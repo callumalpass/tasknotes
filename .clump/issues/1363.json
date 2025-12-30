@@ -1,0 +1,26 @@
+{
+  "issue_number": 1363,
+  "priority": "high",
+  "difficulty": "easy",
+  "risk": "low",
+  "type": "bug",
+  "affected_areas": [
+    "src/bases/CalendarView.ts",
+    "src/bases/calendar-core.ts",
+    "src/utils/dateUtils.ts"
+  ],
+  "ai_summary": "Invalid task dates (e.g., '262025-12-16') cause entire calendar view to fail instead of gracefully skipping the bad task",
+  "notes": "The calendar view crashes when any task has a malformed date string. The error propagates from parseDate() through createScheduledEvent()/createDueEvent() to buildAllEvents(), which has a catch block that calls failureCallback() - causing the entire calendar to show nothing. Property-based events already have per-entry try-catch that gracefully skips bad dates, but task event generation lacks this defensive handling. The malformed date '262025-12-16' appears to be a data entry issue (likely from the date picker), but regardless of source, the calendar should be resilient to bad data.",
+  "root_cause": "createScheduledEvent() and createDueEvent() in calendar-core.ts call parseDateToLocal() without try-catch error handling. When a task has an invalid date, the error propagates up to buildAllEvents() which fails the entire event fetch rather than skipping just the problematic task.",
+  "suggested_fix": "Wrap the task event generation logic (createScheduledEvent/createDueEvent calls in generateCalendarEvents) with try-catch blocks to gracefully skip tasks with invalid dates, similar to how buildPropertyBasedEvents already handles errors per-entry. Optionally log a warning or show a notice to alert users about the problematic task.",
+  "analyzed_at": "2025-12-30T15:30:00Z",
+  "analyzed_by": "claude-opus-4-5-20251101",
+  "status": "fixed",
+  "fixed_at": "2025-12-30T16:00:00Z",
+  "fixed_by": "claude-opus-4-5-20251101",
+  "fix_summary": "Added try-catch block around per-task event generation in generateCalendarEvents() to gracefully skip tasks with invalid dates while logging a warning, allowing other events to display normally.",
+  "files_changed": [
+    "src/bases/calendar-core.ts",
+    "docs/releases/unreleased.md"
+  ]
+}

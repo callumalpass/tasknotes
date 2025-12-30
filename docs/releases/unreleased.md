@@ -62,3 +62,8 @@ Example:
 - (#1398) Fixed overdue highlight showing on completed tasks
   - Completed tasks with past due dates no longer display overdue styling (red highlight)
   - Respects the "Hide completed from overdue" setting which defaults to true
+
+- (#1363) Fixed calendar view showing nothing when a task has an invalid date format
+  - Tasks with malformed dates (e.g., "262025-12-16" instead of "2025-12-16") no longer crash the entire calendar
+  - Invalid tasks are now skipped with a console warning, allowing other events to display normally
+  - Thanks to @Erelen for reporting

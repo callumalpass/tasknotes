@@ -925,45 +925,51 @@ export async function generateCalendarEvents(
 	const events: CalendarEvent[] = [];
 
 	for (const task of tasks) {
-		// Handle recurring tasks
-		if (task.recurrence) {
-			if (!task.scheduled) continue;
+		try {
+			// Handle recurring tasks
+			if (task.recurrence) {
+				if (!task.scheduled) continue;
 
-			if (showRecurring && visibleStart && visibleEnd) {
-				const recurringEvents = generateRecurringTaskInstances(
-					task,
-					visibleStart,
-					visibleEnd,
-					plugin
-				);
-				events.push(...recurringEvents);
-			}
-		} else {
-			// Handle non-recurring tasks with date range filtering
-			if (showScheduled && task.scheduled) {
-				if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
-					const scheduledEvent = createScheduledEvent(task, plugin);
-					if (scheduledEvent) events.push(scheduledEvent);
+				if (showRecurring && visibleStart && visibleEnd) {
+					const recurringEvents = generateRecurringTaskInstances(
+						task,
+						visibleStart,
+						visibleEnd,
+						plugin
+					);
+					events.push(...recurringEvents);
+				}
+			} else {
+				// Handle non-recurring tasks with date range filtering
+				if (showScheduled && task.scheduled) {
+					if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
+						const scheduledEvent = createScheduledEvent(task, plugin);
+						if (scheduledEvent) events.push(scheduledEvent);
+					}
+				}
+
+				if (showDue && task.due) {
+					if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
+						const dueEvent = createDueEvent(task, plugin);
+						if (dueEvent) events.push(dueEvent);
+					}
 				}
 			}
 
-			if (showDue && task.due) {
-				if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
-					const dueEvent = createDueEvent(task, plugin);
-					if (dueEvent) events.push(dueEvent);
+			// Add time entry events with date range filtering
+			if (showTimeEntries && task.timeEntries) {
+				const timeEvents = createTimeEntryEvents(task, plugin);
+				// Filter time entries by visible range
+				for (const event of timeEvents) {
+					if (isDateInVisibleRange(event.start, visibleStart, visibleEnd)) {
+						events.push(event);
+					}
 				}
 			}
-		}
-
-		// Add time entry events with date range filtering
-		if (showTimeEntries && task.timeEntries) {
-			const timeEvents = createTimeEntryEvents(task, plugin);
-			// Filter time entries by visible range
-			for (const event of timeEvents) {
-				if (isDateInVisibleRange(event.start, visibleStart, visibleEnd)) {
-					events.push(event);
-				}
-			}
+		} catch (error) {
+			// Log error but continue processing other tasks
+			// This prevents a single task with invalid dates from breaking the entire calendar
+			console.warn(`[TaskNotes][Calendar] Error processing task "${task.title}" (${task.path}):`, error);
 		}
 	}
 
