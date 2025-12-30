@@ -673,6 +673,9 @@ export abstract class TaskModal extends Modal {
 			iconContainer.setAttribute("data-type", dataType);
 		}
 
+		// Add visual tooltip using Obsidian's setTooltip API
+		setTooltip(iconContainer, tooltip, { placement: "top" });
+
 		const icon = iconContainer.createSpan("icon");
 		setIcon(icon, iconName);
 
