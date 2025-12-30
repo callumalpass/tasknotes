@@ -10,6 +10,8 @@
 		"copy-files": "node copy-files.mjs",
 		"build-css": "node build-css.mjs",
 		"e2e": "playwright test",
+		"e2e:docs": "playwright test e2e/docs-screenshots.spec.ts",
+		"e2e:docs:copy": "mkdir -p media/docs && cp test-results/docs/*.png media/docs/",
 		"e2e:setup": "bash e2e-setup.sh",
 		"e2e:launch": "bash e2e-launch.sh",
 		"version": "node version-bump.mjs && node generate-release-notes-import.mjs && git add manifest.json versions.json src/releaseNotes.ts",

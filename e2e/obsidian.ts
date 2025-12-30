@@ -25,14 +25,22 @@ export async function launchObsidian(): Promise<ObsidianApp> {
   // Launch Obsidian manually and connect via CDP
   const remoteDebuggingPort = 9222;
 
+  // Use obsidian:// URI to open specific vault
+  const vaultUri = `obsidian://open?path=${encodeURIComponent(E2E_VAULT_DIR)}`;
+
   // Pass the vault path directly as an argument
   const obsidianProcess = spawn(obsidianBinary, [
     '--no-sandbox',
     `--remote-debugging-port=${remoteDebuggingPort}`,
-    E2E_VAULT_DIR,
+    vaultUri,
   ], {
     cwd: UNPACKED_DIR,
     stdio: ['ignore', 'pipe', 'pipe'],
+    env: {
+      ...process.env,
+      // Set home to a temp directory to avoid using user's vault config
+      OBSIDIAN_CONFIG_DIR: path.join(PROJECT_ROOT, '.obsidian-config-e2e'),
+    },
   });
 
   // Wait for DevTools to be ready
@@ -96,21 +104,72 @@ export async function launchObsidian(): Promise<ObsidianApp> {
   // Give Obsidian time to initialize
   await page.waitForTimeout(3000);
 
-  // Handle "Trust this vault" dialog
-  const trustButton = page.locator('button:has-text("Trust")');
-  if (await trustButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+  // Handle "Trust this vault" dialog - this enables community plugins
+  const trustButton = page.locator('button:has-text("Trust author and enable plugins")');
+  if (await trustButton.isVisible({ timeout: 3000 }).catch(() => false)) {
     await trustButton.click();
+    await page.waitForTimeout(2000);
+  }
+
+  // Alternative trust button text
+  const trustButton2 = page.locator('button:has-text("Trust")');
+  if (await trustButton2.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await trustButton2.click();
+    await page.waitForTimeout(1000);
+  }
+
+  // Handle "Turn on community plugins" dialog if it appears
+  const enablePluginsButton = page.locator('button:has-text("Turn on community plugins")');
+  if (await enablePluginsButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await enablePluginsButton.click();
+    await page.waitForTimeout(2000);
+  }
+
+  // Handle any "Enable" button for plugins
+  const enableButton = page.locator('button:has-text("Enable community plugins")');
+  if (await enableButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await enableButton.click();
     await page.waitForTimeout(1000);
   }
 
   // Wait for the workspace to be ready
   await page.waitForSelector('.workspace', { timeout: 30000 });
 
+  // Wait for TaskNotes plugin to fully initialize
+  // The plugin adds its sidebar items and commands after loading
+  await page.waitForTimeout(2000);
+
+  // Verify TaskNotes is loaded by checking for its ribbon icon or commands
+  // Try to verify the plugin is active by checking command availability
+  try {
+    await page.keyboard.press('Control+p');
+    await page.waitForSelector('.prompt', { timeout: 5000 });
+    const promptInput = page.locator('.prompt-input');
+    await promptInput.fill('TaskNotes');
+    await page.waitForTimeout(500);
+    const suggestion = page.locator('.suggestion-item');
+    const hasSuggestions = await suggestion.first().isVisible({ timeout: 3000 }).catch(() => false);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    if (!hasSuggestions) {
+      console.warn('Warning: TaskNotes commands not found. Plugin may not be loaded.');
+    }
+  } catch (e) {
+    console.warn('Could not verify TaskNotes plugin status:', e);
+  }
+
   return { browser, process: obsidianProcess, page };
 }
 
 export async function closeObsidian(app: ObsidianApp): Promise<void> {
   if (app.browser) {
+    // Close all open tabs/pages before closing the browser
+    for (const context of app.browser.contexts()) {
+      for (const page of context.pages()) {
+        await page.close().catch(() => {});
+      }
+    }
     await app.browser.close();
   }
   if (app.process) {
@@ -122,13 +181,27 @@ export async function openCommandPalette(page: Page): Promise<void> {
   // Use Ctrl+P to open command palette
   await page.keyboard.press('Control+p');
   await page.waitForSelector('.prompt', { timeout: 5000 });
+  // Clear any existing text in the prompt input
+  const promptInput = page.locator('.prompt-input');
+  await promptInput.fill('');
 }
 
 export async function runCommand(page: Page, command: string): Promise<void> {
   await openCommandPalette(page);
-  await page.keyboard.type(command, { delay: 50 });
-  await page.waitForTimeout(300); // Wait for search to filter
-  await page.keyboard.press('Enter');
+  // Type the command
+  await page.keyboard.type(command, { delay: 30 });
+  await page.waitForTimeout(500); // Wait for search to filter
+
+  // Wait for suggestions to appear
+  const suggestion = page.locator('.suggestion-item').first();
+  try {
+    await suggestion.waitFor({ timeout: 3000, state: 'visible' });
+    await page.keyboard.press('Enter');
+  } catch {
+    // If no suggestions found, still try to press Enter and close palette
+    await page.keyboard.press('Escape');
+    throw new Error(`Command not found: "${command}". Make sure TaskNotes plugin is loaded.`);
+  }
 }
 
 export async function waitForNotice(page: Page, text?: string): Promise<void> {
