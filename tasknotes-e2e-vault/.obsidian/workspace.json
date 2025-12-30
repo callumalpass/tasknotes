@@ -1,0 +1,209 @@
+{
+  "main": {
+    "id": "5fbb4b4e79942ff5",
+    "type": "split",
+    "children": [
+      {
+        "id": "ead54bd586d8e733",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "60672b8bf6360f2e",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/mini-calendar-default.base",
+                "viewName": "Due"
+              },
+              "icon": "tasknotes-simple",
+              "title": "mini-calendar-default"
+            }
+          },
+          {
+            "id": "1204dd1d984295ac",
+            "type": "leaf",
+            "state": {
+              "type": "tasknotes-stats-view",
+              "state": {},
+              "icon": "lucide-ghost",
+              "title": "tasknotes-stats-view"
+            }
+          },
+          {
+            "id": "54a514db224a82cb",
+            "type": "leaf",
+            "state": {
+              "type": "tasknotes-pomodoro-stats-view",
+              "state": {},
+              "icon": "lucide-ghost",
+              "title": "tasknotes-pomodoro-stats-view"
+            }
+          },
+          {
+            "id": "1fce333c7850d4d0",
+            "type": "leaf",
+            "state": {
+              "type": "tasknotes-pomodoro-view",
+              "state": {},
+              "icon": "lucide-ghost",
+              "title": "tasknotes-pomodoro-view"
+            }
+          },
+          {
+            "id": "31709169f77e18e5",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/mini-calendar-default.base",
+                "viewName": "Due"
+              },
+              "icon": "tasknotes-simple",
+              "title": "mini-calendar-default"
+            }
+          },
+          {
+            "id": "4d1c05999e747f56",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/kanban-default.base",
+                "viewName": "Kanban"
+              },
+              "icon": "tasknotes-simple",
+              "title": "kanban-default"
+            }
+          }
+        ],
+        "currentTab": 5
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4fbd1ee9b6b12816",
+    "type": "split",
+    "children": [
+      {
+        "id": "78b476739a4ca057",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4dfe819ab309703e",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "a37fd665c7b7a224",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "02fa9c1a10fd1d56",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "8ff3322ed5378417",
+    "type": "split",
+    "children": [
+      {
+        "id": "f7af2f39eaafd53b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "36b40c38d2035910",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "daily-notes:Open today's daily note": false,
+      "switcher:Open quick switcher": false,
+      "canvas:Create new canvas": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "tasknotes:Open mini calendar": false,
+      "tasknotes:Open advanced calendar": false,
+      "tasknotes:Open task list": false,
+      "tasknotes:Open agenda": false,
+      "tasknotes:Open kanban board": false,
+      "tasknotes:Open pomodoro": false,
+      "tasknotes:Open pomodoro stats": false,
+      "tasknotes:Create new task": false
+    }
+  },
+  "active": "4d1c05999e747f56",
+  "lastOpenFiles": [
+    "TaskNotes/Views/mini-calendar-default.base",
+    "TaskNotes/Views/kanban-default.base",
+    "TaskNotes/Views/tasks-default.base",
+    "TaskNotes/Views/relationships.base",
+    "TaskNotes/Views/calendar-default.base",
+    "TaskNotes/Weekly team meeting.md",
+    "TaskNotes/Review project proposal.md",
+    "TaskNotes/Views/agenda-default.base",
+    "TaskNotes/Buy groceries.md",
+    "TaskNotes/Daily standup.md",
+    "TaskNotes/Code review PR 123.md",
+    "2026-01-01.md",
+    "2025-12-31.md",
+    "Welcome.md",
+    "TaskNotes/Plan vacation.md",
+    "TaskNotes/Overdue report.md",
+    "TaskNotes/Fix login bug.md",
+    "TaskNotes/Views/relationships.base.tmp.1242721.1767128675679",
+    "TaskNotes/Code review PR 123.md.tmp.492119.1767088462652",
+    "TaskNotes/Daily standup.md.tmp.492119.1767088462513",
+    "TaskNotes/Plan vacation.md.tmp.492119.1767088462381"
+  ]
+}

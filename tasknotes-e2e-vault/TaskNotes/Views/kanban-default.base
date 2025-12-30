@@ -1,0 +1,18 @@
+filters:
+  and:
+    - note.status && note.status != "" && note.status != null
+views:
+  - type: tasknotesKanban
+    name: Kanban
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+    consolidateStatusIcon: false
