@@ -38,6 +38,8 @@ import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 export interface TaskCardOptions {
 	targetDate?: Date;
 	layout?: "default" | "compact" | "inline";
+	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
+	hideStatusIndicator?: boolean;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -1410,11 +1412,12 @@ export function createTaskCard(
 		card.style.setProperty("--next-status-color", nextStatusConfig.color);
 	}
 
-	// Status indicator dot (conditional based on visible properties)
+	// Status indicator dot (conditional based on visible properties and options)
 	let statusDot: HTMLElement | null = null;
 	const shouldShowStatus =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
+		!opts.hideStatusIndicator &&
+		(!visibleProperties ||
+			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
 	if (shouldShowStatus) {
 		statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
 		if (statusConfig) {
