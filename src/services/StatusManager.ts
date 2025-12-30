@@ -24,6 +24,23 @@ export class StatusManager {
 	}
 
 	/**
+	 * Get previous status in cycle from current status (reverse cycling)
+	 */
+	getPreviousStatus(currentStatus: string): string {
+		const sortedStatuses = this.getStatusesByOrder();
+		const currentIndex = sortedStatuses.findIndex((s) => s.value === currentStatus);
+
+		if (currentIndex === -1) {
+			// Current status not found, return last status
+			return sortedStatuses[sortedStatuses.length - 1]?.value || "open";
+		}
+
+		// Get previous status, cycling to last if at beginning
+		const prevIndex = (currentIndex - 1 + sortedStatuses.length) % sortedStatuses.length;
+		return sortedStatuses[prevIndex].value;
+	}
+
+	/**
 	 * Get status configuration by value
 	 */
 	getStatusConfig(value: string): StatusConfig | undefined {

@@ -42,6 +42,11 @@ Example:
   - The manual "Create Default Files" button remains available for on-demand recreation
   - Thanks to @LookGoodFeelGood for the feature request
 
+- (#1408) Shift+click on status icon to cycle backwards through statuses
+  - Normal click cycles forward through status order
+  - Shift+click cycles in reverse order
+  - Thanks to @JerryLu086 for the feature request
+
 ## Fixed
 
 - (#1386) Fixed `timeEstimateCategory` formula showing "Long (>2h)" instead of "No estimate" for new tasks

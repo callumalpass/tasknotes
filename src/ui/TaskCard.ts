@@ -162,14 +162,16 @@ function createStatusCycleHandler(
 				// Update card classes
 				updateCardCompletionState(card, task, plugin, isNowCompleted, newEffectiveStatus);
 			} else {
-				// For regular tasks, cycle to next status
+				// For regular tasks, cycle to next/previous status based on shift key
 				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
 				if (!freshTask) {
 					new Notice("Task not found");
 					return;
 				}
 				const currentStatus = freshTask.status || "open";
-				const nextStatus = plugin.statusManager.getNextStatus(currentStatus);
+				const nextStatus = e.shiftKey
+					? plugin.statusManager.getPreviousStatus(currentStatus)
+					: plugin.statusManager.getNextStatus(currentStatus);
 				await plugin.updateTaskProperty(freshTask, "status", nextStatus);
 			}
 		} catch (error) {
@@ -1900,7 +1902,7 @@ export function updateTaskCard(
 							titleContainer.classList.toggle("completed", isNowCompleted);
 						}
 					} else {
-						// For regular tasks, cycle to next status
+						// For regular tasks, cycle to next/previous status based on shift key
 						// Get fresh task data to ensure we have the latest status
 						const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
 						if (!freshTask) {
@@ -1909,7 +1911,9 @@ export function updateTaskCard(
 						}
 
 						const currentStatus = freshTask.status || "open";
-						const nextStatus = plugin.statusManager.getNextStatus(currentStatus);
+						const nextStatus = e.shiftKey
+							? plugin.statusManager.getPreviousStatus(currentStatus)
+							: plugin.statusManager.getNextStatus(currentStatus);
 						await plugin.updateTaskProperty(freshTask, "status", nextStatus);
 					}
 				} catch (error) {
