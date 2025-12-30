@@ -58,6 +58,11 @@ webhook*.log
 external/tasknotes-e2e/.e2e/
 C/
 .copy-files.local
+
+# E2E testing - unpacked Obsidian and test results
+.obsidian-unpacked/
+test-results/
+tasknotes-e2e-vault/.obsidian/plugins/tasknotes/
 .augment
 # Test output files
 jest-out.txt

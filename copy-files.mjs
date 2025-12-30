@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 import { copyFile, mkdir, access, constants, readFile } from 'fs/promises';
-import { join, resolve } from 'path';
-import os from 'os';
+import { join, resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// Default copy destination - can be overridden with OBSIDIAN_PLUGIN_PATH environment variable
-// Use os.homedir() to avoid literal "$HOME" not being expanded by Node
-const defaultPath = join(os.homedir(), 'testvault', 'test', '.obsidian', 'plugins', 'tasknotes');
+// Get current script directory
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Default copy destination - the e2e-vault in this repo
+// Can be overridden with OBSIDIAN_PLUGIN_PATH environment variable or .copy-files.local file
+const defaultPath = join(__dirname, 'tasknotes-e2e-vault', '.obsidian', 'plugins', 'tasknotes');
 const LOCAL_OVERRIDE_FILE = '.copy-files.local';
 let copyPath = process.env.OBSIDIAN_PLUGIN_PATH || defaultPath;
 try {
