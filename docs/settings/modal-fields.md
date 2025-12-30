@@ -2,6 +2,8 @@
 
 The Modal Fields tab lets you decide exactly which fields appear in the task creation and edit modals. Open **Settings → TaskNotes → Modal Fields** to manage the configuration.
 
+![Modal Fields Settings](../assets/settings-modal-fields.png)
+
 ## Field Groups
 
 Fields are organized into draggable groups:

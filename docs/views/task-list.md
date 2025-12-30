@@ -4,6 +4,8 @@
 
 The Task List View displays tasks in a scrollable list format with filtering, sorting, and grouping capabilities. In TaskNotes v4, this view operates as a Bases view configured through YAML.
 
+![Task List View](../assets/views-tasks-list.png)
+
 ## Bases Architecture
 
 Task List is implemented as a `.base` file located in `TaskNotes/Views/tasks-default.base` by default. It requires the Bases core plugin to be enabled.

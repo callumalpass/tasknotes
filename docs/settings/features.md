@@ -4,6 +4,8 @@ These settings allow you to enable, disable, and configure the various features 
 
 [← Back to Settings](../settings.md)
 
+![Features Settings](../assets/settings-features.png)
+
 ## Inline Tasks
 
 - **Task link overlay**: Replaces links to tasks with an interactive widget in Live Preview mode. The widget is not shown when the cursor is on the link, to allow for editing.

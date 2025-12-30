@@ -4,6 +4,8 @@
 
 The Kanban View displays tasks as cards organized in columns, where each column represents a distinct value of a grouped property.
 
+![Kanban View](../assets/views-kanban.png)
+
 ## Configuration
 
 Kanban views are stored as `.base` files in `TaskNotes/Views/`. The `groupBy` property determines the column structure—each unique value becomes a column in the board. Open a `.base` file and access the view settings panel to configure options.

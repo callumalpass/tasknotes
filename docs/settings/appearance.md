@@ -4,6 +4,8 @@ These settings control the visual appearance of the plugin, including the calend
 
 [← Back to Settings](../settings.md)
 
+![Appearance Settings](../assets/settings-appearance.png)
+
 ## Task Cards
 
 - **Default visible properties**: Choose which properties appear on task cards by default.

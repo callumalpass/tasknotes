@@ -4,6 +4,8 @@
 
 TaskNotes provides two calendar-based views: the **Mini Calendar** and the **Calendar View**. Both operate as Bases views (`.base` files) and require the Bases core plugin to be enabled in Obsidian.
 
+![Calendar Month View](../assets/views-calendar-month.png)
+
 ## Bases View Architecture
 
 Calendar views in TaskNotes v4 are implemented as Bases views, which means:
@@ -16,6 +18,8 @@ Calendar views in TaskNotes v4 are implemented as Bases views, which means:
 ## Mini Calendar View
 
 The Mini Calendar displays a month-based view that shows which days contain tasks or other dated notes. It provides navigation and an overview of your task distribution across time.
+
+![Mini Calendar View](../assets/views-mini-calendar.png)
 
 ### Features
 
@@ -39,6 +43,10 @@ The Calendar View supports the following view modes:
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
 - **Custom Days**: Configurable multi-day view (2-10 days)
+
+| Week View | Day View | Year View |
+|-----------|----------|-----------|
+| ![Week View](../assets/views-calendar-week.png) | ![Day View](../assets/views-calendar-day.png) | ![Year View](../assets/views-calendar-year.png) |
 
 ### Performance Improvements
 
