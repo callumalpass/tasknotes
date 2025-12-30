@@ -78,3 +78,8 @@ Example:
 
 - Fixed today column in week/day calendar views using FullCalendar's default yellow instead of theme accent
   - Today's column now uses a subtle tint of the theme accent color for consistent styling
+
+- (#1399) Fixed drag-and-drop not working in Kanban view on mobile
+  - Cards and columns can now be dragged using long-press gesture on touch devices
+  - Includes haptic feedback and auto-scroll when dragging near edges
+  - Thanks to @l-mb for reporting and the fix
