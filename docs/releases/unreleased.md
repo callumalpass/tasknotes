@@ -58,3 +58,7 @@ Example:
   - Views would show "?" in the Views menu due to view type mismatch
   - Caused by typo in view type properties not matching registration IDs
   - Thanks to @music-soul1-1 for reporting
+
+- (#1398) Fixed overdue highlight showing on completed tasks
+  - Completed tasks with past due dates no longer display overdue styling (red highlight)
+  - Respects the "Hide completed from overdue" setting which defaults to true

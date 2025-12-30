@@ -1195,7 +1195,9 @@ function renderDueDateProperty(
 	plugin: TaskNotesPlugin
 ): void {
 	const isDueToday = isTodayTimeAware(due);
-	const isDueOverdue = isOverdueTimeAware(due);
+	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	const hideCompletedFromOverdue = plugin.settings?.hideCompletedFromOverdue ?? true;
+	const isDueOverdue = isOverdueTimeAware(due, isCompleted, hideCompletedFromOverdue);
 
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
 	let dueDateText = "";
@@ -1243,7 +1245,9 @@ function renderScheduledDateProperty(
 	plugin: TaskNotesPlugin
 ): void {
 	const isScheduledToday = isTodayTimeAware(scheduled);
-	const isScheduledPast = isOverdueTimeAware(scheduled);
+	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	const hideCompletedFromOverdue = plugin.settings?.hideCompletedFromOverdue ?? true;
+	const isScheduledPast = isOverdueTimeAware(scheduled, isCompleted, hideCompletedFromOverdue);
 
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
 	let scheduledDateText = "";
