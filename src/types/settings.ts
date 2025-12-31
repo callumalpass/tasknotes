@@ -123,6 +123,7 @@ export interface TaskNotesSettings {
 	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data
 	// Editor settings
 	enableTaskLinkOverlay: boolean;
+	disableOverlayOnAlias: boolean;
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;

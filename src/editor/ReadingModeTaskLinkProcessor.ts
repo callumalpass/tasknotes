@@ -163,6 +163,18 @@ export class ReadingModeTaskLinkProcessor {
 			// Get the original link text for display
 			const originalText = linkEl.textContent || `[[${originalLinkPath}]]`;
 
+			// Check for alias exclusion
+			if (this.plugin.settings.disableOverlayOnAlias) {
+				// In reading mode, we check if the displayed text differs from the path or title
+				// If it does, it's likely an alias/custom text
+				const currentText = linkEl.textContent || "";
+				
+				// If text doesn't match path AND doesn't match task title, it's an alias
+				if (currentText !== originalLinkPath && currentText !== taskInfo.title) {
+					return;
+				}
+			}
+
 			// Parse display text if it's a piped link
 			let displayText: string | undefined;
 			const linkContent = linkEl.textContent || "";
