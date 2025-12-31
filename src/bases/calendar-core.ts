@@ -456,7 +456,7 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 		backgroundColor: fadedBackground,
 		borderColor: borderColor,
 		textColor: textColor,
-		editable: false,
+		editable: true,
 		extendedProps: {
 			taskInfo: task,
 			eventType: "due",

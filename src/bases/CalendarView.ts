@@ -1234,29 +1234,24 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		// Only allow scheduled and recurring events to be moved (block due dates)
-		if (eventType === "due") {
-			info.revert();
-			return;
-		}
-
 		// Handle recurring task drops
 		if (taskInfo && (isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)) {
 			await handleRecurringTaskDrop(info, taskInfo, this.plugin);
 			return;
 		}
 
-		// Handle normal task drops
+		// Handle normal task drops (scheduled and due dates)
 		if (taskInfo) {
 			try {
-				if (eventType === "scheduled") {
+				if (eventType === "scheduled" || eventType === "due") {
 					const newStart = info.event.start;
 					const allDay = info.event.allDay;
 					const newDateString = allDay
 						? format(newStart, "yyyy-MM-dd")
 						: format(newStart, "yyyy-MM-dd'T'HH:mm");
 
-					await this.plugin.taskService.updateProperty(taskInfo, "scheduled", newDateString);
+					const property = eventType === "scheduled" ? "scheduled" : "due";
+					await this.plugin.taskService.updateProperty(taskInfo, property, newDateString);
 				}
 			} catch (error) {
 				console.error("[TaskNotes][CalendarView] Error updating task date:", error);
@@ -1665,10 +1660,8 @@ export class CalendarView extends BasesViewBase {
 					case "scheduled":
 					case "recurring":
 					case "timeEntry":
-						arg.event.setProp("editable", true);
-						break;
 					case "due":
-						arg.event.setProp("editable", false);
+						arg.event.setProp("editable", true);
 						break;
 					default:
 						arg.event.setProp("editable", true);

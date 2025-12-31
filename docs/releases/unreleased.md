@@ -131,3 +131,8 @@ Example:
   - Title filters now correctly use `file.name` instead of `note.title`
   - Archived filters now generate valid boolean expressions instead of malformed comparisons
   - "Is Blocked" filters now generate correct expressions with proper operator precedence
+
+- (#1036) Due dates can now be dragged in the calendar view
+  - Previously only scheduled dates were draggable; due dates were locked in place
+  - Dragging a due event now updates the task's due date property
+  - Thanks to @same774 for reporting
