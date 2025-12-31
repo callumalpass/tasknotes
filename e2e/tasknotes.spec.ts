@@ -1828,6 +1828,96 @@ test.describe('Task Edit Modal', () => {
       await page.keyboard.press('Escape');
     }
   });
+
+  test.fixme('task popup buttons should be visible without scrolling (Issue #1345)', async () => {
+    // STATUS: BUG - Issue #1345
+    //
+    // When opening the task edit modal, the user must scroll a tiny bit
+    // to see the buttons at the bottom (Save, Cancel, etc.).
+    //
+    // ROOT CAUSE: The modal content height may exceed the available viewport
+    // or the modal container may have incorrect height/overflow constraints.
+    //
+    // Potential areas to investigate in CSS:
+    // - styles/task-modal.css - modal height, max-height, overflow settings
+    // - .minimalist-modal-container padding/margin
+    // - .modal-content sizing
+    // - .modal-button-container positioning
+    //
+    // STEPS TO REPRODUCE:
+    // 1. Open any task (click on calendar event or via command)
+    // 2. Observe that the modal opens
+    // 3. Check if the bottom buttons are visible without scrolling
+    //
+    // EXPECTED: All modal buttons should be visible without scrolling
+    // ACTUAL: User needs to scroll slightly to see the bottom buttons
+    const page = getPage();
+
+    // Ensure clean state
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open calendar view first
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Click on a calendar event to open task edit modal
+    const calendarEvent = page.locator('.fc-event').first();
+    if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await calendarEvent.click();
+      await page.waitForTimeout(800);
+
+      // Check if modal opened
+      const modal = page.locator('.modal.mod-tasknotes, .tasknotes-plugin.minimalist-task-modal');
+      const modalVisible = await modal.isVisible({ timeout: 2000 }).catch(() => false);
+
+      if (modalVisible) {
+        await page.screenshot({ path: 'test-results/screenshots/issue-1345-task-popup-before.png' });
+
+        // Locate the button container
+        const buttonContainer = modal.locator('.modal-button-container');
+        const buttonContainerVisible = await buttonContainer.isVisible({ timeout: 1000 }).catch(() => false);
+
+        if (buttonContainerVisible) {
+          // Get the modal's bounding box
+          const modalBox = await modal.boundingBox();
+          // Get the button container's bounding box
+          const buttonBox = await buttonContainer.boundingBox();
+
+          if (modalBox && buttonBox) {
+            // The button container's bottom edge should be within the viewport
+            // If the button is below the modal's visible area, it requires scrolling
+            const viewportHeight = await page.evaluate(() => window.innerHeight);
+
+            // Check if the buttons are fully visible (their bottom is within viewport)
+            const buttonsFullyVisible = buttonBox.y + buttonBox.height <= viewportHeight;
+
+            await page.screenshot({ path: 'test-results/screenshots/issue-1345-button-visibility.png' });
+
+            // BUG: Buttons should be visible without scrolling but they're cut off
+            expect(buttonsFullyVisible).toBe(true);
+          }
+        }
+
+        // Also check if the modal content itself is scrolled
+        const modalContent = modal.locator('.modal-content, .minimalist-modal-container').first();
+        if (await modalContent.isVisible({ timeout: 1000 }).catch(() => false)) {
+          const scrollTop = await modalContent.evaluate((el) => el.scrollTop);
+          const scrollHeight = await modalContent.evaluate((el) => el.scrollHeight);
+          const clientHeight = await modalContent.evaluate((el) => el.clientHeight);
+
+          // If scrollHeight > clientHeight, the content requires scrolling
+          const requiresScroll = scrollHeight > clientHeight;
+
+          // BUG: Modal content should not require scrolling to see all controls
+          // When requiresScroll is true, the buttons at the bottom may be hidden
+          expect(requiresScroll).toBe(false);
+        }
+
+        await page.keyboard.press('Escape');
+      }
+    }
+  });
 });
 
 // ============================================================================
