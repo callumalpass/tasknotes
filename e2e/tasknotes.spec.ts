@@ -390,6 +390,35 @@ test.describe('Task Creation Modal', () => {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
   });
+
+  test.fixme('should start in insert mode when vim keybindings are enabled (#1410)', async () => {
+    // Feature Request: https://github.com/anthropics/tasknotes/issues/1410
+    //
+    // Issue: When vim keybindings are enabled in Obsidian settings, the task creation
+    // modal's CodeMirror editor defaults to vim's Normal mode. This requires users to
+    // press 'i' before they can start typing task details, adding friction.
+    //
+    // Expected behavior: When vim mode is enabled in Obsidian and user opens the task
+    // creation modal, the editor should automatically be in Insert mode to allow
+    // immediate typing.
+    //
+    // Current behavior: Editor starts in Normal mode, requiring 'i' keypress first.
+    //
+    // Testing challenges:
+    // - Vim mode is an Obsidian-level setting (not TaskNotes plugin setting)
+    // - Enabling vim mode in the e2e vault would affect all other tests
+    // - Would need to modify tasknotes-e2e-vault/.obsidian/app.json to add "vimMode": true
+    //
+    // Manual verification steps:
+    // 1. Enable vim mode in Obsidian Settings > Editor > Vim key bindings
+    // 2. Open TaskNotes task creation modal (Ctrl+Shift+N or command palette)
+    // 3. Try typing immediately without pressing 'i'
+    // 4. Expected: Text should appear in the input
+    // 5. Actual: Nothing happens until 'i' is pressed
+    //
+    // Fix location: src/editor/EmbeddableMarkdownEditor.ts or src/modals/TaskCreationModal.ts
+    // Need to programmatically enter insert mode after editor initialization when vim is active.
+  });
 });
 
 test.describe('Properties Panel', () => {
