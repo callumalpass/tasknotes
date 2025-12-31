@@ -3565,3 +3565,223 @@ test.describe('Issue #1409 - Popout window functionality', () => {
     }
   });
 });
+
+// ============================================================================
+// Issue #1352: Preserve time when updating schedule/due date
+// https://github.com/user/tasknotes/issues/1352
+// ============================================================================
+test.describe('Issue #1352 - Preserve time when updating dates', () => {
+  test('should preserve time when using +1 day from date context menu', async () => {
+    // STATUS: BUG - Issue #1352
+    //
+    // When using the date context menu's increment operations (+1 day, -1 day, etc.),
+    // the time component of the scheduled/due date is lost.
+    //
+    // Example from issue:
+    //   scheduled_date: 2025-12-10T16:00
+    //   After "+1 day": 2025-12-11 (time lost!)
+    //   Expected: 2025-12-11T16:00 (time preserved)
+    //
+    // ROOT CAUSE: In src/ui/TaskCard.ts line 362:
+    //   currentValue: getDatePart(currentValue || ""),
+    // The full datetime is stripped to just the date before being passed to DateContextMenu.
+    // When addDaysToDateTime() is called with just "2025-12-10", there's no time to preserve.
+    //
+    // FIX: Pass the full currentValue to DateContextMenu instead of just getDatePart().
+    // The DateContextMenu's getDateOptions() already uses addDaysToDateTime() which
+    // correctly preserves time when present.
+    const page = getPage();
+
+    // Open the tasks view
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1500);
+
+    // Find the "Weekly team meeting" task which has scheduled: 2025-12-30T10:00
+    // This task has a time component that should be preserved
+    const taskCard = page.locator('.tn-task-card:has-text("Weekly team meeting"), .task-card:has-text("Weekly team meeting")').first();
+
+    if (!await taskCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // If task card is not visible in default view, try searching
+      const searchInput = page.locator('.tn-search-input, [placeholder*="Search"]');
+      if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await searchInput.fill('Weekly team meeting');
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Look for the scheduled date indicator (usually has a calendar icon or shows the date)
+    const scheduledDateElement = taskCard.locator('[class*="scheduled"], [data-property="scheduled"], .tn-date-badge').first();
+
+    if (await scheduledDateElement.isVisible({ timeout: 3000 }).catch(() => false)) {
+      // Click to open the date context menu
+      await scheduledDateElement.click();
+      await page.waitForTimeout(300);
+
+      // Look for the context menu with +1 day option
+      const contextMenu = page.locator('.menu, .suggestion-container, .tn-context-menu');
+      await expect(contextMenu).toBeVisible({ timeout: 3000 });
+
+      // Screenshot showing the context menu
+      await page.screenshot({ path: 'test-results/screenshots/issue-1352-date-context-menu.png' });
+
+      // Click +1 day
+      const plusOneDay = contextMenu.locator('text="+1 day"').first();
+      if (await plusOneDay.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await plusOneDay.click();
+        await page.waitForTimeout(500);
+
+        // Screenshot after clicking +1 day
+        await page.screenshot({ path: 'test-results/screenshots/issue-1352-after-plus-one-day.png' });
+
+        // Now verify that the time was preserved by reading the task file
+        // We need to check the actual YAML frontmatter of the file
+        const updatedScheduled = await page.evaluate(async () => {
+          // @ts-ignore - Obsidian global
+          const app = (window as any).app;
+          const plugin = app?.plugins?.plugins?.['tasknotes'];
+          if (!plugin) return null;
+
+          // Find the task by title
+          const allTasks = plugin.taskService?.getAllTasks?.() || [];
+          const task = allTasks.find((t: any) => t.title === 'Weekly team meeting');
+          return task?.scheduled;
+        });
+
+        console.log('Updated scheduled value:', updatedScheduled);
+
+        // BUG: Time should be preserved!
+        // The original was 2025-12-30T10:00, after +1 day it should be 2025-12-31T10:00
+        // But the bug causes it to become just 2025-12-31 (no time)
+        if (updatedScheduled) {
+          // Check if time component is preserved (should contain 'T' and time)
+          const hasTimeComponent = updatedScheduled.includes('T') && /T\d{2}:\d{2}/.test(updatedScheduled);
+
+          // This assertion will FAIL until the bug is fixed
+          expect(hasTimeComponent).toBe(true);
+
+          // Additionally verify the time is specifically 10:00
+          if (hasTimeComponent) {
+            expect(updatedScheduled).toMatch(/T10:00$/);
+          }
+        }
+      } else {
+        // Close menu if +1 day wasn't found
+        await page.keyboard.press('Escape');
+      }
+    } else {
+      // Try right-clicking the task card instead
+      await taskCard.click({ button: 'right' });
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: 'test-results/screenshots/issue-1352-task-context-menu.png' });
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should preserve time when using -1 day from date context menu', async () => {
+    // Similar test for -1 day operation
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1500);
+
+    const taskCard = page.locator('.tn-task-card:has-text("Review project proposal"), .task-card:has-text("Review project proposal")').first();
+
+    if (!await taskCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('Task card not visible, skipping test');
+      return;
+    }
+
+    const scheduledDateElement = taskCard.locator('[class*="scheduled"], [data-property="scheduled"], .tn-date-badge').first();
+
+    if (await scheduledDateElement.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await scheduledDateElement.click();
+      await page.waitForTimeout(300);
+
+      const contextMenu = page.locator('.menu, .suggestion-container, .tn-context-menu');
+
+      if (await contextMenu.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const minusOneDay = contextMenu.locator('text="-1 day"').first();
+        if (await minusOneDay.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await minusOneDay.click();
+          await page.waitForTimeout(500);
+
+          const updatedScheduled = await page.evaluate(async () => {
+            // @ts-ignore - Obsidian global
+            const app = (window as any).app;
+            const plugin = app?.plugins?.plugins?.['tasknotes'];
+            if (!plugin) return null;
+
+            const allTasks = plugin.taskService?.getAllTasks?.() || [];
+            const task = allTasks.find((t: any) => t.title === 'Review project proposal');
+            return task?.scheduled;
+          });
+
+          console.log('Updated scheduled value after -1 day:', updatedScheduled);
+
+          // BUG: Time should be preserved!
+          // Original: 2025-12-30T06:00, expected after -1 day: 2025-12-29T06:00
+          if (updatedScheduled) {
+            const hasTimeComponent = updatedScheduled.includes('T') && /T\d{2}:\d{2}/.test(updatedScheduled);
+            expect(hasTimeComponent).toBe(true);
+          }
+        } else {
+          await page.keyboard.press('Escape');
+        }
+      }
+    }
+  });
+
+  test('should preserve time when using +1 week from date context menu', async () => {
+    // Test for +1 week operation
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1500);
+
+    const taskCard = page.locator('.tn-task-card:has-text("Write documentation"), .task-card:has-text("Write documentation")').first();
+
+    if (!await taskCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('Task card not visible, skipping test');
+      return;
+    }
+
+    const scheduledDateElement = taskCard.locator('[class*="scheduled"], [data-property="scheduled"], .tn-date-badge').first();
+
+    if (await scheduledDateElement.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await scheduledDateElement.click();
+      await page.waitForTimeout(300);
+
+      const contextMenu = page.locator('.menu, .suggestion-container, .tn-context-menu');
+
+      if (await contextMenu.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const plusOneWeek = contextMenu.locator('text="+1 week"').first();
+        if (await plusOneWeek.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await plusOneWeek.click();
+          await page.waitForTimeout(500);
+
+          const updatedScheduled = await page.evaluate(async () => {
+            // @ts-ignore - Obsidian global
+            const app = (window as any).app;
+            const plugin = app?.plugins?.plugins?.['tasknotes'];
+            if (!plugin) return null;
+
+            const allTasks = plugin.taskService?.getAllTasks?.() || [];
+            const task = allTasks.find((t: any) => t.title === 'Write documentation');
+            return task?.scheduled;
+          });
+
+          console.log('Updated scheduled value after +1 week:', updatedScheduled);
+
+          // BUG: Time should be preserved!
+          // Original: 2025-12-31T14:00, expected after +1 week: 2026-01-07T14:00
+          if (updatedScheduled) {
+            const hasTimeComponent = updatedScheduled.includes('T') && /T\d{2}:\d{2}/.test(updatedScheduled);
+            expect(hasTimeComponent).toBe(true);
+          }
+        } else {
+          await page.keyboard.press('Escape');
+        }
+      }
+    }
+  });
+});
