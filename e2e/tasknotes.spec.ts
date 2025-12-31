@@ -3208,3 +3208,369 @@ test.describe('Additional UI Issues', () => {
     expect(eventCount).toBeGreaterThanOrEqual(0);
   });
 });
+
+// ============================================================================
+// Issue #1409: Calendar/Agenda and other features do not work properly in New Window
+// https://github.com/user/tasknotes/issues/1409
+// Related to issue #979 (drag and drop broken in advanced calendar view in new window)
+// ============================================================================
+test.describe('Issue #1409 - Popout window functionality', () => {
+  // Helper to move current pane to a new popout window
+  async function moveToPopoutWindow(page: Page): Promise<Page | null> {
+    // Use Obsidian command to move pane to new window
+    await runCommand(page, 'Move current pane to new window');
+    await page.waitForTimeout(2000);
+
+    // Get the browser context to find the new window
+    const context = page.context();
+    const pages = context.pages();
+
+    // Return the newest page (the popout window) if one was created
+    if (pages.length > 1) {
+      // The popout window is typically the last page
+      return pages[pages.length - 1];
+    }
+    return null;
+  }
+
+  test.fixme('calendar drag and drop should work in popout window (Issue #1409, #979)', async () => {
+    // STATUS: BUG - Issue #1409, related to #979
+    //
+    // This test documents the bug where drag-and-drop doesn't work in calendar view
+    // when the view is opened in a popout/new window.
+    //
+    // ROOT CAUSE: Direct `document` access in calendar and kanban code.
+    // In popout windows, `document` refers to the main window's document,
+    // not the popout window's document. This causes:
+    // - Drag ghost elements to be appended to wrong window's body
+    // - Event listeners to be attached to wrong document
+    // - elementFromPoint() to query wrong document
+    //
+    // Key problematic code locations:
+    // - src/bases/KanbanView.ts:1274 - document.body.appendChild() for drag ghost
+    // - src/bases/KanbanView.ts:1299 - document.elementFromPoint() queries wrong document
+    // - src/bases/KanbanView.ts:1618 - document.addEventListener for contextmenu
+    // - src/views/StatsView.ts:1306 - document.body.createDiv() for modal
+    //
+    // STEPS TO REPRODUCE:
+    // 1. Open calendar view in main window
+    // 2. Move the pane to a new window (via command or right-click tab)
+    // 3. Try to drag a task event to another date
+    // 4. Observe that dragging doesn't work - can't grab events
+    //
+    // EXPECTED: Drag and drop should work identically in popout window
+    // ACTUAL: Cannot grab or drag events in popout window
+    //
+    // FIX: Replace direct `document` access with element-relative access:
+    //   const win = this.contentEl.ownerDocument.defaultView || window;
+    //   win.document.body.appendChild(dragGhost);
+    //   win.document.elementFromPoint(x, y);
+    //   win.document.addEventListener(...);
+    //
+    // See: https://obsidian.md/blog/how-to-update-plugins-to-support-pop-out-windows/
+    const page = getPage();
+
+    // Open calendar view in main window
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Verify calendar is loaded
+    const calendarContainer = page.locator('.fc');
+    await expect(calendarContainer).toBeVisible({ timeout: 10000 });
+
+    // Move to popout window
+    const popoutPage = await moveToPopoutWindow(page);
+    if (!popoutPage) {
+      console.log('Popout window not available in this test environment');
+      return;
+    }
+
+    await popoutPage.waitForTimeout(1000);
+
+    // In the popout window, try to find draggable calendar events
+    const events = popoutPage.locator('.fc-event-draggable');
+    const eventCount = await events.count().catch(() => 0);
+
+    if (eventCount > 0) {
+      const firstEvent = events.first();
+
+      // Get event position
+      const box = await firstEvent.boundingBox();
+      if (box) {
+        // Try to initiate drag - in the buggy state, this would fail
+        // because the drag handlers reference the wrong document
+
+        await firstEvent.hover();
+        await popoutPage.waitForTimeout(300);
+
+        // Attempt drag start - this should trigger drag behavior
+        // BUG: The drag ghost gets appended to main window's body, not popout's
+        await popoutPage.mouse.down();
+        await popoutPage.mouse.move(box.x + 100, box.y + 50);
+        await popoutPage.waitForTimeout(300);
+
+        // Check if drag ghost is visible in popout window
+        const dragGhost = popoutPage.locator('.fc-event-dragging, .tn-drag-ghost');
+        const ghostVisible = await dragGhost.isVisible({ timeout: 1000 }).catch(() => false);
+
+        // BUG: Ghost should be visible in popout window but won't be
+        expect(ghostVisible).toBe(true);
+
+        await popoutPage.mouse.up();
+      }
+    }
+
+    await popoutPage.screenshot({ path: 'test-results/screenshots/issue-1409-calendar-popout-drag.png' });
+  });
+
+  test.fixme('task modal buttons should be clickable in popout window (Issue #1409)', async () => {
+    // STATUS: BUG - Issue #1409
+    //
+    // This test documents the bug where buttons in the task edit modal
+    // cannot be clicked when the view is in a popout window.
+    //
+    // ROOT CAUSE: Modal and dropdown elements use direct `document` access
+    // for event handling and DOM queries:
+    // - document.querySelector(".menu") in context menus
+    // - document.addEventListener for keyboard/mouse events
+    // - document.body for modal backdrop
+    //
+    // Key problematic code locations:
+    // - src/components/PriorityContextMenu.ts:71 - document.querySelector(".menu")
+    // - src/components/StatusContextMenu.ts:100 - document.querySelector(".menu")
+    // - src/components/TaskContextMenu.ts:1015 - document.querySelector(".menu")
+    //
+    // STEPS TO REPRODUCE:
+    // 1. Open calendar or agenda view
+    // 2. Move the pane to a new window
+    // 3. Click on a task to open the edit modal
+    // 4. Try to click the status, priority, or date buttons in the modal header
+    // 5. Observe that clicks don't register or dropdowns don't appear
+    //
+    // EXPECTED: All modal buttons should work in popout window
+    // ACTUAL: Buttons appear unresponsive, dropdowns don't open
+    //
+    // FIX: Use element-relative document access:
+    //   const menuEl = element.ownerDocument.querySelector(".menu");
+    const page = getPage();
+
+    // Open calendar view
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Move to popout window
+    const popoutPage = await moveToPopoutWindow(page);
+    if (!popoutPage) {
+      console.log('Popout window not available in this test environment');
+      return;
+    }
+
+    await popoutPage.waitForTimeout(1000);
+
+    // Click on a calendar event to open task modal
+    const events = popoutPage.locator('.fc-event');
+    const eventCount = await events.count().catch(() => 0);
+
+    if (eventCount > 0) {
+      const firstEvent = events.first();
+      await firstEvent.click();
+      await popoutPage.waitForTimeout(1000);
+
+      // Check if modal opened
+      const modal = popoutPage.locator('.modal, .tasknotes-task-modal');
+      const modalVisible = await modal.isVisible({ timeout: 3000 }).catch(() => false);
+
+      if (modalVisible) {
+        await popoutPage.screenshot({ path: 'test-results/screenshots/issue-1409-modal-in-popout.png' });
+
+        // Try to click the status dropdown button
+        const statusButton = modal.locator('.tn-status-dropdown, [class*="status"] button, button:has-text("Status")').first();
+        if (await statusButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await statusButton.click();
+          await popoutPage.waitForTimeout(500);
+
+          // Check if dropdown/menu appeared
+          const dropdown = popoutPage.locator('.menu, .dropdown-menu, [class*="dropdown"]');
+          const dropdownVisible = await dropdown.isVisible({ timeout: 1000 }).catch(() => false);
+
+          // BUG: Dropdown should appear but won't in popout window
+          expect(dropdownVisible).toBe(true);
+
+          await popoutPage.screenshot({ path: 'test-results/screenshots/issue-1409-dropdown-in-popout.png' });
+        }
+
+        // Try to click the priority button
+        const priorityButton = modal.locator('.tn-priority-dropdown, [class*="priority"] button, button:has-text("Priority")').first();
+        if (await priorityButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await priorityButton.click();
+          await popoutPage.waitForTimeout(500);
+
+          const dropdown = popoutPage.locator('.menu, .dropdown-menu, [class*="dropdown"]');
+          const dropdownVisible = await dropdown.isVisible({ timeout: 1000 }).catch(() => false);
+
+          // BUG: Priority dropdown should appear but won't in popout window
+          expect(dropdownVisible).toBe(true);
+        }
+
+        // Try to click date picker button
+        const dateButton = modal.locator('.tn-date-button, [class*="date"] button, .clickable-icon').first();
+        if (await dateButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await dateButton.click();
+          await popoutPage.waitForTimeout(500);
+
+          const datePicker = popoutPage.locator('.flatpickr-calendar, .date-picker, [class*="calendar"]');
+          const datePickerVisible = await datePicker.isVisible({ timeout: 1000 }).catch(() => false);
+
+          // BUG: Date picker should appear but may not in popout window
+          expect(datePickerVisible).toBe(true);
+
+          await popoutPage.screenshot({ path: 'test-results/screenshots/issue-1409-datepicker-in-popout.png' });
+        }
+      }
+    }
+  });
+
+  test.fixme('agenda view should function in popout window (Issue #1409)', async () => {
+    // STATUS: BUG - Issue #1409
+    //
+    // This test documents the bug where agenda view is "very buggy" in popout windows.
+    //
+    // ROOT CAUSE: Same as calendar - direct document access in view rendering
+    // and event handling code.
+    //
+    // STEPS TO REPRODUCE:
+    // 1. Open agenda view via sidebar (agenda-default.base)
+    // 2. Move the pane to a new window
+    // 3. Try to interact with tasks - click, edit, etc.
+    // 4. Observe various broken behaviors
+    //
+    // EXPECTED: Agenda view should work identically in popout window
+    // ACTUAL: Various interactions are broken
+    const page = getPage();
+
+    // First ensure calendar is initialized (required for agenda)
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open agenda view from sidebar
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    if (await agendaItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await agendaItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Move to popout window
+    const popoutPage = await moveToPopoutWindow(page);
+    if (!popoutPage) {
+      console.log('Popout window not available in this test environment');
+      return;
+    }
+
+    await popoutPage.waitForTimeout(1000);
+    await popoutPage.screenshot({ path: 'test-results/screenshots/issue-1409-agenda-popout.png' });
+
+    // Verify agenda view loaded in popout
+    const agendaContainer = popoutPage.locator('.fc-list, .bases-agenda-list-view');
+    const agendaVisible = await agendaContainer.isVisible({ timeout: 5000 }).catch(() => false);
+
+    expect(agendaVisible).toBe(true);
+
+    // Try clicking on a task in the agenda
+    const agendaEvents = popoutPage.locator('.fc-list-event, .agenda-task-item');
+    const agendaEventCount = await agendaEvents.count().catch(() => 0);
+
+    if (agendaEventCount > 0) {
+      const firstAgendaEvent = agendaEvents.first();
+      await firstAgendaEvent.click();
+      await popoutPage.waitForTimeout(1000);
+
+      // Check if task modal opened
+      const modal = popoutPage.locator('.modal, .tasknotes-task-modal');
+      const modalVisible = await modal.isVisible({ timeout: 3000 }).catch(() => false);
+
+      // The modal should open when clicking a task
+      expect(modalVisible).toBe(true);
+    }
+  });
+
+  test.fixme('kanban drag and drop should work in popout window (Issue #1409)', async () => {
+    // STATUS: BUG - Issue #1409
+    //
+    // This test documents the bug where kanban drag-and-drop doesn't work
+    // in popout windows.
+    //
+    // ROOT CAUSE: KanbanView.ts uses direct document access:
+    // - Line 1274: document.body.appendChild(dragGhost)
+    // - Line 1299: document.elementFromPoint(x, y)
+    // - Line 1365: document.removeEventListener()
+    // - Lines 1075, 1618: document.addEventListener("contextmenu", ...)
+    //
+    // STEPS TO REPRODUCE:
+    // 1. Open kanban view via sidebar (kanban-default.base)
+    // 2. Move the pane to a new window
+    // 3. Try to drag a task between columns
+    // 4. Observe that dragging doesn't work
+    //
+    // EXPECTED: Drag and drop should work in popout window
+    // ACTUAL: Cannot drag tasks between columns
+    const page = getPage();
+
+    // First ensure calendar is initialized
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open kanban view from sidebar
+    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
+    if (await kanbanItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await kanbanItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Move to popout window
+    const popoutPage = await moveToPopoutWindow(page);
+    if (!popoutPage) {
+      console.log('Popout window not available in this test environment');
+      return;
+    }
+
+    await popoutPage.waitForTimeout(1000);
+    await popoutPage.screenshot({ path: 'test-results/screenshots/issue-1409-kanban-popout.png' });
+
+    // Verify kanban view loaded in popout
+    const kanbanContainer = popoutPage.locator('.tn-kanban, .kanban-board');
+    const kanbanVisible = await kanbanContainer.isVisible({ timeout: 5000 }).catch(() => false);
+
+    expect(kanbanVisible).toBe(true);
+
+    // Try to drag a task between columns
+    const taskCards = popoutPage.locator('.tn-kanban-card, .kanban-card');
+    const cardCount = await taskCards.count().catch(() => 0);
+
+    if (cardCount > 0) {
+      const firstCard = taskCards.first();
+      const box = await firstCard.boundingBox();
+
+      if (box) {
+        // Attempt drag operation
+        await firstCard.hover();
+        await popoutPage.waitForTimeout(300);
+        await popoutPage.mouse.down();
+        await popoutPage.mouse.move(box.x + 200, box.y);
+        await popoutPage.waitForTimeout(300);
+
+        // Check if drag ghost is visible
+        const dragGhost = popoutPage.locator('.tn-drag-ghost, .kanban-drag-ghost');
+        const ghostVisible = await dragGhost.isVisible({ timeout: 1000 }).catch(() => false);
+
+        // BUG: Ghost should be visible but won't be in popout window
+        expect(ghostVisible).toBe(true);
+
+        await popoutPage.mouse.up();
+      }
+    }
+  });
+});
