@@ -47,6 +47,11 @@ Example:
   - Shift+click cycles in reverse order
   - Thanks to @JerryLu086 for the feature request
 
+- (#1410) Task creation modal now starts in vim insert mode when vim keybindings are enabled
+  - Previously required pressing 'i' before typing when Obsidian vim mode was active
+  - The modal now automatically enters insert mode on focus, allowing immediate typing
+  - Thanks to @Leo310 for the feature request
+
 - Added button tooltips to calendar view toolbar
   - Hovering over navigation and view buttons now shows descriptive hints
   - Buttons include: Today, Previous, Next, Month, Week, Day, Year, List
@@ -70,6 +75,11 @@ Example:
   - When enabled, tasks with both scheduled and due dates display as multi-day bars
   - Provides Gantt chart-style visualization for project planning
   - Thanks to @0atman for the feature request
+
+- (#1334) `{{currentNotePath}}` now works for "Create new inline task" command
+  - The inline task folder setting with `{{currentNotePath}}` previously only worked for checkbox conversion
+  - Now also applies when using the "Create new inline task" command from the command palette
+  - Thanks to @kmaustral for the feature request
 
 ## Fixed
 

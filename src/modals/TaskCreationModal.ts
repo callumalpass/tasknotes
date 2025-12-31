@@ -729,6 +729,7 @@ export class TaskCreationModal extends TaskModal {
 				placeholder: this.t("modals.taskCreation.nlPlaceholder"),
 				cls: "nlp-editor",
 				extensions: nlpAutocomplete, // Add autocomplete extensions (array)
+				enterVimInsertMode: true, // Auto-enter insert mode when vim is enabled (#1410)
 				onChange: (value) => {
 					// Update preview as user types
 					if (value.trim()) {
