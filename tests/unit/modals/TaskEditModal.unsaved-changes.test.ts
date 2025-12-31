@@ -461,4 +461,142 @@ describe('TaskEditModal - Unsaved Changes Detection', () => {
       await flushPromises();
     });
   });
+
+  /**
+   * Bug #1344: Unsaved Changes popup appears randomly without user making changes
+   *
+   * Root cause: Inconsistent normalization between extractDetailsFromContent() (uses trimEnd)
+   * and normalizeDetails() (does not use trimEnd). When details have trailing whitespace,
+   * the comparison fails and triggers a false positive.
+   *
+   * These tests should FAIL when the bug exists and PASS when fixed.
+   */
+  describe('Bug #1344: False positive unsaved changes detection', () => {
+    it('should NOT show unsaved changes when details have trailing whitespace only', () => {
+      // This tests the scenario where the markdown editor reports the same content
+      // but with trailing whitespace, which should not be considered a change
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+
+      // Simulate what happens when the markdown editor fires onChange with trailing whitespace
+      // The originalDetails was set to trimmed value, but editor fires with trailing whitespace
+      (modal as any).originalDetails = 'Original details';
+      (modal as any).details = 'Original details  \n';  // Same content but with trailing whitespace
+
+      // Close the modal
+      modal.close();
+
+      // Should NOT show confirmation - trailing whitespace should be ignored
+      expect(ConfirmationModal).not.toHaveBeenCalled();
+    });
+
+    it('should NOT show unsaved changes when details differ only in trailing newlines', () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+
+      // Simulate extractDetailsFromContent() result (trimmed) vs editor content (with trailing newlines)
+      (modal as any).originalDetails = 'Some task details';
+      (modal as any).details = 'Some task details\n\n';
+
+      modal.close();
+
+      expect(ConfirmationModal).not.toHaveBeenCalled();
+    });
+
+    it('should NOT show unsaved changes when details differ only in CRLF vs LF line endings', () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+
+      // Test mixed line endings - CRLF should normalize to LF
+      (modal as any).originalDetails = 'Line 1\nLine 2';
+      (modal as any).details = 'Line 1\r\nLine 2';  // CRLF instead of LF
+
+      modal.close();
+
+      expect(ConfirmationModal).not.toHaveBeenCalled();
+    });
+
+    it('should NOT show unsaved changes when originalDetails and details are semantically identical', () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+
+      // Both are exactly the same - no changes made
+      const identicalContent = 'Multiline content\n\nWith paragraphs';
+      (modal as any).originalDetails = identicalContent;
+      (modal as any).details = identicalContent;
+
+      modal.close();
+
+      expect(ConfirmationModal).not.toHaveBeenCalled();
+    });
+
+    it('should NOT show unsaved changes when details is empty and originalDetails is empty', () => {
+      const taskWithNoDetails = { ...mockTask, details: '' };
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: taskWithNoDetails });
+      initializeModalFields(modal, taskWithNoDetails);
+
+      // Empty details should be compared correctly
+      (modal as any).originalDetails = '';
+      (modal as any).details = '';
+
+      modal.close();
+
+      expect(ConfirmationModal).not.toHaveBeenCalled();
+    });
+
+    it('should NOT show unsaved changes when details only has trailing spaces trimmed differently', () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+
+      // Simulate the actual bug scenario:
+      // extractDetailsFromContent() applies trimEnd() which removes trailing whitespace
+      // normalizeDetails() does NOT apply trimEnd()
+      // When modal opens, originalDetails = content.trimEnd()
+      // When editor fires onChange, details = content (without trimEnd)
+      (modal as any).originalDetails = 'Content with trailing removed';
+      (modal as any).details = 'Content with trailing removed   ';
+
+      modal.close();
+
+      expect(ConfirmationModal).not.toHaveBeenCalled();
+    });
+
+    it('SHOULD show unsaved changes when content is actually different', async () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+
+      // Actual change - should trigger confirmation
+      (modal as any).originalDetails = 'Original content';
+      (modal as any).details = 'Modified content';
+
+      (ConfirmationModal as jest.Mock).mockImplementationOnce((app, options) => ({
+        show: jest.fn().mockResolvedValue(false),
+        options,
+      }));
+
+      modal.close();
+      await flushPromises();
+
+      // SHOULD show confirmation for actual changes
+      expect(ConfirmationModal).toHaveBeenCalled();
+    });
+
+    it('SHOULD show unsaved changes when content has meaningful additions', async () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+
+      (modal as any).originalDetails = 'Original';
+      (modal as any).details = 'Original\n\nNew paragraph added';
+
+      (ConfirmationModal as jest.Mock).mockImplementationOnce((app, options) => ({
+        show: jest.fn().mockResolvedValue(false),
+        options,
+      }));
+
+      modal.close();
+      await flushPromises();
+
+      expect(ConfirmationModal).toHaveBeenCalled();
+    });
+  });
 });
