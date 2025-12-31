@@ -4912,3 +4912,196 @@ test.describe('Nested Checkbox Conversion Alignment (Issue #1349)', () => {
     expect(convertedLine).toMatch(/^    \* \[\[/);
   });
 });
+
+// ============================================================================
+// Task Edit Modal Autosave Feature (Issue #1340)
+// ============================================================================
+test.describe('Task Edit Modal Autosave (Issue #1340)', () => {
+  test.fixme('should have autosave option in plugin settings', async () => {
+    // Issue #1340: https://github.com/anthropics/tasknotes/issues/1340
+    //
+    // Feature Request: Add option to automatically save changes in task edit widget
+    // to avoid scrolling to the save button on tall modals.
+    //
+    // Expected: Settings should include:
+    // - "Enable autosave" toggle
+    // - "Autosave delay (ms)" number input (default ~2000ms)
+    const page = getPage();
+
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    // Navigate to TaskNotes plugin settings
+    const settingsSearch = page.locator('.vertical-tab-header-group-title:has-text("Community Plugins")');
+    if (await settingsSearch.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await page.locator('.vertical-tab-nav-item:has-text("TaskNotes")').click();
+      await page.waitForTimeout(500);
+    }
+
+    // Look for autosave settings
+    const autosaveToggle = page.locator('text=Enable autosave, text=Auto-save, text=Autosave').first();
+    await expect(autosaveToggle).toBeVisible({ timeout: 3000 });
+
+    // Close settings
+    await page.keyboard.press('Escape');
+  });
+
+  test.fixme('should automatically save task changes after debounce delay when autosave enabled', async () => {
+    // Issue #1340: When autosave is enabled, changes should be saved automatically
+    // after the configured debounce delay, without requiring manual save button click.
+    const page = getPage();
+
+    // Open an existing task for editing
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Click on a task to open edit modal
+    const taskEvent = page.locator('.fc-event').first();
+    if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await taskEvent.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Make a change to the task (e.g., add a context)
+    const contextsInput = page.locator('[placeholder*="context"], .tn-contexts-input, input[id*="context"]').first();
+    if (await contextsInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await contextsInput.fill('@autosave-test');
+      await page.waitForTimeout(500);
+
+      // Wait for autosave debounce delay (should be ~2-3 seconds)
+      await page.waitForTimeout(3000);
+
+      // Verify save indicator shows "Saved" status
+      const savedIndicator = page.locator('text=Saved, .save-status-saved, [data-save-status="saved"]');
+      await expect(savedIndicator).toBeVisible({ timeout: 2000 });
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test.fixme('should show saving indicator during autosave', async () => {
+    // Issue #1340: User should have visual feedback when autosave is in progress.
+    //
+    // Expected: A subtle indicator (e.g., "Saving..." text or spinner) should appear
+    // in the action bar area when changes are detected and being saved.
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const taskEvent = page.locator('.fc-event').first();
+    if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await taskEvent.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Make a change to trigger autosave
+    const titleInput = page.locator('.tn-title-input, input[placeholder*="title"]').first();
+    if (await titleInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await titleInput.fill('Autosave test title');
+
+      // Should see "Saving..." indicator during debounce/save
+      const savingIndicator = page.locator('text=Saving, .save-status-saving, [data-save-status="saving"]');
+      await expect(savingIndicator).toBeVisible({ timeout: 1000 });
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test.fixme('should debounce rapid changes into single save operation', async () => {
+    // Issue #1340: Multiple rapid changes should be debounced into a single save
+    // to avoid excessive file operations and potential conflicts.
+    //
+    // Expected: Typing quickly in a field should reset the debounce timer,
+    // resulting in only one save after the user stops typing.
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const taskEvent = page.locator('.fc-event').first();
+    if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await taskEvent.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Type rapidly with small pauses (less than debounce delay)
+    const titleInput = page.locator('.tn-title-input, input[placeholder*="title"]').first();
+    if (await titleInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      for (const char of 'Hello World') {
+        await titleInput.press(char);
+        await page.waitForTimeout(100); // 100ms between keystrokes
+      }
+
+      // Wait for debounce to complete
+      await page.waitForTimeout(3000);
+
+      // Should only have saved once (check for single "Saved" state)
+      const savedIndicator = page.locator('text=Saved, .save-status-saved');
+      await expect(savedIndicator).toBeVisible({ timeout: 2000 });
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test.fixme('should not interfere with manual save button or keyboard shortcut', async () => {
+    // Issue #1340: Manual save methods (button click, Ctrl+Enter) should still work
+    // when autosave is enabled, and should immediately save + close the modal.
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const taskEvent = page.locator('.fc-event').first();
+    if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await taskEvent.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Make a change
+    const titleInput = page.locator('.tn-title-input, input[placeholder*="title"]').first();
+    if (await titleInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await titleInput.fill('Manual save test');
+
+      // Use keyboard shortcut to save immediately (before autosave delay)
+      await page.keyboard.press('Control+Enter');
+      await page.waitForTimeout(500);
+
+      // Modal should close (manual save behavior)
+      const modal = page.locator('.modal');
+      await expect(modal).not.toBeVisible({ timeout: 2000 });
+    }
+  });
+
+  test.fixme('should not trigger unsaved changes dialog if autosave caught all changes', async () => {
+    // Issue #1340: When autosave is enabled and has saved all changes,
+    // closing the modal should not show the "Unsaved changes" confirmation.
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const taskEvent = page.locator('.fc-event').first();
+    if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await taskEvent.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Make a change
+    const titleInput = page.locator('.tn-title-input, input[placeholder*="title"]').first();
+    if (await titleInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await titleInput.fill('Autosave no confirm test');
+
+      // Wait for autosave to complete
+      await page.waitForTimeout(3500);
+
+      // Close modal with Escape
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+
+      // Should NOT see unsaved changes confirmation
+      const confirmDialog = page.locator('text=Unsaved changes, text=discard changes');
+      await expect(confirmDialog).not.toBeVisible({ timeout: 1000 });
+    }
+  });
+});
