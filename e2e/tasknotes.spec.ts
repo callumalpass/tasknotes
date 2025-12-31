@@ -2595,3 +2595,282 @@ test.describe('Mobile Mode', () => {
     console.log('Has mobile-specific class/attribute:', hasMobileClass);
   });
 });
+
+// ============================================================================
+// PRIORITY COLOR ISSUES IN CALENDAR VIEW (Issue #1036)
+// These tests document known issues with priority coloring in calendar view.
+// ============================================================================
+
+test.describe('Priority Color Issues (#1036)', () => {
+  // Helper to expand TaskNotes and Views folders
+  async function expandViewsFolderForPriorityTests(page: Page): Promise<void> {
+    await ensureSidebarExpanded(page);
+
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
+  test('should display scheduled events with priority colors in calendar', async () => {
+    // Issue #1036: Priority colors should be applied consistently to scheduled events
+    // Tests that scheduled events display with the correct border color based on priority
+    const page = getPage();
+
+    // Open the calendar view
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Find scheduled events (they have transparent background and colored border)
+    const scheduledEvents = page.locator('.fc-event[data-event-type="scheduled"], .fc-event:not([style*="background"])');
+    const eventCount = await scheduledEvents.count().catch(() => 0);
+
+    // Screenshot to capture the current state of priority coloring
+    await page.screenshot({ path: 'test-results/screenshots/issue-1036-scheduled-events.png' });
+
+    // At least one event should be visible if tasks exist
+    if (eventCount > 0) {
+      // Get the first event's computed styles
+      const firstEvent = scheduledEvents.first();
+      const borderColor = await firstEvent.evaluate(el => {
+        return window.getComputedStyle(el).borderLeftColor;
+      }).catch(() => 'unknown');
+
+      console.log(`Scheduled event border color: ${borderColor}`);
+
+      // Border should not be the fallback CSS variable (which would be computed to a theme color)
+      // This is a soft check - just documenting the behavior
+    }
+  });
+
+  test('should display due events with priority-based border and fill colors', async () => {
+    // Issue #1036: Due events show correct outline but wrong fill color when priority
+    // is set manually via YAML. The hexToRgba function cannot convert CSS variables,
+    // causing unexpected fill colors.
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Due events have "DUE:" prefix in title and filled background
+    const dueEvents = page.locator('.fc-event:has-text("DUE:")');
+    const dueCount = await dueEvents.count().catch(() => 0);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1036-due-events.png' });
+
+    if (dueCount > 0) {
+      const firstDueEvent = dueEvents.first();
+      const styles = await firstDueEvent.evaluate(el => {
+        const computed = window.getComputedStyle(el);
+        return {
+          borderColor: computed.borderLeftColor,
+          backgroundColor: computed.backgroundColor,
+        };
+      }).catch(() => ({ borderColor: 'unknown', backgroundColor: 'unknown' }));
+
+      console.log(`Due event styles - border: ${styles.borderColor}, background: ${styles.backgroundColor}`);
+
+      // Document that border and background should be related (background is faded version of border)
+      // When using CSS variable fallback, the hexToRgba function returns the variable unchanged,
+      // which can cause inconsistent fill colors
+    }
+  });
+
+  test.fixme('due event fill color should match faded priority color', async () => {
+    // Issue #1036: When priority is set via YAML that doesn't match configured priorities,
+    // the due event's fill color uses the CSS variable fallback unchanged instead of
+    // a properly faded version of the border color.
+    //
+    // Root cause: hexToRgba() in calendar-core.ts returns CSS variables unchanged
+    // because they cannot be converted to RGBA. This means when priority falls back
+    // to "var(--color-orange)", the fill is also "var(--color-orange)" instead of
+    // a faded 15% opacity version.
+    //
+    // Expected: Due event should have backgroundColor as semi-transparent version of borderColor
+    // Actual: Due event may have full-opacity CSS variable as backgroundColor
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    const dueEvents = page.locator('.fc-event:has-text("DUE:")');
+    const dueCount = await dueEvents.count().catch(() => 0);
+
+    if (dueCount > 0) {
+      const firstDueEvent = dueEvents.first();
+
+      // Get the computed background color
+      const backgroundColor = await firstDueEvent.evaluate(el => {
+        return window.getComputedStyle(el).backgroundColor;
+      }).catch(() => 'unknown');
+
+      // Parse the background color - if it contains alpha < 1, the fading is working
+      // RGBA format: rgba(r, g, b, a) where a should be ~0.15 for due events
+      const rgbaMatch = backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+
+      if (rgbaMatch) {
+        const alpha = parseFloat(rgbaMatch[4] || '1');
+        // Due events should have ~15% opacity (0.15 alpha)
+        expect(alpha).toBeLessThan(0.5);
+        expect(alpha).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test('due events should not be draggable (by design)', async () => {
+    // Issue #1036 mentions that due dates cannot be dragged like scheduled dates.
+    // This is intentional - createDueEvent sets editable: false.
+    // Documenting this as expected behavior.
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    const dueEvents = page.locator('.fc-event:has-text("DUE:")');
+    const dueCount = await dueEvents.count().catch(() => 0);
+
+    if (dueCount > 0) {
+      const firstDueEvent = dueEvents.first();
+
+      // Due events should not have the draggable class
+      const isDraggable = await firstDueEvent.evaluate(el => {
+        // FullCalendar adds fc-event-draggable class to editable events
+        return el.classList.contains('fc-event-draggable');
+      }).catch(() => false);
+
+      // Due events are intentionally not draggable
+      expect(isDraggable).toBe(false);
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1036-due-not-draggable.png' });
+    }
+  });
+
+  test('scheduled events should be draggable', async () => {
+    // Contrast test: scheduled events SHOULD be draggable
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Scheduled events don't have "DUE:" prefix
+    const allEvents = page.locator('.fc-event');
+    const scheduledEvents = allEvents.filter({ hasNotText: 'DUE:' });
+    const scheduledCount = await scheduledEvents.count().catch(() => 0);
+
+    if (scheduledCount > 0) {
+      const firstScheduledEvent = scheduledEvents.first();
+
+      const isDraggable = await firstScheduledEvent.evaluate(el => {
+        return el.classList.contains('fc-event-draggable');
+      }).catch(() => false);
+
+      // Scheduled events should be draggable (editable: true in createScheduledEvent)
+      expect(isDraggable).toBe(true);
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1036-scheduled-draggable.png' });
+    }
+  });
+
+  test.fixme('priority colors should update when priority changes', async () => {
+    // Issue #1036: When priority is changed, the due date sometimes retains old color.
+    // This could be due to caching in FullCalendar's event rendering or CSS variable
+    // resolution timing.
+    //
+    // Root cause investigation:
+    // - Calendar events are recreated from scratch via generateCalendarEvents() on data change
+    // - FullCalendar may cache previous event styles
+    // - CSS variable values may not update immediately
+    //
+    // Steps to reproduce:
+    // 1. Create task with high priority (red color)
+    // 2. View in calendar - due event should have red border and faded red fill
+    // 3. Change priority to low (green color)
+    // 4. Due event should now have green border and faded green fill
+    // 5. Observe if colors update correctly
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // This test documents the expected behavior
+    // When priority changes, events should reflect new priority color
+    await page.screenshot({ path: 'test-results/screenshots/issue-1036-priority-change.png' });
+  });
+
+  test('tasks with configured priorities should have correct colors', async () => {
+    // Test that tasks with priorities matching the configured values (none, low, normal, high)
+    // display their priority colors correctly.
+    //
+    // The test vault has:
+    // - none: #cccccc (gray)
+    // - low: #00aa00 (green)
+    // - normal: #ffaa00 (orange)
+    // - high: #ff0000 (red)
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Find events and check if any have colored borders matching priority colors
+    const events = page.locator('.fc-event');
+    const eventCount = await events.count().catch(() => 0);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1036-configured-priorities.png' });
+
+    // Collect event colors for analysis
+    const eventColors: string[] = [];
+    for (let i = 0; i < Math.min(eventCount, 5); i++) {
+      const event = events.nth(i);
+      const borderColor = await event.evaluate(el => {
+        return window.getComputedStyle(el).borderLeftColor;
+      }).catch(() => 'unknown');
+      eventColors.push(borderColor);
+    }
+
+    console.log('Event border colors:', eventColors);
+
+    // At least one event should exist if test vault has tasks
+    // Colors should match configured priority colors when priority is properly recognized
+  });
+
+  test('calendar view should open via calendar-default.base', async () => {
+    // Test opening calendar view via the Bases file to verify priority rendering
+    const page = getPage();
+
+    // First open calendar to ensure FullCalendar is registered
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await expandViewsFolderForPriorityTests(page);
+
+    const calendarItem = page.locator('.nav-file-title:has-text("calendar-default")');
+    if (await calendarItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await calendarItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Verify the calendar loaded
+    const calendarContainer = page.locator('.fc');
+    await expect(calendarContainer).toBeVisible({ timeout: 10000 });
+
+    // Screenshot showing priority colors in Bases calendar view
+    await page.screenshot({ path: 'test-results/screenshots/issue-1036-bases-calendar.png' });
+  });
+});
