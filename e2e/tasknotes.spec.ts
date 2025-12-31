@@ -2874,3 +2874,72 @@ test.describe('Priority Color Issues (#1036)', () => {
     await page.screenshot({ path: 'test-results/screenshots/issue-1036-bases-calendar.png' });
   });
 });
+
+// ============================================================================
+// Issue #1337: Convert current note to task doesn't apply default values from settings
+// https://github.com/user/tasknotes/issues/1337
+// ============================================================================
+test.describe('Issue #1337 - Convert note to task default values', () => {
+  // Helper to create a test note for conversion
+  async function createTestNoteForConversion(page: Page, title: string): Promise<void> {
+    // Create a new note via command
+    await runCommand(page, 'Create new note');
+    await page.waitForTimeout(500);
+
+    // Type the title if a prompt appears
+    const promptInput = page.locator('.prompt-input');
+    if (await promptInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await promptInput.fill(title);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(500);
+    }
+  }
+
+  // Helper to update plugin settings via the data.json approach
+  async function getPluginSettings(page: Page): Promise<any> {
+    // We can't directly read files from Playwright, but we can use the
+    // Obsidian console to get the plugin settings
+    return await page.evaluate(() => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      return plugin?.settings;
+    });
+  }
+
+  test.fixme('should use empty string defaults when user sets status/priority to "none" (Issue #1337)', async () => {
+    // STATUS: BUG - Issue #1337
+    //
+    // This test documents the bug where the "Convert current note to task" command
+    // ignores user-configured default values when they are set to empty strings (meaning "none").
+    //
+    // ROOT CAUSE: In src/main.ts line 2210-2211:
+    //   status: frontmatter.status || this.settings.defaultTaskStatus,
+    //   priority: frontmatter.priority || this.settings.defaultTaskPriority,
+    //
+    // The || operator treats empty strings as falsy, causing fallback to hardcoded defaults
+    // from settings/defaults.ts (defaultTaskPriority: "normal", defaultTaskStatus: "open")
+    // instead of using the user's configured empty string values.
+    //
+    // FIX: Replace || with nullish coalescing (??) or explicit undefined checks:
+    //   status: frontmatter.status ?? this.settings.defaultTaskStatus,
+    //   priority: frontmatter.priority ?? this.settings.defaultTaskPriority,
+    //
+    // STEPS TO REPRODUCE:
+    // 1. In TaskNotes settings, set "Default priority" to "None" (empty string)
+    // 2. Open a regular note (not a task) like Welcome.md
+    // 3. Run command "TaskNotes: Convert current note to task"
+    // 4. Observe the task edit modal
+    //
+    // EXPECTED: Priority field should be empty/None (respecting user's setting)
+    // ACTUAL: Priority shows "Normal" (hardcoded fallback from settings/defaults.ts)
+    //
+    // ADDITIONAL ISSUE: The command also does not apply template preset YAML property ordering,
+    // as it constructs TaskInfo directly without using the template processor.
+    //
+    // See: src/main.ts:2176-2242 (convertCurrentNoteToTask method)
+    // See: src/settings/defaults.ts:245-246 (hardcoded defaults)
+    // See: src/services/TaskService.ts:200-201 (correct usage pattern for comparison)
+    // See: src/settings/tabs/taskProperties/priorityPropertyCard.ts:31-32 (None option)
+  });
+});
