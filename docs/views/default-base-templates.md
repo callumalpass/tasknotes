@@ -64,7 +64,7 @@ These formulas return string values useful for grouping tasks in views:
 | `scheduledMonth` | Scheduled date as year-month | "2025-01", "Not scheduled" | `if(scheduled, date(scheduled).format("YYYY-MM"), "Not scheduled")` |
 | `scheduledWeek` | Scheduled date as year-week | "2025-W01", "Not scheduled" | `if(scheduled, date(scheduled).format("YYYY-[W]WW"), "Not scheduled")` |
 | `dueDateCategory` | Human-readable due date bucket | "Overdue", "Today", "Tomorrow", "This week", "Later", "No due date" | `if(!due, "No due date", if(date(due) < today(), "Overdue", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due) <= today() + "7d", "This week", "Later")))))` |
-| `timeEstimateCategory` | Task size by time estimate | "No estimate", "Quick (<30m)", "Medium (30m-2h)", "Long (>2h)" | `if(!timeEstimate \|\| timeEstimate == 0, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))` |
+| `timeEstimateCategory` | Task size by time estimate | "No estimate", "Quick (<30m)", "Medium (30m-2h)", "Long (>2h)" | `if(timeEstimate > 0, if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")), "No estimate")` |
 | `ageCategory` | Task age bucket | "Today", "This week", "This month", "Older" | `if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))` |
 | `createdMonth` | Creation date as year-month | "2025-01" | `file.ctime.format("YYYY-MM")` |
 | `modifiedMonth` | Last modified date as year-month | "2025-01" | `file.mtime.format("YYYY-MM")` |
