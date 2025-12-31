@@ -5105,3 +5105,218 @@ test.describe('Task Edit Modal Autosave (Issue #1340)', () => {
     }
   });
 });
+
+// ============================================================================
+// Issue #1339: Expanded subtasks toggle - for always expanded view in list views
+// https://github.com/user/tasknotes/issues/1339
+// Feature request: Toggle to make all subtasks always expanded in list views
+// ============================================================================
+test.describe('Issue #1339 - Expanded subtasks toggle', () => {
+  test.fixme('should have setting for "always expand subtasks" in list views', async () => {
+    // Issue #1339: User requests a toggle to make all subtasks always expanded
+    //
+    // This test verifies that an "always expand subtasks" setting exists in the
+    // Appearance settings tab, allowing users to have subtasks automatically
+    // expanded in list views without needing to click the chevron.
+    //
+    // Steps to reproduce:
+    // 1. Open Obsidian settings (Ctrl+,)
+    // 2. Navigate to TaskNotes plugin settings
+    // 3. Go to Appearance tab
+    // 4. Look for "always expand subtasks" toggle near "Show expandable subtasks"
+    //
+    // Expected: A setting like "Always expand subtasks" should exist
+    // Actual: No such setting currently exists
+    const page = getPage();
+
+    // Open settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal.mod-settings');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const pluginSettings = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await pluginSettings.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await pluginSettings.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Navigate to Appearance tab
+    const appearanceTab = page.locator('.tn-settings-tab-btn:has-text("Appearance"), button:has-text("Appearance")');
+    if (await appearanceTab.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await appearanceTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Screenshot the settings to document current state
+    await page.screenshot({ path: 'test-results/screenshots/issue-1339-settings-appearance.png' });
+
+    // Look for the "always expand subtasks" setting
+    // This should be near the existing "Show expandable subtasks" setting
+    const alwaysExpandSetting = page.locator('text=Always expand subtasks, text=always expand, text=Auto-expand subtasks');
+    await expect(alwaysExpandSetting).toBeVisible({ timeout: 3000 });
+
+    // Close settings
+    await page.keyboard.press('Escape');
+  });
+
+  test.fixme('should auto-expand subtasks in list view when "always expand" is enabled', async () => {
+    // Issue #1339: Subtasks should be automatically expanded when setting is enabled
+    //
+    // This test verifies that when "always expand subtasks" is enabled,
+    // project tasks in list views show their subtasks automatically without
+    // needing to click the chevron.
+    //
+    // Prerequisites:
+    // - A project task with subtasks (e.g., "Code review PR 123" has "Write documentation")
+    // - "Always expand subtasks" setting enabled
+    //
+    // Expected: Subtasks are visible immediately when viewing the project task
+    // Actual: Subtasks are collapsed by default and require clicking chevron
+    const page = getPage();
+
+    // Open the tasks list view
+    await runCommand(page, 'Open tasks list');
+    await page.waitForTimeout(1500);
+
+    // Find a project task (task with the folder icon indicating it has subtasks)
+    // "Code review PR 123" is used as a project by "Write documentation"
+    const projectTask = page.locator('.task-card:has-text("Code review PR")');
+    if (await projectTask.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await page.screenshot({ path: 'test-results/screenshots/issue-1339-project-task.png' });
+
+      // Check that subtasks container is visible (auto-expanded)
+      // If "always expand" is working, .task-card__subtasks should be visible
+      const subtasksContainer = projectTask.locator('.task-card__subtasks');
+      await expect(subtasksContainer).toBeVisible({ timeout: 3000 });
+
+      // Verify that a subtask is shown within
+      const subtask = subtasksContainer.locator('.task-card');
+      await expect(subtask.first()).toBeVisible({ timeout: 2000 });
+    }
+  });
+
+  test.fixme('subtask chevron/folder icon should be more visible and easier to click', async () => {
+    // Issue #1339: User reports the subtasks "folder" icon is very tiny and hard to click
+    //
+    // The current chevron icon is 14x14 pixels in right mode and only visible on hover.
+    // This test verifies the chevron meets minimum accessibility standards for click targets.
+    //
+    // Expected: Chevron should be at least 24x24 pixels (WCAG minimum touch target)
+    // Actual: Chevron is 14x14 pixels and starts with opacity: 0 (invisible)
+    const page = getPage();
+
+    // Open the tasks list view
+    await runCommand(page, 'Open tasks list');
+    await page.waitForTimeout(1500);
+
+    // Find a project task with the chevron
+    const projectTask = page.locator('.task-card:has(.task-card__chevron)').first();
+    if (await projectTask.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // Hover to make chevron visible (current behavior)
+      await projectTask.hover();
+      await page.waitForTimeout(300);
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1339-chevron-size.png' });
+
+      // Check chevron dimensions
+      const chevron = projectTask.locator('.task-card__chevron');
+      if (await chevron.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const box = await chevron.boundingBox();
+        if (box) {
+          // WCAG 2.1 Success Criterion 2.5.5 recommends at least 44x44 CSS pixels
+          // Minimum acceptable is 24x24 pixels
+          expect(box.width).toBeGreaterThanOrEqual(24);
+          expect(box.height).toBeGreaterThanOrEqual(24);
+        }
+      }
+    }
+  });
+
+  test.fixme('chevron should be visible without hovering when tasks have subtasks', async () => {
+    // Issue #1339: The folder/chevron icon is hard to see because it only appears on hover
+    //
+    // Users shouldn't have to discover that subtasks exist by hovering over each task.
+    // The chevron should be visible at all times for tasks that are used as projects.
+    //
+    // Expected: Chevron is always visible (opacity: 1) for project tasks
+    // Actual: Chevron has opacity: 0 and only shows on hover (in right position mode)
+    const page = getPage();
+
+    // Open the tasks list view
+    await runCommand(page, 'Open tasks list');
+    await page.waitForTimeout(1500);
+
+    // Find a project task
+    const projectTask = page.locator('.task-card:has(.task-card__chevron)').first();
+    if (await projectTask.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // Take screenshot WITHOUT hovering first
+      await page.screenshot({ path: 'test-results/screenshots/issue-1339-chevron-no-hover.png' });
+
+      // Check that chevron is visible without hover
+      const chevron = projectTask.locator('.task-card__chevron');
+
+      // Should be visible without needing to hover
+      await expect(chevron).toBeVisible({ timeout: 1000 });
+
+      // Check computed opacity is 1 (fully visible)
+      const opacity = await chevron.evaluate((el) => {
+        return window.getComputedStyle(el).opacity;
+      });
+      expect(Number(opacity)).toBe(1);
+    }
+  });
+
+  test.fixme('should persist expanded state across view refreshes', async () => {
+    // Issue #1339: Related improvement - expanded state should persist
+    //
+    // Currently the ExpandedProjectsService stores state in memory only,
+    // so expanded/collapsed state is lost when the view refreshes or plugin reloads.
+    //
+    // Expected: Subtask expansion state is preserved across view changes
+    // Actual: State is lost and all subtasks collapse on refresh
+    const page = getPage();
+
+    // Open tasks list view
+    await runCommand(page, 'Open tasks list');
+    await page.waitForTimeout(1500);
+
+    // Find and expand a project's subtasks
+    const projectTask = page.locator('.task-card:has(.task-card__chevron)').first();
+    if (await projectTask.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // Hover and click the chevron to expand
+      await projectTask.hover();
+      await page.waitForTimeout(300);
+
+      const chevron = projectTask.locator('.task-card__chevron');
+      if (await chevron.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await chevron.click();
+        await page.waitForTimeout(500);
+
+        // Verify subtasks are now visible
+        const subtasksContainer = projectTask.locator('.task-card__subtasks');
+        await expect(subtasksContainer).toBeVisible({ timeout: 3000 });
+
+        await page.screenshot({ path: 'test-results/screenshots/issue-1339-expanded-before-refresh.png' });
+
+        // Switch to another view and back
+        await runCommand(page, 'Open calendar view');
+        await page.waitForTimeout(1000);
+
+        await runCommand(page, 'Open tasks list');
+        await page.waitForTimeout(1500);
+
+        // Find the same project task again
+        const projectTaskAfter = page.locator('.task-card:has(.task-card__chevron)').first();
+        const subtasksAfter = projectTaskAfter.locator('.task-card__subtasks');
+
+        // Subtasks should still be expanded
+        await expect(subtasksAfter).toBeVisible({ timeout: 3000 });
+
+        await page.screenshot({ path: 'test-results/screenshots/issue-1339-expanded-after-refresh.png' });
+      }
+    }
+  });
+});
