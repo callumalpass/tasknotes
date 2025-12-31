@@ -4108,3 +4108,423 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
     });
   });
 });
+
+// ============================================================================
+// ISSUE #1350: INLINE TASK PROPERTY UPDATE FAILS IN READING VIEW
+// Bug: When editing the metadata of an inline TaskNote (e.g., Scheduled date)
+// while in Reading View, the markdown file is updated but the Reading View
+// display does NOT refresh. User must close and re-open to see changes.
+// ============================================================================
+
+test.describe('Inline Task Reading View Refresh (Issue #1350)', () => {
+  test.fixme('should refresh inline task display when property is updated in Reading View', async () => {
+    // Issue #1350: https://github.com/anthropics/tasknotes/issues/1350
+    //
+    // Bug Summary:
+    // When editing an inline TaskNote's property (like scheduled date) in Reading View:
+    // 1. The markdown file IS updated correctly
+    // 2. But the inline task widget display does NOT refresh
+    // 3. User must close and re-open the file to see changes
+    //
+    // Root Cause: ReadingModeTaskLinkProcessor is a one-time post-processor
+    // that runs when markdown is rendered. Unlike Live Preview (TaskLinkOverlay.ts),
+    // it has NO event listeners for EVENT_TASK_UPDATED, so it never re-renders.
+    //
+    // Fix: Add event listeners to ReadingModeTaskLinkProcessor that:
+    // 1. Listen for EVENT_TASK_UPDATED
+    // 2. Find affected inline widgets in the DOM
+    // 3. Replace them with fresh widgets containing updated data
+    const page = getPage();
+
+    // Open the inline task test page
+    const testPage = page.locator('.nav-file-title:has-text("Inline-Task-Test")');
+    if (await testPage.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await testPage.click();
+      await page.waitForTimeout(1000);
+    } else {
+      // Try to create/find the test file another way
+      await runCommand(page, 'Quick switcher');
+      await page.waitForTimeout(300);
+      await page.keyboard.type('Inline-Task-Test', { delay: 30 });
+      await page.waitForTimeout(300);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+    }
+
+    // Switch to Reading View using Ctrl+E toggle
+    // First check if we're in editing mode (has CM editor)
+    const isEditing = await page.locator('.cm-content, .markdown-source-view.is-live-preview').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isEditing) {
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    // Ensure we're in Reading View (preview mode) - check for markdown-reading-view class
+    const readingView = page.locator('.markdown-reading-view, .markdown-preview-view');
+    await expect(readingView).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-reading-view-before.png' });
+
+    // Find an inline task widget in Reading View
+    // Inline widgets have class "tasknotes-inline-widget" or "task-inline-preview--reading-mode"
+    const inlineWidget = page.locator('.tasknotes-inline-widget, .task-inline-preview--reading-mode').first();
+
+    if (!await inlineWidget.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1350] Inline task widget not found - skipping test');
+      // This could happen if the test file isn't properly set up
+      return;
+    }
+
+    // Get the current scheduled date value displayed
+    const scheduledBadge = inlineWidget.locator('[data-property="scheduled"], .tn-date-badge, [class*="scheduled"]').first();
+    const originalValue = await scheduledBadge.textContent().catch(() => null);
+    console.log('[Issue #1350] Original scheduled value:', originalValue);
+
+    // Click on the scheduled date to open the date picker
+    if (await scheduledBadge.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await scheduledBadge.click();
+      await page.waitForTimeout(500);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-date-picker-open.png' });
+
+    // Look for the date context menu
+    const dateMenu = page.locator('.menu, .suggestion-container, .tn-context-menu');
+    if (await dateMenu.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Click on "+1 day" option
+      const plusOneDay = dateMenu.locator('text="+1 day"').first();
+      if (await plusOneDay.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await plusOneDay.click();
+        await page.waitForTimeout(1000);
+      } else {
+        // Try finding any date option
+        const tomorrow = dateMenu.locator('text="Tomorrow"').first();
+        if (await tomorrow.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await tomorrow.click();
+          await page.waitForTimeout(1000);
+        } else {
+          await page.keyboard.press('Escape');
+          console.log('[Issue #1350] Date option not found in menu');
+          return;
+        }
+      }
+    } else {
+      console.log('[Issue #1350] Date menu not visible after clicking scheduled badge');
+      return;
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-after-date-change.png' });
+
+    // Verify the underlying file was updated (the file write succeeds)
+    const fileWasUpdated = await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin) return null;
+
+      const allTasks = plugin.taskService?.getAllTasks?.() || [];
+      // Find Buy groceries task (first inline task in test page)
+      const task = allTasks.find((t: any) => t.title === 'Buy groceries');
+      return task?.scheduled;
+    });
+
+    console.log('[Issue #1350] Task scheduled value in file after update:', fileWasUpdated);
+
+    // Now check if the DISPLAY was updated (this is the bug!)
+    const updatedValue = await scheduledBadge.textContent().catch(() => null);
+    console.log('[Issue #1350] Display value after update:', updatedValue);
+
+    // BUG: The display value should have changed, but it doesn't!
+    // The widget shows stale data until the file is closed and reopened.
+    expect(updatedValue).not.toBe(originalValue);
+  });
+
+  test.fixme('should refresh inline task status when checkbox is toggled in Reading View', async () => {
+    // Issue #1350 related: Status changes should also refresh inline widgets
+    //
+    // When marking a task complete via its inline checkbox in Reading View,
+    // the visual status indicator should update immediately.
+    const page = getPage();
+
+    // Open a page with inline tasks
+    const testPage = page.locator('.nav-file-title:has-text("Inline-Task-Test")');
+    if (await testPage.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await testPage.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Switch to Reading View
+    const isEditing = await page.locator('.cm-content, .markdown-source-view.is-live-preview').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isEditing) {
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    const readingView = page.locator('.markdown-reading-view, .markdown-preview-view');
+    await expect(readingView).toBeVisible({ timeout: 5000 });
+
+    // Find an inline task widget
+    const inlineWidget = page.locator('.tasknotes-inline-widget, .task-inline-preview--reading-mode').first();
+
+    if (!await inlineWidget.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1350] Inline widget not visible, skipping test');
+      return;
+    }
+
+    // Get the status dot/checkbox element
+    const statusElement = inlineWidget.locator('.tn-status-dot, .status-dot, [class*="status"], input[type="checkbox"]').first();
+    const originalStatus = await statusElement.getAttribute('class').catch(() => null);
+    console.log('[Issue #1350] Original status classes:', originalStatus);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-status-before.png' });
+
+    // Click to toggle status
+    if (await statusElement.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await statusElement.click();
+      await page.waitForTimeout(500);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-status-after.png' });
+
+    // Check if file was updated
+    const taskStatus = await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin) return null;
+
+      const allTasks = plugin.taskService?.getAllTasks?.() || [];
+      const task = allTasks.find((t: any) => t.title === 'Buy groceries');
+      return task?.status;
+    });
+
+    console.log('[Issue #1350] Task status in file after toggle:', taskStatus);
+
+    // Get updated status visual
+    const updatedStatus = await statusElement.getAttribute('class').catch(() => null);
+    console.log('[Issue #1350] Status classes after toggle:', updatedStatus);
+
+    // BUG: The status indicator should have visually changed
+    // But in Reading View, the widget doesn't refresh
+    expect(updatedStatus).not.toBe(originalStatus);
+  });
+
+  test.fixme('should refresh all inline task instances when one is updated', async () => {
+    // Issue #1350 edge case: If the same task is referenced multiple times
+    // on a page (e.g., [[Buy groceries]] appears twice), updating one
+    // should refresh ALL instances.
+    const page = getPage();
+
+    // Create a test page with duplicate task references
+    await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      if (!app?.vault) return;
+
+      const content = `---
+title: Duplicate Task References
+---
+
+# Test Page
+
+First reference: [[Buy groceries]]
+
+Some text in between.
+
+Second reference: [[Buy groceries]]
+`;
+      // Create or update the test file
+      const testPath = 'Duplicate-Task-Test.md';
+      const existingFile = app.vault.getAbstractFileByPath(testPath);
+      if (existingFile) {
+        await app.vault.modify(existingFile, content);
+      } else {
+        await app.vault.create(testPath, content);
+      }
+    });
+
+    await page.waitForTimeout(1000);
+
+    // Open the test page
+    await runCommand(page, 'Quick switcher');
+    await page.waitForTimeout(300);
+    await page.keyboard.type('Duplicate-Task-Test', { delay: 30 });
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000);
+
+    // Switch to Reading View
+    const isEditing = await page.locator('.cm-content, .markdown-source-view.is-live-preview').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isEditing) {
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-duplicate-refs-before.png' });
+
+    // Find all inline widgets for the same task
+    const allWidgets = page.locator('.tasknotes-inline-widget, .task-inline-preview--reading-mode');
+    const widgetCount = await allWidgets.count();
+    console.log(`[Issue #1350] Found ${widgetCount} inline widget instances`);
+
+    // Get scheduled values from all instances
+    const originalValues: string[] = [];
+    for (let i = 0; i < widgetCount; i++) {
+      const widget = allWidgets.nth(i);
+      const badge = widget.locator('[data-property="scheduled"], .tn-date-badge').first();
+      const value = await badge.textContent().catch(() => '');
+      originalValues.push(value || '');
+    }
+    console.log('[Issue #1350] Original values for all instances:', originalValues);
+
+    // Update the first instance
+    const firstWidget = allWidgets.first();
+    const firstBadge = firstWidget.locator('[data-property="scheduled"], .tn-date-badge').first();
+    if (await firstBadge.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstBadge.click();
+      await page.waitForTimeout(500);
+
+      const menu = page.locator('.menu, .suggestion-container');
+      if (await menu.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const plusDay = menu.locator('text="+1 day"').first();
+        if (await plusDay.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await plusDay.click();
+          await page.waitForTimeout(1000);
+        } else {
+          await page.keyboard.press('Escape');
+        }
+      }
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-duplicate-refs-after.png' });
+
+    // Check if ALL instances were updated
+    const updatedValues: string[] = [];
+    for (let i = 0; i < widgetCount; i++) {
+      const widget = allWidgets.nth(i);
+      const badge = widget.locator('[data-property="scheduled"], .tn-date-badge').first();
+      const value = await badge.textContent().catch(() => '');
+      updatedValues.push(value || '');
+    }
+    console.log('[Issue #1350] Updated values for all instances:', updatedValues);
+
+    // BUG: All instances should show the same updated value
+    // But in Reading View, widgets don't refresh, and even if they did,
+    // would need to refresh ALL instances, not just the one clicked.
+    expect(updatedValues.every(v => v === updatedValues[0])).toBe(true);
+    expect(updatedValues[0]).not.toBe(originalValues[0]);
+
+    // Clean up test file
+    await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      if (!app?.vault) return;
+
+      const testPath = 'Duplicate-Task-Test.md';
+      const file = app.vault.getAbstractFileByPath(testPath);
+      if (file) {
+        await app.vault.delete(file);
+      }
+    });
+  });
+
+  test.fixme('Live Preview refreshes but Reading View does not - demonstrates the gap', async () => {
+    // Issue #1350: This test demonstrates that Live Preview DOES refresh
+    // while Reading View does NOT, proving the architectural gap.
+    //
+    // Live Preview uses TaskLinkOverlay.ts which has event listeners.
+    // Reading View uses ReadingModeTaskLinkProcessor.ts which is a one-time post-processor.
+    const page = getPage();
+
+    // Open a page with inline task references
+    const testPage = page.locator('.nav-file-title:has-text("Inline-Task-Test")');
+    if (await testPage.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await testPage.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // === Test in Live Preview mode (should work) ===
+    // Ensure we're in Live Preview (editing mode)
+    const isReadingView = await page.locator('.markdown-reading-view').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isReadingView) {
+      await page.keyboard.press('Control+e'); // Toggle to editing
+      await page.waitForTimeout(500);
+    }
+
+    // Verify we're in Live Preview
+    const livePreview = page.locator('.markdown-source-view.is-live-preview');
+    const isLivePreview = await livePreview.isVisible({ timeout: 3000 }).catch(() => false);
+
+    if (isLivePreview) {
+      const inlineWidgetLP = page.locator('.tasknotes-inline-widget').first();
+      const scheduledBadgeLP = inlineWidgetLP.locator('[data-property="scheduled"], .tn-date-badge').first();
+      const originalLP = await scheduledBadgeLP.textContent().catch(() => null);
+      console.log('[Issue #1350] Live Preview - original value:', originalLP);
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1350-live-preview-before.png' });
+
+      // Update in Live Preview
+      if (await scheduledBadgeLP.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await scheduledBadgeLP.click();
+        await page.waitForTimeout(500);
+
+        const menu = page.locator('.menu, .suggestion-container');
+        if (await menu.isVisible({ timeout: 2000 }).catch(() => false)) {
+          const plusDay = menu.locator('text="+1 day"').first();
+          if (await plusDay.isVisible({ timeout: 1000 }).catch(() => false)) {
+            await plusDay.click();
+            await page.waitForTimeout(1000);
+          }
+        }
+      }
+
+      const updatedLP = await scheduledBadgeLP.textContent().catch(() => null);
+      console.log('[Issue #1350] Live Preview - updated value:', updatedLP);
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1350-live-preview-after.png' });
+
+      // Live Preview should have updated
+      console.log('[Issue #1350] Live Preview refreshed:', originalLP !== updatedLP);
+    }
+
+    // === Now switch to Reading View (bug case) ===
+    await page.keyboard.press('Control+e'); // Toggle to Reading View
+    await page.waitForTimeout(500);
+
+    const readingView = page.locator('.markdown-reading-view, .markdown-preview-view');
+    await expect(readingView).toBeVisible({ timeout: 5000 });
+
+    const inlineWidgetRV = page.locator('.tasknotes-inline-widget, .task-inline-preview--reading-mode').first();
+    const scheduledBadgeRV = inlineWidgetRV.locator('[data-property="scheduled"], .tn-date-badge').first();
+    const originalRV = await scheduledBadgeRV.textContent().catch(() => null);
+    console.log('[Issue #1350] Reading View - value before update:', originalRV);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-reading-view-compare-before.png' });
+
+    // Update in Reading View
+    if (await scheduledBadgeRV.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await scheduledBadgeRV.click();
+      await page.waitForTimeout(500);
+
+      const menu = page.locator('.menu, .suggestion-container');
+      if (await menu.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const plusDay = menu.locator('text="+1 day"').first();
+        if (await plusDay.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await plusDay.click();
+          await page.waitForTimeout(1000);
+        }
+      }
+    }
+
+    const updatedRV = await scheduledBadgeRV.textContent().catch(() => null);
+    console.log('[Issue #1350] Reading View - value after update:', updatedRV);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1350-reading-view-compare-after.png' });
+
+    // BUG: Reading View should have updated but didn't
+    console.log('[Issue #1350] Reading View refreshed:', originalRV !== updatedRV);
+
+    // This assertion will FAIL, demonstrating the bug
+    expect(updatedRV).not.toBe(originalRV);
+  });
+});

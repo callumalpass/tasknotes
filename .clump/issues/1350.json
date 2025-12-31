@@ -1,0 +1,16 @@
+{
+  "issue_number": 1350,
+  "status": "open",
+  "tags": ["inline-tasks", "reading-view", "rendering", "ux"],
+  "priority": "medium",
+  "difficulty": "medium",
+  "risk": "low",
+  "type": "bug",
+  "affected_areas": ["src/editor/ReadingModeTaskLinkProcessor.ts", "src/editor/TaskLinkWidget.ts", "src/ui/TaskCard.ts"],
+  "ai_summary": "Inline task widgets don't refresh after property updates in Reading View",
+  "notes": "When editing inline TaskNote properties (scheduled/due dates, status) in Reading View, the underlying markdown file is updated correctly but the widget display remains stale. User must close and re-open the file to see changes. This only affects Reading View - Live Preview works correctly because TaskLinkOverlay.ts has EVENT_TASK_UPDATED listeners that trigger refreshDecorations(). The ReadingModeTaskLinkProcessor is a one-time Markdown post-processor with no event listeners, so it never re-renders widgets after initial page load. The TaskCardNoteDecorations.ts already shows how to implement refresh for Reading View widgets (at top of task notes) using debounced EVENT_TASK_UPDATED listeners.",
+  "root_cause": "ReadingModeTaskLinkProcessor.ts is a one-time Markdown post-processor that replaces wikilinks with TaskLinkWidget elements during initial render. Unlike TaskLinkOverlay.ts (Live Preview) which has listeners for EVENT_TASK_UPDATED that call refreshDecorations(), the Reading View processor has no event listeners and never re-renders. When updateTaskProperty() fires EVENT_TASK_UPDATED, Reading View widgets don't receive the update.",
+  "suggested_fix": "Add event handling to ReadingModeTaskLinkProcessor similar to TaskCardNoteDecorations.ts pattern: 1) Create a separate handler class that listens to EVENT_TASK_UPDATED and metadataCache.on('changed') events, 2) On update, find all inline widgets with matching task path using data attributes, 3) Replace stale widgets with fresh ones containing updated data, 4) Use debouncing (500ms like TaskCardNoteDecorations) to avoid excessive DOM manipulation. The handler should be registered per-leaf and cleaned up when leaves close.",
+  "analyzed_at": "2026-01-01T10:00:00.000Z",
+  "analyzed_by": "claude-opus-4-5-20251101"
+}
