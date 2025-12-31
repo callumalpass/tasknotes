@@ -753,3 +753,405 @@ test.describe('Responsive Layout', () => {
     await page.setViewportSize(DOC_VIEWPORT);
   });
 });
+
+// ============================================================================
+// INLINE TASK CARD SCREENSHOTS
+// Task card widget displayed in the editor
+// ============================================================================
+
+test.describe('Inline Task Card', () => {
+  test('inline-task-card-in-editor', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open a task note that shows the inline task card widget
+    const taskItem = page.locator('.nav-file-title:has-text("Write documentation")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // The inline task card should be visible at the top of the note
+    await docScreenshot(page, 'feature-inline-task-card');
+  });
+
+  test('inline-task-card-with-time-entries', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open a task with time entries to show tracked time
+    const taskItem = page.locator('.nav-file-title:has-text("Write documentation")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    await docScreenshot(page, 'feature-inline-card-time-tracked');
+  });
+
+  test('inline-task-card-blocked', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open a task that is blocked by another task
+    const taskItem = page.locator('.nav-file-title:has-text("Deploy authentication")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    await docScreenshot(page, 'feature-inline-card-blocked');
+  });
+});
+
+// ============================================================================
+// RECURRING TASK SCREENSHOTS
+// Recurring task visualization and modal
+// ============================================================================
+
+test.describe('Recurring Tasks', () => {
+  test('recurring-task-edit-modal', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open the recurring task note first
+    const taskItem = page.locator('.nav-file-title:has-text("Daily standup")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Open calendar view and find the recurring task
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Look for recurring task event and click to open edit modal
+    const recurringEvent = page.locator('.fc-event:has-text("Daily standup")').first();
+    if (await recurringEvent.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await recurringEvent.click();
+      await page.waitForTimeout(800);
+
+      const modal = page.locator('.modal');
+      if (await modal.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await docScreenshot(page, 'feature-recurring-task-modal');
+        await page.keyboard.press('Escape');
+      }
+    }
+  });
+
+  test('recurring-task-in-calendar', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Switch to week view to see recurring events across days
+    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    if (await weekButton.isVisible()) {
+      await weekButton.click();
+      await page.waitForTimeout(800);
+    }
+
+    await docScreenshot(page, 'feature-recurring-task-calendar');
+  });
+
+  test('weekly-recurring-task-modal', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open the weekly recurring task
+    const taskItem = page.locator('.nav-file-title:has-text("Weekly team meeting")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Now open calendar and click on it
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    const weeklyEvent = page.locator('.fc-event:has-text("Weekly team")').first();
+    if (await weeklyEvent.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await weeklyEvent.click();
+      await page.waitForTimeout(800);
+
+      const modal = page.locator('.modal');
+      if (await modal.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await docScreenshot(page, 'feature-weekly-recurring-modal');
+        await page.keyboard.press('Escape');
+      }
+    }
+  });
+});
+
+// ============================================================================
+// ACTIVE TIMER SCREENSHOTS
+// Pomodoro timer in action
+// ============================================================================
+
+test.describe('Active Timer', () => {
+  test('pomodoro-timer-running', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open pomodoro timer
+    await runCommand(page, 'Open pomodoro timer');
+    await page.waitForTimeout(1000);
+
+    // Start the timer by clicking the start button
+    const startButton = page.locator('button:has-text("Start")').first();
+    if (await startButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await startButton.click();
+      await page.waitForTimeout(2000); // Let it run for a moment
+    }
+
+    await docScreenshot(page, 'feature-pomodoro-running');
+
+    // Stop the timer
+    const pauseButton = page.locator('button:has-text("Pause")').first();
+    if (await pauseButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await pauseButton.click();
+    }
+  });
+
+  test('time-tracking-active', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open a task and try to start time tracking
+    const taskItem = page.locator('.nav-file-title:has-text("Code review PR")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Look for time tracking controls in the task card
+    const trackButton = page.locator('[aria-label*="time"], button:has-text("Track"), .tn-time-track-button').first();
+    if (await trackButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await trackButton.click();
+      await page.waitForTimeout(1500);
+      await docScreenshot(page, 'feature-time-tracking-active');
+
+      // Stop tracking
+      const stopButton = page.locator('[aria-label*="stop"], button:has-text("Stop")').first();
+      if (await stopButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await stopButton.click();
+      }
+    }
+  });
+});
+
+// ============================================================================
+// NLP INPUT SCREENSHOTS
+// Natural language processing in task creation
+// ============================================================================
+
+test.describe('NLP Input', () => {
+  test('nlp-task-creation', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open task creation modal
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Type a natural language task with date and context
+    const titleInput = page.locator('.modal input[type="text"]').first();
+    if (await titleInput.isVisible()) {
+      // Type slowly to show NLP parsing
+      await titleInput.fill('Review quarterly report tomorrow at 2pm @work +ProjectX !high');
+      await page.waitForTimeout(1000);
+    }
+
+    await docScreenshot(page, 'feature-nlp-input');
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('nlp-date-parsing', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    const titleInput = page.locator('.modal input[type="text"]').first();
+    if (await titleInput.isVisible()) {
+      await titleInput.fill('Submit expense report next Friday');
+      await page.waitForTimeout(800);
+    }
+
+    await docScreenshot(page, 'feature-nlp-date-parsing');
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('nlp-context-trigger', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    const titleInput = page.locator('.modal input[type="text"]').first();
+    if (await titleInput.isVisible()) {
+      await titleInput.fill('Call client @phone +Sales');
+      await page.waitForTimeout(800);
+    }
+
+    await docScreenshot(page, 'feature-nlp-context-trigger');
+
+    await page.keyboard.press('Escape');
+  });
+});
+
+// ============================================================================
+// TASK CARD PROPERTIES SCREENSHOTS
+// Task cards showing various property states
+// ============================================================================
+
+test.describe('Task Card Properties', () => {
+  test('task-card-with-blocked-indicator', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open tasks list view to see task cards
+    await expandViewsFolder(page);
+
+    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
+    await expect(tasksItem).toBeVisible({ timeout: 5000 });
+    await tasksItem.click();
+    await page.waitForTimeout(1500);
+
+    // Look for the blocked task card
+    const blockedCard = page.locator('.tn-task-card:has-text("Deploy authentication"), [class*="task-card"]:has-text("Deploy")').first();
+    if (await blockedCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const box = await blockedCard.boundingBox();
+      if (box) {
+        await docScreenshot(page, 'feature-task-card-blocked', {
+          clip: {
+            x: Math.max(0, box.x - 20),
+            y: Math.max(0, box.y - 20),
+            width: box.width + 40,
+            height: box.height + 40,
+          },
+        });
+      }
+    } else {
+      // Fallback to full view screenshot
+      await docScreenshot(page, 'feature-task-cards-list');
+    }
+  });
+
+  test('task-card-priority-indicators', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open kanban view to see cards with priority colors
+    await expandViewsFolder(page);
+
+    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
+    await expect(kanbanItem).toBeVisible({ timeout: 5000 });
+    await kanbanItem.click();
+    await page.waitForTimeout(1500);
+
+    await docScreenshot(page, 'feature-task-card-priorities');
+  });
+
+  test('task-card-status-indicators', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Kanban view shows status columns
+    await expandViewsFolder(page);
+
+    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
+    await expect(kanbanItem).toBeVisible({ timeout: 5000 });
+    await kanbanItem.click();
+    await page.waitForTimeout(1500);
+
+    // Focus on a specific column if possible
+    const inProgressColumn = page.locator('[class*="kanban"]').locator(':has-text("In Progress"), :has-text("in-progress")').first();
+    if (await inProgressColumn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const box = await inProgressColumn.boundingBox();
+      if (box) {
+        await docScreenshot(page, 'feature-task-card-status', {
+          clip: {
+            x: Math.max(0, box.x - 10),
+            y: Math.max(0, box.y - 10),
+            width: Math.min(400, box.width + 20),
+            height: Math.min(500, box.height + 20),
+          },
+        });
+      }
+    }
+  });
+
+  test('task-card-with-time-estimate', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open task list view
+    await expandViewsFolder(page);
+
+    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
+    await expect(tasksItem).toBeVisible({ timeout: 5000 });
+    await tasksItem.click();
+    await page.waitForTimeout(1500);
+
+    // Look for a task card showing time estimate
+    const timeCard = page.locator('.tn-task-card:has-text("Write documentation"), [class*="task-card"]:has-text("documentation")').first();
+    if (await timeCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const box = await timeCard.boundingBox();
+      if (box) {
+        await docScreenshot(page, 'feature-task-card-time-estimate', {
+          clip: {
+            x: Math.max(0, box.x - 20),
+            y: Math.max(0, box.y - 20),
+            width: box.width + 40,
+            height: box.height + 40,
+          },
+        });
+      }
+    }
+  });
+
+  test('task-card-recurring-indicator', async () => {
+    const page = getPage();
+    await ensureCleanState(page);
+
+    // Open task list view
+    await expandViewsFolder(page);
+
+    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
+    await expect(tasksItem).toBeVisible({ timeout: 5000 });
+    await tasksItem.click();
+    await page.waitForTimeout(1500);
+
+    // Look for a recurring task card
+    const recurringCard = page.locator('.tn-task-card:has-text("Daily standup"), [class*="task-card"]:has-text("Daily standup")').first();
+    if (await recurringCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const box = await recurringCard.boundingBox();
+      if (box) {
+        await docScreenshot(page, 'feature-task-card-recurring', {
+          clip: {
+            x: Math.max(0, box.x - 20),
+            y: Math.max(0, box.y - 20),
+            width: box.width + 40,
+            height: box.height + 40,
+          },
+        });
+      }
+    }
+  });
+});
