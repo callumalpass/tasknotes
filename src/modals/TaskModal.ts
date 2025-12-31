@@ -244,7 +244,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected normalizeDetails(value: string): string {
-		return value.replace(/\r\n/g, "\n");
+		return value.replace(/\r\n/g, "\n").trimEnd();
 	}
 
 	protected addBlockedByTask(file: TFile): void {
