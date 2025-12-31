@@ -100,3 +100,8 @@ Example:
   - Cards and columns can now be dragged using long-press gesture on touch devices
   - Includes haptic feedback and auto-scroll when dragging near edges
   - Thanks to @l-mb for reporting and the fix
+
+- (#1381) Fixed Pomodoro "Change Task" menu not showing newly created tasks
+  - Tasks created while the Pomodoro view was open would not appear in the task selector
+  - Improved metadata cache synchronization to properly wait for new files to be indexed
+  - Thanks to @Ghosthael for reporting
