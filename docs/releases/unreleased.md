@@ -126,3 +126,8 @@ Example:
   - Using +1 day, -1 day, +1 week, or -1 week on a task with a time (e.g., `2025-12-10T16:00`) now preserves the time
   - Previously the time would be stripped, changing `2025-12-10T16:00` to `2025-12-11` instead of `2025-12-11T16:00`
   - Thanks to @cathywu for the feature request
+
+- Fixed v3 saved views exporting incorrectly to Bases format
+  - Title filters now correctly use `file.name` instead of `note.title`
+  - Archived filters now generate valid boolean expressions instead of malformed comparisons
+  - "Is Blocked" filters now generate correct expressions with proper operator precedence

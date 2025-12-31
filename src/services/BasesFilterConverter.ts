@@ -113,6 +113,16 @@ export class BasesFilterConverter {
 			return this.convertCompletedStatusCondition(operator, value);
 		}
 
+		// Handle special property: archived (boolean based on tag presence)
+		if (property == "archived") {
+			return this.convertArchivedCondition(operator);
+		}
+
+		// Handle special property: dependencies.isBlocked (boolean expression)
+		if (property == "dependencies.isBlocked") {
+			return this.convertIsBlockedCondition(operator);
+		}
+
 		// Handle user-defined fields (user:<id>)
 		if (property.startsWith("user:")) {
 			return this.convertUserFieldCondition(property, operator, value);
@@ -185,6 +195,40 @@ export class BasesFilterConverter {
 	}
 
 	/**
+	 * Convert archived property to Bases expression
+	 * Archived is a boolean property based on whether the task has the archive tag
+	 */
+	private convertArchivedCondition(operator: FilterOperator): string {
+		const fm = this.plugin.fieldMapper;
+		const archiveTag = fm.toUserField("archiveTag");
+		const archivedExpression = `file.tags.contains("${this.escapeString(archiveTag)}")`;
+
+		// Handle operator - is-checked/is means archived, is-not-checked/is-not means not archived
+		if (operator == "is-not-checked" || operator == "is-not") {
+			return `!${archivedExpression}`;
+		}
+
+		return archivedExpression;
+	}
+
+	/**
+	 * Convert dependencies.isBlocked to Bases expression
+	 * A task is blocked if it has any entries in its blockedBy array
+	 */
+	private convertIsBlockedCondition(operator: FilterOperator): string {
+		const fm = this.plugin.fieldMapper;
+		const blockedByProp = fm.toUserField("blockedBy");
+		const isBlockedExpression = `(note.${blockedByProp} && list(note.${blockedByProp}).length > 0)`;
+
+		// Handle operator - is-checked/is means blocked, is-not-checked/is-not means not blocked
+		if (operator == "is-not-checked" || operator == "is-not") {
+			return `!(${isBlockedExpression})`;
+		}
+
+		return isBlockedExpression;
+	}
+
+	/**
 	 * Convert user field condition to Bases expression
 	 */
 	private convertUserFieldCondition(
@@ -223,8 +267,7 @@ export class BasesFilterConverter {
 
 		switch (property) {
 			case "title":
-				frontmatterKey = fm.toUserField("title");
-				break;
+				return "file.name";
 			case "status":
 				frontmatterKey = fm.toUserField("status");
 				break;
@@ -251,9 +294,7 @@ export class BasesFilterConverter {
 				return "file.ctime";
 			case "dateModified":
 				return "file.mtime";
-			case "archived":
-				// Check if task has the archive tag
-				return `file.tags.contains("${this.escapeString(fm.toUserField("archiveTag"))}")`;
+			// Note: "archived" is handled specially in convertConditionToString
 			case "timeEstimate":
 				frontmatterKey = fm.toUserField("timeEstimate");
 				break;
@@ -269,13 +310,8 @@ export class BasesFilterConverter {
 			case "blocking":
 				frontmatterKey = "blocking"; // Computed property, not in field mapping
 				break;
-			case "dependencies.isBlocked":
-			case "dependencies.isBlocking":
-				// These are computed properties based on blockedBy
-				// For now, return a placeholder - proper implementation would need more complex logic
-				return property == "dependencies.isBlocked"
-					? `note.${fm.toUserField("blockedBy")} && note.${fm.toUserField("blockedBy")}.length > 0`
-					: "false"; // isBlocking needs reverse lookup, complex to implement
+			// Note: "dependencies.isBlocked" is handled specially in convertConditionToString
+			// Note: "dependencies.isBlocking" returns "true" (unsupported - requires reverse lookup)
 			default:
 				// Default to the property name (handles user fields and unknown properties)
 				frontmatterKey = property as string;
