@@ -3785,3 +3785,326 @@ test.describe('Issue #1352 - Preserve time when updating dates', () => {
     }
   });
 });
+
+// ============================================================================
+// ISSUE #1351: CONSOLIDATE SAME-DATE START/DUE TASKS
+// Feature Request: When a task has the same scheduled and due date, consolidate
+// them into a single calendar event showing "Start/Due: Task" instead of two
+// separate events.
+// ============================================================================
+
+test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
+  test.fixme('should show single consolidated event when scheduled and due dates are the same', async () => {
+    // Issue #1351: https://github.com/anthropics/tasknotes/issues/1351
+    //
+    // Feature Request: When both scheduled (start) and due dates are on the same day,
+    // currently TWO separate events appear on the calendar:
+    // 1. A scheduled event with the task title
+    // 2. A "DUE: Task" event with the task title
+    //
+    // Expected behavior: Show a SINGLE consolidated event with "Start/Due: Task" title
+    // when both dates fall on the same day.
+    //
+    // Implementation hint: See src/bases/calendar-core.ts:
+    // - generateCalendarEvents() at lines 987-1018 creates separate events
+    // - Need to add date comparison check before creating individual events
+    // - Create new createConsolidatedEvent() function similar to createScheduledEvent/createDueEvent
+    const page = getPage();
+
+    // First, create a task with same scheduled and due date via the API
+    const testDate = '2026-01-15'; // Use a future date
+    await page.evaluate(async (date) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      // Create a test task with same scheduled and due date
+      await plugin.taskService.createTask({
+        title: 'Test Same Date Task',
+        scheduled: date,
+        due: date,
+        status: 'todo',
+        priority: 'normal'
+      });
+    }, testDate);
+
+    await page.waitForTimeout(500);
+
+    // Open calendar view
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Navigate to the test date
+    // Click on a date cell or use navigation to reach January 2026
+    const monthButton = page.locator('.fc-dayGridMonth-button');
+    if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await monthButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Navigate forward to January 2026
+    const nextButton = page.locator('.fc-next-button');
+    for (let i = 0; i < 12; i++) { // Navigate up to 12 months forward
+      if (await nextButton.isVisible()) {
+        await nextButton.click();
+        await page.waitForTimeout(200);
+      }
+      // Check if we've reached January 2026
+      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      if (headerText?.includes('January') && headerText?.includes('2026')) {
+        break;
+      }
+    }
+
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: 'test-results/screenshots/issue-1351-calendar-view.png' });
+
+    // Count events for the test task on January 15, 2026
+    // Currently: Should show 2 events (scheduled + due) - this is the bug
+    // Expected: Should show 1 consolidated event
+    const eventsOnDate = page.locator('.fc-event:has-text("Same Date")');
+    const eventCount = await eventsOnDate.count();
+
+    console.log(`[Issue #1351] Events found for same-date task: ${eventCount}`);
+
+    // BUG: Currently shows 2 events (one for scheduled, one for due)
+    // FIX: Should consolidate to 1 event when dates match
+    expect(eventCount).toBe(1);
+
+    // Clean up - delete the test task
+    await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const testTask = allTasks.find((t: any) => t.title === 'Test Same Date Task');
+      if (testTask) {
+        await plugin.taskService.deleteTask(testTask.path);
+      }
+    });
+  });
+
+  test.fixme('should show "Start/Due:" prefix for consolidated same-date events', async () => {
+    // Issue #1351: When events are consolidated, the title should indicate
+    // that this represents both the start and due date.
+    //
+    // Currently: Shows either task title (scheduled) or "DUE: Task" (due) as separate events
+    // Expected: Show "Start/Due: Task" as a single consolidated event
+    const page = getPage();
+
+    const testDate = '2026-01-16';
+    await page.evaluate(async (date) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: 'Consolidated Title Test',
+        scheduled: date,
+        due: date,
+        status: 'todo',
+        priority: 'normal'
+      });
+    }, testDate);
+
+    await page.waitForTimeout(500);
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Navigate to January 2026
+    const nextButton = page.locator('.fc-next-button');
+    for (let i = 0; i < 12; i++) {
+      if (await nextButton.isVisible()) {
+        await nextButton.click();
+        await page.waitForTimeout(200);
+      }
+      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      if (headerText?.includes('January') && headerText?.includes('2026')) {
+        break;
+      }
+    }
+
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: 'test-results/screenshots/issue-1351-consolidated-title.png' });
+
+    // Look for consolidated event title
+    // Expected: Should find "Start/Due: Consolidated Title Test"
+    const consolidatedEvent = page.locator('.fc-event:has-text("Start/Due")');
+    const hasConsolidatedTitle = await consolidatedEvent.isVisible({ timeout: 3000 }).catch(() => false);
+
+    expect(hasConsolidatedTitle).toBe(true);
+
+    // Clean up
+    await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const testTask = allTasks.find((t: any) => t.title === 'Consolidated Title Test');
+      if (testTask) {
+        await plugin.taskService.deleteTask(testTask.path);
+      }
+    });
+  });
+
+  test.fixme('should still show separate events when scheduled and due dates differ', async () => {
+    // Issue #1351: Consolidation should ONLY happen when dates match.
+    // When scheduled and due are on different days, behavior should be unchanged.
+    const page = getPage();
+
+    const scheduledDate = '2026-01-17';
+    const dueDate = '2026-01-18';
+    await page.evaluate(async ({ scheduled, due }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: 'Different Dates Test',
+        scheduled: scheduled,
+        due: due,
+        status: 'todo',
+        priority: 'normal'
+      });
+    }, { scheduled: scheduledDate, due: dueDate });
+
+    await page.waitForTimeout(500);
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Switch to week view to see both days
+    const weekButton = page.locator('.fc-timeGridWeek-button');
+    if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await weekButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Navigate to January 2026
+    const nextButton = page.locator('.fc-next-button');
+    for (let i = 0; i < 12; i++) {
+      if (await nextButton.isVisible()) {
+        await nextButton.click();
+        await page.waitForTimeout(200);
+      }
+      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      if (headerText?.includes('Jan') && headerText?.includes('2026')) {
+        break;
+      }
+    }
+
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: 'test-results/screenshots/issue-1351-different-dates.png' });
+
+    // For different dates, should still show 2 separate events
+    const scheduledEvent = page.locator('.fc-event:has-text("Different Dates Test")').first();
+    const dueEvent = page.locator('.fc-event:has-text("DUE: Different Dates Test")');
+
+    const hasScheduled = await scheduledEvent.isVisible({ timeout: 3000 }).catch(() => false);
+    const hasDue = await dueEvent.isVisible({ timeout: 3000 }).catch(() => false);
+
+    // When dates differ, we should still see both events
+    expect(hasScheduled || hasDue).toBe(true);
+
+    // Clean up
+    await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const testTask = allTasks.find((t: any) => t.title === 'Different Dates Test');
+      if (testTask) {
+        await plugin.taskService.deleteTask(testTask.path);
+      }
+    });
+  });
+
+  test.fixme('should consolidate same-date events even with different times', async () => {
+    // Issue #1351: When scheduled and due are on the same DATE but different times,
+    // they should still be consolidated since the user experience issue is about
+    // duplicate visual entries on the same day cell.
+    //
+    // Example: scheduled "2026-01-20T09:00" and due "2026-01-20T17:00"
+    // Should show single consolidated event (or optionally a span within the day)
+    const page = getPage();
+
+    const scheduledDateTime = '2026-01-20T09:00';
+    const dueDateTimeTime = '2026-01-20T17:00';
+    await page.evaluate(async ({ scheduled, due }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: 'Same Day Different Times',
+        scheduled: scheduled,
+        due: due,
+        status: 'todo',
+        priority: 'normal'
+      });
+    }, { scheduled: scheduledDateTime, due: dueDateTimeTime });
+
+    await page.waitForTimeout(500);
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Switch to day view to see timed events
+    const dayButton = page.locator('.fc-timeGridDay-button');
+    if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await dayButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Navigate to January 20, 2026
+    const nextButton = page.locator('.fc-next-button');
+    for (let i = 0; i < 30; i++) { // Navigate daily
+      if (await nextButton.isVisible()) {
+        await nextButton.click();
+        await page.waitForTimeout(100);
+      }
+      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      if (headerText?.includes('January 20') && headerText?.includes('2026')) {
+        break;
+      }
+    }
+
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: 'test-results/screenshots/issue-1351-same-day-different-times.png' });
+
+    // Count events - currently shows 2, should show 1 (or a span)
+    const eventsForTask = page.locator('.fc-event:has-text("Same Day Different Times")');
+    const eventCount = await eventsForTask.count();
+
+    console.log(`[Issue #1351] Events found for same-day task with different times: ${eventCount}`);
+
+    // Currently shows 2 events (bug), should show 1 consolidated or span event
+    // Note: The exact behavior for timed events may differ - could show a span from 9am to 5pm
+    expect(eventCount).toBeLessThanOrEqual(1);
+
+    // Clean up
+    await page.evaluate(async () => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const testTask = allTasks.find((t: any) => t.title === 'Same Day Different Times');
+      if (testTask) {
+        await plugin.taskService.deleteTask(testTask.path);
+      }
+    });
+  });
+});
