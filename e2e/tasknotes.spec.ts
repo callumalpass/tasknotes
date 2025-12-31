@@ -4528,3 +4528,297 @@ Second reference: [[Buy groceries]]
     expect(updatedRV).not.toBe(originalRV);
   });
 });
+
+// ============================================================================
+// Issue #1349: Converting checkboxes to tasks leads to alignment broken
+// https://github.com/anthropics/tasknotes/issues/1349
+// ============================================================================
+test.describe('Nested Checkbox Conversion Alignment (Issue #1349)', () => {
+  test.fixme('should preserve indentation when converting level 2 checkbox to task', async () => {
+    // Issue #1349: https://github.com/anthropics/tasknotes/issues/1349
+    //
+    // BUG: When converting checkboxes at level 2 or higher (nested under parent items),
+    // the alignment/indentation is broken. The resulting task link does not maintain
+    // the same indentation level as the original checkbox.
+    //
+    // ROOT CAUSE: In InstantTaskConvertService.ts, the indentation preservation logic
+    // may not correctly handle all cases of nested checkboxes, particularly when:
+    // - Using tabs vs spaces for indentation
+    // - Deep nesting levels (2+)
+    // - Mixed indentation styles
+    //
+    // EXPECTED: A level 2 checkbox like:
+    //   - Parent item
+    //       - [ ] Nested task
+    // Should convert to:
+    //   - Parent item
+    //       - [[Nested task]]
+    //
+    // ACTUAL: The indentation is broken/misaligned after conversion.
+
+    const page = getPage();
+
+    // Create a test file with nested checkboxes
+    await runCommand(page, 'Create new note');
+    await page.waitForTimeout(500);
+
+    const promptInput = page.locator('.prompt-input');
+    if (await promptInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await promptInput.fill('Issue-1349-Test-Nested-Checkbox');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+    }
+
+    // Switch to source/edit mode for precise text entry
+    await runCommand(page, 'Toggle reading view');
+    await page.waitForTimeout(500);
+
+    // Type a nested checkbox structure
+    // Level 1: "- Parent item"
+    // Level 2: "    - [ ] Nested task to convert"
+    const editor = page.locator('.cm-content, .markdown-source-view');
+    await editor.click();
+    await page.waitForTimeout(200);
+
+    // Clear any existing content and add our test structure
+    await page.keyboard.press('Control+a');
+    await page.waitForTimeout(100);
+
+    // Type the test content with proper indentation
+    await page.keyboard.type('- Parent item\n    - [ ] Nested task level 2\n        - [ ] Nested task level 3', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-before-convert.png' });
+
+    // Get the original content to compare indentation
+    const originalContent = await editor.textContent();
+    console.log('[Issue #1349] Original content before conversion:', originalContent);
+
+    // Place cursor on the level 2 task (line 2)
+    // Move to start, then down to line 2
+    await page.keyboard.press('Control+Home');
+    await page.waitForTimeout(100);
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(100);
+
+    // Look for the instant convert button or use the command
+    const convertButton = page.locator('.instant-convert-button').first();
+    if (await convertButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await convertButton.click();
+    } else {
+      // Fallback to command palette
+      await runCommand(page, 'Convert to TaskNote');
+    }
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-after-convert.png' });
+
+    // Get the converted content
+    const convertedContent = await editor.textContent();
+    console.log('[Issue #1349] Content after conversion:', convertedContent);
+
+    // Verify the indentation is preserved
+    // The converted line should still have 4 spaces of indentation
+    const lines = convertedContent?.split('\n') || [];
+    const convertedLine = lines.find((line: string) => line.includes('[['));
+
+    console.log('[Issue #1349] Converted line:', convertedLine);
+
+    // BUG: The converted line should start with "    - " (4 spaces + bullet)
+    // but the alignment is broken
+    expect(convertedLine).toMatch(/^    - \[\[/);
+  });
+
+  test.fixme('should preserve tab indentation when converting nested checkbox', async () => {
+    // Issue #1349: Tab-based indentation should also be preserved
+    //
+    // Some users use tabs for indentation. The conversion should preserve
+    // the exact indentation characters (tabs vs spaces).
+
+    const page = getPage();
+
+    // Create a test file with tab-indented checkboxes
+    await runCommand(page, 'Create new note');
+    await page.waitForTimeout(500);
+
+    const promptInput = page.locator('.prompt-input');
+    if (await promptInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await promptInput.fill('Issue-1349-Test-Tab-Indent');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+    }
+
+    await runCommand(page, 'Toggle reading view');
+    await page.waitForTimeout(500);
+
+    const editor = page.locator('.cm-content, .markdown-source-view');
+    await editor.click();
+    await page.waitForTimeout(200);
+
+    await page.keyboard.press('Control+a');
+    await page.waitForTimeout(100);
+
+    // Type content with tab indentation
+    await page.keyboard.type('- Parent item');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Tab'); // Use tab for indentation
+    await page.keyboard.type('- [ ] Tab-indented task');
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-tab-before.png' });
+
+    // Move to the nested task line
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(100);
+
+    // Convert the task
+    const convertButton = page.locator('.instant-convert-button').first();
+    if (await convertButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await convertButton.click();
+    } else {
+      await runCommand(page, 'Convert to TaskNote');
+    }
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-tab-after.png' });
+
+    // Get the raw editor content including indentation
+    const convertedContent = await editor.textContent();
+    console.log('[Issue #1349] Tab-indented content after conversion:', convertedContent);
+
+    // The converted line should preserve the tab indentation
+    // BUG: Tab indentation may be lost or converted to spaces incorrectly
+    const lines = convertedContent?.split('\n') || [];
+    const convertedLine = lines.find((line: string) => line.includes('[['));
+
+    // Should start with tab character + bullet + space + link
+    expect(convertedLine).toMatch(/^\t- \[\[/);
+  });
+
+  test.fixme('should preserve alignment for deeply nested checkboxes (level 3+)', async () => {
+    // Issue #1349: Deep nesting (3+ levels) should also preserve alignment
+    //
+    // The bug may be more pronounced at deeper nesting levels.
+
+    const page = getPage();
+
+    await runCommand(page, 'Create new note');
+    await page.waitForTimeout(500);
+
+    const promptInput = page.locator('.prompt-input');
+    if (await promptInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await promptInput.fill('Issue-1349-Test-Deep-Nesting');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+    }
+
+    await runCommand(page, 'Toggle reading view');
+    await page.waitForTimeout(500);
+
+    const editor = page.locator('.cm-content, .markdown-source-view');
+    await editor.click();
+    await page.waitForTimeout(200);
+
+    await page.keyboard.press('Control+a');
+    await page.waitForTimeout(100);
+
+    // Create deeply nested structure (4 levels)
+    const testContent = [
+      '- Level 1 parent',
+      '    - Level 2 item',
+      '        - Level 3 item',
+      '            - [ ] Level 4 task to convert',
+    ].join('\n');
+
+    await page.keyboard.type(testContent, { delay: 20 });
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-deep-before.png' });
+
+    // Navigate to the level 4 task
+    await page.keyboard.press('Control+End');
+    await page.waitForTimeout(100);
+
+    // Convert the task
+    const convertButton = page.locator('.instant-convert-button').last();
+    if (await convertButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await convertButton.click();
+    } else {
+      await runCommand(page, 'Convert to TaskNote');
+    }
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-deep-after.png' });
+
+    const convertedContent = await editor.textContent();
+    console.log('[Issue #1349] Deep nesting after conversion:', convertedContent);
+
+    const lines = convertedContent?.split('\n') || [];
+    const convertedLine = lines.find((line: string) => line.includes('[['));
+
+    console.log('[Issue #1349] Deeply nested converted line:', convertedLine);
+
+    // Should have 12 spaces (3 levels * 4 spaces) + bullet + space + link
+    // BUG: Deep nesting alignment is broken
+    expect(convertedLine).toMatch(/^            - \[\[/);
+  });
+
+  test.fixme('should preserve bullet style when converting nested checkbox', async () => {
+    // Issue #1349 related: The list marker style (-, *, +) should be preserved
+    //
+    // If the user uses different bullet styles, conversion should maintain them.
+
+    const page = getPage();
+
+    await runCommand(page, 'Create new note');
+    await page.waitForTimeout(500);
+
+    const promptInput = page.locator('.prompt-input');
+    if (await promptInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await promptInput.fill('Issue-1349-Test-Bullet-Style');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+    }
+
+    await runCommand(page, 'Toggle reading view');
+    await page.waitForTimeout(500);
+
+    const editor = page.locator('.cm-content, .markdown-source-view');
+    await editor.click();
+    await page.waitForTimeout(200);
+
+    await page.keyboard.press('Control+a');
+    await page.waitForTimeout(100);
+
+    // Use asterisk bullet style
+    await page.keyboard.type('* Parent with asterisk\n    * [ ] Nested task with asterisk', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-asterisk-before.png' });
+
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(100);
+
+    const convertButton = page.locator('.instant-convert-button').first();
+    if (await convertButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await convertButton.click();
+    } else {
+      await runCommand(page, 'Convert to TaskNote');
+    }
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1349-asterisk-after.png' });
+
+    const convertedContent = await editor.textContent();
+    console.log('[Issue #1349] Asterisk style after conversion:', convertedContent);
+
+    const lines = convertedContent?.split('\n') || [];
+    const convertedLine = lines.find((line: string) => line.includes('[['));
+
+    // Should use asterisk style: "    * [[link]]"
+    // BUG: May incorrectly use dash instead of asterisk
+    expect(convertedLine).toMatch(/^    \* \[\[/);
+  });
+});
