@@ -1481,6 +1481,69 @@ test.describe('Pomodoro Timer Interaction', () => {
   });
 });
 
+// ============================================================================
+// POMODORO TAGGING TESTS (Issue #1342)
+// These tests verify the optional tagging system for Pomodoro sessions
+// ============================================================================
+
+test.describe('Pomodoro Session Tags', () => {
+  test('should show tag input in pomodoro timer view', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open pomodoro timer');
+    await page.waitForTimeout(1000);
+
+    // The pomodoro view should be visible
+    const pomodoroView = page.locator('.pomodoro-view');
+    await expect(pomodoroView).toBeVisible({ timeout: 10000 });
+
+    // Look for tag input field or tag selector in the pomodoro view
+    // This should be near the task selector
+    const tagInput = page.locator('.pomodoro-view [class*="tag-input"], .pomodoro-view [class*="tag-select"], .pomodoro-view input[placeholder*="tag"]');
+    await expect(tagInput).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/pomodoro-tag-input.png' });
+  });
+
+  test('should allow adding tags to a pomodoro session', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open pomodoro timer');
+    await page.waitForTimeout(1000);
+
+    const pomodoroView = page.locator('.pomodoro-view');
+    await expect(pomodoroView).toBeVisible({ timeout: 10000 });
+
+    // Find and interact with tag input
+    const tagInput = page.locator('.pomodoro-view [class*="tag-input"], .pomodoro-view input[placeholder*="tag"]');
+    await expect(tagInput).toBeVisible({ timeout: 5000 });
+
+    // Type a tag
+    await tagInput.fill('#learning');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
+
+    // Verify tag was added (should appear as a chip/token)
+    const tagChip = page.locator('.pomodoro-view [class*="tag-chip"]:has-text("learning"), .pomodoro-view [class*="tag-token"]:has-text("learning")');
+    await expect(tagChip).toBeVisible({ timeout: 3000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/pomodoro-tag-added.png' });
+  });
+
+  test('should display tags in pomodoro statistics', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open pomodoro statistics');
+    await page.waitForTimeout(1000);
+
+    // Look for tag breakdown/filter in statistics
+    const tagStats = page.locator('[class*="tag-stats"], [class*="tag-breakdown"], [class*="stats-by-tag"]');
+    await expect(tagStats).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/pomodoro-stats-tags.png' });
+  });
+});
+
 test.describe('Calendar Event Color Coding', () => {
   test('should show tasks with status-based colors', async () => {
     const page = getPage();
