@@ -423,5 +423,23 @@
         "defaultCollapsed": false
       }
     ]
-  }
+  },
+  "pomodoroState": {
+    "isRunning": false,
+    "timeRemaining": 1498,
+    "currentSession": {
+      "id": "1767137957823",
+      "startTime": "2025-12-31T10:39:17.823+11:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2025-12-31T10:39:17.823+11:00",
+          "endTime": "2025-12-31T10:39:20.146+11:00"
+        }
+      ]
+    }
+  },
+  "lastPomodoroDate": "2025-12-30"
 }

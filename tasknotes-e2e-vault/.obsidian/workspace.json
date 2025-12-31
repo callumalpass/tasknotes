@@ -26,8 +26,8 @@
             "state": {
               "type": "tasknotes-stats-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "tasknotes-stats-view"
+              "icon": "bar-chart-4",
+              "title": "Statistics"
             }
           },
           {
@@ -36,8 +36,8 @@
             "state": {
               "type": "tasknotes-pomodoro-stats-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "tasknotes-pomodoro-stats-view"
+              "icon": "bar-chart",
+              "title": "Pomodoro stats"
             }
           },
           {
@@ -46,8 +46,8 @@
             "state": {
               "type": "tasknotes-pomodoro-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "tasknotes-pomodoro-view"
+              "icon": "clock",
+              "title": "Pomodoro"
             }
           },
           {
@@ -69,15 +69,67 @@
             "state": {
               "type": "bases",
               "state": {
-                "file": "TaskNotes/Views/kanban-default.base",
-                "viewName": "Kanban"
+                "file": "TaskNotes/Views/calendar-default.base",
+                "viewName": "Calendar"
               },
               "icon": "tasknotes-simple",
-              "title": "kanban-default"
+              "title": "calendar-default"
+            }
+          },
+          {
+            "id": "8604433216f15ddd",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/mini-calendar-default.base",
+                "viewName": "Due"
+              },
+              "icon": "tasknotes-simple",
+              "title": "mini-calendar-default"
+            }
+          },
+          {
+            "id": "be186b52de2db43b",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/mini-calendar-default.base",
+                "viewName": "Due"
+              },
+              "icon": "tasknotes-simple",
+              "title": "mini-calendar-default"
+            }
+          },
+          {
+            "id": "c5e6109f3b53718b",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/mini-calendar-default.base",
+                "viewName": "Due"
+              },
+              "icon": "tasknotes-simple",
+              "title": "mini-calendar-default"
+            }
+          },
+          {
+            "id": "55ba482ae0af65e9",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/calendar-default.base",
+                "viewName": "Calendar"
+              },
+              "icon": "tasknotes-simple",
+              "title": "calendar-default"
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 9
       }
     ],
     "direction": "vertical"
@@ -182,19 +234,21 @@
       "tasknotes:Create new task": false
     }
   },
-  "active": "4d1c05999e747f56",
+  "active": "55ba482ae0af65e9",
   "lastOpenFiles": [
-    "TaskNotes/Views/mini-calendar-default.base",
-    "TaskNotes/Views/kanban-default.base",
-    "TaskNotes/Views/tasks-default.base",
     "TaskNotes/Views/relationships.base",
     "TaskNotes/Views/calendar-default.base",
-    "TaskNotes/Weekly team meeting.md",
-    "TaskNotes/Review project proposal.md",
-    "TaskNotes/Views/agenda-default.base",
+    "TaskNotes/Views/kanban-default.base",
     "TaskNotes/Buy groceries.md",
+    "TaskNotes/Views/tasks-default.base",
+    "TaskNotes/Views/mini-calendar-default.base",
+    "TaskNotes/Views/agenda-default.base",
     "TaskNotes/Daily standup.md",
     "TaskNotes/Code review PR 123.md",
+    "TaskNotes/Weekly team meeting.md",
+    "TaskNotes/Deploy authentication update.md",
+    "TaskNotes/Write documentation.md",
+    "TaskNotes/Review project proposal.md",
     "2026-01-01.md",
     "2025-12-31.md",
     "Welcome.md",
