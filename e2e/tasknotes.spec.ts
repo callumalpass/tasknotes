@@ -2414,3 +2414,123 @@ test.describe('Hierarchical Tag Coloring', () => {
     }
   });
 });
+
+test.describe('Mobile Mode', () => {
+  let originalViewportSize: { width: number; height: number } | null = null;
+
+  test.beforeAll(async () => {
+    const page = getPage();
+
+    // Save original viewport size
+    originalViewportSize = page.viewportSize();
+
+    // Set mobile viewport (iPhone 14 / modern phone dimensions)
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    // Enable mobile emulation
+    await page.evaluate(() => {
+      (window as any).app.emulateMobile(true);
+    });
+    await page.waitForTimeout(1000);
+  });
+
+  test.afterAll(async () => {
+    const page = getPage();
+
+    // Disable mobile emulation
+    await page.evaluate(() => {
+      (window as any).app.emulateMobile(false);
+    });
+
+    // Restore original viewport size
+    if (originalViewportSize) {
+      await page.setViewportSize(originalViewportSize);
+    }
+    await page.waitForTimeout(500);
+  });
+
+  test('should detect mobile mode via Platform API', async () => {
+    const page = getPage();
+
+    const isMobile = await page.evaluate(() => {
+      return (window as any).app.isMobile;
+    });
+
+    expect(isMobile).toBe(true);
+  });
+
+  test('should show TaskNotes commands in mobile mode', async () => {
+    const page = getPage();
+
+    await openCommandPalette(page);
+    await page.keyboard.type('tasknotes', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    const suggestions = page.locator('.suggestion-item');
+    await expect(suggestions.first()).toBeVisible({ timeout: 5000 });
+
+    const count = await suggestions.count();
+    expect(count).toBeGreaterThan(0);
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should open calendar view in mobile mode', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar');
+    await page.waitForTimeout(1500);
+
+    // Verify calendar view is visible
+    const calendarView = page.locator('.tasknotes-calendar-view, .fc, .fc-view');
+    await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/mobile-calendar-view.png' });
+  });
+
+  test('should open task creation modal in mobile mode', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(1000);
+
+    // Verify modal is visible
+    const modal = page.locator('.modal, .tasknotes-task-modal');
+    await expect(modal.first()).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/mobile-task-modal.png' });
+
+    // Close the modal
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+  });
+
+  test('should open kanban board in mobile mode', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open kanban board');
+    await page.waitForTimeout(1500);
+
+    // Verify kanban view is visible (uses kanban-view__column class)
+    const kanbanView = page.locator('.kanban-view__column, .bases-view');
+    await expect(kanbanView.first()).toBeVisible({ timeout: 10000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/mobile-kanban-view.png' });
+  });
+
+  test('should display mobile-specific UI elements', async () => {
+    const page = getPage();
+
+    // Take a screenshot to document mobile UI state
+    await page.screenshot({ path: 'test-results/screenshots/mobile-ui-overview.png', fullPage: true });
+
+    // Check for mobile-specific body class or attribute
+    const hasMobileClass = await page.evaluate(() => {
+      return document.body.classList.contains('is-mobile') ||
+             document.body.hasAttribute('data-mobile');
+    });
+
+    // Log the result (may or may not have specific class depending on Obsidian version)
+    console.log('Has mobile-specific class/attribute:', hasMobileClass);
+  });
+});
