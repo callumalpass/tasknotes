@@ -481,6 +481,8 @@ views:
 
 Used by the **Agenda** command to display tasks in a list-based agenda view.
 
+Note: Property-based events are disabled by default to avoid duplicate entries when tasks already have due/scheduled dates.
+
 ```yaml
 # Agenda
 
@@ -506,6 +508,8 @@ views:
       - file.name
       - recurrence
       - complete_instances
+    options:
+      showPropertyBasedEvents: false
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7

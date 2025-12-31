@@ -67,6 +67,12 @@ Example:
 
 ## Fixed
 
+- (#1028, #1140, #1152, #1354, #1362) Fixed duplicate task entries appearing in Agenda view
+  - Tasks were shown twice: once as TaskNotes events and again as property-based events with a file icon
+  - Changed default Agenda template to disable property-based events (`showPropertyBasedEvents: false`)
+  - Users can re-enable property-based events in view settings if needed for non-task date properties
+  - Thanks to @YIRU69, @jhedlund, @dblinnikov, @Snakiest, @WeiYiAcc, @JacksonMcDonaldDev, @jimbo108108, and @krelltunez for reporting
+
 - (#1386) Fixed `timeEstimateCategory` formula showing "Long (>2h)" instead of "No estimate" for new tasks
   - The condition didn't properly handle null values when `timeEstimate` property is unset
   - Also fixed the same issue in `trackingStatus` formula

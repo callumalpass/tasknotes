@@ -659,6 +659,8 @@ views:
     name: "Agenda"
     order:
 ${orderYaml}
+    options:
+      showPropertyBasedEvents: false
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7
