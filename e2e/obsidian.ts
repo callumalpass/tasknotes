@@ -66,17 +66,19 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     const vaultUri = `obsidian://open?path=${encodeURIComponent(E2E_VAULT_DIR)}`;
 
     // Pass the vault path directly as an argument
+    // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
+    const userDataDir = path.join(PROJECT_ROOT, '.obsidian-config-e2e');
     obsidianProcess = spawn(obsidianBinary, [
       '--no-sandbox',
       `--remote-debugging-port=${remoteDebuggingPort}`,
+      `--user-data-dir=${userDataDir}`,
       vaultUri,
     ], {
       cwd: UNPACKED_DIR,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: {
         ...process.env,
-        // Set home to a temp directory to avoid using user's vault config
-        OBSIDIAN_CONFIG_DIR: path.join(PROJECT_ROOT, '.obsidian-config-e2e'),
+        OBSIDIAN_CONFIG_DIR: userDataDir,
       },
     });
 
