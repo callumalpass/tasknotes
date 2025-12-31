@@ -1,6 +1,7 @@
 import { App, setIcon } from "obsidian";
 import { ContextMenu } from "./ContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
+import { addDaysToDateTime } from "../utils/dateUtils";
 
 export interface DateOption {
 	label: string;
@@ -132,28 +133,27 @@ export class DateContextMenu {
 		const options: DateOption[] = [];
 
 		if (this.options.currentValue) {
-			const currentDate = (window as any).moment(this.options.currentValue);
 			options.push({
 				label: this.t("contextMenus.date.increment.plusOneDay", "+1 day"),
-				value: currentDate.clone().add(1, "day").format("YYYY-MM-DD"),
+				value: addDaysToDateTime(this.options.currentValue, 1),
 				icon: "plus",
 				category: "increment",
 			});
 			options.push({
 				label: this.t("contextMenus.date.increment.minusOneDay", "-1 day"),
-				value: currentDate.clone().subtract(1, "day").format("YYYY-MM-DD"),
+				value: addDaysToDateTime(this.options.currentValue, -1),
 				icon: "minus",
 				category: "increment",
 			});
 			options.push({
 				label: this.t("contextMenus.date.increment.plusOneWeek", "+1 week"),
-				value: currentDate.clone().add(1, "week").format("YYYY-MM-DD"),
+				value: addDaysToDateTime(this.options.currentValue, 7),
 				icon: "plus-circle",
 				category: "increment",
 			});
 			options.push({
 				label: this.t("contextMenus.date.increment.minusOneWeek", "-1 week"),
-				value: currentDate.clone().subtract(1, "week").format("YYYY-MM-DD"),
+				value: addDaysToDateTime(this.options.currentValue, -7),
 				icon: "minus-circle",
 				category: "increment",
 			});

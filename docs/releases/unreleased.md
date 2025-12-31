@@ -115,3 +115,8 @@ Example:
   - After editing task metadata, cards would jump to "None" column until Obsidian reload
   - Column assignment now uses Bases' computed grouping instead of cached formula outputs
   - Thanks to @bailob for the fix
+
+- (#1352) Fixed date context menu not preserving time when using increment options
+  - Using +1 day, -1 day, +1 week, or -1 week on a task with a time (e.g., `2025-12-10T16:00`) now preserves the time
+  - Previously the time would be stripped, changing `2025-12-10T16:00` to `2025-12-11` instead of `2025-12-11T16:00`
+  - Thanks to @cathywu for the feature request
