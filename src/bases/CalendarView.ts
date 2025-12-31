@@ -1809,21 +1809,11 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	onunload(): void {
-		// Save the current view type to config on unload (safe here, won't trigger recreation)
-		if (this.calendar && this.config) {
-			const currentViewType = this.calendar.view?.type;
-			if (currentViewType) {
-				try {
-					const storedViewType = this.config.get('calendarView');
-					if (storedViewType !== currentViewType) {
-						this.config.set('calendarView', currentViewType);
-						console.debug('[TaskNotes][CalendarView] Saved view type on unload:', currentViewType);
-					}
-				} catch (error) {
-					console.debug('[TaskNotes][CalendarView] Failed to save view type on unload:', error);
-				}
-			}
-		}
+		// Note: We intentionally do NOT call config.set() here (issue #1397)
+		// The Bases API has a bug where config objects can point to wrong files,
+		// causing view corruption when config.set() writes to unrelated .base files.
+		// View type is preserved via ephemeral state (getEphemeralState/setEphemeralState)
+		// and users can set their default view in the .base file's calendarView option.
 
 		// Component.register() calls will be automatically cleaned up
 

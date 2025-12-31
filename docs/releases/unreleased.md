@@ -75,6 +75,7 @@ Example:
 - (#1397) Fixed Bases views (Kanban, Calendar, Task List) resetting to Calendar view after a few minutes
   - Views would show "?" in the Views menu due to view type mismatch
   - Caused by typo in view type properties not matching registration IDs
+  - Also fixed CalendarView corrupting other view files when saving state on unload
   - Thanks to @music-soul1-1 for reporting
 
 - (#1398) Fixed overdue highlight showing on completed tasks
