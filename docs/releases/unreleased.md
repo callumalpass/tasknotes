@@ -76,7 +76,7 @@ Example:
 - (#1386) Fixed `timeEstimateCategory` formula showing "Long (>2h)" instead of "No estimate" for new tasks
   - The condition didn't properly handle null values when `timeEstimate` property is unset
   - Also fixed the same issue in `trackingStatus` formula
-  - Thanks to @nicou for reporting and suggesting the fix
+  - Thanks to @nicou for reporting and @osxisl for the PR
 
 - (#1397) Fixed Bases views (Kanban, Calendar, Task List) resetting to Calendar view after a few minutes
   - Views would show "?" in the Views menu due to view type mismatch
@@ -105,3 +105,13 @@ Example:
   - Tasks created while the Pomodoro view was open would not appear in the task selector
   - Improved metadata cache synchronization to properly wait for new files to be indexed
   - Thanks to @Ghosthael for reporting
+
+- (#1344) Fixed "Unsaved Changes" popup appearing randomly when closing task edit modal
+  - The popup would appear even when no changes were made to the task
+  - Caused by inconsistent trailing whitespace normalization when comparing details content
+  - Thanks to @hasanyilmaz for reporting
+
+- (#1402) Fixed Kanban swimlane view showing tasks in wrong column when grouped by formula
+  - After editing task metadata, cards would jump to "None" column until Obsidian reload
+  - Column assignment now uses Bases' computed grouping instead of cached formula outputs
+  - Thanks to @bailob for the fix
