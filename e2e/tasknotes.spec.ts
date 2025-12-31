@@ -2732,10 +2732,10 @@ test.describe('Priority Color Issues (#1036)', () => {
     }
   });
 
-  test('due events should not be draggable (by design)', async () => {
-    // Issue #1036 mentions that due dates cannot be dragged like scheduled dates.
-    // This is intentional - createDueEvent sets editable: false.
-    // Documenting this as expected behavior.
+  test('due events should be draggable (fix #1036)', async () => {
+    // Issue #1036 fix: due dates can now be dragged in calendar view.
+    // Previously createDueEvent set editable: false, but this was changed
+    // to allow users to reschedule due dates by dragging.
     const page = getPage();
 
     await runCommand(page, 'Open calendar view');
@@ -2747,16 +2747,16 @@ test.describe('Priority Color Issues (#1036)', () => {
     if (dueCount > 0) {
       const firstDueEvent = dueEvents.first();
 
-      // Due events should not have the draggable class
+      // Due events should now have the draggable class
       const isDraggable = await firstDueEvent.evaluate(el => {
         // FullCalendar adds fc-event-draggable class to editable events
         return el.classList.contains('fc-event-draggable');
       }).catch(() => false);
 
-      // Due events are intentionally not draggable
-      expect(isDraggable).toBe(false);
+      // Due events are now draggable (fix #1036)
+      expect(isDraggable).toBe(true);
 
-      await page.screenshot({ path: 'test-results/screenshots/issue-1036-due-not-draggable.png' });
+      await page.screenshot({ path: 'test-results/screenshots/issue-1036-due-draggable.png' });
     }
   });
 
