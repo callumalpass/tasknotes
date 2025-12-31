@@ -158,6 +158,7 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	defaultShowScheduled: true,
 	defaultShowDue: true,
 	defaultShowDueWhenScheduled: true,
+	defaultShowScheduledToDueSpan: false, // Off by default - opt-in feature
 	defaultShowTimeEntries: false,
 	defaultShowRecurring: true,
 	defaultShowICSEvents: true,

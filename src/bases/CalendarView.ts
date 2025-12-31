@@ -108,6 +108,7 @@ export class CalendarView extends BasesViewBase {
 		// Events
 		showScheduled: boolean;
 		showDue: boolean;
+		showScheduledToDueSpan: boolean;
 		showRecurring: boolean;
 		showTimeEntries: boolean;
 		showTimeblocks: boolean;
@@ -167,7 +168,8 @@ export class CalendarView extends BasesViewBase {
 		this.viewOptions = {
 			// Events
 			showScheduled: calendarSettings.defaultShowScheduled,
-			showDue: calendarSettings.defaultShowDue, 
+			showDue: calendarSettings.defaultShowDue,
+			showScheduledToDueSpan: calendarSettings.defaultShowScheduledToDueSpan,
 			showRecurring: calendarSettings.defaultShowRecurring,
 			showTimeEntries: calendarSettings.defaultShowTimeEntries,
 			showTimeblocks: calendarSettings.defaultShowTimeblocks,
@@ -342,6 +344,7 @@ export class CalendarView extends BasesViewBase {
 		try {
 			this.viewOptions.showScheduled = this.config.get('showScheduled') ?? this.viewOptions.showScheduled;
 			this.viewOptions.showDue = this.config.get('showDue') ?? this.viewOptions.showDue;
+			this.viewOptions.showScheduledToDueSpan = this.config.get('showScheduledToDueSpan') ?? this.viewOptions.showScheduledToDueSpan;
 			this.viewOptions.showRecurring = this.config.get('showRecurring') ?? this.viewOptions.showRecurring;
 			this.viewOptions.showTimeEntries = this.config.get('showTimeEntries') ?? this.viewOptions.showTimeEntries;
 			this.viewOptions.showTimeblocks = this.config.get('showTimeblocks') ?? this.viewOptions.showTimeblocks;
@@ -787,6 +790,7 @@ export class CalendarView extends BasesViewBase {
 		const eventConfig = {
 			showScheduled: this.viewOptions.showScheduled,
 			showDue: this.viewOptions.showDue,
+			showScheduledToDueSpan: this.viewOptions.showScheduledToDueSpan,
 			showRecurring: this.viewOptions.showRecurring,
 			showTimeEntries: this.viewOptions.showTimeEntries,
 			showTimeblocks: this.viewOptions.showTimeblocks,

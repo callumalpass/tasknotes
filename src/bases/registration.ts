@@ -370,6 +370,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										max: 10,
 										step: 1,
 									},
+									{
+										type: "toggle",
+										key: "showScheduledToDueSpan",
+										displayName: t("layout.spanScheduledToDue"),
+										default: calendarSettings.defaultShowScheduledToDueSpan,
+									},
 								],
 							},
 							{

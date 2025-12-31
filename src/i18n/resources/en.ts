@@ -246,6 +246,7 @@ export const en: TranslationTree = {
 					eventMaxStack: "Max stacked events (week/day view, 0 = unlimited)",
 					dayMaxEvents: "Max events per day (month view, 0 = auto)",
 					dayMaxEventRows: "Max event rows per day (month view, 0 = unlimited)",
+					spanScheduledToDue: "Span tasks between scheduled and due dates",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Start date property",

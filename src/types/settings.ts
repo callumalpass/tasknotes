@@ -307,6 +307,7 @@ export interface CalendarViewSettings {
 	defaultShowScheduled: boolean;
 	defaultShowDue: boolean;
 	defaultShowDueWhenScheduled: boolean;
+	defaultShowScheduledToDueSpan: boolean; // Show multi-day span from scheduled to due
 	defaultShowTimeEntries: boolean;
 	defaultShowRecurring: boolean;
 	defaultShowICSEvents: boolean;

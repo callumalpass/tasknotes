@@ -65,6 +65,12 @@ Example:
   - Reduces visual redundancy when the column already indicates the status
   - Thanks to @l-mb for the feature request and implementation
 
+- (#1401) Calendar view option to span tasks between scheduled and due dates
+  - New "Span tasks between scheduled and due dates" toggle in Calendar view Layout settings
+  - When enabled, tasks with both scheduled and due dates display as multi-day bars
+  - Provides Gantt chart-style visualization for project planning
+  - Thanks to @0atman for the feature request
+
 ## Fixed
 
 - (#1028, #1140, #1152, #1354, #1362) Fixed duplicate task entries appearing in Agenda view
