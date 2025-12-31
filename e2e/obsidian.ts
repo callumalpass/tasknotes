@@ -11,6 +11,34 @@ export interface ObsidianApp {
   browser?: Browser;
   process?: ChildProcess;
   page: Page;
+  isExistingInstance?: boolean;
+}
+
+async function tryConnectExisting(remoteDebuggingPort: number): Promise<string | null> {
+  try {
+    const http = await import('http');
+    return new Promise((resolve) => {
+      const req = http.get(`http://localhost:${remoteDebuggingPort}/json/version`, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            resolve(json.webSocketDebuggerUrl || null);
+          } catch {
+            resolve(null);
+          }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.setTimeout(2000, () => {
+        req.destroy();
+        resolve(null);
+      });
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function launchObsidian(): Promise<ObsidianApp> {
@@ -22,47 +50,56 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     );
   }
 
-  // Launch Obsidian manually and connect via CDP
   const remoteDebuggingPort = 9222;
 
-  // Use obsidian:// URI to open specific vault
-  const vaultUri = `obsidian://open?path=${encodeURIComponent(E2E_VAULT_DIR)}`;
-
-  // Pass the vault path directly as an argument
-  const obsidianProcess = spawn(obsidianBinary, [
-    '--no-sandbox',
-    `--remote-debugging-port=${remoteDebuggingPort}`,
-    vaultUri,
-  ], {
-    cwd: UNPACKED_DIR,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: {
-      ...process.env,
-      // Set home to a temp directory to avoid using user's vault config
-      OBSIDIAN_CONFIG_DIR: path.join(PROJECT_ROOT, '.obsidian-config-e2e'),
-    },
-  });
-
-  // Wait for DevTools to be ready
+  // First, try to connect to an already running instance
+  const existingCdpUrl = await tryConnectExisting(remoteDebuggingPort);
   let cdpUrl = '';
-  await new Promise<void>((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error('Timeout waiting for DevTools')), 30000);
+  let obsidianProcess: ChildProcess | undefined;
 
-    obsidianProcess.stderr?.on('data', (data: Buffer) => {
-      const output = data.toString();
-      const match = output.match(/DevTools listening on (ws:\/\/[^\s]+)/);
-      if (match) {
-        cdpUrl = match[1];
+  if (existingCdpUrl) {
+    console.log('Found existing Obsidian instance, connecting...');
+    cdpUrl = existingCdpUrl;
+  } else {
+    // Launch Obsidian manually and connect via CDP
+    // Use obsidian:// URI to open specific vault
+    const vaultUri = `obsidian://open?path=${encodeURIComponent(E2E_VAULT_DIR)}`;
+
+    // Pass the vault path directly as an argument
+    obsidianProcess = spawn(obsidianBinary, [
+      '--no-sandbox',
+      `--remote-debugging-port=${remoteDebuggingPort}`,
+      vaultUri,
+    ], {
+      cwd: UNPACKED_DIR,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        // Set home to a temp directory to avoid using user's vault config
+        OBSIDIAN_CONFIG_DIR: path.join(PROJECT_ROOT, '.obsidian-config-e2e'),
+      },
+    });
+
+    // Wait for DevTools to be ready
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Timeout waiting for DevTools')), 30000);
+
+      obsidianProcess!.stderr?.on('data', (data: Buffer) => {
+        const output = data.toString();
+        const match = output.match(/DevTools listening on (ws:\/\/[^\s]+)/);
+        if (match) {
+          cdpUrl = match[1];
+          clearTimeout(timeout);
+          resolve();
+        }
+      });
+
+      obsidianProcess!.on('error', (err) => {
         clearTimeout(timeout);
-        resolve();
-      }
+        reject(err);
+      });
     });
-
-    obsidianProcess.on('error', (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-  });
+  }
 
   console.log('Connecting to CDP:', cdpUrl);
 
@@ -139,6 +176,20 @@ export async function launchObsidian(): Promise<ObsidianApp> {
   // The plugin adds its sidebar items and commands after loading
   await page.waitForTimeout(2000);
 
+  // Close any open modals/dialogs that might be blocking the UI
+  // This is especially important when reusing an existing instance
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+  }
+
+  // Click on workspace to ensure focus
+  const workspaceForFocus = page.locator('.workspace');
+  if (await workspaceForFocus.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await workspaceForFocus.click({ position: { x: 100, y: 100 } }).catch(() => {});
+    await page.waitForTimeout(200);
+  }
+
   // Verify TaskNotes is loaded by checking for its ribbon icon or commands
   // Try to verify the plugin is active by checking command availability
   try {
@@ -159,10 +210,15 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     console.warn('Could not verify TaskNotes plugin status:', e);
   }
 
-  return { browser, process: obsidianProcess, page };
+  return { browser, process: obsidianProcess, page, isExistingInstance: !!existingCdpUrl };
 }
 
 export async function closeObsidian(app: ObsidianApp): Promise<void> {
+  // Don't close if we connected to an existing instance - leave it running for the next test run
+  if (app.isExistingInstance) {
+    console.log('Keeping existing Obsidian instance running');
+    return;
+  }
   if (app.browser) {
     // Close all open tabs/pages before closing the browser
     for (const context of app.browser.contexts()) {
@@ -178,6 +234,17 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
 }
 
 export async function openCommandPalette(page: Page): Promise<void> {
+  // Close any existing modals first
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+
+  // Click on workspace to ensure focus
+  const workspace = page.locator('.workspace');
+  if (await workspace.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await workspace.click({ position: { x: 10, y: 10 } }).catch(() => {});
+    await page.waitForTimeout(100);
+  }
+
   // Use Ctrl+P to open command palette
   await page.keyboard.press('Control+p');
   await page.waitForSelector('.prompt', { timeout: 5000 });

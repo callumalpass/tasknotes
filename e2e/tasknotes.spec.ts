@@ -25,6 +25,65 @@ function getPage(): Page {
   return app.page;
 }
 
+// Helper to ensure sidebar is expanded
+async function ensureSidebarExpanded(page: Page): Promise<void> {
+  // Check if file-explorer is already visible
+  const fileExplorer = page.locator('.nav-files-container');
+  if (await fileExplorer.isVisible({ timeout: 1000 }).catch(() => false)) {
+    return; // Sidebar is already expanded
+  }
+
+  // Method 1: Look for the "Expand" button which appears when sidebar is collapsed
+  const expandButtonSelectors = [
+    'button:has-text("Expand")',
+    '.sidebar-toggle-button',
+    '[aria-label="Expand"]',
+    '.mod-left-split .sidebar-toggle-button',
+  ];
+
+  for (const selector of expandButtonSelectors) {
+    const expandButton = page.locator(selector).first();
+    if (await expandButton.isVisible({ timeout: 500 }).catch(() => false)) {
+      await expandButton.click();
+      await page.waitForTimeout(500);
+      if (await fileExplorer.isVisible({ timeout: 500 }).catch(() => false)) {
+        return;
+      }
+    }
+  }
+
+  // Method 2: Use Obsidian command to toggle left sidebar
+  await page.keyboard.press('Control+p');
+  await page.waitForSelector('.prompt', { timeout: 3000 }).catch(() => null);
+  const promptInput = page.locator('.prompt-input');
+  if (await promptInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await promptInput.fill('Toggle left sidebar');
+    await page.waitForTimeout(300);
+    const suggestion = page.locator('.suggestion-item').first();
+    if (await suggestion.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(500);
+    } else {
+      await page.keyboard.press('Escape');
+    }
+  }
+
+  // Method 3: Try clicking ribbon icons if sidebar still not visible
+  if (!await fileExplorer.isVisible({ timeout: 500 }).catch(() => false)) {
+    const ribbonIcons = page.locator('.side-dock-ribbon-action');
+    const count = await ribbonIcons.count();
+    for (let i = 0; i < Math.min(count, 5); i++) {
+      const icon = ribbonIcons.nth(i);
+      const ariaLabel = await icon.getAttribute('aria-label').catch(() => '');
+      if (ariaLabel && (ariaLabel.toLowerCase().includes('file') || ariaLabel.toLowerCase().includes('explorer'))) {
+        await icon.click();
+        await page.waitForTimeout(500);
+        break;
+      }
+    }
+  }
+}
+
 test.describe('TaskNotes Plugin', () => {
   test('should load and show commands in command palette', async () => {
     const page = getPage();
@@ -86,6 +145,9 @@ test.describe('TaskNotes Plugin', () => {
 test.describe('TaskNotes Views', () => {
   // Helper to expand TaskNotes and Views folders if needed
   async function expandViewsFolder(page: Page): Promise<void> {
+    // First ensure the sidebar is expanded
+    await ensureSidebarExpanded(page);
+
     // First expand TaskNotes folder if collapsed
     // The folder structure is: .nav-folder > .nav-folder-title (clickable) + .nav-folder-children
     // When collapsed, .nav-folder has class 'is-collapsed'
@@ -115,9 +177,17 @@ test.describe('TaskNotes Views', () => {
   test('should open kanban board via sidebar', async () => {
     const page = getPage();
 
+    // Ensure clean state - close any dropdowns/menus
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
     // First open calendar view to initialize FullCalendar (required for Bases views)
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
+
+    // Close any dropdowns that may have opened and ensure sidebar is visible
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
 
     await expandViewsFolder(page);
 
@@ -296,9 +366,9 @@ test.describe('Task Creation Modal', () => {
     // Screenshot the initial modal state
     await page.screenshot({ path: 'test-results/screenshots/task-modal-initial.png' });
 
-    // Try clicking on the status dropdown
-    const statusDropdown = modal.locator('.tn-status-dropdown, [class*="status"]').first();
-    if (await statusDropdown.isVisible()) {
+    // Try clicking on the status dropdown (use more specific selector)
+    const statusDropdown = modal.locator('.tn-status-dropdown').first();
+    if (await statusDropdown.isVisible({ timeout: 2000 }).catch(() => false)) {
       await statusDropdown.click();
       await page.waitForTimeout(300);
       await page.screenshot({ path: 'test-results/screenshots/task-modal-status-dropdown.png' });
@@ -306,12 +376,14 @@ test.describe('Task Creation Modal', () => {
       await page.waitForTimeout(200);
     }
 
-    // Try clicking on the date picker icon
-    const dateIcon = modal.locator('[aria-label*="date"], [class*="calendar-icon"], svg').first();
-    if (await dateIcon.isVisible()) {
-      await dateIcon.click();
+    // Try clicking on the due date section (look for label or specific class)
+    const dueDateSection = modal.locator('.tn-modal-row:has-text("Due"), [class*="due-date"]').first();
+    if (await dueDateSection.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await dueDateSection.click();
       await page.waitForTimeout(300);
       await page.screenshot({ path: 'test-results/screenshots/task-modal-date-picker.png' });
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
     }
 
     // Close modal
@@ -780,22 +852,50 @@ test.describe('Responsive Layout', () => {
 });
 
 test.describe('Relationships View', () => {
+  // Helper to expand TaskNotes and Views folders
+  async function expandViewsFolderForRelationships(page: Page): Promise<void> {
+    // First ensure the sidebar is expanded
+    await ensureSidebarExpanded(page);
+
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
   test('should open relationships view via sidebar', async () => {
     const page = getPage();
+
+    // Ensure clean state
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
 
     // First open calendar view to initialize FullCalendar (required for Bases views)
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    // Expand Views folder
-    const viewsFolder = page.locator('.nav-folder-title:has-text("Views")');
-    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const isCollapsed = await viewsFolder.locator('..').evaluate(el => el.classList.contains('is-collapsed'));
-      if (isCollapsed) {
-        await viewsFolder.click();
-        await page.waitForTimeout(300);
-      }
-    }
+    // Close any dropdowns
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await expandViewsFolderForRelationships(page);
 
     // Click on relationships in the sidebar
     const relationshipsItem = page.locator('.nav-file-title:has-text("relationships")');
@@ -873,13 +973,32 @@ test.describe('Task Status Toggle', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(500);
 
-    // Expand Views folder and open tasks view
-    const viewsFolder = page.locator('.nav-folder-title:has-text("Views")');
+    // Close any dropdowns
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Ensure sidebar is visible and expand Views folder
+    await ensureSidebarExpanded(page);
+
+    // Expand TaskNotes folder first
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Expand Views folder
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
     if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const isCollapsed = await viewsFolder.locator('..').evaluate(el => el.classList.contains('is-collapsed'));
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
       if (isCollapsed) {
         await viewsFolder.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
       }
     }
 
@@ -1657,11 +1776,19 @@ test.describe('Tag and Project Editing', () => {
   test('should display existing tags on task cards', async () => {
     const page = getPage();
 
-    await runCommand(page, 'Open kanban board');
+    // Initialize calendar first (required for Bases views)
+    await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
+    // Close any dropdowns
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await runCommand(page, 'Open kanban board');
+    await page.waitForTimeout(1500);
+
     // Look for tag elements on task cards
-    const tagElements = page.locator('.task-card .tag, .kanban-card .tag, [class*="tag-pill"], .cm-hashtag');
+    const tagElements = page.locator('.task-card .tag, .kanban-card .tag, [class*="tag-pill"], a.tag');
     const tagCount = await tagElements.count();
 
     await page.screenshot({ path: 'test-results/screenshots/kanban-task-tags.png' });
