@@ -85,12 +85,10 @@ Example:
   - Thanks to @nicou for reporting and @osxisl for the PR
 
 - (#1397) Fixed Bases views (Kanban, Calendar, Task List) resetting to Calendar view after a few minutes
-  - Views would show "?" in the Views menu due to view type mismatch
-  - Caused by typo in view type properties not matching registration IDs
   - Also fixed CalendarView corrupting other view files when saving state on unload
   - Thanks to @music-soul1-1 for reporting
 
-- (#1398) Fixed overdue highlight showing on completed tasks
+- (#1398) Fixed overdue strikethrough showing on completed tasks
   - Completed tasks with past due dates no longer display overdue styling (red highlight)
   - Respects the "Hide completed from overdue" setting which defaults to true
 
@@ -141,3 +139,8 @@ Example:
   - Task creation, editing, timeblock changes, and view option toggles now update immediately
   - Previously these actions waited 5 seconds due to the debounce intended for external file changes
   - The 5-second debounce is now bypassed for direct user actions while still preventing flicker during typing
+
+- Improved visual affordance for Pomodoro timer duration adjustment buttons
+  - The +/- buttons below the timer now have visible backgrounds and borders
+  - Hover states show accent color border for clearer interactivity feedback
+  - Previously buttons were nearly invisible with transparent backgrounds
