@@ -84,15 +84,30 @@ test.describe('TaskNotes Plugin', () => {
 });
 
 test.describe('TaskNotes Views', () => {
-  // Helper to expand Views folder if needed
+  // Helper to expand TaskNotes and Views folders if needed
   async function expandViewsFolder(page: Page): Promise<void> {
-    const viewsFolder = page.locator('.nav-folder-title:has-text("Views")');
+    // First expand TaskNotes folder if collapsed
+    // The folder structure is: .nav-folder > .nav-folder-title (clickable) + .nav-folder-children
+    // When collapsed, .nav-folder has class 'is-collapsed'
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // Check if the parent .nav-folder has is-collapsed
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
     if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
-      // Check if folder is collapsed (has is-collapsed class on parent)
-      const isCollapsed = await viewsFolder.locator('..').evaluate(el => el.classList.contains('is-collapsed'));
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
       if (isCollapsed) {
         await viewsFolder.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
       }
     }
   }
@@ -2154,6 +2169,121 @@ test.describe('Task Dependencies Interface', () => {
       }
 
       await page.keyboard.press('Escape');
+    }
+  });
+});
+
+// ============================================================================
+// HIERARCHICAL TAG COLORING TESTS
+// Issue #1347: Hierarchical tags not colored correctly by external plugins
+// ============================================================================
+
+test.describe('Hierarchical Tag Coloring', () => {
+  test.fixme('hierarchical tag href should contain full tag path for Colored Tags plugin compatibility', async () => {
+    // Issue #1347: Tag coloring not working for hierarchical tags
+    //
+    // The Colored Tags plugin (and similar plugins) colors tags by matching the
+    // href attribute. For a tag like #project/frontend, they use CSS selectors like:
+    //   a.tag[href="#project/frontend" i]
+    //
+    // Currently, TaskNotes renders tags with the full path in both text and href,
+    // which should work. However, the user reports that only the first part gets
+    // colored. This could indicate either:
+    //   1. The href is not being set correctly for hierarchical tags
+    //   2. There's CSS specificity or escaping issues with slashes
+    //   3. The plugin's MutationObserver doesn't see our dynamically added tags
+    //
+    // This test verifies the tag element has the correct structure for plugin compatibility.
+
+    const page = getPage();
+
+    // Open the kanban view to see task cards with tags
+    await runCommand(page, 'Open kanban board');
+    await page.waitForTimeout(1500);
+
+    // Find a tag element that contains a hierarchical tag (with slash)
+    // We created a test task with tag "project/frontend" for this purpose
+    const hierarchicalTag = page.locator('a.tag[href*="/"]').first();
+
+    if (await hierarchicalTag.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // Get the href and text content
+      const href = await hierarchicalTag.getAttribute('href');
+      const text = await hierarchicalTag.textContent();
+
+      console.log('Hierarchical tag found:');
+      console.log('  href:', href);
+      console.log('  text:', text);
+
+      await page.screenshot({ path: 'test-results/screenshots/hierarchical-tag-element.png' });
+
+      // Verify the tag has the correct structure
+      // The href should be the full tag path (e.g., "#project/frontend")
+      expect(href).toBeTruthy();
+      expect(href).toContain('/');
+      expect(href).toMatch(/^#[\w-]+\/[\w-]+/); // Should match #word/word pattern
+
+      // The text should also show the full hierarchical tag
+      expect(text).toBeTruthy();
+      expect(text).toContain('/');
+
+      // The href and text should match (both should be the full tag)
+      // This is important for Colored Tags plugin which uses [href="..."] selector
+      expect(href).toBe(text);
+    } else {
+      console.log('No hierarchical tags found in view - test needs task with hierarchical tag');
+      // Try opening tasks view instead
+      await runCommand(page, 'Open tasks view');
+      await page.waitForTimeout(1500);
+
+      const hierarchicalTagAlt = page.locator('a.tag[href*="/"]').first();
+      if (await hierarchicalTagAlt.isVisible({ timeout: 3000 }).catch(() => false)) {
+        const href = await hierarchicalTagAlt.getAttribute('href');
+        expect(href).toMatch(/^#[\w-]+\/[\w-]+/);
+      } else {
+        // Skip the test if we can't find a hierarchical tag
+        console.log('Skipping: No hierarchical tags visible in any view');
+      }
+    }
+  });
+
+  test.fixme('hierarchical tags should be observable by MutationObserver for plugin styling', async () => {
+    // Issue #1347: Related verification that the tag elements are properly observable
+    //
+    // The Colored Tags plugin uses MutationObserver to watch for new tag elements.
+    // This test verifies that our tags are rendered in a way that triggers the observer.
+    //
+    // The plugin's selector: 'a.tag[href^="#"]'
+    // We need to ensure our tags match this selector.
+
+    const page = getPage();
+
+    await runCommand(page, 'Open kanban board');
+    await page.waitForTimeout(2000);
+
+    // Check that tags have the correct class and href format
+    const tags = page.locator('a.tag');
+    const count = await tags.count();
+
+    if (count > 0) {
+      console.log(`Found ${count} tag elements`);
+
+      for (let i = 0; i < Math.min(count, 5); i++) {
+        const tag = tags.nth(i);
+        const cls = await tag.getAttribute('class');
+        const href = await tag.getAttribute('href');
+        const text = await tag.textContent();
+
+        console.log(`Tag ${i}: class="${cls}", href="${href}", text="${text}"`);
+
+        // Verify required attributes for Colored Tags plugin
+        expect(cls).toContain('tag');
+        expect(href).toBeTruthy();
+        expect(href).toMatch(/^#/); // href must start with #
+      }
+
+      await page.screenshot({ path: 'test-results/screenshots/tag-elements-structure.png' });
+    } else {
+      console.log('No tags found in view');
     }
   });
 });
