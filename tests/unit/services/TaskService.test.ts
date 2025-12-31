@@ -293,6 +293,33 @@ describe('TaskService', () => {
       );
     });
 
+    // Issue #1334: Support {{currentNotePath}} for manual-creation context (Create new inline task command)
+    // Currently, only 'inline-conversion' supports {{currentNotePath}}. This test documents the expected
+    // behavior when the feature is implemented for the 'Create new inline task' command.
+    it('should handle manual-creation context with currentNotePath variable (#1334)', async () => {
+      // When the feature is implemented, inlineTaskConvertFolder should apply to both
+      // 'inline-conversion' and 'manual-creation' contexts when the task is being created inline
+      mockPlugin.settings.inlineTaskConvertFolder = 'Tasks/{{currentNotePath}}';
+
+      const mockCurrentFile = new TFile('Projects/MyProject/note.md');
+      mockCurrentFile.parent = { path: 'Projects/MyProject' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Manual Inline Task',
+        creationContext: 'manual-creation' // This is what TaskCreationModal uses
+      };
+
+      await taskService.createTask(taskData);
+
+      // Currently this will create the task in the default tasksFolder, not respecting {{currentNotePath}}
+      // When #1334 is fixed, manual-creation should also respect inlineTaskConvertFolder with {{currentNotePath}}
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Tasks/Projects/MyProject/manual-inline-task.md',
+        expect.stringContaining('title: Manual Inline Task')
+      );
+    });
+
     it('should handle project template variables correctly by extracting basenames from wikilinks', async () => {
       mockPlugin.settings.tasksFolder = 'projects/{{context}}/{{project}}/tasks';
 
