@@ -2443,9 +2443,9 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Opens the task edit modal for a specific task
 	 */
-	async openTaskEditModal(task: TaskInfo) {
+	async openTaskEditModal(task: TaskInfo, onTaskUpdated?: (task: TaskInfo) => void) {
 		// With native cache, task data is always current - no need to refetch
-		new TaskEditModal(this.app, this, { task }).open();
+		new TaskEditModal(this.app, this, { task, onTaskUpdated }).open();
 	}
 
 	/**
@@ -2656,13 +2656,16 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Open time entry editor modal for a specific task
 	 */
-	openTimeEntryEditor(task: TaskInfo): void {
+	openTimeEntryEditor(task: TaskInfo, onSave?: () => void): void {
 		const modal = new TimeEntryEditorModal(this.app, this, task, async (updatedEntries) => {
 			try {
 				// Save to file
 				await this.taskService.updateTask(task, {
 					timeEntries: updatedEntries,
 				});
+
+				// Signal immediate update before triggering data change
+				onSave?.();
 
 				// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
 				// We just need to trigger EVENT_DATA_CHANGED

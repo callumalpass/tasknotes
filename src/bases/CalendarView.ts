@@ -103,6 +103,9 @@ export class CalendarView extends BasesViewBase {
 
 	// Track if this is the first data update after load (should be immediate)
 	private _isFirstDataUpdate = true;
+
+	// Track previous config values to detect user-initiated toggle changes
+	private _previousConfigSnapshot: string | null = null;
 	
 	private viewOptions: {
 		// Events
@@ -217,6 +220,8 @@ export class CalendarView extends BasesViewBase {
 	onload(): void {
 		// Read view options now that config is available
 		this.readViewOptions();
+		// Initialize config snapshot for change detection
+		this._previousConfigSnapshot = this.getConfigSnapshot();
 		// Call parent onload which sets up container and listeners
 		super.onload();
 	}
@@ -262,6 +267,12 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
+		// If config toggles changed, render immediately (user toggled a view option)
+		if (this.hasConfigChanged()) {
+			this.render();
+			return;
+		}
+
 		// Otherwise use longer debounce for external changes (typing in notes)
 		this.dataUpdateDebounceTimer = window.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
@@ -279,6 +290,67 @@ export class CalendarView extends BasesViewBase {
 		setTimeout(() => {
 			this._expectingImmediateUpdate = false;
 		}, 2000);
+	}
+
+	/**
+	 * Get a snapshot of config values that affect rendering.
+	 * Used to detect user-initiated toggle changes.
+	 */
+	private getConfigSnapshot(): string {
+		if (!this.config || typeof this.config.get !== 'function') {
+			return '';
+		}
+		// Include all toggle values that would affect what's displayed
+		const values: any[] = [
+			this.config.get('showScheduled'),
+			this.config.get('showDue'),
+			this.config.get('showScheduledToDueSpan'),
+			this.config.get('showRecurring'),
+			this.config.get('showTimeEntries'),
+			this.config.get('showTimeblocks'),
+			this.config.get('showPropertyBasedEvents'),
+		];
+
+		// Include ICS calendar toggles
+		if (this.plugin.icsSubscriptionService) {
+			for (const sub of this.plugin.icsSubscriptionService.getSubscriptions()) {
+				values.push(this.config.get(`showICS_${sub.id}`));
+			}
+		}
+
+		// Include Google calendar toggles
+		if (this.plugin.googleCalendarService) {
+			for (const cal of this.plugin.googleCalendarService.getAvailableCalendars()) {
+				values.push(this.config.get(`showGoogleCalendar_${cal.id}`));
+			}
+		}
+
+		// Include Microsoft calendar toggles
+		if (this.plugin.microsoftCalendarService) {
+			for (const cal of this.plugin.microsoftCalendarService.getAvailableCalendars()) {
+				values.push(this.config.get(`showMicrosoftCalendar_${cal.id}`));
+			}
+		}
+
+		return JSON.stringify(values);
+	}
+
+	/**
+	 * Check if config has changed since last snapshot.
+	 * Returns true if this is likely a user-initiated config change.
+	 */
+	private hasConfigChanged(): boolean {
+		const currentSnapshot = this.getConfigSnapshot();
+		if (this._previousConfigSnapshot === null) {
+			// First time - just store the snapshot
+			this._previousConfigSnapshot = currentSnapshot;
+			return false;
+		}
+		if (currentSnapshot !== this._previousConfigSnapshot) {
+			this._previousConfigSnapshot = currentSnapshot;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -1005,13 +1077,13 @@ export class CalendarView extends BasesViewBase {
 		// Handle timeblock click
 		if (eventType === "timeblock" && timeblock) {
 			const originalDate = format(info.event.start, "yyyy-MM-dd");
-			showTimeblockInfoModal(timeblock, info.event.start, originalDate, this.plugin);
+			showTimeblockInfoModal(timeblock, info.event.start, originalDate, this.plugin, () => this.expectImmediateUpdate());
 			return;
 		}
 
 		// Handle time entry click - left click opens time entry modal
 		if (eventType === "timeEntry" && taskInfo && jsEvent.button === 0) {
-			this.plugin.openTimeEntryEditor(taskInfo);
+			this.plugin.openTimeEntryEditor(taskInfo, () => this.expectImmediateUpdate());
 			return;
 		}
 
@@ -1035,7 +1107,7 @@ export class CalendarView extends BasesViewBase {
 
 		// Handle task click with single/double click detection based on user settings
 		if (taskInfo?.path && jsEvent.button === 0) {
-			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id);
+			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id, () => this.expectImmediateUpdate());
 		}
 	}
 
@@ -1461,7 +1533,10 @@ export class CalendarView extends BasesViewBase {
 					const modal = new TaskCreationModal(
 						this.plugin.app,
 						this.plugin,
-						{ prePopulatedValues: values }
+						{
+							prePopulatedValues: values,
+							onTaskCreated: () => this.expectImmediateUpdate()
+						}
 					);
 					modal.open();
 				});

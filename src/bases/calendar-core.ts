@@ -1248,7 +1248,8 @@ export async function showTimeblockInfoModal(
 	timeblock: TimeBlock,
 	eventDate: Date,
 	originalDate: string | undefined,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	onChange?: () => void
 ): Promise<void> {
 
 	const modal = new TimeblockInfoModal(
@@ -1256,7 +1257,8 @@ export async function showTimeblockInfoModal(
 		plugin,
 		timeblock,
 		eventDate,
-		originalDate
+		originalDate,
+		onChange
 	);
 	modal.open();
 }

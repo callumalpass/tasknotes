@@ -136,3 +136,8 @@ Example:
   - Previously only scheduled dates were draggable; due dates were locked in place
   - Dragging a due event now updates the task's due date property
   - Thanks to @same774 for reporting
+
+- Improved calendar view responsiveness for user interactions
+  - Task creation, editing, timeblock changes, and view option toggles now update immediately
+  - Previously these actions waited 5 seconds due to the debounce intended for external file changes
+  - The 5-second debounce is now bypassed for direct user actions while still preventing flicker during typing
