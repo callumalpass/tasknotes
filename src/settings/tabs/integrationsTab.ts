@@ -882,6 +882,19 @@ export function renderIntegrationsTab(
 					})
 				);
 			}
+
+			// Task creation settings
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.calendarSubscriptions.useICSEndAsDue.name"),
+					desc: translate("settings.integrations.calendarSubscriptions.useICSEndAsDue.description"),
+					getValue: () => plugin.settings.icsIntegration.useICSEndAsDue ?? false,
+					setValue: async (value: boolean) => {
+						plugin.settings.icsIntegration.useICSEndAsDue = value;
+						save();
+					},
+				})
+			);
 		}
 	);
 

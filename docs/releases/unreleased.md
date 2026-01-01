@@ -85,6 +85,20 @@ Example:
   - Now also applies when using the "Create new inline task" command from the command palette
   - Thanks to @kmaustral for the feature request
 
+- (#1264) Option to open Pomodoro timer in mobile sidebar instead of note panel
+  - New "Mobile sidebar" setting in Settings → Features → Pomodoro Timer
+  - Choose between: Note panel (default tab behavior), Left sidebar, or Right sidebar
+  - Allows quick swipe access to the timer without switching notes on mobile devices
+  - Thanks to @Evthestrike for the feature request
+
+- (#1220) Option to use ICS event end time as task due date
+  - New "Use ICS event end time as task due date" toggle in Settings → Integrations → Calendar Subscriptions
+  - When enabled, tasks created from calendar events will have their due date set to the event's end time
+  - For all-day events, uses the event date (not the ICS container end date which is the next day per ICS spec)
+  - For timed events, includes the exact end time
+  - Defaults to disabled to preserve existing behavior
+  - Thanks to @MiserMagus for the feature request
+
 ## Fixed
 
 - (#1384) Fixed title being sanitized even when "Store Task Title in Filename" is disabled

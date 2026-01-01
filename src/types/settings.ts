@@ -121,6 +121,7 @@ export interface TaskNotesSettings {
 	pomodoroSoundEnabled: boolean;
 	pomodoroSoundVolume: number; // 0-100
 	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data
+	pomodoroMobileSidebar: "tab" | "left" | "right"; // where to open pomodoro view on mobile
 	// Editor settings
 	enableTaskLinkOverlay: boolean;
 	enableInstantTaskConvert: boolean;
@@ -279,6 +280,8 @@ export interface ICSIntegrationSettings {
 	enableAutoExport: boolean; // Whether to automatically export tasks to ICS file
 	autoExportPath: string; // Path where the ICS file should be saved
 	autoExportInterval: number; // Export interval in minutes (default: 60)
+	// Task creation from ICS events
+	useICSEndAsDue: boolean; // Whether to use ICS event end time as task due date
 }
 
 export interface CalendarViewSettings {

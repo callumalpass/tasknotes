@@ -1586,6 +1586,10 @@ export const en: TranslationTree = {
 					description: "Template for custom ICS event filenames",
 					placeholder: "{date}-{title}",
 				},
+				useICSEndAsDue: {
+					name: "Use ICS event end time as task due date",
+					description: "When enabled, tasks created from calendar events will have their due date set to the event's end time. For all-day events, the due date will be set to the event date. For timed events, the due date will include the end time.",
+				},
 			},
 			subscriptionsList: {
 				header: "Calendar subscriptions list",

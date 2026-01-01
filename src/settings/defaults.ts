@@ -189,6 +189,8 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	enableAutoExport: false,
 	autoExportPath: "tasknotes-calendar.ics",
 	autoExportInterval: 60, // 60 minutes by default
+	// Task creation defaults
+	useICSEndAsDue: false, // Preserve existing behavior: don't set due date from ICS events
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
