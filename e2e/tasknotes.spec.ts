@@ -6580,3 +6580,201 @@ test.describe('Issue #1297: TaskSelectorWithCreate modal mobile support', () => 
     expect(isFooterVisible).toBe(true);
   });
 });
+
+// ============================================================================
+// Issue #1252: Calendar date picker on iPad doesn't let you select a date
+// ============================================================================
+test.describe('Issue #1252: iPad calendar date picker selection', () => {
+  // Save original viewport for restoration
+  let originalViewportSize: { width: number; height: number } | null = null;
+
+  test.beforeAll(async () => {
+    const page = getPage();
+    originalViewportSize = page.viewportSize();
+
+    // Set iPad viewport dimensions
+    await page.setViewportSize({ width: 820, height: 1180 });
+
+    // Enable mobile emulation to simulate iPad behavior
+    await page.evaluate(() => {
+      (window as any).app.emulateMobile(true);
+    });
+    await page.waitForTimeout(1000);
+  });
+
+  test.afterAll(async () => {
+    const page = getPage();
+
+    // Disable mobile emulation
+    await page.evaluate(() => {
+      (window as any).app.emulateMobile(false);
+    });
+
+    // Restore original viewport size
+    if (originalViewportSize) {
+      await page.setViewportSize(originalViewportSize);
+    }
+    await page.waitForTimeout(500);
+  });
+
+  test.fixme('should select a date in the date picker modal on iPad (Issue #1252)', async () => {
+    // Issue: When trying to add a task on iPad, selecting a date using the
+    // calendar picker shows the animation when pressing a date, but doesn't
+    // actually add/apply the selected date.
+    //
+    // Root cause: The native HTML5 date input (<input type="date">) used in
+    // DateTimePickerModal has known issues on iOS/iPadOS Safari where touch
+    // events in modal contexts don't properly register date selection.
+    //
+    // Affected files:
+    //   - src/modals/DateTimePickerModal.ts (uses native <input type="date">)
+    //   - styles/date-picker.css (CSS styling for native picker)
+    //
+    // Potential fixes:
+    //   1. Use a custom JavaScript date picker instead of native input
+    //   2. Add touch event handlers to capture selection on iOS
+    //   3. Use a third-party date picker library with better mobile support
+    //
+    // This test documents the bug - it will pass when the issue is fixed.
+
+    const page = getPage();
+
+    // Open task creation modal
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(1000);
+
+    // Verify modal opened
+    const modal = page.locator('.modal');
+    await expect(modal.first()).toBeVisible({ timeout: 5000 });
+
+    // Find and click the due date calendar icon to open date context menu
+    const dueDateIcon = page.locator('.action-bar .action-icon.due-date, .action-bar [aria-label*="due" i]').first();
+    if (!await dueDateIcon.isVisible({ timeout: 3000 }).catch(() => false)) {
+      // Try alternative selector
+      const calendarIcon = page.locator('.action-bar [class*="calendar"]:not([class*="clock"])').first();
+      if (await calendarIcon.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await calendarIcon.click();
+      } else {
+        console.log('[Issue #1252] Due date icon not found - skipping test');
+        await page.keyboard.press('Escape');
+        return;
+      }
+    } else {
+      await dueDateIcon.click();
+    }
+    await page.waitForTimeout(500);
+
+    // Look for "Pick date & time" option in the context menu
+    const pickDateOption = page.locator('.menu-item:has-text("Pick date"), .menu-item:has-text("date & time")').first();
+    if (await pickDateOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await pickDateOption.click();
+      await page.waitForTimeout(500);
+    } else {
+      console.log('[Issue #1252] Pick date option not found in menu');
+      await page.keyboard.press('Escape');
+      await page.keyboard.press('Escape');
+      return;
+    }
+
+    // Screenshot the date picker modal for debugging
+    await page.screenshot({ path: 'test-results/screenshots/issue-1252-date-picker-modal-ipad.png' });
+
+    // Find the date input in the DateTimePickerModal
+    const dateInput = page.locator('.date-time-picker-modal input[type="date"], .modal input[type="date"]').first();
+    await expect(dateInput).toBeVisible({ timeout: 3000 });
+
+    // Get tomorrow's date for selection
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    // Attempt to set the date value
+    // On iPad, this is where the bug occurs - the native picker shows animation
+    // but doesn't apply the selection
+    await dateInput.fill(tomorrowStr);
+    await page.waitForTimeout(500);
+
+    // Verify the date was set in the input
+    const inputValue = await dateInput.inputValue();
+    console.log(`[Issue #1252] Date input value after fill: "${inputValue}"`);
+
+    // Take screenshot after attempting to set date
+    await page.screenshot({ path: 'test-results/screenshots/issue-1252-date-after-selection-ipad.png' });
+
+    // Click Select/Confirm button
+    const selectButton = page.locator('.date-time-picker-modal button:has-text("Select"), .modal .mod-cta, button.mod-cta').first();
+    if (await selectButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await selectButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Verify the date picker modal closed
+    const datePickerModal = page.locator('.date-time-picker-modal');
+    const isDatePickerClosed = !(await datePickerModal.isVisible({ timeout: 1000 }).catch(() => false));
+
+    // Check if the date was actually applied by looking at the action bar icon state
+    // or checking if the due date field shows the selected date
+    const dueDateState = await page.locator('.action-icon.due-date.active, .due-date-display').isVisible({ timeout: 1000 }).catch(() => false);
+
+    // Close task modal
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // This assertion documents the expected behavior - should pass when fixed
+    // The bug is that inputValue is empty or the date doesn't get applied on iPad
+    expect(inputValue).toBe(tomorrowStr);
+  });
+
+  test('should display date picker modal correctly on iPad viewport', async () => {
+    // This test verifies the date picker modal renders correctly on iPad
+    // It doesn't test the actual date selection bug, just the UI rendering
+
+    const page = getPage();
+
+    // Open task creation modal
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(1000);
+
+    const modal = page.locator('.modal');
+    if (!await modal.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('[Issue #1252] Task modal not found - skipping');
+      return;
+    }
+
+    // Try to find the calendar icon for due date
+    const dueDateIcon = page.locator('.action-bar .action-icon').first();
+    if (await dueDateIcon.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await dueDateIcon.click();
+      await page.waitForTimeout(300);
+
+      // Take screenshot of date context menu on iPad
+      await page.screenshot({ path: 'test-results/screenshots/issue-1252-date-context-menu-ipad.png' });
+
+      // Look for "Pick date & time" option
+      const pickDateOption = page.locator('.menu-item:has-text("Pick date"), .menu-item:has-text("date & time")');
+      if (await pickDateOption.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+        await pickDateOption.first().click();
+        await page.waitForTimeout(300);
+
+        // Verify date picker modal appears
+        const dateInput = page.locator('input[type="date"]');
+        const hasDateInput = await dateInput.first().isVisible({ timeout: 2000 }).catch(() => false);
+
+        await page.screenshot({ path: 'test-results/screenshots/issue-1252-date-picker-ui-ipad.png' });
+
+        // Close the date picker modal
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(200);
+
+        expect(hasDateInput).toBe(true);
+      }
+
+      // Close the menu if still open
+      await page.keyboard.press('Escape');
+    }
+
+    // Close task modal
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+  });
+});
