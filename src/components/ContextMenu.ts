@@ -3,16 +3,17 @@ import { Menu } from "obsidian";
 export class ContextMenu extends Menu {
 
 	public show(event: UIEvent) {
-		if (event instanceof MouseEvent) {
+		// Use cross-window compatible instanceOf checks for pop-out window support
+		if (event.instanceOf(MouseEvent)) {
 			this.showAtMouseEvent(event);
-		} else if (event instanceof KeyboardEvent) {
+		} else if (event.instanceOf(KeyboardEvent)) {
 			const element = event.currentTarget;
-			if (!(element instanceof HTMLElement)) {
+			if (!element || !(element as Node).instanceOf?.(HTMLElement)) {
 				return;
 			}
 			this.showAtPosition({
-				x: element.getBoundingClientRect().left,
-				y: element.getBoundingClientRect().bottom + 4,
+				x: (element as HTMLElement).getBoundingClientRect().left,
+				y: (element as HTMLElement).getBoundingClientRect().bottom + 4,
 			});
 		}
 	}

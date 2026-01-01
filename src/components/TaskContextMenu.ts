@@ -28,6 +28,7 @@ export interface TaskContextMenuOptions {
 export class TaskContextMenu {
 	private menu: ContextMenu;
 	private options: TaskContextMenuOptions;
+	private targetDoc: Document = document;
 
 	constructor(options: TaskContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -1012,7 +1013,7 @@ export class TaskContextMenu {
 	}
 
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
-		const menuEl = document.querySelector(".menu");
+		const menuEl = this.targetDoc.querySelector(".menu");
 		if (!menuEl) return;
 
 		const menuItems = menuEl.querySelectorAll(".menu-item");
@@ -1449,10 +1450,17 @@ export class TaskContextMenu {
 	}
 
 	public show(event: MouseEvent): void {
+		// Store the document reference from the event target to support pop-out windows
+		// Use cross-window compatible instanceOf check
+		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
+			this.targetDoc = (event.target as HTMLElement).ownerDocument;
+		}
 		this.menu.showAtMouseEvent(event);
 	}
 
 	public showAtElement(element: HTMLElement): void {
+		// Store the document reference from the element to support pop-out windows
+		this.targetDoc = element.ownerDocument;
 		this.menu.showAtPosition({
 			x: element.getBoundingClientRect().left,
 			y: element.getBoundingClientRect().bottom + 4,

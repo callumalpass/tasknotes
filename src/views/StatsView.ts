@@ -1302,8 +1302,11 @@ export class StatsView extends ItemView {
 		// Remove any existing modal
 		this.closeDrilldownModal();
 
+		// Use contentEl.ownerDocument to support pop-out windows
+		const doc = this.contentEl.ownerDocument;
+
 		// Create modal backdrop
-		const backdrop = document.body.createDiv({ cls: "stats-view__modal-backdrop" });
+		const backdrop = doc.body.createDiv({ cls: "stats-view__modal-backdrop" });
 		this.drilldownModal = backdrop;
 
 		// Create modal content with proper CSS scope for TaskCard components
@@ -1333,10 +1336,10 @@ export class StatsView extends ItemView {
 		const escHandler = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				this.closeDrilldownModal();
-				document.removeEventListener("keydown", escHandler);
+				doc.removeEventListener("keydown", escHandler);
 			}
 		};
-		document.addEventListener("keydown", escHandler);
+		doc.addEventListener("keydown", escHandler);
 
 		// Load and render drill-down data
 		try {

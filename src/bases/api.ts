@@ -228,11 +228,14 @@ export function unregisterBasesView(plugin: Plugin, viewId: string): boolean {
  * Type guard to check if a container is a valid BasesContainer
  */
 export function isValidBasesContainer(container: any): container is BasesContainer {
+	// Use cross-window compatible instanceOf check for pop-out window support
+	const isValidViewContainer =
+		container.viewContainerEl === undefined ||
+		(container.viewContainerEl as Node)?.instanceOf?.(HTMLElement);
 	return (
 		container &&
 		typeof container === "object" &&
 		(container.results instanceof Map || container.results === undefined) &&
-		(container.viewContainerEl instanceof HTMLElement ||
-			container.viewContainerEl === undefined)
+		isValidViewContainer
 	);
 }

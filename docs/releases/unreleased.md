@@ -154,3 +154,11 @@ Example:
   - The +/- buttons below the timer now have visible backgrounds and borders
   - Hover states show accent color border for clearer interactivity feedback
   - Previously buttons were nearly invisible with transparent backgrounds
+
+- (#1409) Fixed Calendar, Agenda, Kanban, and Stats views not working properly in pop-out windows
+  - Drag-and-drop in Kanban view now works correctly when the view is in a new window
+  - Context menus (status, priority, task) now work correctly in pop-out windows
+  - Stats view drill-down modal now appears in the correct window
+  - Root cause: Code was using global `document` and standard `instanceof` checks which fail across windows
+  - Solution: Use `ownerDocument` for DOM operations and Obsidian's cross-window `instanceOf()` method
+  - Thanks to @Snakiest for reporting

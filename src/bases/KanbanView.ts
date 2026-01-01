@@ -1072,7 +1072,8 @@ export class KanbanView extends BasesViewBase {
 					this.touchDragActive = true;
 					this.touchDragType = "column";
 					this.draggedColumnKey = columnKey;
-					document.addEventListener("contextmenu", this.boundContextMenuBlocker, true);
+					// Use containerEl.ownerDocument to support pop-out windows
+					this.containerEl.ownerDocument.addEventListener("contextmenu", this.boundContextMenuBlocker, true);
 					header.classList.add(draggingClass);
 					this.touchDragGhost = this.createTouchDragGhost(header, touch.clientX, touch.clientY);
 					navigator.vibrate?.(50);
@@ -1271,7 +1272,9 @@ export class KanbanView extends BasesViewBase {
 			transform: translate(-50%, -50%) rotate(3deg);
 			box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 		`;
-		document.body.appendChild(ghost);
+		// Use containerEl.ownerDocument to support pop-out windows
+		const doc = this.containerEl.ownerDocument;
+		doc.body.appendChild(ghost);
 		return ghost;
 	}
 
@@ -1296,7 +1299,9 @@ export class KanbanView extends BasesViewBase {
 		element: HTMLElement | null;
 	} {
 		if (this.touchDragGhost) this.touchDragGhost.style.display = "none";
-		const el = document.elementFromPoint(x, y) as HTMLElement | null;
+		// Use containerEl.ownerDocument to support pop-out windows
+		const doc = this.containerEl.ownerDocument;
+		const el = doc.elementFromPoint(x, y) as HTMLElement | null;
 		if (this.touchDragGhost) this.touchDragGhost.style.display = "";
 
 		if (!el) return { type: null, groupKey: null, swimLaneKey: null, element: null };
@@ -1362,7 +1367,8 @@ export class KanbanView extends BasesViewBase {
 
 	private clearTouchDragState(): void {
 		this.touchDragActive = false;
-		document.removeEventListener("contextmenu", this.boundContextMenuBlocker, true);
+		// Use containerEl.ownerDocument to support pop-out windows
+		this.containerEl.ownerDocument.removeEventListener("contextmenu", this.boundContextMenuBlocker, true);
 		this.removeTouchDragGhost();
 		this.stopAutoScroll();
 
@@ -1615,7 +1621,8 @@ export class KanbanView extends BasesViewBase {
 	private initiateTouchDrag(cardWrapper: HTMLElement, task: TaskInfo, x: number, y: number): void {
 		this.touchDragActive = true;
 		this.touchDragType = "task";
-		document.addEventListener("contextmenu", this.boundContextMenuBlocker, true);
+		// Use containerEl.ownerDocument to support pop-out windows
+		this.containerEl.ownerDocument.addEventListener("contextmenu", this.boundContextMenuBlocker, true);
 
 		const selectionService = this.plugin.taskSelectionService;
 		if (selectionService?.isSelected(task.path) && selectionService.getSelectionCount() > 1) {
