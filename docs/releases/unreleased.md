@@ -155,7 +155,7 @@ Example:
   - Hover states show accent color border for clearer interactivity feedback
   - Previously buttons were nearly invisible with transparent backgrounds
 
-- (#1409) Improved Calendar, Agenda, Kanban, and Stats views in pop-out windows
+- (#1409, #1214, #979) Improved Calendar, Agenda, Kanban, and Stats views in pop-out windows
   - Drag-and-drop in Kanban view now works correctly when the view is in a new window
   - Context menus (status, priority, task) now work correctly in pop-out windows
   - Stats view drill-down modal now appears in the correct window
@@ -164,4 +164,4 @@ Example:
   - Solution: Use `ownerDocument` for DOM operations and Obsidian's cross-window `instanceOf()` method
   - **Known limitation**: Calendar event dragging does not work in pop-out windows due to FullCalendar library using global `document` for mouse event listeners. Use context menus or edit modals as a workaround.
   - Updated FullCalendar to v6.1.20
-  - Thanks to @Snakiest for reporting
+  - Thanks to @Snakiest, @same774, and @3zra47 for reporting
