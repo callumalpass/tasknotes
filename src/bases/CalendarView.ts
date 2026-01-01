@@ -274,7 +274,9 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Otherwise use longer debounce for external changes (typing in notes)
-		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+		// Use correct window for pop-out window support
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			this.render();
 		}, 5000);  // 5 second debounce - outlasts Obsidian's save interval
@@ -1582,12 +1584,14 @@ export class CalendarView extends BasesViewBase {
 			if (provider) {
 				const titleEl = arg.el.querySelector('.fc-event-title');
 				if (titleEl) {
-					const iconContainer = document.createElement('span');
+					// Use correct document for pop-out window support
+					const doc = arg.el.ownerDocument;
+					const iconContainer = doc.createElement('span');
 					iconContainer.style.marginRight = '4px';
 					iconContainer.style.display = 'inline-flex';
 					iconContainer.style.alignItems = 'center';
 
-					const iconEl = document.createElement('span');
+					const iconEl = doc.createElement('span');
 					iconEl.style.width = '12px';
 					iconEl.style.height = '12px';
 					iconEl.style.display = 'inline-flex';
@@ -1854,8 +1858,11 @@ export class CalendarView extends BasesViewBase {
 			this.rootElement.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
 			this.rootElement.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
 
+			// Use correct document for pop-out window support
+			const doc = this.containerEl.ownerDocument;
+
 			// Calendar element for FullCalendar to render into
-			const calendarEl = document.createElement("div");
+			const calendarEl = doc.createElement("div");
 			calendarEl.id = "bases-calendar";
 			calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
 			this.rootElement.appendChild(calendarEl);
@@ -1872,7 +1879,9 @@ export class CalendarView extends BasesViewBase {
 	renderError(error: Error): void {
 		if (!this.calendarEl) return;
 
-		const errorEl = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.calendarEl.ownerDocument;
+		const errorEl = doc.createElement("div");
 		errorEl.className = "tn-bases-error";
 		errorEl.style.cssText =
 			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";

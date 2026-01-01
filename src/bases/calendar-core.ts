@@ -93,9 +93,10 @@ export function hexToRgba(hex: string, alpha: number): string {
 
 /**
  * Check if the app is in dark mode
+ * Uses activeDocument to support pop-out windows
  */
 export function isDarkMode(): boolean {
-	return document.body.classList.contains('theme-dark');
+	return activeDocument.body.classList.contains('theme-dark');
 }
 
 /**
