@@ -6207,3 +6207,273 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
     }
   });
 });
+
+// Issue #144: Open note in new tab
+test.describe('Open Note in New Tab - Issue #144', () => {
+  // STATUS: FEATURE REQUEST - Issue #144
+  // Problem: Cmd+click on task should open note in new tab (like standard link behavior)
+  // Currently: Cmd+click opens in same tab
+  // Expected: Cmd+click should open in new tab immediately
+
+  test.fixme('cmd+click on task in calendar should open note in new tab (Issue #144)', async () => {
+    // STATUS: FEATURE REQUEST - Issue #144
+    // This test verifies that Cmd/Ctrl+click on a calendar task event opens
+    // the task note in a NEW tab, not the current tab.
+    //
+    // CURRENT BEHAVIOR (bug):
+    // - Cmd+click opens the note in the same tab
+    //
+    // EXPECTED BEHAVIOR:
+    // - Cmd+click should immediately open the note in a new tab
+    // - This matches standard browser/OS behavior for modifier+click on links
+    //
+    // IMPLEMENTATION NOTES:
+    // - The issue is in src/utils/clickHandlers.ts
+    // - Cmd+click goes through a 250ms timeout for single/double click detection
+    // - Cmd+click should bypass this timeout and open immediately in new tab
+    // - Need to check for e.ctrlKey || e.metaKey BEFORE the timeout logic
+
+    const page = getPage();
+
+    // First, close any open modals
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(100);
+    }
+
+    // Open calendar view
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Count initial number of tabs/leaves
+    const initialTabCount = await page.locator('.workspace-tab-header').count();
+    console.log(`[Issue #144] Initial tab count: ${initialTabCount}`);
+
+    // Find a task event on the calendar
+    const taskEvent = page.locator('.fc-event').first();
+    const isVisible = await taskEvent.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isVisible) {
+      console.log('[Issue #144] No calendar events found - test inconclusive');
+      return;
+    }
+
+    // Get the task title for verification
+    const eventTitle = await taskEvent.textContent().catch(() => 'unknown');
+    console.log(`[Issue #144] Clicking task: ${eventTitle}`);
+
+    // Cmd+click (Meta+click on Mac, Ctrl+click on Windows/Linux) on the task
+    await taskEvent.click({ modifiers: ['Meta'] });
+    await page.waitForTimeout(500);
+
+    // Count tabs after click
+    const afterTabCount = await page.locator('.workspace-tab-header').count();
+    console.log(`[Issue #144] Tab count after Cmd+click: ${afterTabCount}`);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-144-cmd-click-calendar.png' });
+
+    // EXPECTED: A new tab should have been created
+    // The tab count should have increased by 1
+    expect(afterTabCount).toBeGreaterThan(initialTabCount);
+  });
+
+  test.fixme('cmd+click on task in sidebar should open note in new tab (Issue #144)', async () => {
+    // STATUS: FEATURE REQUEST - Issue #144
+    // Same as above, but for tasks in the file explorer sidebar
+
+    const page = getPage();
+
+    // Close modals
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(100);
+    }
+
+    // Ensure sidebar is expanded
+    const tasknotesFolder = page.locator('.nav-folder-title:has-text("TaskNotes")');
+    if (await tasknotesFolder.isVisible({ timeout: 3000 }).catch(() => false)) {
+      const isCollapsed = await tasknotesFolder.locator('.is-collapsed').isVisible().catch(() => false);
+      if (isCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Count initial tabs
+    const initialTabCount = await page.locator('.workspace-tab-header').count();
+    console.log(`[Issue #144] Initial tab count: ${initialTabCount}`);
+
+    // Find a task in the sidebar
+    const taskItem = page.locator('.nav-file-title:has-text("Buy groceries")');
+    const isVisible = await taskItem.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isVisible) {
+      console.log('[Issue #144] Task not found in sidebar - test inconclusive');
+      return;
+    }
+
+    // Cmd+click on the task
+    await taskItem.click({ modifiers: ['Meta'] });
+    await page.waitForTimeout(500);
+
+    // Count tabs after click
+    const afterTabCount = await page.locator('.workspace-tab-header').count();
+    console.log(`[Issue #144] Tab count after Cmd+click: ${afterTabCount}`);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-144-cmd-click-sidebar.png' });
+
+    // EXPECTED: A new tab should have been created
+    expect(afterTabCount).toBeGreaterThan(initialTabCount);
+  });
+
+  test.fixme('cmd+click on task card in task view should open note in new tab (Issue #144)', async () => {
+    // STATUS: FEATURE REQUEST - Issue #144
+    // Test for task cards in the TaskNotes views (tasks-default, kanban, etc.)
+
+    const page = getPage();
+
+    // Close modals
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(100);
+    }
+
+    // Open tasks view
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1500);
+
+    // Count initial tabs
+    const initialTabCount = await page.locator('.workspace-tab-header').count();
+    console.log(`[Issue #144] Initial tab count: ${initialTabCount}`);
+
+    // Find a task card - try multiple selectors
+    const taskCard = page.locator('.tasknotes-task-card, .task-card, .fc-event').first();
+    const isVisible = await taskCard.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isVisible) {
+      console.log('[Issue #144] No task cards found - test inconclusive');
+      return;
+    }
+
+    // Cmd+click on the task card
+    await taskCard.click({ modifiers: ['Meta'] });
+    await page.waitForTimeout(500);
+
+    // Count tabs after click
+    const afterTabCount = await page.locator('.workspace-tab-header').count();
+    console.log(`[Issue #144] Tab count after Cmd+click: ${afterTabCount}`);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-144-cmd-click-taskcard.png' });
+
+    // EXPECTED: A new tab should have been created
+    expect(afterTabCount).toBeGreaterThan(initialTabCount);
+  });
+
+  test.fixme('cmd+click should open immediately without 250ms delay (Issue #144)', async () => {
+    // STATUS: FEATURE REQUEST - Issue #144
+    // The current implementation has a 250ms delay for single/double click detection.
+    // Cmd+click should bypass this delay and open immediately.
+    //
+    // This test measures the time between click and the tab appearing.
+    // With the current buggy behavior, there's a ~250ms delay.
+    // With the fix, it should be nearly instantaneous (<100ms).
+
+    const page = getPage();
+
+    // Close modals
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(100);
+    }
+
+    // Open calendar view
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Find a task event
+    const taskEvent = page.locator('.fc-event').first();
+    const isVisible = await taskEvent.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isVisible) {
+      console.log('[Issue #144] No calendar events found - test inconclusive');
+      return;
+    }
+
+    // Count initial tabs
+    const initialTabCount = await page.locator('.workspace-tab-header').count();
+
+    // Time the Cmd+click action
+    const startTime = Date.now();
+
+    // Cmd+click on the task
+    await taskEvent.click({ modifiers: ['Meta'] });
+
+    // Wait for tab count to change (with a short timeout)
+    let tabAppeared = false;
+    for (let i = 0; i < 50; i++) {
+      const currentTabCount = await page.locator('.workspace-tab-header').count();
+      if (currentTabCount > initialTabCount) {
+        tabAppeared = true;
+        break;
+      }
+      await page.waitForTimeout(10);
+    }
+
+    const elapsed = Date.now() - startTime;
+    console.log(`[Issue #144] Time to open new tab: ${elapsed}ms`);
+
+    // EXPECTED: Tab should appear within 100ms (no 250ms delay)
+    // Currently this will fail because of the setTimeout in clickHandlers.ts
+    expect(tabAppeared).toBe(true);
+    expect(elapsed).toBeLessThan(150); // Allow some margin for execution time
+  });
+
+  test.fixme('context menu Open note should have option to open in new tab (Issue #144)', async () => {
+    // STATUS: FEATURE REQUEST - Issue #144 (secondary)
+    // User mentioned: "Right click > Open note has the same behavior"
+    // The context menu "Open note" always opens in current tab.
+    //
+    // POSSIBLE SOLUTIONS:
+    // 1. Add a separate "Open note in new tab" context menu item
+    // 2. Make "Open note" respect Cmd/Ctrl modifier when clicking
+    // 3. Change default behavior based on user preference
+
+    const page = getPage();
+
+    // Close modals
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(100);
+    }
+
+    // Open calendar view
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1500);
+
+    // Find a task event
+    const taskEvent = page.locator('.fc-event').first();
+    const isVisible = await taskEvent.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isVisible) {
+      console.log('[Issue #144] No calendar events found - test inconclusive');
+      return;
+    }
+
+    // Right-click to open context menu
+    await taskEvent.click({ button: 'right' });
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-144-context-menu.png' });
+
+    // Look for "Open note in new tab" option
+    const openInNewTabOption = page.locator('.menu-item:has-text("Open note in new tab"), .menu-item:has-text("Open in new tab")');
+    const hasNewTabOption = await openInNewTabOption.isVisible({ timeout: 2000 }).catch(() => false);
+
+    // Close context menu
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: There should be an option to open in new tab
+    // This test documents the feature request - currently there's no such option
+    expect(hasNewTabOption).toBe(true);
+  });
+});
