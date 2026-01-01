@@ -7056,3 +7056,172 @@ test.describe('Issue #1216 - Hide relationships widget when empty', () => {
     expect(dropdownExists).toBe(true);
   });
 });
+
+// ============================================================================
+// Issue #1299: Create or Open Task command with automatic time tracking
+// ============================================================================
+test.describe('Issue #1299: Create or Open Task with Time Tracking', () => {
+  test.skip('should have a command to create/open task and start time tracking (Issue #1299)', async () => {
+    // Feature request: Extend the "Create or open task" command to also start
+    // time tracking automatically after selecting or creating a task.
+    //
+    // Use case: When pulled into urgent work, users want to quickly:
+    // 1. Create a new task (or select existing)
+    // 2. Start time tracking immediately
+    // 3. Begin working without manually starting the timer
+    //
+    // Implementation approach:
+    // - Add new command "create-or-open-task-with-tracking" in main.ts
+    // - Reuse TaskSelectorWithCreateModal
+    // - After task selection/creation, call startTimeTracking() before opening file
+    // - Add i18n key: commands.createOrOpenTaskWithTracking
+    //
+    // Affected files:
+    //   - src/main.ts (add command and handler)
+    //   - src/i18n/resources/en.ts (add translation)
+    //   - Optionally: src/modals/TaskSelectorWithCreateModal.ts (if refactoring)
+    //
+    // Bonus feature mentioned in issue:
+    //   - Option to prompt for time entry description when starting/stopping
+    //
+    // Related: Issue #1297 (same modal, mobile footer click support)
+
+    const page = getPage();
+
+    // Try to run the new command (should fail until implemented)
+    await openCommandPalette(page);
+    await page.keyboard.type('Create or open task and start time tracking', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // Check if the command exists in suggestions
+    const suggestions = page.locator('.suggestion-item');
+    const commandExists = await suggestions.filter({ hasText: /time tracking/i }).first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Command should exist and be selectable
+    expect(commandExists).toBe(true);
+  });
+
+  test.skip('should start time tracking after selecting existing task (Issue #1299)', async () => {
+    // This test verifies that when using the new command and selecting an
+    // existing task, time tracking starts automatically.
+
+    const page = getPage();
+
+    // Run the new command
+    await runCommand(page, 'Create or open task and start time tracking');
+    await page.waitForTimeout(500);
+
+    // Verify modal opened
+    const modal = page.locator('.task-selector-with-create-modal, .prompt');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Select an existing task (first suggestion)
+    const firstTask = page.locator('.suggestion-item').first();
+    if (await firstTask.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstTask.click();
+      await page.waitForTimeout(1000);
+
+      // Check if time tracking notice appeared
+      const notice = page.locator('.notice:has-text("tracking")');
+      const trackingStarted = await notice.isVisible({ timeout: 3000 }).catch(() => false);
+
+      // Also check status bar for active time tracking indicator
+      const statusBar = page.locator('.status-bar');
+      const hasTimeIndicator = await statusBar.locator('[class*="time"], [class*="timer"]')
+        .isVisible({ timeout: 2000 }).catch(() => false);
+
+      // Close any open files
+      await page.keyboard.press('Control+w');
+
+      // EXPECTED: Time tracking should have started
+      expect(trackingStarted || hasTimeIndicator).toBe(true);
+    } else {
+      // No tasks available, skip verification
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test.skip('should start time tracking after creating new task (Issue #1299)', async () => {
+    // This test verifies that when using the new command to create a task,
+    // time tracking starts automatically on the newly created task.
+
+    const page = getPage();
+
+    // Run the new command
+    await runCommand(page, 'Create or open task and start time tracking');
+    await page.waitForTimeout(500);
+
+    // Verify modal opened
+    const modal = page.locator('.task-selector-with-create-modal, .prompt');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Type a unique task name that won't match existing tasks
+    const uniqueTaskName = `Time tracking test task ${Date.now()}`;
+    await page.keyboard.type(uniqueTaskName, { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // Create the task using Shift+Enter
+    await page.keyboard.press('Shift+Enter');
+    await page.waitForTimeout(1000);
+
+    // Check if time tracking notice appeared
+    const notice = page.locator('.notice:has-text("tracking")');
+    const trackingStarted = await notice.isVisible({ timeout: 3000 }).catch(() => false);
+
+    // Also check status bar for active time tracking indicator
+    const statusBar = page.locator('.status-bar');
+    const hasTimeIndicator = await statusBar.locator('[class*="time"], [class*="timer"]')
+      .isVisible({ timeout: 2000 }).catch(() => false);
+
+    // Close any open files
+    await page.keyboard.press('Control+w');
+
+    // EXPECTED: Time tracking should have started on the new task
+    expect(trackingStarted || hasTimeIndicator).toBe(true);
+  });
+
+  test.skip('should optionally prompt for time entry description (Issue #1299 bonus)', async () => {
+    // Bonus feature from issue: Option to show a dialog for entering
+    // a description when starting time tracking.
+    //
+    // This would be useful for:
+    // - Detailed time tracking (e.g., "Preparing ingredients", "Kneading dough")
+    // - Invoice/billing documentation
+    // - Progress notes
+    //
+    // Implementation would require:
+    // - New setting: promptForTimeEntryDescription (boolean)
+    // - Modify startTimeTracking to show input dialog when enabled
+    // - Store description in TimeEntry.description field
+
+    const page = getPage();
+
+    // This test documents the bonus feature - placeholder until implemented
+    // First, check if the setting exists
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    if (await settingsModal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Search for time tracking description setting
+      const settingSearch = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+      if (await settingSearch.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await settingSearch.click();
+        await page.waitForTimeout(500);
+      }
+
+      const descriptionSetting = page.locator('.setting-item:has-text("description")');
+      const settingExists = await descriptionSetting.isVisible({ timeout: 2000 }).catch(() => false);
+
+      await page.keyboard.press('Escape');
+
+      // EXPECTED: Setting for time entry description prompt should exist
+      expect(settingExists).toBe(true);
+    } else {
+      await page.keyboard.press('Escape');
+      expect(true).toBe(false); // Force fail if settings didn't open
+    }
+  });
+});
