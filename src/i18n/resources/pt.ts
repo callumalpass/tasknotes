@@ -19,7 +19,8 @@ export const pt: TranslationTree = {
 			de: "Alemão",
 			es: "Espanhol",
 			ja: "Japonês",
-            pt: "Português (Brasil)"
+            pt: "Português (Brasil)",
+			ko: "Coreano",
 		},
 		weekdays: {
 			sunday: "Domingo",
@@ -175,7 +176,16 @@ export const pt: TranslationTree = {
 				refresh: "Atualizar"
 			},
 			hints: {
-				refresh: "Atualizar inscrições de calendário"
+				refresh: "Atualizar inscrições de calendário",
+				today: "Ir para hoje",
+				prev: "Anterior",
+				next: "Próximo",
+				month: "Visualização mensal",
+				week: "Visualização semanal",
+				day: "Visualização diária",
+				year: "Visualização anual",
+				list: "Visualização em lista",
+				customDays: "Visualização de {count} dias"
 			},
 			settings: {
 		header: {
@@ -238,7 +248,8 @@ export const pt: TranslationTree = {
 					enableSearch: "Habilitar caixa de pesquisa",
 					eventMaxStack: "Máx. eventos empilhados (vista semana/dia, 0 = ilimitado)",
 					dayMaxEvents: "Máx. eventos por dia (vista mês, 0 = automático)",
-					dayMaxEventRows: "Máx. linhas de eventos por dia (vista mês, 0 = ilimitado)"
+					dayMaxEventRows: "Máx. linhas de eventos por dia (vista mês, 0 = ilimitado)",
+					spanScheduledToDue: "Estender tarefas entre data agendada e data de vencimento"
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propriedade da data de início",
@@ -266,7 +277,9 @@ export const pt: TranslationTree = {
 			},
 			errors: {
 				loadingBoard: "Erro ao carregar o quadro.",
-				noGroupBy: "A vista Kanban requer que uma propriedade 'Agrupar por' seja configurada. Clique no botão 'Ordenar' e selecione uma propriedade em 'Agrupar por'."
+				noGroupBy: "A vista Kanban requer que uma propriedade 'Agrupar por' seja configurada. Clique no botão 'Ordenar' e selecione uma propriedade em 'Agrupar por'.",
+				formulaGroupingReadOnly: "Não é possível mover tarefas entre colunas baseadas em fórmulas. Os valores de fórmula são calculados e não podem ser modificados diretamente.",
+				formulaSwimlaneReadOnly: "Não é possível mover tarefas entre raias baseadas em fórmulas. Os valores de fórmula são calculados e não podem ser modificados diretamente."
 			},
 			columnTitle: "Sem título"
 		},
@@ -2509,6 +2522,9 @@ export const pt: TranslationTree = {
 				copyUrlSuccess: "URL do Obsidian copiado para a área de transferência",
 				updateRecurrenceFailure: "Falha ao atualizar recorrência da tarefa: {message}"
 			}
+		},
+		priority: {
+			clearPriority: "Limpar prioridade"
 		},
 		ics: {
 			showDetails: "Mostrar detalhes",

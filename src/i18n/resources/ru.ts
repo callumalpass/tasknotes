@@ -20,6 +20,7 @@ export const ru: TranslationTree = {
 			es: "Испанский",
 			ja: "Японский",
 			pt: "Португальский (Бразилия)",
+			ko: "Корейский",
 		},
 		weekdays: {
 			sunday: "Воскресенье",
@@ -175,7 +176,16 @@ export const ru: TranslationTree = {
 				refresh: "Обновить",
 			},
 			hints: {
-				refresh: "Обновить calendar subscriptions",
+				refresh: "Обновить подписки календаря",
+				today: "Перейти к сегодня",
+				prev: "Назад",
+				next: "Вперёд",
+				month: "Вид по месяцам",
+				week: "Вид по неделям",
+				day: "Вид по дням",
+				year: "Вид по годам",
+				list: "Вид списком",
+				customDays: "Вид на {count} дней",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const ru: TranslationTree = {
 					eventMaxStack: "Макс. наложенных событий (неделя/день, 0 = без ограничений)",
 					dayMaxEvents: "Макс. событий в день (месяц, 0 = авто)",
 					dayMaxEventRows: "Макс. строк событий в день (месяц, 0 = без ограничений)",
+					spanScheduledToDue: "Растягивать задачи между запланированной и срочной датами",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Свойство даты начала",
@@ -267,6 +278,8 @@ export const ru: TranslationTree = {
 			errors: {
 				loadingBoard: "Ошибка загрузки доски.",
 				noGroupBy: "Для представления Канбан требуется настроенное свойство 'Группировать по'. Нажмите кнопку 'Сортировка' и выберите свойство в разделе 'Группировать по'.",
+				formulaGroupingReadOnly: "Нельзя перемещать задачи между колонками на основе формул. Значения формул вычисляются и не могут быть изменены напрямую.",
+				formulaSwimlaneReadOnly: "Нельзя перемещать задачи между дорожками на основе формул. Значения формул вычисляются и не могут быть изменены напрямую.",
 			},
 			columnTitle: "Без названия",
 		},
@@ -2501,6 +2514,9 @@ export const ru: TranslationTree = {
 				copyUrlSuccess: "URL Obsidian скопирован в буфер обмена",
 				updateRecurrenceFailure: "Не удалось обновить повторение задачи: {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Очистить приоритет",
 		},
 		ics: {
 			showDetails: "Показать детали",

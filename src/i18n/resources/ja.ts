@@ -20,6 +20,7 @@ export const ja: TranslationTree = {
 			es: "スペイン語",
 			ja: "日本語",
 			pt: "ポルトガル語（ブラジル）",
+			ko: "韓国語",
 		},
 		weekdays: {
 			sunday: "日曜日",
@@ -176,6 +177,15 @@ export const ja: TranslationTree = {
 			},
 			hints: {
 				refresh: "カレンダー購読を更新",
+				today: "今日に移動",
+				prev: "前へ",
+				next: "次へ",
+				month: "月表示",
+				week: "週表示",
+				day: "日表示",
+				year: "年表示",
+				list: "一覧表示",
+				customDays: "{count}日表示",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const ja: TranslationTree = {
 					eventMaxStack: "最大スタックイベント数（週/日表示、0 = 無制限）",
 					dayMaxEvents: "1日あたりの最大イベント数（月表示、0 = 自動）",
 					dayMaxEventRows: "1日あたりの最大イベント行数（月表示、0 = 無制限）",
+					spanScheduledToDue: "予定日から期日までタスクを延長表示",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "開始日プロパティ",
@@ -267,6 +278,8 @@ export const ja: TranslationTree = {
 			errors: {
 				loadingBoard: "ボードの読み込みエラー。",
 				noGroupBy: "かんばんビューには「グループ化」プロパティの設定が必要です。「並び替え」ボタンをクリックし、「グループ化」でプロパティを選択してください。",
+				formulaGroupingReadOnly: "数式ベースの列間でタスクを移動することはできません。数式の値は計算されるため、直接変更することはできません。",
+				formulaSwimlaneReadOnly: "数式ベースのスイムレーン間でタスクを移動することはできません。数式の値は計算されるため、直接変更することはできません。",
 			},
 			columnTitle: "無題",
 		},
@@ -2501,6 +2514,9 @@ export const ja: TranslationTree = {
 				copyUrlSuccess: "Obsidian URLをクリップボードにコピーしました",
 				updateRecurrenceFailure: "タスク繰り返しの更新に失敗しました：{message}",
 			},
+		},
+		priority: {
+			clearPriority: "優先度をクリア",
 		},
 		ics: {
 			showDetails: "詳細を表示",

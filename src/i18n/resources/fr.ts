@@ -20,6 +20,7 @@ export const fr: TranslationTree = {
 			es: "Espagnol",
 			ja: "Japonais",
 			pt: "Portugais (Brésil)",
+			ko: "Coréen",
 		},
 		weekdays: {
 			sunday: "Dimanche",
@@ -176,6 +177,15 @@ export const fr: TranslationTree = {
 			},
 			hints: {
 				refresh: "Actualiser les abonnements calendrier",
+				today: "Aller à aujourd'hui",
+				prev: "Précédent",
+				next: "Suivant",
+				month: "Vue mensuelle",
+				week: "Vue hebdomadaire",
+				day: "Vue journalière",
+				year: "Vue annuelle",
+				list: "Vue liste",
+				customDays: "Vue {count} jours",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const fr: TranslationTree = {
 					eventMaxStack: "Max. événements empilés (vue semaine/jour, 0 = illimité)",
 					dayMaxEvents: "Max. événements par jour (vue mois, 0 = automatique)",
 					dayMaxEventRows: "Max. lignes d'événements par jour (vue mois, 0 = illimité)",
+					spanScheduledToDue: "Étendre les tâches entre la date planifiée et la date d'échéance",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propriété de date de début",
@@ -267,6 +278,8 @@ export const fr: TranslationTree = {
 			errors: {
 				loadingBoard: "Erreur lors du chargement du tableau.",
 				noGroupBy: "La vue Kanban nécessite qu'une propriété 'Grouper par' soit configurée. Cliquez sur le bouton 'Trier' et sélectionnez une propriété sous 'Grouper par'.",
+				formulaGroupingReadOnly: "Impossible de déplacer les tâches entre les colonnes basées sur des formules. Les valeurs de formule sont calculées et ne peuvent pas être modifiées directement.",
+				formulaSwimlaneReadOnly: "Impossible de déplacer les tâches entre les couloirs basés sur des formules. Les valeurs de formule sont calculées et ne peuvent pas être modifiées directement.",
 			},
 			columnTitle: "Sans titre",
 		},
@@ -2501,6 +2514,9 @@ export const fr: TranslationTree = {
 				copyUrlSuccess: "URL Obsidian copiée dans le presse-papiers",
 				updateRecurrenceFailure: "Impossible de mettre à jour la récurrence : {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Supprimer la priorité",
 		},
 		ics: {
 			showDetails: "Afficher les détails",

@@ -20,6 +20,7 @@ export const es: TranslationTree = {
 			es: "Español",
 			ja: "Japonés",
 			pt: "Portugués (Brasil)",
+			ko: "Coreano",
 		},
 		weekdays: {
 			sunday: "Domingo",
@@ -176,6 +177,15 @@ export const es: TranslationTree = {
 			},
 			hints: {
 				refresh: "Actualizar suscripciones de calendario",
+				today: "Ir a hoy",
+				prev: "Anterior",
+				next: "Siguiente",
+				month: "Vista de mes",
+				week: "Vista de semana",
+				day: "Vista de día",
+				year: "Vista de año",
+				list: "Vista de lista",
+				customDays: "Vista de {count} días",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const es: TranslationTree = {
 					eventMaxStack: "Máx. eventos apilados (vista semana/día, 0 = ilimitado)",
 					dayMaxEvents: "Máx. eventos por día (vista mes, 0 = automático)",
 					dayMaxEventRows: "Máx. filas de eventos por día (vista mes, 0 = ilimitado)",
+					spanScheduledToDue: "Expandir tareas entre fecha programada y fecha límite",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propiedad de fecha de inicio",
@@ -267,6 +278,8 @@ export const es: TranslationTree = {
 			errors: {
 				loadingBoard: "Error al cargar el tablero.",
 				noGroupBy: "La vista Kanban requiere que se configure una propiedad 'Agrupar por'. Haga clic en el botón 'Ordenar' y seleccione una propiedad en 'Agrupar por'.",
+				formulaGroupingReadOnly: "No se pueden mover tareas entre columnas basadas en fórmulas. Los valores de fórmula se calculan y no se pueden modificar directamente.",
+				formulaSwimlaneReadOnly: "No se pueden mover tareas entre carriles basados en fórmulas. Los valores de fórmula se calculan y no se pueden modificar directamente.",
 			},
 			columnTitle: "Sin título",
 		},
@@ -2501,6 +2514,9 @@ export const es: TranslationTree = {
 				copyUrlSuccess: "URL de Obsidian copiada al portapapeles",
 				updateRecurrenceFailure: "Error al actualizar recurrencia de tarea: {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Quitar prioridad",
 		},
 		ics: {
 			showDetails: "Mostrar detalles",

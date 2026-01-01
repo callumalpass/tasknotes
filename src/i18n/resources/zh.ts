@@ -20,6 +20,7 @@ export const zh: TranslationTree = {
 			es: "西班牙语",
 			ja: "日语",
 			pt: "葡萄牙语（巴西）",
+			ko: "韩语",
 		},
 		weekdays: {
 			sunday: "星期日",
@@ -176,6 +177,15 @@ export const zh: TranslationTree = {
 			},
 			hints: {
 				refresh: "刷新日历订阅",
+				today: "转到今天",
+				prev: "上一个",
+				next: "下一个",
+				month: "月视图",
+				week: "周视图",
+				day: "日视图",
+				year: "年视图",
+				list: "列表视图",
+				customDays: "{count}天视图",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const zh: TranslationTree = {
 					initialScrollTime: "初始滚动时间",
 					initialScrollTimePlaceholder: "HH:mm:ss（例如：08:00:00）",
 					minimumEventHeight: "最小事件高度（px）",
+					spanScheduledToDue: "在计划日期和截止日期之间扩展任务",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "开始日期属性",
@@ -267,6 +278,8 @@ export const zh: TranslationTree = {
 			errors: {
 				loadingBoard: "加载看板时出错。",
 				noGroupBy: "看板视图需要配置「分组依据」属性。点击「排序」按钮，然后在「分组依据」下选择一个属性。",
+				formulaGroupingReadOnly: "无法在基于公式的列之间移动任务。公式值是计算得出的，不能直接修改。",
+				formulaSwimlaneReadOnly: "无法在基于公式的泳道之间移动任务。公式值是计算得出的，不能直接修改。",
 			},
 			columnTitle: "无标题",
 		},
@@ -2501,6 +2514,9 @@ export const zh: TranslationTree = {
 				copyUrlSuccess: "Obsidian URL已复制到剪贴板",
 				updateRecurrenceFailure: "更新任务重复失败：{message}",
 			},
+		},
+		priority: {
+			clearPriority: "清除优先级",
 		},
 		ics: {
 			showDetails: "显示详情",

@@ -26,6 +26,10 @@ Example:
 
 ## Added
 
+- Added Korean (한국어) language support
+  - Full translation of all 1911 localization keys
+  - Korean language option now available in Settings → General → Language
+
 - Adopted Obsidian 1.11.0 API features with backwards compatibility
   - Settings tab now displays TaskNotes icon in the sidebar (Obsidian 1.11.0+)
   - Settings sections now use native `SettingGroup` for improved visual grouping (Obsidian 1.11.0+)

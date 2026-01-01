@@ -20,6 +20,7 @@ export const en: TranslationTree = {
 			es: "Spanish",
 			ja: "Japanese",
 			pt: "Portuguese (Brazil)",
+			ko: "Korean",
 		},
 		weekdays: {
 			sunday: "Sunday",
@@ -275,6 +276,8 @@ export const en: TranslationTree = {
 			errors: {
 				loadingBoard: "Error loading board.",
 				noGroupBy: "Kanban view requires a 'Group by' property to be configured. Click the 'Sort' button and select a property under 'Group by'.",
+				formulaGroupingReadOnly: "Cannot move tasks between formula-based columns. Formula values are computed and cannot be directly modified.",
+				formulaSwimlaneReadOnly: "Cannot move tasks between formula-based swimlanes. Formula values are computed and cannot be directly modified.",
 			},
 			columnTitle: "Untitled",
 		},
@@ -508,6 +511,13 @@ export const en: TranslationTree = {
 				notifications: {
 					name: "Pomodoro notifications",
 					description: "Show notifications when Pomodoro sessions end",
+				},
+				mobileSidebar: {
+					name: "Mobile sidebar",
+					description: "Where to open the Pomodoro timer on mobile devices",
+					tab: "Note panel",
+					left: "Left sidebar",
+					right: "Right sidebar",
 				},
 			},
 			uiLanguage: {
@@ -2568,6 +2578,9 @@ export const en: TranslationTree = {
 				copyUrlSuccess: "Obsidian URL copied to clipboard",
 				updateRecurrenceFailure: "Failed to update task recurrence: {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Clear priority",
 		},
 		ics: {
 			showDetails: "Show details",

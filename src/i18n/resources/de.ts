@@ -20,6 +20,7 @@ export const de: TranslationTree = {
 			es: "Spanisch",
 			ja: "Japanisch",
 			pt: "Portugiesisch (Brasilien)",
+			ko: "Koreanisch",
 		},
 		weekdays: {
 			sunday: "Sonntag",
@@ -176,6 +177,15 @@ export const de: TranslationTree = {
 			},
 			hints: {
 				refresh: "Kalenderabonnements aktualisieren",
+				today: "Zu heute gehen",
+				prev: "Zurück",
+				next: "Weiter",
+				month: "Monatsansicht",
+				week: "Wochenansicht",
+				day: "Tagesansicht",
+				year: "Jahresansicht",
+				list: "Listenansicht",
+				customDays: "{count}-Tage-Ansicht",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const de: TranslationTree = {
 					eventMaxStack: "Max. gestapelte Ereignisse (Wochen-/Tagesansicht, 0 = unbegrenzt)",
 					dayMaxEvents: "Max. Ereignisse pro Tag (Monatsansicht, 0 = automatisch)",
 					dayMaxEventRows: "Max. Ereigniszeilen pro Tag (Monatsansicht, 0 = unbegrenzt)",
+					spanScheduledToDue: "Aufgaben zwischen geplantem und Fälligkeitsdatum spannen",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Startdatumseigenschaft",
@@ -267,6 +278,8 @@ export const de: TranslationTree = {
 			errors: {
 				loadingBoard: "Fehler beim Laden des Boards.",
 				noGroupBy: "Die Kanban-Ansicht erfordert eine konfigurierte 'Gruppieren nach'-Eigenschaft. Klicken Sie auf die Schaltfläche 'Sortieren' und wählen Sie eine Eigenschaft unter 'Gruppieren nach' aus.",
+				formulaGroupingReadOnly: "Aufgaben können nicht zwischen formelbasierten Spalten verschoben werden. Formelwerte werden berechnet und können nicht direkt geändert werden.",
+				formulaSwimlaneReadOnly: "Aufgaben können nicht zwischen formelbasierten Swimlanes verschoben werden. Formelwerte werden berechnet und können nicht direkt geändert werden.",
 			},
 			columnTitle: "Ohne Titel",
 		},
@@ -2501,6 +2514,9 @@ export const de: TranslationTree = {
 				copyUrlSuccess: "Obsidian URL in Zwischenablage kopiert",
 				updateRecurrenceFailure: "Aufgabenwiederholung konnte nicht aktualisiert werden: {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Priorität löschen",
 		},
 		ics: {
 			showDetails: "Details anzeigen",
