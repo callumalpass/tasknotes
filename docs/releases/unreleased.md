@@ -83,7 +83,12 @@ Example:
 
 ## Fixed
 
-- (#1028, #1140, #1152, #1354, #1362) Fixed duplicate task entries appearing in Agenda view
+- (#1384) Fixed title being sanitized even when "Store Task Title in Filename" is disabled
+  - Characters like `?`, `<`, `>`, `:`, etc. are now preserved in task titles when they won't be used in filenames
+  - When `storeTitleInFilename` is false, only minimal sanitization (whitespace normalization, control character removal) is applied
+  - Thanks to @allison-casey for reporting
+
+- (#1028), (#1140), (#1152), (#1354), (#1362) Fixed duplicate task entries appearing in Agenda view
   - Tasks were shown twice: once as TaskNotes events and again as property-based events with a file icon
   - Changed default Agenda template to disable property-based events (`showPropertyBasedEvents: false`)
   - Users can re-enable property-based events in view settings if needed for non-task date properties
@@ -99,7 +104,7 @@ Example:
   - Thanks to @music-soul1-1 for reporting
 
 - (#1398) Fixed overdue strikethrough showing on completed tasks
-  - Completed tasks with past due dates no longer display overdue styling (red highlight)
+  - Completed tasks with past due dates no longer display overdue styling 
   - Respects the "Hide completed from overdue" setting which defaults to true
 
 - (#1363) Fixed calendar view showing nothing when a task has an invalid date format
@@ -108,7 +113,7 @@ Example:
   - Thanks to @Erelen for reporting
 
 - Fixed today column in week/day calendar views using FullCalendar's default yellow instead of theme accent
-  - Today's column now uses a subtle tint of the theme accent color for consistent styling
+  - Today's column now uses a tint of the theme accent color for consistent styling
 
 - (#1399) Fixed drag-and-drop not working in Kanban view on mobile
   - Cards and columns can now be dragged using long-press gesture on touch devices
@@ -155,7 +160,7 @@ Example:
   - Hover states show accent color border for clearer interactivity feedback
   - Previously buttons were nearly invisible with transparent backgrounds
 
-- (#1409, #1214, #979) Improved Calendar, Agenda, Kanban, and Stats views in pop-out windows
+- (#1409), (#1214), (#979) Improved Calendar, Agenda, Kanban, and Stats views in pop-out windows
   - Drag-and-drop in Kanban view now works correctly when the view is in a new window
   - Context menus (status, priority, task) now work correctly in pop-out windows
   - Stats view drill-down modal now appears in the correct window
