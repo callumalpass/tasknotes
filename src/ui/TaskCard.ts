@@ -2349,7 +2349,8 @@ export async function toggleSubtasks(
 			// Show subtasks
 			if (!subtasksContainer) {
 				// Create subtasks container after the main content
-				subtasksContainer = document.createElement("div");
+				// Use card.ownerDocument for pop-out window support
+				subtasksContainer = card.ownerDocument.createElement("div");
 				subtasksContainer.className = "task-card__subtasks";
 
 				// Prevent clicks inside subtasks container from bubbling to parent card
