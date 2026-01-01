@@ -6778,3 +6778,159 @@ test.describe('Issue #1252: iPad calendar date picker selection', () => {
     await page.waitForTimeout(300);
   });
 });
+
+// ============================================================================
+// Issue #1216: Show Relationships widget only when relationships exist
+// https://github.com/user/tasknotes/issues/1216
+// ============================================================================
+test.describe('Issue #1216 - Hide relationships widget when empty', () => {
+  test.fixme('should hide relationships widget on notes with no relationships when setting enabled', async () => {
+    // STATUS: FEATURE REQUEST - Issue #1216
+    //
+    // This test documents the requested behavior where the Relationships widget
+    // should be hidden when a note has no relationships (no subtasks, no projects,
+    // no blocked by, no blocking).
+    //
+    // CURRENT BEHAVIOR:
+    // - The Relationships widget is shown on all task notes when enabled via
+    //   Settings → Appearance → UI Elements → Show relationships widget
+    // - Individual tabs (Subtasks, Projects, Blocked By, Blocking) hide themselves
+    //   when empty, but the widget container itself still renders
+    // - This takes up vertical space and shows an empty box
+    //
+    // REQUESTED BEHAVIOR:
+    // Add a new setting with three options:
+    // - "Always" (current behavior, default)
+    // - "When populated" (hide widget when ALL tabs are empty)
+    // - "Never" (disable widget entirely)
+    //
+    // USE CASE:
+    // Reduces visual clutter on simple tasks without dependencies or subtasks.
+    //
+    // IMPLEMENTATION NOTES:
+    // - Current setting is a boolean: showRelationships (true/false)
+    // - Should be changed to: relationshipsDisplayMode: 'always' | 'whenPopulated' | 'never'
+    // - The widget (created in src/editor/RelationshipsDecorations.ts) would need to
+    //   check if all tabs are empty before rendering the container
+    // - The Bases view framework already tracks which tabs have content
+    //
+    // See: src/editor/RelationshipsDecorations.ts (widget creation)
+    // See: src/settings/tabs/appearanceTab.ts (settings UI)
+    // See: src/types/settings.ts (settings type definition)
+
+    const page = getPage();
+
+    // Ensure clean state
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open "Plan vacation" which is a simple task with no relationships:
+    // - No subtasks (not a project)
+    // - No projects property
+    // - No blockedBy or blocking dependencies
+    const taskItem = page.locator('.nav-file-title:has-text("Plan vacation")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Wait for the editor to fully render
+    await page.waitForTimeout(1000);
+
+    // Find the relationships widget
+    const relationshipsWidget = page.locator('.tasknotes-relationships-widget');
+
+    // CURRENT BEHAVIOR (BUG): Widget is visible even though there are no relationships
+    const widgetVisible = await relationshipsWidget.isVisible({ timeout: 3000 }).catch(() => false);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1216-empty-relationships.png' });
+
+    // EXPECTED: When the "When populated" setting is enabled, the widget should NOT
+    // be visible on notes without any relationships
+    //
+    // ACTUAL (current behavior): Widget is visible regardless of relationship content
+    //
+    // This test will pass once the feature is implemented and the setting is set
+    // to "When populated"
+    expect(widgetVisible).toBe(false);
+  });
+
+  test.fixme('should show relationships widget on notes WITH relationships regardless of setting', async () => {
+    // STATUS: FEATURE REQUEST - Issue #1216
+    //
+    // Complementary test: Verify that notes WITH relationships still show the widget
+    // even when "When populated" is enabled.
+
+    const page = getPage();
+
+    // Ensure clean state
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open "Write documentation" which HAS relationships:
+    // - Has projects: "[[Code review PR 123]]"
+    const taskItem = page.locator('.nav-file-title:has-text("Write documentation")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Wait for the editor to fully render
+    await page.waitForTimeout(1000);
+
+    // Find the relationships widget
+    const relationshipsWidget = page.locator('.tasknotes-relationships-widget');
+
+    // Widget should be visible because this note has relationships
+    const widgetVisible = await relationshipsWidget.isVisible({ timeout: 3000 }).catch(() => false);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1216-populated-relationships.png' });
+
+    // EXPECTED: Widget is visible because the note has relationships
+    expect(widgetVisible).toBe(true);
+  });
+
+  test.fixme('should have relationshipsDisplayMode setting with three options', async () => {
+    // STATUS: FEATURE REQUEST - Issue #1216
+    //
+    // Test that the new setting exists and has the correct options.
+    // This requires opening settings and verifying the dropdown.
+
+    const page = getPage();
+
+    // Open settings
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    // Navigate to TaskNotes settings (via community plugins or search)
+    const tasknotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await tasknotesTab.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await tasknotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Navigate to Features tab (where UI Elements are)
+    const featuresTab = page.locator('.tasknotes-settings-tab:has-text("Features")');
+    if (await featuresTab.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await featuresTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1216-settings.png' });
+
+    // Look for the new setting dropdown with three options
+    // The setting should be "Show relationships widget" with options:
+    // - Always
+    // - When populated
+    // - Never
+    const settingDropdown = page.locator('.setting-item:has-text("relationships") select');
+    const dropdownExists = await settingDropdown.isVisible({ timeout: 2000 }).catch(() => false);
+
+    // Close settings
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Dropdown exists with three options
+    // ACTUAL: Currently it's a toggle (boolean) not a dropdown
+    expect(dropdownExists).toBe(true);
+  });
+});
