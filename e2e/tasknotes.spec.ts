@@ -1223,6 +1223,148 @@ test.describe('Calendar 3-Day View', () => {
   });
 });
 
+test.describe('Calendar Performance - Issue #1330', () => {
+  // STATUS: BUG - Issue #1330
+  // PROBLEM: Advanced Calendar View (week view) takes 8-10 seconds to load on first open
+  // after Obsidian restart. Other views (Kanban, Mini Calendar, task lists) load instantly.
+  //
+  // ROOT CAUSE (suspected): The CalendarView.buildAllEvents() method:
+  // 1. Iterates through ALL Bases entries for property-based events without date filtering
+  // 2. Calls external calendar services (ICS, Google, Microsoft) synchronously on first render
+  // 3. Event DOM mounting (handleEventDidMount) runs expensive operations for EVERY event
+  // 4. No lazy loading or progressive rendering for calendar events
+  //
+  // EXPECTED: Calendar view should load in under 2 seconds on first open
+  // ACTUAL: Calendar view takes 8-10 seconds to load on first open
+
+  test.fixme('calendar week view should load within acceptable time (Issue #1330)', async () => {
+    const page = getPage();
+
+    // Close any open views first to ensure fresh state
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open calendar view via command
+    const startTime = Date.now();
+    await runCommand(page, 'Open calendar view');
+
+    // Wait for FullCalendar container to appear (basic initialization)
+    const calendarContainer = page.locator('.fc');
+    await expect(calendarContainer).toBeVisible({ timeout: 30000 });
+
+    // Switch to week view which is reported as slow
+    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await weekButton.click();
+    }
+
+    // Wait for the calendar to be fully interactive (events rendered)
+    // We check for the timeGrid body which indicates week view is loaded
+    const timeGridBody = page.locator('.fc-timegrid-body');
+    await expect(timeGridBody).toBeVisible({ timeout: 30000 });
+
+    // Wait for any event cards to finish rendering (if there are events)
+    // This ensures the expensive handleEventDidMount operations are complete
+    await page.waitForTimeout(500);
+
+    const loadTime = Date.now() - startTime;
+    console.log(`[Issue #1330] Calendar week view load time: ${loadTime}ms`);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1330-calendar-week-load-time.png' });
+
+    // PERFORMANCE EXPECTATION: Calendar should load within 2000ms (2 seconds)
+    // This test will FAIL until the performance issue is fixed
+    // Current behavior: 8000-10000ms (8-10 seconds)
+    expect(loadTime).toBeLessThan(2000);
+  });
+
+  test.fixme('calendar view should load events progressively (Issue #1330)', async () => {
+    // STATUS: BUG - Issue #1330
+    // PROBLEM: All events are loaded synchronously in buildAllEvents(), blocking the UI
+    // EXPECTED: Events should load progressively, showing the calendar immediately
+    // with events appearing as they're fetched
+
+    const page = getPage();
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open calendar view
+    await runCommand(page, 'Open calendar view');
+
+    // The calendar container should appear quickly (within 500ms)
+    const containerStartTime = Date.now();
+    const calendarContainer = page.locator('.fc');
+    await expect(calendarContainer).toBeVisible({ timeout: 1000 });
+    const containerLoadTime = Date.now() - containerStartTime;
+
+    console.log(`[Issue #1330] Calendar container visible in: ${containerLoadTime}ms`);
+
+    // Switch to week view
+    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await weekButton.click();
+    }
+
+    // The week view grid should appear quickly, even if events are still loading
+    const gridStartTime = Date.now();
+    const timeGrid = page.locator('.fc-timegrid');
+    await expect(timeGrid).toBeVisible({ timeout: 1000 });
+    const gridLoadTime = Date.now() - gridStartTime;
+
+    console.log(`[Issue #1330] Week view grid visible in: ${gridLoadTime}ms`);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1330-progressive-load.png' });
+
+    // Container and grid should appear within 500ms for good perceived performance
+    // Events can load progressively afterwards
+    // This test will FAIL until progressive loading is implemented
+    expect(containerLoadTime).toBeLessThan(500);
+    expect(gridLoadTime).toBeLessThan(500);
+  });
+
+  test.fixme('external calendar events should load lazily (Issue #1330)', async () => {
+    // STATUS: BUG - Issue #1330
+    // PROBLEM: ICS, Google, and Microsoft calendar events are all fetched during
+    // initial calendar render, causing significant delay
+    // EXPECTED: External calendar events should be fetched lazily or in parallel
+    // with the main calendar render
+
+    const page = getPage();
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Measure time to first paint vs time to all events loaded
+    const startTime = Date.now();
+    await runCommand(page, 'Open calendar view');
+
+    // Time to first paint (calendar structure visible)
+    const calendarContainer = page.locator('.fc');
+    await expect(calendarContainer).toBeVisible({ timeout: 30000 });
+    const firstPaintTime = Date.now() - startTime;
+
+    // Switch to week view
+    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await weekButton.click();
+    }
+
+    // Wait for all events to be rendered
+    await page.waitForTimeout(2000);
+    const fullyLoadedTime = Date.now() - startTime;
+
+    console.log(`[Issue #1330] First paint: ${firstPaintTime}ms, Fully loaded: ${fullyLoadedTime}ms`);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1330-lazy-loading.png' });
+
+    // First paint should happen quickly even if full loading takes longer
+    // The gap between first paint and fully loaded indicates lazy loading works
+    // If first paint is slow (>2s), the bug exists
+    expect(firstPaintTime).toBeLessThan(2000);
+  });
+});
+
 test.describe('Task Quick Add', () => {
   test('should double-click calendar day to create task', async () => {
     const page = getPage();
