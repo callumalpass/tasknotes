@@ -170,3 +170,9 @@ Example:
   - **Known limitation**: Calendar event dragging does not work in pop-out windows due to FullCalendar library using global `document` for mouse event listeners. Use context menus or edit modals as a workaround.
   - Updated FullCalendar to v6.1.20
   - Thanks to @Snakiest, @same774, and @3zra47 for reporting
+
+- (#1337) Fixed "Convert current note to task" hotkey not applying default values from settings
+  - When user configured default status/priority as "None", the modal would show "Open" and "Normal" instead
+  - Root cause: Task edit modal was refreshing data from file and overwriting user-configured defaults
+  - Now preserves constructor-provided task data when converting non-task files
+  - Thanks to @guihasparyk for reporting

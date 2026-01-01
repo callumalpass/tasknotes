@@ -2203,12 +2203,13 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Build a TaskInfo object from the note's existing data
 		// Use defaults for required fields that don't exist
+		// Use ?? (nullish coalescing) to properly handle empty string defaults
 		const now = getCurrentTimestamp();
 		const taskInfo: TaskInfo = {
 			path: activeFile.path,
 			title: frontmatter.title || activeFile.basename,
-			status: frontmatter.status || this.settings.defaultTaskStatus,
-			priority: frontmatter.priority || this.settings.defaultTaskPriority,
+			status: frontmatter.status ?? this.settings.defaultTaskStatus,
+			priority: frontmatter.priority ?? this.settings.defaultTaskPriority,
 			archived: false,
 			due: frontmatter.due || undefined,
 			scheduled: frontmatter.scheduled || undefined,

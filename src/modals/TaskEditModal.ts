@@ -265,6 +265,19 @@ export class TaskEditModal extends TaskModal {
 			this.details = this.extractDetailsFromContent(content);
 			this.originalDetails = this.details;
 
+			// Check if this file is actually a task (has task tag/property)
+			// If not, keep the original task data (e.g., for "convert note to task" flow)
+			const metadata = this.app.metadataCache.getFileCache(file);
+			const isRecognizedTask = metadata?.frontmatter &&
+				this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
+
+			if (!isRecognizedTask) {
+				// File is not yet a task - keep the original task data passed to constructor
+				// This preserves user's default settings for status/priority during conversion
+				this.task.details = this.details;
+				return;
+			}
+
 			const cachedTaskInfo = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 
 			if (cachedTaskInfo) {
