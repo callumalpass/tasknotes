@@ -186,3 +186,8 @@ Example:
 - (#1295) Fixed missing navigation link to Default Base Templates page on tasknotes.dev
   - The page existed but was not accessible from the site navigation
   - Thanks to @Arachnidai for reporting
+
+- (#1223) Fixed "Go to today's note" command opening wrong date in positive UTC offset timezones
+  - In timezones like Japan (UTC+9), early morning use of this command opened yesterday's note
+  - Root cause: Incorrectly extracting UTC date components instead of local timezone date
+  - Thanks to @BrucePlumb for reporting
