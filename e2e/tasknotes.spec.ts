@@ -5320,3 +5320,285 @@ test.describe('Issue #1339 - Expanded subtasks toggle', () => {
     }
   });
 });
+
+// Issue #1331: Agenda view not sorting/grouping - but Tasks view does
+// https://github.com/anthropics/tasknotes/issues/1331
+
+test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
+  // Helper to expand TaskNotes and Views folders if needed
+  async function expandViewsFolder(page: Page): Promise<void> {
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
+  test.fixme('agenda view should respect sort configuration (Issue #1331)', async () => {
+    // STATUS: BUG - Issue #1331
+    // PROBLEM: Agenda view (CalendarView in listWeek mode) ignores sort/group settings
+    // that work correctly in the Tasks view (TaskListView).
+    //
+    // ROOT CAUSE: FullCalendar's list view only sorts by event start time. The
+    // CalendarView never retrieves or applies Bases' sortBy configuration.
+    //
+    // EXPECTED: When sortBy is configured (e.g., priority A->Z), tasks should be
+    // sorted within each day according to that configuration.
+    // ACTUAL: Tasks are sorted by filename within each day.
+
+    const page = getPage();
+
+    // Close any open modals first
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await expandViewsFolder(page);
+
+    // Open agenda view
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(2000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1331-agenda-unsorted.png' });
+
+    // Verify we're in the FullCalendar list view
+    const listView = page.locator('.fc-list');
+    const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isListView) {
+      console.log('[Issue #1331] Not in list view mode, skipping test');
+      return;
+    }
+
+    // Find all task cards within the agenda
+    const taskCards = page.locator('.fc-list-event .task-card, .fc-list-event-row');
+    const taskCount = await taskCards.count();
+    console.log(`[Issue #1331] Found ${taskCount} tasks in agenda view`);
+
+    if (taskCount < 2) {
+      console.log('[Issue #1331] Not enough tasks to verify sorting, skipping test');
+      return;
+    }
+
+    // Get the titles/priority of tasks in order
+    const taskTitles: string[] = [];
+    const taskPriorities: string[] = [];
+
+    for (let i = 0; i < Math.min(taskCount, 10); i++) {
+      const card = taskCards.nth(i);
+      const title = await card.locator('.task-card__title, .fc-list-event-title').textContent().catch(() => '');
+      const priorityBadge = await card.locator('[class*="priority"]').textContent().catch(() => '');
+      taskTitles.push(title || `task-${i}`);
+      taskPriorities.push(priorityBadge || 'unknown');
+    }
+
+    console.log('[Issue #1331] Task order in agenda:', taskTitles);
+    console.log('[Issue #1331] Task priorities:', taskPriorities);
+
+    // Now compare with tasks view which correctly sorts
+    await expandViewsFolder(page);
+
+    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
+    await expect(tasksItem).toBeVisible({ timeout: 10000 });
+    await tasksItem.click();
+    await page.waitForTimeout(2000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1331-tasks-sorted.png' });
+
+    // Get task order in tasks view
+    const tasksViewCards = page.locator('.task-card');
+    const tasksViewCount = await tasksViewCards.count();
+
+    const tasksViewTitles: string[] = [];
+    const tasksViewPriorities: string[] = [];
+
+    for (let i = 0; i < Math.min(tasksViewCount, 10); i++) {
+      const card = tasksViewCards.nth(i);
+      const title = await card.locator('.task-card__title').textContent().catch(() => '');
+      const priorityBadge = await card.locator('[class*="priority"]').textContent().catch(() => '');
+      tasksViewTitles.push(title || `task-${i}`);
+      tasksViewPriorities.push(priorityBadge || 'unknown');
+    }
+
+    console.log('[Issue #1331] Task order in tasks view:', tasksViewTitles);
+    console.log('[Issue #1331] Task priorities in tasks view:', tasksViewPriorities);
+
+    // The test is marked as fixme because this will fail until the bug is fixed.
+    // When fixed, the order should match (within the same day).
+    // For now, we expect them to potentially be in different order due to the bug.
+
+    // This assertion will fail when the bug exists (agenda ignores sort config)
+    // and pass when fixed (agenda respects sort config like tasks view does)
+    expect(taskTitles).toEqual(tasksViewTitles);
+  });
+
+  test.fixme('agenda view should respect groupBy configuration (Issue #1331)', async () => {
+    // STATUS: BUG - Issue #1331
+    // PROBLEM: Agenda view (CalendarView in listWeek mode) cannot group by properties
+    // like status or priority, which works correctly in the Tasks view (TaskListView).
+    //
+    // ROOT CAUSE: FullCalendar's list view only supports grouping by date. The
+    // CalendarView never retrieves or applies Bases' groupBy configuration.
+    // FullCalendar's list plugin doesn't support custom grouping at all.
+    //
+    // EXPECTED: When groupBy is configured (e.g., group by status), tasks should be
+    // grouped accordingly within the agenda view.
+    // ACTUAL: Tasks are only grouped by date (FullCalendar's default behavior).
+
+    const page = getPage();
+
+    // Close any open modals first
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await expandViewsFolder(page);
+
+    // Open agenda view
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(2000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1331-agenda-no-groups.png' });
+
+    // Verify we're in the FullCalendar list view
+    const listView = page.locator('.fc-list');
+    const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isListView) {
+      console.log('[Issue #1331] Not in list view mode, skipping test');
+      return;
+    }
+
+    // Check for group headers in agenda view
+    // FullCalendar's list view uses fc-list-day for date headers
+    const dateHeaders = page.locator('.fc-list-day');
+    const dateHeaderCount = await dateHeaders.count();
+    console.log(`[Issue #1331] Found ${dateHeaderCount} date headers in agenda`);
+
+    // Check for custom group headers (like status groups)
+    // These would be added if agenda view supported groupBy
+    const statusGroups = page.locator('.bases-group-header, [class*="group-header"]');
+    const statusGroupCount = await statusGroups.count();
+    console.log(`[Issue #1331] Found ${statusGroupCount} status/custom group headers in agenda`);
+
+    // Now compare with tasks view which correctly groups
+    await expandViewsFolder(page);
+
+    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
+    await expect(tasksItem).toBeVisible({ timeout: 10000 });
+    await tasksItem.click();
+    await page.waitForTimeout(2000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1331-tasks-grouped.png' });
+
+    // Check for group headers in tasks view
+    const tasksGroupHeaders = page.locator('.bases-group-header, [class*="group-header"]');
+    const tasksGroupCount = await tasksGroupHeaders.count();
+    console.log(`[Issue #1331] Found ${tasksGroupCount} group headers in tasks view`);
+
+    // The test is marked as fixme because this will fail until the bug is fixed.
+    // When groupBy is configured, both views should show the same groups.
+    // For now, agenda shows 0 custom groups while tasks view shows them.
+
+    // This assertion will fail when the bug exists (agenda only has date groups)
+    // and pass when fixed (agenda has custom groups like tasks view)
+    expect(statusGroupCount).toBeGreaterThan(0);
+  });
+
+  test.fixme('agenda view should sort tasks within each day by priority (Issue #1331)', async () => {
+    // STATUS: BUG - Issue #1331
+    // This is a more specific test for the sorting issue.
+    //
+    // PROBLEM: Within a single day in the agenda view, tasks are sorted by filename
+    // instead of respecting the sortBy configuration (e.g., priority).
+    //
+    // EXPECTED: High priority tasks should appear before normal/low priority tasks
+    // within the same day.
+    // ACTUAL: Tasks appear sorted by filename (alphabetically).
+
+    const page = getPage();
+
+    // Close any open modals first
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await expandViewsFolder(page);
+
+    // Open agenda view
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(2000);
+
+    // Verify we're in the FullCalendar list view
+    const listView = page.locator('.fc-list');
+    const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isListView) {
+      console.log('[Issue #1331] Not in list view mode, skipping test');
+      return;
+    }
+
+    // Find tasks within a single day
+    const dayGroups = page.locator('.fc-list-day');
+    const dayCount = await dayGroups.count();
+
+    for (let dayIndex = 0; dayIndex < Math.min(dayCount, 3); dayIndex++) {
+      const dayHeader = dayGroups.nth(dayIndex);
+      const dayText = await dayHeader.textContent().catch(() => '');
+
+      // Get all events for this day (following tr elements until next fc-list-day)
+      // This is tricky because FullCalendar uses table structure
+      const dayEvents = page.locator(`.fc-list-table tr.fc-list-event`);
+      const eventsInDay: string[] = [];
+      const prioritiesInDay: string[] = [];
+
+      // We'd need to filter events by their day, which is complex in FC's table structure
+      // For now, just log the overall order
+      const eventCount = await dayEvents.count();
+
+      for (let i = 0; i < Math.min(eventCount, 5); i++) {
+        const event = dayEvents.nth(i);
+        const title = await event.locator('.task-card__title, .fc-list-event-title').textContent().catch(() => '');
+        const priorityClass = await event.locator('.task-card').getAttribute('class').catch(() => '');
+
+        eventsInDay.push(title || '');
+
+        // Extract priority from class name (e.g., "priority-high", "priority-normal")
+        const priorityMatch = priorityClass?.match(/priority-(\w+)/);
+        prioritiesInDay.push(priorityMatch?.[1] || 'unknown');
+      }
+
+      console.log(`[Issue #1331] Day ${dayIndex} (${dayText}): events=${eventsInDay.join(', ')}`);
+      console.log(`[Issue #1331] Day ${dayIndex} priorities: ${prioritiesInDay.join(', ')}`);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1331-agenda-priority-order.png' });
+
+    // This test documents the bug but doesn't have a simple assertion
+    // because verifying cross-day sorting is complex.
+    // The main assertion is that high priority tasks come before low priority within a day.
+
+    // For the test to pass when fixed, we'd need to verify priority order within each day.
+    // For now, just document that sorting doesn't work as expected.
+    expect(true).toBe(false); // Placeholder assertion - test is fixme'd
+  });
+});
