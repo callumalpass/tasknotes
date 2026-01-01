@@ -1348,11 +1348,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "ae9145d07eee8272b302a1808073c159cd3bfec8"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "34efbd209e68898aed324b11d0f5cfed124e7575"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "9aec40048d87876fcbf062ea1349a9911ca13906"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "3820766478f37d994713aaf89407f86d80c8ae91"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "29eb97f68f70709cbc3d61588a824fb025927ed9"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "53c502151363306373b3ba6583e5f728a78ee217"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "d895170a7309ec578eb4d03b2bb3f14dd94f6333"
@@ -3668,6 +3683,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "552c8aeac6387a00fee4a29b2237c4ebffe6cd6b"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "17e1b7f3eeaf4948018b4da3d03fa0765b6792b9"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -8979,11 +9002,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "a78f6e71b3a19e05cb6dc7c6beb3337b07c6e78c"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "32152ee04e637ca71297967ddbbfcfeab0fb416b"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "c3a2166ad0881c93956be6f99633574055a8aa6c"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "c904c3057bd4258d4ecc91e28b9569e32c6468e7"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "015e105e52e4cd7301c2e27cc5d0337cb27cb1b4"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "c47cfeff05eb5bf7b5061e1cad51a2a8bfa29c55"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "add12ca7e25ebc36794defe7b219ec3e02f5a67d"
@@ -11299,6 +11337,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "03920d6f0ddd85704a780a5496e415c6ce05f1c7"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "ef66f13fd51af802465a65417c4fbc968d8065df"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -16610,11 +16656,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "540dd3582211c3f818e2b9a9d6c36f29cf09b7f4"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "e6b4a66c9e5c63b56de5413d4f2a8d40c0d6be23"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "a562c001b1278f72812811af1340382b9f1b0efc"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "5baddf74d1c66e68eee6f1d22cefb31f5d6725c5"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "b3110748b86892f58793a799bab654615a112d0d"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "e1f028745302fe82cdda9f02f45f6ec77cfc1c65"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "d36a7f5b30c0d29538afea14f2e2d99e99bac035"
@@ -18930,6 +18991,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "9ad1bf066f396b53c2b164e9d4fe17a9c01b3c5b"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "ebb2fa5e523d1d98620788691a3e9c99ab7254ff"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -24241,11 +24310,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "e7d488d41f55b2c027a4a30ba6fa27ab9c03eaa8"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "cc304244b06cc59e1233e42f38456265c9e9064f"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "4e54892791fe5812f97a622b6cfeb893d3ea0e2a"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "5de943b59bd97ba9c74ab3873d3eb7098e2e402b"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "e735b57a635417a16e6d54d4b429d8551f48b188"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "6b5edf4b72df5a4727285445c5875a47e7d8ba70"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "302c6a85316ba7ce01eb3bc6712e05b7f2330d61"
@@ -26561,6 +26645,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "2bd6e811ec1a7654873ec6ba782cd9bd6766d1d8"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "30c209e261393b735ff1cfd2b4dc5e182faf0fe1"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -31872,11 +31964,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "d247d40cced4ba312afdfa2db0a7720461cc8f31"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "2041c915cd2b8e22fb36f5fa78f1bf07f2218682"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "5da0c87f54feff672a3d12026bc136013f50e7ae"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "ad231dbb6e76845db6b768b7622e1f0a42caf173"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "2825e6c08c3412176bb42a6074186fd3131dfdcc"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "1a0ba764600504bca9d1025fd3e86f4e2cd1eb19"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "53eae44a18e3be17062bdbc759568ea554465e35"
@@ -34192,6 +34299,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "667b00947829ed5cb19967e9a113214ab7a28060"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "01db0cffbcf915132fa6c5a05956554cb1ccdc36"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -39503,11 +39618,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "663e5bf381d9a56331a5af3121ee29537040803a"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "67f6b0f016cf66eb955159f8c934c466b2574dd7"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "5e767b3b58a609df1aa1518df49ea04e36ccb6b0"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "0f3a099656e02fe9e9ee6e1b519c77d8d6a57f0e"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "e30a5fdfccab8624c7b7eaaa683e4db9afafc623"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "0d417a85c354d21379ccf40fb1c4884a255fc7df"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "1b4c59b136df4f61182a52f55ceb14795ef4d3ca"
@@ -41823,6 +41953,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "d3351bc7de52f5073c0ca21016b601a82f3e2449"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "42f546280a9de71bf8f0846b854f3fe35444a076"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -47134,11 +47272,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "50897a01edacce0ad503c8f27f4f5435fd7ef358"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "3f81d7313a3dd44dedf7890bee6413d10a8e2825"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "1e681aea7e37b6257c916b68270beb064e68924d"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "b3ebcde0bc2b926c9ba4393bc48559b9ee2fc22b"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "8619e3701c1b437928efafff88c2ea4d448692e3"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "63cd698012716a6ed8dc821fac2bd629266f6a07"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "d9396e7d7f043091de61ff08bda4303b21e81987"
@@ -49454,6 +49607,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "4270c4fad03947ed8170d33c50a8947d38c61c65"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "8be26463cb3fa45cd1f2bcf953c22d5bd081e5de"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -54765,11 +54926,26 @@
       "source": "f0ab676e9164fa81973c0206c0fbb5ae8d9c6701",
       "translation": "a430843de48705a73caaaee92e7f753e95a1b024"
     },
-    "settings.features.pomodoro.mobileSidebar.name": null,
-    "settings.features.pomodoro.mobileSidebar.description": null,
-    "settings.features.pomodoro.mobileSidebar.tab": null,
-    "settings.features.pomodoro.mobileSidebar.left": null,
-    "settings.features.pomodoro.mobileSidebar.right": null,
+    "settings.features.pomodoro.mobileSidebar.name": {
+      "source": "c52589b57978be41d72d5771769ee590bdcb94fd",
+      "translation": "391de144adc5b782799dc338f5e849798f1d7f79"
+    },
+    "settings.features.pomodoro.mobileSidebar.description": {
+      "source": "47d74da8947feeeb93dc3ca3ff6003509338a0c3",
+      "translation": "7d95e19422a295f2e73a0315d0c2ee17841a08f3"
+    },
+    "settings.features.pomodoro.mobileSidebar.tab": {
+      "source": "55e8569b89bd6f96de3e199204b5241d46400ce2",
+      "translation": "4a6d36b25cf43f5ed802eb87ac75b72b9e974511"
+    },
+    "settings.features.pomodoro.mobileSidebar.left": {
+      "source": "bbd95793e8ca3f18b1b9f11e9351a6c277bcc95b",
+      "translation": "a65e2a68d3f602abd9578ef833a2be474610b91e"
+    },
+    "settings.features.pomodoro.mobileSidebar.right": {
+      "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
+      "translation": "1dbcee4b3358b9cb2e47077858c66cd2da09f71e"
+    },
     "settings.features.uiLanguage.header": {
       "source": "e660e6c5bedaffd6276e2833ad53818a1ce2c0f3",
       "translation": "d5d8edd12c086fe7b4f8111054448f345bd82d19"
@@ -57085,6 +57261,14 @@
     "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
       "source": "4f73737fff77e4d11521ac76908146aae2c48b47",
       "translation": "4f73737fff77e4d11521ac76908146aae2c48b47"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {
+      "source": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+      "translation": "f9d2a6ea7d65f376e719d75a88addf6f0f0b3d2d"
+    },
+    "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
+      "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
+      "translation": "53827ffca8bacbb13efc6ba42dd4e4dd981a6efa"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",

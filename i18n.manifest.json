@@ -920,6 +920,8 @@
   "settings.integrations.calendarSubscriptions.customTemplate.name": "2200353612d920419cc3b94e8be41312cc0b96db",
   "settings.integrations.calendarSubscriptions.customTemplate.description": "8cc4f4ff4d84a895e16add3621070ffbf8c40c10",
   "settings.integrations.calendarSubscriptions.customTemplate.placeholder": "4f73737fff77e4d11521ac76908146aae2c48b47",
+  "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": "cc33d3d9bf36ae654cb6aab11540d95a0a074169",
+  "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
   "settings.integrations.subscriptionsList.header": "6570967667fd5103c370ee5c88bf816abf475510",
   "settings.integrations.subscriptionsList.addSubscription.name": "0bbabb4ede2b376e405529001ccb064b338e2c5a",
   "settings.integrations.subscriptionsList.addSubscription.description": "d62e2b3643c816028fc916796a58089540e916eb",

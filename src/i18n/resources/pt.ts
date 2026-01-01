@@ -506,6 +506,13 @@ export const pt: TranslationTree = {
 				notifications: {
 					name: "Notificações Pomodoro",
 					description: "Mostrar notificações quando as sessões Pomodoro terminarem"
+				},
+				mobileSidebar: {
+					name: "Barra lateral móvel",
+					description: "Onde abrir o temporizador Pomodoro em dispositivos móveis",
+					tab: "Painel de notas",
+					left: "Barra lateral esquerda",
+					right: "Barra lateral direita"
 				}
 			},
 			uiLanguage: {
@@ -1544,6 +1551,10 @@ export const pt: TranslationTree = {
 					name: "Modelo de nome de arquivo ICS personalizado",
 					description: "Modelo para nomes de arquivo de eventos ICS personalizados",
 					placeholder: "{date}-{title}"
+				},
+				useICSEndAsDue: {
+					name: "Usar hora de término do evento ICS como data de vencimento",
+					description: "Quando ativado, as tarefas criadas a partir de eventos de calendário terão sua data de vencimento definida para a hora de término do evento. Para eventos de dia inteiro, a data de vencimento será a data do evento. Para eventos com horário, a data de vencimento incluirá a hora de término."
 				}
 			},
 			subscriptionsList: {

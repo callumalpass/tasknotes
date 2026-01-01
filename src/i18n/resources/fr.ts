@@ -507,6 +507,13 @@ export const fr: TranslationTree = {
 					name: "Notifications Pomodoro",
 					description: "Afficher une notification lorsque les sessions Pomodoro se terminent",
 				},
+				mobileSidebar: {
+					name: "Barre latérale mobile",
+					description: "Où ouvrir le minuteur Pomodoro sur les appareils mobiles",
+					tab: "Panneau de notes",
+					left: "Barre latérale gauche",
+					right: "Barre latérale droite",
+				},
 			},
 			uiLanguage: {
 				header: "Langue de l'interface",
@@ -1541,6 +1548,10 @@ export const fr: TranslationTree = {
 					name: "Modèle de nom de fichier ICS personnalisé",
 					description: "Modèle pour les noms de fichiers d'événements ICS personnalisés",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "Utiliser l'heure de fin de l'événement ICS comme date d'échéance",
+					description: "Lorsqu'activé, les tâches créées à partir d'événements de calendrier auront leur date d'échéance définie sur l'heure de fin de l'événement. Pour les événements sur toute la journée, la date d'échéance sera la date de l'événement. Pour les événements avec horaire, la date d'échéance inclura l'heure de fin.",
 				},
 			},
 			subscriptionsList: {

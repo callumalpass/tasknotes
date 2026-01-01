@@ -507,6 +507,13 @@ export const de: TranslationTree = {
 					name: "Pomodoro-Benachrichtigungen",
 					description: "Benachrichtigungen anzeigen, wenn Pomodoro-Sitzungen enden",
 				},
+				mobileSidebar: {
+					name: "Mobile Seitenleiste",
+					description: "Wo der Pomodoro-Timer auf mobilen Geräten geöffnet werden soll",
+					tab: "Notiz-Panel",
+					left: "Linke Seitenleiste",
+					right: "Rechte Seitenleiste",
+				},
 			},
 			uiLanguage: {
 				header: "Oberflächensprache",
@@ -1541,6 +1548,10 @@ export const de: TranslationTree = {
 					name: "Benutzerdefinierte ICS-Dateinamenvorlage",
 					description: "Vorlage für benutzerdefinierte ICS-Event-Dateinamen",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "ICS-Ereignis-Endzeit als Fälligkeitsdatum verwenden",
+					description: "Wenn aktiviert, wird das Fälligkeitsdatum von Aufgaben aus Kalenderereignissen auf die Endzeit des Ereignisses gesetzt. Bei ganztägigen Ereignissen wird das Fälligkeitsdatum auf das Ereignisdatum gesetzt. Bei zeitgesteuerten Ereignissen enthält das Fälligkeitsdatum die Endzeit.",
 				},
 			},
 			subscriptionsList: {

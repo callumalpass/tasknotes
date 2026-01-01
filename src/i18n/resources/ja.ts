@@ -507,6 +507,13 @@ export const ja: TranslationTree = {
 					name: "ポモドーロ通知",
 					description: "ポモドーロセッション終了時に通知を表示",
 				},
+				mobileSidebar: {
+					name: "モバイルサイドバー",
+					description: "モバイルデバイスでポモドーロタイマーを開く場所",
+					tab: "ノートパネル",
+					left: "左サイドバー",
+					right: "右サイドバー",
+				},
 			},
 			uiLanguage: {
 				header: "インターフェース言語",
@@ -1541,6 +1548,10 @@ export const ja: TranslationTree = {
 					name: "カスタムICSファイル名テンプレート",
 					description: "カスタムICSイベントファイル名のテンプレート",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "ICSイベント終了時刻をタスク期日として使用",
+					description: "有効にすると、カレンダーイベントから作成されたタスクの期日がイベントの終了時刻に設定されます。終日イベントの場合、期日はイベントの日付に設定されます。時間指定イベントの場合、期日に終了時刻が含まれます。",
 				},
 			},
 			subscriptionsList: {

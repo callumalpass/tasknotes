@@ -507,6 +507,13 @@ export const zh: TranslationTree = {
 					name: "番茄钟通知",
 					description: "番茄钟会话结束时显示通知",
 				},
+				mobileSidebar: {
+					name: "移动端侧边栏",
+					description: "在移动设备上打开番茄钟计时器的位置",
+					tab: "笔记面板",
+					left: "左侧边栏",
+					right: "右侧边栏",
+				},
 			},
 			uiLanguage: {
 				header: "界面语言",
@@ -1541,6 +1548,10 @@ export const zh: TranslationTree = {
 					name: "自定义ICS文件名模板",
 					description: "自定义ICS事件文件名的模板",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "使用ICS事件结束时间作为任务截止日期",
+					description: "启用后，从日历事件创建的任务将把截止日期设置为事件的结束时间。对于全天事件，截止日期将设置为事件日期。对于有时间的事件，截止日期将包含结束时间。",
 				},
 			},
 			subscriptionsList: {

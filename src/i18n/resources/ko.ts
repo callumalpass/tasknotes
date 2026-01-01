@@ -503,6 +503,13 @@ export const ko: TranslationTree = {
 					name: "뽀모도로 알림",
 					description: "뽀모도로 세션 종료 시 알림 표시",
 				},
+				mobileSidebar: {
+					name: "모바일 사이드바",
+					description: "모바일 기기에서 뽀모도로 타이머를 열 위치",
+					tab: "노트 패널",
+					left: "왼쪽 사이드바",
+					right: "오른쪽 사이드바",
+				},
 			},
 			uiLanguage: {
 				header: "인터페이스 언어",
@@ -1491,6 +1498,10 @@ export const ko: TranslationTree = {
 					name: "사용자 지정 ICS 파일명 템플릿",
 					description: "사용자 지정 ICS 이벤트 파일명 템플릿",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "ICS 이벤트 종료 시간을 작업 마감일로 사용",
+					description: "활성화하면 캘린더 이벤트에서 생성된 작업의 마감일이 이벤트 종료 시간으로 설정됩니다. 종일 이벤트의 경우 마감일이 이벤트 날짜로 설정됩니다. 시간이 지정된 이벤트의 경우 마감일에 종료 시간이 포함됩니다.",
 				},
 			},
 			subscriptionsList: {
