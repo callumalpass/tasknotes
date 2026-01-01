@@ -5746,6 +5746,128 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
 });
 
 // ============================================================================
+// Issue #1411: Agenda base ignores sort (DUPLICATE of #1331)
+// https://github.com/anthropics/tasknotes/issues/1411
+// ============================================================================
+test.describe('Issue #1411 - Agenda base ignores sort (duplicate of #1331)', () => {
+  // Helper to expand TaskNotes and Views folders if needed
+  async function expandViewsFolder(page: Page): Promise<void> {
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
+  test.fixme('agenda view should sort by status then priority (Issue #1411)', async () => {
+    // STATUS: BUG - Issue #1411 (duplicate of #1331)
+    //
+    // User reports: TaskNotes v4.1.3, Agenda view ignores sort settings.
+    //
+    // STEPS TO REPRODUCE (from issue):
+    // 1. Go to default Agenda view
+    // 2. Tasks will be sorted in alphabetical order of note title
+    // 3. Try to sort to "status" and "priority"
+    //
+    // EXPECTED: Tasks should sort by status then priority
+    // ACTUAL: Tasks remain sorted alphabetically by title
+    //
+    // ROOT CAUSE: This is a duplicate of Issue #1331. CalendarView (used by
+    // agenda-default in listWeek mode) doesn't apply Bases' sortBy configuration.
+    // Additionally, agenda-default.base only has an 'order' field (for displayed
+    // properties) but no 'sort' field for event ordering.
+    //
+    // See tests for Issue #1331 above for comprehensive coverage of this bug.
+
+    const page = getPage();
+
+    // Close any open modals first
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await expandViewsFolder(page);
+
+    // Open agenda view (reproducing step 1)
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(2000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1411-agenda-sort-ignored.png' });
+
+    // Verify we're in the FullCalendar list view
+    const listView = page.locator('.fc-list');
+    const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isListView) {
+      console.log('[Issue #1411] Not in list view mode, skipping test');
+      return;
+    }
+
+    // Find all task events in the agenda
+    const taskEvents = page.locator('.fc-list-event');
+    const taskCount = await taskEvents.count();
+    console.log(`[Issue #1411] Found ${taskCount} tasks in agenda view`);
+
+    if (taskCount < 2) {
+      console.log('[Issue #1411] Not enough tasks to verify sorting');
+      return;
+    }
+
+    // Extract task info to check sort order
+    const taskInfo: Array<{ title: string; status?: string; priority?: string }> = [];
+
+    for (let i = 0; i < Math.min(taskCount, 10); i++) {
+      const event = taskEvents.nth(i);
+      const title = await event.locator('.fc-list-event-title, .task-card__title').textContent().catch(() => '');
+      const statusBadge = await event.locator('[class*="status"]').first().textContent().catch(() => '');
+      const priorityBadge = await event.locator('[class*="priority"]').first().textContent().catch(() => '');
+
+      taskInfo.push({
+        title: title?.trim() || `task-${i}`,
+        status: statusBadge?.trim() || undefined,
+        priority: priorityBadge?.trim() || undefined,
+      });
+    }
+
+    console.log('[Issue #1411] Task order in agenda:', taskInfo.map(t => t.title));
+    console.log('[Issue #1411] Task statuses:', taskInfo.map(t => t.status));
+    console.log('[Issue #1411] Task priorities:', taskInfo.map(t => t.priority));
+
+    // Verify tasks are sorted alphabetically (the bug behavior)
+    // When fixed, this should fail because tasks will be sorted by status/priority
+    const titles = taskInfo.map(t => t.title);
+    const sortedAlphabetically = [...titles].sort((a, b) => a.localeCompare(b));
+
+    // This assertion documents the bug: tasks ARE sorted alphabetically (wrong)
+    // When the bug is fixed, tasks should NOT be sorted alphabetically
+    // (they should be sorted by status, then priority)
+    const isSortedAlphabetically = JSON.stringify(titles) === JSON.stringify(sortedAlphabetically);
+    console.log(`[Issue #1411] Tasks sorted alphabetically: ${isSortedAlphabetically}`);
+
+    // The bug exists when tasks are sorted alphabetically instead of by status/priority
+    // This test.fixme will pass when fixed (tasks NOT sorted alphabetically)
+    expect(isSortedAlphabetically).toBe(false);
+  });
+});
+
+// ============================================================================
 // Issue #1329: Huge gap between end of note and relationship-widget
 // https://github.com/user/tasknotes/issues/1329
 // ============================================================================
