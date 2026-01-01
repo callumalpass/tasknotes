@@ -5890,3 +5890,320 @@ test.describe('Issue #1329 - Relationships widget gap', () => {
     await page.waitForTimeout(500);
   });
 });
+
+// ============================================================================
+// Issue #1328: Add task to calendar from agenda view
+// ============================================================================
+test.describe('Issue #1328: Add task to calendar from agenda view', () => {
+  // Helper to expand TaskNotes and Views folders
+  async function expandViewsFolderFor1328(page: Page): Promise<void> {
+    // First ensure the sidebar is expanded
+    await ensureSidebarExpanded(page);
+
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
+  test.fixme('agenda view should allow dragging tasks to calendar to schedule them (Issue #1328)', async () => {
+    // Issue #1328: Feature request to add task to calendar from agenda view
+    //
+    // FEATURE REQUEST:
+    // Users want to be able to drag a task from the agenda view (listWeek mode) to
+    // a specific date/time slot on the calendar view to schedule it.
+    //
+    // CURRENT BEHAVIOR:
+    // - Tasks displayed in the agenda view (FullCalendar listWeek mode) cannot be
+    //   dragged to a calendar time grid to assign a scheduled date/time
+    // - There is no drag-to-schedule functionality from the agenda list
+    //
+    // EXPECTED BEHAVIOR:
+    // - Users should be able to drag a task event from the agenda view
+    // - When dropped on a calendar time slot, the task should get scheduled for that date/time
+    // - The task's 'scheduled' property should be updated with the drop target date/time
+    //
+    // IMPLEMENTATION NOTES:
+    // - The agenda view uses FullCalendar's listWeek mode which shows events as a list
+    // - Events in list mode may need custom draggable configuration
+    // - Consider using FullCalendar's eventDragStart/eventDrop with cross-view support
+    // - May need to split view or have a secondary calendar panel as drop target
+
+    const page = getPage();
+
+    // Initialize calendar first (required for FullCalendar)
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Open agenda view from sidebar
+    await expandViewsFolderFor1328(page);
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(1500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1328-agenda-view.png' });
+
+    // Check for task events in the agenda list view
+    // FullCalendar list view uses .fc-list-event class for events
+    const agendaEvents = page.locator('.fc-list-event, .fc-event');
+    const eventCount = await agendaEvents.count().catch(() => 0);
+
+    console.log(`[Issue #1328] Found ${eventCount} events in agenda view`);
+
+    if (eventCount === 0) {
+      console.log('[Issue #1328] No events found in agenda - test inconclusive');
+      return;
+    }
+
+    // Try to find the first task event
+    const firstEvent = agendaEvents.first();
+    await expect(firstEvent).toBeVisible({ timeout: 5000 });
+
+    // Check if events in list mode are draggable
+    const isDraggable = await firstEvent.evaluate(el => {
+      // Check for FullCalendar draggable class or draggable attribute
+      return el.classList.contains('fc-event-draggable') ||
+             el.getAttribute('draggable') === 'true' ||
+             el.closest('[data-event]') !== null;
+    }).catch(() => false);
+
+    console.log(`[Issue #1328] Agenda event is draggable: ${isDraggable}`);
+
+    // This assertion will FAIL until the feature is implemented
+    // Events in agenda (listWeek) view should be draggable to schedule tasks
+    expect(isDraggable).toBe(true);
+
+    // If draggable, try to perform a drag operation
+    if (isDraggable) {
+      const eventBox = await firstEvent.boundingBox();
+      if (eventBox) {
+        // Attempt to drag the event
+        await firstEvent.hover();
+        await page.mouse.down();
+        // Drag to a hypothetical calendar drop zone
+        await page.mouse.move(eventBox.x + 200, eventBox.y);
+        await page.waitForTimeout(500);
+
+        // Check for drag ghost/preview
+        const dragGhost = page.locator('.fc-event-dragging, .tn-drag-ghost');
+        const ghostVisible = await dragGhost.isVisible({ timeout: 1000 }).catch(() => false);
+
+        console.log(`[Issue #1328] Drag ghost visible: ${ghostVisible}`);
+
+        await page.mouse.up();
+      }
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1328-drag-attempt.png' });
+  });
+
+  test.fixme('agenda view should have context menu option to add task to calendar (Issue #1328)', async () => {
+    // Issue #1328: Feature request to add task to calendar from agenda view
+    //
+    // FEATURE REQUEST:
+    // Users want a right-click context menu option in the agenda view to add a task
+    // to the calendar (e.g., "Schedule..." or "Add to calendar...").
+    //
+    // CURRENT BEHAVIOR:
+    // - Right-clicking a task in the agenda view may show a context menu, but it does
+    //   not have a dedicated "Add to calendar" or "Schedule to date..." option that
+    //   opens a date/time picker specifically for scheduling
+    //
+    // EXPECTED BEHAVIOR:
+    // - Right-clicking a task in the agenda view should show context menu
+    // - Context menu should include "Add to calendar..." or "Schedule..." option
+    // - Clicking this option should open a date/time picker
+    // - Selecting a date/time should schedule the task for that time
+    //
+    // IMPLEMENTATION NOTES:
+    // - TaskContextMenu already exists and has date options
+    // - May need a new dedicated "Add to calendar" action that:
+    //   1. Opens a mini calendar picker
+    //   2. Allows time selection
+    //   3. Sets the 'scheduled' property
+    // - Consider integrating with existing DateContextMenu or creating a CalendarPicker
+
+    const page = getPage();
+
+    // Initialize calendar first
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Open agenda view
+    await expandViewsFolderFor1328(page);
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(1500);
+
+    // Find task events in the agenda
+    const agendaEvents = page.locator('.fc-list-event, .fc-event');
+    const eventCount = await agendaEvents.count().catch(() => 0);
+
+    console.log(`[Issue #1328] Found ${eventCount} events for context menu test`);
+
+    if (eventCount === 0) {
+      console.log('[Issue #1328] No events found - test inconclusive');
+      return;
+    }
+
+    const firstEvent = agendaEvents.first();
+    await expect(firstEvent).toBeVisible({ timeout: 5000 });
+
+    // Right-click to open context menu
+    await firstEvent.click({ button: 'right' });
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1328-context-menu.png' });
+
+    // Look for context menu
+    const contextMenu = page.locator('.menu, .tn-context-menu, .suggestion-container');
+    const menuVisible = await contextMenu.isVisible({ timeout: 3000 }).catch(() => false);
+
+    console.log(`[Issue #1328] Context menu visible: ${menuVisible}`);
+
+    if (!menuVisible) {
+      console.log('[Issue #1328] Context menu not visible - feature may not be implemented');
+      // This assertion will FAIL - we expect a context menu to appear
+      expect(menuVisible).toBe(true);
+      return;
+    }
+
+    // Look for "Add to calendar" or "Schedule" option in the menu
+    // This is the key feature request - a dedicated option to add task to calendar
+    const addToCalendarOption = page.locator('.menu-item, .suggestion-item').filter({
+      hasText: /add to calendar|schedule to|schedule for|add to date|pick date/i
+    });
+
+    const optionExists = await addToCalendarOption.isVisible({ timeout: 2000 }).catch(() => false);
+
+    console.log(`[Issue #1328] "Add to calendar" menu option exists: ${optionExists}`);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1328-menu-options.png' });
+
+    // Get all menu items for debugging
+    const allMenuItems = page.locator('.menu-item, .suggestion-item');
+    const menuItemCount = await allMenuItems.count().catch(() => 0);
+    const menuItemTexts: string[] = [];
+    for (let i = 0; i < Math.min(menuItemCount, 20); i++) {
+      const text = await allMenuItems.nth(i).textContent().catch(() => '');
+      if (text) menuItemTexts.push(text.trim());
+    }
+    console.log(`[Issue #1328] Menu items found: ${menuItemTexts.join(', ')}`);
+
+    // Close menu
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // This assertion will FAIL until the feature is implemented
+    // There should be a dedicated "Add to calendar" or "Schedule..." option
+    expect(optionExists).toBe(true);
+  });
+
+  test.fixme('should be able to drag task from agenda to calendar week view (Issue #1328)', async () => {
+    // Issue #1328: Advanced feature - drag from agenda to a split calendar view
+    //
+    // SCENARIO:
+    // User has agenda view open and wants to drag a task to a specific time slot
+    // on a calendar. This could work via:
+    // 1. Split view with agenda + calendar side by side
+    // 2. Drag to a mini-calendar widget
+    // 3. Switch to week view and drag within the same calendar
+    //
+    // This test checks if switching from listWeek (agenda) to timeGridWeek mode
+    // preserves any drag state or allows scheduling via the calendar grid.
+
+    const page = getPage();
+
+    // Initialize calendar
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Open agenda view
+    await expandViewsFolderFor1328(page);
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(1500);
+
+    // Verify we're in list view mode
+    const fcListView = page.locator('.fc-list, .fc-listWeek-view');
+    const isListView = await fcListView.isVisible({ timeout: 3000 }).catch(() => false);
+
+    console.log(`[Issue #1328] Calendar is in list view: ${isListView}`);
+
+    // Look for view switch buttons (Week button to switch to timeGridWeek)
+    const weekButton = page.locator('button.fc-timeGridWeek-button, button:has-text("Week")');
+    const weekButtonVisible = await weekButton.isVisible({ timeout: 3000 }).catch(() => false);
+
+    if (!weekButtonVisible) {
+      console.log('[Issue #1328] Week view button not visible in agenda - test inconclusive');
+      // The feature might require a different UI approach
+      return;
+    }
+
+    // Switch to week view
+    await weekButton.click();
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1328-switched-to-week.png' });
+
+    // Now check if events are draggable in week view
+    const weekEvents = page.locator('.fc-event');
+    const eventCount = await weekEvents.count().catch(() => 0);
+
+    if (eventCount > 0) {
+      const firstEvent = weekEvents.first();
+      const isDraggable = await firstEvent.evaluate(el => {
+        return el.classList.contains('fc-event-draggable');
+      }).catch(() => false);
+
+      console.log(`[Issue #1328] Event in week view is draggable: ${isDraggable}`);
+
+      // Events should be draggable in week view for rescheduling
+      expect(isDraggable).toBe(true);
+
+      // Try to drag to a new time slot
+      if (isDraggable) {
+        const eventBox = await firstEvent.boundingBox();
+        if (eventBox) {
+          // Get initial scheduled time (if displayed)
+          const eventText = await firstEvent.textContent().catch(() => '');
+          console.log(`[Issue #1328] Event before drag: ${eventText}`);
+
+          // Drag down by 100px (roughly 1-2 hours in most time grids)
+          await firstEvent.hover();
+          await page.mouse.down();
+          await page.mouse.move(eventBox.x, eventBox.y + 100, { steps: 10 });
+          await page.waitForTimeout(300);
+          await page.mouse.up();
+          await page.waitForTimeout(500);
+
+          await page.screenshot({ path: 'test-results/screenshots/issue-1328-after-drag.png' });
+
+          // Verify the event moved (time should have changed)
+          const eventTextAfter = await firstEvent.textContent().catch(() => '');
+          console.log(`[Issue #1328] Event after drag: ${eventTextAfter}`);
+        }
+      }
+    }
+  });
+});
