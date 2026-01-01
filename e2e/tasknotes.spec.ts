@@ -5744,3 +5744,149 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
     expect(true).toBe(false); // Placeholder assertion - test is fixme'd
   });
 });
+
+// ============================================================================
+// Issue #1329: Huge gap between end of note and relationship-widget
+// https://github.com/user/tasknotes/issues/1329
+// ============================================================================
+test.describe('Issue #1329 - Relationships widget gap', () => {
+  test.fixme('relationships widget should appear close to note content without excessive gap', async () => {
+    // STATUS: BUG - Issue #1329
+    //
+    // This test documents the bug where there is a huge gap between the end of
+    // the note content and the relationships widget, making the widget not visible
+    // at all in most cases.
+    //
+    // ROOT CAUSE: In src/editor/RelationshipsDecorations.ts, when the widget is
+    // positioned at "bottom" (lines 385-394), it is appended to .cm-sizer or
+    // inserted before .embedded-backlinks. However, .cm-sizer may have significant
+    // internal padding/height from CodeMirror's layout that creates a gap between
+    // the actual content and where the widget is appended.
+    //
+    // The DOM manipulation approach appends to the container end rather than
+    // positioning relative to the last actual content element.
+    //
+    // STEPS TO REPRODUCE:
+    // 1. Open a task note with relationships widget enabled
+    // 2. Ensure "relationshipsPosition" setting is "bottom" (default)
+    // 3. Scroll to the end of the note
+    // 4. Observe large gap between note content and relationships widget
+    //
+    // EXPECTED: Widget appears immediately below the note content (within ~50px)
+    // ACTUAL: Widget appears with a huge gap, often not visible without scrolling
+    //
+    // POSSIBLE FIX: Instead of appending to .cm-sizer, find the last content
+    // element (e.g., last .cm-line or .cm-content child) and insert after it,
+    // or use CSS to force the widget to appear immediately after content.
+    //
+    // See: src/editor/RelationshipsDecorations.ts:385-394 (bottom positioning)
+    // See: styles/relationships.css:12 (margin adds more spacing)
+
+    const page = getPage();
+
+    // Ensure clean state
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    // Open a task note that should have the relationships widget
+    // Use "Write documentation" which has content and relationships (projects property)
+    const taskItem = page.locator('.nav-file-title:has-text("Write documentation")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Wait for the editor to fully render
+    await page.waitForTimeout(1000);
+
+    // Find the relationships widget
+    const relationshipsWidget = page.locator('.tasknotes-relationships-widget');
+
+    // First verify the widget exists (if not, this is a different issue)
+    const widgetExists = await relationshipsWidget.isVisible({ timeout: 5000 }).catch(() => false);
+    if (!widgetExists) {
+      console.log('[Issue #1329] Relationships widget not found - may be disabled in settings');
+      // Skip the gap test if widget doesn't exist
+      return;
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1329-relationships-gap.png' });
+
+    // Get the bounding boxes to measure the gap
+    const contentArea = page.locator('.cm-content, .markdown-preview-section').first();
+    const contentBox = await contentArea.boundingBox();
+    const widgetBox = await relationshipsWidget.boundingBox();
+
+    if (contentBox && widgetBox) {
+      // Calculate the gap: widget top - content bottom
+      const gap = widgetBox.y - (contentBox.y + contentBox.height);
+
+      console.log(`[Issue #1329] Content bottom: ${contentBox.y + contentBox.height}`);
+      console.log(`[Issue #1329] Widget top: ${widgetBox.y}`);
+      console.log(`[Issue #1329] Gap between content and widget: ${gap}px`);
+
+      // The gap should be reasonable (accounting for margins)
+      // Normal margin would be ~50px (1.5em from CSS + some editor spacing)
+      // A "huge gap" as reported would be >200px
+      const MAX_ACCEPTABLE_GAP = 100; // px - reasonable gap with margins
+
+      expect(gap).toBeLessThan(MAX_ACCEPTABLE_GAP);
+    } else {
+      console.log('[Issue #1329] Could not get bounding boxes for gap measurement');
+      // Fail the test if we can't measure
+      expect(contentBox).not.toBeNull();
+      expect(widgetBox).not.toBeNull();
+    }
+  });
+
+  test.fixme('relationships widget gap should be consistent in reading mode', async () => {
+    // STATUS: BUG - Issue #1329
+    //
+    // Same issue may affect reading mode via injectReadingModeWidget function.
+    // The widget is appended to .markdown-preview-sizer which may have similar
+    // gap issues.
+    //
+    // See: src/editor/RelationshipsDecorations.ts:516-522 (reading mode bottom positioning)
+
+    const page = getPage();
+
+    // Switch to reading mode
+    await runCommand(page, 'Toggle reading');
+    await page.waitForTimeout(1000);
+
+    // Open a task note
+    const taskItem = page.locator('.nav-file-title:has-text("Write documentation")');
+    if (await taskItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Find the relationships widget in reading mode
+    const relationshipsWidget = page.locator('.tasknotes-relationships-widget');
+    const widgetExists = await relationshipsWidget.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!widgetExists) {
+      console.log('[Issue #1329] Relationships widget not found in reading mode');
+      return;
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1329-relationships-gap-reading.png' });
+
+    // Measure the gap in reading mode
+    const contentArea = page.locator('.markdown-preview-section').first();
+    const contentBox = await contentArea.boundingBox();
+    const widgetBox = await relationshipsWidget.boundingBox();
+
+    if (contentBox && widgetBox) {
+      const gap = widgetBox.y - (contentBox.y + contentBox.height);
+      console.log(`[Issue #1329] Reading mode gap: ${gap}px`);
+
+      const MAX_ACCEPTABLE_GAP = 100;
+      expect(gap).toBeLessThan(MAX_ACCEPTABLE_GAP);
+    }
+
+    // Switch back to live preview mode for subsequent tests
+    await runCommand(page, 'Toggle reading');
+    await page.waitForTimeout(500);
+  });
+});
