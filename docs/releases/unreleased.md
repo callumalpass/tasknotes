@@ -99,6 +99,13 @@ Example:
   - Defaults to disabled to preserve existing behavior
   - Thanks to @MiserMagus for the feature request
 
+- (#1108) Option to use task duration instead of due date for ICS calendar export
+  - New "Use task duration for event length" toggle in Settings → Integrations → Automatic ICS Export
+  - When enabled, exported calendar events use scheduled date + time estimate as DTSTART/DTEND
+  - This aligns with GTD workflows where scheduled + duration represents work planning, while due date represents deadlines
+  - When disabled (default), preserves existing behavior using due date as DTEND
+  - Thanks to @bepolymathe for the feature request
+
 ## Fixed
 
 - (#1384) Fixed title being sanitized even when "Store Task Title in Filename" is disabled

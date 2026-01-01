@@ -100,8 +100,11 @@ export class AutoExportService {
 				return;
 			}
 
-			// Generate ICS content
-			const icsContent = CalendarExportService.generateMultipleTasksICSContent(allTasks);
+			// Generate ICS content with export options from settings
+			const exportOptions = {
+				useDurationForExport: this.plugin.settings.icsIntegration.useDurationForExport,
+			};
+			const icsContent = CalendarExportService.generateMultipleTasksICSContent(allTasks, exportOptions);
 
 			// Write to file - use path as-is since Obsidian handles normalization
 			const normalizedPath = exportPath;

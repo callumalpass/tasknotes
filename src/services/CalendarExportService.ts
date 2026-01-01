@@ -9,6 +9,10 @@ export interface CalendarURLOptions {
 	useScheduledAsDue?: boolean; // If task has no due date, use scheduled as end time
 }
 
+export interface ICSExportOptions {
+	useDurationForExport?: boolean; // Use timeEstimate (duration) instead of due date for DTEND
+}
+
 type TranslateFn = (key: TranslationKey, variables?: Record<string, any>) => string;
 
 export class CalendarExportService {
@@ -162,7 +166,7 @@ export class CalendarExportService {
 	/**
 	 * Generate ICS file content
 	 */
-	static generateICSContent(task: TaskInfo): string {
+	static generateICSContent(task: TaskInfo, options?: ICSExportOptions): string {
 		const uid = `${task.path.replace(/[^a-zA-Z0-9]/g, "-")}-${Date.now()}@tasknotes`;
 		const now = new Date()
 			.toISOString()
@@ -184,7 +188,7 @@ export class CalendarExportService {
 		lines.push(`SUMMARY:${this.escapeICSText(task.title)}`);
 
 		// Add dates
-		const { startICS, endICS } = this.getICSDateFormat(task);
+		const { startICS, endICS } = this.getICSDateFormat(task, true, options);
 		if (startICS) {
 			lines.push(`DTSTART:${startICS}`);
 		}
@@ -309,7 +313,8 @@ export class CalendarExportService {
 	 */
 	private static getTaskDateRange(
 		task: TaskInfo,
-		useScheduledAsDue: boolean
+		useScheduledAsDue: boolean,
+		options?: ICSExportOptions
 	): { startISO: string | null; endISO: string | null } {
 		let startISO: string | null = null;
 		let endISO: string | null = null;
@@ -323,7 +328,14 @@ export class CalendarExportService {
 			}
 		}
 
-		if (task.due) {
+		// When useDurationForExport is enabled, use timeEstimate to calculate end time
+		// instead of using due date
+		if (options?.useDurationForExport && startISO && task.timeEstimate && task.timeEstimate > 0) {
+			// Use scheduled + timeEstimate (in minutes) as end time
+			const start = new Date(startISO);
+			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
+			endISO = end.toISOString();
+		} else if (task.due) {
 			try {
 				const dueDate = this.parseTaskDate(task.due);
 				endISO = dueDate.toISOString();
@@ -331,7 +343,7 @@ export class CalendarExportService {
 				console.warn("Invalid due date:", task.due);
 			}
 		} else if (useScheduledAsDue && startISO) {
-			// Use scheduled + 1 hour as end time
+			// Use scheduled + 1 hour as end time (default fallback)
 			const start = new Date(startISO);
 			const end = new Date(start.getTime() + 60 * 60 * 1000);
 			endISO = end.toISOString();
@@ -365,9 +377,10 @@ export class CalendarExportService {
 	 */
 	private static getICSDateFormat(
 		task: TaskInfo,
-		useScheduledAsDue = true
+		useScheduledAsDue = true,
+		options?: ICSExportOptions
 	): { startICS: string | null; endICS: string | null } {
-		const { startISO, endISO } = this.getTaskDateRange(task, useScheduledAsDue);
+		const { startISO, endISO } = this.getTaskDateRange(task, useScheduledAsDue, options);
 
 		const formatICS = (isoString: string): string => {
 			const date = new Date(isoString);
@@ -460,7 +473,7 @@ export class CalendarExportService {
 	/**
 	 * Generate ICS content for multiple tasks
 	 */
-	static generateMultipleTasksICSContent(tasks: TaskInfo[]): string {
+	static generateMultipleTasksICSContent(tasks: TaskInfo[], options?: ICSExportOptions): string {
 		const now = new Date()
 			.toISOString()
 			.replace(/[-:]/g, "")
@@ -485,7 +498,7 @@ export class CalendarExportService {
 			lines.push(`SUMMARY:${this.escapeICSText(task.title)}`);
 
 			// Add dates - ensure every event has a DTSTART (required by ICS standard)
-			let { startICS, endICS } = this.getICSDateFormat(task);
+			let { startICS, endICS } = this.getICSDateFormat(task, true, options);
 
 			// If no start date, use task creation date or current date as fallback
 			if (!startICS) {
@@ -567,7 +580,7 @@ export class CalendarExportService {
 	/**
 	 * Download ICS file for all tasks
 	 */
-	static downloadAllTasksICSFile(tasks: TaskInfo[], translate?: TranslateFn): void {
+	static downloadAllTasksICSFile(tasks: TaskInfo[], translate?: TranslateFn, options?: ICSExportOptions): void {
 		try {
 			if (!tasks || tasks.length === 0) {
 				new Notice(
@@ -578,7 +591,7 @@ export class CalendarExportService {
 				return;
 			}
 
-			const icsContent = this.generateMultipleTasksICSContent(tasks);
+			const icsContent = this.generateMultipleTasksICSContent(tasks, options);
 			const blob = new Blob([icsContent], { type: "text/calendar" });
 			const url = URL.createObjectURL(blob);
 
@@ -615,9 +628,9 @@ export class CalendarExportService {
 	/**
 	 * Download ICS file for a task
 	 */
-	static downloadICSFile(task: TaskInfo, translate?: TranslateFn): void {
+	static downloadICSFile(task: TaskInfo, translate?: TranslateFn, options?: ICSExportOptions): void {
 		try {
-			const icsContent = this.generateICSContent(task);
+			const icsContent = this.generateICSContent(task, options);
 			const blob = new Blob([icsContent], { type: "text/calendar" });
 			const url = URL.createObjectURL(blob);
 

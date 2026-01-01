@@ -1677,6 +1677,11 @@ export const en: TranslationTree = {
 					description: "How often to update the export file",
 					placeholder: "60",
 				},
+				useDuration: {
+					name: "Use task duration for event length",
+					description:
+						"When enabled, uses the task's time estimate (duration) instead of due date for the calendar event end time. This is useful for GTD workflows where scheduled + duration represents work planning, while due date represents deadlines.",
+				},
 				exportNow: {
 					name: "Export now",
 					description: "Manually trigger an immediate export",

@@ -1029,6 +1029,18 @@ export function renderIntegrationsTab(
 					})
 				);
 
+				group.addSetting((setting) =>
+					configureToggleSetting(setting, {
+						name: translate("settings.integrations.autoExport.useDuration.name"),
+						desc: translate("settings.integrations.autoExport.useDuration.description"),
+						getValue: () => plugin.settings.icsIntegration.useDurationForExport ?? false,
+						setValue: async (value: boolean) => {
+							plugin.settings.icsIntegration.useDurationForExport = value;
+							save();
+						},
+					})
+				);
+
 				// Manual export trigger button
 				group.addSetting((setting) =>
 					configureButtonSetting(setting, {
