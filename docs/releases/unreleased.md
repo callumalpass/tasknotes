@@ -182,3 +182,7 @@ Example:
   - Root cause: When `blockedBy` contained a single dependency, Bases returned it as a Link object without a `.map()` method
   - Fixed by wrapping `blockedBy` with `list()` before calling `.map()`, consistent with the Blocked By view
   - Thanks to @prayidae for reporting
+
+- (#1295) Fixed missing navigation link to Default Base Templates page on tasknotes.dev
+  - The page existed but was not accessible from the site navigation
+  - Thanks to @Arachnidai for reporting

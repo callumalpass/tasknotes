@@ -55,6 +55,7 @@ nav:
     - Kanban View: views/kanban-view.md
     - Calendar Views: views/calendar-views.md
     - Pomodoro View: views/pomodoro-view.md
+    - Default Base Templates: views/default-base-templates.md
   - Settings:
     - Overview: settings.md
     - General: settings/general.md
