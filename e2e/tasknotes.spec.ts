@@ -6477,3 +6477,106 @@ test.describe('Open Note in New Tab - Issue #144', () => {
     expect(hasNewTabOption).toBe(true);
   });
 });
+
+// ============================================================================
+// Issue #1297: Create or Open Task command - mobile footer click support
+// ============================================================================
+test.describe('Issue #1297: TaskSelectorWithCreate modal mobile support', () => {
+  test.fixme('should create task when clicking the create footer (Issue #1297)', async () => {
+    // Issue: On mobile, the "Create: [Task Name]" footer in the TaskSelectorWithCreate
+    // modal is not clickable. The footer only shows a keyboard shortcut hint (⇧↵)
+    // but has no click/tap handler, making it impossible for mobile users to create tasks.
+    //
+    // Root cause: The footer element in TaskSelectorWithCreateModal.ts (lines 110-183)
+    // is purely informational with no click event listener attached.
+    //
+    // Fix needed: Add click handler to createFooterEl that calls createNewTask()
+    //
+    // Affected file: src/modals/TaskSelectorWithCreateModal.ts
+    // Related CSS: styles/task-selector-with-create-modal.css
+
+    const page = getPage();
+
+    // Open the "Create or open task" command modal
+    await runCommand(page, 'Create or open task');
+    await page.waitForTimeout(500);
+
+    // Verify the modal opened
+    const modal = page.locator('.task-selector-with-create-modal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Type a new task name that doesn't exist
+    const testTaskName = `Test task from issue 1297 ${Date.now()}`;
+    await page.keyboard.type(testTaskName, { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // The create footer should appear at the bottom with the task preview
+    const createFooter = page.locator('.task-selector-create-footer');
+    await expect(createFooter).toBeVisible({ timeout: 3000 });
+
+    // Verify the footer shows the task title
+    const footerTitle = page.locator('.task-selector-create-footer__title');
+    await expect(footerTitle).toContainText(testTaskName.substring(0, 20)); // At least part of it
+
+    // Take a screenshot for documentation
+    await page.screenshot({ path: 'test-results/screenshots/issue-1297-create-footer.png' });
+
+    // BUG: Clicking the footer should create the task, but currently it does nothing
+    await createFooter.click();
+    await page.waitForTimeout(1000);
+
+    // EXPECTED: Modal should close and task should be created
+    // ACTUAL: Modal remains open, nothing happens
+
+    // Check if modal closed (task was created)
+    const modalStillOpen = await modal.isVisible({ timeout: 1000 }).catch(() => false);
+
+    // If modal is still open, the bug exists - this test should fail
+    if (modalStillOpen) {
+      // Close the modal for cleanup
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+    }
+
+    // This assertion will fail until the bug is fixed
+    expect(modalStillOpen).toBe(false);
+  });
+
+  test('should show create footer with keyboard hint', async () => {
+    // Verify the footer appears correctly when typing a new task name
+    // This test documents the current behavior (not the bug)
+
+    const page = getPage();
+
+    await runCommand(page, 'Create or open task');
+    await page.waitForTimeout(500);
+
+    const modal = page.locator('.task-selector-with-create-modal');
+    if (!await modal.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('[Issue #1297] TaskSelectorWithCreate modal not found - skipping');
+      return;
+    }
+
+    // Type a unique task name
+    await page.keyboard.type('Unique test task 12345', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // Check that the create footer is visible
+    const createFooter = page.locator('.task-selector-create-footer');
+    const isFooterVisible = await createFooter.isVisible({ timeout: 2000 }).catch(() => false);
+
+    if (isFooterVisible) {
+      // Check for the keyboard shortcut hint
+      const shortcutHint = page.locator('.task-selector-create-footer__shortcut');
+      await expect(shortcutHint).toContainText('⇧↵');
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1297-footer-visible.png' });
+    }
+
+    // Close the modal
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    expect(isFooterVisible).toBe(true);
+  });
+});
