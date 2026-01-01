@@ -243,38 +243,28 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	 * Uses Obsidian's internal CodeMirrorAdapter.Vim API.
 	 */
 	private enterVimInsertMode(): void {
-		try {
-			// Check if vim mode is enabled in Obsidian settings
-			// Using internal Obsidian API - vault.getConfig is not in public types
-			const vimModeEnabled = (this.app.vault as any).getConfig("vimMode");
-			if (!vimModeEnabled) return;
+		// Use a small delay to ensure vim extension has initialized
+		setTimeout(() => {
+			try {
+				// Check if vim mode is enabled in Obsidian settings
+				const vimModeEnabled = (this.app.vault as any).getConfig("vimMode");
+				if (!vimModeEnabled) return;
 
-			// Access the Vim API from Obsidian's CodeMirrorAdapter
-			// Using internal Obsidian API - CodeMirrorAdapter is not in public types
-			const Vim = (window as any).CodeMirrorAdapter?.Vim;
-			if (!Vim) return;
+				// Access the Vim API from Obsidian's CodeMirrorAdapter
+				const Vim = (window as any).CodeMirrorAdapter?.Vim;
+				if (!Vim) return;
 
-			// Get the CodeMirror 6 EditorView instance from the editor
-			const cm = this.editor?.cm;
-			if (!cm) return;
+				// Get the CM5 adapter - Obsidian nests it at editor.cm.cm
+				// Fallback to activeCM if the standard path doesn't work
+				const cm5 = (this.editor as any)?.cm?.cm ?? (this as any).activeCM;
+				if (!cm5) return;
 
-			// The vim plugin attaches a cm5 adapter to the EditorView state
-			// Using internal vim plugin API - vim state is not in public types
-			const vimState = (cm.state as any)?.vim;
-			if (!vimState) return;
-
-			// Get the CM5 adapter that the vim plugin uses
-			// Using internal vim plugin API - cm property is not in public types
-			const cm5 = vimState.cm;
-			if (!cm5) return;
-
-			// Enter insert mode by simulating the 'i' key
-			// Vim.handleKey takes (cm5adapter, key, origin) but origin is optional
-			Vim.handleKey(cm5, "i", "api");
-		} catch (e) {
-			// Silently fail if vim integration isn't available
-			console.debug("Could not enter vim insert mode:", e);
-		}
+				// Enter insert mode by simulating the 'i' key
+				Vim.handleKey(cm5, "i", "api");
+			} catch {
+				// Silently fail if vim integration isn't available
+			}
+		}, 50);
 	}
 
 	/**
