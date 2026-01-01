@@ -810,7 +810,9 @@ export class KanbanView extends BasesViewBase {
 		tasks: TaskInfo[],
 		visibleProperties: string[]
 	): Promise<HTMLElement> {
-		const column = document.createElement("div");
+		// Use containerEl.ownerDocument for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const column = doc.createElement("div");
 		column.className = "kanban-view__column";
 		column.style.width = `${this.columnWidth}px`;
 		column.setAttribute("data-group", groupKey);
@@ -879,13 +881,15 @@ export class KanbanView extends BasesViewBase {
 		// Make container scrollable with full viewport height
 		cardsContainer.style.cssText = "overflow-y: auto; max-height: 100vh; position: relative;";
 
+		// Use containerEl.ownerDocument for pop-out window support
+		const doc = this.containerEl.ownerDocument;
 		const scroller = new VirtualScroller<TaskInfo>({
 			container: cardsContainer,
 			items: tasks,
 			// itemHeight omitted - automatically calculated from sample
 			overscan: 3,
 			renderItem: (task: TaskInfo) => {
-				const cardWrapper = document.createElement("div");
+				const cardWrapper = doc.createElement("div");
 				cardWrapper.className = "kanban-view__card-wrapper";
 				cardWrapper.setAttribute("draggable", "true");
 				cardWrapper.setAttribute("data-task-path", task.path);
@@ -915,13 +919,15 @@ export class KanbanView extends BasesViewBase {
 
 		const cardOptions = this.getCardOptions();
 
+		// Use containerEl.ownerDocument for pop-out window support
+		const doc = this.containerEl.ownerDocument;
 		const scroller = new VirtualScroller<TaskInfo>({
 			container: tasksContainer,
 			items: tasks,
 			// itemHeight omitted - automatically calculated from sample
 			overscan: 3,
 			renderItem: (task: TaskInfo) => {
-				const cardWrapper = document.createElement("div");
+				const cardWrapper = doc.createElement("div");
 				cardWrapper.className = "kanban-view__card-wrapper";
 				cardWrapper.setAttribute("draggable", "true");
 				cardWrapper.setAttribute("data-task-path", task.path);
@@ -1840,7 +1846,9 @@ export class KanbanView extends BasesViewBase {
 	protected setupContainer(): void {
 		super.setupContainer();
 
-		const board = document.createElement("div");
+		// Use containerEl.ownerDocument for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const board = doc.createElement("div");
 		board.className = "kanban-view__board";
 		this.rootElement?.appendChild(board);
 		this.boardEl = board;
@@ -1864,7 +1872,9 @@ export class KanbanView extends BasesViewBase {
 		// Save current scroll state before the timer fires
 		const savedState = this.getEphemeralState();
 
-		(this as any).updateDebounceTimer = window.setTimeout(async () => {
+		// Use correct window for pop-out window support
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		(this as any).updateDebounceTimer = win.setTimeout(async () => {
 			await this.render();
 			(this as any).updateDebounceTimer = null;
 			// Restore scroll state after render completes
@@ -1874,7 +1884,9 @@ export class KanbanView extends BasesViewBase {
 
 	private renderEmptyState(): void {
 		if (!this.boardEl) return;
-		const empty = document.createElement("div");
+		// Use containerEl.ownerDocument for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const empty = doc.createElement("div");
 		empty.className = "tn-bases-empty";
 		empty.style.cssText = "padding: 20px; text-align: center; color: var(--text-muted);";
 		empty.textContent = "No TaskNotes tasks found for this Base.";
@@ -1883,7 +1895,9 @@ export class KanbanView extends BasesViewBase {
 
 	private renderNoGroupByError(): void {
 		if (!this.boardEl) return;
-		const error = document.createElement("div");
+		// Use containerEl.ownerDocument for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const error = doc.createElement("div");
 		error.className = "tn-bases-error";
 		error.style.cssText = "padding: 20px; text-align: center; color: var(--text-error);";
 		error.textContent = this.plugin.i18n.translate("views.kanban.errors.noGroupBy");
@@ -1892,7 +1906,9 @@ export class KanbanView extends BasesViewBase {
 
 	renderError(error: Error): void {
 		if (!this.boardEl) return;
-		const errorEl = document.createElement("div");
+		// Use containerEl.ownerDocument for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const errorEl = doc.createElement("div");
 		errorEl.className = "tn-bases-error";
 		errorEl.style.cssText =
 			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";
