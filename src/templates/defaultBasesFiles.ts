@@ -711,7 +711,7 @@ ${orderYaml}
     name: "Blocking"
     filters:
       and:
-        - note.${blockedByProperty}.map(value.uid).contains(this.file.asLink())
+        - list(note.${blockedByProperty}).map(value.uid).contains(this.file.asLink())
     order:
 ${orderYaml}
     groupBy:

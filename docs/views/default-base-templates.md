@@ -593,7 +593,7 @@ views:
     name: "Blocking"
     filters:
       and:
-        - note.blockedBy.map(value.uid).contains(this.file.asLink())
+        - list(note.blockedBy).map(value.uid).contains(this.file.asLink())
     order:
       - status
       - priority

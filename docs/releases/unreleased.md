@@ -176,3 +176,9 @@ Example:
   - Root cause: Task edit modal was refreshing data from file and overwriting user-configured defaults
   - Now preserves constructor-provided task data when converting non-task files
   - Thanks to @guihasparyk for reporting
+
+- (#1304) Fixed "Cannot find function map on type Link" error in Blocking view
+  - Error occurred when embedding the Relationships base and opening the Blocking view
+  - Root cause: When `blockedBy` contained a single dependency, Bases returned it as a Link object without a `.map()` method
+  - Fixed by wrapping `blockedBy` with `list()` before calling `.map()`, consistent with the Blocked By view
+  - Thanks to @prayidae for reporting
