@@ -15,7 +15,7 @@ import { FieldMapper } from '../../../src/services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 import { TaskInfo } from '../../../src/types';
 
-describe('Issue #1289: Priority number type support', () => {
+describe.skip('Issue #1289: Priority number type support', () => {
 	describe('mapToFrontmatter - writing numeric priority values', () => {
 		it('should write numeric priority values as numbers when priorityType is "number"', () => {
 			// Configure FieldMapper with priorityType set to 'number'

@@ -444,16 +444,16 @@ async function injectReadingModeWidget(
 	// Get the file's frontmatter to check if it's a task or project
 	let isTaskNote = false;
 	let isProjectNote = false;
-	const metadata = this.plugin.app.metadataCache.getFileCache(file);
+	const metadata = plugin.app.metadataCache.getFileCache(file);
 	if (!metadata?.frontmatter) {
 		// Check if this is a project note (referenced by tasks via the project property)
 		// Some project notes will not have frontmatter
-		isProjectNote = this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+		isProjectNote = plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
 	} else {
 		// Check if this is a task note
-		isTaskNote = this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
+		isTaskNote = plugin.cacheManager.isTaskFile(metadata.frontmatter);
 		// Check if this is a project note (referenced by tasks via the project property)
-		isProjectNote = this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+		isProjectNote = plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
 	}
 
 	if (!isTaskNote && !isProjectNote) {

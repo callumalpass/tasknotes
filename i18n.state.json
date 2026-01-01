@@ -3920,6 +3920,14 @@
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
     },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "ffb078be6e4ff10c2a1fc17a0a8571de74238dfc"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "ce1acda2cd8f23fe178b3011cee2624e4e1af1ee"
+    },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",
       "translation": "56a4bf9a1d4c031fc7b827cde93098049fb9aca7"
@@ -11573,6 +11581,14 @@
     "settings.integrations.autoExport.interval.placeholder": {
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
+    },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "4de1b7ff833f94a673a073d5dae03cd9dd56e2d3"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "2975a0d8204499b302f876a62af476d55638f365"
     },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",
@@ -19228,6 +19244,14 @@
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
     },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "707b71ac33bb87573ac2d436c574a9b1baa7ebfe"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "0f86445ffee2678c980bfd6c280dd129e3f4b477"
+    },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",
       "translation": "43a57aaa3715ba7cccd669b005599ea9f78b5e05"
@@ -26881,6 +26905,14 @@
     "settings.integrations.autoExport.interval.placeholder": {
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
+    },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "87c2f65e12aa9f604f983a35b37964bb8fbc93b7"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "562338567eeb47f13daa52712ce38ca1ec917a6b"
     },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",
@@ -34536,6 +34568,14 @@
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
     },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "0555b2095b3968b18fdfc5ffa157d29c3d1adb83"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "20a416cff1e02e5bb151cd51bf68a2fdac4b2bf3"
+    },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",
       "translation": "bc1f813743b8ed3976b732481936f339118862fa"
@@ -42189,6 +42229,14 @@
     "settings.integrations.autoExport.interval.placeholder": {
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
+    },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "38113122ef0060797059245825fd0b9a4a120e77"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "3e383bfde00a14969eb9aa0b845342fa3327d48c"
     },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",
@@ -49844,6 +49892,14 @@
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
     },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "79eb17a244def77706d8aced3ed664bbb1551ed5"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "ddb96f9a30382595e19c9e8afecfe86c19af117f"
+    },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",
       "translation": "665a1aca073518fb8a998bed874bf864c7243015"
@@ -57497,6 +57553,14 @@
     "settings.integrations.autoExport.interval.placeholder": {
       "source": "e6c3dd630428fd54834172b8fd2735fed9416da4",
       "translation": "e6c3dd630428fd54834172b8fd2735fed9416da4"
+    },
+    "settings.integrations.autoExport.useDuration.name": {
+      "source": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+      "translation": "c909406db35651c1be15a854990974fae2628356"
+    },
+    "settings.integrations.autoExport.useDuration.description": {
+      "source": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
+      "translation": "43318be69b51eeb674e8a433b501c63e8cb27061"
     },
     "settings.integrations.autoExport.exportNow.name": {
       "source": "7cfc9635a969797678683f0e868769f62939f193",

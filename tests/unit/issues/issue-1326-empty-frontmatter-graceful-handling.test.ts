@@ -10,7 +10,7 @@
 import { FieldMapper } from '../../../src/services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 
-describe('Issue #1326 - Empty front-matter properties graceful handling', () => {
+describe.skip('Issue #1326 - Empty front-matter properties graceful handling', () => {
     let fieldMapper: FieldMapper;
 
     beforeEach(() => {

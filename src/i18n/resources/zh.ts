@@ -1638,6 +1638,11 @@ export const zh: TranslationTree = {
 					description: "更新导出文件的频率",
 					placeholder: "60",
 				},
+				useDuration: {
+					name: "使用任务持续时间作为事件长度",
+					description:
+						"启用后，使用任务的时间估计（持续时间）而不是截止日期作为日历事件的结束时间。这对于GTD工作流程很有用，其中计划 + 持续时间代表工作规划，而截止日期代表最后期限。",
+				},
 				exportNow: {
 					name: "立即导出",
 					description: "手动触发立即导出",

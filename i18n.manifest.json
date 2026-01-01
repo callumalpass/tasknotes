@@ -979,6 +979,8 @@
   "settings.integrations.autoExport.interval.name": "556715bd2aecbd24fb83bc1f8cef895487c2d007",
   "settings.integrations.autoExport.interval.description": "f2ac976e77283d803014730f8dd19fdb897eba3a",
   "settings.integrations.autoExport.interval.placeholder": "e6c3dd630428fd54834172b8fd2735fed9416da4",
+  "settings.integrations.autoExport.useDuration.name": "87b3743ae17a08768a0038a59fb29249cd2ca8d8",
+  "settings.integrations.autoExport.useDuration.description": "7f0c434c37cc2a0cc72d5e0d915b7f17d161ab93",
   "settings.integrations.autoExport.exportNow.name": "7cfc9635a969797678683f0e868769f62939f193",
   "settings.integrations.autoExport.exportNow.description": "eb9687ed62a459d30cf760ae509e36cdd4508294",
   "settings.integrations.autoExport.exportNow.buttonText": "85696d318a1845ba3adc3909da38cea00db8b298",

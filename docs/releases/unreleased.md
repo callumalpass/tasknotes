@@ -38,13 +38,13 @@ Example:
 - (#59) Added `shortYear` template variable for custom filename and folder templates
   - Use `{shortYear}` in filename templates (e.g., "25" for 2025)
   - Use `{{shortYear}}` in folder templates
-  - Thanks to @Konosprod for the feature request
+  - Thanks to @Pixeltica for the feature request
 
 - (#1393) Option to prevent auto-creation of default Base view files on startup
   - New "Auto-create default files" toggle in Settings → Integrations → Bases Integration
   - When disabled, deleted sample Base files will not be recreated on plugin load
   - The manual "Create Default Files" button remains available for on-demand recreation
-  - Thanks to @LookGoodFeelGood for the feature request
+  - Thanks to @wealthychef1 for the feature request
 
 - (#1408) Shift+click on status icon to cycle backwards through statuses
   - Normal click cycles forward through status order

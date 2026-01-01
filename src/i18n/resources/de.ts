@@ -1638,6 +1638,11 @@ export const de: TranslationTree = {
 					description: "Wie oft die Export-Datei aktualisiert werden soll",
 					placeholder: "60",
 				},
+				useDuration: {
+					name: "Aufgabendauer für Eventlänge verwenden",
+					description:
+						"Wenn aktiviert, wird die geschätzte Dauer der Aufgabe anstelle des Fälligkeitsdatums für die Endzeit des Kalenderevents verwendet. Dies ist nützlich für GTD-Workflows, bei denen geplant + Dauer die Arbeitsplanung darstellt, während das Fälligkeitsdatum Fristen repräsentiert.",
+				},
 				exportNow: {
 					name: "Jetzt exportieren",
 					description: "Sofortigen Export manuell auslösen",

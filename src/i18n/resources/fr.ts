@@ -1638,6 +1638,11 @@ export const fr: TranslationTree = {
 					description: "Fréquence de mise à jour du fichier d'export",
 					placeholder: "60",
 				},
+				useDuration: {
+					name: "Utiliser la durée de la tâche pour la longueur de l'événement",
+					description:
+						"Lorsque activé, utilise l'estimation de temps (durée) de la tâche au lieu de la date d'échéance pour l'heure de fin de l'événement du calendrier. Ceci est utile pour les flux de travail GTD où planifié + durée représente la planification du travail, tandis que la date d'échéance représente les délais.",
+				},
 				exportNow: {
 					name: "Exporter maintenant",
 					description: "Déclencher manuellement un export immédiat",

@@ -388,6 +388,23 @@ export function renderFeaturesTab(
 					},
 				})
 			);
+
+			group.addSetting((setting) =>
+				configureDropdownSetting(setting, {
+					name: translate("settings.features.pomodoro.mobileSidebar.name"),
+					desc: translate("settings.features.pomodoro.mobileSidebar.description"),
+					options: [
+						{ value: "tab", label: translate("settings.features.pomodoro.mobileSidebar.tab") },
+						{ value: "left", label: translate("settings.features.pomodoro.mobileSidebar.left") },
+						{ value: "right", label: translate("settings.features.pomodoro.mobileSidebar.right") },
+					],
+					getValue: () => plugin.settings.pomodoroMobileSidebar,
+					setValue: async (value: string) => {
+						plugin.settings.pomodoroMobileSidebar = value as "tab" | "left" | "right";
+						save();
+					},
+				})
+			);
 		}
 	);
 

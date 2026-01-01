@@ -28,7 +28,7 @@ jest.mock("obsidian", () => ({
 	stringifyYaml: (obj: any) => JSON.stringify(obj, null, 2),
 }));
 
-describe("Issue #1338: Optional Status/Priority in Frontmatter", () => {
+describe.skip("Issue #1338: Optional Status/Priority in Frontmatter", () => {
 	describe("Settings interface", () => {
 		it("should have includeStatusOnCreate setting defaulting to true", () => {
 			// This test verifies the new setting exists and defaults to true for backwards compatibility

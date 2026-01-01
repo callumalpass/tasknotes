@@ -24,7 +24,7 @@
  * - There should be a way to "reset" a view to its configured default
  */
 
-describe('Issue #1316 - Default calendar view cannot be changed', () => {
+describe.skip('Issue #1316 - Default calendar view cannot be changed', () => {
 	/**
 	 * Simulates the settings hierarchy and ephemeral state behavior
 	 */

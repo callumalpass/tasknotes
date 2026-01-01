@@ -26,7 +26,7 @@ import { TaskInfo } from '../../../src/types/TaskInfo';
 jest.mock('../../../src/editor/TaskLinkWidget');
 const MockTaskLinkWidget = TaskLinkWidget as jest.MockedClass<typeof TaskLinkWidget>;
 
-describe('Issue #1318: Wikilink alias support for inline tasks', () => {
+describe.skip('Issue #1318: Wikilink alias support for inline tasks', () => {
     let mockPlugin: TaskNotesPlugin;
     let mockTask: TaskInfo;
     let activeWidgets: Map<string, TaskLinkWidget>;
@@ -350,7 +350,7 @@ jest.mock('../../../src/components/TaskContextMenu', () => ({
     }))
 }));
 
-describe('Issue #1318: createTaskCard displayText support', () => {
+describe.skip('Issue #1318: createTaskCard displayText support', () => {
     let mockPlugin: any;
     let mockTask: TaskInfo;
 

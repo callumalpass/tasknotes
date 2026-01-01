@@ -1588,6 +1588,11 @@ export const ko: TranslationTree = {
 					description: "내보내기 파일 업데이트 주기",
 					placeholder: "60",
 				},
+				useDuration: {
+					name: "작업 소요 시간을 이벤트 길이로 사용",
+					description:
+						"활성화하면 캘린더 이벤트 종료 시간에 마감일 대신 작업의 예상 시간(소요 시간)을 사용합니다. 이는 예정 + 소요 시간이 작업 계획을 나타내고 마감일이 기한을 나타내는 GTD 워크플로우에 유용합니다.",
+				},
 				exportNow: {
 					name: "지금 내보내기",
 					description: "즉시 내보내기를 수동으로 트리거",

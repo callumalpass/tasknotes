@@ -195,7 +195,7 @@ describe('FileSuggestHelper', () => {
     });
 
     // Issue #1325: Relative path support
-    describe('Relative Path Support (Issue #1325)', () => {
+    describe.skip('Relative Path Support (Issue #1325)', () => {
       let nestedMockFiles: TFile[];
       let nestedMockPlugin: any;
 

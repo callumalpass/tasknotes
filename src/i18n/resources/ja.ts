@@ -1638,6 +1638,11 @@ export const ja: TranslationTree = {
 					description: "エクスポートファイルを更新する頻度",
 					placeholder: "60",
 				},
+				useDuration: {
+					name: "タスクの所要時間をイベントの長さに使用",
+					description:
+						"有効にすると、カレンダーイベントの終了時刻に期日ではなくタスクの見積時間（所要時間）を使用します。これは、予定 + 所要時間が作業計画を表し、期日が締め切りを表すGTDワークフローに便利です。",
+				},
 				exportNow: {
 					name: "今すぐエクスポート",
 					description: "即座にエクスポートを手動でトリガー",
