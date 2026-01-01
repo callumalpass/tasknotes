@@ -670,11 +670,12 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			renderScheduledDateProperty(element, value, task, plugin);
 		}
 	},
-	projects: (element, value, _, plugin) => {
+	projects: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
 			const linkServices: LinkServices = {
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
+				sourcePath: task.path,
 			};
 			renderProjectLinks(element, value as string[], linkServices);
 		}

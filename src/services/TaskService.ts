@@ -33,6 +33,7 @@ import {
 	normalizeDependencyEntry,
 	resolveDependencyEntry,
 } from "../utils/dependencyUtils";
+import { getProjectDisplayName } from "../utils/linkUtils";
 import {
 	formatDateForStorage,
 	getCurrentDateString,
@@ -2137,41 +2138,6 @@ export class TaskService {
 	 * - "simple string" -> "simple string"
 	 */
 	private extractProjectBasename(project: string): string {
-		if (!project) return "";
-
-		// Check if it's a wikilink format [[...]]
-		const linkMatch = project.match(/^\[\[([^\]]+)\]\]$/);
-		if (linkMatch) {
-			const linkContent = linkMatch[1];
-
-			// Handle pipe syntax: "path|display" -> use "display"
-			if (linkContent.includes("|")) {
-				return linkContent.split("|")[1].trim();
-			}
-
-			// Try to resolve the file using Obsidian's metadata cache
-			if (this.plugin.app?.metadataCache) {
-				try {
-					const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
-						linkContent,
-						""
-					);
-					if (file) {
-						// Return the file's basename (name without extension)
-						return file.basename;
-					}
-				} catch (error) {
-					// File resolution failed, fall back to manual extraction
-					console.debug("Error resolving project file:", error);
-				}
-			}
-
-			// Fallback: extract basename manually from the path
-			const pathParts = linkContent.split("/");
-			return pathParts[pathParts.length - 1] || linkContent;
-		}
-
-		// For non-wikilink strings, return as-is
-		return project;
+		return getProjectDisplayName(project, this.plugin.app);
 	}
 }
