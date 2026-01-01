@@ -1,21 +1,17 @@
 {
   "issue_number": 1334,
-  "status": "open",
+  "status": "completed",
   "tags": [],
   "priority": "medium",
   "difficulty": "easy",
   "risk": "low",
   "type": "feature",
   "affected_areas": [
-    "src/main.ts",
-    "src/modals/TaskCreationModal.ts",
-    "src/services/TaskService.ts",
-    "src/types/settings.ts",
-    "src/settings/tabs/generalTab.ts"
+    "src/services/TaskService.ts"
   ],
   "ai_summary": "Add {{currentNotePath}} folder support for 'Create new inline task' command",
-  "notes": "User wants the 'Create new inline task' command to respect {{currentNotePath}} template variable for the destination folder, similar to how inline conversion (checkbox to task) already works. Currently, inline conversion uses creationContext: 'inline-conversion' which triggers special folder logic in TaskService.createTask() (lines 233-265) that handles {{currentNotePath}} and {{currentNoteTitle}} variables from the inlineTaskConvertFolder setting. However, the TaskCreationModal uses creationContext: 'manual-creation' which falls through to the general tasksFolder setting without variable support. The user confirmed they want this for the 'Create new inline task' command specifically, to match their filters that use the current folder. This is a straightforward enhancement since the folder template processing logic already exists - it just needs to be applied to the 'Create new inline task' command path.",
-  "suggested_fix": "Option 1 (minimal change): Modify TaskCreationModal to set creationContext: 'inline-command' or 'inline-creation' when opened from the createInlineTask command. Then update TaskService.createTask() to treat this new context the same as 'inline-conversion' for folder path resolution. Option 2 (cleaner): Add a new setting for 'Create inline task folder' that supports {{currentNotePath}}, or unify with inlineTaskConvertFolder by making it apply to both conversion and direct creation. Option 3 (simplest): Pass a flag from createInlineTask() to indicate it should use the inline folder logic, perhaps via prePopulatedValues or a new modal option.",
-  "analyzed_at": "2025-12-31T18:30:00.000Z",
+  "notes": "User wants the 'Create new inline task' command to respect {{currentNotePath}} template variable for the destination folder, similar to how inline conversion (checkbox to task) already works. IMPLEMENTED: TaskService.createTask() at line 233 now includes 'manual-creation' in the same condition as 'inline-conversion', allowing both contexts to use the inlineTaskConvertFolder setting with {{currentNotePath}} and {{currentNoteTitle}} variable support. Unit test added at tests/unit/services/TaskService.test.ts:299-321 which passes. Release notes added in docs/releases/unreleased.md.",
+  "suggested_fix": "Implemented by adding 'manual-creation' to the condition at TaskService.ts:233 that checks for inline-conversion context. This applies the inlineTaskConvertFolder setting with template variable support to both checkbox conversion and the 'Create new inline task' command.",
+  "analyzed_at": "2026-01-01T00:00:00.000Z",
   "analyzed_by": "claude-opus-4-5-20251101"
 }

@@ -41,6 +41,7 @@
     "defaultShowScheduled": true,
     "defaultShowDue": true,
     "defaultShowDueWhenScheduled": true,
+    "defaultShowScheduledToDueSpan": false,
     "defaultShowTimeEntries": false,
     "defaultShowRecurring": true,
     "defaultShowICSEvents": true,
@@ -426,20 +427,7 @@
   },
   "pomodoroState": {
     "isRunning": false,
-    "timeRemaining": 1498,
-    "currentSession": {
-      "id": "1767137957823",
-      "startTime": "2025-12-31T10:39:17.823+11:00",
-      "plannedDuration": 25,
-      "type": "work",
-      "completed": false,
-      "activePeriods": [
-        {
-          "startTime": "2025-12-31T10:39:17.823+11:00",
-          "endTime": "2025-12-31T10:39:20.146+11:00"
-        }
-      ]
-    }
+    "timeRemaining": 1500
   },
-  "lastPomodoroDate": "2025-12-30"
+  "lastPomodoroDate": "2025-12-31"
 }

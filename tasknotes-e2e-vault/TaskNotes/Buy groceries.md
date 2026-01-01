@@ -1,8 +1,8 @@
 ---
 title: Buy groceries
-status: open
+status: none
 priority: medium
-due: 2025-12-31
+due: 2025-12-31T17:00
 scheduled: 2025-12-30
 tags:
   - errands
@@ -11,7 +11,7 @@ tags:
 contexts:
   - "@shopping"
 timeEstimate: 45
-dateModified: 2025-12-31T08:48:35.494+11:00
+dateModified: 2025-12-31T15:34:27.967+11:00
 ---
 
 # Buy groceries

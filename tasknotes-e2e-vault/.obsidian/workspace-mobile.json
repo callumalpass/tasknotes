@@ -1,0 +1,117 @@
+{
+  "main": {
+    "id": "e6364498b9e4c173",
+    "type": "split",
+    "children": [
+      {
+        "id": "40fe0cc526b1248e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d9ce92780d6bb4b5",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "TaskNotes/Views/kanban-default.base",
+                "viewName": "Kanban Board"
+              },
+              "icon": "tasknotes-simple",
+              "title": "kanban-default"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "60b8b403d1834cc7",
+    "type": "mobile-drawer",
+    "children": [
+      {
+        "id": "756c05eb000020b4",
+        "type": "leaf",
+        "state": {
+          "type": "file-explorer",
+          "state": {
+            "sortOrder": "alphabetical",
+            "autoReveal": false
+          },
+          "icon": "lucide-folder-closed",
+          "title": "Files"
+        }
+      },
+      {
+        "id": "e9f1f16e5c553b41",
+        "type": "leaf",
+        "state": {
+          "type": "search",
+          "state": {
+            "query": "",
+            "matchingCase": false,
+            "explainSearch": false,
+            "collapseAll": false,
+            "extraContext": false,
+            "sortOrder": "alphabetical"
+          },
+          "icon": "lucide-search",
+          "title": "Search"
+        }
+      },
+      {
+        "id": "0c4183fbb14decb4",
+        "type": "leaf",
+        "state": {
+          "type": "all-properties",
+          "state": {
+            "sortOrder": "frequency",
+            "showSearch": false,
+            "searchQuery": ""
+          },
+          "icon": "lucide-archive",
+          "title": "All properties"
+        }
+      },
+      {
+        "id": "931e6d43d6fb5ebb",
+        "type": "leaf",
+        "state": {
+          "type": "bookmarks",
+          "state": {},
+          "icon": "lucide-bookmark",
+          "title": "Bookmarks"
+        }
+      }
+    ],
+    "currentTab": 0
+  },
+  "right": {
+    "id": "092406a3556646de",
+    "type": "mobile-drawer",
+    "children": [],
+    "currentTab": -1
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "tasknotes:Open mini calendar": false,
+      "tasknotes:Open advanced calendar": false,
+      "tasknotes:Open task list": false,
+      "tasknotes:Open agenda": false,
+      "tasknotes:Open kanban board": false,
+      "tasknotes:Open pomodoro": false,
+      "tasknotes:Open pomodoro stats": false,
+      "tasknotes:Create new task": false
+    }
+  },
+  "active": "d9ce92780d6bb4b5",
+  "lastOpenFiles": [
+    "TaskNotes/Views/calendar-default.base",
+    "TaskNotes/Views/kanban-default.base"
+  ]
+}

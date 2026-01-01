@@ -1,7 +1,7 @@
 ---
 title: "Code review PR #123"
-status: in-progress
-priority: medium
+status: open
+priority: normal
 due: 2025-12-31
 tags:
   - code-review
@@ -10,6 +10,7 @@ tags:
 contexts:
   - "@dev"
 timeEstimate: 45
+dateModified: 2025-12-31T13:35:17.901+11:00
 ---
 
 # Code review PR #123
