@@ -24,6 +24,15 @@ Example:
 
 -->
 
+## Added
+
+- New Calendars API endpoints for accessing calendar provider information and events
+  - `GET /api/calendars` - Overview of all calendar sources with connection status
+  - `GET /api/calendars/google` - Google Calendar connection details and available calendars
+  - `GET /api/calendars/microsoft` - Microsoft Calendar connection details and available calendars
+  - `GET /api/calendars/subscriptions` - ICS subscription details with fetch status
+  - `GET /api/calendars/events` - All calendar events with optional date range filtering
+
 ## Fixed
 
 - (#1410) Fixed vim insert mode not activating in task creation modal
