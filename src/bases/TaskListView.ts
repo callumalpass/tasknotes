@@ -16,6 +16,7 @@ import { VirtualScroller } from "../utils/VirtualScroller";
 
 export class TaskListView extends BasesViewBase {
 	type = "tasknotesTaskList";
+	private basesController: any;
 
 	private itemsContainer: HTMLElement | null = null;
 	private currentTaskElements = new Map<string, HTMLElement>();
@@ -43,6 +44,7 @@ export class TaskListView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.basesController = controller;
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
 		(this.dataAdapter as any).basesView = this;
@@ -853,9 +855,48 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private getCardOptions(targetDate: Date) {
+		const groupedByStatus = this.isGroupedByStatus();
 		return {
 			targetDate,
+			groupedByStatus,
 		};
+	}
+
+	private getGroupByPropertyId(): string | null {
+		const controller = this.basesController;
+
+		// Try to get groupBy from internal API (controller.query.views)
+		if (controller?.query?.views && controller?.viewName) {
+			const views = controller.query.views;
+			const viewName = controller.viewName;
+
+			for (let i = 0; i < 20; i++) {
+				const view = views[i];
+				if (view && view.name === viewName) {
+					if (view.groupBy) {
+						if (typeof view.groupBy === "object" && view.groupBy.property) {
+							return view.groupBy.property;
+						} else if (typeof view.groupBy === "string") {
+							return view.groupBy;
+						}
+					}
+
+					// View found but no groupBy configured
+					return null;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private isGroupedByStatus(): boolean {
+		const groupByPropertyId = this.getGroupByPropertyId();
+		if (!groupByPropertyId) return false;
+
+		const statusPropertyName = this.plugin.fieldMapper.toUserField("status");
+		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "");
+		return cleanGroupBy === statusPropertyName;
 	}
 
 	private clearClickTimeouts(): void {

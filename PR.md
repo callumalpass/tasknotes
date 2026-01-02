@@ -8,6 +8,8 @@ When a view groups by status, the status property is hidden but subtasks still n
 
 ### Task Cards & Note Widgets
 
-- Mark task cards as status-hidden only when status is grouped (hideStatusIndicator).
+- Mark task cards as status-hidden only when status is grouped and not shown in properties.
+- Subtasks inherit parent visible properties (including custom fields).
 - Subtasks inherit that state and replace the status dot with a subtle right-edge stripe.
 - Add styling for the subtask status stripe.
+- Propagate grouped-by-status context into subtasks so they render consistently.

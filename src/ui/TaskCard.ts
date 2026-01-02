@@ -40,6 +40,8 @@ export interface TaskCardOptions {
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
+	/** True when the current view is grouped by status */
+	groupedByStatus?: boolean;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -406,6 +408,37 @@ function getDefaultVisibleProperties(plugin: TaskNotesPlugin): string[] {
 	];
 
 	return convertInternalToUserProperties(internalDefaults, plugin);
+}
+
+function resolveVisibleProperties(
+	visibleProperties: string[] | undefined,
+	plugin: TaskNotesPlugin
+): string[] {
+	if (visibleProperties && visibleProperties.length > 0) {
+		return visibleProperties;
+	}
+
+	if (plugin.settings.defaultVisibleProperties) {
+		return convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin);
+	}
+
+	return getDefaultVisibleProperties(plugin);
+}
+
+function getSubtaskVisibleProperties(card: HTMLElement, plugin: TaskNotesPlugin): string[] {
+	const raw = card?.dataset?.visibleProperties;
+	if (raw) {
+		try {
+			const parsed = JSON.parse(raw);
+			if (Array.isArray(parsed) && parsed.length > 0) {
+				return parsed;
+			}
+		} catch (error) {
+			console.warn("Failed to parse visibleProperties from card dataset", error);
+		}
+	}
+
+	return resolveVisibleProperties(undefined, plugin);
 }
 
 /**
@@ -1330,6 +1363,7 @@ export function createTaskCard(
 		const todayLocal = new Date();
 		return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
 	})();
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
@@ -1342,8 +1376,8 @@ export function createTaskCard(
 	// Main container with BEM class structure
 	// Use span for inline layout to ensure proper inline flow in CodeMirror
 	const card = document.createElement(layout === "inline" ? "span" : "div");
+	card.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 	(card as any)._taskCardOptions = opts;
-	(card as any)._visibleProperties = visibleProperties;
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
@@ -1424,9 +1458,9 @@ export function createTaskCard(
 	let statusDot: HTMLElement | null = null;
 	const shouldShowStatus =
 		!opts.hideStatusIndicator &&
-		(!visibleProperties ||
-			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
-	if (opts.hideStatusIndicator) {
+		(!resolvedVisibleProperties ||
+			resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
+	if (!shouldShowStatus && opts.groupedByStatus) {
 		card.classList.add("task-card--status-hidden");
 	}
 	if (shouldShowStatus) {
@@ -1453,8 +1487,8 @@ export function createTaskCard(
 
 	// Priority indicator dot (conditional based on visible properties)
 	const shouldShowPriority =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
+		!resolvedVisibleProperties ||
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
 	if (task.priority && priorityConfig && shouldShowPriority) {
 		const priorityDot = mainRow.createEl("span", {
 			cls: "task-card__priority-dot",
@@ -1763,7 +1797,7 @@ export function updateTaskCard(
 ): void {
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
 	(element as any)._taskCardOptions = opts;
-	(element as any)._visibleProperties = visibleProperties;
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 	// Use fresh UTC-anchored "today" if no targetDate provided
 	// This ensures recurring tasks show correct completion status for the current day
 	const targetDate = opts.targetDate || (() => {
@@ -1813,6 +1847,7 @@ export function updateTaskCard(
 
 	element.className = cardClasses.join(" ");
 	element.dataset.status = effectiveStatus;
+	element.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 
 	// Get the main row container
 	const mainRow = element.querySelector(".task-card__main-row") as HTMLElement;
@@ -1844,10 +1879,13 @@ export function updateTaskCard(
 	// Update status dot (conditional based on visible properties)
 	const shouldShowStatus =
 		!opts.hideStatusIndicator &&
-		(!visibleProperties ||
-			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
+		(!resolvedVisibleProperties ||
+			resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
 	const statusDot = element.querySelector(".task-card__status-dot") as HTMLElement;
-	element.classList.toggle("task-card--status-hidden", !!opts.hideStatusIndicator);
+	element.classList.toggle(
+		"task-card--status-hidden",
+		!shouldShowStatus && !!opts.groupedByStatus
+	);
 
 	if (shouldShowStatus) {
 		if (statusDot) {
@@ -1954,8 +1992,8 @@ export function updateTaskCard(
 
 	// Update priority indicator (conditional based on visible properties)
 	const shouldShowPriority =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
+		!resolvedVisibleProperties ||
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
 	const existingPriorityDot = element.querySelector(".task-card__priority-dot") as HTMLElement;
 
 	if (shouldShowPriority && task.priority && priorityConfig) {
@@ -2448,12 +2486,13 @@ export async function toggleSubtasks(
 						continue;
 					}
 
-					const parentVisibleProperties = (card as any)._visibleProperties;
 					const parentOptions = (card as any)._taskCardOptions as Partial<TaskCardOptions> | undefined;
+					const parentVisibleProperties = getSubtaskVisibleProperties(card, plugin);
 					const subtaskOptions: Partial<TaskCardOptions> = {
 						layout: parentOptions?.layout,
 						targetDate: parentOptions?.targetDate,
 						hideStatusIndicator: parentOptions?.hideStatusIndicator,
+						groupedByStatus: parentOptions?.groupedByStatus,
 					};
 					const subtaskCard = createTaskCard(
 						subtask,
