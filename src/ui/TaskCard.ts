@@ -1342,6 +1342,8 @@ export function createTaskCard(
 	// Main container with BEM class structure
 	// Use span for inline layout to ensure proper inline flow in CodeMirror
 	const card = document.createElement(layout === "inline" ? "span" : "div");
+	(card as any)._taskCardOptions = opts;
+	(card as any)._visibleProperties = visibleProperties;
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
@@ -1760,6 +1762,8 @@ export function updateTaskCard(
 	options: Partial<TaskCardOptions> = {}
 ): void {
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
+	(element as any)._taskCardOptions = opts;
+	(element as any)._visibleProperties = visibleProperties;
 	// Use fresh UTC-anchored "today" if no targetDate provided
 	// This ensures recurring tasks show correct completion status for the current day
 	const targetDate = opts.targetDate || (() => {
@@ -2444,7 +2448,19 @@ export async function toggleSubtasks(
 						continue;
 					}
 
-					const subtaskCard = createTaskCard(subtask, plugin, undefined);
+					const parentVisibleProperties = (card as any)._visibleProperties;
+					const parentOptions = (card as any)._taskCardOptions as Partial<TaskCardOptions> | undefined;
+					const subtaskOptions: Partial<TaskCardOptions> = {
+						layout: parentOptions?.layout,
+						targetDate: parentOptions?.targetDate,
+						hideStatusIndicator: parentOptions?.hideStatusIndicator,
+					};
+					const subtaskCard = createTaskCard(
+						subtask,
+						plugin,
+						parentVisibleProperties,
+						subtaskOptions
+					);
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
