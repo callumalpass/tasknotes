@@ -7225,3 +7225,297 @@ test.describe('Issue #1299: Create or Open Task with Time Tracking', () => {
     }
   });
 });
+
+// ============================================================================
+// Issue #1293: Incomplete tasks automatically move to next day
+// ============================================================================
+test.describe('Issue #1293: Incomplete Task Rollover to Next Day', () => {
+  test.skip('should have setting to enable automatic task rollover (Issue #1293)', async () => {
+    // Feature request: Tasks that aren't completed on their due/scheduled day
+    // should automatically move to the next day.
+    //
+    // Use case: When a task isn't completed by end of day, instead of it
+    // becoming overdue/past-scheduled, automatically reschedule it to tomorrow.
+    //
+    // Implementation approach:
+    // - Add new service similar to AutoArchiveService pattern
+    // - Add settings: autoRolloverIncomplete (boolean), rolloverDateField (scheduled/due/both)
+    // - Process once per day (at midnight or on first app usage)
+    // - For each incomplete task where scheduled/due < today, set to tomorrow
+    //
+    // Affected files:
+    //   - src/services/TaskRolloverService.ts (new file)
+    //   - src/main.ts (register service)
+    //   - src/settings.ts (add settings)
+    //   - src/i18n/resources/en.ts (add translations)
+    //
+    // Related patterns:
+    //   - AutoArchiveService.ts (queue-based scheduled processing)
+    //   - updateToNextScheduledOccurrence() in helpers.ts (date advancement)
+
+    const page = getPage();
+
+    // Navigate to settings
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Search for rollover/auto-advance setting
+    const rolloverSetting = page.locator('.setting-item').filter({
+      hasText: /rollover|auto.*advance|move.*next.*day|incomplete.*next/i
+    });
+    const settingExists = await rolloverSetting.first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Setting for automatic task rollover should exist
+    expect(settingExists).toBe(true);
+  });
+
+  test.skip('should have option to choose which date field to rollover (Issue #1293)', async () => {
+    // The user should be able to choose whether to rollover:
+    // - scheduled date only
+    // - due date only
+    // - both dates
+    //
+    // This is important because scheduled and due dates have different semantics:
+    // - scheduled: when to work on the task (planning)
+    // - due: deadline (commitment)
+    //
+    // Some users may want to only rollover scheduled (planning) but keep
+    // due dates fixed as they represent real deadlines.
+
+    const page = getPage();
+
+    // Navigate to settings
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Look for dropdown/toggle to select date field
+    const dateFieldOption = page.locator('.setting-item').filter({
+      hasText: /scheduled|due|both|date.*field|rollover.*type/i
+    });
+    const optionExists = await dateFieldOption.first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    // Check if there's a dropdown with options
+    const dropdown = dateFieldOption.locator('select, .dropdown');
+    const hasDropdown = await dropdown.isVisible({ timeout: 1000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Option to choose which date field to rollover should exist
+    expect(optionExists && hasDropdown).toBe(true);
+  });
+
+  test.skip('should rollover scheduled date for incomplete task (Issue #1293)', async () => {
+    // This test verifies that an incomplete task with a past scheduled date
+    // gets automatically moved to today/tomorrow.
+    //
+    // Test scenario:
+    // 1. Create task with scheduled date = yesterday
+    // 2. Leave task incomplete
+    // 3. Trigger rollover (via command or wait)
+    // 4. Verify scheduled date is now today or tomorrow
+
+    const page = getPage();
+
+    // Create a task with yesterday's scheduled date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const taskTitle = `Rollover test ${Date.now()}`;
+
+    // Open task creation modal
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(500);
+
+    const modal = page.locator('.task-creation-modal, .modal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Enter task title
+    await page.keyboard.type(taskTitle, { delay: 20 });
+
+    // Set scheduled date to yesterday (using natural language or date picker)
+    // This depends on how the modal works - may need adjustment
+    await page.keyboard.type(` @${yesterdayStr}`, { delay: 20 });
+
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000);
+
+    // Now trigger the rollover command (if it exists)
+    await runCommand(page, 'Rollover incomplete tasks');
+    await page.waitForTimeout(1000);
+
+    // Open the task and check its scheduled date
+    await runCommand(page, 'Open task');
+    await page.waitForTimeout(500);
+    await page.keyboard.type(taskTitle, { delay: 30 });
+    await page.waitForTimeout(500);
+
+    const taskSuggestion = page.locator('.suggestion-item').first();
+    if (await taskSuggestion.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskSuggestion.click();
+      await page.waitForTimeout(1000);
+
+      // Check the frontmatter for updated scheduled date
+      // The scheduled date should no longer be yesterday
+      const editor = page.locator('.cm-content, .markdown-source-view');
+      const content = await editor.textContent().catch(() => '');
+
+      const hasYesterdayDate = content?.includes(yesterdayStr);
+
+      await page.keyboard.press('Control+w');
+
+      // EXPECTED: Task should NOT have yesterday's date anymore
+      expect(hasYesterdayDate).toBe(false);
+    } else {
+      await page.keyboard.press('Escape');
+      expect(true).toBe(false); // Force fail - task not found
+    }
+  });
+
+  test.skip('should have manual command to rollover incomplete tasks (Issue #1293)', async () => {
+    // In addition to automatic rollover, there should be a manual command
+    // to trigger rollover on demand. This is useful for:
+    // - Testing the feature
+    // - Running at specific times
+    // - Users who prefer manual control
+    //
+    // Command could be named:
+    // - "Rollover incomplete tasks to today"
+    // - "Move past tasks to today"
+    // - "Reschedule overdue tasks"
+
+    const page = getPage();
+
+    await openCommandPalette(page);
+    await page.keyboard.type('rollover', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // Check if any rollover-related command exists
+    const suggestions = page.locator('.suggestion-item');
+    const commandExists = await suggestions.filter({
+      hasText: /rollover|reschedule.*incomplete|move.*today/i
+    }).first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Manual rollover command should exist
+    expect(commandExists).toBe(true);
+  });
+
+  test.skip('should not rollover completed tasks (Issue #1293)', async () => {
+    // Rollover should only affect incomplete tasks.
+    // Completed tasks with past dates should remain unchanged
+    // as they represent historical completed work.
+
+    const page = getPage();
+
+    // Create a completed task with yesterday's date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const taskTitle = `Completed rollover test ${Date.now()}`;
+
+    // Create task
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(500);
+    await page.keyboard.type(taskTitle, { delay: 20 });
+    await page.keyboard.type(` @${yesterdayStr}`, { delay: 20 });
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000);
+
+    // Mark task as complete
+    await runCommand(page, 'Toggle task complete');
+    await page.waitForTimeout(500);
+
+    // Trigger rollover
+    await runCommand(page, 'Rollover incomplete tasks');
+    await page.waitForTimeout(1000);
+
+    // Check that completed task still has yesterday's date
+    await runCommand(page, 'Open task');
+    await page.waitForTimeout(500);
+    await page.keyboard.type(taskTitle, { delay: 30 });
+    await page.waitForTimeout(500);
+
+    const taskSuggestion = page.locator('.suggestion-item').first();
+    if (await taskSuggestion.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskSuggestion.click();
+      await page.waitForTimeout(1000);
+
+      const editor = page.locator('.cm-content, .markdown-source-view');
+      const content = await editor.textContent().catch(() => '');
+
+      // Completed task should STILL have yesterday's date
+      const hasYesterdayDate = content?.includes(yesterdayStr);
+
+      await page.keyboard.press('Control+w');
+
+      // EXPECTED: Completed task should still have original date
+      expect(hasYesterdayDate).toBe(true);
+    } else {
+      await page.keyboard.press('Escape');
+      // Task not found is acceptable - may have been archived
+    }
+  });
+
+  test.skip('should support rollover only for tasks with no due date (Issue #1293 variant)', async () => {
+    // Some users may want different behavior:
+    // - Only rollover scheduled date if no due date is set
+    // - If due date exists, don't touch scheduled (as it has a deadline)
+    //
+    // This could be an additional setting for fine-grained control.
+
+    const page = getPage();
+
+    // Navigate to settings
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Look for conditional rollover setting
+    const conditionalSetting = page.locator('.setting-item').filter({
+      hasText: /only.*no.*due|skip.*due|conditional.*rollover/i
+    });
+    const settingExists = await conditionalSetting.first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Conditional rollover setting should exist
+    // (This is a bonus/variant feature, so test may need adjustment)
+    expect(settingExists).toBe(true);
+  });
+});
