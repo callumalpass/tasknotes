@@ -1424,6 +1424,9 @@ export function createTaskCard(
 		!opts.hideStatusIndicator &&
 		(!visibleProperties ||
 			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
+	if (!shouldShowStatus) {
+		card.classList.add("task-card--status-hidden");
+	}
 	if (shouldShowStatus) {
 		statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
 		if (statusConfig) {
@@ -1836,9 +1839,11 @@ export function updateTaskCard(
 
 	// Update status dot (conditional based on visible properties)
 	const shouldShowStatus =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
+		!opts.hideStatusIndicator &&
+		(!visibleProperties ||
+			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
 	const statusDot = element.querySelector(".task-card__status-dot") as HTMLElement;
+	element.classList.toggle("task-card--status-hidden", !shouldShowStatus);
 
 	if (shouldShowStatus) {
 		if (statusDot) {
@@ -2443,6 +2448,10 @@ export async function toggleSubtasks(
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
+					if (card.classList.contains("task-card--status-hidden")) {
+						subtaskCard.classList.add("task-card--status-hidden");
+						subtaskCard.querySelector(".task-card__status-dot")?.remove();
+					}
 
 					subtasksContainer.appendChild(subtaskCard);
 				}
