@@ -1424,7 +1424,7 @@ export function createTaskCard(
 		!opts.hideStatusIndicator &&
 		(!visibleProperties ||
 			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
-	if (!shouldShowStatus) {
+	if (opts.hideStatusIndicator) {
 		card.classList.add("task-card--status-hidden");
 	}
 	if (shouldShowStatus) {
@@ -1843,7 +1843,7 @@ export function updateTaskCard(
 		(!visibleProperties ||
 			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
 	const statusDot = element.querySelector(".task-card__status-dot") as HTMLElement;
-	element.classList.toggle("task-card--status-hidden", !shouldShowStatus);
+	element.classList.toggle("task-card--status-hidden", !!opts.hideStatusIndicator);
 
 	if (shouldShowStatus) {
 		if (statusDot) {
