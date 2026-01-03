@@ -17,3 +17,8 @@ Examples (illustrative):
 - In property-based mode, preserve user/default tags without filtering them out.
 - Only write `frontmatter.tags` during updates when tags are explicitly provided; otherwise leave tags untouched.
 - Fixes callumalpass/tasknotes#1391.
+
+### Edit modal tag safety
+
+- Property-based identification now keeps all tags visible in the edit modal (only tag-based mode hides the task tag).
+- Tags are only updated when the user actually changes the tags field, preventing accidental tag removal on unrelated edits.
