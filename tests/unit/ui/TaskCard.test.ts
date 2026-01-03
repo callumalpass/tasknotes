@@ -253,6 +253,21 @@ describe('TaskCard Component', () => {
       expect(titleEl?.textContent).toBe(task.title);
     });
 
+    it('should persist rendering options to dataset', () => {
+      const task = TaskFactory.createTask();
+      const options: Partial<TaskCardOptions> = {
+        hideStatusIndicator: true,
+        groupedByStatus: true,
+        noteWidget: true
+      };
+
+      const card = createTaskCard(task, mockPlugin, undefined, options);
+
+      expect(card.dataset.hideStatusIndicator).toBe('true');
+      expect(card.dataset.groupedByStatus).toBe('true');
+      expect(card.dataset.noteWidget).toBe('true');
+    });
+
     it.skip('should create task card with checkbox when enabled', () => {
       const task = TaskFactory.createTask({ status: 'done' });
       const options: Partial<TaskCardOptions> = { showCheckbox: true };
@@ -696,6 +711,24 @@ describe('TaskCard Component', () => {
 
       const priorityDot = cardWithoutPriority.querySelector('.task-card__priority-dot');
       expect(priorityDot).toBeTruthy();
+    });
+
+    it('should update rendering options in dataset', () => {
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        title: 'Updated Task',
+        status: 'open'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin, undefined, {
+        hideStatusIndicator: true,
+        groupedByStatus: true,
+        noteWidget: true
+      });
+
+      expect(card.dataset.hideStatusIndicator).toBe('true');
+      expect(card.dataset.groupedByStatus).toBe('true');
+      expect(card.dataset.noteWidget).toBe('true');
     });
 
     it('should remove priority indicator when task loses priority', () => {

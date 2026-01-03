@@ -436,6 +436,34 @@ function resolveVisibleProperties(
 	return getDefaultVisibleProperties(plugin);
 }
 
+function setCardOptionDataset(
+	card: HTMLElement,
+	options: Partial<TaskCardOptions>
+): void {
+	if (options.hideStatusIndicator !== undefined) {
+		card.dataset.hideStatusIndicator = String(!!options.hideStatusIndicator);
+	}
+	if (options.groupedByStatus !== undefined) {
+		card.dataset.groupedByStatus = String(!!options.groupedByStatus);
+	}
+	if (options.noteWidget !== undefined) {
+		card.dataset.noteWidget = String(!!options.noteWidget);
+	}
+}
+
+function readCardOptionDataset(card: HTMLElement): Partial<TaskCardOptions> {
+	const parseBool = (value?: string): boolean | undefined => {
+		if (value === undefined) return undefined;
+		return value === "true";
+	};
+
+	return {
+		hideStatusIndicator: parseBool(card.dataset.hideStatusIndicator),
+		groupedByStatus: parseBool(card.dataset.groupedByStatus),
+		noteWidget: parseBool(card.dataset.noteWidget),
+	};
+}
+
 function getSubtaskVisibleProperties(card: HTMLElement, plugin: TaskNotesPlugin): string[] {
 	const raw = card?.dataset?.visibleProperties;
 	if (raw) {
@@ -1388,7 +1416,11 @@ export function createTaskCard(
 	// Use span for inline layout to ensure proper inline flow in CodeMirror
 	const card = document.createElement(layout === "inline" ? "span" : "div");
 	card.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
-	(card as any)._taskCardOptions = opts;
+	setCardOptionDataset(card, {
+		hideStatusIndicator: opts.hideStatusIndicator,
+		groupedByStatus: opts.groupedByStatus,
+		noteWidget: opts.noteWidget,
+	});
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
@@ -1865,7 +1897,11 @@ export function updateTaskCard(
 
 	element.className = cardClasses.join(" ");
 	element.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
-	(element as any)._taskCardOptions = opts;
+	setCardOptionDataset(element, {
+		hideStatusIndicator: opts.hideStatusIndicator,
+		groupedByStatus: opts.groupedByStatus,
+		noteWidget: isNoteWidget,
+	});
 	if (isNoteWidget) {
 		element.classList.add("task-card--note-widget");
 	}
@@ -2494,19 +2530,16 @@ export async function toggleSubtasks(
 
 				// Sort subtasks
 				const sortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
-				const parentOptions = (card as any)._taskCardOptions as Partial<TaskCardOptions> | undefined;
+				const parentOptions = readCardOptionDataset(card);
 				const parentVisibleProperties = getSubtaskVisibleProperties(card, plugin);
-				const isNoteWidget = card.classList.contains("task-card--note-widget");
-				const subtaskOptions = parentOptions
-					? {
-							...parentOptions,
-							hideStatusIndicator: parentOptions?.hideStatusIndicator,
-							groupedByStatus: parentOptions?.groupedByStatus,
-							noteWidget: parentOptions?.noteWidget || isNoteWidget,
-						}
-					: isNoteWidget
-						? { noteWidget: true }
-						: {};
+				const isNoteWidget =
+					parentOptions.noteWidget ?? card.classList.contains("task-card--note-widget");
+				const subtaskOptions = {
+					...parentOptions,
+					hideStatusIndicator: parentOptions.hideStatusIndicator,
+					groupedByStatus: parentOptions.groupedByStatus,
+					noteWidget: parentOptions.noteWidget ?? isNoteWidget,
+				};
 
 				// Build parent chain by traversing up the DOM hierarchy
 				const buildParentChain = (element: HTMLElement): string[] => {
