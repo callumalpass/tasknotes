@@ -21,6 +21,14 @@ In the task card note widget, status is displayed as a subtle right-edge strip f
 
 Subtasks now inherit the parent card's visible properties (including custom fields), so their metadata line matches the parent configuration.
 
+## Subtask Rendering Options Stability
+
+Subtask rendering options are now derived from stable dataset values rather than transient DOM state, reducing inconsistencies after re-renders.
+
+## TaskListView Group-by Detection
+
+TaskListView now retains the bases controller reference so group-by status detection works correctly.
+
 ## Changelog
 
 - Add pointer cursor styling for all clickable task card elements (status, priority, indicators, chevron, blocking toggle, context menu, dates).
@@ -29,7 +37,9 @@ Subtasks now inherit the parent card's visible properties (including custom fiel
 - Show a status strip on subtasks only when grouped by status and status is hidden.
 - Hide status dots in the note widget and show a status strip instead (icon overrides strip).
 - Propagate visible properties from parent task cards to subtasks.
+- Persist task card rendering options on dataset attributes for reliable subtask rendering.
+- Store the bases controller in TaskListView to detect group-by status correctly.
 
 ## Tests
 
-- Not run (UI-only change).
+- Added unit coverage for task card option persistence.
