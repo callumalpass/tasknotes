@@ -97,11 +97,13 @@ export class TaskEditModal extends TaskModal {
 			this.selectedProjectItems = [];
 		}
 
-		this.tags = this.task.tags
-			? sanitizeTags(
-					this.task.tags.filter((tag) => tag !== this.plugin.settings.taskTag).join(", ")
-				)
-			: "";
+		const shouldFilterTaskTag =
+			this.plugin.settings.taskIdentificationMethod === "tag";
+		const rawTags = this.task.tags || [];
+		const visibleTags = shouldFilterTaskTag
+			? rawTags.filter((tag) => tag !== this.plugin.settings.taskTag)
+			: rawTags;
+		this.tags = rawTags.length > 0 ? sanitizeTags(visibleTags.join(", ")) : "";
 		this.timeEstimate = this.task.timeEstimate || 0;
 
 		// Handle recurrence
