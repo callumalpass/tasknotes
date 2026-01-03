@@ -35,6 +35,13 @@ Example:
 
 ## Fixed
 
+- (#1424) Fixed "Create New Task" command creating tasks in active folder instead of default folder
+  - Introduced new `modal-inline-creation` context for the "Create New Inline Task" command
+  - "Create New Task" now correctly uses the configured default task folder (`tasksFolder`)
+  - "Create New Inline Task" continues to use `inlineTaskConvertFolder` with `{{currentNotePath}}` support
+  - Regression was introduced in #1334 which incorrectly grouped both commands
+  - Thanks to @Gogo-XD for reporting
+
 - (#1410) Fixed vim insert mode not activating in task creation modal
   - The 4.2.0 implementation used incorrect path to access the CodeMirror vim adapter
   - Now correctly accesses the CM5 adapter and adds a small delay for vim initialization
