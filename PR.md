@@ -38,3 +38,9 @@ Examples (illustrative):
 ### Tests
 
 - Added unit coverage for angle-bracket link parsing and project display name resolution in `linkUtils`.
+
+### Link anchors
+
+- `parseLinkToPath` now strips `#heading`/`#^block` fragments so file resolution stays stable.
+- Internal link rendering preserves anchors separately (`data-href-fragment`) and uses the full `path#anchor` for navigation and hovers.
+- Relative project links resolve with a `sourcePath` when available for consistent display names.
