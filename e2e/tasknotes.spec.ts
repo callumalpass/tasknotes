@@ -7837,3 +7837,482 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     expect(foundPriority).toBe(true);
   });
 });
+
+// Issue #1423: Project cards don't refresh when subtasks are removed (stale project UI until reload)
+// https://github.com/anthropics/tasknotes/issues/1423
+//
+// When subtasks are removed from a task, the project UI does not refresh.
+// The deleted subtask remains visible in the expanded subtask list, and if the last
+// subtask is removed the parent still renders as a project. The UI only corrects
+// itself after a full view reload.
+//
+// Root cause: ProjectSubtasksService uses a 30-second TTL-based cache (INDEX_TTL = 30000)
+// and there is no event-driven invalidation when subtasks are deleted. The buildProjectIndex()
+// method only rebuilds on time expiration, not on EVENT_TASK_DELETED or file deletion events.
+test.describe('Issue #1423 - Project cards refresh when subtasks are removed', () => {
+  // Helper to expand TaskNotes and Views folders
+  async function expandViewsFolderFor1423(page: Page): Promise<void> {
+    // First ensure the sidebar is expanded
+    await ensureSidebarExpanded(page);
+
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
+  test.fixme('subtask should disappear from expanded list when deleted', async () => {
+    // Issue #1423: Deleted subtasks remain visible in the expanded subtask list
+    //
+    // Steps to reproduce:
+    // 1. Create a parent task (Task A) and subtask (Task B)
+    // 2. Add Task B as a subtask of Task A via the projects field
+    // 3. In a view, expand Task A to see its subtasks
+    // 4. Delete Task B
+    //
+    // Expected: Task B should disappear immediately from Task A's subtask list
+    // Actual: Task B remains visible until a full view reload
+    const page = getPage();
+
+    // Create test tasks: parent (project) and subtask
+    const parentTitle = 'Issue1423 Parent Task';
+    const subtaskTitle = 'Issue1423 Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      // Create parent task first
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      // Wait for parent to be created
+      await new Promise(r => setTimeout(r, 500));
+
+      // Get the parent task's path
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      // Create subtask with parent as project (using wikilink format)
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Open kanban view and expand the parent to show subtasks
+    await expandViewsFolderFor1423(page);
+    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
+    if (await kanbanItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await kanbanItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Find the parent task card
+    const parentCard = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    await expect(parentCard).toBeVisible({ timeout: 5000 });
+
+    // Expand subtasks by clicking the chevron
+    await parentCard.hover();
+    await page.waitForTimeout(300);
+    const chevron = parentCard.locator('.task-card__chevron');
+    if (await chevron.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await chevron.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Verify subtask is visible in the expanded list
+    const subtasksContainer = parentCard.locator('.task-card__subtasks');
+    await expect(subtasksContainer).toBeVisible({ timeout: 3000 });
+    const subtaskCard = subtasksContainer.locator(`.task-card:has-text("${subtaskTitle}")`);
+    await expect(subtaskCard).toBeVisible({ timeout: 3000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-before-delete.png' });
+
+    // Delete the subtask via the plugin API
+    await page.evaluate(async (subtaskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (subtask) {
+        await plugin.taskService.deleteTask(subtask.path);
+      }
+    }, subtaskTitle);
+
+    // Wait a short time for UI to update (NOT 30 seconds for index rebuild)
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-after-delete.png' });
+
+    // BUG: The subtask should no longer be visible
+    // Currently it remains visible due to stale cache until 30-second TTL expires
+    await expect(subtaskCard).not.toBeVisible({ timeout: 3000 });
+
+    // Cleanup: delete parent task
+    await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (parent) {
+        await plugin.taskService.deleteTask(parent.path);
+      }
+    }, parentTitle);
+  });
+
+  test.fixme('parent should revert to normal card when last subtask is deleted', async () => {
+    // Issue #1423: After deleting the last subtask, the parent still appears as a project
+    //
+    // Steps to reproduce:
+    // 1. Create Task A with Task B as its only subtask
+    // 2. In Kanban/Task List view, Task A shows with project indicator (chevron)
+    // 3. Delete Task B
+    //
+    // Expected: Task A should revert to a normal task card without chevron/project UI
+    // Actual: Task A still shows chevron and project UI until view reload
+    const page = getPage();
+
+    // Create test tasks
+    const parentTitle = 'Issue1423 Solo Parent';
+    const subtaskTitle = 'Issue1423 Only Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      // Create parent task
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      await new Promise(r => setTimeout(r, 500));
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      // Create single subtask
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Open kanban view
+    await expandViewsFolderFor1423(page);
+    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
+    if (await kanbanItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await kanbanItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Find the parent task and verify it has project indicators
+    const parentCard = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    await expect(parentCard).toBeVisible({ timeout: 5000 });
+
+    // Verify parent shows as a project (has chevron)
+    await parentCard.hover();
+    await page.waitForTimeout(300);
+    const chevronBefore = parentCard.locator('.task-card__chevron');
+    await expect(chevronBefore).toBeVisible({ timeout: 3000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-parent-as-project.png' });
+
+    // Delete the only subtask
+    await page.evaluate(async (subtaskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (subtask) {
+        await plugin.taskService.deleteTask(subtask.path);
+      }
+    }, subtaskTitle);
+
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-parent-after-subtask-deleted.png' });
+
+    // BUG: After deleting the only subtask, parent should no longer show as project
+    // The chevron should disappear since there are no more subtasks
+    const parentCardAfter = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    await parentCardAfter.hover();
+    await page.waitForTimeout(300);
+    const chevronAfter = parentCardAfter.locator('.task-card__chevron');
+
+    // Chevron should NOT be visible anymore
+    await expect(chevronAfter).not.toBeVisible({ timeout: 3000 });
+
+    // Cleanup
+    await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (parent) {
+        await plugin.taskService.deleteTask(parent.path);
+      }
+    }, parentTitle);
+  });
+
+  test.fixme('project index should invalidate when subtask projects field is modified', async () => {
+    // Issue #1423: Project index uses 30-second TTL instead of event-driven invalidation
+    //
+    // The ProjectSubtasksService.buildProjectIndex() only rebuilds when:
+    // - Component initialization
+    // - Time-based TTL expiration (30 seconds)
+    //
+    // It should also rebuild when:
+    // - EVENT_TASK_DELETED is emitted
+    // - A task's projects field is modified (subtask removed from project)
+    // - A file is deleted from the vault
+    const page = getPage();
+
+    // Create parent and subtask
+    const parentTitle = 'Issue1423 Index Test Parent';
+    const subtaskTitle = 'Issue1423 Index Test Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      await new Promise(r => setTimeout(r, 500));
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Verify parent is in project index
+    const isProjectBefore = await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.projectSubtasksService) return false;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parent) return false;
+
+      return plugin.projectSubtasksService.isTaskUsedAsProjectSync(parent.path);
+    }, parentTitle);
+
+    expect(isProjectBefore).toBe(true);
+
+    // Remove the subtask from the project (modify projects field, not delete)
+    await page.evaluate(async (subtaskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (subtask) {
+        // Update the subtask to remove projects
+        await plugin.taskService.updateTask(subtask.path, {
+          ...subtask,
+          projects: []
+        });
+      }
+    }, subtaskTitle);
+
+    await page.waitForTimeout(1000);
+
+    // BUG: Project index should immediately reflect that parent is no longer a project
+    // Currently it takes up to 30 seconds for the index to rebuild
+    const isProjectAfter = await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.projectSubtasksService) return true;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parent) return true;
+
+      return plugin.projectSubtasksService.isTaskUsedAsProjectSync(parent.path);
+    }, parentTitle);
+
+    // Should no longer be a project
+    expect(isProjectAfter).toBe(false);
+
+    // Cleanup
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (parent) await plugin.taskService.deleteTask(parent.path);
+      if (subtask) await plugin.taskService.deleteTask(subtask.path);
+    }, { parentTitle, subtaskTitle });
+  });
+
+  test.fixme('task list view should refresh when subtask is deleted', async () => {
+    // Issue #1423: Task List view doesn't refresh subtasks on deletion
+    //
+    // Same bug manifests in Task List view - verifying this is a cross-view issue
+    // tied to the shared ProjectSubtasksService cache, not view-specific rendering
+    const page = getPage();
+
+    const parentTitle = 'Issue1423 TaskList Parent';
+    const subtaskTitle = 'Issue1423 TaskList Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      await new Promise(r => setTimeout(r, 500));
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Open task list view
+    await runCommand(page, 'Open tasks list');
+    await page.waitForTimeout(1500);
+
+    // Find and expand the parent
+    const parentCard = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    if (await parentCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await parentCard.hover();
+      await page.waitForTimeout(300);
+      const chevron = parentCard.locator('.task-card__chevron');
+      if (await chevron.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await chevron.click();
+        await page.waitForTimeout(500);
+      }
+
+      // Verify subtask is visible
+      const subtasksContainer = parentCard.locator('.task-card__subtasks');
+      const subtaskCard = subtasksContainer.locator(`.task-card:has-text("${subtaskTitle}")`);
+      await expect(subtaskCard).toBeVisible({ timeout: 3000 });
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1423-tasklist-before-delete.png' });
+
+      // Delete the subtask
+      await page.evaluate(async (subtaskTitle) => {
+        // @ts-ignore - Obsidian global
+        const app = (window as any).app;
+        const plugin = app?.plugins?.plugins?.['tasknotes'];
+        if (!plugin?.taskService) return;
+
+        const allTasks = plugin.taskService.getAllTasks() || [];
+        const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+        if (subtask) {
+          await plugin.taskService.deleteTask(subtask.path);
+        }
+      }, subtaskTitle);
+
+      await page.waitForTimeout(1000);
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1423-tasklist-after-delete.png' });
+
+      // BUG: Subtask should no longer be visible in the task list view
+      await expect(subtaskCard).not.toBeVisible({ timeout: 3000 });
+    }
+
+    // Cleanup
+    await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (parent) await plugin.taskService.deleteTask(parent.path);
+    }, parentTitle);
+  });
+});
