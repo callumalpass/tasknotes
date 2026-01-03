@@ -344,7 +344,7 @@ function renderStatusList(
 		statusCard = createCard(container, cardConfig);
 		updateDelayInputVisibility();
 
-		valueInput.addEventListener("change", () => {
+		valueInput.addEventListener("input", () => {
 			status.value = valueInput.value;
 			statusCard.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
 				status.value || "untitled";
@@ -352,7 +352,7 @@ function renderStatusList(
 			if (onStatusesChanged) onStatusesChanged();
 		});
 
-		labelInput.addEventListener("change", () => {
+		labelInput.addEventListener("input", () => {
 			status.label = labelInput.value;
 			statusCard.querySelector(".tasknotes-settings__card-secondary-text")!.textContent =
 				status.label || "No label";

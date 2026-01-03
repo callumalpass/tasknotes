@@ -52,3 +52,9 @@ Example:
   - Updated `TAG_PATTERN` to include hyphens: `/#[\w/-]+/g`
   - Thanks to @JerryLu086 for reporting
 
+- (#1419) Fixed custom statuses and priorities not saving in settings
+  - Text input fields used `change` event which only fires on blur, losing values if modal closed without blurring
+  - Changed to `input` event so values are captured on every keystroke
+  - Added `hide()` method to settings tab to flush pending debounced saves when modal closes
+  - Thanks to @s33a for reporting
+
