@@ -11,11 +11,14 @@ export function parseLinkToPath(linkText: string): string {
 	if (!linkText) return linkText;
 
 	const trimmed = linkText.trim();
+	const stripAnchor = (value: string): string => {
+		const hashIndex = value.indexOf("#");
+		return hashIndex === -1 ? value : value.slice(0, hashIndex);
+	};
 
 	// Handle plain angle-bracket autolink style: <path/to/note.md>
 	if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
 		let inner = trimmed.slice(1, -1).trim();
-		const hasMdExt = /\.md$/i.test(inner);
 		try {
 			inner = decodeURIComponent(inner);
 		} catch (error) {
@@ -23,7 +26,8 @@ export function parseLinkToPath(linkText: string): string {
 		}
 
 		const parsed = parseLinktext(inner);
-		return hasMdExt ? inner : parsed.path || inner;
+		const path = parsed.path || inner;
+		return stripAnchor(path);
 	}
 
 	// Handle wikilinks: [[path]] or [[path|alias]]
@@ -36,7 +40,8 @@ export function parseLinkToPath(linkText: string): string {
 		const pathOnly = pipeIndex !== -1 ? inner.substring(0, pipeIndex) : inner;
 		const parsed = parseLinktext(pathOnly);
 
-		return parsed.path;
+		const path = parsed.path || pathOnly;
+		return stripAnchor(path);
 	}
 
 	// Handle markdown links: [text](path)
@@ -49,8 +54,6 @@ export function parseLinkToPath(linkText: string): string {
 			linkPath = linkPath.slice(1, -1).trim();
 		}
 
-		const hasMdExt = /\.md$/i.test(linkPath);
-
 		// URL decode the link path - crucial for paths with spaces like Car%20Maintenance.md
 		try {
 			linkPath = decodeURIComponent(linkPath);
@@ -61,7 +64,8 @@ export function parseLinkToPath(linkText: string): string {
 
 		// Use parseLinktext to handle subpaths/headings
 		const parsed = parseLinktext(linkPath);
-		return hasMdExt ? linkPath : parsed.path;
+		const path = parsed.path || linkPath;
+		return stripAnchor(path);
 	}
 
 	// Not a link format, return as-is

@@ -104,9 +104,24 @@ describe('linkUtils - frontmatter link format', () => {
       expect(parseLinkToPath(link)).toBe('Folder/My Note.md');
     });
 
+    it('should strip headings from markdown links with .md paths', () => {
+      const link = '[My Note](Folder/My Note.md#Section)';
+      expect(parseLinkToPath(link)).toBe('Folder/My Note.md');
+    });
+
     it('should parse plain angle bracket autolinks', () => {
       const link = '<Folder/My Note.md>';
       expect(parseLinkToPath(link)).toBe('Folder/My Note.md');
+    });
+
+    it('should strip headings from plain angle bracket autolinks', () => {
+      const link = '<Folder/My Note.md#Section>';
+      expect(parseLinkToPath(link)).toBe('Folder/My Note.md');
+    });
+
+    it('should strip headings from wikilinks', () => {
+      const link = '[[Folder/My Note#Section]]';
+      expect(parseLinkToPath(link)).toBe('Folder/My Note');
     });
 
     it('should decode markdown link paths without .md extension', () => {
