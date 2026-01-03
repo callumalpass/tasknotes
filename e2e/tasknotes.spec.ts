@@ -7519,3 +7519,321 @@ test.describe('Issue #1293: Incomplete Task Rollover to Next Day', () => {
     expect(settingExists).toBe(true);
   });
 });
+
+// ============================================================================
+// Issue #1419: Custom statuses not saving
+// User reports that custom task statuses don't persist after closing settings
+// Also affects priorities.
+// See: https://github.com/callumalpass/tasknotes/issues/1419
+// ============================================================================
+
+test.describe('Issue #1419: Custom statuses not saving', () => {
+  test.skip('should persist new custom status values after closing and reopening settings', async () => {
+    // Issue: Custom task statuses don't save properly after updating to 4.2.0
+    // User adds a new custom status, fills in values, closes settings,
+    // reopens settings, and the values are gone.
+    //
+    // Steps to reproduce:
+    // 1. Open TaskNotes settings
+    // 2. Go to Task Properties tab
+    // 3. Expand Status property card
+    // 4. Click "Add New" to add a custom status
+    // 5. Fill in value, label, and color
+    // 6. Close settings
+    // 7. Reopen settings and navigate back to the status
+    // 8. Observe: values are empty/reset
+    //
+    // Expected: Values should persist
+    // Actual: Values are lost
+    //
+    // Related: Also affects custom priorities
+
+    const page = getPage();
+    const testStatusValue = `test-status-${Date.now()}`;
+    const testStatusLabel = 'Test Status Label';
+
+    // Open settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal.mod-settings');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab
+    const taskPropertiesTab = page.locator('button:has-text("Task Properties")').first();
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand the Status property card
+    const statusCard = page.locator('.tasknotes-settings__card[data-card-id="property-status"]');
+    const statusCardHeader = statusCard.locator('.tasknotes-settings__card-header').first();
+    if (await statusCardHeader.isVisible({ timeout: 2000 })) {
+      await statusCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand the "Status Values" collapsible section
+    const statusValuesHeader = page.locator('.tasknotes-settings__collapsible-section-header:has-text("Status Values")').first();
+    if (await statusValuesHeader.isVisible({ timeout: 2000 })) {
+      await statusValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Click "Add New" button to add a new status
+    const addNewButton = page.locator('button:has-text("Add New")').first();
+    if (await addNewButton.isVisible({ timeout: 2000 })) {
+      await addNewButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Find the newly added status card (should be the last one, collapsed by default)
+    // The new status has empty value so its header shows "untitled"
+    const newStatusCard = page.locator('.tasknotes-statuses-container .tasknotes-settings__card').last();
+    const newStatusCardHeader = newStatusCard.locator('.tasknotes-settings__card-header').first();
+    if (await newStatusCardHeader.isVisible({ timeout: 2000 })) {
+      await newStatusCardHeader.click(); // Expand it
+      await page.waitForTimeout(300);
+    }
+
+    // Fill in the value field
+    const valueInput = newStatusCard.locator('input[type="text"]').first();
+    if (await valueInput.isVisible({ timeout: 2000 })) {
+      await valueInput.fill(testStatusValue);
+      await valueInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Fill in the label field
+    const labelInput = newStatusCard.locator('input[type="text"]').nth(1);
+    if (await labelInput.isVisible({ timeout: 2000 })) {
+      await labelInput.fill(testStatusLabel);
+      await labelInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Wait for debounced save (500ms + buffer)
+    await page.waitForTimeout(1000);
+
+    // Close settings
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+    // Reopen settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate back to TaskNotes settings
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab again
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand Status card again
+    if (await statusCardHeader.isVisible({ timeout: 2000 })) {
+      await statusCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand Status Values section again
+    if (await statusValuesHeader.isVisible({ timeout: 2000 })) {
+      await statusValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Find the status card with our test value
+    const statusCards = page.locator('.tasknotes-statuses-container .tasknotes-settings__card');
+    const statusCount = await statusCards.count();
+
+    let foundStatus = false;
+    for (let i = 0; i < statusCount; i++) {
+      const card = statusCards.nth(i);
+      const headerText = await card.locator('.tasknotes-settings__card-primary-text').textContent().catch(() => '');
+      if (headerText === testStatusValue) {
+        foundStatus = true;
+        // Expand this card to verify label
+        const cardHeader = card.locator('.tasknotes-settings__card-header').first();
+        await cardHeader.click();
+        await page.waitForTimeout(300);
+
+        const labelValue = await card.locator('input[type="text"]').nth(1).inputValue().catch(() => '');
+        expect(labelValue).toBe(testStatusLabel);
+        break;
+      }
+    }
+
+    // Close settings
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: The custom status should be found with correct values
+    expect(foundStatus).toBe(true);
+  });
+
+  test.skip('should persist new custom priority values after closing and reopening settings', async () => {
+    // Same issue as above but for priorities
+    //
+    // Steps to reproduce:
+    // 1. Open TaskNotes settings
+    // 2. Go to Task Properties tab
+    // 3. Expand Priority property card
+    // 4. Click "Add New" to add a custom priority
+    // 5. Fill in value, label, and color
+    // 6. Close settings
+    // 7. Reopen settings and navigate back to the priority
+    // 8. Observe: values are empty/reset
+    //
+    // Expected: Values should persist
+    // Actual: Values are lost
+
+    const page = getPage();
+    const testPriorityValue = `test-priority-${Date.now()}`;
+    const testPriorityLabel = 'Test Priority Label';
+
+    // Open settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal.mod-settings');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab
+    const taskPropertiesTab = page.locator('button:has-text("Task Properties")').first();
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand the Priority property card
+    const priorityCard = page.locator('.tasknotes-settings__card[data-card-id="property-priority"]');
+    const priorityCardHeader = priorityCard.locator('.tasknotes-settings__card-header').first();
+    if (await priorityCardHeader.isVisible({ timeout: 2000 })) {
+      await priorityCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand the "Priority Values" collapsible section
+    const priorityValuesHeader = page.locator('.tasknotes-settings__collapsible-section-header:has-text("Priority Values")').first();
+    if (await priorityValuesHeader.isVisible({ timeout: 2000 })) {
+      await priorityValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Click "Add New" button to add a new priority
+    const addNewButton = priorityCard.locator('button:has-text("Add New")').first();
+    if (await addNewButton.isVisible({ timeout: 2000 })) {
+      await addNewButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Find the newly added priority card (should be the last one)
+    const newPriorityCard = page.locator('.tasknotes-priorities-container .tasknotes-settings__card').last();
+    const newPriorityCardHeader = newPriorityCard.locator('.tasknotes-settings__card-header').first();
+    if (await newPriorityCardHeader.isVisible({ timeout: 2000 })) {
+      await newPriorityCardHeader.click(); // Expand it
+      await page.waitForTimeout(300);
+    }
+
+    // Fill in the value field
+    const valueInput = newPriorityCard.locator('input[type="text"]').first();
+    if (await valueInput.isVisible({ timeout: 2000 })) {
+      await valueInput.fill(testPriorityValue);
+      await valueInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Fill in the label field
+    const labelInput = newPriorityCard.locator('input[type="text"]').nth(1);
+    if (await labelInput.isVisible({ timeout: 2000 })) {
+      await labelInput.fill(testPriorityLabel);
+      await labelInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Wait for debounced save (500ms + buffer)
+    await page.waitForTimeout(1000);
+
+    // Close settings
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+    // Reopen settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate back to TaskNotes settings
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab again
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand Priority card again
+    if (await priorityCardHeader.isVisible({ timeout: 2000 })) {
+      await priorityCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand Priority Values section again
+    if (await priorityValuesHeader.isVisible({ timeout: 2000 })) {
+      await priorityValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Find the priority card with our test value
+    const priorityCards = page.locator('.tasknotes-priorities-container .tasknotes-settings__card');
+    const priorityCount = await priorityCards.count();
+
+    let foundPriority = false;
+    for (let i = 0; i < priorityCount; i++) {
+      const card = priorityCards.nth(i);
+      const headerText = await card.locator('.tasknotes-settings__card-primary-text').textContent().catch(() => '');
+      if (headerText === testPriorityLabel || headerText === testPriorityValue) {
+        foundPriority = true;
+        // Expand this card to verify values
+        const cardHeader = card.locator('.tasknotes-settings__card-header').first();
+        await cardHeader.click();
+        await page.waitForTimeout(300);
+
+        const savedValue = await card.locator('input[type="text"]').first().inputValue().catch(() => '');
+        expect(savedValue).toBe(testPriorityValue);
+        break;
+      }
+    }
+
+    // Close settings
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: The custom priority should be found with correct values
+    expect(foundPriority).toBe(true);
+  });
+});
