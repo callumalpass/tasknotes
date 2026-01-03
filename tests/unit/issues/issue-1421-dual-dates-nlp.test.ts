@@ -19,6 +19,21 @@ import { ChronoTestUtils } from "../../__mocks__/chrono-node";
  * This means if the input contains both "scheduled for <date>" and "due <date>",
  * only the first trigger encountered in the loop is processed.
  *
+ * TRIGGER LOOP ORDER:
+ * The triggerPatterns array (lines 701-716) is ordered as ["due", "scheduled"].
+ * This means "due" triggers are always checked first, regardless of their
+ * position in the input text. So even if user types "scheduled for Jan 9 due Jan 10",
+ * the parser finds the "due" match first and returns early.
+ *
+ * RELEVANT SETTINGS:
+ * - nlpDefaultToScheduled (boolean): When no explicit trigger is found, determines
+ *   whether dates default to scheduledDate (true) or dueDate (false). This setting
+ *   is correctly handled for single-date inputs but is irrelevant for the bug since
+ *   explicit triggers are present.
+ * - nlpLanguage (string): Determines which locale's dateTriggers are used.
+ *   English triggers are: due: ["due", "deadline", "must be done by", "by"]
+ *                         scheduled: ["scheduled for", "start on", "begin on", "work on", "on"]
+ *
  * EXPECTED BEHAVIOR:
  * Both date triggers should be processed, allowing users to set both scheduled
  * and due dates in a single natural language input.
@@ -175,6 +190,121 @@ describe("Issue #1421: Setting both due and scheduled dates via natural language
 			const result = parser.parseInput(input);
 
 			// "on" is a scheduled trigger, "deadline" is a due trigger
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeDefined();
+		});
+	});
+
+	describe("Settings interaction (nlpDefaultToScheduled)", () => {
+		it("should respect nlpDefaultToScheduled=true for single implicit date", () => {
+			// With defaultToScheduled=true (default in our setup)
+			const input = "Task tomorrow";
+			const result = parser.parseInput(input);
+
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeUndefined();
+		});
+
+		it("should respect nlpDefaultToScheduled=false for single implicit date", () => {
+			// Create parser with defaultToScheduled=false
+			const parserDueDefault = new NaturalLanguageParser(
+				mockStatusConfigs,
+				mockPriorityConfigs,
+				false // defaultToScheduled = false
+			);
+
+			const input = "Task tomorrow";
+			const result = parserDueDefault.parseInput(input);
+
+			expect(result.dueDate).toBeDefined();
+			expect(result.scheduledDate).toBeUndefined();
+		});
+
+		it.skip("should ignore nlpDefaultToScheduled when both explicit triggers present", () => {
+			// When explicit triggers are used, the setting should be irrelevant
+			// because we're explicitly specifying both dates
+			const parserDueDefault = new NaturalLanguageParser(
+				mockStatusConfigs,
+				mockPriorityConfigs,
+				false // defaultToScheduled = false
+			);
+
+			const input = "Task scheduled for tomorrow due next week";
+			const result = parserDueDefault.parseInput(input);
+
+			// Both should be set regardless of default setting
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeDefined();
+		});
+	});
+
+	describe("Trigger processing order (documents bug behavior)", () => {
+		it.skip("should process both triggers regardless of input order - scheduled first", () => {
+			// User puts scheduled before due in their input
+			const input = "Task scheduled for tomorrow due next week";
+			const result = parser.parseInput(input);
+
+			// BUG: Currently only dueDate is set because "due" is checked first in loop
+			// The loop order is ["due", "scheduled"], so "due next week" is found first
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeDefined();
+		});
+
+		it.skip("should process both triggers regardless of input order - due first", () => {
+			// User puts due before scheduled in their input
+			const input = "Task due next week scheduled for tomorrow";
+			const result = parser.parseInput(input);
+
+			// BUG: Only dueDate is set because "due" is checked first in loop
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeDefined();
+		});
+
+		it("documents current buggy behavior: only due is captured", () => {
+			// This test documents the CURRENT (buggy) behavior
+			// It should be updated when the fix is implemented
+			const input = "Task scheduled for tomorrow due next week";
+			const result = parser.parseInput(input);
+
+			// Currently, only dueDate is set because:
+			// 1. triggerPatterns loop order is ["due", "scheduled"]
+			// 2. "due" trigger is found at position in text
+			// 3. Parser returns early after processing first match
+			expect(result.dueDate).toBeDefined();
+			// This assertion documents the bug - scheduledDate should be set but isn't
+			expect(result.scheduledDate).toBeUndefined();
+		});
+	});
+
+	describe("Alternative trigger words", () => {
+		it.skip("should handle 'deadline' trigger for due date with explicit scheduled", () => {
+			const input = "Task scheduled for tomorrow deadline next week";
+			const result = parser.parseInput(input);
+
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeDefined();
+		});
+
+		it.skip("should handle 'by' trigger for due date with explicit scheduled", () => {
+			const input = "Task scheduled for tomorrow by next week";
+			const result = parser.parseInput(input);
+
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeDefined();
+		});
+
+		it.skip("should handle 'start on' trigger for scheduled with explicit due", () => {
+			const input = "Task start on tomorrow due next week";
+			const result = parser.parseInput(input);
+
+			expect(result.scheduledDate).toBeDefined();
+			expect(result.dueDate).toBeDefined();
+		});
+
+		it.skip("should handle 'work on' trigger for scheduled with explicit due", () => {
+			const input = "Task work on tomorrow due next week";
+			const result = parser.parseInput(input);
+
 			expect(result.scheduledDate).toBeDefined();
 			expect(result.dueDate).toBeDefined();
 		});
