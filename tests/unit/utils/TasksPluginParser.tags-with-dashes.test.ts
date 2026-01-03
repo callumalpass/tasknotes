@@ -13,48 +13,42 @@ import { TasksPluginParser } from '../../../src/utils/TasksPluginParser';
 
 describe('Issue #1422: Tags with dashes', () => {
   describe('TasksPluginParser.parseTaskLine - tag extraction', () => {
-    it.skip('should extract tags containing dashes', () => {
-      // BUG: Currently #my-tag is parsed as just #my
+    it('should extract tags containing dashes', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Task with #my-tag');
 
       expect(result.isTaskLine).toBe(true);
       expect(result.parsedData?.tags).toContain('my-tag');
     });
 
-    it.skip('should extract tags with multiple dashes', () => {
-      // BUG: #multi-part-tag-name becomes #multi
+    it('should extract tags with multiple dashes', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Task with #multi-part-tag-name');
 
       expect(result.isTaskLine).toBe(true);
       expect(result.parsedData?.tags).toContain('multi-part-tag-name');
     });
 
-    it.skip('should extract multiple tags including ones with dashes', () => {
-      // BUG: #feature-request becomes #feature, #high-priority becomes #high
+    it('should extract multiple tags including ones with dashes', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Review #feature-request for #high-priority client');
 
       expect(result.isTaskLine).toBe(true);
       expect(result.parsedData?.tags).toEqual(expect.arrayContaining(['feature-request', 'high-priority']));
     });
 
-    it.skip('should extract hierarchical tags with dashes', () => {
-      // BUG: #project/sub-project becomes #project/sub
+    it('should extract hierarchical tags with dashes', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Work on #project/sub-project');
 
       expect(result.isTaskLine).toBe(true);
       expect(result.parsedData?.tags).toContain('project/sub-project');
     });
 
-    it.skip('should preserve dashes in tag names when cleaning title', () => {
-      // BUG: The -tag portion of #my-tag remains in the title
+    it('should preserve dashes in tag names when cleaning title', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Fix bug #my-tag');
 
       expect(result.isTaskLine).toBe(true);
       expect(result.parsedData?.title).toBe('Fix bug');
-      // Currently the title incorrectly becomes "Fix bug -tag"
     });
 
-    it.skip('should handle tags starting with dashes after the hash', () => {
+    it('should handle tags starting with dashes after the hash', () => {
       // Edge case: #-prefixed-tag
       const result = TasksPluginParser.parseTaskLine('- [ ] Test #-prefixed-tag');
 
@@ -62,7 +56,7 @@ describe('Issue #1422: Tags with dashes', () => {
       expect(result.parsedData?.tags).toContain('-prefixed-tag');
     });
 
-    it.skip('should handle tags ending with dashes', () => {
+    it('should handle tags ending with dashes', () => {
       // Edge case: #trailing-dash-
       const result = TasksPluginParser.parseTaskLine('- [ ] Test #trailing-dash-');
 
@@ -74,8 +68,7 @@ describe('Issue #1422: Tags with dashes', () => {
   });
 
   describe('TasksPluginParser.parseTaskLine - title cleaning with dashed tags', () => {
-    it.skip('should remove entire dashed tag from title', () => {
-      // BUG: #work-related tag leaves "-related" in the title
+    it('should remove entire dashed tag from title', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Complete report #work-related');
 
       expect(result.isTaskLine).toBe(true);
@@ -83,8 +76,7 @@ describe('Issue #1422: Tags with dashes', () => {
       expect(result.parsedData?.title).not.toContain('-related');
     });
 
-    it.skip('should handle multiple dashed tags in title cleaning', () => {
-      // BUG: Multiple partial tags left in title
+    it('should handle multiple dashed tags in title cleaning', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Task #tag-one #tag-two');
 
       expect(result.isTaskLine).toBe(true);

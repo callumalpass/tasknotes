@@ -47,3 +47,8 @@ Example:
   - Now correctly accesses the CM5 adapter and adds a small delay for vim initialization
   - Thanks to @Leo310 for the feature request
 
+- (#1422) Fixed tags with dashes not being parsed correctly
+  - Tags like `#my-tag` were truncated to `#my` because the regex pattern didn't include hyphens
+  - Updated `TAG_PATTERN` to include hyphens: `/#[\w/-]+/g`
+  - Thanks to @JerryLu086 for reporting
+
