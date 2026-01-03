@@ -17,6 +17,7 @@ import { VirtualScroller } from "../utils/VirtualScroller";
 export class TaskListView extends BasesViewBase {
 	type = "tasknotesTaskList";
 
+	private basesController: any;
 	private itemsContainer: HTMLElement | null = null;
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private lastRenderWasGrouped = false;
@@ -43,6 +44,7 @@ export class TaskListView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.basesController = controller;
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
 		(this.dataAdapter as any).basesView = this;
