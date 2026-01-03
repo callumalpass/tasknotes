@@ -406,10 +406,12 @@ export class StatsView extends ItemView {
 	 * Returns a canonical project name that represents all variations.
 	 * Based on the implementation from PR #486
 	 */
-	private consolidateProjectName(projectValue: string): string {
+	private consolidateProjectName(projectValue: string, sourcePath?: string): string {
 		if (!projectValue || typeof projectValue !== "string") {
 			return projectValue;
 		}
+
+		const resolvedSourcePath = sourcePath ?? "";
 
 		// For wikilink format, try to resolve to actual file
 		if (projectValue.startsWith("[[") && projectValue.endsWith("]]")) {
@@ -417,7 +419,7 @@ export class StatsView extends ItemView {
 			if (linkPath && this.plugin?.app) {
 				const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
 					linkPath,
-					""
+					resolvedSourcePath
 				);
 				if (resolvedFile) {
 					// Return the file basename as the canonical name
@@ -425,7 +427,7 @@ export class StatsView extends ItemView {
 				}
 
 				// If file doesn't exist, extract clean name from path
-				const cleanName = this.extractProjectName(projectValue);
+				const cleanName = this.extractProjectName(projectValue, sourcePath);
 				if (cleanName) {
 					return cleanName;
 				}
@@ -471,9 +473,9 @@ export class StatsView extends ItemView {
 	/**
 	 * Extract clean project name from various formats
 	 */
-	private extractProjectName(projectValue: string): string | null {
+	private extractProjectName(projectValue: string, sourcePath?: string): string | null {
 		if (!projectValue) return null;
-		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
+		const displayName = getProjectDisplayName(projectValue, this.plugin?.app, sourcePath);
 		return displayName || null;
 	}
 
@@ -804,7 +806,7 @@ export class StatsView extends ItemView {
 			const filteredProjects = filterEmptyProjects(task.projects);
 			if (filteredProjects.length > 0) {
 				return filteredProjects
-					.map((project) => this.consolidateProjectName(project))
+					.map((project) => this.consolidateProjectName(project, task.path))
 					.filter((project) => typeof project === "string" && project.length > 0);
 			}
 			return [this.plugin.i18n.translate("views.stats.noProject")];

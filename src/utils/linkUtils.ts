@@ -78,11 +78,17 @@ export function parseLinkToPath(linkText: string): string {
  *
  * @param projectValue - The raw project value
  * @param app - Optional Obsidian app for resolving to basename
+ * @param sourcePath - Optional source path to resolve relative links
  */
-export function getProjectDisplayName(projectValue: string, app?: App): string {
+export function getProjectDisplayName(
+	projectValue: string,
+	app?: App,
+	sourcePath?: string
+): string {
 	if (!projectValue) return "";
 
 	const trimmed = projectValue.trim();
+	const resolvedSourcePath = sourcePath ?? "";
 
 	// Handle markdown links: [text](path)
 	const markdownMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
@@ -93,7 +99,7 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 			return displayText;
 		}
 		const linkPath = parseLinkToPath(rawPath);
-		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, "");
+		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, resolvedSourcePath);
 		if (resolved) return resolved.basename;
 		const cleanPath = linkPath.replace(/\.md$/i, "");
 		const parts = cleanPath.split("/");
@@ -110,7 +116,7 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 		}
 		const parsed = parseLinktext(linkContent.split("|")[0] || linkContent);
 		const linkPath = parsed.path || parseLinkToPath(trimmed);
-		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, "");
+		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, resolvedSourcePath);
 		if (resolved) return resolved.basename;
 		const cleanPath = linkPath.replace(/\.md$/i, "");
 		const parts = cleanPath.split("/");

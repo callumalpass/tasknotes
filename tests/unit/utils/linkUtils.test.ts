@@ -151,6 +151,17 @@ describe('linkUtils - frontmatter link format', () => {
       expect(getProjectDisplayName(link, appWithResolver)).toBe('Resolved Project');
     });
 
+    it('should resolve relative links using sourcePath when provided', () => {
+      const appWithResolver = createMockApp(MockObsidian.createMockApp());
+      const resolver = jest.fn().mockReturnValue({ basename: 'Resolved Project' });
+      (appWithResolver.metadataCache as any).getFirstLinkpathDest = resolver;
+
+      const link = '[[Folder/My Note]]';
+      const sourcePath = 'Projects/Parent Note.md';
+      expect(getProjectDisplayName(link, appWithResolver, sourcePath)).toBe('Resolved Project');
+      expect(resolver).toHaveBeenCalledWith('Folder/My Note', sourcePath);
+    });
+
     it('should fall back to last path segment when unresolved', () => {
       const link = '[[Folder/My Note]]';
       expect(getProjectDisplayName(link)).toBe('My Note');
