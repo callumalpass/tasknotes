@@ -1103,7 +1103,7 @@
     box-shadow: none;
 }
 
-.tasknotes-plugin .task-card--subtask.task-card--status-hidden::after {
+.tasknotes-plugin .task-card--subtask.task-card--subtask-status-strip::after {
     content: "";
     position: absolute;
     right: var(--tn-spacing-xs);

@@ -208,6 +208,7 @@ function updateCardCompletionState(
 		(visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)) ||
 			(isNoteWidget && hasStatusIcon));
 	const statusHidden = !shouldShowStatus && !!cardOptions.groupedByStatus;
+	const showStatusStrip = !shouldShowStatus && !!cardOptions.groupedByStatus;
 	if (isCompleted) cardClasses.push("task-card--completed");
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (plugin.getActiveTimeSession(task)) cardClasses.push("task-card--actively-tracked");
@@ -219,6 +220,7 @@ function updateCardCompletionState(
 	if (isNoteWidget) cardClasses.push("task-card--note-widget");
 	if (isNoteWidget && hasStatusIcon) cardClasses.push("task-card--status-icon");
 	if (statusHidden) cardClasses.push("task-card--status-hidden");
+	if (showStatusStrip) cardClasses.push("task-card--subtask-status-strip");
 
 	card.className = cardClasses.join(" ");
 	card.dataset.status = effectiveStatus;
@@ -1517,8 +1519,12 @@ export function createTaskCard(
 		!opts.hideStatusIndicator &&
 		(resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)) ||
 			(!!opts.noteWidget && statusHasIcon));
+	const showStatusStrip = !shouldShowStatus && !!opts.groupedByStatus;
 	if (!shouldShowStatus && opts.groupedByStatus) {
 		card.classList.add("task-card--status-hidden");
+	}
+	if (showStatusStrip) {
+		card.classList.add("task-card--subtask-status-strip");
 	}
 	if (shouldShowStatus) {
 		statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
@@ -2069,6 +2075,10 @@ export function updateTaskCard(
 		"task-card--status-hidden",
 		!shouldShowStatus && !!opts.groupedByStatus
 	);
+	element.classList.toggle(
+		"task-card--subtask-status-strip",
+		!shouldShowStatus && !!opts.groupedByStatus
+	);
 	if (isNoteWidget && statusConfig?.icon) {
 		element.classList.add("task-card--status-icon");
 	} else {
@@ -2581,10 +2591,6 @@ export async function toggleSubtasks(
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
-					if (card.classList.contains("task-card--status-hidden")) {
-						subtaskCard.classList.add("task-card--status-hidden");
-					}
-
 					subtasksContainer.appendChild(subtaskCard);
 				}
 			} catch (error) {

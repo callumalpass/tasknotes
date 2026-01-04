@@ -268,6 +268,27 @@ describe('TaskCard Component', () => {
       expect(card.dataset.noteWidget).toBe('true');
     });
 
+    it('should add status strip class when grouped by status and status hidden', () => {
+      const task = TaskFactory.createTask({ status: 'open' });
+      const options: Partial<TaskCardOptions> = { groupedByStatus: true };
+
+      const card = createTaskCard(task, mockPlugin, ['title'], options);
+
+      expect(card.classList.contains('task-card--subtask-status-strip')).toBe(true);
+    });
+
+    it('should not add status strip class when status is visible', () => {
+      const task = TaskFactory.createTask({ status: 'open' });
+      mockPlugin.fieldMapper.isPropertyForField.mockImplementation(
+        (propertyId: string) => propertyId === 'status'
+      );
+      const options: Partial<TaskCardOptions> = { groupedByStatus: true };
+
+      const card = createTaskCard(task, mockPlugin, ['status'], options);
+
+      expect(card.classList.contains('task-card--subtask-status-strip')).toBe(false);
+    });
+
     it.skip('should create task card with checkbox when enabled', () => {
       const task = TaskFactory.createTask({ status: 'done' });
       const options: Partial<TaskCardOptions> = { showCheckbox: true };
