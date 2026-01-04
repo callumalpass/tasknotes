@@ -1134,6 +1134,12 @@
     vertical-align: baseline;
 }
 
+/* Inline layout: indicate the title is clickable (opens task dialog) */
+.tasknotes-plugin .task-card--layout-inline .task-card__title,
+.tasknotes-plugin .task-card--layout-inline .task-card__title-text {
+    cursor: pointer;
+}
+
 /* Content in inline mode - horizontal, truncated */
 .tasknotes-plugin .task-card--layout-inline .task-card__content {
     display: inline !important;
