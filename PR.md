@@ -22,3 +22,7 @@ Examples (illustrative):
 
 - Property-based identification now keeps all tags visible in the edit modal (only tag-based mode hides the task tag).
 - Tags are only updated when the user actually changes the tags field, preventing accidental tag removal on unrelated edits.
+
+## Risks / Notes
+
+- Tags are written only on explicit changes, which is correct, but still depends on UI state. If the UI normalizes tags (order/casing) it could be interpreted as a change and re-written.
