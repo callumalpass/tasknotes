@@ -1056,6 +1056,27 @@ export class TaskService {
 			}
 		}
 
+		// Sync to Google Calendar if enabled
+		// Archiving removes from calendar (archived tasks aren't synced)
+		// Unarchiving may re-add to calendar
+		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+			if (updatedTask.archived && task.googleCalendarEventId) {
+				// Task is being archived - delete the calendar event
+				this.plugin.taskCalendarSyncService
+					.deleteTaskFromCalendar(updatedTask)
+					.catch((error) => {
+						console.warn("Failed to delete archived task from Google Calendar:", error);
+					});
+			} else if (!updatedTask.archived) {
+				// Task is being unarchived - sync it back if eligible
+				this.plugin.taskCalendarSyncService
+					.updateTaskInCalendar(updatedTask, task)
+					.catch((error) => {
+						console.warn("Failed to sync unarchived task to Google Calendar:", error);
+					});
+			}
+		}
+
 		// Step 5: Return authoritative data
 		return updatedTask;
 	}
@@ -1954,7 +1975,17 @@ export class TaskService {
 			}
 		}
 
-		// Step 6: Return authoritative data
+		// Step 6: Sync to Google Calendar if enabled (scheduled date changed)
+		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+			// Recurring task completion updates the scheduled date to next occurrence
+			this.plugin.taskCalendarSyncService
+				.updateTaskInCalendar(updatedTask, freshTask)
+				.catch((error) => {
+					console.warn("Failed to sync recurring task update to Google Calendar:", error);
+				});
+		}
+
+		// Step 7: Return authoritative data
 		return updatedTask;
 	}
 
@@ -2096,7 +2127,17 @@ export class TaskService {
 			}
 		}
 
-		// Step 7: Return authoritative data
+		// Step 7: Sync to Google Calendar if enabled (scheduled date changed)
+		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+			// Skipping a recurring task updates the scheduled date to next occurrence
+			this.plugin.taskCalendarSyncService
+				.updateTaskInCalendar(updatedTask, freshTask)
+				.catch((error) => {
+					console.warn("Failed to sync recurring task skip to Google Calendar:", error);
+				});
+		}
+
+		// Step 8: Return authoritative data
 		return updatedTask;
 	}
 

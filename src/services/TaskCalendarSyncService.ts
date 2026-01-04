@@ -24,13 +24,11 @@ export class TaskCalendarSyncService {
 		const settings = this.plugin.settings.googleCalendarExport;
 		const enabled = settings.enabled;
 		const hasTargetCalendar = !!settings.targetCalendarId;
-		// Check if we have valid Google Calendar credentials (OAuth connected)
-		const hasCredentials = !!(
-			this.plugin.settings.googleOAuthClientId &&
-			this.plugin.settings.googleOAuthClientSecret
-		);
+		// Check if Google Calendar is connected by verifying calendars are available
+		// (populated during GoogleCalendarService.initialize() when OAuth is connected)
+		const isConnected = this.googleCalendarService.getAvailableCalendars().length > 0;
 
-		return enabled && hasTargetCalendar && hasCredentials;
+		return enabled && hasTargetCalendar && isConnected;
 	}
 
 	/**
