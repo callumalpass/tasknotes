@@ -164,6 +164,10 @@ The API enables browser integrations:
 - **Browser extensions**: [for example](https://github.com/callumalpass/tasknotes-browser-extension)
 - **Automation** with Zapier, IFTTT, and similar services
 
+### Command Line Interface
+
+**[TaskNotes CLI](https://github.com/callumalpass/tasknotes-cli)** provides terminal access to TaskNotes with natural language task creation, interactive mode, time tracking, pomodoro timer, and advanced filtering.
+
 ### Webhooks
 
 Configure webhooks to notify external services when tasks are created, updated, or completed. Supports custom payloads and authentication headers.
