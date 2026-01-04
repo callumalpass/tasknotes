@@ -268,8 +268,8 @@ export class TaskService {
 			// Determine folder based on creation context
 			// Process folder templates with task and date variables for dynamic folder organization
 			let folder = "";
-			if (taskData.creationContext === "inline-conversion" || taskData.creationContext === "manual-creation") {
-				// For inline conversion and manual creation, use the inline task folder setting with variable support
+			if (taskData.creationContext === "inline-conversion" || taskData.creationContext === "modal-inline-creation") {
+				// For inline conversion and modal-based inline task creation, use the inline task folder setting with variable support
 				const inlineFolder = this.plugin.settings.inlineTaskConvertFolder || "";
 				if (inlineFolder.trim()) {
 					// Inline folder is configured, use it
