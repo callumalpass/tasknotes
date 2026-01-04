@@ -133,6 +133,11 @@ export class TaskLinkDetectionService {
 		const displayText = match[1].trim();
 		let linkPath = match[2].trim();
 
+		// Strip angle brackets used to escape spaces/special characters in markdown links
+		if (linkPath.startsWith("<") && linkPath.endsWith(">")) {
+			linkPath = linkPath.slice(1, -1).trim();
+		}
+
 		if (!linkPath) return null;
 
 		// URL decode the link path - this is crucial for markdown links

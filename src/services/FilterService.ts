@@ -11,6 +11,7 @@ import {
 	FilterOperator,
 } from "../types";
 import { parseLinktext } from "obsidian";
+import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
 import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
@@ -996,17 +997,8 @@ export class FilterService extends EventEmitter {
 		if (!projectValue || typeof projectValue !== "string") {
 			return null;
 		}
-
-		// Handle [[Name]] format
-		if (projectValue.startsWith("[[") && projectValue.endsWith("]]")) {
-			const linkContent = projectValue.slice(2, -2);
-			// Extract just the name part if it's a path
-			const parts = linkContent.split("/");
-			return parts[parts.length - 1] || null;
-		}
-
-		// Handle plain name
-		return projectValue.trim() || null;
+		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
+		return displayName ? displayName : null;
 	}
 
 	/**
@@ -1091,44 +1083,7 @@ export class FilterService extends EventEmitter {
 	 * For non-link strings, returns the input as-is.
 	 */
 	private parseLinkToPath(linkText: string): string {
-		if (!linkText) return linkText;
-
-		const trimmed = linkText.trim();
-
-		// Handle wikilinks: [[path]] or [[path|alias]]
-		if (trimmed.startsWith("[[") && trimmed.endsWith("]]")) {
-			const linkContent = trimmed.slice(2, -2);
-			const pipeIndex = linkContent.indexOf("|");
-			if (pipeIndex !== -1) {
-				return linkContent.substring(0, pipeIndex).trim();
-			}
-			return linkContent.trim();
-		}
-
-		// Handle markdown links: [text](path)
-		const markdownMatch = trimmed.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
-		if (markdownMatch) {
-			let linkPath = markdownMatch[2].trim();
-
-			// URL decode the link path - crucial for paths with spaces like Car%20Maintenance.md
-			try {
-				linkPath = decodeURIComponent(linkPath);
-			} catch (error) {
-				// If decoding fails, use the original path
-				console.debug("Failed to decode URI component:", linkPath, error);
-			}
-
-			return linkPath;
-		}
-
-		// Handle legacy pipe syntax like "../projects/Genealogy|Genealogy"
-		if (trimmed.includes("|")) {
-			const parts = trimmed.split("|");
-			return parts[0].trim();
-		}
-
-		// Not a link format, return as-is
-		return trimmed;
+		return parseLinkToPath(linkText);
 	}
 
 	/**

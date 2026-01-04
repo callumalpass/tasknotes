@@ -1,4 +1,4 @@
-import { App, FuzzySuggestModal, FuzzyMatch, setIcon, TFile, Notice } from "obsidian";
+import { App, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
 import { format } from "date-fns";
 import { TaskInfo } from "../types";
 import {
@@ -11,6 +11,8 @@ import {
 import { filterEmptyProjects } from "../utils/helpers";
 import TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
+import { appendInternalLink, LinkServices } from "../ui/renderers/linkRenderer";
+import { parseLinkToPath } from "../utils/linkUtils";
 
 export interface ScheduleTaskOptions {
 	date?: Date;
@@ -264,6 +266,12 @@ function renderProjectLinksForSelector(
 ): void {
 	container.innerHTML = "";
 
+	const linkServices: LinkServices = {
+		metadataCache: plugin.app.metadataCache,
+		workspace: plugin.app.workspace,
+		sourcePath: plugin.app.workspace.getActiveFile()?.path || "",
+	};
+
 	projects.forEach((project, index) => {
 		if (index > 0) {
 			const separator = document.createTextNode(", ");
@@ -275,30 +283,24 @@ function renderProjectLinksForSelector(
 
 		if (isWikilinkProject(project)) {
 			// Extract the note name from [[Note Name]]
-			const noteName = project.slice(2, -2);
-
-			// Create a clickable link
-			const linkEl = container.createEl("a", {
-				cls: "unscheduled-tasks-selector__project-link internal-link",
-				text: noteName,
-				attr: { "data-href": noteName },
+			const noteName = project.slice(2, -2).trim();
+			appendInternalLink(container, noteName, noteName, linkServices, {
+				cssClass: "unscheduled-tasks-selector__project-link internal-link",
+				hoverSource: "tasknotes-project-link",
+				showErrorNotices: true,
 			});
-
-			// Add click handler to open the note
-			linkEl.addEventListener("click", async (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-
-				// Resolve the link to get the actual file
-				const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, "");
-				if (file instanceof TFile) {
-					// Open the file in the current leaf
-					await plugin.app.workspace.getLeaf(false).openFile(file);
-				} else {
-					// File not found, show notice
-					new Notice(`Note not found: ${noteName}`);
-				}
-			});
+		} else if (/^\[([^\]]+)\]\(([^)]+)\)$/.test(project)) {
+			const match = project.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+			if (match) {
+				const displayText = match[1].trim();
+				const rawPath = match[2].trim();
+				const path = parseLinkToPath(rawPath);
+				appendInternalLink(container, path, displayText, linkServices, {
+					cssClass: "unscheduled-tasks-selector__project-link internal-link",
+					hoverSource: "tasknotes-project-link",
+					showErrorNotices: true,
+				});
+			}
 		} else {
 			// Plain text project
 			const textNode = document.createTextNode(project);
