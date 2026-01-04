@@ -14,6 +14,11 @@ Examples (illustrative):
 - Invalidate the project index after subtask edits in the task edit modal.
 - Emit a task-updated event for the parent task to refresh visible views.
 
+## Risks / Notes
+
+- This is a minimal fix and does not address the broader, system-wide refresh architecture. A more robust approach is under discussion in: https://github.com/callumalpass/tasknotes/issues/1423
+- The project index invalidation is global, which can be more expensive in large vaults. This is an intentional trade-off for immediate correctness.
+
 ## Tests
 
 - Not run (manual testing only)
