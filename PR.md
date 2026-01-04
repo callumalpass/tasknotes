@@ -29,6 +29,10 @@ Subtask rendering options are now derived from stable dataset values rather than
 
 TaskListView now retains the bases controller reference so group-by status detection works correctly.
 
+## Risks / Notes
+
+- TaskCard remains a large, multi-responsibility component. The current changes are robust, but future UI tweaks may become harder to reason about unless the component is gradually decomposed (out of scope for this PR).
+
 ## Changelog
 
 - Add pointer cursor styling for all clickable task card elements (status, priority, indicators, chevron, blocking toggle, context menu, dates).
