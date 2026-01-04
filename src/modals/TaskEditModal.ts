@@ -688,12 +688,14 @@ export class TaskEditModal extends TaskModal {
 			if (hasSubtaskChanges) {
 				await this.applySubtaskChanges(updatedTask);
 				this.plugin.projectSubtasksService?.invalidateProjectIndex();
-				this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-					path: updatedTask.path,
-					task: updatedTask,
-					taskInfo: updatedTask,
-					updatedTask,
-				});
+				if (!hasTaskChanges) {
+					this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+						path: updatedTask.path,
+						task: updatedTask,
+						taskInfo: updatedTask,
+						updatedTask,
+					});
+				}
 			}
 
 			if (this.unresolvedBlockingEntries.length > 0) {
