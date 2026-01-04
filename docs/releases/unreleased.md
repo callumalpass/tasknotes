@@ -24,10 +24,3 @@ Example:
 
 -->
 
-## Fixed
-
-- (#1410) Fixed vim insert mode not activating in task creation modal
-  - The 4.2.0 implementation used incorrect path to access the CodeMirror vim adapter
-  - Now correctly accesses the CM5 adapter and adds a small delay for vim initialization
-  - Thanks to @Leo310 for the feature request
-

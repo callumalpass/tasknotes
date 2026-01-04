@@ -2854,11 +2854,13 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			// Open task creation modal with callback to insert link
+			// Use modal-inline-creation context for inline folder behavior (Issue #1424)
 			const modal = new TaskCreationModal(this.app, this, {
 				prePopulatedValues: Object.keys(prePopulatedValues).length > 0 ? prePopulatedValues : undefined,
 				onTaskCreated: (task: TaskInfo) => {
 					this.handleInlineTaskCreated(task, insertionContext);
 				},
+				creationContext: "modal-inline-creation",
 			});
 
 			modal.open();
