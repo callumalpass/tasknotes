@@ -1998,6 +1998,32 @@ export class KanbanView extends BasesViewBase {
 		return String(value);
 	}
 
+	private getGroupDisplayTitle(title: string, propertyId?: string | null): string {
+		if (!propertyId) {
+			return title;
+		}
+
+		const cleanProperty = this.stripPropertyPrefix(propertyId);
+
+		const statusField = this.plugin.fieldMapper.toUserField("status");
+		if (cleanProperty === statusField) {
+			const statusConfig = this.plugin.statusManager.getStatusConfig(title);
+			if (statusConfig?.label) {
+				return statusConfig.label;
+			}
+		}
+
+		const priorityField = this.plugin.fieldMapper.toUserField("priority");
+		if (cleanProperty === priorityField) {
+			const priorityConfig = this.plugin.priorityManager.getPriorityConfig(title);
+			if (priorityConfig?.label) {
+				return priorityConfig.label;
+			}
+		}
+
+		return title;
+	}
+
 	private renderGroupTitleWrapper(container: HTMLElement, title: string, isSwimLane = false, skipIcon = false): void {
 		// When grouped by status (column or swimlane), show label instead of raw value
 		const isStatusGrouping = isSwimLane ? this.isSwimLaneByStatus() : this.isGroupedByStatus();
@@ -2016,12 +2042,14 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		// Default: use link-aware title rendering
+		const propertyId = isSwimLane ? this.swimLanePropertyId : this.getGroupByPropertyId();
+		const displayTitle = this.getGroupDisplayTitle(title, propertyId);
 		const app = this.app || this.plugin.app;
 		const linkServices: LinkServices = {
 			metadataCache: app.metadataCache,
 			workspace: app.workspace,
 		};
-		renderGroupTitle(container, title, linkServices);
+		renderGroupTitle(container, displayTitle, linkServices);
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
