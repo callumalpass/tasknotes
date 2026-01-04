@@ -389,6 +389,7 @@ export function debounce<T extends (...args: any[]) => any>(
 
 	const debounced = function (this: any, ...args: Parameters<T>) {
 		lastArgs = args;
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		lastThis = this;
 
 		const later = () => {
