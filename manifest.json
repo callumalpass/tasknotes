@@ -1,7 +1,7 @@
 {
 	"id": "tasknotes",
 	"name": "TaskNotes",
-	"version": "4.2.0",
+	"version": "4.2.1",
 	"minAppVersion": "1.10.1",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"author": "Callum Alpass",

@@ -16,6 +16,7 @@ import { TimeTrackingController } from "../api/TimeTrackingController";
 import { PomodoroController } from "../api/PomodoroController";
 import { SystemController } from "../api/SystemController";
 import { WebhookController } from "../api/WebhookController";
+import { CalendarsController } from "../api/CalendarsController";
 
 @OpenAPIController
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,6 +29,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 	private pomodoroController: PomodoroController;
 	private systemController: SystemController;
 	private webhookController: WebhookController;
+	private calendarsController: CalendarsController;
 
 	constructor(
 		plugin: TaskNotesPlugin,
@@ -73,6 +75,12 @@ export class HTTPAPIService implements IWebhookNotifier {
 			this.webhookController,
 			this
 		);
+		this.calendarsController = new CalendarsController(
+			plugin,
+			plugin.oauthService,
+			plugin.icsSubscriptionService,
+			plugin.calendarProviderRegistry
+		);
 
 		// Initialize router and register routes
 		this.router = new APIRouter();
@@ -86,6 +94,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 		this.router.registerController(this.pomodoroController);
 		this.router.registerController(this.systemController);
 		this.router.registerController(this.webhookController);
+		this.router.registerController(this.calendarsController);
 	}
 
 	/**
@@ -105,6 +114,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 			this.pomodoroController,
 			this.systemController,
 			this.webhookController,
+			this.calendarsController,
 		];
 
 		// Merge paths from all controllers
