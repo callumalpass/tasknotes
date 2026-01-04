@@ -8316,3 +8316,336 @@ test.describe('Issue #1423 - Project cards refresh when subtasks are removed', (
     }, parentTitle);
   });
 });
+
+// Issue #1425: [FR] Auto-Refresh Calendar Upon Edit to Time Entries
+// https://github.com/anthropics/tasknotes/issues/1425
+//
+// Feature Request:
+// When (a) users select `Save` after editing the Time Entries for a task, and
+// (b) upon completing a Pomodoro Session, the Advanced Calendar should automatically
+// update if it is presently open.
+//
+// Current behavior:
+// - Time entry edits trigger EVENT_TASK_UPDATED but calendar uses 5-second debounce
+// - Pomodoro completion triggers EVENT_TASK_UPDATED via stopTimeTracking() but
+//   the calendar does not listen to EVENT_POMODORO_COMPLETE specifically
+// - User-initiated actions should use expectImmediateUpdate() but currently don't
+//
+// Expected behavior:
+// - Calendar should refresh immediately (not after 5-second debounce) when:
+//   1. User saves time entries via Time Entry Editor modal
+//   2. A Pomodoro session completes (work session ends, creating a time entry)
+test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro updates', () => {
+  // Helper to open calendar view
+  async function openCalendarView(page: Page): Promise<void> {
+    await ensureSidebarExpanded(page);
+
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isViewsCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isViewsCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Click on calendar-default.base file to open it
+    const calendarFile = page.locator('.nav-file-title').filter({ hasText: /calendar-default/ }).first();
+    await calendarFile.click();
+    await page.waitForTimeout(1000);
+
+    // Wait for calendar to be rendered
+    await expect(page.locator('.fc-view-harness')).toBeVisible({ timeout: 10000 });
+  }
+
+  test.fixme('calendar should refresh immediately when time entries are saved', async () => {
+    // Issue #1425: Time entry edits should trigger immediate calendar refresh
+    //
+    // Steps to reproduce:
+    // 1. Create a task with no time entries
+    // 2. Open Advanced Calendar view
+    // 3. Open Time Entry Editor for the task
+    // 4. Add a time entry for today
+    // 5. Save the time entries
+    //
+    // Expected: Calendar should show the new time entry event immediately
+    // Actual: Calendar waits up to 5 seconds (debounce) before showing the entry
+    const page = getPage();
+
+    // Create a test task
+    const taskTitle = 'Issue1425 Time Entry Test';
+    const now = new Date();
+
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: taskTitle,
+        status: 'todo',
+        priority: 'normal',
+        timeEntries: [] // No time entries initially
+      });
+    }, taskTitle);
+
+    await page.waitForTimeout(500);
+
+    // Open calendar view
+    await openCalendarView(page);
+
+    // The calendar should NOT show any time entry events for this task yet
+    let timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    await expect(timeEntryEvent).not.toBeVisible({ timeout: 2000 });
+
+    // Add a time entry via the Time Entry Editor
+    // (In practice, we'd open the context menu and click "Edit Time Entries")
+    // For this test, we'll add the time entry directly via the API
+    await page.evaluate(async ({ taskTitle, now }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (!task) return;
+
+      // Simulate what TimeEntryEditorModal does when saving
+      const startTime = new Date(now);
+      startTime.setHours(startTime.getHours() - 1);
+      const endTime = new Date(now);
+
+      const timeEntry = {
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        duration: 60, // 1 hour
+        description: 'Test time entry'
+      };
+
+      await plugin.taskService.updateTask(task, {
+        timeEntries: [timeEntry]
+      });
+
+      // The code in main.ts also triggers EVENT_DATA_CHANGED after updateTask
+      // This should cause calendar to refresh
+      plugin.emitter.trigger('data-changed');
+    }, { taskTitle, now: now.toISOString() });
+
+    // Take screenshot before waiting for debounce
+    await page.screenshot({ path: 'test-results/screenshots/issue-1425-before-refresh.png' });
+
+    // BUG: The calendar should refresh IMMEDIATELY (within 1-2 seconds)
+    // but due to the 5-second debounce, we have to wait longer
+    // This test documents the bug - it should pass once fixed
+    timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+
+    // The fix would call expectImmediateUpdate() before saving time entries
+    // so the calendar bypasses the 5-second debounce
+    await expect(timeEntryEvent).toBeVisible({ timeout: 2000 });
+
+    // Cleanup
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (task) await plugin.taskService.deleteTask(task.path);
+    }, taskTitle);
+  });
+
+  test.fixme('calendar should refresh immediately when pomodoro session completes', async () => {
+    // Issue #1425: Pomodoro completion should trigger immediate calendar refresh
+    //
+    // Steps to reproduce:
+    // 1. Create a task
+    // 2. Open Advanced Calendar view
+    // 3. Start a Pomodoro session for the task
+    // 4. Complete the Pomodoro session (or let timer run out)
+    //
+    // Expected: Calendar should show the new time entry from the Pomodoro immediately
+    // Actual: Calendar may take up to 5 seconds to refresh, or may not refresh at all
+    //         if the calendar doesn't listen to EVENT_POMODORO_COMPLETE
+    const page = getPage();
+
+    // Create a test task
+    const taskTitle = 'Issue1425 Pomodoro Test';
+
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: taskTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+    }, taskTitle);
+
+    await page.waitForTimeout(500);
+
+    // Open calendar view
+    await openCalendarView(page);
+
+    // No time entry events should exist for this task yet
+    let timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    await expect(timeEntryEvent).not.toBeVisible({ timeout: 2000 });
+
+    // Simulate a completed Pomodoro session
+    // In practice, this would happen after 25 minutes, but we can simulate the
+    // end result which is a time entry being added to the task
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService || !plugin?.pomodoroService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (!task) return;
+
+      // Simulate what PomodoroService.completePomodoro() does:
+      // 1. It calls stopTimeTracking which adds a time entry
+      // 2. It triggers EVENT_POMODORO_COMPLETE
+      const now = new Date();
+      const startTime = new Date(now.getTime() - 25 * 60 * 1000); // 25 min ago
+
+      const timeEntry = {
+        startTime: startTime.toISOString(),
+        endTime: now.toISOString(),
+        duration: 25,
+        description: 'Pomodoro session'
+      };
+
+      await plugin.taskService.updateTask(task, {
+        timeEntries: [timeEntry]
+      });
+
+      // Trigger the pomodoro complete event (which calendar doesn't currently listen to)
+      plugin.emitter.trigger('pomodoro-complete', {
+        session: {
+          type: 'work',
+          taskPath: task.path,
+          completed: true,
+          startTime: startTime.toISOString(),
+          endTime: now.toISOString()
+        },
+        nextType: 'short-break'
+      });
+    }, taskTitle);
+
+    // Take screenshot
+    await page.screenshot({ path: 'test-results/screenshots/issue-1425-pomodoro-complete.png' });
+
+    // BUG: The calendar should refresh IMMEDIATELY after pomodoro completion
+    // Currently it either waits for debounce or doesn't respond to EVENT_POMODORO_COMPLETE
+    timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+
+    // The fix would be to:
+    // 1. Have CalendarView listen to EVENT_POMODORO_COMPLETE
+    // 2. Call expectImmediateUpdate() when receiving that event
+    // OR
+    // 1. Have PomodoroService trigger EVENT_DATA_CHANGED after stopTimeTracking
+    // 2. Have the calendar recognize this as a user-initiated action
+    await expect(timeEntryEvent).toBeVisible({ timeout: 2000 });
+
+    // Cleanup
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (task) await plugin.taskService.deleteTask(task.path);
+    }, taskTitle);
+  });
+
+  test.fixme('calendar should show time entry toggle enabled to see time entry events', async () => {
+    // Issue #1425: Prerequisite - verify time entries are visible in calendar
+    //
+    // This test verifies that the calendar's "Show Time Entries" toggle is working
+    // and time entry events can be displayed. This is a prerequisite for the
+    // auto-refresh feature.
+    const page = getPage();
+
+    // Create a test task with a time entry
+    const taskTitle = 'Issue1425 Toggle Test';
+    const now = new Date();
+
+    await page.evaluate(async ({ taskTitle, now }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const startTime = new Date(now);
+      startTime.setHours(startTime.getHours() - 1);
+      const endTime = new Date(now);
+
+      await plugin.taskService.createTask({
+        title: taskTitle,
+        status: 'todo',
+        priority: 'normal',
+        timeEntries: [{
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          duration: 60,
+          description: 'Existing time entry'
+        }]
+      });
+    }, { taskTitle, now: now.toISOString() });
+
+    await page.waitForTimeout(500);
+
+    // Open calendar view
+    await openCalendarView(page);
+
+    // Wait for calendar to fully load
+    await page.waitForTimeout(2000);
+
+    // Check if "Show Time Entries" toggle exists and is enabled
+    // The calendar config should have showTimeEntries option
+    const timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+
+    // If time entries toggle is enabled, the event should be visible
+    // (after accounting for the current date view)
+    await page.screenshot({ path: 'test-results/screenshots/issue-1425-toggle-test.png' });
+
+    // Note: This may fail if the calendar is not showing today's date by default
+    // or if showTimeEntries is disabled in the calendar config
+    await expect(timeEntryEvent).toBeVisible({ timeout: 5000 });
+
+    // Cleanup
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (task) await plugin.taskService.deleteTask(task.path);
+    }, taskTitle);
+  });
+});
