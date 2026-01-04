@@ -1124,6 +1124,108 @@ select.tasknotes-settings__card-input {
 }
 
 /* ================================================
+   INTEGRATIONS TAB - OAUTH SETUP & CALENDAR CARDS
+   ================================================ */
+
+/* OAuth Setup Info Box */
+.tasknotes-oauth-setup-guide {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    line-height: 1.5;
+    padding: 12px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    border-left: 3px solid var(--interactive-accent);
+    margin-bottom: 16px;
+}
+
+.tasknotes-oauth-setup-guide a {
+    font-size: 0.9em;
+    color: var(--interactive-accent);
+    margin-top: 8px;
+    display: inline-block;
+}
+
+/* Calendar connection info (connected/last refreshed) */
+.tasknotes-calendar-info {
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
+.tasknotes-calendar-help {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.tasknotes-credential-note {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+/* Webhook events display */
+.tasknotes-webhook-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 1.5rem;
+    line-height: 1.5rem;
+}
+
+.tasknotes-webhook-events--empty {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Webhook transform file display */
+.tasknotes-transform-file {
+    font-family: var(--font-monospace);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--background-modifier-form-field);
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-transform-file--empty {
+    font-family: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Auto export status container */
+.tasknotes-auto-export-status {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--background-secondary);
+    border-radius: 4px;
+}
+
+.tasknotes-auto-export-status__title {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.tasknotes-auto-export-status__content {
+    font-size: 0.9em;
+    opacity: 0.8;
+    white-space: pre-line;
+}
+
+.tasknotes-auto-export-status__error {
+    font-weight: 500;
+    color: var(--text-warning);
+}
+
+/* ================================================
    ACCESSIBILITY & REDUCED MOTION
    ================================================ */
 
@@ -1131,7 +1233,7 @@ select.tasknotes-settings__card-input {
     .tasknotes-plugin .settings-view__tab-content--active {
         animation: none;
     }
-    
+
     .tasknotes-settings__card,
     .tasknotes-settings__card-drag-handle {
         transition: none;

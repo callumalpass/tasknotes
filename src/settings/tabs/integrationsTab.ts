@@ -348,33 +348,17 @@ export function renderIntegrationsTab(
 
 	// Setup guide link (always visible)
 	const setupGuideContainer = container.createDiv("tasknotes-oauth-setup-guide");
-	setupGuideContainer.style.cssText = `
-		font-size: 0.9em;
-		color: var(--text-muted);
-		line-height: 1.5;
-		padding: 12px;
-		background: var(--background-secondary);
-		border-radius: 6px;
-		border-left: 3px solid var(--interactive-accent);
-		margin-bottom: 16px;
-	`;
 
 	const setupText = setupGuideContainer.createDiv();
 	const strong = setupText.createEl("strong");
 	strong.textContent = "OAuth Setup Required:";
 	setupText.appendText(" You'll need to create OAuth credentials with Google and/or Microsoft to connect your calendars. This takes approximately 15 minutes for initial setup.");
 
-	const setupGuideLink = setupGuideContainer.createEl("a", {
+	setupGuideContainer.createEl("a", {
 		text: "View Calendar Setup Guide",
 		href: "https://callumalpass.github.io/tasknotes/calendar-setup",
 		attr: { target: "_blank" }
 	});
-	setupGuideLink.style.cssText = `
-		font-size: 0.9em;
-		color: var(--interactive-accent);
-		margin-top: 8px;
-		display: inline-block;
-	`;
 
 	// Google Calendar container for card-based UI
 	const googleCalendarContainer = container.createDiv("google-calendar-integration-container");
@@ -404,13 +388,11 @@ export function renderIntegrationsTab(
 
 			// Create info displays
 			const connectedInfo = document.createElement("div");
-			connectedInfo.style.fontSize = "0.9em";
-			connectedInfo.style.color = "var(--text-muted)";
+			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
 			const lastRefreshInfo = document.createElement("div");
-			lastRefreshInfo.style.fontSize = "0.9em";
-			lastRefreshInfo.style.color = "var(--text-muted)";
+			lastRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
 				lastRefreshInfo.textContent = `Last refreshed ${getRelativeTime(lastRefreshDate, translate)}`;
@@ -477,9 +459,7 @@ export function renderIntegrationsTab(
 		} else {
 			// Disconnected state card
 			const helpText = document.createElement("div");
-			helpText.style.fontSize = "0.9em";
-			helpText.style.color = "var(--text-muted)";
-			helpText.style.lineHeight = "1.5";
+			helpText.className = "tasknotes-calendar-help";
 			helpText.innerHTML = "Connect your Google Calendar account to sync events directly into TaskNotes. Events will automatically refresh every 15 minutes.";
 
 			// Build sections based on setup mode
@@ -515,10 +495,7 @@ export function renderIntegrationsTab(
 				});
 
 				const credentialNote = document.createElement("div");
-				credentialNote.style.fontSize = "0.85em";
-				credentialNote.style.color = "var(--text-muted)";
-				credentialNote.style.fontStyle = "italic";
-				credentialNote.style.marginTop = "0.5rem";
+				credentialNote.className = "tasknotes-credential-note";
 				credentialNote.textContent = "Enter your OAuth app credentials from Google Cloud Console.";
 
 				sections.push({
@@ -615,13 +592,11 @@ export function renderIntegrationsTab(
 
 			// Create info displays
 			const connectedInfo = document.createElement("div");
-			connectedInfo.style.fontSize = "0.9em";
-			connectedInfo.style.color = "var(--text-muted)";
+			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
 			const lastRefreshInfo = document.createElement("div");
-			lastRefreshInfo.style.fontSize = "0.9em";
-			lastRefreshInfo.style.color = "var(--text-muted)";
+			lastRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
 				lastRefreshInfo.textContent = `Last refreshed ${getRelativeTime(lastRefreshDate, translate)}`;
@@ -671,9 +646,7 @@ export function renderIntegrationsTab(
 		} else {
 			// Disconnected state card
 			const helpText = document.createElement("div");
-			helpText.style.fontSize = "0.9em";
-			helpText.style.color = "var(--text-muted)";
-			helpText.style.lineHeight = "1.5";
+			helpText.className = "tasknotes-calendar-help";
 			helpText.innerHTML = "Connect your Microsoft Outlook calendar to sync events directly into TaskNotes.";
 
 			// Build sections based on setup mode
@@ -709,10 +682,7 @@ export function renderIntegrationsTab(
 				});
 
 				const credentialNote = document.createElement("div");
-				credentialNote.style.fontSize = "0.85em";
-				credentialNote.style.color = "var(--text-muted)";
-				credentialNote.style.fontStyle = "italic";
-				credentialNote.style.marginTop = "0.5rem";
+				credentialNote.className = "tasknotes-credential-note";
 				credentialNote.textContent = "Enter your OAuth app credentials from Azure Portal.";
 
 				sections.push({
@@ -1341,26 +1311,16 @@ export function renderIntegrationsTab(
 
 	// Show current export status (outside group, as a dynamic element)
 	if (plugin.settings.icsIntegration.enableAutoExport) {
-		const statusContainer = container.createDiv("auto-export-status");
-		statusContainer.style.marginTop = "10px";
-		statusContainer.style.padding = "10px";
-		statusContainer.style.backgroundColor = "var(--background-secondary)";
-		statusContainer.style.borderRadius = "4px";
-
-		statusContainer.empty();
+		const statusContainer = container.createDiv("tasknotes-auto-export-status");
 
 		if (plugin.autoExportService) {
 			const lastExport = plugin.autoExportService.getLastExportTime();
 			const nextExport = plugin.autoExportService.getNextExportTime();
 
-			const titleDiv = statusContainer.createDiv();
-			titleDiv.style.fontWeight = "500";
-			titleDiv.style.marginBottom = "5px";
+			const titleDiv = statusContainer.createDiv("tasknotes-auto-export-status__title");
 			titleDiv.textContent = translate("settings.integrations.autoExport.status.title") + ":";
 
-			const statusDiv = statusContainer.createDiv();
-			statusDiv.style.fontSize = "0.9em";
-			statusDiv.style.opacity = "0.8";
+			const statusDiv = statusContainer.createDiv("tasknotes-auto-export-status__content");
 
 			const lastExportText = lastExport
 				? translate("settings.integrations.autoExport.status.lastExport", { time: lastExport.toLocaleString() })
@@ -1370,11 +1330,8 @@ export function renderIntegrationsTab(
 				: translate("settings.integrations.autoExport.status.notScheduled");
 
 			statusDiv.textContent = lastExportText + "\n" + nextExportText;
-			statusDiv.style.whiteSpace = "pre-line";
 		} else {
-			const errorDiv = statusContainer.createDiv();
-			errorDiv.style.fontWeight = "500";
-			errorDiv.style.color = "var(--text-warning)";
+			const errorDiv = statusContainer.createDiv("tasknotes-auto-export-status__error");
 			errorDiv.textContent = translate("settings.integrations.autoExport.status.serviceNotInitialized");
 		}
 	}
@@ -1976,56 +1933,32 @@ function renderWebhookList(
 
 		// Create events display as a formatted string
 		const eventsDisplay = document.createElement("div");
-		eventsDisplay.style.display = "flex";
-		eventsDisplay.style.flexWrap = "wrap";
-		eventsDisplay.style.gap = "0.5rem";
-		eventsDisplay.style.alignItems = "center";
-		eventsDisplay.style.minHeight = "1.5rem";
-		eventsDisplay.style.lineHeight = "1.5rem";
+		eventsDisplay.className = "tasknotes-webhook-events";
 
 		if (webhook.events.length === 0) {
 			const noEventsSpan = document.createElement("span");
+			noEventsSpan.className = "tasknotes-webhook-events--empty";
 			noEventsSpan.textContent = translate(
 				"settings.integrations.webhooks.eventsDisplay.noEvents"
 			);
-			noEventsSpan.style.color = "var(--text-muted)";
-			noEventsSpan.style.fontStyle = "italic";
-			noEventsSpan.style.lineHeight = "1.5rem";
 			eventsDisplay.appendChild(noEventsSpan);
 		} else {
 			webhook.events.forEach((event) => {
-				const eventBadge = createInfoBadge(event);
-				eventBadge.style.marginBottom = "0";
-				eventBadge.style.flexShrink = "0";
-				eventsDisplay.appendChild(eventBadge);
+				eventsDisplay.appendChild(createInfoBadge(event));
 			});
 		}
 
 		// Create transform file display if exists
-		const transformDisplay = webhook.transformFile
-			? (() => {
-					const span = document.createElement("span");
-					span.textContent = webhook.transformFile;
-					span.style.fontFamily = "monospace";
-					span.style.fontSize = "0.85rem";
-					span.style.color = "var(--text-muted)";
-					span.style.lineHeight = "1.5rem";
-					span.style.padding = "0.25rem 0.5rem";
-					span.style.background = "var(--background-modifier-form-field)";
-					span.style.borderRadius = "4px";
-					span.style.border = "1px solid var(--background-modifier-border)";
-					return span;
-				})()
-			: (() => {
-					const span = document.createElement("span");
-					span.textContent = translate(
-						"settings.integrations.webhooks.transformDisplay.noTransform"
-					);
-					span.style.color = "var(--text-muted)";
-					span.style.fontStyle = "italic";
-					span.style.lineHeight = "1.5rem";
-					return span;
-				})();
+		const transformDisplay = document.createElement("span");
+		if (webhook.transformFile) {
+			transformDisplay.className = "tasknotes-transform-file";
+			transformDisplay.textContent = webhook.transformFile;
+		} else {
+			transformDisplay.className = "tasknotes-transform-file--empty";
+			transformDisplay.textContent = translate(
+				"settings.integrations.webhooks.transformDisplay.noTransform"
+			);
+		}
 
 		createCard(webhooksContainer, {
 			id: webhook.id,
