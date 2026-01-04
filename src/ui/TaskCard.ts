@@ -198,10 +198,16 @@ function updateCardCompletionState(
 ): void {
 	const cardClasses = ["task-card"];
 	const isProject = plugin.projectSubtasksService?.isTaskUsedAsProjectSync(task.path) || false;
-	const isNoteWidget = card.classList.contains("task-card--note-widget");
-	const statusWasHidden = card.classList.contains("task-card--status-hidden");
+	const cardOptions = readCardOptionDataset(card);
+	const isNoteWidget = cardOptions.noteWidget ?? card.classList.contains("task-card--note-widget");
 	const statusConfig = plugin.statusManager.getStatusConfig(effectiveStatus);
 	const hasStatusIcon = !!statusConfig?.icon;
+	const visibleProperties = getSubtaskVisibleProperties(card, plugin);
+	const shouldShowStatus =
+		!cardOptions.hideStatusIndicator &&
+		(visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)) ||
+			(isNoteWidget && hasStatusIcon));
+	const statusHidden = !shouldShowStatus && !!cardOptions.groupedByStatus;
 	if (isCompleted) cardClasses.push("task-card--completed");
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (plugin.getActiveTimeSession(task)) cardClasses.push("task-card--actively-tracked");
@@ -212,7 +218,7 @@ function updateCardCompletionState(
 	if (isProject) cardClasses.push("task-card--project");
 	if (isNoteWidget) cardClasses.push("task-card--note-widget");
 	if (isNoteWidget && hasStatusIcon) cardClasses.push("task-card--status-icon");
-	if (statusWasHidden) cardClasses.push("task-card--status-hidden");
+	if (statusHidden) cardClasses.push("task-card--status-hidden");
 
 	card.className = cardClasses.join(" ");
 	card.dataset.status = effectiveStatus;

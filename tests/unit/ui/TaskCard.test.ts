@@ -560,6 +560,27 @@ describe('TaskCard Component', () => {
       );
     });
 
+    it('should restore note widget class from dataset when recurring status updates', async () => {
+      const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
+      mockPlugin.fieldMapper.isPropertyForField.mockImplementation(
+        (prop: string, field: string) => prop === field
+      );
+      mockPlugin.toggleRecurringTaskComplete.mockResolvedValue({
+        ...recurringTask,
+        status: 'done'
+      });
+
+      const recurringCard = createTaskCard(recurringTask, mockPlugin, undefined, { noteWidget: true });
+      recurringCard.classList.remove('task-card--note-widget');
+
+      const statusDot = recurringCard.querySelector('.task-card__status-dot') as HTMLElement;
+      statusDot.click();
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(recurringCard.classList.contains('task-card--note-widget')).toBe(true);
+    });
+
     it('should handle context menu icon click', async () => {
       const contextIcon = card.querySelector('.task-card__context-menu') as HTMLElement;
       const mockEvent = new MouseEvent('click', { bubbles: true });
