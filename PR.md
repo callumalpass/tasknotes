@@ -44,3 +44,8 @@ Examples (illustrative):
 - `parseLinkToPath` now strips `#heading`/`#^block` fragments so file resolution stays stable.
 - Internal link rendering preserves anchors separately (`data-href-fragment`) and uses the full `path#anchor` for navigation and hovers.
 - Relative project links resolve with a `sourcePath` when available for consistent display names.
+
+## Risks / Notes
+
+- Display consistency now depends on frontmatter `title` values; in mixed vaults with partial titles, project names may appear uneven across views.
+- Anchor preservation relies on consistent `data-href` + fragment handling in renderers. It is covered by tests, but future renderer changes should keep that pairing intact.
