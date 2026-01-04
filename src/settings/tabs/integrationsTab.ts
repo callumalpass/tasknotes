@@ -781,6 +781,271 @@ export function renderIntegrationsTab(
 	// Initial render
 	renderMicrosoftCalendarCard();
 
+	// Google Calendar Task Export Section
+	createSettingGroup(
+		container,
+		{
+			heading: translate("settings.integrations.googleCalendarExport.header"),
+			description: translate("settings.integrations.googleCalendarExport.description"),
+		},
+		(group) => {
+			// Master toggle
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.enable.name"),
+					desc: translate("settings.integrations.googleCalendarExport.enable.description"),
+					getValue: () => plugin.settings.googleCalendarExport.enabled,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.enabled = value;
+						save();
+					},
+				})
+			);
+
+			// Target calendar dropdown (populated dynamically)
+			group.addSetting((setting) => {
+				setting.setName(translate("settings.integrations.googleCalendarExport.targetCalendar.name"));
+				setting.setDesc(translate("settings.integrations.googleCalendarExport.targetCalendar.description"));
+
+				const dropdown = setting.controlEl.createEl("select", {
+					cls: "dropdown",
+				});
+				dropdown.style.width = "200px";
+
+				// Add placeholder option
+				const placeholderOption = dropdown.createEl("option", {
+					text: translate("settings.integrations.googleCalendarExport.targetCalendar.placeholder"),
+					value: "",
+				});
+
+				// Populate calendars if connected
+				const populateCalendars = async () => {
+					// Clear existing options except placeholder
+					while (dropdown.options.length > 1) {
+						dropdown.remove(1);
+					}
+
+					const isConnected = plugin.oauthService && await plugin.oauthService.isConnected("google");
+					if (isConnected && plugin.googleCalendarService) {
+						const calendars = plugin.googleCalendarService.getAvailableCalendars();
+						for (const cal of calendars) {
+							const option = dropdown.createEl("option", {
+								text: cal.summary + (cal.primary ? translate("settings.integrations.googleCalendarExport.targetCalendar.primarySuffix") : ""),
+								value: cal.id,
+							});
+							if (cal.id === plugin.settings.googleCalendarExport.targetCalendarId) {
+								option.selected = true;
+							}
+						}
+					} else {
+						dropdown.createEl("option", {
+							text: translate("settings.integrations.googleCalendarExport.targetCalendar.connectFirst"),
+							value: "",
+						});
+					}
+				};
+
+				populateCalendars();
+
+				dropdown.addEventListener("change", async () => {
+					plugin.settings.googleCalendarExport.targetCalendarId = dropdown.value;
+					save();
+				});
+
+				return setting;
+			});
+
+			// Sync trigger
+			group.addSetting((setting) =>
+				configureDropdownSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.syncTrigger.name"),
+					desc: translate("settings.integrations.googleCalendarExport.syncTrigger.description"),
+					options: [
+						{ value: "scheduled", label: translate("settings.integrations.googleCalendarExport.syncTrigger.options.scheduled") },
+						{ value: "due", label: translate("settings.integrations.googleCalendarExport.syncTrigger.options.due") },
+						{ value: "both", label: translate("settings.integrations.googleCalendarExport.syncTrigger.options.both") },
+					],
+					getValue: () => plugin.settings.googleCalendarExport.syncTrigger,
+					setValue: async (value: string) => {
+						plugin.settings.googleCalendarExport.syncTrigger = value as "scheduled" | "due" | "both";
+						save();
+					},
+				})
+			);
+
+			// Create as all-day
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.allDayEvents.name"),
+					desc: translate("settings.integrations.googleCalendarExport.allDayEvents.description"),
+					getValue: () => plugin.settings.googleCalendarExport.createAsAllDay,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.createAsAllDay = value;
+						save();
+					},
+				})
+			);
+
+			// Default duration (only relevant for timed events)
+			group.addSetting((setting) =>
+				configureNumberSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.defaultDuration.name"),
+					desc: translate("settings.integrations.googleCalendarExport.defaultDuration.description"),
+					getValue: () => plugin.settings.googleCalendarExport.defaultEventDuration,
+					setValue: async (value: number) => {
+						plugin.settings.googleCalendarExport.defaultEventDuration = value;
+						save();
+					},
+					min: 15,
+					max: 480,
+				})
+			);
+
+			// Event title template
+			group.addSetting((setting) =>
+				configureTextSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.eventTitleTemplate.name"),
+					desc: translate("settings.integrations.googleCalendarExport.eventTitleTemplate.description"),
+					placeholder: translate("settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder"),
+					getValue: () => plugin.settings.googleCalendarExport.eventTitleTemplate,
+					setValue: async (value: string) => {
+						plugin.settings.googleCalendarExport.eventTitleTemplate = value || "{{title}}";
+						save();
+					},
+				})
+			);
+
+			// Include description
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.includeDescription.name"),
+					desc: translate("settings.integrations.googleCalendarExport.includeDescription.description"),
+					getValue: () => plugin.settings.googleCalendarExport.includeDescription,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.includeDescription = value;
+						save();
+					},
+				})
+			);
+
+			// Include Obsidian link
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.includeObsidianLink.name"),
+					desc: translate("settings.integrations.googleCalendarExport.includeObsidianLink.description"),
+					getValue: () => plugin.settings.googleCalendarExport.includeObsidianLink,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.includeObsidianLink = value;
+						save();
+					},
+				})
+			);
+
+			// Sync behavior toggles - section header
+			group.addSetting((setting) => {
+				setting.setName(translate("settings.integrations.googleCalendarExport.automaticSyncBehavior.header"));
+				setting.setHeading();
+			});
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.syncOnCreate.name"),
+					desc: translate("settings.integrations.googleCalendarExport.syncOnCreate.description"),
+					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskCreate,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.syncOnTaskCreate = value;
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.syncOnUpdate.name"),
+					desc: translate("settings.integrations.googleCalendarExport.syncOnUpdate.description"),
+					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskUpdate,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.syncOnTaskUpdate = value;
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.syncOnComplete.name"),
+					desc: translate("settings.integrations.googleCalendarExport.syncOnComplete.description"),
+					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskComplete,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.syncOnTaskComplete = value;
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.syncOnDelete.name"),
+					desc: translate("settings.integrations.googleCalendarExport.syncOnDelete.description"),
+					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskDelete,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.syncOnTaskDelete = value;
+						save();
+					},
+				})
+			);
+
+			// Manual sync actions - section header
+			group.addSetting((setting) => {
+				setting.setName(translate("settings.integrations.googleCalendarExport.manualSyncActions.header"));
+				setting.setHeading();
+			});
+
+			group.addSetting((setting) =>
+				configureButtonSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.syncAllTasks.name"),
+					desc: translate("settings.integrations.googleCalendarExport.syncAllTasks.description"),
+					buttonText: translate("settings.integrations.googleCalendarExport.syncAllTasks.buttonText"),
+					onClick: async () => {
+						if (!plugin.taskCalendarSyncService?.isEnabled()) {
+							new Notice(translate("settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"));
+							return;
+						}
+						const results = await plugin.taskCalendarSyncService.syncAllTasks();
+						new Notice(translate("settings.integrations.googleCalendarExport.notices.syncResults", {
+							synced: results.synced,
+							failed: results.failed,
+							skipped: results.skipped,
+						}));
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureButtonSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.name"),
+					desc: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.description"),
+					buttonText: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText"),
+					onClick: async () => {
+						if (!plugin.taskCalendarSyncService) {
+							new Notice(translate("settings.integrations.googleCalendarExport.notices.serviceNotAvailable"));
+							return;
+						}
+						const confirmed = await showConfirmationModal(plugin.app, {
+							title: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle"),
+							message: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage"),
+							confirmText: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText"),
+							isDestructive: true,
+						});
+						if (confirmed) {
+							await plugin.taskCalendarSyncService.unlinkAllTasks(false);
+						}
+					},
+				})
+			);
+		}
+	);
+
 	// Calendar Subscriptions Section (ICS)
 	createSettingGroup(
 		container,

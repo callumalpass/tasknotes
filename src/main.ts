@@ -96,6 +96,7 @@ import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { LicenseService } from "./services/LicenseService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
+import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -213,6 +214,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Calendar provider registry for abstraction
 	calendarProviderRegistry: CalendarProviderRegistry;
+
+	// Task-to-Google Calendar sync service
+	taskCalendarSyncService: TaskCalendarSyncService;
 
 	// Bases filter converter for exporting saved views
 	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
@@ -613,6 +617,12 @@ export default class TaskNotesPlugin extends Plugin {
 				// Initialize Google Calendar service (instance already created in onload)
 				// This triggers the actual data fetching and will emit data-changed
 				await this.googleCalendarService.initialize();
+
+				// Initialize Task Calendar Sync service for pushing tasks to Google Calendar
+				this.taskCalendarSyncService = new TaskCalendarSyncService(
+					this,
+					this.googleCalendarService
+				);
 
 				// Microsoft Calendar
 				this.microsoftCalendarService.on("data-changed", () => {
@@ -1600,6 +1610,43 @@ export default class TaskNotesPlugin extends Plugin {
 						console.error("Error exporting all tasks as ICS:", error);
 						new Notice(this.i18n.translate("notices.exportTasksFailed"));
 					}
+				},
+			},
+			{
+				id: "sync-all-tasks-google-calendar",
+				nameKey: "commands.syncAllTasksGoogleCalendar",
+				callback: async () => {
+					if (!this.taskCalendarSyncService?.isEnabled()) {
+						new Notice(this.i18n.translate("settings.integrations.googleCalendarExport.notices.notEnabled"));
+						return;
+					}
+					await this.taskCalendarSyncService.syncAllTasks();
+				},
+			},
+			{
+				id: "sync-current-task-google-calendar",
+				nameKey: "commands.syncCurrentTaskGoogleCalendar",
+				callback: async () => {
+					if (!this.taskCalendarSyncService?.isEnabled()) {
+						new Notice(this.i18n.translate("settings.integrations.googleCalendarExport.notices.notEnabled"));
+						return;
+					}
+					const activeFile = this.app.workspace.getActiveFile();
+					if (!activeFile) {
+						new Notice(this.i18n.translate("settings.integrations.googleCalendarExport.notices.noActiveFile"));
+						return;
+					}
+					const task = await this.cacheManager.getTaskInfo(activeFile.path);
+					if (!task) {
+						new Notice(this.i18n.translate("settings.integrations.googleCalendarExport.notices.notATask"));
+						return;
+					}
+					if (!this.taskCalendarSyncService.shouldSyncTask(task)) {
+						new Notice(this.i18n.translate("settings.integrations.googleCalendarExport.notices.noDateToSync"));
+						return;
+					}
+					await this.taskCalendarSyncService.syncTaskToCalendar(task);
+					new Notice(this.i18n.translate("settings.integrations.googleCalendarExport.notices.taskSynced"));
 				},
 			},
 			{

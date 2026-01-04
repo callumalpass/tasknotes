@@ -445,6 +445,16 @@ export class TaskService {
 				}
 			}
 
+			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
+			if (
+				this.plugin.taskCalendarSyncService?.isEnabled() &&
+				this.plugin.settings.googleCalendarExport.syncOnTaskCreate
+			) {
+				this.plugin.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {
+					console.warn("Failed to sync task to Google Calendar:", error);
+				});
+			}
+
 			return { file, taskInfo };
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -800,6 +810,27 @@ export class TaskService {
 				} catch (error) {
 					console.warn("Failed to trigger webhook for property update:", error);
 				}
+			}
+
+			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
+			if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+				const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
+				const isCompleted =
+					property === "status" && this.plugin.statusManager.isCompletedStatus(value);
+
+				const syncPromise =
+					property === "status" && !wasCompleted && isCompleted
+						? this.plugin.taskCalendarSyncService.completeTaskInCalendar(
+								updatedTask as TaskInfo
+							)
+						: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
+								updatedTask as TaskInfo,
+								task
+							);
+
+				syncPromise.catch((error) => {
+					console.warn("Failed to sync task update to Google Calendar:", error);
+				});
 			}
 
 			// Handle auto-archive if status property changed
@@ -1511,6 +1542,28 @@ export class TaskService {
 				}
 			}
 
+			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
+			if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+				const wasCompleted = this.plugin.statusManager.isCompletedStatus(
+					originalTask.status
+				);
+				const isCompleted = this.plugin.statusManager.isCompletedStatus(
+					updatedTask.status
+				);
+
+				const syncPromise =
+					!wasCompleted && isCompleted
+						? this.plugin.taskCalendarSyncService.completeTaskInCalendar(updatedTask)
+						: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
+								updatedTask,
+								originalTask
+							);
+
+				syncPromise.catch((error) => {
+					console.warn("Failed to sync task update to Google Calendar:", error);
+				});
+			}
+
 			// Handle auto-archive if status changed
 			if (
 				this.autoArchiveService &&
@@ -1671,6 +1724,16 @@ export class TaskService {
 			const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 			if (!(file instanceof TFile)) {
 				throw new Error(`Cannot find task file: ${task.path}`);
+			}
+
+			// Delete from Google Calendar first (before file deletion, so we have the event ID)
+			// Fire-and-forget to avoid blocking the delete operation
+			if (this.plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
+				this.plugin.taskCalendarSyncService
+					.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
+					.catch((error) => {
+						console.warn("Failed to delete task from Google Calendar:", error);
+					});
 			}
 
 			// Step 1: Delete the file from the vault
