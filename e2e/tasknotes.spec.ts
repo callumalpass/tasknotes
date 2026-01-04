@@ -5746,6 +5746,128 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
 });
 
 // ============================================================================
+// Issue #1411: Agenda base ignores sort (DUPLICATE of #1331)
+// https://github.com/anthropics/tasknotes/issues/1411
+// ============================================================================
+test.describe('Issue #1411 - Agenda base ignores sort (duplicate of #1331)', () => {
+  // Helper to expand TaskNotes and Views folders if needed
+  async function expandViewsFolder(page: Page): Promise<void> {
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
+  test.fixme('agenda view should sort by status then priority (Issue #1411)', async () => {
+    // STATUS: BUG - Issue #1411 (duplicate of #1331)
+    //
+    // User reports: TaskNotes v4.1.3, Agenda view ignores sort settings.
+    //
+    // STEPS TO REPRODUCE (from issue):
+    // 1. Go to default Agenda view
+    // 2. Tasks will be sorted in alphabetical order of note title
+    // 3. Try to sort to "status" and "priority"
+    //
+    // EXPECTED: Tasks should sort by status then priority
+    // ACTUAL: Tasks remain sorted alphabetically by title
+    //
+    // ROOT CAUSE: This is a duplicate of Issue #1331. CalendarView (used by
+    // agenda-default in listWeek mode) doesn't apply Bases' sortBy configuration.
+    // Additionally, agenda-default.base only has an 'order' field (for displayed
+    // properties) but no 'sort' field for event ordering.
+    //
+    // See tests for Issue #1331 above for comprehensive coverage of this bug.
+
+    const page = getPage();
+
+    // Close any open modals first
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await expandViewsFolder(page);
+
+    // Open agenda view (reproducing step 1)
+    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
+    await expect(agendaItem).toBeVisible({ timeout: 10000 });
+    await agendaItem.click();
+    await page.waitForTimeout(2000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1411-agenda-sort-ignored.png' });
+
+    // Verify we're in the FullCalendar list view
+    const listView = page.locator('.fc-list');
+    const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isListView) {
+      console.log('[Issue #1411] Not in list view mode, skipping test');
+      return;
+    }
+
+    // Find all task events in the agenda
+    const taskEvents = page.locator('.fc-list-event');
+    const taskCount = await taskEvents.count();
+    console.log(`[Issue #1411] Found ${taskCount} tasks in agenda view`);
+
+    if (taskCount < 2) {
+      console.log('[Issue #1411] Not enough tasks to verify sorting');
+      return;
+    }
+
+    // Extract task info to check sort order
+    const taskInfo: Array<{ title: string; status?: string; priority?: string }> = [];
+
+    for (let i = 0; i < Math.min(taskCount, 10); i++) {
+      const event = taskEvents.nth(i);
+      const title = await event.locator('.fc-list-event-title, .task-card__title').textContent().catch(() => '');
+      const statusBadge = await event.locator('[class*="status"]').first().textContent().catch(() => '');
+      const priorityBadge = await event.locator('[class*="priority"]').first().textContent().catch(() => '');
+
+      taskInfo.push({
+        title: title?.trim() || `task-${i}`,
+        status: statusBadge?.trim() || undefined,
+        priority: priorityBadge?.trim() || undefined,
+      });
+    }
+
+    console.log('[Issue #1411] Task order in agenda:', taskInfo.map(t => t.title));
+    console.log('[Issue #1411] Task statuses:', taskInfo.map(t => t.status));
+    console.log('[Issue #1411] Task priorities:', taskInfo.map(t => t.priority));
+
+    // Verify tasks are sorted alphabetically (the bug behavior)
+    // When fixed, this should fail because tasks will be sorted by status/priority
+    const titles = taskInfo.map(t => t.title);
+    const sortedAlphabetically = [...titles].sort((a, b) => a.localeCompare(b));
+
+    // This assertion documents the bug: tasks ARE sorted alphabetically (wrong)
+    // When the bug is fixed, tasks should NOT be sorted alphabetically
+    // (they should be sorted by status, then priority)
+    const isSortedAlphabetically = JSON.stringify(titles) === JSON.stringify(sortedAlphabetically);
+    console.log(`[Issue #1411] Tasks sorted alphabetically: ${isSortedAlphabetically}`);
+
+    // The bug exists when tasks are sorted alphabetically instead of by status/priority
+    // This test.fixme will pass when fixed (tasks NOT sorted alphabetically)
+    expect(isSortedAlphabetically).toBe(false);
+  });
+});
+
+// ============================================================================
 // Issue #1329: Huge gap between end of note and relationship-widget
 // https://github.com/user/tasknotes/issues/1329
 // ============================================================================
@@ -6932,5 +7054,1598 @@ test.describe('Issue #1216 - Hide relationships widget when empty', () => {
     // EXPECTED: Dropdown exists with three options
     // ACTUAL: Currently it's a toggle (boolean) not a dropdown
     expect(dropdownExists).toBe(true);
+  });
+});
+
+// ============================================================================
+// Issue #1299: Create or Open Task command with automatic time tracking
+// ============================================================================
+test.describe('Issue #1299: Create or Open Task with Time Tracking', () => {
+  test.skip('should have a command to create/open task and start time tracking (Issue #1299)', async () => {
+    // Feature request: Extend the "Create or open task" command to also start
+    // time tracking automatically after selecting or creating a task.
+    //
+    // Use case: When pulled into urgent work, users want to quickly:
+    // 1. Create a new task (or select existing)
+    // 2. Start time tracking immediately
+    // 3. Begin working without manually starting the timer
+    //
+    // Implementation approach:
+    // - Add new command "create-or-open-task-with-tracking" in main.ts
+    // - Reuse TaskSelectorWithCreateModal
+    // - After task selection/creation, call startTimeTracking() before opening file
+    // - Add i18n key: commands.createOrOpenTaskWithTracking
+    //
+    // Affected files:
+    //   - src/main.ts (add command and handler)
+    //   - src/i18n/resources/en.ts (add translation)
+    //   - Optionally: src/modals/TaskSelectorWithCreateModal.ts (if refactoring)
+    //
+    // Bonus feature mentioned in issue:
+    //   - Option to prompt for time entry description when starting/stopping
+    //
+    // Related: Issue #1297 (same modal, mobile footer click support)
+
+    const page = getPage();
+
+    // Try to run the new command (should fail until implemented)
+    await openCommandPalette(page);
+    await page.keyboard.type('Create or open task and start time tracking', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // Check if the command exists in suggestions
+    const suggestions = page.locator('.suggestion-item');
+    const commandExists = await suggestions.filter({ hasText: /time tracking/i }).first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Command should exist and be selectable
+    expect(commandExists).toBe(true);
+  });
+
+  test.skip('should start time tracking after selecting existing task (Issue #1299)', async () => {
+    // This test verifies that when using the new command and selecting an
+    // existing task, time tracking starts automatically.
+
+    const page = getPage();
+
+    // Run the new command
+    await runCommand(page, 'Create or open task and start time tracking');
+    await page.waitForTimeout(500);
+
+    // Verify modal opened
+    const modal = page.locator('.task-selector-with-create-modal, .prompt');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Select an existing task (first suggestion)
+    const firstTask = page.locator('.suggestion-item').first();
+    if (await firstTask.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstTask.click();
+      await page.waitForTimeout(1000);
+
+      // Check if time tracking notice appeared
+      const notice = page.locator('.notice:has-text("tracking")');
+      const trackingStarted = await notice.isVisible({ timeout: 3000 }).catch(() => false);
+
+      // Also check status bar for active time tracking indicator
+      const statusBar = page.locator('.status-bar');
+      const hasTimeIndicator = await statusBar.locator('[class*="time"], [class*="timer"]')
+        .isVisible({ timeout: 2000 }).catch(() => false);
+
+      // Close any open files
+      await page.keyboard.press('Control+w');
+
+      // EXPECTED: Time tracking should have started
+      expect(trackingStarted || hasTimeIndicator).toBe(true);
+    } else {
+      // No tasks available, skip verification
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test.skip('should start time tracking after creating new task (Issue #1299)', async () => {
+    // This test verifies that when using the new command to create a task,
+    // time tracking starts automatically on the newly created task.
+
+    const page = getPage();
+
+    // Run the new command
+    await runCommand(page, 'Create or open task and start time tracking');
+    await page.waitForTimeout(500);
+
+    // Verify modal opened
+    const modal = page.locator('.task-selector-with-create-modal, .prompt');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Type a unique task name that won't match existing tasks
+    const uniqueTaskName = `Time tracking test task ${Date.now()}`;
+    await page.keyboard.type(uniqueTaskName, { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // Create the task using Shift+Enter
+    await page.keyboard.press('Shift+Enter');
+    await page.waitForTimeout(1000);
+
+    // Check if time tracking notice appeared
+    const notice = page.locator('.notice:has-text("tracking")');
+    const trackingStarted = await notice.isVisible({ timeout: 3000 }).catch(() => false);
+
+    // Also check status bar for active time tracking indicator
+    const statusBar = page.locator('.status-bar');
+    const hasTimeIndicator = await statusBar.locator('[class*="time"], [class*="timer"]')
+      .isVisible({ timeout: 2000 }).catch(() => false);
+
+    // Close any open files
+    await page.keyboard.press('Control+w');
+
+    // EXPECTED: Time tracking should have started on the new task
+    expect(trackingStarted || hasTimeIndicator).toBe(true);
+  });
+
+  test.skip('should optionally prompt for time entry description (Issue #1299 bonus)', async () => {
+    // Bonus feature from issue: Option to show a dialog for entering
+    // a description when starting time tracking.
+    //
+    // This would be useful for:
+    // - Detailed time tracking (e.g., "Preparing ingredients", "Kneading dough")
+    // - Invoice/billing documentation
+    // - Progress notes
+    //
+    // Implementation would require:
+    // - New setting: promptForTimeEntryDescription (boolean)
+    // - Modify startTimeTracking to show input dialog when enabled
+    // - Store description in TimeEntry.description field
+
+    const page = getPage();
+
+    // This test documents the bonus feature - placeholder until implemented
+    // First, check if the setting exists
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    if (await settingsModal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Search for time tracking description setting
+      const settingSearch = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+      if (await settingSearch.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await settingSearch.click();
+        await page.waitForTimeout(500);
+      }
+
+      const descriptionSetting = page.locator('.setting-item:has-text("description")');
+      const settingExists = await descriptionSetting.isVisible({ timeout: 2000 }).catch(() => false);
+
+      await page.keyboard.press('Escape');
+
+      // EXPECTED: Setting for time entry description prompt should exist
+      expect(settingExists).toBe(true);
+    } else {
+      await page.keyboard.press('Escape');
+      expect(true).toBe(false); // Force fail if settings didn't open
+    }
+  });
+});
+
+// ============================================================================
+// Issue #1293: Incomplete tasks automatically move to next day
+// ============================================================================
+test.describe('Issue #1293: Incomplete Task Rollover to Next Day', () => {
+  test.skip('should have setting to enable automatic task rollover (Issue #1293)', async () => {
+    // Feature request: Tasks that aren't completed on their due/scheduled day
+    // should automatically move to the next day.
+    //
+    // Use case: When a task isn't completed by end of day, instead of it
+    // becoming overdue/past-scheduled, automatically reschedule it to tomorrow.
+    //
+    // Implementation approach:
+    // - Add new service similar to AutoArchiveService pattern
+    // - Add settings: autoRolloverIncomplete (boolean), rolloverDateField (scheduled/due/both)
+    // - Process once per day (at midnight or on first app usage)
+    // - For each incomplete task where scheduled/due < today, set to tomorrow
+    //
+    // Affected files:
+    //   - src/services/TaskRolloverService.ts (new file)
+    //   - src/main.ts (register service)
+    //   - src/settings.ts (add settings)
+    //   - src/i18n/resources/en.ts (add translations)
+    //
+    // Related patterns:
+    //   - AutoArchiveService.ts (queue-based scheduled processing)
+    //   - updateToNextScheduledOccurrence() in helpers.ts (date advancement)
+
+    const page = getPage();
+
+    // Navigate to settings
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Search for rollover/auto-advance setting
+    const rolloverSetting = page.locator('.setting-item').filter({
+      hasText: /rollover|auto.*advance|move.*next.*day|incomplete.*next/i
+    });
+    const settingExists = await rolloverSetting.first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Setting for automatic task rollover should exist
+    expect(settingExists).toBe(true);
+  });
+
+  test.skip('should have option to choose which date field to rollover (Issue #1293)', async () => {
+    // The user should be able to choose whether to rollover:
+    // - scheduled date only
+    // - due date only
+    // - both dates
+    //
+    // This is important because scheduled and due dates have different semantics:
+    // - scheduled: when to work on the task (planning)
+    // - due: deadline (commitment)
+    //
+    // Some users may want to only rollover scheduled (planning) but keep
+    // due dates fixed as they represent real deadlines.
+
+    const page = getPage();
+
+    // Navigate to settings
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Look for dropdown/toggle to select date field
+    const dateFieldOption = page.locator('.setting-item').filter({
+      hasText: /scheduled|due|both|date.*field|rollover.*type/i
+    });
+    const optionExists = await dateFieldOption.first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    // Check if there's a dropdown with options
+    const dropdown = dateFieldOption.locator('select, .dropdown');
+    const hasDropdown = await dropdown.isVisible({ timeout: 1000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Option to choose which date field to rollover should exist
+    expect(optionExists && hasDropdown).toBe(true);
+  });
+
+  test.skip('should rollover scheduled date for incomplete task (Issue #1293)', async () => {
+    // This test verifies that an incomplete task with a past scheduled date
+    // gets automatically moved to today/tomorrow.
+    //
+    // Test scenario:
+    // 1. Create task with scheduled date = yesterday
+    // 2. Leave task incomplete
+    // 3. Trigger rollover (via command or wait)
+    // 4. Verify scheduled date is now today or tomorrow
+
+    const page = getPage();
+
+    // Create a task with yesterday's scheduled date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const taskTitle = `Rollover test ${Date.now()}`;
+
+    // Open task creation modal
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(500);
+
+    const modal = page.locator('.task-creation-modal, .modal');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Enter task title
+    await page.keyboard.type(taskTitle, { delay: 20 });
+
+    // Set scheduled date to yesterday (using natural language or date picker)
+    // This depends on how the modal works - may need adjustment
+    await page.keyboard.type(` @${yesterdayStr}`, { delay: 20 });
+
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000);
+
+    // Now trigger the rollover command (if it exists)
+    await runCommand(page, 'Rollover incomplete tasks');
+    await page.waitForTimeout(1000);
+
+    // Open the task and check its scheduled date
+    await runCommand(page, 'Open task');
+    await page.waitForTimeout(500);
+    await page.keyboard.type(taskTitle, { delay: 30 });
+    await page.waitForTimeout(500);
+
+    const taskSuggestion = page.locator('.suggestion-item').first();
+    if (await taskSuggestion.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskSuggestion.click();
+      await page.waitForTimeout(1000);
+
+      // Check the frontmatter for updated scheduled date
+      // The scheduled date should no longer be yesterday
+      const editor = page.locator('.cm-content, .markdown-source-view');
+      const content = await editor.textContent().catch(() => '');
+
+      const hasYesterdayDate = content?.includes(yesterdayStr);
+
+      await page.keyboard.press('Control+w');
+
+      // EXPECTED: Task should NOT have yesterday's date anymore
+      expect(hasYesterdayDate).toBe(false);
+    } else {
+      await page.keyboard.press('Escape');
+      expect(true).toBe(false); // Force fail - task not found
+    }
+  });
+
+  test.skip('should have manual command to rollover incomplete tasks (Issue #1293)', async () => {
+    // In addition to automatic rollover, there should be a manual command
+    // to trigger rollover on demand. This is useful for:
+    // - Testing the feature
+    // - Running at specific times
+    // - Users who prefer manual control
+    //
+    // Command could be named:
+    // - "Rollover incomplete tasks to today"
+    // - "Move past tasks to today"
+    // - "Reschedule overdue tasks"
+
+    const page = getPage();
+
+    await openCommandPalette(page);
+    await page.keyboard.type('rollover', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    // Check if any rollover-related command exists
+    const suggestions = page.locator('.suggestion-item');
+    const commandExists = await suggestions.filter({
+      hasText: /rollover|reschedule.*incomplete|move.*today/i
+    }).first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Manual rollover command should exist
+    expect(commandExists).toBe(true);
+  });
+
+  test.skip('should not rollover completed tasks (Issue #1293)', async () => {
+    // Rollover should only affect incomplete tasks.
+    // Completed tasks with past dates should remain unchanged
+    // as they represent historical completed work.
+
+    const page = getPage();
+
+    // Create a completed task with yesterday's date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const taskTitle = `Completed rollover test ${Date.now()}`;
+
+    // Create task
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(500);
+    await page.keyboard.type(taskTitle, { delay: 20 });
+    await page.keyboard.type(` @${yesterdayStr}`, { delay: 20 });
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000);
+
+    // Mark task as complete
+    await runCommand(page, 'Toggle task complete');
+    await page.waitForTimeout(500);
+
+    // Trigger rollover
+    await runCommand(page, 'Rollover incomplete tasks');
+    await page.waitForTimeout(1000);
+
+    // Check that completed task still has yesterday's date
+    await runCommand(page, 'Open task');
+    await page.waitForTimeout(500);
+    await page.keyboard.type(taskTitle, { delay: 30 });
+    await page.waitForTimeout(500);
+
+    const taskSuggestion = page.locator('.suggestion-item').first();
+    if (await taskSuggestion.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskSuggestion.click();
+      await page.waitForTimeout(1000);
+
+      const editor = page.locator('.cm-content, .markdown-source-view');
+      const content = await editor.textContent().catch(() => '');
+
+      // Completed task should STILL have yesterday's date
+      const hasYesterdayDate = content?.includes(yesterdayStr);
+
+      await page.keyboard.press('Control+w');
+
+      // EXPECTED: Completed task should still have original date
+      expect(hasYesterdayDate).toBe(true);
+    } else {
+      await page.keyboard.press('Escape');
+      // Task not found is acceptable - may have been archived
+    }
+  });
+
+  test.skip('should support rollover only for tasks with no due date (Issue #1293 variant)', async () => {
+    // Some users may want different behavior:
+    // - Only rollover scheduled date if no due date is set
+    // - If due date exists, don't touch scheduled (as it has a deadline)
+    //
+    // This could be an additional setting for fine-grained control.
+
+    const page = getPage();
+
+    // Navigate to settings
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Look for conditional rollover setting
+    const conditionalSetting = page.locator('.setting-item').filter({
+      hasText: /only.*no.*due|skip.*due|conditional.*rollover/i
+    });
+    const settingExists = await conditionalSetting.first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: Conditional rollover setting should exist
+    // (This is a bonus/variant feature, so test may need adjustment)
+    expect(settingExists).toBe(true);
+  });
+});
+
+// ============================================================================
+// Issue #1419: Custom statuses not saving
+// User reports that custom task statuses don't persist after closing settings
+// Also affects priorities.
+// See: https://github.com/callumalpass/tasknotes/issues/1419
+// ============================================================================
+
+test.describe('Issue #1419: Custom statuses not saving', () => {
+  test.skip('should persist new custom status values after closing and reopening settings', async () => {
+    // Issue: Custom task statuses don't save properly after updating to 4.2.0
+    // User adds a new custom status, fills in values, closes settings,
+    // reopens settings, and the values are gone.
+    //
+    // Steps to reproduce:
+    // 1. Open TaskNotes settings
+    // 2. Go to Task Properties tab
+    // 3. Expand Status property card
+    // 4. Click "Add New" to add a custom status
+    // 5. Fill in value, label, and color
+    // 6. Close settings
+    // 7. Reopen settings and navigate back to the status
+    // 8. Observe: values are empty/reset
+    //
+    // Expected: Values should persist
+    // Actual: Values are lost
+    //
+    // Related: Also affects custom priorities
+
+    const page = getPage();
+    const testStatusValue = `test-status-${Date.now()}`;
+    const testStatusLabel = 'Test Status Label';
+
+    // Open settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal.mod-settings');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab
+    const taskPropertiesTab = page.locator('button:has-text("Task Properties")').first();
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand the Status property card
+    const statusCard = page.locator('.tasknotes-settings__card[data-card-id="property-status"]');
+    const statusCardHeader = statusCard.locator('.tasknotes-settings__card-header').first();
+    if (await statusCardHeader.isVisible({ timeout: 2000 })) {
+      await statusCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand the "Status Values" collapsible section
+    const statusValuesHeader = page.locator('.tasknotes-settings__collapsible-section-header:has-text("Status Values")').first();
+    if (await statusValuesHeader.isVisible({ timeout: 2000 })) {
+      await statusValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Click "Add New" button to add a new status
+    const addNewButton = page.locator('button:has-text("Add New")').first();
+    if (await addNewButton.isVisible({ timeout: 2000 })) {
+      await addNewButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Find the newly added status card (should be the last one, collapsed by default)
+    // The new status has empty value so its header shows "untitled"
+    const newStatusCard = page.locator('.tasknotes-statuses-container .tasknotes-settings__card').last();
+    const newStatusCardHeader = newStatusCard.locator('.tasknotes-settings__card-header').first();
+    if (await newStatusCardHeader.isVisible({ timeout: 2000 })) {
+      await newStatusCardHeader.click(); // Expand it
+      await page.waitForTimeout(300);
+    }
+
+    // Fill in the value field
+    const valueInput = newStatusCard.locator('input[type="text"]').first();
+    if (await valueInput.isVisible({ timeout: 2000 })) {
+      await valueInput.fill(testStatusValue);
+      await valueInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Fill in the label field
+    const labelInput = newStatusCard.locator('input[type="text"]').nth(1);
+    if (await labelInput.isVisible({ timeout: 2000 })) {
+      await labelInput.fill(testStatusLabel);
+      await labelInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Wait for debounced save (500ms + buffer)
+    await page.waitForTimeout(1000);
+
+    // Close settings
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+    // Reopen settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate back to TaskNotes settings
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab again
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand Status card again
+    if (await statusCardHeader.isVisible({ timeout: 2000 })) {
+      await statusCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand Status Values section again
+    if (await statusValuesHeader.isVisible({ timeout: 2000 })) {
+      await statusValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Find the status card with our test value
+    const statusCards = page.locator('.tasknotes-statuses-container .tasknotes-settings__card');
+    const statusCount = await statusCards.count();
+
+    let foundStatus = false;
+    for (let i = 0; i < statusCount; i++) {
+      const card = statusCards.nth(i);
+      const headerText = await card.locator('.tasknotes-settings__card-primary-text').textContent().catch(() => '');
+      if (headerText === testStatusValue) {
+        foundStatus = true;
+        // Expand this card to verify label
+        const cardHeader = card.locator('.tasknotes-settings__card-header').first();
+        await cardHeader.click();
+        await page.waitForTimeout(300);
+
+        const labelValue = await card.locator('input[type="text"]').nth(1).inputValue().catch(() => '');
+        expect(labelValue).toBe(testStatusLabel);
+        break;
+      }
+    }
+
+    // Close settings
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: The custom status should be found with correct values
+    expect(foundStatus).toBe(true);
+  });
+
+  test.skip('should persist new custom priority values after closing and reopening settings', async () => {
+    // Same issue as above but for priorities
+    //
+    // Steps to reproduce:
+    // 1. Open TaskNotes settings
+    // 2. Go to Task Properties tab
+    // 3. Expand Priority property card
+    // 4. Click "Add New" to add a custom priority
+    // 5. Fill in value, label, and color
+    // 6. Close settings
+    // 7. Reopen settings and navigate back to the priority
+    // 8. Observe: values are empty/reset
+    //
+    // Expected: Values should persist
+    // Actual: Values are lost
+
+    const page = getPage();
+    const testPriorityValue = `test-priority-${Date.now()}`;
+    const testPriorityLabel = 'Test Priority Label';
+
+    // Open settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal.mod-settings');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab
+    const taskPropertiesTab = page.locator('button:has-text("Task Properties")').first();
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand the Priority property card
+    const priorityCard = page.locator('.tasknotes-settings__card[data-card-id="property-priority"]');
+    const priorityCardHeader = priorityCard.locator('.tasknotes-settings__card-header').first();
+    if (await priorityCardHeader.isVisible({ timeout: 2000 })) {
+      await priorityCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand the "Priority Values" collapsible section
+    const priorityValuesHeader = page.locator('.tasknotes-settings__collapsible-section-header:has-text("Priority Values")').first();
+    if (await priorityValuesHeader.isVisible({ timeout: 2000 })) {
+      await priorityValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Click "Add New" button to add a new priority
+    const addNewButton = priorityCard.locator('button:has-text("Add New")').first();
+    if (await addNewButton.isVisible({ timeout: 2000 })) {
+      await addNewButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Find the newly added priority card (should be the last one)
+    const newPriorityCard = page.locator('.tasknotes-priorities-container .tasknotes-settings__card').last();
+    const newPriorityCardHeader = newPriorityCard.locator('.tasknotes-settings__card-header').first();
+    if (await newPriorityCardHeader.isVisible({ timeout: 2000 })) {
+      await newPriorityCardHeader.click(); // Expand it
+      await page.waitForTimeout(300);
+    }
+
+    // Fill in the value field
+    const valueInput = newPriorityCard.locator('input[type="text"]').first();
+    if (await valueInput.isVisible({ timeout: 2000 })) {
+      await valueInput.fill(testPriorityValue);
+      await valueInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Fill in the label field
+    const labelInput = newPriorityCard.locator('input[type="text"]').nth(1);
+    if (await labelInput.isVisible({ timeout: 2000 })) {
+      await labelInput.fill(testPriorityLabel);
+      await labelInput.dispatchEvent('change');
+      await page.waitForTimeout(200);
+    }
+
+    // Wait for debounced save (500ms + buffer)
+    await page.waitForTimeout(1000);
+
+    // Close settings
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+    // Reopen settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate back to TaskNotes settings
+    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
+      await taskNotesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Click Task Properties tab again
+    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
+      await taskPropertiesTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Expand Priority card again
+    if (await priorityCardHeader.isVisible({ timeout: 2000 })) {
+      await priorityCardHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Expand Priority Values section again
+    if (await priorityValuesHeader.isVisible({ timeout: 2000 })) {
+      await priorityValuesHeader.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Find the priority card with our test value
+    const priorityCards = page.locator('.tasknotes-priorities-container .tasknotes-settings__card');
+    const priorityCount = await priorityCards.count();
+
+    let foundPriority = false;
+    for (let i = 0; i < priorityCount; i++) {
+      const card = priorityCards.nth(i);
+      const headerText = await card.locator('.tasknotes-settings__card-primary-text').textContent().catch(() => '');
+      if (headerText === testPriorityLabel || headerText === testPriorityValue) {
+        foundPriority = true;
+        // Expand this card to verify values
+        const cardHeader = card.locator('.tasknotes-settings__card-header').first();
+        await cardHeader.click();
+        await page.waitForTimeout(300);
+
+        const savedValue = await card.locator('input[type="text"]').first().inputValue().catch(() => '');
+        expect(savedValue).toBe(testPriorityValue);
+        break;
+      }
+    }
+
+    // Close settings
+    await page.keyboard.press('Escape');
+
+    // EXPECTED: The custom priority should be found with correct values
+    expect(foundPriority).toBe(true);
+  });
+});
+
+// Issue #1423: Project cards don't refresh when subtasks are removed (stale project UI until reload)
+// https://github.com/anthropics/tasknotes/issues/1423
+//
+// When subtasks are removed from a task, the project UI does not refresh.
+// The deleted subtask remains visible in the expanded subtask list, and if the last
+// subtask is removed the parent still renders as a project. The UI only corrects
+// itself after a full view reload.
+//
+// Root cause: ProjectSubtasksService uses a 30-second TTL-based cache (INDEX_TTL = 30000)
+// and there is no event-driven invalidation when subtasks are deleted. The buildProjectIndex()
+// method only rebuilds on time expiration, not on EVENT_TASK_DELETED or file deletion events.
+test.describe('Issue #1423 - Project cards refresh when subtasks are removed', () => {
+  // Helper to expand TaskNotes and Views folders
+  async function expandViewsFolderFor1423(page: Page): Promise<void> {
+    // First ensure the sidebar is expanded
+    await ensureSidebarExpanded(page);
+
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  }
+
+  test.fixme('subtask should disappear from expanded list when deleted', async () => {
+    // Issue #1423: Deleted subtasks remain visible in the expanded subtask list
+    //
+    // Steps to reproduce:
+    // 1. Create a parent task (Task A) and subtask (Task B)
+    // 2. Add Task B as a subtask of Task A via the projects field
+    // 3. In a view, expand Task A to see its subtasks
+    // 4. Delete Task B
+    //
+    // Expected: Task B should disappear immediately from Task A's subtask list
+    // Actual: Task B remains visible until a full view reload
+    const page = getPage();
+
+    // Create test tasks: parent (project) and subtask
+    const parentTitle = 'Issue1423 Parent Task';
+    const subtaskTitle = 'Issue1423 Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      // Create parent task first
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      // Wait for parent to be created
+      await new Promise(r => setTimeout(r, 500));
+
+      // Get the parent task's path
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      // Create subtask with parent as project (using wikilink format)
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Open kanban view and expand the parent to show subtasks
+    await expandViewsFolderFor1423(page);
+    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
+    if (await kanbanItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await kanbanItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Find the parent task card
+    const parentCard = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    await expect(parentCard).toBeVisible({ timeout: 5000 });
+
+    // Expand subtasks by clicking the chevron
+    await parentCard.hover();
+    await page.waitForTimeout(300);
+    const chevron = parentCard.locator('.task-card__chevron');
+    if (await chevron.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await chevron.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Verify subtask is visible in the expanded list
+    const subtasksContainer = parentCard.locator('.task-card__subtasks');
+    await expect(subtasksContainer).toBeVisible({ timeout: 3000 });
+    const subtaskCard = subtasksContainer.locator(`.task-card:has-text("${subtaskTitle}")`);
+    await expect(subtaskCard).toBeVisible({ timeout: 3000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-before-delete.png' });
+
+    // Delete the subtask via the plugin API
+    await page.evaluate(async (subtaskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (subtask) {
+        await plugin.taskService.deleteTask(subtask.path);
+      }
+    }, subtaskTitle);
+
+    // Wait a short time for UI to update (NOT 30 seconds for index rebuild)
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-after-delete.png' });
+
+    // BUG: The subtask should no longer be visible
+    // Currently it remains visible due to stale cache until 30-second TTL expires
+    await expect(subtaskCard).not.toBeVisible({ timeout: 3000 });
+
+    // Cleanup: delete parent task
+    await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (parent) {
+        await plugin.taskService.deleteTask(parent.path);
+      }
+    }, parentTitle);
+  });
+
+  test.fixme('parent should revert to normal card when last subtask is deleted', async () => {
+    // Issue #1423: After deleting the last subtask, the parent still appears as a project
+    //
+    // Steps to reproduce:
+    // 1. Create Task A with Task B as its only subtask
+    // 2. In Kanban/Task List view, Task A shows with project indicator (chevron)
+    // 3. Delete Task B
+    //
+    // Expected: Task A should revert to a normal task card without chevron/project UI
+    // Actual: Task A still shows chevron and project UI until view reload
+    const page = getPage();
+
+    // Create test tasks
+    const parentTitle = 'Issue1423 Solo Parent';
+    const subtaskTitle = 'Issue1423 Only Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      // Create parent task
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      await new Promise(r => setTimeout(r, 500));
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      // Create single subtask
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Open kanban view
+    await expandViewsFolderFor1423(page);
+    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
+    if (await kanbanItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await kanbanItem.click();
+      await page.waitForTimeout(1500);
+    }
+
+    // Find the parent task and verify it has project indicators
+    const parentCard = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    await expect(parentCard).toBeVisible({ timeout: 5000 });
+
+    // Verify parent shows as a project (has chevron)
+    await parentCard.hover();
+    await page.waitForTimeout(300);
+    const chevronBefore = parentCard.locator('.task-card__chevron');
+    await expect(chevronBefore).toBeVisible({ timeout: 3000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-parent-as-project.png' });
+
+    // Delete the only subtask
+    await page.evaluate(async (subtaskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (subtask) {
+        await plugin.taskService.deleteTask(subtask.path);
+      }
+    }, subtaskTitle);
+
+    await page.waitForTimeout(1000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1423-parent-after-subtask-deleted.png' });
+
+    // BUG: After deleting the only subtask, parent should no longer show as project
+    // The chevron should disappear since there are no more subtasks
+    const parentCardAfter = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    await parentCardAfter.hover();
+    await page.waitForTimeout(300);
+    const chevronAfter = parentCardAfter.locator('.task-card__chevron');
+
+    // Chevron should NOT be visible anymore
+    await expect(chevronAfter).not.toBeVisible({ timeout: 3000 });
+
+    // Cleanup
+    await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (parent) {
+        await plugin.taskService.deleteTask(parent.path);
+      }
+    }, parentTitle);
+  });
+
+  test.fixme('project index should invalidate when subtask projects field is modified', async () => {
+    // Issue #1423: Project index uses 30-second TTL instead of event-driven invalidation
+    //
+    // The ProjectSubtasksService.buildProjectIndex() only rebuilds when:
+    // - Component initialization
+    // - Time-based TTL expiration (30 seconds)
+    //
+    // It should also rebuild when:
+    // - EVENT_TASK_DELETED is emitted
+    // - A task's projects field is modified (subtask removed from project)
+    // - A file is deleted from the vault
+    const page = getPage();
+
+    // Create parent and subtask
+    const parentTitle = 'Issue1423 Index Test Parent';
+    const subtaskTitle = 'Issue1423 Index Test Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      await new Promise(r => setTimeout(r, 500));
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Verify parent is in project index
+    const isProjectBefore = await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.projectSubtasksService) return false;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parent) return false;
+
+      return plugin.projectSubtasksService.isTaskUsedAsProjectSync(parent.path);
+    }, parentTitle);
+
+    expect(isProjectBefore).toBe(true);
+
+    // Remove the subtask from the project (modify projects field, not delete)
+    await page.evaluate(async (subtaskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (subtask) {
+        // Update the subtask to remove projects
+        await plugin.taskService.updateTask(subtask.path, {
+          ...subtask,
+          projects: []
+        });
+      }
+    }, subtaskTitle);
+
+    await page.waitForTimeout(1000);
+
+    // BUG: Project index should immediately reflect that parent is no longer a project
+    // Currently it takes up to 30 seconds for the index to rebuild
+    const isProjectAfter = await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.projectSubtasksService) return true;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parent) return true;
+
+      return plugin.projectSubtasksService.isTaskUsedAsProjectSync(parent.path);
+    }, parentTitle);
+
+    // Should no longer be a project
+    expect(isProjectAfter).toBe(false);
+
+    // Cleanup
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+      if (parent) await plugin.taskService.deleteTask(parent.path);
+      if (subtask) await plugin.taskService.deleteTask(subtask.path);
+    }, { parentTitle, subtaskTitle });
+  });
+
+  test.fixme('task list view should refresh when subtask is deleted', async () => {
+    // Issue #1423: Task List view doesn't refresh subtasks on deletion
+    //
+    // Same bug manifests in Task List view - verifying this is a cross-view issue
+    // tied to the shared ProjectSubtasksService cache, not view-specific rendering
+    const page = getPage();
+
+    const parentTitle = 'Issue1423 TaskList Parent';
+    const subtaskTitle = 'Issue1423 TaskList Subtask';
+
+    await page.evaluate(async ({ parentTitle, subtaskTitle }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: parentTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+
+      await new Promise(r => setTimeout(r, 500));
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parentTask = allTasks.find((t: any) => t.title === parentTitle);
+      if (!parentTask) return;
+
+      const parentBasename = parentTask.path.replace(/^.*\//, '').replace('.md', '');
+      await plugin.taskService.createTask({
+        title: subtaskTitle,
+        status: 'todo',
+        priority: 'normal',
+        projects: [`[[${parentBasename}]]`]
+      });
+    }, { parentTitle, subtaskTitle });
+
+    await page.waitForTimeout(1000);
+
+    // Open task list view
+    await runCommand(page, 'Open tasks list');
+    await page.waitForTimeout(1500);
+
+    // Find and expand the parent
+    const parentCard = page.locator(`.task-card:has-text("${parentTitle}")`).first();
+    if (await parentCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await parentCard.hover();
+      await page.waitForTimeout(300);
+      const chevron = parentCard.locator('.task-card__chevron');
+      if (await chevron.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await chevron.click();
+        await page.waitForTimeout(500);
+      }
+
+      // Verify subtask is visible
+      const subtasksContainer = parentCard.locator('.task-card__subtasks');
+      const subtaskCard = subtasksContainer.locator(`.task-card:has-text("${subtaskTitle}")`);
+      await expect(subtaskCard).toBeVisible({ timeout: 3000 });
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1423-tasklist-before-delete.png' });
+
+      // Delete the subtask
+      await page.evaluate(async (subtaskTitle) => {
+        // @ts-ignore - Obsidian global
+        const app = (window as any).app;
+        const plugin = app?.plugins?.plugins?.['tasknotes'];
+        if (!plugin?.taskService) return;
+
+        const allTasks = plugin.taskService.getAllTasks() || [];
+        const subtask = allTasks.find((t: any) => t.title === subtaskTitle);
+        if (subtask) {
+          await plugin.taskService.deleteTask(subtask.path);
+        }
+      }, subtaskTitle);
+
+      await page.waitForTimeout(1000);
+
+      await page.screenshot({ path: 'test-results/screenshots/issue-1423-tasklist-after-delete.png' });
+
+      // BUG: Subtask should no longer be visible in the task list view
+      await expect(subtaskCard).not.toBeVisible({ timeout: 3000 });
+    }
+
+    // Cleanup
+    await page.evaluate(async (parentTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const parent = allTasks.find((t: any) => t.title === parentTitle);
+      if (parent) await plugin.taskService.deleteTask(parent.path);
+    }, parentTitle);
+  });
+});
+
+// Issue #1425: [FR] Auto-Refresh Calendar Upon Edit to Time Entries
+// https://github.com/anthropics/tasknotes/issues/1425
+//
+// Feature Request:
+// When (a) users select `Save` after editing the Time Entries for a task, and
+// (b) upon completing a Pomodoro Session, the Advanced Calendar should automatically
+// update if it is presently open.
+//
+// Current behavior:
+// - Time entry edits trigger EVENT_TASK_UPDATED but calendar uses 5-second debounce
+// - Pomodoro completion triggers EVENT_TASK_UPDATED via stopTimeTracking() but
+//   the calendar does not listen to EVENT_POMODORO_COMPLETE specifically
+// - User-initiated actions should use expectImmediateUpdate() but currently don't
+//
+// Expected behavior:
+// - Calendar should refresh immediately (not after 5-second debounce) when:
+//   1. User saves time entries via Time Entry Editor modal
+//   2. A Pomodoro session completes (work session ends, creating a time entry)
+test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro updates', () => {
+  // Helper to open calendar view
+  async function openCalendarView(page: Page): Promise<void> {
+    await ensureSidebarExpanded(page);
+
+    // First expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isTasknotesCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isTasknotesCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Then expand Views folder if collapsed
+    const viewsFolder = page.locator('.nav-folder-title').filter({ hasText: /^Views$/ });
+    if (await viewsFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = viewsFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isViewsCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isViewsCollapsed) {
+        await viewsFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Click on calendar-default.base file to open it
+    const calendarFile = page.locator('.nav-file-title').filter({ hasText: /calendar-default/ }).first();
+    await calendarFile.click();
+    await page.waitForTimeout(1000);
+
+    // Wait for calendar to be rendered
+    await expect(page.locator('.fc-view-harness')).toBeVisible({ timeout: 10000 });
+  }
+
+  test.fixme('calendar should refresh immediately when time entries are saved', async () => {
+    // Issue #1425: Time entry edits should trigger immediate calendar refresh
+    //
+    // Steps to reproduce:
+    // 1. Create a task with no time entries
+    // 2. Open Advanced Calendar view
+    // 3. Open Time Entry Editor for the task
+    // 4. Add a time entry for today
+    // 5. Save the time entries
+    //
+    // Expected: Calendar should show the new time entry event immediately
+    // Actual: Calendar waits up to 5 seconds (debounce) before showing the entry
+    const page = getPage();
+
+    // Create a test task
+    const taskTitle = 'Issue1425 Time Entry Test';
+    const now = new Date();
+
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: taskTitle,
+        status: 'todo',
+        priority: 'normal',
+        timeEntries: [] // No time entries initially
+      });
+    }, taskTitle);
+
+    await page.waitForTimeout(500);
+
+    // Open calendar view
+    await openCalendarView(page);
+
+    // The calendar should NOT show any time entry events for this task yet
+    let timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    await expect(timeEntryEvent).not.toBeVisible({ timeout: 2000 });
+
+    // Add a time entry via the Time Entry Editor
+    // (In practice, we'd open the context menu and click "Edit Time Entries")
+    // For this test, we'll add the time entry directly via the API
+    await page.evaluate(async ({ taskTitle, now }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (!task) return;
+
+      // Simulate what TimeEntryEditorModal does when saving
+      const startTime = new Date(now);
+      startTime.setHours(startTime.getHours() - 1);
+      const endTime = new Date(now);
+
+      const timeEntry = {
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        duration: 60, // 1 hour
+        description: 'Test time entry'
+      };
+
+      await plugin.taskService.updateTask(task, {
+        timeEntries: [timeEntry]
+      });
+
+      // The code in main.ts also triggers EVENT_DATA_CHANGED after updateTask
+      // This should cause calendar to refresh
+      plugin.emitter.trigger('data-changed');
+    }, { taskTitle, now: now.toISOString() });
+
+    // Take screenshot before waiting for debounce
+    await page.screenshot({ path: 'test-results/screenshots/issue-1425-before-refresh.png' });
+
+    // BUG: The calendar should refresh IMMEDIATELY (within 1-2 seconds)
+    // but due to the 5-second debounce, we have to wait longer
+    // This test documents the bug - it should pass once fixed
+    timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+
+    // The fix would call expectImmediateUpdate() before saving time entries
+    // so the calendar bypasses the 5-second debounce
+    await expect(timeEntryEvent).toBeVisible({ timeout: 2000 });
+
+    // Cleanup
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (task) await plugin.taskService.deleteTask(task.path);
+    }, taskTitle);
+  });
+
+  test.fixme('calendar should refresh immediately when pomodoro session completes', async () => {
+    // Issue #1425: Pomodoro completion should trigger immediate calendar refresh
+    //
+    // Steps to reproduce:
+    // 1. Create a task
+    // 2. Open Advanced Calendar view
+    // 3. Start a Pomodoro session for the task
+    // 4. Complete the Pomodoro session (or let timer run out)
+    //
+    // Expected: Calendar should show the new time entry from the Pomodoro immediately
+    // Actual: Calendar may take up to 5 seconds to refresh, or may not refresh at all
+    //         if the calendar doesn't listen to EVENT_POMODORO_COMPLETE
+    const page = getPage();
+
+    // Create a test task
+    const taskTitle = 'Issue1425 Pomodoro Test';
+
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      await plugin.taskService.createTask({
+        title: taskTitle,
+        status: 'todo',
+        priority: 'normal'
+      });
+    }, taskTitle);
+
+    await page.waitForTimeout(500);
+
+    // Open calendar view
+    await openCalendarView(page);
+
+    // No time entry events should exist for this task yet
+    let timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    await expect(timeEntryEvent).not.toBeVisible({ timeout: 2000 });
+
+    // Simulate a completed Pomodoro session
+    // In practice, this would happen after 25 minutes, but we can simulate the
+    // end result which is a time entry being added to the task
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService || !plugin?.pomodoroService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (!task) return;
+
+      // Simulate what PomodoroService.completePomodoro() does:
+      // 1. It calls stopTimeTracking which adds a time entry
+      // 2. It triggers EVENT_POMODORO_COMPLETE
+      const now = new Date();
+      const startTime = new Date(now.getTime() - 25 * 60 * 1000); // 25 min ago
+
+      const timeEntry = {
+        startTime: startTime.toISOString(),
+        endTime: now.toISOString(),
+        duration: 25,
+        description: 'Pomodoro session'
+      };
+
+      await plugin.taskService.updateTask(task, {
+        timeEntries: [timeEntry]
+      });
+
+      // Trigger the pomodoro complete event (which calendar doesn't currently listen to)
+      plugin.emitter.trigger('pomodoro-complete', {
+        session: {
+          type: 'work',
+          taskPath: task.path,
+          completed: true,
+          startTime: startTime.toISOString(),
+          endTime: now.toISOString()
+        },
+        nextType: 'short-break'
+      });
+    }, taskTitle);
+
+    // Take screenshot
+    await page.screenshot({ path: 'test-results/screenshots/issue-1425-pomodoro-complete.png' });
+
+    // BUG: The calendar should refresh IMMEDIATELY after pomodoro completion
+    // Currently it either waits for debounce or doesn't respond to EVENT_POMODORO_COMPLETE
+    timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+
+    // The fix would be to:
+    // 1. Have CalendarView listen to EVENT_POMODORO_COMPLETE
+    // 2. Call expectImmediateUpdate() when receiving that event
+    // OR
+    // 1. Have PomodoroService trigger EVENT_DATA_CHANGED after stopTimeTracking
+    // 2. Have the calendar recognize this as a user-initiated action
+    await expect(timeEntryEvent).toBeVisible({ timeout: 2000 });
+
+    // Cleanup
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (task) await plugin.taskService.deleteTask(task.path);
+    }, taskTitle);
+  });
+
+  test.fixme('calendar should show time entry toggle enabled to see time entry events', async () => {
+    // Issue #1425: Prerequisite - verify time entries are visible in calendar
+    //
+    // This test verifies that the calendar's "Show Time Entries" toggle is working
+    // and time entry events can be displayed. This is a prerequisite for the
+    // auto-refresh feature.
+    const page = getPage();
+
+    // Create a test task with a time entry
+    const taskTitle = 'Issue1425 Toggle Test';
+    const now = new Date();
+
+    await page.evaluate(async ({ taskTitle, now }) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const startTime = new Date(now);
+      startTime.setHours(startTime.getHours() - 1);
+      const endTime = new Date(now);
+
+      await plugin.taskService.createTask({
+        title: taskTitle,
+        status: 'todo',
+        priority: 'normal',
+        timeEntries: [{
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          duration: 60,
+          description: 'Existing time entry'
+        }]
+      });
+    }, { taskTitle, now: now.toISOString() });
+
+    await page.waitForTimeout(500);
+
+    // Open calendar view
+    await openCalendarView(page);
+
+    // Wait for calendar to fully load
+    await page.waitForTimeout(2000);
+
+    // Check if "Show Time Entries" toggle exists and is enabled
+    // The calendar config should have showTimeEntries option
+    const timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+
+    // If time entries toggle is enabled, the event should be visible
+    // (after accounting for the current date view)
+    await page.screenshot({ path: 'test-results/screenshots/issue-1425-toggle-test.png' });
+
+    // Note: This may fail if the calendar is not showing today's date by default
+    // or if showTimeEntries is disabled in the calendar config
+    await expect(timeEntryEvent).toBeVisible({ timeout: 5000 });
+
+    // Cleanup
+    await page.evaluate(async (taskTitle) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.taskService) return;
+
+      const allTasks = plugin.taskService.getAllTasks() || [];
+      const task = allTasks.find((t: any) => t.title === taskTitle);
+      if (task) await plugin.taskService.deleteTask(task.path);
+    }, taskTitle);
   });
 });

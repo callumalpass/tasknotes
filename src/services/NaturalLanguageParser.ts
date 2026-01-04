@@ -715,7 +715,8 @@ export class NaturalLanguageParser {
 				},
 			];
 
-			// Check for explicit triggers first
+			// Check for explicit triggers - process all triggers, not just the first one
+			let foundExplicitTrigger = false;
 			for (const triggerPattern of triggerPatterns) {
 				const match = workingText.match(triggerPattern.regex);
 				if (match) {
@@ -727,6 +728,7 @@ export class NaturalLanguageParser {
 					const chronoParsed = this.parseChronoFromPosition(remainingText);
 
 					if (chronoParsed.success) {
+						foundExplicitTrigger = true;
 						// Assign to the correct field based on trigger type
 						if (triggerPattern.type === "due") {
 							result.dueDate = chronoParsed.date;
@@ -746,9 +748,14 @@ export class NaturalLanguageParser {
 							workingText = workingText.replace(chronoParsed.matchedText, "");
 						}
 						workingText = this.cleanupWhitespace(workingText);
-						return workingText; // Early return after finding explicit trigger
+						// Continue processing to find additional triggers (Issue #1421)
 					}
 				}
+			}
+
+			// Return early if we found explicit triggers - no need for implicit parsing
+			if (foundExplicitTrigger) {
+				return workingText;
 			}
 
 			// If no explicit triggers found, parse all remaining dates with context

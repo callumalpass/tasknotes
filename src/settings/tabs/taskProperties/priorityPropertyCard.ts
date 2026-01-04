@@ -270,13 +270,13 @@ function renderPriorityList(
 			},
 		});
 
-		valueInput.addEventListener("change", () => {
+		valueInput.addEventListener("input", () => {
 			priority.value = valueInput.value;
 			save();
 			if (onPrioritiesChanged) onPrioritiesChanged();
 		});
 
-		labelInput.addEventListener("change", () => {
+		labelInput.addEventListener("input", () => {
 			priority.label = labelInput.value;
 			card.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
 				priority.label || priority.value || "untitled";

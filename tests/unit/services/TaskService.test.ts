@@ -293,12 +293,11 @@ describe('TaskService', () => {
       );
     });
 
-    // Issue #1334: Support {{currentNotePath}} for manual-creation context (Create new inline task command)
-    // Currently, only 'inline-conversion' supports {{currentNotePath}}. This test documents the expected
-    // behavior when the feature is implemented for the 'Create new inline task' command.
-    it('should handle manual-creation context with currentNotePath variable (#1334)', async () => {
-      // When the feature is implemented, inlineTaskConvertFolder should apply to both
-      // 'inline-conversion' and 'manual-creation' contexts when the task is being created inline
+    // Issue #1334: Support {{currentNotePath}} for modal-inline-creation context (Create new inline task command)
+    // The 'Create New Inline Task' command now uses 'modal-inline-creation' context (fixed in #1424)
+    // to distinguish it from 'manual-creation' (Create New Task command).
+    it('should handle modal-inline-creation context with currentNotePath variable (#1334)', async () => {
+      // modal-inline-creation uses inlineTaskConvertFolder with variable support
       mockPlugin.settings.inlineTaskConvertFolder = 'Tasks/{{currentNotePath}}';
 
       const mockCurrentFile = new TFile('Projects/MyProject/note.md');
@@ -306,17 +305,102 @@ describe('TaskService', () => {
       mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
 
       const taskData: TaskCreationData = {
-        title: 'Manual Inline Task',
-        creationContext: 'manual-creation' // This is what TaskCreationModal uses
+        title: 'Modal Inline Task',
+        creationContext: 'modal-inline-creation' // Create New Inline Task command uses this
       };
 
       await taskService.createTask(taskData);
 
-      // Currently this will create the task in the default tasksFolder, not respecting {{currentNotePath}}
-      // When #1334 is fixed, manual-creation should also respect inlineTaskConvertFolder with {{currentNotePath}}
+      // modal-inline-creation respects inlineTaskConvertFolder with {{currentNotePath}}
       expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
-        'Tasks/Projects/MyProject/manual-inline-task.md',
-        expect.stringContaining('title: Manual Inline Task')
+        'Tasks/Projects/MyProject/modal-inline-task.md',
+        expect.stringContaining('title: Modal Inline Task')
+      );
+    });
+
+    // Issue #1424: Create New Task command should use default task folder (tasksFolder), not inlineTaskConvertFolder
+    // The "Create New Task" command (via TaskCreationModal) should create tasks in the configured default folder,
+    // NOT in the active folder. Fixed by introducing 'modal-inline-creation' context for Create New Inline Task.
+    //
+    // The distinction:
+    // - "Create New Task" command: Uses 'manual-creation' -> tasksFolder (default task folder setting)
+    // - "Create New Inline Task" command: Uses 'modal-inline-creation' -> inlineTaskConvertFolder with {{currentNotePath}} support
+    // - Checkbox conversion: Uses 'inline-conversion' -> inlineTaskConvertFolder with {{currentNotePath}} support
+    it('should use default task folder for Create New Task command, not inlineTaskConvertFolder (#1424)', async () => {
+      // Configure both folders - this is the scenario described in the bug
+      mockPlugin.settings.tasksFolder = 'TaskNotes/Tasks';  // Default folder setting
+      mockPlugin.settings.inlineTaskConvertFolder = '{{currentNotePath}}';  // Inline conversion setting
+
+      // User has a note open somewhere else
+      const mockCurrentFile = new TFile('Projects/MyProject/meeting-notes.md');
+      mockCurrentFile.parent = { path: 'Projects/MyProject' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      // TaskCreationModal (Create New Task command) sets creationContext: 'manual-creation'
+      const taskData: TaskCreationData = {
+        title: 'Buy groceries',
+        creationContext: 'manual-creation'
+      };
+
+      await taskService.createTask(taskData);
+
+      // FIXED: Now correctly creates in 'TaskNotes/Tasks/buy-groceries.md' (default folder)
+      // Previously incorrectly created in 'Projects/MyProject/buy-groceries.md' (active folder)
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'TaskNotes/Tasks/buy-groceries.md',
+        expect.stringContaining('title: Buy groceries')
+      );
+    });
+
+    // Additional test to clarify the expected behavior difference between command types
+    it('should still use inlineTaskConvertFolder for inline-conversion context (#1424)', async () => {
+      // Configure both folders
+      mockPlugin.settings.tasksFolder = 'TaskNotes/Tasks';  // Default folder setting
+      mockPlugin.settings.inlineTaskConvertFolder = '{{currentNotePath}}';  // Inline conversion setting
+
+      // User has a note open
+      const mockCurrentFile = new TFile('Projects/MyProject/meeting-notes.md');
+      mockCurrentFile.parent = { path: 'Projects/MyProject' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      // Inline conversion (checkbox to task) sets creationContext: 'inline-conversion'
+      const taskData: TaskCreationData = {
+        title: 'Review proposal',
+        creationContext: 'inline-conversion'
+      };
+
+      await taskService.createTask(taskData);
+
+      // Inline conversion SHOULD use inlineTaskConvertFolder with {{currentNotePath}}
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Projects/MyProject/review-proposal.md',
+        expect.stringContaining('title: Review proposal')
+      );
+    });
+
+    // Test for modal-inline-creation context (Create New Inline Task command)
+    it('should use inlineTaskConvertFolder for modal-inline-creation context (#1424)', async () => {
+      // Configure both folders
+      mockPlugin.settings.tasksFolder = 'TaskNotes/Tasks';  // Default folder setting
+      mockPlugin.settings.inlineTaskConvertFolder = '{{currentNotePath}}';  // Inline conversion setting
+
+      // User has a note open
+      const mockCurrentFile = new TFile('Projects/MyProject/meeting-notes.md');
+      mockCurrentFile.parent = { path: 'Projects/MyProject' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      // Create New Inline Task command sets creationContext: 'modal-inline-creation'
+      const taskData: TaskCreationData = {
+        title: 'Follow up on meeting',
+        creationContext: 'modal-inline-creation'
+      };
+
+      await taskService.createTask(taskData);
+
+      // modal-inline-creation uses inlineTaskConvertFolder with {{currentNotePath}}
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Projects/MyProject/follow-up-on-meeting.md',
+        expect.stringContaining('title: Follow up on meeting')
       );
     });
 

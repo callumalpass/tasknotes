@@ -47,8 +47,8 @@ export class TasksPluginParser {
 		RECURRENCE: /🔁\s*([^📅⏳🛫➕✅⏫🔼⏬🔁#]+?)(?=\s*[📅⏳🛫➕✅⏫🔼⏬🔁#]|$)/gu,
 	};
 
-	// Tag pattern for hashtags
-	private static readonly TAG_PATTERN = /#[\w/]+/g;
+	// Tag pattern for hashtags (includes hyphens for tags like #my-tag)
+	private static readonly TAG_PATTERN = /#[\w/-]+/g;
 
 	// Checkbox pattern for markdown tasks (supports both bullet points and numbered lists)
 	private static readonly CHECKBOX_PATTERN = /^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+)(.*)/;

@@ -94,7 +94,24 @@ const mockChrono = {
         new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3])) },
       { regex: /(\d{1,2})\/(\d{1,2})\/(\d{4})/i, dateFn: (match: RegExpMatchArray) =>
         new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2])) },
+      // Month name patterns (e.g., "Jan 9", "January 15")
+      { regex: /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})\b/i,
+        dateFn: (match: RegExpMatchArray) => {
+          const monthNames: { [key: string]: number } = {
+            jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3,
+            may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7, sep: 8, sept: 8, september: 8,
+            oct: 9, october: 9, nov: 10, november: 10, dec: 11, december: 11
+          };
+          const month = monthNames[match[1].toLowerCase()];
+          const day = parseInt(match[2]);
+          const year = new Date().getFullYear();
+          return new Date(year, month, day);
+        }
+      },
     ];
+
+    // Track all matches with their positions to find all date expressions
+    const allMatches: Array<{ pattern: typeof patterns[0], match: RegExpMatchArray, targetDate: Date }> = [];
 
     for (const pattern of patterns) {
       const match = text.match(pattern.regex);
@@ -120,23 +137,28 @@ const mockChrono = {
           targetDate.setHours(hour, 0, 0, 0);
         }
 
-        // Determine certain components based on pattern
-        let certainComponents: string[] = ['year', 'month', 'day'];
-        if (pattern.timeFn || pattern.regex.toString().includes('am|pm')) {
-          certainComponents.push('hour', 'minute');
-        }
-
-        results.push(createMockParsedResult(
-          match[0], // This now includes the full match like "tomorrow at 3pm"
-          targetDate,
-          match.index || 0,
-          undefined,
-          certainComponents
-        ));
-
-        // Return first match only (like real chrono-node)
-        break;
+        allMatches.push({ pattern, match, targetDate });
       }
+    }
+
+    // Sort matches by position in text (like real chrono-node)
+    allMatches.sort((a, b) => (a.match.index || 0) - (b.match.index || 0));
+
+    // Add results in order of appearance
+    for (const { pattern, match, targetDate } of allMatches) {
+      // Determine certain components based on pattern
+      let certainComponents: string[] = ['year', 'month', 'day'];
+      if (pattern.timeFn || pattern.regex.toString().includes('am|pm')) {
+        certainComponents.push('hour', 'minute');
+      }
+
+      results.push(createMockParsedResult(
+        match[0],
+        targetDate,
+        match.index || 0,
+        undefined,
+        certainComponents
+      ));
     }
     
     return results;

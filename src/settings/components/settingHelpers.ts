@@ -366,19 +366,36 @@ export function createListHeaders(
 }
 
 /**
+ * Debounced function interface with flush capability
+ */
+export interface DebouncedFunction<T extends (...args: any[]) => any> {
+	(...args: Parameters<T>): void;
+	/** Immediately execute any pending debounced call */
+	flush: () => void;
+}
+
+/**
  * Debounce function for reducing save calls
+ * Returns a debounced function with a flush() method to immediately execute pending calls
  */
 export function debounce<T extends (...args: any[]) => any>(
 	func: T,
 	wait: number,
 	immediate = false
-): (...args: Parameters<T>) => void {
+): DebouncedFunction<T> {
 	let timeout: ReturnType<typeof setTimeout> | undefined;
+	let lastArgs: Parameters<T> | undefined;
+	let lastThis: any;
 
-	return function (this: any, ...args: Parameters<T>) {
+	const debounced = function (this: any, ...args: Parameters<T>) {
+		lastArgs = args;
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		lastThis = this;
+
 		const later = () => {
 			timeout = undefined;
-			if (!immediate) func.apply(this, args);
+			lastArgs = undefined;
+			if (!immediate) func.apply(lastThis, args);
 		};
 
 		const callNow = immediate && !timeout;
@@ -386,5 +403,16 @@ export function debounce<T extends (...args: any[]) => any>(
 		timeout = setTimeout(later, wait);
 
 		if (callNow) func.apply(this, args);
+	} as DebouncedFunction<T>;
+
+	debounced.flush = () => {
+		if (timeout && lastArgs) {
+			clearTimeout(timeout);
+			timeout = undefined;
+			func.apply(lastThis, lastArgs);
+			lastArgs = undefined;
+		}
 	};
+
+	return debounced;
 }
