@@ -254,6 +254,7 @@
     transition: all var(--tn-transition-fast);
     position: relative;
     box-shadow: none;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__status-dot:hover {
@@ -354,6 +355,7 @@
     transition: all var(--tn-transition-fast);
     border-radius: var(--tn-radius-sm);
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__recurring-indicator:hover {
@@ -389,6 +391,7 @@
     justify-content: center;
     border-radius: var(--tn-radius-sm);
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__reminder-indicator:hover {
@@ -414,6 +417,7 @@
     border-radius: var(--tn-radius-sm);
     transition: all var(--tn-transition-fast);
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__project-indicator:hover {
@@ -439,6 +443,13 @@
     border-radius: var(--tn-radius-sm);
     transition: all var(--tn-transition-fast);
     flex-shrink: 0;
+    cursor: pointer;
+    order: 10;
+}
+
+/* Always show chevron for project tasks when on the right */
+.tasknotes-plugin .task-card--project:not(.task-card--chevron-left) .task-card__chevron {
+    opacity: 1;
 }
 
 .tasknotes-plugin .task-card__chevron:hover {
@@ -484,6 +495,7 @@
     transition: color var(--tn-transition-fast), background var(--tn-transition-fast), opacity var(--tn-transition-fast);
     border-radius: var(--tn-radius-sm);
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__blocking-toggle:hover {
@@ -632,6 +644,7 @@
     border-radius: var(--tn-radius-sm);
     flex-shrink: 0;
     margin-left: auto;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__context-menu:hover {
@@ -663,6 +676,7 @@
 .tasknotes-plugin .task-card__priority-dot {
     transition: all var(--tn-transition-fast);
     box-shadow: none;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__priority-dot:hover {
@@ -676,6 +690,7 @@
     padding: 3px 6px;
     margin: -3px -6px;
     position: relative;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__metadata-date:hover {
@@ -1088,6 +1103,19 @@
     box-shadow: none;
 }
 
+.tasknotes-plugin .task-card--subtask.task-card--subtask-status-strip::after {
+    content: "";
+    position: absolute;
+    right: var(--tn-spacing-xs);
+    top: var(--tn-spacing-xs);
+    bottom: var(--tn-spacing-xs);
+    width: 2px;
+    border-radius: var(--tn-radius-xs);
+    background-color: var(--current-status-color, var(--tn-border-color));
+    opacity: 0.7;
+    pointer-events: none;
+}
+
 .tasknotes-plugin .task-card--layout-inline[draggable="true"]:active {
     cursor: default;
     transform: none;
@@ -1104,6 +1132,12 @@
 .tasknotes-plugin .task-card--layout-inline .task-card__main-row {
     display: inline !important;
     vertical-align: baseline;
+}
+
+/* Inline layout: indicate the title is clickable (opens task dialog) */
+.tasknotes-plugin .task-card--layout-inline .task-card__title,
+.tasknotes-plugin .task-card--layout-inline .task-card__title-text {
+    cursor: pointer;
 }
 
 /* Content in inline mode - horizontal, truncated */

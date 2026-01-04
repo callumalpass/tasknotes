@@ -253,6 +253,42 @@ describe('TaskCard Component', () => {
       expect(titleEl?.textContent).toBe(task.title);
     });
 
+    it('should persist rendering options to dataset', () => {
+      const task = TaskFactory.createTask();
+      const options: Partial<TaskCardOptions> = {
+        hideStatusIndicator: true,
+        groupedByStatus: true,
+        noteWidget: true
+      };
+
+      const card = createTaskCard(task, mockPlugin, undefined, options);
+
+      expect(card.dataset.hideStatusIndicator).toBe('true');
+      expect(card.dataset.groupedByStatus).toBe('true');
+      expect(card.dataset.noteWidget).toBe('true');
+    });
+
+    it('should add status strip class when grouped by status and status hidden', () => {
+      const task = TaskFactory.createTask({ status: 'open' });
+      const options: Partial<TaskCardOptions> = { groupedByStatus: true };
+
+      const card = createTaskCard(task, mockPlugin, ['title'], options);
+
+      expect(card.classList.contains('task-card--subtask-status-strip')).toBe(true);
+    });
+
+    it('should not add status strip class when status is visible', () => {
+      const task = TaskFactory.createTask({ status: 'open' });
+      mockPlugin.fieldMapper.isPropertyForField.mockImplementation(
+        (propertyId: string) => propertyId === 'status'
+      );
+      const options: Partial<TaskCardOptions> = { groupedByStatus: true };
+
+      const card = createTaskCard(task, mockPlugin, ['status'], options);
+
+      expect(card.classList.contains('task-card--subtask-status-strip')).toBe(false);
+    });
+
     it.skip('should create task card with checkbox when enabled', () => {
       const task = TaskFactory.createTask({ status: 'done' });
       const options: Partial<TaskCardOptions> = { showCheckbox: true };
@@ -545,6 +581,27 @@ describe('TaskCard Component', () => {
       );
     });
 
+    it('should restore note widget class from dataset when recurring status updates', async () => {
+      const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
+      mockPlugin.fieldMapper.isPropertyForField.mockImplementation(
+        (prop: string, field: string) => prop === field
+      );
+      mockPlugin.toggleRecurringTaskComplete.mockResolvedValue({
+        ...recurringTask,
+        status: 'done'
+      });
+
+      const recurringCard = createTaskCard(recurringTask, mockPlugin, undefined, { noteWidget: true });
+      recurringCard.classList.remove('task-card--note-widget');
+
+      const statusDot = recurringCard.querySelector('.task-card__status-dot') as HTMLElement;
+      statusDot.click();
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(recurringCard.classList.contains('task-card--note-widget')).toBe(true);
+    });
+
     it('should handle context menu icon click', async () => {
       const contextIcon = card.querySelector('.task-card__context-menu') as HTMLElement;
       const mockEvent = new MouseEvent('click', { bubbles: true });
@@ -696,6 +753,24 @@ describe('TaskCard Component', () => {
 
       const priorityDot = cardWithoutPriority.querySelector('.task-card__priority-dot');
       expect(priorityDot).toBeTruthy();
+    });
+
+    it('should update rendering options in dataset', () => {
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        title: 'Updated Task',
+        status: 'open'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin, undefined, {
+        hideStatusIndicator: true,
+        groupedByStatus: true,
+        noteWidget: true
+      });
+
+      expect(card.dataset.hideStatusIndicator).toBe('true');
+      expect(card.dataset.groupedByStatus).toBe('true');
+      expect(card.dataset.noteWidget).toBe('true');
     });
 
     it('should remove priority indicator when task loses priority', () => {

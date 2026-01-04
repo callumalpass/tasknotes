@@ -12,3 +12,28 @@
     /* Reset margins for the inner task card */
     margin: 0 !important;
 }
+
+.task-card--note-widget .task-card__status-dot {
+    display: none;
+}
+
+.task-card--note-widget .task-card__status-dot--icon {
+    display: inline-flex;
+}
+
+.task-card--note-widget::after {
+    content: "";
+    position: absolute;
+    right: var(--tn-spacing-xs);
+    top: var(--tn-spacing-xs);
+    bottom: var(--tn-spacing-xs);
+    width: 2px;
+    border-radius: var(--tn-radius-xs);
+    background-color: var(--current-status-color, var(--tn-border-color));
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.task-card--note-widget.task-card--status-icon::after {
+    display: none;
+}

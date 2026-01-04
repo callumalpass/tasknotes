@@ -63,7 +63,8 @@ import { Extension } from "@codemirror/state";
 
 import TaskNotesPlugin from "../main";
 import { createTaskCard } from "../ui/TaskCard";
-import { convertInternalToUserProperties } from "../utils/propertyMapping";
+import { convertInternalToUserProperties, isPropertyForField } from "../utils/propertyMapping";
+import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 
 // CSS class for identifying plugin-generated elements
 const CSS_TASK_CARD_WIDGET = 'tasknotes-task-card-note-widget';
@@ -97,12 +98,21 @@ function createTaskCardWidget(
 	container.component = component;
 
 	// Get the visible properties from settings and convert internal names to user-configured names
-	const visibleProperties = plugin.settings.defaultVisibleProperties
+	const internalDefaults = [
+		...DEFAULT_INTERNAL_VISIBLE_PROPERTIES,
+		"tags",
+		"blocked",
+		"blocking",
+	];
+	const baseVisibleProperties = plugin.settings.defaultVisibleProperties
 		? convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin)
-		: undefined;
+		: convertInternalToUserProperties(internalDefaults, plugin);
+	const visibleProperties = baseVisibleProperties.filter(
+		(prop) => !isPropertyForField(prop, "status", plugin)
+	);
 
 	// Create the task card
-	const taskCard = createTaskCard(task, plugin, visibleProperties);
+	const taskCard = createTaskCard(task, plugin, visibleProperties, { noteWidget: true });
 
 	// Add specific styling for the note widget
 	taskCard.classList.add("task-card-note-widget__card");
