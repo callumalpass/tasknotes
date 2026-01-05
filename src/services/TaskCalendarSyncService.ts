@@ -4,6 +4,12 @@ import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
 import { TaskInfo } from "../types";
 
+/** Debounce delay for rapid task updates (ms) */
+const SYNC_DEBOUNCE_MS = 500;
+
+/** Max concurrent API calls during bulk sync to avoid rate limits */
+const SYNC_CONCURRENCY_LIMIT = 5;
+
 /**
  * Service for syncing TaskNotes tasks to Google Calendar.
  * Handles creating, updating, and deleting calendar events when tasks change.
@@ -12,9 +18,49 @@ export class TaskCalendarSyncService {
 	private plugin: TaskNotesPlugin;
 	private googleCalendarService: GoogleCalendarService;
 
+	/** Debounce timers for pending syncs, keyed by task path */
+	private pendingSyncs: Map<string, ReturnType<typeof setTimeout>> = new Map();
+
+	/** In-flight sync operations to prevent concurrent syncs for the same task */
+	private inFlightSyncs: Map<string, Promise<void>> = new Map();
+
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
+	}
+
+	/**
+	 * Clean up pending timers (call on plugin unload)
+	 */
+	destroy(): void {
+		for (const timer of this.pendingSyncs.values()) {
+			clearTimeout(timer);
+		}
+		this.pendingSyncs.clear();
+	}
+
+	/**
+	 * Process items in parallel with a concurrency limit.
+	 * Executes up to SYNC_CONCURRENCY_LIMIT operations simultaneously.
+	 */
+	private async processInParallel<T>(
+		items: T[],
+		processor: (item: T) => Promise<void>
+	): Promise<void> {
+		const executing: Promise<void>[] = [];
+
+		for (const item of items) {
+			const promise = processor(item).then(() => {
+				executing.splice(executing.indexOf(promise), 1);
+			});
+			executing.push(promise);
+
+			if (executing.length >= SYNC_CONCURRENCY_LIMIT) {
+				await Promise.race(executing);
+			}
+		}
+
+		await Promise.all(executing);
 	}
 
 	/**
@@ -292,8 +338,10 @@ export class TaskCalendarSyncService {
 		// If user prefers all-day events, convert timed to all-day
 		let start: { date?: string; dateTime?: string; timeZone?: string };
 		if (settings.createAsAllDay && !startInfo.isAllDay) {
-			// Convert to all-day
-			const dateOnly = eventDate.split("T")[0];
+			// Convert to all-day - use local date to handle timezone correctly
+			// e.g., "2024-01-15T23:00:00" in UTC+5 should become "2024-01-16" not "2024-01-15"
+			const localDate = new Date(eventDate);
+			const dateOnly = format(localDate, "yyyy-MM-dd");
 			start = { date: dateOnly };
 		} else if (startInfo.isAllDay) {
 			start = { date: startInfo.date };
@@ -408,13 +456,61 @@ export class TaskCalendarSyncService {
 	}
 
 	/**
-	 * Update a task in Google Calendar when it changes
+	 * Update a task in Google Calendar when it changes.
+	 * Debounced to prevent rapid-fire API calls during quick successive edits.
 	 */
 	async updateTaskInCalendar(task: TaskInfo, previous?: TaskInfo): Promise<void> {
 		if (!this.plugin.settings.googleCalendarExport.syncOnTaskUpdate) {
 			return;
 		}
 
+		const taskPath = task.path;
+
+		// Cancel any pending debounced sync for this task
+		const existingTimer = this.pendingSyncs.get(taskPath);
+		if (existingTimer) {
+			clearTimeout(existingTimer);
+		}
+
+		// Return a promise that resolves when the debounced sync completes
+		return new Promise((resolve, reject) => {
+			const timer = setTimeout(async () => {
+				this.pendingSyncs.delete(taskPath);
+
+				// Wait for any in-flight sync to complete before starting a new one
+				const inFlight = this.inFlightSyncs.get(taskPath);
+				if (inFlight) {
+					await inFlight.catch(() => {}); // Ignore errors from previous sync
+				}
+
+				// Re-fetch the task to get the latest state after debounce
+				const freshTask = await this.plugin.cacheManager.getTaskInfo(taskPath);
+				if (!freshTask) {
+					resolve();
+					return;
+				}
+
+				const syncPromise = this.executeTaskUpdate(freshTask);
+				this.inFlightSyncs.set(taskPath, syncPromise);
+
+				try {
+					await syncPromise;
+					resolve();
+				} catch (error) {
+					reject(error);
+				} finally {
+					this.inFlightSyncs.delete(taskPath);
+				}
+			}, SYNC_DEBOUNCE_MS);
+
+			this.pendingSyncs.set(taskPath, timer);
+		});
+	}
+
+	/**
+	 * Internal method that performs the actual task update sync
+	 */
+	private async executeTaskUpdate(task: TaskInfo): Promise<void> {
 		const existingEventId = this.getTaskEventId(task);
 
 		// If task no longer meets sync criteria, delete the event
@@ -523,7 +619,8 @@ export class TaskCalendarSyncService {
 	// and moves with the file automatically when renamed/moved
 
 	/**
-	 * Sync all tasks to Google Calendar (initial sync or resync)
+	 * Sync all tasks to Google Calendar (initial sync or resync).
+	 * Uses parallel execution with concurrency limits to improve performance.
 	 */
 	async syncAllTasks(): Promise<{ synced: number; failed: number; skipped: number }> {
 		const results = { synced: 0, failed: 0, skipped: 0 };
@@ -533,17 +630,22 @@ export class TaskCalendarSyncService {
 			return results;
 		}
 
-		const tasks = await this.plugin.cacheManager.getAllTasks();
-		const total = tasks.length;
+		const allTasks = await this.plugin.cacheManager.getAllTasks();
 
-		new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncingTasks", { total }));
-
-		for (const task of tasks) {
+		// Filter to only tasks that should be synced
+		const tasksToSync = allTasks.filter((task) => {
 			if (!this.shouldSyncTask(task)) {
 				results.skipped++;
-				continue;
+				return false;
 			}
+			return true;
+		});
 
+		const total = allTasks.length;
+		new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncingTasks", { total }));
+
+		// Process tasks in parallel with concurrency limit
+		await this.processInParallel(tasksToSync, async (task) => {
 			try {
 				await this.syncTaskToCalendar(task);
 				results.synced++;
@@ -551,7 +653,7 @@ export class TaskCalendarSyncService {
 				results.failed++;
 				console.error(`[TaskCalendarSync] Failed to sync task ${task.path}:`, error);
 			}
-		}
+		});
 
 		new Notice(
 			this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncComplete", {

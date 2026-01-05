@@ -557,6 +557,11 @@ export class GoogleCalendarService extends CalendarProvider {
 			end?: string | { dateTime?: string; date?: string; timeZone?: string };
 			location?: string;
 			isAllDay?: boolean;
+			reminders?: {
+				useDefault: boolean;
+				overrides?: Array<{ method: string; minutes: number }>;
+			};
+			colorId?: string;
 		}
 	): Promise<ICSEvent> {
 		// Validate inputs
@@ -593,6 +598,12 @@ export class GoogleCalendarService extends CalendarProvider {
 			}
 			if (updates.location !== undefined) {
 				payload.location = updates.location;
+			}
+			if (updates.reminders !== undefined) {
+				payload.reminders = updates.reminders;
+			}
+			if (updates.colorId !== undefined) {
+				payload.colorId = updates.colorId;
 			}
 
 			// Handle start/end updates
@@ -695,6 +706,11 @@ export class GoogleCalendarService extends CalendarProvider {
 			end: string | { dateTime?: string; date?: string; timeZone?: string };
 			location?: string;
 			isAllDay?: boolean;
+			reminders?: {
+				useDefault: boolean;
+				overrides?: Array<{ method: string; minutes: number }>;
+			};
+			colorId?: string;
 		}
 	): Promise<ICSEvent> {
 		// Validate inputs
@@ -716,6 +732,16 @@ export class GoogleCalendarService extends CalendarProvider {
 				description: event.description,
 				location: event.location
 			};
+
+			// Add reminders if provided
+			if (event.reminders) {
+				payload.reminders = event.reminders;
+			}
+
+			// Add color if provided
+			if (event.colorId) {
+				payload.colorId = event.colorId;
+			}
 
 			// Handle start/end - could be string or object
 			if (typeof event.start === 'string') {
