@@ -8649,3 +8649,144 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
     }, taskTitle);
   });
 });
+
+// ============================================================================
+// ISSUE #1430: Incorrect Property ID After Customization
+// Bug: Modal Fields displays internal ID instead of customized property key
+// ============================================================================
+
+test.describe('Issue #1430: Modal Fields Property ID Display', () => {
+  test.fixme('should display property key instead of internal ID in Modal Fields tab', async () => {
+    // Issue #1430: When a user customizes a user field's Property Key,
+    // the Modal Fields tab still displays the internal ID (e.g., "field_1735011234")
+    // instead of the customized property key (e.g., "propID").
+    //
+    // Steps to reproduce:
+    // 1. Go to Settings > TaskNotes > Task Properties
+    // 2. Add a new user field
+    // 3. Set Display Name to "My Custom Field"
+    // 4. Set Property Key to "propID"
+    // 5. Go to Settings > TaskNotes > Modal Fields
+    // 6. Click the "Custom Fields" tab
+    // 7. Observe: The field shows "ID: field_xxxxx" instead of "Key: propID"
+    //
+    // Expected: Secondary text should show the property key "propID"
+    // Actual: Secondary text shows internal ID like "field_1735011234"
+    //
+    // Root cause: FieldManagerComponent.ts:187 displays `ID: ${field.id}` for all fields.
+    // For user fields, it should look up the property key from UserMappedField.
+
+    const page = getPage();
+    const testFieldName = 'TestField_1430';
+    const testPropertyKey = 'test_property_key_1430';
+
+    // Open settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal.mod-settings');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const tasknotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    await tasknotesTab.click();
+    await page.waitForTimeout(500);
+
+    // Click Task Properties tab
+    const taskPropertiesTab = page.locator('.mod-settings button:has-text("Task Properties")').first();
+    await taskPropertiesTab.click();
+    await page.waitForTimeout(500);
+
+    // Scroll down to find "Add user field" button
+    const settingsContent = page.locator('.mod-settings .vertical-tab-content');
+    await settingsContent.evaluate((el) => el.scrollTop = el.scrollHeight);
+    await page.waitForTimeout(300);
+
+    // Add a new user field
+    const addUserFieldButton = page.locator('button:has-text("Add user field")');
+    await addUserFieldButton.click();
+    await page.waitForTimeout(500);
+
+    // Find the newly created field card (last one)
+    const fieldCards = page.locator('.tasknotes-user-fields-container .tasknotes-settings__card');
+    const lastCard = fieldCards.last();
+
+    // Expand the card if collapsed
+    const chevron = lastCard.locator('.tasknotes-settings__card-chevron');
+    if (await chevron.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await chevron.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Fill in Display Name
+    const displayNameInput = lastCard.locator('input[placeholder*="Display name"], input[placeholder*="display name"]').first();
+    await displayNameInput.fill(testFieldName);
+    await page.waitForTimeout(200);
+
+    // Fill in Property Key
+    const propertyKeyInput = lastCard.locator('input[placeholder*="Property key"], input[placeholder*="property key"], input[placeholder*="Property name"]').first();
+    await propertyKeyInput.fill(testPropertyKey);
+    await page.waitForTimeout(200);
+
+    // Take screenshot of the configured field in Task Properties
+    await page.screenshot({ path: 'test-results/screenshots/issue-1430-task-properties-field.png' });
+
+    // Now navigate to Modal Fields tab
+    const modalFieldsTab = page.locator('.mod-settings button:has-text("Modal Fields")').first();
+    await modalFieldsTab.click();
+    await page.waitForTimeout(500);
+
+    // Click the Custom Fields group tab
+    const customFieldsTab = page.locator('.field-manager__tab:has-text("Custom")');
+    if (await customFieldsTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await customFieldsTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Take screenshot of Modal Fields tab
+    await page.screenshot({ path: 'test-results/screenshots/issue-1430-modal-fields-tab.png' });
+
+    // Find the card for our test field
+    const modalFieldCard = page.locator(`.field-manager__cards .tasknotes-settings__card:has-text("${testFieldName}")`);
+    await expect(modalFieldCard).toBeVisible({ timeout: 5000 });
+
+    // Get the secondary text (which shows the ID/key)
+    const secondaryText = modalFieldCard.locator('.tasknotes-settings__card-header-secondary');
+    const secondaryTextContent = await secondaryText.textContent();
+
+    // BUG: This assertion will fail because it shows internal ID instead of property key
+    // Expected: "Key: test_property_key_1430" or just "test_property_key_1430"
+    // Actual: "ID: field_xxxxx"
+    expect(secondaryTextContent).toContain(testPropertyKey);
+    expect(secondaryTextContent).not.toMatch(/ID: field_\d+/);
+
+    // Cleanup: Delete the test field
+    await page.keyboard.press('Escape'); // Close settings
+    await page.waitForTimeout(300);
+
+    // Remove the test field via plugin API
+    await page.evaluate(async (fieldName) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.settings?.userFields) return;
+
+      const fieldIndex = plugin.settings.userFields.findIndex(
+        (f: any) => f.displayName === fieldName
+      );
+      if (fieldIndex !== -1) {
+        const fieldId = plugin.settings.userFields[fieldIndex].id;
+        plugin.settings.userFields.splice(fieldIndex, 1);
+
+        // Also remove from modalFieldsConfig
+        if (plugin.settings.modalFieldsConfig?.fields) {
+          plugin.settings.modalFieldsConfig.fields = plugin.settings.modalFieldsConfig.fields.filter(
+            (f: any) => f.id !== fieldId
+          );
+        }
+
+        await plugin.saveSettings();
+      }
+    }, testFieldName);
+  });
+});
