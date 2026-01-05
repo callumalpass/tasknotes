@@ -911,6 +911,21 @@ export function renderIntegrationsTab(
 				})
 			);
 
+			// Default reminder minutes
+			group.addSetting((setting) =>
+				configureNumberSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.defaultReminder.name"),
+					desc: translate("settings.integrations.googleCalendarExport.defaultReminder.description"),
+					getValue: () => plugin.settings.googleCalendarExport.defaultReminderMinutes ?? 0,
+					setValue: async (value: number) => {
+						plugin.settings.googleCalendarExport.defaultReminderMinutes = value === 0 ? null : value;
+						save();
+					},
+					min: 0,
+					max: 40320, // 4 weeks in minutes (Google Calendar API limit)
+				})
+			);
+
 			// Sync behavior toggles - section header
 			group.addSetting((setting) => {
 				setting.setName(translate("settings.integrations.googleCalendarExport.automaticSyncBehavior.header"));

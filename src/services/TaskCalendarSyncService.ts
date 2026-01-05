@@ -278,6 +278,10 @@ export class TaskCalendarSyncService {
 		start: { date?: string; dateTime?: string; timeZone?: string };
 		end: { date?: string; dateTime?: string; timeZone?: string };
 		colorId?: string;
+		reminders?: {
+			useDefault: boolean;
+			overrides?: Array<{ method: string; minutes: number }>;
+		};
 	} | null {
 		const eventDate = this.getEventDate(task);
 		if (!eventDate) return null;
@@ -312,6 +316,10 @@ export class TaskCalendarSyncService {
 			start: { date?: string; dateTime?: string; timeZone?: string };
 			end: { date?: string; dateTime?: string; timeZone?: string };
 			colorId?: string;
+			reminders?: {
+				useDefault: boolean;
+				overrides?: Array<{ method: string; minutes: number }>;
+			};
 		} = {
 			summary: this.applyTitleTemplate(task),
 			start,
@@ -324,6 +332,14 @@ export class TaskCalendarSyncService {
 
 		if (settings.eventColorId) {
 			event.colorId = settings.eventColorId;
+		}
+
+		// Add reminder if configured
+		if (settings.defaultReminderMinutes !== null && settings.defaultReminderMinutes > 0) {
+			event.reminders = {
+				useDefault: false,
+				overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
+			};
 		}
 
 		return event;

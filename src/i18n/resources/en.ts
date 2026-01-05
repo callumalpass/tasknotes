@@ -1755,6 +1755,11 @@ export const en: TranslationTree = {
 					description:
 						"Add a link back to the task in Obsidian in the event description.",
 				},
+				defaultReminder: {
+					name: "Default Reminder",
+					description:
+						"Add a popup reminder to Google Calendar events. Set minutes before event (0 = no reminder). Common values: 15, 30, 60, 1440 (1 day).",
+				},
 				automaticSyncBehavior: {
 					header: "Automatic Sync Behavior",
 				},
