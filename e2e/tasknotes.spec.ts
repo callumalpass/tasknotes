@@ -7528,7 +7528,7 @@ test.describe('Issue #1293: Incomplete Task Rollover to Next Day', () => {
 // ============================================================================
 
 test.describe('Issue #1419: Custom statuses not saving', () => {
-  test.skip('should persist new custom status values after closing and reopening settings', async () => {
+  test('should persist new custom status values after closing and reopening settings', async () => {
     // Issue: Custom task statuses don't save properly after updating to 4.2.0
     // User adds a new custom status, fills in values, closes settings,
     // reopens settings, and the values are gone.
@@ -7685,7 +7685,7 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     expect(foundStatus).toBe(true);
   });
 
-  test.skip('should persist new custom priority values after closing and reopening settings', async () => {
+  test('should persist new custom priority values after closing and reopening settings', async () => {
     // Same issue as above but for priorities
     //
     // Steps to reproduce:
