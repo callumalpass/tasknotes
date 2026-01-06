@@ -445,6 +445,11 @@ export const ja: TranslationTree = {
 					name: "タスクリンクオーバーレイ",
 					description: "タスクリンクにホバーした際のインタラクティブオーバーレイを表示",
 				},
+				aliasExclusion: {
+					name: "エイリアス付きリンクでオーバーレイを無効化",
+					description:
+						"リンクにエイリアスが含まれている場合、タスクウィジェットを表示しない（例: [[タスク|エイリアス]]）。",
+				},
 			},
 			instantConvert: {
 				toggle: {

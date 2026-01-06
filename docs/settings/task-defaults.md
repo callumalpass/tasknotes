@@ -123,87 +123,96 @@ The system prevents file overwrites by checking for existing files and showing e
 
 When using the **custom** filename format, you can create templates using variables that are replaced with actual values when tasks are created.
 
+> **Recommended syntax:** Use double braces `{{variable}}` for consistency with body templates. Single braces `{variable}` are supported for backwards compatibility but are deprecated.
+
 ### Available Filename Variables
 
 **Task Properties:**
 
-- `{title}` - Task title (sanitized for filenames)
-- `{priority}` - Task priority (e.g., "high", "medium", "low")
-- `{status}` - Task status (e.g., "todo", "in-progress", "done")
-- `{dueDate}` - Task due date (YYYY-MM-DD format)
-- `{scheduledDate}` - Task scheduled date (YYYY-MM-DD format)
-- `{priorityShort}` - First letter of priority in uppercase (e.g., "H")
-- `{statusShort}` - First letter of status in uppercase (e.g., "T")
-- `{titleLower}` - Task title in lowercase
-- `{titleUpper}` - Task title in uppercase
-- `{titleSnake}` - Task title in snake_case
-- `{titleKebab}` - Task title in kebab-case
-- `{titleCamel}` - Task title in camelCase
-- `{titlePascal}` - Task title in PascalCase
+- `{{title}}` - Task title (sanitized for filenames)
+- `{{priority}}` - Task priority (e.g., "high", "medium", "low")
+- `{{status}}` - Task status (e.g., "todo", "in-progress", "done")
+- `{{dueDate}}` - Task due date (YYYY-MM-DD format)
+- `{{scheduledDate}}` - Task scheduled date (YYYY-MM-DD format)
+- `{{context}}` - First context from the task's contexts array
+- `{{contexts}}` - All contexts joined by `/`
+- `{{tags}}` - Task tags (comma-separated)
+- `{{hashtags}}` - Task tags as space-separated hashtags (e.g., "#work #urgent")
+- `{{timeEstimate}}` - Time estimate in minutes
+- `{{details}}` - Task details/description (truncated to 50 characters)
+- `{{parentNote}}` - Parent note name where task was created
+- `{{priorityShort}}` - First letter of priority in uppercase (e.g., "H")
+- `{{statusShort}}` - First letter of status in uppercase (e.g., "T")
+- `{{titleLower}}` - Task title in lowercase
+- `{{titleUpper}}` - Task title in uppercase
+- `{{titleSnake}}` - Task title in snake_case
+- `{{titleKebab}}` - Task title in kebab-case
+- `{{titleCamel}}` - Task title in camelCase
+- `{{titlePascal}}` - Task title in PascalCase
 
 **Date and Time:**
 
-- `{date}` - Full date (YYYY-MM-DD format, e.g., "2025-08-15")
-- `{time}` - Time as HHMMSS (e.g., "143502")
-- `{timestamp}` - Date and time as YYYY-MM-DD-HHMMSS (e.g., "2025-08-15-143502")
-- `{dateTime}` - Date and time as YYYY-MM-DD-HHMM (e.g., "2025-08-15-1435")
-- `{year}` - Year (e.g., "2025")
-- `{month}` - Month with leading zero (e.g., "08")
-- `{day}` - Day with leading zero (e.g., "15")
-- `{hour}` - Hour with leading zero (e.g., "14")
-- `{minute}` - Minute with leading zero (e.g., "35")
-- `{second}` - Second with leading zero (e.g., "02")
-- `{shortDate}` - Short date as YYMMDD (e.g., "250815")
-- `{shortYear}` - Short year as YY (e.g., "25")
-- `{monthName}` - Full month name (e.g., "August")
-- `{monthNameShort}` - Short month name (e.g., "Aug")
-- `{dayName}` - Full day name (e.g., "Thursday")
-- `{dayNameShort}` - Short day name (e.g., "Thu")
-- `{week}` - Week number (e.g., "33")
-- `{quarter}` - Quarter number (e.g., "3")
-- `{time12}` - 12-hour time with AM/PM (e.g., "02:35 PM")
-- `{time24}` - 24-hour time (e.g., "14:35")
-- `{hourPadded}` - Hour with leading zero (e.g., "14")
-- `{hour12}` - 12-hour format hour with leading zero (e.g., "02")
-- `{ampm}` - AM/PM indicator (e.g., "PM")
+- `{{date}}` - Full date (YYYY-MM-DD format, e.g., "2025-08-15")
+- `{{time}}` - Time as HHMMSS (e.g., "143502")
+- `{{timestamp}}` - Date and time as YYYY-MM-DD-HHMMSS (e.g., "2025-08-15-143502")
+- `{{dateTime}}` - Date and time as YYYY-MM-DD-HHMM (e.g., "2025-08-15-1435")
+- `{{year}}` - Year (e.g., "2025")
+- `{{month}}` - Month with leading zero (e.g., "08")
+- `{{day}}` - Day with leading zero (e.g., "15")
+- `{{hour}}` - Hour with leading zero (e.g., "14")
+- `{{minute}}` - Minute with leading zero (e.g., "35")
+- `{{second}}` - Second with leading zero (e.g., "02")
+- `{{shortDate}}` - Short date as YYMMDD (e.g., "250815")
+- `{{shortYear}}` - Short year as YY (e.g., "25")
+- `{{monthName}}` - Full month name (e.g., "August")
+- `{{monthNameShort}}` - Short month name (e.g., "Aug")
+- `{{dayName}}` - Full day name (e.g., "Thursday")
+- `{{dayNameShort}}` - Short day name (e.g., "Thu")
+- `{{week}}` - Week number (e.g., "33")
+- `{{quarter}}` - Quarter number (e.g., "3")
+- `{{time12}}` - 12-hour time with AM/PM (e.g., "02:35 PM")
+- `{{time24}}` - 24-hour time (e.g., "14:35")
+- `{{hourPadded}}` - Hour with leading zero (e.g., "14")
+- `{{hour12}}` - 12-hour format hour with leading zero (e.g., "02")
+- `{{ampm}}` - AM/PM indicator (e.g., "PM")
 
 **Advanced:**
 
-- `{unix}` - Unix timestamp in seconds (e.g., "1692106502")
-- `{unixMs}` - Unix timestamp in milliseconds (e.g., "1692106502123")
-- `{milliseconds}` - Milliseconds (e.g., "123")
-- `{ms}` - Milliseconds (e.g., "123")
-- `{timezone}` - Timezone offset (e.g., "+10:00")
-- `{timezoneShort}` - Short timezone offset (e.g., "+1000")
-- `{utcOffset}` - UTC offset (e.g., "+10:00")
-- `{utcOffsetShort}` - Short UTC offset (e.g., "+1000")
-- `{utcZ}` - UTC Z indicator (always "Z")
-- `{zettel}` - Zettelkasten ID (e.g., "250815abc")
-- `{nano}` - Nano ID with timestamp and random string
+- `{{unix}}` - Unix timestamp in seconds (e.g., "1692106502")
+- `{{unixMs}}` - Unix timestamp in milliseconds (e.g., "1692106502123")
+- `{{milliseconds}}` - Milliseconds (e.g., "123")
+- `{{ms}}` - Milliseconds (e.g., "123")
+- `{{timezone}}` - Timezone offset (e.g., "+10:00")
+- `{{timezoneShort}}` - Short timezone offset (e.g., "+1000")
+- `{{utcOffset}}` - UTC offset (e.g., "+10:00")
+- `{{utcOffsetShort}}` - Short UTC offset (e.g., "+1000")
+- `{{utcZ}}` - UTC Z indicator (always "Z")
+- `{{zettel}}` - Zettelkasten ID (e.g., "250815abc")
+- `{{nano}}` - Nano ID with timestamp and random string
 
 ### Filename Template Examples
 
 **Date-based with title:**
 ```
-{year}-{month}-{day} {title}
+{{year}}-{{month}}-{{day}} {{title}}
 ```
 Result: `2025-08-15 Complete documentation.md`
 
 **Zettelkasten with title:**
 ```
-{zettel} {title}
+{{zettel}} {{title}}
 ```
 Result: `250815abc Complete documentation.md`
 
 **Priority and status prefix:**
 ```
-[{priorityShort}] {title}
+[{{priorityShort}}] {{title}}
 ```
 Result: `[H] Complete documentation.md`
 
 **Custom timestamp:**
 ```
-{timestamp}-{titleKebab}
+{{timestamp}}-{{titleKebab}}
 ```
 Result: `2025-08-15-143502-complete-documentation.md`
 
@@ -211,14 +220,14 @@ Result: `2025-08-15-143502-complete-documentation.md`
 
 For ICS event notes, additional variables are available:
 
-- `{icsEventTitle}` - Event title from ICS calendar
-- `{icsEventLocation}` - Event location
-- `{icsEventDescription}` - Event description (truncated to 50 characters)
-- `{icsEventTitleWithDate}` - Event title with formatted date
+- `{{icsEventTitle}}` - Event title from ICS calendar
+- `{{icsEventLocation}}` - Event location
+- `{{icsEventDescription}}` - Event description (truncated to 50 characters)
+- `{{icsEventTitleWithDate}}` - Event title with formatted date
 
 ### Important Notes
 
-- **Single Braces**: Filename variables use single braces `{variable}` while folder variables use double braces `{{variable}}`
+- **Unified Syntax**: Both filename and body templates now use double braces `{{variable}}`. Single braces `{variable}` are supported for backwards compatibility but deprecated.
 - **Sanitization**: All variables are automatically sanitized to be safe for filenames (invalid characters removed)
 - **Empty Values**: If a property doesn't have a value, the variable is replaced with an empty string
 - **Character Limits**: Filenames are limited to 255 characters on most systems
@@ -263,6 +272,25 @@ For detailed reminder documentation, see [Task Reminders](../features/task-manag
 ## Template System
 
 TaskNotes supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}`, which will be automatically replaced with the appropriate values when a new task is created.
+
+### Unified Template Variables
+
+Body templates now support the same variables as filename templates. All variables listed in the [Filename Template Variables](#filename-template-variables) section above are available in body templates, including:
+
+- All date/time variables (`{{year}}`, `{{month}}`, `{{timestamp}}`, etc.)
+- All title variations (`{{titleKebab}}`, `{{titleSnake}}`, etc.)
+- Task property variations (`{{priorityShort}}`, `{{statusShort}}`)
+- Unique identifiers (`{{zettel}}`, `{{nano}}`)
+- Advanced variables (`{{unix}}`, `{{unixMs}}`, etc.)
+
+### Body-Specific Variables
+
+- `{{contexts}}` - Task contexts (comma-separated)
+- `{{tags}}` - Task tags (comma-separated)
+- `{{hashtags}}` - Task tags as space-separated hashtags
+- `{{timeEstimate}}` - Time estimate in minutes
+- `{{details}}` - User-provided details/description
+- `{{parentNote}}` - Parent note name/path (properly quoted for YAML)
 
 The `{{parentNote}}` variable is particularly useful for project organization. It inserts the parent note as a properly formatted markdown link. 
 

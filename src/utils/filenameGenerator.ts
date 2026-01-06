@@ -9,6 +9,12 @@ export interface FilenameContext {
 	date?: Date;
 	dueDate?: string; // YYYY-MM-DD format
 	scheduledDate?: string; // YYYY-MM-DD format
+	// Additional body template variables (optional for backwards compatibility)
+	contexts?: string[];
+	tags?: string[];
+	timeEstimate?: number;
+	details?: string;
+	parentNote?: string;
 }
 
 export interface ICSFilenameContext extends FilenameContext {
@@ -214,6 +220,10 @@ function generateCustomFilename(
 				? context.status
 				: "open";
 
+		// Process array values for contexts and tags
+		const contexts = Array.isArray(context.contexts) ? context.contexts : [];
+		const tags = Array.isArray(context.tags) ? context.tags : [];
+
 		const variables: Record<string, string> = {
 			title: sanitizedTitle,
 			date: format(date, "yyyy-MM-dd"),
@@ -230,6 +240,14 @@ function generateCustomFilename(
 			second: format(date, "ss"),
 			dueDate: context.dueDate || "",
 			scheduledDate: context.scheduledDate || "",
+			// Body template variables (contexts, tags, etc.)
+			context: contexts[0] ? sanitizeForFilename(contexts[0]) : "",
+			contexts: contexts.map((c) => sanitizeForFilename(c)).join("/"),
+			tags: tags.map((t) => sanitizeForFilename(t)).join(", "),
+			hashtags: tags.map((t) => `#${sanitizeForFilename(t)}`).join(" "),
+			timeEstimate: context.timeEstimate?.toString() || "",
+			details: context.details ? sanitizeForFilename(context.details.substring(0, 50)) : "",
+			parentNote: context.parentNote ? sanitizeForFilename(context.parentNote) : "",
 			// New date format variations
 			shortDate: format(date, "yyMMdd"),
 			shortYear: format(date, "yy"),
@@ -288,17 +306,24 @@ function generateCustomFilename(
 		}
 
 		// Replace all variables in the template
+		// Support both {{variable}} (preferred) and {variable} (legacy) syntax
 		Object.entries(variables).forEach(([key, value]) => {
 			try {
-				const regex = new RegExp(`\\{${key}\\}`, "g");
-				result = result.replace(regex, value);
+				// First: Replace double-brace syntax {{variable}} (preferred, consistent with body templates)
+				const doubleRegex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+				result = result.replace(doubleRegex, value);
+
+				// Second: Replace single-brace syntax {variable} (legacy, backwards compatibility)
+				const singleRegex = new RegExp(`\\{${key}\\}`, "g");
+				result = result.replace(singleRegex, value);
 			} catch (regexError) {
 				console.warn(`Error replacing template variable ${key}:`, regexError);
 			}
 		});
 
-		// Clean up any remaining unreplaced variables
-		result = result.replace(/\{[^}]+\}/g, "");
+		// Clean up any remaining unreplaced variables (both syntaxes)
+		result = result.replace(/\{\{[^}]+\}\}/g, ""); // {{variable}}
+		result = result.replace(/\{[^}]+\}/g, ""); // {variable}
 
 		// Ensure we have a valid filename
 		if (!result.trim()) {

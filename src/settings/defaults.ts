@@ -6,6 +6,7 @@ import {
 	ICSIntegrationSettings,
 	ProjectAutosuggestSettings,
 	NLPTriggersConfig,
+	GoogleCalendarExportSettings,
 } from "../types/settings";
 
 /**
@@ -44,6 +45,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	pomodoros: "pomodoros",
 	icsEventId: "icsEventId",
 	icsEventTag: "ics_event",
+	googleCalendarEventId: "googleCalendarEventId",
 	reminders: "reminders",
 };
 
@@ -194,6 +196,23 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	useICSEndAsDue: false, // Preserve existing behavior: don't set due date from ICS events
 };
 
+export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
+	enabled: false, // Disabled by default - user must opt-in
+	targetCalendarId: "", // Empty = user must select a calendar
+	syncOnTaskCreate: true,
+	syncOnTaskUpdate: true,
+	syncOnTaskComplete: true,
+	syncOnTaskDelete: true,
+	eventTitleTemplate: "{{title}}", // Simple title by default
+	includeDescription: true,
+	eventColorId: null, // Use calendar default color
+	syncTrigger: "scheduled", // Default to scheduled date
+	createAsAllDay: true, // All-day events by default
+	defaultEventDuration: 60, // 1 hour if timed events
+	includeObsidianLink: true, // Include link back to Obsidian
+	defaultReminderMinutes: null, // No reminder by default (user opts in)
+};
+
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 	enableFuzzy: false,
 	rows: ["{title|n(Title)}", "{aliases|n(Aliases)}", "{file.path|n(Path)}"],
@@ -270,6 +289,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroMobileSidebar: "tab",
 	// Editor defaults
 	enableTaskLinkOverlay: true,
+	disableOverlayOnAlias: false,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
@@ -385,4 +405,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enabledMicrosoftCalendars: [],
 	// Microsoft Calendar sync tokens (delta links for incremental sync)
 	microsoftCalendarSyncTokens: {},
+	// Google Calendar task export settings
+	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
 };

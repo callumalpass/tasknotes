@@ -196,6 +196,74 @@ function processTemplateVariablesForYaml(
 	// {{time}} - Current time (basic format only)
 	result = result.replace(/\{\{time\}\}/g, format(now, "HH:mm"));
 
+	// Extended date/time variables (consistent with filename templates)
+	result = result.replace(/\{\{year\}\}/g, format(now, "yyyy"));
+	result = result.replace(/\{\{month\}\}/g, format(now, "MM"));
+	result = result.replace(/\{\{day\}\}/g, format(now, "dd"));
+	result = result.replace(/\{\{hour\}\}/g, format(now, "HH"));
+	result = result.replace(/\{\{minute\}\}/g, format(now, "mm"));
+	result = result.replace(/\{\{second\}\}/g, format(now, "ss"));
+	result = result.replace(/\{\{timestamp\}\}/g, format(now, "yyyy-MM-dd-HHmmss"));
+	result = result.replace(/\{\{dateTime\}\}/g, format(now, "yyyy-MM-dd-HHmm"));
+	result = result.replace(/\{\{shortDate\}\}/g, format(now, "yyMMdd"));
+	result = result.replace(/\{\{shortYear\}\}/g, format(now, "yy"));
+	result = result.replace(/\{\{monthName\}\}/g, format(now, "MMMM"));
+	result = result.replace(/\{\{monthNameShort\}\}/g, format(now, "MMM"));
+	result = result.replace(/\{\{dayName\}\}/g, format(now, "EEEE"));
+	result = result.replace(/\{\{dayNameShort\}\}/g, format(now, "EEE"));
+	result = result.replace(/\{\{week\}\}/g, format(now, "ww"));
+	result = result.replace(/\{\{quarter\}\}/g, format(now, "q"));
+	result = result.replace(/\{\{time12\}\}/g, format(now, "hh:mm a"));
+	result = result.replace(/\{\{time24\}\}/g, format(now, "HH:mm"));
+	result = result.replace(/\{\{hourPadded\}\}/g, format(now, "HH"));
+	result = result.replace(/\{\{hour12\}\}/g, format(now, "hh"));
+	result = result.replace(/\{\{ampm\}\}/g, format(now, "a"));
+	result = result.replace(/\{\{unix\}\}/g, Math.floor(now.getTime() / 1000).toString());
+	result = result.replace(/\{\{unixMs\}\}/g, now.getTime().toString());
+	result = result.replace(/\{\{milliseconds\}\}/g, format(now, "SSS"));
+	result = result.replace(/\{\{ms\}\}/g, format(now, "SSS"));
+	result = result.replace(/\{\{timezone\}\}/g, format(now, "xxx"));
+	result = result.replace(/\{\{timezoneShort\}\}/g, format(now, "xx"));
+	result = result.replace(/\{\{utcOffset\}\}/g, format(now, "xxx"));
+	result = result.replace(/\{\{utcOffsetShort\}\}/g, format(now, "xx"));
+	result = result.replace(/\{\{utcZ\}\}/g, "Z");
+
+	// Date-based identifiers (consistent with filename templates)
+	const datePart = format(now, "yyMMdd");
+	const midnight = new Date(now);
+	midnight.setHours(0, 0, 0, 0);
+	const secondsSinceMidnight = Math.floor((now.getTime() - midnight.getTime()) / 1000);
+	const zettelId = `${datePart}${secondsSinceMidnight.toString(36)}`;
+	result = result.replace(/\{\{zettel\}\}/g, zettelId);
+	result = result.replace(/\{\{nano\}\}/g, Date.now().toString() + Math.random().toString(36).substring(2, 7));
+
+	// Priority and status variations
+	const priority = taskData.priority || "";
+	const status = taskData.status || "";
+	result = result.replace(/\{\{priorityShort\}\}/g, priority.substring(0, 1).toUpperCase());
+	result = result.replace(/\{\{statusShort\}\}/g, status.substring(0, 1).toUpperCase());
+
+	// Title variations
+	const titleForVariations = taskData.title || "";
+	result = result.replace(/\{\{titleLower\}\}/g, titleForVariations.toLowerCase());
+	result = result.replace(/\{\{titleUpper\}\}/g, titleForVariations.toUpperCase());
+	result = result.replace(/\{\{titleSnake\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "_"));
+	result = result.replace(/\{\{titleKebab\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "-"));
+	result = result.replace(
+		/\{\{titleCamel\}\}/g,
+		titleForVariations
+			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
+				index === 0 ? word.toLowerCase() : word.toUpperCase()
+			)
+			.replace(/\s+/g, "")
+	);
+	result = result.replace(
+		/\{\{titlePascal\}\}/g,
+		titleForVariations
+			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
+			.replace(/\s+/g, "")
+	);
+
 	// ICS Event template variables (only available if taskData is ICSTemplateData)
 	if ("icsEventTitle" in taskData) {
 		const icsData = taskData as ICSTemplateData;
@@ -333,6 +401,74 @@ function processTemplateVariables(
 
 	// {{time}} - Current time (basic format only)
 	result = result.replace(/\{\{time\}\}/g, format(now, "HH:mm"));
+
+	// Extended date/time variables (consistent with filename templates)
+	result = result.replace(/\{\{year\}\}/g, format(now, "yyyy"));
+	result = result.replace(/\{\{month\}\}/g, format(now, "MM"));
+	result = result.replace(/\{\{day\}\}/g, format(now, "dd"));
+	result = result.replace(/\{\{hour\}\}/g, format(now, "HH"));
+	result = result.replace(/\{\{minute\}\}/g, format(now, "mm"));
+	result = result.replace(/\{\{second\}\}/g, format(now, "ss"));
+	result = result.replace(/\{\{timestamp\}\}/g, format(now, "yyyy-MM-dd-HHmmss"));
+	result = result.replace(/\{\{dateTime\}\}/g, format(now, "yyyy-MM-dd-HHmm"));
+	result = result.replace(/\{\{shortDate\}\}/g, format(now, "yyMMdd"));
+	result = result.replace(/\{\{shortYear\}\}/g, format(now, "yy"));
+	result = result.replace(/\{\{monthName\}\}/g, format(now, "MMMM"));
+	result = result.replace(/\{\{monthNameShort\}\}/g, format(now, "MMM"));
+	result = result.replace(/\{\{dayName\}\}/g, format(now, "EEEE"));
+	result = result.replace(/\{\{dayNameShort\}\}/g, format(now, "EEE"));
+	result = result.replace(/\{\{week\}\}/g, format(now, "ww"));
+	result = result.replace(/\{\{quarter\}\}/g, format(now, "q"));
+	result = result.replace(/\{\{time12\}\}/g, format(now, "hh:mm a"));
+	result = result.replace(/\{\{time24\}\}/g, format(now, "HH:mm"));
+	result = result.replace(/\{\{hourPadded\}\}/g, format(now, "HH"));
+	result = result.replace(/\{\{hour12\}\}/g, format(now, "hh"));
+	result = result.replace(/\{\{ampm\}\}/g, format(now, "a"));
+	result = result.replace(/\{\{unix\}\}/g, Math.floor(now.getTime() / 1000).toString());
+	result = result.replace(/\{\{unixMs\}\}/g, now.getTime().toString());
+	result = result.replace(/\{\{milliseconds\}\}/g, format(now, "SSS"));
+	result = result.replace(/\{\{ms\}\}/g, format(now, "SSS"));
+	result = result.replace(/\{\{timezone\}\}/g, format(now, "xxx"));
+	result = result.replace(/\{\{timezoneShort\}\}/g, format(now, "xx"));
+	result = result.replace(/\{\{utcOffset\}\}/g, format(now, "xxx"));
+	result = result.replace(/\{\{utcOffsetShort\}\}/g, format(now, "xx"));
+	result = result.replace(/\{\{utcZ\}\}/g, "Z");
+
+	// Date-based identifiers (consistent with filename templates)
+	const datePartBody = format(now, "yyMMdd");
+	const midnightBody = new Date(now);
+	midnightBody.setHours(0, 0, 0, 0);
+	const secondsSinceMidnightBody = Math.floor((now.getTime() - midnightBody.getTime()) / 1000);
+	const zettelIdBody = `${datePartBody}${secondsSinceMidnightBody.toString(36)}`;
+	result = result.replace(/\{\{zettel\}\}/g, zettelIdBody);
+	result = result.replace(/\{\{nano\}\}/g, Date.now().toString() + Math.random().toString(36).substring(2, 7));
+
+	// Priority and status variations
+	const priority = taskData.priority || "";
+	const status = taskData.status || "";
+	result = result.replace(/\{\{priorityShort\}\}/g, priority.substring(0, 1).toUpperCase());
+	result = result.replace(/\{\{statusShort\}\}/g, status.substring(0, 1).toUpperCase());
+
+	// Title variations
+	const titleForVariations = taskData.title || "";
+	result = result.replace(/\{\{titleLower\}\}/g, titleForVariations.toLowerCase());
+	result = result.replace(/\{\{titleUpper\}\}/g, titleForVariations.toUpperCase());
+	result = result.replace(/\{\{titleSnake\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "_"));
+	result = result.replace(/\{\{titleKebab\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "-"));
+	result = result.replace(
+		/\{\{titleCamel\}\}/g,
+		titleForVariations
+			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
+				index === 0 ? word.toLowerCase() : word.toUpperCase()
+			)
+			.replace(/\s+/g, "")
+	);
+	result = result.replace(
+		/\{\{titlePascal\}\}/g,
+		titleForVariations
+			.replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
+			.replace(/\s+/g, "")
+	);
 
 	// ICS Event template variables (only available if taskData is ICSTemplateData)
 	if ("icsEventTitle" in taskData) {

@@ -215,6 +215,27 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 				expect(changes.tags).not.toContain('task');
 			}
 		});
+
+		test('should preserve task tag on load in property mode', async () => {
+			mockTask.tags = ['task', 'existing'];
+			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+			(modal as any).initializeSubtasks = jest.fn().mockResolvedValue(undefined);
+
+			await modal.initializeFormData();
+
+			expect((modal as any).tags).toBe('task, existing');
+		});
+
+		test('should not mark tags as changed when untouched in property mode', async () => {
+			mockTask.tags = ['task', 'existing'];
+			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+			(modal as any).initializeSubtasks = jest.fn().mockResolvedValue(undefined);
+
+			await modal.initializeFormData();
+
+			const changes = (modal as any).getChanges();
+			expect(changes.tags).toBeUndefined();
+		});
 	});
 
 	describe('TaskEditModal - Tag Mode (Existing Behavior)', () => {
@@ -268,6 +289,27 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 				expect(changes.tags).toContain('task');
 				expect(changes.tags).toEqual(['important', 'task']);
 			}
+		});
+
+		test('should hide task tag on load in tag mode', async () => {
+			mockTask.tags = ['task', 'existing'];
+			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+			(modal as any).initializeSubtasks = jest.fn().mockResolvedValue(undefined);
+
+			await modal.initializeFormData();
+
+			expect((modal as any).tags).toBe('existing');
+		});
+
+		test('should not mark tags as changed when untouched in tag mode', async () => {
+			mockTask.tags = ['task', 'existing'];
+			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+			(modal as any).initializeSubtasks = jest.fn().mockResolvedValue(undefined);
+
+			await modal.initializeFormData();
+
+			const changes = (modal as any).getChanges();
+			expect(changes.tags).toBeUndefined();
 		});
 	});
 });

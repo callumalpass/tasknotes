@@ -54,6 +54,18 @@ export function renderFeaturesTab(
 			);
 
 			if (plugin.settings.enableTaskLinkOverlay) {
+				group.addSetting((setting) =>
+					configureToggleSetting(setting, {
+						name: translate("settings.features.overlays.aliasExclusion.name"),
+						desc: translate("settings.features.overlays.aliasExclusion.description"),
+						getValue: () => plugin.settings.disableOverlayOnAlias,
+						setValue: async (value: boolean) => {
+							plugin.settings.disableOverlayOnAlias = value;
+							save();
+						},
+					})
+				);
+
 				group.addSetting((setting) => {
 					setting
 						.setName("Inline Task Card Properties")

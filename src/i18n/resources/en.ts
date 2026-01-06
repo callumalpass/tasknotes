@@ -444,6 +444,11 @@ export const en: TranslationTree = {
 					name: "Task link overlay",
 					description: "Show interactive overlays when hovering over task links",
 				},
+				aliasExclusion: {
+					name: "Disable overlay for aliased links",
+					description:
+						"Do not show the task widget if the link contains an alias (e.g. [[Task|Alias]]).",
+				},
 			},
 			instantConvert: {
 				toggle: {
@@ -1011,6 +1016,7 @@ export const en: TranslationTree = {
 				filenameUpdatesWithTitle: "Filename will automatically update when the task title changes.",
 				filenameFormat: "Filename format:",
 				customTemplate: "Custom template:",
+				legacySyntaxWarning: "Single-brace syntax like {title} is deprecated. Please use double-brace syntax {{title}} instead for consistency with body templates.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "Uses native Obsidian tags",
@@ -1704,6 +1710,135 @@ export const en: TranslationTree = {
 					serviceUnavailable: "Auto export service not available",
 				},
 			},
+			googleCalendarExport: {
+				header: "Export Tasks to Google Calendar",
+				description:
+					"Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above.",
+				enable: {
+					name: "Enable Task Export",
+					description:
+						"When enabled, tasks with dates will be automatically synced to Google Calendar as events.",
+				},
+				targetCalendar: {
+					name: "Target Calendar",
+					description: "Select which calendar to create task events in.",
+					placeholder: "Select a calendar...",
+					connectFirst: "Connect Google Calendar first",
+					primarySuffix: " (Primary)",
+				},
+				syncTrigger: {
+					name: "Sync Trigger",
+					description: "Which task date should trigger calendar event creation.",
+					options: {
+						scheduled: "Scheduled Date",
+						due: "Due Date",
+						both: "Both (prefer scheduled)",
+					},
+				},
+				allDayEvents: {
+					name: "Create as All-Day Events",
+					description:
+						"When enabled, tasks are created as all-day events. When disabled, uses time estimate for duration.",
+				},
+				defaultDuration: {
+					name: "Default Event Duration",
+					description:
+						"Duration in minutes for timed events (used when task has no time estimate).",
+				},
+				eventTitleTemplate: {
+					name: "Event Title Template",
+					description:
+						"Template for event titles. Available variables: {{title}}, {{status}}, {{priority}}",
+					placeholder: "{{title}}",
+				},
+				includeDescription: {
+					name: "Include Task Details in Description",
+					description:
+						"Add task metadata (priority, status, tags, etc.) to the event description.",
+				},
+				includeObsidianLink: {
+					name: "Include Obsidian Link",
+					description:
+						"Add a link back to the task in Obsidian in the event description.",
+				},
+				defaultReminder: {
+					name: "Default Reminder",
+					description:
+						"Add a popup reminder to Google Calendar events. Set minutes before event (0 = no reminder). Common values: 15, 30, 60, 1440 (1 day).",
+				},
+				automaticSyncBehavior: {
+					header: "Automatic Sync Behavior",
+				},
+				syncOnCreate: {
+					name: "Sync on Task Create",
+					description:
+						"Automatically create calendar event when a new task is created.",
+				},
+				syncOnUpdate: {
+					name: "Sync on Task Update",
+					description:
+						"Automatically update calendar event when a task is modified.",
+				},
+				syncOnComplete: {
+					name: "Sync on Task Complete",
+					description:
+						"Update calendar event when a task is completed (adds checkmark to title).",
+				},
+				syncOnDelete: {
+					name: "Delete Event on Task Delete",
+					description:
+						"Remove calendar event when the corresponding task is deleted.",
+				},
+				manualSyncActions: {
+					header: "Manual Sync Actions",
+				},
+				syncAllTasks: {
+					name: "Sync All Tasks",
+					description:
+						"Sync all existing tasks to Google Calendar. This will create events for tasks that haven't been synced yet.",
+					buttonText: "Sync All",
+				},
+				unlinkAllTasks: {
+					name: "Unlink All Tasks",
+					description:
+						"Remove all task-event links without deleting calendar events.",
+					buttonText: "Unlink All",
+					confirmTitle: "Unlink All Tasks",
+					confirmMessage:
+						"This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?",
+					confirmButtonText: "Unlink All",
+				},
+				notices: {
+					notEnabled:
+						"Google Calendar export is not enabled. Configure it in Settings > Integrations.",
+					notEnabledOrConfigured:
+						"Google Calendar export is not enabled or configured",
+					serviceNotAvailable: "Task calendar sync service not available",
+					syncResults: "Synced: {synced}, Failed: {failed}, Skipped: {skipped}",
+					taskSynced: "Task synced to Google Calendar",
+					noActiveFile: "No file is currently active",
+					notATask: "Current file is not a task",
+					noDateToSync: "Task has no scheduled or due date to sync",
+					syncFailed: "Failed to sync task to Google Calendar: {message}",
+					syncingTasks: "Syncing {total} tasks to Google Calendar...",
+					syncComplete:
+						"Sync complete: {synced} synced, {failed} failed, {skipped} skipped",
+					eventsDeletedAndUnlinked: "All events deleted and unlinked",
+					tasksUnlinked: "All task links removed",
+				},
+				eventDescription: {
+					untitledTask: "Untitled Task",
+					priority: "Priority: {value}",
+					status: "Status: {value}",
+					due: "Due: {value}",
+					scheduled: "Scheduled: {value}",
+					timeEstimate: "Time Estimate: {value}",
+					tags: "Tags: {value}",
+					contexts: "Contexts: {value}",
+					projects: "Projects: {value}",
+					openInObsidian: "Open in Obsidian",
+				},
+			},
 			httpApi: {
 				header: "HTTP API",
 				description: "Enable HTTP API for external integrations and automations.",
@@ -2001,6 +2136,8 @@ export const en: TranslationTree = {
 		pauseResumePomodoro: "Pause/resume pomodoro timer",
 		refreshCache: "Refresh cache",
 		exportAllTasksIcs: "Export all tasks as ICS file",
+		syncAllTasksGoogleCalendar: "Sync all tasks to Google Calendar",
+		syncCurrentTaskGoogleCalendar: "Sync current task to Google Calendar",
 		viewReleaseNotes: "View release notes",
 		startTimeTrackingWithSelector: "Start time tracking (select task)",
 		editTimeEntries: "Edit time entries (select task)",
@@ -2784,6 +2921,7 @@ export const en: TranslationTree = {
 			loadingDependencies: "Loading dependencies...",
 			blockingEmpty: "No dependent tasks",
 			blockingLoadError: "Failed to load dependencies",
+			googleCalendarSyncTooltip: "Synced to Google Calendar",
 		},
 		propertyEventCard: {
 			unknownFile: "Unknown file",

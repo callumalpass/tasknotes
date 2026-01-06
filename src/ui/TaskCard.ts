@@ -403,6 +403,7 @@ function getDefaultVisibleProperties(plugin: TaskNotesPlugin): string[] {
 		"tags", // Special property (not in FieldMapping)
 		"blocked", // Special property (computed from blockedBy)
 		"blocking", // Special property (not in FieldMapping)
+		"googleCalendarSync", // Special property (shows if task is synced to Google Calendar)
 	];
 
 	return convertInternalToUserProperties(internalDefaults, plugin);
@@ -432,6 +433,7 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
 	skippedInstances: (task) => task.skipped_instances,
 	dateCreated: (task) => task.dateCreated,
 	dateModified: (task) => task.dateModified,
+	googleCalendarSync: (task) => task.path, // Used to check if task is synced via plugin settings
 };
 
 /**
@@ -670,11 +672,12 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			renderScheduledDateProperty(element, value, task, plugin);
 		}
 	},
-	projects: (element, value, _, plugin) => {
+	projects: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
 			const linkServices: LinkServices = {
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
+				sourcePath: task.path,
 			};
 			renderProjectLinks(element, value as string[], linkServices);
 		}
@@ -1635,6 +1638,25 @@ export function createTaskCard(
 					{ placement: "top" }
 				);
 				metadataElements.push(blockingPill);
+			}
+			continue;
+		}
+
+		// Google Calendar sync indicator
+		if (propertyId === "googleCalendarSync") {
+			// Check if task has a Google Calendar event ID in frontmatter
+			if (task.googleCalendarEventId) {
+				const syncPill = metadataLine.createSpan({
+					cls: "task-card__metadata-pill task-card__metadata-pill--google-calendar",
+				});
+				// Add calendar icon
+				setIcon(syncPill, "calendar");
+				setTooltip(
+					syncPill,
+					plugin.i18n.translate("ui.taskCard.googleCalendarSyncTooltip"),
+					{ placement: "top" }
+				);
+				metadataElements.push(syncPill);
 			}
 			continue;
 		}

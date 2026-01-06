@@ -273,6 +273,14 @@ export function buildTaskLinkDecorations(
 					continue;
 				}
 
+				// Check for alias exclusion
+				if (plugin.settings.disableOverlayOnAlias) {
+					// Skip Wikilinks with pipes [[Path|Alias]]
+					if (link.type === "wikilink" && link.match.includes("|")) {
+						continue;
+					}
+				}
+
 				// Parse the link to get the link path (handle both wikilinks and markdown links)
 				const parsed =
 					link.type === "wikilink"
@@ -422,6 +430,11 @@ function parseMarkdownLinkSync(
 
 	const displayText = match[1].trim();
 	let linkPath = match[2].trim();
+
+	// Strip angle brackets used to escape special characters or spaces
+	if (linkPath.startsWith("<") && linkPath.endsWith(">")) {
+		linkPath = linkPath.slice(1, -1).trim();
+	}
 
 	if (!linkPath || linkPath.length === 0) {
 		return null;

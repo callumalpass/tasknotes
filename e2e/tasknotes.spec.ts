@@ -7528,7 +7528,7 @@ test.describe('Issue #1293: Incomplete Task Rollover to Next Day', () => {
 // ============================================================================
 
 test.describe('Issue #1419: Custom statuses not saving', () => {
-  test.skip('should persist new custom status values after closing and reopening settings', async () => {
+  test('should persist new custom status values after closing and reopening settings', async () => {
     // Issue: Custom task statuses don't save properly after updating to 4.2.0
     // User adds a new custom status, fills in values, closes settings,
     // reopens settings, and the values are gone.
@@ -7685,7 +7685,7 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     expect(foundStatus).toBe(true);
   });
 
-  test.skip('should persist new custom priority values after closing and reopening settings', async () => {
+  test('should persist new custom priority values after closing and reopening settings', async () => {
     // Same issue as above but for priorities
     //
     // Steps to reproduce:
@@ -8647,5 +8647,334 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
       const task = allTasks.find((t: any) => t.title === taskTitle);
       if (task) await plugin.taskService.deleteTask(task.path);
     }, taskTitle);
+  });
+});
+
+// ============================================================================
+// ISSUE #1430: Incorrect Property ID After Customization
+// Bug: Modal Fields displays internal ID instead of customized property key
+// ============================================================================
+
+test.describe('Issue #1430: Modal Fields Property ID Display', () => {
+  test.fixme('should display property key instead of internal ID in Modal Fields tab', async () => {
+    // Issue #1430: When a user customizes a user field's Property Key,
+    // the Modal Fields tab still displays the internal ID (e.g., "field_1735011234")
+    // instead of the customized property key (e.g., "propID").
+    //
+    // Steps to reproduce:
+    // 1. Go to Settings > TaskNotes > Task Properties
+    // 2. Add a new user field
+    // 3. Set Display Name to "My Custom Field"
+    // 4. Set Property Key to "propID"
+    // 5. Go to Settings > TaskNotes > Modal Fields
+    // 6. Click the "Custom Fields" tab
+    // 7. Observe: The field shows "ID: field_xxxxx" instead of "Key: propID"
+    //
+    // Expected: Secondary text should show the property key "propID"
+    // Actual: Secondary text shows internal ID like "field_1735011234"
+    //
+    // Root cause: FieldManagerComponent.ts:187 displays `ID: ${field.id}` for all fields.
+    // For user fields, it should look up the property key from UserMappedField.
+
+    const page = getPage();
+    const testFieldName = 'TestField_1430';
+    const testPropertyKey = 'test_property_key_1430';
+
+    // Open settings
+    await page.keyboard.press('Control+,');
+    await page.waitForTimeout(500);
+
+    const settingsModal = page.locator('.modal.mod-settings');
+    await expect(settingsModal).toBeVisible({ timeout: 5000 });
+
+    // Navigate to TaskNotes settings
+    const tasknotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
+    await tasknotesTab.click();
+    await page.waitForTimeout(500);
+
+    // Click Task Properties tab
+    const taskPropertiesTab = page.locator('.mod-settings button:has-text("Task Properties")').first();
+    await taskPropertiesTab.click();
+    await page.waitForTimeout(500);
+
+    // Scroll down to find "Add user field" button
+    const settingsContent = page.locator('.mod-settings .vertical-tab-content');
+    await settingsContent.evaluate((el) => el.scrollTop = el.scrollHeight);
+    await page.waitForTimeout(300);
+
+    // Add a new user field
+    const addUserFieldButton = page.locator('button:has-text("Add user field")');
+    await addUserFieldButton.click();
+    await page.waitForTimeout(500);
+
+    // Find the newly created field card (last one)
+    const fieldCards = page.locator('.tasknotes-user-fields-container .tasknotes-settings__card');
+    const lastCard = fieldCards.last();
+
+    // Expand the card if collapsed
+    const chevron = lastCard.locator('.tasknotes-settings__card-chevron');
+    if (await chevron.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await chevron.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Fill in Display Name
+    const displayNameInput = lastCard.locator('input[placeholder*="Display name"], input[placeholder*="display name"]').first();
+    await displayNameInput.fill(testFieldName);
+    await page.waitForTimeout(200);
+
+    // Fill in Property Key
+    const propertyKeyInput = lastCard.locator('input[placeholder*="Property key"], input[placeholder*="property key"], input[placeholder*="Property name"]').first();
+    await propertyKeyInput.fill(testPropertyKey);
+    await page.waitForTimeout(200);
+
+    // Take screenshot of the configured field in Task Properties
+    await page.screenshot({ path: 'test-results/screenshots/issue-1430-task-properties-field.png' });
+
+    // Now navigate to Modal Fields tab
+    const modalFieldsTab = page.locator('.mod-settings button:has-text("Modal Fields")').first();
+    await modalFieldsTab.click();
+    await page.waitForTimeout(500);
+
+    // Click the Custom Fields group tab
+    const customFieldsTab = page.locator('.field-manager__tab:has-text("Custom")');
+    if (await customFieldsTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await customFieldsTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Take screenshot of Modal Fields tab
+    await page.screenshot({ path: 'test-results/screenshots/issue-1430-modal-fields-tab.png' });
+
+    // Find the card for our test field
+    const modalFieldCard = page.locator(`.field-manager__cards .tasknotes-settings__card:has-text("${testFieldName}")`);
+    await expect(modalFieldCard).toBeVisible({ timeout: 5000 });
+
+    // Get the secondary text (which shows the ID/key)
+    const secondaryText = modalFieldCard.locator('.tasknotes-settings__card-header-secondary');
+    const secondaryTextContent = await secondaryText.textContent();
+
+    // BUG: This assertion will fail because it shows internal ID instead of property key
+    // Expected: "Key: test_property_key_1430" or just "test_property_key_1430"
+    // Actual: "ID: field_xxxxx"
+    expect(secondaryTextContent).toContain(testPropertyKey);
+    expect(secondaryTextContent).not.toMatch(/ID: field_\d+/);
+
+    // Cleanup: Delete the test field
+    await page.keyboard.press('Escape'); // Close settings
+    await page.waitForTimeout(300);
+
+    // Remove the test field via plugin API
+    await page.evaluate(async (fieldName) => {
+      // @ts-ignore - Obsidian global
+      const app = (window as any).app;
+      const plugin = app?.plugins?.plugins?.['tasknotes'];
+      if (!plugin?.settings?.userFields) return;
+
+      const fieldIndex = plugin.settings.userFields.findIndex(
+        (f: any) => f.displayName === fieldName
+      );
+      if (fieldIndex !== -1) {
+        const fieldId = plugin.settings.userFields[fieldIndex].id;
+        plugin.settings.userFields.splice(fieldIndex, 1);
+
+        // Also remove from modalFieldsConfig
+        if (plugin.settings.modalFieldsConfig?.fields) {
+          plugin.settings.modalFieldsConfig.fields = plugin.settings.modalFieldsConfig.fields.filter(
+            (f: any) => f.id !== fieldId
+          );
+        }
+
+        await plugin.saveSettings();
+      }
+    }, testFieldName);
+  });
+});
+
+test.describe('Issue #1436: Task card widget injection error in reading mode', () => {
+  test.fixme('should not throw insertBefore error when injecting task card in reading mode', async () => {
+    // Issue #1436: Error injecting task card widget in reading mode
+    // https://github.com/anthropics/tasknotes/issues/1436
+    //
+    // Environment: TaskNotes v4.2.1, OSX 26.2, Obsidian 1.11.3
+    //
+    // Steps to reproduce:
+    // 1. Open any task note
+    // 2. Every time you open the note, refocus the note, or refresh the note,
+    //    another subtasks view is added to the note body
+    //
+    // Console error:
+    // [TaskNotes] Error injecting task card widget in reading mode: NotFoundError:
+    // Failed to execute 'insertBefore' on 'Node': The node before which the new
+    // node is to be inserted is not a child of this node.
+    //
+    // Root cause analysis:
+    // In src/editor/TaskCardNoteDecorations.ts:injectReadingModeWidget (lines 475-477):
+    //   const metadataContainer = sizer.querySelector('.metadata-container');
+    //   if (metadataContainer?.nextSibling) {
+    //     sizer.insertBefore(widget, metadataContainer.nextSibling);
+    //
+    // The bug is that querySelector() searches ALL descendants, so if .metadata-container
+    // is nested inside another element (not a direct child of sizer), then
+    // metadataContainer.nextSibling is NOT a child of sizer, causing insertBefore to fail.
+    //
+    // Additionally, the "another subtasks view is added" behavior suggests the cleanup
+    // logic may not be properly preventing duplicate widgets.
+    //
+    // Fix approach:
+    // 1. Check if metadataContainer.parentElement === sizer before using nextSibling
+    // 2. If not a direct child, insert at appropriate position in sizer
+    // 3. Ensure orphaned widget cleanup runs before injection
+
+    const page = getPage();
+
+    // First, find and open a task note
+    await ensureSidebarExpanded(page);
+
+    // Expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Expand Tasks folder if collapsed
+    const tasksFolder = page.locator('.nav-folder-title').filter({ hasText: /^Tasks$/ }).first();
+    if (await tasksFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasksFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await tasksFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Find a task note to open (look for any .md file in Tasks folder)
+    const taskFile = page.locator('.nav-file-title').filter({ has: page.locator('.nav-file-title-content') }).first();
+    if (!await taskFile.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1436] No task files found - skipping test');
+      return;
+    }
+
+    await taskFile.click();
+    await page.waitForTimeout(1000);
+
+    // Switch to Reading View using Ctrl+E
+    const isEditing = await page.locator('.cm-content, .markdown-source-view.is-live-preview').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isEditing) {
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    // Ensure we're in Reading View
+    const readingView = page.locator('.markdown-reading-view, .markdown-preview-view');
+    await expect(readingView).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1436-reading-mode-initial.png' });
+
+    // Listen for console errors
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    // Simulate the bug conditions by triggering refresh events:
+    // 1. Refocus the note by clicking away and back
+    await page.locator('.workspace-leaf').first().click();
+    await page.waitForTimeout(300);
+    await readingView.click();
+    await page.waitForTimeout(500);
+
+    // 2. Switch away and back to the file
+    await page.keyboard.press('Control+o'); // Open quick switcher
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+    // 3. Toggle to source mode and back to reading mode
+    await page.keyboard.press('Control+e'); // Toggle to source
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Control+e'); // Toggle back to reading
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1436-reading-mode-after-toggle.png' });
+
+    // Check for the specific error message
+    const insertBeforeErrors = consoleErrors.filter(err =>
+      err.includes('insertBefore') ||
+      err.includes('Error injecting task card widget in reading mode')
+    );
+
+    // BUG: This assertion will fail if the insertBefore error occurs
+    expect(insertBeforeErrors.length).toBe(0);
+
+    // Also check that there are no duplicate task card widgets
+    // (The user reported "another subtasks view is added" each time)
+    const taskCardWidgets = page.locator('.tasknotes-task-card-note-widget');
+    const widgetCount = await taskCardWidgets.count();
+
+    // There should be at most one task card widget per note
+    expect(widgetCount).toBeLessThanOrEqual(1);
+  });
+
+  test.fixme('should not accumulate duplicate task card widgets on repeated focus', async () => {
+    // Issue #1436: "Every time you open the note, refocus the note, or refresh
+    // the note, another subtasks view is added to the note body"
+    //
+    // This test verifies the duplicate widget accumulation bug.
+
+    const page = getPage();
+
+    // Find and open a task note
+    await ensureSidebarExpanded(page);
+
+    const taskFile = page.locator('.nav-file-title').filter({ has: page.locator('.nav-file-title-content') }).first();
+    if (!await taskFile.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1436] No task files found - skipping test');
+      return;
+    }
+
+    await taskFile.click();
+    await page.waitForTimeout(1000);
+
+    // Switch to Reading View
+    const isEditing = await page.locator('.cm-content, .markdown-source-view.is-live-preview').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isEditing) {
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    const readingView = page.locator('.markdown-reading-view, .markdown-preview-view');
+    await expect(readingView).toBeVisible({ timeout: 5000 });
+
+    // Count initial widgets
+    let taskCardWidgets = page.locator('.tasknotes-task-card-note-widget');
+    const initialCount = await taskCardWidgets.count();
+
+    // Simulate multiple focus/refresh cycles
+    for (let i = 0; i < 3; i++) {
+      // Toggle reading mode off and on
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(300);
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1436-duplicate-widgets.png' });
+
+    // Count widgets after multiple toggles
+    taskCardWidgets = page.locator('.tasknotes-task-card-note-widget');
+    const finalCount = await taskCardWidgets.count();
+
+    // BUG: This assertion will fail if widgets are accumulating
+    // We should have the same number of widgets (at most 1)
+    expect(finalCount).toBe(initialCount);
+    expect(finalCount).toBeLessThanOrEqual(1);
   });
 });

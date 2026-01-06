@@ -2,11 +2,22 @@
 // Link and tag rendering utilities for UI components
 
 import { App, TFile, Notice } from "obsidian";
+import { parseLinkToPath } from "../../utils/linkUtils";
+
+export type LinkNavigateHandler = (
+	normalizedPath: string,
+	event: MouseEvent
+) => Promise<boolean | void> | boolean | void;
 
 /** Minimal services required to render internal links (DI-friendly) */
 export interface LinkServices {
 	metadataCache: App["metadataCache"];
 	workspace: App["workspace"];
+	/**
+	 * Optional source path to resolve relative links and support angle-bracket markdown links.
+	 * Defaults to root resolution when not provided.
+	 */
+	sourcePath?: string;
 }
 
 /** Type for hover-link event payload */
@@ -33,19 +44,24 @@ export function appendInternalLink(
 		cssClass?: string;
 		hoverSource?: string;
 		showErrorNotices?: boolean;
+		onPrimaryNavigate?: LinkNavigateHandler;
 	} = {}
 ): void {
 	const {
 		cssClass = "internal-link",
 		hoverSource = "tasknotes-property-link",
 		showErrorNotices = false,
+		onPrimaryNavigate,
 	} = options;
+
+	const sourcePath = deps.sourcePath ?? "";
+	const normalizedPath = parseLinkToPath(filePath);
 
 	const linkEl = container.createEl("a", {
 		cls: cssClass,
 		text: displayText,
 		attr: {
-			"data-href": filePath,
+			"data-href": normalizedPath,
 			role: "link",
 			tabindex: "0",
 		},
@@ -55,14 +71,24 @@ export function appendInternalLink(
 		e.preventDefault();
 		e.stopPropagation();
 		try {
-			const file = deps.metadataCache.getFirstLinkpathDest(filePath, "");
-			if (file instanceof TFile) {
-				if (e.ctrlKey || e.metaKey) {
-					// Ctrl/Cmd+Click opens in new tab
-					deps.workspace.openLinkText(filePath, "", true);
-				} else {
-					await deps.workspace.getLeaf(false).openFile(file);
+			if (e.ctrlKey || e.metaKey) {
+				// Ctrl/Cmd+Click opens in new tab
+				deps.workspace.openLinkText(normalizedPath, sourcePath, true);
+				return;
+			}
+
+			if (onPrimaryNavigate) {
+				const handled = await onPrimaryNavigate(normalizedPath, e);
+				if (handled !== false) {
+					return;
 				}
+			}
+
+			const file =
+				deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
+				deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+			if (file instanceof TFile) {
+				await deps.workspace.getLeaf(false).openFile(file);
 			} else if (showErrorNotices) {
 				new Notice(`Note "${displayText}" not found`);
 			}
@@ -80,9 +106,11 @@ export function appendInternalLink(
 			e.preventDefault();
 			e.stopPropagation();
 			try {
-				const file = deps.metadataCache.getFirstLinkpathDest(filePath, "");
+				const file =
+					deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
+					deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
 				if (file instanceof TFile) {
-					deps.workspace.openLinkText(filePath, "", true);
+					deps.workspace.openLinkText(normalizedPath, sourcePath, true);
 				}
 			} catch (error) {
 				console.error("[TaskNotes] Error opening internal link:", { filePath, error });
@@ -98,15 +126,17 @@ export function appendInternalLink(
 	});
 
 	linkEl.addEventListener("mouseover", (event) => {
-		const file = deps.metadataCache.getFirstLinkpathDest(filePath, "");
+		const file =
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
 		if (file instanceof TFile) {
 			const hoverEvent: HoverLinkEvent = {
 				event: event as MouseEvent,
 				source: hoverSource,
 				hoverParent: container,
 				targetEl: linkEl,
-				linktext: filePath,
-				sourcePath: file.path,
+				linktext: normalizedPath,
+				sourcePath: sourcePath || file.path,
 			};
 			deps.workspace.trigger("hover-link", hoverEvent);
 		}
@@ -280,16 +310,43 @@ function parseMarkdownLink(text: string): { displayText: string; filePath: strin
 	if (!match) return null;
 
 	const displayText = match[1].trim();
-	let filePath = match[2].trim();
-
-	// URL decode the link path - crucial for paths with spaces
-	try {
-		filePath = decodeURIComponent(filePath);
-	} catch (error) {
-		console.debug("Failed to decode URI component:", filePath, error);
-	}
+	const rawPath = match[2].trim();
+	const filePath = parseLinkToPath(rawPath);
 
 	return { displayText, filePath };
+}
+
+function resolveProjectDisplayText(
+	filePath: string,
+	displayText: string,
+	deps: LinkServices
+): string {
+	const sourcePath = deps.sourcePath ?? "";
+	const normalizedPath = parseLinkToPath(filePath);
+	const file =
+		deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
+		deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+	if (!(file instanceof TFile)) return displayText;
+	const cache = deps.metadataCache.getCache(file.path);
+	const frontmatterTitle = cache?.frontmatter?.title;
+	if (typeof frontmatterTitle !== "string" || frontmatterTitle.trim().length === 0) {
+		return displayText;
+	}
+
+	const normalizedDisplay = displayText?.trim() || "";
+	const fileName = file.name;
+	const fileBase = file.basename;
+	if (
+		normalizedDisplay === "" ||
+		normalizedDisplay === fileName ||
+		normalizedDisplay === fileBase ||
+		normalizedDisplay === file.path ||
+		normalizedDisplay === normalizedPath
+	) {
+		return frontmatterTitle;
+	}
+
+	return displayText;
 }
 
 /**
@@ -298,7 +355,8 @@ function parseMarkdownLink(text: string): { displayText: string; filePath: strin
 export function renderProjectLinks(
 	container: HTMLElement,
 	projects: string[],
-	deps: LinkServices
+	deps: LinkServices,
+	options: { onPrimaryNavigate?: LinkNavigateHandler } = {}
 ): void {
 	container.innerHTML = "";
 
@@ -331,19 +389,27 @@ export function renderProjectLinks(
 				displayText = parts[1].trim();
 			}
 
-			appendInternalLink(container, filePath, displayText, deps, {
+			const resolvedText = resolveProjectDisplayText(filePath, displayText, deps);
+			appendInternalLink(container, filePath, resolvedText, deps, {
 				cssClass: "task-card__project-link internal-link",
 				hoverSource: "tasknotes-project-link",
 				showErrorNotices: true,
+				onPrimaryNavigate: options.onPrimaryNavigate,
 			});
 		} else if (isMarkdownLink(project)) {
 			// Parse markdown link: [text](path)
 			const parsed = parseMarkdownLink(project);
 			if (parsed) {
-				appendInternalLink(container, parsed.filePath, parsed.displayText, deps, {
+				const resolvedText = resolveProjectDisplayText(
+					parsed.filePath,
+					parsed.displayText,
+					deps
+				);
+				appendInternalLink(container, parsed.filePath, resolvedText, deps, {
 					cssClass: "task-card__project-link internal-link",
 					hoverSource: "tasknotes-project-link",
 					showErrorNotices: true,
+					onPrimaryNavigate: options.onPrimaryNavigate,
 				});
 			} else {
 				// Fallback to plain text if parsing fails

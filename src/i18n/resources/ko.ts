@@ -441,6 +441,11 @@ export const ko: TranslationTree = {
 					name: "작업 링크 오버레이",
 					description: "작업 링크에 마우스를 올리면 인터랙티브 오버레이 표시",
 				},
+				aliasExclusion: {
+					name: "별칭 링크에서 오버레이 비활성화",
+					description:
+						"링크에 별칭이 포함된 경우 작업 위젯을 표시하지 않음 (예: [[작업|별칭]]).",
+				},
 			},
 			instantConvert: {
 				toggle: {

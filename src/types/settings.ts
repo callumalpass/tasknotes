@@ -124,6 +124,7 @@ export interface TaskNotesSettings {
 	pomodoroMobileSidebar: "tab" | "left" | "right"; // where to open pomodoro view on mobile
 	// Editor settings
 	enableTaskLinkOverlay: boolean;
+	disableOverlayOnAlias: boolean;
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
@@ -234,6 +235,8 @@ export interface TaskNotesSettings {
 	enabledMicrosoftCalendars: string[]; // Array of calendar IDs that should be displayed
 	// Microsoft Calendar sync tokens (delta links for incremental sync)
 	microsoftCalendarSyncTokens: Record<string, string>; // Maps calendar ID to delta link
+	// Google Calendar task export settings
+	googleCalendarExport: GoogleCalendarExportSettings;
 }
 
 export interface DefaultReminder {
@@ -283,6 +286,26 @@ export interface ICSIntegrationSettings {
 	useDurationForExport: boolean; // Whether to use timeEstimate (duration) instead of due date for DTEND
 	// Task creation from ICS events
 	useICSEndAsDue: boolean; // Whether to use ICS event end time as task due date
+}
+
+/**
+ * Configuration for exporting tasks to Google Calendar
+ */
+export interface GoogleCalendarExportSettings {
+	enabled: boolean; // Master enable/disable for task export
+	targetCalendarId: string; // Which calendar to create events in
+	syncOnTaskCreate: boolean; // Auto-sync when task is created
+	syncOnTaskUpdate: boolean; // Auto-sync when task is updated
+	syncOnTaskComplete: boolean; // Update event when task is completed
+	syncOnTaskDelete: boolean; // Delete event when task is deleted
+	eventTitleTemplate: string; // Template for event title (e.g., "{{title}}" or "[TaskNotes] {{title}}")
+	includeDescription: boolean; // Include task details in event description
+	eventColorId: string | null; // Optional: Google Calendar color ID for TaskNotes events (null = calendar default)
+	syncTrigger: "scheduled" | "due" | "both"; // Which date triggers event creation
+	createAsAllDay: boolean; // Create as all-day events vs timed
+	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
+	includeObsidianLink: boolean; // Include obsidian:// link in event description
+	defaultReminderMinutes: number | null; // Popup reminder X minutes before event (null = no reminder)
 }
 
 export interface CalendarViewSettings {

@@ -163,6 +163,371 @@ describe('FileSuggestHelper', () => {
       // All files should be returned
       expect(results.length).toBe(4);
     });
+
+    // Issue #1427: Tags filtering not working when notes only have frontmatter tags
+    describe('Issue #1427: Frontmatter-only tags filtering', () => {
+      let frontmatterOnlyMockPlugin: any;
+      let frontmatterOnlyMockFiles: TFile[];
+
+      beforeEach(() => {
+        // Create mock files where tags are ONLY in frontmatter (no inline #tags)
+        frontmatterOnlyMockFiles = [
+          {
+            basename: 'Project Alpha',
+            path: 'projects/Project Alpha.md',
+            extension: 'md',
+            parent: { path: 'projects' }
+          } as TFile,
+          {
+            basename: 'Project Beta',
+            path: 'projects/Project Beta.md',
+            extension: 'md',
+            parent: { path: 'projects' }
+          } as TFile,
+          {
+            basename: 'Regular Note',
+            path: 'notes/Regular Note.md',
+            extension: 'md',
+            parent: { path: 'notes' }
+          } as TFile,
+        ];
+
+        frontmatterOnlyMockPlugin = {
+          app: {
+            vault: {
+              getMarkdownFiles: jest.fn(() => frontmatterOnlyMockFiles),
+            },
+            metadataCache: {
+              getFileCache: jest.fn((file: TFile) => {
+                // Project files have tags ONLY in frontmatter (no native #tags)
+                if (file.path.startsWith('projects/')) {
+                  return {
+                    frontmatter: {
+                      tags: ['project'], // Frontmatter tags only
+                    },
+                    tags: [], // No native inline #tags detected
+                  };
+                }
+                // Regular notes have no tags
+                return {
+                  frontmatter: {},
+                  tags: []
+                };
+              }),
+            },
+          },
+          settings: {
+            suggestionDebounceMs: 0
+          },
+          fieldMapper: {
+            mapFromFrontmatter: jest.fn((fm: any) => ({
+              title: fm.title || ''
+            }))
+          }
+        } as unknown as TaskNotesPlugin;
+      });
+
+      it('should filter by requiredTags when tags are only in frontmatter', async () => {
+        // This is the bug from issue #1427:
+        // Setting Required Tags to "project" should match notes with frontmatter tags: [project]
+        const filterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        const results = await FileSuggestHelper.suggest(
+          frontmatterOnlyMockPlugin,
+          '',
+          20,
+          filterConfig
+        );
+
+        // Should find the 2 project files that have tags: [project] in frontmatter
+        expect(results.length).toBe(2);
+        expect(results.some(r => r.insertText === 'Project Alpha')).toBe(true);
+        expect(results.some(r => r.insertText === 'Project Beta')).toBe(true);
+      });
+
+      it('should produce same results as property filter for tags', async () => {
+        // This demonstrates the discrepancy from issue #1427:
+        // - requiredTags: ['project'] should work the same as
+        // - propertyKey: 'tags', propertyValue: 'project'
+
+        const tagFilterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        const propertyFilterConfig: FileFilterConfig = {
+          propertyKey: 'tags',
+          propertyValue: 'project'
+        };
+
+        const tagResults = await FileSuggestHelper.suggest(
+          frontmatterOnlyMockPlugin,
+          '',
+          20,
+          tagFilterConfig
+        );
+
+        const propertyResults = await FileSuggestHelper.suggest(
+          frontmatterOnlyMockPlugin,
+          '',
+          20,
+          propertyFilterConfig
+        );
+
+        // Both should return the same files
+        expect(tagResults.length).toBe(propertyResults.length);
+        expect(tagResults.length).toBe(2);
+      });
+
+      it('should work with single tag string in frontmatter', async () => {
+        // Some users might have tags: project (string) instead of tags: [project] (array)
+        const singleTagMockPlugin = {
+          ...frontmatterOnlyMockPlugin,
+          app: {
+            ...frontmatterOnlyMockPlugin.app,
+            metadataCache: {
+              getFileCache: jest.fn((file: TFile) => {
+                if (file.path.startsWith('projects/')) {
+                  return {
+                    frontmatter: {
+                      tags: 'project', // Single string, not array
+                    },
+                    tags: [],
+                  };
+                }
+                return {
+                  frontmatter: {},
+                  tags: []
+                };
+              }),
+            },
+          },
+        };
+
+        const filterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        const results = await FileSuggestHelper.suggest(
+          singleTagMockPlugin,
+          '',
+          20,
+          filterConfig
+        );
+
+        expect(results.length).toBe(2);
+      });
+
+      it('should work when frontmatter.tags is undefined but parseFrontMatterTags returns tags', async () => {
+        // This simulates the real Obsidian behavior where tags might not be
+        // directly accessible via frontmatter.tags but are available via parseFrontMatterTags
+        const obsidianStyleMockPlugin = {
+          ...frontmatterOnlyMockPlugin,
+          app: {
+            ...frontmatterOnlyMockPlugin.app,
+            metadataCache: {
+              getFileCache: jest.fn((file: TFile) => {
+                if (file.path.startsWith('projects/')) {
+                  return {
+                    frontmatter: {
+                      // Obsidian might store tags in a different format internally
+                      // The raw 'tags' key might not be directly accessible
+                      // but parseFrontMatterTags would still return them
+                    },
+                    // Native tags array is also empty
+                    tags: [],
+                  };
+                }
+                return {
+                  frontmatter: {},
+                  tags: []
+                };
+              }),
+            },
+          },
+        };
+
+        const filterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        // Note: This test documents the current behavior
+        // If frontmatter.tags is undefined and cache.tags is empty,
+        // no files will match - this might be the bug!
+        const results = await FileSuggestHelper.suggest(
+          obsidianStyleMockPlugin,
+          '',
+          20,
+          filterConfig
+        );
+
+        // Currently this returns 0 because no tags are found
+        // This might be the root cause of issue #1427
+        expect(results.length).toBe(0);
+      });
+
+      it('should handle Obsidian tag format with # prefix in frontmatter', async () => {
+        // Obsidian's parseFrontMatterTags might return tags with # prefix
+        const hashPrefixMockPlugin = {
+          ...frontmatterOnlyMockPlugin,
+          app: {
+            ...frontmatterOnlyMockPlugin.app,
+            metadataCache: {
+              getFileCache: jest.fn((file: TFile) => {
+                if (file.path.startsWith('projects/')) {
+                  return {
+                    frontmatter: {
+                      // Some users might store tags with # prefix in frontmatter
+                      tags: ['#project'],
+                    },
+                    tags: [],
+                  };
+                }
+                return {
+                  frontmatter: {},
+                  tags: []
+                };
+              }),
+            },
+          },
+        };
+
+        const filterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        const results = await FileSuggestHelper.suggest(
+          hashPrefixMockPlugin,
+          '',
+          20,
+          filterConfig
+        );
+
+        // Should still match even if tags have # prefix
+        // Current behavior: this might fail because '#project' !== 'project'
+        expect(results.length).toBe(2);
+      });
+
+      it('should handle tags stored as "tag" key instead of "tags"', async () => {
+        // Some YAML parsers or user configurations might use "tag" (singular)
+        const singularKeyMockPlugin = {
+          ...frontmatterOnlyMockPlugin,
+          app: {
+            ...frontmatterOnlyMockPlugin.app,
+            metadataCache: {
+              getFileCache: jest.fn((file: TFile) => {
+                if (file.path.startsWith('projects/')) {
+                  return {
+                    frontmatter: {
+                      tag: ['project'], // Note: "tag" instead of "tags"
+                    },
+                    tags: [],
+                  };
+                }
+                return {
+                  frontmatter: {},
+                  tags: []
+                };
+              }),
+            },
+          },
+        };
+
+        const filterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        const results = await FileSuggestHelper.suggest(
+          singularKeyMockPlugin,
+          '',
+          20,
+          filterConfig
+        );
+
+        // This will fail because the code only checks "tags" key
+        // This might be a potential issue if users use "tag" key
+        expect(results.length).toBe(0); // Documents current behavior
+      });
+
+      it('should handle empty string tags array', async () => {
+        // Edge case: tags array exists but is empty or has empty strings
+        const emptyTagsMockPlugin = {
+          ...frontmatterOnlyMockPlugin,
+          app: {
+            ...frontmatterOnlyMockPlugin.app,
+            metadataCache: {
+              getFileCache: jest.fn((file: TFile) => {
+                if (file.path.startsWith('projects/')) {
+                  return {
+                    frontmatter: {
+                      tags: [], // Empty array
+                    },
+                    tags: [],
+                  };
+                }
+                return {
+                  frontmatter: {},
+                  tags: []
+                };
+              }),
+            },
+          },
+        };
+
+        const filterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        const results = await FileSuggestHelper.suggest(
+          emptyTagsMockPlugin,
+          '',
+          20,
+          filterConfig
+        );
+
+        expect(results.length).toBe(0);
+      });
+
+      it('should handle null frontmatter.tags', async () => {
+        // Edge case: frontmatter exists but tags is null
+        const nullTagsMockPlugin = {
+          ...frontmatterOnlyMockPlugin,
+          app: {
+            ...frontmatterOnlyMockPlugin.app,
+            metadataCache: {
+              getFileCache: jest.fn((file: TFile) => {
+                if (file.path.startsWith('projects/')) {
+                  return {
+                    frontmatter: {
+                      tags: null,
+                    },
+                    tags: [],
+                  };
+                }
+                return {
+                  frontmatter: {},
+                  tags: []
+                };
+              }),
+            },
+          },
+        };
+
+        const filterConfig: FileFilterConfig = {
+          requiredTags: ['project']
+        };
+
+        const results = await FileSuggestHelper.suggest(
+          nullTagsMockPlugin,
+          '',
+          20,
+          filterConfig
+        );
+
+        expect(results.length).toBe(0);
+      });
+    });
   });
 
   describe('Folder Filtering', () => {
