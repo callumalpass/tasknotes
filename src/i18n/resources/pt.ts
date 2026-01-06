@@ -444,6 +444,11 @@ export const pt: TranslationTree = {
 				taskLinkToggle: {
 					name: "Sobreposição de link de tarefa",
 					description: "Mostrar sobreposições interativas ao passar o mouse sobre links de tarefas"
+				},
+				aliasExclusion: {
+					name: "Desativar sobreposição para links com alias",
+					description:
+						"Não mostrar o widget de tarefa se o link contiver um alias (ex. [[Tarefa|Alias]])."
 				}
 			},
 			instantConvert: {

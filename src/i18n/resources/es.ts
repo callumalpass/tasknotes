@@ -445,6 +445,11 @@ export const es: TranslationTree = {
 					name: "Superposición de enlace de tarea",
 					description: "Mostrar superposiciones interactivas al pasar el cursor sobre enlaces de tareas",
 				},
+				aliasExclusion: {
+					name: "Desactivar superposición para enlaces con alias",
+					description:
+						"No mostrar el widget de tarea si el enlace contiene un alias (ej. [[Tarea|Alias]]).",
+				},
 			},
 			instantConvert: {
 				toggle: {

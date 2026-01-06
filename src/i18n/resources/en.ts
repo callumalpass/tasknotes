@@ -444,6 +444,11 @@ export const en: TranslationTree = {
 					name: "Task link overlay",
 					description: "Show interactive overlays when hovering over task links",
 				},
+				aliasExclusion: {
+					name: "Disable overlay for aliased links",
+					description:
+						"Do not show the task widget if the link contains an alias (e.g. [[Task|Alias]]).",
+				},
 			},
 			instantConvert: {
 				toggle: {

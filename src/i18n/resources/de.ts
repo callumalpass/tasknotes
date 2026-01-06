@@ -445,6 +445,11 @@ export const de: TranslationTree = {
 					name: "Aufgabenlink-Overlay",
 					description: "Zeige interaktive Overlays beim Hovern über Aufgabenlinks",
 				},
+				aliasExclusion: {
+					name: "Overlay für Alias-Links deaktivieren",
+					description:
+						"Das Aufgaben-Widget nicht anzeigen, wenn der Link einen Alias enthält (z.B. [[Aufgabe|Alias]]).",
+				},
 			},
 			instantConvert: {
 				toggle: {

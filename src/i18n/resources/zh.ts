@@ -445,6 +445,11 @@ export const zh: TranslationTree = {
 					name: "任务链接覆盖",
 					description: "悬停在任务链接上时显示交互式覆盖",
 				},
+				aliasExclusion: {
+					name: "禁用别名链接的覆盖",
+					description:
+						"如果链接包含别名，则不显示任务小部件（例如 [[任务|别名]]）。",
+				},
 			},
 			instantConvert: {
 				toggle: {

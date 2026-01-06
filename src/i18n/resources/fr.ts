@@ -445,6 +445,11 @@ export const fr: TranslationTree = {
 					name: "Survol des liens de tâches",
 					description: "Afficher des superpositions interactives lorsque la souris passe sur les liens de tâches",
 				},
+				aliasExclusion: {
+					name: "Désactiver la superposition pour les liens avec alias",
+					description:
+						"Ne pas afficher le widget de tâche si le lien contient un alias (ex. [[Tâche|Alias]]).",
+				},
 			},
 			instantConvert: {
 				toggle: {
