@@ -124,6 +124,7 @@ export interface TaskNotesSettings {
 	pomodoroMobileSidebar: "tab" | "left" | "right"; // where to open pomodoro view on mobile
 	// Editor settings
 	enableTaskLinkOverlay: boolean;
+	disableOverlayOnAlias: boolean;
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;

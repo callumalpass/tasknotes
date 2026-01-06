@@ -289,6 +289,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroMobileSidebar: "tab",
 	// Editor defaults
 	enableTaskLinkOverlay: true,
+	disableOverlayOnAlias: false,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
