@@ -19,7 +19,8 @@ export const pt: TranslationTree = {
 			de: "Alemão",
 			es: "Espanhol",
 			ja: "Japonês",
-            pt: "Português (Brasil)"
+            pt: "Português (Brasil)",
+			ko: "Coreano",
 		},
 		weekdays: {
 			sunday: "Domingo",
@@ -175,7 +176,16 @@ export const pt: TranslationTree = {
 				refresh: "Atualizar"
 			},
 			hints: {
-				refresh: "Atualizar inscrições de calendário"
+				refresh: "Atualizar inscrições de calendário",
+				today: "Ir para hoje",
+				prev: "Anterior",
+				next: "Próximo",
+				month: "Visualização mensal",
+				week: "Visualização semanal",
+				day: "Visualização diária",
+				year: "Visualização anual",
+				list: "Visualização em lista",
+				customDays: "Visualização de {count} dias"
 			},
 			settings: {
 		header: {
@@ -238,7 +248,8 @@ export const pt: TranslationTree = {
 					enableSearch: "Habilitar caixa de pesquisa",
 					eventMaxStack: "Máx. eventos empilhados (vista semana/dia, 0 = ilimitado)",
 					dayMaxEvents: "Máx. eventos por dia (vista mês, 0 = automático)",
-					dayMaxEventRows: "Máx. linhas de eventos por dia (vista mês, 0 = ilimitado)"
+					dayMaxEventRows: "Máx. linhas de eventos por dia (vista mês, 0 = ilimitado)",
+					spanScheduledToDue: "Estender tarefas entre data agendada e data de vencimento"
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propriedade da data de início",
@@ -266,7 +277,9 @@ export const pt: TranslationTree = {
 			},
 			errors: {
 				loadingBoard: "Erro ao carregar o quadro.",
-				noGroupBy: "A vista Kanban requer que uma propriedade 'Agrupar por' seja configurada. Clique no botão 'Ordenar' e selecione uma propriedade em 'Agrupar por'."
+				noGroupBy: "A vista Kanban requer que uma propriedade 'Agrupar por' seja configurada. Clique no botão 'Ordenar' e selecione uma propriedade em 'Agrupar por'.",
+				formulaGroupingReadOnly: "Não é possível mover tarefas entre colunas baseadas em fórmulas. Os valores de fórmula são calculados e não podem ser modificados diretamente.",
+				formulaSwimlaneReadOnly: "Não é possível mover tarefas entre raias baseadas em fórmulas. Os valores de fórmula são calculados e não podem ser modificados diretamente."
 			},
 			columnTitle: "Sem título"
 		},
@@ -493,6 +506,13 @@ export const pt: TranslationTree = {
 				notifications: {
 					name: "Notificações Pomodoro",
 					description: "Mostrar notificações quando as sessões Pomodoro terminarem"
+				},
+				mobileSidebar: {
+					name: "Barra lateral móvel",
+					description: "Onde abrir o temporizador Pomodoro em dispositivos móveis",
+					tab: "Painel de notas",
+					left: "Barra lateral esquerda",
+					right: "Barra lateral direita"
 				}
 			},
 			uiLanguage: {
@@ -1480,6 +1500,10 @@ export const pt: TranslationTree = {
 					resetButton: "Redefinir",
 					resetTooltip: "Redefinir para caminho padrão"
 				},
+				autoCreateDefaultFiles: {
+					name: "Criar arquivos padrão automaticamente",
+					description: "Criar automaticamente arquivos Base padrão ausentes na inicialização. Desative para evitar que arquivos de exemplo excluídos sejam recriados.",
+				},
 				createDefaultFiles: {
 					name: "Criar arquivos padrão",
 					description: "Crie os arquivos .base padrão no diretório TaskNotes/Views/. Os arquivos existentes não serão sobrescritos.",
@@ -1527,6 +1551,10 @@ export const pt: TranslationTree = {
 					name: "Modelo de nome de arquivo ICS personalizado",
 					description: "Modelo para nomes de arquivo de eventos ICS personalizados",
 					placeholder: "{date}-{title}"
+				},
+				useICSEndAsDue: {
+					name: "Usar hora de término do evento ICS como data de vencimento",
+					description: "Quando ativado, as tarefas criadas a partir de eventos de calendário terão sua data de vencimento definida para a hora de término do evento. Para eventos de dia inteiro, a data de vencimento será a data do evento. Para eventos com horário, a data de vencimento incluirá a hora de término."
 				}
 			},
 			subscriptionsList: {
@@ -1612,6 +1640,11 @@ export const pt: TranslationTree = {
 					name: "Intervalo de atualização (entre 5 e 1440 minutos)",
 					description: "Com que frequência atualizar o arquivo de exportação",
 					placeholder: "60"
+				},
+				useDuration: {
+					name: "Usar duração da tarefa para o comprimento do evento",
+					description:
+						"Quando ativado, usa a estimativa de tempo (duração) da tarefa em vez da data de vencimento para o horário de término do evento do calendário. Isso é útil para fluxos de trabalho GTD onde agendado + duração representa o planejamento do trabalho, enquanto a data de vencimento representa prazos."
 				},
 				exportNow: {
 					name: "Exportar agora",
@@ -2505,6 +2538,9 @@ export const pt: TranslationTree = {
 				copyUrlSuccess: "URL do Obsidian copiado para a área de transferência",
 				updateRecurrenceFailure: "Falha ao atualizar recorrência da tarefa: {message}"
 			}
+		},
+		priority: {
+			clearPriority: "Limpar prioridade"
 		},
 		ics: {
 			showDetails: "Mostrar detalhes",

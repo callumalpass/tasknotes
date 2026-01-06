@@ -755,6 +755,18 @@
     z-index: 1;
 }
 
+/* Timegrid (week/day view) today column - use subtle accent instead of FullCalendar default yellow */
+/* Must match FullCalendar's specificity: .fc .fc-timegrid-col.fc-day-today */
+.advanced-calendar-view .fc .fc-timegrid-col.fc-day-today {
+    background-color: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary)) !important;
+}
+
+/* Override FullCalendar's today background CSS variable for consistent theming */
+/* Scoped to .fc inside our view to ensure the variable is properly inherited */
+.advanced-calendar-view .fc {
+    --fc-today-bg-color: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+}
+
 /* Header cells */
 .advanced-calendar-view .fc-col-header-cell {
     background: var(--background-primary) !important;
@@ -979,7 +991,7 @@
     display: none;
 }
 
-.hide-today-highlight .fc-timegrid-col.fc-day-today {
+.hide-today-highlight .fc .fc-timegrid-col.fc-day-today {
     background: inherit !important;
     border: none !important;
 }

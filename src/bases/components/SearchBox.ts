@@ -50,28 +50,31 @@ export class SearchBox {
 	 * Render the search box UI
 	 */
 	render(): HTMLElement {
+		// Use container's document for pop-out window support
+		const doc = this.container.ownerDocument;
+
 		// Create main container
-		this.searchBoxEl = document.createElement('div');
+		this.searchBoxEl = doc.createElement('div');
 		this.searchBoxEl.className = 'tn-search-box';
 
 		// Create input wrapper
-		const inputWrapper = document.createElement('div');
+		const inputWrapper = doc.createElement('div');
 		inputWrapper.className = 'tn-search-box__input-wrapper';
 
 		// Create search icon using Lucide icon (like Obsidian)
-		const icon = document.createElement('div');
+		const icon = doc.createElement('div');
 		icon.className = 'tn-search-box__icon';
 		setIcon(icon, 'search');
 
 		// Create input element
-		this.inputEl = document.createElement('input');
+		this.inputEl = doc.createElement('input');
 		this.inputEl.type = 'text';
 		this.inputEl.className = 'tn-search-box__input';
 		this.inputEl.placeholder = 'Search tasks...';
 		this.inputEl.setAttribute('aria-label', 'Search tasks');
 
 		// Create clear button
-		const clearBtn = document.createElement('button');
+		const clearBtn = doc.createElement('button');
 		clearBtn.type = 'button';
 		clearBtn.className = 'tn-search-box__clear';
 		clearBtn.textContent = '×';

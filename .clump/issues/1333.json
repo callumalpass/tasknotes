@@ -1,0 +1,20 @@
+{
+  "issue_number": 1333,
+  "status": "open",
+  "tags": [],
+  "priority": "medium",
+  "difficulty": "hard",
+  "risk": "medium",
+  "type": "feature",
+  "affected_areas": [
+    "src/modals/TimeblockCreationModal.ts",
+    "src/bases/calendar-core.ts",
+    "src/utils/helpers.ts",
+    "src/types/settings.ts"
+  ],
+  "ai_summary": "Support external journaling plugins (e.g., Journals) for timeblock creation",
+  "notes": "Feature request to allow timeblock creation with journaling plugins other than the native Daily Notes plugin. Currently, the codebase is tightly coupled to obsidian-daily-notes-interface (v0.9.4). The TimeblockCreationModal requires appHasDailyNotesPluginLoaded() at line 271, and uses getAllDailyNotes()/getDailyNote()/createDailyNote() for daily note discovery. To support external plugins like 'Journals' (obsidian-journal), we need: 1) An abstraction layer/interface for daily note resolution, 2) Adapter implementations for different journal plugins, 3) Settings to select which journal system to use, 4) Optional metadata/path/format configuration for custom daily note discovery. This is a significant architectural change requiring a plugin adapter pattern.",
+  "suggested_fix": "Create a JournalProvider interface with methods like getDailyNoteForDate(), createDailyNoteForDate(), and hasDailyNotePlugin(). Implement adapters: NativeDailyNotesProvider (using obsidian-daily-notes-interface) and JournalsPluginProvider (for obsidian-journal). Add a setting to choose the journal provider. Update TimeblockCreationModal, calendar-core.ts, and helpers.ts to use the abstraction instead of direct obsidian-daily-notes-interface calls.",
+  "analyzed_at": "2026-01-01T10:45:00.000Z",
+  "analyzed_by": "claude-opus-4-5-20251101"
+}

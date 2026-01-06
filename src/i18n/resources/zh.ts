@@ -20,6 +20,7 @@ export const zh: TranslationTree = {
 			es: "西班牙语",
 			ja: "日语",
 			pt: "葡萄牙语（巴西）",
+			ko: "韩语",
 		},
 		weekdays: {
 			sunday: "星期日",
@@ -176,6 +177,15 @@ export const zh: TranslationTree = {
 			},
 			hints: {
 				refresh: "刷新日历订阅",
+				today: "转到今天",
+				prev: "上一个",
+				next: "下一个",
+				month: "月视图",
+				week: "周视图",
+				day: "日视图",
+				year: "年视图",
+				list: "列表视图",
+				customDays: "{count}天视图",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const zh: TranslationTree = {
 					initialScrollTime: "初始滚动时间",
 					initialScrollTimePlaceholder: "HH:mm:ss（例如：08:00:00）",
 					minimumEventHeight: "最小事件高度（px）",
+					spanScheduledToDue: "在计划日期和截止日期之间扩展任务",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "开始日期属性",
@@ -267,6 +278,8 @@ export const zh: TranslationTree = {
 			errors: {
 				loadingBoard: "加载看板时出错。",
 				noGroupBy: "看板视图需要配置「分组依据」属性。点击「排序」按钮，然后在「分组依据」下选择一个属性。",
+				formulaGroupingReadOnly: "无法在基于公式的列之间移动任务。公式值是计算得出的，不能直接修改。",
+				formulaSwimlaneReadOnly: "无法在基于公式的泳道之间移动任务。公式值是计算得出的，不能直接修改。",
 			},
 			columnTitle: "无标题",
 		},
@@ -493,6 +506,13 @@ export const zh: TranslationTree = {
 				notifications: {
 					name: "番茄钟通知",
 					description: "番茄钟会话结束时显示通知",
+				},
+				mobileSidebar: {
+					name: "移动端侧边栏",
+					description: "在移动设备上打开番茄钟计时器的位置",
+					tab: "笔记面板",
+					left: "左侧边栏",
+					right: "右侧边栏",
 				},
 			},
 			uiLanguage: {
@@ -1477,6 +1497,10 @@ export const zh: TranslationTree = {
 					resetButton: "重置",
 					resetTooltip: "重置为默认路径",
 				},
+				autoCreateDefaultFiles: {
+					name: "自动创建默认文件",
+					description: "启动时自动创建缺失的默认 Base 视图文件。禁用以防止已删除的示例文件被重新创建。",
+				},
 				createDefaultFiles: {
 					name: "创建默认文件",
 					description: "在 TaskNotes/Views/ 目录中创建默认的 .base 文件。现有文件不会被覆盖。",
@@ -1524,6 +1548,10 @@ export const zh: TranslationTree = {
 					name: "自定义ICS文件名模板",
 					description: "自定义ICS事件文件名的模板",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "使用ICS事件结束时间作为任务截止日期",
+					description: "启用后，从日历事件创建的任务将把截止日期设置为事件的结束时间。对于全天事件，截止日期将设置为事件日期。对于有时间的事件，截止日期将包含结束时间。",
 				},
 			},
 			subscriptionsList: {
@@ -1609,6 +1637,11 @@ export const zh: TranslationTree = {
 					name: "更新间隔（5到1440分钟之间）",
 					description: "更新导出文件的频率",
 					placeholder: "60",
+				},
+				useDuration: {
+					name: "使用任务持续时间作为事件长度",
+					description:
+						"启用后，使用任务的时间估计（持续时间）而不是截止日期作为日历事件的结束时间。这对于GTD工作流程很有用，其中计划 + 持续时间代表工作规划，而截止日期代表最后期限。",
 				},
 				exportNow: {
 					name: "立即导出",
@@ -2497,6 +2530,9 @@ export const zh: TranslationTree = {
 				copyUrlSuccess: "Obsidian URL已复制到剪贴板",
 				updateRecurrenceFailure: "更新任务重复失败：{message}",
 			},
+		},
+		priority: {
+			clearPriority: "清除优先级",
 		},
 		ics: {
 			showDetails: "显示详情",

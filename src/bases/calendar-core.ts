@@ -40,7 +40,7 @@ export interface CalendarEvent {
 		taskInfo?: TaskInfo;
 		icsEvent?: ICSEvent;
 		timeblock?: TimeBlock;
-		eventType: "scheduled" | "due" | "timeEntry" | "recurring" | "ics" | "timeblock" | "property-based";
+		eventType: "scheduled" | "due" | "scheduledToDueSpan" | "timeEntry" | "recurring" | "ics" | "timeblock" | "property-based";
 		filePath?: string; // For property-based events
 		file?: any; // For property-based events
 		basesEntry?: any; // For property-based events - full Bases entry with getValue()
@@ -62,6 +62,7 @@ export interface CalendarEvent {
 export interface CalendarEventGenerationOptions {
 	showScheduled?: boolean;
 	showDue?: boolean;
+	showScheduledToDueSpan?: boolean;
 	showTimeEntries?: boolean;
 	showRecurring?: boolean;
 	showICSEvents?: boolean;
@@ -92,9 +93,10 @@ export function hexToRgba(hex: string, alpha: number): string {
 
 /**
  * Check if the app is in dark mode
+ * Uses activeDocument to support pop-out windows
  */
 export function isDarkMode(): boolean {
-	return document.body.classList.contains('theme-dark');
+	return activeDocument.body.classList.contains('theme-dark');
 }
 
 /**
@@ -455,10 +457,53 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 		backgroundColor: fadedBackground,
 		borderColor: borderColor,
 		textColor: textColor,
-		editable: false,
+		editable: true,
 		extendedProps: {
 			taskInfo: task,
 			eventType: "due",
+			isCompleted: isCompleted,
+		},
+	};
+}
+
+/**
+ * Create a spanning event from scheduled date to due date.
+ * Shows the task as a multi-day bar from when work starts to when it's due.
+ */
+export function createScheduledToDueSpanEvent(task: TaskInfo, plugin: TaskNotesPlugin): CalendarEvent | null {
+	if (!task.scheduled || !task.due) return null;
+
+	// Parse dates to compare them
+	const scheduledDate = parseDateToLocal(task.scheduled);
+	const dueDate = parseDateToLocal(task.due);
+
+	// Skip if due is before or same as scheduled (no span to show)
+	if (dueDate <= scheduledDate) return null;
+
+	// For FullCalendar, the end date for all-day events is exclusive,
+	// so we need to add one day to include the due date
+	const endDateExclusive = new Date(dueDate);
+	endDateExclusive.setDate(endDateExclusive.getDate() + 1);
+
+	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
+	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const fadedBackground = hexToRgba(borderColor, 0.2);
+	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
+
+	return {
+		id: `span-${task.path}`,
+		title: task.title,
+		start: format(scheduledDate, "yyyy-MM-dd"),
+		end: format(endDateExclusive, "yyyy-MM-dd"),
+		allDay: true,
+		backgroundColor: fadedBackground,
+		borderColor: borderColor,
+		textColor: textColor,
+		editable: false, // Span events are read-only (edit via scheduled/due separately)
+		extendedProps: {
+			taskInfo: task,
+			eventType: "scheduledToDueSpan",
 			isCompleted: isCompleted,
 		},
 	};
@@ -914,6 +959,7 @@ export async function generateCalendarEvents(
 	const {
 		showScheduled = true,
 		showDue = true,
+		showScheduledToDueSpan = false,
 		showTimeEntries = true,
 		showRecurring = true,
 		showICSEvents = true,
@@ -925,45 +971,68 @@ export async function generateCalendarEvents(
 	const events: CalendarEvent[] = [];
 
 	for (const task of tasks) {
-		// Handle recurring tasks
-		if (task.recurrence) {
-			if (!task.scheduled) continue;
+		try {
+			// Handle recurring tasks
+			if (task.recurrence) {
+				if (!task.scheduled) continue;
 
-			if (showRecurring && visibleStart && visibleEnd) {
-				const recurringEvents = generateRecurringTaskInstances(
-					task,
-					visibleStart,
-					visibleEnd,
-					plugin
-				);
-				events.push(...recurringEvents);
-			}
-		} else {
-			// Handle non-recurring tasks with date range filtering
-			if (showScheduled && task.scheduled) {
-				if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
-					const scheduledEvent = createScheduledEvent(task, plugin);
-					if (scheduledEvent) events.push(scheduledEvent);
+				if (showRecurring && visibleStart && visibleEnd) {
+					const recurringEvents = generateRecurringTaskInstances(
+						task,
+						visibleStart,
+						visibleEnd,
+						plugin
+					);
+					events.push(...recurringEvents);
+				}
+			} else {
+				// Handle non-recurring tasks with date range filtering
+				// Check if we should show a span event (replaces individual scheduled/due for this task)
+				let showedSpan = false;
+				if (showScheduledToDueSpan && task.scheduled && task.due) {
+					const spanEvent = createScheduledToDueSpanEvent(task, plugin);
+					if (spanEvent) {
+						// Check if span is in visible range (use scheduled date for range check)
+						if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd) ||
+							isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
+							events.push(spanEvent);
+							showedSpan = true;
+						}
+					}
+				}
+
+				// Only show individual scheduled/due events if we didn't show a span
+				if (!showedSpan) {
+					if (showScheduled && task.scheduled) {
+						if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
+							const scheduledEvent = createScheduledEvent(task, plugin);
+							if (scheduledEvent) events.push(scheduledEvent);
+						}
+					}
+
+					if (showDue && task.due) {
+						if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
+							const dueEvent = createDueEvent(task, plugin);
+							if (dueEvent) events.push(dueEvent);
+						}
+					}
 				}
 			}
 
-			if (showDue && task.due) {
-				if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
-					const dueEvent = createDueEvent(task, plugin);
-					if (dueEvent) events.push(dueEvent);
+			// Add time entry events with date range filtering
+			if (showTimeEntries && task.timeEntries) {
+				const timeEvents = createTimeEntryEvents(task, plugin);
+				// Filter time entries by visible range
+				for (const event of timeEvents) {
+					if (isDateInVisibleRange(event.start, visibleStart, visibleEnd)) {
+						events.push(event);
+					}
 				}
 			}
-		}
-
-		// Add time entry events with date range filtering
-		if (showTimeEntries && task.timeEntries) {
-			const timeEvents = createTimeEntryEvents(task, plugin);
-			// Filter time entries by visible range
-			for (const event of timeEvents) {
-				if (isDateInVisibleRange(event.start, visibleStart, visibleEnd)) {
-					events.push(event);
-				}
-			}
+		} catch (error) {
+			// Log error but continue processing other tasks
+			// This prevents a single task with invalid dates from breaking the entire calendar
+			console.warn(`[TaskNotes][Calendar] Error processing task "${task.title}" (${task.path}):`, error);
 		}
 	}
 
@@ -1180,7 +1249,8 @@ export async function showTimeblockInfoModal(
 	timeblock: TimeBlock,
 	eventDate: Date,
 	originalDate: string | undefined,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	onChange?: () => void
 ): Promise<void> {
 
 	const modal = new TimeblockInfoModal(
@@ -1188,7 +1258,8 @@ export async function showTimeblockInfoModal(
 		plugin,
 		timeblock,
 		eventDate,
-		originalDate
+		originalDate,
+		onChange
 	);
 	modal.open();
 }

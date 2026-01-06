@@ -8,6 +8,8 @@ This page covers task creation, properties, projects, dependencies, recurring ta
 
 You can create and edit tasks in a variety of ways. The primary method is through the **Task Creation Modal**, which can be accessed via the "Create new task" command or by clicking on dates or time slots in the calendar views. This modal provides an interface for setting all available task properties, including title, status, priority, and due dates.
 
+![Task Creation Modal](../assets/modal-task-create.png)
+
 When creating a task, the title will be automatically sanitized to remove any characters that are forbidden in filenames.
 
 TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority."

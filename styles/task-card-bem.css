@@ -158,6 +158,18 @@
     border-color: color-mix(in srgb, var(--tn-color-error) 70%, transparent);
 }
 
+.tasknotes-plugin .task-card__metadata-pill--google-calendar {
+    background: transparent;
+    color: #4285F4;
+    border-color: color-mix(in srgb, #4285F4 70%, transparent);
+    padding: 0 6px;
+}
+
+.tasknotes-plugin .task-card__metadata-pill--google-calendar svg {
+    width: 12px;
+    height: 12px;
+}
+
 
 .tasknotes-plugin .task-card__tag {
     background: var(--tn-bg-secondary);

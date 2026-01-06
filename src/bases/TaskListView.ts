@@ -15,7 +15,7 @@ import { getDatePart, getTimePart, parseDateToUTC, createUTCDateFromLocalCalenda
 import { VirtualScroller } from "../utils/VirtualScroller";
 
 export class TaskListView extends BasesViewBase {
-	type = "tasknoteTaskList";
+	type = "tasknotesTaskList";
 
 	private itemsContainer: HTMLElement | null = null;
 	private currentTaskElements = new Map<string, HTMLElement>();
@@ -90,8 +90,11 @@ export class TaskListView extends BasesViewBase {
 			this.rootElement.style.cssText = "display: flex; flex-direction: column; height: 100%;";
 		}
 
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+
 		// Create items container
-		const itemsContainer = document.createElement("div");
+		const itemsContainer = doc.createElement("div");
 		itemsContainer.className = "tn-bases-items-container";
 		// Use flex: 1 to fill available space in the rootElement flex container
 		// max-height: 100vh prevents unbounded growth when embedded in notes
@@ -649,7 +652,10 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private createGroupHeader(headerItem: any): HTMLElement {
-		const groupHeader = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+
+		const groupHeader = doc.createElement("div");
 		groupHeader.className = "task-section task-group";
 
 		// Determine header level and set appropriate data attributes
@@ -669,12 +675,12 @@ export class TaskListView extends BasesViewBase {
 			groupHeader.classList.add("is-collapsed");
 		}
 
-		const headerElement = document.createElement("h3");
+		const headerElement = doc.createElement("h3");
 		headerElement.className = "task-group-header task-list-view__group-header";
 		groupHeader.appendChild(headerElement);
 
 		// Add toggle button
-		const toggleBtn = document.createElement("button");
+		const toggleBtn = doc.createElement("button");
 		toggleBtn.className = "task-group-toggle";
 		toggleBtn.setAttribute("aria-label", "Toggle group");
 		toggleBtn.setAttribute("aria-expanded", String(!headerItem.isCollapsed));
@@ -721,7 +727,9 @@ export class TaskListView extends BasesViewBase {
 				const replacement = createTaskCard(task, this.plugin, visibleProperties, this.getCardOptions(this.currentTargetDate));
 				existingElement.replaceWith(replacement);
 				replacement.classList.add("task-card--updated");
-				window.setTimeout(() => {
+				// Use correct window for pop-out window support
+				const win = this.containerEl.ownerDocument.defaultView || window;
+				win.setTimeout(() => {
 					replacement.classList.remove("task-card--updated");
 				}, 1000);
 				this.currentTaskElements.set(task.path, replacement);
@@ -732,7 +740,9 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private renderEmptyState(): void {
-		const emptyEl = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const emptyEl = doc.createElement("div");
 		emptyEl.className = "tn-bases-empty";
 		emptyEl.style.cssText = "padding: 20px; text-align: center; color: #666;";
 		emptyEl.textContent = "No TaskNotes tasks found for this Base.";
@@ -740,7 +750,9 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	renderError(error: Error): void {
-		const errorEl = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const errorEl = doc.createElement("div");
 		errorEl.className = "tn-bases-error";
 		errorEl.style.cssText =
 			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";
@@ -1184,7 +1196,9 @@ export class TaskListView extends BasesViewBase {
 			this.clickTimeouts.delete(task.path);
 			await this.executeDoubleClickAction(task, event);
 		} else {
-			const timeout = window.setTimeout(async () => {
+			// Use correct window for pop-out window support
+			const win = this.containerEl.ownerDocument.defaultView || window;
+			const timeout = win.setTimeout(async () => {
 				this.clickTimeouts.delete(task.path);
 				await this.executeSingleClickAction(task, event);
 			}, 250);

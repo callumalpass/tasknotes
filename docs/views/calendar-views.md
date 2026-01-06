@@ -4,6 +4,8 @@
 
 TaskNotes provides two calendar-based views: the **Mini Calendar** and the **Calendar View**. Both operate as Bases views (`.base` files) and require the Bases core plugin to be enabled in Obsidian.
 
+![Calendar Month View](../assets/views-calendar-month.png)
+
 ## Bases View Architecture
 
 Calendar views in TaskNotes v4 are implemented as Bases views, which means:
@@ -16,6 +18,8 @@ Calendar views in TaskNotes v4 are implemented as Bases views, which means:
 ## Mini Calendar View
 
 The Mini Calendar displays a month-based view that shows which days contain tasks or other dated notes. It provides navigation and an overview of your task distribution across time.
+
+![Mini Calendar View](../assets/views-mini-calendar.png)
 
 ### Features
 
@@ -39,6 +43,10 @@ The Calendar View supports the following view modes:
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
 - **Custom Days**: Configurable multi-day view (2-10 days)
+
+| Week View | Day View | Year View |
+|-----------|----------|-----------|
+| ![Week View](../assets/views-calendar-week.png) | ![Day View](../assets/views-calendar-day.png) | ![Year View](../assets/views-calendar-year.png) |
 
 ### Performance Improvements
 
@@ -119,8 +127,21 @@ The Calendar View provides several display options that control what types of ev
 - **Show ICS events**: Display events from imported ICS calendars
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
+- **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)
 
 The **All-day slot** option is particularly useful when you have many all-day tasks on a single date, as hiding it can resolve scrolling issues and make the hourly time slots more accessible. When disabled, all-day events will not be displayed in time grid views, but they will still appear in month view.
+
+#### Multi-Day Task Spans
+
+The **Span tasks between scheduled and due dates** option provides a visual representation of task duration on the calendar. When enabled:
+
+- Tasks with both a scheduled date and a due date display as a single bar spanning across all days from the scheduled date to the due date
+- This replaces the separate scheduled and due markers for qualifying tasks
+- Tasks with only a scheduled date or only a due date continue to display as single-day events
+- Span events are shown as all-day bars with the task's priority color
+- Span events are read-only on the calendar (edit the underlying scheduled/due dates to modify)
+
+This option is useful for project planning and visualizing how long tasks are expected to take, similar to Gantt chart-style views.
 
 These display options are preserved when you save a view, allowing you to create specialized calendar views that show only specific types of events and maintain those preferences across sessions.
 

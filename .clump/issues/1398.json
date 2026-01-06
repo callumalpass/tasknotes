@@ -1,0 +1,18 @@
+{
+  "issue_number": 1398,
+  "status": "completed",
+  "tags": [],
+  "priority": "medium",
+  "difficulty": "trivial",
+  "risk": "low",
+  "type": "bug",
+  "affected_areas": [
+    "src/ui/TaskCard.ts"
+  ],
+  "ai_summary": "Overdue highlighting should not apply to completed tasks",
+  "notes": "The isOverdueTimeAware() function in dateUtils.ts already supports parameters for isCompleted and hideCompletedFromOverdue (with a default setting of true). The FilterService correctly uses these parameters when grouping tasks, but TaskCard.ts does not pass them when rendering due/scheduled dates. This causes completed tasks to still show overdue styling (red highlight) even though the setting hideCompletedFromOverdue defaults to true.",
+  "root_cause": "In TaskCard.ts, renderDueDateProperty() at line 1194 and renderScheduledDateProperty() at line 1242 call isOverdueTimeAware() with only the date parameter, ignoring the task's completion status and the hideCompletedFromOverdue setting. The function signature supports these optional parameters but they are not being passed.",
+  "suggested_fix": "Update renderDueDateProperty() and renderScheduledDateProperty() in TaskCard.ts to: 1) Determine if task is completed (check status against completed statuses), 2) Read the hideCompletedFromOverdue setting from plugin.settings, 3) Pass both values to isOverdueTimeAware() calls. The pattern for determining completion status can be copied from FilterService.ts.",
+  "analyzed_at": "2025-12-30T12:45:00Z",
+  "analyzed_by": "claude-opus-4-5-20251101"
+}

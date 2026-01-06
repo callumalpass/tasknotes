@@ -1,0 +1,22 @@
+{
+  "issue_number": 1342,
+  "status": "open",
+  "tags": [],
+  "priority": "medium",
+  "difficulty": "medium",
+  "risk": "low",
+  "type": "feature",
+  "affected_areas": [
+    "src/types.ts",
+    "src/services/PomodoroService.ts",
+    "src/views/PomodoroView.ts",
+    "src/views/PomodoroStatsView.ts",
+    "src/api/PomodoroController.ts",
+    "src/services/FieldMapper.ts"
+  ],
+  "ai_summary": "Add optional tags field to Pomodoro sessions and time-tracking entries for activity categorization and analytics",
+  "notes": "Feature request to allow users to categorize Pomodoro and time-tracking sessions with optional tags (e.g., #learning, #writing). The codebase is well-positioned for this: (1) Task tags infrastructure already exists with string[] arrays, (2) TimeEntry already has description field - could be extended with tags, (3) TimeTrackingController.getTimeSummary() already aggregates statistics by tags (lines 305-311) - this pattern can be replicated for Pomodoro, (4) PomodoroSession and PomodoroSessionHistory interfaces can be extended with optional tags?: string[] field, (5) FieldMapping system supports custom field names for daily note storage, (6) Tag filtering already exists in advanced filters with 'contains'/'does-not-contain' operators. Implementation follows established patterns and is backward compatible since tags field is optional.",
+  "suggested_fix": "1. Add tags?: string[] to PomodoroSession and PomodoroSessionHistory in types.ts (lines 577-611). 2. Update PomodoroService.startPomodoro() to accept optional tags parameter and store in session/history. 3. Add tag input field to PomodoroView (token-style selector near task selection). 4. Extend PomodoroController API endpoints to accept/return tags. 5. Update PomodoroStatsView to show tag-based analytics replicating TimeTrackingController's tagStats aggregation pattern. 6. Add pomodoroTags to FieldMapping for customizable daily note property names. 7. Optionally extend TimeEntry with tags array for time-tracking entries.",
+  "analyzed_at": "2026-01-01T12:00:00Z",
+  "analyzed_by": "claude-opus-4-5-20251101"
+}

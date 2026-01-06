@@ -431,6 +431,11 @@ function parseMarkdownLinkSync(
 	const displayText = match[1].trim();
 	let linkPath = match[2].trim();
 
+	// Strip angle brackets used to escape special characters or spaces
+	if (linkPath.startsWith("<") && linkPath.endsWith(">")) {
+		linkPath = linkPath.slice(1, -1).trim();
+	}
+
 	if (!linkPath || linkPath.length === 0) {
 		return null;
 	}

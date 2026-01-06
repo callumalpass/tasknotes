@@ -1,9 +1,10 @@
-
 # Integrations Settings
 
 These settings control the integration with other plugins and services, such as Bases and external calendars.
 
 [← Back to Settings](../settings.md)
+
+![Integrations Settings](../assets/settings-integrations.png)
 
 ## Bases Integration
 

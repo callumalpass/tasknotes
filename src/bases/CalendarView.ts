@@ -88,7 +88,7 @@ export function normalizeDateValueForCalendar(
 }
 
 export class CalendarView extends BasesViewBase {
-	type = "tasknoteCalendar";
+	type = "tasknotesCalendar";
 	calendar: Calendar | null = null; // Made public for factory access
 	private calendarEl: HTMLElement | null = null;
 	private currentTasks: TaskInfo[] = [];
@@ -103,11 +103,15 @@ export class CalendarView extends BasesViewBase {
 
 	// Track if this is the first data update after load (should be immediate)
 	private _isFirstDataUpdate = true;
+
+	// Track previous config values to detect user-initiated toggle changes
+	private _previousConfigSnapshot: string | null = null;
 	
 	private viewOptions: {
 		// Events
 		showScheduled: boolean;
 		showDue: boolean;
+		showScheduledToDueSpan: boolean;
 		showRecurring: boolean;
 		showTimeEntries: boolean;
 		showTimeblocks: boolean;
@@ -167,7 +171,8 @@ export class CalendarView extends BasesViewBase {
 		this.viewOptions = {
 			// Events
 			showScheduled: calendarSettings.defaultShowScheduled,
-			showDue: calendarSettings.defaultShowDue, 
+			showDue: calendarSettings.defaultShowDue,
+			showScheduledToDueSpan: calendarSettings.defaultShowScheduledToDueSpan,
 			showRecurring: calendarSettings.defaultShowRecurring,
 			showTimeEntries: calendarSettings.defaultShowTimeEntries,
 			showTimeblocks: calendarSettings.defaultShowTimeblocks,
@@ -215,6 +220,8 @@ export class CalendarView extends BasesViewBase {
 	onload(): void {
 		// Read view options now that config is available
 		this.readViewOptions();
+		// Initialize config snapshot for change detection
+		this._previousConfigSnapshot = this.getConfigSnapshot();
 		// Call parent onload which sets up container and listeners
 		super.onload();
 	}
@@ -260,8 +267,16 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
+		// If config toggles changed, render immediately (user toggled a view option)
+		if (this.hasConfigChanged()) {
+			this.render();
+			return;
+		}
+
 		// Otherwise use longer debounce for external changes (typing in notes)
-		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+		// Use correct window for pop-out window support
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			this.render();
 		}, 5000);  // 5 second debounce - outlasts Obsidian's save interval
@@ -277,6 +292,67 @@ export class CalendarView extends BasesViewBase {
 		setTimeout(() => {
 			this._expectingImmediateUpdate = false;
 		}, 2000);
+	}
+
+	/**
+	 * Get a snapshot of config values that affect rendering.
+	 * Used to detect user-initiated toggle changes.
+	 */
+	private getConfigSnapshot(): string {
+		if (!this.config || typeof this.config.get !== 'function') {
+			return '';
+		}
+		// Include all toggle values that would affect what's displayed
+		const values: any[] = [
+			this.config.get('showScheduled'),
+			this.config.get('showDue'),
+			this.config.get('showScheduledToDueSpan'),
+			this.config.get('showRecurring'),
+			this.config.get('showTimeEntries'),
+			this.config.get('showTimeblocks'),
+			this.config.get('showPropertyBasedEvents'),
+		];
+
+		// Include ICS calendar toggles
+		if (this.plugin.icsSubscriptionService) {
+			for (const sub of this.plugin.icsSubscriptionService.getSubscriptions()) {
+				values.push(this.config.get(`showICS_${sub.id}`));
+			}
+		}
+
+		// Include Google calendar toggles
+		if (this.plugin.googleCalendarService) {
+			for (const cal of this.plugin.googleCalendarService.getAvailableCalendars()) {
+				values.push(this.config.get(`showGoogleCalendar_${cal.id}`));
+			}
+		}
+
+		// Include Microsoft calendar toggles
+		if (this.plugin.microsoftCalendarService) {
+			for (const cal of this.plugin.microsoftCalendarService.getAvailableCalendars()) {
+				values.push(this.config.get(`showMicrosoftCalendar_${cal.id}`));
+			}
+		}
+
+		return JSON.stringify(values);
+	}
+
+	/**
+	 * Check if config has changed since last snapshot.
+	 * Returns true if this is likely a user-initiated config change.
+	 */
+	private hasConfigChanged(): boolean {
+		const currentSnapshot = this.getConfigSnapshot();
+		if (this._previousConfigSnapshot === null) {
+			// First time - just store the snapshot
+			this._previousConfigSnapshot = currentSnapshot;
+			return false;
+		}
+		if (currentSnapshot !== this._previousConfigSnapshot) {
+			this._previousConfigSnapshot = currentSnapshot;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -342,6 +418,7 @@ export class CalendarView extends BasesViewBase {
 		try {
 			this.viewOptions.showScheduled = this.config.get('showScheduled') ?? this.viewOptions.showScheduled;
 			this.viewOptions.showDue = this.config.get('showDue') ?? this.viewOptions.showDue;
+			this.viewOptions.showScheduledToDueSpan = this.config.get('showScheduledToDueSpan') ?? this.viewOptions.showScheduledToDueSpan;
 			this.viewOptions.showRecurring = this.config.get('showRecurring') ?? this.viewOptions.showRecurring;
 			this.viewOptions.showTimeEntries = this.config.get('showTimeEntries') ?? this.viewOptions.showTimeEntries;
 			this.viewOptions.showTimeblocks = this.config.get('showTimeblocks') ?? this.viewOptions.showTimeblocks;
@@ -570,10 +647,20 @@ export class CalendarView extends BasesViewBase {
 				year: this.plugin.i18n.translate("views.basesCalendar.buttonText.year"),
 				list: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
 			},
+			buttonHints: {
+				today: this.plugin.i18n.translate("views.basesCalendar.hints.today") || "Go to today",
+				prev: this.plugin.i18n.translate("views.basesCalendar.hints.prev") || "Previous",
+				next: this.plugin.i18n.translate("views.basesCalendar.hints.next") || "Next",
+				month: this.plugin.i18n.translate("views.basesCalendar.hints.month") || "Month view",
+				week: this.plugin.i18n.translate("views.basesCalendar.hints.week") || "Week view",
+				day: this.plugin.i18n.translate("views.basesCalendar.hints.day") || "Day view",
+				year: this.plugin.i18n.translate("views.basesCalendar.hints.year") || "Year view",
+				list: this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
+			},
 			customButtons: {
 				listWeekButton: {
 					text: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
-					hint: this.plugin.i18n.translate("views.basesCalendar.buttonText.list") || "List",
+					hint: this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
 					click: () => {
 						if (this.calendar) {
 							const currentView = this.calendar.view?.type;
@@ -620,6 +707,7 @@ export class CalendarView extends BasesViewBase {
 					buttonText: this.plugin.i18n.translate("views.basesCalendar.buttonText.customDays", {
 						count: this.viewOptions.customDayCount.toString()
 					}),
+					titleFormat: { year: "numeric", month: "short", day: "numeric" },
 				},
 				listWeek: {
 					type: "list",
@@ -776,6 +864,7 @@ export class CalendarView extends BasesViewBase {
 		const eventConfig = {
 			showScheduled: this.viewOptions.showScheduled,
 			showDue: this.viewOptions.showDue,
+			showScheduledToDueSpan: this.viewOptions.showScheduledToDueSpan,
 			showRecurring: this.viewOptions.showRecurring,
 			showTimeEntries: this.viewOptions.showTimeEntries,
 			showTimeblocks: this.viewOptions.showTimeblocks,
@@ -990,13 +1079,13 @@ export class CalendarView extends BasesViewBase {
 		// Handle timeblock click
 		if (eventType === "timeblock" && timeblock) {
 			const originalDate = format(info.event.start, "yyyy-MM-dd");
-			showTimeblockInfoModal(timeblock, info.event.start, originalDate, this.plugin);
+			showTimeblockInfoModal(timeblock, info.event.start, originalDate, this.plugin, () => this.expectImmediateUpdate());
 			return;
 		}
 
 		// Handle time entry click - left click opens time entry modal
 		if (eventType === "timeEntry" && taskInfo && jsEvent.button === 0) {
-			this.plugin.openTimeEntryEditor(taskInfo);
+			this.plugin.openTimeEntryEditor(taskInfo, () => this.expectImmediateUpdate());
 			return;
 		}
 
@@ -1020,7 +1109,7 @@ export class CalendarView extends BasesViewBase {
 
 		// Handle task click with single/double click detection based on user settings
 		if (taskInfo?.path && jsEvent.button === 0) {
-			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id);
+			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id, () => this.expectImmediateUpdate());
 		}
 	}
 
@@ -1219,29 +1308,24 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		// Only allow scheduled and recurring events to be moved (block due dates)
-		if (eventType === "due") {
-			info.revert();
-			return;
-		}
-
 		// Handle recurring task drops
 		if (taskInfo && (isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)) {
 			await handleRecurringTaskDrop(info, taskInfo, this.plugin);
 			return;
 		}
 
-		// Handle normal task drops
+		// Handle normal task drops (scheduled and due dates)
 		if (taskInfo) {
 			try {
-				if (eventType === "scheduled") {
+				if (eventType === "scheduled" || eventType === "due") {
 					const newStart = info.event.start;
 					const allDay = info.event.allDay;
 					const newDateString = allDay
 						? format(newStart, "yyyy-MM-dd")
 						: format(newStart, "yyyy-MM-dd'T'HH:mm");
 
-					await this.plugin.taskService.updateProperty(taskInfo, "scheduled", newDateString);
+					const property = eventType === "scheduled" ? "scheduled" : "due";
+					await this.plugin.taskService.updateProperty(taskInfo, property, newDateString);
 				}
 			} catch (error) {
 				console.error("[TaskNotes][CalendarView] Error updating task date:", error);
@@ -1451,7 +1535,10 @@ export class CalendarView extends BasesViewBase {
 					const modal = new TaskCreationModal(
 						this.plugin.app,
 						this.plugin,
-						{ prePopulatedValues: values }
+						{
+							prePopulatedValues: values,
+							onTaskCreated: () => this.expectImmediateUpdate()
+						}
 					);
 					modal.open();
 				});
@@ -1497,12 +1584,14 @@ export class CalendarView extends BasesViewBase {
 			if (provider) {
 				const titleEl = arg.el.querySelector('.fc-event-title');
 				if (titleEl) {
-					const iconContainer = document.createElement('span');
+					// Use correct document for pop-out window support
+					const doc = arg.el.ownerDocument;
+					const iconContainer = doc.createElement('span');
 					iconContainer.style.marginRight = '4px';
 					iconContainer.style.display = 'inline-flex';
 					iconContainer.style.alignItems = 'center';
 
-					const iconEl = document.createElement('span');
+					const iconEl = doc.createElement('span');
 					iconEl.style.width = '12px';
 					iconEl.style.height = '12px';
 					iconEl.style.display = 'inline-flex';
@@ -1650,10 +1739,8 @@ export class CalendarView extends BasesViewBase {
 					case "scheduled":
 					case "recurring":
 					case "timeEntry":
-						arg.event.setProp("editable", true);
-						break;
 					case "due":
-						arg.event.setProp("editable", false);
+						arg.event.setProp("editable", true);
 						break;
 					default:
 						arg.event.setProp("editable", true);
@@ -1771,8 +1858,11 @@ export class CalendarView extends BasesViewBase {
 			this.rootElement.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
 			this.rootElement.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
 
+			// Use correct document for pop-out window support
+			const doc = this.containerEl.ownerDocument;
+
 			// Calendar element for FullCalendar to render into
-			const calendarEl = document.createElement("div");
+			const calendarEl = doc.createElement("div");
 			calendarEl.id = "bases-calendar";
 			calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
 			this.rootElement.appendChild(calendarEl);
@@ -1789,7 +1879,9 @@ export class CalendarView extends BasesViewBase {
 	renderError(error: Error): void {
 		if (!this.calendarEl) return;
 
-		const errorEl = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.calendarEl.ownerDocument;
+		const errorEl = doc.createElement("div");
 		errorEl.className = "tn-bases-error";
 		errorEl.style.cssText =
 			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";
@@ -1798,21 +1890,11 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	onunload(): void {
-		// Save the current view type to config on unload (safe here, won't trigger recreation)
-		if (this.calendar && this.config) {
-			const currentViewType = this.calendar.view?.type;
-			if (currentViewType) {
-				try {
-					const storedViewType = this.config.get('calendarView');
-					if (storedViewType !== currentViewType) {
-						this.config.set('calendarView', currentViewType);
-						console.debug('[TaskNotes][CalendarView] Saved view type on unload:', currentViewType);
-					}
-				} catch (error) {
-					console.debug('[TaskNotes][CalendarView] Failed to save view type on unload:', error);
-				}
-			}
-		}
+		// Note: We intentionally do NOT call config.set() here (issue #1397)
+		// The Bases API has a bug where config objects can point to wrong files,
+		// causing view corruption when config.set() writes to unrelated .base files.
+		// View type is preserved via ephemeral state (getEphemeralState/setEphemeralState)
+		// and users can set their default view in the .base file's calendarView option.
 
 		// Component.register() calls will be automatically cleaned up
 

@@ -58,6 +58,14 @@ webhook*.log
 external/tasknotes-e2e/.e2e/
 C/
 .copy-files.local
+
+# E2E testing - unpacked Obsidian and test results
+.obsidian-unpacked/
+test-results/
+# E2E vault plugin symlinks (point to build output)
+tasknotes-e2e-vault/.obsidian/plugins/tasknotes/main.js
+tasknotes-e2e-vault/.obsidian/plugins/tasknotes/manifest.json
+tasknotes-e2e-vault/.obsidian/plugins/tasknotes/styles.css
 .augment
 # Test output files
 jest-out.txt
@@ -67,3 +75,8 @@ BASES_API_MIGRATION.md
 OBSIDIAN-SERVER-README.md
 obsidian-help
 obsidian-api
+.clump
+tasknotes-e2e-vault/.obsidian/workspace.json
+.obsidian-config-e2e
+# Generated calendar files
+tasknotes-e2e-vault/*.ics

@@ -114,6 +114,8 @@ export interface MarkdownEditorProps {
 	onChange?: (value: string, update: ViewUpdate) => void;
 	/** Additional CodeMirror extensions (e.g., autocomplete) */
 	extensions?: Extension[];
+	/** Automatically enter vim insert mode on first focus when vim keybindings are enabled */
+	enterVimInsertMode?: boolean;
 }
 
 const defaultProperties: Required<MarkdownEditorProps> = {
@@ -129,6 +131,7 @@ const defaultProperties: Required<MarkdownEditorProps> = {
 	onPaste: () => {},
 	onChange: () => {},
 	extensions: [],
+	enterVimInsertMode: false,
 };
 
 /**
@@ -152,6 +155,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	initial_value: string;
 	scope: Scope;
 	private uninstaller?: () => void;
+	private hasEnteredVimInsertMode = false;
 
 	constructor(app: App, container: HTMLElement, options: Partial<MarkdownEditorProps> = {}) {
 		super(app, container, {
@@ -196,6 +200,12 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		this.editor.cm.contentDOM.addEventListener("focusin", () => {
 			this.app.keymap.pushScope(this.scope);
 			this.app.workspace.activeEditor = this.owner;
+
+			// Enter vim insert mode on first focus if requested and vim mode is enabled
+			if (this.options.enterVimInsertMode && !this.hasEnteredVimInsertMode) {
+				this.hasEnteredVimInsertMode = true;
+				this.enterVimInsertMode();
+			}
 		});
 
 		// Add custom CSS class if provided
@@ -226,6 +236,35 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	 */
 	setValue(value: string): void {
 		this.set(value);
+	}
+
+	/**
+	 * Enter vim insert mode if vim keybindings are enabled in Obsidian.
+	 * Uses Obsidian's internal CodeMirrorAdapter.Vim API.
+	 */
+	private enterVimInsertMode(): void {
+		// Use a small delay to ensure vim extension has initialized
+		setTimeout(() => {
+			try {
+				// Check if vim mode is enabled in Obsidian settings
+				const vimModeEnabled = (this.app.vault as any).getConfig("vimMode");
+				if (!vimModeEnabled) return;
+
+				// Access the Vim API from Obsidian's CodeMirrorAdapter
+				const Vim = (window as any).CodeMirrorAdapter?.Vim;
+				if (!Vim) return;
+
+				// Get the CM5 adapter - Obsidian nests it at editor.cm.cm
+				// Fallback to activeCM if the standard path doesn't work
+				const cm5 = (this.editor as any)?.cm?.cm ?? (this as any).activeCM;
+				if (!cm5) return;
+
+				// Enter insert mode by simulating the 'i' key
+				Vim.handleKey(cm5, "i", "api");
+			} catch {
+				// Silently fail if vim integration isn't available
+			}
+		}, 50);
 	}
 
 	/**

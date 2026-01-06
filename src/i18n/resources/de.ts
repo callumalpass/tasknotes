@@ -20,6 +20,7 @@ export const de: TranslationTree = {
 			es: "Spanisch",
 			ja: "Japanisch",
 			pt: "Portugiesisch (Brasilien)",
+			ko: "Koreanisch",
 		},
 		weekdays: {
 			sunday: "Sonntag",
@@ -176,6 +177,15 @@ export const de: TranslationTree = {
 			},
 			hints: {
 				refresh: "Kalenderabonnements aktualisieren",
+				today: "Zu heute gehen",
+				prev: "Zurück",
+				next: "Weiter",
+				month: "Monatsansicht",
+				week: "Wochenansicht",
+				day: "Tagesansicht",
+				year: "Jahresansicht",
+				list: "Listenansicht",
+				customDays: "{count}-Tage-Ansicht",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const de: TranslationTree = {
 					eventMaxStack: "Max. gestapelte Ereignisse (Wochen-/Tagesansicht, 0 = unbegrenzt)",
 					dayMaxEvents: "Max. Ereignisse pro Tag (Monatsansicht, 0 = automatisch)",
 					dayMaxEventRows: "Max. Ereigniszeilen pro Tag (Monatsansicht, 0 = unbegrenzt)",
+					spanScheduledToDue: "Aufgaben zwischen geplantem und Fälligkeitsdatum spannen",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Startdatumseigenschaft",
@@ -267,6 +278,8 @@ export const de: TranslationTree = {
 			errors: {
 				loadingBoard: "Fehler beim Laden des Boards.",
 				noGroupBy: "Die Kanban-Ansicht erfordert eine konfigurierte 'Gruppieren nach'-Eigenschaft. Klicken Sie auf die Schaltfläche 'Sortieren' und wählen Sie eine Eigenschaft unter 'Gruppieren nach' aus.",
+				formulaGroupingReadOnly: "Aufgaben können nicht zwischen formelbasierten Spalten verschoben werden. Formelwerte werden berechnet und können nicht direkt geändert werden.",
+				formulaSwimlaneReadOnly: "Aufgaben können nicht zwischen formelbasierten Swimlanes verschoben werden. Formelwerte werden berechnet und können nicht direkt geändert werden.",
 			},
 			columnTitle: "Ohne Titel",
 		},
@@ -493,6 +506,13 @@ export const de: TranslationTree = {
 				notifications: {
 					name: "Pomodoro-Benachrichtigungen",
 					description: "Benachrichtigungen anzeigen, wenn Pomodoro-Sitzungen enden",
+				},
+				mobileSidebar: {
+					name: "Mobile Seitenleiste",
+					description: "Wo der Pomodoro-Timer auf mobilen Geräten geöffnet werden soll",
+					tab: "Notiz-Panel",
+					left: "Linke Seitenleiste",
+					right: "Rechte Seitenleiste",
 				},
 			},
 			uiLanguage: {
@@ -1477,6 +1497,10 @@ export const de: TranslationTree = {
 					resetButton: "Zurücksetzen",
 					resetTooltip: "Auf Standardpfad zurücksetzen",
 				},
+				autoCreateDefaultFiles: {
+					name: "Standarddateien automatisch erstellen",
+					description: "Fehlende Standard-Base-Ansichtsdateien beim Start automatisch erstellen. Deaktivieren, um zu verhindern, dass gelöschte Beispieldateien neu erstellt werden.",
+				},
 				createDefaultFiles: {
 					name: "Standarddateien erstellen",
 					description: "Erstelle die Standard-.base-Dateien im TaskNotes/Views/-Verzeichnis. Vorhandene Dateien werden nicht überschrieben.",
@@ -1524,6 +1548,10 @@ export const de: TranslationTree = {
 					name: "Benutzerdefinierte ICS-Dateinamenvorlage",
 					description: "Vorlage für benutzerdefinierte ICS-Event-Dateinamen",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "ICS-Ereignis-Endzeit als Fälligkeitsdatum verwenden",
+					description: "Wenn aktiviert, wird das Fälligkeitsdatum von Aufgaben aus Kalenderereignissen auf die Endzeit des Ereignisses gesetzt. Bei ganztägigen Ereignissen wird das Fälligkeitsdatum auf das Ereignisdatum gesetzt. Bei zeitgesteuerten Ereignissen enthält das Fälligkeitsdatum die Endzeit.",
 				},
 			},
 			subscriptionsList: {
@@ -1609,6 +1637,11 @@ export const de: TranslationTree = {
 					name: "Aktualisierungsintervall (zwischen 5 und 1440 Minuten)",
 					description: "Wie oft die Export-Datei aktualisiert werden soll",
 					placeholder: "60",
+				},
+				useDuration: {
+					name: "Aufgabendauer für Eventlänge verwenden",
+					description:
+						"Wenn aktiviert, wird die geschätzte Dauer der Aufgabe anstelle des Fälligkeitsdatums für die Endzeit des Kalenderevents verwendet. Dies ist nützlich für GTD-Workflows, bei denen geplant + Dauer die Arbeitsplanung darstellt, während das Fälligkeitsdatum Fristen repräsentiert.",
 				},
 				exportNow: {
 					name: "Jetzt exportieren",
@@ -2497,6 +2530,9 @@ export const de: TranslationTree = {
 				copyUrlSuccess: "Obsidian URL in Zwischenablage kopiert",
 				updateRecurrenceFailure: "Aufgabenwiederholung konnte nicht aktualisiert werden: {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Priorität löschen",
 		},
 		ics: {
 			showDetails: "Details anzeigen",

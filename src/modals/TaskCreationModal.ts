@@ -36,6 +36,7 @@ import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
 export interface TaskCreationOptions {
 	prePopulatedValues?: Partial<TaskInfo>;
 	onTaskCreated?: (task: TaskInfo) => void;
+	creationContext?: "manual-creation" | "modal-inline-creation"; // Folder behavior context
 }
 
 /**
@@ -729,6 +730,7 @@ export class TaskCreationModal extends TaskModal {
 				placeholder: this.t("modals.taskCreation.nlPlaceholder"),
 				cls: "nlp-editor",
 				extensions: nlpAutocomplete, // Add autocomplete extensions (array)
+				enterVimInsertMode: true, // Auto-enter insert mode when vim is enabled (#1410)
 				onChange: (value) => {
 					// Update preview as user types
 					if (value.trim()) {
@@ -1321,7 +1323,10 @@ export class TaskCreationModal extends TaskModal {
 			recurrence: this.recurrenceRule || undefined,
 			recurrence_anchor: this.recurrenceRule ? this.recurrenceAnchor : undefined,
 			reminders: this.reminders.length > 0 ? this.reminders : undefined,
-			creationContext: "manual-creation", // Mark as manual creation for folder logic
+			// Use provided creationContext or default to manual-creation for folder logic
+			// "manual-creation" = Create New Task command -> uses default tasksFolder
+			// "modal-inline-creation" = Create New Inline Task command -> uses inlineTaskConvertFolder
+			creationContext: this.options.creationContext || "manual-creation",
 			dateCreated: now,
 			dateModified: now,
 			// Add user fields as custom frontmatter properties

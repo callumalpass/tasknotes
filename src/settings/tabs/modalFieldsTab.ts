@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { TranslationKey } from "../../i18n";
-import { createSectionHeader, createHelpText, createToggleSetting } from "../components/settingHelpers";
+import { createSettingGroup, configureToggleSetting } from "../components/settingHelpers";
 import { createFieldManager, addFieldManagerStyles } from "../components/FieldManagerComponent";
 import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
 import type { TaskModalFieldsConfig, UserMappedField } from "../../types/settings";
@@ -32,48 +32,81 @@ export function renderModalFieldsTab(
 		save(); // Save the initialized config
 	}
 
-	// Header
-	createSectionHeader(
+	// Configuration Section
+	createSettingGroup(
 		container,
-		"Task Modal Fields Configuration"
-	);
-
-	createHelpText(
-		container,
-		"Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group."
-	);
-
-	// Split layout toggle
-	createToggleSetting(container, {
-		name: "Split layout on wide screens",
-		desc: "When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
-		getValue: () => plugin.settings.enableModalSplitLayout,
-		setValue: (value) => {
-			plugin.settings.enableModalSplitLayout = value;
-			save();
+		{
+			heading: "Task Modal Fields Configuration",
+			description: "Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.",
 		},
-	});
+		(group) => {
+			// Split layout toggle
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Split layout on wide screens",
+					desc: "When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
+					getValue: () => plugin.settings.enableModalSplitLayout,
+					setValue: (value) => {
+						plugin.settings.enableModalSplitLayout = value;
+						save();
+					},
+				})
+			);
 
-	// Sync button to update from user fields
-	const syncContainer = container.createDiv({ cls: "modal-fields-sync" });
-	const syncButton = syncContainer.createEl("button", {
-		cls: "mod-cta",
-		text: "Sync User Fields",
-	});
-	syncButton.onclick = () => {
-		syncUserFieldsToConfig(plugin);
-		save();
-		new Notice("User fields synced to modal configuration");
-		// Re-render the tab
-		renderModalFieldsTab(container, plugin, save);
-	};
+			// Sync button
+			group.addSetting((setting) => {
+				setting
+					.setName("Sync User Fields")
+					.setDesc("Click to sync custom user fields from Task Properties settings into this configuration.")
+					.addButton((button) => {
+						button
+							.setButtonText("Sync User Fields")
+							.setCta()
+							.onClick(() => {
+								syncUserFieldsToConfig(plugin);
+								save();
+								new Notice("User fields synced to modal configuration");
+								// Re-render the tab
+								renderModalFieldsTab(container, plugin, save);
+							});
+					});
+			});
 
-	createHelpText(
-		syncContainer,
-		"Click to sync custom user fields from Task Properties settings into this configuration."
+			// Reset button
+			group.addSetting((setting) => {
+				setting
+					.setName("Reset to Defaults")
+					.setDesc("Reset all field configurations to their default values. This will remove any custom configurations.")
+					.addButton((button) => {
+						button
+							.setButtonText("Reset to Defaults")
+							.setWarning()
+							.onClick(async () => {
+								const confirmed = await showConfirmationModal(plugin.app, {
+									title: "Reset Field Configuration",
+									message: "Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
+									confirmText: "Reset",
+									cancelText: "Cancel",
+									isDestructive: true,
+								});
+
+								if (confirmed) {
+									plugin.settings.modalFieldsConfig = initializeFieldConfig(
+										undefined,
+										plugin.settings.userFields
+									);
+									save();
+									new Notice("Field configuration reset to defaults");
+									// Re-render the tab
+									renderModalFieldsTab(container, plugin, save);
+								}
+							});
+					});
+			});
+		}
 	);
 
-	// Field manager
+	// Field manager (keep existing component for now - has its own internal tabs)
 	const managerContainer = container.createDiv({ cls: "modal-fields-manager-container" });
 
 	// Double-check config exists before creating field manager
@@ -92,33 +125,6 @@ export function renderModalFieldsTab(
 		},
 		plugin.app
 	);
-
-	// Reset button
-	const resetContainer = container.createDiv({ cls: "modal-fields-reset" });
-	const resetButton = resetContainer.createEl("button", {
-		cls: "mod-warning",
-		text: "Reset to Defaults",
-	});
-	resetButton.onclick = async () => {
-		const confirmed = await showConfirmationModal(plugin.app, {
-			title: "Reset Field Configuration",
-			message: "Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
-			confirmText: "Reset",
-			cancelText: "Cancel",
-			isDestructive: true,
-		});
-
-		if (confirmed) {
-			plugin.settings.modalFieldsConfig = initializeFieldConfig(
-				undefined,
-				plugin.settings.userFields
-			);
-			save();
-			new Notice("Field configuration reset to defaults");
-			// Re-render the tab
-			renderModalFieldsTab(container, plugin, save);
-		}
-	};
 }
 
 /**

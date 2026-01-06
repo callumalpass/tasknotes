@@ -1,6 +1,6 @@
-import { App, PluginSettingTab, Platform } from "obsidian";
+import { App, PluginSettingTab, Platform, requireApiVersion } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { debounce } from "./components/settingHelpers";
+import { debounce, DebouncedFunction } from "./components/settingHelpers";
 import { renderGeneralTab } from "./tabs/generalTab";
 import { renderTaskPropertiesTab } from "./tabs/taskPropertiesTab";
 import { renderModalFieldsTab } from "./tabs/modalFieldsTab";
@@ -19,11 +19,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	plugin: TaskNotesPlugin;
 	private activeTab = "general";
 	private tabContents: Record<string, HTMLElement> = {};
-	private debouncedSave = debounce(() => this.plugin.saveSettings(), 500);
+	private debouncedSave: DebouncedFunction<() => Promise<void>> = debounce(
+		() => this.plugin.saveSettings(),
+		500
+	);
 
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+
+		// Set icon for settings sidebar (Obsidian 1.11.0+)
+		if (requireApiVersion("1.11.0")) {
+			this.icon = "tasknotes-simple";
+		}
 
 		this.plugin.registerEvent(
 			this.plugin.i18n.on("locale-changed", () => {
@@ -246,5 +254,13 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Check if there are integrations other than HTTP API that work on mobile
 		// Currently: ICS subscriptions and plugin integrations work on mobile
 		return true; // ICS subscriptions are always available
+	}
+
+	/**
+	 * Called when the settings tab is hidden/closed.
+	 * Flushes any pending debounced saves to ensure settings are persisted.
+	 */
+	hide(): void {
+		this.debouncedSave.flush();
 	}
 }

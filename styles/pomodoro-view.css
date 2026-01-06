@@ -392,15 +392,18 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: transparent;
+    background: var(--background-secondary);
     color: var(--tn-text-normal);
-    border: none;
+    border: 1px solid var(--background-modifier-border);
     box-shadow: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .tasknotes-plugin .pomodoro-view__time-adjust-button:hover {
     background: var(--tn-interactive-hover);
-    border: none;
+    border-color: var(--tn-interactive-accent);
     box-shadow: none;
 }
 

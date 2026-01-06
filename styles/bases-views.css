@@ -326,6 +326,9 @@
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     font-size: var(--tn-font-size-md);
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 /* Swimlane task count */
@@ -359,6 +362,12 @@
     opacity: 0.5;
     transform: rotate(2deg);
     box-shadow: var(--tn-shadow-medium);
+}
+
+@media (pointer: coarse) {
+    .kanban-view__column-header-cell--dragging {
+        pointer-events: none;
+    }
 }
 
 .kanban-view__column-header-cell .kanban-view__column-title {

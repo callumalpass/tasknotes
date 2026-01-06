@@ -47,7 +47,11 @@ export class ICSNoteService {
 				title: overrides?.title || icsEvent.title,
 				status: overrides?.status || this.plugin.settings.defaultTaskStatus,
 				priority: overrides?.priority || this.plugin.settings.defaultTaskPriority,
-				due: overrides?.due || undefined, // Don't set due date from ICS events
+				due: overrides?.due !== undefined
+				? overrides.due
+				: this.plugin.settings.icsIntegration?.useICSEndAsDue
+					? this.computeDueFromICSEnd(icsEvent)
+					: undefined,
 				// Safe date handling per guidelines:
 				// - all-day: YYYY-MM-DD (UTC-anchored calendar day)
 				// - timed: YYYY-MM-DDTHH:mm (local)
@@ -63,7 +67,10 @@ export class ICSNoteService {
 				creationContext: "ics-event",
 				dateCreated: getCurrentTimestamp(),
 				dateModified: getCurrentTimestamp(),
-				...overrides,
+				// Spread overrides but exclude 'due' since we handle it specially above
+				...Object.fromEntries(
+					Object.entries(overrides || {}).filter(([key]) => key !== 'due')
+				),
 			};
 
 			// Create the task using the existing TaskService
@@ -104,6 +111,44 @@ export class ICSNoteService {
 				error,
 			});
 			return icsEvent.start; // fallback to raw value
+		}
+	}
+
+	/**
+	 * Convert ICSEvent.end to a safe due date string
+	 * - All-day events: Use the start date (ICS all-day events have DTEND as the next day per spec)
+	 * - Timed events: Use the actual end time
+	 * - No end time: Return undefined
+	 */
+	private computeDueFromICSEnd(icsEvent: ICSEvent): string | undefined {
+		try {
+			// No end time means no due date
+			if (!icsEvent.end) return undefined;
+
+			// For all-day events, the ICS spec uses DTEND as the day AFTER the event
+			// e.g., an all-day event on Feb 12 has DTSTART=20250212 and DTEND=20250213
+			// So we use the start date as the due date for all-day events
+			if (icsEvent.allDay) {
+				if (!icsEvent.start) return undefined;
+				const startDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+					? icsEvent.start + 'T00:00:00'
+					: icsEvent.start;
+				const startDate = new Date(startDateStr);
+				return formatDateForStorage(startDate);
+			}
+
+			// Timed event: use the actual end time
+			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
+				? icsEvent.end + 'T00:00:00'
+				: icsEvent.end;
+			const endDate = new Date(endDateStr);
+			return format(endDate, "yyyy-MM-dd'T'HH:mm");
+		} catch (error) {
+			console.warn("Failed to compute due from ICS event end:", {
+				end: icsEvent.end,
+				error,
+			});
+			return undefined;
 		}
 	}
 

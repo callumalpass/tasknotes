@@ -17,6 +17,7 @@ export interface StatusContextMenuOptions {
 export class StatusContextMenu {
 	private menu: ContextMenu;
 	private options: StatusContextMenuOptions;
+	private targetDoc: Document = document;
 
 	constructor(options: StatusContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -75,6 +76,11 @@ export class StatusContextMenu {
 	}
 
 	public show(event: UIEvent): void {
+		// Store the document reference from the event target to support pop-out windows
+		// Use cross-window compatible instanceOf check
+		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
+			this.targetDoc = (event.target as HTMLElement).ownerDocument;
+		}
 		this.menu.show(event);
 
 		// Apply color styling after menu is shown
@@ -84,6 +90,8 @@ export class StatusContextMenu {
 	}
 
 	public showAtElement(element: HTMLElement): void {
+		// Store the document reference from the element to support pop-out windows
+		this.targetDoc = element.ownerDocument;
 		this.menu.showAtPosition({
 			x: element.getBoundingClientRect().left,
 			y: element.getBoundingClientRect().bottom + 4,
@@ -97,7 +105,7 @@ export class StatusContextMenu {
 
 	private applyColorStyling(): void {
 		const statusOptions = this.getStatusOptions();
-		const menuEl = document.querySelector(".menu");
+		const menuEl = this.targetDoc.querySelector(".menu");
 
 		if (!menuEl) return;
 

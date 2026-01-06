@@ -229,7 +229,8 @@ export async function handleCalendarTaskClick(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
 	jsEvent: MouseEvent,
-	eventId: string
+	eventId: string,
+	onTaskUpdated?: () => void
 ) {
 	const openNote = (newTab = false) => {
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -243,7 +244,7 @@ export async function handleCalendarTaskClick(
 	};
 
 	const editTask = async () => {
-		await plugin.openTaskEditModal(task);
+		await plugin.openTaskEditModal(task, onTaskUpdated ? () => onTaskUpdated() : undefined);
 	};
 
 	const handleSingleClick = async (e: MouseEvent) => {

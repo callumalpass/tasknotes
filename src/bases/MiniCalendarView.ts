@@ -102,7 +102,9 @@ export class MiniCalendarView extends BasesViewBase {
 
 		try {
 			// Check if the grid currently has focus before clearing
-			const gridHadFocus = this.calendarEl.querySelector('.mini-calendar-view__grid') === document.activeElement;
+			// Use correct document for pop-out window support
+			const doc = this.containerEl.ownerDocument;
+			const gridHadFocus = this.calendarEl.querySelector('.mini-calendar-view__grid') === doc.activeElement;
 
 			// Clear calendar
 			this.calendarEl.empty();
@@ -1048,7 +1050,9 @@ export class MiniCalendarView extends BasesViewBase {
 	protected setupContainer(): void {
 		super.setupContainer();
 
-		const calendar = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const calendar = doc.createElement("div");
 		calendar.className = "mini-calendar-bases-view";
 		this.rootElement?.appendChild(calendar);
 		this.calendarEl = calendar;
@@ -1062,7 +1066,9 @@ export class MiniCalendarView extends BasesViewBase {
 	renderError(error: Error): void {
 		if (!this.calendarEl) return;
 
-		const errorEl = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.calendarEl.ownerDocument;
+		const errorEl = doc.createElement("div");
 		errorEl.className = "tn-bases-error";
 		errorEl.style.cssText =
 			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";

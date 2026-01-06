@@ -6,6 +6,7 @@ import {
 	ICSIntegrationSettings,
 	ProjectAutosuggestSettings,
 	NLPTriggersConfig,
+	GoogleCalendarExportSettings,
 } from "../types/settings";
 
 /**
@@ -44,6 +45,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	pomodoros: "pomodoros",
 	icsEventId: "icsEventId",
 	icsEventTag: "ics_event",
+	googleCalendarEventId: "googleCalendarEventId",
 	reminders: "reminders",
 };
 
@@ -158,6 +160,7 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	defaultShowScheduled: true,
 	defaultShowDue: true,
 	defaultShowDueWhenScheduled: true,
+	defaultShowScheduledToDueSpan: false, // Off by default - opt-in feature
 	defaultShowTimeEntries: false,
 	defaultShowRecurring: true,
 	defaultShowICSEvents: true,
@@ -188,6 +191,26 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	enableAutoExport: false,
 	autoExportPath: "tasknotes-calendar.ics",
 	autoExportInterval: 60, // 60 minutes by default
+	useDurationForExport: false, // Preserve existing behavior: use due date as DTEND
+	// Task creation defaults
+	useICSEndAsDue: false, // Preserve existing behavior: don't set due date from ICS events
+};
+
+export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
+	enabled: false, // Disabled by default - user must opt-in
+	targetCalendarId: "", // Empty = user must select a calendar
+	syncOnTaskCreate: true,
+	syncOnTaskUpdate: true,
+	syncOnTaskComplete: true,
+	syncOnTaskDelete: true,
+	eventTitleTemplate: "{{title}}", // Simple title by default
+	includeDescription: true,
+	eventColorId: null, // Use calendar default color
+	syncTrigger: "scheduled", // Default to scheduled date
+	createAsAllDay: true, // All-day events by default
+	defaultEventDuration: 60, // 1 hour if timed events
+	includeObsidianLink: true, // Include link back to Obsidian
+	defaultReminderMinutes: null, // No reminder by default (user opts in)
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
@@ -263,6 +286,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroSoundEnabled: true,
 	pomodoroSoundVolume: 50,
 	pomodoroStorageLocation: "plugin",
+	pomodoroMobileSidebar: "tab",
 	// Editor defaults
 	enableTaskLinkOverlay: true,
 	disableOverlayOnAlias: false,
@@ -350,6 +374,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	inlineVisibleProperties: ["status", "priority", "due", "scheduled", "recurrence"],
 	// Bases integration defaults
 	enableBases: true,
+	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
 		'open-calendar-view': 'TaskNotes/Views/mini-calendar-default.base',
@@ -380,4 +405,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enabledMicrosoftCalendars: [],
 	// Microsoft Calendar sync tokens (delta links for incremental sync)
 	microsoftCalendarSyncTokens: {},
+	// Google Calendar task export settings
+	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
 };

@@ -221,6 +221,109 @@ describe('TaskSearchFilter', () => {
 		});
 	});
 
+	describe.skip('ANY word matching (issue #1327)', () => {
+		// Issue #1327: Kanban search should support matching ANY word, not just phrase
+		// Currently searching "code review" only matches if those exact words appear together
+		// Feature request: should match tasks containing "code" OR "review" separately
+
+		it('should match when ANY search word is found in task (not just phrase)', () => {
+			// Task has "review" in title, but not "code"
+			// When searching "code review", current behavior fails to match
+			// Expected: should match because "review" is present
+			const tasksForTest: TaskInfo[] = [
+				{
+					title: 'Review pull request for quality',
+					status: 'open',
+					priority: 'high',
+					path: 'tasks/review.md',
+					archived: false,
+					tags: ['pr'],
+				},
+			] as TaskInfo[];
+
+			const result = filter.filterTasks(tasksForTest, 'code review');
+			// This test currently FAILS - the phrase "code review" is not in the title
+			// After fix, it should PASS because "review" is in the title
+			expect(result.length).toBe(1);
+		});
+
+		it('should match task when search words appear in different fields', () => {
+			// "bug" is in title, "urgent" is in tags
+			// Searching "bug urgent" should match this task
+			const tasksForTest: TaskInfo[] = [
+				{
+					title: 'Fix bug in authentication',
+					status: 'open',
+					priority: 'high',
+					path: 'tasks/bug.md',
+					archived: false,
+					tags: ['urgent', 'security'],
+				},
+			] as TaskInfo[];
+
+			const result = filter.filterTasks(tasksForTest, 'bug urgent');
+			// This test currently FAILS - "bug urgent" as phrase is not in searchable text
+			// After fix, it should PASS because both "bug" and "urgent" are present
+			expect(result.length).toBe(1);
+		});
+
+		it('should match task when only one of multiple search words is present', () => {
+			// Task only has "documentation" which contains "doc"
+			// Searching "api doc" should still match because "doc" is present
+			const tasksForTest: TaskInfo[] = [
+				{
+					title: 'Write documentation for feature',
+					status: 'open',
+					priority: 'normal',
+					path: 'tasks/docs.md',
+					archived: false,
+				},
+			] as TaskInfo[];
+
+			const result = filter.filterTasks(tasksForTest, 'api doc');
+			// This test currently FAILS - "api doc" as phrase is not in the title
+			// After fix, it should PASS because "doc" (partial) is in "documentation"
+			expect(result.length).toBe(1);
+		});
+
+		it('should match when search words appear in reverse order', () => {
+			// Title has "feature search" but user searches "search feature"
+			const tasksForTest: TaskInfo[] = [
+				{
+					title: 'New feature search implementation',
+					status: 'open',
+					priority: 'normal',
+					path: 'tasks/feature.md',
+					archived: false,
+				},
+			] as TaskInfo[];
+
+			const result = filter.filterTasks(tasksForTest, 'search feature');
+			// This currently PASSES because "search feature" appears as substring
+			// But if the title was "Search the new feature", it would fail
+			// Keeping this test to ensure ANY word matching works regardless of order
+			expect(result.length).toBe(1);
+		});
+
+		it('should match when words are separated by other content', () => {
+			// Title has "meeting" and "report" but they're not adjacent
+			const tasksForTest: TaskInfo[] = [
+				{
+					title: 'Prepare meeting notes and status report',
+					status: 'open',
+					priority: 'normal',
+					path: 'tasks/meeting.md',
+					archived: false,
+				},
+			] as TaskInfo[];
+
+			const result = filter.filterTasks(tasksForTest, 'meeting report');
+			// This test currently FAILS - "meeting report" as phrase is not in title
+			// After fix, it should PASS because both "meeting" and "report" are present
+			expect(result.length).toBe(1);
+		});
+	});
+
 	describe('extractSearchableText', () => {
 		it('should extract text from all core fields', () => {
 			const task: TaskInfo = {

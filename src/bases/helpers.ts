@@ -329,7 +329,9 @@ export async function renderTaskNotesInBasesView(
 	console.log("[TaskNotes][Bases] renderTaskNotesInBasesView ENTRY - tasks:", taskNotes.length, "basesContainer:", !!basesContainer, "precomputed props:", precomputedVisibleProperties?.length);
 	const { createTaskCard } = await import("../ui/TaskCard");
 
-	const taskListEl = document.createElement("div");
+	// Use container's document for pop-out window support
+	const doc = container.ownerDocument;
+	const taskListEl = doc.createElement("div");
 	taskListEl.className = "tn-bases-tasknotes-list";
 	taskListEl.style.cssText = "display: flex; flex-direction: column; gap: 1px;";
 	container.appendChild(taskListEl);
@@ -506,8 +508,11 @@ export async function renderGroupedTasksInBasesView(
 		}
 	}
 
+	// Use container's document for pop-out window support
+	const doc = container.ownerDocument;
+
 	// Create wrapper with proper class for CSS styling
-	const listWrapper = document.createElement("div");
+	const listWrapper = doc.createElement("div");
 	listWrapper.className = "tn-bases-tasknotes-list";
 	container.appendChild(listWrapper);
 
@@ -560,18 +565,18 @@ export async function renderGroupedTasksInBasesView(
 		if (groupEntries.length === 0) continue;
 
 		// Create group section
-		const groupSection = document.createElement("div");
+		const groupSection = doc.createElement("div");
 		groupSection.className = "task-section task-group";
 		groupSection.setAttribute("data-group", groupName);
 		listWrapper.appendChild(groupSection);
 
 		// Create group header
-		const headerElement = document.createElement("h3");
+		const headerElement = doc.createElement("h3");
 		headerElement.className = "task-group-header task-list-view__group-header";
 		groupSection.appendChild(headerElement);
 
 		// Add toggle button (chevron)
-		const toggleBtn = document.createElement("button");
+		const toggleBtn = doc.createElement("button");
 		toggleBtn.className = "task-group-toggle";
 		toggleBtn.setAttribute("aria-label", "Toggle group");
 		toggleBtn.setAttribute("aria-expanded", "true");
@@ -598,7 +603,7 @@ export async function renderGroupedTasksInBasesView(
 		});
 
 		// Create task cards container BEFORE adding click handler
-		const taskCardsContainer = document.createElement("div");
+		const taskCardsContainer = doc.createElement("div");
 		taskCardsContainer.className = "tasks-container task-cards";
 		groupSection.appendChild(taskCardsContainer);
 
@@ -662,18 +667,20 @@ export function renderBasesDataItem(
 	item: BasesDataItem,
 	index: number
 ): void {
-	const itemEl = document.createElement("div");
+	// Use container's document for pop-out window support
+	const doc = container.ownerDocument;
+	const itemEl = doc.createElement("div");
 	itemEl.className = "tn-bases-data-item";
 	itemEl.style.cssText =
 		"padding: 12px; margin: 8px 0; background: #fff; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);";
 
-	const header = document.createElement("div");
+	const header = doc.createElement("div");
 	header.style.cssText = "font-weight: bold; margin-bottom: 8px; color: #333;";
 	header.textContent = `Item ${index + 1}`;
 	itemEl.appendChild(header);
 
 	if ((item as any).path) {
-		const pathEl = document.createElement("div");
+		const pathEl = doc.createElement("div");
 		pathEl.style.cssText =
 			"font-size: 12px; color: #666; margin-bottom: 6px; font-family: monospace;";
 		pathEl.textContent = `Path: ${(item as any).path}`;
@@ -682,19 +689,19 @@ export function renderBasesDataItem(
 
 	const props = (item as any).properties;
 	if (props && typeof props === "object") {
-		const propsEl = document.createElement("div");
+		const propsEl = doc.createElement("div");
 		propsEl.style.cssText = "font-size: 12px; margin-top: 8px;";
 
-		const propsHeader = document.createElement("div");
+		const propsHeader = doc.createElement("div");
 		propsHeader.style.cssText = "font-weight: bold; margin-bottom: 4px; color: #555;";
 		propsHeader.textContent = "Properties:";
 		propsEl.appendChild(propsHeader);
 
-		const propsList = document.createElement("ul");
+		const propsList = doc.createElement("ul");
 		propsList.style.cssText = "margin: 0; padding-left: 16px; list-style-type: disc;";
 
 		Object.entries(props).forEach(([key, value]) => {
-			const li = document.createElement("li");
+			const li = doc.createElement("li");
 			li.style.cssText = "margin: 2px 0; color: #444;";
 			li.textContent = `${key}: ${JSON.stringify(value)}`;
 			propsList.appendChild(li);
@@ -704,15 +711,15 @@ export function renderBasesDataItem(
 		itemEl.appendChild(propsEl);
 	}
 
-	const rawDataEl = document.createElement("details");
+	const rawDataEl = doc.createElement("details");
 	rawDataEl.style.cssText = "margin-top: 8px; font-size: 11px;";
 
-	const summary = document.createElement("summary");
+	const summary = doc.createElement("summary");
 	summary.style.cssText = "cursor: pointer; color: #666; font-weight: bold;";
 	summary.textContent = "Raw Data Structure";
 	rawDataEl.appendChild(summary);
 
-	const pre = document.createElement("pre");
+	const pre = doc.createElement("pre");
 	pre.style.cssText =
 		"margin: 8px 0 0 0; padding: 8px; background: #f8f8f8; border-radius: 4px; overflow-x: auto; font-size: 10px;";
 	pre.textContent = JSON.stringify(item, null, 2);

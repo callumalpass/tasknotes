@@ -20,6 +20,7 @@ export const ja: TranslationTree = {
 			es: "スペイン語",
 			ja: "日本語",
 			pt: "ポルトガル語（ブラジル）",
+			ko: "韓国語",
 		},
 		weekdays: {
 			sunday: "日曜日",
@@ -176,6 +177,15 @@ export const ja: TranslationTree = {
 			},
 			hints: {
 				refresh: "カレンダー購読を更新",
+				today: "今日に移動",
+				prev: "前へ",
+				next: "次へ",
+				month: "月表示",
+				week: "週表示",
+				day: "日表示",
+				year: "年表示",
+				list: "一覧表示",
+				customDays: "{count}日表示",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const ja: TranslationTree = {
 					eventMaxStack: "最大スタックイベント数（週/日表示、0 = 無制限）",
 					dayMaxEvents: "1日あたりの最大イベント数（月表示、0 = 自動）",
 					dayMaxEventRows: "1日あたりの最大イベント行数（月表示、0 = 無制限）",
+					spanScheduledToDue: "予定日から期日までタスクを延長表示",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "開始日プロパティ",
@@ -267,6 +278,8 @@ export const ja: TranslationTree = {
 			errors: {
 				loadingBoard: "ボードの読み込みエラー。",
 				noGroupBy: "かんばんビューには「グループ化」プロパティの設定が必要です。「並び替え」ボタンをクリックし、「グループ化」でプロパティを選択してください。",
+				formulaGroupingReadOnly: "数式ベースの列間でタスクを移動することはできません。数式の値は計算されるため、直接変更することはできません。",
+				formulaSwimlaneReadOnly: "数式ベースのスイムレーン間でタスクを移動することはできません。数式の値は計算されるため、直接変更することはできません。",
 			},
 			columnTitle: "無題",
 		},
@@ -493,6 +506,13 @@ export const ja: TranslationTree = {
 				notifications: {
 					name: "ポモドーロ通知",
 					description: "ポモドーロセッション終了時に通知を表示",
+				},
+				mobileSidebar: {
+					name: "モバイルサイドバー",
+					description: "モバイルデバイスでポモドーロタイマーを開く場所",
+					tab: "ノートパネル",
+					left: "左サイドバー",
+					right: "右サイドバー",
 				},
 			},
 			uiLanguage: {
@@ -1477,6 +1497,10 @@ export const ja: TranslationTree = {
 					resetButton: "リセット",
 					resetTooltip: "デフォルトパスにリセット",
 				},
+				autoCreateDefaultFiles: {
+					name: "デフォルトファイルを自動作成",
+					description: "起動時に不足しているデフォルトのBaseビューファイルを自動的に作成します。削除したサンプルファイルが再作成されないようにするには無効にしてください。",
+				},
 				createDefaultFiles: {
 					name: "デフォルトファイルを作成",
 					description: "TaskNotes/Views/ディレクトリにデフォルトの.baseファイルを作成します。既存のファイルは上書きされません。",
@@ -1524,6 +1548,10 @@ export const ja: TranslationTree = {
 					name: "カスタムICSファイル名テンプレート",
 					description: "カスタムICSイベントファイル名のテンプレート",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "ICSイベント終了時刻をタスク期日として使用",
+					description: "有効にすると、カレンダーイベントから作成されたタスクの期日がイベントの終了時刻に設定されます。終日イベントの場合、期日はイベントの日付に設定されます。時間指定イベントの場合、期日に終了時刻が含まれます。",
 				},
 			},
 			subscriptionsList: {
@@ -1609,6 +1637,11 @@ export const ja: TranslationTree = {
 					name: "更新間隔（5から1440分の間）",
 					description: "エクスポートファイルを更新する頻度",
 					placeholder: "60",
+				},
+				useDuration: {
+					name: "タスクの所要時間をイベントの長さに使用",
+					description:
+						"有効にすると、カレンダーイベントの終了時刻に期日ではなくタスクの見積時間（所要時間）を使用します。これは、予定 + 所要時間が作業計画を表し、期日が締め切りを表すGTDワークフローに便利です。",
 				},
 				exportNow: {
 					name: "今すぐエクスポート",
@@ -2497,6 +2530,9 @@ export const ja: TranslationTree = {
 				copyUrlSuccess: "Obsidian URLをクリップボードにコピーしました",
 				updateRecurrenceFailure: "タスク繰り返しの更新に失敗しました：{message}",
 			},
+		},
+		priority: {
+			clearPriority: "優先度をクリア",
 		},
 		ics: {
 			showDetails: "詳細を表示",

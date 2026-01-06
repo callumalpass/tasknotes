@@ -64,14 +64,14 @@ These formulas return string values useful for grouping tasks in views:
 | `scheduledMonth` | Scheduled date as year-month | "2025-01", "Not scheduled" | `if(scheduled, date(scheduled).format("YYYY-MM"), "Not scheduled")` |
 | `scheduledWeek` | Scheduled date as year-week | "2025-W01", "Not scheduled" | `if(scheduled, date(scheduled).format("YYYY-[W]WW"), "Not scheduled")` |
 | `dueDateCategory` | Human-readable due date bucket | "Overdue", "Today", "Tomorrow", "This week", "Later", "No due date" | `if(!due, "No due date", if(date(due) < today(), "Overdue", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due) <= today() + "7d", "This week", "Later")))))` |
-| `timeEstimateCategory` | Task size by time estimate | "No estimate", "Quick (<30m)", "Medium (30m-2h)", "Long (>2h)" | `if(!timeEstimate \|\| timeEstimate == 0, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))` |
+| `timeEstimateCategory` | Task size by time estimate | "No estimate", "Quick (<30m)", "Medium (30m-2h)", "Long (>2h)" | `if(!timeEstimate \|\| timeEstimate == 0 \|\| timeEstimate == null, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))` |
 | `ageCategory` | Task age bucket | "Today", "This week", "This month", "Older" | `if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))` |
 | `createdMonth` | Creation date as year-month | "2025-01" | `file.ctime.format("YYYY-MM")` |
 | `modifiedMonth` | Last modified date as year-month | "2025-01" | `file.mtime.format("YYYY-MM")` |
 | `priorityCategory` | Priority as readable label | "High", "Normal", "Low", "No priority" | `if(priority=="high","High",if(priority=="normal","Normal",if(priority=="low","Low","No priority")))` |
 | `projectCount` | Number of assigned projects | "No projects", "Single project", "Multiple projects" | `if(!projects \|\| list(projects).length == 0, "No projects", if(list(projects).length == 1, "Single project", "Multiple projects"))` |
 | `contextCount` | Number of assigned contexts | "No contexts", "Single context", "Multiple contexts" | `if(!contexts \|\| list(contexts).length == 0, "No contexts", if(list(contexts).length == 1, "Single context", "Multiple contexts"))` |
-| `trackingStatus` | Time tracking vs estimate | "No estimate", "Not started", "Under estimate", "Over estimate" | `if(!timeEstimate \|\| timeEstimate == 0, "No estimate", if(!timeEntries \|\| list(timeEntries).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))` |
+| `trackingStatus` | Time tracking vs estimate | "No estimate", "Not started", "Under estimate", "Over estimate" | `if(!timeEstimate \|\| timeEstimate == 0 \|\| timeEstimate == null, "No estimate", if(!timeEntries \|\| list(timeEntries).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))` |
 
 ### Combined due/scheduled formulas
 
@@ -143,14 +143,14 @@ formulas:
   scheduledWeek: 'if(scheduled, date(scheduled).format("YYYY-[W]WW"), "Not scheduled")'
   dueDateCategory: 'if(!due, "No due date", if(date(due) < today(), "Overdue", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due) <= today() + "7d", "This week", "Later")))))'
   dueDateDisplay: '...'  # Shows "Today", "Tomorrow", "3d ago", "Mon", "Dec 15"
-  timeEstimateCategory: 'if(!timeEstimate || timeEstimate == 0, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))'
+  timeEstimateCategory: 'if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))'
   ageCategory: 'if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))'
   createdMonth: 'file.ctime.format("YYYY-MM")'
   modifiedMonth: 'file.mtime.format("YYYY-MM")'
   priorityCategory: 'if(priority=="high","High",if(priority=="normal","Normal",if(priority=="low","Low","No priority")))'
   projectCount: 'if(!projects || list(projects).length == 0, "No projects", if(list(projects).length == 1, "Single project", "Multiple projects"))'
   contextCount: 'if(!contexts || list(contexts).length == 0, "No contexts", if(list(contexts).length == 1, "Single context", "Multiple contexts"))'
-  trackingStatus: 'if(!timeEstimate || timeEstimate == 0, "No estimate", if(!timeEntries || list(timeEntries).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))'
+  trackingStatus: 'if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "No estimate", if(!timeEntries || list(timeEntries).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))'
   # Combined due/scheduled
   nextDate: 'if(due && scheduled, if(date(due) < date(scheduled), due, scheduled), if(due, due, scheduled))'
   daysUntilNext: 'if(due && scheduled, min(formula.daysUntilDue, formula.daysUntilScheduled), if(due, formula.daysUntilDue, formula.daysUntilScheduled))'
@@ -481,6 +481,8 @@ views:
 
 Used by the **Agenda** command to display tasks in a list-based agenda view.
 
+Note: Property-based events are disabled by default to avoid duplicate entries when tasks already have due/scheduled dates.
+
 ```yaml
 # Agenda
 
@@ -506,6 +508,8 @@ views:
       - file.name
       - recurrence
       - complete_instances
+    options:
+      showPropertyBasedEvents: false
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7
@@ -589,7 +593,7 @@ views:
     name: "Blocking"
     filters:
       and:
-        - note.blockedBy.map(value.uid).contains(this.file.asLink())
+        - list(note.blockedBy).map(value.uid).contains(this.file.asLink())
     order:
       - status
       - priority

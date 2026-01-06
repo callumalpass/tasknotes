@@ -1,0 +1,17 @@
+{
+  "issue_number": 1334,
+  "status": "completed",
+  "tags": [],
+  "priority": "medium",
+  "difficulty": "easy",
+  "risk": "low",
+  "type": "feature",
+  "affected_areas": [
+    "src/services/TaskService.ts"
+  ],
+  "ai_summary": "Add {{currentNotePath}} folder support for 'Create new inline task' command",
+  "notes": "User wants the 'Create new inline task' command to respect {{currentNotePath}} template variable for the destination folder, similar to how inline conversion (checkbox to task) already works. IMPLEMENTED: TaskService.createTask() at line 233 now includes 'manual-creation' in the same condition as 'inline-conversion', allowing both contexts to use the inlineTaskConvertFolder setting with {{currentNotePath}} and {{currentNoteTitle}} variable support. Unit test added at tests/unit/services/TaskService.test.ts:299-321 which passes. Release notes added in docs/releases/unreleased.md.",
+  "suggested_fix": "Implemented by adding 'manual-creation' to the condition at TaskService.ts:233 that checks for inline-conversion context. This applies the inlineTaskConvertFolder setting with template variable support to both checkbox conversion and the 'Create new inline task' command.",
+  "analyzed_at": "2026-01-01T00:00:00.000Z",
+  "analyzed_by": "claude-opus-4-5-20251101"
+}

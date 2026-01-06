@@ -1,0 +1,21 @@
+{
+  "issue_number": 1408,
+  "status": "completed",
+  "tags": [
+    "completed"
+  ],
+  "priority": "low",
+  "difficulty": "easy",
+  "risk": "low",
+  "type": "feature",
+  "affected_areas": [
+    "src/services/StatusManager.ts",
+    "src/ui/TaskCard.ts"
+  ],
+  "ai_summary": "Add shift+click on status dot to cycle backwards through statuses",
+  "notes": "Currently clicking the status dot cycles forward through statuses via StatusManager.getNextStatus(). The user requests shift+click to cycle in reverse order. This is a common UX pattern (similar to browser forward/back navigation with shift). The StatusManager already has getStatusesByOrder() which returns sorted statuses, making a getPreviousStatus() method straightforward to implement. Note: shift+click is currently used for multi-task selection in clickHandlers.ts, but the status dot click handler is separate and doesn't conflict - it uses e.stopPropagation() before the selection logic can intercept.",
+  "root_cause": null,
+  "suggested_fix": "1. Add getPreviousStatus(currentStatus: string) method to StatusManager that cycles backwards through statuses. 2. Modify createStatusCycleHandler() in TaskCard.ts to check e.shiftKey and call getPreviousStatus() instead of getNextStatus(). 3. Same pattern applies to the inline status dot handler around line 1909 in TaskCard.ts.",
+  "analyzed_at": "2025-12-30T12:00:00.000Z",
+  "analyzed_by": "claude-opus-4-5-20251101"
+}

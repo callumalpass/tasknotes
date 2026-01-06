@@ -20,6 +20,7 @@ export const fr: TranslationTree = {
 			es: "Espagnol",
 			ja: "Japonais",
 			pt: "Portugais (Brésil)",
+			ko: "Coréen",
 		},
 		weekdays: {
 			sunday: "Dimanche",
@@ -176,6 +177,15 @@ export const fr: TranslationTree = {
 			},
 			hints: {
 				refresh: "Actualiser les abonnements calendrier",
+				today: "Aller à aujourd'hui",
+				prev: "Précédent",
+				next: "Suivant",
+				month: "Vue mensuelle",
+				week: "Vue hebdomadaire",
+				day: "Vue journalière",
+				year: "Vue annuelle",
+				list: "Vue liste",
+				customDays: "Vue {count} jours",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const fr: TranslationTree = {
 					eventMaxStack: "Max. événements empilés (vue semaine/jour, 0 = illimité)",
 					dayMaxEvents: "Max. événements par jour (vue mois, 0 = automatique)",
 					dayMaxEventRows: "Max. lignes d'événements par jour (vue mois, 0 = illimité)",
+					spanScheduledToDue: "Étendre les tâches entre la date planifiée et la date d'échéance",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propriété de date de début",
@@ -267,6 +278,8 @@ export const fr: TranslationTree = {
 			errors: {
 				loadingBoard: "Erreur lors du chargement du tableau.",
 				noGroupBy: "La vue Kanban nécessite qu'une propriété 'Grouper par' soit configurée. Cliquez sur le bouton 'Trier' et sélectionnez une propriété sous 'Grouper par'.",
+				formulaGroupingReadOnly: "Impossible de déplacer les tâches entre les colonnes basées sur des formules. Les valeurs de formule sont calculées et ne peuvent pas être modifiées directement.",
+				formulaSwimlaneReadOnly: "Impossible de déplacer les tâches entre les couloirs basés sur des formules. Les valeurs de formule sont calculées et ne peuvent pas être modifiées directement.",
 			},
 			columnTitle: "Sans titre",
 		},
@@ -493,6 +506,13 @@ export const fr: TranslationTree = {
 				notifications: {
 					name: "Notifications Pomodoro",
 					description: "Afficher une notification lorsque les sessions Pomodoro se terminent",
+				},
+				mobileSidebar: {
+					name: "Barre latérale mobile",
+					description: "Où ouvrir le minuteur Pomodoro sur les appareils mobiles",
+					tab: "Panneau de notes",
+					left: "Barre latérale gauche",
+					right: "Barre latérale droite",
 				},
 			},
 			uiLanguage: {
@@ -1477,6 +1497,10 @@ export const fr: TranslationTree = {
 					resetButton: "Réinitialiser",
 					resetTooltip: "Réinitialiser au chemin par défaut",
 				},
+				autoCreateDefaultFiles: {
+					name: "Créer automatiquement les fichiers par défaut",
+					description: "Créer automatiquement les fichiers Base par défaut manquants au démarrage. Désactivez pour empêcher la recréation des fichiers d'exemple supprimés.",
+				},
 				createDefaultFiles: {
 					name: "Créer les fichiers par défaut",
 					description: "Créez les fichiers .base par défaut dans le répertoire TaskNotes/Views/. Les fichiers existants ne seront pas écrasés.",
@@ -1524,6 +1548,10 @@ export const fr: TranslationTree = {
 					name: "Modèle de nom de fichier ICS personnalisé",
 					description: "Modèle pour les noms de fichiers d'événements ICS personnalisés",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "Utiliser l'heure de fin de l'événement ICS comme date d'échéance",
+					description: "Lorsqu'activé, les tâches créées à partir d'événements de calendrier auront leur date d'échéance définie sur l'heure de fin de l'événement. Pour les événements sur toute la journée, la date d'échéance sera la date de l'événement. Pour les événements avec horaire, la date d'échéance inclura l'heure de fin.",
 				},
 			},
 			subscriptionsList: {
@@ -1609,6 +1637,11 @@ export const fr: TranslationTree = {
 					name: "Intervalle de mise à jour (entre 5 et 1440 minutes)",
 					description: "Fréquence de mise à jour du fichier d'export",
 					placeholder: "60",
+				},
+				useDuration: {
+					name: "Utiliser la durée de la tâche pour la longueur de l'événement",
+					description:
+						"Lorsque activé, utilise l'estimation de temps (durée) de la tâche au lieu de la date d'échéance pour l'heure de fin de l'événement du calendrier. Ceci est utile pour les flux de travail GTD où planifié + durée représente la planification du travail, tandis que la date d'échéance représente les délais.",
 				},
 				exportNow: {
 					name: "Exporter maintenant",
@@ -2497,6 +2530,9 @@ export const fr: TranslationTree = {
 				copyUrlSuccess: "URL Obsidian copiée dans le presse-papiers",
 				updateRecurrenceFailure: "Impossible de mettre à jour la récurrence : {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Supprimer la priorité",
 		},
 		ics: {
 			showDetails: "Afficher les détails",

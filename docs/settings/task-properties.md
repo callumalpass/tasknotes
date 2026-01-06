@@ -4,6 +4,8 @@ This tab configures all task properties. Each property is displayed as a card co
 
 [← Back to Settings](../settings.md)
 
+![Task Properties Settings](../assets/settings-task-properties.png)
+
 !!! tip "Looking for property type documentation?"
     See the [Property Types Reference](property-types-reference.md) for detailed documentation on the expected data types (text, list, date, etc.) for each frontmatter property.
 

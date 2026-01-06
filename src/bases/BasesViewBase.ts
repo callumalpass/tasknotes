@@ -85,7 +85,9 @@ export abstract class BasesViewBase extends Component {
 			clearTimeout(this.dataUpdateDebounceTimer);
 		}
 
-		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+		// Use correct window for pop-out window support
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			try {
 				this.render();
@@ -175,7 +177,9 @@ export abstract class BasesViewBase extends Component {
 	protected setupContainer(): void {
 		this.containerEl.empty();
 
-		const root = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+		const root = doc.createElement("div");
 		root.className = `tn-bases-integration tasknotes-plugin tasknotes-container tn-${this.type}`;
 		root.tabIndex = -1; // Make focusable without adding to tab order
 		this.containerEl.appendChild(root);
@@ -239,22 +243,25 @@ export abstract class BasesViewBase extends Component {
 		// Check if we already added the button (reuse existing)
 		if (toolbarEl.querySelector(".tn-bases-new-task-btn")) return;
 
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+
 		// Create "New Task" button matching Bases' text-icon-button style
-		const newTaskBtn = document.createElement("div");
+		const newTaskBtn = doc.createElement("div");
 		newTaskBtn.className = "bases-toolbar-item tn-bases-new-task-btn";
 
-		const innerBtn = document.createElement("div");
+		const innerBtn = doc.createElement("div");
 		innerBtn.className = "text-icon-button";
 		innerBtn.tabIndex = 0;
 
 		// Add icon
-		const iconSpan = document.createElement("span");
+		const iconSpan = doc.createElement("span");
 		iconSpan.className = "text-button-icon";
 		setIcon(iconSpan, "plus");
 		innerBtn.appendChild(iconSpan);
 
 		// Add label
-		const labelSpan = document.createElement("span");
+		const labelSpan = doc.createElement("span");
 		labelSpan.className = "text-button-label";
 		labelSpan.textContent = this.plugin.i18n.translate("common.new");
 		innerBtn.appendChild(labelSpan);
@@ -323,7 +330,9 @@ export abstract class BasesViewBase extends Component {
 			clearTimeout(this.updateDebounceTimer);
 		}
 
-		this.updateDebounceTimer = window.setTimeout(() => {
+		// Use correct window for pop-out window support
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		this.updateDebounceTimer = win.setTimeout(() => {
 			this.render();
 			this.updateDebounceTimer = null;
 		}, 300);  // Increased from 150ms for better typing performance
@@ -512,8 +521,11 @@ export abstract class BasesViewBase extends Component {
 			return;
 		}
 
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+
 		// Create search container
-		const searchContainer = document.createElement("div");
+		const searchContainer = doc.createElement("div");
 		searchContainer.className = "tn-search-container";
 
 		// Insert search container at the top of the container so it appears above
@@ -619,14 +631,17 @@ export abstract class BasesViewBase extends Component {
 	 * Call this when search produces no matches.
 	 */
 	protected renderSearchNoResults(container: HTMLElement): void {
-		const noResultsEl = document.createElement("div");
+		// Use correct document for pop-out window support
+		const doc = container.ownerDocument;
+
+		const noResultsEl = doc.createElement("div");
 		noResultsEl.className = "tn-search-no-results";
 
-		const textEl = document.createElement("div");
+		const textEl = doc.createElement("div");
 		textEl.className = "tn-search-no-results__text";
 		textEl.textContent = `No tasks match "${this.currentSearchTerm}"`;
 
-		const hintEl = document.createElement("div");
+		const hintEl = doc.createElement("div");
 		hintEl.className = "tn-search-no-results__hint";
 		hintEl.textContent = "Try a different search term or clear the search";
 
@@ -781,7 +796,9 @@ export abstract class BasesViewBase extends Component {
 		if (count > 0) {
 			// Create or update indicator
 			if (!this.selectionIndicatorEl) {
-				this.selectionIndicatorEl = document.createElement("div");
+				// Use correct document for pop-out window support
+				const doc = this.rootElement.ownerDocument;
+				this.selectionIndicatorEl = doc.createElement("div");
 				this.selectionIndicatorEl.className = "tn-selection-indicator";
 				this.selectionIndicatorEl.addEventListener("click", () => {
 					this.plugin.taskSelectionService?.clearSelection();

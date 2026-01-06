@@ -20,6 +20,7 @@ export const es: TranslationTree = {
 			es: "Español",
 			ja: "Japonés",
 			pt: "Portugués (Brasil)",
+			ko: "Coreano",
 		},
 		weekdays: {
 			sunday: "Domingo",
@@ -176,6 +177,15 @@ export const es: TranslationTree = {
 			},
 			hints: {
 				refresh: "Actualizar suscripciones de calendario",
+				today: "Ir a hoy",
+				prev: "Anterior",
+				next: "Siguiente",
+				month: "Vista de mes",
+				week: "Vista de semana",
+				day: "Vista de día",
+				year: "Vista de año",
+				list: "Vista de lista",
+				customDays: "Vista de {count} días",
 			},
 			settings: {
 		header: {
@@ -239,6 +249,7 @@ export const es: TranslationTree = {
 					eventMaxStack: "Máx. eventos apilados (vista semana/día, 0 = ilimitado)",
 					dayMaxEvents: "Máx. eventos por día (vista mes, 0 = automático)",
 					dayMaxEventRows: "Máx. filas de eventos por día (vista mes, 0 = ilimitado)",
+					spanScheduledToDue: "Expandir tareas entre fecha programada y fecha límite",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propiedad de fecha de inicio",
@@ -267,6 +278,8 @@ export const es: TranslationTree = {
 			errors: {
 				loadingBoard: "Error al cargar el tablero.",
 				noGroupBy: "La vista Kanban requiere que se configure una propiedad 'Agrupar por'. Haga clic en el botón 'Ordenar' y seleccione una propiedad en 'Agrupar por'.",
+				formulaGroupingReadOnly: "No se pueden mover tareas entre columnas basadas en fórmulas. Los valores de fórmula se calculan y no se pueden modificar directamente.",
+				formulaSwimlaneReadOnly: "No se pueden mover tareas entre carriles basados en fórmulas. Los valores de fórmula se calculan y no se pueden modificar directamente.",
 			},
 			columnTitle: "Sin título",
 		},
@@ -493,6 +506,13 @@ export const es: TranslationTree = {
 				notifications: {
 					name: "Notificaciones de Pomodoro",
 					description: "Mostrar notificaciones cuando terminen las sesiones de Pomodoro",
+				},
+				mobileSidebar: {
+					name: "Barra lateral móvil",
+					description: "Dónde abrir el temporizador Pomodoro en dispositivos móviles",
+					tab: "Panel de notas",
+					left: "Barra lateral izquierda",
+					right: "Barra lateral derecha",
 				},
 			},
 			uiLanguage: {
@@ -1477,6 +1497,10 @@ export const es: TranslationTree = {
 					resetButton: "Restablecer",
 					resetTooltip: "Restablecer a ruta predeterminada",
 				},
+				autoCreateDefaultFiles: {
+					name: "Crear archivos predeterminados automáticamente",
+					description: "Crear automáticamente los archivos Base predeterminados que falten al iniciar. Desactiva para evitar que se recreen los archivos de ejemplo eliminados.",
+				},
 				createDefaultFiles: {
 					name: "Crear archivos predeterminados",
 					description: "Crea los archivos .base predeterminados en el directorio TaskNotes/Views/. Los archivos existentes no se sobrescribirán.",
@@ -1524,6 +1548,10 @@ export const es: TranslationTree = {
 					name: "Plantilla de nombre de archivo ICS personalizada",
 					description: "Plantilla para nombres de archivo de eventos ICS personalizados",
 					placeholder: "{date}-{title}",
+				},
+				useICSEndAsDue: {
+					name: "Usar hora de fin del evento ICS como fecha de vencimiento",
+					description: "Cuando está habilitado, las tareas creadas a partir de eventos de calendario tendrán su fecha de vencimiento establecida en la hora de fin del evento. Para eventos de todo el día, la fecha de vencimiento será la fecha del evento. Para eventos con hora, la fecha de vencimiento incluirá la hora de fin.",
 				},
 			},
 			subscriptionsList: {
@@ -1609,6 +1637,11 @@ export const es: TranslationTree = {
 					name: "Intervalo de actualización (entre 5 y 1440 minutos)",
 					description: "Con qué frecuencia actualizar el archivo de exportación",
 					placeholder: "60",
+				},
+				useDuration: {
+					name: "Usar duración de la tarea para la longitud del evento",
+					description:
+						"Cuando está habilitado, usa la estimación de tiempo (duración) de la tarea en lugar de la fecha de vencimiento para la hora de finalización del evento del calendario. Esto es útil para flujos de trabajo GTD donde programado + duración representa la planificación del trabajo, mientras que la fecha de vencimiento representa plazos.",
 				},
 				exportNow: {
 					name: "Exportar ahora",
@@ -2497,6 +2530,9 @@ export const es: TranslationTree = {
 				copyUrlSuccess: "URL de Obsidian copiada al portapapeles",
 				updateRecurrenceFailure: "Error al actualizar recurrencia de tarea: {message}",
 			},
+		},
+		priority: {
+			clearPriority: "Quitar prioridad",
 		},
 		ics: {
 			showDetails: "Mostrar detalles",

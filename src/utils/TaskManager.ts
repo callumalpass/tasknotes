@@ -726,12 +726,35 @@ export class TaskManager extends Events {
 	}
 
 	/**
-	 * Compatibility methods for legacy views
+	 * Wait for Obsidian's metadata cache to have fresh data for a file.
+	 * This is necessary after creating/modifying files because the metadata cache
+	 * updates asynchronously.
 	 */
-	async waitForFreshTaskData(pathOrFile: string | TFile, maxRetries = 3): Promise<void> {
-		// In JIT mode, data is always fresh from metadataCache
-		// Just do a small delay to ensure metadata cache is updated
-		await new Promise(resolve => setTimeout(resolve, 50));
+	async waitForFreshTaskData(pathOrFile: string | TFile, maxRetries = 10): Promise<void> {
+		const path = pathOrFile instanceof TFile ? pathOrFile.path : pathOrFile;
+		const file = pathOrFile instanceof TFile
+			? pathOrFile
+			: this.app.vault.getAbstractFileByPath(path);
+
+		if (!(file instanceof TFile)) {
+			// File doesn't exist yet, just wait a bit
+			await new Promise(resolve => setTimeout(resolve, 100));
+			return;
+		}
+
+		// Poll the metadata cache until it has the file's frontmatter
+		for (let i = 0; i < maxRetries; i++) {
+			const metadata = this.app.metadataCache.getFileCache(file);
+			if (metadata?.frontmatter) {
+				// Metadata cache has the file indexed
+				return;
+			}
+			// Wait before retrying (50ms, 100ms, 150ms, etc.)
+			await new Promise(resolve => setTimeout(resolve, 50 * (i + 1)));
+		}
+
+		// If we still don't have metadata after retries, log a warning but continue
+		console.warn(`TaskManager: Metadata cache not ready for ${path} after ${maxRetries} retries`);
 	}
 
 	updateConfig(settings: any): void {

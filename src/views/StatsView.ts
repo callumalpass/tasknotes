@@ -14,6 +14,7 @@ import { calculateTotalTimeSpent, filterEmptyProjects } from "../utils/helpers";
 import { getTodayLocal, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import { createTaskCard } from "../ui/TaskCard";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
+import { getProjectDisplayName } from "../utils/linkUtils";
 
 interface ProjectStats {
 	projectName: string;
@@ -472,30 +473,8 @@ export class StatsView extends ItemView {
 	 */
 	private extractProjectName(projectValue: string): string | null {
 		if (!projectValue) return null;
-
-		// For wikilinks, extract the link content
-		if (projectValue.startsWith("[[") && projectValue.endsWith("]]")) {
-			const linkPath = this.extractWikilinkPath(projectValue);
-			if (!linkPath) return null;
-
-			// Extract basename from path
-			const parts = linkPath.split("/");
-			return parts[parts.length - 1] || linkPath;
-		}
-
-		// For pipe syntax, get the display name
-		if (projectValue.includes("|")) {
-			const parts = projectValue.split("|");
-			return parts[parts.length - 1] || projectValue;
-		}
-
-		// For paths, get the final segment
-		if (projectValue.includes("/")) {
-			const parts = projectValue.split("/");
-			return parts[parts.length - 1] || projectValue;
-		}
-
-		return projectValue;
+		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
+		return displayName || null;
 	}
 
 	private calculateOverallStats(tasks: TaskInfo[]): OverallStats {
@@ -1302,8 +1281,11 @@ export class StatsView extends ItemView {
 		// Remove any existing modal
 		this.closeDrilldownModal();
 
+		// Use contentEl.ownerDocument to support pop-out windows
+		const doc = this.contentEl.ownerDocument;
+
 		// Create modal backdrop
-		const backdrop = document.body.createDiv({ cls: "stats-view__modal-backdrop" });
+		const backdrop = doc.body.createDiv({ cls: "stats-view__modal-backdrop" });
 		this.drilldownModal = backdrop;
 
 		// Create modal content with proper CSS scope for TaskCard components
@@ -1333,10 +1315,10 @@ export class StatsView extends ItemView {
 		const escHandler = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				this.closeDrilldownModal();
-				document.removeEventListener("keydown", escHandler);
+				doc.removeEventListener("keydown", escHandler);
 			}
 		};
-		document.addEventListener("keydown", escHandler);
+		doc.addEventListener("keydown", escHandler);
 
 		// Load and render drill-down data
 		try {

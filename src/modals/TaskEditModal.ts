@@ -50,6 +50,7 @@ export class TaskEditModal extends TaskModal {
 		raw: Record<string, TaskDependency>;
 	} = { added: [], removed: [], raw: {} };
 	private unresolvedBlockingEntries: string[] = [];
+	private initialTags = "";
 	private isShowingConfirmation = false;
 	private pendingClose = false;
 
@@ -97,11 +98,14 @@ export class TaskEditModal extends TaskModal {
 			this.selectedProjectItems = [];
 		}
 
-		this.tags = this.task.tags
-			? sanitizeTags(
-					this.task.tags.filter((tag) => tag !== this.plugin.settings.taskTag).join(", ")
-				)
-			: "";
+		const shouldFilterTaskTag =
+			this.plugin.settings.taskIdentificationMethod === "tag";
+		const rawTags = this.task.tags || [];
+		const visibleTags = shouldFilterTaskTag
+			? rawTags.filter((tag) => tag !== this.plugin.settings.taskTag)
+			: rawTags;
+		this.tags = rawTags.length > 0 ? sanitizeTags(visibleTags.join(", ")) : "";
+		this.initialTags = this.tags;
 		this.timeEstimate = this.task.timeEstimate || 0;
 
 		// Handle recurrence
@@ -264,6 +268,19 @@ export class TaskEditModal extends TaskModal {
 			const content = await this.app.vault.read(file);
 			this.details = this.extractDetailsFromContent(content);
 			this.originalDetails = this.details;
+
+			// Check if this file is actually a task (has task tag/property)
+			// If not, keep the original task data (e.g., for "convert note to task" flow)
+			const metadata = this.app.metadataCache.getFileCache(file);
+			const isRecognizedTask = metadata?.frontmatter &&
+				this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
+
+			if (!isRecognizedTask) {
+				// File is not yet a task - keep the original task data passed to constructor
+				// This preserves user's default settings for status/priority during conversion
+				this.task.details = this.details;
+				return;
+			}
 
 			const cachedTaskInfo = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 
@@ -749,6 +766,8 @@ export class TaskEditModal extends TaskModal {
 		}
 
 		// Parse and compare tags
+		const tagsUnchanged =
+			sanitizeTags(this.tags) === sanitizeTags(this.initialTags);
 		const newTags = this.tags
 			.split(",")
 			.map((t) => t.trim())
@@ -765,7 +784,7 @@ export class TaskEditModal extends TaskModal {
 
 		const oldTags = this.task.tags || [];
 
-		if (JSON.stringify(newTags.sort()) !== JSON.stringify(oldTags.sort())) {
+		if (!tagsUnchanged && JSON.stringify(newTags.sort()) !== JSON.stringify(oldTags.sort())) {
 			changes.tags = newTags.length > 0 ? newTags : undefined;
 		}
 

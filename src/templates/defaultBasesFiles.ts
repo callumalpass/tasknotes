@@ -318,7 +318,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		dueDateCategory: `if(!${dueProperty}, "No due date", if(date(${dueProperty}) < today(), "Overdue", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}) <= today() + "7d", "This week", "Later")))))`,
 
 		// Time estimate category for grouping
-		timeEstimateCategory: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0, "No estimate", if(${timeEstimateProperty} < 30, "Quick (<30m)", if(${timeEstimateProperty} <= 120, "Medium (30m-2h)", "Long (>2h)")))`,
+		timeEstimateCategory: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0 || ${timeEstimateProperty} == null, "No estimate", if(${timeEstimateProperty} < 30, "Quick (<30m)", if(${timeEstimateProperty} <= 120, "Medium (30m-2h)", "Long (>2h)")))`,
 
 		// Age category based on creation date
 		ageCategory: 'if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))',
@@ -339,7 +339,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		contextCount: `if(!${contextsProperty} || list(${contextsProperty}).length == 0, "No contexts", if(list(${contextsProperty}).length == 1, "Single context", "Multiple contexts"))`,
 
 		// Tracking vs estimate status for grouping
-		trackingStatus: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0, "No estimate", if(!${timeEntriesProperty} || list(${timeEntriesProperty}).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))`,
+		trackingStatus: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0 || ${timeEstimateProperty} == null, "No estimate", if(!${timeEntriesProperty} || list(${timeEntriesProperty}).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))`,
 
 		// === COMBINED DUE/SCHEDULED FORMULAS ===
 
@@ -659,6 +659,8 @@ views:
     name: "Agenda"
     order:
 ${orderYaml}
+    options:
+      showPropertyBasedEvents: false
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7
@@ -709,7 +711,7 @@ ${orderYaml}
     name: "Blocking"
     filters:
       and:
-        - note.${blockedByProperty}.map(value.uid).contains(this.file.asLink())
+        - list(note.${blockedByProperty}).map(value.uid).contains(this.file.asLink())
     order:
 ${orderYaml}
     groupBy:

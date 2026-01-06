@@ -12,6 +12,7 @@ export class PriorityContextMenu {
 	private menu: ContextMenu;
 	private options: PriorityContextMenuOptions;
 	private sortedPriorities: PriorityConfig[];
+	private targetDoc: Document = document;
 
 	constructor(options: PriorityContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -47,6 +48,11 @@ export class PriorityContextMenu {
 	}
 
 	public show(event: UIEvent): void {
+		// Store the document reference from the event target to support pop-out windows
+		// Use cross-window compatible instanceOf check
+		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
+			this.targetDoc = (event.target as HTMLElement).ownerDocument;
+		}
 		this.menu.show(event);
 
 		// Apply color styling after menu is shown
@@ -56,6 +62,8 @@ export class PriorityContextMenu {
 	}
 
 	public showAtElement(element: HTMLElement): void {
+		// Store the document reference from the element to support pop-out windows
+		this.targetDoc = element.ownerDocument;
 		this.menu.showAtPosition({
 			x: element.getBoundingClientRect().left,
 			y: element.getBoundingClientRect().bottom + 4,
@@ -68,7 +76,7 @@ export class PriorityContextMenu {
 	}
 
 	private applyColorStyling(): void {
-		const menuEl = document.querySelector(".menu");
+		const menuEl = this.targetDoc.querySelector(".menu");
 
 		if (!menuEl) return;
 

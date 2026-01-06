@@ -50,12 +50,16 @@ export class TimeblockInfoModal extends Modal {
 	private attachmentsList: HTMLElement;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 
+	// Callback for when timeblock is saved or deleted
+	private onChange?: () => void;
+
 	constructor(
 		app: App,
 		plugin: TaskNotesPlugin,
 		timeblock: TimeBlock,
 		eventDate: Date,
-		timeblockDate?: string
+		timeblockDate?: string,
+		onChange?: () => void
 	) {
 		super(app);
 		this.plugin = plugin;
@@ -64,6 +68,7 @@ export class TimeblockInfoModal extends Modal {
 		this.eventDate = eventDate;
 		this.timeblockDate = timeblockDate || formatDateForStorage(eventDate);
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
+		this.onChange = onChange;
 	}
 
 	async onOpen() {
@@ -304,6 +309,9 @@ export class TimeblockInfoModal extends Modal {
 			// Save to daily note
 			await this.updateTimeblockInDailyNote();
 
+			// Signal immediate update before triggering data change
+			this.onChange?.();
+
 			// Refresh calendar views
 			this.plugin.emitter.trigger("data-changed");
 
@@ -388,6 +396,9 @@ export class TimeblockInfoModal extends Modal {
 
 		try {
 			await this.deleteTimeblockFromDailyNote();
+
+			// Signal immediate update before triggering data change
+			this.onChange?.();
 
 			// Refresh calendar views
 			this.plugin.emitter.trigger("data-changed");
