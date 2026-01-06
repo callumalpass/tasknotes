@@ -344,10 +344,15 @@ export class TaskService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			const shouldAddTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
+			const taskTagForFrontmatter = shouldAddTaskTag
+				? this.plugin.settings.taskTag
+				: undefined;
+
 			// Use field mapper to convert to frontmatter with proper field mapping
 			const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(
 				completeTaskData,
-				this.plugin.settings.taskTag,
+				taskTagForFrontmatter,
 				this.plugin.settings.storeTitleInFilename
 			);
 
@@ -362,12 +367,8 @@ export class TaskService {
 						lower === "true" || lower === "false" ? lower === "true" : propValue;
 					frontmatter[propName] = coercedValue as any;
 				}
-				// Remove task tag from tags array if using property identification
-				const filteredTags = tagsArray.filter(
-					(tag: string) => tag !== this.plugin.settings.taskTag
-				);
-				if (filteredTags.length > 0) {
-					frontmatter.tags = filteredTags;
+				if (tagsArray.length > 0) {
+					frontmatter.tags = tagsArray;
 				}
 			} else {
 				// Tags are handled separately (not via field mapper)
@@ -1427,23 +1428,12 @@ export class TaskService {
 				}
 
 				if (updates.hasOwnProperty("tags")) {
-					let tagsToSet = updates.tags;
-					// Remove task tag if using property identification
-					if (this.plugin.settings.taskIdentificationMethod === "property" && tagsToSet) {
-						tagsToSet = tagsToSet.filter(
-							(tag: string) => tag !== this.plugin.settings.taskTag
-						);
+					const tagsToSet = Array.isArray(updates.tags) ? [...updates.tags] : [];
+					if (tagsToSet.length > 0) {
+						frontmatter.tags = tagsToSet;
+					} else {
+						delete frontmatter.tags;
 					}
-					frontmatter.tags = tagsToSet;
-				} else if (originalTask.tags) {
-					let tagsToSet = originalTask.tags;
-					// Remove task tag if using property identification
-					if (this.plugin.settings.taskIdentificationMethod === "property") {
-						tagsToSet = tagsToSet.filter(
-							(tag: string) => tag !== this.plugin.settings.taskTag
-						);
-					}
-					frontmatter.tags = tagsToSet;
 				}
 			});
 
