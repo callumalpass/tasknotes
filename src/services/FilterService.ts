@@ -927,7 +927,8 @@ export class FilterService extends EventEmitter {
 			const result = this.evaluateProjectsCondition(
 				taskValue,
 				operator as FilterOperator,
-				value
+				value,
+				task.path
 			);
 			return result;
 		}
@@ -950,7 +951,8 @@ export class FilterService extends EventEmitter {
 	private evaluateProjectsCondition(
 		taskValue: TaskPropertyValue,
 		operator: FilterOperator,
-		conditionValue: TaskPropertyValue
+		conditionValue: TaskPropertyValue,
+		sourcePath?: string
 	): boolean {
 		if (!Array.isArray(taskValue)) {
 			return false;
@@ -973,7 +975,7 @@ export class FilterService extends EventEmitter {
 				return false;
 			}
 
-			const taskProjectName = this.extractProjectName(taskProject, task.path);
+			const taskProjectName = this.extractProjectName(taskProject, sourcePath);
 			if (!taskProjectName) {
 				return false;
 			}
