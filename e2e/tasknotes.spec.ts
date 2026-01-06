@@ -8790,3 +8790,191 @@ test.describe('Issue #1430: Modal Fields Property ID Display', () => {
     }, testFieldName);
   });
 });
+
+test.describe('Issue #1436: Task card widget injection error in reading mode', () => {
+  test.fixme('should not throw insertBefore error when injecting task card in reading mode', async () => {
+    // Issue #1436: Error injecting task card widget in reading mode
+    // https://github.com/anthropics/tasknotes/issues/1436
+    //
+    // Environment: TaskNotes v4.2.1, OSX 26.2, Obsidian 1.11.3
+    //
+    // Steps to reproduce:
+    // 1. Open any task note
+    // 2. Every time you open the note, refocus the note, or refresh the note,
+    //    another subtasks view is added to the note body
+    //
+    // Console error:
+    // [TaskNotes] Error injecting task card widget in reading mode: NotFoundError:
+    // Failed to execute 'insertBefore' on 'Node': The node before which the new
+    // node is to be inserted is not a child of this node.
+    //
+    // Root cause analysis:
+    // In src/editor/TaskCardNoteDecorations.ts:injectReadingModeWidget (lines 475-477):
+    //   const metadataContainer = sizer.querySelector('.metadata-container');
+    //   if (metadataContainer?.nextSibling) {
+    //     sizer.insertBefore(widget, metadataContainer.nextSibling);
+    //
+    // The bug is that querySelector() searches ALL descendants, so if .metadata-container
+    // is nested inside another element (not a direct child of sizer), then
+    // metadataContainer.nextSibling is NOT a child of sizer, causing insertBefore to fail.
+    //
+    // Additionally, the "another subtasks view is added" behavior suggests the cleanup
+    // logic may not be properly preventing duplicate widgets.
+    //
+    // Fix approach:
+    // 1. Check if metadataContainer.parentElement === sizer before using nextSibling
+    // 2. If not a direct child, insert at appropriate position in sizer
+    // 3. Ensure orphaned widget cleanup runs before injection
+
+    const page = getPage();
+
+    // First, find and open a task note
+    await ensureSidebarExpanded(page);
+
+    // Expand TaskNotes folder if collapsed
+    const tasknotesFolder = page.locator('.nav-folder-title').filter({ hasText: /^TaskNotes$/ }).first();
+    if (await tasknotesFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasknotesFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await tasknotesFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Expand Tasks folder if collapsed
+    const tasksFolder = page.locator('.nav-folder-title').filter({ hasText: /^Tasks$/ }).first();
+    if (await tasksFolder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const parentFolder = tasksFolder.locator('xpath=ancestor::div[contains(@class, "nav-folder")][1]');
+      const isCollapsed = await parentFolder.evaluate(el => el.classList.contains('is-collapsed')).catch(() => true);
+      if (isCollapsed) {
+        await tasksFolder.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    // Find a task note to open (look for any .md file in Tasks folder)
+    const taskFile = page.locator('.nav-file-title').filter({ has: page.locator('.nav-file-title-content') }).first();
+    if (!await taskFile.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1436] No task files found - skipping test');
+      return;
+    }
+
+    await taskFile.click();
+    await page.waitForTimeout(1000);
+
+    // Switch to Reading View using Ctrl+E
+    const isEditing = await page.locator('.cm-content, .markdown-source-view.is-live-preview').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isEditing) {
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    // Ensure we're in Reading View
+    const readingView = page.locator('.markdown-reading-view, .markdown-preview-view');
+    await expect(readingView).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1436-reading-mode-initial.png' });
+
+    // Listen for console errors
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    // Simulate the bug conditions by triggering refresh events:
+    // 1. Refocus the note by clicking away and back
+    await page.locator('.workspace-leaf').first().click();
+    await page.waitForTimeout(300);
+    await readingView.click();
+    await page.waitForTimeout(500);
+
+    // 2. Switch away and back to the file
+    await page.keyboard.press('Control+o'); // Open quick switcher
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+    // 3. Toggle to source mode and back to reading mode
+    await page.keyboard.press('Control+e'); // Toggle to source
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Control+e'); // Toggle back to reading
+    await page.waitForTimeout(500);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1436-reading-mode-after-toggle.png' });
+
+    // Check for the specific error message
+    const insertBeforeErrors = consoleErrors.filter(err =>
+      err.includes('insertBefore') ||
+      err.includes('Error injecting task card widget in reading mode')
+    );
+
+    // BUG: This assertion will fail if the insertBefore error occurs
+    expect(insertBeforeErrors.length).toBe(0);
+
+    // Also check that there are no duplicate task card widgets
+    // (The user reported "another subtasks view is added" each time)
+    const taskCardWidgets = page.locator('.tasknotes-task-card-note-widget');
+    const widgetCount = await taskCardWidgets.count();
+
+    // There should be at most one task card widget per note
+    expect(widgetCount).toBeLessThanOrEqual(1);
+  });
+
+  test.fixme('should not accumulate duplicate task card widgets on repeated focus', async () => {
+    // Issue #1436: "Every time you open the note, refocus the note, or refresh
+    // the note, another subtasks view is added to the note body"
+    //
+    // This test verifies the duplicate widget accumulation bug.
+
+    const page = getPage();
+
+    // Find and open a task note
+    await ensureSidebarExpanded(page);
+
+    const taskFile = page.locator('.nav-file-title').filter({ has: page.locator('.nav-file-title-content') }).first();
+    if (!await taskFile.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1436] No task files found - skipping test');
+      return;
+    }
+
+    await taskFile.click();
+    await page.waitForTimeout(1000);
+
+    // Switch to Reading View
+    const isEditing = await page.locator('.cm-content, .markdown-source-view.is-live-preview').isVisible({ timeout: 1000 }).catch(() => false);
+    if (isEditing) {
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    const readingView = page.locator('.markdown-reading-view, .markdown-preview-view');
+    await expect(readingView).toBeVisible({ timeout: 5000 });
+
+    // Count initial widgets
+    let taskCardWidgets = page.locator('.tasknotes-task-card-note-widget');
+    const initialCount = await taskCardWidgets.count();
+
+    // Simulate multiple focus/refresh cycles
+    for (let i = 0; i < 3; i++) {
+      // Toggle reading mode off and on
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(300);
+      await page.keyboard.press('Control+e');
+      await page.waitForTimeout(500);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1436-duplicate-widgets.png' });
+
+    // Count widgets after multiple toggles
+    taskCardWidgets = page.locator('.tasknotes-task-card-note-widget');
+    const finalCount = await taskCardWidgets.count();
+
+    // BUG: This assertion will fail if widgets are accumulating
+    // We should have the same number of widgets (at most 1)
+    expect(finalCount).toBe(initialCount);
+    expect(finalCount).toBeLessThanOrEqual(1);
+  });
+});
