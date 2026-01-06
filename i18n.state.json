@@ -1228,6 +1228,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "3359dcad83a76df0be54e809b9540c77eb9790c0"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "e6d96c7b8d95c109d6b9c87d3492a7ca476a2487"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "9dd68bca25c7d0823851ae3b88cf91e100fef011"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "7df5b73a6b1ff8e8b2dc0a6acdcd0fa9d974ca61"
@@ -2392,6 +2400,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "55699af1691e1de3404924db7ce4093c45874634"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "ab3be06d574b88103cdbf39183e94d9ffc7e9f53"
@@ -4009,6 +4018,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
@@ -8960,6 +8971,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "5560805b75f9ca6c3f4c7d4b5dc67c6646bc51da"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "f5add3d88eee7e037c53cc1b08c847c52ab0eac7"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "e9c7d076ebc400b1fc57fac202de2fb7891cd7cd"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "709183df80b086b808df842e0514286dfdcf5ab1"
@@ -10124,6 +10143,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "2dbce0421bd41e3f20acd850ef0edc20261cb543"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "b3a9646483d1d8da951934d38d01a4fa36991c9b"
@@ -11741,6 +11761,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
@@ -16692,6 +16714,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "de2fbdefad879f53a036d83e837991d22d01c576"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "80af3725ead4d10dcf05ba1f2a484b1fe507eb53"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "ae0530050f2bb3d0a128adeb6bbb7a05f34b4787"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "b228a2b3e9bc93a8daaad83924b64ff32ddb234b"
@@ -17856,6 +17886,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "41e93d835d4d8e8026d0f40adf05dd4fbe8c8923"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "4798205e0784697c88ad582e92e23c929f8b4c3d"
@@ -19473,6 +19504,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
@@ -24424,6 +24457,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "5d05953e7c032593e70cdfe0e72449dc89be55e1"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "3241d7ce1a3880c9dbb4dffe85950a16e21a0e67"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "291bb764cd0a9532ef0cabd0787d94cba1bd26ca"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "6e573765a0221000ace248f7a29474291f44d04b"
@@ -25588,6 +25629,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "4efd3016bc7cf636c29551cc9e95a4cf8dd6ac12"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "0b406fa8c0ba75b47acf7a433b7e50d66c0ade13"
@@ -27205,6 +27247,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
@@ -32156,6 +32200,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "6d48bc4a4cf6707cc1ef03d046c150cfc7879d05"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "b8c0f8304c1c20fbf4ead910d422637d9c428a35"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "62f482dc6273e9c0c0356e92722546d448c893a8"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "c6c7c0a6e02a346b9ad948bdc309feab828f1207"
@@ -33320,6 +33372,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "d9a54c4034666e0ff204bbbe58a09cc7e3c94cda"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "70b84dd5e8cad86c892f3d0be03b119a4fdac69b"
@@ -34937,6 +34990,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
@@ -39888,6 +39943,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "ee23dee27c2660512041e6347fec9b563fbf5c62"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "75f60da4d3d9d169516a8a5fc57b83a7083c44e9"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "679c4169a47d23a6c01e5b7ae73abbf90229ab58"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "dcc2038ba444d1427120dc24f37b20574045f06f"
@@ -41052,6 +41115,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "0b9c58bf49e2c93f5dadf0509b18407c92fe8f35"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "dd3534cec3d201d4da70dea73123c094285734bd"
@@ -42669,6 +42733,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
@@ -47620,6 +47686,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "9dd59cfa99308687e6fba34ccb0dab93a0735753"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "901f851eb98d4954adaa8dde0dd8e0c3e3b8dc92"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "91e30004e5b36d37522f2dae638a1eb72631a80c"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "0b80a70cc7b685af112d88f8a6888ea230a9cb17"
@@ -48784,6 +48858,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "96f9dc23f5b09eb71f2ae37f7f6747de5aa61059"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "41e43d9282de7af6f5acc815614810ec0f3dad31"
@@ -50401,6 +50476,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
@@ -55352,6 +55429,14 @@
       "source": "1a6bb52dada7ea3bffc8652a0bbb906cb48e2921",
       "translation": "255fc47feda4b290634318dbff469eff35e5e91a"
     },
+    "settings.features.overlays.aliasExclusion.name": {
+      "source": "36d9ba953266109308eb1cc36a268f4c1020f8e8",
+      "translation": "526c2d3c887929c20f7f9eaa955faf7f79b34357"
+    },
+    "settings.features.overlays.aliasExclusion.description": {
+      "source": "7ed83f518b02fcb0e04a538502fd3a22e9afed24",
+      "translation": "da66afc0dfc605e546ce3c43884e00fe4ea02ffa"
+    },
     "settings.features.instantConvert.toggle.name": {
       "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
       "translation": "d2fe636ff89a7dd3a1a03153fbe41a3a57f571f5"
@@ -56516,6 +56601,7 @@
       "source": "39448a2ba1e6f74f53c856ae2b7c9ee2fd3029c9",
       "translation": "f535a5ae7a35b295d1162c855633a1438235adaf"
     },
+    "settings.taskProperties.titleCard.legacySyntaxWarning": null,
     "settings.taskProperties.tagsCard.nativeObsidianTags": {
       "source": "c062ef944dbbfbde38a1c80dee244e9f0e38c6bf",
       "translation": "525f5b80d3cc32aca9e618a998b998dcf4d41ea0"
@@ -58133,6 +58219,8 @@
     "settings.integrations.googleCalendarExport.includeDescription.description": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.name": null,
     "settings.integrations.googleCalendarExport.includeObsidianLink.description": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.name": null,
+    "settings.integrations.googleCalendarExport.defaultReminder.description": null,
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.name": null,
     "settings.integrations.googleCalendarExport.syncOnCreate.description": null,
