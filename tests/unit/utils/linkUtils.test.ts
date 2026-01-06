@@ -1,4 +1,4 @@
-import { generateLink, generateLinkWithBasename, generateLinkWithDisplay } from '../../../src/utils/linkUtils';
+import { generateLink, generateLinkWithBasename, generateLinkWithDisplay, getProjectDisplayName, parseLinkToPath } from '../../../src/utils/linkUtils';
 import { MockObsidian } from '../../__mocks__/obsidian';
 import type { App, TFile } from 'obsidian';
 
@@ -90,6 +90,55 @@ describe('linkUtils - frontmatter link format', () => {
     it('should generate wikilinks by default when useMarkdownLinks is undefined', () => {
       const link = generateLink(mockApp, mockFile, 'tasks/My Task.md');
       expect(link).toBe('[[Test Project]]');
+    });
+  });
+
+  describe('parseLinkToPath', () => {
+    it('should parse wikilinks with alias', () => {
+      const link = '[[Folder/My Note|Alias]]';
+      expect(parseLinkToPath(link)).toBe('Folder/My Note');
+    });
+
+    it('should parse markdown links with angle bracket paths', () => {
+      const link = '[My Note](<Folder/My Note.md>)';
+      expect(parseLinkToPath(link)).toBe('Folder/My Note.md');
+    });
+
+    it('should parse plain angle bracket autolinks', () => {
+      const link = '<Folder/My Note.md>';
+      expect(parseLinkToPath(link)).toBe('Folder/My Note.md');
+    });
+
+    it('should decode markdown link paths without .md extension', () => {
+      const link = '[My Note](Folder/My%20Note)';
+      expect(parseLinkToPath(link)).toBe('Folder/My Note');
+    });
+  });
+
+  describe('getProjectDisplayName', () => {
+    it('should prefer markdown link display text', () => {
+      const link = '[Display Title](<Folder/My Note.md>)';
+      expect(getProjectDisplayName(link)).toBe('Display Title');
+    });
+
+    it('should prefer wikilink alias', () => {
+      const link = '[[Folder/My Note|Alias Title]]';
+      expect(getProjectDisplayName(link)).toBe('Alias Title');
+    });
+
+    it('should resolve basename from app when possible', () => {
+      const appWithResolver = createMockApp(MockObsidian.createMockApp());
+      (appWithResolver.metadataCache as any).getFirstLinkpathDest = jest.fn().mockReturnValue({
+        basename: 'Resolved Project'
+      });
+
+      const link = '[[Folder/My Note]]';
+      expect(getProjectDisplayName(link, appWithResolver)).toBe('Resolved Project');
+    });
+
+    it('should fall back to last path segment when unresolved', () => {
+      const link = '[[Folder/My Note]]';
+      expect(getProjectDisplayName(link)).toBe('My Note');
     });
   });
 });
