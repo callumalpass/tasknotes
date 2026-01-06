@@ -973,7 +973,7 @@ export class FilterService extends EventEmitter {
 				return false;
 			}
 
-			const taskProjectName = this.extractProjectName(taskProject);
+			const taskProjectName = this.extractProjectName(taskProject, task.path);
 			if (!taskProjectName) {
 				return false;
 			}
@@ -993,11 +993,11 @@ export class FilterService extends EventEmitter {
 	/**
 	 * Extract clean project name from various formats ([[Name]], Name, [[path/Name]], etc.)
 	 */
-	private extractProjectName(projectValue: string): string | null {
+	private extractProjectName(projectValue: string, sourcePath?: string): string | null {
 		if (!projectValue || typeof projectValue !== "string") {
 			return null;
 		}
-		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
+		const displayName = getProjectDisplayName(projectValue, this.plugin?.app, sourcePath);
 		return displayName ? displayName : null;
 	}
 
