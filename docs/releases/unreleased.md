@@ -40,7 +40,7 @@ Example:
   - When enabled, links with aliases like `[[Task|Check Status]]` render as plain links
   - Links without aliases continue to show the interactive task widget
   - Useful when embedding tasks in prose where the widget would be disruptive
-  - Thanks to @jldiaz for proposing this feature in #1117
+  - Thanks to @diegomarzaa for the contribution and @jldiaz for proposing this feature in #1117
 
 - (#1205) Google Calendar export for tasks
   - Sync tasks to Google Calendar based on scheduled or due dates
