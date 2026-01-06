@@ -288,17 +288,24 @@ function generateCustomFilename(
 		}
 
 		// Replace all variables in the template
+		// Support both {{variable}} (preferred) and {variable} (legacy) syntax
 		Object.entries(variables).forEach(([key, value]) => {
 			try {
-				const regex = new RegExp(`\\{${key}\\}`, "g");
-				result = result.replace(regex, value);
+				// First: Replace double-brace syntax {{variable}} (preferred, consistent with body templates)
+				const doubleRegex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+				result = result.replace(doubleRegex, value);
+
+				// Second: Replace single-brace syntax {variable} (legacy, backwards compatibility)
+				const singleRegex = new RegExp(`\\{${key}\\}`, "g");
+				result = result.replace(singleRegex, value);
 			} catch (regexError) {
 				console.warn(`Error replacing template variable ${key}:`, regexError);
 			}
 		});
 
-		// Clean up any remaining unreplaced variables
-		result = result.replace(/\{[^}]+\}/g, "");
+		// Clean up any remaining unreplaced variables (both syntaxes)
+		result = result.replace(/\{\{[^}]+\}\}/g, ""); // {{variable}}
+		result = result.replace(/\{[^}]+\}/g, ""); // {variable}
 
 		// Ensure we have a valid filename
 		if (!result.trim()) {

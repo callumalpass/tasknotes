@@ -1011,6 +1011,7 @@ export const en: TranslationTree = {
 				filenameUpdatesWithTitle: "Filename will automatically update when the task title changes.",
 				filenameFormat: "Filename format:",
 				customTemplate: "Custom template:",
+				legacySyntaxWarning: "Single-brace syntax like {title} is deprecated. Please use double-brace syntax {{title}} instead for consistency with body templates.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "Uses native Obsidian tags",
