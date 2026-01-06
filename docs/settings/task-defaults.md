@@ -134,6 +134,13 @@ When using the **custom** filename format, you can create templates using variab
 - `{{status}}` - Task status (e.g., "todo", "in-progress", "done")
 - `{{dueDate}}` - Task due date (YYYY-MM-DD format)
 - `{{scheduledDate}}` - Task scheduled date (YYYY-MM-DD format)
+- `{{context}}` - First context from the task's contexts array
+- `{{contexts}}` - All contexts joined by `/`
+- `{{tags}}` - Task tags (comma-separated)
+- `{{hashtags}}` - Task tags as space-separated hashtags (e.g., "#work #urgent")
+- `{{timeEstimate}}` - Time estimate in minutes
+- `{{details}}` - Task details/description (truncated to 50 characters)
+- `{{parentNote}}` - Parent note name where task was created
 - `{{priorityShort}}` - First letter of priority in uppercase (e.g., "H")
 - `{{statusShort}}` - First letter of status in uppercase (e.g., "T")
 - `{{titleLower}}` - Task title in lowercase
@@ -265,6 +272,25 @@ For detailed reminder documentation, see [Task Reminders](../features/task-manag
 ## Template System
 
 TaskNotes supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}`, which will be automatically replaced with the appropriate values when a new task is created.
+
+### Unified Template Variables
+
+Body templates now support the same variables as filename templates. All variables listed in the [Filename Template Variables](#filename-template-variables) section above are available in body templates, including:
+
+- All date/time variables (`{{year}}`, `{{month}}`, `{{timestamp}}`, etc.)
+- All title variations (`{{titleKebab}}`, `{{titleSnake}}`, etc.)
+- Task property variations (`{{priorityShort}}`, `{{statusShort}}`)
+- Unique identifiers (`{{zettel}}`, `{{nano}}`)
+- Advanced variables (`{{unix}}`, `{{unixMs}}`, etc.)
+
+### Body-Specific Variables
+
+- `{{contexts}}` - Task contexts (comma-separated)
+- `{{tags}}` - Task tags (comma-separated)
+- `{{hashtags}}` - Task tags as space-separated hashtags
+- `{{timeEstimate}}` - Time estimate in minutes
+- `{{details}}` - User-provided details/description
+- `{{parentNote}}` - Parent note name/path (properly quoted for YAML)
 
 The `{{parentNote}}` variable is particularly useful for project organization. It inserts the parent note as a properly formatted markdown link. 
 
