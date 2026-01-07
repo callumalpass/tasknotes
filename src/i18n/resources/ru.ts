@@ -998,6 +998,7 @@ export const ru: TranslationTree = {
 				filenameUpdatesWithTitle: "Имя файла будет автоматически обновляться при изменении заголовка задачи.",
 				filenameFormat: "Формат имени файла:",
 				customTemplate: "Пользовательский шаблон:",
+				legacySyntaxWarning: "Синтаксис с одинарными фигурными скобками, такой как {title}, устарел. Пожалуйста, используйте синтаксис с двойными фигурными скобками {{title}} для согласованности с шаблонами тела.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "Использует нативные теги Obsidian",
@@ -1669,6 +1670,135 @@ export const ru: TranslationTree = {
 					serviceUnavailable: "Сервис автоэкспорта недоступен",
 				},
 			},
+			googleCalendarExport: {
+				header: "Экспорт задач в Google Календарь",
+				description:
+					"Автоматически синхронизируйте ваши задачи с Google Календарём как события. Требуется подключение Google Календаря выше.",
+				enable: {
+					name: "Включить экспорт задач",
+					description:
+						"При включении задачи с датами будут автоматически синхронизироваться с Google Календарём как события.",
+				},
+				targetCalendar: {
+					name: "Целевой календарь",
+					description: "Выберите, в каком календаре создавать события задач.",
+					placeholder: "Выберите календарь...",
+					connectFirst: "Сначала подключите Google Календарь",
+					primarySuffix: " (Основной)",
+				},
+				syncTrigger: {
+					name: "Триггер синхронизации",
+					description: "Какая дата задачи должна вызывать создание события.",
+					options: {
+						scheduled: "Запланированная дата",
+						due: "Срок выполнения",
+						both: "Оба (предпочтение запланированной)",
+					},
+				},
+				allDayEvents: {
+					name: "Создавать как события на весь день",
+					description:
+						"При включении задачи создаются как события на весь день. При выключении используется оценка времени для длительности.",
+				},
+				defaultDuration: {
+					name: "Длительность события по умолчанию",
+					description:
+						"Длительность в минутах для событий с указанным временем (используется, когда у задачи нет оценки времени).",
+				},
+				eventTitleTemplate: {
+					name: "Шаблон заголовка события",
+					description:
+						"Шаблон для заголовков событий. Доступные переменные: {{title}}, {{status}}, {{priority}}",
+					placeholder: "{{title}}",
+				},
+				includeDescription: {
+					name: "Включить детали задачи в описание",
+					description:
+						"Добавить метаданные задачи (приоритет, статус, теги и т.д.) в описание события.",
+				},
+				includeObsidianLink: {
+					name: "Включить ссылку на Obsidian",
+					description:
+						"Добавить ссылку на задачу в Obsidian в описание события.",
+				},
+				defaultReminder: {
+					name: "Напоминание по умолчанию",
+					description:
+						"Добавить всплывающее напоминание к событиям Google Календаря. Укажите минуты до события (0 = без напоминания). Обычные значения: 15, 30, 60, 1440 (1 день).",
+				},
+				automaticSyncBehavior: {
+					header: "Поведение автоматической синхронизации",
+				},
+				syncOnCreate: {
+					name: "Синхронизировать при создании задачи",
+					description:
+						"Автоматически создавать событие календаря при создании новой задачи.",
+				},
+				syncOnUpdate: {
+					name: "Синхронизировать при обновлении задачи",
+					description:
+						"Автоматически обновлять событие календаря при изменении задачи.",
+				},
+				syncOnComplete: {
+					name: "Синхронизировать при завершении задачи",
+					description:
+						"Обновлять событие календаря при завершении задачи (добавляет галочку к заголовку).",
+				},
+				syncOnDelete: {
+					name: "Удалять событие при удалении задачи",
+					description:
+						"Удалять событие календаря при удалении соответствующей задачи.",
+				},
+				manualSyncActions: {
+					header: "Действия ручной синхронизации",
+				},
+				syncAllTasks: {
+					name: "Синхронизировать все задачи",
+					description:
+						"Синхронизировать все существующие задачи с Google Календарём. Будут созданы события для задач, которые ещё не синхронизированы.",
+					buttonText: "Синхронизировать все",
+				},
+				unlinkAllTasks: {
+					name: "Отвязать все задачи",
+					description:
+						"Удалить все связи задача-событие без удаления событий календаря.",
+					buttonText: "Отвязать все",
+					confirmTitle: "Отвязать все задачи",
+					confirmMessage:
+						"Это удалит все связи между задачами и событиями календаря. События календаря останутся, но больше не будут обновляться при изменении задач. Вы уверены?",
+					confirmButtonText: "Отвязать все",
+				},
+				notices: {
+					notEnabled:
+						"Экспорт в Google Календарь не включен. Настройте его в Настройки > Интеграции.",
+					notEnabledOrConfigured:
+						"Экспорт в Google Календарь не включен или не настроен",
+					serviceNotAvailable: "Сервис синхронизации с календарём недоступен",
+					syncResults: "Синхронизировано: {synced}, Ошибок: {failed}, Пропущено: {skipped}",
+					taskSynced: "Задача синхронизирована с Google Календарём",
+					noActiveFile: "Нет активного файла",
+					notATask: "Текущий файл не является задачей",
+					noDateToSync: "У задачи нет запланированной даты или срока для синхронизации",
+					syncFailed: "Не удалось синхронизировать задачу с Google Календарём: {message}",
+					syncingTasks: "Синхронизация {total} задач с Google Календарём...",
+					syncComplete:
+						"Синхронизация завершена: {synced} синхронизировано, {failed} ошибок, {skipped} пропущено",
+					eventsDeletedAndUnlinked: "Все события удалены и отвязаны",
+					tasksUnlinked: "Все связи задач удалены",
+				},
+				eventDescription: {
+					untitledTask: "Безымянная задача",
+					priority: "Приоритет: {value}",
+					status: "Статус: {value}",
+					due: "Срок: {value}",
+					scheduled: "Запланировано: {value}",
+					timeEstimate: "Оценка времени: {value}",
+					tags: "Теги: {value}",
+					contexts: "Контексты: {value}",
+					projects: "Проекты: {value}",
+					openInObsidian: "Открыть в Obsidian",
+				},
+			},
 			httpApi: {
 				header: "HTTP API",
 				description: "Включить HTTP API для внешних интеграций и автоматизации.",
@@ -1956,6 +2086,8 @@ export const ru: TranslationTree = {
 		startTimeTrackingWithSelector: "Начать отслеживание времени (выбрать задачу)",
 		editTimeEntries: "Редактировать временные записи (выбрать задачу)",
 		createOrOpenTask: "Создать или открыть задачу",
+		syncAllTasksGoogleCalendar: "Синхронизировать все задачи с Google Календарём",
+		syncCurrentTaskGoogleCalendar: "Синхронизировать текущую задачу с Google Календарём",
 	},
 	modals: {
 		deviceCode: {
@@ -2458,6 +2590,10 @@ export const ru: TranslationTree = {
 				outlook: "Outlook Календарь",
 				yahoo: "Yahoo Календарь",
 				downloadIcs: "Скачать файл .ics",
+				syncToGoogle: "Синхронизировать с Google Календарём",
+				syncToGoogleNotConfigured: "Синхронизация с Google Календарём не настроена",
+				syncToGoogleSuccess: "Задача синхронизирована с Google Календарём",
+				syncToGoogleFailed: "Не удалось синхронизировать с Google Календарём",
 			},
 			recurrence: "Повторение",
 			clearRecurrence: "Очистить повторение",
@@ -2720,6 +2856,7 @@ export const ru: TranslationTree = {
 			loadingDependencies: "Загрузка зависимостей…",
 			blockingEmpty: "Нет зависимых задач",
 			blockingLoadError: "Не удалось загрузить зависимости",
+			googleCalendarSyncTooltip: "Синхронизировано с Google Календарём",
 		},
 		propertyEventCard: {
 			unknownFile: "Неизвестный файл",

@@ -967,6 +967,7 @@ export const ko: TranslationTree = {
 				filenameUpdatesWithTitle: "작업 제목이 변경되면 파일명이 자동으로 업데이트됩니다.",
 				filenameFormat: "파일명 형식:",
 				customTemplate: "사용자 지정 템플릿:",
+				legacySyntaxWarning: "{title}과 같은 단일 중괄호 구문은 더 이상 사용되지 않습니다. 본문 템플릿과의 일관성을 위해 {{title}}과 같은 이중 중괄호 구문을 사용하세요.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "기본 Obsidian 태그 사용",
@@ -1619,6 +1620,135 @@ export const ko: TranslationTree = {
 					serviceUnavailable: "자동 내보내기 서비스를 사용할 수 없습니다",
 				},
 			},
+			googleCalendarExport: {
+				header: "Google 캘린더로 작업 내보내기",
+				description:
+					"작업을 Google 캘린더 이벤트로 자동 동기화합니다. 위에서 Google 캘린더가 연결되어 있어야 합니다.",
+				enable: {
+					name: "작업 내보내기 활성화",
+					description:
+						"활성화하면 날짜가 있는 작업이 Google 캘린더에 이벤트로 자동 동기화됩니다.",
+				},
+				targetCalendar: {
+					name: "대상 캘린더",
+					description: "작업 이벤트를 생성할 캘린더를 선택하세요.",
+					placeholder: "캘린더 선택...",
+					connectFirst: "먼저 Google 캘린더를 연결하세요",
+					primarySuffix: " (기본)",
+				},
+				syncTrigger: {
+					name: "동기화 트리거",
+					description: "어떤 작업 날짜가 캘린더 이벤트 생성을 트리거할지 설정합니다.",
+					options: {
+						scheduled: "예정 날짜",
+						due: "마감 날짜",
+						both: "둘 다 (예정 날짜 우선)",
+					},
+				},
+				allDayEvents: {
+					name: "종일 이벤트로 생성",
+					description:
+						"활성화하면 작업이 종일 이벤트로 생성됩니다. 비활성화하면 시간 추정을 기간으로 사용합니다.",
+				},
+				defaultDuration: {
+					name: "기본 이벤트 기간",
+					description:
+						"시간이 지정된 이벤트의 기간(분) (작업에 시간 추정이 없을 때 사용).",
+				},
+				eventTitleTemplate: {
+					name: "이벤트 제목 템플릿",
+					description:
+						"이벤트 제목 템플릿. 사용 가능한 변수: {{title}}, {{status}}, {{priority}}",
+					placeholder: "{{title}}",
+				},
+				includeDescription: {
+					name: "설명에 작업 세부 정보 포함",
+					description:
+						"이벤트 설명에 작업 메타데이터(우선순위, 상태, 태그 등)를 추가합니다.",
+				},
+				includeObsidianLink: {
+					name: "Obsidian 링크 포함",
+					description:
+						"이벤트 설명에 Obsidian의 작업으로 돌아가는 링크를 추가합니다.",
+				},
+				defaultReminder: {
+					name: "기본 알림",
+					description:
+						"Google 캘린더 이벤트에 팝업 알림을 추가합니다. 이벤트 전 분을 설정하세요 (0 = 알림 없음). 일반적인 값: 15, 30, 60, 1440 (1일).",
+				},
+				automaticSyncBehavior: {
+					header: "자동 동기화 동작",
+				},
+				syncOnCreate: {
+					name: "작업 생성 시 동기화",
+					description:
+						"새 작업이 생성될 때 자동으로 캘린더 이벤트를 생성합니다.",
+				},
+				syncOnUpdate: {
+					name: "작업 업데이트 시 동기화",
+					description:
+						"작업이 수정될 때 자동으로 캘린더 이벤트를 업데이트합니다.",
+				},
+				syncOnComplete: {
+					name: "작업 완료 시 동기화",
+					description:
+						"작업이 완료되면 캘린더 이벤트를 업데이트합니다 (제목에 체크 표시 추가).",
+				},
+				syncOnDelete: {
+					name: "작업 삭제 시 이벤트 삭제",
+					description:
+						"해당 작업이 삭제되면 캘린더 이벤트를 삭제합니다.",
+				},
+				manualSyncActions: {
+					header: "수동 동기화 작업",
+				},
+				syncAllTasks: {
+					name: "모든 작업 동기화",
+					description:
+						"모든 기존 작업을 Google 캘린더에 동기화합니다. 아직 동기화되지 않은 작업에 대해 이벤트가 생성됩니다.",
+					buttonText: "모두 동기화",
+				},
+				unlinkAllTasks: {
+					name: "모든 작업 연결 해제",
+					description:
+						"캘린더 이벤트를 삭제하지 않고 모든 작업-이벤트 링크를 제거합니다.",
+					buttonText: "모두 연결 해제",
+					confirmTitle: "모든 작업 연결 해제",
+					confirmMessage:
+						"작업과 캘린더 이벤트 간의 모든 링크가 제거됩니다. 캘린더 이벤트는 유지되지만 작업 변경 시 더 이상 업데이트되지 않습니다. 확실합니까?",
+					confirmButtonText: "모두 연결 해제",
+				},
+				notices: {
+					notEnabled:
+						"Google 캘린더 내보내기가 활성화되지 않았습니다. 설정 > 통합에서 구성하세요.",
+					notEnabledOrConfigured:
+						"Google 캘린더 내보내기가 활성화되거나 구성되지 않았습니다",
+					serviceNotAvailable: "작업 캘린더 동기화 서비스를 사용할 수 없습니다",
+					syncResults: "동기화됨: {synced}, 실패: {failed}, 건너뜀: {skipped}",
+					taskSynced: "작업이 Google 캘린더에 동기화되었습니다",
+					noActiveFile: "현재 활성 파일이 없습니다",
+					notATask: "현재 파일은 작업이 아닙니다",
+					noDateToSync: "동기화할 예정 날짜 또는 마감 날짜가 없습니다",
+					syncFailed: "Google 캘린더에 작업 동기화 실패: {message}",
+					syncingTasks: "{total}개의 작업을 Google 캘린더에 동기화 중...",
+					syncComplete:
+						"동기화 완료: {synced}개 동기화됨, {failed}개 실패, {skipped}개 건너뜀",
+					eventsDeletedAndUnlinked: "모든 이벤트가 삭제되고 연결 해제되었습니다",
+					tasksUnlinked: "모든 작업 링크가 제거되었습니다",
+				},
+				eventDescription: {
+					untitledTask: "제목 없는 작업",
+					priority: "우선순위: {value}",
+					status: "상태: {value}",
+					due: "마감: {value}",
+					scheduled: "예정: {value}",
+					timeEstimate: "시간 추정: {value}",
+					tags: "태그: {value}",
+					contexts: "컨텍스트: {value}",
+					projects: "프로젝트: {value}",
+					openInObsidian: "Obsidian에서 열기",
+				},
+			},
 			httpApi: {
 				header: "HTTP API",
 				description: "외부 통합 및 자동화를 위한 HTTP API 활성화.",
@@ -1906,6 +2036,8 @@ export const ko: TranslationTree = {
 		startTimeTrackingWithSelector: "시간 추적 시작 (작업 선택)",
 		editTimeEntries: "시간 기록 편집 (작업 선택)",
 		createOrOpenTask: "작업 만들기 또는 열기",
+		syncAllTasksGoogleCalendar: "모든 작업을 Google 캘린더에 동기화",
+		syncCurrentTaskGoogleCalendar: "현재 작업을 Google 캘린더에 동기화",
 	},
 	modals: {
 		deviceCode: {
@@ -2408,6 +2540,10 @@ export const ko: TranslationTree = {
 				outlook: "Outlook 캘린더",
 				yahoo: "Yahoo 캘린더",
 				downloadIcs: ".ics 파일 다운로드",
+				syncToGoogle: "Google 캘린더에 동기화",
+				syncToGoogleNotConfigured: "Google 캘린더 동기화가 구성되지 않았습니다",
+				syncToGoogleSuccess: "작업이 Google 캘린더에 동기화되었습니다",
+				syncToGoogleFailed: "Google 캘린더 동기화 실패",
 			},
 			recurrence: "반복",
 			clearRecurrence: "반복 지우기",
@@ -2670,6 +2806,7 @@ export const ko: TranslationTree = {
 			loadingDependencies: "종속성 로딩 중...",
 			blockingEmpty: "종속 작업 없음",
 			blockingLoadError: "종속성 로드 실패",
+			googleCalendarSyncTooltip: "Google 캘린더에 동기화됨",
 		},
 		propertyEventCard: {
 			unknownFile: "알 수 없는 파일",

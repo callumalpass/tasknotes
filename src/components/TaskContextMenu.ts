@@ -570,6 +570,28 @@ export class TaskContextMenu {
 					CalendarExportService.downloadICSFile(task, this.t.bind(this));
 				});
 			});
+
+			submenu.addSeparator();
+
+			// Sync to Google Calendar (via API)
+			submenu.addItem((subItem: any) => {
+				subItem.setTitle(this.t("contextMenus.task.calendar.syncToGoogle"));
+				subItem.setIcon("refresh-cw");
+				subItem.onClick(async () => {
+					if (!plugin.taskCalendarSyncService?.isEnabled()) {
+						new Notice(this.t("contextMenus.task.calendar.syncToGoogleNotConfigured"));
+						return;
+					}
+					try {
+						await plugin.taskCalendarSyncService.syncTaskToCalendar(task);
+						new Notice(this.t("contextMenus.task.calendar.syncToGoogleSuccess"));
+						this.options.onUpdate?.();
+					} catch (error) {
+						console.error("Failed to sync task to Google Calendar:", error);
+						new Notice(this.t("contextMenus.task.calendar.syncToGoogleFailed"));
+					}
+				});
+			});
 		});
 
 		this.menu.addSeparator();
