@@ -998,6 +998,7 @@ export const ja: TranslationTree = {
 				filenameUpdatesWithTitle: "タスクタイトルが変更されると、ファイル名は自動的に更新されます。",
 				filenameFormat: "ファイル名形式:",
 				customTemplate: "カスタムテンプレート:",
+				legacySyntaxWarning: "{title}のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、{{title}}のような二重波括弧構文を使用してください。",
 			},
 			tagsCard: {
 				nativeObsidianTags: "ネイティブObsidianタグを使用",
@@ -1669,6 +1670,135 @@ export const ja: TranslationTree = {
 					serviceUnavailable: "自動エクスポートサービスが利用できません",
 				},
 			},
+			googleCalendarExport: {
+				header: "タスクをGoogleカレンダーにエクスポート",
+				description:
+					"タスクを自動的にGoogleカレンダーのイベントとして同期します。上記でGoogleカレンダーが接続されている必要があります。",
+				enable: {
+					name: "タスクエクスポートを有効にする",
+					description:
+						"有効にすると、日付のあるタスクが自動的にGoogleカレンダーにイベントとして同期されます。",
+				},
+				targetCalendar: {
+					name: "ターゲットカレンダー",
+					description: "タスクイベントを作成するカレンダーを選択します。",
+					placeholder: "カレンダーを選択...",
+					connectFirst: "先にGoogleカレンダーを接続してください",
+					primarySuffix: "（メイン）",
+				},
+				syncTrigger: {
+					name: "同期トリガー",
+					description: "どのタスク日付でカレンダーイベントを作成するか。",
+					options: {
+						scheduled: "予定日",
+						due: "期限",
+						both: "両方（予定日優先）",
+					},
+				},
+				allDayEvents: {
+					name: "終日イベントとして作成",
+					description:
+						"有効にすると、タスクは終日イベントとして作成されます。無効にすると、時間見積もりを期間として使用します。",
+				},
+				defaultDuration: {
+					name: "デフォルトのイベント期間",
+					description:
+						"時間指定イベントの期間（分）（タスクに時間見積もりがない場合に使用）。",
+				},
+				eventTitleTemplate: {
+					name: "イベントタイトルテンプレート",
+					description:
+						"イベントタイトルのテンプレート。使用可能な変数：{{title}}、{{status}}、{{priority}}",
+					placeholder: "{{title}}",
+				},
+				includeDescription: {
+					name: "説明にタスク詳細を含める",
+					description:
+						"イベントの説明にタスクのメタデータ（優先度、ステータス、タグなど）を追加します。",
+				},
+				includeObsidianLink: {
+					name: "Obsidianリンクを含める",
+					description:
+						"イベントの説明にObsidianのタスクへのリンクを追加します。",
+				},
+				defaultReminder: {
+					name: "デフォルトリマインダー",
+					description:
+						"Googleカレンダーイベントにポップアップリマインダーを追加します。イベント前の分数を設定（0 = リマインダーなし）。一般的な値：15、30、60、1440（1日）。",
+				},
+				automaticSyncBehavior: {
+					header: "自動同期動作",
+				},
+				syncOnCreate: {
+					name: "タスク作成時に同期",
+					description:
+						"新しいタスクが作成されたときに自動的にカレンダーイベントを作成します。",
+				},
+				syncOnUpdate: {
+					name: "タスク更新時に同期",
+					description:
+						"タスクが変更されたときに自動的にカレンダーイベントを更新します。",
+				},
+				syncOnComplete: {
+					name: "タスク完了時に同期",
+					description:
+						"タスクが完了したときにカレンダーイベントを更新します（タイトルにチェックマークを追加）。",
+				},
+				syncOnDelete: {
+					name: "タスク削除時にイベントを削除",
+					description:
+						"対応するタスクが削除されたときにカレンダーイベントを削除します。",
+				},
+				manualSyncActions: {
+					header: "手動同期アクション",
+				},
+				syncAllTasks: {
+					name: "すべてのタスクを同期",
+					description:
+						"すべての既存タスクをGoogleカレンダーに同期します。まだ同期されていないタスクのイベントが作成されます。",
+					buttonText: "すべて同期",
+				},
+				unlinkAllTasks: {
+					name: "すべてのタスクのリンクを解除",
+					description:
+						"カレンダーイベントを削除せずに、すべてのタスクとイベントのリンクを解除します。",
+					buttonText: "すべてリンク解除",
+					confirmTitle: "すべてのタスクのリンクを解除",
+					confirmMessage:
+						"これにより、タスクとカレンダーイベント間のすべてのリンクが削除されます。カレンダーイベントは残りますが、タスクが変更されても更新されなくなります。よろしいですか？",
+					confirmButtonText: "すべてリンク解除",
+				},
+				notices: {
+					notEnabled:
+						"Googleカレンダーエクスポートが有効になっていません。設定 > 統合で設定してください。",
+					notEnabledOrConfigured:
+						"Googleカレンダーエクスポートが有効または設定されていません",
+					serviceNotAvailable: "タスクカレンダー同期サービスが利用できません",
+					syncResults: "同期済み：{synced}、失敗：{failed}、スキップ：{skipped}",
+					taskSynced: "タスクをGoogleカレンダーに同期しました",
+					noActiveFile: "現在アクティブなファイルがありません",
+					notATask: "現在のファイルはタスクではありません",
+					noDateToSync: "タスクに同期する予定日または期限がありません",
+					syncFailed: "タスクのGoogleカレンダーへの同期に失敗しました：{message}",
+					syncingTasks: "{total}件のタスクをGoogleカレンダーに同期中...",
+					syncComplete:
+						"同期完了：{synced}件同期、{failed}件失敗、{skipped}件スキップ",
+					eventsDeletedAndUnlinked: "すべてのイベントが削除され、リンク解除されました",
+					tasksUnlinked: "すべてのタスクリンクが削除されました",
+				},
+				eventDescription: {
+					untitledTask: "無題のタスク",
+					priority: "優先度：{value}",
+					status: "ステータス：{value}",
+					due: "期限：{value}",
+					scheduled: "予定：{value}",
+					timeEstimate: "時間見積もり：{value}",
+					tags: "タグ：{value}",
+					contexts: "コンテキスト：{value}",
+					projects: "プロジェクト：{value}",
+					openInObsidian: "Obsidianで開く",
+				},
+			},
 			httpApi: {
 				header: "HTTP API",
 				description: "外部統合と自動化のためのHTTP APIを有効にします。",
@@ -1956,6 +2086,8 @@ export const ja: TranslationTree = {
 		startTimeTrackingWithSelector: "時間追跡を開始（タスクを選択）",
 		editTimeEntries: "時間エントリを編集（タスクを選択）",
 		createOrOpenTask: "タスクを作成または開く",
+		syncAllTasksGoogleCalendar: "すべてのタスクをGoogleカレンダーに同期",
+		syncCurrentTaskGoogleCalendar: "現在のタスクをGoogleカレンダーに同期",
 	},
 	modals: {
 		deviceCode: {
@@ -2458,6 +2590,10 @@ export const ja: TranslationTree = {
 				outlook: "Outlookカレンダー",
 				yahoo: "Yahooカレンダー",
 				downloadIcs: ".icsファイルをダウンロード",
+				syncToGoogle: "Googleカレンダーに同期",
+				syncToGoogleNotConfigured: "Googleカレンダー同期が設定されていません",
+				syncToGoogleSuccess: "タスクをGoogleカレンダーに同期しました",
+				syncToGoogleFailed: "Googleカレンダーへの同期に失敗しました",
 			},
 			recurrence: "繰り返し",
 			clearRecurrence: "繰り返しをクリア",
@@ -2720,6 +2856,7 @@ export const ja: TranslationTree = {
 			loadingDependencies: "依存関係を読み込み中…",
 			blockingEmpty: "依存タスクはありません",
 			blockingLoadError: "依存関係の読み込みに失敗しました",
+			googleCalendarSyncTooltip: "Googleカレンダーに同期済み",
 		},
 		propertyEventCard: {
 			unknownFile: "不明なファイル",

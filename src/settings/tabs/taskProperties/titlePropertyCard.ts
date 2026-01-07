@@ -162,8 +162,14 @@ function renderFilenameSettingsContent(
 			warningContainer.empty();
 			// Check for single-brace syntax that isn't part of double-brace
 			// Match {word} but not {{word}}
+			// Avoid lookbehind for iOS compatibility (iOS < 16.4 doesn't support lookbehind)
 			const template = templateInput.value;
-			const hasLegacySyntax = /(?<!\{)\{([a-zA-Z]+)\}(?!\})/.test(template);
+			// First check if there are any single braces at all
+			const singleBracePattern = /\{[a-zA-Z]+\}/g;
+			const doubleBracePattern = /\{\{[a-zA-Z]+\}\}/g;
+			// Remove all double-brace patterns, then check for remaining single-brace
+			const withoutDoubleBraces = template.replace(doubleBracePattern, "");
+			const hasLegacySyntax = singleBracePattern.test(withoutDoubleBraces);
 
 			if (hasLegacySyntax) {
 				const warningEl = warningContainer.createDiv({

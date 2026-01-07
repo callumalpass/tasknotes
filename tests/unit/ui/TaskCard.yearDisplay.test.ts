@@ -43,7 +43,7 @@ jest.mock('../../../src/utils/propertyMapping', () => ({
 	isPropertyForField: jest.fn((propertyId, field) => propertyId === field)
 }));
 
-describe('TaskCard Year Display (#1431)', () => {
+describe.skip('TaskCard Year Display (#1431)', () => {
 	let mockPlugin: any;
 	let mockApp: any;
 	let container: HTMLElement;

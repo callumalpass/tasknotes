@@ -998,6 +998,7 @@ export const zh: TranslationTree = {
 				filenameUpdatesWithTitle: "文件名将在任务标题更改时自动更新。",
 				filenameFormat: "文件名格式：",
 				customTemplate: "自定义模板：",
+				legacySyntaxWarning: "像 {title} 这样的单花括号语法已弃用。请使用双花括号语法 {{title}} 以与正文模板保持一致。",
 			},
 			tagsCard: {
 				nativeObsidianTags: "使用原生Obsidian标签",
@@ -1669,6 +1670,135 @@ export const zh: TranslationTree = {
 					serviceUnavailable: "自动导出服务不可用",
 				},
 			},
+			googleCalendarExport: {
+				header: "将任务导出到Google日历",
+				description:
+					"自动将您的任务同步到Google日历作为事件。需要在上方连接Google日历。",
+				enable: {
+					name: "启用任务导出",
+					description:
+						"启用后，带有日期的任务将自动同步到Google日历作为事件。",
+				},
+				targetCalendar: {
+					name: "目标日历",
+					description: "选择要创建任务事件的日历。",
+					placeholder: "选择日历...",
+					connectFirst: "请先连接Google日历",
+					primarySuffix: "（主要）",
+				},
+				syncTrigger: {
+					name: "同步触发器",
+					description: "哪个任务日期应触发日历事件创建。",
+					options: {
+						scheduled: "计划日期",
+						due: "截止日期",
+						both: "两者（优先计划日期）",
+					},
+				},
+				allDayEvents: {
+					name: "创建为全天事件",
+					description:
+						"启用后，任务将创建为全天事件。禁用后，使用时间估计作为持续时间。",
+				},
+				defaultDuration: {
+					name: "默认事件持续时间",
+					description:
+						"带时间的事件持续时间（分钟）（当任务没有时间估计时使用）。",
+				},
+				eventTitleTemplate: {
+					name: "事件标题模板",
+					description:
+						"事件标题模板。可用变量：{{title}}、{{status}}、{{priority}}",
+					placeholder: "{{title}}",
+				},
+				includeDescription: {
+					name: "在描述中包含任务详情",
+					description:
+						"将任务元数据（优先级、状态、标签等）添加到事件描述中。",
+				},
+				includeObsidianLink: {
+					name: "包含Obsidian链接",
+					description:
+						"在事件描述中添加返回Obsidian中任务的链接。",
+				},
+				defaultReminder: {
+					name: "默认提醒",
+					description:
+						"为Google日历事件添加弹出提醒。设置事件前的分钟数（0 = 无提醒）。常用值：15、30、60、1440（1天）。",
+				},
+				automaticSyncBehavior: {
+					header: "自动同步行为",
+				},
+				syncOnCreate: {
+					name: "创建任务时同步",
+					description:
+						"创建新任务时自动创建日历事件。",
+				},
+				syncOnUpdate: {
+					name: "更新任务时同步",
+					description:
+						"修改任务时自动更新日历事件。",
+				},
+				syncOnComplete: {
+					name: "完成任务时同步",
+					description:
+						"任务完成时更新日历事件（在标题中添加勾选标记）。",
+				},
+				syncOnDelete: {
+					name: "删除任务时删除事件",
+					description:
+						"删除相应任务时删除日历事件。",
+				},
+				manualSyncActions: {
+					header: "手动同步操作",
+				},
+				syncAllTasks: {
+					name: "同步所有任务",
+					description:
+						"将所有现有任务同步到Google日历。这将为尚未同步的任务创建事件。",
+					buttonText: "全部同步",
+				},
+				unlinkAllTasks: {
+					name: "取消关联所有任务",
+					description:
+						"删除所有任务-事件关联而不删除日历事件。",
+					buttonText: "全部取消关联",
+					confirmTitle: "取消关联所有任务",
+					confirmMessage:
+						"这将删除任务和日历事件之间的所有关联。日历事件将保留，但任务更改时不再更新。确定吗？",
+					confirmButtonText: "全部取消关联",
+				},
+				notices: {
+					notEnabled:
+						"Google日历导出未启用。请在设置 > 集成中配置。",
+					notEnabledOrConfigured:
+						"Google日历导出未启用或未配置",
+					serviceNotAvailable: "任务日历同步服务不可用",
+					syncResults: "已同步：{synced}，失败：{failed}，跳过：{skipped}",
+					taskSynced: "任务已同步到Google日历",
+					noActiveFile: "当前没有活动文件",
+					notATask: "当前文件不是任务",
+					noDateToSync: "任务没有可同步的计划日期或截止日期",
+					syncFailed: "同步任务到Google日历失败：{message}",
+					syncingTasks: "正在同步{total}个任务到Google日历...",
+					syncComplete:
+						"同步完成：{synced}个已同步，{failed}个失败，{skipped}个跳过",
+					eventsDeletedAndUnlinked: "所有事件已删除并取消关联",
+					tasksUnlinked: "所有任务关联已删除",
+				},
+				eventDescription: {
+					untitledTask: "无标题任务",
+					priority: "优先级：{value}",
+					status: "状态：{value}",
+					due: "截止：{value}",
+					scheduled: "计划：{value}",
+					timeEstimate: "时间估计：{value}",
+					tags: "标签：{value}",
+					contexts: "上下文：{value}",
+					projects: "项目：{value}",
+					openInObsidian: "在Obsidian中打开",
+				},
+			},
 			httpApi: {
 				header: "HTTP API",
 				description: "启用HTTP API进行外部集成和自动化。",
@@ -1956,6 +2086,8 @@ export const zh: TranslationTree = {
 		startTimeTrackingWithSelector: "开始时间跟踪（选择任务）",
 		editTimeEntries: "编辑时间条目（选择任务）",
 		createOrOpenTask: "创建或打开任务",
+		syncAllTasksGoogleCalendar: "同步所有任务到Google日历",
+		syncCurrentTaskGoogleCalendar: "同步当前任务到Google日历",
 	},
 	modals: {
 		deviceCode: {
@@ -2458,6 +2590,10 @@ export const zh: TranslationTree = {
 				outlook: "Outlook日历",
 				yahoo: "Yahoo日历",
 				downloadIcs: "下载.ics文件",
+				syncToGoogle: "同步到Google日历",
+				syncToGoogleNotConfigured: "Google日历同步未配置",
+				syncToGoogleSuccess: "任务已同步到Google日历",
+				syncToGoogleFailed: "同步到Google日历失败",
 			},
 			recurrence: "重复",
 			clearRecurrence: "清除重复",
@@ -2720,6 +2856,7 @@ export const zh: TranslationTree = {
 			loadingDependencies: "正在加载依赖…",
 			blockingEmpty: "没有依赖的任务",
 			blockingLoadError: "无法加载依赖",
+			googleCalendarSyncTooltip: "已同步到Google日历",
 		},
 		propertyEventCard: {
 			unknownFile: "未知文件",

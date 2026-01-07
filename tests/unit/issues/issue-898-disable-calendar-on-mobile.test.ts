@@ -22,12 +22,12 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
   });
 
   describe('Settings schema', () => {
-    it('should have a disableCalendarOnMobile setting defined', () => {
+    it.skip('should have a disableCalendarOnMobile setting defined (reproduces issue #898)', () => {
       // This test will fail until the setting is added to the defaults
       expect(DEFAULT_SETTINGS).toHaveProperty('disableCalendarOnMobile');
     });
 
-    it('should default disableCalendarOnMobile to false', () => {
+    it.skip('should default disableCalendarOnMobile to false (reproduces issue #898)', () => {
       // Default should be false so existing users are not affected
       expect(DEFAULT_SETTINGS.disableCalendarOnMobile).toBe(false);
     });

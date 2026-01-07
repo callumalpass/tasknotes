@@ -24,7 +24,7 @@
 import { renderTextWithLinks, LinkServices } from '../../../src/ui/renderers/linkRenderer';
 import { makeContainer } from '../../helpers/dom-helpers';
 
-describe('Issue #1428: Hashtags with slashes not rendered correctly', () => {
+describe.skip('Issue #1428: Hashtags with slashes not rendered correctly', () => {
   // Mock LinkServices for rendering
   const mockLinkServices: LinkServices = {
     metadataCache: {

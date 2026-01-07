@@ -106,6 +106,12 @@ export class CalendarView extends BasesViewBase {
 
 	// Track previous config values to detect user-initiated toggle changes
 	private _previousConfigSnapshot: string | null = null;
+
+	// Debounce timer for saving view type to config
+	private _saveViewTypeTimer: ReturnType<typeof setTimeout> | null = null;
+
+	// Flag to indicate config changed and calendar needs recreation
+	private _configChangedNeedsRecreate = false;
 	
 	private viewOptions: {
 		// Events
@@ -267,8 +273,9 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		// If config toggles changed, render immediately (user toggled a view option)
+		// If config changed, mark for recreation and render immediately
 		if (this.hasConfigChanged()) {
+			this._configChangedNeedsRecreate = true;
 			this.render();
 			return;
 		}
@@ -296,14 +303,15 @@ export class CalendarView extends BasesViewBase {
 
 	/**
 	 * Get a snapshot of config values that affect rendering.
-	 * Used to detect user-initiated toggle changes.
+	 * Used to detect user-initiated config changes.
 	 */
 	private getConfigSnapshot(): string {
 		if (!this.config || typeof this.config.get !== 'function') {
 			return '';
 		}
-		// Include all toggle values that would affect what's displayed
+		// Include all config values that affect the calendar
 		const values: any[] = [
+			// Event toggles
 			this.config.get('showScheduled'),
 			this.config.get('showDue'),
 			this.config.get('showScheduledToDueSpan'),
@@ -311,6 +319,35 @@ export class CalendarView extends BasesViewBase {
 			this.config.get('showTimeEntries'),
 			this.config.get('showTimeblocks'),
 			this.config.get('showPropertyBasedEvents'),
+			// Layout options
+			this.config.get('calendarView'),
+			this.config.get('customDayCount'),
+			this.config.get('listDayCount'),
+			this.config.get('slotMinTime'),
+			this.config.get('slotMaxTime'),
+			this.config.get('slotDuration'),
+			this.config.get('firstDay'),
+			this.config.get('weekNumbers'),
+			this.config.get('nowIndicator'),
+			this.config.get('showWeekends'),
+			this.config.get('showAllDaySlot'),
+			this.config.get('showTodayHighlight'),
+			this.config.get('selectMirror'),
+			this.config.get('timeFormat'),
+			this.config.get('scrollTime'),
+			this.config.get('eventMinHeight'),
+			this.config.get('slotEventOverlap'),
+			this.config.get('eventMaxStack'),
+			this.config.get('dayMaxEvents'),
+			this.config.get('dayMaxEventRows'),
+			// Property-based events
+			this.config.get('startDateProperty'),
+			this.config.get('endDateProperty'),
+			this.config.get('titleProperty'),
+			// Date navigation
+			this.config.get('initialDate'),
+			this.config.get('initialDateProperty'),
+			this.config.get('initialDateStrategy'),
 		];
 
 		// Include ICS calendar toggles
@@ -574,8 +611,18 @@ export class CalendarView extends BasesViewBase {
 		if (!this.configLoaded && this.config) {
 			this.readViewOptions();
 		} else if (this.config) {
-			// Always re-read event toggles to respond to toggle changes
-			this.readEventToggles();
+			// If config changed, re-read ALL options and destroy calendar for recreation
+			if (this._configChangedNeedsRecreate) {
+				this._configChangedNeedsRecreate = false;
+				this.readViewOptions();
+				if (this.calendar) {
+					this.calendar.destroy();
+					this.calendar = null;
+				}
+			} else {
+				// Normal render - just re-read event toggles
+				this.readEventToggles();
+			}
 		}
 
 		// Now that config is loaded, setup search (idempotent: will only create once)
@@ -761,13 +808,12 @@ export class CalendarView extends BasesViewBase {
 			eventResize: (info) => this.handleEventResize(info),
 			select: (info) => this.handleDateSelect(info),
 			viewDidMount: (arg) => {
-				// Track view type changes locally but DON'T save to Bases config
-				// Saving to config triggers Bases to recreate the entire view, which is expensive
-				// The view type will be persisted when the user leaves the view
+				// Track view type changes and save to config with debounce
+				// Debouncing prevents rapid view recreation when clicking through views quickly
 				const newViewType = arg.view.type;
 				if (newViewType && newViewType !== this.viewOptions.calendarView) {
 					this.viewOptions.calendarView = newViewType;
-					console.debug('[TaskNotes][CalendarView] View type changed to:', newViewType, '(not saving to avoid recreation)');
+					this.debouncedSaveViewType(newViewType);
 				}
 			},
 		};
@@ -794,6 +840,32 @@ export class CalendarView extends BasesViewBase {
 			// Add the existing CSS class to hide today highlighting
 			this.calendarEl.classList.add('hide-today-highlight');
 		}
+	}
+
+	/**
+	 * Save view type to config with debouncing.
+	 * Uses a 1 second debounce to avoid rapid view recreation when clicking through views.
+	 * Unlike saving on unload (which caused #1397), saving during active use is safe
+	 * because the config object is still valid.
+	 */
+	private debouncedSaveViewType(viewType: string): void {
+		// Clear any pending save
+		if (this._saveViewTypeTimer) {
+			clearTimeout(this._saveViewTypeTimer);
+		}
+
+		// Debounce the save to avoid rapid recreation
+		this._saveViewTypeTimer = setTimeout(() => {
+			this._saveViewTypeTimer = null;
+			try {
+				if (this.config && typeof this.config.set === 'function') {
+					this.config.set('calendarView', viewType);
+					console.debug('[TaskNotes][CalendarView] View type saved to config:', viewType);
+				}
+			} catch (error) {
+				console.error('[TaskNotes][CalendarView] Failed to save view type:', error);
+			}
+		}, 1000);
 	}
 
 	private determineInitialDate(taskNotes: TaskInfo[]): Date | string | undefined {
@@ -1326,6 +1398,34 @@ export class CalendarView extends BasesViewBase {
 
 					const property = eventType === "scheduled" ? "scheduled" : "due";
 					await this.plugin.taskService.updateProperty(taskInfo, property, newDateString);
+				} else if (eventType === "scheduledToDueSpan") {
+					// Handle span event drag - shift both scheduled and due by the same amount
+					const oldStart = info.oldEvent.start;
+					const newStart = info.event.start;
+
+					if (!oldStart || !newStart) {
+						info.revert();
+						return;
+					}
+
+					// Calculate the time shift in milliseconds
+					const timeDiffMs = newStart.getTime() - oldStart.getTime();
+
+					// Update scheduled date
+					if (taskInfo.scheduled) {
+						const oldScheduled = new Date(taskInfo.scheduled);
+						const newScheduled = new Date(oldScheduled.getTime() + timeDiffMs);
+						const scheduledString = format(newScheduled, "yyyy-MM-dd");
+						await this.plugin.taskService.updateProperty(taskInfo, "scheduled", scheduledString);
+					}
+
+					// Update due date
+					if (taskInfo.due) {
+						const oldDue = new Date(taskInfo.due);
+						const newDue = new Date(oldDue.getTime() + timeDiffMs);
+						const dueString = format(newDue, "yyyy-MM-dd");
+						await this.plugin.taskService.updateProperty(taskInfo, "due", dueString);
+					}
 				}
 			} catch (error) {
 				console.error("[TaskNotes][CalendarView] Error updating task date:", error);
@@ -1740,10 +1840,12 @@ export class CalendarView extends BasesViewBase {
 					case "recurring":
 					case "timeEntry":
 					case "due":
+					case "scheduledToDueSpan":
 						arg.event.setProp("editable", true);
 						break;
 					default:
-						arg.event.setProp("editable", true);
+						// Non-task events (like ICS without provider) remain non-editable
+						break;
 				}
 			}
 
@@ -1893,8 +1995,13 @@ export class CalendarView extends BasesViewBase {
 		// Note: We intentionally do NOT call config.set() here (issue #1397)
 		// The Bases API has a bug where config objects can point to wrong files,
 		// causing view corruption when config.set() writes to unrelated .base files.
-		// View type is preserved via ephemeral state (getEphemeralState/setEphemeralState)
-		// and users can set their default view in the .base file's calendarView option.
+		// View type is saved during active use via debouncedSaveViewType() instead.
+
+		// Clean up any pending view type save timer
+		if (this._saveViewTypeTimer) {
+			clearTimeout(this._saveViewTypeTimer);
+			this._saveViewTypeTimer = null;
+		}
 
 		// Component.register() calls will be automatically cleaned up
 

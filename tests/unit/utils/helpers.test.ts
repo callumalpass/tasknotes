@@ -614,6 +614,72 @@ describe('Helpers', () => {
         expect(validateTimeBlock(timeblock)).toBe(true);
       });
 
+      /**
+       * Issue #1076: Cannot create timeblock with end time = 00:00
+       *
+       * The validation logic treats 00:00 as "0 minutes since midnight",
+       * which will always be less than any reasonable start time.
+       *
+       * Example: 22:00 to 00:00 should be a valid 2-hour timeblock ending at midnight.
+       * Current behavior: endMinutes (0) <= startMinutes (1320) returns false.
+       *
+       * @see https://github.com/callumalpass/tasknotes/issues/1076
+       */
+      it.skip('reproduces issue #1076 - should accept 00:00 as valid end time (midnight)', () => {
+        const timeblock: TimeBlock = {
+          id: 'tb-1',
+          title: 'Late Night Work',
+          startTime: '22:00',
+          endTime: '00:00'
+        };
+
+        // This should be valid: a 2-hour timeblock from 22:00 to midnight
+        expect(validateTimeBlock(timeblock)).toBe(true);
+      });
+
+      it.skip('reproduces issue #1076 - should accept 23:30 to 00:00 as valid 30-minute block', () => {
+        const timeblock: TimeBlock = {
+          id: 'tb-1',
+          title: 'End of Day Review',
+          startTime: '23:30',
+          endTime: '00:00'
+        };
+
+        // This should be valid: a 30-minute timeblock ending at midnight
+        expect(validateTimeBlock(timeblock)).toBe(true);
+      });
+
+      it.skip('reproduces issue #1076 - should calculate correct duration for timeblock ending at 00:00', () => {
+        // When fixed, the validation should treat 00:00 as 1440 minutes (24 hours)
+        // Duration should be: 1440 - (22 * 60) = 1440 - 1320 = 120 minutes (2 hours)
+        const timeblock: TimeBlock = {
+          id: 'tb-1',
+          title: 'Test Duration',
+          startTime: '22:00',
+          endTime: '00:00'
+        };
+
+        expect(validateTimeBlock(timeblock)).toBe(true);
+
+        // The actual duration calculation (if exposed) would be:
+        // startMinutes = 22 * 60 = 1320
+        // endMinutes = 0 (should be treated as 1440)
+        // duration = 1440 - 1320 = 120 minutes
+      });
+
+      it.skip('reproduces issue #1076 - edge case: 00:00 to 00:00 should be invalid', () => {
+        // A timeblock starting and ending at midnight (same time) should still be invalid
+        const timeblock: TimeBlock = {
+          id: 'tb-1',
+          title: 'Zero Duration',
+          startTime: '00:00',
+          endTime: '00:00'
+        };
+
+        // This should be invalid: zero duration timeblock
+        expect(validateTimeBlock(timeblock)).toBe(false);
+      });
+
       it('should reject timeblock with invalid time format', () => {
         const timeblock = {
           id: 'tb-1',

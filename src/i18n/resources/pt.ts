@@ -1001,6 +1001,7 @@ export const pt: TranslationTree = {
 				filenameUpdatesWithTitle: "O nome do arquivo será atualizado automaticamente quando o título da tarefa mudar.",
 				filenameFormat: "Formato do nome do arquivo:",
 				customTemplate: "Modelo personalizado:",
+				legacySyntaxWarning: "A sintaxe de chaves simples como {title} está obsoleta. Por favor, use a sintaxe de chaves duplas {{title}} para consistência com os modelos de corpo.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "Usa tags nativas do Obsidian",
@@ -1672,6 +1673,135 @@ export const pt: TranslationTree = {
 					serviceUnavailable: "Serviço de exportação automática não disponível"
 				}
 			},
+			googleCalendarExport: {
+				header: "Exportar tarefas para o Google Calendar",
+				description:
+					"Sincronize automaticamente suas tarefas para o Google Calendar como eventos. Requer que o Google Calendar esteja conectado acima.",
+				enable: {
+					name: "Ativar exportação de tarefas",
+					description:
+						"Quando ativado, tarefas com datas serão automaticamente sincronizadas para o Google Calendar como eventos."
+				},
+				targetCalendar: {
+					name: "Calendário de destino",
+					description: "Selecione em qual calendário criar eventos de tarefas.",
+					placeholder: "Selecionar um calendário...",
+					connectFirst: "Conecte o Google Calendar primeiro",
+					primarySuffix: " (Principal)"
+				},
+				syncTrigger: {
+					name: "Gatilho de sincronização",
+					description: "Qual data da tarefa deve acionar a criação do evento no calendário.",
+					options: {
+						scheduled: "Data agendada",
+						due: "Data de vencimento",
+						both: "Ambas (preferir agendada)"
+					}
+				},
+				allDayEvents: {
+					name: "Criar como eventos de dia inteiro",
+					description:
+						"Quando ativado, tarefas são criadas como eventos de dia inteiro. Quando desativado, usa a estimativa de tempo para a duração."
+				},
+				defaultDuration: {
+					name: "Duração padrão do evento",
+					description:
+						"Duração em minutos para eventos com horário (usada quando a tarefa não tem estimativa de tempo)."
+				},
+				eventTitleTemplate: {
+					name: "Modelo de título do evento",
+					description:
+						"Modelo para títulos de eventos. Variáveis disponíveis: {{title}}, {{status}}, {{priority}}",
+					placeholder: "{{title}}"
+				},
+				includeDescription: {
+					name: "Incluir detalhes da tarefa na descrição",
+					description:
+						"Adicionar metadados da tarefa (prioridade, status, tags, etc.) à descrição do evento."
+				},
+				includeObsidianLink: {
+					name: "Incluir link do Obsidian",
+					description:
+						"Adicionar um link de volta para a tarefa no Obsidian na descrição do evento."
+				},
+				defaultReminder: {
+					name: "Lembrete padrão",
+					description:
+						"Adicionar um lembrete popup aos eventos do Google Calendar. Defina minutos antes do evento (0 = sem lembrete). Valores comuns: 15, 30, 60, 1440 (1 dia)."
+				},
+				automaticSyncBehavior: {
+					header: "Comportamento de sincronização automática"
+				},
+				syncOnCreate: {
+					name: "Sincronizar ao criar tarefa",
+					description:
+						"Criar automaticamente um evento no calendário quando uma nova tarefa é criada."
+				},
+				syncOnUpdate: {
+					name: "Sincronizar ao atualizar tarefa",
+					description:
+						"Atualizar automaticamente o evento no calendário quando uma tarefa é modificada."
+				},
+				syncOnComplete: {
+					name: "Sincronizar ao completar tarefa",
+					description:
+						"Atualizar evento no calendário quando uma tarefa é completada (adiciona marca de verificação ao título)."
+				},
+				syncOnDelete: {
+					name: "Excluir evento ao excluir tarefa",
+					description:
+						"Remover evento do calendário quando a tarefa correspondente é excluída."
+				},
+				manualSyncActions: {
+					header: "Ações de sincronização manual"
+				},
+				syncAllTasks: {
+					name: "Sincronizar todas as tarefas",
+					description:
+						"Sincronizar todas as tarefas existentes para o Google Calendar. Isso criará eventos para tarefas que ainda não foram sincronizadas.",
+					buttonText: "Sincronizar tudo"
+				},
+				unlinkAllTasks: {
+					name: "Desvincular todas as tarefas",
+					description:
+						"Remover todos os vínculos tarefa-evento sem excluir eventos do calendário.",
+					buttonText: "Desvincular tudo",
+					confirmTitle: "Desvincular todas as tarefas",
+					confirmMessage:
+						"Isso removerá todos os vínculos entre tarefas e eventos do calendário. Os eventos do calendário permanecerão mas não serão mais atualizados quando as tarefas mudarem. Tem certeza?",
+					confirmButtonText: "Desvincular tudo"
+				},
+				notices: {
+					notEnabled:
+						"Exportação para o Google Calendar não está ativada. Configure em Configurações > Integrações.",
+					notEnabledOrConfigured:
+						"Exportação para o Google Calendar não está ativada ou configurada",
+					serviceNotAvailable: "Serviço de sincronização de calendário não disponível",
+					syncResults: "Sincronizados: {synced}, Falharam: {failed}, Ignorados: {skipped}",
+					taskSynced: "Tarefa sincronizada para o Google Calendar",
+					noActiveFile: "Nenhum arquivo está atualmente ativo",
+					notATask: "O arquivo atual não é uma tarefa",
+					noDateToSync: "Tarefa não tem data agendada ou de vencimento para sincronizar",
+					syncFailed: "Falha ao sincronizar tarefa para o Google Calendar: {message}",
+					syncingTasks: "Sincronizando {total} tarefas para o Google Calendar...",
+					syncComplete:
+						"Sincronização completa: {synced} sincronizadas, {failed} falharam, {skipped} ignoradas",
+					eventsDeletedAndUnlinked: "Todos os eventos excluídos e desvinculados",
+					tasksUnlinked: "Todos os vínculos de tarefas removidos"
+				},
+				eventDescription: {
+					untitledTask: "Tarefa sem título",
+					priority: "Prioridade: {value}",
+					status: "Status: {value}",
+					due: "Vencimento: {value}",
+					scheduled: "Agendado: {value}",
+					timeEstimate: "Estimativa de tempo: {value}",
+					tags: "Tags: {value}",
+					contexts: "Contextos: {value}",
+					projects: "Projetos: {value}",
+					openInObsidian: "Abrir no Obsidian"
+				}
+			},
 			httpApi: {
 				header: "API HTTP",
 				description: "Ative a API HTTP para integrações externas e automações.",
@@ -1963,7 +2093,9 @@ export const pt: TranslationTree = {
 		viewReleaseNotes: "Ver notas de lançamento",
 		startTimeTrackingWithSelector: "Iniciar registro de tempo (selecionar tarefa)",
 		editTimeEntries: "Editar registros de tempo (selecionar tarefa)",
-		createOrOpenTask: "Criar ou abrir tarefa"
+		createOrOpenTask: "Criar ou abrir tarefa",
+		syncAllTasksGoogleCalendar: "Sincronizar todas as tarefas para o Google Calendar",
+		syncCurrentTaskGoogleCalendar: "Sincronizar tarefa atual para o Google Calendar"
 	},
 	modals: {
 		deviceCode: {
@@ -2465,7 +2597,11 @@ export const pt: TranslationTree = {
 				google: "Google Calendar",
 				outlook: "Outlook Calendar",
 				yahoo: "Yahoo Calendar",
-				downloadIcs: "Baixar arquivo .ics"
+				downloadIcs: "Baixar arquivo .ics",
+				syncToGoogle: "Sincronizar com o Google Calendar",
+				syncToGoogleNotConfigured: "Sincronização com Google Calendar não configurada",
+				syncToGoogleSuccess: "Tarefa sincronizada com o Google Calendar",
+				syncToGoogleFailed: "Falha ao sincronizar com o Google Calendar"
 			},
 			recurrence: "Recorrência",
 			clearRecurrence: "Limpar recorrência",
@@ -2733,7 +2869,8 @@ export const pt: TranslationTree = {
 			blockingToggle: "Bloqueando {count} tarefas",
 			loadingDependencies: "Carregando dependências...",
 			blockingEmpty: "Nenhuma tarefa dependente",
-			blockingLoadError: "Falha ao carregar dependências"
+			blockingLoadError: "Falha ao carregar dependências",
+			googleCalendarSyncTooltip: "Sincronizado com o Google Calendar"
 		},
 		propertyEventCard: {
 			unknownFile: "Arquivo desconhecido"

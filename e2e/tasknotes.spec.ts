@@ -8978,3 +8978,213 @@ test.describe('Issue #1436: Task card widget injection error in reading mode', (
     expect(finalCount).toBeLessThanOrEqual(1);
   });
 });
+
+test.describe('Issue #1261 - Double scroll bar in embedded task list base view', () => {
+  // Issue #1261: When embedding a task list base view in a note and dragging
+  // it to a sidebar, two scrollbars appear - one for the task list view and
+  // one for the note itself. This makes it difficult to scroll the note.
+  //
+  // Observations from the bug report:
+  // - No double scrollbar when the task list view itself is in the sidebar (no note embedding)
+  // - No double scrollbar when viewing the note with embedded base in the main window
+  // - No double scrollbar for other base views (like native base table view)
+  //
+  // Root cause: The task list items container uses `overflow-y: auto` with `max-height: 100vh`,
+  // which creates an independent scroll region. When the note is in a sidebar,
+  // both the note and the task list view become scrollable.
+
+  test.fixme('should not show double scrollbars when embedded task list is in sidebar', async () => {
+    const page = getPage();
+
+    // Ensure sidebar is expanded
+    await ensureSidebarExpanded(page);
+
+    // Open the test file with embedded base view
+    const embeddedTestFile = page.locator('.nav-file-title').filter({ hasText: 'Embedded-TaskList-Test' });
+
+    // If the test file isn't found, we need to navigate to create it or skip
+    if (!await embeddedTestFile.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1261] Test file not found - skipping test');
+      return;
+    }
+
+    // Open the file in the main editor first
+    await embeddedTestFile.click();
+    await page.waitForTimeout(2000);
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1261-main-view.png' });
+
+    // Wait for the embedded base view to load
+    const embeddedBase = page.locator('.internal-embed .tn-bases-integration, .internal-embed .bases-view');
+    await expect(embeddedBase).toBeVisible({ timeout: 10000 });
+
+    // Get the task list items container within the embedded view
+    const itemsContainer = page.locator('.internal-embed .tn-bases-items-container').first();
+    await expect(itemsContainer).toBeVisible({ timeout: 5000 });
+
+    // In main view, check that items container has controlled scrolling
+    const mainViewItemsStyle = await itemsContainer.evaluate(el => {
+      const style = window.getComputedStyle(el);
+      return {
+        overflowY: style.overflowY,
+        maxHeight: style.maxHeight,
+        height: style.height
+      };
+    });
+
+    console.log('[Issue #1261] Main view items container style:', mainViewItemsStyle);
+
+    // Now we need to simulate moving the note to a sidebar
+    // This is done via Obsidian's "Move current pane to new window" or drag & drop
+    // For testing, we'll use command palette
+
+    // Open command palette and try to move to right sidebar
+    await page.keyboard.press('Control+p');
+    await page.waitForSelector('.prompt', { timeout: 3000 });
+    await page.keyboard.type('Move current pane to right sidebar', { delay: 30 });
+    await page.waitForTimeout(500);
+
+    const suggestion = page.locator('.suggestion-item').first();
+    const hasCommand = await suggestion.isVisible({ timeout: 2000 }).catch(() => false);
+
+    if (!hasCommand) {
+      // Try alternative command
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+
+      // Alternative: Open in split view to right (smaller space like sidebar)
+      await page.keyboard.press('Control+p');
+      await page.waitForSelector('.prompt', { timeout: 3000 });
+      await page.keyboard.type('Split right', { delay: 30 });
+      await page.waitForTimeout(500);
+
+      const splitSuggestion = page.locator('.suggestion-item').first();
+      if (await splitSuggestion.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(1500);
+      } else {
+        await page.keyboard.press('Escape');
+        console.log('[Issue #1261] Could not split view - skipping sidebar simulation');
+        return;
+      }
+    } else {
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1500);
+    }
+
+    await page.screenshot({ path: 'test-results/screenshots/issue-1261-sidebar-view.png' });
+
+    // Find all scrollable elements within the embedded base view in sidebar context
+    // The bug manifests as multiple elements with overflow-y: scroll or auto
+
+    // Get the sidebar pane containing our note
+    const sidebarPane = page.locator('.mod-right-split .workspace-leaf, .workspace-split:not(.mod-left-split) .workspace-leaf').last();
+
+    if (!await sidebarPane.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('[Issue #1261] Could not find sidebar pane after move');
+      return;
+    }
+
+    // Check for double scrollbar issue
+    // The bug: both the note container AND the task list items container are scrollable
+    const scrollableElements = await sidebarPane.evaluate(pane => {
+      const elements: { className: string; overflowY: string; scrollHeight: number; clientHeight: number }[] = [];
+      const allElements = pane.querySelectorAll('*');
+
+      allElements.forEach(el => {
+        const style = window.getComputedStyle(el);
+        if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+          const elem = el as HTMLElement;
+          elements.push({
+            className: elem.className,
+            overflowY: style.overflowY,
+            scrollHeight: elem.scrollHeight,
+            clientHeight: elem.clientHeight
+          });
+        }
+      });
+
+      return elements;
+    });
+
+    console.log('[Issue #1261] Scrollable elements in sidebar:', scrollableElements);
+
+    // Filter to find actually scrollable elements (scrollHeight > clientHeight)
+    const actuallyScrollable = scrollableElements.filter(
+      el => el.scrollHeight > el.clientHeight + 5 // 5px tolerance
+    );
+
+    console.log('[Issue #1261] Actually scrollable elements:', actuallyScrollable);
+
+    // BUG: This assertion will fail if there are multiple scrollable regions
+    // In the embedded base view, we should only have ONE scrollable region
+    // (either the note or the task list, not both)
+
+    // Check if we have both a markdown preview scroller AND a task list scroller that are both scrollable
+    const hasMarkdownScroller = actuallyScrollable.some(el =>
+      el.className.includes('markdown-preview') ||
+      el.className.includes('cm-scroller') ||
+      el.className.includes('view-content')
+    );
+
+    const hasTaskListScroller = actuallyScrollable.some(el =>
+      el.className.includes('tn-bases-items-container') ||
+      el.className.includes('task-list-view')
+    );
+
+    // If both are scrollable AND have content to scroll, we have the double scrollbar issue
+    if (hasMarkdownScroller && hasTaskListScroller) {
+      // This is the bug - fail the test
+      expect(hasMarkdownScroller && hasTaskListScroller).toBe(false);
+    }
+  });
+
+  test.fixme('task list view should inherit scroll behavior from parent when embedded', async () => {
+    const page = getPage();
+
+    // This test verifies the expected fix behavior:
+    // When a task list base view is embedded in a note, it should NOT set its own
+    // overflow-y: auto but instead let the parent note container handle scrolling.
+
+    await ensureSidebarExpanded(page);
+
+    const embeddedTestFile = page.locator('.nav-file-title').filter({ hasText: 'Embedded-TaskList-Test' });
+
+    if (!await embeddedTestFile.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('[Issue #1261] Test file not found - skipping test');
+      return;
+    }
+
+    await embeddedTestFile.click();
+    await page.waitForTimeout(2000);
+
+    const embeddedBase = page.locator('.internal-embed .tn-bases-integration, .internal-embed .bases-view');
+    await expect(embeddedBase).toBeVisible({ timeout: 10000 });
+
+    // Check the items container styling
+    const itemsContainer = page.locator('.internal-embed .tn-bases-items-container').first();
+    await expect(itemsContainer).toBeVisible({ timeout: 5000 });
+
+    const containerStyle = await itemsContainer.evaluate(el => {
+      const style = window.getComputedStyle(el);
+      return {
+        overflowY: style.overflowY,
+        maxHeight: style.maxHeight,
+        height: style.height,
+        position: style.position
+      };
+    });
+
+    console.log('[Issue #1261] Embedded items container style:', containerStyle);
+
+    // EXPECTED FIX: When embedded in a note, the items container should NOT have
+    // overflow-y: auto or scroll. It should either be 'visible' or 'hidden'.
+    //
+    // Current BUG: The container has overflow-y: auto which creates the second scrollbar
+
+    // This assertion documents the expected fix behavior
+    // Currently it will fail because the bug exists
+    expect(containerStyle.overflowY).not.toBe('auto');
+    expect(containerStyle.overflowY).not.toBe('scroll');
+  });
+});

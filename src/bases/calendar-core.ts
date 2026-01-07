@@ -500,7 +500,7 @@ export function createScheduledToDueSpanEvent(task: TaskInfo, plugin: TaskNotesP
 		backgroundColor: fadedBackground,
 		borderColor: borderColor,
 		textColor: textColor,
-		editable: false, // Span events are read-only (edit via scheduled/due separately)
+		editable: true, // Span events can be dragged to shift both scheduled and due dates
 		extendedProps: {
 			taskInfo: task,
 			eventType: "scheduledToDueSpan",

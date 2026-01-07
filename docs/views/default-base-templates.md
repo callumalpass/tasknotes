@@ -522,14 +522,15 @@ Used by the **Relationships widget** to display task relationships (subtasks, pr
 
 This template uses the special `this` object to reference the current file's properties, enabling dynamic relationship queries.
 
+Note: Unlike other templates, this one does not have a top-level task filter. Each view applies filters as appropriate:
+
+- **Subtasks, Blocked By, Blocking**: Include the task filter (these views show tasks)
+- **Projects**: No task filter (project files can be any file type, not just tasks)
+
 ```yaml
 # Relationships
 # This view shows all relationships for the current file
 # Dynamically shows/hides tabs based on available data
-
-filters:
-  and:
-    - file.hasTag("task")
 
 formulas:
   # ... same formulas as Mini Calendar above ...
@@ -539,6 +540,7 @@ views:
     name: "Subtasks"
     filters:
       and:
+        - file.hasTag("task")
         - note.projects.contains(this.file.asLink())
     order:
       - status
@@ -576,6 +578,7 @@ views:
     name: "Blocked By"
     filters:
       and:
+        - file.hasTag("task")
         - list(this.note.blockedBy).map(value.uid).contains(file.asLink())
     order:
       - status
@@ -593,6 +596,7 @@ views:
     name: "Blocking"
     filters:
       and:
+        - file.hasTag("task")
         - list(note.blockedBy).map(value.uid).contains(this.file.asLink())
     order:
       - status

@@ -443,6 +443,14 @@ export class TaskContextMenu {
 							isDestructive: true,
 						});
 						if (confirmed) {
+							// Delete from Google Calendar before trashing file
+							if (plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
+								plugin.taskCalendarSyncService
+									.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
+									.catch((error) => {
+										console.warn("Failed to delete task from Google Calendar:", error);
+									});
+							}
 							plugin.app.vault.trash(file, true);
 						}
 					});
@@ -568,6 +576,28 @@ export class TaskContextMenu {
 				subItem.setIcon("download");
 				subItem.onClick(() => {
 					CalendarExportService.downloadICSFile(task, this.t.bind(this));
+				});
+			});
+
+			submenu.addSeparator();
+
+			// Sync to Google Calendar (via API)
+			submenu.addItem((subItem: any) => {
+				subItem.setTitle(this.t("contextMenus.task.calendar.syncToGoogle"));
+				subItem.setIcon("refresh-cw");
+				subItem.onClick(async () => {
+					if (!plugin.taskCalendarSyncService?.isEnabled()) {
+						new Notice(this.t("contextMenus.task.calendar.syncToGoogleNotConfigured"));
+						return;
+					}
+					try {
+						await plugin.taskCalendarSyncService.syncTaskToCalendar(task);
+						new Notice(this.t("contextMenus.task.calendar.syncToGoogleSuccess"));
+						this.options.onUpdate?.();
+					} catch (error) {
+						console.error("Failed to sync task to Google Calendar:", error);
+						new Notice(this.t("contextMenus.task.calendar.syncToGoogleFailed"));
+					}
 				});
 			});
 		});

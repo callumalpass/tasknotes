@@ -1,12 +1,22 @@
 /**
  * Test for Issue #1013: Can't Subscribe to Apple Calendar
  *
- * This test demonstrates that the HTML5 URL input type validation
- * rejects webcal:// and webcals:// URLs, preventing users from
- * subscribing to Apple iCloud calendars.
+ * This test file documents multiple aspects of the Apple Calendar subscription issue:
+ *
+ * 1. URL Input Validation: HTML5 URL input type rejects webcal:// and webcals:// URLs
+ *    - FIXED: Using type="text" instead of type="url" allows webcal:// URLs
+ *
+ * 2. URL Normalization: The normalizeCalendarUrl function converts protocols
+ *    - webcal:// -> http:// (may need to be https:// for iCloud)
+ *    - webcals:// -> https://
+ *
+ * 3. iCloud Fetch Issues: Even with proper URL normalization, iCloud calendars
+ *    may fail to fetch due to authentication requirements, CORS, or SSL redirects
  *
  * Issue: https://github.com/[owner]/[repo]/issues/1013
  */
+
+import { normalizeCalendarUrl } from '../../../src/settings/components/CardComponent';
 
 describe('Issue #1013: Apple Calendar webcal:// URL Validation', () => {
 
@@ -147,5 +157,112 @@ describe('Issue #1013: Apple Calendar webcal:// URL Validation', () => {
             input.value = url;
             expect(input.validity.valid).toBe(false);
         });
+    });
+});
+
+/**
+ * Issue #1013 - Part 2: iCloud URL Normalization Issue
+ *
+ * The current normalizeCalendarUrl function converts webcal:// to http://
+ * However, Apple iCloud servers typically require https:// connections.
+ * This may cause fetch failures even after URL normalization.
+ *
+ * User report: "Replacing webcal with https in the link also errors"
+ * This suggests iCloud may have additional authentication or CORS requirements.
+ */
+describe('Issue #1013: iCloud URL Normalization Concerns', () => {
+
+    it.skip('reproduces issue #1013 - webcal:// converted to http:// may fail for iCloud', () => {
+        // Current behavior: webcal:// -> http://
+        // iCloud servers may require https:// and reject http://
+        const webcalUrl = 'webcal://p01-caldav.icloud.com/published/2/example';
+        const normalizedUrl = normalizeCalendarUrl(webcalUrl);
+
+        // Current implementation converts to http://
+        expect(normalizedUrl).toBe('http://p01-caldav.icloud.com/published/2/example');
+
+        // BUG: For iCloud, http:// will likely redirect to https:// or fail
+        // The normalization should possibly convert webcal:// to https:// for iCloud
+        // or the fetch logic should follow redirects
+    });
+
+    it.skip('reproduces issue #1013 - iCloud may require authentication headers', () => {
+        // Even with https://, iCloud published calendars may require:
+        // 1. Specific User-Agent headers
+        // 2. Authentication cookies
+        // 3. CORS preflight handling
+        //
+        // The user reports that manually replacing webcal with https also fails
+        // This suggests the issue is not just protocol conversion but server requirements
+
+        const httpsUrl = 'https://p01-caldav.icloud.com/published/2/example';
+
+        // Document expected behavior: The fetch should succeed with proper headers
+        // Actual behavior: May fail with 401, 403, or CORS errors
+
+        // Potential fixes:
+        // 1. Add iCloud-specific User-Agent header
+        // 2. Handle HTTP redirects from http:// to https://
+        // 3. Implement authentication flow for non-public calendars
+        // 4. Improve error messages to guide users on calendar sharing settings
+
+        expect(true).toBe(true); // Placeholder for actual fetch test
+    });
+
+    it.skip('reproduces issue #1013 - iCloud calendar must be set to "Public" sharing', () => {
+        // Key insight: iCloud calendars have different sharing modes:
+        // 1. "Private" - Only accessible with Apple ID authentication
+        // 2. "Public" - Accessible via webcal:// link (no auth needed)
+        //
+        // The user may have a "Private" calendar trying to use "Public" URL
+        //
+        // Steps to make iCloud calendar publicly accessible:
+        // 1. Open Calendar app on Mac
+        // 2. Right-click calendar -> "Share Calendar..."
+        // 3. Check "Public Calendar"
+        // 4. Copy the webcal:// link
+        //
+        // If the calendar is not set to "Public", the webcal:// URL will fail
+        // even with correct protocol conversion
+
+        expect(true).toBe(true); // Documentation test
+    });
+});
+
+/**
+ * Issue #1013 - Part 3: Potential Fix Verification
+ *
+ * Tests to verify that fixes for the issue work correctly
+ */
+describe('Issue #1013: Fix Verification', () => {
+
+    it('should verify normalizeCalendarUrl handles webcals:// correctly (uses https)', () => {
+        // webcals:// (secure webcal) should convert to https://
+        // This is the correct behavior and should work for iCloud
+        const webcalsUrl = 'webcals://p01-caldav.icloud.com/published/2/example';
+        const normalizedUrl = normalizeCalendarUrl(webcalsUrl);
+
+        expect(normalizedUrl).toBe('https://p01-caldav.icloud.com/published/2/example');
+    });
+
+    it.skip('reproduces issue #1013 - suggested fix: convert webcal:// to https:// for known secure hosts', () => {
+        // Potential fix: Detect iCloud and other known HTTPS-only hosts
+        // and convert webcal:// to https:// instead of http://
+        //
+        // Known HTTPS-only calendar hosts:
+        // - p01-caldav.icloud.com (Apple iCloud)
+        // - calendar.google.com (Google Calendar)
+        // - outlook.office365.com (Microsoft 365)
+
+        const webcalUrl = 'webcal://p01-caldav.icloud.com/published/2/example';
+
+        // Current behavior (may cause issues):
+        const currentNormalized = normalizeCalendarUrl(webcalUrl);
+        expect(currentNormalized).toBe('http://p01-caldav.icloud.com/published/2/example');
+
+        // Suggested fix: For iCloud URLs, use https://
+        // This test documents the expected behavior after the fix
+        // const fixedNormalized = normalizeCalendarUrlFixed(webcalUrl);
+        // expect(fixedNormalized).toBe('https://p01-caldav.icloud.com/published/2/example');
     });
 });

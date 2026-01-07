@@ -1266,6 +1266,14 @@ export default class TaskNotesPlugin extends Plugin {
 			);
 		}
 
+		// Migration: Force enableBases to true (issue #1187)
+		// The enableBases toggle was removed in V4 (bases is always-on), but users who
+		// had disabled it in pre-V4 still have enableBases: false saved. This prevents
+		// view registration and causes "Unknown view types" errors.
+		if (loadedData && loadedData.enableBases === false) {
+			loadedData.enableBases = true;
+		}
+
 		// Deep merge settings with proper migration for nested objects
 		this.settings = {
 			...DEFAULT_SETTINGS,

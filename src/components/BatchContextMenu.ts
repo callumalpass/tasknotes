@@ -333,6 +333,17 @@ export class BatchContextMenu {
 				try {
 					const file = plugin.app.vault.getAbstractFileByPath(path);
 					if (file) {
+						// Delete from Google Calendar before trashing file
+						if (plugin.taskCalendarSyncService?.isEnabled()) {
+							const task = await plugin.cacheManager.getTaskInfo(path);
+							if (task?.googleCalendarEventId) {
+								plugin.taskCalendarSyncService
+									.deleteTaskFromCalendarByPath(path, task.googleCalendarEventId)
+									.catch((error) => {
+										console.warn("Failed to delete task from Google Calendar:", error);
+									});
+							}
+						}
 						await plugin.app.vault.trash(file, true);
 						successCount++;
 					} else {

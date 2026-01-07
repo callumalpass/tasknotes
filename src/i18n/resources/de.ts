@@ -998,6 +998,7 @@ export const de: TranslationTree = {
 				filenameUpdatesWithTitle: "Der Dateiname wird automatisch aktualisiert, wenn sich der Aufgabentitel ändert.",
 				filenameFormat: "Dateinamenformat:",
 				customTemplate: "Benutzerdefinierte Vorlage:",
+				legacySyntaxWarning: "Die Syntax mit einfachen Klammern wie {title} ist veraltet. Bitte verwenden Sie stattdessen die Syntax mit doppelten Klammern {{title}} für Konsistenz mit Body-Vorlagen.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "Verwendet native Obsidian-Tags",
@@ -1669,6 +1670,135 @@ export const de: TranslationTree = {
 					serviceUnavailable: "Auto-Export-Dienst nicht verfügbar",
 				},
 			},
+			googleCalendarExport: {
+				header: "Aufgaben zu Google Kalender exportieren",
+				description:
+					"Synchronisiere deine Aufgaben automatisch als Ereignisse mit Google Kalender. Erfordert eine vorherige Google Kalender-Verbindung.",
+				enable: {
+					name: "Aufgabenexport aktivieren",
+					description:
+						"Wenn aktiviert, werden Aufgaben mit Terminen automatisch als Ereignisse mit Google Kalender synchronisiert.",
+				},
+				targetCalendar: {
+					name: "Zielkalender",
+					description: "Wähle den Kalender aus, in dem Aufgabenereignisse erstellt werden sollen.",
+					placeholder: "Kalender auswählen...",
+					connectFirst: "Verbinde zuerst Google Kalender",
+					primarySuffix: " (Primär)",
+				},
+				syncTrigger: {
+					name: "Synchronisierungsauslöser",
+					description: "Welches Aufgabendatum soll die Kalenderereigniserstellung auslösen.",
+					options: {
+						scheduled: "Geplantes Datum",
+						due: "Fälligkeitsdatum",
+						both: "Beide (geplant bevorzugt)",
+					},
+				},
+				allDayEvents: {
+					name: "Als Ganztagesereignisse erstellen",
+					description:
+						"Wenn aktiviert, werden Aufgaben als Ganztagesereignisse erstellt. Wenn deaktiviert, wird die Zeitschätzung für die Dauer verwendet.",
+				},
+				defaultDuration: {
+					name: "Standard-Ereignisdauer",
+					description:
+						"Dauer in Minuten für zeitgesteuerte Ereignisse (wird verwendet, wenn die Aufgabe keine Zeitschätzung hat).",
+				},
+				eventTitleTemplate: {
+					name: "Ereignistitelvorlage",
+					description:
+						"Vorlage für Ereignistitel. Verfügbare Variablen: {{title}}, {{status}}, {{priority}}",
+					placeholder: "{{title}}",
+				},
+				includeDescription: {
+					name: "Aufgabendetails in Beschreibung einschließen",
+					description:
+						"Aufgabenmetadaten (Priorität, Status, Tags, etc.) zur Ereignisbeschreibung hinzufügen.",
+				},
+				includeObsidianLink: {
+					name: "Obsidian-Link einschließen",
+					description:
+						"Einen Link zur Aufgabe in Obsidian in der Ereignisbeschreibung hinzufügen.",
+				},
+				defaultReminder: {
+					name: "Standard-Erinnerung",
+					description:
+						"Eine Popup-Erinnerung zu Google Kalender-Ereignissen hinzufügen. Minuten vor dem Ereignis angeben (0 = keine Erinnerung). Übliche Werte: 15, 30, 60, 1440 (1 Tag).",
+				},
+				automaticSyncBehavior: {
+					header: "Automatisches Synchronisierungsverhalten",
+				},
+				syncOnCreate: {
+					name: "Bei Aufgabenerstellung synchronisieren",
+					description:
+						"Automatisch ein Kalenderereignis erstellen, wenn eine neue Aufgabe erstellt wird.",
+				},
+				syncOnUpdate: {
+					name: "Bei Aufgabenaktualisierung synchronisieren",
+					description:
+						"Automatisch das Kalenderereignis aktualisieren, wenn eine Aufgabe geändert wird.",
+				},
+				syncOnComplete: {
+					name: "Bei Aufgabenabschluss synchronisieren",
+					description:
+						"Kalenderereignis aktualisieren, wenn eine Aufgabe abgeschlossen wird (fügt ein Häkchen zum Titel hinzu).",
+				},
+				syncOnDelete: {
+					name: "Ereignis bei Aufgabenlöschung löschen",
+					description:
+						"Kalenderereignis entfernen, wenn die entsprechende Aufgabe gelöscht wird.",
+				},
+				manualSyncActions: {
+					header: "Manuelle Synchronisierungsaktionen",
+				},
+				syncAllTasks: {
+					name: "Alle Aufgaben synchronisieren",
+					description:
+						"Alle vorhandenen Aufgaben mit Google Kalender synchronisieren. Dies erstellt Ereignisse für Aufgaben, die noch nicht synchronisiert wurden.",
+					buttonText: "Alle synchronisieren",
+				},
+				unlinkAllTasks: {
+					name: "Alle Aufgaben trennen",
+					description:
+						"Alle Verknüpfungen zwischen Aufgaben und Ereignissen entfernen, ohne Kalenderereignisse zu löschen.",
+					buttonText: "Alle trennen",
+					confirmTitle: "Alle Aufgaben trennen",
+					confirmMessage:
+						"Dies entfernt alle Verknüpfungen zwischen Aufgaben und Kalenderereignissen. Die Kalenderereignisse bleiben erhalten, werden aber nicht mehr aktualisiert, wenn sich Aufgaben ändern. Bist du sicher?",
+					confirmButtonText: "Alle trennen",
+				},
+				notices: {
+					notEnabled:
+						"Google Kalender-Export ist nicht aktiviert. Konfiguriere es unter Einstellungen > Integrationen.",
+					notEnabledOrConfigured:
+						"Google Kalender-Export ist nicht aktiviert oder konfiguriert",
+					serviceNotAvailable: "Aufgaben-Kalender-Synchronisierungsdienst nicht verfügbar",
+					syncResults: "Synchronisiert: {synced}, Fehlgeschlagen: {failed}, Übersprungen: {skipped}",
+					taskSynced: "Aufgabe mit Google Kalender synchronisiert",
+					noActiveFile: "Keine Datei ist derzeit aktiv",
+					notATask: "Die aktuelle Datei ist keine Aufgabe",
+					noDateToSync: "Aufgabe hat kein geplantes oder Fälligkeitsdatum zum Synchronisieren",
+					syncFailed: "Synchronisierung der Aufgabe mit Google Kalender fehlgeschlagen: {message}",
+					syncingTasks: "Synchronisiere {total} Aufgaben mit Google Kalender...",
+					syncComplete:
+						"Synchronisierung abgeschlossen: {synced} synchronisiert, {failed} fehlgeschlagen, {skipped} übersprungen",
+					eventsDeletedAndUnlinked: "Alle Ereignisse gelöscht und getrennt",
+					tasksUnlinked: "Alle Aufgabenverknüpfungen entfernt",
+				},
+				eventDescription: {
+					untitledTask: "Unbenannte Aufgabe",
+					priority: "Priorität: {value}",
+					status: "Status: {value}",
+					due: "Fällig: {value}",
+					scheduled: "Geplant: {value}",
+					timeEstimate: "Zeitschätzung: {value}",
+					tags: "Tags: {value}",
+					contexts: "Kontexte: {value}",
+					projects: "Projekte: {value}",
+					openInObsidian: "In Obsidian öffnen",
+				},
+			},
 			httpApi: {
 				header: "HTTP API",
 				description: "HTTP API für externe Integrationen und Automatisierungen aktivieren.",
@@ -1956,6 +2086,8 @@ export const de: TranslationTree = {
 		startTimeTrackingWithSelector: "Zeiterfassung starten (Aufgabe auswählen)",
 		editTimeEntries: "Zeiteinträge bearbeiten (Aufgabe auswählen)",
 		createOrOpenTask: "Aufgabe erstellen oder öffnen",
+		syncAllTasksGoogleCalendar: "Alle Aufgaben mit Google Kalender synchronisieren",
+		syncCurrentTaskGoogleCalendar: "Aktuelle Aufgabe mit Google Kalender synchronisieren",
 	},
 	modals: {
 		deviceCode: {
@@ -2458,6 +2590,10 @@ export const de: TranslationTree = {
 				outlook: "Outlook Kalender",
 				yahoo: "Yahoo Kalender",
 				downloadIcs: ".ics Datei herunterladen",
+				syncToGoogle: "Mit Google Kalender synchronisieren",
+				syncToGoogleNotConfigured: "Google Kalender-Synchronisierung nicht konfiguriert",
+				syncToGoogleSuccess: "Aufgabe mit Google Kalender synchronisiert",
+				syncToGoogleFailed: "Synchronisierung mit Google Kalender fehlgeschlagen",
 			},
 			recurrence: "Wiederholung",
 			clearRecurrence: "Wiederholung löschen",
@@ -2720,6 +2856,7 @@ export const de: TranslationTree = {
 			loadingDependencies: "Abhängigkeiten werden geladen…",
 			blockingEmpty: "Keine abhängigen Aufgaben",
 			blockingLoadError: "Abhängigkeiten konnten nicht geladen werden",
+			googleCalendarSyncTooltip: "Mit Google Kalender synchronisiert",
 		},
 		propertyEventCard: {
 			unknownFile: "Unbekannte Datei",

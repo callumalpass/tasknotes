@@ -674,11 +674,13 @@ ${orderYaml}
 			const blockedByProperty = getPropertyName(mapPropertyToBasesProperty('blockedBy', plugin));
 			const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
 
+			// Note: No top-level task filter here. Each view applies filters as needed:
+			// - Subtasks, Blocked By, Blocking: include task filter (these are tasks)
+			// - Projects: no task filter (projects can be any file type, not just tasks)
+
 			return `# Relationships
 # This view shows all relationships for the current file
 # Dynamically shows/hides tabs based on available data
-
-${formatFilterAsYAML([taskFilterCondition])}
 
 ${formulasSection}
 
@@ -687,6 +689,7 @@ views:
     name: "Subtasks"
     filters:
       and:
+        - ${taskFilterCondition}
         - note.${projectsProperty}.contains(this.file.asLink())
     order:
 ${orderYaml}
@@ -704,6 +707,7 @@ ${orderYaml}
     name: "Blocked By"
     filters:
       and:
+        - ${taskFilterCondition}
         - list(this.note.${blockedByProperty}).map(value.uid).contains(file.asLink())
     order:
 ${orderYaml}
@@ -711,6 +715,7 @@ ${orderYaml}
     name: "Blocking"
     filters:
       and:
+        - ${taskFilterCondition}
         - list(note.${blockedByProperty}).map(value.uid).contains(this.file.asLink())
     order:
 ${orderYaml}
