@@ -74,3 +74,10 @@ Example:
   - Users who had disabled Bases support in earlier versions could not open Bases views after upgrading
   - Settings migration now automatically re-enables Bases support since the toggle was removed in V4
   - Thanks to @MiracleXYZ for reporting
+
+- (#1144) Fixed relationships.base showing empty views for Projects, Blocked By, and Blocking tabs
+  - The top-level task filter was excluding non-task files from the Projects view
+  - Projects can be any file type (not just tasks), so the filter is now applied per-view
+  - Subtasks, Blocked By, and Blocking views retain the task filter; Projects view does not
+  - Users with existing relationships.base files should delete and regenerate them to get the fix
+  - Thanks to @needo37 for reporting, and @n1njaznutz, @nestor50, and @IvyDliu for investigating and confirming the solution
