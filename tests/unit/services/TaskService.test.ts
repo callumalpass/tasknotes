@@ -987,6 +987,24 @@ describe('TaskService', () => {
       expect(mockPlugin.app.fileManager.processFrontMatter).toHaveBeenCalled();
     });
 
+    it('should remove projects when set to an empty array', async () => {
+      const taskWithProjects = TaskFactory.createTask({
+        projects: ['[[Project Alpha]]']
+      });
+      mockFile = new TFile(taskWithProjects.path);
+      mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+      let capturedFrontmatter: any = {};
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file, fn) => {
+        capturedFrontmatter = { projects: ['[[Project Alpha]]'] };
+        fn(capturedFrontmatter);
+      });
+
+      await taskService.updateTask(taskWithProjects, { projects: [] });
+
+      expect(capturedFrontmatter.projects).toBeUndefined();
+    });
+
     it('should preserve tags when not being updated', async () => {
       const taskWithTags = TaskFactory.createTask({ tags: ['task', 'important'] });
       const updates = { priority: 'high' };

@@ -1414,6 +1414,15 @@ export class TaskService {
 					delete frontmatter[this.plugin.fieldMapper.toUserField("scheduled")];
 				if (updates.hasOwnProperty("contexts") && updates.contexts === undefined)
 					delete frontmatter[this.plugin.fieldMapper.toUserField("contexts")];
+				if (updates.hasOwnProperty("projects")) {
+					const projectsField = this.plugin.fieldMapper.toUserField("projects");
+					const projectsToSet = Array.isArray(updates.projects) ? updates.projects : [];
+					if (projectsToSet.length > 0) {
+						frontmatter[projectsField] = projectsToSet;
+					} else {
+						delete frontmatter[projectsField];
+					}
+				}
 				if (updates.hasOwnProperty("timeEstimate") && updates.timeEstimate === undefined)
 					delete frontmatter[this.plugin.fieldMapper.toUserField("timeEstimate")];
 				if (updates.hasOwnProperty("completedDate") && updates.completedDate === undefined)
