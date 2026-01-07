@@ -47,6 +47,7 @@ nav:
     - ICS Integration: features/ics-integration.md
     - Third-party Integrations: features/integrations.md
     - User Fields: features/user-fields.md
+    - Template Variables: features/template-variables.md
   - Views:
     - Overview: views.md
     - Task List View: views/task-list.md
