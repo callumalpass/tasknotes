@@ -52,6 +52,8 @@ Example:
   - Default reminder setting for popup notifications
   - Bulk sync and unlink actions in settings
   - Task-event linking stored in frontmatter (`googleCalendarEventId`)
+  - Recurring tasks with scheduled anchor sync as Google Calendar recurring events with RRULE
+  - Completed/skipped instances automatically excluded via EXDATE
   - Thanks to @someromans and @Leonard-44 for requesting this feature, and @dmantisk, @farangkao, @rayvermey, and @rdpr for their input
 
 ## Fixed

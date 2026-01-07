@@ -562,6 +562,7 @@ export class GoogleCalendarService extends CalendarProvider {
 				overrides?: Array<{ method: string; minutes: number }>;
 			};
 			colorId?: string;
+			recurrence?: string[];
 		}
 	): Promise<ICSEvent> {
 		// Validate inputs
@@ -604,6 +605,9 @@ export class GoogleCalendarService extends CalendarProvider {
 			}
 			if (updates.colorId !== undefined) {
 				payload.colorId = updates.colorId;
+			}
+			if (updates.recurrence !== undefined) {
+				payload.recurrence = updates.recurrence;
 			}
 
 			// Handle start/end updates
@@ -711,6 +715,7 @@ export class GoogleCalendarService extends CalendarProvider {
 				overrides?: Array<{ method: string; minutes: number }>;
 			};
 			colorId?: string;
+			recurrence?: string[];
 		}
 	): Promise<ICSEvent> {
 		// Validate inputs
@@ -741,6 +746,11 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Add color if provided
 			if (event.colorId) {
 				payload.colorId = event.colorId;
+			}
+
+			// Add recurrence rules if provided (for recurring events)
+			if (event.recurrence && event.recurrence.length > 0) {
+				payload.recurrence = event.recurrence;
 			}
 
 			// Handle start/end - could be string or object

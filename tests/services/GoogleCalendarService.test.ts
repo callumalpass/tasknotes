@@ -299,6 +299,77 @@ describe('GoogleCalendarService', () => {
 				})
 			);
 		});
+
+		test('should create a recurring event with RRULE', async () => {
+			const newEvent = {
+				title: 'Daily Standup',
+				start: '2025-10-23',
+				end: '2025-10-24',
+				isAllDay: true,
+				recurrence: ['RRULE:FREQ=DAILY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR']
+			};
+
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'recurring-event-id',
+					summary: newEvent.title,
+					start: { date: newEvent.start },
+					end: { date: newEvent.end },
+					recurrence: newEvent.recurrence,
+					htmlLink: 'https://calendar.google.com/event'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			const created = await service.createEvent('primary', newEvent);
+
+			expect(created.id).toContain('recurring-event-id');
+			expect(mockRequestUrl).toHaveBeenCalledWith(
+				expect.objectContaining({
+					body: expect.stringContaining('"recurrence":["RRULE:FREQ=DAILY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR"]')
+				})
+			);
+		});
+
+		test('should create a recurring event with EXDATE', async () => {
+			const newEvent = {
+				title: 'Weekly Team Sync',
+				start: '2025-10-20',
+				end: '2025-10-21',
+				isAllDay: true,
+				recurrence: [
+					'RRULE:FREQ=WEEKLY;BYDAY=MO',
+					'EXDATE:20251027',
+					'EXDATE:20251103'
+				]
+			};
+
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'recurring-event-with-exceptions',
+					summary: newEvent.title,
+					start: { date: newEvent.start },
+					end: { date: newEvent.end },
+					recurrence: newEvent.recurrence,
+					htmlLink: 'https://calendar.google.com/event'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			const created = await service.createEvent('primary', newEvent);
+
+			expect(created.id).toContain('recurring-event-with-exceptions');
+			const requestBody = mockRequestUrl.mock.calls[0][0].body as string;
+			expect(requestBody).toContain('RRULE:FREQ=WEEKLY;BYDAY=MO');
+			expect(requestBody).toContain('EXDATE:20251027');
+			expect(requestBody).toContain('EXDATE:20251103');
+		});
 	});
 
 	describe('updateEvent', () => {
@@ -400,6 +471,105 @@ describe('GoogleCalendarService', () => {
 			await expect(
 				service.updateEvent('primary', 'nonexistent', { title: 'New Title' })
 			).rejects.toThrow(EventNotFoundError);
+		});
+
+		test('should update recurring event with EXDATE', async () => {
+			// First GET request to fetch current event
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'recurring-event-id',
+					summary: 'Daily Standup',
+					start: { date: '2025-10-20' },
+					end: { date: '2025-10-21' },
+					recurrence: ['RRULE:FREQ=DAILY;INTERVAL=1']
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			// Then PUT request with updated recurrence
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'recurring-event-id',
+					summary: 'Daily Standup',
+					start: { date: '2025-10-20' },
+					end: { date: '2025-10-21' },
+					recurrence: ['RRULE:FREQ=DAILY;INTERVAL=1', 'EXDATE:20251022'],
+					htmlLink: 'https://calendar.google.com/event'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			await service.updateEvent('primary', 'recurring-event-id', {
+				recurrence: ['RRULE:FREQ=DAILY;INTERVAL=1', 'EXDATE:20251022']
+			});
+
+			// Check the second call (PUT request) - first is GET, second is PUT, third is refresh
+			expect(mockRequestUrl).toHaveBeenNthCalledWith(
+				2,
+				expect.objectContaining({
+					method: 'PUT',
+					body: expect.stringContaining('EXDATE:20251022')
+				})
+			);
+		});
+
+		test('should update recurring event with multiple EXDATEs', async () => {
+			// First GET request
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'recurring-event-id',
+					summary: 'Weekly Sync',
+					start: { date: '2025-10-20' },
+					end: { date: '2025-10-21' },
+					recurrence: ['RRULE:FREQ=WEEKLY;BYDAY=MO']
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			// Then PUT request
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'recurring-event-id',
+					summary: 'Weekly Sync',
+					start: { date: '2025-10-20' },
+					end: { date: '2025-10-21' },
+					recurrence: [
+						'RRULE:FREQ=WEEKLY;BYDAY=MO',
+						'EXDATE:20251027',
+						'EXDATE:20251103',
+						'EXDATE:20251110'
+					],
+					htmlLink: 'https://calendar.google.com/event'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			await service.updateEvent('primary', 'recurring-event-id', {
+				recurrence: [
+					'RRULE:FREQ=WEEKLY;BYDAY=MO',
+					'EXDATE:20251027',
+					'EXDATE:20251103',
+					'EXDATE:20251110'
+				]
+			});
+
+			const requestBody = mockRequestUrl.mock.calls[1][0].body as string;
+			expect(requestBody).toContain('RRULE:FREQ=WEEKLY;BYDAY=MO');
+			expect(requestBody).toContain('EXDATE:20251027');
+			expect(requestBody).toContain('EXDATE:20251103');
+			expect(requestBody).toContain('EXDATE:20251110');
 		});
 	});
 

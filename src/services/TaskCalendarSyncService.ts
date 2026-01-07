@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
 import { TaskInfo } from "../types";
+import { convertToGoogleRecurrence } from "../utils/rruleConverter";
 
 /** Debounce delay for rapid task updates (ms) */
 const SYNC_DEBOUNCE_MS = 500;
@@ -106,6 +107,22 @@ export class TaskCalendarSyncService {
 	 */
 	getTaskEventId(task: TaskInfo): string | undefined {
 		return task.googleCalendarEventId;
+	}
+
+	/**
+	 * Determines if a task should be synced as a Google Calendar recurring event.
+	 * Only scheduled-based recurring tasks are synced as recurring events.
+	 * Completion-based recurring tasks remain as single events (since their
+	 * DTSTART shifts on each completion, which doesn't map well to Google Calendar).
+	 */
+	private shouldSyncAsRecurring(task: TaskInfo): boolean {
+		// Must have a recurrence rule
+		if (!task.recurrence) return false;
+
+		// Only scheduled-based recurrence syncs as recurring events
+		// Completion-based recurrence stays as single events (existing behavior)
+		const anchor = task.recurrence_anchor || "scheduled";
+		return anchor === "scheduled";
 	}
 
 	/**
@@ -328,6 +345,7 @@ export class TaskCalendarSyncService {
 			useDefault: boolean;
 			overrides?: Array<{ method: string; minutes: number }>;
 		};
+		recurrence?: string[];
 	} | null {
 		const eventDate = this.getEventDate(task);
 		if (!eventDate) return null;
@@ -368,6 +386,7 @@ export class TaskCalendarSyncService {
 				useDefault: boolean;
 				overrides?: Array<{ method: string; minutes: number }>;
 			};
+			recurrence?: string[];
 		} = {
 			summary: this.applyTitleTemplate(task),
 			start,
@@ -388,6 +407,44 @@ export class TaskCalendarSyncService {
 				useDefault: false,
 				overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
 			};
+		}
+
+		// Add recurrence rules for scheduled-based recurring tasks
+		if (this.shouldSyncAsRecurring(task) && task.recurrence) {
+			const recurrenceData = convertToGoogleRecurrence(task.recurrence, {
+				completedInstances: task.complete_instances,
+				skippedInstances: task.skipped_instances,
+			});
+
+			if (recurrenceData) {
+				event.recurrence = recurrenceData.recurrence;
+
+				// Override start date with DTSTART from recurrence rule
+				// This ensures the recurring event starts from the correct date
+				if (recurrenceData.dtstart) {
+					if (settings.createAsAllDay || !recurrenceData.hasTime) {
+						event.start = { date: recurrenceData.dtstart };
+						// Recalculate end for all-day event
+						const endDate = new Date(recurrenceData.dtstart + "T00:00:00");
+						endDate.setDate(endDate.getDate() + 1);
+						event.end = { date: format(endDate, "yyyy-MM-dd") };
+					} else if (recurrenceData.time) {
+						const dateTimeStr = `${recurrenceData.dtstart}T${recurrenceData.time}`;
+						const startDate = new Date(dateTimeStr);
+						event.start = {
+							dateTime: startDate.toISOString(),
+							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+						};
+						// Recalculate end based on duration
+						const duration = task.timeEstimate || settings.defaultEventDuration;
+						const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
+						event.end = {
+							dateTime: endDate.toISOString(),
+							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+						};
+					}
+				}
+			}
 		}
 
 		return event;
@@ -526,7 +583,9 @@ export class TaskCalendarSyncService {
 	}
 
 	/**
-	 * Handle task completion - update the calendar event
+	 * Handle task completion - update the calendar event.
+	 * For recurring tasks, updates the EXDATE list to exclude the completed instance.
+	 * For non-recurring tasks, adds a checkmark to the event title.
 	 */
 	async completeTaskInCalendar(task: TaskInfo): Promise<void> {
 		if (!this.plugin.settings.googleCalendarExport.syncOnTaskComplete) {
@@ -536,6 +595,12 @@ export class TaskCalendarSyncService {
 		const settings = this.plugin.settings.googleCalendarExport;
 		const existingEventId = this.getTaskEventId(task);
 		if (!existingEventId) {
+			return;
+		}
+
+		// For recurring tasks, update EXDATE to exclude completed instance
+		if (this.shouldSyncAsRecurring(task)) {
+			await this.updateRecurringEventExdates(task);
 			return;
 		}
 
@@ -561,6 +626,42 @@ export class TaskCalendarSyncService {
 				return;
 			}
 			console.error("[TaskCalendarSync] Failed to update completed task:", task.path, error);
+		}
+	}
+
+	/**
+	 * Updates a recurring event's EXDATE list when an instance is completed or skipped.
+	 * This adds EXDATE entries for completed/skipped instances to hide them from the calendar.
+	 */
+	private async updateRecurringEventExdates(task: TaskInfo): Promise<void> {
+		if (!this.shouldSyncAsRecurring(task) || !task.recurrence) return;
+
+		const settings = this.plugin.settings.googleCalendarExport;
+		const eventId = this.getTaskEventId(task);
+		if (!eventId) return;
+
+		try {
+			const recurrenceData = convertToGoogleRecurrence(task.recurrence, {
+				completedInstances: task.complete_instances,
+				skippedInstances: task.skipped_instances,
+			});
+
+			if (recurrenceData) {
+				await this.googleCalendarService.updateEvent(
+					settings.targetCalendarId,
+					eventId,
+					{ recurrence: recurrenceData.recurrence }
+				);
+			}
+		} catch (error: any) {
+			if (error.status === 404) {
+				// Event was deleted externally, clean up the link
+				await this.removeTaskEventId(task.path);
+				return;
+			}
+			console.error("[TaskCalendarSync] Failed to update recurring event EXDATEs:", task.path, error);
+			// Fall back to full resync
+			await this.syncTaskToCalendar(task);
 		}
 	}
 
