@@ -1398,6 +1398,34 @@ export class CalendarView extends BasesViewBase {
 
 					const property = eventType === "scheduled" ? "scheduled" : "due";
 					await this.plugin.taskService.updateProperty(taskInfo, property, newDateString);
+				} else if (eventType === "scheduledToDueSpan") {
+					// Handle span event drag - shift both scheduled and due by the same amount
+					const oldStart = info.oldEvent.start;
+					const newStart = info.event.start;
+
+					if (!oldStart || !newStart) {
+						info.revert();
+						return;
+					}
+
+					// Calculate the time shift in milliseconds
+					const timeDiffMs = newStart.getTime() - oldStart.getTime();
+
+					// Update scheduled date
+					if (taskInfo.scheduled) {
+						const oldScheduled = new Date(taskInfo.scheduled);
+						const newScheduled = new Date(oldScheduled.getTime() + timeDiffMs);
+						const scheduledString = format(newScheduled, "yyyy-MM-dd");
+						await this.plugin.taskService.updateProperty(taskInfo, "scheduled", scheduledString);
+					}
+
+					// Update due date
+					if (taskInfo.due) {
+						const oldDue = new Date(taskInfo.due);
+						const newDue = new Date(oldDue.getTime() + timeDiffMs);
+						const dueString = format(newDue, "yyyy-MM-dd");
+						await this.plugin.taskService.updateProperty(taskInfo, "due", dueString);
+					}
 				}
 			} catch (error) {
 				console.error("[TaskNotes][CalendarView] Error updating task date:", error);
@@ -1812,10 +1840,12 @@ export class CalendarView extends BasesViewBase {
 					case "recurring":
 					case "timeEntry":
 					case "due":
+					case "scheduledToDueSpan":
 						arg.event.setProp("editable", true);
 						break;
 					default:
-						arg.event.setProp("editable", true);
+						// Non-task events (like ICS without provider) remain non-editable
+						break;
 				}
 			}
 
