@@ -69,3 +69,8 @@ Example:
   - Task tag is only added in tag-based identification mode
   - Fixes #1391
   - Many thanks to @normenmueller for the contribution
+
+- (#1187) Fixed "Unknown view types" error when opening Bases views after upgrading from pre-V4
+  - Users who had disabled Bases support in earlier versions could not open Bases views after upgrading
+  - Settings migration now automatically re-enables Bases support since the toggle was removed in V4
+  - Thanks to @MiracleXYZ for reporting
