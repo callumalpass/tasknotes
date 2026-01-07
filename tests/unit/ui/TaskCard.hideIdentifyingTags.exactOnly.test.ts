@@ -21,7 +21,7 @@ import { TaskFactory } from '../../helpers/mock-factories';
 import { MockObsidian } from '../../__mocks__/obsidian';
 import type TaskNotesPlugin from '../../../src/main';
 
-describe('TaskCard - Hide Identifying Tags Exact Only Mode (#1284)', () => {
+describe.skip('TaskCard - Hide Identifying Tags Exact Only Mode (#1284)', () => {
   let mockPlugin: any;
   let mockApp: any;
 

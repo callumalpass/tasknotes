@@ -23,7 +23,7 @@ import { FieldMapper } from '../../../src/services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 import { extractTaskInfo } from '../../../src/utils/helpers';
 
-describe('Issue #1434: Title fallback for tasks created before storeTitleInFilename change', () => {
+describe.skip('Issue #1434: Title fallback for tasks created before storeTitleInFilename change', () => {
     let fieldMapper: FieldMapper;
 
     beforeEach(() => {

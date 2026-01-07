@@ -32,7 +32,7 @@
  * @see https://github.com/callumalpass/tasknotes/issues/926
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 
 describe('Issue #926: Convert to Tasknote with subtasks', () => {
 	/**

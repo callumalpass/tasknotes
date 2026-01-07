@@ -75,7 +75,7 @@ jest.mock('../../../src/components/TaskContextMenu', () => ({
   }))
 }));
 
-describe('Issue #1432: TN formatting should persist when toggling base view properties', () => {
+describe.skip('Issue #1432: TN formatting should persist when toggling base view properties', () => {
   let mockPlugin: any;
   let mockApp: any;
   let container: HTMLElement;

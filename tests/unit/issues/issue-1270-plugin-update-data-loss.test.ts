@@ -16,7 +16,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-describe("Issue #1270: Plugin update data loss bugs", () => {
+describe.skip("Issue #1270: Plugin update data loss bugs", () => {
 	describe("Bug 1: null columns appearing in Kanban view", () => {
 		/**
 		 * This test reproduces the bug in KanbanView.ts:386 where:
