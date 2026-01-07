@@ -27,6 +27,13 @@ export function renderPriorityPropertyCard(
 		plugin.settings.fieldMapping.priority
 	);
 
+	// Validate defaultTaskPriority - if it doesn't exist in customPriorities (and isn't empty), reset to empty
+	const validPriorityValues = plugin.settings.customPriorities.map((p) => p.value);
+	if (plugin.settings.defaultTaskPriority !== "" && !validPriorityValues.includes(plugin.settings.defaultTaskPriority)) {
+		plugin.settings.defaultTaskPriority = validPriorityValues.length > 0 ? validPriorityValues[0] : "";
+		save();
+	}
+
 	const defaultSelect = createCardSelect(
 		[
 			{ value: "", label: translate("settings.defaults.options.noDefault") },
@@ -235,12 +242,23 @@ function renderPriorityList(
 							(p) => p.id === priority.id
 						);
 						if (priorityIndex !== -1) {
+							// Check if we're deleting the default priority
+							const wasDefault = plugin.settings.defaultTaskPriority === priority.value;
+
 							plugin.settings.customPriorities.splice(priorityIndex, 1);
 							plugin.settings.customPriorities
 								.sort((a, b) => a.weight - b.weight)
 								.forEach((p, i) => {
 									p.weight = i;
 								});
+
+							// If deleted priority was the default, update to first available or empty
+							if (wasDefault) {
+								plugin.settings.defaultTaskPriority = plugin.settings.customPriorities.length > 0
+									? plugin.settings.customPriorities[0].value
+									: "";
+							}
+
 							save();
 							renderPriorityList(container, plugin, save, translate, onPrioritiesChanged);
 							if (onPrioritiesChanged) onPrioritiesChanged();

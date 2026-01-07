@@ -31,6 +31,13 @@ export function renderStatusPropertyCard(
 		plugin.settings.fieldMapping.status
 	);
 
+	// Validate defaultTaskStatus - if it doesn't exist in customStatuses, reset to first available
+	const validStatusValues = plugin.settings.customStatuses.map((s) => s.value);
+	if (!validStatusValues.includes(plugin.settings.defaultTaskStatus) && validStatusValues.length > 0) {
+		plugin.settings.defaultTaskStatus = validStatusValues[0];
+		save();
+	}
+
 	const defaultSelect = createCardSelect(
 		plugin.settings.customStatuses.map((status) => ({
 			value: status.value,
@@ -280,10 +287,19 @@ function renderStatusList(
 					(s) => s.id === status.id
 				);
 				if (statusIndex !== -1) {
+					// Check if we're deleting the default status
+					const wasDefault = plugin.settings.defaultTaskStatus === status.value;
+
 					plugin.settings.customStatuses.splice(statusIndex, 1);
 					plugin.settings.customStatuses.forEach((s, i) => {
 						s.order = i;
 					});
+
+					// If deleted status was the default, update to first available status
+					if (wasDefault && plugin.settings.customStatuses.length > 0) {
+						plugin.settings.defaultTaskStatus = plugin.settings.customStatuses[0].value;
+					}
+
 					save();
 					renderStatusList(container, plugin, save, translate, onStatusesChanged);
 					if (onStatusesChanged) onStatusesChanged();
