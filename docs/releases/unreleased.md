@@ -42,7 +42,7 @@ Example:
   - Useful when embedding tasks in prose where the widget would be disruptive
   - Thanks to @diegomarzaa for the contribution and @jldiaz for proposing this feature in #1117
 
-- (#1205) Google Calendar export for tasks
+- (#1199, #1205) Google Calendar export for tasks
   - Sync tasks to Google Calendar based on scheduled or due dates
   - Automatic sync on task create, update, complete, and delete
   - Configurable event title templates with placeholders (`{{title}}`, `{{status}}`, `{{priority}}`, etc.)
@@ -52,6 +52,7 @@ Example:
   - Default reminder setting for popup notifications
   - Bulk sync and unlink actions in settings
   - Task-event linking stored in frontmatter (`googleCalendarEventId`)
+  - Thanks to @someromans and @Leonard-44 for requesting this feature, and @dmantisk, @farangkao, @rayvermey, and @rdpr for their input
 
 ## Fixed
 
@@ -81,3 +82,7 @@ Example:
   - Subtasks, Blocked By, and Blocking views retain the task filter; Projects view does not
   - Users with existing relationships.base files should delete and regenerate them to get the fix
   - Thanks to @needo37 for reporting, and @n1njaznutz, @nestor50, and @IvyDliu for investigating and confirming the solution
+
+- Fixed calendar view type not persisting or applying when changed
+  - View type changes via header buttons (week/day/month) are now saved to the .base file
+  - View type changes via Bases settings panel now apply immediately without reload
