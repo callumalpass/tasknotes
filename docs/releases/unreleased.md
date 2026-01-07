@@ -88,3 +88,8 @@ Example:
 - Fixed calendar view type not persisting or applying when changed
   - View type changes via header buttons (week/day/month) are now saved to the .base file
   - View type changes via Bases settings panel now apply immediately without reload
+
+- (#1441) Fixed task dragging broken with "Span tasks between scheduled and due dates" enabled
+  - Span events can now be dragged to move tasks in time
+  - Dragging shifts both scheduled and due dates proportionally, preserving the span duration
+  - Previously, dragging span events would cause a visual/data mismatch where the calendar showed the wrong position
