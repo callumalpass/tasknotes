@@ -19,5 +19,13 @@ Examples (illustrative):
 
 ## Tests
 
-- `./node_modules/.bin/jest tests/unit/utils/linkUtils.test.ts --runInBand`
-- `./node_modules/.bin/jest tests/unit/ui/linkRenderer.test.ts --runInBand`
+- `npm run i18n:sync`
+- `npm run lint` (warnings only; matches `main`)
+- `node generate-release-notes-import.mjs`
+- `npm run typecheck`
+- `npm run test:ci -- --verbose` (fails: `due-date-timezone-inconsistency` test, same as `main`)
+- `./node_modules/.bin/jest tests/unit/utils/linkUtils.test.ts tests/unit/issues/issue-814-markdown-project-links.test.ts --runInBand`
+- `npm run test:integration`
+- `npm run test:performance` (no tests found)
+- `npm run build` (missing OAuth IDs warning, same as `main`)
+- `npm run test:build`
