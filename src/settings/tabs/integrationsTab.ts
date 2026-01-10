@@ -2,6 +2,7 @@ import { Notice, Platform, Modal, Setting, setIcon, App } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { WebhookConfig } from "../../types";
 import { TranslationKey } from "../../i18n";
+import { VikunjaService } from "../../services/VikunjaService";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
 import {
 	createSettingGroup,
@@ -1505,6 +1506,164 @@ export function renderIntegrationsTab(
 		);
 	}
 
+	// Vikunja Integration Section
+	createSettingGroup(
+		container,
+		{
+			heading: "Vikunja Integration",
+			description: "Synchronize tasks with a Vikunja instance.",
+		},
+		(group) => {
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Enable Vikunja Sync",
+					desc: "Enable synchronization with Vikunja.",
+					getValue: () => plugin.settings.vikunja.enabled,
+					setValue: async (value: boolean) => {
+						plugin.settings.vikunja.enabled = value;
+						save();
+						// plugin.settingTab.display(); // TODO: Fix refresh mechanism
+					},
+				})
+			);
+
+			if (plugin.settings.vikunja.enabled) {
+				group.addSetting((setting) =>
+					configureTextSetting(setting, {
+						name: "Vikunja API URL",
+						desc: "The base URL of your Vikunja instance (e.g., https://vikunja.example.com/api/v1).",
+						placeholder: "https://vikunja.example.com/api/v1",
+						getValue: () => plugin.settings.vikunja.apiUrl,
+						setValue: async (value: string) => {
+							plugin.settings.vikunja.apiUrl = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
+					configureTextSetting(setting, {
+						name: "API Token",
+						desc: "A scoped API token with Read & Write permissions.",
+						placeholder: "Your API Token",
+						getValue: () => plugin.settings.vikunja.apiToken,
+						setValue: async (value: string) => {
+							plugin.settings.vikunja.apiToken = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
+					configureNumberSetting(setting, {
+						name: "Default List ID",
+						desc: "The ID of the Vikunja list/project where new tasks will be created.",
+						placeholder: "1",
+						getValue: () => plugin.settings.vikunja.defaultListId,
+						setValue: async (value: number) => {
+							plugin.settings.vikunja.defaultListId = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
+					configureButtonSetting(setting, {
+						name: "Test Connection",
+						desc: "Verify your URL and API Token.",
+						buttonText: "Test Connection",
+						onClick: async () => {
+							const tempService = new VikunjaService(plugin, plugin.settings.vikunja);
+							const isValid = await tempService.validateConnection();
+							if (isValid) {
+								new Notice("Connection successful!");
+							} else {
+								new Notice("Connection failed. Check settings and console.");
+							}
+						},
+					})
+				);
+
+				// Two-Way Sync Settings
+				group.addSetting((setting) => {
+					setting.setName("Sync Settings");
+					setting.setHeading();
+				});
+
+				group.addSetting((setting) =>
+					configureToggleSetting(setting, {
+						name: "Two-Way Sync",
+						desc: "Pull changes from Vikunja to Obsidian (requires periodic polling).",
+						getValue: () => plugin.settings.vikunja.enableTwoWaySync,
+						setValue: async (value: boolean) => {
+							plugin.settings.vikunja.enableTwoWaySync = value;
+							save();
+							// plugin.settingTab.display(); // TODO: Fix refresh mechanism
+						},
+					})
+				);
+
+				if (plugin.settings.vikunja.enableTwoWaySync) {
+					group.addSetting((setting) =>
+						configureNumberSetting(setting, {
+							name: "Sync Interval (Minutes)",
+							desc: "How often to check for updates from Vikunja.",
+							min: 1,
+							max: 1440,
+							getValue: () => plugin.settings.vikunja.syncInterval,
+							setValue: async (value: number) => {
+								plugin.settings.vikunja.syncInterval = value;
+								save();
+							},
+						})
+					);
+				}
+
+				// Sync Triggers
+				group.addSetting((setting) => {
+					setting.setName("Sync Triggers");
+					setting.setHeading();
+				});
+
+				group.addSetting((setting) =>
+					configureToggleSetting(setting, {
+						name: "Sync on Create",
+						desc: "Push new tasks to Vikunja.",
+						getValue: () => plugin.settings.vikunja.syncOnTaskCreate,
+						setValue: async (value: boolean) => {
+							plugin.settings.vikunja.syncOnTaskCreate = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
+					configureToggleSetting(setting, {
+						name: "Sync on Update",
+						desc: "Push task updates to Vikunja.",
+						getValue: () => plugin.settings.vikunja.syncOnTaskUpdate,
+						setValue: async (value: boolean) => {
+							plugin.settings.vikunja.syncOnTaskUpdate = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
+					configureToggleSetting(setting, {
+						name: "Sync on Complete",
+						desc: "Push completion status to Vikunja.",
+						getValue: () => plugin.settings.vikunja.syncOnTaskComplete,
+						setValue: async (value: boolean) => {
+							plugin.settings.vikunja.syncOnTaskComplete = value;
+							save();
+						},
+					})
+				);
+			}
+		}
+	);
+
 	// Other Integrations Section
 	createSettingGroup(
 		container,
@@ -1942,8 +2101,8 @@ function renderWebhookList(
 		const createdDate = webhook.createdAt ? new Date(webhook.createdAt) : null;
 		const createdText = createdDate
 			? translate("settings.integrations.webhooks.statusLabels.created", {
-					timeAgo: getRelativeTime(createdDate, translate),
-				})
+				timeAgo: getRelativeTime(createdDate, translate),
+			})
 			: "Creation date unknown";
 
 		// Create events display as a formatted string

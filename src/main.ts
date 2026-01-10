@@ -97,6 +97,8 @@ import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { LicenseService } from "./services/LicenseService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import { VikunjaService } from "./services/VikunjaService";
+import { VikunjaSyncService } from "./services/VikunjaSyncService";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -217,6 +219,10 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
+
+	// Vikunja Integration
+	vikunjaService: VikunjaService;
+	vikunjaSyncService: VikunjaSyncService;
 
 	// Bases filter converter for exporting saved views
 	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
@@ -623,6 +629,23 @@ export default class TaskNotesPlugin extends Plugin {
 					this,
 					this.googleCalendarService
 				);
+
+				// Initialize Vikunja services
+				this.vikunjaService = new VikunjaService(this, this.settings.vikunja);
+				this.vikunjaSyncService = new VikunjaSyncService(this, this.vikunjaService);
+				this.vikunjaSyncService.initialize();
+
+				// Add Vikunja Sync Command
+				this.addCommand({
+					id: "vikunja-sync-now",
+					name: "Vikunja: Sync Now",
+					callback: () => {
+						if (this.vikunjaSyncService) {
+							this.vikunjaSyncService.syncFromVikunja();
+							new Notice("Vikunja sync started.");
+						}
+					},
+				});
 
 				// Microsoft Calendar
 				this.microsoftCalendarService.on("data-changed", () => {
@@ -1324,7 +1347,7 @@ export default class TaskNotesPlugin extends Plugin {
 		const hasNewCalendarSettings = Object.keys(DEFAULT_SETTINGS.calendarViewSettings).some(
 			(key) =>
 				!loadedData?.calendarViewSettings?.[
-					key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings
+				key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings
 				]
 		);
 		const hasNewCommandMappings = Object.keys(DEFAULT_SETTINGS.commandFileMapping).some(
@@ -2993,7 +3016,7 @@ export default class TaskNotesPlugin extends Plugin {
 			current.disableNoteIndexing !== this.previousCacheSettings.disableNoteIndexing ||
 			current.storeTitleInFilename !== this.previousCacheSettings.storeTitleInFilename ||
 			JSON.stringify(current.fieldMapping) !==
-				JSON.stringify(this.previousCacheSettings.fieldMapping)
+			JSON.stringify(this.previousCacheSettings.fieldMapping)
 		);
 	}
 

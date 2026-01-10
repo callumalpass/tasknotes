@@ -1,6 +1,18 @@
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from "../types";
 import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
 
+export interface VikunjaSettings {
+	enabled: boolean;
+	apiUrl: string;
+	apiToken: string;
+	defaultListId: number;
+	syncOnTaskCreate: boolean;
+	syncOnTaskUpdate: boolean;
+	syncOnTaskComplete: boolean;
+	enableTwoWaySync: boolean;
+	syncInterval: number; // minutes
+}
+
 export interface UserFieldMapping {
 	enabled: boolean;
 	displayName: string;
@@ -237,6 +249,9 @@ export interface TaskNotesSettings {
 	microsoftCalendarSyncTokens: Record<string, string>; // Maps calendar ID to delta link
 	// Google Calendar task export settings
 	googleCalendarExport: GoogleCalendarExportSettings;
+
+	// Vikunja Integration settings
+	vikunja: VikunjaSettings;
 }
 
 export interface DefaultReminder {
@@ -311,11 +326,11 @@ export interface GoogleCalendarExportSettings {
 export interface CalendarViewSettings {
 	// Default view
 	defaultView:
-		| "dayGridMonth"
-		| "timeGridWeek"
-		| "timeGridDay"
-		| "multiMonthYear"
-		| "timeGridCustom";
+	| "dayGridMonth"
+	| "timeGridWeek"
+	| "timeGridDay"
+	| "multiMonthYear"
+	| "timeGridCustom";
 	// Custom multi-day view settings
 	customDayCount: number; // Number of days to show in custom view (2-10)
 	// Time settings
