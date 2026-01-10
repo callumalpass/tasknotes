@@ -174,6 +174,9 @@ export class VikunjaSyncService {
         if (response && response.id) {
             console.log(`Vikunja Sync: Created task ${response.id} for ${task.title}`);
             await this.saveVikunjaId(task.path, response.id);
+            if (task.tags && task.tags.length > 0) {
+                await this.syncTagsToVikunja(response.id, task.tags);
+            }
             new Notice(`Task created in Vikunja: ${task.title}`);
         } else {
             console.warn("Vikunja Sync: Task creation response missing ID:", response);
@@ -183,6 +186,9 @@ export class VikunjaSyncService {
     private async updateVikunjaTask(vikunjaId: number, task: TaskInfo) {
         const payload = this.mapTaskToPayload(task);
         await this.vikunjaService.updateTask(vikunjaId, payload);
+        if (task.tags) {
+            await this.syncTagsToVikunja(vikunjaId, task.tags);
+        }
     }
 
     private mapTaskToPayload(task: TaskInfo): any {
@@ -286,6 +292,7 @@ export class VikunjaSyncService {
                 due: this.fromVikunjaDate(vTask.due_date),
                 scheduled: this.fromVikunjaDate(vTask.start_date),
                 recurrence: this.fromVikunjaRecurrence(vTask.repeat_after),
+                tags: this.fromVikunjaLabels(vTask.labels),
                 customFrontmatter: {
                     vikunja_id: vTask.id,
                     vikunja_last_sync: Date.now()
@@ -340,6 +347,16 @@ export class VikunjaSyncService {
             if (frontmatter["recurrence"] !== newRecurrence) {
                 if (newRecurrence) frontmatter["recurrence"] = newRecurrence;
                 else delete frontmatter["recurrence"];
+            }
+
+            // Tags sync
+            const newTags = this.fromVikunjaLabels(vTask.labels);
+            // Sort to ensure order doesn't cause false changes
+            const oldTags = frontmatter["tags"] ? [...frontmatter["tags"]].sort() : [];
+            const sortedNewTags = newTags ? [...newTags].sort() : [];
+            if (JSON.stringify(oldTags) !== JSON.stringify(sortedNewTags)) {
+                if (newTags && newTags.length > 0) frontmatter["tags"] = newTags;
+                else delete frontmatter["tags"];
             }
 
             // Reminders sync
@@ -447,6 +464,50 @@ export class VikunjaSyncService {
         }
         console.log("Vikunja Sync: Mapped local reminders:", JSON.stringify(reminders));
         return reminders.length > 0 ? reminders : undefined;
+    }
+
+    private fromVikunjaLabels(vLabels?: any[]): string[] | undefined {
+        if (!vLabels || !Array.isArray(vLabels) || vLabels.length === 0) return undefined;
+        return vLabels.map(l => l.title);
+    }
+
+    private async syncTagsToVikunja(vikunjaId: number, tags: string[]) {
+        try {
+            console.log(`Vikunja Sync: Syncing tags for task ${vikunjaId}:`, tags);
+            // 1. Get all available labels
+            const allLabels = await this.vikunjaService.getLabels(1, 1000); // Fetch up to 1000 labels
+            let labelList = Array.isArray(allLabels) ? allLabels : [];
+            // If API returns { labels: [...] } or pages, handle that:
+            // Assuming flat array or we need to inspect. Vikunja usually returns array.
+
+            const labelsToSet: any[] = [];
+
+            for (const tag of tags) {
+                let label = labelList.find((l: any) => l.title === tag);
+                if (!label) {
+                    // Create if not exists
+                    try {
+                        console.log(`Vikunja Sync: Creating label '${tag}'`);
+                        label = await this.vikunjaService.createLabel({ title: tag });
+                        // Add to local list to avoid re-creating in this loop (if duplicates in tags)
+                        labelList.push(label);
+                    } catch (e) {
+                        console.error(`Vikunja Sync: Failed to create label ${tag}`, e);
+                        continue;
+                    }
+                }
+                if (label) {
+                    labelsToSet.push(label);
+                }
+            }
+
+            // 2. Bulk update labels on task
+            // This replaces existing labels with the new set
+            await this.vikunjaService.updateTaskLabels(vikunjaId, labelsToSet);
+            console.log(`Vikunja Sync: Updated labels for task ${vikunjaId}`);
+        } catch (error) {
+            console.error(`Vikunja Sync: Error syncing tags for task ${vikunjaId}`, error);
+        }
     }
 
     unload() {

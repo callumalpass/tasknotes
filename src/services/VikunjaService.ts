@@ -109,4 +109,17 @@ export class VikunjaService {
 
         return this.request(endpoint);
     }
+
+    async getLabels(page: number = 1, perPage: number = 50): Promise<any> {
+        return this.request(`labels?page=${page}&per_page=${perPage}`);
+    }
+
+    async createLabel(label: { title: string; description?: string; color?: string }): Promise<any> {
+        return this.request("labels", "PUT", label);
+    }
+
+    async updateTaskLabels(taskId: number, labels: any[]): Promise<any> {
+        // labels array should contain label objects (with id)
+        return this.request(`tasks/${taskId}/labels/bulk`, "POST", { labels });
+    }
 }
