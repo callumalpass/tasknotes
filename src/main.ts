@@ -639,10 +639,11 @@ export default class TaskNotesPlugin extends Plugin {
 				this.addCommand({
 					id: "vikunja-sync-now",
 					name: "Vikunja: Sync Now",
-					callback: () => {
+					callback: async () => {
 						if (this.vikunjaSyncService) {
-							this.vikunjaSyncService.syncFromVikunja();
 							new Notice("Vikunja sync started.");
+							await this.vikunjaSyncService.syncFromVikunja();
+							new Notice("Vikunja sync completed.");
 						}
 					},
 				});
