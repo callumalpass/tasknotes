@@ -752,6 +752,210 @@ export function renderIntegrationsTab(
 	// Initial render
 	renderMicrosoftCalendarCard();
 
+	// ============================================================
+	// Vikunja Task Sync Integration Section
+	// ============================================================
+	const vikunjaContainer = container.createDiv("vikunja-integration-container");
+
+	const renderVikunjaCard = async () => {
+		vikunjaContainer.empty();
+
+		// Helper to create toggle rows
+		const createSyncToggle = (label: string, checked: boolean, onChange: (value: boolean) => void) => {
+			const toggleContainer = document.createElement("div");
+			toggleContainer.style.display = "flex";
+			toggleContainer.style.alignItems = "center";
+			toggleContainer.style.gap = "8px";
+
+			const toggle = createCardToggle(checked, onChange);
+			const labelEl = document.createElement("span");
+			labelEl.textContent = label;
+			labelEl.style.fontSize = "0.9em";
+
+			toggleContainer.appendChild(toggle);
+			toggleContainer.appendChild(labelEl);
+			return toggleContainer;
+		};
+
+		// Help text
+		const helpText = document.createElement("div");
+		helpText.className = "tasknotes-calendar-help";
+		helpText.innerHTML = "Sync tasks bidirectionally with your Vikunja instance.";
+
+		// Master enable toggle
+		const enableToggle = createSyncToggle("Enable Vikunja Sync", plugin.settings.vikunja.enabled, (value) => {
+			plugin.settings.vikunja.enabled = value;
+			save();
+			renderVikunjaCard(); // Re-render to show/hide settings
+		});
+
+		// Connection settings (always visible for setup)
+		const apiUrlInput = createCardUrlInput("https://try.vikunja.io/api/v1", plugin.settings.vikunja.apiUrl);
+		apiUrlInput.addEventListener("blur", () => {
+			plugin.settings.vikunja.apiUrl = apiUrlInput.value.trim();
+			save();
+		});
+
+		const apiTokenInput = createCardInput("text", "your-api-token", plugin.settings.vikunja.apiToken);
+		apiTokenInput.setAttribute("type", "password");
+		apiTokenInput.addEventListener("blur", () => {
+			plugin.settings.vikunja.apiToken = apiTokenInput.value.trim();
+			save();
+		});
+
+		const listIdInput = createCardNumberInput(0, 999999, 1, plugin.settings.vikunja.defaultListId || 0);
+		listIdInput.addEventListener("blur", () => {
+			plugin.settings.vikunja.defaultListId = parseInt(listIdInput.value) || 0;
+			save();
+		});
+
+		const setupNote = document.createElement("div");
+		setupNote.className = "tasknotes-credential-note";
+		setupNote.innerHTML = "Get your API token from <strong>Vikunja Settings → API Tokens</strong>. The List ID is in the URL when viewing a project.";
+
+		// Build sections based on enabled state
+		const sections: any[] = [
+			{
+				rows: [
+					{ label: "", input: helpText, fullWidth: true },
+					{ label: "Enable:", input: enableToggle }
+				]
+			}
+		];
+
+		// Connection settings section (always shown for editing)
+		sections.push({
+			rows: [
+				{ label: "API URL:", input: apiUrlInput },
+				{ label: "API Token:", input: apiTokenInput },
+				{ label: "Default List ID:", input: listIdInput },
+				{ label: "", input: setupNote, fullWidth: true }
+			]
+		});
+
+		// Additional settings when enabled
+		if (plugin.settings.vikunja.enabled) {
+			const syncIntervalInput = createCardNumberInput(1, 60, 1, plugin.settings.vikunja.syncInterval || 5);
+			syncIntervalInput.addEventListener("blur", () => {
+				plugin.settings.vikunja.syncInterval = parseInt(syncIntervalInput.value) || 5;
+				save();
+			});
+
+			// Sync triggers
+			const syncTriggersContainer = document.createElement("div");
+			syncTriggersContainer.style.display = "flex";
+			syncTriggersContainer.style.flexDirection = "column";
+			syncTriggersContainer.style.gap = "8px";
+
+			syncTriggersContainer.appendChild(createSyncToggle("Sync on task create", plugin.settings.vikunja.syncOnTaskCreate, (value) => {
+				plugin.settings.vikunja.syncOnTaskCreate = value;
+				save();
+			}));
+			syncTriggersContainer.appendChild(createSyncToggle("Sync on task update", plugin.settings.vikunja.syncOnTaskUpdate, (value) => {
+				plugin.settings.vikunja.syncOnTaskUpdate = value;
+				save();
+			}));
+			syncTriggersContainer.appendChild(createSyncToggle("Sync on task complete", plugin.settings.vikunja.syncOnTaskComplete, (value) => {
+				plugin.settings.vikunja.syncOnTaskComplete = value;
+				save();
+			}));
+			syncTriggersContainer.appendChild(createSyncToggle("Two-way sync (pull from Vikunja)", plugin.settings.vikunja.enableTwoWaySync, (value) => {
+				plugin.settings.vikunja.enableTwoWaySync = value;
+				save();
+			}));
+
+			sections.push({
+				rows: [
+					{ label: "Sync Interval (min):", input: syncIntervalInput },
+					{ label: "Sync Options:", input: syncTriggersContainer }
+				]
+			});
+		}
+
+		// Determine status
+		let isConnected = false;
+		if (plugin.settings.vikunja.enabled && plugin.settings.vikunja.apiUrl && plugin.settings.vikunja.apiToken) {
+			try {
+				const testService = new VikunjaService(plugin, plugin.settings.vikunja);
+				isConnected = await testService.validateConnection();
+			} catch {
+				isConnected = false;
+			}
+		}
+
+		const statusBadge = plugin.settings.vikunja.enabled
+			? (isConnected ? createStatusBadge("Connected", "active") : createStatusBadge("Connection Error", "inactive"))
+			: createStatusBadge("Disabled", "inactive");
+
+		// Build action buttons
+		const buttons: any[] = [
+			{
+				text: "Test Connection",
+				icon: "check-circle",
+				variant: "default",
+				onClick: async () => {
+					const testService = new VikunjaService(plugin, plugin.settings.vikunja);
+					try {
+						const valid = await testService.validateConnection();
+						if (valid) {
+							new Notice("Connection successful!");
+							renderVikunjaCard(); // Update status badge
+						} else {
+							new Notice("Connection failed. Check your credentials.");
+						}
+					} catch (error) {
+						console.error("Connection test failed:", error);
+						new Notice("Connection failed: " + (error as Error).message);
+					}
+				}
+			}
+		];
+
+		if (plugin.settings.vikunja.enabled) {
+			buttons.push({
+				text: "Sync Now",
+				icon: "refresh-cw",
+				variant: "primary",
+				onClick: async () => {
+					try {
+						if (plugin.vikunjaSyncService) {
+							plugin.vikunjaSyncService.syncFromVikunja();
+							new Notice("Vikunja sync started");
+						} else {
+							new Notice("Vikunja sync service not available. Try reloading the plugin.");
+						}
+					} catch (error) {
+						console.error("Failed to sync:", error);
+						new Notice("Failed to sync with Vikunja");
+					}
+				}
+			});
+		}
+
+		createCard(vikunjaContainer, {
+			collapsible: true,
+			defaultCollapsed: false,
+			colorIndicator: {
+				color: plugin.settings.vikunja.enabled ? "#00ACC1" : "#737373"
+			},
+			header: {
+				primaryText: "Vikunja Task Sync",
+				secondaryText: "Bidirectional task synchronization",
+				meta: [statusBadge]
+			},
+			content: {
+				sections: sections
+			},
+			actions: {
+				buttons: buttons
+			}
+		});
+	};
+
+	// Initial render
+	renderVikunjaCard();
+
+
 	// Google Calendar Task Export Section
 	createSettingGroup(
 		container,
@@ -1505,164 +1709,6 @@ export function renderIntegrationsTab(
 			}
 		);
 	}
-
-	// Vikunja Integration Section
-	createSettingGroup(
-		container,
-		{
-			heading: "Vikunja Integration",
-			description: "Synchronize tasks with a Vikunja instance.",
-		},
-		(group) => {
-			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
-					name: "Enable Vikunja Sync",
-					desc: "Enable synchronization with Vikunja.",
-					getValue: () => plugin.settings.vikunja.enabled,
-					setValue: async (value: boolean) => {
-						plugin.settings.vikunja.enabled = value;
-						save();
-						// plugin.settingTab.display(); // TODO: Fix refresh mechanism
-					},
-				})
-			);
-
-			if (plugin.settings.vikunja.enabled) {
-				group.addSetting((setting) =>
-					configureTextSetting(setting, {
-						name: "Vikunja API URL",
-						desc: "The base URL of your Vikunja instance (e.g., https://vikunja.example.com/api/v1).",
-						placeholder: "https://vikunja.example.com/api/v1",
-						getValue: () => plugin.settings.vikunja.apiUrl,
-						setValue: async (value: string) => {
-							plugin.settings.vikunja.apiUrl = value;
-							save();
-						},
-					})
-				);
-
-				group.addSetting((setting) =>
-					configureTextSetting(setting, {
-						name: "API Token",
-						desc: "A scoped API token with Read & Write permissions.",
-						placeholder: "Your API Token",
-						getValue: () => plugin.settings.vikunja.apiToken,
-						setValue: async (value: string) => {
-							plugin.settings.vikunja.apiToken = value;
-							save();
-						},
-					})
-				);
-
-				group.addSetting((setting) =>
-					configureNumberSetting(setting, {
-						name: "Default List ID",
-						desc: "The ID of the Vikunja list/project where new tasks will be created.",
-						placeholder: "1",
-						getValue: () => plugin.settings.vikunja.defaultListId,
-						setValue: async (value: number) => {
-							plugin.settings.vikunja.defaultListId = value;
-							save();
-						},
-					})
-				);
-
-				group.addSetting((setting) =>
-					configureButtonSetting(setting, {
-						name: "Test Connection",
-						desc: "Verify your URL and API Token.",
-						buttonText: "Test Connection",
-						onClick: async () => {
-							const tempService = new VikunjaService(plugin, plugin.settings.vikunja);
-							const isValid = await tempService.validateConnection();
-							if (isValid) {
-								new Notice("Connection successful!");
-							} else {
-								new Notice("Connection failed. Check settings and console.");
-							}
-						},
-					})
-				);
-
-				// Two-Way Sync Settings
-				group.addSetting((setting) => {
-					setting.setName("Sync Settings");
-					setting.setHeading();
-				});
-
-				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
-						name: "Two-Way Sync",
-						desc: "Pull changes from Vikunja to Obsidian (requires periodic polling).",
-						getValue: () => plugin.settings.vikunja.enableTwoWaySync,
-						setValue: async (value: boolean) => {
-							plugin.settings.vikunja.enableTwoWaySync = value;
-							save();
-							// plugin.settingTab.display(); // TODO: Fix refresh mechanism
-						},
-					})
-				);
-
-				if (plugin.settings.vikunja.enableTwoWaySync) {
-					group.addSetting((setting) =>
-						configureNumberSetting(setting, {
-							name: "Sync Interval (Minutes)",
-							desc: "How often to check for updates from Vikunja.",
-							min: 1,
-							max: 1440,
-							getValue: () => plugin.settings.vikunja.syncInterval,
-							setValue: async (value: number) => {
-								plugin.settings.vikunja.syncInterval = value;
-								save();
-							},
-						})
-					);
-				}
-
-				// Sync Triggers
-				group.addSetting((setting) => {
-					setting.setName("Sync Triggers");
-					setting.setHeading();
-				});
-
-				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
-						name: "Sync on Create",
-						desc: "Push new tasks to Vikunja.",
-						getValue: () => plugin.settings.vikunja.syncOnTaskCreate,
-						setValue: async (value: boolean) => {
-							plugin.settings.vikunja.syncOnTaskCreate = value;
-							save();
-						},
-					})
-				);
-
-				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
-						name: "Sync on Update",
-						desc: "Push task updates to Vikunja.",
-						getValue: () => plugin.settings.vikunja.syncOnTaskUpdate,
-						setValue: async (value: boolean) => {
-							plugin.settings.vikunja.syncOnTaskUpdate = value;
-							save();
-						},
-					})
-				);
-
-				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
-						name: "Sync on Complete",
-						desc: "Push completion status to Vikunja.",
-						getValue: () => plugin.settings.vikunja.syncOnTaskComplete,
-						setValue: async (value: boolean) => {
-							plugin.settings.vikunja.syncOnTaskComplete = value;
-							save();
-						},
-					})
-				);
-			}
-		}
-	);
 
 	// Other Integrations Section
 	createSettingGroup(
