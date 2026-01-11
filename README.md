@@ -73,7 +73,42 @@ Calendar sync with Google and Microsoft (OAuth) or any ICS feed. Time tracking w
 
 ## Integrations
 
+### Vikunja Sync
+
+Sync tasks bidirectionally with a [Vikunja](https://vikunja.io/) instance. Changes in TaskNotes push to Vikunja, and changes in Vikunja pull back to TaskNotes.
+
+**Setup:**
+1. Go to **Settings → TaskNotes → Integrations**
+2. Find the **Vikunja Task Sync** card
+3. Enter your **API URL** (e.g., `https://vikunja.example.com/api/v1`)
+4. Enter your **API Token** (get it from Vikunja Settings → API Tokens)
+5. Enter the **Default List ID** (found in the URL when viewing a project: `/projects/123/list`)
+6. Click **Test Connection** to verify
+7. Toggle **Enable Vikunja Sync**
+
+**Sync options:**
+- **Sync on create/update/complete**: Push changes when tasks are created, modified, or completed
+- **Two-way sync**: Pull changes from Vikunja on a configurable interval
+- **Sync Now**: Manually trigger a sync from the settings
+
+**Field mapping:**
+| TaskNotes | Vikunja |
+|-----------|---------|
+| title | title |
+| status (done/open) | done |
+| due | due_date |
+| scheduled | start_date |
+| priority | priority |
+| tags | labels |
+| recurrence | repeat_after |
+| reminders | reminders |
+| projects | parent task (via relations) |
+| body content | description (HTML) |
+
+### Other Integrations
+
 TaskNotes has an optional HTTP API. There's a [browser extension](https://github.com/callumalpass/tasknotes-browser-extension) and a [CLI](https://github.com/callumalpass/tasknotes-cli). Webhooks can notify external services on task changes. See [HTTP API docs](./docs/HTTP_API.md) and [Webhooks docs](./docs/webhooks.md).
+
 
 ## Language support
 
