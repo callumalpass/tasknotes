@@ -4,16 +4,41 @@ import { format, parseISO, addSeconds } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { VikunjaService } from "./VikunjaService";
 import { TaskInfo, EVENT_TASK_UPDATED, Reminder } from "../types";
+import TurndownService from "turndown";
+import showdown from "showdown";
 
 export class VikunjaSyncService {
     plugin: TaskNotesPlugin;
     vikunjaService: VikunjaService;
     private syncIntervalId: number | null = null;
     private isSyncing = false;
+    private turndownService: TurndownService;
+    private showdownConverter: showdown.Converter;
+    private isInternalUpdate = false;
+    private debouncedPush = new Map<string, number>();
 
     constructor(plugin: TaskNotesPlugin, vikunjaService: VikunjaService) {
         this.plugin = plugin;
         this.vikunjaService = vikunjaService;
+        this.turndownService = new TurndownService({
+            headingStyle: "atx",
+            hr: "---",
+            bulletListMarker: "-",
+            codeBlockStyle: "fenced",
+        });
+        this.showdownConverter = new showdown.Converter();
+        this.turndownService.addRule('github-task-list', {
+            filter: 'li',
+            replacement: function (content, node) {
+                const item = node as HTMLLIElement;
+                if (item.classList.contains('task-list-item') || (item.querySelector('input[type="checkbox"]'))) {
+                    const checkbox = item.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                    const checked = checkbox && checkbox.checked ? 'x' : ' ';
+                    return '- [' + checked + '] ' + content + '\n';
+                }
+                return '- ' + content + '\n';
+            }
+        });
     }
 
     // --- Helpers ---
@@ -104,8 +129,59 @@ export class VikunjaSyncService {
             this.plugin.emitter.on(EVENT_TASK_UPDATED, this.onTaskUpdated.bind(this))
         );
 
+        // Register vault modify listener for manual edits
+        this.plugin.registerEvent(
+            this.plugin.app.vault.on("modify", (file) => {
+                if (file instanceof TFile && file.extension === "md") {
+                    this.handleFileModification(file);
+                }
+            })
+        );
+
         // Start polling if enabled
         this.updateSyncInterval();
+    }
+
+    private handleFileModification(file: TFile) {
+        if (this.isInternalUpdate) return;
+
+        // Debounce
+        if (this.debouncedPush.has(file.path)) {
+            window.clearTimeout(this.debouncedPush.get(file.path));
+        }
+
+        const timeoutId = window.setTimeout(async () => {
+            // Fetch fresh task info
+            // Construct a partial TaskInfo or trigger onTaskUpdated logic
+            // Since onTaskUpdated handles reading the file, we can just call it passing the path
+            // But onTaskUpdated expects {path, updatedTask}
+            // We can construct a minimal updatedTask to trigger the flow
+
+            // We need to verify if it's a monitored task
+            const cache = this.plugin.app.metadataCache.getFileCache(file);
+            if (!cache?.frontmatter?.vikunja_id) return;
+
+            // Mimic TaskInfo structure - we only really need path and status for current logic, 
+            // but onTaskUpdated re-reads the file body anyway.
+            // We need 'status' to determine if we should sync based on settings (syncOnComplete).
+            // Let's rely on cache frontmatter for status.
+            const status = cache.frontmatter.status || "open";
+
+            const dummyTaskInfo: TaskInfo = {
+                path: file.path,
+                title: cache.frontmatter.title || file.basename,
+                status: status,
+                priority: cache.frontmatter.priority,
+                // Add other required fields if needed by Typescript, but onTaskUpdated mainly uses these or re-reads
+                // To be safe we should try to get full info if possible, but basic is enough for now
+            } as any;
+
+            await this.onTaskUpdated({ path: file.path, updatedTask: dummyTaskInfo });
+
+            this.debouncedPush.delete(file.path);
+        }, 2000); // 2 second debounce for typing
+
+        this.debouncedPush.set(file.path, timeoutId);
     }
 
     updateSyncInterval() {
@@ -139,8 +215,15 @@ export class VikunjaSyncService {
         if (frontmatter?.vikunja_ignore) return;
 
         try {
+            // Read actual file body for description
+            const content = await this.plugin.app.vault.read(file);
+            const frontmatterRegex = /^---\n[\s\S]*?\n---\n/;
+            const body = content.replace(frontmatterRegex, "").trim();
+
+            // Update task info with actual body
+            updatedTask.details = body;
+
             const vikunjaId = frontmatter?.vikunja_id;
-            console.log(`Vikunja Sync: Processing ${path}. ID in frontmatter: ${vikunjaId}`);
 
             if (vikunjaId) {
                 // Update existing task
@@ -194,7 +277,7 @@ export class VikunjaSyncService {
     private mapTaskToPayload(task: TaskInfo): any {
         const payload: any = {
             title: task.title,
-            description: task.details || "",
+            description: task.details ? this.showdownConverter.makeHtml(task.details) : "",
             done: task.status === "done",
             priority: this.toVikunjaPriority(task.priority),
         };
@@ -319,58 +402,95 @@ export class VikunjaSyncService {
     }
 
     private async updateLocalTask(file: TFile, vTask: any) {
-        await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-            // Only update if changes
-            if (frontmatter["title"] !== vTask.title) frontmatter["title"] = vTask.title;
-            // Update status
-            // Update status
-            const newStatus = vTask.done ? "done" : "open";
-            if (frontmatter["status"] !== newStatus) frontmatter["status"] = newStatus;
+        this.isInternalUpdate = true;
+        try {
+            await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+                // Only update if changes
+                if (frontmatter["title"] !== vTask.title) frontmatter["title"] = vTask.title;
+                // Update status
+                // Update status
+                const newStatus = vTask.done ? "done" : "open";
+                if (frontmatter["status"] !== newStatus) frontmatter["status"] = newStatus;
 
-            // Map other fields
-            const newPriority = this.fromVikunjaPriority(vTask.priority);
-            if (frontmatter["priority"] !== newPriority) frontmatter["priority"] = newPriority;
+                // Map other fields
+                const newPriority = this.fromVikunjaPriority(vTask.priority);
+                if (frontmatter["priority"] !== newPriority) frontmatter["priority"] = newPriority;
 
-            const newDue = this.fromVikunjaDate(vTask.due_date);
-            if (frontmatter["due"] !== newDue) {
-                if (newDue) frontmatter["due"] = newDue;
-                else delete frontmatter["due"];
+                const newDue = this.fromVikunjaDate(vTask.due_date);
+                if (frontmatter["due"] !== newDue) {
+                    if (newDue) frontmatter["due"] = newDue;
+                    else delete frontmatter["due"];
+                }
+
+                const newScheduled = this.fromVikunjaDate(vTask.start_date);
+                if (frontmatter["scheduled"] !== newScheduled) {
+                    if (newScheduled) frontmatter["scheduled"] = newScheduled;
+                    else delete frontmatter["scheduled"];
+                }
+
+                const newRecurrence = this.fromVikunjaRecurrence(vTask.repeat_after);
+                if (frontmatter["recurrence"] !== newRecurrence) {
+                    if (newRecurrence) frontmatter["recurrence"] = newRecurrence;
+                    else delete frontmatter["recurrence"];
+                }
+
+                // Tags sync
+                const newTags = this.fromVikunjaLabels(vTask.labels);
+                // Sort to ensure order doesn't cause false changes
+                const oldTags = frontmatter["tags"] ? [...frontmatter["tags"]].sort() : [];
+                const sortedNewTags = newTags ? [...newTags].sort() : [];
+                if (JSON.stringify(oldTags) !== JSON.stringify(sortedNewTags)) {
+                    if (newTags && newTags.length > 0) frontmatter["tags"] = newTags;
+                    else delete frontmatter["tags"];
+                }
+
+                // Reminders sync
+                const newReminders = this.fromVikunjaReminders(vTask.reminders);
+                // Simple comparison using JSON stringify to avoid deep object checking complexity
+                if (JSON.stringify(frontmatter["reminders"]) !== JSON.stringify(newReminders)) {
+                    console.log(`Vikunja Sync: Updating reminders for ${file.path}. Old: ${JSON.stringify(frontmatter["reminders"])}, New: ${JSON.stringify(newReminders)}`);
+                    if (newReminders) frontmatter["reminders"] = newReminders;
+                    else delete frontmatter["reminders"];
+                }
+
+                frontmatter["vikunja_last_sync"] = Date.now();
+            });
+
+            // Update body (description)
+            if (vTask.description !== undefined) {
+                const markdownBody = this.turndownService.turndown(vTask.description);
+                await this.updateFileBody(file, markdownBody);
             }
+        } finally {
+            this.isInternalUpdate = false;
+        }
+    }
 
-            const newScheduled = this.fromVikunjaDate(vTask.start_date);
-            if (frontmatter["scheduled"] !== newScheduled) {
-                if (newScheduled) frontmatter["scheduled"] = newScheduled;
-                else delete frontmatter["scheduled"];
+    private async updateFileBody(file: TFile, newBody: string) {
+        try {
+            const content = await this.plugin.app.vault.read(file);
+            const frontmatterRegex = /^---\n[\s\S]*?\n---\n/;
+            const match = content.match(frontmatterRegex);
+
+            const currentFrontmatter = match ? match[0] : "";
+            const currentBody = match ? content.replace(frontmatterRegex, "") : content;
+
+            // Normalize newlines / trim for comparison
+            if (currentBody.trim() !== newBody.trim()) {
+                console.log(`Vikunja Sync: Updating description/body for ${file.path}`);
+                const newContent = currentFrontmatter + newBody;
+
+                this.isInternalUpdate = true;
+                await this.plugin.app.vault.modify(file, newContent);
+                // isInternalUpdate will be reset in updateLocalTask finally block if called from there.
+                // But updateFileBody is async and awaited. 
+                // We should ensure it's handled here too just in case it's called independently.
+                // However, updateLocalTask wraps this.
+                // If called independently, we might need own try/finally but updateLocalTask has it.
             }
-
-            const newRecurrence = this.fromVikunjaRecurrence(vTask.repeat_after);
-            if (frontmatter["recurrence"] !== newRecurrence) {
-                if (newRecurrence) frontmatter["recurrence"] = newRecurrence;
-                else delete frontmatter["recurrence"];
-            }
-
-            // Tags sync
-            const newTags = this.fromVikunjaLabels(vTask.labels);
-            // Sort to ensure order doesn't cause false changes
-            const oldTags = frontmatter["tags"] ? [...frontmatter["tags"]].sort() : [];
-            const sortedNewTags = newTags ? [...newTags].sort() : [];
-            if (JSON.stringify(oldTags) !== JSON.stringify(sortedNewTags)) {
-                if (newTags && newTags.length > 0) frontmatter["tags"] = newTags;
-                else delete frontmatter["tags"];
-            }
-
-            // Reminders sync
-            const newReminders = this.fromVikunjaReminders(vTask.reminders);
-            // Simple comparison using JSON stringify to avoid deep object checking complexity
-            if (JSON.stringify(frontmatter["reminders"]) !== JSON.stringify(newReminders)) {
-                console.log(`Vikunja Sync: Updating reminders for ${file.path}. Old: ${JSON.stringify(frontmatter["reminders"])}, New: ${JSON.stringify(newReminders)}`);
-                if (newReminders) frontmatter["reminders"] = newReminders;
-                else delete frontmatter["reminders"];
-            }
-
-            frontmatter["vikunja_last_sync"] = Date.now();
-        });
-        // If description changed, we'd need to update file body, which is more complex (read, replace, write)
+        } catch (e) {
+            console.error(`Vikunja Sync: Error updating file body for ${file.path}`, e);
+        }
     }
 
     // --- Helpers for Duration ---

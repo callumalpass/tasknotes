@@ -74,12 +74,16 @@
 		"@fullcalendar/list": "^6.1.17",
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
+		"@types/showdown": "^2.0.6",
+		"@types/turndown": "^5.0.6",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
 		"ical.js": "^2.2.1",
 		"obsidian-daily-notes-interface": "^0.9.4",
 		"reflect-metadata": "^0.2.2",
 		"rrule": "^2.8.1",
+		"showdown": "^2.1.0",
+		"turndown": "^7.2.2",
 		"yaml": "^2.3.1"
 	}
 }
