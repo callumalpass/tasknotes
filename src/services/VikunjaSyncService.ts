@@ -6,6 +6,7 @@ import { VikunjaService } from "./VikunjaService";
 import { TaskInfo, EVENT_TASK_UPDATED, Reminder } from "../types";
 import TurndownService from "turndown";
 import showdown from "showdown";
+import { parseLinkToPath } from "../utils/linkUtils";
 
 export class VikunjaSyncService {
     plugin: TaskNotesPlugin;
@@ -172,8 +173,13 @@ export class VikunjaSyncService {
                 title: cache.frontmatter.title || file.basename,
                 status: status,
                 priority: cache.frontmatter.priority,
-                // Add other required fields if needed by Typescript, but onTaskUpdated mainly uses these or re-reads
-                // To be safe we should try to get full info if possible, but basic is enough for now
+                // Add other required fields
+                due: cache.frontmatter.due,
+                scheduled: cache.frontmatter.scheduled,
+                recurrence: cache.frontmatter.recurrence,
+                tags: cache.frontmatter.tags,
+                projects: cache.frontmatter.projects,
+                reminders: cache.frontmatter.reminders,
             } as any;
 
             await this.onTaskUpdated({ path: file.path, updatedTask: dummyTaskInfo });
@@ -260,6 +266,8 @@ export class VikunjaSyncService {
             if (task.tags && task.tags.length > 0) {
                 await this.syncTagsToVikunja(response.id, task.tags);
             }
+            // Sync parent relation
+            await this.syncParentRelation(response.id, task);
             new Notice(`Task created in Vikunja: ${task.title}`);
         } else {
             console.warn("Vikunja Sync: Task creation response missing ID:", response);
@@ -272,6 +280,8 @@ export class VikunjaSyncService {
         if (task.tags) {
             await this.syncTagsToVikunja(vikunjaId, task.tags);
         }
+        // Sync parent relation
+        await this.syncParentRelation(vikunjaId, task);
     }
 
     private mapTaskToPayload(task: TaskInfo): any {
@@ -297,7 +307,47 @@ export class VikunjaSyncService {
         const reminders = this.toVikunjaReminders(task.reminders);
         if (reminders) payload.reminders = reminders;
 
+        // Parent/Subtask Sync is handled separately via relations API
+
         return payload;
+    }
+
+    // Creates/updates parent relation in Vikunja for subtask sync
+    private async syncParentRelation(vikunjaId: number, task: TaskInfo) {
+        const parentVikunjaId = this.getParentVikunjaId(task);
+        if (parentVikunjaId) {
+            try {
+                // Create a "parenttask" relation: the parent is the parenttask OF this current task
+                await this.vikunjaService.createTaskRelation(vikunjaId, parentVikunjaId, "parenttask");
+                console.log(`Vikunja Sync: Created parenttask relation: ${vikunjaId} -> parent ${parentVikunjaId}`);
+            } catch (error: any) {
+                // Ignore "already exists" errors
+                if (!error.message?.includes("exists")) {
+                    console.error(`Vikunja Sync: Error creating parent relation for ${vikunjaId}`, error);
+                }
+            }
+        }
+    }
+
+    private getParentVikunjaId(task: TaskInfo): number | null {
+        console.log(`Vikunja Sync: Checking parent for task '${task.title}'`);
+        // Check 'projects' field
+        if (task.projects && task.projects.length > 0) {
+            // Use first project that has a Vikunja ID
+            for (const projectLink of task.projects) {
+                // Resolve link
+                const linkPath = parseLinkToPath(projectLink);
+                // Resolve to file
+                const file = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, task.path);
+                if (file) {
+                    const cache = this.plugin.app.metadataCache.getFileCache(file);
+                    if (cache?.frontmatter?.vikunja_id) {
+                        return cache.frontmatter.vikunja_id;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private async saveVikunjaId(path: string, id: number) {
@@ -330,8 +380,20 @@ export class VikunjaSyncService {
             console.log(`Vikunja Sync: Fetched ${Array.isArray(tasks) ? tasks.length : 0} tasks.`);
 
             if (Array.isArray(tasks)) {
+                // PASS 1: Create/update all tasks WITHOUT parent relations
+                // This ensures all files exist before we try to link them
+                const tasksNeedingParentUpdate: any[] = [];
+
                 for (const vTask of tasks) {
-                    await this.processRemoteTask(vTask);
+                    const needsParentUpdate = await this.processRemoteTask(vTask, false);
+                    if (needsParentUpdate) {
+                        tasksNeedingParentUpdate.push(vTask);
+                    }
+                }
+
+                // PASS 2: Update parent relations now that all files exist
+                for (const vTask of tasksNeedingParentUpdate) {
+                    await this.updateParentRelationOnly(vTask);
                 }
             } else {
                 console.warn("Vikunja Sync: getTasks returned non-array:", tasks);
@@ -344,24 +406,51 @@ export class VikunjaSyncService {
         }
     }
 
-    private async processRemoteTask(vTask: any) {
+    // Update just the projects field for a task that has a parent
+    private async updateParentRelationOnly(vTask: any) {
+        const localFile = await this.findTaskByVikunjaId(vTask.id);
+        if (!localFile) return;
+
+        const projects = await this.fromVikunjaParent(vTask);
+        if (!projects || projects.length === 0) return;
+
+        this.isInternalUpdate = true;
+        try {
+            await this.plugin.app.fileManager.processFrontMatter(localFile, (frontmatter) => {
+                if (JSON.stringify(frontmatter["projects"]) !== JSON.stringify(projects)) {
+                    frontmatter["projects"] = projects;
+                    console.log(`Vikunja Sync: Updated parent relation for ${localFile.path} -> ${projects}`);
+                }
+            });
+        } finally {
+            setTimeout(() => { this.isInternalUpdate = false; }, 100);
+        }
+    }
+
+    private async processRemoteTask(vTask: any, skipParentUpdate: boolean = false): Promise<boolean> {
         // 1. Find local task with this vikunja_id
         const localTask = await this.findTaskByVikunjaId(vTask.id);
+
+        // Check if this task has a parent
+        const hasParent = vTask?.related_tasks?.parenttask?.length > 0;
 
         if (localTask) {
             // 2. Compare and update if remote is newer
             // Simplification: Always update local from remote in this polling cycle
             // In reality, check timestamps
-            await this.updateLocalTask(localTask, vTask);
+            await this.updateLocalTask(localTask, vTask, skipParentUpdate);
         } else {
             // 3. Create local task if configured to import
             if (this.plugin.settings.vikunja.enableTwoWaySync) {
-                await this.createLocalTaskFromVikunja(vTask);
+                await this.createLocalTaskFromVikunja(vTask, skipParentUpdate);
             }
         }
+
+        // Return true if this task has a parent and we skipped the update
+        return hasParent && skipParentUpdate;
     }
 
-    private async createLocalTaskFromVikunja(vTask: any) {
+    private async createLocalTaskFromVikunja(vTask: any, skipParentUpdate: boolean = false) {
         try {
             // Avoid loop: ignore if we just pushed this
             // But we don't have a reliable way to know "we just pushed it" without complex state using current ID.
@@ -376,6 +465,8 @@ export class VikunjaSyncService {
                 scheduled: this.fromVikunjaDate(vTask.start_date),
                 recurrence: this.fromVikunjaRecurrence(vTask.repeat_after),
                 tags: this.fromVikunjaLabels(vTask.labels),
+                // Skip projects in first pass, will be updated in second pass
+                projects: skipParentUpdate ? undefined : await this.fromVikunjaParent(vTask),
                 customFrontmatter: {
                     vikunja_id: vTask.id,
                     vikunja_last_sync: Date.now()
@@ -401,9 +492,12 @@ export class VikunjaSyncService {
         return null;
     }
 
-    private async updateLocalTask(file: TFile, vTask: any) {
+    private async updateLocalTask(file: TFile, vTask: any, skipParentUpdate: boolean = false) {
         this.isInternalUpdate = true;
         try {
+            // Prepare projects (async) before modifying frontmatter - skip if in first pass
+            const newProjects = skipParentUpdate ? undefined : await this.fromVikunjaParent(vTask);
+
             await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
                 // Only update if changes
                 if (frontmatter["title"] !== vTask.title) frontmatter["title"] = vTask.title;
@@ -442,6 +536,18 @@ export class VikunjaSyncService {
                 if (JSON.stringify(oldTags) !== JSON.stringify(sortedNewTags)) {
                     if (newTags && newTags.length > 0) frontmatter["tags"] = newTags;
                     else delete frontmatter["tags"];
+                }
+
+                // Projects (Parent) Sync
+                // const newProjects = await this.fromVikunjaParent(vTask.parent_task_id); // MOVED OUT
+                if (newProjects && newProjects.length > 0) {
+                    // Check if changed
+                    if (JSON.stringify(frontmatter["projects"]) !== JSON.stringify(newProjects)) {
+                        frontmatter["projects"] = newProjects;
+                    }
+                } else {
+                    // Do not delete existing projects if Vikunja has no parent, 
+                    // to prevent overwriting local organization unless explicit.
                 }
 
                 // Reminders sync
@@ -628,6 +734,26 @@ export class VikunjaSyncService {
         } catch (error) {
             console.error(`Vikunja Sync: Error syncing tags for task ${vikunjaId}`, error);
         }
+    }
+
+    private async fromVikunjaParent(vTask: any): Promise<string[] | undefined> {
+        // Get parent from related_tasks.parenttask
+        console.log(`Vikunja Sync: Task ${vTask.id} ('${vTask.title}') related_tasks:`, JSON.stringify(vTask?.related_tasks));
+        const parentTasks = vTask?.related_tasks?.parenttask;
+        const parentId = parentTasks && parentTasks.length > 0 ? parentTasks[0]?.id : undefined;
+
+        console.log(`Vikunja Sync: Resolving parent for ID: ${parentId}`);
+        if (!parentId || parentId === 0) return undefined;
+
+        const parentFile = await this.findTaskByVikunjaId(parentId);
+        if (parentFile) {
+            console.log(`Vikunja Sync: Found parent file '${parentFile.path}' for Vikunja ID ${parentId}`);
+            // Create a wikilink to the file
+            return [`[[${parentFile.basename}]]`];
+        } else {
+            console.log(`Vikunja Sync: Parent file not found for Vikunja ID ${parentId}`);
+        }
+        return undefined;
     }
 
     unload() {

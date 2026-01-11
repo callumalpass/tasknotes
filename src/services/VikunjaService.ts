@@ -122,4 +122,24 @@ export class VikunjaService {
         // labels array should contain label objects (with id)
         return this.request(`tasks/${taskId}/labels/bulk`, "POST", { labels });
     }
+
+    /**
+     * Create a relation between two tasks.
+     * @param taskId The base task ID
+     * @param otherTaskId The related task ID
+     * @param relationKind The kind of relation (e.g., "subtask", "parenttask", "related", "blocked", "blocking")
+     */
+    async createTaskRelation(taskId: number, otherTaskId: number, relationKind: string): Promise<any> {
+        return this.request(`tasks/${taskId}/relations`, "PUT", {
+            other_task_id: otherTaskId,
+            relation_kind: relationKind
+        });
+    }
+
+    /**
+     * Delete a relation between two tasks.
+     */
+    async deleteTaskRelation(taskId: number, relationKind: string, otherTaskId: number): Promise<any> {
+        return this.request(`tasks/${taskId}/relations/${relationKind}/${otherTaskId}`, "DELETE");
+    }
 }
