@@ -70,21 +70,23 @@ export class VikunjaSyncService {
     }
 
     private toVikunjaPriority(priority?: string): number {
-        switch (priority?.toLowerCase()) {
+        if (!priority) return 0; // Unset in Vikunja
+        switch (priority.toLowerCase()) {
             case "low": return 1;
             case "normal": return 2;
-            case "high": return 4; // Vikunja 3=High? 4=Urgent? Usually 1-5. Assumed: 1=Low, 2=Normal, 3=High, 4=Urgent, 5=Do Now
+            case "medium": return 2; // Alias for normal
+            case "high": return 4;
             case "critical": return 5;
-            default: return 2;
+            default: return 0; // Unset for unknown values
         }
     }
 
     private fromVikunjaPriority(priority?: number): string {
-        if (!priority) return "normal";
+        if (priority === undefined || priority === null || priority === 0) return ""; // Unset
         if (priority <= 1) return "low";
         if (priority === 2) return "normal";
-        if (priority >= 3) return "high"; // Map 3, 4, 5 to high for simplicity or critical?
-        return "normal";
+        if (priority >= 3) return "high"; // Map 3, 4, 5 to high for simplicity
+        return "";
     }
 
     private toVikunjaRecurrence(recurrence?: string): number | null {
