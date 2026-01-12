@@ -2,6 +2,7 @@ import { Notice, Platform, Modal, Setting, setIcon, App } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { WebhookConfig } from "../../types";
 import { TranslationKey } from "../../i18n";
+import { VikunjaService } from "../../services/VikunjaService";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
 import {
 	createSettingGroup,
@@ -750,6 +751,210 @@ export function renderIntegrationsTab(
 
 	// Initial render
 	renderMicrosoftCalendarCard();
+
+	// ============================================================
+	// Vikunja Task Sync Integration Section
+	// ============================================================
+	const vikunjaContainer = container.createDiv("vikunja-integration-container");
+
+	const renderVikunjaCard = async () => {
+		vikunjaContainer.empty();
+
+		// Helper to create toggle rows
+		const createSyncToggle = (label: string, checked: boolean, onChange: (value: boolean) => void) => {
+			const toggleContainer = document.createElement("div");
+			toggleContainer.style.display = "flex";
+			toggleContainer.style.alignItems = "center";
+			toggleContainer.style.gap = "8px";
+
+			const toggle = createCardToggle(checked, onChange);
+			const labelEl = document.createElement("span");
+			labelEl.textContent = label;
+			labelEl.style.fontSize = "0.9em";
+
+			toggleContainer.appendChild(toggle);
+			toggleContainer.appendChild(labelEl);
+			return toggleContainer;
+		};
+
+		// Help text
+		const helpText = document.createElement("div");
+		helpText.className = "tasknotes-calendar-help";
+		helpText.innerHTML = "Sync tasks bidirectionally with your Vikunja instance.";
+
+		// Master enable toggle
+		const enableToggle = createSyncToggle("Enable Vikunja Sync", plugin.settings.vikunja.enabled, (value) => {
+			plugin.settings.vikunja.enabled = value;
+			save();
+			renderVikunjaCard(); // Re-render to show/hide settings
+		});
+
+		// Connection settings (always visible for setup)
+		const apiUrlInput = createCardUrlInput("https://try.vikunja.io/api/v1", plugin.settings.vikunja.apiUrl);
+		apiUrlInput.addEventListener("blur", () => {
+			plugin.settings.vikunja.apiUrl = apiUrlInput.value.trim();
+			save();
+		});
+
+		const apiTokenInput = createCardInput("text", "your-api-token", plugin.settings.vikunja.apiToken);
+		apiTokenInput.setAttribute("type", "password");
+		apiTokenInput.addEventListener("blur", () => {
+			plugin.settings.vikunja.apiToken = apiTokenInput.value.trim();
+			save();
+		});
+
+		const listIdInput = createCardNumberInput(0, 999999, 1, plugin.settings.vikunja.defaultListId || 0);
+		listIdInput.addEventListener("blur", () => {
+			plugin.settings.vikunja.defaultListId = parseInt(listIdInput.value) || 0;
+			save();
+		});
+
+		const setupNote = document.createElement("div");
+		setupNote.className = "tasknotes-credential-note";
+		setupNote.innerHTML = "Get your API token from <strong>Vikunja Settings → API Tokens</strong>. The List ID is in the URL when viewing a project.";
+
+		// Build sections based on enabled state
+		const sections: any[] = [
+			{
+				rows: [
+					{ label: "", input: helpText, fullWidth: true },
+					{ label: "Enable:", input: enableToggle }
+				]
+			}
+		];
+
+		// Connection settings section (always shown for editing)
+		sections.push({
+			rows: [
+				{ label: "API URL:", input: apiUrlInput },
+				{ label: "API Token:", input: apiTokenInput },
+				{ label: "Default List ID:", input: listIdInput },
+				{ label: "", input: setupNote, fullWidth: true }
+			]
+		});
+
+		// Additional settings when enabled
+		if (plugin.settings.vikunja.enabled) {
+			const syncIntervalInput = createCardNumberInput(1, 60, 1, plugin.settings.vikunja.syncInterval || 5);
+			syncIntervalInput.addEventListener("blur", () => {
+				plugin.settings.vikunja.syncInterval = parseInt(syncIntervalInput.value) || 5;
+				save();
+			});
+
+			// Sync triggers
+			const syncTriggersContainer = document.createElement("div");
+			syncTriggersContainer.style.display = "flex";
+			syncTriggersContainer.style.flexDirection = "column";
+			syncTriggersContainer.style.gap = "8px";
+
+			syncTriggersContainer.appendChild(createSyncToggle("Sync on task create", plugin.settings.vikunja.syncOnTaskCreate, (value) => {
+				plugin.settings.vikunja.syncOnTaskCreate = value;
+				save();
+			}));
+			syncTriggersContainer.appendChild(createSyncToggle("Sync on task update", plugin.settings.vikunja.syncOnTaskUpdate, (value) => {
+				plugin.settings.vikunja.syncOnTaskUpdate = value;
+				save();
+			}));
+			syncTriggersContainer.appendChild(createSyncToggle("Sync on task complete", plugin.settings.vikunja.syncOnTaskComplete, (value) => {
+				plugin.settings.vikunja.syncOnTaskComplete = value;
+				save();
+			}));
+			syncTriggersContainer.appendChild(createSyncToggle("Two-way sync (pull from Vikunja)", plugin.settings.vikunja.enableTwoWaySync, (value) => {
+				plugin.settings.vikunja.enableTwoWaySync = value;
+				save();
+			}));
+
+			sections.push({
+				rows: [
+					{ label: "Sync Interval (min):", input: syncIntervalInput },
+					{ label: "Sync Options:", input: syncTriggersContainer }
+				]
+			});
+		}
+
+		// Determine status
+		let isConnected = false;
+		if (plugin.settings.vikunja.enabled && plugin.settings.vikunja.apiUrl && plugin.settings.vikunja.apiToken) {
+			try {
+				const testService = new VikunjaService(plugin, plugin.settings.vikunja);
+				isConnected = await testService.validateConnection();
+			} catch {
+				isConnected = false;
+			}
+		}
+
+		const statusBadge = plugin.settings.vikunja.enabled
+			? (isConnected ? createStatusBadge("Connected", "active") : createStatusBadge("Connection Error", "inactive"))
+			: createStatusBadge("Disabled", "inactive");
+
+		// Build action buttons
+		const buttons: any[] = [
+			{
+				text: "Test Connection",
+				icon: "check-circle",
+				variant: "default",
+				onClick: async () => {
+					const testService = new VikunjaService(plugin, plugin.settings.vikunja);
+					try {
+						const valid = await testService.validateConnection();
+						if (valid) {
+							new Notice("Connection successful!");
+							renderVikunjaCard(); // Update status badge
+						} else {
+							new Notice("Connection failed. Check your credentials.");
+						}
+					} catch (error) {
+						console.error("Connection test failed:", error);
+						new Notice("Connection failed: " + (error as Error).message);
+					}
+				}
+			}
+		];
+
+		if (plugin.settings.vikunja.enabled) {
+			buttons.push({
+				text: "Sync Now",
+				icon: "refresh-cw",
+				variant: "primary",
+				onClick: async () => {
+					try {
+						if (plugin.vikunjaSyncService) {
+							plugin.vikunjaSyncService.syncFromVikunja();
+							new Notice("Vikunja sync started");
+						} else {
+							new Notice("Vikunja sync service not available. Try reloading the plugin.");
+						}
+					} catch (error) {
+						console.error("Failed to sync:", error);
+						new Notice("Failed to sync with Vikunja");
+					}
+				}
+			});
+		}
+
+		createCard(vikunjaContainer, {
+			collapsible: true,
+			defaultCollapsed: false,
+			colorIndicator: {
+				color: plugin.settings.vikunja.enabled ? "#00ACC1" : "#737373"
+			},
+			header: {
+				primaryText: "Vikunja Task Sync",
+				secondaryText: "Bidirectional task synchronization",
+				meta: [statusBadge]
+			},
+			content: {
+				sections: sections
+			},
+			actions: {
+				buttons: buttons
+			}
+		});
+	};
+
+	// Initial render
+	renderVikunjaCard();
+
 
 	// Google Calendar Task Export Section
 	createSettingGroup(
@@ -1942,8 +2147,8 @@ function renderWebhookList(
 		const createdDate = webhook.createdAt ? new Date(webhook.createdAt) : null;
 		const createdText = createdDate
 			? translate("settings.integrations.webhooks.statusLabels.created", {
-					timeAgo: getRelativeTime(createdDate, translate),
-				})
+				timeAgo: getRelativeTime(createdDate, translate),
+			})
 			: "Creation date unknown";
 
 		// Create events display as a formatted string

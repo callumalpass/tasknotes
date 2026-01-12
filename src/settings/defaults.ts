@@ -7,6 +7,7 @@ import {
 	ProjectAutosuggestSettings,
 	NLPTriggersConfig,
 	GoogleCalendarExportSettings,
+	VikunjaSettings,
 } from "../types/settings";
 
 /**
@@ -213,6 +214,18 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	defaultReminderMinutes: null, // No reminder by default (user opts in)
 };
 
+export const DEFAULT_VIKUNJA_SETTINGS: VikunjaSettings = {
+	enabled: false,
+	apiUrl: "",
+	apiToken: "",
+	defaultListId: 0,
+	syncOnTaskCreate: true,
+	syncOnTaskUpdate: true,
+	syncOnTaskComplete: true,
+	enableTwoWaySync: false,
+	syncInterval: 15, // minutes
+};
+
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 	enableFuzzy: false,
 	rows: ["{title|n(Title)}", "{aliases|n(Aliases)}", "{file.path|n(Path)}"],
@@ -407,4 +420,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftCalendarSyncTokens: {},
 	// Google Calendar task export settings
 	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
+	// Vikunja Integration defaults
+	vikunja: DEFAULT_VIKUNJA_SETTINGS,
 };
