@@ -236,7 +236,7 @@ export class ICSSubscriptionService extends EventEmitter {
 				throw new Error("Unknown subscription type");
 			}
 
-			const events = this.parseICS(icsData, subscription.id);
+			const events = this.parseICS(icsData, subscription);
 
 			// Update cache
 			const cache: ICSCache = {
@@ -296,7 +296,7 @@ export class ICSSubscriptionService extends EventEmitter {
 		}
 	}
 
-	private parseICS(icsData: string, subscriptionId: string): ICSEvent[] {
+	private parseICS(icsData: string, subscription: ICSSubscription): ICSEvent[] {
 		try {
 			const jcalData = ICAL.parse(icsData);
 			const comp = new ICAL.Component(jcalData);
@@ -331,6 +331,20 @@ export class ICSSubscriptionService extends EventEmitter {
 				}
 			});
 
+			// Create Regex filter if user sets subscription.filter
+			let regExp: RegExp | null = null;
+			const filter = subscription.filter?.trim();
+
+			if (filter) {
+				try {
+					// Fix double escaping
+					const match = filter.match(/^\/(.+)\/([a-z]*)$/i);
+					regExp = match ? new RegExp(match[1], match[2]) : new RegExp(filter);
+				} catch {
+					regExp = null;
+				}
+			}
+
 			// Second pass: process events
 			vevents.forEach((vevent: ICAL.Component) => {
 				try {
@@ -344,6 +358,11 @@ export class ICSSubscriptionService extends EventEmitter {
 
 					// Extract basic properties
 					const summary = event.summary || "Untitled Event";
+
+					if (regExp && !regExp.test(summary)) {
+						return;
+					}
+
 					const description = event.description || undefined;
 					const location = event.location || undefined;
 
@@ -360,12 +379,12 @@ export class ICSSubscriptionService extends EventEmitter {
 					const endISO = endDate ? this.icalTimeToISOString(endDate) : undefined;
 
 					// Generate unique ID
-					const uid = event.uid || `${subscriptionId}-${events.length}`;
-					const eventId = `${subscriptionId}-${uid}`;
+					const uid = event.uid || `${subscription.id}-${events.length}`;
+					const eventId = `${subscription.id}-${uid}`;
 
 					const icsEvent: ICSEvent = {
 						id: eventId,
-						subscriptionId: subscriptionId,
+						subscriptionId: subscription.id,
 						title: summary,
 						description: description,
 						start: startISO,
@@ -430,7 +449,7 @@ export class ICSSubscriptionService extends EventEmitter {
 								if (modifiedStart) {
 									events.push({
 										id: `${eventId}-${instanceCount}`,
-										subscriptionId: subscriptionId,
+										subscriptionId: subscription.id,
 										title: modifiedEvent.summary || summary,
 										description: modifiedEvent.description || description,
 										start: this.icalTimeToISOString(modifiedStart),
