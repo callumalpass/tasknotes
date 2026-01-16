@@ -293,6 +293,14 @@ export class FilterUtils {
 				"is-greater-than-or-equal",
 				"is-less-than-or-equal",
 			],
+			progress: [
+				"is",
+				"is-not",
+				"is-greater-than",
+				"is-less-than",
+				"is-greater-than-or-equal",
+				"is-less-than-or-equal",
+			],
 
 			// Special properties
 			recurrence: ["is-empty", "is-not-empty"],
@@ -364,6 +372,8 @@ export class FilterUtils {
 				return task.archived;
 			case "timeEstimate":
 				return task.timeEstimate;
+			case "progress":
+				return task.progress?.percentage ?? null;
 			case "recurrence":
 				return task.recurrence as TaskPropertyValue;
 			case "status.isCompleted":

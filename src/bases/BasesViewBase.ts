@@ -155,6 +155,9 @@ export abstract class BasesViewBase extends Component {
 	 * Debounced to prevent excessive re-renders during rapid file saves.
 	 */
 	onDataUpdated(): void {
+		// Re-register computed properties in case query was recreated
+		this.registerComputedProperties();
+
 		// Skip if view is not visible
 		if (!this.rootElement?.isConnected) {
 			return;

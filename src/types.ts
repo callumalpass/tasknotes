@@ -123,6 +123,7 @@ export type FilterProperty =
 	| "dependencies.isBlocking"
 	// Numeric properties
 	| "timeEstimate"
+	| "progress"
 	// Special properties
 	| "recurrence"
 	| "status.isCompleted"
