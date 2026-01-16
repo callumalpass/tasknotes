@@ -47,7 +47,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	icsEventTag: "ics_event",
 	googleCalendarEventId: "googleCalendarEventId",
 	reminders: "reminders",
-	progress: "task_progress", // Store as task_progress in frontmatter for Bases compatibility
+	progress: "progress", // Store as progress in frontmatter
 };
 
 // Default status configuration matches current hardcoded behavior

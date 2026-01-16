@@ -207,18 +207,22 @@ export class BasesDataAdapter {
 	 * Extracts frontmatter and basic file properties only (cheap operations).
 	 * Computed file properties (backlinks, links, etc.) are fetched lazily via getComputedProperty().
 	 *
-	 * Also adds 'task.progress' property mapped from frontmatter 'task_progress' so Bases can discover it.
+	 * Also adds 'task.progress' property mapped from frontmatter progress field so Bases can discover it.
 	 */
 	private extractEntryProperties(entry: any): Record<string, any> {
 		const frontmatter = (entry as any).frontmatter || (entry as any).properties || {};
 
 		const result = { ...frontmatter };
 
-		// Map task_progress from frontmatter to task.progress for Bases compatibility
-		// Progress is now stored in frontmatter as task_progress (percentage number)
+		// Map progress from frontmatter to task.progress for Bases compatibility
+		// Progress is stored in frontmatter using the configured field name (default: task_progress)
 		// We expose it as task.progress so Bases can use it for sorting/filtering
-		if (frontmatter['task_progress'] !== undefined) {
-			result['task.progress'] = frontmatter['task_progress'];
+		// Get the configured field name from the plugin via basesView
+		const plugin = (this.basesView as any)?.plugin;
+		const progressFieldName = plugin?.fieldMapper?.toUserField?.('progress') || 'task_progress';
+
+		if (frontmatter[progressFieldName] !== undefined) {
+			result['task.progress'] = frontmatter[progressFieldName];
 		} else {
 			// If no progress in frontmatter, set to 0 (number) to ensure Bases recognizes it as a number property
 			result['task.progress'] = 0;
