@@ -99,9 +99,9 @@ The `MinimalNativeCache` serves as an intelligent coordinator rather than a data
     ```typescript
     // Only these are indexed for performance:
     tasksByDate: Map<string, Set<string>>    // Calendar view optimization
-    tasksByStatus: Map<string, Set<string>>  // FilterService optimization  
+    tasksByStatus: Map<string, Set<string>>  // FilterService optimization
     overdueTasks: Set<string>                // Overdue query optimization
-    
+
     // Everything else computed on-demand:
     getAllTags() -> scans native cache when called
     getAllPriorities() -> scans native cache when called
@@ -112,10 +112,10 @@ The `MinimalNativeCache` serves as an intelligent coordinator rather than a data
     ```typescript
     // Without coordination: Multiple views scan independently
     CalendarView -> scans 1000 files for date tasks
-    AgendaView   -> scans 1000 files for date tasks  
+    AgendaView   -> scans 1000 files for date tasks
     KanbanView   -> scans 1000 files for status tasks
     // Result: 3000 file scans on data change
-    
+
     // With coordination: Single coordinated update
     MinimalCache -> coordinates single refresh signal
     All views    -> refresh once with targeted data
@@ -142,7 +142,7 @@ The event system now focuses on **coordination efficiency** rather than complex 
         // All views receive coordinated signal
         // Each view refreshes with fresh native cache data
     });
-    
+
     // Inefficient: Direct native listening (avoided)
     app.metadataCache.on('changed', (file) => {
         // Each view independently processes the same change
@@ -176,10 +176,10 @@ The UTC Anchor principle is a fundamental architectural decision that ensures ti
     ```typescript
     // For internal logic (comparisons, sorting, filtering)
     const date = parseDateToUTC('2025-08-01');  // Always 2025-08-01T00:00:00.000Z
-    
+
     // For UI display (showing dates to users)
     const date = parseDateToLocal('2025-08-01'); // Midnight in user's timezone
-    
+
     // Deprecated - do not use directly
     const date = parseDate('2025-08-01'); // Legacy function, aliased to parseDateToLocal
     ```
@@ -207,13 +207,13 @@ The UTC Anchor principle is a fundamental architectural decision that ensures ti
     *   **For comparisons**: Use the provided safe functions that implement UTC anchors: `isSameDateSafe`, `isBeforeDateSafe`, `isOverdueTimeAware`.
     *   **For storage**: Always store dates in YYYY-MM-DD format using `formatDateForStorage()`.
     *   **For timestamps**: When creating `dateCreated` or `dateModified`, use `getCurrentTimestamp()` for timezone-aware ISO strings.
-    
+
 *   **Migration Pattern**: When updating existing code:
     ```typescript
     // Old pattern (fragile)
     const date = parseDate(task.due);
     if (isBefore(date, today)) { ... }
-    
+
     // New pattern (robust)
     const date = parseDateToUTC(task.due);  // For logic
     if (isBeforeDateSafe(task.due, getTodayString())) { ... }
@@ -229,7 +229,7 @@ The UTC Anchor principle is a fundamental architectural decision that ensures ti
     async refreshTasks(): Promise<void> {
         // Get task paths from minimal cache (indexed)
         const taskPaths = this.plugin.cacheManager.getTasksForDate(dateStr);
-        
+
         // Get fresh task data from native cache
         const tasks = await Promise.all(
             taskPaths.map(path => {
@@ -238,7 +238,7 @@ The UTC Anchor principle is a fundamental architectural decision that ensures ti
                 return this.extractTaskInfo(path, metadata.frontmatter);
             })
         );
-        
+
         this.renderTasks(tasks);
     }
     ```
@@ -289,6 +289,45 @@ Let's say you want to add a `complexity: 'simple' | 'medium' | 'hard'` property 
 
 **Note**: With the minimal cache approach, most new properties should be computed on-demand rather than indexed. Only add indexes for frequently-accessed, performance-critical queries.
 
+### 5.1.1. Adding a Computed Property to Tasks
+
+Computed properties are calculated dynamically from task data rather than stored in frontmatter. Examples include `totalTrackedTime` (from `timeEntries`), `blocked`/`blocking` (from `blockedBy` dependencies), and `progress` (from checkboxes in task body). See the `progress` property implementation for a complete example.
+
+Let's say you want to add a `progress` property that calculates completion percentage based on checkboxes in the task body.
+
+1.  **Update `types.ts`**: Define the computed property interface (e.g., `ProgressInfo`) and add it to `TaskInfo` as optional (e.g., `progress?: ProgressInfo`).
+
+2.  **Create a Service (if computation is complex)**: Create a new service class (e.g., `ProgressService`) in `/services/` with calculation logic and caching. Add cache invalidation methods (`clearCache()`, `clearCacheForTask(path)`).
+
+3.  **Integrate Service in `main.ts`**: Add service instance to plugin class, initialize in `onload()`, and add cache invalidation in `notifyDataChanged()`.
+
+4.  **Add Helper Function in `utils/helpers.ts`**: Create a helper function that delegates to the service (e.g., `calculateTaskProgress()`).
+
+5.  **Update `utils/propertyHelpers.ts`**: Add the property to `coreProperties` array so it appears in property selection.
+
+6.  **Implement Rendering in `ui/TaskCard.ts`**: Add rendering function (e.g., `renderProgressProperty`). Use lazy loading: only calculate when property is visible. Load `task.details` if needed using `vault.read()` (body content isn't in metadataCache). Handle empty states gracefully.
+
+7.  **Integrate with Bases Views** (if property should be available in Bases):
+    *   Register in `BasesViewBase.registerComputedProperties()`: Add to `query.properties` map as `task.progress` (standard form for TaskNotes computed properties).
+    *   Add to `BasesDataAdapter.extractEntryProperties()`: Add placeholder to `entry.frontmatter['task.progress']` so Bases discovers it.
+    *   Update `PropertyMappingService.applySpecialTransformations()`: Map both `progress` and `task.progress` to the internal property name.
+
+8.  **Add Settings Integration (optional)**: If the property has display options, add settings interface, add to `TaskNotesSettings`, add defaults in `settings/defaults.ts`, add UI in settings tab, and add settings change listener in views to trigger re-renders.
+
+9.  **Add i18n Translations**: Add translations for property name in all language files, and for settings UI if applicable.
+
+**Key Differences from Regular Properties:**
+*   Not stored in frontmatter: Computed properties are never written to YAML frontmatter.
+*   No FieldMapper integration: They don't need `FieldMapper` since they're not user-configurable field names.
+*   Lazy computation: Should only be calculated when the property is visible/needed.
+*   Service-based calculation: Complex computations should be encapsulated in a dedicated service.
+
+**Performance Considerations:**
+*   Use lazy loading: Only calculate when property is visible.
+*   Implement caching: Use service-level cache with hash-based invalidation for expensive computations.
+*   Body content: Use `vault.read()` for body content (not in metadataCache) - this is acceptable for lazy-loaded computed properties.
+*   Cache invalidation: Clear cache on task updates via `notifyDataChanged()`.
+
 ### 5.2. Adding View-Specific Options to Saved Views
 
 The plugin supports capturing and restoring view-specific display options as part of saved views. This feature allows views to preserve their display preferences (toggles, visibility options) alongside filter configurations.
@@ -300,7 +339,7 @@ The plugin supports capturing and restoring view-specific display options as par
 export class MyView extends ItemView {
     private showOption1: boolean = true;
     private showOption2: boolean = false;
-    
+
     private setupViewOptions(): void {
         // Configure FilterBar with view options
         this.filterBar.setViewOptions([
@@ -318,7 +357,7 @@ private setupEventListeners(): void {
     this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
         this.plugin.viewStateManager.saveView(name, query, viewOptions);
     });
-    
+
     // Apply loaded view options
     this.filterBar.on('loadViewOptions', (viewOptions: {[key: string]: boolean}) => {
         this.applyViewOptions(viewOptions);
@@ -333,10 +372,10 @@ private applyViewOptions(viewOptions: {[key: string]: boolean}): void {
     if (viewOptions.hasOwnProperty('showOption2')) {
         this.showOption2 = viewOptions.showOption2;
     }
-    
+
     // Update FilterBar to reflect loaded state
     this.setupViewOptions();
-    
+
     // Refresh view to apply changes
     this.refresh();
 }
@@ -381,7 +420,7 @@ saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean
 
 **Advanced Calendar View Options:**
 - `showScheduled`: Display tasks with scheduled dates
-- `showDue`: Display tasks with due dates  
+- `showDue`: Display tasks with due dates
 - `showTimeblocks`: Display time-blocking entries
 - `showRecurring`: Display recurring task events
 - `showICSEvents`: Display imported calendar events
@@ -539,11 +578,11 @@ async onload() {
     // Essential initialization only
     await this.loadSettings();
     this.initializeLightweightServices();
-    
+
     // Register view types and commands
     this.registerViews();
     this.addCommands();
-    
+
     // Defer expensive operations
     this.app.workspace.onLayoutReady(() => {
         this.initializeAfterLayoutReady();
@@ -553,10 +592,10 @@ async onload() {
 private async initializeAfterLayoutReady() {
     // Minimal cache initialization (lightweight)
     this.cacheManager.initialize();
-    
+
     // Heavy service initialization
     await this.pomodoroService.initialize();
-    
+
     // Editor services with async imports
     const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
 }
@@ -586,7 +625,7 @@ getTaskInfo(path: string): TaskInfo | null {
 getAllTasksOfStatus(status: string): TaskInfo[] {
     // Use essential index for paths
     const taskPaths = this.minimalCache.getTaskPathsByStatus(status);
-    
+
     // Batch native cache access
     return taskPaths.map(path => this.getTaskInfo(path)).filter(Boolean);
 }
@@ -606,9 +645,9 @@ getAllTasksOfStatus(status: string): TaskInfo[] {
 class MinimalNativeCache {
     // Only 3 essential indexes (~70% reduction from previous approach)
     private tasksByDate: Map<string, Set<string>> = new Map();
-    private tasksByStatus: Map<string, Set<string>> = new Map(); 
+    private tasksByStatus: Map<string, Set<string>> = new Map();
     private overdueTasks: Set<string> = new Set();
-    
+
     // No redundant data storage - everything comes from native cache
     getTaskInfo(path) {
         return this.extractFromNativeCache(path); // Always fresh
@@ -634,15 +673,15 @@ export class MyView extends ItemView {
         this.plugin = plugin;
         // Lightweight constructor only
     }
-    
+
     async onOpen() {
         // Wait for plugin readiness
         await this.plugin.onReady();
-        
+
         // Initialize view with native cache access
         this.initializeView();
     }
-    
+
     private async refreshData() {
         // Direct native cache access for fresh data
         const taskPaths = this.plugin.cacheManager.getTasksForDate(this.selectedDate);
@@ -682,14 +721,14 @@ interface ICSSubscription {
 ```typescript
 async fetchSubscription(id: string): Promise<void> {
     const subscription = this.getSubscription(id);
-    
+
     let icsData: string;
     if (subscription.type === 'remote') {
         icsData = await this.fetchRemoteICS(subscription.url);
     } else {
         icsData = await this.readLocalICS(subscription.filePath);
     }
-    
+
     const events = this.parseICS(icsData);
     this.updateCache(id, events);
 }
@@ -708,7 +747,7 @@ private startFileWatcher(subscription: ICSSubscription): void {
             setTimeout(() => this.refreshSubscription(subscription.id), 1000);
         }
     });
-    
+
     // Store cleanup function
     this.fileWatchers.set(subscription.id, () => {
         this.plugin.app.vault.offref(modifyRef);
@@ -878,7 +917,7 @@ const displayDate = hasTimeComponent(task.due)
     : format(parseDateToLocal(task.due), 'MMM d');
 
 // Pattern 3: Filtering by date
-const todayTasks = tasks.filter(task => 
+const todayTasks = tasks.filter(task =>
     task.due && isSameDateSafe(task.due, getTodayString())
 );
 
