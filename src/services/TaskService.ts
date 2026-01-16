@@ -395,6 +395,24 @@ export class TaskService {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
 
+			// Calculate and add progress if details are present
+			if (normalizedBody && this.plugin.progressService) {
+				const taskWithDetails: TaskInfo = {
+					...completeTaskData,
+					details: normalizedBody,
+				} as TaskInfo;
+				const progress = this.plugin.progressService.calculateProgress(taskWithDetails);
+				if (progress) {
+					// Add progress to frontmatter via field mapper
+					const progressFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(
+						{ progress } as Partial<TaskInfo>,
+						taskTagForFrontmatter,
+						this.plugin.settings.storeTitleInFilename
+					);
+					finalFrontmatter = { ...finalFrontmatter, ...progressFrontmatter };
+				}
+			}
+
 			// Prepare file content
 			const yamlHeader = stringifyYaml(finalFrontmatter);
 			let content = `---\n${yamlHeader}---\n\n`;
@@ -1362,6 +1380,22 @@ export class TaskService {
 					dateModified: getCurrentTimestamp(),
 				};
 
+				// Calculate and update progress if details changed
+				if (normalizedDetails !== null && this.plugin.progressService) {
+					const taskWithDetails: TaskInfo = {
+						...originalTask,
+						...updates,
+						details: normalizedDetails,
+					};
+					const progress = this.plugin.progressService.calculateProgress(taskWithDetails);
+					if (progress) {
+						completeTaskData.progress = progress;
+					} else {
+						// If no progress (no checkboxes), remove progress from frontmatter
+						completeTaskData.progress = null as any;
+					}
+				}
+
 				const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(
 					completeTaskData,
 					this.plugin.settings.taskIdentificationMethod === "tag"
@@ -1422,6 +1456,10 @@ export class TaskService {
 					delete frontmatter[this.plugin.fieldMapper.toUserField("recurrence")];
 				if (updates.hasOwnProperty("blockedBy") && updates.blockedBy === undefined)
 					delete frontmatter[this.plugin.fieldMapper.toUserField("blockedBy")];
+				if (normalizedDetails !== null && this.plugin.progressService) {
+					// Progress is handled above via completeTaskData.progress
+					// If progress was set to null, it will be removed by mapToFrontmatter
+				}
 
 				if (isRenameNeeded) {
 					delete frontmatter[this.plugin.fieldMapper.toUserField("title")];

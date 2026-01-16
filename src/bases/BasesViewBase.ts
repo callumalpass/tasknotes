@@ -113,17 +113,24 @@ export abstract class BasesViewBase extends Component {
 					},
 					getType: () => 'number',
 					getValue: (entry: any) => {
-						// Calculate progress for this entry
-						// Note: Bases expects synchronous getValue, so we can't read file content here
-						// Instead, we try to get progress from cache if available, or return null
-						// Progress will be calculated lazily during rendering
+						// Progress is now stored in frontmatter as task_progress (percentage number)
+						// Read it directly from frontmatter for Bases compatibility
 						if (!entry?.file?.path) {
 							return null;
 						}
 
 						try {
-							// Try to get TaskInfo from cache (if already loaded)
-							// This allows us to get progress if it was already calculated
+							// First try to get from frontmatter (persisted value)
+							const frontmatter = entry.frontmatter || entry.properties || {};
+							const progressFieldName = this.plugin.fieldMapper.toUserField('progress');
+							if (frontmatter[progressFieldName] !== undefined) {
+								const progressValue = frontmatter[progressFieldName];
+								// Ensure we return a number
+								return typeof progressValue === 'number' ? progressValue : Number(progressValue) || 0;
+							}
+
+							// Fallback: Try to get TaskInfo from cache (if already loaded)
+							// This allows us to get progress if it was already calculated but not yet persisted
 							const cachedTaskInfo = this.plugin.cacheManager?.getCachedTaskInfoSync?.(entry.file.path);
 							if (cachedTaskInfo?.progress) {
 								// Ensure we return a number, not a string
@@ -131,7 +138,7 @@ export abstract class BasesViewBase extends Component {
 								return typeof percentage === 'number' ? percentage : Number(percentage) || 0;
 							}
 
-							// If not in cache, return 0 instead of null to ensure Bases recognizes it as a number
+							// If not available, return 0 instead of null to ensure Bases recognizes it as a number
 							// This ensures Bases treats it as a number property even when not yet calculated
 							return 0;
 						} catch (error) {

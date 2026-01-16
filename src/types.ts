@@ -688,6 +688,7 @@ export interface FieldMapping {
 	icsEventTag: string; // Tag used for ICS event-related content
 	googleCalendarEventId: string; // For Google Calendar sync (stores event ID)
 	reminders: string; // For task reminders
+	progress: string; // For task progress percentage (0-100) based on top-level checkboxes
 }
 
 export interface StatusConfig {

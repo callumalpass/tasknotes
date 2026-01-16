@@ -289,44 +289,63 @@ Let's say you want to add a `complexity: 'simple' | 'medium' | 'hard'` property 
 
 **Note**: With the minimal cache approach, most new properties should be computed on-demand rather than indexed. Only add indexes for frequently-accessed, performance-critical queries.
 
-### 5.1.1. Adding a Computed Property to Tasks
+### 5.1.1. Adding a Computed Property That Needs Bases Integration
 
-Computed properties are calculated dynamically from task data rather than stored in frontmatter. Examples include `totalTrackedTime` (from `timeEntries`), `blocked`/`blocking` (from `blockedBy` dependencies), and `progress` (from checkboxes in task body). See the `progress` property implementation for a complete example.
+Some properties are calculated dynamically from task data (like `progress` from checkboxes in task body) but need to be available in Bases views for sorting and filtering. **Important**: For Bases compatibility, these properties must be persisted in frontmatter, not just computed on-demand.
 
-Let's say you want to add a `progress` property that calculates completion percentage based on checkboxes in the task body.
+**Why Frontmatter Persistence is Required:**
+*   Bases standard views (Table, etc.) require persistent values in frontmatter for sorting and filtering
+*   Computed properties without frontmatter storage don't work reliably in Bases
+*   The value must be recalculated and updated whenever the source data changes
+
+**Example: Progress Property Implementation**
+
+The `progress` property calculates completion percentage from top-level checkboxes in the task body and stores it in frontmatter as `task_progress` (percentage number 0-100).
 
 1.  **Update `types.ts`**: Define the computed property interface (e.g., `ProgressInfo`) and add it to `TaskInfo` as optional (e.g., `progress?: ProgressInfo`).
 
-2.  **Create a Service (if computation is complex)**: Create a new service class (e.g., `ProgressService`) in `/services/` with calculation logic and caching. Add cache invalidation methods (`clearCache()`, `clearCacheForTask(path)`).
+2.  **Add to FieldMapping**: Add the property to `FieldMapping` interface and `DEFAULT_FIELD_MAPPING` in `settings/defaults.ts` (e.g., `progress: "task_progress"`).
 
-3.  **Integrate Service in `main.ts`**: Add service instance to plugin class, initialize in `onload()`, and add cache invalidation in `notifyDataChanged()`.
+3.  **Update `FieldMapper.ts`**:
+    *   Add reading logic in `mapFromFrontmatter()` to read the persisted value from frontmatter
+    *   Add writing logic in `mapToFrontmatter()` to write the calculated value to frontmatter
 
-4.  **Add Helper Function in `utils/helpers.ts`**: Create a helper function that delegates to the service (e.g., `calculateTaskProgress()`).
+4.  **Create a Service (if computation is complex)**: Create a new service class (e.g., `ProgressService`) in `/services/` with calculation logic and caching. Add cache invalidation methods (`clearCache()`, `clearCacheForTask(path)`).
 
-5.  **Update `utils/propertyHelpers.ts`**: Add the property to `coreProperties` array so it appears in property selection.
+5.  **Integrate Service in `main.ts`**: Add service instance to plugin class, initialize in `onload()`, and add cache invalidation in `notifyDataChanged()`.
 
-6.  **Implement Rendering in `ui/TaskCard.ts`**: Add rendering function (e.g., `renderProgressProperty`). Use lazy loading: only calculate when property is visible. Load `task.details` if needed using `vault.read()` (body content isn't in metadataCache). Handle empty states gracefully.
+6.  **Update `TaskService.ts`**:
+    *   In `updateTask()`: Calculate and persist the property when source data changes (e.g., when `details` changes, recalculate progress and update frontmatter)
+    *   In `createTask()`: Calculate and persist the property when creating new tasks if source data is present
 
-7.  **Integrate with Bases Views** (if property should be available in Bases):
-    *   Register in `BasesViewBase.registerComputedProperties()`: Add to `query.properties` map as `task.progress` (standard form for TaskNotes computed properties).
-    *   Add to `BasesDataAdapter.extractEntryProperties()`: Add placeholder to `entry.frontmatter['task.progress']` so Bases discovers it.
-    *   Update `PropertyMappingService.applySpecialTransformations()`: Map both `progress` and `task.progress` to the internal property name.
+7.  **Add File Change Listener**: In `main.ts`, add a listener (`metadataCache.on('changed')`) that recalculates and updates the property when files are modified directly (e.g., checkbox toggled in editor). Use debouncing to avoid excessive file writes.
 
-8.  **Add Settings Integration (optional)**: If the property has display options, add settings interface, add to `TaskNotesSettings`, add defaults in `settings/defaults.ts`, add UI in settings tab, and add settings change listener in views to trigger re-renders.
+8.  **Add Helper Function in `utils/helpers.ts`**: Create a helper function that delegates to the service (e.g., `calculateTaskProgress()`).
 
-9.  **Add i18n Translations**: Add translations for property name in all language files, and for settings UI if applicable.
+9.  **Update `utils/propertyHelpers.ts`**: Add the property to `coreProperties` array so it appears in property selection.
 
-**Key Differences from Regular Properties:**
-*   Not stored in frontmatter: Computed properties are never written to YAML frontmatter.
-*   No FieldMapper integration: They don't need `FieldMapper` since they're not user-configurable field names.
-*   Lazy computation: Should only be calculated when the property is visible/needed.
-*   Service-based calculation: Complex computations should be encapsulated in a dedicated service.
+10. **Implement Rendering in `ui/TaskCard.ts`**: Add rendering function (e.g., `renderProgressProperty`). Use lazy loading: only calculate when property is visible. Load `task.details` if needed using `vault.read()` (body content isn't in metadataCache). Handle empty states gracefully.
+
+11. **Integrate with Bases Views**:
+    *   Register in `BasesViewBase.registerComputedProperties()`: Read from frontmatter first, fallback to cache if needed. Return the persisted value for Bases compatibility.
+    *   Update `BasesDataAdapter.extractEntryProperties()`: Map the frontmatter property (e.g., `task_progress`) to Bases property name (e.g., `task.progress`) so Bases can discover and use it.
+
+12. **Add Settings Integration (optional)**: If the property has display options, add settings interface, add to `TaskNotesSettings`, add defaults in `settings/defaults.ts`, add UI in settings tab, and add settings change listener in views to trigger re-renders.
+
+13. **Add i18n Translations**: Add translations for property name in all language files, and for settings UI if applicable.
+
+**Key Implementation Details:**
+*   **Frontmatter Persistence**: The calculated value must be stored in frontmatter for Bases compatibility
+*   **Automatic Updates**: The value must be recalculated and updated whenever source data changes (via `updateTask()`, file change listener, etc.)
+*   **FieldMapper Integration**: Use `FieldMapper` to read/write the persisted value with user-configurable field names
+*   **Service-based Calculation**: Complex computations should be encapsulated in a dedicated service with caching
+*   **Debounced File Writes**: File change listeners should use debouncing to avoid excessive writes
 
 **Performance Considerations:**
-*   Use lazy loading: Only calculate when property is visible.
-*   Implement caching: Use service-level cache with hash-based invalidation for expensive computations.
-*   Body content: Use `vault.read()` for body content (not in metadataCache) - this is acceptable for lazy-loaded computed properties.
-*   Cache invalidation: Clear cache on task updates via `notifyDataChanged()`.
+*   Use lazy loading for UI rendering: Only calculate when property is visible
+*   Implement caching: Use service-level cache with hash-based invalidation for expensive computations
+*   Debounce file writes: File change listeners should debounce updates (e.g., 500ms) to batch rapid changes
+*   Cache invalidation: Clear cache on task updates via `notifyDataChanged()`
 
 ### 5.2. Adding View-Specific Options to Saved Views
 
