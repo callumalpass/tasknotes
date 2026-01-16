@@ -1214,6 +1214,14 @@ export const de: TranslationTree = {
 						name: "Prozentzahl anzeigen",
 						description: "Fortschrittsprozentsatz anzeigen (z.B. '40%')",
 					},
+					emptyState: {
+						name: "Leerer Zustand",
+						description: "Wie der Fortschritt angezeigt wird, wenn keine Checkboxen vorhanden sind",
+						options: {
+							hide: "Verstecken",
+							showZero: "0/0 (0%) anzeigen",
+						},
+					},
 				},
 			},
 			taskFilenames: {

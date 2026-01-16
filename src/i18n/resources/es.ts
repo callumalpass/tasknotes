@@ -1192,6 +1192,36 @@ export const es: TranslationTree = {
 					tags: "Etiquetas",
 					blocked: "Bloqueada",
 					blocking: "Bloqueando",
+					progress: "Progreso",
+				},
+				progressBar: {
+					header: "Barra de progreso",
+					description: "Configura cómo se muestra la barra de progreso en las tarjetas de tareas.",
+					displayMode: {
+						name: "Modo de visualización",
+						description: "Cómo mostrar la barra de progreso",
+						options: {
+							barOnly: "Solo barra",
+							textOnly: "Solo texto",
+							barWithText: "Barra con texto",
+						},
+					},
+					showCount: {
+						name: "Mostrar conteo",
+						description: "Mostrar el conteo de casillas completadas (ej., '2/5')",
+					},
+					showPercentage: {
+						name: "Mostrar porcentaje",
+						description: "Mostrar el porcentaje de finalización (ej., '40%')",
+					},
+					emptyState: {
+						name: "Estado vacío",
+						description: "Cómo mostrar el progreso cuando no hay casillas",
+						options: {
+							hide: "Ocultar",
+							showZero: "Mostrar 0/0 (0%)",
+						},
+					},
 				},
 			},
 			taskFilenames: {
@@ -2852,6 +2882,7 @@ export const es: TranslationTree = {
 			blockedBadgeTooltip: "Esta tarea está esperando otra tarea",
 			blockingBadge: "Bloqueando",
 			blockingBadgeTooltip: "Esta tarea bloquea otra tarea",
+			progressTooltip: "Progreso: {completed} de {total} casillas completadas ({percentage}%)",
 			blockingToggle: "Bloqueando {count} tareas",
 			loadingDependencies: "Cargando dependencias...",
 			blockingEmpty: "Sin tareas dependientes",

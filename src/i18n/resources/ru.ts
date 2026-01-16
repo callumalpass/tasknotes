@@ -1192,6 +1192,36 @@ export const ru: TranslationTree = {
 					tags: "Теги",
 					blocked: "Заблокирована",
 					blocking: "Блокирует",
+					progress: "Прогресс",
+				},
+				progressBar: {
+					header: "Индикатор прогресса",
+					description: "Настройте отображение индикатора прогресса на карточках задач.",
+					displayMode: {
+						name: "Режим отображения",
+						description: "Как отображать индикатор прогресса",
+						options: {
+							barOnly: "Только полоса",
+							textOnly: "Только текст",
+							barWithText: "Полоса с текстом",
+						},
+					},
+					showCount: {
+						name: "Показать количество",
+						description: "Отображать количество выполненных чекбоксов (например, '2/5')",
+					},
+					showPercentage: {
+						name: "Показать процент",
+						description: "Отображать процент выполнения (например, '40%')",
+					},
+					emptyState: {
+						name: "Пустое состояние",
+						description: "Как отображать прогресс, когда нет чекбоксов",
+						options: {
+							hide: "Скрыть",
+							showZero: "Показать 0/0 (0%)",
+						},
+					},
 				},
 			},
 			taskFilenames: {
@@ -2852,6 +2882,7 @@ export const ru: TranslationTree = {
 			blockedBadgeTooltip: "Эта задача ожидает другую задачу",
 			blockingBadge: "Блокирует",
 			blockingBadgeTooltip: "Эта задача блокирует другую задачу",
+			progressTooltip: "Прогресс: {completed} из {total} чекбоксов выполнено ({percentage}%)",
 			blockingToggle: "Блокирует {count} задач",
 			loadingDependencies: "Загрузка зависимостей…",
 			blockingEmpty: "Нет зависимых задач",

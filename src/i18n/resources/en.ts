@@ -1238,6 +1238,14 @@ export const en: TranslationTree = {
 						name: "Show percentage",
 						description: "Display the completion percentage (e.g., '40%')",
 					},
+					emptyState: {
+						name: "Empty state",
+						description: "How to display progress when there are no checkboxes",
+						options: {
+							hide: "Hide",
+							showZero: "Show 0/0 (0%)",
+						},
+					},
 				},
 			},
 			taskFilenames: {

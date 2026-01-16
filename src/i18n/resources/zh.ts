@@ -1192,6 +1192,36 @@ export const zh: TranslationTree = {
 					tags: "标签",
 					blocked: "已阻塞",
 					blocking: "阻塞中",
+					progress: "进度",
+				},
+				progressBar: {
+					header: "进度条",
+					description: "配置任务卡片上进度条的显示方式。",
+					displayMode: {
+						name: "显示模式",
+						description: "如何显示进度条",
+						options: {
+							barOnly: "仅条",
+							textOnly: "仅文本",
+							barWithText: "条和文本",
+						},
+					},
+					showCount: {
+						name: "显示计数",
+						description: "显示已完成的复选框计数（例如：'2/5'）",
+					},
+					showPercentage: {
+						name: "显示百分比",
+						description: "显示完成百分比（例如：'40%'）",
+					},
+					emptyState: {
+						name: "空状态",
+						description: "没有复选框时如何显示进度",
+						options: {
+							hide: "隐藏",
+							showZero: "显示 0/0 (0%)",
+						},
+					},
 				},
 			},
 			taskFilenames: {
@@ -2852,6 +2882,7 @@ export const zh: TranslationTree = {
 			blockedBadgeTooltip: "此任务正在等待其他任务",
 			blockingBadge: "阻塞中",
 			blockingBadgeTooltip: "此任务正在阻塞其他任务",
+			progressTooltip: "进度：{completed}/{total} 个复选框已完成 ({percentage}%)",
 			blockingToggle: "阻塞 {count} 个任务",
 			loadingDependencies: "正在加载依赖…",
 			blockingEmpty: "没有依赖的任务",

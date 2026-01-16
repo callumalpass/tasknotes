@@ -1192,6 +1192,36 @@ export const fr: TranslationTree = {
 					tags: "Étiquettes",
 					blocked: "Bloqué",
 					blocking: "Bloquant",
+					progress: "Progression",
+				},
+				progressBar: {
+					header: "Barre de progression",
+					description: "Configurez l'affichage de la barre de progression sur les cartes de tâches.",
+					displayMode: {
+						name: "Mode d'affichage",
+						description: "Comment afficher la barre de progression",
+						options: {
+							barOnly: "Barre uniquement",
+							textOnly: "Texte uniquement",
+							barWithText: "Barre avec texte",
+						},
+					},
+					showCount: {
+						name: "Afficher le décompte",
+						description: "Afficher le nombre de cases cochées complétées (ex. '2/5')",
+					},
+					showPercentage: {
+						name: "Afficher le pourcentage",
+						description: "Afficher le pourcentage de complétion (ex. '40%')",
+					},
+					emptyState: {
+						name: "État vide",
+						description: "Comment afficher la progression lorsqu'il n'y a pas de cases",
+						options: {
+							hide: "Masquer",
+							showZero: "Afficher 0/0 (0%)",
+						},
+					},
 				},
 			},
 			taskFilenames: {
@@ -2852,6 +2882,7 @@ export const fr: TranslationTree = {
 			blockedBadgeTooltip: "Cette tâche attend une autre tâche",
 			blockingBadge: "Bloquant",
 			blockingBadgeTooltip: "Cette tâche bloque une autre tâche",
+			progressTooltip: "Progression : {completed} sur {total} cases cochées complétées ({percentage}%)",
 			blockingToggle: "Bloque {count} tâches",
 			loadingDependencies: "Chargement des dépendances…",
 			blockingEmpty: "Aucune tâche dépendante",
