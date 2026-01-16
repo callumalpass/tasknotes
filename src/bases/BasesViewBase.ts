@@ -1,4 +1,4 @@
-import { Component, App, setIcon } from "obsidian";
+import { Component, App, setIcon, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -8,6 +8,7 @@ import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
+import { splitFrontmatterAndBody } from "../utils/helpers";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -110,8 +111,34 @@ export abstract class BasesViewBase extends Component {
 							return 'Progress';
 						}
 					},
-					getType: () => 'text',
-					getValue: () => null,
+					getType: () => 'number',
+					getValue: (entry: any) => {
+						// Calculate progress for this entry
+						// Note: Bases expects synchronous getValue, so we can't read file content here
+						// Instead, we try to get progress from cache if available, or return null
+						// Progress will be calculated lazily during rendering
+						if (!entry?.file?.path) {
+							return null;
+						}
+
+						try {
+							// Try to get TaskInfo from cache (if already loaded)
+							// This allows us to get progress if it was already calculated
+							const cachedTaskInfo = this.plugin.cacheManager?.getCachedTaskInfoSync?.(entry.file.path);
+							if (cachedTaskInfo?.progress) {
+								// Ensure we return a number, not a string
+								const percentage = cachedTaskInfo.progress.percentage;
+								return typeof percentage === 'number' ? percentage : Number(percentage) || 0;
+							}
+
+							// If not in cache, return 0 instead of null to ensure Bases recognizes it as a number
+							// This ensures Bases treats it as a number property even when not yet calculated
+							return 0;
+						} catch (error) {
+							console.debug('[TaskNotes] Error getting progress in getValue:', error);
+							return 0;
+						}
+					},
 					isComputed: () => true,
 				};
 

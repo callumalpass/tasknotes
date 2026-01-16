@@ -213,11 +213,12 @@ export class BasesDataAdapter {
 		const frontmatter = (entry as any).frontmatter || (entry as any).properties || {};
 
 		// Add virtual computed property 'task.progress' to entry.frontmatter so Bases discovers it
+		// Set to 0 (number) instead of null to ensure Bases recognizes it as a number property
 		if (entry && !frontmatter['task.progress']) {
 			if (!entry.frontmatter) {
 				entry.frontmatter = {};
 			}
-			entry.frontmatter['task.progress'] = null;
+			entry.frontmatter['task.progress'] = 0;
 		}
 
 		const result = { ...frontmatter };

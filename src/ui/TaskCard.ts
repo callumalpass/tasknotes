@@ -436,6 +436,15 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
 	dateCreated: (task) => task.dateCreated,
 	dateModified: (task) => task.dateModified,
 	googleCalendarSync: (task) => task.path, // Used to check if task is synced via plugin settings
+	progress: (task) => {
+		// Return percentage as number (0-100) for sorting and filtering
+		// If progress is already calculated, return the percentage
+		if (task.progress) {
+			return task.progress.percentage;
+		}
+		// If not calculated yet, return null (will be calculated lazily when needed)
+		return null;
+	},
 };
 
 /**
@@ -574,6 +583,37 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 				console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
 				return "[Formula Error]";
 			}
+		}
+
+		// Handle progress property specially - must return number for Bases sorting/filtering
+		if (propertyId === "progress" || propertyId === "task.progress") {
+			// If progress is already calculated, return the percentage
+			if (task.progress) {
+				return task.progress.percentage;
+			}
+
+			// Try to get from Bases API first (for computed properties)
+			if (task.basesData && typeof task.basesData.getValue === "function") {
+				try {
+					const value = task.basesData.getValue("task.progress" as any);
+					if (value !== null && value !== undefined) {
+						const extracted = extractBasesValue(value);
+						// Ensure it's a number
+						if (typeof extracted === "number") {
+							return extracted;
+						}
+						// If Bases returned a ProgressInfo object, extract percentage
+						if (extracted && typeof extracted === "object" && "percentage" in extracted) {
+							return (extracted as any).percentage;
+						}
+					}
+				} catch (error) {
+					// Property doesn't exist in Bases, try fallback
+				}
+			}
+
+			// If not available, return null (will be calculated lazily when rendering)
+			return null;
 		}
 
 		// Try to get property from Bases API first (for custom properties)
