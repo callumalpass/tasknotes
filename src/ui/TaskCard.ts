@@ -8,6 +8,8 @@ import {
 	getRecurrenceDisplayText,
 	filterEmptyProjects,
 	calculateTotalTimeSpent,
+	calculateTaskProgress,
+	splitFrontmatterAndBody,
 } from "../utils/helpers";
 import { FilterUtils } from "../utils/FilterUtils";
 import {
@@ -1070,6 +1072,210 @@ function renderGenericProperty(
 }
 
 /**
+ * Render progress property as a separate line
+ * Shows progress bar based on top-level checkboxes in task body
+ */
+async function renderProgressProperty(
+	container: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	layout: "default" | "compact" | "inline"
+): Promise<void> {
+	// For inline layout, skip progress bar (too complex for inline)
+	if (layout === "inline") {
+		return;
+	}
+
+	// Load details if not present (lazy loading)
+	let taskDetails = task.details;
+	if (!taskDetails) {
+		try {
+			const file = plugin.app.vault.getAbstractFileByPath(task.path);
+			if (file instanceof TFile) {
+				const content = await plugin.app.vault.read(file);
+				const { body } = splitFrontmatterAndBody(content);
+				taskDetails = body;
+			}
+		} catch (error) {
+			console.warn("Could not load task details for progress calculation:", error);
+			return;
+		}
+	}
+
+	// Create task with details for progress calculation
+	const taskWithDetails: TaskInfo = {
+		...task,
+		details: taskDetails,
+	};
+
+	// Calculate progress using ProgressService
+	const progress = calculateTaskProgress(taskWithDetails, plugin.progressService);
+
+	// If no progress (no checkboxes or no details), handle based on emptyState setting
+	if (!progress) {
+		const emptyState = plugin.settings.progressBar?.emptyState || "show-zero";
+
+		// Show 0% if details exist but no checkboxes and emptyState is "show-zero"
+		if (emptyState === "show-zero" && taskDetails && taskDetails.trim().length > 0) {
+			// Get display mode from settings (default to bar-with-text)
+			const displayMode = plugin.settings.progressBar?.displayMode || "bar-with-text";
+			const showPercentage = plugin.settings.progressBar?.showPercentage !== false;
+			const showCount = plugin.settings.progressBar?.showCount !== false;
+
+			const progressLine = container.createEl("div", { cls: "task-card__progress" });
+
+			// Render based on display mode
+			if (displayMode === "bar-only" || displayMode === "bar-with-text") {
+				const progressBar = progressLine.createEl("div", { cls: "task-card__progress-bar" });
+				progressBar.style.setProperty("--progress-width", "0%");
+				progressBar.setAttribute("aria-label", "0/0 (0%)");
+			}
+
+			if (displayMode === "text-only" || displayMode === "bar-with-text") {
+				const progressText = progressLine.createEl("span", { cls: "task-card__progress-text" });
+				const parts: string[] = [];
+				if (showCount) {
+					parts.push("0/0");
+				}
+				if (showPercentage) {
+					parts.push("(0%)");
+				}
+				progressText.textContent = parts.join(" ");
+			}
+			return;
+		}
+		// No details or emptyState is "hide", don't show progress
+		return;
+	}
+
+	// Get display mode from settings (default to bar-with-text)
+	const displayMode = plugin.settings.progressBar?.displayMode || "bar-with-text";
+	const showPercentage = plugin.settings.progressBar?.showPercentage !== false;
+	const showCount = plugin.settings.progressBar?.showCount !== false;
+
+	// Create progress container
+	const progressLine = container.createEl("div", { cls: "task-card__progress" });
+
+	// Render based on display mode
+	if (displayMode === "bar-only" || displayMode === "bar-with-text") {
+		const progressBar = progressLine.createEl("div", { cls: "task-card__progress-bar" });
+		progressBar.style.setProperty("--progress-width", `${progress.percentage}%`);
+		progressBar.setAttribute("aria-label", `${progress.completed}/${progress.total} (${progress.percentage}%)`);
+	}
+
+	if (displayMode === "text-only" || displayMode === "bar-with-text") {
+		const progressText = progressLine.createEl("span", { cls: "task-card__progress-text" });
+		const parts: string[] = [];
+		if (showCount) {
+			parts.push(`${progress.completed}/${progress.total}`);
+		}
+		if (showPercentage) {
+			parts.push(`(${progress.percentage}%)`);
+		}
+		progressText.textContent = parts.join(" ");
+		setTooltip(
+			progressText,
+			plugin.i18n.translate("ui.taskCard.progressTooltip", {
+				completed: progress.completed,
+				total: progress.total,
+				percentage: progress.percentage,
+			}),
+			{ placement: "top" }
+		);
+	}
+}
+
+/**
+ * Render progress property synchronously (for cases where details is already loaded)
+ */
+function renderProgressPropertySync(
+	container: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	layout: "default" | "compact" | "inline"
+): void {
+	// For inline layout, skip progress bar (too complex for inline)
+	if (layout === "inline") {
+		return;
+	}
+
+	// Calculate progress using ProgressService
+	const progress = calculateTaskProgress(task, plugin.progressService);
+
+	// If no progress (no checkboxes or no details), handle based on emptyState setting
+	if (!progress) {
+		const emptyState = plugin.settings.progressBar?.emptyState || "show-zero";
+
+		// Show 0% if details exist but no checkboxes and emptyState is "show-zero"
+		if (emptyState === "show-zero" && task.details && task.details.trim().length > 0) {
+			// Get display mode from settings (default to bar-with-text)
+			const displayMode = plugin.settings.progressBar?.displayMode || "bar-with-text";
+			const showPercentage = plugin.settings.progressBar?.showPercentage !== false;
+			const showCount = plugin.settings.progressBar?.showCount !== false;
+
+			const progressLine = container.createEl("div", { cls: "task-card__progress" });
+
+			// Render based on display mode
+			if (displayMode === "bar-only" || displayMode === "bar-with-text") {
+				const progressBar = progressLine.createEl("div", { cls: "task-card__progress-bar" });
+				progressBar.style.setProperty("--progress-width", "0%");
+				progressBar.setAttribute("aria-label", "0/0 (0%)");
+			}
+
+			if (displayMode === "text-only" || displayMode === "bar-with-text") {
+				const progressText = progressLine.createEl("span", { cls: "task-card__progress-text" });
+				const parts: string[] = [];
+				if (showCount) {
+					parts.push("0/0");
+				}
+				if (showPercentage) {
+					parts.push("(0%)");
+				}
+				progressText.textContent = parts.join(" ");
+			}
+		}
+		// No details or emptyState is "hide", don't show progress
+		return;
+	}
+
+	// Get display mode from settings (default to bar-with-text)
+	const displayMode = plugin.settings.progressBar?.displayMode || "bar-with-text";
+	const showPercentage = plugin.settings.progressBar?.showPercentage !== false;
+	const showCount = plugin.settings.progressBar?.showCount !== false;
+
+	// Create progress container
+	const progressLine = container.createEl("div", { cls: "task-card__progress" });
+
+	// Render based on display mode
+	if (displayMode === "bar-only" || displayMode === "bar-with-text") {
+		const progressBar = progressLine.createEl("div", { cls: "task-card__progress-bar" });
+		progressBar.style.setProperty("--progress-width", `${progress.percentage}%`);
+		progressBar.setAttribute("aria-label", `${progress.completed}/${progress.total} (${progress.percentage}%)`);
+	}
+
+	if (displayMode === "text-only" || displayMode === "bar-with-text") {
+		const progressText = progressLine.createEl("span", { cls: "task-card__progress-text" });
+		const parts: string[] = [];
+		if (showCount) {
+			parts.push(`${progress.completed}/${progress.total}`);
+		}
+		if (showPercentage) {
+			parts.push(`(${progress.percentage}%)`);
+		}
+		progressText.textContent = parts.join(" ");
+		setTooltip(
+			progressText,
+			plugin.i18n.translate("ui.taskCard.progressTooltip", {
+				completed: progress.completed,
+				total: progress.total,
+				percentage: progress.percentage,
+			}),
+			{ placement: "top" }
+		);
+	}
+}
+
+/**
  * Render a single property value with link detection
  */
 function renderPropertyValue(
@@ -1642,6 +1848,12 @@ export function createTaskCard(
 			continue;
 		}
 
+		// Progress property - handled separately as its own line
+		if (propertyId === "progress") {
+			// Skip here, will be rendered as separate line below
+			continue;
+		}
+
 		// Google Calendar sync indicator
 		if (propertyId === "googleCalendarSync") {
 			// Check if task has a Google Calendar event ID in frontmatter
@@ -1669,6 +1881,20 @@ export function createTaskCard(
 
 	// Show/hide metadata line based on content
 	updateMetadataVisibility(metadataLine, metadataElements);
+
+	// Render progress as separate line if visible
+	const shouldShowProgress = propertiesToShow.includes("progress");
+	if (shouldShowProgress) {
+		// Use sync version if details is already loaded, otherwise use async version
+		if (task.details !== undefined) {
+			renderProgressPropertySync(contentContainer, task, plugin, layout);
+		} else {
+			// Load details asynchronously and render progress
+			renderProgressProperty(contentContainer, task, plugin, layout).catch((error) => {
+				console.warn("Error rendering progress:", error);
+			});
+		}
+	}
 
 	// Add click handlers with single/double click distinction
 	const { clickHandler, dblclickHandler, contextmenuHandler } = createTaskClickHandler({
@@ -2233,6 +2459,12 @@ export function updateTaskCard(
 				continue;
 			}
 
+			// Progress property - handled separately as its own line
+			if (propertyId === "progress") {
+				// Skip here, will be rendered as separate line below
+				continue;
+			}
+
 			const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
 			if (element) {
 				metadataElements.push(element);
@@ -2241,6 +2473,40 @@ export function updateTaskCard(
 
 		// Hide metadata line if empty
 		updateMetadataVisibility(metadataLine, metadataElements);
+	}
+
+	// Update progress as separate line if visible
+	const contentContainer = element.querySelector(".task-card__content") as HTMLElement;
+	if (contentContainer) {
+		const propertiesToShow =
+			visibleProperties ||
+			(plugin.settings.defaultVisibleProperties
+				? convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin)
+				: getDefaultVisibleProperties(plugin));
+
+		const shouldShowProgress = propertiesToShow.includes("progress");
+		const existingProgress = contentContainer.querySelector(".task-card__progress");
+
+		if (shouldShowProgress) {
+			// Remove existing progress if present
+			if (existingProgress) {
+				existingProgress.remove();
+			}
+
+			// Use sync version if details is already loaded, otherwise use async version
+			const layout = opts.layout || "default";
+			if (task.details !== undefined) {
+				renderProgressPropertySync(contentContainer, task, plugin, layout);
+			} else {
+				// Load details asynchronously and render progress
+				renderProgressProperty(contentContainer, task, plugin, layout).catch((error) => {
+					console.warn("Error rendering progress:", error);
+				});
+			}
+		} else if (existingProgress) {
+			// Remove progress if it should not be visible
+			existingProgress.remove();
+		}
 	}
 
 	// Animation is now handled separately - don't add it here during reconciler updates

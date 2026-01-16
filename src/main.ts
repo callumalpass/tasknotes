@@ -97,6 +97,7 @@ import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { LicenseService } from "./services/LicenseService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import { ProgressService } from "./services/ProgressService";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -217,6 +218,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
+
+	// Progress service for calculating task progress from checkboxes
+	progressService: ProgressService;
 
 	// Bases filter converter for exporting saved views
 	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
@@ -365,6 +369,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);
 		this.viewPerformanceService = new ViewPerformanceService(this);
+		this.progressService = new ProgressService();
 
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");
@@ -996,6 +1001,11 @@ export default class TaskNotesPlugin extends Plugin {
 			if (this.taskLinkDetectionService) {
 				this.taskLinkDetectionService.clearCacheForFile(filePath);
 			}
+
+			// Clear progress cache for this file
+			if (this.progressService) {
+				this.progressService.clearCacheForTask(filePath);
+			}
 		} else if (force) {
 			// Full cache clear if forcing
 			this.cacheManager.clearAllCaches();
@@ -1003,6 +1013,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// Clear task link detection cache completely
 			if (this.taskLinkDetectionService) {
 				this.taskLinkDetectionService.clearCache();
+			}
+
+			// Clear progress cache completely
+			if (this.progressService) {
+				this.progressService.clearCache();
 			}
 		}
 

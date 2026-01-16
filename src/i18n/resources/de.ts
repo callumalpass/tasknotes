@@ -1192,6 +1192,28 @@ export const de: TranslationTree = {
 					tags: "Tags",
 					blocked: "Blockiert",
 					blocking: "Blockierend",
+					progress: "Fortschritt",
+				},
+				progressBar: {
+					header: "Fortschrittsbalken",
+					description: "Konfiguriere, wie der Fortschrittsbalken auf Aufgabenkarten angezeigt wird.",
+					displayMode: {
+						name: "Anzeigemodus",
+						description: "Wie der Fortschrittsbalken angezeigt werden soll",
+						options: {
+							barOnly: "Nur Balken",
+							textOnly: "Nur Text",
+							barWithText: "Balken mit Text",
+						},
+					},
+					showCount: {
+						name: "Anzahl anzeigen",
+						description: "Anzahl der abgeschlossenen Checkboxen anzeigen (z.B. '2/5')",
+					},
+					showPercentage: {
+						name: "Prozentzahl anzeigen",
+						description: "Fortschrittsprozentsatz anzeigen (z.B. '40%')",
+					},
 				},
 			},
 			taskFilenames: {
@@ -2857,6 +2879,7 @@ export const de: TranslationTree = {
 			blockingEmpty: "Keine abhängigen Aufgaben",
 			blockingLoadError: "Abhängigkeiten konnten nicht geladen werden",
 			googleCalendarSyncTooltip: "Mit Google Kalender synchronisiert",
+			progressTooltip: "Fortschritt: {completed} von {total} Checkboxen abgeschlossen ({percentage}%)",
 		},
 		propertyEventCard: {
 			unknownFile: "Unbekannte Datei",

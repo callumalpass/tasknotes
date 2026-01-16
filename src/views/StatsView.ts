@@ -143,6 +143,15 @@ export class StatsView extends ItemView {
 		);
 		this.listeners.push(taskUpdateListener);
 
+		// Listen for settings changes (e.g., progress bar display mode)
+		const settingsChangeListener = this.plugin.emitter.on("settings-changed", async () => {
+			// Refresh drill-down modal if it's open to apply new settings
+			if (this.drilldownModal && this.currentDrilldownData) {
+				await this.refreshDrilldownModal();
+			}
+		});
+		this.listeners.push(settingsChangeListener);
+
 		await this.render();
 	}
 

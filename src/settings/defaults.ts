@@ -369,6 +369,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		"tags", // Tags
 		"blocked", // Blocked indicator
 		"blocking", // Blocking indicator
+		"progress", // Progress bar
 	],
 	// Default visible properties for inline task cards (more compact by default)
 	inlineVisibleProperties: ["status", "priority", "due", "scheduled", "recurrence"],
@@ -407,4 +408,12 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftCalendarSyncTokens: {},
 	// Google Calendar task export settings
 	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
+	// Progress bar settings
+	progressBar: {
+		enabled: true,
+		displayMode: "bar-with-text",
+		showPercentage: true,
+		showCount: true,
+		emptyState: "show-zero",
+	},
 };

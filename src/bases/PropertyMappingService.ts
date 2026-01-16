@@ -157,6 +157,10 @@ export class PropertyMappingService {
 		// blockedBy → blocked (show status pill instead of dependency array)
 		if (propId === "blockedBy") return "blocked";
 
+		// progress → progress (explicitly handle progress as computed property)
+		// Support both 'progress' and 'task.progress' (standard form for TaskNotes computed properties)
+		if (propId === "progress" || propId === "task.progress") return "progress";
+
 		// Keep everything else unchanged
 		return propId;
 	}

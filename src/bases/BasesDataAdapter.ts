@@ -206,14 +206,20 @@ export class BasesDataAdapter {
 	 * Extract properties from a BasesEntry.
 	 * Extracts frontmatter and basic file properties only (cheap operations).
 	 * Computed file properties (backlinks, links, etc.) are fetched lazily via getComputedProperty().
+	 *
+	 * Also adds virtual computed property 'task.progress' to entry.frontmatter so Bases can discover it.
 	 */
 	private extractEntryProperties(entry: any): Record<string, any> {
-		// Extract all properties from the entry's frontmatter
-		// We don't filter by visible properties here - that happens during rendering
-		// This ensures all properties are available for TaskInfo creation
 		const frontmatter = (entry as any).frontmatter || (entry as any).properties || {};
 
-		// Start with frontmatter properties
+		// Add virtual computed property 'task.progress' to entry.frontmatter so Bases discovers it
+		if (entry && !frontmatter['task.progress']) {
+			if (!entry.frontmatter) {
+				entry.frontmatter = {};
+			}
+			entry.frontmatter['task.progress'] = null;
+		}
+
 		const result = { ...frontmatter };
 
 		// Also extract file properties directly from the TFile object (these are cheap - no getValue calls)

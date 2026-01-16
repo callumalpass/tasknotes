@@ -145,6 +145,15 @@ export class PomodoroView extends ItemView {
 			}
 		);
 		this.listeners.push(taskUpdateListener);
+
+		// Listen for settings changes (e.g., progress bar display mode)
+		const settingsChangeListener = this.plugin.emitter.on("settings-changed", () => {
+			// Refresh task card display if a task is selected
+			if (this.currentSelectedTask) {
+				this.updateTaskCardDisplay(this.currentSelectedTask);
+			}
+		});
+		this.listeners.push(settingsChangeListener);
 	}
 
 	async onOpen() {

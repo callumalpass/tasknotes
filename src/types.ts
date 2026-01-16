@@ -433,6 +433,15 @@ export interface TaskDependency {
 	gap?: string; // Optional ISO 8601 duration offset between tasks
 }
 
+/**
+ * Progress information for a task based on top-level checkboxes
+ */
+export interface ProgressInfo {
+	completed: number; // Number of completed checkboxes
+	total: number; // Total number of top-level checkboxes
+	percentage: number; // Completion percentage (0-100)
+}
+
 export interface TaskInfo {
 	id?: string; // Task identifier (typically same as path for API consistency)
 	title: string;
@@ -465,6 +474,7 @@ export interface TaskInfo {
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
 	isBlocking?: boolean; // True if this task blocks at least one other task
 	details?: string; // Optional task body content
+	progress?: ProgressInfo; // Progress information based on top-level checkboxes (computed property)
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
