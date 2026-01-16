@@ -66,6 +66,104 @@ export function renderAppearanceTab(
 				setting.setDesc(`Currently showing: ${currentLabels.join(", ")}`);
 				setting.settingEl.addClass("settings-view__group-description");
 			});
+
+			// Progress Bar Settings
+			group.addSetting((setting) => {
+				setting.setHeading();
+				setting.setName(translate("settings.appearance.taskCards.progressBar.header"));
+				setting.setDesc(translate("settings.appearance.taskCards.progressBar.description"));
+			});
+
+			// Initialize progressBar settings if not present
+			if (!plugin.settings.progressBar) {
+				plugin.settings.progressBar = {
+					enabled: true,
+					displayMode: "bar-with-text",
+					showPercentage: true,
+					showCount: true,
+					emptyState: "show-zero",
+				};
+			}
+
+			group.addSetting((setting) =>
+				configureDropdownSetting(setting, {
+					name: translate("settings.appearance.taskCards.progressBar.displayMode.name"),
+					desc: translate("settings.appearance.taskCards.progressBar.displayMode.description"),
+					options: [
+						{
+							value: "bar-only",
+							label: translate("settings.appearance.taskCards.progressBar.displayMode.options.barOnly"),
+						},
+						{
+							value: "text-only",
+							label: translate("settings.appearance.taskCards.progressBar.displayMode.options.textOnly"),
+						},
+						{
+							value: "bar-with-text",
+							label: translate("settings.appearance.taskCards.progressBar.displayMode.options.barWithText"),
+						},
+					],
+					getValue: () => plugin.settings.progressBar?.displayMode || "bar-with-text",
+					setValue: async (value: string) => {
+						if (!plugin.settings.progressBar) {
+							plugin.settings.progressBar = {
+								enabled: true,
+								displayMode: value as "bar-only" | "text-only" | "bar-with-text",
+								showPercentage: true,
+								showCount: true,
+								emptyState: "show-zero",
+							};
+						} else {
+							plugin.settings.progressBar.displayMode = value as "bar-only" | "text-only" | "bar-with-text";
+						}
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.appearance.taskCards.progressBar.showCount.name"),
+					desc: translate("settings.appearance.taskCards.progressBar.showCount.description"),
+					getValue: () => plugin.settings.progressBar?.showCount !== false,
+					setValue: async (value: boolean) => {
+						if (!plugin.settings.progressBar) {
+							plugin.settings.progressBar = {
+								enabled: true,
+								displayMode: "bar-with-text",
+								showPercentage: true,
+								showCount: value,
+								emptyState: "show-zero",
+							};
+						} else {
+							plugin.settings.progressBar.showCount = value;
+						}
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.appearance.taskCards.progressBar.showPercentage.name"),
+					desc: translate("settings.appearance.taskCards.progressBar.showPercentage.description"),
+					getValue: () => plugin.settings.progressBar?.showPercentage !== false,
+					setValue: async (value: boolean) => {
+						if (!plugin.settings.progressBar) {
+							plugin.settings.progressBar = {
+								enabled: true,
+								displayMode: "bar-with-text",
+								showPercentage: value,
+								showCount: true,
+								emptyState: "show-zero",
+							};
+						} else {
+							plugin.settings.progressBar.showPercentage = value;
+						}
+						save();
+					},
+				})
+			);
 		}
 	);
 

@@ -1,9 +1,10 @@
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
 import { RRule } from "rrule";
-import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from "../types";
+import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter, ProgressInfo } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING } from "../settings/defaults";
+import { ProgressService } from "../services/ProgressService";
 import {
 	getTodayString,
 	parseDateToLocal,
@@ -1438,4 +1439,23 @@ export function sanitizeTags(tags: string): string {
 		})
 		.filter((tag) => tag.length > 0) // Remove empty tags
 		.join(", ");
+}
+
+/**
+ * Calculate progress for a task based on top-level checkboxes in the task body
+ * This is a lazy computation that should be called when progress property is visible
+ *
+ * @param task - The task to calculate progress for
+ * @param progressService - ProgressService instance (required for caching)
+ * @returns ProgressInfo or null if no checkboxes found
+ */
+export function calculateTaskProgress(
+	task: TaskInfo,
+	progressService: ProgressService
+): ProgressInfo | null {
+	if (!progressService) {
+		console.warn("[TaskNotes] calculateTaskProgress called without ProgressService");
+		return null;
+	}
+	return progressService.calculateProgress(task);
 }

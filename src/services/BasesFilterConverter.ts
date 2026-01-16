@@ -310,6 +310,9 @@ export class BasesFilterConverter {
 			case "blocking":
 				frontmatterKey = "blocking"; // Computed property, not in field mapping
 				break;
+			case "progress":
+				// Computed property - use task.progress prefix
+				return "task.progress";
 			// Note: "dependencies.isBlocked" is handled specially in convertConditionToString
 			// Note: "dependencies.isBlocking" returns "true" (unsupported - requires reverse lookup)
 			default:
@@ -597,6 +600,7 @@ export class BasesFilterConverter {
 			case "path": return "file.path";
 			case "timeEstimate": return fm.toUserField("timeEstimate");
 			case "recurrence": return fm.toUserField("recurrence");
+			case "progress": return "task.progress"; // Computed property
 			default:
 				// Handle user fields
 				if (sortKey.startsWith("user:")) {

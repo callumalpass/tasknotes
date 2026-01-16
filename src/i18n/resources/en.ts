@@ -1216,6 +1216,36 @@ export const en: TranslationTree = {
 					tags: "Tags",
 					blocked: "Blocked",
 					blocking: "Blocking",
+					progress: "Progress",
+				},
+				progressBar: {
+					header: "Progress Bar",
+					description: "Configure how the progress bar is displayed on task cards.",
+					displayMode: {
+						name: "Display mode",
+						description: "How to display the progress bar",
+						options: {
+							barOnly: "Bar only",
+							textOnly: "Text only",
+							barWithText: "Bar with text",
+						},
+					},
+					showCount: {
+						name: "Show count",
+						description: "Display the count of completed checkboxes (e.g., '2/5')",
+					},
+					showPercentage: {
+						name: "Show percentage",
+						description: "Display the completion percentage (e.g., '40%')",
+					},
+					emptyState: {
+						name: "Empty state",
+						description: "How to display progress when there are no checkboxes",
+						options: {
+							hide: "Hide",
+							showZero: "Show 0/0 (0%)",
+						},
+					},
 				},
 			},
 			taskFilenames: {
@@ -2921,6 +2951,7 @@ export const en: TranslationTree = {
 			blockedBadgeTooltip: "This task is waiting on another task",
 			blockingBadge: "Blocking",
 			blockingBadgeTooltip: "This task is blocking another task",
+			progressTooltip: "Progress: {completed} of {total} checkboxes completed ({percentage}%)",
 			blockingToggle: "Blocking {count} tasks",
 			loadingDependencies: "Loading dependencies...",
 			blockingEmpty: "No dependent tasks",

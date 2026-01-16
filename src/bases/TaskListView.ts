@@ -21,7 +21,8 @@ export class TaskListView extends BasesViewBase {
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private lastRenderWasGrouped = false;
 	private lastFlatPaths: string[] = [];
-	private lastTaskSignatures = new Map<string, string>();
+	// Signature cache - declared in BasesViewBase but initialized here for type safety
+	protected lastTaskSignatures = new Map<string, string>();
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private clickTimeouts = new Map<string, number>();
 	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());

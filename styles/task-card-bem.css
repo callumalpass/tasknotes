@@ -24,8 +24,6 @@
     /* Interactions & Accessibility - Smooth transitions */
     transition: all var(--tn-transition-fast);
     outline: none;
-    role: listitem;
-    tabindex: 0;
 }
 
 .tasknotes-plugin .task-card:hover {
@@ -1401,4 +1399,57 @@
 /* Primary selected kanban card wrapper gets a border */
 .tasknotes-plugin .kanban-view__card-wrapper--selected-primary {
     box-shadow: inset 0 0 0 2px var(--interactive-accent);
+}
+
+/* =================================================================
+   PROGRESS BAR STYLING
+   ================================================================= */
+
+.tasknotes-plugin .task-card__progress {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    margin-top: var(--tn-spacing-xs);
+    width: 100%;
+}
+
+.tasknotes-plugin .task-card__progress-bar {
+    flex: 1;
+    height: 6px;
+    background-color: var(--background-modifier-border);
+    border-radius: var(--tn-radius-xs);
+    overflow: hidden;
+    position: relative;
+}
+
+.tasknotes-plugin .task-card__progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--progress-width, 0%);
+    background-color: var(--interactive-accent);
+    border-radius: var(--tn-radius-xs);
+    transition: width var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .task-card__progress-text {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+/* Progress bar in compact layout */
+.tasknotes-plugin .task-card--layout-compact .task-card__progress {
+    margin-top: 2px;
+}
+
+.tasknotes-plugin .task-card--layout-compact .task-card__progress-bar {
+    height: 4px;
+}
+
+.tasknotes-plugin .task-card--layout-compact .task-card__progress-text {
+    font-size: var(--tn-font-size-xs);
 }

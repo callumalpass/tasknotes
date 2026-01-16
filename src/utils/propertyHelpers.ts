@@ -27,6 +27,7 @@ export function getAvailableProperties(
 		{ id: "priority", label: makeLabel("Priority", "priority") },
 		{ id: "blocked", label: "Blocked Status" }, // Special property, not in FieldMapping
 		{ id: "blocking", label: "Blocking Status" }, // Special property, not in FieldMapping
+		{ id: "progress", label: "Progress" }, // Computed property based on top-level checkboxes
 		{ id: "due", label: makeLabel("Due Date", "due") },
 		{ id: "scheduled", label: makeLabel("Scheduled Date", "scheduled") },
 		{ id: "timeEstimate", label: makeLabel("Time Estimate", "timeEstimate") },

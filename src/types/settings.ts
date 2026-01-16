@@ -201,6 +201,8 @@ export interface TaskNotesSettings {
 	defaultVisibleProperties?: string[];
 	// Default visible properties for inline task cards (task link widgets in editor)
 	inlineVisibleProperties?: string[];
+	// Progress bar settings
+	progressBar?: ProgressBarSettings;
 	// Bases integration settings
 	enableBases: boolean;
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
@@ -286,6 +288,17 @@ export interface ICSIntegrationSettings {
 	useDurationForExport: boolean; // Whether to use timeEstimate (duration) instead of due date for DTEND
 	// Task creation from ICS events
 	useICSEndAsDue: boolean; // Whether to use ICS event end time as task due date
+}
+
+/**
+ * Configuration for progress bar display
+ */
+export interface ProgressBarSettings {
+	enabled: boolean; // Whether progress bar is enabled
+	displayMode: "bar-only" | "text-only" | "bar-with-text"; // How to display progress
+	showPercentage: boolean; // Show percentage in text
+	showCount: boolean; // Show count (e.g., "2/5") in text
+	emptyState: "hide" | "show-zero"; // Whether to show "0/0 (0%)" if no checkboxes found
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Component, App, setIcon } from "obsidian";
+import { Component, App, setIcon, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -8,6 +8,7 @@ import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
+import { splitFrontmatterAndBody } from "../utils/helpers";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -40,6 +41,9 @@ export abstract class BasesViewBase extends Component {
 	protected selectionModeCleanup: (() => void) | null = null;
 	protected selectionIndicatorEl: HTMLElement | null = null;
 
+	// Signature cache for task cards (used by TaskListView, can be accessed by subclasses)
+	protected lastTaskSignatures?: Map<string, string>;
+
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		// Call Component constructor
 		super();
@@ -62,6 +66,10 @@ export abstract class BasesViewBase extends Component {
 	 * Override from Component base class.
 	 */
 	onload(): void {
+		// Register computed properties like 'progress' to Bases query properties
+		// so they appear in the property selector
+		this.registerComputedProperties();
+
 		this.setupContainer();
 		this.setupTaskUpdateListener();
 		this.setupSelectionHandling();
@@ -70,11 +78,93 @@ export abstract class BasesViewBase extends Component {
 	}
 
 	/**
+	 * Register computed properties (like 'task.progress') to Bases query properties
+	 * so they appear in the property selector dropdown.
+	 * Called during onload() and can be called again during render() if query becomes available later.
+	 */
+	protected registerComputedProperties(): void {
+		try {
+			// Access Bases query through multiple possible paths
+			const query =
+				(this.data as any)?.query ||
+				(this as any).controller?.query ||
+				(this as any).query;
+
+			if (!query) {
+				return;
+			}
+
+			// Ensure properties map exists
+			if (!query.properties) {
+				query.properties = {};
+			}
+
+			const propsMap = query.properties as Record<string, any>;
+
+			// Register 'task.progress' as a computed property if not already present
+			if (!propsMap['task.progress']) {
+				const progressProperty = {
+					getDisplayName: () => {
+						try {
+							return this.plugin.i18n.translate('settings.appearance.taskCards.properties.progress') || 'Progress';
+						} catch {
+							return 'Progress';
+						}
+					},
+					getType: () => 'number',
+					getValue: (entry: any) => {
+						// Progress is now stored in frontmatter as task_progress (percentage number)
+						// Read it directly from frontmatter for Bases compatibility
+						if (!entry?.file?.path) {
+							return null;
+						}
+
+						try {
+							// First try to get from frontmatter (persisted value)
+							const frontmatter = entry.frontmatter || entry.properties || {};
+							const progressFieldName = this.plugin.fieldMapper.toUserField('progress');
+							if (frontmatter[progressFieldName] !== undefined) {
+								const progressValue = frontmatter[progressFieldName];
+								// Ensure we return a number
+								return typeof progressValue === 'number' ? progressValue : Number(progressValue) || 0;
+							}
+
+							// Fallback: Try to get TaskInfo from cache (if already loaded)
+							// This allows us to get progress if it was already calculated but not yet persisted
+							const cachedTaskInfo = this.plugin.cacheManager?.getCachedTaskInfoSync?.(entry.file.path);
+							if (cachedTaskInfo?.progress) {
+								// Ensure we return a number, not a string
+								const percentage = cachedTaskInfo.progress.percentage;
+								return typeof percentage === 'number' ? percentage : Number(percentage) || 0;
+							}
+
+							// If not available, return 0 instead of null to ensure Bases recognizes it as a number
+							// This ensures Bases treats it as a number property even when not yet calculated
+							return 0;
+						} catch (error) {
+							console.debug('[TaskNotes] Error getting progress in getValue:', error);
+							return 0;
+						}
+					},
+					isComputed: () => true,
+				};
+
+				propsMap['task.progress'] = progressProperty;
+			}
+		} catch (error) {
+			// Silently fail - property registration is optional
+		}
+	}
+
+	/**
 	 * BasesView lifecycle: Called when Bases data changes.
 	 * Required abstract method implementation.
 	 * Debounced to prevent excessive re-renders during rapid file saves.
 	 */
 	onDataUpdated(): void {
+		// Re-register computed properties in case query was recreated
+		this.registerComputedProperties();
+
 		// Skip if view is not visible
 		if (!this.rootElement?.isConnected) {
 			return;
@@ -312,11 +402,27 @@ export abstract class BasesViewBase extends Component {
 			}
 		});
 
+		// Listen for settings changes (e.g., progress bar display mode)
+		const settingsChangeListener = this.plugin.emitter.on("settings-changed", () => {
+			// Skip if view is not visible
+			if (!this.rootElement?.isConnected) return;
+			// Clear signature cache to force all task cards to be recreated with new settings
+			// This ensures that settings changes (like progress bar display mode) are immediately visible
+			if (this.lastTaskSignatures) {
+				this.lastTaskSignatures.clear();
+			}
+			// Refresh view to apply new settings
+			this.debouncedRefresh();
+		});
+
 		// Register cleanup using Component lifecycle
 		this.register(() => {
 			if (this.taskUpdateListener) {
 				this.plugin.emitter.offref(this.taskUpdateListener);
 				this.taskUpdateListener = null;
+			}
+			if (settingsChangeListener) {
+				this.plugin.emitter.offref(settingsChangeListener);
 			}
 		});
 	}

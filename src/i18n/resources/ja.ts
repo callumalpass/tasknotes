@@ -1192,6 +1192,36 @@ export const ja: TranslationTree = {
 					tags: "タグ",
 					blocked: "ブロック中",
 					blocking: "ブロックしている",
+					progress: "進捗",
+				},
+				progressBar: {
+					header: "進捗バー",
+					description: "タスクカードでの進捗バーの表示方法を設定します。",
+					displayMode: {
+						name: "表示モード",
+						description: "進捗バーの表示方法",
+						options: {
+							barOnly: "バーのみ",
+							textOnly: "テキストのみ",
+							barWithText: "バーとテキスト",
+						},
+					},
+					showCount: {
+						name: "カウントを表示",
+						description: "完了したチェックボックスの数を表示（例：'2/5'）",
+					},
+					showPercentage: {
+						name: "パーセンテージを表示",
+						description: "完了率を表示（例：'40%'）",
+					},
+					emptyState: {
+						name: "空の状態",
+						description: "チェックボックスがない場合の進捗表示方法",
+						options: {
+							hide: "非表示",
+							showZero: "0/0 (0%) を表示",
+						},
+					},
 				},
 			},
 			taskFilenames: {
@@ -2852,6 +2882,7 @@ export const ja: TranslationTree = {
 			blockedBadgeTooltip: "このタスクは他のタスクを待っています",
 			blockingBadge: "ブロックしている",
 			blockingBadgeTooltip: "このタスクは他のタスクをブロックしています",
+			progressTooltip: "進捗: {completed}/{total} 個のチェックボックスが完了 ({percentage}%)",
 			blockingToggle: "{count} 件のタスクをブロック",
 			loadingDependencies: "依存関係を読み込み中…",
 			blockingEmpty: "依存タスクはありません",

@@ -40,7 +40,8 @@ export function mapBasesPropertyToTaskCardProperty(
 ): string {
 	// Delegate to PropertyMappingService if available (preferred path)
 	if (plugin) {
-		// Import PropertyMappingService inline to avoid circular dependencies
+		// Use dynamic import to avoid circular dependencies
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const { PropertyMappingService } = require("./PropertyMappingService");
 		const mapper = new PropertyMappingService(plugin, plugin.fieldMapper);
 		return mapper.basesToTaskCardProperty(propId);
@@ -61,6 +62,7 @@ export function mapBasesPropertyToTaskCardProperty(
 function applySpecialTransformations(propId: string): string {
 	if (propId === "timeEntries") return "totalTrackedTime";
 	if (propId === "blockedBy") return "blocked";
+	if (propId === "progress") return "progress"; // Explicitly handle progress
 	return propId;
 }
 

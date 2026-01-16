@@ -206,15 +206,27 @@ export class BasesDataAdapter {
 	 * Extract properties from a BasesEntry.
 	 * Extracts frontmatter and basic file properties only (cheap operations).
 	 * Computed file properties (backlinks, links, etc.) are fetched lazily via getComputedProperty().
+	 *
+	 * Also adds 'task.progress' property mapped from frontmatter progress field so Bases can discover it.
 	 */
 	private extractEntryProperties(entry: any): Record<string, any> {
-		// Extract all properties from the entry's frontmatter
-		// We don't filter by visible properties here - that happens during rendering
-		// This ensures all properties are available for TaskInfo creation
 		const frontmatter = (entry as any).frontmatter || (entry as any).properties || {};
 
-		// Start with frontmatter properties
 		const result = { ...frontmatter };
+
+		// Map progress from frontmatter to task.progress for Bases compatibility
+		// Progress is stored in frontmatter using the configured field name (default: task_progress)
+		// We expose it as task.progress so Bases can use it for sorting/filtering
+		// Get the configured field name from the plugin via basesView
+		const plugin = (this.basesView as any)?.plugin;
+		const progressFieldName = plugin?.fieldMapper?.toUserField?.('progress') || 'task_progress';
+
+		if (frontmatter[progressFieldName] !== undefined) {
+			result['task.progress'] = frontmatter[progressFieldName];
+		} else {
+			// If no progress in frontmatter, set to 0 (number) to ensure Bases recognizes it as a number property
+			result['task.progress'] = 0;
+		}
 
 		// Also extract file properties directly from the TFile object (these are cheap - no getValue calls)
 		const file = entry.file;

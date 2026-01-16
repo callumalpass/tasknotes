@@ -46,7 +46,7 @@ import { TaskEditModal } from "./modals/TaskEditModal";
 import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { TimeEntryEditorModal } from "./modals/TimeEntryEditorModal";
 import { PomodoroService } from "./services/PomodoroService";
-import { formatTime, getActiveTimeEntry } from "./utils/helpers";
+import { formatTime, getActiveTimeEntry, splitFrontmatterAndBody } from "./utils/helpers";
 import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
@@ -97,6 +97,7 @@ import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { LicenseService } from "./services/LicenseService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import { ProgressService } from "./services/ProgressService";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -217,6 +218,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
+
+	// Progress service for calculating task progress from checkboxes
+	progressService: ProgressService;
 
 	// Bases filter converter for exporting saved views
 	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
@@ -365,6 +369,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);
 		this.viewPerformanceService = new ViewPerformanceService(this);
+		this.progressService = new ProgressService();
 
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");
@@ -568,6 +573,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Initialize date change detection to refresh tasks at midnight
 			this.setupDateChangeDetection();
+
+			// Set up listener to update progress when task files are modified directly
+			this.setupProgressUpdateListener();
 
 			// Defer heavy service initialization until needed
 			this.initializeServicesLazily();
@@ -996,6 +1004,11 @@ export default class TaskNotesPlugin extends Plugin {
 			if (this.taskLinkDetectionService) {
 				this.taskLinkDetectionService.clearCacheForFile(filePath);
 			}
+
+			// Clear progress cache for this file
+			if (this.progressService) {
+				this.progressService.clearCacheForTask(filePath);
+			}
 		} else if (force) {
 			// Full cache clear if forcing
 			this.cacheManager.clearAllCaches();
@@ -1003,6 +1016,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// Clear task link detection cache completely
 			if (this.taskLinkDetectionService) {
 				this.taskLinkDetectionService.clearCache();
+			}
+
+			// Clear progress cache completely
+			if (this.progressService) {
+				this.progressService.clearCache();
 			}
 		}
 
@@ -1035,6 +1053,76 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Schedule precise check at next midnight for better timing
 		this.scheduleNextMidnightCheck();
+	}
+
+	/**
+	 * Set up listener to update progress when task files are modified directly (e.g., checkbox toggled in editor)
+	 */
+	private setupProgressUpdateListener(): void {
+		if (!this.progressService) {
+			return;
+		}
+
+		// Debounce map to avoid multiple updates for the same file
+		const pendingUpdates = new Map<string, NodeJS.Timeout>();
+
+		this.registerEvent(
+			this.app.metadataCache.on("changed", async (file: TFile) => {
+				// Only process task files
+				const metadata = this.app.metadataCache.getFileCache(file);
+				if (!metadata?.frontmatter) {
+					return;
+				}
+
+				// Check if this is a task file
+				const taskInfo = await this.cacheManager.getTaskInfo(file.path);
+				if (!taskInfo) {
+					return;
+				}
+
+				// Clear any pending update for this file
+				const existingTimeout = pendingUpdates.get(file.path);
+				if (existingTimeout) {
+					clearTimeout(existingTimeout);
+				}
+
+				// Debounce the update to avoid excessive file reads
+				const timeoutId = setTimeout(async () => {
+					pendingUpdates.delete(file.path);
+					try {
+						// Read file content to check if body changed
+						const content = await this.app.vault.read(file);
+						const { body } = splitFrontmatterAndBody(content);
+
+						// Calculate progress
+						const taskWithDetails: TaskInfo = {
+							...taskInfo,
+							details: body,
+						};
+						const progress = this.progressService.calculateProgress(taskWithDetails);
+
+						// Update frontmatter if progress changed
+						const currentProgress = metadata.frontmatter?.[this.fieldMapper.toUserField("progress")];
+						const newProgressValue = progress ? progress.percentage : null;
+
+						if (currentProgress !== newProgressValue) {
+							await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+								if (newProgressValue !== null) {
+									frontmatter[this.fieldMapper.toUserField("progress")] = newProgressValue;
+								} else {
+									// Remove progress if no checkboxes found
+									delete frontmatter[this.fieldMapper.toUserField("progress")];
+								}
+							});
+						}
+					} catch (error) {
+						console.debug(`[TaskNotes] Error updating progress for ${file.path}:`, error);
+					}
+				}, 500); // 500ms debounce
+
+				pendingUpdates.set(file.path, timeoutId);
+			})
+		);
 	}
 
 	/**

@@ -47,6 +47,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	icsEventTag: "ics_event",
 	googleCalendarEventId: "googleCalendarEventId",
 	reminders: "reminders",
+	progress: "progress", // Store as progress in frontmatter
 };
 
 // Default status configuration matches current hardcoded behavior
@@ -369,6 +370,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		"tags", // Tags
 		"blocked", // Blocked indicator
 		"blocking", // Blocking indicator
+		"progress", // Progress bar
 	],
 	// Default visible properties for inline task cards (more compact by default)
 	inlineVisibleProperties: ["status", "priority", "due", "scheduled", "recurrence"],
@@ -407,4 +409,12 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftCalendarSyncTokens: {},
 	// Google Calendar task export settings
 	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
+	// Progress bar settings
+	progressBar: {
+		enabled: true,
+		displayMode: "bar-with-text",
+		showPercentage: true,
+		showCount: true,
+		emptyState: "show-zero",
+	},
 };

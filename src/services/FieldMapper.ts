@@ -183,6 +183,21 @@ export class FieldMapper {
 			mapped.archived = frontmatter.tags.includes(this.mapping.archiveTag);
 		}
 
+		// Handle progress (stored as percentage number in frontmatter)
+		if (this.mapping.progress && frontmatter[this.mapping.progress] !== undefined) {
+			const progressValue = frontmatter[this.mapping.progress];
+			// Convert to ProgressInfo if it's a number (percentage)
+			if (typeof progressValue === 'number') {
+				// We only store percentage in frontmatter, so we can't reconstruct completed/total
+				// This will be recalculated when details are loaded
+				mapped.progress = {
+					completed: 0,
+					total: 0,
+					percentage: progressValue,
+				};
+			}
+		}
+
 		return mapped;
 	}
 
@@ -288,6 +303,15 @@ export class FieldMapper {
 
 		if (taskData.reminders !== undefined && taskData.reminders.length > 0) {
 			frontmatter[this.mapping.reminders] = taskData.reminders;
+		}
+
+		// Handle progress (store percentage as number in frontmatter)
+		if (this.mapping.progress && taskData.progress !== undefined) {
+			// Store percentage as number for Bases compatibility
+			frontmatter[this.mapping.progress] = taskData.progress.percentage;
+		} else if (this.mapping.progress && taskData.progress === null) {
+			// Remove progress if explicitly set to null
+			delete frontmatter[this.mapping.progress];
 		}
 
 		// Handle tags (merge archive status into tags array)

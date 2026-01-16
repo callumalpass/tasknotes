@@ -1154,6 +1154,36 @@ export const ko: TranslationTree = {
 					tags: "태그",
 					blocked: "차단됨",
 					blocking: "차단 중",
+					progress: "진행률",
+				},
+				progressBar: {
+					header: "진행률 표시줄",
+					description: "작업 카드에서 진행률 표시줄이 표시되는 방식을 설정합니다.",
+					displayMode: {
+						name: "표시 모드",
+						description: "진행률 표시줄 표시 방법",
+						options: {
+							barOnly: "표시줄만",
+							textOnly: "텍스트만",
+							barWithText: "표시줄과 텍스트",
+						},
+					},
+					showCount: {
+						name: "개수 표시",
+						description: "완료된 체크박스 개수 표시 (예: '2/5')",
+					},
+					showPercentage: {
+						name: "백분율 표시",
+						description: "완료 백분율 표시 (예: '40%')",
+					},
+					emptyState: {
+						name: "빈 상태",
+						description: "체크박스가 없을 때 진행률 표시 방법",
+						options: {
+							hide: "숨기기",
+							showZero: "0/0 (0%) 표시",
+						},
+					},
 				},
 			},
 			taskFilenames: {
@@ -2802,6 +2832,7 @@ export const ko: TranslationTree = {
 			blockedBadgeTooltip: "이 작업은 다른 작업을 기다리고 있습니다",
 			blockingBadge: "차단 중",
 			blockingBadgeTooltip: "이 작업이 다른 작업을 차단하고 있습니다",
+			progressTooltip: "진행률: {completed}/{total}개의 체크박스 완료 ({percentage}%)",
 			blockingToggle: "{count}개의 작업을 차단 중",
 			loadingDependencies: "종속성 로딩 중...",
 			blockingEmpty: "종속 작업 없음",
