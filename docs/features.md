@@ -38,6 +38,12 @@ ICS export allows other systems to access task data with automatic updates. The 
 
 See [Calendar Integration](features/calendar-integration.md) for details.
 
+## Progress Tracking
+
+TaskNotes automatically calculates task completion progress based on first-level checkboxes in the task body. A visual progress bar displays completion percentage, similar to Trello. Progress is available in Bases views for sorting and filtering.
+
+See [Progress Tracking](features/progress-tracking.md) for details.
+
 ## User Fields
 
 Custom fields extend task structure with additional data. These fields work in filtering, sorting, and templates.
