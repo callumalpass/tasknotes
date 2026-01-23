@@ -15,6 +15,7 @@ Examples (illustrative):
 - Add pointer cursor cues to clickable task card controls and inline titles.
 - Mark project task cards and keep right-side chevrons visible.
 - Persist resolved visible properties on cards and apply them to subtask rendering.
+- Respect an explicitly empty visible-properties list (do not fall back to defaults).
 
 ## Tests
 

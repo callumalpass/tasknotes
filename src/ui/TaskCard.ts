@@ -413,7 +413,7 @@ function resolveVisibleProperties(
 	visibleProperties: string[] | undefined,
 	plugin: TaskNotesPlugin
 ): string[] {
-	if (visibleProperties && visibleProperties.length > 0) {
+	if (visibleProperties !== undefined) {
 		return visibleProperties;
 	}
 
