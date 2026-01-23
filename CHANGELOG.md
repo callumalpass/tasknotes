@@ -46,6 +46,19 @@ Tests:
 
 Published PRs from `preq/`.
 
+### fix/projects-removal
+
+Summary:
+- Removing projects in the edit modal persists to frontmatter, including deletion of the field.
+
+Changes:
+- Normalize project link comparisons in the edit modal to handle angle‑bracket markdown links.
+- Persist empty project lists by explicitly removing the `projects` field from frontmatter.
+- Add a unit test to ensure empty project updates remove the property.
+
+Tests:
+- `./node_modules/.bin/jest tests/unit/services/TaskService.test.ts --runInBand`
+
 ### fix/angle-brackets
 
 Summary:
