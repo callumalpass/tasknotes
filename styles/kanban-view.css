@@ -13,6 +13,14 @@
     max-width: 100%;
 }
 
+/* Bases Kanban root uses tn-tasknotesKanban (no kanban-view wrapper) */
+.tasknotes-plugin.tn-tasknotesKanban {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
 /* Kanban Header */
 .tasknotes-plugin .kanban-view__header {
     display: flex;
@@ -99,10 +107,16 @@
     display: flex;
     height: 100%;
     overflow-x: auto;
+    overflow-y: auto;
     padding: var(--tn-spacing-md);
     gap: var(--tn-spacing-md);
     min-height: 0;
     flex-wrap: nowrap;
+}
+
+.tasknotes-plugin.tn-tasknotesKanban .kanban-view__board {
+    flex: 1;
+    min-height: 0;
 }
 
 /* Board Scrollbar */
@@ -247,6 +261,9 @@
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     border-bottom: 1px solid var(--tn-border-color);
     background: var(--tn-bg-secondary);
+    position: sticky;
+    top: 0;
+    z-index: 5;
     border-radius: var(--tn-radius-md) var(--tn-radius-md) 0 0;
     cursor: grab;
     user-select: none;
