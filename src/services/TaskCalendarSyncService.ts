@@ -333,6 +333,150 @@ export class TaskCalendarSyncService {
 	}
 
 	/**
+	 * Parse ISO 8601 duration format and return milliseconds.
+	 * Based on the parser from NotificationService.
+	 */
+	private parseISO8601Duration(duration: string): number | null {
+		// Parse ISO 8601 duration format (e.g., "-PT15M", "P2D", "-PT1H30M")
+		const match = duration.match(
+			/^(-?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
+		);
+
+		if (!match) {
+			return null;
+		}
+
+		const [, sign, years, months, weeks, days, hours, minutes, seconds] = match;
+
+		let totalMs = 0;
+
+		// Note: For simplicity, we treat months as 30 days and years as 365 days
+		if (years) totalMs += parseInt(years) * 365 * 24 * 60 * 60 * 1000;
+		if (months) totalMs += parseInt(months) * 30 * 24 * 60 * 60 * 1000;
+		if (weeks) totalMs += parseInt(weeks) * 7 * 24 * 60 * 60 * 1000;
+		if (days) totalMs += parseInt(days) * 24 * 60 * 60 * 1000;
+		if (hours) totalMs += parseInt(hours) * 60 * 60 * 1000;
+		if (minutes) totalMs += parseInt(minutes) * 60 * 1000;
+		if (seconds) totalMs += parseInt(seconds) * 1000;
+
+		// Apply sign for negative durations (before the anchor date)
+		return sign === "-" ? -totalMs : totalMs;
+	}
+
+	/**
+	 * Convert task reminders to Google Calendar reminder format.
+	 * Returns an array of reminder overrides in the format Google Calendar API expects.
+	 * 
+	 * @param task - The task with reminders
+	 * @param eventStartTime - The event start time (ISO string or date string)
+	 * @param eventDateSource - Which date field was used for the event ('due' or 'scheduled')
+	 * @returns Array of { method: string; minutes: number } or null if no valid reminders
+	 */
+	private convertTaskRemindersToGoogleFormat(
+		task: TaskInfo,
+		eventStartTime: string,
+		eventDateSource: 'due' | 'scheduled'
+	): Array<{ method: string; minutes: number }> | null {
+		if (!task.reminders || !Array.isArray(task.reminders) || task.reminders.length === 0) {
+			return null;
+		}
+
+		const googleReminders: Array<{ method: string; minutes: number }> = [];
+		const GOOGLE_MAX_REMINDER_MINUTES = 40320; // 4 weeks in minutes (Google Calendar API limit)
+
+		// Parse event start time to get a timestamp
+		let eventStartMs: number;
+		try {
+			// Handle both ISO timestamps and date-only strings
+			if (eventStartTime.includes('T')) {
+				eventStartMs = new Date(eventStartTime).getTime();
+			} else {
+				// Date-only string - assume start of day in local timezone
+				eventStartMs = new Date(eventStartTime + 'T00:00:00').getTime();
+			}
+
+			if (isNaN(eventStartMs)) {
+				console.warn('[TaskCalendarSync] Invalid event start time:', eventStartTime);
+				return null;
+			}
+		} catch (error) {
+			console.warn('[TaskCalendarSync] Error parsing event start time:', error);
+			return null;
+		}
+
+		for (const reminder of task.reminders) {
+			if (!reminder.type) continue;
+
+			if (reminder.type === 'relative') {
+				// Only include relative reminders that match the event's date source
+				if (reminder.relatedTo !== eventDateSource) {
+					continue;
+				}
+
+				// Parse the ISO 8601 duration
+				if (!reminder.offset) continue;
+				const durationMs = this.parseISO8601Duration(reminder.offset);
+				if (durationMs === null) {
+					console.warn('[TaskCalendarSync] Invalid duration format:', reminder.offset);
+					continue;
+				}
+
+				// Convert to minutes before the event
+				// Negative duration means "before", which is what we want
+				// Zero duration means "at event time"
+				// Positive duration means "after", which Google Calendar doesn't support for reminders
+				const minutesBefore = Math.abs(Math.round(durationMs / (60 * 1000)));
+
+				// Skip if reminder is after the event (positive duration without negative sign)
+				if (durationMs > 0) {
+					console.warn('[TaskCalendarSync] Skipping reminder after event:', reminder);
+					continue;
+				}
+
+				// Cap at Google Calendar's limit
+				const cappedMinutes = Math.min(minutesBefore, GOOGLE_MAX_REMINDER_MINUTES);
+
+				// Include 0-minute reminders (at event time)
+				if (cappedMinutes >= 0) {
+					googleReminders.push({ method: 'popup', minutes: cappedMinutes });
+				}
+			} else if (reminder.type === 'absolute') {
+				// Calculate minutes before event start
+				if (!reminder.absoluteTime) continue;
+
+				try {
+					const reminderTimeMs = new Date(reminder.absoluteTime).getTime();
+					if (isNaN(reminderTimeMs)) {
+						console.warn('[TaskCalendarSync] Invalid absolute time:', reminder.absoluteTime);
+						continue;
+					}
+
+					// Calculate difference in minutes
+					const diffMs = eventStartMs - reminderTimeMs;
+					const minutesBefore = Math.round(diffMs / (60 * 1000));
+
+					// Skip if reminder is after the event start
+					if (minutesBefore < 0) {
+						console.warn('[TaskCalendarSync] Skipping absolute reminder after event:', reminder);
+						continue;
+					}
+
+					// Cap at Google Calendar's limit
+					const cappedMinutes = Math.min(minutesBefore, GOOGLE_MAX_REMINDER_MINUTES);
+					// Include 0-minute reminders (at event time)
+					googleReminders.push({ method: 'popup', minutes: cappedMinutes });
+				} catch (error) {
+					console.warn('[TaskCalendarSync] Error parsing absolute reminder time:', error);
+					continue;
+				}
+			}
+		}
+
+		console.log('[TaskCalendarSync] Final reminders to sync:', googleReminders);
+		return googleReminders.length > 0 ? googleReminders : null;
+	}
+
+	/**
 	 * Convert a task to a Google Calendar event payload
 	 */
 	private taskToCalendarEvent(task: TaskInfo): {
@@ -401,8 +545,29 @@ export class TaskCalendarSyncService {
 			event.colorId = settings.eventColorId;
 		}
 
-		// Add reminder if configured
-		if (settings.defaultReminderMinutes !== null && settings.defaultReminderMinutes > 0) {
+		// Determine which date field was used for the event (for reminder conversion)
+		let eventDateSource: 'due' | 'scheduled';
+		if (settings.syncTrigger === 'scheduled' || (settings.syncTrigger === 'both' && task.scheduled)) {
+			eventDateSource = 'scheduled';
+		} else {
+			eventDateSource = 'due';
+		}
+
+		// Add reminders - prioritize task reminders, fall back to default
+		const taskReminders = this.convertTaskRemindersToGoogleFormat(
+			task,
+			eventDate,
+			eventDateSource
+		);
+
+		if (taskReminders && taskReminders.length > 0) {
+			// Use task-specific reminders
+			event.reminders = {
+				useDefault: false,
+				overrides: taskReminders,
+			};
+		} else if (settings.defaultReminderMinutes !== null && settings.defaultReminderMinutes > 0) {
+			// Fall back to default reminder setting
 			event.reminders = {
 				useDefault: false,
 				overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
@@ -537,7 +702,7 @@ export class TaskCalendarSyncService {
 				// Wait for any in-flight sync to complete before starting a new one
 				const inFlight = this.inFlightSyncs.get(taskPath);
 				if (inFlight) {
-					await inFlight.catch(() => {}); // Ignore errors from previous sync
+					await inFlight.catch(() => { }); // Ignore errors from previous sync
 				}
 
 				// Re-fetch the task to get the latest state after debounce
