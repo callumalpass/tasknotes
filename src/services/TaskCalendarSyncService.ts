@@ -11,6 +11,9 @@ const SYNC_DEBOUNCE_MS = 500;
 /** Max concurrent API calls during bulk sync to avoid rate limits */
 const SYNC_CONCURRENCY_LIMIT = 5;
 
+/** Minimum spacing between Google Calendar API calls (ms) to reduce 403 rate limits */
+const GOOGLE_API_CALL_SPACING_MS = 25;
+
 /**
  * Service for syncing TaskNotes tasks to Google Calendar.
  * Handles creating, updating, and deleting calendar events when tasks change.
@@ -18,6 +21,8 @@ const SYNC_CONCURRENCY_LIMIT = 5;
 export class TaskCalendarSyncService {
 	private plugin: TaskNotesPlugin;
 	private googleCalendarService: GoogleCalendarService;
+	private rateLimitChain: Promise<unknown> = Promise.resolve();
+	private lastApiCallAt = 0;
 
 	/** Debounce timers for pending syncs, keyed by task path */
 	private pendingSyncs: Map<string, ReturnType<typeof setTimeout>> = new Map();
@@ -62,6 +67,26 @@ export class TaskCalendarSyncService {
 		}
 
 		await Promise.all(executing);
+	}
+
+	/**
+	 * Ensure Google API calls are spaced out to avoid 403 rate limits.
+	 * Calls are queued and executed with at least GOOGLE_API_CALL_SPACING_MS between them.
+	 */
+	private async withGoogleRateLimit<T>(fn: () => Promise<T>): Promise<T> {
+		const run = async () => {
+			const now = Date.now();
+			const wait = Math.max(0, GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt));
+			if (wait > 0) {
+				await new Promise((resolve) => setTimeout(resolve, wait));
+			}
+			const result = await fn();
+			this.lastApiCallAt = Date.now();
+			return result;
+		};
+
+		this.rateLimitChain = this.rateLimitChain.then(run, run);
+		return this.rateLimitChain as Promise<T>;
 	}
 
 	/**
@@ -470,21 +495,25 @@ export class TaskCalendarSyncService {
 
 			if (existingEventId) {
 				// Update existing event
-				await this.googleCalendarService.updateEvent(
-					settings.targetCalendarId,
-					existingEventId,
-					eventData
+				await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.updateEvent(
+						settings.targetCalendarId,
+						existingEventId,
+						eventData
+					)
 				);
 			} else {
 				// Create new event
-				const createdEvent = await this.googleCalendarService.createEvent(
-					settings.targetCalendarId,
-					{
-						...eventData,
-						start: eventData.start.date || eventData.start.dateTime!,
-						end: eventData.end.date || eventData.end.dateTime!,
-						isAllDay: !!eventData.start.date,
-					}
+				const createdEvent = await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.createEvent(
+						settings.targetCalendarId,
+						{
+							...eventData,
+							start: eventData.start.date || eventData.start.dateTime!,
+							end: eventData.end.date || eventData.end.dateTime!,
+							isAllDay: !!eventData.start.date,
+						}
+					)
 				);
 
 				// Extract the actual event ID from the ICSEvent ID format
@@ -611,13 +640,15 @@ export class TaskCalendarSyncService {
 				? this.buildEventDescription(task)
 				: undefined;
 
-			await this.googleCalendarService.updateEvent(
-				settings.targetCalendarId,
-				existingEventId,
-				{
-					summary: completedTitle,
-					description,
-				}
+			await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.updateEvent(
+					settings.targetCalendarId,
+					existingEventId,
+					{
+						summary: completedTitle,
+						description,
+					}
+				)
 			);
 		} catch (error: any) {
 			if (error.status === 404) {
@@ -647,10 +678,12 @@ export class TaskCalendarSyncService {
 			});
 
 			if (recurrenceData) {
-				await this.googleCalendarService.updateEvent(
-					settings.targetCalendarId,
-					eventId,
-					{ recurrence: recurrenceData.recurrence }
+				await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.updateEvent(
+						settings.targetCalendarId,
+						eventId,
+						{ recurrence: recurrenceData.recurrence }
+					)
 				);
 			}
 		} catch (error: any) {
@@ -680,9 +713,11 @@ export class TaskCalendarSyncService {
 		}
 
 		try {
-			await this.googleCalendarService.deleteEvent(
-				settings.targetCalendarId,
-				existingEventId
+			await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.deleteEvent(
+					settings.targetCalendarId,
+					existingEventId
+				)
 			);
 		} catch (error: any) {
 			// 404 or 410 means event is already gone - that's fine
@@ -706,7 +741,9 @@ export class TaskCalendarSyncService {
 		const settings = this.plugin.settings.googleCalendarExport;
 
 		try {
-			await this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId);
+			await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId)
+			);
 		} catch (error: any) {
 			// 404 or 410 means event is already gone - that's fine
 			if (error.status !== 404 && error.status !== 410) {
@@ -783,9 +820,11 @@ export class TaskCalendarSyncService {
 
 			if (deleteEvents) {
 				try {
-					await this.googleCalendarService.deleteEvent(
-						settings.targetCalendarId,
-						task.googleCalendarEventId
+					await this.withGoogleRateLimit(() =>
+						this.googleCalendarService.deleteEvent(
+							settings.targetCalendarId,
+							task.googleCalendarEventId
+						)
 					);
 				} catch (error) {
 					console.warn(`[TaskCalendarSync] Failed to delete event for ${task.path}:`, error);
