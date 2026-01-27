@@ -1365,6 +1365,7 @@ export class TaskContextMenu {
 				const recurrenceMenu = new RecurrenceContextMenu({
 					currentValue: typeof currentValue === "string" ? currentValue : undefined,
 					currentAnchor: this.options.task.recurrence_anchor || 'scheduled',
+					scheduledDate: this.options.task.scheduled,
 					onSelect: onSelect,
 					app: plugin.app,
 					plugin: plugin,
