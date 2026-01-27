@@ -344,6 +344,27 @@ export class TaskService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			// Add DTSTART to recurrence rule if it doesn't have one
+			// This ensures Google Calendar sync works correctly from the start
+			if (
+				completeTaskData.recurrence &&
+				typeof completeTaskData.recurrence === "string" &&
+				!completeTaskData.recurrence.includes("DTSTART:")
+			) {
+				const tempTaskInfo: TaskInfo = {
+					...completeTaskData,
+					title: title,
+					status: status,
+					priority: priority,
+					path: "", // Path not yet known, but not needed for DTSTART calculation
+					archived: false,
+				};
+				const recurrenceWithDTSTART = addDTSTARTToRecurrenceRule(tempTaskInfo);
+				if (recurrenceWithDTSTART) {
+					completeTaskData.recurrence = recurrenceWithDTSTART;
+				}
+			}
+
 			const shouldAddTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
 			const taskTagForFrontmatter = shouldAddTaskTag
 				? this.plugin.settings.taskTag
