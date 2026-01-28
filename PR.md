@@ -16,5 +16,12 @@ Examples (illustrative):
 
 ## Tests
 
+- `npm run i18n:sync`
+- `npm run lint` (warnings only; matches upstream)
 - `node generate-release-notes-import.mjs`
 - `npm run typecheck`
+- `npm run test:ci -- --verbose` (fails: `due-date-timezone-inconsistency.test.ts`, also failing in upstream)
+- `npm run test:integration`
+- `npm run test:performance`
+- `npm run build` (warns about missing OAuth env vars)
+- `npm run test:build`
