@@ -2,6 +2,14 @@ import { parseLinktext, TFile } from "obsidian";
 import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
 import { parseLinkToPath } from "../utils/linkUtils";
 
+function looksLikeFilePath(value: string): boolean {
+	const trimmed = value.trim();
+	if (trimmed.length === 0) return false;
+	if (trimmed.startsWith("./") || trimmed.startsWith("../")) return true;
+	if (trimmed.includes("/") || trimmed.includes("\\")) return true;
+	return trimmed.endsWith(".md");
+}
+
 function resolveDisplayText(
 	filePath: string,
 	displayText: string,
@@ -87,6 +95,11 @@ export function renderGroupTitle(
 
 	// Check if title is a file path (with or without .md extension)
 	// Try to resolve it as a file
+	if (!looksLikeFilePath(title)) {
+		container.textContent = title;
+		return;
+	}
+
 	const filePathToTry = title.endsWith(".md") ? title.replace(/\.md$/, "") : title;
 	const file = linkServices.metadataCache.getFirstLinkpathDest(filePathToTry, "");
 
