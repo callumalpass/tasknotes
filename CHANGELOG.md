@@ -46,6 +46,30 @@ Tests:
 
 Published PRs from `preq/`.
 
+### fix/project-card-refresh
+
+Summary:
+- Project cards refresh immediately after subtask edits in the task edit modal.
+
+Changes:
+- Invalidate the project index after subtask edits in the task edit modal.
+- Emit a task-updated event for the parent task to refresh visible views.
+
+Notes:
+- This is a minimal fix and does not address the broader, system-wide refresh architecture (see upstream issue #1423).
+- The project index invalidation is global and can be more expensive in large vaults; this is an intentional trade-off for immediate correctness.
+
+Tests:
+- `npm run i18n:sync`
+- `npm run lint` (warnings only; matches `upstream/main`)
+- `node generate-release-notes-import.mjs`
+- `npm run typecheck`
+- `npm run test:ci -- --verbose` (fails in `upstream/main`: `tests/unit/issues/due-date-timezone-inconsistency.test.ts`)
+- `npm run test:integration`
+- `npm run test:performance` (no tests found)
+- `npm run build` (missing OAuth IDs: `GOOGLE_OAUTH_CLIENT_ID`, `MICROSOFT_OAUTH_CLIENT_ID`)
+- `npm run test:build`
+
 ### feat/ui-tweaks
 
 Summary:
