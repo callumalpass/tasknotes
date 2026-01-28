@@ -2,7 +2,7 @@
 import { App, Notice, TFile, TAbstractFile, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
-import { TaskDependency, TaskInfo } from "../types";
+import { TaskDependency, TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import {
 	getCurrentTimestamp,
 	formatDateForStorage,
@@ -691,6 +691,15 @@ export class TaskEditModal extends TaskModal {
 
 			if (hasSubtaskChanges) {
 				await this.applySubtaskChanges(updatedTask);
+				this.plugin.projectSubtasksService?.invalidateProjectIndex();
+				if (!hasTaskChanges) {
+					this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+						path: updatedTask.path,
+						task: updatedTask,
+						taskInfo: updatedTask,
+						updatedTask,
+					});
+				}
 			}
 
 			if (this.unresolvedBlockingEntries.length > 0) {

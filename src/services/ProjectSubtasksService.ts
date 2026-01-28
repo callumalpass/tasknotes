@@ -239,6 +239,14 @@ export class ProjectSubtasksService {
 	}
 
 	/**
+	 * Mark the project index as stale so it rebuilds on next access.
+	 */
+	invalidateProjectIndex(): void {
+		this.projectIndex.clear();
+		this.indexLastBuilt = 0;
+	}
+
+	/**
 	 * Cleanup when service is destroyed
 	 */
 	destroy(): void {
