@@ -16,4 +16,5 @@ Examples (illustrative):
 
 ## Tests
 
-- Not run (manual testing only)
+- `node generate-release-notes-import.mjs`
+- `npm run typecheck`
