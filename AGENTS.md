@@ -9,9 +9,8 @@
 
 - `./upstream` → Upstream baseline mirror (**read-only**).
 - `./main` → Fork main worktree (branch `main`); merges only after explicit approval.
-- `./intg/<name>` → Integration test worktrees (merge multiple branches for combined testing; no pushes).
-- `./feat/drft/alpha/{feat, fix, ...}-<feature>` → Draft worktrees (active, not yet merged to `main`).
-- `./feat/drft/beta/{feat, fix, ...}-<feature>` → Draft worktrees (merged into `main`, no PR yet).
+- `./intg` → Integration test worktree (merge multiple branches for combined testing; no pushes).
+- `./feat/drft/{feat, fix, ...}-<feature>` → Draft worktrees (active, not yet merged to `main`).
 - `./feat/preq/{feat, fix, ...}-<feature>` → PR worktrees (published PRs).
 - `./_archive` → Archived worktrees/data (ignored for active work).
 
@@ -50,20 +49,15 @@ Robustness, modularity, maintainability, naming consistency, standards complianc
 
 ## Workflow (Strict)
 
-**Mandatory** before creating **any** new branch/worktree (applies to all `./feat/drft/alpha/*`, `./feat/drft/beta/*`, `./feat/preq/*`, and `./main`): Run the full **Status-Check (sync/clean)** and confirm a clean project state.
+**Mandatory** before creating **any** new branch/worktree (applies to all `./feat/drft/*`, `./feat/preq/*`, and `./main`): Run the full **Status-Check (sync/clean)** and confirm a clean project state.
 
 **Mandatory** if you merge `upstream/main` into any branch, run `npm run i18n:sync`. If `i18n.manifest.json` or `i18n.state.json` changed, commit them with `chore: sync i18n manifest`. This prevents CI failures in `Check i18n manifest is up-to-date`.
 
 ### 1) Where to Work
 
-- Default: work **only** in `./feat/drft/alpha/...`.
-- After a draft is merged into `main` but not yet published, move it to `./feat/drft/beta/...`.
+- Default: work **only** in `./feat/drft/...`.
 - Exception: fixing an **already published PR** → work directly in the matching `./feat/preq/...`.
 - Never develop in `./main`, `./upstream`, or `./intg`.
-
-```
-git -C ./main worktree move ./feat/drft/alpha/{feat, fix, ...}-<feature> ./feat/drft/beta/{feat, fix, ...}-<feature>
-```
 
 ### 2) Checkpoint Tags (Mandatory)
 
@@ -78,28 +72,25 @@ git -C ./main worktree move ./feat/drft/alpha/{feat, fix, ...}-<feature> ./feat/
 ```
 git -C ./main fetch upstream
 git -C ./main branch {feat, fix, ...}-<feature> upstream/main
-git -C ./main worktree add ./feat/drft/alpha/{feat, fix, ...}-<feature> {feat, fix, ...}-<feature>
+git -C ./main worktree add ./feat/drft/{feat, fix, ...}-<feature> {feat, fix, ...}-<feature>
 ```
 
 ### 3a) Integration Strategy (intg)
 
-- Merge candidate branches into `./intg/*` for **combined testing** before any merge to `main`.
-- `./intg/*` is for local verification only (no pushes).
-- A branch does **not** move to `drft/beta` just because it was merged into `intg`.
-- Do **not** keep `PR.md` in `./intg/*` (integration notes belong in `CHANGELOG.md` after merge to `main`).
+- Merge candidate branches into `./intg` for **combined testing** before any merge to `main`.
+- `./intg` is for local verification only (no pushes).
+- Do **not** keep `PR.md` in `./intg` (integration notes belong in `CHANGELOG.md` after merge to `main`).
 
 ### 4) Publishing a PR
 
-- When ready: move `./feat/drft/alpha/...` **or** `./feat/drft/beta/...` → `./feat/preq/...`:
+- When ready: move `./feat/drft/...` → `./feat/preq/...`:
 
 ```
-git -C ./main worktree move ./feat/drft/alpha/{feat, fix, ...}-<feature> ./feat/preq/{feat, fix, ...}-<feature>
-# or (if already integrated)
-git -C ./main worktree move ./feat/drft/beta/{feat, fix, ...}-<feature> ./feat/preq/{feat, fix, ...}-<feature>
+git -C ./main worktree move ./feat/drft/{feat, fix, ...}-<feature> ./feat/preq/{feat, fix, ...}-<feature>
 ```
 
 - Suggest to open a PR from that feature branch to upstream.
-- PRs may be opened **after** merging into `main` when the branch is already in `drft/beta`.
+- PRs may be opened **after** merging into `main`.
 
 ### 5) PR Documentation (Mandatory)
 
@@ -130,7 +121,7 @@ Examples (illustrative):
 ### 6) Integration to `main`
 
 - Only when explicitly requested.
-- Only after the branch has been verified in `./intg/*`.
+- Only after the branch has been verified in `./intg`.
 - Always **merge** (no cherry-picks) and **always** with `--no-ff`.
 - Merge commit message format:
   `Merge branch '<feature-branch>' of github.com:normenmueller/tasknotes into main`
@@ -209,8 +200,7 @@ Run `git status -sb` for:
 - `./main`
 - `./upstream`
 - every `./feat/preq/*` worktree
-- every `./feat/drft/alpha/*` worktree
-- every `./feat/drft/beta/*` worktree
+- every `./feat/drft/*` worktree
 - **Ignore** anything under `./_archive` (not part of active work).
 
 3) **Sync checks**
@@ -220,8 +210,7 @@ Run `git status -sb` for:
 git -C ./main rev-list --left-right --count upstream/main...HEAD
 ```
 - `./feat/preq/*` should be in sync with their `origin/<branch>` unless explicitly stated otherwise.
-- `./feat/drft/alpha/*` should be clean and may be ahead of `upstream/main` (report ahead count).
-- `./feat/drft/beta/*` should be clean and may be ahead of `upstream/main` (report ahead count).
+- `./feat/drft/*` should be clean and may be ahead of `upstream/main` (report ahead count).
 - Verify **no stray checkpoint tags** remain:
   - List `checkpoint-*` tags.
   - Only keep tags that are explicitly still needed; otherwise report them as cleanup items.
@@ -238,8 +227,7 @@ Return a concise summary:
 Before continuing implementation work, run a focused peer review across active worktrees.
 
 **Scope**
-- All branches in `./feat/drft/alpha/*`
-- All branches in `./feat/drft/beta/*`
+- All branches in `./feat/drft/*`
 - All branches in `./feat/preq/*`
 - `./main`
 
