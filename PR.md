@@ -20,11 +20,11 @@ Examples (illustrative):
 ## Tests
 
 - `npm run i18n:sync`
-- `npm run lint` (warnings only; matches `main`)
+- `npm run lint` (warnings only; matches `upstream/main`)
+- `node generate-release-notes-import.mjs`
 - `npm run typecheck`
-- `npm run test:ci -- --verbose` (fails: `due-date-timezone-inconsistency` test, same as `main`)
-- `./node_modules/.bin/jest tests/unit/ui/TaskCard.test.ts --runInBand`
+- `npm run test:ci -- --verbose` (fails in `upstream/main`: `tests/unit/issues/due-date-timezone-inconsistency.test.ts`)
 - `npm run test:integration`
 - `npm run test:performance` (no tests found)
-- `npm run build` (missing OAuth IDs warning, same as `main`)
+- `npm run build` (missing OAuth IDs: `GOOGLE_OAUTH_CLIENT_ID`, `MICROSOFT_OAUTH_CLIENT_ID`)
 - `npm run test:build`
