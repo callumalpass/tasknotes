@@ -333,9 +333,21 @@ export class KanbanView extends BasesViewBase {
 		// Must use internal API to detect if groupBy is configured.
 		// We can't rely on isGrouped() because it returns false when all items have null values.
 
-		const controller = this.basesController;
-
 		// Try to get groupBy from internal API (controller.query.views)
+		const view = this.getActiveViewConfig();
+		if (view?.groupBy) {
+			if (typeof view.groupBy === "object" && view.groupBy.property) {
+				return view.groupBy.property;
+			} else if (typeof view.groupBy === "string") {
+				return view.groupBy;
+			}
+		}
+
+		return null;
+	}
+
+	private getActiveViewConfig(): any | null {
+		const controller = this.basesController;
 		if (controller?.query?.views && controller?.viewName) {
 			const views = controller.query.views;
 			const viewName = controller.viewName;
@@ -343,16 +355,7 @@ export class KanbanView extends BasesViewBase {
 			for (let i = 0; i < 20; i++) {
 				const view = views[i];
 				if (view && view.name === viewName) {
-					if (view.groupBy) {
-						if (typeof view.groupBy === "object" && view.groupBy.property) {
-							return view.groupBy.property;
-						} else if (typeof view.groupBy === "string") {
-							return view.groupBy;
-						}
-					}
-
-					// View found but no groupBy configured
-					return null;
+					return view;
 				}
 			}
 		}
@@ -662,12 +665,16 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 
+		const swimLanesToRender = this.shouldHideEmptySwimLanes()
+			? this.filterEmptySwimLanes(swimLanes, orderedSwimLaneKeys)
+			: swimLanes;
+
 		// Apply column ordering
 		const columnKeys = Array.from(groups.keys());
 		const orderedKeys = this.applyColumnOrder(groupByPropertyId, columnKeys);
 
 		// Render swimlane table
-		await this.renderSwimLaneTable(swimLanes, orderedKeys, pathToProps);
+		await this.renderSwimLaneTable(swimLanesToRender, orderedKeys, pathToProps);
 	}
 
 	private async renderSwimLaneTable(
@@ -2169,6 +2176,86 @@ export class KanbanView extends BasesViewBase {
 			ordered.push(noneKey);
 		}
 		return ordered;
+	}
+
+	private shouldHideEmptySwimLanes(): boolean {
+		if (this.currentSearchTerm?.length) {
+			return true;
+		}
+
+		return this.hasActiveBasesFilters();
+	}
+
+	private hasActiveBasesFilters(): boolean {
+		const viewConfig = this.getActiveViewConfig();
+		if (this.isNonEmptyFilterConfig(this.extractFilterConfig(viewConfig))) {
+			return true;
+		}
+
+		const controller = this.basesController;
+		const query = controller?.query;
+		const config = controller?.getViewConfig?.() ?? query?.getViewConfig?.();
+		return this.isNonEmptyFilterConfig(this.extractFilterConfig(config));
+	}
+
+	private extractFilterConfig(config: any): any {
+		if (!config || typeof config !== "object") {
+			return null;
+		}
+
+		return (
+			config.filter ??
+			config.filters ??
+			config.query?.filter ??
+			config.query?.filters ??
+			config.where ??
+			config.conditions ??
+			null
+		);
+	}
+
+	private isNonEmptyFilterConfig(value: any): boolean {
+		if (!value) return false;
+		if (Array.isArray(value)) return value.length > 0;
+		if (typeof value === "string") return value.trim().length > 0;
+		if (typeof value === "object") {
+			const rules =
+				value.rules ??
+				value.conditions ??
+				value.filters ??
+				value.groups ??
+				null;
+			if (Array.isArray(rules)) return rules.length > 0;
+			if (rules && typeof rules === "object") return Object.keys(rules).length > 0;
+			return Object.keys(value).length > 0;
+		}
+		return false;
+	}
+
+	private filterEmptySwimLanes(
+		swimLanes: Map<string, Map<string, TaskInfo[]>>,
+		orderedKeys: string[]
+	): Map<string, Map<string, TaskInfo[]>> {
+		const filtered = new Map<string, Map<string, TaskInfo[]>>();
+
+		for (const swimLaneKey of orderedKeys) {
+			const columns = swimLanes.get(swimLaneKey);
+			if (!columns) continue;
+
+			let hasTasks = false;
+			for (const tasks of columns.values()) {
+				if (tasks.length > 0) {
+					hasTasks = true;
+					break;
+				}
+			}
+
+			if (hasTasks) {
+				filtered.set(swimLaneKey, columns);
+			}
+		}
+
+		return filtered;
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
