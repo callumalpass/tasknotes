@@ -46,6 +46,30 @@ Tests:
 
 Published PRs from `preq/`.
 
+### fix/swimlane-order
+
+Summary:
+- Swimlane ordering is deterministic and independent from card sorting; status/priority follow configured order and other fields sort alphabetically with "None" last.
+- When filters/search are active, empty swimlanes are hidden; switching between swimlane and non-swimlane boards resets layout correctly.
+
+Changes:
+- Sort swimlanes by property semantics instead of task order.
+- Include empty status/priority swimlanes based on configured options.
+- Keep "None" swimlane last for free-text fields.
+- Hide empty swimlanes when filters/search are active.
+- Reset swimlane layout class when toggling swimlanes or switching boards.
+
+Tests:
+- `npm run i18n:sync`
+- `npm run lint` (warnings only)
+- `node generate-release-notes-import.mjs`
+- `npm run typecheck`
+- `npm run test:ci -- --verbose` (fails: `tests/unit/issues/due-date-timezone-inconsistency.test.ts` — confirmed failing in `upstream/main`)
+- `npm run test:integration`
+- `npm run test:performance` (no tests found)
+- `npm run build` (warning: missing OAuth client IDs)
+- `npm run test:build`
+
 ### fix/context-group-title
 
 Summary:
