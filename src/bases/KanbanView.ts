@@ -572,6 +572,9 @@ export class KanbanView extends BasesViewBase {
 	private async renderFlat(groups: Map<string, TaskInfo[]>): Promise<void> {
 		if (!this.boardEl) return;
 
+		this.boardEl.removeClass("kanban-view__board--swimlanes");
+		this.boardEl.style.removeProperty("--kanban-swimlane-max-height");
+
 		// Set CSS variable for column width (allows responsive override)
 		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
 

@@ -2,7 +2,7 @@
 
 ## Deterministic swimlane ordering
 
-Swimlane ordering is now deterministic and independent from card sorting. Status/priority swimlanes follow their configured order, other fields sort alphabetically with "None" last. When filters/search are active, empty swimlanes are hidden.
+Swimlane ordering is now deterministic and independent from card sorting. Status/priority swimlanes follow their configured order, other fields sort alphabetically with "None" last. When filters/search are active, empty swimlanes are hidden. Switching between swimlane and non-swimlane boards resets the layout correctly.
 
 Examples (illustrative):
 
@@ -15,6 +15,7 @@ Examples (illustrative):
 - Include empty status/priority swimlanes based on configured options
 - Keep "None" swimlane last for free-text fields
 - Hide empty swimlanes when filters/search are active
+- Reset swimlane layout class when toggling swimlanes or switching boards
 
 ## Tests
 
