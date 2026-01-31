@@ -1,5 +1,7 @@
 # fix/render-hierarchical-tags
 
+Fixes: https://github.com/callumalpass/tasknotes/issues/1428
+
 ## Fix hierarchical tags in Agenda
 
 Render hierarchical tags with slashes (e.g., #g/tog) as a single tag token in Agenda/Task list views. This prevents the slash suffix from being rendered as plain text.
