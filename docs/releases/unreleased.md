@@ -79,6 +79,11 @@ Example:
   - The dropdown now listens for the `data-changed` event so it re-populates once calendars are fetched during deferred startup initialization
   - Thanks to @N-HEDGER for reporting
 
+- (#1567) Fixed inline task card widgets disappearing during transient cache invalidations
+  - Added a path-keyed fallback widget cache so that when the task info cache is temporarily empty (e.g. during Smart Connections processing), the previously-rendered widget is reused instead of showing a plain wiki link
+  - Stale fallback entries are cleaned up automatically when a task is deleted
+  - Thanks to @scztt for reporting
+
 - (#1568) Fixed deleted tasks not being removed from Google Calendar
   - When a task file is deleted outside of TaskNotes (e.g., via Obsidian's file manager), the synced Google Calendar event is now cleaned up automatically
   - The metadata cache `deleted` event's `prevCache` is now forwarded so the calendar event ID can be extracted from the former frontmatter
