@@ -875,11 +875,26 @@ export default class TaskNotesPlugin extends Plugin {
 			return;
 		}
 
-		// Check if status changed from non-completed to completed
+		// Check if task was just completed
+		let wasJustCompleted = false;
+
+		// For non-recurring tasks: check if status changed from non-completed to completed
 		const wasCompleted = this.statusManager.isCompletedStatus(originalTask.status);
 		const isNowCompleted = this.statusManager.isCompletedStatus(updatedTask.status);
-
 		if (!wasCompleted && isNowCompleted) {
+			wasJustCompleted = true;
+		}
+
+		// For recurring tasks: check if a new instance was completed (complete_instances grew)
+		if (updatedTask.recurrence) {
+			const originalInstances = originalTask.complete_instances || [];
+			const updatedInstances = updatedTask.complete_instances || [];
+			if (updatedInstances.length > originalInstances.length) {
+				wasJustCompleted = true;
+			}
+		}
+
+		if (wasJustCompleted) {
 			// Task was just marked as completed - check if it has active time tracking
 			const activeSession = this.getActiveTimeSession(updatedTask);
 			if (activeSession) {
