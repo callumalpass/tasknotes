@@ -26,6 +26,9 @@ Example:
 
 ## Added
 
+- (#1546) Added sticky kanban column headers that remain visible while scrolling
+  - Thanks to @normenmueller for the contribution
+
 - (#1458) Added CSS color classes to context tags for custom styling
   - Context tags now receive a BEM modifier class (`context-tag--color-0` through `context-tag--color-19`) based on a consistent hash of the context name
   - Enables users to style individual contexts via CSS snippets
