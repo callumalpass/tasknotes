@@ -24,6 +24,13 @@ Example:
 
 -->
 
+## Added
+
+- (#1458) Added CSS color classes to context tags for custom styling
+  - Context tags now receive a BEM modifier class (`context-tag--color-0` through `context-tag--color-19`) based on a consistent hash of the context name
+  - Enables users to style individual contexts via CSS snippets
+  - Thanks to @phortx for the contribution
+
 ## Fixed
 
 - (#1472) Fixed task dependencies not being stored as wikilinks in frontmatter
