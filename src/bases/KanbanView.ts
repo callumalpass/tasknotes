@@ -3,7 +3,7 @@ import { Notice, Platform, setIcon, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
-import { identifyTaskNotesFromBasesData } from "./helpers";
+import { identifyTaskNotesFromBasesData, BasesDataItem } from "./helpers";
 import { createTaskCard } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -277,6 +277,10 @@ export class KanbanView extends BasesViewBase {
 
 		try {
 			const dataItems = this.dataAdapter.extractDataItems();
+
+			// Compute formulas before reading formula-based properties (swimlanes, etc.)
+			await this.computeFormulas(dataItems);
+
 			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
 
 			// Apply search filter
@@ -1914,6 +1918,54 @@ export class KanbanView extends BasesViewBase {
 			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";
 		errorEl.textContent = `Error loading kanban: ${error.message || "Unknown error"}`;
 		this.boardEl.appendChild(errorEl);
+	}
+
+	/**
+	 * Compute Bases formulas for TaskNotes items.
+	 * Ensures formula-based properties (e.g. dueDateCategory) are populated
+	 * before swimlane/grouping reads them from cachedFormulaOutputs.
+	 */
+	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
+		const ctxFormulas = (this.data as any)?.ctx?.formulas;
+		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
+			return;
+		}
+
+		for (let i = 0; i < dataItems.length; i++) {
+			const item = dataItems[i];
+			const itemFormulaResults = item.basesData?.formulaResults;
+			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+
+			for (const formulaName of Object.keys(ctxFormulas)) {
+				const formula = ctxFormulas[formulaName];
+				if (formula && typeof formula.getValue === "function") {
+					try {
+						const baseData = item.basesData;
+						const taskProperties = item.properties || {};
+
+						let result;
+
+						if (baseData.frontmatter && Object.keys(taskProperties).length > 0) {
+							const originalFrontmatter = baseData.frontmatter;
+							baseData.frontmatter = {
+								...originalFrontmatter,
+								...taskProperties,
+							};
+							result = formula.getValue(baseData);
+							baseData.frontmatter = originalFrontmatter;
+						} else {
+							result = formula.getValue(baseData);
+						}
+
+						if (result !== undefined) {
+							itemFormulaResults.cachedFormulaOutputs[formulaName] = result;
+						}
+					} catch (e) {
+						// Formulas may fail for various reasons - this is expected
+					}
+				}
+			}
+		}
 	}
 
 	private buildPathToPropsMap(): Map<string, Record<string, any>> {

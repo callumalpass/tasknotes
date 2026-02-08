@@ -38,6 +38,11 @@ Example:
 
 ## Fixed
 
+- (#1494) Fixed Kanban swimlane resetting to "None" on initial load and after navigation
+  - Formula-based swimlane properties (e.g. dueDateCategory) were not computed before the first render
+  - Added formula computation to KanbanView, matching the existing pattern in TaskListView
+  - Thanks to @tnguyen2018 for reporting
+
 - Fixed [mdbase-spec](https://mdbase.dev) type definition generation not triggering when settings change
   - Improved generated `_types/task.md` to use proper multi-line YAML format with field descriptions
 
