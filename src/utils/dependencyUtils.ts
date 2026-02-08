@@ -64,8 +64,12 @@ export function normalizeDependencyList(value: unknown): TaskDependency[] | unde
 
 export function serializeDependencies(dependencies: TaskDependency[]): any[] {
 	return dependencies.map((dependency) => {
+		// Wrap uid in wikilink brackets if not already wrapped.
+		// normalizeDependencyEntry() strips link formatting from uids,
+		// so we must re-add it here to preserve wikilinks in frontmatter.
+		const uid = dependency.uid.startsWith("[[") ? dependency.uid : `[[${dependency.uid}]]`;
 		const serialized: Record<string, string> = {
-			uid: dependency.uid,
+			uid,
 			reltype: dependency.reltype,
 		};
 		if (dependency.gap && dependency.gap.trim().length > 0) {

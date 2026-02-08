@@ -23,3 +23,10 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1472) Fixed task dependencies not being stored as wikilinks in frontmatter
+  - `serializeDependencies()` now wraps UIDs in `[[...]]` brackets before writing to YAML
+  - Previously, normalization stripped wikilink brackets but serialization never re-added them, causing dependencies to break on file rename
+  - Thanks to @renekalff for reporting
