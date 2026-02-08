@@ -37,7 +37,7 @@ jest.mock('../../../src/utils/helpers', () => ({
       default: return undefined;
     }
   }),
-  addDTSTARTToRecurrenceRule: jest.fn((rule: string) => rule),
+  addDTSTARTToRecurrenceRule: jest.fn((task: { recurrence?: string }) => task.recurrence ? `DTSTART:20250110T120000Z;${task.recurrence}` : null),
   updateDTSTARTInRecurrenceRule: jest.fn((rule: string) => rule),
   updateToNextScheduledOccurrence: jest.fn(),
   splitFrontmatterAndBody: jest.fn(() => ({ frontmatter: {}, body: '' }))
@@ -123,7 +123,7 @@ describe('TaskService', () => {
         scheduled: '2025-01-10',
         contexts: ['work', 'urgent'],
         timeEstimate: 120,
-        recurrence: 'FREQ=DAILY;INTERVAL=1'
+        recurrence: 'DTSTART:20250110T120000Z;FREQ=DAILY;INTERVAL=1'
       });
       // With default tag-based identification, task tag should be included
       expect(taskInfo.tags).toContain('task');
