@@ -30,3 +30,8 @@ Example:
   - `serializeDependencies()` now wraps UIDs in `[[...]]` brackets before writing to YAML
   - Previously, normalization stripped wikilink brackets but serialization never re-added them, causing dependencies to break on file rename
   - Thanks to @renekalff for reporting
+
+- (#1443) Fixed default status/priority not updating when the referenced custom value is deleted
+  - Deleting a custom status or priority that was set as the default now resets the default to the first available value
+  - Added validation on settings render to catch stale defaults that reference non-existent values
+  - Thanks to @l-mb for the contribution
