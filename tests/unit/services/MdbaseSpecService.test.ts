@@ -29,27 +29,31 @@ function getYamlValue(yaml: string, key: string): string | undefined {
 	return match ? match[1].trim() : undefined;
 }
 
-/** Get all lines under a YAML key that are indented (simple block) */
-function getYamlBlock(yaml: string, key: string): string[] {
+/**
+ * Extract the multi-line block for a field under `fields:`.
+ * Returns all lines belonging to that field definition (from the field name
+ * line up to the next sibling field or end of fields section).
+ */
+function getFieldBlock(yaml: string, fieldName: string): string | undefined {
 	const lines = yaml.split("\n");
-	const startIdx = lines.findIndex((l) => l.match(new RegExp(`^${key}:`)));
-	if (startIdx === -1) return [];
-	const result: string[] = [];
+	// Find the field line at exactly 2-space indent under fields:
+	const fieldRe = new RegExp(`^  ${fieldName}:`);
+	const startIdx = lines.findIndex((l) => fieldRe.test(l));
+	if (startIdx === -1) return undefined;
+
+	const result: string[] = [lines[startIdx]];
 	for (let i = startIdx + 1; i < lines.length; i++) {
-		if (lines[i].match(/^\s+/)) {
-			result.push(lines[i]);
+		const line = lines[i];
+		// Stop at next sibling field (2-space indent, non-empty) or section boundary
+		if (line.match(/^  \S/) || line.match(/^[a-z]/)) break;
+		// Include deeper-indented lines and blank lines within the block
+		if (line.match(/^\s{4,}/) || line === "") {
+			result.push(line);
 		} else {
 			break;
 		}
 	}
-	return result;
-}
-
-/** Extract the inline object value for a field under `fields:` */
-function getFieldDef(yaml: string, fieldName: string): string | undefined {
-	const re = new RegExp(`^  ${fieldName}:\\s*(.+)$`, "m");
-	const match = yaml.match(re);
-	return match ? match[1].trim() : undefined;
+	return result.join("\n");
 }
 
 function createMockPlugin(overrides: Record<string, any> = {}): any {
@@ -154,7 +158,7 @@ describe("MdbaseSpecService", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
-			expect(getYamlValue(fm, "display_name_key")).toBe('"title"');
+			expect(getYamlValue(fm, "display_name_key")).toBe("title");
 		});
 
 		it("should use custom display_name_key when title field is remapped", () => {
@@ -165,7 +169,7 @@ describe("MdbaseSpecService", () => {
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
-			expect(getYamlValue(fm, "display_name_key")).toBe('"name"');
+			expect(getYamlValue(fm, "display_name_key")).toBe("name");
 		});
 	});
 
@@ -187,7 +191,7 @@ describe("MdbaseSpecService", () => {
 		});
 	});
 
-	describe("buildTaskTypeDef - core fields", () => {
+	describe("buildTaskTypeDef - core fields (multi-line format)", () => {
 		let fm: string;
 
 		beforeEach(() => {
@@ -195,97 +199,97 @@ describe("MdbaseSpecService", () => {
 			fm = extractFrontmatter(service.buildTaskTypeDef());
 		});
 
-		it("should define title as required string", () => {
-			const def = getFieldDef(fm, "title");
-			expect(def).toContain("type: string");
-			expect(def).toContain("required: true");
+		it("should define title as required string with description", () => {
+			const block = getFieldBlock(fm, "title");
+			expect(block).toContain("type: string");
+			expect(block).toContain("required: true");
+			expect(block).toContain("description:");
 		});
 
-		it("should define status as enum with default status values", () => {
-			const def = getFieldDef(fm, "status");
-			expect(def).toContain("type: enum");
-			expect(def).toContain('"none"');
-			expect(def).toContain('"open"');
-			expect(def).toContain('"in-progress"');
-			expect(def).toContain('"done"');
-			expect(def).toContain('default: "open"');
+		it("should define status as enum with values on separate lines", () => {
+			const block = getFieldBlock(fm, "status");
+			expect(block).toContain("type: enum");
+			expect(block).toContain("required: true");
+			expect(block).toContain("values: [none, open, in-progress, done]");
+			expect(block).toContain("default: open");
 		});
 
-		it("should define priority as enum with default priority values", () => {
-			const def = getFieldDef(fm, "priority");
-			expect(def).toContain("type: enum");
-			expect(def).toContain('"none"');
-			expect(def).toContain('"low"');
-			expect(def).toContain('"normal"');
-			expect(def).toContain('"high"');
-			expect(def).toContain('default: "normal"');
+		it("should define priority as enum with values", () => {
+			const block = getFieldBlock(fm, "priority");
+			expect(block).toContain("type: enum");
+			expect(block).toContain("values: [none, low, normal, high]");
+			expect(block).toContain("default: normal");
 		});
 
 		it("should define due as date", () => {
-			const def = getFieldDef(fm, "due");
-			expect(def).toContain("type: date");
+			const block = getFieldBlock(fm, "due");
+			expect(block).toContain("type: date");
 		});
 
 		it("should define scheduled as date", () => {
-			const def = getFieldDef(fm, "scheduled");
-			expect(def).toContain("type: date");
+			const block = getFieldBlock(fm, "scheduled");
+			expect(block).toContain("type: date");
 		});
 
 		it("should define contexts as list of strings", () => {
-			const def = getFieldDef(fm, "contexts");
-			expect(def).toContain("type: list");
-			expect(def).toContain("items: { type: string }");
+			const block = getFieldBlock(fm, "contexts");
+			expect(block).toContain("type: list");
+			expect(block).toContain("items:");
+			expect(block).toContain("type: string");
 		});
 
-		it("should define projects as list of links", () => {
-			const def = getFieldDef(fm, "projects");
-			expect(def).toContain("type: list");
-			expect(def).toContain("items: { type: link }");
+		it("should define projects as list of links with description", () => {
+			const block = getFieldBlock(fm, "projects");
+			expect(block).toContain("type: list");
+			expect(block).toContain("items:");
+			expect(block).toContain("type: link");
+			expect(block).toContain("description:");
 		});
 
 		it("should define timeEstimate as integer with min 0", () => {
-			const def = getFieldDef(fm, "timeEstimate");
-			expect(def).toContain("type: integer");
-			expect(def).toContain("min: 0");
+			const block = getFieldBlock(fm, "timeEstimate");
+			expect(block).toContain("type: integer");
+			expect(block).toContain("min: 0");
 		});
 
 		it("should define completedDate as date", () => {
-			const def = getFieldDef(fm, "completedDate");
-			expect(def).toContain("type: date");
+			const block = getFieldBlock(fm, "completedDate");
+			expect(block).toContain("type: date");
 		});
 
-		it("should define dateCreated as datetime", () => {
-			const def = getFieldDef(fm, "dateCreated");
-			expect(def).toContain("type: datetime");
+		it("should define dateCreated as datetime and required", () => {
+			const block = getFieldBlock(fm, "dateCreated");
+			expect(block).toContain("type: datetime");
+			expect(block).toContain("required: true");
 		});
 
 		it("should define dateModified as datetime", () => {
-			const def = getFieldDef(fm, "dateModified");
-			expect(def).toContain("type: datetime");
+			const block = getFieldBlock(fm, "dateModified");
+			expect(block).toContain("type: datetime");
 		});
 
 		it("should define recurrence as string", () => {
-			const def = getFieldDef(fm, "recurrence");
-			expect(def).toContain("type: string");
+			const block = getFieldBlock(fm, "recurrence");
+			expect(block).toContain("type: string");
 		});
 
 		it("should define recurrence_anchor as enum", () => {
-			const def = getFieldDef(fm, "recurrence_anchor");
-			expect(def).toContain("type: enum");
-			expect(def).toContain('"scheduled"');
-			expect(def).toContain('"completion"');
-			expect(def).toContain('default: "scheduled"');
+			const block = getFieldBlock(fm, "recurrence_anchor");
+			expect(block).toContain("type: enum");
+			expect(block).toContain("values: [scheduled, completion]");
+			expect(block).toContain("default: scheduled");
 		});
 
 		it("should define tags as list of strings", () => {
-			const def = getFieldDef(fm, "tags");
-			expect(def).toContain("type: list");
-			expect(def).toContain("items: { type: string }");
+			const block = getFieldBlock(fm, "tags");
+			expect(block).toContain("type: list");
+			expect(block).toContain("items:");
+			expect(block).toContain("type: string");
 		});
 
 		it("should define googleCalendarEventId as string", () => {
-			const def = getFieldDef(fm, "googleCalendarEventId");
-			expect(def).toContain("type: string");
+			const block = getFieldBlock(fm, "googleCalendarEventId");
+			expect(block).toContain("type: string");
 		});
 	});
 
@@ -297,50 +301,57 @@ describe("MdbaseSpecService", () => {
 			fm = extractFrontmatter(service.buildTaskTypeDef());
 		});
 
-		it("should define timeEntries as list of objects", () => {
-			const def = getFieldDef(fm, "timeEntries");
-			expect(def).toContain("type: list");
-			expect(def).toContain("type: object");
-			expect(def).toContain("startTime:");
-			expect(def).toContain("endTime:");
-			expect(def).toContain("description:");
-			expect(def).toContain("duration:");
+		it("should define timeEntries as list of objects with nested fields", () => {
+			const block = getFieldBlock(fm, "timeEntries");
+			expect(block).toContain("type: list");
+			expect(block).toContain("type: object");
+			expect(block).toContain("fields:");
+			expect(block).toContain("startTime:");
+			expect(block).toContain("endTime:");
+			expect(block).toContain("description:");
+			expect(block).toContain("duration:");
 		});
 
-		it("should define reminders as list of objects", () => {
-			const def = getFieldDef(fm, "reminders");
-			expect(def).toContain("type: list");
-			expect(def).toContain("type: object");
-			expect(def).toContain("id:");
-			expect(def).toContain("relatedTo:");
-			expect(def).toContain("offset:");
+		it("should define reminders as list of objects with description", () => {
+			const block = getFieldBlock(fm, "reminders");
+			expect(block).toContain("type: list");
+			expect(block).toContain("type: object");
+			expect(block).toContain("fields:");
+			expect(block).toContain("id:");
+			expect(block).toContain("relatedTo:");
+			expect(block).toContain("offset:");
+			expect(block).toContain('description: "Reminder objects');
 		});
 
 		it("should define blockedBy as list of objects", () => {
-			const def = getFieldDef(fm, "blockedBy");
-			expect(def).toContain("type: list");
-			expect(def).toContain("type: object");
-			expect(def).toContain("uid:");
-			expect(def).toContain("reltype:");
-			expect(def).toContain("gap:");
+			const block = getFieldBlock(fm, "blockedBy");
+			expect(block).toContain("type: list");
+			expect(block).toContain("type: object");
+			expect(block).toContain("fields:");
+			expect(block).toContain("uid:");
+			expect(block).toContain("reltype:");
+			expect(block).toContain("gap:");
 		});
 
 		it("should define complete_instances as list of dates", () => {
-			const def = getFieldDef(fm, "complete_instances");
-			expect(def).toContain("type: list");
-			expect(def).toContain("items: { type: date }");
+			const block = getFieldBlock(fm, "complete_instances");
+			expect(block).toContain("type: list");
+			expect(block).toContain("items:");
+			expect(block).toContain("type: date");
 		});
 
 		it("should define skipped_instances as list of dates", () => {
-			const def = getFieldDef(fm, "skipped_instances");
-			expect(def).toContain("type: list");
-			expect(def).toContain("items: { type: date }");
+			const block = getFieldBlock(fm, "skipped_instances");
+			expect(block).toContain("type: list");
+			expect(block).toContain("items:");
+			expect(block).toContain("type: date");
 		});
 
 		it("should define icsEventId as list of strings", () => {
-			const def = getFieldDef(fm, "icsEventId");
-			expect(def).toContain("type: list");
-			expect(def).toContain("items: { type: string }");
+			const block = getFieldBlock(fm, "icsEventId");
+			expect(block).toContain("type: list");
+			expect(block).toContain("items:");
+			expect(block).toContain("type: string");
 		});
 	});
 
@@ -361,16 +372,16 @@ describe("MdbaseSpecService", () => {
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
-			expect(getFieldDef(fm, "task_status")).toContain("type: enum");
-			expect(getFieldDef(fm, "task_priority")).toContain("type: enum");
-			expect(getFieldDef(fm, "due_date")).toContain("type: date");
-			expect(getFieldDef(fm, "scheduled_date")).toContain("type: date");
-			expect(getFieldDef(fm, "areas")).toContain("type: list");
-			expect(getFieldDef(fm, "related_projects")).toContain("type: list");
+			expect(getFieldBlock(fm, "task_status")).toContain("type: enum");
+			expect(getFieldBlock(fm, "task_priority")).toContain("type: enum");
+			expect(getFieldBlock(fm, "due_date")).toContain("type: date");
+			expect(getFieldBlock(fm, "scheduled_date")).toContain("type: date");
+			expect(getFieldBlock(fm, "areas")).toContain("type: list");
+			expect(getFieldBlock(fm, "related_projects")).toContain("type: list");
 
 			// Original names should not appear as field definitions
-			expect(getFieldDef(fm, "status")).toBeUndefined();
-			expect(getFieldDef(fm, "priority")).toBeUndefined();
+			expect(getFieldBlock(fm, "status")).toBeUndefined();
+			expect(getFieldBlock(fm, "priority")).toBeUndefined();
 		});
 	});
 
@@ -387,14 +398,14 @@ describe("MdbaseSpecService", () => {
 				})
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
-			const def = getFieldDef(fm, "status");
+			const block = getFieldBlock(fm, "status");
 
-			expect(def).toContain('"todo"');
-			expect(def).toContain('"doing"');
-			expect(def).toContain('"finished"');
-			expect(def).toContain('default: "todo"');
+			expect(block).toContain("todo");
+			expect(block).toContain("doing");
+			expect(block).toContain("finished");
+			expect(block).toContain("default: todo");
 			// Default statuses should not appear
-			expect(def).not.toContain('"in-progress"');
+			expect(block).not.toContain("in-progress");
 		});
 
 		it("should include custom priority values in enum", () => {
@@ -409,12 +420,12 @@ describe("MdbaseSpecService", () => {
 				})
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
-			const def = getFieldDef(fm, "priority");
+			const block = getFieldBlock(fm, "priority");
 
-			expect(def).toContain('"critical"');
-			expect(def).toContain('"important"');
-			expect(def).toContain('"nice"');
-			expect(def).toContain('default: "important"');
+			expect(block).toContain("critical");
+			expect(block).toContain("important");
+			expect(block).toContain("nice");
+			expect(block).toContain("default: important");
 		});
 	});
 
@@ -433,13 +444,14 @@ describe("MdbaseSpecService", () => {
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
-			expect(getFieldDef(fm, "effort")).toContain("type: number");
-			expect(getFieldDef(fm, "extra_notes")).toContain("type: string");
-			expect(getFieldDef(fm, "reviewed")).toContain("type: boolean");
-			expect(getFieldDef(fm, "review_date")).toContain("type: date");
-			const labelsDef = getFieldDef(fm, "labels");
-			expect(labelsDef).toContain("type: list");
-			expect(labelsDef).toContain("items: { type: string }");
+			expect(getFieldBlock(fm, "effort")).toContain("type: number");
+			expect(getFieldBlock(fm, "extra_notes")).toContain("type: string");
+			expect(getFieldBlock(fm, "reviewed")).toContain("type: boolean");
+			expect(getFieldBlock(fm, "review_date")).toContain("type: date");
+			const labelsBlock = getFieldBlock(fm, "labels");
+			expect(labelsBlock).toContain("type: list");
+			expect(labelsBlock).toContain("items:");
+			expect(labelsBlock).toContain("type: string");
 		});
 
 		it("should not include user fields section when none are defined", () => {
@@ -449,8 +461,8 @@ describe("MdbaseSpecService", () => {
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
 			// Should still have core fields but no extra fields beyond the known set
-			expect(getFieldDef(fm, "title")).toBeDefined();
-			expect(getFieldDef(fm, "effort")).toBeUndefined();
+			expect(getFieldBlock(fm, "title")).toBeDefined();
+			expect(getFieldBlock(fm, "effort")).toBeUndefined();
 		});
 	});
 
@@ -477,6 +489,33 @@ describe("MdbaseSpecService", () => {
 
 			// The path_glob should have escaped quotes
 			expect(fm).toContain('path_glob: "tasks/my \\"special\\" folder/**/*.md"');
+		});
+	});
+
+	describe("buildTaskTypeDef - multi-line YAML format", () => {
+		it("should output fields in multi-line format, not inline", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			// Should NOT contain inline object notation for field definitions
+			expect(fm).not.toMatch(/^  \w+: \{/m);
+		});
+
+		it("should indent field properties under the field name", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			// title field should have properties on subsequent indented lines
+			expect(fm).toMatch(/^  title:\n    type: string\n    required: true/m);
+		});
+
+		it("should nest object items with proper indentation", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			// reminders should have deeply nested structure
+			const block = getFieldBlock(fm, "reminders");
+			expect(block).toMatch(/items:\n\s+type: object\n\s+fields:/);
 		});
 	});
 

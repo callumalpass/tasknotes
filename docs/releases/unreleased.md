@@ -23,3 +23,8 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- Fixed [mdbase-spec](https://mdbase.dev) type definition generation not triggering when settings change
+- Improved generated `_types/task.md` to use proper multi-line YAML format with field descriptions

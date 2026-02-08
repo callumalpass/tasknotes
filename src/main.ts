@@ -218,6 +218,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
 
+	// mdbase-spec generation service
+	mdbaseSpecService: import("./services/MdbaseSpecService").MdbaseSpecService;
+
 	// Bases filter converter for exporting saved views
 	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
 
@@ -369,6 +372,10 @@ export default class TaskNotesPlugin extends Plugin {
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");
 		this.basesFilterConverter = new BasesFilterConverter(this);
+
+		// Initialize mdbase-spec generation service
+		const { MdbaseSpecService } = await import("./services/MdbaseSpecService");
+		this.mdbaseSpecService = new MdbaseSpecService(this);
 
 		// Create ICS services early so views can register event listeners
 		// (initialization will be deferred to lazy loading)
@@ -1426,6 +1433,9 @@ export default class TaskNotesPlugin extends Plugin {
 		if (this.statusBarService) {
 			this.statusBarService.updateVisibility();
 		}
+
+		// Regenerate mdbase-spec files if the feature is enabled
+		this.mdbaseSpecService?.onSettingsChanged();
 
 		// Invalidate filter options cache so new settings (e.g., user fields) appear immediately
 		this.filterService?.refreshFilterOptions();

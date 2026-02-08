@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import TaskNotesPlugin from "../main";
-import { FieldMapping } from "../types";
 import { UserMappedField } from "../types/settings";
 
 /**
@@ -93,8 +92,8 @@ export class MdbaseSpecService {
 		const lines: string[] = [];
 		lines.push("---");
 		lines.push("name: task");
-		lines.push('description: "A task managed by the TaskNotes plugin for Obsidian"');
-		lines.push(`display_name_key: ${yamlQuote(fm.toUserField("title"))}`);
+		lines.push("description: A task managed by the TaskNotes plugin for Obsidian.");
+		lines.push(`display_name_key: ${fm.toUserField("title")}`);
 		lines.push("strict: false");
 		lines.push("");
 
@@ -107,10 +106,15 @@ export class MdbaseSpecService {
 		lines.push("fields:");
 
 		// Core fields
-		this.addField(lines, fm.toUserField("title"), { type: "string", required: true });
+		this.addField(lines, fm.toUserField("title"), {
+			type: "string",
+			required: true,
+			description: "Short summary of the task.",
+		});
 
 		this.addField(lines, fm.toUserField("status"), {
 			type: "enum",
+			required: true,
 			values: settings.customStatuses.map((s) => s.value),
 			default: settings.defaultTaskStatus,
 		});
@@ -130,10 +134,15 @@ export class MdbaseSpecService {
 		this.addField(lines, fm.toUserField("projects"), {
 			type: "list",
 			items: { type: "link" },
+			description: "Wikilinks to related project notes.",
 		});
-		this.addField(lines, fm.toUserField("timeEstimate"), { type: "integer", min: 0 });
+		this.addField(lines, fm.toUserField("timeEstimate"), {
+			type: "integer",
+			min: 0,
+			description: "Estimated time in minutes.",
+		});
 		this.addField(lines, fm.toUserField("completedDate"), { type: "date" });
-		this.addField(lines, fm.toUserField("dateCreated"), { type: "datetime" });
+		this.addField(lines, fm.toUserField("dateCreated"), { type: "datetime", required: true });
 		this.addField(lines, fm.toUserField("dateModified"), { type: "datetime" });
 		this.addField(lines, fm.toUserField("recurrence"), { type: "string" });
 		this.addField(lines, fm.toUserField("recurrenceAnchor"), {
@@ -162,14 +171,21 @@ export class MdbaseSpecService {
 			items: {
 				type: "object",
 				fields: {
-					id: { type: "string" },
+					id: { type: "string", required: true },
 					type: { type: "string" },
-					relatedTo: { type: "string" },
-					offset: { type: "integer" },
-					absoluteTime: { type: "string" },
 					description: { type: "string" },
+					relatedTo: {
+						type: "string",
+						description: "Field the reminder is relative to (e.g. 'due').",
+					},
+					offset: {
+						type: "string",
+						description: "ISO 8601 duration offset (e.g. '-PT1H').",
+					},
+					absoluteTime: { type: "string" },
 				},
 			},
+			description: "Reminder objects with id, type, offset, etc.",
 		});
 
 		this.addField(lines, fm.toUserField("blockedBy"), {
@@ -177,7 +193,7 @@ export class MdbaseSpecService {
 			items: {
 				type: "object",
 				fields: {
-					uid: { type: "string" },
+					uid: { type: "string", required: true },
 					reltype: { type: "string" },
 					gap: { type: "string" },
 				},
@@ -225,50 +241,49 @@ export class MdbaseSpecService {
 	}
 
 	/**
-	 * Add a field definition to the YAML lines array.
+	 * Add a field definition to the YAML lines array using multi-line format.
 	 */
-	private addField(lines: string[], name: string, def: FieldDef): void {
-		const inline = this.fieldDefToInlineYaml(def);
-		lines.push(`  ${name}: ${inline}`);
+	private addField(lines: string[], name: string, def: FieldDef, indent = 2): void {
+		const pad = " ".repeat(indent);
+		lines.push(`${pad}${name}:`);
+		this.writeFieldProps(lines, def, indent + 2);
 	}
 
 	/**
-	 * Convert a field definition to inline YAML object notation.
+	 * Write field properties as indented YAML lines.
 	 */
-	private fieldDefToInlineYaml(def: FieldDef): string {
-		const parts: string[] = [];
-		parts.push(`type: ${def.type}`);
+	private writeFieldProps(lines: string[], def: FieldDef, indent: number): void {
+		const pad = " ".repeat(indent);
+		lines.push(`${pad}type: ${def.type}`);
 
 		if (def.required) {
-			parts.push("required: true");
+			lines.push(`${pad}required: true`);
 		}
 		if (def.values) {
-			parts.push(`values: [${def.values.map(yamlQuote).join(", ")}]`);
+			lines.push(`${pad}values: [${def.values.join(", ")}]`);
 		}
 		if (def.default !== undefined) {
-			parts.push(`default: ${yamlQuote(def.default)}`);
+			lines.push(`${pad}default: ${def.default}`);
 		}
 		if (def.min !== undefined) {
-			parts.push(`min: ${def.min}`);
+			lines.push(`${pad}min: ${def.min}`);
+		}
+		if (def.description) {
+			lines.push(`${pad}description: ${yamlQuote(def.description)}`);
 		}
 		if (def.items) {
 			if (def.items.type === "object" && def.items.fields) {
-				parts.push(`items: { type: object, fields: { ${this.buildNestedFields(def.items.fields)} } }`);
+				lines.push(`${pad}items:`);
+				lines.push(`${pad}  type: object`);
+				lines.push(`${pad}  fields:`);
+				for (const [fieldName, fieldDef] of Object.entries(def.items.fields)) {
+					this.addField(lines, fieldName, fieldDef, indent + 4);
+				}
 			} else {
-				parts.push(`items: { type: ${def.items.type} }`);
+				lines.push(`${pad}items:`);
+				lines.push(`${pad}  type: ${def.items.type}`);
 			}
 		}
-
-		return `{ ${parts.join(", ")} }`;
-	}
-
-	/**
-	 * Build nested field definitions for object items.
-	 */
-	private buildNestedFields(fields: Record<string, FieldDef>): string {
-		return Object.entries(fields)
-			.map(([name, def]) => `${name}: { type: ${def.type} }`)
-			.join(", ");
 	}
 
 	/**
@@ -301,6 +316,7 @@ interface FieldDef {
 	values?: string[];
 	default?: string;
 	min?: number;
+	description?: string;
 	items?: {
 		type: string;
 		fields?: Record<string, FieldDef>;
