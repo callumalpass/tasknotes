@@ -137,7 +137,7 @@ export class TaskManager extends Events {
 		// Listen for file deletion
 		const deletedRef = this.app.metadataCache.on("deleted", (file, prevCache) => {
 			if (file instanceof TFile && file.extension === "md") {
-				this.handleFileDeleted(file.path);
+				this.handleFileDeleted(file.path, prevCache);
 			}
 		});
 		this.eventListeners.push(deletedRef);
@@ -184,7 +184,7 @@ export class TaskManager extends Events {
 	/**
 	 * Handle file deletion
 	 */
-	private handleFileDeleted(path: string): void {
+	private handleFileDeleted(path: string, prevCache: any): void {
 		// Cancel any pending debounced handlers
 		const timeoutId = this.debouncedHandlers.get(path);
 		if (timeoutId) {
@@ -192,7 +192,7 @@ export class TaskManager extends Events {
 			this.debouncedHandlers.delete(path);
 		}
 
-		this.trigger("file-deleted", { path });
+		this.trigger("file-deleted", { path, prevCache });
 		this.trigger("data-changed");
 	}
 

@@ -624,6 +624,22 @@ export default class TaskNotesPlugin extends Plugin {
 					this.googleCalendarService
 				);
 
+				// Clean up Google Calendar events when task files are deleted externally
+				this.registerEvent(
+					this.emitter.on("file-deleted", (data: { path: string; prevCache?: any }) => {
+						if (!this.taskCalendarSyncService?.isEnabled()) return;
+						const eventIdKey = this.fieldMapper.toUserField("googleCalendarEventId");
+						const eventId = data.prevCache?.frontmatter?.[eventIdKey];
+						if (eventId) {
+							this.taskCalendarSyncService
+								.deleteTaskFromCalendarByPath(data.path, eventId)
+								.catch((error) => {
+									console.warn("Failed to delete task from Google Calendar on file deletion:", error);
+								});
+						}
+					})
+				);
+
 				// Microsoft Calendar
 				this.microsoftCalendarService.on("data-changed", () => {
 					// Trigger calendar view refreshes when Microsoft Calendar events change

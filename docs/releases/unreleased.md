@@ -78,3 +78,8 @@ Example:
 - (#1565) Fixed Google Calendar target calendar dropdown appearing empty after app restart
   - The dropdown now listens for the `data-changed` event so it re-populates once calendars are fetched during deferred startup initialization
   - Thanks to @N-HEDGER for reporting
+
+- (#1568) Fixed deleted tasks not being removed from Google Calendar
+  - When a task file is deleted outside of TaskNotes (e.g., via Obsidian's file manager), the synced Google Calendar event is now cleaned up automatically
+  - The metadata cache `deleted` event's `prevCache` is now forwarded so the calendar event ID can be extracted from the former frontmatter
+  - Thanks to @kmaustral for reporting
