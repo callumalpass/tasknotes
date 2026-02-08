@@ -2617,6 +2617,7 @@ export const es: TranslationTree = {
 				addBlockingTitle: "Agregar tareas que esto bloquea",
 				removeBlockedBy: "Eliminar bloqueado-por…",
 				removeBlocking: "Eliminar bloqueando…",
+				unknownDependency: "Desconocido",
 				inputPlaceholder: "[[Nota de tarea]]",
 				notices: {
 					noEntries: "Por favor ingrese al menos una tarea",

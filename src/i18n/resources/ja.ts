@@ -2617,6 +2617,7 @@ export const ja: TranslationTree = {
 				addBlockingTitle: "このタスクがブロックするタスクを追加",
 				removeBlockedBy: "ブロック元を削除…",
 				removeBlocking: "ブロックしているを削除…",
+				unknownDependency: "不明",
 				inputPlaceholder: "[[タスクノート]]",
 				notices: {
 					noEntries: "少なくとも1つのタスクを入力してください",

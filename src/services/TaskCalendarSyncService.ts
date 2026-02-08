@@ -605,11 +605,19 @@ export class TaskCalendarSyncService {
 				overrides: taskReminders,
 			};
 		} else if (settings.defaultReminderMinutes !== null && settings.defaultReminderMinutes > 0) {
-			// Fall back to default reminder setting
-			event.reminders = {
-				useDefault: false,
-				overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
-			};
+			// For all-day events, use Google Calendar's default all-day notifications
+			// (configured by the user in their Google Calendar settings) rather than
+			// overriding with minutes-based reminders which would fire at the wrong time
+			// (e.g., 11:30 PM the night before instead of 9 AM day-of). See #1465.
+			const isAllDay = settings.createAsAllDay || startInfo.isAllDay;
+			if (isAllDay) {
+				event.reminders = { useDefault: true };
+			} else {
+				event.reminders = {
+					useDefault: false,
+					overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
+				};
+			}
 		}
 
 		// Add recurrence rules for scheduled-based recurring tasks

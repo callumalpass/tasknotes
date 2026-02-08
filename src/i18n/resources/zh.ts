@@ -2617,6 +2617,7 @@ export const zh: TranslationTree = {
 				addBlockingTitle: "添加此任务阻塞的任务",
 				removeBlockedBy: "删除\"被阻塞\"…",
 				removeBlocking: "删除\"阻塞中\"…",
+				unknownDependency: "未知",
 				inputPlaceholder: "[[任务笔记]]",
 				notices: {
 					noEntries: "请至少输入一个任务",

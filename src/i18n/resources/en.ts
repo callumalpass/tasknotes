@@ -2674,6 +2674,7 @@ export const en: TranslationTree = {
 				addBlockingTitle: "Add tasks this blocks",
 				removeBlockedBy: "Remove blocked-by…",
 				removeBlocking: "Remove blocking…",
+				unknownDependency: "Unknown",
 				inputPlaceholder: "[[Task Note]]",
 					notices: {
 						noEntries: "Please enter at least one task",

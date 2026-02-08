@@ -2617,6 +2617,7 @@ export const fr: TranslationTree = {
 				addBlockingTitle: "Ajouter des tâches bloquées par celle-ci",
 				removeBlockedBy: "Retirer « bloqué par »…",
 				removeBlocking: "Retirer « bloquant »…",
+				unknownDependency: "Inconnu",
 				inputPlaceholder: "[[Note de tâche]]",
 				notices: {
 					noEntries: "Veuillez saisir au moins une tâche",

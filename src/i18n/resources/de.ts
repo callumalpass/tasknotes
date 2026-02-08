@@ -2617,6 +2617,7 @@ export const de: TranslationTree = {
 				addBlockingTitle: "Aufgaben hinzufügen, die dies blockiert",
 				removeBlockedBy: "Blockiert-von entfernen…",
 				removeBlocking: "Blockierend entfernen…",
+				unknownDependency: "Unbekannt",
 				inputPlaceholder: "[[Aufgabennotiz]]",
 				notices: {
 					noEntries: "Bitte geben Sie mindestens eine Aufgabe ein",

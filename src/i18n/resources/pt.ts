@@ -2619,12 +2619,13 @@ export const pt: TranslationTree = {
 			createSubtask: "Criar subtarefa",
 			dependencies: {
 				title: "Dependências",
-				addBlockedBy: "Adicionar “bloqueada por”...",
+				addBlockedBy: "Adicionar \"bloqueada por\"...",
 				addBlockedByTitle: "Adicionar tarefas das quais esta depende",
-				addBlocking: "Adicionar “bloqueando”...",
+				addBlocking: "Adicionar \"bloqueando\"...",
 				addBlockingTitle: "Adicionar tarefas que esta bloqueia",
-				removeBlockedBy: "Remover “bloqueada por”...",
-				removeBlocking: "Remover “bloqueando”...",
+				removeBlockedBy: "Remover \"bloqueada por\"...",
+				removeBlocking: "Remover \"bloqueando\"...",
+				unknownDependency: "Desconhecido",
 				inputPlaceholder: "[[Nota da Tarefa]]",
 				notices: {
 					noEntries: "Por favor, insira pelo menos uma tarefa",

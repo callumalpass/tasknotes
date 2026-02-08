@@ -2567,6 +2567,7 @@ export const ko: TranslationTree = {
 				addBlockingTitle: "이 작업이 차단하는 작업 추가",
 				removeBlockedBy: "차단 원인 제거...",
 				removeBlocking: "차단 중 제거...",
+				unknownDependency: "알 수 없음",
 				inputPlaceholder: "[[작업 노트]]",
 				notices: {
 					noEntries: "최소 하나의 작업을 입력하세요",

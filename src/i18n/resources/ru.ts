@@ -2617,6 +2617,7 @@ export const ru: TranslationTree = {
 				addBlockingTitle: "Добавить задачи, которые блокирует текущая",
 				removeBlockedBy: "Удалить «заблокирована»…",
 				removeBlocking: "Удалить «блокирует»…",
+				unknownDependency: "Неизвестно",
 				inputPlaceholder: "[[Задача]]",
 				notices: {
 					noEntries: "Введите хотя бы одну задачу",
