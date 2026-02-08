@@ -51,27 +51,27 @@ Example:
   - Normalized link comparison so different link syntaxes (e.g., angle-bracket markdown links vs wikilinks) no longer cause false change detection
   - Thanks to @normenmueller for the contribution
 
-- (#1517) Fixed task reminders not syncing to Google Calendar
+- (#1514), (#1517) Fixed task reminders not syncing to Google Calendar
   - Task-specific reminders (both relative and absolute) are now converted to Google Calendar API format
   - Previously only the global `defaultReminderMinutes` setting was used, ignoring per-task reminders
   - Thanks to @christenbc for the contribution
 
-- (#1531) Fixed subtask status dot not refreshing visuals immediately on click
+- (#1525), (#1531) Fixed subtask status dot not refreshing visuals immediately on click
   - Status dot, checkbox, card classes, and CSS vars now update instantly when cycling status
   - Reuses shared status handler for newly-created status dots, eliminating duplicated logic
   - Card class updates now use `classList.toggle` instead of rebuilding `className`, preserving classes from other systems
   - Thanks to @christenbc for the contribution
 
-- (#1537) Fixed Google Calendar 403 rate limit errors during bulk sync
+- (#1533), (#1537) Fixed Google Calendar 403 rate limit errors during bulk sync
   - Added rate limiting to space out API calls, preventing errors when syncing many tasks (~350+)
   - Thanks to @Lorite for the contribution
 
-- (#1540) Fixed time loss when setting recurrence and recurrence not clearing from Google Calendar
+- (#1515), (#1540) Fixed time loss when setting recurrence and recurrence not clearing from Google Calendar
   - Setting recurrence on a task with a scheduled time now preserves the time component in DTSTART, preventing Google Calendar events from appearing as all-day
   - Clearing recurrence from a task now explicitly removes it from the synced Google Calendar event
   - Thanks to @christenbc for the contribution
 
-- (#1559) Fixed hierarchical tags with slashes (e.g., `#project/sub-project`) being truncated in link text rendering
+- (#1428), (#1559) Fixed hierarchical tags with slashes (e.g., `#project/sub-project`) being truncated in link text rendering
   - Tag regex now supports slashes, hyphens, and Unicode characters
   - Thanks to @normenmueller for the contribution
 
