@@ -38,6 +38,10 @@ Example:
 
 ## Fixed
 
+- (#1491) Fixed boolean property values being quoted as strings in Bases filter generation
+  - When using a boolean property (e.g. `tasknote: true`) for task identification, the filter now emits unquoted booleans
+  - Thanks to @denisgorod for reporting
+
 - (#1494) Fixed Kanban swimlane resetting to "None" on initial load and after navigation
   - Formula-based swimlane properties (e.g. dueDateCategory) were not computed before the first render
   - Added formula computation to KanbanView, matching the existing pattern in TaskListView
