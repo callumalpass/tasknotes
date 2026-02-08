@@ -38,6 +38,10 @@ Example:
 
 ## Fixed
 
+- (#1456) Fixed inline tasks jumping visually when marked as completed
+  - Removed scale transformation from the entrance animation to prevent distracting movement on status change
+  - Thanks to @3zra47 for reporting
+
 - (#1364) Fixed auto-stop time tracking not triggering when completing recurring task instances
   - The auto-stop logic now detects when `complete_instances` grows, not just status changes
 
