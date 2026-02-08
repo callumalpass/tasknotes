@@ -36,6 +36,9 @@ Example:
 - (#1532) Fixed expanded task modal buttons being cut off when content exceeds viewport height
   - Thanks to @willfanguy for reporting
 
+- (#1542) Fixed declined and cancelled events from ICS calendar subscriptions appearing in calendar view
+  - Events with `STATUS:CANCELLED` or an attendee `PARTSTAT=DECLINED` are now filtered out
+
 - (#1556) Fixed completion-based recurring tasks not rescheduling when INTERVAL exceeds 30 (DAILY) or ~12 (WEEKLY)
   - The look-ahead window for finding the next occurrence now scales with the INTERVAL value
   - Thanks to @kazerniel for reporting
