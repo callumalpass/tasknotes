@@ -990,12 +990,13 @@ export class TaskCalendarSyncService {
 				continue;
 			}
 
+			const eventId = task.googleCalendarEventId;
 			if (deleteEvents) {
 				try {
 					await this.withGoogleRateLimit(() =>
 						this.googleCalendarService.deleteEvent(
 							settings.targetCalendarId,
-							task.googleCalendarEventId
+							eventId
 						)
 					);
 				} catch (error) {
