@@ -2023,6 +2023,13 @@ export const de: TranslationTree = {
 				header: "Andere Plugin-Integrationen",
 				description: "Konfiguriere Integrationen mit anderen Obsidian-Plugins.",
 			},
+			mdbaseSpec: {
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "Gerade eben",
 				minutesAgo: "vor {minutes} Minute{plural}",

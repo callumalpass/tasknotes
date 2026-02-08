@@ -374,6 +374,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	inlineVisibleProperties: ["status", "priority", "due", "scheduled", "recurrence"],
 	// Bases integration defaults
 	enableBases: true,
+	enableMdbaseSpec: false,
 	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {

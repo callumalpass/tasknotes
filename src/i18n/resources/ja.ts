@@ -2023,6 +2023,13 @@ export const ja: TranslationTree = {
 				header: "その他のプラグイン統合",
 				description: "他のObsidianプラグインとの統合を設定します。",
 			},
+			mdbaseSpec: {
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "たった今",
 				minutesAgo: "{minutes}分前",

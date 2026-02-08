@@ -2023,6 +2023,13 @@ export const zh: TranslationTree = {
 				header: "其他插件集成",
 				description: "配置与其他Obsidian插件的集成。",
 			},
+			mdbaseSpec: {
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "刚刚",
 				minutesAgo: "{minutes}分钟{plural}前",

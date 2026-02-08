@@ -1973,6 +1973,13 @@ export const ko: TranslationTree = {
 				header: "기타 플러그인 통합",
 				description: "다른 Obsidian 플러그인과의 통합을 설정합니다.",
 			},
+			mdbaseSpec: {
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "방금",
 				minutesAgo: "{minutes}분 전",

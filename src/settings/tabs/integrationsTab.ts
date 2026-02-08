@@ -83,6 +83,34 @@ export function renderIntegrationsTab(
 	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
+	// mdbase-spec Section
+	createSettingGroup(
+		container,
+		{
+			heading: translate("settings.integrations.mdbaseSpec.header"),
+		},
+		(group) => {
+			group.addSetting((setting) => {
+				configureToggleSetting(setting, {
+					name: translate("settings.integrations.mdbaseSpec.enable.name"),
+					desc: "",
+					getValue: () => plugin.settings.enableMdbaseSpec,
+					setValue: (value: boolean) => {
+						plugin.settings.enableMdbaseSpec = value;
+						save();
+					},
+				});
+				const descEl = setting.descEl;
+				descEl.createSpan({ text: translate("settings.integrations.mdbaseSpec.enable.description") + " " });
+				const link = descEl.createEl("a", {
+					text: translate("settings.integrations.mdbaseSpec.learnMore"),
+					href: "https://mdbase.dev",
+				});
+				link.setAttr("target", "_blank");
+			});
+		}
+	);
+
 	// OAuth Calendar Integration Section
 	createSettingGroup(
 		container,
@@ -1505,17 +1533,6 @@ export function renderIntegrationsTab(
 		);
 	}
 
-	// Other Integrations Section
-	createSettingGroup(
-		container,
-		{
-			heading: translate("settings.integrations.otherIntegrations.header"),
-			description: translate("settings.integrations.otherIntegrations.description"),
-		},
-		() => {
-			// No settings yet - placeholder for future integrations
-		}
-	);
 }
 
 function renderICSSubscriptionsList(
