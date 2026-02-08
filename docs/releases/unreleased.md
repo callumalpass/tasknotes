@@ -52,3 +52,9 @@ Example:
   - Task-specific reminders (both relative and absolute) are now converted to Google Calendar API format
   - Previously only the global `defaultReminderMinutes` setting was used, ignoring per-task reminders
   - Thanks to @christenbc for the contribution
+
+- (#1531) Fixed subtask status dot not refreshing visuals immediately on click
+  - Status dot, checkbox, card classes, and CSS vars now update instantly when cycling status
+  - Reuses shared status handler for newly-created status dots, eliminating duplicated logic
+  - Card class updates now use `classList.toggle` instead of rebuilding `className`, preserving classes from other systems
+  - Thanks to @christenbc for the contribution
