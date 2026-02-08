@@ -38,6 +38,15 @@ Example:
 
 ## Fixed
 
+- (#1364) Fixed auto-stop time tracking not triggering when completing recurring task instances
+  - The auto-stop logic now detects when `complete_instances` grows, not just status changes
+
+- (#1465) Fixed all-day events synced to Google Calendar receiving wrong notification time
+  - All-day events now use Google Calendar's configured all-day notification defaults instead of a minutes-based reminder
+
+- (#1470) Fixed cursor showing as default instead of pointer on interactive elements
+  - Added `pointer` fallback to all 91 `var(--cursor)` declarations across 19 CSS files
+
 - (#1491) Fixed boolean property values being quoted as strings in Bases filter generation
   - When using a boolean property (e.g. `tasknote: true`) for task identification, the filter now emits unquoted booleans
   - Thanks to @denisgorod for reporting
