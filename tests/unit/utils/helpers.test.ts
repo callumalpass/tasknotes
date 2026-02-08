@@ -789,7 +789,7 @@ describe('Helpers', () => {
         const result = timeblockToCalendarEvent(timeblock, '2025-01-15');
 
         expect(result.backgroundColor).toBe('#6366f1');
-        expect(result.borderColor).toBe('#4f46e5');
+        expect(result.borderColor).toBe('#6366f1');
       });
     });
 

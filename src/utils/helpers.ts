@@ -239,7 +239,8 @@ export function extractTaskInfo(
 	path: string,
 	file: TFile,
 	fieldMapper?: FieldMapper,
-	storeTitleInFilename?: boolean
+	storeTitleInFilename?: boolean,
+	defaultStatus?: string
 ): TaskInfo | null {
 	// Try to extract task info from frontmatter using native metadata cache
 	const metadata = app.metadataCache.getFileCache(file);
@@ -253,7 +254,7 @@ export function extractTaskInfo(
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
 				title: mappedTask.title || "Untitled task",
-				status: mappedTask.status || "open",
+				status: mappedTask.status || (defaultStatus || "open"),
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
@@ -280,7 +281,7 @@ export function extractTaskInfo(
 
 			return {
 				title: mappedTask.title || "Untitled task",
-				status: mappedTask.status || "open",
+				status: mappedTask.status || (defaultStatus || "open"),
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
@@ -305,7 +306,7 @@ export function extractTaskInfo(
 	const filename = path.split("/").pop()?.replace(".md", "") || "Untitled";
 	return {
 		title: filename,
-		status: "open",
+		status: defaultStatus || "open",
 		priority: "normal",
 		path,
 		archived: false,
@@ -415,7 +416,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 /**
  * Gets the effective status of a task, considering recurrence
  */
-export function getEffectiveTaskStatus(task: any, date: Date): string {
+export function getEffectiveTaskStatus(task: any, date: Date, completedStatus?: string): string {
 	if (!task.recurrence) {
 		return task.status || "open";
 	}
@@ -424,7 +425,9 @@ export function getEffectiveTaskStatus(task: any, date: Date): string {
 	const dateStr = formatDateForStorage(date);
 	const completedDates = Array.isArray(task.complete_instances) ? task.complete_instances : [];
 
-	return completedDates.includes(dateStr) ? "done" : "open";
+	return completedDates.includes(dateStr)
+		? (completedStatus || "done")
+		: (task.status || "open");
 }
 
 /**

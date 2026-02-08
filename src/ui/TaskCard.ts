@@ -185,7 +185,7 @@ function createStatusCycleHandler(
 			if (task.recurrence) {
 				// For recurring tasks, toggle completion for the target date
 				const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
-				const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate);
+				const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate, plugin.statusManager.getCompletedStatuses()[0]);
 				const isNowCompleted = plugin.statusManager.isCompletedStatus(newEffectiveStatus);
 				updateStatusVisuals(updatedTask, newEffectiveStatus, isNowCompleted);
 			} else {
@@ -195,7 +195,7 @@ function createStatusCycleHandler(
 					new Notice("Task not found");
 					return;
 				}
-				const currentStatus = freshTask.status || "open";
+				const currentStatus = freshTask.status || plugin.settings.defaultTaskStatus;
 				const nextStatus = e.shiftKey
 					? plugin.statusManager.getPreviousStatus(currentStatus)
 					: plugin.statusManager.getNextStatus(currentStatus);
@@ -1380,7 +1380,7 @@ export function createTaskCard(
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
-		? getEffectiveTaskStatus(task, targetDate)
+		? getEffectiveTaskStatus(task, targetDate, plugin.statusManager.getCompletedStatuses()[0])
 		: task.status;
 
 	// Determine layout mode first
@@ -1832,7 +1832,7 @@ export function updateTaskCard(
 
 	// Update effective status
 	const effectiveStatus = task.recurrence
-		? getEffectiveTaskStatus(task, targetDate)
+		? getEffectiveTaskStatus(task, targetDate, plugin.statusManager.getCompletedStatuses()[0])
 		: task.status;
 
 	// Update main element classes using BEM structure

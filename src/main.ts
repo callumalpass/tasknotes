@@ -320,7 +320,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Initialize only essential services that are needed for app registration
 		this.fieldMapper = new FieldMapper(this.settings.fieldMapping);
-		this.statusManager = new StatusManager(this.settings.customStatuses);
+		this.statusManager = new StatusManager(this.settings.customStatuses, this.settings.defaultTaskStatus);
 		this.priorityManager = new PriorityManager(this.settings.customPriorities);
 
 		// Initialize performance optimization utilities (lightweight)
