@@ -291,6 +291,7 @@ function createRecurrenceClickHandler(
 		const menu = new RecurrenceContextMenu({
 			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
 			currentAnchor: task.recurrence_anchor || "scheduled",
+			scheduledDate: task.scheduled,
 			onSelect: async (newRecurrence, anchor) => {
 				try {
 					await plugin.updateTaskProperty(task, "recurrence", newRecurrence || undefined);

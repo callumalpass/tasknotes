@@ -31,6 +31,9 @@ export class TaskCalendarSyncService {
 	/** In-flight sync operations to prevent concurrent syncs for the same task */
 	private inFlightSyncs: Map<string, Promise<void>> = new Map();
 
+	/** Track previous task state for detecting recurrence removal */
+	private previousTaskState: Map<string, TaskInfo> = new Map();
+
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
@@ -44,6 +47,7 @@ export class TaskCalendarSyncService {
 			clearTimeout(timer);
 		}
 		this.pendingSyncs.clear();
+		this.previousTaskState.clear();
 	}
 
 	/**
@@ -511,7 +515,7 @@ export class TaskCalendarSyncService {
 	/**
 	 * Convert a task to a Google Calendar event payload
 	 */
-	private taskToCalendarEvent(task: TaskInfo): {
+	private taskToCalendarEvent(task: TaskInfo, clearRecurrence?: boolean): {
 		summary: string;
 		description?: string;
 		start: { date?: string; dateTime?: string; timeZone?: string };
@@ -642,6 +646,10 @@ export class TaskCalendarSyncService {
 					}
 				}
 			}
+		} else if (clearRecurrence) {
+			// Explicitly clear recurrence when it was removed from the task
+			// Google Calendar API requires an empty array to remove recurrence
+			event.recurrence = [];
 		}
 
 		return event;
@@ -650,7 +658,7 @@ export class TaskCalendarSyncService {
 	/**
 	 * Sync a task to Google Calendar (create or update)
 	 */
-	async syncTaskToCalendar(task: TaskInfo): Promise<void> {
+	async syncTaskToCalendar(task: TaskInfo, previous?: TaskInfo): Promise<void> {
 		if (!this.shouldSyncTask(task)) {
 			return;
 		}
@@ -659,7 +667,10 @@ export class TaskCalendarSyncService {
 		const existingEventId = this.getTaskEventId(task);
 
 		try {
-			const eventData = this.taskToCalendarEvent(task);
+			// Check if recurrence was removed (previous had recurrence, current doesn't)
+			const clearRecurrence = !!(previous?.recurrence && !task.recurrence);
+			
+			const eventData = this.taskToCalendarEvent(task, clearRecurrence);
 			if (!eventData) {
 				console.warn("[TaskCalendarSync] Could not convert task to event:", task.path);
 				return;
@@ -704,7 +715,7 @@ export class TaskCalendarSyncService {
 				// Retry without the link - refetch task to get updated version
 				const updatedTask = await this.plugin.cacheManager.getTaskInfo(task.path);
 				if (updatedTask) {
-					return this.syncTaskToCalendar(updatedTask);
+					return this.syncTaskToCalendar(updatedTask, previous);
 				}
 			}
 
@@ -723,6 +734,11 @@ export class TaskCalendarSyncService {
 		}
 
 		const taskPath = task.path;
+
+		// Store previous state for recurrence change detection
+		if (previous) {
+			this.previousTaskState.set(taskPath, previous);
+		}
 
 		// Cancel any pending debounced sync for this task
 		const existingTimer = this.pendingSyncs.get(taskPath);
@@ -776,11 +792,19 @@ export class TaskCalendarSyncService {
 			if (existingEventId) {
 				await this.deleteTaskFromCalendar(task);
 			}
+			// Clean up previous state
+			this.previousTaskState.delete(task.path);
 			return;
 		}
 
+		// Get previous state for recurrence change detection
+		const previousState = this.previousTaskState.get(task.path);
+
 		// Sync the updated task
-		await this.syncTaskToCalendar(task);
+		await this.syncTaskToCalendar(task, previousState);
+		
+		// Update previous state with current task
+		this.previousTaskState.set(task.path, task);
 	}
 
 	/**

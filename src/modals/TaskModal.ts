@@ -1350,6 +1350,7 @@ export abstract class TaskModal extends Modal {
 		const menu = new RecurrenceContextMenu({
 			currentValue: this.recurrenceRule,
 			currentAnchor: this.recurrenceAnchor,
+			scheduledDate: this.scheduledDate,
 			onSelect: (value, anchor) => {
 				this.recurrenceRule = value || "";
 				if (anchor !== undefined) {

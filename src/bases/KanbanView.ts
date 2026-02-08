@@ -2302,6 +2302,7 @@ export class KanbanView extends BasesViewBase {
 		const menu = new RecurrenceContextMenu({
 			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
 			currentAnchor: task.recurrence_anchor || "scheduled",
+			scheduledDate: task.scheduled,
 			onSelect: async (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
 				try {
 					await this.plugin.updateTaskProperty(
