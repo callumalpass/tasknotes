@@ -11,8 +11,9 @@ const SYNC_DEBOUNCE_MS = 500;
 /** Max concurrent API calls during bulk sync to avoid rate limits */
 const SYNC_CONCURRENCY_LIMIT = 5;
 
-/** Minimum spacing between Google Calendar API calls (ms) to reduce 403 rate limits */
-const GOOGLE_API_CALL_SPACING_MS = 25;
+/** Minimum spacing between Google Calendar API calls (ms) to reduce 403 rate limits.
+ *  Google Calendar enforces ~10 req/s per-user; 100ms keeps us comfortably under that. */
+const GOOGLE_API_CALL_SPACING_MS = 100;
 
 /**
  * Service for syncing TaskNotes tasks to Google Calendar.
@@ -73,20 +74,27 @@ export class TaskCalendarSyncService {
 	 * Ensure Google API calls are spaced out to avoid 403 rate limits.
 	 * Calls are queued and executed with at least GOOGLE_API_CALL_SPACING_MS between them.
 	 */
-	private async withGoogleRateLimit<T>(fn: () => Promise<T>): Promise<T> {
-		const run = async () => {
-			const now = Date.now();
-			const wait = Math.max(0, GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt));
-			if (wait > 0) {
-				await new Promise((resolve) => setTimeout(resolve, wait));
-			}
-			const result = await fn();
-			this.lastApiCallAt = Date.now();
-			return result;
-		};
-
-		this.rateLimitChain = this.rateLimitChain.then(run, run);
-		return this.rateLimitChain as Promise<T>;
+	private withGoogleRateLimit<T>(fn: () => Promise<T>): Promise<T> {
+		return new Promise<T>((resolve, reject) => {
+			this.rateLimitChain = this.rateLimitChain.then(async () => {
+				const now = Date.now();
+				const wait = Math.max(0, GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt));
+				if (wait > 0) {
+					await new Promise((r) => setTimeout(r, wait));
+				}
+				try {
+					const result = await fn();
+					this.lastApiCallAt = Date.now();
+					resolve(result);
+				} catch (e) {
+					this.lastApiCallAt = Date.now();
+					reject(e);
+				}
+			}, () => {
+				// Previous call in chain failed; continue the chain
+				fn().then(resolve, reject);
+			});
+		});
 	}
 
 	/**

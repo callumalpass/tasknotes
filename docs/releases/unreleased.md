@@ -58,3 +58,7 @@ Example:
   - Reuses shared status handler for newly-created status dots, eliminating duplicated logic
   - Card class updates now use `classList.toggle` instead of rebuilding `className`, preserving classes from other systems
   - Thanks to @christenbc for the contribution
+
+- (#1537) Fixed Google Calendar 403 rate limit errors during bulk sync
+  - Added rate limiting to space out API calls, preventing errors when syncing many tasks (~350+)
+  - Thanks to @Lorite for the contribution
