@@ -24,6 +24,13 @@ Example:
 
 -->
 
+## Added
+
+- (#1520) Tag and Context fields in Edit Task modal now show all available suggestions immediately on focus
+  - Previously required typing at least one character before suggestions appeared
+  - Already-selected values are excluded from the suggestion list
+  - Thanks to @Glint-Eye for the suggestion
+
 ## Fixed
 
 - Fixed [mdbase-spec](https://mdbase.dev) type definition generation not triggering when settings change
