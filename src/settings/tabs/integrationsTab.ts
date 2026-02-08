@@ -845,6 +845,9 @@ export function renderIntegrationsTab(
 
 				populateCalendars();
 
+				// Re-populate when calendar data is fetched after startup
+				plugin.googleCalendarService?.on("data-changed", populateCalendars);
+
 				dropdown.addEventListener("change", async () => {
 					plugin.settings.googleCalendarExport.targetCalendarId = dropdown.value;
 					save();

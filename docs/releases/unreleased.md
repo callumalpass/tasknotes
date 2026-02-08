@@ -74,3 +74,7 @@ Example:
 - (#1559) Fixed hierarchical tags with slashes (e.g., `#project/sub-project`) being truncated in link text rendering
   - Tag regex now supports slashes, hyphens, and Unicode characters
   - Thanks to @normenmueller for the contribution
+
+- (#1565) Fixed Google Calendar target calendar dropdown appearing empty after app restart
+  - The dropdown now listens for the `data-changed` event so it re-populates once calendars are fetched during deferred startup initialization
+  - Thanks to @N-HEDGER for reporting
