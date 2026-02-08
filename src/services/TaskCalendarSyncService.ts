@@ -472,7 +472,6 @@ export class TaskCalendarSyncService {
 			}
 		}
 
-		console.log('[TaskCalendarSync] Final reminders to sync:', googleReminders);
 		return googleReminders.length > 0 ? googleReminders : null;
 	}
 
@@ -702,7 +701,7 @@ export class TaskCalendarSyncService {
 				// Wait for any in-flight sync to complete before starting a new one
 				const inFlight = this.inFlightSyncs.get(taskPath);
 				if (inFlight) {
-					await inFlight.catch(() => { }); // Ignore errors from previous sync
+					await inFlight.catch(() => {}); // Ignore errors from previous sync
 				}
 
 				// Re-fetch the task to get the latest state after debounce

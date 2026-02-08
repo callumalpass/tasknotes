@@ -47,3 +47,8 @@ Example:
   - Removing all projects from a task now correctly deletes the `projects` field from frontmatter
   - Normalized link comparison so different link syntaxes (e.g., angle-bracket markdown links vs wikilinks) no longer cause false change detection
   - Thanks to @normenmueller for the contribution
+
+- (#1517) Fixed task reminders not syncing to Google Calendar
+  - Task-specific reminders (both relative and absolute) are now converted to Google Calendar API format
+  - Previously only the global `defaultReminderMinutes` setting was used, ignoring per-task reminders
+  - Thanks to @christenbc for the contribution
