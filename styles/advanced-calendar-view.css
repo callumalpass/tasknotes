@@ -834,6 +834,19 @@
     background: transparent !important;
 }
 
+/* Today highlight in list/agenda view */
+.advanced-calendar-view .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--interactive-accent) !important;
+    font-weight: 600;
+    border-bottom-color: var(--interactive-accent);
+}
+
+.hide-today-highlight .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--text-normal) !important;
+    font-weight: 500;
+    border-bottom-color: var(--divider-color);
+}
+
 .advanced-calendar-view .fc-list-table th {
     background: var(--background-secondary-alt) !important;
 }

@@ -235,6 +235,19 @@
     background: transparent;
 }
 
+/* Today highlight in list/agenda view */
+#bases-calendar .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--interactive-accent);
+    font-weight: 600;
+    border-bottom-color: var(--interactive-accent);
+}
+
+.hide-today-highlight #bases-calendar .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--text-normal);
+    font-weight: var(--tn-font-weight-medium);
+    border-bottom-color: var(--tn-divider-color);
+}
+
 /* Override FullCalendar's bright white border color in dark mode */
 .theme-dark #bases-calendar.fc-theme-standard {
     --fc-border-color: var(--background-modifier-border);

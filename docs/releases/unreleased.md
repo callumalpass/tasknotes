@@ -54,3 +54,8 @@ Example:
 - (#1556) Fixed completion-based recurring tasks not rescheduling when INTERVAL exceeds 30 (DAILY) or ~12 (WEEKLY)
   - The look-ahead window for finding the next occurrence now scales with the INTERVAL value
   - Thanks to @kazerniel for reporting
+
+- (#1501) Fixed Google/Microsoft Calendar event colors not showing in agenda/list view
+  - Per-event and calendar-level colors now display correctly in the list view, matching grid view behavior
+  - Added today indicator highlighting to list view day headers, respecting the "Show Today Highlight" setting
+  - Thanks to @Robubble for the suggestion
