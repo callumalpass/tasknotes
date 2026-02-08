@@ -1127,6 +1127,13 @@ select.tasknotes-settings__card-input {
    INTEGRATIONS TAB - OAUTH SETUP & CALENDAR CARDS
    ================================================ */
 
+/* Calendar & ICS card container spacing */
+.google-calendar-integration-container,
+.microsoft-calendar-integration-container,
+.ics-subscriptions-container {
+    margin-top: 12px;
+}
+
 /* OAuth Setup Info Box */
 .tasknotes-oauth-setup-guide {
     font-size: 0.9em;

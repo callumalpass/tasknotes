@@ -116,10 +116,18 @@ export function renderIntegrationsTab(
 		container,
 		{
 			heading: "OAuth Calendar Integration",
-			description: "Connect your Google Calendar or Microsoft Outlook to sync events directly into TaskNotes.",
 		},
-		() => {
-			// Settings added via card components below
+		(group) => {
+			group.addSetting((setting) => {
+				setting.setDesc("Connect your Google Calendar or Microsoft Outlook to sync events directly into TaskNotes.");
+				const descEl = setting.descEl;
+				descEl.createSpan({ text: " You'll need to create OAuth credentials with Google and/or Microsoft. This takes approximately 15 minutes for initial setup. " });
+				const link = descEl.createEl("a", {
+					text: "View Calendar Setup Guide",
+					href: "https://callumalpass.github.io/tasknotes/calendar-setup",
+				});
+				link.setAttr("target", "_blank");
+			});
 		}
 	);
 
@@ -373,20 +381,6 @@ export function renderIntegrationsTab(
 	// Initial render
 	// TEMPORARILY DISABLED FOR BETA RELEASE
 	// renderLicenseCard();
-
-	// Setup guide link (always visible)
-	const setupGuideContainer = container.createDiv("tasknotes-oauth-setup-guide");
-
-	const setupText = setupGuideContainer.createDiv();
-	const strong = setupText.createEl("strong");
-	strong.textContent = "OAuth Setup Required:";
-	setupText.appendText(" You'll need to create OAuth credentials with Google and/or Microsoft to connect your calendars. This takes approximately 15 minutes for initial setup.");
-
-	setupGuideContainer.createEl("a", {
-		text: "View Calendar Setup Guide",
-		href: "https://callumalpass.github.io/tasknotes/calendar-setup",
-		attr: { target: "_blank" }
-	});
 
 	// Google Calendar container for card-based UI
 	const googleCalendarContainer = container.createDiv("google-calendar-integration-container");
@@ -1179,10 +1173,7 @@ export function renderIntegrationsTab(
 		}
 	);
 
-	// ICS Subscriptions List
-	const icsContainer = container.createDiv("ics-subscriptions-container");
-	renderICSSubscriptionsList(icsContainer, plugin, save);
-
+	// ICS Subscriptions List - buttons first, then cards
 	createSettingGroup(
 		container,
 		{
@@ -1251,6 +1242,9 @@ export function renderIntegrationsTab(
 			);
 		}
 	);
+
+	const icsContainer = container.createDiv("ics-subscriptions-container");
+	renderICSSubscriptionsList(icsContainer, plugin, save);
 
 	// Automatic ICS Export Section
 	createSettingGroup(
@@ -1351,36 +1345,32 @@ export function renderIntegrationsTab(
 						},
 					})
 				);
+
+				// Export status display
+				group.addSetting((setting) => {
+					setting.setName(translate("settings.integrations.autoExport.status.title"));
+					const descEl = setting.descEl;
+
+					if (plugin.autoExportService) {
+						const lastExport = plugin.autoExportService.getLastExportTime();
+						const nextExport = plugin.autoExportService.getNextExportTime();
+
+						const lastExportText = lastExport
+							? translate("settings.integrations.autoExport.status.lastExport", { time: lastExport.toLocaleString() })
+							: translate("settings.integrations.autoExport.status.noExports");
+						const nextExportText = nextExport
+							? translate("settings.integrations.autoExport.status.nextExport", { time: nextExport.toLocaleString() })
+							: translate("settings.integrations.autoExport.status.notScheduled");
+
+						descEl.textContent = lastExportText + "\n" + nextExportText;
+					} else {
+						descEl.textContent = translate("settings.integrations.autoExport.status.serviceNotInitialized");
+						descEl.addClass("tasknotes-auto-export-status__error");
+					}
+				});
 			}
 		}
 	);
-
-	// Show current export status (outside group, as a dynamic element)
-	if (plugin.settings.icsIntegration.enableAutoExport) {
-		const statusContainer = container.createDiv("tasknotes-auto-export-status");
-
-		if (plugin.autoExportService) {
-			const lastExport = plugin.autoExportService.getLastExportTime();
-			const nextExport = plugin.autoExportService.getNextExportTime();
-
-			const titleDiv = statusContainer.createDiv("tasknotes-auto-export-status__title");
-			titleDiv.textContent = translate("settings.integrations.autoExport.status.title") + ":";
-
-			const statusDiv = statusContainer.createDiv("tasknotes-auto-export-status__content");
-
-			const lastExportText = lastExport
-				? translate("settings.integrations.autoExport.status.lastExport", { time: lastExport.toLocaleString() })
-				: translate("settings.integrations.autoExport.status.noExports");
-			const nextExportText = nextExport
-				? translate("settings.integrations.autoExport.status.nextExport", { time: nextExport.toLocaleString() })
-				: translate("settings.integrations.autoExport.status.notScheduled");
-
-			statusDiv.textContent = lastExportText + "\n" + nextExportText;
-		} else {
-			const errorDiv = statusContainer.createDiv("tasknotes-auto-export-status__error");
-			errorDiv.textContent = translate("settings.integrations.autoExport.status.serviceNotInitialized");
-		}
-	}
 
 	// HTTP API Section (Skip on mobile)
 	if (!Platform.isMobile) {
@@ -1474,9 +1464,6 @@ export function renderIntegrationsTab(
 		}
 
 		// Webhooks Section
-		// Webhook management
-		renderWebhookList(container, plugin, save);
-
 		createSettingGroup(
 			container,
 			{
@@ -1534,6 +1521,9 @@ export function renderIntegrationsTab(
 				);
 			}
 		);
+
+		// Webhook cards (rendered after the heading/button group)
+		renderWebhookList(container, plugin, save);
 	}
 
 }
