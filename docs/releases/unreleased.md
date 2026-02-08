@@ -62,3 +62,8 @@ Example:
 - (#1537) Fixed Google Calendar 403 rate limit errors during bulk sync
   - Added rate limiting to space out API calls, preventing errors when syncing many tasks (~350+)
   - Thanks to @Lorite for the contribution
+
+- (#1540) Fixed time loss when setting recurrence and recurrence not clearing from Google Calendar
+  - Setting recurrence on a task with a scheduled time now preserves the time component in DTSTART, preventing Google Calendar events from appearing as all-day
+  - Clearing recurrence from a task now explicitly removes it from the synced Google Calendar event
+  - Thanks to @christenbc for the contribution
