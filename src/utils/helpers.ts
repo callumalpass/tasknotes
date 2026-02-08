@@ -49,9 +49,23 @@ export async function ensureFolderExists(vault: Vault, folderPath: string): Prom
 
 		for (const folder of folders) {
 			currentPath = currentPath ? `${currentPath}/${folder}` : folder;
-			const abstractFile = vault.getAbstractFileByPath(currentPath);
-			if (!abstractFile) {
+
+			// Check on-disk existence via adapter rather than the in-memory
+			// vault cache, which can be stale during startup or after external
+			// filesystem changes.
+			if (await vault.adapter.exists(currentPath)) {
+				continue;
+			}
+
+			try {
 				await vault.createFolder(currentPath);
+			} catch {
+				// Race condition: another call may have created the folder
+				// between our exists check and createFolder.  Only re-throw
+				// if the folder genuinely doesn't exist.
+				if (!(await vault.adapter.exists(currentPath))) {
+					throw new Error(`Failed to create folder "${currentPath}"`);
+				}
 			}
 		}
 	} catch (error) {
