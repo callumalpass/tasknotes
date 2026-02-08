@@ -70,3 +70,7 @@ Example:
   - Setting recurrence on a task with a scheduled time now preserves the time component in DTSTART, preventing Google Calendar events from appearing as all-day
   - Clearing recurrence from a task now explicitly removes it from the synced Google Calendar event
   - Thanks to @christenbc for the contribution
+
+- (#1559) Fixed hierarchical tags with slashes (e.g., `#project/sub-project`) being truncated in link text rendering
+  - Tag regex now supports slashes, hyphens, and Unicode characters
+  - Thanks to @normenmueller for the contribution
