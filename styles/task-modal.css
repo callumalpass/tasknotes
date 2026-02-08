@@ -566,6 +566,26 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 
 .tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
     min-height: 400px;
+    max-height: 85vh;
+    overflow: hidden;
+}
+
+/* Flex column so the split-content fills remaining space while buttons stay pinned */
+.tasknotes-plugin.minimalist-task-modal.expanded .minimalist-modal-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    overflow: hidden;
+}
+
+.tasknotes-plugin.minimalist-task-modal.expanded .modal-split-content {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Keep buttons pinned at the bottom, outside the scrollable area */
+.tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
+    flex-shrink: 0;
 }
 
 /* =====================================================================

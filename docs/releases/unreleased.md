@@ -28,3 +28,5 @@ Example:
 
 - Fixed [mdbase-spec](https://mdbase.dev) type definition generation not triggering when settings change
 - Improved generated `_types/task.md` to use proper multi-line YAML format with field descriptions
+- (#1555) Fixed "Folder already exists" error when creating tasks or converting inline tasks
+- (#1532) Fixed expanded task modal buttons being cut off when content exceeds viewport height
