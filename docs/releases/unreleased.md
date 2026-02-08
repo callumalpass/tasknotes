@@ -35,3 +35,8 @@ Example:
   - Deleting a custom status or priority that was set as the default now resets the default to the first available value
   - Added validation on settings render to catch stale defaults that reference non-existent values
   - Thanks to @l-mb for the contribution
+
+- (#1448) Fixed project removals not persisting from the task edit modal
+  - Removing all projects from a task now correctly deletes the `projects` field from frontmatter
+  - Normalized link comparison so different link syntaxes (e.g., angle-bracket markdown links vs wikilinks) no longer cause false change detection
+  - Thanks to @normenmueller for the contribution
