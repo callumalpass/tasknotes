@@ -1016,7 +1016,7 @@ export function extractTimeblocksFromNote(content: string, path: string): TimeBl
  * Converts a timeblock to a calendar event format
  * Uses proper timezone handling following UTC Anchor pattern to prevent date shift issues
  */
-export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string): any {
+export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string, defaultColor = "#6366f1"): any {
 	// Create datetime strings that FullCalendar interprets consistently
 	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
@@ -1028,8 +1028,8 @@ export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string): an
 		start: startDateTime,
 		end: endDateTime,
 		allDay: false,
-		backgroundColor: timeblock.color || "#6366f1", // Default indigo color
-		borderColor: timeblock.color || "#4f46e5",
+		backgroundColor: timeblock.color || defaultColor,
+		borderColor: timeblock.color || defaultColor,
 		editable: true, // Enable drag and drop for timeblocks
 		eventType: "timeblock", // Mark as timeblock for FullCalendar
 		extendedProps: {

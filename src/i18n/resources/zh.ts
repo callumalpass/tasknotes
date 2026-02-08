@@ -582,6 +582,8 @@ export const zh: TranslationTree = {
 				enableDesc: "启用时间块功能，在日记中进行轻量级调度。启用后，'时间块'选项会出现在日历拖动上下文菜单中。",
 				showBlocksName: "显示时间块",
 				showBlocksDesc: "默认显示日记中的时间块",
+				defaultColorName: "默认时间块颜色",
+				defaultColorDesc: "创建新时间块时使用的默认颜色",
 				usage: "用法：在日历上拖动以创建事件。从上下文菜单中选择'时间块'（仅在启用时间块时可见）。拖动以移动现有时间块。调整边缘以修改持续时间。",
 			},
 			performance: {
@@ -2024,6 +2026,7 @@ export const zh: TranslationTree = {
 				description: "配置与其他Obsidian插件的集成。",
 			},
 			mdbaseSpec: {
+				header: "mdbase类型定义",
 				learnMore: "Learn more about mdbase-spec",
 				enable: {
 					name: "Generate mdbase type definitions",

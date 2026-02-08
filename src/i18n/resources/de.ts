@@ -582,6 +582,8 @@ export const de: TranslationTree = {
 				enableDesc: "Zeitblockfunktionalität für leichte Planung in täglichen Notizen aktivieren. Wenn aktiviert, erscheint die Option 'Zeitblock' im Kalender-Ziehen-Kontextmenü.",
 				showBlocksName: "Zeitblöcke anzeigen",
 				showBlocksDesc: "Zeitblöcke aus täglichen Notizen standardmäßig anzeigen",
+				defaultColorName: "Standard-Zeitblockfarbe",
+				defaultColorDesc: "Die Standardfarbe für neue Zeitblöcke",
 				usage: "Verwendung: Ziehe im Kalender, um Ereignisse zu erstellen. Wähle 'Zeitblock' aus dem Kontextmenü (nur sichtbar, wenn Zeitblockierung aktiviert ist). Ziehe, um bestehende Zeitblöcke zu verschieben. Ränder anpassen, um Dauer zu ändern.",
 			},
 			performance: {
@@ -2024,6 +2026,7 @@ export const de: TranslationTree = {
 				description: "Konfiguriere Integrationen mit anderen Obsidian-Plugins.",
 			},
 			mdbaseSpec: {
+				header: "mdbase-Typdefinitionen",
 				learnMore: "Learn more about mdbase-spec",
 				enable: {
 					name: "Generate mdbase type definitions",

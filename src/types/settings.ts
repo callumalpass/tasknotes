@@ -342,6 +342,7 @@ export interface CalendarViewSettings {
 	// Timeblocking settings
 	enableTimeblocking: boolean;
 	defaultShowTimeblocks: boolean;
+	defaultTimeblockColor: string;
 	// Calendar behavior
 	nowIndicator: boolean;
 	selectMirror: boolean;

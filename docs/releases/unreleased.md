@@ -31,6 +31,11 @@ Example:
   - Already-selected values are excluded from the suggestion list
   - Thanks to @Glint-Eye for the suggestion
 
+- (#1506) Added setting to configure the default color for new timeblocks
+  - New color picker in Settings > Features > Timeblocking
+  - Previously hardcoded to indigo (#6366f1); now user-configurable
+  - Thanks to @phillipadsmith for the suggestion
+
 ## Fixed
 
 - Fixed [mdbase-spec](https://mdbase.dev) type definition generation not triggering when settings change

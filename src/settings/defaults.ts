@@ -167,6 +167,7 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Timeblocking settings
 	enableTimeblocking: false, // Disabled by default - toggleable feature
 	defaultShowTimeblocks: true,
+	defaultTimeblockColor: "#6366f1",
 	// Calendar behavior
 	nowIndicator: true,
 	selectMirror: true,

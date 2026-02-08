@@ -1532,6 +1532,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "79619fbc45e0bfeaa713d62994a31dfa432cfe4b"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "37a1c7dd1d3c433fb1480eb4fc4c3e0d19df0880"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "ea21a7188c8abd533f4d7f38e2249a08a18ebf4b"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "257a7f95aeccea7db32a4f437b56f008084fb839"
@@ -4775,6 +4783,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "a9ad098ea6d51c9d8441b0dc905806dd934a7812"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "ca092fddcef0244d2b93db6db7efeef378ca980c"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -9510,6 +9534,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "769bf451c05de9668f887ce627efba564e246809"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "6530fd5eb8378043e8b0929820415dfd88f7274e"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "1146e2de8173e6de6ac098c70e56982b62e4bd5a"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "cbfa2499e226c399cd44ed1b9ea00101e62ce285"
@@ -12753,6 +12785,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "9e6c83ec09e6ff8d5a7863d91a8d50b0fbb36f68"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "998bdb5e69b1fc63e9e2a7cf842db5b4911c4bb1"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -17488,6 +17536,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "eef3a57233240a40952bc4ce94eccf6872a7be9d"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "8ee86f4fb80e564ba458eae4176ddd0b586e7c09"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "207a47a66bf6ae37aeca3edee07bbe7ef2648c38"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "15d6c080ab1c2d8a7b3a3a07c75487ed65248066"
@@ -20731,6 +20787,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "315c661eb529e3455ff66898b81b408f6dada12a"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "7623bcf3268949a9df03ae260473f01b610685fc"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -25466,6 +25538,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "5231a6ed848122b41df2022f01ad9668d9f4d2bb"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "3c85176c277413a61fce8570a2f87ba111f21e98"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "f2ee3e17699ee26c8e4800d3e85e6b6030a2c421"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "d2ef5f6e68f4332ba3c869b1534184c7f2b2f3c5"
@@ -28709,6 +28789,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "59604217dc299a0cb3dad6369ed6ec4adae9cf27"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "872ed039ed54018fa4acc57119b7be464c43e111"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -33444,6 +33540,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "37696625ea85f94e4817d4539d5a8f2b33a1f856"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "b544b49e73c9c157798514ba4957ac1ec3efcfe2"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "f42b97e8750548554792c1c9fae92abed3fdd0d5"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "af6d734bdb5b34fe4d3ccfef3ee6e5cf07d6e78b"
@@ -36687,6 +36791,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "8341639e9aa4ec2f63a3da4747592e70352935d3"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "093366d0d8e58b488283a44f3f1dd937840bb0ba"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -41422,6 +41542,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "e2aa55a68edd8be44411e58b28f9b80c1d4d039b"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "b7f463cedf1b4a14aa14274662ce6b7fb9374d4d"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "00cb47825ac12b6cc45b3b138c2c5def697ecb76"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "8449006965c913967f788daac6575c3ff3f7fd90"
@@ -44665,6 +44793,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "6271b873a5542dc55b8c2b7f7bd6d35205864d00"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "7a0bf1226e2e6966bf6519cda4650d00405fc07a"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -49400,6 +49544,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "3bf71ad88f1c2c9bcddef51957cf262799729bdb"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "b5405c80576f153e6f9373d4f6b355d7c4b7e16b"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "605ab2ea6e0b693b3591888eebfa2ec208a2a510"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "65f729eb23b993e9fa93a808f4a6be36f381df73"
@@ -52643,6 +52795,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "dcf0c36e6c3a6c710e2b64338c13f4713c06fb84"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "b01a7c497875abdcb369c5a6945102af47fda404"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -57378,6 +57546,14 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "26dbb8a0bac597d0832cbd7e5f49556c957d703d"
     },
+    "settings.features.timeblocking.defaultColorName": {
+      "source": "397498e7856b8906b80dcc49c268f81534ca484d",
+      "translation": "619098bec97dd9339771ecdf09a303539c8f1d8a"
+    },
+    "settings.features.timeblocking.defaultColorDesc": {
+      "source": "af9cbbeb37743a6e6255a743651007cc21e387c0",
+      "translation": "14a1fc14d682a272ae21eaf31320377374e6e416"
+    },
     "settings.features.timeblocking.usage": {
       "source": "e6e8abb51fea3c6fb2eda2469662ab79d3bbc2f6",
       "translation": "fc0f1a62054937b114711eb9e99abe20108b53d3"
@@ -60621,6 +60797,22 @@
     "settings.integrations.otherIntegrations.description": {
       "source": "5581b6a75f6c7c9111f763432a08f61001be8154",
       "translation": "74cee8e32b417f4bfc515dc9e278d74361ed1587"
+    },
+    "settings.integrations.mdbaseSpec.header": {
+      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
+      "translation": "6d13826c99ac032131b0b6441f864b11404464c8"
+    },
+    "settings.integrations.mdbaseSpec.learnMore": {
+      "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
+      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+    },
+    "settings.integrations.mdbaseSpec.enable.name": {
+      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
+      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+    },
+    "settings.integrations.mdbaseSpec.enable.description": {
+      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
+      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",

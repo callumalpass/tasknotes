@@ -591,6 +591,8 @@ export const en: TranslationTree = {
 					"Enable timeblocking feature for lightweight scheduling in daily notes. When enabled, 'Timeblock' option appears in the calendar drag context menu.",
 				showBlocksName: "Show timeblocks",
 				showBlocksDesc: "Display timeblocks from daily notes by default",
+				defaultColorName: "Default timeblock color",
+				defaultColorDesc: "The default color used when creating new timeblocks",
 				usage: "Usage: Drag on the calendar to create events. Select 'Timeblock' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration.",
 			},
 			performance: {

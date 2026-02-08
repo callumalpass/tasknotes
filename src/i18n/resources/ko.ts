@@ -578,6 +578,8 @@ export const ko: TranslationTree = {
 				enableDesc: "데일리 노트에서 가벼운 일정 관리를 위한 타임블로킹 기능 활성화. 활성화하면 캘린더 드래그 컨텍스트 메뉴에 '타임블록' 옵션이 나타납니다.",
 				showBlocksName: "타임블록 표시",
 				showBlocksDesc: "기본적으로 데일리 노트의 타임블록 표시",
+				defaultColorName: "기본 타임블록 색상",
+				defaultColorDesc: "새 타임블록 생성 시 사용되는 기본 색상",
 				usage: "사용법: 캘린더에서 드래그하여 이벤트를 만듭니다. 컨텍스트 메뉴에서 '타임블록'을 선택하세요 (타임블로킹이 활성화된 경우에만 표시됨). 드래그하여 기존 타임블록을 이동합니다. 가장자리를 드래그하여 기간을 조정합니다.",
 			},
 			performance: {
@@ -1974,6 +1976,7 @@ export const ko: TranslationTree = {
 				description: "다른 Obsidian 플러그인과의 통합을 설정합니다.",
 			},
 			mdbaseSpec: {
+				header: "mdbase 타입 정의",
 				learnMore: "Learn more about mdbase-spec",
 				enable: {
 					name: "Generate mdbase type definitions",

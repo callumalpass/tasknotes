@@ -582,6 +582,8 @@ export const es: TranslationTree = {
 				enableDesc: "Habilitar funcionalidad de bloque de tiempo para programación ligera en notas diarias. Cuando está habilitado, la opción 'Timeblock' aparece en el menú contextual de arrastrar del calendario.",
 				showBlocksName: "Mostrar bloques de tiempo",
 				showBlocksDesc: "Mostrar bloques de tiempo de notas diarias por defecto",
+				defaultColorName: "Color predeterminado de bloque de tiempo",
+				defaultColorDesc: "El color predeterminado utilizado al crear nuevos bloques de tiempo",
 				usage: "Uso: Arrastra en el calendario para crear eventos. Selecciona 'Timeblock' del menú contextual (solo visible cuando el bloqueo de tiempo está habilitado). Arrastra para mover bloques de tiempo existentes. Ajusta los bordes para ajustar la duración.",
 			},
 			performance: {
@@ -2024,6 +2026,7 @@ export const es: TranslationTree = {
 				description: "Configurar integraciones con otros plugins de Obsidian.",
 			},
 			mdbaseSpec: {
+				header: "Definiciones de tipos mdbase",
 				learnMore: "Learn more about mdbase-spec",
 				enable: {
 					name: "Generate mdbase type definitions",

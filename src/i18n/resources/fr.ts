@@ -582,6 +582,8 @@ export const fr: TranslationTree = {
 				enableDesc: "Activer la fonctionnalité de planification par blocs pour une programmation légère dans les notes quotidiennes. Lorsqu'activé, l'option 'Timeblock' apparaît dans le menu contextuel de glissement du calendrier.",
 				showBlocksName: "Afficher les blocs de temps",
 				showBlocksDesc: "Afficher les blocs de temps des notes quotidiennes par défaut",
+				defaultColorName: "Couleur par défaut des blocs de temps",
+				defaultColorDesc: "La couleur par défaut utilisée lors de la création de nouveaux blocs de temps",
 				usage: "Utilisation : Glissez sur le calendrier pour créer des événements. Sélectionnez 'Timeblock' dans le menu contextuel (uniquement visible lorsque la planification par blocs est activée). Glissez pour déplacer les blocs de temps existants. Ajustez les bords pour modifier la durée.",
 			},
 			performance: {
@@ -2024,6 +2026,7 @@ export const fr: TranslationTree = {
 				description: "Configurez les intégrations avec d'autres plugins Obsidian.",
 			},
 			mdbaseSpec: {
+				header: "Définitions de types mdbase",
 				learnMore: "Learn more about mdbase-spec",
 				enable: {
 					name: "Generate mdbase type definitions",
