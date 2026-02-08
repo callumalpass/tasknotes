@@ -88,3 +88,10 @@ Example:
   - When a task file is deleted outside of TaskNotes (e.g., via Obsidian's file manager), the synced Google Calendar event is now cleaned up automatically
   - The metadata cache `deleted` event's `prevCache` is now forwarded so the calendar event ID can be extracted from the former frontmatter
   - Thanks to @kmaustral for reporting
+
+- Fixed Integrations tab spacing and layout issues
+  - OAuth section now shows setup guide link inside the group instead of as a standalone block with an empty heading
+  - ICS "Add Subscription" / "Refresh All" buttons now appear above subscription cards
+  - Webhooks heading and "Add Webhook" button now appear above webhook cards
+  - Auto-export status now displays inside the auto-export group instead of as a detached element
+  - Added consistent spacing to calendar and ICS card containers
