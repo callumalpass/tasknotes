@@ -50,7 +50,7 @@
     color: var(--tn-text-normal);
     letter-spacing: 0.01em;
     line-height: 1.4;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 /* Count element within group headers */
@@ -72,7 +72,7 @@
     color: var(--tn-text-normal);
     font-size: 14px;
     line-height: 1;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: 0;
 }
 
