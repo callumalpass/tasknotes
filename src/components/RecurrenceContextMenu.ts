@@ -855,9 +855,9 @@ class CustomRecurrenceModal extends Modal {
 		if (this.dtstart) {
 			let dtstartFormatted = this.dtstart.replace(/-/g, "");
 
-			// Add time if specified
+			// Add time if specified (local time, no Z suffix — the time comes from the task's scheduled date which is local)
 			if (this.dtstartTime) {
-				const timeFormatted = this.dtstartTime.replace(":", "") + "00Z";
+				const timeFormatted = this.dtstartTime.replace(":", "") + "00";
 				dtstartFormatted = `${dtstartFormatted}T${timeFormatted}`;
 			}
 

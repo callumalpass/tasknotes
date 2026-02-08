@@ -318,10 +318,12 @@ export class TaskCalendarSyncService {
 	} {
 		// Check if the date includes a time component (has 'T')
 		if (dateStr.includes("T")) {
-			// Timed event - parse and format for Google Calendar
+			// Timed event - format with local timezone offset for Google Calendar.
+			// Using date-fns format with 'xxx' to produce an offset-aware RFC 3339 string
+			// (e.g. "2024-03-15T14:30:00+05:00") so the dateTime matches the timeZone.
 			const date = new Date(dateStr);
 			return {
-				dateTime: date.toISOString(),
+				dateTime: format(date, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 				timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 				isAllDay: false,
 			};
@@ -363,7 +365,7 @@ export class TaskCalendarSyncService {
 			const startDate = new Date(startInfo.dateTime!);
 			const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 			return {
-				dateTime: endDate.toISOString(),
+				dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 				timeZone: startInfo.timeZone,
 			};
 		}
@@ -633,14 +635,14 @@ export class TaskCalendarSyncService {
 						const dateTimeStr = `${recurrenceData.dtstart}T${recurrenceData.time}`;
 						const startDate = new Date(dateTimeStr);
 						event.start = {
-							dateTime: startDate.toISOString(),
+							dateTime: format(startDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 						};
 						// Recalculate end based on duration
 						const duration = task.timeEstimate || settings.defaultEventDuration;
 						const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 						event.end = {
-							dateTime: endDate.toISOString(),
+							dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 						};
 					}
@@ -686,14 +688,12 @@ export class TaskCalendarSyncService {
 					)
 				);
 			} else {
-				// Create new event
+				// Create new event — pass structured start/end objects to preserve timeZone
 				const createdEvent = await this.withGoogleRateLimit(() =>
 					this.googleCalendarService.createEvent(
 						settings.targetCalendarId,
 						{
 							...eventData,
-							start: eventData.start.date || eventData.start.dateTime!,
-							end: eventData.end.date || eventData.end.dateTime!,
 							isAllDay: !!eventData.start.date,
 						}
 					)
@@ -701,8 +701,11 @@ export class TaskCalendarSyncService {
 
 				// Extract the actual event ID from the ICSEvent ID format
 				// Format is "google-{calendarId}-{eventId}"
-				const eventIdMatch = createdEvent.id.match(/^google-[^-]+-(.+)$/);
-				const eventId = eventIdMatch ? eventIdMatch[1] : createdEvent.id;
+				// Calendar IDs can contain hyphens, so strip the known prefix
+				const prefix = `google-${settings.targetCalendarId}-`;
+				const eventId = createdEvent.id.startsWith(prefix)
+					? createdEvent.id.slice(prefix.length)
+					: createdEvent.id;
 
 				// Save the event ID to the task's frontmatter
 				await this.saveTaskEventId(task.path, eventId);

@@ -1769,13 +1769,13 @@ export class TaskService {
 			}
 
 			// Delete from Google Calendar first (before file deletion, so we have the event ID)
-			// Fire-and-forget to avoid blocking the delete operation
 			if (this.plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
-				this.plugin.taskCalendarSyncService
-					.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
-					.catch((error) => {
-						console.warn("Failed to delete task from Google Calendar:", error);
-					});
+				try {
+					await this.plugin.taskCalendarSyncService
+						.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);
+				} catch (error) {
+					console.warn("Failed to delete task from Google Calendar:", error);
+				}
 			}
 
 			// Step 1: Delete the file from the vault

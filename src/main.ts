@@ -1163,6 +1163,11 @@ export default class TaskNotesPlugin extends Plugin {
 			this.oauthService.destroy();
 		}
 
+		// Clean up task calendar sync service (before calendar services it depends on)
+		if (this.taskCalendarSyncService) {
+			this.taskCalendarSyncService.destroy();
+		}
+
 		// Clean up calendar services
 		if (this.googleCalendarService) {
 			this.googleCalendarService.destroy();
