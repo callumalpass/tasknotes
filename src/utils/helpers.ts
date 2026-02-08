@@ -584,6 +584,11 @@ export function getNextUncompletedOccurrence(task: TaskInfo): Date | null {
 	}
 }
 
+function parseIntervalFromRecurrence(recurrence: string): number {
+	const match = recurrence.match(/INTERVAL=(\d+)/);
+	return match ? parseInt(match[1], 10) : 1;
+}
+
 /**
  * Gets next occurrence for scheduled-based (fixed) recurrence
  */
@@ -599,15 +604,17 @@ function getNextScheduledBasedOccurrence(task: TaskInfo): Date | null {
 
 		// Determine look-ahead period based on recurrence frequency
 		// This ensures we can find at least one future occurrence
+		// Scale with INTERVAL to handle large intervals (e.g. DAILY;INTERVAL=60)
+		const interval = parseIntervalFromRecurrence(task.recurrence);
 		let lookAheadDays = 365; // Default: 1 year
 		if (task.recurrence.includes("FREQ=DAILY")) {
-			lookAheadDays = 30; // 30 days for daily tasks
+			lookAheadDays = Math.max(30, interval * 1 * 2);
 		} else if (task.recurrence.includes("FREQ=WEEKLY")) {
-			lookAheadDays = 90; // ~13 weeks for weekly tasks
+			lookAheadDays = Math.max(90, interval * 7 * 2);
 		} else if (task.recurrence.includes("FREQ=MONTHLY")) {
-			lookAheadDays = 400; // ~13 months for monthly tasks
+			lookAheadDays = Math.max(400, interval * 31 * 2);
 		} else if (task.recurrence.includes("FREQ=YEARLY")) {
-			lookAheadDays = 800; // ~2.2 years for yearly tasks to ensure we find the next occurrence
+			lookAheadDays = Math.max(800, interval * 366 * 2);
 		}
 
 		// Start from the DTSTART (or earlier) to ensure we catch all occurrences
@@ -674,15 +681,17 @@ function getNextCompletionBasedOccurrence(task: TaskInfo): Date | null {
 
 		// Determine look-ahead period based on recurrence frequency
 		// This ensures we can find at least one future occurrence
+		// Scale with INTERVAL to handle large intervals (e.g. DAILY;INTERVAL=60)
+		const interval = parseIntervalFromRecurrence(task.recurrence);
 		let lookAheadDays = 365; // Default: 1 year
 		if (task.recurrence.includes("FREQ=DAILY")) {
-			lookAheadDays = 30; // 30 days for daily tasks
+			lookAheadDays = Math.max(30, interval * 1 * 2);
 		} else if (task.recurrence.includes("FREQ=WEEKLY")) {
-			lookAheadDays = 90; // ~13 weeks for weekly tasks
+			lookAheadDays = Math.max(90, interval * 7 * 2);
 		} else if (task.recurrence.includes("FREQ=MONTHLY")) {
-			lookAheadDays = 400; // ~13 months for monthly tasks
+			lookAheadDays = Math.max(400, interval * 31 * 2);
 		} else if (task.recurrence.includes("FREQ=YEARLY")) {
-			lookAheadDays = 800; // ~2.2 years for yearly tasks to ensure we find the next occurrence
+			lookAheadDays = Math.max(800, interval * 366 * 2);
 		}
 
 		// Extract DTSTART date from the RRULE
