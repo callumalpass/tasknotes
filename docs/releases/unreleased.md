@@ -24,15 +24,8 @@ Example:
 
 -->
 
-## Added
-
-- (#1597) Added MCP (Model Context Protocol) server for AI agent integration
-  - Exposes TaskNotes tools at `/mcp` endpoint, gated behind `enableMCP` setting
-  - Supports tasks (CRUD, query, toggle status/archive, parse from text), time tracking, pomodoro, calendar events, and task statistics
-  - Useful for remote/hosted AI clients like Claude or ChatGPT on mobile
-  - Thanks to @dstotijn for the contribution
-
 ## Fixed
 
-- (#1597) Fixed webhook payloads for time tracking start-with-description containing stale data
-  - Thanks to @dstotijn for the fix
+- (#1577) Fixed Edit Note/Task modal hiding action buttons when content exceeds viewport height
+  - Added vertical scroll to modal content area while keeping buttons pinned at bottom
+  - Thanks to @hossam-elshabory for reporting
