@@ -74,8 +74,9 @@ export function renderContextsValue(
 	if (typeof value === "string") {
 		const normalized = normalizeContext(value);
 		if (normalized) {
+			const colorClass = getContextColorClass(normalized);
 			const el = container.createEl("span", {
-				cls: "context-tag",
+				cls: `context-tag ${colorClass}`,
 				text: normalized,
 				attr: {
 					role: "button",
@@ -112,8 +113,9 @@ export function renderContextsValue(
 			const normalized = normalizeContext(context);
 
 			if (normalized) {
+				const colorClass = getContextColorClass(normalized);
 				const el = container.createEl("span", {
-					cls: "context-tag",
+					cls: `context-tag ${colorClass}`,
 					text: normalized,
 					attr: {
 						role: "button",
@@ -165,7 +167,40 @@ export function normalizeTag(raw: string): string | null {
 	}
 
 	return cleaned ? `#${cleaned}` : null;
-} /**
+}/**
+ * Generate a simple hash from a string for consistent color mapping.
+ * Uses djb2 algorithm for good distribution with short strings.
+ */
+function simpleHash(str: string): number {
+	let hash = 5381;
+	for (let i = 0; i < str.length; i++) {
+		hash = (hash * 33) ^ str.charCodeAt(i);
+	}
+	return hash >>> 0; // Convert to unsigned 32-bit integer
+}
+
+/**
+ * Generate a CSS class for context coloring based on the context name.
+ * Returns a BEM modifier class like "context-tag--color-0" through "context-tag--color-19" (20 colors).
+ * The same context name will always produce the same color class.
+ */
+export function getContextColorClass(contextName: string): string {
+	if (!contextName || typeof contextName !== "string") {
+		return "context-tag--color-0";
+	}
+
+	// Remove the @ prefix if present, normalize to lowercase for consistent hashing
+	const name = contextName.replace(/^@/, "").toLowerCase();
+	if (!name) {
+		return "context-tag--color-0";
+	}
+
+	const hash = simpleHash(name);
+	const colorIndex = hash % 20; // 20 distinct color classes
+	return `context-tag--color-${colorIndex}`;
+}
+
+/**
  * Normalize context strings into @context form
  * Enhanced to handle spaces and special characters including Unicode
  */

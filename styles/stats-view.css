@@ -688,7 +688,7 @@
     background: var(--tn-background-primary);
     color: var(--tn-text-normal);
     font-size: var(--tn-font-size-sm);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 
@@ -712,7 +712,7 @@
 
 /* Clickable project items */
 .tasknotes-plugin .stats-view__project-item--clickable {
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 
@@ -809,7 +809,7 @@
     border: none;
     font-size: var(--tn-font-size-xl, 20px);
     color: var(--tn-text-muted, var(--text-muted));
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: var(--tn-spacing-xs, 4px);
     border-radius: var(--tn-border-radius-sm, 4px);
     transition: all 0.2s ease;
@@ -923,7 +923,7 @@
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-border-radius-sm);
     padding: var(--tn-spacing-sm);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 

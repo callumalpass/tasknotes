@@ -333,9 +333,8 @@ export function renderGeneralTab(
 									const fileName = 'all-saved-views.base';
 									const filePath = `TaskNotes/Views/${fileName}`;
 
-									// Create folder if needed
-									const folder = plugin.app.vault.getAbstractFileByPath('TaskNotes/Views');
-									if (!folder) {
+									// Create folder if needed (check on-disk via adapter, not in-memory cache)
+									if (!(await plugin.app.vault.adapter.exists('TaskNotes/Views'))) {
 										await plugin.app.vault.createFolder('TaskNotes/Views');
 									}
 

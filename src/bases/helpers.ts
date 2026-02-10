@@ -128,7 +128,7 @@ function createTaskInfoFromProperties(
 			basesItem.name ||
 			basesItem.path?.split("/").pop()?.replace(".md", "") ||
 			"Untitled",
-		status: props.status || "open",
+		status: props.status || plugin?.settings?.defaultTaskStatus || "open",
 		priority: props.priority || "normal",
 		path: basesItem.path || "",
 		archived: props.archived || false,

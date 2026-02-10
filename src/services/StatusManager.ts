@@ -4,7 +4,7 @@ import { StatusConfig } from "../types";
  * Service for managing custom task statuses
  */
 export class StatusManager {
-	constructor(private statuses: StatusConfig[]) {}
+	constructor(private statuses: StatusConfig[], private defaultStatus: string = "open") {}
 
 	/**
 	 * Get next status in cycle from current status
@@ -15,7 +15,7 @@ export class StatusManager {
 
 		if (currentIndex === -1) {
 			// Current status not found, return first status
-			return sortedStatuses[0]?.value || "open";
+			return sortedStatuses[0]?.value || this.defaultStatus;
 		}
 
 		// Get next status, cycling to first if at end
@@ -32,7 +32,7 @@ export class StatusManager {
 
 		if (currentIndex === -1) {
 			// Current status not found, return last status
-			return sortedStatuses[sortedStatuses.length - 1]?.value || "open";
+			return sortedStatuses[sortedStatuses.length - 1]?.value || this.defaultStatus;
 		}
 
 		// Get previous status, cycling to last if at beginning

@@ -13,6 +13,7 @@ export interface RecurrenceOption {
 export interface RecurrenceContextMenuOptions {
 	currentValue?: string;
 	currentAnchor?: 'scheduled' | 'completion';
+	scheduledDate?: string; // Task's scheduled date to extract time from
 	onSelect: (value: string | null, anchor?: 'scheduled' | 'completion') => void;
 	app: App;
 	plugin: TaskNotesPlugin;
@@ -115,7 +116,7 @@ export class RecurrenceContextMenu {
 		// Format today as DTSTART, preserving existing time if available
 		let todayDTSTART = this.formatDateForDTSTART(today);
 
-		// If there's an existing recurrence with time, preserve the time component
+		// Priority 1: Preserve time from existing recurrence
 		if (this.options.currentValue) {
 			const existingDtstartMatch = this.options.currentValue.match(
 				/DTSTART:(\d{8}(?:T\d{6}Z?)?)/
@@ -124,6 +125,16 @@ export class RecurrenceContextMenu {
 				// Extract time part from existing DTSTART
 				const existingTime = existingDtstartMatch[1].split("T")[1];
 				todayDTSTART = `${todayDTSTART}T${existingTime}`;
+			}
+		}
+		// Priority 2: If no existing recurrence time, check task's scheduled date
+		else if (this.options.scheduledDate && this.options.scheduledDate.includes("T")) {
+			// Extract time from scheduled date (format: YYYY-MM-DDTHH:mm or similar)
+			const timeMatch = this.options.scheduledDate.match(/T(\d{2}):(\d{2})/);
+			if (timeMatch) {
+				const hours = timeMatch[1];
+				const minutes = timeMatch[2];
+				todayDTSTART = `${todayDTSTART}T${hours}${minutes}00Z`;
 			}
 		}
 
@@ -242,6 +253,7 @@ export class RecurrenceContextMenu {
 			this.options.app,
 			this.options.currentValue || "",
 			this.options.currentAnchor || 'scheduled',
+			this.options.scheduledDate,
 			(result, anchor) => {
 				if (result) {
 					this.options.onSelect(result, anchor);
@@ -257,6 +269,7 @@ export class RecurrenceContextMenu {
 
 class CustomRecurrenceModal extends Modal {
 	private currentValue: string;
+	private scheduledDate?: string;
 	private onSubmit: (result: string | null, anchor?: 'scheduled' | 'completion') => void;
 	private frequency = "DAILY";
 	private interval = 1;
@@ -271,10 +284,11 @@ class CustomRecurrenceModal extends Modal {
 	private dtstartTime = "";
 	private recurrenceAnchor: 'scheduled' | 'completion' = 'scheduled'; // NEW: Recurrence anchor
 
-	constructor(app: App, currentValue: string, currentAnchor: 'scheduled' | 'completion', onSubmit: (result: string | null, anchor?: 'scheduled' | 'completion') => void) {
+	constructor(app: App, currentValue: string, currentAnchor: 'scheduled' | 'completion', scheduledDate: string | undefined, onSubmit: (result: string | null, anchor?: 'scheduled' | 'completion') => void) {
 		super(app);
 		this.currentValue = currentValue;
 		this.recurrenceAnchor = currentAnchor;
+		this.scheduledDate = scheduledDate;
 		this.onSubmit = onSubmit;
 		this.parseCurrentValue();
 	}
@@ -283,6 +297,14 @@ class CustomRecurrenceModal extends Modal {
 		if (!this.currentValue) {
 			// Set default DTSTART to today
 			this.dtstart = this.formatTodayForInput();
+			
+			// Check if we should preserve time from scheduled date
+			if (this.scheduledDate && this.scheduledDate.includes("T")) {
+				const timeMatch = this.scheduledDate.match(/T(\d{2}):(\d{2})/);
+				if (timeMatch) {
+					this.dtstartTime = `${timeMatch[1]}:${timeMatch[2]}`;
+				}
+			}
 			return;
 		}
 
@@ -833,9 +855,9 @@ class CustomRecurrenceModal extends Modal {
 		if (this.dtstart) {
 			let dtstartFormatted = this.dtstart.replace(/-/g, "");
 
-			// Add time if specified
+			// Add time if specified (local time, no Z suffix — the time comes from the task's scheduled date which is local)
 			if (this.dtstartTime) {
-				const timeFormatted = this.dtstartTime.replace(":", "") + "00Z";
+				const timeFormatted = this.dtstartTime.replace(":", "") + "00";
 				dtstartFormatted = `${dtstartFormatted}T${timeFormatted}`;
 			}
 

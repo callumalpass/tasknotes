@@ -179,12 +179,9 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 				return;
 			}
 
-			// Ensure folder exists
-			if (folderPath) {
-				const folder = this.app.vault.getAbstractFileByPath(folderPath);
-				if (!folder) {
-					await this.app.vault.createFolder(folderPath);
-				}
+			// Ensure folder exists (check on-disk via adapter, not in-memory cache)
+			if (folderPath && !(await this.app.vault.adapter.exists(folderPath))) {
+				await this.app.vault.createFolder(folderPath);
 			}
 
 			// Create the file

@@ -183,7 +183,7 @@
     background: transparent;
     color: var(--text-muted);
     font-size: 12px;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -237,7 +237,7 @@
     border: none;
     border-radius: var(--radius-s);
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,7 +264,7 @@
     border: none;
     border-radius: var(--radius-s);
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: var(--font-ui-small);
     font-weight: 500;
     transition: all 0.2s ease;
@@ -502,7 +502,7 @@
     color: var(--text-normal);
     text-align: left;
     justify-content: flex-start;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: var(--font-ui-small);
     font-weight: 500;
     transition: background-color 0.2s ease;
@@ -528,7 +528,7 @@
     border: none;
     box-shadow: none;
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: var(--tn-spacing-xs);
     border-radius: var(--radius-s);
     display: flex;
@@ -551,7 +551,7 @@
     border: none;
     color: var(--color-accent);
     text-align: left;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     border-radius: var(--radius-s);
     font-size: var(--font-ui-small);
     font-weight: 500;
@@ -603,7 +603,7 @@
     display: flex;
     align-items: center;
     flex-grow: 1;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: var(--tn-spacing-sm) 0;
 }
 
@@ -892,7 +892,7 @@
     border: none;
     box-shadow: none;
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: var(--tn-spacing-xs);
     border-radius: var(--radius-s);
     display: flex;
@@ -921,7 +921,7 @@
     border: none;
     box-shadow: none;
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: var(--font-ui-small);
     border-radius: var(--radius-s);
     transition: all 0.2s ease;
@@ -992,7 +992,7 @@
     width: 30px;
     border-radius: var(--radius-s);
     color: var(--text-accent);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: 16px;
     font-weight: 700;
     transition: all 0.2s ease;
@@ -1026,7 +1026,7 @@
     display: flex;
     align-items: center;
     gap: var(--tn-spacing-xs);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: var(--font-ui-small);
     color: var(--text-normal);
 }

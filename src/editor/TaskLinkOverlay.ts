@@ -26,6 +26,8 @@ const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
 export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 	// Track widget instances for updates
 	const activeWidgets = new Map<string, TaskLinkWidget>();
+	// Fallback cache keyed by resolvedPath only — survives position shifts and activeWidgets.clear()
+	const lastKnownWidgets = new Map<string, TaskLinkWidget>();
 
 	return ViewPlugin.fromClass(
 		class {
@@ -57,7 +59,10 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					this.refreshDecorations();
 				});
 
-				const taskDeleteListener = plugin.emitter.on(EVENT_TASK_DELETED, () => {
+				const taskDeleteListener = plugin.emitter.on(EVENT_TASK_DELETED, (data?: { path?: string }) => {
+					if (data?.path) {
+						lastKnownWidgets.delete(data.path);
+					}
 					this.refreshDecorations();
 				});
 
@@ -165,7 +170,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					const editorInfo = view.state.field(editorInfoField, false);
 					const currentFile = editorInfo?.file?.path;
 
-					return buildTaskLinkDecorations(view.state, plugin, activeWidgets, currentFile);
+					return buildTaskLinkDecorations(view.state, plugin, activeWidgets, currentFile, lastKnownWidgets);
 				} catch (error) {
 					console.error("Error building task link decorations:", error);
 					return Decoration.none;
@@ -185,7 +190,8 @@ export function buildTaskLinkDecorations(
 	},
 	plugin: TaskNotesPlugin,
 	activeWidgets: Map<string, TaskLinkWidget>,
-	currentFile?: string
+	currentFile?: string,
+	lastKnownWidgets?: Map<string, TaskLinkWidget>
 ): DecorationSet {
 	const builder = new RangeSetBuilder<Decoration>();
 
@@ -334,9 +340,33 @@ export function buildTaskLinkDecorations(
 						activeWidgets.set(widgetKey, newWidget);
 					}
 
+					// Store in fallback cache so transient cache misses reuse this widget
+					lastKnownWidgets?.set(resolvedPath, newWidget);
+
 					// Create a replacement decoration that replaces the wikilink with our widget
 					const decoration = Decoration.replace({
 						widget: activeWidgets.get(widgetKey) as WidgetType,
+						inclusive: true,
+					});
+
+					builder.add(link.start, link.end, decoration);
+				} else if (lastKnownWidgets?.has(resolvedPath)) {
+					// Cache miss (transient invalidation) — reuse the last-known widget
+					// Check if cursor is within link range
+					if (
+						cursorPos !== undefined &&
+						cursorPos >= link.start &&
+						cursorPos < link.end
+					) {
+						continue;
+					}
+
+					const fallbackWidget = lastKnownWidgets.get(resolvedPath)!;
+					const widgetKey = `${resolvedPath}-${link.start}-${link.end}`;
+					activeWidgets.set(widgetKey, fallbackWidget);
+
+					const decoration = Decoration.replace({
+						widget: fallbackWidget as WidgetType,
 						inclusive: true,
 					});
 

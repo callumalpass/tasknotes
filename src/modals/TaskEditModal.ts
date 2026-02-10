@@ -25,7 +25,7 @@ import {
 } from "../utils/helpers";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
-import { generateLinkWithDisplay } from "../utils/linkUtils";
+import { generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { ConfirmationModal } from "./ConfirmationModal";
 
@@ -295,7 +295,8 @@ export class TaskEditModal extends TaskModal {
 					this.task.path,
 					file,
 					this.plugin.fieldMapper,
-					this.plugin.settings.storeTitleInFilename
+					this.plugin.settings.storeTitleInFilename,
+					this.plugin.settings.defaultTaskStatus
 				);
 
 				if (freshTaskInfo) {
@@ -761,8 +762,23 @@ export class TaskEditModal extends TaskModal {
 		const newProjects = splitListPreservingLinksAndQuotes(this.projects);
 		const oldProjects = this.task.projects || [];
 
-		if (JSON.stringify(newProjects.sort()) !== JSON.stringify(oldProjects.sort())) {
-			changes.projects = newProjects.length > 0 ? newProjects : undefined;
+		const normalizeProjectList = (projects: string[]): string[] =>
+			projects
+				.map((project) => {
+					if (!project || typeof project !== "string") return "";
+					const trimmed = project.trim();
+					if (!trimmed) return "";
+					return parseLinkToPath(trimmed).trim();
+				})
+				.filter((project) => project.length > 0);
+
+		const normalizedNewProjects = normalizeProjectList(newProjects).sort();
+		const normalizedOldProjects = normalizeProjectList(oldProjects).sort();
+
+		if (
+			JSON.stringify(normalizedNewProjects) !== JSON.stringify(normalizedOldProjects)
+		) {
+			changes.projects = newProjects.length > 0 ? newProjects : [];
 		}
 
 		// Parse and compare tags
