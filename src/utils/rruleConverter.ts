@@ -98,9 +98,9 @@ export function formatExdates(dates: string[]): string[] {
 	return dates
 		.filter((date) => date && /^\d{4}-\d{2}-\d{2}$/.test(date))
 		.map((date) => {
-			// Convert YYYY-MM-DD to YYYYMMDD
+			// Convert YYYY-MM-DD to YYYYMMDD with VALUE=DATE per RFC 5545
 			const compact = date.replace(/-/g, "");
-			return `EXDATE:${compact}`;
+			return `EXDATE;VALUE=DATE:${compact}`;
 		});
 }
 

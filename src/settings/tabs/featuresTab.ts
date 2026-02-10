@@ -603,6 +603,20 @@ export function renderFeaturesTab(
 				);
 
 				group.addSetting((setting) => {
+					setting
+						.setName(translate("settings.features.timeblocking.defaultColorName"))
+						.setDesc(translate("settings.features.timeblocking.defaultColorDesc"))
+						.addText((text) => {
+							text.inputEl.type = "color";
+							text.setValue(plugin.settings.calendarViewSettings.defaultTimeblockColor);
+							text.onChange(async (value) => {
+								plugin.settings.calendarViewSettings.defaultTimeblockColor = value;
+								await save();
+							});
+						});
+				});
+
+				group.addSetting((setting) => {
 					setting.setDesc(translate("settings.features.timeblocking.usage"));
 					setting.settingEl.addClass("settings-view__group-description");
 				});

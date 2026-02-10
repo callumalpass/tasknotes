@@ -19,4 +19,4 @@ Tip: You don’t need to quote boolean values in frontmatter. Use plain true/fal
   - Matches: `isTask: false`
   - Does not match: `isTask: true`
 
-For contributor details on edge cases, see docs/development/BOOLEAN_PROPERTY_IDENTIFICATION.md.
+For related configuration details, see [Task Properties](task-properties.md).

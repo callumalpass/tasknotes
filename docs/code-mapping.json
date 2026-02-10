@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Mapping between source code files and their related documentation. Coding agents should consult this file to find which docs to review or update when changing code.",
+  "mappings": [
+    {
+      "id": "http-api",
+      "description": "HTTP API endpoints and server",
+      "source": ["src/api/**", "src/services/HTTPAPIService.ts"],
+      "docs": ["docs/HTTP_API.md"]
+    },
+    {
+      "id": "nlp-api",
+      "description": "Natural language parsing API",
+      "source": ["src/services/NaturalLanguageParser.ts"],
+      "docs": ["docs/nlp-api.md"]
+    },
+    {
+      "id": "webhooks",
+      "description": "Webhook triggers and configuration",
+      "source": ["src/api/WebhookController.ts", "src/services/TriggerConfigService.ts"],
+      "docs": ["docs/webhooks.md"]
+    },
+    {
+      "id": "core-concepts",
+      "description": "Core types, field mapping, and task service fundamentals",
+      "source": ["src/types.ts", "src/services/FieldMapper.ts", "src/services/TaskService.ts"],
+      "docs": ["docs/core-concepts.md"]
+    },
+    {
+      "id": "task-management",
+      "description": "Task CRUD, filtering, status, priority, and auto-archiving",
+      "source": [
+        "src/services/TaskService.ts",
+        "src/services/FilterService.ts",
+        "src/services/StatusManager.ts",
+        "src/services/PriorityManager.ts",
+        "src/services/AutoArchiveService.ts"
+      ],
+      "docs": ["docs/features/task-management.md"]
+    },
+    {
+      "id": "time-management",
+      "description": "Task time tracking and statistics",
+      "source": ["src/services/TaskStatsService.ts"],
+      "docs": ["docs/features/time-management.md"]
+    },
+    {
+      "id": "pomodoro",
+      "description": "Pomodoro timer, views, and API",
+      "source": [
+        "src/services/PomodoroService.ts",
+        "src/views/PomodoroView.ts",
+        "src/views/PomodoroStatsView.ts",
+        "src/api/PomodoroController.ts"
+      ],
+      "docs": ["docs/views/pomodoro-view.md", "docs/features/time-management.md"]
+    },
+    {
+      "id": "calendar-integration",
+      "description": "Google/Microsoft calendar sync and OAuth",
+      "source": [
+        "src/services/GoogleCalendarService.ts",
+        "src/services/MicrosoftCalendarService.ts",
+        "src/services/OAuthService.ts",
+        "src/services/TaskCalendarSyncService.ts",
+        "src/services/CalendarProvider.ts"
+      ],
+      "docs": ["docs/features/calendar-integration.md", "docs/calendar-setup.md"]
+    },
+    {
+      "id": "ics-integration",
+      "description": "ICS calendar subscriptions, notes, and export",
+      "source": [
+        "src/services/ICSSubscriptionService.ts",
+        "src/services/ICSNoteService.ts",
+        "src/services/CalendarExportService.ts"
+      ],
+      "docs": ["docs/features/ics-integration.md"]
+    },
+    {
+      "id": "inline-tasks",
+      "description": "Inline task editing in the editor",
+      "source": ["src/editor/**"],
+      "docs": ["docs/features/inline-tasks.md"]
+    },
+    {
+      "id": "user-fields",
+      "description": "User-defined custom fields",
+      "source": ["src/utils/userFieldUtils.ts"],
+      "docs": ["docs/features/user-fields.md"]
+    },
+    {
+      "id": "template-variables",
+      "description": "Template variable processing for tasks and folders",
+      "source": ["src/utils/templateProcessor.ts", "src/utils/folderTemplateProcessor.ts"],
+      "docs": ["docs/features/template-variables.md"]
+    },
+    {
+      "id": "task-list-view",
+      "description": "Task list view component and task cards",
+      "source": ["src/bases/TaskListView.ts", "src/ui/TaskCard.ts"],
+      "docs": ["docs/views/task-list.md"]
+    },
+    {
+      "id": "kanban-view",
+      "description": "Kanban board view component",
+      "source": ["src/bases/KanbanView.ts"],
+      "docs": ["docs/views/kanban-view.md"]
+    },
+    {
+      "id": "calendar-views",
+      "description": "Calendar and mini-calendar view components",
+      "source": [
+        "src/bases/CalendarView.ts",
+        "src/bases/MiniCalendarView.ts"
+      ],
+      "docs": ["docs/views/calendar-views.md"]
+    },
+    {
+      "id": "agenda-view",
+      "description": "Agenda view component",
+      "source": ["src/bases/TaskListView.ts"],
+      "docs": ["docs/views/agenda-view.md"]
+    },
+    {
+      "id": "notes-view",
+      "description": "Notes view component",
+      "source": ["src/bases/BasesViewBase.ts"],
+      "docs": ["docs/views/notes-view.md"]
+    },
+    {
+      "id": "settings",
+      "description": "Plugin settings UI and configuration",
+      "source": ["src/settings/**"],
+      "docs": ["docs/settings.md", "docs/settings/**"]
+    },
+    {
+      "id": "i18n",
+      "description": "Internationalization and locale files",
+      "source": ["src/i18n/**", "src/locales/**"],
+      "docs": ["I18N_GUIDE.md"]
+    },
+    {
+      "id": "bases-integration",
+      "description": "Bases database integration layer",
+      "source": ["src/bases/**"],
+      "docs": ["BASES_API_DOCUMENTATION.md"]
+    },
+    {
+      "id": "architecture",
+      "description": "Plugin entry point, services, and core utilities",
+      "source": [
+        "src/main.ts",
+        "src/services/**",
+        "src/utils/DOMReconciler.ts",
+        "src/utils/VirtualScroller.ts"
+      ],
+      "docs": ["Tasknotes-Development-Guidelines.md"]
+    },
+    {
+      "id": "privacy",
+      "description": "OAuth, calendar, and license services handling user data",
+      "source": [
+        "src/services/OAuthService.ts",
+        "src/services/GoogleCalendarService.ts",
+        "src/services/MicrosoftCalendarService.ts",
+        "src/services/LicenseService.ts"
+      ],
+      "docs": ["PRIVACY.md"]
+    },
+    {
+      "id": "workflows",
+      "description": "Recurring rules and natural language parsing for workflows",
+      "source": ["src/utils/rruleConverter.ts", "src/services/NaturalLanguageParser.ts"],
+      "docs": ["docs/workflows.md"]
+    },
+    {
+      "id": "default-base-templates",
+      "description": "Default bases file templates",
+      "source": ["src/templates/defaultBasesFiles.ts"],
+      "docs": ["docs/views/default-base-templates.md"]
+    },
+    {
+      "id": "time-tracking-api",
+      "description": "Time tracking HTTP API endpoints",
+      "source": ["src/api/TimeTrackingController.ts"],
+      "docs": ["docs/HTTP_API.md"]
+    }
+  ]
+}

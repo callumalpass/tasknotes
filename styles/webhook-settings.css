@@ -218,7 +218,7 @@
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 0.85rem;
-  cursor: var(--cursor);
+  cursor: var(--cursor, pointer);
   transition: all 0.2s ease;
 }
 
@@ -449,7 +449,7 @@
   color: var(--text-normal);
   font-size: 0.9rem;
   font-weight: 500;
-  cursor: var(--cursor);
+  cursor: var(--cursor, pointer);
   transition: all 0.2s ease;
   white-space: nowrap;
   min-width: 0;

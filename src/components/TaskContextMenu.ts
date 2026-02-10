@@ -12,6 +12,7 @@ import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "../modals/ProjectSelectModal";
 import {
 	DEFAULT_DEPENDENCY_RELTYPE,
+	extractDependencyUid,
 	formatDependencyLink,
 	normalizeDependencyEntry,
 } from "../utils/dependencyUtils";
@@ -677,7 +678,8 @@ export class TaskContextMenu {
 				const innerMenu = (subItem as any).setSubmenu();
 				blockedByEntries.forEach((entry, index) => {
 					innerMenu.addItem((item: any) => {
-						item.setTitle(entry.uid);
+						const uid = extractDependencyUid(entry) || this.t("contextMenus.task.dependencies.unknownDependency");
+						item.setTitle(uid);
 						item.onClick(async () => {
 							try {
 								const remaining = blockedByEntries.filter((_, i) => i !== index);
@@ -1365,6 +1367,7 @@ export class TaskContextMenu {
 				const recurrenceMenu = new RecurrenceContextMenu({
 					currentValue: typeof currentValue === "string" ? currentValue : undefined,
 					currentAnchor: this.options.task.recurrence_anchor || 'scheduled',
+					scheduledDate: this.options.task.scheduled,
 					onSelect: onSelect,
 					app: plugin.app,
 					plugin: plugin,

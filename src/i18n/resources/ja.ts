@@ -582,6 +582,8 @@ export const ja: TranslationTree = {
 				enableDesc: "デイリーノートでの軽量スケジューリングのためのタイムブロック機能を有効にする。有効にすると、カレンダーのドラッグコンテキストメニューに'タイムブロック'オプションが表示されます。",
 				showBlocksName: "タイムブロックを表示",
 				showBlocksDesc: "デイリーノートからのタイムブロックをデフォルトで表示",
+				defaultColorName: "デフォルトのタイムブロック色",
+				defaultColorDesc: "新しいタイムブロック作成時に使用されるデフォルトの色",
 				usage: "使用方法：カレンダーでドラッグしてイベントを作成します。コンテキストメニューから'タイムブロック'を選択します（タイムブロッキングが有効な場合のみ表示されます）。ドラッグして既存のタイムブロックを移動します。端を調整して時間を変更します。",
 			},
 			performance: {
@@ -2023,6 +2025,14 @@ export const ja: TranslationTree = {
 				header: "その他のプラグイン統合",
 				description: "他のObsidianプラグインとの統合を設定します。",
 			},
+			mdbaseSpec: {
+				header: "mdbase型定義",
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "たった今",
 				minutesAgo: "{minutes}分前",
@@ -2607,6 +2617,7 @@ export const ja: TranslationTree = {
 				addBlockingTitle: "このタスクがブロックするタスクを追加",
 				removeBlockedBy: "ブロック元を削除…",
 				removeBlocking: "ブロックしているを削除…",
+				unknownDependency: "不明",
 				inputPlaceholder: "[[タスクノート]]",
 				notices: {
 					noEntries: "少なくとも1つのタスクを入力してください",

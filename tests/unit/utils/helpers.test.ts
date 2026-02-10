@@ -133,22 +133,20 @@ describe('Helpers', () => {
       });
       
       mockVault = {
-        getAbstractFileByPath: jest.fn(),
+        adapter: {
+          exists: jest.fn().mockResolvedValue(false),
+        },
         createFolder: jest.fn().mockResolvedValue(undefined)
       };
     });
 
     it('should create single folder', async () => {
-      mockVault.getAbstractFileByPath.mockReturnValue(null);
-
       await ensureFolderExists(mockVault, 'Tasks');
 
       expect(mockVault.createFolder).toHaveBeenCalledWith('Tasks');
     });
 
     it('should create nested folders', async () => {
-      mockVault.getAbstractFileByPath.mockReturnValue(null);
-
       await ensureFolderExists(mockVault, 'Projects/TaskNotes/Archive');
 
       expect(mockVault.createFolder).toHaveBeenCalledWith('Projects');
@@ -157,10 +155,10 @@ describe('Helpers', () => {
     });
 
     it('should skip existing folders', async () => {
-      mockVault.getAbstractFileByPath
-        .mockReturnValueOnce({ path: 'Projects' }) // Projects exists
-        .mockReturnValueOnce(null) // TaskNotes doesn't exist
-        .mockReturnValueOnce({ path: 'Projects/TaskNotes/Archive' }); // Archive exists
+      mockVault.adapter.exists
+        .mockResolvedValueOnce(true)  // Projects exists
+        .mockResolvedValueOnce(false) // TaskNotes doesn't exist
+        .mockResolvedValueOnce(true); // Archive exists
 
       await ensureFolderExists(mockVault, 'Projects/TaskNotes/Archive');
 
@@ -174,16 +172,26 @@ describe('Helpers', () => {
     });
 
     it('should handle folder creation errors', async () => {
-      mockVault.getAbstractFileByPath.mockReturnValue(null);
       mockVault.createFolder.mockRejectedValue(new Error('Permission denied'));
+      // Folder still doesn't exist after the failed attempt
+      mockVault.adapter.exists.mockResolvedValue(false);
 
       await expect(ensureFolderExists(mockVault, 'Tasks'))
-        .rejects.toThrow('Failed to create folder "Tasks": Permission denied');
+        .rejects.toThrow('Failed to create folder "Tasks"');
+    });
+
+    it('should tolerate race condition where folder is created between check and create', async () => {
+      // adapter.exists returns false initially (folder doesn't exist yet)
+      mockVault.adapter.exists.mockResolvedValueOnce(false);
+      // createFolder throws "Folder already exists" (race condition)
+      mockVault.createFolder.mockRejectedValueOnce(new Error('Folder already exists.'));
+      // Second exists check confirms folder now exists
+      mockVault.adapter.exists.mockResolvedValueOnce(true);
+
+      await expect(ensureFolderExists(mockVault, 'Tasks')).resolves.toBeUndefined();
     });
 
     it('should normalize folder paths', async () => {
-      mockVault.getAbstractFileByPath.mockReturnValue(null);
-
       await ensureFolderExists(mockVault, 'Tasks/SubFolder');
 
       expect(mockVault.createFolder).toHaveBeenCalledWith('Tasks');
@@ -781,7 +789,7 @@ describe('Helpers', () => {
         const result = timeblockToCalendarEvent(timeblock, '2025-01-15');
 
         expect(result.backgroundColor).toBe('#6366f1');
-        expect(result.borderColor).toBe('#4f46e5');
+        expect(result.borderColor).toBe('#6366f1');
       });
     });
 

@@ -135,7 +135,7 @@ export class TimeblockCreationModal extends Modal {
 			.setDesc(this.translate("modals.timeblockCreation.colorDesc"))
 			.addText((text) => {
 				this.colorInput = text.inputEl;
-				text.setPlaceholder(this.translate("modals.timeblockCreation.colorPlaceholder")).setValue("#6366f1"); // Default indigo color
+				text.setPlaceholder(this.translate("modals.timeblockCreation.colorPlaceholder")).setValue(this.plugin.settings.calendarViewSettings.defaultTimeblockColor);
 				this.colorInput.type = "color";
 			});
 

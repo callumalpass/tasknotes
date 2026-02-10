@@ -203,6 +203,7 @@ export interface TaskNotesSettings {
 	inlineVisibleProperties?: string[];
 	// Bases integration settings
 	enableBases: boolean;
+	enableMdbaseSpec: boolean;
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
@@ -341,6 +342,7 @@ export interface CalendarViewSettings {
 	// Timeblocking settings
 	enableTimeblocking: boolean;
 	defaultShowTimeblocks: boolean;
+	defaultTimeblockColor: string;
 	// Calendar behavior
 	nowIndicator: boolean;
 	selectMirror: boolean;

@@ -915,7 +915,7 @@ export class FilterService extends EventEmitter {
 
 		// Handle special case for status.isCompleted
 		if (property === "status.isCompleted") {
-			const effectiveStatus = getEffectiveTaskStatus(task, targetDate || new Date());
+			const effectiveStatus = getEffectiveTaskStatus(task, targetDate || new Date(), this.statusManager.getCompletedStatuses()[0]);
 			taskValue = this.statusManager.isCompletedStatus(effectiveStatus);
 		}
 
