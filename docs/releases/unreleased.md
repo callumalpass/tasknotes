@@ -26,6 +26,11 @@ Example:
 
 ## Fixed
 
+- (#1581) Fixed Pomodoro starting break instead of work session after app restart
+  - After completing a work session and restarting, pressing Start would incorrectly start a break
+  - Now properly resets `nextSessionType` when clearing stale sessions or stopping the timer
+  - Thanks to @Sirnii for the detailed bug report and root cause analysis
+
 - (#1577) Fixed Edit Note/Task modal hiding action buttons when content exceeds viewport height
   - Added vertical scroll to modal content area while keeping buttons pinned at bottom
   - Thanks to @hossam-elshabory for reporting
