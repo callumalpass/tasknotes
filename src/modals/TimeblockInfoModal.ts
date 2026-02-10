@@ -122,7 +122,7 @@ export class TimeblockInfoModal extends Modal {
 			.setDesc(this.translate("modals.timeblockInfo.colorDesc"))
 			.addText((text) => {
 				this.colorInput = text.inputEl;
-				text.setPlaceholder(this.translate("modals.timeblockInfo.colorPlaceholder")).setValue(this.timeblock.color || "#6366f1");
+				text.setPlaceholder(this.translate("modals.timeblockInfo.colorPlaceholder")).setValue(this.timeblock.color || this.plugin.settings.calendarViewSettings.defaultTimeblockColor);
 				this.colorInput.type = "color";
 			});
 

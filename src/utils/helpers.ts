@@ -49,9 +49,23 @@ export async function ensureFolderExists(vault: Vault, folderPath: string): Prom
 
 		for (const folder of folders) {
 			currentPath = currentPath ? `${currentPath}/${folder}` : folder;
-			const abstractFile = vault.getAbstractFileByPath(currentPath);
-			if (!abstractFile) {
+
+			// Check on-disk existence via adapter rather than the in-memory
+			// vault cache, which can be stale during startup or after external
+			// filesystem changes.
+			if (await vault.adapter.exists(currentPath)) {
+				continue;
+			}
+
+			try {
 				await vault.createFolder(currentPath);
+			} catch {
+				// Race condition: another call may have created the folder
+				// between our exists check and createFolder.  Only re-throw
+				// if the folder genuinely doesn't exist.
+				if (!(await vault.adapter.exists(currentPath))) {
+					throw new Error(`Failed to create folder "${currentPath}"`);
+				}
 			}
 		}
 	} catch (error) {
@@ -225,7 +239,8 @@ export function extractTaskInfo(
 	path: string,
 	file: TFile,
 	fieldMapper?: FieldMapper,
-	storeTitleInFilename?: boolean
+	storeTitleInFilename?: boolean,
+	defaultStatus?: string
 ): TaskInfo | null {
 	// Try to extract task info from frontmatter using native metadata cache
 	const metadata = app.metadataCache.getFileCache(file);
@@ -239,7 +254,7 @@ export function extractTaskInfo(
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
 				title: mappedTask.title || "Untitled task",
-				status: mappedTask.status || "open",
+				status: mappedTask.status || (defaultStatus || "open"),
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
@@ -266,7 +281,7 @@ export function extractTaskInfo(
 
 			return {
 				title: mappedTask.title || "Untitled task",
-				status: mappedTask.status || "open",
+				status: mappedTask.status || (defaultStatus || "open"),
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
@@ -291,7 +306,7 @@ export function extractTaskInfo(
 	const filename = path.split("/").pop()?.replace(".md", "") || "Untitled";
 	return {
 		title: filename,
-		status: "open",
+		status: defaultStatus || "open",
 		priority: "normal",
 		path,
 		archived: false,
@@ -401,7 +416,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 /**
  * Gets the effective status of a task, considering recurrence
  */
-export function getEffectiveTaskStatus(task: any, date: Date): string {
+export function getEffectiveTaskStatus(task: any, date: Date, completedStatus?: string): string {
 	if (!task.recurrence) {
 		return task.status || "open";
 	}
@@ -410,7 +425,9 @@ export function getEffectiveTaskStatus(task: any, date: Date): string {
 	const dateStr = formatDateForStorage(date);
 	const completedDates = Array.isArray(task.complete_instances) ? task.complete_instances : [];
 
-	return completedDates.includes(dateStr) ? "done" : "open";
+	return completedDates.includes(dateStr)
+		? (completedStatus || "done")
+		: (task.status || "open");
 }
 
 /**
@@ -570,6 +587,11 @@ export function getNextUncompletedOccurrence(task: TaskInfo): Date | null {
 	}
 }
 
+function parseIntervalFromRecurrence(recurrence: string): number {
+	const match = recurrence.match(/INTERVAL=(\d+)/);
+	return match ? parseInt(match[1], 10) : 1;
+}
+
 /**
  * Gets next occurrence for scheduled-based (fixed) recurrence
  */
@@ -585,15 +607,17 @@ function getNextScheduledBasedOccurrence(task: TaskInfo): Date | null {
 
 		// Determine look-ahead period based on recurrence frequency
 		// This ensures we can find at least one future occurrence
+		// Scale with INTERVAL to handle large intervals (e.g. DAILY;INTERVAL=60)
+		const interval = parseIntervalFromRecurrence(task.recurrence);
 		let lookAheadDays = 365; // Default: 1 year
 		if (task.recurrence.includes("FREQ=DAILY")) {
-			lookAheadDays = 30; // 30 days for daily tasks
+			lookAheadDays = Math.max(30, interval * 1 * 2);
 		} else if (task.recurrence.includes("FREQ=WEEKLY")) {
-			lookAheadDays = 90; // ~13 weeks for weekly tasks
+			lookAheadDays = Math.max(90, interval * 7 * 2);
 		} else if (task.recurrence.includes("FREQ=MONTHLY")) {
-			lookAheadDays = 400; // ~13 months for monthly tasks
+			lookAheadDays = Math.max(400, interval * 31 * 2);
 		} else if (task.recurrence.includes("FREQ=YEARLY")) {
-			lookAheadDays = 800; // ~2.2 years for yearly tasks to ensure we find the next occurrence
+			lookAheadDays = Math.max(800, interval * 366 * 2);
 		}
 
 		// Start from the DTSTART (or earlier) to ensure we catch all occurrences
@@ -660,15 +684,17 @@ function getNextCompletionBasedOccurrence(task: TaskInfo): Date | null {
 
 		// Determine look-ahead period based on recurrence frequency
 		// This ensures we can find at least one future occurrence
+		// Scale with INTERVAL to handle large intervals (e.g. DAILY;INTERVAL=60)
+		const interval = parseIntervalFromRecurrence(task.recurrence);
 		let lookAheadDays = 365; // Default: 1 year
 		if (task.recurrence.includes("FREQ=DAILY")) {
-			lookAheadDays = 30; // 30 days for daily tasks
+			lookAheadDays = Math.max(30, interval * 1 * 2);
 		} else if (task.recurrence.includes("FREQ=WEEKLY")) {
-			lookAheadDays = 90; // ~13 weeks for weekly tasks
+			lookAheadDays = Math.max(90, interval * 7 * 2);
 		} else if (task.recurrence.includes("FREQ=MONTHLY")) {
-			lookAheadDays = 400; // ~13 months for monthly tasks
+			lookAheadDays = Math.max(400, interval * 31 * 2);
 		} else if (task.recurrence.includes("FREQ=YEARLY")) {
-			lookAheadDays = 800; // ~2.2 years for yearly tasks to ensure we find the next occurrence
+			lookAheadDays = Math.max(800, interval * 366 * 2);
 		}
 
 		// Extract DTSTART date from the RRULE
@@ -993,7 +1019,7 @@ export function extractTimeblocksFromNote(content: string, path: string): TimeBl
  * Converts a timeblock to a calendar event format
  * Uses proper timezone handling following UTC Anchor pattern to prevent date shift issues
  */
-export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string): any {
+export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string, defaultColor = "#6366f1"): any {
 	// Create datetime strings that FullCalendar interprets consistently
 	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
@@ -1005,8 +1031,8 @@ export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string): an
 		start: startDateTime,
 		end: endDateTime,
 		allDay: false,
-		backgroundColor: timeblock.color || "#6366f1", // Default indigo color
-		borderColor: timeblock.color || "#4f46e5",
+		backgroundColor: timeblock.color || defaultColor,
+		borderColor: timeblock.color || defaultColor,
 		editable: true, // Enable drag and drop for timeblocks
 		eventType: "timeblock", // Mark as timeblock for FullCalendar
 		extendedProps: {

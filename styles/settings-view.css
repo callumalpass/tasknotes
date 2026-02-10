@@ -257,7 +257,7 @@ select.tasknotes-settings__card-input {
     color: var(--text-normal);
     font-size: 13px;
     font-weight: 500;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -296,7 +296,7 @@ select.tasknotes-settings__card-input {
     border: none !important;
     background: transparent;
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     border-radius: 3px;
     display: flex;
     align-items: center;
@@ -531,7 +531,7 @@ select.tasknotes-settings__card-input {
 
 /* Clickable header styling */
 .tasknotes-settings__card-header--clickable {
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     user-select: none;
 }
 
@@ -650,7 +650,7 @@ select.tasknotes-settings__card-input {
     color: var(--text-normal);
     font-size: var(--tn-font-size-sm);
     font-weight: 500;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 
@@ -720,7 +720,7 @@ select.tasknotes-settings__card-input {
     user-select: all;
     border: 1px solid var(--background-modifier-border);
     margin: var(--tn-spacing-md) 0;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .tasknotes-webhook-secret-code:hover {
@@ -912,13 +912,13 @@ select.tasknotes-settings__card-input {
     width: 16px;
     height: 16px;
     margin: 0;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .tasknotes-settings__property-label {
     font-size: 13px;
     color: var(--text-normal);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     flex: 1;
     line-height: 1.3;
 }
@@ -932,7 +932,7 @@ select.tasknotes-settings__card-input {
    ================================================ */
 
 .tasknotes-settings__collapsible-header {
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: 8px 12px;
     margin: -8px -12px 12px -12px;
     border-radius: 4px;
@@ -978,7 +978,7 @@ select.tasknotes-settings__card-input {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: 8px 12px;
     margin: 0 -12px 12px -12px;
     border-radius: 4px;
@@ -1126,6 +1126,13 @@ select.tasknotes-settings__card-input {
 /* ================================================
    INTEGRATIONS TAB - OAUTH SETUP & CALENDAR CARDS
    ================================================ */
+
+/* Calendar & ICS card container spacing */
+.google-calendar-integration-container,
+.microsoft-calendar-integration-container,
+.ics-subscriptions-container {
+    margin-top: 12px;
+}
 
 /* OAuth Setup Info Box */
 .tasknotes-oauth-setup-guide {

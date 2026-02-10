@@ -1,6 +1,6 @@
 # TaskNotes Privacy Policy
 
-Last updated: October 29, 2025
+Last updated: February 8, 2026
 
 ## Overview
 
@@ -31,7 +31,7 @@ TaskNotes operates locally by default, but includes optional features that make 
 
 - **OAuth Calendar Integration**: If you connect Google Calendar or Microsoft Calendar, TaskNotes:
   - Uses OAuth 2.0 to authenticate with Google/Microsoft
-  - Stores encrypted access tokens locally in your Obsidian vault
+  - Stores OAuth access and refresh tokens locally in plugin data on your device
   - Fetches calendar events from your connected calendars
   - Can create/update calendar events when you choose to sync tasks
   - Uses bundled OAuth credentials (client ID and secret) for Quick Setup mode
@@ -74,8 +74,8 @@ We may update this policy. Changes will be posted in this file with an updated d
 ## Contact
 
 For questions or concerns about privacy, please open an issue on GitHub:
-- https://github.com/calluma/tasknotes/issues
+- https://github.com/callumalpass/tasknotes/issues
 
 ## Open Source
 
-TaskNotes is open source software. You can review the code at https://github.com/calluma/tasknotes to verify these privacy practices.
+TaskNotes is open source software. You can review the code at https://github.com/callumalpass/tasknotes to verify these privacy practices.

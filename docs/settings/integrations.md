@@ -92,6 +92,11 @@ When connected, displays:
 - **API port**: Port number for the HTTP API server.
 - **API authentication token**: Token required for API authentication (leave empty for no auth).
 
+Changes to API enablement or port require an Obsidian restart to take effect.
+
+!!! warning
+    If the authentication token is empty, API requests are unauthenticated. Set a token unless your environment is fully trusted.
+
 ## Webhooks
 
 - **Add Webhook**: Register a new webhook endpoint.

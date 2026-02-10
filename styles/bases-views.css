@@ -50,7 +50,7 @@
     color: var(--tn-text-normal);
     letter-spacing: 0.01em;
     line-height: 1.4;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 /* Count element within group headers */
@@ -72,7 +72,7 @@
     color: var(--tn-text-normal);
     font-size: 14px;
     line-height: 1;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: 0;
 }
 
@@ -233,6 +233,19 @@
 
 #bases-calendar .fc-list-day {
     background: transparent;
+}
+
+/* Today highlight in list/agenda view */
+#bases-calendar .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--interactive-accent);
+    font-weight: 600;
+    border-bottom-color: var(--interactive-accent);
+}
+
+.hide-today-highlight #bases-calendar .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--text-normal);
+    font-weight: var(--tn-font-weight-medium);
+    border-bottom-color: var(--tn-divider-color);
 }
 
 /* Override FullCalendar's bright white border color in dark mode */

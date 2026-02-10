@@ -167,6 +167,7 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Timeblocking settings
 	enableTimeblocking: false, // Disabled by default - toggleable feature
 	defaultShowTimeblocks: true,
+	defaultTimeblockColor: "#6366f1",
 	// Calendar behavior
 	nowIndicator: true,
 	selectMirror: true,
@@ -374,6 +375,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	inlineVisibleProperties: ["status", "priority", "due", "scheduled", "recurrence"],
 	// Bases integration defaults
 	enableBases: true,
+	enableMdbaseSpec: false,
 	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {

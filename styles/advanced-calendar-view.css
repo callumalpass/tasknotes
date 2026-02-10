@@ -254,7 +254,7 @@
     border: none;
     color: var(--text-muted);
     font-size: 1.2em;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: 0.2rem 0.5rem;
     border-radius: 3px;
     margin-left: 0.5rem;
@@ -305,7 +305,7 @@
 .timeblock-attachment-item .internal-link {
     color: var(--link-color);
     text-decoration: none;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .timeblock-attachment-item .internal-link:hover {
@@ -467,7 +467,7 @@
     height: 30px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 3px;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .ics-form-number,
@@ -485,7 +485,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .ics-form-checkbox,
@@ -569,7 +569,7 @@
     color: var(--text-on-accent);
     border: none;
     border-radius: 6px;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: 0.85rem;
     font-weight: 500;
     transition: background-color 0.2s ease;
@@ -834,6 +834,19 @@
     background: transparent !important;
 }
 
+/* Today highlight in list/agenda view */
+.advanced-calendar-view .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--interactive-accent) !important;
+    font-weight: 600;
+    border-bottom-color: var(--interactive-accent);
+}
+
+.hide-today-highlight .fc-list-day.fc-day-today .fc-list-day-cushion {
+    color: var(--text-normal) !important;
+    font-weight: 500;
+    border-bottom-color: var(--divider-color);
+}
+
 .advanced-calendar-view .fc-list-table th {
     background: var(--background-secondary-alt) !important;
 }
@@ -847,7 +860,7 @@
     padding: 0.2rem 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .advanced-calendar-view .fc-event:hover {
@@ -911,7 +924,7 @@
     border-radius: 6px;
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 
@@ -1160,7 +1173,7 @@
 }
 
 .fc-list-task-priority-dot {
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .fc-list-task-priority-dot {
@@ -1173,7 +1186,7 @@
     height: 12px;
     flex-shrink: 0;
     opacity: 0.7;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .fc-list-task-recurring-indicator:hover {

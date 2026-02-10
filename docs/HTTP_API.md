@@ -4,9 +4,9 @@ The TaskNotes HTTP API allows external applications to interact with your TaskNo
 
 ## Quick Start
 
-1. **Enable API**: Go to TaskNotes Settings → HTTP API tab (desktop only)
+1. **Enable API**: Go to TaskNotes Settings → Integrations → HTTP API (desktop only)
 2. **Configure**: Set port (default 8080) and optional auth token
-3. **Restart**: Restart Obsidian to start the server
+3. **Restart**: Restart Obsidian to apply API enable/port changes and start the server
 4. **Test**: `curl http://localhost:8080/api/health`
 5. **Explore**: Visit `http://localhost:8080/api/docs/ui` for interactive documentation
 
@@ -32,7 +32,10 @@ curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:8080/api/tasks
 ```
 
 ### No Authentication
-If no token is configured, all requests are allowed from localhost.
+If no token is configured, all API requests are allowed without authentication.
+
+### Security Warning
+The HTTP API is intended for local use. Any client that can reach your configured API port can send requests if authentication is disabled. Always set an authentication token unless you are in a fully trusted environment.
 
 ## Base URL
 ```
@@ -1066,5 +1069,4 @@ CORS is enabled for all origins (`*`). API is intended for localhost use only.
 1. Verify token matches exactly (case-sensitive)
 2. Include `Bearer ` prefix in Authorization header
 3. Check for trailing spaces in token
-
 

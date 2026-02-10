@@ -92,13 +92,33 @@ export class RRule {
         current.setUTCDate(current.getUTCDate() + 1);
       }
     } else if (freq === Frequency.DAILY) {
-      // For daily recurrence, generate all dates in the range
-      const current = new Date(start);
+      // For daily recurrence, generate dates respecting the interval
+      const dailyInterval = this.options.interval || 1;
+      const current = new Date(dtstart);
       current.setUTCHours(0, 0, 0, 0);
-      
+
+      // Advance to the first occurrence at or after start
+      while (current < start) {
+        current.setUTCDate(current.getUTCDate() + dailyInterval);
+      }
+
       while (current <= end) {
         dates.push(new Date(current));
-        current.setUTCDate(current.getUTCDate() + 1);
+        current.setUTCDate(current.getUTCDate() + dailyInterval);
+      }
+    } else if (freq === Frequency.WEEKLY && (!byweekday || byweekday.length === 0)) {
+      // Weekly recurrence without specific weekdays
+      const weeklyInterval = this.options.interval || 1;
+      const current = new Date(dtstart);
+      current.setUTCHours(0, 0, 0, 0);
+
+      while (current < start) {
+        current.setUTCDate(current.getUTCDate() + weeklyInterval * 7);
+      }
+
+      while (current <= end) {
+        dates.push(new Date(current));
+        current.setUTCDate(current.getUTCDate() + weeklyInterval * 7);
       }
     }
     

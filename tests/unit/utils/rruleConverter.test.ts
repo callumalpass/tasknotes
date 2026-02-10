@@ -126,8 +126,8 @@ describe("rruleConverter", () => {
 				});
 
 				expect(result?.recurrence).toContain("RRULE:FREQ=DAILY;INTERVAL=1");
-				expect(result?.recurrence).toContain("EXDATE:20240116");
-				expect(result?.recurrence).toContain("EXDATE:20240118");
+				expect(result?.recurrence).toContain("EXDATE;VALUE=DATE:20240116");
+				expect(result?.recurrence).toContain("EXDATE;VALUE=DATE:20240118");
 				expect(result?.recurrence).toHaveLength(3);
 			});
 
@@ -138,8 +138,8 @@ describe("rruleConverter", () => {
 				});
 
 				expect(result?.recurrence).toContain("RRULE:FREQ=DAILY;INTERVAL=1");
-				expect(result?.recurrence).toContain("EXDATE:20240117");
-				expect(result?.recurrence).toContain("EXDATE:20240119");
+				expect(result?.recurrence).toContain("EXDATE;VALUE=DATE:20240117");
+				expect(result?.recurrence).toContain("EXDATE;VALUE=DATE:20240119");
 			});
 
 			test("combines completed and skipped instances in EXDATE", () => {
@@ -149,8 +149,8 @@ describe("rruleConverter", () => {
 					skippedInstances: ["2024-01-17"],
 				});
 
-				expect(result?.recurrence).toContain("EXDATE:20240116");
-				expect(result?.recurrence).toContain("EXDATE:20240117");
+				expect(result?.recurrence).toContain("EXDATE;VALUE=DATE:20240116");
+				expect(result?.recurrence).toContain("EXDATE;VALUE=DATE:20240117");
 				expect(result?.recurrence).toHaveLength(3);
 			});
 
@@ -207,14 +207,14 @@ describe("rruleConverter", () => {
 
 	describe("formatExdates", () => {
 		test("formats single date", () => {
-			expect(formatExdates(["2024-01-15"])).toEqual(["EXDATE:20240115"]);
+			expect(formatExdates(["2024-01-15"])).toEqual(["EXDATE;VALUE=DATE:20240115"]);
 		});
 
 		test("formats multiple dates", () => {
 			expect(formatExdates(["2024-01-15", "2024-01-16", "2024-02-01"])).toEqual([
-				"EXDATE:20240115",
-				"EXDATE:20240116",
-				"EXDATE:20240201",
+				"EXDATE;VALUE=DATE:20240115",
+				"EXDATE;VALUE=DATE:20240116",
+				"EXDATE;VALUE=DATE:20240201",
 			]);
 		});
 
@@ -229,15 +229,15 @@ describe("rruleConverter", () => {
 
 		test("filters out invalid date formats", () => {
 			expect(formatExdates(["2024-01-15", "invalid", "2024-01-16"])).toEqual([
-				"EXDATE:20240115",
-				"EXDATE:20240116",
+				"EXDATE;VALUE=DATE:20240115",
+				"EXDATE;VALUE=DATE:20240116",
 			]);
 		});
 
 		test("filters out empty strings", () => {
 			expect(formatExdates(["2024-01-15", "", "2024-01-16"])).toEqual([
-				"EXDATE:20240115",
-				"EXDATE:20240116",
+				"EXDATE;VALUE=DATE:20240115",
+				"EXDATE;VALUE=DATE:20240116",
 			]);
 		});
 	});
