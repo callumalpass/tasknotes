@@ -60,7 +60,7 @@
     background: transparent;
     border: none;
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     padding: var(--size-4-1);
     border-radius: var(--radius-s);
     transition: all 0.2s ease;

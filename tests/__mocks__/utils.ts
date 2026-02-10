@@ -64,7 +64,7 @@ export const isTaskOverdue = jest.fn().mockImplementation((task: any) => false);
 
 export const isDueByRRule = jest.fn().mockImplementation((task: any, date: Date) => true);
 
-export const getEffectiveTaskStatus = jest.fn().mockImplementation((task: any, date: Date) => task.status || 'open');
+export const getEffectiveTaskStatus = jest.fn().mockImplementation((task: any, date: Date, completedStatus?: string) => task.status || 'open');
 
 export const shouldShowRecurringTaskOnDate = jest.fn().mockImplementation((task: any, date: Date) => true);
 

@@ -344,6 +344,27 @@ export class TaskService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			// Add DTSTART to recurrence rule if it doesn't have one
+			// This ensures Google Calendar sync works correctly from the start
+			if (
+				completeTaskData.recurrence &&
+				typeof completeTaskData.recurrence === "string" &&
+				!completeTaskData.recurrence.includes("DTSTART:")
+			) {
+				const tempTaskInfo: TaskInfo = {
+					...completeTaskData,
+					title: title,
+					status: status,
+					priority: priority,
+					path: "", // Path not yet known, but not needed for DTSTART calculation
+					archived: false,
+				};
+				const recurrenceWithDTSTART = addDTSTARTToRecurrenceRule(tempTaskInfo);
+				if (recurrenceWithDTSTART) {
+					completeTaskData.recurrence = recurrenceWithDTSTART;
+				}
+			}
+
 			const shouldAddTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
 			const taskTagForFrontmatter = shouldAddTaskTag
 				? this.plugin.settings.taskTag
@@ -1414,6 +1435,15 @@ export class TaskService {
 					delete frontmatter[this.plugin.fieldMapper.toUserField("scheduled")];
 				if (updates.hasOwnProperty("contexts") && updates.contexts === undefined)
 					delete frontmatter[this.plugin.fieldMapper.toUserField("contexts")];
+				if (updates.hasOwnProperty("projects")) {
+					const projectsField = this.plugin.fieldMapper.toUserField("projects");
+					const projectsToSet = Array.isArray(updates.projects) ? updates.projects : [];
+					if (projectsToSet.length > 0) {
+						frontmatter[projectsField] = projectsToSet;
+					} else {
+						delete frontmatter[projectsField];
+					}
+				}
 				if (updates.hasOwnProperty("timeEstimate") && updates.timeEstimate === undefined)
 					delete frontmatter[this.plugin.fieldMapper.toUserField("timeEstimate")];
 				if (updates.hasOwnProperty("completedDate") && updates.completedDate === undefined)
@@ -1739,13 +1769,13 @@ export class TaskService {
 			}
 
 			// Delete from Google Calendar first (before file deletion, so we have the event ID)
-			// Fire-and-forget to avoid blocking the delete operation
 			if (this.plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
-				this.plugin.taskCalendarSyncService
-					.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
-					.catch((error) => {
-						console.warn("Failed to delete task from Google Calendar:", error);
-					});
+				try {
+					await this.plugin.taskCalendarSyncService
+						.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);
+				} catch (error) {
+					console.warn("Failed to delete task from Google Calendar:", error);
+				}
 			}
 
 			// Step 1: Delete the file from the vault

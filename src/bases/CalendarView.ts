@@ -1411,20 +1411,32 @@ export class CalendarView extends BasesViewBase {
 					// Calculate the time shift in milliseconds
 					const timeDiffMs = newStart.getTime() - oldStart.getTime();
 
-					// Update scheduled date
+					// Compute new date strings
+					let scheduledString: string | undefined;
+					let dueString: string | undefined;
+
 					if (taskInfo.scheduled) {
 						const oldScheduled = new Date(taskInfo.scheduled);
 						const newScheduled = new Date(oldScheduled.getTime() + timeDiffMs);
-						const scheduledString = format(newScheduled, "yyyy-MM-dd");
-						await this.plugin.taskService.updateProperty(taskInfo, "scheduled", scheduledString);
+						scheduledString = format(newScheduled, "yyyy-MM-dd");
 					}
 
-					// Update due date
 					if (taskInfo.due) {
 						const oldDue = new Date(taskInfo.due);
 						const newDue = new Date(oldDue.getTime() + timeDiffMs);
-						const dueString = format(newDue, "yyyy-MM-dd");
-						await this.plugin.taskService.updateProperty(taskInfo, "due", dueString);
+						dueString = format(newDue, "yyyy-MM-dd");
+					}
+
+					// Update both dates atomically in a single frontmatter write
+					const spanFile = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
+					if (spanFile instanceof TFile) {
+						const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
+						const dueField = this.plugin.fieldMapper.toUserField("due");
+
+						await this.plugin.app.fileManager.processFrontMatter(spanFile, (frontmatter) => {
+							if (scheduledString) frontmatter[scheduledField] = scheduledString;
+							if (dueString) frontmatter[dueField] = dueString;
+						});
 					}
 				}
 			} catch (error) {

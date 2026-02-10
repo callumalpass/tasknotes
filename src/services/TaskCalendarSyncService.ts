@@ -11,6 +11,10 @@ const SYNC_DEBOUNCE_MS = 500;
 /** Max concurrent API calls during bulk sync to avoid rate limits */
 const SYNC_CONCURRENCY_LIMIT = 5;
 
+/** Minimum spacing between Google Calendar API calls (ms) to reduce 403 rate limits.
+ *  Google Calendar enforces ~10 req/s per-user; 100ms keeps us comfortably under that. */
+const GOOGLE_API_CALL_SPACING_MS = 100;
+
 /**
  * Service for syncing TaskNotes tasks to Google Calendar.
  * Handles creating, updating, and deleting calendar events when tasks change.
@@ -18,12 +22,17 @@ const SYNC_CONCURRENCY_LIMIT = 5;
 export class TaskCalendarSyncService {
 	private plugin: TaskNotesPlugin;
 	private googleCalendarService: GoogleCalendarService;
+	private rateLimitChain: Promise<unknown> = Promise.resolve();
+	private lastApiCallAt = 0;
 
 	/** Debounce timers for pending syncs, keyed by task path */
 	private pendingSyncs: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
 	/** In-flight sync operations to prevent concurrent syncs for the same task */
 	private inFlightSyncs: Map<string, Promise<void>> = new Map();
+
+	/** Track previous task state for detecting recurrence removal */
+	private previousTaskState: Map<string, TaskInfo> = new Map();
 
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
@@ -38,6 +47,7 @@ export class TaskCalendarSyncService {
 			clearTimeout(timer);
 		}
 		this.pendingSyncs.clear();
+		this.previousTaskState.clear();
 	}
 
 	/**
@@ -62,6 +72,33 @@ export class TaskCalendarSyncService {
 		}
 
 		await Promise.all(executing);
+	}
+
+	/**
+	 * Ensure Google API calls are spaced out to avoid 403 rate limits.
+	 * Calls are queued and executed with at least GOOGLE_API_CALL_SPACING_MS between them.
+	 */
+	private withGoogleRateLimit<T>(fn: () => Promise<T>): Promise<T> {
+		return new Promise<T>((resolve, reject) => {
+			this.rateLimitChain = this.rateLimitChain.then(async () => {
+				const now = Date.now();
+				const wait = Math.max(0, GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt));
+				if (wait > 0) {
+					await new Promise((r) => setTimeout(r, wait));
+				}
+				try {
+					const result = await fn();
+					this.lastApiCallAt = Date.now();
+					resolve(result);
+				} catch (e) {
+					this.lastApiCallAt = Date.now();
+					reject(e);
+				}
+			}, () => {
+				// Previous call in chain failed; continue the chain
+				fn().then(resolve, reject);
+			});
+		});
 	}
 
 	/**
@@ -281,10 +318,12 @@ export class TaskCalendarSyncService {
 	} {
 		// Check if the date includes a time component (has 'T')
 		if (dateStr.includes("T")) {
-			// Timed event - parse and format for Google Calendar
+			// Timed event - format with local timezone offset for Google Calendar.
+			// Using date-fns format with 'xxx' to produce an offset-aware RFC 3339 string
+			// (e.g. "2024-03-15T14:30:00+05:00") so the dateTime matches the timeZone.
 			const date = new Date(dateStr);
 			return {
-				dateTime: date.toISOString(),
+				dateTime: format(date, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 				timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 				isAllDay: false,
 			};
@@ -326,16 +365,159 @@ export class TaskCalendarSyncService {
 			const startDate = new Date(startInfo.dateTime!);
 			const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 			return {
-				dateTime: endDate.toISOString(),
+				dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 				timeZone: startInfo.timeZone,
 			};
 		}
 	}
 
 	/**
+	 * Parse ISO 8601 duration format and return milliseconds.
+	 * Based on the parser from NotificationService.
+	 */
+	private parseISO8601Duration(duration: string): number | null {
+		// Parse ISO 8601 duration format (e.g., "-PT15M", "P2D", "-PT1H30M")
+		const match = duration.match(
+			/^(-?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
+		);
+
+		if (!match) {
+			return null;
+		}
+
+		const [, sign, years, months, weeks, days, hours, minutes, seconds] = match;
+
+		let totalMs = 0;
+
+		// Note: For simplicity, we treat months as 30 days and years as 365 days
+		if (years) totalMs += parseInt(years) * 365 * 24 * 60 * 60 * 1000;
+		if (months) totalMs += parseInt(months) * 30 * 24 * 60 * 60 * 1000;
+		if (weeks) totalMs += parseInt(weeks) * 7 * 24 * 60 * 60 * 1000;
+		if (days) totalMs += parseInt(days) * 24 * 60 * 60 * 1000;
+		if (hours) totalMs += parseInt(hours) * 60 * 60 * 1000;
+		if (minutes) totalMs += parseInt(minutes) * 60 * 1000;
+		if (seconds) totalMs += parseInt(seconds) * 1000;
+
+		// Apply sign for negative durations (before the anchor date)
+		return sign === "-" ? -totalMs : totalMs;
+	}
+
+	/**
+	 * Convert task reminders to Google Calendar reminder format.
+	 * Returns an array of reminder overrides in the format Google Calendar API expects.
+	 * 
+	 * @param task - The task with reminders
+	 * @param eventStartTime - The event start time (ISO string or date string)
+	 * @param eventDateSource - Which date field was used for the event ('due' or 'scheduled')
+	 * @returns Array of { method: string; minutes: number } or null if no valid reminders
+	 */
+	private convertTaskRemindersToGoogleFormat(
+		task: TaskInfo,
+		eventStartTime: string,
+		eventDateSource: 'due' | 'scheduled'
+	): Array<{ method: string; minutes: number }> | null {
+		if (!task.reminders || !Array.isArray(task.reminders) || task.reminders.length === 0) {
+			return null;
+		}
+
+		const googleReminders: Array<{ method: string; minutes: number }> = [];
+		const GOOGLE_MAX_REMINDER_MINUTES = 40320; // 4 weeks in minutes (Google Calendar API limit)
+
+		// Parse event start time to get a timestamp
+		let eventStartMs: number;
+		try {
+			// Handle both ISO timestamps and date-only strings
+			if (eventStartTime.includes('T')) {
+				eventStartMs = new Date(eventStartTime).getTime();
+			} else {
+				// Date-only string - assume start of day in local timezone
+				eventStartMs = new Date(eventStartTime + 'T00:00:00').getTime();
+			}
+
+			if (isNaN(eventStartMs)) {
+				console.warn('[TaskCalendarSync] Invalid event start time:', eventStartTime);
+				return null;
+			}
+		} catch (error) {
+			console.warn('[TaskCalendarSync] Error parsing event start time:', error);
+			return null;
+		}
+
+		for (const reminder of task.reminders) {
+			if (!reminder.type) continue;
+
+			if (reminder.type === 'relative') {
+				// Only include relative reminders that match the event's date source
+				if (reminder.relatedTo !== eventDateSource) {
+					continue;
+				}
+
+				// Parse the ISO 8601 duration
+				if (!reminder.offset) continue;
+				const durationMs = this.parseISO8601Duration(reminder.offset);
+				if (durationMs === null) {
+					console.warn('[TaskCalendarSync] Invalid duration format:', reminder.offset);
+					continue;
+				}
+
+				// Convert to minutes before the event
+				// Negative duration means "before", which is what we want
+				// Zero duration means "at event time"
+				// Positive duration means "after", which Google Calendar doesn't support for reminders
+				const minutesBefore = Math.abs(Math.round(durationMs / (60 * 1000)));
+
+				// Skip if reminder is after the event (positive duration without negative sign)
+				if (durationMs > 0) {
+					console.warn('[TaskCalendarSync] Skipping reminder after event:', reminder);
+					continue;
+				}
+
+				// Cap at Google Calendar's limit
+				const cappedMinutes = Math.min(minutesBefore, GOOGLE_MAX_REMINDER_MINUTES);
+
+				// Include 0-minute reminders (at event time)
+				if (cappedMinutes >= 0) {
+					googleReminders.push({ method: 'popup', minutes: cappedMinutes });
+				}
+			} else if (reminder.type === 'absolute') {
+				// Calculate minutes before event start
+				if (!reminder.absoluteTime) continue;
+
+				try {
+					const reminderTimeMs = new Date(reminder.absoluteTime).getTime();
+					if (isNaN(reminderTimeMs)) {
+						console.warn('[TaskCalendarSync] Invalid absolute time:', reminder.absoluteTime);
+						continue;
+					}
+
+					// Calculate difference in minutes
+					const diffMs = eventStartMs - reminderTimeMs;
+					const minutesBefore = Math.round(diffMs / (60 * 1000));
+
+					// Skip if reminder is after the event start
+					if (minutesBefore < 0) {
+						console.warn('[TaskCalendarSync] Skipping absolute reminder after event:', reminder);
+						continue;
+					}
+
+					// Cap at Google Calendar's limit
+					const cappedMinutes = Math.min(minutesBefore, GOOGLE_MAX_REMINDER_MINUTES);
+					// Include 0-minute reminders (at event time)
+					googleReminders.push({ method: 'popup', minutes: cappedMinutes });
+				} catch (error) {
+					console.warn('[TaskCalendarSync] Error parsing absolute reminder time:', error);
+					continue;
+				}
+			}
+		}
+
+		return googleReminders.length > 0 ? googleReminders : null;
+	}
+
+	/**
 	 * Convert a task to a Google Calendar event payload
 	 */
-	private taskToCalendarEvent(task: TaskInfo): {
+	private taskToCalendarEvent(task: TaskInfo, clearRecurrence?: boolean): {
 		summary: string;
 		description?: string;
 		start: { date?: string; dateTime?: string; timeZone?: string };
@@ -401,12 +583,41 @@ export class TaskCalendarSyncService {
 			event.colorId = settings.eventColorId;
 		}
 
-		// Add reminder if configured
-		if (settings.defaultReminderMinutes !== null && settings.defaultReminderMinutes > 0) {
+		// Determine which date field was used for the event (for reminder conversion)
+		let eventDateSource: 'due' | 'scheduled';
+		if (settings.syncTrigger === 'scheduled' || (settings.syncTrigger === 'both' && task.scheduled)) {
+			eventDateSource = 'scheduled';
+		} else {
+			eventDateSource = 'due';
+		}
+
+		// Add reminders - prioritize task reminders, fall back to default
+		const taskReminders = this.convertTaskRemindersToGoogleFormat(
+			task,
+			eventDate,
+			eventDateSource
+		);
+
+		if (taskReminders && taskReminders.length > 0) {
+			// Use task-specific reminders
 			event.reminders = {
 				useDefault: false,
-				overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
+				overrides: taskReminders,
 			};
+		} else if (settings.defaultReminderMinutes !== null && settings.defaultReminderMinutes > 0) {
+			// For all-day events, use Google Calendar's default all-day notifications
+			// (configured by the user in their Google Calendar settings) rather than
+			// overriding with minutes-based reminders which would fire at the wrong time
+			// (e.g., 11:30 PM the night before instead of 9 AM day-of). See #1465.
+			const isAllDay = settings.createAsAllDay || startInfo.isAllDay;
+			if (isAllDay) {
+				event.reminders = { useDefault: true };
+			} else {
+				event.reminders = {
+					useDefault: false,
+					overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
+				};
+			}
 		}
 
 		// Add recurrence rules for scheduled-based recurring tasks
@@ -432,19 +643,23 @@ export class TaskCalendarSyncService {
 						const dateTimeStr = `${recurrenceData.dtstart}T${recurrenceData.time}`;
 						const startDate = new Date(dateTimeStr);
 						event.start = {
-							dateTime: startDate.toISOString(),
+							dateTime: format(startDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 						};
 						// Recalculate end based on duration
 						const duration = task.timeEstimate || settings.defaultEventDuration;
 						const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 						event.end = {
-							dateTime: endDate.toISOString(),
+							dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 						};
 					}
 				}
 			}
+		} else if (clearRecurrence) {
+			// Explicitly clear recurrence when it was removed from the task
+			// Google Calendar API requires an empty array to remove recurrence
+			event.recurrence = [];
 		}
 
 		return event;
@@ -453,7 +668,7 @@ export class TaskCalendarSyncService {
 	/**
 	 * Sync a task to Google Calendar (create or update)
 	 */
-	async syncTaskToCalendar(task: TaskInfo): Promise<void> {
+	async syncTaskToCalendar(task: TaskInfo, previous?: TaskInfo): Promise<void> {
 		if (!this.shouldSyncTask(task)) {
 			return;
 		}
@@ -462,7 +677,10 @@ export class TaskCalendarSyncService {
 		const existingEventId = this.getTaskEventId(task);
 
 		try {
-			const eventData = this.taskToCalendarEvent(task);
+			// Check if recurrence was removed (previous had recurrence, current doesn't)
+			const clearRecurrence = !!(previous?.recurrence && !task.recurrence);
+			
+			const eventData = this.taskToCalendarEvent(task, clearRecurrence);
 			if (!eventData) {
 				console.warn("[TaskCalendarSync] Could not convert task to event:", task.path);
 				return;
@@ -470,27 +688,32 @@ export class TaskCalendarSyncService {
 
 			if (existingEventId) {
 				// Update existing event
-				await this.googleCalendarService.updateEvent(
-					settings.targetCalendarId,
-					existingEventId,
-					eventData
+				await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.updateEvent(
+						settings.targetCalendarId,
+						existingEventId,
+						eventData
+					)
 				);
 			} else {
-				// Create new event
-				const createdEvent = await this.googleCalendarService.createEvent(
-					settings.targetCalendarId,
-					{
-						...eventData,
-						start: eventData.start.date || eventData.start.dateTime!,
-						end: eventData.end.date || eventData.end.dateTime!,
-						isAllDay: !!eventData.start.date,
-					}
+				// Create new event — pass structured start/end objects to preserve timeZone
+				const createdEvent = await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.createEvent(
+						settings.targetCalendarId,
+						{
+							...eventData,
+							isAllDay: !!eventData.start.date,
+						}
+					)
 				);
 
 				// Extract the actual event ID from the ICSEvent ID format
 				// Format is "google-{calendarId}-{eventId}"
-				const eventIdMatch = createdEvent.id.match(/^google-[^-]+-(.+)$/);
-				const eventId = eventIdMatch ? eventIdMatch[1] : createdEvent.id;
+				// Calendar IDs can contain hyphens, so strip the known prefix
+				const prefix = `google-${settings.targetCalendarId}-`;
+				const eventId = createdEvent.id.startsWith(prefix)
+					? createdEvent.id.slice(prefix.length)
+					: createdEvent.id;
 
 				// Save the event ID to the task's frontmatter
 				await this.saveTaskEventId(task.path, eventId);
@@ -503,7 +726,7 @@ export class TaskCalendarSyncService {
 				// Retry without the link - refetch task to get updated version
 				const updatedTask = await this.plugin.cacheManager.getTaskInfo(task.path);
 				if (updatedTask) {
-					return this.syncTaskToCalendar(updatedTask);
+					return this.syncTaskToCalendar(updatedTask, previous);
 				}
 			}
 
@@ -522,6 +745,11 @@ export class TaskCalendarSyncService {
 		}
 
 		const taskPath = task.path;
+
+		// Store previous state for recurrence change detection
+		if (previous) {
+			this.previousTaskState.set(taskPath, previous);
+		}
 
 		// Cancel any pending debounced sync for this task
 		const existingTimer = this.pendingSyncs.get(taskPath);
@@ -575,11 +803,19 @@ export class TaskCalendarSyncService {
 			if (existingEventId) {
 				await this.deleteTaskFromCalendar(task);
 			}
+			// Clean up previous state
+			this.previousTaskState.delete(task.path);
 			return;
 		}
 
+		// Get previous state for recurrence change detection
+		const previousState = this.previousTaskState.get(task.path);
+
 		// Sync the updated task
-		await this.syncTaskToCalendar(task);
+		await this.syncTaskToCalendar(task, previousState);
+		
+		// Update previous state with current task
+		this.previousTaskState.set(task.path, task);
 	}
 
 	/**
@@ -611,13 +847,15 @@ export class TaskCalendarSyncService {
 				? this.buildEventDescription(task)
 				: undefined;
 
-			await this.googleCalendarService.updateEvent(
-				settings.targetCalendarId,
-				existingEventId,
-				{
-					summary: completedTitle,
-					description,
-				}
+			await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.updateEvent(
+					settings.targetCalendarId,
+					existingEventId,
+					{
+						summary: completedTitle,
+						description,
+					}
+				)
 			);
 		} catch (error: any) {
 			if (error.status === 404) {
@@ -647,10 +885,12 @@ export class TaskCalendarSyncService {
 			});
 
 			if (recurrenceData) {
-				await this.googleCalendarService.updateEvent(
-					settings.targetCalendarId,
-					eventId,
-					{ recurrence: recurrenceData.recurrence }
+				await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.updateEvent(
+						settings.targetCalendarId,
+						eventId,
+						{ recurrence: recurrenceData.recurrence }
+					)
 				);
 			}
 		} catch (error: any) {
@@ -680,9 +920,11 @@ export class TaskCalendarSyncService {
 		}
 
 		try {
-			await this.googleCalendarService.deleteEvent(
-				settings.targetCalendarId,
-				existingEventId
+			await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.deleteEvent(
+					settings.targetCalendarId,
+					existingEventId
+				)
 			);
 		} catch (error: any) {
 			// 404 or 410 means event is already gone - that's fine
@@ -706,7 +948,9 @@ export class TaskCalendarSyncService {
 		const settings = this.plugin.settings.googleCalendarExport;
 
 		try {
-			await this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId);
+			await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId)
+			);
 		} catch (error: any) {
 			// 404 or 410 means event is already gone - that's fine
 			if (error.status !== 404 && error.status !== 410) {
@@ -781,11 +1025,14 @@ export class TaskCalendarSyncService {
 				continue;
 			}
 
+			const eventId = task.googleCalendarEventId;
 			if (deleteEvents) {
 				try {
-					await this.googleCalendarService.deleteEvent(
-						settings.targetCalendarId,
-						task.googleCalendarEventId
+					await this.withGoogleRateLimit(() =>
+						this.googleCalendarService.deleteEvent(
+							settings.targetCalendarId,
+							eventId
+						)
 					);
 				} catch (error) {
 					console.warn(`[TaskCalendarSync] Failed to delete event for ${task.path}:`, error);

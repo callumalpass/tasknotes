@@ -152,7 +152,8 @@ describe('TaskCard Component', () => {
           { value: 'open', label: 'Open' },
           { value: 'in-progress', label: 'In Progress' }
         ]),
-        getNextStatus: jest.fn(() => 'done')
+        getNextStatus: jest.fn(() => 'done'),
+        getCompletedStatuses: jest.fn(() => ['done'])
       },
       priorityManager: {
         getPriorityConfig: jest.fn((priority) => ({

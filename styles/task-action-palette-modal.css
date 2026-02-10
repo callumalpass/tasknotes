@@ -21,7 +21,7 @@
     padding: var(--palette-gap);
     border-radius: var(--palette-border-radius);
     min-height: var(--palette-item-height);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: background-color 0.15s ease;
 }
 

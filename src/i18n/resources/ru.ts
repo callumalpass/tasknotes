@@ -582,6 +582,8 @@ export const ru: TranslationTree = {
 				enableDesc: "Включить функциональность временных блоков для легкого планирования в ежедневных заметках. Когда включено, опция 'Timeblock' появляется в контекстном меню перетаскивания календаря.",
 				showBlocksName: "Показать временные блоки",
 				showBlocksDesc: "Отображать временные блоки из ежедневных заметок по умолчанию",
+				defaultColorName: "Цвет временных блоков по умолчанию",
+				defaultColorDesc: "Цвет по умолчанию, используемый при создании новых временных блоков",
 				usage: "Использование: Перетащите в календаре для создания событий. Выберите 'Timeblock' из контекстного меню (видно только когда блокировка времени включена). Перетащите для перемещения существующих временных блоков. Измените размер краев для настройки длительности.",
 			},
 			performance: {
@@ -2023,6 +2025,14 @@ export const ru: TranslationTree = {
 				header: "Интеграции с другими плагинами",
 				description: "Настройте интеграции с другими плагинами Obsidian.",
 			},
+			mdbaseSpec: {
+				header: "Определения типов mdbase",
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "Только что",
 				minutesAgo: "{minutes} минут{plural} назад",
@@ -2607,6 +2617,7 @@ export const ru: TranslationTree = {
 				addBlockingTitle: "Добавить задачи, которые блокирует текущая",
 				removeBlockedBy: "Удалить «заблокирована»…",
 				removeBlocking: "Удалить «блокирует»…",
+				unknownDependency: "Неизвестно",
 				inputPlaceholder: "[[Задача]]",
 				notices: {
 					noEntries: "Введите хотя бы одну задачу",

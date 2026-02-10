@@ -585,6 +585,8 @@ export const pt: TranslationTree = {
 				enableDesc: "Ativar recurso de bloco de tempo para agendamento leve em notas diárias. Quando ativado, a opção 'Bloco de Tempo' aparece no menu de contexto de arrastar do calendário.",
 				showBlocksName: "Mostrar blocos de tempo",
 				showBlocksDesc: "Exibir blocos de tempo de notas diárias por padrão",
+				defaultColorName: "Cor padrão do bloco de tempo",
+				defaultColorDesc: "A cor padrão usada ao criar novos blocos de tempo",
 				usage: "Uso: Arraste no calendário para criar eventos. Selecione 'Bloco de Tempo' no menu de contexto (visível apenas quando o bloco de tempo está ativado). Arraste para mover blocos de tempo existentes. Redimensione as bordas para ajustar a duração."
 			},
 			performance: {
@@ -2026,6 +2028,14 @@ export const pt: TranslationTree = {
 				header: "Outras integrações de plugins",
 				description: "Configure integrações com outros plugins do Obsidian."
 			},
+			mdbaseSpec: {
+				header: "Definições de tipos mdbase",
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "Agora mesmo",
 				minutesAgo: "{minutes} minuto{plural} atrás",
@@ -2609,12 +2619,13 @@ export const pt: TranslationTree = {
 			createSubtask: "Criar subtarefa",
 			dependencies: {
 				title: "Dependências",
-				addBlockedBy: "Adicionar “bloqueada por”...",
+				addBlockedBy: "Adicionar \"bloqueada por\"...",
 				addBlockedByTitle: "Adicionar tarefas das quais esta depende",
-				addBlocking: "Adicionar “bloqueando”...",
+				addBlocking: "Adicionar \"bloqueando\"...",
 				addBlockingTitle: "Adicionar tarefas que esta bloqueia",
-				removeBlockedBy: "Remover “bloqueada por”...",
-				removeBlocking: "Remover “bloqueando”...",
+				removeBlockedBy: "Remover \"bloqueada por\"...",
+				removeBlocking: "Remover \"bloqueando\"...",
+				unknownDependency: "Desconhecido",
 				inputPlaceholder: "[[Nota da Tarefa]]",
 				notices: {
 					noEntries: "Por favor, insira pelo menos uma tarefa",
