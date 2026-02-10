@@ -591,6 +591,8 @@ export const en: TranslationTree = {
 					"Enable timeblocking feature for lightweight scheduling in daily notes. When enabled, 'Timeblock' option appears in the calendar drag context menu.",
 				showBlocksName: "Show timeblocks",
 				showBlocksDesc: "Display timeblocks from daily notes by default",
+				defaultColorName: "Default timeblock color",
+				defaultColorDesc: "The default color used when creating new timeblocks",
 				usage: "Usage: Drag on the calendar to create events. Select 'Timeblock' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration.",
 			},
 			performance: {
@@ -2072,6 +2074,14 @@ export const en: TranslationTree = {
 				header: "Other plugin integrations",
 				description: "Configure integrations with other Obsidian plugins.",
 			},
+			mdbaseSpec: {
+				header: "mdbase type definitions",
+				learnMore: "Learn more about mdbase-spec",
+				enable: {
+					name: "Generate mdbase type definitions",
+					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+				},
+			},
 			timeFormats: {
 				justNow: "Just now",
 				minutesAgo: "{minutes} minute{plural} ago",
@@ -2664,6 +2674,7 @@ export const en: TranslationTree = {
 				addBlockingTitle: "Add tasks this blocks",
 				removeBlockedBy: "Remove blocked-by…",
 				removeBlocking: "Remove blocking…",
+				unknownDependency: "Unknown",
 				inputPlaceholder: "[[Task Note]]",
 					notices: {
 						noEntries: "Please enter at least one task",

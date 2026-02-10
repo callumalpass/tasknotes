@@ -22,7 +22,7 @@
     border-left: 3px solid transparent; /* Transparent by default */
     
     /* Interactions & Accessibility - Simplified */
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: background-color var(--tn-transition-fast);
     outline: none;
     role: listitem;
@@ -282,7 +282,7 @@
     border: none;
     border-bottom: 1px solid var(--tn-border-color);
     border-radius: 0;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: background-color var(--tn-transition-fast);
 }
 

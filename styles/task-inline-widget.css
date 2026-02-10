@@ -37,7 +37,7 @@
     padding: 2px 4px;
 
     /* Interactivity */
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 
     /* Prevent text selection issues */
     user-select: none;
@@ -65,7 +65,7 @@
     border: 2px solid var(--tn-border-color);
     background-color: transparent;
     transition: all 0.2s ease;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     position: relative;
     flex-shrink: 0;
     margin-right: 6px; /* More gap between status and priority */
@@ -90,7 +90,7 @@
     border: none;
     flex-shrink: 0;
     margin-right: 6px; /* Gap between priority and title */
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 /* Date info styling */
@@ -104,7 +104,7 @@
 
 /* Clickable date styling */
 .tasknotes-plugin .task-inline-preview__date--clickable {
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     border-radius: 3px;
     padding: 1px 3px;
     transition: all 0.15s ease;
@@ -142,7 +142,7 @@
 /* Recurring indicator styling */
 .tasknotes-plugin .task-inline-preview__recurring-indicator {
     opacity: 0.6;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     display: inline-block;
     width: 12px;
     height: 12px;
@@ -175,7 +175,7 @@
 /* Pencil icon styling */
 .tasknotes-plugin .task-inline-preview__pencil {
     opacity: 0;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     display: inline-block;
     width: 12px;
     height: 12px;
@@ -254,7 +254,7 @@
     border-radius: 3px;
     
     /* Interactivity */
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     opacity: 0.6;
     transition: all 0.15s ease;
     
@@ -326,7 +326,7 @@
     max-width: min(600px, 80vw); /* Responsive max-width for longer titles */
     flex-shrink: 1; /* Allow shrinking if needed */
     vertical-align: baseline;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: color 0.15s ease;
     border-radius: 2px;
     padding: 1px 2px;
@@ -370,7 +370,7 @@
     flex-shrink: 0;
     opacity: 0.4;
     transition: opacity 0.15s ease;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -415,11 +415,9 @@
 @keyframes tn-fadeInTaskPreview {
     from {
         opacity: 0;
-        transform: scale(0.95);
     }
     to {
         opacity: 1;
-        transform: scale(1);
     }
 }
 

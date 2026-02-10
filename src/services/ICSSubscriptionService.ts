@@ -342,6 +342,30 @@ export class ICSSubscriptionService extends EventEmitter {
 						return;
 					}
 
+					// Skip cancelled events (STATUS:CANCELLED)
+					const status = (vevent as any).getFirstPropertyValue("status");
+					if (typeof status === "string" && status.toUpperCase() === "CANCELLED") {
+						return;
+					}
+
+					// Skip events the user has declined.
+					// In a personal calendar's ICS feed the owner's ATTENDEE
+					// entry carries their own PARTSTAT, so if any attendee is
+					// marked DECLINED the event was almost certainly declined
+					// by the calendar owner.
+					const attendees = (vevent as any).getAllProperties("attendee");
+					if (attendees && attendees.length > 0) {
+						const hasDeclined = attendees.some(
+							(a: any) => {
+								const partstat = a.getParameter("partstat");
+								return typeof partstat === "string" && partstat.toUpperCase() === "DECLINED";
+							}
+						);
+						if (hasDeclined) {
+							return;
+						}
+					}
+
 					// Extract basic properties
 					const summary = event.summary || "Untitled Event";
 					const description = event.description || undefined;

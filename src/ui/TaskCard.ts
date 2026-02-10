@@ -139,28 +139,55 @@ function createStatusCycleHandler(
 	return async (e: MouseEvent) => {
 		e.stopPropagation();
 		try {
+			const updateStatusVisuals = (
+				updatedTask: TaskInfo,
+				effectiveStatus: string,
+				isCompleted: boolean
+			) => {
+				const statusConfig = plugin.statusManager.getStatusConfig(effectiveStatus);
+				if (statusConfig?.color) {
+					statusDot.style.borderColor = statusConfig.color;
+				} else {
+					statusDot.style.borderColor = "";
+				}
+
+				if (statusConfig?.icon) {
+					statusDot.addClass("task-card__status-dot--icon");
+					statusDot.empty();
+					setIcon(statusDot, statusConfig.icon);
+				} else {
+					statusDot.removeClass("task-card__status-dot--icon");
+					statusDot.empty();
+				}
+
+				if (statusConfig?.color) {
+					card.style.setProperty("--current-status-color", statusConfig.color);
+				} else {
+					card.style.removeProperty("--current-status-color");
+				}
+
+				const nextStatus = plugin.statusManager.getNextStatus(effectiveStatus);
+				const nextStatusConfig = plugin.statusManager.getStatusConfig(nextStatus);
+				if (nextStatusConfig?.color) {
+					card.style.setProperty("--next-status-color", nextStatusConfig.color);
+				} else {
+					card.style.removeProperty("--next-status-color");
+				}
+
+				const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement | null;
+				if (checkbox) {
+					checkbox.checked = isCompleted;
+				}
+
+				updateCardCompletionState(card, updatedTask, plugin, isCompleted, effectiveStatus);
+			};
+
 			if (task.recurrence) {
 				// For recurring tasks, toggle completion for the target date
 				const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
-				const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate);
-				const newStatusConfig = plugin.statusManager.getStatusConfig(newEffectiveStatus);
+				const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate, plugin.statusManager.getCompletedStatuses()[0]);
 				const isNowCompleted = plugin.statusManager.isCompletedStatus(newEffectiveStatus);
-
-				if (newStatusConfig) {
-					statusDot.style.borderColor = newStatusConfig.color;
-					// Update icon if configured
-					if (newStatusConfig.icon) {
-						statusDot.addClass("task-card__status-dot--icon");
-						statusDot.empty();
-						setIcon(statusDot, newStatusConfig.icon);
-					} else {
-						statusDot.removeClass("task-card__status-dot--icon");
-						statusDot.empty();
-					}
-				}
-
-				// Update card classes
-				updateCardCompletionState(card, task, plugin, isNowCompleted, newEffectiveStatus);
+				updateStatusVisuals(updatedTask, newEffectiveStatus, isNowCompleted);
 			} else {
 				// For regular tasks, cycle to next/previous status based on shift key
 				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
@@ -168,11 +195,13 @@ function createStatusCycleHandler(
 					new Notice("Task not found");
 					return;
 				}
-				const currentStatus = freshTask.status || "open";
+				const currentStatus = freshTask.status || plugin.settings.defaultTaskStatus;
 				const nextStatus = e.shiftKey
 					? plugin.statusManager.getPreviousStatus(currentStatus)
 					: plugin.statusManager.getNextStatus(currentStatus);
-				await plugin.updateTaskProperty(freshTask, "status", nextStatus);
+				const updatedTask = await plugin.updateTaskProperty(freshTask, "status", nextStatus);
+				const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
+				updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -192,16 +221,30 @@ function updateCardCompletionState(
 	isCompleted: boolean,
 	effectiveStatus: string
 ): void {
-	const cardClasses = ["task-card"];
-	if (isCompleted) cardClasses.push("task-card--completed");
-	if (task.archived) cardClasses.push("task-card--archived");
-	if (plugin.getActiveTimeSession(task)) cardClasses.push("task-card--actively-tracked");
-	if (task.recurrence) cardClasses.push("task-card--recurring");
-	if (task.priority) cardClasses.push(`task-card--priority-${task.priority}`);
-	if (effectiveStatus) cardClasses.push(`task-card--status-${effectiveStatus}`);
-	if (plugin.settings?.subtaskChevronPosition === "left") cardClasses.push("task-card--chevron-left");
+	card.classList.toggle("task-card--completed", isCompleted);
+	card.classList.toggle("task-card--archived", !!task.archived);
+	card.classList.toggle("task-card--actively-tracked", plugin.getActiveTimeSession(task) !== null);
+	card.classList.toggle("task-card--recurring", !!task.recurrence);
+	card.classList.toggle("task-card--chevron-left", plugin.settings?.subtaskChevronPosition === "left");
 
-	card.className = cardClasses.join(" ");
+	for (const className of Array.from(card.classList)) {
+		if (className.startsWith("task-card--priority-")) {
+			card.classList.remove(className);
+		}
+	}
+	if (task.priority) {
+		card.classList.add(`task-card--priority-${task.priority}`);
+	}
+
+	for (const className of Array.from(card.classList)) {
+		if (className.startsWith("task-card--status-")) {
+			card.classList.remove(className);
+		}
+	}
+	if (effectiveStatus) {
+		card.classList.add(`task-card--status-${effectiveStatus}`);
+	}
+
 	card.dataset.status = effectiveStatus;
 
 	// Update title styling
@@ -248,6 +291,7 @@ function createRecurrenceClickHandler(
 		const menu = new RecurrenceContextMenu({
 			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
 			currentAnchor: task.recurrence_anchor || "scheduled",
+			scheduledDate: task.scheduled,
 			onSelect: async (newRecurrence, anchor) => {
 				try {
 					await plugin.updateTaskProperty(task, "recurrence", newRecurrence || undefined);
@@ -1336,7 +1380,7 @@ export function createTaskCard(
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
-		? getEffectiveTaskStatus(task, targetDate)
+		? getEffectiveTaskStatus(task, targetDate, plugin.statusManager.getCompletedStatuses()[0])
 		: task.status;
 
 	// Determine layout mode first
@@ -1788,7 +1832,7 @@ export function updateTaskCard(
 
 	// Update effective status
 	const effectiveStatus = task.recurrence
-		? getEffectiveTaskStatus(task, targetDate)
+		? getEffectiveTaskStatus(task, targetDate, plugin.statusManager.getCompletedStatuses()[0])
 		: task.status;
 
 	// Update main element classes using BEM structure
@@ -1874,83 +1918,15 @@ export function updateTaskCard(
 			if (statusConfig) {
 				newStatusDot.style.borderColor = statusConfig.color;
 			}
-
-			// Add click handler to cycle through statuses
-			newStatusDot.addEventListener("click", async (e) => {
+			// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
+			newStatusDot.addEventListener("mousedown", (e) => {
+				e.preventDefault();
 				e.stopPropagation();
-				try {
-					if (task.recurrence) {
-						// For recurring tasks, toggle completion for the target date
-						const updatedTask = await plugin.toggleRecurringTaskComplete(
-							task,
-							targetDate
-						);
-
-						// Immediately update the visual state of the status dot
-						const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate);
-						const newStatusConfig =
-							plugin.statusManager.getStatusConfig(newEffectiveStatus);
-						const isNowCompleted =
-							plugin.statusManager.isCompletedStatus(newEffectiveStatus);
-
-						// Update status dot border color
-						if (newStatusConfig) {
-							newStatusDot.style.borderColor = newStatusConfig.color;
-						}
-
-						// Update the card's completion state and classes
-						const cardClasses = ["task-card"];
-						if (isNowCompleted) {
-							cardClasses.push("task-card--completed");
-						}
-						if (task.archived) cardClasses.push("task-card--archived");
-						if (plugin.getActiveTimeSession(task))
-							cardClasses.push("task-card--actively-tracked");
-						if (task.recurrence) cardClasses.push("task-card--recurring");
-						if (task.priority) cardClasses.push(`task-card--priority-${task.priority}`);
-						if (newEffectiveStatus)
-							cardClasses.push(`task-card--status-${newEffectiveStatus}`);
-
-						element.className = cardClasses.join(" ");
-						element.dataset.status = newEffectiveStatus;
-
-						// Update the title completion styling
-						const titleText = element.querySelector(
-							".task-card__title-text"
-						) as HTMLElement;
-						const titleContainer = element.querySelector(
-							".task-card__title"
-						) as HTMLElement;
-						if (titleText) {
-							titleText.classList.toggle("completed", isNowCompleted);
-						}
-						if (titleContainer) {
-							titleContainer.classList.toggle("completed", isNowCompleted);
-						}
-					} else {
-						// For regular tasks, cycle to next/previous status based on shift key
-						// Get fresh task data to ensure we have the latest status
-						const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-						if (!freshTask) {
-							new Notice("Task not found");
-							return;
-						}
-
-						const currentStatus = freshTask.status || "open";
-						const nextStatus = e.shiftKey
-							? plugin.statusManager.getPreviousStatus(currentStatus)
-							: plugin.statusManager.getNextStatus(currentStatus);
-						await plugin.updateTaskProperty(freshTask, "status", nextStatus);
-					}
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error("Error cycling task status:", {
-						error: errorMessage,
-						taskPath: task.path,
-					});
-					new Notice(`Failed to update task status: ${errorMessage}`);
-				}
 			});
+			newStatusDot.addEventListener(
+				"click",
+				createStatusCycleHandler(task, plugin, element, newStatusDot, targetDate)
+			);
 
 			// Insert at the beginning after checkbox
 			const checkbox = element.querySelector(".task-card__checkbox");

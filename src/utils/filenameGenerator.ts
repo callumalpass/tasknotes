@@ -215,10 +215,9 @@ function generateCustomFilename(
 			context.priority && ["low", "normal", "medium", "high"].includes(context.priority)
 				? context.priority
 				: "normal";
-		const sanitizedStatus =
-			context.status && ["open", "in-progress", "done", "scheduled"].includes(context.status)
-				? context.status
-				: "open";
+		const sanitizedStatus = context.status
+			? sanitizeForFilename(context.status)
+			: "open";
 
 		// Process array values for contexts and tags
 		const contexts = Array.isArray(context.contexts) ? context.contexts : [];
