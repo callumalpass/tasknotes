@@ -1856,6 +1856,12 @@ export const en: TranslationTree = {
 					description: "Token required for API authentication (leave empty for no auth)",
 					placeholder: "your-secret-token",
 				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
+				},
 				endpoints: {
 					header: "Available API Endpoints",
 					expandIcon: "▶",

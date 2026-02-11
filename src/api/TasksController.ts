@@ -6,6 +6,7 @@ import { TaskService } from "../services/TaskService";
 import { FilterService } from "../services/FilterService";
 import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "../services/StatusManager";
+import { TaskStatsService } from "../services/TaskStatsService";
 import TaskNotesPlugin from "../main";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Get, Post, Put, Delete } from "../utils/OpenAPIDecorators";
@@ -35,7 +36,8 @@ export class TasksController extends BaseController {
 		private filterService: FilterService,
 		private cacheManager: TaskManager,
 		private statusManager: StatusManager,
-		private webhookNotifier: IWebhookNotifier
+		private webhookNotifier: IWebhookNotifier,
+		private taskStatsService: TaskStatsService
 	) {
 		super();
 	}
@@ -420,20 +422,15 @@ export class TasksController extends BaseController {
 	async getStats(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const allTasks = await this.cacheManager.getAllTasks();
+			const fullStats = this.taskStatsService.getStats(allTasks);
+
 			const stats = {
-				total: allTasks.length,
-				completed: allTasks.filter((t) => this.statusManager.isCompletedStatus(t.status))
-					.length,
-				active: allTasks.filter(
-					(t) => !this.statusManager.isCompletedStatus(t.status) && !t.archived
-				).length,
-				overdue: allTasks.filter((t) => {
-					if (this.statusManager.isCompletedStatus(t.status) || t.archived) return false;
-					return t.due && new Date(t.due) < new Date();
-				}).length,
-				archived: allTasks.filter((t) => t.archived).length,
-				withTimeTracking: allTasks.filter((t) => t.timeEntries && t.timeEntries.length > 0)
-					.length,
+				total: fullStats.total,
+				completed: fullStats.completed,
+				active: fullStats.active,
+				overdue: fullStats.overdue,
+				archived: fullStats.archived,
+				withTimeTracking: fullStats.withTimeEntries,
 			};
 
 			this.sendResponse(res, 200, this.successResponse(stats));

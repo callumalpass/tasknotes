@@ -187,6 +187,7 @@ export interface TaskNotesSettings {
 	enableAPI: boolean;
 	apiPort: number;
 	apiAuthToken: string;
+	enableMCP: boolean;
 	// Webhook settings
 	webhooks: WebhookConfig[];
 	// User-defined field mappings (optional)

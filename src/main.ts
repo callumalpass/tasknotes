@@ -352,7 +352,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.priorityManager,
 			this
 		);
-		this.taskStatsService = new TaskStatsService(this.cacheManager);
+		this.taskStatsService = new TaskStatsService(this.cacheManager, this.statusManager);
 		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.projectSubtasksService = new ProjectSubtasksService(this);
 		this.expandedProjectsService = new ExpandedProjectsService(this);
@@ -1237,6 +1237,9 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 		if (loadedData && typeof loadedData.apiAuthToken === "undefined") {
 			loadedData.apiAuthToken = "";
+		}
+		if (loadedData && typeof loadedData.enableMCP === "undefined") {
+			loadedData.enableMCP = false;
 		}
 
 		// Migration: Migrate statusSuggestionTrigger to nlpTriggers if needed

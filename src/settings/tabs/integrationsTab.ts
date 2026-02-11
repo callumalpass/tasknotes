@@ -1402,6 +1402,18 @@ export function renderIntegrationsTab(
 							},
 						})
 					);
+
+					group.addSetting((setting) =>
+						configureToggleSetting(setting, {
+							name: translate("settings.integrations.httpApi.mcp.enable.name"),
+							desc: translate("settings.integrations.httpApi.mcp.enable.description"),
+							getValue: () => plugin.settings.enableMCP,
+							setValue: async (value: boolean) => {
+								plugin.settings.enableMCP = value;
+								save();
+							},
+						})
+					);
 				}
 			}
 		);

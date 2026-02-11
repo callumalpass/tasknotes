@@ -350,6 +350,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enableAPI: false,
 	apiPort: 8080,
 	apiAuthToken: "",
+	enableMCP: false,
 	// Webhook defaults
 	webhooks: [],
 	// User Fields defaults (multiple)
