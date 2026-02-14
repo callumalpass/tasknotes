@@ -815,12 +815,12 @@ export function generateRecurringTaskInstances(
 /**
  * Create timeblock calendar event
  */
-export function createTimeblockEvent(timeblock: TimeBlock, date: string): CalendarEvent {
+export function createTimeblockEvent(timeblock: TimeBlock, date: string, defaultColor = "#6366f1"): CalendarEvent {
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
 	const endDateTime = `${date}T${timeblock.endTime}:00`;
 
-	const backgroundColor = timeblock.color || "#6366f1";
-	const borderColor = timeblock.color || "#4f46e5";
+	const backgroundColor = timeblock.color || defaultColor;
+	const borderColor = timeblock.color || defaultColor;
 
 	return {
 		id: `timeblock-${timeblock.id}`,
@@ -900,7 +900,7 @@ export async function generateTimeblockEvents(
 				if (cache?.frontmatter) {
 					const timeblocks = extractTimeblocksFromCache(cache.frontmatter, dailyNote.path);
 					for (const timeblock of timeblocks) {
-						events.push(createTimeblockEvent(timeblock, dateString));
+						events.push(createTimeblockEvent(timeblock, dateString, plugin.settings.calendarViewSettings.defaultTimeblockColor));
 					}
 				}
 			}

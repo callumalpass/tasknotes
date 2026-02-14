@@ -40,7 +40,7 @@
     border: none;
     background: var(--interactive-accent);
     color: var(--text-on-accent);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 
@@ -58,7 +58,7 @@
     border: 1px solid var(--background-modifier-border);
     background: var(--background-primary);
     color: var(--tn-text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 
@@ -76,7 +76,7 @@
     border: 1px solid var(--background-modifier-border);
     background: var(--background-secondary);
     color: var(--tn-text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 
@@ -275,7 +275,7 @@
 
 .tasknotes-plugin .modal-form__suggestion {
     padding: var(--tn-spacing-sm) var(--tn-spacing-lg);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: var(--tn-font-size-md);
     color: var(--tn-text-normal);
     line-height: 1.5;
@@ -553,12 +553,12 @@
     flex-direction: column;
     align-items: center;
     gap: var(--tn-spacing-sm);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
 }
 
 .tasknotes-plugin .modal-form__day-input {
     margin: 0;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     width: auto;
     height: auto;
     flex: none;
@@ -570,7 +570,7 @@
     color: var(--tn-text-normal);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     user-select: none;
     line-height: 1;
 }
@@ -861,7 +861,7 @@
     border-radius: var(--radius-s);
     background: var(--background-primary);
     color: var(--tn-text-normal);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
 }
 

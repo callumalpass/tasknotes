@@ -37,6 +37,13 @@ function generateTaskFilterCondition(settings: TaskNotesSettings): string {
 
 		if (propertyValue) {
 			// Check property has specific value
+			// Boolean values must not be quoted — Obsidian stores checkbox/boolean
+			// frontmatter as actual booleans, so the Bases filter needs e.g.
+			// note.prop == true rather than note.prop == "true" (#1491)
+			const lower = propertyValue.toLowerCase();
+			if (lower === "true" || lower === "false") {
+				return `note.${propertyName} == ${lower}`;
+			}
 			return `note.${propertyName} == "${propertyValue}"`;
 		} else {
 			// Just check property exists (is not empty)

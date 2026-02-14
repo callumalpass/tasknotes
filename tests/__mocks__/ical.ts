@@ -8,84 +8,162 @@ export const ICAL = {
   EventType: 'vevent',
   Calendar: 'vcalendar',
   Timezone: 'vtimezone',
+
+  TimezoneService: {
+    register: (_tz: any) => { /* no-op for tests */ },
+  },
   
+  // Property class mock (for ATTENDEE etc. with parameters)
+  Property: class Property {
+    private _name: string;
+    private _value: any;
+    private _params: Record<string, string>;
+
+    constructor(name: string, value?: any, params?: Record<string, string>) {
+      this._name = name;
+      this._value = value;
+      this._params = params || {};
+    }
+
+    getParameter(name: string): string | undefined {
+      return this._params[name.toLowerCase()];
+    }
+
+    get name(): string { return this._name; }
+    get value(): any { return this._value; }
+  },
+
   // Component class mock
   Component: class Component {
-    private properties = new Map<string, any>();
+    properties = new Map<string, any>();
+    private multiProperties = new Map<string, any[]>();
     private components = new Map<string, Component[]>();
-    
+
     constructor(private jCal: any[] | string) {
       if (typeof jCal === 'string') {
         this.jCal = [jCal, [], []];
+      } else if (Array.isArray(jCal) && jCal.length >= 3) {
+        // Reconstruct from jCal: [name, properties[], components[]]
+        const props = jCal[1] || [];
+        for (const prop of props) {
+          // prop: [name, params, type, value]
+          this.properties.set(prop[0], prop[3]);
+          if (prop[1] && Object.keys(prop[1]).length > 0) {
+            const propObj = new ICAL.Property(prop[0], prop[3], prop[1]);
+            if (!this.multiProperties.has(prop[0])) {
+              this.multiProperties.set(prop[0], []);
+            }
+            this.multiProperties.get(prop[0])!.push(propObj);
+          }
+        }
+        const subcomps = jCal[2] || [];
+        for (const sub of subcomps) {
+          const subComp = new Component(sub);
+          const type = sub[0];
+          if (!this.components.has(type)) {
+            this.components.set(type, []);
+          }
+          this.components.get(type)!.push(subComp);
+        }
       }
     }
-    
+
     static fromString(str: string): Component {
       // Simple parsing for test purposes
       const component = new Component('vcalendar');
-      
+
       // Extract events from VEVENT blocks
       const eventMatches = str.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g);
       if (eventMatches) {
         const events = eventMatches.map(eventStr => {
           const event = new Component('vevent');
-          
+
           // Extract summary
           const summaryMatch = eventStr.match(/SUMMARY:(.*)/);
           if (summaryMatch) {
             event.addPropertyWithValue('summary', summaryMatch[1].trim());
           }
-          
+
           // Extract start date
           const dtStartMatch = eventStr.match(/DTSTART[^:]*:(.*)/);
           if (dtStartMatch) {
             event.addPropertyWithValue('dtstart', new Time().fromString(dtStartMatch[1].trim()));
           }
-          
+
           // Extract end date
           const dtEndMatch = eventStr.match(/DTEND[^:]*:(.*)/);
           if (dtEndMatch) {
             event.addPropertyWithValue('dtend', new Time().fromString(dtEndMatch[1].trim()));
           }
-          
+
           // Extract UID
           const uidMatch = eventStr.match(/UID:(.*)/);
           if (uidMatch) {
             event.addPropertyWithValue('uid', uidMatch[1].trim());
           }
-          
+
           // Extract description
           const descMatch = eventStr.match(/DESCRIPTION:(.*)/);
           if (descMatch) {
             event.addPropertyWithValue('description', descMatch[1].trim());
           }
-          
+
+          // Extract STATUS
+          const statusMatch = eventStr.match(/STATUS:(.*)/);
+          if (statusMatch) {
+            event.addPropertyWithValue('status', statusMatch[1].trim());
+          }
+
+          // Extract ATTENDEE lines with parameters
+          const attendeeRe = /ATTENDEE;([^:]*):(.*)$/gm;
+          let attMatch;
+          while ((attMatch = attendeeRe.exec(eventStr)) !== null) {
+            const paramStr = attMatch[1];
+            const value = attMatch[2].trim();
+            const params: Record<string, string> = {};
+            for (const part of paramStr.split(';')) {
+              const eqIdx = part.indexOf('=');
+              if (eqIdx !== -1) {
+                params[part.substring(0, eqIdx).toLowerCase()] = part.substring(eqIdx + 1);
+              }
+            }
+            const prop = new ICAL.Property('attendee', value, params);
+            if (!event.multiProperties.has('attendee')) {
+              event.multiProperties.set('attendee', []);
+            }
+            event.multiProperties.get('attendee')!.push(prop);
+          }
+
           return event;
         });
-        
+
         component.components.set('vevent', events);
       }
-      
+
       return component;
     }
-    
+
     getFirstSubcomponent(type: string): Component | null {
       const components = this.components.get(type);
       return components && components.length > 0 ? components[0] : null;
     }
-    
+
     getAllSubcomponents(type: string): Component[] {
       return this.components.get(type) || [];
     }
-    
+
     getFirstPropertyValue(name: string): any {
       return this.properties.get(name);
     }
-    
+
+    getAllProperties(name: string): any[] {
+      return this.multiProperties.get(name) || [];
+    }
+
     addPropertyWithValue(name: string, value: any): void {
       this.properties.set(name, value);
     }
-    
+
     addSubcomponent(component: Component): void {
       const type = component.name;
       if (!this.components.has(type)) {
@@ -93,7 +171,7 @@ export const ICAL = {
       }
       this.components.get(type)!.push(component);
     }
-    
+
     get name(): string {
       return Array.isArray(this.jCal) ? this.jCal[0] : this.jCal;
     }
@@ -119,7 +197,7 @@ export const ICAL = {
       }
     }
     
-    get isRecurring(): boolean {
+    isRecurring(): boolean {
       return this.component?.getFirstPropertyValue('rrule') != null;
     }
     
@@ -271,12 +349,19 @@ export function parse(str: string): any[] {
   const events = component.getAllSubcomponents('vevent');
 
   for (const event of events) {
-    const eventProperties = [];
+    const eventProperties: any[] = [];
     const eventComponent = event as any;
 
-    // Add properties from the event component
+    // Add simple properties from the event component
     for (const [key, value] of eventComponent.properties.entries()) {
       eventProperties.push([key, {}, 'text', value]);
+    }
+
+    // Add multi-properties (ATTENDEE etc.) with their parameters
+    for (const [key, props] of eventComponent.multiProperties.entries()) {
+      for (const prop of props) {
+        eventProperties.push([key, prop._params || {}, 'text', prop._value]);
+      }
     }
 
     jCalComponents.push(['vevent', eventProperties, []]);
@@ -357,6 +442,9 @@ export const ICALTestUtils = {
     // Reset any mock state if needed
   }
 };
+
+// Attach parse to the ICAL object so `import ICAL; ICAL.parse()` works
+(ICAL as any).parse = parse;
 
 // Default export
 export default ICAL;

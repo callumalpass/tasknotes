@@ -198,7 +198,7 @@ export function renderTextWithLinks(
 	const remainingText = text.slice(lastIndex);
 	if (remainingText && options?.onTagClick) {
 		// Look for tags in the remaining text
-		const tagRegex = /(^|\s)(#\w+)/g;
+		const tagRegex = /(^|\s)(#[\p{L}\p{N}\p{M}_/-]+)/gu;
 		let tagLastIndex = 0;
 		let tagMatch: RegExpExecArray | null;
 

@@ -52,7 +52,7 @@ export function createICSEventCard(
 	const subscription = plugin.icsSubscriptionService
 		?.getSubscriptions()
 		.find((s) => s.id === icsEvent.subscriptionId);
-	const color = subscription?.color || "var(--color-accent)";
+	const color = icsEvent.color || subscription?.color || "var(--color-accent)";
 	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
 
 	// Main row
@@ -138,7 +138,7 @@ export function updateICSEventCard(
 	const subscription = plugin.icsSubscriptionService
 		?.getSubscriptions()
 		.find((s) => s.id === icsEvent.subscriptionId);
-	const color = subscription?.color || "var(--color-accent)";
+	const color = icsEvent.color || subscription?.color || "var(--color-accent)";
 	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
 
 	// Update icon color on wrapper to propagate to svg (icons use currentColor)

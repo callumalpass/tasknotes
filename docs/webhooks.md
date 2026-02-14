@@ -4,7 +4,7 @@ TaskNotes webhooks enable real-time integrations by sending HTTP POST requests t
 
 ## Quick Start
 
-1. **Enable HTTP API** in TaskNotes Settings → HTTP API tab
+1. **Enable HTTP API** in TaskNotes Settings → Integrations → HTTP API
 2. **Add a webhook** by clicking "Add Webhook" in the webhook settings
 3. **Select events** you want to receive notifications for
 4. **Configure transformation** (optional) for custom payload formats

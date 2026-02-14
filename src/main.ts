@@ -218,6 +218,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
 
+	// mdbase-spec generation service
+	mdbaseSpecService: import("./services/MdbaseSpecService").MdbaseSpecService;
+
 	// Bases filter converter for exporting saved views
 	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
 
@@ -317,7 +320,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Initialize only essential services that are needed for app registration
 		this.fieldMapper = new FieldMapper(this.settings.fieldMapping);
-		this.statusManager = new StatusManager(this.settings.customStatuses);
+		this.statusManager = new StatusManager(this.settings.customStatuses, this.settings.defaultTaskStatus);
 		this.priorityManager = new PriorityManager(this.settings.customPriorities);
 
 		// Initialize performance optimization utilities (lightweight)
@@ -369,6 +372,10 @@ export default class TaskNotesPlugin extends Plugin {
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");
 		this.basesFilterConverter = new BasesFilterConverter(this);
+
+		// Initialize mdbase-spec generation service
+		const { MdbaseSpecService } = await import("./services/MdbaseSpecService");
+		this.mdbaseSpecService = new MdbaseSpecService(this);
 
 		// Create ICS services early so views can register event listeners
 		// (initialization will be deferred to lazy loading)
@@ -624,6 +631,22 @@ export default class TaskNotesPlugin extends Plugin {
 					this.googleCalendarService
 				);
 
+				// Clean up Google Calendar events when task files are deleted externally
+				this.registerEvent(
+					this.emitter.on("file-deleted", (data: { path: string; prevCache?: any }) => {
+						if (!this.taskCalendarSyncService?.isEnabled()) return;
+						const eventIdKey = this.fieldMapper.toUserField("googleCalendarEventId");
+						const eventId = data.prevCache?.frontmatter?.[eventIdKey];
+						if (eventId) {
+							this.taskCalendarSyncService
+								.deleteTaskFromCalendarByPath(data.path, eventId)
+								.catch((error) => {
+									console.warn("Failed to delete task from Google Calendar on file deletion:", error);
+								});
+						}
+					})
+				);
+
 				// Microsoft Calendar
 				this.microsoftCalendarService.on("data-changed", () => {
 					// Trigger calendar view refreshes when Microsoft Calendar events change
@@ -852,11 +875,26 @@ export default class TaskNotesPlugin extends Plugin {
 			return;
 		}
 
-		// Check if status changed from non-completed to completed
+		// Check if task was just completed
+		let wasJustCompleted = false;
+
+		// For non-recurring tasks: check if status changed from non-completed to completed
 		const wasCompleted = this.statusManager.isCompletedStatus(originalTask.status);
 		const isNowCompleted = this.statusManager.isCompletedStatus(updatedTask.status);
-
 		if (!wasCompleted && isNowCompleted) {
+			wasJustCompleted = true;
+		}
+
+		// For recurring tasks: check if a new instance was completed (complete_instances grew)
+		if (updatedTask.recurrence) {
+			const originalInstances = originalTask.complete_instances || [];
+			const updatedInstances = updatedTask.complete_instances || [];
+			if (updatedInstances.length > originalInstances.length) {
+				wasJustCompleted = true;
+			}
+		}
+
+		if (wasJustCompleted) {
 			// Task was just marked as completed - check if it has active time tracking
 			const activeSession = this.getActiveTimeSession(updatedTask);
 			if (activeSession) {
@@ -1147,6 +1185,11 @@ export default class TaskNotesPlugin extends Plugin {
 			this.oauthService.destroy();
 		}
 
+		// Clean up task calendar sync service (before calendar services it depends on)
+		if (this.taskCalendarSyncService) {
+			this.taskCalendarSyncService.destroy();
+		}
+
 		// Clean up calendar services
 		if (this.googleCalendarService) {
 			this.googleCalendarService.destroy();
@@ -1408,6 +1451,9 @@ export default class TaskNotesPlugin extends Plugin {
 		if (this.statusBarService) {
 			this.statusBarService.updateVisibility();
 		}
+
+		// Regenerate mdbase-spec files if the feature is enabled
+		this.mdbaseSpecService?.onSettingsChanged();
 
 		// Invalidate filter options cache so new settings (e.g., user fields) appear immediately
 		this.filterService?.refreshFilterOptions();

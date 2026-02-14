@@ -20,7 +20,7 @@ The frontmatter is extensible—add fields like `energy-level` or `client` and t
 
 ## Quick start
 
-Create a task with **TaskNotes: Create task**. The plugin parses natural language—type "Buy groceries tomorrow #errands" and it extracts the due date and context automatically.
+Create a task with **TaskNotes: Create new task**. The plugin parses natural language—type "Buy groceries tomorrow #errands" and it extracts the due date and context automatically.
 
 Tasks are stored as Markdown files in your vault. Open them directly, edit the frontmatter, or use the plugin's views to manage them.
 
@@ -77,7 +77,7 @@ TaskNotes has an optional HTTP API. There's a [browser extension](https://github
 
 ## Language support
 
-UI: English, German, Spanish, French, Japanese, Russian, Chinese.
+UI: English, German, Spanish, French, Japanese, Russian, Chinese, Portuguese, Korean.
 
 Natural language parsing: English, German, Spanish, French, Italian, Japanese, Dutch, Portuguese, Russian, Swedish, Ukrainian, Chinese.
 

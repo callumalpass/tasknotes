@@ -160,7 +160,7 @@
 /* Individual completion option */
 .tasknotes-plugin .cm-tooltip-autocomplete li {
     padding: var(--size-4-2) var(--size-4-3);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     border-radius: var(--radius-s);
     display: flex;
     align-items: center;
@@ -361,7 +361,7 @@
     width: 32px;
     height: 32px;
     border-radius: var(--radius-s);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
     position: relative;
 }
@@ -516,7 +516,7 @@
     border-radius: var(--radius-s);
     background: transparent;
     color: var(--interactive-accent);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.2s ease;
     min-width: 80px;
 }
@@ -566,6 +566,26 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 
 .tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
     min-height: 400px;
+    max-height: 85vh;
+    overflow: hidden;
+}
+
+/* Flex column so the split-content fills remaining space while buttons stay pinned */
+.tasknotes-plugin.minimalist-task-modal.expanded .minimalist-modal-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    overflow: hidden;
+}
+
+.tasknotes-plugin.minimalist-task-modal.expanded .modal-split-content {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Keep buttons pinned at the bottom, outside the scrollable area */
+.tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
+    flex-shrink: 0;
 }
 
 /* =====================================================================
@@ -865,7 +885,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 
 .tasknotes-plugin .autocomplete-suggestion {
     padding: 8px 12px;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     border-bottom: 1px solid var(--background-modifier-border-hover);
     font-size: var(--font-ui-small);
     color: var(--text-normal);
@@ -952,7 +972,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
     border: none;
     background: transparent;
     color: var(--text-muted);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: 14px;
     padding: 2px 4px;
     transition: color 0.1s ease;
@@ -991,7 +1011,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 }
 
 .tasknotes-plugin .recurring-calendar__day--clickable {
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     transition: all 0.1s ease;
 }
 
@@ -1206,7 +1226,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 .tasknotes-plugin .clickable-project .internal-link {
     color: var(--link-color);
     text-decoration: none;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-ui-small);
     border-radius: var(--radius-xs);
@@ -1231,7 +1251,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 .tasknotes-plugin .clickable-dependency .task-dependency-link {
     color: var(--link-color);
     text-decoration: none;
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-ui-small);
     border-radius: var(--radius-xs);

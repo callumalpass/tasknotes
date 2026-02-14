@@ -79,7 +79,7 @@
     background: var(--background-primary);
     color: var(--text-normal);
     font-size: var(--font-ui-medium);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     color-scheme: dark light;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -105,7 +105,7 @@
 .date-picker-modal__button {
     padding: var(--size-4-2) var(--size-4-4);
     border-radius: var(--radius-s);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     font-size: var(--font-ui-medium);
     font-weight: 500;
     transition: all 0.2s ease;
@@ -168,7 +168,7 @@
 .date-picker-modal input[type="date"]::-webkit-datetime-edit-day-field,
 .date-picker-modal input[type="date"]::-webkit-datetime-edit-year-field {
     /* Make the date text clickable */
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     color: var(--text-normal);
     font-size: var(--font-ui-medium);
     font-family: var(--font-interface);
@@ -180,7 +180,7 @@
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     opacity: 0.7;
     width: 16px;
     height: 16px;
@@ -209,7 +209,7 @@
 .date-picker-modal input[type="time"]::-webkit-datetime-edit-minute-field,
 .date-picker-modal input[type="time"]::-webkit-datetime-edit-ampm-field {
     /* Make the time text clickable */
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     color: var(--text-normal);
     font-size: var(--font-ui-medium);
     font-family: var(--font-interface);
@@ -221,7 +221,7 @@
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    cursor: var(--cursor);
+    cursor: var(--cursor, pointer);
     opacity: 0.7;
     width: 16px;
     height: 16px;
@@ -241,7 +241,7 @@
     .date-picker-modal input[type="date"],
     .date-picker-modal input[type="time"] {
         /* Firefox doesn't have the same issue but ensure consistency */
-        cursor: var(--cursor);
+        cursor: var(--cursor, pointer);
     }
 }
 
