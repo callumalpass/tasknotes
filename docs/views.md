@@ -8,15 +8,22 @@ For details on Bases integration and how to enable it, see [Core Concepts](core-
 
 ## Task-Focused Views
 
-- **[Task List View](views/task-list.md)**: Displays tasks in a list format. Supports filtering, sorting, and grouping via YAML configuration in the `.base` file.
-- **[Kanban View](views/kanban-view.md)**: Displays tasks as cards organized by status. Supports optional swimlane layout for additional organization.
-- **[Calendar Views](views/calendar-views.md)**: Calendar-based task visualization with multiple view modes (month, week, day, year, list). Supports drag-and-drop scheduling, time-blocking, and OAuth calendars.
-- **[Agenda View](views/agenda-view.md)**: A preconfigured calendar list view opened via its own command. It uses the same `.base` infrastructure as the calendar but defaults to `listWeek` mode for fast daily and weekly reviews.
-- **[MiniCalendar View](views/calendar-views.md#mini-calendar-view)**: Month-based calendar showing which days have tasks. Includes fuzzy search and keyboard navigation for quick date navigation.
+Task-focused views are different entry points into the same underlying task notes. The [Task List View](views/task-list.md) is usually the best default for day-to-day planning because it exposes filters, sorting, and grouping in a straightforward list format.
+
+When you want workflow by status, [Kanban View](views/kanban-view.md) organizes cards into columns and can optionally add swimlanes for an extra organizational layer. [Calendar Views](views/calendar-views.md) are useful when schedule and timing matter more than backlog shape, with month/week/day/year/list modes plus drag-and-drop scheduling and time-block support.
+
+[Agenda View](views/agenda-view.md) is a preconfigured list-oriented calendar layout designed for short-horizon planning, while [MiniCalendar View](views/calendar-views.md#mini-calendar-view) gives a compact month heatmap and fast keyboard navigation.
+
+![Task List view](assets/views-tasks-list.png)
+
+![Calendar week view](assets/views-calendar-week.png)
 
 ## Productivity-Focused Views
 
 These views support time management and work tracking.
 
-- **[Pomodoro View](views/pomodoro-view.md)**: Pomodoro timer for focused work sessions.
-- **[Pomodoro Stats View](views/pomodoro-view.md#pomodoro-stats-view)**: Displays analytics and visualizations of completed Pomodoro sessions and work patterns.
+[Pomodoro View](views/pomodoro-view.md) supports focused intervals directly inside Obsidian, and [Pomodoro Stats View](views/pomodoro-view.md#pomodoro-stats-view) summarizes completed sessions so you can see pace and consistency over time.
+
+![Pomodoro view](assets/feature-pomodoro-timer.png)
+
+Screenshots in this section are captured via the Playwright docs suite (`npm run e2e:docs`).

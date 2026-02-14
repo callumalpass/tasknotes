@@ -16,7 +16,7 @@ The frontmatter is extensible—add fields like `energy-level` or `client` and t
 
 ![Screenshot of TaskNotes plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
 
-**[Full Documentation](https://callumalpass.github.io/tasknotes/)**
+**[Full Documentation](https://tasknotes.dev/)**
 
 ## Quick start
 
@@ -36,7 +36,7 @@ The default `.base` files include formula properties for computed values:
 formulas:
   daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
   isOverdue: due && date(due) < today() && status != "done"
-  urgencyScore: formula.priorityWeight + max(0, 10 - formula.daysUntilNext)
+  urgencyScore: formula.priorityWeight + max(0, 10 - formula.daysUntilDue)
   efficiencyRatio: (timeTracked / timeEstimate * 100).round()
 ```
 
@@ -85,6 +85,8 @@ Natural language parsing: English, German, Spanish, French, Italian, Japanese, D
 
 <details>
 <summary>View screenshots</summary>
+
+Screenshots are generated from the Playwright documentation suite (`npm run e2e:docs`).
 
 ### Calendar
 
