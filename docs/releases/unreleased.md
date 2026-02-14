@@ -23,3 +23,16 @@ Example:
 ```
 
 -->
+
+## Added
+
+- (#1597) Added MCP (Model Context Protocol) server for AI agent integration
+  - Exposes TaskNotes tools at `/mcp` endpoint, gated behind `enableMCP` setting
+  - Supports tasks (CRUD, query, toggle status/archive, parse from text), time tracking, pomodoro, calendar events, and task statistics
+  - Useful for remote/hosted AI clients like Claude or ChatGPT on mobile
+  - Thanks to @dstotijn for the contribution
+
+## Fixed
+
+- (#1597) Fixed webhook payloads for time tracking start-with-description containing stale data
+  - Thanks to @dstotijn for the fix
