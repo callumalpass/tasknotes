@@ -34,3 +34,8 @@ Example:
 - (#1577) Fixed Edit Note/Task modal hiding action buttons when content exceeds viewport height
   - Added vertical scroll to modal content area while keeping buttons pinned at bottom
   - Thanks to @hossam-elshabory for reporting
+
+- (#1600) Fixed kanban view grouping not working when more than 20 views exist
+  - The `getGroupByPropertyId()` method had a hardcoded loop limit of 20 iterations
+  - Views at index 20 or higher would not be found, causing groupBy to return null
+  - Thanks to @IHaveNoShame for reporting
