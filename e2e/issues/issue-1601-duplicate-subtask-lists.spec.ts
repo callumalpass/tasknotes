@@ -2,37 +2,36 @@
  * Issue #1601: [Bug]: Subtask lists appear twice requiring Obsidian restart
  *
  * Bug Description:
- * Intermittently (every few days), subtask lists appear duplicated in task cards.
- * The duplicates persist until Obsidian is restarted or "Reload app without saving"
+ * The RelationshipsDecorations widget (subtasks/relationships section shown inside
+ * a task note in the editor, below the frontmatter) appears duplicated intermittently.
+ * The duplicate persists until Obsidian is restarted or "Reload app without saving"
  * command is run.
  *
  * Root cause hypothesis:
- * Async race condition in subtask rendering. The `toggleSubtasks()` function in
- * src/ui/TaskCard.ts is called asynchronously (fire-and-forget) from multiple places:
+ * Race condition in RelationshipsDecorations widget injection. Multiple code paths
+ * can trigger widget injection concurrently:
  *
- * 1. `createTaskCard()` at line 1571-1575: Calls toggleSubtasks without awaiting
- * 2. `updateTaskCard()` at line 2083-2087: Also calls toggleSubtasks without awaiting
- * 3. `refreshParentTaskSubtasks()` at line 2612: Awaits toggleSubtasks
+ * 1. Constructor calls injectWidget() immediately (line 149) - NOT debounced
+ * 2. EVENT_TASK_CARD_INJECTED triggers debouncedInjectWidget() (line 185)
+ * 3. 'settings-changed' event triggers debouncedInjectWidget() (line 191)
+ * 4. File change in update() triggers debouncedInjectWidget() (line 160)
  *
- * When `updateTaskCard()` is triggered while a previous `toggleSubtasks()` is still
- * running (async operation fetching subtasks), both calls can end up appending
- * subtask containers to the same card, causing duplicates.
+ * The orphan cleanup logic at cleanupOrphanedWidgets() (lines 277-296) only
+ * removes widgets that are !== this.currentWidget. If a duplicate is created
+ * before currentWidget is updated, it won't be cleaned up.
  *
  * The bug persists until restart because:
- * - The ExpandedProjectsService maintains in-memory state
- * - DOM elements with duplicate containers aren't cleaned up properly
- * - Only a full app reload clears the state and rebuilds DOM fresh
- *
- * Contributing factors:
- * - toggleSubtasks() checks for existing container but the check and append
- *   aren't atomic with respect to concurrent calls
- * - Multiple rapid view updates can queue multiple toggleSubtasks calls
- * - The in-memory Set in ExpandedProjectsService doesn't track pending operations
+ * - Orphaned widget DOM elements remain in the editor
+ * - Component lifecycle state becomes desynchronized from DOM
+ * - cleanupOrphanedWidgets only removes widgets !== currentWidget
  *
  * Related code:
- * - src/ui/TaskCard.ts: toggleSubtasks(), createTaskCard(), updateTaskCard()
- * - src/services/ExpandedProjectsService.ts: In-memory expansion state
- * - src/utils/DOMReconciler.ts: DOM update handling
+ * - src/editor/RelationshipsDecorations.ts: Main widget injection
+ *   - constructor (line 149): Immediate injection, not debounced
+ *   - setupEventListeners (lines 181-193): Multiple event triggers
+ *   - cleanupOrphanedWidgets (lines 277-296): Orphan detection
+ *   - injectWidget (line 298): Async widget injection
+ * - src/editor/TaskCardNoteDecorations.ts: Coordinates with relationships
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1601
  */
@@ -42,7 +41,7 @@ import { launchObsidian, closeObsidian, ObsidianApp, runCommand } from '../obsid
 
 let app: ObsidianApp;
 
-test.describe('Issue #1601: Subtask lists appear twice requiring Obsidian restart', () => {
+test.describe('Issue #1601: Relationships widget appears twice in note editor', () => {
   test.beforeAll(async () => {
     app = await launchObsidian();
   });
@@ -53,416 +52,390 @@ test.describe('Issue #1601: Subtask lists appear twice requiring Obsidian restar
     }
   });
 
-  test.fixme('reproduces issue #1601 - rapid view updates cause duplicate subtask containers', async () => {
+  test.fixme('reproduces issue #1601 - relationships widget duplicates on rapid file switches', async () => {
     /**
-     * This test attempts to reproduce the race condition by rapidly triggering
-     * view updates while subtasks are expanded.
+     * This test attempts to reproduce the race condition by rapidly switching
+     * between task notes, which could cause multiple injectWidget calls to
+     * overlap before cleanup completes.
      *
-     * Steps to reproduce:
-     * 1. Open task list view
-     * 2. Find a task with subtasks (project task)
-     * 3. Expand the subtasks
-     * 4. Rapidly trigger view updates (filter changes, sort changes, etc.)
-     * 5. Check if duplicate subtask containers appear
-     *
-     * The intermittent nature of this bug makes it hard to reproduce reliably,
-     * but this test documents the expected behavior and race condition scenario.
+     * Steps:
+     * 1. Open a task note that has subtasks (project note)
+     * 2. Verify relationships widget appears once
+     * 3. Rapidly switch to another task note and back
+     * 4. Check if duplicate widgets appear
      */
     const page = app.page;
 
-    // Open task list view
+    // Open task list view to find tasks
     await runCommand(page, 'TaskNotes: Open task list view');
     await page.waitForTimeout(1000);
 
-    // Find a task card with the chevron indicator (has subtasks)
-    const taskCardWithSubtasks = page.locator('.task-card').filter({
+    // Find a task card that is a project (has subtasks)
+    const projectCard = page.locator('.task-card').filter({
       has: page.locator('.task-card__chevron'),
     }).first();
 
-    if (!await taskCardWithSubtasks.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('No task cards with subtasks visible - skipping test');
+    if (!await projectCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('No project task cards visible - skipping test');
       return;
     }
 
-    // Click the chevron to expand subtasks
-    const chevron = taskCardWithSubtasks.locator('.task-card__chevron').first();
-    await chevron.click();
-    await page.waitForTimeout(500);
+    // Double-click to open the task note in the editor
+    await projectCard.dblclick();
+    await page.waitForTimeout(1500);
 
-    // Wait for subtasks to load
-    const subtasksContainer = taskCardWithSubtasks.locator('.task-card__subtasks');
-    await expect(subtasksContainer).toBeVisible({ timeout: 5000 });
+    // Check for the relationships widget in the editor
+    const editor = page.locator('.markdown-source-view');
+    await expect(editor).toBeVisible({ timeout: 5000 });
 
-    // Count initial subtask containers - should be exactly 1
-    const initialContainerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-    console.log(`Initial subtask container count: ${initialContainerCount}`);
+    const relationshipsWidget = page.locator('.tasknotes-relationships-widget');
 
-    // Attempt to trigger the race condition by rapidly causing view updates
-    // This simulates the conditions that can cause the bug
-    for (let i = 0; i < 5; i++) {
-      // Trigger a view refresh by toggling something
-      // Click elsewhere to potentially trigger card updates
-      await page.locator('.tasknotes-plugin').click({ position: { x: 10, y: 10 } });
-      await page.waitForTimeout(50); // Very short delay to cause race
+    // Wait for widget to appear
+    const widgetVisible = await relationshipsWidget.first().isVisible({ timeout: 3000 }).catch(() => false);
+    if (!widgetVisible) {
+      console.log('Relationships widget not visible - task may not have subtasks');
+      return;
+    }
 
-      // Re-click the area near the task to trigger potential re-renders
-      const cardBox = await taskCardWithSubtasks.boundingBox();
-      if (cardBox) {
-        await page.mouse.move(cardBox.x + cardBox.width / 2, cardBox.y + 10);
-      }
+    // Count initial widgets - should be exactly 1
+    const initialCount = await relationshipsWidget.count();
+    console.log(`Initial relationships widget count: ${initialCount}`);
+
+    // Rapidly switch files to try to trigger the race condition
+    // Go back to task list
+    await page.keyboard.press('Escape');
+    await runCommand(page, 'TaskNotes: Open task list view');
+    await page.waitForTimeout(200);
+
+    // Find another task to open
+    const anotherCard = page.locator('.task-card').nth(1);
+    if (await anotherCard.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await anotherCard.dblclick();
+      await page.waitForTimeout(100); // Very short - race condition timing
+
+      // Quickly go back to original
+      await page.keyboard.press('Escape');
+      await runCommand(page, 'TaskNotes: Open task list view');
+      await page.waitForTimeout(100);
+      await projectCard.dblclick();
+      await page.waitForTimeout(100);
+    }
+
+    // Repeat rapid switching
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Control+Tab'); // Switch tabs/panes
+      await page.waitForTimeout(50);
+      await page.keyboard.press('Control+Shift+Tab');
       await page.waitForTimeout(50);
     }
 
     // Wait for any pending async operations
-    await page.waitForTimeout(500);
-
-    // Check for duplicate subtask containers
-    const finalContainerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-    console.log(`Final subtask container count: ${finalContainerCount}`);
-
-    if (finalContainerCount > 1) {
-      console.log('BUG REPRODUCED: Multiple subtask containers detected');
-    }
-
-    // There should only ever be one subtasks container per card
-    expect(finalContainerCount).toBe(1);
-  });
-
-  test.fixme('reproduces issue #1601 - concurrent toggleSubtasks calls cause duplicates', async () => {
-    /**
-     * This test simulates the scenario where createTaskCard and updateTaskCard
-     * both call toggleSubtasks concurrently for the same expanded task.
-     *
-     * The bug occurs when:
-     * 1. User expands subtasks (toggleSubtasks starts async operation)
-     * 2. Before async completes, view updates → updateTaskCard called
-     * 3. updateTaskCard sees isExpanded=true, calls toggleSubtasks again
-     * 4. Both calls try to append subtask containers → duplicates
-     */
-    const page = app.page;
-
-    // Open task list view
-    await runCommand(page, 'TaskNotes: Open task list view');
-    await page.waitForTimeout(1000);
-
-    // Find multiple task cards with subtasks to test concurrent updates
-    const taskCardsWithSubtasks = page.locator('.task-card').filter({
-      has: page.locator('.task-card__chevron'),
-    });
-
-    const count = await taskCardsWithSubtasks.count();
-    if (count < 1) {
-      console.log('No task cards with subtasks visible - skipping test');
-      return;
-    }
-
-    // Expand subtasks on the first card
-    const firstCard = taskCardsWithSubtasks.first();
-    const chevron = firstCard.locator('.task-card__chevron').first();
-    await chevron.click();
-
-    // Immediately trigger operations that could cause updateTaskCard to be called
-    // while the initial toggleSubtasks is still pending
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Shift+Tab');
-
-    // Very rapid interactions to try to catch the race condition
-    for (let i = 0; i < 3; i++) {
-      await page.mouse.wheel(0, 10);
-      await page.waitForTimeout(20);
-      await page.mouse.wheel(0, -10);
-      await page.waitForTimeout(20);
-    }
-
-    // Wait for async operations to complete
     await page.waitForTimeout(1000);
 
     // Check for duplicates
-    const subtaskContainers = await firstCard.locator('.task-card__subtasks').count();
+    const finalCount = await relationshipsWidget.count();
+    console.log(`Final relationships widget count: ${finalCount}`);
 
-    if (subtaskContainers > 1) {
-      console.log(`BUG REPRODUCED: Found ${subtaskContainers} subtask containers instead of 1`);
-
-      // Additional diagnostic: count total subtask cards
-      const subtaskCards = await firstCard.locator('.task-card__subtasks .task-card').count();
-      console.log(`Total subtask cards rendered: ${subtaskCards}`);
+    if (finalCount > 1) {
+      console.log(`BUG REPRODUCED: Found ${finalCount} relationships widgets instead of 1`);
     }
 
-    expect(subtaskContainers).toBe(1);
+    // Should only ever have one relationships widget per view
+    expect(finalCount).toBeLessThanOrEqual(1);
   });
 
-  test.fixme('reproduces issue #1601 - refreshParentTaskSubtasks causes duplicates on subtask edit', async () => {
+  test.fixme('reproduces issue #1601 - widget duplicates when task card event fires during injection', async () => {
     /**
-     * When a subtask is edited, refreshParentTaskSubtasks() is called which
-     * triggers toggleSubtasks() on the parent card. If the parent already has
-     * a pending toggleSubtasks operation, this can cause duplicates.
+     * Tests the race condition between constructor injection and
+     * EVENT_TASK_CARD_INJECTED event handler.
      *
-     * Steps:
-     * 1. Expand a project task's subtasks
-     * 2. Edit one of the subtasks (e.g., change status)
-     * 3. This triggers refreshParentTaskSubtasks()
-     * 4. Check if duplicate containers appear
+     * The constructor at line 149 calls injectWidget() immediately (not debounced).
+     * The event listener at line 183-185 calls debouncedInjectWidget() when
+     * task card is injected. If both fire close together, duplicates can occur.
      */
     const page = app.page;
 
-    // Open task list view
-    await runCommand(page, 'TaskNotes: Open task list view');
-    await page.waitForTimeout(1000);
-
-    // Find a task with subtasks
-    const taskCardWithSubtasks = page.locator('.task-card').filter({
-      has: page.locator('.task-card__chevron'),
-    }).first();
-
-    if (!await taskCardWithSubtasks.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('No task cards with subtasks visible - skipping test');
-      return;
-    }
-
-    // Expand subtasks
-    const chevron = taskCardWithSubtasks.locator('.task-card__chevron').first();
-    await chevron.click();
-    await page.waitForTimeout(1000);
-
-    // Find a subtask to edit
-    const subtaskCard = taskCardWithSubtasks.locator('.task-card__subtasks .task-card').first();
-
-    if (!await subtaskCard.isVisible({ timeout: 3000 }).catch(() => false)) {
-      console.log('No subtasks visible - skipping test');
-      return;
-    }
-
-    // Record initial state
-    const initialContainerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-
-    // Click the checkbox on the subtask to toggle its status
-    // This should trigger a cache update and refreshParentTaskSubtasks
-    const checkbox = subtaskCard.locator('.task-card__checkbox, input[type="checkbox"]').first();
-    if (await checkbox.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await checkbox.click();
-      await page.waitForTimeout(100);
-
-      // Quickly click again to toggle back (rapid status changes)
-      await checkbox.click();
-      await page.waitForTimeout(100);
-
-      await checkbox.click();
-    }
-
-    // Wait for refresh operations
-    await page.waitForTimeout(1000);
-
-    // Check for duplicates
-    const finalContainerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-
-    if (finalContainerCount > initialContainerCount) {
-      console.log(`BUG REPRODUCED: Container count increased from ${initialContainerCount} to ${finalContainerCount}`);
-    }
-
-    expect(finalContainerCount).toBe(1);
-  });
-
-  test.fixme('reproduces issue #1601 - expand/collapse rapid toggle causes duplicate containers', async () => {
-    /**
-     * Rapidly expanding and collapsing subtasks can cause the async operations
-     * to interleave incorrectly, potentially leaving duplicate containers.
-     *
-     * This tests the scenario where:
-     * 1. User clicks expand (toggleSubtasks starts with expanded=true)
-     * 2. User quickly clicks collapse (toggleSubtasks with expanded=false)
-     * 3. User clicks expand again before first operation completes
-     * 4. Multiple container appends could occur
-     */
-    const page = app.page;
-
-    // Open task list view
-    await runCommand(page, 'TaskNotes: Open task list view');
-    await page.waitForTimeout(1000);
-
-    // Find a task with subtasks
-    const taskCardWithSubtasks = page.locator('.task-card').filter({
-      has: page.locator('.task-card__chevron'),
-    }).first();
-
-    if (!await taskCardWithSubtasks.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('No task cards with subtasks visible - skipping test');
-      return;
-    }
-
-    const chevron = taskCardWithSubtasks.locator('.task-card__chevron').first();
-
-    // Rapidly toggle expand/collapse multiple times
-    for (let i = 0; i < 5; i++) {
-      await chevron.click(); // Expand
-      await page.waitForTimeout(30); // Very short - operations still pending
-      await chevron.click(); // Collapse
-      await page.waitForTimeout(30);
-    }
-
-    // End in expanded state
-    await chevron.click();
-    await page.waitForTimeout(1000);
-
-    // Check for duplicates
-    const containerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-
-    if (containerCount > 1) {
-      console.log(`BUG REPRODUCED: ${containerCount} subtask containers after rapid toggling`);
-    }
-
-    // Should have exactly 0 or 1 containers, never more
-    expect(containerCount).toBeLessThanOrEqual(1);
-  });
-
-  test.fixme('reproduces issue #1601 - duplicate content within single container', async () => {
-    /**
-     * The screenshots in the issue show duplicate subtask CONTENT appearing,
-     * which could be caused by toggleSubtasks clearing and re-adding content
-     * but not the container itself when concurrent calls happen.
-     *
-     * toggleSubtasks() at line 2367-2369 clears content:
-     *   while (subtasksContainer.firstChild) {
-     *     subtasksContainer.removeChild(subtasksContainer.firstChild);
-     *   }
-     *
-     * But if two concurrent calls both get past the container check,
-     * both could append subtask cards to the same container.
-     */
-    const page = app.page;
-
-    // Open task list view
-    await runCommand(page, 'TaskNotes: Open task list view');
-    await page.waitForTimeout(1000);
-
-    // Find a task with subtasks
-    const taskCardWithSubtasks = page.locator('.task-card').filter({
-      has: page.locator('.task-card__chevron'),
-    }).first();
-
-    if (!await taskCardWithSubtasks.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('No task cards with subtasks visible - skipping test');
-      return;
-    }
-
-    // Expand subtasks
-    const chevron = taskCardWithSubtasks.locator('.task-card__chevron').first();
-    await chevron.click();
-    await page.waitForTimeout(1000);
-
-    // Count the actual subtask cards
-    const subtasksContainer = taskCardWithSubtasks.locator('.task-card__subtasks').first();
-    if (!await subtasksContainer.isVisible({ timeout: 3000 }).catch(() => false)) {
-      console.log('Subtasks container not visible');
-      return;
-    }
-
-    const subtaskCards = subtasksContainer.locator('.task-card--subtask');
-    const initialCount = await subtaskCards.count();
-    console.log(`Initial subtask card count: ${initialCount}`);
-
-    // Try to trigger a refresh that could cause duplicates
-    // Simulate what might happen with cache updates or view refreshes
-    await runCommand(page, 'TaskNotes: Refresh cache');
+    // Open a task note directly via quick switcher
+    await runCommand(page, 'Quick switcher: Open quick switcher');
     await page.waitForTimeout(500);
 
-    // Check if subtask count doubled (indicating duplicates)
-    const finalCount = await subtaskCards.count();
-    console.log(`Final subtask card count: ${finalCount}`);
+    const quickSwitcher = page.locator('.prompt');
+    if (await quickSwitcher.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Type to find a task note
+      await page.keyboard.type('task', { delay: 30 });
+      await page.waitForTimeout(500);
 
-    if (finalCount > initialCount && finalCount === initialCount * 2) {
-      console.log('BUG REPRODUCED: Subtask cards doubled, indicating duplicate rendering');
+      // Select first result
+      const suggestion = page.locator('.suggestion-item').first();
+      if (await suggestion.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(1500);
+      }
     }
 
-    // Each subtask should appear exactly once
-    // Get unique task paths to verify
-    const taskPaths = await subtaskCards.evaluateAll((cards) =>
-      cards.map((card) => (card as HTMLElement).dataset.taskPath)
-    );
+    // Check for relationships widget
+    const relationshipsWidget = page.locator('.tasknotes-relationships-widget');
+    await page.waitForTimeout(500);
 
-    const uniquePaths = new Set(taskPaths);
-    if (uniquePaths.size < taskPaths.length) {
-      console.log('BUG: Duplicate task paths found in subtask list');
-      console.log('Total cards:', taskPaths.length);
-      console.log('Unique paths:', uniquePaths.size);
+    const count = await relationshipsWidget.count();
+    console.log(`Relationships widget count after opening note: ${count}`);
+
+    if (count > 1) {
+      console.log('BUG: Multiple widgets after opening note via quick switcher');
     }
 
-    // All rendered subtasks should be unique
-    expect(taskPaths.length).toBe(uniquePaths.size);
+    expect(count).toBeLessThanOrEqual(1);
   });
 
-  test.fixme('reproduces issue #1601 - state persists incorrectly after bug occurs', async () => {
+  test.fixme('reproduces issue #1601 - widget duplicates persist after view mode toggle', async () => {
     /**
-     * The user reports that the duplicate state persists until app restart.
-     * This suggests that the ExpandedProjectsService state or DOM state
-     * becomes corrupted and isn't properly cleaned up.
+     * Toggling between Live Preview and Reading mode may create new widget
+     * instances while old ones aren't properly cleaned up.
      *
-     * This test verifies that collapsing and re-expanding cleans up properly.
+     * RelationshipsDecorations.ts has separate handling:
+     * - Live Preview: RelationshipsDecorationsPlugin class (ViewPlugin)
+     * - Reading Mode: injectReadingModeWidget() function (lines 424-527)
      */
     const page = app.page;
 
-    // Open task list view
+    // Open task list and then a task note
     await runCommand(page, 'TaskNotes: Open task list view');
     await page.waitForTimeout(1000);
 
-    // Find a task with subtasks
-    const taskCardWithSubtasks = page.locator('.task-card').filter({
+    const projectCard = page.locator('.task-card').filter({
       has: page.locator('.task-card__chevron'),
     }).first();
 
-    if (!await taskCardWithSubtasks.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('No task cards with subtasks visible - skipping test');
+    if (!await projectCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('No project task cards visible - skipping test');
       return;
     }
 
-    const chevron = taskCardWithSubtasks.locator('.task-card__chevron').first();
+    await projectCard.dblclick();
+    await page.waitForTimeout(1500);
 
-    // Expand subtasks
-    await chevron.click();
-    await page.waitForTimeout(1000);
+    // Verify in Live Preview mode
+    const livePreviewWidget = page.locator('.markdown-source-view .tasknotes-relationships-widget');
+    const livePreviewCount = await livePreviewWidget.count();
+    console.log(`Widget count in Live Preview: ${livePreviewCount}`);
 
-    // Check initial state
-    let containerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-    console.log(`Container count after expand: ${containerCount}`);
-
-    // Collapse subtasks
-    await chevron.click();
+    // Toggle to Reading mode
+    await runCommand(page, 'Toggle reading view');
     await page.waitForTimeout(500);
 
-    // Containers should be completely removed when collapsed
-    containerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-    console.log(`Container count after collapse: ${containerCount}`);
-    expect(containerCount).toBe(0);
+    // Check widget in reading mode
+    const readingWidget = page.locator('.markdown-preview-view .tasknotes-relationships-widget, .markdown-reading-view .tasknotes-relationships-widget');
+    const readingCount = await readingWidget.count();
+    console.log(`Widget count in Reading mode: ${readingCount}`);
 
-    // Re-expand
-    await chevron.click();
-    await page.waitForTimeout(1000);
+    // Toggle back to Live Preview
+    await runCommand(page, 'Toggle reading view');
+    await page.waitForTimeout(500);
 
-    // Should have exactly one container again
-    containerCount = await taskCardWithSubtasks.locator('.task-card__subtasks').count();
-    console.log(`Container count after re-expand: ${containerCount}`);
-    expect(containerCount).toBe(1);
+    // Check for duplicates after toggle
+    const afterToggleWidget = page.locator('.tasknotes-relationships-widget');
+    const afterToggleCount = await afterToggleWidget.count();
+    console.log(`Widget count after toggling back: ${afterToggleCount}`);
 
-    // Navigate away and back
-    await runCommand(page, 'TaskNotes: Open calendar view');
-    await page.waitForTimeout(1000);
+    if (afterToggleCount > 1) {
+      console.log('BUG: Widget duplicated after view mode toggle');
+    }
+
+    // Should have at most 1 widget visible at a time
+    expect(afterToggleCount).toBeLessThanOrEqual(1);
+  });
+
+  test.fixme('reproduces issue #1601 - orphan cleanup misses duplicates', async () => {
+    /**
+     * The cleanupOrphanedWidgets() method at lines 277-296 only removes
+     * widgets that are !== this.currentWidget. If a duplicate is created
+     * before currentWidget is set, or if currentWidget points to wrong
+     * instance, orphans won't be cleaned.
+     *
+     * This test verifies that multiple widgets don't accumulate over time.
+     */
+    const page = app.page;
+
+    // Open a task note
     await runCommand(page, 'TaskNotes: Open task list view');
     await page.waitForTimeout(1000);
 
-    // Find the same card again (it may have been re-rendered)
-    const taskCardAfterNav = page.locator('.task-card').filter({
-      has: page.locator('.task-card__chevron--expanded'),
+    const projectCard = page.locator('.task-card').filter({
+      has: page.locator('.task-card__chevron'),
     }).first();
 
-    if (await taskCardAfterNav.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // If still expanded, check for duplicates
-      containerCount = await taskCardAfterNav.locator('.task-card__subtasks').count();
-      console.log(`Container count after navigation: ${containerCount}`);
+    if (!await projectCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('No project task cards visible - skipping test');
+      return;
+    }
 
-      if (containerCount > 1) {
-        console.log('BUG: Duplicates persisted through view navigation');
+    await projectCard.dblclick();
+    await page.waitForTimeout(1500);
+
+    // Record baseline widget count
+    let widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+    console.log(`Baseline widget count: ${widgetCount}`);
+
+    // Trigger various events that could cause re-injection
+    // 1. Settings change event
+    await runCommand(page, 'Open settings');
+    await page.waitForTimeout(500);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
+    widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+    console.log(`Widget count after settings open/close: ${widgetCount}`);
+
+    // 2. Layout change - resize window
+    await page.setViewportSize({ width: 800, height: 600 });
+    await page.waitForTimeout(300);
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await page.waitForTimeout(500);
+
+    widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+    console.log(`Widget count after viewport resize: ${widgetCount}`);
+
+    // 3. Active leaf change - click different panes
+    const workspace = page.locator('.workspace');
+    await workspace.click({ position: { x: 50, y: 50 } });
+    await page.waitForTimeout(200);
+
+    widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+    console.log(`Final widget count: ${widgetCount}`);
+
+    if (widgetCount > 1) {
+      console.log(`BUG: ${widgetCount} widgets accumulated instead of 1`);
+    }
+
+    expect(widgetCount).toBeLessThanOrEqual(1);
+  });
+
+  test.fixme('reproduces issue #1601 - duplicate persists until reload', async () => {
+    /**
+     * The user reports that duplicates persist until "Reload app without saving"
+     * or full restart. This test documents that once a duplicate occurs,
+     * normal operations don't clean it up.
+     */
+    const page = app.page;
+
+    // Open a task note
+    await runCommand(page, 'TaskNotes: Open task list view');
+    await page.waitForTimeout(1000);
+
+    const projectCard = page.locator('.task-card').filter({
+      has: page.locator('.task-card__chevron'),
+    }).first();
+
+    if (!await projectCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('No project task cards visible - skipping test');
+      return;
+    }
+
+    await projectCard.dblclick();
+    await page.waitForTimeout(1500);
+
+    // Check current state
+    let widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+    const hasMultiple = widgetCount > 1;
+
+    if (hasMultiple) {
+      console.log(`Found ${widgetCount} widgets - attempting cleanup operations`);
+
+      // Try various cleanup operations that should work but don't
+      // 1. Close and reopen the file
+      await page.keyboard.press('Control+w');
+      await page.waitForTimeout(500);
+      await runCommand(page, 'TaskNotes: Open task list view');
+      await page.waitForTimeout(500);
+      await projectCard.dblclick();
+      await page.waitForTimeout(1000);
+
+      widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+      console.log(`Widget count after close/reopen: ${widgetCount}`);
+
+      // 2. Switch to different view and back
+      await runCommand(page, 'TaskNotes: Open calendar view');
+      await page.waitForTimeout(500);
+      await runCommand(page, 'TaskNotes: Open task list view');
+      await page.waitForTimeout(500);
+      await projectCard.dblclick();
+      await page.waitForTimeout(1000);
+
+      widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+      console.log(`Widget count after view switch: ${widgetCount}`);
+
+      // 3. Refresh cache
+      await runCommand(page, 'TaskNotes: Refresh cache');
+      await page.waitForTimeout(1000);
+
+      widgetCount = await page.locator('.tasknotes-relationships-widget').count();
+      console.log(`Widget count after cache refresh: ${widgetCount}`);
+
+      // If still duplicated, this confirms the bug persists until reload
+      if (widgetCount > 1) {
+        console.log('CONFIRMED: Duplicate persists through normal cleanup operations');
+        console.log('User must use "Reload app without saving" or restart Obsidian');
+      }
+    }
+
+    // After all cleanup attempts, should have at most 1 widget
+    expect(widgetCount).toBeLessThanOrEqual(1);
+  });
+
+  test.fixme('reproduces issue #1601 - multiple editor panes cause widget accumulation', async () => {
+    /**
+     * ViewPlugin instances are created per editor view. If user opens
+     * the same note in multiple panes, or splits the editor, multiple
+     * plugin instances exist and could interfere with each other's
+     * cleanup logic.
+     */
+    const page = app.page;
+
+    // Open a task note
+    await runCommand(page, 'TaskNotes: Open task list view');
+    await page.waitForTimeout(1000);
+
+    const projectCard = page.locator('.task-card').filter({
+      has: page.locator('.task-card__chevron'),
+    }).first();
+
+    if (!await projectCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('No project task cards visible - skipping test');
+      return;
+    }
+
+    await projectCard.dblclick();
+    await page.waitForTimeout(1500);
+
+    // Split the editor to create multiple panes with same file
+    await runCommand(page, 'Split right');
+    await page.waitForTimeout(500);
+
+    // Count widgets across all panes
+    // Each pane should have its own widget, but no pane should have duplicates
+    const allWidgets = await page.locator('.tasknotes-relationships-widget').count();
+    const workspaceLeaves = await page.locator('.workspace-leaf').count();
+
+    console.log(`Total widgets: ${allWidgets}, Total leaves: ${workspaceLeaves}`);
+
+    // Check individual panes for duplicates
+    const leaves = page.locator('.workspace-leaf');
+    const leafCount = await leaves.count();
+
+    for (let i = 0; i < leafCount; i++) {
+      const leaf = leaves.nth(i);
+      const widgetsInLeaf = await leaf.locator('.tasknotes-relationships-widget').count();
+
+      if (widgetsInLeaf > 1) {
+        console.log(`BUG: Leaf ${i} has ${widgetsInLeaf} widgets (should be 0 or 1)`);
       }
 
-      expect(containerCount).toBeLessThanOrEqual(1);
+      // Each leaf should have at most 1 widget
+      expect(widgetsInLeaf).toBeLessThanOrEqual(1);
     }
+
+    // Close the split pane
+    await runCommand(page, 'Close this tab group');
+    await page.waitForTimeout(500);
   });
 });
