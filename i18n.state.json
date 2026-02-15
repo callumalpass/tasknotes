@@ -1508,6 +1508,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "5a2479e8d695b0a30ed06ce40f23059a3979272f"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "701e1ec3839c57707e1ebeccea624a854c1af281"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "6bf9b5fc62f2a2bbf39ab9494fa5aacec929aae5"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "205a235d7e3e1488fb7982d6e5d83c6e7c3d7d13"
@@ -4224,6 +4232,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "f54cf866b81db50d694a4e9439d98d3813e75cfe"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "44b5cb5060fa752a6674bc33b1713a1507e048e7"
@@ -4320,6 +4329,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "d69df6760273a6efce583b3c98ef6fdd00d1d4d4"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "a5dfe0936bfd106daddd8787099886f2ea7d3bfd"
@@ -5303,6 +5314,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "901f706bc8539497483f268eb8b75e17180da316"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "f9bcdaf4ef4ed14ff80a6d5789de565c84e0719f"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "e0794ae909f0f6ef70a639a591b8fcfd82aeec8f"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "950701e758d18a72134a6b8948c7cf42867c0eb9"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "b7288a02748e8b098b4770d97d7eaf27b13dc6ce"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "8bb21e1258d6f1f7fc96a6234dc6913c35a616c4"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "33fe92f625e5e1d93b2f0ad659aeb0950c49bc06"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "18da3488adec22a4e61e9359debc085d93b4d6d4"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "b3c8defcacc0ad93a3cfcbdd962b7b95ab5d019f"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "01ff67508a846f687f68a2d152548fb225f884ec"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "f707cda841a7d21060233e4a10454cf5aa78bd7c"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "d95f9e67114d4f4267b966a80a35f074ad30dc5d"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "3a5e878cc749fbfbeb014708bd0f5bf97f08ed29"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "b157a409897013b700e15752c83fde971b8b44a2"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "48b363d26fdbfa518d7ec43df34da11cfd959188"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "26300832bc89fa836775f436bb837bff6c27eb6f"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "3620d26dcdfdd111f21b57e801b1628559b99b8f"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "c6c5fb66b7319090935d10009eabeec4924ec7cf"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "795bc46844e93adc571b477c10700e166dc960f0"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",
@@ -9514,6 +9597,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "bc3794396b3c3b3017f5bc8696297cf595001714"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "cf8f53c0bb1aa8165a533abb8cd857b861b2258b"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "6527e50df91571a2a603f9e2fd4deba0ba1adcef"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "4e36b221ac10a0d6f8044e3df4e7934029b97271"
@@ -12230,6 +12321,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "36f5fedb80209c5a392142701c1d189a4b81ee39"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "9ade27e5f156dec6b71b2089dcff8f29429d858c"
@@ -12326,6 +12418,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "9d9df64baade40f7ef0ed5e17d000b7a6e78ce9b"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "dcee52f5ccc6e6abf2c7129584cb20d0b7dc5644"
@@ -13309,6 +13403,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "61a9103ef44153884f3f8c5cedcc1bfefd189d2f"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "baf2a6df744e9fb5fd13b55977e3a4b44d9d38d4"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "34ebd04dbf2153601d4e839c5ed13c3650164a24"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "98a5efa60beb882ed4dbac1ac013f73418acda77"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "1c2dc6fb6ac1f2d11ccc1bf8970de870423c0ed1"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "e1ec0ebc14b4eb5d1c1ba9c47aad5ed532aa7bd8"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "df824e6b9b926d40cc19b68662e959c8d43a8fff"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "f2bea7ba223cf1c072e451bc8287648ee023a34a"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "7fda3970598ef60b0b151b2274290dd18559cf83"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "f8e2d20c6ffaeb03aabadc1e8666bd9f15931476"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "f2c67432e271251fd08613dba800e79147408e05"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "7af1ffcca691e731c33e254a9d552915acd12ca6"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "9cc1c9fb966115b2b731804807e28c42d43b8306"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "5605012dda92560f7c6bc5d09b0adb8c5fd4e1ee"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "50ec735ccf4f957ecf8461cdc5e3de4d73afd065"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "cb95a1ed8752afa3d2eceea23ecdc45b65e3e94d"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "1ba9a3695a1ef8894c7ccb997d19a4ffd558bba1"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "db5084545c188a58640925e7af80b772f21b0b71"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "0f5caa5d0578d871e8fdf6e00b13e98e661f092b"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",
@@ -17520,6 +17686,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "186a1a509f0cbba6179920b88cbeb6ece9e480b0"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "93e351fc6b481bb4b89d80a109ffb2822b655f1b"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "4be5ccf7b66a7d3aa24eb01b0de15c07084219fe"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "9a4650036fc33aec859867fae23a9b56135272a5"
@@ -20236,6 +20410,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "cf98643b82e793b6184e2098c89301f70316a59e"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "733a4d1f58cdf8379212d4d8b6fc6353d0dbfbd2"
@@ -20332,6 +20507,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "bbfef2a622f0672a3bb2ec04eee9c7b2ea53843d"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "3cbde2a054c4ea8464c2ad7135a69f1a4911af10"
@@ -21315,6 +21492,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "37f67e2819ebbe183e4df51aaa23648eb2083b45"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "0c5a479212c8af78fb1b6c95bd93f25613da4c55"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "1a0134fde9fabe377e46ba8ca85f9393e6bd3046"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "eb97899aedcd5609782b5ccb4ffa390e0e66a3eb"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "fba9d00bcd802badbcfdbdb40f3b6dd6c8c9b811"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "6d140ba6babef4f9a032a65a40e679f2f38fbaac"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "4c83736b7403957857c3e9951ecc30262711c6c7"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "ee01bcfeff16eb4cb8cd1fafcadf600661b6d502"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "fbdc5cbc88dbec17472a975f1f5337db90cd204b"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "3b2ac858bb897c14b946903c0da46bc1ace60b02"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "7791ebea903fa767c64733b14faed6d303d4f530"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "1fa4cbdddcd0605648fb5c3a289a1ee60c87320d"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "12967a434ca63945993ecb09decb9dc527893e44"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "adaf5aaf2c70a83d92fb889d608c774583cd9262"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "bb14c6abafd24525ab9199985a04e5d3c79910f4"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "8b3ad54a0b5e004d341a215c2024a2e58bacc184"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "201383d68f38a987b276d7b5897361756d1ebbb0"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "25243a191f03582b13b08571d4e67ef6ad3ced77"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",
@@ -25526,6 +25775,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "3369f3cfb3dd58e32abf1ff03a1f8278561b61e9"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "583bbd6318f5cda9affcaf29496cb378e3e50eb5"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "8ecf91cc3e5d9965080e82f000aecc782883d885"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "f2fcea03bcd83ad35153c28849555e493cb14802"
@@ -28242,6 +28499,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "dd0beea7bf7f3133bb876d1dfe8fd203f6da0299"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "0d6bd6066443942da0008d16fe99bb8bbff500ad"
@@ -28338,6 +28596,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "0983fb3a73aec3ba20bad3da76764793cd218abf"
@@ -29321,6 +29581,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "a4214644f76b1fcc5961ce2d185488e8c2bb72ef"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "00aae20ac12579d3d84621fea2d275a30843e6e0"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "7a4a59242baa586d81e03e8742f165d07147239d"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "47b4753f220d4e6205ab2eb57371e940cbbdfd46"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "96a533f1510e477899dda309653887928eea3b93"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "b2196853c4f06a71696f8f87981a8a4cc64f8e5e"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "340ba3962c527f49e49344dece05361c260a6ad1"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "878433e598030b9b0d8b42bed54630438c3fec26"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "f6c2c8d0f4629d905c124c8a59694eb1343a2a5a"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "bd9a7e5d3c2af9ee1f6832cbaae21f4c1c94ec85"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "07889440bb68815d551e6407c06a94c631c85904"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "07c4e81b27751acb78bfcf22c34dde3f6694071e"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "b9707cf42ca828d80eec355937e2952f6c2cfdbc"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "17c4046c5ae9f398e34d6c73c76684b19fc29a6b"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "5bad02261d1cd2f9ca19c49216c4e50927f96d9b"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "27951470cc7fa8564c18f078baf1d2163121ab72"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "ed9bea2f74e507498ea98a7a8a50515cf2e48901"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "262b7275e9ee684fced44a5f8aa131e1f0c2f797"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "c70663d1fd14fa5a1cfb62d28cba33ce2246b3df"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",
@@ -33532,6 +33864,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "cfd36a058d13cbd6761b14ddec7aee48fcf66a44"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "0df82ace1efa3c9f52f8f306df340a3264eeee59"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "6b81770780b731fb0c2c3cb272af4fb9d794178c"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "df3742092e53303ce273ea5588d2dacf2f962074"
@@ -36248,6 +36588,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "8a35723a391a98c5bba7479aa98e201e11f556ef"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "4034ff1ad8940e29fefc752a9942059f332e74e0"
@@ -36344,6 +36685,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "9c0b7ae51ef45961aceea9cd82a01158a3d819f7"
@@ -37327,6 +37670,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "7658f71b16dde7acab45f40bd1cf49e9f26a6315"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "ae1068f2cfb9561bd6f74cdf4092a3f8a2472028"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "7cb0af58a2dec32c164946b8e17e5d043f7bf972"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "078b3a1b0a3dc17487beabf5119cf7cdf99489ff"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "2546eee40cc4a32e3c5a2feb6036033201c2ff9c"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "0ebb579be80cf3c79058dea0695954fd04c66917"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "fc8c5b6975f76dd90501f70e910006ef7b22aedf"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "8f9afd154b2607dcc1d81219d136fa4b8a3eccdf"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "841964364c395ce4575d8bb872725ce6f1481817"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "586f5422ba49bab461ff6bb1698bed81f166a6fc"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "1df765ebf155c142177ff52547560d63385d18c2"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "3d9d982dfd3191d6ed4ab87dc22e8ba32ac06edd"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "16061d9a09c58b7162dcacd7e0493c51fbfcd943"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "468156baa4767f7aaa40ced0a591e3f72a2d4fb6"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "2423bf5c21a19a5f9288121635a3afe59d4de3a3"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "a3ecdcc57b436c619a38c3c4f92b0edb45eb4283"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "c7e8b95e72b35299f58787b1c8f8ab757d3c80b6"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "91e89648b9afe2f12a77171fb4e51d18abaf5028"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "252f44e5279d54e28ba44839038248a2e03ef265"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",
@@ -41538,6 +41953,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "90342838a0709bc9e6708f28726c6030143051ee"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "076faae40cb80513e1d50091b9409194d24f25e2"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "9aeb2f282783a6a5411dbcc90fc014ca1330ffd8"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "d3daff3df4681bcef1999205c2b5b762bdec5894"
@@ -44254,6 +44677,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "1707144d30124dd65bbaef57b093b762805af3cd"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "fa4fe08ec4d8255a48cbe5da23b7e4739f1da8d9"
@@ -44350,6 +44774,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "9f06048d726b915f674f33b7a1a31ec80e6492d0"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "449457e5dcc4cd6d5b48f94dc341ad61d16424f1"
@@ -45333,6 +45759,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "340938ad46760703b62374555f36ae6c2e2e7ef4"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "ef0f8d40cbed235b8f5f04d87ecd5e0637bfd36c"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "3946a54fa8927dceb1835a665c1650d0c4d886a8"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "98a5efa60beb882ed4dbac1ac013f73418acda77"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "d4b5fd65b0e728c1180607add3757aea904df707"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "363fe549100b76ea5b429305fcb338acc3bd6adc"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "439ade69fdcd320a3557e9e8e0daa7cb59aa3c5c"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "c9420bebe5a338b17eb83aea1b3e77a1015d577d"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "469768598e0fd225cdf8609caffb128dc3e0bcd0"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "7b98303bebb579af872b14102497b24e304754a1"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "bc8501fc83b3c2acc849f87de074e9fae2974198"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "dc99d54d9990e3c134420be3918e88f28531e630"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "8c966e300d17d3f79c820fcd0e770d8a703a5d63"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "c9cbbfae3b3110f4246b1872c6a7cea4c7bf80c9"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "b2c53f1e691f3824324ed3b7b3bac4529b40f9eb"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "efa41dc970170f11d8681d1096b08f2f767017ba"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "85fa471b9a749d3764cc7be275110a69f5e78d3d"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "2f1435846e1924df0e80556fa14a9ee1849f9413"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "404e96b97d4f2fdd7895c67bcedd22f335a51211"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",
@@ -49544,6 +50042,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "ee30c043b7740a0c996e372da9e4b1b92ae15e40"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "81ee8e080f197fe6b3cafcd3f4f9db185b83e792"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "b7d670eb366706e88daaa49ea2672377c65357ef"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "d3b8d0692a009a981d32bff05867c02291ea2552"
@@ -52260,6 +52766,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "1e1efd6c4e3dcd7d6519ecbb137bc4a886ea2536"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "9103ab380bc11c3048f9854599ed24b9df1b46f4"
@@ -52356,6 +52863,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "542cca6b9051576ac9fb6b7a3c7599a1d7f7ff8a"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "555612d1c2cdaf9af325c116cfba1192195787a4"
@@ -53339,6 +53848,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "8e0587de5c3133952114e8f24fa3aabd2a2ee782"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "94cffec71e95ea1e5ae2cf2df3610a5ea6448bad"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "c94349dc7d5476e6c6dd464496f6a11757a52005"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "3de49828e86a4016140f16781af6cceba1ad3c3c"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "bc68758df1cd47bdf6d0d533d130f6c4dadfa1e5"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "a6bca31bbddfce16028f0d451f8cbaf6be55d107"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "fa3a2f17993af6412508d17c3f63ece764af2c0b"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "5fa74131d1a12046ee7a4595bbb9e3d2d390340d"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "f5441f6aee76222c4120066575e80c2d177ac3c0"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "447047e88f7ae62259444200f61956ef44a4acc2"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "899b99f830697db7a6806fdfd5cc49c4642d1c9e"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "8e2fe0254e7864170067d43e7086384b09f00e2b"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "f5c917ba7f9a41e58374a8e1cd3904b173ec454c"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "2254f1e8c12aa455a6fa3f367f3b3be9d4f3acbf"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "1f8f703fdabefe57ab2e9ca902259e9e50f2ce52"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "338707109e4a967da58ff66b281c8983f0834fab"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "ca2a8f43ecf9e570e917c00803b288b09070d0ca"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "5fb297841cd255d4e5d5630d75b120264f49a163"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "c8902f90a019be329542abd5eddfe41716de116c"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",
@@ -57550,6 +58131,14 @@
       "source": "c91f5d8591a6cc0689595756dee86a1fdb64064e",
       "translation": "96646c4d3a60c0ffb0e5e50942286da005e2124e"
     },
+    "settings.features.recurring.resetCheckboxesName": {
+      "source": "b2f84f2eee1e5f97fb92f3722e5f67519ed5bff6",
+      "translation": "63f6b79cb9e820e64971f548379bd984e548dc9c"
+    },
+    "settings.features.recurring.resetCheckboxesDesc": {
+      "source": "e1ba32bdec3d1cb31313e8c9bcc5b6917bb69343",
+      "translation": "fb43877ea8061e50bfba09dcec8b92d6731cec73"
+    },
     "settings.features.timeblocking.header": {
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "93fcff18f5080cf382e59bdfe14fbd42205ad295"
@@ -60266,6 +60855,7 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "cf4413809fd14c375b99a88a7fa2e951c5d7f5d5"
     },
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "ba3a4ece59db9c1255ad02d909fb8b41ac054277"
@@ -60362,6 +60952,8 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
     },
+    "settings.integrations.httpApi.mcp.enable.name": null,
+    "settings.integrations.httpApi.mcp.enable.description": null,
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "d3084f6cb039430a34c706caef7351a884335835"
@@ -61345,6 +61937,78 @@
     "modals.timeblockCreation.createButton": {
       "source": "6ba03dee8a531db91b38fb09715e0c40304804d2",
       "translation": "6cc56418e8f47eba7ed05ed01b59d999ca98a311"
+    },
+    "modals.calendarEventCreation.heading": {
+      "source": "0b87cfcf3e7c4b53d489fdfc5574bd6ac663c652",
+      "translation": "65bff9abe407ea1183a303a52fa90db2c870d913"
+    },
+    "modals.calendarEventCreation.dateTimeLabel": {
+      "source": "28948815dbd940aae135258b71870cac05cf589c",
+      "translation": "de1fb2dc83361fa16f93a23dfeb90e651da06b43"
+    },
+    "modals.calendarEventCreation.titleLabel": {
+      "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
+      "translation": "748d7dc7e3212d62e207d204624705af70ea635c"
+    },
+    "modals.calendarEventCreation.titleDesc": {
+      "source": "204facdde5d37b2a8c6841d3b51506b09a7970aa",
+      "translation": "8118625fa27300a52af04697368054c12e53c8e1"
+    },
+    "modals.calendarEventCreation.titlePlaceholder": {
+      "source": "52d170c5b605d844a7c3833ffd0152d55ef21989",
+      "translation": "011bc62ec3546f7692afb7e93a0d51fcc5b8239e"
+    },
+    "modals.calendarEventCreation.calendarLabel": {
+      "source": "adab5090ac6a1b7b5420faac7be86c41721ba27c",
+      "translation": "2ecbc11608d1df5c4df3bca6864abb9faac6a3fb"
+    },
+    "modals.calendarEventCreation.calendarDesc": {
+      "source": "96e367bdcacf395006d26ab3de76820862e371e9",
+      "translation": "8c726c94ba58522a164df8e8fc4c03d384e4f443"
+    },
+    "modals.calendarEventCreation.descriptionLabel": {
+      "source": "55f8ebc805e65b5b71ddafdae390e3be2bcd69af",
+      "translation": "412f54dc38e642eda535746e715503df35ad768f"
+    },
+    "modals.calendarEventCreation.descriptionDesc": {
+      "source": "1349d1871a2fde03ce6e7565bc8b2eb2eabbf991",
+      "translation": "2f7aa04a0c167b34e430733285c6a695cd440af8"
+    },
+    "modals.calendarEventCreation.descriptionPlaceholder": {
+      "source": "5f51a995cba708ec83e4707407cf61444efa286f",
+      "translation": "c68ce34e5854fb1d9dc2e62840ae36f0970f7a0f"
+    },
+    "modals.calendarEventCreation.locationLabel": {
+      "source": "d219c68101f532de10add2cf42fb9dbeca73d3be",
+      "translation": "e9e0a3f4e5d4cb56f2d54bc30856201a1be5ef8d"
+    },
+    "modals.calendarEventCreation.locationDesc": {
+      "source": "71432720c31437c6ac5c9d0d1824cb38ee8f7fb6",
+      "translation": "2dbfef1cd901857c599566cb70b4902a0c5b18d1"
+    },
+    "modals.calendarEventCreation.locationPlaceholder": {
+      "source": "a8040397f1794903936a6cc4c04acf255e336f1a",
+      "translation": "1fd7b8ffb0cb552e54805ca41b9ab47b87fb07e6"
+    },
+    "modals.calendarEventCreation.createButton": {
+      "source": "b8d8b9a919706adf04012ceb4de659811efac2f7",
+      "translation": "314f65bd031dfc90ba7486fba95cc30e007c9061"
+    },
+    "modals.calendarEventCreation.titleRequired": {
+      "source": "e103b10ec6905383118ee08d4e3df22cceada672",
+      "translation": "59e6ffde9f02946267a579045c421d5e944e8291"
+    },
+    "modals.calendarEventCreation.noCalendarSelected": {
+      "source": "92e6ee1f3406847d6cc155af79d7de9a3a63e3d7",
+      "translation": "c704d3f2517bae364b6870e861d45453d1c745e9"
+    },
+    "modals.calendarEventCreation.success": {
+      "source": "d456cfe80d68b0f592914ee969747d3dfb05aa2b",
+      "translation": "605e7b1b2e0e8e4f786839799035b1746bf49364"
+    },
+    "modals.calendarEventCreation.error": {
+      "source": "3124f35fa1cfca38954a50cc7fdbe161ae505aec",
+      "translation": "d4a08e377dfb9af2d8e10fe3fe7b507efeacdee2"
     },
     "modals.icsNoteCreation.heading": {
       "source": "f75a2f58d0530c7a70c2df4d96166a16f0c47d31",

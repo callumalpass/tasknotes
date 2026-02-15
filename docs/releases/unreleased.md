@@ -45,6 +45,12 @@ Example:
   - Configurable via Settings > Features > Recurring Tasks > "Reset checkboxes on recurrence"
   - Thanks to @phortx for the feature request
 
+- (#1548) Added ability to create calendar events on connected external calendars directly from the calendar view
+  - When clicking or dragging to select a time slot, a new "Create calendar event" option appears in the context menu
+  - Opens a modal to enter event title, description, location, and select which calendar to create on
+  - Supports both Google Calendar and Microsoft Calendar providers
+  - Thanks to @Robubble for the feature request
+
 - (#1597) Added MCP server for AI agent integration
   - Exposes TaskNotes tools at `/mcp` endpoint, gated behind `enableMCP` setting
   - Supports tasks (CRUD, query, toggle status/archive, parse from text), time tracking, pomodoro, calendar events, and task statistics

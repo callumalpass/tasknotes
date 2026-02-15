@@ -28,6 +28,7 @@ import {
 } from "./calendar-core";
 import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
+import { CalendarEventCreationModal } from "../modals/CalendarEventCreationModal";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { Menu, TFile, setIcon, setTooltip } from "obsidian";
 import { format } from "date-fns";
@@ -1676,6 +1677,38 @@ export class CalendarView extends BasesViewBase {
 					await handleTimeEntryCreation(info.start, info.end, info.allDay, this.plugin);
 				});
 		});
+
+		// Show "Create calendar event" if any external calendars are connected
+		const registry = this.plugin.calendarProviderRegistry;
+		if (registry) {
+			const hasWritableCalendars = registry.getAllProviders().some(
+				(p) => p.getAvailableCalendars().length > 0
+			);
+			if (hasWritableCalendars) {
+				menu.addSeparator();
+				menu.addItem((item) => {
+					item.setTitle("Create external calendar event")
+						.setIcon("calendar-plus")
+						.onClick(() => {
+							const modal = new CalendarEventCreationModal(
+								this.plugin.app,
+								this.plugin,
+								{
+									start: info.start,
+									end: info.end,
+									allDay: info.allDay,
+									onEventCreated: () => {
+										this.expectImmediateUpdate();
+										// Refresh provider data to show the new event
+										registry.refreshAll();
+									},
+								}
+							);
+							modal.open();
+						});
+				});
+			}
+		}
 
 		menu.showAtMouseEvent(info.jsEvent);
 
