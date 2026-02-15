@@ -1784,6 +1784,8 @@ export const de: TranslationTree = {
 					notATask: "Die aktuelle Datei ist keine Aufgabe",
 					noDateToSync: "Aufgabe hat kein geplantes oder Fälligkeitsdatum zum Synchronisieren",
 					syncFailed: "Synchronisierung der Aufgabe mit Google Kalender fehlgeschlagen: {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "Synchronisiere {total} Aufgaben mit Google Kalender...",
 					syncComplete:
 						"Synchronisierung abgeschlossen: {synced} synchronisiert, {failed} fehlgeschlagen, {skipped} übersprungen",
@@ -1819,6 +1821,12 @@ export const de: TranslationTree = {
 					name: "API-Authentifizierungstoken",
 					description: "Token für API-Authentifizierung erforderlich (leer lassen für keine Authentifizierung)",
 					placeholder: "dein-geheimes-token",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "Verfügbare API-Endpunkte",

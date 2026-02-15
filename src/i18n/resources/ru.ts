@@ -1784,6 +1784,8 @@ export const ru: TranslationTree = {
 					notATask: "Текущий файл не является задачей",
 					noDateToSync: "У задачи нет запланированной даты или срока для синхронизации",
 					syncFailed: "Не удалось синхронизировать задачу с Google Календарём: {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "Синхронизация {total} задач с Google Календарём...",
 					syncComplete:
 						"Синхронизация завершена: {synced} синхронизировано, {failed} ошибок, {skipped} пропущено",
@@ -1819,6 +1821,12 @@ export const ru: TranslationTree = {
 					name: "Токен аутентификации API",
 					description: "Токен, необходимый для аутентификации API (оставьте пустым для отсутствия аутентификации)",
 					placeholder: "ваш-секретный-токен",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "Доступные конечные точки API",

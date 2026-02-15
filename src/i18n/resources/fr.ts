@@ -1784,6 +1784,8 @@ export const fr: TranslationTree = {
 					notATask: "Le fichier actuel n'est pas une tâche",
 					noDateToSync: "La tâche n'a pas de date planifiée ou d'échéance à synchroniser",
 					syncFailed: "Échec de la synchronisation de la tâche vers Google Calendar : {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "Synchronisation de {total} tâches vers Google Calendar...",
 					syncComplete:
 						"Synchronisation terminée : {synced} synchronisées, {failed} échouées, {skipped} ignorées",
@@ -1819,6 +1821,12 @@ export const fr: TranslationTree = {
 					name: "Jeton d'authentification API",
 					description: "Jeton requis pour l'authentification API (laisser vide pour pas d'authentification)",
 					placeholder: "votre-jeton-secret",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "Points de terminaison API disponibles",

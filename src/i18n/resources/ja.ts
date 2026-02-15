@@ -1784,6 +1784,8 @@ export const ja: TranslationTree = {
 					notATask: "現在のファイルはタスクではありません",
 					noDateToSync: "タスクに同期する予定日または期限がありません",
 					syncFailed: "タスクのGoogleカレンダーへの同期に失敗しました：{message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "{total}件のタスクをGoogleカレンダーに同期中...",
 					syncComplete:
 						"同期完了：{synced}件同期、{failed}件失敗、{skipped}件スキップ",
@@ -1819,6 +1821,12 @@ export const ja: TranslationTree = {
 					name: "API認証トークン",
 					description: "API認証に必要なトークン（認証なしの場合は空白のままにする）",
 					placeholder: "your-secret-token",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "利用可能なAPIエンドポイント",

@@ -1784,6 +1784,8 @@ export const zh: TranslationTree = {
 					notATask: "当前文件不是任务",
 					noDateToSync: "任务没有可同步的计划日期或截止日期",
 					syncFailed: "同步任务到Google日历失败：{message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "正在同步{total}个任务到Google日历...",
 					syncComplete:
 						"同步完成：{synced}个已同步，{failed}个失败，{skipped}个跳过",
@@ -1819,6 +1821,12 @@ export const zh: TranslationTree = {
 					name: "API认证令牌",
 					description: "API认证所需的令牌（留空表示无认证）",
 					placeholder: "your-secret-token",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "可用API端点",

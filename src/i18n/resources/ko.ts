@@ -1734,6 +1734,8 @@ export const ko: TranslationTree = {
 					notATask: "현재 파일은 작업이 아닙니다",
 					noDateToSync: "동기화할 예정 날짜 또는 마감 날짜가 없습니다",
 					syncFailed: "Google 캘린더에 작업 동기화 실패: {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "{total}개의 작업을 Google 캘린더에 동기화 중...",
 					syncComplete:
 						"동기화 완료: {synced}개 동기화됨, {failed}개 실패, {skipped}개 건너뜀",
@@ -1769,6 +1771,12 @@ export const ko: TranslationTree = {
 					name: "API 인증 토큰",
 					description: "API 인증에 필요한 토큰 (인증 없이 사용하려면 비워두세요)",
 					placeholder: "your-secret-token",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "사용 가능한 API 엔드포인트",

@@ -4232,7 +4232,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "f54cf866b81db50d694a4e9439d98d3813e75cfe"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "44b5cb5060fa752a6674bc33b1713a1507e048e7"
@@ -4329,8 +4332,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "d69df6760273a6efce583b3c98ef6fdd00d1d4d4"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "a5dfe0936bfd106daddd8787099886f2ea7d3bfd"
@@ -12321,7 +12330,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "36f5fedb80209c5a392142701c1d189a4b81ee39"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "9ade27e5f156dec6b71b2089dcff8f29429d858c"
@@ -12418,8 +12430,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "9d9df64baade40f7ef0ed5e17d000b7a6e78ce9b"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "dcee52f5ccc6e6abf2c7129584cb20d0b7dc5644"
@@ -20410,7 +20428,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "cf98643b82e793b6184e2098c89301f70316a59e"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "733a4d1f58cdf8379212d4d8b6fc6353d0dbfbd2"
@@ -20507,8 +20528,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "bbfef2a622f0672a3bb2ec04eee9c7b2ea53843d"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "3cbde2a054c4ea8464c2ad7135a69f1a4911af10"
@@ -28499,7 +28526,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "dd0beea7bf7f3133bb876d1dfe8fd203f6da0299"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "0d6bd6066443942da0008d16fe99bb8bbff500ad"
@@ -28596,8 +28626,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "0983fb3a73aec3ba20bad3da76764793cd218abf"
@@ -36588,7 +36624,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "8a35723a391a98c5bba7479aa98e201e11f556ef"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "4034ff1ad8940e29fefc752a9942059f332e74e0"
@@ -36685,8 +36724,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "9c0b7ae51ef45961aceea9cd82a01158a3d819f7"
@@ -44677,7 +44722,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "1707144d30124dd65bbaef57b093b762805af3cd"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "fa4fe08ec4d8255a48cbe5da23b7e4739f1da8d9"
@@ -44774,8 +44822,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "9f06048d726b915f674f33b7a1a31ec80e6492d0"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "449457e5dcc4cd6d5b48f94dc341ad61d16424f1"
@@ -52766,7 +52820,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "1e1efd6c4e3dcd7d6519ecbb137bc4a886ea2536"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "9103ab380bc11c3048f9854599ed24b9df1b46f4"
@@ -52863,8 +52920,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "542cca6b9051576ac9fb6b7a3c7599a1d7f7ff8a"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "555612d1c2cdaf9af325c116cfba1192195787a4"
@@ -60855,7 +60918,10 @@
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
       "translation": "cf4413809fd14c375b99a88a7fa2e951c5d7f5d5"
     },
-    "settings.integrations.googleCalendarExport.notices.connectionExpired": null,
+    "settings.integrations.googleCalendarExport.notices.connectionExpired": {
+      "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
+      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+    },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
       "translation": "ba3a4ece59db9c1255ad02d909fb8b41ac054277"
@@ -60952,8 +61018,14 @@
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
       "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
     },
-    "settings.integrations.httpApi.mcp.enable.name": null,
-    "settings.integrations.httpApi.mcp.enable.description": null,
+    "settings.integrations.httpApi.mcp.enable.name": {
+      "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
+      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+    },
+    "settings.integrations.httpApi.mcp.enable.description": {
+      "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
+      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+    },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
       "translation": "d3084f6cb039430a34c706caef7351a884335835"
