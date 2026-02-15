@@ -49,10 +49,12 @@ Since tasks are proper notes, they work with Obsidian's core features:
 - **Links**: Reference tasks from daily notes, meeting notes, or project documents
 
 This approach creates many small files. TaskNotes stores tasks in a configurable folder (default: `TaskNotes/Tasks/`) to keep them organized.
+In practice, this lets TaskNotes fit into existing vault habits instead of replacing them. You keep using normal note workflows, and TaskNotes adds structure, filtering, and commands on top.
 
 ## YAML Frontmatter
 
 Task properties are stored in YAML frontmatter, a standard format with broad tool support.
+Treat frontmatter as the machine-readable layer and the note body as the human-readable layer. TaskNotes automations and Bases filters rely on frontmatter; your project notes and context stay in the body.
 
 ### Property Types
 
@@ -85,6 +87,7 @@ TaskNotes v4 uses Obsidian's Bases core plugin for its main views. Bases provide
 - **Views**: Task List, Kanban, Calendar, and Agenda are all Bases views
 
 Views are stored as `.base` files in `TaskNotes/Views/`. These files contain YAML configuration that defines the view's query and display settings. You can duplicate, modify, or create new views by editing these files.
+This makes view behavior inspectable and predictable. If a task appears in the wrong place, you can open the `.base` file and see exactly which filter or grouping rule produced that result.
 
 ### Enabling Bases
 
@@ -94,34 +97,3 @@ Bases is a core plugin included with Obsidian 1.10.1+:
 2. Enable "Bases"
 3. TaskNotes views will now function
 
-## Methodology-Agnostic Design
-
-TaskNotes provides tools without enforcing a specific productivity methodology. The same features support different approaches:
-
-### Getting Things Done (GTD)
-
-- **Contexts** (`@home`, `@office`, `@phone`) for location/tool-based grouping
-- **Projects** for multi-step outcomes
-- **Status workflows** for next actions, waiting, and someday/maybe
-- **Calendar integration** for time-specific commitments
-
-### Time-Based Planning
-
-- **Calendar views** for scheduling and time-blocking
-- **Scheduled dates** for when to work on tasks
-- **Time tracking** for logging work sessions
-- **Pomodoro timer** for focused work intervals
-
-### Project-Centric Workflows
-
-- **Project links** connecting tasks to project notes
-- **Dependencies** for task sequencing
-- **Subtasks** created from project context menus
-- **Filtering by project** in all views
-
-### Kanban / Agile
-
-- **Kanban view** with customizable columns
-- **Swimlanes** for two-dimensional organization
-- **Drag-and-drop** status changes
-- **Custom status values** for your workflow stages

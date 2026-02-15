@@ -3,6 +3,7 @@
 [← Back to Views](../views.md)
 
 The Kanban View displays tasks as cards organized in columns, where each column represents a distinct value of a grouped property.
+Kanban emphasizes state transitions and drag operations over dense list scanning.
 
 ![Kanban View](../assets/views-kanban.png)
 
@@ -16,6 +17,7 @@ Kanban views are stored as `.base` files in `TaskNotes/Views/`. The `groupBy` pr
 - **Filter**: Define criteria to include or exclude specific tasks
 - **Sort**: Specify the order of tasks within each column
 - **Group by**: Required. Defines the property that creates columns (e.g., status, priority)
+Choosing a stable `groupBy` field is the most important design decision. Frequent changes to this field create column churn and make historical comparisons harder.
 
 ### Kanban-Specific Options
 
@@ -26,6 +28,7 @@ Access these options through the Bases view settings panel:
 - **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
+A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
 ## Interface Layout
 
@@ -64,6 +67,7 @@ Drag column headers to reorder columns. The new order persists across sessions a
 Drag task cards between columns to update the `groupBy` property value. In swimlane mode, dragging a task to a different cell updates both the `groupBy` and `swimLane` properties.
 
 When grouping by a list property (contexts, tags, projects) with "Show items in multiple columns" enabled, dragging a task between columns modifies the list rather than replacing it. The source column's value is removed and the target column's value is added. For example, dragging a task from the "work" column to the "home" column changes `contexts: [work, call]` to `contexts: [call, home]`.
+Drag operations write directly to task metadata, so consistent grouping values reduce ambiguity.
 
 ## Performance Optimization
 

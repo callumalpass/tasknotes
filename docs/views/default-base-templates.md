@@ -9,6 +9,7 @@ dateModified: 2025-12-02T12:00:00+1100
 TaskNotes automatically generates [Bases](https://help.obsidian.md/Bases/Introduction+to+Bases) files for its built-in views when you first open them. These templates are configured based on your TaskNotes settings, including custom property names, statuses, and task identification methods.
 
 This page shows the default templates as they would appear with TaskNotes' default settings. The actual templates generated in your vault may differ if you've customized your settings.
+This page documents generated defaults. It is reference material for understanding and editing `.base` files already created in your vault.
 
 ## Default settings assumptions
 
@@ -23,6 +24,7 @@ The examples below assume:
 ## Included formulas
 
 All templates include the following calculated formula properties that you can use in views, filters, and sorting.
+The formula set is broad so views can reuse shared computed properties without custom plugin code.
 
 ### Date calculations
 
@@ -105,6 +107,7 @@ These formulas work with either due date or scheduled date, useful for finding t
 ## Mini Calendar
 
 Used by the **Mini Calendar** command to display tasks on a calendar grid.
+YAML examples in this document are complete snapshots. In custom files, targeted edits (for example `dateProperty`, `sort`, or a filter clause) are easier to compare and troubleshoot.
 
 ```yaml
 # Mini Calendar
@@ -234,6 +237,7 @@ views:
 Used by the **Tasks** command to display filtered task views.
 
 This template includes multiple views: All Tasks, Not Blocked, Today, Overdue, This Week, and Unscheduled. Each view (except All Tasks) filters for incomplete tasks, handling both recurring and non-recurring tasks. The "Not Blocked" view additionally filters for tasks that are ready to work on (no incomplete blocking dependencies).
+The default views cover common review horizons and can be kept, removed, or cloned with modified filters.
 
 ```yaml
 # All Tasks
@@ -526,6 +530,7 @@ Note: Unlike other templates, this one does not have a top-level task filter. Ea
 
 - **Subtasks, Blocked By, Blocking**: Include the task filter (these views show tasks)
 - **Projects**: No task filter (project files can be any file type, not just tasks)
+When debugging empty relationship tabs, check tab-specific filters first, then verify property values on linked notes.
 
 ```yaml
 # Relationships
@@ -624,6 +629,7 @@ If you've customized your TaskNotes settings (e.g., renamed properties, added cu
 - **Custom priorities**: The `priorityWeight` formula will include all your configured priorities with their weights
 - **Property-based identification**: If you identify tasks by a property instead of a tag, the filters will use that property
 - **Custom visible properties**: The `order` arrays will include your configured visible properties
+After major settings changes, regenerate default files and diff against customized versions to merge template updates.
 
 ## Related
 

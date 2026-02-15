@@ -29,9 +29,13 @@ This reference documents the expected data types for each frontmatter property t
 | skipped_instances | list | `["2025-01-22"]` |
 | icsEventId | list | `["event-abc123"]` |
 
+Use this table for fast validation when a field is not behaving as expected in views or API calls. Most parsing issues come from shape mismatches (for example scalar vs list) rather than missing values.
+
 ---
 
 ## Property Details
+
+The sections below describe storage formats, but there is flexibility in authoring style. TaskNotes normalizes many equivalent YAML representations as long as the resulting data type is correct.
 
 ### Text Properties
 
@@ -58,6 +62,7 @@ This reference documents the expected data types for each frontmatter property t
 ### Date Properties
 
 All date properties are stored as **text strings** in your frontmatter. TaskNotes expects specific formats:
+When in doubt, prefer ISO-style values. They sort correctly as text, travel well through APIs, and are easiest to parse consistently.
 
 #### due
 
@@ -109,6 +114,7 @@ All date properties are stored as **text strings** in your frontmatter. TaskNote
 ### List Properties
 
 List properties must be arrays, even when containing a single value.
+Single-item arrays may look verbose, but they prevent edge cases when filters and formulas assume list semantics.
 
 #### tags
 
@@ -213,6 +219,7 @@ List properties must be arrays, even when containing a single value.
 ### Complex Properties
 
 These properties contain structured data with multiple fields.
+For these fields, copy known-good examples before editing manually. Minor schema deviations can break downstream features such as reminders, recurrence, or dependency checks.
 
 #### Time Entries
 

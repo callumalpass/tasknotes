@@ -1,6 +1,7 @@
 # TaskNotes HTTP API
 
 The TaskNotes HTTP API allows external applications to interact with your TaskNotes data. This enables powerful integrations with browsers, automation tools, mobile apps, and custom scripts.
+The API is local-first and designed for automation against files in your vault.
 
 ## Quick Start
 
@@ -9,6 +10,7 @@ The TaskNotes HTTP API allows external applications to interact with your TaskNo
 3. **Restart**: Restart Obsidian to apply API enable/port changes and start the server
 4. **Test**: `curl http://localhost:8080/api/health`
 5. **Explore**: Visit `http://localhost:8080/api/docs/ui` for interactive documentation
+After setup, validate `/api/health` first, then test one read endpoint and one write endpoint.
 
 ## Interactive Documentation
 
@@ -36,6 +38,7 @@ If no token is configured, all API requests are allowed without authentication.
 
 ### Security Warning
 The HTTP API is intended for local use. Any client that can reach your configured API port can send requests if authentication is disabled. Always set an authentication token unless you are in a fully trusted environment.
+When exposing the port beyond localhost, token authentication should be treated as required.
 
 ## Base URL
 ```
@@ -63,6 +66,7 @@ Error responses:
 ```
 
 ## Endpoints
+Endpoints are grouped by resource and follow the same response envelope. Read operations return current file-derived state; write operations update vault files.
 
 ### Health Check
 ```
@@ -722,6 +726,7 @@ GET /api/pomodoro/stats
 ```
 
 ## Integration Examples
+Examples below show typical patterns for browser extensions, local scripts, and service bridges.
 
 ### Browser Bookmarklet
 
@@ -1025,6 +1030,7 @@ for project in projects['projects']:
 ```
 
 ## Error Handling
+Errors return `success: false` with an `error` message. For client code, handle non-2xx status codes and response-body errors as separate checks.
 
 ### Common Errors
 
@@ -1042,6 +1048,7 @@ No rate limiting currently implemented. Use responsibly.
 CORS is enabled for all origins (`*`). API is intended for localhost use only.
 
 ## Security Notes
+If you store tokens in scripts, load them from environment variables rather than hardcoding in source files.
 
 - **Localhost Only**: API server only accepts connections from localhost
 - **Desktop Only**: API is not available on mobile platforms
@@ -1049,6 +1056,7 @@ CORS is enabled for all origins (`*`). API is intended for localhost use only.
 - **No HTTPS**: Traffic is unencrypted (localhost only)
 
 ## Troubleshooting
+Most connection issues are caused by API disabled state, port mismatch, or stale Obsidian process state after settings changes.
 
 ### API Not Starting
 
@@ -1069,4 +1077,3 @@ CORS is enabled for all origins (`*`). API is intended for localhost use only.
 1. Verify token matches exactly (case-sensitive)
 2. Include `Bearer ` prefix in Authorization header
 3. Check for trailing spaces in token
-

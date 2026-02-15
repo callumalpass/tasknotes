@@ -3,6 +3,7 @@
 [← Back to Features](../features.md)
 
 TaskNotes integrates with the Obsidian editor to allow task management directly within notes. This is achieved through interactive widgets, a conversion feature for checkboxes, and natural language processing.
+Inline features support capture and task updates without leaving the current note.
 
 ## Task Link Overlays
 
@@ -26,6 +27,7 @@ The task link overlay displays:
 - **Date Information**: Shows due dates (calendar icon) and scheduled dates (clock icon) with clickable context menus.
 - **Recurrence Indicator**: Rotating arrow icon for recurring tasks with modification options.
 - **Action Menu**: Ellipsis icon (shown on hover) provides additional task actions.
+The widget exposes common task actions at the link location, so status and metadata can be updated in-place.
 
 ### Mode-Specific Behavior
 
@@ -45,6 +47,7 @@ When you run the command, the current line is used as the title of the new task.
 ## Instant Task Conversion
 
 The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from **Settings → TaskNotes → Features → Show convert button next to checkboxes**. When enabled, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
+This supports progressive conversion from draft notes to dedicated task files.
 
 ### Folder Configuration
 
@@ -74,6 +77,7 @@ When converting lines:
 - **Original formatting** is preserved in the note (e.g., `> [[Task Title]]` for blockquoted content)
 - **Task metadata** is extracted from checkbox tasks (due dates, priorities, etc.)
 - **Natural language processing** can extract dates and metadata from plain text (if enabled)
+Conversion preserves surrounding formatting, including callouts, outlines, and nested lists.
 
 The feature handles edge cases like nested blockquotes and maintains proper indentation in the final link replacement.
 
@@ -137,6 +141,7 @@ Failed conversions typically occur due to:
 - Tasks with titles containing invalid filename characters
 - Insufficient disk permissions
 - Very long task titles (over 200 characters)
+For large notes, converting a small section first helps validate folder and filename settings.
 
 ## Relationships Widget
 
@@ -152,6 +157,7 @@ The widget appears in task notes and automatically displays up to four tabs base
 ### Automatic Tab Management
 
 Tabs automatically show or hide based on the presence of relationship data. If a task has no subtasks, the Subtasks tab does not appear. If there are no blocking relationships, those tabs remain hidden. This keeps the interface focused on relevant information.
+The widget layout changes with available data, so simple tasks show fewer sections.
 
 ### Features
 
@@ -211,6 +217,7 @@ The NLP engine recognizes:
 -   **Time Estimates**: Formats like "2h," "30min," and "1h30m".
 -   **Recurrence Patterns**: Phrases like "daily," "weekly," and "every Monday".
 -   **User-Defined Fields**: Custom fields can be assigned using configured triggers (e.g., `effort: high`). Supports quoted values for multi-word entries.
+NLP parses common patterns during capture; fields can be refined in the modal afterward.
 
 ### Rich Markdown Editor
 

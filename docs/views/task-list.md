@@ -3,6 +3,7 @@
 [← Back to Views](../views.md)
 
 The Task List View displays tasks in a scrollable list format with filtering, sorting, and grouping capabilities. In TaskNotes v4, this view operates as a Bases view configured through YAML.
+This view is optimized for high task volume and explicit filter definitions.
 
 ![Task List View](../assets/views-tasks-list.png)
 
@@ -18,6 +19,7 @@ To enable Bases:
 1. Open Settings → Core Plugins
 2. Enable "Bases"
 3. TaskNotes view commands will now open `.base` files from `TaskNotes/Views/`
+If commands open empty or unexpected views, first confirm Bases is enabled and the command path points to the intended `.base` file.
 
 ### View File Location
 
@@ -71,6 +73,7 @@ filters:
     - note.status == "Open"
     - note.priority == "High"
 ```
+Start with one or two simple filters, verify results, then layer complexity. Incremental edits are much easier to debug than large one-shot query rewrites.
 
 ### Property Mapping
 

@@ -3,6 +3,7 @@
 [← Back to Views](../views.md)
 
 TaskNotes provides two calendar-based views: the **Mini Calendar** and the **Calendar View**. Both operate as Bases views (`.base` files) and require the Bases core plugin to be enabled in Obsidian.
+Mini Calendar is date-density and navigation focused, while Calendar View is scheduling focused.
 
 ![Calendar Month View](../assets/views-calendar-month.png)
 
@@ -14,6 +15,7 @@ Calendar views in TaskNotes v4 are implemented as Bases views, which means:
 - Configuration is controlled through YAML frontmatter in the base file
 - The Bases plugin is an official Obsidian core plugin and must be enabled
 - Views can be opened in tabs, pinned, and managed like other Obsidian views
+This architecture makes calendar behavior auditable. Filters, formulas, and display options are stored with the view file, so they are versionable and easy to share across vault setups.
 
 ## Mini Calendar View
 
@@ -28,6 +30,7 @@ The Mini Calendar displays a month-based view that shows which days contain task
 - **Heatmap Styling**: Visual indicators show the density of tasks or notes on each day
 - **Configurable Date Property**: Set which date property to track (not limited to tasks - can display any dated notes based on configured property)
 - **Month Navigation**: Browse forward and backward through months to view historical and future task distribution
+Mini Calendar is commonly used as an entry view: select a date, then open Task List, Agenda, or Calendar for execution.
 
 ## Calendar View
 
@@ -43,6 +46,7 @@ The Calendar View supports the following view modes:
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
 - **Custom Days**: Configurable multi-day view (2-10 days)
+View modes can be switched within a single `.base` file based on planning horizon (day, week, month, year, or custom range).
 
 | Week View | Day View | Year View |
 |-----------|----------|-----------|
@@ -128,6 +132,7 @@ The Calendar View provides several display options that control what types of ev
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
 - **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)
+Multiple saved calendar views can store different option sets (for example planning vs focus), avoiding repeated manual toggles.
 
 The **All-day slot** option is particularly useful when you have many all-day tasks on a single date, as hiding it can resolve scrolling issues and make the hourly time slots more accessible. When disabled, all-day events will not be displayed in time grid views, but they will still appear in month view.
 
