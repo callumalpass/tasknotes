@@ -8,7 +8,7 @@ Habit tracking in TaskNotes is built on recurring task notes. You can create a r
 
 Once a task has a recurrence rule, its edit modal shows a recurrence calendar. That calendar is where you mark completion per occurrence. Completion history is stored in `complete_instances`, so a recurring task can remain open while still recording daily/weekly completion behavior.
 
-![Recurring task calendar](assets/feature-recurring-task-calendar.png)
+![Recurring task calendar](assets/views-calendar-month.png)
 
 ```yaml
 title: Morning Exercise
@@ -50,7 +50,7 @@ A typical daily flow is to start in Task List for prioritization, move to Calend
 
 If you use timeboxing, drag-select on calendar timeline views and create timeblocks directly from the context menu. If you use Pomodoro, run sessions against active tasks so completion and timing data stay attached to task notes.
 
-![Calendar quick add workflow](assets/workflow-quick-add-calendar.png)
+![Calendar quick add workflow](../media/docs/workflow-quick-add-calendar.png)
 
 ## Maintenance Workflow (Weekly)
 
