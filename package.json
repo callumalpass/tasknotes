@@ -69,6 +69,7 @@
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
+		"tasknotes-nlp-core": "^0.1.0",
 		"@codemirror/view": "^6.37.2",
 		"@fullcalendar/core": "^6.1.17",
 		"@modelcontextprotocol/sdk": "^1.12.1",

@@ -790,12 +790,15 @@ export function generateRecurringTaskInstances(
 	const recurringDates = generateRecurringInstances(task, startDate, adjustedEndDate);
 
 	// Filter instances to only show those within the original visible date range
-	const endDateTime = endDate.getTime();
+	// Compare by date only (not time) since FullCalendar boundaries are at midnight local time
+	// but RRule generates occurrences at the task's scheduled time in UTC (issue #1582)
+	const endDateOnly = formatDateForStorage(endDate);
 	for (const date of recurringDates) {
 		const instanceDate = formatDateForStorage(date);
 
 		// Skip instances outside the original visible range (for yearly tasks with extended look-ahead)
-		if (date.getTime() > endDateTime) {
+		// Compare dates as strings (YYYY-MM-DD) to avoid timezone/time issues
+		if (instanceDate > endDateOnly) {
 			continue;
 		}
 
