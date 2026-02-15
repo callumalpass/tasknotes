@@ -26,6 +26,7 @@ import {
 	ensureFolderExists,
 	updateToNextScheduledOccurrence,
 	splitFrontmatterAndBody,
+	resetMarkdownCheckboxes,
 } from "../utils/helpers";
 import {
 	DEFAULT_DEPENDENCY_RELTYPE,
@@ -1955,6 +1956,24 @@ export class TaskService {
 
 			frontmatter[dateModifiedField] = updatedTask.dateModified;
 		});
+
+		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
+		if (newComplete && this.plugin.settings.resetCheckboxesOnRecurrence) {
+			const currentContent = await this.plugin.app.vault.read(file);
+			const { frontmatter: frontmatterText, body } = splitFrontmatterAndBody(currentContent);
+			const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+
+			if (changed) {
+				const frontmatterBlock =
+					frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
+				const finalBody = resetBody.trimEnd();
+				const newContent = finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
+				await this.plugin.app.vault.modify(file, newContent);
+
+				// Update the details field in the returned task
+				updatedTask.details = resetBody.replace(/\r\n/g, "\n").trimEnd();
+			}
+		}
 
 		// Step 3: Wait for fresh data and update cache
 		try {

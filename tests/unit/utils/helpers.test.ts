@@ -1022,4 +1022,92 @@ invalid yaml: [
       expect(true).toBe(true);
     });
   });
+
+  describe('resetMarkdownCheckboxes', () => {
+    // Import the function directly for testing
+    const { resetMarkdownCheckboxes } = require('../../../src/utils/helpers');
+
+    it('should reset lowercase [x] checkboxes', () => {
+      const content = '- [x] Item 1\n- [x] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should reset uppercase [X] checkboxes', () => {
+      const content = '- [X] Item 1\n- [X] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle mixed case checkboxes', () => {
+      const content = '- [x] Item 1\n- [X] Item 2\n- [ ] Item 3';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2\n- [ ] Item 3');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should not change already unchecked checkboxes', () => {
+      const content = '- [ ] Item 1\n- [ ] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2');
+      expect(result.changed).toBe(false);
+    });
+
+    it('should handle asterisk list markers', () => {
+      const content = '* [x] Item 1\n* [X] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('* [ ] Item 1\n* [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle plus list markers', () => {
+      const content = '+ [x] Item 1\n+ [X] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('+ [ ] Item 1\n+ [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle ordered list checkboxes', () => {
+      const content = '1. [x] First item\n2. [X] Second item\n3. [ ] Third item';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('1. [ ] First item\n2. [ ] Second item\n3. [ ] Third item');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle indented checkboxes', () => {
+      const content = '- [x] Parent\n  - [x] Child 1\n    - [X] Grandchild';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Parent\n  - [ ] Child 1\n    - [ ] Grandchild');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should preserve non-checkbox content', () => {
+      const content = '# Header\n\nSome text\n\n- [x] Task\n\nMore text';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('# Header\n\nSome text\n\n- [ ] Task\n\nMore text');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle content with no checkboxes', () => {
+      const content = '# Just a heading\n\nSome regular text';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('# Just a heading\n\nSome regular text');
+      expect(result.changed).toBe(false);
+    });
+
+    it('should handle empty content', () => {
+      const result = resetMarkdownCheckboxes('');
+      expect(result.content).toBe('');
+      expect(result.changed).toBe(false);
+    });
+
+    it('should not modify [x] in regular text (not list items)', () => {
+      const content = 'This mentions [x] in text but is not a list item';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('This mentions [x] in text but is not a list item');
+      expect(result.changed).toBe(false);
+    });
+  });
 });

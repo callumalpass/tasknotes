@@ -335,6 +335,39 @@ export function splitFrontmatterAndBody(content: string): {
 }
 
 /**
+ * Resets all checked markdown checkboxes to unchecked in the given content.
+ * Handles all standard markdown checkbox formats:
+ * - Unordered lists: - [x], * [x], + [x]
+ * - Ordered lists: 1. [x], 2. [x], etc.
+ * - Various indentation levels
+ * - Both [x] and [X] (case-insensitive)
+ *
+ * @param content The markdown content to process
+ * @returns Object with the processed content and whether any changes were made
+ */
+export function resetMarkdownCheckboxes(content: string): {
+	content: string;
+	changed: boolean;
+} {
+	// Match checkbox list items that are checked: - [x], * [x], + [x], 1. [x], etc.
+	// Pattern breakdown:
+	// ^(\s*)           - Start of line, capture leading whitespace
+	// ([-*+]|\d+\.)    - List marker: -, *, +, or number with dot
+	// (\s+\[)          - Whitespace and opening bracket
+	// [xX]             - The check mark (x or X)
+	// (\].*)           - Closing bracket and rest of line
+	const checkboxPattern = /^(\s*)([-*+]|\d+\.)(\s+\[)[xX](\].*)/gm;
+
+	let changed = false;
+	const result = content.replace(checkboxPattern, (match, indent, marker, beforeX, afterX) => {
+		changed = true;
+		return `${indent}${marker}${beforeX} ${afterX}`;
+	});
+
+	return { content: result, changed };
+}
+
+/**
  * Checks if a recurring task is due on a specific date using RFC 5545 rrule
  */
 export function isDueByRRule(task: TaskInfo, date: Date): boolean {
