@@ -39,7 +39,7 @@ Example:
 
 ## Added
 
-- (#1597) Added MCP (Model Context Protocol) server for AI agent integration
+- (#1597) Added MCP server for AI agent integration
   - Exposes TaskNotes tools at `/mcp` endpoint, gated behind `enableMCP` setting
   - Supports tasks (CRUD, query, toggle status/archive, parse from text), time tracking, pomodoro, calendar events, and task statistics
   - Thanks to @dstotijn for the contribution
@@ -83,6 +83,13 @@ Example:
   - Thanks to @hGriff0n for reporting
 
 - (#1582) Fixed recurring tasks not appearing at end of visible calendar range for non-UTC timezones
-  - Daily/weekly recurring tasks would disappear near week boundaries for users in positive UTC offsets (e.g., UTC+9)
-  - Fixed `generateRecurringInstances()` to use UTC date methods instead of local timezone methods when calculating date boundaries
+  - Daily/weekly recurring tasks with times after ~1pm would disappear on the last day of the visible range for users in positive UTC offsets (e.g., UTC+11)
+  - Fixed date boundary comparisons in both `generateRecurringInstances()` and `generateRecurringTaskInstances()` to compare dates only, not timestamps
   - Thanks to @benefitbug for reporting
+
+- (#1580) Fixed Google Calendar sync failing after OAuth token expires with unhelpful error message
+  - When refresh tokens expire or are revoked (e.g., Google Cloud project in Testing mode, user revoked access), the error message was confusing: "Failed to refresh google token: Request failed, status 400"
+  - Now detects irrecoverable token errors (`invalid_grant`, `invalid_client`) and automatically disconnects the OAuth connection
+  - Shows actionable error message: "Google Calendar connection expired. Please reconnect in Settings > Integrations."
+  - Prevents repeated failed refresh attempts and error message spam
+  - Thanks to @osxisl for reporting

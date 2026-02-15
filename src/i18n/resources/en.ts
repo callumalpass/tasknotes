@@ -1822,6 +1822,8 @@ export const en: TranslationTree = {
 					notATask: "Current file is not a task",
 					noDateToSync: "Task has no scheduled or due date to sync",
 					syncFailed: "Failed to sync task to Google Calendar: {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "Syncing {total} tasks to Google Calendar...",
 					syncComplete:
 						"Sync complete: {synced} synced, {failed} failed, {skipped} skipped",
