@@ -93,3 +93,8 @@ Example:
   - Shows actionable error message: "Google Calendar connection expired. Please reconnect in Settings > Integrations."
   - Prevents repeated failed refresh attempts and error message spam
   - Thanks to @osxisl for reporting
+
+- (#1584) Fixed DOMTokenList error when task status values contain spaces
+  - Clicking the status ring on a task card threw an error when status contained spaces (e.g., "In Progress")
+  - Status and priority values are now sanitized before being used as CSS class names
+  - Thanks to @omber for reporting

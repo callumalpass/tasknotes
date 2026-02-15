@@ -33,7 +33,8 @@ import {
   validateTimeBlock,
   extractTimeblocksFromNote,
   timeblockToCalendarEvent,
-  generateTimeblockId
+  generateTimeblockId,
+  sanitizeForCssClass
 } from '../../../src/utils/helpers';
 
 import { TaskInfo, TimeEntry, TimeBlock } from '../../../src/types';
@@ -958,6 +959,39 @@ invalid yaml: [
       // Original timeblock should be preserved in extended props
       expect(calendarEvent.extendedProps.timeblock).toEqual(timeblock);
       expect(calendarEvent.title).toBe(timeblock.title);
+    });
+  });
+
+  describe('sanitizeForCssClass', () => {
+    it('should replace spaces with hyphens and lowercase', () => {
+      expect(sanitizeForCssClass('In Progress')).toBe('in-progress');
+      expect(sanitizeForCssClass('60-In Progress')).toBe('60-in-progress');
+    });
+
+    it('should replace multiple spaces with single hyphen', () => {
+      expect(sanitizeForCssClass('Waiting  For  Review')).toBe('waiting--for--review');
+    });
+
+    it('should replace special characters with hyphens', () => {
+      expect(sanitizeForCssClass('Task@Home!')).toBe('task-home-');
+      expect(sanitizeForCssClass('50% Complete')).toBe('50--complete');
+    });
+
+    it('should preserve existing hyphens', () => {
+      expect(sanitizeForCssClass('in-progress')).toBe('in-progress');
+      expect(sanitizeForCssClass('High-Priority')).toBe('high-priority');
+    });
+
+    it('should handle empty and null values', () => {
+      expect(sanitizeForCssClass('')).toBe('');
+      expect(sanitizeForCssClass(null as any)).toBe('');
+      expect(sanitizeForCssClass(undefined as any)).toBe('');
+    });
+
+    it('should handle simple status values', () => {
+      expect(sanitizeForCssClass('open')).toBe('open');
+      expect(sanitizeForCssClass('DONE')).toBe('done');
+      expect(sanitizeForCssClass('High')).toBe('high');
     });
   });
 

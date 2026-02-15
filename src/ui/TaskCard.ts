@@ -8,6 +8,7 @@ import {
 	getRecurrenceDisplayText,
 	filterEmptyProjects,
 	calculateTotalTimeSpent,
+	sanitizeForCssClass,
 } from "../utils/helpers";
 import { FilterUtils } from "../utils/FilterUtils";
 import {
@@ -233,7 +234,7 @@ function updateCardCompletionState(
 		}
 	}
 	if (task.priority) {
-		card.classList.add(`task-card--priority-${task.priority}`);
+		card.classList.add(`task-card--priority-${sanitizeForCssClass(task.priority)}`);
 	}
 
 	for (const className of Array.from(card.classList)) {
@@ -242,7 +243,7 @@ function updateCardCompletionState(
 		}
 	}
 	if (effectiveStatus) {
-		card.classList.add(`task-card--status-${effectiveStatus}`);
+		card.classList.add(`task-card--status-${sanitizeForCssClass(effectiveStatus)}`);
 	}
 
 	card.dataset.status = effectiveStatus;
