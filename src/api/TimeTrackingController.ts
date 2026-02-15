@@ -1,7 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { parse } from "url";
 import { BaseController } from "./BaseController";
-import { IWebhookNotifier } from "../types";
 import { TaskService } from "../services/TaskService";
 import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "../services/StatusManager";
@@ -19,8 +18,7 @@ export class TimeTrackingController extends BaseController {
 		private plugin: TaskNotesPlugin,
 		private taskService: TaskService,
 		private cacheManager: TaskManager,
-		private statusManager: StatusManager,
-		private webhookNotifier: IWebhookNotifier
+		private statusManager: StatusManager
 	) {
 		super();
 	}
@@ -46,12 +44,6 @@ export class TimeTrackingController extends BaseController {
 			}
 
 			const updatedTask = await this.taskService.startTimeTracking(task);
-
-			// Trigger webhook for time tracking start
-			await this.webhookNotifier.triggerWebhook("time.started", {
-				task: updatedTask,
-				session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
-			});
 
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
 		} catch (error: any) {
@@ -80,12 +72,6 @@ export class TimeTrackingController extends BaseController {
 			}
 
 			const updatedTask = await this.taskService.stopTimeTracking(task);
-
-			// Trigger webhook for time tracking stop
-			await this.webhookNotifier.triggerWebhook("time.stopped", {
-				task: updatedTask,
-				session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
-			});
 
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
 		} catch (error: any) {
@@ -130,12 +116,6 @@ export class TimeTrackingController extends BaseController {
 					});
 				}
 			}
-
-			// Trigger webhook for time tracking start
-			await this.webhookNotifier.triggerWebhook("time.started", {
-				task: updatedTask,
-				session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
-			});
 
 			this.sendResponse(
 				res,

@@ -19,6 +19,7 @@ import { SystemController } from "../api/SystemController";
 import { WebhookController } from "../api/WebhookController";
 import { CalendarsController } from "../api/CalendarsController";
 import { MCPService } from "./MCPService";
+import { parseJSONBody, sendJSONResponse, setCORSHeaders } from "../api/httpUtils";
 
 @OpenAPIController
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -61,25 +62,16 @@ export class HTTPAPIService implements IWebhookNotifier {
 			taskService,
 			filterService,
 			cacheManager,
-			statusManager,
-			this.webhookController,
 			taskStatsService
 		);
 		this.timeTrackingController = new TimeTrackingController(
 			plugin,
 			taskService,
 			cacheManager,
-			statusManager,
-			this.webhookController
+			statusManager
 		);
 		this.pomodoroController = new PomodoroController(plugin, cacheManager);
-		this.systemController = new SystemController(
-			plugin,
-			taskService,
-			nlParser,
-			this.webhookController,
-			this
-		);
+		this.systemController = new SystemController(plugin, taskService, nlParser, this);
 		this.calendarsController = new CalendarsController(
 			plugin,
 			plugin.oauthService,
@@ -96,8 +88,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 				cacheManager,
 				statusManager,
 				nlParser,
-				taskStatsService,
-				this.webhookController
+				taskStatsService
 			);
 		}
 
@@ -158,9 +149,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 
 	private async handleCORSPreflight(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		res.statusCode = 200;
-		res.setHeader("Access-Control-Allow-Origin", "*");
-		res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+		setCORSHeaders(res);
 		res.end();
 	}
 
@@ -182,12 +171,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 	}
 
 	private sendResponse(res: ServerResponse, statusCode: number, data: any): void {
-		res.statusCode = statusCode;
-		res.setHeader("Content-Type", "application/json");
-		res.setHeader("Access-Control-Allow-Origin", "*");
-		res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-		res.end(JSON.stringify(data));
+		sendJSONResponse(res, statusCode, data);
 	}
 
 	private successResponse<T>(
@@ -252,21 +236,16 @@ export class HTTPAPIService implements IWebhookNotifier {
 		await this.webhookController.triggerWebhook(event, data);
 	}
 
+	/**
+	 * Reload webhook configuration from plugin settings.
+	 * Called after settings edits so runtime delivery state stays in sync.
+	 */
+	syncWebhookSettings(): void {
+		this.webhookController.syncFromSettings();
+	}
+
 	private parseBody(req: IncomingMessage): Promise<Record<string, unknown>> {
-		return new Promise((resolve, reject) => {
-			let body = "";
-			req.on("data", (chunk: Buffer) => {
-				body += chunk.toString();
-			});
-			req.on("end", () => {
-				try {
-					resolve(body ? JSON.parse(body) : {});
-				} catch {
-					reject(new Error("Invalid JSON"));
-				}
-			});
-			req.on("error", reject);
-		});
+		return parseJSONBody(req);
 	}
 
 	async start(): Promise<void> {

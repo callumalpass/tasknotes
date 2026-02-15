@@ -16,7 +16,6 @@ import {
 	FilterQuery,
 	FilterCondition,
 	FilterGroup,
-	IWebhookNotifier,
 } from "../types";
 import {
 	computeActiveTimeSessions,
@@ -39,8 +38,7 @@ export class MCPService {
 		private cacheManager: TaskManager,
 		private statusManager: StatusManager,
 		private nlParser: NaturalLanguageParser,
-		private taskStatsService: TaskStatsService,
-		private webhookNotifier: IWebhookNotifier
+		private taskStatsService: TaskStatsService
 	) {}
 
 	/** Handle an incoming MCP-over-HTTP request. */
@@ -190,10 +188,6 @@ export class MCPService {
 					};
 					const result = await this.taskService.createTask(taskData);
 
-					await this.webhookNotifier.triggerWebhook("task.created", {
-						task: result.taskInfo,
-					});
-
 					return this.jsonResult(result.taskInfo);
 				} catch (error: any) {
 					return this.errorResult(error.message);
@@ -235,11 +229,6 @@ export class MCPService {
 
 					const updatedTask = await this.taskService.updateTask(task, cleanUpdates);
 
-					await this.webhookNotifier.triggerWebhook("task.updated", {
-						task: updatedTask,
-						previous: task,
-					});
-
 					return this.jsonResult(updatedTask);
 				} catch (error: any) {
 					return this.errorResult(error.message);
@@ -258,8 +247,6 @@ export class MCPService {
 						return this.errorResult("Task not found");
 					}
 					await this.taskService.deleteTask(task);
-
-					await this.webhookNotifier.triggerWebhook("task.deleted", { task });
 
 					return this.jsonResult({ deleted: true, id });
 				} catch (error: any) {
@@ -280,20 +267,6 @@ export class MCPService {
 					}
 					const updatedTask = await this.taskService.toggleStatus(task);
 
-					const wasCompleted = this.statusManager.isCompletedStatus(task.status);
-					const isCompleted = this.statusManager.isCompletedStatus(updatedTask.status);
-
-					if (!wasCompleted && isCompleted) {
-						await this.webhookNotifier.triggerWebhook("task.completed", {
-							task: updatedTask,
-						});
-					} else {
-						await this.webhookNotifier.triggerWebhook("task.updated", {
-							task: updatedTask,
-							previous: task,
-						});
-					}
-
 					return this.jsonResult(updatedTask);
 				} catch (error: any) {
 					return this.errorResult(error.message);
@@ -312,16 +285,6 @@ export class MCPService {
 						return this.errorResult("Task not found");
 					}
 					const updatedTask = await this.taskService.toggleArchive(task);
-
-					if (updatedTask.archived) {
-						await this.webhookNotifier.triggerWebhook("task.archived", {
-							task: updatedTask,
-						});
-					} else {
-						await this.webhookNotifier.triggerWebhook("task.unarchived", {
-							task: updatedTask,
-						});
-					}
 
 					return this.jsonResult(updatedTask);
 				} catch (error: any) {
@@ -348,11 +311,6 @@ export class MCPService {
 						task,
 						targetDate
 					);
-
-					await this.webhookNotifier.triggerWebhook("task.updated", {
-						task: updatedTask,
-						previous: task,
-					});
 
 					return this.jsonResult(updatedTask);
 				} catch (error: any) {
@@ -385,10 +343,6 @@ export class MCPService {
 						creationContext: "api",
 					};
 					const result = await this.taskService.createTask(taskData);
-
-					await this.webhookNotifier.triggerWebhook("task.created", {
-						task: result.taskInfo,
-					});
 
 					return this.jsonResult({ parsed, task: result.taskInfo });
 				} catch (error: any) {
@@ -524,11 +478,6 @@ export class MCPService {
 						}
 					}
 
-					await this.webhookNotifier.triggerWebhook("time.started", {
-						task: updatedTask,
-						session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
-					});
-
 					return this.jsonResult(updatedTask);
 				} catch (error: any) {
 					return this.errorResult(error.message);
@@ -547,11 +496,6 @@ export class MCPService {
 						return this.errorResult("Task not found");
 					}
 					const updatedTask = await this.taskService.stopTimeTracking(task);
-
-					await this.webhookNotifier.triggerWebhook("time.stopped", {
-						task: updatedTask,
-						session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
-					});
 
 					return this.jsonResult(updatedTask);
 				} catch (error: any) {

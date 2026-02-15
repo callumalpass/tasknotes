@@ -321,6 +321,13 @@ export class WebhookController extends BaseController {
 		}
 	}
 
+	/**
+	 * Reload in-memory webhook state from persisted plugin settings.
+	 */
+	syncFromSettings(): void {
+		this.loadWebhooks();
+	}
+
 	private async applyTransformation(
 		transformFile: string,
 		payload: WebhookPayload

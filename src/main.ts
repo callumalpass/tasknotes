@@ -1412,6 +1412,9 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 		await this.saveData(data);
 
+		// Keep runtime webhook state aligned with settings edits while API is running.
+		this.apiService?.syncWebhookSettings?.();
+
 		// Check if cache-related settings have changed
 		const cacheSettingsChanged = this.haveCacheSettingsChanged();
 
@@ -1467,6 +1470,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async onExternalSettingsChange(): Promise<void> {
 		await this.loadSettings();
+		this.apiService?.syncWebhookSettings?.();
 
 		// Update all services with new settings
 		this.fieldMapper?.updateMapping(this.settings.fieldMapping);
