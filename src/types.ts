@@ -478,7 +478,7 @@ export interface TimeEntry {
 	startTime: string; // ISO timestamp
 	endTime?: string; // ISO timestamp, undefined if currently running
 	description?: string; // Optional description of what was worked on
-	duration?: number; // Duration in minutes (calculated or manually set)
+	duration?: number; // Legacy field; duration should be derived from start/end timestamps
 }
 
 // Reminder types

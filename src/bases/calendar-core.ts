@@ -1134,11 +1134,16 @@ export async function handleTimeEntryCreation(
 						startTime: start.toISOString(),
 						endTime: end.toISOString(),
 						description: "",
-						duration: durationMinutes,
 					};
 
 					// Add to task's time entries
-					const updatedTimeEntries = [...(selectedTask.timeEntries || []), newEntry];
+					const updatedTimeEntries = [...(selectedTask.timeEntries || []), newEntry].map(
+						(entry) => {
+							const sanitizedEntry = { ...entry };
+							delete sanitizedEntry.duration;
+							return sanitizedEntry;
+						}
+					);
 
 					// Save to file
 					await plugin.taskService.updateTask(selectedTask, {

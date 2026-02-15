@@ -78,9 +78,7 @@ export function calculateTotalTimeSpent(timeEntries: TimeEntry[]): number {
 	if (!timeEntries || timeEntries.length === 0) return 0;
 
 	return timeEntries.reduce((total, entry) => {
-		if (entry.duration) {
-			return total + entry.duration;
-		} else if (entry.endTime) {
+		if (entry.endTime) {
 			const durationMs =
 				new Date(entry.endTime).getTime() - new Date(entry.startTime).getTime();
 			return total + Math.floor(durationMs / (1000 * 60));
@@ -194,9 +192,7 @@ export function computeTimeSummary(
 			const entryStart = new Date(entry.startTime);
 
 			if (entryStart >= startDate && entryStart <= endDate) {
-				if (entry.duration) {
-					taskMinutes += entry.duration;
-				} else if (!entry.endTime) {
+				if (!entry.endTime) {
 					taskMinutes += Math.floor(
 						(Date.now() - entryStart.getTime()) / (1000 * 60)
 					);
@@ -281,12 +277,18 @@ export function computeTaskTimeData(
 	const totalMinutes = calculateTotalTimeSpent(timeEntries);
 
 	const completedSessions = timeEntries.filter((entry) => entry.endTime).length;
-	const completedEntries = timeEntries.filter((entry) => entry.endTime && entry.duration);
+	const completedEntries = timeEntries.filter((entry) => entry.endTime);
 	const averageSessionMinutes =
 		completedEntries.length > 0
 			? Math.round(
 					(completedEntries.reduce(
-						(sum, entry) => sum + (entry.duration || 0),
+						(sum, entry) =>
+							sum +
+							Math.floor(
+								(new Date(entry.endTime as string).getTime() -
+									new Date(entry.startTime).getTime()) /
+									(1000 * 60)
+							),
 						0
 					) /
 						completedEntries.length) *
@@ -323,18 +325,16 @@ export function computeTaskTimeData(
 			startTime: entry.startTime,
 			endTime: entry.endTime || null,
 			description: entry.description || null,
-			duration:
-				entry.duration ||
-				(entry.endTime
-					? Math.floor(
-							(new Date(entry.endTime).getTime() -
-								new Date(entry.startTime).getTime()) /
-								(1000 * 60)
-						)
-					: Math.floor(
-							(Date.now() - new Date(entry.startTime).getTime()) /
-								(1000 * 60)
-						)),
+			duration: entry.endTime
+				? Math.floor(
+						(new Date(entry.endTime).getTime() -
+							new Date(entry.startTime).getTime()) /
+							(1000 * 60)
+					)
+				: Math.floor(
+						(Date.now() - new Date(entry.startTime).getTime()) /
+							(1000 * 60)
+					),
 			isActive: !entry.endTime,
 		})),
 	};

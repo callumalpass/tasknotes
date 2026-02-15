@@ -1127,9 +1127,14 @@ export class TaskService {
 		if (!updatedTask.timeEntries) {
 			updatedTask.timeEntries = [];
 		}
+		updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
+			const sanitizedEntry = { ...entry };
+			delete sanitizedEntry.duration;
+			return sanitizedEntry;
+		});
 
 		const newEntry: TimeEntry = {
-			startTime: getCurrentTimestamp(),
+			startTime: new Date().toISOString(),
 			description: "Work session",
 		};
 		updatedTask.timeEntries = [...updatedTask.timeEntries, newEntry];
@@ -1141,6 +1146,13 @@ export class TaskService {
 
 			if (!frontmatter[timeEntriesField]) {
 				frontmatter[timeEntriesField] = [];
+			}
+			if (Array.isArray(frontmatter[timeEntriesField])) {
+				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map((entry: TimeEntry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
 			}
 
 			// Add new time entry with start time
@@ -1195,12 +1207,18 @@ export class TaskService {
 		if (!activeSession) {
 			throw new Error("No active time tracking session for this task");
 		}
+		const stopTimestamp = new Date().toISOString();
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
 		updatedTask.dateModified = getCurrentTimestamp();
 
 		if (updatedTask.timeEntries && Array.isArray(updatedTask.timeEntries)) {
+			updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
+				const sanitizedEntry = { ...entry };
+				delete sanitizedEntry.duration;
+				return sanitizedEntry;
+			});
 			const entryIndex = updatedTask.timeEntries.findIndex(
 				(entry: TimeEntry) => entry.startTime === activeSession.startTime && !entry.endTime
 			);
@@ -1208,7 +1226,7 @@ export class TaskService {
 				updatedTask.timeEntries = [...updatedTask.timeEntries];
 				updatedTask.timeEntries[entryIndex] = {
 					...updatedTask.timeEntries[entryIndex],
-					endTime: getCurrentTimestamp(),
+					endTime: stopTimestamp,
 				};
 			}
 		}
@@ -1219,6 +1237,11 @@ export class TaskService {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 
 			if (frontmatter[timeEntriesField] && Array.isArray(frontmatter[timeEntriesField])) {
+				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map((entry: TimeEntry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
 				// Find and update the active session
 				const entryIndex = frontmatter[timeEntriesField].findIndex(
 					(entry: TimeEntry) =>
@@ -1226,7 +1249,7 @@ export class TaskService {
 				);
 
 				if (entryIndex !== -1) {
-					frontmatter[timeEntriesField][entryIndex].endTime = getCurrentTimestamp();
+					frontmatter[timeEntriesField][entryIndex].endTime = stopTimestamp;
 				}
 			}
 			frontmatter[dateModifiedField] = updatedTask.dateModified;
@@ -1278,6 +1301,14 @@ export class TaskService {
 			const file = this.plugin.app.vault.getAbstractFileByPath(originalTask.path);
 			if (!(file instanceof TFile)) {
 				throw new Error(`Cannot find task file: ${originalTask.path}`);
+			}
+
+			if (Array.isArray(updates.timeEntries)) {
+				updates.timeEntries = updates.timeEntries.map((entry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
 			}
 
 			const isRenameNeeded =

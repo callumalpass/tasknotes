@@ -284,7 +284,6 @@ Stop the currently active time tracking session for a task.
       {
         "startTime": "2025-08-14T10:00:00.000Z",
         "endTime": "2025-08-14T11:30:00.000Z",
-        "duration": 90,
         "description": "Working on API endpoint implementation"
       }
     ]

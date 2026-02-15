@@ -1364,14 +1364,16 @@ export class CalendarView extends BasesViewBase {
 
 					entry.startTime = new Date(oldStartDate.getTime() + timeDiffMs).toISOString();
 					entry.endTime = new Date(oldEndDate.getTime() + timeDiffMs).toISOString();
+					delete entry.duration;
 
-					// Recalculate duration
-					entry.duration = Math.round(
-						(new Date(entry.endTime).getTime() - new Date(entry.startTime).getTime()) / 60000
-					);
+					const sanitizedEntries = updatedEntries.map((timeEntry) => {
+						const sanitizedEntry = { ...timeEntry };
+						delete sanitizedEntry.duration;
+						return sanitizedEntry;
+					});
 
 					await this.plugin.taskService.updateTask(taskInfo, {
-						timeEntries: updatedEntries,
+						timeEntries: sanitizedEntries,
 					});
 				}
 			} catch (error) {
@@ -1482,14 +1484,16 @@ export class CalendarView extends BasesViewBase {
 					// Update start and end times
 					entry.startTime = newStart.toISOString();
 					entry.endTime = newEnd.toISOString();
+					delete entry.duration;
 
-					// Recalculate duration
-					entry.duration = Math.round(
-						(newEnd.getTime() - newStart.getTime()) / 60000
-					);
+					const sanitizedEntries = updatedEntries.map((timeEntry) => {
+						const sanitizedEntry = { ...timeEntry };
+						delete sanitizedEntry.duration;
+						return sanitizedEntry;
+					});
 
 					await this.plugin.taskService.updateTask(taskInfo, {
-						timeEntries: updatedEntries,
+						timeEntries: sanitizedEntries,
 					});
 				}
 			} catch (error) {

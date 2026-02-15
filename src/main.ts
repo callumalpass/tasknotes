@@ -2805,9 +2805,15 @@ export default class TaskNotesPlugin extends Plugin {
 	openTimeEntryEditor(task: TaskInfo, onSave?: () => void): void {
 		const modal = new TimeEntryEditorModal(this.app, this, task, async (updatedEntries) => {
 			try {
+				const sanitizedEntries = updatedEntries.map((entry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
+
 				// Save to file
 				await this.taskService.updateTask(task, {
-					timeEntries: updatedEntries,
+					timeEntries: sanitizedEntries,
 				});
 
 				// Signal immediate update before triggering data change
