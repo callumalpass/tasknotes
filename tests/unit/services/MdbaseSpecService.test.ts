@@ -630,7 +630,7 @@ describe("MdbaseSpecService", () => {
 			);
 		});
 
-		it("should update existing files via adapter.write", async () => {
+		it("should update _types/task.md via adapter.write when it exists", async () => {
 			const plugin = createMockPlugin();
 			plugin.app.vault.adapter.exists.mockResolvedValue(true);
 			const service = new MdbaseSpecService(plugin);
@@ -638,14 +638,27 @@ describe("MdbaseSpecService", () => {
 			await service.generate();
 
 			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
-				"mdbase.yaml",
-				expect.any(String)
-			);
-			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
 				"_types/task.md",
 				expect.any(String)
 			);
 			expect(plugin.app.vault.create).not.toHaveBeenCalled();
+		});
+
+		it("should not overwrite mdbase.yaml when it already exists", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalledWith(
+				"mdbase.yaml",
+				expect.any(String)
+			);
+			expect(plugin.app.vault.create).not.toHaveBeenCalledWith(
+				"mdbase.yaml",
+				expect.any(String)
+			);
 		});
 	});
 

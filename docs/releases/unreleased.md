@@ -32,6 +32,8 @@ Example:
 
 ## Changed
 
+- [Mdbase spec](https://mdbase.dev) no longer overwrites `mdbase.yaml` if the file already exists, preserving user customisations
+
 - Webhook emissions moved from API controllers and MCP layer into the service/domain layer, ensuring webhooks fire consistently regardless of entry point
 - Webhook runtime state now syncs automatically when plugin settings change
 - Extracted shared HTTP response/body-parsing utilities into a dedicated `httpUtils` module

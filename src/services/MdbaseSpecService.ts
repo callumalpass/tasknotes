@@ -39,11 +39,16 @@ export class MdbaseSpecService {
 				await vault.createFolder("_types");
 			}
 
-			const mdbaseYaml = this.buildMdbaseYaml();
 			const taskTypeDef = this.buildTaskTypeDef();
-
-			await this.writeFile("mdbase.yaml", mdbaseYaml);
 			await this.writeFile("_types/task.md", taskTypeDef);
+
+			// Only create mdbase.yaml if it doesn't already exist so that
+			// user customisations (extra excludes, description, etc.) are preserved.
+			const mdbaseExists = await vault.adapter.exists("mdbase.yaml");
+			if (!mdbaseExists) {
+				const mdbaseYaml = this.buildMdbaseYaml();
+				await this.writeFile("mdbase.yaml", mdbaseYaml);
+			}
 
 			console.debug("[TaskNotes][mdbase-spec] Generated mdbase.yaml and _types/task.md");
 		} catch (error) {
