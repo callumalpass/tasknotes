@@ -23,3 +23,14 @@ Example:
 ```
 
 -->
+
+## Added
+
+- [Mdbase spec](https://mdbase.dev) now emits `tn_role` annotations on schema fields, allowing external tools (e.g. [mtn CLI](https://github.com/callumalpass/mdbase-tasknotes)) to discover each field's semantic role regardless of custom frontmatter names
+- [Mdbase spec](https://mdbase.dev) match rules now use tag or frontmatter property matching (based on task identification settings) instead of path glob, with automatic fallback to tag matching
+
+## Changed
+
+- Webhook emissions moved from API controllers and MCP layer into the service/domain layer, ensuring webhooks fire consistently regardless of entry point
+- Webhook runtime state now syncs automatically when plugin settings change
+- Extracted shared HTTP response/body-parsing utilities into a dedicated `httpUtils` module
