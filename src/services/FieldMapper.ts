@@ -201,9 +201,8 @@ export class FieldMapper {
 			frontmatter[this.mapping.title] = taskData.title;
 		}
 
-		if (storeTitleInFilename) {
-			delete frontmatter[this.mapping.title];
-		}
+		// Note: title is always kept in frontmatter for CLI/API compatibility,
+		// even when storeTitleInFilename is true (filename is derived from title)
 
 		if (taskData.status !== undefined) {
 			// Coerce boolean-like status strings to actual booleans for compatibility with Obsidian checkbox properties
