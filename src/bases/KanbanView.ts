@@ -337,9 +337,21 @@ export class KanbanView extends BasesViewBase {
 		// Must use internal API to detect if groupBy is configured.
 		// We can't rely on isGrouped() because it returns false when all items have null values.
 
-		const controller = this.basesController;
-
 		// Try to get groupBy from internal API (controller.query.views)
+		const view = this.getActiveViewConfig();
+		if (view?.groupBy) {
+			if (typeof view.groupBy === "object" && view.groupBy.property) {
+				return view.groupBy.property;
+			} else if (typeof view.groupBy === "string") {
+				return view.groupBy;
+			}
+		}
+
+		return null;
+	}
+
+	private getActiveViewConfig(): any | null {
+		const controller = this.basesController;
 		if (controller?.query?.views && controller?.viewName) {
 			const views = controller.query.views;
 			const viewName = controller.viewName;
@@ -347,16 +359,7 @@ export class KanbanView extends BasesViewBase {
 			for (let i = 0; i < views.length; i++) {
 				const view = views[i];
 				if (view && view.name === viewName) {
-					if (view.groupBy) {
-						if (typeof view.groupBy === "object" && view.groupBy.property) {
-							return view.groupBy.property;
-						} else if (typeof view.groupBy === "string") {
-							return view.groupBy;
-						}
-					}
-
-					// View found but no groupBy configured
-					return null;
+					return view;
 				}
 			}
 		}
@@ -573,6 +576,9 @@ export class KanbanView extends BasesViewBase {
 	private async renderFlat(groups: Map<string, TaskInfo[]>): Promise<void> {
 		if (!this.boardEl) return;
 
+		this.boardEl.removeClass("kanban-view__board--swimlanes");
+		this.boardEl.style.removeProperty("--kanban-swimlane-max-height");
+
 		// Set CSS variable for column width (allows responsive override)
 		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
 
@@ -628,9 +634,11 @@ export class KanbanView extends BasesViewBase {
 			swimLaneValues.add(swimLaneKey);
 		}
 
+		const orderedSwimLaneKeys = this.getOrderedSwimLaneKeys(swimLaneValues);
+
 		// Initialize swimlane -> column -> tasks structure
 		// Note: groups already includes empty status columns from augmentWithEmptyStatusColumns()
-		for (const swimLaneKey of swimLaneValues) {
+		for (const swimLaneKey of orderedSwimLaneKeys) {
 			const swimLaneMap = new Map<string, TaskInfo[]>();
 			swimLanes.set(swimLaneKey, swimLaneMap);
 
@@ -664,12 +672,16 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 
+		const swimLanesToRender = this.shouldHideEmptySwimLanes()
+			? this.filterEmptySwimLanes(swimLanes, orderedSwimLaneKeys)
+			: swimLanes;
+
 		// Apply column ordering
 		const columnKeys = Array.from(groups.keys());
 		const orderedKeys = this.applyColumnOrder(groupByPropertyId, columnKeys);
 
 		// Render swimlane table
-		await this.renderSwimLaneTable(swimLanes, orderedKeys, pathToProps);
+		await this.renderSwimLaneTable(swimLanesToRender, orderedKeys, pathToProps);
 	}
 
 	private async renderSwimLaneTable(
@@ -2102,6 +2114,203 @@ export class KanbanView extends BasesViewBase {
 			workspace: app.workspace,
 		};
 		renderGroupTitle(container, displayTitle, linkServices);
+	}
+
+	private getOrderedSwimLaneKeys(swimLaneValues: Set<string>): string[] {
+		if (!this.swimLanePropertyId) {
+			return Array.from(swimLaneValues);
+		}
+
+		const noneKey = "None";
+		const hasNone = swimLaneValues.has(noneKey);
+		const rawKeys = Array.from(swimLaneValues);
+		const valueKeys = rawKeys.filter((key) => key !== noneKey);
+		const cleanProperty = this.stripPropertyPrefix(this.swimLanePropertyId);
+
+		const statusField = this.plugin.fieldMapper.toUserField("status");
+		if (cleanProperty === statusField) {
+			const statusValues = this.plugin.statusManager.getStatusesByOrder().map((s) => s.value);
+			const extras = this.sortSwimLaneKeysAlphabetical(
+				valueKeys.filter((key) => !statusValues.includes(key))
+			);
+			const ordered = [...statusValues, ...extras];
+			if (hasNone && !ordered.includes(noneKey)) {
+				ordered.push(noneKey);
+			}
+			return ordered;
+		}
+
+		const priorityField = this.plugin.fieldMapper.toUserField("priority");
+		if (cleanProperty === priorityField) {
+			const priorityValues = this.plugin.priorityManager
+				.getPrioritiesByWeight()
+				.map((p) => p.value);
+			const extras = this.sortSwimLaneKeysAlphabetical(
+				valueKeys.filter((key) => !priorityValues.includes(key))
+			);
+			const ordered = [...priorityValues, ...extras];
+			if (hasNone && !ordered.includes(noneKey)) {
+				ordered.push(noneKey);
+			}
+			return ordered;
+		}
+
+		if (cleanProperty.startsWith("user:")) {
+			return this.sortUserFieldSwimLaneKeys(rawKeys, cleanProperty);
+		}
+
+		const ordered = this.sortSwimLaneKeysAlphabetical(valueKeys);
+		if (hasNone) {
+			ordered.push(noneKey);
+		}
+		return ordered;
+	}
+
+	private sortSwimLaneKeysAlphabetical(keys: string[]): string[] {
+		return [...keys].sort((a, b) =>
+			a.localeCompare(b, undefined, { sensitivity: "base" })
+		);
+	}
+
+	private sortUserFieldSwimLaneKeys(keys: string[], cleanProperty: string): string[] {
+		const noneKey = "None";
+		const hasNone = keys.includes(noneKey);
+		const valueKeys = keys.filter((key) => key !== noneKey);
+		const fieldId = cleanProperty.slice("user:".length);
+		const fields = this.plugin.settings?.userFields || [];
+		const field = fields.find((f: any) => (f.id || f.key) === fieldId);
+
+		let ordered: string[];
+
+		if (!field) {
+			ordered = this.sortSwimLaneKeysAlphabetical(valueKeys);
+		} else {
+			switch (field.type) {
+				case "number":
+					ordered = [...valueKeys].sort((a, b) => {
+						const numA = parseFloat(a);
+						const numB = parseFloat(b);
+						const isNumA = !isNaN(numA);
+						const isNumB = !isNaN(numB);
+						if (isNumA && isNumB) return numB - numA;
+						if (isNumA && !isNumB) return -1;
+						if (!isNumA && isNumB) return 1;
+						return a.localeCompare(b, undefined, { sensitivity: "base" });
+					});
+					break;
+				case "boolean":
+					ordered = [...valueKeys].sort((a, b) => {
+						const aLower = a.toLowerCase();
+						const bLower = b.toLowerCase();
+						if (aLower === "true" && bLower === "false") return -1;
+						if (aLower === "false" && bLower === "true") return 1;
+						return a.localeCompare(b, undefined, { sensitivity: "base" });
+					});
+					break;
+				case "date":
+					ordered = [...valueKeys].sort((a, b) => {
+						const tA = Date.parse(a);
+						const tB = Date.parse(b);
+						const isValidA = !isNaN(tA);
+						const isValidB = !isNaN(tB);
+						if (isValidA && isValidB) return tA - tB;
+						if (isValidA && !isValidB) return -1;
+						if (!isValidA && isValidB) return 1;
+						return a.localeCompare(b, undefined, { sensitivity: "base" });
+					});
+					break;
+				case "text":
+				case "list":
+				default:
+					ordered = this.sortSwimLaneKeysAlphabetical(valueKeys);
+					break;
+			}
+		}
+
+		if (hasNone) {
+			ordered.push(noneKey);
+		}
+		return ordered;
+	}
+
+	private shouldHideEmptySwimLanes(): boolean {
+		if (this.currentSearchTerm?.length) {
+			return true;
+		}
+
+		return this.hasActiveBasesFilters();
+	}
+
+	private hasActiveBasesFilters(): boolean {
+		const viewConfig = this.getActiveViewConfig();
+		if (this.isNonEmptyFilterConfig(this.extractFilterConfig(viewConfig))) {
+			return true;
+		}
+
+		const controller = this.basesController;
+		const query = controller?.query;
+		const config = controller?.getViewConfig?.() ?? query?.getViewConfig?.();
+		return this.isNonEmptyFilterConfig(this.extractFilterConfig(config));
+	}
+
+	private extractFilterConfig(config: any): any {
+		if (!config || typeof config !== "object") {
+			return null;
+		}
+
+		return (
+			config.filter ??
+			config.filters ??
+			config.query?.filter ??
+			config.query?.filters ??
+			config.where ??
+			config.conditions ??
+			null
+		);
+	}
+
+	private isNonEmptyFilterConfig(value: any): boolean {
+		if (!value) return false;
+		if (Array.isArray(value)) return value.length > 0;
+		if (typeof value === "string") return value.trim().length > 0;
+		if (typeof value === "object") {
+			const rules =
+				value.rules ??
+				value.conditions ??
+				value.filters ??
+				value.groups ??
+				null;
+			if (Array.isArray(rules)) return rules.length > 0;
+			if (rules && typeof rules === "object") return Object.keys(rules).length > 0;
+			return Object.keys(value).length > 0;
+		}
+		return false;
+	}
+
+	private filterEmptySwimLanes(
+		swimLanes: Map<string, Map<string, TaskInfo[]>>,
+		orderedKeys: string[]
+	): Map<string, Map<string, TaskInfo[]>> {
+		const filtered = new Map<string, Map<string, TaskInfo[]>>();
+
+		for (const swimLaneKey of orderedKeys) {
+			const columns = swimLanes.get(swimLaneKey);
+			if (!columns) continue;
+
+			let hasTasks = false;
+			for (const tasks of columns.values()) {
+				if (tasks.length > 0) {
+					hasTasks = true;
+					break;
+				}
+			}
+
+			if (hasTasks) {
+				filtered.set(swimLaneKey, columns);
+			}
+		}
+
+		return filtered;
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
