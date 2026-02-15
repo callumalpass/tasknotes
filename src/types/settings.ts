@@ -218,6 +218,7 @@ export interface TaskNotesSettings {
 	};
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
+	resetCheckboxesOnRecurrence: boolean; // Reset markdown checkboxes in task body when recurring task completes
 	// Frontmatter link format settings
 	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
 	// OAuth Calendar Integration settings

@@ -574,6 +574,8 @@ export const de: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "Fälligkeitsdatum-Offset in wiederkehrenden Aufgaben beibehalten",
 				maintainOffsetDesc: "Den Offset zwischen Fälligkeitsdatum und geplantem Datum beibehalten, wenn wiederkehrende Aufgaben abgeschlossen werden",
+				resetCheckboxesName: "Kontrollkästchen bei Wiederholung zurücksetzen",
+				resetCheckboxesDesc: "Alle Markdown-Kontrollkästchen im Aufgabentext zurücksetzen, wenn eine wiederkehrende Aufgabe abgeschlossen und neu geplant wird",
 			},
 			timeblocking: {
 				header: "Zeitblockierung",

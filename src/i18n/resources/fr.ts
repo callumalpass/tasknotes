@@ -574,6 +574,8 @@ export const fr: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "Maintenir le décalage de date d'échéance dans les tâches récurrentes",
 				maintainOffsetDesc: "Conserver le décalage entre la date d'échéance et la date planifiée lors de l'achèvement des tâches récurrentes",
+				resetCheckboxesName: "Réinitialiser les cases à cocher lors de la récurrence",
+				resetCheckboxesDesc: "Réinitialiser toutes les cases à cocher markdown dans le corps de la tâche lorsqu'une tâche récurrente est terminée et reprogrammée",
 			},
 			timeblocking: {
 				header: "Planification par blocs",

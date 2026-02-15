@@ -574,6 +574,8 @@ export const es: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "Mantener desplazamiento de fecha de vencimiento en tareas recurrentes",
 				maintainOffsetDesc: "Mantener el desplazamiento entre fecha de vencimiento y fecha programada cuando se completan tareas recurrentes",
+				resetCheckboxesName: "Restablecer casillas de verificación en recurrencia",
+				resetCheckboxesDesc: "Restablecer todas las casillas de verificación markdown en el cuerpo de la tarea cuando una tarea recurrente se completa y reprograma",
 			},
 			timeblocking: {
 				header: "Bloqueo de tiempo",

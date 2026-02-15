@@ -574,6 +574,8 @@ export const ja: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "繰り返しタスクで期限日オフセットを維持",
 				maintainOffsetDesc: "繰り返しタスクが完了したときに期限日と予定日の間のオフセットを保持",
+				resetCheckboxesName: "繰り返し時にチェックボックスをリセット",
+				resetCheckboxesDesc: "繰り返しタスクが完了して再スケジュールされたときに、タスク本文のすべてのmarkdownチェックボックスをリセット",
 			},
 			timeblocking: {
 				header: "タイムブロッキング",

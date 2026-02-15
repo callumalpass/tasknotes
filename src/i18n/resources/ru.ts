@@ -574,6 +574,8 @@ export const ru: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "Сохранять смещение срока выполнения в повторяющихся задачах",
 				maintainOffsetDesc: "Сохранять смещение между сроком выполнения и запланированной датой при завершении повторяющихся задач",
+				resetCheckboxesName: "Сбрасывать флажки при повторении",
+				resetCheckboxesDesc: "Сбрасывать все флажки markdown в теле задачи, когда повторяющаяся задача завершена и перенесена",
 			},
 			timeblocking: {
 				header: "Блокировка времени",

@@ -574,6 +574,8 @@ export const zh: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "在重复任务中保持到期日期偏移",
 				maintainOffsetDesc: "重复任务完成时保持到期日期和安排日期之间的偏移",
+				resetCheckboxesName: "重复时重置复选框",
+				resetCheckboxesDesc: "当重复任务完成并重新安排时，重置任务正文中的所有markdown复选框",
 			},
 			timeblocking: {
 				header: "时间块",

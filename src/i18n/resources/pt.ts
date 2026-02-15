@@ -576,7 +576,9 @@ export const pt: TranslationTree = {
 			stopNotificationDesc: "Mostrar notificação quando o registro de tempo é parado automaticamente",
 			recurring: {
 				maintainOffsetName: "Manter deslocamento da data de vencimento em tarefas recorrentes",
-				maintainOffsetDesc: "Manter o deslocamento entre a data de vencimento e a data agendada quando tarefas recorrentes são concluídas"
+				maintainOffsetDesc: "Manter o deslocamento entre a data de vencimento e a data agendada quando tarefas recorrentes são concluídas",
+				resetCheckboxesName: "Redefinir caixas de seleção na recorrência",
+				resetCheckboxesDesc: "Redefinir todas as caixas de seleção markdown no corpo da tarefa quando uma tarefa recorrente é concluída e reagendada",
 			},
 			timeblocking: {
 				header: "Bloco de Tempo",

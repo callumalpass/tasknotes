@@ -39,6 +39,12 @@ Example:
 
 ## Added
 
+- (#1549) Added setting to reset markdown checkboxes when recurring tasks are completed
+  - When enabled, all checked checkboxes (`- [x]`) in the task body are reset to unchecked when a recurring task instance is completed and rescheduled
+  - Useful for recurring tasks with subtask checklists that need to be repeated each instance
+  - Configurable via Settings > Features > Recurring Tasks > "Reset checkboxes on recurrence"
+  - Thanks to @phortx for the feature request
+
 - (#1597) Added MCP server for AI agent integration
   - Exposes TaskNotes tools at `/mcp` endpoint, gated behind `enableMCP` setting
   - Supports tasks (CRUD, query, toggle status/archive, parse from text), time tracking, pomodoro, calendar events, and task statistics

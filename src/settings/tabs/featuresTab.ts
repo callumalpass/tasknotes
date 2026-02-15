@@ -565,6 +565,17 @@ export function renderFeaturesTab(
 					},
 				})
 			);
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.features.recurring.resetCheckboxesName"),
+					desc: translate("settings.features.recurring.resetCheckboxesDesc"),
+					getValue: () => plugin.settings.resetCheckboxesOnRecurrence,
+					setValue: async (value: boolean) => {
+						plugin.settings.resetCheckboxesOnRecurrence = value;
+						save();
+					},
+				})
+			);
 		}
 	);
 

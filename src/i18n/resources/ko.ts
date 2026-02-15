@@ -570,6 +570,8 @@ export const ko: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "반복 작업에서 마감일 오프셋 유지",
 				maintainOffsetDesc: "반복 작업 완료 시 마감일과 예정일 간의 오프셋 유지",
+				resetCheckboxesName: "반복 시 체크박스 초기화",
+				resetCheckboxesDesc: "반복 작업이 완료되고 다시 예약될 때 작업 본문의 모든 마크다운 체크박스를 초기화",
 			},
 			timeblocking: {
 				header: "타임블로킹",

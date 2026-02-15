@@ -581,6 +581,9 @@ export const en: TranslationTree = {
 				maintainOffsetName: "Maintain due date offset in recurring tasks",
 				maintainOffsetDesc:
 					"Keep the offset between due date and scheduled date when recurring tasks are completed",
+				resetCheckboxesName: "Reset checkboxes on recurrence",
+				resetCheckboxesDesc:
+					"Reset all markdown checkboxes in the task body when a recurring task is completed and rescheduled",
 			},
 			timeblocking: {
 				header: "Timeblocking",
