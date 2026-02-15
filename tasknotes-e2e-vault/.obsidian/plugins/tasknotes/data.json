@@ -47,6 +47,7 @@
     "defaultShowICSEvents": true,
     "enableTimeblocking": true,
     "defaultShowTimeblocks": true,
+    "defaultTimeblockColor": "#6366f1",
     "nowIndicator": true,
     "selectMirror": true,
     "weekNumbers": false,
@@ -144,6 +145,7 @@
     "pomodoros": "pomodoros",
     "icsEventId": "icsEventId",
     "icsEventTag": "ics_event",
+    "googleCalendarEventId": "googleCalendarEventId",
     "reminders": "reminders"
   },
   "customStatuses": [
@@ -220,7 +222,7 @@
     }
   ],
   "recurrenceMigrated": false,
-  "lastSeenVersion": "4.1.3",
+  "lastSeenVersion": "4.3.2",
   "showReleaseNotesOnUpdate": true,
   "showTrackedTasksInStatusBar": false,
   "autoStopTimeTrackingOnComplete": true,
@@ -239,7 +241,9 @@
     "customICSNoteFilenameTemplate": "{title}",
     "enableAutoExport": false,
     "autoExportPath": "tasknotes-calendar.ics",
-    "autoExportInterval": 60
+    "autoExportInterval": 60,
+    "useDurationForExport": false,
+    "useICSEndAsDue": false
   },
   "savedViews": [],
   "enableNotifications": true,
@@ -427,7 +431,40 @@
   },
   "pomodoroState": {
     "isRunning": false,
-    "timeRemaining": 1500
+    "timeRemaining": 1498,
+    "currentSession": {
+      "id": "1771112492792",
+      "startTime": "2026-02-15T10:41:32.792+11:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2026-02-15T10:41:32.792+11:00",
+          "endTime": "2026-02-15T10:41:35.074+11:00"
+        }
+      ]
+    }
   },
-  "lastPomodoroDate": "2025-12-31"
+  "lastPomodoroDate": "2026-02-14",
+  "pomodoroMobileSidebar": "tab",
+  "disableOverlayOnAlias": false,
+  "enableMdbaseSpec": false,
+  "googleCalendarExport": {
+    "enabled": false,
+    "targetCalendarId": "",
+    "syncOnTaskCreate": true,
+    "syncOnTaskUpdate": true,
+    "syncOnTaskComplete": true,
+    "syncOnTaskDelete": true,
+    "eventTitleTemplate": "{{title}}",
+    "includeDescription": true,
+    "eventColorId": null,
+    "syncTrigger": "scheduled",
+    "createAsAllDay": true,
+    "defaultEventDuration": 60,
+    "includeObsidianLink": true,
+    "defaultReminderMinutes": null
+  },
+  "enableMCP": false
 }

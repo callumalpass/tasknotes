@@ -172,17 +172,18 @@ export class MdbaseSpecService {
 				type: "object",
 				fields: {
 					id: { type: "string", required: true },
-					type: { type: "string" },
+					type: { type: "enum", values: ["absolute", "relative"] },
 					description: { type: "string" },
 					relatedTo: {
-						type: "string",
+						type: "enum",
+						values: ["due", "scheduled"],
 						description: "Field the reminder is relative to (e.g. 'due').",
 					},
 					offset: {
 						type: "string",
 						description: "ISO 8601 duration offset (e.g. '-PT1H').",
 					},
-					absoluteTime: { type: "string" },
+					absoluteTime: { type: "datetime" },
 				},
 			},
 			description: "Reminder objects with id, type, offset, etc.",
@@ -193,7 +194,7 @@ export class MdbaseSpecService {
 			items: {
 				type: "object",
 				fields: {
-					uid: { type: "string", required: true },
+					uid: { type: "link", required: true },
 					reltype: { type: "string" },
 					gap: { type: "string" },
 				},

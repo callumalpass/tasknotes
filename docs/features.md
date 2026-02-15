@@ -9,6 +9,8 @@ TaskNotes gives each task a structured set of properties, including status, prio
 Reminders can be relative (for example, "3 days before due") or absolute, and completed tasks can be archived automatically to keep active work surfaces focused.
 
 See [Task Management](features/task-management.md) for details.
+For recurrence behavior, see [Recurring Tasks](features/recurring-tasks.md).
+For reminder setup and data format, see [Task Reminders](features/reminders.md).
 
 ## Filtering and Views
 

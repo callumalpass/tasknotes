@@ -34,6 +34,15 @@ Example:
 
 ## Fixed
 
+- Fixed generated [mdbase](https://mdbase.dev) type definitions for task dependencies using the wrong field type
+  - In `_types/task.md`, `blockedBy[].uid` now uses `type: link` (was `type: string`)
+  - Better matches how dependency links are serialized in task frontmatter (`[[...]]`)
+
+- Fixed generated mdbase reminder type definitions to better match TaskNotes reminder data
+  - In `_types/task.md`, `reminders[].type` now uses enum values `absolute|relative`
+  - `reminders[].relatedTo` now uses enum values `due|scheduled`
+  - `reminders[].absoluteTime` now uses `type: datetime` (was `type: string`)
+
 - (#1597) Fixed webhook payloads for time tracking start-with-description containing stale data
   - Thanks to @dstotijn for the fix
 
@@ -55,3 +64,8 @@ Example:
   - Added mobile-specific (`body.is-mobile`) CSS to ensure proper flex layout
   - Button container now stays pinned at bottom without overlapping scrollable content
   - Thanks to @Jomo94 for reporting
+
+- (#1590) Fixed HTTP API not allowing `blockedBy` dependencies when creating tasks
+  - Added `blockedBy` field support to `TaskService.createTask()`
+  - Updated API documentation with `blockedBy`, `recurrence`, and `reminders` fields
+  - Thanks to @hGriff0n for reporting

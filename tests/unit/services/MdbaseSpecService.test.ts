@@ -318,8 +318,12 @@ describe("MdbaseSpecService", () => {
 			expect(block).toContain("type: object");
 			expect(block).toContain("fields:");
 			expect(block).toContain("id:");
+			expect(block).toContain("values: [absolute, relative]");
 			expect(block).toContain("relatedTo:");
+			expect(block).toContain("values: [due, scheduled]");
 			expect(block).toContain("offset:");
+			expect(block).toContain("absoluteTime:");
+			expect(block).toContain("type: datetime");
 			expect(block).toContain('description: "Reminder objects');
 		});
 
@@ -329,6 +333,7 @@ describe("MdbaseSpecService", () => {
 			expect(block).toContain("type: object");
 			expect(block).toContain("fields:");
 			expect(block).toContain("uid:");
+			expect(block).toContain("type: link");
 			expect(block).toContain("reltype:");
 			expect(block).toContain("gap:");
 		});

@@ -8,60 +8,39 @@ These settings allow you to enable, disable, and configure the various features 
 
 ## Inline Tasks
 
-- **Task link overlay**: Replaces links to tasks with an interactive widget in Live Preview mode. The widget is not shown when the cursor is on the link, to allow for editing.
-- **Instant task convert**: Shows a button next to list items and checkboxes to convert them to tasks.
-- **Inline task convert folder**: The folder for inline task conversion. Use `{{currentNotePath}}` for a path relative to the current note.
-- **Use task defaults on instant convert**: Apply default task settings when converting text to tasks instantly.
+Inline task settings control how aggressively TaskNotes turns plain note content into structured task interactions. **Task link overlay** enables the Live Preview card behavior for task links, while **Instant task convert** surfaces conversion buttons next to list items and checkboxes. For conversion output, **Inline task convert folder** sets destination behavior and supports `{{currentNotePath}}`, and **Use task defaults on instant convert** applies your default task values at conversion time.
 
 ## Body Template
 
-- **Use body template**: Use a template file for task body content.
-- **Body template file**: Path to template file for task body content. Supports template variables including `{{title}}`, `{{date}}`, `{{time}}`, `{{priority}}`, `{{status}}`, `{{contexts}}`, `{{tags}}`, and `{{projects}}`.
+Body template settings let you scaffold newly created tasks with consistent note content. When enabled, TaskNotes reads the configured template file and expands variables like `{{title}}`, `{{date}}`, `{{time}}`, `{{priority}}`, `{{status}}`, `{{contexts}}`, `{{tags}}`, and `{{projects}}`.
 
 ## Natural Language Processing
 
-- **Enable natural language task input**: Parse due dates, priorities, and contexts from natural language when creating tasks.
-- **Default to scheduled**: When NLP detects a date without context, treat it as scheduled rather than due.
-- **NLP language**: The language for natural language processing patterns and date parsing.
-- **Status suggestion trigger**: Text to trigger status suggestions (leave empty to disable).
+NLP settings define how text input is interpreted during task capture. **Enable natural language task input** activates date and metadata parsing, **Default to scheduled** changes ambiguous date handling, **NLP language** selects parsing patterns, and **Status suggestion trigger** controls optional status autocomplete activation.
 
 ## Pomodoro Timer
 
-- **Work duration**: Duration of work intervals in minutes.
-- **Short break duration**: Duration of short breaks in minutes.
-- **Long break duration**: Duration of long breaks in minutes.
-- **Long break interval**: Number of work sessions before a long break.
-- **Auto-start breaks**: Automatically start break timers after work sessions.
-- **Auto-start work**: Automatically start work sessions after breaks.
-- **Pomodoro notifications**: Show notifications when Pomodoro sessions end.
-- **Sound enabled**: Play sound when Pomodoro sessions end.
-- **Sound volume**: Volume for Pomodoro sounds (0-100).
-- **Pomodoro data storage**: Where to store Pomodoro session history. Can be either "Plugin data" or "Daily notes".
+Pomodoro settings control interval lengths, long-break cadence, optional auto-start behavior, and end-of-session notifications/sound. **Pomodoro data storage** chooses whether history is kept in plugin data or daily notes.
 
 ## Notifications
 
-- **Enable notifications**: Enable task reminder notifications.
-- **Notification type**: Type of notifications to show. Can be either "In-app notifications" or "System notifications".
+Use this section to enable reminders globally and choose whether notices are shown in-app or through system notifications.
 
 ## Performance & Behavior
 
-- **Hide completed tasks from overdue**: Exclude completed tasks from overdue task calculations.
-- **Disable note indexing**: Disable automatic indexing of notes for better performance (may reduce some features).
-- **Suggestion debounce**: Debounce delay for file suggestions in milliseconds (0 = disabled).
+Performance and behavior toggles let you refine overhead and interaction feel: exclude completed tasks from overdue calculations, disable indexing for very large vaults, and tune suggestion debounce timing.
 
 ## Time Tracking
 
-- **Auto-stop tracking on complete**: Automatically stop time tracking when a task is marked complete.
-- **Time tracking stop notification**: Show notification when time tracking is automatically stopped.
+Time tracking options handle completion behavior. You can automatically stop running timers when a task is completed and optionally show a confirmation notification.
 
 ## Recurring Tasks
 
-- **Maintain due date offset in recurring tasks**: When completing recurring tasks, maintain the offset between due and scheduled dates.
+Use **Maintain due date offset in recurring tasks** to keep due/scheduled spacing consistent when recurring tasks roll forward.
 
 ## Timeblocking
 
-- **Enable timeblocking**: Enable timeblock functionality for lightweight scheduling in daily notes.
-- **Show timeblocks**: Display timeblocks from daily notes by default.
+Timeblocking enables lightweight daily-note scheduling blocks and controls whether those blocks are visible by default in calendar views.
 
 ### Usage
 

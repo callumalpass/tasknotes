@@ -8,48 +8,29 @@ These settings control the visual appearance of the plugin, including the calend
 
 ## Task Cards
 
-- **Default visible properties**: Choose which properties appear on task cards by default.
+Use **Default visible properties** to decide what metadata appears on task cards without opening each task. This is the primary control for card density.
 
 ## Display Formatting
 
-- **Time format**: Display time in 12-hour or 24-hour format throughout the plugin.
+Use **Time format** to switch between 12-hour and 24-hour display across all TaskNotes surfaces.
 
 ## Calendar View
 
-- **Default view**: The calendar view shown when opening the calendar tab.
-- **Custom view day count**: Number of days to show in custom multi-day view.
-- **First day of week**: Which day should be the first column in week views.
-- **Show weekends**: Display weekends in calendar views.
-- **Show week numbers**: Display week numbers in calendar views.
-- **Show today highlight**: Highlight the current day in calendar views.
-- **Show current time indicator**: Display a line showing the current time in timeline views.
-- **Selection mirror**: Show a visual preview while dragging to select time ranges.
-- **Calendar locale**: Calendar locale for date formatting and calendar system (e.g., "en", "fa" for Farsi/Persian, "de" for German). Leave empty to auto-detect from browser.
+Calendar view settings determine the default landing mode, day/week framing, and timeline affordances. You can choose the default view, custom day span, first day of week, weekend visibility, week numbers, and whether today/current-time markers are shown. **Selection mirror** controls whether drag selections show a visual preview before committing.
+
+Use **Calendar locale** for region-specific formatting and calendar systems (for example `en`, `de`, or `fa`). Leave it empty to use automatic detection.
 
 ## Default Event Visibility
 
-- **Show scheduled tasks**: Display tasks with scheduled dates by default.
-- **Show due dates**: Display task due dates by default.
-- **Show due dates when scheduled**: Display due dates even for tasks that already have scheduled dates.
-- **Show time entries**: Display completed time tracking entries by default.
-- **Show recurring tasks**: Display recurring task instances by default.
-- **Show ICS events**: Display events from ICS subscriptions by default.
+This section controls which event layers are enabled when a calendar view opens. You can independently toggle scheduled tasks, due dates, due dates for already-scheduled tasks, time entries, recurring tasks, and ICS events.
 
 ## Time Settings
 
-- **Time slot duration**: Duration of each time slot in timeline views.
-- **Start time**: Earliest time shown in timeline views (HH:MM format).
-- **End time**: Latest time shown in timeline views (HH:MM format).
-- **Initial scroll time**: Time to scroll to when opening timeline views (HH:MM format).
+Time settings define the structure of timeline views: slot duration, earliest visible time, latest visible time, and initial scroll position. Use these together to match your workday shape.
 
 ## UI Elements
 
-- **Show tracked tasks in status bar**: Display currently tracked tasks in Obsidian's status bar.
-- **Show project subtasks widget**: Display a widget showing subtasks for the current project note.
-- **Project subtasks position**: Where to position the project subtasks widget.
-- **Show expandable subtasks**: Allow expanding/collapsing subtask sections in task cards.
-- **Subtask chevron position**: Position of expand/collapse chevrons in task cards.
-- **Views button alignment**: Alignment of the views/filters button in the task interface.
+UI element toggles control auxiliary surfaces such as the tracked-task status bar entry, the project subtasks widget and its placement, expandable subtasks in cards, chevron position, and the alignment of the views/filters button.
 
 ## Related Settings
 

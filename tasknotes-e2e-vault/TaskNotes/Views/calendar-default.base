@@ -69,7 +69,7 @@ views:
       slotMinTime: 06:00:00
       slotMaxTime: 22:00:00
       slotDuration: 00:30:00
-    calendarView: timeGridDay
+    calendarView: timeGridWeek
     slotEventOverlap: false
     showScheduledToDueSpan: false
     showDue: true

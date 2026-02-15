@@ -41,6 +41,8 @@ nav:
   - Features:
     - Overview: features.md
     - Task Management: features/task-management.md
+    - Recurring Tasks: features/recurring-tasks.md
+    - Task Reminders: features/reminders.md
     - Inline Task Integration: features/inline-tasks.md
     - Time Management: features/time-management.md
     - Calendar Integration: features/calendar-integration.md

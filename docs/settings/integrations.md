@@ -12,17 +12,18 @@ TaskNotes v4 uses Obsidian's Bases core plugin for its main views. For setup ins
 
 ### View Commands Configuration
 
-Configure which `.base` files are opened by TaskNotes view commands and ribbon icons. These settings allow you to customize which files open when you use familiar TaskNotes shortcuts.
+View command settings map TaskNotes commands and ribbon actions to specific `.base` files. This is useful when you maintain custom variants of the default views and want first-class command access to those files.
 
 Access these settings in **Settings → TaskNotes → General → View Commands**.
 
-Available command mappings:
-- **Open Mini Calendar View**: Default opens `TaskNotes/Views/mini-calendar-default.base`
-- **Open Kanban View**: Default opens `TaskNotes/Views/kanban-default.base`
-- **Open Tasks View**: Default opens `TaskNotes/Views/tasks-default.base`
-- **Open Calendar View**: Default opens `TaskNotes/Views/calendar-default.base`
-- **Open Agenda View**: Default opens `TaskNotes/Views/agenda-default.base`
-- **Relationships Widget**: Default opens `TaskNotes/Views/relationships.base`
+Default mappings:
+
+- **Open Mini Calendar View** → `TaskNotes/Views/mini-calendar-default.base`
+- **Open Kanban View** → `TaskNotes/Views/kanban-default.base`
+- **Open Tasks View** → `TaskNotes/Views/tasks-default.base`
+- **Open Calendar View** → `TaskNotes/Views/calendar-default.base`
+- **Open Agenda View** → `TaskNotes/Views/agenda-default.base`
+- **Relationships Widget** → `TaskNotes/Views/relationships.base`
 
 Each command allows you to specify a custom `.base` file path and includes a reset button to restore the default path.
 
@@ -40,10 +41,7 @@ OAuth integration requires creating your own OAuth application with Google and/o
 
 ### Google Calendar
 
-- **Client ID**: OAuth 2.0 Client ID from Google Cloud Console
-- **Client Secret**: OAuth 2.0 Client Secret from Google Cloud Console
-- **Connect Google Calendar**: Button to authenticate via OAuth 2.0 loopback flow
-- **Disconnect**: Revokes access and removes stored credentials
+Provide **Client ID** and **Client Secret** from Google Cloud Console, then use **Connect Google Calendar** to complete OAuth loopback authentication. **Disconnect** revokes local credentials.
 
 When connected, displays:
 - Connected account email
@@ -53,10 +51,7 @@ When connected, displays:
 
 ### Microsoft Outlook Calendar
 
-- **Client ID**: Application (client) ID from Azure Portal
-- **Client Secret**: Client secret from Azure Portal
-- **Connect Microsoft Calendar**: Button to authenticate via OAuth 2.0
-- **Disconnect**: Revokes access and removes stored credentials
+Provide **Client ID** and **Client Secret** from Azure App Registration, then use **Connect Microsoft Calendar** to authenticate. **Disconnect** removes stored credentials and sync access.
 
 When connected, displays:
 - Connected account email
@@ -72,25 +67,15 @@ When connected, displays:
 
 ## Calendar subscriptions (ICS)
 
-- **Default note template**: Path to template file for notes created from ICS events.
-- **Default note folder**: Folder for notes created from ICS events. Supports template variables (e.g., `Daily/{{year}}/{{month}}/{{day}}`, `Events/{{icsEventTitle}}`). See ICS Integration documentation for full list of supported variables.
-- **ICS note filename format**: How filenames are generated for notes created from ICS events.
-- **Custom ICS filename template**: Template for custom ICS event filenames.
-- **Add Calendar Subscription**: Add a new calendar subscription from ICS/iCal URL or local file.
-- **Refresh all subscriptions**: Manually refresh all enabled calendar subscriptions.
+ICS settings define how subscribed calendar events are represented in your vault. You can set a default template, destination folder, filename strategy, and custom filename template for generated notes. Use **Add Calendar Subscription** to register URLs or local files, and **Refresh all subscriptions** for manual synchronization.
 
 ## Automatic ICS export
 
-- **Enable automatic export**: Automatically keep an ICS file updated with all your tasks.
-- **Export file path**: Path where the ICS file will be saved (relative to vault root).
-- **Update interval (between 5 and 1440 minutes)**: How often to update the export file.
-- **Export now**: Manually trigger an immediate export.
+Automatic export keeps an ICS feed of your tasks updated on a schedule. Configure whether it is enabled, where the file is written (vault-relative path), the refresh interval, and use **Export now** for immediate output.
 
 ## HTTP API
 
-- **Enable HTTP API**: Start local HTTP server for API access.
-- **API port**: Port number for the HTTP API server.
-- **API authentication token**: Token required for API authentication (leave empty for no auth).
+HTTP API settings control the local server lifecycle, listening port, and request authentication token.
 
 Changes to API enablement or port require an Obsidian restart to take effect.
 

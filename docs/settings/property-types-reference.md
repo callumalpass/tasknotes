@@ -240,8 +240,8 @@ These properties contain structured data with multiple fields.
       gap: "P1D"                         # Optional: ISO 8601 duration offset
   ```
 
-- **Relationship types:** `FINISHTOSTART`, `STARTTOSTART`, `FINISHTOFINISH`, `STARTTOFINISH` 
-	- Note: As of version 4.1.0, only the FINISHTOSTART duration offset is supported
+- **Relationship types accepted in stored data:** `FINISHTOSTART`, `STARTTOSTART`, `FINISHTOFINISH`, `STARTTOFINISH`
+- **Current behavior:** Dependencies created from the UI use `FINISHTOSTART`. Blocking evaluation is based on dependency presence/completion state and does not currently apply distinct scheduling semantics for different `reltype` values or `gap`.
 
 #### Reminders
 

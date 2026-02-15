@@ -17,7 +17,9 @@ TaskNotes bundles OAuth client IDs (and the Google client secret) so you can con
 
 ## Setup (Your Own OAuth Credentials)
 
-To connect your calendars, you'll need to create OAuth applications with Google and/or Microsoft.
+To connect calendars, create OAuth credentials with Google and/or Microsoft, then paste them into TaskNotes Integrations settings. The sections below walk through each provider.
+
+![Integrations calendar settings](assets/settings-integrations-calendar.png)
 
 ### Google Calendar
 
@@ -25,81 +27,35 @@ To connect your calendars, you'll need to create OAuth applications with Google 
 
 *Video by [@antoneheyward](https://www.youtube.com/@antoneheyward)*
 
-1. **Create OAuth App**
-   - Go to [Google Cloud Console](https://console.cloud.google.com)
-   - Create a new project or select existing
-   - Enable Google Calendar API
-   - Create OAuth 2.0 credentials (Desktop application type)
-
-2. **Configure Credentials**
-   - Copy Client ID and Client Secret
-   - In TaskNotes Settings → Integrations → Calendar:
-     - Paste your Client ID in the Google Calendar card
-     - Paste your Client Secret in the Google Calendar card
-   - Click "Connect Google Calendar"
+In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (Settings → Integrations → Calendar) and click **Connect Google Calendar**.
 
 ### Microsoft Calendar
 
-1. **Create Azure App Registration**
-   - Go to [Azure Portal](https://portal.azure.com)
-   - Navigate to "App registrations" → "New registration"
-   - Name: Choose any name (e.g., "TaskNotes")
-   - Supported account types: Select appropriate option for your use case
-   - Redirect URI: Leave blank for now (we'll add it via manifest)
+In [Azure Portal](https://portal.azure.com), create an App Registration and then configure loopback redirect support in the manifest by adding:
 
-2. **Configure Redirect URI via Manifest**
-   - In your app registration, go to "Manifest"
-   - Find the `replyUrlsWithType` array and add:
-     ```json
-     {
-       "url": "http://127.0.0.1",
-       "type": "Web"
-     }
-     ```
-   - Save the manifest
-   - Note: Azure Portal UI may not allow `http://127.0.0.1` directly, but the manifest editor does. Azure ignores the port for loopback addresses, so any port will work.
+```json
+{
+  "url": "http://127.0.0.1",
+  "type": "Web"
+}
+```
 
-3. **Configure API Permissions**
-   - In your app registration, go to "API permissions"
-   - Add permissions:
-     - `Calendars.Read`
-     - `Calendars.ReadWrite`
-     - `offline_access`
-   - Grant admin consent if required
-
-4. **Get Credentials**
-   - In "Overview", copy the Application (client) ID
-   - In "Certificates & secrets", create a new client secret
-   - Copy the secret value immediately (shown only once)
-
-5. **Configure TaskNotes**
-   - In TaskNotes Settings → Integrations → Calendar:
-     - Paste your Client ID in the Microsoft Calendar card
-     - Paste your Client Secret in the Microsoft Calendar card
-   - Click "Connect Microsoft Calendar"
+Azure may reject this URI in the normal UI, but accepts it via manifest editing; loopback ports are ignored during matching. Next, add API permissions (`Calendars.Read`, `Calendars.ReadWrite`, and `offline_access`), grant consent when required, and create a client secret. Copy the Application (client) ID and secret value into TaskNotes, then click **Connect Microsoft Calendar**.
 
 ## Security Notes
 
-- Your OAuth credentials are stored locally in Obsidian's data folder
-- Access tokens are stored securely and refreshed automatically
-- Calendar data is synced directly between Obsidian and your calendar provider
-- Disconnect at any time to revoke access
+Credentials and tokens are stored locally in your Obsidian data. Tokens refresh automatically, calendar data syncs directly between your vault and provider, and you can disconnect at any time to revoke access.
 
 ## Troubleshooting
 
 **"Failed to connect"**
 
-- Verify Client ID and Secret are correct
-- For Microsoft: Check redirect URI `http://127.0.0.1` is configured via the manifest editor (not `localhost`)
-- For Google: Check redirect URI `http://localhost:8080` is configured
-- Ensure required API permissions are granted
+Verify credentials first, then confirm redirect URI setup. For Microsoft, use `http://127.0.0.1` via the manifest editor (not `localhost`). For Google, verify `http://localhost:8080` is configured. Also confirm API permissions were granted.
 
 **"Failed to fetch events"**
 
-- Disconnect and reconnect to refresh tokens
-- Check calendar permissions in Google/Microsoft settings
+Disconnect and reconnect to refresh OAuth tokens, then re-check provider-side calendar permissions.
 
 **Connection lost after Obsidian restart**
 
-- Tokens are persisted - you should not need to reconnect
-- If you do, there may be a file permissions issue with your vault
+Tokens should persist between sessions. If reconnection is required each restart, investigate vault or plugin-data file permissions.
