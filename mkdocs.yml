@@ -75,6 +75,7 @@ nav:
   - APIs & Integration:
     - HTTP API: HTTP_API.md
     - NLP API: nlp-api.md
+    - mdbase-tasknotes CLI: mdbase-tasknotes-cli.md
     - Webhooks: webhooks.md
     - Workflows: workflows.md
     - Calendar Setup: calendar-setup.md

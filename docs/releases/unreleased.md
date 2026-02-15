@@ -24,12 +24,24 @@ Example:
 
 -->
 
+## Changed
+
+- Published [`mdbase-tasknotes`](https://github.com/callumalpass/mdbase-tasknotes) (`mtn`), a standalone CLI for managing tasks directly on markdown files via mdbase
+  - Works on the same vault and `_types/task.md` schema that TaskNotes generates— no plugin or HTTP API required
+  - Preferable over [`tasknotes-cli`](https//github.com/callumalpass/tasknotes-cli) when Obsidian isn't running, on headless/remote machines, in shell scripts and CI pipelines, or anywhere the plugin's HTTP API isn't reachable
+  - Natural language task creation via `tasknotes-nlp-core`, plus time tracking, project aggregation, statistics, and an interactive REPL
+  - Install with `npm install -g mdbase-tasknotes`
+
+- Extracted shared natural language parsing logic into the standalone npm package [`tasknotes-nlp-core`](https://github.com/callumalpass/tasknotes-nlp-core)
+  - Core parser, trigger config service, language configs, and shared NLP types now live in the package
+  - TaskNotes now uses a thin adapter in `src/services/NaturalLanguageParser.ts` to preserve plugin-facing API behavior
+  - TaskNotes depends on `tasknotes-nlp-core` via npm instead of a local package import, which simplifies reuse in other tools (for example mdbase-backed CLI workflows)
+
 ## Added
 
 - (#1597) Added MCP (Model Context Protocol) server for AI agent integration
   - Exposes TaskNotes tools at `/mcp` endpoint, gated behind `enableMCP` setting
   - Supports tasks (CRUD, query, toggle status/archive, parse from text), time tracking, pomodoro, calendar events, and task statistics
-  - Useful for remote/hosted AI clients like Claude or ChatGPT on mobile
   - Thanks to @dstotijn for the contribution
 
 ## Fixed
@@ -69,3 +81,8 @@ Example:
   - Added `blockedBy` field support to `TaskService.createTask()`
   - Updated API documentation with `blockedBy`, `recurrence`, and `reminders` fields
   - Thanks to @hGriff0n for reporting
+
+- (#1582) Fixed recurring tasks not appearing at end of visible calendar range for non-UTC timezones
+  - Daily/weekly recurring tasks would disappear near week boundaries for users in positive UTC offsets (e.g., UTC+9)
+  - Fixed `generateRecurringInstances()` to use UTC date methods instead of local timezone methods when calculating date boundaries
+  - Thanks to @benefitbug for reporting
