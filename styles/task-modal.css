@@ -631,6 +631,44 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 }
 
 /* =====================================================================
+   MOBILE-SPECIFIC FIXES (Obsidian Mobile)
+   On mobile, modals often take full screen. Ensure buttons stay at bottom
+   without overlapping scrollable content.
+   ===================================================================== */
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .minimalist-modal-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-split-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Add padding at bottom to ensure content isn't hidden behind buttons during scroll */
+    padding-bottom: var(--size-4-2);
+}
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
+    flex-shrink: 0;
+    position: relative;
+    background: var(--modal-background);
+    padding-top: var(--size-4-3);
+    margin-top: var(--size-4-2);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+/* =====================================================================
    SPLIT LAYOUT - BASE STYLES (mobile/narrow screens)
    On narrow screens, content flows vertically with details below title
    ===================================================================== */

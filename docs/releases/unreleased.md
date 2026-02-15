@@ -24,7 +24,18 @@ Example:
 
 -->
 
+## Added
+
+- (#1597) Added MCP (Model Context Protocol) server for AI agent integration
+  - Exposes TaskNotes tools at `/mcp` endpoint, gated behind `enableMCP` setting
+  - Supports tasks (CRUD, query, toggle status/archive, parse from text), time tracking, pomodoro, calendar events, and task statistics
+  - Useful for remote/hosted AI clients like Claude or ChatGPT on mobile
+  - Thanks to @dstotijn for the contribution
+
 ## Fixed
+
+- (#1597) Fixed webhook payloads for time tracking start-with-description containing stale data
+  - Thanks to @dstotijn for the fix
 
 - (#1581) Fixed Pomodoro starting break instead of work session after app restart
   - After completing a work session and restarting, pressing Start would incorrectly start a break
@@ -39,3 +50,8 @@ Example:
   - The `getGroupByPropertyId()` method had a hardcoded loop limit of 20 iterations
   - Views at index 20 or higher would not be found, causing groupBy to return null
   - Thanks to @IHaveNoShame for reporting
+
+- (#1595) Fixed task modal floating buttons blocking content on mobile
+  - Added mobile-specific (`body.is-mobile`) CSS to ensure proper flex layout
+  - Button container now stays pinned at bottom without overlapping scrollable content
+  - Thanks to @Jomo94 for reporting
