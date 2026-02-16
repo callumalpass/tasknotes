@@ -16,6 +16,7 @@ import {
 
 export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
+
 	private boardEl: HTMLElement | null = null;
 	private basesController: any; // Store controller for accessing query.views
 	private currentTaskElements = new Map<string, HTMLElement>();
@@ -23,9 +24,13 @@ export class KanbanView extends BasesViewBase {
 	private draggedTaskPaths: string[] = []; // For batch drag operations
 	private draggedFromColumn: string | null = null; // Track source column for list property handling
 	private draggedFromSwimlane: string | null = null; // Track source swimlane for list property handling
+	private dropTargetPath: string | null = null; // Card-level drop position tracking
+	private pendingRender: boolean = false; // Deferred render while dragging
+	private dropAbove: boolean = true; // Whether drop is above or below target card
 	private draggedSourceColumns: Map<string, string> = new Map(); // Track source column per task for batch operations
 	private draggedSourceSwimlanes: Map<string, string> = new Map(); // Track source swimlane per task for batch operations
 	private taskInfoCache = new Map<string, TaskInfo>();
+	private columnTasksCache = new Map<string, TaskInfo[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
 
@@ -88,6 +93,15 @@ export class KanbanView extends BasesViewBase {
 	 * Override to preserve scroll position during re-renders.
 	 */
 	onDataUpdated(): void {
+		// Defer re-render while a drag is in progress — re-rendering
+		// destroys column/card elements and their event listeners, which
+		// causes the drop event to never fire.
+		if (this.draggedTaskPath) {
+			this.pendingRender = true;
+			// Silently defer — don't use Notice here (fires during drag)
+			return;
+		}
+
 		// Save scroll state before re-render
 		const savedState = this.getEphemeralState();
 
@@ -314,6 +328,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Group tasks
 			const groups = this.groupTasks(filteredTasks, groupByPropertyId, pathToProps);
+			this.columnTasksCache = groups;
 
 			// Render swimlanes if configured
 			if (this.swimLanePropertyId) {
@@ -580,7 +595,7 @@ export class KanbanView extends BasesViewBase {
 		const visibleProperties = this.getVisibleProperties();
 
 		// Note: tasks are already sorted by Bases within each group
-		// No manual sorting needed - Bases provides pre-sorted data
+		// Bases handles sort_order sorting when configured in the .base sort config
 
 		// Get groupBy property ID
 		const groupByPropertyId = this.getGroupByPropertyId();
@@ -1209,11 +1224,18 @@ export class KanbanView extends BasesViewBase {
 
 			if (!this.draggedTaskPath) return;
 
+			// Capture drop position before clearing state
+			const dropTarget = this.dropTargetPath
+				? { taskPath: this.dropTargetPath, above: this.dropAbove }
+				: undefined;
+
+
 			// Update the task's groupBy property in Bases
-			await this.handleTaskDrop(this.draggedTaskPath, groupKey, null);
+			await this.handleTaskDrop(this.draggedTaskPath, groupKey, null, dropTarget);
 
 			this.draggedTaskPath = null;
 			this.draggedFromColumn = null;
+			this.dropTargetPath = null;
 		});
 
 		// Drag end handler - cleanup in case drop doesn't fire
@@ -1255,11 +1277,17 @@ export class KanbanView extends BasesViewBase {
 
 			if (!this.draggedTaskPath) return;
 
+			// Capture drop position before clearing state
+			const dropTarget = this.dropTargetPath
+				? { taskPath: this.dropTargetPath, above: this.dropAbove }
+				: undefined;
+
 			// Update both the groupBy property and swimlane property
-			await this.handleTaskDrop(this.draggedTaskPath, columnKey, swimLaneKey);
+			await this.handleTaskDrop(this.draggedTaskPath, columnKey, swimLaneKey, dropTarget);
 
 			this.draggedTaskPath = null;
 			this.draggedFromColumn = null;
+			this.dropTargetPath = null;
 		});
 
 		// Drag end handler - cleanup in case drop doesn't fire
@@ -1467,6 +1495,74 @@ export class KanbanView extends BasesViewBase {
 			showTaskContextMenu(e, task.path, this.plugin, new Date());
 		});
 
+		cardWrapper.addEventListener("dragover", (e: DragEvent) => {
+			// Skip if dragging over self
+			if (this.draggedTaskPath === task.path) return;
+			e.preventDefault();
+			e.stopPropagation();
+			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			// Don't log on dragover — fires too frequently for Notice toasts
+
+			// Calculate if cursor is in top or bottom half of card
+			const rect = cardWrapper.getBoundingClientRect();
+			const isAbove = e.clientY < rect.top + rect.height / 2;
+
+			// Clear previous drop indicators on all cards
+			this.boardEl?.querySelectorAll(".kanban-view__card-wrapper--drop-above, .kanban-view__card-wrapper--drop-below").forEach(el => {
+				el.classList.remove("kanban-view__card-wrapper--drop-above", "kanban-view__card-wrapper--drop-below");
+			});
+
+			// Add indicator to this card
+			cardWrapper.classList.add(isAbove ? "kanban-view__card-wrapper--drop-above" : "kanban-view__card-wrapper--drop-below");
+			this.dropTargetPath = task.path;
+			this.dropAbove = isAbove;
+		});
+
+		cardWrapper.addEventListener("dragleave", () => {
+			cardWrapper.classList.remove("kanban-view__card-wrapper--drop-above", "kanban-view__card-wrapper--drop-below");
+		});
+
+		// Drop handler on card — handles drop at card level so it doesn't
+		// depend on event bubbling to the column (which can fail if the column
+		// is re-rendered during the drag)
+		cardWrapper.addEventListener("drop", async (e: DragEvent) => {
+			// Only handle task drags (not column drags)
+			if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+			e.preventDefault();
+			e.stopPropagation();
+
+			if (!this.draggedTaskPath) {
+				return;
+			}
+
+			// Determine which column this card belongs to
+			const col = cardWrapper.closest("[data-group]") as HTMLElement;
+			const swimCol = cardWrapper.closest("[data-column]") as HTMLElement;
+			const swimlaneRow = cardWrapper.closest("[data-swimlane]") as HTMLElement;
+			const groupKey = col?.dataset.group || swimCol?.dataset.column;
+			const swimLaneKey = swimlaneRow?.dataset.swimlane || null;
+
+			if (!groupKey) return;
+
+			// Build drop target from the current card position
+			const dropTarget = {
+				taskPath: task.path,
+				above: this.dropAbove
+			};
+
+			// Clear visual indicators
+			this.boardEl?.querySelectorAll(".kanban-view__card-wrapper--drop-above, .kanban-view__card-wrapper--drop-below").forEach(el => {
+				el.classList.remove("kanban-view__card-wrapper--drop-above", "kanban-view__card-wrapper--drop-below");
+			});
+			col?.classList.remove("kanban-view__column--dragover");
+
+			await this.handleTaskDrop(this.draggedTaskPath, groupKey, swimLaneKey, dropTarget);
+
+			this.draggedTaskPath = null;
+			this.draggedFromColumn = null;
+			this.dropTargetPath = null;
+		});
+
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
@@ -1551,6 +1647,24 @@ export class KanbanView extends BasesViewBase {
 				.forEach((el) => {
 					el.classList.remove("kanban-view__swimlane-column--dragover");
 				});
+
+			// Clean up drop position indicators
+			this.boardEl?.querySelectorAll(".kanban-view__card-wrapper--drop-above, .kanban-view__card-wrapper--drop-below").forEach(el => {
+				el.classList.remove("kanban-view__card-wrapper--drop-above", "kanban-view__card-wrapper--drop-below");
+			});
+			this.dropTargetPath = null;
+
+			// Flush any render that was deferred while dragging.
+			// Use a short delay so the async drop handler can finish first.
+			if (this.pendingRender) {
+				const win = this.containerEl.ownerDocument.defaultView || window;
+				win.setTimeout(() => {
+					if (this.pendingRender) {
+						this.pendingRender = false;
+						this.debouncedRefresh();
+					}
+				}, 200);
+			}
 		});
 
 		this.setupCardTouchHandlers(cardWrapper, task);
@@ -1672,7 +1786,8 @@ export class KanbanView extends BasesViewBase {
 	private async handleTaskDrop(
 		taskPath: string,
 		newGroupValue: string,
-		newSwimLaneValue: string | null
+		newSwimLaneValue: string | null,
+		dropTarget?: { taskPath: string; above: boolean }
 	): Promise<void> {
 		try {
 			// Get the groupBy property from the controller
@@ -1721,26 +1836,33 @@ export class KanbanView extends BasesViewBase {
 					? this.draggedSourceSwimlanes.get(path)
 					: this.draggedFromSwimlane;
 
-				// Update groupBy property
-				if (isGroupByListProperty && sourceColumn) {
-					// For list properties, remove the source value and add the target value
-					await this.updateListPropertyOnDrop(
-						path,
-						groupByPropertyId,
-						sourceColumn,
-						newGroupValue
-					);
-				} else {
-					// For non-list properties, simply replace the value
-					await this.updateTaskFrontmatterProperty(
-						path,
-						groupByPropertyId,
-						newGroupValue
-					);
+				// Detect same-column drop — skip group property update to avoid
+				// unnecessary writes or value corruption
+				const isSameColumn = sourceColumn === newGroupValue;
+
+				// Update groupBy property (only if changing columns)
+				if (!isSameColumn) {
+					if (isGroupByListProperty && sourceColumn) {
+						// For list properties, remove the source value and add the target value
+						await this.updateListPropertyOnDrop(
+							path,
+							groupByPropertyId,
+							sourceColumn,
+							newGroupValue
+						);
+					} else {
+						// For non-list properties, simply replace the value
+						await this.updateTaskFrontmatterProperty(
+							path,
+							groupByPropertyId,
+							newGroupValue
+						);
+					}
 				}
 
-				// Update swimlane property if applicable
-				if (newSwimLaneValue !== null && this.swimLanePropertyId) {
+				// Update swimlane property if applicable (only if changing swimlanes)
+				const isSameSwimlane = sourceSwimlane === newSwimLaneValue;
+				if (newSwimLaneValue !== null && this.swimLanePropertyId && !isSameSwimlane) {
 					if (isSwimlaneListProperty && sourceSwimlane) {
 						// For list swimlane properties, remove source and add target
 						await this.updateListPropertyOnDrop(
@@ -1756,6 +1878,28 @@ export class KanbanView extends BasesViewBase {
 							this.swimLanePropertyId,
 							newSwimLaneValue
 						);
+					}
+				}
+			}
+
+			// Compute and write sort_order if we have a drop position
+			// and the view's sort config includes sort_order
+			const hasSortOrder = this.isSortOrderInSortConfig();
+			if (dropTarget && hasSortOrder) {
+				for (const path of pathsToUpdate) {
+					const newSortOrder = await this.computeSortOrder(
+						dropTarget.taskPath,
+						dropTarget.above,
+						newGroupValue,
+						path
+					);
+					if (newSortOrder !== null && newSortOrder < Number.MAX_SAFE_INTEGER) {
+						const file = this.plugin.app.vault.getAbstractFileByPath(path);
+						if (file && file instanceof TFile) {
+							await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+								frontmatter["sort_order"] = newSortOrder;
+							});
+						}
 					}
 				}
 			}
@@ -1845,6 +1989,237 @@ export class KanbanView extends BasesViewBase {
 				frontmatter[frontmatterKey] = value;
 			});
 		}
+	}
+
+	/**
+	 * Compute a sort_order value for a task being dropped at a specific position.
+	 * Returns the midpoint between the two neighboring tasks' sort_order values.
+	 */
+	private computeDefaultGap(columnTasks: TaskInfo[]): number {
+		const values = columnTasks
+			.map(t => t.sortOrder)
+			.filter((v): v is number => v !== undefined && v < Number.MAX_SAFE_INTEGER)
+			.sort((a, b) => a - b);
+		if (values.length < 2) {
+			return values.length === 1 && values[0] !== 0
+				? Math.max(1, Math.floor(Math.abs(values[0]) / 10))
+				: 1000;
+		}
+		const gaps: number[] = [];
+		for (let i = 1; i < values.length; i++) gaps.push(values[i] - values[i - 1]);
+		gaps.sort((a, b) => a - b);
+		return Math.max(1, gaps[Math.floor(gaps.length / 2)]);
+	}
+
+	private async computeSortOrder(
+		targetTaskPath: string,
+		above: boolean,
+		groupKey: string,
+		draggedPath: string
+	): Promise<number | null> {
+		// Get column tasks, filtering out the task being dragged
+		const columnTasks = this.getColumnTasks(groupKey)
+			.filter(t => t.path !== draggedPath);
+		if (!columnTasks || columnTasks.length === 0) return 0;
+
+		const targetIndex = columnTasks.findIndex(t => t.path === targetTaskPath);
+		if (targetIndex === -1) return null;
+
+		const defaultGap = this.computeDefaultGap(columnTasks);
+		const MAX_ORDER = Number.MAX_SAFE_INTEGER;
+
+		const getOrder = (task: TaskInfo): number =>
+			task.sortOrder ?? MAX_ORDER;
+
+		let lo: number;
+		let hi: number;
+
+		if (above) {
+			hi = getOrder(columnTasks[targetIndex]);
+			lo = targetIndex === 0 ? hi - defaultGap : getOrder(columnTasks[targetIndex - 1]);
+			// Top of column with no sorted tasks
+			if (hi >= MAX_ORDER && targetIndex === 0) return 0;
+			// Top of column
+			if (targetIndex === 0) return hi - defaultGap;
+		} else {
+			lo = getOrder(columnTasks[targetIndex]);
+			hi = targetIndex === columnTasks.length - 1
+				? lo + defaultGap * 2
+				: getOrder(columnTasks[targetIndex + 1]);
+			// Bottom of column with no sorted tasks
+			if (lo >= MAX_ORDER && targetIndex === columnTasks.length - 1) return 0;
+			// Bottom of column
+			if (targetIndex === columnTasks.length - 1) return lo + defaultGap;
+		}
+
+		// Handle unsorted neighbors (MAX_ORDER)
+		if (lo >= MAX_ORDER) lo = hi - defaultGap;
+		if (hi >= MAX_ORDER) hi = lo + defaultGap;
+
+		// Normal case: there's a gap between neighbors
+		const mid = Math.floor((lo + hi) / 2);
+		if (mid !== lo && mid !== hi) return mid;
+
+		// Collision: neighbors are equal or adjacent integers — renumber the column
+		return await this.renumberColumnAndInsert(columnTasks, targetIndex, above, draggedPath, groupKey);
+	}
+
+	/**
+	 * When adjacent tasks share the same sort_order (no gap for midpoint),
+	 * renumber all tasks in the column with even spacing and return the
+	 * sort_order for the dragged task at the insertion point.
+	 *
+	 * Side effect: writes new sort_order values to all OTHER tasks in the column.
+	 * The caller is responsible for writing the returned value to the dragged task.
+	 */
+	private async renumberColumnAndInsert(
+		columnTasks: TaskInfo[],
+		targetIndex: number,
+		above: boolean,
+		draggedPath: string,
+		groupKey: string
+	): Promise<number> {
+		// Collect existing sort_order values to determine the range
+		const values = columnTasks
+			.map(t => t.sortOrder)
+			.filter((v): v is number => v !== undefined && v < Number.MAX_SAFE_INTEGER)
+			.sort((a, b) => a - b);
+
+		const rangeMin = values.length >= 1 ? values[0] : 0;
+		const rangeMax = values.length >= 2
+			? values[values.length - 1]
+			: rangeMin + (columnTasks.length + 2) * 1000;
+
+		const totalSlots = columnTasks.length + 1; // +1 for the dragged task
+		const step = Math.max(1, Math.floor((rangeMax - rangeMin) / (totalSlots + 1)));
+
+		// Build the new order: insert a placeholder for the dragged task
+		const insertAt = above ? targetIndex : targetIndex + 1;
+		const orderedPaths: (string | null)[] = columnTasks.map(t => t.path);
+		// Insert null as placeholder for the dragged task
+		orderedPaths.splice(insertAt, 0, null);
+
+		let draggedSortOrder = 0;
+		const writes: Array<{ path: string; order: number }> = [];
+
+		for (let i = 0; i < orderedPaths.length; i++) {
+			const newOrder = rangeMin + (i + 1) * step;
+			const p = orderedPaths[i];
+			if (p === null) {
+				// This is the dragged task's new position
+				draggedSortOrder = newOrder;
+			} else {
+				writes.push({ path: p, order: newOrder });
+			}
+		}
+
+		// Write new sort_orders to all other tasks in the column
+		for (const w of writes) {
+			const file = this.plugin.app.vault.getAbstractFileByPath(w.path);
+			if (file && file instanceof TFile) {
+				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+					frontmatter["sort_order"] = w.order;
+				});
+			}
+		}
+
+		return draggedSortOrder;
+	}
+
+	/**
+	 * Check if sort_order is included in the current view's Bases sort config.
+	 * Returns true if the sort config contains sort_order as a sort property.
+	 */
+	
+
+	private isSortOrderInSortConfig(): boolean {
+		try {
+			const sortConfig = this.dataAdapter.getSortConfig();
+			if (!sortConfig) return false;
+
+			// Handle both array and single-object formats
+			const configs = Array.isArray(sortConfig) ? sortConfig : [sortConfig];
+
+			return configs.some((s: any) => {
+				if (!s || typeof s !== "object") return false;
+				// Check all possible keys the sort property might be under
+				const candidate = s.property || s.column || s.field || s.id || s.name || "";
+				const clean = String(candidate).replace(/^(note\.|file\.|task\.)/, "");
+				return clean === "sort_order";
+			});
+		} catch (e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Sort tasks within each group by sort_order from Obsidian's metadata cache.
+	 * Tasks with sort_order are sorted ascending; tasks without sort_order
+	 * are placed after sorted tasks, preserving their relative Bases order.
+	 */
+	
+
+	/**
+	 * Get the list of tasks in a column, preserving their current render order.
+	 * Reads sort_order directly from Obsidian's metadata cache to avoid stale values.
+	 */
+	private getColumnTasks(groupKey: string): TaskInfo[] {
+		// Scan ALL vault files matching the column's group property,
+		// not just filtered/visible tasks. This ensures the midpoint
+		// algorithm considers hidden/filtered-out tasks as neighbors
+		// (matching SkedPal's reorder behavior — see priority-integer-encoding.md rule 3).
+		const groupByPropertyId = this.getGroupByPropertyId();
+		if (!groupByPropertyId) return [];
+
+		const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
+		const allFiles = this.plugin.app.vault.getMarkdownFiles();
+		const tasks: TaskInfo[] = [];
+
+		for (const file of allFiles) {
+			const fm = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+			if (!fm) continue;
+
+			// Check if this file's group property matches the target groupKey
+			const rawValue = fm[cleanGroupBy];
+			if (rawValue === undefined || rawValue === null) continue;
+
+			// Handle both scalar and array values (for list properties)
+			const values = Array.isArray(rawValue) ? rawValue.map(String) : [String(rawValue)];
+			if (!values.includes(groupKey)) continue;
+
+			// Read sort_order
+			const sortOrder = fm["sort_order"] !== undefined
+				? (typeof fm["sort_order"] === "number" ? fm["sort_order"] : Number(fm["sort_order"]))
+				: undefined;
+
+			// Use cached TaskInfo if available, otherwise create minimal object
+			const cached = this.taskInfoCache.get(file.path);
+			if (cached) {
+				cached.sortOrder = sortOrder;
+				tasks.push(cached);
+			} else {
+				tasks.push({
+					path: file.path,
+					title: file.basename,
+					status: fm["status"] || "open",
+					priority: fm["priority"] || "",
+					archived: fm["archived"] || false,
+					sortOrder: sortOrder,
+				} as TaskInfo);
+			}
+		}
+
+		// Sort by sortOrder ascending (lower value = higher priority)
+		tasks.sort((a, b) => {
+			const aHas = a.sortOrder !== undefined && a.sortOrder < Number.MAX_SAFE_INTEGER;
+			const bHas = b.sortOrder !== undefined && b.sortOrder < Number.MAX_SAFE_INTEGER;
+			if (aHas && bHas) return a.sortOrder! - b.sortOrder!;
+			if (aHas && !bHas) return -1;
+			if (!aHas && bHas) return 1;
+			return 0;
+		});
+
+		return tasks;
 	}
 
 	protected setupContainer(): void {
@@ -2485,6 +2860,7 @@ export class KanbanView extends BasesViewBase {
 		this.destroyColumnScrollers();
 		this.currentTaskElements.clear();
 		this.taskInfoCache.clear();
+		this.columnTasksCache.clear();
 		this.boardEl = null;
 	}
 }

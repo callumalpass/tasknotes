@@ -50,6 +50,7 @@ views:
     order:
       - status
       - priority
+      - sort_order
       - due
       - scheduled
       - projects
