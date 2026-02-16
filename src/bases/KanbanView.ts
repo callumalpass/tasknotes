@@ -13,6 +13,11 @@ import {
 	parseDateToUTC,
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
+import {
+	stripPropertyPrefix,
+	isSortOrderInSortConfig,
+	computeSortOrder,
+} from "./sortOrderUtils";
 
 export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
@@ -387,7 +392,7 @@ export class KanbanView extends BasesViewBase {
 		const groups = new Map<string, TaskInfo[]>();
 
 		// Check if we should explode list properties into multiple columns
-		const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
+		const cleanGroupBy = stripPropertyPrefix(groupByPropertyId);
 		const shouldExplode = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
 
 		if (shouldExplode) {
@@ -1812,13 +1817,13 @@ export class KanbanView extends BasesViewBase {
 				return;
 			}
 
-			const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
+			const cleanGroupBy = stripPropertyPrefix(groupByPropertyId);
 			const isGroupByListProperty =
 				this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
 
 			// Check if swimlane property is also a list type
 			const cleanSwimlane = this.swimLanePropertyId
-				? this.stripPropertyPrefix(this.swimLanePropertyId)
+				? stripPropertyPrefix(this.swimLanePropertyId)
 				: null;
 			const isSwimlaneListProperty = cleanSwimlane && this.isListTypeProperty(cleanSwimlane);
 
@@ -1884,14 +1889,18 @@ export class KanbanView extends BasesViewBase {
 
 			// Compute and write sort_order if we have a drop position
 			// and the view's sort config includes sort_order
-			const hasSortOrder = this.isSortOrderInSortConfig();
+			const hasSortOrder = isSortOrderInSortConfig(this.dataAdapter);
 			if (dropTarget && hasSortOrder) {
+				const cleanGroupByForSort = stripPropertyPrefix(groupByPropertyId);
 				for (const path of pathsToUpdate) {
-					const newSortOrder = await this.computeSortOrder(
+					const newSortOrder = await computeSortOrder(
 						dropTarget.taskPath,
 						dropTarget.above,
 						newGroupValue,
-						path
+						cleanGroupByForSort,
+						path,
+						this.plugin,
+						this.taskInfoCache
 					);
 					if (newSortOrder !== null && newSortOrder < Number.MAX_SAFE_INTEGER) {
 						const file = this.plugin.app.vault.getAbstractFileByPath(path);
@@ -1995,74 +2004,9 @@ export class KanbanView extends BasesViewBase {
 	 * Compute a sort_order value for a task being dropped at a specific position.
 	 * Returns the midpoint between the two neighboring tasks' sort_order values.
 	 */
-	private computeDefaultGap(columnTasks: TaskInfo[]): number {
-		const values = columnTasks
-			.map(t => t.sortOrder)
-			.filter((v): v is number => v !== undefined && v < Number.MAX_SAFE_INTEGER)
-			.sort((a, b) => a - b);
-		if (values.length < 2) {
-			return values.length === 1 && values[0] !== 0
-				? Math.max(1, Math.floor(Math.abs(values[0]) / 10))
-				: 1000;
-		}
-		const gaps: number[] = [];
-		for (let i = 1; i < values.length; i++) gaps.push(values[i] - values[i - 1]);
-		gaps.sort((a, b) => a - b);
-		return Math.max(1, gaps[Math.floor(gaps.length / 2)]);
-	}
+	
 
-	private async computeSortOrder(
-		targetTaskPath: string,
-		above: boolean,
-		groupKey: string,
-		draggedPath: string
-	): Promise<number | null> {
-		// Get column tasks, filtering out the task being dragged
-		const columnTasks = this.getColumnTasks(groupKey)
-			.filter(t => t.path !== draggedPath);
-		if (!columnTasks || columnTasks.length === 0) return 0;
-
-		const targetIndex = columnTasks.findIndex(t => t.path === targetTaskPath);
-		if (targetIndex === -1) return null;
-
-		const defaultGap = this.computeDefaultGap(columnTasks);
-		const MAX_ORDER = Number.MAX_SAFE_INTEGER;
-
-		const getOrder = (task: TaskInfo): number =>
-			task.sortOrder ?? MAX_ORDER;
-
-		let lo: number;
-		let hi: number;
-
-		if (above) {
-			hi = getOrder(columnTasks[targetIndex]);
-			lo = targetIndex === 0 ? hi - defaultGap : getOrder(columnTasks[targetIndex - 1]);
-			// Top of column with no sorted tasks
-			if (hi >= MAX_ORDER && targetIndex === 0) return 0;
-			// Top of column
-			if (targetIndex === 0) return hi - defaultGap;
-		} else {
-			lo = getOrder(columnTasks[targetIndex]);
-			hi = targetIndex === columnTasks.length - 1
-				? lo + defaultGap * 2
-				: getOrder(columnTasks[targetIndex + 1]);
-			// Bottom of column with no sorted tasks
-			if (lo >= MAX_ORDER && targetIndex === columnTasks.length - 1) return 0;
-			// Bottom of column
-			if (targetIndex === columnTasks.length - 1) return lo + defaultGap;
-		}
-
-		// Handle unsorted neighbors (MAX_ORDER)
-		if (lo >= MAX_ORDER) lo = hi - defaultGap;
-		if (hi >= MAX_ORDER) hi = lo + defaultGap;
-
-		// Normal case: there's a gap between neighbors
-		const mid = Math.floor((lo + hi) / 2);
-		if (mid !== lo && mid !== hi) return mid;
-
-		// Collision: neighbors are equal or adjacent integers — renumber the column
-		return await this.renumberColumnAndInsert(columnTasks, targetIndex, above, draggedPath, groupKey);
-	}
+	
 
 	/**
 	 * When adjacent tasks share the same sort_order (no gap for midpoint),
@@ -2072,59 +2016,7 @@ export class KanbanView extends BasesViewBase {
 	 * Side effect: writes new sort_order values to all OTHER tasks in the column.
 	 * The caller is responsible for writing the returned value to the dragged task.
 	 */
-	private async renumberColumnAndInsert(
-		columnTasks: TaskInfo[],
-		targetIndex: number,
-		above: boolean,
-		draggedPath: string,
-		groupKey: string
-	): Promise<number> {
-		// Collect existing sort_order values to determine the range
-		const values = columnTasks
-			.map(t => t.sortOrder)
-			.filter((v): v is number => v !== undefined && v < Number.MAX_SAFE_INTEGER)
-			.sort((a, b) => a - b);
-
-		const rangeMin = values.length >= 1 ? values[0] : 0;
-		const rangeMax = values.length >= 2
-			? values[values.length - 1]
-			: rangeMin + (columnTasks.length + 2) * 1000;
-
-		const totalSlots = columnTasks.length + 1; // +1 for the dragged task
-		const step = Math.max(1, Math.floor((rangeMax - rangeMin) / (totalSlots + 1)));
-
-		// Build the new order: insert a placeholder for the dragged task
-		const insertAt = above ? targetIndex : targetIndex + 1;
-		const orderedPaths: (string | null)[] = columnTasks.map(t => t.path);
-		// Insert null as placeholder for the dragged task
-		orderedPaths.splice(insertAt, 0, null);
-
-		let draggedSortOrder = 0;
-		const writes: Array<{ path: string; order: number }> = [];
-
-		for (let i = 0; i < orderedPaths.length; i++) {
-			const newOrder = rangeMin + (i + 1) * step;
-			const p = orderedPaths[i];
-			if (p === null) {
-				// This is the dragged task's new position
-				draggedSortOrder = newOrder;
-			} else {
-				writes.push({ path: p, order: newOrder });
-			}
-		}
-
-		// Write new sort_orders to all other tasks in the column
-		for (const w of writes) {
-			const file = this.plugin.app.vault.getAbstractFileByPath(w.path);
-			if (file && file instanceof TFile) {
-				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-					frontmatter["sort_order"] = w.order;
-				});
-			}
-		}
-
-		return draggedSortOrder;
-	}
+	
 
 	/**
 	 * Check if sort_order is included in the current view's Bases sort config.
@@ -2132,25 +2024,7 @@ export class KanbanView extends BasesViewBase {
 	 */
 	
 
-	private isSortOrderInSortConfig(): boolean {
-		try {
-			const sortConfig = this.dataAdapter.getSortConfig();
-			if (!sortConfig) return false;
-
-			// Handle both array and single-object formats
-			const configs = Array.isArray(sortConfig) ? sortConfig : [sortConfig];
-
-			return configs.some((s: any) => {
-				if (!s || typeof s !== "object") return false;
-				// Check all possible keys the sort property might be under
-				const candidate = s.property || s.column || s.field || s.id || s.name || "";
-				const clean = String(candidate).replace(/^(note\.|file\.|task\.)/, "");
-				return clean === "sort_order";
-			});
-		} catch (e) {
-			return false;
-		}
-	}
+	
 
 	/**
 	 * Sort tasks within each group by sort_order from Obsidian's metadata cache.
@@ -2163,64 +2037,7 @@ export class KanbanView extends BasesViewBase {
 	 * Get the list of tasks in a column, preserving their current render order.
 	 * Reads sort_order directly from Obsidian's metadata cache to avoid stale values.
 	 */
-	private getColumnTasks(groupKey: string): TaskInfo[] {
-		// Scan ALL vault files matching the column's group property,
-		// not just filtered/visible tasks. This ensures the midpoint
-		// algorithm considers hidden/filtered-out tasks as neighbors
-		// (matching SkedPal's reorder behavior — see priority-integer-encoding.md rule 3).
-		const groupByPropertyId = this.getGroupByPropertyId();
-		if (!groupByPropertyId) return [];
-
-		const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
-		const allFiles = this.plugin.app.vault.getMarkdownFiles();
-		const tasks: TaskInfo[] = [];
-
-		for (const file of allFiles) {
-			const fm = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
-			if (!fm) continue;
-
-			// Check if this file's group property matches the target groupKey
-			const rawValue = fm[cleanGroupBy];
-			if (rawValue === undefined || rawValue === null) continue;
-
-			// Handle both scalar and array values (for list properties)
-			const values = Array.isArray(rawValue) ? rawValue.map(String) : [String(rawValue)];
-			if (!values.includes(groupKey)) continue;
-
-			// Read sort_order
-			const sortOrder = fm["sort_order"] !== undefined
-				? (typeof fm["sort_order"] === "number" ? fm["sort_order"] : Number(fm["sort_order"]))
-				: undefined;
-
-			// Use cached TaskInfo if available, otherwise create minimal object
-			const cached = this.taskInfoCache.get(file.path);
-			if (cached) {
-				cached.sortOrder = sortOrder;
-				tasks.push(cached);
-			} else {
-				tasks.push({
-					path: file.path,
-					title: file.basename,
-					status: fm["status"] || "open",
-					priority: fm["priority"] || "",
-					archived: fm["archived"] || false,
-					sortOrder: sortOrder,
-				} as TaskInfo);
-			}
-		}
-
-		// Sort by sortOrder ascending (lower value = higher priority)
-		tasks.sort((a, b) => {
-			const aHas = a.sortOrder !== undefined && a.sortOrder < Number.MAX_SAFE_INTEGER;
-			const bHas = b.sortOrder !== undefined && b.sortOrder < Number.MAX_SAFE_INTEGER;
-			if (aHas && bHas) return a.sortOrder! - b.sortOrder!;
-			if (aHas && !bHas) return -1;
-			if (!aHas && bHas) return 1;
-			return 0;
-		});
-
-		return tasks;
-	}
+	
 
 	protected setupContainer(): void {
 		super.setupContainer();
@@ -2375,7 +2192,7 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		// Strip prefix from property ID if present
-		const cleanId = this.stripPropertyPrefix(propertyId);
+		const cleanId = stripPropertyPrefix(propertyId);
 
 		// Try exact match first
 		if (props[propertyId] !== undefined) return props[propertyId];
@@ -2384,13 +2201,7 @@ export class KanbanView extends BasesViewBase {
 		return null;
 	}
 
-	private stripPropertyPrefix(propertyId: string): string {
-		const parts = propertyId.split(".");
-		if (parts.length > 1 && ["note", "file", "formula", "task"].includes(parts[0])) {
-			return parts.slice(1).join(".");
-		}
-		return propertyId;
-	}
+	
 
 	private valueToString(value: any): string {
 		if (value === null || value === undefined) return "None";
@@ -2430,7 +2241,7 @@ export class KanbanView extends BasesViewBase {
 			return title;
 		}
 
-		const cleanProperty = this.stripPropertyPrefix(propertyId);
+		const cleanProperty = stripPropertyPrefix(propertyId);
 
 		const statusField = this.plugin.fieldMapper.toUserField("status");
 		if (cleanProperty === statusField) {

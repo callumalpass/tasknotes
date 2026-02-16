@@ -336,3 +336,30 @@
         font-size: var(--tn-font-size-sm);
     }
 }
+
+/* Drop position indicators for drag-to-reorder */
+.tasknotes-plugin .task-card--drop-above::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    background: var(--tn-interactive-accent);
+    border-radius: 2px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.tasknotes-plugin .task-card--drop-below::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    background: var(--tn-interactive-accent);
+    border-radius: 2px;
+    z-index: 10;
+    pointer-events: none;
+}
