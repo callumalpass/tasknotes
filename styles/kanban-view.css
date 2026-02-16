@@ -514,6 +514,37 @@
     transform: scale(0.95);
 }
 
+/* Drop position indicators for within-column reordering */
+.tasknotes-plugin .kanban-view__card-wrapper {
+    position: relative;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--drop-above::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    background: var(--tn-interactive-accent);
+    border-radius: 2px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--drop-below::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    background: var(--tn-interactive-accent);
+    border-radius: 2px;
+    z-index: 10;
+    pointer-events: none;
+}
+
 @media (pointer: coarse) {
     .tasknotes-plugin .kanban-view__card--dragging {
         pointer-events: none;
