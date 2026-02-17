@@ -845,10 +845,17 @@ describe('TaskService', () => {
     let mockFile: TFile;
 
     beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2025-01-01T12:00:00Z'));
+
       task = TaskFactory.createTask();
       mockFile = new TFile(task.path);
       mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockFile);
       mockPlugin.getActiveTimeSession.mockReturnValue(null);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
     });
 
     it('should start time tracking for a task', async () => {
@@ -856,7 +863,7 @@ describe('TaskService', () => {
 
       expect(result.timeEntries).toHaveLength(1);
       expect(result.timeEntries![0]).toMatchObject({
-        startTime: '2025-01-01T12:00:00Z',
+        startTime: '2025-01-01T12:00:00.000Z',
         description: 'Work session'
       });
       expect(result.timeEntries![0].endTime).toBeUndefined();
@@ -893,6 +900,9 @@ describe('TaskService', () => {
     let activeSession: TimeEntry;
 
     beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2025-01-01T12:00:00Z'));
+
       activeSession = {
         startTime: '2025-01-01T11:00:00Z',
         description: 'Active session'
@@ -907,12 +917,16 @@ describe('TaskService', () => {
       mockPlugin.getActiveTimeSession.mockReturnValue(activeSession);
     });
 
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should stop active time tracking', async () => {
       const result = await taskService.stopTimeTracking(task);
 
       expect(result.timeEntries![0]).toMatchObject({
         startTime: '2025-01-01T11:00:00Z',
-        endTime: '2025-01-01T12:00:00Z',
+        endTime: '2025-01-01T12:00:00.000Z',
         description: 'Active session'
       });
     });
