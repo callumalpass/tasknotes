@@ -141,16 +141,22 @@ export class GoogleCalendarService extends CalendarProvider {
 	 * Saves a sync token for a calendar to settings
 	 */
 	private async saveSyncToken(calendarId: string, syncToken: string): Promise<void> {
+		if (this.plugin.settings.googleCalendarSyncTokens[calendarId] === syncToken) {
+			return;
+		}
 		this.plugin.settings.googleCalendarSyncTokens[calendarId] = syncToken;
-		await this.plugin.saveSettings();
+		await this.plugin.saveSettingsDataOnly();
 	}
 
 	/**
 	 * Clears the sync token for a calendar (forces full resync)
 	 */
 	private async clearSyncToken(calendarId: string): Promise<void> {
+		if (!(calendarId in this.plugin.settings.googleCalendarSyncTokens)) {
+			return;
+		}
 		delete this.plugin.settings.googleCalendarSyncTokens[calendarId];
-		await this.plugin.saveSettings();
+		await this.plugin.saveSettingsDataOnly();
 	}
 
 	async initialize(): Promise<void> {

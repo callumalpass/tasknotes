@@ -839,8 +839,41 @@ export function renderIntegrationsTab(
 
 				populateCalendars();
 
-				// Re-populate when calendar data is fetched after startup
-				plugin.googleCalendarService?.on("data-changed", populateCalendars);
+				// Re-populate when calendar data is fetched after startup.
+				// Clean up the listener automatically when this settings control is detached.
+				let unsubscribeGoogleCalendarDataChanged: (() => void) | null = null;
+				let detachObserver: MutationObserver | null = null;
+				const cleanupGoogleCalendarDataChanged = () => {
+					if (unsubscribeGoogleCalendarDataChanged) {
+						unsubscribeGoogleCalendarDataChanged();
+						unsubscribeGoogleCalendarDataChanged = null;
+					}
+					if (detachObserver) {
+						detachObserver.disconnect();
+						detachObserver = null;
+					}
+				};
+
+				unsubscribeGoogleCalendarDataChanged = plugin.googleCalendarService.on(
+					"data-changed",
+					() => {
+						if (!dropdown.isConnected) {
+							cleanupGoogleCalendarDataChanged();
+							return;
+						}
+						void populateCalendars();
+					}
+				);
+
+				detachObserver = new MutationObserver(() => {
+					if (!dropdown.isConnected) {
+						cleanupGoogleCalendarDataChanged();
+					}
+				});
+				detachObserver.observe(container.ownerDocument.body, {
+					childList: true,
+					subtree: true,
+				});
 
 				dropdown.addEventListener("change", async () => {
 					plugin.settings.googleCalendarExport.targetCalendarId = dropdown.value;

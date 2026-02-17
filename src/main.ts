@@ -230,6 +230,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Event listener cleanup
 	private taskUpdateListenerForEditor: import("obsidian").EventRef | null = null;
+	private autoStopTimeTrackingListener: import("obsidian").EventRef | null = null;
 	private relationshipsReadingModeCleanup: (() => void) | null = null;
 	private taskCardReadingModeCleanup: (() => void) | null = null;
 
@@ -851,15 +852,20 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Set up time tracking event listeners based on settings
 	 */
 	private setupTimeTrackingEventListeners(): void {
+		// Clear existing listener to avoid duplicate handlers across settings reloads/changes
+		if (this.autoStopTimeTrackingListener) {
+			this.emitter.offref(this.autoStopTimeTrackingListener);
+			this.autoStopTimeTrackingListener = null;
+		}
+
 		// Only set up listener if auto-stop is enabled
 		if (this.settings.autoStopTimeTrackingOnComplete) {
-			const eventRef = this.emitter.on(
+			this.autoStopTimeTrackingListener = this.emitter.on(
 				EVENT_TASK_UPDATED,
 				async (data: TaskUpdateEventData) => {
 					await this.handleAutoStopTimeTracking(data);
 				}
 			);
-			this.registerEvent(eventRef);
 		}
 
 		// Update tracking of time tracking settings
@@ -1254,6 +1260,12 @@ export default class TaskNotesPlugin extends Plugin {
 			this.emitter.offref(this.taskUpdateListenerForEditor);
 		}
 
+		// Clean up auto-stop time tracking listener
+		if (this.autoStopTimeTrackingListener) {
+			this.emitter.offref(this.autoStopTimeTrackingListener);
+			this.autoStopTimeTrackingListener = null;
+		}
+
 		// Clean up the event emitter (native Events class)
 		if (this.emitter && typeof this.emitter.off === "function") {
 			// Native Events cleanup happens automatically
@@ -1403,14 +1415,7 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async saveSettings() {
-		// Load existing plugin data to preserve non-settings data like pomodoroHistory
-		const data = (await this.loadData()) || {};
-		// Merge only settings properties, preserving non-settings data
-		const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
-		for (const key of settingsKeys) {
-			data[key] = this.settings[key];
-		}
-		await this.saveData(data);
+		await this.saveSettingsDataOnly();
 
 		// Keep runtime webhook state aligned with settings edits while API is running.
 		this.apiService?.syncWebhookSettings?.();
@@ -1466,6 +1471,21 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Emit settings-changed event for specific settings updates
 		this.emitter.trigger("settings-changed", this.settings);
+	}
+
+	/**
+	 * Persist settings to disk without triggering runtime side-effects.
+	 * Intended for background/internal updates (e.g., sync token writes).
+	 */
+	async saveSettingsDataOnly(): Promise<void> {
+		// Load existing plugin data to preserve non-settings data like pomodoroHistory
+		const data = (await this.loadData()) || {};
+		// Merge only settings properties, preserving non-settings data
+		const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
+		for (const key of settingsKeys) {
+			data[key] = this.settings[key];
+		}
+		await this.saveData(data);
 	}
 
 	async onExternalSettingsChange(): Promise<void> {
