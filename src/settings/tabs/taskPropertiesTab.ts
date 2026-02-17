@@ -207,6 +207,11 @@ export function renderTaskPropertiesTab(
 		translate("settings.taskProperties.properties.blockedBy.name"),
 		translate("settings.taskProperties.properties.blockedBy.description"));
 
+	// Sort Order Property Card
+	renderMetadataPropertyCard(container, plugin, save, translate, "sortOrder",
+		translate("settings.taskProperties.properties.sortOrder.name"),
+		translate("settings.taskProperties.properties.sortOrder.description"));
+
 	// ===== FEATURE PROPERTIES SECTION =====
 	createSectionHeader(container, translate("settings.taskProperties.sections.featureProperties"));
 	createHelpText(container, translate("settings.taskProperties.sections.featurePropertiesDesc"));

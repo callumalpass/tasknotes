@@ -1889,7 +1889,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Compute and write sort_order if we have a drop position
 			// and the view's sort config includes sort_order
-			const hasSortOrder = isSortOrderInSortConfig(this.dataAdapter);
+			const hasSortOrder = isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder);
 			if (dropTarget && hasSortOrder) {
 				const cleanGroupByForSort = stripPropertyPrefix(groupByPropertyId);
 				for (const path of pathsToUpdate) {
