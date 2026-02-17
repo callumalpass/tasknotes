@@ -94,7 +94,6 @@ import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
 import { OAuthService } from "./services/OAuthService";
 import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
-import { LicenseService } from "./services/LicenseService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
 
@@ -199,9 +198,6 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// HTTP API service
 	apiService?: HTTPAPIService;
-
-	// License service for Lemon Squeezy validation
-	licenseService: LicenseService;
 
 	// OAuth service
 	oauthService: OAuthService;
@@ -429,11 +425,6 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
-
-		// Initialize License service early (needed by OAuth service)
-		this.licenseService = new LicenseService(this);
-		// Load cached license validation data on startup
-		await this.licenseService.loadCacheFromData();
 
 		// Initialize OAuth and Calendar services early (before Bases registration)
 		// This ensures the calendar toggles appear in Bases calendar views

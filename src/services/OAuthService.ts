@@ -3,7 +3,6 @@ import { Notice, requestUrl, Platform } from "obsidian";
 import { randomBytes, createHash } from "crypto";
 import TaskNotesPlugin from "../main";
 import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../types";
-import { DeviceCodeModal } from "../modals/DeviceCodeModal";
 import { OAUTH_CONSTANTS } from "./constants";
 import { OAuthNotConfiguredError, TokenExpiredError, TokenRefreshError } from "./errors";
 
@@ -89,37 +88,21 @@ export class OAuthService {
 
 	/**
 	 * Loads OAuth client IDs and secrets
-	 * Priority order:
-	 * 1. User-configured credentials (for standard OAuth flow with client_secret)
-	 * 2. Built-in TaskNotes credentials (bundled client_id and client_secret for loopback flow)
+	 * from user settings.
 	 */
 	async loadClientIds(): Promise<void> {
 		// Google Calendar
-		// User credentials take priority (for standard flow)
-		if (this.plugin.settings.googleOAuthClientId) {
-			this.configs.google.clientId = this.plugin.settings.googleOAuthClientId;
-			this.configs.google.clientSecret = this.plugin.settings.googleOAuthClientSecret || "";
-		} else {
-			// Use built-in credentials for loopback flow
-			// Note: client_secret is bundled in code (not truly secret for desktop apps - PKCE provides security)
-			this.configs.google.clientId = process.env.GOOGLE_OAUTH_CLIENT_ID || "";
-			this.configs.google.clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET || undefined;
-		}
+		this.configs.google.clientId = this.plugin.settings.googleOAuthClientId || "";
+		this.configs.google.clientSecret = this.plugin.settings.googleOAuthClientSecret || "";
 
 		// Microsoft Calendar
-		if (this.plugin.settings.microsoftOAuthClientId) {
-			this.configs.microsoft.clientId = this.plugin.settings.microsoftOAuthClientId;
-			this.configs.microsoft.clientSecret = this.plugin.settings.microsoftOAuthClientSecret || "";
-		} else {
-			this.configs.microsoft.clientId = process.env.MICROSOFT_OAUTH_CLIENT_ID || "";
-			this.configs.microsoft.clientSecret = undefined; // Device Flow doesn't use secret
-		}
+		this.configs.microsoft.clientId = this.plugin.settings.microsoftOAuthClientId || "";
+		this.configs.microsoft.clientSecret = this.plugin.settings.microsoftOAuthClientSecret || "";
 	}
 
 	/**
 	 * Initiates OAuth flow for a provider
-	 * Google: Uses loopback redirect flow (device flow doesn't support Calendar scopes)
-	 * Microsoft: Uses device flow when available, otherwise loopback redirect
+	 * Uses standard loopback redirect flow with user-provided credentials.
 	 */
 	async authenticate(provider: OAuthProvider): Promise<void> {
 		const config = this.configs[provider];
@@ -128,38 +111,15 @@ export class OAuthService {
 			throw new OAuthNotConfiguredError(provider);
 		}
 
-		// Determine which flow to use based on the user's selected setup mode
-		const useAdvancedSetup = this.plugin.settings.oauthSetupMode === "advanced";
+		const hasCredentials =
+			(provider === "google" && this.plugin.settings.googleOAuthClientId) ||
+			(provider === "microsoft" && this.plugin.settings.microsoftOAuthClientId);
 
-		if (useAdvancedSetup) {
-			// Advanced Setup: User provided their own OAuth app credentials - use loopback flow
-			// Validate that user has actually entered credentials
-			const hasCredentials =
-				(provider === "google" && this.plugin.settings.googleOAuthClientId) ||
-				(provider === "microsoft" && this.plugin.settings.microsoftOAuthClientId);
-
-			if (!hasCredentials) {
-				throw new OAuthNotConfiguredError(provider);
-			}
-
-			return await this.authenticateStandard(provider);
-		} else {
-			// Quick Setup: Using built-in TaskNotes client_id
-			// Check license validation
-			const hasValidLicense = await this.plugin.licenseService?.canUseBuiltInCredentials();
-
-			if (!hasValidLicense) {
-				throw new OAuthNotConfiguredError(provider);
-			}
-
-			// Google: Use loopback redirect flow (device flow doesn't support Calendar API scopes)
-			// Microsoft: Use device flow (supports calendar scopes and is easier for users)
-			if (provider === "google") {
-				return await this.authenticateStandard(provider);
-			} else {
-				return await this.authenticateDeviceFlow(provider);
-			}
+		if (!hasCredentials) {
+			throw new OAuthNotConfiguredError(provider);
 		}
+
+		return await this.authenticateStandard(provider);
 	}
 
 	/**
@@ -233,199 +193,6 @@ export class OAuthService {
 		} finally {
 			await this.stopCallbackServer();
 		}
-	}
-
-	/**
-	 * Device Flow OAuth (no client_secret required)
-	 * Used when user has valid license for built-in TaskNotes credentials
-	 */
-	private async authenticateDeviceFlow(provider: OAuthProvider): Promise<void> {
-		try {
-			const config = this.configs[provider];
-
-			if (!config.deviceCodeEndpoint) {
-				throw new Error(`${provider} does not support Device Flow`);
-			}
-
-			// Step 1: Request device code
-			const deviceResponse = await requestUrl({
-				url: config.deviceCodeEndpoint,
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					"Accept": "application/json"
-				},
-				body: new URLSearchParams({
-					client_id: config.clientId,
-					scope: config.scope.join(" ")
-				}).toString(),
-				throw: false
-			});
-
-			if (deviceResponse.status !== 200) {
-				console.error("Device code request failed:", deviceResponse.status, deviceResponse.text);
-				throw new Error(`Failed to request device code: ${deviceResponse.status}`);
-			}
-
-			const deviceData = deviceResponse.json;
-			const {
-				device_code,
-				user_code,
-				verification_uri,
-				verification_uri_complete,
-				expires_in,
-				interval
-			} = deviceData;
-
-			// Step 2: Show modal with code and instructions
-			let cancelled = false;
-			const modal = new DeviceCodeModal(
-				this.plugin.app,
-				this.plugin,
-				{
-					userCode: user_code,
-					verificationUrl: verification_uri,
-					verificationUrlComplete: verification_uri_complete,
-					expiresIn: expires_in || 900 // Default 15 minutes
-				},
-				() => {
-					cancelled = true;
-				}
-			);
-			modal.open();
-
-			// Step 3: Poll for authorization
-			try {
-				const tokens = await this.pollForDeviceToken(
-					config,
-					device_code,
-					interval || 5,
-					() => cancelled
-				);
-
-				// Close modal on success
-				modal.close();
-
-				// Store connection
-				await this.storeConnection(provider, tokens);
-
-				new Notice(`Successfully connected to ${provider} Calendar!`);
-
-			} catch (error) {
-				modal.close();
-				throw error;
-			}
-
-		} catch (error) {
-			console.error(`Device Flow authentication failed for ${provider}:`, error);
-			new Notice(`Failed to connect to ${provider}: ${error.message}`);
-			throw error;
-		}
-	}
-
-	/**
-	 * Polls the token endpoint until user authorizes or timeout
-	 */
-	private async pollForDeviceToken(
-		config: OAuthConfig,
-		deviceCode: string,
-		interval: number,
-		isCancelled: () => boolean
-	): Promise<OAuthTokens> {
-		const maxAttempts = OAUTH_CONSTANTS.DEVICE_FLOW.MAX_ATTEMPTS;
-		let currentInterval = interval;
-
-		for (let attempt = 0; attempt < maxAttempts; attempt++) {
-			// Check if user cancelled
-			if (isCancelled()) {
-				throw new Error("Authorization cancelled by user");
-			}
-
-			// Wait before polling (except first attempt)
-			if (attempt > 0) {
-				await this.sleep(currentInterval * 1000);
-			}
-
-			try {
-				const response = await requestUrl({
-					url: config.tokenEndpoint,
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-						"Accept": "application/json"
-					},
-					body: new URLSearchParams({
-						client_id: config.clientId,
-						device_code: deviceCode,
-						grant_type: "urn:ietf:params:oauth:grant-type:device_code"
-					}).toString(),
-					throw: false
-				});
-
-				if (response.status === 200) {
-					// Success! Parse and return tokens
-					const data = response.json;
-					const expiresIn = data.expires_in || 3600;
-					const expiresAt = Date.now() + (expiresIn * 1000);
-
-					return {
-						accessToken: data.access_token,
-						refreshToken: data.refresh_token,
-						expiresAt: expiresAt,
-						scope: data.scope || config.scope.join(" "),
-						tokenType: data.token_type || "Bearer"
-					};
-				}
-
-				// Handle error responses
-				const errorData = response.json;
-				const errorCode = errorData.error;
-
-				if (errorCode === "authorization_pending") {
-					// User hasn't authorized yet, keep polling
-					continue;
-				} else if (errorCode === "slow_down") {
-					// Server wants us to slow down
-					currentInterval += OAUTH_CONSTANTS.DEVICE_FLOW.SLOW_DOWN_INCREMENT_SECONDS;
-					continue;
-				} else if (errorCode === "expired_token") {
-					// Fatal error - code expired, don't retry
-					throw new Error("Device code expired. Please try again.");
-				} else if (errorCode === "access_denied") {
-					// Fatal error - user denied access, don't retry
-					throw new Error("Authorization denied by user");
-				} else {
-					// Other OAuth errors are also fatal
-					throw new Error(`Authorization failed: ${errorCode || "unknown error"}`);
-				}
-
-			} catch (error) {
-				// Check if this is a fatal OAuth error (thrown by us above)
-				// These should propagate immediately without retry
-				if (error instanceof Error &&
-					(error.message.includes("expired") ||
-					 error.message.includes("denied") ||
-					 error.message.includes("Authorization failed"))) {
-					throw error;
-				}
-
-				// Network errors can be retried - only throw on last attempt
-				if (attempt === maxAttempts - 1) {
-					throw error;
-				}
-				// Otherwise, log and continue polling
-				console.error(`[OAuth] Device Flow polling error:`, error);
-			}
-		}
-
-		throw new Error("Device authorization timed out. Please try again.");
-	}
-
-	/**
-	 * Sleep helper for async polling
-	 */
-	private sleep(ms: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
 	/**

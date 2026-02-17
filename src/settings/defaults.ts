@@ -393,8 +393,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Frontmatter link format defaults
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
 	// OAuth Calendar Integration defaults
-	oauthSetupMode: "advanced" as "quick" | "advanced", // BETA: Default to advanced setup (quick setup temporarily disabled)
-	lemonSqueezyLicenseKey: "",
 	googleOAuthClientId: "",
 	googleOAuthClientSecret: "",
 	microsoftOAuthClientId: "",

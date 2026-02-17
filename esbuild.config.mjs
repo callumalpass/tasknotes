@@ -1,8 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
-import { readFileSync, existsSync } from "fs";
-import { resolve } from "path";
+import { readFileSync } from "fs";
 
 const banner =
 `/*
@@ -12,58 +11,6 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
-
-function loadEnvFile(path) {
-	const envPath = resolve(process.cwd(), path);
-	if (!existsSync(envPath)) {
-		return;
-	}
-
-	const content = readFileSync(envPath, "utf8");
-	const lines = content.split(/\r?\n/);
-	for (const line of lines) {
-		const trimmed = line.trim();
-		if (!trimmed || trimmed.startsWith("#")) {
-			continue;
-		}
-		const eqIndex = trimmed.indexOf("=");
-		if (eqIndex === -1) {
-			continue;
-		}
-		const key = trimmed.slice(0, eqIndex).trim();
-		const value = trimmed.slice(eqIndex + 1).trim();
-		if (!(key in process.env)) {
-			// Remove surrounding quotes if present
-			const unquoted = value.replace(/^['"]|['"]$/g, "");
-			process.env[key] = unquoted;
-		}
-	}
-}
-
-// Allow developers/CI to place secrets in a local .env file (never committed)
-loadEnvFile(".env");
-
-const googleClientId = process.env.GOOGLE_OAUTH_CLIENT_ID ?? "";
-const googleClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET ?? "";
-const microsoftClientId = process.env.MICROSOFT_OAUTH_CLIENT_ID ?? "";
-
-const missingIds = [];
-if (!googleClientId) {
-	missingIds.push("GOOGLE_OAUTH_CLIENT_ID");
-}
-if (!microsoftClientId) {
-	missingIds.push("MICROSOFT_OAUTH_CLIENT_ID");
-}
-
-if (missingIds.length > 0) {
-	console.warn(`[tasknotes build] Missing built-in OAuth client IDs: ${missingIds.join(", ")}. Quick Setup device flow will be disabled in the resulting bundle.`);
-}
-
-const define = {
-	"process.env.GOOGLE_OAUTH_CLIENT_ID": JSON.stringify(googleClientId),
-	"process.env.GOOGLE_OAUTH_CLIENT_SECRET": JSON.stringify(googleClientSecret),
-	"process.env.MICROSOFT_OAUTH_CLIENT_ID": JSON.stringify(microsoftClientId),
-};
 
 // Plugin to import markdown files as strings
 const markdownPlugin = {
@@ -107,7 +54,6 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
-	define,
 	plugins: [markdownPlugin],
 });
 
