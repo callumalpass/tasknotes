@@ -419,6 +419,7 @@ export const de: TranslationTree = {
 			header: "Was ist neu in TaskNotes {version}",
 			viewAllLink: "Alle Versionshinweise auf GitHub anzeigen →",
 			starMessage: "Wenn Sie TaskNotes nützlich finden, geben Sie ihm bitte einen Stern auf GitHub",
+			baseFilesNotice: "> [!info] Hinweis zu den standardmäßigen `.base`-Dateien\n> Änderungen an standardmäßig generierten `.base`-Vorlagen überschreiben Ihre vorhandenen `.base`-Dateien nicht, damit Ihre Anpassungen erhalten bleiben.\n> Wenn Sie die neuesten Vorlagenverbesserungen möchten, erstellen Sie die Base-Dateien neu unter **Einstellungen → TaskNotes → Allgemein → Dateien erstellen**.",
 		},
 	},
 	settings: {

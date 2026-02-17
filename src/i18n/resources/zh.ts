@@ -419,6 +419,7 @@ export const zh: TranslationTree = {
 			header: "TaskNotes {version} 的新功能",
 			viewAllLink: "在 GitHub 上查看所有版本说明 →",
 			starMessage: "如果您觉得 TaskNotes 有用，请在 GitHub 上给它加星",
+			baseFilesNotice: "> [!info] 关于默认 `.base` 文件\n> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 创建文件** 中重新生成 base 文件。",
 		},
 	},
 	settings: {

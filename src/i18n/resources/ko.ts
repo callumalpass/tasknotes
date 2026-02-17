@@ -415,6 +415,7 @@ export const ko: TranslationTree = {
 			header: "TaskNotes {version}의 새로운 기능",
 			viewAllLink: "GitHub에서 모든 릴리스 노트 보기 →",
 			starMessage: "TaskNotes가 유용하다면 GitHub에서 별표를 주세요",
+			baseFilesNotice: "> [!info] 기본 `.base` 파일 안내\n> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 일반 → 파일 생성**에서 베이스 파일을 다시 생성하세요.",
 		},
 	},
 	settings: {

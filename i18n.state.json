@@ -1176,6 +1176,10 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "3886f7795b91fd4ed8d6fcdf37424e5e0b59857d"
     },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "66768051603f604e916270ef46d5c8b31ced4887"
+    },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
       "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
@@ -2891,6 +2895,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "562937392377276e6c4119dde04182e00cfd28aa"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -7764,6 +7772,10 @@
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "562937392377276e6c4119dde04182e00cfd28aa"
     },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
+    },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "31786adb16beeaebf49f5d8ca82ee5cdd77aff84"
@@ -9273,6 +9285,10 @@
     "views.releaseNotes.starMessage": {
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "f41b51d65c2637f895c175954e78a9c70d470034"
+    },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "12b967d92428653dec5e5fca1e59d54cd9b4c9ff"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -10989,6 +11005,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "06cde372574cf501065859b8ae805163bb7236c6"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -15862,6 +15882,10 @@
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "06cde372574cf501065859b8ae805163bb7236c6"
     },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
+    },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "a11310c8459688e1e71051c34e1275459bf822f1"
@@ -17371,6 +17395,10 @@
     "views.releaseNotes.starMessage": {
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "25d41272c6bff10b1fba1a61f6db2e8f9df40425"
+    },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "4793167e1294b19e20a8215fda450a2b4b8f6777"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -19087,6 +19115,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "72fd78b1870f125d1d272c906a79fec8e4dd962b"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -23960,6 +23992,10 @@
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "72fd78b1870f125d1d272c906a79fec8e4dd962b"
     },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
+    },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "a1e1903a7ee91c0a90e6208f97b4a7fb12c448d3"
@@ -25469,6 +25505,10 @@
     "views.releaseNotes.starMessage": {
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "e3b958998079c079c491b83f4f167887d8ba3c01"
+    },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "b475d6d461d7dd4fa6176ed4286b1823a5990ca4"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -27185,6 +27225,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "5ac8906cb1ecdebba3ddaf0a89738cdd25224413"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -32058,6 +32102,10 @@
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "5ac8906cb1ecdebba3ddaf0a89738cdd25224413"
     },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
+    },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "f5969b332b9a921a81f68cec1c26712f421d4156"
@@ -33567,6 +33615,10 @@
     "views.releaseNotes.starMessage": {
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "074138951790d74799a0317c3cc1dc988dfbcb30"
+    },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "1ee47ecde6ad55c2e054902690878604f39564b0"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -35283,6 +35335,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "6402bb48bd6ef3f14d9435c8d62d4a7aa756be07"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -40156,6 +40212,10 @@
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "6402bb48bd6ef3f14d9435c8d62d4a7aa756be07"
     },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
+    },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "b65a1e0b3cadf3bb2e7a75790c3faa29a455554e"
@@ -41665,6 +41725,10 @@
     "views.releaseNotes.starMessage": {
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "f347d38134f66ff8ef403261cc2fe0a178bd59ff"
+    },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "694fba6f1ca8f4248be894ea519155bd4f5a6c87"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -43381,6 +43445,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "e6f80d1121f154848c3dd90950b6bbbcc386c12f"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -48254,6 +48322,10 @@
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "e6f80d1121f154848c3dd90950b6bbbcc386c12f"
     },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
+    },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "214469f5cc1695d05fa9154b92960cad62d68429"
@@ -49763,6 +49835,10 @@
     "views.releaseNotes.starMessage": {
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "c2f8b36f59bc9f660cf0c1bd566fde7f11490dd6"
+    },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "729d1ad5b4b3ec389c056afcf544ff2036f24cbf"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -51479,6 +51555,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "32e0b7fce55acd0b19e9ef24033a34d3dbe734cf"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -56352,6 +56432,10 @@
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "32e0b7fce55acd0b19e9ef24033a34d3dbe734cf"
     },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
+    },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "107232ba34a46152dd3a329fa95083c480bc0acd"
@@ -57861,6 +57945,10 @@
     "views.releaseNotes.starMessage": {
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "68e964844caa7bf91e74ffd31d2121483f126d1c"
+    },
+    "views.releaseNotes.baseFilesNotice": {
+      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
+      "translation": "d158cc620209ec0a3b05e5b7c0fdada7f8cc070c"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -59577,6 +59665,10 @@
     "settings.appearance.taskCards.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "b3ac5ecf8b993b63ae53d86ae5610d51b69e7c0d"
+    },
+    "settings.appearance.taskCards.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -64449,6 +64541,10 @@
     "components.propertyVisibilityDropdown.properties.totalTrackedTime": {
       "source": "1f8b5adde139463856b85a5334a5a0dc56be021e",
       "translation": "b3ac5ecf8b993b63ae53d86ae5610d51b69e7c0d"
+    },
+    "components.propertyVisibilityDropdown.properties.checklistProgress": {
+      "source": "396a57b5107038f90d53659042a82157500053e9",
+      "translation": "396a57b5107038f90d53659042a82157500053e9"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",

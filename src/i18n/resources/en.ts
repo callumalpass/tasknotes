@@ -417,6 +417,7 @@ export const en: TranslationTree = {
 			header: "What's new in TaskNotes {version}",
 			viewAllLink: "View all release notes on GitHub →",
 			starMessage: "If you find TaskNotes useful, please consider giving it a star on GitHub",
+			baseFilesNotice: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Create Default Files**.",
 		},
 	},
 	settings: {

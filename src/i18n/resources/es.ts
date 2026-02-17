@@ -419,6 +419,7 @@ export const es: TranslationTree = {
 			header: "Novedades en TaskNotes {version}",
 			viewAllLink: "Ver todas las notas de versión en GitHub →",
 			starMessage: "Si TaskNotes te resulta útil, considera darle una estrella en GitHub",
+			baseFilesNotice: "> [!info] Acerca de los archivos `.base` predeterminados\n> Los cambios en las plantillas `.base` generadas por defecto no sobrescriben tus archivos `.base` existentes, por lo que tus personalizaciones se mantienen.\n> Si quieres las mejoras más recientes de las plantillas, regenera los archivos base en **Ajustes → TaskNotes → General → Crear archivos**.",
 		},
 	},
 	settings: {
