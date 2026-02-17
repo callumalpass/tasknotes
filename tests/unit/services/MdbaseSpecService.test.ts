@@ -60,6 +60,10 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 	const settings = {
 		enableMdbaseSpec: true,
 		tasksFolder: "TaskNotes/Tasks",
+		taskIdentificationMethod: "tag",
+		taskTag: "task",
+		taskPropertyName: "",
+		taskPropertyValue: "",
 		fieldMapping: { ...DEFAULT_FIELD_MAPPING },
 		customStatuses: [...DEFAULT_STATUSES],
 		customPriorities: [...DEFAULT_PRIORITIES],
@@ -174,20 +178,80 @@ describe("MdbaseSpecService", () => {
 	});
 
 	describe("buildTaskTypeDef - match section", () => {
-		it("should include path_glob with tasks folder", () => {
+		it("should match by tag when task identification method is tag", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
-			expect(fm).toContain('path_glob: "TaskNotes/Tasks/**/*.md"');
+			expect(fm).toContain("match:");
+			expect(fm).toContain("  where:");
+			expect(fm).toContain("    tags:");
+			expect(fm).toContain('      contains: "task"');
 		});
 
-		it("should reflect custom tasks folder in path_glob", () => {
+		it("should match by custom tag when configured", () => {
 			const service = new MdbaseSpecService(
-				createMockPlugin({ tasksFolder: "my/custom/tasks" })
+				createMockPlugin({ taskTag: "my-task-tag" })
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
-			expect(fm).toContain('path_glob: "my/custom/tasks/**/*.md"');
+			expect(fm).toContain('contains: "my-task-tag"');
+		});
+
+		it("should match by property equality when property identification has value", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					taskIdentificationMethod: "property",
+					taskPropertyName: "kind",
+					taskPropertyValue: "task",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			expect(fm).toContain("  where:");
+			expect(fm).toContain('    "kind":');
+			expect(fm).toContain('      eq: "task"');
+		});
+
+		it("should coerce boolean-like property values in match rule", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					taskIdentificationMethod: "property",
+					taskPropertyName: "isTask",
+					taskPropertyValue: "true",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			expect(fm).toContain('    "isTask":');
+			expect(fm).toContain("      eq: true");
+		});
+
+		it("should match by property existence when property value is empty", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					taskIdentificationMethod: "property",
+					taskPropertyName: "isTask",
+					taskPropertyValue: "",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			expect(fm).toContain('    "isTask":');
+			expect(fm).toContain("      exists: true");
+		});
+
+		it("should fall back to tag matching when property method has no property name", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					taskIdentificationMethod: "property",
+					taskPropertyName: "",
+					taskTag: "fallback-task",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			expect(fm).toContain("    tags:");
+			expect(fm).toContain('      contains: "fallback-task"');
 		});
 	});
 
@@ -318,8 +382,12 @@ describe("MdbaseSpecService", () => {
 			expect(block).toContain("type: object");
 			expect(block).toContain("fields:");
 			expect(block).toContain("id:");
+			expect(block).toContain("values: [absolute, relative]");
 			expect(block).toContain("relatedTo:");
+			expect(block).toContain("values: [due, scheduled]");
 			expect(block).toContain("offset:");
+			expect(block).toContain("absoluteTime:");
+			expect(block).toContain("type: datetime");
 			expect(block).toContain('description: "Reminder objects');
 		});
 
@@ -329,6 +397,7 @@ describe("MdbaseSpecService", () => {
 			expect(block).toContain("type: object");
 			expect(block).toContain("fields:");
 			expect(block).toContain("uid:");
+			expect(block).toContain("type: link");
 			expect(block).toContain("reltype:");
 			expect(block).toContain("gap:");
 		});
@@ -482,13 +551,15 @@ describe("MdbaseSpecService", () => {
 		it("should properly quote values containing special characters", () => {
 			const service = new MdbaseSpecService(
 				createMockPlugin({
-					tasksFolder: 'tasks/my "special" folder',
+					taskIdentificationMethod: "property",
+					taskPropertyName: 'task "kind"',
+					taskPropertyValue: 'my "special" task',
 				})
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
-			// The path_glob should have escaped quotes
-			expect(fm).toContain('path_glob: "tasks/my \\"special\\" folder/**/*.md"');
+			expect(fm).toContain('    "task \\"kind\\"":');
+			expect(fm).toContain('      eq: "my \\"special\\" task"');
 		});
 	});
 
@@ -559,7 +630,7 @@ describe("MdbaseSpecService", () => {
 			);
 		});
 
-		it("should update existing files via adapter.write", async () => {
+		it("should update _types/task.md via adapter.write when it exists", async () => {
 			const plugin = createMockPlugin();
 			plugin.app.vault.adapter.exists.mockResolvedValue(true);
 			const service = new MdbaseSpecService(plugin);
@@ -567,14 +638,27 @@ describe("MdbaseSpecService", () => {
 			await service.generate();
 
 			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
-				"mdbase.yaml",
-				expect.any(String)
-			);
-			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
 				"_types/task.md",
 				expect.any(String)
 			);
 			expect(plugin.app.vault.create).not.toHaveBeenCalled();
+		});
+
+		it("should not overwrite mdbase.yaml when it already exists", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalledWith(
+				"mdbase.yaml",
+				expect.any(String)
+			);
+			expect(plugin.app.vault.create).not.toHaveBeenCalledWith(
+				"mdbase.yaml",
+				expect.any(String)
+			);
 		});
 	});
 

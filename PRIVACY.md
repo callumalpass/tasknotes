@@ -12,16 +12,11 @@ TaskNotes does not collect, transmit, or share any of your data.
 
 ## Data Storage
 
-- All task and note data remains local to your Obsidian vault
-- Plugin settings are stored locally in Obsidian's configuration
-- No data is sent to external servers or third parties
+Task and note content stays in your local Obsidian vault, and plugin settings are stored in Obsidian’s local configuration. By default, TaskNotes does not send vault data to external services.
 
 ## Data Deletion
 
-You can delete your data at any time:
-- Disable the plugin to stop processing tasks
-- Remove the plugin to delete all plugin settings
-- Your notes remain in your Obsidian vault under your control
+You can stop TaskNotes processing by disabling the plugin, and remove plugin configuration by uninstalling it. Your notes remain in your vault under your control.
 
 ## Network Requests (Optional Features)
 
@@ -29,28 +24,13 @@ TaskNotes operates locally by default, but includes optional features that make 
 
 **Optional network features:**
 
-- **OAuth Calendar Integration**: If you connect Google Calendar or Microsoft Calendar, TaskNotes:
-  - Uses OAuth 2.0 to authenticate with Google/Microsoft
-  - Stores OAuth access and refresh tokens locally in plugin data on your device
-  - Fetches calendar events from your connected calendars
-  - Can create/update calendar events when you choose to sync tasks
-  - Uses bundled OAuth credentials (client ID and secret) for Quick Setup mode
-  - All OAuth flows are industry-standard and use PKCE for enhanced security
-- **ICS Calendar Subscriptions**: If you configure calendar subscriptions, TaskNotes fetches calendar data from the URLs you provide (e.g., Google Calendar, Outlook)
-- **Webhooks**: If you configure webhooks, TaskNotes sends task event data to the webhook URLs you specify
-- **License Validation**: If you use a TaskNotes license key, the plugin:
-  - Validates your license key with Lemon Squeezy (our payment processor)
-  - Sends only your license key to verify it's valid and active
-  - Caches the validation result locally for 24 hours to reduce API calls
-  - Includes a 7-day grace period if validation server is temporarily unavailable
-  - Does not send any personal information except what's associated with your license key
+OAuth calendar integration (Google or Microsoft) uses OAuth 2.0 (with PKCE) to authenticate and stores access/refresh tokens locally on your device. If enabled, TaskNotes fetches calendar events and can update external events when you choose sync actions.
+
+ICS subscriptions fetch event data from URLs you configure. Webhooks send task event payloads to endpoints you configure. License validation sends your license key to Lemon Squeezy for validity checks, caches results locally for 24 hours, and applies a 7-day grace period when validation is temporarily unavailable.
 
 **OAuth Credentials:**
 
-- TaskNotes bundles OAuth client credentials (client ID and client secret) for easy setup
-- These credentials are public (visible in the plugin code) and identify the app to Google/Microsoft
-- Your actual authentication and calendar data remain secure through OAuth access tokens
-- You can optionally provide your own OAuth credentials in Advanced Setup mode
+TaskNotes includes bundled OAuth client credentials for quick setup. These app credentials are public identifiers and do not expose your account. Authentication and calendar access are controlled by your user tokens. You can also use your own OAuth credentials in advanced setup.
 
 **Third-Party Services:**
 
@@ -59,13 +39,7 @@ TaskNotes operates locally by default, but includes optional features that make 
 - **Microsoft**: OAuth authentication and Calendar API access (https://privacy.microsoft.com/privacystatement)
 
 **What we never do:**
-
-- No analytics or tracking beyond license validation
-- No telemetry data collection
-- No access to your notes or task data
-- Your notes remain local to your device
-- We never access your calendar data - all calendar requests go directly to Google/Microsoft
-- We never store your calendar data on our servers (we don't have any servers)
+TaskNotes does not run analytics/telemetry collection, does not read your notes remotely, and does not store your calendar data on TaskNotes servers. Calendar requests go directly between your device and the provider APIs you connect.
 
 ## Changes to Privacy Policy
 
@@ -74,7 +48,8 @@ We may update this policy. Changes will be posted in this file with an updated d
 ## Contact
 
 For questions or concerns about privacy, please open an issue on GitHub:
-- https://github.com/callumalpass/tasknotes/issues
+
+https://github.com/callumalpass/tasknotes/issues
 
 ## Open Source
 

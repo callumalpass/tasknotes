@@ -28,6 +28,10 @@ const DOC_VIEWPORT = { width: 1400, height: 900 };
 
 let app: ObsidianApp;
 
+// Obsidian UI startup and plugin command availability can occasionally lag.
+// One retry keeps docs generation robust without masking persistent failures.
+test.describe.configure({ retries: 1 });
+
 test.beforeAll(async () => {
   app = await launchObsidian();
   // Set viewport for consistent screenshots
@@ -69,6 +73,60 @@ async function expandViewsFolder(page: Page): Promise<void> {
       await page.waitForTimeout(300);
     }
   }
+}
+
+async function openView(
+  page: Page,
+  commands: string[],
+  sidebarFileHint: string
+): Promise<void> {
+  for (const command of commands) {
+    try {
+      await runCommand(page, command);
+      await page.waitForTimeout(1200);
+      return;
+    } catch {
+      // Try the next command alias
+    }
+  }
+
+  // Fallback: open default base files directly via Obsidian API.
+  const fileCandidates = [
+    `TaskNotes/Views/${sidebarFileHint}.base`,
+    `${sidebarFileHint}.base`,
+    sidebarFileHint,
+  ];
+  for (const targetPath of fileCandidates) {
+    const opened = await page.evaluate(async (path) => {
+      try {
+        const appAny = (window as any).app;
+        const file = appAny?.vault?.getAbstractFileByPath?.(path);
+        if (file) {
+          await appAny.workspace.getLeaf(true).openFile(file);
+          return true;
+        }
+        await appAny.workspace.openLinkText(path, "", false);
+        return true;
+      } catch {
+        return false;
+      }
+    }, targetPath);
+
+    if (opened) {
+      await page.waitForTimeout(1200);
+      return;
+    }
+  }
+
+  await expandViewsFolder(page);
+  const item = page.locator(`.nav-file-title:has-text("${sidebarFileHint}")`).first();
+  if (await item.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await item.click();
+    await page.waitForTimeout(1500);
+    return;
+  }
+
+  throw new Error(`Could not open view using commands [${commands.join(', ')}] or sidebar hint "${sidebarFileHint}"`);
 }
 
 // Helper to take a screenshot with consistent settings
@@ -153,16 +211,7 @@ test.describe('Main Views', () => {
     const page = getPage();
     await ensureCleanState(page);
 
-    // Calendar must be opened first to initialize FullCalendar
-    await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(1000);
-
-    await expandViewsFolder(page);
-
-    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
-    await expect(kanbanItem).toBeVisible({ timeout: 5000 });
-    await kanbanItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open kanban board', 'Open kanban view'], 'kanban-default');
 
     await docScreenshot(page, 'views-kanban');
   });
@@ -170,12 +219,7 @@ test.describe('Main Views', () => {
   test('tasks-list-view', async () => {
     const page = getPage();
 
-    await expandViewsFolder(page);
-
-    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
-    await expect(tasksItem).toBeVisible({ timeout: 5000 });
-    await tasksItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open tasks view', 'Open task list view'], 'tasks-default');
 
     await docScreenshot(page, 'views-tasks-list');
   });
@@ -183,12 +227,7 @@ test.describe('Main Views', () => {
   test('agenda-view', async () => {
     const page = getPage();
 
-    await expandViewsFolder(page);
-
-    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
-    await expect(agendaItem).toBeVisible({ timeout: 5000 });
-    await agendaItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open agenda view'], 'agenda-default');
 
     await docScreenshot(page, 'views-agenda');
   });
@@ -196,12 +235,8 @@ test.describe('Main Views', () => {
   test('mini-calendar-view', async () => {
     const page = getPage();
 
-    await expandViewsFolder(page);
-
-    const miniCalItem = page.locator('.nav-file-title:has-text("mini-calendar-default")');
-    await expect(miniCalItem).toBeVisible({ timeout: 5000 });
-    await miniCalItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open mini calendar view', 'Open minicalendar view'], 'mini-calendar-default');
+    await page.waitForTimeout(1200);
 
     await docScreenshot(page, 'views-mini-calendar');
   });
@@ -406,20 +441,10 @@ test.describe('UI Elements', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    // Focus on just the toolbar area
+    // Keep this capture simple and robust: verify toolbar visibility, then screenshot the view.
     const toolbar = page.locator('.tn-view-toolbar, .fc-header-toolbar').first();
-    if (await toolbar.isVisible()) {
-      const box = await toolbar.boundingBox();
-      if (box) {
-        await docScreenshot(page, 'ui-calendar-toolbar', {
-          clip: {
-            x: box.x - 10,
-            y: box.y - 10,
-            width: box.width + 20,
-            height: box.height + 20,
-          },
-        });
-      }
+    if (await toolbar.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await docScreenshot(page, 'ui-calendar-toolbar');
     }
   });
 });
@@ -1025,13 +1050,7 @@ test.describe('Task Card Properties', () => {
     const page = getPage();
     await ensureCleanState(page);
 
-    // Open tasks list view to see task cards
-    await expandViewsFolder(page);
-
-    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
-    await expect(tasksItem).toBeVisible({ timeout: 5000 });
-    await tasksItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open tasks view', 'Open task list view'], 'tasks-default');
 
     // Look for the blocked task card
     const blockedCard = page.locator('.tn-task-card:has-text("Deploy authentication"), [class*="task-card"]:has-text("Deploy")').first();
@@ -1057,13 +1076,7 @@ test.describe('Task Card Properties', () => {
     const page = getPage();
     await ensureCleanState(page);
 
-    // Open kanban view to see cards with priority colors
-    await expandViewsFolder(page);
-
-    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
-    await expect(kanbanItem).toBeVisible({ timeout: 5000 });
-    await kanbanItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open kanban board', 'Open kanban view'], 'kanban-default');
 
     await docScreenshot(page, 'feature-task-card-priorities');
   });
@@ -1072,13 +1085,7 @@ test.describe('Task Card Properties', () => {
     const page = getPage();
     await ensureCleanState(page);
 
-    // Kanban view shows status columns
-    await expandViewsFolder(page);
-
-    const kanbanItem = page.locator('.nav-file-title:has-text("kanban-default")');
-    await expect(kanbanItem).toBeVisible({ timeout: 5000 });
-    await kanbanItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open kanban board', 'Open kanban view'], 'kanban-default');
 
     // Focus on a specific column if possible
     const inProgressColumn = page.locator('[class*="kanban"]').locator(':has-text("In Progress"), :has-text("in-progress")').first();
@@ -1101,13 +1108,7 @@ test.describe('Task Card Properties', () => {
     const page = getPage();
     await ensureCleanState(page);
 
-    // Open task list view
-    await expandViewsFolder(page);
-
-    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
-    await expect(tasksItem).toBeVisible({ timeout: 5000 });
-    await tasksItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open tasks view', 'Open task list view'], 'tasks-default');
 
     // Look for a task card showing time estimate
     const timeCard = page.locator('.tn-task-card:has-text("Write documentation"), [class*="task-card"]:has-text("documentation")').first();
@@ -1130,13 +1131,7 @@ test.describe('Task Card Properties', () => {
     const page = getPage();
     await ensureCleanState(page);
 
-    // Open task list view
-    await expandViewsFolder(page);
-
-    const tasksItem = page.locator('.nav-file-title:has-text("tasks-default")');
-    await expect(tasksItem).toBeVisible({ timeout: 5000 });
-    await tasksItem.click();
-    await page.waitForTimeout(1500);
+    await openView(page, ['Open tasks view', 'Open task list view'], 'tasks-default');
 
     // Look for a recurring task card
     const recurringCard = page.locator('.tn-task-card:has-text("Daily standup"), [class*="task-card"]:has-text("Daily standup")').first();

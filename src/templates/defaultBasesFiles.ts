@@ -108,6 +108,10 @@ function mapPropertyToBasesProperty(property: string, plugin: TaskNotesPlugin): 
 		case "totalTrackedTime":
 			// totalTrackedTime is computed from timeEntries, use the timeEntries property
 			return fm.toUserField("timeEntries");
+		case "checklistProgress":
+			// checklistProgress is computed from markdown checklist items.
+			// Use file.tasks as the selectable Bases source property.
+			return "file.tasks";
 	}
 
 	// Try to map using FieldMapper
@@ -145,6 +149,7 @@ function generateOrderArray(plugin: TaskNotesPlugin): string[] {
 		"file.name", // title
 		mapPropertyToBasesProperty("recurrence", plugin),
 		mapPropertyToBasesProperty("complete_instances", plugin),
+		mapPropertyToBasesProperty("checklistProgress", plugin),
 	].filter((prop): prop is string => !!prop);
 
 	// Combine, removing duplicates while preserving order

@@ -2,10 +2,19 @@
  * Global test setup for TaskNotes plugin tests
  * This file is run once before all tests
  */
+import { TextDecoder, TextEncoder } from "util";
 
 // Mock global objects and APIs that would normally be provided by Obsidian
 (global as any).window = global.window || {};
 (global as any).document = global.document || {};
+
+if (!(global as any).TextEncoder) {
+	(global as any).TextEncoder = TextEncoder;
+}
+
+if (!(global as any).TextDecoder) {
+	(global as any).TextDecoder = TextDecoder;
+}
 
 // Store the original createElement to avoid recursion
 const originalCreateElement = document.createElement;

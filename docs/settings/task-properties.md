@@ -17,6 +17,7 @@ Each property card contains:
 - **Default**: The default value applied to new tasks (where applicable)
 - **NLP trigger**: Toggle and character configuration for natural language parsing (where applicable)
 - **Property-specific settings**: Additional configuration options specific to that property
+This tab defines the task schema used by creation flows, NLP parsing, views, and API payloads.
 
 ## Core Properties
 
@@ -84,6 +85,7 @@ Each priority value has:
 - **Color**: Visual indicator color
 
 Priority cards support drag-and-drop reordering.
+Status and priority values are stored in frontmatter; renaming them later may require migration of existing task files.
 
 > **Note for Bases plugin users:** Obsidian's Bases plugin sorts priorities alphabetically by their **Value**. To control sort order, name values to sort alphabetically in the desired order:
 > - Example: `1-urgent`, `2-high`, `3-medium`, `4-normal`, `5-low`
@@ -104,6 +106,7 @@ When to work on the task. Configuration options:
 
 - **Property key**: Frontmatter field name (default: `scheduled`)
 - **Default**: Default scheduled date for new tasks (None, Today, Tomorrow, Next Week)
+`due` tracks commitment deadlines, while `scheduled` tracks intended execution time.
 
 ## Organization Properties
 
@@ -134,6 +137,7 @@ Control which notes appear when selecting projects:
 - **Include folders**: Comma-separated list of folder paths (shows notes in ANY of these folders)
 - **Required property key**: Frontmatter property that must exist
 - **Required property value**: Expected value for the property (optional)
+These filters reduce suggestion noise in large vaults.
 
 A "Filters On" badge appears when any filters are configured.
 
@@ -221,6 +225,7 @@ Define custom frontmatter properties to appear as filter options across views. C
 - **Default Value**: Pre-fill value for new tasks (format varies by type)
 - **NLP trigger**: Toggle and character for natural language parsing
 - **Autosuggest Filters**: Filter which files appear when using `[[` wikilink autocomplete
+Custom fields are most maintainable when they map to repeated workflow decisions (for example `effort`, `owner`, or `client`).
 
 ### Default Values
 

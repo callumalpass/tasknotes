@@ -344,7 +344,7 @@ export class KanbanView extends BasesViewBase {
 			const views = controller.query.views;
 			const viewName = controller.viewName;
 
-			for (let i = 0; i < 20; i++) {
+			for (let i = 0; i < views.length; i++) {
 				const view = views[i];
 				if (view && view.name === viewName) {
 					if (view.groupBy) {
