@@ -177,6 +177,13 @@ export class PropertyVisibilityDropdown {
 					category: "core" as const,
 				},
 				{
+					id: "checklistProgress",
+					name: this.plugin.i18n.translate(
+						"components.propertyVisibilityDropdown.properties.checklistProgress"
+					),
+					category: "core" as const,
+				},
+				{
 					id: "recurrence",
 					name: this.plugin.i18n.translate(
 						"components.propertyVisibilityDropdown.properties.recurrence"

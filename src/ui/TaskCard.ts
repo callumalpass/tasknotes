@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { TFile, setIcon, Notice, Modal, App, setTooltip, parseLinktext, Menu } from "obsidian";
+import { TFile, setIcon, Notice, Modal, App, setTooltip, parseLinktext, Menu, type CachedMetadata } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { TaskContextMenu } from "../components/TaskContextMenu";
@@ -454,6 +454,63 @@ function getDefaultVisibleProperties(plugin: TaskNotesPlugin): string[] {
 	return convertInternalToUserProperties(internalDefaults, plugin);
 }
 
+interface ChecklistProgress {
+	completed: number;
+	total: number;
+	percent: number;
+}
+
+/**
+ * Get checklist progress from Obsidian's metadata cache listItems.
+ * Uses parsed metadata only (no vault body reads) for better performance.
+ */
+function getChecklistProgress(taskPath: string, plugin: TaskNotesPlugin): ChecklistProgress | null {
+	const file = plugin.app.vault.getAbstractFileByPath(taskPath);
+	if (!(file instanceof TFile)) return null;
+
+	const fileCache = plugin.app.metadataCache.getFileCache(file);
+	return calculateChecklistProgress(fileCache);
+}
+
+/**
+ * Calculate first-level checklist progress from cached list items.
+ * Only top-level task list items are counted (nested subtasks are ignored).
+ */
+function calculateChecklistProgress(cache: CachedMetadata | null): ChecklistProgress | null {
+	const listItems = cache?.listItems;
+	if (!Array.isArray(listItems) || listItems.length === 0) {
+		return null;
+	}
+
+	let total = 0;
+	let completed = 0;
+
+	for (const item of listItems) {
+		if (!item || typeof item.task !== "string") continue;
+
+		// Obsidian uses parent >= 0 for nested list items.
+		const isNested = typeof item.parent === "number" && item.parent >= 0;
+		if (isNested) continue;
+
+		total += 1;
+		// Count only explicit checked boxes as complete ([x] / [X]).
+		// Other task markers (e.g. [-], [>]) are treated as not complete.
+		if (item.task.toLowerCase() === "x") {
+			completed += 1;
+		}
+	}
+
+	if (total === 0) {
+		return null;
+	}
+
+	return {
+		completed,
+		total,
+		percent: Math.round((completed / total) * 100),
+	};
+}
+
 /**
  * Property value extractors for better type safety and error handling
  */
@@ -479,6 +536,7 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
 	dateCreated: (task) => task.dateCreated,
 	dateModified: (task) => task.dateModified,
 	googleCalendarSync: (task) => task.path, // Used to check if task is synced via plugin settings
+	checklistProgress: (task) => task.path, // Used to compute checklist progress from metadata cache listItems
 };
 
 /**
@@ -920,6 +978,29 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (Array.isArray(value) && value.length > 0) {
 			element.textContent = `Linked to ${value.length} calendar ${value.length === 1 ? "event" : "events"}`;
 		}
+	},
+	checklistProgress: (element, _value, task, plugin) => {
+		const progress = getChecklistProgress(task.path, plugin);
+		if (!progress) {
+			return;
+		}
+
+		const progressEl = element.createEl("span", { cls: "task-card__progress" });
+		const progressBar = progressEl.createEl("span", { cls: "task-card__progress-bar" });
+		const progressFill = progressBar.createEl("span", { cls: "task-card__progress-fill" });
+		progressFill.style.width = `${progress.percent}%`;
+		if (progress.percent > 0 && progress.percent < 5) {
+			progressFill.style.minWidth = "2px";
+		}
+
+		progressEl.createEl("span", {
+			cls: "task-card__progress-label",
+			text: `${progress.completed}/${progress.total}`,
+		});
+
+		setTooltip(progressEl, `${progress.percent}% complete (${progress.completed}/${progress.total})`, {
+			placement: "top",
+		});
 	},
 };
 

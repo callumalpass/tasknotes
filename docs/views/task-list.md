@@ -56,7 +56,8 @@ views:
 
 **`name`**: Display name shown in the view header
 
-**`order`**: Array of property names that control which task properties are visible in the task cards. Properties are referenced using their Bases property paths (e.g., `note.status`, `note.priority`, `note.due`).
+**`order`**: Array of property names that control which task properties are visible in the task cards. Properties are referenced using their Bases property paths (e.g., `note.status`, `note.priority`, `note.due`, `file.tasks`).
+For existing `.base` files, add `file.tasks` in YAML manually; once present in `order`, it appears in the Bases picker as `tasks`.
 
 **`sort`**: Array of sort criteria. Tasks are sorted by the first criterion, with ties broken by subsequent criteria.
 - `column`: Property to sort by (e.g., `due`, `scheduled`, `priority`, `title`)
@@ -88,6 +89,7 @@ TaskNotes properties are accessed in Bases YAML using these paths:
 | Projects | `note.projects` | Associated projects |
 | Contexts | `note.contexts` | Task contexts |
 | Tags | `file.tags` | File tags |
+| Checklist progress | `file.tasks` | First-level markdown checkbox progress shown as the TaskNotes checklist progress bar |
 | Time estimate | `note.timeEstimate` | Estimated duration |
 | Recurrence | `note.recurrence` | Recurrence pattern |
 | Blocked by | `note.blockedBy` | Blocking dependencies |

@@ -29,6 +29,13 @@ Example:
 - [Mdbase](https://mdbase.dev) type generation now emits `tn_role` annotations on schema fields, allowing external tools (e.g. [mtn CLI](https://github.com/callumalpass/mdbase-tasknotes)) to discover each field's semantic role regardless of custom frontmatter names
 - Mdbase type match rules now use tag or frontmatter property matching (based on task identification settings) instead of path glob, with automatic fallback to tag matching
 - Mdbase type status field now includes `tn_completed_values` annotation, listing which status values count as completed
+- (#1576) Added an optional `Checklist Progress` task-card property that renders a compact progress bar and `completed/total` count from top-level markdown checkboxes
+  - Uses Obsidian `metadataCache.listItems` parsing (no vault body reads), minimizing rendering overhead
+  - Nested checklist items are excluded so progress reflects first-level task steps only
+  - Bases views map `tasks` (`file.tasks`) to `Checklist Progress` for TaskNotes cards
+  - Existing `.base` files need `file.tasks` added to the view `order` YAML manually (it is not auto-added to pickers by default)
+  - Default generated `.base` templates now include `file.tasks` in view `order` arrays so checklist progress is available out of the box and then appears in the picker
+  - Thanks to @phortx for the initial PR and for opening #1576
 
 ## Changed
 

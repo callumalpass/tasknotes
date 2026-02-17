@@ -179,6 +179,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     sort:
       - property: due
         direction: ASC
@@ -224,6 +225,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     groupBy:
       property: status
       direction: ASC
@@ -264,6 +266,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     sort:
       - column: due
         direction: ASC
@@ -299,6 +302,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     sort:
       - column: formula.urgencyScore
         direction: DESC
@@ -332,6 +336,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     sort:
       - column: formula.urgencyScore
         direction: DESC
@@ -363,6 +368,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     sort:
       - column: formula.urgencyScore
         direction: DESC
@@ -400,6 +406,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     sort:
       - column: formula.urgencyScore
         direction: DESC
@@ -432,6 +439,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     sort:
       - column: status
         direction: ASC
@@ -466,6 +474,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     options:
       showScheduled: true
       showDue: true
@@ -512,6 +521,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     options:
       showPropertyBasedEvents: false
     calendarView: "listWeek"
@@ -559,6 +569,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     groupBy:
       property: status
       direction: ASC
@@ -579,6 +590,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
   - type: tasknotesTaskList
     name: "Blocked By"
     filters:
@@ -597,6 +609,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
   - type: tasknotesKanban
     name: "Blocking"
     filters:
@@ -615,6 +628,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
+      - file.tasks
     groupBy:
       property: status
       direction: ASC
@@ -629,6 +643,7 @@ If you've customized your TaskNotes settings (e.g., renamed properties, added cu
 - **Custom priorities**: The `priorityWeight` formula will include all your configured priorities with their weights
 - **Property-based identification**: If you identify tasks by a property instead of a tag, the filters will use that property
 - **Custom visible properties**: The `order` arrays will include your configured visible properties
+- **Essential card properties**: `file.name`, recurrence, `complete_instances`, and `file.tasks` are always included in generated `order` arrays for TaskNotes card rendering
 After major settings changes, regenerate default files and diff against customized versions to merge template updates.
 
 ## Related

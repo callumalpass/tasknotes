@@ -10,6 +10,8 @@ These settings control the visual appearance of the plugin, including the calend
 
 Use **Default visible properties** to decide what metadata appears on task cards without opening each task. This is the primary control for card density.
 
+Checklist progress is available as a visible property in task cards. In Bases view `order` arrays, the corresponding source property is `file.tasks` (shown as `tasks` in Bases property pickers once present in the view `order` list).
+
 ## Display Formatting
 
 Use **Time format** to switch between 12-hour and 24-hour display across all TaskNotes surfaces.
