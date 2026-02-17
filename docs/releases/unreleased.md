@@ -46,6 +46,9 @@ Example:
 
 ## Fixed
 
+- (#1608) Fixed task title frontmatter being removed when `storeTitleInFilename` is enabled
+  - `title` is now retained in frontmatter for better CLI/API interoperability while filename derivation from title remains unchanged
+  - Thanks to @victoraraujo105 for the PR
 - (#1602) Fixed time tracking statistics showing incorrect or zero values for Today/Week/Month due to UTC-anchored date range boundaries in Stats View
   - Updated range calculations to use local calendar-day boundaries consistently
 - (#1602) Fixed inconsistent `timeEntries` timestamp formats across create/edit/drag/resize flows
