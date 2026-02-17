@@ -504,7 +504,7 @@ export class TaskListView extends BasesViewBase {
 					const card = createTaskCard(taskInfo, this.plugin, visibleProperties, cardOptions);
 
 					// Attach drag handlers for sort_order reordering
-					if (isSortOrderInSortConfig(this.dataAdapter)) {
+					if (isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
 						card.setAttribute("draggable", "true");
 						this.setupCardDragHandlers(card, taskInfo, null);
 					}
@@ -570,7 +570,7 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			// Attach drag handlers when the card was (re)created
-			if (needsUpdate && isSortOrderInSortConfig(this.dataAdapter)) {
+			if (needsUpdate && isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
 				cardEl!.setAttribute("draggable", "true");
 				this.setupCardDragHandlers(cardEl!, taskInfo, null);
 			}
@@ -851,7 +851,7 @@ export class TaskListView extends BasesViewBase {
 					} else {
 						const cardEl = createTaskCard(item.task, this.plugin, visibleProperties, cardOptions);
 						// Attach drag handlers for sort_order reordering
-						if (isSortOrderInSortConfig(this.dataAdapter)) {
+						if (isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
 							cardEl.setAttribute("draggable", "true");
 							this.setupCardDragHandlers(cardEl, item.task, item.groupKey);
 						}
@@ -898,7 +898,7 @@ export class TaskListView extends BasesViewBase {
 				this.itemsContainer!.appendChild(headerEl);
 			} else {
 				const cardEl = createTaskCard(item.task, this.plugin, visibleProperties, cardOptions);
-				if (isSortOrderInSortConfig(this.dataAdapter)) {
+				if (isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
 					cardEl.setAttribute("draggable", "true");
 					this.setupCardDragHandlers(cardEl, item.task, item.groupKey);
 				}

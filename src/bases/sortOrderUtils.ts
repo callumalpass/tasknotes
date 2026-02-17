@@ -23,7 +23,7 @@ export function stripPropertyPrefix(propertyId: string): string {
  * Check whether `sort_order` is present in the view's base sort configuration.
  * Drag-to-reorder should only activate when this returns true.
  */
-export function isSortOrderInSortConfig(dataAdapter: any): boolean {
+export function isSortOrderInSortConfig(dataAdapter: any, sortOrderField: string): boolean {
 	try {
 		const sortConfig = dataAdapter.getSortConfig();
 		if (!sortConfig) return false;
@@ -36,7 +36,7 @@ export function isSortOrderInSortConfig(dataAdapter: any): boolean {
 			// Check all possible keys the sort property might be under
 			const candidate = s.property || s.column || s.field || s.id || s.name || "";
 			const clean = String(candidate).replace(/^(note\.|file\.|task\.)/, "");
-			return clean === "sort_order";
+			return clean === sortOrderField;
 		});
 	} catch (e) {
 		return false;
@@ -97,8 +97,9 @@ export function getGroupTasks(
 		// When groupKey is null, include ALL tasks (flat/ungrouped mode)
 
 		// Read sort_order
-		const sortOrder = fm["sort_order"] !== undefined
-			? (typeof fm["sort_order"] === "number" ? fm["sort_order"] : Number(fm["sort_order"]))
+		const sortOrderField = plugin.settings.fieldMapping.sortOrder;
+		const sortOrder = fm[sortOrderField] !== undefined
+			? (typeof fm[sortOrderField] === "number" ? fm[sortOrderField] : Number(fm[sortOrderField]))
 			: undefined;
 
 		// Use cached TaskInfo if available, otherwise create minimal object
@@ -179,8 +180,9 @@ async function renumberAndInsert(
 	for (const w of writes) {
 		const file = plugin.app.vault.getAbstractFileByPath(w.path);
 		if (file && file instanceof TFile) {
+			const sortOrderField = plugin.settings.fieldMapping.sortOrder;
 			await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				frontmatter["sort_order"] = w.order;
+				frontmatter[sortOrderField] = w.order;
 			});
 		}
 	}
