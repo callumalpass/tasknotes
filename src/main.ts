@@ -355,7 +355,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.priorityManager,
 			this
 		);
-		this.taskStatsService = new TaskStatsService(this.cacheManager);
+		this.taskStatsService = new TaskStatsService(this.cacheManager, this.statusManager);
 		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.projectSubtasksService = new ProjectSubtasksService(this);
 		this.expandedProjectsService = new ExpandedProjectsService(this);
@@ -1281,6 +1281,9 @@ export default class TaskNotesPlugin extends Plugin {
 		if (loadedData && typeof loadedData.apiAuthToken === "undefined") {
 			loadedData.apiAuthToken = "";
 		}
+		if (loadedData && typeof loadedData.enableMCP === "undefined") {
+			loadedData.enableMCP = false;
+		}
 
 		// Migration: Migrate statusSuggestionTrigger to nlpTriggers if needed
 		if (loadedData && !loadedData.nlpTriggers && loadedData.statusSuggestionTrigger !== undefined) {
@@ -1409,6 +1412,9 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 		await this.saveData(data);
 
+		// Keep runtime webhook state aligned with settings edits while API is running.
+		this.apiService?.syncWebhookSettings?.();
+
 		// Check if cache-related settings have changed
 		const cacheSettingsChanged = this.haveCacheSettingsChanged();
 
@@ -1464,6 +1470,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async onExternalSettingsChange(): Promise<void> {
 		await this.loadSettings();
+		this.apiService?.syncWebhookSettings?.();
 
 		// Update all services with new settings
 		this.fieldMapper?.updateMapping(this.settings.fieldMapping);
@@ -2798,9 +2805,15 @@ export default class TaskNotesPlugin extends Plugin {
 	openTimeEntryEditor(task: TaskInfo, onSave?: () => void): void {
 		const modal = new TimeEntryEditorModal(this.app, this, task, async (updatedEntries) => {
 			try {
+				const sanitizedEntries = updatedEntries.map((entry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
+
 				// Save to file
 				await this.taskService.updateTask(task, {
-					timeEntries: updatedEntries,
+					timeEntries: sanitizedEntries,
 				});
 
 				// Signal immediate update before triggering data change

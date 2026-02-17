@@ -33,7 +33,8 @@ import {
   validateTimeBlock,
   extractTimeblocksFromNote,
   timeblockToCalendarEvent,
-  generateTimeblockId
+  generateTimeblockId,
+  sanitizeForCssClass
 } from '../../../src/utils/helpers';
 
 import { TaskInfo, TimeEntry, TimeBlock } from '../../../src/types';
@@ -961,6 +962,39 @@ invalid yaml: [
     });
   });
 
+  describe('sanitizeForCssClass', () => {
+    it('should replace spaces with hyphens and lowercase', () => {
+      expect(sanitizeForCssClass('In Progress')).toBe('in-progress');
+      expect(sanitizeForCssClass('60-In Progress')).toBe('60-in-progress');
+    });
+
+    it('should replace multiple spaces with single hyphen', () => {
+      expect(sanitizeForCssClass('Waiting  For  Review')).toBe('waiting--for--review');
+    });
+
+    it('should replace special characters with hyphens', () => {
+      expect(sanitizeForCssClass('Task@Home!')).toBe('task-home-');
+      expect(sanitizeForCssClass('50% Complete')).toBe('50--complete');
+    });
+
+    it('should preserve existing hyphens', () => {
+      expect(sanitizeForCssClass('in-progress')).toBe('in-progress');
+      expect(sanitizeForCssClass('High-Priority')).toBe('high-priority');
+    });
+
+    it('should handle empty and null values', () => {
+      expect(sanitizeForCssClass('')).toBe('');
+      expect(sanitizeForCssClass(null as any)).toBe('');
+      expect(sanitizeForCssClass(undefined as any)).toBe('');
+    });
+
+    it('should handle simple status values', () => {
+      expect(sanitizeForCssClass('open')).toBe('open');
+      expect(sanitizeForCssClass('DONE')).toBe('done');
+      expect(sanitizeForCssClass('High')).toBe('high');
+    });
+  });
+
   describe('Performance and Memory', () => {
     it('should handle large datasets efficiently', () => {
       const largeTimeEntries: TimeEntry[] = Array.from({ length: 1000 }, (_, i) => ({
@@ -986,6 +1020,94 @@ invalid yaml: [
 
       // No explicit memory assertions, but operations should complete without issues
       expect(true).toBe(true);
+    });
+  });
+
+  describe('resetMarkdownCheckboxes', () => {
+    // Import the function directly for testing
+    const { resetMarkdownCheckboxes } = require('../../../src/utils/helpers');
+
+    it('should reset lowercase [x] checkboxes', () => {
+      const content = '- [x] Item 1\n- [x] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should reset uppercase [X] checkboxes', () => {
+      const content = '- [X] Item 1\n- [X] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle mixed case checkboxes', () => {
+      const content = '- [x] Item 1\n- [X] Item 2\n- [ ] Item 3';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2\n- [ ] Item 3');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should not change already unchecked checkboxes', () => {
+      const content = '- [ ] Item 1\n- [ ] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Item 1\n- [ ] Item 2');
+      expect(result.changed).toBe(false);
+    });
+
+    it('should handle asterisk list markers', () => {
+      const content = '* [x] Item 1\n* [X] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('* [ ] Item 1\n* [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle plus list markers', () => {
+      const content = '+ [x] Item 1\n+ [X] Item 2';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('+ [ ] Item 1\n+ [ ] Item 2');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle ordered list checkboxes', () => {
+      const content = '1. [x] First item\n2. [X] Second item\n3. [ ] Third item';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('1. [ ] First item\n2. [ ] Second item\n3. [ ] Third item');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle indented checkboxes', () => {
+      const content = '- [x] Parent\n  - [x] Child 1\n    - [X] Grandchild';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('- [ ] Parent\n  - [ ] Child 1\n    - [ ] Grandchild');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should preserve non-checkbox content', () => {
+      const content = '# Header\n\nSome text\n\n- [x] Task\n\nMore text';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('# Header\n\nSome text\n\n- [ ] Task\n\nMore text');
+      expect(result.changed).toBe(true);
+    });
+
+    it('should handle content with no checkboxes', () => {
+      const content = '# Just a heading\n\nSome regular text';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('# Just a heading\n\nSome regular text');
+      expect(result.changed).toBe(false);
+    });
+
+    it('should handle empty content', () => {
+      const result = resetMarkdownCheckboxes('');
+      expect(result.content).toBe('');
+      expect(result.changed).toBe(false);
+    });
+
+    it('should not modify [x] in regular text (not list items)', () => {
+      const content = 'This mentions [x] in text but is not a list item';
+      const result = resetMarkdownCheckboxes(content);
+      expect(result.content).toBe('This mentions [x] in text but is not a list item');
+      expect(result.changed).toBe(false);
     });
   });
 });

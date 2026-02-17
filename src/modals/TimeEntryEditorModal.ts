@@ -206,7 +206,7 @@ export class TimeEntryEditorModal extends Modal {
 
 	private calculateTotalMinutes(): number {
 		return this.timeEntries.reduce((total, entry) => {
-			const duration = entry.duration || this.calculateDuration(entry);
+			const duration = this.calculateDuration(entry);
 			return total + duration;
 		}, 0);
 	}
@@ -259,14 +259,12 @@ export class TimeEntryEditorModal extends Modal {
 			}
 		}
 
-		// Calculate durations for all entries with end times
-		this.timeEntries.forEach(entry => {
-			if (entry.endTime) {
-				entry.duration = this.calculateDuration(entry);
-			}
+		const sanitizedEntries = this.timeEntries.map((entry) => {
+			const sanitizedEntry = { ...entry };
+			delete sanitizedEntry.duration;
+			return sanitizedEntry;
 		});
-
-		this.onSave(this.timeEntries);
+		this.onSave(sanitizedEntries);
 		this.close();
 	}
 

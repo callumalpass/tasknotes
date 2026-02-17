@@ -5,7 +5,7 @@ import TaskNotesPlugin from "../main";
 import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../types";
 import { DeviceCodeModal } from "../modals/DeviceCodeModal";
 import { OAUTH_CONSTANTS } from "./constants";
-import { OAuthNotConfiguredError, TokenExpiredError } from "./errors";
+import { OAuthNotConfiguredError, TokenExpiredError, TokenRefreshError } from "./errors";
 
 let cachedHttpModule: typeof import("http") | null = null;
 
@@ -716,7 +716,11 @@ export class OAuthService {
 	}
 
 	/**
-	 * Refreshes an expired access token
+	 * Refreshes an expired access token.
+	 *
+	 * Handles irrecoverable token errors (HTTP 400/401 with invalid_grant or invalid_client)
+	 * by automatically disconnecting the OAuth connection and throwing TokenRefreshError.
+	 * This prevents repeated failed refresh attempts and provides actionable guidance to users.
 	 */
 	async refreshToken(provider: OAuthProvider): Promise<OAuthTokens> {
 		const connection = await this.getConnection(provider);
@@ -750,8 +754,54 @@ export class OAuthService {
 					"Content-Type": "application/x-www-form-urlencoded",
 					"Accept": "application/json"
 				},
-				body: urlParams.toString()
+				body: urlParams.toString(),
+				throw: false // Don't throw on error status so we can inspect the response
 			});
+
+			// Check for error responses (400, 401, etc.)
+			if (response.status !== 200) {
+				// Parse OAuth error from response body
+				let oauthError: string | undefined;
+				let oauthErrorDescription: string | undefined;
+
+				try {
+					const errorData = response.json;
+					oauthError = errorData?.error;
+					oauthErrorDescription = errorData?.error_description;
+				} catch {
+					// Response body might not be JSON
+				}
+
+				console.error("[OAuth] Token refresh failed:", {
+					status: response.status,
+					error: oauthError,
+					description: oauthErrorDescription
+				});
+
+				// Check if this is an irrecoverable token error
+				// HTTP 400 with invalid_grant: refresh token revoked, expired, or otherwise invalid
+				// HTTP 400 with invalid_client: client credentials changed
+				// HTTP 401: unauthorized (token invalid)
+				const isIrrecoverableError =
+					response.status === 401 ||
+					(response.status === 400 && (
+						oauthError === "invalid_grant" ||
+						oauthError === "invalid_client"
+					));
+
+				if (isIrrecoverableError) {
+					// Auto-disconnect to prevent repeated failures
+					// This clears local tokens but doesn't revoke on provider (token is already invalid)
+					await this.clearConnection(provider);
+
+					new Notice(`${provider} connection expired. Please reconnect in Settings > Integrations.`);
+					throw new TokenRefreshError(provider, oauthError, oauthErrorDescription);
+				}
+
+				// For other errors (5xx server errors, network issues), throw generic error
+				// These may be transient and worth retrying
+				throw new Error(`Token refresh failed with status ${response.status}: ${oauthError || response.text || "Unknown error"}`);
+			}
 
 			const data = response.json;
 
@@ -775,8 +825,25 @@ export class OAuthService {
 
 			return newTokens;
 		} catch (error) {
+			// Re-throw TokenRefreshError as-is (already handled above)
+			if (error instanceof TokenRefreshError) {
+				throw error;
+			}
+
 			console.error("Token refresh failed:", error);
 			throw new Error(`Failed to refresh ${provider} token: ${error.message}`);
+		}
+	}
+
+	/**
+	 * Clears a stored OAuth connection without revoking tokens on the provider.
+	 * Used when tokens are already invalid (e.g., after refresh failure with invalid_grant).
+	 */
+	private async clearConnection(provider: OAuthProvider): Promise<void> {
+		const data = await this.plugin.loadData() || {};
+		if (data.oauthConnections) {
+			delete data.oauthConnections[provider];
+			await this.plugin.saveData(data);
 		}
 	}
 

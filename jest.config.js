@@ -11,6 +11,7 @@ module.exports = {
   },
   setupFilesAfterEnv: ['<rootDir>/tests/test-setup.ts'],
   moduleNameMapper: {
+    '^tasknotes-nlp-core$': '<rootDir>/../tasknotes-nlp-core/src/index.ts',
     '^obsidian$': '<rootDir>/tests/__mocks__/obsidian.ts',
     '^@fullcalendar/(.*)$': '<rootDir>/tests/__mocks__/fullcalendar.ts',
     // Keep mocks for complex/large libraries that benefit from controlled testing

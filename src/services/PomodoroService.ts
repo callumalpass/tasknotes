@@ -106,6 +106,7 @@ export class PomodoroService {
 					if (this.state.currentSession) {
 						this.state.currentSession = undefined;
 						this.state.isRunning = false;
+						this.state.nextSessionType = undefined;
 					}
 				}
 
@@ -121,12 +122,14 @@ export class PomodoroService {
 						this.state.currentSession = undefined;
 						this.state.isRunning = false;
 						this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60;
+						this.state.nextSessionType = undefined;
 					}
 				}
 
 				// If no active session, reset timer to default duration
 				if (!this.state.currentSession) {
 					this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60;
+					this.state.nextSessionType = undefined;
 				}
 			}
 		} catch (error) {
@@ -469,6 +472,7 @@ export class PomodoroService {
 		this.state.isRunning = false;
 		// Reset to default work duration
 		this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60;
+		this.state.nextSessionType = undefined;
 
 		await this.saveState();
 

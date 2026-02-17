@@ -26,6 +26,7 @@ import {
 	ensureFolderExists,
 	updateToNextScheduledOccurrence,
 	splitFrontmatterAndBody,
+	resetMarkdownCheckboxes,
 } from "../utils/helpers";
 import {
 	DEFAULT_DEPENDENCY_RELTYPE,
@@ -1126,9 +1127,14 @@ export class TaskService {
 		if (!updatedTask.timeEntries) {
 			updatedTask.timeEntries = [];
 		}
+		updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
+			const sanitizedEntry = { ...entry };
+			delete sanitizedEntry.duration;
+			return sanitizedEntry;
+		});
 
 		const newEntry: TimeEntry = {
-			startTime: getCurrentTimestamp(),
+			startTime: new Date().toISOString(),
 			description: "Work session",
 		};
 		updatedTask.timeEntries = [...updatedTask.timeEntries, newEntry];
@@ -1140,6 +1146,13 @@ export class TaskService {
 
 			if (!frontmatter[timeEntriesField]) {
 				frontmatter[timeEntriesField] = [];
+			}
+			if (Array.isArray(frontmatter[timeEntriesField])) {
+				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map((entry: TimeEntry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
 			}
 
 			// Add new time entry with start time
@@ -1194,12 +1207,18 @@ export class TaskService {
 		if (!activeSession) {
 			throw new Error("No active time tracking session for this task");
 		}
+		const stopTimestamp = new Date().toISOString();
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
 		updatedTask.dateModified = getCurrentTimestamp();
 
 		if (updatedTask.timeEntries && Array.isArray(updatedTask.timeEntries)) {
+			updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
+				const sanitizedEntry = { ...entry };
+				delete sanitizedEntry.duration;
+				return sanitizedEntry;
+			});
 			const entryIndex = updatedTask.timeEntries.findIndex(
 				(entry: TimeEntry) => entry.startTime === activeSession.startTime && !entry.endTime
 			);
@@ -1207,7 +1226,7 @@ export class TaskService {
 				updatedTask.timeEntries = [...updatedTask.timeEntries];
 				updatedTask.timeEntries[entryIndex] = {
 					...updatedTask.timeEntries[entryIndex],
-					endTime: getCurrentTimestamp(),
+					endTime: stopTimestamp,
 				};
 			}
 		}
@@ -1218,6 +1237,11 @@ export class TaskService {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 
 			if (frontmatter[timeEntriesField] && Array.isArray(frontmatter[timeEntriesField])) {
+				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map((entry: TimeEntry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
 				// Find and update the active session
 				const entryIndex = frontmatter[timeEntriesField].findIndex(
 					(entry: TimeEntry) =>
@@ -1225,7 +1249,7 @@ export class TaskService {
 				);
 
 				if (entryIndex !== -1) {
-					frontmatter[timeEntriesField][entryIndex].endTime = getCurrentTimestamp();
+					frontmatter[timeEntriesField][entryIndex].endTime = stopTimestamp;
 				}
 			}
 			frontmatter[dateModifiedField] = updatedTask.dateModified;
@@ -1277,6 +1301,14 @@ export class TaskService {
 			const file = this.plugin.app.vault.getAbstractFileByPath(originalTask.path);
 			if (!(file instanceof TFile)) {
 				throw new Error(`Cannot find task file: ${originalTask.path}`);
+			}
+
+			if (Array.isArray(updates.timeEntries)) {
+				updates.timeEntries = updates.timeEntries.map((entry) => {
+					const sanitizedEntry = { ...entry };
+					delete sanitizedEntry.duration;
+					return sanitizedEntry;
+				});
 			}
 
 			const isRenameNeeded =
@@ -1955,6 +1987,24 @@ export class TaskService {
 
 			frontmatter[dateModifiedField] = updatedTask.dateModified;
 		});
+
+		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
+		if (newComplete && this.plugin.settings.resetCheckboxesOnRecurrence) {
+			const currentContent = await this.plugin.app.vault.read(file);
+			const { frontmatter: frontmatterText, body } = splitFrontmatterAndBody(currentContent);
+			const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+
+			if (changed) {
+				const frontmatterBlock =
+					frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
+				const finalBody = resetBody.trimEnd();
+				const newContent = finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
+				await this.plugin.app.vault.modify(file, newContent);
+
+				// Update the details field in the returned task
+				updatedTask.details = resetBody.replace(/\r\n/g, "\n").trimEnd();
+			}
+		}
 
 		// Step 3: Wait for fresh data and update cache
 		try {

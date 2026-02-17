@@ -419,6 +419,7 @@ export const fr: TranslationTree = {
 			header: "Nouveautés de TaskNotes {version}",
 			viewAllLink: "Voir toutes les notes de version sur GitHub →",
 			starMessage: "Si vous trouvez TaskNotes utile, pensez à lui donner une étoile sur GitHub",
+			baseFilesNotice: "> [!info] À propos des fichiers `.base` par défaut\n> Les modifications des modèles `.base` générés par défaut n'écrasent pas vos fichiers `.base` existants, afin de préserver vos personnalisations.\n> Si vous souhaitez profiter des dernières améliorations de modèles, régénérez les fichiers base via **Paramètres → TaskNotes → Général → Créer les fichiers**.",
 		},
 	},
 	settings: {
@@ -574,6 +575,8 @@ export const fr: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "Maintenir le décalage de date d'échéance dans les tâches récurrentes",
 				maintainOffsetDesc: "Conserver le décalage entre la date d'échéance et la date planifiée lors de l'achèvement des tâches récurrentes",
+				resetCheckboxesName: "Réinitialiser les cases à cocher lors de la récurrence",
+				resetCheckboxesDesc: "Réinitialiser toutes les cases à cocher markdown dans le corps de la tâche lorsqu'une tâche récurrente est terminée et reprogrammée",
 			},
 			timeblocking: {
 				header: "Planification par blocs",
@@ -1185,6 +1188,7 @@ export const fr: TranslationTree = {
 					scheduled: "Date planifiée",
 					timeEstimate: "Estimation de temps",
 					totalTrackedTime: "Temps suivi total",
+					checklistProgress: "Checklist Progress",
 					recurrence: "Récurrence",
 					completedDate: "Date d'achèvement",
 					createdDate: "Date de création",
@@ -1782,6 +1786,8 @@ export const fr: TranslationTree = {
 					notATask: "Le fichier actuel n'est pas une tâche",
 					noDateToSync: "La tâche n'a pas de date planifiée ou d'échéance à synchroniser",
 					syncFailed: "Échec de la synchronisation de la tâche vers Google Calendar : {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "Synchronisation de {total} tâches vers Google Calendar...",
 					syncComplete:
 						"Synchronisation terminée : {synced} synchronisées, {failed} échouées, {skipped} ignorées",
@@ -1817,6 +1823,12 @@ export const fr: TranslationTree = {
 					name: "Jeton d'authentification API",
 					description: "Jeton requis pour l'authentification API (laisser vide pour pas d'authentification)",
 					placeholder: "votre-jeton-secret",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "Points de terminaison API disponibles",
@@ -2181,6 +2193,26 @@ export const fr: TranslationTree = {
 			addAttachmentButton: "Ajouter une pièce jointe",
 			addAttachmentTooltip: "Sélectionnez un fichier ou une note en utilisant la recherche floue",
 			createButton: "Créer un bloc de temps",
+		},
+		calendarEventCreation: {
+			heading: "Créer un événement",
+			dateTimeLabel: "Date et heure : ",
+			titleLabel: "Titre",
+			titleDesc: "Titre de l'événement",
+			titlePlaceholder: "ex., Réunion d'équipe",
+			calendarLabel: "Calendrier",
+			calendarDesc: "Dans quel calendrier créer l'événement",
+			descriptionLabel: "Description",
+			descriptionDesc: "Description facultative de l'événement",
+			descriptionPlaceholder: "Ajouter des détails sur cet événement...",
+			locationLabel: "Lieu",
+			locationDesc: "Lieu facultatif de l'événement",
+			locationPlaceholder: "ex., Salle de réunion A",
+			createButton: "Créer l'événement",
+			titleRequired: "Le titre de l'événement est requis",
+			noCalendarSelected: "Aucun calendrier sélectionné",
+			success: "Événement \"{title}\" créé",
+			error: "Impossible de créer l'événement : {message}",
 		},
 		icsNoteCreation: {
 			heading: "Créer à partir d'un événement ICS",
@@ -3010,6 +3042,7 @@ export const fr: TranslationTree = {
 				scheduledDate: "Date planifiée",
 				timeEstimate: "Estimation de temps",
 				totalTrackedTime: "Temps suivi total",
+				checklistProgress: "Checklist Progress",
 				recurrence: "Récurrence",
 				completedDate: "Date d'achèvement",
 				createdDate: "Date de création",

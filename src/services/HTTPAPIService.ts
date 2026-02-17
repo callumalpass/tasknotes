@@ -7,6 +7,7 @@ import { FilterService } from "./FilterService";
 import { TaskManager } from "../utils/TaskManager";
 import { NaturalLanguageParser } from "./NaturalLanguageParser";
 import { StatusManager } from "./StatusManager";
+import { TaskStatsService } from "./TaskStatsService";
 import TaskNotesPlugin from "../main";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { OpenAPIController } from "../utils/OpenAPIDecorators";
@@ -17,6 +18,8 @@ import { PomodoroController } from "../api/PomodoroController";
 import { SystemController } from "../api/SystemController";
 import { WebhookController } from "../api/WebhookController";
 import { CalendarsController } from "../api/CalendarsController";
+import { MCPService } from "./MCPService";
+import { parseJSONBody, sendJSONResponse, setCORSHeaders } from "../api/httpUtils";
 
 @OpenAPIController
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -30,6 +33,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 	private systemController: SystemController;
 	private webhookController: WebhookController;
 	private calendarsController: CalendarsController;
+	private mcpService?: MCPService;
 
 	constructor(
 		plugin: TaskNotesPlugin,
@@ -49,6 +53,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 			plugin.settings.userFields
 		);
 		const statusManager = new StatusManager(plugin.settings.customStatuses, plugin.settings.defaultTaskStatus);
+		const taskStatsService = new TaskStatsService(cacheManager, statusManager);
 
 		// Initialize controllers
 		this.webhookController = new WebhookController(plugin);
@@ -57,30 +62,35 @@ export class HTTPAPIService implements IWebhookNotifier {
 			taskService,
 			filterService,
 			cacheManager,
-			statusManager,
-			this.webhookController
+			taskStatsService
 		);
 		this.timeTrackingController = new TimeTrackingController(
 			plugin,
 			taskService,
 			cacheManager,
-			statusManager,
-			this.webhookController
+			statusManager
 		);
 		this.pomodoroController = new PomodoroController(plugin, cacheManager);
-		this.systemController = new SystemController(
-			plugin,
-			taskService,
-			nlParser,
-			this.webhookController,
-			this
-		);
+		this.systemController = new SystemController(plugin, taskService, nlParser, this);
 		this.calendarsController = new CalendarsController(
 			plugin,
 			plugin.oauthService,
 			plugin.icsSubscriptionService,
 			plugin.calendarProviderRegistry
 		);
+
+		// Initialize MCP service if enabled
+		if (plugin.settings.enableMCP) {
+			this.mcpService = new MCPService(
+				plugin,
+				taskService,
+				filterService,
+				cacheManager,
+				statusManager,
+				nlParser,
+				taskStatsService
+			);
+		}
 
 		// Initialize router and register routes
 		this.router = new APIRouter();
@@ -139,9 +149,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 
 	private async handleCORSPreflight(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		res.statusCode = 200;
-		res.setHeader("Access-Control-Allow-Origin", "*");
-		res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+		setCORSHeaders(res);
 		res.end();
 	}
 
@@ -163,12 +171,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 	}
 
 	private sendResponse(res: ServerResponse, statusCode: number, data: any): void {
-		res.statusCode = statusCode;
-		res.setHeader("Content-Type", "application/json");
-		res.setHeader("Access-Control-Allow-Origin", "*");
-		res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-		res.end(JSON.stringify(data));
+		sendJSONResponse(res, statusCode, data);
 	}
 
 	private successResponse<T>(
@@ -194,6 +197,21 @@ export class HTTPAPIService implements IWebhookNotifier {
 			const parsedUrl = parse(req.url || "", true);
 			const pathname = parsedUrl.pathname || "";
 
+			// Handle MCP endpoint
+			if (pathname === "/mcp") {
+				if (!this.mcpService) {
+					this.sendResponse(res, 404, this.errorResponse("MCP server is not enabled"));
+					return;
+				}
+				if (!this.authenticate(req)) {
+					this.sendResponse(res, 401, this.errorResponse("Authentication required"));
+					return;
+				}
+				const body = await this.parseBody(req);
+				await this.mcpService.handleRequest(req, res, body);
+				return;
+			}
+
 			// Check authentication for API routes
 			if (pathname.startsWith("/api/") && !this.authenticate(req)) {
 				this.sendResponse(res, 401, this.errorResponse("Authentication required"));
@@ -216,6 +234,18 @@ export class HTTPAPIService implements IWebhookNotifier {
 	// Webhook interface implementation - delegate to WebhookController
 	async triggerWebhook(event: any, data: any): Promise<void> {
 		await this.webhookController.triggerWebhook(event, data);
+	}
+
+	/**
+	 * Reload webhook configuration from plugin settings.
+	 * Called after settings edits so runtime delivery state stays in sync.
+	 */
+	syncWebhookSettings(): void {
+		this.webhookController.syncFromSettings();
+	}
+
+	private parseBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+		return parseJSONBody(req);
 	}
 
 	async start(): Promise<void> {

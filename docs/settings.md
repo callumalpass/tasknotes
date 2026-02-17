@@ -6,41 +6,36 @@ TaskNotes provides settings to customize its behavior and appearance. The settin
 
 ## General
 
-These settings control task identification, file storage, and click behavior.
+The General tab controls how TaskNotes recognizes tasks, where files are stored, and how task cards respond to clicks. This is the best place to start if your vault already has conventions you want TaskNotes to follow, such as custom task tags, property-based identification, or specific folder structures.
 
 For more information, see the [General Settings](settings/general.md) documentation.
 
 ## Task Properties
 
-These settings configure task properties including statuses, priorities, dates, projects, reminders, and custom user fields. Each property has a card where you can configure:
-
-- Property key (frontmatter field name)
-- Default value for new tasks
-- NLP trigger character (if applicable)
-- Property-specific options
+Task Properties defines the schema TaskNotes writes to frontmatter, including status, priority, dates, reminders, projects, and user fields. Each property card lets you remap key names and behavior so TaskNotes can match existing metadata rather than forcing a migration.
 
 For more detailed information, see the [Task Properties Settings](settings/task-properties.md) documentation.
 
 ## Modal Fields
 
-These settings control which fields appear in task creation and edit modals. Configure field visibility, ordering, and grouping. Fields can be enabled or disabled individually, and reordered within their groups using drag-and-drop.
+Modal Fields controls the task create/edit experience by deciding which fields are visible and in what order. If your workflow depends on a handful of fields, you can surface only those and reduce form noise.
 
 For more information, see the [Modal Fields Settings](settings/modal-fields.md) documentation.
 
 ## Appearance & UI
 
-These settings control the visual appearance of the plugin, including the calendar, task cards, and other UI elements.
+Appearance & UI handles task card density, calendar defaults, time formatting, and visual toggles for supporting widgets. Use this tab to tune how much information is visible at a glance.
 
 For more detailed information, see the [Appearance & UI Settings](settings/appearance.md) documentation.
 
 ## Features
 
-These settings control inline tasks, natural language processing, the Pomodoro timer, and notifications.
+Features groups behavior toggles for inline tasks, natural language input, Pomodoro, reminders, and performance-related options. It is where you enable advanced workflow capabilities and then refine defaults.
 
 For more information, see the [Features Settings](settings/features.md) documentation.
 
 ## Integrations
 
-These settings control integration with external services and plugins. This includes OAuth calendar connections (Google Calendar and Microsoft Outlook), Bases plugin integration, calendar subscriptions from ICS/iCal sources, automatic ICS export, HTTP API configuration, and webhook management.
+Integrations covers external connectivity: Bases view wiring, Google/Microsoft OAuth calendar sync, ICS subscriptions, automatic ICS export, HTTP API settings, and webhook endpoints.
 
 For more detailed information, see the [Integrations Settings](settings/integrations.md) documentation.
