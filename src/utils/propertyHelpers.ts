@@ -31,6 +31,7 @@ export function getAvailableProperties(
 		{ id: "scheduled", label: makeLabel("Scheduled Date", "scheduled") },
 		{ id: "timeEstimate", label: makeLabel("Time Estimate", "timeEstimate") },
 		{ id: "totalTrackedTime", label: "Total Tracked Time" }, // Computed property, not in FieldMapping
+		{ id: "checklistProgress", label: "Checklist Progress" }, // Computed from metadata cache listItems
 		{ id: "recurrence", label: makeLabel("Recurrence", "recurrence") },
 		{ id: "completeInstances", label: makeLabel("Completed Instances", "completeInstances") },
 		{ id: "skippedInstances", label: makeLabel("Skipped Instances", "skippedInstances") },

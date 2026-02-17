@@ -5,9 +5,10 @@ import TaskNotesPlugin from "../main";
 import { OAuthService } from "../services/OAuthService";
 import { ICSSubscriptionService } from "../services/ICSSubscriptionService";
 import { CalendarProviderRegistry } from "../services/CalendarProvider";
-import { OAuthProvider, ICSEvent } from "../types";
+import { OAuthProvider } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Get } from "../utils/OpenAPIDecorators";
+import { collectCalendarEvents } from "../utils/calendarUtils";
 
 export class CalendarsController extends BaseController {
 	constructor(
@@ -90,45 +91,16 @@ export class CalendarsController extends BaseController {
 			const parsedUrl = parse(req.url || "", true);
 			const params = parsedUrl.query;
 
-			// Parse optional date range filters
 			const startDate = params.start ? new Date(params.start as string) : null;
 			const endDate = params.end ? new Date(params.end as string) : null;
 
-			// Collect events from all sources
-			const allEvents: (ICSEvent & { provider: string })[] = [];
-			const sources: Record<string, number> = {};
-
-			// Get events from OAuth providers (Google, Microsoft)
-			const providerEvents = this.calendarProviderRegistry.getAllEvents();
-			for (const event of providerEvents) {
-				const provider = this.getProviderFromSubscriptionId(event.subscriptionId);
-				if (this.isEventInRange(event, startDate, endDate)) {
-					allEvents.push({ ...event, provider });
-					sources[provider] = (sources[provider] || 0) + 1;
-				}
-			}
-
-			// Get events from ICS subscriptions
-			const icsEvents = this.icsSubscriptionService.getAllEvents();
-			for (const event of icsEvents) {
-				if (this.isEventInRange(event, startDate, endDate)) {
-					allEvents.push({ ...event, provider: "ics" });
-					sources["ics"] = (sources["ics"] || 0) + 1;
-				}
-			}
-
-			// Sort events by start time
-			allEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-
-			this.sendResponse(
-				res,
-				200,
-				this.successResponse({
-					events: allEvents,
-					total: allEvents.length,
-					sources,
-				})
+			const result = collectCalendarEvents(
+				this.calendarProviderRegistry,
+				this.icsSubscriptionService,
+				{ start: startDate, end: endDate }
 			);
+
+			this.sendResponse(res, 200, this.successResponse(result));
 		} catch (error: any) {
 			this.sendResponse(res, 500, this.errorResponse(error.message));
 		}
@@ -198,35 +170,4 @@ export class CalendarsController extends BaseController {
 		};
 	}
 
-	private getProviderFromSubscriptionId(subscriptionId: string): string {
-		if (subscriptionId.startsWith("google-")) {
-			return "google";
-		}
-		if (subscriptionId.startsWith("microsoft-")) {
-			return "microsoft";
-		}
-		return "unknown";
-	}
-
-	private isEventInRange(
-		event: ICSEvent,
-		startDate: Date | null,
-		endDate: Date | null
-	): boolean {
-		if (!startDate && !endDate) {
-			return true;
-		}
-
-		const eventStart = new Date(event.start);
-		const eventEnd = event.end ? new Date(event.end) : eventStart;
-
-		if (startDate && eventEnd < startDate) {
-			return false;
-		}
-		if (endDate && eventStart > endDate) {
-			return false;
-		}
-
-		return true;
-	}
 }

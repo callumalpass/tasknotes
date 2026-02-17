@@ -2,12 +2,14 @@
 # User Fields
 
 TaskNotes allows you to define your own custom fields for tasks. This feature allows you to add custom data to your tasks and use it for filtering, sorting, and grouping.
+User fields can store workflow-specific metadata such as owner, effort class, client, or review stage.
 
 [← Back to Features](../features.md)
 
 ## Creating User Fields
 
 User fields are created in the TaskNotes settings, under the "Task Properties" tab. To create a new user field, click the "Add new user field" button.
+Fields that are not used in filters or grouping still add frontmatter overhead, so this section focuses on fields used in views.
 
 Each user field has the following properties:
 
@@ -36,6 +38,7 @@ This is useful when you want to limit suggestions to specific types of notes. Fo
 - An "Assignee" field that only suggests notes tagged with `#person`
 - A "Project" field that only shows notes in the `Projects/` folder
 - A "Related Document" field filtered by a specific frontmatter property
+Filtering narrows wikilink suggestions in large vaults.
 
 ### Configuring Filters
 
@@ -73,6 +76,7 @@ When filters are configured, a **"Filters On"** badge with a funnel icon appears
 - **Empty filters are ignored**: If you don't configure a filter, it won't restrict results
 - **No filters = all files**: If no filters are configured, all markdown files in your vault will appear
 - **Filters only affect autocomplete**: They don't affect the actual field value or validation
+Autocomplete filtering and stored field values are handled independently.
 
 ### Example Configurations
 
@@ -117,6 +121,7 @@ Once you have created a user field, it will be available in the following places
 - **Bases Filters**: Add the field to Bases filter expressions (for example `note.effort == "high"`) to narrow task lists and Kanban boards.
 - **Sorting**: Use the Bases sort menu to order tasks by the user field.
 - **Grouping**: Use the Bases group menu to create swimlanes or list groupings based on the user field.
+To verify a new field is active in workflow, add it to at least one saved view.
 
 ## Frontmatter
 

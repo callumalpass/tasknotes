@@ -419,6 +419,7 @@ export const zh: TranslationTree = {
 			header: "TaskNotes {version} 的新功能",
 			viewAllLink: "在 GitHub 上查看所有版本说明 →",
 			starMessage: "如果您觉得 TaskNotes 有用，请在 GitHub 上给它加星",
+			baseFilesNotice: "> [!info] 关于默认 `.base` 文件\n> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 创建文件** 中重新生成 base 文件。",
 		},
 	},
 	settings: {
@@ -574,6 +575,8 @@ export const zh: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "在重复任务中保持到期日期偏移",
 				maintainOffsetDesc: "重复任务完成时保持到期日期和安排日期之间的偏移",
+				resetCheckboxesName: "重复时重置复选框",
+				resetCheckboxesDesc: "当重复任务完成并重新安排时，重置任务正文中的所有markdown复选框",
 			},
 			timeblocking: {
 				header: "时间块",
@@ -1185,6 +1188,7 @@ export const zh: TranslationTree = {
 					scheduled: "安排日期",
 					timeEstimate: "时间估计",
 					totalTrackedTime: "总跟踪时间",
+					checklistProgress: "Checklist Progress",
 					recurrence: "重复",
 					completedDate: "完成日期",
 					createdDate: "创建日期",
@@ -1782,6 +1786,8 @@ export const zh: TranslationTree = {
 					notATask: "当前文件不是任务",
 					noDateToSync: "任务没有可同步的计划日期或截止日期",
 					syncFailed: "同步任务到Google日历失败：{message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "正在同步{total}个任务到Google日历...",
 					syncComplete:
 						"同步完成：{synced}个已同步，{failed}个失败，{skipped}个跳过",
@@ -1817,6 +1823,12 @@ export const zh: TranslationTree = {
 					name: "API认证令牌",
 					description: "API认证所需的令牌（留空表示无认证）",
 					placeholder: "your-secret-token",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "可用API端点",
@@ -2181,6 +2193,26 @@ export const zh: TranslationTree = {
 			addAttachmentButton: "添加附件",
 			addAttachmentTooltip: "使用模糊搜索选择文件或笔记",
 			createButton: "创建时间块",
+		},
+		calendarEventCreation: {
+			heading: "创建日历事件",
+			dateTimeLabel: "日期和时间：",
+			titleLabel: "标题",
+			titleDesc: "日历事件的标题",
+			titlePlaceholder: "例如：团队会议",
+			calendarLabel: "日历",
+			calendarDesc: "在哪个日历中创建事件",
+			descriptionLabel: "描述",
+			descriptionDesc: "事件的可选描述",
+			descriptionPlaceholder: "添加此事件的详细信息...",
+			locationLabel: "地点",
+			locationDesc: "事件的可选地点",
+			locationPlaceholder: "例如：会议室A",
+			createButton: "创建事件",
+			titleRequired: "事件标题为必填项",
+			noCalendarSelected: "未选择日历",
+			success: "日历事件 \"{title}\" 已创建",
+			error: "创建日历事件失败：{message}",
 		},
 		icsNoteCreation: {
 			heading: "从 ICS 事件创建",
@@ -3010,6 +3042,7 @@ export const zh: TranslationTree = {
 				scheduledDate: "安排日期",
 				timeEstimate: "时间估计",
 				totalTrackedTime: "总跟踪时间",
+				checklistProgress: "Checklist Progress",
 				recurrence: "重复",
 				completedDate: "完成日期",
 				createdDate: "创建日期",

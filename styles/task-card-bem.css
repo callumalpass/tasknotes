@@ -170,6 +170,43 @@
     height: 12px;
 }
 
+/* Checklist progress metadata */
+.tasknotes-plugin .task-card__metadata-property--checklistProgress {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tasknotes-plugin .task-card__progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tasknotes-plugin .task-card__progress-bar {
+    width: 72px;
+    height: 6px;
+    background: color-mix(in srgb, var(--background-modifier-border) 70%, transparent);
+    border-radius: 999px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .task-card__progress-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--interactive-accent);
+    border-radius: inherit;
+    transition: width var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .task-card__progress-label {
+    font-size: var(--tn-font-size-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--tn-text-muted);
+}
+
 
 .tasknotes-plugin .task-card__tag {
     background: var(--tn-bg-secondary);
@@ -1252,6 +1289,23 @@
     padding: 0;
     margin: 0 0.75em 0 0;
     vertical-align: baseline;
+}
+
+.tasknotes-plugin .task-card--layout-inline .task-card__metadata-property--checklistProgress {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tasknotes-plugin .task-card--layout-inline .task-card__progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tasknotes-plugin .task-card--layout-inline .task-card__progress-bar {
+    width: 42px;
+    height: 4px;
 }
 
 /* Metadata pills in inline mode */
