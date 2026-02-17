@@ -135,9 +135,11 @@ export class ReleaseNotesView extends ItemView {
 
 		// Transform issue references into clickable links and render the markdown
 		const transformedNotes = this.transformIssueLinks(versionData.content);
+		const baseFilesNotice = this.plugin.i18n.translate("views.releaseNotes.baseFilesNotice");
+		const releaseContentWithNotice = `${baseFilesNotice}\n\n${transformedNotes}`;
 		await MarkdownRenderer.render(
 			this.plugin.app,
-			transformedNotes,
+			releaseContentWithNotice,
 			content,
 			"",
 			this as any

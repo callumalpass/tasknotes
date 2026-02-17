@@ -27,6 +27,7 @@ import type { FrontmatterPropertyName, TaskCardPropertyId } from "../types";
  * Special transformations (for computed properties):
  * - "timeEntries" → "totalTrackedTime" (show total instead of raw array)
  * - "blockedBy" → "blocked" (show status pill instead of array)
+ * - "file.tasks" / "formula.checklistProgress" → "checklistProgress"
  */
 export class PropertyMappingService {
 	constructor(
@@ -94,6 +95,7 @@ export class PropertyMappingService {
 			// Map specific file properties to TaskInfo equivalents
 			if (basesPropertyId === "file.ctime") return "dateCreated";
 			if (basesPropertyId === "file.mtime") return "dateModified";
+			if (basesPropertyId === "file.tasks") return "checklistProgress";
 
 			// Keep file.* prefix for computed file properties (backlinks, links, etc.)
 			// This distinguishes them from note.* properties with the same name
@@ -102,6 +104,7 @@ export class PropertyMappingService {
 
 		// Step 3: Keep formula properties unchanged
 		if (basesPropertyId.startsWith("formula.")) {
+			if (basesPropertyId === "formula.checklistProgress") return "checklistProgress";
 			return basesPropertyId;
 		}
 
@@ -156,6 +159,11 @@ export class PropertyMappingService {
 
 		// blockedBy → blocked (show status pill instead of dependency array)
 		if (propId === "blockedBy") return "blocked";
+
+		// Keep only explicit Bases-facing checklist progress aliases.
+		// "Tasks" (file.tasks) is selectable in Bases UI.
+		if (propId === "file.tasks") return "checklistProgress";
+		if (propId === "formula.checklistProgress") return "checklistProgress";
 
 		// Keep everything else unchanged
 		return propId;

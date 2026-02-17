@@ -4,6 +4,7 @@ import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
 import { TaskInfo } from "../types";
 import { convertToGoogleRecurrence } from "../utils/rruleConverter";
+import { TokenRefreshError } from "./errors";
 
 /** Debounce delay for rapid task updates (ms) */
 const SYNC_DEBOUNCE_MS = 500;
@@ -731,7 +732,14 @@ export class TaskCalendarSyncService {
 			}
 
 			console.error("[TaskCalendarSync] Failed to sync task:", task.path, error);
-			new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncFailed", { message: error.message }));
+
+			// Show user-friendly message for token refresh errors
+			// TokenRefreshError indicates the OAuth connection expired and user needs to reconnect
+			if (error instanceof TokenRefreshError) {
+				new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.connectionExpired"));
+			} else {
+				new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncFailed", { message: error.message }));
+			}
 		}
 	}
 

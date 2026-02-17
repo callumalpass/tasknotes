@@ -67,6 +67,10 @@ jobs:
         echo "NPM version: $(npm --version)"
         echo "Timezone: $(date)"
         echo "Jest version: $(npx jest --version)"
+
+    - name: Run docs quality checks
+      run: npm run docs:check
+      timeout-minutes: 3
       
     - name: Run linter
       run: npm run lint || echo "Linting completed with warnings"

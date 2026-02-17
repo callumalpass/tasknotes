@@ -49,7 +49,12 @@ function transform(payload) {
     }
     
     const totalMinutes = task.timeEntries.reduce((sum, entry) => {
-      return sum + (entry.duration || 0);
+      if (!entry.startTime) return sum;
+      const start = new Date(entry.startTime);
+      const end = entry.endTime ? new Date(entry.endTime) : new Date();
+      const diffMs = end.getTime() - start.getTime();
+      const minutes = Math.max(0, Math.floor(diffMs / (1000 * 60)));
+      return sum + minutes;
     }, 0);
     
     const hours = Math.floor(totalMinutes / 60);

@@ -10,6 +10,7 @@ This page documents folder management, filename templates, archive settings, and
 You can specify a **Default Tasks Folder** where new tasks will be created. You can also configure the **Task Tag** that identifies notes as TaskNotes, and you can specify a list of **Excluded Folders** that will be ignored by the plugin.
 
 Filename generation settings are configured in the **Task Properties** tab within the Title property card. You can choose from title-based, timestamp-based, Zettelkasten-style patterns, or create a custom filename template.
+These settings define folder paths and filename behavior for new tasks, which affects long-term vault structure.
 
 ### Folder Template Variables
 
@@ -36,6 +37,7 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 - `{{titleKebab}}` - Task title in kebab-case
 - `{{titleCamel}}` - Task title in camelCase
 - `{{titlePascal}}` - Task title in PascalCase
+Task variables allow folder paths to reflect task metadata such as project, context, status, or priority.
 
 **Date Variables:**
 
@@ -43,6 +45,7 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 - `{{month}}` - Current month with leading zero (e.g., "08")
 - `{{day}}` - Current day with leading zero (e.g., "15")
 - `{{date}}` - Full current date (e.g., "2025-08-15")
+Date variables support time-based partitioning such as yearly archives or monthly intake folders.
 
 **Time Variables:**
 
@@ -57,6 +60,7 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 - `{{hourPadded}}` - Hour with leading zero (e.g., "14")
 - `{{hour12}}` - 12-hour format hour with leading zero (e.g., "02")
 - `{{ampm}}` - AM/PM indicator (e.g., "PM")
+Time variables are commonly used for filename/path uniqueness in high-volume capture workflows.
 
 **Extended Date Variables:**
 
@@ -82,6 +86,7 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 - `{{utcZ}}` - UTC Z indicator (always "Z")
 - `{{zettel}}` - Zettelkasten ID (e.g., "250815abc")
 - `{{nano}}` - Nano ID with timestamp and random string
+Advanced variables increase uniqueness and entropy, but may reduce path readability.
 
 #### Important Notes
 
@@ -91,6 +96,7 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 - **Title Sanitization**: The `{{title}}` variable automatically removes invalid folder characters (`<>:"/\|?*`) and replaces them with underscores
 - **Folder Creation**: Folders are automatically created if they don't exist
 - **Inline Tasks**: Template variables also work for the inline task conversion folder setting
+When templates contain nested variables, create a small test set first to validate the resulting paths.
 
 #### Advanced Usage
 
@@ -102,6 +108,7 @@ Tasks/{{project}}/{{context}}/{{year}}
 - If both project and context exist: `Tasks/ProjectName/ContextName/2025`
 - If only project exists: `Tasks/ProjectName//2025` (note the double slash)
 - If neither exists: `Tasks///2025`
+Conditional structures can produce empty path segments. A static fallback segment (for example `Tasks/_unassigned/{{year}}`) avoids sparse paths.
 
 **Combining with Static Paths:**
 ```
@@ -112,6 +119,7 @@ Archive/{{year}}/{{month}}/{{project}}
 ## Archive Folder Management
 
 TaskNotes can automatically move tasks to a designated archive folder when archived, and back to the default tasks folder when unarchived.
+Archive moves separate active and historical tasks at the filesystem level.
 
 **Move archived tasks to folder** - Controls whether tasks are automatically moved when archived. Disabled by default.
 
@@ -124,6 +132,7 @@ The system prevents file overwrites by checking for existing files and showing e
 When using the **custom** filename format, you can create templates using variables that are replaced with actual values when tasks are created.
 
 > **Recommended syntax:** Use double braces `{{variable}}` for consistency with body templates. Single braces `{variable}` are supported for backwards compatibility but are deprecated.
+Short deterministic filename patterns improve link stability, scripting, and manual navigation.
 
 ### Available Filename Variables
 
@@ -149,6 +158,7 @@ When using the **custom** filename format, you can create templates using variab
 - `{{titleKebab}}` - Task title in kebab-case
 - `{{titleCamel}}` - Task title in camelCase
 - `{{titlePascal}}` - Task title in PascalCase
+Property-driven filename patterns preserve task metadata directly in filenames.
 
 **Date and Time:**
 
@@ -175,6 +185,7 @@ When using the **custom** filename format, you can create templates using variab
 - `{{hourPadded}}` - Hour with leading zero (e.g., "14")
 - `{{hour12}}` - 12-hour format hour with leading zero (e.g., "02")
 - `{{ampm}}` - AM/PM indicator (e.g., "PM")
+Date/time components provide uniqueness without relying only on title text.
 
 **Advanced:**
 
@@ -243,10 +254,12 @@ When enabled, the task's title is stored in the filename instead of frontmatter.
 - **Backward Compatibility:** This feature is designed to be backward-compatible. Existing tasks with the `title` property in their frontmatter will continue to work as expected. The plugin will always prioritize reading the title from the frontmatter if it exists.
 - **New Tasks:** New tasks created with this setting enabled will have their title stored exclusively in the filename.
 - **Migration:** To migrate an existing task to this system, rename the file to match the task's title and remove the `title` property from frontmatter.
+Storing title in filename favors path-readable tasks and external tooling that keys off filenames. Keeping title in frontmatter avoids path changes when titles are edited.
 
 ## Default Reminders
 
 Configure default reminders in **Settings → Task Properties → Reminders**. These reminders automatically apply to new tasks.
+Default reminders apply to all new tasks and can be supplemented with per-task reminders.
 
 ### Reminder Types
 
