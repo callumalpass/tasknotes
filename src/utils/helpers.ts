@@ -335,6 +335,39 @@ export function splitFrontmatterAndBody(content: string): {
 }
 
 /**
+ * Resets all checked markdown checkboxes to unchecked in the given content.
+ * Handles all standard markdown checkbox formats:
+ * - Unordered lists: - [x], * [x], + [x]
+ * - Ordered lists: 1. [x], 2. [x], etc.
+ * - Various indentation levels
+ * - Both [x] and [X] (case-insensitive)
+ *
+ * @param content The markdown content to process
+ * @returns Object with the processed content and whether any changes were made
+ */
+export function resetMarkdownCheckboxes(content: string): {
+	content: string;
+	changed: boolean;
+} {
+	// Match checkbox list items that are checked: - [x], * [x], + [x], 1. [x], etc.
+	// Pattern breakdown:
+	// ^(\s*)           - Start of line, capture leading whitespace
+	// ([-*+]|\d+\.)    - List marker: -, *, +, or number with dot
+	// (\s+\[)          - Whitespace and opening bracket
+	// [xX]             - The check mark (x or X)
+	// (\].*)           - Closing bracket and rest of line
+	const checkboxPattern = /^(\s*)([-*+]|\d+\.)(\s+\[)[xX](\].*)/gm;
+
+	let changed = false;
+	const result = content.replace(checkboxPattern, (match, indent, marker, beforeX, afterX) => {
+		changed = true;
+		return `${indent}${marker}${beforeX} ${afterX}`;
+	});
+
+	return { content: result, changed };
+}
+
+/**
  * Checks if a recurring task is due on a specific date using RFC 5545 rrule
  */
 export function isDueByRRule(task: TaskInfo, date: Date): boolean {
@@ -514,12 +547,13 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 			const rrule = new RRule(rruleOptions);
 
 			// Convert start and end dates to UTC to match dtstart
-			// This ensures consistent timezone handling and prevents off-by-one day errors
+			// Use getUTC* methods to extract UTC date components, not local timezone components
+			// This prevents off-by-one day errors for users in non-UTC timezones (issue #1582)
 			const utcStartDate = new Date(
 				Date.UTC(
-					startDate.getFullYear(),
-					startDate.getMonth(),
-					startDate.getDate(),
+					startDate.getUTCFullYear(),
+					startDate.getUTCMonth(),
+					startDate.getUTCDate(),
 					0,
 					0,
 					0,
@@ -528,9 +562,9 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 			);
 			const utcEndDate = new Date(
 				Date.UTC(
-					endDate.getFullYear(),
-					endDate.getMonth(),
-					endDate.getDate(),
+					endDate.getUTCFullYear(),
+					endDate.getUTCMonth(),
+					endDate.getUTCDate(),
 					23,
 					59,
 					59,
@@ -1464,4 +1498,20 @@ export function sanitizeTags(tags: string): string {
 		})
 		.filter((tag) => tag.length > 0) // Remove empty tags
 		.join(", ");
+}
+
+/**
+ * Sanitizes a string for use as a CSS class name
+ * Replaces non-alphanumeric characters (except hyphens) with hyphens and lowercases
+ * This prevents DOMTokenList errors when using classList.add() with values containing spaces
+ *
+ * @example
+ * sanitizeForCssClass("In Progress") // "in-progress"
+ * sanitizeForCssClass("60-In Progress") // "60-in-progress"
+ */
+export function sanitizeForCssClass(value: string): string {
+	if (!value || typeof value !== "string") {
+		return "";
+	}
+	return value.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase();
 }

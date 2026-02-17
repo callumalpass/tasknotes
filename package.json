@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "4.3.2",
+	"version": "4.4.0",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -14,7 +14,9 @@
 		"e2e:docs:copy": "mkdir -p media/docs && cp test-results/docs/*.png media/docs/",
 		"e2e:setup": "bash e2e-setup.sh",
 		"e2e:launch": "bash e2e-launch.sh",
-		"version": "node version-bump.mjs && node generate-release-notes-import.mjs && git add manifest.json versions.json src/releaseNotes.ts",
+		"version": "node version-bump.mjs && node generate-release-notes-import.mjs && npm run docs:sync && git add manifest.json versions.json src/releaseNotes.ts docs/releases.md PRIVACY.md",
+		"docs:sync": "node scripts/update-release-index.mjs && node scripts/sync-privacy.mjs",
+		"docs:check": "node scripts/update-release-index.mjs --check && node scripts/sync-privacy.mjs --check && node scripts/check-docs.mjs",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
@@ -74,12 +76,15 @@
 		"@fullcalendar/list": "^6.1.17",
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
+		"@modelcontextprotocol/sdk": "^1.12.1",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
 		"ical.js": "^2.2.1",
 		"obsidian-daily-notes-interface": "^0.9.4",
 		"reflect-metadata": "^0.2.2",
 		"rrule": "^2.8.1",
-		"yaml": "^2.3.1"
+		"tasknotes-nlp-core": "^0.1.0",
+		"yaml": "^2.3.1",
+		"zod": "^3.24.0"
 	}
 }

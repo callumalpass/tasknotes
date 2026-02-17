@@ -419,6 +419,7 @@ export const ru: TranslationTree = {
 			header: "Что нового в TaskNotes {version}",
 			viewAllLink: "Посмотреть все примечания к выпуску на GitHub →",
 			starMessage: "Если TaskNotes полезен для вас, поставьте звезду на GitHub",
+			baseFilesNotice: "> [!info] О файлах `.base` по умолчанию\n> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Общие → Создать файлы**.",
 		},
 	},
 	settings: {
@@ -574,6 +575,8 @@ export const ru: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "Сохранять смещение срока выполнения в повторяющихся задачах",
 				maintainOffsetDesc: "Сохранять смещение между сроком выполнения и запланированной датой при завершении повторяющихся задач",
+				resetCheckboxesName: "Сбрасывать флажки при повторении",
+				resetCheckboxesDesc: "Сбрасывать все флажки markdown в теле задачи, когда повторяющаяся задача завершена и перенесена",
 			},
 			timeblocking: {
 				header: "Блокировка времени",
@@ -1185,6 +1188,7 @@ export const ru: TranslationTree = {
 					scheduled: "Запланированная дата",
 					timeEstimate: "Оценка времени",
 					totalTrackedTime: "Общее отслеженное время",
+					checklistProgress: "Checklist Progress",
 					recurrence: "Повторение",
 					completedDate: "Дата завершения",
 					createdDate: "Дата создания",
@@ -1782,6 +1786,8 @@ export const ru: TranslationTree = {
 					notATask: "Текущий файл не является задачей",
 					noDateToSync: "У задачи нет запланированной даты или срока для синхронизации",
 					syncFailed: "Не удалось синхронизировать задачу с Google Календарём: {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "Синхронизация {total} задач с Google Календарём...",
 					syncComplete:
 						"Синхронизация завершена: {synced} синхронизировано, {failed} ошибок, {skipped} пропущено",
@@ -1817,6 +1823,12 @@ export const ru: TranslationTree = {
 					name: "Токен аутентификации API",
 					description: "Токен, необходимый для аутентификации API (оставьте пустым для отсутствия аутентификации)",
 					placeholder: "ваш-секретный-токен",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "Доступные конечные точки API",
@@ -2181,6 +2193,26 @@ export const ru: TranslationTree = {
 			addAttachmentButton: "Добавить вложение",
 			addAttachmentTooltip: "Выберите файл или заметку с помощью нечеткого поиска",
 			createButton: "Создать timeblock",
+		},
+		calendarEventCreation: {
+			heading: "Создать событие в календаре",
+			dateTimeLabel: "Дата и время: ",
+			titleLabel: "Название",
+			titleDesc: "Название события в календаре",
+			titlePlaceholder: "напр., Совещание команды",
+			calendarLabel: "Календарь",
+			calendarDesc: "В каком календаре создать событие",
+			descriptionLabel: "Описание",
+			descriptionDesc: "Необязательное описание события",
+			descriptionPlaceholder: "Добавить подробности о событии...",
+			locationLabel: "Место",
+			locationDesc: "Необязательное место проведения события",
+			locationPlaceholder: "напр., Переговорная А",
+			createButton: "Создать событие",
+			titleRequired: "Необходимо указать название события",
+			noCalendarSelected: "Календарь не выбран",
+			success: "Событие \"{title}\" создано в календаре",
+			error: "Не удалось создать событие в календаре: {message}",
 		},
 		icsNoteCreation: {
 			heading: "Создать from ICS Event",
@@ -3010,6 +3042,7 @@ export const ru: TranslationTree = {
 				scheduledDate: "Запланированная дата",
 				timeEstimate: "Оценка времени",
 				totalTrackedTime: "Общее отслеженное время",
+				checklistProgress: "Checklist Progress",
 				recurrence: "Повторение",
 				completedDate: "Дата завершения",
 				createdDate: "Дата создания",

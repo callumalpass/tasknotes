@@ -418,7 +418,8 @@ export const pt: TranslationTree = {
 			title: "O que há de novo no TaskNotes {version}",
 			header: "O que há de novo no TaskNotes {version}",
 			viewAllLink: "Ver todas as notas de lançamento no GitHub →",
-			starMessage: "Se você acha o TaskNotes útil, por favor, considere dar uma estrela no GitHub"
+			starMessage: "Se você acha o TaskNotes útil, por favor, considere dar uma estrela no GitHub",
+			baseFilesNotice: "> [!info] Sobre os arquivos `.base` padrão\n> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Geral → Criar arquivos**."
 		}
 	},
 	settings: {
@@ -576,7 +577,9 @@ export const pt: TranslationTree = {
 			stopNotificationDesc: "Mostrar notificação quando o registro de tempo é parado automaticamente",
 			recurring: {
 				maintainOffsetName: "Manter deslocamento da data de vencimento em tarefas recorrentes",
-				maintainOffsetDesc: "Manter o deslocamento entre a data de vencimento e a data agendada quando tarefas recorrentes são concluídas"
+				maintainOffsetDesc: "Manter o deslocamento entre a data de vencimento e a data agendada quando tarefas recorrentes são concluídas",
+				resetCheckboxesName: "Redefinir caixas de seleção na recorrência",
+				resetCheckboxesDesc: "Redefinir todas as caixas de seleção markdown no corpo da tarefa quando uma tarefa recorrente é concluída e reagendada",
 			},
 			timeblocking: {
 				header: "Bloco de Tempo",
@@ -1188,6 +1191,7 @@ export const pt: TranslationTree = {
 					scheduled: "Data Agendada",
 					timeEstimate: "Estimativa de Tempo",
 					totalTrackedTime: "Tempo Total Registrado",
+					checklistProgress: "Checklist Progress",
 					recurrence: "Recorrência",
 					completedDate: "Data de Conclusão",
 					createdDate: "Data de Criação",
@@ -1785,6 +1789,8 @@ export const pt: TranslationTree = {
 					notATask: "O arquivo atual não é uma tarefa",
 					noDateToSync: "Tarefa não tem data agendada ou de vencimento para sincronizar",
 					syncFailed: "Falha ao sincronizar tarefa para o Google Calendar: {message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "Sincronizando {total} tarefas para o Google Calendar...",
 					syncComplete:
 						"Sincronização completa: {synced} sincronizadas, {failed} falharam, {skipped} ignoradas",
@@ -1820,6 +1826,12 @@ export const pt: TranslationTree = {
 					name: "Token de autenticação da API",
 					description: "Token necessário para autenticação da API (deixe em branco para sem autenticação)",
 					placeholder: "seu-token-secreto"
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "Endpoints da API Disponíveis",
@@ -2189,6 +2201,26 @@ export const pt: TranslationTree = {
 			addAttachmentButton: "Adicionar Anexo",
 			addAttachmentTooltip: "Selecionar um arquivo ou nota usando busca difusa",
 			createButton: "Criar bloco de tempo"
+		},
+		calendarEventCreation: {
+			heading: "Criar evento no calendário",
+			dateTimeLabel: "Data e hora: ",
+			titleLabel: "Título",
+			titleDesc: "Título do evento no calendário",
+			titlePlaceholder: "ex., Reunião de equipe",
+			calendarLabel: "Calendário",
+			calendarDesc: "Em qual calendário criar o evento",
+			descriptionLabel: "Descrição",
+			descriptionDesc: "Descrição opcional do evento",
+			descriptionPlaceholder: "Adicionar detalhes sobre este evento...",
+			locationLabel: "Local",
+			locationDesc: "Local opcional do evento",
+			locationPlaceholder: "ex., Sala de conferência A",
+			createButton: "Criar evento",
+			titleRequired: "O título do evento é obrigatório",
+			noCalendarSelected: "Nenhum calendário selecionado",
+			success: "Evento \"{title}\" criado no calendário",
+			error: "Falha ao criar evento no calendário: {message}",
 		},
 		icsNoteCreation: {
 			heading: "Criar a partir de Evento ICS",
@@ -3024,6 +3056,7 @@ export const pt: TranslationTree = {
 				scheduledDate: "Data Agendada",
 				timeEstimate: "Estimativa de Tempo",
 				totalTrackedTime: "Tempo Total Registrado",
+				checklistProgress: "Checklist Progress",
 				recurrence: "Recorrência",
 				completedDate: "Data de Conclusão",
 				createdDate: "Data de Criação",

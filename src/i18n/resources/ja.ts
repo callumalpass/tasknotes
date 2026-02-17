@@ -419,6 +419,7 @@ export const ja: TranslationTree = {
 			header: "TaskNotes {version} の新機能",
 			viewAllLink: "GitHubですべてのリリースノートを表示 →",
 			starMessage: "TaskNotesが役に立ったら、GitHubでスターをお願いします",
+			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ファイルを作成** からベースファイルを再生成してください。",
 		},
 	},
 	settings: {
@@ -574,6 +575,8 @@ export const ja: TranslationTree = {
 			recurring: {
 				maintainOffsetName: "繰り返しタスクで期限日オフセットを維持",
 				maintainOffsetDesc: "繰り返しタスクが完了したときに期限日と予定日の間のオフセットを保持",
+				resetCheckboxesName: "繰り返し時にチェックボックスをリセット",
+				resetCheckboxesDesc: "繰り返しタスクが完了して再スケジュールされたときに、タスク本文のすべてのmarkdownチェックボックスをリセット",
 			},
 			timeblocking: {
 				header: "タイムブロッキング",
@@ -1185,6 +1188,7 @@ export const ja: TranslationTree = {
 					scheduled: "予定日",
 					timeEstimate: "時間見積もり",
 					totalTrackedTime: "総追跡時間",
+					checklistProgress: "Checklist Progress",
 					recurrence: "繰り返し",
 					completedDate: "完了日",
 					createdDate: "作成日",
@@ -1782,6 +1786,8 @@ export const ja: TranslationTree = {
 					notATask: "現在のファイルはタスクではありません",
 					noDateToSync: "タスクに同期する予定日または期限がありません",
 					syncFailed: "タスクのGoogleカレンダーへの同期に失敗しました：{message}",
+					connectionExpired:
+						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
 					syncingTasks: "{total}件のタスクをGoogleカレンダーに同期中...",
 					syncComplete:
 						"同期完了：{synced}件同期、{failed}件失敗、{skipped}件スキップ",
@@ -1817,6 +1823,12 @@ export const ja: TranslationTree = {
 					name: "API認証トークン",
 					description: "API認証に必要なトークン（認証なしの場合は空白のままにする）",
 					placeholder: "your-secret-token",
+				},
+				mcp: {
+					enable: {
+						name: "Enable MCP Server",
+						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+					},
 				},
 				endpoints: {
 					header: "利用可能なAPIエンドポイント",
@@ -2181,6 +2193,26 @@ export const ja: TranslationTree = {
 			addAttachmentButton: "添付ファイルを追加",
 			addAttachmentTooltip: "ファジー検索を使用してファイルまたはノートを選択",
 			createButton: "タイムブロックを作成",
+		},
+		calendarEventCreation: {
+			heading: "カレンダーイベントを作成",
+			dateTimeLabel: "日時：",
+			titleLabel: "タイトル",
+			titleDesc: "カレンダーイベントのタイトル",
+			titlePlaceholder: "例：チームミーティング",
+			calendarLabel: "カレンダー",
+			calendarDesc: "イベントを作成するカレンダー",
+			descriptionLabel: "説明",
+			descriptionDesc: "イベントの説明（任意）",
+			descriptionPlaceholder: "イベントの詳細を追加...",
+			locationLabel: "場所",
+			locationDesc: "イベントの場所（任意）",
+			locationPlaceholder: "例：会議室A",
+			createButton: "イベントを作成",
+			titleRequired: "イベントのタイトルは必須です",
+			noCalendarSelected: "カレンダーが選択されていません",
+			success: "カレンダーイベント「{title}」を作成しました",
+			error: "カレンダーイベントの作成に失敗しました：{message}",
 		},
 		icsNoteCreation: {
 			heading: "ICSイベントから作成",
@@ -3010,6 +3042,7 @@ export const ja: TranslationTree = {
 				scheduledDate: "予定日",
 				timeEstimate: "時間見積もり",
 				totalTrackedTime: "総追跡時間",
+				checklistProgress: "Checklist Progress",
 				recurrence: "繰り返し",
 				completedDate: "完了日",
 				createdDate: "作成日",

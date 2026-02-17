@@ -42,6 +42,23 @@ export class TokenExpiredError extends OAuthError {
 }
 
 /**
+ * OAuth token refresh failed with an irrecoverable error.
+ * This indicates the refresh token has been revoked, expired, or is otherwise invalid.
+ * The user needs to reconnect their account.
+ */
+export class TokenRefreshError extends OAuthError {
+	constructor(
+		provider: string,
+		public readonly oauthErrorCode?: string,
+		public readonly oauthErrorDescription?: string
+	) {
+		const message = `${provider} connection expired. Please reconnect in Settings > Integrations.`;
+		super(message, provider, 'TOKEN_REFRESH_FAILED');
+		this.name = 'TokenRefreshError';
+	}
+}
+
+/**
  * OAuth credentials not configured
  */
 export class OAuthNotConfiguredError extends OAuthError {
@@ -169,6 +186,9 @@ export function isRetriableError(error: Error): boolean {
  * Helper to extract user-friendly error message
  */
 export function getUserFriendlyMessage(error: Error): string {
+	if (error instanceof TokenRefreshError) {
+		return `Your ${error.provider} connection has expired. Please reconnect in Settings > Integrations.`;
+	}
 	if (error instanceof TokenExpiredError) {
 		return `Your ${error.provider} connection has expired. Please reconnect in settings.`;
 	}

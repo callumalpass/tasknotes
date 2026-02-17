@@ -4,43 +4,29 @@ TaskNotes is a task and note management plugin for Obsidian that follows the "on
 
 ## Requirements
 
-- **Obsidian**: Version 1.10.1 or later
-- **Bases Core Plugin**: Must be enabled (Settings → Core Plugins → Bases)
+TaskNotes requires Obsidian 1.10.1 or later, and it depends on the Bases core plugin. Before you begin, open Obsidian settings and confirm that Bases is enabled under Core Plugins.
+
+![Task List view](assets/views-tasks-list.png)
 
 ## Getting Started
 
 ### 1. Install and Enable
 
-1. Open Obsidian Settings → Community Plugins
-2. Browse and search for "TaskNotes"
-3. Install and enable the plugin
-4. Enable the Bases core plugin: Settings → Core Plugins → Bases
+Install TaskNotes from Community Plugins in Obsidian settings, then enable it. If Bases is still disabled, enable it right away so TaskNotes views can open correctly.
 
 ### 2. Create Your First Task
 
-**Option A: Command Palette**
+The fastest way to create your first task is the command palette. Press `Ctrl/Cmd + P`, run `TaskNotes: Create new task`, then fill the modal and save. If you prefer inline workflows, you can also start with a checkbox like `- [ ] Buy groceries` and convert it using the inline task command.
 
-1. Press `Ctrl/Cmd + P` to open the command palette
-2. Type "TaskNotes: Create new task"
-3. Fill in the task details and click Create
-
-**Option B: Convert a Checkbox**
-
-1. In any note, type a checkbox: `- [ ] Buy groceries`
-2. Position your cursor on the line
-3. Click the convert button that appears, or use "TaskNotes: Create new inline task"
+![Create task modal](assets/modal-task-create.png)
 
 ### 3. Open the Task List
 
-1. Click the TaskNotes icon in the left ribbon, or
-2. Use the command palette: "TaskNotes: Open tasks view"
+Open your first view from the TaskNotes ribbon icon or by running `TaskNotes: Open tasks view` from the command palette. This opens the default Task List `.base` file inside `TaskNotes/Views`.
 
 ### 4. Explore
 
-- **[Core Concepts](core-concepts.md)**: How tasks work, YAML structure, Bases integration
-- **[Features](features.md)**: Task properties, time tracking, calendar integration
-- **[Views](views.md)**: Task List, Kanban, Calendar, Agenda, Pomodoro
-- **[Settings](settings.md)**: Configuration options
+From there, use [Core Concepts](core-concepts.md) to understand the data model, [Features](features.md) for workflow capabilities, [Views](views.md) for interface behavior, and [Settings](settings.md) to tune TaskNotes for your vault.
 
 ## Quick Links
 
@@ -52,3 +38,5 @@ TaskNotes is a task and note management plugin for Obsidian that follows the "on
 | [HTTP API](HTTP_API.md) | REST API for automation and external tools |
 | [Migration Guide](migration-v3-to-v4.md) | Upgrading from TaskNotes v3 |
 | [Troubleshooting](troubleshooting.md) | Common issues and solutions |
+
+Screenshots in this documentation are captured with the Playwright docs suite (`npm run e2e:docs`).

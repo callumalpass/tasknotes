@@ -1,6 +1,7 @@
 # TaskNotes Webhooks
 
 TaskNotes webhooks enable real-time integrations by sending HTTP POST requests to your configured endpoints whenever specific events occur. This allows you to build automation, sync with external services, and create custom workflows.
+Webhooks provide push-based event delivery. For periodic sync, HTTP API polling is an alternative.
 
 ## Quick Start
 
@@ -9,6 +10,7 @@ TaskNotes webhooks enable real-time integrations by sending HTTP POST requests t
 3. **Select events** you want to receive notifications for
 4. **Configure transformation** (optional) for custom payload formats
 5. **Test your integration** using the included test server or your endpoint
+A minimal first setup is one event (for example `task.completed`) and a logging endpoint, then incremental event expansion.
 
 ## Webhook Management Interface
 
@@ -54,6 +56,7 @@ The webhook interface is designed for accessibility:
 ## Webhook Events
 
 TaskNotes triggers webhooks for the following events:
+Event selection controls downstream load and payload volume.
 
 ### Task Events
 
@@ -113,6 +116,7 @@ All webhook payloads follow this structure:
   }
 }
 ```
+The stable envelope (`event`, `timestamp`, `vault`, `data`) supports event-based routing with selective field parsing.
 
 ## Event-Specific Payloads
 
@@ -194,6 +198,7 @@ All webhook payloads follow this structure:
 ### Webhook Signatures
 
 TaskNotes signs all webhook payloads using HMAC-SHA256. Verify signatures to ensure authenticity:
+Validate signatures before business logic or database writes.
 
 **Headers:**
 
@@ -410,6 +415,7 @@ curl http://localhost:8080/api/webhooks/deliveries \
 
 - Failed deliveries retry 3 times with exponential backoff (1s, 2s, 4s)
 - Webhooks automatically disabled after 10+ consecutive failures
+Handlers should be idempotent because retries and duplicate deliveries can occur.
 
 ### Delivery Tracking
 
@@ -428,6 +434,7 @@ curl http://localhost:8080/api/webhooks/deliveries \
 ### Transform Files
 
 TaskNotes supports custom payload transformations using JavaScript or JSON template files stored in your vault. This allows you to adapt webhook payloads to match the specific format required by different services (Discord, Slack, custom APIs, etc.).
+JSON templates support direct field mapping; JavaScript transforms support conditional logic and event-specific formatting.
 
 📁 **[View Transform Examples](examples/webhook-transforms/)** - Ready-to-use transform files for Discord, Slack, Teams, and more!
 

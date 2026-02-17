@@ -1,9 +1,77 @@
 /* eslint-disable no-console */
 import { TaskManager } from "../utils/TaskManager";
 import { TaskInfo } from "../types";
+import { StatusManager } from "./StatusManager";
+
+export interface TaskStats {
+	total: number;
+	statusCounts: Record<string, number>;
+	priorityCounts: Record<string, number>;
+	completed: number;
+	active: number;
+	overdue: number;
+	archived: number;
+	withTimeEntries: number;
+	totalTrackedMinutes: number;
+	totalTrackedHours: number;
+}
 
 export class TaskStatsService {
-	constructor(private cache: TaskManager) {}
+	constructor(
+		private cache: TaskManager,
+		private statusManager: StatusManager
+	) {}
+
+	public getStats(tasks: TaskInfo[]): TaskStats {
+		const statusCounts: Record<string, number> = {};
+		const priorityCounts: Record<string, number> = {};
+		let completed = 0;
+		let active = 0;
+		let overdue = 0;
+		let archived = 0;
+		let withTimeEntries = 0;
+		let totalTrackedMinutes = 0;
+
+		const today = new Date().toISOString().split("T")[0];
+
+		for (const task of tasks) {
+			statusCounts[task.status] = (statusCounts[task.status] || 0) + 1;
+			priorityCounts[task.priority] = (priorityCounts[task.priority] || 0) + 1;
+
+			const isCompleted = this.statusManager.isCompletedStatus(task.status);
+
+			if (task.archived) archived++;
+			if (isCompleted) completed++;
+			if (!isCompleted && !task.archived) active++;
+
+			if (
+				task.due &&
+				task.due < today &&
+				!isCompleted &&
+				!task.archived
+			) {
+				overdue++;
+			}
+
+			if (task.timeEntries && task.timeEntries.length > 0) {
+				withTimeEntries++;
+				totalTrackedMinutes += task.totalTrackedTime || 0;
+			}
+		}
+
+		return {
+			total: tasks.length,
+			statusCounts,
+			priorityCounts,
+			completed,
+			active,
+			overdue,
+			archived,
+			withTimeEntries,
+			totalTrackedMinutes,
+			totalTrackedHours: Math.round((totalTrackedMinutes / 60) * 100) / 100,
+		};
+	}
 
 	/**
 	 * Aggregates the time estimate of tasks within a given date range.
