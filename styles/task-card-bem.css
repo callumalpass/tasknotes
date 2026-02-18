@@ -990,6 +990,15 @@
     box-shadow: 0 2px 8px color-mix(in srgb, var(--tn-shadow-color) 15%, transparent);
 }
 
+/* Suppress hover effects during active drag — the translateY(-1px) distorts
+   getBoundingClientRect and fights with the gap/slot shift transforms,
+   and the background-color highlight lingers on cards the cursor passes over. */
+.tn-drag-active .tasknotes-plugin .task-card:hover {
+    background-color: inherit;
+    transform: none;
+    box-shadow: none;
+}
+
 .tasknotes-plugin .task-card[draggable="true"]:active {
     cursor: grabbing;
     transform: scale(0.98) rotate(1deg);

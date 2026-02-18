@@ -196,12 +196,11 @@
     flex-direction: column;
     height: fit-content;
     max-height: calc(100vh - 200px);
-    transition: all var(--tn-transition-fast);
+    transition: border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .kanban-view__column--dragover {
     border-color: var(--tn-interactive-accent);
-    transform: scale(1.02);
     box-shadow: var(--tn-shadow-medium);
 }
 
@@ -519,30 +518,20 @@
     position: relative;
 }
 
-.tasknotes-plugin .kanban-view__card-wrapper--drop-above::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: 8px;
-    right: 8px;
-    height: 3px;
-    background: var(--tn-interactive-accent);
-    border-radius: 2px;
-    z-index: 10;
-    pointer-events: none;
+/* Gap/slot drag-to-reorder: sibling cards shift apart to show drop position */
+.tasknotes-plugin .kanban-view__card-wrapper--drag-shift {
+    transition: transform 200ms cubic-bezier(0.2, 0, 0, 1);
+    will-change: transform;
 }
 
-.tasknotes-plugin .kanban-view__card-wrapper--drop-below::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 8px;
-    right: 8px;
-    height: 3px;
-    background: var(--tn-interactive-accent);
-    border-radius: 2px;
-    z-index: 10;
-    pointer-events: none;
+.tasknotes-plugin .kanban-view__card-wrapper--shift-down {
+    transform: translateY(var(--tn-drag-gap, 60px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .kanban-view__card-wrapper--drag-shift {
+        transition: none;
+    }
 }
 
 @media (pointer: coarse) {
@@ -554,17 +543,15 @@
 @media (pointer: coarse) {
     .tasknotes-plugin .kanban-view__column--dragover,
     .tasknotes-plugin .kanban-view__swimlane-column--dragover {
-        transform: scale(1.02);
         border-color: var(--tn-interactive-accent);
         border-width: 2px;
-        transition: transform 0.15s ease, border-color 0.15s ease;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     .tasknotes-plugin .kanban-view__column-header--dragover,
     .tasknotes-plugin .kanban-view__column-header-cell--dragover {
-        transform: scale(1.02);
         border-color: var(--tn-interactive-accent);
         background: var(--tn-bg-secondary);
-        transition: transform 0.15s ease, border-color 0.15s ease;
+        transition: border-color 0.15s ease;
     }
 }
