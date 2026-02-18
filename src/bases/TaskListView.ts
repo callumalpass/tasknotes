@@ -46,6 +46,9 @@ export class TaskListView extends BasesViewBase {
 	private dropAbove: boolean = false;
 	private pendingRender: boolean = false;
 	private taskGroupKeys = new Map<string, string>(); // task path → group key (set during grouped render)
+	private dragOverRafId: number = 0; // rAF handle for throttled dragover
+	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
+	private currentInsertionIndex: number = -1; // Current gap/slot position
 
 	/**
 	 * Threshold for enabling virtual scrolling in task list view.
@@ -227,14 +230,59 @@ export class TaskListView extends BasesViewBase {
 				e.dataTransfer.effectAllowed = "move";
 				e.dataTransfer.setData("text/plain", task.path);
 			}
+
+			// Add body-level class to suppress hover lift on siblings
+			this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
+
+			// Measure card height before collapse (for gap/slot sizing)
+			const draggedHeight = cardEl.getBoundingClientRect().height;
+			const container = this.itemsContainer;
+
+			// Collapse dragged card on next frame (after browser captures drag image)
+			requestAnimationFrame(() => {
+				cardEl.style.height = "0";
+				cardEl.style.overflow = "hidden";
+				cardEl.style.padding = "0";
+				cardEl.style.margin = "0";
+				cardEl.style.border = "none";
+				cardEl.style.opacity = "0";
+
+				// Set up gap/slot on siblings
+				if (container) {
+					const gapStr = getComputedStyle(container).gap;
+					const gap = parseFloat(gapStr) || 4;
+					container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
+
+					const siblings = container.querySelectorAll<HTMLElement>(".task-card[data-task-path]");
+					for (const sib of siblings) {
+						if (sib.dataset.taskPath !== task.path) {
+							sib.classList.add("task-card--drag-shift");
+						}
+					}
+					this.dragContainer = container;
+					this.currentInsertionIndex = -1;
+				}
+			});
 		});
 
 		cardEl.addEventListener("dragend", () => {
+			// Restore collapsed card
+			cardEl.style.cssText = "";
 			cardEl.classList.remove("task-card--dragging");
-			this.clearDropIndicators();
+
+			// Clean up gap/slot state
+			this.cleanupDragShift();
+			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+
 			this.draggedTaskPath = null;
 			this.dragGroupKey = null;
 			this.dropTargetPath = null;
+
+			// Cancel any pending rAF
+			if (this.dragOverRafId) {
+				cancelAnimationFrame(this.dragOverRafId);
+				this.dragOverRafId = 0;
+			}
 
 			// Flush any render that was deferred while dragging
 			if (this.pendingRender) {
@@ -250,9 +298,28 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private clearDropIndicators(): void {
+		// Legacy cleanup — old line indicator classes removed in CSS,
+		// but keep this for any stale DOM from mid-drag re-renders.
 		this.itemsContainer?.querySelectorAll(".task-card--drop-above, .task-card--drop-below").forEach(el => {
 			el.classList.remove("task-card--drop-above", "task-card--drop-below");
 		});
+	}
+
+	/**
+	 * Remove all gap/slot shift classes and custom properties.
+	 */
+	private cleanupDragShift(): void {
+		if (this.dragContainer) {
+			this.dragContainer.style.removeProperty("--tn-drag-gap");
+		}
+		// Clean from entire items container (safety net)
+		this.itemsContainer?.querySelectorAll<HTMLElement>(
+			".task-card--drag-shift, .task-card--shift-down"
+		).forEach(el => {
+			el.classList.remove("task-card--drag-shift", "task-card--shift-down");
+		});
+		this.dragContainer = null;
+		this.currentInsertionIndex = -1;
 	}
 
 	/**
@@ -285,16 +352,51 @@ export class TaskListView extends BasesViewBase {
 			e.preventDefault();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
 
-			const card = (e.target as HTMLElement).closest<HTMLElement>(".task-card[data-task-path]");
-			if (!card || card.dataset.taskPath === this.draggedTaskPath) return;
+			// Throttle visual updates via rAF
+			const clientX = e.clientX;
+			const clientY = e.clientY;
+			if (!this.dragOverRafId) {
+				this.dragOverRafId = requestAnimationFrame(() => {
+					this.dragOverRafId = 0;
 
-			const rect = card.getBoundingClientRect();
-			const isAbove = e.clientY < rect.top + rect.height / 2;
+					const card = this.containerEl.ownerDocument.elementFromPoint(
+						clientX, clientY
+					)?.closest<HTMLElement>(".task-card[data-task-path]");
+					if (!card || card.dataset.taskPath === this.draggedTaskPath) return;
 
-			this.clearDropIndicators();
-			card.classList.add(isAbove ? "task-card--drop-above" : "task-card--drop-below");
-			this.dropTargetPath = card.dataset.taskPath!;
-			this.dropAbove = isAbove;
+					const rect = card.getBoundingClientRect();
+					const isAbove = clientY < rect.top + rect.height / 2;
+
+					this.dropTargetPath = card.dataset.taskPath!;
+					this.dropAbove = isAbove;
+
+					// Compute insertion index among non-dragged siblings
+					const container = this.itemsContainer;
+					if (!container) return;
+
+					const siblings = Array.from(
+						container.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
+					).filter(sib => sib.dataset.taskPath !== this.draggedTaskPath);
+
+					let insertionIndex = siblings.length; // default: end
+					for (let i = 0; i < siblings.length; i++) {
+						if (siblings[i].dataset.taskPath === card.dataset.taskPath) {
+							insertionIndex = isAbove ? i : i + 1;
+							break;
+						}
+					}
+
+					if (insertionIndex !== this.currentInsertionIndex) {
+						this.currentInsertionIndex = insertionIndex;
+						for (let i = 0; i < siblings.length; i++) {
+							siblings[i].classList.toggle(
+								"task-card--shift-down",
+								i >= insertionIndex
+							);
+						}
+					}
+				});
+			}
 		});
 
 		this.itemsContainer.addEventListener("dragleave", (e: DragEvent) => {
@@ -315,6 +417,7 @@ export class TaskListView extends BasesViewBase {
 			const sourceGroupKey = this.dragGroupKey;
 
 			this.clearDropIndicators();
+			this.cleanupDragShift();
 
 			// Determine target group from the render-time map (the flat DOM
 			// structure means closest("[data-group-key]") won't work here).
