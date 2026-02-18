@@ -1892,6 +1892,8 @@ export class KanbanView extends BasesViewBase {
 			const hasSortOrder = isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder);
 			if (dropTarget && hasSortOrder) {
 				const cleanGroupByForSort = stripPropertyPrefix(groupByPropertyId);
+				const cleanSwimLaneForSort = this.swimLanePropertyId
+					? stripPropertyPrefix(this.swimLanePropertyId) : null;
 				for (const path of pathsToUpdate) {
 					const newSortOrder = await computeSortOrder(
 						dropTarget.taskPath,
@@ -1900,13 +1902,16 @@ export class KanbanView extends BasesViewBase {
 						cleanGroupByForSort,
 						path,
 						this.plugin,
-						this.taskInfoCache
+						this.taskInfoCache,
+						newSwimLaneValue,
+						cleanSwimLaneForSort
 					);
-					if (newSortOrder !== null && newSortOrder < Number.MAX_SAFE_INTEGER) {
+					if (newSortOrder !== null) {
+						const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 						const file = this.plugin.app.vault.getAbstractFileByPath(path);
 						if (file && file instanceof TFile) {
 							await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-								frontmatter["sort_order"] = newSortOrder;
+								frontmatter[sortOrderField] = newSortOrder;
 							});
 						}
 					}
@@ -1999,45 +2004,6 @@ export class KanbanView extends BasesViewBase {
 			});
 		}
 	}
-
-	/**
-	 * Compute a sort_order value for a task being dropped at a specific position.
-	 * Returns the midpoint between the two neighboring tasks' sort_order values.
-	 */
-	
-
-	
-
-	/**
-	 * When adjacent tasks share the same sort_order (no gap for midpoint),
-	 * renumber all tasks in the column with even spacing and return the
-	 * sort_order for the dragged task at the insertion point.
-	 *
-	 * Side effect: writes new sort_order values to all OTHER tasks in the column.
-	 * The caller is responsible for writing the returned value to the dragged task.
-	 */
-	
-
-	/**
-	 * Check if sort_order is included in the current view's Bases sort config.
-	 * Returns true if the sort config contains sort_order as a sort property.
-	 */
-	
-
-	
-
-	/**
-	 * Sort tasks within each group by sort_order from Obsidian's metadata cache.
-	 * Tasks with sort_order are sorted ascending; tasks without sort_order
-	 * are placed after sorted tasks, preserving their relative Bases order.
-	 */
-	
-
-	/**
-	 * Get the list of tasks in a column, preserving their current render order.
-	 * Reads sort_order directly from Obsidian's metadata cache to avoid stale values.
-	 */
-	
 
 	protected setupContainer(): void {
 		super.setupContainer();

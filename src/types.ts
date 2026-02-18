@@ -465,7 +465,7 @@ export interface TaskInfo {
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
 	isBlocking?: boolean; // True if this task blocks at least one other task
 	details?: string; // Optional task body content
-	sortOrder?: number; // Numeric ordering within column (lower = higher)
+	sortOrder?: string; // LexoRank string for ordering within column
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
