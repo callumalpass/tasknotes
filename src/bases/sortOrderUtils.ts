@@ -3,7 +3,9 @@
  * Used by both KanbanView and TaskListView.
  *
  * Design: pure functions with explicit dependency injection — no `this` references.
+ * Uses LexoRank for string-based ordering that avoids integer midpoint collisions.
  */
+import { LexoRank } from "lexorank";
 import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -44,40 +46,116 @@ export function isSortOrderInSortConfig(dataAdapter: any, sortOrderField: string
 }
 
 /**
- * Compute the default gap between sort_order values based on existing values.
- * Uses the median gap as the default spacing.
+ * Try to parse a string as a LexoRank. Returns null if parsing fails
+ * (e.g. legacy numeric strings like "1500").
  */
-function computeDefaultGap(columnTasks: TaskInfo[]): number {
-	const values = columnTasks
-		.map(t => t.sortOrder)
-		.filter((v): v is number => v !== undefined && v < Number.MAX_SAFE_INTEGER)
-		.sort((a, b) => a - b);
-	if (values.length < 2) {
-		return values.length === 1 && values[0] !== 0
-			? Math.max(1, Math.floor(Math.abs(values[0]) / 10))
-			: 1000;
+function tryParseLexoRank(value: string): LexoRank | null {
+	try {
+		return LexoRank.parse(value);
+	} catch {
+		return null;
 	}
-	const gaps: number[] = [];
-	for (let i = 1; i < values.length; i++) gaps.push(values[i] - values[i - 1]);
-	gaps.sort((a, b) => a - b);
-	return Math.max(1, gaps[Math.floor(gaps.length / 2)]);
 }
 
 /**
- * Get all tasks matching a group, scanning the entire vault.
+ * Ensure a task has a valid LexoRank. If it doesn't, assign one and persist it
+ * to the task's frontmatter.
+ *
+ * **Side-effect:** When a neighbor task lacks a LexoRank (e.g. legacy numeric
+ * value or missing field), this function writes the fallback rank into the
+ * task's frontmatter so that subsequent operations see a consistent value.
+ *
+ * @param task          - The task to check/assign a rank to.
+ * @param fallbackRank  - The LexoRank to assign if the task has no valid rank.
+ * @param plugin        - Plugin instance for vault/file access.
+ * @param sortOrderField - The frontmatter property name for sort order.
+ * @returns The task's existing or newly assigned LexoRank.
+ */
+async function ensureRank(
+	task: TaskInfo,
+	fallbackRank: LexoRank,
+	plugin: TaskNotesPlugin,
+	sortOrderField: string
+): Promise<LexoRank> {
+	// If the task already has a valid LexoRank, return it
+	if (task.sortOrder !== undefined) {
+		const parsed = tryParseLexoRank(task.sortOrder);
+		if (parsed) return parsed;
+	}
+
+	// Assign the fallback rank and persist it
+	console.debug(
+		`[TaskNotes] Auto-assigning LexoRank to "${task.title}" (${task.path}): ${fallbackRank.toString()}`
+	);
+	const rankStr = fallbackRank.toString();
+	task.sortOrder = rankStr;
+
+	const file = plugin.app.vault.getAbstractFileByPath(task.path);
+	if (file && file instanceof TFile) {
+		await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			frontmatter[sortOrderField] = rankStr;
+		});
+	}
+
+	return fallbackRank;
+}
+
+/**
+ * Compute a LexoRank between two neighbor tasks, with try/catch protection
+ * around the `between()` call. If `between()` throws (e.g. identical ranks),
+ * falls back to `aboveRank.genNext()`.
+ *
+ * @param aboveTask     - The task immediately above the drop position.
+ * @param belowTask     - The task immediately below the drop position.
+ * @param aboveFallback - Fallback LexoRank for `aboveTask` if it has no rank.
+ * @param plugin        - Plugin instance.
+ * @param sortOrderField - The frontmatter property name for sort order.
+ * @returns The computed LexoRank string for the dropped task.
+ */
+async function rankBetween(
+	aboveTask: TaskInfo,
+	belowTask: TaskInfo,
+	aboveFallback: LexoRank,
+	plugin: TaskNotesPlugin,
+	sortOrderField: string
+): Promise<string> {
+	const aboveRank = await ensureRank(aboveTask, aboveFallback, plugin, sortOrderField);
+	const belowRank = await ensureRank(
+		belowTask, aboveRank.genNext().genNext(), plugin, sortOrderField
+	);
+	try {
+		return aboveRank.between(belowRank).toString();
+	} catch (e) {
+		console.warn(
+			"[TaskNotes] LexoRank.between() failed, falling back to genNext():",
+			e
+		);
+		return aboveRank.genNext().toString();
+	}
+}
+
+/**
+ * Get all tasks matching a group (and optionally swimlane), scanning the entire vault.
  *
  * @param groupKey   - The group value to match, or `null` for ungrouped (all tasks).
  * @param groupByProperty - The cleaned frontmatter property name for grouping (e.g. "priority"), or `null`.
  * @param plugin     - Plugin instance for vault/metadata access.
  * @param taskInfoCache - Optional cache of TaskInfo objects for reuse.
- * @returns Tasks sorted by sort_order ascending.
+ * @param swimlaneKey - The swimlane value to filter by, or `null`/`undefined` to skip swimlane filtering.
+ * @param swimlaneProperty - The cleaned frontmatter property name for swimlanes, or `null`/`undefined`.
+ * @param sortOrderField - The frontmatter property name for sort order. Defaults to plugin setting.
+ * @returns Tasks sorted by sort_order ascending (lexicographic).
  */
 export function getGroupTasks(
 	groupKey: string | null,
 	groupByProperty: string | null,
 	plugin: TaskNotesPlugin,
-	taskInfoCache?: Map<string, TaskInfo>
+	taskInfoCache?: Map<string, TaskInfo>,
+	swimlaneKey?: string | null,
+	swimlaneProperty?: string | null,
+	sortOrderField?: string
 ): TaskInfo[] {
+	const soField = sortOrderField ?? plugin.settings.fieldMapping.sortOrder;
 	const allFiles = plugin.app.vault.getMarkdownFiles();
 	const tasks: TaskInfo[] = [];
 
@@ -96,10 +174,20 @@ export function getGroupTasks(
 		}
 		// When groupKey is null, include ALL tasks (flat/ungrouped mode)
 
-		// Read sort_order
-		const sortOrderField = plugin.settings.fieldMapping.sortOrder;
-		const sortOrder = fm[sortOrderField] !== undefined
-			? (typeof fm[sortOrderField] === "number" ? fm[sortOrderField] : Number(fm[sortOrderField]))
+		// Swimlane filter: when both swimlaneKey and swimlaneProperty are provided,
+		// only include tasks whose swimlane property matches swimlaneKey
+		if (swimlaneKey !== undefined && swimlaneKey !== null && swimlaneProperty) {
+			const rawSwim = fm[swimlaneProperty];
+			if (rawSwim === undefined || rawSwim === null) continue;
+
+			const swimValues = Array.isArray(rawSwim) ? rawSwim.map(String) : [String(rawSwim)];
+			if (!swimValues.includes(swimlaneKey)) continue;
+		}
+
+		// Read sort_order as string
+		const rawSortOrder = fm[soField];
+		const sortOrder = rawSortOrder !== undefined
+			? String(rawSortOrder)
 			: undefined;
 
 		// Use cached TaskInfo if available, otherwise create minimal object
@@ -119,11 +207,12 @@ export function getGroupTasks(
 		}
 	}
 
-	// Sort by sortOrder ascending (lower value = higher position)
+	// Sort by sortOrder ascending (lexicographic for LexoRank strings)
+	// Unranked tasks (undefined sortOrder) sort to end
 	tasks.sort((a, b) => {
-		const aHas = a.sortOrder !== undefined && a.sortOrder < Number.MAX_SAFE_INTEGER;
-		const bHas = b.sortOrder !== undefined && b.sortOrder < Number.MAX_SAFE_INTEGER;
-		if (aHas && bHas) return a.sortOrder! - b.sortOrder!;
+		const aHas = a.sortOrder !== undefined;
+		const bHas = b.sortOrder !== undefined;
+		if (aHas && bHas) return a.sortOrder!.localeCompare(b.sortOrder!);
 		if (aHas && !bHas) return -1;
 		if (!aHas && bHas) return 1;
 		return 0;
@@ -133,68 +222,14 @@ export function getGroupTasks(
 }
 
 /**
- * Renumber all tasks in the column/group and insert the dragged task at the target position.
- * Called when the midpoint algorithm finds no gap (collision).
- */
-async function renumberAndInsert(
-	columnTasks: TaskInfo[],
-	targetIndex: number,
-	above: boolean,
-	plugin: TaskNotesPlugin
-): Promise<number> {
-	// Collect existing sort_order values to determine the range
-	const values = columnTasks
-		.map(t => t.sortOrder)
-		.filter((v): v is number => v !== undefined && v < Number.MAX_SAFE_INTEGER)
-		.sort((a, b) => a - b);
-
-	const rangeMin = values.length >= 1 ? values[0] : 0;
-	const rangeMax = values.length >= 2
-		? values[values.length - 1]
-		: rangeMin + (columnTasks.length + 2) * 1000;
-
-	const totalSlots = columnTasks.length + 1; // +1 for the dragged task
-	const step = Math.max(1, Math.floor((rangeMax - rangeMin) / (totalSlots + 1)));
-
-	// Build the new order: insert a placeholder for the dragged task
-	const insertAt = above ? targetIndex : targetIndex + 1;
-	const orderedPaths: (string | null)[] = columnTasks.map(t => t.path);
-	// Insert null as placeholder for the dragged task
-	orderedPaths.splice(insertAt, 0, null);
-
-	let draggedSortOrder = 0;
-	const writes: Array<{ path: string; order: number }> = [];
-
-	for (let i = 0; i < orderedPaths.length; i++) {
-		const newOrder = rangeMin + (i + 1) * step;
-		const p = orderedPaths[i];
-		if (p === null) {
-			// This is the dragged task's new position
-			draggedSortOrder = newOrder;
-		} else {
-			writes.push({ path: p, order: newOrder });
-		}
-	}
-
-	// Write new sort_orders to all other tasks in the column
-	for (const w of writes) {
-		const file = plugin.app.vault.getAbstractFileByPath(w.path);
-		if (file && file instanceof TFile) {
-			const sortOrderField = plugin.settings.fieldMapping.sortOrder;
-			await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				frontmatter[sortOrderField] = w.order;
-			});
-		}
-	}
-
-	return draggedSortOrder;
-}
-
-/**
- * Compute the new sort_order value for a task being dropped at a target position.
+ * Compute the new sort_order LexoRank string for a task being dropped at a target position.
  *
- * Uses a midpoint insertion algorithm: `floor((neighbor_above + neighbor_below) / 2)`.
- * Falls back to full renumbering if no gap exists between neighbors.
+ * Uses LexoRank for string-based ordering:
+ * - Empty column → `LexoRank.middle()`
+ * - Drop above first task → `firstRank.genPrev()`
+ * - Drop below last task → `lastRank.genNext()`
+ * - Between two tasks → `rankBetween()` (with try/catch protection)
+ * - Unranked/legacy neighbors get a rank assigned on the fly via `ensureRank()`
  *
  * @param targetTaskPath  - Path of the task being dropped on.
  * @param above           - Whether to drop above (true) or below (false) the target.
@@ -203,7 +238,9 @@ async function renumberAndInsert(
  * @param draggedPath     - Path of the task being dragged.
  * @param plugin          - Plugin instance.
  * @param taskInfoCache   - Optional cache for TaskInfo reuse.
- * @returns The computed sort_order, or `null` if computation fails.
+ * @param swimlaneKey     - Swimlane value to scope to, or `null`/`undefined`.
+ * @param swimlaneProperty - Cleaned frontmatter property name for swimlanes, or `null`/`undefined`.
+ * @returns The computed sort_order string, or `null` if computation fails.
  */
 export async function computeSortOrder(
 	targetTaskPath: string,
@@ -212,51 +249,56 @@ export async function computeSortOrder(
 	groupByProperty: string | null,
 	draggedPath: string,
 	plugin: TaskNotesPlugin,
-	taskInfoCache?: Map<string, TaskInfo>
-): Promise<number | null> {
-	// Get group tasks, filtering out the task being dragged
-	const columnTasks = getGroupTasks(groupKey, groupByProperty, plugin, taskInfoCache)
-		.filter(t => t.path !== draggedPath);
-	if (!columnTasks || columnTasks.length === 0) return 0;
+	taskInfoCache?: Map<string, TaskInfo>,
+	swimlaneKey?: string | null,
+	swimlaneProperty?: string | null
+): Promise<string | null> {
+	const sortOrderField = plugin.settings.fieldMapping.sortOrder;
+
+	// Get group tasks (with swimlane filtering), excluding the task being dragged
+	const columnTasks = getGroupTasks(
+		groupKey, groupByProperty, plugin, taskInfoCache,
+		swimlaneKey, swimlaneProperty, sortOrderField
+	).filter(t => t.path !== draggedPath);
+
+	if (!columnTasks || columnTasks.length === 0) {
+		return LexoRank.middle().toString();
+	}
 
 	const targetIndex = columnTasks.findIndex(t => t.path === targetTaskPath);
 	if (targetIndex === -1) return null;
 
-	const defaultGap = computeDefaultGap(columnTasks);
-	const MAX_ORDER = Number.MAX_SAFE_INTEGER;
-
-	const getOrder = (task: TaskInfo): number =>
-		task.sortOrder ?? MAX_ORDER;
-
-	let lo: number;
-	let hi: number;
-
 	if (above) {
-		hi = getOrder(columnTasks[targetIndex]);
-		lo = targetIndex === 0 ? hi - defaultGap : getOrder(columnTasks[targetIndex - 1]);
-		// Top of column with no sorted tasks
-		if (hi >= MAX_ORDER && targetIndex === 0) return 0;
-		// Top of column
-		if (targetIndex === 0) return hi - defaultGap;
+		if (targetIndex === 0) {
+			// Drop above first task
+			const firstRank = await ensureRank(
+				columnTasks[0], LexoRank.middle(), plugin, sortOrderField
+			);
+			return firstRank.genPrev().toString();
+		}
+		// Between two tasks
+		return rankBetween(
+			columnTasks[targetIndex - 1],
+			columnTasks[targetIndex],
+			LexoRank.middle(),
+			plugin,
+			sortOrderField
+		);
 	} else {
-		lo = getOrder(columnTasks[targetIndex]);
-		hi = targetIndex === columnTasks.length - 1
-			? lo + defaultGap * 2
-			: getOrder(columnTasks[targetIndex + 1]);
-		// Bottom of column with no sorted tasks
-		if (lo >= MAX_ORDER && targetIndex === columnTasks.length - 1) return 0;
-		// Bottom of column
-		if (targetIndex === columnTasks.length - 1) return lo + defaultGap;
+		if (targetIndex === columnTasks.length - 1) {
+			// Drop below last task
+			const lastRank = await ensureRank(
+				columnTasks[columnTasks.length - 1], LexoRank.middle(), plugin, sortOrderField
+			);
+			return lastRank.genNext().toString();
+		}
+		// Between two tasks
+		return rankBetween(
+			columnTasks[targetIndex],
+			columnTasks[targetIndex + 1],
+			LexoRank.middle(),
+			plugin,
+			sortOrderField
+		);
 	}
-
-	// Handle unsorted neighbors (MAX_ORDER)
-	if (lo >= MAX_ORDER) lo = hi - defaultGap;
-	if (hi >= MAX_ORDER) hi = lo + defaultGap;
-
-	// Normal case: there's a gap between neighbors
-	const mid = Math.floor((lo + hi) / 2);
-	if (mid !== lo && mid !== hi) return mid;
-
-	// Collision: neighbors are equal or adjacent integers — renumber the column
-	return await renumberAndInsert(columnTasks, targetIndex, above, plugin);
 }

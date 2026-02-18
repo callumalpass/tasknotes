@@ -179,7 +179,7 @@ export class FieldMapper {
 
 		if (frontmatter[this.mapping.sortOrder] !== undefined) {
 			const val = frontmatter[this.mapping.sortOrder];
-			mapped.sortOrder = typeof val === "number" ? val : Number(val);
+			mapped.sortOrder = typeof val === "string" ? val : String(val);
 		}
 
 		// Handle tags array (includes archive tag)

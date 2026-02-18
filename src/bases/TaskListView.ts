@@ -348,11 +348,12 @@ export class TaskListView extends BasesViewBase {
 			targetPath, above, targetGroupKey, cleanGroupBy, draggedPath,
 			this.plugin, this.taskInfoCache
 		);
-		if (newSortOrder !== null && newSortOrder < Number.MAX_SAFE_INTEGER) {
+		if (newSortOrder !== null) {
+			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 			const file = this.plugin.app.vault.getAbstractFileByPath(draggedPath);
 			if (file && file instanceof TFile) {
 				await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
-					fm["sort_order"] = newSortOrder;
+					fm[sortOrderField] = newSortOrder;
 				});
 			}
 		}
