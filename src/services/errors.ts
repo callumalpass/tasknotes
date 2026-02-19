@@ -64,7 +64,7 @@ export class TokenRefreshError extends OAuthError {
 export class OAuthNotConfiguredError extends OAuthError {
 	constructor(provider: string) {
 		super(
-			`${provider} OAuth is not configured. Please provide credentials or license key.`,
+			`${provider} OAuth is not configured. Please provide OAuth credentials in settings.`,
 			provider,
 			'NOT_CONFIGURED'
 		);
@@ -120,29 +120,6 @@ export class RateLimitError extends GoogleCalendarError {
 }
 
 /**
- * License validation errors
- */
-export class LicenseError extends TaskNotesServiceError {
-	constructor(message: string, code?: string) {
-		super(message, code);
-		this.name = 'LicenseError';
-	}
-}
-
-/**
- * Invalid or expired license
- */
-export class InvalidLicenseError extends LicenseError {
-	constructor(reason?: string) {
-		const message = reason
-			? `Invalid license: ${reason}`
-			: 'Invalid or expired license key.';
-		super(message, 'INVALID_LICENSE');
-		this.name = 'InvalidLicenseError';
-	}
-}
-
-/**
  * Network and connectivity errors
  */
 export class NetworkError extends TaskNotesServiceError {
@@ -194,9 +171,6 @@ export function getUserFriendlyMessage(error: Error): string {
 	}
 	if (error instanceof OAuthNotConfiguredError) {
 		return `${error.provider} is not set up. Please configure it in settings.`;
-	}
-	if (error instanceof InvalidLicenseError) {
-		return 'Your license key is invalid or expired. Please check your license in settings.';
 	}
 	if (error instanceof RateLimitError) {
 		return 'Too many requests. Please wait a moment and try again.';
