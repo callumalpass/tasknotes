@@ -100,6 +100,7 @@ export class MdbaseSpecService {
 		lines.push("description: A task managed by the TaskNotes plugin for Obsidian.");
 		lines.push(`display_name_key: ${fm.toUserField("title")}`);
 		lines.push("strict: false");
+		lines.push(`path_pattern: ${yamlQuote(this.buildPathPattern())}`);
 		lines.push("");
 
 		// Match section
@@ -382,6 +383,72 @@ export class MdbaseSpecService {
 		lines.push("  where:");
 		lines.push("    tags:");
 		lines.push(`      contains: ${yamlQuote(taskTag)}`);
+	}
+
+	/**
+	 * Build a best-effort mdbase path_pattern from TaskNotes folder + filename settings.
+	 * TaskNotes supports richer templating than mdbase, so unknown variables are kept
+	 * as placeholders and resolved by compatible clients when possible.
+	 */
+	private buildPathPattern(): string {
+		const folderTemplate = this.toMdbaseTemplate(this.plugin.settings.tasksFolder || "");
+		const filenameTemplate = this.getFilenameTemplate();
+		const filenamePatternRaw = this.toMdbaseTemplate(filenameTemplate) || `{${this.plugin.fieldMapper.toUserField("title")}}`;
+		const filenamePattern = filenamePatternRaw.endsWith(".md")
+			? filenamePatternRaw
+			: `${filenamePatternRaw}.md`;
+
+		if (!folderTemplate) {
+			return filenamePattern;
+		}
+		return `${folderTemplate}/${filenamePattern}`;
+	}
+
+	private getFilenameTemplate(): string {
+		const settings = this.plugin.settings;
+		if (settings.storeTitleInFilename || settings.taskFilenameFormat === "title") {
+			return "{{title}}";
+		}
+
+		switch (settings.taskFilenameFormat) {
+			case "timestamp":
+				return "{{timestamp}}";
+			case "custom":
+				return settings.customFilenameTemplate?.trim() || "{{title}}";
+			case "zettel":
+			default:
+				return "{{zettel}}";
+		}
+	}
+
+	private toMdbaseTemplate(template: string): string {
+		const raw = (template || "").trim();
+		if (!raw) return "";
+
+		const variableMap = this.getPathVariableMap();
+		const converted = raw.replace(/\{\{(\w+)\}\}|\{(\w+)\}/g, (_match, a, b) => {
+			const key = String(a ?? b);
+			const mapped = variableMap[key] || key;
+			return `{${mapped}}`;
+		});
+
+		return converted
+			.replace(/\\/g, "/")
+			.replace(/\/+/g, "/")
+			.replace(/^\/+|\/+$/g, "");
+	}
+
+	private getPathVariableMap(): Record<string, string> {
+		const fm = this.plugin.fieldMapper;
+		return {
+			title: fm.toUserField("title"),
+			priority: fm.toUserField("priority"),
+			status: fm.toUserField("status"),
+			dueDate: fm.toUserField("due"),
+			scheduledDate: fm.toUserField("scheduled"),
+			due: fm.toUserField("due"),
+			scheduled: fm.toUserField("scheduled"),
+		};
 	}
 }
 
