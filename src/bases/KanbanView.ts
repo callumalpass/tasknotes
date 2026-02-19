@@ -1541,8 +1541,12 @@ export class KanbanView extends BasesViewBase {
 							: 60;
 						const gapStr = getComputedStyle(container).gap;
 						const gap = parseFloat(gapStr) || 4;
-						container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
+						const totalGap = draggedHeight + gap;
+						container.style.setProperty("--tn-drag-gap", `${totalGap}px`);
 						container.style.overflowY = "clip";
+						// Add padding to grow the container's content box so
+						// translateY-shifted cards aren't clipped off the bottom
+						container.style.paddingBottom = `${totalGap}px`;
 
 						const siblings = container.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper");
 						for (const sib of siblings) {
@@ -1803,6 +1807,7 @@ export class KanbanView extends BasesViewBase {
 		if (this.dragContainer) {
 			this.dragContainer.style.removeProperty("--tn-drag-gap");
 			this.dragContainer.style.overflowY = "";
+			this.dragContainer.style.paddingBottom = "";
 			const wrappers = this.dragContainer.querySelectorAll<HTMLElement>(
 				".kanban-view__card-wrapper--drag-shift, .kanban-view__card-wrapper--shift-down"
 			);
