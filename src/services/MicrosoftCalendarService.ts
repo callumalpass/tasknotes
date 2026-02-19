@@ -171,18 +171,25 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		if (!this.plugin.settings.microsoftCalendarSyncTokens) {
 			this.plugin.settings.microsoftCalendarSyncTokens = {};
 		}
+		if (this.plugin.settings.microsoftCalendarSyncTokens[calendarId] === syncToken) {
+			return;
+		}
 		this.plugin.settings.microsoftCalendarSyncTokens[calendarId] = syncToken;
-		await this.plugin.saveSettings();
+		await this.plugin.saveSettingsDataOnly();
 	}
 
 	/**
 	 * Clears the sync token for a calendar (forces full resync)
 	 */
 	private async clearSyncToken(calendarId: string): Promise<void> {
-		if (this.plugin.settings.microsoftCalendarSyncTokens) {
-			delete this.plugin.settings.microsoftCalendarSyncTokens[calendarId];
-			await this.plugin.saveSettings();
+		if (!this.plugin.settings.microsoftCalendarSyncTokens) {
+			return;
 		}
+		if (!(calendarId in this.plugin.settings.microsoftCalendarSyncTokens)) {
+			return;
+		}
+		delete this.plugin.settings.microsoftCalendarSyncTokens[calendarId];
+		await this.plugin.saveSettingsDataOnly();
 	}
 
 	async initialize(): Promise<void> {

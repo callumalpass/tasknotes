@@ -699,7 +699,7 @@ export interface PriorityConfig {
 	weight: number; // For sorting (higher = more important)
 }
 
-// Template configuration for quick setup
+// Template configuration presets
 export interface Template {
 	id: string;
 	name: string;
