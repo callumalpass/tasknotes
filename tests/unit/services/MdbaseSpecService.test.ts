@@ -60,6 +60,9 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 	const settings = {
 		enableMdbaseSpec: true,
 		tasksFolder: "TaskNotes/Tasks",
+		taskFilenameFormat: "zettel",
+		storeTitleInFilename: true,
+		customFilenameTemplate: "{title}",
 		taskIdentificationMethod: "tag",
 		taskTag: "task",
 		taskPropertyName: "",
@@ -158,6 +161,13 @@ describe("MdbaseSpecService", () => {
 			expect(fm).toContain("description:");
 		});
 
+		it("should include path_pattern", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+
+			expect(getYamlValue(fm, "path_pattern")).toBe('"TaskNotes/Tasks/{title}.md"');
+		});
+
 		it("should set display_name_key to the mapped title field", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
@@ -174,6 +184,62 @@ describe("MdbaseSpecService", () => {
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
 			expect(getYamlValue(fm, "display_name_key")).toBe("name");
+		});
+	});
+
+	describe("buildTaskTypeDef - path_pattern generation", () => {
+		it("should use title filename when storeTitleInFilename is true", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					tasksFolder: "Tasks",
+					storeTitleInFilename: true,
+					taskFilenameFormat: "zettel",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{title}.md"');
+		});
+
+		it("should use zettel filename when configured", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					tasksFolder: "Tasks",
+					storeTitleInFilename: false,
+					taskFilenameFormat: "zettel",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{zettel}.md"');
+		});
+
+		it("should use timestamp filename when configured", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					tasksFolder: "Tasks",
+					storeTitleInFilename: false,
+					taskFilenameFormat: "timestamp",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{timestamp}.md"');
+		});
+
+		it("should map known custom template variables to mapped fields", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					tasksFolder: "Calendar/{{year}}/{{month}}",
+					storeTitleInFilename: false,
+					taskFilenameFormat: "custom",
+					customFilenameTemplate: "{{priority}}-{{title}}-{{titleKebab}}",
+					fieldMapping: {
+						...DEFAULT_FIELD_MAPPING,
+						title: "name",
+						priority: "importance",
+					},
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			expect(getYamlValue(fm, "path_pattern")).toBe('"Calendar/{year}/{month}/{importance}-{name}-{titleKebab}.md"');
 		});
 	});
 
