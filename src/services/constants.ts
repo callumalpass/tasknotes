@@ -11,16 +11,6 @@ export const OAUTH_CONSTANTS = {
 	/** Port range for OAuth callback server */
 	CALLBACK_PORT_START: 8080,
 	CALLBACK_PORT_END: 8090,
-
-	/** Device Flow polling configuration */
-	DEVICE_FLOW: {
-		/** Maximum polling attempts before timeout */
-		MAX_ATTEMPTS: 60,
-		/** Default polling interval in seconds */
-		DEFAULT_INTERVAL_SECONDS: 5,
-		/** Additional delay when server requests slow_down */
-		SLOW_DOWN_INCREMENT_SECONDS: 5,
-	}
 } as const;
 
 // Google Calendar Service Constants
@@ -91,15 +81,6 @@ export const MICROSOFT_CALENDAR_CONSTANTS = {
 		/** Exponential backoff multiplier */
 		BACKOFF_MULTIPLIER: 2,
 	},
-} as const;
-
-// License Service Constants
-export const LICENSE_CONSTANTS = {
-	/** Duration to cache license validation results (24 hours in milliseconds) */
-	CACHE_DURATION_MS: 24 * 60 * 60 * 1000,
-
-	/** Grace period for offline license validation (7 days in milliseconds) */
-	GRACE_PERIOD_MS: 7 * 24 * 60 * 60 * 1000,
 } as const;
 
 // Time conversion utilities
