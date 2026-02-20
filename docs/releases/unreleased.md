@@ -29,3 +29,5 @@ Example:
 - Reduced long-running performance risk from calendar sync token persistence by avoiding full runtime settings side-effects during background sync writes
 - Prevented duplicate auto-stop time tracking listeners from accumulating when settings are reloaded or changed
 - Fixed a settings Integrations listener lifecycle issue that could accumulate calendar update callbacks while the settings UI is repeatedly opened/re-rendered
+- (#1630) Fixed TaskNote inline task cards ignoring centered "Readable line length" layout in Minimal theme by constraining and centering the widget in readable mode
+  - Thanks to @martin-forge for reporting
