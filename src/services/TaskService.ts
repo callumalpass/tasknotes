@@ -68,8 +68,23 @@ export class TaskService {
 		}
 
 		try {
+			let processed = input;
+
+			// Process Wikilinks: [[Link|Alias]] -> Alias, or [[Link]] -> Link
+			processed = processed.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, link, alias) => {
+				return (alias || link || "").trim();
+			});
+
+			// Process Markdown links: [Text](URL) -> Text
+			processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text) => {
+				return (text || "").trim();
+			});
+
+			// Remove protocol prefixes
+			processed = processed.replace(/https?:\/\//g, "");
+
 			// Remove or replace problematic characters
-			let sanitized = input
+			let sanitized = processed
 				.trim()
 				// Replace multiple spaces with single space
 				.replace(/\s+/g, " ")
@@ -226,7 +241,6 @@ export class TaskService {
 		taskData: TaskCreationData,
 		options: { applyDefaults?: boolean } = {}
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
-		console.log("[TaskService] Creating task with data:", taskData);
 		const { applyDefaults = true } = options;
 		try {
 			// Apply task creation defaults if enabled
@@ -249,7 +263,6 @@ export class TaskService {
 			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
 			const dateModified = taskData.dateModified || getCurrentTimestamp();
 			const titleLinks = this.retrieveTitleLinks(taskData.title);
-			console.log("[TaskService] Extracted title links:", titleLinks);
 
 			// Prepare contexts, projects, and tags arrays
 			const contextsArray = taskData.contexts || [];
@@ -427,12 +440,19 @@ export class TaskService {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
 
+			// Prepare the body content, prepending title links if any
+			let finalBody = normalizedBody;
+			if (titleLinks && titleLinks.length > 0) {
+				const linksHeader = titleLinks.join("\n");
+				finalBody = linksHeader + (normalizedBody ? "\n\n" + normalizedBody : "");
+			}
+
 			// Prepare file content
 			const yamlHeader = stringifyYaml(finalFrontmatter);
 			let content = `---\n${yamlHeader}---\n\n`;
 
-			if (normalizedBody.length > 0) {
-				content += `${normalizedBody}\n`;
+			if (finalBody.length > 0) {
+				content += `${finalBody}\n`;
 			}
 
 			// Create the file
@@ -450,7 +470,7 @@ export class TaskService {
 				path: file.path,
 				tags: tagsArray,
 				archived: false,
-				details: normalizedBody,
+				details: finalBody,
 			};
 
 			// Wait for fresh data and update cache
