@@ -12,6 +12,7 @@ import {
 	FilenameContext,
 	generateTaskFilename,
 	generateUniqueFilename,
+	sanitizeLinks,
 } from "../utils/filenameGenerator";
 import { Notice, TFile, normalizePath, stringifyYaml } from "obsidian";
 import {
@@ -52,7 +53,7 @@ export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
 	private autoArchiveService?: AutoArchiveService;
 
-	constructor(private plugin: TaskNotesPlugin) {}
+	constructor(private plugin: TaskNotesPlugin) { }
 
 	private translate(key: TranslationKey, variables?: Record<string, any>): string {
 		return this.plugin.i18n.translate(key, variables);
@@ -68,8 +69,10 @@ export class TaskService {
 		}
 
 		try {
+			let processed = sanitizeLinks(input);
+
 			// Remove or replace problematic characters
-			let sanitized = input
+			let sanitized = processed
 				.trim()
 				// Replace multiple spaces with single space
 				.replace(/\s+/g, " ")
@@ -95,6 +98,14 @@ export class TaskService {
 			console.error("Error sanitizing title:", error);
 			return "untitled";
 		}
+	}
+
+	private retrieveTitleLinks(input: string): string[] {
+		if (!input) return [];
+		// Regex to match both Obsidian links [[link|alias]] and Markdown links [alias](target)
+		const anyLinkRegex = /\[\[.*?\]\]|\[.*?\]\(.*?\)/g;
+		const matches = input.match(anyLinkRegex);
+		return matches || [];
 	}
 
 	/**
@@ -188,14 +199,14 @@ export class TaskService {
 		// Convert TaskCreationData to TaskTemplateData
 		const templateData: TaskTemplateData | undefined = taskData
 			? {
-					title: taskData.title,
-					priority: taskData.priority,
-					status: taskData.status,
-					contexts: taskData.contexts,
-					projects: taskData.projects,
-					due: taskData.due,
-					scheduled: taskData.scheduled,
-			  }
+				title: taskData.title,
+				priority: taskData.priority,
+				status: taskData.status,
+				contexts: taskData.contexts,
+				projects: taskData.projects,
+				due: taskData.due,
+				scheduled: taskData.scheduled,
+			}
 			: undefined;
 
 		// Use the shared folder template processor utility
@@ -219,7 +230,6 @@ export class TaskService {
 		options: { applyDefaults?: boolean } = {}
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
 		const { applyDefaults = true } = options;
-
 		try {
 			// Apply task creation defaults if enabled
 			if (applyDefaults) {
@@ -240,6 +250,7 @@ export class TaskService {
 			const status = taskData.status || this.plugin.settings.defaultTaskStatus;
 			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
 			const dateModified = taskData.dateModified || getCurrentTimestamp();
+			const titleLinks = this.retrieveTitleLinks(taskData.title);
 
 			// Prepare contexts, projects, and tags arrays
 			const contextsArray = taskData.contexts || [];
@@ -417,12 +428,19 @@ export class TaskService {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
 
+			// Prepare the body content, prepending title links if any
+			let finalBody = normalizedBody;
+			if (titleLinks && titleLinks.length > 0) {
+				const linksHeader = titleLinks.join("\n");
+				finalBody = linksHeader + (normalizedBody ? "\n\n" + normalizedBody : "");
+			}
+
 			// Prepare file content
 			const yamlHeader = stringifyYaml(finalFrontmatter);
 			let content = `---\n${yamlHeader}---\n\n`;
 
-			if (normalizedBody.length > 0) {
-				content += `${normalizedBody}\n`;
+			if (finalBody.length > 0) {
+				content += `${finalBody}\n`;
 			}
 
 			// Create the file
@@ -440,7 +458,7 @@ export class TaskService {
 				path: file.path,
 				tags: tagsArray,
 				archived: false,
-				details: normalizedBody,
+				details: finalBody,
 			};
 
 			// Wait for fresh data and update cache
@@ -845,12 +863,12 @@ export class TaskService {
 				const syncPromise =
 					property === "status" && !wasCompleted && isCompleted
 						? this.plugin.taskCalendarSyncService.completeTaskInCalendar(
-								updatedTask as TaskInfo
-							)
+							updatedTask as TaskInfo
+						)
 						: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
-								updatedTask as TaskInfo,
-								task
-							);
+							updatedTask as TaskInfo,
+							task
+						);
 
 				syncPromise.catch((error) => {
 					console.warn("Failed to sync task update to Google Calendar:", error);
@@ -1629,9 +1647,9 @@ export class TaskService {
 					!wasCompleted && isCompleted
 						? this.plugin.taskCalendarSyncService.completeTaskInCalendar(updatedTask)
 						: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
-								updatedTask,
-								originalTask
-							);
+							updatedTask,
+							originalTask
+						);
 
 				syncPromise.catch((error) => {
 					console.warn("Failed to sync task update to Google Calendar:", error);
@@ -1745,8 +1763,8 @@ export class TaskService {
 	): TaskDependency[] | null {
 		const existing = Array.isArray(blockedTask.blockedBy)
 			? blockedTask.blockedBy
-					.map((entry) => normalizeDependencyEntry(entry))
-					.filter((entry): entry is TaskDependency => !!entry)
+				.map((entry) => normalizeDependencyEntry(entry))
+				.filter((entry): entry is TaskDependency => !!entry)
 			: [];
 
 		if (existing.length === 0 && action === "remove") {
