@@ -13,6 +13,11 @@ import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderModal } from "../modals/ReminderModal";
 import { getDatePart, getTimePart, parseDateToUTC, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
+import {
+	stripPropertyPrefix,
+	isSortOrderInSortConfig,
+	computeSortOrder,
+} from "./sortOrderUtils";
 
 export class TaskListView extends BasesViewBase {
 	type = "tasknotesTaskList";
@@ -33,6 +38,18 @@ export class TaskListView extends BasesViewBase {
 	private subGroupPropertyId: string | null = null; // Property ID for sub-grouping
 	private configLoaded = false; // Track if we've successfully loaded config
 
+	// Drag-to-reorder state
+	private basesController: any;
+	private draggedTaskPath: string | null = null;
+	private dragGroupKey: string | null = null;
+	private dropTargetPath: string | null = null;
+	private dropAbove: boolean = false;
+	private pendingRender: boolean = false;
+	private taskGroupKeys = new Map<string, string>(); // task path → group key (set during grouped render)
+	private dragOverRafId: number = 0; // rAF handle for throttled dragover
+	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
+	private currentInsertionIndex: number = -1; // Current gap/slot position
+
 	/**
 	 * Threshold for enabling virtual scrolling in task list view.
 	 * Virtual scrolling activates when total items (tasks + group headers) >= 100.
@@ -43,6 +60,7 @@ export class TaskListView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.basesController = controller;
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
 		(this.dataAdapter as any).basesView = this;
@@ -103,10 +121,19 @@ export class TaskListView extends BasesViewBase {
 		this.rootElement?.appendChild(itemsContainer);
 		this.itemsContainer = itemsContainer;
 		this.registerContainerListeners();
+		this.setupContainerDragHandlers();
 	}
 
 	async render(): Promise<void> {
 		if (!this.itemsContainer || !this.rootElement) return;
+
+		// Defer re-render while a drag is in progress — re-rendering
+		// destroys card elements and their event listeners, which
+		// causes the drop event to never fire.
+		if (this.draggedTaskPath) {
+			this.pendingRender = true;
+			return;
+		}
 
 		// Ensure view options are read (in case config wasn't available in onload)
 		if (!this.configLoaded && this.config) {
@@ -168,6 +195,303 @@ export class TaskListView extends BasesViewBase {
 			console.error("[TaskNotes][TaskListView] Error rendering:", error);
 			this.clearAllTaskElements();
 			this.renderError(error);
+		}
+	}
+
+	// ── Drag-to-reorder ────────────────────────────────────────────────
+
+	private getGroupByPropertyId(): string | null {
+		const controller = this.basesController;
+		if (controller?.query?.views && controller?.viewName) {
+			for (const view of controller.query.views) {
+				if (view?.name === controller.viewName) {
+					if (view.groupBy) {
+						if (typeof view.groupBy === "object" && view.groupBy.property) return view.groupBy.property;
+						if (typeof view.groupBy === "string") return view.groupBy;
+					}
+					return null;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Attach a dragstart handler to a single card element.
+	 * Drop-target handling (dragover/drop) is done via container-level delegation
+	 * in setupContainerDragHandlers() for robustness with virtual scrolling.
+	 */
+	private setupCardDragHandlers(cardEl: HTMLElement, task: TaskInfo, groupKey: string | null): void {
+		cardEl.addEventListener("dragstart", (e: DragEvent) => {
+			this.draggedTaskPath = task.path;
+			this.dragGroupKey = groupKey;
+			cardEl.classList.add("task-card--dragging");
+			if (e.dataTransfer) {
+				e.dataTransfer.effectAllowed = "move";
+				e.dataTransfer.setData("text/plain", task.path);
+			}
+
+			// Add body-level class to suppress hover lift on siblings
+			this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
+
+			// Measure card height before collapse (for gap/slot sizing)
+			const draggedHeight = cardEl.getBoundingClientRect().height;
+			const container = this.itemsContainer;
+
+			// Collapse dragged card on next frame (after browser captures drag image)
+			requestAnimationFrame(() => {
+				cardEl.style.height = "0";
+				cardEl.style.overflow = "hidden";
+				cardEl.style.padding = "0";
+				cardEl.style.margin = "0";
+				cardEl.style.border = "none";
+				cardEl.style.opacity = "0";
+
+				// Set up gap/slot on siblings
+				if (container) {
+					const gapStr = getComputedStyle(container).gap;
+					const gap = parseFloat(gapStr) || 4;
+					container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
+
+					const siblings = container.querySelectorAll<HTMLElement>(".task-card[data-task-path]");
+					for (const sib of siblings) {
+						if (sib.dataset.taskPath !== task.path) {
+							sib.classList.add("task-card--drag-shift");
+						}
+					}
+					this.dragContainer = container;
+					this.currentInsertionIndex = -1;
+				}
+			});
+		});
+
+		cardEl.addEventListener("dragend", () => {
+			// Restore collapsed card
+			cardEl.style.cssText = "";
+			cardEl.classList.remove("task-card--dragging");
+
+			// Clean up gap/slot state
+			this.cleanupDragShift();
+			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+
+			this.draggedTaskPath = null;
+			this.dragGroupKey = null;
+			this.dropTargetPath = null;
+
+			// Cancel any pending rAF
+			if (this.dragOverRafId) {
+				cancelAnimationFrame(this.dragOverRafId);
+				this.dragOverRafId = 0;
+			}
+
+			// Flush any render that was deferred while dragging
+			if (this.pendingRender) {
+				const win = this.containerEl.ownerDocument.defaultView || window;
+				win.setTimeout(() => {
+					if (this.pendingRender) {
+						this.pendingRender = false;
+						this.debouncedRefresh();
+					}
+				}, 200);
+			}
+		});
+	}
+
+	private clearDropIndicators(): void {
+		// Legacy cleanup — old line indicator classes removed in CSS,
+		// but keep this for any stale DOM from mid-drag re-renders.
+		this.itemsContainer?.querySelectorAll(".task-card--drop-above, .task-card--drop-below").forEach(el => {
+			el.classList.remove("task-card--drop-above", "task-card--drop-below");
+		});
+	}
+
+	/**
+	 * Remove all gap/slot shift classes and custom properties.
+	 */
+	private cleanupDragShift(): void {
+		if (this.dragContainer) {
+			this.dragContainer.style.removeProperty("--tn-drag-gap");
+		}
+		// Clean from entire items container (safety net)
+		this.itemsContainer?.querySelectorAll<HTMLElement>(
+			".task-card--drag-shift, .task-card--shift-down"
+		).forEach(el => {
+			el.classList.remove("task-card--drag-shift", "task-card--shift-down");
+		});
+		this.dragContainer = null;
+		this.currentInsertionIndex = -1;
+	}
+
+	/**
+	 * Container-level drag event delegation.
+	 * Handles dragenter/dragover/drop/dragleave on the itemsContainer so it
+	 * works with both normal and virtual-scrolling rendering.
+	 *
+	 * IMPORTANT: Both dragenter and dragover must call e.preventDefault() to
+	 * tell the browser this container accepts drops.  The call must happen
+	 * unconditionally (once we know a drag is active) – if it's gated behind
+	 * finding a card target, the browser denies the drop zone on frames where
+	 * the cursor is between cards or over the dragged card itself.
+	 */
+	private setupContainerDragHandlers(): void {
+		if (!this.itemsContainer) return;
+
+		// dragenter: required by the HTML5 DnD spec alongside dragover to
+		// indicate this container is a valid drop zone.
+		this.itemsContainer.addEventListener("dragenter", (e: DragEvent) => {
+			if (!this.draggedTaskPath) return;
+			e.preventDefault();
+			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+		});
+
+		this.itemsContainer.addEventListener("dragover", (e: DragEvent) => {
+			if (!this.draggedTaskPath) return;
+
+			// Always accept – must be unconditional so the browser keeps
+			// the drop zone active even when the cursor is between cards.
+			e.preventDefault();
+			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+
+			// Throttle visual updates via rAF
+			const clientX = e.clientX;
+			const clientY = e.clientY;
+			if (!this.dragOverRafId) {
+				this.dragOverRafId = requestAnimationFrame(() => {
+					this.dragOverRafId = 0;
+
+					const card = this.containerEl.ownerDocument.elementFromPoint(
+						clientX, clientY
+					)?.closest<HTMLElement>(".task-card[data-task-path]");
+					if (!card || card.dataset.taskPath === this.draggedTaskPath) return;
+
+					const rect = card.getBoundingClientRect();
+					const isAbove = clientY < rect.top + rect.height / 2;
+
+					this.dropTargetPath = card.dataset.taskPath!;
+					this.dropAbove = isAbove;
+
+					// Compute insertion index among non-dragged siblings
+					const container = this.itemsContainer;
+					if (!container) return;
+
+					const siblings = Array.from(
+						container.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
+					).filter(sib => sib.dataset.taskPath !== this.draggedTaskPath);
+
+					let insertionIndex = siblings.length; // default: end
+					for (let i = 0; i < siblings.length; i++) {
+						if (siblings[i].dataset.taskPath === card.dataset.taskPath) {
+							insertionIndex = isAbove ? i : i + 1;
+							break;
+						}
+					}
+
+					if (insertionIndex !== this.currentInsertionIndex) {
+						this.currentInsertionIndex = insertionIndex;
+						for (let i = 0; i < siblings.length; i++) {
+							siblings[i].classList.toggle(
+								"task-card--shift-down",
+								i >= insertionIndex
+							);
+						}
+					}
+				});
+			}
+		});
+
+		this.itemsContainer.addEventListener("dragleave", (e: DragEvent) => {
+			// Only clear if leaving the container entirely (not moving between children)
+			const related = e.relatedTarget as HTMLElement | null;
+			if (!related || !this.itemsContainer?.contains(related)) {
+				this.clearDropIndicators();
+			}
+		});
+
+		this.itemsContainer.addEventListener("drop", async (e: DragEvent) => {
+			e.preventDefault();
+			if (!this.draggedTaskPath || !this.dropTargetPath) return;
+
+			const draggedPath = this.draggedTaskPath;
+			const targetPath = this.dropTargetPath;
+			const above = this.dropAbove;
+			const sourceGroupKey = this.dragGroupKey;
+
+			this.clearDropIndicators();
+			this.cleanupDragShift();
+
+			// Determine target group from the render-time map (the flat DOM
+			// structure means closest("[data-group-key]") won't work here).
+			const targetGroupKey = this.taskGroupKeys.get(targetPath) ?? sourceGroupKey;
+
+			this.draggedTaskPath = null;
+			this.dragGroupKey = null;
+			this.dropTargetPath = null;
+
+			await this.handleSortOrderDrop(draggedPath, targetPath, above, targetGroupKey, sourceGroupKey);
+		});
+	}
+
+	private async handleSortOrderDrop(
+		draggedPath: string,
+		targetPath: string,
+		above: boolean,
+		targetGroupKey: string | null,
+		sourceGroupKey: string | null
+	): Promise<void> {
+		const groupByPropertyId = this.getGroupByPropertyId();
+		const cleanGroupBy = groupByPropertyId ? stripPropertyPrefix(groupByPropertyId) : null;
+
+		// If the task was dragged to a different group, update the group property
+		if (groupByPropertyId && targetGroupKey !== null && targetGroupKey !== sourceGroupKey) {
+			await this.updateTaskGroupProperty(draggedPath, groupByPropertyId, targetGroupKey);
+		}
+
+		// Compute and write sort_order for positioning within the target group
+		const newSortOrder = await computeSortOrder(
+			targetPath, above, targetGroupKey, cleanGroupBy, draggedPath,
+			this.plugin, this.taskInfoCache
+		);
+		if (newSortOrder !== null) {
+			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
+			const file = this.plugin.app.vault.getAbstractFileByPath(draggedPath);
+			if (file && file instanceof TFile) {
+				await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+					fm[sortOrderField] = newSortOrder;
+				});
+			}
+		}
+		this.debouncedRefresh();
+	}
+
+	/**
+	 * Update a task's group property in frontmatter.
+	 * Uses TaskService.updateProperty when possible (for business logic like
+	 * completedDate, auto-archive, webhooks), falls back to direct frontmatter write.
+	 */
+	private async updateTaskGroupProperty(
+		taskPath: string,
+		basesPropertyId: string,
+		value: any
+	): Promise<void> {
+		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
+		if (!file || !(file instanceof TFile)) return;
+
+		// Strip Bases prefix to get the frontmatter key
+		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, "");
+
+		const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
+		const taskProperty = this.plugin.fieldMapper.lookupMappingKey(frontmatterKey);
+
+		if (task && taskProperty) {
+			await this.plugin.taskService.updateProperty(
+				task,
+				taskProperty as keyof TaskInfo,
+				value
+			);
+		} else {
+			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				frontmatter[frontmatterKey] = value;
+			});
 		}
 	}
 
@@ -270,6 +594,7 @@ export class TaskListView extends BasesViewBase {
 		cardOptions: any
 	): Promise<void> {
 		if (!this.itemsContainer) return;
+		this.taskGroupKeys.clear(); // No groups in flat mode
 
 		if (!this.virtualScroller) {
 			// Initialize virtual scroller with automatic height calculation
@@ -281,6 +606,12 @@ export class TaskListView extends BasesViewBase {
 				renderItem: (taskInfo: TaskInfo, index: number) => {
 					// Create card using lazy mode
 					const card = createTaskCard(taskInfo, this.plugin, visibleProperties, cardOptions);
+
+					// Attach drag handlers for sort_order reordering
+					if (isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
+						card.setAttribute("draggable", "true");
+						this.setupCardDragHandlers(card, taskInfo, null);
+					}
 
 					// Cache task info for event handlers
 					this.taskInfoCache.set(taskInfo.path, taskInfo);
@@ -309,6 +640,7 @@ export class TaskListView extends BasesViewBase {
 		cardOptions: any
 	): Promise<void> {
 		if (!this.itemsContainer) return;
+		this.taskGroupKeys.clear(); // No groups in flat mode
 
 		const seenPaths = new Set<string>();
 		const orderChanged = !this.arePathArraysEqual(taskNotes, this.lastFlatPaths);
@@ -339,6 +671,12 @@ export class TaskListView extends BasesViewBase {
 
 			if (!cardEl!.isConnected) {
 				this.itemsContainer!.appendChild(cardEl!);
+			}
+
+			// Attach drag handlers when the card was (re)created
+			if (needsUpdate && isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
+				cardEl!.setAttribute("draggable", "true");
+				this.setupCardDragHandlers(cardEl!, taskInfo, null);
 			}
 
 			this.currentTaskElements.set(taskInfo.path, cardEl!);
@@ -597,6 +935,14 @@ export class TaskListView extends BasesViewBase {
 		visibleProperties: string[] | undefined,
 		cardOptions: any
 	): Promise<void> {
+		// Populate group key lookup for cross-group drag detection
+		this.taskGroupKeys.clear();
+		for (const item of items) {
+			if (item.type === 'task') {
+				this.taskGroupKeys.set(item.task.path, item.groupKey);
+			}
+		}
+
 		if (!this.virtualScroller) {
 			this.virtualScroller = new VirtualScroller<any>({
 				container: this.itemsContainer!,
@@ -608,6 +954,11 @@ export class TaskListView extends BasesViewBase {
 						return this.createGroupHeader(item);
 					} else {
 						const cardEl = createTaskCard(item.task, this.plugin, visibleProperties, cardOptions);
+						// Attach drag handlers for sort_order reordering
+						if (isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
+							cardEl.setAttribute("draggable", "true");
+							this.setupCardDragHandlers(cardEl, item.task, item.groupKey);
+						}
 						this.taskInfoCache.set(item.task.path, item.task);
 						this.lastTaskSignatures.set(item.task.path, this.buildTaskSignature(item.task));
 						return cardEl;
@@ -637,12 +988,24 @@ export class TaskListView extends BasesViewBase {
 		visibleProperties: string[] | undefined,
 		cardOptions: any
 	): Promise<void> {
+		// Populate group key lookup for cross-group drag detection
+		this.taskGroupKeys.clear();
+		for (const item of items) {
+			if (item.type === 'task') {
+				this.taskGroupKeys.set(item.task.path, item.groupKey);
+			}
+		}
+
 		for (const item of items) {
 			if (item.type === 'primary-header' || item.type === 'sub-header') {
 				const headerEl = this.createGroupHeader(item);
 				this.itemsContainer!.appendChild(headerEl);
 			} else {
 				const cardEl = createTaskCard(item.task, this.plugin, visibleProperties, cardOptions);
+				if (isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
+					cardEl.setAttribute("draggable", "true");
+					this.setupCardDragHandlers(cardEl, item.task, item.groupKey);
+				}
 				this.itemsContainer!.appendChild(cardEl);
 				this.currentTaskElements.set(item.task.path, cardEl);
 				this.taskInfoCache.set(item.task.path, item.task);

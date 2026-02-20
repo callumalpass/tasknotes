@@ -336,3 +336,19 @@
         font-size: var(--tn-font-size-sm);
     }
 }
+
+/* Gap/slot drag-to-reorder: sibling cards shift apart to show drop position */
+.tasknotes-plugin .task-card--drag-shift {
+    transition: transform 200ms cubic-bezier(0.2, 0, 0, 1);
+    will-change: transform;
+}
+
+.tasknotes-plugin .task-card--shift-down {
+    transform: translateY(var(--tn-drag-gap, 60px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .task-card--drag-shift {
+        transition: none;
+    }
+}

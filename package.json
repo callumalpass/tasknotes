@@ -80,6 +80,7 @@
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
 		"ical.js": "^2.2.1",
+		"lexorank": "1.0.5",
 		"obsidian-daily-notes-interface": "^0.9.4",
 		"reflect-metadata": "^0.2.2",
 		"rrule": "^2.8.1",

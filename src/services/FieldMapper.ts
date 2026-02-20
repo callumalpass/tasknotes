@@ -177,6 +177,11 @@ export class FieldMapper {
 			}
 		}
 
+		if (frontmatter[this.mapping.sortOrder] !== undefined) {
+			const val = frontmatter[this.mapping.sortOrder];
+			mapped.sortOrder = typeof val === "string" ? val : String(val);
+		}
+
 		// Handle tags array (includes archive tag)
 		if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
 			mapped.tags = frontmatter.tags;
@@ -254,6 +259,10 @@ export class FieldMapper {
 
 		if (taskData.dateModified !== undefined) {
 			frontmatter[this.mapping.dateModified] = taskData.dateModified;
+		}
+
+		if (taskData.sortOrder !== undefined) {
+			frontmatter[this.mapping.sortOrder] = taskData.sortOrder;
 		}
 
 		if (taskData.timeEntries !== undefined) {
