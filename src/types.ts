@@ -761,6 +761,7 @@ export interface ICSSubscription {
 	color: string;
 	enabled: boolean;
 	refreshInterval: number; // minutes (for remote) or check interval (for local)
+	filter: string;
 }
 
 export interface ICSEvent {
