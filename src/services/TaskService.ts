@@ -12,6 +12,7 @@ import {
 	FilenameContext,
 	generateTaskFilename,
 	generateUniqueFilename,
+	sanitizeLinks,
 } from "../utils/filenameGenerator";
 import { Notice, TFile, normalizePath, stringifyYaml } from "obsidian";
 import {
@@ -68,20 +69,7 @@ export class TaskService {
 		}
 
 		try {
-			let processed = input;
-
-			// Process Wikilinks: [[Link|Alias]] -> Alias, or [[Link]] -> Link
-			processed = processed.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, link, alias) => {
-				return (alias || link || "").trim();
-			});
-
-			// Process Markdown links: [Text](URL) -> Text
-			processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text) => {
-				return (text || "").trim();
-			});
-
-			// Remove protocol prefixes
-			processed = processed.replace(/https?:\/\//g, "");
+			let processed = sanitizeLinks(input);
 
 			// Remove or replace problematic characters
 			let sanitized = processed
