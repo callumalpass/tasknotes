@@ -36,6 +36,10 @@ Use [Core Concepts](core-concepts.md) to understand the data model, [Features](f
 ## Quick Links
 
 <div class="card-grid">
+  <a class="card" href="https://github.com/callumalpass/tasknotes" target="_blank" rel="noopener noreferrer">
+    <span class="card__title">GitHub Repository</span>
+    <span class="card__desc">Source code, issues, releases, and contribution discussions</span>
+  </a>
   <a class="card" href="/features/task-management/">
     <span class="card__title">Task Management</span>
     <span class="card__desc">Status, priority, dates, reminders, and recurring tasks</span>
