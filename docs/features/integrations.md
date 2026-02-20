@@ -2,7 +2,6 @@
 
 TaskNotes integrates with external services and Obsidian's core plugins.
 
-[← Back to Features](../features.md)
 
 ## Bases Core Plugin
 

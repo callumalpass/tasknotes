@@ -1,6 +1,5 @@
 # Recurring Tasks
 
-[← Back to Features](../features.md)
 
 TaskNotes recurring tasks use RFC 5545 RRule strings with `DTSTART` support and dynamic next-occurrence scheduling. The model separates recurrence patterns from the next planned instance.
 

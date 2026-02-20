@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} — {{site_title}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <!-- Left-edge reading progress -->
+  <div class="progress-rail" aria-hidden="true">
+    <div class="progress-fill" id="js-progress"></div>
+  </div>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="js-sidebar">
+      <div class="sidebar__header">
+        <a href="/" class="logotype">
+          <span class="logotype__name">{{site_title}}</span>
+          <span class="logotype__sub">documentation</span>
+        </a>
+      </div>
+
+      <div class="sidebar__scroll">
+        {{nav}}
+      </div>
+
+      <div class="sidebar__footer">
+        <button class="theme-btn" id="js-theme" aria-label="Toggle colour scheme">
+          <span class="theme-btn__track">
+            <span class="theme-btn__knob"></span>
+          </span>
+          <span class="theme-btn__label">theme</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="stage">
+
+      <!-- Mobile top bar -->
+      <header class="topbar">
+        <button class="menu-btn" id="js-menu" aria-label="Open navigation" aria-expanded="false" aria-controls="js-sidebar">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <line x1="2" y1="4.5"  x2="16" y2="4.5"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="2" y1="9"    x2="16" y2="9"    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="2" y1="13.5" x2="16" y2="13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <a href="/" class="topbar__title">{{site_title}}</a>
+      </header>
+
+      <div class="content-row">
+        <main class="prose" id="js-content">
+          {{content}}
+        </main>
+        <div class="toc-col">
+          {{toc}}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="overlay" id="js-overlay" aria-hidden="true"></div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

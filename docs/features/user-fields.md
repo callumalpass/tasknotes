@@ -4,7 +4,6 @@
 TaskNotes allows you to define your own custom fields for tasks. This feature allows you to add custom data to your tasks and use it for filtering, sorting, and grouping.
 User fields can store workflow-specific metadata such as owner, effort class, client, or review stage.
 
-[← Back to Features](../features.md)
 
 ## Creating User Fields
 

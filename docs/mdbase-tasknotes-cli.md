@@ -2,7 +2,6 @@
 
 [mdbase-tasknotes](https://github.com/callumalpass/mdbase-tasknotes) (`mtn`) is a standalone command-line tool for managing TaskNotes tasks directly on markdown files. It uses [mdbase](https://mdbase.dev) to read and write task files and [tasknotes-nlp-core](https://github.com/callumalpass/tasknotes-nlp-core) for natural language parsing.
 
-[← Back to APIs & Integration](HTTP_API.md)
 
 ## When to use this vs tasknotes-cli
 

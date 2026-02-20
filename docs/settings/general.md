@@ -2,7 +2,6 @@
 
 These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior.
 
-[← Back to Settings](../settings.md)
 
 ![General Settings](../assets/settings-general.png)
 

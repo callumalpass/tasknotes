@@ -82,3 +82,4 @@ tasknotes-e2e-vault/.obsidian/workspace.json
 tasknotes-e2e-vault/*.ics
 /.ops
 AGENTS.md
+/docs-builder/dist

@@ -2,7 +2,6 @@
 
 This tab configures all task properties. Each property is displayed as a card containing its configuration options.
 
-[← Back to Settings](../settings.md)
 
 ![Task Properties Settings](../assets/settings-task-properties.png)
 

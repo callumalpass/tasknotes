@@ -1,6 +1,5 @@
 # Calendar Views
 
-[← Back to Views](../views.md)
 
 TaskNotes provides two calendar-based views: the **Mini Calendar** and the **Calendar View**. Both operate as Bases views (`.base` files) and require the Bases core plugin to be enabled in Obsidian.
 Mini Calendar is date-density and navigation focused, while Calendar View is scheduling focused.

@@ -1,6 +1,5 @@
 # Calendar Integration
 
-[← Back to Features](../features.md)
 
 TaskNotes provides calendar integration through OAuth-connected calendar services, two Bases-powered calendar views, and read-only ICS calendar subscriptions.
 

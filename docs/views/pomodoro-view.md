@@ -1,6 +1,5 @@
 # Pomodoro View
 
-[← Back to Views](../views.md)
 
 The Pomodoro View provides a timer for working in focused intervals, based on the Pomodoro Technique.
 

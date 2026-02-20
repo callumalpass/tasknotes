@@ -21,31 +21,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
       with:
-        python-version: '3.x'
-        
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-          
-    - name: Install MkDocs
-      run: pip install mkdocs-material
-      
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: docs-builder/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: docs-builder
+
     - name: Build documentation
-      run: mkdocs build --clean
-      
+      run: node build.js
+      working-directory: docs-builder
+
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: site/
-        
+        path: docs-builder/dist/
+
   deploy:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     environment:

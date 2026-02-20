@@ -1,6 +1,5 @@
 # Inline Task Integration
 
-[← Back to Features](../features.md)
 
 TaskNotes integrates with the Obsidian editor to allow task management directly within notes. This is achieved through interactive widgets, a conversion feature for checkboxes, and natural language processing.
 Inline features support capture and task updates without leaving the current note.
