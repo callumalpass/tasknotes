@@ -1,6 +1,5 @@
 # Task List View
 
-[← Back to Views](../views.md)
 
 The Task List View displays tasks in a scrollable list format with filtering, sorting, and grouping capabilities. In TaskNotes v4, this view operates as a Bases view configured through YAML.
 This view is optimized for high task volume and explicit filter definitions.

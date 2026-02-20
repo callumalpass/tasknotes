@@ -86,3 +86,6 @@ task_plan.md
 # Upstream ops workspace
 /.ops
 AGENTS.md
+
+# Docs builder output
+/docs-builder/dist

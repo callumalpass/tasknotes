@@ -1,6 +1,5 @@
 # Task Reminders
 
-[← Back to Features](../features.md)
 
 TaskNotes reminders use iCalendar `VALARM` semantics and support both relative and absolute reminder types.
 

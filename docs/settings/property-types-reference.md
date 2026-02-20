@@ -2,7 +2,6 @@
 
 This reference documents the expected data types for each frontmatter property that TaskNotes uses.
 
-[← Back to Settings](../settings.md)
 
 ## Quick Reference
 

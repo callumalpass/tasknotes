@@ -1,6 +1,5 @@
 # Task Management
 
-[← Back to Features](../features.md)
 
 This page covers task creation, properties, projects, dependencies, recurring tasks, and reminders. For the underlying architecture, see [Core Concepts](../core-concepts.md).
 

@@ -2,7 +2,6 @@
 
 TaskNotes provides settings to customize its behavior and appearance. The settings are organized into tabs, each controlling a different aspect of the plugin.
 
-[← Back to Documentation](index.md)
 
 ## General
 
