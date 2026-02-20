@@ -214,15 +214,24 @@ export class ICSSubscriptionService extends EventEmitter {
 					throw new Error("Remote subscription missing URL");
 				}
 
+				// Build headers with optional Basic Auth
+				const headers: Record<string, string> = {
+					Accept: "text/calendar,*/*;q=0.1",
+					"Accept-Language": "en-US,en;q=0.9",
+					"User-Agent":
+						"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+				};
+
+				// Add HTTP Basic Auth header for Baikal/Davis/CalDAV servers
+				if (subscription.authType === "basic" && subscription.username && subscription.password) {
+					const credentials = btoa(`${subscription.username}:${subscription.password}`);
+					headers["Authorization"] = `Basic ${credentials}`;
+				}
+
 				const response = await requestUrl({
 					url: subscription.url,
 					method: "GET",
-					headers: {
-						Accept: "text/calendar,*/*;q=0.1",
-						"Accept-Language": "en-US,en;q=0.9",
-						"User-Agent":
-							"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-					},
+					headers,
 				});
 
 				icsData = response.text;
@@ -262,7 +271,13 @@ export class ICSSubscriptionService extends EventEmitter {
 
 			// Show user notification for errors with more helpful message
 			if (subscription.type === "remote") {
-				if (errorMessage.includes("404")) {
+				if (errorMessage.includes("401") || errorMessage.includes("Unauthorized")) {
+					new Notice(
+						this.translate("services.icsSubscription.notices.authenticationFailed", {
+							name: subscription.name,
+						})
+					);
+				} else if (errorMessage.includes("404")) {
 					new Notice(
 						this.translate("services.icsSubscription.notices.calendarNotFound", {
 							name: subscription.name,
@@ -298,6 +313,27 @@ export class ICSSubscriptionService extends EventEmitter {
 
 	private parseICS(icsData: string, subscriptionId: string): ICSEvent[] {
 		try {
+			// Basic validation - check if this looks like ICS data
+			const trimmedData = icsData.trim();
+			if (!trimmedData.startsWith("BEGIN:VCALENDAR")) {
+				// Log what we received for debugging
+				const preview = trimmedData.substring(0, 500);
+				console.error("ICS parse error: Response does not appear to be ICS data");
+				console.error("Response preview:", preview);
+				
+				// Check for common CalDAV/WebDAV error responses
+				if (trimmedData.includes("<!DOCTYPE") || trimmedData.includes("<html")) {
+					throw new Error("Received HTML instead of ICS data. Check the calendar URL - for CalDAV servers like Baikal/Davis, you may need to append '?export' to the calendar URL.");
+				}
+				if (trimmedData.includes("<?xml") || trimmedData.includes("<multistatus")) {
+					throw new Error("Received WebDAV XML response. For CalDAV servers, use the direct ICS export URL (usually ends with '?export').");
+				}
+				if (trimmedData.includes("Unauthorized") || trimmedData.includes("401")) {
+					throw new Error("Authentication required or failed. Please check your username and password.");
+				}
+				throw new Error("Invalid ICS format - server did not return calendar data");
+			}
+
 			const jcalData = ICAL.parse(icsData);
 			const comp = new ICAL.Component(jcalData);
 
@@ -499,7 +535,11 @@ export class ICSSubscriptionService extends EventEmitter {
 			return events;
 		} catch (error) {
 			console.error("Failed to parse ICS data:", error);
-			throw new Error("Invalid ICS format");
+			// Re-throw with more context if it's already a detailed error
+			if (error instanceof Error && error.message !== "Invalid ICS format") {
+				throw error;
+			}
+			throw new Error("Invalid ICS format - could not parse calendar data");
 		}
 	}
 
