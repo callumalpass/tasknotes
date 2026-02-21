@@ -62,6 +62,24 @@ function parseMarkdown(raw) {
   return { fm, html };
 }
 
+function splitHref(href) {
+  const queryIndex = href.indexOf('?');
+  const hashIndex = href.indexOf('#');
+  let end = href.length;
+  if (queryIndex !== -1 && queryIndex < end) end = queryIndex;
+  if (hashIndex !== -1 && hashIndex < end) end = hashIndex;
+  return { pathPart: href.slice(0, end), suffix: href.slice(end) };
+}
+
+function mdLinkPathToUrl(linkPath, mdPath) {
+  const pageDir = '/' + path.posix.dirname(mdPath).replace(/^\.(?:\/|$)/, '');
+  const resolved = linkPath.startsWith('/')
+    ? path.posix.normalize(linkPath)
+    : path.posix.normalize(path.posix.join(pageDir || '/', linkPath));
+  const relativeMdPath = resolved.replace(/^\/+/, '');
+  return mdPathToUrl(relativeMdPath);
+}
+
 // Rewrite relative image src/href paths to absolute URL paths.
 // Markdown files reference assets relative to their own location, but the
 // built HTML is served from a URL path that doesn't match the source path
@@ -73,6 +91,24 @@ function resolveAssetPaths(html, mdPath) {
     if (/^(https?:\/\/|\/|data:)/.test(src)) return _;
     const resolved = path.posix.resolve(pageDir || '/', src);
     return pre + resolved + post;
+  });
+}
+
+// Rewrite local markdown links to route URLs so links stay valid regardless
+// of the current page path (e.g. `foo.md` -> `/foo/`).
+function resolveMarkdownLinks(html, mdPath) {
+  return html.replace(/(<a\b[^>]*\shref=")([^"]+)(")/g, (_, pre, href, post) => {
+    if (!href) return _;
+    if (href.startsWith('#')) return _;
+    if (href.startsWith('//')) return _;
+    if (/^[A-Za-z][A-Za-z0-9+.-]*:/.test(href)) return _;
+
+    const { pathPart, suffix } = splitHref(href);
+    if (!pathPart) return _;
+    if (!/\.md$/i.test(pathPart)) return _;
+
+    const rewritten = mdLinkPathToUrl(pathPart, mdPath);
+    return pre + rewritten + suffix + post;
   });
 }
 
@@ -158,6 +194,26 @@ async function ensureDir(p) {
   await fs.mkdir(p, { recursive: true });
 }
 
+async function listMarkdownFiles(rootDir) {
+  const files = [];
+
+  async function walk(dir) {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(fullPath);
+        continue;
+      }
+      if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+      files.push(path.relative(rootDir, fullPath).split(path.sep).join('/'));
+    }
+  }
+
+  await walk(rootDir);
+  return files;
+}
+
 async function readSource(mdPath) {
   // Local override takes precedence over the source docs file
   const override = path.join(SRC, 'overrides', mdPath);
@@ -204,8 +260,10 @@ async function main() {
     await fs.copyFile(cname, path.join(DIST, 'CNAME'));
   }
 
-  // Build every page listed in the nav
-  const pages = flattenNav(nav);
+  // Build every markdown doc so cross-links outside the nav still resolve
+  const navPages = flattenNav(nav);
+  const allDocPages = await listMarkdownFiles(DOCS);
+  const pages = [...new Set([...navPages, ...allDocPages])];
   let built = 0, skipped = 0;
 
   for (const mdPath of pages) {
@@ -213,7 +271,7 @@ async function main() {
     if (!raw) { skipped++; continue; }
 
     const { fm, html: rawHtml } = parseMarkdown(raw);
-    const html     = resolveAssetPaths(rawHtml, mdPath);
+    const html     = resolveMarkdownLinks(resolveAssetPaths(rawHtml, mdPath), mdPath);
     const url      = mdPathToUrl(mdPath);
     const title    = extractTitle(html, fm);
     const body     = stripH1(html);
