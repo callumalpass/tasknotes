@@ -14,6 +14,8 @@ node_modules
 # Don't include the compiled main.js file in the repo.
 # They should be uploaded to GitHub releases instead.
 main.js
+# Keep docs site source JS tracked.
+!docs-builder/src/js/main.js
 
 # Don't include the generated styles.css file in the repo.
 # It's built from source files in styles/ directory during CI/build process.
