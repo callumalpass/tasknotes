@@ -287,6 +287,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroSoundEnabled: true,
 	pomodoroSoundVolume: 50,
 	pomodoroStorageLocation: "plugin",
+	sessionStateStorageLocation: "plugin",
 	pomodoroMobileSidebar: "tab",
 	// Editor defaults
 	enableTaskLinkOverlay: true,

@@ -91,7 +91,7 @@ export class PomodoroService {
 
 	async loadState() {
 		try {
-			const data = await this.plugin.loadData();
+			const data = await this.plugin.sessionStateStorage.load();
 
 			if (data?.pomodoroState) {
 				this.state = data.pomodoroState;
@@ -144,10 +144,10 @@ export class PomodoroService {
 
 	async saveState() {
 		try {
-			const data = (await this.plugin.loadData()) || {};
-			data.pomodoroState = this.state;
-			data.lastPomodoroDate = formatDateForStorage(getTodayLocal());
-			await this.plugin.saveData(data);
+			await this.plugin.sessionStateStorage.save({
+				pomodoroState: this.state,
+				lastPomodoroDate: formatDateForStorage(getTodayLocal()),
+			});
 		} catch (error) {
 			console.error("Failed to save pomodoro state:", error);
 		}
@@ -157,9 +157,7 @@ export class PomodoroService {
 		this.lastSelectedTaskPath = taskPath;
 		this.lastSelectedTaskPathLoaded = true;
 		try {
-			const data = (await this.plugin.loadData()) || {};
-			data.lastSelectedTaskPath = taskPath;
-			await this.plugin.saveData(data);
+			await this.plugin.sessionStateStorage.save({ lastSelectedTaskPath: taskPath });
 		} catch (error) {
 			console.error("Failed to save last selected task:", error);
 		}
@@ -170,7 +168,7 @@ export class PomodoroService {
 			return this.lastSelectedTaskPath;
 		}
 		try {
-			const data = await this.plugin.loadData();
+			const data = await this.plugin.sessionStateStorage.load();
 			const path = data?.lastSelectedTaskPath;
 			if (typeof path === "string" && path.trim().length > 0) {
 				this.lastSelectedTaskPath = path;

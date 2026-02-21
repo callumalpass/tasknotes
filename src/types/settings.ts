@@ -121,6 +121,13 @@ export interface TaskNotesSettings {
 	pomodoroSoundEnabled: boolean;
 	pomodoroSoundVolume: number; // 0-100
 	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data
+		/**
+		 * Where to store resume state (e.g., pomodoroState/currentSession, lastSelectedTaskPath).
+		 * - "plugin": stored in plugin `data.json` (will sync with `.obsidian`).
+		 * - "state-file": stored in `.obsidian/plugins/tasknotes/state.json` (can be gitignored).
+		 * - "localStorage": stored in WebView/Electron localStorage (device-only).
+		 */
+		sessionStateStorageLocation: "plugin" | "state-file" | "localStorage";
 	pomodoroMobileSidebar: "tab" | "left" | "right"; // where to open pomodoro view on mobile
 	// Editor settings
 	enableTaskLinkOverlay: boolean;

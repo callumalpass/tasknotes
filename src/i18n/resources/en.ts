@@ -549,6 +549,24 @@ export const en: TranslationTree = {
 					locationChanged: "Pomodoro storage location changed to {location}",
 				},
 			},
+				sessionStateStorage: {
+					name: "Resume state storage",
+					description:
+						"Choose where TaskNotes stores resume state (in-progress Pomodoro, last selected task).",
+					pluginData: "Plugin data (syncs)",
+					stateFile: "Separate file (state.json)",
+					localStorage: "Device storage (localStorage)",
+					notices: {
+						locationChanged: "Resume state storage changed to {location}",
+					},
+					modal: {
+						title: "Change resume state storage",
+						message:
+							"This will move your current resume state to the new storage location. If you use Git, the separate file option lets you ignore state changes to avoid conflicts.",
+						confirm: "Change storage",
+						cancel: "Cancel",
+					},
+				},
 			notifications: {
 				header: "Notifications",
 				description: "Configure task reminder notifications and alerts.",

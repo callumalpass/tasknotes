@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Added
+
+- Added `Resume state storage` setting to control where resume state is persisted (plugin data, separate `state.json`, or device-only `localStorage`)
+  - Helps Git users avoid sync conflicts/noise by allowing `state.json` to be gitignored
+
 ## Fixed
 
 - Fixed documentation deployment CI failures caused by `docs-builder/src/js/main.js` being excluded by a broad `.gitignore` `main.js` rule

@@ -86,6 +86,7 @@ import { ProjectSubtasksService } from "./services/ProjectSubtasksService";
 import { ExpandedProjectsService } from "./services/ExpandedProjectsService";
 import { NotificationService } from "./services/NotificationService";
 import { AutoExportService } from "./services/AutoExportService";
+import { SessionStateStorage } from "./services/SessionStateStorage";
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService, TranslationKey } from "./i18n";
@@ -155,6 +156,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Pomodoro service
 	pomodoroService: PomodoroService;
+	sessionStateStorage: SessionStateStorage;
 
 	// Customization services
 	fieldMapper: FieldMapper;
@@ -284,6 +286,10 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		await this.loadSettings();
+
+		// Initialize resume state storage and migrate legacy state out of data.json if configured
+		this.sessionStateStorage = new SessionStateStorage(this);
+		await this.sessionStateStorage.migrateFromPluginDataIfNeeded();
 
 		this.i18n = createI18nService({
 			initialLocale: this.settings.uiLanguage ?? "system",
@@ -1471,6 +1477,12 @@ export default class TaskNotesPlugin extends Plugin {
 	async saveSettingsDataOnly(): Promise<void> {
 		// Load existing plugin data to preserve non-settings data like pomodoroHistory
 		const data = (await this.loadData()) || {};
+		// If session state is stored elsewhere, keep it out of data.json to avoid sync noise/conflicts
+		if (this.settings.sessionStateStorageLocation !== "plugin") {
+			delete (data as any).pomodoroState;
+			delete (data as any).lastPomodoroDate;
+			delete (data as any).lastSelectedTaskPath;
+		}
 		// Merge only settings properties, preserving non-settings data
 		const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
 		for (const key of settingsKeys) {

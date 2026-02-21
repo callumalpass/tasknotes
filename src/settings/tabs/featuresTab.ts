@@ -7,6 +7,7 @@ import {
 	configureDropdownSetting,
 	configureNumberSetting,
 } from "../components/settingHelpers";
+import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { showStorageLocationConfirmationModal } from "../../modals/StorageLocationConfirmationModal";
 import { getAvailableLanguages } from "../../locales";
 import type { TranslationKey } from "../../i18n";
@@ -397,6 +398,60 @@ export function renderFeaturesTab(
 								renderFeaturesTab(container, plugin, save);
 							}
 						}
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureDropdownSetting(setting, {
+					name: translate("settings.features.sessionStateStorage.name"),
+					desc: translate("settings.features.sessionStateStorage.description"),
+					options: [
+						{
+							value: "plugin",
+							label: translate("settings.features.sessionStateStorage.pluginData"),
+						},
+						{
+							value: "state-file",
+							label: translate("settings.features.sessionStateStorage.stateFile"),
+						},
+						{
+							value: "localStorage",
+							label: translate("settings.features.sessionStateStorage.localStorage"),
+						},
+					],
+					getValue: () => plugin.settings.sessionStateStorageLocation,
+					setValue: async (value: string) => {
+						const newLocation = value as "plugin" | "state-file" | "localStorage";
+						if (newLocation === plugin.settings.sessionStateStorageLocation) return;
+
+						const confirmed = await showConfirmationModal(plugin.app, {
+							title: translate("settings.features.sessionStateStorage.modal.title"),
+							message: translate("settings.features.sessionStateStorage.modal.message"),
+							confirmText: translate("settings.features.sessionStateStorage.modal.confirm"),
+							cancelText: translate("settings.features.sessionStateStorage.modal.cancel"),
+						});
+
+						if (!confirmed) {
+							renderFeaturesTab(container, plugin, save);
+							return;
+						}
+
+						const oldLocation = plugin.settings.sessionStateStorageLocation;
+						await plugin.sessionStateStorage.migrateLocation(oldLocation, newLocation);
+						plugin.settings.sessionStateStorageLocation = newLocation;
+						save();
+
+						new Notice(
+							translate("settings.features.sessionStateStorage.notices.locationChanged", {
+								location:
+									newLocation === "plugin"
+										? translate("settings.features.sessionStateStorage.pluginData")
+										: newLocation === "state-file"
+											? translate("settings.features.sessionStateStorage.stateFile")
+											: translate("settings.features.sessionStateStorage.localStorage"),
+							})
+						);
 					},
 				})
 			);
