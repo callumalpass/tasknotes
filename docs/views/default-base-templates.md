@@ -95,7 +95,7 @@ These formulas work with either due date or scheduled date, useful for finding t
 | Formula | Description | Expression |
 |---------|-------------|------------|
 | `priorityWeight` | Numeric weight for priority sorting (lower = higher priority) | `if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))` |
-| `urgencyScore` | Combines priority and next date proximity (due or scheduled, higher = more urgent) | `if(!due && !scheduled, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext))` |
+| `urgencyScore` | Combines priority and next date proximity (due or scheduled, higher = more urgent) | `if(!due && !scheduled, formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)))` |
 
 ### Display formulas
 
