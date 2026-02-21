@@ -5,7 +5,7 @@ TaskNotes integrates with external services and Obsidian's core plugins.
 
 ## Bases Core Plugin
 
-TaskNotes v4 uses Obsidian's Bases core plugin for its main views (Task List, Kanban, Calendar, Agenda). Bases must be enabled from Settings → Core Plugins.
+TaskNotes v4 uses Obsidian's Bases core plugin for its main views (Task List, Kanban, Calendar, Agenda). Bases must be enabled in `Settings -> Core Plugins`.
 
 For details on Bases integration, see [Core Concepts](../core-concepts.md#bases-integration).
 
@@ -17,12 +17,12 @@ For setup instructions, see [Calendar Integration](calendar-integration.md).
 
 ## HTTP API
 
-A REST API enables external applications to create, update, and query tasks. Use this for automation, browser extensions, mobile apps, or custom integrations.
+A REST API enables external applications to create, update, and query tasks. Use it for automation, browser extensions, or custom integrations.
 
 For API documentation, see [HTTP API](../HTTP_API.md).
 
 ## Webhooks
 
-Send task data to external services when tasks are created, updated, or completed. Supports custom payload transformations for services like Slack, Discord, and Microsoft Teams.
+Webhooks send task event payloads to external services when subscribed events occur. Optional payload transformations support service-specific formats.
 
 For configuration, see [Webhooks](../webhooks.md).

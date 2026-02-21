@@ -62,7 +62,6 @@ nav:
   - Views:
     - Overview: views.md
     - Task List View: views/task-list.md
-    - Notes View: views/notes-view.md
     - Agenda View: views/agenda-view.md
     - Kanban View: views/kanban-view.md
     - Calendar Views: views/calendar-views.md
@@ -73,12 +72,15 @@ nav:
     - General: settings/general.md
     - Features: settings/features.md
     - Task Properties: settings/task-properties.md
+    - Modal Fields: settings/modal-fields.md
+    - Property Identification: settings/property-identification.md
     - Property Types Reference: settings/property-types-reference.md
     - Defaults & Templates: settings/defaults.md
     - Task Defaults: settings/task-defaults.md
     - Appearance & UI: settings/appearance.md
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md
+    - Misc Settings: settings/misc-settings.md
     - Integrations: settings/integrations.md
     - Advanced Settings: settings/advanced-settings.md
   - APIs & Integration:

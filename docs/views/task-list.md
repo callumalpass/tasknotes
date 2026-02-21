@@ -15,14 +15,14 @@ Task List is implemented as a `.base` file located in `TaskNotes/Views/tasks-def
 Bases is an official Obsidian core plugin built directly into Obsidian (not a community plugin). It provides a framework for creating database views of notes and tasks.
 
 To enable Bases:
-1. Open Settings → Core Plugins
+1. Open `Settings -> Core Plugins`
 2. Enable "Bases"
 3. TaskNotes view commands will now open `.base` files from `TaskNotes/Views/`
 If commands open empty or unexpected views, first confirm Bases is enabled and the command path points to the intended `.base` file.
 
 ### View File Location
 
-When you use the "Open Tasks View" command or ribbon icon, TaskNotes opens the `.base` file configured under **Settings → TaskNotes → General → View Commands** (initially `TaskNotes/Views/tasks-default.base`). The default file is created automatically the first time you use the command, and you can point the command to any other `.base` file if you maintain multiple task-list layouts.
+When you use the "Open Tasks View" command or ribbon icon, TaskNotes opens the `.base` file configured under `Settings -> TaskNotes -> General` (`View Commands`) (initially `TaskNotes/Views/tasks-default.base`). The default file is created automatically the first time you use the command, and you can point the command to any other `.base` file if you maintain multiple task-list layouts.
 
 ## Configuration
 
@@ -96,7 +96,7 @@ TaskNotes properties are accessed in Bases YAML using these paths:
 | Created | `file.ctime` | File creation date |
 | Modified | `file.mtime` | File modification date |
 
-The exact property names depend on your TaskNotes field mapping settings (Settings → Advanced → Field Mapping). The table above shows the default mappings.
+The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Task Properties`). The table above shows default mappings.
 
 ## Filtering and Sorting
 
@@ -233,7 +233,7 @@ The v3 FilterBar UI component no longer exists - all configuration is done throu
 
 The Task List View provides interaction with tasks through clicking and context menus:
 
-- **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in Settings → General → Click Actions)
+- **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in `Settings -> TaskNotes -> General` in click-action controls)
 - **Right-click on a task**: Opens a context menu with actions:
   - Mark as complete
   - Change priority
