@@ -258,7 +258,7 @@ Storing title in filename favors path-readable tasks and external tooling that k
 
 ## Default Reminders
 
-Configure default reminders in **Settings → Task Properties → Reminders**. These reminders automatically apply to new tasks.
+Configure default reminders in `Settings -> TaskNotes -> Task Properties` (Reminders card). These reminders automatically apply to new tasks.
 Default reminders apply to all new tasks and can be supplemented with per-task reminders.
 
 ### Reminder Types
@@ -272,7 +272,7 @@ Default reminders apply to all new tasks and can be supplemented with per-task r
 
 ### Configuration
 
-1. Navigate to Settings → TaskNotes → Task Properties
+1. Navigate to `Settings -> TaskNotes -> Task Properties`
 2. Expand the Reminders card
 3. In the Default Reminders section, select type (Relative or Absolute)
 4. Configure timing and optional description

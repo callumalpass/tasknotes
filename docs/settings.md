@@ -1,11 +1,11 @@
 # Settings
 
-TaskNotes provides settings to customize its behavior and appearance. The settings are organized into tabs, each controlling a different aspect of the plugin.
+TaskNotes settings are organized into tabs. Each tab controls a different part of plugin behavior.
 
 
 ## General
 
-The General tab controls how TaskNotes recognizes tasks, where files are stored, and how task cards respond to clicks. This is the best place to start if your vault already has conventions you want TaskNotes to follow, such as custom task tags, property-based identification, or specific folder structures.
+The General tab controls task identification, storage locations, and task-card click behavior. Use this tab when your vault already has conventions such as custom tags, property-based identification, or specific folder structures.
 
 For more information, see the [General Settings](settings/general.md) documentation.
 

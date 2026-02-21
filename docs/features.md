@@ -1,6 +1,6 @@
 # Features
 
-TaskNotes covers the full spectrum of task management, from basic organization to advanced workflows with time tracking and calendar integration.
+TaskNotes includes task organization, time tracking, and calendar integration features.
 
 ## Task Management
 
@@ -26,7 +26,7 @@ For details on how Bases integration works, see [Core Concepts](core-concepts.md
 
 Inline task features let you work from normal notes without context switching. Task links can display interactive cards, checkboxes can be converted into full task notes, and project notes can surface subtasks and dependency relationships in place.
 
-Natural language parsing supports date, priority, and context extraction across multiple languages, which helps keep capture friction low while preserving structured data.
+Natural language parsing supports date, priority, and context extraction across multiple languages, which helps keep fast capture while preserving structured data.
 
 See [Inline Task Integration](features/inline-tasks.md) for details.
 
@@ -42,7 +42,7 @@ See [Time Management](features/time-management.md) for details.
 
 TaskNotes supports bidirectional OAuth sync with Google Calendar and Microsoft Outlook, plus read-only ICS subscriptions for external feeds. Calendar views include month, week, day, year, and list modes, and drag-and-drop scheduling can update tasks directly.
 
-For planning workflows, time-blocking and calendar-linked task updates make it possible to move from backlog management to real schedule execution in one workspace.
+For planning workflows, time-blocking and calendar-linked task updates connect backlog management with schedule execution in the same workspace.
 
 ![Calendar month view](assets/views-calendar-month.png)
 

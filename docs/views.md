@@ -7,7 +7,7 @@ For details on Bases integration and how to enable it, see [Core Concepts](core-
 
 ## Task-Focused Views
 
-Task-focused views are different entry points into the same underlying task notes. The [Task List View](views/task-list.md) is usually the best default for day-to-day planning because it exposes filters, sorting, and grouping in a straightforward list format.
+Task-focused views are different entry points into the same underlying task notes. The [Task List View](views/task-list.md) is a common starting view for day-to-day planning because it exposes filters, sorting, and grouping in list format.
 
 When you want workflow by status, [Kanban View](views/kanban-view.md) organizes cards into columns and can optionally add swimlanes for an extra organizational layer. [Calendar Views](views/calendar-views.md) are useful when schedule and timing matter more than backlog shape, with month/week/day/year/list modes plus drag-and-drop scheduling and time-block support.
 

@@ -6,7 +6,7 @@ TaskNotes includes features for time tracking and productivity, such as a time t
 
 TaskNotes has a time tracker to record the time spent on each task. Time tracking information is stored in the `timeEntries` array within each task's YAML frontmatter. Each time entry includes a start time and an end time.
 
-The time tracking interface includes controls to start and stop tracking, which appear in task views and on task cards. Only one task can be actively tracked at a time; starting a new timer will automatically stop the previous one. The total time spent on a task is calculated from all completed sessions.
+The time tracking interface includes controls to start and stop tracking in task views and task cards. TaskNotes prevents duplicate active sessions on the same task. Active sessions on different tasks can exist at the same time, and total time spent on each task is calculated from completed sessions.
 
 ### Auto-Stop Time Tracking
 
@@ -14,7 +14,7 @@ TaskNotes can automatically stop time tracking when a task is marked as complete
 
 The auto-stop feature works by monitoring task status changes across all views and interfaces. When a task's status changes from any non-completed state to a completed state (as defined by the custom status configuration), any active time tracking session for that task is automatically terminated.
 
-**Configuration Options:** Configure these under **Settings → TaskNotes → Features → Time Tracking**.
+**Configuration Options:** Configure these under `Settings -> TaskNotes -> Features` (Time Tracking section).
 
 - **Auto-stop tracking** - Enable or disable the automatic stopping behavior (enabled by default)
 - **Completion notification** - Show a notice when auto-stop occurs (disabled by default)

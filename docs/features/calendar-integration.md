@@ -19,7 +19,7 @@ OAuth calendar integration requires creating an OAuth application with your cale
 1. Create an OAuth application in Google Cloud Console or Microsoft Azure Portal
 2. Configure redirect URIs and scopes
 3. Obtain client ID and client secret
-4. Enter credentials in TaskNotes settings (**Settings → TaskNotes → Integrations → OAuth Calendar Integration**)
+4. Enter credentials in TaskNotes settings (`Settings -> TaskNotes -> Integrations`, OAuth calendar section)
 
 ### Synchronization Behavior
 
@@ -49,9 +49,10 @@ To create a time entry on the Calendar View:
 
 1. Click and drag on a time slot in the calendar to select a time range
 2. When the selection menu appears, choose **Create time entry** (timeblock appears only if the feature is enabled)
-3. The time entry editor opens with start/end times pre-filled for the selected range
+3. Choose a task in the task selector modal
+4. A time entry is created for that task with the selected start/end range
 
-Time entries are associated with tasks and stored in the task's frontmatter. Multiple time entries can exist for a single task.
+Time entries are always associated with a specific task and stored in that task's frontmatter. Multiple time entries can exist for one task.
 
 ### Managing Time Entries
 
@@ -62,13 +63,13 @@ The time entry editor modal provides functions to:
 - Delete time entries
 - See the total time tracked across all entries for a task
 
-Access the time entry editor by clicking on an existing time entry in the calendar or through the task's context menu.
+Access the time entry editor by clicking an existing time entry in the calendar.
 
 ## ICS Calendar Subscriptions
 
 TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) format. This provides read-only access to events from calendar services. ICS subscriptions differ from OAuth calendar integration in that they are read-only—dragging ICS events to new dates does not update the source calendar.
 
-Add and manage ICS subscriptions from **Settings → TaskNotes → Integrations → Calendar subscriptions**.
+Add and manage ICS subscriptions from `Settings -> TaskNotes -> Integrations` (Calendar Subscriptions section).
 
 For details on creating notes and tasks from calendar events, see [ICS Integration](ics-integration.md).
 
@@ -82,4 +83,4 @@ The Calendar View supports time blocking for scheduling dedicated work periods. 
 
 Time blocks are stored in the frontmatter of daily notes and can be linked to specific tasks. This differs from time entries, which track actual time spent and are stored in task frontmatter rather than daily notes.
 
-Enable time blocking under **Settings → TaskNotes → Features → Timeblocking**.
+Enable time blocking under `Settings -> TaskNotes -> Features` (Timeblocking section).

@@ -94,7 +94,7 @@ Additionally, you can convert any line type in your notes to TaskNotes using the
 
 Tasks store their data in YAML frontmatter with properties for status, priority, dates, contexts, projects, tags, time estimates, recurrence, and reminders. Custom fields can extend this structure.
 
-This frontmatter-first design keeps task data editable and portable while still supporting rich UI interactions across views and widgets.
+This frontmatter-first design keeps task data editable and portable while supporting consistent behavior across views and widgets.
 
 For property types and examples, see [Core Concepts](../core-concepts.md#yaml-frontmatter). For configuration options, see [Task Properties Settings](../settings/task-properties.md).
 

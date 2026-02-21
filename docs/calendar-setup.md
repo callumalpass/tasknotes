@@ -2,19 +2,6 @@
 
 TaskNotes supports Google Calendar and Microsoft Calendar integration via OAuth 2.0.
 
-<!-- TEMPORARILY DISABLED FOR BETA RELEASE
-## Quick Setup
-
-TaskNotes bundles OAuth client IDs (and the Google client secret) so you can connect without creating your own apps. You'll need an active TaskNotes license to unlock these built-in credentials.
-
-1. Go to Settings → Integrations → Calendar.
-2. In the license card, ensure **Quick Setup** is selected and enter your Lemon Squeezy license key.
-3. Click **Validate License** (or blur the input) and wait for the success notice.
-4. Use the Google or Microsoft card to click **Connect** and authorize access in your browser.
-   - Google uses the OAuth loopback flow and will reopen to `http://127.0.0.1:<port>` to finish the login.
-   - Microsoft uses the OAuth device-flow and will show you a short code and link.
--->
-
 ## Setup (Your Own OAuth Credentials)
 
 To connect calendars, create OAuth credentials with Google and/or Microsoft, then paste them into TaskNotes Integrations settings. The sections below walk through each provider.
@@ -27,7 +14,7 @@ To connect calendars, create OAuth credentials with Google and/or Microsoft, the
 
 *Video by [@antoneheyward](https://www.youtube.com/@antoneheyward)*
 
-In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (Settings → Integrations → Calendar) and click **Connect Google Calendar**.
+In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (`Settings -> TaskNotes -> Integrations`) and click **Connect Google Calendar**.
 
 ### Microsoft Calendar
 
@@ -50,7 +37,7 @@ Credentials and tokens are stored locally in your Obsidian data. Tokens refresh 
 
 **"Failed to connect"**
 
-Verify credentials first, then confirm redirect URI setup. For Microsoft, use `http://127.0.0.1` via the manifest editor (not `localhost`). For Google, verify `http://localhost:8080` is configured. Also confirm API permissions were granted.
+Verify credentials first, then confirm loopback redirect configuration. TaskNotes uses a local callback on `127.0.0.1` with a dynamically selected port. For Microsoft, ensure loopback redirect support is configured in the app registration. Also confirm required permissions/scopes are granted.
 
 **"Failed to fetch events"**
 

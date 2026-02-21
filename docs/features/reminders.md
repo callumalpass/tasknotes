@@ -112,7 +112,7 @@ These indicators are intended to make reminders discoverable in list-heavy views
 
 Default reminders can be configured in:
 
-**Settings → TaskNotes → Task Properties → Reminders**
+`Settings -> TaskNotes -> Task Properties -> Reminders`
 
 Defaults are applied to:
 
@@ -120,7 +120,7 @@ Defaults are applied to:
 - Instant conversion
 - Natural language task creation
 
-Default reminders are best for recurring operating habits, such as pre-deadline checks or day-before planning prompts.
+Default reminders are useful for recurring habits, such as pre-deadline checks or day-before planning prompts.
 
 ![Task properties settings](../assets/settings-task-properties.png)
 

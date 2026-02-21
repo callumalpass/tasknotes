@@ -1,23 +1,37 @@
-
 # TaskNotes NLP API
 
-TaskNotes now exposes its natural language parsing capabilities through API endpoints, allowing external clients to parse task descriptions and create tasks using natural language input.
+The NLP API parses natural-language task text and optionally creates a task.
 
 ## Endpoints
 
-### POST /api/nlp/parse
+- `POST /api/nlp/parse`
+- `POST /api/nlp/create`
 
-Parses natural language input and returns structured task data without creating a task.
+Both endpoints require a JSON body with `text`.
 
-**Request:**
+## Request Format
+
 ```json
 {
-  "text": "Review PR #123 tomorrow high priority @work",
-  "locale": "en"
+  "text": "Review PR #123 tomorrow high priority @work"
 }
 ```
 
-**Response:**
+Notes:
+
+- `text` is required and must be a string.
+- Per-request `locale` is not currently supported.
+- Parser language comes from TaskNotes settings (`nlpLanguage`).
+
+## `POST /api/nlp/parse`
+
+Parses text and returns two objects:
+
+- `parsed`: direct parser output
+- `taskData`: normalized task payload that would be used for creation
+
+Example response (shape):
+
 ```json
 {
   "success": true,
@@ -28,8 +42,8 @@ Parses natural language input and returns structured task data without creating 
       "contexts": ["work"],
       "projects": [],
       "priority": "high",
-      "status": "todo",
-      "dueDate": "2024-08-13",
+      "status": null,
+      "dueDate": "2026-02-22",
       "scheduledDate": null,
       "dueTime": null,
       "scheduledTime": null,
@@ -40,11 +54,11 @@ Parses natural language input and returns structured task data without creating 
     "taskData": {
       "title": "Review PR",
       "priority": "high",
-      "status": "todo",
+      "status": "open",
       "tags": ["123"],
       "contexts": ["work"],
       "projects": [],
-      "due": "2024-08-13",
+      "due": "2026-02-22",
       "scheduled": null,
       "recurrence": null,
       "timeEstimate": null
@@ -53,123 +67,51 @@ Parses natural language input and returns structured task data without creating 
 }
 ```
 
-### POST /api/nlp/create
+If parser does not detect status, `taskData.status` falls back to your default status workflow.
 
-Parses natural language input and creates a task in one step.
+## `POST /api/nlp/create`
 
-**Request:**
-```json
-{
-  "text": "Call mom due friday 2pm #personal",
-  "locale": "en"
-}
+Parses text and creates a task in one call.
+
+Returns HTTP `201` on success.
+
+Example:
+
+```bash
+curl -X POST http://localhost:8080/api/nlp/create \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Call mom due friday 2pm #personal"}'
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "task": {
-      "id": "TaskNotes/Tasks/Call mom.md",
-      "title": "Call mom",
-      "filePath": "TaskNotes/Tasks/Call mom.md",
-      "priority": "medium",
-      "status": "todo",
-      "tags": ["personal"],
-      "contexts": [],
-      "projects": [],
-      "due": "2024-08-16 14:00"
-    },
-    "parsed": {
-      "title": "Call mom",
-      "tags": ["personal"],
-      "contexts": [],
-      "projects": [],
-      "priority": null,
-      "status": "todo",
-      "dueDate": "2024-08-16",
-      "dueTime": "14:00",
-      "scheduledDate": null,
-      "scheduledTime": null,
-      "recurrence": null,
-      "estimate": null,
-      "isCompleted": false
-    }
-  }
-}
-```
+Response fields:
 
-## Natural Language Parsing Features
+- `data.task` (created task)
+- `data.parsed` (parser output)
 
-The NLP parser can extract the following from text input:
+## What the Parser Extracts
 
-### Dates and Times
-- **Absolute**: "tomorrow", "friday", "next week", "2024-08-15"
-- **Relative**: "today", "tomorrow", "next monday"
-- **Times**: "2pm", "14:00", "at 6pm"
-- **Keywords**: "due friday", "scheduled tomorrow"
+The parser can extract:
 
-### Priority Levels
-- **Keywords**: "high priority", "low priority", "urgent"
-- **Symbols**: "!!!" (high), "!!" (medium), "!" (low)
+- Dates and times (`tomorrow`, `friday 2pm`, ISO dates)
+- Priority terms (`high priority`, `urgent`, symbol patterns)
+- Status terms (mapped to your configured statuses)
+- Tags (`#tag`)
+- Contexts (`@context`)
+- Projects (`+project`)
+- Time estimates (`2h`, `30min`, `estimate 45m`)
+- Recurrence (`daily`, `weekly`, `every monday`)
 
-### Tags
-- **Format**: "#tag", "#personal", "#work"
-- **Extracted**: Becomes task tags
+Exact parsing behavior depends on your TaskNotes NLP settings and trigger configuration.
 
-### Contexts
-- **Format**: "@context", "@work", "@home"
-- **Extracted**: Becomes task contexts
+## Error Responses
 
-### Projects
-- **Format**: "+project", "+website-redesign"
-- **Extracted**: Becomes task projects
+Common errors:
 
-### Time Estimates
-- **Format**: "2h", "30min", "estimate 45m"
-- **Extracted**: Converted to minutes
+- `400`: missing/invalid `text`
+- `401`: auth required (if API token is enabled)
+- `500`: parse/processing error
 
-### Recurrence
-- **Keywords**: "daily", "weekly", "monthly", "every monday"
-- **Format**: Converted to RRule format
-
-### Status
-- **Keywords**: "done", "completed", "todo", "in-progress"
-- **Custom**: Uses your configured status types
-
-### Multi-language Support
-
-The NLP parser supports multiple languages. You can specify the language to use for parsing by providing a `locale` parameter in the request body. The following locales are supported:
-
-- `en` (English)
-- `de` (German)
-- `es` (Spanish)
-- `fr` (French)
-- `it` (Italian)
-- `ja` (Japanese)
-- `nl` (Dutch)
-- `pt` (Portuguese)
-- `ru` (Russian)
-- `sv` (Swedish)
-- `uk` (Ukrainian)
-- `zh` (Chinese)
-
-If no locale is provided, the parser will default to English.
-
-## Example Inputs
-
-| Input | Extracted |
-|-------|-----------|
-| `Review PR #123 tomorrow high priority @work` | Title: "Review PR", Tags: ["123"], Contexts: ["work"], Priority: "high", Due: tomorrow |
-| `Buy groceries today at 6pm` | Title: "Buy groceries", Scheduled: today 18:00 |
-| `Weekly team meeting every monday 10am` | Title: "Weekly team meeting", Recurrence: "weekly", Scheduled: mondays 10:00 |
-| `Fix bug estimate 2h high priority @urgent` | Title: "Fix bug", Estimate: 120 min, Priority: "high", Contexts: ["urgent"] |
-| `Call mom due friday 2pm #personal` | Title: "Call mom", Due: friday 14:00, Tags: ["personal"] |
-
-## Error Handling
-
-Both endpoints return standard error responses:
+Error shape:
 
 ```json
 {
@@ -178,75 +120,56 @@ Both endpoints return standard error responses:
 }
 ```
 
-Common errors:
-- **400**: Missing or invalid `text` field
-- **401**: Authentication required (if API token configured)
-- **500**: Internal server error during parsing or task creation
+## Client Examples
 
-## Client Usage
+### JavaScript
 
-### JavaScript Example
 ```javascript
-// Parse text only
-async function parseTask(text, locale = 'en') {
-  const response = await fetch('http://localhost:8080/api/nlp/parse', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, locale })
+async function parseTask(text) {
+  const response = await fetch("http://localhost:8080/api/nlp/parse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
   });
   return response.json();
 }
 
-// Parse and create task
-async function createTaskFromText(text, locale = 'en') {
-  const response = await fetch('http://localhost:8080/api/nlp/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, locale })
+async function createTaskFromText(text) {
+  const response = await fetch("http://localhost:8080/api/nlp/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
   });
   return response.json();
 }
 ```
 
-### Python Example
+### Python
+
 ```python
 import requests
 
-def parse_task(text, locale='en'):
-    response = requests.post('http://localhost:8080/api/nlp/parse', 
-                           json={'text': text, 'locale': locale})
+
+def parse_task(text):
+    response = requests.post(
+        "http://localhost:8080/api/nlp/parse",
+        json={"text": text},
+    )
     return response.json()
 
-def create_task_from_text(text, locale='en'):
-    response = requests.post('http://localhost:8080/api/nlp/create', 
-                           json={'text': text, 'locale': locale})
+
+def create_task_from_text(text):
+    response = requests.post(
+        "http://localhost:8080/api/nlp/create",
+        json={"text": text},
+    )
     return response.json()
 ```
-
-## Integration Benefits
-
-- **Mobile Apps**: Parse voice-to-text input
-- **CLI Tools**: Natural language task creation
-- **Chat Bots**: Process user messages
-- **Email Integration**: Parse forwarded emails
-- **Browser Extensions**: Smart task creation
-- **Third-party Apps**: Integrate with existing workflows
 
 ## Authentication
 
-If you have an API authentication token configured in TaskNotes settings, include it in requests:
+If API auth token is enabled, include bearer token:
 
-```javascript
-headers: {
-  'Content-Type': 'application/json',
-  'Authorization': 'Bearer your-api-token'
-}
+```http
+Authorization: Bearer YOUR_TOKEN
 ```
-
-## User Settings Integration
-
-The NLP parser uses your TaskNotes configuration:
-- **Custom Status Types**: Your configured statuses
-- **Custom Priorities**: Your priority levels  
-- **Default Behavior**: Scheduled vs due date preferences
-- **Task Creation Defaults**: Applied to created tasks

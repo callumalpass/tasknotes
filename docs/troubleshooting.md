@@ -10,13 +10,13 @@ When debugging, start with the smallest reproducible scenario: one affected task
 
 **Symptoms**: TaskNotes views show errors or don't display tasks
 
-First confirm Bases is enabled (Settings → Core Plugins → Bases), then restart Obsidian once. If views are still missing, verify `.base` files exist in `TaskNotes/Views/`. If needed, regenerate defaults from Settings → TaskNotes → Integrations → **Create default files**.
+First confirm Bases is enabled (`Settings -> Core Plugins -> Bases`), then restart Obsidian once. If views are still missing, verify `.base` files exist in `TaskNotes/Views/`. If needed, regenerate defaults from `Settings -> TaskNotes -> Integrations` (`Create default files`).
 
 ### Commands Open Wrong Files
 
 **Symptoms**: Ribbon icons or commands open unexpected files
 
-Check command mappings in Settings → TaskNotes → Integrations → View Commands. Reset mappings that were changed unintentionally, then verify each referenced `.base` file exists at the configured path.
+Check command mappings in `Settings -> TaskNotes -> General` (`View Commands`). Reset mappings that were changed unintentionally, then verify each referenced `.base` file exists at the configured path.
 
 ## Common Issues
 
@@ -48,7 +48,7 @@ Reduce visible event layers first (scheduled/due/recurring/time entries), then i
 
 **Symptoms**: Natural language input doesn't extract expected task properties
 
-Enable NLP in Settings → TaskNotes → Features, then verify your trigger characters (`@`, `#`, `!` by default) and any custom status/priority mappings. If parsing still seems inconsistent, compare input against the syntax in [NLP API](nlp-api.md).
+Enable NLP in `Settings -> TaskNotes -> Features`, then verify your trigger characters (`@`, `#`, `!` by default) and any custom status/priority mappings. If parsing still seems inconsistent, compare input against the syntax in [NLP API](nlp-api.md).
 
 ### Time Tracking Issues
 
@@ -88,7 +88,7 @@ To improve loading times, reduce external calendar subscriptions, increase ICS r
 
 **Symptoms**: Google Calendar or Microsoft Outlook won't connect
 
-Verify credentials and redirect URI (`http://localhost:42813/callback`) exactly, ensure app publication/test-user access is correct, and retry after disconnecting. Also check popup blockers. For provider-specific setup details, use [Calendar Setup](calendar-setup.md).
+Verify credentials and loopback redirect configuration (`127.0.0.1` with dynamic local port), ensure app publication/test-user access is correct, and retry after disconnecting. Also check popup blockers. For provider-specific setup details, use [Calendar Setup](calendar-setup.md).
 
 ### OAuth Calendar Not Syncing
 

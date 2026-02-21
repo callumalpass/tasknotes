@@ -75,7 +75,7 @@ Property keys are configurable. If your vault uses `deadline` instead of `due`, 
 
 ### Custom Fields
 
-Add any frontmatter property to your tasks. User-defined fields work in filtering, sorting, and templates. Define custom fields in Settings → Task Properties to include them in task modals and views.
+Add any frontmatter property to your tasks. User-defined fields work in filtering, sorting, and templates. Define custom fields in `Settings -> TaskNotes -> Task Properties` to include them in task modals and views.
 
 ## Bases Integration
 
@@ -93,7 +93,6 @@ This makes view behavior inspectable and predictable. If a task appears in the w
 
 Bases is a core plugin included with Obsidian 1.10.1+:
 
-1. Open Settings → Core Plugins
+1. Open `Settings -> Core Plugins`
 2. Enable "Bases"
 3. TaskNotes views will now function
-
