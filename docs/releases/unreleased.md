@@ -35,3 +35,5 @@ Example:
   - Thanks to @martin-forge for reporting
 - Consolidated documentation cleanup for accuracy and clarity across API, webhook, NLP, privacy, settings, and view docs (corrected outdated endpoint/behavior details, normalized current settings paths, and tightened non-release prose)
 - Fixed a broken docs cross-reference from Property Types Reference to Task Properties settings
+- Fixed docs site link generation so internal Markdown links resolve to route URLs instead of broken `.md` paths (for example `/views/default-base-templates/`)
+- Fixed docs release-note links by building all Markdown docs pages, including pages not listed directly in sidebar nav
