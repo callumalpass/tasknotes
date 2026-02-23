@@ -12044,16 +12044,26 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
 .task-card-note-widget {
     display: block;
+    box-sizing: border-box;
     border-radius: var(--radius-s);
     border: 1px solid var(--background-modifier-border);
-    margin: var(--cs-spacing-md) 0;
+    margin-block: var(--cs-spacing-md);
+    margin-inline: 0;
     padding: var(--cs-spacing-sm);
+}
+
+/* Keep widget aligned with the centered readable column when enabled */
+.is-readable-line-width .task-card-note-widget {
+    width: min(100%, var(--file-line-width, 100%));
+    max-width: var(--file-line-width, 100%);
+    margin-inline: auto;
 }
 
 .task-card-note-widget__card {
     /* Reset margins for the inner task card */
     margin: 0 !important;
 }
+
 
 /* ===== TASK-LIST-VIEW.CSS ===== */
 /* ================================================
@@ -18623,6 +18633,46 @@ select.tasknotes-settings__card-input {
     opacity: 0.9;
 }
 
+/* Field visibility callout (Creator/Assignee modal status) */
+.tn-field-visibility-callout {
+    margin: 0 12px 12px 12px;
+    padding: 8px 12px;
+    border-radius: var(--radius-s);
+    font-size: var(--font-ui-smaller);
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tn-field-visibility-callout--warning {
+    background: color-mix(in srgb, var(--color-orange) 8%, var(--background-secondary));
+    border-left: 3px solid var(--color-orange);
+    color: var(--text-normal);
+}
+
+.tn-field-visibility-callout--info {
+    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-secondary));
+    border-left: 3px solid var(--interactive-accent);
+    color: var(--text-muted);
+}
+
+.tn-field-visibility-callout__btn {
+    padding: 2px 10px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-primary);
+    color: var(--text-accent);
+    font-size: var(--font-ui-smaller);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tn-field-visibility-callout__btn:hover {
+    background: var(--background-modifier-hover);
+}
+
 /* Clickable header styling */
 .tasknotes-settings__card-header--clickable {
     cursor: var(--cursor, pointer);
@@ -20207,6 +20257,33 @@ select.tasknotes-settings__card-input {
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
+.tn-discovery-section__header--collapsible {
+    cursor: pointer;
+    user-select: none;
+    border-radius: var(--radius-s);
+    padding: 4px 4px 4px 0;
+}
+
+.tn-discovery-section__header--collapsible:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tn-discovery-section__chevron {
+    display: flex;
+    align-items: center;
+    transition: transform 150ms ease;
+}
+
+.tn-discovery-section__chevron .svg-icon {
+    width: 12px;
+    height: 12px;
+    color: var(--text-faint);
+}
+
+.tn-discovery-section__chevron.is-collapsed {
+    transform: rotate(-90deg);
+}
+
 .tn-discovery-section__header .svg-icon {
     width: 14px;
     height: 14px;
@@ -20218,6 +20295,12 @@ select.tasknotes-settings__card-input {
     font-size: var(--font-ui-smaller);
     font-style: italic;
     padding: 4px 0;
+}
+
+.tn-discovery-section__empty em {
+    color: var(--text-muted);
+    font-style: normal;
+    font-weight: 500;
 }
 
 .tn-discovery-row {
@@ -20232,16 +20315,8 @@ select.tasknotes-settings__card-input {
     background: var(--background-modifier-hover);
 }
 
-.tn-discovery-row__icon {
+.tn-discovery-row .tn-avatar {
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-}
-
-.tn-discovery-row__icon .svg-icon {
-    width: 14px;
-    height: 14px;
-    color: var(--text-muted);
 }
 
 .tn-discovery-row__info {

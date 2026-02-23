@@ -1,6 +1,22 @@
-import { App } from "obsidian";
+import { App, Notice } from "obsidian";
 import type TaskNotesPlugin from "../../main";
 import type { ModalFieldConfig, FieldGroup, TaskModalFieldsConfig } from "../../types/settings";
+
+/**
+ * Check if a modal field config entry corresponds to a person field (creator/assignee).
+ * Returns the display name if it is, or null if not.
+ */
+function getPersonFieldLabel(field: ModalFieldConfig, plugin: TaskNotesPlugin): string | null {
+	if (field.fieldType !== "user") return null;
+	const userField = plugin.settings.userFields?.find((f: any) => f.id === field.id);
+	if (!userField?.key) return null;
+	const key = userField.key.toLowerCase().trim().replace(/s$/, "");
+	const creatorKey = (plugin.settings.creatorFieldName || "creator").toLowerCase().replace(/s$/, "");
+	const assigneeKey = (plugin.settings.assigneeFieldName || "assignee").toLowerCase().replace(/s$/, "");
+	if (key === creatorKey) return userField.displayName || "Creator";
+	if (key === assigneeKey) return userField.displayName || "Assignees";
+	return null;
+}
 import {
 	createCard,
 	setupCardDragAndDrop,
@@ -126,6 +142,12 @@ function createFieldCard(
 		const fieldIndex = config.fields.findIndex((f) => f.id === field.id);
 		if (fieldIndex !== -1) {
 			config.fields[fieldIndex].enabled = value;
+			if (!value) {
+				const label = getPersonFieldLabel(field, plugin);
+				if (label) {
+					new Notice(`${label} picker will be hidden from task modals. Re-enable here or in Task Properties.`, 8000);
+				}
+			}
 			onUpdate(config);
 			// Re-render to update visibility
 			const activeTab = document.querySelector(".field-manager__tab--active") as HTMLElement;
@@ -144,6 +166,12 @@ function createFieldCard(
 		const fieldIndex = config.fields.findIndex((f) => f.id === field.id);
 		if (fieldIndex !== -1) {
 			config.fields[fieldIndex].visibleInCreation = value;
+			if (!value) {
+				const label = getPersonFieldLabel(field, plugin);
+				if (label) {
+					new Notice(`${label} picker will be hidden from the task creation modal.`, 6000);
+				}
+			}
 			onUpdate(config);
 		}
 	});
@@ -152,6 +180,12 @@ function createFieldCard(
 		const fieldIndex = config.fields.findIndex((f) => f.id === field.id);
 		if (fieldIndex !== -1) {
 			config.fields[fieldIndex].visibleInEdit = value;
+			if (!value) {
+				const label = getPersonFieldLabel(field, plugin);
+				if (label) {
+					new Notice(`${label} picker will be hidden from the task edit modal.`, 6000);
+				}
+			}
 			onUpdate(config);
 		}
 	});
@@ -178,13 +212,25 @@ function createFieldCard(
 	// Title and details are in the basic group and cannot be reordered
 	const canReorder = field.group !== "basic";
 
+	// Resolve display text for the card header
+	let secondaryText = field.id;
+	if (field.fieldType === "user") {
+		const matchingUserField = plugin.settings.userFields?.find((f: any) => f.id === field.id);
+		if (matchingUserField?.key) {
+			secondaryText = matchingUserField.key;
+		}
+	}
+	const displayName = field.displayName || (field.fieldType === "user"
+		? plugin.settings.userFields?.find((f: any) => f.id === field.id)?.displayName
+		: undefined) || field.id;
+
 	// Create the card using CardComponent
 	const card = createCard(container, {
 		id: field.id,
 		draggable: canReorder,
 		header: {
-			primaryText: field.displayName,
-			secondaryText: `ID: ${field.id}`,
+			primaryText: displayName,
+			secondaryText,
 			meta: [typeBadge],
 		},
 		content: {

@@ -1,8 +1,9 @@
 /**
  * Modal for bulk task operations from Bases view items.
- * Supports two modes:
+ * Supports three action modes plus view settings:
  *   - Generate: Create new task files linked to source items
  *   - Convert: Add task metadata to existing notes in-place
+ *   - Bulk Edit: Modify properties on existing task files
  */
 
 import { App, Modal, Notice, Setting, TFile, setIcon, setTooltip } from "obsidian";
@@ -10,6 +11,7 @@ import TaskNotesPlugin from "../main";
 import { BasesDataItem } from "../bases/helpers";
 import { BulkTaskEngine, BulkCreationOptions, BulkCreationResult } from "./bulk-task-engine";
 import { BulkConvertEngine, BulkConvertOptions, BulkConvertResult, ConvertPreCheckResult } from "./bulk-convert-engine";
+import { BulkEditEngine, BulkEditOptions, BulkEditResult, EditPreCheckResult } from "./bulk-edit-engine";
 import { PersonNoteInfo } from "../identity/PersonNoteService";
 import { GroupNoteMapping } from "../identity/GroupRegistry";
 import { createPersonGroupPicker } from "../ui/PersonGroupPicker";
@@ -30,11 +32,11 @@ import {
 } from "../utils/fieldOverrideUtils";
 
 
-type BulkMode = "generate" | "convert" | "viewSettings";
+type BulkMode = "generate" | "convert" | "bulkEdit" | "viewSettings";
 
 export interface BulkTaskCreationModalOptions {
-	/** Called when tasks are created or notes are converted successfully */
-	onTasksCreated?: (result: BulkCreationResult | BulkConvertResult) => void;
+	/** Called when tasks are created, converted, or edited successfully */
+	onTasksCreated?: (result: BulkCreationResult | BulkConvertResult | BulkEditResult) => void;
 	/** Per-view field mapping from a .base file (ADR-011). */
 	viewFieldMapping?: import("../identity/BaseIdentityService").ViewFieldMapping;
 	/** Source base ID for provenance tracking (ADR-011). */
@@ -57,6 +59,7 @@ export class BulkTaskCreationModal extends Modal {
 	private modalOptions: BulkTaskCreationModalOptions;
 	private engine: BulkTaskEngine;
 	private convertEngine: BulkConvertEngine;
+	private editEngine: BulkEditEngine;
 	private baseFilePath: string | undefined;
 
 	// Mode state
@@ -141,6 +144,7 @@ export class BulkTaskCreationModal extends Modal {
 		this.baseFilePath = baseFilePath;
 		this.engine = new BulkTaskEngine(plugin);
 		this.convertEngine = new BulkConvertEngine(plugin);
+		this.editEngine = new BulkEditEngine(plugin);
 		const requestedMode = options.openToViewSettings ? "viewSettings" : (plugin.settings.defaultBulkMode || "generate");
 		// Fall back from viewSettings if no base file context (e.g., opened from file explorer)
 		this.mode = (requestedMode === "viewSettings" && !baseFilePath) ? "generate" : requestedMode;
@@ -265,6 +269,20 @@ export class BulkTaskCreationModal extends Modal {
 		convertTab.addEventListener("click", () => {
 			if (this.mode !== "convert") {
 				this.mode = "convert";
+				this.onModeChanged();
+				this.updateTabStyles(tabsContainer);
+			}
+		});
+
+		// Bulk Edit tab
+		const editTab = tabsContainer.createEl("button", {
+			cls: `tn-bulk-modal__tab ${this.mode === "bulkEdit" ? "tn-bulk-modal__tab--active" : ""}`,
+			text: "Edit existing tasks",
+			attr: { "data-mode": "bulkEdit" },
+		});
+		editTab.addEventListener("click", () => {
+			if (this.mode !== "bulkEdit") {
+				this.mode = "bulkEdit";
 				this.onModeChanged();
 				this.updateTabStyles(tabsContainer);
 			}
@@ -2103,6 +2121,7 @@ export class BulkTaskCreationModal extends Modal {
 	 */
 	private getActionButtonText(): string {
 		if (this.mode === "viewSettings") return "Save";
+		if (this.mode === "bulkEdit") return "Edit tasks";
 		return this.mode === "generate" ? "Generate tasks" : "Convert to tasks";
 	}
 
@@ -2285,6 +2304,8 @@ export class BulkTaskCreationModal extends Modal {
 
 		if (this.mode === "generate") {
 			this.renderGenerateOptions(this.optionsContainer);
+		} else if (this.mode === "bulkEdit") {
+			this.renderBulkEditOptions(this.optionsContainer);
 		} else {
 			this.renderConvertOptions(this.optionsContainer);
 		}
@@ -2375,6 +2396,27 @@ export class BulkTaskCreationModal extends Modal {
 	}
 
 	/**
+	 * Render Bulk Edit-mode options.
+	 */
+	private renderBulkEditOptions(container: HTMLElement) {
+		const header = container.createDiv({ cls: "tn-bulk-modal__section-header" });
+		header.createSpan({ cls: "tn-bulk-modal__section-label", text: "OPTIONS" });
+
+		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
+		setIcon(helpIcon, "help-circle");
+		setTooltip(helpIcon, "Modify properties on existing task files. Only the fields you set above will be changed. Non-task items are skipped.");
+
+		const optionsBox = container.createDiv({ cls: "tn-bulk-modal__options" });
+
+		// Warning callout
+		const warningEl = optionsBox.createDiv({ cls: "tn-bulk-modal__edit-warning" });
+		warningEl.style.cssText = "display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; background: var(--background-modifier-error-hover); color: var(--text-normal); font-size: var(--font-ui-small); margin-bottom: 8px;";
+		const warningIconEl = warningEl.createSpan();
+		setIcon(warningIconEl, "alert-triangle");
+		warningEl.createSpan({ text: "This will overwrite selected properties on existing task files. Only fields you've set above will be changed." });
+	}
+
+	/**
 	 * Run pre-check based on current mode.
 	 */
 	private async runPreCheck() {
@@ -2386,6 +2428,8 @@ export class BulkTaskCreationModal extends Modal {
 		try {
 			if (this.mode === "generate") {
 				await this.runGeneratePreCheck();
+			} else if (this.mode === "bulkEdit") {
+				await this.runEditPreCheck();
 			} else {
 				await this.runConvertPreCheck();
 			}
@@ -2463,6 +2507,73 @@ export class BulkTaskCreationModal extends Modal {
 
 		if (this.actionButton) {
 			this.actionButton.disabled = preCheck.toConvert === 0;
+		}
+	}
+
+	/**
+	 * Pre-check for Bulk Edit mode: check which items are tasks (editable) vs non-tasks (skipped).
+	 */
+	private async runEditPreCheck() {
+		if (!this.statusContainer) return;
+
+		const preCheck = await this.editEngine.preCheck(this.items);
+
+		this.statusContainer.empty();
+		this.statusContainer.createSpan({
+			text: `Ready to edit ${preCheck.toEdit} task${preCheck.toEdit !== 1 ? "s" : ""}`,
+		});
+
+		// Show skip info if any
+		const totalSkips = preCheck.notTasks + preCheck.nonMarkdown;
+
+		// Populate items list with badges (reuse: notTaskPaths shown as "not a task", nonMarkdown as usual)
+		this.populateItemsListWithEditBadges(preCheck.notTaskPaths, preCheck.nonMarkdownPaths);
+		this.updateItemsSummaryWithSkips(totalSkips);
+
+		if (this.actionButton) {
+			this.actionButton.disabled = preCheck.toEdit === 0;
+		}
+	}
+
+	/**
+	 * Populate items list with skip badges for bulk edit mode.
+	 */
+	private populateItemsListWithEditBadges(notTaskPaths: Set<string>, nonMarkdownPaths: Set<string>) {
+		if (!this.itemsListContainer) return;
+		this.itemsListContainer.empty();
+
+		const maxItems = 20;
+		const itemsToShow = this.items.slice(0, maxItems);
+
+		for (const item of itemsToShow) {
+			const isNotTask = item.path && notTaskPaths.has(item.path);
+			const isNonMarkdown = item.path && nonMarkdownPaths.has(item.path);
+			const isSkipped = isNotTask || isNonMarkdown;
+
+			const itemEl = this.itemsListContainer.createDiv({
+				cls: `tn-bulk-modal__item ${isSkipped ? "tn-bulk-modal__item--skipped" : ""}`,
+			});
+
+			const title = this.extractTitle(item);
+			itemEl.createSpan({ cls: "tn-bulk-modal__item-title", text: title });
+
+			if (isNonMarkdown) {
+				const badge = itemEl.createSpan({ cls: "tn-bulk-modal__item-badge tn-bulk-modal__item-badge--skip" });
+				badge.textContent = "non-markdown";
+			} else if (isNotTask) {
+				const badge = itemEl.createSpan({ cls: "tn-bulk-modal__item-badge tn-bulk-modal__item-badge--skip" });
+				badge.textContent = "not a task";
+			} else {
+				const badge = itemEl.createSpan({ cls: "tn-bulk-modal__item-badge tn-bulk-modal__item-badge--task" });
+				badge.textContent = "task";
+			}
+		}
+
+		if (this.items.length > maxItems) {
+			this.itemsListContainer.createDiv({
+				cls: "tn-bulk-modal__item tn-bulk-modal__item--more",
+				text: `... and ${this.items.length - maxItems} more`,
+			});
 		}
 	}
 
@@ -2660,6 +2771,8 @@ export class BulkTaskCreationModal extends Modal {
 		}
 		if (this.mode === "generate") {
 			await this.executeGeneration();
+		} else if (this.mode === "bulkEdit") {
+			await this.executeBulkEdit();
 		} else {
 			await this.executeConversion();
 		}
@@ -2812,6 +2925,128 @@ export class BulkTaskCreationModal extends Modal {
 			this.actionButton.textContent = "Retry";
 			this.progressBar.removeClass("is-visible");
 		}
+	}
+
+	/**
+	 * Execute bulk edit on existing task files.
+	 */
+	private async executeBulkEdit() {
+		if (!this.actionButton || !this.progressBar || !this.statusContainer) return;
+
+		// Show confirmation dialog unless suppressed
+		if (!this.plugin.settings.suppressBulkEditConfirmation) {
+			const confirmed = await this.showBulkEditConfirmation();
+			if (!confirmed) return;
+		}
+
+		this.actionButton.disabled = true;
+		this.actionButton.textContent = "Editing...";
+		this.progressBar.addClass("is-visible");
+
+		const options: BulkEditOptions = {
+			status: this.bulkStatus || undefined,
+			priority: this.bulkPriority || undefined,
+			dueDate: this.dueDate || undefined,
+			scheduledDate: this.scheduledDate || undefined,
+			assignees: this.selectedAssignees.length > 0 ? this.selectedAssignees.map(p => {
+				const file = this.app.vault.getAbstractFileByPath(p);
+				if (file instanceof TFile) {
+					const linktext = this.app.metadataCache.fileToLinktext(file, "", true);
+					return `[[${linktext}]]`;
+				}
+				return `[[${p.replace(/\.md$/, "")}]]`;
+			}) : undefined,
+			reminders: this.bulkReminders.length > 0 ? this.bulkReminders : undefined,
+			customFrontmatter: Object.keys(this.bulkCustomProperties).length > 0 ? this.getFlatCustomProperties() : undefined,
+			viewFieldMapping: this.modalOptions.viewFieldMapping,
+			sourceBaseId: this.modalOptions.sourceBaseId,
+			sourceViewId: this.modalOptions.sourceViewId,
+			onProgress: (current, total, status) => {
+				const percent = Math.round((current / total) * 100);
+				if (this.progressBarInner) {
+					this.progressBarInner.style.width = `${percent}%`;
+				}
+				if (this.statusContainer) {
+					this.statusContainer.empty();
+					this.statusContainer.createSpan({ text: status });
+				}
+			},
+		};
+
+		try {
+			const result = await this.editEngine.editTasks(this.items, options);
+
+			this.statusContainer.empty();
+
+			let resultText = `Edited ${result.edited} task${result.edited !== 1 ? "s" : ""}`;
+			if (result.skipped > 0) {
+				resultText += `, skipped ${result.skipped}`;
+			}
+			if (result.failed > 0) {
+				resultText += `, ${result.failed} failed`;
+			}
+
+			this.statusContainer.createSpan({
+				text: resultText,
+				cls: result.failed > 0 ? "tn-bulk-modal__status--warning" : "tn-bulk-modal__status--success",
+			});
+
+			new Notice(resultText);
+			this.modalOptions.onTasksCreated?.(result);
+			setTimeout(() => this.close(), 1500);
+		} catch (error) {
+			const errorMsg = error instanceof Error ? error.message : String(error);
+
+			this.statusContainer.empty();
+			this.statusContainer.createSpan({
+				text: `Error: ${errorMsg}`,
+				cls: "tn-bulk-modal__status--error",
+			});
+
+			new Notice(`Bulk edit failed: ${errorMsg}`);
+
+			this.actionButton.disabled = false;
+			this.actionButton.textContent = "Retry";
+			this.progressBar.removeClass("is-visible");
+		}
+	}
+
+	/**
+	 * Show confirmation dialog before bulk edit. Returns true if user confirms.
+	 */
+	private showBulkEditConfirmation(): Promise<boolean> {
+		return new Promise((resolve) => {
+			const confirmModal = new Modal(this.app);
+			confirmModal.titleEl.setText("Confirm bulk edit");
+			confirmModal.contentEl.createEl("p", {
+				text: "This will modify frontmatter properties on multiple task files. Only the fields you've explicitly set will be changed.",
+			});
+
+			let dontShowAgain = false;
+			new Setting(confirmModal.contentEl)
+				.setName("Don't show this again")
+				.addToggle((toggle) => toggle.onChange((v) => { dontShowAgain = v; }));
+
+			const btnRow = new Setting(confirmModal.contentEl);
+			btnRow.addButton((b) =>
+				b.setButtonText("Cancel").onClick(() => {
+					confirmModal.close();
+					resolve(false);
+				})
+			);
+			btnRow.addButton((b) =>
+				b.setButtonText("Edit tasks").setCta().onClick(async () => {
+					if (dontShowAgain) {
+						this.plugin.settings.suppressBulkEditConfirmation = true;
+						await this.plugin.saveSettings();
+					}
+					confirmModal.close();
+					resolve(true);
+				})
+			);
+
+			confirmModal.open();
+		});
 	}
 
 	/**

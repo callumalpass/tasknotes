@@ -1,0 +1,56 @@
+filters:
+  and:
+    - file.inFolder("Document Library, Knowledge")
+    - type == "document"
+    - status == "active"
+formulas:
+  ownerName: if(owner, owner.replace("[[", "").replace("]]", ""), "Unassigned")
+  daysUntilReview: "review_date ? ((number(date(review_date)) - number(today())) / 86400000).floor() : 999"
+  reviewStatus: if(formula.daysUntilReview < 0, "OVERDUE", if(formula.daysUntilReview <= 7, "This week", if(formula.daysUntilReview <= 30, "This month", "OK")))
+properties:
+  file.name:
+    displayName: Document
+  formula.ownerName:
+    displayName: Owner
+  formula.reviewStatus:
+    displayName: Review Status
+  review_date:
+    displayName: Review Date
+  review_cycle:
+    displayName: Cycle
+views:
+  - type: tasknotesTaskList
+    name: Ready to Generate
+    order:
+      - file.name
+      - formula.ownerName
+      - formula.reviewStatus
+      - review_date
+      - review_cycle
+    sort:
+      - property: formula.daysUntilReview
+        direction: ASC
+    enableSearch: true
+  - type: table
+    name: All Documents
+    order:
+      - file.name
+      - formula.ownerName
+      - formula.reviewStatus
+      - review_date
+      - review_cycle
+    sort:
+      - property: formula.daysUntilReview
+        direction: ASC
+  - type: table
+    name: By Department
+    order:
+      - file.name
+      - formula.ownerName
+      - formula.reviewStatus
+      - review_date
+    sort:
+      - property: file.name
+        direction: ASC
+    group:
+      - column: file.folder

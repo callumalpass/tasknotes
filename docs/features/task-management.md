@@ -1,11 +1,42 @@
 # Task Management
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Use: TaskNotes/Demos/Priority Dashboard Demo.base and Project Dependencies Demo.base
+Show opening the task creation modal → fill title/due/priority → save
+Show typing a natural language task description → fields auto-populate
+
+PROJECTS section:
+  Show clicking "Add Project" in task modal → fuzzy search → select project
+  Show task frontmatter with projects: ["[[Project Alpha]]"]
+  Show Kanban grouped by project with tasks in multiple columns
+  Show project indicator icon on a task card
+  Show right-click → "Create subtask" on a project task
+
+DEPENDENCIES section:
+  Show task frontmatter with blockedBy field
+  Show clicking "Blocked by" in edit modal → fuzzy task selector → add dependency
+  Show fork icon on task card → expand inline list of blocked tasks
+
+CLEANUP (task creation / dependency changes modify files):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 This page covers task creation, properties, projects, dependencies, recurring tasks, and reminders. For the underlying architecture, see [Core Concepts](../core-concepts.md).
 
 Use this page as the operational overview: how tasks are captured, how they are structured, and how relationships/automation behave. Detailed reference content for recurrence and reminders is split into dedicated pages linked near the end.
 
 ## Creating and Editing Tasks
+
+<!-- GIF: Opening the task creation modal, filling in title/due/priority, and saving -->
+
+![Task creation modal with fields for title, due date, and priority](../assets/screenshot-task-create-modal.png)
 
 You can create and edit tasks in a variety of ways. The primary method is through the **Task Creation Modal**, which can be accessed via the "Create new task" command or by clicking on dates or time slots in the calendar views. This modal provides an interface for setting all available task properties, including title, status, priority, and due dates.
 
@@ -90,6 +121,10 @@ Status suggestions allow quick selection of statuses when creating tasks. For ex
 
 Additionally, you can convert any line type in your notes to TaskNotes using the **Instant Conversion** feature. This works with checkboxes, bullet points, numbered lists, blockquotes, headers, and plain text lines.
 
+<!-- GIF: Typing a natural language task description and seeing fields auto-populate -->
+
+![Task creation modal with natural language input](../assets/screenshot-task-create-modal.png)
+
 ## Task Properties
 
 Tasks store their data in YAML frontmatter with properties for status, priority, dates, contexts, projects, tags, time estimates, recurrence, and reminders. Custom fields can extend this structure.
@@ -106,31 +141,55 @@ This model avoids creating a separate project database. Any note can become a pr
 
 ### Project Assignment
 
+<!-- GIF: Opening the task edit modal, clicking "Add Project", searching for a project note, and selecting it -->
+
+![Task creation modal with fields for title, due date, and priority](../assets/screenshot-task-create-modal.png)
+
 Tasks can be assigned to one or more projects through the task creation or editing interface. When creating or editing a task, click the "Add Project" button to open the project selection modal. This modal provides fuzzy search functionality to quickly find and select project notes from your vault.
 
 ### Project Links
+
+<!-- SCREENSHOT: Task frontmatter showing projects field with wikilinks, e.g. projects: ["[[Project Alpha]]", "[[Project Beta]]"] -->
+
+![Task note showing frontmatter properties and content](../assets/screenshot-task-note.png)
 
 Projects are stored as wikilinks in the task's frontmatter (e.g., `projects: ["[[Project A]]", "[[Project B]]"]`). These links are clickable in the task interface and will navigate directly to the project notes when clicked. Any note in your vault can serve as a project note simply by being linked from a task's projects field.
 
 ### Organization and Filtering
 
+<!-- GIF: Kanban board grouped by project -- tasks appearing in multiple project columns, then switching to Task List grouped by project -->
+
+![Kanban board showing tasks organized by status columns](../assets/screenshot-kanban.png)
+
 Tasks can be filtered and grouped by their associated projects in all Bases-driven task views. Use the Bases filter editor to add `note.projects` conditions, and configure the grouping menu to organize Task List or Kanban boards by project. Tasks assigned to multiple projects will appear in each relevant project group, providing flexibility in project-based organization.
 
 ### Project Indicators
+
+<!-- SCREENSHOT: Task card showing the project indicator icon, indicating this task is used as a project with subtasks linked to it -->
+
+![Task list sorted and grouped by status](../assets/screenshot-tasks-list.png)
 
 TaskCards display visual indicators when tasks are used as projects. These indicators help identify which tasks have other tasks linked to them as subtasks, making project hierarchy visible at a glance.
 
 ### Subtask Creation
 
+<!-- GIF: Right-clicking a task that serves as a project, selecting "Create subtask" from the context menu, and seeing the new subtask linked automatically -->
+
+![Task creation modal with fields for title, due date, and priority](../assets/screenshot-task-create-modal.png)
+
 Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
 
 ## Dependencies
+
+<!-- SCREENSHOT: Task frontmatter showing blockedBy field with structured dependency objects (uid, reltype, gap) -->
+
+![Task note showing frontmatter properties and content](../assets/screenshot-task-note.png)
 
 Task dependencies capture prerequisite work using RFC&nbsp;9253 terminology. Dependencies are stored in frontmatter as structured objects:
 
 ```yaml
 blockedBy:
-  - uid: "[[Operations/Order hardware]]"
+  - uid: “[[Operations/Order hardware]]”
     reltype: FINISHTOSTART
     gap: P1D
 ```
@@ -143,13 +202,19 @@ Whenever a dependency is added, TaskNotes updates the upstream note’s `blockin
 
 ### Selecting dependencies in the UI
 
+<!-- GIF: Opening the task edit modal, clicking “Blocked by”, searching for a task in the fuzzy selector, and adding it as a dependency -->
+
+![Task edit modal showing dependency fields](../assets/screenshot-task-edit-modal.png)
+
 - The task creation and edit modals expose “Blocked by” and “Blocking” buttons that launch a fuzzy task selector. The picker only offers valid tasks, excludes the current note, and prevents duplicate entries.
 - The task context menu provides the same selector, enabling dependency management directly from the Task List, Kanban, and calendar views.
 - Task cards show a fork icon whenever a task blocks other work. Clicking it expands an inline list of downstream tasks without triggering the parent card’s modal, so you can inspect dependents in place.
 
-These controls currently create and manage finish-to-start style blockers. Advanced `reltype` values and `gap` data are preserved in frontmatter, but blocking evaluation is currently based on whether unresolved dependencies exist rather than relationship-type-specific scheduling rules.
+<!-- GIF: Clicking the fork icon on a task card to expand inline list of downstream blocked tasks -->
 
 ![Task context menu](../assets/feature-task-context-menu.png)
+
+These controls currently create and manage finish-to-start style blockers. Advanced `reltype` values and `gap` data are preserved in frontmatter, but blocking evaluation is currently based on whether unresolved dependencies exist rather than relationship-type-specific scheduling rules.
 
 ## Automation
 

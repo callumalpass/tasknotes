@@ -1,10 +1,23 @@
 # Task List View
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Show sorting the task list by priority descending, then grouping by status
+Show adding a filter in the .base file YAML → task list updates live
+-->
 
 The Task List View displays tasks in a scrollable list format with filtering, sorting, and grouping capabilities. In TaskNotes v4, this view operates as a Bases view configured through YAML.
 This view is optimized for high task volume and explicit filter definitions.
 
 ![Task List View](../assets/views-tasks-list.png)
+
+!!! info "No implicit task filter"
+    The `tasknotesTaskList` view type does **not** impose its own filter on top of the `.base` file's `filters:` block. It renders whatever items the Bases engine returns. This means you can use it to display non-task notes too -- for example, a list of documents eligible for conversion. If your view shows zero items, check your `.base` filter YAML rather than assuming `isTask` or the `task` tag is required.
 
 ## Bases Architecture
 
@@ -97,6 +110,10 @@ TaskNotes properties are accessed in Bases YAML using these paths:
 | Modified | `file.mtime` | File modification date |
 
 The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Task Properties`). The table above shows default mappings.
+
+<!-- GIF: Sorting the task list by priority descending, then grouping by status -->
+
+![Task list sorted and grouped by status](../assets/screenshot-tasks-list.png)
 
 ## Filtering and Sorting
 
@@ -228,6 +245,10 @@ To recreate a v3 saved view:
 4. Save the file
 
 The v3 FilterBar UI component no longer exists - all configuration is done through YAML editing.
+
+<!-- GIF: Adding a filter in the .base file YAML and seeing the task list update live -->
+
+![Task list with applied filters](../assets/screenshot-tasks-list.png)
 
 ## Task Actions
 

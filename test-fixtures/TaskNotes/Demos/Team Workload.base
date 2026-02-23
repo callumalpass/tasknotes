@@ -1,0 +1,42 @@
+filters:
+  and:
+    - file.hasTag("task")
+formulas:
+  assigneeName: |
+    if(assignee, assignee.replace("[[", "").replace("]]", ""), "Unassigned")
+properties:
+  title:
+    displayName: Task
+  status:
+    displayName: Status
+  priority:
+    displayName: Priority
+  due:
+    displayName: Due
+  formula.assigneeName:
+    displayName: Assignee
+views:
+  - type: tasknotesTaskList
+    name: Tasks by Assignee
+    groupBy:
+      property: formula.assigneeName
+      direction: ASC
+    order:
+      - status
+      - priority
+      - due
+      - assignee
+    sort:
+      - property: priority
+        direction: DESC
+  - type: table
+    name: All Tasks
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - formula.assigneeName
+    sort:
+      - property: priority
+        direction: DESC

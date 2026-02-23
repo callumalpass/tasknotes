@@ -1,6 +1,6 @@
 # <img src="tasknotes-gradient.svg" width="32" height="32" style="vertical-align: middle;"> TaskNotes for Obsidian
 
-A task management plugin where each task is a separate Markdown note, and all views are powered by [Obsidian Bases](https://help.obsidian.md/bases).
+The most practical way to manage tasks in Obsidian. Each task is a plain Markdown note with structured frontmatter, and every view -- task list, kanban, calendar, upcoming, agenda -- is a [Bases](https://help.obsidian.md/bases) query you can inspect and customize. No hidden databases, no proprietary formats. Your tasks are just files.
 
 <img src="https://github.com/callumalpass/tasknotes/blob/main/media/2025-12-07T15-43-26.png?raw=true" />
 
@@ -14,13 +14,13 @@ This keeps your data portable. Tasks are just Markdown files with YAML, so you c
 
 The frontmatter is extensible—add fields like `energy-level` or `client` and they're immediately available in Bases for filtering and grouping. The `.base` files are plain text too, so you can edit filters and sorting directly or duplicate them to create new views.
 
-![Screenshot of TaskNotes plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
+<!-- TODO: Add new GIF/video demo showcasing task creation, view switching, and calendar integration -->
 
 **[Full Documentation](https://tasknotes.dev/)**
 
 ## Quick start
 
-Create a task with **TaskNotes: Create new task**. The plugin parses natural language—type "Buy groceries tomorrow #errands" and it extracts the due date and context automatically.
+Create a task with **TaskNotes: Create new task**. The plugin parses natural language -- type "Buy groceries tomorrow #errands" and it extracts the due date and context automatically. You can also convert existing notes into tasks in place, or generate tasks in bulk from any Bases view.
 
 Tasks are stored as Markdown files in your vault. Open them directly, edit the frontmatter, or use the plugin's views to manage them.
 
@@ -28,19 +28,9 @@ Open a view with commands like **TaskNotes: Open tasks view** or **TaskNotes: Op
 
 ## How it works with Bases
 
-TaskNotes registers as a Bases data source and provides custom view types: `tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`, and `tasknotesMiniCalendar`. The default Agenda file is a preconfigured `tasknotesCalendar` list view (`listWeek`). Your task notes become rows; frontmatter properties become columns.
+TaskNotes registers custom view types (`tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`, `tasknotesMiniCalendar`) with Obsidian's Bases core plugin. Your task notes become rows; frontmatter properties become columns. The default `.base` files ship with formula properties for computed values like days until due, overdue status, and urgency scores.
 
-The default `.base` files include formula properties for computed values:
-
-```yaml
-formulas:
-  daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
-  isOverdue: due && date(due) < today() && status != "done"
-  urgencyScore: formula.priorityWeight + max(0, 10 - formula.daysUntilDue)
-  efficiencyRatio: (timeTracked / timeEstimate * 100).round()
-```
-
-You can sort by `urgencyScore`, filter to show only `isOverdue` tasks, or add these as columns. Edit the `.base` files directly or use the Bases UI. See [default base templates](./docs/views/default-base-templates.md) for the full list of included formulas.
+Edit the `.base` files directly or use the Bases UI -- they're plain YAML. See [default base templates](./docs/views/default-base-templates.md) for the full list of included formulas and [Core Concepts](./docs/core-concepts.md#bases-integration) for setup details.
 
 ## Task structure
 
@@ -167,7 +157,7 @@ bun run e2e -- e2e/issues/issue-1102-frontmatter-status-sync.spec.ts  # Single i
 
 **Faster iteration (attach to running instance):**
 
-Instead of letting Playwright launch Obsidian each time, start Obsidian manually with the debug port and Playwright will connect to it:
+Instead of letting Playwright launch Obsidian each time, start Obsidian manually with the debug port and Playwright will connect to it. You can also use the [Obsidian CLI](https://help.obsidian.md/cli) (1.12+) for plugin reload, eval, and screenshot capture, or [wdio-obsidian-service](https://github.com/jesse-r-s-hines/wdio-obsidian-service) for multi-version testing:
 
 ```bash
 # Launch Obsidian with debug port (leave it running)
@@ -198,7 +188,7 @@ bun run e2e
 | `tasknotes-e2e-vault/` | Isolated vault for E2E (separate from dev vault) |
 | `playwright.config.ts` | Config: 1 worker, sequential, 60s timeout |
 
-See `knowledge-base/03-reference/architecture/e2e-testing-strategy.md` for the full architecture comparison including [wdio-obsidian-service](https://github.com/jesse-r-s-hines/wdio-obsidian-service) as an alternative.
+See the [contributing guide](./docs/contributing.md) for full development setup and the [E2E testing strategy](./knowledge-base/03-reference/architecture/e2e-testing-strategy.md) for the architecture comparison.
 
 ## Known limitations
 

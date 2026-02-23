@@ -1,0 +1,63 @@
+filters:
+  and:
+    - or:
+        - file.hasTag("task")
+        - isTask == true
+    - tnType != "base-notification"
+    - reminders
+    - '!reminders.isEmpty()'
+formulas:
+  daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
+  assigneeName: if(assignee, assignee.replace("[[", "").replace("]]", ""), "Unassigned")
+  reminderCount: if(reminders, list(reminders).length, 0)
+  hasReminder: reminders && list(reminders).length > 0
+properties:
+  title:
+    displayName: Task
+  status:
+    displayName: Status
+  priority:
+    displayName: Priority
+  due:
+    displayName: Due
+  scheduled:
+    displayName: Scheduled
+  formula.reminderCount:
+    displayName: Reminders
+  formula.assigneeName:
+    displayName: Assignee
+views:
+  - type: tasknotesTaskList
+    name: Tasks with Reminders
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - scheduled
+      - formula.reminderCount
+      - formula.assigneeName
+    sort:
+      - property: due
+        direction: ASC
+    enableSearch: true
+  - type: table
+    name: All Reminders
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - scheduled
+      - formula.reminderCount
+      - formula.assigneeName
+    sort:
+      - property: due
+        direction: ASC
+  - type: tasknotesCalendar
+    name: Reminder Calendar
+    order:
+      - title
+      - status
+      - priority
+      - formula.reminderCount

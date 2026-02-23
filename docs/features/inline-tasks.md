@@ -1,10 +1,37 @@
 # Inline Task Integration
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+  Open a note that contains task wikilinks (e.g., a document from Document Library)
+
+Show hovering over a task wikilink → overlay widget with status dot, priority, action menu
+Show clicking the convert button next to a checkbox → task file created, line replaced with wikilink
+
+RELATIONSHIPS WIDGET section (open a task note that has subtasks/dependencies, e.g., "Launch Project Beta"):
+  Show the Relationships Widget embedded in the note
+  Show clicking through tabs: Subtasks (Kanban), Projects (List), Blocked By (List), Blocking (Kanban)
+  Show collapsing/expanding the widget
+  Show real-time update after adding a new subtask
+  Show subtask chevron on a task card → expand/collapse child tasks inline
+  Show both left and right chevron position options
+
+CLEANUP (subtask creation / dependency changes modify files):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 TaskNotes integrates with the Obsidian editor to allow task management directly within notes. This is achieved through interactive widgets, a conversion feature for checkboxes, and natural language processing.
 Inline features support capture and task updates without leaving the current note.
 
 ## Task Link Overlays
+
+<!-- GIF: Hovering over a task wikilink and seeing the overlay widget with status dot, priority, and action menu -->
+
+![Task note showing frontmatter properties and content](../assets/screenshot-task-note.png)
 
 When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Features` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
 
@@ -44,6 +71,10 @@ The `Create inline task` command allows you to create a new task from the curren
 When you run the command, the current line is used as the title of the new task. The line is then replaced with a link to the new task file.
 
 ## Instant Task Conversion
+
+<!-- GIF: Clicking the convert button next to a checkbox, seeing the task file created and the line replaced with a wikilink -->
+
+![Document note that can be converted to a task](../assets/screenshot-document-note.png)
 
 The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Features` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
 This supports progressive conversion from draft notes to dedicated task files.
@@ -146,12 +177,20 @@ For large notes, converting a small section first helps validate folder and file
 
 **New in v4**: The Relationships Widget consolidates what were previously three separate widgets (project subtasks, task dependencies, and blocking tasks) into a single dynamic interface.
 
+<!-- SCREENSHOT: Relationships Widget embedded in a task note showing the Subtasks tab with Kanban cards -->
+
+![Task note showing frontmatter properties and content](../assets/screenshot-task-note.png)
+
 The widget appears in task notes and automatically displays up to four tabs based on available relationship data:
 
 - **Subtasks Tab (Kanban)**: Shows tasks that reference the current note as a project. Uses Kanban layout for visual task management.
 - **Projects Tab (List)**: Shows projects that the current task belongs to. Uses list layout.
 - **Blocked By Tab (List)**: Shows tasks that are blocking the current task. Uses list layout.
 - **Blocking Tab (Kanban)**: Shows tasks that the current task is blocking. Uses Kanban layout.
+
+<!-- GIF: Clicking through the four Relationships Widget tabs -- Subtasks (Kanban), Projects (List), Blocked By (List), Blocking (Kanban) -->
+
+![Task note showing frontmatter properties and content](../assets/screenshot-task-note.png)
 
 ### Automatic Tab Management
 
@@ -169,6 +208,10 @@ Additional behavior:
 - **Task Details**: Each task shows its status, priority, due date, and other configured properties.
 - **Real-time Updates**: The widget updates automatically when tasks are added, modified, or deleted via Bases views.
 
+<!-- GIF: Collapsing and expanding the Relationships Widget, then showing it update in real-time after adding a new subtask -->
+
+![Task note showing frontmatter properties and content](../assets/screenshot-task-note.png)
+
 ### Configuration
 
 Enable or disable the widget in `Settings -> TaskNotes -> Appearance` (`Show relationships widget`).
@@ -176,6 +219,8 @@ Enable or disable the widget in `Settings -> TaskNotes -> Appearance` (`Show rel
 Position the widget at the top (after frontmatter) or bottom of the note using the **Relationships Position** setting.
 
 ### Expandable Subtasks Chevron
+
+<!-- GIF: Clicking the subtask chevron on a task card to expand/collapse child tasks inline, showing both left and right chevron positions -->
 
 Tasks with subtasks can display an expand/collapse chevron that toggles subtask visibility.
 

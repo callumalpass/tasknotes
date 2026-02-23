@@ -1,11 +1,26 @@
 
 # User Fields
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Show adding a new user field in settings → see it appear in the task creation modal
+Show filtering a Bases view by a custom user field value
+-->
+
 TaskNotes allows you to define your own custom fields for tasks. This feature allows you to add custom data to your tasks and use it for filtering, sorting, and grouping.
 User fields can store workflow-specific metadata such as owner, effort class, client, or review stage.
 
 
 ## Creating User Fields
+
+<!-- GIF: Adding a new user field in settings, then seeing it appear in the task creation modal -->
+
+![Settings modal fields tab for user field configuration](../assets/screenshot-settings-modal-fields.png)
 
 User fields are created in the TaskNotes settings, under the "Task Properties" tab. To create a new user field, click the "Add new user field" button.
 Fields that are not used in filters or grouping still add frontmatter overhead, so this section focuses on fields used in views.
@@ -113,6 +128,10 @@ Autosuggestion filters:
 ```
 
 ## Using User Fields
+
+<!-- GIF: Filtering a Bases view by a custom user field value -->
+
+![Task list with custom field filtering](../assets/screenshot-tasks-list.png)
 
 Once you have created a user field, it will be available in the following places:
 

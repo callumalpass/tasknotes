@@ -506,21 +506,38 @@ function renderGroupNotesSection(
 
 						// --- People section ---
 						const peopleSection = detailsContainer.createDiv({ cls: "tn-discovery-section" });
-						const peopleHeader = peopleSection.createDiv({ cls: "tn-discovery-section__header" });
+						const peopleHeader = peopleSection.createDiv({ cls: "tn-discovery-section__header tn-discovery-section__header--collapsible" });
+						const peopleChevron = peopleHeader.createSpan({ cls: "tn-discovery-section__chevron" });
+						setIcon(peopleChevron, "chevron-down");
 						setIcon(peopleHeader.createSpan(), "user");
 						peopleHeader.createSpan({ text: ` People (${persons.length})` });
+						const peopleBody = peopleSection.createDiv({ cls: "tn-discovery-section__body" });
+
+						// Collapsible state from localStorage
+						const peopleCollapsed = localStorage.getItem("tn-discovery-people-collapsed") === "true";
+						if (peopleCollapsed) {
+							peopleBody.style.display = "none";
+							peopleChevron.classList.add("is-collapsed");
+						}
+						peopleHeader.addEventListener("click", () => {
+							const isNowCollapsed = peopleBody.style.display !== "none";
+							peopleBody.style.display = isNowCollapsed ? "none" : "";
+							peopleChevron.classList.toggle("is-collapsed", isNowCollapsed);
+							localStorage.setItem("tn-discovery-people-collapsed", String(isNowCollapsed));
+						});
 
 						if (persons.length === 0) {
-							const emptyEl = peopleSection.createDiv({ cls: "tn-discovery-section__empty" });
-							emptyEl.textContent = "No person notes found";
-							if (plugin.settings.personNotesFolder) {
-								emptyEl.textContent += ` in ${plugin.settings.personNotesFolder}`;
+							const emptyEl = peopleBody.createDiv({ cls: "tn-discovery-section__empty" });
+							if (!plugin.settings.personNotesFolder) {
+								emptyEl.innerHTML = "No folder configured. Set a <em>Person notes folder</em> above to discover team members.";
+							} else {
+								emptyEl.textContent = `No person notes found in ${plugin.settings.personNotesFolder}`;
 							}
 						} else {
 							for (const p of persons) {
-								const row = peopleSection.createDiv({ cls: "tn-discovery-row" });
-								const iconEl = row.createSpan({ cls: "tn-discovery-row__icon" });
-								setIcon(iconEl, "user");
+								const row = peopleBody.createDiv({ cls: "tn-discovery-row" });
+								const avatarEl = createAvatar({ name: p.displayName, size: "sm" });
+								row.appendChild(avatarEl);
 								const info = row.createDiv({ cls: "tn-discovery-row__info" });
 								info.createDiv({ cls: "tn-discovery-row__name", text: p.displayName });
 								const meta: string[] = [];
@@ -542,28 +559,53 @@ function renderGroupNotesSection(
 
 						// --- Groups section ---
 						const groupsSection = detailsContainer.createDiv({ cls: "tn-discovery-section" });
-						const groupsHeader = groupsSection.createDiv({ cls: "tn-discovery-section__header" });
+						const groupsHeader = groupsSection.createDiv({ cls: "tn-discovery-section__header tn-discovery-section__header--collapsible" });
+						const groupsChevron = groupsHeader.createSpan({ cls: "tn-discovery-section__chevron" });
+						setIcon(groupsChevron, "chevron-down");
 						setIcon(groupsHeader.createSpan(), "users");
 						groupsHeader.createSpan({ text: ` Groups (${groups.length})` });
+						const groupsBody = groupsSection.createDiv({ cls: "tn-discovery-section__body" });
+
+						// Collapsible state from localStorage
+						const groupsCollapsed = localStorage.getItem("tn-discovery-groups-collapsed") === "true";
+						if (groupsCollapsed) {
+							groupsBody.style.display = "none";
+							groupsChevron.classList.add("is-collapsed");
+						}
+						groupsHeader.addEventListener("click", () => {
+							const isNowCollapsed = groupsBody.style.display !== "none";
+							groupsBody.style.display = isNowCollapsed ? "none" : "";
+							groupsChevron.classList.toggle("is-collapsed", isNowCollapsed);
+							localStorage.setItem("tn-discovery-groups-collapsed", String(isNowCollapsed));
+						});
 
 						if (groups.length === 0) {
-							const emptyEl = groupsSection.createDiv({ cls: "tn-discovery-section__empty" });
-							emptyEl.textContent = "No group notes found";
-							if (plugin.settings.groupNotesFolder) {
-								emptyEl.textContent += ` in ${plugin.settings.groupNotesFolder}`;
+							const emptyEl = groupsBody.createDiv({ cls: "tn-discovery-section__empty" });
+							if (!plugin.settings.groupNotesFolder) {
+								emptyEl.innerHTML = "No folder configured. Set a <em>Group notes folder</em> above to discover teams.";
+							} else {
+								emptyEl.textContent = `No group notes found in ${plugin.settings.groupNotesFolder}`;
 							}
 						} else {
 							for (const g of groups) {
-								const row = groupsSection.createDiv({ cls: "tn-discovery-row" });
-								const iconEl = row.createSpan({ cls: "tn-discovery-row__icon" });
-								setIcon(iconEl, "users");
+								const row = groupsBody.createDiv({ cls: "tn-discovery-row" });
+								const avatarEl = createAvatar({ name: g.displayName, size: "sm", isGroup: true });
+								row.appendChild(avatarEl);
 								const info = row.createDiv({ cls: "tn-discovery-row__info" });
 								info.createDiv({ cls: "tn-discovery-row__name", text: g.displayName });
-								const memberCount = g.memberPaths.length;
-								info.createDiv({
-									cls: "tn-discovery-row__meta",
-									text: `${memberCount} member${memberCount !== 1 ? "s" : ""}`,
+								// Resolve member display names from paths
+								const memberNames = g.memberPaths.map((mp: string) => {
+									const basename = mp.replace(/\.md$/, "").split("/").pop() || mp;
+									return basename;
 								});
+								const memberCount = memberNames.length;
+								let memberText = `${memberCount} member${memberCount !== 1 ? "s" : ""}`;
+								if (memberCount > 0 && memberCount <= 5) {
+									memberText += `: ${memberNames.join(", ")}`;
+								} else if (memberCount > 5) {
+									memberText += `: ${memberNames.slice(0, 3).join(", ")} +${memberCount - 3} more`;
+								}
+								info.createDiv({ cls: "tn-discovery-row__meta", text: memberText });
 								const openBtn = row.createEl("a", { cls: "tn-discovery-row__action", attr: { "aria-label": "Open note" } });
 								setIcon(openBtn, "external-link");
 								openBtn.style.cssText = "cursor: pointer; color: var(--text-muted); opacity: 0.6;";

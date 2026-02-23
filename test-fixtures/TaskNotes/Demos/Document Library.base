@@ -1,0 +1,82 @@
+filters:
+  and:
+    - file.inFolder("Document Library, Knowledge")
+    - type == "document"
+formulas:
+  daysUntilReview: "note.review_date ? ((number(date(note.review_date)) - number(today())) / 86400000).floor() : 999"
+  isOverdue: formula.daysUntilReview < 0
+  reviewStatus: if(formula.daysUntilReview < 0, "OVERDUE", if(formula.daysUntilReview <= 7, "This week", if(formula.daysUntilReview <= 30, "This month", "OK")))
+  ownerName: if(note.owner, note.owner.replace("[[", "").replace("]]", ""), "Unassigned")
+properties:
+  file.name:
+    displayName: Document
+  note.status:
+    displayName: Status
+  formula.ownerName:
+    displayName: Owner
+  note.review_date:
+    displayName: Review Date
+  note.review_cycle:
+    displayName: Cycle
+  formula.daysUntilReview:
+    displayName: Days Until Review
+  formula.reviewStatus:
+    displayName: Review Status
+  note.version:
+    displayName: Version
+views:
+  - type: tasknotesTaskList
+    name: All Documents
+    order:
+      - file.name
+      - status
+      - formula.ownerName
+      - review_date
+      - review_cycle
+      - formula.reviewStatus
+      - version
+    sort:
+      - property: file.name
+        direction: ASC
+    enableSearch: true
+    notify: true
+  - type: table
+    name: Active Only
+    filters:
+      and:
+        - status == "active"
+    order:
+      - file.name
+      - formula.ownerName
+      - review_date
+      - formula.reviewStatus
+    sort:
+      - property: formula.daysUntilReview
+        direction: ASC
+  - type: table
+    name: Needs Attention
+    filters:
+      or:
+        - formula.isOverdue
+        - status == "draft"
+        - status == "deprecated"
+    order:
+      - file.name
+      - status
+      - formula.ownerName
+      - formula.daysUntilReview
+    sort:
+      - property: formula.daysUntilReview
+        direction: ASC
+  - type: table
+    name: By Owner
+    order:
+      - formula.ownerName
+      - file.name
+      - status
+      - formula.reviewStatus
+    sort:
+      - property: formula.ownerName
+        direction: ASC
+    group:
+      - column: formula.ownerName

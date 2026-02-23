@@ -1663,6 +1663,13 @@ export default class TaskNotesPlugin extends Plugin {
 			);
 		}
 
+		// Migration: Ensure creator/assignee user fields have matching modal config entries
+		if (loadedData?.modalFieldsConfig && loadedData?.userFields?.length) {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { ensurePersonFieldsInModalConfig } = require("./utils/fieldConfigDefaults");
+			ensurePersonFieldsInModalConfig(loadedData);
+		}
+
 		// Migration: Force enableBases to true (issue #1187)
 		// The enableBases toggle was removed in V4 (bases is always-on), but users who
 		// had disabled it in pre-V4 still have enableBases: false saved. This prevents

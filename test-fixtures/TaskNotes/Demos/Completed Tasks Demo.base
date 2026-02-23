@@ -1,0 +1,65 @@
+filters:
+  and:
+    - or:
+        - file.hasTag("task")
+        - isTask == true
+    - tnType != "base-notification"
+    - status == "done"
+formulas:
+  assigneeName: if(assignee, assignee.replace("[[", "").replace("]]", ""), "Unassigned")
+  projectName: if(projects && list(projects).length > 0, list(projects)[0].replace("[[", "").replace("]]", ""), "No project")
+  completedWeek: if(completedDate, date(completedDate).format("YYYY-[W]WW"), file.mtime.format("YYYY-[W]WW"))
+  completedMonth: if(completedDate, date(completedDate).format("YYYY-MM"), file.mtime.format("YYYY-MM"))
+  daysSinceCompleted: if(completedDate, ((number(today()) - number(date(completedDate))) / 86400000).floor(), ((number(today()) - number(file.mtime)) / 86400000).floor())
+properties:
+  title:
+    displayName: Task
+  priority:
+    displayName: Priority
+  completedDate:
+    displayName: Completed
+  formula.daysSinceCompleted:
+    displayName: Days Ago
+  formula.assigneeName:
+    displayName: Completed By
+  formula.projectName:
+    displayName: Project
+  formula.completedWeek:
+    displayName: Week
+views:
+  - type: tasknotesTaskList
+    name: Recently Completed
+    order:
+      - title
+      - priority
+      - completedDate
+      - formula.daysSinceCompleted
+      - formula.assigneeName
+      - formula.projectName
+    sort:
+      - property: formula.daysSinceCompleted
+        direction: ASC
+    enableSearch: true
+  - type: table
+    name: By Week
+    order:
+      - title
+      - priority
+      - completedDate
+      - formula.assigneeName
+    sort:
+      - property: formula.daysSinceCompleted
+        direction: ASC
+    group:
+      - column: formula.completedWeek
+  - type: table
+    name: By Person
+    order:
+      - title
+      - completedDate
+      - formula.projectName
+    sort:
+      - property: formula.daysSinceCompleted
+        direction: ASC
+    group:
+      - column: formula.assigneeName

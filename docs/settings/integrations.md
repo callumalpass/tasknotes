@@ -1,5 +1,13 @@
 # Integrations Settings
 
+<!--
+Recording Script
+No test data setup needed — settings are static UI.
+
+Show the integrations settings tab
+Show a connected Google Calendar account with email, sync time, disconnect button
+-->
+
 These settings control the integration with other plugins and services, such as Bases and external calendars.
 
 
@@ -27,6 +35,10 @@ Default mappings:
 Each command allows you to specify a custom `.base` file path and includes a reset button to restore the default path.
 
 **Create Default Files**: Button to generate all default `.base` files in the `TaskNotes/Views/` directory. Existing files are not overwritten.
+
+<!-- SCREENSHOT: OAuth calendar section showing a connected Google Calendar account with email, sync time, and disconnect button -->
+
+![Integrations settings showing calendar OAuth configuration](../assets/screenshot-settings-integrations.png)
 
 ## OAuth Calendar Integration
 

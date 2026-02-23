@@ -1,5 +1,19 @@
 # Calendar Views
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Show switching between month, week, and day views using calendar toolbar buttons
+Show dragging a task from one date to another in month view to reschedule
+
+CLEANUP (dragging tasks changes due dates):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 TaskNotes provides two calendar-based views: the **Mini Calendar** and the **Calendar View**. Both operate as Bases views (`.base` files) and require the Bases core plugin to be enabled in Obsidian.
 Mini Calendar is date-density and navigation focused, while Calendar View is scheduling focused.
@@ -34,6 +48,10 @@ Mini Calendar is commonly used as an entry view: select a date, then open Task L
 ## Calendar View
 
 The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times.
+
+<!-- GIF: Switching between month, week, and day views using the calendar toolbar buttons -->
+
+![Calendar month view with tasks on dates](../assets/screenshot-calendar-month.png)
 
 ### View Modes
 
@@ -79,6 +97,10 @@ The Custom Days view is particularly useful for:
 1. **Select the View**: Choose "Custom Days" from the calendar toolbar alongside Month, Week, Day, and Year views
 2. **Adjust Day Count**: Navigate to Settings > Calendar > Custom view day count and use the slider to select 2-10 days
 3. **Set as Default**: Optionally set "Custom Days" as your default view in Settings > Calendar > Default view
+
+<!-- GIF: Dragging a task from one date to another in month view to reschedule it -->
+
+![Calendar month view for task scheduling](../assets/screenshot-calendar-month.png)
 
 ### Recurring Task Support
 

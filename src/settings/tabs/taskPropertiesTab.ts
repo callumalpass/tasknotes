@@ -160,6 +160,100 @@ function addFieldToModalConfig(plugin: TaskNotesPlugin, fieldId: string): void {
 }
 
 /**
+ * Check modal visibility state for a user field by its ID.
+ */
+function getFieldModalVisibility(
+	plugin: TaskNotesPlugin,
+	fieldId: string
+): { inConfig: boolean; enabled: boolean; visibleInCreation: boolean; visibleInEdit: boolean } {
+	const config = plugin.settings.modalFieldsConfig;
+	if (!config) return { inConfig: false, enabled: false, visibleInCreation: false, visibleInEdit: false };
+
+	const fieldConfig = config.fields.find((f) => f.id === fieldId);
+	if (!fieldConfig) return { inConfig: false, enabled: false, visibleInCreation: false, visibleInEdit: false };
+
+	return {
+		inConfig: true,
+		enabled: fieldConfig.enabled,
+		visibleInCreation: fieldConfig.visibleInCreation,
+		visibleInEdit: fieldConfig.visibleInEdit,
+	};
+}
+
+/**
+ * Fix modal visibility for a field — enable + make visible, or add if missing.
+ */
+function fixFieldVisibility(
+	plugin: TaskNotesPlugin,
+	fieldId: string
+): void {
+	if (!plugin.settings.modalFieldsConfig) return;
+
+	const fieldConfig = plugin.settings.modalFieldsConfig.fields.find((f) => f.id === fieldId);
+	if (fieldConfig) {
+		fieldConfig.enabled = true;
+		fieldConfig.visibleInCreation = true;
+		fieldConfig.visibleInEdit = true;
+	} else {
+		addFieldToModalConfig(plugin, fieldId);
+	}
+}
+
+/**
+ * Render a visibility callout below a Creator/Assignee card when the field
+ * exists but is disabled or hidden in the modal fields configuration.
+ */
+function renderModalVisibilityCallout(
+	card: HTMLElement,
+	plugin: TaskNotesPlugin,
+	fieldId: string,
+	fieldLabel: string,
+	save: () => void,
+	rerender: () => void
+): void {
+	const vis = getFieldModalVisibility(plugin, fieldId);
+
+	// All good — nothing to show
+	if (vis.inConfig && vis.enabled && vis.visibleInCreation && vis.visibleInEdit) return;
+
+	const callout = card.createDiv();
+
+	let message: string;
+	let variant: "warning" | "info";
+	let buttonText: string;
+
+	if (!vis.inConfig) {
+		variant = "warning";
+		message = `${fieldLabel} is not in the modal configuration and won't appear in task modals.`;
+		buttonText = "Fix";
+	} else if (!vis.enabled) {
+		variant = "warning";
+		message = `${fieldLabel} is disabled in Modal Fields and won't appear in task modals.`;
+		buttonText = "Enable";
+	} else {
+		variant = "info";
+		const hidden: string[] = [];
+		if (!vis.visibleInCreation) hidden.push("creation");
+		if (!vis.visibleInEdit) hidden.push("edit");
+		message = `${fieldLabel} is hidden in ${hidden.join(" and ")} modal${hidden.length > 1 ? "s" : ""}.`;
+		buttonText = "Show in all modals";
+	}
+
+	callout.className = `tn-field-visibility-callout tn-field-visibility-callout--${variant}`;
+
+	const textEl = callout.createSpan();
+	textEl.textContent = message;
+
+	const fixBtn = callout.createEl("button", { cls: "tn-field-visibility-callout__btn" });
+	fixBtn.textContent = buttonText;
+	fixBtn.addEventListener("click", () => {
+		fixFieldVisibility(plugin, fieldId);
+		save();
+		rerender();
+	});
+}
+
+/**
  * Delete the creator User Field
  */
 function deleteCreatorField(
@@ -601,7 +695,7 @@ function renderCreatorFieldCard(
 		input: autoSetToggle,
 	});
 
-	createCard(container, {
+	const creatorCard = createCard(container, {
 		id: "property-creator",
 		collapsible: true,
 		defaultCollapsed: true,
@@ -639,6 +733,14 @@ function renderCreatorFieldCard(
 			}],
 		} : undefined,
 	});
+
+	// Show visibility callout if field is configured but hidden in modal fields
+	if (creatorField) {
+		renderModalVisibilityCallout(
+			creatorCard, plugin, creatorField.id, "Creator", save,
+			() => renderTaskPropertiesTab(container.parentElement!, plugin, save)
+		);
+	}
 }
 
 /**
@@ -751,7 +853,7 @@ function renderAssigneeFieldCard(
 		});
 	}
 
-	createCard(container, {
+	const assigneeCard = createCard(container, {
 		id: "property-assignees",
 		collapsible: true,
 		defaultCollapsed: true,
@@ -789,6 +891,14 @@ function renderAssigneeFieldCard(
 			}],
 		} : undefined,
 	});
+
+	// Show visibility callout if field is configured but hidden in modal fields
+	if (assigneeField) {
+		renderModalVisibilityCallout(
+			assigneeCard, plugin, assigneeField.id, "Assignees", save,
+			() => renderTaskPropertiesTab(container.parentElement!, plugin, save)
+		);
+	}
 }
 
 /**

@@ -21,10 +21,10 @@ This folder contains sample documents for testing the TaskNotes bulk workflow fe
 ## Testing Scenarios
 
 ### Generate Tasks
-Open `document-library.base` -> click "Generate Tasks" -> mode "Generate new tasks" -> creates task files in `TaskNotes/Tasks/` linked back to each document via `projects` field.
+Open `Document Library.base` -> click "Generate Tasks" -> mode "Generate new tasks" -> creates task files in `TaskNotes/Tasks/` linked back to each document via `projects` field.
 
 ### Convert to Tasks
-Open `document-library.base` -> click "Generate Tasks" -> mode "Convert to tasks" -> adds `isTask: true` + status/priority to each document's frontmatter IN-PLACE.
+Open `Document Library.base` -> click "Generate Tasks" -> mode "Convert to tasks" -> adds `isTask: true` + status/priority to each document's frontmatter IN-PLACE.
 
 ### Duplicate Detection
 After generating, clicking "Generate Tasks" again with "Skip existing" should show all items as skipped (no duplicates).
@@ -49,5 +49,5 @@ tags:
 
 ## Bases Views
 
-- **document-library.base** - All documents (for Generate/Convert testing)
-- **documents-coming-due.base** - Active documents with review tracking (for notification testing)
+- **Document Library.base** - All documents (for Generate/Convert testing)
+- **Documents Coming Due.base** - Active documents with review tracking (for notification testing)

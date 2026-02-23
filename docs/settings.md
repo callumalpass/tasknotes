@@ -1,7 +1,18 @@
 # Settings
 
+<!--
+Recording Script
+No test data setup needed — settings are static UI.
+
+Show the settings panel, click through each tab (General, Task Properties, Modal Fields, Appearance, Features, Integrations)
+Pause briefly on each tab to show the layout
+-->
+
 TaskNotes settings are organized into tabs. Each tab controls a different part of plugin behavior.
 
+<!-- SCREENSHOT: TaskNotes settings panel showing the tab navigation with General, Task Properties, Modal Fields, Appearance, Features, and Integrations -->
+
+![TaskNotes settings panel with tab navigation](assets/screenshot-settings-overview.png)
 
 ## General
 

@@ -89,3 +89,8 @@ AGENTS.md
 
 # Docs builder output
 /docs-builder/dist
+
+# MkDocs virtual environments (created per-contributor)
+.mkdocs-venv/
+.mkdocs-venv-win/
+site/

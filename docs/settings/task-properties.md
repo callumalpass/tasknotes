@@ -1,5 +1,13 @@
 # Task Properties Settings
 
+<!--
+Recording Script
+No test data setup needed — settings are static UI.
+
+Show the task properties settings tab
+Show expanding a single property card to reveal key, default value, NLP trigger, property-specific settings
+-->
+
 This tab configures all task properties. Each property is displayed as a card containing its configuration options.
 
 
@@ -7,6 +15,10 @@ This tab configures all task properties. Each property is displayed as a card co
 
 !!! tip "Looking for property type documentation?"
     See the [Property Types Reference](property-types-reference.md) for detailed documentation on the expected data types (text, list, date, etc.) for each frontmatter property.
+
+<!-- SCREENSHOT: A single property card expanded, showing the property key field, default value, NLP trigger toggle, and property-specific settings -->
+
+![Task properties settings tab with property cards](../assets/screenshot-settings-task-properties.png)
 
 ## Property Card Structure
 

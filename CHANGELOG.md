@@ -4,6 +4,26 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.47] - 2026-02-20
+
+### Added
+- **Creator/Assignee visibility callout**: Creator and Assignee cards in Task Properties settings now show a warning callout when the field is disabled or hidden in Modal Fields, with one-click "Enable" / "Show in all modals" fix buttons and a link to the Modal Fields tab.
+- **Self-healing person field sync**: Plugin load now auto-repairs missing Creator/Assignee entries in `modalFieldsConfig` — fixes silent data desync from migration edge cases or settings corruption.
+- **Notice warnings in Modal Fields**: Disabling or hiding a Creator/Assignee field in the Modal Fields manager now shows a Notice explaining the consequence and where to re-enable.
+- **Human-readable Modal Fields cards**: User field cards in Modal Fields now show display name and property key instead of opaque internal IDs like `creator-1234567890`.
+- **Discovery UX improvements**: Team & Attribution "Show details" section now shows colored avatar initials, collapsible People/Groups sections with localStorage persistence, inline group member names, and actionable empty states.
+- **Bulk Edit Tasks tab**: Bases view toolbar now includes a "Bulk edit" button that opens the Bulk Task Creation modal pre-populated with all view items for batch property edits.
+
+### Fixed
+- **Creator missing from Edit Task modal**: Fixed fallback person pickers not rendering when the Creator field existed in user fields but was disabled in Modal Fields configuration. The fallback now checks modal field visibility before deciding whether to render.
+- **Duplicate assignees in task creation**: Fixed duplicate entries appearing in assignee arrays when creating tasks with PersonGroupPicker.
+
+### Documentation
+- **Full documentation overhaul**: 26 doc pages rewritten with accurate feature descriptions, cross-links, and breadcrumb navigation.
+- **24 screenshots**: Captured clean UI screenshots for views, settings, modals, features, and content types.
+- **New doc pages**: Contributing guide, bulk tasking, shared vault, custom properties, per-base mapping, property migration, Bases notifications, upcoming view, and release notes.
+- **Test data infrastructure**: Generator script fixed and expanded (50 tasks, 45 documents, 18 demo .base views). Separate [tasknotes-test-fixtures](https://github.com/cybersader/tasknotes-test-fixtures) plugin for BRAT installation.
+
 ## [4.3.46] - 2026-02-20
 
 ### Changed

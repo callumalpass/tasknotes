@@ -1069,8 +1069,8 @@ export abstract class TaskModal extends Modal {
 		const creatorFieldName = this.plugin.settings.creatorFieldName || "creator";
 		const fieldKey = userField.key?.toLowerCase().trim();
 		console.debug("[TaskModal] Checking user field:", userField.key, "vs assignee:", assigneeFieldName, "/ creator:", creatorFieldName);
-		if (fieldKey === assigneeFieldName.toLowerCase().trim() ||
-			fieldKey === creatorFieldName.toLowerCase().trim()) {
+		if (this.fuzzyPersonFieldMatch(fieldKey, assigneeFieldName, globalAssignee) ||
+			this.fuzzyPersonFieldMatch(fieldKey, creatorFieldName, creatorFieldName)) {
 			this.createAssigneePickerField(container, userField);
 			return;
 		}
@@ -1255,11 +1255,33 @@ export abstract class TaskModal extends Modal {
 		const creatorKey = this.plugin.settings.creatorFieldName || "creator";
 		const assigneeKey = this.plugin.settings.assigneeFieldName || "assignee";
 
+		// Belt-and-suspenders: if any configured user field fuzzy-matches the
+		// assignee/creator setting names AND is actually visible in the current modal,
+		// skip the fallback even if the picker flag wasn't set
+		// (handles singular/plural mismatches like "assignee" vs "assignees")
+		const isCreation = this.isCreationMode();
+		const config = this.plugin.settings.modalFieldsConfig;
+		const visibleUserFieldKeys = (this.plugin.settings?.userFields || [])
+			.filter((f: any) => {
+				if (!f?.key) return false;
+				// Check if this field is actually visible in the current modal config
+				if (config?.fields) {
+					const fieldConfig = config.fields.find((fc: any) => fc.id === f.id || fc.id === f.key);
+					if (fieldConfig && (!fieldConfig.enabled || !(isCreation ? fieldConfig.visibleInCreation : fieldConfig.visibleInEdit))) {
+						return false; // Field exists but is disabled/hidden — don't block fallback
+					}
+				}
+				return true;
+			})
+			.map((f: any) => f.key as string);
+		const hasMatchingUserField = (settingKey: string) =>
+			visibleUserFieldKeys.some((k: string) => this.fuzzyPersonFieldMatch(k, settingKey, settingKey));
+
 		const fallbacks: { key: string; displayName: string }[] = [];
-		if (!this.creatorPickerRendered && creatorKey) {
+		if (!this.creatorPickerRendered && creatorKey && !hasMatchingUserField(creatorKey)) {
 			fallbacks.push({ key: creatorKey, displayName: "Creator" });
 		}
-		if (!this.assigneePickerRendered && assigneeKey) {
+		if (!this.assigneePickerRendered && assigneeKey && !hasMatchingUserField(assigneeKey)) {
 			fallbacks.push({ key: assigneeKey, displayName: "Assignees" });
 		}
 		if (fallbacks.length === 0) return;
@@ -1336,6 +1358,16 @@ export abstract class TaskModal extends Modal {
 			}
 			return `[[${p.replace(/\.md$/, "")}]]`;
 		});
+	}
+
+	/**
+	 * Fuzzy match a user field key against assignee/creator field names.
+	 * Handles singular/plural mismatches (e.g., "assignee" vs "assignees").
+	 */
+	private fuzzyPersonFieldMatch(fieldKey: string, resolvedName: string, rawSettingName: string): boolean {
+		const normalize = (s: string) => s.toLowerCase().trim().replace(/s$/, "");
+		const nk = normalize(fieldKey);
+		return nk === normalize(resolvedName) || nk === normalize(rawSettingName);
 	}
 
 	private parseAssigneesToPaths(value: any): string[] {

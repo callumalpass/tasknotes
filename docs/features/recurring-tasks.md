@@ -1,5 +1,20 @@
 # Recurring Tasks
 
+<!--
+Recording Script
+SETUP (need tasks with recurrence field):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Use: TaskNotes/Demos/Recurring Tasks Demo.base
+Show creating a recurring task with "every weekday" preset
+Show completing one occurrence → scheduled date advances
+Show the recurring tasks demo base with different recurrence types
+
+CLEANUP (completing occurrences modifies task files):
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 TaskNotes recurring tasks use RFC 5545 RRule strings with `DTSTART` support and dynamic next-occurrence scheduling. The model separates recurrence patterns from the next planned instance.
 
@@ -15,6 +30,10 @@ Recurring tasks operate on two independent levels:
 This separation lets you reschedule the next occurrence without changing the pattern.
 
 ## Setting Up Recurring Tasks
+
+<!-- GIF: Creating a recurring task with "every weekday" preset, completing one occurrence, and seeing the scheduled date advance -->
+
+![Task creation modal for recurring task setup](../assets/screenshot-task-create-modal.png)
 
 In practice, setup is usually a two-step flow: choose a pattern, then check whether the next scheduled occurrence matches how you actually want to execute the next instance.
 

@@ -1,0 +1,71 @@
+filters:
+  and:
+    - or:
+        - file.hasTag("task")
+        - isTask == true
+    - tnType != "base-notification"
+    - status != "done"
+    - or:
+        - and:
+            - due
+            - date(due) <= today() + "3d"
+        - and:
+            - scheduled
+            - date(scheduled) <= today()
+formulas:
+  daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
+  isOverdue: due && date(due) < today() && status != "done"
+  urgencyLabel: if(due && date(due) < today(), "OVERDUE", if(due && date(due).date() == today(), "Due Today", if(due && date(due).date() == today() + "1d", "Due Tomorrow", "Due Soon")))
+  assigneeName: if(assignee, assignee.replace("[[", "").replace("]]", ""), "Unassigned")
+properties:
+  title:
+    displayName: Task
+  status:
+    displayName: Status
+  priority:
+    displayName: Priority
+  due:
+    displayName: Due
+  formula.urgencyLabel:
+    displayName: Urgency
+  formula.assigneeName:
+    displayName: Assignee
+views:
+  - type: tasknotesTaskList
+    name: Urgent Items
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - formula.urgencyLabel
+      - formula.assigneeName
+    sort:
+      - property: formula.daysUntilDue
+        direction: ASC
+    enableSearch: true
+    notify: true
+  - type: table
+    name: All Urgent
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - formula.urgencyLabel
+      - formula.assigneeName
+    sort:
+      - property: formula.daysUntilDue
+        direction: ASC
+  - type: table
+    name: By Urgency
+    order:
+      - title
+      - priority
+      - due
+      - formula.assigneeName
+    sort:
+      - property: formula.daysUntilDue
+        direction: ASC
+    group:
+      - column: formula.urgencyLabel

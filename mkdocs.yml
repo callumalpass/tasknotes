@@ -50,9 +50,15 @@ nav:
   - Features:
     - Overview: features.md
     - Task Management: features/task-management.md
+    - Bulk Tasking: features/bulk-tasking.md
     - Recurring Tasks: features/recurring-tasks.md
     - Task Reminders: features/reminders.md
+    - View Notifications: features/bases-notifications.md
     - Inline Task Integration: features/inline-tasks.md
+    - Custom Properties: features/custom-properties.md
+    - Per-View Property Mapping: features/per-base-mapping.md
+    - Property Migration: features/property-migration.md
+    - Team & Attribution: features/shared-vault.md
     - Time Management: features/time-management.md
     - Calendar Integration: features/calendar-integration.md
     - ICS Integration: features/ics-integration.md
@@ -63,6 +69,7 @@ nav:
     - Overview: views.md
     - Task List View: views/task-list.md
     - Agenda View: views/agenda-view.md
+    - Upcoming View: views/upcoming-view.md
     - Kanban View: views/kanban-view.md
     - Calendar Views: views/calendar-views.md
     - Pomodoro View: views/pomodoro-view.md
@@ -90,6 +97,7 @@ nav:
     - Webhooks: webhooks.md
     - Workflows: workflows.md
     - Calendar Setup: calendar-setup.md
+  - Contributing: contributing.md
   - Migration Guide: migration-v3-to-v4.md
   - Development:
     - Translation Workflow: development/translations.md

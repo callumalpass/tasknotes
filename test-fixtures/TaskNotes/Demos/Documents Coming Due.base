@@ -1,0 +1,95 @@
+filters:
+  and:
+    - file.inFolder("Document Library, Knowledge")
+    - type == "document"
+    - status == "active"
+formulas:
+  daysUntilReview: "review_date ? ((number(date(review_date)) - number(today())) / 86400000).floor() : 999"
+  isOverdue: formula.daysUntilReview < 0
+  reviewStatus: if(formula.daysUntilReview < 0, "OVERDUE", if(formula.daysUntilReview <= 7, "This week", if(formula.daysUntilReview <= 30, "This month", "OK")))
+  ownerName: if(owner, owner.replace("[[", "").replace("]]", ""), "Unassigned")
+properties:
+  file.name:
+    displayName: Document
+  formula.ownerName:
+    displayName: Owner
+  review_date:
+    displayName: Review Date
+  last_reviewed:
+    displayName: Last Reviewed
+  review_cycle:
+    displayName: Cycle
+  status:
+    displayName: Status
+  formula.daysUntilReview:
+    displayName: Days Until Review
+  formula.reviewStatus:
+    displayName: Review Status
+views:
+  - type: table
+    name: Coming Due (30 days)
+    filters:
+      and:
+        - formula.daysUntilReview <= 30
+    order:
+      - formula.reviewStatus
+      - formula.daysUntilReview
+      - file.name
+      - formula.ownerName
+      - review_date
+      - review_cycle
+    sort:
+      - property: formula.daysUntilReview
+        direction: ASC
+  - type: table
+    name: Overdue
+    filters:
+      and:
+        - formula.isOverdue
+    order:
+      - formula.daysUntilReview
+      - file.name
+      - formula.ownerName
+      - last_reviewed
+    sort:
+      - property: formula.daysUntilReview
+        direction: ASC
+  - type: table
+    name: By Owner
+    order:
+      - formula.ownerName
+      - file.name
+      - formula.daysUntilReview
+      - formula.reviewStatus
+    sort:
+      - property: formula.daysUntilReview
+        direction: ASC
+    group:
+      - column: formula.ownerName
+  - type: tasknotesTaskList
+    name: All Documents
+    order:
+      - file.name
+      - status
+      - formula.ownerName
+      - review_date
+      - review_cycle
+      - formula.reviewStatus
+    sort:
+      - property: file.name
+        direction: ASC
+    columnSize:
+      status: 101
+    indentProperties: true
+    enableSearch: true
+    notify: true
+  - type: table
+    name: All
+    order:
+      - file.name
+      - formula.reviewStatus
+      - formula.daysUntilReview
+      - formula.ownerName
+    sort:
+      - property: file.name
+        direction: ASC

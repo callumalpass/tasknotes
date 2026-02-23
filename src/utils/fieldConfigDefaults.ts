@@ -228,6 +228,59 @@ export function migrateUserFieldsToFieldConfig(
 }
 
 /**
+ * Ensure person fields (creator/assignee) in userFields have matching entries in modalFieldsConfig.
+ * Auto-repairs desync from migration edge cases or settings corruption.
+ * Returns true if any entries were added.
+ */
+export function ensurePersonFieldsInModalConfig(settings: {
+	modalFieldsConfig?: TaskModalFieldsConfig;
+	userFields?: any[];
+	creatorFieldName?: string;
+	assigneeFieldName?: string;
+}): boolean {
+	if (!settings.modalFieldsConfig || !settings.userFields?.length) return false;
+
+	const creatorKey = (settings.creatorFieldName || "creator").toLowerCase().replace(/s$/, "");
+	const assigneeKey = (settings.assigneeFieldName || "assignee").toLowerCase().replace(/s$/, "");
+	let changed = false;
+
+	for (const userField of settings.userFields) {
+		const key = (userField.key || "").toLowerCase().trim().replace(/s$/, "");
+		if (!key) continue;
+
+		const isPersonField = key === creatorKey || key === assigneeKey;
+		if (!isPersonField) continue;
+
+		const existsInConfig = settings.modalFieldsConfig.fields.some(
+			(f) => f.id === userField.id
+		);
+		if (existsInConfig) continue;
+
+		// Missing — add with full visibility
+		const customGroupFields = settings.modalFieldsConfig.fields.filter(
+			(f) => f.group === "custom"
+		);
+		const maxOrder = customGroupFields.length > 0
+			? Math.max(...customGroupFields.map((f) => f.order))
+			: -1;
+
+		settings.modalFieldsConfig.fields.push({
+			id: userField.id,
+			fieldType: "user",
+			group: "custom",
+			displayName: userField.displayName || "",
+			visibleInCreation: true,
+			visibleInEdit: true,
+			order: maxOrder + 1,
+			enabled: true,
+		});
+		changed = true;
+	}
+
+	return changed;
+}
+
+/**
  * Initialize or migrate field configuration
  */
 export function initializeFieldConfig(

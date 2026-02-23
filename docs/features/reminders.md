@@ -1,5 +1,19 @@
 # Task Reminders
 
+<!--
+Recording Script
+SETUP (need tasks with reminders):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Use: TaskNotes/Demos/Reminders Demo.base
+Show clicking the bell icon on a task card → "15 minutes before due" → reminder indicator appears
+Show a reminder notification firing → Obsidian notice with task name and action buttons
+
+CLEANUP (dismissing reminders modifies task files):
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 TaskNotes reminders use iCalendar `VALARM` semantics and support both relative and absolute reminder types.
 
@@ -33,6 +47,10 @@ Examples:
 - Next Monday at 10:00 AM
 
 ## Adding Reminders
+
+<!-- GIF: Clicking the bell icon on a task card, selecting "15 minutes before due", and seeing the reminder indicator appear -->
+
+![Task edit modal showing reminder configuration](../assets/screenshot-task-edit-modal.png)
 
 You can add reminders from:
 
@@ -98,6 +116,10 @@ Field meanings:
 
 You typically do not need to edit these fields manually, but understanding the structure helps when debugging automation or importing task data.
 
+<!-- GIF: A reminder notification firing -- the Obsidian notice appearing with task name and action buttons -->
+
+![Kanban view with notification toast](../assets/screenshot-kanban.png)
+
 ## Visual Indicators
 
 Tasks with reminders show a bell icon on task cards.
@@ -130,3 +152,9 @@ Default reminders are useful for recurring habits, such as pre-deadline checks o
 - The reminder property name can be customized through field mapping
 
 For settings-level behavior (notification channels, enable/disable state), see [Features Settings](../settings/features.md).
+
+## Related
+
+- [View Notifications](bases-notifications.md) for per-view query-based alerts (separate from per-task reminders)
+- [Upcoming View](../views/upcoming-view.md) for the time-grouped view that shows overdue and upcoming tasks
+- [Custom Properties](custom-properties.md) for using custom date properties as reminder anchors

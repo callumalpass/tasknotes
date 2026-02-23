@@ -258,7 +258,8 @@ export interface TaskNotesSettings {
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
 	enableBulkActionsButton: boolean; // Show the "Bulk tasking" button in Bases view toolbars (key kept for backward compat)
 	enableUniversalBasesButtons: boolean; // Show TaskNotes buttons on all Bases views (not just TaskNotes view types)
-	defaultBulkMode: "generate" | "convert"; // Default mode for the bulk tasking modal
+	defaultBulkMode: "generate" | "convert" | "bulkEdit"; // Default mode for the bulk tasking modal
+	suppressBulkEditConfirmation: boolean; // Suppress confirmation dialog for bulk edit operations
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
 		'open-calendar-view': string;

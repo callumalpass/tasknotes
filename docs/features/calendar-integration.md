@@ -1,9 +1,30 @@
 # Calendar Integration
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+  Ensure a Google/Outlook calendar is connected in settings (or mock it)
+
+Show calendar settings with connected Google Calendar account
+Show dragging a task to a new date in the calendar week view
+Show clicking/dragging on a calendar time slot to create a time entry
+
+CLEANUP:
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 TaskNotes provides calendar integration through OAuth-connected calendar services, two Bases-powered calendar views, and read-only ICS calendar subscriptions.
 
 ## OAuth Calendar Integration
+
+<!-- SCREENSHOT: Calendar integration settings showing connected Google Calendar with account email and sync status -->
+
+<!-- GIF: Dragging a task to a new date in the calendar week view and seeing the due date update -->
+
+![Calendar month view with tasks placed on dates](../assets/screenshot-calendar-month.png)
 
 TaskNotes supports bidirectional synchronization with Google Calendar and Microsoft Outlook using OAuth authentication. This integration allows you to view external calendar events alongside your tasks and sync changes back to the calendar provider.
 
@@ -40,6 +61,10 @@ TaskNotes provides Calendar and Mini Calendar views that display tasks alongside
 For detailed view documentation, see [Calendar Views](../views/calendar-views.md).
 
 ## Time Entry Editor
+
+<!-- GIF: Clicking and dragging on a calendar time slot to create a time entry linked to a task -->
+
+![Calendar view for scheduling tasks](../assets/screenshot-calendar-month.png)
 
 TaskNotes includes a time entry editor for tracking time spent on tasks. Time entries are created and managed through the Calendar View.
 

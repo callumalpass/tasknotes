@@ -6,13 +6,13 @@
  *   node reset-test-data.mjs --create     # Create fixtures from current vault files (strips task metadata)
  *
  * What it does (reset mode):
- *   1. Copies clean fixture files to Document Library/ (overwrites dirty files)
+ *   1. Copies clean fixture files to Document Library, Knowledge/ (overwrites dirty files)
  *   2. Deletes all .md files in TaskNotes/Tasks/ (generated task files)
  *
  * What it does (create mode):
- *   1. Reads Document Library/ files from the vault
+ *   1. Reads Document Library, Knowledge/ files from the vault
  *   2. Strips task-related frontmatter fields (isTask, priority, dateCreated, dateModified, projects)
- *   3. Writes clean copies to test-fixtures/Document Library/
+ *   3. Writes clean copies to test-fixtures/Document Library, Knowledge/
  */
 
 import { existsSync, readdirSync, readFileSync, writeFileSync, unlinkSync, copyFileSync, mkdirSync } from "fs";
@@ -25,12 +25,16 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = __dirname;
 const VAULT_ROOT = resolve(REPO_ROOT, "../../..");
 const FIXTURES_DIR = join(REPO_ROOT, "test-fixtures");
-const DOC_LIBRARY_FIXTURE = join(FIXTURES_DIR, "Document Library");
-const DOC_LIBRARY_VAULT = join(VAULT_ROOT, "Document Library");
+const DOC_LIBRARY_FIXTURE = join(FIXTURES_DIR, "Document Library, Knowledge");
+const DOC_LIBRARY_VAULT = join(VAULT_ROOT, "Document Library, Knowledge");
 const TASKS_DIR = join(VAULT_ROOT, "TaskNotes", "Tasks");
 
 // Fields to strip from frontmatter when creating fixtures
-const TASK_FIELDS = ["isTask", "priority", "dateCreated", "dateModified", "projects"];
+// All fields that bulk-convert or task creation can inject into a non-task note
+const TASK_FIELDS = ["isTask", "priority", "dateCreated", "dateModified", "projects",
+	"due", "scheduled", "assignee", "assignees", "tnType", "tnId", "completedDate",
+	"recurrence", "reminders", "timeEstimate", "timeEntries", "blockedBy", "blocking",
+	"subtasks", "parent", "creator", "contexts"];
 
 function log(msg) {
 	console.log(`[reset] ${msg}`);
@@ -80,7 +84,7 @@ function createFixtures() {
 	log("Creating fixtures from current vault files...");
 
 	if (!existsSync(DOC_LIBRARY_VAULT)) {
-		log(`ERROR: Document Library not found at ${DOC_LIBRARY_VAULT}`);
+		log(`ERROR: Document Library, Knowledge not found at ${DOC_LIBRARY_VAULT}`);
 		process.exit(1);
 	}
 
@@ -101,7 +105,7 @@ function createFixtures() {
 		log(`  ${stripped ? "Stripped" : "Copied "} ${file}${stripped ? " (removed task fields)" : ""}`);
 	}
 
-	log(`Created ${count} fixture file(s) in test-fixtures/Document Library/`);
+	log(`Created ${count} fixture file(s) in test-fixtures/Document Library, Knowledge/`);
 }
 
 /**
@@ -121,7 +125,7 @@ function resetVault() {
 		process.exit(1);
 	}
 
-	// Step 1: Restore Document Library from fixtures
+	// Step 1: Restore Document Library, Knowledge from fixtures
 	let docsRestored = 0;
 	const fixtureFiles = readdirSync(DOC_LIBRARY_FIXTURE).filter((f) => f.endsWith(".md"));
 
