@@ -166,7 +166,7 @@ export function createPersonGroupPicker(options: PersonGroupPickerOptions): {
 				const hint = emptyMsg.createDiv({ cls: "tn-pgp-empty-hint" });
 				hint.textContent = "Configure person notes folder and type property in ";
 				if (onConfigureClick) {
-					const link = hint.createEl("a", { text: "Settings \u2192 Shared vault" });
+					const link = hint.createEl("a", { text: "Settings \u2192 Team & Attribution" });
 					link.style.cssText = "cursor: pointer; color: var(--text-accent)";
 					link.addEventListener("click", (e) => {
 						e.preventDefault();
@@ -174,7 +174,7 @@ export function createPersonGroupPicker(options: PersonGroupPickerOptions): {
 						onConfigureClick();
 					});
 				} else {
-					hint.appendText("Settings \u2192 Shared vault");
+					hint.appendText("Settings \u2192 Team & Attribution");
 				}
 			} else {
 				emptyMsg.textContent = "No options available";

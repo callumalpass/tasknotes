@@ -12,6 +12,8 @@ Show adding a new user field in settings → see it appear in the task creation 
 Show filtering a Bases view by a custom user field value
 -->
 
+
+
 > [!info] TaskNotes has three property systems
 > They serve different purposes and work at different scopes:
 >
@@ -31,7 +33,7 @@ User fields can store workflow-specific metadata such as owner, effort class, cl
 
 <!-- GIF: Adding a new user field in settings, then seeing it appear in the task creation modal -->
 
-![Settings modal fields tab for user field configuration](../assets/screenshot-settings-modal-fields.png)
+![[file-20260224161328271.mp4]]
 
 User fields are created in the TaskNotes settings, under the "Task Properties" tab. To create a new user field, click the "Add new user field" button.
 Fields that are not used in filters or grouping still add frontmatter overhead, so this section focuses on fields used in views.

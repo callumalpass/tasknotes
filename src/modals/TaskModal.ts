@@ -1184,7 +1184,7 @@ export abstract class TaskModal extends Modal {
 				this.updateIconStates();
 			},
 			onConfigureClick: () => {
-				// Close this modal and open settings to the Shared Vault tab
+				// Close this modal and open settings to the Team & Attribution tab
 				this.close();
 				// @ts-ignore - openTab is available on Obsidian's setting instance
 				const settingInstance = this.plugin.app.setting;
@@ -1193,7 +1193,7 @@ export abstract class TaskModal extends Modal {
 					// Navigate to the plugin's settings tab, then the Shared Vault sub-tab
 					settingInstance.openTabById(this.plugin.manifest.id);
 					setTimeout(() => {
-						const btn = settingInstance.containerEl?.querySelector('[data-tab-id="shared-vault"]') as HTMLElement;
+						const btn = settingInstance.containerEl?.querySelector('[data-tab-id="team-attribution"]') as HTMLElement;
 						if (btn) btn.click();
 					}, 200);
 				}
@@ -1289,13 +1289,45 @@ export abstract class TaskModal extends Modal {
 		// Discover persons synchronously
 		const persons: PersonNoteInfo[] = this.plugin.personNoteService?.discoverPersons() || [];
 
+		// Find the insertion point: place fallback pickers right after the last
+		// rendered person picker (creator/assignee via createAssigneePickerField),
+		// so they stay grouped with other person fields instead of appearing after
+		// unrelated user fields like "TEST".
+		// Fields render into group containers (.task-modal__field-group), so we
+		// need to find the group that contains the person picker and insert within it.
+		let insertParent: HTMLElement = container;
+		let insertBeforeEl: Element | null = null;
+		const existingPersonPickers = container.querySelectorAll(".tn-task-modal-assignee");
+		if (existingPersonPickers.length > 0) {
+			const lastPicker = existingPersonPickers[existingPersonPickers.length - 1];
+			const lastSettingItem = lastPicker.closest(".setting-item");
+			if (lastSettingItem) {
+				// Insert into the same parent as the person picker (the group container)
+				const groupContainer = lastSettingItem.parentElement;
+				if (groupContainer) {
+					insertParent = groupContainer as HTMLElement;
+					insertBeforeEl = lastSettingItem.nextElementSibling;
+				}
+			}
+		}
+
 		for (let i = 0; i < fallbacks.length; i++) {
 			const fb = fallbacks[i];
-			const setting = new Setting(container).setName(fb.displayName);
-			// First fallback: remove border-top since the field group's <hr> already provides separation
-			if (i === 0) {
+			// Create the setting in the correct parent (group container, not top-level container)
+			const setting = new Setting(insertParent).setName(fb.displayName);
+			// When appended at top level (no existing person pickers in a group),
+			// remove border-top on the first fallback since the group's <hr> already
+			// provides separation. When inserted into a group, keep normal borders
+			// for visual consistency with other fields.
+			if (i === 0 && insertParent === container) {
 				setting.settingEl.style.borderTop = "none";
 			}
+
+			// Move the setting element to the correct position (after existing person pickers)
+			if (insertBeforeEl) {
+				insertParent.insertBefore(setting.settingEl, insertBeforeEl);
+			}
+
 			const pickerContainer = setting.controlEl.createDiv({ cls: "tn-task-modal-assignee" });
 			pickerContainer.dataset.fieldKey = fb.key;
 
@@ -1327,7 +1359,7 @@ export abstract class TaskModal extends Modal {
 						settingInstance.open();
 						settingInstance.openTabById(this.plugin.manifest.id);
 						setTimeout(() => {
-							const btn = settingInstance.containerEl?.querySelector('[data-tab-id="shared-vault"]') as HTMLElement;
+							const btn = settingInstance.containerEl?.querySelector('[data-tab-id="team-attribution"]') as HTMLElement;
 							if (btn) btn.click();
 						}, 200);
 					}
@@ -1339,8 +1371,11 @@ export abstract class TaskModal extends Modal {
 			this.discoverGroupsForPicker(fb.key, persons);
 		}
 
-		// Trailing separator to visually separate from Properties & Anchors section
-		container.createEl("hr", { cls: "task-modal__section-separator" });
+		// Trailing separator only when fallback pickers are at the top level
+		// (not inserted into an existing group container which already has separation)
+		if (insertParent === container) {
+			container.createEl("hr", { cls: "task-modal__section-separator" });
+		}
 	}
 
 	/**

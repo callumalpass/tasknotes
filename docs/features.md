@@ -51,7 +51,7 @@ TaskNotes ships with several view types, each suited to a different way of worki
 - **[Upcoming](views/upcoming-view.md)** -- time-grouped overview (Overdue, Today, This Week, Later)
 - **[Agenda](views/agenda-view.md)** -- short-horizon daily planning
 
-
+![[file-20260224153129081.mp4]]
 
 See [Views](views.md) for the full list, configuration options, and how to create your own. For details on how Bases integration works, see [Core Concepts](core-concepts.md#bases-integration). For Bases syntax documentation, see the [official Obsidian Bases documentation](https://help.obsidian.md/Bases/Introduction+to+Bases).
 

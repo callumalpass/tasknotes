@@ -4,13 +4,19 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.52] - 2026-02-24
+
+### Fixed
+- **User field ordering in Edit modal**: Custom user fields (e.g., "TEST") no longer appear between Creator and Assignees. Fallback person pickers now insert into the correct group container alongside registered person fields.
+- **"Shared vault" label mismatch**: PersonGroupPicker empty state and configure link now say "Team & Attribution" to match the actual settings tab name. Tab navigation selector also corrected.
+
 ## [4.3.51] - 2026-02-24
 
 ### Fixed
 - **Edit modal not loading assignee**: Assignee field appeared empty in the Edit Task modal even when the task had an assignee in frontmatter. Root cause: `initializeUserFields()` only loaded registered user fields, but the fallback PersonGroupPicker for core fields (assignee/creator) read from the same map. Now pre-loads core assignee/creator values from frontmatter so fallback pickers always find existing data.
 
 ### Changed
-- **Docs overhaul (in progress)**: Rewrote workflows page with four-mode knowledge work taxonomy (Records & Registers, Capture & Execute, Orchestration, Rhythm). Updated index page, task-defaults settings clarification, visual asset checklist. Original developer walkthroughs preserved.
+- **Docs overhaul (in progress)**: Rewrote workflows page with four-mode knowledge work taxonomy (Records & Registers, Capture & Execute, Orchestration, Rhythm & Habits). Updated index page, views page cleanup, mkdocs nav fix. Original developer walkthroughs preserved with foldable use case examples.
 - **Test fixtures aligned to plugin defaults**: Renamed view `.base` files from Title Case to `*-default.base` naming to match plugin auto-created defaults. Added 4 workflow demo `.base` files. Enriched test data with capture/rhythm tasks and recurring task completion history.
 
 ## [4.3.50] - 2026-02-24

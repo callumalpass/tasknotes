@@ -43,9 +43,12 @@ TaskNotes supports four fundamental [modes of knowledge work](workflows.md), and
 - **[Records & Registers](workflows.md#records--registers).** Maintain a body of knowledge — compliance controls, document libraries, asset inventories — and let views surface what needs attention.
 - **[Capture & Execute](workflows.md#capture--execute).** Quickly capture tasks from meetings, notes, or ideas, then triage and execute from focused views.
 - **[Orchestration](workflows.md#orchestration).** Coordinate projects with subtasks, dependencies, and team assignments across Kanban and Calendar views.
-- **[Rhythm](workflows.md#rhythm).** Build habits and routines with recurring tasks, completion tracking, and review cycles.
+- **[Rhythm & Habits](workflows.md#rhythm--habits).** Build habits and routines with recurring tasks, completion tracking, and review cycles.
 
-These are starting points. TaskNotes is flexible enough to combine modes or invent your own workflows as your vault grows. See [Workflows](workflows.md) for detailed guides and examples.
+These are starting points. TaskNotes is flexible enough to combine modes or invent your own workflows as your vault grows.
+
+> [!tip] Looking for concrete use cases?
+> The [Workflows](workflows.md) page includes expandable use case examples for each mode — from content calendars and compliance registers to meeting triage and habit tracking — plus step-by-step walkthroughs.
 
 ### 3. Create Your First Task
 

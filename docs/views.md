@@ -16,10 +16,8 @@ TaskNotes provides multiple views for managing tasks and tracking productivity. 
 
 For details on Bases integration and how to enable it, see [Core Concepts](core-concepts.md#bases-integration). For view templates and configuration examples, see [Default Base Templates](views/default-base-templates.md).
 
-<!-- GIF: Quick tour cycling through 3-4 view types (use TaskNotes/Demos/ bases from test fixtures) — same GIF as index.md -->
+<!-- TODO: Embed the quick tour video/GIF here — user has already recorded one -->
 <!-- SCREENSHOT: Side-by-side comparison showing the same tasks in Task List, Kanban, and Calendar views -->
-
-![Task list view showing all tasks with status, priority, and due dates](docs/assets/views/screenshot-tasks-list.png)
 
 ## Task-Focused Views
 
@@ -43,4 +41,3 @@ These views support time management and work tracking.
 
 ![Pomodoro view](docs/assets/views/feature-pomodoro-timer.png)
 
-Screenshots in this section are captured via the Playwright docs suite (`npm run e2e:docs`).

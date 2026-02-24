@@ -25,14 +25,14 @@ TaskNotes sits at the intersection of two disciplines: **knowledge management** 
 
 All productive work with information follows a cycle: **sense** the state of things, **decide** what to do, **act** on those decisions, and **integrate** the results back. Different kinds of work enter that cycle at different points. The four modes below describe those entry points. They are lenses, not silos — real work blends them, and TaskNotes supports that blending because the same [Bases view engine](views.md) serves all four.
 
-## The Four Modes of Knowledge Work
+## Four Modes of Knowledge Work
 
-| Mode | What drives the work | Primary views | Key features |
-|------|---------------------|---------------|--------------|
-| [Records & Registers](#records--registers) | State of knowledge artifacts | Bases tables, Document Library views | [Bulk Generate](features/bulk-tasking.md), [recurring tasks](features/recurring-tasks.md), [per-view mapping](features/per-base-mapping.md) |
-| [Capture & Execute](#capture--execute) | Incoming items from any source | [Upcoming](views/upcoming-view.md), [Agenda](views/agenda-view.md), [Task List](views/task-list.md) | NLP capture, [inline conversion](features/inline-tasks.md), quick add |
-| [Orchestration](#orchestration) | Relationships between tasks and people | [Kanban](views/kanban-view.md), [Calendar](views/calendar-views.md), project views | [Projects](features/task-management.md#projects), [dependencies](features/task-management.md#dependencies), [team assignment](features/shared-vault.md) |
-| [Rhythm](#rhythm) | Recurring time cycles | [Calendar](views/calendar-views.md), [Upcoming](views/upcoming-view.md), [Pomodoro](views/pomodoro-view.md) | [Recurring tasks](features/recurring-tasks.md), completion tracking, habits |
+| Mode                                                                                                                | What drives the work                   | Primary views                                                                                               | Key features                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Records & Registers](#records--registers)                                                                          | State of knowledge artifacts           | Bases tables, Document Library views                                                                        | [Bulk Convert / Generate](features/bulk-tasking.md), [recurring tasks](features/recurring-tasks.md), [per-view mapping](features/per-base-mapping.md) |
+| [Capture & Execute](#capture--execute)                                                                              | Incoming items from any source         | [Upcoming](views/upcoming-view.md), [Agenda](views/agenda-view.md), [Task List](views/task-list.md)         | NLP capture, [inline conversion](features/inline-tasks.md), quick add                                                                                                                                                                                              |
+| [Orchestration](#orchestration)                                                                                     | Relationships between tasks and people | [Kanban](views/kanban-view.md), [Calendar](views/calendar-views.md), project views                          | [Projects](features/task-management.md#projects), [dependencies](features/task-management.md#dependencies), [team assignment](features/shared-vault.md)                                                                                                            |
+| [Rhythm & Habits](#rhythm--habits) | Recurring time cycles                  | [Calendar](views/calendar-views.md), [Upcoming](views/upcoming-view.md), [Pomodoro](views/pomodoro-view.md) | [Recurring tasks](features/recurring-tasks.md), completion tracking, habits                                                                                                                                                                                        |
 
 <!-- VIDEO: Quick overview of all four modes — show one view per mode in rapid succession -->
 
@@ -40,24 +40,33 @@ All productive work with information follows a cycle: **sense** the state of thi
 
 > Maintaining a body of knowledge that drives its own task list.
 
-In records management and archival science, a **register** is a structured inventory of items that require ongoing attention — a control library, document collection, asset inventory, or policy corpus. The items themselves are the knowledge. Tasks are *derived from* their state: "this document is due for review," "this control hasn't been tested," "this policy expires next month."
+> [!info] What is a register?
+> In records management, a **register** is a structured inventory of items that require ongoing attention: a document collection, asset inventory, content library, or any corpus that needs periodic review. Tasks are *derived from* the state of those items: "this document is due for review," "this asset hasn't been audited," "this policy expires next month."
 
-TaskNotes supports this pattern directly. A Bases view can act as a register — a structured table (like a spreadsheet) that filters documents by metadata and surfaces the ones that need action. [Bulk Generate](features/bulk-tasking.md) creates task files from those items. [Recurring tasks](features/recurring-tasks.md) enforce review cycles. [Per-view property mapping](features/per-base-mapping.md) lets each register use domain-appropriate field names (`review_date` instead of `due`, `control_owner` instead of `assignee`).
+TaskNotes supports this pattern directly. A Bases view can act as a register, a structured table that filters documents by metadata and surfaces the ones that need action. [Bulk Convert](features/bulk-tasking.md) turns existing notes into tracked tasks in place, while [Bulk Generate](features/bulk-tasking.md) creates new task files from document metadata. [Recurring tasks](features/recurring-tasks.md) enforce review cycles. [Per-view property mapping](features/per-base-mapping.md) lets each register use domain-appropriate field names (`review_date` instead of `due`, `owner` instead of `assignee`).
 
-The register pattern is common in compliance, audit, documentation management, asset tracking, content calendars, and any context where a corpus of knowledge needs periodic maintenance.
+The register pattern is common in documentation management, asset tracking, content calendars, compliance, and any context where a corpus of knowledge needs periodic maintenance.
 
-### Example: Compliance Control Library
+> [!example]- More use cases for Records & Registers
+> - **Content calendar** — blog posts, social media drafts, and newsletter issues with `publish_date`, `author`, and `status` fields. A view surfaces drafts approaching their publish date.
+> - **Asset inventory** — hardware, software licenses, or equipment with `warranty_expiry`, `assigned_to`, and `location`. Bulk Convert turns inventory notes into trackable tasks when maintenance is due.
+> - **Policy library** — internal policies with `effective_date`, `review_cycle`, and `approver`. Recurring tasks enforce review cadence.
+> - **Knowledge base maintenance** — wiki articles or runbooks with `last_verified` and `owner`. A register view highlights stale articles.
+> - **Compliance controls** — security or regulatory controls with `audit_date`, `control_owner`, and `evidence_status`. Bases views act as audit dashboards.
+> - **Client/vendor directory** — contact records with `contract_renewal`, `account_manager`, and `tier`. Views surface upcoming renewals.
 
-A security team maintains a folder of control documents (e.g., `Controls/AC-01 Access Control.md`, `Controls/IR-03 Incident Response.md`). Each document has frontmatter properties like `review_date`, `review_cycle`, and `control_owner`. A Bases view filters to controls where the review date has passed, surfaces them as a register, and the team uses Bulk Generate to create review tasks linked back to each control.
+### Example: Document Review Library
+
+A team maintains a folder of documents that need periodic review (e.g., `Documents/Onboarding Guide.md`, `Documents/API Reference.md`). Each document has frontmatter properties like `review_date`, `review_cycle`, and `owner`. A Bases view filters to documents where the review date has passed, surfaces them as a register, and the team uses Bulk Convert or Bulk Generate to create review tasks linked back to each document.
 
 ```yaml
-# Example control document frontmatter
-title: "AC-01 Access Control Policy"
+# Example document frontmatter
+title: "Onboarding Guide"
 review_date: 2025-12-15
 review_cycle: quarterly
-control_owner: "[[Alice Chen]]"
+owner: "[[Alice Chen]]"
 status: active
-department: security
+department: engineering
 ```
 
 ### TaskNotes Features Used
@@ -68,11 +77,7 @@ department: security
 - [Recurring tasks](features/recurring-tasks.md) for cyclical review requirements
 - [Custom Properties](features/custom-properties.md) for domain-specific metadata (`review_cycle`, `department`)
 
-### Try It
-
-Open `TaskNotes/Demos/Records & Registers Demo.base` in the test fixtures to see a control library register with overdue and upcoming reviews.
-
-<!-- VIDEO: Records & Registers workflow — browsing a control library register, filtering overdue reviews, bulk-generating review tasks -->
+<!-- VIDEO: Records & Registers workflow — browsing a document review register, filtering overdue reviews, bulk-converting review tasks -->
 
 ## Capture & Execute
 
@@ -97,9 +102,13 @@ You start the day in Upcoming View to see what is overdue and what is due today.
 - [Calendar views](views/calendar-views.md) for schedule placement
 - [Pomodoro View](views/pomodoro-view.md) for focused intervals
 
-### Try It
-
-Open `TaskNotes/Demos/Capture Workflow Demo.base` to see an inbox-style view of recently captured tasks ready for triage.
+> [!example]- More use cases for Capture & Execute
+> - **Meeting action items** — jot checkboxes during a meeting, then batch-convert them into tracked tasks with inline conversion.
+> - **Reading notes** — highlight ideas or follow-ups while reading, convert them into tasks linked to the source note.
+> - **Email triage** — capture action items from email into quick tasks via the command palette, then schedule them in Calendar view.
+> - **Brainstorming sessions** — dump ideas as bullets, later promote the actionable ones to tasks.
+> - **Student coursework** — capture assignments and deadlines from syllabi, triage in Upcoming View by due date.
+> - **Freelance client requests** — quick-add tasks from client messages, tag by client, schedule in Calendar.
 
 <!-- VIDEO: Capture & Execute workflow — quick-add from command palette, inline conversion from meeting note, triage in Upcoming, schedule in Calendar -->
 
@@ -138,19 +147,23 @@ due: 2025-03-15
 - [Calendar views](views/calendar-views.md) for timeline management
 - [View Notifications](features/bases-notifications.md) (experimental) for triage alerts
 
-### Try It
-
-Open `TaskNotes/Demos/Orchestration Demo.base` for a project-filtered Kanban with dependencies and team assignments. See also `TaskNotes/Demos/Project Dependencies Demo.base` and `TaskNotes/Demos/Shared Vault Demo.base`.
+> [!example]- More use cases for Orchestration
+> - **Product launch** — design, engineering, and marketing tasks linked to a launch project note, with dependencies gating sequential deliverables.
+> - **Onboarding program** — new hire tasks assigned to mentors and managers, with a Kanban board tracking completion across departments.
+> - **Event planning** — venue, catering, speakers, and logistics tasks with dependencies and deadlines on a Calendar view.
+> - **Research project** — literature review, experiments, and writing tasks with blocking dependencies and co-author assignments.
+> - **Software release** — feature work, QA, docs, and deployment tasks with milestones, assignees, and a Kanban for status flow.
+> - **Home renovation** — contractor tasks, permit tracking, and material orders with dependencies and timeline in Calendar view.
 
 <!-- VIDEO: Orchestration workflow — project Kanban, adding dependencies, team assignment, notification triage -->
 
-## Rhythm
+## Rhythm & Habits
 
 > Recurring patterns of attention that structure time and build consistency.
 
 Some work is neither project-shaped nor register-shaped — it is **cyclical**. Daily reviews, weekly planning, habit tracking, periodic check-ins. The pattern itself is the product. What matters is consistency over time and visibility into streaks, gaps, and trends.
 
-TaskNotes models this with [recurring tasks](features/recurring-tasks.md) using RFC 5545 RRule syntax. A recurring task stays open while recording completion per occurrence in `complete_instances`. Calendar views show completion patterns visually. The [Upcoming View](views/upcoming-view.md) structures your day around what recurs. [Pomodoro View](views/pomodoro-view.md) supports focused intervals with break handling and session tracking.
+TaskNotes models this with [recurring tasks](features/recurring-tasks.md) using [RFC 5545](features/recurring-tasks.md#core-concepts) RRule syntax. A recurring task stays open while recording completion per occurrence in `complete_instances`. Calendar views show completion patterns visually. The [Upcoming View](views/upcoming-view.md) structures your day around what recurs. [Pomodoro View](views/pomodoro-view.md) supports focused intervals with break handling and session tracking.
 
 ### Example: Habit Tracking and Weekly Reviews
 
@@ -174,11 +187,16 @@ complete_instances:
 - [Upcoming View](views/upcoming-view.md) for daily cadence
 - [Pomodoro View](views/pomodoro-view.md) for focused intervals
 
-### Try It
+> [!example]- More use cases for Rhythm & Habits
+> - **Morning routine** — daily recurring tasks for exercise, journaling, and planning, with streak tracking in Calendar view.
+> - **Weekly review** — a weekly task that prompts you to clean up completed work, check recurring patterns, and rebalance priorities.
+> - **Monthly budget review** — recurring monthly task to review finances, with completion history showing consistency.
+> - **Medication tracking** — daily reminders with completion logging to verify adherence over time.
+> - **Content publishing cadence** — weekly blog post or newsletter task with Pomodoro sessions for focused writing blocks.
+> - **Team standups** — daily or weekly recurring tasks for standup notes, with completion history showing attendance patterns.
+> - **Quarterly goal check-ins** — recurring quarterly tasks to review OKRs or personal goals.
 
-Open `TaskNotes/Demos/Rhythm Demo.base` to see recurring tasks with completion history and streak visualization. See also `TaskNotes/Demos/Recurring Tasks Demo.base`.
-
-<!-- VIDEO: Rhythm workflow — recurring tasks in calendar, marking completions, reviewing streak patterns, Pomodoro focus session -->
+<!-- VIDEO: Rhythm & Habits workflow — recurring tasks in calendar, marking completions, reviewing streak patterns, Pomodoro focus session -->
 
 ## Combining Modes
 
