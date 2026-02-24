@@ -11,10 +11,10 @@ Show expanding a single property card to reveal key, default value, NLP trigger,
 This tab configures all task properties. Each property is displayed as a card containing its configuration options.
 
 
-![Task Properties Settings](../assets/settings-task-properties.png)
+![Task Properties Settings](docs/assets/task-properties/settings-task-properties.png)
 
-!!! tip "Looking for property type documentation?"
-    See the [Property Types Reference](property-types-reference.md) for detailed documentation on the expected data types (text, list, date, etc.) for each frontmatter property.
+> [!tip] Looking for property type documentation?
+> See the [Property Types Reference](property-types-reference.md) for detailed documentation on the expected data types (text, list, date, etc.) for each frontmatter property.
 
 <!-- SCREENSHOT: A single property card expanded, showing the property key field, default value, NLP trigger toggle, and property-specific settings -->
 

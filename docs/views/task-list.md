@@ -14,10 +14,10 @@ Show adding a filter in the .base file YAML → task list updates live
 The Task List View displays tasks in a scrollable list format with filtering, sorting, and grouping capabilities. In TaskNotes v4, this view operates as a Bases view configured through YAML.
 This view is optimized for high task volume and explicit filter definitions.
 
-![Task List View](../assets/views-tasks-list.png)
+![Task List View](docs/assets/task-list/views-tasks-list.png)
 
-!!! info "No implicit task filter"
-    The `tasknotesTaskList` view type does **not** impose its own filter on top of the `.base` file's `filters:` block. It renders whatever items the Bases engine returns. This means you can use it to display non-task notes too -- for example, a list of documents eligible for conversion. If your view shows zero items, check your `.base` filter YAML rather than assuming `isTask` or the `task` tag is required.
+> [!info] No implicit task filter
+> The `tasknotesTaskList` view type does **not** impose its own filter on top of the `.base` file's `filters:` block. It renders whatever items the Bases engine returns. This means you can use it to display non-task notes too -- for example, a list of documents eligible for conversion. If your view shows zero items, check your `.base` filter YAML rather than assuming `isTask` or the `task` tag is required.
 
 ## Bases Architecture
 
@@ -113,7 +113,7 @@ The exact property names depend on your TaskNotes field mapping settings (`Setti
 
 <!-- GIF: Sorting the task list by priority descending, then grouping by status -->
 
-![Task list sorted and grouped by status](../assets/screenshot-tasks-list.png)
+![Task list sorted and grouped by status](docs/assets/task-list/screenshot-tasks-list.png)
 
 ## Filtering and Sorting
 
@@ -248,7 +248,7 @@ The v3 FilterBar UI component no longer exists - all configuration is done throu
 
 <!-- GIF: Adding a filter in the .base file YAML and seeing the task list update live -->
 
-![Task list with applied filters](../assets/screenshot-tasks-list.png)
+![Task list with applied filters](docs/assets/task-list/screenshot-tasks-list.png)
 
 ## Task Actions
 

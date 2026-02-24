@@ -1,0 +1,92 @@
+filters:
+  and:
+    - or:
+        - file.hasTag("task")
+        - isTask == true
+    - tnType != "base-notification"
+    - status != "done"
+formulas:
+  hasProject: projects && list(projects).length > 0
+  projectName: if(formula.hasProject, list(projects)[0].replace("[[", "").replace("]]", ""), "No project")
+  daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
+  isOverdue: due && date(due) < today() && status != "done"
+  captureAge: if(file.cday, ((number(today()) - number(file.cday)) / 86400000).floor(), null)
+  triageStatus: if(status == "pending" && !due && !formula.hasProject, "Needs triage", if(formula.isOverdue, "Overdue", if(due && formula.daysUntilDue <= 1, "Due soon", "Scheduled")))
+properties:
+  title:
+    displayName: Task
+  status:
+    displayName: Status
+  priority:
+    displayName: Priority
+  due:
+    displayName: Due
+  formula.projectName:
+    displayName: Project
+  formula.triageStatus:
+    displayName: Triage
+  formula.captureAge:
+    displayName: Age (days)
+views:
+  - type: tasknotesTaskList
+    name: Inbox — Needs Triage
+    filters:
+      and:
+        - status == "pending"
+        - or:
+            - !due
+            - !formula.hasProject
+    order:
+      - title
+      - priority
+      - due
+      - formula.projectName
+      - formula.captureAge
+    sort:
+      - property: formula.captureAge
+        direction: DESC
+    enableSearch: true
+  - type: tasknotesTaskList
+    name: Today
+    filters:
+      and:
+        - or:
+            - due && date(due).date() == today()
+            - scheduled && date(scheduled).date() == today()
+            - formula.isOverdue
+    order:
+      - title
+      - priority
+      - due
+      - formula.projectName
+      - formula.triageStatus
+    sort:
+      - property: priority
+        direction: DESC
+    enableSearch: true
+  - type: table
+    name: By Triage Status
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - formula.projectName
+      - formula.captureAge
+    sort:
+      - property: formula.captureAge
+        direction: DESC
+    group:
+      - column: formula.triageStatus
+  - type: table
+    name: All Open
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - formula.projectName
+      - formula.triageStatus
+    sort:
+      - property: due
+        direction: ASC

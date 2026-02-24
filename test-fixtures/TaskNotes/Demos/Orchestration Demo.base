@@ -1,0 +1,103 @@
+filters:
+  and:
+    - or:
+        - file.hasTag("task")
+        - isTask == true
+    - tnType != "base-notification"
+    - or:
+        - projects && list(projects).length > 0
+        - blockedBy && list(blockedBy).length > 0
+        - blocking && list(blocking).length > 0
+        - assignee
+formulas:
+  assigneeName: if(assignee, assignee.replace("[[", "").replace("]]", ""), "Unassigned")
+  projectName: if(projects && list(projects).length > 0, list(projects)[0].replace("[[", "").replace("]]", ""), "No project")
+  isBlocked: blockedBy && list(blockedBy).length > 0
+  isBlocking: blocking && list(blocking).length > 0
+  blockCount: if(blocking, list(blocking).length, 0)
+  daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
+  isOverdue: due && date(due) < today() && status != "done"
+  dependencyStatus: if(formula.isBlocked && status != "done", "Blocked", if(formula.isBlocking && status != "done", "Blocking others", "Independent"))
+properties:
+  title:
+    displayName: Task
+  status:
+    displayName: Status
+  priority:
+    displayName: Priority
+  due:
+    displayName: Due
+  formula.assigneeName:
+    displayName: Assignee
+  formula.projectName:
+    displayName: Project
+  formula.dependencyStatus:
+    displayName: Dependencies
+  formula.blockCount:
+    displayName: Blocks
+views:
+  - type: tasknotesKanban
+    name: Project Board
+    groupBy:
+      property: status
+    order:
+      - title
+      - priority
+      - due
+      - formula.assigneeName
+      - formula.dependencyStatus
+    options:
+      columnWidth: 300
+  - type: table
+    name: By Assignee
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - formula.projectName
+      - formula.dependencyStatus
+    sort:
+      - property: due
+        direction: ASC
+    group:
+      - column: formula.assigneeName
+  - type: table
+    name: By Project
+    order:
+      - title
+      - status
+      - priority
+      - due
+      - formula.assigneeName
+      - formula.dependencyStatus
+    sort:
+      - property: due
+        direction: ASC
+    group:
+      - column: formula.projectName
+  - type: table
+    name: Dependency Map
+    filters:
+      and:
+        - or:
+            - formula.isBlocked
+            - formula.isBlocking
+    order:
+      - title
+      - formula.dependencyStatus
+      - formula.blockCount
+      - status
+      - formula.assigneeName
+      - due
+    sort:
+      - property: formula.blockCount
+        direction: DESC
+  - type: tasknotesCalendar
+    name: Timeline
+    order:
+      - title
+      - status
+      - priority
+      - formula.assigneeName
+      - formula.projectName

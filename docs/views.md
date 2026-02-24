@@ -16,9 +16,10 @@ TaskNotes provides multiple views for managing tasks and tracking productivity. 
 
 For details on Bases integration and how to enable it, see [Core Concepts](core-concepts.md#bases-integration). For view templates and configuration examples, see [Default Base Templates](views/default-base-templates.md).
 
+<!-- GIF: Quick tour cycling through 3-4 view types (use TaskNotes/Demos/ bases from test fixtures) — same GIF as index.md -->
 <!-- SCREENSHOT: Side-by-side comparison showing the same tasks in Task List, Kanban, and Calendar views -->
 
-![Task list view showing all tasks with status, priority, and due dates](assets/screenshot-tasks-list.png)
+![Task list view showing all tasks with status, priority, and due dates](docs/assets/views/screenshot-tasks-list.png)
 
 ## Task-Focused Views
 
@@ -30,9 +31,9 @@ When you want workflow by status, [Kanban View](views/kanban-view.md) organizes 
 
 [Agenda View](views/agenda-view.md) is a preconfigured list-oriented calendar layout designed for short-horizon planning, while [MiniCalendar View](views/calendar-views.md#mini-calendar-view) gives a compact month heatmap and fast keyboard navigation.
 
-![Task List view](assets/views-tasks-list.png)
+![Task List view](docs/assets/views/views-tasks-list.png)
 
-![Calendar week view](assets/views-calendar-week.png)
+![Calendar week view](docs/assets/views/views-calendar-week.png)
 
 ## Productivity-Focused Views
 
@@ -40,6 +41,6 @@ These views support time management and work tracking.
 
 [Pomodoro View](views/pomodoro-view.md) supports focused intervals directly inside Obsidian, and [Pomodoro Stats View](views/pomodoro-view.md#pomodoro-stats-view) summarizes completed sessions so you can see pace and consistency over time.
 
-![Pomodoro view](assets/feature-pomodoro-timer.png)
+![Pomodoro view](docs/assets/views/feature-pomodoro-timer.png)
 
 Screenshots in this section are captured via the Playwright docs suite (`npm run e2e:docs`).

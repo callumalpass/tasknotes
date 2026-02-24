@@ -15,8 +15,18 @@ Show clicking scope chips: "This note" → "View items" → "All tasks" → "All
 Show searching for a property, selecting it, seeing it appear as editable row
 Show selecting "Use as Due date" on a custom property → date picker appears
 -->
-{>> I have a lot of comments down below. We need to clarify for sure how custom. how custom properties relates to per base mapping or just property mapping in general.  There may be a lot of confusion around these. per base mapping, though, is more related to bulk tasking or like a tasking workspace. And that's something we could call out in the workflow section. Tasking workspaces You know how you work with tasks. One context would be on the fly in line and then the other would be from a task workspace, which is really just an obsidian base.<<}
-TaskNotes discovers custom frontmatter properties from your existing task files and lets you use them in filters, views, modals, and bulk operations. You are not limited to the built-in fields. Any property you add to a task's frontmatter can become a first-class part of your workflow.{>>We need to show a diagram that shows why. being able to map custom properties to the task note properties is useful Also probably need to have a terminology section in our docs so that we can refer to it. But long story short here on the custom properties you might. have a different schema in all sorts of contexts across the vault. For instance, you might have a base where you have certain columns which are really just properties in the YAML front matter.  And their only specific to that type of context or base view, for instance, And so you still want them to have the functionality, but you can.' Use the global task note core properties. So we can actually remap to those properties on the fly. We need to explain this in intuitive way, and maybe use a mermaid diagram to show it.<<}
+TaskNotes discovers custom frontmatter properties from your existing task files and lets you use them in filters, views, modals, and bulk operations. You are not limited to the built-in fields. Any property you add to a task's frontmatter can become a first-class part of your workflow.
+
+> [!info] TaskNotes has three property systems
+> They serve different purposes and work at different scopes:
+>
+> | System | What it does | Scope | Where to configure |
+> |--------|-------------|-------|-------------------|
+> | **Custom Properties** (this page) | Discover and use ad-hoc frontmatter fields from your vault | Per-task | Task modal PropertyPicker |
+> | **[User Fields](user-fields.md)** | Pre-register fields so they always appear in modals | Global | Settings > Task Properties |
+> | **[Per-View Mapping](per-base-mapping.md)** | Remap property names per Bases view (e.g., `deadline` → `due`) | Per-view | `.base` file or bulk modal |
+>
+> Custom Properties let you work with whatever frontmatter already exists. User Fields ensure specific fields always show up. Per-View Mapping lets different views use different property names for the same concept.
 
 <!-- SCREENSHOT: PropertyPicker showing discovered properties with type badges and scope chips -->
 
@@ -59,7 +69,7 @@ Above the PropertyPicker search input, scope chips control where properties are 
 | All tasks | "All tasks" | Every file identified as a task in your vault |
 | All files | "All files" | Every Markdown file in the vault |
 
-{>>Not sure it's applicable here, but if you're ever referencing something else in the tool, the task notes tool then actually linked to it from here. Don't just mention what it is.<<}Not all chips are always visible. "This note" only appears when editing an existing task. "View items" only appears when the PropertyPicker was opened from a Bases view context (like bulk tasking).
+Not all chips are always visible. "This note" only appears when editing an existing task. "View items" only appears when the PropertyPicker was opened from a Bases view context (like [bulk tasking](bulk-tasking.md)).
 
 The default scope depends on context: if you opened from a view, it starts on "View items". If you are editing a single task, it starts on "This note". Otherwise it defaults to "All tasks".
 
@@ -68,12 +78,14 @@ Switching scopes immediately reloads the property list. A property that exists o
 ## Adding a Custom Property
 
 <!-- GIF: Searching for a property in the PropertyPicker, selecting it, and seeing it appear as an editable row -->
-{>>Originally, we also have this for the reminders model. I'm not sure if we want to call that out here as well, and then link to the page from there, but it could be something.<<}
-In any task creation or edit modal, scroll to the **Additional Properties** section. The PropertyPicker search input lets you:
+In any task creation or edit modal, scroll to the **Additional Properties** section. The PropertyPicker also appears in the [reminders modal](reminders.md) for selecting date anchor properties. The search input lets you:
 
 1. **Select an existing property** -- start typing to filter discovered properties, then click one. It appears as an editable row below the picker with an appropriate editor (text input, date picker, or checkbox depending on the detected type).
 
-2. {>>Not sure how to visually call this out, but this second type of thing that you can do is going to rarely be used from this, and there's definitely better plugins that can do it at scale, way better. So avoid this. Maybe call an experimental, I'm not sure what to do here, but this is rarely going to be used. and we should style it that way on this document page.<<}**Create a new property** -- type a name that does not match any existing property and press Enter. A small form appears where you choose the property type (text, number, date, boolean, list). The property is added to the task's frontmatter when you save.
+2. **Create a new property** -- type a name that does not match any existing property and press Enter. A small form appears where you choose the property type (text, number, date, boolean, list). The property is added to the task's frontmatter when you save.
+
+> [!tip]- Creating new properties (advanced)
+> This is useful for one-off fields, but for properties you use regularly, consider registering them as [User Fields](user-fields.md) instead — they will always appear in modals without needing to be discovered first. For bulk property management across many files, dedicated property plugins may be more efficient.
 
 Once added, a property row shows its name, current value, and a remove button. You can add multiple custom properties to a single task.
 
@@ -81,28 +93,32 @@ Once added, a property row shows its name, current value, and a remove button. Y
 
 The [Bulk Tasking](bulk-tasking.md) modal has the same PropertyPicker. Properties you set there apply to every item in the batch:
 
-{>>We should probably just replace these three with a gig. that or a video that's also used in the bulk tasking modal so that we're not duplicating a demonstrations and we can just reference the same demonstration file right here. That might be a good idea.<<}- In **Generate** mode, custom properties are written to each new task file
+<!-- GIF: PropertyPicker in the bulk tasking modal — same demo as bulk-tasking.md -->
+
+- In **Generate** mode, custom properties are written to each new task file
 - In **Convert** mode, custom properties are added only if the file does not already have them
 - In **Edit** mode, custom properties overwrite existing values
 
 ## Type Detection and Conversion
 
-{>>Awful lot of text for something that isn't as important of a call out, so maybe you can try to make some of these a collapsed by default call out and. we could just have a GIF or a video or something that shows it in action and that could take up most of the space here. But the how it works could be like a call out or something like that.<<}When a property has inconsistent types across files (for example, `review_date` is a proper date in 43 files but plain text in 2 files), the PropertyPicker flags it. The catalog view shows a type breakdown:
+<!-- GIF: Type mismatch detection and conversion in the PropertyPicker -->
 
-```
-review_date   Date (43)  Text (2)  -- 2 mismatched files
-```
-
-You can convert mismatched files to a consistent type. Click the convert button next to the property, and TaskNotes shows a confirmation dialog listing how many files will be updated. Conversion uses Obsidian's `processFrontMatter` API to safely rewrite each file's YAML.
-
-Conversion targets depend on context. In the reminder modal, only date conversion is offered (since reminders need date anchors). In task modals, all type conversions are available.
+> [!info]- How type detection and conversion works
+> When a property has inconsistent types across files (for example, `review_date` is a proper date in 43 files but plain text in 2 files), the PropertyPicker flags it. The catalog view shows a type breakdown:
+>
+> ```
+> review_date   Date (43)  Text (2)  -- 2 mismatched files
+> ```
+>
+> You can convert mismatched files to a consistent type. Click the convert button next to the property, and TaskNotes shows a confirmation dialog listing how many files will be updated. Conversion uses Obsidian's `processFrontMatter` API to safely rewrite each file's YAML.
+>
+> Conversion targets depend on context. In the [reminder modal](reminders.md), only date conversion is offered (since reminders need date anchors). In task modals, all type conversions are available.
 
 ## Per-Task Field Overrides
 
 Custom properties can replace built-in date and assignee fields on a per-task basis. This is useful when your vault uses different property names for the same concept -- one project might use `deadline` while another uses `due`.
 
 <!-- GIF: Selecting "Use as Due date" on a custom property and seeing it switch to a date picker -->
-{>>I thought this was what we were calling out in a section above it somewhere. Or maybe we also have custom and global properties. We are. currently we only allow that at the global level for reminders. but we plan on making a bulk tasking version of that for all bulk tasking models, but that'll have to be a later feature. So we should add that to the road map as well.<<}
 When you select a custom property in the PropertyPicker, a **Use as** option appears next to it. Click it to see which core fields the property can replace:
 
 | Core field | What it replaces |
@@ -134,7 +150,10 @@ The tracking properties are internal to TaskNotes:
 These are hidden from the PropertyPicker (they are in the core properties skip list) and should not be edited manually. They make each task self-describing: the notification system, overdue calculations, sorting, and views all read the tracking property first, then fall back to the global field mapping.
 
 ## Settings
-{>>There will be a lot of user confusion around how these differ from the other ones, like the custom property mappings per view, not per view, but per per task. The. are really just additional things that you can fill out a. essentially letting you fill out a proper ty like a custom yamel property on the fly. So really any plugin could do this, but we just allow you to do it alongside your task notes if there's an additional thing you always want to track with a task though the property doesn't really do anything with the back end task note logic. but this could change in the future.  <<}
+
+> [!note] Custom Properties vs User Fields vs Per-View Mapping
+> **Custom Properties** (this page) let you work with ad-hoc frontmatter fields on a per-task basis — they don't change how TaskNotes processes tasks internally. **[User Fields](user-fields.md)** are pre-registered so they always appear in modals. **[Per-View Mapping](per-base-mapping.md)** remaps property names per Bases view, which is useful when different views use different schemas.
+
 These settings are in **Settings > Task Properties > User Fields**:
 
 | Setting | Default | Description |

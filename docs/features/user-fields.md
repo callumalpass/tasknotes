@@ -12,6 +12,17 @@ Show adding a new user field in settings → see it appear in the task creation 
 Show filtering a Bases view by a custom user field value
 -->
 
+> [!info] TaskNotes has three property systems
+> They serve different purposes and work at different scopes:
+>
+> | System | What it does | Scope | Where to configure |
+> |--------|-------------|-------|-------------------|
+> | **[Custom Properties](custom-properties.md)** | Discover and use ad-hoc frontmatter fields from your vault | Per-task | Task modal PropertyPicker |
+> | **User Fields** (this page) | Pre-register fields so they always appear in modals | Global | Settings > Task Properties |
+> | **[Per-View Mapping](per-base-mapping.md)** | Remap property names per Bases view (e.g., `deadline` → `due`) | Per-view | `.base` file or bulk modal |
+>
+> User Fields ensure specific fields always show up in every task modal. Custom Properties let you work with whatever frontmatter already exists. Per-View Mapping lets different views use different property names for the same concept.
+
 TaskNotes allows you to define your own custom fields for tasks. This feature allows you to add custom data to your tasks and use it for filtering, sorting, and grouping.
 User fields can store workflow-specific metadata such as owner, effort class, client, or review stage.
 
@@ -130,8 +141,6 @@ Autosuggestion filters:
 ## Using User Fields
 
 <!-- GIF: Filtering a Bases view by a custom user field value -->
-
-![Task list with custom field filtering](../assets/screenshot-tasks-list.png)
 
 Once you have created a user field, it will be available in the following places:
 

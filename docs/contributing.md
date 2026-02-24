@@ -1,16 +1,5 @@
 # Contributing
 
-<!--
-Recording Script
-SETUP:
-  cd .obsidian/plugins/tasknotes
-  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
-  bun run dev
-
-Show running bun run dev, editing a source file, seeing Hot Reload pick up the change
-Show the dev vault with test data loaded
--->
-
 TaskNotes is an open-source Obsidian plugin. Contributions are welcome, whether you are fixing a bug, adding a feature, improving documentation, or reporting an issue.
 
 ## Getting Started
@@ -33,7 +22,7 @@ bun run build      # Production build (type-check + minify)
 
 <!-- GIF: Running bun run dev, editing a source file, and seeing Hot Reload pick up the change in Obsidian -->
 
-![Task list view showing the development vault with test data](assets/screenshot-tasks-list.png)
+![Task list view showing the development vault with test data](docs/assets/contributing/screenshot-tasks-list.png)
 
 ### Dev Vault
 
@@ -265,18 +254,22 @@ Replace placeholders with actual images as they become available.
 
 **Navigation:** Update `mkdocs.yml` when adding new pages. Place feature pages under the Features nav section, view pages under Views.
 
-## Reporting Issues
+## Reporting Issues and Feature Requests
 
-If you find a bug or have a feature request, open an issue on [GitHub](https://github.com/callumalpass/tasknotes/issues). Include:
+If you find a bug or have a feature request, open an issue on [GitHub](https://github.com/cybersader/tasknotes/issues). Include:
 
 - Steps to reproduce the issue
 - What you expected to happen
 - What actually happened
 - Your Obsidian version and TaskNotes version
+- Debug log output if applicable (see [Collecting Debug Logs](troubleshooting.md#collecting-debug-logs))
+
+For troubleshooting common problems before filing an issue, see [Troubleshooting](troubleshooting.md).
 
 ## Resources
 
 - [Obsidian Plugin API](https://docs.obsidian.md/Reference/TypeScript+API/Plugin)
 - [Obsidian Plugin Developer Docs](https://docs.obsidian.md/Plugins/Getting+started/Build+a+plugin)
 - [Obsidian Plugin Guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines)
-- [TaskNotes Source Code](https://github.com/callumalpass/tasknotes)
+- [TaskNotes Source Code (fork)](https://github.com/cybersader/tasknotes)
+- [TaskNotes Source Code (upstream)](https://github.com/callumalpass/tasknotes)

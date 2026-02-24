@@ -43,7 +43,7 @@ The tracking property (`tnDueDateProp`) tells TaskNotes to read the due date fro
 
 <!-- GIF: Creating a task from a mapped view -- the PropertyPicker shows pre-populated mapped fields -->
 
-![Task creation modal with mapped fields](../assets/screenshot-task-create-modal.png)
+![Task creation modal with mapped fields](docs/assets/per-base-mapping/screenshot-task-create-modal.png)
 
 ## Which Fields Can Be Mapped
 

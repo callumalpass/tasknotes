@@ -36,7 +36,7 @@ Use this page as the operational overview: how tasks are captured, how they are 
 
 <!-- GIF: Opening the task creation modal, filling in title/due/priority, and saving -->
 
-![Task creation modal with fields for title, due date, and priority](../assets/screenshot-task-create-modal.png)
+![Task creation modal with fields for title, due date, and priority](docs/assets/task-management/screenshot-task-create-modal.png)
 
 You can create and edit tasks in a variety of ways. The primary method is through the **Task Creation Modal**, which can be accessed via the "Create new task" command or by clicking on dates or time slots in the calendar views. This modal provides an interface for setting all available task properties, including title, status, priority, and due dates.
 
@@ -123,7 +123,7 @@ Additionally, you can convert any line type in your notes to TaskNotes using the
 
 <!-- GIF: Typing a natural language task description and seeing fields auto-populate -->
 
-![Task creation modal with natural language input](../assets/screenshot-task-create-modal.png)
+![Task creation modal with natural language input](docs/assets/task-management/screenshot-task-create-modal.png)
 
 ## Task Properties
 
@@ -143,7 +143,7 @@ This model avoids creating a separate project database. Any note can become a pr
 
 <!-- GIF: Opening the task edit modal, clicking "Add Project", searching for a project note, and selecting it -->
 
-![Task creation modal with fields for title, due date, and priority](../assets/screenshot-task-create-modal.png)
+![Task creation modal with fields for title, due date, and priority](docs/assets/task-management/screenshot-task-create-modal.png)
 
 Tasks can be assigned to one or more projects through the task creation or editing interface. When creating or editing a task, click the "Add Project" button to open the project selection modal. This modal provides fuzzy search functionality to quickly find and select project notes from your vault.
 
@@ -159,7 +159,7 @@ Projects are stored as wikilinks in the task's frontmatter (e.g., `projects: ["[
 
 <!-- GIF: Kanban board grouped by project -- tasks appearing in multiple project columns, then switching to Task List grouped by project -->
 
-![Kanban board showing tasks organized by status columns](../assets/screenshot-kanban.png)
+![Kanban board showing tasks organized by status columns](docs/assets/task-management/screenshot-kanban.png)
 
 Tasks can be filtered and grouped by their associated projects in all Bases-driven task views. Use the Bases filter editor to add `note.projects` conditions, and configure the grouping menu to organize Task List or Kanban boards by project. Tasks assigned to multiple projects will appear in each relevant project group, providing flexibility in project-based organization.
 
@@ -167,7 +167,7 @@ Tasks can be filtered and grouped by their associated projects in all Bases-driv
 
 <!-- SCREENSHOT: Task card showing the project indicator icon, indicating this task is used as a project with subtasks linked to it -->
 
-![Task list sorted and grouped by status](../assets/screenshot-tasks-list.png)
+![Task list sorted and grouped by status](docs/assets/task-management/screenshot-tasks-list.png)
 
 TaskCards display visual indicators when tasks are used as projects. These indicators help identify which tasks have other tasks linked to them as subtasks, making project hierarchy visible at a glance.
 
@@ -175,7 +175,7 @@ TaskCards display visual indicators when tasks are used as projects. These indic
 
 <!-- GIF: Right-clicking a task that serves as a project, selecting "Create subtask" from the context menu, and seeing the new subtask linked automatically -->
 
-![Task creation modal with fields for title, due date, and priority](../assets/screenshot-task-create-modal.png)
+![Task creation modal with fields for title, due date, and priority](docs/assets/task-management/screenshot-task-create-modal.png)
 
 Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
 
@@ -204,7 +204,7 @@ Whenever a dependency is added, TaskNotes updates the upstream note’s `blockin
 
 <!-- GIF: Opening the task edit modal, clicking “Blocked by”, searching for a task in the fuzzy selector, and adding it as a dependency -->
 
-![Task edit modal showing dependency fields](../assets/screenshot-task-edit-modal.png)
+![Task edit modal showing dependency fields](docs/assets/task-management/screenshot-task-edit-modal.png)
 
 - The task creation and edit modals expose “Blocked by” and “Blocking” buttons that launch a fuzzy task selector. The picker only offers valid tasks, excludes the current note, and prevents duplicate entries.
 - The task context menu provides the same selector, enabling dependency management directly from the Task List, Kanban, and calendar views.
@@ -212,7 +212,7 @@ Whenever a dependency is added, TaskNotes updates the upstream note’s `blockin
 
 <!-- GIF: Clicking the fork icon on a task card to expand inline list of downstream blocked tasks -->
 
-![Task context menu](../assets/feature-task-context-menu.png)
+![Task context menu](docs/assets/task-management/feature-task-context-menu.png)
 
 These controls currently create and manage finish-to-start style blockers. Advanced `reltype` values and `gap` data are preserved in frontmatter, but blocking evaluation is currently based on whether unresolved dependencies exist rather than relationship-type-specific scheduling rules.
 
@@ -234,7 +234,7 @@ TaskNotes supports configurable task folder locations, filename generation patte
 
 These settings let you align task files with existing vault conventions (for example, date-based folders, project-based routing, or template-driven task note scaffolds).
 
-For configuration details, see [Task Defaults](../settings/task-defaults.md).  
+For configuration details, see [Folders & Filenames](../settings/task-defaults.md).  
 For template variables, see [Template Variables Reference](template-variables.md).
 
 ## Recurring Tasks

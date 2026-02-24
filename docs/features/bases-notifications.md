@@ -20,6 +20,9 @@ Show clicking toast → navigates to the view
 CLEANUP: remove notify: true if added to a non-demo base
 -->
 
+> [!warning] Experimental feature
+> View notifications are experimental as of v4.3.50. The core functionality works -- toast alerts, bell badge, snooze, and assignee filtering -- but edge cases remain. Known issues include the watcher sometimes reporting "monitoring 0 bases" on startup and notification sync files not always cleaning up. See [Troubleshooting](../troubleshooting.md#notifications) for workarounds. Feedback welcome on [GitHub Discussions](https://github.com/cybersader/tasknotes/discussions).
+
 View notifications alert you when items match a view's filter. This is separate from [task reminders](reminders.md), which alert you based on a task's due or scheduled date. Notifications are per-view: you enable them on any [Bases](https://help.obsidian.md/bases) view, and TaskNotes watches for matching items in the background.
 
 <!-- SCREENSHOT: Toast notification in bottom-right corner with bell badge -->
@@ -69,11 +72,11 @@ When items match a notification-enabled view, a toast appears in the bottom-righ
 
 <!-- SCREENSHOT: Toast notification expanded showing item breakdown -->
 
-![Notification toast with item count and action buttons](../assets/screenshot-kanban.png)
+![Notification toast with item count and action buttons](docs/assets/bases-notifications/screenshot-kanban.png)
 
 <!-- GIF: Toast appearing with item breakdown, clicking snooze dropdown, selecting a duration -->
 
-![Notification toast with View, Snooze, and Got it buttons](../assets/screenshot-kanban.png)
+![Notification toast with View, Snooze, and Got it buttons](docs/assets/bases-notifications/screenshot-kanban.png)
 
 The toast persists until you dismiss it or snooze it. It does not auto-dismiss (following WCAG 2.2.4 accessibility guidelines for timed content).
 
@@ -83,7 +86,7 @@ Clicking the toast body or the action button opens the Upcoming View, where you 
 
 <!-- SCREENSHOT: Status bar showing bell icon with count badge -->
 
-![Kanban view with status bar notification indicators](../assets/screenshot-kanban.png)
+![Kanban view with status bar notification indicators](docs/assets/bases-notifications/screenshot-kanban.png)
 
 A bell icon appears in the Obsidian status bar. When there are active notification items, it shows a count badge. Click the bell to open the Upcoming View.
 

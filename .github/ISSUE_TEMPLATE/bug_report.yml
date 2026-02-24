@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug or issue with TaskNotes
+description: Report a bug or issue with TaskNotes (fork)
 title: "[Bug]: "
 labels: ["bug"]
 body:
@@ -8,13 +8,116 @@ body:
       value: |
         Thanks for taking the time to report this bug!
 
-        Please fill out the details below. The more info you provide, the faster we can help. 
+        Please fill out the details below. The more info you provide, the faster we can help.
 
   - type: textarea
     id: description
     attributes:
       label: Bug Description
-      description: Please describe the bug and any relevant details.
+      description: What happened? Be as specific as you can.
+      placeholder: "When I click the bulk tasking button on a view with 50+ items, the modal opens but shows a blank list..."
     validations:
       required: true
 
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Open a .base file with many items
+        2. Click "Bulk tasking" in the toolbar
+        3. Switch to Edit tab
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: input
+    id: tasknotes-version
+    attributes:
+      label: TaskNotes Version
+      description: "Find in Settings > Community Plugins > TaskNotes"
+      placeholder: "4.3.50"
+    validations:
+      required: true
+
+  - type: input
+    id: obsidian-version
+    attributes:
+      label: Obsidian Version
+      description: "Find in Settings > About"
+      placeholder: "1.8.9"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - iOS
+        - Android
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: How did you install this fork?
+      options:
+        - BRAT (cybersader/tasknotes)
+        - Manual (downloaded release)
+        - Built from source
+    validations:
+      required: true
+
+  - type: textarea
+    id: debug-logs
+    attributes:
+      label: Debug Logs
+      description: |
+        If possible, enable debug logging and reproduce the issue:
+        1. Settings > TaskNotes > Developer Options (bottom of settings)
+        2. Turn on "Enable debug logging"
+        3. Check "File" to write to debug.log in your vault root
+        4. Reproduce the issue
+        5. Paste the relevant portion of debug.log here
+
+        Remove any sensitive info (file paths, person names) before sharing.
+      render: text
+
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Console Errors (if any)
+      description: "Open the developer console (Ctrl+Shift+I / Cmd+Opt+I), reproduce the issue, and paste any red error messages."
+      render: text
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots or screen recordings to help explain the problem.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have checked the [troubleshooting guide](https://cybersader.github.io/tasknotes/troubleshooting/)
+          required: false
+        - label: I am using the latest version of the fork
+          required: false

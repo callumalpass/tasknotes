@@ -289,6 +289,17 @@ flowchart LR
 
 Supports all Mermaid diagram types: flowcharts, sequence diagrams, class diagrams, state diagrams, Gantt charts, and more. See the [Mermaid documentation](https://mermaid.js.org/intro/) for the full syntax reference.
 
+> [!warning] Line breaks in node labels
+> Use `<br/>` for line breaks inside Mermaid node labels — **not** `\n`. Backslash-n renders as literal `\n` text instead of a line break.
+>
+> ```mermaid
+> %% WRONG — shows literal \n
+> A["Line one\nLine two"]
+>
+> %% CORRECT — renders as two lines
+> B["Line one<br/>Line two"]
+> ```
+
 Theme is auto-detected from the site's light/dark mode toggle.
 
 ---

@@ -22,8 +22,6 @@ When you change a property name in TaskNotes settings, existing notes using the 
 
 <!-- GIF: Changing a property name in settings, seeing the migration prompt with file count, and clicking "Migrate all" -->
 
-![Task properties settings for property management](../assets/screenshot-settings-task-properties.png)
-
 Certain settings changes trigger a migration prompt. When you change one of these settings and press Enter or click away from the field, TaskNotes counts how many files use the old value and shows a confirmation dialog with three options:
 
 | Button | What it does |
@@ -65,7 +63,6 @@ Some migrations are scoped to specific folders. Renaming the creator field only 
 
 <!-- GIF: Opening the migration command from the palette, selecting "Rename property key", setting a scope, and running the migration -->
 
-![Command palette showing TaskNotes commands](../assets/screenshot-command-palette.png)
 
 Open the command palette and run **TaskNotes: Migrate frontmatter properties** for a more flexible migration tool. The migration modal lets you:
 

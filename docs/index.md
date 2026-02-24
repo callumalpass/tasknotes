@@ -38,13 +38,14 @@ Install TaskNotes from **Community Plugins** in Obsidian settings, then enable i
 
 ### 2. Pick a Workflow
 
-People use TaskNotes in different ways depending on how they work. A few examples:
+TaskNotes supports four fundamental [modes of knowledge work](workflows.md), and most people blend them:
 
-- **Track projects.** Create a view per project. See what is overdue, in progress, or blocked at a glance.
-- **Turn notes into tasks.** Writing meeting notes or a project plan? Convert action items into tracked tasks without leaving the note.
-- **Work as a team.** In a shared vault, attribute tasks to people, filter by assignee, and let each person control their own notifications.
+- **[Records & Registers](workflows.md#records--registers).** Maintain a body of knowledge — compliance controls, document libraries, asset inventories — and let views surface what needs attention.
+- **[Capture & Execute](workflows.md#capture--execute).** Quickly capture tasks from meetings, notes, or ideas, then triage and execute from focused views.
+- **[Orchestration](workflows.md#orchestration).** Coordinate projects with subtasks, dependencies, and team assignments across Kanban and Calendar views.
+- **[Rhythm](workflows.md#rhythm).** Build habits and routines with recurring tasks, completion tracking, and review cycles.
 
-These are starting points. TaskNotes is flexible enough to combine approaches or invent your own as your vault grows.
+These are starting points. TaskNotes is flexible enough to combine modes or invent your own workflows as your vault grows. See [Workflows](workflows.md) for detailed guides and examples.
 
 ### 3. Create Your First Task
 
@@ -62,9 +63,7 @@ Views are the main way you interact with tasks. TaskNotes comes with several:
 - **[Upcoming](views/upcoming-view.md)** for a time-grouped overview (Overdue, Today, This Week, and beyond)
 - **[Agenda](views/agenda-view.md)** for short-horizon daily planning
 
-<!-- GIF: Quick tour cycling through 3-4 view types -->
-
-![Kanban board showing tasks organized by status columns](assets/screenshot-kanban.png)
+<!-- GIF: Quick tour cycling through 3-4 view types (use TaskNotes/Demos/ bases from test fixtures) — reuse this GIF on views.md -->
 
 Each view is a `.base` file you can duplicate, customize, or create from scratch. Beyond filtering and display, views can trigger notifications, run bulk operations, and carry per-view property mappings. See [Views](views.md) for the full list and configuration options.
 
@@ -72,11 +71,7 @@ For the full data model, read [Core Concepts](core-concepts.md).
 
 ## Features
 
-<!-- GIF: Task card showing project label, then clicking the subtask chevron to expand child tasks inline -->
-
-![Task list sorted and grouped by status](assets/screenshot-tasks-list.png)
-
-Tasks can link to projects and contain subtasks. Project names appear on task cards and in views, and subtasks are expandable directly from the card -- click the chevron to see child tasks without leaving the current view. These relationships are standard frontmatter links, so they work with Obsidian's graph and backlinks too.
+TaskNotes covers the full task lifecycle -- create tasks from a modal or natural language, organize them in views, set reminders, track time, and collaborate in shared vaults. Here are the highlights.
 
 ### Viewing and Filtering
 

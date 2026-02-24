@@ -194,6 +194,19 @@ export class TaskEditModal extends TaskModal {
 				}
 			}
 
+			// Pre-load core assignee/creator fields from frontmatter so that
+			// fallback PersonGroupPickers (renderFallbackPersonPickers) find
+			// existing values even when these keys aren't registered as user fields.
+			const corePersonKeys = [
+				this.plugin.settings.assigneeFieldName || "assignee",
+				this.plugin.settings.creatorFieldName || "creator",
+			];
+			for (const key of corePersonKeys) {
+				if (key && this.userFields[key] === undefined && frontmatter[key] !== undefined) {
+					this.userFields[key] = frontmatter[key];
+				}
+			}
+
 			// Properties & Anchors section starts empty — user adds via search.
 			// Undiscovered frontmatter properties are preserved as-is on save
 			// (the save pipeline only writes diffs).

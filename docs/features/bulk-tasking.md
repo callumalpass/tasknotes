@@ -5,7 +5,7 @@
 TaskNotes lets you create, convert, and edit tasks in batch from any [Bases](https://help.obsidian.md/bases) view. The bulk tasking modal has three modes -- **Convert**, **Edit**, and **Generate** -- each designed for a different workflow. You can also bulk-task files directly from the file explorer.
 
 > [!info] Roadmap
-> Bulk tasking is under active development. Upcoming work includes modal customization (layout, field visibility, default values per view), improved Edit and Generate{>>add links for edit and generate to related headings here since top of page<<} workflows, and performance optimizations for large views. See the sections below for per-mode status.
+> Bulk tasking is under active development. Upcoming work includes modal customization (layout, field visibility, default values per view), improved [Edit](#edit-mode) and [Generate](#generate-mode) workflows, and performance optimizations for large views. See the sections below for per-mode status.
 
 <!--
 Recording Script — GIF/video demos for this page

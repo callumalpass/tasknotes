@@ -219,7 +219,11 @@ function resolveMarkdownLinks(html, mdPath) {
 function extractTitle(html, fm) {
   if (fm.title) return fm.title;
   const m = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
-  return m ? m[1].replace(/<[^>]+>/g, '') : 'Untitled';
+  if (!m) return 'Untitled';
+  // Strip HTML tags, then decode entities so escHtml() doesn't double-encode
+  return m[1].replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
 
 // Strip the first <h1> — rendered separately in the page header

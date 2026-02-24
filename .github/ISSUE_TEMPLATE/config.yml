@@ -1,8 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Documentation
-    url: https://callumalpass.github.io/tasknotes/
-    about: Check the official TaskNotes documentation for guides and troubleshooting
-  - name: GitHub Discussions
-    url: https://github.com/callumalpass/tasknotes/discussions
-    about: Ask questions, share ideas, or discuss TaskNotes with the community
+  - name: Discussions (questions, ideas, show & tell)
+    url: https://github.com/cybersader/tasknotes/discussions
+    about: Ask questions, share workflows, or discuss ideas that are not bug reports or feature requests
+  - name: Documentation (fork)
+    url: https://cybersader.github.io/tasknotes/
+    about: Check the fork's documentation for guides, troubleshooting, and debug logging instructions
+  - name: Troubleshooting Guide
+    url: https://cybersader.github.io/tasknotes/troubleshooting/
+    about: Common issues and solutions -- check here before filing a bug report
+  - name: Upstream TaskNotes
+    url: https://github.com/callumalpass/tasknotes
+    about: For issues with upstream (non-fork) TaskNotes, report there instead

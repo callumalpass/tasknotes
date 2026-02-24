@@ -106,7 +106,7 @@ Your period selection is saved per device and remembered across sessions. In Lis
 
 <!-- GIF: Clicking "Add task" in the Tomorrow section and seeing the due date pre-filled -->
 
-![Task creation modal with pre-filled due date](../assets/screenshot-task-create-modal.png)
+![Task creation modal with pre-filled due date](docs/assets/upcoming-view/screenshot-task-create-modal.png)
 
 Each time category section has an **Add task** button. Clicking it opens the task creation modal with the due date pre-filled based on which section you clicked. For example, clicking "Add task" in the Tomorrow section sets the due date to tomorrow.
 
@@ -188,4 +188,4 @@ views:
 
 - [Task Management](../features/task-management.md) for task properties that drive the view
 - [Reminders](../features/reminders.md) for per-task date reminders
-- [View Notifications](../features/bases-notifications.md) for the notification system
+- [View Notifications](../features/bases-notifications.md) for the notification system (experimental)

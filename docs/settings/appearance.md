@@ -31,7 +31,22 @@ Time settings define the structure of timeline views: slot duration, earliest vi
 
 ## UI Elements
 
-UI element toggles control auxiliary surfaces such as the tracked-task status bar entry, the project subtasks widget and its placement, expandable subtasks in cards, chevron position, and the alignment of the views/filters button.
+These toggles control auxiliary surfaces and layout options throughout the plugin.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Show tracked tasks in status bar | Off | Displays the currently time-tracked task in the Obsidian status bar. Useful for timer visibility without opening a view. |
+| Relationships widget | On | Shows an inline widget in task notes surfacing subtasks, parent project links, and blocking/blocked-by relationships. |
+| Subtask chevron position | Right | Controls chevron placement for expandable subtasks. Set to Left to match Obsidian's group chevron style. |
+| Saved views button position | Right | Controls where the Saved Views button appears in view headers (Task List, Agenda, Kanban, Calendar). |
+
+> [!info]- Relationships widget details
+> When enabled, the widget appears at the top of task notes and shows:
+> - **Subtasks** linked to this task
+> - **Parent project** links (via the `projects` property)
+> - **Blocking / blocked-by** relationships
+>
+> Disable this if you prefer a clean note body or use a different plugin for relationship tracking.
 
 ## Related Settings
 

@@ -1,9 +1,9 @@
-# Task Defaults
+# Folders & Filenames
 
-This page documents folder management, filename templates, archive settings, and the template system. These settings are found in the **General** tab.
+This page documents folder management, filename templates, archive settings, and the template system.
 
-!!! note "Default Property Values"
-    Default values for task properties (status, priority, dates, etc.) are now configured in the [Task Properties](task-properties.md) tab within each property's card.
+> [!note] Settings split across two tabs
+> **Folder locations** (default tasks folder, archive folder, excluded folders) are in the **General** tab. **Filename format** (title-based, Zettelkasten, custom template, collision behavior) is in the **[Task Properties](task-properties.md)** tab under the Title property card. Default values for other task properties (status, priority, dates, etc.) are also in Task Properties within each property's card.
 
 ## Folder and File Management
 

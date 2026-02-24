@@ -1,6 +1,7 @@
 # Filename Templates
 
 TaskNotes supports custom filename templates for task files. This allows you to define exactly how your task filenames are generated.
+<!-- GIF: Changing template variables in Settings > Task Properties > Title and seeing the live filename preview update -->
 
 ## Quick Start
 

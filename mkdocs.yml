@@ -82,14 +82,11 @@ nav:
     - Modal Fields: settings/modal-fields.md
     - Property Identification: settings/property-identification.md
     - Property Types Reference: settings/property-types-reference.md
-    - Defaults & Templates: settings/defaults.md
-    - Task Defaults: settings/task-defaults.md
+    - Folders & Filenames: settings/task-defaults.md
     - Appearance & UI: settings/appearance.md
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md
-    - Misc Settings: settings/misc-settings.md
     - Integrations: settings/integrations.md
-    - Advanced Settings: settings/advanced-settings.md
   - APIs & Integration:
     - HTTP API: HTTP_API.md
     - NLP API: nlp-api.md

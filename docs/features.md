@@ -11,6 +11,8 @@ Cycle through different view types in the same vault (task list → kanban → c
 Show the features overview page as a visual index
 -->
 
+
+
 TaskNotes includes task organization, time tracking, and calendar integration features.
 
 ## Task Management
@@ -49,9 +51,7 @@ TaskNotes ships with several view types, each suited to a different way of worki
 - **[Upcoming](views/upcoming-view.md)** -- time-grouped overview (Overdue, Today, This Week, Later)
 - **[Agenda](views/agenda-view.md)** -- short-horizon daily planning
 
-<!-- GIF: Cycling through different view types in the same vault -->
 
-![Kanban board with tasks in status columns](assets/screenshot-kanban.png)
 
 See [Views](views.md) for the full list, configuration options, and how to create your own. For details on how Bases integration works, see [Core Concepts](core-concepts.md#bases-integration). For Bases syntax documentation, see the [official Obsidian Bases documentation](https://help.obsidian.md/Bases/Introduction+to+Bases).
 
@@ -67,7 +67,7 @@ See [Inline Task Integration](features/inline-tasks.md) for details.
 
 Time tracking records work sessions per task, and Pomodoro mode supports focused intervals with break handling. Over time, the statistics views help you compare estimated versus actual effort and spot trends in workload distribution.
 
-![Pomodoro timer](assets/feature-pomodoro-timer.png)
+![Pomodoro timer](docs/assets/features/feature-pomodoro-timer.png)
 
 See [Time Management](features/time-management.md) for details.
 
@@ -77,13 +77,15 @@ TaskNotes supports bidirectional OAuth sync with Google Calendar and Microsoft O
 
 For planning workflows, time-blocking and calendar-linked task updates connect backlog management with schedule execution in the same workspace.
 
-![Calendar month view](assets/views-calendar-month.png)
+![Calendar month view](docs/assets/features/views-calendar-month.png)
 
 See [Calendar Integration](features/calendar-integration.md) for details.
 
-## View Notifications
+## View Notifications (experimental)
 
 Enable notifications on any Bases view to get alerted when items match its filter. A toast notification appears with item counts, and a bell badge in the status bar keeps you informed. Notifications are separate from per-task reminders -- they watch view filters, not individual due dates.
+
+> [!warning] This feature is experimental as of v4.3.50. Core functionality works, but edge cases remain. See [known issues](troubleshooting.md#notifications).
 
 See [View Notifications](features/bases-notifications.md) for details.
 

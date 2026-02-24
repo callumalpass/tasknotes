@@ -635,6 +635,7 @@ const TASKS = [
     assignee: 'Engineering Team',
     contexts: ['meeting'],
     recurrence: 'FREQ=WEEKLY;BYDAY=MO',
+    complete_instances: generateCompleteInstances(56, 7, 0.85),
     reminders: [
       { id: 'rem_standup_1', type: 'relative', relatedTo: 'due', offset: 15, unit: 'minutes', direction: 'before', description: '15 min before standup' },
     ],
@@ -720,6 +721,7 @@ const TASKS = [
     assignee: 'All Staff',
     contexts: ['meeting'],
     recurrence: 'FREQ=WEEKLY;BYDAY=FR',
+    complete_instances: generateCompleteInstances(42, 7, 0.9),
   },
 
   // ============================================================
@@ -734,6 +736,7 @@ const TASKS = [
     creator: 'Bob Wilson',
     projects: ['Security Incident Response Plan'],
     recurrence: 'FREQ=MONTHLY;BYMONTHDAY=1',
+    complete_instances: generateCompleteInstances(180, 30, 0.83),
     contexts: ['security', 'compliance'],
     timeEstimate: 180,
     reminders: [
@@ -768,6 +771,7 @@ const TASKS = [
     creator: 'Bob Wilson',
     projects: ['Security Incident Response Plan'],
     recurrence: 'FREQ=MONTHLY;BYMONTHDAY=15',
+    complete_instances: generateCompleteInstances(150, 30, 0.7),
     reminders: [
       { id: 'rem_security_1', type: 'relative', relatedTo: 'due', offset: 3, unit: 'days', direction: 'before', description: '3 days before session' },
       { id: 'rem_security_2', type: 'relative', relatedTo: 'due', offset: 1, unit: 'hours', direction: 'before', description: '1 hour before session' },
@@ -783,6 +787,7 @@ const TASKS = [
     creator: 'Carol Davis',
     projects: ['GDPR Compliance Review'],
     recurrence: 'FREQ=YEARLY;BYMONTH=3,6,9,12;BYMONTHDAY=1',
+    complete_instances: generateCompleteInstances(365, 90, 1.0),
     contexts: ['compliance', 'audit'],
     timeEstimate: 360,
     reminders: [
@@ -797,6 +802,7 @@ const TASKS = [
     scheduled: getDateOffset(1),
     assignee: 'Cybersader',
     recurrence: 'FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR',
+    complete_instances: generateCompleteInstances(30, 1, 0.75),
     contexts: ['meeting', 'daily'],
   },
   {
@@ -806,6 +812,7 @@ const TASKS = [
     due: getDateOffset(14),
     assignee: 'Alice Chen',
     recurrence: 'FREQ=WEEKLY;INTERVAL=2;BYDAY=TH',
+    complete_instances: generateCompleteInstances(84, 14, 0.92),
     contexts: ['meeting', 'one-on-one'],
     reminders: [
       { id: 'rem_1on1_1', type: 'relative', relatedTo: 'due', offset: 1, unit: 'hours', direction: 'before', description: '1 hour before meeting' },
@@ -1067,6 +1074,89 @@ const TASKS = [
       { id: 'rem_seclaunch_1', type: 'relative', relatedTo: 'due', offset: 2, unit: 'days', direction: 'before', description: '2 days before review' },
     ],
   },
+
+  // ============================================================
+  // CAPTURE & EXECUTE — inbox-style tasks (no project, quick capture)
+  // ============================================================
+  {
+    name: 'Reply to vendor email',
+    status: 'pending',
+    priority: 'medium',
+    due: getTodayDate(),
+    contexts: ['email'],
+  },
+  {
+    name: 'Book dentist appointment',
+    status: 'pending',
+    priority: 'low',
+    contexts: ['personal'],
+  },
+  {
+    name: 'Fix broken link on docs site',
+    status: 'pending',
+    priority: 'medium',
+    due: getTodayDate(),
+    assignee: 'Cybersader',
+    contexts: ['documentation'],
+  },
+  {
+    name: 'Order new monitor cable',
+    status: 'pending',
+    priority: 'low',
+    contexts: ['personal', 'office'],
+  },
+  {
+    name: 'Follow up on budget approval',
+    status: 'pending',
+    priority: 'high',
+    due: getTomorrowDate(),
+    contexts: ['finance'],
+  },
+
+  // ============================================================
+  // RHYTHM — habit-style recurring tasks with completion history
+  // ============================================================
+  {
+    name: 'Morning exercise',
+    status: 'pending',
+    priority: 'medium',
+    due: getTodayDate(),
+    scheduled: getTodayDate(),
+    assignee: 'Cybersader',
+    recurrence: 'FREQ=DAILY',
+    complete_instances: generateCompleteInstances(30, 1, 0.73),
+    contexts: ['health', 'habit'],
+  },
+  {
+    name: 'Read for 30 minutes',
+    status: 'pending',
+    priority: 'low',
+    due: getTodayDate(),
+    assignee: 'Cybersader',
+    recurrence: 'FREQ=DAILY',
+    complete_instances: generateCompleteInstances(21, 1, 0.6),
+    contexts: ['learning', 'habit'],
+  },
+  {
+    name: 'Weekly review and planning',
+    status: 'pending',
+    priority: 'high',
+    due: getDateOffset(7),
+    assignee: 'Cybersader',
+    recurrence: 'FREQ=WEEKLY;BYDAY=SU',
+    complete_instances: generateCompleteInstances(56, 7, 0.93),
+    contexts: ['planning', 'review'],
+  },
+  {
+    name: 'Monthly budget review',
+    status: 'pending',
+    priority: 'medium',
+    due: getDateOffset(28),
+    assignee: 'Cybersader',
+    recurrence: 'FREQ=MONTHLY;BYMONTHDAY=1',
+    complete_instances: generateCompleteInstances(180, 30, 0.83),
+    contexts: ['finance', 'review'],
+  },
 ];
 
 // ============================================================
@@ -1099,6 +1189,24 @@ function getDateOffset(days) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
+}
+
+/**
+ * Generate an array of date strings for recurring task completion history.
+ * Simulates a realistic streak with occasional gaps.
+ * @param {number} daysBack - How far back to start
+ * @param {number} intervalDays - Interval between occurrences (1=daily, 7=weekly)
+ * @param {number} completionRate - Fraction of occurrences completed (0.0 to 1.0)
+ * @returns {string[]} Array of YYYY-MM-DD date strings
+ */
+function generateCompleteInstances(daysBack, intervalDays, completionRate = 0.8) {
+  const instances = [];
+  for (let d = daysBack; d >= 1; d -= intervalDays) {
+    if (Math.random() < completionRate) {
+      instances.push(getDateOffset(-d));
+    }
+  }
+  return instances;
 }
 
 function ensureDir(dirPath) {
@@ -1294,6 +1402,14 @@ function generateTaskNote(task) {
 
   // Recurrence
   if (task.recurrence) lines.push(`recurrence: "${task.recurrence}"`);
+
+  // Complete instances (for recurring task streak tracking)
+  if (task.complete_instances) {
+    lines.push(`complete_instances:`);
+    for (const ci of task.complete_instances) {
+      lines.push(`  - "${ci}"`);
+    }
+  }
 
   // Reminders (array of objects)
   if (task.reminders) {
