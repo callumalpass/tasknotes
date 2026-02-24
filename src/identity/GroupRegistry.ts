@@ -99,9 +99,10 @@ export class GroupRegistry {
 			this.groupCache.set(file.path, mapping);
 		}
 
-		// Update settings with discovered groups
+		// Update settings with discovered groups (data-only save to avoid flushing
+		// unrelated in-memory settings changes — see defaultBulkMode revert bug)
 		this.plugin.settings.groupNoteMappings = groups;
-		await this.plugin.saveSettings();
+		await this.plugin.saveSettingsDataOnly();
 
 		return groups;
 	}

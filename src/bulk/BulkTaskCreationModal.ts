@@ -145,9 +145,9 @@ export class BulkTaskCreationModal extends Modal {
 		this.engine = new BulkTaskEngine(plugin);
 		this.convertEngine = new BulkConvertEngine(plugin);
 		this.editEngine = new BulkEditEngine(plugin);
-		const requestedMode = options.openToViewSettings ? "viewSettings" : (plugin.settings.defaultBulkMode || "generate");
+		const requestedMode = options.openToViewSettings ? "viewSettings" : (plugin.settings.defaultBulkMode || "convert");
 		// Fall back from viewSettings if no base file context (e.g., opened from file explorer)
-		this.mode = (requestedMode === "viewSettings" && !baseFilePath) ? "generate" : requestedMode;
+		this.mode = (requestedMode === "viewSettings" && !baseFilePath) ? "convert" : requestedMode;
 	}
 
 	onOpen() {
@@ -242,63 +242,57 @@ export class BulkTaskCreationModal extends Modal {
 
 	/**
 	 * Render mode tabs as a segmented control.
+	 * Inactive tabs show a short label; the active tab expands to the full phrase.
 	 */
 	private renderModeTabs(container: HTMLElement) {
 		const tabsContainer = container.createDiv({ cls: "tn-bulk-modal__mode-tabs" });
 
-		// Generate tab
-		const generateTab = tabsContainer.createEl("button", {
-			cls: `tn-bulk-modal__tab ${this.mode === "generate" ? "tn-bulk-modal__tab--active" : ""}`,
-			text: "Generate new tasks",
-			attr: { "data-mode": "generate" },
-		});
-		generateTab.addEventListener("click", () => {
-			if (this.mode !== "generate") {
-				this.mode = "generate";
-				this.onModeChanged();
-				this.updateTabStyles(tabsContainer);
-			}
-		});
+		const tabDefs: Array<{
+			mode: string;
+			short: string;
+			full: string;
+			experimental?: boolean;
+			icon?: string;
+		}> = [
+			{ mode: "convert", short: "Convert", full: "Convert to tasks" },
+			{ mode: "bulkEdit", short: "Edit", full: "Edit existing tasks", experimental: true },
+			{ mode: "generate", short: "Generate", full: "Generate new tasks", experimental: true },
+		];
 
-		// Convert tab
-		const convertTab = tabsContainer.createEl("button", {
-			cls: `tn-bulk-modal__tab ${this.mode === "convert" ? "tn-bulk-modal__tab--active" : ""}`,
-			text: "Convert to tasks",
-			attr: { "data-mode": "convert" },
-		});
-		convertTab.addEventListener("click", () => {
-			if (this.mode !== "convert") {
-				this.mode = "convert";
-				this.onModeChanged();
-				this.updateTabStyles(tabsContainer);
-			}
-		});
-
-		// Bulk Edit tab
-		const editTab = tabsContainer.createEl("button", {
-			cls: `tn-bulk-modal__tab ${this.mode === "bulkEdit" ? "tn-bulk-modal__tab--active" : ""}`,
-			text: "Edit existing tasks",
-			attr: { "data-mode": "bulkEdit" },
-		});
-		editTab.addEventListener("click", () => {
-			if (this.mode !== "bulkEdit") {
-				this.mode = "bulkEdit";
-				this.onModeChanged();
-				this.updateTabStyles(tabsContainer);
-			}
-		});
-
-		// View Settings tab — only shown when opened from a Bases view (has baseFilePath)
+		// View Settings tab — only shown when opened from a Bases view
 		if (this.baseFilePath) {
-			const settingsTab = tabsContainer.createEl("button", {
-				cls: `tn-bulk-modal__tab ${this.mode === "viewSettings" ? "tn-bulk-modal__tab--active" : ""}`,
-				attr: { "data-mode": "viewSettings" },
+			tabDefs.push({
+				mode: "viewSettings",
+				short: "Defaults",
+				full: "View defaults & settings",
+				icon: "settings",
 			});
-			setIcon(settingsTab.createSpan({ cls: "tn-bulk-modal__tab-icon" }), "settings");
-			settingsTab.appendText("Base view defaults & settings");
-			settingsTab.addEventListener("click", () => {
-				if (this.mode !== "viewSettings") {
-					this.mode = "viewSettings";
+		}
+
+		for (const def of tabDefs) {
+			const isActive = this.mode === def.mode;
+			const tab = tabsContainer.createEl("button", {
+				cls: `tn-bulk-modal__tab ${isActive ? "tn-bulk-modal__tab--active" : ""}`,
+				attr: { "data-mode": def.mode },
+			});
+
+			if (def.icon) {
+				setIcon(tab.createSpan({ cls: "tn-bulk-modal__tab-icon" }), def.icon);
+			}
+
+			tab.createSpan({ cls: "tn-bulk-modal__tab-short", text: def.short });
+			tab.createSpan({ cls: "tn-bulk-modal__tab-full", text: def.full });
+
+			if (def.experimental) {
+				tab.createSpan({
+					text: "EXPERIMENTAL",
+					cls: "tn-bulk-modal__badge--experimental",
+				});
+			}
+
+			tab.addEventListener("click", () => {
+				if (this.mode !== def.mode) {
+					this.mode = def.mode as typeof this.mode;
 					this.onModeChanged();
 					this.updateTabStyles(tabsContainer);
 				}
@@ -2863,6 +2857,26 @@ export class BulkTaskCreationModal extends Modal {
 		this.actionButton.textContent = "Converting...";
 		this.progressBar.addClass("is-visible");
 
+		// Build custom frontmatter, including assignees routed through it
+		let convertCustomFm: Record<string, any> | undefined =
+			Object.keys(this.bulkCustomProperties).length > 0 ? this.getFlatCustomProperties() : undefined;
+
+		if (this.selectedAssignees.length > 0) {
+			const assigneeFieldName = this.plugin.settings.assigneeFieldName || "assignee";
+			const assigneeLinks = this.selectedAssignees.map(p => {
+				const file = this.app.vault.getAbstractFileByPath(p);
+				if (file instanceof TFile) {
+					const linktext = this.app.metadataCache.fileToLinktext(file, "", true);
+					return `[[${linktext}]]`;
+				}
+				return `[[${p.replace(/\.md$/, "")}]]`;
+			});
+			convertCustomFm = {
+				...convertCustomFm,
+				[assigneeFieldName]: assigneeLinks.length === 1 ? assigneeLinks[0] : assigneeLinks,
+			};
+		}
+
 		const options: BulkConvertOptions = {
 			applyDefaults: this.applyDefaults,
 			linkToBase: this.linkToBase && !!this.baseFilePath,
@@ -2872,7 +2886,7 @@ export class BulkTaskCreationModal extends Modal {
 			status: this.bulkStatus || undefined,
 			priority: this.bulkPriority || undefined,
 			reminders: this.bulkReminders.length > 0 ? this.bulkReminders : undefined,
-			customFrontmatter: Object.keys(this.bulkCustomProperties).length > 0 ? this.getFlatCustomProperties() : undefined,
+			customFrontmatter: convertCustomFm,
 			// Per-view field mapping and provenance (ADR-011)
 			viewFieldMapping: this.modalOptions.viewFieldMapping,
 			sourceBaseId: this.modalOptions.sourceBaseId,

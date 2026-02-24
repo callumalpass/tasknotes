@@ -23993,6 +23993,31 @@ select.tasknotes-settings__card-input {
     border-radius: 2px 2px 0 0;
 }
 
+/* Short label shown by default, full label hidden */
+.tn-bulk-modal__tab-full {
+    display: none;
+}
+
+/* When active: show full, hide short */
+.tn-bulk-modal__tab--active .tn-bulk-modal__tab-short {
+    display: none;
+}
+.tn-bulk-modal__tab--active .tn-bulk-modal__tab-full {
+    display: inline;
+}
+
+/* EXPERIMENTAL badge */
+.tn-bulk-modal__badge--experimental {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--text-warning);
+    color: var(--background-primary);
+    font-weight: 700;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
 /* =====================================================================
    SCROLLABLE BODY
    ===================================================================== */

@@ -78,7 +78,7 @@
 
   // ── Code copy buttons ────────────────────────────────────────────
 
-  document.querySelectorAll('.prose pre').forEach(pre => {
+  document.querySelectorAll('.prose pre:not(.mermaid)').forEach(pre => {
     const btn = document.createElement('button');
     btn.className = 'copy-btn';
     btn.setAttribute('aria-label', 'Copy code');

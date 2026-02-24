@@ -267,21 +267,27 @@ export class BulkTaskEngine {
 		}
 
 		// Auto-set creator from device identity (if configured)
+		// Route through customFrontmatter so it survives TaskService's typed field extraction
 		if (this.plugin.userRegistry?.shouldAutoSetCreator()) {
 			const creator = this.plugin.userRegistry.getCreatorValueForNewTask();
 			if (creator) {
 				const creatorField = this.plugin.userRegistry.getCreatorFieldName();
-				(taskData as Record<string, unknown>)[creatorField] = creator;
+				taskData.customFrontmatter = {
+					...taskData.customFrontmatter,
+					[creatorField]: creator,
+				};
 			}
 		}
 
 		// Set assignees if provided
+		// Route through customFrontmatter so it survives TaskService's typed field extraction
 		if (options.assignees && options.assignees.length > 0) {
 			const assigneeFieldName = this.plugin.settings.assigneeFieldName || "assignee";
 			const assigneeLinks = options.assignees.map(path => this.formatAsWikilink(path));
-			// Store as single value if only one, otherwise as array
-			(taskData as Record<string, unknown>)[assigneeFieldName] =
-				assigneeLinks.length === 1 ? assigneeLinks[0] : assigneeLinks;
+			taskData.customFrontmatter = {
+				...taskData.customFrontmatter,
+				[assigneeFieldName]: assigneeLinks.length === 1 ? assigneeLinks[0] : assigneeLinks,
+			};
 		}
 
 		// Pass per-view field mapping and provenance (ADR-011)

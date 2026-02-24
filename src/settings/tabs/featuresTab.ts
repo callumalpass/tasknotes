@@ -1016,14 +1016,15 @@ export function renderFeaturesTab(
 			group.addSetting((setting) =>
 				setting
 					.setName("Default bulk mode")
-					.setDesc("Choose whether the bulk tasking modal defaults to generating new tasks or converting existing notes")
+					.setDesc("Choose which tab the bulk tasking modal opens to by default")
 					.addDropdown((dropdown) =>
 						dropdown
-							.addOption("generate", "Generate new tasks")
-							.addOption("convert", "Convert to tasks")
-							.setValue(plugin.settings.defaultBulkMode || "generate")
+							.addOption("convert", "Convert")
+							.addOption("bulkEdit", "Edit")
+							.addOption("generate", "Generate")
+							.setValue(plugin.settings.defaultBulkMode || "convert")
 							.onChange(async (value) => {
-								plugin.settings.defaultBulkMode = value as "generate" | "convert";
+								plugin.settings.defaultBulkMode = value as "generate" | "convert" | "bulkEdit";
 								save();
 							})
 					)

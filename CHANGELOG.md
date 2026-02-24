@@ -4,6 +4,18 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.48] - 2026-02-24
+
+### Fixed
+- **Toolbar buttons disappearing on toggle**: Fixed race condition where toggling "Show toolbar buttons" off/on on TaskNotes views caused the "New task" button to vanish. Root causes: (1) old view cleanup removing buttons the new view just injected during Bases re-mount, (2) toggle handler using stale DOM references after YAML save. Now uses deferred cleanup with re-claim detection and YAML-based view type identification instead of fragile DOM class checks.
+- **Docs-builder Mermaid diagrams**: Fixed "Syntax error in text" caused by copy-button script appending a `<button>` child to `<pre class="mermaid">` elements, corrupting diagram content. Excluded Mermaid blocks from copy-button injection.
+- **Duplicate toolbar buttons on table views**: Made button injection idempotent — always cleans up existing buttons before inserting new ones to handle Bases DOM reuse.
+
+### Documentation
+- Docs-builder: added Mermaid diagram support (CDN rendering, dark/light theme integration, dedicated CSS).
+- Docs-builder: added callout/admonition rendering with icons for note, tip, warning, caution, and abstract types.
+- New development docs: architecture overview, testing guide, writing-docs guide.
+
 ## [4.3.47] - 2026-02-20
 
 ### Added

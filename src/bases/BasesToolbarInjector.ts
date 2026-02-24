@@ -277,6 +277,11 @@ export class BasesToolbarInjector {
 	 * "Bulk tasking" opens BulkTaskCreationModal for generate/convert operations.
 	 */
 	private injectButtons(toolbarEl: HTMLElement): void {
+		// Idempotent: remove any existing universal buttons first to prevent duplicates.
+		// Bases can re-render toolbars in ways that bypass our dedup checks (partial DOM
+		// reuse, cloned nodes, etc.), so always start clean.
+		this.cleanupUniversalButtonsFrom(toolbarEl);
+
 		const doc = toolbarEl.ownerDocument;
 
 		// Find the native "New" button as insertion anchor
@@ -344,6 +349,50 @@ export class BasesToolbarInjector {
 			"BasesToolbarInjector",
 			"Injected New task + Bulk tasking buttons into toolbar"
 		);
+	}
+
+	/**
+	 * Inject only the "Bulk tasking" button into a toolbar (for TN views where
+	 * "New task" is managed by BasesViewBase and should never be touched).
+	 * Does NOT mark as .tn-universal-injected so the periodic scanner won't
+	 * clean it up on TN views. BasesViewBase's own bulk injection is idempotent
+	 * and will replace this button if it re-runs.
+	 */
+	private injectBulkButtonOnly(toolbarEl: HTMLElement): void {
+		if (!this.plugin.settings.enableBulkActionsButton) return;
+
+		// Remove existing bulk button first (idempotent)
+		toolbarEl.querySelectorAll(".tn-bases-bulk-create-btn").forEach(btn => btn.remove());
+
+		const doc = toolbarEl.ownerDocument;
+		const bulkBtn = doc.createElement("div");
+		bulkBtn.className = "bases-toolbar-item tn-bases-bulk-create-btn";
+		bulkBtn.style.display = "flex"; // Override CSS default display:none
+
+		const bulkInner = doc.createElement("div");
+		bulkInner.className = "text-icon-button";
+		bulkInner.tabIndex = 0;
+
+		const bulkIcon = doc.createElement("span");
+		bulkIcon.className = "text-button-icon";
+		setIcon(bulkIcon, "layers");
+		bulkInner.appendChild(bulkIcon);
+
+		const bulkLabel = doc.createElement("span");
+		bulkLabel.className = "text-button-label";
+		bulkLabel.textContent = "Bulk tasking";
+		bulkInner.appendChild(bulkLabel);
+
+		bulkBtn.appendChild(bulkInner);
+		bulkBtn.addEventListener("click", (e) => this.handleBulkCreation(e));
+
+		// Insert after the "New task" button, or append to end
+		const newTaskBtn = toolbarEl.querySelector(".tn-bases-new-task-btn");
+		if (newTaskBtn) {
+			newTaskBtn.after(bulkBtn);
+		} else {
+			toolbarEl.appendChild(bulkBtn);
+		}
 	}
 
 	/**
@@ -808,6 +857,25 @@ export class BasesToolbarInjector {
 		return matchedLeaf;
 	}
 
+	/**
+	 * Re-query a live toolbar for a given .base file path.
+	 * After YAML saves Bases may destroy/recreate toolbar DOM, so the toolbar
+	 * reference captured at panel-inject time can go stale.  This walks all
+	 * live toolbars and matches by the leaf's file path.
+	 */
+	private findLiveToolbarForBase(baseFilePath: string | undefined): HTMLElement | null {
+		if (!baseFilePath) return null;
+		const toolbars = document.querySelectorAll(".bases-toolbar");
+		for (const tb of toolbars) {
+			const leaf = this.findLeafFromToolbar(tb as HTMLElement);
+			if (leaf) {
+				const file = (leaf.getViewState()?.state?.file as string) ?? "";
+				if (file === baseFilePath) return tb as HTMLElement;
+			}
+		}
+		return null;
+	}
+
 	// ── Configure View Panel Injection ─────────────────────────────
 
 	/**
@@ -985,17 +1053,37 @@ export class BasesToolbarInjector {
 						} else {
 							parsed.views[viewIndex].showTaskNotesUI = false;
 						}
+
+						// Determine TN vs native from YAML view type (deterministic),
+						// NOT from DOM class which depends on unpredictable re-mount timing.
+						const viewType: string = parsed.views[viewIndex].type ?? "";
+						const isTNView = viewType.startsWith("tasknotes");
+
 						await this.plugin.app.vault.modify(baseFile, stringifyYaml(parsed));
-					}
-					if (toolbar) {
-						if (newValue) {
-							if (!toolbar.querySelector(".tn-universal-injected")) {
-								this.injectButtons(toolbar);
+
+						// If Bases re-mounts after the YAML save, the `toolbar` reference
+						// may be stale (detached DOM) — DOM ops become harmless no-ops,
+						// and the new BasesViewBase lifecycle handles injection.
+						// If Bases does NOT re-mount, `toolbar` is still live and we
+						// update it directly.
+						if (toolbar) {
+							if (isTNView) {
+								// TN views: only manage Bulk tasking. "New task" is always
+								// present (managed by BasesViewBase lifecycle).
+								toolbar.querySelectorAll(".tn-bases-bulk-create-btn").forEach(btn => btn.remove());
+								if (newValue) {
+									this.injectBulkButtonOnly(toolbar);
+								}
+							} else {
+								// Native views: manage all buttons
+								toolbar.querySelectorAll(".tn-bases-new-task-btn, .tn-bases-bulk-create-btn").forEach(btn => btn.remove());
+								if (newValue) {
+									this.injectButtons(toolbar);
+								}
 							}
-						} else {
-							this.cleanupUniversalButtonsFrom(toolbar);
 						}
 					}
+
 					this.plugin.debugLog.log(
 						"BasesToolbarInjector",
 						`Toggled showTaskNotesUI ${newValue ? "on" : "off"} for ${baseFilePath} view[${viewIndex}]`

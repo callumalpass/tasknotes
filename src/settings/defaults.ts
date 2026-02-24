@@ -480,7 +480,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
 	enableBulkActionsButton: true, // Show the "Bulk tasking" button in Bases view toolbars
 	enableUniversalBasesButtons: true, // Show TaskNotes buttons on all Bases views (not just TaskNotes view types)
-	defaultBulkMode: "generate" as const, // Default mode for the bulk tasking modal
+	defaultBulkMode: "convert" as const, // Default mode for the bulk tasking modal
 	suppressBulkEditConfirmation: false, // Suppress confirmation dialog for bulk edit operations
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {

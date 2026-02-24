@@ -211,8 +211,21 @@ export abstract class BasesViewBase extends Component {
 	 * Injects the button into the Bases toolbar and hides the default "New" button.
 	 */
 	protected setupNewTaskButton(): void {
-		// Defer to allow Bases to render its toolbar first
-		setTimeout(() => this.injectNewTaskButton(), 100);
+		// Defer to allow Bases to render its toolbar first.
+		// Retry a few times -- after YAML changes Bases may re-mount the toolbar
+		// asynchronously, so it may not exist at the first attempt.
+		let attempts = 0;
+		const tryInject = (): void => {
+			attempts++;
+			const basesViewEl = this.containerEl.closest(".bases-view");
+			const toolbar = basesViewEl?.parentElement?.querySelector(".bases-toolbar");
+			if (toolbar || attempts >= 5) {
+				this.injectNewTaskButton();
+			} else {
+				setTimeout(tryInject, 200);
+			}
+		};
+		setTimeout(tryInject, 100);
 
 		// Register cleanup to remove buttons and class when view is unloaded
 		this.register(() => this.cleanupToolbarButtons());
@@ -221,18 +234,34 @@ export abstract class BasesViewBase extends Component {
 	/**
 	 * Clean up: remove buttons and active class when view unloads.
 	 * This ensures buttons don't persist when switching to non-TaskNotes view types.
+	 *
+	 * Uses a deferred check: when Bases re-mounts (e.g. YAML change), the old view
+	 * unloads while a new TN view may be loading into the SAME toolbar.  If we
+	 * immediately remove buttons the new view just injected, the "New task" button
+	 * disappears.  Instead we remove the active class immediately, defer button
+	 * removal 300ms, and check if a new TN view has reclaimed the toolbar
+	 * (indicated by `tasknotes-view-active` being re-added by the new view).
 	 */
 	private cleanupToolbarButtons(): void {
-		// Remove the active class
-		this.toolbarParentEl?.classList.remove("tasknotes-view-active");
+		const parent = this.toolbarParentEl;
+		this.toolbarParentEl = null; // Release reference immediately
 
-		// Remove the buttons we injected
-		const newTaskBtn = this.toolbarParentEl?.querySelector(".tn-bases-new-task-btn");
-		const bulkBtn = this.toolbarParentEl?.querySelector(".tn-bases-bulk-create-btn");
-		newTaskBtn?.remove();
-		bulkBtn?.remove();
+		if (!parent) return;
 
-		this.toolbarParentEl = null;
+		// Remove active class immediately — if a new TN view mounts it will re-add
+		// it within ~100ms.  This lets the deferred check distinguish "TN→TN remount"
+		// (class re-added) from "TN→Table switch" (class stays gone).
+		parent.classList.remove("tasknotes-view-active");
+
+		// Defer button removal to avoid racing with the new view's injection
+		setTimeout(() => {
+			// If a new TN view has already reclaimed this toolbar, skip cleanup
+			if (parent.classList.contains("tasknotes-view-active")) return;
+
+			// No TN view owns this toolbar any more — safe to remove
+			parent.querySelectorAll(".tn-bases-new-task-btn").forEach(btn => btn.remove());
+			parent.querySelectorAll(".tn-bases-bulk-create-btn").forEach(btn => btn.remove());
+		}, 300);
 	}
 
 	/**
@@ -256,12 +285,11 @@ export abstract class BasesViewBase extends Component {
 
 	/**
 	 * Inject the custom "New Task" button into the Bases toolbar.
+	 * Always injected on TaskNotes-managed views (TaskList, Kanban, etc.)
+	 * regardless of showTaskNotesUI -- this is the primary create action
+	 * and hiding it leaves users with no way to create tasks.
 	 */
 	private async injectNewTaskButton(): Promise<void> {
-		// Check if TaskNotes UI is disabled for this view
-		const showUI = await this.shouldShowUI();
-		if (!showUI) return;
-
 		// Find the Bases view container
 		const basesViewEl = this.containerEl.closest(".bases-view");
 		if (!basesViewEl) {
@@ -289,19 +317,21 @@ export abstract class BasesViewBase extends Component {
 			return;
 		}
 
-		// Remove any universal-injected buttons (BasesToolbarInjector may have placed
-		// them before BasesViewBase took over this toolbar)
+		// Idempotent: remove ALL TaskNotes buttons (universal or ours) before injecting.
+		// Bases can re-render toolbars in ways that bypass dedup checks, so always start clean.
 		toolbarEl.querySelectorAll(".tn-universal-injected").forEach(btn => btn.remove());
-
-		// Check if we already added the button (reuse existing)
-		if (toolbarEl.querySelector(".tn-bases-new-task-btn")) return;
+		toolbarEl.querySelectorAll(".tn-bases-new-task-btn").forEach(btn => btn.remove());
 
 		// Use correct document for pop-out window support
 		const doc = this.containerEl.ownerDocument;
 
-		// Create "New Task" button matching Bases' text-icon-button style
+		// Create "New Task" button matching Bases' text-icon-button style.
+		// Inline display:flex overrides the CSS rule `.tn-bases-new-task-btn { display: none }`
+		// which normally requires `.tasknotes-view-active` on the parent. This ensures the
+		// button is always visible on TN views regardless of parent class state.
 		const newTaskBtn = doc.createElement("div");
 		newTaskBtn.className = "bases-toolbar-item tn-bases-new-task-btn";
+		newTaskBtn.style.display = "flex";
 
 		const innerBtn = doc.createElement("div");
 		innerBtn.className = "text-icon-button";
@@ -343,8 +373,20 @@ export abstract class BasesViewBase extends Component {
 	 * Injects the button into the Bases toolbar.
 	 */
 	protected setupBulkCreationButton(): void {
-		// Defer to allow Bases to render its toolbar first
-		setTimeout(() => this.injectBulkCreationButton(), 150);
+		// Defer to allow Bases to render its toolbar first.
+		// Retry like setupNewTaskButton — toolbar may not exist yet after YAML changes.
+		let attempts = 0;
+		const tryInject = (): void => {
+			attempts++;
+			const basesViewEl = this.containerEl.closest(".bases-view");
+			const toolbar = basesViewEl?.parentElement?.querySelector(".bases-toolbar");
+			if (toolbar || attempts >= 5) {
+				this.injectBulkCreationButton();
+			} else {
+				setTimeout(tryInject, 200);
+			}
+		};
+		setTimeout(tryInject, 150);
 	}
 
 	/**
@@ -374,15 +416,17 @@ export abstract class BasesViewBase extends Component {
 			return;
 		}
 
-		// Check if we already added the button
-		if (toolbarEl.querySelector(".tn-bases-bulk-create-btn")) return;
+		// Idempotent: remove existing bulk button before re-injecting
+		toolbarEl.querySelectorAll(".tn-bases-bulk-create-btn").forEach(btn => btn.remove());
 
 		// Use correct document for pop-out window support
 		const doc = this.containerEl.ownerDocument;
 
-		// Create "Bulk tasking" button matching Bases' text-icon-button style
+		// Create "Bulk tasking" button matching Bases' text-icon-button style.
+		// Inline display:flex to override CSS default `display: none`.
 		const bulkBtn = doc.createElement("div");
 		bulkBtn.className = "bases-toolbar-item tn-bases-bulk-create-btn";
+		bulkBtn.style.display = "flex";
 
 		const innerBtn = doc.createElement("div");
 		innerBtn.className = "text-icon-button";
