@@ -597,13 +597,16 @@ export function renderGeneralTab(
 		(group) => {
 			// Container for the category filters (shown/hidden with toggle)
 			let categoryContainer: HTMLElement | null = null;
+			// Stable anchor element — categories are always inserted after this
+			let categoryAnchor: HTMLElement | null = null;
 
-			const renderCategories = (parentEl: HTMLElement, show: boolean): void => {
+			const renderCategories = (_parentEl: HTMLElement, show: boolean): void => {
 				categoryContainer?.remove();
 				categoryContainer = null;
-				if (!show) return;
+				if (!show || !categoryAnchor) return;
 
-				categoryContainer = parentEl.createDiv({ cls: "tn-debug-categories" });
+				categoryContainer = createDiv({ cls: "tn-debug-categories" });
+				categoryAnchor.after(categoryContainer);
 				const cats: Record<string, boolean> = { ...(plugin.settings.debugLogCategories ?? {}) };
 
 				// "Select all" / "Deselect all" controls
@@ -658,32 +661,60 @@ export function renderGeneralTab(
 				});
 			};
 
-			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
-					name: "Enable debug logging",
-					desc: "When ON, diagnostic logs go to both the developer console (Ctrl+Shift+I) and a debug.log file in your vault root. When OFF, all info/warning logs are silenced — only errors reach the console. Use the category filters below to focus on specific subsystems.",
-					getValue: () => plugin.settings.enableDebugLogging ?? false,
-					setValue: async (value: boolean) => {
-						plugin.settings.enableDebugLogging = value;
-						plugin.debugLog.setEnabled(value);
-						save();
-						new Notice(`Debug logging ${value ? "enabled" : "disabled"}`);
-						// Show/hide category filters
-						renderCategories(setting.settingEl.parentElement!, value);
-					},
-				})
-			);
+			// Expandable details container — revealed by master toggle
+			let detailsContainer: HTMLElement | null = null;
 
-			// Show categories on initial render if logging is already on
-			group.addSetting((setting) => {
-				setting.settingEl.style.display = "none"; // Invisible anchor
-				if (plugin.settings.enableDebugLogging) {
-					renderCategories(setting.settingEl.parentElement!, true);
+			const renderDetails = (parentEl: HTMLElement, show: boolean): void => {
+				// Tear down previous
+				detailsContainer?.remove();
+				detailsContainer = null;
+				categoryContainer?.remove();
+				categoryContainer = null;
+				if (!show) return;
+
+				detailsContainer = createDiv({ cls: "tn-debug-details" });
+				detailsContainer.style.cssText = "padding: 0 0 0 12px; border-left: 2px solid var(--background-modifier-border);";
+
+				// -- Destination checkboxes --
+				const destSetting = new Setting(detailsContainer)
+					.setName("Log output")
+					.setDesc("Choose where diagnostic logs are written.");
+
+				const destRow = destSetting.settingEl.createDiv();
+				destRow.style.cssText = "display: flex; gap: 16px; margin-top: 6px;";
+
+				const makeDestCheckbox = (label: string, checked: boolean, onChange: (v: boolean) => void) => {
+					const lbl = destRow.createEl("label");
+					lbl.style.cssText = "display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: var(--font-ui-small);";
+					const cb = lbl.createEl("input", { type: "checkbox" });
+					cb.checked = checked;
+					lbl.appendText(label);
+					cb.addEventListener("change", () => onChange(cb.checked));
+					return cb;
+				};
+
+				makeDestCheckbox("File (debug.log)", plugin.settings.enableDebugLogging ?? false, (v) => {
+					plugin.settings.enableDebugLogging = v;
+					plugin.debugLog.setEnabled(v);
+					save();
+				});
+
+				makeDestCheckbox("Console (Ctrl+Shift+I)", plugin.settings.debugLogConsoleOutput ?? false, (v) => {
+					plugin.settings.debugLogConsoleOutput = v;
+					plugin.debugLog.consoleOutput = v;
+					save();
+				});
+
+				// -- Category filters --
+				categoryAnchor = destSetting.settingEl;
+				renderCategories(parentEl, true);
+				// Move categories inside the details container
+				if (categoryContainer) {
+					detailsContainer.appendChild(categoryContainer);
 				}
-			});
 
-			group.addSetting((setting) => {
-				setting
+				// -- Clear debug log --
+				new Setting(detailsContainer)
 					.setName("Clear debug log")
 					.setDesc("Clear the contents of the debug.log file")
 					.addButton((button) =>
@@ -694,6 +725,50 @@ export function renderGeneralTab(
 								new Notice("Debug log cleared");
 							})
 					);
+
+				// Insert after the master toggle's anchor
+				categoryAnchor = masterSettingEl;
+				masterSettingEl.after(detailsContainer);
+			};
+
+			// -- Master toggle --
+			let masterSettingEl: HTMLElement;
+			const isAnyLoggingOn = () =>
+				(plugin.settings.enableDebugLogging ?? false) || (plugin.settings.debugLogConsoleOutput ?? false);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Enable debug logging",
+					desc: "Errors always reach the console. Turn on to choose where other diagnostic logs go.",
+					getValue: () => isAnyLoggingOn(),
+					setValue: async (value: boolean) => {
+						if (value) {
+							// Turn on: enable file output by default
+							plugin.settings.enableDebugLogging = true;
+							plugin.settings.debugLogConsoleOutput = true;
+							plugin.debugLog.setEnabled(true);
+							plugin.debugLog.consoleOutput = true;
+						} else {
+							// Turn off: disable both
+							plugin.settings.enableDebugLogging = false;
+							plugin.settings.debugLogConsoleOutput = false;
+							plugin.debugLog.setEnabled(false);
+							plugin.debugLog.consoleOutput = false;
+						}
+						save();
+						renderDetails(setting.settingEl.parentElement!, value);
+					},
+				})
+			);
+
+			// Capture the master toggle element and render details if already on
+			group.addSetting((setting) => {
+				// Use previous sibling as the master setting element
+				masterSettingEl = setting.settingEl.previousElementSibling as HTMLElement;
+				setting.settingEl.style.display = "none";
+				if (isAnyLoggingOn()) {
+					renderDetails(setting.settingEl.parentElement!, true);
+				}
 			});
 		}
 	);

@@ -4,6 +4,11 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.50] - 2026-02-24
+
+### Improved
+- **Debug logging settings UX**: Collapsed all debug options behind a single "Enable debug logging" toggle. When OFF, just one line. When ON, expands to show destination checkboxes (File / Console), category filters, and clear button in an indented panel. Independent file and console toggles — use either or both.
+
 ## [4.3.49] - 2026-02-24
 
 ### Added

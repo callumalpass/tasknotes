@@ -39,6 +39,7 @@ export class DebugLog {
 	private app: App;
 	private logPath = "debug.log";
 	public enabled = false;
+	public consoleOutput = false;
 	private categories: Record<string, boolean> = {};
 	private writeQueue: Promise<void> = Promise.resolve();
 	private onEnabledChange?: (enabled: boolean) => void;
@@ -110,41 +111,45 @@ export class DebugLog {
 	 * @param data - Optional structured data to include
 	 */
 	async log(tag: string, message: string, data?: unknown): Promise<void> {
-		// Only output when enabled (per Obsidian guidelines)
-		if (!this.enabled) return;
-		// Per-category filter
+		// Bail early if neither output is on
+		if (!this.enabled && !this.consoleOutput) return;
+		// Per-category filter applies to both outputs
 		if (!this.isCategoryEnabled(tag)) return;
 
-		// Log to console when debug mode is on (with timestamp for traceability)
 		const timestamp = new Date().toISOString();
-		if (data !== undefined) {
-			console.log(`[${timestamp}] [${tag}] ${message}`, data);
-		} else {
-			console.log(`[${timestamp}] [${tag}] ${message}`);
+		if (this.consoleOutput) {
+			if (data !== undefined) {
+				console.log(`[${timestamp}] [${tag}] ${message}`, data);
+			} else {
+				console.log(`[${timestamp}] [${tag}] ${message}`);
+			}
 		}
 
-		// Queue writes to avoid race conditions
-		this.writeQueue = this.writeQueue.then(() => this.writeToFile(tag, message, data));
-		await this.writeQueue;
+		if (this.enabled) {
+			this.writeQueue = this.writeQueue.then(() => this.writeToFile(tag, message, data));
+			await this.writeQueue;
+		}
 	}
 
 	/**
-	 * Log a warning. Only outputs when debug mode is enabled.
+	 * Log a warning. Only outputs when enabled.
 	 * Per Obsidian plugin guidelines: debug messages should not be shown by default.
 	 */
 	async warn(tag: string, message: string, data?: unknown): Promise<void> {
-		// Only output when enabled (per Obsidian guidelines)
-		if (!this.enabled) return;
-		// Per-category filter
+		if (!this.enabled && !this.consoleOutput) return;
 		if (!this.isCategoryEnabled(tag)) return;
 
 		const timestamp = new Date().toISOString();
-		console.warn(`[${timestamp}] [${tag}] ${message}`, data);
+		if (this.consoleOutput) {
+			console.warn(`[${timestamp}] [${tag}] ${message}`, data);
+		}
 
-		this.writeQueue = this.writeQueue.then(() =>
-			this.writeToFile(tag, `⚠️ WARN: ${message}`, data)
-		);
-		await this.writeQueue;
+		if (this.enabled) {
+			this.writeQueue = this.writeQueue.then(() =>
+				this.writeToFile(tag, `⚠️ WARN: ${message}`, data)
+			);
+			await this.writeQueue;
+		}
 	}
 
 	/**

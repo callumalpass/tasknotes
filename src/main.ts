@@ -433,8 +433,9 @@ export default class TaskNotesPlugin extends Plugin {
 				}
 			}
 		);
-		// Apply per-category filters from settings
+		// Apply per-category filters and console output preference from settings
 		this.debugLog.setCategories(this.settings?.debugLogCategories ?? {});
+		this.debugLog.consoleOutput = this.settings?.debugLogConsoleOutput ?? true;
 
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");

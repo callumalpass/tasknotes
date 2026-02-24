@@ -312,6 +312,8 @@ export interface TaskNotesSettings {
 	vaultWideNotifications: VaultWideNotificationSettings;
 	// Debug logging (persists between restarts)
 	enableDebugLogging: boolean;
+	// Whether debug logs also appear in the developer console (default: true)
+	debugLogConsoleOutput: boolean;
 	// Per-category log filters (empty = all enabled when debug logging is on)
 	debugLogCategories: Record<string, boolean>;
 	// Note UUID settings (for persistent identity across renames)
