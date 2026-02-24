@@ -586,7 +586,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 			return true;
 		} catch (error) {
-			console.warn("[TaskNotes][Bases] Registration attempt failed:", error);
+			plugin.debugLog.warn('BasesRegistration', 'Registration attempt failed:', error);
 			return false;
 		}
 	};
@@ -604,7 +604,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 		}
 	}
 
-	console.warn("[TaskNotes][Bases] Failed to register views after multiple attempts");
+	plugin.debugLog.warn('BasesRegistration', 'Failed to register views after multiple attempts');
 }
 
 /**

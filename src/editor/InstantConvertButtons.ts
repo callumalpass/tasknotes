@@ -44,7 +44,7 @@ class ConvertButtonWidget extends WidgetType {
 				const activeMarkdownView =
 					this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
 				if (!activeMarkdownView) {
-					console.warn("No active markdown view available for task conversion");
+					this.plugin.debugLog.warn("InstantConvert", "No active markdown view available for task conversion");
 					return;
 				}
 				const editor = activeMarkdownView.editor;
@@ -90,17 +90,17 @@ class ConvertButtonWidget extends WidgetType {
 	 */
 	private validateButtonClick(): boolean {
 		if (!this.plugin) {
-			console.warn("Plugin not available for task conversion");
+			console.warn("[InstantConvert] Plugin not available for task conversion");
 			return false;
 		}
 
 		if (!this.plugin.settings.enableInstantTaskConvert) {
-			console.warn("Instant task conversion is disabled");
+			this.plugin.debugLog.warn("InstantConvert", "Instant task conversion is disabled");
 			return false;
 		}
 
 		if (typeof this.lineNumber !== "number" || this.lineNumber < 0) {
-			console.warn("Invalid line number for task conversion:", this.lineNumber);
+			this.plugin.debugLog.warn("InstantConvert", "Invalid line number for task conversion:", this.lineNumber);
 			return false;
 		}
 
@@ -112,14 +112,14 @@ class ConvertButtonWidget extends WidgetType {
 	 */
 	private validateEditorState(editor: unknown): boolean {
 		if (!editor) {
-			console.warn("Editor not available for task conversion");
+			this.plugin.debugLog.warn("InstantConvert", "Editor not available for task conversion");
 			return false;
 		}
 
 		const totalLines = (editor as Editor).lineCount();
 		if (this.lineNumber >= totalLines) {
-			console.warn(
-				`Line number ${this.lineNumber} is out of bounds (total lines: ${totalLines})`
+			this.plugin.debugLog.warn(
+				"InstantConvert", `Line number ${this.lineNumber} is out of bounds (total lines: ${totalLines})`
 			);
 			return false;
 		}
@@ -128,19 +128,19 @@ class ConvertButtonWidget extends WidgetType {
 		try {
 			const currentLine = (editor as Editor).getLine(this.lineNumber);
 			if (!currentLine) {
-				console.warn(`Cannot read line ${this.lineNumber}`);
+				this.plugin.debugLog.warn("InstantConvert", `Cannot read line ${this.lineNumber}`);
 				return false;
 			}
 
 			const taskLineInfo = TasksPluginParser.parseTaskLine(currentLine);
 			if (!taskLineInfo.isTaskLine) {
-				console.warn(`Line ${this.lineNumber} is no longer a task`);
+				this.plugin.debugLog.warn("InstantConvert", `Line ${this.lineNumber} is no longer a task`);
 				return false;
 			}
 
 			return true;
 		} catch (error) {
-			console.warn("Error validating line content:", error);
+			this.plugin.debugLog.warn("InstantConvert", "Error validating line content:", error);
 			return false;
 		}
 	}
@@ -164,7 +164,7 @@ export function createInstantConvertField(plugin: TaskNotesPlugin) {
 
 			// Safety check for transaction state
 			if (!transaction.state) {
-				console.warn("Invalid transaction state in instant convert field update");
+				plugin.debugLog.warn("InstantConvert", "Invalid transaction state in instant convert field update");
 				return Decoration.none;
 			}
 
@@ -196,13 +196,13 @@ function buildConvertButtonDecorations(
 
 	// Validate inputs
 	if (!doc || !plugin) {
-		console.warn("Invalid state or plugin for building convert button decorations");
+		plugin.debugLog.warn("InstantConvert", "Invalid state or plugin for building convert button decorations");
 		return builder.finish();
 	}
 
 	// Safety check for doc.lines
 	if (typeof doc.lines !== "number" || doc.lines < 0) {
-		console.warn("Invalid document lines count:", doc.lines);
+		plugin.debugLog.warn("InstantConvert", "Invalid document lines count:", doc.lines);
 		return builder.finish();
 	}
 

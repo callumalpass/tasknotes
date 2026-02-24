@@ -1573,7 +1573,7 @@ export class TaskCreationModal extends TaskModal {
 					console.debug(`[TaskCreationModal] Applied user field ${userField.displayName} (key: ${userField.key}): ${value}`);
 					console.debug(`[TaskCreationModal] Current this.userFields:`, this.userFields);
 				} else {
-					console.warn(`[TaskCreationModal] No user field definition found for field ID: ${fieldId}`);
+					this.plugin.debugLog.warn('TaskCreationModal', `No user field definition found for field ID: ${fieldId}`);
 				}
 			}
 		} else {

@@ -49,8 +49,8 @@ export function initializeViewPerformance(
 
 		view.viewPerformanceService.registerView(fullConfig, handler);
 	} else {
-		console.warn(
-			`[ViewOptimizations] ViewPerformanceService not available for ${fullConfig.viewId}`
+		view.plugin.debugLog.warn(
+			'ViewOptimizations', `ViewPerformanceService not available for ${fullConfig.viewId}`
 		);
 	}
 }

@@ -124,13 +124,13 @@ export class ICSEventInfoModal extends Modal {
 			.setDesc(this.translate("modals.icsEventInfo.createFromEventDesc"))
 			.addButton((button) => {
 				button.setButtonText("Create Note").onClick(() => {
-					console.log("Create Note clicked");
+					this.plugin.debugLog.log('ICSEventInfo', 'Create Note clicked');
 					this.openCreationModal();
 				});
 			})
 			.addButton((button) => {
 				button.setButtonText("Create Task").onClick(async () => {
-					console.log("Create Task clicked");
+					this.plugin.debugLog.log('ICSEventInfo', 'Create Task clicked');
 					await this.createTaskDirectly();
 				});
 			});
@@ -140,13 +140,13 @@ export class ICSEventInfoModal extends Modal {
 			.setDesc(this.translate("modals.icsEventInfo.linkExistingDesc"))
 			.addButton((button) => {
 				button.setButtonText("Link Note").onClick(() => {
-					console.log("Link Note clicked");
+					this.plugin.debugLog.log('ICSEventInfo', 'Link Note clicked');
 					this.linkExistingNote();
 				});
 			})
 			.addButton((button) => {
 				button.setButtonText("Refresh").onClick(() => {
-					console.log("Refresh clicked");
+					this.plugin.debugLog.log('ICSEventInfo', 'Refresh clicked');
 					this.refreshRelatedNotes();
 				});
 			});
@@ -165,7 +165,7 @@ export class ICSEventInfoModal extends Modal {
 	}
 
 	private openCreationModal(): void {
-		console.log("Opening note creation modal");
+		this.plugin.debugLog.log('ICSEventInfo', 'Opening note creation modal');
 		try {
 			const modal = new ICSNoteCreationModal(this.app, this.plugin, {
 				icsEvent: this.icsEvent,

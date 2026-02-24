@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { Notice, Setting } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import {
 	createSettingGroup,
@@ -10,6 +10,7 @@ import { FolderSuggest } from "../components/FolderSuggest";
 import { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { migrateTag, migratePropertyValue, migratePropertyName } from "../../utils/settingsMigration";
+import { LOG_CATEGORY_GROUPS } from "../../utils/DebugLog";
 
 /**
  * Renders the General tab - foundational settings for task identification and storage
@@ -594,19 +595,92 @@ export function renderGeneralTab(
 			description: "Settings for debugging and development. Enable debug logging to write diagnostics to debug.log in your vault root.",
 		},
 		(group) => {
+			// Container for the category filters (shown/hidden with toggle)
+			let categoryContainer: HTMLElement | null = null;
+
+			const renderCategories = (parentEl: HTMLElement, show: boolean): void => {
+				categoryContainer?.remove();
+				categoryContainer = null;
+				if (!show) return;
+
+				categoryContainer = parentEl.createDiv({ cls: "tn-debug-categories" });
+				const cats: Record<string, boolean> = { ...(plugin.settings.debugLogCategories ?? {}) };
+
+				// "Select all" / "Deselect all" controls
+				const controlRow = categoryContainer.createDiv({ cls: "setting-item" });
+				controlRow.style.cssText = "padding: 4px 0; border: none; display: flex; gap: 8px;";
+				const selectAll = controlRow.createEl("a", { text: "Select all" });
+				selectAll.style.cssText = "cursor: pointer; color: var(--text-accent); font-size: var(--font-ui-small);";
+				const deselectAll = controlRow.createEl("a", { text: "Deselect all" });
+				deselectAll.style.cssText = "cursor: pointer; color: var(--text-accent); font-size: var(--font-ui-small);";
+
+				const allCheckboxes: HTMLInputElement[] = [];
+
+				// Render each group
+				for (const [groupName, tags] of Object.entries(LOG_CATEGORY_GROUPS)) {
+					const groupEl = categoryContainer.createDiv();
+					groupEl.createEl("div", {
+						text: groupName,
+						cls: "setting-item-name",
+					}).style.cssText = "font-size: var(--font-ui-small); font-weight: var(--font-semibold); margin: 8px 0 4px; color: var(--text-muted);";
+
+					const tagGrid = groupEl.createDiv();
+					tagGrid.style.cssText = "display: flex; flex-wrap: wrap; gap: 4px 12px;";
+
+					for (const tag of tags) {
+						const label = tagGrid.createEl("label");
+						label.style.cssText = "display: flex; align-items: center; gap: 4px; font-size: var(--font-ui-small); cursor: pointer;";
+						const cb = label.createEl("input", { type: "checkbox" });
+						cb.checked = cats[tag] !== false;
+						label.appendText(tag);
+						allCheckboxes.push(cb);
+
+						cb.addEventListener("change", () => {
+							if (cb.checked) {
+								delete cats[tag]; // Remove = default enabled
+							} else {
+								cats[tag] = false;
+							}
+							plugin.settings.debugLogCategories = { ...cats };
+							plugin.debugLog.setCategories(plugin.settings.debugLogCategories);
+							save();
+						});
+					}
+				}
+
+				selectAll.addEventListener("click", (e) => {
+					e.preventDefault();
+					allCheckboxes.forEach(cb => { cb.checked = true; cb.dispatchEvent(new Event("change")); });
+				});
+				deselectAll.addEventListener("click", (e) => {
+					e.preventDefault();
+					allCheckboxes.forEach(cb => { cb.checked = false; cb.dispatchEvent(new Event("change")); });
+				});
+			};
+
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
 					name: "Enable debug logging",
-					desc: "Write diagnostic logs to debug.log file. Useful for troubleshooting issues. This setting persists between restarts.",
+					desc: "When ON, diagnostic logs go to both the developer console (Ctrl+Shift+I) and a debug.log file in your vault root. When OFF, all info/warning logs are silenced — only errors reach the console. Use the category filters below to focus on specific subsystems.",
 					getValue: () => plugin.settings.enableDebugLogging ?? false,
 					setValue: async (value: boolean) => {
 						plugin.settings.enableDebugLogging = value;
 						plugin.debugLog.setEnabled(value);
 						save();
 						new Notice(`Debug logging ${value ? "enabled" : "disabled"}`);
+						// Show/hide category filters
+						renderCategories(setting.settingEl.parentElement!, value);
 					},
 				})
 			);
+
+			// Show categories on initial render if logging is already on
+			group.addSetting((setting) => {
+				setting.settingEl.style.display = "none"; // Invisible anchor
+				if (plugin.settings.enableDebugLogging) {
+					renderCategories(setting.settingEl.parentElement!, true);
+				}
+			});
 
 			group.addSetting((setting) => {
 				setting

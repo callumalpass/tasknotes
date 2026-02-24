@@ -206,7 +206,7 @@ export class BasesNotificationModal extends Modal {
 			// Get a completed status from StatusManager
 			const completedStatuses = this.plugin.statusManager.getCompletedStatuses();
 			if (!completedStatuses || completedStatuses.length === 0) {
-				console.warn("[BasesNotificationModal] No completed status found");
+				this.plugin.debugLog.warn('BasesNotificationModal', 'No completed status found');
 				return;
 			}
 

@@ -169,7 +169,7 @@ export class TaskCalendarSyncService {
 	private async saveTaskEventId(taskPath: string, eventId: string): Promise<void> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
 		if (!(file instanceof TFile)) {
-			console.warn(`Cannot save event ID: file not found at ${taskPath}`);
+			this.plugin.debugLog.warn("CalendarSync", `Cannot save event ID: file not found at ${taskPath}`);
 			return;
 		}
 
@@ -185,7 +185,7 @@ export class TaskCalendarSyncService {
 	private async removeTaskEventId(taskPath: string): Promise<void> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
 		if (!(file instanceof TFile)) {
-			console.warn(`Cannot remove event ID: file not found at ${taskPath}`);
+			this.plugin.debugLog.warn("CalendarSync", `Cannot remove event ID: file not found at ${taskPath}`);
 			return;
 		}
 
@@ -436,11 +436,11 @@ export class TaskCalendarSyncService {
 			}
 
 			if (isNaN(eventStartMs)) {
-				console.warn('[TaskCalendarSync] Invalid event start time:', eventStartTime);
+				this.plugin.debugLog.warn("CalendarSync", "Invalid event start time:", eventStartTime);
 				return null;
 			}
 		} catch (error) {
-			console.warn('[TaskCalendarSync] Error parsing event start time:', error);
+			this.plugin.debugLog.warn("CalendarSync", "Error parsing event start time:", error);
 			return null;
 		}
 
@@ -457,7 +457,7 @@ export class TaskCalendarSyncService {
 				if (!reminder.offset) continue;
 				const durationMs = this.parseISO8601Duration(reminder.offset);
 				if (durationMs === null) {
-					console.warn('[TaskCalendarSync] Invalid duration format:', reminder.offset);
+					this.plugin.debugLog.warn("CalendarSync", "Invalid duration format:", reminder.offset);
 					continue;
 				}
 
@@ -469,7 +469,7 @@ export class TaskCalendarSyncService {
 
 				// Skip if reminder is after the event (positive duration without negative sign)
 				if (durationMs > 0) {
-					console.warn('[TaskCalendarSync] Skipping reminder after event:', reminder);
+					this.plugin.debugLog.warn("CalendarSync", "Skipping reminder after event:", reminder);
 					continue;
 				}
 
@@ -487,7 +487,7 @@ export class TaskCalendarSyncService {
 				try {
 					const reminderTimeMs = new Date(reminder.absoluteTime).getTime();
 					if (isNaN(reminderTimeMs)) {
-						console.warn('[TaskCalendarSync] Invalid absolute time:', reminder.absoluteTime);
+						this.plugin.debugLog.warn("CalendarSync", "Invalid absolute time:", reminder.absoluteTime);
 						continue;
 					}
 
@@ -497,7 +497,7 @@ export class TaskCalendarSyncService {
 
 					// Skip if reminder is after the event start
 					if (minutesBefore < 0) {
-						console.warn('[TaskCalendarSync] Skipping absolute reminder after event:', reminder);
+						this.plugin.debugLog.warn("CalendarSync", "Skipping absolute reminder after event:", reminder);
 						continue;
 					}
 
@@ -506,7 +506,7 @@ export class TaskCalendarSyncService {
 					// Include 0-minute reminders (at event time)
 					googleReminders.push({ method: 'popup', minutes: cappedMinutes });
 				} catch (error) {
-					console.warn('[TaskCalendarSync] Error parsing absolute reminder time:', error);
+					this.plugin.debugLog.warn("CalendarSync", "Error parsing absolute reminder time:", error);
 					continue;
 				}
 			}
@@ -683,7 +683,7 @@ export class TaskCalendarSyncService {
 			
 			const eventData = this.taskToCalendarEvent(task, clearRecurrence);
 			if (!eventData) {
-				console.warn("[TaskCalendarSync] Could not convert task to event:", task.path);
+				this.plugin.debugLog.warn("CalendarSync", "Could not convert task to event:", task.path);
 				return;
 			}
 
@@ -1043,7 +1043,7 @@ export class TaskCalendarSyncService {
 						)
 					);
 				} catch (error) {
-					console.warn(`[TaskCalendarSync] Failed to delete event for ${task.path}:`, error);
+					this.plugin.debugLog.warn("CalendarSync", `Failed to delete event for ${task.path}:`, error);
 				}
 			}
 

@@ -10,10 +10,36 @@ import { App, TFile } from "obsidian";
  *
  * The log file (debug.log) can be read by Claude to diagnose issues.
  */
+/**
+ * Known log categories grouped by subsystem.
+ * Used by the settings UI to render grouped checkboxes.
+ */
+export const LOG_CATEGORY_GROUPS: Record<string, string[]> = {
+	"Notifications": [
+		"NotificationService", "BasesQueryWatcher", "NotificationCache",
+		"BaseNotificationSyncService", "VaultWideNotificationService", "ToastNotification",
+	],
+	"Views": [
+		"BasesViewBase", "UpcomingView", "BasesToolbarInjector", "TaskCard",
+	],
+	"Bulk operations": [
+		"BulkConvertEngine", "BulkUpdateEngine", "BulkEditEngine", "BulkRescheduleModal",
+	],
+	"Services": [
+		"TaskService", "CalendarSync", "Pomodoro", "ViewState",
+		"InstantConvert", "BaseIdentityService", "ICSSubscription", "ICSNote",
+	],
+	"Other": [
+		"DateUtils", "BasesHelpers", "DependencyCache", "PerformanceMonitor",
+		"BasesDataAdapter", "BasesFilterConverter", "AutoExport",
+	],
+};
+
 export class DebugLog {
 	private app: App;
 	private logPath = "debug.log";
 	public enabled = false;
+	private categories: Record<string, boolean> = {};
 	private writeQueue: Promise<void> = Promise.resolve();
 	private onEnabledChange?: (enabled: boolean) => void;
 
@@ -24,6 +50,26 @@ export class DebugLog {
 		if (initialEnabled) {
 			console.log("[DebugLog] File logging enabled from settings - writing to debug.log");
 		}
+	}
+
+	/**
+	 * Set per-category filters. Categories set to `false` are suppressed.
+	 * An empty object (default) means all categories are allowed.
+	 */
+	setCategories(cats: Record<string, boolean>): void {
+		this.categories = cats;
+	}
+
+	/**
+	 * Check if a given category tag is allowed to log.
+	 * If no categories are configured, all are allowed (backwards compatible).
+	 * If categories are configured, only those set to `true` (or not present) pass.
+	 */
+	private isCategoryEnabled(tag: string): boolean {
+		// If no categories configured, allow all
+		if (Object.keys(this.categories).length === 0) return true;
+		// Explicitly disabled → suppress
+		return this.categories[tag] !== false;
 	}
 
 	enable(): void {
@@ -66,6 +112,8 @@ export class DebugLog {
 	async log(tag: string, message: string, data?: unknown): Promise<void> {
 		// Only output when enabled (per Obsidian guidelines)
 		if (!this.enabled) return;
+		// Per-category filter
+		if (!this.isCategoryEnabled(tag)) return;
 
 		// Log to console when debug mode is on (with timestamp for traceability)
 		const timestamp = new Date().toISOString();
@@ -87,6 +135,8 @@ export class DebugLog {
 	async warn(tag: string, message: string, data?: unknown): Promise<void> {
 		// Only output when enabled (per Obsidian guidelines)
 		if (!this.enabled) return;
+		// Per-category filter
+		if (!this.isCategoryEnabled(tag)) return;
 
 		const timestamp = new Date().toISOString();
 		console.warn(`[${timestamp}] [${tag}] ${message}`, data);
@@ -137,12 +187,18 @@ export class DebugLog {
 
 			const file = this.app.vault.getAbstractFileByPath(this.logPath);
 			if (file instanceof TFile) {
-				const existing = await this.app.vault.read(file);
-				await this.app.vault.modify(file, existing + logLine);
+				try {
+					const existing = await this.app.vault.read(file);
+					await this.app.vault.modify(file, existing + logLine);
+				} catch {
+					// File reference is stale (deleted on disk but cache not yet updated).
+					// Recreate it.
+					try { await this.app.vault.create(this.logPath, `# TaskNotes Debug Log\nCreated: ${timestamp}\n\n` + logLine); } catch { /* already recreated by a concurrent call */ }
+				}
 			} else {
 				// Create file with header
 				const header = `# TaskNotes Debug Log\nCreated: ${timestamp}\n\n`;
-				await this.app.vault.create(this.logPath, header + logLine);
+				try { await this.app.vault.create(this.logPath, header + logLine); } catch { /* already exists */ }
 			}
 		} catch (err) {
 			// Don't let logging errors break the plugin

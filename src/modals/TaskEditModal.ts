@@ -295,7 +295,7 @@ export class TaskEditModal extends TaskModal {
 		try {
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
 			if (!file || !(file instanceof TFile)) {
-				console.warn("Could not find file for task:", this.task.path);
+				this.plugin.debugLog.warn('TaskEditModal', 'Could not find file for task:', this.task.path);
 				return;
 			}
 
@@ -340,7 +340,7 @@ export class TaskEditModal extends TaskModal {
 				}
 			}
 		} catch (error) {
-			console.warn("Could not refresh task data:", error);
+			this.plugin.debugLog.warn('TaskEditModal', 'Could not refresh task data:', error);
 		}
 	}
 

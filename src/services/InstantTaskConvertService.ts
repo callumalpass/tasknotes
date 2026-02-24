@@ -88,7 +88,7 @@ export class InstantTaskConvertService {
 				);
 
 				// Log failures for debugging
-				console.warn("Batch conversion failures:", result.failures);
+				this.plugin.debugLog.warn('InstantConvert', 'Batch conversion failures:', result.failures);
 			}
 		} catch (error) {
 			console.error("Error during batch task conversion:", error);
@@ -272,8 +272,8 @@ export class InstantTaskConvertService {
 				try {
 					await this.plugin.app.vault.delete(file);
 				} catch (cleanupError) {
-					console.warn(
-						"Failed to clean up created file after replacement failure:",
+					this.plugin.debugLog.warn('InstantConvert',
+						'Failed to clean up created file after replacement failure:',
 						cleanupError
 					);
 				}
@@ -656,7 +656,7 @@ export class InstantTaskConvertService {
 						customFrontmatter[userField.key] = value;
 					}
 				} else {
-					console.warn(`[InstantTaskConvert] No user field definition found for field ID: ${fieldId}`);
+					this.plugin.debugLog.warn('InstantConvert', `No user field definition found for field ID: ${fieldId}`);
 				}
 			}
 		}
@@ -1242,7 +1242,7 @@ export class InstantTaskConvertService {
 				return taskLineInfo.parsedData;
 			}
 		} catch (error) {
-			console.warn("Error parsing task for batch:", error);
+			this.plugin.debugLog.warn('InstantConvert', 'Error parsing task for batch:', error);
 			return null;
 		}
 	}

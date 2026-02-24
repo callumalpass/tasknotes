@@ -4,6 +4,18 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.49] - 2026-02-24
+
+### Added
+- **Granular debug log controls**: New per-category filter checkboxes under Developer Options let you enable/disable logging for specific subsystems (Notifications, Views, Bulk operations, Services, etc.) instead of all-or-nothing.
+- **Clearer debug logging description**: Setting now explains that ON sends logs to both console and debug.log file, while OFF silences everything except errors.
+
+### Changed
+- **Migrated ~170 raw console.log/warn calls to debugLog**: Logs from 41 source files now respect the debug logging toggle and category filters. Console is quiet by default — only errors show unless debug logging is explicitly enabled.
+
+### Fixed
+- **DebugLog ENOENT crash**: Deleting `debug.log` while logging was enabled caused repeated ENOENT errors. Now gracefully recreates the file when the cached reference is stale.
+
 ## [4.3.48] - 2026-02-24
 
 ### Fixed

@@ -95,8 +95,8 @@ export class NotificationService {
 			// Check for system sleep/wake - if gap is significantly larger than interval, handle catch-up
 			if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) {
 				// 1 minute tolerance
-				console.log(
-					"NotificationService: Detected potential system sleep, performing catch-up scan"
+				this.plugin.debugLog.log(
+					"NotificationService", "Detected potential system sleep, performing catch-up scan"
 				);
 				await this.handleSystemWakeUp();
 			}
@@ -114,8 +114,8 @@ export class NotificationService {
 			// Check for system sleep/wake for quick checks too
 			if (timeSinceLastCheck > this.QUICK_CHECK_INTERVAL + 60000) {
 				// 1 minute tolerance
-				console.log(
-					"NotificationService: Detected potential system sleep during quick check"
+				this.plugin.debugLog.log(
+					"NotificationService", "Detected potential system sleep during quick check"
 				);
 				// Don't spam with catch-up, just process current queue
 			}
@@ -182,8 +182,8 @@ export class NotificationService {
 
 		// If person has disabled notifications, skip entirely
 		if (!prefs.notificationEnabled) {
-			console.log(
-				`[NotificationService] Skipping notification for ${personPath} — notificationEnabled: false`
+			this.plugin.debugLog.log(
+				"NotificationService", `Skipping notification for ${personPath} — notificationEnabled: false`
 			);
 			return { notifyAt, skip: true };
 		}
@@ -218,8 +218,8 @@ export class NotificationService {
 		notifyDate.setHours(fromTime.hours, fromTime.minutes, 0, 0);
 
 		if (originalHours !== fromTime.hours || originalMinutes !== fromTime.minutes) {
-			console.log(
-				`[NotificationService] Person timing adjusted: ${originalHours}:${String(originalMinutes).padStart(2, "0")} → ${fromTime.hours}:${String(fromTime.minutes).padStart(2, "0")} for ${personPath}`
+			this.plugin.debugLog.log(
+				"NotificationService", `Person timing adjusted: ${originalHours}:${String(originalMinutes).padStart(2, "0")} → ${fromTime.hours}:${String(fromTime.minutes).padStart(2, "0")} for ${personPath}`
 			);
 		}
 
@@ -260,17 +260,17 @@ export class NotificationService {
 			// Always defer to today's fromTime (it's later today)
 			if (currentMinutes > untilMinutes && currentMinutes < fromMinutes) {
 				d.setHours(fromTime.hours, fromTime.minutes, 0, 0);
-				console.log(`[NotificationService] Deferred to availableFrom (today, night shift) for ${personPath}`);
+				this.plugin.debugLog.log("NotificationService", `Deferred to availableFrom (today, night shift) for ${personPath}`);
 			}
 		} else {
 			// Normal: before from → today's from; after until → tomorrow's from
 			if (currentMinutes < fromMinutes) {
 				d.setHours(fromTime.hours, fromTime.minutes, 0, 0);
-				console.log(`[NotificationService] Deferred to availableFrom (today) for ${personPath}`);
+				this.plugin.debugLog.log("NotificationService", `Deferred to availableFrom (today) for ${personPath}`);
 			} else {
 				d.setDate(d.getDate() + 1);
 				d.setHours(fromTime.hours, fromTime.minutes, 0, 0);
-				console.log(`[NotificationService] Deferred to availableFrom (tomorrow) for ${personPath}`);
+				this.plugin.debugLog.log("NotificationService", `Deferred to availableFrom (tomorrow) for ${personPath}`);
 			}
 		}
 
@@ -407,8 +407,8 @@ export class NotificationService {
 		const hasCustomLT = personPath && this.plugin.personNoteService
 			? this.plugin.personNoteService.hasCustomLeadTimes(personPath)
 			: false;
-		console.log(
-			`[NotificationService] Scan complete: ` +
+		this.plugin.debugLog.log(
+			"NotificationService", `Scan complete: ` +
 			`${tasksScanned} tasks scanned, ` +
 			`${tasksSkippedAssignee} skipped (assignee), ` +
 			`${tasksSkippedDisabled} skipped (disabled), ` +
@@ -486,8 +486,8 @@ export class NotificationService {
 
 			const mode = shouldOverride ? "replacing" : "adding to";
 			if (personLeadTimeReminders.length > 0) {
-				console.log(
-					`[NotificationService] Person lead times for ${personPath}: ` +
+				this.plugin.debugLog.log(
+					"NotificationService", `Person lead times for ${personPath}: ` +
 					`generated ${personLeadTimeReminders.length} reminders (${mode} global lead-time rules)`
 				);
 			}
@@ -554,8 +554,8 @@ export class NotificationService {
 		virtualReminders.push(...personLeadTimeReminders);
 
 		if (virtualReminders.length > 0 || skippedRules.length > 0) {
-			console.log(
-				`[NotificationService] Virtual reminders for ${task.path}: ` +
+			this.plugin.debugLog.log(
+				"NotificationService", `Virtual reminders for ${task.path}: ` +
 				`generated=[${virtualReminders.map((r) => r.sourceRuleId).join(", ")}], ` +
 				`skipped=[${skippedRules.join(", ")}]`
 			);
@@ -649,7 +649,7 @@ export class NotificationService {
 					// Fire once per session — stored in firedReminders map for unified toast display.
 					// Using processedReminders (not sessionFiredReminders) prevents re-firing on each scan.
 					this.processedReminders.add(reminderId);
-					console.log(`[NotificationService] Due-date reminder fired once for ${item.taskPath}`);
+					this.plugin.debugLog.log("NotificationService", `Due-date reminder fired once for ${item.taskPath}`);
 				} else if (semanticType === "overdue" && item.reminder.repeatIntervalHours) {
 					// Overdue: re-queue with next interval
 					this.sessionFiredReminders.add(reminderId);
@@ -659,7 +659,7 @@ export class NotificationService {
 						reminder: item.reminder,
 						notifyAt: item.notifyAt + intervalMs,
 					});
-					console.log(`[NotificationService] Overdue reminder re-queued for ${item.taskPath} in ${item.reminder.repeatIntervalHours}h`);
+					this.plugin.debugLog.log("NotificationService", `Overdue reminder re-queued for ${item.taskPath} in ${item.reminder.repeatIntervalHours}h`);
 				} else {
 					// One-shot (lead-time, start-date, custom): mark as processed
 					this.processedReminders.add(reminderId);
@@ -733,7 +733,7 @@ export class NotificationService {
 				reminderId: item.reminder.id,
 				task,
 			});
-			console.log(`[NotificationService] Fired reminder stored for unified display: ${key}`);
+			this.plugin.debugLog.log("NotificationService", `Fired reminder stored for unified display: ${key}`);
 
 			// Invalidate notification cache so the next bell/toast check picks this up
 			if (this.plugin.notificationCache) {
@@ -883,7 +883,7 @@ export class NotificationService {
 							this.processedReminders.add(`${path}-virtual_${rule.id}`);
 						}
 					}
-					console.log(`[NotificationService] Task completed, cancelled virtual reminders for ${path}`);
+					this.plugin.debugLog.log("NotificationService", `Task completed, cancelled virtual reminders for ${path}`);
 					return;
 				}
 

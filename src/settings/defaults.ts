@@ -534,6 +534,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	vaultWideNotifications: DEFAULT_VAULT_WIDE_NOTIFICATIONS,
 	// Debug logging (off by default)
 	enableDebugLogging: false,
+	debugLogCategories: {},
 	// Note UUID settings (for persistent identity across renames)
 	noteUuidPropertyName: "tnId",
 	noteUuidAutoGenerate: true,

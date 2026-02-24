@@ -643,7 +643,7 @@ export class TaskService {
 				try {
 					await this.webhookNotifier.triggerWebhook("task.created", { task: taskInfo });
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task creation:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task creation:", error);
 				}
 			}
 
@@ -653,7 +653,7 @@ export class TaskService {
 				this.plugin.settings.googleCalendarExport.syncOnTaskCreate
 			) {
 				this.plugin.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {
-					console.warn("Failed to sync task to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync task to Google Calendar:", error);
 				});
 			}
 
@@ -719,7 +719,7 @@ export class TaskService {
 			} else {
 				// Template file not found, log error and return details as-is
 				// eslint-disable-next-line no-console
-				console.warn(`Task body template not found: ${templatePath}`);
+				this.plugin.debugLog.warn("TaskService", `Task body template not found: ${templatePath}`);
 				new Notice(
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
 				);
@@ -1083,7 +1083,7 @@ export class TaskService {
 						});
 					}
 				} catch (error) {
-					console.warn("Failed to trigger webhook for property update:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for property update:", error);
 				}
 			}
 
@@ -1104,7 +1104,7 @@ export class TaskService {
 							);
 
 				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync task update to Google Calendar:", error);
 				});
 			}
 
@@ -1127,8 +1127,8 @@ export class TaskService {
 						}
 					}
 				} catch (error) {
-					console.warn(
-						"Failed to handle auto-archive for status property change:",
+					this.plugin.debugLog.warn(
+						"TaskService", "Failed to handle auto-archive for status property change:",
 						error
 					);
 				}
@@ -1327,7 +1327,7 @@ export class TaskService {
 					});
 				}
 			} catch (error) {
-				console.warn("Failed to trigger webhook for task archive/unarchive:", error);
+				this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task archive/unarchive:", error);
 			}
 		}
 
@@ -1340,14 +1340,14 @@ export class TaskService {
 				this.plugin.taskCalendarSyncService
 					.deleteTaskFromCalendar(updatedTask)
 					.catch((error) => {
-						console.warn("Failed to delete archived task from Google Calendar:", error);
+						this.plugin.debugLog.warn("TaskService", "Failed to delete archived task from Google Calendar:", error);
 					});
 			} else if (!updatedTask.archived) {
 				// Task is being unarchived - sync it back if eligible
 				this.plugin.taskCalendarSyncService
 					.updateTaskInCalendar(updatedTask, task)
 					.catch((error) => {
-						console.warn("Failed to sync unarchived task to Google Calendar:", error);
+						this.plugin.debugLog.warn("TaskService", "Failed to sync unarchived task to Google Calendar:", error);
 					});
 			}
 		}
@@ -1437,7 +1437,7 @@ export class TaskService {
 					session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for time tracking start:", error);
+				this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for time tracking start:", error);
 			}
 		}
 
@@ -1532,7 +1532,7 @@ export class TaskService {
 					session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for time tracking stop:", error);
+				this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for time tracking stop:", error);
 			}
 		}
 
@@ -1863,7 +1863,7 @@ export class TaskService {
 						});
 					}
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task update:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task update:", error);
 				}
 			}
 
@@ -1885,7 +1885,7 @@ export class TaskService {
 							);
 
 				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync task update to Google Calendar:", error);
 				});
 			}
 
@@ -1912,7 +1912,7 @@ export class TaskService {
 						}
 					}
 				} catch (error) {
-					console.warn("Failed to handle auto-archive for status change:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to handle auto-archive for status change:", error);
 				}
 			}
 
@@ -2057,7 +2057,7 @@ export class TaskService {
 					await this.plugin.taskCalendarSyncService
 						.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);
 				} catch (error) {
-					console.warn("Failed to delete task from Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to delete task from Google Calendar:", error);
 				}
 			}
 
@@ -2079,7 +2079,7 @@ export class TaskService {
 				try {
 					await this.webhookNotifier.triggerWebhook("task.deleted", { task });
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task deletion:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task deletion:", error);
 				}
 			}
 		} catch (error) {
@@ -2303,7 +2303,7 @@ export class TaskService {
 			this.plugin.taskCalendarSyncService
 				.updateTaskInCalendar(updatedTask, freshTask)
 				.catch((error) => {
-					console.warn("Failed to sync recurring task update to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync recurring task update to Google Calendar:", error);
 				});
 		}
 
@@ -2455,7 +2455,7 @@ export class TaskService {
 			this.plugin.taskCalendarSyncService
 				.updateTaskInCalendar(updatedTask, freshTask)
 				.catch((error) => {
-					console.warn("Failed to sync recurring task skip to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync recurring task skip to Google Calendar:", error);
 				});
 		}
 

@@ -263,7 +263,7 @@ export class PropertyVisibilityDropdown {
 				}
 			}
 		} catch (error) {
-			console.warn("PropertyVisibilityDropdown: Error loading user properties:", error);
+			this.plugin.debugLog.warn('PropertyVisibility', 'Error loading user properties:', error);
 		}
 	}
 

@@ -208,7 +208,7 @@ export class MiniCalendarView extends BasesViewBase {
 							}
 						}
 					} catch (error) {
-						console.warn("[TaskNotes][MiniCalendarView] Error getting title property:", error);
+						this.plugin.debugLog.warn('MiniCalendarView', 'Error getting title property:', error);
 					}
 				}
 
@@ -230,7 +230,7 @@ export class MiniCalendarView extends BasesViewBase {
 					notes.push(noteEntry);
 				}
 			} catch (error) {
-				console.warn("[TaskNotes][MiniCalendarView] Error indexing note:", error);
+				this.plugin.debugLog.warn('MiniCalendarView', 'Error indexing note:', error);
 			}
 		}
 	}
@@ -271,7 +271,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 			return null;
 		} catch (error) {
-			console.warn("[TaskNotes][MiniCalendarView] Error getting date value:", error);
+			this.plugin.debugLog.warn('MiniCalendarView', 'Error getting date value:', error);
 			return null;
 		}
 	}

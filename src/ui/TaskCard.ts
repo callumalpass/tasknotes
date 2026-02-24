@@ -702,7 +702,7 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 
 		return null;
 	} catch (error) {
-		console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
+		plugin.debugLog.warn("TaskCard", `Error getting property ${propertyId}:`, error);
 		return null;
 	}
 }
@@ -746,7 +746,7 @@ function getFrontmatterValue(taskPath: string, key: string, plugin: TaskNotesPlu
 		const frontmatter = fileMetadata.frontmatter as Record<string, unknown>;
 		return frontmatter[key];
 	} catch (error) {
-		console.warn(`TaskCard: Error accessing frontmatter for ${taskPath}:`, error);
+		plugin.debugLog.warn("TaskCard", `Error accessing frontmatter for ${taskPath}:`, error);
 		return undefined;
 	}
 }
@@ -793,7 +793,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 					const searchTag = context.startsWith("@") ? context.slice(1) : context;
 					const success = await plugin.openTagsPane(`#${searchTag}`);
 					if (!success) {
-						console.log("Could not open search pane, context clicked:", context);
+						plugin.debugLog.log("TaskCard", "Could not open search pane, context clicked:", context);
 					}
 				},
 			};
@@ -825,7 +825,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 						const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
 						const success = await plugin.openTagsPane(`#${searchTag}`);
 						if (!success) {
-							console.log("Could not open search pane, tag clicked:", tag);
+							plugin.debugLog.log("TaskCard", "Could not open search pane, tag clicked:", tag);
 						}
 					},
 				};
@@ -1047,7 +1047,7 @@ function renderPropertyMetadata(
 
 		return element;
 	} catch (error) {
-		console.warn(`TaskCard: Error rendering property ${propertyId}:`, error);
+		plugin.debugLog.warn("TaskCard", `Error rendering property ${propertyId}:`, error);
 		element.textContent = `${propertyId}: (error)`;
 		return element;
 	}
@@ -1222,8 +1222,8 @@ function renderPropertyValue(
 					const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
 					const success = await plugin.openTagsPane(`#${searchTag}`);
 					if (!success) {
-						console.log(
-							"Could not open search pane, generic property tag clicked:",
+						plugin.debugLog.log(
+							"TaskCard", "Could not open search pane, generic property tag clicked:",
 							tag
 						);
 					}
@@ -2511,7 +2511,7 @@ export async function toggleSubtasks(
 				for (const subtask of sortedSubtasks) {
 					// Check for circular reference in the parent chain
 					if (parentChain.includes(subtask.path)) {
-						console.warn("Circular reference detected in task chain:", {
+						plugin.debugLog.warn("TaskCard", "Circular reference detected in task chain:", {
 							subtask: subtask.path,
 							parentChain,
 							cycle: [...parentChain, subtask.path],

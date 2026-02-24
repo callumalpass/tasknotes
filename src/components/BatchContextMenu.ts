@@ -341,7 +341,7 @@ export class BatchContextMenu {
 									await plugin.taskCalendarSyncService
 										.deleteTaskFromCalendarByPath(path, task.googleCalendarEventId);
 								} catch (error) {
-									console.warn("Failed to delete task from Google Calendar:", error);
+									plugin.debugLog.warn('BatchContextMenu', 'Failed to delete task from Google Calendar:', error);
 								}
 							}
 						}

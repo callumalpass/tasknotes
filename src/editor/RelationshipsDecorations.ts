@@ -350,7 +350,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			const targetContainer = view.dom.closest('.markdown-source-view')?.querySelector<HTMLElement>('.cm-sizer');
 
 			if (!targetContainer) {
-				console.warn('[TaskNotes] Could not find .cm-sizer container for relationships widget');
+				this.plugin.debugLog.warn('RelationshipsDecorations', 'Could not find .cm-sizer container for relationships widget');
 				return;
 			}
 
@@ -492,7 +492,7 @@ async function injectReadingModeWidget(
 		// RISK: Relies on Obsidian's internal DOM structure
 		const sizer = containerEl.querySelector<HTMLElement>('.markdown-preview-sizer');
 		if (!sizer) {
-			console.warn('[TaskNotes] Could not find .markdown-preview-sizer for relationships in reading mode');
+			plugin.debugLog.warn('RelationshipsDecorations', 'Could not find .markdown-preview-sizer for relationships in reading mode');
 			return;
 		}
 

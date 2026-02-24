@@ -312,6 +312,8 @@ export interface TaskNotesSettings {
 	vaultWideNotifications: VaultWideNotificationSettings;
 	// Debug logging (persists between restarts)
 	enableDebugLogging: boolean;
+	// Per-category log filters (empty = all enabled when debug logging is on)
+	debugLogCategories: Record<string, boolean>;
 	// Note UUID settings (for persistent identity across renames)
 	noteUuidPropertyName: string; // Empty = feature disabled
 	noteUuidAutoGenerate: boolean;

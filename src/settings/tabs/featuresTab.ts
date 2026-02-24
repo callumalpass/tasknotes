@@ -1334,7 +1334,7 @@ export function sendTestNotification(type: "in-app" | "system" | "both", plugin:
 
 	// Show diagnostic summary
 	if (diagnostics.length > 0) {
-		console.log("[TaskNotes Test Notification]", diagnostics.join(" | "));
+		plugin.debugLog.log('FeaturesTab', 'Test notification diagnostics:', diagnostics.join(" | "));
 	}
 }
 

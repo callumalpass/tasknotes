@@ -243,7 +243,7 @@ export class BasesFilterConverter {
 		);
 
 		if (!field) {
-			console.warn(`User field not found: ${fieldId}`);
+			this.plugin.debugLog.warn('BasesFilterConverter', `User field not found: ${fieldId}`);
 			return "true"; // Default to always true if field not found
 		}
 
@@ -380,7 +380,7 @@ export class BasesFilterConverter {
 				return `${basesProperty} <= ${this.formatNumericValue(value)}`;
 
 			default:
-				console.warn(`Unknown operator: ${operator}`);
+				this.plugin.debugLog.warn('BasesFilterConverter', `Unknown operator: ${operator}`);
 				return "true";
 		}
 	}

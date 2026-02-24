@@ -207,7 +207,7 @@ export class PomodoroService {
 		// Convert to minutes for planned duration
 		const plannedDurationMinutes = durationSeconds / 60;
 
-		console.log("Starting pomodoro with planned duration:", plannedDurationMinutes, "minutes");
+		this.plugin.debugLog.log("Pomodoro", `Starting pomodoro with planned duration: ${plannedDurationMinutes} minutes`);
 
 		const sessionStartTime = getCurrentTimestamp();
 
@@ -264,7 +264,7 @@ export class PomodoroService {
 			try {
 				await this.webhookNotifier.triggerWebhook("pomodoro.started", { session, task });
 			} catch (error) {
-				console.warn("Failed to trigger webhook for pomodoro start:", error);
+				this.plugin.debugLog.warn("Pomodoro", "Failed to trigger webhook for pomodoro start:", error);
 			}
 		}
 
@@ -450,7 +450,7 @@ export class PomodoroService {
 					task,
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for pomodoro interruption:", error);
+				this.plugin.debugLog.warn("Pomodoro", "Failed to trigger webhook for pomodoro interruption:", error);
 			}
 		}
 
@@ -593,7 +593,7 @@ export class PomodoroService {
 				}
 				return task;
 			} catch (error) {
-				console.warn(`Failed to load task for auto-start (${path}):`, error);
+				this.plugin.debugLog.warn("Pomodoro", `Failed to load task for auto-start (${path}):`, error);
 			}
 		}
 
@@ -689,7 +689,7 @@ export class PomodoroService {
 					: undefined;
 				await this.webhookNotifier.triggerWebhook("pomodoro.completed", { session, task });
 			} catch (error) {
-				console.warn("Failed to trigger webhook for pomodoro completion:", error);
+				this.plugin.debugLog.warn("Pomodoro", "Failed to trigger webhook for pomodoro completion:", error);
 			}
 		}
 
@@ -859,7 +859,7 @@ export class PomodoroService {
 			this.state.timeRemaining = Math.max(1, newTimeInSeconds);
 			this.saveState();
 
-			console.log("Adjusted prepared timer to:", this.state.timeRemaining, "seconds");
+			this.plugin.debugLog.log("Pomodoro", `Adjusted prepared timer to: ${this.state.timeRemaining} seconds`);
 
 			// Trigger tick event to update UI
 			this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
@@ -974,7 +974,7 @@ export class PomodoroService {
 
 	async addSessionToHistory(session: PomodoroSession): Promise<void> {
 		if (!session.endTime) {
-			console.warn("Cannot add session to history without end time");
+			this.plugin.debugLog.warn("Pomodoro", "Cannot add session to history without end time");
 			return;
 		}
 
@@ -1122,8 +1122,8 @@ export class PomodoroService {
 						}
 					}
 				} catch (error) {
-					console.warn(
-						`Failed to read pomodoro data from daily note ${file.path}:`,
+					this.plugin.debugLog.warn(
+						"Pomodoro", `Failed to read pomodoro data from daily note ${file.path}:`,
 						error
 					);
 				}

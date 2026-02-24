@@ -79,7 +79,7 @@ export class TaskListView extends BasesViewBase {
 			this.configLoaded = true;
 		} catch (e) {
 			// Use defaults
-			console.warn('[TaskListView] Failed to parse config:', e);
+			this.plugin.debugLog.warn('TaskListView', 'Failed to parse config:', e);
 		}
 	}
 

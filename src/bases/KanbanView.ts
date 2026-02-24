@@ -137,7 +137,7 @@ export class KanbanView extends BasesViewBase {
 			this.configLoaded = true;
 		} catch (e) {
 			// Use defaults
-			console.warn("[KanbanView] Failed to parse config:", e);
+			this.plugin.debugLog.warn('KanbanView', 'Failed to parse config:', e);
 		}
 	}
 

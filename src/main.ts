@@ -433,6 +433,8 @@ export default class TaskNotesPlugin extends Plugin {
 				}
 			}
 		);
+		// Apply per-category filters from settings
+		this.debugLog.setCategories(this.settings?.debugLogCategories ?? {});
 
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");
@@ -785,7 +787,7 @@ export default class TaskNotesPlugin extends Plugin {
 							this.taskCalendarSyncService
 								.deleteTaskFromCalendarByPath(data.path, eventId)
 								.catch((error) => {
-									console.warn("Failed to delete task from Google Calendar on file deletion:", error);
+									this.debugLog.warn('TaskNotes', 'Failed to delete task from Google Calendar on file deletion:', error);
 								});
 						}
 					})
@@ -912,8 +914,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const duration = Date.now() - warmupStartTime;
 			// Only log slow warmup for debugging large vaults
 			if (duration > 2000) {
-				// eslint-disable-next-line no-console
-				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms`);
+				this.debugLog.log('TaskNotes', `Project indexes warmed up in ${duration}ms`);
 			}
 		} catch (error) {
 			console.error("[TaskNotes] Error during project index warmup:", error);
@@ -1217,7 +1218,7 @@ export default class TaskNotesPlugin extends Plugin {
 						new Notice(`Auto-stopped time tracking for: ${updatedTask.title}`);
 					}
 
-					console.log(
+					this.debugLog.log('TaskNotes',
 						`Auto-stopped time tracking for completed task: ${updatedTask.title}`
 					);
 				} catch (error) {
@@ -1257,14 +1258,14 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	private async performEarlyMigrationCheck(): Promise<void> {
 		try {
-			console.log("TaskNotes: Starting early migration check...");
+			this.debugLog.log('TaskNotes', 'Starting early migration check...');
 
 			// Initialize saved views (handles migration if needed)
 			await this.viewStateManager.initializeSavedViews();
 
 			// Perform view state migration if needed (this is silent and fast)
 			if (this.viewStateManager.needsMigration()) {
-				console.log("TaskNotes: Performing view state migration...");
+				this.debugLog.log('TaskNotes', 'Performing view state migration...');
 				await this.viewStateManager.performMigration();
 			}
 
@@ -2467,7 +2468,7 @@ export default class TaskNotesPlugin extends Plugin {
 				created.push(rawPath);
 			}
 		} catch (error) {
-			console.warn("[TaskNotes][Bases] Failed to ensure Bases command files:", error);
+			this.debugLog.warn('TaskNotes', 'Failed to ensure Bases command files:', error);
 		}
 
 		return { created, skipped };
@@ -2489,7 +2490,7 @@ export default class TaskNotesPlugin extends Plugin {
 				const leftLeaf = workspace.getLeftLeaf(false);
 
 				if (!leftLeaf) {
-					console.warn("Could not get left leaf for search pane");
+					this.debugLog.warn('TaskNotes', 'Could not get left leaf for search pane');
 					return false;
 				}
 
@@ -2500,14 +2501,14 @@ export default class TaskNotesPlugin extends Plugin {
 					});
 					searchLeaf = leftLeaf;
 				} catch (error) {
-					console.warn("Failed to create search view:", error);
+					this.debugLog.warn('TaskNotes', 'Failed to create search view:', error);
 					return false;
 				}
 			}
 
 			// Ensure we have a valid search leaf
 			if (!searchLeaf || !searchLeaf.view) {
-				console.warn("No search leaf available");
+				this.debugLog.warn('TaskNotes', 'No search leaf available');
 				return false;
 			}
 
@@ -2530,7 +2531,7 @@ export default class TaskNotesPlugin extends Plugin {
 					searchView.startSearch();
 				}
 			} else {
-				console.warn("[TaskNotes] Could not find method to set search query");
+				this.debugLog.warn('TaskNotes', 'Could not find method to set search query');
 				new Notice("Search pane opened but could not set tag query");
 				return false;
 			}

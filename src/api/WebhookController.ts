@@ -274,7 +274,7 @@ export class WebhookController extends BaseController {
 				// Disable webhook after too many failures
 				if (webhook.failureCount > 10) {
 					webhook.active = false;
-					console.warn(
+					this.plugin.debugLog.warn('WebhookController',
 						`Webhook ${webhook.id} disabled after ${webhook.failureCount} failures`
 					);
 				}
@@ -333,7 +333,7 @@ export class WebhookController extends BaseController {
 		payload: WebhookPayload
 	): Promise<any> {
 		try {
-			console.log(`🔧 Applying transformation: ${transformFile}`);
+			this.plugin.debugLog.log('WebhookController', `Applying transformation: ${transformFile}`);
 
 			if (transformFile.endsWith(".js")) {
 				return await this.applyJSTransformation(transformFile, payload);
@@ -342,8 +342,8 @@ export class WebhookController extends BaseController {
 			}
 
 			// Unknown file type, return original payload
-			console.warn(
-				`⚠️ Unknown transform file type for ${transformFile}, using original payload`
+			this.plugin.debugLog.warn('WebhookController',
+				`Unknown transform file type for ${transformFile}, using original payload`
 			);
 			return payload;
 		} catch (error) {
@@ -357,14 +357,14 @@ export class WebhookController extends BaseController {
 		payload: WebhookPayload
 	): Promise<any> {
 		try {
-			console.log(`📂 Reading transform file: ${transformFile}`);
+			this.plugin.debugLog.log('WebhookController', `Reading transform file: ${transformFile}`);
 
 			// Read transformation file from vault
 			let transformCode: string;
 			try {
 				transformCode = await this.plugin.app.vault.adapter.read(transformFile);
-				console.log(
-					`✅ Transform file loaded successfully (${transformCode.length} characters)`
+				this.plugin.debugLog.log('WebhookController',
+					`Transform file loaded successfully (${transformCode.length} characters)`
 				);
 			} catch (readError: any) {
 				throw new Error(
@@ -381,12 +381,12 @@ export class WebhookController extends BaseController {
 
 			// Check for transform function in the code
 			if (!transformCode.includes("function transform")) {
-				console.warn(
-					`⚠️ Transform file '${transformFile}' may not contain a 'transform' function`
+				this.plugin.debugLog.warn('WebhookController',
+					`Transform file '${transformFile}' may not contain a 'transform' function`
 				);
 			}
 
-			console.log(`🔧 Executing transform function for event: ${payload.event}`);
+			this.plugin.debugLog.log('WebhookController', `Executing transform function for event: ${payload.event}`);
 
 			// Create a safe execution context
 			const transform = new Function(
@@ -403,7 +403,7 @@ export class WebhookController extends BaseController {
 			);
 
 			const result = transform(payload);
-			console.log(`✅ Transform completed successfully for ${transformFile}`);
+			this.plugin.debugLog.log('WebhookController', `Transform completed successfully for ${transformFile}`);
 			return result;
 		} catch (error: any) {
 			console.error(`❌ JS transformation error for '${transformFile}':`, error.message);
@@ -416,14 +416,14 @@ export class WebhookController extends BaseController {
 		payload: WebhookPayload
 	): Promise<any> {
 		try {
-			console.log(`📂 Reading JSON template file: ${transformFile}`);
+			this.plugin.debugLog.log('WebhookController', `Reading JSON template file: ${transformFile}`);
 
 			// Read template file from vault
 			let templateContent: string;
 			try {
 				templateContent = await this.plugin.app.vault.adapter.read(transformFile);
-				console.log(
-					`✅ JSON template file loaded successfully (${templateContent.length} characters)`
+				this.plugin.debugLog.log('WebhookController',
+					`JSON template file loaded successfully (${templateContent.length} characters)`
 				);
 			} catch (readError: any) {
 				throw new Error(
@@ -448,7 +448,7 @@ export class WebhookController extends BaseController {
 				);
 			}
 
-			console.log(`🔧 Applying JSON template for event: ${payload.event}`);
+			this.plugin.debugLog.log('WebhookController', `Applying JSON template for event: ${payload.event}`);
 
 			// Get template for this event or use default
 			const template = templates[payload.event] || templates.default;
@@ -461,7 +461,7 @@ export class WebhookController extends BaseController {
 
 			// Apply template variable substitution
 			const result = this.interpolateTemplate(template, payload);
-			console.log(`✅ JSON template applied successfully for ${transformFile}`);
+			this.plugin.debugLog.log('WebhookController', `JSON template applied successfully for ${transformFile}`);
 			return result;
 		} catch (error: any) {
 			console.error(`❌ JSON transformation error for '${transformFile}':`, error.message);

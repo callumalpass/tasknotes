@@ -465,7 +465,7 @@ export class TaskContextMenu {
 								plugin.taskCalendarSyncService
 									.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
 									.catch((error) => {
-										console.warn("Failed to delete task from Google Calendar:", error);
+										plugin.debugLog.warn('TaskContextMenu', 'Failed to delete task from Google Calendar:', error);
 									});
 							}
 							plugin.app.vault.trash(file, true);

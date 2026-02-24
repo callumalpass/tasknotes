@@ -1035,7 +1035,7 @@ export async function generateCalendarEvents(
 		} catch (error) {
 			// Log error but continue processing other tasks
 			// This prevents a single task with invalid dates from breaking the entire calendar
-			console.warn(`[TaskNotes][Calendar] Error processing task "${task.title}" (${task.path}):`, error);
+			plugin.debugLog.warn('CalendarCore', `Error processing task "${task.title}" (${task.path}):`, error);
 		}
 	}
 

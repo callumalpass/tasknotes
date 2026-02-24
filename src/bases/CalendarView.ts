@@ -406,13 +406,13 @@ export class CalendarView extends BasesViewBase {
 			const maxHours = allowMax24 ? 24 : 23;
 
 			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
 			// Special case: 24:XX is only valid as 24:00
 			if (hours === 24 && minutes !== 0) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
@@ -425,13 +425,13 @@ export class CalendarView extends BasesViewBase {
 			const maxHours = allowMax24 ? 24 : 23;
 
 			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
 			// Special case: 24:XX is only valid as 24:00
 			if (hours === 24 && minutes !== 0) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
@@ -439,7 +439,7 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Invalid format
-		console.warn(`[TaskNotes][CalendarView] Invalid time format: ${value}, using default: ${defaultValue}`);
+		this.plugin.debugLog.warn('CalendarView', `Invalid time format: ${value}, using default: ${defaultValue}`);
 		return defaultValue;
 	}
 
@@ -1046,7 +1046,7 @@ export class CalendarView extends BasesViewBase {
 					},
 				});
 			} catch (error) {
-				console.warn(`[TaskNotes][CalendarView] Error processing property-based entry:`, error);
+				this.plugin.debugLog.warn('CalendarView', 'Error processing property-based entry:', error);
 			}
 		}
 
@@ -1195,7 +1195,7 @@ export class CalendarView extends BasesViewBase {
 		this.expectImmediateUpdate();
 
 		if (!info?.event?.extendedProps) {
-			console.warn("[TaskNotes][CalendarView] Event dropped without extendedProps");
+			this.plugin.debugLog.warn('CalendarView', 'Event dropped without extendedProps');
 			return;
 		}
 
@@ -1458,7 +1458,7 @@ export class CalendarView extends BasesViewBase {
 		this.expectImmediateUpdate();
 
 		if (!info?.event?.extendedProps) {
-			console.warn("[TaskNotes][CalendarView] Event resized without extendedProps");
+			this.plugin.debugLog.warn('CalendarView', 'Event resized without extendedProps');
 			return;
 		}
 

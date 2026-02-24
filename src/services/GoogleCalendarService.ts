@@ -96,8 +96,8 @@ export class GoogleCalendarService extends CalendarProvider {
 				const jitter = Math.random() * 0.3 * backoffMs; // 0-30% jitter
 				const delay = Math.min(backoffMs + jitter, MAX_BACKOFF_MS);
 
-				console.warn(
-					`[GoogleCalendar] ${context} failed (${error.status}), ` +
+				this.plugin.debugLog.warn('GoogleCalendar',
+					`${context} failed (${error.status}), ` +
 					`retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})`
 				);
 
@@ -483,7 +483,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// If it's an auth error, show notice to reconnect
 			if (error.message && error.message.includes("401")) {
-				console.warn("[GoogleCalendar] Authentication expired - caller should handle re-authentication");
+				this.plugin.debugLog.warn('GoogleCalendar', 'Authentication expired - caller should handle re-authentication');
 			}
 		}
 	}
