@@ -6,24 +6,20 @@ This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other e
 
 ## [4.3.55] - 2026-02-25
 
-### Fixed
-- **Edit Task modal shows field overrides on open**: Tasks with per-task field mappings (e.g., `tnDueDateProp: convert_test`) now auto-populate the Remap Properties section when the Edit Task modal opens, instead of requiring manual re-add via search.
-- **Bulk generation writes field override tracking properties**: When mapping a custom property to a core field (e.g., `convert_test` to Due date) in the bulk generate modal, the tracking property (`tnDueDateProp`) is now correctly written to generated task files.
-- **Duplicate "Bulk tasking" button**: Toggling "Show toolbar buttons" in Bases view configure panel no longer creates duplicate buttons.
-
-### Added
-- **PropertyPicker conversion progress bar**: Type conversion now shows a live progress bar inside the confirmation modal instead of closing immediately.
-
-### Removed
-- **Stale test-fixtures folder**: Removed static fixture files from the repo — the test fixtures plugin generates these dynamically now.
-
-## [4.3.54] - 2026-02-25
-
 ### Added
 - **Upcoming View: group by scheduled date**: New "Group by date" dropdown in the Upcoming View's Configure panel lets you switch between grouping by due date (default) or scheduled date. Tasks are categorized into the same time buckets (Overdue, Today, Tomorrow, etc.) based on whichever date field you choose.
 - **Reschedule targets active date field**: When grouping by scheduled date, single-task reschedule and bulk reschedule both modify the scheduled date instead of the due date.
 - **Row 2 shows the "other" date**: Cards display the non-grouping date on the second row (e.g., when grouping by scheduled, the due date appears with a calendar icon, and vice versa).
 - **Add task pre-populates correct field**: The "+" button in each time category pre-fills the scheduled or due date based on the active grouping mode.
+- **PropertyPicker conversion progress bar**: Type conversion now shows a live progress bar inside the confirmation modal instead of closing immediately.
+
+### Fixed
+- **Edit Task modal shows field overrides on open**: Tasks with per-task field mappings (e.g., `tnDueDateProp: convert_test`) now auto-populate the Remap Properties section when the Edit Task modal opens, instead of requiring manual re-add via search.
+- **Bulk generation writes field override tracking properties**: When mapping a custom property to a core field (e.g., `convert_test` to Due date) in the bulk generate modal, the tracking property (`tnDueDateProp`) is now correctly written to generated task files.
+- **Duplicate "Bulk tasking" button**: Toggling "Show toolbar buttons" in Bases view configure panel no longer creates duplicate buttons.
+
+### Removed
+- **Stale test-fixtures folder**: Removed static fixture files from the repo — the test fixtures plugin generates these dynamically now.
 
 ## [4.3.53] - 2026-02-25
 
