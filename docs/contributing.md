@@ -22,7 +22,7 @@ bun run build      # Production build (type-check + minify)
 
 <!-- GIF: Running bun run dev, editing a source file, and seeing Hot Reload pick up the change in Obsidian -->
 
-![Task list view showing the development vault with test data](docs/assets/contributing/screenshot-tasks-list.png)
+![Task list view showing the development vault with test data](assets/contributing/screenshot-tasks-list.png)
 
 ### Dev Vault
 

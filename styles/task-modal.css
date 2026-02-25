@@ -750,10 +750,15 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     order: 4;
 }
 
+/* Remap properties section - after form fields (creator, assignee, etc.) */
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .discovered-properties-container {
+    order: 5;
+}
+
 /* Additional sections (completions calendar, metadata) - last */
 .tasknotes-plugin.minimalist-task-modal .modal-split-left .completions-calendar-container,
 .tasknotes-plugin.minimalist-task-modal .modal-split-left .metadata-container {
-    order: 5;
+    order: 6;
 }
 
 /* Hide empty right column indicator on narrow screens */
@@ -815,6 +820,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .nl-markdown-editor,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .action-bar,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .details-container,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .discovered-properties-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .completions-calendar-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .metadata-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {

@@ -341,7 +341,7 @@ See [Task Properties settings](task-properties.md) for configuration details.
 
 ---
 
-## Custom User Fields
+## Custom Properties
 
 You can define additional properties with these types:
 
@@ -351,4 +351,4 @@ You can define additional properties with these types:
 - **boolean** - true/false
 - **list** - Array of values
 
-See [Custom User Fields](task-properties.md#custom-user-fields) for configuration details.
+See [Custom Properties](task-properties.md#custom-properties) for configuration details.

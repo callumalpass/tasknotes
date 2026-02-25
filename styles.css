@@ -8431,10 +8431,15 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     order: 4;
 }
 
+/* Remap properties section - after form fields (creator, assignee, etc.) */
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .discovered-properties-container {
+    order: 5;
+}
+
 /* Additional sections (completions calendar, metadata) - last */
 .tasknotes-plugin.minimalist-task-modal .modal-split-left .completions-calendar-container,
 .tasknotes-plugin.minimalist-task-modal .modal-split-left .metadata-container {
-    order: 5;
+    order: 6;
 }
 
 /* Hide empty right column indicator on narrow screens */
@@ -8496,6 +8501,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .nl-markdown-editor,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .action-bar,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .details-container,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .discovered-properties-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .completions-calendar-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .metadata-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
@@ -18133,12 +18139,11 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 /* Tab Navigation Container */
 .tasknotes-plugin .settings-view__tab-nav {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--tn-spacing-xs);
     margin-bottom: var(--tn-spacing-lg);
     border-bottom: 1px solid var(--tn-border-color);
     padding-bottom: var(--tn-spacing-sm);
-    overflow-x: auto;
-    white-space: nowrap;
 }
 
 .tasknotes-plugin .settings-view__tab-button {
@@ -23878,6 +23883,17 @@ select.tasknotes-settings__card-input {
     opacity: 0.8;
 }
 
+/* ================================================
+   COLLAPSIBLE SECTION TOGGLE
+   Used by task modals to collapse/expand the property picker section
+   ================================================ */
+
+/* Show/hide toggle for the property picker section.
+   The list-plus action bar icon or header click toggles this. */
+.tn-pp-section-hidden {
+    display: none !important;
+}
+
 
 /* ===== BULK-MODAL.CSS ===== */
 /* =====================================================================
@@ -24614,6 +24630,21 @@ select.tasknotes-settings__card-input {
     gap: var(--size-4-3);
 }
 
+/* Remove section margin-bottom inside view-settings — flex gap handles spacing */
+.tn-bulk-modal__view-settings > .tn-bulk-modal__section {
+    margin-bottom: 0;
+}
+
+/* Tighten property picker panel inside view settings */
+.tn-bulk-modal__view-settings .tn-bulk-modal__custom-props-panel {
+    padding: 0;
+    margin-bottom: var(--size-4-1);
+}
+
+.tn-bulk-modal__view-settings .tn-bulk-modal__custom-props-active {
+    margin-bottom: 0;
+}
+
 /* Tab icon (gear) inline with tab text */
 .tn-bulk-modal__tab-icon {
     display: inline-flex;
@@ -24755,6 +24786,73 @@ select.tasknotes-settings__card-input {
 .tn-configure-panel-settings-arrow svg {
     width: 16px;
     height: 16px;
+}
+
+/* =====================================================================
+   ACTION BAR POPOVERS (Assignees, Remap Properties)
+   Floating panels anchored to action bar icons.
+   ===================================================================== */
+
+.tn-bulk-popover {
+    position: fixed;
+    z-index: 10000;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-s);
+    padding: var(--size-4-3);
+    min-width: 280px;
+    max-width: 500px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.tn-bulk-popover__header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-2);
+    padding-bottom: var(--size-4-2);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tn-bulk-popover__title {
+    font-size: var(--font-ui-small);
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+.tn-bulk-popover__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 0;
+}
+
+.tn-bulk-popover__close:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.tn-bulk-popover__close svg {
+    width: 14px;
+    height: 14px;
+}
+
+.tn-bulk-popover__spacer {
+    flex: 1;
+}
+
+/* Ensure Obsidian tooltips render above the popover */
+.tooltip {
+    z-index: 10001 !important;
 }
 
 

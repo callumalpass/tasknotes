@@ -91,11 +91,11 @@ TaskNotes uses several property types:
 
 ### Field Mapping
 
-Property keys are configurable. If your vault uses `deadline` instead of `due`, you can map TaskNotes to use your existing field names without modifying your files. Configure global mappings in [Settings > Task Properties](settings/task-properties.md), or set per-view mappings with [Per-View Property Mapping](features/per-base-mapping.md).
+Property keys are configurable. If your vault uses `deadline` instead of `due`, you can map TaskNotes to use your existing field names without modifying your files. Configure global mappings in [Settings > Task Properties](settings/task-properties.md), or set per-task and per-view mappings with [Property Mapping](features/property-mapping.md).
 
 ### Custom Properties
 
-Add any frontmatter property to your tasks. TaskNotes discovers them automatically via the [Custom Properties](features/custom-properties.md) system. For fields you want to always appear in modals, register them as [User Fields](features/user-fields.md). User-defined fields work in filtering, sorting, and templates.
+Add any frontmatter property to your tasks. Register them as [Custom Properties](features/custom-properties.md) so they always appear in modals with autocomplete, defaults, NLP recognition, and Bases integration. Custom properties work in filtering, sorting, and templates.
 
 ## Views
 
@@ -128,7 +128,7 @@ Views are not just for looking at tasks. They can drive actions too.
 
 - **[Notifications](features/notifications.md) (experimental).** Enable notifications on any view to get alerted when items match your filter. Useful for tracking overdue tasks, blocked items, or any condition you define. This is separate from [task reminders](features/reminders.md), which alert you based on a task's due date.
 - **[Bulk operations](features/bulk-tasking.md).** The toolbar on any view lets you generate new task files or convert existing notes into tasks, using the items the view currently shows. Useful when a project plan or document library produces work items you want to track individually.
-- **[Property mapping](features/per-base-mapping.md).** Each view can use different property names for the same concept. One view might use `deadline` while another uses `review_date`. You configure this per view so that tasks created from a view inherit the right field names automatically.
+- **[Property mapping](features/property-mapping.md).** Each view can use different property names for the same concept. One view might use `deadline` while another uses `review_date`. You configure this per view so that tasks created from a view inherit the right field names automatically.
 - **Creation defaults.** Set default values for new tasks created from a specific view, so they inherit the right status, tags, or project without manual entry.
 
 ### Other Views
@@ -144,7 +144,7 @@ If you work in a shared vault, TaskNotes can attribute tasks to people and filte
 | Managing individual tasks | [Task Management](features/task-management.md) | Create, edit, complete, and recur tasks |
 | Inline capture | [Inline Tasks](features/inline-tasks.md) | Convert lines and checkboxes into task files without leaving your note |
 | Bulk workflows | [Bulk Tasking](features/bulk-tasking.md) | Generate or convert tasks in batch from any view |
-| Property systems | [Custom Properties](features/custom-properties.md) | Discover and use ad-hoc frontmatter fields |
+| Property systems | [Custom Properties](features/custom-properties.md) | Register custom frontmatter fields with full plugin integration |
 | Reminders & notifications | [Reminders](features/reminders.md), [Notifications](features/notifications.md) (experimental) | Date-based alerts vs. view-based alerts |
 | Shared vaults | [Team & Attribution](features/shared-vault.md) | Device identity, person/group notes, filtered notifications |
 | Filename control | [Filename Templates](filename-templates.md) | Zettel IDs, date prefixes, collision handling |

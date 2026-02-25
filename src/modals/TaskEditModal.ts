@@ -76,6 +76,7 @@ export class TaskEditModal extends TaskModal {
 	private initialTags = "";
 	private isShowingConfirmation = false;
 	private pendingClose = false;
+	private propertyPickerSectionContainer: HTMLElement | null = null;
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
 		super(app, plugin);
@@ -207,7 +208,7 @@ export class TaskEditModal extends TaskModal {
 				}
 			}
 
-			// Properties & Anchors section starts empty — user adds via search.
+			// Remap properties section starts empty — user adds via search.
 			// Undiscovered frontmatter properties are preserved as-is on save
 			// (the save pipeline only writes diffs).
 
@@ -537,13 +538,20 @@ export class TaskEditModal extends TaskModal {
 			container.appendChild(sectionContainer);
 		}
 
-		// Section label matching the bulk modal's "CUSTOM PROPERTIES" heading
+		// Section label
 		const propLabelRow = sectionContainer.createDiv({ cls: "detail-label-section" });
-		propLabelRow.createSpan({ text: "Properties & anchors" });
+		propLabelRow.createSpan({ text: "Remap properties" });
 
 		const propHelp = propLabelRow.createSpan({ cls: "task-edit-modal__help" });
 		setIcon(propHelp, "help-circle");
-		setTooltip(propHelp, "Add extra frontmatter to this task, or use \u2018Map to\u2019 to assign custom properties to standard task fields (e.g., Due date, Assignee). Search existing properties or create new ones. Use scope chips to filter by source.");
+		setTooltip(propHelp, "Add extra frontmatter to this task, or use \u2018Map to\u2019 to assign custom properties to standard task fields (e.g., Due date, Assignee). Search existing properties or create new ones. Use scope chips to filter by source.", { placement: "top" });
+
+		this.propertyPickerSectionContainer = sectionContainer;
+
+		// Hide section by default if setting is enabled
+		if (this.plugin.settings.propertyPickerCollapsed) {
+			sectionContainer.classList.add("tn-pp-section-hidden");
+		}
 
 		// PropertyPicker for adding more (above the fields list, matching bulk modal layout)
 		const pickerContainer = sectionContainer.createDiv("discovered-properties-picker");
@@ -921,7 +929,7 @@ export class TaskEditModal extends TaskModal {
 			if (!hasValue) span.style.color = "var(--text-faint)";
 
 			display.addEventListener("click", () => {
-				this.scrollToAssigneePickerFromProp();
+				this.scrollToAssigneePicker();
 			});
 		} else {
 			// Fallback for other mapped types: regular input
@@ -966,7 +974,7 @@ export class TaskEditModal extends TaskModal {
 	 * Scroll to and highlight the assignee PersonGroupPicker.
 	 * Expands the details section if collapsed.
 	 */
-	private scrollToAssigneePickerFromProp(): void {
+	protected override scrollToAssigneePicker(): void {
 		if (!this.isExpanded) {
 			this.expandModal();
 		}
@@ -1849,4 +1857,24 @@ export class TaskEditModal extends TaskModal {
 
 	// Start expanded for edit modal - override parent property
 	protected isExpanded = true;
+
+	protected override hasDiscoveredProperties(): boolean {
+		return this.discoveredProperties.length > 0;
+	}
+
+	protected override scrollToAndExpandPropertyPicker(): void {
+		if (!this.propertyPickerSectionContainer) return;
+
+		const isHidden = this.propertyPickerSectionContainer.classList.contains("tn-pp-section-hidden");
+		if (isHidden) {
+			// Show and scroll to it
+			this.propertyPickerSectionContainer.classList.remove("tn-pp-section-hidden");
+			this.propertyPickerSectionContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+		} else {
+			// Hide it
+			this.propertyPickerSectionContainer.classList.add("tn-pp-section-hidden");
+		}
+
+		this.updateIconStates();
+	}
 }

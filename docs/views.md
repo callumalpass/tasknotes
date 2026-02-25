@@ -29,9 +29,9 @@ When you want workflow by status, [Kanban View](views/kanban-view.md) organizes 
 
 [Agenda View](views/agenda-view.md) is a preconfigured list-oriented calendar layout designed for short-horizon planning, while [MiniCalendar View](views/calendar-views.md#mini-calendar-view) gives a compact month heatmap and fast keyboard navigation.
 
-![Task List view](docs/assets/views/views-tasks-list.png)
+![Task List view](assets/views/views-tasks-list.png)
 
-![Calendar week view](docs/assets/views/views-calendar-week.png)
+![Calendar week view](assets/views/views-calendar-week.png)
 
 ## Productivity-Focused Views
 
@@ -39,5 +39,5 @@ These views support time management and work tracking.
 
 [Pomodoro View](views/pomodoro-view.md) supports focused intervals directly inside Obsidian, and [Pomodoro Stats View](views/pomodoro-view.md#pomodoro-stats-view) summarizes completed sessions so you can see pace and consistency over time.
 
-![Pomodoro view](docs/assets/views/feature-pomodoro-timer.png)
+![Pomodoro view](assets/views/feature-pomodoro-timer.png)
 

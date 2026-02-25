@@ -29,7 +29,7 @@ All productive work with information follows a cycle: **sense** the state of thi
 
 | Mode                                                                                                                | What drives the work                   | Primary views                                                                                               | Key features                                                                                                                                                                                                                                                       |
 | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Records & Registers](#records--registers)                                                                          | State of knowledge artifacts           | Bases tables, Document Library views                                                                        | [Bulk Convert / Generate](features/bulk-tasking.md), [recurring tasks](features/recurring-tasks.md), [per-view mapping](features/per-base-mapping.md) |
+| [Records & Registers](#records--registers)                                                                          | State of knowledge artifacts           | Bases tables, Document Library views                                                                        | [Bulk Convert / Generate](features/bulk-tasking.md), [recurring tasks](features/recurring-tasks.md), [property mapping](features/property-mapping.md) |
 | [Capture & Execute](#capture--execute)                                                                              | Incoming items from any source         | [Upcoming](views/upcoming-view.md), [Agenda](views/agenda-view.md), [Task List](views/task-list.md)         | NLP capture, [inline conversion](features/inline-tasks.md), quick add                                                                                                                                                                                              |
 | [Orchestration](#orchestration)                                                                                     | Relationships between tasks and people | [Kanban](views/kanban-view.md), [Calendar](views/calendar-views.md), project views                          | [Projects](features/task-management.md#projects), [dependencies](features/task-management.md#dependencies), [team assignment](features/shared-vault.md)                                                                                                            |
 | [Rhythm & Habits](#rhythm--habits) | Recurring time cycles                  | [Calendar](views/calendar-views.md), [Upcoming](views/upcoming-view.md), [Pomodoro](views/pomodoro-view.md) | [Recurring tasks](features/recurring-tasks.md), completion tracking, habits                                                                                                                                                                                        |
@@ -43,7 +43,7 @@ All productive work with information follows a cycle: **sense** the state of thi
 > [!info] What is a register?
 > In records management, a **register** is a structured inventory of items that require ongoing attention: a document collection, asset inventory, content library, or any corpus that needs periodic review. Tasks are *derived from* the state of those items: "this document is due for review," "this asset hasn't been audited," "this policy expires next month."
 
-TaskNotes supports this pattern directly. A Bases view can act as a register, a structured table that filters documents by metadata and surfaces the ones that need action. [Bulk Convert](features/bulk-tasking.md) turns existing notes into tracked tasks in place, while [Bulk Generate](features/bulk-tasking.md) creates new task files from document metadata. [Recurring tasks](features/recurring-tasks.md) enforce review cycles. [Per-view property mapping](features/per-base-mapping.md) lets each register use domain-appropriate field names (`review_date` instead of `due`, `owner` instead of `assignee`).
+TaskNotes supports this pattern directly. A Bases view can act as a register, a structured table that filters documents by metadata and surfaces the ones that need action. [Bulk Convert](features/bulk-tasking.md) turns existing notes into tracked tasks in place, while [Bulk Generate](features/bulk-tasking.md) creates new task files from document metadata. [Recurring tasks](features/recurring-tasks.md) enforce review cycles. [Property mapping](features/property-mapping.md) lets each register use domain-appropriate field names (`review_date` instead of `due`, `owner` instead of `assignee`).
 
 The register pattern is common in documentation management, asset tracking, content calendars, compliance, and any context where a corpus of knowledge needs periodic maintenance.
 
@@ -73,7 +73,7 @@ department: engineering
 
 - [Bases views](views.md) as structured registers with filters, sorting, and grouping
 - [Bulk Generate](features/bulk-tasking.md) to create task files from document metadata
-- [Per-view property mapping](features/per-base-mapping.md) for domain-specific field names
+- [Property mapping](features/property-mapping.md) for domain-specific field names
 - [Recurring tasks](features/recurring-tasks.md) for cyclical review requirements
 - [Custom Properties](features/custom-properties.md) for domain-specific metadata (`review_cycle`, `department`)
 
@@ -210,7 +210,9 @@ When you find yourself combining modes, create separate views for each concern. 
 
 ## Practical Walkthroughs
 
-The sections above describe *why* each mode works. The walkthroughs below show *how* — step-by-step guides for common scenarios. Each walkthrough is tagged with the mode(s) it demonstrates.
+The sections above describe *why* each mode works. The walkthroughs below summarize *how*. For the full guided experience with GIFs and video tutorials, see **[Workflow Examples](workflow-examples.md)**.
+
+Each walkthrough is tagged with the mode(s) it demonstrates.
 
 <!-- VIDEO: Full walkthrough of setting up TaskNotes from scratch -- creating first task, opening a view, completing a task -->
 

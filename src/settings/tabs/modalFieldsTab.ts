@@ -53,19 +53,32 @@ export function renderModalFieldsTab(
 				})
 			);
 
+			// Hide property mapping toggle
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Hide property mapping by default",
+					desc: "The 'Remap properties' section starts hidden in Edit and Create task modals. Click the list-plus icon to reveal it. The bulk modal always uses a popover.",
+					getValue: () => plugin.settings.propertyPickerCollapsed,
+					setValue: (value) => {
+						plugin.settings.propertyPickerCollapsed = value;
+						save();
+					},
+				})
+			);
+
 			// Sync button
 			group.addSetting((setting) => {
 				setting
-					.setName("Sync User Fields")
-					.setDesc("Click to sync custom user fields from Task Properties settings into this configuration.")
+					.setName("Sync custom properties")
+					.setDesc("Click to sync custom properties from Task Properties settings into this configuration.")
 					.addButton((button) => {
 						button
-							.setButtonText("Sync User Fields")
+							.setButtonText("Sync custom properties")
 							.setCta()
 							.onClick(() => {
 								syncUserFieldsToConfig(plugin);
 								save();
-								new Notice("User fields synced to modal configuration");
+								new Notice("Custom properties synced to modal configuration");
 								// Re-render the tab
 								renderModalFieldsTab(container, plugin, save);
 							});

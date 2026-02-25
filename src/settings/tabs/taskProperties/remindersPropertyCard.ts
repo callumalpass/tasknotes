@@ -785,7 +785,7 @@ export function renderDatePropertiesReference(container: HTMLElement, plugin: Ta
 	const details = wrapper.createEl("details", { cls: "tn-date-props" });
 	const summary = details.createEl("summary", { cls: "tn-date-props-summary" });
 	const headerRow = summary.createSpan({ cls: "tn-date-props-header-row" });
-	headerRow.createEl("h3", { text: "Properties & anchors" });
+	headerRow.createEl("h3", { text: "Remap properties" });
 	const settingsHelp = headerRow.createSpan({ cls: "tn-date-props-help" });
 	setIcon(settingsHelp, "help-circle");
 	setTooltip(settingsHelp, "Date properties used as reminder anchors. Promote discovered properties to make them available globally. Core properties come from built-in task fields.");
@@ -1398,7 +1398,7 @@ function navigateToTeamAttribution(plugin: TaskNotesPlugin): void {
 }
 
 /**
- * Scroll to the "Custom User Fields" section on the same Task Properties tab.
+ * Scroll to the "Custom Properties" section on the same Task Properties tab.
  */
 function scrollToUserFieldsSection(plugin: TaskNotesPlugin): void {
 	const settingsTab = (plugin.app as any).setting?.activeTab;
@@ -1407,7 +1407,7 @@ function scrollToUserFieldsSection(plugin: TaskNotesPlugin): void {
 		".setting-item-heading .setting-item-name"
 	);
 	for (const heading of headings) {
-		if (heading.textContent?.includes("Custom User Fields")) {
+		if (heading.textContent?.includes("Custom Properties")) {
 			(heading as HTMLElement).scrollIntoView({ behavior: "smooth", block: "start" });
 			const parent = (heading as HTMLElement).closest(".setting-item") as HTMLElement;
 			if (parent) {

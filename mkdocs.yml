@@ -47,23 +47,25 @@ theme:
 nav:
   - Home: index.md
   - Core Concepts: core-concepts.md
+  - Workflows: workflows.md
+  - Workflow Examples: workflow-examples.md
   - Features:
     - Overview: features.md
     - Task Management: features/task-management.md
+    - Natural Language Input: features/natural-language.md
     - Bulk Tasking: features/bulk-tasking.md
     - Recurring Tasks: features/recurring-tasks.md
     - Task Reminders: features/reminders.md
     - View Notifications: features/bases-notifications.md
     - Inline Task Integration: features/inline-tasks.md
     - Custom Properties: features/custom-properties.md
-    - Per-View Property Mapping: features/per-base-mapping.md
+    - Property Mapping: features/property-mapping.md
     - Property Migration: features/property-migration.md
     - Team & Attribution: features/shared-vault.md
     - Time Management: features/time-management.md
     - Calendar Integration: features/calendar-integration.md
     - ICS Integration: features/ics-integration.md
     - Third-party Integrations: features/integrations.md
-    - User Fields: features/user-fields.md
     - Template Variables: features/template-variables.md
   - Views:
     - Overview: views.md
@@ -87,22 +89,21 @@ nav:
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md
     - Integrations: settings/integrations.md
-  - Workflows: workflows.md
   - APIs & Integration:
     - HTTP API: HTTP_API.md
     - NLP API: nlp-api.md
     - mdbase-tasknotes CLI: mdbase-tasknotes-cli.md
     - Webhooks: webhooks.md
     - Calendar Setup: calendar-setup.md
-  - Contributing: contributing.md
-  - Migration Guide: migration-v3-to-v4.md
   - Development:
+    - Contributing: contributing.md
     - Writing Docs: development/writing-docs.md
     - Architecture: development/architecture.md
     - Testing: development/testing.md
     - Translation Workflow: development/translations.md
     - i18n-state-manager: development/i18n-state-manager.md
   - Release Notes: releases.md
+  - Migration Guide: migration-v3-to-v4.md
   - Troubleshooting: troubleshooting.md
   - Privacy Policy: privacy.md
 

@@ -219,7 +219,7 @@ export class ReminderModal extends Modal {
 
 		const helpIcon = sectionHeader.createSpan({ cls: "reminder-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Edit or delete reminders. Click the pencil to edit, trash to delete. Configure defaults in Settings → Task Properties → Reminders.");
+		setTooltip(helpIcon, "Edit or delete reminders. Click the pencil to edit, trash to delete. Configure defaults in Settings → Task Properties → Reminders.", { placement: "top" });
 
 		if (this.reminders.length > 0) {
 			sectionHeader.createSpan({
@@ -455,7 +455,7 @@ export class ReminderModal extends Modal {
 		// Collapsible header — default collapsed
 		const details = section.createEl("details", { cls: "tn-date-props" });
 		const summary = details.createEl("summary", { cls: "tn-date-props-summary" });
-		summary.createEl("h3", { text: "Properties & anchors" });
+		summary.createEl("h3", { text: "Remap properties" });
 		const countSpan = summary.createSpan({
 			cls: "reminder-modal__reminder-count",
 			text: `(${anchors.length} available)`,

@@ -33,7 +33,7 @@ This separation lets you reschedule the next occurrence without changing the pat
 
 <!-- GIF: Creating a recurring task with "every weekday" preset, completing one occurrence, and seeing the scheduled date advance -->
 
-![Task creation modal for recurring task setup](docs/assets/recurring-tasks/screenshot-task-create-modal.png)
+![Task creation modal for recurring task setup](../assets/recurring-tasks/screenshot-task-create-modal.png)
 
 In practice, setup is usually a two-step flow: choose a pattern, then check whether the next scheduled occurrence matches how you actually want to execute the next instance.
 
@@ -130,7 +130,7 @@ Recurring tasks can show:
 - **Next occurrence** (solid border): dragging updates only `scheduled`
 - **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
 
-![Recurring tasks in calendar week view](docs/assets/recurring-tasks/views-calendar-week.png)
+![Recurring tasks in calendar week view](../assets/recurring-tasks/views-calendar-week.png)
 
 ## Completion Tracking
 

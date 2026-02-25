@@ -660,6 +660,7 @@ export class TaskCreationModal extends TaskModal {
 	private discoveredFieldsContainer: HTMLElement | null = null;
 	/** Configured user field keys (for re-rendering) */
 	private configuredUserFieldKeys: Set<string> = new Set();
+	private propertyPickerSectionContainer: HTMLElement | null = null;
 
 	// Track event listeners for cleanup
 	private eventListeners: Array<{
@@ -774,11 +775,18 @@ export class TaskCreationModal extends TaskModal {
 
 		const sectionContainer = container.createDiv("discovered-properties-container");
 		const sectionLabel = sectionContainer.createDiv("detail-label");
-		sectionLabel.createSpan({ text: "Properties & anchors" });
+		sectionLabel.createSpan({ text: "Remap properties" });
 		const helpIcon = sectionLabel.createSpan({ cls: "tn-pp-help-icon" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Add extra frontmatter to this task, or use \u2018Map to\u2019 to assign custom properties to standard task fields (e.g., Due date, Assignee). Search existing properties or create new ones. Use scope chips to filter by source.");
+		setTooltip(helpIcon, "Add extra frontmatter to this task, or use \u2018Map to\u2019 to assign custom properties to standard task fields (e.g., Due date, Assignee). Search existing properties or create new ones. Use scope chips to filter by source.", { placement: "top" });
 		sectionLabel.style.cssText = "color: var(--text-muted); font-size: var(--font-ui-smaller); display: flex; align-items: center; gap: 4px;";
+
+		this.propertyPickerSectionContainer = sectionContainer;
+
+		// Hide section by default if setting is enabled
+		if (this.plugin.settings.propertyPickerCollapsed) {
+			sectionContainer.classList.add("tn-pp-section-hidden");
+		}
 
 		// PropertyPicker search (above the fields list)
 		const pickerContainer = sectionContainer.createDiv("discovered-properties-picker");
@@ -1068,7 +1076,7 @@ export class TaskCreationModal extends TaskModal {
 	 * Expands the details section if collapsed. Used by both the action bar icon
 	 * and mapped property "Click to set..." clicks.
 	 */
-	private scrollToAssigneePicker(): void {
+	protected override scrollToAssigneePicker(): void {
 		// Expand details section if collapsed
 		if (!this.isExpanded) {
 			this.expandModal();
@@ -1493,6 +1501,17 @@ export class TaskCreationModal extends TaskModal {
 			"assignee"
 		);
 
+		// Remap properties icon (scroll to + show section)
+		this.createActionIcon(
+			this.actionBar,
+			"list-plus",
+			"Remap properties",
+			() => {
+				this.scrollToAndExpandPropertyPicker();
+			},
+			"remap-properties"
+		);
+
 		// Update icon states based on current values
 		this.updateIconStates();
 	}
@@ -1589,7 +1608,15 @@ export class TaskCreationModal extends TaskModal {
 			// Collapse
 			this.isExpanded = false;
 			this.detailsContainer.style.display = "none";
+			// Also hide the right column (details editor)
+			if (this.splitRightColumn) {
+				this.splitRightColumn.style.display = "none";
+			}
 			this.containerEl.removeClass("expanded");
+			// Hide property picker section when collapsing
+			if (this.propertyPickerSectionContainer) {
+				this.propertyPickerSectionContainer.classList.add("tn-pp-section-hidden");
+			}
 			// Close any PersonGroupPicker dropdowns that are body-level
 			for (const picker of this.assigneePickers.values()) {
 				picker.closeDropdown();
@@ -1597,6 +1624,14 @@ export class TaskCreationModal extends TaskModal {
 		} else {
 			// Expand
 			this.expandModal();
+			// Restore property picker visibility based on setting
+			if (this.propertyPickerSectionContainer) {
+				if (this.plugin.settings.propertyPickerCollapsed) {
+					this.propertyPickerSectionContainer.classList.add("tn-pp-section-hidden");
+				} else {
+					this.propertyPickerSectionContainer.classList.remove("tn-pp-section-hidden");
+				}
+			}
 		}
 	}
 
@@ -2002,5 +2037,34 @@ export class TaskCreationModal extends TaskModal {
 		this.removeAllEventListeners();
 
 		super.onClose();
+	}
+
+	protected override hasDiscoveredProperties(): boolean {
+		return this.discoveredProperties.length > 0;
+	}
+
+	protected override scrollToAndExpandPropertyPicker(): void {
+		if (!this.propertyPickerSectionContainer) return;
+
+		const isHidden = this.propertyPickerSectionContainer.classList.contains("tn-pp-section-hidden");
+		if (isHidden) {
+			// Expand details container first if modal is in compact mode
+			if (!this.isExpanded && this.detailsContainer) {
+				this.isExpanded = true;
+				this.detailsContainer.style.display = "";
+				if ((this as any).splitRightColumn) {
+					(this as any).splitRightColumn.style.display = "";
+				}
+			}
+
+			// Show and scroll to it
+			this.propertyPickerSectionContainer.classList.remove("tn-pp-section-hidden");
+			this.propertyPickerSectionContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+		} else {
+			// Hide it
+			this.propertyPickerSectionContainer.classList.add("tn-pp-section-hidden");
+		}
+
+		this.updateIconStates();
 	}
 }

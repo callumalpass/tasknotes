@@ -922,10 +922,10 @@ export function renderTaskPropertiesTab(
 	const overviewList = overviewCallout.createEl("ul");
 	const perTaskItem = overviewList.createEl("li");
 	perTaskItem.createEl("strong", { text: "Per-task overrides" });
-	perTaskItem.appendText(" \u2014 the \"Properties & anchors\" section in the Edit Task and Bulk Task modals lets you search for any property in your vault and add it to a task. The \"Use as\" menu lets you tell TaskNotes to treat that property as a built-in field (e.g., use \"review_date\" as the due date for this task).");
+	perTaskItem.appendText(" \u2014 the \"Remap properties\" section in the Edit Task and Bulk Task modals lets you search for any property in your vault and add it to a task. The \"Use as\" menu lets you tell TaskNotes to treat that property as a built-in field (e.g., use \"review_date\" as the due date for this task).");
 	const anchorsItem = overviewList.createEl("li");
 	anchorsItem.createEl("strong", { text: "Reminder anchors" });
-	anchorsItem.appendText(" \u2014 reminders can be timed relative to any date property. The property search bar in the Reminder modal and the Properties & anchors section (under Reminders below) let you find, convert, and manage which date properties are available as anchors.");
+	anchorsItem.appendText(" \u2014 reminders can be timed relative to any date property. The property search bar in the Reminder modal and the Remap properties section (under Reminders below) let you find, convert, and manage which date properties are available as anchors.");
 
 	// ===== CORE PROPERTIES SECTION =====
 	createSectionHeader(container, translate("settings.taskProperties.sections.coreProperties"));
@@ -1147,10 +1147,37 @@ export function renderTaskPropertiesTab(
 			.onClick(() => navigateToTeamAttribution(plugin))
 		);
 
-	// ===== CUSTOM USER FIELDS SECTION =====
+	// ===== CUSTOM PROPERTIES SECTION =====
 	createSectionHeader(container, translate("settings.taskProperties.customUserFields.header"));
-	createHelpText(container, translate("settings.taskProperties.customUserFields.description"));
 
-	// Render user fields section (includes list + add button)
+	// Description with clickable "Modal Fields" link for cross-tab navigation
+	const customPropsDesc = container.createEl("p", {
+		cls: "settings-view__help-note",
+	});
+	const descText = translate("settings.taskProperties.customUserFields.description");
+	const modalFieldsLabel = "Modal Fields";
+	const splitIdx = descText.indexOf(modalFieldsLabel);
+	if (splitIdx >= 0) {
+		customPropsDesc.appendText(descText.slice(0, splitIdx));
+		const modalFieldsLink = customPropsDesc.createEl("a");
+		modalFieldsLink.textContent = modalFieldsLabel;
+		modalFieldsLink.style.cssText = "cursor: pointer; color: var(--text-accent)";
+		modalFieldsLink.addEventListener("click", () => {
+			const settingsTab = (plugin.app as any).setting?.activeTab;
+			if (settingsTab?.containerEl) {
+				const tabButton = settingsTab.containerEl.querySelector(
+					"#tab-button-modal-fields"
+				) as HTMLElement;
+				if (tabButton) {
+					tabButton.click();
+				}
+			}
+		});
+		customPropsDesc.appendText(descText.slice(splitIdx + modalFieldsLabel.length));
+	} else {
+		customPropsDesc.textContent = descText;
+	}
+
+	// Render custom properties section (includes list + add button)
 	renderUserFieldsSection(container, plugin, save, translate);
 }

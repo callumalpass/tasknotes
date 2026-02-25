@@ -227,63 +227,6 @@ If you had project subtasks enabled in v3, the relationships widget is enabled a
 
 ## Natural Language Processing
 
-TaskNotes includes a **Natural Language Processor (NLP)** that parses task descriptions to extract structured data. The same NLP engine powers [task creation modals](task-management.md), [inline conversion](#instant-task-conversion), and [bulk operations](bulk-tasking.md). For the full syntax reference and language support, see the [NLP API](../nlp-api.md) page.
+TaskNotes includes a natural language parser that extracts dates, priority, status, tags, contexts, projects, time estimates, recurrence, and custom property values from task descriptions. The same engine powers the [task creation modal](task-management.md), [inline conversion](#instant-task-conversion), and [bulk operations](bulk-tasking.md).
 
-For example, typing "Prepare quarterly report due Friday #work high priority" automatically sets the due date, tag, and priority.
-
-The NLP engine supports multiple languages, including English, Spanish, French, German, Italian, Japanese, Dutch, Portuguese, Russian, Swedish, Chinese, and Ukrainian.
-
-### Supported Syntax
-
-The NLP engine recognizes:
-
--   **Tags and Contexts**: `#tag` and `@context` syntax (triggers are customizable).
--   **Projects**: `+project` for simple projects or `+[[Project Name]]` for projects with spaces.
--   **Priority Levels**: Keywords like "high," "normal," and "low". Also supports a trigger character (default: `!`).
--   **Status Assignment**: Keywords like "open," "in-progress," and "done". Also supports a trigger character (default: `*`).
--   **Dates and Times**: Phrases like "tomorrow," "next Friday," and "January 15th at 3pm".
--   **Time Estimates**: Formats like "2h," "30min," and "1h30m".
--   **Recurrence Patterns**: Phrases like "daily," "weekly," and "every Monday".
--   **User-Defined Fields**: Custom fields can be assigned using configured triggers (e.g., `effort: high`). Supports quoted values for multi-word entries.
-NLP parses common patterns during capture; fields can be refined in the modal afterward.
-
-### Rich Markdown Editor
-
-**New in v4**: The task creation modal uses a rich CodeMirror markdown editor instead of a plain textarea.
-
-Features include:
-
--   **Live Preview**: Rendered markdown preview as you type.
--   **Syntax Highlighting**: Code blocks, links, and formatting are highlighted.
--   **Wikilink Support**: Create links to other notes using `[[Note Name]]` syntax.
--   **Keyboard Shortcuts**:
-    - `Ctrl/Cmd+Enter` saves the task
-    - `Esc` or `Tab` to navigate out of the editor
--   **Placeholder Text**: Shows an example task (e.g., "Buy groceries tomorrow at 3pm @home #errands") when the editor is empty.
-
-### Customizable Triggers
-
-**New in v4**: Triggers for NLP properties can be customized in `Settings -> TaskNotes -> Features` (`NLP Triggers`).
-
-You can configure trigger characters or strings for:
-
--   **Tags** (default: `#`) - When set to `#`, Obsidian's native tag suggester is used
--   **Contexts** (default: `@`)
--   **Projects** (default: `+`)
--   **Status** (default: `*`)
--   **Priority** (default: `!`, disabled by default)
--   **User-Defined Fields** (default: `fieldname:`) - Each custom field can have its own trigger
-
-Triggers support up to 10 characters and can include trailing spaces (e.g., `"def: "` for a custom field).
-
-### Autocomplete
-
-**New in v4**: When typing a trigger in the NLP editor, an autocomplete menu appears with available values.
-
--   Navigate suggestions with arrow keys
--   Select with `Enter` or `Tab`
--   Autocomplete works for tags, contexts, projects, status, priority, and user-defined fields
--   Tag autocomplete uses Obsidian's native tag suggester when using the `#` trigger
--   For user fields with multi-word values, wrap the value in quotes (e.g., `effort: "very high"`)
-
-The NLP engine is integrated with the task creation modal and bulk conversion features. Typing a natural language description populates the corresponding task fields automatically.
+See **[Natural Language Input](natural-language.md)** for the full syntax reference, trigger configuration, auto-suggestion behavior, and language support.

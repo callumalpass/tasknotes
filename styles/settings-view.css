@@ -38,12 +38,11 @@
 /* Tab Navigation Container */
 .tasknotes-plugin .settings-view__tab-nav {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--tn-spacing-xs);
     margin-bottom: var(--tn-spacing-lg);
     border-bottom: 1px solid var(--tn-border-color);
     padding-bottom: var(--tn-spacing-sm);
-    overflow-x: auto;
-    white-space: nowrap;
 }
 
 .tasknotes-plugin .settings-view__tab-button {

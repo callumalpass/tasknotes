@@ -677,6 +677,28 @@ export abstract class TaskModal extends Modal {
 			"reminders"
 		);
 
+		// Assignee icon
+		this.createActionIcon(
+			this.actionBar,
+			"user",
+			this.t("modals.task.actions.assignee"),
+			() => {
+				this.scrollToAssigneePicker();
+			},
+			"assignee"
+		);
+
+		// Remap properties icon (toggle show/hide section)
+		this.createActionIcon(
+			this.actionBar,
+			"list-plus",
+			"Remap properties",
+			() => {
+				this.scrollToAndExpandPropertyPicker();
+			},
+			"remap-properties"
+		);
+
 		// Update icon states based on current values
 		this.updateIconStates();
 	}
@@ -2041,6 +2063,43 @@ export abstract class TaskModal extends Modal {
 				});
 			}
 		}
+
+		// Update remap properties icon
+		const remapIcon = this.actionBar.querySelector('[data-type="remap-properties"]') as HTMLElement;
+		if (remapIcon) {
+			const hasProps = this.hasDiscoveredProperties();
+			if (hasProps) {
+				remapIcon.classList.add("has-value");
+				setTooltip(remapIcon, "Remap properties (properties added)", { placement: "top" });
+			} else {
+				remapIcon.classList.remove("has-value");
+				setTooltip(remapIcon, "Remap properties", { placement: "top" });
+			}
+		}
+	}
+
+	/**
+	 * Scroll to the assignee picker.
+	 * Overridden by subclasses that have an assignee picker.
+	 */
+	protected scrollToAssigneePicker(): void {
+		// No-op in base class — overridden by TaskEditModal and TaskCreationModal
+	}
+
+	/**
+	 * Scroll to and show the property picker section.
+	 * Overridden by subclasses that have a property picker section.
+	 */
+	protected scrollToAndExpandPropertyPicker(): void {
+		// No-op in base class — overridden by TaskEditModal and TaskCreationModal
+	}
+
+	/**
+	 * Whether the modal has discovered properties added via PropertyPicker.
+	 * Overridden by subclasses that track discovered properties.
+	 */
+	protected hasDiscoveredProperties(): boolean {
+		return false;
 	}
 
 	protected focusTitleInput(): void {

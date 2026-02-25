@@ -84,10 +84,10 @@
       "docs": ["docs/features/inline-tasks.md"]
     },
     {
-      "id": "user-fields",
-      "description": "User-defined custom fields",
+      "id": "custom-properties",
+      "description": "Custom properties with modal UI, autocomplete, defaults, NLP, and Bases integration",
       "source": ["src/utils/userFieldUtils.ts"],
-      "docs": ["docs/features/user-fields.md"]
+      "docs": ["docs/features/custom-properties.md"]
     },
     {
       "id": "template-variables",

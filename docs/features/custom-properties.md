@@ -4,168 +4,181 @@
 
 <!--
 Recording Script
-SETUP (need tasks with contexts, timeEstimate):
+SETUP:
   cd .obsidian/plugins/tasknotes
   node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
   Reload plugin in Obsidian
 
-Use: TaskNotes/Demos/Custom Properties Demo.base
-Show PropertyPicker with type badges and scope chips
-Show clicking scope chips: "This note" → "View items" → "All tasks" → "All files"
-Show searching for a property, selecting it, seeing it appear as editable row
-Show selecting "Use as Due date" on a custom property → date picker appears
+Show adding a new custom property in settings → see it appear in the task creation modal
+Show filtering a Bases view by a custom property value
 -->
-TaskNotes discovers custom frontmatter properties from your existing task files and lets you use them in filters, views, modals, and bulk operations. You are not limited to the built-in fields. Any property you add to a task's frontmatter can become a first-class part of your workflow.
+
+
 
 > [!info] TaskNotes has three property systems
 > They serve different purposes and work at different scopes:
 >
 > | System | What it does | Scope | Where to configure |
 > |--------|-------------|-------|-------------------|
-> | **Custom Properties** (this page) | Discover and use ad-hoc frontmatter fields from your vault | Per-task | Task modal PropertyPicker |
-> | **[User Fields](user-fields.md)** | Pre-register fields so they always appear in modals | Global | Settings > Task Properties |
-> | **[Per-View Mapping](per-base-mapping.md)** | Remap property names per Bases view (e.g., `deadline` → `due`) | Per-view | `.base` file or bulk modal |
+> | **[Built-in Task Properties](../settings/task-properties.md)** | Core fields every task has: status, priority, due date, scheduled date, tags, contexts, assignee, etc. | Global | Settings > Task Properties |
+> | **Custom Properties** (this page) | Register your own fields for modal UI, autocomplete, defaults, NLP, and Bases integration | Global | Settings > Task Properties > Custom Properties |
+> | **[Property Mapping](property-mapping.md)** | Remap property names to core fields, per-task or per-view | Per-task / Per-view | Task modal PropertyPicker or `.base` file |
 >
-> Custom Properties let you work with whatever frontmatter already exists. User Fields ensure specific fields always show up. Per-View Mapping lets different views use different property names for the same concept.
+> Built-in properties ship with TaskNotes and cover most task workflows. Custom Properties extend the data model with your own fields. Property Mapping changes which frontmatter key TaskNotes reads for core logic like due date or assignee.
 
-<!-- SCREENSHOT: PropertyPicker showing discovered properties with type badges and scope chips -->
+TaskNotes allows you to define your own custom properties for tasks. A custom property starts as a frontmatter field definition (a name, a type, and optionally a default value), but once registered it feeds into nearly every part of the plugin:
+
+| Where it shows up | What happens |
+|-------------------|-------------|
+| **Task creation & edit modals** | The field appears as an editable row with a type-appropriate editor (text input, date picker, checkbox, number stepper, or list chips) |
+| **Autocomplete** | Text and list fields support `[[` wikilink suggestions, filterable by tag, folder, or frontmatter property -- so an "Assignee" field can limit suggestions to notes tagged `#person` |
+| **Task creation defaults** | Default values pre-fill automatically when creating tasks via the modal, instant conversion, the "Create or open task" command, or the HTTP API |
+| **NLP recognition** | Each field can have a trigger character (e.g., `^` for effort). Typing `^high` in a natural language task description sets the field automatically |
+| **Bases views** | Custom properties are available in filter expressions (`note.effort == "high"`), sort menus, and group-by options -- they work the same as built-in fields |
+| **[Modal Fields](../settings/modal-fields.md) configuration** | Custom properties sync into Settings > Modal Fields, where you can reorder them, toggle visibility, or mark them as required |
+| **Bulk operations** | The PropertyPicker in the bulk tasking modal includes custom properties, so you can set values across many tasks at once |
+
+In short, registering a custom property is not just adding a frontmatter key -- it wires that key into the full task lifecycle. Add a field like `client`, `effort`, `billing_code`, or `review_stage` and it works everywhere built-in fields like `status` or `priority` do.
 
 
+## Creating Custom Properties
 
-Custom properties appear throughout TaskNotes: in [task modals](task-management.md#editing-tasks), [bulk operations](bulk-tasking.md#custom-properties-in-bulk-operations), [per-view field mapping](per-base-mapping.md), and [Bases view filters](../views.md).
+<!-- GIF: Adding a new custom property in settings, then seeing it appear in the task creation modal -->
 
-## Discovering Properties
+Custom properties are created in the TaskNotes settings, under the "Task Properties" tab. To create a new custom property, click the "Add custom property" button.
 
-TaskNotes scans your vault's frontmatter to find properties beyond the built-in task fields. When you open a task modal or the bulk tasking dialog, the PropertyPicker reads the metadata cache (not the files directly, so it is fast even on large vaults) and presents every custom property it finds.
+Each custom property has the following settings:
 
-Built-in properties like `title`, `status`, `due`, `tags`, and identity fields like `type`, `assignee`, and `creator` are excluded automatically. Properties from your global field mapping (when you have renamed a built-in field) are also excluded. What remains are your custom additions -- project codes, review dates, effort estimates, client names, or anything else you have added.
+- **Display Name**: The name of the field as it will be displayed in the UI.
+- **Property Name**: The name of the field as it will be stored in the frontmatter of the task note.
+- **Type**: The data type of the field. The following types are supported:
+    - **Text**: A single line of text.
+    - **Number**: A numeric value (supports ranges in filters and sorting).
+    - **Boolean**: A true/false value stored as a checkbox in the task modal.
+    - **Date**: A date.
+    - **List**: A list of values.
+- **Default Value** (optional): A default value to pre-fill when creating new tasks. The input format depends on the field type:
+    - **Text**: Enter the default text value.
+    - **Number**: Enter the default number.
+    - **Boolean**: Toggle to set the default state (checked/unchecked).
+    - **Date**: Select from presets: None, Today, Tomorrow, or Next Week.
+    - **List**: Enter comma-separated default values.
 
-Each discovered property shows:
+## File Suggestion Filtering (Advanced)
 
-- **Name** in human-readable form (underscores become spaces, first letter capitalized)
-- **Type badge** with a color indicating what kind of value it holds
-- **File count** showing how many files use this property (in catalog view)
+When using text or list type custom properties, you can configure **autosuggestion filters** to control which files appear in the autocomplete dropdown when you type `[[` in the field.
 
-| Type | Badge color | Detected when |
-|------|-------------|---------------|
-| Date | Blue | Value is a `Date` object or a string starting with `YYYY-MM-DD` |
-| Text | Green | Value is a non-date string |
-| Number | Purple | Value is a number |
-| Boolean | Orange | Value is `true` or `false` |
-| List | Cyan | Value is an array |
+![Custom Field Filtering](../assets/CustomFields-Selection-Filter.gif)
 
-Type detection runs on each value individually. If a property is used as a date in some files and as text in others, the PropertyPicker shows the dominant type (the most common one) and flags the inconsistency.
+This is useful when you want to limit suggestions to specific types of notes. For example:
+- An "Assignee" field that only suggests notes tagged with `#person`
+- A "Project" field that only shows notes in the `Projects/` folder
+- A "Related Document" field filtered by a specific frontmatter property
 
-## Scope Chips
+Filtering is especially useful in large vaults where unfiltered autocomplete returns too many results.
 
-<!-- GIF: Clicking scope chips to switch between "This note", "View items", "All tasks", and "All files" -->
+### Configuring Filters
 
-Above the PropertyPicker search input, scope chips control where properties are discovered from. Click a chip to switch scopes:
+To configure filters for a custom property:
 
-| Chip | Label | What it scans |
-|------|-------|---------------|
-| This note | "This note" | Only the current task's frontmatter |
-| View items | "View items" | All files currently shown in the Bases view |
-| All tasks | "All tasks" | Every file identified as a task in your vault |
-| All files | "All files" | Every Markdown file in the vault |
+1. Go to **Settings > Task Properties > Custom Properties**
+2. Expand the custom property card you want to configure
+3. Expand the **"Autosuggestion filters (Advanced)"** section
+4. Configure one or more of the following filters:
 
-Not all chips are always visible. "This note" only appears when editing an existing task. "View items" only appears when the PropertyPicker was opened from a Bases view context (like [bulk tasking](bulk-tasking.md)).
+#### Filter Options
 
-The default scope depends on context: if you opened from a view, it starts on "View items". If you are editing a single task, it starts on "This note". Otherwise it defaults to "All tasks".
+- **Required tags**: Only show files that have ANY of these tags (comma-separated)
+  - Example: `person, team` - shows files with either `#person` OR `#team` tag
+  - Supports hierarchical tags: `project/active` matches `#project/active`
 
-Switching scopes immediately reloads the property list. A property that exists on one task might not appear in "All tasks" if the scope started on "This note", and switching to "All files" may reveal properties from non-task notes that you could adopt.
+- **Include folders**: Only show files in these folders (comma-separated)
+  - Example: `People/, Teams/` - shows files in either folder
+  - Supports nested folders: `Projects/Active/` matches files in that specific folder
 
-## Adding a Custom Property
+- **Required property key**: Only show files that have this frontmatter property
+  - Example: `role` - shows files with a `role:` property in frontmatter
 
-<!-- GIF: Searching for a property in the PropertyPicker, selecting it, and seeing it appear as an editable row -->
-In any task creation or edit modal, scroll to the **Additional Properties** section. The PropertyPicker also appears in the [reminders modal](reminders.md) for selecting date anchor properties. The search input lets you:
+- **Required property value**: Expected value for the property (optional)
+  - Example: `developer` - when combined with property key `role`, shows files with `role: developer`
+  - Leave empty to match any value (just checks property exists)
 
-1. **Select an existing property** -- start typing to filter discovered properties, then click one. It appears as an editable row below the picker with an appropriate editor (text input, date picker, or checkbox depending on the detected type).
+#### Filter Indicator
 
-2. **Create a new property** -- type a name that does not match any existing property and press Enter. A small form appears where you choose the property type (text, number, date, boolean, list). The property is added to the task's frontmatter when you save.
+When filters are configured, a **"Filters On"** badge with a funnel icon appears next to the section title. This prevents you from forgetting that filters are active.
 
-> [!tip]- Creating new properties (advanced)
-> This is useful for one-off fields, but for properties you use regularly, consider registering them as [User Fields](user-fields.md) instead — they will always appear in modals without needing to be discovered first. For bulk property management across many files, dedicated property plugins may be more efficient.
+### Filter Behavior
 
-Once added, a property row shows its name, current value, and a remove button. You can add multiple custom properties to a single task.
+- **All filters are combined with AND logic**: Files must match ALL configured filters to appear
+- **Empty filters are ignored**: If you don't configure a filter, it won't restrict results
+- **No filters = all files**: If no filters are configured, all markdown files in your vault will appear
+- **Filters only affect autocomplete**: They don't affect the actual field value or validation. You can still type any value manually -- filters only narrow the suggestion list.
 
-### Using Properties in Bulk Operations
+### Example Configurations
 
-The [Bulk Tasking](bulk-tasking.md) modal has the same PropertyPicker. Properties you set there apply to every item in the batch:
+#### Assignee Field (People Only)
+```
+Display Name: Assignee
+Property Key: assignee
+Type: List
 
-<!-- GIF: PropertyPicker in the bulk tasking modal — same demo as bulk-tasking.md -->
+Autosuggestion filters:
+  Required tags: person
+  Include folders: People/
+```
 
-- In **Generate** mode, custom properties are written to each new task file
-- In **Convert** mode, custom properties are added only if the file does not already have them
-- In **Edit** mode, custom properties overwrite existing values
+#### Project Field (Active Projects)
+```
+Display Name: Project
+Property Key: project
+Type: Text
 
-## Type Detection and Conversion
+Autosuggestion filters:
+  Required tags: project
+  Required property key: status
+  Required property value: active
+```
 
-<!-- GIF: Type mismatch detection and conversion in the PropertyPicker -->
+#### Related Note (Specific Folder)
+```
+Display Name: Related Note
+Property Key: related-note
+Type: Text
 
-> [!info]- How type detection and conversion works
-> When a property has inconsistent types across files (for example, `review_date` is a proper date in 43 files but plain text in 2 files), the PropertyPicker flags it. The catalog view shows a type breakdown:
->
-> ```
-> review_date   Date (43)  Text (2)  -- 2 mismatched files
-> ```
->
-> You can convert mismatched files to a consistent type. Click the convert button next to the property, and TaskNotes shows a confirmation dialog listing how many files will be updated. Conversion uses Obsidian's `processFrontMatter` API to safely rewrite each file's YAML.
->
-> Conversion targets depend on context. In the [reminder modal](reminders.md), only date conversion is offered (since reminders need date anchors). In task modals, all type conversions are available.
+Autosuggestion filters:
+  Include folders: Documentation/, Guides/
+```
 
-## Per-Task Field Overrides
+## Using Custom Properties
 
-Custom properties can replace built-in date and assignee fields on a per-task basis. This is useful when your vault uses different property names for the same concept -- one project might use `deadline` while another uses `due`.
+<!-- GIF: Filtering a Bases view by a custom property value -->
 
-<!-- GIF: Selecting "Use as Due date" on a custom property and seeing it switch to a date picker -->
-When you select a custom property in the PropertyPicker, a **Use as** option appears next to it. Click it to see which core fields the property can replace:
+Once you have created a custom property, it will be available in the following places:
 
-| Core field | What it replaces |
-|------------|-----------------|
-| Due date | The task's due date |
-| Scheduled date | The task's scheduled date |
-| Completed date | When the task was completed |
-| Created date | When the task was created |
-| Assignee | Who the task is assigned to |
+- **Task Modals**: The custom property will be displayed in the task creation and edit modals.
+- **Bases Filters**: Add the field to Bases filter expressions (for example `note.effort == "high"`) to narrow task lists and Kanban boards.
+- **Sorting**: Use the Bases sort menu to order tasks by the custom property.
+- **Grouping**: Use the Bases group menu to create swimlanes or list groupings based on the custom property.
+- **NLP Recognition**: Custom properties are recognized by the natural language task creation system.
+- **Task Creation Defaults**: Default values are pre-filled when creating new tasks via any method.
 
-Choosing "Use as Due date" on a property called `deadline` means:
+> [!tip] To verify a new custom property is working, add it to a Bases view filter or group-by and confirm it appears in the task creation modal.
 
-1. The task's due date is read from and written to `deadline` instead of the global due date property
-2. A tracking property (`tnDueDateProp: deadline`) is saved in the task's frontmatter so TaskNotes always knows where to find the due date, even without view context
-3. The property row switches to a rich editor (date picker for dates, person/group picker for assignee) instead of a plain text input
+## Frontmatter
 
-Each core field can only be mapped to one custom property at a time. If `deadline` is already mapped to Due date, the "Use as Due date" option is grayed out for other properties.
+Custom property data is stored in the frontmatter of the task note. The property name you define is used as the key in the frontmatter.
 
-The tracking properties are internal to TaskNotes:
+For example, if you create a custom property with the property name "my_field", the data for that field will be stored in the frontmatter as follows:
 
-| Tracking property | Maps to |
-|-------------------|---------|
-| `tnDueDateProp` | Due date |
-| `tnScheduledDateProp` | Scheduled date |
-| `tnCompletedDateProp` | Completed date |
-| `tnCreatedDateProp` | Created date |
-| `tnAssigneeProp` | Assignee |
-
-These are hidden from the PropertyPicker (they are in the core properties skip list) and should not be edited manually. They make each task self-describing: the notification system, overdue calculations, sorting, and views all read the tracking property first, then fall back to the global field mapping.
-
-## Settings
-
-> [!note] Custom Properties vs User Fields vs Per-View Mapping
-> **Custom Properties** (this page) let you work with ad-hoc frontmatter fields on a per-task basis — they don't change how TaskNotes processes tasks internally. **[User Fields](user-fields.md)** are pre-registered so they always appear in modals. **[Per-View Mapping](per-base-mapping.md)** remaps property names per Bases view, which is useful when different views use different schemas.
-
-These settings are in **Settings > Task Properties > User Fields**:
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| User fields | (empty) | Properties to always show in task modals, even if not yet on the current task |
-| Modal field visibility | All shown | Choose which built-in and custom fields appear in the task creation and edit modals |
-
-User fields let you define properties that should always be available in task modals without needing to discover them first. Add a property name and type, and it appears as an editable row every time you create or edit a task.
+```yaml
+---
+my_field: value
+---
+```
 
 ## Related
 
+- [Property Mapping](property-mapping.md) for remapping property names to core TaskNotes fields
 - [Task Management](task-management.md) for built-in task properties
-- [Per-View Property Mapping](per-base-mapping.md) for per-view field name configuration
 - [Bulk Tasking](bulk-tasking.md) for using custom properties in bulk operations
 - [Views](../views.md) for filtering and sorting by custom properties

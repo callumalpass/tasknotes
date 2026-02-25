@@ -1154,17 +1154,17 @@ export const en: TranslationTree = {
 				},
 			},
 			customUserFields: {
-				header: "Custom User Fields",
+				header: "Custom Properties",
 				description:
-					"Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.",
+					"Register custom frontmatter fields that integrate across the entire plugin — task modals, autocomplete, NLP recognition, task creation defaults, Bases views (filtering, sorting, grouping), and bulk operations. Control how they appear in modals via Modal Fields.",
 				addNew: {
-					name: "Add new user field",
-					description: "Create a new custom field that will appear in filters and views",
-					buttonText: "Add user field",
+					name: "Add custom property",
+					description: "Create a new custom property that integrates across modals, views, NLP, and defaults",
+					buttonText: "Add property",
 				},
 				emptyState:
-					"No custom user fields configured. Add a field to create custom properties for your tasks.",
-				emptyStateButton: "Add User Field",
+					"No custom properties configured. Add a property to extend your tasks with custom frontmatter fields.",
+				emptyStateButton: "Add Custom Property",
 				fields: {
 					displayName: "Display Name:",
 					propertyKey: "Property Key:",

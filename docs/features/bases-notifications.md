@@ -72,11 +72,11 @@ When items match a notification-enabled view, a toast appears in the bottom-righ
 
 <!-- SCREENSHOT: Toast notification expanded showing item breakdown -->
 
-![Notification toast with item count and action buttons](docs/assets/bases-notifications/screenshot-kanban.png)
+![Notification toast with item count and action buttons](../assets/bases-notifications/screenshot-kanban.png)
 
 <!-- GIF: Toast appearing with item breakdown, clicking snooze dropdown, selecting a duration -->
 
-![Notification toast with View, Snooze, and Got it buttons](docs/assets/bases-notifications/screenshot-kanban.png)
+![Notification toast with View, Snooze, and Got it buttons](../assets/bases-notifications/screenshot-kanban.png)
 
 The toast persists until you dismiss it or snooze it. It does not auto-dismiss (following WCAG 2.2.4 accessibility guidelines for timed content).
 
@@ -86,7 +86,7 @@ Clicking the toast body or the action button opens the Upcoming View, where you 
 
 <!-- SCREENSHOT: Status bar showing bell icon with count badge -->
 
-![Kanban view with status bar notification indicators](docs/assets/bases-notifications/screenshot-kanban.png)
+![Kanban view with status bar notification indicators](../assets/bases-notifications/screenshot-kanban.png)
 
 A bell icon appears in the Obsidian status bar. When there are active notification items, it shows a count badge. Click the bell to open the Upcoming View.
 

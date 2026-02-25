@@ -617,14 +617,34 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 		// Remove any existing conversion menu
 		const existing = dropdown.querySelector(".tn-pp-conversion-menu");
 		if (existing) existing.remove();
+		document.querySelectorAll(".tn-pp-conversion-menu").forEach(el => el.remove());
 
-		const menu = anchor.createDiv({ cls: "tn-pp-conversion-menu" });
+		const menu = document.createElement("div");
+		menu.className = "tn-pp-conversion-menu";
+
+		// Fixed positioning on body to avoid popover overflow clipping
+		const anchorRect = anchor.getBoundingClientRect();
+		menu.style.position = "fixed";
+		menu.style.left = `${anchorRect.left}px`;
+		menu.style.right = "auto";
+		menu.style.zIndex = "10002";
+		const menuHeight = 120;
+		const spaceBelow = window.innerHeight - anchorRect.bottom;
+		if (spaceBelow < menuHeight && anchorRect.top > menuHeight) {
+			menu.style.bottom = `${window.innerHeight - anchorRect.top + 2}px`;
+			menu.style.top = "auto";
+		} else {
+			menu.style.top = `${anchorRect.bottom + 2}px`;
+			menu.style.bottom = "auto";
+		}
+		document.body.appendChild(menu);
 
 		// Convert in-place option
 		const convertBtn = menu.createDiv({ cls: "tn-pp-conversion-option" });
 		convertBtn.createSpan({
-			text: `Convert ${entry.mismatchedFiles.length} files to ${TYPE_LABELS[entry.dominantType].toLowerCase()}`,
+			text: `Fix ${entry.mismatchedFiles.length} \u2192 ${TYPE_LABELS[entry.dominantType].toLowerCase()}`,
 		});
+		convertBtn.title = `Convert ${entry.mismatchedFiles.length} mismatched files to ${TYPE_LABELS[entry.dominantType].toLowerCase()}`;
 		convertBtn.addEventListener("click", async (e) => {
 			e.stopPropagation();
 			menu.remove();
@@ -639,8 +659,9 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 		// Create duplicate option
 		const duplicateBtn = menu.createDiv({ cls: "tn-pp-conversion-option" });
 		duplicateBtn.createSpan({
-			text: `Create ${entry.key}_${entry.dominantType} copy`,
+			text: `Duplicate with suffix "_${entry.dominantType}"`,
 		});
+		duplicateBtn.title = `Create ${entry.key}_${entry.dominantType} copy for mismatched files`;
 		duplicateBtn.addEventListener("click", async (e) => {
 			e.stopPropagation();
 			menu.remove();
@@ -654,12 +675,21 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 
 		// Show mismatched files
 		const showFilesBtn = menu.createDiv({ cls: "tn-pp-conversion-option" });
-		showFilesBtn.createSpan({ text: "Show affected files" });
+		showFilesBtn.createSpan({ text: `View ${entry.mismatchedFiles.length} files` });
 		showFilesBtn.addEventListener("click", (e) => {
 			e.stopPropagation();
 			menu.remove();
 			showMismatchedFiles(anchor, entry);
 		});
+
+		// Close menu on outside click
+		const closeHandler = (e: MouseEvent) => {
+			if (!menu.contains(e.target as Node)) {
+				menu.remove();
+				document.removeEventListener("click", closeHandler, true);
+			}
+		};
+		setTimeout(() => document.addEventListener("click", closeHandler, true), 0);
 	}
 
 	function showTypeConversionMenu(
@@ -670,11 +700,27 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 		// Remove any existing menu
 		const existing = dropdown.querySelector(".tn-pp-type-conversion-menu");
 		if (existing) existing.remove();
+		document.querySelectorAll(".tn-pp-type-conversion-menu").forEach(el => el.remove());
 
 		const menu = document.createElement("div");
 		menu.className = "tn-pp-conversion-menu tn-pp-type-conversion-menu";
-		anchor.style.position = "relative";
-		anchor.appendChild(menu);
+
+		// Fixed positioning on body to avoid popover overflow clipping
+		const anchorRect = anchor.getBoundingClientRect();
+		menu.style.position = "fixed";
+		menu.style.left = `${anchorRect.left}px`;
+		menu.style.right = "auto";
+		menu.style.zIndex = "10002";
+		const menuHeight = targets.length * 36 + 8;
+		const spaceBelow = window.innerHeight - anchorRect.bottom;
+		if (spaceBelow < menuHeight && anchorRect.top > menuHeight) {
+			menu.style.bottom = `${window.innerHeight - anchorRect.top + 2}px`;
+			menu.style.top = "auto";
+		} else {
+			menu.style.top = `${anchorRect.bottom + 2}px`;
+			menu.style.bottom = "auto";
+		}
+		document.body.appendChild(menu);
 
 		for (const targetType of targets) {
 			const option = menu.createDiv({ cls: "tn-pp-conversion-option" });
@@ -925,8 +971,37 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 	function showMismatchedFiles(anchor: HTMLElement, entry: PropertyCatalogEntry) {
 		const existing = dropdown.querySelector(".tn-pp-files-list");
 		if (existing) existing.remove();
+		document.querySelectorAll(".tn-pp-files-list-floating").forEach(el => el.remove());
 
-		const list = anchor.createDiv({ cls: "tn-pp-files-list" });
+		const list = document.createElement("div");
+		list.className = "tn-pp-files-list tn-pp-files-list-floating";
+
+		// Fixed positioning on body to avoid popover overflow clipping
+		const anchorRect = anchor.getBoundingClientRect();
+		list.style.position = "fixed";
+		list.style.left = `${anchorRect.left}px`;
+		list.style.right = "auto";
+		list.style.zIndex = "10002";
+		const listHeight = Math.min(entry.mismatchedFiles.length, 11) * 28 + 40;
+		const spaceBelow = window.innerHeight - anchorRect.bottom;
+		if (spaceBelow < listHeight && anchorRect.top > listHeight) {
+			list.style.bottom = `${window.innerHeight - anchorRect.top + 2}px`;
+			list.style.top = "auto";
+		} else {
+			list.style.top = `${anchorRect.bottom + 2}px`;
+			list.style.bottom = "auto";
+		}
+		document.body.appendChild(list);
+
+		// Back button to return to conversion menu
+		const backBtn = list.createDiv({ cls: "tn-pp-conversion-option tn-pp-files-back" });
+		backBtn.createSpan({ text: "\u2190 Back" });
+		backBtn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			list.remove();
+			showConversionMenu(anchor, entry);
+		});
+
 		for (const filePath of entry.mismatchedFiles.slice(0, 10)) {
 			const fileName = filePath.split("/").pop()?.replace(".md", "") || filePath;
 			list.createDiv({ cls: "tn-pp-file-item", text: fileName });
@@ -937,6 +1012,15 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 				text: `... and ${entry.mismatchedFiles.length - 10} more`,
 			});
 		}
+
+		// Close on outside click
+		const closeHandler = (e: MouseEvent) => {
+			if (!list.contains(e.target as Node)) {
+				list.remove();
+				document.removeEventListener("click", closeHandler, true);
+			}
+		};
+		setTimeout(() => document.addEventListener("click", closeHandler, true), 0);
 	}
 
 	async function runConversion(
@@ -1010,8 +1094,8 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 		lastCloseTime = Date.now();
 		dropdown.style.display = "none";
 		showAddForm = false;
-		// Clean up any floating "Use as" menus appended to body
-		document.querySelectorAll(".tn-pp-use-as-menu").forEach(el => el.remove());
+		// Clean up any floating menus appended to body
+		document.querySelectorAll(".tn-pp-use-as-menu, .tn-pp-conversion-menu, .tn-pp-type-conversion-menu, .tn-pp-files-list-floating").forEach(el => el.remove());
 	}
 
 	// ── Event listeners ───────────────────────────────

@@ -18,7 +18,7 @@ CLEANUP (dragging tasks changes due dates):
 TaskNotes provides two calendar-based views: the **Mini Calendar** and the **Calendar View**. Both operate as Bases views (`.base` files) and require the Bases core plugin to be enabled in Obsidian.
 Mini Calendar is date-density and navigation focused, while Calendar View is scheduling focused.
 
-![Calendar Month View](docs/assets/calendar-views/views-calendar-month.png)
+![Calendar Month View](../assets/calendar-views/views-calendar-month.png)
 
 ## Bases View Architecture
 
@@ -51,7 +51,7 @@ The Calendar View provides multiple view modes (month, week, day, year, list, an
 
 <!-- GIF: Switching between month, week, and day views using the calendar toolbar buttons -->
 
-![Calendar month view with tasks on dates](docs/assets/calendar-views/screenshot-calendar-month.png)
+![Calendar month view with tasks on dates](../assets/calendar-views/screenshot-calendar-month.png)
 
 ### View Modes
 
@@ -67,7 +67,7 @@ View modes can be switched within a single `.base` file based on planning horizo
 
 | Week View | Day View | Year View |
 |-----------|----------|-----------|
-| ![Week View](docs/assets/calendar-views/views-calendar-week.png) | ![Day View](../assets/views-calendar-day.png) | ![Year View](../assets/views-calendar-year.png) |
+| ![Week View](../assets/calendar-views/views-calendar-week.png) | ![Day View](../assets/views-calendar-day.png) | ![Year View](../assets/views-calendar-year.png) |
 
 ### Performance Improvements
 
@@ -100,7 +100,7 @@ The Custom Days view is particularly useful for:
 
 <!-- GIF: Dragging a task from one date to another in month view to reschedule it -->
 
-![Calendar month view for task scheduling](docs/assets/calendar-views/screenshot-calendar-month.png)
+![Calendar month view for task scheduling](../assets/calendar-views/screenshot-calendar-month.png)
 
 ### Recurring Task Support
 

@@ -128,7 +128,12 @@ export class BulkTaskCreationModal extends Modal {
 	private priorityIcon: HTMLElement | null = null;
 	private reminderIcon: HTMLElement | null = null;
 	private assigneeIcon: HTMLElement | null = null;
+	private remapPropsIcon: HTMLElement | null = null;
 	private reminderWarning: HTMLElement | null = null;
+	// Popover state
+	private activePopover: HTMLElement | null = null;
+	private activePopoverDismissHandler: ((e: MouseEvent) => void) | null = null;
+	private activePopoverEscHandler: ((e: KeyboardEvent) => void) | null = null;
 
 	constructor(
 		app: App,
@@ -318,17 +323,9 @@ export class BulkTaskCreationModal extends Modal {
 	private renderTopSections() {
 		if (!this.topSectionsWrapper) return;
 
-		// 1. Action bar (Bulk Values)
+		// Action bar (Bulk Values) — assignees and remap properties are popovers, not inline sections
 		const actionBarSection = this.topSectionsWrapper.createDiv({ cls: "tn-bulk-modal__section" });
 		this.renderActionBarInto(actionBarSection);
-
-		// 2. Custom Properties
-		const customSection = this.topSectionsWrapper.createDiv({ cls: "tn-bulk-modal__section" });
-		this.renderCustomPropertiesSection(customSection);
-
-		// 3. Assignees
-		const assigneeSection = this.topSectionsWrapper.createDiv({ cls: "tn-bulk-modal__section" });
-		this.renderAssigneeSectionInto(assigneeSection);
 	}
 
 	/**
@@ -398,6 +395,13 @@ export class BulkTaskCreationModal extends Modal {
 			setTooltip(this.assigneeIcon, count > 0 ? `${count} assignee${count !== 1 ? "s" : ""} selected` : "Assignee");
 		}
 
+		// Remap properties
+		if (this.remapPropsIcon) {
+			const hasProps = Object.keys(this.bulkCustomProperties).length > 0;
+			this.remapPropsIcon.toggleClass("has-value", hasProps);
+			setTooltip(this.remapPropsIcon, hasProps ? "Remap properties (properties added)" : "Remap properties");
+		}
+
 		// Show/hide reminder warning (when reminders set but no dates)
 		if (this.reminderWarning) {
 			const hasReminders = this.bulkReminders.length > 0;
@@ -408,66 +412,209 @@ export class BulkTaskCreationModal extends Modal {
 	}
 
 	/**
-	 * Render the custom properties section with heading, help tip, and PropertyPicker.
-	 * Follows the same pattern as BULK VALUES and ASSIGNEES sections.
+	 * Show a floating popover panel anchored below the given element.
+	 * Dismisses any existing popover first. Renders content via callback.
+	 *
+	 * The popover is appended to this.modalEl (NOT document.body) so that:
+	 * - PropertyPicker's closestAncestor finds `.modal` correctly
+	 * - Obsidian's modal focus trap includes the popover's inputs
+	 * - position: fixed still works for viewport positioning
 	 */
-	private renderCustomPropertiesSection(parentSection: HTMLElement) {
-		// Clean up existing picker if re-rendering
-		if (this.propertyPickerInstance) {
-			this.propertyPickerInstance.destroy();
-			this.propertyPickerInstance = null;
+	private showPopover(anchorEl: HTMLElement, title: string, helpText: string, renderContent: (container: HTMLElement) => void, width?: number): void {
+		// If a popover is already open, just dismiss it (toggle behavior)
+		if (this.activePopover) {
+			this.dismissPopover();
+			return;
 		}
 
-		// Subsection header with label and help icon
-		const header = parentSection.createDiv({ cls: "tn-bulk-modal__section-header" });
-		header.createSpan({ cls: "tn-bulk-modal__section-label", text: "PROPERTIES & ANCHORS" });
+		// Append to modalEl so pickers find .modal as closestAncestor
+		const popover = this.modalEl.createDiv({ cls: "tn-bulk-popover" });
 
+		// Header with title + help icon + close button
+		const header = popover.createDiv({ cls: "tn-bulk-popover__header" });
+		header.createSpan({ cls: "tn-bulk-popover__title", text: title });
+
+		// Help icon next to title
 		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Add extra frontmatter to every item in this batch, or use \u2018Map to\u2019 to assign custom properties to standard task fields (e.g., Due date, Assignee). Search existing properties or create new ones.");
+		setTooltip(helpIcon, helpText, { placement: "top" });
 
-		// PropertyPicker container — createPropertyPicker takes this over entirely
-		// (it calls container.empty() + container.addClass("tn-property-picker"))
-		this.customPropsPanel = parentSection.createDiv({ cls: "tn-bulk-modal__custom-props-panel" });
+		// Spacer to push close button to right
+		header.createDiv({ cls: "tn-bulk-popover__spacer" });
 
-		// Active property rows — SIBLING of the picker panel in parentSection,
-		// completely safe from createPropertyPicker's container.empty() call
-		this.activeListEl = parentSection.createDiv({ cls: "tn-bulk-modal__custom-props-active" });
+		const closeBtn = header.createEl("button", { cls: "tn-bulk-popover__close" });
+		setIcon(closeBtn, "x");
+		closeBtn.addEventListener("click", () => this.dismissPopover());
 
-		// Sync the shared excludeKeys set with current state
-		this.syncExcludeKeys();
+		// Content area
+		const content = popover.createDiv({ cls: "tn-bulk-popover__content" });
+		renderContent(content);
 
-		this.propertyPickerInstance = createPropertyPicker({
-			container: this.customPropsPanel,
-			plugin: this.plugin,
-			itemPaths: this.items.map(i => i.path).filter((p): p is string => !!p),
-			excludeKeys: this.excludeKeysSet,
-			useAsOptions: Object.entries(OVERRIDABLE_FIELD_LABELS).map(([key, label]) => ({
-				key,
-				label,
-				requiresType: (OVERRIDABLE_FIELD_TYPES[key as OverridableField] || "text") as PropertyType,
-			})),
-			claimedMappings: this.bulkFieldOverrides,
-			onSelect: (key: string, type: PropertyType, value?: any, useAs?: string) => {
-				// Set field override mapping if a "Use as" target was chosen
-				if (useAs) {
-					this.clearBulkMappingForProperty(key);
-					this.bulkFieldOverrides[useAs] = key;
-				}
-				this.handleCustomPropertySelected(key, type, value);
-			},
-		});
+		// Position below the anchor icon
+		const rect = anchorEl.getBoundingClientRect();
+		const popoverWidth = width ?? 360;
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
 
-		// Render active custom properties (if any were set before a re-render)
-		this.renderCustomPropsActiveList();
+		// Horizontal: try to center on the icon, but clamp to viewport
+		let left = rect.left + rect.width / 2 - popoverWidth / 2;
+		left = Math.max(8, Math.min(left, viewportWidth - popoverWidth - 8));
+		popover.style.left = `${left}px`;
+		popover.style.width = `${popoverWidth}px`;
 
-		// Pre-load view field mappings + defaults into bulk state (once).
-		// Copies modalOptions.viewFieldMapping → bulkFieldOverrides and loads
-		// default property values from .base YAML → bulkCustomProperties.
-		// After async loading completes, refreshes the picker and active list.
-		if (!this.bulkPreloadedFromView) {
-			this.preloadBulkFromViewSettings();
+		// Vertical: prefer below, fall back to above
+		const spaceBelow = viewportHeight - rect.bottom;
+		if (spaceBelow >= 200) {
+			popover.style.top = `${rect.bottom + 6}px`;
+		} else {
+			popover.style.bottom = `${viewportHeight - rect.top + 6}px`;
 		}
+
+		// Dismiss on outside mousedown (delayed to avoid catching the opening click).
+		// Since popover is inside .modal, we listen on the modal for outside clicks.
+		const dismissHandler = (e: MouseEvent) => {
+			const target = e.target as Node;
+			if (popover.contains(target)) return;
+			// Don't dismiss if clicking inside picker dropdowns (on document.body)
+			const ppDropdown = document.querySelector(".tn-pp-dropdown");
+			if (ppDropdown && ppDropdown.contains(target)) return;
+			const pgpDropdown = document.querySelector(".tn-pgp-dropdown");
+			if (pgpDropdown && pgpDropdown.contains(target)) return;
+			this.dismissPopover();
+		};
+		setTimeout(() => {
+			document.addEventListener("mousedown", dismissHandler, true);
+		}, 0);
+
+		// Escape key to dismiss (only when no picker dropdown is open)
+		const escHandler = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				const ppDropdown = document.querySelector(".tn-pp-dropdown") as HTMLElement | null;
+				if (ppDropdown && ppDropdown.style.display !== "none") return;
+				const pgpDropdown = document.querySelector(".tn-pgp-dropdown") as HTMLElement | null;
+				if (pgpDropdown && pgpDropdown.style.display !== "none") return;
+				this.dismissPopover();
+			}
+		};
+		document.addEventListener("keydown", escHandler, true);
+
+		this.activePopover = popover;
+		this.activePopoverDismissHandler = dismissHandler;
+		this.activePopoverEscHandler = escHandler;
+	}
+
+	/**
+	 * Dismiss the currently active popover and clean up DOM + listeners.
+	 */
+	private dismissPopover(): void {
+		if (this.activePopoverDismissHandler) {
+			document.removeEventListener("mousedown", this.activePopoverDismissHandler, true);
+			this.activePopoverDismissHandler = null;
+		}
+		if (this.activePopoverEscHandler) {
+			document.removeEventListener("keydown", this.activePopoverEscHandler, true);
+			this.activePopoverEscHandler = null;
+		}
+		if (this.activePopover) {
+			this.activePopover.remove();
+			this.activePopover = null;
+		}
+	}
+
+	/**
+	 * Open a popover with the PropertyPicker for remap properties.
+	 */
+	private openRemapPropertiesPopover(): void {
+		if (!this.remapPropsIcon) return;
+
+		this.showPopover(
+			this.remapPropsIcon,
+			"Remap properties",
+			"Add custom frontmatter to every item, or use \u2018Map to\u2019 to assign properties to standard task fields (e.g., Due date, Assignee).",
+			(container) => {
+			// Clean up existing picker if it exists
+			if (this.propertyPickerInstance) {
+				this.propertyPickerInstance.destroy();
+				this.propertyPickerInstance = null;
+			}
+
+			// PropertyPicker container
+			const pickerPanel = container.createDiv({ cls: "tn-bulk-modal__custom-props-panel" });
+
+			// Active property rows — sibling of picker
+			this.activeListEl = container.createDiv({ cls: "tn-bulk-modal__custom-props-active" });
+
+			// Sync the shared excludeKeys set with current state
+			this.syncExcludeKeys();
+
+			this.propertyPickerInstance = createPropertyPicker({
+				container: pickerPanel,
+				plugin: this.plugin,
+				itemPaths: this.items.map(i => i.path).filter((p): p is string => !!p),
+				excludeKeys: this.excludeKeysSet,
+				useAsOptions: Object.entries(OVERRIDABLE_FIELD_LABELS).map(([key, label]) => ({
+					key,
+					label,
+					requiresType: (OVERRIDABLE_FIELD_TYPES[key as OverridableField] || "text") as PropertyType,
+				})),
+				claimedMappings: this.bulkFieldOverrides,
+				onSelect: (key: string, type: PropertyType, value?: any, useAs?: string) => {
+					if (useAs) {
+						this.clearBulkMappingForProperty(key);
+						this.bulkFieldOverrides[useAs] = key;
+					}
+					this.handleCustomPropertySelected(key, type, value);
+				},
+			});
+
+			// Render active custom properties
+			this.renderCustomPropsActiveList();
+
+			// Pre-load view field mappings + defaults into bulk state (once)
+			if (!this.bulkPreloadedFromView) {
+				this.preloadBulkFromViewSettings();
+			}
+		}, 480);
+	}
+
+	/**
+	 * Open a popover with the PersonGroupPicker for assignees.
+	 */
+	private openAssigneePopover(): void {
+		if (!this.assigneeIcon) return;
+
+		this.showPopover(
+			this.assigneeIcon,
+			"Assignees",
+			"Assign tasks to people or groups. Supports multiple assignees.",
+			(container) => {
+			// Clean up existing picker
+			this.assigneePicker?.destroy();
+			this.assigneePicker = null;
+
+			const hasAssignees = this.discoveredPersons.length > 0 || this.discoveredGroups.length > 0;
+
+			if (!hasAssignees) {
+				container.createDiv({
+					cls: "tn-bulk-modal__section-summary",
+					text: "No person or group notes found in vault.",
+				});
+				return;
+			}
+
+			this.assigneePicker = createPersonGroupPicker({
+				container,
+				persons: this.discoveredPersons,
+				groups: this.discoveredGroups,
+				multiSelect: true,
+				placeholder: "Search people or groups...",
+				initialSelection: this.selectedAssignees,
+				onChange: (paths) => {
+					this.selectedAssignees = paths;
+					this.updateActionIconStates();
+				},
+			});
+		});
 	}
 
 	/**
@@ -859,28 +1006,7 @@ export class BulkTaskCreationModal extends Modal {
 		span.style.color = "var(--text-faint)";
 
 		display.addEventListener("click", () => {
-			// Find the ASSIGNEES section in the top sections wrapper
-			if (!this.topSectionsWrapper) return;
-			const sections = this.topSectionsWrapper.querySelectorAll(".tn-bulk-modal__section");
-			for (const section of sections) {
-				const label = section.querySelector(".tn-bulk-modal__section-label");
-				if (label && label.textContent === "ASSIGNEES") {
-					// Scroll into view
-					section.scrollIntoView({ behavior: "smooth", block: "center" });
-					// Flash highlight to draw attention
-					(section as HTMLElement).style.transition = "background-color 0.3s";
-					(section as HTMLElement).style.backgroundColor = "var(--background-modifier-hover)";
-					setTimeout(() => {
-						(section as HTMLElement).style.backgroundColor = "";
-					}, 800);
-					// Focus the search input if available
-					const searchInput = section.querySelector("input") as HTMLInputElement | null;
-					if (searchInput) {
-						setTimeout(() => searchInput.focus(), 300);
-					}
-					break;
-				}
-			}
+			this.openAssigneePopover();
 		});
 	}
 
@@ -1270,78 +1396,6 @@ export class BulkTaskCreationModal extends Modal {
 	}
 
 	/**
-	 * Open the assignee picker.
-	 */
-	private openAssigneePicker() {
-		// For assignees, we need a modal or popover with the PersonGroupPicker
-		// For now, use a simple approach - create a temporary container
-		// TODO: Implement proper popover with PersonGroupPicker
-
-		const { Menu } = require("obsidian");
-		const menu = new Menu();
-
-		// Add persons
-		for (const person of this.discoveredPersons) {
-			const isSelected = this.selectedAssignees.includes(person.path);
-			menu.addItem((item: any) => {
-				item.setTitle(person.displayName);
-				if (isSelected) {
-					item.setIcon("check");
-				}
-				item.onClick(() => {
-					if (isSelected) {
-						this.selectedAssignees = this.selectedAssignees.filter(p => p !== person.path);
-					} else {
-						this.selectedAssignees.push(person.path);
-					}
-					this.updateActionIconStates();
-				});
-			});
-		}
-
-		// Separator if both exist
-		if (this.discoveredPersons.length > 0 && this.discoveredGroups.length > 0) {
-			menu.addSeparator();
-		}
-
-		// Add groups
-		for (const group of this.discoveredGroups) {
-			const isSelected = this.selectedAssignees.includes(group.notePath);
-			menu.addItem((item: any) => {
-				item.setTitle(`👥 ${group.displayName}`);
-				if (isSelected) {
-					item.setIcon("check");
-				}
-				item.onClick(() => {
-					if (isSelected) {
-						this.selectedAssignees = this.selectedAssignees.filter(p => p !== group.notePath);
-					} else {
-						this.selectedAssignees.push(group.notePath);
-					}
-					this.updateActionIconStates();
-				});
-			});
-		}
-
-		// Clear option
-		if (this.selectedAssignees.length > 0) {
-			menu.addSeparator();
-			menu.addItem((item: any) => {
-				item.setTitle("Clear all");
-				item.onClick(() => {
-					this.selectedAssignees = [];
-					this.updateActionIconStates();
-				});
-			});
-		}
-
-		if (this.assigneeIcon) {
-			const rect = this.assigneeIcon.getBoundingClientRect();
-			menu.showAtPosition({ x: rect.left, y: rect.bottom });
-		}
-	}
-
-	/**
 	 * Show or create the View Settings body.
 	 * Lazily loads notification config from .base YAML on first open.
 	 */
@@ -1574,21 +1628,21 @@ export class BulkTaskCreationModal extends Modal {
 	}
 
 	/**
-	 * Render the unified Default Properties & Anchors section for View Settings.
-	 * Same visual pattern as the Generate/Convert "PROPERTIES & ANCHORS" section.
+	 * Render the unified Default Remap Properties section for View Settings.
+	 * Same visual pattern as the Generate/Convert "REMAP PROPERTIES" section.
 	 */
 	private renderViewPropertiesSection(container: HTMLElement) {
 		const section = container.createDiv({ cls: "tn-bulk-modal__section" });
 		const header = section.createDiv({ cls: "tn-bulk-modal__section-header" });
-		header.createSpan({ cls: "tn-bulk-modal__section-label", text: "DEFAULT PROPERTIES & ANCHORS" });
+		header.createSpan({ cls: "tn-bulk-modal__section-label", text: "DEFAULT REMAP PROPERTIES" });
 
 		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "These properties and values are automatically applied to every task created from this view (Generate, Convert, or New Task button). Use 'Map to' to assign custom properties to standard task fields like Due date or Assignee.");
+		setTooltip(helpIcon, "These properties and values are automatically applied to every task created from this view (Generate, Convert, or New Task button). Use 'Map to' to assign custom properties to standard task fields like Due date or Assignee.", { placement: "top" });
 
 		section.createDiv({
 			cls: "tn-bulk-modal__section-subtitle",
-			text: "Properties pre-populated on tasks created from this view. Use \u2018Map to\u2019 to assign custom properties to standard task fields (e.g., Due date, Scheduled date, Assignee).",
+			text: "Pre-populated on tasks from this view. Use \u2018Map to\u2019 for standard fields.",
 		});
 
 		// PropertyPicker for adding new properties
@@ -1879,7 +1933,7 @@ export class BulkTaskCreationModal extends Modal {
 			return;
 		}
 
-		// ── Default Properties & Anchors (unified section) ──
+		// ── Default Remap Properties (unified section) ──
 		this.renderViewPropertiesSection(container);
 
 		// ── Notifications section ──
@@ -1889,7 +1943,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		const helpIcon = notifHeader.createSpan({ cls: "tn-bulk-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Configure when this view triggers notifications. Changes are saved to the .base file automatically.");
+		setTooltip(helpIcon, "Configure when this view triggers notifications. Changes are saved to the .base file automatically.", { placement: "top" });
 
 		notifSection.createDiv({
 			cls: "tn-bulk-modal__section-subtitle",
@@ -2090,6 +2144,9 @@ export class BulkTaskCreationModal extends Modal {
 	}
 
 	onClose() {
+		// Dismiss any active popover
+		this.dismissPopover();
+
 		// Clean up PersonGroupPicker
 		this.assigneePicker?.destroy();
 		this.assigneePicker = null;
@@ -2210,44 +2267,6 @@ export class BulkTaskCreationModal extends Modal {
 	}
 
 	/**
-	 * Render assignee section content into a container.
-	 */
-	private renderAssigneeSectionInto(section: HTMLElement) {
-		// Section header
-		const header = section.createDiv({ cls: "tn-bulk-modal__section-header" });
-		header.createSpan({ cls: "tn-bulk-modal__section-label", text: "ASSIGNEES" });
-
-		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
-		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Assign tasks to people or groups. Supports multiple assignees.");
-
-		// Check if persons/groups available
-		const hasAssignees = this.discoveredPersons.length > 0 || this.discoveredGroups.length > 0;
-
-		if (!hasAssignees) {
-			const emptyMsg = section.createDiv({ cls: "tn-bulk-modal__section-summary" });
-			emptyMsg.textContent = "No person or group notes found in vault.";
-			return;
-		}
-
-		// Picker container
-		const pickerContainer = section.createDiv({ cls: "tn-bulk-modal__assignee-picker" });
-
-		// Create the PersonGroupPicker
-		this.assigneePicker = createPersonGroupPicker({
-			container: pickerContainer,
-			persons: this.discoveredPersons,
-			groups: this.discoveredGroups,
-			multiSelect: true,
-			placeholder: "Search people or groups...",
-			initialSelection: this.selectedAssignees,
-			onChange: (paths) => {
-				this.selectedAssignees = paths;
-			},
-		});
-	}
-
-	/**
 	 * Render action bar content into a container.
 	 * Shows same icons for both modes - unified bulk values.
 	 */
@@ -2258,7 +2277,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Set values to apply to all items. Click an icon to set a value.");
+		setTooltip(helpIcon, "Set values to apply to all items. Click an icon to set a value.", { placement: "top" });
 
 		// Action bar with icons - same for both modes
 		const actionBar = section.createDiv({ cls: "tn-bulk-modal__action-bar" });
@@ -2277,6 +2296,14 @@ export class BulkTaskCreationModal extends Modal {
 
 		// Reminders
 		this.reminderIcon = this.createActionIcon(actionBar, "bell", "Reminders", () => this.openReminderPicker());
+
+		actionBar.createDiv({ cls: "tn-bulk-modal__action-separator" });
+
+		// Assignee (popover with PersonGroupPicker)
+		this.assigneeIcon = this.createActionIcon(actionBar, "user", "Assignees", () => this.openAssigneePopover());
+
+		// Remap properties (popover with PropertyPicker)
+		this.remapPropsIcon = this.createActionIcon(actionBar, "list-plus", "Remap properties", () => this.openRemapPropertiesPopover());
 
 		// Reminder warning (hidden by default, shown when reminders set but no dates)
 		this.reminderWarning = section.createDiv({
@@ -2316,7 +2343,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Configure how new task files are created. See Settings → Task properties for defaults.");
+		setTooltip(helpIcon, "Configure how new task files are created. See Settings → Task properties for defaults.", { placement: "top" });
 
 		// Options container
 		const optionsBox = container.createDiv({ cls: "tn-bulk-modal__options" });
@@ -2352,7 +2379,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Configure how notes are converted to tasks. See Settings → Task properties for defaults.");
+		setTooltip(helpIcon, "Configure how notes are converted to tasks. See Settings → Task properties for defaults.", { placement: "top" });
 
 		// Options container
 		const optionsBox = container.createDiv({ cls: "tn-bulk-modal__options" });
@@ -2398,7 +2425,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		const helpIcon = header.createSpan({ cls: "tn-bulk-modal__help" });
 		setIcon(helpIcon, "help-circle");
-		setTooltip(helpIcon, "Modify properties on existing task files. Only the fields you set above will be changed. Non-task items are skipped.");
+		setTooltip(helpIcon, "Modify properties on existing task files. Only the fields you set above will be changed. Non-task items are skipped.", { placement: "top" });
 
 		const optionsBox = container.createDiv({ cls: "tn-bulk-modal__options" });
 

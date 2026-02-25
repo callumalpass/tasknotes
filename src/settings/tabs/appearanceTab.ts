@@ -690,6 +690,22 @@ export function renderAppearanceTab(
 				);
 			}
 
+			// Cross-link to Modal Fields tab for modal layout settings
+			group.addSetting((setting) => {
+				const descFrag = document.createDocumentFragment();
+				descFrag.appendText("Controls like split layout and property mapping visibility are in ");
+				const link = descFrag.createEl("a", { text: "Modal fields" });
+				link.style.cssText = "cursor: pointer; color: var(--text-accent)";
+				link.addEventListener("click", (e) => {
+					e.preventDefault();
+					const tabBtn = container.closest(".tasknotes-settings")
+						?.querySelector("#tab-button-modal-fields") as HTMLElement | null;
+					if (tabBtn) tabBtn.click();
+				});
+				descFrag.appendText(" settings.");
+				setting.setName("Modal layout").setDesc(descFrag);
+			});
+
 			group.addSetting((setting) =>
 				configureDropdownSetting(setting, {
 					name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),

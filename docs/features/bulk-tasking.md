@@ -389,5 +389,5 @@ These settings are in **Settings > Features > Bases views**:
 
 - [Task Management](task-management.md) for creating individual tasks
 - [Custom Properties](custom-properties.md) for the PropertyPicker used in bulk operations
-- [Per-View Property Mapping](per-base-mapping.md) for how views can use different property names
+- [Property Mapping](property-mapping.md) for how views can use different property names
 - [Views](../views.md) for the Bases views that bulk tasking operates on

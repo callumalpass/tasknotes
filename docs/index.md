@@ -83,7 +83,7 @@ Add filters, change grouping, write formulas. Views are stored in [YAML](https:/
 | Topic | Description |
 |-------|-------------|
 | [Views](views.md) | Task List, Kanban, Calendar, Agenda, and more |
-| [Custom Fields](features/user-fields.md) | Add any frontmatter field to your tasks and use it in filters, views, and templates |
+| [Custom Properties](features/custom-properties.md) | Add any frontmatter field to your tasks and use it in filters, views, and templates |
 
 ### Creating and Managing Tasks
 

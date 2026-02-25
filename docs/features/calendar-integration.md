@@ -24,7 +24,7 @@ TaskNotes provides calendar integration through OAuth-connected calendar service
 
 <!-- GIF: Dragging a task to a new date in the calendar week view and seeing the due date update -->
 
-![Calendar month view with tasks placed on dates](docs/assets/calendar-integration/screenshot-calendar-month.png)
+![Calendar month view with tasks placed on dates](../assets/calendar-integration/screenshot-calendar-month.png)
 
 TaskNotes supports bidirectional synchronization with Google Calendar and Microsoft Outlook using OAuth authentication. This integration allows you to view external calendar events alongside your tasks and sync changes back to the calendar provider.
 
@@ -64,7 +64,7 @@ For detailed view documentation, see [Calendar Views](../views/calendar-views.md
 
 <!-- GIF: Clicking and dragging on a calendar time slot to create a time entry linked to a task -->
 
-![Calendar view for scheduling tasks](docs/assets/calendar-integration/screenshot-calendar-month.png)
+![Calendar view for scheduling tasks](../assets/calendar-integration/screenshot-calendar-month.png)
 
 TaskNotes includes a time entry editor for tracking time spent on tasks. Time entries are created and managed through the Calendar View.
 

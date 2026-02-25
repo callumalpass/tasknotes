@@ -50,7 +50,7 @@ Examples:
 
 <!-- GIF: Clicking the bell icon on a task card, selecting "15 minutes before due", and seeing the reminder indicator appear -->
 
-![Task edit modal showing reminder configuration](docs/assets/reminders/screenshot-task-edit-modal.png)
+![Task edit modal showing reminder configuration](../assets/reminders/screenshot-task-edit-modal.png)
 
 You can add reminders from:
 
@@ -76,7 +76,7 @@ Quick options appear only when the anchor date exists.
 
 This prevents invalid reminder states and keeps the quick menu focused on options that can be applied immediately.
 
-![Task context menu](docs/assets/reminders/feature-task-context-menu.png)
+![Task context menu](../assets/reminders/feature-task-context-menu.png)
 
 ## Reminder Data Format
 
@@ -118,7 +118,7 @@ You typically do not need to edit these fields manually, but understanding the s
 
 <!-- GIF: A reminder notification firing -- the Obsidian notice appearing with task name and action buttons -->
 
-![Kanban view with notification toast](docs/assets/reminders/screenshot-kanban.png)
+![Kanban view with notification toast](../assets/reminders/screenshot-kanban.png)
 
 ## Visual Indicators
 
@@ -144,7 +144,7 @@ Defaults are applied to:
 
 Default reminders are useful for recurring habits, such as pre-deadline checks or day-before planning prompts.
 
-![Task properties settings](docs/assets/reminders/settings-task-properties.png)
+![Task properties settings](../assets/reminders/settings-task-properties.png)
 
 ## Technical Notes
 

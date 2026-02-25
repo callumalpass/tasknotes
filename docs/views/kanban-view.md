@@ -45,7 +45,7 @@ A common setup is to keep one board grouped by status and another grouped by pro
 
 <!-- GIF: Dragging a task card from the "Open" column to "In Progress" and seeing the status update -->
 
-![Kanban board with task cards in status columns](docs/assets/kanban-view/screenshot-kanban.png)
+![Kanban board with task cards in status columns](../assets/kanban-view/screenshot-kanban.png)
 
 ## Interface Layout
 
@@ -62,7 +62,7 @@ Each column includes:
 
 <!-- SCREENSHOT: Kanban board with swimlanes showing priority rows and status columns -->
 
-![Kanban board showing status columns with task cards](docs/assets/kanban-view/screenshot-kanban.png)
+![Kanban board showing status columns with task cards](../assets/kanban-view/screenshot-kanban.png)
 
 When a `swimLane` property is configured, the board displays a grid layout. The horizontal axis represents columns (groupBy values), and the vertical axis represents swimlanes.
 

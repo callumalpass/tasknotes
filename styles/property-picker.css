@@ -803,3 +803,14 @@
 .tn-prop-row__conflict-action:hover {
     opacity: 0.8;
 }
+
+/* ================================================
+   COLLAPSIBLE SECTION TOGGLE
+   Used by task modals to collapse/expand the property picker section
+   ================================================ */
+
+/* Show/hide toggle for the property picker section.
+   The list-plus action bar icon or header click toggles this. */
+.tn-pp-section-hidden {
+    display: none !important;
+}
