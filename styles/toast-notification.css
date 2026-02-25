@@ -288,17 +288,19 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-/* Scrollable mode - triggered by clicking "+X more" to show all items */
-.tn-toast__items-list--above.tn-toast__items-list--scrollable {
-	max-height: 250px;
-	overflow-y: auto;
-	padding: 8px 16px;
-	border-bottom: 1px solid var(--background-modifier-border);
-}
-
-/* Combined: expanded + scrollable */
+/* Scrollable mode - only applies when ALSO expanded (clicking "+X more" sets scrollable,
+   but collapsing via toggle should still hide the list) */
 .tn-toast__items-list--above.tn-toast__items-list--expanded.tn-toast__items-list--scrollable {
 	max-height: 250px;
+	overflow-y: auto;
+}
+
+/* Scrollable but NOT expanded = collapsed (toggle clicked to hide) */
+.tn-toast__items-list--above.tn-toast__items-list--scrollable:not(.tn-toast__items-list--expanded) {
+	max-height: 0;
+	overflow: hidden;
+	padding: 0;
+	border-bottom: none;
 }
 
 /* Legacy items list (fallback) */
