@@ -23894,6 +23894,36 @@ select.tasknotes-settings__card-input {
     display: none !important;
 }
 
+/* ================================================
+   CONVERSION PROGRESS BAR
+   Shown inside confirmation modal during type conversion
+   ================================================ */
+
+.tn-pp-conversion-progress {
+    margin-top: 8px;
+}
+
+.tn-pp-conversion-progress__label {
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.tn-pp-conversion-progress__track {
+    width: 100%;
+    height: 6px;
+    background: var(--background-modifier-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tn-pp-conversion-progress__bar {
+    height: 100%;
+    background: var(--interactive-accent);
+    border-radius: 3px;
+    transition: width 0.15s ease;
+}
+
 
 /* ===== BULK-MODAL.CSS ===== */
 /* =====================================================================

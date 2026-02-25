@@ -79,6 +79,9 @@ tasknotes-e2e-vault/*.ics
 # Upstream reference copy
 tasknotes-upstream/
 
+# Static test fixtures (generated dynamically by tasknotes-test-fixtures plugin)
+test-fixtures/
+
 # Agent workspace and planning
 knowledge-base/
 task_plan.md

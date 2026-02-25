@@ -40,7 +40,7 @@ The primary method is the **Task Creation Modal**, accessed via the "Create new 
 <!-- GIF: Opening the task creation modal, filling in title/due/priority, and saving -->
 
 ![[file-20260225120755827.png]]
-
+{>>Could we show this screenshot in a callout collapsed dropdown or something?<<}
 ![[file-20260225120526242.mp4]]
 
 When creating a task, the title is automatically sanitized to remove characters forbidden in filenames.
@@ -118,8 +118,7 @@ Tasks can have subtasks created directly from their context menu. When viewing a
 ## Dependencies
 
 <!-- SCREENSHOT: Task frontmatter showing blockedBy field with structured dependency objects (uid, reltype, gap) -->
-
-{>>Get screenshot<<}
+{>>At least in our test fixtures, I'm not finding any examples of this structured information<<}
 
 Task dependencies capture prerequisite work using RFC&nbsp;9253 terminology. Dependencies are stored in frontmatter as structured objects:
 
@@ -139,7 +138,6 @@ Whenever a dependency is added, TaskNotes updates the upstream note's `blocking`
 ### Selecting dependencies in the UI
 
 <!-- GIF: Opening the task edit modal, clicking "Blocked by", searching for a task in the fuzzy selector, and adding it as a dependency -->
-
 {>>Do gif<<}
 
 - The task creation and edit modals expose "Blocked by" and "Blocking" buttons that launch a fuzzy task selector. The picker only offers valid tasks, excludes the current note, and prevents duplicate entries.
@@ -147,8 +145,7 @@ Whenever a dependency is added, TaskNotes updates the upstream note's `blocking`
 - Task cards show a fork icon whenever a task blocks other work. Clicking it expands an inline list of downstream tasks without triggering the parent card's modal, so you can inspect dependents in place.
 
 <!-- GIF: Clicking the fork icon on a task card to expand inline list of downstream blocked tasks -->
-
-{>>Do gif<<}
+![[file-20260225132447537.gif]]
 
 These controls currently create and manage finish-to-start style blockers. Advanced `reltype` values and `gap` data are preserved in frontmatter, but blocking evaluation is currently based on whether unresolved dependencies exist rather than relationship-type-specific scheduling rules.
 
@@ -156,7 +153,9 @@ These controls currently create and manage finish-to-start style blockers. Advan
 
 ### Auto-Archiving
 
-TaskNotes can automatically archive tasks when they transition into a status that has auto-archiving enabled. This keeps completed work out of your active lists without requiring manual cleanup.
+![[file-20260225132923590.gif]]
+
+{>>This could be made more actionable and less like a big block of text - also added a gif<<}TaskNotes can automatically archive tasks when they transition into a status that has auto-archiving enabled. This keeps completed work out of your active lists without requiring manual cleanup.
 
 Configure auto-archiving per status from **Settings > Task Properties > Task Statuses**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1-1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
 

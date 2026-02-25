@@ -134,6 +134,8 @@ export class BulkTaskCreationModal extends Modal {
 	private activePopover: HTMLElement | null = null;
 	private activePopoverDismissHandler: ((e: MouseEvent) => void) | null = null;
 	private activePopoverEscHandler: ((e: KeyboardEvent) => void) | null = null;
+	/** Lock to prevent popover dismiss during async flows (e.g. conversion confirmation) */
+	private popoverDismissLocked = false;
 
 	constructor(
 		app: App,
@@ -473,13 +475,27 @@ export class BulkTaskCreationModal extends Modal {
 		// Dismiss on outside mousedown (delayed to avoid catching the opening click).
 		// Since popover is inside .modal, we listen on the modal for outside clicks.
 		const dismissHandler = (e: MouseEvent) => {
+			// Don't dismiss while an async conversion flow is in progress
+			if (this.popoverDismissLocked) return;
 			const target = e.target as Node;
 			if (popover.contains(target)) return;
-			// Don't dismiss if clicking inside picker dropdowns (on document.body)
+			// Don't dismiss if clicking inside picker dropdowns or floating menus (on document.body)
 			const ppDropdown = document.querySelector(".tn-pp-dropdown");
 			if (ppDropdown && ppDropdown.contains(target)) return;
 			const pgpDropdown = document.querySelector(".tn-pgp-dropdown");
 			if (pgpDropdown && pgpDropdown.contains(target)) return;
+			// PropertyPicker floating menus (Use as, conversion, type-conversion, files list)
+			for (const sel of [".tn-pp-use-as-menu", ".tn-pp-conversion-menu", ".tn-pp-type-conversion-menu", ".tn-pp-files-list-floating"]) {
+				const el = document.querySelector(sel);
+				if (el && el.contains(target)) return;
+			}
+			// Don't dismiss if a stacked modal is open (e.g. conversion confirmation dialog)
+			const targetEl = target instanceof HTMLElement ? target : (target as Node).parentElement;
+			if (targetEl) {
+				const targetModal = targetEl.closest(".modal-container");
+				const ourModal = popover.closest(".modal-container");
+				if (targetModal && targetModal !== ourModal) return;
+			}
 			this.dismissPopover();
 		};
 		setTimeout(() => {
@@ -489,6 +505,7 @@ export class BulkTaskCreationModal extends Modal {
 		// Escape key to dismiss (only when no picker dropdown is open)
 		const escHandler = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
+				if (this.popoverDismissLocked) return;
 				const ppDropdown = document.querySelector(".tn-pp-dropdown") as HTMLElement | null;
 				if (ppDropdown && ppDropdown.style.display !== "none") return;
 				const pgpDropdown = document.querySelector(".tn-pgp-dropdown") as HTMLElement | null;
@@ -558,6 +575,8 @@ export class BulkTaskCreationModal extends Modal {
 					requiresType: (OVERRIDABLE_FIELD_TYPES[key as OverridableField] || "text") as PropertyType,
 				})),
 				claimedMappings: this.bulkFieldOverrides,
+				onConversionStart: () => { this.popoverDismissLocked = true; },
+				onConversionEnd: () => { this.popoverDismissLocked = false; },
 				onSelect: (key: string, type: PropertyType, value?: any, useAs?: string) => {
 					if (useAs) {
 						this.clearBulkMappingForProperty(key);
@@ -1026,6 +1045,12 @@ export class BulkTaskCreationModal extends Modal {
 			}
 		}
 		return flat;
+	}
+
+	/** Whether custom frontmatter needs to be written (custom props OR field overrides). */
+	private hasCustomFrontmatter(): boolean {
+		return Object.keys(this.bulkCustomProperties).length > 0
+			|| Object.keys(this.bulkFieldOverrides).length > 0;
 	}
 
 	/**
@@ -2819,7 +2844,7 @@ export class BulkTaskCreationModal extends Modal {
 			status: this.bulkStatus || undefined,
 			priority: this.bulkPriority || undefined,
 			reminders: this.bulkReminders.length > 0 ? this.bulkReminders : undefined,
-			customFrontmatter: Object.keys(this.bulkCustomProperties).length > 0 ? this.getFlatCustomProperties() : undefined,
+			customFrontmatter: this.hasCustomFrontmatter() ? this.getFlatCustomProperties() : undefined,
 			// Per-view field mapping and provenance (ADR-011)
 			viewFieldMapping: this.modalOptions.viewFieldMapping,
 			sourceBaseId: this.modalOptions.sourceBaseId,
@@ -2886,7 +2911,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		// Build custom frontmatter, including assignees routed through it
 		let convertCustomFm: Record<string, any> | undefined =
-			Object.keys(this.bulkCustomProperties).length > 0 ? this.getFlatCustomProperties() : undefined;
+			this.hasCustomFrontmatter() ? this.getFlatCustomProperties() : undefined;
 
 		if (this.selectedAssignees.length > 0) {
 			const assigneeFieldName = this.plugin.settings.assigneeFieldName || "assignee";
@@ -2998,7 +3023,7 @@ export class BulkTaskCreationModal extends Modal {
 				return `[[${p.replace(/\.md$/, "")}]]`;
 			}) : undefined,
 			reminders: this.bulkReminders.length > 0 ? this.bulkReminders : undefined,
-			customFrontmatter: Object.keys(this.bulkCustomProperties).length > 0 ? this.getFlatCustomProperties() : undefined,
+			customFrontmatter: this.hasCustomFrontmatter() ? this.getFlatCustomProperties() : undefined,
 			viewFieldMapping: this.modalOptions.viewFieldMapping,
 			sourceBaseId: this.modalOptions.sourceBaseId,
 			sourceViewId: this.modalOptions.sourceViewId,

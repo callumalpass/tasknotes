@@ -37,6 +37,7 @@ import {
 	type PropertyType,
 	normalizeDateValue,
 	keyToDisplayName,
+	detectPropertyType,
 } from "../utils/propertyDiscoveryUtils";
 import { createPropertyPicker } from "../ui/PropertyPicker";
 import {
@@ -214,6 +215,24 @@ export class TaskEditModal extends TaskModal {
 
 			// Initialize per-task field overrides from existing tracking properties
 			this.fieldOverrides = readFieldOverrides(frontmatter);
+
+			// Auto-populate discoveredProperties with overridden properties so
+			// the remap section shows them on modal open (not just after manual add).
+			for (const [, customPropName] of Object.entries(this.fieldOverrides)) {
+				// Skip if already loaded as a configured userField
+				const alreadyLoaded = this.discoveredProperties.some(p => p.key === customPropName)
+					|| this.userFields[customPropName] !== undefined;
+				if (alreadyLoaded) continue;
+
+				const value = frontmatter[customPropName] ?? null;
+				this.userFields[customPropName] = value;
+				this.discoveredProperties.push({
+					key: customPropName,
+					displayName: keyToDisplayName(customPropName),
+					type: detectPropertyType(value),
+					value,
+				});
+			}
 		} catch (error) {
 			console.error("Error initializing user fields:", error);
 		}

@@ -64,6 +64,10 @@ export interface PropertyPickerOptions {
 	useAsOptions?: UseAsOption[];
 	/** Currently claimed mappings: { fieldKey: propertyKey } — disables claimed options. */
 	claimedMappings?: Record<string, string>;
+	/** Called when an async conversion flow starts (e.g. confirmation modal opens). */
+	onConversionStart?: () => void;
+	/** Called when an async conversion flow ends (regardless of outcome). */
+	onConversionEnd?: () => void;
 	/** Initial scope for property discovery (for restoring across re-renders) */
 	initialScope?: PropertyScope;
 	/** Called when the scope changes */
@@ -97,29 +101,82 @@ const TYPE_LABELS: Record<PropertyType, string> = {
 /**
  * Show a confirmation modal before destructive property type conversion.
  * Shared between PropertyPicker, Settings, and any other conversion sites.
+ *
+ * If `onConvert` is provided, clicking "Convert" runs the conversion with a
+ * progress bar inside the modal. The modal stays open until conversion completes.
+ * If omitted, behaves as a simple confirm/cancel dialog.
  */
 export function showConversionConfirmation(
 	app: InstanceType<typeof import("obsidian").App>,
 	key: string,
 	targetType: string,
-	fileCount: number
+	fileCount: number,
+	onConvert?: (onProgress: (completed: number, total: number) => void) => Promise<{ converted: number; failed: number }>,
 ): Promise<boolean> {
 	return new Promise((resolve) => {
 		const modal = new Modal(app);
+		let resolved = false;
 		modal.titleEl.textContent = `Convert "${key}" to ${targetType}?`;
 		const content = modal.contentEl;
 		content.createEl("p", {
 			text: `This will modify frontmatter in ${fileCount} file${fileCount !== 1 ? "s" : ""}. Values that cannot be parsed will be set to defaults.`,
 		});
-		content.createEl("p", {
+		const warningEl = content.createEl("p", {
 			text: "This action cannot be undone.",
-		}).style.cssText = "color: var(--text-warning); font-weight: 500;";
+		});
+		warningEl.style.cssText = "color: var(--text-warning); font-weight: 500;";
+
+		// Progress bar (hidden initially)
+		const progressContainer = content.createDiv({ cls: "tn-pp-conversion-progress" });
+		progressContainer.style.display = "none";
+		const progressLabel = progressContainer.createDiv({ cls: "tn-pp-conversion-progress__label" });
+		const progressTrack = progressContainer.createDiv({ cls: "tn-pp-conversion-progress__track" });
+		const progressBar = progressTrack.createDiv({ cls: "tn-pp-conversion-progress__bar" });
+		progressBar.style.width = "0%";
+
 		const buttonRow = content.createDiv({ cls: "modal-button-container" });
-		buttonRow.createEl("button", { text: "Cancel" })
-			.addEventListener("click", () => { modal.close(); resolve(false); });
-		buttonRow.createEl("button", { text: "Convert", cls: "mod-cta" })
-			.addEventListener("click", () => { modal.close(); resolve(true); });
-		modal.onClose = () => resolve(false);
+		const cancelBtn = buttonRow.createEl("button", { text: "Cancel" });
+		const convertBtn = buttonRow.createEl("button", { text: "Convert", cls: "mod-cta" });
+
+		cancelBtn.addEventListener("click", () => { resolved = true; resolve(false); modal.close(); });
+
+		convertBtn.addEventListener("click", async () => {
+			if (!onConvert) {
+				resolved = true; resolve(true); modal.close();
+				return;
+			}
+			// Transition to progress state
+			cancelBtn.disabled = true;
+			convertBtn.disabled = true;
+			convertBtn.textContent = "Converting...";
+			warningEl.style.display = "none";
+			progressContainer.style.display = "block";
+			progressLabel.textContent = `Converting 0 / ${fileCount}...`;
+
+			try {
+				const result = await onConvert((completed, total) => {
+					const pct = Math.round((completed / total) * 100);
+					progressBar.style.width = `${pct}%`;
+					progressLabel.textContent = `Converting ${completed} / ${total}...`;
+				});
+				progressBar.style.width = "100%";
+				if (result.failed > 0) {
+					progressLabel.textContent = `Done: ${result.converted} converted, ${result.failed} failed`;
+				} else {
+					progressLabel.textContent = `Converted ${result.converted} file${result.converted !== 1 ? "s" : ""} successfully`;
+				}
+				// Brief pause to show completion before closing
+				await new Promise(r => setTimeout(r, 600));
+				resolved = true; resolve(true); modal.close();
+			} catch (err) {
+				progressLabel.textContent = `Error: ${err instanceof Error ? err.message : String(err)}`;
+				progressLabel.style.color = "var(--text-error)";
+				cancelBtn.disabled = false;
+				cancelBtn.textContent = "Close";
+			}
+		});
+
+		modal.onClose = () => { if (!resolved) resolve(false); };
 		modal.open();
 	});
 }
@@ -142,6 +199,8 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 		allowedConversionTargets,
 		useAsOptions,
 		claimedMappings,
+		onConversionStart,
+		onConversionEnd,
 		includeNonTaskFiles,
 	} = options;
 
@@ -469,16 +528,23 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 					convertBtn.addEventListener("click", async (e) => {
 						e.stopPropagation();
 						closeDropdown();
-						const confirmed = await showConversionConfirmation(
-							plugin.app, entry.key, targets[0], entry.allFiles.length
-						);
-						if (!confirmed) { openDropdown(); return; }
+						onConversionStart?.();
 						try {
-							if (onConvert) await onConvert(entry.key, targets[0], entry.allFiles, "convert-in-place");
-							else await runConversion(entry.key, targets[0], entry.allFiles, "convert-in-place");
+							const confirmed = await showConversionConfirmation(
+								plugin.app, entry.key, targets[0], entry.allFiles.length,
+								async (onProgress) => {
+									const result = await convertPropertyType(plugin, entry.key, targets[0], entry.allFiles, "convert-in-place", onProgress);
+									return result;
+								}
+							);
+							if (!confirmed) { onConversionEnd?.(); openDropdown(); return; }
+							setTimeout(() => refresh(), 500);
+							onConversionEnd?.();
 							onSelect(entry.key, targets[0]);
-							closeDropdown();
-						} catch { /* cancelled */ }
+						} catch (err) {
+							onConversionEnd?.();
+							throw err;
+						}
 					});
 				} else if (targets.length > 1) {
 					// Multiple targets: button opens popup menu
@@ -737,16 +803,23 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 				e.stopPropagation();
 				menu.remove();
 				closeDropdown();
-				const confirmed = await showConversionConfirmation(
-					plugin.app, entry.key, targetType, entry.allFiles.length
-				);
-				if (!confirmed) { openDropdown(); return; }
+				onConversionStart?.();
 				try {
-					if (onConvert) await onConvert(entry.key, targetType, entry.allFiles, "convert-in-place");
-					else await runConversion(entry.key, targetType, entry.allFiles, "convert-in-place");
+					const confirmed = await showConversionConfirmation(
+						plugin.app, entry.key, targetType, entry.allFiles.length,
+						async (onProgress) => {
+							const result = await convertPropertyType(plugin, entry.key, targetType, entry.allFiles, "convert-in-place", onProgress);
+							return result;
+						}
+					);
+					if (!confirmed) { onConversionEnd?.(); openDropdown(); return; }
+					setTimeout(() => refresh(), 500);
+					onConversionEnd?.();
 					onSelect(entry.key, targetType);
-					closeDropdown();
-				} catch { /* cancelled */ }
+				} catch (err) {
+					onConversionEnd?.();
+					throw err;
+				}
 			});
 		}
 
@@ -831,16 +904,27 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 					try {
 						// Auto-convert if type mismatch (with confirmation)
 						if (entry.dominantType !== option.requiresType) {
-							const confirmed = await showConversionConfirmation(
-								plugin.app, entry.key, option.requiresType, entry.allFiles.length
-							);
-							if (!confirmed) { openDropdown(); return; }
-							if (onConvert) await onConvert(entry.key, option.requiresType, entry.allFiles, "convert-in-place");
-							else await runConversion(entry.key, option.requiresType, entry.allFiles, "convert-in-place");
+							onConversionStart?.();
+							try {
+								const confirmed = await showConversionConfirmation(
+									plugin.app, entry.key, option.requiresType, entry.allFiles.length,
+									async (onProgress) => {
+										const result = await convertPropertyType(plugin, entry.key, option.requiresType, entry.allFiles, "convert-in-place", onProgress);
+										return result;
+									}
+								);
+								if (!confirmed) { onConversionEnd?.(); openDropdown(); return; }
+								setTimeout(() => refresh(), 500);
+							} catch (err) {
+								onConversionEnd?.();
+								throw err;
+							}
+							onConversionEnd?.();
 						}
 						onSelect(entry.key, option.requiresType, undefined, option.key);
-						closeDropdown();
-					} catch { /* cancelled */ }
+					} catch (err) {
+						console.error("[PropertyPicker] Use-as error:", err);
+					}
 				});
 			}
 		}
@@ -1035,6 +1119,9 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 		} else {
 			new Notice(`Converted ${result.converted} file${result.converted !== 1 ? "s" : ""} successfully`);
 		}
+		// Metadata cache updates asynchronously after file writes — delay a refresh
+		// so the PropertyPicker re-reads the updated types on next open.
+		setTimeout(() => refresh(), 500);
 	}
 
 	// ── Helpers ───────────────────────────────────────

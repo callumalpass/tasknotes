@@ -4,6 +4,19 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.55] - 2026-02-25
+
+### Fixed
+- **Edit Task modal shows field overrides on open**: Tasks with per-task field mappings (e.g., `tnDueDateProp: convert_test`) now auto-populate the Remap Properties section when the Edit Task modal opens, instead of requiring manual re-add via search.
+- **Bulk generation writes field override tracking properties**: When mapping a custom property to a core field (e.g., `convert_test` to Due date) in the bulk generate modal, the tracking property (`tnDueDateProp`) is now correctly written to generated task files.
+- **Duplicate "Bulk tasking" button**: Toggling "Show toolbar buttons" in Bases view configure panel no longer creates duplicate buttons.
+
+### Added
+- **PropertyPicker conversion progress bar**: Type conversion now shows a live progress bar inside the confirmation modal instead of closing immediately.
+
+### Removed
+- **Stale test-fixtures folder**: Removed static fixture files from the repo — the test fixtures plugin generates these dynamically now.
+
 ## [4.3.54] - 2026-02-25
 
 ### Added

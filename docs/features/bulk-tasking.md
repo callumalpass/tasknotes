@@ -133,6 +133,7 @@ Edit mode modifies frontmatter properties on files that are already tasks. Unlik
 This is useful for batch updates: reschedule 20 tasks to next week, change the priority on everything in a view, or assign a group of tasks to someone.
 
 <!-- GIF: Using Edit mode to batch-update priority and due date on multiple tasks -->
+![[file-20260225134350339.gif]]
 
 **Behavior:**
 
@@ -148,6 +149,7 @@ This is useful for batch updates: reschedule 20 tasks to next week, change the p
 Generate mode creates a new task file for each item in the view. The source items stay unchanged. This is useful when you have a list of notes (meeting notes, project plans, reference documents) and want to spin off tasks linked back to them.
 
 <!-- GIF: Opening the bulk modal from a Bases view, selecting Generate mode, and creating tasks -->
+![[file-20260225135305462.gif]]
 
 Each generated task:
 
@@ -169,21 +171,17 @@ The engine processes items in parallel (batches of 5) for speed, with a progress
 All three modes share an action bar at the top of the modal. It contains icon buttons for the most common task properties:
 
 <!-- SCREENSHOT: Action bar with icons for due, scheduled, status, priority, reminders, assignee -->
+![[file-20260225135639815.gif]]
+{>>Should we add better visuals or even icons to below table - not sure how helpful it currently is unless we link to other pages like task properties<<}
 
-![Action bar screenshot](../assets/bulk-action-bar.png)
-
-<video controls width="100%">
-  <source src="../assets/bulk-action-bar-demo.mp4" type="video/mp4">
-</video>
-
-| Icon | Property | Picker |
-|------|----------|--------|
-| Calendar | Due date | Date picker with relative options (Today, Tomorrow, Next week, etc.) |
-| Calendar clock | Scheduled date | Date picker |
-| Circle | Status | Dropdown with your configured statuses |
-| Flag | Priority | Dropdown with your configured priorities |
-| Bell | Reminders | Reminder editor (stackable -- you can add multiple reminders) |
-| User | Assignee | Person and group picker |
+| Icon           | Property       | Picker                                                               |
+| -------------- | -------------- | -------------------------------------------------------------------- |
+| Calendar       | Due date       | Date picker with relative options (Today, Tomorrow, Next week, etc.) |
+| Calendar clock | Scheduled date | Date picker                                                          |
+| Circle         | Status         | Dropdown with your configured statuses                               |
+| Flag           | Priority       | Dropdown with your configured priorities                             |
+| Bell           | Reminders      | Reminder editor (stackable -- you can add multiple reminders)        |
+| User           | Assignee       | Person and group picker                                              |
 
 Each icon shows a dot indicator when a value is set, and the tooltip updates to show the current value. For reminders, the dot shows a count badge.
 
@@ -193,15 +191,10 @@ Values set in the action bar apply to every item in the batch. In Generate mode 
 
 ## Custom Properties in Bulk Operations
 
-Below the action bar, a **Properties & Anchors** section lets you add any frontmatter property to the batch. It uses the same PropertyPicker that appears in individual task modals.
+Below the action bar, a{>>Update this - we change the name<<} **Properties & Anchors** section lets you add any frontmatter property to the batch. It uses the same PropertyPicker that appears in individual task modals.
 
 <!-- SCREENSHOT: PropertyPicker in bulk modal showing discovered properties with type badges -->
 
-![Properties section screenshot](../assets/bulk-properties-section.png)
-
-<video controls width="100%">
-  <source src="../assets/bulk-properties-demo.mp4" type="video/mp4">
-</video>
 
 Type a property name or search existing properties discovered from your task files. The picker shows:
 
@@ -213,7 +206,8 @@ Custom properties are written to frontmatter alongside the standard task fields.
 
 If the view you opened from has per-view field mappings configured, those mappings are pre-loaded into the Properties & Anchors section automatically.
 
-## Duplicate Detection
+## Duplicate Detection{>>Wont have time to test this yet - should probably mark as experimental as well
+<<}
 
 In Generate mode, TaskNotes checks for existing tasks that already link to each source note before creating new ones. This prevents accidental duplicates when you run bulk generation more than once.
 
@@ -225,8 +219,8 @@ The detection works by scanning the `projects` field on all existing tasks:
 
 If the **Skip existing** toggle is on (the default), items with existing linked tasks are skipped and counted separately in the results. You can turn this off if you intentionally want multiple tasks per source note.
 
-## When to Use Generate vs Convert
-
+## When to Use Generate vs Convert{>>This section should reference applicable workflow and/or workflow tutorial pages<<}
+{>>Should the below 2 sections be linked to from the applicable above sections as callouts?<<}
 Generate and Convert solve different problems. Choose the one that matches your workflow:
 
 **Use Generate** when you want to **spin off tasks from reference material** without changing the source notes. The source notes stay as they are (meeting notes, project plans, documents), and new task files are created in your tasks folder. Each generated task links back to its source via the `projects` field, creating a parent-child relationship. This is useful when:

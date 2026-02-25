@@ -188,11 +188,12 @@ export class BasesToolbarInjector {
 					continue;
 				}
 
-				// Skip if BasesViewBase-injected buttons exist (non-universal — TN view owns this toolbar)
-				const tnBtn = toolbar.querySelector(".tn-bases-new-task-btn:not(.tn-universal-injected)");
-				if (tnBtn) {
-					continue;
-				}
+				// Clean up stale BasesViewBase buttons that linger when the user switches
+				// from a TN view tab to a native table tab (BasesViewBase doesn't remove
+				// its buttons on tab switch). We already know isTNView is false here.
+				(toolbar as HTMLElement).querySelectorAll(
+					".tn-bases-new-task-btn:not(.tn-universal-injected), .tn-bases-bulk-create-btn:not(.tn-universal-injected)"
+				).forEach(btn => btn.remove());
 
 				// Check if user disabled TaskNotes controls for this view
 				const showUI = await this.shouldShowTaskNotesUI(toolbar as HTMLElement);
@@ -277,10 +278,10 @@ export class BasesToolbarInjector {
 	 * "Bulk tasking" opens BulkTaskCreationModal for generate/convert operations.
 	 */
 	private injectButtons(toolbarEl: HTMLElement): void {
-		// Idempotent: remove any existing universal buttons first to prevent duplicates.
-		// Bases can re-render toolbars in ways that bypass our dedup checks (partial DOM
-		// reuse, cloned nodes, etc.), so always start clean.
-		this.cleanupUniversalButtonsFrom(toolbarEl);
+		// Idempotent: remove ALL TaskNotes buttons (universal and non-universal) before
+		// re-injecting. A non-universal button may remain from a TN view tab (BasesViewBase)
+		// when the user switches to a native table tab — cleanupUniversalButtonsFrom misses it.
+		toolbarEl.querySelectorAll(".tn-bases-new-task-btn, .tn-bases-bulk-create-btn").forEach(btn => btn.remove());
 
 		const doc = toolbarEl.ownerDocument;
 

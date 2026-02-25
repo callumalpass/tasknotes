@@ -342,21 +342,35 @@ export function getAllMarkdownFilePaths(plugin: TaskNotesPlugin): string[] {
  * @param strategy - "convert-in-place" or "create-duplicate"
  * @returns Conversion results with counts and errors
  */
+/** Map our PropertyType to Obsidian's internal metadataTypeManager type names. */
+const OBSIDIAN_TYPE_NAMES: Record<PropertyType, string> = {
+	date: "date",
+	text: "text",
+	number: "number",
+	boolean: "checkbox",
+	list: "multitext",
+};
+
 export async function convertPropertyType(
 	plugin: TaskNotesPlugin,
 	propertyKey: string,
 	targetType: PropertyType,
 	filePaths: string[],
-	strategy: "convert-in-place" | "create-duplicate"
+	strategy: "convert-in-place" | "create-duplicate",
+	onProgress?: (completed: number, total: number) => void,
 ): Promise<ConversionResult> {
 	const result: ConversionResult = { converted: 0, failed: 0, errors: [] };
 	if (!plugin.app) return result;
+
+	const targetKey = strategy === "convert-in-place" ? propertyKey : `${propertyKey}_${targetType}`;
+	const total = filePaths.length;
 
 	for (const filePath of filePaths) {
 		const file = plugin.app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) {
 			result.failed++;
 			result.errors.push(`File not found: ${filePath}`);
+			onProgress?.(result.converted + result.failed, total);
 			continue;
 		}
 
@@ -371,14 +385,26 @@ export async function convertPropertyType(
 					fm[propertyKey] = converted;
 				} else {
 					// create-duplicate: new key with target type suffix
-					const newKey = `${propertyKey}_${targetType}`;
-					fm[newKey] = converted;
+					fm[targetKey] = converted;
 				}
 			});
 			result.converted++;
 		} catch (err) {
 			result.failed++;
 			result.errors.push(`${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+		}
+		onProgress?.(result.converted + result.failed, total);
+	}
+
+	// Update Obsidian's property type registry so the UI reflects the new type
+	if (result.converted > 0) {
+		try {
+			const typeManager = (plugin.app as any).metadataTypeManager;
+			if (typeManager?.setType) {
+				await typeManager.setType(targetKey, OBSIDIAN_TYPE_NAMES[targetType] || targetType);
+			}
+		} catch {
+			// Non-critical: property type registry update failed, values are still converted
 		}
 	}
 
