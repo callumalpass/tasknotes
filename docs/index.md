@@ -54,6 +54,7 @@ These are starting points. TaskNotes is flexible enough to combine modes or inve
 
 Press `Ctrl/Cmd + P`, run **TaskNotes: Create new task**, fill in the modal, and save. TaskNotes creates a Markdown file with your task details in the frontmatter. You can also convert an existing checkbox like `- [ ] Buy groceries` into a full task using the inline task command.
 
+
 ### 4. See It in a View
 
 Click the TaskNotes ribbon icon or run **TaskNotes: Open tasks view** from the command palette. This opens the default Task List, a `.base` file inside `TaskNotes/Views/`.
@@ -67,6 +68,8 @@ Views are the main way you interact with tasks. TaskNotes comes with several:
 - **[Agenda](views/agenda-view.md)** for short-horizon daily planning
 
 <!-- GIF: Quick tour cycling through 3-4 view types (use TaskNotes/Demos/ bases from test fixtures) — reuse this GIF on views.md -->
+
+![[docs/assets/features/file-20260224153129081.mp4]]
 
 Each view is a `.base` file you can duplicate, customize, or create from scratch. Beyond filtering and display, views can trigger notifications, run bulk operations, and carry per-view property mappings. See [Views](views.md) for the full list and configuration options.
 

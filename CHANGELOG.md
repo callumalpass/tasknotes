@@ -4,6 +4,14 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.54] - 2026-02-25
+
+### Added
+- **Upcoming View: group by scheduled date**: New "Group by date" dropdown in the Upcoming View's Configure panel lets you switch between grouping by due date (default) or scheduled date. Tasks are categorized into the same time buckets (Overdue, Today, Tomorrow, etc.) based on whichever date field you choose.
+- **Reschedule targets active date field**: When grouping by scheduled date, single-task reschedule and bulk reschedule both modify the scheduled date instead of the due date.
+- **Row 2 shows the "other" date**: Cards display the non-grouping date on the second row (e.g., when grouping by scheduled, the due date appears with a calendar icon, and vice versa).
+- **Add task pre-populates correct field**: The "+" button in each time category pre-fills the scheduled or due date based on the active grouping mode.
+
 ## [4.3.53] - 2026-02-25
 
 ### Added

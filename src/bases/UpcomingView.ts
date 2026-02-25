@@ -94,6 +94,9 @@ export class UpcomingView extends BasesViewBase {
 	private collapsedSections: Set<ExtendedTimeCategory> = new Set(DEFAULT_COLLAPSED);
 	private groupedItems: Map<ExtendedTimeCategory, AggregatedNotificationItem[]> = new Map();
 
+	// Which date field drives grouping: "due" (default) or "scheduled"
+	private groupByDate: "due" | "scheduled" = "due";
+
 	// Agenda-style date navigation state
 	private currentDate: Date = new Date();
 	private periodType: PeriodType = "list"; // Fallback, will be overwritten by device prefs
@@ -205,6 +208,12 @@ export class UpcomingView extends BasesViewBase {
 
 		this.plugin.debugLog.log("UpcomingView", "render() called");
 
+		// Read groupByDate config from .base file (defaults to "due")
+		if (this.config && typeof this.config.get === "function") {
+			const raw = this.config.get("groupByDate") as string;
+			this.groupByDate = (raw === "scheduled") ? "scheduled" : "due";
+		}
+
 		try {
 			// Get items from own filter ONLY (this base's data)
 			// NOTE: We do NOT aggregate from other notify:true bases here.
@@ -282,9 +291,10 @@ export class UpcomingView extends BasesViewBase {
 			const dueDate = normalizeDateValue(rawDueDate) ?? undefined;
 			const scheduledDate = normalizeDateValue(rawScheduledDate) ?? undefined;
 
-			// FILTER: Only include items that are tasks OR have a due date
+			// FILTER: Only include items that are tasks OR have the active date
 			// This prevents random notes from appearing in the Upcoming view
-			if (!isTask && !dueDate) {
+			const activeDate = this.groupByDate === "scheduled" ? scheduledDate : dueDate;
+			if (!isTask && !activeDate) {
 				skippedCount++;
 				continue;
 			}
@@ -311,8 +321,8 @@ export class UpcomingView extends BasesViewBase {
 				dueDate,
 			});
 
-			const timeCategory = this.categorizeByTime(dueDate);
-			const timeContext = this.getTimeContext(dueDate);
+			const timeCategory = this.categorizeByTime(activeDate);
+			const timeContext = this.getTimeContext(activeDate);
 
 			// Get projects field (user-configured field name via fieldMapper)
 			const projectFieldName = this.plugin.fieldMapper.toUserField("projects");
@@ -354,7 +364,7 @@ export class UpcomingView extends BasesViewBase {
 			});
 		}
 
-		this.plugin.debugLog.log("UpcomingView", `getOwnFilterItems: filtered to ${items.length} items (skipped ${skippedCount} non-task items without due dates)`);
+		this.plugin.debugLog.log("UpcomingView", `getOwnFilterItems: filtered to ${items.length} items (skipped ${skippedCount} non-task items without ${this.groupByDate} dates)`);
 
 		return items;
 	}
@@ -401,14 +411,12 @@ export class UpcomingView extends BasesViewBase {
 			grouped.set(cat, []);
 		}
 
-		// Group items - route items without due dates to "noDueDate"
+		// Group items - route items without the active date to "noDueDate"
 		for (const item of items) {
-			// Determine the actual category
+			// Determine the actual category using whichever date field is active
+			const activeDate = this.groupByDate === "scheduled" ? item.scheduledDate : item.dueDate;
 			let category: ExtendedTimeCategory;
-			if (!item.dueDate) {
-				category = "noDueDate";
-			} else if (item.timeCategory === "later" && !item.dueDate) {
-				// Double-check: if categorized as "later" but no due date, move to noDueDate
+			if (!activeDate) {
 				category = "noDueDate";
 			} else {
 				category = item.timeCategory;
@@ -937,7 +945,7 @@ export class UpcomingView extends BasesViewBase {
 			case "later":
 				return "Later";
 			case "noDueDate":
-				return "No due date";
+				return this.groupByDate === "scheduled" ? "No scheduled date" : "No due date";
 			default:
 				return TIME_CATEGORY_LABELS[category];
 		}
@@ -1154,12 +1162,16 @@ export class UpcomingView extends BasesViewBase {
 		row2.className = "tn-upcoming-item__row2";
 
 		// Left side: date/time display
+		// The "active" date is the one used for grouping; the "other" is supplementary info
+		const activeDateValue = this.groupByDate === "scheduled" ? item.scheduledDate : item.dueDate;
+		const otherDateValue = this.groupByDate === "scheduled" ? item.dueDate : item.scheduledDate;
+
 		const dateEl = doc.createElement("span");
-		const itemHasTime = item.dueDate && hasTimeComponent(item.dueDate);
+		const itemHasTime = activeDateValue && hasTimeComponent(activeDateValue);
 		const isDateSpecificSection = item.timeCategory === "today" || item.timeCategory === "tomorrow";
 		const isCategorySection = item.timeCategory === "overdue" || item.timeCategory === "thisWeek" ||
 			item.timeCategory === "thisMonth" || item.timeCategory === "later";
-		const needsDateDisplay = isCategorySection && item.dueDate;
+		const needsDateDisplay = isCategorySection && activeDateValue;
 
 		if (itemHasTime || needsDateDisplay) {
 			dateEl.className = `tn-upcoming-item__date tn-upcoming-item__date--${item.timeCategory}`;
@@ -1171,20 +1183,37 @@ export class UpcomingView extends BasesViewBase {
 				dateEl.appendChild(clockIcon);
 
 				const timeFormat = this.plugin.settings.calendarViewSettings?.timeFormat || "12";
-				const parsedDate = parseDate(item.dueDate!);
+				const parsedDate = parseDate(activeDateValue!);
 				const timeStr = formatTime(parsedDate, timeFormat as "12" | "24");
 				dateEl.appendChild(doc.createTextNode(` ${timeStr}`));
 
-				if (!isDateSpecificSection && item.dueDate) {
+				if (!isDateSpecificSection && activeDateValue) {
 					const settings = this.getDateSettings();
-					const formattedDate = formatDateForUpcomingView(item.dueDate, settings, false);
+					const formattedDate = formatDateForUpcomingView(activeDateValue, settings, false);
 					dateEl.appendChild(doc.createTextNode(` • ${formattedDate}`));
 				}
 			} else if (needsDateDisplay) {
 				const settings = this.getDateSettings();
-				const formattedDate = formatDateForUpcomingView(item.dueDate, settings, false);
+				const formattedDate = formatDateForUpcomingView(activeDateValue, settings, false);
 				dateEl.textContent = formattedDate;
 			}
+		}
+
+		// Show the "other" date as supplementary info (e.g., due date when grouping by scheduled)
+		if (otherDateValue) {
+			const otherLabel = this.groupByDate === "scheduled" ? "Due" : "Scheduled";
+			const otherIcon = this.groupByDate === "scheduled" ? "calendar" : "calendar-clock";
+			if (dateEl.textContent || dateEl.childNodes.length > 0) {
+				dateEl.appendChild(doc.createTextNode(" • "));
+			}
+			dateEl.className = dateEl.className || `tn-upcoming-item__date tn-upcoming-item__date--${item.timeCategory}`;
+			const iconSpan = doc.createElement("span");
+			iconSpan.className = "tn-upcoming-item__date-icon";
+			setIcon(iconSpan, otherIcon);
+			dateEl.appendChild(iconSpan);
+			const settings = this.getDateSettings();
+			const formattedOther = formatDateForUpcomingView(otherDateValue, settings, false);
+			dateEl.appendChild(doc.createTextNode(` ${otherLabel}: ${formattedOther}`));
 		}
 		row2.appendChild(dateEl);
 
@@ -1819,11 +1848,18 @@ export class UpcomingView extends BasesViewBase {
 			return;
 		}
 
-		this.plugin.debugLog.log("UpcomingView", `Found task: ${task.title}, opening DueDateModal`);
-		// Open the standard DueDateModal
-		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
+		this.plugin.debugLog.log("UpcomingView", `Found task: ${task.title}, opening reschedule modal (target: ${this.groupByDate})`);
 		const app = (this as any).app || this.plugin.app;
-		new DueDateModal(app, task, this.plugin).open();
+
+		if (this.groupByDate === "scheduled") {
+			// Use BulkRescheduleModal for a single item targeting scheduled date
+			new BulkRescheduleModal(app, [item], this.plugin, () => {
+				this.renderContent();
+			}, "scheduled").open();
+		} else {
+			// Open the standard DueDateModal for due date
+			new DueDateModal(app, task, this.plugin).open();
+		}
 	}
 
 	private handleRescheduleAll(items: AggregatedNotificationItem[]): void {
@@ -1851,7 +1887,7 @@ export class UpcomingView extends BasesViewBase {
 		new BulkRescheduleModal(app, taskItems, this.plugin, () => {
 			// Refresh the view after rescheduling
 			this.renderContent();
-		}).open();
+		}, this.groupByDate).open();
 	}
 
 	private handleAddTask(category: ExtendedTimeCategory): void {
@@ -1882,13 +1918,15 @@ export class UpcomingView extends BasesViewBase {
 				dueDate = undefined;
 		}
 
-		// Open task creation modal with pre-populated due date
+		// Open task creation modal with pre-populated date
 		// Use local date components directly to avoid timezone shift from toISOString()
-		this.plugin.openTaskCreationModal({
-			due: dueDate
-				? `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, "0")}-${String(dueDate.getDate()).padStart(2, "0")}`
-				: undefined,
-		});
+		const dateStr = dueDate
+			? `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, "0")}-${String(dueDate.getDate()).padStart(2, "0")}`
+			: undefined;
+		const prePopulate = this.groupByDate === "scheduled"
+			? { scheduled: dateStr }
+			: { due: dateStr };
+		this.plugin.openTaskCreationModal(prePopulate);
 	}
 }
 
@@ -1911,6 +1949,7 @@ class BulkRescheduleModal extends Modal {
 	private items: AggregatedNotificationItem[];
 	private plugin: TaskNotesPlugin;
 	private onComplete: () => void;
+	private targetField: "due" | "scheduled";
 	private dueDateInput: HTMLInputElement;
 	private dueTimeInput: HTMLInputElement;
 
@@ -1918,12 +1957,14 @@ class BulkRescheduleModal extends Modal {
 		app: any,
 		items: AggregatedNotificationItem[],
 		plugin: TaskNotesPlugin,
-		onComplete: () => void
+		onComplete: () => void,
+		targetField: "due" | "scheduled" = "due"
 	) {
 		super(app);
 		this.items = items;
 		this.plugin = plugin;
 		this.onComplete = onComplete;
+		this.targetField = targetField;
 	}
 
 	onOpen() {
@@ -1940,14 +1981,15 @@ class BulkRescheduleModal extends Modal {
 		this.titleEl.setText(`Reschedule ${this.items.length} task${this.items.length > 1 ? "s" : ""}`);
 
 		// Description
+		const dateLabel = this.targetField === "scheduled" ? "scheduled date" : "due date";
 		contentEl.createEl("p", {
-			text: `Select a new due date for ${this.items.length} overdue task${this.items.length > 1 ? "s" : ""}.`,
+			text: `Select a new ${dateLabel} for ${this.items.length} task${this.items.length > 1 ? "s" : ""}.`,
 			cls: "bulk-reschedule-modal__description",
 		});
 
 		// Date and time inputs
 		const dateTimeSetting = new Setting(contentEl)
-			.setName("New due date")
+			.setName(this.targetField === "scheduled" ? "New scheduled date" : "New due date")
 			.setDesc("All selected tasks will be rescheduled to this date");
 
 		const dateTimeContainer = dateTimeSetting.controlEl.createDiv({
@@ -2027,8 +2069,9 @@ class BulkRescheduleModal extends Modal {
 		this.items.slice(0, maxPreview).forEach(item => {
 			const li = taskList.createEl("li");
 			li.createSpan({ text: item.title, cls: "bulk-reschedule-modal__task-title" });
-			if (item.dueDate) {
-				const formattedDate = formatDateForUpcomingView(item.dueDate, dateSettings, true);
+			const previewDate = this.targetField === "scheduled" ? item.scheduledDate : item.dueDate;
+			if (previewDate) {
+				const formattedDate = formatDateForUpcomingView(previewDate, dateSettings, true);
 				if (formattedDate) {
 					li.createSpan({
 						text: ` (was: ${formattedDate})`,
@@ -2090,11 +2133,12 @@ class BulkRescheduleModal extends Modal {
 			sourceBase: item.sourceBasePath,
 		}));
 
-		// Use unified bulk engine for reschedule
+		// Use unified bulk engine for reschedule — target the correct date field
 		const engine = new BulkOperationEngine(this.plugin);
-		const result = await engine.reschedule(bulkItems, {
-			newDueDate: finalValue,
-		});
+		const rescheduleOptions = this.targetField === "scheduled"
+			? { newScheduledDate: finalValue }
+			: { newDueDate: finalValue };
+		const result = await engine.reschedule(bulkItems, rescheduleOptions);
 
 		// Show result using unified format
 		const message = `Rescheduled to ${dateValue}: ${formatResultNotice(result)}`;

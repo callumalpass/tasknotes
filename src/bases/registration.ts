@@ -528,6 +528,16 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 				factory: buildUpcomingViewFactory(plugin),
 				options: () => [
 					{
+						type: "dropdown" as const,
+						key: "groupByDate",
+						displayName: "Group by date",
+						default: "due",
+						options: {
+							"due": "Due date",
+							"scheduled": "Scheduled date",
+						} as Record<string, string>,
+					},
+					{
 						type: "toggle",
 						key: "showTodayTomorrow",
 						displayName: "Always show Today/Tomorrow sections",

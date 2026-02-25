@@ -39,8 +39,9 @@ The primary method is the **Task Creation Modal**, accessed via the "Create new 
 
 <!-- GIF: Opening the task creation modal, filling in title/due/priority, and saving -->
 
+![[file-20260225120755827.png]]
 
-![Task creation modal](../assets/feature-task-modal-filled.png)
+![[file-20260225120526242.mp4]]
 
 When creating a task, the title is automatically sanitized to remove characters forbidden in filenames.
 
@@ -81,42 +82,39 @@ This model avoids creating a separate project database. Any note can become a pr
 
 <!-- GIF: Opening the task edit modal, clicking "Add Project", searching for a project note, and selecting it -->
 
-{>>Still need to get this one<<}
+![[file-20260225121137318.gif]]
 
 Tasks can be assigned to one or more projects through the task creation or editing interface. When creating or editing a task, click the "Add Project" button to open the project selection modal. This modal provides fuzzy search functionality to quickly find and select project notes from your vault.
-
+{>>Need to lead to something like the workflow docks or examples to show how projects are used in practice.<<}
 ### Project Links
 
 <!-- SCREENSHOT: Task frontmatter showing projects field with wikilinks, e.g. projects: ["[[Project Alpha]]", "[[Project Beta]]"] -->
 
-{>>Still need to get this one<<}
+![[file-20260225121818319.gif]]
 
 Projects are stored as wikilinks in the task's frontmatter (e.g., `projects: ["[[Project A]]", "[[Project B]]"]`). These links are clickable in the task interface and will navigate directly to the project notes when clicked. Any note in your vault can serve as a project note simply by being linked from a task's projects field.
 
 ### Organization and Filtering
 
 <!-- GIF: Kanban board grouped by project -- tasks appearing in multiple project columns, then switching to Task List grouped by project -->
-
-{>>Redo image to gif with better zoom / size<<}
+![[file-20260225122330156.gif]]
 
 Tasks can be filtered and grouped by their associated projects in all Bases-driven task views. Use the Bases filter editor to add `note.projects` conditions, and configure the grouping menu to organize Task List or Kanban boards by project. Tasks assigned to multiple projects will appear in each relevant project group, providing flexibility in project-based organization.
 
 ### Project Indicators
 
 <!-- SCREENSHOT: Task card showing the project indicator icon, indicating this task is used as a project with subtasks linked to it -->
-
-{>>Redo as gif<<}
+![[file-20260225122502709.gif]]
 
 TaskCards display visual indicators when tasks are used as projects. These indicators help identify which tasks have other tasks linked to them as subtasks, making project hierarchy visible at a glance.
 
 ### Subtask Creation
 
-<!-- GIF: Right-clicking a task that serves as a project, selecting "Create subtask" from the context menu, and seeing the new subtask linked automatically -->
-
-{>>Do gif<<}
+<!-- GIF: Right-clicking a task that serves as a project, selecting "Create subtask" from the context menu, and seeing the new subtask linked automatically --> 
+![[file-20260225122816203.gif]]
 
 Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
-
+{>>Add reference here or call out that references the workflow tutorial that will show with. project based workflows or whatever its workflow name it is where subtasks are used in practice and how.<<}
 ## Dependencies
 
 <!-- SCREENSHOT: Task frontmatter showing blockedBy field with structured dependency objects (uid, reltype, gap) -->
