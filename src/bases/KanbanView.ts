@@ -10,6 +10,7 @@ import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	getDatePart,
+	getCurrentTimestamp,
 	parseDateToUTC,
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
@@ -2221,6 +2222,13 @@ export class KanbanView extends BasesViewBase {
 				dropTarget: dropTarget ? { file: dropTarget.taskPath.split("/").pop(), above: dropTarget.above } : null,
 			});
 
+			// Detect if the groupBy / swimlane property maps to a known TaskInfo field
+			// so we can fire side effects (completedDate, auto-archive, webhooks, etc.)
+			const groupByTaskProp = this.plugin.fieldMapper.lookupMappingKey(cleanGroupBy);
+			const swimlaneTaskProp = cleanSwimlane
+				? this.plugin.fieldMapper.lookupMappingKey(cleanSwimlane)
+				: null;
+
 			for (const path of pathsToUpdate) {
 				// Get the source column and swimlane for this specific task
 				const sourceColumn = isBatchOperation
@@ -2340,6 +2348,21 @@ export class KanbanView extends BasesViewBase {
 					if (newSortOrder !== null) {
 						fm[sortOrderField] = newSortOrder;
 					}
+
+					// Derivative writes for status changes (completedDate + dateModified)
+					if (needsGroupUpdate && groupByTaskProp === "status") {
+						const task = this.taskInfoCache.get(path);
+						const isRecurring = !!(task?.recurrence);
+						this.plugin.taskService.updateCompletedDateInFrontmatter(fm, newGroupValue, isRecurring);
+						const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
+						fm[dateModifiedField] = getCurrentTimestamp();
+					} else if (needsSwimlaneUpdate && swimlaneTaskProp === "status") {
+						const task = this.taskInfoCache.get(path);
+						const isRecurring = !!(task?.recurrence);
+						this.plugin.taskService.updateCompletedDateInFrontmatter(fm, newSwimLaneValue!, isRecurring);
+						const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
+						fm[dateModifiedField] = getCurrentTimestamp();
+					}
 				});
 
 				this.debugLog("ATOMIC-WRITE-DONE", {
@@ -2348,6 +2371,37 @@ export class KanbanView extends BasesViewBase {
 					needsSwimlaneUpdate,
 					hasSortOrder: newSortOrder !== null,
 				});
+
+				// Fire post-write side effects for known TaskInfo property changes
+				const changedTaskProp = needsGroupUpdate ? groupByTaskProp
+					: needsSwimlaneUpdate ? swimlaneTaskProp
+					: null;
+				if (changedTaskProp) {
+					const oldPropValue = needsGroupUpdate ? sourceColumn : sourceSwimlane;
+					const newPropValue = needsGroupUpdate ? newGroupValue : newSwimLaneValue;
+					try {
+						const originalTask = this.taskInfoCache.get(path) ??
+							await this.plugin.cacheManager.getTaskInfo(path);
+						if (originalTask) {
+							const updatedTask = { ...originalTask, [changedTaskProp]: newPropValue } as TaskInfo;
+							updatedTask.dateModified = getCurrentTimestamp();
+							if (changedTaskProp === "status" && !originalTask.recurrence) {
+								if (this.plugin.statusManager.isCompletedStatus(newPropValue as string)) {
+									updatedTask.completedDate = new Date().toISOString().split("T")[0];
+								} else {
+									updatedTask.completedDate = undefined;
+								}
+							}
+							await this.plugin.taskService.applyPropertyChangeSideEffects(
+								file, originalTask, updatedTask,
+								changedTaskProp as keyof TaskInfo,
+								oldPropValue, newPropValue
+							);
+						}
+					} catch (sideEffectError) {
+						console.warn("[TaskNotes][KanbanView] Side-effect error after drop:", sideEffectError);
+					}
+				}
 			}
 
 			// Clear selection after batch move
@@ -2365,46 +2419,6 @@ export class KanbanView extends BasesViewBase {
 			if (this.activeDropCount === 0) {
 				this.schedulePostDropRender();
 			}
-		}
-	}
-
-	/**
-	 * Update a list property when dragging between columns.
-	 * Removes the source column's value and adds the target column's value.
-	 */
-
-	/**
-	 * Update a frontmatter property for any property (built-in or user-defined)
-	 */
-	private async updateTaskFrontmatterProperty(
-		taskPath: string,
-		basesPropertyId: string,
-		value: any
-	): Promise<void> {
-		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
-		if (!file || !(file instanceof TFile)) {
-			throw new Error(`Cannot find task file: ${taskPath}`);
-		}
-
-		// Strip Bases prefix to get the frontmatter key
-		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, "");
-
-		const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
-		const taskProperty = this.plugin.fieldMapper.lookupMappingKey(frontmatterKey);
-
-		if (task && taskProperty) {
-			// Update the task property using updateProperty to ensure all business logic runs
-			// (e.g., completedDate updates, auto-archive queueing, webhooks, etc.)
-			await this.plugin.taskService.updateProperty(
-				task,
-				taskProperty as keyof TaskInfo,
-				value
-			);
-		} else {
-			// Update the frontmatter directly for custom/unrecognized properties
-			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				frontmatter[frontmatterKey] = value;
-			});
 		}
 	}
 
@@ -2450,11 +2464,12 @@ export class KanbanView extends BasesViewBase {
 	private static readonly POST_DROP_RENDER_DELAY = 500; // ms
 
 	private debugLog(msg: string, data?: Record<string, unknown>): void {
+		if (!this.plugin.settings.enableDebugLogging) return;
 		const ts = new Date().toISOString().slice(11, 23);
 		if (data) {
-			console.log(`[TN-DBG ${ts}] ${msg}`, JSON.stringify(data));
+			console.debug(`[TN-DBG ${ts}] ${msg}`, JSON.stringify(data));
 		} else {
-			console.log(`[TN-DBG ${ts}] ${msg}`);
+			console.debug(`[TN-DBG ${ts}] ${msg}`);
 		}
 	}
 

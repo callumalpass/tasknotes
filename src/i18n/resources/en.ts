@@ -611,6 +611,12 @@ export const en: TranslationTree = {
 				header: "Recurring Tasks",
 				description: "Configure behavior for recurring task management.",
 			},
+			debugLogging: {
+				header: "Debug Logging",
+				description: "Configure debug log output for troubleshooting.",
+				enableName: "Enable debug logging",
+				enableDesc: "Log detailed drag-and-drop and view diagnostics to the developer console. Useful for troubleshooting.",
+			},
 		},
 		defaults: {
 			header: {

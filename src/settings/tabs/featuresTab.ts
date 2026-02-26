@@ -634,4 +634,26 @@ export function renderFeaturesTab(
 			}
 		}
 	);
+
+	// Debug Logging Section
+	createSettingGroup(
+		container,
+		{
+			heading: translate("settings.features.debugLogging.header"),
+			description: translate("settings.features.debugLogging.description"),
+		},
+		(group) => {
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.features.debugLogging.enableName"),
+					desc: translate("settings.features.debugLogging.enableDesc"),
+					getValue: () => plugin.settings.enableDebugLogging,
+					setValue: async (value: boolean) => {
+						plugin.settings.enableDebugLogging = value;
+						save();
+					},
+				})
+			);
+		}
+	);
 }
