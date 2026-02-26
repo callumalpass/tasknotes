@@ -17,6 +17,7 @@ import {
 	stripPropertyPrefix,
 	isSortOrderInSortConfig,
 	computeSortOrder,
+	DropOperationQueue,
 } from "./sortOrderUtils";
 
 export class TaskListView extends BasesViewBase {
@@ -49,6 +50,7 @@ export class TaskListView extends BasesViewBase {
 	private dragOverRafId: number = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
 	private currentInsertionIndex: number = -1; // Current gap/slot position
+	private dropQueue = new DropOperationQueue();
 
 	/**
 	 * Threshold for enabling virtual scrolling in task list view.
@@ -438,29 +440,46 @@ export class TaskListView extends BasesViewBase {
 		targetGroupKey: string | null,
 		sourceGroupKey: string | null
 	): Promise<void> {
-		const groupByPropertyId = this.getGroupByPropertyId();
-		const cleanGroupBy = groupByPropertyId ? stripPropertyPrefix(groupByPropertyId) : null;
+		await this.dropQueue.enqueue(draggedPath, async () => {
+			const groupByPropertyId = this.getGroupByPropertyId();
+			const cleanGroupBy = groupByPropertyId ? stripPropertyPrefix(groupByPropertyId) : null;
 
-		// If the task was dragged to a different group, update the group property
-		if (groupByPropertyId && targetGroupKey !== null && targetGroupKey !== sourceGroupKey) {
-			await this.updateTaskGroupProperty(draggedPath, groupByPropertyId, targetGroupKey);
-		}
+			const needsGroupUpdate = groupByPropertyId && targetGroupKey !== null && targetGroupKey !== sourceGroupKey;
 
-		// Compute and write sort_order for positioning within the target group
-		const newSortOrder = await computeSortOrder(
-			targetPath, above, targetGroupKey, cleanGroupBy, draggedPath,
-			this.plugin, this.taskInfoCache
-		);
-		if (newSortOrder !== null) {
-			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
-			const file = this.plugin.app.vault.getAbstractFileByPath(draggedPath);
-			if (file && file instanceof TFile) {
-				await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
-					fm[sortOrderField] = newSortOrder;
-				});
+			// Compute sort_order first (read-only — no file writes yet)
+			const newSortOrder = await computeSortOrder(
+				targetPath, above, targetGroupKey, cleanGroupBy, draggedPath,
+				this.plugin, this.taskInfoCache
+			);
+
+			// Determine if we need to write anything
+			const needsWrite = needsGroupUpdate || newSortOrder !== null;
+			if (!needsWrite) {
+				this.debouncedRefresh();
+				return;
 			}
-		}
-		this.debouncedRefresh();
+
+			const file = this.plugin.app.vault.getAbstractFileByPath(draggedPath);
+			if (!file || !(file instanceof TFile)) {
+				this.debouncedRefresh();
+				return;
+			}
+
+			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
+
+			// Single atomic write: group property + sort_order
+			await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+				if (needsGroupUpdate) {
+					const frontmatterKey = groupByPropertyId!.replace(/^(note\.|file\.|task\.)/, "");
+					fm[frontmatterKey] = targetGroupKey;
+				}
+				if (newSortOrder !== null) {
+					fm[sortOrderField] = newSortOrder;
+				}
+			});
+
+			this.debouncedRefresh();
+		});
 	}
 
 	/**
@@ -468,32 +487,6 @@ export class TaskListView extends BasesViewBase {
 	 * Uses TaskService.updateProperty when possible (for business logic like
 	 * completedDate, auto-archive, webhooks), falls back to direct frontmatter write.
 	 */
-	private async updateTaskGroupProperty(
-		taskPath: string,
-		basesPropertyId: string,
-		value: any
-	): Promise<void> {
-		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
-		if (!file || !(file instanceof TFile)) return;
-
-		// Strip Bases prefix to get the frontmatter key
-		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, "");
-
-		const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
-		const taskProperty = this.plugin.fieldMapper.lookupMappingKey(frontmatterKey);
-
-		if (task && taskProperty) {
-			await this.plugin.taskService.updateProperty(
-				task,
-				taskProperty as keyof TaskInfo,
-				value
-			);
-		} else {
-			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				frontmatter[frontmatterKey] = value;
-			});
-		}
-	}
 
 	/**
 	 * Compute Bases formulas for TaskNotes items.
