@@ -4,6 +4,12 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.56] - 2026-02-26
+
+### Fixed
+- **Convert to task saves without requiring field changes**: Opening the Edit Task modal via "Convert to task" (from Bases view or command palette) and hitting Save without modifying any field now correctly writes the task identification property. Previously it showed "No changes" and closed without converting.
+- **Toast notification collapse after "+X more"**: Expanding the notification items list and clicking "+X more" no longer prevents the collapse toggle from working. The scrollable CSS class now respects the expand/collapse state.
+
 ## [4.3.55] - 2026-02-25
 
 ### Added

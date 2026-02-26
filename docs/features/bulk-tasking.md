@@ -193,8 +193,8 @@ Values set in the action bar apply to every item in the batch. In Generate mode 
 
 Below the action bar, a{>>Update this - we change the name<<} **Properties & Anchors** section lets you add any frontmatter property to the batch. It uses the same PropertyPicker that appears in individual task modals.
 
-<!-- SCREENSHOT: PropertyPicker in bulk modal showing discovered properties with type badges -->
-
+<!-- SCREENSHOT: PropertyPicker in bulk modal showing discovered properties with type badges -->{>>In the demonstration video, I also showed the case of needing to convert types when it comes to the property. So we can also mention that here in a drop, like in a call out below the GIF just in case<<}
+![[file-20260225182511076.gif]]
 
 Type a property name or search existing properties discovered from your task files. The picker shows:
 
@@ -329,7 +329,7 @@ See [Workflows](../workflows.md) for practical examples of both approaches, incl
 TaskNotes adds **New task** and **Bulk tasking** buttons to every Bases view toolbar, not just TaskNotes-registered view types. This means Table, Board, and any other native Bases view gets TaskNotes controls automatically.
 
 <!-- GIF: TaskNotes "New task" and "Bulk tasking" buttons appearing on a native Bases Table view -->
-
+![[file-20260225182354220.gif]]
 
 The buttons appear next to Obsidian's built-in "New" button. They use the same styling as native toolbar items so they blend in.
 
@@ -338,15 +338,15 @@ The buttons appear next to Obsidian's built-in "New" button. They use the same s
 
 **Per-view control:**
 
-<!-- GIF: Toggling "Show toolbar buttons" off in a view's Configure panel -->
-
+<!-- GIF: Toggling "Show toolbar buttons" off in a view's Configure panel -->{>>I already kind of did that in the GIF above.<<}
 
 
 You can disable TaskNotes controls on specific views. Open the view's Configure panel (the gear icon in the Bases toolbar) and toggle **Show toolbar buttons** off. This writes `showTaskNotesUI: false` to that view's configuration in the `.base` file.
 
 **Right-click context menus:**
 
-<!-- GIF: Right-clicking a row in a Bases view showing task vs non-task context menu options -->
+<!-- GIF: Right-clicking a row in a Bases view showing task vs non-task context menu options -->{>>If the file is not a task, then it'll show a convert to task button. So this is something we want to call out for in this section. And also, if you don't change a value when trying to convert to task, like if you're not, if you don't set some sort of value on it, then it won't become a task.<<}
+
 
 On views with universal buttons, right-clicking a row or card shows a context menu:
 

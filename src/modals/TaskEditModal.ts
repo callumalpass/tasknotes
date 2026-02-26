@@ -1272,6 +1272,17 @@ export class TaskEditModal extends TaskModal {
 			const hasTaskChanges = Object.keys(changes).length > 0;
 			const hasSubtaskChanges = this.hasSubtaskChanges();
 
+			// Check if this file is not yet a recognized task (convert-to-task flow).
+			// updateTask() writes the task identification property, so we must call it
+			// even when no fields were changed by the user.
+			let isConvertMode = false;
+			const taskFile = this.app.vault.getAbstractFileByPath(this.task.path);
+			if (taskFile instanceof TFile) {
+				const metadata = this.app.metadataCache.getFileCache(taskFile);
+				isConvertMode = !metadata?.frontmatter ||
+					!this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
+			}
+
 			if (this.unresolvedBlockingEntries.length > 0 && !hasBlockingChanges) {
 				new Notice(
 					this.t("modals.taskEdit.notices.blockingUnresolved", {
@@ -1281,7 +1292,7 @@ export class TaskEditModal extends TaskModal {
 				this.unresolvedBlockingEntries = [];
 			}
 
-			if (!hasTaskChanges && !hasBlockingChanges && !hasSubtaskChanges) {
+			if (!hasTaskChanges && !hasBlockingChanges && !hasSubtaskChanges && !isConvertMode) {
 				new Notice(this.t("modals.taskEdit.notices.noChanges"));
 				this.close();
 				return;
@@ -1289,7 +1300,7 @@ export class TaskEditModal extends TaskModal {
 
 			let updatedTask = this.task;
 
-			if (hasTaskChanges) {
+			if (hasTaskChanges || isConvertMode) {
 				updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
 				this.task = updatedTask;
 				if (Object.prototype.hasOwnProperty.call(changes as any, "details")) {
@@ -1330,7 +1341,7 @@ export class TaskEditModal extends TaskModal {
 				this.options.onTaskUpdated(updatedTask);
 			}
 
-			if (hasTaskChanges) {
+			if (hasTaskChanges || isConvertMode) {
 				new Notice(
 					this.t("modals.taskEdit.notices.updateSuccess", { title: updatedTask.title })
 				);
