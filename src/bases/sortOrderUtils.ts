@@ -58,6 +58,92 @@ function tryParseLexoRank(value: string): LexoRank | null {
 }
 
 /**
+ * Increment a base-36 digit (0-9, a-z). Returns 'z' at ceiling.
+ */
+function nextBase36Char(ch: string): string {
+	if (ch >= "0" && ch <= "8") return String.fromCharCode(ch.charCodeAt(0) + 1);
+	if (ch === "9") return "a";
+	if (ch >= "a" && ch <= "y") return String.fromCharCode(ch.charCodeAt(0) + 1);
+	return "z";
+}
+
+/**
+ * Decrement a base-36 digit (0-9, a-z). Returns '0' at floor.
+ */
+function prevBase36Char(ch: string): string {
+	if (ch >= "1" && ch <= "9") return String.fromCharCode(ch.charCodeAt(0) - 1);
+	if (ch === "a") return "9";
+	if (ch >= "b" && ch <= "z") return String.fromCharCode(ch.charCodeAt(0) - 1);
+	return "0";
+}
+
+/**
+ * Generate a rank that sorts after `rank` in plain string comparison.
+ *
+ * For values whose integer part doesn't start with 'z', constructs an
+ * upper bound (same digit count) and uses `between()` for the midpoint.
+ *
+ * For values starting with 'z' (near the ceiling of the range), or if
+ * `between()` overflows, falls back to extending the decimal part with
+ * 'i' (midpoint of base-36).  This is always safe because appending to
+ * the decimal makes the string lexicographically greater without any
+ * arithmetic that could wrap around.
+ */
+function safeGenNext(rank: LexoRank): LexoRank {
+	const str = rank.toString();
+	const pipeIdx = str.indexOf("|");
+	const colonIdx = str.indexOf(":");
+	const bucket = str.substring(0, pipeIdx);
+	const value = str.substring(pipeIdx + 1, colonIdx);
+	const decimal = str.substring(colonIdx + 1);
+	const firstChar = value.charAt(0);
+
+	if (firstChar !== "z") {
+		const upperStr = bucket + "|" + nextBase36Char(firstChar) + value.slice(1) + ":";
+		const result = rank.between(LexoRank.parse(upperStr));
+		// Sanity check: result must actually be greater than rank.
+		// LexoRank.between() can overflow for near-ceiling values.
+		if (result.toString() > str) return result;
+	}
+
+	// Near ceiling or between() overflow: extend via the decimal part.
+	// e.g. "0|z14hzz:" → "0|z14hzz:i"  (always > original)
+	return LexoRank.parse(bucket + "|" + value + ":" + decimal + "i");
+}
+
+/**
+ * Generate a rank that sorts before `rank` in plain string comparison.
+ * Mirror of `safeGenNext` — decrements the first character to build a
+ * lower bound and uses `between()`.
+ */
+function safeGenPrev(rank: LexoRank): LexoRank {
+	const str = rank.toString();
+	const pipeIdx = str.indexOf("|");
+	const colonIdx = str.indexOf(":");
+	const bucket = str.substring(0, pipeIdx);
+	const value = str.substring(pipeIdx + 1, colonIdx);
+	const firstChar = value.charAt(0);
+
+	let lowerStr: string;
+	if (firstChar === "0") {
+		lowerStr = bucket + "|0:";
+	} else {
+		lowerStr = bucket + "|" + prevBase36Char(firstChar) + value.slice(1) + ":";
+	}
+	return LexoRank.parse(lowerStr).between(rank);
+}
+
+/**
+ * Generate a LexoRank string near the end of the ranking space.
+ * Used for cross-column drops where no specific position was targeted —
+ * the task should appear at the bottom of the target column.
+ */
+export function generateEndRank(): string {
+	const endRank = LexoRank.parse("0|zzzzzz:");
+	return safeGenPrev(endRank).toString();
+}
+
+/**
  * Ensure a task has a valid LexoRank. If it doesn't, assign one and persist it
  * to the task's frontmatter.
  *
@@ -120,17 +206,31 @@ async function rankBetween(
 	sortOrderField: string
 ): Promise<string> {
 	const aboveRank = await ensureRank(aboveTask, aboveFallback, plugin, sortOrderField);
+	const belowFallback = safeGenNext(safeGenNext(aboveRank));
 	const belowRank = await ensureRank(
-		belowTask, aboveRank.genNext().genNext(), plugin, sortOrderField
+		belowTask, belowFallback, plugin, sortOrderField
 	);
 	try {
-		return aboveRank.between(belowRank).toString();
+		const result = aboveRank.between(belowRank).toString();
+		const aboveStr = aboveRank.toString();
+		const belowStr = belowRank.toString();
+		// Sanity check: result must be strictly between the two ranks.
+		// LexoRank.between() can overflow for near-ceiling values.
+		if (result > aboveStr && result < belowStr) {
+			return result;
+		}
+		console.warn(
+			`[TaskNotes] LexoRank.between() produced out-of-range result: ` +
+			`${result} (expected between ${aboveStr} and ${belowStr}), ` +
+			`falling back to safeGenNext()`
+		);
+		return safeGenNext(aboveRank).toString();
 	} catch (e) {
 		console.warn(
-			"[TaskNotes] LexoRank.between() failed, falling back to genNext():",
+			"[TaskNotes] LexoRank.between() failed, falling back to safeGenNext():",
 			e
 		);
-		return aboveRank.genNext().toString();
+		return safeGenNext(aboveRank).toString();
 	}
 }
 
@@ -229,7 +329,7 @@ export function getGroupTasks(
  * - Drop above first task → `firstRank.genPrev()`
  * - Drop below last task → `lastRank.genNext()`
  * - Between two tasks → `rankBetween()` (with try/catch protection)
- * - Unranked/legacy neighbors get a rank assigned on the fly via `ensureRank()`
+ * - Tasks without a valid LexoRank sort_order are excluded from neighbor lookup
  *
  * @param targetTaskPath  - Path of the task being dropped on.
  * @param above           - Whether to drop above (true) or below (false) the target.
@@ -238,8 +338,7 @@ export function getGroupTasks(
  * @param draggedPath     - Path of the task being dragged.
  * @param plugin          - Plugin instance.
  * @param taskInfoCache   - Optional cache for TaskInfo reuse.
- * @param swimlaneKey     - Swimlane value to scope to, or `null`/`undefined`.
- * @param swimlaneProperty - Cleaned frontmatter property name for swimlanes, or `null`/`undefined`.
+ * @param debugLog        - Optional debug logging callback.
  * @returns The computed sort_order string, or `null` if computation fails.
  */
 export async function computeSortOrder(
@@ -250,23 +349,80 @@ export async function computeSortOrder(
 	draggedPath: string,
 	plugin: TaskNotesPlugin,
 	taskInfoCache?: Map<string, TaskInfo>,
-	swimlaneKey?: string | null,
-	swimlaneProperty?: string | null
+	debugLog?: (msg: string, data?: Record<string, unknown>) => void
 ): Promise<string | null> {
 	const sortOrderField = plugin.settings.fieldMapping.sortOrder;
+	const _log = debugLog || (() => {});
 
-	// Get group tasks (with swimlane filtering), excluding the task being dragged
+	// Always scan the full vault for ALL tasks in this column — not just
+	// the tasks visible in the current view.  This prevents invisible tasks
+	// (hidden by view filters or swimlane grouping) from being "leapfrogged"
+	// when the user reorders within a filtered view.
+	//
+	// Also exclude tasks with non-LexoRank sort_orders (e.g. legacy numeric
+	// timestamps).  These can't participate in LexoRank.between() and would
+	// corrupt the neighbor lookup if they end up adjacent to the target.
 	const columnTasks = getGroupTasks(
 		groupKey, groupByProperty, plugin, taskInfoCache,
-		swimlaneKey, swimlaneProperty, sortOrderField
-	).filter(t => t.path !== draggedPath);
+		undefined, undefined, sortOrderField
+	).filter(t => {
+		if (t.path === draggedPath) return false;
+		// Exclude tasks without a sort_order or with a non-LexoRank sort_order.
+		// Tasks without a defined LexoRank can't meaningfully participate in
+		// neighbor lookup — using them causes ensureRank() to write fallback
+		// ranks to unrelated files and LexoRank.between() to produce garbage
+		// for boundary values.
+		if (t.sortOrder === undefined) return false;
+		if (!tryParseLexoRank(t.sortOrder)) return false;
+		return true;
+	});
+
+	_log("COMPUTE-SORT-ORDER", {
+		columnTaskCount: columnTasks.length,
+		columnTasks: columnTasks.map(t => ({
+			file: t.path.split("/").pop(),
+			sortOrder: t.sortOrder,
+		})),
+		targetFile: targetTaskPath.split("/").pop(),
+		draggedFile: draggedPath.split("/").pop(),
+		above,
+		groupKey,
+		groupByProperty,
+	});
 
 	if (!columnTasks || columnTasks.length === 0) {
+		_log("COMPUTE-SORT-ORDER: empty column, returning middle");
 		return LexoRank.middle().toString();
 	}
 
 	const targetIndex = columnTasks.findIndex(t => t.path === targetTaskPath);
-	if (targetIndex === -1) return null;
+
+
+
+	if (targetIndex === -1) {
+		_log("COMPUTE-SORT-ORDER: target not found — appending to end of column", {
+			targetFile: targetTaskPath.split("/").pop(),
+			allPaths: columnTasks.map(t => t.path.split("/").pop()),
+		});
+		// Target not in column (e.g. cross-column drop with stale target, or empty target).
+		// Append after the last task in the column.
+		const lastTask = columnTasks[columnTasks.length - 1];
+		const lastRank = await ensureRank(lastTask, LexoRank.middle(), plugin, sortOrderField);
+		const result = safeGenNext(lastRank).toString();
+		_log("COMPUTE-SORT-ORDER: appended after last", { lastFile: lastTask.path.split("/").pop(), lastRank: lastRank.toString(), result });
+		return result;
+	}
+
+	_log("COMPUTE-SORT-ORDER: target found", {
+		targetIndex,
+		totalTasks: columnTasks.length,
+		position: above
+			? (targetIndex === 0 ? "ABOVE-FIRST" : "BETWEEN")
+			: (targetIndex === columnTasks.length - 1 ? "BELOW-LAST" : "BETWEEN"),
+		neighborAbove: targetIndex > 0 ? { file: columnTasks[targetIndex - 1].path.split("/").pop(), so: columnTasks[targetIndex - 1].sortOrder } : null,
+		target: { file: columnTasks[targetIndex].path.split("/").pop(), so: columnTasks[targetIndex].sortOrder },
+		neighborBelow: targetIndex < columnTasks.length - 1 ? { file: columnTasks[targetIndex + 1].path.split("/").pop(), so: columnTasks[targetIndex + 1].sortOrder } : null,
+	});
 
 	if (above) {
 		if (targetIndex === 0) {
@@ -274,31 +430,66 @@ export async function computeSortOrder(
 			const firstRank = await ensureRank(
 				columnTasks[0], LexoRank.middle(), plugin, sortOrderField
 			);
-			return firstRank.genPrev().toString();
+			const result = safeGenPrev(firstRank).toString();
+			_log("COMPUTE-SORT-ORDER: above first → safeGenPrev", { firstRank: firstRank.toString(), result });
+			return result;
 		}
 		// Between two tasks
-		return rankBetween(
+		const result = await rankBetween(
 			columnTasks[targetIndex - 1],
 			columnTasks[targetIndex],
 			LexoRank.middle(),
 			plugin,
 			sortOrderField
 		);
+		_log("COMPUTE-SORT-ORDER: between (above)", { result });
+		return result;
 	} else {
 		if (targetIndex === columnTasks.length - 1) {
 			// Drop below last task
 			const lastRank = await ensureRank(
 				columnTasks[columnTasks.length - 1], LexoRank.middle(), plugin, sortOrderField
 			);
-			return lastRank.genNext().toString();
+			const result = safeGenNext(lastRank).toString();
+			_log("COMPUTE-SORT-ORDER: below last → safeGenNext", { lastRank: lastRank.toString(), result });
+			return result;
 		}
 		// Between two tasks
-		return rankBetween(
+		const result = await rankBetween(
 			columnTasks[targetIndex],
 			columnTasks[targetIndex + 1],
 			LexoRank.middle(),
 			plugin,
 			sortOrderField
 		);
+		_log("COMPUTE-SORT-ORDER: between (below)", { result });
+		return result;
+	}
+}
+
+/**
+ * Per-task promise queue that serializes async drop operations on the same file.
+ *
+ * When a user rapidly drags the same task twice (e.g. column A → B → A), the
+ * second `handleTaskDrop` must wait for the first to fully complete before
+ * running — otherwise their interleaved `processFrontMatter` writes cause the
+ * task to end up at the wrong position.
+ *
+ * Different task paths are processed in parallel (they write to different files).
+ */
+export class DropOperationQueue {
+	private queues = new Map<string, Promise<void>>();
+
+	async enqueue(taskPath: string, operation: () => Promise<void>): Promise<void> {
+		const prev = this.queues.get(taskPath) ?? Promise.resolve();
+		const next = prev.then(operation, operation);
+		this.queues.set(taskPath, next);
+		try {
+			await next;
+		} finally {
+			if (this.queues.get(taskPath) === next) {
+				this.queues.delete(taskPath);
+			}
+		}
 	}
 }

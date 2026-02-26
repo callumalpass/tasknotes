@@ -86,3 +86,4 @@ tasknotes-e2e-vault/*.ics
 AGENTS.md
 /docs-builder/dist
 .ops/
+.serena/
