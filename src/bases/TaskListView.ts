@@ -11,7 +11,7 @@ import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderModal } from "../modals/ReminderModal";
-import { getDatePart, getTimePart, parseDateToUTC, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
+import { getDatePart, getTimePart, getCurrentTimestamp, parseDateToUTC, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	stripPropertyPrefix,
@@ -446,6 +446,11 @@ export class TaskListView extends BasesViewBase {
 
 			const needsGroupUpdate = groupByPropertyId && targetGroupKey !== null && targetGroupKey !== sourceGroupKey;
 
+			// Detect if the groupBy property maps to a known TaskInfo field
+			const groupByTaskProp = cleanGroupBy
+				? this.plugin.fieldMapper.lookupMappingKey(cleanGroupBy)
+				: null;
+
 			// Compute sort_order first (read-only — no file writes yet)
 			const newSortOrder = await computeSortOrder(
 				targetPath, above, targetGroupKey, cleanGroupBy, draggedPath,
@@ -467,26 +472,55 @@ export class TaskListView extends BasesViewBase {
 
 			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 
-			// Single atomic write: group property + sort_order
+			// Single atomic write: group property + sort_order + derivative fields
 			await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
 				if (needsGroupUpdate) {
 					const frontmatterKey = groupByPropertyId!.replace(/^(note\.|file\.|task\.)/, "");
 					fm[frontmatterKey] = targetGroupKey;
+
+					// Derivative writes for status changes (completedDate + dateModified)
+					if (groupByTaskProp === "status" && targetGroupKey !== null) {
+						const task = this.taskInfoCache.get(draggedPath);
+						const isRecurring = !!(task?.recurrence);
+						this.plugin.taskService.updateCompletedDateInFrontmatter(fm, targetGroupKey, isRecurring);
+						const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
+						fm[dateModifiedField] = getCurrentTimestamp();
+					}
 				}
 				if (newSortOrder !== null) {
 					fm[sortOrderField] = newSortOrder;
 				}
 			});
 
+			// Fire post-write side effects for known TaskInfo property changes
+			if (needsGroupUpdate && groupByTaskProp) {
+				try {
+					const originalTask = this.taskInfoCache.get(draggedPath) ??
+						await this.plugin.cacheManager.getTaskInfo(draggedPath);
+					if (originalTask) {
+						const updatedTask = { ...originalTask, [groupByTaskProp]: targetGroupKey } as TaskInfo;
+						updatedTask.dateModified = getCurrentTimestamp();
+						if (groupByTaskProp === "status" && !originalTask.recurrence) {
+							if (this.plugin.statusManager.isCompletedStatus(targetGroupKey as string)) {
+								updatedTask.completedDate = new Date().toISOString().split("T")[0];
+							} else {
+								updatedTask.completedDate = undefined;
+							}
+						}
+						await this.plugin.taskService.applyPropertyChangeSideEffects(
+							file, originalTask, updatedTask,
+							groupByTaskProp as keyof TaskInfo,
+							sourceGroupKey, targetGroupKey
+						);
+					}
+				} catch (sideEffectError) {
+					console.warn("[TaskNotes][TaskListView] Side-effect error after drop:", sideEffectError);
+				}
+			}
+
 			this.debouncedRefresh();
 		});
 	}
-
-	/**
-	 * Update a task's group property in frontmatter.
-	 * Uses TaskService.updateProperty when possible (for business logic like
-	 * completedDate, auto-archive, webhooks), falls back to direct frontmatter write.
-	 */
 
 	/**
 	 * Compute Bases formulas for TaskNotes items.
