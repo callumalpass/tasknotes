@@ -259,6 +259,7 @@ export class TaskService {
 				title: title,
 				priority: priority,
 				status: status,
+				projects: projectsArray,
 				date: new Date(),
 				dueDate: taskData.due,
 				scheduledDate: taskData.scheduled,
