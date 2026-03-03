@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- Updated generated `_types/task.md` mdbase schema output so `dateCreated` and `dateModified` include generated values (`now` and `now_on_write`) for automatic timestamp handling on create/write
 - Fixed documentation deployment CI failures caused by `docs-builder/src/js/main.js` being excluded by a broad `.gitignore` `main.js` rule
   - Added a specific unignore rule so the docs site client script is tracked and available in GitHub Actions builds
 - Reduced long-running performance risk from calendar sync token persistence by avoiding full runtime settings side-effects during background sync writes
