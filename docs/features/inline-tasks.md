@@ -1,13 +1,12 @@
 # Inline Task Integration
 
-[← Back to Features](../features.md)
 
 TaskNotes integrates with the Obsidian editor to allow task management directly within notes. This is achieved through interactive widgets, a conversion feature for checkboxes, and natural language processing.
 Inline features support capture and task updates without leaving the current note.
 
 ## Task Link Overlays
 
-When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from **Settings → TaskNotes → General → Task link overlay**. The widget displays information about the task, such as its status, priority, and due date, and allows actions like changing the status or priority or opening the task for editing directly from the note.
+When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Features` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
 
 ![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
 
@@ -46,12 +45,12 @@ When you run the command, the current line is used as the title of the new task.
 
 ## Instant Task Conversion
 
-The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from **Settings → TaskNotes → Features → Show convert button next to checkboxes**. When enabled, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
+The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Features` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
 This supports progressive conversion from draft notes to dedicated task files.
 
 ### Folder Configuration
 
-By default, converted tasks are placed in the same folder as the current note (`{{currentNotePath}}`). You can change this behavior in **Settings → TaskNotes → General → Folder for converted tasks**:
+By default, converted tasks are placed in the same folder as the current note (`{{currentNotePath}}`). You can change this behavior in `Settings -> TaskNotes -> General` (`Folder for converted tasks`):
 
 - **Leave empty**: Uses your default tasks folder (configured in the same section)
 - **`{{currentNotePath}}`**: Places tasks in the same folder as the note you're editing (default)
@@ -107,7 +106,7 @@ To use bulk conversion:
 3. Search for "Convert all tasks in note to TaskNotes"
 4. Execute the command
 
-The command will display progress and show a summary when complete (e.g., "✅ Successfully converted 5 tasks to TaskNotes!").
+The command displays progress and shows a summary when complete (for example, "Successfully converted 5 tasks to TaskNotes.").
 
 !!! warning "Important Considerations"
 
@@ -172,7 +171,7 @@ Additional behavior:
 
 ### Configuration
 
-Enable or disable the widget in **Settings → TaskNotes → Misc Settings → Show Relationships Widget**.
+Enable or disable the widget in `Settings -> TaskNotes -> Appearance` (`Show relationships widget`).
 
 Position the widget at the top (after frontmatter) or bottom of the note using the **Relationships Position** setting.
 
@@ -181,7 +180,7 @@ Position the widget at the top (after frontmatter) or bottom of the note using t
 Tasks with subtasks can display an expand/collapse chevron that toggles subtask visibility.
 
 - The chevron can be positioned on the Right (default, hover to show) or on the Left (always visible, matches group chevrons).
-- Configure this in Settings → TaskNotes → Misc Settings → Subtask chevron position.
+- Configure this in `Settings -> TaskNotes -> Appearance` (`Subtask chevron position`).
 
 ![Left subtask chevron](../assets/left-task-subtask-chevron.gif)
 
@@ -197,7 +196,7 @@ These settings are replaced in v4 by:
 
 - `showRelationships` and `relationshipsPosition`
 
-If you had project subtasks enabled in v3, the relationships widget will be enabled automatically after upgrading to v4. The underlying Bases file changed from `TaskNotes/Views/project-subtasks.base` to `TaskNotes/Views/relationships.base`. Run the **Create Default Files** command in Settings → General to create the new relationships.base file.
+If you had project subtasks enabled in v3, the relationships widget is enabled automatically after upgrading to v4. The underlying Bases file changed from `TaskNotes/Views/project-subtasks.base` to `TaskNotes/Views/relationships.base`. Run the **Create default files** action in `Settings -> TaskNotes -> Integrations` if `relationships.base` is missing.
 
 ## Natural Language Processing
 
@@ -235,7 +234,7 @@ Features include:
 
 ### Customizable Triggers
 
-**New in v4**: Triggers for NLP properties can be customized in **Settings → Features → NLP Triggers**.
+**New in v4**: Triggers for NLP properties can be customized in `Settings -> TaskNotes -> Features` (`NLP Triggers`).
 
 You can configure trigger characters or strings for:
 
