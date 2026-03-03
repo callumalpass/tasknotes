@@ -2,7 +2,6 @@
 
 This reference documents the expected data types for each frontmatter property that TaskNotes uses.
 
-[← Back to Settings](../settings.md)
 
 ## Quick Reference
 
@@ -338,7 +337,7 @@ For example, if you map `due` to `dueDate`, TaskNotes will expect:
 dueDate: "2025-01-15"
 ```
 
-See [Field Mapping](task-properties.md#field-mapping) for configuration details.
+See [Task Properties settings](task-properties.md) for configuration details.
 
 ---
 
