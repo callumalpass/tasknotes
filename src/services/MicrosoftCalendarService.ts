@@ -175,7 +175,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			return;
 		}
 		this.plugin.settings.microsoftCalendarSyncTokens[calendarId] = syncToken;
-		await this.plugin.saveSettingsDataOnly();
+		await this.plugin.saveSettingsDataOnly?.();
 	}
 
 	/**
@@ -189,7 +189,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			return;
 		}
 		delete this.plugin.settings.microsoftCalendarSyncTokens[calendarId];
-		await this.plugin.saveSettingsDataOnly();
+		await this.plugin.saveSettingsDataOnly?.();
 	}
 
 	async initialize(): Promise<void> {
