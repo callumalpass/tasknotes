@@ -1,6 +1,6 @@
 # ICS Calendar Event Integration
 
-TaskNotes provides integration with ICS calendar events, allowing you to create notes and tasks directly from calendar entries. This feature bridges the gap between scheduled events and actionable content in your vault.
+TaskNotes can use ICS calendar events to create notes and tasks directly from calendar entries.
 ICS integration creates linked notes and tasks from event data without manual re-entry.
 
 ## Overview
@@ -12,7 +12,7 @@ The ICS integration allows you to:
 - Generate tasks from events with proper scheduling and context
 - Link existing vault content to calendar events
 - Maintain relationships between events and created content
-Event context, notes, and follow-up tasks remain connected through frontmatter links rather than manual cross-linking.
+Event context, notes, and follow-up tasks remain connected through frontmatter links.
 
 ## Event Information Modal
 
@@ -44,7 +44,6 @@ The relationship is maintained through the ICS Event ID field in the content's f
 **Link Note** - Opens a file selection dialog to link an existing note to the calendar event.
 
 **Refresh** - Reloads the list of related content to reflect recent changes.
-For meeting workflows, the modal provides a single place to inspect event data, create content, and link existing files.
 
 ## Note Creation from Events
 
@@ -93,7 +92,7 @@ Tasks are scheduled using the event's start time as an ISO timestamp, preserving
 - **Contexts** - Event location is added as a context (if provided)
 - **Time Estimate** - Calculated from event duration (if start and end times are available)
 - **Tags** - Includes the ICS event tag and any default task tags
-After creation, priority, status, and schedule can be edited when the event data does not match the final task plan.
+After creation, priority, status, and schedule can be edited if event data does not match the final task plan.
 
 ### Content
 
@@ -109,7 +108,6 @@ You can establish connections between existing vault content and calendar events
 2. The file's frontmatter is updated to include the event ID
 3. The modification date is updated to reflect the change
 4. The connection appears in the related content list
-Linking existing files supports notes created before calendar integration or outside the modal flow.
 
 ### Bidirectional References
 
@@ -160,7 +158,7 @@ All standard TaskNotes template variables remain available:
 
 ## Configuration
 
-ICS integration settings are located under **Settings → TaskNotes → Integrations**:
+ICS integration settings are located under `Settings -> TaskNotes -> Integrations`:
 
 ### Default Templates
 
@@ -175,7 +173,6 @@ Folder paths support template variables for dynamic organization:
 - Date variables: `{{year}}`, `{{month}}`, `{{day}}`, `{{monthName}}`, etc.
 - ICS event variables: `{{icsEventTitle}}`, `{{icsEventLocation}}`, `{{icsEventDescription}}`
 - Other variables: See template variables section below
-Define folder conventions before large imports to keep event-generated files in predictable locations.
 
 Example folder paths:
 
