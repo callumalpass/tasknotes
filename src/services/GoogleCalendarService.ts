@@ -145,7 +145,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			return;
 		}
 		this.plugin.settings.googleCalendarSyncTokens[calendarId] = syncToken;
-		await this.plugin.saveSettingsDataOnly();
+		await this.plugin.saveSettingsDataOnly?.();
 	}
 
 	/**
@@ -156,7 +156,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			return;
 		}
 		delete this.plugin.settings.googleCalendarSyncTokens[calendarId];
-		await this.plugin.saveSettingsDataOnly();
+		await this.plugin.saveSettingsDataOnly?.();
 	}
 
 	async initialize(): Promise<void> {
