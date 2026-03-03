@@ -3,7 +3,6 @@
 !!! note "Settings Reorganization"
     Default value settings have been moved to the [Task Properties](task-properties.md) tab. Each property card now contains its own default value configuration alongside other property-specific settings.
 
-[← Back to Settings](../settings.md)
 
 ## Where to Find Default Settings
 

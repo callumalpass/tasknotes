@@ -2,10 +2,19 @@
 
 .task-card-note-widget {
     display: block;
+    box-sizing: border-box;
     border-radius: var(--radius-s);
     border: 1px solid var(--background-modifier-border);
-    margin: var(--cs-spacing-md) 0;
+    margin-block: var(--cs-spacing-md);
+    margin-inline: 0;
     padding: var(--cs-spacing-sm);
+}
+
+/* Keep widget aligned with the centered readable column when enabled */
+.is-readable-line-width .task-card-note-widget {
+    width: min(100%, var(--file-line-width, 100%));
+    max-width: var(--file-line-width, 100%);
+    margin-inline: auto;
 }
 
 .task-card-note-widget__card {
