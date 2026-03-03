@@ -454,6 +454,37 @@ function getDefaultVisibleProperties(plugin: TaskNotesPlugin): string[] {
 	return convertInternalToUserProperties(internalDefaults, plugin);
 }
 
+function resolveVisibleProperties(
+	visibleProperties: string[] | undefined,
+	plugin: TaskNotesPlugin
+): string[] {
+	if (visibleProperties !== undefined) {
+		return visibleProperties;
+	}
+
+	if (plugin.settings.defaultVisibleProperties) {
+		return convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin);
+	}
+
+	return getDefaultVisibleProperties(plugin);
+}
+
+function getSubtaskVisibleProperties(card: HTMLElement, plugin: TaskNotesPlugin): string[] {
+	const raw = card?.dataset?.visibleProperties;
+	if (raw) {
+		try {
+			const parsed = JSON.parse(raw);
+			if (Array.isArray(parsed) && parsed.length > 0) {
+				return parsed;
+			}
+		} catch (error) {
+			console.warn("Failed to parse visibleProperties from card dataset", error);
+		}
+	}
+
+	return resolveVisibleProperties(undefined, plugin);
+}
+
 interface ChecklistProgress {
 	completed: number;
 	total: number;
@@ -1459,6 +1490,7 @@ export function createTaskCard(
 		const todayLocal = new Date();
 		return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
 	})();
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
@@ -1471,6 +1503,7 @@ export function createTaskCard(
 	// Main container with BEM class structure
 	// Use span for inline layout to ensure proper inline flow in CodeMirror
 	const card = document.createElement(layout === "inline" ? "span" : "div");
+	card.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
@@ -1483,6 +1516,7 @@ export function createTaskCard(
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of skipped_instances
 		: false; // Only recurring tasks can have skipped instances
 	const isRecurring = !!task.recurrence;
+	const isProject = plugin.projectSubtasksService?.isTaskUsedAsProjectSync(task.path) || false;
 
 	// Build BEM class names
 	const cardClasses = ["task-card"];
@@ -1498,6 +1532,7 @@ export function createTaskCard(
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (isActivelyTracked) cardClasses.push("task-card--actively-tracked");
 	if (isRecurring) cardClasses.push("task-card--recurring");
+	if (isProject) cardClasses.push("task-card--project");
 
 	// Add priority modifier
 	if (task.priority) {
@@ -1551,8 +1586,7 @@ export function createTaskCard(
 	let statusDot: HTMLElement | null = null;
 	const shouldShowStatus =
 		!opts.hideStatusIndicator &&
-		(!visibleProperties ||
-			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
 	if (shouldShowStatus) {
 		statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
 		if (statusConfig) {
@@ -1577,8 +1611,7 @@ export function createTaskCard(
 
 	// Priority indicator dot (conditional based on visible properties)
 	const shouldShowPriority =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
 	if (task.priority && priorityConfig && shouldShowPriority) {
 		const priorityDot = mainRow.createEl("span", {
 			cls: "task-card__priority-dot",
@@ -1710,11 +1743,7 @@ export function createTaskCard(
 	const metadataElements: HTMLElement[] = [];
 
 	// Get properties to display
-	const propertiesToShow =
-		visibleProperties ||
-		(plugin.settings.defaultVisibleProperties
-			? convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin)
-			: getDefaultVisibleProperties(plugin));
+	const propertiesToShow = resolvedVisibleProperties;
 
 	// Render each visible property
 	for (const propertyId of propertiesToShow) {
@@ -1911,6 +1940,7 @@ export function updateTaskCard(
 		const todayLocal = new Date();
 		return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
 	})();
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 
 	// Update effective status
 	const effectiveStatus = task.recurrence
@@ -1953,6 +1983,7 @@ export function updateTaskCard(
 	}
 
 	element.className = cardClasses.join(" ");
+	element.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 	element.dataset.status = effectiveStatus;
 
 	// Get the main row container
@@ -1984,8 +2015,8 @@ export function updateTaskCard(
 
 	// Update status dot (conditional based on visible properties)
 	const shouldShowStatus =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
+		!opts.hideStatusIndicator &&
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
 	const statusDot = element.querySelector(".task-card__status-dot") as HTMLElement;
 
 	if (shouldShowStatus) {
@@ -1993,12 +2024,24 @@ export function updateTaskCard(
 			// Update existing dot
 			if (statusConfig) {
 				statusDot.style.borderColor = statusConfig.color;
+				if (statusConfig.icon) {
+					statusDot.addClass("task-card__status-dot--icon");
+					statusDot.empty();
+					setIcon(statusDot, statusConfig.icon);
+				} else {
+					statusDot.removeClass("task-card__status-dot--icon");
+					statusDot.empty();
+				}
 			}
 		} else if (mainRow) {
 			// Add missing dot
 			const newStatusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
 			if (statusConfig) {
 				newStatusDot.style.borderColor = statusConfig.color;
+				if (statusConfig.icon) {
+					newStatusDot.addClass("task-card__status-dot--icon");
+					setIcon(newStatusDot, statusConfig.icon);
+				}
 			}
 			// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
 			newStatusDot.addEventListener("mousedown", (e) => {
@@ -2025,8 +2068,7 @@ export function updateTaskCard(
 
 	// Update priority indicator (conditional based on visible properties)
 	const shouldShowPriority =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
 	const existingPriorityDot = element.querySelector(".task-card__priority-dot") as HTMLElement;
 
 	if (shouldShowPriority && task.priority && priorityConfig) {
@@ -2129,6 +2171,7 @@ export function updateTaskCard(
 	plugin.projectSubtasksService
 		.isTaskUsedAsProject(task.path)
 		.then((isProject: boolean) => {
+			element.classList.toggle("task-card--project", isProject);
 			// Remove old placeholders if they exist
 			element.querySelector(".task-card__project-indicator-placeholder")?.remove();
 			element.querySelector(".task-card__chevron-placeholder")?.remove();
@@ -2236,11 +2279,7 @@ export function updateTaskCard(
 		const metadataElements: HTMLElement[] = [];
 
 		// Get properties to display
-		const propertiesToShow =
-			visibleProperties ||
-			(plugin.settings.defaultVisibleProperties
-				? convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin)
-				: getDefaultVisibleProperties(plugin));
+		const propertiesToShow = resolvedVisibleProperties;
 
 		for (const propertyId of propertiesToShow) {
 			// Skip status and priority as they're rendered separately
@@ -2488,6 +2527,7 @@ export async function toggleSubtasks(
 
 				// Sort subtasks
 				const sortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
+				const parentVisibleProperties = getSubtaskVisibleProperties(card, plugin);
 
 				// Build parent chain by traversing up the DOM hierarchy
 				const buildParentChain = (element: HTMLElement): string[] => {
@@ -2519,7 +2559,7 @@ export async function toggleSubtasks(
 						continue;
 					}
 
-					const subtaskCard = createTaskCard(subtask, plugin, undefined);
+					const subtaskCard = createTaskCard(subtask, plugin, parentVisibleProperties);
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
