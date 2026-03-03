@@ -28,7 +28,7 @@ Open a view with commands like **TaskNotes: Open tasks view** or **TaskNotes: Op
 
 ## How it works with Bases
 
-TaskNotes registers as a Bases data source and provides custom view types: `tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`, `tasknotesAgenda`, and `tasknotesMinicalendar`. Your task notes become rows; frontmatter properties become columns.
+TaskNotes registers as a Bases data source and provides custom view types: `tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`, and `tasknotesMiniCalendar`. The default Agenda file is a preconfigured `tasknotesCalendar` list view (`listWeek`). Your task notes become rows; frontmatter properties become columns.
 
 The default `.base` files include formula properties for computed values:
 

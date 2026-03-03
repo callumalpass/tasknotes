@@ -1,0 +1,16 @@
+{
+  "name": "tasknotes-docs-builder",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js && python3 -m http.server 4321 --directory dist"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.0.0",
+    "js-yaml": "^4.1.0",
+    "marked": "^13.0.0",
+    "marked-highlight": "^2.1.0"
+  }
+}

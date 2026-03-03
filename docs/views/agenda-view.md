@@ -1,6 +1,5 @@
 # Agenda View
 
-[← Back to Views](../views.md)
 
 The Agenda view is a dedicated `.base` file that opens the calendar in list mode. It provides a scrollable agenda of upcoming tasks, notes, and external calendar events without needing to switch the primary calendar into list view manually.
 
