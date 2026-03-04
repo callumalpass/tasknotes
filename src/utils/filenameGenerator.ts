@@ -11,6 +11,7 @@ export interface FilenameContext {
 	scheduledDate?: string; // YYYY-MM-DD format
 	// Additional body template variables (optional for backwards compatibility)
 	contexts?: string[];
+	projects?: string[];
 	tags?: string[];
 	timeEstimate?: number;
 	details?: string;
@@ -209,6 +210,11 @@ function generateCustomFilename(
 	}
 
 	try {
+		// Process array values for contexts and tags
+		const contexts = Array.isArray(context.contexts) ? context.contexts : [];
+		const projects = Array.isArray(context.projects) ? context.projects : [];
+		const tags = Array.isArray(context.tags) ? context.tags : [];
+
 		// Validate and sanitize context values
 		const sanitizedTitle = sanitizeForFilename(context.title);
 		const sanitizedPriority =
@@ -218,10 +224,10 @@ function generateCustomFilename(
 		const sanitizedStatus = context.status
 			? sanitizeForFilename(context.status)
 			: "open";
-
-		// Process array values for contexts and tags
-		const contexts = Array.isArray(context.contexts) ? context.contexts : [];
-		const tags = Array.isArray(context.tags) ? context.tags : [];
+		const sanitizedProjectId =
+			projects
+				? sanitizeForFilename(projects[0]).trim().substring(0,4).toUpperCase()
+				: "TASK";
 
 		const variables: Record<string, string> = {
 			title: sanitizedTitle,
@@ -229,6 +235,7 @@ function generateCustomFilename(
 			time: format(date, "HHmmss"),
 			priority: sanitizedPriority,
 			status: sanitizedStatus,
+			projectId: sanitizedProjectId,
 			timestamp: format(date, "yyyy-MM-dd-HHmmss"),
 			dateTime: format(date, "yyyy-MM-dd-HHmm"),
 			year: format(date, "yyyy"),
@@ -242,6 +249,8 @@ function generateCustomFilename(
 			// Body template variables (contexts, tags, etc.)
 			context: contexts[0] ? sanitizeForFilename(contexts[0]) : "",
 			contexts: contexts.map((c) => sanitizeForFilename(c)).join("/"),
+			project: projects[0] ? sanitizeForFilename(projects[0]) : "",
+			projects: projects.map((c) => sanitizeForFilename(c)).join("/"),
 			tags: tags.map((t) => sanitizeForFilename(t)).join(", "),
 			hashtags: tags.map((t) => `#${sanitizeForFilename(t)}`).join(" "),
 			timeEstimate: context.timeEstimate?.toString() || "",

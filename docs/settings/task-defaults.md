@@ -24,6 +24,7 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 - `{{contexts}}` - All contexts from the task's contexts array, joined by `/`
 - `{{project}}` - First project from the task's projects array  
 - `{{projects}}` - All projects from the task's projects array, joined by `/`
+- `{{projectId}}` - First project from the task's projects array abbreviated to 4 characters. (e.g., "TASK")
 - `{{priority}}` - Task priority (e.g., "high", "medium", "low")
 - `{{status}}` - Task status (e.g., "todo", "in-progress", "done")
 - `{{title}}` - Task title (sanitized for folder names)
