@@ -260,6 +260,40 @@ describe('timeTrackingUtils', () => {
 			expect(result.topTags).toBeUndefined();
 		});
 
+		it('should filter by custom date range when period is "custom"', () => {
+			const tasks: TaskInfo[] = [
+				TaskFactory.createTask({
+					title: 'In Range',
+					path: '/tasks/in-range.md',
+					timeEntries: [
+						{ startTime: '2025-03-03T10:00:00Z', endTime: '2025-03-03T10:30:00Z', duration: 30 },
+					],
+				}),
+				TaskFactory.createTask({
+					title: 'Out of Range',
+					path: '/tasks/out-of-range.md',
+					timeEntries: [
+						{ startTime: '2025-01-01T10:00:00Z', endTime: '2025-01-01T10:30:00Z', duration: 30 },
+					],
+				}),
+			];
+
+			const result = computeTimeSummary(
+				tasks,
+				{
+					period: 'custom',
+					fromDate: new Date('2025-03-01T00:00:00Z'),
+					toDate: new Date('2025-03-04T23:59:59Z'),
+				},
+				isCompleted
+			);
+
+			expect(result.summary.totalMinutes).toBe(30);
+			expect(result.summary.tasksWithTime).toBe(1);
+			expect(result.topTasks).toHaveLength(1);
+			expect(result.topTasks[0].title).toBe('In Range');
+		});
+
 		it('should sort top tasks by minutes descending', () => {
 			const tasks: TaskInfo[] = [
 				TaskFactory.createTask({
