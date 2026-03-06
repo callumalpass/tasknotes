@@ -338,6 +338,32 @@ function generateCustomFilename(
 }
 
 /**
+ * Removes link markings (Wikilinks, Markdown links) and protocol prefixes from a string
+ */
+export function sanitizeLinks(input: string): string {
+	if (!input || typeof input !== "string") {
+		return input;
+	}
+
+	let processed = input;
+
+	// 1. Process Wikilinks: [[Link|Alias]] -> Alias, or [[Link]] -> Link
+	processed = processed.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, link, alias) => {
+		return (alias || link || "").trim();
+	});
+
+	// 2. Process Markdown links: [Text](URL) -> Text
+	processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text) => {
+		return (text || "").trim();
+	});
+
+	// 3. Remove protocol prefixes
+	processed = processed.replace(/https?:\/\//g, "");
+
+	return processed;
+}
+
+/**
  * Sanitizes a string to be safe for use as a filename
  */
 export function sanitizeForFilename(input: string): string {
@@ -346,8 +372,11 @@ export function sanitizeForFilename(input: string): string {
 	}
 
 	try {
+		// First, remove link markings and protocols
+		const processed = sanitizeLinks(input);
+
 		// Remove or replace problematic characters
-		let sanitized = input
+		let sanitized = processed
 			.trim()
 			// Replace multiple spaces with single space
 			.replace(/\s+/g, " ")

@@ -110,7 +110,7 @@ describe('InstantTaskConvertService - Issue #1109: Link Preservation', () => {
 	 * They are skipped until the fix is implemented.
 	 */
 	describe('Expected behavior after fix (skipped until implemented)', () => {
-		it.skip('should extract markdown link display text for title, preserve URL in body', () => {
+		it('should extract markdown link display text for title, preserve URL in body', () => {
 			// When fixed, we should have a function that:
 			// 1. Extracts markdown links from the title
 			// 2. Replaces [text](url) with just "text" in the title
@@ -130,7 +130,7 @@ describe('InstantTaskConvertService - Issue #1109: Link Preservation', () => {
 			// TODO: Implement extractLinksFromTitle function that returns { cleanTitle, links }
 		});
 
-		it.skip('should preserve wikilinks in task body', () => {
+		it('should preserve wikilinks in task body', () => {
 			const input = 'Review [[Meeting Notes 2024-01-15]]';
 
 			// For wikilinks, the expected behavior could be:
@@ -140,7 +140,7 @@ describe('InstantTaskConvertService - Issue #1109: Link Preservation', () => {
 			// TODO: Implement wikilink extraction
 		});
 
-		it.skip('should handle multiple mixed link types', () => {
+		it('should handle multiple mixed link types', () => {
 			const input = 'See [[Project Notes]] and [external docs](https://docs.example.com)';
 
 			// Expected title: "See Project Notes and external docs"

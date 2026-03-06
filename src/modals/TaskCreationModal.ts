@@ -11,7 +11,7 @@ import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskInfo, TaskCreationData, TaskDependency } from "../types";
 import { getCurrentTimestamp } from "../utils/dateUtils";
-import { generateTaskFilename, FilenameContext } from "../utils/filenameGenerator";
+import { generateTaskFilename, FilenameContext, sanitizeLinks } from "../utils/filenameGenerator";
 import { calculateDefaultDate, sanitizeTags } from "../utils/helpers";
 import {
 	NaturalLanguageParser,
@@ -845,7 +845,8 @@ export class TaskCreationModal extends TaskModal {
 
 			previewData.forEach((item) => {
 				const previewItem = this.nlPreviewContainer.createDiv("nl-preview-item");
-				previewItem.textContent = item.text;
+				// Sanitize links in the preview text
+				previewItem.textContent = sanitizeLinks(item.text);
 			});
 		} else {
 			this.clearNaturalLanguagePreview();
