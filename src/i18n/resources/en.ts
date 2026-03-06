@@ -611,6 +611,12 @@ export const en: TranslationTree = {
 				header: "Recurring Tasks",
 				description: "Configure behavior for recurring task management.",
 			},
+			debugLogging: {
+				header: "Debug Logging",
+				description: "Configure debug log output for troubleshooting.",
+				enableName: "Enable debug logging",
+				enableDesc: "Log detailed drag-and-drop and view diagnostics to the developer console. Useful for troubleshooting.",
+			},
 		},
 		defaults: {
 			header: {
@@ -985,6 +991,11 @@ export const en: TranslationTree = {
 					description:
 						"Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator.",
 				},
+				sortOrder: {
+					name: "Sort Order",
+					description:
+						"Frontmatter property used for manual task ordering via drag-and-drop.",
+				},
 				pomodoros: {
 					name: "Pomodoros",
 					description:
@@ -1144,6 +1155,7 @@ export const en: TranslationTree = {
 					timeEntries: "Time entries",
 					completeInstances: "Complete instances",
 					blockedBy: "Blocked by",
+					sortOrder: "Sort order",
 					pomodoros: "Pomodoros",
 					icsEventId: "ICS Event ID",
 					icsEventTag: "ICS Event Tag",

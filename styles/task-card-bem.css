@@ -1027,22 +1027,30 @@
     box-shadow: 0 2px 8px color-mix(in srgb, var(--tn-shadow-color) 15%, transparent);
 }
 
+/* Suppress hover effects during active drag — the translateY(-1px) distorts
+   getBoundingClientRect and fights with the gap/slot shift transforms,
+   and the background-color highlight lingers on cards the cursor passes over. */
+.tn-drag-active .tasknotes-plugin .task-card:hover {
+    background-color: inherit;
+    transform: none;
+    box-shadow: none;
+}
+
 .tasknotes-plugin .task-card[draggable="true"]:active {
     cursor: grabbing;
     transform: scale(0.98) rotate(1deg);
 }
 
-/* Enhanced dragging state */
+/* Enhanced dragging state — keep visual feedback subtle so the
+   transformed element doesn't overlap adjacent cards and steal
+   hit-test events during drag-to-reorder. */
 .tasknotes-plugin .task-card--dragging {
-    opacity: 0.8;
-    transform: rotate(5deg) scale(1.02);
+    opacity: 0.4;
     cursor: grabbing;
     z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 8px 32px color-mix(in srgb, var(--tn-shadow-color) 30%, transparent),
-                0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 50%, transparent);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--tn-shadow-color) 20%, transparent);
     transition: none;
-    animation: drag-pulse 2s infinite ease-in-out;
+    animation: none;
 }
 
 @keyframes drag-pulse {
