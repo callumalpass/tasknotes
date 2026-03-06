@@ -294,6 +294,7 @@ export interface ICSIntegrationSettings {
  */
 export interface GoogleCalendarExportSettings {
 	enabled: boolean; // Master enable/disable for task export
+	syncTimeblocks: boolean; // Enable syncing timeblocks to Google Calendar
 	targetCalendarId: string; // Which calendar to create events in
 	syncOnTaskCreate: boolean; // Auto-sync when task is created
 	syncOnTaskUpdate: boolean; // Auto-sync when task is updated
