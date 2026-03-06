@@ -1315,25 +1315,7 @@ export class KanbanView extends BasesViewBase {
 			// never fired), reconstruct the drop target from the column's
 			// visible non-dragged cards.
 			if (!dropTarget && !isCrossColumn && cardsContainer) {
-				const visibleCards = Array.from(
-					cardsContainer.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper")
-				).filter(el => !this.draggedTaskPaths.includes(el.dataset.taskPath || ""));
-
-				if (visibleCards.length > 0) {
-					// Use currentInsertionIndex if available; otherwise
-					// default to after the last visible card.
-					const idx = this.currentInsertionIndex >= 0
-						? Math.min(this.currentInsertionIndex, visibleCards.length)
-						: visibleCards.length;
-
-					if (idx === 0) {
-						// Before the first visible card
-						dropTarget = { taskPath: visibleCards[0].dataset.taskPath!, above: true };
-					} else {
-						// After the card at idx-1
-						dropTarget = { taskPath: visibleCards[idx - 1].dataset.taskPath!, above: false };
-					}
-				}
+				dropTarget = this.reconstructDropTarget(cardsContainer);
 			}
 
 			this.debugLog("COLUMN-DROP", {
@@ -1399,7 +1381,16 @@ export class KanbanView extends BasesViewBase {
 			e.preventDefault();
 			e.stopPropagation();
 
+			this.debugLog("SWIMLANE-CELL-DROP-EVENT-RECEIVED", {
+				targetColumn: columnKey,
+				targetSwimlane: swimLaneKey,
+				draggedTaskPath: this.draggedTaskPath?.split("/").pop() || "(null)",
+				dropTargetPath: this.dropTargetPath?.split("/").pop() || "(null)",
+				eventTarget: (e.target as HTMLElement)?.className?.slice(0, 60),
+			});
+
 			if (!this.draggedTaskPath) {
+				this.debugLog("SWIMLANE-CELL-DROP: bail — draggedTaskPath is null (dragend already fired?)");
 				cell.classList.remove("kanban-view__swimlane-column--dragover");
 				this.cleanupDragShift();
 				return;
@@ -1411,7 +1402,7 @@ export class KanbanView extends BasesViewBase {
 				: undefined;
 
 			// For cross-column/swimlane drops, validate dropTarget is in this cell via DOM query
-			const cardsContainer = cell.querySelector(".kanban-view__cards") as HTMLElement | null;
+			const cardsContainer = cell.querySelector(".kanban-view__tasks-container") as HTMLElement | null;
 			const isCrossColumn = this.draggedFromColumn !== columnKey;
 			const isCrossSwimlane = this.draggedFromSwimlane !== swimLaneKey;
 			if ((isCrossColumn || isCrossSwimlane) && dropTarget) {
@@ -1419,6 +1410,13 @@ export class KanbanView extends BasesViewBase {
 				if (!targetInCell) {
 					dropTarget = undefined;
 				}
+			}
+
+			// Same-cell fallback: when dropTarget is null (e.g. user dropped
+			// in empty space below the last card), reconstruct the drop target
+			// from the cell's visible non-dragged cards.
+			if (!dropTarget && !isCrossColumn && !isCrossSwimlane && cardsContainer) {
+				dropTarget = this.reconstructDropTarget(cardsContainer);
 			}
 
 			// Optimistic DOM reorder: move card to correct position immediately
@@ -1429,6 +1427,7 @@ export class KanbanView extends BasesViewBase {
 				isCrossSwimlane,
 				dropTarget: dropTarget ? { file: dropTarget.taskPath.split("/").pop(), above: dropTarget.above } : null,
 				cardsContainerFound: !!cardsContainer,
+				cardsContainerChildCount: cardsContainer?.childElementCount,
 			});
 			const optimisticResult = this.performOptimisticReorder(paths, dropTarget, cardsContainer);
 			this.debugLog("SWIMLANE-CELL-DROP-OPTIMISTIC-RESULT", { success: optimisticResult });
@@ -1986,6 +1985,34 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		this.setupCardTouchHandlers(cardWrapper, task);
+	}
+
+	/**
+	 * Reconstruct a drop target from the visible (non-dragged) cards in a container.
+	 * Used as a fallback when the user drops in empty space where the card-level
+	 * dragover never fired, so dropTargetPath is null.
+	 */
+	private reconstructDropTarget(
+		cardsContainer: HTMLElement
+	): { taskPath: string; above: boolean } | undefined {
+		const visibleCards = Array.from(
+			cardsContainer.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper")
+		).filter(el => !this.draggedTaskPaths.includes(el.dataset.taskPath || ""));
+
+		if (visibleCards.length === 0) return undefined;
+
+		// Use currentInsertionIndex if available; otherwise
+		// default to after the last visible card.
+		const idx = this.currentInsertionIndex >= 0
+			? Math.min(this.currentInsertionIndex, visibleCards.length)
+			: visibleCards.length;
+
+		if (idx === 0) {
+			// Before the first visible card
+			return { taskPath: visibleCards[0].dataset.taskPath!, above: true };
+		}
+		// After the card at idx-1
+		return { taskPath: visibleCards[idx - 1].dataset.taskPath!, above: false };
 	}
 
 	/**
