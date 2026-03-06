@@ -18,7 +18,6 @@ import {
 	stripPropertyPrefix,
 	isSortOrderInSortConfig,
 	computeSortOrder,
-	generateEndRank,
 	DropOperationQueue,
 } from "./sortOrderUtils";
 
@@ -306,6 +305,13 @@ export class KanbanView extends BasesViewBase {
 	async render(): Promise<void> {
 		if (!this.boardEl || !this.rootElement) return;
 		if (!this.data?.data) return;
+
+		this.debugLog("RENDER-START", {
+			activeDropCount: this.activeDropCount,
+			suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
+			draggedTaskPath: this.draggedTaskPath?.split("/").pop() || null,
+			currentTaskElementsCount: this.currentTaskElements.size,
+		});
 
 		// Always re-read view options to catch config changes (e.g., toggling consolidateStatusIcon)
 		if (this.config) {
@@ -1271,7 +1277,15 @@ export class KanbanView extends BasesViewBase {
 			e.preventDefault();
 			e.stopPropagation();
 
+			this.debugLog("COLUMN-DROP-EVENT-RECEIVED", {
+				targetColumn: groupKey,
+				draggedTaskPath: this.draggedTaskPath?.split("/").pop() || "(null)",
+				dropTargetPath: this.dropTargetPath?.split("/").pop() || "(null)",
+				eventTarget: (e.target as HTMLElement)?.className?.slice(0, 60),
+			});
+
 			if (!this.draggedTaskPath) {
+				this.debugLog("COLUMN-DROP: bail — draggedTaskPath is null (dragend already fired?)");
 				column.classList.remove("kanban-view__column--dragover");
 				this.cleanupDragShift();
 				return;
@@ -1328,11 +1342,15 @@ export class KanbanView extends BasesViewBase {
 				targetColumn: groupKey,
 				isCrossColumn,
 				dropTarget: dropTarget ? { file: dropTarget.taskPath.split("/").pop(), above: dropTarget.above } : null,
+				cardsContainerFound: !!cardsContainer,
+				cardsContainerChildCount: cardsContainer?.childElementCount,
+				draggedTaskPaths: this.draggedTaskPaths.map(p => p.split("/").pop()),
 			});
 
 			// Optimistic DOM reorder: move card to correct position immediately
 			const paths = this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath!];
-			this.performOptimisticReorder(paths, dropTarget, cardsContainer);
+			const optimisticResult = this.performOptimisticReorder(paths, dropTarget, cardsContainer);
+			this.debugLog("COLUMN-DROP-OPTIMISTIC-RESULT", { success: optimisticResult });
 
 			// Now clean up shift CSS — no visual change since DOM is already correct
 			column.classList.remove("kanban-view__column--dragover");
@@ -1405,7 +1423,15 @@ export class KanbanView extends BasesViewBase {
 
 			// Optimistic DOM reorder: move card to correct position immediately
 			const paths = this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath!];
-			this.performOptimisticReorder(paths, dropTarget, cardsContainer);
+			this.debugLog("SWIMLANE-CELL-DROP", {
+				draggedTask: this.draggedTaskPath?.split("/").pop(),
+				isCrossColumn,
+				isCrossSwimlane,
+				dropTarget: dropTarget ? { file: dropTarget.taskPath.split("/").pop(), above: dropTarget.above } : null,
+				cardsContainerFound: !!cardsContainer,
+			});
+			const optimisticResult = this.performOptimisticReorder(paths, dropTarget, cardsContainer);
+			this.debugLog("SWIMLANE-CELL-DROP-OPTIMISTIC-RESULT", { success: optimisticResult });
 
 			// Now clean up shift CSS — no visual change since DOM is already correct
 			cell.classList.remove("kanban-view__swimlane-column--dragover");
@@ -1746,7 +1772,7 @@ export class KanbanView extends BasesViewBase {
 
 			const container = cardWrapper.parentElement;
 
-			this.debugLog("CARD-DROP", {
+			this.debugLog("CARD-DROP (drop-on-card handler)", {
 				draggedTask: this.draggedTaskPath?.split("/").pop(),
 				targetCard: task.path.split("/").pop(),
 				sourceColumn: this.draggedFromColumn,
@@ -1771,6 +1797,10 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
+			this.debugLog("DRAGSTART", {
+				task: task.path.split("/").pop(),
+				inCurrentTaskElements: this.currentTaskElements.has(task.path),
+			});
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
 			if (
@@ -1882,10 +1912,25 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		cardWrapper.addEventListener("dragend", () => {
+			this.debugLog("DRAGEND-FIRED", {
+				draggedTask: task.path.split("/").pop(),
+				draggedTaskPath: this.draggedTaskPath?.split("/").pop() || "(already null)",
+				draggedTaskPathsCount: this.draggedTaskPaths.length,
+				pendingRender: this.pendingRender,
+				activeDropCount: this.activeDropCount,
+				suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
+			});
+
 			// Restore collapsed dragged cards' inline styles
 			for (const path of this.draggedTaskPaths) {
 				const wrapper = this.currentTaskElements.get(path);
 				if (wrapper) {
+					const parentClass = wrapper.parentElement?.className || "(detached)";
+					this.debugLog("DRAGEND-RESTORE-CARD", {
+						path: path.split("/").pop(),
+						parentClass,
+						currentStyles: wrapper.style.cssText.slice(0, 80),
+					});
 					wrapper.style.cssText = "";
 					wrapper.classList.remove("kanban-view__card--dragging");
 				}
@@ -1932,8 +1977,11 @@ export class KanbanView extends BasesViewBase {
 			// Flush any render that was deferred while dragging.
 			// Use a short delay so the async drop handler can finish first.
 			if (this.pendingRender) {
+				this.debugLog("DRAGEND-PENDING-RENDER: flushing deferred render via debouncedRefresh");
 				this.pendingRender = false;
 				this.debouncedRefresh();
+			} else {
+				this.debugLog("DRAGEND: no pending render to flush");
 			}
 		});
 
@@ -1951,22 +1999,85 @@ export class KanbanView extends BasesViewBase {
 		dropTarget: { taskPath: string; above: boolean } | undefined,
 		targetContainer?: HTMLElement | null
 	): boolean {
-		if (!dropTarget || draggedPaths.length === 0) return false;
+		if (draggedPaths.length === 0) {
+			this.debugLog("OPTIMISTIC-REORDER: bail — no dragged paths");
+			return false;
+		}
+
+		// Cross-column drop onto empty space / column background: no specific
+		// card target, but we know the destination container.  Append the
+		// dragged card(s) so the user sees an instant move instead of the card
+		// snapping back to the source column.
+		if (!dropTarget) {
+			if (!targetContainer) {
+				this.debugLog("OPTIMISTIC-REORDER: bail — no dropTarget AND no targetContainer");
+				return false;
+			}
+			this.debugLog("OPTIMISTIC-REORDER: cross-column append path", {
+				paths: draggedPaths.map(p => p.split("/").pop()),
+				containerChildCount: targetContainer.childElementCount,
+				containerClass: targetContainer.className,
+			});
+			for (const path of draggedPaths) {
+				const draggedEl = this.currentTaskElements.get(path);
+				if (!draggedEl) {
+					this.debugLog("OPTIMISTIC-REORDER: bail — element not in currentTaskElements", { path: path.split("/").pop() });
+					return false;
+				}
+				const oldParent = draggedEl.parentElement;
+				this.debugLog("OPTIMISTIC-REORDER: moving element", {
+					path: path.split("/").pop(),
+					oldParentClass: oldParent?.className,
+					oldParentChildCount: oldParent?.childElementCount,
+					sameContainer: oldParent === targetContainer,
+					elCurrentStyles: draggedEl.style.cssText.slice(0, 120),
+				});
+				draggedEl.style.cssText = "";
+				draggedEl.classList.remove("kanban-view__card--dragging");
+				targetContainer.appendChild(draggedEl);
+			}
+			this.debugLog("OPTIMISTIC-REORDER: cross-column append SUCCESS", {
+				containerChildCount: targetContainer.childElementCount,
+			});
+			return true;
+		}
+
+		this.debugLog("OPTIMISTIC-REORDER: drop-on-card path", {
+			paths: draggedPaths.map(p => p.split("/").pop()),
+			targetCard: dropTarget.taskPath.split("/").pop(),
+			above: dropTarget.above,
+			hasContainer: !!targetContainer,
+		});
 
 		const targetEl = this.currentTaskElements.get(dropTarget.taskPath);
-		if (!targetEl) return false;
+		if (!targetEl) {
+			this.debugLog("OPTIMISTIC-REORDER: bail — target element not in currentTaskElements", { target: dropTarget.taskPath.split("/").pop() });
+			return false;
+		}
 
 		const container = targetContainer || targetEl.parentElement;
-		if (!container) return false;
+		if (!container) {
+			this.debugLog("OPTIMISTIC-REORDER: bail — no container resolved");
+			return false;
+		}
 
 		// If the target element is not in the container (e.g. cross-column drop
 		// where dropTarget references a card in the source column), bail out
 		// gracefully — the post-drop render will fix the DOM.
-		if (!container.contains(targetEl)) return false;
+		if (!container.contains(targetEl)) {
+			this.debugLog("OPTIMISTIC-REORDER: bail — targetEl not in container", {
+				containerClass: container.className,
+				targetElParentClass: targetEl.parentElement?.className,
+			});
+			return false;
+		}
 
 		for (const path of draggedPaths) {
 			const draggedEl = this.currentTaskElements.get(path);
-			if (!draggedEl) return false; // Virtual-scrolled column — can't do optimistic reorder
+			if (!draggedEl) {
+				this.debugLog("OPTIMISTIC-REORDER: bail — dragged element not in map (virtual scroll?)", { path: path.split("/").pop() });
+				return false; // Virtual-scrolled column — can't do optimistic reorder
+			}
 
 			// Restore visibility (undo the dragstart collapse)
 			draggedEl.style.cssText = "";
@@ -1979,6 +2090,7 @@ export class KanbanView extends BasesViewBase {
 				container.insertBefore(draggedEl, targetEl.nextSibling);
 			}
 		}
+		this.debugLog("OPTIMISTIC-REORDER: drop-on-card SUCCESS");
 		return true;
 	}
 
@@ -2266,13 +2378,12 @@ export class KanbanView extends BasesViewBase {
 					);
 					} else {
 						// No specific drop target (cross-column drop without card position).
-						// Assign a rank near the end so the task appears at the bottom of
-						// the target column.
-						newSortOrder = generateEndRank();
-						this.debugLog("SORT-ORDER-CROSS-COLUMN-APPEND", {
+						// Preserve the task's existing sort_order so it retains its
+						// relative position when moved back.  The user can always drop
+						// ON a specific card to choose a precise position.
+						this.debugLog("SORT-ORDER-CROSS-COLUMN-PRESERVE", {
 							taskFile: path.split("/").pop(),
 							groupKey: newGroupValue,
-							newSortOrder,
 						});
 					}
 
@@ -2430,8 +2541,14 @@ export class KanbanView extends BasesViewBase {
 	 */
 	protected debouncedRefresh(): void {
 		if ((this as any).updateDebounceTimer) {
+			this.debugLog("DEBOUNCED-REFRESH: cancelling previous pending timer");
 			clearTimeout((this as any).updateDebounceTimer);
 		}
+
+		this.debugLog("DEBOUNCED-REFRESH: scheduling render in 150ms", {
+			activeDropCount: this.activeDropCount,
+			suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
+		});
 
 		// Save current scroll state before the timer fires
 		const savedState = this.getEphemeralState();
@@ -2439,6 +2556,21 @@ export class KanbanView extends BasesViewBase {
 		// Use correct window for pop-out window support
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		(this as any).updateDebounceTimer = win.setTimeout(async () => {
+			// Respect render suppression — a drop is still in-flight.
+			// The post-drop render (schedulePostDropRender) will fire the
+			// guaranteed render once the writes have settled.
+			if (this.activeDropCount > 0 || Date.now() < this.suppressRenderUntil) {
+				this.debugLog("DEBOUNCED-REFRESH-TIMER-FIRED: SKIPPED (drop still in-flight)", {
+					activeDropCount: this.activeDropCount,
+					suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
+				});
+				(this as any).updateDebounceTimer = null;
+				return;
+			}
+			this.debugLog("DEBOUNCED-REFRESH-TIMER-FIRED: executing render now", {
+				activeDropCount: this.activeDropCount,
+				suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
+			});
 			await this.render();
 			(this as any).updateDebounceTimer = null;
 			// Restore scroll state after render completes
