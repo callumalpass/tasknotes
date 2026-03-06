@@ -1601,16 +1601,26 @@ export const ja: TranslationTree = {
 					filePath: "ファイルパス：",
 					color: "色：",
 					refreshMinutes: "更新（分）：",
+					authentication: "認証：",
+					username: "ユーザー名：",
+					password: "パスワード：",
 				},
 				typeOptions: {
 					remote: "リモートURL",
 					local: "ローカルファイル",
 				},
+				authOptions: {
+					none: "なし（公開）",
+					basic: "HTTP Basic Auth",
+				},
+				authWarning: "認証情報はプラグインデータに暗号化されずに保存されます。可能な場合はアプリ固有のパスワードを使用してください。",
 				placeholders: {
 					calendarName: "カレンダー名",
 					url: "ICS/iCal URL",
 					filePath: "ローカルファイルパス（例：Calendar.ics）",
 					localFile: "Calendar.ics",
+					username: "ユーザー名",
+					password: "パスワード",
 				},
 				statusLabels: {
 					enabled: "有効",
@@ -2798,6 +2808,7 @@ export const ja: TranslationTree = {
 			notices: {
 				calendarNotFound: "カレンダー\"{name}\"が見つかりません（404）。ICS URLが正しく、カレンダーが公開アクセス可能であることを確認してください。",
 				calendarAccessDenied: "カレンダー\"{name}\"のアクセスが拒否されました（500）。これはMicrosoft Outlookサーバーの制限によるものかもしれません。カレンダー設定からICS URLを再生成してみてください。",
+				authenticationFailed: "カレンダー\"{name}\"の認証に失敗しました。ユーザー名とパスワードが正しいか確認してください。",
 				fetchRemoteFailed: "リモートカレンダー\"{name}\"の取得に失敗しました：{error}",
 				readLocalFailed: "ローカルカレンダー\"{name}\"の読み込みに失敗しました：{error}",
 			},

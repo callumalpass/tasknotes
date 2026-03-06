@@ -1601,16 +1601,26 @@ export const de: TranslationTree = {
 					filePath: "Dateipfad:",
 					color: "Farbe:",
 					refreshMinutes: "Aktualisierung (Min):",
+					authentication: "Authentifizierung:",
+					username: "Benutzername:",
+					password: "Passwort:",
 				},
 				typeOptions: {
 					remote: "Remote URL",
 					local: "Lokale Datei",
 				},
+				authOptions: {
+					none: "Keine (Öffentlich)",
+					basic: "HTTP Basic Auth",
+				},
+				authWarning: "Anmeldedaten werden unverschlüsselt in den Plugin-Daten gespeichert. Verwende wenn möglich anwendungsspezifische Passwörter.",
 				placeholders: {
 					calendarName: "Kalendername",
 					url: "ICS/iCal URL",
 					filePath: "Lokaler Dateipfad (z.B. Kalender.ics)",
 					localFile: "Kalender.ics",
+					username: "Benutzername",
+					password: "Passwort",
 				},
 				statusLabels: {
 					enabled: "Aktiviert",
@@ -2798,6 +2808,7 @@ export const de: TranslationTree = {
 			notices: {
 				calendarNotFound: "Kalender \"{name}\" nicht gefunden (404). Bitte prüfe, ob die ICS-URL korrekt ist und der Kalender öffentlich zugänglich ist.",
 				calendarAccessDenied: "Kalender \"{name}\" Zugriff verweigert (500). Dies könnte auf Microsoft Outlook Server-Beschränkungen zurückzuführen sein. Versuche, die ICS-URL aus deinen Kalendereinstellungen neu zu generieren.",
+				authenticationFailed: "Authentifizierung für Kalender \"{name}\" fehlgeschlagen. Bitte überprüfe deinen Benutzernamen und dein Passwort.",
 				fetchRemoteFailed: "Remote-Kalender \"{name}\" konnte nicht abgerufen werden: {error}",
 				readLocalFailed: "Lokaler Kalender \"{name}\" konnte nicht gelesen werden: {error}",
 			},
