@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Added
+
+- Added a dedicated Google Calendar integration setting to enable or disable timeblock synchronization independently from task synchronization
