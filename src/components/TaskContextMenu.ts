@@ -1,7 +1,7 @@
 import { Menu, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
-import { formatDateForStorage } from "../utils/dateUtils";
+import { formatDateForStorage, parseDateToLocal } from "../utils/dateUtils";
 import { ReminderModal } from "../modals/ReminderModal";
 import { CalendarExportService } from "../services/CalendarExportService";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
@@ -18,6 +18,7 @@ import {
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
+import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -39,6 +40,49 @@ export class TaskContextMenu {
 
 	private t(key: string, params?: Record<string, string | number>): string {
 		return this.options.plugin.i18n.translate(key, params);
+	}
+
+	private formatTimeForInput(date: Date): string {
+		const hours = String(date.getHours()).padStart(2, "0");
+		const minutes = String(date.getMinutes()).padStart(2, "0");
+		return `${hours}:${minutes}`;
+	}
+
+	private getTimeblockPrefillForTask(task: TaskInfo): {
+		date: string;
+		startTime: string;
+		endTime: string;
+	} {
+		let startDate = new Date(this.options.targetDate);
+
+		// If the task has a scheduled datetime, use it as the timeblock anchor.
+		if (task.scheduled && task.scheduled.includes("T")) {
+			try {
+				startDate = parseDateToLocal(task.scheduled);
+			} catch {
+				// Fallback to target date defaults if parsing fails.
+			}
+		}
+
+		if (isNaN(startDate.getTime())) {
+			startDate = new Date();
+		}
+
+		// For date-only tasks, default to a 09:00 planning slot.
+		if (!task.scheduled || !task.scheduled.includes("T")) {
+			startDate.setHours(9, 0, 0, 0);
+		}
+
+		const durationMinutes = task.timeEstimate && task.timeEstimate > 0
+			? task.timeEstimate
+			: 60;
+		const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+
+		return {
+			date: formatDateForStorage(startDate),
+			startTime: this.formatTimeForInput(startDate),
+			endTime: this.formatTimeForInput(endDate),
+		};
 	}
 
 	private buildMenu(): void {
@@ -311,6 +355,25 @@ export class TaskContextMenu {
 				plugin.openTimeEntryEditor(task);
 			});
 		});
+
+		// Create timeblock from task
+		if (plugin.settings.calendarViewSettings.enableTimeblocking) {
+			this.menu.addItem((item) => {
+				item.setTitle("Create timeblock");
+				item.setIcon("calendar-plus");
+				item.onClick(() => {
+					const prefill = this.getTimeblockPrefillForTask(task);
+					const modal = new TimeblockCreationModal(plugin.app, plugin, {
+						date: prefill.date,
+						startTime: prefill.startTime,
+						endTime: prefill.endTime,
+						prefilledTitle: task.title,
+						prefilledAttachmentPaths: [task.path],
+					});
+					modal.open();
+				});
+			});
+		}
 
 		// Archive/Unarchive
 		this.menu.addItem((item) => {
