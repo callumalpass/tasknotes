@@ -743,6 +743,18 @@ export function renderIntegrationsTab(
 				})
 			);
 
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Sync timeblocks",
+					desc: "Enable syncing timeblocks to Google Calendar.",
+					getValue: () => plugin.settings.googleCalendarExport.syncTimeblocks,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.syncTimeblocks = value;
+						save();
+					},
+				})
+			);
+
 			// Manual sync actions - section header
 			group.addSetting((setting) => {
 				setting.setName(translate("settings.integrations.googleCalendarExport.manualSyncActions.header"));

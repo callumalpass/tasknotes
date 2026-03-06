@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- Added a dedicated Google Calendar integration setting to enable or disable timeblock synchronization independently from task synchronization
 - Fixed documentation deployment CI failures caused by `docs-builder/src/js/main.js` being excluded by a broad `.gitignore` `main.js` rule
   - Added a specific unignore rule so the docs site client script is tracked and available in GitHub Actions builds
 - Reduced long-running performance risk from calendar sync token persistence by avoiding full runtime settings side-effects during background sync writes

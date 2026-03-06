@@ -26,7 +26,8 @@ export interface TimeBlock {
 	description?: string;
 	attachments?: string[];
 	color?: string;
-	id?: string;
+	id: string;
+	googleCalendarEventId?: string;
 }
 
 /**
@@ -309,6 +310,18 @@ export class TimeblockInfoModal extends Modal {
 			// Save to daily note
 			await this.updateTimeblockInDailyNote();
 
+			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
+			if (
+				this.plugin.timeblockCalendarSyncService?.isEnabled() &&
+				this.plugin.settings.googleCalendarExport.syncOnTaskUpdate
+			) {
+				this.plugin.timeblockCalendarSyncService
+					.updateTimeblockInCalendar(this.timeblock, this.timeblockDate)
+					.catch((error) => {
+						console.warn("Failed to sync timeblock update to Google Calendar:", error);
+					});
+			}
+
 			// Signal immediate update before triggering data change
 			this.onChange?.();
 
@@ -395,6 +408,15 @@ export class TimeblockInfoModal extends Modal {
 		if (!confirmed) return;
 
 		try {
+			// Delete from Google Calendar before deleting from daily note so we still have ID linkage
+			if (this.plugin.timeblockCalendarSyncService?.isEnabled()) {
+				this.plugin.timeblockCalendarSyncService
+					.deleteTimeblockFromCalendar(this.timeblock, this.timeblockDate)
+					.catch((error) => {
+						console.warn("Failed to delete timeblock from Google Calendar:", error);
+					});
+			}
+
 			await this.deleteTimeblockFromDailyNote();
 
 			// Signal immediate update before triggering data change

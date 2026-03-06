@@ -199,6 +199,7 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 
 export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	enabled: false, // Disabled by default - user must opt-in
+	syncTimeblocks: false, // Timeblock sync is opt-in
 	targetCalendarId: "", // Empty = user must select a calendar
 	syncOnTaskCreate: true,
 	syncOnTaskUpdate: true,
