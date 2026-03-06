@@ -26,6 +26,7 @@ export interface TimeblockCreationOptions {
 	startTime?: string; // HH:MM format
 	endTime?: string; // HH:MM format
 	prefilledTitle?: string;
+	prefilledAttachmentPaths?: string[];
 }
 
 export class TimeblockCreationModal extends Modal {
@@ -159,6 +160,7 @@ export class TimeblockCreationModal extends Modal {
 
 		// Attachments list container
 		this.attachmentsList = contentEl.createDiv({ cls: "timeblock-attachments-list" });
+		this.initializePrefilledAttachments();
 		this.renderAttachmentsList(); // Initialize empty state
 
 		// Buttons
@@ -209,6 +211,21 @@ export class TimeblockCreationModal extends Modal {
 
 		createButton.disabled = !isValid;
 		createButton.style.opacity = isValid ? "1" : "0.5";
+	}
+
+	private initializePrefilledAttachments(): void {
+		const prefilledPaths = this.options.prefilledAttachmentPaths || [];
+		if (prefilledPaths.length === 0) {
+			return;
+		}
+
+		const uniquePaths = new Set(prefilledPaths.filter((path) => typeof path === "string" && path.trim().length > 0));
+		for (const path of uniquePaths) {
+			const file = this.app.vault.getAbstractFileByPath(path);
+			if (file) {
+				this.selectedAttachments.push(file);
+			}
+		}
 	}
 
 	private async handleSubmit(): Promise<void> {

@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- Added a task context-menu action to create a timeblock with the task title prefilled, and default times derived from the task schedule or a planning slot
+- Timeblocks created from a task now automatically include that task note as a prefilled attachment
 - Fixed documentation deployment CI failures caused by `docs-builder/src/js/main.js` being excluded by a broad `.gitignore` `main.js` rule
   - Added a specific unignore rule so the docs site client script is tracked and available in GitHub Actions builds
 - Reduced long-running performance risk from calendar sync token persistence by avoiding full runtime settings side-effects during background sync writes
