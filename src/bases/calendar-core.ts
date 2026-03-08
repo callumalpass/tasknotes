@@ -1201,6 +1201,20 @@ export async function handleTimeblockDrop(
 			newEndTime
 		);
 
+		if (plugin.timeblockCalendarSyncService?.isEnabled()) {
+			const updatedTimeblock: TimeBlock = {
+				...timeblock,
+				startTime: newStartTime,
+				endTime: newEndTime,
+			};
+
+			plugin.timeblockCalendarSyncService
+				.updateTimeblockInCalendar(updatedTimeblock, newDate, originalDate)
+				.catch((error) => {
+					console.warn("Failed to sync moved timeblock to Google Calendar:", error);
+				});
+		}
+
 		new Notice("Timeblock moved successfully");
 	} catch (error: any) {
 		console.error("Error moving timeblock:", error);
@@ -1241,6 +1255,20 @@ export async function handleTimeblockResize(
 			newStartTime,
 			newEndTime
 		);
+
+		if (plugin.timeblockCalendarSyncService?.isEnabled()) {
+			const updatedTimeblock: TimeBlock = {
+				...timeblock,
+				startTime: newStartTime,
+				endTime: newEndTime,
+			};
+
+			plugin.timeblockCalendarSyncService
+				.updateTimeblockInCalendar(updatedTimeblock, originalDate)
+				.catch((error) => {
+					console.warn("Failed to sync resized timeblock to Google Calendar:", error);
+				});
+		}
 
 		new Notice("Timeblock duration updated");
 	} catch (error: any) {

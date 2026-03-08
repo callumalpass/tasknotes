@@ -256,6 +256,18 @@ export class TimeblockCreationModal extends Modal {
 			// Save to daily note
 			await this.saveTimeblockToDailyNote(timeblock);
 
+			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
+			if (
+				this.plugin.timeblockCalendarSyncService?.isEnabled() &&
+				this.plugin.settings.googleCalendarExport.syncOnTaskCreate
+			) {
+				this.plugin.timeblockCalendarSyncService
+					.syncTimeblockToCalendar(timeblock, this.options.date)
+					.catch((error) => {
+						console.warn("Failed to sync timeblock to Google Calendar:", error);
+					});
+			}
+
 			// Refresh calendar views
 			this.plugin.emitter.trigger("data-changed");
 

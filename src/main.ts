@@ -96,6 +96,7 @@ import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import { TimeblockCalendarSyncService } from "./services/TimeblockCalendarSyncService";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -213,6 +214,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
+	timeblockCalendarSyncService: TimeblockCalendarSyncService;
 
 	// mdbase-spec generation service
 	mdbaseSpecService: import("./services/MdbaseSpecService").MdbaseSpecService;
@@ -637,6 +639,12 @@ export default class TaskNotesPlugin extends Plugin {
 								});
 						}
 					})
+				);
+				
+				// Initialize Timeblock Calendar Sync service for pushing timeblocks to Google Calendar
+				this.timeblockCalendarSyncService = new TimeblockCalendarSyncService(
+					this,
+					this.googleCalendarService
 				);
 
 				// Microsoft Calendar
@@ -1188,6 +1196,10 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		// Clean up calendar services
+		if (this.timeblockCalendarSyncService) {
+			this.timeblockCalendarSyncService.destroy();
+		}
+
 		if (this.googleCalendarService) {
 			this.googleCalendarService.destroy();
 		}
@@ -1352,6 +1364,11 @@ export default class TaskNotesPlugin extends Plugin {
 				...DEFAULT_SETTINGS.icsIntegration,
 				...(loadedData?.icsIntegration || {}),
 			},
+			// Deep merge Google Calendar export settings to ensure new fields get default values
+			googleCalendarExport: {
+				...DEFAULT_SETTINGS.googleCalendarExport,
+				...(loadedData?.googleCalendarExport || {}),
+			},
 			// Deep merge NLP triggers to ensure new triggers get defaults
 			nlpTriggers: {
 				...DEFAULT_SETTINGS.nlpTriggers,
@@ -1379,8 +1396,19 @@ export default class TaskNotesPlugin extends Plugin {
 		const hasNewCommandMappings = Object.keys(DEFAULT_SETTINGS.commandFileMapping).some(
 			(key) => !loadedData?.commandFileMapping?.[key]
 		);
+		const hasNewGoogleExportSettings = Object.keys(DEFAULT_SETTINGS.googleCalendarExport).some(
+			(key) =>
+				loadedData?.googleCalendarExport?.[
+					key as keyof typeof DEFAULT_SETTINGS.googleCalendarExport
+				] === undefined
+		);
 
-		if (hasNewFields || hasNewCalendarSettings || hasNewCommandMappings) {
+		if (
+			hasNewFields ||
+			hasNewCalendarSettings ||
+			hasNewCommandMappings ||
+			hasNewGoogleExportSettings
+		) {
 			// Save the migrated settings to include new field mappings (non-blocking)
 			setTimeout(async () => {
 				try {
