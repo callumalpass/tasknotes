@@ -96,6 +96,30 @@ export class TimeblockCalendarSyncService {
 		return lines.length > 0 ? lines.join("\n") : undefined;
 	}
 
+	/**
+	 * Apply the shared Google Calendar event title template to a timeblock.
+	 * Supports task placeholders for compatibility and adds timeblock-specific fields.
+	 */
+	private applyTitleTemplate(timeblock: TimeBlock, date: string): string {
+		const settings = this.plugin.settings.googleCalendarExport;
+		const template =
+			settings.timeblockEventTitleTemplate || settings.eventTitleTemplate || "{{title}}";
+		const fallbackTitle = timeblock.title || "Timeblock";
+
+		const rendered = template
+			.replace(/\{\{title\}\}/g, fallbackTitle)
+			.replace(/\{\{status\}\}/g, "")
+			.replace(/\{\{priority\}\}/g, "")
+			.replace(/\{\{due\}\}/g, "")
+			.replace(/\{\{scheduled\}\}/g, "")
+			.replace(/\{\{date\}\}/g, date)
+			.replace(/\{\{startTime\}\}/g, timeblock.startTime || "")
+			.replace(/\{\{endTime\}\}/g, timeblock.endTime || "")
+			.trim();
+
+		return rendered || fallbackTitle;
+	}
+
 	private toCalendarEvent(timeblock: TimeBlock, date: string): {
 		summary: string;
 		description?: string;
@@ -114,7 +138,7 @@ export class TimeblockCalendarSyncService {
 			end: { dateTime: string; timeZone: string };
 			colorId?: string;
 		} = {
-			summary: timeblock.title || "Timeblock",
+			summary: this.applyTitleTemplate(timeblock, date),
 			start: { dateTime: startDateTime, timeZone: timezone },
 			end: { dateTime: endDateTime, timeZone: timezone },
 		};
