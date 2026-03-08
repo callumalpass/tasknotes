@@ -4,6 +4,7 @@ import {
 	Setting,
 	Notice,
 	TAbstractFile,
+	TFile,
 	parseYaml,
 	stringifyYaml,
 	setTooltip,
@@ -361,6 +362,13 @@ export class TimeblockCreationModal extends Modal {
 		if (this.selectedAttachments.some((existing) => existing.path === file.path)) {
 			new Notice(this.translate("notices.timeblockAttachmentExists", { fileName: file.name }));
 			return;
+		}
+
+		// If title is empty, default it to the selected attachment name.
+		if (this.titleInput && !this.titleInput.value.trim()) {
+			const derivedTitle = file instanceof TFile ? file.basename : file.name;
+			this.titleInput.value = derivedTitle;
+			this.validateForm();
 		}
 
 		this.selectedAttachments.push(file);

@@ -28,7 +28,7 @@ Example:
 
 - Added a task context-menu action to create a timeblock with the task title prefilled, and default times derived from the task schedule or a planning slot
 - Timeblocks created from a task now automatically include that task note as a prefilled attachment
-- In Edit Timeblock, adding an attachment now auto-fills the title when the title is empty
+- In Create Timeblock and Edit Timeblock, adding an attachment now auto-fills the title when the title is empty
 - Added a setting to control the ordering of results in the timeblock Add Attachment search window
 - Fixed documentation deployment CI failures caused by `docs-builder/src/js/main.js` being excluded by a broad `.gitignore` `main.js` rule
   - Added a specific unignore rule so the docs site client script is tracked and available in GitHub Actions builds
