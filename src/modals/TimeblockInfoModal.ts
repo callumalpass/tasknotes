@@ -220,6 +220,14 @@ export class TimeblockInfoModal extends Modal {
 			return;
 		}
 
+		// If title is empty, default it to the first selected attachment name.
+		if (this.titleInput && !this.titleInput.value.trim()) {
+			const derivedTitle = file instanceof TFile ? file.basename : file.name;
+			this.titleInput.value = derivedTitle;
+			this.timeblock.title = derivedTitle;
+			this.validateForm();
+		}
+
 		this.selectedAttachments.push(file);
 		this.renderAttachmentsList();
 		new Notice(this.translate("notices.timeblockAttachmentAdded", { fileName: file.name }));
