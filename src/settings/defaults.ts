@@ -206,6 +206,7 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	syncOnTaskComplete: true,
 	syncOnTaskDelete: true,
 	eventTitleTemplate: "{{title}}", // Simple title by default
+	timeblockEventTitleTemplate: "{{title}}", // Timeblock title by default
 	includeDescription: true,
 	eventColorId: null, // Use calendar default color
 	syncTrigger: "scheduled", // Default to scheduled date

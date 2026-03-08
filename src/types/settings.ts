@@ -301,6 +301,7 @@ export interface GoogleCalendarExportSettings {
 	syncOnTaskComplete: boolean; // Update event when task is completed
 	syncOnTaskDelete: boolean; // Delete event when task is deleted
 	eventTitleTemplate: string; // Template for event title (e.g., "{{title}}" or "[TaskNotes] {{title}}")
+	timeblockEventTitleTemplate: string; // Template for timeblock event title
 	includeDescription: boolean; // Include task details in event description
 	eventColorId: string | null; // Optional: Google Calendar color ID for TaskNotes events (null = calendar default)
 	syncTrigger: "scheduled" | "due" | "both"; // Which date triggers event creation
