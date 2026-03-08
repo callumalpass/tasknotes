@@ -309,6 +309,16 @@ export interface GoogleCalendarExportSettings {
 	defaultReminderMinutes: number | null; // Popup reminder X minutes before event (null = no reminder)
 }
 
+export type TimeblockAttachmentSearchOrder =
+	| "name-asc"
+	| "name-desc"
+	| "path-asc"
+	| "path-desc"
+	| "created-recent"
+	| "created-oldest"
+	| "modified-recent"
+	| "modified-oldest";
+
 export interface CalendarViewSettings {
 	// Default view
 	defaultView:
@@ -343,6 +353,7 @@ export interface CalendarViewSettings {
 	enableTimeblocking: boolean;
 	defaultShowTimeblocks: boolean;
 	defaultTimeblockColor: string;
+	timeblockAttachmentSearchOrder: TimeblockAttachmentSearchOrder;
 	// Calendar behavior
 	nowIndicator: boolean;
 	selectMirror: boolean;

@@ -154,6 +154,9 @@ export class TimeblockCreationModal extends Modal {
 						}, {
 							placeholder: "Search files or type to create new...",
 							filter: "all",
+							sortOrder:
+								this.plugin.settings.calendarViewSettings
+									.timeblockAttachmentSearchOrder,
 						});
 					});
 			});
