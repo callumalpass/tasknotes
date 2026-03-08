@@ -36,6 +36,9 @@ Example:
 - (#1644) Fixed generated default task views so recurring tasks without a `complete_instances` property are still treated as incomplete and appear in views like This Week, Today, and Overdue
   - Thanks to @bkennedy-improving for reporting
 - Updated generated `_types/task.md` mdbase schema output so `dateCreated` and `dateModified` include generated values (`now` and `now_on_write`) for automatic timestamp handling on create/write
+- (#1513, #1686) Fixed a calendar view issue where creating or modifying events, timeblocks, etc. could reset the visible date back to today
+  - Preserves the visible date for in-place calendar recreation without overriding explicit initial-date navigation settings
+  - Thanks to @Lorite for the fix
 - Fixed documentation deployment CI failures caused by `docs-builder/src/js/main.js` being excluded by a broad `.gitignore` `main.js` rule
   - Added a specific unignore rule so the docs site client script is tracked and available in GitHub Actions builds
 - Reduced long-running performance risk from calendar sync token persistence by avoiding full runtime settings side-effects during background sync writes

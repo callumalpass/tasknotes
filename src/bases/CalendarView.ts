@@ -113,6 +113,8 @@ export class CalendarView extends BasesViewBase {
 
 	// Flag to indicate config changed and calendar needs recreation
 	private _configChangedNeedsRecreate = false;
+	// Preserve visible date when calendar is re-created.
+	private _recreateTargetDate: Date | null = null;
 	
 	private viewOptions: {
 		// Events
@@ -617,6 +619,7 @@ export class CalendarView extends BasesViewBase {
 				this._configChangedNeedsRecreate = false;
 				this.readViewOptions();
 				if (this.calendar) {
+					this._recreateTargetDate = this.calendar.getDate();
 					this.calendar.destroy();
 					this.calendar = null;
 				}
@@ -675,7 +678,7 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendarEl) return;
 
 		// Determine initial date
-		const initialDate = this.determineInitialDate(taskNotes);
+		const initialDate = this._recreateTargetDate ?? this.determineInitialDate(taskNotes);
 
 		// Build calendar options
 		const calendarOptions: CalendarOptions = {
@@ -822,6 +825,7 @@ export class CalendarView extends BasesViewBase {
 		// Create calendar
 		this.calendar = new Calendar(this.calendarEl, calendarOptions);
 		this.calendar.render();
+		this._recreateTargetDate = null;
 
 		// Apply showTodayHighlight option via CSS
 		this.applyTodayHighlightStyling();
