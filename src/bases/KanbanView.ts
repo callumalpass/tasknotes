@@ -431,14 +431,21 @@ export class KanbanView extends BasesViewBase {
 	): Promise<boolean> {
 		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 		const scopeLabel = swimLaneKey === null
-			? `column "${groupKey}"`
-			: `column "${groupKey}" in swimlane "${swimLaneKey}"`;
+			? this.plugin.i18n.translate("views.kanban.reorder.scope.column", { group: groupKey })
+			: this.plugin.i18n.translate("views.kanban.reorder.scope.columnInSwimlane", {
+				group: groupKey,
+				swimlane: swimLaneKey,
+			});
 
 		return showConfirmationModal(this.plugin.app, {
-			title: "Confirm large reorder",
-			message: `Reordering here will update "${sortOrderField}" in ${editCount} notes to create a persistent manual order for ${scopeLabel}. Hidden or filtered notes in the same scope may also be updated. Continue?`,
-			confirmText: "Reorder notes",
-			cancelText: "Cancel",
+			title: this.plugin.i18n.translate("common.reorder.confirmLargeTitle"),
+			message: this.plugin.i18n.translate("common.reorder.confirmLargeMessage", {
+				field: sortOrderField,
+				count: editCount,
+				scope: scopeLabel,
+			}),
+			confirmText: this.plugin.i18n.translate("common.reorder.confirmButton"),
+			cancelText: this.plugin.i18n.translate("common.cancel"),
 		});
 	}
 
@@ -2333,8 +2340,7 @@ export class KanbanView extends BasesViewBase {
 			// Check if groupBy is a formula - formulas are read-only
 			if (groupByPropertyId.startsWith("formula.")) {
 				new Notice(
-					this.plugin.i18n.translate("views.kanban.errors.formulaGroupingReadOnly") ||
-						"Cannot move tasks between formula-based columns. Formula values are computed and cannot be directly modified."
+					this.plugin.i18n.translate("views.kanban.errors.formulaGroupingReadOnly")
 				);
 				return;
 			}
@@ -2342,8 +2348,7 @@ export class KanbanView extends BasesViewBase {
 			// Check if swimlane is a formula - formulas are read-only
 			if (newSwimLaneValue !== null && this.swimLanePropertyId?.startsWith("formula.")) {
 				new Notice(
-					this.plugin.i18n.translate("views.kanban.errors.formulaSwimlaneReadOnly") ||
-						"Cannot move tasks between formula-based swimlanes. Formula values are computed and cannot be directly modified."
+					this.plugin.i18n.translate("views.kanban.errors.formulaSwimlaneReadOnly")
 				);
 				return;
 			}
