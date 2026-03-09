@@ -226,6 +226,9 @@ views:
       - recurrence
       - complete_instances
       - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
     groupBy:
       property: status
       direction: ASC
@@ -238,7 +241,7 @@ views:
 
 Used by the **Tasks** command to display filtered task views.
 
-This template includes multiple views: All Tasks, Not Blocked, Today, Overdue, This Week, and Unscheduled. Each view (except All Tasks) filters for incomplete tasks, handling both recurring and non-recurring tasks. The "Not Blocked" view additionally filters for tasks that are ready to work on (no incomplete blocking dependencies).
+This template includes multiple views: Manual Order, All Tasks, Not Blocked, Today, Overdue, This Week, and Unscheduled. The Manual Order view groups by status and sorts by the manual-order property so drag-to-reorder works immediately in new bases. The default property name is `tasknotes_manual_order`. The remaining views keep their existing date- and urgency-focused defaults. Each filtered view handles both recurring and non-recurring incomplete tasks. The "Not Blocked" view additionally filters for tasks that are ready to work on (no incomplete blocking dependencies).
 The default views cover common review horizons and can be kept, removed, or cloned with modified filters.
 
 ```yaml
@@ -252,6 +255,27 @@ formulas:
   # ... same formulas as Mini Calendar above ...
 
 views:
+  - type: tasknotesTaskList
+    name: "Manual Order"
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
+    groupBy:
+      property: status
+      direction: ASC
   - type: tasknotesTaskList
     name: "All Tasks"
     order:
@@ -538,8 +562,8 @@ This template uses the special `this` object to reference the current file's pro
 
 Note: Unlike other templates, this one does not have a top-level task filter. Each view applies filters as appropriate:
 
-- **Subtasks, Blocked By, Blocking**: Include the task filter (these views show tasks)
-- **Projects**: No task filter (project files can be any file type, not just tasks)
+- **Subtasks, Blocked By, Blocking**: Include the task filter and default to manual-order sorting so drag-to-reorder works immediately
+- **Projects**: No task filter and no default manual-order sort (project files can be any file type, not just tasks)
 When debugging empty relationship tabs, check tab-specific filters first, then verify property values on linked notes.
 
 ```yaml
@@ -570,6 +594,9 @@ views:
       - recurrence
       - complete_instances
       - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
     groupBy:
       property: status
       direction: ASC
@@ -610,6 +637,9 @@ views:
       - recurrence
       - complete_instances
       - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
   - type: tasknotesKanban
     name: "Blocking"
     filters:
@@ -629,6 +659,9 @@ views:
       - recurrence
       - complete_instances
       - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
     groupBy:
       property: status
       direction: ASC

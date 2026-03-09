@@ -187,6 +187,18 @@ describe('TaskCard Component', () => {
         isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
         isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false)
       },
+      expandedProjectsService: {
+        isExpanded: jest.fn(() => false),
+        toggle: jest.fn(() => true),
+      },
+      i18n: {
+        translate: jest.fn((key, vars) => {
+          if (key === 'ui.taskCard.blockingToggle') {
+            return `Blocking ${vars?.count ?? 0}`;
+          }
+          return key;
+        }),
+      },
       settings: {
         singleClickAction: 'edit',
         doubleClickAction: 'none',
@@ -1030,6 +1042,38 @@ describe('TaskCard Component', () => {
       mockPlugin.settings.subtaskChevronPosition = 'right';
       updateTaskCard(card, task, mockPlugin);
       expect(card.classList.contains('task-card--chevron-left')).toBe(false);
+    });
+
+    it('should mark the subtask chevron as a no-drag control', () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
+
+      const card = createTaskCard(task, mockPlugin);
+      const chevron = card.querySelector('.task-card__chevron') as HTMLElement;
+      const mouseDown = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+
+      expect(chevron.getAttribute('data-tn-no-drag')).toBe('true');
+      expect(chevron.getAttribute('draggable')).toBe('false');
+
+      chevron.dispatchEvent(mouseDown);
+      expect(mouseDown.defaultPrevented).toBe(true);
+    });
+
+    it('should mark the blocking toggle as a no-drag control', () => {
+      const task = TaskFactory.createTask({
+        blocking: ['tasks/dependent-a.md'],
+        isBlocking: true,
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+      const toggle = card.querySelector('.task-card__blocking-toggle') as HTMLElement;
+      const mouseDown = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+
+      expect(toggle.getAttribute('data-tn-no-drag')).toBe('true');
+      expect(toggle.getAttribute('draggable')).toBe('false');
+
+      toggle.dispatchEvent(mouseDown);
+      expect(mouseDown.defaultPrevented).toBe(true);
     });
   });
   describe('Accessibility', () => {

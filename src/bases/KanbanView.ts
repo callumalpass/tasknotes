@@ -2445,7 +2445,6 @@ export class KanbanView extends BasesViewBase {
 								scopeFilters: sortScopeFilters,
 								taskInfoCache: this.taskInfoCache,
 								visibleTaskPaths,
-								debugLog: (msg, data) => this.debugLog(msg, data),
 							}
 						);
 						if (sortOrderPlan.sortOrder === null) {

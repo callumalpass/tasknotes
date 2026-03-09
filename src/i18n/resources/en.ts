@@ -992,9 +992,9 @@ export const en: TranslationTree = {
 						"Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator.",
 				},
 				sortOrder: {
-					name: "Sort Order",
+					name: "Manual Order",
 					description:
-						"Frontmatter property used for manual task ordering via drag-and-drop.",
+						"Frontmatter property used for drag-to-reorder manual ordering. A view must be sorted by this property for drag-and-drop reordering to work.",
 				},
 				pomodoros: {
 					name: "Pomodoros",
@@ -1155,7 +1155,7 @@ export const en: TranslationTree = {
 					timeEntries: "Time entries",
 					completeInstances: "Complete instances",
 					blockedBy: "Blocked by",
-					sortOrder: "Sort order",
+					sortOrder: "Manual order",
 					pomodoros: "Pomodoros",
 					icsEventId: "ICS Event ID",
 					icsEventTag: "ICS Event Tag",
