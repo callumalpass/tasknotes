@@ -10,7 +10,7 @@ jest.mock("obsidian");
 
 type FrontmatterMap = Record<string, Record<string, any>>;
 
-function createPlugin(frontmatterByPath: FrontmatterMap, sortOrderField = "sort_order") {
+function createPlugin(frontmatterByPath: FrontmatterMap, sortOrderField = "tasknotes_order") {
 	const processFrontMatter = jest.fn(async (file: TFile, updater: (frontmatter: any) => void) => {
 		const frontmatter = frontmatterByPath[file.path];
 		if (!frontmatter) {
@@ -66,7 +66,7 @@ describe("sortOrderUtils", () => {
 
 	it("initializes a sparse visible run in the dragged display order", async () => {
 		const plugin = createPlugin({
-			"ranked.md": { status: "todo", sort_order: "0|hzzzzz:" },
+			"ranked.md": { status: "todo", tasknotes_order: "0|hzzzzz:" },
 			"unranked-a.md": { status: "todo" },
 			"unranked-b.md": { status: "todo" },
 			"unranked-c.md": { status: "todo" },
@@ -99,7 +99,7 @@ describe("sortOrderUtils", () => {
 
 	it("uses a cheap boundary insert before the first unranked task in a sparse tail", async () => {
 		const plugin = createPlugin({
-			"ranked.md": { status: "todo", sort_order: "0|hzzzzz:" },
+			"ranked.md": { status: "todo", tasknotes_order: "0|hzzzzz:" },
 			"unranked-a.md": { status: "todo" },
 			"unranked-b.md": { status: "todo" },
 		});
@@ -124,9 +124,9 @@ describe("sortOrderUtils", () => {
 
 	it("isolates kanban reorder calculations to the active swimlane scope", async () => {
 		const plugin = createPlugin({
-			"alpha-a.md": { status: "todo", project: "Alpha", sort_order: "0|hzzzzz:" },
-			"alpha-b.md": { status: "todo", project: "Alpha", sort_order: "0|i00007:" },
-			"beta-a.md": { status: "todo", project: "Beta", sort_order: "0|zzzzzz:" },
+			"alpha-a.md": { status: "todo", project: "Alpha", tasknotes_order: "0|hzzzzz:" },
+			"alpha-b.md": { status: "todo", project: "Alpha", tasknotes_order: "0|i00007:" },
+			"beta-a.md": { status: "todo", project: "Beta", tasknotes_order: "0|zzzzzz:" },
 		});
 
 		const plan = await prepareSortOrderUpdate(
@@ -151,7 +151,7 @@ describe("sortOrderUtils", () => {
 	it("rebalances oversized sparse scopes into compact ranks", async () => {
 		const oversizedRank = `0|zhzzzz:${"i".repeat(120)}`;
 		const plugin = createPlugin({
-			"seed.md": { status: "todo", sort_order: oversizedRank },
+			"seed.md": { status: "todo", tasknotes_order: oversizedRank },
 			"unranked-a.md": { status: "todo" },
 			"unranked-b.md": { status: "todo" },
 		});
