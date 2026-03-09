@@ -7,6 +7,7 @@ import { identifyTaskNotesFromBasesData, BasesDataItem } from "./helpers";
 import { createTaskCard } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
+import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	getDatePart,
@@ -17,7 +18,8 @@ import {
 import {
 	stripPropertyPrefix,
 	isSortOrderInSortConfig,
-	computeSortOrder,
+	prepareSortOrderUpdate,
+	applySortOrderPlan,
 	DropOperationQueue,
 } from "./sortOrderUtils";
 
@@ -42,7 +44,7 @@ export class KanbanView extends BasesViewBase {
 	private draggedSourceColumns: Map<string, string> = new Map(); // Track source column per task for batch operations
 	private draggedSourceSwimlanes: Map<string, string> = new Map(); // Track source swimlane per task for batch operations
 	private taskInfoCache = new Map<string, TaskInfo>();
-	private columnTasksCache = new Map<string, TaskInfo[]>();
+	private sortScopeTaskPaths = new Map<string, string[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
 	private suppressRenderUntil: number = 0;
@@ -65,6 +67,7 @@ export class KanbanView extends BasesViewBase {
 	private touchDragType: "task" | "column" | null = null;
 	private draggedColumnKey: string | null = null;
 	private boundContextMenuBlocker = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
+	private readonly LARGE_REORDER_WARNING_THRESHOLD = 10;
 
 	// View options (accessed via BasesViewConfig)
 	private swimLanePropertyId: string | null = null;
@@ -337,6 +340,7 @@ export class KanbanView extends BasesViewBase {
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
 			this.boardEl.empty();
+			this.sortScopeTaskPaths.clear();
 
 			if (filteredTasks.length === 0) {
 				// Show "no results" if search returned empty but we had tasks
@@ -362,7 +366,6 @@ export class KanbanView extends BasesViewBase {
 
 			// Group tasks
 			const groups = this.groupTasks(filteredTasks, groupByPropertyId, pathToProps);
-			this.columnTasksCache = groups;
 
 			// Render swimlanes if configured
 			if (this.swimLanePropertyId) {
@@ -411,6 +414,32 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		return null;
+	}
+
+	private getSortScopeKey(groupKey: string, swimLaneKey: string | null = null): string {
+		return swimLaneKey === null ? groupKey : `${swimLaneKey}::${groupKey}`;
+	}
+
+	private getVisibleSortScopePaths(groupKey: string, swimLaneKey: string | null = null): string[] | undefined {
+		return this.sortScopeTaskPaths.get(this.getSortScopeKey(groupKey, swimLaneKey));
+	}
+
+	private async confirmLargeReorder(
+		editCount: number,
+		groupKey: string,
+		swimLaneKey: string | null
+	): Promise<boolean> {
+		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
+		const scopeLabel = swimLaneKey === null
+			? `column "${groupKey}"`
+			: `column "${groupKey}" in swimlane "${swimLaneKey}"`;
+
+		return showConfirmationModal(this.plugin.app, {
+			title: "Confirm large reorder",
+			message: `Reordering here will update "${sortOrderField}" in ${editCount} notes to create a persistent manual order for ${scopeLabel}. Hidden or filtered notes in the same scope may also be updated. Continue?`,
+			confirmText: "Reorder notes",
+			cancelText: "Cancel",
+		});
 	}
 
 	private groupTasks(
@@ -643,6 +672,7 @@ export class KanbanView extends BasesViewBase {
 
 	private async renderFlat(groups: Map<string, TaskInfo[]>): Promise<void> {
 		if (!this.boardEl) return;
+		this.sortScopeTaskPaths.clear();
 
 		// Set CSS variable for column width (allows responsive override)
 		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
@@ -670,6 +700,8 @@ export class KanbanView extends BasesViewBase {
 				continue;
 			}
 
+			this.sortScopeTaskPaths.set(this.getSortScopeKey(groupKey), tasks.map((task) => task.path));
+
 			// Create column
 			const column = await this.createColumn(groupKey, tasks, visibleProperties);
 			if (this.boardEl) {
@@ -685,6 +717,7 @@ export class KanbanView extends BasesViewBase {
 		groupByPropertyId: string
 	): Promise<void> {
 		if (!this.swimLanePropertyId) return;
+		this.sortScopeTaskPaths.clear();
 
 		// Group by swimlane first, then by column within each swimlane
 		const swimLanes = new Map<string, Map<string, TaskInfo[]>>();
@@ -827,6 +860,10 @@ export class KanbanView extends BasesViewBase {
 			// Render columns in this swimlane
 			for (const columnKey of columnKeys) {
 				const tasks = columns.get(columnKey) || [];
+				this.sortScopeTaskPaths.set(
+					this.getSortScopeKey(columnKey, swimLaneKey),
+					tasks.map((task) => task.path)
+				);
 
 				// Create cell
 				const cell = row.createEl("div", {
@@ -2339,6 +2376,10 @@ export class KanbanView extends BasesViewBase {
 			const cleanGroupByForSort = stripPropertyPrefix(groupByPropertyId);
 			const cleanSwimLaneForSort = this.swimLanePropertyId
 				? stripPropertyPrefix(this.swimLanePropertyId) : null;
+			const sortScopeFilters = newSwimLaneValue !== null && cleanSwimLaneForSort
+				? [{ property: cleanSwimLaneForSort, value: newSwimLaneValue }]
+				: undefined;
+			const visibleTaskPaths = this.getVisibleSortScopePaths(newGroupValue, newSwimLaneValue);
 
 			this.debugLog("SORT-ORDER-CHECK", {
 				hasDropTarget: !!dropTarget,
@@ -2381,7 +2422,7 @@ export class KanbanView extends BasesViewBase {
 				const needsSwimlaneUpdate = newSwimLaneValue !== null && !!this.swimLanePropertyId && !isSameSwimlane;
 
 				// Compute sort_order first (read-only — no file writes yet)
-				let newSortOrder: string | null = null;
+				let sortOrderPlan = null;
 				if (hasSortOrder) {
 					if (dropTarget) {
 						this.debugLog("COMPUTE-SORT-ORDER-CALL", {
@@ -2393,16 +2434,33 @@ export class KanbanView extends BasesViewBase {
 							cleanSwimLane: cleanSwimLaneForSort,
 						});
 
-						newSortOrder = await computeSortOrder(
-						dropTarget.taskPath,
-						dropTarget.above,
-						newGroupValue,
-						cleanGroupByForSort,
-						path,
-						this.plugin,
-						this.taskInfoCache,
-						(msg, data) => this.debugLog(msg, data)
-					);
+						sortOrderPlan = await prepareSortOrderUpdate(
+							dropTarget.taskPath,
+							dropTarget.above,
+							newGroupValue,
+							cleanGroupByForSort,
+							path,
+							this.plugin,
+							{
+								scopeFilters: sortScopeFilters,
+								taskInfoCache: this.taskInfoCache,
+								visibleTaskPaths,
+								debugLog: (msg, data) => this.debugLog(msg, data),
+							}
+						);
+						if (sortOrderPlan.sortOrder === null) {
+							continue;
+						}
+
+						const totalEditedNotes = sortOrderPlan.additionalWrites.length + 1;
+						if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD) {
+							const confirmed = await this.confirmLargeReorder(
+								totalEditedNotes,
+								newGroupValue,
+								newSwimLaneValue
+							);
+							if (!confirmed) return;
+						}
 					} else {
 						// No specific drop target (cross-column drop without card position).
 						// Preserve the task's existing sort_order so it retains its
@@ -2416,17 +2474,22 @@ export class KanbanView extends BasesViewBase {
 
 					this.debugLog("SORT-ORDER-RESULT", {
 						taskFile: path.split("/").pop(),
-						newSortOrder,
-						isNull: newSortOrder === null,
+						newSortOrder: sortOrderPlan?.sortOrder ?? null,
+						isNull: sortOrderPlan?.sortOrder === null,
+						additionalWrites: sortOrderPlan?.additionalWrites.length ?? 0,
 					});
 				}
 
 				// Skip file write if nothing to change
-				const needsWrite = needsGroupUpdate || needsSwimlaneUpdate || newSortOrder !== null;
+				const needsWrite = needsGroupUpdate || needsSwimlaneUpdate || sortOrderPlan !== null;
 				if (!needsWrite) continue;
 
 				const file = this.plugin.app.vault.getAbstractFileByPath(path);
 				if (!file || !(file instanceof TFile)) continue;
+
+				if (sortOrderPlan) {
+					await applySortOrderPlan(path, sortOrderPlan, this.plugin, { includeDragged: false });
+				}
 
 				// Single atomic write: groupBy + swimlane + sort_order
 				await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
@@ -2468,8 +2531,8 @@ export class KanbanView extends BasesViewBase {
 					}
 
 					// Write sort_order
-					if (newSortOrder !== null) {
-						fm[sortOrderField] = newSortOrder;
+					if (sortOrderPlan?.sortOrder !== null && sortOrderPlan) {
+						fm[sortOrderField] = sortOrderPlan.sortOrder;
 					}
 
 					// Derivative writes for status changes (completedDate + dateModified)
@@ -2492,7 +2555,7 @@ export class KanbanView extends BasesViewBase {
 					taskFile: path.split("/").pop(),
 					needsGroupUpdate,
 					needsSwimlaneUpdate,
-					hasSortOrder: newSortOrder !== null,
+					hasSortOrder: sortOrderPlan !== null,
 				});
 
 				// Fire post-write side effects for known TaskInfo property changes
@@ -3232,7 +3295,7 @@ export class KanbanView extends BasesViewBase {
 		this.destroyColumnScrollers();
 		this.currentTaskElements.clear();
 		this.taskInfoCache.clear();
-		this.columnTasksCache.clear();
+		this.sortScopeTaskPaths.clear();
 		this.boardEl = null;
 	}
 }
