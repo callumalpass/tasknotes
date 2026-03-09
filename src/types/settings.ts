@@ -238,6 +238,8 @@ export interface TaskNotesSettings {
 	microsoftCalendarSyncTokens: Record<string, string>; // Maps calendar ID to delta link
 	// Google Calendar task export settings
 	googleCalendarExport: GoogleCalendarExportSettings;
+	// Debug logging
+	enableDebugLogging: boolean;
 }
 
 export interface DefaultReminder {

@@ -47,6 +47,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	icsEventTag: "ics_event",
 	googleCalendarEventId: "googleCalendarEventId",
 	reminders: "reminders",
+	sortOrder: "tasknotes_manual_order",
 };
 
 // Default status configuration matches current hardcoded behavior
@@ -409,4 +410,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftCalendarSyncTokens: {},
 	// Google Calendar task export settings
 	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
+	// Debug logging
+	enableDebugLogging: false,
 };

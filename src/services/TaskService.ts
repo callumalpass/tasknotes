@@ -743,147 +743,12 @@ export class TaskService {
 				frontmatter[dateModifiedField] = updatedTask.dateModified;
 			});
 
-			// Step 3: Wait for fresh data and update cache
-			try {
-				// Wait for the metadata cache to have the updated data
-				if (this.plugin.cacheManager.waitForFreshTaskData) {
-					await this.plugin.cacheManager.waitForFreshTaskData(file);
-				}
-				this.plugin.cacheManager.updateTaskInfoInCache(
-					task.path,
-					updatedTask as TaskInfo
-				);
-			} catch (cacheError) {
-				// Cache errors shouldn't break the operation, just log them
-				// eslint-disable-next-line no-console
-				console.error("Error updating task cache:", {
-					error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-					taskPath: task.path,
-				});
-			}
+			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
+			await this.applyPropertyChangeSideEffects(
+				file, task, updatedTask as TaskInfo, property, task[property], value
+			);
 
-			// Step 4: Notify system of change
-			try {
-				this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-					path: task.path,
-					originalTask: task,
-					updatedTask: updatedTask as TaskInfo,
-				});
-
-				// Step 5: If status changed, trigger UI updates for dependent tasks
-				if (property === "status") {
-					const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-					const isNowCompleted = this.plugin.statusManager.isCompletedStatus(value);
-
-					if (wasCompleted !== isNowCompleted) {
-						// Get tasks that this task blocks (they need UI updates for their blocked state)
-						const dependentTaskPaths = this.plugin.cacheManager.getBlockedTaskPaths(
-							task.path
-						);
-
-						// Trigger updates for each dependent task so their UI can refresh
-						for (const dependentPath of dependentTaskPaths) {
-							try {
-								const dependentTask =
-									await this.plugin.cacheManager.getTaskInfo(dependentPath);
-								if (dependentTask) {
-									this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-										path: dependentPath,
-										originalTask: dependentTask,
-										updatedTask: dependentTask, // The dependent task itself didn't change, just needs UI refresh
-									});
-								}
-							} catch (dependentError) {
-								console.error(
-									`Error triggering update for dependent task ${dependentPath}:`,
-									dependentError
-								);
-							}
-						}
-					}
-				}
-			} catch (eventError) {
-				// eslint-disable-next-line no-console
-				console.error("Error emitting task update event:", {
-					error: eventError instanceof Error ? eventError.message : String(eventError),
-					taskPath: task.path,
-				});
-				// Event emission errors shouldn't break the operation
-			}
-
-			// Trigger webhooks for property updates
-			if (this.webhookNotifier) {
-				try {
-					// Check if this was a completion
-					const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-					const isCompleted =
-						property === "status" && this.plugin.statusManager.isCompletedStatus(value);
-
-					if (property === "status" && !wasCompleted && isCompleted) {
-						// Task was completed
-						await this.webhookNotifier.triggerWebhook("task.completed", {
-							task: updatedTask as TaskInfo,
-						});
-					} else {
-						// Regular property update
-						await this.webhookNotifier.triggerWebhook("task.updated", {
-							task: updatedTask as TaskInfo,
-							previous: task,
-						});
-					}
-				} catch (error) {
-					console.warn("Failed to trigger webhook for property update:", error);
-				}
-			}
-
-			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
-			if (this.plugin.taskCalendarSyncService?.isEnabled()) {
-				const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-				const isCompleted =
-					property === "status" && this.plugin.statusManager.isCompletedStatus(value);
-
-				const syncPromise =
-					property === "status" && !wasCompleted && isCompleted
-						? this.plugin.taskCalendarSyncService.completeTaskInCalendar(
-								updatedTask as TaskInfo
-							)
-						: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
-								updatedTask as TaskInfo,
-								task
-							);
-
-				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
-				});
-			}
-
-			// Handle auto-archive if status property changed
-			if (this.autoArchiveService && property === "status" && value !== task.status) {
-				try {
-					const statusConfig = this.plugin.statusManager.getStatusConfig(value as string);
-					if (statusConfig) {
-						if (statusConfig.autoArchive) {
-							// Schedule for auto-archive
-							await this.autoArchiveService.scheduleAutoArchive(
-								updatedTask as TaskInfo,
-								statusConfig
-							);
-						} else {
-							// Cancel any pending auto-archive since new status doesn't have auto-archive
-							await this.autoArchiveService.cancelAutoArchive(
-								(updatedTask as TaskInfo).path
-							);
-						}
-					}
-				} catch (error) {
-					console.warn(
-						"Failed to handle auto-archive for status property change:",
-						error
-					);
-				}
-			}
-
-			// Step 5: Return authoritative data
+			// Step 4: Return authoritative data
 			return updatedTask as TaskInfo;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -897,6 +762,148 @@ export class TaskService {
 			});
 
 			throw new Error(`Failed to update task property: ${errorMessage}`);
+		}
+	}
+
+	/**
+	 * Run all post-write side effects for a property change WITHOUT performing a
+	 * frontmatter write. This includes: cache update, EVENT_TASK_UPDATED,
+	 * dependent-task UI refresh, webhooks, Google Calendar sync, and auto-archive.
+	 *
+	 * Callers are responsible for having already persisted the change to frontmatter.
+	 */
+	async applyPropertyChangeSideEffects(
+		file: TFile,
+		originalTask: TaskInfo,
+		updatedTask: TaskInfo,
+		property: keyof TaskInfo,
+		oldValue: any,
+		newValue: any
+	): Promise<void> {
+		// Update cache
+		try {
+			if (this.plugin.cacheManager.waitForFreshTaskData) {
+				await this.plugin.cacheManager.waitForFreshTaskData(file);
+			}
+			this.plugin.cacheManager.updateTaskInfoInCache(
+				originalTask.path,
+				updatedTask
+			);
+		} catch (cacheError) {
+			// eslint-disable-next-line no-console
+			console.error("Error updating task cache:", {
+				error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+				taskPath: originalTask.path,
+			});
+		}
+
+		// Notify system of change
+		try {
+			this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+				path: originalTask.path,
+				originalTask,
+				updatedTask,
+			});
+
+			// If status changed, trigger UI updates for dependent tasks
+			if (property === "status") {
+				const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
+				const isNowCompleted = this.plugin.statusManager.isCompletedStatus(newValue);
+
+				if (wasCompleted !== isNowCompleted) {
+					const dependentTaskPaths = this.plugin.cacheManager.getBlockedTaskPaths(
+						originalTask.path
+					);
+
+					for (const dependentPath of dependentTaskPaths) {
+						try {
+							const dependentTask =
+								await this.plugin.cacheManager.getTaskInfo(dependentPath);
+							if (dependentTask) {
+								this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+									path: dependentPath,
+									originalTask: dependentTask,
+									updatedTask: dependentTask,
+								});
+							}
+						} catch (dependentError) {
+							console.error(
+								`Error triggering update for dependent task ${dependentPath}:`,
+								dependentError
+							);
+						}
+					}
+				}
+			}
+		} catch (eventError) {
+			// eslint-disable-next-line no-console
+			console.error("Error emitting task update event:", {
+				error: eventError instanceof Error ? eventError.message : String(eventError),
+				taskPath: originalTask.path,
+			});
+		}
+
+		// Trigger webhooks
+		if (this.webhookNotifier) {
+			try {
+				const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
+				const isCompleted =
+					property === "status" && this.plugin.statusManager.isCompletedStatus(newValue);
+
+				if (property === "status" && !wasCompleted && isCompleted) {
+					await this.webhookNotifier.triggerWebhook("task.completed", {
+						task: updatedTask,
+					});
+				} else {
+					await this.webhookNotifier.triggerWebhook("task.updated", {
+						task: updatedTask,
+						previous: originalTask,
+					});
+				}
+			} catch (error) {
+				console.warn("Failed to trigger webhook for property update:", error);
+			}
+		}
+
+		// Sync to Google Calendar if enabled
+		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+			const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
+			const isCompleted =
+				property === "status" && this.plugin.statusManager.isCompletedStatus(newValue);
+
+			const syncPromise =
+				property === "status" && !wasCompleted && isCompleted
+					? this.plugin.taskCalendarSyncService.completeTaskInCalendar(updatedTask)
+					: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
+							updatedTask,
+							originalTask
+						);
+
+			syncPromise.catch((error) => {
+				console.warn("Failed to sync task update to Google Calendar:", error);
+			});
+		}
+
+		// Handle auto-archive if status property changed
+		if (this.autoArchiveService && property === "status" && newValue !== oldValue) {
+			try {
+				const statusConfig = this.plugin.statusManager.getStatusConfig(newValue as string);
+				if (statusConfig) {
+					if (statusConfig.autoArchive) {
+						await this.autoArchiveService.scheduleAutoArchive(
+							updatedTask,
+							statusConfig
+						);
+					} else {
+						await this.autoArchiveService.cancelAutoArchive(updatedTask.path);
+					}
+				}
+			} catch (error) {
+				console.warn(
+					"Failed to handle auto-archive for status property change:",
+					error
+				);
+			}
 		}
 	}
 
@@ -2284,7 +2291,7 @@ export class TaskService {
 	 * @param newStatus - The new status value
 	 * @param isRecurring - Whether the task is recurring
 	 */
-	private updateCompletedDateInFrontmatter(
+	updateCompletedDateInFrontmatter(
 		frontmatter: Record<string, any>,
 		newStatus: string,
 		isRecurring: boolean

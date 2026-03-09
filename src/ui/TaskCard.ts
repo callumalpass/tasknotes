@@ -79,6 +79,7 @@ function createBadgeIndicator(config: BadgeIndicatorConfig): HTMLElement | null 
 	setTooltip(indicator, tooltip, { placement: "top" });
 
 	if (onClick) {
+		prepareInteractiveControl(indicator);
 		indicator.addEventListener("click", (e) => {
 			e.stopPropagation();
 			onClick(e);
@@ -108,6 +109,9 @@ function updateBadgeIndicator(
 		// Update existing indicator
 		existing.setAttribute("aria-label", config.ariaLabel || config.tooltip);
 		setTooltip(existing, config.tooltip, { placement: "top" });
+		if (config.onClick) {
+			prepareInteractiveControl(existing);
+		}
 		return existing;
 	}
 
@@ -120,6 +124,23 @@ function updateBadgeIndicator(
 	return createBadgeIndicator({
 		container: targetContainer,
 		...config,
+	});
+}
+
+/**
+ * Mark interactive task-card controls so draggable parent cards do not swallow clicks.
+ */
+function prepareInteractiveControl(element: HTMLElement): void {
+	if (element.dataset.tnNoDrag === "true") {
+		element.setAttribute("draggable", "false");
+		return;
+	}
+
+	element.dataset.tnNoDrag = "true";
+	element.setAttribute("draggable", "false");
+	element.addEventListener("mousedown", (e) => {
+		e.preventDefault();
+		e.stopPropagation();
 	});
 }
 
@@ -400,6 +421,7 @@ function attachDateClickHandler(
 	plugin: TaskNotesPlugin,
 	dateType: "due" | "scheduled"
 ): void {
+	prepareInteractiveControl(span);
 	span.addEventListener("click", (e) => {
 		e.stopPropagation(); // Don't trigger card click
 		const currentValue = dateType === "due" ? task.due : task.scheduled;
@@ -1567,11 +1589,7 @@ export function createTaskCard(
 
 	// Add click handler to cycle through statuses
 	if (statusDot) {
-		// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
-		statusDot.addEventListener("mousedown", (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-		});
+		prepareInteractiveControl(statusDot);
 		statusDot.addEventListener("click", createStatusCycleHandler(task, plugin, card, statusDot, targetDate));
 	}
 
@@ -1585,6 +1603,7 @@ export function createTaskCard(
 			attr: { "aria-label": `Priority: ${priorityConfig.label}` },
 		});
 		priorityDot.style.borderColor = priorityConfig.color;
+		prepareInteractiveControl(priorityDot);
 		priorityDot.addEventListener("click", createPriorityClickHandler(task, plugin));
 	}
 
@@ -1634,20 +1653,18 @@ export function createTaskCard(
 			// Chevron for expandable subtasks
 			if (plugin.settings?.showExpandableSubtasks) {
 				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
+				createBadgeIndicator({
 					container: badgesContainer,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 					icon: "chevron-right",
 					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+					onClick: () => {
+						const chevron = card.querySelector(".task-card__chevron") as HTMLElement | null;
+						if (chevron) {
+							void createChevronClickHandler(task, plugin, card, chevron)();
+						}
+					},
 				});
-
-				// Chevron needs special handler since it updates its own state
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, card, chevron)();
-					});
-				}
 
 				// Show subtasks if already expanded
 				if (isExpanded) {
@@ -1662,19 +1679,18 @@ export function createTaskCard(
 		const hasBlocking = task.blocking && task.blocking.length > 0;
 		if (hasBlocking) {
 			const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", { count: task.blocking!.length });
-			const toggle = createBadgeIndicator({
+			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__blocking-toggle is-visible",
 				icon: "git-branch",
 				tooltip: toggleLabel,
+				onClick: () => {
+					const toggle = card.querySelector(".task-card__blocking-toggle") as HTMLElement | null;
+					if (toggle) {
+						void createBlockingToggleClickHandler(task, plugin, card, toggle)();
+					}
+				},
 			});
-
-			if (toggle) {
-				toggle.addEventListener("click", (e) => {
-					e.stopPropagation();
-					createBlockingToggleClickHandler(task, plugin, card, toggle)();
-				});
-			}
 		}
 	}
 
@@ -1689,6 +1705,7 @@ export function createTaskCard(
 	// Use Obsidian's built-in ellipsis-vertical icon
 	setIcon(contextIcon, "ellipsis-vertical");
 	setTooltip(contextIcon, "Task options", { placement: "top" });
+	prepareInteractiveControl(contextIcon);
 
 	contextIcon.addEventListener("click", async (e) => {
 		e.stopPropagation();
@@ -2000,11 +2017,7 @@ export function updateTaskCard(
 			if (statusConfig) {
 				newStatusDot.style.borderColor = statusConfig.color;
 			}
-			// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
-			newStatusDot.addEventListener("mousedown", (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-			});
+			prepareInteractiveControl(newStatusDot);
 			newStatusDot.addEventListener(
 				"click",
 				createStatusCycleHandler(task, plugin, element, newStatusDot, targetDate)
@@ -2037,6 +2050,7 @@ export function updateTaskCard(
 				attr: { "aria-label": `Priority: ${priorityConfig.label}` },
 			});
 			priorityDot.style.borderColor = priorityConfig.color;
+			prepareInteractiveControl(priorityDot);
 
 			// Add click context menu for priority
 			priorityDot.addEventListener("click", (e) => {
@@ -2073,6 +2087,7 @@ export function updateTaskCard(
 
 			// Remove old event listener and add new one with updated task data
 			const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
+			prepareInteractiveControl(newPriorityDot);
 			newPriorityDot.addEventListener("click", (e) => {
 				e.stopPropagation(); // Don't trigger card click
 				const menu = new PriorityContextMenu({
@@ -2148,19 +2163,18 @@ export function updateTaskCard(
 
 			if (showChevron && !existingChevron) {
 				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
+				createBadgeIndicator({
 					container: badgesContainer || mainRow,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 					icon: "chevron-right",
 					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+					onClick: () => {
+						const chevron = element.querySelector(".task-card__chevron") as HTMLElement | null;
+						if (chevron) {
+							void createChevronClickHandler(task, plugin, element, chevron)();
+						}
+					},
 				});
-
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, element, chevron)();
-					});
-				}
 
 				if (isExpanded) {
 					toggleSubtasks(element, task, plugin, true).catch((error) => {

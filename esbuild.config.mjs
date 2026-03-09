@@ -1,7 +1,9 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync, copyFileSync, mkdirSync } from "fs";
+import { resolve, join } from "path";
+import { homedir } from "os";
 
 const banner =
 `/*
@@ -11,6 +13,41 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+
+// Read copy destinations from .copy-files.local (same logic as copy-files.mjs)
+function getCopyDestinations() {
+	const localFile = resolve(process.cwd(), '.copy-files.local');
+	if (!existsSync(localFile)) return [];
+	const expandTilde = (p) => p.startsWith('~/') ? join(homedir(), p.slice(2)) : p;
+	return readFileSync(localFile, 'utf8')
+		.split('\n')
+		.map(p => p.trim())
+		.filter(p => p && !p.startsWith('#'))
+		.map(expandTilde);
+}
+
+// esbuild plugin: copy build outputs to vault after each rebuild
+const copyToVaultPlugin = {
+	name: 'copy-to-vault',
+	setup(build) {
+		const destinations = getCopyDestinations();
+		if (destinations.length === 0) return;
+		const filesToCopy = ['main.js', 'styles.css', 'manifest.json'];
+		build.onEnd((result) => {
+			if (result.errors.length > 0) return;
+			for (const dest of destinations) {
+				mkdirSync(dest, { recursive: true });
+				for (const file of filesToCopy) {
+					const src = resolve(process.cwd(), file);
+					if (existsSync(src)) {
+						copyFileSync(src, join(dest, file));
+					}
+				}
+				console.log(`\x1b[32m✓ Copied to ${dest}\x1b[0m`);
+			}
+		});
+	}
+};
 
 // Plugin to import markdown files as strings
 const markdownPlugin = {
@@ -54,7 +91,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
-	plugins: [markdownPlugin],
+	plugins: [markdownPlugin, ...(!prod ? [copyToVaultPlugin] : [])],
 });
 
 if (prod) {
