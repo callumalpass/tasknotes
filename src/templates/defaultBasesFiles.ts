@@ -452,6 +452,7 @@ ${orderYaml}
 		}
 		case 'open-kanban-view': {
 			const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
+			const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
 			return `# Kanban Board
 
 ${formatFilterAsYAML([taskFilterCondition])}
@@ -463,6 +464,9 @@ views:
     name: "Kanban Board"
     order:
 ${orderYaml}
+    sort:
+      - column: ${sortOrderProperty}
+        direction: DESC
     groupBy:
       property: ${statusProperty}
       direction: ASC
@@ -479,6 +483,7 @@ ${orderYaml}
 			const recurrenceProperty = mapPropertyToBasesProperty('recurrence', plugin);
 			const completeInstancesProperty = mapPropertyToBasesProperty('completeInstances', plugin);
 			const blockedByProperty = mapPropertyToBasesProperty('blockedBy', plugin);
+			const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
 
 			// Get all completed status values
 			const completedStatuses = settings.customStatuses
@@ -509,6 +514,16 @@ ${formatFilterAsYAML([taskFilterCondition])}
 ${formulasSection}
 
 views:
+  - type: tasknotesTaskList
+    name: "Manual Order"
+    order:
+${orderYaml}
+    sort:
+      - column: ${sortOrderProperty}
+        direction: DESC
+    groupBy:
+      property: ${statusProperty}
+      direction: ASC
   - type: tasknotesTaskList
     name: "All Tasks"
     order:
@@ -684,12 +699,13 @@ ${orderYaml}
     titleProperty: file.basename
 `;
 
-		case 'relationships': {
-			// Unified relationships widget that shows all relationship types
-			// Extract just the property names (without prefixes) since the template controls the context
-			const projectsProperty = getPropertyName(mapPropertyToBasesProperty('projects', plugin));
-			const blockedByProperty = getPropertyName(mapPropertyToBasesProperty('blockedBy', plugin));
-			const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
+			case 'relationships': {
+				// Unified relationships widget that shows all relationship types
+				// Extract just the property names (without prefixes) since the template controls the context
+				const projectsProperty = getPropertyName(mapPropertyToBasesProperty('projects', plugin));
+				const blockedByProperty = getPropertyName(mapPropertyToBasesProperty('blockedBy', plugin));
+				const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
+				const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
 
 			// Note: No top-level task filter here. Each view applies filters as needed:
 			// - Subtasks, Blocked By, Blocking: include task filter (these are tasks)
@@ -710,6 +726,9 @@ views:
         - note.${projectsProperty}.contains(this.file.asLink())
     order:
 ${orderYaml}
+    sort:
+      - column: ${sortOrderProperty}
+        direction: DESC
     groupBy:
       property: ${statusProperty}
       direction: ASC
@@ -728,6 +747,9 @@ ${orderYaml}
         - list(this.note.${blockedByProperty}).map(value.uid).contains(file.asLink())
     order:
 ${orderYaml}
+    sort:
+      - column: ${sortOrderProperty}
+        direction: DESC
   - type: tasknotesKanban
     name: "Blocking"
     filters:
@@ -736,6 +758,9 @@ ${orderYaml}
         - list(note.${blockedByProperty}).map(value.uid).contains(this.file.asLink())
     order:
 ${orderYaml}
+    sort:
+      - column: ${sortOrderProperty}
+        direction: DESC
     groupBy:
       property: ${statusProperty}
       direction: ASC

@@ -272,6 +272,19 @@
     opacity: 0.8;
 }
 
+.tasknotes-plugin .task-card[draggable="true"] {
+    cursor: grab;
+}
+
+.tasknotes-plugin .task-card[draggable="true"]:active,
+.tasknotes-plugin .task-card.task-card--dragging {
+    cursor: grabbing;
+}
+
+.tasknotes-plugin .task-card [data-tn-no-drag="true"] {
+    cursor: var(--cursor, pointer);
+}
+
 /* Container queries for adaptive layouts */
 @container (max-width: 300px) {
     .tasknotes-plugin .task-card {

@@ -10,7 +10,7 @@ jest.mock("obsidian");
 
 type FrontmatterMap = Record<string, Record<string, any>>;
 
-function createPlugin(frontmatterByPath: FrontmatterMap, sortOrderField = "tasknotes_order") {
+function createPlugin(frontmatterByPath: FrontmatterMap, sortOrderField = "tasknotes_manual_order") {
 	const processFrontMatter = jest.fn(async (file: TFile, updater: (frontmatter: any) => void) => {
 		const frontmatter = frontmatterByPath[file.path];
 		if (!frontmatter) {
@@ -66,7 +66,7 @@ describe("sortOrderUtils", () => {
 
 	it("initializes a sparse visible run in the dragged display order", async () => {
 		const plugin = createPlugin({
-			"ranked.md": { status: "todo", tasknotes_order: "0|hzzzzz:" },
+			"ranked.md": { status: "todo", tasknotes_manual_order: "0|hzzzzz:" },
 			"unranked-a.md": { status: "todo" },
 			"unranked-b.md": { status: "todo" },
 			"unranked-c.md": { status: "todo" },
@@ -99,7 +99,7 @@ describe("sortOrderUtils", () => {
 
 	it("uses a cheap boundary insert before the first unranked task in a sparse tail", async () => {
 		const plugin = createPlugin({
-			"ranked.md": { status: "todo", tasknotes_order: "0|hzzzzz:" },
+			"ranked.md": { status: "todo", tasknotes_manual_order: "0|hzzzzz:" },
 			"unranked-a.md": { status: "todo" },
 			"unranked-b.md": { status: "todo" },
 		});
@@ -124,9 +124,9 @@ describe("sortOrderUtils", () => {
 
 	it("isolates kanban reorder calculations to the active swimlane scope", async () => {
 		const plugin = createPlugin({
-			"alpha-a.md": { status: "todo", project: "Alpha", tasknotes_order: "0|hzzzzz:" },
-			"alpha-b.md": { status: "todo", project: "Alpha", tasknotes_order: "0|i00007:" },
-			"beta-a.md": { status: "todo", project: "Beta", tasknotes_order: "0|zzzzzz:" },
+			"alpha-a.md": { status: "todo", project: "Alpha", tasknotes_manual_order: "0|hzzzzz:" },
+			"alpha-b.md": { status: "todo", project: "Alpha", tasknotes_manual_order: "0|i00007:" },
+			"beta-a.md": { status: "todo", project: "Beta", tasknotes_manual_order: "0|zzzzzz:" },
 		});
 
 		const plan = await prepareSortOrderUpdate(
@@ -148,10 +148,94 @@ describe("sortOrderUtils", () => {
 		expect(plan.sortOrder!.localeCompare("0|i00007:")).toBeLessThan(0);
 	});
 
+	it("uses the visible list order as the authoritative drop scope", async () => {
+		const plugin = createPlugin({
+			"alpha.md": { status: "todo", tasknotes_manual_order: "0|hzzzzz:" },
+			"visible-last.md": { status: "todo", tasknotes_manual_order: "0|i00007:" },
+			"hidden-after.md": { status: "todo", tasknotes_manual_order: "0|i0000f:" },
+		});
+
+		const plan = await prepareSortOrderUpdate(
+			"visible-last.md",
+			false,
+			"todo",
+			"status",
+			"dragged.md",
+			plugin,
+			{
+				visibleTaskPaths: ["alpha.md", "visible-last.md"],
+			}
+		);
+
+		expect(plan.reason).toBe("boundary");
+		expect(plan.additionalWrites).toEqual([]);
+		expect(plan.sortOrder!.localeCompare("0|i00007:")).toBeGreaterThan(0);
+	});
+
+	it("respects descending visible sort order when inserting above a target", async () => {
+		const plugin = createPlugin({
+			"previous.md": { status: "todo", tasknotes_manual_order: "0|jc3j7d:" },
+			"target.md": { status: "todo", tasknotes_manual_order: "0|jc2tkt:" },
+			"next.md": { status: "todo", tasknotes_manual_order: "0|jc0oo7:" },
+		});
+
+		const plan = await prepareSortOrderUpdate(
+			"target.md",
+			true,
+			"todo",
+			"status",
+			"dragged.md",
+			plugin,
+			{
+				visibleTaskPaths: ["previous.md", "target.md", "next.md"],
+			}
+		);
+
+		expect(plan.reason).toBe("midpoint");
+		expect(plan.additionalWrites).toEqual([]);
+		expect(plan.sortOrder!.localeCompare("0|jc3j7d:")).toBeLessThan(0);
+		expect(plan.sortOrder!.localeCompare("0|jc2tkt:")).toBeGreaterThan(0);
+	});
+
+	it("rebalances descending duplicate boundaries instead of jumping above the previous task", async () => {
+		const plugin = createPlugin({
+			"previous.md": { status: "todo", tasknotes_manual_order: "0|jc3j7l:" },
+			"target.md": { status: "todo", tasknotes_manual_order: "0|jc3j7l:" },
+			"next.md": { status: "todo", tasknotes_manual_order: "0|jc3j7d:" },
+		});
+
+		const plan = await prepareSortOrderUpdate(
+			"target.md",
+			true,
+			"todo",
+			"status",
+			"dragged.md",
+			plugin,
+			{
+				visibleTaskPaths: ["previous.md", "target.md", "next.md"],
+			}
+		);
+
+		expect(plan.reason).toBe("rebalance");
+		expect(plan.additionalWrites.map((write) => write.path)).toEqual([
+			"previous.md",
+			"target.md",
+			"next.md",
+		]);
+
+		const previousRank = plan.additionalWrites.find((write) => write.path === "previous.md")!.sortOrder;
+		const targetRank = plan.additionalWrites.find((write) => write.path === "target.md")!.sortOrder;
+		const nextRank = plan.additionalWrites.find((write) => write.path === "next.md")!.sortOrder;
+
+		expect(previousRank.localeCompare(plan.sortOrder!)).toBeGreaterThan(0);
+		expect(plan.sortOrder!.localeCompare(targetRank)).toBeGreaterThan(0);
+		expect(targetRank.localeCompare(nextRank)).toBeGreaterThan(0);
+	});
+
 	it("rebalances oversized sparse scopes into compact ranks", async () => {
 		const oversizedRank = `0|zhzzzz:${"i".repeat(120)}`;
 		const plugin = createPlugin({
-			"seed.md": { status: "todo", tasknotes_order: oversizedRank },
+			"seed.md": { status: "todo", tasknotes_manual_order: oversizedRank },
 			"unranked-a.md": { status: "todo" },
 			"unranked-b.md": { status: "todo" },
 		});

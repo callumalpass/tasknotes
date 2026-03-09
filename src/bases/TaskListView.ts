@@ -22,6 +22,28 @@ import {
 	DropOperationQueue,
 } from "./sortOrderUtils";
 
+type TaskListDropBaselineCard = {
+	path: string;
+	groupKey: string | null;
+	card: HTMLElement;
+	top: number;
+	bottom: number;
+	midpoint: number;
+};
+
+type TaskListDropSegment = {
+	groupKey: string | null;
+	cards: TaskListDropBaselineCard[];
+};
+
+type TaskListInsertionSlot = {
+	groupKey: string | null;
+	segmentIndex: number;
+	insertionIndex: number;
+	element: HTMLElement;
+	position: "before" | "after";
+};
+
 export class TaskListView extends BasesViewBase {
 	type = "tasknotesTaskList";
 
@@ -45,15 +67,18 @@ export class TaskListView extends BasesViewBase {
 	private basesController: any;
 	private draggedTaskPath: string | null = null;
 	private dragGroupKey: string | null = null;
-	private dropTargetPath: string | null = null;
-	private dropAbove: boolean = false;
+	private currentInsertionGroupKey: string | null = null;
+	private currentInsertionSegmentIndex: number = -1;
+	private currentInsertionIndex: number = -1;
+	private pendingDragClientY: number | null = null;
 	private pendingRender: boolean = false;
 	private taskGroupKeys = new Map<string, string>(); // task path → group key (set during grouped render)
 	private sortScopeTaskPaths = new Map<string, string[]>();
 	private dragOverRafId: number = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
-	private currentInsertionIndex: number = -1; // Current gap/slot position
-	private currentInsertionGroupKey: string | null = null; // Group currently showing the drag gap
+	private currentDropSlotElement: HTMLElement | null = null;
+	private currentDropSlotPosition: "before" | "after" | null = null;
+	private dragBaselineCards: TaskListDropBaselineCard[] = [];
 	private dropQueue = new DropOperationQueue();
 
 	/**
@@ -65,6 +90,8 @@ export class TaskListView extends BasesViewBase {
 	private readonly VIRTUAL_SCROLL_THRESHOLD = 100;
 	private readonly LARGE_REORDER_WARNING_THRESHOLD = 10;
 	private readonly UNGROUPED_SORT_SCOPE_KEY = "__ungrouped__";
+	private readonly CARD_NO_DRAG_SELECTOR =
+		'[data-tn-no-drag="true"], a, button, input, select, textarea, [contenteditable="true"]';
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
@@ -241,11 +268,6 @@ export class TaskListView extends BasesViewBase {
 		}
 	}
 
-	private getPreviewGroupKey(taskPath: string | null): string | null {
-		if (!taskPath) return null;
-		return this.taskGroupKeys.get(taskPath) ?? null;
-	}
-
 	private isListTypeProperty(propertyName: string): boolean {
 		const metadataTypeManager = (this.plugin.app as any).metadataTypeManager;
 		if (metadataTypeManager?.properties) {
@@ -285,13 +307,56 @@ export class TaskListView extends BasesViewBase {
 		});
 	}
 
+	private getEventTargetElement(target: EventTarget | null): HTMLElement | null {
+		const node = target as Node | null;
+		if (!node || typeof (node as any).nodeType !== "number") {
+			return null;
+		}
+
+		return node.nodeType === Node.ELEMENT_NODE
+			? (node as HTMLElement)
+			: node.parentElement;
+	}
+
+	private shouldSuppressCardDrag(target: EventTarget | null, cardEl: HTMLElement): boolean {
+		const targetEl = this.getEventTargetElement(target);
+		if (!targetEl || !cardEl.contains(targetEl)) {
+			return false;
+		}
+
+		return !!targetEl.closest(this.CARD_NO_DRAG_SELECTOR);
+	}
+
 	/**
 	 * Attach a dragstart handler to a single card element.
 	 * Drop-target handling (dragover/drop) is done via container-level delegation
 	 * in setupContainerDragHandlers() for robustness with virtual scrolling.
 	 */
 	private setupCardDragHandlers(cardEl: HTMLElement, task: TaskInfo, groupKey: string | null): void {
+		let dragOriginTarget: EventTarget | null = null;
+		const restoreCardDraggable = () => {
+			cardEl.setAttribute("draggable", "true");
+			dragOriginTarget = null;
+		};
+
+		cardEl.addEventListener("mousedown", (e: MouseEvent) => {
+			dragOriginTarget = e.target;
+			cardEl.setAttribute(
+				"draggable",
+				this.shouldSuppressCardDrag(e.target, cardEl) ? "false" : "true"
+			);
+		}, { capture: true });
+		cardEl.addEventListener("mouseup", restoreCardDraggable);
+		cardEl.addEventListener("click", restoreCardDraggable, { capture: true });
+
 		cardEl.addEventListener("dragstart", (e: DragEvent) => {
+			if (this.shouldSuppressCardDrag(dragOriginTarget ?? e.target, cardEl)) {
+				e.preventDefault();
+				e.stopPropagation();
+				restoreCardDraggable();
+				return;
+			}
+
 			this.draggedTaskPath = task.path;
 			this.dragGroupKey = groupKey;
 			cardEl.classList.add("task-card--dragging");
@@ -321,21 +386,20 @@ export class TaskListView extends BasesViewBase {
 					const gapStr = getComputedStyle(container).gap;
 					const gap = parseFloat(gapStr) || 4;
 					container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
-
-					const siblings = container.querySelectorAll<HTMLElement>(".task-card[data-task-path]");
-					for (const sib of siblings) {
-						if (sib.dataset.taskPath !== task.path) {
-							sib.classList.add("task-card--drag-shift");
-						}
-					}
 					this.dragContainer = container;
+					this.currentInsertionGroupKey = groupKey;
+					this.currentInsertionSegmentIndex = -1;
 					this.currentInsertionIndex = -1;
-					this.currentInsertionGroupKey = null;
+					this.currentDropSlotElement = null;
+					this.currentDropSlotPosition = null;
+					this.captureDropBaseline();
 				}
 			});
 		});
 
 		cardEl.addEventListener("dragend", () => {
+			restoreCardDraggable();
+
 			// Restore collapsed card
 			cardEl.style.cssText = "";
 			cardEl.classList.remove("task-card--dragging");
@@ -346,13 +410,16 @@ export class TaskListView extends BasesViewBase {
 
 			this.draggedTaskPath = null;
 			this.dragGroupKey = null;
-			this.dropTargetPath = null;
+			this.currentInsertionGroupKey = null;
+			this.currentInsertionSegmentIndex = -1;
+			this.currentInsertionIndex = -1;
 
 			// Cancel any pending rAF
 			if (this.dragOverRafId) {
 				cancelAnimationFrame(this.dragOverRafId);
 				this.dragOverRafId = 0;
 			}
+			this.pendingDragClientY = null;
 
 			// Flush any render that was deferred while dragging
 			if (this.pendingRender) {
@@ -368,11 +435,18 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private clearDropIndicators(): void {
-		// Legacy cleanup — old line indicator classes removed in CSS,
-		// but keep this for any stale DOM from mid-drag re-renders.
-		this.itemsContainer?.querySelectorAll(".task-card--drop-above, .task-card--drop-below").forEach(el => {
-			el.classList.remove("task-card--drop-above", "task-card--drop-below");
+		this.itemsContainer?.querySelectorAll(
+			".task-card--drop-above, .task-card--drop-below, .task-list-view__drop-slot-before, .task-list-view__drop-slot-after"
+		).forEach(el => {
+			el.classList.remove(
+				"task-card--drop-above",
+				"task-card--drop-below",
+				"task-list-view__drop-slot-before",
+				"task-list-view__drop-slot-after"
+			);
 		});
+		this.currentDropSlotElement = null;
+		this.currentDropSlotPosition = null;
 	}
 
 	/**
@@ -384,13 +458,239 @@ export class TaskListView extends BasesViewBase {
 		}
 		// Clean from entire items container (safety net)
 		this.itemsContainer?.querySelectorAll<HTMLElement>(
-			".task-card--drag-shift, .task-card--shift-down"
+			".task-card--drag-shift, .task-card--shift-down, .task-list-view__drop-slot-before, .task-list-view__drop-slot-after"
 		).forEach(el => {
-			el.classList.remove("task-card--drag-shift", "task-card--shift-down");
+			el.classList.remove(
+				"task-card--drag-shift",
+				"task-card--shift-down",
+				"task-list-view__drop-slot-before",
+				"task-list-view__drop-slot-after"
+			);
 		});
 		this.dragContainer = null;
-		this.currentInsertionIndex = -1;
+		this.currentDropSlotElement = null;
+		this.currentDropSlotPosition = null;
 		this.currentInsertionGroupKey = null;
+		this.currentInsertionSegmentIndex = -1;
+		this.currentInsertionIndex = -1;
+		this.dragBaselineCards = [];
+	}
+
+	private getDropSegments(): TaskListDropSegment[] {
+		const cards = this.getDropBaselineCards();
+		if (cards.length === 0) return [];
+
+		const segments: TaskListDropSegment[] = [];
+		for (const card of cards) {
+			const previousSegment = segments[segments.length - 1];
+			if (!previousSegment || previousSegment.groupKey !== card.groupKey) {
+				segments.push({
+					groupKey: card.groupKey,
+					cards: [card],
+				});
+				continue;
+			}
+			previousSegment.cards.push(card);
+		}
+
+		return segments;
+	}
+
+	private reconstructDropTargetFromInsertionSlot(
+		segmentIndex: number,
+		insertionIndex: number
+	): { taskPath: string; above: boolean } | null {
+		const segment = this.getDropSegments()[segmentIndex];
+		if (!segment || segment.cards.length === 0) return null;
+
+		const clampedIndex = Math.max(0, Math.min(insertionIndex, segment.cards.length));
+		if (clampedIndex === 0) {
+			return {
+				taskPath: segment.cards[0].path,
+				above: true,
+			};
+		}
+
+		return {
+			taskPath: segment.cards[clampedIndex - 1].path,
+			above: false,
+		};
+	}
+
+	private getCurrentInsertionTarget(): { taskPath: string; above: boolean } | null {
+		if (this.currentInsertionSegmentIndex < 0 || this.currentInsertionIndex < 0) return null;
+		return this.reconstructDropTargetFromInsertionSlot(
+			this.currentInsertionSegmentIndex,
+			this.currentInsertionIndex
+		);
+	}
+
+	private getVisibleSortScopePathsForDrag(groupKey: string | null): string[] | undefined {
+		if (this.dragBaselineCards.length > 0) {
+			const scopeKey = this.getSortScopeKey(groupKey);
+			const visiblePaths = this.dragBaselineCards
+				.filter((entry) => this.getSortScopeKey(entry.groupKey) === scopeKey)
+				.map((entry) => entry.path);
+			if (visiblePaths.length > 0) {
+				return visiblePaths;
+			}
+		}
+
+		return this.getVisibleSortScopePaths(groupKey);
+	}
+
+	private updateDropSlotPreview(slot: TaskListInsertionSlot): void {
+		const { element, position } = slot;
+		if (
+			element === this.currentDropSlotElement &&
+			position === this.currentDropSlotPosition
+		) {
+			return;
+		}
+
+		this.clearDropIndicators();
+		element.classList.add(
+			position === "before"
+				? "task-list-view__drop-slot-before"
+				: "task-list-view__drop-slot-after"
+		);
+		this.currentDropSlotElement = element;
+		this.currentDropSlotPosition = position;
+	}
+
+	private updateResolvedInsertionSlot(clientY: number): boolean {
+		const insertionSlot = this.resolveClosestInsertionSlot(clientY);
+		if (!insertionSlot) return false;
+
+		this.currentInsertionGroupKey = insertionSlot.groupKey;
+		this.currentInsertionSegmentIndex = insertionSlot.segmentIndex;
+		this.currentInsertionIndex = insertionSlot.insertionIndex;
+		this.updateDropSlotPreview(insertionSlot);
+		return true;
+	}
+
+	private flushPendingInsertionSlot(clientYFallback: number): boolean {
+		if (this.dragOverRafId) {
+			cancelAnimationFrame(this.dragOverRafId);
+			this.dragOverRafId = 0;
+		}
+
+		const clientY = this.pendingDragClientY ?? clientYFallback;
+		if (clientY === null) {
+			return this.currentInsertionSegmentIndex >= 0 && this.currentInsertionIndex >= 0;
+		}
+
+		return this.updateResolvedInsertionSlot(clientY);
+	}
+
+	private getVisibleDropCards(): HTMLElement[] {
+		if (!this.itemsContainer) return [];
+
+		return Array.from(
+			this.itemsContainer.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
+		).filter((card) => {
+			if (card.dataset.taskPath === this.draggedTaskPath) return false;
+			const parentTaskCard = card.parentElement?.closest<HTMLElement>(".task-card[data-task-path]");
+			return !parentTaskCard;
+		});
+	}
+
+	private captureDropBaseline(cards = this.getVisibleDropCards()): void {
+		if (!this.itemsContainer) {
+			this.dragBaselineCards = [];
+			return;
+		}
+
+		const containerRect = this.itemsContainer.getBoundingClientRect();
+		const scrollTop = this.itemsContainer.scrollTop;
+		this.dragBaselineCards = cards
+			.map((card) => {
+				const path = card.dataset.taskPath;
+				if (!path) return null;
+				const rect = card.getBoundingClientRect();
+				const top = rect.top - containerRect.top + scrollTop;
+				return {
+					path,
+					groupKey: this.taskGroupKeys.get(path) ?? null,
+					card,
+					top,
+					bottom: top + rect.height,
+					midpoint: top + rect.height / 2,
+				};
+			})
+			.filter((entry): entry is TaskListDropBaselineCard => !!entry);
+	}
+
+	private getDropBaselineCards(): TaskListDropBaselineCard[] {
+		const cards = this.getVisibleDropCards();
+		const currentPaths = cards.map((card) => card.dataset.taskPath ?? "");
+		const baselinePaths = this.dragBaselineCards.map((entry) => entry.path);
+		const baselineIsCurrent =
+			currentPaths.length === baselinePaths.length &&
+			currentPaths.every((path, index) => path === baselinePaths[index]);
+
+		if (!baselineIsCurrent) {
+			this.captureDropBaseline(cards);
+		}
+
+		return this.dragBaselineCards;
+	}
+
+	private getContainerLocalY(clientY: number): number {
+		if (!this.itemsContainer) return clientY;
+		const containerRect = this.itemsContainer.getBoundingClientRect();
+		return clientY - containerRect.top + this.itemsContainer.scrollTop;
+	}
+
+	private resolveClosestInsertionSlot(clientY: number): TaskListInsertionSlot | null {
+		const segments = this.getDropSegments();
+		if (segments.length === 0) return null;
+
+		const localY = this.getContainerLocalY(clientY);
+		let selectedSegmentIndex = segments.length - 1;
+
+		for (let index = 0; index < segments.length; index++) {
+			const currentSegment = segments[index];
+			const previousSegment = index > 0 ? segments[index - 1] : null;
+			const nextSegment = index < segments.length - 1 ? segments[index + 1] : null;
+			const firstCard = currentSegment.cards[0];
+			const lastCard = currentSegment.cards[currentSegment.cards.length - 1];
+			const lowerBoundary = previousSegment
+				? (previousSegment.cards[previousSegment.cards.length - 1].bottom + firstCard.top) / 2
+				: Number.NEGATIVE_INFINITY;
+			const upperBoundary = nextSegment
+				? (lastCard.bottom + nextSegment.cards[0].top) / 2
+				: Number.POSITIVE_INFINITY;
+
+			if (localY < upperBoundary || index === segments.length - 1) {
+				if (localY >= lowerBoundary || index === 0) {
+					selectedSegmentIndex = index;
+					break;
+				}
+			}
+		}
+
+		const selectedSegment = segments[selectedSegmentIndex];
+		const cardsInSegment = selectedSegment.cards;
+		const targetIndex = cardsInSegment.findIndex((card) => localY < card.midpoint);
+		if (targetIndex === -1) {
+			const lastCard = cardsInSegment[cardsInSegment.length - 1];
+			return {
+				groupKey: selectedSegment.groupKey,
+				segmentIndex: selectedSegmentIndex,
+				insertionIndex: cardsInSegment.length,
+				element: lastCard.card,
+				position: "after",
+			};
+		}
+
+		return {
+			groupKey: selectedSegment.groupKey,
+			segmentIndex: selectedSegmentIndex,
+			insertionIndex: targetIndex,
+			element: cardsInSegment[targetIndex].card,
+			position: "before",
+		};
 	}
 
 	/**
@@ -424,61 +724,15 @@ export class TaskListView extends BasesViewBase {
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
 
 			// Throttle visual updates via rAF
-			const clientX = e.clientX;
-			const clientY = e.clientY;
+			this.pendingDragClientY = e.clientY;
 			if (!this.dragOverRafId) {
 				this.dragOverRafId = requestAnimationFrame(() => {
 					this.dragOverRafId = 0;
 
-					const card = this.containerEl.ownerDocument.elementFromPoint(
-						clientX, clientY
-					)?.closest<HTMLElement>(".task-card[data-task-path]");
-					if (!card || card.dataset.taskPath === this.draggedTaskPath) return;
+					const clientY = this.pendingDragClientY;
+					if (clientY === null) return;
 
-					const rect = card.getBoundingClientRect();
-					const isAbove = clientY < rect.top + rect.height / 2;
-
-					this.dropTargetPath = card.dataset.taskPath!;
-					this.dropAbove = isAbove;
-					const previewGroupKey = this.getPreviewGroupKey(card.dataset.taskPath!);
-
-					// In grouped views, only shift cards in the hovered group so
-					// the landing preview matches the visible section boundaries.
-					const container = this.itemsContainer;
-					if (!container) return;
-
-					const siblings = Array.from(
-						container.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
-					).filter((sib) => {
-						if (sib.dataset.taskPath === this.draggedTaskPath) return false;
-						if (this.taskGroupKeys.size === 0) return true;
-						return this.getPreviewGroupKey(sib.dataset.taskPath || null) === previewGroupKey;
-					});
-
-					let insertionIndex = siblings.length; // default: end
-					for (let i = 0; i < siblings.length; i++) {
-						if (siblings[i].dataset.taskPath === card.dataset.taskPath) {
-							insertionIndex = isAbove ? i : i + 1;
-							break;
-						}
-					}
-
-					if (
-						insertionIndex !== this.currentInsertionIndex ||
-						previewGroupKey !== this.currentInsertionGroupKey
-					) {
-						this.currentInsertionIndex = insertionIndex;
-						this.currentInsertionGroupKey = previewGroupKey;
-						container.querySelectorAll<HTMLElement>(".task-card--shift-down").forEach((el) => {
-							el.classList.remove("task-card--shift-down");
-						});
-						for (let i = 0; i < siblings.length; i++) {
-							siblings[i].classList.toggle(
-								"task-card--shift-down",
-								i >= insertionIndex
-							);
-						}
-					}
+					this.updateResolvedInsertionSlot(clientY);
 				});
 			}
 		});
@@ -493,25 +747,39 @@ export class TaskListView extends BasesViewBase {
 
 		this.itemsContainer.addEventListener("drop", async (e: DragEvent) => {
 			e.preventDefault();
-			if (!this.draggedTaskPath || !this.dropTargetPath) return;
+			if (!this.draggedTaskPath) return;
+
+			if (!this.flushPendingInsertionSlot(e.clientY) && this.currentInsertionIndex < 0) return;
 
 			const draggedPath = this.draggedTaskPath;
-			const targetPath = this.dropTargetPath;
-			const above = this.dropAbove;
 			const sourceGroupKey = this.dragGroupKey;
+			const targetGroupKey = this.currentInsertionGroupKey;
+			const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
+			const insertionSegmentIndex = this.currentInsertionSegmentIndex;
+			const insertionIndex = this.currentInsertionIndex;
+			const dropTarget = insertionSegmentIndex >= 0 && insertionIndex >= 0
+				? this.reconstructDropTargetFromInsertionSlot(insertionSegmentIndex, insertionIndex)
+				: null;
+			if (!draggedPath || !dropTarget) return;
 
 			this.clearDropIndicators();
 			this.cleanupDragShift();
 
-			// Determine target group from the render-time map (the flat DOM
-			// structure means closest("[data-group-key]") won't work here).
-			const targetGroupKey = this.taskGroupKeys.get(targetPath) ?? sourceGroupKey;
-
 			this.draggedTaskPath = null;
 			this.dragGroupKey = null;
-			this.dropTargetPath = null;
+			this.currentInsertionGroupKey = null;
+			this.currentInsertionSegmentIndex = -1;
+			this.currentInsertionIndex = -1;
+			this.pendingDragClientY = null;
 
-			await this.handleSortOrderDrop(draggedPath, targetPath, above, targetGroupKey, sourceGroupKey);
+			await this.handleSortOrderDrop(
+				draggedPath,
+				dropTarget.taskPath,
+				dropTarget.above,
+				targetGroupKey,
+				sourceGroupKey,
+				targetVisiblePaths
+			);
 		});
 	}
 
@@ -520,7 +788,8 @@ export class TaskListView extends BasesViewBase {
 		targetPath: string,
 		above: boolean,
 		targetGroupKey: string | null,
-		sourceGroupKey: string | null
+		sourceGroupKey: string | null,
+		targetVisiblePaths?: string[]
 	): Promise<void> {
 		await this.dropQueue.enqueue(draggedPath, async () => {
 			const groupByPropertyId = this.getGroupByPropertyId();
@@ -550,7 +819,7 @@ export class TaskListView extends BasesViewBase {
 				this.plugin,
 				{
 					taskInfoCache: this.taskInfoCache,
-					visibleTaskPaths: this.getVisibleSortScopePaths(targetGroupKey),
+					visibleTaskPaths: targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
 				}
 			);
 			if (sortOrderPlan.sortOrder === null) return;
