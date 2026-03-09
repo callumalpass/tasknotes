@@ -147,4 +147,42 @@ describe("sortOrderUtils", () => {
 		expect(plan.sortOrder!.localeCompare("0|hzzzzz:")).toBeGreaterThan(0);
 		expect(plan.sortOrder!.localeCompare("0|i00007:")).toBeLessThan(0);
 	});
+
+	it("rebalances oversized sparse scopes into compact ranks", async () => {
+		const oversizedRank = `0|zhzzzz:${"i".repeat(120)}`;
+		const plugin = createPlugin({
+			"seed.md": { status: "todo", sort_order: oversizedRank },
+			"unranked-a.md": { status: "todo" },
+			"unranked-b.md": { status: "todo" },
+		});
+
+		const plan = await prepareSortOrderUpdate(
+			"unranked-a.md",
+			false,
+			"todo",
+			"status",
+			"dragged.md",
+			plugin,
+			{
+				visibleTaskPaths: ["seed.md", "unranked-a.md", "unranked-b.md"],
+			}
+		);
+
+		expect(plan.reason).toBe("rebalance");
+		expect(plan.additionalWrites.map((write) => write.path)).toEqual([
+			"seed.md",
+			"unranked-a.md",
+			"unranked-b.md",
+		]);
+		expect(plan.sortOrder).toBeDefined();
+
+		const seedRank = plan.additionalWrites.find((write) => write.path === "seed.md")!.sortOrder;
+		const rankA = plan.additionalWrites.find((write) => write.path === "unranked-a.md")!.sortOrder;
+		const rankB = plan.additionalWrites.find((write) => write.path === "unranked-b.md")!.sortOrder;
+		const allRanks = [seedRank, rankA, plan.sortOrder!, rankB];
+		expect(allRanks.every((rank) => rank.length <= 12)).toBe(true);
+		expect(seedRank.localeCompare(rankA)).toBeLessThan(0);
+		expect(rankA.localeCompare(plan.sortOrder!)).toBeLessThan(0);
+		expect(plan.sortOrder!.localeCompare(rankB)).toBeLessThan(0);
+	});
 });
