@@ -46,3 +46,7 @@ Example:
 - Fixed a broken docs cross-reference from Property Types Reference to Task Properties settings
 - Fixed docs site link generation so internal Markdown links resolve to route URLs instead of broken `.md` paths (for example `/views/default-base-templates/`)
 - Fixed docs release-note links by building all Markdown docs pages, including pages not listed directly in sidebar nav
+- Drag-to-reorder now scopes Kanban ordering to the active swimlane, initializes sparse manual ordering using the visible drag order, and warns before large multi-note reorder writes
+- Task List drag-to-reorder now blocks formula-group drops and updates list-backed group properties safely during cross-group moves
+- Grouped Task List drag previews now keep the landing gap inside the hovered group instead of shifting unrelated groups
+- Thanks to @ac8318740 for the original drag-to-reorder groundwork in PR #1619
