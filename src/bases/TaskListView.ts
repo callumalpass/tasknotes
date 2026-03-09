@@ -296,14 +296,18 @@ export class TaskListView extends BasesViewBase {
 	private async confirmLargeReorder(editCount: number, targetGroupKey: string | null): Promise<boolean> {
 		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 		const scopeLabel = targetGroupKey === null
-			? "this ungrouped list"
-			: `group "${targetGroupKey}"`;
+			? this.plugin.i18n.translate("views.taskList.reorder.scope.ungrouped")
+			: this.plugin.i18n.translate("views.taskList.reorder.scope.group", { group: targetGroupKey });
 
 		return showConfirmationModal(this.plugin.app, {
-			title: "Confirm large reorder",
-			message: `Reordering here will update "${sortOrderField}" in ${editCount} notes to create a persistent manual order for ${scopeLabel}. Hidden or filtered notes in the same scope may also be updated. Continue?`,
-			confirmText: "Reorder notes",
-			cancelText: "Cancel",
+			title: this.plugin.i18n.translate("common.reorder.confirmLargeTitle"),
+			message: this.plugin.i18n.translate("common.reorder.confirmLargeMessage", {
+				field: sortOrderField,
+				count: editCount,
+				scope: scopeLabel,
+			}),
+			confirmText: this.plugin.i18n.translate("common.reorder.confirmButton"),
+			cancelText: this.plugin.i18n.translate("common.cancel"),
 		});
 	}
 
@@ -798,7 +802,7 @@ export class TaskListView extends BasesViewBase {
 			const isListGrouping = !!cleanGroupBy && this.isListTypeProperty(cleanGroupBy);
 
 			if (isFormulaGrouping) {
-				new Notice("Cannot reorder tasks in formula-based groups. Formula values are computed and cannot be directly modified.");
+				new Notice(this.plugin.i18n.translate("views.taskList.errors.formulaGroupingReadOnly"));
 				return;
 			}
 
