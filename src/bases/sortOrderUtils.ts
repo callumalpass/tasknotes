@@ -27,8 +27,10 @@ export interface SortOrderWrite {
 export interface SortOrderPlan {
 	sortOrder: string | null;
 	additionalWrites: SortOrderWrite[];
-	reason: "midpoint" | "boundary" | "sparse-init";
+	reason: "midpoint" | "boundary" | "sparse-init" | "rebalance";
 }
+
+const REBALANCE_RANK_LENGTH_THRESHOLD = 32;
 
 /**
  * Strip Bases property prefixes (note., file., formula., task.) from a property ID.
@@ -74,6 +76,11 @@ function hasValidLexoRank(task: TaskInfo): boolean {
 	return tryParseLexoRank(task.sortOrder) !== null;
 }
 
+function shouldRebalanceRank(rank: LexoRank | null): boolean {
+	if (!rank) return false;
+	return rank.isMax() || rank.toString().length > REBALANCE_RANK_LENGTH_THRESHOLD;
+}
+
 function frontmatterValueToGroupString(value: unknown): string {
 	if (value === null || value === undefined || value === "") return "None";
 	if (typeof value === "string") return value;
@@ -111,6 +118,13 @@ function buildVisibleOrderLookup(visibleTaskPaths?: string[]): Map<string, numbe
  */
 function safeGenNext(rank: LexoRank): LexoRank {
 	const str = rank.toString();
+	try {
+		const result = rank.genNext();
+		if (result.toString() > str) return result;
+	} catch {
+		// Fall through to conservative fallback logic.
+	}
+
 	const pipeIdx = str.indexOf("|");
 	const colonIdx = str.indexOf(":");
 	const bucket = str.substring(0, pipeIdx);
@@ -139,6 +153,13 @@ function safeGenNext(rank: LexoRank): LexoRank {
  */
 function safeGenPrev(rank: LexoRank): LexoRank {
 	const str = rank.toString();
+	try {
+		const result = rank.genPrev();
+		if (result.toString() < str) return result;
+	} catch {
+		// Fall through to conservative fallback logic.
+	}
+
 	const pipeIdx = str.indexOf("|");
 	const colonIdx = str.indexOf(":");
 	const bucket = str.substring(0, pipeIdx);
@@ -232,6 +253,37 @@ function getContiguousVisibleSparseRun(
 	return runPaths.length > 0 ? runPaths : null;
 }
 
+function createRebalancePlan(
+	columnTasks: TaskInfo[],
+	targetIndex: number,
+	above: boolean
+): SortOrderPlan {
+	const insertAt = above ? targetIndex : targetIndex + 1;
+	const orderedPaths: Array<string | null> = columnTasks.map((task) => task.path);
+	orderedPaths.splice(insertAt, 0, null);
+
+	const additionalWrites: SortOrderWrite[] = [];
+	let draggedSortOrder: string | null = null;
+	let currentRank = LexoRank.middle();
+
+	for (let index = 0; index < orderedPaths.length; index++) {
+		if (index > 0) currentRank = currentRank.genNext();
+		const rankString = currentRank.toString();
+		const path = orderedPaths[index];
+		if (path === null) {
+			draggedSortOrder = rankString;
+		} else {
+			additionalWrites.push({ path, sortOrder: rankString });
+		}
+	}
+
+	return {
+		sortOrder: draggedSortOrder,
+		additionalWrites,
+		reason: "rebalance",
+	};
+}
+
 function createSparsePlan(
 	columnTasks: TaskInfo[],
 	targetIndex: number,
@@ -269,6 +321,9 @@ function createSparsePlan(
 		? columnTasks.findIndex((task) => task.path === runPaths[0])
 		: targetIndex;
 	const previousRank = getNearestPreviousRank(columnTasks, firstRunIndex >= 0 ? firstRunIndex : targetIndex);
+	if (shouldRebalanceRank(previousRank)) {
+		return createRebalancePlan(columnTasks, targetIndex, above);
+	}
 	const targetRunIndex = runPaths.indexOf(targetTask.path);
 	if (above && targetRunIndex === 0) {
 		return {
@@ -447,6 +502,16 @@ export async function prepareSortOrderUpdate(
 
 	if (!targetRank) {
 		return createSparsePlan(columnTasks, targetIndex, above, draggedPath, options.visibleTaskPaths);
+	}
+
+	if (shouldRebalanceRank(previousRank) || shouldRebalanceRank(targetRank) || shouldRebalanceRank(nextRank)) {
+		_log("PREPARE-SORT-ORDER: rebalancing oversized scope", {
+			targetIndex,
+			previousRank: previousRank?.toString() ?? null,
+			targetRank: targetRank.toString(),
+			nextRank: nextRank?.toString() ?? null,
+		});
+		return createRebalancePlan(columnTasks, targetIndex, above);
 	}
 
 	if (above) {
