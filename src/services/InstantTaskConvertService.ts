@@ -373,7 +373,7 @@ export class InstantTaskConvertService {
         const parsedScheduledTime = parsedData.scheduledTime?.trim() || undefined;
         
         // Apply task creation defaults if setting is enabled
-        let priority: string | undefined;
+        let priority: string | number | undefined;
         let status: string | undefined;
         let dueDate: string | undefined;
         let scheduledDate: string | undefined;
@@ -535,13 +535,15 @@ export class InstantTaskConvertService {
     }
 
     /**
-     * Sanitize priority input
+     * Sanitize priority input (supports both string and number)
      */
-    private sanitizePriority(priority: string): string {
+    private sanitizePriority(priority: string | number): string | number {
         const validPriorities = this.priorityManager.getAllPriorities()
             .map((p: any) => p && typeof p === 'object' ? p.value : p)
             .filter(value => value != null);
-        return validPriorities.includes(priority) ? priority : '';
+        const normalizedPriority = String(priority);
+        const found = validPriorities.find(v => String(v) === normalizedPriority);
+        return found !== undefined ? found : '';
     }
 
     /**

@@ -3,8 +3,8 @@ import TaskNotesPlugin from '../main';
 import { PriorityConfig } from '../types';
 
 export interface PriorityContextMenuOptions {
-    currentValue?: string;
-    onSelect: (value: string) => void;
+    currentValue?: string | number;
+    onSelect: (value: string | number) => void;
     plugin: TaskNotesPlugin;
 }
 
@@ -32,8 +32,8 @@ export class PriorityContextMenu {
                 // Use consistent icon for all items
                 item.setIcon('star');
                 
-                // Highlight current selection with visual indicator
-                if (priority.value === this.options.currentValue) {
+                // Highlight current selection with visual indicator (compare as strings for consistency)
+                if (String(priority.value) === String(this.options.currentValue)) {
                     title = `✓ ${priority.label}`;
                 }
                 

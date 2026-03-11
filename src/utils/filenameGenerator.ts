@@ -4,7 +4,7 @@ import { TaskNotesSettings } from '../types/settings';
 
 export interface FilenameContext {
     title: string;
-    priority: string;
+    priority: string | number;
     status: string;
     date?: Date;
     dueDate?: string; // YYYY-MM-DD format
@@ -194,7 +194,8 @@ function generateCustomFilename(
     try {
         // Validate and sanitize context values
         const sanitizedTitle = sanitizeForFilename(context.title);
-        const sanitizedPriority = (context.priority && ['low', 'normal', 'medium', 'high'].includes(context.priority)) ? context.priority : 'normal';
+        const priorityStr = String(context.priority || 'normal');
+        const sanitizedPriority = (context.priority && ['low', 'normal', 'medium', 'high'].includes(priorityStr)) ? priorityStr : 'normal';
         const sanitizedStatus = (context.status && ['open', 'in-progress', 'done', 'scheduled'].includes(context.status)) ? context.status : 'open';
         
         const variables: Record<string, string> = {

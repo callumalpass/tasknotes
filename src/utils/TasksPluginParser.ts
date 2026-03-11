@@ -3,7 +3,7 @@ import { parseDateToUTC, isPastDate, isToday, formatDateForStorage } from './dat
 export interface ParsedTaskData {
 	title: string;
 	status?: string;
-	priority?: string;
+	priority?: string | number;
 	dueDate?: string;
 	scheduledDate?: string;
 	dueTime?: string;

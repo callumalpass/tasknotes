@@ -93,10 +93,11 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     const priorityHelpContainer = container.createDiv('tasknotes-settings__help-section');
     priorityHelpContainer.createEl('h4', { text: 'How priorities work:' });
     const priorityHelpList = priorityHelpContainer.createEl('ul');
-    priorityHelpList.createEl('li', { text: 'Value: The internal identifier stored in your task files (e.g., "high")' });
+    priorityHelpList.createEl('li', { text: 'Value: The identifier stored in task files - supports both numbers (1, 2, 3) and text (high, normal, low)' });
     priorityHelpList.createEl('li', { text: 'Display Label: The display name shown in the interface (e.g., "High Priority")' });
     priorityHelpList.createEl('li', { text: 'Color: Visual indicator color for the priority dot and badges' });
     priorityHelpList.createEl('li', { text: 'Weight: Numeric value for sorting (higher weights appear first in lists)' });
+    priorityHelpList.createEl('li', { text: 'Value Type: Choose whether to store priorities as numbers or text in your task files' });
     priorityHelpContainer.createEl('p', {
         text: 'Tasks are automatically sorted by priority weight in descending order (highest weight first). Weights can be any positive number.',
         cls: 'settings-help-note'
@@ -116,7 +117,7 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
                 const newId = `priority_${Date.now()}`;
                 const newPriority = {
                     id: newId,
-                    value: '',
+                    value: plugin.settings.priorityValueType === 'number' ? 0 : '',
                     label: '',
                     color: '#6366f1',
                     weight: 1
@@ -124,6 +125,19 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
                 plugin.settings.customPriorities.push(newPriority);
                 save();
                 renderPriorityList(priorityList, plugin, save);
+            }));
+
+    // Priority value type setting
+    new Setting(container)
+        .setName('Priority value type')
+        .setDesc('How priority values are stored in your task files. Text (e.g., "high", "low") or Number (e.g., 1, 2, 3)')
+        .addDropdown(dropdown => dropdown
+            .addOption('text', 'Text')
+            .addOption('number', 'Number')
+            .setValue(plugin.settings.priorityValueType || 'number')
+            .onChange(async (value: 'text' | 'number') => {
+                plugin.settings.priorityValueType = value;
+                save();
             }));
 
     createValidationNote(container, 'Note: You must have at least 1 priority. Higher weights take precedence in sorting and visual hierarchy.');
@@ -392,7 +406,7 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
     const sortedPriorities = [...plugin.settings.customPriorities].sort((a, b) => b.weight - a.weight);
     
     sortedPriorities.forEach((priority, index) => {
-        const valueInput = createCardInput('text', 'high', priority.value);
+        const valueInput = createCardInput('text', '1 or high', String(priority.value));
         const labelInput = createCardInput('text', 'High Priority', priority.label);
         const colorInput = createCardInput('color', '', priority.color);
         const weightInput = createCardNumberInput(0, undefined, 1, priority.weight);
@@ -403,7 +417,7 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
             defaultCollapsed: true,
             colorIndicator: { color: priority.color },
             header: {
-                primaryText: priority.label || priority.value || 'untitled',
+                primaryText: String(priority.label || priority.value || 'untitled'),
                 secondaryText: `Weight: ${priority.weight}`,
                 actions: [
                     createDeleteHeaderButton(() => {
@@ -430,13 +444,16 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
         });
 
         valueInput.addEventListener('change', () => {
-            priority.value = valueInput.value;
+            // Support both numeric and text priority values
+            const inputValue = valueInput.value.trim();
+            const numericValue = Number(inputValue);
+            priority.value = !isNaN(numericValue) && inputValue !== '' ? numericValue : inputValue;
             save();
         });
 
         labelInput.addEventListener('change', () => {
             priority.label = labelInput.value;
-            card.querySelector('.tasknotes-settings__card-primary-text')!.textContent = priority.label || priority.value || 'untitled';
+            card.querySelector('.tasknotes-settings__card-primary-text')!.textContent = String(priority.label || priority.value || 'untitled');
             save();
         });
 

@@ -11,7 +11,7 @@ export interface ParsedTaskData {
     scheduledDate?: string;
     dueTime?: string;
     scheduledTime?: string;
-    priority?: string;
+    priority?: string | number; // Supports both text and numeric priorities
     status?: string;
     tags: string[];
     contexts: string[];
@@ -23,7 +23,7 @@ export interface ParsedTaskData {
 
 interface RegexPattern {
     regex: RegExp;
-    value: string;
+    value: string | number; // Supports both text and numeric priority values
 }
 
 /**
@@ -245,16 +245,20 @@ export class NaturalLanguageParser {
     /**
      * Pre-builds priority regex patterns from configuration for efficiency.
      * Creates patterns for both custom priority configs and language fallbacks.
+     * Supports both text and numeric priority values.
      * 
      * @param configs Custom priority configurations
      * @returns Array of compiled regex patterns with their corresponding priority values
      */
     private buildPriorityPatterns(configs: PriorityConfig[]): RegexPattern[] {
         if (configs.length > 0) {
-            return configs.flatMap(config => [
-                { regex: new RegExp(`\\b${this.escapeRegex(config.value)}\\b`, 'i'), value: config.value },
-                { regex: new RegExp(`\\b${this.escapeRegex(config.label)}\\b`, 'i'), value: config.value }
-            ]);
+            return configs.flatMap(config => {
+                const valueStr = String(config.value);
+                return [
+                    { regex: new RegExp(`\\b${this.escapeRegex(valueStr)}\\b`, 'i'), value: config.value },
+                    { regex: new RegExp(`\\b${this.escapeRegex(config.label)}\\b`, 'i'), value: config.value }
+                ];
+            });
         }
         // Fallback patterns from language config - order matters, most specific first
         const patterns: RegexPattern[] = [];
@@ -373,7 +377,7 @@ export class NaturalLanguageParser {
         // Fallback to regex patterns for built-in status keywords
         for (const pattern of this.statusPatterns) {
             if (pattern.regex.test(text)) {
-                result.status = pattern.value;
+                result.status = String(pattern.value);
                 return this.cleanupWhitespace(text.replace(pattern.regex, ''));
             }
         }

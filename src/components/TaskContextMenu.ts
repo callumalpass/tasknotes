@@ -498,7 +498,7 @@ export class TaskContextMenu {
                 
                 // Apply priority color
                 else if (title === 'Priority') {
-                    const priorityConfig = plugin.settings.customPriorities.find(p => p.value === task.priority);
+                    const priorityConfig = plugin.settings.customPriorities.find(p => String(p.value) === String(task.priority));
                     if (priorityConfig && priorityConfig.color) {
                         (iconEl as HTMLElement).style.color = priorityConfig.color;
                     }
@@ -564,8 +564,8 @@ export class TaskContextMenu {
                 // Use consistent icon for all items
                 item.setIcon('star');
                 
-                // Highlight current selection with visual indicator
-                if (priority.value === task.priority) {
+                // Highlight current selection with visual indicator (compare as strings for consistency)
+                if (String(priority.value) === String(task.priority)) {
                     title = `✓ ${priority.label}`;
                 }
                 

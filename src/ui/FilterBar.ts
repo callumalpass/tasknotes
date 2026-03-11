@@ -1221,7 +1221,8 @@ export class FilterBar extends EventEmitter {
                 break;
             case 'priority':
                 this.filterOptions.priorities.forEach(priorityConfig => {
-                    dropdown.addOption(priorityConfig.value, priorityConfig.label);
+                    // Convert value to string for dropdown (supports both numeric and text priorities)
+                    dropdown.addOption(String(priorityConfig.value), priorityConfig.label);
                 });
                 break;
             case 'tags':

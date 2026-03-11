@@ -468,10 +468,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				dropdown.selectEl.setAttribute('aria-label', 'Default priority for new tasks');
 				// Populate with custom priorities
 				this.plugin.settings.customPriorities.forEach(priority => {
-					dropdown.addOption(priority.value, priority.label);
+					dropdown.addOption(String(priority.value), priority.label);
 				});
 				return dropdown
-					.setValue(this.plugin.settings.defaultTaskPriority)
+					.setValue(String(this.plugin.settings.defaultTaskPriority))
 					.onChange(async (value: any) => {
 						this.plugin.settings.defaultTaskPriority = value;
 						await this.plugin.saveSettings();
@@ -2530,7 +2530,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			// Priority value input
 			const valueInput = priorityRow.createEl('input', {
 				type: 'text',
-				value: priority.value,
+				value: String(priority.value),
 				cls: 'settings-input value-input settings-view__input settings-view__input--value',
 				attr: {
 					'aria-label': `Priority value for ${priority.label}`,

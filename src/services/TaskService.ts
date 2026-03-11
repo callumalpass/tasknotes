@@ -99,7 +99,7 @@ export class TaskService {
             
             // Handle priority
             const priority = taskData.priority || '';
-            processedPath = processedPath.replace(/\{\{priority\}\}/g, priority);
+            processedPath = processedPath.replace(/\{\{priority\}\}/g, String(priority));
             
             // Handle status
             const status = taskData.status || '';
@@ -117,7 +117,7 @@ export class TaskService {
             processedPath = processedPath.replace(/\{\{scheduledDate\}\}/g, scheduledDate);
             
             // Priority and status variations
-            const priorityShort = priority ? priority.substring(0, 1).toUpperCase() : '';
+            const priorityShort = priority ? String(priority).substring(0, 1).toUpperCase() : '';
             processedPath = processedPath.replace(/\{\{priorityShort\}\}/g, priorityShort);
             
             const statusShort = status ? status.substring(0, 1).toUpperCase() : '';
@@ -307,7 +307,12 @@ export class TaskService {
             };
 
             // Use field mapper to convert to frontmatter with proper field mapping
-            const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(completeTaskData, this.plugin.settings.taskTag, this.plugin.settings.storeTitleInFilename);
+            const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(
+                completeTaskData, 
+                this.plugin.settings.taskTag, 
+                this.plugin.settings.storeTitleInFilename,
+                this.plugin.settings.priorityValueType
+            );
             
             // Handle task identification based on settings
             if (this.plugin.settings.taskIdentificationMethod === 'property') {
@@ -1040,7 +1045,8 @@ export class TaskService {
                 const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(
                     completeTaskData,
                     this.plugin.settings.taskTag,
-                    this.plugin.settings.storeTitleInFilename
+                    this.plugin.settings.storeTitleInFilename,
+                    this.plugin.settings.priorityValueType
                 );
 
                 Object.keys(mappedFrontmatter).forEach(key => {

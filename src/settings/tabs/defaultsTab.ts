@@ -46,13 +46,15 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
         options: [
             { value: '', label: 'No default' },
             ...plugin.settings.customPriorities.map(priority => ({
-                value: priority.value,
-                label: priority.label || priority.value
+                value: String(priority.value),
+                label: String(priority.label || priority.value)
             }))
         ],
-        getValue: () => plugin.settings.defaultTaskPriority,
+        getValue: () => String(plugin.settings.defaultTaskPriority),
         setValue: async (value: string) => {
-            plugin.settings.defaultTaskPriority = value;
+            // Convert back to number if the value looks like a number
+            const numericValue = Number(value);
+            plugin.settings.defaultTaskPriority = !isNaN(numericValue) && value !== '' ? numericValue : value;
             save();
         }
     });

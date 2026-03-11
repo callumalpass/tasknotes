@@ -4,7 +4,7 @@ import { parseYaml } from 'obsidian';
 
 export interface TemplateData {
     title: string;
-    priority: string;
+    priority: string | number;
     status: string;
     contexts: string[];
     tags: string[];
@@ -135,8 +135,8 @@ function processTemplateVariablesForYaml(template: string, taskData: TemplateDat
     const quotedTitle = needsYamlQuoting(title) ? `"${escapeYamlString(title)}"` : title;
     result = result.replace(/\{\{title\}\}/g, quotedTitle);
     
-    // {{priority}} - Task priority
-    result = result.replace(/\{\{priority\}\}/g, taskData.priority || '');
+    // {{priority}} - Task priority (supports both string and number)
+    result = result.replace(/\{\{priority\}\}/g, String(taskData.priority || ''));
     
     // {{status}} - Task status
     result = result.replace(/\{\{status\}\}/g, taskData.status || '');
@@ -253,8 +253,8 @@ function processTemplateVariables(template: string, taskData: TemplateData | ICS
     // {{title}} - Task title
     result = result.replace(/\{\{title\}\}/g, taskData.title || '');
     
-    // {{priority}} - Task priority
-    result = result.replace(/\{\{priority\}\}/g, taskData.priority || '');
+    // {{priority}} - Task priority (supports both string and number)
+    result = result.replace(/\{\{priority\}\}/g, String(taskData.priority || ''));
     
     // {{status}} - Task status
     result = result.replace(/\{\{status\}\}/g, taskData.status || '');

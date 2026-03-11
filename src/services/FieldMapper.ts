@@ -155,8 +155,12 @@ export class FieldMapper {
 
     /**
      * Convert internal task data to frontmatter using mapping
+     * @param taskData The task data to convert
+     * @param taskTag Optional task tag to add to tags array
+     * @param storeTitleInFilename Whether title is stored in filename
+     * @param priorityValueType Optional type for priority values ('text' or 'number')
      */
-    mapToFrontmatter(taskData: Partial<TaskInfo>, taskTag?: string, storeTitleInFilename?: boolean): any {
+    mapToFrontmatter(taskData: Partial<TaskInfo>, taskTag?: string, storeTitleInFilename?: boolean, priorityValueType?: 'text' | 'number'): any {
         const frontmatter: any = {};
 
         // Map each field if it exists in task data
@@ -176,7 +180,17 @@ export class FieldMapper {
         }
 
         if (taskData.priority !== undefined) {
-            frontmatter[this.mapping.priority] = taskData.priority;
+            // Convert priority value based on priorityValueType setting
+            let priorityValue: string | number = taskData.priority;
+            if (priorityValueType === 'number') {
+                const numValue = Number(taskData.priority);
+                if (!isNaN(numValue)) {
+                    priorityValue = numValue;
+                }
+            } else if (priorityValueType === 'text') {
+                priorityValue = String(taskData.priority);
+            }
+            frontmatter[this.mapping.priority] = priorityValue;
         }
 
         if (taskData.due !== undefined) {

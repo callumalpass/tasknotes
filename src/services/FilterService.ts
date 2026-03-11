@@ -954,8 +954,9 @@ export class FilterService extends EventEmitter {
 
     /**
      * Compare priorities using PriorityManager weights
+     * Supports both string and numeric priority values
      */
-    private comparePriorities(priorityA: string, priorityB: string): number {
+    private comparePriorities(priorityA: string | number, priorityB: string | number): number {
         const weightA = this.priorityManager.getPriorityWeight(priorityA);
         const weightB = this.priorityManager.getPriorityWeight(priorityB);
 
@@ -1178,7 +1179,7 @@ export class FilterService extends EventEmitter {
                             groupValue = task.status || 'no-status';
                             break;
                         case 'priority':
-                            groupValue = task.priority || 'unknown';
+                            groupValue = String(task.priority || 'unknown');
                             break;
                         case 'context':
                             // For multiple contexts, put task in first context or 'none'

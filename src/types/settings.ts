@@ -34,7 +34,7 @@ export interface TaskNotesSettings {
 	taskPropertyName: string;     // Property name for property-based identification
 	taskPropertyValue: string;    // Property value for property-based identification
 	excludedFolders: string;  // Comma-separated list of folders to exclude from Notes tab
-	defaultTaskPriority: string;  // Changed to string to support custom priorities
+	defaultTaskPriority: string | number;  // Supports both text and numeric priorities
 	defaultTaskStatus: string;    // Changed to string to support custom statuses
 	taskOrgFiltersCollapsed: boolean;  // Save collapse state of task organization filters
 	// Task filename settings
@@ -82,6 +82,7 @@ export interface TaskNotesSettings {
 	fieldMapping: FieldMapping;
 	customStatuses: StatusConfig[];
 	customPriorities: PriorityConfig[];
+	priorityValueType: 'text' | 'number';  // How priority values are stored in frontmatter
 	// Migration tracking
 	recurrenceMigrated?: boolean;
 	// Status bar settings

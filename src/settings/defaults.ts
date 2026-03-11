@@ -68,7 +68,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	}
 ];
 
-// Default priority configuration matches current hardcoded behavior
+// Default priority configuration - uses text values for backward compatibility
 export const DEFAULT_PRIORITIES: PriorityConfig[] = [
 	{
 		id: 'none',
@@ -183,7 +183,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	taskPropertyName: '',
 	taskPropertyValue: '',
 	excludedFolders: '',  // Default to no excluded folders
-	defaultTaskPriority: 'normal',
+	defaultTaskPriority: 'normal',  // Text priority for backward compatibility
 	defaultTaskStatus: 'open',
 	taskOrgFiltersCollapsed: false,  // Default to expanded
 	// Task filename defaults
@@ -230,6 +230,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	fieldMapping: DEFAULT_FIELD_MAPPING,
 	customStatuses: DEFAULT_STATUSES,
 	customPriorities: DEFAULT_PRIORITIES,
+	priorityValueType: 'text',  // Default to text for backward compatibility
 	// Migration defaults
 	recurrenceMigrated: false,
 	// Status bar defaults

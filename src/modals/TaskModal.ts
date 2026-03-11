@@ -18,7 +18,7 @@ export abstract class TaskModal extends Modal {
     protected details = '';
     protected dueDate = '';
     protected scheduledDate = '';
-    protected priority = 'normal';
+    protected priority: string | number = 'normal';
     protected status = 'open';
     protected contexts = '';
     protected projects = '';
@@ -599,7 +599,7 @@ export abstract class TaskModal extends Modal {
         return 'open'; // fallback
     }
 
-    protected getDefaultPriority(): string {
+    protected getDefaultPriority(): string | number {
         // Get the priority with lowest weight as default
         const priorityConfigs = this.plugin.settings.customPriorities;
         if (priorityConfigs && priorityConfigs.length > 0) {
@@ -745,9 +745,9 @@ export abstract class TaskModal extends Modal {
         // Update priority icon
         const priorityIcon = this.actionBar.querySelector('[data-type="priority"]') as HTMLElement;
         if (priorityIcon) {
-            // Find the priority config to get the label and color
-            const priorityConfig = this.plugin.settings.customPriorities.find(p => p.value === this.priority);
-            const priorityLabel = priorityConfig ? priorityConfig.label : this.priority;
+            // Find the priority config to get the label and color (compare as strings for consistency)
+            const priorityConfig = this.plugin.settings.customPriorities.find(p => String(p.value) === String(this.priority));
+            const priorityLabel = priorityConfig ? priorityConfig.label : String(this.priority);
             
             if (this.priority && priorityConfig && priorityConfig.value !== this.getDefaultPriority()) {
                 priorityIcon.classList.add('has-value');

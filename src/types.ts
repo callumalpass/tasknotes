@@ -225,7 +225,7 @@ export interface TaskInfo {
 	id?: string; // Task identifier (typically same as path for API consistency)
 	title: string;
 	status: string;
-	priority: string;
+	priority: string | number; // Supports both text ("high") and numeric (1, 2, 3) priorities
 	due?: string;
 	scheduled?: string; // Date (YYYY-MM-DD) when task is scheduled to be worked on
 	path: string;
@@ -322,7 +322,7 @@ export interface TaskFrontmatter {
 	due?: string;
 	scheduled?: string;
 	tags: string[];
-	priority: 'low' | 'normal' | 'high';
+	priority: string | number; // Supports both text ('low'|'normal'|'high') and numeric priorities
 	contexts?: string[];
 	projects?: string[];
 	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string (preferred) or legacy RecurrenceInfo object (deprecated)
@@ -435,7 +435,7 @@ export interface StatusConfig {
 
 export interface PriorityConfig {
 	id: string;          // Unique identifier
-	value: string;       // What gets written to YAML
+	value: string | number; // What gets written to YAML (supports both text and numeric priorities)
 	label: string;       // What displays in UI
 	color: string;       // Hex color for indicators
 	weight: number;      // For sorting (higher = more important)

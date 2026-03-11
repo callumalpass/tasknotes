@@ -78,7 +78,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
                 description: `Change task priority to ${priorityConfig.label}`,
                 icon: isCurrentPriority ? 'check' : 'flag',
                 category: 'priority',
-                keywords: ['priority', priorityConfig.value, priorityConfig.label, 'change', 'set'],
+                keywords: ['priority', String(priorityConfig.value), priorityConfig.label, 'change', 'set'],
                 isApplicable: () => !isCurrentPriority,
                 execute: async (task) => {
                     await this.plugin.updateTaskProperty(task, 'priority', priorityConfig.value);

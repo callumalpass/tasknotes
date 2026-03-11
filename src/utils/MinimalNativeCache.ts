@@ -531,7 +531,7 @@ export class MinimalNativeCache extends Events {
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo?.priority) {
-                    priorities.add(taskInfo.priority);
+                    priorities.add(String(taskInfo.priority));
                 }
             }
         }

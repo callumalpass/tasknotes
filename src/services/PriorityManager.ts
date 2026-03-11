@@ -7,10 +7,20 @@ export class PriorityManager {
     constructor(private priorities: PriorityConfig[]) {}
 
     /**
-     * Get priority configuration by value
+     * Normalize priority value to string for comparison
      */
-    getPriorityConfig(value: string): PriorityConfig | undefined {
-        return this.priorities.find(p => p.value === value);
+    private normalizeValue(value: string | number | undefined): string {
+        if (value === undefined || value === null) return '';
+        return String(value);
+    }
+
+    /**
+     * Get priority configuration by value (supports both string and number)
+     */
+    getPriorityConfig(value: string | number | undefined): PriorityConfig | undefined {
+        if (value === undefined || value === null) return undefined;
+        const normalizedValue = this.normalizeValue(value);
+        return this.priorities.find(p => this.normalizeValue(p.value) === normalizedValue);
     }
 
     /**
@@ -30,9 +40,10 @@ export class PriorityManager {
     /**
      * Get next priority in cycle (cycling by weight order)
      */
-    getNextPriority(currentPriority: string): string {
+    getNextPriority(currentPriority: string | number): string | number {
         const sortedPriorities = this.getPrioritiesByWeightAsc();
-        const currentIndex = sortedPriorities.findIndex(p => p.value === currentPriority);
+        const normalizedCurrent = this.normalizeValue(currentPriority);
+        const currentIndex = sortedPriorities.findIndex(p => this.normalizeValue(p.value) === normalizedCurrent);
         
         if (currentIndex === -1) {
             // Current priority not found, return first priority
@@ -48,7 +59,7 @@ export class PriorityManager {
      * Compare priorities for sorting (higher weight = higher priority)
      * Returns negative if a has lower priority, positive if higher, 0 if equal
      */
-    comparePriorities(a: string, b: string): number {
+    comparePriorities(a: string | number, b: string | number): number {
         const priorityA = this.getPriorityConfig(a);
         const priorityB = this.getPriorityConfig(b);
         
@@ -66,7 +77,7 @@ export class PriorityManager {
         const cssRules: string[] = [];
         
         for (const priority of this.priorities) {
-            const cssClass = `--priority-${priority.value.replace(/[^a-zA-Z0-9-]/g, '-')}-color`;
+            const cssClass = `--priority-${String(priority.value).replace(/[^a-zA-Z0-9-]/g, '-')}-color`;
             cssRules.push(`${cssClass}: ${priority.color};`);
         }
         
@@ -90,7 +101,7 @@ export class PriorityManager {
     /**
      * Get the highest priority value (highest weight)
      */
-    getHighestPriority(): string | undefined {
+    getHighestPriority(): string | number | undefined {
         const sorted = this.getPrioritiesByWeight();
         return sorted[0]?.value;
     }
@@ -98,7 +109,7 @@ export class PriorityManager {
     /**
      * Get the lowest priority value (lowest weight)
      */
-    getLowestPriority(): string | undefined {
+    getLowestPriority(): string | number | undefined {
         const sorted = this.getPrioritiesByWeightAsc();
         return sorted[0]?.value;
     }
@@ -106,7 +117,7 @@ export class PriorityManager {
     /**
      * Get priority weight for sorting
      */
-    getPriorityWeight(priority: string): number {
+    getPriorityWeight(priority: string | number): number {
         const config = this.getPriorityConfig(priority);
         return config?.weight || 0;
     }
@@ -114,7 +125,7 @@ export class PriorityManager {
     /**
      * Check if priority A is higher than priority B
      */
-    isHigherPriority(a: string, b: string): boolean {
+    isHigherPriority(a: string | number, b: string | number): boolean {
         return this.comparePriorities(a, b) > 0;
     }
 
@@ -152,11 +163,11 @@ export class PriorityManager {
 
         // Check for empty values and labels
         for (const priority of priorities) {
-            if (!priority.value || priority.value.trim() === '') {
+            if (priority.value === undefined || priority.value === null || String(priority.value).trim() === '') {
                 errors.push('Priority values cannot be empty');
                 break;
             }
-            if (!priority.label || priority.label.trim() === '') {
+            if (!priority.label || String(priority.label).trim() === '') {
                 errors.push('Priority labels cannot be empty');
                 break;
             }
