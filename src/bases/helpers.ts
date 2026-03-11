@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
-import { setIcon } from "obsidian";
+import { setIcon, TFile } from "obsidian";
 import { calculateTotalTimeSpent } from "../utils/helpers";
 import { format } from "date-fns";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
@@ -176,6 +176,24 @@ export function createTaskInfoFromBasesData(
 
 	const props = basesItem.properties || basesItem.frontmatter || {};
 
+	// Check task identification using the canonical method.
+	// Defaults to true when plugin is unavailable (safety: treat as task if unknown).
+	let isTask = plugin?.cacheManager
+		? plugin.cacheManager.isTaskFile(props)
+		: true;
+
+	// Bases' cached properties can be stale after convert-to-task.
+	// If Bases says non-task, double-check against live metadataCache.
+	if (!isTask && plugin?.app && basesItem.path) {
+		const file = plugin.app.vault.getAbstractFileByPath(basesItem.path);
+		if (file instanceof TFile) {
+			const cache = plugin.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter && plugin.cacheManager.isTaskFile(cache.frontmatter)) {
+				isTask = true;
+			}
+		}
+	}
+
 	if (plugin?.fieldMapper) {
 		const mappedTaskInfo = plugin.fieldMapper.mapFromFrontmatter(
 			props,
@@ -195,6 +213,7 @@ export function createTaskInfoFromBasesData(
 		// Merge file properties with existing custom properties
 		return {
 			...taskInfo,
+			isTask,
 			customProperties: {
 				...mappedTaskInfo.customProperties,
 				...taskInfo.customProperties,
@@ -202,7 +221,10 @@ export function createTaskInfoFromBasesData(
 			},
 		};
 	} else {
-		return createTaskInfoFromProperties(props, basesItem, plugin);
+		return {
+			...createTaskInfoFromProperties(props, basesItem, plugin),
+			isTask,
+		};
 	}
 }
 

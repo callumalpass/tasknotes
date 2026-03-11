@@ -1407,6 +1407,7 @@ export abstract class TaskModal extends Modal {
 	 * Convert file paths to shortest possible wikilinks using Obsidian's link resolution.
 	 */
 	private pathsToShortestWikilinks(paths: string[]): string[] {
+		const seen = new Set<string>();
 		return paths.map(p => {
 			const file = this.app.vault.getAbstractFileByPath(p);
 			if (file instanceof TFile) {
@@ -1414,6 +1415,10 @@ export abstract class TaskModal extends Modal {
 				return `[[${linktext}]]`;
 			}
 			return `[[${p.replace(/\.md$/, "")}]]`;
+		}).filter(wl => {
+			if (seen.has(wl)) return false;
+			seen.add(wl);
+			return true;
 		});
 	}
 

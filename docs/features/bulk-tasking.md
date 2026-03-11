@@ -346,7 +346,7 @@ You can disable TaskNotes controls on specific views. Open the view's Configure 
 **Right-click context menus:**
 
 <!-- GIF: Right-clicking a row in a Bases view showing task vs non-task context menu options -->{>>If the file is not a task, then it'll show a convert to task button. So this is something we want to call out for in this section. And also, if you don't change a value when trying to convert to task, like if you're not, if you don't set some sort of value on it, then it won't become a task.<<}
-
+![[file-20260225195138705.gif]]
 
 On views with universal buttons, right-clicking a row or card shows a context menu:
 
@@ -356,10 +356,7 @@ On views with universal buttons, right-clicking a row or card shows a context me
 ## Right-Click in the File Explorer
 
 <!-- GIF: Right-clicking files and folders in the file explorer to open bulk tasking modal -->
-
-<video controls width="100%">
-  <source src="../assets/bulk-file-explorer-demo.mp4" type="video/mp4">
-</video>
+![[file-20260305224450961.gif]]
 
 You do not need a Bases view to use bulk tasking. Right-click any file or folder in Obsidian's file explorer:
 

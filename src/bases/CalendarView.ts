@@ -169,6 +169,7 @@ export class CalendarView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.ensureCoreCardProperties = true;
 		// BasesView now provides this.data, this.config, and this.app directly
 		(this.dataAdapter as any).basesView = this;
 		// Note: Don't read config here - this.config is not set until after construction

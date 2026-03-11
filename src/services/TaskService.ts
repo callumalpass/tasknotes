@@ -1706,8 +1706,10 @@ export class TaskService {
 							// Remove the property if value is null
 							delete frontmatter[key];
 						} else {
-							// Set the property value
-							frontmatter[key] = value;
+							// Deduplicate arrays (e.g. assignees) before writing
+							frontmatter[key] = Array.isArray(value)
+								? [...new Set(value)]
+								: value;
 						}
 					});
 				}

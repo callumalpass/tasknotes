@@ -44,6 +44,7 @@ export class TaskListView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.ensureCoreCardProperties = true;
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
 		(this.dataAdapter as any).basesView = this;
@@ -179,16 +180,23 @@ export class TaskListView extends BasesViewBase {
 	 * This ensures formulas have access to TaskNote-specific properties.
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		// Access formulas through the data context
-		const ctxFormulas = (this.data as any)?.ctx?.formulas;
+		// Access formulas through the controller's context (not this.data — ctx lives on controller)
+		const ctxFormulas = this.getController()?.ctx?.formulas;
 		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const itemFormulaResults = item.basesData?.formulaResults;
-			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+			if (!item.basesData) continue;
+			// Initialize formula results structure if Bases hasn't done so yet
+			// (happens for freshly re-indexed items after convert-to-task)
+			if (!item.basesData.formulaResults) {
+				item.basesData.formulaResults = { cachedFormulaOutputs: {} };
+			} else if (!item.basesData.formulaResults.cachedFormulaOutputs) {
+				item.basesData.formulaResults.cachedFormulaOutputs = {};
+			}
+			const itemFormulaResults = item.basesData.formulaResults;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];
@@ -1468,8 +1476,19 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private buildTaskSignature(task: TaskInfo): string {
-		// Fast signature using only fields that affect rendering
-		return `${task.path}|${task.title}|${task.status}|${task.priority}|${task.due}|${task.scheduled}|${task.recurrence}|${task.archived}|${task.complete_instances?.join(',')}|${task.reminders?.length}|${task.blocking?.length}|${task.blockedBy?.length}`;
+		// Fast signature using only fields that affect rendering.
+		// Include isTask + formula outputs so cards re-render when formulas
+		// settle after convert-to-task (Bases re-indexes the file, formula
+		// cache is stale on the first render, then catches up).
+		let formulaSig = "";
+		const cached = task.basesData?.formulaResults?.cachedFormulaOutputs;
+		if (cached && typeof cached === "object") {
+			for (const key of Object.keys(cached)) {
+				const v = cached[key];
+				formulaSig += `|f.${key}=${v != null ? String(v).substring(0, 50) : ""}`;
+			}
+		}
+		return `${task.path}|${task.title}|${task.status}|${task.priority}|${task.due}|${task.scheduled}|${task.recurrence}|${task.archived}|${task.complete_instances?.join(',')}|${task.reminders?.length}|${task.blocking?.length}|${task.blockedBy?.length}|${task.isTask}${formulaSig}`;
 	}
 }
 

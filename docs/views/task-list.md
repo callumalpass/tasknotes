@@ -88,6 +88,38 @@ filters:
 ```
 Start with one or two simple filters, verify results, then layer complexity. Incremental edits are much easier to debug than large one-shot query rewrites.
 
+### How Card Rendering Works
+
+> [!info] `order:` and card display
+> In **table** views, the `order:` array directly controls which columns appear. In **task card** views (`tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`), `order:` serves a different role — it tells the card renderer which properties are "visible." The card renderer uses this list to decide whether to show elements like the status dot, priority indicator, and due date badge on each card.
+>
+> Obsidian's Bases plugin designed `order:` for table column control. TaskNotes reuses it for card views, but the connection between `order:` and what appears on a task card is not obvious from the Bases UI alone.
+
+**Core property auto-injection:** Task card views automatically include **status**, **priority**, and **due** in the visible property set at render time, even if your `order:` list omits them. This ensures the three core card elements always appear:
+
+- **Status dot** — colored circle (left edge of card) showing the task's current status
+- **Priority indicator** — colored dot reflecting the priority level
+- **Due date badge** — date display with relative formatting ("today", "overdue", etc.)
+
+This injection is read-only — it does not modify your `.base` file or the `order:` config. Switching between view types (e.g., table and task list) within the same `.base` file is safe; the table view still reads the original `order:` without the injected properties.
+
+**What `order:` still controls on cards:** Properties beyond the three core fields — such as `note.scheduled`, `note.projects`, `note.contexts`, `file.tags`, and `file.tasks` (checklist progress) — only appear on cards when they are listed in `order:`. Adding or removing these from `order:` (via YAML or the Bases property picker) changes what metadata is shown on each card.
+
+**Recommended `order:` for task card views:**
+```yaml
+order:
+  - note.status
+  - note.priority
+  - note.due
+  - note.scheduled
+  - note.projects
+  - note.contexts
+  - file.tags
+  - file.tasks
+```
+
+Including the core properties in `order:` is not required for card display (they are auto-injected), but it keeps them visible in the Bases property picker for reordering alongside your other fields.
+
 ### Property Mapping
 
 TaskNotes properties are accessed in Bases YAML using these paths:

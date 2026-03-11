@@ -168,7 +168,7 @@ function renderTeamAttributionFieldsSection(
 						.addButton((btn) =>
 							btn
 								.setButtonText("Edit")
-								.onClick(() => navigateToTaskProperties(plugin))
+								.onClick(() => navigateToTaskProperties(plugin, "property-creator"))
 						);
 					setting.settingEl.addClass("tasknotes-field-status-setting");
 					setting.settingEl.addClass("tasknotes-field-status-setting--success");
@@ -180,7 +180,7 @@ function renderTeamAttributionFieldsSection(
 							btn
 								.setButtonText("Configure")
 								.setCta()
-								.onClick(() => navigateToTaskProperties(plugin))
+								.onClick(() => navigateToTaskProperties(plugin, "property-creator"))
 						);
 					setting.settingEl.addClass("tasknotes-field-status-setting");
 					setting.settingEl.addClass("tasknotes-field-status-setting--warning");
@@ -196,7 +196,7 @@ function renderTeamAttributionFieldsSection(
 						.addButton((btn) =>
 							btn
 								.setButtonText("Edit")
-								.onClick(() => navigateToTaskProperties(plugin))
+								.onClick(() => navigateToTaskProperties(plugin, "property-assignees"))
 						);
 					setting.settingEl.addClass("tasknotes-field-status-setting");
 					setting.settingEl.addClass("tasknotes-field-status-setting--success");
@@ -208,7 +208,7 @@ function renderTeamAttributionFieldsSection(
 							btn
 								.setButtonText("Configure")
 								.setCta()
-								.onClick(() => navigateToTaskProperties(plugin))
+								.onClick(() => navigateToTaskProperties(plugin, "property-assignees"))
 						);
 					setting.settingEl.addClass("tasknotes-field-status-setting");
 					setting.settingEl.addClass("tasknotes-field-status-setting--warning");
@@ -818,7 +818,7 @@ function renderYourIdentitySection(
 /**
  * Navigate to Task Properties tab and scroll to Team & Attribution Properties section
  */
-function navigateToTaskProperties(plugin: TaskNotesPlugin): void {
+function navigateToTaskProperties(plugin: TaskNotesPlugin, cardId = "property-type"): void {
 	const settingsTab = (plugin.app as any).setting?.activeTab;
 	if (settingsTab && settingsTab.containerEl) {
 		// Force re-render by clearing target tab
@@ -832,15 +832,15 @@ function navigateToTaskProperties(plugin: TaskNotesPlugin): void {
 		const tabButton = settingsTab.containerEl.querySelector("#tab-button-task-properties") as HTMLElement;
 		if (tabButton) {
 			tabButton.click();
-			// After tab switch, scroll to the Type Property card
+			// After tab switch, scroll to the target card
 			setTimeout(() => {
-				const typeCard = settingsTab.containerEl.querySelector('[data-card-id="property-type"]') as HTMLElement;
-				if (typeCard) {
-					typeCard.scrollIntoView({ behavior: "smooth", block: "start" });
+				const targetCard = settingsTab.containerEl.querySelector(`[data-card-id="${cardId}"]`) as HTMLElement;
+				if (targetCard) {
+					targetCard.scrollIntoView({ behavior: "smooth", block: "start" });
 					// Brief highlight to draw attention
-					typeCard.style.outline = "2px solid var(--text-accent)";
-					typeCard.style.borderRadius = "var(--radius-m)";
-					setTimeout(() => { typeCard.style.outline = ""; typeCard.style.borderRadius = ""; }, 2000);
+					targetCard.style.outline = "2px solid var(--text-accent)";
+					targetCard.style.borderRadius = "var(--radius-m)";
+					setTimeout(() => { targetCard.style.outline = ""; targetCard.style.borderRadius = ""; }, 2000);
 				}
 			}, 200);
 		}

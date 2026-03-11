@@ -4,6 +4,24 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.57] - 2026-03-11
+
+### Added
+- **Note vs task differentiation in card views**: Task cards in TaskList, Kanban, and Calendar views now show a muted file-text icon for non-task items instead of a status dot and priority indicator. Tasks render identically to before. Uses the existing `isTask` detection from the task identification settings.
+- **Core card property injection**: TaskList, Kanban, and Calendar views now defensively inject `status`, `priority`, and `due` into `visibleProperties` regardless of `.base` file `order:` config, ensuring task cards always render essential fields.
+
+### Fixed
+- **Bulk tasking button missing from Upcoming View**: The toolbar injector checked the wrong DOM ancestor for the `tasknotes-view-active` class. Now uses `.closest()` to walk up the tree correctly.
+- **Settings "Configure" links targeting wrong property card**: Creator and Assignee "Configure" links in Team Attribution settings now navigate to the correct property card instead of always landing on the Type property.
+- **Quick assign not showing checked state**: Right-click quick assign menu now correctly detects existing assignees regardless of format (wikilinks, full paths, display names, aliases).
+- **Duplicate assignee entries**: Added three-layer deduplication to prevent duplicate assignee values in frontmatter — in the PersonGroupPicker wikilink converter, the TaskService custom frontmatter writer, and the context menu toggle.
+- **Convert-to-task formula metadata disappearing**: Task card signature now includes `isTask` flag and formula cache values, ensuring cards re-render when formulas settle after Bases re-indexes converted files.
+- **Formula computation was a no-op**: `computeFormulas()` in TaskListView and KanbanView was accessing `this.data.ctx.formulas` (always undefined) instead of `this.controller.ctx.formulas`.
+- **Converted files ignored by view refresh**: `onDataUpdated()` now always updates `relevantPathsCache` so newly converted files are recognized immediately.
+
+### Improved
+- **Docs updates**: Updated documentation for bulk tasking, upcoming view, kanban view, calendar views, task list, and shared vault settings with new screenshots and GIFs.
+
 ## [4.3.56] - 2026-02-26
 
 ### Fixed

@@ -171,6 +171,9 @@ This option is useful for project planning and visualizing how long tasks are ex
 
 These display options are preserved when you save a view, allowing you to create specialized calendar views that show only specific types of events and maintain those preferences across sessions.
 
+> [!note] Core card properties are always rendered
+> The Calendar view automatically includes **status**, **priority**, and **due** at render time so the status dot, priority indicator, and due date badge always appear on task cards — even if your `order:` list omits them. This does not modify your `.base` file. See [How Card Rendering Works](task-list.md#how-card-rendering-works) for the full explanation.
+
 ### OAuth Calendar Integration
 
 The Calendar View supports bidirectional synchronization with external calendar services through OAuth authentication:

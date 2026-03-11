@@ -4,7 +4,7 @@ import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
 import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
-import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
+import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES, CORE_TASK_CARD_FIELDS } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
@@ -45,17 +45,29 @@ export abstract class BasesViewBase extends Component {
 	// Filtered items cache — updated by subclass render(), consumed by handleBulkCreation()
 	protected lastFilteredDataItems: import("./helpers").BasesDataItem[] = [];
 
+	// When true, getVisibleProperties() ensures core task card fields (status,
+	// priority, due) are always present so cards render with full styling even
+	// if the .base file's order: config omits them. Subclasses that render task
+	// cards (TaskListView, KanbanView, CalendarView) set this to true.
+	protected ensureCoreCardProperties = false;
+
 	// Notification state - prevent duplicate notifications per session
 	private notifyChecked = false;
 
 	// Store reference to toolbar parent for cleanup
 	private toolbarParentEl: HTMLElement | null = null;
 
+	// Controller reference — needed to access ctx.formulas for formula computation.
+	// Stored in constructor, but also discoverable at runtime via getController()
+	// in case hot reload created a new plugin without recreating the Bases view instance.
+	protected controller: any;
+
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		// Call Component constructor
 		super();
 		this.plugin = plugin;
 		this.containerEl = containerEl;
+		this.controller = controller;
 
 		// Note: app, config, and data will be set by Bases when it creates the view
 		// We just need to ensure our types match the BasesView interface
@@ -66,6 +78,25 @@ export abstract class BasesViewBase extends Component {
 		// Bind createFileForView to ensure Bases can find it
 		// Some versions of Bases may check hasOwnProperty rather than prototype chain
 		this.createFileForView = this.createFileForView.bind(this);
+	}
+
+	/**
+	 * Get the Bases controller for this view. Uses stored reference first,
+	 * then falls back to workspace search (needed after hot reload, which
+	 * creates a new plugin instance but Bases keeps old view instances).
+	 */
+	protected getController(): any {
+		if (this.controller?.ctx) return this.controller;
+		// Hot reload fallback: find our controller by matching view references
+		const basesLeaves = (this as any).app?.workspace?.getLeavesOfType?.("bases") || [];
+		for (const leaf of basesLeaves) {
+			const ctrl = (leaf.view as any)?.controller;
+			if (ctrl?.view === this) {
+				this.controller = ctrl; // Cache for next call
+				return ctrl;
+			}
+		}
+		return this.controller;
 	}
 
 	/**
@@ -101,6 +132,7 @@ export abstract class BasesViewBase extends Component {
 		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			try {
+				this.updateRelevantPathsCache();
 				this.render();
 				// DISABLED: Old BasesNotificationModal auto-trigger
 				// Replaced by new Upcoming View + Toast system (see ADR-009)
@@ -515,7 +547,27 @@ export abstract class BasesViewBase extends Component {
 
 		this.taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
 			try {
-				const updatedTask = eventData?.task || eventData?.taskInfo;
+				const updatedTask = eventData?.task || eventData?.taskInfo || eventData?.updatedTask;
+
+				// Convert-to-task: Bases will eventually call onDataUpdated() when it
+				// detects the metadata change, but the properties in Bases' cache may
+				// still be stale when our render() reads them. Mark that a convert
+				// happened so the next onDataUpdated() forces a cache rebuild.
+				if (eventData?.converted) {
+					// Don't render immediately — Bases will call onDataUpdated()
+					// when it detects the frontmatter change. But the first
+					// onDataUpdated() render may lack formula values (Bases hasn't
+					// recomputed them yet). Schedule a delayed re-render to catch
+					// the fully-settled state with all formula metadata.
+					const win = this.containerEl?.ownerDocument?.defaultView || window;
+					win.setTimeout(() => {
+						if (this.rootElement?.isConnected) {
+							this.render();
+						}
+					}, 2000);
+					return;
+				}
+
 				if (!updatedTask?.path) return;
 
 				// Skip if view is not visible (no point updating hidden views)
@@ -717,6 +769,10 @@ export abstract class BasesViewBase extends Component {
 	/**
 	 * Get visible properties for rendering task cards.
 	 * Uses BasesView's config API directly.
+	 *
+	 * When `ensureCoreCardProperties` is true (task card views), core fields
+	 * (status, priority, due) are always included so cards render with full
+	 * styling even if the .base file's order: config omits them.
 	 */
 	protected getVisibleProperties(): string[] {
 		// Get ordered properties from Bases config (configured by user in Bases UI)
@@ -731,6 +787,20 @@ export abstract class BasesViewBase extends Component {
 			];
 			// Convert internal field names to user-configured property names
 			visibleProperties = convertInternalToUserProperties(internalDefaults, this.plugin);
+		}
+
+		// For task card views, ensure core card fields are always present so
+		// status dot, priority indicator, and due date badge always render.
+		if (this.ensureCoreCardProperties && visibleProperties.length > 0) {
+			const coreUserProps = convertInternalToUserProperties(
+				[...CORE_TASK_CARD_FIELDS],
+				this.plugin,
+			);
+			for (const prop of coreUserProps) {
+				if (!visibleProperties.includes(prop)) {
+					visibleProperties.push(prop);
+				}
+			}
 		}
 
 		return visibleProperties;

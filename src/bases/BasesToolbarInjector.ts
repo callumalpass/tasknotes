@@ -177,9 +177,11 @@ export class BasesToolbarInjector {
 		try {
 			const toolbars = document.querySelectorAll(".bases-toolbar");
 			for (const toolbar of toolbars) {
-				// toolbar and .bases-view are siblings under the same parent (.bases-page)
-				// so use toolbar.parentElement directly (not toolbar.closest(".bases-view")?.parentElement)
-				const parentEl = toolbar.parentElement;
+				// BasesViewBase adds .tasknotes-view-active to the .bases-view's parent
+				// (typically .view-content). The toolbar lives inside .bases-header which
+				// is a sibling of .bases-view — so toolbar.parentElement is bases-header,
+				// NOT the element with the active class. Walk up to find it.
+				const parentEl = toolbar.closest(".tasknotes-view-active") || toolbar.parentElement;
 				const isTNView = parentEl?.classList.contains("tasknotes-view-active") ?? false;
 
 				// CLEANUP: If BasesViewBase has claimed this view, remove any universal buttons

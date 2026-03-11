@@ -27,6 +27,34 @@ export interface TaskContextMenuOptions {
 	onUpdate?: () => void;
 }
 
+/**
+ * Check if a person/group is assigned by matching against stored assignee values.
+ * Handles multiple storage formats:
+ *  - Wikilinks: "[[User]]", "[[User-DB/People/User]]", "[[User|Display Name]]"
+ *  - Plain paths: "User-DB/People/User"
+ *  - Display names: "User"
+ */
+function isAssigneeMatch(currentAssignees: string[], pathNoExt: string, displayName: string): boolean {
+	// Extract just the filename (no folder, no extension) for matching
+	const fileName = pathNoExt.split("/").pop() || pathNoExt;
+
+	return currentAssignees.some(a => {
+		// Direct path match (stored as full or partial path)
+		if (a.includes(pathNoExt)) return true;
+		// Wikilink with just display name: "[[User]]"
+		if (a.includes(`[[${fileName}]]`)) return true;
+		if (a.includes(`[[${displayName}]]`)) return true;
+		// Wikilink with path: "[[User-DB/People/User]]"
+		if (a.includes(`[[${pathNoExt}]]`)) return true;
+		// Wikilink with alias: "[[User-DB/People/User|User]]"
+		if (a.includes(`[[${pathNoExt}|`)) return true;
+		if (a.includes(`[[${fileName}|`)) return true;
+		// Plain display name match
+		if (a === displayName || a === fileName) return true;
+		return false;
+	});
+}
+
 export class TaskContextMenu {
 	private menu: ContextMenu;
 	private options: TaskContextMenuOptions;
@@ -983,7 +1011,7 @@ export class TaskContextMenu {
 		if (persons.length > 0) {
 			for (const person of persons) {
 				const personPath = person.path.replace(/\.md$/, "");
-				const isAssigned = currentAssignees.some(a => a.includes(personPath));
+				const isAssigned = isAssigneeMatch(currentAssignees, personPath, person.displayName);
 
 				menu.addItem((subItem: any) => {
 					subItem.setTitle(person.displayName);
@@ -1002,7 +1030,7 @@ export class TaskContextMenu {
 		}
 		for (const group of groups) {
 			const groupPath = group.notePath.replace(/\.md$/, "");
-			const isAssigned = currentAssignees.some(a => a.includes(groupPath));
+			const isAssigned = isAssigneeMatch(currentAssignees, groupPath, group.displayName);
 
 			menu.addItem((subItem: any) => {
 				subItem.setTitle(group.displayName);
@@ -1068,8 +1096,8 @@ export class TaskContextMenu {
 					}
 					displayName = ""; // signal removal
 				} else {
-					// Add this assignee
-					const updated = [...currentAssignees, wikilink];
+					// Add this assignee (deduplicate to prevent double entries)
+					const updated = [...new Set([...currentAssignees, wikilink])];
 					if (updated.length === 1) {
 						fm[assigneeFieldName] = updated[0];
 					} else {

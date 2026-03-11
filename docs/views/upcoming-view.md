@@ -29,7 +29,7 @@ The Upcoming View groups your tasks by when they are due and lays them out in a 
 
 <!-- GIF: Scrolling through the Upcoming View showing overdue, today, tomorrow, and later sections -->
 
-![Upcoming view sections overview](../assets/screenshot-upcoming.png)
+![[file-20260311190040854.gif]]
 
 ## How to Open It
 
@@ -51,13 +51,10 @@ Tasks are sorted into categories based on their due date relative to today:
 
 ![Upcoming view overdue section](../assets/screenshot-upcoming.png)
 
-<!-- SCREENSHOT: Today section header with green styling -->
-
-![Upcoming view today section](../assets/screenshot-upcoming.png)
-
+{>>Today doesn't seem to have green styling<<}<!-- SCREENSHOT: Today section header with green styling -->
 <!-- SCREENSHOT: No Due Date section collapsed by default -->
 
-![Upcoming view no due date section](../assets/screenshot-upcoming.png)
+![[file-20260311190948351.png]]
 
 | Category | When | Color |
 |----------|------|-------|
@@ -87,7 +84,7 @@ A navigation bar at the top of the view lets you move through time and choose ho
 
 <!-- GIF: Clicking through period selectors (D, 3D, W, M) and watching the view update -->
 
-![Upcoming view with period selector toolbar](../assets/screenshot-upcoming.png)
+![[file-20260311190539170.gif]]
 
 **Right side -- period selectors:**
 
@@ -106,15 +103,13 @@ Your period selection is saved per device and remembered across sessions. In Lis
 
 <!-- GIF: Clicking "Add task" in the Tomorrow section and seeing the due date pre-filled -->
 
-![Task creation modal with pre-filled due date](../assets/upcoming-view/screenshot-task-create-modal.png)
+![[file-20260311190700799.gif]]
 
 Each time category section has an **Add task** button. Clicking it opens the task creation modal with the due date pre-filled based on which section you clicked. For example, clicking "Add task" in the Tomorrow section sets the due date to tomorrow.
 
 ## Context Menus
 
-<!-- GIF: Right-clicking a task and using the context menu to reschedule it -->
-
-![Upcoming view with task context options](../assets/screenshot-upcoming.png)
+<!-- GIF: Right-clicking a task and using the context menu to reschedule it -->{>>This should work really on any tasknote view - not sure it needs to be called out specifically for this view - maybe in a general part of view functionality/base functionality docs - that part instead<<}
 
 Right-click any item in the view to open a context menu:
 

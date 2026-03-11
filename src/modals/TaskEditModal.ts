@@ -2,7 +2,7 @@
 import { App, Notice, TFile, TAbstractFile, Setting, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
-import { TaskDependency, TaskInfo } from "../types";
+import { TaskDependency, TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import {
 	getCurrentTimestamp,
 	formatDateForStorage,
@@ -1347,6 +1347,17 @@ export class TaskEditModal extends TaskModal {
 				);
 			} else if (hasBlockingChanges) {
 				new Notice(this.t("modals.taskEdit.notices.dependenciesUpdateSuccess"));
+			}
+
+			// Convert-to-task: the file wasn't in any task view's relevantPathsCache,
+			// so the normal EVENT_TASK_UPDATED was silently ignored. Re-emit with a
+			// `converted` flag so views know to do a full refresh.
+			if (isConvertMode) {
+				this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+					path: updatedTask.path,
+					updatedTask,
+					converted: true,
+				});
 			}
 
 			this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };

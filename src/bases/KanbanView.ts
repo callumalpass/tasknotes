@@ -65,6 +65,7 @@ export class KanbanView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.ensureCoreCardProperties = true;
 		this.basesController = controller; // Store for groupBy detection
 		// BasesView now provides this.data, this.config, and this.app directly
 		(this.dataAdapter as any).basesView = this;
@@ -1930,15 +1931,21 @@ export class KanbanView extends BasesViewBase {
 	 * before swimlane/grouping reads them from cachedFormulaOutputs.
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		const ctxFormulas = (this.data as any)?.ctx?.formulas;
+		// Access formulas through the controller's context (not this.data — ctx lives on controller)
+		const ctxFormulas = this.getController()?.ctx?.formulas;
 		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const itemFormulaResults = item.basesData?.formulaResults;
-			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+			if (!item.basesData) continue;
+			if (!item.basesData.formulaResults) {
+				item.basesData.formulaResults = { cachedFormulaOutputs: {} };
+			} else if (!item.basesData.formulaResults.cachedFormulaOutputs) {
+				item.basesData.formulaResults.cachedFormulaOutputs = {};
+			}
+			const itemFormulaResults = item.basesData.formulaResults;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];

@@ -66,15 +66,12 @@ flowchart TB
 ```
 
 **How it works in three steps:**
-
+{>>Shouldn't we explain that you also need person notes and optionally group notes?????<<}
 1. **Register once** — each device gets a UUID stored in `localStorage`. You map it to your person note in Settings > Team & Attribution.
 2. **Create tasks normally** — TaskNotes auto-fills the `creator` field with your person note. Assign tasks to people or groups via the picker.
 3. **Notifications filter automatically** — enable "Only notify for my tasks" and you only see notifications for tasks assigned to you (or a group you belong to).
 
 <!-- SCREENSHOT: Team & Attribution settings tab showing device-to-person mapping -->
-
-![Team and attribution settings panel](../assets/screenshot-settings-team.png)
-
 ## Device Identity
 
 Every device that opens the vault gets a unique UUID stored in `localStorage`:
@@ -106,6 +103,7 @@ TaskNotes also detects a human-readable device name from the platform (e.g., "Wi
 > You can override this with a custom name in Settings > Team & Attribution.
 
 <!-- GIF: Registering a device to a person note in the Your Identity section -->
+![[file-20260311191511874.gif]]
 
 > [!info]- Your Identity section in settings
 > The "Your Identity" section shows your device's UUID, detected platform name, and which person note you are mapped to. From here you can:
@@ -204,6 +202,7 @@ TaskNotes uses two frontmatter fields for attribution:
 Both are stored as wikilinks (e.g., `[[Alice Chen]]`). The assignee field can hold a single person, a group, or an array of multiple assignees.
 
 <!-- GIF: Using the person/group picker in a task modal to assign a task -->
+![[file-20260311193022613.gif]]
 
 **Person/group picker:** Task modals and the bulk tasking action bar include a picker that shows all discovered persons and groups. Start typing to filter, or scroll through the list. Groups show their member count.
 
@@ -212,7 +211,7 @@ Both are stored as wikilinks (e.g., `[[Alice Chen]]`). The assignee field can ho
 
 ## Assignee-Aware Notifications
 
-When "Only notify for my tasks" is enabled, the notification system checks each task before showing it:
+{>>Need to link to other relevant documentation<<}When "Only notify for my tasks" is enabled, the notification system checks each task before showing it:
 
 ```mermaid
 flowchart LR

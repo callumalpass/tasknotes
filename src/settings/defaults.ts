@@ -26,6 +26,18 @@ export const DEFAULT_INTERNAL_VISIBLE_PROPERTIES: (keyof FieldMapping)[] = [
 	"contexts",
 ];
 
+/**
+ * Core fields that task card views (TaskList, Kanban, Calendar) always need
+ * for proper rendering — status dot, priority indicator, due date badge.
+ * These are injected into visibleProperties regardless of the .base file's
+ * order: config so that task cards never appear as plain text.
+ */
+export const CORE_TASK_CARD_FIELDS: (keyof FieldMapping)[] = [
+	"status",
+	"priority",
+	"due",
+];
+
 // Default field mapping maintains backward compatibility
 export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	title: "title",

@@ -468,6 +468,10 @@ export interface TaskInfo {
 	/** Per-task overrides: maps internal field key to custom frontmatter property name.
 	 *  e.g., { due: "deadline", scheduled: "review_date" } */
 	fieldOverrides?: Record<string, string>;
+	/** Whether file has the task identification property. When false, card views
+	 *  render a note-style icon instead of status dot / priority indicator.
+	 *  Defaults to true when unset (backward compatibility). */
+	isTask?: boolean;
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {

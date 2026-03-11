@@ -43,6 +43,9 @@ Access these options through the Bases view settings panel:
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
+> [!note] Core card properties are always rendered
+> The Kanban view automatically includes **status**, **priority**, and **due** at render time so the status dot, priority indicator, and due date badge always appear on task cards — even if your `order:` list omits them. This does not modify your `.base` file. See [How Card Rendering Works](task-list.md#how-card-rendering-works) for the full explanation.
+
 <!-- GIF: Dragging a task card from the "Open" column to "In Progress" and seeing the status update -->
 
 ![Kanban board with task cards in status columns](../assets/kanban-view/screenshot-kanban.png)
