@@ -797,6 +797,13 @@ describe('TaskService', () => {
       task = TaskFactory.createTask({ archived: false, tags: ['task'] });
       mockFile = new TFile(task.path);
       mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+      mockPlugin.app.fileManager.renameFile = jest.fn().mockResolvedValue(undefined);
+      mockPlugin.cacheManager.waitForFreshTaskData = jest.fn().mockResolvedValue(undefined);
+      mockPlugin.taskCalendarSyncService = {
+        isEnabled: jest.fn().mockReturnValue(false),
+        deleteTaskFromCalendar: jest.fn().mockResolvedValue(true),
+        updateTaskInCalendar: jest.fn().mockResolvedValue(undefined),
+      };
     });
 
     it('should archive an unarchived task', async () => {
@@ -837,6 +844,64 @@ describe('TaskService', () => {
       const result = await taskService.toggleArchive(task);
 
       expect(result.tags).toContain('custom-archived');
+    });
+
+    it('should preserve the Google Calendar event ID across an archive move and clear it after successful deletion', async () => {
+      const taskWithCalendar = TaskFactory.createTask({
+        path: 'TaskNotes/Tasks/archive-me.md',
+        archived: false,
+        tags: ['task'],
+        googleCalendarEventId: 'master-event-id',
+      });
+      const originalFile = new TFile(taskWithCalendar.path);
+      const archivedPath = 'TaskNotes/Archive/archive-me.md';
+      const archivedFile = new TFile(archivedPath);
+      let renamed = false;
+
+      mockPlugin.settings.moveArchivedTasks = true;
+      mockPlugin.settings.archiveFolder = 'TaskNotes/Archive';
+      mockPlugin.app.vault.getAbstractFileByPath.mockImplementation((path: string) => {
+        if (path === taskWithCalendar.path) {
+          return originalFile;
+        }
+        if (path === archivedPath && renamed) {
+          return archivedFile;
+        }
+        return null;
+      });
+      mockPlugin.app.fileManager.renameFile.mockImplementation(async () => {
+        renamed = true;
+      });
+      mockPlugin.taskCalendarSyncService.isEnabled.mockReturnValue(true);
+
+      const result = await taskService.toggleArchive(taskWithCalendar);
+
+      expect(mockPlugin.taskCalendarSyncService.deleteTaskFromCalendar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: archivedPath,
+          googleCalendarEventId: 'master-event-id',
+        })
+      );
+      expect(result.path).toBe(archivedPath);
+      expect(result.archived).toBe(true);
+      expect(result.googleCalendarEventId).toBeUndefined();
+    });
+
+    it('should retry archive-time Google Calendar deletion and keep the event ID when cleanup still fails', async () => {
+      const taskWithCalendar = TaskFactory.createTask({
+        archived: false,
+        tags: ['task'],
+        googleCalendarEventId: 'master-event-id',
+      });
+
+      mockPlugin.taskCalendarSyncService.isEnabled.mockReturnValue(true);
+      mockPlugin.taskCalendarSyncService.deleteTaskFromCalendar.mockResolvedValue(false);
+
+      const result = await taskService.toggleArchive(taskWithCalendar);
+
+      expect(mockPlugin.taskCalendarSyncService.deleteTaskFromCalendar).toHaveBeenCalledTimes(3);
+      expect(result.archived).toBe(true);
+      expect(result.googleCalendarEventId).toBe('master-event-id');
     });
   });
 

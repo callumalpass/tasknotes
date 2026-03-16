@@ -54,6 +54,43 @@ export class TaskService {
 
 	constructor(private plugin: TaskNotesPlugin) {}
 
+	private hasGoogleCalendarLink(task: TaskInfo): boolean {
+		return !!task.googleCalendarEventId;
+	}
+
+	private createArchiveCalendarDeletionTask(task: TaskInfo, updatedTask: TaskInfo): TaskInfo {
+		return {
+			...updatedTask,
+			googleCalendarEventId: task.googleCalendarEventId,
+		};
+	}
+
+	private clearGoogleCalendarMetadata(task: TaskInfo): void {
+		task.googleCalendarEventId = undefined;
+	}
+
+	private async deleteArchivedTaskFromCalendarWithRetry(
+		task: TaskInfo,
+		maxAttempts = 3
+	): Promise<boolean> {
+		if (!this.plugin.taskCalendarSyncService) {
+			return true;
+		}
+
+		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+			const deleted = await this.plugin.taskCalendarSyncService.deleteTaskFromCalendar(task);
+			if (deleted) {
+				return true;
+			}
+		}
+
+		console.warn("Failed to delete archived task from Google Calendar after retries:", {
+			taskPath: task.path,
+			eventId: task.googleCalendarEventId,
+		});
+		return false;
+	}
+
 	private translate(key: TranslationKey, variables?: Record<string, any>): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
@@ -1045,6 +1082,21 @@ export class TaskService {
 			}
 		}
 
+		let archiveCalendarCleanupComplete = true;
+		if (this.plugin.taskCalendarSyncService?.isEnabled() && updatedTask.archived) {
+			if (this.hasGoogleCalendarLink(task)) {
+				const archiveCalendarTask = this.createArchiveCalendarDeletionTask(
+					task,
+					updatedTask
+				);
+				archiveCalendarCleanupComplete =
+					await this.deleteArchivedTaskFromCalendarWithRetry(archiveCalendarTask);
+				if (archiveCalendarCleanupComplete) {
+					this.clearGoogleCalendarMetadata(updatedTask);
+				}
+			}
+		}
+
 		// Step 3: Wait for fresh data and update cache
 		try {
 			// Wait for the metadata cache to have the updated data
@@ -1084,20 +1136,18 @@ export class TaskService {
 		// Archiving removes from calendar (archived tasks aren't synced)
 		// Unarchiving may re-add to calendar
 		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
-			if (updatedTask.archived && task.googleCalendarEventId) {
-				// Task is being archived - delete the calendar event
-				this.plugin.taskCalendarSyncService
-					.deleteTaskFromCalendar(updatedTask)
-					.catch((error) => {
-						console.warn("Failed to delete archived task from Google Calendar:", error);
-					});
-			} else if (!updatedTask.archived) {
+			if (!updatedTask.archived) {
 				// Task is being unarchived - sync it back if eligible
 				this.plugin.taskCalendarSyncService
 					.updateTaskInCalendar(updatedTask, task)
 					.catch((error) => {
 						console.warn("Failed to sync unarchived task to Google Calendar:", error);
 					});
+			} else if (!archiveCalendarCleanupComplete && this.hasGoogleCalendarLink(updatedTask)) {
+				console.warn(
+					"Archived task still has Google Calendar links and will need retry cleanup:",
+					updatedTask.path
+				);
 			}
 		}
 
