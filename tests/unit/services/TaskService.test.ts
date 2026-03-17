@@ -887,7 +887,7 @@ describe('TaskService', () => {
       expect(result.googleCalendarEventId).toBeUndefined();
     });
 
-    it('should retry archive-time Google Calendar deletion and keep the event ID when cleanup still fails', async () => {
+    it('should keep the event ID when archive-time Google Calendar deletion fails', async () => {
       const taskWithCalendar = TaskFactory.createTask({
         archived: false,
         tags: ['task'],
@@ -899,7 +899,7 @@ describe('TaskService', () => {
 
       const result = await taskService.toggleArchive(taskWithCalendar);
 
-      expect(mockPlugin.taskCalendarSyncService.deleteTaskFromCalendar).toHaveBeenCalledTimes(3);
+      expect(mockPlugin.taskCalendarSyncService.deleteTaskFromCalendar).toHaveBeenCalledTimes(1);
       expect(result.archived).toBe(true);
       expect(result.googleCalendarEventId).toBe('master-event-id');
     });

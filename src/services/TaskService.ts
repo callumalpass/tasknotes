@@ -69,28 +69,17 @@ export class TaskService {
 		task.googleCalendarEventId = undefined;
 	}
 
-	private async deleteArchivedTaskFromCalendarWithRetry(
-		task: TaskInfo,
-		maxAttempts = 3
-	): Promise<boolean> {
+	private async deleteArchivedTaskFromCalendar(task: TaskInfo): Promise<boolean> {
 		if (!this.plugin.taskCalendarSyncService) {
 			return true;
 		}
 
-		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-			const deleted = await this.plugin.taskCalendarSyncService.deleteTaskFromCalendar(task);
-			if (deleted) {
-				return true;
-			}
-
-			if (attempt < maxAttempts) {
-				// Brief backoff gives transient API failures a chance to clear
-				// before we fall back to the longer auto-archive retry cycle.
-				await new Promise((resolve) => setTimeout(resolve, attempt * 500));
-			}
+		const deleted = await this.plugin.taskCalendarSyncService.deleteTaskFromCalendar(task);
+		if (deleted) {
+			return true;
 		}
 
-		console.warn("Failed to delete archived task from Google Calendar after retries:", {
+		console.warn("Failed to delete archived task from Google Calendar during archive:", {
 			taskPath: task.path,
 			eventId: task.googleCalendarEventId,
 		});
@@ -1096,7 +1085,7 @@ export class TaskService {
 					updatedTask
 				);
 				archiveCalendarCleanupComplete =
-					await this.deleteArchivedTaskFromCalendarWithRetry(archiveCalendarTask);
+					await this.deleteArchivedTaskFromCalendar(archiveCalendarTask);
 				if (archiveCalendarCleanupComplete) {
 					this.clearGoogleCalendarMetadata(updatedTask);
 				}
