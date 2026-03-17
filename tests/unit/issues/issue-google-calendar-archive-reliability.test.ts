@@ -112,6 +112,8 @@ describe("Google Calendar archive reliability", () => {
 			archived: false,
 			googleCalendarEventId: "master-event-id",
 		});
+		// Simulate the state returned from TaskService when archive retries were exhausted
+		// and the Google Calendar link was intentionally preserved for later cleanup.
 		const archivedTask: TaskInfo = {
 			...currentTask,
 			archived: true,

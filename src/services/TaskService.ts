@@ -82,6 +82,12 @@ export class TaskService {
 			if (deleted) {
 				return true;
 			}
+
+			if (attempt < maxAttempts) {
+				// Brief backoff gives transient API failures a chance to clear
+				// before we fall back to the longer auto-archive retry cycle.
+				await new Promise((resolve) => setTimeout(resolve, attempt * 500));
+			}
 		}
 
 		console.warn("Failed to delete archived task from Google Calendar after retries:", {
