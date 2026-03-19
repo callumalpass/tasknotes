@@ -61,6 +61,7 @@ import { FilterService } from "./services/FilterService";
 import { TaskStatsService } from "./services/TaskStatsService";
 import { ViewPerformanceService } from "./services/ViewPerformanceService";
 import { AutoArchiveService } from "./services/AutoArchiveService";
+import { AttachmentService } from "./services/AttachmentService";
 import { ViewStateManager } from "./services/ViewStateManager";
 import { createTaskLinkOverlay, dispatchTaskUpdate } from "./editor/TaskLinkOverlay";
 import { createReadingModeTaskLinkProcessor } from "./editor/ReadingModeTaskLinkProcessor";
@@ -169,6 +170,7 @@ export default class TaskNotesPlugin extends Plugin {
 	projectSubtasksService: ProjectSubtasksService;
 	expandedProjectsService: ExpandedProjectsService;
 	autoArchiveService: AutoArchiveService;
+	attachmentService: AttachmentService;
 	viewPerformanceService: ViewPerformanceService;
 
 	// Task selection service for batch operations
@@ -357,6 +359,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.projectSubtasksService = new ProjectSubtasksService(this);
 		this.expandedProjectsService = new ExpandedProjectsService(this);
 		this.autoArchiveService = new AutoArchiveService(this);
+		this.attachmentService = new AttachmentService(this.app);
 
 		// Initialize task selection service for batch operations
 		const { TaskSelectionService } = require("./services/TaskSelectionService");

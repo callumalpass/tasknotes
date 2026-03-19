@@ -32,6 +32,7 @@ import {
 } from "../ui/renderers/linkRenderer";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
+import { AttachmentArea } from "../ui/AttachmentArea";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 
 interface DependencyItem {
@@ -439,6 +440,8 @@ export abstract class TaskModal extends Modal {
 	protected actionBar: HTMLElement;
 	protected detailsContainer: HTMLElement;
 	protected isExpanded = false;
+	protected attachments: string[] = [];
+	protected attachmentArea: AttachmentArea | null = null;
 
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app);
@@ -580,6 +583,44 @@ export abstract class TaskModal extends Modal {
 	 */
 	protected createAdditionalSections(container: HTMLElement): void {
 		// Override in subclasses (e.g., TaskEditModal adds completions calendar and metadata)
+	}
+
+	/**
+	 * Create an attachment area in the given container.
+	 * @param container - The DOM element to append the attachment area to
+	 * @param sourceFilePath - The vault path used for determining attachment storage location
+	 */
+	protected createAttachmentArea(container: HTMLElement, sourceFilePath: string): void {
+		this.attachmentArea = new AttachmentArea(container, {
+			attachments: this.attachments,
+			attachmentService: this.plugin.attachmentService,
+			dropzoneText: this.t("ui.attachmentArea.dropzoneText"),
+			contextMenuOpenLabel: this.t("ui.attachmentArea.contextMenuOpen"),
+			contextMenuRemoveLabel: this.t("ui.attachmentArea.contextMenuRemove"),
+			contextMenuDeleteLabel: this.t("ui.attachmentArea.contextMenuDelete"),
+			onAdd: async (files) => {
+				for (const file of files) {
+					const path = await this.plugin.attachmentService.saveAttachment(
+						file,
+						sourceFilePath,
+					);
+					this.attachments.push(path);
+				}
+				this.attachmentArea?.update(this.attachments);
+			},
+			onRemove: (path) => {
+				this.attachments = this.plugin.attachmentService.removeReference(this.attachments, path);
+				this.attachmentArea?.update(this.attachments);
+			},
+			onDelete: async (path) => {
+				this.attachments = this.plugin.attachmentService.removeReference(this.attachments, path);
+				await this.plugin.attachmentService.deleteFile(path);
+				this.attachmentArea?.update(this.attachments);
+			},
+			onOpen: (path) => {
+				this.app.workspace.openLinkText(path, "");
+			},
+		});
 	}
 
 	protected createTitleInput(container: HTMLElement): void {

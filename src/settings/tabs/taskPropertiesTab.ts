@@ -207,6 +207,11 @@ export function renderTaskPropertiesTab(
 		translate("settings.taskProperties.properties.blockedBy.name"),
 		translate("settings.taskProperties.properties.blockedBy.description"));
 
+	// Attachments Property Card
+	renderMetadataPropertyCard(container, plugin, save, translate, "attachments",
+		translate("settings.taskProperties.properties.attachments.name"),
+		translate("settings.taskProperties.properties.attachments.description"));
+
 	// ===== FEATURE PROPERTIES SECTION =====
 	createSectionHeader(container, translate("settings.taskProperties.sections.featureProperties"));
 	createHelpText(container, translate("settings.taskProperties.sections.featurePropertiesDesc"));

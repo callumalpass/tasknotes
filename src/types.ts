@@ -111,6 +111,7 @@ export type FilterProperty =
 	| "projects"
 	| "blockedBy"
 	| "blocking"
+	| "attachments"
 	// Date properties
 	| "due"
 	| "scheduled"
@@ -233,6 +234,13 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	{
 		id: "blocking",
 		label: "Blocking",
+		category: "select",
+		supportedOperators: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
+		valueInputType: "text",
+	},
+	{
+		id: "attachments",
+		label: "Attachments",
 		category: "select",
 		supportedOperators: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
 		valueInputType: "text",
@@ -465,6 +473,7 @@ export interface TaskInfo {
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
 	isBlocking?: boolean; // True if this task blocks at least one other task
 	details?: string; // Optional task body content
+	attachments?: string[]; // Vault-relative paths to attached files
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
@@ -677,6 +686,7 @@ export interface FieldMapping {
 	icsEventTag: string; // Tag used for ICS event-related content
 	googleCalendarEventId: string; // For Google Calendar sync (stores event ID)
 	reminders: string; // For task reminders
+	attachments: string; // For file attachments (vault-relative paths)
 }
 
 export interface StatusConfig {

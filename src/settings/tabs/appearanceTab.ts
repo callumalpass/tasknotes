@@ -369,6 +369,18 @@ export function renderAppearanceTab(
 					},
 				})
 			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.appearance.defaultEventVisibility.showAttachmentIndicator.name"),
+					desc: translate("settings.appearance.defaultEventVisibility.showAttachmentIndicator.description"),
+					getValue: () => plugin.settings.calendarViewSettings.showAttachmentIndicator,
+					setValue: async (value: boolean) => {
+						plugin.settings.calendarViewSettings.showAttachmentIndicator = value;
+						save();
+					},
+				})
+			);
 		}
 	);
 

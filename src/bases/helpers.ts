@@ -97,6 +97,7 @@ function createTaskInfoFromProperties(
 		"skipped_instances",
 		"blockedBy",
 		"blocking",
+		"attachments",
 	]);
 
 	const customProperties: Record<string, any> = {};
@@ -163,6 +164,9 @@ function createTaskInfoFromProperties(
 		blocking: blockingTasks.length > 0 ? blockingTasks : undefined,
 		isBlocked: isBlocked,
 		isBlocking: isBlocking,
+		attachments: Array.isArray(props.attachments) && props.attachments.length > 0
+			? props.attachments
+			: undefined,
 		customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined,
 		basesData: basesItem.basesData,
 	};

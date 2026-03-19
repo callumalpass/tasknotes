@@ -177,6 +177,12 @@ export class FieldMapper {
 			}
 		}
 
+		if (frontmatter[this.mapping.attachments] !== undefined) {
+			const attachments = frontmatter[this.mapping.attachments];
+			// Ensure attachments is always an array
+			mapped.attachments = Array.isArray(attachments) ? attachments : [attachments];
+		}
+
 		// Handle tags array (includes archive tag)
 		if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
 			mapped.tags = frontmatter.tags;
@@ -287,6 +293,10 @@ export class FieldMapper {
 
 		if (taskData.reminders !== undefined && taskData.reminders.length > 0) {
 			frontmatter[this.mapping.reminders] = taskData.reminders;
+		}
+
+		if (taskData.attachments !== undefined && taskData.attachments.length > 0) {
+			frontmatter[this.mapping.attachments] = taskData.attachments;
 		}
 
 		// Handle tags (merge archive status into tags array)

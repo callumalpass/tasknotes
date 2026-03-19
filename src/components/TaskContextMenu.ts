@@ -18,6 +18,7 @@ import {
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
+import { openFileSelector } from "../modals/FileSelectorModal";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -270,7 +271,14 @@ export class TaskContextMenu {
 			this.addDependencyMenuItems(submenu, task, plugin);
 		});
 
-		// this.menu.addSeparator();
+		// Attachments submenu
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.attachments.title"));
+			item.setIcon("paperclip");
+
+			const submenu = (item as any).setSubmenu();
+			this.addAttachmentMenuItems(submenu, task, plugin);
+		});
 
 		// Organization submenu (projects and subtasks)
 		this.menu.addItem((item) => {
@@ -910,6 +918,103 @@ export class TaskContextMenu {
 
 	private getDependencyKey(entry: TaskDependency): string {
 		return `${entry.uid}::${entry.reltype}::${entry.gap ?? ""}`;
+	}
+
+	private addAttachmentMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+		// Add from vault
+		menu.addItem((subItem: any) => {
+			subItem.setTitle(this.t("contextMenus.task.attachments.addFromVault"));
+			subItem.setIcon("plus");
+			subItem.onClick(() => {
+				this.menu.hide();
+				openFileSelector(plugin, async (file) => {
+					if (!file) return;
+					try {
+						const currentAttachments = task.attachments || [];
+						if (currentAttachments.includes(file.path)) {
+							new Notice(this.t("contextMenus.task.attachments.notices.alreadyAttached"));
+							return;
+						}
+						const updated = [...currentAttachments, file.path];
+						await plugin.updateTaskProperty(task, "attachments", updated);
+						const displayName = plugin.attachmentService.getDisplayName(file.path);
+						new Notice(this.t("contextMenus.task.attachments.notices.added", { name: displayName }));
+						this.options.onUpdate?.();
+					} catch (error) {
+						console.error("Error adding attachment:", error);
+						new Notice(this.t("contextMenus.task.attachments.notices.updateFailed"));
+					}
+				}, {
+					title: this.t("contextMenus.task.attachments.addFromVault"),
+					filter: "all",
+				});
+			});
+		});
+
+		// List existing attachments with actions
+		const attachments = task.attachments || [];
+		if (attachments.length > 0) {
+			menu.addSeparator();
+
+			for (const path of attachments) {
+				const displayName = plugin.attachmentService.getDisplayName(path);
+
+				menu.addItem((subItem: any) => {
+					subItem.setTitle(displayName);
+					subItem.setIcon(plugin.attachmentService.getIconName(path));
+
+					const attachmentSubmenu = subItem.setSubmenu();
+
+					attachmentSubmenu.addItem((action: any) => {
+						action.setTitle(this.t("contextMenus.task.attachments.openAttachment", { name: displayName }));
+						action.setIcon("external-link");
+						action.onClick(() => {
+							plugin.app.workspace.openLinkText(path, "");
+						});
+					});
+
+					attachmentSubmenu.addSeparator();
+
+					attachmentSubmenu.addItem((action: any) => {
+						action.setTitle(this.t("contextMenus.task.attachments.removeAttachment", { name: displayName }));
+						action.setIcon("link-2-off");
+						action.onClick(async () => {
+							try {
+								const updated = plugin.attachmentService.removeReference(attachments, path);
+								await plugin.updateTaskProperty(task, "attachments", updated.length > 0 ? updated : undefined);
+								new Notice(this.t("contextMenus.task.attachments.notices.removed", { name: displayName }));
+								this.options.onUpdate?.();
+							} catch (error) {
+								console.error("Error removing attachment:", error);
+								new Notice(this.t("contextMenus.task.attachments.notices.updateFailed"));
+							}
+						});
+					});
+
+					attachmentSubmenu.addItem((action: any) => {
+						action.setTitle(this.t("contextMenus.task.attachments.removeAndDelete", { name: displayName }));
+						action.setIcon("trash-2");
+						action.onClick(async () => {
+							try {
+								const updated = plugin.attachmentService.removeReference(attachments, path);
+								await plugin.updateTaskProperty(task, "attachments", updated.length > 0 ? updated : undefined);
+								await plugin.attachmentService.deleteFile(path);
+								new Notice(this.t("contextMenus.task.attachments.notices.deleted", { name: displayName }));
+								this.options.onUpdate?.();
+							} catch (error) {
+								console.error("Error deleting attachment:", error);
+								new Notice(this.t("contextMenus.task.attachments.notices.updateFailed"));
+							}
+						});
+					});
+				});
+			}
+		} else {
+			menu.addItem((subItem: any) => {
+				subItem.setTitle(this.t("contextMenus.task.attachments.noAttachments"));
+				subItem.setDisabled(true);
+			});
+		}
 	}
 
 	private addOrganizationMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {

@@ -702,6 +702,9 @@ export class TaskCreationModal extends TaskModal {
 		) {
 			this.renderProjectsList();
 		}
+
+		// Attachment area in the left column (always visible)
+		this.createAttachmentArea(container, this.plugin.settings.tasksFolder || "");
 	}
 
 	private createNaturalLanguageInput(container: HTMLElement): void {
@@ -1332,6 +1335,10 @@ export class TaskCreationModal extends TaskModal {
 			// Add user fields as custom frontmatter properties
 			customFrontmatter: this.buildCustomFrontmatter(),
 		};
+
+		if (this.attachments.length > 0) {
+			taskData.attachments = this.attachments;
+		}
 
 		const blockedDependencies = this.blockedByItems.map((item) => ({
 			...item.dependency,
