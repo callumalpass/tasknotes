@@ -47,6 +47,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	icsEventTag: "ics_event",
 	googleCalendarEventId: "googleCalendarEventId",
 	reminders: "reminders",
+	attachments: "attachments",
 };
 
 // Default status configuration matches current hardcoded behavior
@@ -164,6 +165,8 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	defaultShowTimeEntries: false,
 	defaultShowRecurring: true,
 	defaultShowICSEvents: true,
+	// Indicator settings
+	showAttachmentIndicator: true,
 	// Timeblocking settings
 	enableTimeblocking: false, // Disabled by default - toggleable feature
 	defaultShowTimeblocks: true,

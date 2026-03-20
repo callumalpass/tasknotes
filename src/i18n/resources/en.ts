@@ -1000,6 +1000,11 @@ export const en: TranslationTree = {
 					description:
 						"Tag identifying notes created from ICS calendar events. Used to distinguish calendar-generated notes from regular tasks.",
 				},
+				attachments: {
+					name: "Attachments",
+					description:
+						"Vault-relative paths to files attached to this task. Stored as a list of file paths. Managed through the attachment area in task modals.",
+				},
 			},
 			// Card-specific labels
 			statusCard: {
@@ -1148,6 +1153,7 @@ export const en: TranslationTree = {
 					icsEventId: "ICS Event ID",
 					icsEventTag: "ICS Event Tag",
 					reminders: "Reminders",
+					attachments: "Attachments",
 				},
 			},
 			customUserFields: {
@@ -1344,6 +1350,10 @@ export const en: TranslationTree = {
 				showICSEvents: {
 					name: "Show ICS events",
 					description: "Display events from ICS subscriptions by default",
+				},
+				showAttachmentIndicator: {
+					name: "Show attachment indicator",
+					description: "Display a paperclip icon on calendar events that have file attachments",
 				},
 			},
 			timeSettings: {
@@ -2720,6 +2730,21 @@ export const en: TranslationTree = {
 						updateFailed: "Failed to update dependencies",
 					},
 				},
+			attachments: {
+				title: "Attachments",
+				addAttachment: "Attach file…",
+				openAttachment: "Open {name}",
+				removeAttachment: "Remove {name}",
+				removeAndDelete: "Remove and delete {name}",
+				noAttachments: "No attachments",
+				notices: {
+					added: "Attachment added: {name}",
+					removed: "Attachment removed: {name}",
+					deleted: "Attachment removed and file deleted: {name}",
+					updateFailed: "Failed to update attachments",
+					alreadyAttached: "File is already attached",
+				},
+			},
 			organization: {
 				title: "Organization",
 				projects: "Projects",
@@ -2965,11 +2990,21 @@ export const en: TranslationTree = {
 			blockedBadgeTooltip: "This task is waiting on another task",
 			blockingBadge: "Blocking",
 			blockingBadgeTooltip: "This task is blocking another task",
+			attachmentBadgeSingle: "1 attachment",
+			attachmentBadgePlural: "{count} attachments",
+			attachmentBadgeTooltipSingle: "This task has 1 attached file",
+			attachmentBadgeTooltipPlural: "This task has {count} attached files",
 			blockingToggle: "Blocking {count} tasks",
 			loadingDependencies: "Loading dependencies...",
 			blockingEmpty: "No dependent tasks",
 			blockingLoadError: "Failed to load dependencies",
 			googleCalendarSyncTooltip: "Synced to Google Calendar",
+		},
+		attachmentArea: {
+			dropzoneText: "Drop files or click to attach",
+			contextMenuOpen: "Open file",
+			contextMenuRemove: "Remove attachment",
+			contextMenuDelete: "Remove and delete file",
 		},
 		propertyEventCard: {
 			unknownFile: "Unknown file",

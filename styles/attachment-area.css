@@ -1,0 +1,102 @@
+/* Attachment Area Component */
+
+.tasknotes-plugin .attachment-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.tasknotes-plugin .attachment-area__dropzone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    border: 2px dashed var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+    position: relative;
+}
+
+.tasknotes-plugin .attachment-area__dropzone:hover,
+.tasknotes-plugin .attachment-area__dropzone--active {
+    border-color: var(--interactive-accent);
+    background-color: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .attachment-area__dropzone-icon {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .attachment-area__dropzone-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.tasknotes-plugin .attachment-area__file-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tasknotes-plugin .attachment-area__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.tasknotes-plugin .attachment-area__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-s);
+    background-color: var(--background-secondary);
+    font-size: var(--font-ui-smaller);
+    max-width: 200px;
+}
+
+.tasknotes-plugin .attachment-area__chip-icon {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .attachment-area__chip-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.tasknotes-plugin .attachment-area__chip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .attachment-area__chip-name:hover {
+    color: var(--interactive-accent);
+    text-decoration: underline;
+}
+
+.tasknotes-plugin .attachment-area__chip-remove {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-weight: bold;
+    flex-shrink: 0;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+.tasknotes-plugin .attachment-area__chip-remove:hover {
+    color: var(--text-error);
+}

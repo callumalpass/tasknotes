@@ -1882,6 +1882,9 @@ export class CalendarView extends BasesViewBase {
 				});
 			}
 
+			// Add attachment indicator icon in grid views
+			this.addAttachmentIndicator(arg.el, taskInfo, arg.view.type);
+
 			// Set editable based on event type
 			if (arg.event.setProp) {
 				switch (eventType) {
@@ -2111,6 +2114,38 @@ export class CalendarView extends BasesViewBase {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Add a paperclip icon to calendar events that have attachments (grid views only).
+	 */
+	private addAttachmentIndicator(el: HTMLElement, taskInfo: TaskInfo, viewType: string): void {
+		if (
+			!this.plugin.settings.calendarViewSettings.showAttachmentIndicator ||
+			!taskInfo.attachments?.length ||
+			viewType === 'listWeek'
+		) {
+			return;
+		}
+
+		const titleEl = el.querySelector('.fc-event-title');
+		if (!titleEl) return;
+
+		const doc = el.ownerDocument;
+		const iconContainer = doc.createElement('span');
+		iconContainer.style.marginLeft = '4px';
+		iconContainer.style.display = 'inline-flex';
+		iconContainer.style.alignItems = 'center';
+
+		const iconEl = doc.createElement('span');
+		iconEl.style.width = '12px';
+		iconEl.style.height = '12px';
+		iconEl.style.display = 'inline-flex';
+		iconEl.style.flexShrink = '0';
+		setIcon(iconEl, 'paperclip');
+
+		iconContainer.appendChild(iconEl);
+		titleEl.appendChild(iconContainer);
 	}
 }
 

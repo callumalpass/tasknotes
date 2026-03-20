@@ -226,6 +226,7 @@ export class FilterUtils {
 			projects: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
 			blockedBy: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
 			blocking: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
+			attachments: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
 
 			// Date properties
 			due: [
@@ -350,6 +351,8 @@ export class FilterUtils {
 				return task.blockedBy?.map((dependency) => dependency.uid) || [];
 			case "blocking":
 				return task.blocking || [];
+			case "attachments":
+				return task.attachments || [];
 			case "due":
 				return task.due;
 			case "scheduled":

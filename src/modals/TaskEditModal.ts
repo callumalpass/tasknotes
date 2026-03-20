@@ -117,6 +117,9 @@ export class TaskEditModal extends TaskModal {
 		// Initialize reminders
 		this.reminders = this.task.reminders ? [...this.task.reminders] : [];
 
+		// Initialize attachments
+		this.attachments = this.task.attachments ? [...this.task.attachments] : [];
+
 		this.details = this.normalizeDetails(this.details);
 		this.originalDetails = this.details;
 
@@ -322,7 +325,12 @@ export class TaskEditModal extends TaskModal {
 	 */
 	protected createAdditionalSections(container: HTMLElement): void {
 		this.createCompletionsCalendarSection(container);
+		this.createAttachmentSection(container);
 		this.createMetadataSection(container);
+	}
+
+	private createAttachmentSection(container: HTMLElement): void {
+		this.createAttachmentArea(container, this.task.path);
 	}
 
 	/**
@@ -832,6 +840,12 @@ export class TaskEditModal extends TaskModal {
 
 		if (JSON.stringify(newReminders) !== JSON.stringify(oldReminders)) {
 			changes.reminders = newReminders.length > 0 ? newReminders : undefined;
+		}
+
+		// Compare attachments
+		const oldAttachments = this.task.attachments || [];
+		if (JSON.stringify(this.attachments) !== JSON.stringify(oldAttachments)) {
+			changes.attachments = this.attachments;
 		}
 
 		const newBlockedDependencies = this.blockedByItems.map((item) => ({

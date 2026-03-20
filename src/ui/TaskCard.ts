@@ -537,6 +537,7 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
 	dateModified: (task) => task.dateModified,
 	googleCalendarSync: (task) => task.path, // Used to check if task is synced via plugin settings
 	checklistProgress: (task) => task.path, // Used to compute checklist progress from metadata cache listItems
+	attachments: (task) => task.attachments,
 };
 
 /**
@@ -977,6 +978,17 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		// Show calendar event indicator
 		if (Array.isArray(value) && value.length > 0) {
 			element.textContent = `Linked to ${value.length} calendar ${value.length === 1 ? "event" : "events"}`;
+		}
+	},
+	attachments: (element, value, _task, plugin) => {
+		if (Array.isArray(value) && value.length > 0) {
+			const iconEl = element.createSpan("task-card__metadata-pill-icon");
+			setIcon(iconEl, "paperclip");
+			const count = value.length;
+			const label = count === 1
+				? plugin.i18n.translate("ui.taskCard.attachmentBadgeSingle")
+				: plugin.i18n.translate("ui.taskCard.attachmentBadgePlural", { count });
+			element.createSpan({ text: label });
 		}
 	},
 	checklistProgress: (element, _value, task, plugin) => {
@@ -1617,6 +1629,20 @@ export function createTaskCard(
 				icon: "bell",
 				tooltip: reminderTooltip,
 				onClick: createReminderClickHandler(task, plugin),
+			});
+		}
+
+		// Attachment indicator
+		if (task.attachments && task.attachments.length > 0) {
+			const count = task.attachments.length;
+			const attachmentTooltip = count === 1
+				? plugin.i18n.translate("ui.taskCard.attachmentBadgeTooltipSingle")
+				: plugin.i18n.translate("ui.taskCard.attachmentBadgeTooltipPlural", { count });
+			createBadgeIndicator({
+				container: badgesContainer,
+				className: "task-card__attachment-indicator",
+				icon: "paperclip",
+				tooltip: attachmentTooltip,
 			});
 		}
 

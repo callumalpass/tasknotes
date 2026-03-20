@@ -24,6 +24,21 @@ Example:
 
 -->
 
+## Added
+
+- File attachment support for tasks: attach images, PDFs, and other files to any task
+  - New `attachments` frontmatter field stores vault-relative paths as a string array
+  - Drag-and-drop or click-to-browse attachment area in both task creation and edit modals
+  - Files saved via Obsidian's native attachment handling (`getAvailablePathForAttachments`)
+  - Task cards show an attachment count badge with paperclip icon
+  - Paperclip indicator on calendar events (toggleable in Settings > Appearance)
+  - Right-click context menu: attach files from vault, open/remove/delete per attachment
+  - Right-click attachment chips in modals: remove reference or remove and delete file
+  - Filter tasks by "Attachments is-empty / is-not-empty" in Advanced Filters
+  - `hasAttachments` Bases formula available for custom views
+  - Configurable field mapping in Settings > Task Properties
+  - MCP tools support `attachments` parameter for task creation and updates
+
 ## Fixed
 
 - Fixed documentation deployment CI failures caused by `docs-builder/src/js/main.js` being excluded by a broad `.gitignore` `main.js` rule

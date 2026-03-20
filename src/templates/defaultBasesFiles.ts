@@ -259,6 +259,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 
 	const scheduledProperty = getPropertyName(mapPropertyToBasesProperty('scheduled', plugin));
 	const recurrenceProperty = getPropertyName(mapPropertyToBasesProperty('recurrence', plugin));
+	const attachmentsProperty = getPropertyName(mapPropertyToBasesProperty('attachments', plugin));
 
 	return {
 		// Priority weight for sorting (lower = higher priority)
@@ -296,6 +297,9 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 
 		// Boolean: does this task have a time estimate?
 		hasTimeEstimate: `${timeEstimateProperty} && ${timeEstimateProperty} > 0`,
+
+		// Boolean: does this task have attachments?
+		hasAttachments: `${attachmentsProperty} && !${attachmentsProperty}.isEmpty()`,
 
 		// === TIME TRACKING FORMULAS ===
 

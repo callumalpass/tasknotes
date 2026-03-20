@@ -343,6 +343,10 @@ export class TaskService {
 						? taskData.reminders
 						: undefined,
 				icsEventId: taskData.icsEventId || undefined,
+				attachments:
+					taskData.attachments && taskData.attachments.length > 0
+						? taskData.attachments
+						: undefined,
 			};
 
 			// Add DTSTART to recurrence rule if it doesn't have one
@@ -1484,6 +1488,14 @@ export class TaskService {
 					delete frontmatter[this.plugin.fieldMapper.toUserField("recurrence")];
 				if (updates.hasOwnProperty("blockedBy") && updates.blockedBy === undefined)
 					delete frontmatter[this.plugin.fieldMapper.toUserField("blockedBy")];
+				if (updates.hasOwnProperty("attachments")) {
+					const attachmentsField = this.plugin.fieldMapper.toUserField("attachments");
+					if (Array.isArray(updates.attachments) && updates.attachments.length > 0) {
+						frontmatter[attachmentsField] = updates.attachments;
+					} else {
+						delete frontmatter[attachmentsField];
+					}
+				}
 
 				if (isRenameNeeded) {
 					delete frontmatter[this.plugin.fieldMapper.toUserField("title")];

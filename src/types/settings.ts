@@ -339,6 +339,8 @@ export interface CalendarViewSettings {
 	defaultShowTimeEntries: boolean;
 	defaultShowRecurring: boolean;
 	defaultShowICSEvents: boolean;
+	// Indicator settings
+	showAttachmentIndicator: boolean; // Show paperclip icon on events with attachments
 	// Timeblocking settings
 	enableTimeblocking: boolean;
 	defaultShowTimeblocks: boolean;
