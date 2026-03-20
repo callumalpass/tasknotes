@@ -18,7 +18,6 @@ import {
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
-import { openFileSelector } from "../modals/FileSelectorModal";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -921,40 +920,10 @@ export class TaskContextMenu {
 	}
 
 	private addAttachmentMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
-		// Add from vault (pick existing file in vault)
+		// Add attachment via system file picker
 		menu.addItem((subItem: any) => {
-			subItem.setTitle(this.t("contextMenus.task.attachments.addFromVault"));
-			subItem.setIcon("vault");
-			subItem.onClick(() => {
-				this.menu.hide();
-				openFileSelector(plugin, async (file) => {
-					if (!file) return;
-					try {
-						const currentAttachments = task.attachments || [];
-						if (currentAttachments.includes(file.path)) {
-							new Notice(this.t("contextMenus.task.attachments.notices.alreadyAttached"));
-							return;
-						}
-						const updated = [...currentAttachments, file.path];
-						await plugin.updateTaskProperty(task, "attachments", updated);
-						const displayName = plugin.attachmentService.getDisplayName(file.path);
-						new Notice(this.t("contextMenus.task.attachments.notices.added", { name: displayName }));
-						this.options.onUpdate?.();
-					} catch (error) {
-						console.error("Error adding attachment:", error);
-						new Notice(this.t("contextMenus.task.attachments.notices.updateFailed"));
-					}
-				}, {
-					title: this.t("contextMenus.task.attachments.addFromVault"),
-					filter: "all",
-				});
-			});
-		});
-
-		// Add from disk (import external file via system file picker)
-		menu.addItem((subItem: any) => {
-			subItem.setTitle(this.t("contextMenus.task.attachments.addFromDisk"));
-			subItem.setIcon("hard-drive-upload");
+			subItem.setTitle(this.t("contextMenus.task.attachments.addAttachment"));
+			subItem.setIcon("plus");
 			subItem.onClick(() => {
 				this.menu.hide();
 				const input = document.createElement("input");
