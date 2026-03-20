@@ -2733,6 +2733,7 @@ export const en: TranslationTree = {
 			attachments: {
 				title: "Attachments",
 				addFromVault: "Attach file from vault…",
+				addFromDisk: "Attach file from disk…",
 				openAttachment: "Open {name}",
 				removeAttachment: "Remove {name}",
 				removeAndDelete: "Remove and delete {name}",

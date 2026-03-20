@@ -921,10 +921,10 @@ export class TaskContextMenu {
 	}
 
 	private addAttachmentMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
-		// Add from vault
+		// Add from vault (pick existing file in vault)
 		menu.addItem((subItem: any) => {
 			subItem.setTitle(this.t("contextMenus.task.attachments.addFromVault"));
-			subItem.setIcon("plus");
+			subItem.setIcon("vault");
 			subItem.onClick(() => {
 				this.menu.hide();
 				openFileSelector(plugin, async (file) => {
@@ -948,6 +948,38 @@ export class TaskContextMenu {
 					title: this.t("contextMenus.task.attachments.addFromVault"),
 					filter: "all",
 				});
+			});
+		});
+
+		// Add from disk (import external file via system file picker)
+		menu.addItem((subItem: any) => {
+			subItem.setTitle(this.t("contextMenus.task.attachments.addFromDisk"));
+			subItem.setIcon("hard-drive-upload");
+			subItem.onClick(() => {
+				this.menu.hide();
+				const input = document.createElement("input");
+				input.type = "file";
+				input.multiple = true;
+				input.addEventListener("change", async () => {
+					const files = Array.from(input.files || []);
+					if (files.length === 0) return;
+					try {
+						const currentAttachments = [...(task.attachments || [])];
+						for (const file of files) {
+							const path = await plugin.attachmentService.saveAttachment(file, task.path);
+							currentAttachments.push(path);
+						}
+						await plugin.updateTaskProperty(task, "attachments", currentAttachments);
+						new Notice(this.t("contextMenus.task.attachments.notices.added", {
+							name: files.map(f => f.name).join(", "),
+						}));
+						this.options.onUpdate?.();
+					} catch (error) {
+						console.error("Error adding attachment from disk:", error);
+						new Notice(this.t("contextMenus.task.attachments.notices.updateFailed"));
+					}
+				});
+				input.click();
 			});
 		});
 
