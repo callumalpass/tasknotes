@@ -882,8 +882,8 @@ export class KanbanView extends BasesViewBase {
 		visibleProperties: string[],
 		cardOptions: any
 	): void {
-		// Make container scrollable with full viewport height
-		cardsContainer.style.cssText = "overflow-y: auto; max-height: 100vh; position: relative;";
+		// Use semantic class instead of inline style for easier maintenance.
+		cardsContainer.addClass("kanban-view__cards--virtual");
 
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
@@ -918,8 +918,8 @@ export class KanbanView extends BasesViewBase {
 		tasks: TaskInfo[],
 		visibleProperties: string[]
 	): Promise<void> {
-		// Make container scrollable and fill the cell
-		tasksContainer.style.cssText = "overflow-y: auto; height: 100%; position: relative;";
+		// Use semantic class instead of inline style for easier maintenance.
+		tasksContainer.addClass("kanban-view__tasks-container--virtual");
 
 		const cardOptions = this.getCardOptions();
 
@@ -982,6 +982,9 @@ export class KanbanView extends BasesViewBase {
 		const draggingClass = isSwimlaneHeader
 			? "kanban-view__column-header-cell--dragging"
 			: "kanban-view__column-header--dragging";
+		const dragoverClass = isSwimlaneHeader
+			? "kanban-view__column-header-cell--dragover"
+			: "kanban-view__column-header--dragover";
 
 		header.addEventListener("dragstart", (e: DragEvent) => {
 			if (!e.dataTransfer) return;
@@ -998,14 +1001,14 @@ export class KanbanView extends BasesViewBase {
 			e.dataTransfer.dropEffect = "move";
 
 			// Add visual feedback for drop target
-			header.classList.add("kanban-view__column-header--dragover");
+			header.classList.add(dragoverClass);
 		});
 
 		header.addEventListener("dragleave", (e: DragEvent) => {
 			// Only handle column drags
 			if (!e.dataTransfer?.types.includes("text/x-kanban-column")) return;
 			if (e.target === header) {
-				header.classList.remove("kanban-view__column-header--dragover");
+				header.classList.remove(dragoverClass);
 			}
 		});
 
@@ -1016,7 +1019,7 @@ export class KanbanView extends BasesViewBase {
 			e.stopPropagation();
 
 			// Remove visual feedback
-			header.classList.remove("kanban-view__column-header--dragover");
+			header.classList.remove(dragoverClass);
 
 			const draggedKey = e.dataTransfer.getData("text/x-kanban-column");
 			const targetKey = header.dataset.columnKey;
@@ -1053,7 +1056,12 @@ export class KanbanView extends BasesViewBase {
 			header.classList.remove(draggingClass);
 		});
 
-		this.setupColumnHeaderTouchHandlers(header, columnKey, isSwimlaneHeader, draggingClass);
+		this.setupColumnHeaderTouchHandlers(
+			header,
+			columnKey,
+			isSwimlaneHeader,
+			draggingClass
+		);
 	}
 
 	private setupColumnHeaderTouchHandlers(
@@ -1359,6 +1367,9 @@ export class KanbanView extends BasesViewBase {
 		this.boardEl?.querySelectorAll(".kanban-view__column-header--dragover").forEach((el) => {
 			el.classList.remove("kanban-view__column-header--dragover");
 		});
+		this.boardEl?.querySelectorAll(".kanban-view__column-header-cell--dragover").forEach((el) => {
+			el.classList.remove("kanban-view__column-header-cell--dragover");
+		});
 	}
 
 	private updateDropTargetFeedback(x: number, y: number): void {
@@ -1370,7 +1381,11 @@ export class KanbanView extends BasesViewBase {
 			} else if (target.type === "swimlane") {
 				target.element.classList.add("kanban-view__swimlane-column--dragover");
 			} else if (target.type === "columnHeader" && this.touchDragType === "column") {
-				target.element.classList.add("kanban-view__column-header--dragover");
+				if (target.element.classList.contains("kanban-view__column-header-cell")) {
+					target.element.classList.add("kanban-view__column-header-cell--dragover");
+				} else {
+					target.element.classList.add("kanban-view__column-header--dragover");
+				}
 			}
 		}
 	}
@@ -1892,7 +1907,6 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const empty = doc.createElement("div");
 		empty.className = "tn-bases-empty";
-		empty.style.cssText = "padding: 20px; text-align: center; color: var(--text-muted);";
 		empty.textContent = "No TaskNotes tasks found for this Base.";
 		this.boardEl.appendChild(empty);
 	}
@@ -1903,7 +1917,6 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const error = doc.createElement("div");
 		error.className = "tn-bases-error";
-		error.style.cssText = "padding: 20px; text-align: center; color: var(--text-error);";
 		error.textContent = this.plugin.i18n.translate("views.kanban.errors.noGroupBy");
 		this.boardEl.appendChild(error);
 	}
@@ -1914,8 +1927,6 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const errorEl = doc.createElement("div");
 		errorEl.className = "tn-bases-error";
-		errorEl.style.cssText =
-			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";
 		errorEl.textContent = `Error loading kanban: ${error.message || "Unknown error"}`;
 		this.boardEl.appendChild(errorEl);
 	}

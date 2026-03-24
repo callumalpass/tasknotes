@@ -1,7 +1,7 @@
 ---
 title: Default Base Templates
 description: Default base file templates for TaskNotes views
-dateModified: 2025-12-02T12:00:00+1100
+dateModified: 2026-03-23T18:00:00+1100
 ---
 
 # Default Base Templates
@@ -238,7 +238,7 @@ views:
 
 Used by the **Tasks** command to display filtered task views.
 
-This template includes multiple views: All Tasks, Not Blocked, Today, Overdue, This Week, and Unscheduled. Each view (except All Tasks) filters for incomplete tasks, handling both recurring and non-recurring tasks. The "Not Blocked" view additionally filters for tasks that are ready to work on (no incomplete blocking dependencies).
+This template includes multiple views: All Tasks, Not Blocked, Today, Overdue, This Week, and Unscheduled. Each view (except All Tasks) filters for incomplete tasks, handling both recurring and non-recurring tasks. For recurring tasks, the generated filters treat a missing `complete_instances` property as "not completed today" so newly created recurring tasks still appear by default. The "Not Blocked" view additionally filters for tasks that are ready to work on (no incomplete blocking dependencies).
 The default views cover common review horizons and can be kept, removed, or cloned with modified filters.
 
 ```yaml
@@ -283,7 +283,9 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
+            - or:
+              - complete_instances.isEmpty()
+              - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Not blocked by any incomplete tasks
         - or:
           # No blocking dependencies at all
@@ -319,7 +321,9 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
+            - or:
+              - complete_instances.isEmpty()
+              - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Due or scheduled today
         - or:
           - date(due) == today()
@@ -353,7 +357,9 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
+            - or:
+              - complete_instances.isEmpty()
+              - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Due in the past
         - date(due) < today()
     order:
@@ -385,7 +391,9 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
+            - or:
+              - complete_instances.isEmpty()
+              - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Due or scheduled this week
         - or:
           - and:
@@ -423,7 +431,9 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
+            - or:
+              - complete_instances.isEmpty()
+              - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # No due date and no scheduled date
         - date(due).isEmpty()
         - date(scheduled).isEmpty()

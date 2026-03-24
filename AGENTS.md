@@ -45,3 +45,5 @@ npm run build         # Production build (without copying to vault)
 ---
 
 When you make changes, update docs/releases/unreleased.md. If your changes are related to a GitHub issue or PR, include acknowledgement of the individual who opened the issue or submitted the PR. Do not update unreleased.md for the addition of tests; unreleased.md is user-facing. 
+
+Update .ops/ files as you work on items

@@ -206,7 +206,8 @@
 }
 
 /* Column header dragover state (for column reordering) */
-.tasknotes-plugin .kanban-view__column-header--dragover {
+.tasknotes-plugin .kanban-view__column-header--dragover,
+.tasknotes-plugin .kanban-view__column-header-cell--dragover {
     background: var(--tn-interactive-hover);
     border: 2px solid var(--tn-interactive-accent);
     transform: scale(1.02);
@@ -311,6 +312,14 @@
     color: var(--tn-text-normal);
     line-height: 1.2;
     margin: 0;
+    min-width: 0;
+}
+
+.tasknotes-plugin .kanban-view__column-header .kanban-view__column-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tasknotes-plugin .kanban-view__column-icon {
@@ -331,80 +340,9 @@
     line-height: 1.2;
     font-weight: 400;
     margin: 0;
-}
-
-/* Column Body */
-.tasknotes-plugin .kanban-view__column-body {
-    padding: var(--tn-spacing-sm);
-    min-height: 100px;
-    max-height: calc(100vh - 300px);
-    overflow-y: auto;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-spacing-xs);
-}
-
-.tasknotes-plugin .kanban-view__column-body--dragover {
-    background: var(--tn-interactive-hover);
-    position: relative;
-}
-
-.tasknotes-plugin .kanban-view__column-body--dragover::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: color-mix(in srgb, var(--tn-interactive-accent) 0.1, transparent);
-    border: 2px dashed var(--tn-interactive-accent);
-    border-radius: var(--tn-radius-md);
-    pointer-events: none;
-}
-
-/* Column Body Scrollbar */
-.tasknotes-plugin .kanban-view__column-body::-webkit-scrollbar {
-    width: 6px;
-}
-
-.tasknotes-plugin .kanban-view__column-body::-webkit-scrollbar-track {
-    background: var(--tn-bg-secondary);
-    border-radius: 3px;
-}
-
-.tasknotes-plugin .kanban-view__column-body::-webkit-scrollbar-thumb {
-    background: var(--tn-border-color);
-    border-radius: 3px;
-}
-
-.tasknotes-plugin .kanban-view__column-body::-webkit-scrollbar-thumb:hover {
-    background: var(--tn-text-muted);
-}
-
-/* Empty Column */
-.tasknotes-plugin .kanban-view__column-empty {
-    text-align: center;
-    color: var(--tn-text-muted);
-    font-style: italic;
-    font-size: var(--tn-font-size-sm);
-    padding: var(--tn-spacing-lg);
-    border: 2px dashed var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    background: var(--tn-bg-secondary);
-    transition: all var(--tn-transition-fast);
-    margin: var(--tn-spacing-xs);
-}
-
-.tasknotes-plugin .kanban-view__column-empty:hover {
-    border-color: var(--tn-interactive-accent);
-    background: var(--tn-interactive-hover);
-}
-
-.tasknotes-plugin .kanban-view__column--dragover .kanban-view__column-empty {
-    border-color: var(--tn-interactive-accent);
-    background: var(--tn-interactive-accent-hover);
-    color: var(--tn-text-on-accent);
+    margin-left: var(--tn-spacing-xs);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* ================================================
@@ -419,6 +357,18 @@
     overflow-y: auto; /* Allow vertical scrolling */
     flex: 1; /* Fill available space in column */
     min-height: 0; /* Allow container to shrink and enable scrolling */
+}
+
+/* Virtualized columns need bounded height and relative positioning. */
+.tasknotes-plugin .kanban-view__cards--virtual {
+    max-height: 100vh;
+    position: relative;
+}
+
+/* Virtualized swimlane cells should fill their container. */
+.tasknotes-plugin .kanban-view__tasks-container--virtual {
+    height: 100%;
+    position: relative;
 }
 
 /* Dragging state for card wrappers */
@@ -481,10 +431,6 @@
 
     .tasknotes-plugin .kanban-view__column-header {
         padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    }
-
-    .tasknotes-plugin .kanban-view__column-body {
-        padding: var(--tn-spacing-xs);
     }
 
     .tasknotes-plugin .kanban-view__new-task-button {

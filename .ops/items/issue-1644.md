@@ -11,28 +11,33 @@ remote_title: >-
   [Bug]: Default Filter on This Week View Broken for Recurring Tasks
 remote_author: bkennedy-improving
 remote_url: 'https://github.com/callumalpass/tasknotes/issues/1644'
-local_status: triaged
+local_status: done
 priority: high
 difficulty: easy
 risk: low
 summary: >-
-  Recurring tasks without a `complete_instances` property are hidden from the
-  This Week view because `!complete_instances.contains(...)` evaluates to
-  undefined (falsy) when the property is absent, instead of treating absence as
-  "not completed today."
+  Fixed by updating generated default task view filters so a missing
+  `complete_instances` property is treated as "not completed today," and by
+  updating the default base template docs to match the generated YAML.
 notes: |-
   Root cause:
   - In `src/templates/defaultBasesFiles.ts`, all recurring task filters use the pattern `!completeInstances.contains(today().format("yyyy-MM-dd"))` without a fallback for when `complete_instances` is undefined/empty.
   - When a recurring task has never been completed, `complete_instances` is not present in the frontmatter, so the `.contains()` call on undefined returns undefined rather than true.
   - This affects the Today, This Week, Overdue, Not Blocked, and Unscheduled views -- all share the same filter pattern.
 
-  Suggested fix (preferred):
-  - Add `complete_instances.isEmpty()` as an OR clause alongside the `!complete_instances.contains(...)` check in each recurring task filter block in `defaultBasesFiles.ts`. This matches the user's suggested fix and handles the undefined case.
+  Implemented:
+  - Updated `src/templates/defaultBasesFiles.ts` so generated recurring-task filters in Not Blocked, Today, Overdue, This Week, and Unscheduled use `complete_instances.isEmpty()` as a fallback alongside `!complete_instances.contains(...)`.
+  - Updated `docs/views/default-base-templates.md` so the reference examples match the generator output.
+  - Added a user-facing release note entry in `docs/releases/unreleased.md`.
 
   Fallback options:
   - Modify the filter evaluation engine (`BasesFilterConverter` or `FilterService`) to treat `.contains()` on undefined/null as returning false (so `!undefined.contains(x)` returns true).
-command_id: triage-issue
-last_analyzed_at: '2026-03-22T00:00:00Z'
+  
+  Verification:
+  - `npm run build:test` passed.
+  - `obsidian plugin:reload id=tasknotes` could not be completed from the agent environment because the CLI could not connect to the Obsidian main process.
+command_id: address-issue
+last_analyzed_at: '2026-03-23T00:00:00Z'
 sync_state: clean
 type: item_state
 ---

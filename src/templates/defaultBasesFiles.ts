@@ -491,6 +491,11 @@ ${orderYaml}
 				.map(status => `${statusProperty} != "${status}"`)
 				.join('\n            - ');
 
+			// Treat missing complete_instances as "not completed today" for recurring tasks.
+			const recurringIncompleteFilter = `or:
+              - ${completeInstancesProperty}.isEmpty()
+              - "!${completeInstancesProperty}.contains(today().format(\\"yyyy-MM-dd\\"))"`;
+
 			// Generate filter condition for checking if a blocking task is incomplete
 			// This is used in the "Not Blocked" view to filter out completed blocking tasks
 			const blockingTaskIncompleteCondition = completedStatuses
@@ -524,7 +529,7 @@ ${orderYaml}
           # Recurring task where today is not in complete_instances
           - and:
             - ${recurrenceProperty}
-            - "!${completeInstancesProperty}.contains(today().format(\\"yyyy-MM-dd\\"))"
+            - ${recurringIncompleteFilter}
         # Not blocked by any incomplete tasks
         - or:
           # No blocking dependencies at all
@@ -549,7 +554,7 @@ ${orderYaml}
           # Recurring task where today is not in complete_instances
           - and:
             - ${recurrenceProperty}
-            - "!${completeInstancesProperty}.contains(today().format(\\"yyyy-MM-dd\\"))"
+            - ${recurringIncompleteFilter}
         # Due or scheduled today
         - or:
           - date(${dueProperty}) == today()
@@ -572,7 +577,7 @@ ${orderYaml}
           # Recurring task where today is not in complete_instances
           - and:
             - ${recurrenceProperty}
-            - "!${completeInstancesProperty}.contains(today().format(\\"yyyy-MM-dd\\"))"
+            - ${recurringIncompleteFilter}
         # Due in the past
         - date(${dueProperty}) < today()
     order:
@@ -593,7 +598,7 @@ ${orderYaml}
           # Recurring task where today is not in complete_instances
           - and:
             - ${recurrenceProperty}
-            - "!${completeInstancesProperty}.contains(today().format(\\"yyyy-MM-dd\\"))"
+            - ${recurringIncompleteFilter}
         # Due or scheduled this week
         - or:
           - and:
@@ -620,7 +625,7 @@ ${orderYaml}
           # Recurring task where today is not in complete_instances
           - and:
             - ${recurrenceProperty}
-            - "!${completeInstancesProperty}.contains(today().format(\\"yyyy-MM-dd\\"))"
+            - ${recurringIncompleteFilter}
         # No due date and no scheduled date
         - date(${dueProperty}).isEmpty()
         - date(${scheduledProperty}).isEmpty()
