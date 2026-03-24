@@ -15,7 +15,7 @@ Show the recurring tasks demo base with different recurrence types
 CLEANUP (completing occurrences modifies task files):
   node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
 -->
-
+{>>A good of this page's "technical" stuff could be boiled down into callouts that are collapsed by default<<}
 TaskNotes recurring tasks use RFC 5545 RRule strings with `DTSTART` support and dynamic next-occurrence scheduling. The model separates recurrence patterns from the next planned instance.
 
 If you are new to recurring tasks in TaskNotes, think of the recurrence rule as the long-term plan and the `scheduled` field as the next concrete commitment. Most day-to-day editing affects `scheduled`, while recurrence editing changes the plan itself.
@@ -31,9 +31,8 @@ This separation lets you reschedule the next occurrence without changing the pat
 
 ## Setting Up Recurring Tasks
 
-<!-- GIF: Creating a recurring task with "every weekday" preset, completing one occurrence, and seeing the scheduled date advance -->
-
-![Task creation modal for recurring task setup](../assets/recurring-tasks/screenshot-task-create-modal.png)
+<!-- GIF: Creating a recurring task for every week -->
+![[file-20260324160528275.gif]]
 
 In practice, setup is usually a two-step flow: choose a pattern, then check whether the next scheduled occurrence matches how you actually want to execute the next instance.
 
@@ -130,7 +129,7 @@ Recurring tasks can show:
 - **Next occurrence** (solid border): dragging updates only `scheduled`
 - **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
 
-![Recurring tasks in calendar week view](../assets/recurring-tasks/views-calendar-week.png)
+![[file-20260324165144864.gif]]
 
 ## Completion Tracking
 
@@ -147,7 +146,7 @@ When completion changes, `scheduled` updates to the next uncompleted instance.
 This means completion history and next-action planning stay synchronized automatically, without manually advancing recurring tasks.
 
 ## Flexible Scheduling
-
+{>>This would probably make more sense under a collapsed advanced callout since it's advanced usage.  It's more useful if it really is intuitive to the user how to utilize tasknotes in a way that allows this behavior without necessarily needing to understand the backend logic for the behavior<<}
 TaskNotes intentionally allows off-pattern scheduling so recurring tasks can absorb real-world disruptions without rewriting the entire recurrence rule.
 
 The next occurrence can be:

@@ -6,6 +6,7 @@
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { FolderSuggest } from "../settings/components/FolderSuggest";
+import { PropertySuggest } from "../settings/components/PropertySuggest";
 
 type MigrationType = "renameKey" | "changeValue" | "renameTag";
 
@@ -114,18 +115,20 @@ export class MigrationModal extends Modal {
 
 		// Property name (only for changeValue)
 		if (isChangeValue) {
-			new Setting(this.inputsContainer)
+			const propNameSetting = new Setting(this.inputsContainer)
 				.setName("Property name")
-				.setDesc("The frontmatter key that holds the value to change")
-				.addText((text) => {
-					text
-						.setPlaceholder("e.g., status")
-						.setValue(this.propertyName)
-						.onChange((value) => {
-							this.propertyName = value.trim();
-							this.updateCount();
-						});
-				});
+				.setDesc("The frontmatter key that holds the value to change");
+			const propNameInput = propNameSetting.controlEl.createEl("input", {
+				type: "text",
+				cls: "settings-view__input",
+				attr: { placeholder: "e.g., status" },
+			});
+			propNameInput.value = this.propertyName;
+			new PropertySuggest(this.app, propNameInput);
+			propNameInput.addEventListener("input", () => {
+				this.propertyName = propNameInput.value.trim();
+				this.updateCount();
+			});
 		}
 
 		// Old value
@@ -136,17 +139,20 @@ export class MigrationModal extends Modal {
 			: this.migrationType === "renameTag" ? "e.g., task"
 			: "e.g., open";
 
-		new Setting(this.inputsContainer)
-			.setName(oldLabel)
-			.addText((text) => {
-				text
-					.setPlaceholder(oldPlaceholder)
-					.setValue(this.oldValue)
-					.onChange((value) => {
-						this.oldValue = value.trim();
-						this.updateCount();
-					});
-			});
+		const oldSetting = new Setting(this.inputsContainer).setName(oldLabel);
+		const oldInputEl = oldSetting.controlEl.createEl("input", {
+			type: "text",
+			cls: "settings-view__input",
+			attr: { placeholder: oldPlaceholder },
+		});
+		oldInputEl.value = this.oldValue;
+		if (this.migrationType === "renameKey") {
+			new PropertySuggest(this.app, oldInputEl);
+		}
+		oldInputEl.addEventListener("input", () => {
+			this.oldValue = oldInputEl.value.trim();
+			this.updateCount();
+		});
 
 		// New value
 		const newLabel = this.migrationType === "renameKey" ? "New property key"
@@ -156,17 +162,17 @@ export class MigrationModal extends Modal {
 			: this.migrationType === "renameTag" ? "e.g., todo"
 			: "e.g., active";
 
-		new Setting(this.inputsContainer)
-			.setName(newLabel)
-			.addText((text) => {
-				text
-					.setPlaceholder(newPlaceholder)
-					.setValue(this.newValue)
-					.onChange((value) => {
-						this.newValue = value.trim();
-						this.updateCount();
-					});
-			});
+		const newSetting = new Setting(this.inputsContainer).setName(newLabel);
+		const newInputEl = newSetting.controlEl.createEl("input", {
+			type: "text",
+			cls: "settings-view__input",
+			attr: { placeholder: newPlaceholder },
+		});
+		newInputEl.value = this.newValue;
+		newInputEl.addEventListener("input", () => {
+			this.newValue = newInputEl.value.trim();
+			this.updateCount();
+		});
 
 		// Apply tight spacing to dynamically created settings too
 		this.inputsContainer.querySelectorAll<HTMLElement>(".setting-item").forEach((el) => {

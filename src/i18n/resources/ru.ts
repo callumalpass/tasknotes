@@ -998,8 +998,8 @@ export const ru: TranslationTree = {
 				filtersOn: "Фильтры включены",
 			},
 			titleCard: {
-				storeTitleInFilename: "Хранить заголовок в имени файла:",
-				storedInFilename: "Хранится в имени файла",
+				storeTitleInFilename: "Использовать заголовок как имя файла：",
+				storedInFilename: "Заголовок как имя файла",
 				filenameUpdatesWithTitle: "Имя файла будет автоматически обновляться при изменении заголовка задачи.",
 				filenameFormat: "Формат имени файла:",
 				customTemplate: "Пользовательский шаблон:",
@@ -1204,7 +1204,7 @@ export const ru: TranslationTree = {
 				header: "Имена файлов задач",
 				description: "Настройте именование файлов задач при создании.",
 				storeTitleInFilename: {
-					name: "Хранить название в имени файла",
+					name: "Использовать заголовок как имя файла",
 					description: "Использовать название задачи как имя файла. Имя файла будет обновляться при изменении названия задачи (Рекомендуется).",
 				},
 				filenameFormat: {

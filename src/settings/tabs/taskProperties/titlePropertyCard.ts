@@ -381,7 +381,7 @@ function renderFilenameSettingsContent(
 		tipIcon.style.marginTop = "1px";
 
 		tipNote.createSpan({
-			text: "For collision-proof filenames (zettel, timestamp), turn OFF \"Store title in filename\" below",
+			text: "For collision-proof filenames (zettel, timestamp), turn OFF \"Use title as filename\" above",
 		});
 	}
 

@@ -39,9 +39,9 @@ The primary method is the **Task Creation Modal**, accessed via the "Create new 
 
 <!-- GIF: Opening the task creation modal, filling in title/due/priority, and saving -->
 
-![[file-20260225120755827.png]]
+![task creation modal overview](../assets/task-management/task-creation-modal-overview.png)
 {>>Could we show this screenshot in a callout collapsed dropdown or something?<<}
-![[file-20260225120526242.mp4]]
+![workflow first task walkthrough](../assets/workflow-examples/workflow-first-task-walkthrough.mp4)
 
 When creating a task, the title is automatically sanitized to remove characters forbidden in filenames.
 
@@ -82,7 +82,7 @@ This model avoids creating a separate project database. Any note can become a pr
 
 <!-- GIF: Opening the task edit modal, clicking "Add Project", searching for a project note, and selecting it -->
 
-![[file-20260225121137318.gif]]
+![task edit add project search](../assets/task-management/task-edit-add-project-search.gif)
 
 Tasks can be assigned to one or more projects through the task creation or editing interface. When creating or editing a task, click the "Add Project" button to open the project selection modal. This modal provides fuzzy search functionality to quickly find and select project notes from your vault.
 {>>Need to lead to something like the workflow docks or examples to show how projects are used in practice.<<}
@@ -90,28 +90,28 @@ Tasks can be assigned to one or more projects through the task creation or editi
 
 <!-- SCREENSHOT: Task frontmatter showing projects field with wikilinks, e.g. projects: ["[[Project Alpha]]", "[[Project Beta]]"] -->
 
-![[file-20260225121818319.gif]]
+![task frontmatter project wikilinks](../assets/task-management/task-frontmatter-project-wikilinks.gif)
 
 Projects are stored as wikilinks in the task's frontmatter (e.g., `projects: ["[[Project A]]", "[[Project B]]"]`). These links are clickable in the task interface and will navigate directly to the project notes when clicked. Any note in your vault can serve as a project note simply by being linked from a task's projects field.
 
 ### Organization and Filtering
 
 <!-- GIF: Kanban board grouped by project -- tasks appearing in multiple project columns, then switching to Task List grouped by project -->
-![[file-20260225122330156.gif]]
+![task kanban grouped by project](../assets/task-management/task-kanban-grouped-by-project.gif)
 
 Tasks can be filtered and grouped by their associated projects in all Bases-driven task views. Use the Bases filter editor to add `note.projects` conditions, and configure the grouping menu to organize Task List or Kanban boards by project. Tasks assigned to multiple projects will appear in each relevant project group, providing flexibility in project-based organization.
 
 ### Project Indicators
 
 <!-- SCREENSHOT: Task card showing the project indicator icon, indicating this task is used as a project with subtasks linked to it -->
-![[file-20260225122502709.gif]]
+![task card project indicator](../assets/task-management/task-card-project-indicator.gif)
 
 TaskCards display visual indicators when tasks are used as projects. These indicators help identify which tasks have other tasks linked to them as subtasks, making project hierarchy visible at a glance.
 
 ### Subtask Creation
 
 <!-- GIF: Right-clicking a task that serves as a project, selecting "Create subtask" from the context menu, and seeing the new subtask linked automatically --> 
-![[file-20260225122816203.gif]]
+![task context menu create subtask](../assets/task-management/task-context-menu-create-subtask.gif)
 
 Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
 {>>Add reference here or call out that references the workflow tutorial that will show with. project based workflows or whatever its workflow name it is where subtasks are used in practice and how.<<}
@@ -145,7 +145,7 @@ Whenever a dependency is added, TaskNotes updates the upstream note's `blocking`
 - Task cards show a fork icon whenever a task blocks other work. Clicking it expands an inline list of downstream tasks without triggering the parent card's modal, so you can inspect dependents in place.
 
 <!-- GIF: Clicking the fork icon on a task card to expand inline list of downstream blocked tasks -->
-![[file-20260225132447537.gif]]
+![task card dependency fork expand](../assets/task-management/task-card-dependency-fork-expand.gif)
 
 These controls currently create and manage finish-to-start style blockers. Advanced `reltype` values and `gap` data are preserved in frontmatter, but blocking evaluation is currently based on whether unresolved dependencies exist rather than relationship-type-specific scheduling rules.
 
@@ -153,7 +153,7 @@ These controls currently create and manage finish-to-start style blockers. Advan
 
 ### Auto-Archiving
 
-![[file-20260225132923590.gif]]
+![task auto archive status trigger](../assets/task-management/task-auto-archive-status-trigger.gif)
 
 {>>This could be made more actionable and less like a big block of text - also added a gif<<}TaskNotes can automatically archive tasks when they transition into a status that has auto-archiving enabled. This keeps completed work out of your active lists without requiring manual cleanup.
 

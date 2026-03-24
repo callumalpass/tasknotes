@@ -23,7 +23,7 @@ If you have just installed TaskNotes and want to see it work end-to-end, this is
 
 <!-- VIDEO: Full walkthrough of setting up TaskNotes from scratch — creating first task, opening a view, completing a task -->
 
-![[file-20260225120526242.mp4]]
+![workflow first task walkthrough](assets/workflow-examples/workflow-first-task-walkthrough.mp4)
 
 **What you will learn:** Task creation modal, Upcoming View, task completion flow.
 

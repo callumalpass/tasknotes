@@ -4,6 +4,23 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.59] - 2026-03-24
+
+### Added
+- **Property migration prompts for all property cards**: Changing any property key in Task Properties settings now shows a migration dialog with file count and migrate/skip/cancel options. Previously only Type, Creator, and Assignee had this.
+- **Property autocomplete in migration command**: The "Migrate frontmatter properties" command palette modal now shows autocomplete suggestions from existing vault property keys when typing in the "Current property key" and "Property name" fields.
+
+### Fixed
+- **Settings property key change didn't update card header**: Changing a property key in Task Properties didn't update the subtitle shown on the collapsed card. All property cards now update their header text immediately.
+- **Calendar recurring task drag-and-drop**: Dragging a pattern instance to a different date now correctly updates both the DTSTART date in the recurrence rule and the scheduled date. Previously only the time component was updated, making date drags a no-op.
+- **Calendar "+more" blocks navigation**: Clicking "+X more" on crowded calendar days now navigates to the day view instead of opening a blocking popover.
+- **Settings navigation to Person preferences**: The "Team & Attribution → Person preferences" link in global reminders now scrolls directly to the Person Reminder Preferences section with a highlight animation.
+
+### Improved
+- **Renamed "Store title in filename" → "Use title as filename"**: Clearer label across all 9 languages. The setting controls whether filenames use just the title (recommended) or the configured format with zettel/timestamp prefix.
+- **Reminders docs restructured**: Three-tier explanation (per-task, default, global) with callouts, comparison table, and screenshot placeholders. Clearly distinguishes what gets written to files vs evaluated at runtime.
+- **Docs asset reorganization**: ~70 image/GIF files moved from docs/assets root into feature-specific subdirectories. 28 auto-generated filenames renamed to descriptive names. All Obsidian wikilink embeds converted to standard markdown image syntax for mkdocs compatibility.
+
 ## [4.3.58] - 2026-03-24
 
 ### Fixed

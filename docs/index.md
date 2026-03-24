@@ -69,7 +69,7 @@ Views are the main way you interact with tasks. TaskNotes comes with several:
 
 <!-- GIF: Quick tour cycling through 3-4 view types (use TaskNotes/Demos/ bases from test fixtures) — reuse this GIF on views.md -->
 
-![[docs/assets/features/file-20260224153129081.mp4]]
+![features view types tour](assets/features/features-view-types-tour.mp4)
 
 Each view is a `.base` file you can duplicate, customize, or create from scratch. Beyond filtering and display, views can trigger notifications, run bulk operations, and carry per-view property mappings. See [Views](views.md) for the full list and configuration options.
 

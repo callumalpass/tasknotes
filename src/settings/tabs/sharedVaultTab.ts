@@ -1145,6 +1145,7 @@ function renderNotificationFilteringSection(
 						// Header with explanation + Edit in note button
 						group.addSetting((setting) => {
 							setting.setName("Person reminder preferences");
+							setting.settingEl.dataset.cardId = "person-reminder-preferences";
 							const descEl = setting.descEl;
 							descEl.empty();
 							descEl.appendText(

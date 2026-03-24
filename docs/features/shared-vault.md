@@ -103,7 +103,7 @@ TaskNotes also detects a human-readable device name from the platform (e.g., "Wi
 > You can override this with a custom name in Settings > Team & Attribution.
 
 <!-- GIF: Registering a device to a person note in the Your Identity section -->
-![[file-20260311191511874.gif]]
+![shared vault register device identity](../assets/shared-vault/shared-vault-register-device-identity.gif)
 
 > [!info]- Your Identity section in settings
 > The "Your Identity" section shows your device's UUID, detected platform name, and which person note you are mapped to. From here you can:
@@ -202,7 +202,7 @@ TaskNotes uses two frontmatter fields for attribution:
 Both are stored as wikilinks (e.g., `[[Alice Chen]]`). The assignee field can hold a single person, a group, or an array of multiple assignees.
 
 <!-- GIF: Using the person/group picker in a task modal to assign a task -->
-![[file-20260311193022613.gif]]
+![shared vault person group picker](../assets/shared-vault/shared-vault-person-group-picker.gif)
 
 **Person/group picker:** Task modals and the bulk tasking action bar include a picker that shows all discovered persons and groups. Start typing to filter, or scroll through the list. Groups show their member count.
 

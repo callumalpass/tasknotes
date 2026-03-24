@@ -60,13 +60,16 @@ Each property card contains:
 
 ??? info "Title — Task name"
     - **Property key**: `title` (default)
-    - **Store title in filename**: When enabled, the task title is stored in the filename instead of frontmatter. The filename updates when the title changes.
-    - **Filename format**: When "Store title in filename" is disabled, choose how filenames are generated:
+    - **Use title as filename**: When enabled, the filename is just the task title (e.g., `Weekly Review.md`). A zettel/timestamp suffix is only added on collision. When disabled, filenames use the configured format below.
+    - **Filename format**: When "Use title as filename" is disabled, choose how filenames are generated:
         - Title-based
-        - Zettelkasten-style
+        - Zettelkasten-style (e.g., `260328ygzwi`)
+        - Zettel + title (e.g., `260328ygzwi-Weekly Review`)
         - Timestamp-based
         - Custom template
     - **Custom template**: Define a custom filename pattern using variables (shown when "custom" format is selected)
+
+    > **Tip:** TaskNotes custom views (TaskList, Kanban, Calendar, Upcoming) always display the `title` property regardless of filename. However, regular Bases table/list views show the filename directly. If you use both, enable **"Use title as filename"** for the cleanest experience.
 
 ??? info "Status — Task completion state"
     - **Property key**: `status` (default)

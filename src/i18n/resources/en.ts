@@ -946,7 +946,7 @@ export const en: TranslationTree = {
 				title: {
 					name: "Title",
 					description:
-						"The task name. Can be stored in frontmatter or in the filename (when 'Store title in filename' is enabled).",
+						"The task name. Can be stored in frontmatter or in the filename (when 'Use title as filename' is enabled).",
 				},
 				dateCreated: {
 					name: "Date Created",
@@ -1020,8 +1020,8 @@ export const en: TranslationTree = {
 				filtersOn: "Filters On",
 			},
 			titleCard: {
-				storeTitleInFilename: "Store title in filename:",
-				storedInFilename: "Stored in filename",
+				storeTitleInFilename: "Use title as filename:",
+				storedInFilename: "Title as filename",
 				filenameUpdatesWithTitle: "Filename will automatically update when the task title changes.",
 				filenameFormat: "Filename format:",
 				customTemplate: "Custom template:",
@@ -1232,9 +1232,9 @@ export const en: TranslationTree = {
 				header: "Task Filenames",
 				description: "Configure how task files are named when created.",
 				storeTitleInFilename: {
-					name: "Store title in filename",
+					name: "Use title as filename",
 					description:
-						"Use the task title as the filename. Filename will update when the task title is changed (Recommended).",
+						"Use the task title as the filename instead of a generated ID. Zettel/timestamp prefix is only added on collision (Recommended).",
 				},
 				filenameFormat: {
 					name: "Filename format",

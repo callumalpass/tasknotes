@@ -786,6 +786,7 @@ export class CalendarView extends BasesViewBase {
 			dayMaxEvents: this.viewOptions.dayMaxEvents,
 			dayMaxEventRows: this.viewOptions.dayMaxEventRows,
 			eventMaxStack: this.viewOptions.eventMaxStack ?? undefined,
+			moreLinkClick: "day", // Navigate to day view instead of blocking popover
 			navLinks: true,
 			navLinkDayClick: (date: Date) => handleDateTitleClick(date, this.plugin),
 			editable: true,

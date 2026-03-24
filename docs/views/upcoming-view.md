@@ -29,7 +29,7 @@ The Upcoming View groups your tasks by when they are due and lays them out in a 
 
 <!-- GIF: Scrolling through the Upcoming View showing overdue, today, tomorrow, and later sections -->
 
-![[file-20260311190040854.gif]]
+![upcoming view scroll time sections](../assets/upcoming-view/upcoming-view-scroll-time-sections.gif)
 
 ## How to Open It
 
@@ -54,7 +54,7 @@ Tasks are sorted into categories based on their due date relative to today:
 {>>Today doesn't seem to have green styling<<}<!-- SCREENSHOT: Today section header with green styling -->
 <!-- SCREENSHOT: No Due Date section collapsed by default -->
 
-![[file-20260311190948351.png]]
+![upcoming view time category colors](../assets/upcoming-view/upcoming-view-time-category-colors.png)
 
 | Category | When | Color |
 |----------|------|-------|
@@ -84,7 +84,7 @@ A navigation bar at the top of the view lets you move through time and choose ho
 
 <!-- GIF: Clicking through period selectors (D, 3D, W, M) and watching the view update -->
 
-![[file-20260311190539170.gif]]
+![upcoming view period selector switch](../assets/upcoming-view/upcoming-view-period-selector-switch.gif)
 
 **Right side -- period selectors:**
 
@@ -103,7 +103,7 @@ Your period selection is saved per device and remembered across sessions. In Lis
 
 <!-- GIF: Clicking "Add task" in the Tomorrow section and seeing the due date pre-filled -->
 
-![[file-20260311190700799.gif]]
+![upcoming view add task prefilled date](../assets/upcoming-view/upcoming-view-add-task-prefilled-date.gif)
 
 Each time category section has an **Add task** button. Clicking it opens the task creation modal with the due date pre-filled based on which section you clicked. For example, clicking "Add task" in the Tomorrow section sets the due date to tomorrow.
 

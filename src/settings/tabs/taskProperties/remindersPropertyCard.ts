@@ -1,5 +1,6 @@
 import { setIcon, setTooltip, Notice } from "obsidian";
 import TaskNotesPlugin from "../../../main";
+import { migratePropertyName } from "../../../utils/settingsMigration";
 import { DefaultReminder, GlobalReminderRule, UserMappedField } from "../../../types/settings";
 import { getAvailableDateAnchors, getAnchorDisplayName, type DateAnchor } from "../../../utils/dateAnchorUtils";
 import {
@@ -43,9 +44,19 @@ export function renderRemindersPropertyCard(
 		plugin.settings.fieldMapping.reminders
 	);
 
-	propertyKeyInput.addEventListener("change", () => {
-		plugin.settings.fieldMapping.reminders = propertyKeyInput.value;
+	propertyKeyInput.addEventListener("change", async () => {
+		const newValue = propertyKeyInput.value.trim();
+		const oldValue = plugin.settings.fieldMapping.reminders;
+		if (newValue && newValue !== oldValue) {
+			const result = await migratePropertyName({
+				app: plugin.app, plugin, oldPropertyName: oldValue, newPropertyName: newValue, description: "task files",
+			});
+			if (result === "cancelled") { propertyKeyInput.value = oldValue; return; }
+		}
+		plugin.settings.fieldMapping.reminders = newValue || oldValue;
 		save();
+		const secondary = propertyKeyInput.closest("[data-card-id]")?.querySelector(".tasknotes-settings__card-secondary-text");
+		if (secondary) secondary.textContent = plugin.settings.fieldMapping.reminders;
 	});
 
 	// Create nested content for default reminders
@@ -1383,14 +1394,13 @@ function navigateToTeamAttribution(plugin: TaskNotesPlugin): void {
 		if (tabButton) {
 			tabButton.click();
 			setTimeout(() => {
-				const headings = settingsTab.containerEl.querySelectorAll(
-					".setting-item-heading .setting-item-name"
-				);
-				for (const heading of headings) {
-					if (heading.textContent?.toLowerCase().includes("person reminder")) {
-						(heading as HTMLElement).scrollIntoView({ behavior: "smooth", block: "start" });
-						break;
-					}
+				const target = settingsTab.containerEl.querySelector(
+					'[data-card-id="person-reminder-preferences"]'
+				) as HTMLElement;
+				if (target) {
+					target.scrollIntoView({ behavior: "smooth", block: "start" });
+					target.style.outline = "2px solid var(--text-accent)";
+					setTimeout(() => { target.style.outline = ""; }, 2000);
 				}
 			}, 200);
 		}

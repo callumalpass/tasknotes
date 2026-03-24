@@ -133,7 +133,7 @@ Edit mode modifies frontmatter properties on files that are already tasks. Unlik
 This is useful for batch updates: reschedule 20 tasks to next week, change the priority on everything in a view, or assign a group of tasks to someone.
 
 <!-- GIF: Using Edit mode to batch-update priority and due date on multiple tasks -->
-![[file-20260225134350339.gif]]
+![bulk edit mode batch update](../assets/bulk-tasking/bulk-edit-mode-batch-update.gif)
 
 **Behavior:**
 
@@ -149,7 +149,7 @@ This is useful for batch updates: reschedule 20 tasks to next week, change the p
 Generate mode creates a new task file for each item in the view. The source items stay unchanged. This is useful when you have a list of notes (meeting notes, project plans, reference documents) and want to spin off tasks linked back to them.
 
 <!-- GIF: Opening the bulk modal from a Bases view, selecting Generate mode, and creating tasks -->
-![[file-20260225135305462.gif]]
+![bulk generate mode create tasks](../assets/bulk-tasking/bulk-generate-mode-create-tasks.gif)
 
 Each generated task:
 
@@ -171,7 +171,7 @@ The engine processes items in parallel (batches of 5) for speed, with a progress
 All three modes share an action bar at the top of the modal. It contains icon buttons for the most common task properties:
 
 <!-- SCREENSHOT: Action bar with icons for due, scheduled, status, priority, reminders, assignee -->
-![[file-20260225135639815.gif]]
+![bulk action bar property icons](../assets/visual-asset-checklist/bulk-action-bar-property-icons.gif)
 {>>Should we add better visuals or even icons to below table - not sure how helpful it currently is unless we link to other pages like task properties<<}
 
 | Icon           | Property       | Picker                                                               |
@@ -194,7 +194,7 @@ Values set in the action bar apply to every item in the batch. In Generate mode 
 Below the action bar, a{>>Update this - we change the name<<} **Properties & Anchors** section lets you add any frontmatter property to the batch. It uses the same PropertyPicker that appears in individual task modals.
 
 <!-- SCREENSHOT: PropertyPicker in bulk modal showing discovered properties with type badges -->{>>In the demonstration video, I also showed the case of needing to convert types when it comes to the property. So we can also mention that here in a drop, like in a call out below the GIF just in case<<}
-![[file-20260225182511076.gif]]
+![bulk property picker custom props](../assets/bulk-tasking/bulk-property-picker-custom-props.gif)
 
 Type a property name or search existing properties discovered from your task files. The picker shows:
 
@@ -329,7 +329,7 @@ See [Workflows](../workflows.md) for practical examples of both approaches, incl
 TaskNotes adds **New task** and **Bulk tasking** buttons to every Bases view toolbar, not just TaskNotes-registered view types. This means Table, Board, and any other native Bases view gets TaskNotes controls automatically.
 
 <!-- GIF: TaskNotes "New task" and "Bulk tasking" buttons appearing on a native Bases Table view -->
-![[file-20260225182354220.gif]]
+![bulk universal bases toolbar buttons](../assets/bulk-tasking/bulk-universal-bases-toolbar-buttons.gif)
 
 The buttons appear next to Obsidian's built-in "New" button. They use the same styling as native toolbar items so they blend in.
 
@@ -346,7 +346,7 @@ You can disable TaskNotes controls on specific views. Open the view's Configure 
 **Right-click context menus:**
 
 <!-- GIF: Right-clicking a row in a Bases view showing task vs non-task context menu options -->{>>If the file is not a task, then it'll show a convert to task button. So this is something we want to call out for in this section. And also, if you don't change a value when trying to convert to task, like if you're not, if you don't set some sort of value on it, then it won't become a task.<<}
-![[file-20260225195138705.gif]]
+![bulk right click context menu](../assets/bulk-tasking/bulk-right-click-context-menu.gif)
 
 On views with universal buttons, right-clicking a row or card shows a context menu:
 
@@ -356,7 +356,7 @@ On views with universal buttons, right-clicking a row or card shows a context me
 ## Right-Click in the File Explorer
 
 <!-- GIF: Right-clicking files and folders in the file explorer to open bulk tasking modal -->
-![[file-20260305224450961.gif]]
+![bulk right click file explorer](../assets/bulk-tasking/bulk-right-click-file-explorer.gif)
 
 You do not need a Bases view to use bulk tasking. Right-click any file or folder in Obsidian's file explorer:
 

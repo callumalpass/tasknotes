@@ -245,33 +245,37 @@ export async function handlePatternInstanceDrop(
 				"Added time information to recurring pattern. All future instances now appear at this time."
 			);
 		} else {
-			// DTSTART exists - update the time component
-			const currentDtstart = currentDtstartMatch[1];
+			// DTSTART exists - update both date and time to match drop target
 			let newDTSTART: string;
+			const newYear = String(newStart.getFullYear());
+			const newMonth = String(newStart.getMonth() + 1).padStart(2, "0");
+			const newDay = String(newStart.getDate()).padStart(2, "0");
+			const newDateStr = `${newYear}${newMonth}${newDay}`;
 
 			if (allDay) {
-				// For all-day, remove time component entirely (keep original date)
-				newDTSTART = currentDtstart.slice(0, 8); // Keep YYYYMMDD only
+				newDTSTART = newDateStr;
 			} else {
-				// Update only the time component, preserve the original date
-				const originalDate = currentDtstart.slice(0, 8); // YYYYMMDD
 				const hours = String(newStart.getHours()).padStart(2, "0");
 				const minutes = String(newStart.getMinutes()).padStart(2, "0");
-				newDTSTART = `${originalDate}T${hours}${minutes}00Z`;
+				newDTSTART = `${newDateStr}T${hours}${minutes}00Z`;
 			}
 
 			// Update DTSTART in RRULE string
 			updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
 			new Notice(
-				"Updated recurring pattern time. All future instances now appear at this time."
+				"Updated recurring pattern. All future instances shift to this date/time."
 			);
 		}
 
 		// Update the recurrence pattern
 		await plugin.taskService.updateProperty(taskInfo, "recurrence", updatedRRule);
 
-		// Note: Don't update scheduled date - it should remain independent
-		// Only the pattern timing changes, not the next occurrence timing
+		// Also update scheduled date to match the new DTSTART so the
+		// "next scheduled occurrence" stays in sync with the pattern
+		const newScheduled = allDay
+			? format(newStart, "yyyy-MM-dd")
+			: format(newStart, "yyyy-MM-dd'T'HH:mm");
+		await plugin.taskService.updateProperty(taskInfo, "scheduled", newScheduled);
 
 		// The refresh will happen automatically via EVENT_TASK_UPDATED listener
 	} catch (error) {

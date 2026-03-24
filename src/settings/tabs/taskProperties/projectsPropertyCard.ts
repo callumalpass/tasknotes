@@ -1,5 +1,6 @@
 import { TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../../../main";
+import { migratePropertyName } from "../../../utils/settingsMigration";
 import {
 	createCard,
 	createCardInput,
@@ -34,9 +35,19 @@ export function renderProjectsPropertyCard(
 			plugin.settings.fieldMapping.projects
 		);
 
-		propertyKeyInput.addEventListener("change", () => {
-			plugin.settings.fieldMapping.projects = propertyKeyInput.value;
+		propertyKeyInput.addEventListener("change", async () => {
+			const newValue = propertyKeyInput.value.trim();
+			const oldValue = plugin.settings.fieldMapping.projects;
+			if (newValue && newValue !== oldValue) {
+				const result = await migratePropertyName({
+					app: plugin.app, plugin, oldPropertyName: oldValue, newPropertyName: newValue, description: "task files",
+				});
+				if (result === "cancelled") { propertyKeyInput.value = oldValue; return; }
+			}
+			plugin.settings.fieldMapping.projects = newValue || oldValue;
 			save();
+			const secondary = propertyKeyInput.closest("[data-card-id]")?.querySelector(".tasknotes-settings__card-secondary-text");
+			if (secondary) secondary.textContent = plugin.settings.fieldMapping.projects;
 		});
 
 		// Create nested content for default projects

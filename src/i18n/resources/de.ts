@@ -998,8 +998,8 @@ export const de: TranslationTree = {
 				filtersOn: "Filter aktiv",
 			},
 			titleCard: {
-				storeTitleInFilename: "Titel im Dateinamen speichern:",
-				storedInFilename: "Im Dateinamen gespeichert",
+				storeTitleInFilename: "Titel als Dateiname verwenden:",
+				storedInFilename: "Titel als Dateiname",
 				filenameUpdatesWithTitle: "Der Dateiname wird automatisch aktualisiert, wenn sich der Aufgabentitel ändert.",
 				filenameFormat: "Dateinamenformat:",
 				customTemplate: "Benutzerdefinierte Vorlage:",
@@ -1204,7 +1204,7 @@ export const de: TranslationTree = {
 				header: "Aufgabendateinamen",
 				description: "Konfiguriere, wie Aufgabendateien beim Erstellen benannt werden.",
 				storeTitleInFilename: {
-					name: "Titel im Dateinamen speichern",
+					name: "Titel als Dateiname verwenden",
 					description: "Verwende den Aufgabentitel als Dateinamen. Dateiname wird aktualisiert, wenn der Aufgabentitel geändert wird (Empfohlen).",
 				},
 				filenameFormat: {
