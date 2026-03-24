@@ -15,6 +15,33 @@ import {
 } from "../utils/fieldOverrideUtils";
 
 /**
+ * Normalize a reminder object from frontmatter.
+ * Handles legacy format (numeric offset + unit + direction) and converts to
+ * the canonical ISO 8601 duration format used by the plugin.
+ */
+function normalizeReminderData(r: any): any {
+	if (!r || typeof r !== "object") return r;
+	// Already in canonical format (offset is an ISO 8601 string like "-PT2H")
+	if (typeof r.offset === "string" && r.offset.includes("P")) return r;
+	// Legacy format: { offset: 2, unit: "hours", direction: "before" }
+	if ((typeof r.offset === "number" || !isNaN(Number(r.offset))) && r.unit) {
+		const num = Number(r.offset);
+		const unit = String(r.unit).toLowerCase();
+		let iso: string;
+		if (unit.startsWith("minute")) iso = `PT${num}M`;
+		else if (unit.startsWith("hour")) iso = `PT${num}H`;
+		else if (unit.startsWith("day")) iso = `P${num}D`;
+		else iso = `PT${num}M`; // fallback
+		const prefix = r.direction === "after" ? "" : "-";
+		const normalized = { ...r, offset: `${prefix}${iso}` };
+		delete normalized.unit;
+		delete normalized.direction;
+		return normalized;
+	}
+	return r;
+}
+
+/**
  * Service for mapping between internal field names and user-configured property names
  */
 export class FieldMapper {
@@ -195,12 +222,14 @@ export class FieldMapper {
 			const reminders = frontmatter[this.mapping.reminders];
 			// Ensure reminders is always an array and filter out null/undefined values
 			if (Array.isArray(reminders)) {
-				const filteredReminders = reminders.filter((r) => r != null);
+				const filteredReminders = reminders
+					.filter((r) => r != null)
+					.map((r) => normalizeReminderData(r));
 				if (filteredReminders.length > 0) {
 					mapped.reminders = filteredReminders;
 				}
 			} else if (reminders != null) {
-				mapped.reminders = [reminders];
+				mapped.reminders = [normalizeReminderData(reminders)];
 			}
 		}
 

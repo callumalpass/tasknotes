@@ -1370,12 +1370,17 @@ export class ReminderModal extends Modal {
 		}
 	}
 
-	private formatOffset(offset: string): string {
-		const isNegative = offset.startsWith("-");
-		const cleanOffset = isNegative ? offset.substring(1) : offset;
+	private formatOffset(offset: string | number): string {
+		// Defensive: handle legacy numeric offset with unit/direction fields
+		if (typeof offset === "number" || !isNaN(Number(offset))) {
+			return `${offset}`;
+		}
+		const offsetStr = String(offset);
+		const isNegative = offsetStr.startsWith("-");
+		const cleanOffset = isNegative ? offsetStr.substring(1) : offsetStr;
 
 		const match = cleanOffset.match(/P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?/);
-		if (!match) return offset;
+		if (!match) return offsetStr;
 
 		const [, days, hours, minutes] = match;
 

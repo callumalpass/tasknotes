@@ -4,6 +4,11 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.58] - 2026-03-24
+
+### Fixed
+- **Reminder modal crash on "Manage all reminders"**: Opening the reminder modal for tasks with legacy reminder format (numeric offset + unit + direction fields) caused `TypeError: offset.startsWith is not a function`. Added normalization in FieldMapper to convert legacy `{offset: 2, unit: "hours", direction: "before"}` to ISO 8601 `{offset: "-PT2H"}` at parse time, plus defensive handling in the modal's `formatOffset()`.
+
 ## [4.3.57] - 2026-03-11
 
 ### Added
