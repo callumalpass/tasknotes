@@ -8,6 +8,7 @@ SETUP:
   cd .obsidian/plugins/tasknotes
   node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
   Reload plugin in Obsidian
+  Disable Hider plugin (or untoggle hideStatusBar) so bell icon is visible
 
 Use: TaskNotes/Demos/Notification Demo.base
 Show adding notify: true to a .base file
@@ -16,6 +17,12 @@ Show toast expanded with item breakdown
 Show clicking snooze dropdown, selecting a duration
 Show status bar bell icon with count badge
 Show clicking toast → navigates to the view
+
+TRIGGERING TOAST FOR CAPTURE:
+  The notification check runs every 30 seconds. Reminders must be in the FUTURE (not past) to fire.
+  - For Bases query notifications: just open Notification Demo.base with notify: true — items matching the filter trigger toast automatically
+  - For task reminder notifications: set an ABSOLUTE reminder 2-3 minutes from now on any task, then wait ~30s for the check cycle
+  - Past reminders are silently skipped (notifyAt must be > now)
 
 CLEANUP: remove notify: true if added to a non-demo base
 -->
@@ -148,7 +155,7 @@ The sync runs on plugin load, after each base evaluation, and periodically. It c
 | **Scope** | Per-view | Per-task |
 | **Trigger** | Query matches (items in view filter) | Date-based (due date, scheduled date) |
 | **Configuration** | `notify: true` in `.base` YAML | `reminders` array in task frontmatter |
-| **UI** | Toast + status bar bell | Obsidian Notice popup |
+| **UI** | Toast + status bar bell | Toast + status bar bell (same delivery system) |
 | **Snooze** | Snooze the entire view's notifications | Snooze individual reminders |
 | **Assignee filtering** | Supported (filter by who the task is assigned to) | Not applicable |
 | **Use case** | "Alert me when tasks match these criteria" | "Remind me about this specific task" |
@@ -177,6 +184,7 @@ Per-view settings are configured in the `.base` file YAML or through the Configu
 
 ## Related
 
+- [Notification Delivery](notification-delivery.md) for toast, bell icon, per-category behavior, snooze, and seen tracking
 - [Reminders](reminders.md) for per-task date-driven alerts
 - [Upcoming View](../views/upcoming-view.md) for the aggregated view that shows notification items
 - [Team & Attribution](shared-vault.md) for assignee-aware notification filtering

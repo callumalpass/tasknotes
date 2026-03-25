@@ -71,6 +71,58 @@ export class NotificationService {
 		await this.scanTasksAndBuildQueue();
 	}
 
+	/**
+	 * Clear all processed/session-fired tracking so reminders can re-fire.
+	 * Used by "Check reminders now" command to reset state for demos.
+	 */
+	clearAllProcessed(): void {
+		this.processedReminders.clear();
+		this.sessionFiredReminders.clear();
+		this.firedReminders.clear();
+		this.notificationQueue = [];
+		this.plugin.debugLog.log("NotificationService", "Cleared all processed/fired state");
+	}
+
+	/**
+	 * Force an immediate scan and queue check. Useful for debugging and demos.
+	 * Also includes a grace period for recently-past reminders (up to 2 minutes ago).
+	 */
+	async checkNow(): Promise<{ queued: number; fired: number }> {
+		this.plugin.debugLog.log("NotificationService", "=== MANUAL CHECK NOW ===");
+		await this.scanTasksAndBuildQueue();
+
+		// Also queue recently-past explicit reminders (grace period for demos/testing)
+		const now = Date.now();
+		const gracePeriod = 2 * 60 * 1000; // 2 minutes
+		const tasks = await this.plugin.cacheManager.getAllTasks();
+		let graceQueued = 0;
+
+		for (const task of tasks) {
+			if (!task.reminders) continue;
+			for (const reminder of task.reminders) {
+				const reminderId = `${task.path}-${reminder.id}`;
+				if (this.processedReminders.has(reminderId)) continue;
+
+				const notifyAt = this.calculateNotificationTime(task, reminder);
+				if (notifyAt === null) continue;
+
+				// Queue if within grace period (recently past but not yet processed)
+				if (notifyAt <= now && notifyAt > now - gracePeriod) {
+					this.notificationQueue.push({ taskPath: task.path, reminder, notifyAt: now });
+					graceQueued++;
+					this.plugin.debugLog.log("NotificationService", `Grace-queued past reminder: ${reminderId}`);
+				}
+			}
+		}
+
+		// Process the queue immediately
+		this.checkNotificationQueue();
+
+		const result = { queued: this.notificationQueue.length, fired: graceQueued };
+		this.plugin.debugLog.log("NotificationService", `Check complete: ${result.queued} queued, ${result.fired} grace-fired`);
+		return result;
+	}
+
 	destroy(): void {
 		if (this.broadScanInterval) {
 			clearInterval(this.broadScanInterval);

@@ -57,6 +57,7 @@ nav:
     - Recurring Tasks: features/recurring-tasks.md
     - Task Reminders: features/reminders.md
     - View Notifications: features/bases-notifications.md
+    - Notification Delivery: features/notification-delivery.md
     - Inline Task Integration: features/inline-tasks.md
     - Custom Properties: features/custom-properties.md
     - Property Mapping: features/property-mapping.md

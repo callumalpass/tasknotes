@@ -2317,6 +2317,7 @@ export const en: TranslationTree = {
 		syncBaseNotifications: "Sync base notifications",
 		// Migration commands
 		migrateFrontmatter: "Migrate frontmatter properties",
+		checkRemindersNow: "Check reminders now",
 	},
 	modals: {
 		deviceCode: {

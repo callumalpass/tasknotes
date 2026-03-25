@@ -1,7 +1,7 @@
 import { App, Modal, Setting, setIcon, Notice, setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder } from "../types";
-import { formatDateForDisplay } from "../utils/dateUtils";
+import { formatDateForDisplay, parseDateToLocal } from "../utils/dateUtils";
 import { getAvailableDateAnchors, resolveAnchorDate, getAnchorDisplayName, type DateAnchor, type DateAnchorOrigin } from "../utils/dateAnchorUtils";
 import { keyToDisplayName, type PropertyType } from "../utils/propertyDiscoveryUtils";
 import { createPropertyPicker } from "../ui/PropertyPicker";
@@ -1473,10 +1473,16 @@ export class ReminderModal extends Modal {
 
 			// Parse absoluteTime (ISO 8601 timestamp) into date and time parts
 			if (reminder.absoluteTime) {
-				const dt = new Date(reminder.absoluteTime);
+				// Parse as local time — absoluteTime is stored without timezone
+				const dt = parseDateToLocal(reminder.absoluteTime);
 				if (!isNaN(dt.getTime())) {
-					this.absoluteDate = dt.toISOString().slice(0, 10);
-					this.absoluteTime = dt.toISOString().slice(11, 16);
+					const y = dt.getFullYear();
+					const m = String(dt.getMonth() + 1).padStart(2, "0");
+					const d = String(dt.getDate()).padStart(2, "0");
+					const hh = String(dt.getHours()).padStart(2, "0");
+					const mm = String(dt.getMinutes()).padStart(2, "0");
+					this.absoluteDate = `${y}-${m}-${d}`;
+					this.absoluteTime = `${hh}:${mm}`;
 				} else {
 					this.absoluteDate = "";
 					this.absoluteTime = "";

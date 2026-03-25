@@ -23,7 +23,11 @@ Pomodoro settings control interval lengths, long-break cadence, optional auto-st
 
 ## Notifications
 
-Use this section to enable reminders globally and choose whether notices are shown in-app or through system notifications.
+Enable reminders globally and choose the delivery type (in-app toast, system desktop notifications, or both). The **"Send test"** button fires a test notification to verify your setup.
+
+**Per-category behavior (advanced):** Expand this section to control how each time category (overdue, due today, due tomorrow, this week, scheduled) behaves after dismissal — snooze duration, bell count visibility, and popup visibility. This gives fine-grained control over which notifications are persistent vs awareness-only.
+
+For full details on the toast, bell icon, snooze, and seen tracking, see [Notification Delivery](../features/notification-delivery.md). For what generates notifications, see [Reminders](../features/reminders.md) and [View Notifications](../features/bases-notifications.md).
 
 ## Performance & Behavior
 

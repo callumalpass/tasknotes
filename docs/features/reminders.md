@@ -6,10 +6,18 @@ SETUP (need tasks with reminders):
   cd .obsidian/plugins/tasknotes
   node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
   Reload plugin in Obsidian
+  Disable Hider plugin (or untoggle hideStatusBar) so bell icon is visible
 
 Use: TaskNotes/Demos/Reminders Demo.base
 Show clicking the bell icon on a task card → "15 minutes before due" → reminder indicator appears
-Show a reminder notification firing → Obsidian notice with task name and action buttons
+Show a reminder notification firing → toast notification with task name and action buttons
+
+TRIGGERING A REMINDER TOAST FOR CAPTURE:
+  The notification check runs every 30 seconds. Reminders must be in the FUTURE to fire.
+  - Set an ABSOLUTE reminder 2-3 minutes from now on any task in the demo base
+  - Wait ~30s for the check cycle to queue it, then wait for the time to arrive
+  - The toast appears in the bottom-right (same UI as Bases query notifications)
+  - Toast assets are shared — save to docs/assets/notifications/ for use in both reminders and bases-notifications docs
 
 CLEANUP (dismissing reminders modifies task files):
   node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
@@ -41,6 +49,10 @@ When you click the bell icon on a task card and pick "15 minutes before due", th
 
 <!-- SCREENSHOT: Reminder modal showing per-task reminders on an individual task -->
 
+![reminders modal per task list](../assets/reminders/reminders-modal-per-task-list.png)
+
+![reminders modal timeline view](../assets/reminders/reminders-modal-timeline-view.png)
+
 ---
 
 ### Default Reminders (creation-time)
@@ -55,6 +67,8 @@ When you click the bell icon on a task card and pick "15 minutes before due", th
 Use default reminders for recurring habits like "always remind me 1 day before due" or "3 hours after scheduled date". You can still edit or remove them on individual tasks after creation.
 
 <!-- SCREENSHOT: Settings → Task Properties → Reminders → Default reminders section -->
+
+![reminders settings default panel](../assets/reminders/reminders-settings-default-panel.png)
 
 ---
 
@@ -71,6 +85,7 @@ Use default reminders for recurring habits like "always remind me 1 day before d
 Global reminders are useful for vault-wide policies ("notify me on every due date") without modifying individual task files. They complement per-task reminders — if a task already has an explicit reminder with the same semantic type, the global rule can optionally skip it.
 
 <!-- SCREENSHOT: Settings → Task Properties → Reminders → Global reminders section -->
+![reminders settings global rules](../assets/reminders/reminders-settings-global-rules.png)
 
 ---
 
@@ -85,6 +100,7 @@ Global reminders are useful for vault-wide policies ("notify me on every due dat
 - Availability window defers reminders outside your hours to your next available time
 
 <!-- SCREENSHOT: Team & Attribution → Person preferences → Personal global reminders -->
+![reminders settings personal overrides](../assets/reminders/reminders-settings-personal-overrides.png)
 
 ---
 
@@ -255,6 +271,7 @@ Configure in **Settings → Team & Attribution → Person preferences**.
 
 ## Related
 
+- [Notification Delivery](notification-delivery.md) for toast, bell icon, per-category behavior, snooze, and seen tracking
 - [View Notifications](bases-notifications.md) for per-view query-based alerts (experimental -- separate from per-task reminders)
 - [Upcoming View](../views/upcoming-view.md) for the time-grouped view that shows overdue and upcoming tasks
 - [Custom Properties](custom-properties.md) for using custom date properties as reminder anchors

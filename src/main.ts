@@ -2155,6 +2155,32 @@ export default class TaskNotesPlugin extends Plugin {
 					new MigrationModal(this.app, this).open();
 				},
 			},
+			// Force reminder check (debugging/demos)
+			{
+				id: "check-reminders-now",
+				nameKey: "commands.checkRemindersNow" as TranslationKey,
+				callback: async () => {
+					if (this.notificationService) {
+						// Clear seen items so toast shows even for previously dismissed items
+						if (this.toastNotification) {
+							this.toastNotification.clearSeenItems();
+						}
+						// Clear snooze state
+						localStorage.removeItem("tasknotes-toast-snoozed-until");
+						// Clear processed reminders so they can re-fire
+						this.notificationService.clearAllProcessed();
+
+						const result = await this.notificationService.checkNow();
+						// Trigger toast refresh immediately
+						if (this.toastNotification) {
+							await this.toastNotification.checkAndShow();
+						}
+						new Notice(`Reminder check: ${result.queued} queued, ${result.fired} grace-fired`);
+					} else {
+						new Notice("Notification service not available");
+					}
+				},
+			},
 		];
 
 		this.registerCommands();

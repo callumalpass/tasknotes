@@ -4,6 +4,22 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.61] - 2026-03-25
+
+### Added
+- **Notification Delivery docs page**: New `docs/features/notification-delivery.md` documenting the unified toast, bell icon, per-category behavior settings, snooze, seen tracking, and notification sources architecture.
+- **"Check reminders now" command**: Command palette command that clears all seen/snoozed/processed state, forces immediate scan with 2-minute grace period for past reminders, and triggers toast display. Useful for testing and demos.
+
+### Fixed
+- **Absolute reminder edit shows UTC instead of local time**: Editing an absolute reminder in the Reminder modal now shows the correct local date/time instead of UTC.
+- **WCAG reference**: Added proper link to WCAG 2.2.4 in notification delivery docs.
+
+### Improved
+- **Docs asset cleanup (batch 3)**: Renamed 9 more auto-generated assets, converted 8 wikilink embeds to markdown syntax.
+- **Notification docs cross-links**: Reminders, View Notifications, and Features Settings pages now link to the new Notification Delivery page.
+- **Settings Features expanded**: Notifications section expanded with per-category behavior explanation and cross-links.
+- **Visual asset checklist**: Added notification-delivery section with completed/remaining items.
+
 ## [4.3.60] - 2026-03-25
 
 ### Fixed
