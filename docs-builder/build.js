@@ -194,7 +194,8 @@ function resolveAssetPaths(html, mdPath) {
   return html.replace(/(<(?:img|source|video)[^>]+src=")([^"]+)(")/g, (_, pre, src, post) => {
     if (/^(https?:\/\/|\/|data:)/.test(src)) return _;
     const resolved = path.posix.resolve(pageDir || '/', src);
-    return pre + resolved + post;
+    // Prefix with BASE_PATH for subdirectory hosting
+    return pre + BASE_PATH + resolved.replace(/^\/+/, '') + post;
   });
 }
 
@@ -250,9 +251,11 @@ function buildToc(html) {
 
 // ── Navigation ──────────────────────────────────────────────────────
 
+const BASE_PATH = process.env.BASE_PATH || '/';
+
 function mdPathToUrl(p) {
-  if (p === 'index.md') return '/';
-  return '/' + p.replace(/\.md$/, '/');
+  if (p === 'index.md') return BASE_PATH;
+  return BASE_PATH + p.replace(/\.md$/, '/');
 }
 
 function buildNavHtml(items, currentUrl, depth = 0) {
@@ -386,11 +389,10 @@ async function main() {
     const toc      = buildToc(body);
     const navHtml  = buildNavHtml(nav, url);
 
-    const basePath = process.env.BASE_PATH || '/';
     const page = template
       .replaceAll('{{title}}',      escHtml(title))
       .replaceAll('{{site_title}}', 'TaskNotes')
-      .replaceAll('{{base_path}}',  basePath)
+      .replaceAll('{{base_path}}',  BASE_PATH)
       .replaceAll('{{nav}}',        navHtml)
       .replaceAll('{{toc}}',        toc)
       .replaceAll('{{content}}',    `<h1 class="page-title">${escHtml(title)}</h1>\n${body}`);
