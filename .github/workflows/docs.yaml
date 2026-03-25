@@ -22,21 +22,27 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
+    - name: Setup Node
+      uses: actions/setup-node@v4
       with:
-        python-version: '3.12'
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: docs-builder/package-lock.json
 
-    - name: Install MkDocs Material
-      run: pip install mkdocs-material
+    - name: Install dependencies
+      run: npm ci
+      working-directory: docs-builder
 
     - name: Build documentation
-      run: mkdocs build
+      run: node build.js
+      working-directory: docs-builder
+      env:
+        BASE_PATH: /tasknotes/
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: site/
+        path: docs-builder/dist/
 
   deploy:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'

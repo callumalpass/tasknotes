@@ -386,9 +386,11 @@ async function main() {
     const toc      = buildToc(body);
     const navHtml  = buildNavHtml(nav, url);
 
+    const basePath = process.env.BASE_PATH || '/';
     const page = template
       .replaceAll('{{title}}',      escHtml(title))
       .replaceAll('{{site_title}}', 'TaskNotes')
+      .replaceAll('{{base_path}}',  basePath)
       .replaceAll('{{nav}}',        navHtml)
       .replaceAll('{{toc}}',        toc)
       .replaceAll('{{content}}',    `<h1 class="page-title">${escHtml(title)}</h1>\n${body}`);

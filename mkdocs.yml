@@ -1,9 +1,9 @@
 site_name: TaskNotes Documentation
-site_url: https://cybersader.github.io/tasknotes/
+site_url: https://tasknotes.dev/
 site_description: Comprehensive task and note management with calendar integration for Obsidian
 site_author: Callum Alpass
-repo_name: cybersader/tasknotes
-repo_url: https://github.com/cybersader/tasknotes
+repo_name: callumalpass/tasknotes
+repo_url: https://github.com/callumalpass/tasknotes
 
 # Configuration
 theme:
