@@ -240,6 +240,15 @@ Open `http://127.0.0.1:4321` in your browser to preview. The builder does not li
 
 **Capturing screenshots in Obsidian:** Use the [Custom Attachment Location](https://github.com/RainCat1998/obsidian-custom-attachment-location) community plugin to route pasted images directly to `docs/assets/`. Set the attachment folder to the docs assets path so screenshots land in the right place without manual copying.
 
+**Using test fixtures for docs:** The [TaskNotes Test Fixtures](https://github.com/cybersader/tasknotes-test-fixtures) plugin is essential for docs work. Use it to:
+
+- **Generate demo data** before capturing screenshots or GIFs — gives you realistic tasks, persons, groups, documents, and demo `.base` views
+- **Reset between takes** — run "Clean and regenerate" to get a fresh state after modifying tasks during recording
+- **Test features rapidly** — the generated data covers most features (recurring tasks, dependencies, reminders, bulk operations, shared vault scenarios)
+- **Reproduce examples** — each docs page has a recording script (in an HTML comment at the top) that references specific demo `.base` files from the fixtures
+
+Install via BRAT (`cybersader/tasknotes-test-fixtures`) or clone into `.obsidian/plugins/`. See [Test Data](#test-data) above for full details.
+
 **Placeholders:** When adding a feature before screenshots are ready, use HTML comment placeholders:
 
 ```markdown
