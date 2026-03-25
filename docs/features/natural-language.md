@@ -47,16 +47,22 @@ Each extractable field has a trigger character that activates parsing and auto-s
 | Contexts                                       | `@`                       | `@home`              |
 | Projects                                       | `+`                       | `+[[Project Alpha]]` |
 | Status                                         | `*`                       | `*in-progress`       |
-| Priority{>>Link to relevant pages?<<}          | `!` (disabled by default) | `!high`              |
-| {>>Link to relevant pages?<<}Custom properties | `fieldname:`              | `effort: high`       |
+| [Priority](../settings/task-properties.md)     | `!` (disabled by default) | `!high`              |
+| [Custom properties](custom-properties.md)      | `fieldname:`              | `effort: high`       |
 
 Triggers are configurable in **Settings > Features > NLP Triggers**. Each trigger supports up to 10 characters and can include trailing spaces (e.g., `"def: "` for a custom field). When the tag trigger is set to `#`, Obsidian's native tag suggester is used.
 
 ## Auto-Suggestions
 
 When you type a trigger character in the NLP input field, an autocomplete menu appears with available values. Navigate with arrow keys and select with `Enter` or `Tab`.
-{>>Should we show a gif here?<<}
+
+<!-- GIF: Typing a trigger character and seeing autocomplete suggestions appear -->
+
 ### Project Suggestions
+
+![Autosuggest projects with spaces](../assets/natural-language/autosuggest_project_names_with_space.gif)
+
+![Enhanced project autosuggester](../assets/natural-language/enhanced-project-auto-suggester.gif)
 
 When typing `+`, you see up to 20 suggestions from your vault's markdown files. Suggestions display additional information to help identify files:
 
@@ -104,10 +110,6 @@ Project suggestions can display configurable multi-row cards and support smarter
 
 - Keep rows to three or fewer for clarity and performance (the UI supports up to 3)
 - Prefer specific searchable fields with `|s` on large vaults
-{>>The below images seem pretty random where they are.  They're showing project-related functionality with the NLP while typing - not sure that's necessarily best - especially not in this random spot in the doc<<}
-![Autosuggest projects with spaces](../assets/autosuggest_project_names_with_space.gif)
-
-![Enhanced project autosuggester](../assets/enhanced-project-auto-suggester.gif)
 
 ### Status Suggestions
 

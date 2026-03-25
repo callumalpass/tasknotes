@@ -172,16 +172,14 @@ All three modes share an action bar at the top of the modal. It contains icon bu
 
 <!-- SCREENSHOT: Action bar with icons for due, scheduled, status, priority, reminders, assignee -->
 ![bulk action bar property icons](../assets/visual-asset-checklist/bulk-action-bar-property-icons.gif)
-{>>Should we add better visuals or even icons to below table - not sure how helpful it currently is unless we link to other pages like task properties<<}
-
-| Icon           | Property       | Picker                                                               |
-| -------------- | -------------- | -------------------------------------------------------------------- |
-| Calendar       | Due date       | Date picker with relative options (Today, Tomorrow, Next week, etc.) |
-| Calendar clock | Scheduled date | Date picker                                                          |
-| Circle         | Status         | Dropdown with your configured statuses                               |
-| Flag           | Priority       | Dropdown with your configured priorities                             |
-| Bell           | Reminders      | Reminder editor (stackable -- you can add multiple reminders)        |
-| User           | Assignee       | Person and group picker                                              |
+| Icon | Property | Picker |
+|------|----------|--------|
+| 📅 Calendar | [Due date](../settings/task-properties.md) | Date picker with relative options (Today, Tomorrow, Next week, etc.) |
+| 🕐 Calendar clock | [Scheduled date](../settings/task-properties.md) | Date picker |
+| ⭕ Circle | [Status](../settings/task-properties.md) | Dropdown with your configured statuses |
+| 🚩 Flag | [Priority](../settings/task-properties.md) | Dropdown with your configured priorities |
+| 🔔 Bell | [Reminders](reminders.md) | Reminder editor (stackable — you can add multiple reminders) |
+| 👤 User | [Assignee](shared-vault.md) | Person and group picker |
 
 Each icon shows a dot indicator when a value is set, and the tooltip updates to show the current value. For reminders, the dot shows a count badge.
 
@@ -191,10 +189,13 @@ Values set in the action bar apply to every item in the batch. In Generate mode 
 
 ## Custom Properties in Bulk Operations
 
-Below the action bar, a{>>Update this - we change the name<<} **Properties & Anchors** section lets you add any frontmatter property to the batch. It uses the same PropertyPicker that appears in individual task modals.
+Below the action bar, a **Remap properties** section lets you add any frontmatter property to the batch. It uses the same PropertyPicker that appears in individual task modals.
 
-<!-- SCREENSHOT: PropertyPicker in bulk modal showing discovered properties with type badges -->{>>In the demonstration video, I also showed the case of needing to convert types when it comes to the property. So we can also mention that here in a drop, like in a call out below the GIF just in case<<}
+<!-- SCREENSHOT: PropertyPicker in bulk modal showing discovered properties with type badges -->
 ![bulk property picker custom props](../assets/bulk-tasking/bulk-property-picker-custom-props.gif)
+
+> [!tip]- Type conversion
+> If a discovered property has a different type than expected (e.g., a text field that should be a date), the PropertyPicker offers type conversion options. You can convert values in bulk without manually editing each file.
 
 Type a property name or search existing properties discovered from your task files. The picker shows:
 
@@ -206,8 +207,10 @@ Custom properties are written to frontmatter alongside the standard task fields.
 
 If the view you opened from has per-view field mappings configured, those mappings are pre-loaded into the Properties & Anchors section automatically.
 
-## Duplicate Detection{>>Wont have time to test this yet - should probably mark as experimental as well
-<<}
+## Duplicate Detection
+
+> [!warning] Experimental
+> This feature works but has not been extensively tested across all edge cases.
 
 In Generate mode, TaskNotes checks for existing tasks that already link to each source note before creating new ones. This prevents accidental duplicates when you run bulk generation more than once.
 
@@ -219,9 +222,12 @@ The detection works by scanning the `projects` field on all existing tasks:
 
 If the **Skip existing** toggle is on (the default), items with existing linked tasks are skipped and counted separately in the results. You can turn this off if you intentionally want multiple tasks per source note.
 
-## When to Use Generate vs Convert{>>This section should reference applicable workflow and/or workflow tutorial pages<<}
-{>>Should the below 2 sections be linked to from the applicable above sections as callouts?<<}
+## When to Use Generate vs Convert
+
 Generate and Convert solve different problems. Choose the one that matches your workflow:
+
+> [!tip] See it in practice
+> For end-to-end examples, see [Workflow Examples — Bulk Tasking from Meeting Notes](../workflow-examples.md#bulk-tasking-from-meeting-notes).
 
 **Use Generate** when you want to **spin off tasks from reference material** without changing the source notes. The source notes stay as they are (meeting notes, project plans, documents), and new task files are created in your tasks folder. Each generated task links back to its source via the `projects` field, creating a parent-child relationship. This is useful when:
 
@@ -338,20 +344,20 @@ The buttons appear next to Obsidian's built-in "New" button. They use the same s
 
 **Per-view control:**
 
-<!-- GIF: Toggling "Show toolbar buttons" off in a view's Configure panel -->{>>I already kind of did that in the GIF above.<<}
-
-
 You can disable TaskNotes controls on specific views. Open the view's Configure panel (the gear icon in the Bases toolbar) and toggle **Show toolbar buttons** off. This writes `showTaskNotesUI: false` to that view's configuration in the `.base` file.
 
 **Right-click context menus:**
 
-<!-- GIF: Right-clicking a row in a Bases view showing task vs non-task context menu options -->{>>If the file is not a task, then it'll show a convert to task button. So this is something we want to call out for in this section. And also, if you don't change a value when trying to convert to task, like if you're not, if you don't set some sort of value on it, then it won't become a task.<<}
+<!-- GIF: Right-clicking a row in a Bases view showing task vs non-task context menu options -->
 ![bulk right click context menu](../assets/bulk-tasking/bulk-right-click-context-menu.gif)
 
 On views with universal buttons, right-clicking a row or card shows a context menu:
 
-- If the file is a task: the full task context menu (edit, complete, reschedule, etc.)
-- If the file is not a task: "Convert to task" and "Open note" options
+- If the file **is** a task: the full task context menu (edit, complete, reschedule, etc.)
+- If the file **is not** a task: "Convert to task" and "Open note" options
+
+> [!note] Convert requires a change
+> When converting via the context menu, you must set at least one property value (status, priority, date, etc.) for the file to become a recognized task. Simply opening and closing the edit modal without changes won't convert it.
 
 ## Right-Click in the File Explorer
 

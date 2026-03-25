@@ -51,7 +51,7 @@ Tasks are sorted into categories based on their due date relative to today:
 
 ![Upcoming view overdue section](../assets/screenshot-upcoming.png)
 
-{>>Today doesn't seem to have green styling<<}<!-- SCREENSHOT: Today section header with green styling -->
+<!-- SCREENSHOT: Today section header with green styling -->
 <!-- SCREENSHOT: No Due Date section collapsed by default -->
 
 ![upcoming view time category colors](../assets/upcoming-view/upcoming-view-time-category-colors.png)
@@ -109,7 +109,9 @@ Each time category section has an **Add task** button. Clicking it opens the tas
 
 ## Context Menus
 
-<!-- GIF: Right-clicking a task and using the context menu to reschedule it -->{>>This should work really on any tasknote view - not sure it needs to be called out specifically for this view - maybe in a general part of view functionality/base functionality docs - that part instead<<}
+<!-- GIF: Right-clicking a task and using the context menu to reschedule it -->
+
+> [!note] Context menus are available in all TaskNotes views (Task List, Kanban, Calendar, Upcoming). See [Task Management — Context Menus](../features/task-management.md) for the full reference.
 
 Right-click any item in the view to open a context menu:
 

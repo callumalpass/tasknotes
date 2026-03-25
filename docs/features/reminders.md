@@ -151,7 +151,7 @@ Common shortcuts are available for both due and scheduled anchors, such as:
 
 Quick options appear only when the anchor date exists. This prevents invalid reminder states and keeps the quick menu focused on options that can be applied immediately.
 
-![[file-20260324170510634.gif]]
+![reminders quick options anchor dates](../assets/reminders/reminders-quick-options-anchor-dates.gif)
 
 > [!tip] Configuring defaults
 > To change which reminders are automatically added to new tasks, go to **Settings → Task Properties → Reminders → Default reminders**. To set vault-wide background reminders, use the **Global reminders** section on the same page.
@@ -212,7 +212,7 @@ These indicators are intended to make reminders discoverable in list-heavy views
 
 All reminder configuration lives in **Settings → Task Properties → Reminders**:
 
-![[file-20260324170641754.gif]]
+![reminders settings configuration overview](../assets/reminders/reminders-settings-configuration-overview.gif)
 
 ### Default Reminders
 
@@ -222,7 +222,7 @@ Configure reminders that are automatically added to every new task. Each default
 - **Offset**: how far before or after the anchor
 - **Direction**: before or after
 
-![[file-20260324171217364.png]]
+![reminders default reminders config panel](../assets/reminders/reminders-default-reminders-config-panel.png)
 
 Defaults apply to manual creation, instant conversion, and natural language task creation.
 
@@ -235,7 +235,7 @@ Configure vault-wide rules that run in the background:
 - "Skip if explicit exists" prevents double-notifications when a task already has a matching per-task reminder
 - Semantic types (lead-time, due-date, overdue, start-date) control deduplication behavior
 
-![[file-20260324171324165.png]]
+![reminders global reminders rules panel](../assets/reminders/reminders-global-reminders-rules-panel.png)
 ### Per-Person Overrides
 
 In shared vaults, each person can customize how global reminders apply to them:
@@ -246,14 +246,12 @@ In shared vaults, each person can customize how global reminders apply to them:
 
 Configure in **Settings → Team & Attribution → Person preferences**.
 
-![[file-20260324171426993.png]]
-## Technical Notes
-{>>turn this into nice collapsed callout instead.
-<<}
-- Reminders follow iCalendar `VALARM` concepts with ISO 8601 offsets
-- The reminder property name can be customized through field mapping
+<!-- SCREENSHOT: Person preferences section in Team & Attribution settings -->
 
-For settings-level behavior (notification channels, enable/disable state), see [Features Settings](../settings/features.md).
+> [!abstract]- Technical details
+> - Reminders follow iCalendar `VALARM` concepts with ISO 8601 offsets
+> - The reminder property name can be customized through [field mapping](property-mapping.md)
+> - For settings-level behavior (notification channels, enable/disable state), see [Features Settings](../settings/features.md)
 
 ## Related
 

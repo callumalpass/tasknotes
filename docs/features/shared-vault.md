@@ -65,9 +65,12 @@ flowchart TB
     style T2 fill:#1a2233,stroke:#4a86c8,color:#ccc
 ```
 
+> [!warning] Prerequisites
+> Before using shared vault features, you need **person notes** in your vault (one per team member). Optionally, create **group notes** for team-based assignment. See [Person Notes](#person-notes) and [Group Notes](#group-notes) below.
+
 **How it works in three steps:**
-{>>Shouldn't we explain that you also need person notes and optionally group notes?????<<}
-1. **Register once** — each device gets a UUID stored in `localStorage`. You map it to your person note in Settings > Team & Attribution.
+
+1. **Register once** — each device gets a UUID stored in `localStorage`. You map it to your person note in Settings → Team & Attribution.
 2. **Create tasks normally** — TaskNotes auto-fills the `creator` field with your person note. Assign tasks to people or groups via the picker.
 3. **Notifications filter automatically** — enable "Only notify for my tasks" and you only see notifications for tasks assigned to you (or a group you belong to).
 
@@ -211,7 +214,7 @@ Both are stored as wikilinks (e.g., `[[Alice Chen]]`). The assignee field can ho
 
 ## Assignee-Aware Notifications
 
-{>>Need to link to other relevant documentation<<}When "Only notify for my tasks" is enabled, the notification system checks each task before showing it:
+When "Only notify for my tasks" is enabled, the notification system checks each task before showing it. See also [Reminders](reminders.md) for per-task and global reminder configuration, and [View Notifications](bases-notifications.md) for query-based alerts.
 
 ```mermaid
 flowchart LR

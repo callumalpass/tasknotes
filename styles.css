@@ -21970,9 +21970,17 @@ select.tasknotes-settings__card-input {
 	color: var(--text-accent);
 }
 
-/* Section variants - Overdue gets red color */
+/* Section variants - color-coded headers matching Todoist-style date colors */
 .tn-upcoming-section--overdue .tn-upcoming-section__title {
 	color: var(--text-error);
+}
+
+.tn-upcoming-section--today .tn-upcoming-section__title {
+	color: var(--color-green);
+}
+
+.tn-upcoming-section--tomorrow .tn-upcoming-section__title {
+	color: var(--color-orange);
 }
 
 /* Visual separator line after header */

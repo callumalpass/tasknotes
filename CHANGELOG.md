@@ -4,6 +4,18 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.60] - 2026-03-25
+
+### Fixed
+- **Upcoming View "Today" section header now green**: Added missing CSS for Today (green) and Tomorrow (orange) section header color styling, matching the existing Overdue (red) and item-level date colors.
+- **Dependencies docs updated**: Showed both simple wikilink format and advanced RFC 9253 structured format in a collapsed callout.
+
+### Improved
+- **Docs editorial cleanup**: Resolved 14 CriticMarkup editorial comments — added callouts, cross-references, collapsed technical sections, restructured dense text blocks across 7 doc files.
+- **Docs asset cleanup (batch 2)**: Renamed 12 more auto-generated `file-2026*` assets to descriptive names, converted 9 remaining wikilink embeds to markdown syntax.
+- **Recurring tasks docs**: Technical sections (DTSTART, timezone, flexible scheduling) wrapped in collapsed callouts, keeping user-facing content visible.
+- **Visual asset checklist updated**: Outstanding items from editorial review added with doc page links, deferred items separated into subsection.
+
 ## [4.3.59] - 2026-03-24
 
 ### Added

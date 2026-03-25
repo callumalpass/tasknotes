@@ -39,8 +39,9 @@ The primary method is the **Task Creation Modal**, accessed via the "Create new 
 
 <!-- GIF: Opening the task creation modal, filling in title/due/priority, and saving -->
 
-![task creation modal overview](../assets/task-management/task-creation-modal-overview.png)
-{>>Could we show this screenshot in a callout collapsed dropdown or something?<<}
+> [!info]- Task Creation Modal
+> ![task creation modal overview](../assets/task-management/task-creation-modal-overview.png)
+
 ![workflow first task walkthrough](../assets/workflow-examples/workflow-first-task-walkthrough.mp4)
 
 When creating a task, the title is automatically sanitized to remove characters forbidden in filenames.
@@ -62,7 +63,7 @@ The natural language input field activates auto-suggestions when you type trigge
 
 For project card configuration, enhanced search, and status suggestion details, see [Natural Language Input — Auto-Suggestions](natural-language.md#auto-suggestions).
 
-<!-- GIF: Typing a natural language task description and seeing fields auto-populate -->{>>Still need the gif here<<}
+<!-- GIF: Typing a natural language task description and seeing fields auto-populate -->
 
 ## Task Properties
 
@@ -85,7 +86,9 @@ This model avoids creating a separate project database. Any note can become a pr
 ![task edit add project search](../assets/task-management/task-edit-add-project-search.gif)
 
 Tasks can be assigned to one or more projects through the task creation or editing interface. When creating or editing a task, click the "Add Project" button to open the project selection modal. This modal provides fuzzy search functionality to quickly find and select project notes from your vault.
-{>>Need to lead to something like the workflow docks or examples to show how projects are used in practice.<<}
+
+> [!tip] See it in practice
+> For project-based workflows end-to-end, see [Workflow Examples — Project-Centered Planning](../workflow-examples.md#project-centered-planning).
 ### Project Links
 
 <!-- SCREENSHOT: Task frontmatter showing projects field with wikilinks, e.g. projects: ["[[Project Alpha]]", "[[Project Beta]]"] -->
@@ -114,31 +117,42 @@ TaskCards display visual indicators when tasks are used as projects. These indic
 ![task context menu create subtask](../assets/task-management/task-context-menu-create-subtask.gif)
 
 Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
-{>>Add reference here or call out that references the workflow tutorial that will show with. project based workflows or whatever its workflow name it is where subtasks are used in practice and how.<<}
+
+> [!tip] See it in practice
+> For how subtasks fit into project workflows, see [Workflow Examples — Project-Centered Planning](../workflow-examples.md#project-centered-planning).
 ## Dependencies
 
 <!-- SCREENSHOT: Task frontmatter showing blockedBy field with structured dependency objects (uid, reltype, gap) -->
-{>>At least in our test fixtures, I'm not finding any examples of this structured information<<}
 
-Task dependencies capture prerequisite work using RFC&nbsp;9253 terminology. Dependencies are stored in frontmatter as structured objects:
+Task dependencies capture prerequisite work. Dependencies are stored in the `blockedBy` frontmatter field. The simplest form is a list of wikilinks:
 
 ```yaml
 blockedBy:
-  - uid: "[[Operations/Order hardware]]"
-    reltype: FINISHTOSTART
-    gap: P1D
+  - "[[Run staging environment tests]]"
+  - "[[Security review for launch]]"
 ```
 
-- `uid` references the blocking task, typically through an Obsidian wikilink.
-- `reltype` is stored with each dependency and defaults to `FINISHTOSTART` for dependencies created in the UI.
-- `gap` is optional and uses ISO&nbsp;8601 duration syntax (for example `PT4H` or `P2D`).
+> [!abstract]- Advanced: RFC 9253 structured format
+> Dependencies also support a structured format with relationship type and gap:
+>
+> ```yaml
+> blockedBy:
+>   - uid: "[[Operations/Order hardware]]"
+>     reltype: FINISHTOSTART
+>     gap: P1D
+> ```
+>
+> - `uid` references the blocking task via wikilink
+> - `reltype` defaults to `FINISHTOSTART` for dependencies created in the UI
+> - `gap` is optional, uses ISO 8601 duration syntax (e.g., `PT4H`, `P2D`)
+>
+> Both formats are recognized. The UI creates simple wikilink entries by default.
 
 Whenever a dependency is added, TaskNotes updates the upstream note's `blocking` list so the reverse relationship stays synchronized. Removing a dependency automatically clears both sides.
 
 ### Selecting dependencies in the UI
 
 <!-- GIF: Opening the task edit modal, clicking "Blocked by", searching for a task in the fuzzy selector, and adding it as a dependency -->
-{>>Do gif<<}
 
 - The task creation and edit modals expose "Blocked by" and "Blocking" buttons that launch a fuzzy task selector. The picker only offers valid tasks, excludes the current note, and prevents duplicate entries.
 - The task context menu provides the same selector, enabling dependency management directly from the Task List, Kanban, and calendar views.
@@ -155,11 +169,16 @@ These controls currently create and manage finish-to-start style blockers. Advan
 
 ![task auto archive status trigger](../assets/task-management/task-auto-archive-status-trigger.gif)
 
-{>>This could be made more actionable and less like a big block of text - also added a gif<<}TaskNotes can automatically archive tasks when they transition into a status that has auto-archiving enabled. This keeps completed work out of your active lists without requiring manual cleanup.
+TaskNotes can automatically archive tasks when they transition into a completed status. This keeps finished work out of your active lists without manual cleanup.
 
-Configure auto-archiving per status from **Settings > Task Properties > Task Statuses**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1-1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
+> [!tip] How to enable
+> Go to **Settings → Task Properties → Task Statuses**. Each status card has an **Auto-archive** toggle and a **Delay** input (1–1440 minutes).
 
-The auto-archive queue runs in the background and persists across plugin restarts. If TaskNotes was closed while an archive was pending, the task will be archived shortly after the plugin loads again as long as it still matches the configured status.
+When auto-archive is enabled for a status:
+
+- Any task moved into that status is queued for archiving after the configured delay
+- Moving the task to a different status before the timer expires cancels the pending archive
+- The queue persists across plugin restarts — pending archives resume when the plugin loads
 
 ## Related
 
