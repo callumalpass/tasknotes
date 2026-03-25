@@ -253,9 +253,16 @@ function buildToc(html) {
 
 const BASE_PATH = process.env.BASE_PATH || '/';
 
+/** URL for HTML links (includes BASE_PATH prefix) */
 function mdPathToUrl(p) {
   if (p === 'index.md') return BASE_PATH;
   return BASE_PATH + p.replace(/\.md$/, '/');
+}
+
+/** Path for output directory (no BASE_PATH — the hosting handles that) */
+function mdPathToOutputUrl(p) {
+  if (p === 'index.md') return '/';
+  return '/' + p.replace(/\.md$/, '/');
 }
 
 function buildNavHtml(items, currentUrl, depth = 0) {
@@ -383,7 +390,8 @@ async function main() {
 
     const { fm, html: rawHtml } = parseMarkdown(raw);
     const html     = resolveMarkdownLinks(resolveAssetPaths(rawHtml, mdPath), mdPath);
-    const url      = mdPathToUrl(mdPath);
+    const url      = mdPathToUrl(mdPath);       // For links (includes BASE_PATH)
+    const outUrl   = mdPathToOutputUrl(mdPath);  // For filesystem output (no BASE_PATH)
     const title    = extractTitle(html, fm);
     const body     = stripH1(html);
     const toc      = buildToc(body);
@@ -397,9 +405,9 @@ async function main() {
       .replaceAll('{{toc}}',        toc)
       .replaceAll('{{content}}',    `<h1 class="page-title">${escHtml(title)}</h1>\n${body}`);
 
-    const outDir = url === '/'
+    const outDir = outUrl === '/'
       ? DIST
-      : path.join(DIST, ...url.split('/').filter(Boolean));
+      : path.join(DIST, ...outUrl.split('/').filter(Boolean));
     await ensureDir(outDir);
     await fs.writeFile(path.join(outDir, 'index.html'), page);
     built++;
