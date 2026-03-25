@@ -7,6 +7,7 @@ The most practical way to manage tasks in Obsidian. Each task is a plain Markdow
 > [!NOTE]
 > This is a fork of [callumalpass/tasknotes](https://github.com/callumalpass/tasknotes) with additional enhancements. See [Fork Enhancements](#fork-enhancements) below.
 
+<!-- TODO: Replace with workflow GIF showing create → view → complete loop -->
 ![Task List View](docs/assets/task-list/screenshot-tasks-list.png)
 
 ## Quick Start
@@ -45,7 +46,7 @@ All property names are configurable. If you already use `deadline` instead of `d
 | **Upcoming** | Todoist-style time-grouped view (overdue, today, tomorrow, this week) |
 | **Agenda** | Date-navigated daily/weekly agenda |
 | **Mini Calendar** | Compact month calendar with task dots |
-
+<!-- TODO: Replace with GIF cycling through view types -->
 ![Upcoming View](docs/assets/upcoming-view/upcoming-view-scroll-time-sections.gif)
 
 ## Fork Enhancements
