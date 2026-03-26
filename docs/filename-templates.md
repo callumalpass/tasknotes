@@ -1,10 +1,17 @@
 # Filename Templates
 
-[← Back to Settings](settings.md) | Related: [Folders & Filenames](settings/task-defaults.md) | [Task Properties → Title](settings/task-properties.md)
+[← Back to Settings](settings.md)
 
-TaskNotes supports custom filename templates for task files. This allows you to define exactly how your task filenames are generated.
+> [!info] Where to find this
+> Filename templates are configured in **Settings → Task Properties → Title** card. Turn OFF **"Use title as filename"**, then choose a format (Zettelkasten, Timestamp, or Custom template). See [Task Properties → Title](settings/task-properties.md) for the setting card and [Folders & Filenames](settings/task-defaults.md) for folder path configuration.
+
+TaskNotes supports custom filename templates for task files. This page is the detailed variable reference — covering every available variable, examples, collision handling, and best practices.
+
+### Settings → Task Properties → Title
+
 <!-- GIF: Changing template variables in Settings > Task Properties > Title and seeing the live filename preview update -->
 ![filename template variables live preview](assets/filename-templates/filename-template-variables-live-preview.gif)
+
 ## Quick Start
 
 1. Go to **Settings → Task Properties → Title**
