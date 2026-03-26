@@ -26,9 +26,10 @@ data.json
 obsidian-developer-docs/
 .claude
 
-# Exclude video files
+# Exclude video files (except docs assets)
 *.mp4
 *.avi
+!docs/assets/**/*.mp4
 *.mov
 *.mkv
 *.webm
