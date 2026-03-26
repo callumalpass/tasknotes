@@ -103,7 +103,7 @@ The modal shows the items from the current view (or selection) and lets you pick
 Convert mode turns existing notes into tasks without creating new files. It adds task identification metadata (a frontmatter property or tag, depending on your settings) and optionally sets default values for status, priority, and creation date. The note's existing content and frontmatter are preserved.
 
 <video controls width="100%">
-  <source src="../assets/bulk-convert-demo.mp4" type="video/mp4">
+  <source src="../assets/bulk-tasking/bulk-convert-demo.mp4" type="video/mp4">
 </video>
 
 What Convert does to each note:
