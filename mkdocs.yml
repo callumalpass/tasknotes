@@ -86,6 +86,7 @@ nav:
     - Property Identification: settings/property-identification.md
     - Property Types Reference: settings/property-types-reference.md
     - Folders & Filenames: settings/task-defaults.md
+    - Filename Templates: filename-templates.md
     - Appearance & UI: settings/appearance.md
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md

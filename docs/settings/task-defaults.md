@@ -129,6 +129,8 @@ The system prevents file overwrites by checking for existing files and showing e
 
 ## Filename Template Variables
 
+See also the [Filename Templates](../filename-templates.md) page for a detailed reference with examples, collision handling, and best practices.
+
 When using the **custom** filename format, you can create templates using variables that are replaced with actual values when tasks are created.
 
 > **Recommended syntax:** Use double braces `{{variable}}` for consistency with body templates. Single braces `{variable}` are supported for backwards compatibility but are deprecated.
