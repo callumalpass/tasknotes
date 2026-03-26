@@ -3,7 +3,7 @@
 These settings allow you to enable, disable, and configure the various features of the plugin, such as inline tasks, natural language processing, the Pomodoro timer, and notifications.
 
 
-![Features Settings](../assets/settings-features.png)
+![Features Settings](../assets/settings/settings-features.png)
 
 ## Inline Tasks
 

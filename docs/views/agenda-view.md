@@ -12,7 +12,7 @@ Show scrolling through the agenda list with upcoming tasks grouped by day
 
 The Agenda view is a dedicated `.base` file that opens the calendar in list mode. It provides a scrollable agenda of upcoming tasks, notes, and external calendar events without needing to switch the primary calendar into list view manually.
 
-![Agenda View](../assets/views-agenda.png)
+![Agenda View](../assets/views/views-agenda.png)
 
 ## File Location
 
@@ -45,7 +45,7 @@ This configuration displays seven days at a time, derives entries from `file.cti
 
 <!-- GIF: Scrolling through the agenda list showing upcoming tasks grouped by day -->
 
-![Agenda view showing tasks grouped by day](../assets/screenshot-agenda.png)
+![Agenda view showing tasks grouped by day](../assets/agenda-view/screenshot-agenda.png)
 
 ## Customization
 

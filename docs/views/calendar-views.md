@@ -34,7 +34,7 @@ This architecture makes calendar behavior auditable. Filters, formulas, and disp
 
 The Mini Calendar displays a month-based view that shows which days contain tasks or other dated notes. It provides navigation and an overview of your task distribution across time.
 
-![Mini Calendar View](../assets/views-mini-calendar.png)
+![Mini Calendar View](../assets/views/views-mini-calendar.png)
 
 ### Features
 
@@ -67,7 +67,7 @@ View modes can be switched within a single `.base` file based on planning horizo
 
 | Week View | Day View | Year View |
 |-----------|----------|-----------|
-| ![Week View](../assets/calendar-views/views-calendar-week.png) | ![Day View](../assets/views-calendar-day.png) | ![Year View](../assets/views-calendar-year.png) |
+| ![Week View](../assets/calendar-views/views-calendar-week.png) | ![Day View](../assets/views/views-calendar-day.png) | ![Year View](../assets/views/views-calendar-year.png) |
 
 ### Performance Improvements
 

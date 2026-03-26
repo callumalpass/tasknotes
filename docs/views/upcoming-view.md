@@ -25,7 +25,7 @@ The Upcoming View groups your tasks by when they are due and lays them out in a 
 
 <!-- SCREENSHOT: Upcoming View showing tasks grouped by time category with color-coded section headers -->
 
-![Upcoming view with time-grouped task sections](../assets/screenshot-upcoming.png)
+![Upcoming view with time-grouped task sections](../assets/upcoming-view/screenshot-upcoming.png)
 
 <!-- GIF: Scrolling through the Upcoming View showing overdue, today, tomorrow, and later sections -->
 
@@ -49,7 +49,7 @@ Tasks are sorted into categories based on their due date relative to today:
 
 <!-- SCREENSHOT: Overdue section header with red styling and item count -->
 
-![Upcoming view overdue section](../assets/screenshot-upcoming.png)
+![Upcoming view overdue section](../assets/upcoming-view/screenshot-upcoming.png)
 
 <!-- SCREENSHOT: Today section header with green styling -->
 <!-- SCREENSHOT: No Due Date section collapsed by default -->

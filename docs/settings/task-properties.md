@@ -12,7 +12,7 @@ Show expanding a single property card to reveal key, default value, NLP trigger,
 
 This tab configures all task properties. Each property is displayed as a card containing its configuration options. This tab defines the task schema used by creation flows, NLP parsing, views, and API payloads.
 
-![Task Properties settings tab](../assets/screenshot-settings-task-properties.png)
+![Task Properties settings tab](../assets/settings/screenshot-settings-task-properties.png)
 
 > [!tip] Looking for property type documentation?
 > See the [Property Types Reference](property-types-reference.md) for detailed documentation on the expected data types (text, list, date, etc.) for each frontmatter property.

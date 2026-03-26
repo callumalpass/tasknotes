@@ -185,7 +185,7 @@ Groups appear in the person/group picker when assigning tasks, in notification f
 >
 > <!-- SCREENSHOT: Discovery panel showing persons with avatars and groups with member lists -->
 >
-> ![Person note showing role and contact information](../assets/screenshot-person-note.png)
+> ![Person note showing role and contact information](../assets/content-types/screenshot-person-note.png)
 >
 > - **Persons** are listed with colored avatar initials, display name, and optional role/department fields
 > - **Groups** show their display name and members inline

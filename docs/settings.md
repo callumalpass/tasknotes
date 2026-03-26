@@ -12,7 +12,7 @@ TaskNotes settings are organized into tabs. Each tab controls a different part o
 
 <!-- SCREENSHOT: TaskNotes settings panel showing the tab navigation with General, Task Properties, Modal Fields, Appearance, Features, and Integrations -->
 
-![TaskNotes settings panel with tab navigation](assets/screenshot-settings-overview.png)
+![TaskNotes settings panel with tab navigation](assets/settings/screenshot-settings-overview.png)
 
 ## General
 

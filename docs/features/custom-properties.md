@@ -68,7 +68,7 @@ Each custom property has the following settings:
 
 When using text or list type custom properties, you can configure **autosuggestion filters** to control which files appear in the autocomplete dropdown when you type `[[` in the field.
 
-![Custom Field Filtering](../assets/CustomFields-Selection-Filter.gif)
+![Custom Field Filtering](../assets/custom-properties/CustomFields-Selection-Filter.gif)
 
 This is useful when you want to limit suggestions to specific types of notes. For example:
 - An "Assignee" field that only suggests notes tagged with `#person`

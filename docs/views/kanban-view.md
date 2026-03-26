@@ -18,7 +18,7 @@ CLEANUP (dragging changes task status):
 The Kanban View displays tasks as cards organized in columns, where each column represents a distinct value of a grouped property.
 Kanban emphasizes state transitions and drag operations over dense list scanning.
 
-![Kanban View](../assets/views-kanban.png)
+![Kanban View](../assets/views/views-kanban.png)
 
 ## Configuration
 

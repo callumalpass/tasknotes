@@ -33,11 +33,11 @@ Inline features support capture and task updates without leaving the current not
 
 When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Features` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
 
-![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
+![Task Link Overlays in Live Preview mode](../assets/general/2025-07-17_21-03-55.png)
 
 *Task link overlays in Live Preview mode show interactive widgets with status, dates, and quick actions*
 
-![Task Link Overlays in Source mode](../assets/2025-07-17_21-04-24.png)
+![Task Link Overlays in Source mode](../assets/general/2025-07-17_21-04-24.png)
 
 *In Source mode, task links appear as standard wikilinks until rendered*
 
@@ -207,7 +207,7 @@ Tasks with subtasks can display an expand/collapse chevron that toggles subtask 
 - The chevron can be positioned on the Right (default, hover to show) or on the Left (always visible, matches group chevrons).
 - Configure this in `Settings -> TaskNotes -> Appearance` (`Subtask chevron position`).
 
-![Left subtask chevron](../assets/left-task-subtask-chevron.gif)
+![Left subtask chevron](../assets/task-list/left-task-subtask-chevron.gif)
 
 ### Migration from v3
 

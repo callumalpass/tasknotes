@@ -226,7 +226,7 @@ Habit tracking in TaskNotes is built on recurring task notes. You can create a r
 
 Once a task has a recurrence rule, its edit modal shows a recurrence calendar. That calendar is where you mark completion per occurrence. Completion history is stored in `complete_instances`, so a recurring task can remain open while still recording daily/weekly completion behavior.
 
-![Recurring task calendar](assets/views-calendar-month.png)
+![Recurring task calendar](assets/calendar-views/views-calendar-month.png)
 
 ```yaml
 title: Morning Exercise
@@ -255,7 +255,7 @@ projects: ["[[Market Research]]", "[[Q1 Strategy]]"]
 
 During task creation, use the project picker to search and assign one or more projects. In day-to-day planning, open Task List or Kanban, then filter on `note.projects contains [[Project Name]]` to isolate one initiative. Save that filter as a Bases saved view if you revisit it regularly.
 
-![Task list view](assets/views-tasks-list.png)
+![Task list view](assets/views/views-tasks-list.png)
 
 When work spans initiatives, assign multiple projects and combine with contexts or tags for secondary organization.
 
@@ -276,7 +276,7 @@ A typical daily flow is to start in Task List for prioritization, move to Calend
 
 If you use timeboxing, drag-select on calendar timeline views and create timeblocks directly from the context menu. If you use Pomodoro, run sessions against active tasks so completion and timing data stay attached to task notes.
 
-![Calendar quick add workflow](assets/views-calendar-month.png)
+![Calendar quick add workflow](assets/calendar-views/views-calendar-month.png)
 
 ### Maintenance Workflow (Weekly)
 

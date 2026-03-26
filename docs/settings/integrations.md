@@ -11,7 +11,7 @@ Show a connected Google Calendar account with email, sync time, disconnect butto
 These settings control the integration with other plugins and services, such as Bases and external calendars.
 
 
-![Integrations Settings](../assets/settings-integrations.png)
+![Integrations Settings](../assets/settings/settings-integrations.png)
 
 ## Bases Integration
 
@@ -38,7 +38,7 @@ Each command allows you to specify a custom `.base` file path and includes a res
 
 <!-- SCREENSHOT: OAuth calendar section showing a connected Google Calendar account with email, sync time, and disconnect button -->
 
-![Integrations settings showing calendar OAuth configuration](../assets/screenshot-settings-integrations.png)
+![Integrations settings showing calendar OAuth configuration](../assets/settings/screenshot-settings-integrations.png)
 
 ## OAuth Calendar Integration
 

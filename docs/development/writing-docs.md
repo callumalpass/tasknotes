@@ -53,7 +53,7 @@ The builder does not live-reload -- re-run `node build.js` after edits and refre
 Standard markdown image syntax:
 
 ```markdown
-![Alt text describing the image](../assets/screenshot-bulk-modal.png)
+![Alt text describing the image](../assets/bulk-tasking/screenshot-bulk-modal.png)
 ```
 
 ### Videos

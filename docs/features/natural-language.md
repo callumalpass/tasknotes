@@ -115,7 +115,7 @@ Project suggestions can display configurable multi-row cards and support smarter
 
 When typing the status trigger character (default `*`), you see suggestions for all configured status options. For example, typing `*in` shows "In Progress" if that is one of your configured statuses.
 
-![Status Auto-Suggestion](../assets/auto-suggest-status.gif)
+![Status Auto-Suggestion](../assets/natural-language/auto-suggest-status.gif)
 
 ## Rich Markdown Editor
 
