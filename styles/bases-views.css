@@ -21,6 +21,17 @@
 	display: none;
 }
 
+/* ================================================
+   UNIVERSAL INJECTED BUTTONS
+   Visible on all Bases views (Table, Board, etc.)
+   ================================================ */
+
+/* Universal injected buttons are always visible (not gated by .tasknotes-view-active) */
+.tn-bases-new-task-btn.tn-universal-injected,
+.tn-bases-bulk-create-btn.tn-universal-injected {
+	display: flex;
+}
+
 /* Bases TaskNotes List View Container */
 .tn-bases-tasknotes-list {
     display: flex;
@@ -441,4 +452,299 @@
     .kanban-view__column-header-cell .kanban-view__column-title {
         font-size: var(--tn-font-size-sm);
     }
+}
+
+/* ================================================
+   BULK TASKING BUTTON
+   ================================================ */
+
+/* Hide bulk creation button by default */
+.tn-bases-bulk-create-btn {
+    display: none;
+}
+
+/* Show bulk creation button when TaskNotes view is active */
+.tasknotes-view-active .tn-bases-bulk-create-btn {
+    display: flex;
+}
+
+/* ================================================
+   BULK TASKING MODE SELECTOR
+   ================================================ */
+
+.tn-bulk-mode-section {
+    margin-bottom: var(--tn-spacing-xs);
+}
+
+.tn-bulk-mode-section .setting-item {
+    border-top: none;
+    padding: var(--tn-spacing-xs) 0;
+}
+
+/* ================================================
+   BULK TASKING MODAL
+   ================================================ */
+
+.tn-bulk-creation-modal {
+    max-width: 500px;
+}
+
+.tn-bulk-creation-modal h2 {
+    margin-bottom: 2px;
+}
+
+.tn-bulk-summary {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    margin-bottom: var(--tn-spacing-xs);
+}
+
+/* Preview section */
+.tn-bulk-preview-section {
+    margin-bottom: var(--tn-spacing-xs);
+}
+
+.tn-bulk-preview {
+    padding: 0;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.tn-bulk-preview-item {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    padding: 2px 0;
+}
+
+.tn-bulk-preview-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+}
+
+.tn-bulk-preview-item.tn-bulk-preview-skipped {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.tn-bulk-skip-badge {
+    font-size: var(--tn-font-size-xs);
+    background: var(--tn-bg-secondary);
+    color: var(--tn-text-muted);
+    padding: 2px 6px;
+    border-radius: var(--tn-radius-sm);
+    flex-shrink: 0;
+}
+
+.tn-bulk-preview-more {
+    padding: 2px 0;
+    color: var(--tn-text-muted);
+    font-size: var(--tn-font-size-sm);
+    font-style: italic;
+}
+
+/* Options section */
+.tn-bulk-options-section {
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+.tn-bulk-options-section .setting-item {
+    border-top: none;
+    padding: var(--tn-spacing-xs) 0;
+}
+
+/* Status section */
+.tn-bulk-status {
+    margin-bottom: var(--tn-spacing-sm);
+    min-height: 20px;
+}
+
+.tn-bulk-status-info {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-font-size-sm);
+}
+
+.tn-bulk-status-success {
+    color: var(--tn-color-success);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+.tn-bulk-status-warning {
+    color: var(--tn-color-warning);
+}
+
+.tn-bulk-status-error {
+    color: var(--tn-color-error);
+}
+
+/* Actions section */
+.tn-bulk-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-md);
+}
+
+.tn-bulk-progress {
+    height: 6px;
+    background: var(--tn-bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tn-bulk-progress-bar {
+    height: 100%;
+    background: var(--tn-interactive-accent);
+    transition: width 0.3s ease;
+}
+
+.tn-bulk-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--tn-spacing-sm);
+}
+
+.tn-bulk-buttons button {
+    min-width: 100px;
+}
+
+/* ================================================
+   COMPATIBILITY PANEL (Convert Mode)
+   ================================================ */
+
+.tn-bulk-compatibility-panel {
+    background: var(--background-secondary);
+    border-radius: 6px;
+    padding: 12px;
+    margin: 12px 0;
+}
+
+.tn-bulk-compatibility-header {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.tn-bulk-compatibility-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.tn-bulk-compatibility-icon {
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.tn-bulk-compatibility-icon.ready {
+    color: var(--text-success);
+}
+
+.tn-bulk-compatibility-icon.skip {
+    color: var(--text-warning);
+}
+
+.tn-bulk-compatibility-icon.error {
+    color: var(--text-error);
+}
+
+.tn-bulk-compatibility-toggle {
+    margin-top: 8px;
+    margin-left: 24px;
+}
+
+.tn-bulk-compatibility-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85em;
+    padding: 4px 0;
+}
+
+.tn-bulk-compatibility-toggle-btn:hover {
+    color: var(--text-normal);
+}
+
+.tn-bulk-compatibility-breakdown {
+    margin-left: 24px;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease, padding 0.2s ease;
+}
+
+.tn-bulk-compatibility-breakdown.expanded {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.tn-bulk-compatibility-file {
+    padding: 2px 8px;
+    font-size: 0.85em;
+    color: var(--text-muted);
+    font-family: var(--font-monospace);
+}
+
+.tn-bulk-compatibility-overflow {
+    padding: 2px 8px;
+    font-size: 0.85em;
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+.tn-bulk-compatibility-warning {
+    background: var(--background-modifier-error-hover);
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: var(--text-error);
+}
+
+/* Date and Reminder Controls (Bulk Convert Mode) */
+.tn-bulk-date-input {
+    min-width: 150px;
+}
+
+.tn-bulk-reminder-dropdown {
+    min-width: 150px;
+}
+
+.tn-bulk-reminder-setting {
+    position: relative;
+}
+
+.tn-bulk-reminder-hint {
+    color: var(--text-warning);
+    font-size: 0.85em;
+    margin-top: 4px;
+}
+
+/* ================================================
+   ASSIGNEE DROPDOWN (Bulk Task Modal)
+   ================================================ */
+
+.tn-assignee-dropdown-container {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+}
+
+.tn-assignee-dropdown {
+    min-width: 180px;
+}
+
+.tn-assignee-avatar-preview {
+    display: flex;
+    align-items: center;
 }

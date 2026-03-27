@@ -1,0 +1,846 @@
+/* ================================================
+   PROPERTY PICKER
+   Inline searchable property selector with type badges
+   ================================================ */
+
+.tn-property-picker {
+    position: relative;
+    width: 100%;
+}
+
+/* Header row: search + scope chips */
+.tn-pp-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: var(--size-4-2);
+    flex-wrap: wrap;
+}
+
+.tn-pp-search-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.tn-pp-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.tn-pp-search-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.tn-pp-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 10px 6px 34px !important;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    font-size: var(--font-ui-small);
+}
+
+.tn-pp-search:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* Scope chips — replace vault-wide toggle */
+.tn-pp-scope-chips {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.tn-pp-scope-chip {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: var(--font-ui-smaller);
+    cursor: pointer;
+    background: var(--background-modifier-hover);
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    white-space: nowrap;
+    user-select: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.tn-pp-scope-chip--active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.tn-pp-scope-chip:hover:not(.tn-pp-scope-chip--active) {
+    background: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border);
+}
+
+/* Help icon next to "Additional properties" */
+.tn-pp-help-icon {
+    display: inline-flex;
+    color: var(--text-faint);
+    cursor: help;
+}
+.tn-pp-help-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Dropdown - fixed positioning to escape modal overflow */
+.tn-pp-dropdown {
+    position: fixed;
+    max-height: 280px;
+    min-width: 280px;
+    overflow-y: auto;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    box-shadow: var(--shadow-s);
+    z-index: 10000;
+}
+
+/* Type sections */
+.tn-pp-section {
+    padding: 4px 0;
+}
+
+.tn-pp-section:not(:last-child) {
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tn-pp-section-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: var(--font-ui-smaller);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tn-pp-section-title {
+    flex: 1;
+}
+
+/* Type badges */
+.tn-pp-type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+    background: color-mix(in srgb, var(--badge-color, var(--text-muted)) 15%, transparent);
+    color: var(--badge-color, var(--text-muted));
+}
+
+.tn-pp-type-badge--date {
+    --badge-color: var(--color-blue);
+}
+
+.tn-pp-type-badge--text {
+    --badge-color: var(--color-green);
+}
+
+.tn-pp-type-badge--number {
+    --badge-color: var(--color-purple);
+}
+
+.tn-pp-type-badge--boolean {
+    --badge-color: var(--color-orange);
+}
+
+.tn-pp-type-badge--list {
+    --badge-color: var(--color-cyan);
+}
+
+/* Dropdown items */
+.tn-pp-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.tn-pp-item:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tn-pp-item-key {
+    flex: 1;
+    font-size: var(--font-ui-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tn-pp-item-value {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tn-pp-item-value--empty {
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.tn-pp-item-count {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* Compatibility warning */
+.tn-pp-item-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+    background: color-mix(in srgb, var(--color-orange) 12%, transparent);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.tn-pp-item-warning:hover {
+    background: color-mix(in srgb, var(--color-orange) 22%, transparent);
+}
+
+.tn-pp-warning-icon {
+    display: flex;
+    color: var(--color-orange);
+}
+
+.tn-pp-warning-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.tn-pp-warning-text {
+    font-size: 10px;
+    color: var(--color-orange);
+    white-space: nowrap;
+}
+
+/* Conversion menu (inline dropdown from warning) */
+.tn-pp-conversion-menu {
+    position: absolute;
+    right: 0;
+    margin-top: 4px;
+    min-width: 220px;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    box-shadow: var(--shadow-s);
+    z-index: 10001;
+    overflow: hidden;
+}
+
+.tn-pp-conversion-option {
+    padding: 8px 12px;
+    font-size: var(--font-ui-small);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.tn-pp-conversion-option:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tn-pp-conversion-option:not(:last-child) {
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tn-pp-conversion-option .tn-pp-type-badge {
+    margin-right: 6px;
+    display: inline-block;
+}
+
+/* Files list (shown from conversion menu) */
+.tn-pp-files-list {
+    position: absolute;
+    right: 0;
+    margin-top: 4px;
+    min-width: 200px;
+    max-height: 150px;
+    overflow-y: auto;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    box-shadow: var(--shadow-s);
+    z-index: 10001;
+    padding: 4px 0;
+}
+
+.tn-pp-file-item {
+    padding: 4px 10px;
+    font-size: var(--font-ui-smaller);
+    color: var(--text-normal);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tn-pp-file-item--more {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Add new property */
+.tn-pp-add-section {
+    border-top: 1px solid var(--background-modifier-border);
+    padding: 4px 0;
+}
+
+.tn-pp-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    font-size: var(--font-ui-small);
+    color: var(--text-accent);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.tn-pp-add-btn:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tn-pp-add-icon {
+    display: flex;
+}
+
+.tn-pp-add-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Add form (inline) */
+.tn-pp-add-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+}
+
+.tn-pp-add-key {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    font-size: var(--font-ui-smaller);
+    min-width: 0;
+}
+
+.tn-pp-add-key:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+}
+
+.tn-pp-add-type-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+.tn-pp-add-type {
+    padding: 4px 8px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: var(--font-ui-smaller);
+    cursor: pointer;
+    min-width: 58px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.tn-pp-add-type:hover {
+    background: var(--background-modifier-hover);
+}
+.tn-pp-add-type-caret {
+    font-size: 0.7em;
+    opacity: 0.6;
+    margin-left: auto;
+}
+.tn-pp-add-type-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    box-shadow: var(--shadow-s);
+    margin-top: 2px;
+    overflow: hidden;
+}
+.tn-pp-add-type-option {
+    padding: 4px 8px;
+    font-size: var(--font-ui-smaller);
+    cursor: pointer;
+}
+.tn-pp-add-type-option:hover {
+    background: var(--background-modifier-hover);
+}
+.tn-pp-add-type-option.is-active {
+    color: var(--text-accent);
+    font-weight: 500;
+}
+
+.tn-pp-add-submit,
+.tn-pp-add-cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    transition: background 0.1s;
+    flex-shrink: 0;
+}
+
+.tn-pp-add-submit:hover {
+    background: color-mix(in srgb, var(--color-green) 20%, transparent);
+    color: var(--color-green);
+}
+
+.tn-pp-add-cancel:hover {
+    background: color-mix(in srgb, var(--color-red) 20%, transparent);
+    color: var(--color-red);
+}
+
+.tn-pp-add-submit svg,
+.tn-pp-add-cancel svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Convert to date button (for non-date catalog entries) */
+.tn-pp-convert-btn {
+    font-size: 0.7em;
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+    background: color-mix(in srgb, var(--color-blue) 15%, transparent);
+    color: var(--color-blue);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.1s;
+    white-space: nowrap;
+}
+
+.tn-pp-convert-btn:hover {
+    background: color-mix(in srgb, var(--color-blue) 25%, transparent);
+}
+
+/* Flash animation for convert button when user clicks a non-date property */
+.tn-pp-convert-btn--flash {
+    animation: tn-pp-flash 0.5s ease-in-out 3;
+    outline: 2px solid var(--color-blue);
+    outline-offset: 1px;
+}
+@keyframes tn-pp-flash {
+    0%, 100% { background: color-mix(in srgb, var(--color-blue) 15%, transparent); }
+    50% { background: color-mix(in srgb, var(--color-blue) 45%, transparent); }
+}
+
+/* Inline hint shown below a non-date property row */
+.tn-pp-convert-hint {
+    flex-basis: 100%;
+    font-size: var(--font-ui-smaller);
+    color: var(--text-accent);
+    padding: 2px 0 0;
+    font-style: italic;
+    animation: tn-pp-hint-fade 4s ease-out forwards;
+}
+@keyframes tn-pp-hint-fade {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Empty state */
+.tn-pp-empty {
+    padding: 16px 10px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+    font-style: italic;
+}
+
+/* ================================================
+   EXPANDABLE PROPERTY ROWS
+   Shared by Edit Task + Bulk modals for field mapping
+   ================================================ */
+
+/* Row wrapper — contains header + expandable panel */
+.tn-prop-row {
+    background: var(--background-secondary);
+    border-radius: var(--radius-s);
+    font-size: var(--font-ui-small);
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+/* Header (always visible): toggle + label + badge + value + remove */
+.tn-prop-row__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    min-height: 32px;
+}
+
+/* Expand/collapse toggle (only on date properties) */
+.tn-prop-row__expand-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: var(--radius-s);
+    color: var(--text-muted);
+    transition: color 0.15s, background 0.15s;
+}
+
+.tn-prop-row__expand-toggle:hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+}
+
+.tn-prop-row__expand-toggle svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.15s ease;
+}
+
+.tn-prop-row--expanded .tn-prop-row__expand-toggle svg {
+    transform: rotate(90deg);
+}
+
+/* Property key label */
+.tn-prop-row__key {
+    flex-shrink: 0;
+    min-width: 80px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+/* Type badge (reuses property-picker badge styles) */
+.tn-prop-row__type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 5px;
+    border-radius: var(--radius-s);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--badge-color, var(--text-muted)) 15%, transparent);
+    color: var(--badge-color, var(--text-muted));
+}
+
+/* Value input area */
+.tn-prop-row__value {
+    flex: 1;
+    min-width: 0;
+}
+
+.tn-prop-row__value input {
+    width: 100%;
+    padding: 3px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    font-size: var(--font-ui-small);
+    box-sizing: border-box;
+}
+
+.tn-prop-row__value input:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+}
+
+/* Mapping badge — small pill showing which core field this maps to */
+.tn-prop-row__mapping-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+    color: var(--interactive-accent);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.tn-prop-row__mapping-badge:hover {
+    background: color-mix(in srgb, var(--interactive-accent) 25%, transparent);
+}
+
+.tn-prop-row__mapping-badge svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Remove button */
+.tn-prop-row__remove {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    opacity: 0.5;
+    flex-shrink: 0;
+    transition: opacity 0.1s, color 0.1s;
+}
+
+.tn-prop-row__remove:hover {
+    opacity: 1;
+    color: var(--text-error);
+}
+
+.tn-prop-row__remove svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Expandable mapping panel */
+.tn-prop-row__mapping-panel {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.2s ease, padding 0.2s ease;
+    padding: 0 8px;
+    border-top: none;
+}
+
+.tn-prop-row--expanded .tn-prop-row__mapping-panel {
+    max-height: 200px;
+    padding: 6px 8px 8px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Maps to label + dropdown row */
+.tn-prop-row__mapping-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tn-prop-row__mapping-label {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.tn-prop-row__mapping-dropdown {
+    flex: 1;
+    padding: 3px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    font-size: var(--font-ui-small);
+    color: var(--text-normal);
+    cursor: pointer;
+}
+
+.tn-prop-row__mapping-dropdown:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+}
+
+.tn-prop-row__mapping-help {
+    flex-shrink: 0;
+    color: var(--text-faint);
+    cursor: help;
+    display: flex;
+    align-items: center;
+}
+
+.tn-prop-row__mapping-help .svg-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* Type mismatch warning in mapping panel */
+.tn-prop-row__type-mismatch {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: var(--font-ui-smaller);
+    color: var(--text-warning);
+}
+
+.tn-prop-row__type-mismatch-icon {
+    flex-shrink: 0;
+}
+
+.tn-prop-row__type-mismatch-text {
+    color: var(--text-muted);
+}
+
+.tn-prop-row__type-mismatch-action {
+    cursor: pointer;
+    color: var(--text-accent);
+    white-space: nowrap;
+    margin-left: 4px;
+}
+
+.tn-prop-row__type-mismatch-action:hover {
+    text-decoration: underline;
+}
+
+/* ================================================
+   USE AS MENU
+   Mapping popup for assigning properties to core fields
+   ================================================ */
+
+/* Separator in Use As menu */
+.tn-pp-use-as-separator {
+    border-top: 1px solid var(--background-modifier-border);
+    margin: 4px 0;
+}
+
+/* Disabled option (already claimed by another property) */
+.tn-pp-conversion-option--disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+/* Conversion note in Use As options (e.g., "converts from Text") */
+.tn-pp-use-as-convert-note {
+    color: var(--text-faint);
+    font-size: 0.8em;
+    font-style: italic;
+    margin-left: 4px;
+}
+
+/* Footer note */
+.tn-pp-use-as-footer {
+    color: var(--text-faint);
+    font-size: 0.75em;
+    padding: 4px 8px;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Conflict warning (shown when both custom + default property exist) */
+.tn-prop-row__conflict {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: color-mix(in srgb, var(--color-orange) 10%, transparent);
+    border-left: 3px solid var(--color-orange);
+    border-radius: var(--radius-s);
+    font-size: var(--font-ui-smaller);
+    color: var(--color-orange);
+}
+
+.tn-prop-row__conflict-icon {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.tn-prop-row__conflict-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.tn-prop-row__conflict-text {
+    flex: 1;
+}
+
+.tn-prop-row__conflict-action {
+    cursor: pointer;
+    text-decoration: underline;
+    white-space: nowrap;
+    transition: opacity 0.1s;
+}
+
+.tn-prop-row__conflict-action:hover {
+    opacity: 0.8;
+}
+
+/* ================================================
+   COLLAPSIBLE SECTION TOGGLE
+   Used by task modals to collapse/expand the property picker section
+   ================================================ */
+
+/* Show/hide toggle for the property picker section.
+   The list-plus action bar icon or header click toggles this. */
+.tn-pp-section-hidden {
+    display: none !important;
+}
+
+/* ================================================
+   CONVERSION PROGRESS BAR
+   Shown inside confirmation modal during type conversion
+   ================================================ */
+
+.tn-pp-conversion-progress {
+    margin-top: 8px;
+}
+
+.tn-pp-conversion-progress__label {
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.tn-pp-conversion-progress__track {
+    width: 100%;
+    height: 6px;
+    background: var(--background-modifier-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tn-pp-conversion-progress__bar {
+    height: 100%;
+    background: var(--interactive-accent);
+    border-radius: 3px;
+    transition: width 0.15s ease;
+}

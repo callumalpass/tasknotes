@@ -1,0 +1,326 @@
+/**
+ * Bulk edit engine.
+ * Modifies frontmatter properties on existing task files.
+ * Only writes fields the user explicitly set — blank/empty fields are left untouched.
+ */
+
+import { TFile } from "obsidian";
+import TaskNotesPlugin from "../main";
+import { BasesDataItem } from "../bases/helpers";
+import { getCurrentTimestamp } from "../utils/dateUtils";
+import { FIELD_OVERRIDE_PROPS } from "../utils/fieldOverrideUtils";
+
+export interface BulkEditOptions {
+	/** Status to set on all edited tasks */
+	status?: string;
+	/** Priority to set on all edited tasks */
+	priority?: string;
+	/** Due date to set (YYYY-MM-DD format) */
+	dueDate?: string;
+	/** Scheduled/start date to set (YYYY-MM-DD format) */
+	scheduledDate?: string;
+	/** Assignees to set (wikilink strings) */
+	assignees?: string[];
+	/** Reminders to set */
+	reminders?: Array<{ id?: string; type: string; relatedTo?: string; offset?: string; absoluteTime?: string; description?: string }>;
+	/** Custom frontmatter properties to apply */
+	customFrontmatter?: Record<string, any>;
+	/** Per-view field mapping from a .base file (ADR-011) */
+	viewFieldMapping?: import("../identity/BaseIdentityService").ViewFieldMapping;
+	/** Source base ID for provenance tracking (ADR-011) */
+	sourceBaseId?: string;
+	/** Source view ID for provenance tracking (ADR-011) */
+	sourceViewId?: string;
+	/** Callback for progress updates */
+	onProgress?: (current: number, total: number, status: string) => void;
+}
+
+export interface BulkEditResult {
+	/** Number of tasks successfully edited */
+	edited: number;
+	/** Number of items skipped (not tasks or non-markdown) */
+	skipped: number;
+	/** Number of items that failed */
+	failed: number;
+	/** Error messages for failed items */
+	errors: string[];
+	/** Paths of edited task files */
+	editedPaths: string[];
+}
+
+export interface EditPreCheckResult {
+	/** Number of items that ARE tasks (will be edited) */
+	toEdit: number;
+	/** Number of items that are NOT tasks (will be skipped) */
+	notTasks: number;
+	/** Paths of non-task items */
+	notTaskPaths: Set<string>;
+	/** Non-markdown files that will be skipped */
+	nonMarkdown: number;
+	nonMarkdownPaths: Set<string>;
+	/** Breakdown of non-markdown files by extension */
+	fileTypeBreakdown: Map<string, string[]>;
+}
+
+/**
+ * BulkEditEngine handles modifying frontmatter properties on existing task files.
+ * Unlike BulkConvertEngine, this operates on files that are ALREADY tasks.
+ * Only explicitly-set fields are written — blank/empty fields are left untouched.
+ */
+export class BulkEditEngine {
+	constructor(private plugin: TaskNotesPlugin) {}
+
+	/**
+	 * Pre-check items to determine how many are tasks (editable) vs non-tasks (skipped).
+	 * Inverse of BulkConvertEngine.preCheck().
+	 */
+	async preCheck(items: BasesDataItem[]): Promise<EditPreCheckResult> {
+		const notTaskPaths = new Set<string>();
+		const nonMarkdownPaths = new Set<string>();
+		const fileTypeBreakdown = new Map<string, string[]>();
+
+		this.plugin.debugLog.log("BulkEditEngine", "preCheck", {
+			itemCount: items.length,
+			itemPaths: items.map((item) => item.path || "(no path)"),
+		});
+
+		for (const item of items) {
+			const sourcePath = item.path || "";
+			if (!sourcePath) continue;
+
+			const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+			if (!(file instanceof TFile)) continue;
+
+			// Skip non-markdown files
+			if (file.extension !== "md") {
+				nonMarkdownPaths.add(sourcePath);
+				const ext = file.extension.toLowerCase();
+				if (!fileTypeBreakdown.has(ext)) {
+					fileTypeBreakdown.set(ext, []);
+				}
+				fileTypeBreakdown.get(ext)!.push(file.basename);
+				continue;
+			}
+
+			// Check if NOT a task → will be skipped
+			const metadata = this.plugin.app.metadataCache.getFileCache(file);
+			const frontmatter = metadata?.frontmatter;
+			if (!frontmatter || !this.plugin.cacheManager.isTaskFile(frontmatter)) {
+				notTaskPaths.add(sourcePath);
+			}
+		}
+
+		const notTasks = notTaskPaths.size;
+		const nonMarkdown = nonMarkdownPaths.size;
+		const toEdit = items.length - notTasks - nonMarkdown;
+
+		this.plugin.debugLog.log("BulkEditEngine", "preCheck result", {
+			toEdit,
+			notTasks,
+			nonMarkdown,
+			notTaskPaths: [...notTaskPaths],
+			nonMarkdownPaths: [...nonMarkdownPaths],
+			fileTypeBreakdown: Object.fromEntries(fileTypeBreakdown),
+		});
+
+		return { toEdit, notTasks, notTaskPaths, nonMarkdown, nonMarkdownPaths, fileTypeBreakdown };
+	}
+
+	/**
+	 * Edit existing task files by modifying their frontmatter.
+	 * Only applies fields that are explicitly set in options (non-null, non-empty).
+	 */
+	async editTasks(
+		items: BasesDataItem[],
+		options: BulkEditOptions
+	): Promise<BulkEditResult> {
+		const result: BulkEditResult = {
+			edited: 0,
+			skipped: 0,
+			failed: 0,
+			errors: [],
+			editedPaths: [],
+		};
+
+		if (items.length === 0) {
+			return result;
+		}
+
+		// Pre-check which are NOT tasks
+		options.onProgress?.(0, items.length, "Checking task files...");
+		const preCheck = await this.preCheck(items);
+
+		const total = items.length;
+
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+			const sourcePath = item.path || "";
+
+			options.onProgress?.(i + 1, total, `Editing ${i + 1} of ${total}...`);
+
+			// Skip non-markdown files
+			if (preCheck.nonMarkdownPaths.has(sourcePath)) {
+				this.plugin.debugLog.log("BulkEditEngine", `Skipping (non-markdown): ${sourcePath}`);
+				result.skipped++;
+				continue;
+			}
+
+			// Skip non-task files
+			if (preCheck.notTaskPaths.has(sourcePath)) {
+				this.plugin.debugLog.log("BulkEditEngine", `Skipping (not a task): ${sourcePath}`);
+				result.skipped++;
+				continue;
+			}
+
+			// Skip if no valid file
+			const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+			if (!(file instanceof TFile)) {
+				result.failed++;
+				result.errors.push(`File not found: ${sourcePath}`);
+				continue;
+			}
+
+			try {
+				await this.editSingleTask(file, options);
+				result.edited++;
+				result.editedPaths.push(sourcePath);
+			} catch (error) {
+				result.failed++;
+				const errorMsg = error instanceof Error ? error.message : String(error);
+				result.errors.push(`Error for ${sourcePath}: ${errorMsg}`);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Edit a single task file by modifying its frontmatter.
+	 * Only writes fields that are explicitly set — unlike Convert, this OVERWRITES existing values.
+	 */
+	private async editSingleTask(file: TFile, options: BulkEditOptions): Promise<void> {
+		const settings = this.plugin.settings;
+		const fieldMapper = this.plugin.fieldMapper;
+
+		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			// Apply status if specified
+			if (options.status) {
+				const statusField = fieldMapper.toUserField("status");
+				frontmatter[statusField] = options.status;
+			}
+
+			// Apply priority if specified
+			if (options.priority) {
+				const priorityField = fieldMapper.toUserField("priority");
+				frontmatter[priorityField] = options.priority;
+			}
+
+			// Apply due date if specified
+			if (options.dueDate) {
+				const dueField = fieldMapper.toUserField("due");
+				frontmatter[dueField] = options.dueDate;
+			}
+
+			// Apply scheduled date if specified
+			if (options.scheduledDate) {
+				const scheduledField = fieldMapper.toUserField("scheduled");
+				frontmatter[scheduledField] = options.scheduledDate;
+			}
+
+			// Apply assignees if specified
+			if (options.assignees && options.assignees.length > 0) {
+				const assigneeField = settings.assigneeFieldName || "assignee";
+				frontmatter[assigneeField] = options.assignees.length === 1
+					? options.assignees[0]
+					: options.assignees;
+			}
+
+			// Apply reminders if specified
+			if (options.reminders && options.reminders.length > 0) {
+				const remindersField = fieldMapper.toUserField("reminders");
+				frontmatter[remindersField] = options.reminders.map(r => ({
+					id: r.id || `rem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+					type: r.type,
+					relatedTo: r.relatedTo,
+					offset: r.offset,
+					absoluteTime: r.absoluteTime,
+					description: r.description,
+				}));
+			}
+
+			// Apply custom frontmatter properties
+			if (options.customFrontmatter) {
+				for (const [key, value] of Object.entries(options.customFrontmatter)) {
+					if (value !== null && value !== undefined && value !== "") {
+						frontmatter[key] = value;
+					}
+				}
+			}
+
+			// Apply per-view field mapping (ADR-011)
+			if (options.viewFieldMapping) {
+				const mapping = options.viewFieldMapping;
+				const fieldMappingEntries: Array<{
+					viewKey: keyof typeof mapping;
+					fieldMappingKey: "due" | "scheduled" | "completedDate" | "dateCreated";
+					trackingProp: string;
+				}> = [
+					{ viewKey: "due", fieldMappingKey: "due", trackingProp: FIELD_OVERRIDE_PROPS.due },
+					{ viewKey: "scheduled", fieldMappingKey: "scheduled", trackingProp: FIELD_OVERRIDE_PROPS.scheduled },
+					{ viewKey: "completedDate", fieldMappingKey: "completedDate", trackingProp: FIELD_OVERRIDE_PROPS.completedDate },
+					{ viewKey: "dateCreated", fieldMappingKey: "dateCreated", trackingProp: FIELD_OVERRIDE_PROPS.dateCreated },
+				];
+
+				for (const { viewKey, fieldMappingKey, trackingProp } of fieldMappingEntries) {
+					const customPropName = mapping[viewKey];
+					if (!customPropName?.trim()) continue;
+					const globalPropName = fieldMapper.toUserField(fieldMappingKey);
+					if (customPropName === globalPropName) continue;
+
+					const hasGlobalValue = frontmatter[globalPropName] !== undefined;
+					if (hasGlobalValue) {
+						frontmatter[customPropName] = frontmatter[globalPropName];
+						delete frontmatter[globalPropName];
+					}
+					if (hasGlobalValue || frontmatter[customPropName] !== undefined) {
+						frontmatter[trackingProp] = customPropName;
+					}
+				}
+
+				// Handle assignee field mapping
+				if (mapping.assignee?.trim()) {
+					const globalAssigneeProp = settings.assigneeFieldName || "assignee";
+					if (mapping.assignee !== globalAssigneeProp) {
+						const hasAssigneeValue = frontmatter[globalAssigneeProp] !== undefined;
+						if (hasAssigneeValue) {
+							frontmatter[mapping.assignee] = frontmatter[globalAssigneeProp];
+							delete frontmatter[globalAssigneeProp];
+						}
+						if (hasAssigneeValue || frontmatter[mapping.assignee] !== undefined) {
+							frontmatter[FIELD_OVERRIDE_PROPS.assignee] = mapping.assignee;
+						}
+					}
+				}
+			}
+
+			// Write provenance tracking (ADR-011)
+			if (this.plugin.settings.baseIdentityTrackSourceView) {
+				if (options.sourceBaseId) {
+					frontmatter["tnSourceBaseId"] = options.sourceBaseId;
+				}
+				if (options.sourceViewId) {
+					frontmatter["tnSourceViewId"] = options.sourceViewId;
+				}
+			}
+
+			// Always update dateModified
+			const dateModifiedField = fieldMapper.toUserField("dateModified");
+			frontmatter[dateModifiedField] = getCurrentTimestamp();
+		});
+
+		// Wait for metadata cache to index the changes
+		if (this.plugin.cacheManager.waitForFreshTaskData) {
+			await this.plugin.cacheManager.waitForFreshTaskData(file);
+		}
+	}
+}

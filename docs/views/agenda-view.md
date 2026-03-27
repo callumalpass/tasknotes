@@ -1,9 +1,18 @@
 # Agenda View
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Show scrolling through the agenda list with upcoming tasks grouped by day
+-->
 
 The Agenda view is a dedicated `.base` file that opens the calendar in list mode. It provides a scrollable agenda of upcoming tasks, notes, and external calendar events without needing to switch the primary calendar into list view manually.
 
-![Agenda View](../assets/views-agenda.png)
+![Agenda View](../assets/views/views-agenda.png)
 
 ## File Location
 
@@ -33,6 +42,10 @@ views:
 ```
 
 This configuration displays seven days at a time, derives entries from `file.ctime`/`file.basename`, and inherits the same display options (show scheduled/due/recurring/timeblocks/time entries/ICS events) as the primary calendar view.
+
+<!-- GIF: Scrolling through the agenda list showing upcoming tasks grouped by day -->
+
+![Agenda view showing tasks grouped by day](../assets/agenda-view/screenshot-agenda.png)
 
 ## Customization
 

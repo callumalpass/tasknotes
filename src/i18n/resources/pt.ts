@@ -1001,8 +1001,8 @@ export const pt: TranslationTree = {
 				filtersOn: "Filtros Ativos",
 			},
 			titleCard: {
-				storeTitleInFilename: "Armazenar título no nome do arquivo:",
-				storedInFilename: "Armazenado no nome do arquivo",
+				storeTitleInFilename: "Usar título como nome do arquivo:",
+				storedInFilename: "Título como nome do arquivo",
 				filenameUpdatesWithTitle: "O nome do arquivo será atualizado automaticamente quando o título da tarefa mudar.",
 				filenameFormat: "Formato do nome do arquivo:",
 				customTemplate: "Modelo personalizado:",
@@ -1207,7 +1207,7 @@ export const pt: TranslationTree = {
 				header: "Nomes de Arquivo de Tarefa",
 				description: "Configure como os arquivos de tarefa são nomeados quando criados.",
 				storeTitleInFilename: {
-					name: "Armazenar título no nome do arquivo",
+					name: "Usar título como nome do arquivo",
 					description: "Usar o título da tarefa como nome do arquivo. O nome do arquivo será atualizado quando o título da tarefa for alterado (Recomendado)."
 				},
 				filenameFormat: {

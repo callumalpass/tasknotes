@@ -40,7 +40,7 @@ export class AutoExportService {
 			this.nextExportTime = new Date(Date.now() + intervalMs);
 		}, intervalMs) as unknown as number;
 
-		console.log(`TaskNotes: Auto export started (interval: ${intervalMinutes} minutes)`);
+		this.plugin.debugLog.log('AutoExport', `Auto export started (interval: ${intervalMinutes} minutes)`);
 	}
 
 	/**
@@ -96,7 +96,7 @@ export class AutoExportService {
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 
 			if (allTasks.length === 0) {
-				console.log("TaskNotes: Auto export skipped - no tasks found");
+				this.plugin.debugLog.log('AutoExport', 'Auto export skipped - no tasks found');
 				return;
 			}
 
@@ -121,8 +121,8 @@ export class AutoExportService {
 			}
 
 			this.lastExportTime = new Date();
-			console.log(
-				`TaskNotes: Auto export completed - ${allTasks.length} tasks exported to ${exportPath}`
+			this.plugin.debugLog.log('AutoExport',
+				`Auto export completed - ${allTasks.length} tasks exported to ${exportPath}`
 			);
 		} catch (error) {
 			console.error("TaskNotes: Auto export failed:", error);

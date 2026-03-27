@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../main";
+import { migratePropertyName } from "../../../utils/settingsMigration";
 import {
 	createCard,
 	createCardInput,
@@ -45,9 +46,19 @@ export function renderPriorityPropertyCard(
 		plugin.settings.defaultTaskPriority
 	);
 
-	propertyKeyInput.addEventListener("change", () => {
-		plugin.settings.fieldMapping.priority = propertyKeyInput.value;
+	propertyKeyInput.addEventListener("change", async () => {
+		const newValue = propertyKeyInput.value.trim();
+		const oldValue = plugin.settings.fieldMapping.priority;
+		if (newValue && newValue !== oldValue) {
+			const result = await migratePropertyName({
+				app: plugin.app, plugin, oldPropertyName: oldValue, newPropertyName: newValue, description: "task files",
+			});
+			if (result === "cancelled") { propertyKeyInput.value = oldValue; return; }
+		}
+		plugin.settings.fieldMapping.priority = newValue || oldValue;
 		save();
+		const secondary = propertyKeyInput.closest("[data-card-id]")?.querySelector(".tasknotes-settings__card-secondary-text");
+		if (secondary) secondary.textContent = plugin.settings.fieldMapping.priority;
 	});
 
 	defaultSelect.addEventListener("change", () => {

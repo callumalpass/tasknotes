@@ -10,7 +10,8 @@ import {
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskInfo, TaskCreationData, TaskDependency } from "../types";
-import { getCurrentTimestamp } from "../utils/dateUtils";
+import { getCurrentTimestamp, getDatePart, getTimePart } from "../utils/dateUtils";
+import { DateContextMenu } from "../components/DateContextMenu";
 import { generateTaskFilename, FilenameContext } from "../utils/filenameGenerator";
 import { calculateDefaultDate, sanitizeTags } from "../utils/helpers";
 import {
@@ -30,6 +31,18 @@ import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import {
+	type DiscoveredProperty,
+	type PropertyType,
+	keyToDisplayName,
+} from "../utils/propertyDiscoveryUtils";
+import { createPropertyPicker } from "../ui/PropertyPicker";
+import {
+	FIELD_OVERRIDE_PROPS,
+	OVERRIDABLE_FIELD_LABELS,
+	OVERRIDABLE_FIELD_TYPES,
+	type OverridableField,
+} from "../utils/fieldOverrideUtils";
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
 
 
@@ -37,6 +50,16 @@ export interface TaskCreationOptions {
 	prePopulatedValues?: Partial<TaskInfo>;
 	onTaskCreated?: (task: TaskInfo) => void;
 	creationContext?: "manual-creation" | "modal-inline-creation"; // Folder behavior context
+	/** Per-view field mapping from a .base file (ADR-011). Passed through to TaskService. */
+	viewFieldMapping?: import("../identity/BaseIdentityService").ViewFieldMapping;
+	/** Source base ID for provenance tracking (ADR-011). */
+	sourceBaseId?: string;
+	/** Source view ID for provenance tracking (ADR-011). */
+	sourceViewId?: string;
+	/** File paths from the base view's current results — used for PropertyPicker discovery context. */
+	contextItemPaths?: string[];
+	/** Active file path when modal was opened — used for "This note" scope in PropertyPicker. */
+	currentFilePath?: string;
 }
 
 /**
@@ -628,6 +651,16 @@ export class TaskCreationModal extends TaskModal {
 	private nlPreviewContainer: HTMLElement;
 	private nlButtonContainer: HTMLElement;
 	private nlpSuggest: NLPSuggest | null = null; // Will be replaced with CodeMirror autocomplete
+	private propertyPickerInstance: { refresh: () => void; destroy: () => void } | null = null;
+	private propertyPickerExcludeKeys: Set<string> | null = null;
+	private discoveredProperties: DiscoveredProperty[] = [];
+	/** Per-task field overrides: maps internal field key (e.g., "due") to custom property name (e.g., "deadline") */
+	private fieldOverrides: Record<string, string> = {};
+	/** Container for discovered property rows (for re-rendering after value changes) */
+	private discoveredFieldsContainer: HTMLElement | null = null;
+	/** Configured user field keys (for re-rendering) */
+	private configuredUserFieldKeys: Set<string> = new Set();
+	private propertyPickerSectionContainer: HTMLElement | null = null;
 
 	// Track event listeners for cleanup
 	private eventListeners: Array<{
@@ -644,6 +677,33 @@ export class TaskCreationModal extends TaskModal {
 		super(app, plugin);
 		this.options = options;
 		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
+
+		// Pre-populate fieldOverrides and discoveredProperties from viewFieldMapping (ADR-011)
+		if (options.viewFieldMapping) {
+			const mapping = options.viewFieldMapping;
+			const fieldMapper = plugin.fieldMapper;
+			for (const [internalKey, customPropName] of Object.entries(mapping)) {
+				if (!customPropName?.trim()) continue;
+				// Only add if custom name differs from the global default
+				const globalPropName = fieldMapper.toUserField(internalKey as any);
+				if (customPropName === globalPropName) continue;
+
+				this.fieldOverrides[internalKey] = customPropName;
+
+				// Determine expected type for this field
+				const expectedType = (OVERRIDABLE_FIELD_TYPES[internalKey as OverridableField] || "text") as PropertyType;
+
+				this.discoveredProperties.push({
+					key: customPropName,
+					displayName: customPropName, // Raw key signals "custom property"
+					type: expectedType,
+					value: expectedType === "date" ? "" : "",
+				});
+
+				// Seed userFields so the value is available in buildCustomFrontmatter
+				this.userFields[customPropName] = expectedType === "date" ? "" : "";
+			}
+		}
 	}
 
 	getModalTitle(): string {
@@ -701,6 +761,446 @@ export class TaskCreationModal extends TaskModal {
 			this.selectedProjectItems.length > 0
 		) {
 			this.renderProjectsList();
+		}
+
+		// Add PropertyPicker for discovering and adding custom properties from other tasks
+		this.createPropertyPickerSection(container);
+	}
+
+	private createPropertyPickerSection(container: HTMLElement): void {
+		const userFieldConfigs = this.plugin.settings?.userFields || [];
+		this.configuredUserFieldKeys = new Set(
+			userFieldConfigs.filter((f: any) => f?.key).map((f: any) => f.key)
+		);
+
+		const sectionContainer = container.createDiv("discovered-properties-container");
+		const sectionLabel = sectionContainer.createDiv("detail-label");
+		sectionLabel.createSpan({ text: "Remap properties" });
+		const helpIcon = sectionLabel.createSpan({ cls: "tn-pp-help-icon" });
+		setIcon(helpIcon, "help-circle");
+		setTooltip(helpIcon, "Add extra frontmatter to this task, or use \u2018Map to\u2019 to assign custom properties to standard task fields (e.g., Due date, Assignee). Search existing properties or create new ones. Use scope chips to filter by source.", { placement: "top" });
+		sectionLabel.style.cssText = "color: var(--text-muted); font-size: var(--font-ui-smaller); display: flex; align-items: center; gap: 4px;";
+
+		this.propertyPickerSectionContainer = sectionContainer;
+
+		// Hide section by default if setting is enabled
+		if (this.plugin.settings.propertyPickerCollapsed) {
+			sectionContainer.classList.add("tn-pp-section-hidden");
+		}
+
+		// PropertyPicker search (above the fields list)
+		const pickerContainer = sectionContainer.createDiv("discovered-properties-picker");
+
+		// Editable fields for discovered properties (below the picker)
+		this.discoveredFieldsContainer = sectionContainer.createDiv("discovered-properties-fields");
+
+		// Render pre-populated property rows (from viewFieldMapping)
+		if (this.discoveredProperties.length > 0) {
+			this.renderDiscoveredPropertyFields(this.discoveredFieldsContainer, this.configuredUserFieldKeys);
+		}
+
+		this.propertyPickerExcludeKeys = new Set([...this.configuredUserFieldKeys, ...this.discoveredProperties.map(p => p.key)]);
+		this.propertyPickerInstance = createPropertyPicker({
+			container: pickerContainer,
+			plugin: this.plugin,
+			itemPaths: this.options.contextItemPaths,
+			currentFilePath: this.options.currentFilePath,
+			excludeKeys: this.propertyPickerExcludeKeys,
+			useAsOptions: Object.entries(OVERRIDABLE_FIELD_LABELS).map(([key, label]) => ({
+				key,
+				label,
+				requiresType: (OVERRIDABLE_FIELD_TYPES[key as OverridableField] || "text") as PropertyType,
+			})),
+			claimedMappings: this.fieldOverrides || {},
+			onSelect: (key: string, type: PropertyType, value?: any, useAs?: string) => {
+				// Set field override mapping if a "Use as" target was chosen
+				if (useAs && this.fieldOverrides) {
+					// Clear any old mapping pointing to this property
+					for (const [fk, pk] of Object.entries(this.fieldOverrides)) {
+						if (pk === key) delete this.fieldOverrides[fk];
+					}
+					this.fieldOverrides[useAs] = key;
+				}
+
+				// Set default value based on type
+				let defaultValue: any = value ?? null;
+				if (defaultValue === null) {
+					switch (type) {
+						case "date": defaultValue = ""; break;
+						case "number": defaultValue = 0; break;
+						case "boolean": defaultValue = false; break;
+						case "list": defaultValue = []; break;
+						default: defaultValue = ""; break;
+					}
+				}
+
+				// Add to userFields for save pipeline
+				this.userFields[key] = defaultValue;
+
+				// Add to discoveredProperties for tracking
+				this.discoveredProperties.push({
+					key,
+					displayName: key, // Raw key signals "custom property"
+					type,
+					value: defaultValue,
+				});
+
+				// Update picker exclusions and re-render
+				this.propertyPickerExcludeKeys?.add(key);
+				this.propertyPickerInstance?.refresh();
+				this.reRenderMappedPropertyRows();
+			},
+		});
+	}
+
+	/**
+	 * Render rows for each discovered property. Mapped properties get click-to-edit
+	 * with rich UIs (DateContextMenu, PersonGroupPicker). Unmapped use basic inputs.
+	 */
+	private renderDiscoveredPropertyFields(
+		container: HTMLElement,
+		configuredKeys: Set<string>
+	): void {
+		for (const prop of this.discoveredProperties) {
+			if (configuredKeys.has(prop.key)) continue;
+
+			const row = container.createDiv({ cls: "tn-prop-row" });
+
+			// Check if this property currently maps to a core field
+			const currentMapping = this.findMappingForProperty(prop.key);
+			if (currentMapping) {
+				row.classList.add("tn-prop-row--expanded");
+			}
+
+			// ── Header row ──────────────────────────────────
+			const header = row.createDiv({ cls: "tn-prop-row__header" });
+
+			// Expand toggle
+			{
+				const toggle = header.createDiv({ cls: "tn-prop-row__expand-toggle" });
+				const svgNS = "http://www.w3.org/2000/svg";
+				const chevronSvg = document.createElementNS(svgNS, "svg");
+				chevronSvg.setAttribute("width", "12");
+				chevronSvg.setAttribute("height", "12");
+				chevronSvg.setAttribute("viewBox", "0 0 24 24");
+				chevronSvg.setAttribute("fill", "none");
+				chevronSvg.setAttribute("stroke", "currentColor");
+				chevronSvg.setAttribute("stroke-width", "2");
+				chevronSvg.setAttribute("stroke-linecap", "round");
+				chevronSvg.setAttribute("stroke-linejoin", "round");
+				const path = document.createElementNS(svgNS, "path");
+				path.setAttribute("d", "M9 18l6-6-6-6");
+				chevronSvg.appendChild(path);
+				toggle.appendChild(chevronSvg);
+				toggle.addEventListener("click", () => {
+					row.classList.toggle("tn-prop-row--expanded");
+				});
+			}
+
+			// Property key label (raw name to signal "custom property")
+			header.createDiv({ cls: "tn-prop-row__key", text: prop.displayName });
+
+			// Type badge
+			header.createDiv({ cls: "tn-prop-row__type-badge", text: prop.type });
+
+			// Value area — mapped fields get click-to-edit, unmapped get basic inputs
+			const valueContainer = header.createDiv({ cls: "tn-prop-row__value" });
+			if (currentMapping) {
+				this.createMappedValueDisplay(valueContainer, prop, currentMapping);
+			} else {
+				this.createPropertyValueInput(valueContainer, prop);
+			}
+
+			// Mapping badge
+			if (currentMapping) {
+				const badge = header.createDiv({ cls: "tn-prop-row__mapping-badge" });
+				badge.createSpan({ text: `\u2192 ${OVERRIDABLE_FIELD_LABELS[currentMapping]}` });
+			}
+
+			// Remove button
+			const removeBtn = header.createDiv({ cls: "tn-prop-row__remove" });
+			const removeSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			removeSvg.setAttribute("width", "14");
+			removeSvg.setAttribute("height", "14");
+			removeSvg.setAttribute("viewBox", "0 0 24 24");
+			removeSvg.setAttribute("fill", "none");
+			removeSvg.setAttribute("stroke", "currentColor");
+			removeSvg.setAttribute("stroke-width", "2");
+			const removePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+			removePath.setAttribute("d", "M18 6L6 18M6 6l12 12");
+			removeSvg.appendChild(removePath);
+			removeBtn.appendChild(removeSvg);
+			removeBtn.title = "Remove this property";
+			removeBtn.addEventListener("click", () => {
+				this.clearMappingForProperty(prop.key);
+				delete this.userFields[prop.key];
+				const idx = this.discoveredProperties.findIndex(p => p.key === prop.key);
+				if (idx >= 0) this.discoveredProperties.splice(idx, 1);
+				this.propertyPickerExcludeKeys?.delete(prop.key);
+				this.propertyPickerInstance?.refresh();
+				this.reRenderMappedPropertyRows();
+			});
+
+			// ── Mapping panel (expanded content) ────
+			{
+				const panel = row.createDiv({ cls: "tn-prop-row__mapping-panel" });
+
+				const mappingRow = panel.createDiv({ cls: "tn-prop-row__mapping-row" });
+				mappingRow.createDiv({ cls: "tn-prop-row__mapping-label", text: "Map to:" });
+
+				const select = mappingRow.createEl("select", { cls: "tn-prop-row__mapping-dropdown" });
+
+				// "None" option
+				const noneOpt = select.createEl("option", { value: "", text: "None (custom only)" });
+				if (!currentMapping) noneOpt.selected = true;
+
+				// One option per overridable field
+				for (const [fieldKey, label] of Object.entries(OVERRIDABLE_FIELD_LABELS)) {
+					const opt = select.createEl("option", { value: fieldKey, text: label });
+					if (currentMapping === fieldKey) opt.selected = true;
+
+					// Disable if another property already maps to this field
+					const existingProp = this.findPropertyForMapping(fieldKey);
+					if (existingProp && existingProp !== prop.key) {
+						opt.disabled = true;
+						opt.text = `${label} (used by ${existingProp})`;
+					}
+				}
+
+				select.addEventListener("change", () => {
+					const newField = select.value;
+					this.clearMappingForProperty(prop.key);
+					if (newField) {
+						this.fieldOverrides[newField] = prop.key;
+					}
+					this.reRenderMappedPropertyRows();
+				});
+
+				// ── Type mismatch note ────────────────────────
+				const expectedType = currentMapping ? (OVERRIDABLE_FIELD_TYPES[currentMapping as OverridableField] || "text") : null;
+				if (currentMapping && expectedType && prop.type !== expectedType) {
+					const mismatch = panel.createDiv({ cls: "tn-prop-row__type-mismatch" });
+					mismatch.createSpan({ cls: "tn-prop-row__type-mismatch-icon", text: "\u26A0" });
+					mismatch.createSpan({
+						cls: "tn-prop-row__type-mismatch-text",
+						text: `Property type is '${prop.type}', but '${OVERRIDABLE_FIELD_LABELS[currentMapping as OverridableField]}' expects '${expectedType}'.`,
+					});
+				}
+			}
+		}
+	}
+
+	/**
+	 * Create a read-only clickable value display for a mapped property.
+	 * Clicking opens the appropriate rich editor (DateContextMenu for dates,
+	 * expands row for assignee PersonGroupPicker).
+	 */
+	private createMappedValueDisplay(
+		container: HTMLElement,
+		prop: DiscoveredProperty,
+		mappedField: OverridableField
+	): void {
+		const isDateField = ["due", "scheduled", "completedDate", "dateCreated"].includes(mappedField);
+		const isAssigneeField = mappedField === "assignee";
+
+		const currentValue = this.userFields[prop.key];
+		const hasValue = currentValue !== null && currentValue !== undefined && currentValue !== "";
+
+		const display = container.createDiv({ cls: "tn-prop-row__value-display" });
+		display.style.cssText = "cursor: pointer; display: flex; align-items: center; gap: 4px;";
+
+		if (isDateField) {
+			// Date: show formatted value or placeholder, click opens DateContextMenu
+			const valueText = hasValue ? String(currentValue) : "Click to set...";
+			const span = display.createSpan({
+				text: valueText,
+				cls: hasValue ? "tn-prop-row__value-set" : "tn-prop-row__value-placeholder",
+			});
+			if (!hasValue) span.style.color = "var(--text-faint)";
+
+			display.addEventListener("click", (event) => {
+				this.showMappedDatePicker(event, prop.key, mappedField);
+			});
+		} else if (isAssigneeField) {
+			// Assignee: show current value or placeholder, click opens AssigneeContextMenu
+			const displayValue = hasValue
+				? (Array.isArray(currentValue) ? currentValue.join(", ") : String(currentValue))
+				: "Click to set...";
+			const span = display.createSpan({
+				text: displayValue,
+				cls: hasValue ? "tn-prop-row__value-set" : "tn-prop-row__value-placeholder",
+			});
+			if (!hasValue) span.style.color = "var(--text-faint)";
+
+			display.addEventListener("click", () => {
+				this.scrollToAssigneePicker();
+			});
+		}
+	}
+
+	/**
+	 * Open DateContextMenu for a mapped date property.
+	 * Syncs value to both userFields[propName] AND the corresponding standard field.
+	 */
+	private showMappedDatePicker(
+		event: UIEvent,
+		propName: string,
+		mappedField: OverridableField
+	): void {
+		const currentValue = this.userFields[propName] || "";
+		const menu = new DateContextMenu({
+			currentValue: currentValue ? getDatePart(currentValue) : undefined,
+			currentTime: currentValue ? getTimePart(currentValue) : undefined,
+			title: `Set ${propName}`,
+			plugin: this.plugin,
+			app: this.app,
+			onSelect: (value: string | null, time: string | null) => {
+				const finalValue = value
+					? (time ? combineDateAndTime(value, time) : value)
+					: "";
+				// Store in userFields for the mapped property
+				this.userFields[propName] = finalValue;
+				// Sync to standard field so action bar icon state updates
+				if (mappedField === "due") this.dueDate = finalValue;
+				else if (mappedField === "scheduled") this.scheduledDate = finalValue;
+				this.updateDateIconState();
+				// Re-render to show updated value
+				this.reRenderMappedPropertyRows();
+			},
+		});
+		menu.show(event);
+	}
+
+	/**
+	 * Scroll to and highlight the assignee PersonGroupPicker in the details section.
+	 * Expands the details section if collapsed. Used by both the action bar icon
+	 * and mapped property "Click to set..." clicks.
+	 */
+	protected override scrollToAssigneePicker(): void {
+		// Expand details section if collapsed
+		if (!this.isExpanded) {
+			this.expandModal();
+		}
+
+		// Find the assignee picker container (not creator) using data-field-key
+		setTimeout(() => {
+			const assigneeFieldName = this.plugin.settings.assigneeFieldName || "assignee";
+			const pickerEl = this.containerEl.querySelector(
+				`.tn-task-modal-assignee[data-field-key="${assigneeFieldName}"]`
+			) as HTMLElement ?? this.containerEl.querySelector(".tn-task-modal-assignee") as HTMLElement;
+			if (pickerEl) {
+				pickerEl.scrollIntoView({ behavior: "smooth", block: "center" });
+				// Flash highlight to draw attention
+				pickerEl.style.outline = "2px solid var(--interactive-accent)";
+				pickerEl.style.outlineOffset = "4px";
+				pickerEl.style.borderRadius = "4px";
+				setTimeout(() => {
+					pickerEl.style.outline = "";
+					pickerEl.style.outlineOffset = "";
+					pickerEl.style.borderRadius = "";
+				}, 1500);
+				// Focus the search input if it exists
+				const searchInput = pickerEl.querySelector("input") as HTMLInputElement;
+				if (searchInput) searchInput.focus();
+			}
+		}, 150); // Wait for expand animation
+	}
+
+	/** Re-render the discovered property rows to reflect updated values. */
+	private reRenderMappedPropertyRows(): void {
+		if (this.discoveredFieldsContainer) {
+			this.discoveredFieldsContainer.empty();
+			this.renderDiscoveredPropertyFields(this.discoveredFieldsContainer, this.configuredUserFieldKeys);
+		}
+	}
+
+	/**
+	 * Hook from TaskModal: sync standard date picker → mapped property.
+	 * When user sets Due Date via the action bar, also update the mapped property.
+	 */
+	protected onStandardDateChanged(type: "due" | "scheduled", value: string): void {
+		const mappedProp = this.fieldOverrides[type];
+		if (mappedProp) {
+			this.userFields[mappedProp] = value;
+			this.reRenderMappedPropertyRows();
+		}
+	}
+
+	/**
+	 * Create a type-appropriate value input for an unmapped discovered property.
+	 */
+	private createPropertyValueInput(container: HTMLElement, prop: DiscoveredProperty): void {
+		switch (prop.type) {
+			case "date": {
+				const input = container.createEl("input", { type: "date" });
+				input.value = this.userFields[prop.key] || "";
+				input.addEventListener("change", () => {
+					this.userFields[prop.key] = input.value;
+				});
+				break;
+			}
+			case "number": {
+				const input = container.createEl("input", { type: "number" });
+				input.value = this.userFields[prop.key]?.toString() || "";
+				input.addEventListener("change", () => {
+					const numValue = parseFloat(input.value);
+					this.userFields[prop.key] = isNaN(numValue) ? null : numValue;
+				});
+				break;
+			}
+			case "boolean": {
+				const input = container.createEl("input", { type: "checkbox" });
+				input.checked = this.userFields[prop.key] === true;
+				input.addEventListener("change", () => {
+					this.userFields[prop.key] = input.checked;
+				});
+				break;
+			}
+			case "list": {
+				const input = container.createEl("input", { type: "text" });
+				const currentValue = this.userFields[prop.key];
+				input.value = Array.isArray(currentValue) ? currentValue.join(", ") : currentValue || "";
+				input.placeholder = "Comma-separated values";
+				input.addEventListener("change", () => {
+					this.userFields[prop.key] = input.value
+						.split(",")
+						.map((v) => v.trim())
+						.filter((v) => v.length > 0);
+				});
+				break;
+			}
+			default: {
+				const input = container.createEl("input", { type: "text" });
+				input.value = this.userFields[prop.key]?.toString() || "";
+				input.addEventListener("change", () => {
+					this.userFields[prop.key] = input.value;
+				});
+				break;
+			}
+		}
+	}
+
+	/** Find which core field (if any) a custom property is mapped to. */
+	private findMappingForProperty(propertyKey: string): OverridableField | null {
+		for (const [fieldKey, propName] of Object.entries(this.fieldOverrides)) {
+			if (propName === propertyKey) {
+				return fieldKey as OverridableField;
+			}
+		}
+		return null;
+	}
+
+	/** Find which custom property (if any) is mapped to a given core field. */
+	private findPropertyForMapping(fieldKey: string): string | null {
+		return this.fieldOverrides[fieldKey] || null;
+	}
+
+	/** Clear any mapping that points to a given property key. */
+	private clearMappingForProperty(propertyKey: string): void {
+		for (const [fieldKey, propName] of Object.entries(this.fieldOverrides)) {
+			if (propName === propertyKey) {
+				delete this.fieldOverrides[fieldKey];
+			}
 		}
 	}
 
@@ -990,6 +1490,28 @@ export class TaskCreationModal extends TaskModal {
 			"reminders"
 		);
 
+		// Assignee icon
+		this.createActionIcon(
+			this.actionBar,
+			"user",
+			this.t("modals.task.actions.assignee"),
+			(icon, event) => {
+				this.scrollToAssigneePicker();
+			},
+			"assignee"
+		);
+
+		// Remap properties icon (scroll to + show section)
+		this.createActionIcon(
+			this.actionBar,
+			"list-plus",
+			"Remap properties",
+			() => {
+				this.scrollToAndExpandPropertyPicker();
+			},
+			"remap-properties"
+		);
+
 		// Update icon states based on current values
 		this.updateIconStates();
 	}
@@ -1070,7 +1592,7 @@ export class TaskCreationModal extends TaskModal {
 					console.debug(`[TaskCreationModal] Applied user field ${userField.displayName} (key: ${userField.key}): ${value}`);
 					console.debug(`[TaskCreationModal] Current this.userFields:`, this.userFields);
 				} else {
-					console.warn(`[TaskCreationModal] No user field definition found for field ID: ${fieldId}`);
+					this.plugin.debugLog.warn('TaskCreationModal', `No user field definition found for field ID: ${fieldId}`);
 				}
 			}
 		} else {
@@ -1086,10 +1608,30 @@ export class TaskCreationModal extends TaskModal {
 			// Collapse
 			this.isExpanded = false;
 			this.detailsContainer.style.display = "none";
+			// Also hide the right column (details editor)
+			if (this.splitRightColumn) {
+				this.splitRightColumn.style.display = "none";
+			}
 			this.containerEl.removeClass("expanded");
+			// Hide property picker section when collapsing
+			if (this.propertyPickerSectionContainer) {
+				this.propertyPickerSectionContainer.classList.add("tn-pp-section-hidden");
+			}
+			// Close any PersonGroupPicker dropdowns that are body-level
+			for (const picker of this.assigneePickers.values()) {
+				picker.closeDropdown();
+			}
 		} else {
 			// Expand
 			this.expandModal();
+			// Restore property picker visibility based on setting
+			if (this.propertyPickerSectionContainer) {
+				if (this.plugin.settings.propertyPickerCollapsed) {
+					this.propertyPickerSectionContainer.classList.add("tn-pp-section-hidden");
+				} else {
+					this.propertyPickerSectionContainer.classList.remove("tn-pp-section-hidden");
+				}
+			}
 		}
 	}
 
@@ -1280,6 +1822,13 @@ export class TaskCreationModal extends TaskModal {
 
 			this.close();
 		} catch (error) {
+			// Check if user requested to edit the task (from collision modal)
+			if ((error as any)?.isEditRequest) {
+				// Don't close the modal - user wants to edit
+				new Notice("Edit your task and try again");
+				return;
+			}
+
 			console.error("Failed to create task:", error);
 			const message = error instanceof Error && error.message ? error.message : String(error);
 			new Notice(this.t("modals.taskCreation.notices.failure", { message }));
@@ -1310,10 +1859,30 @@ export class TaskCreationModal extends TaskModal {
 			tagList.push(this.plugin.settings.taskTag);
 		}
 
+		// ADR-011: Redirect standard fields to mapped properties when a mapping exists.
+		// If user mapped "deadline" → Due date and used the standard picker, the value
+		// flows into the mapped property instead of the standard field (no dual values).
+		let effectiveDue = this.dueDate || undefined;
+		let effectiveScheduled = this.scheduledDate || undefined;
+
+		if (this.fieldOverrides.due && this.dueDate) {
+			// Standard picker was used but mapping exists — redirect to mapped property
+			if (!this.userFields[this.fieldOverrides.due]) {
+				this.userFields[this.fieldOverrides.due] = this.dueDate;
+			}
+			effectiveDue = undefined; // Clear standard field
+		}
+		if (this.fieldOverrides.scheduled && this.scheduledDate) {
+			if (!this.userFields[this.fieldOverrides.scheduled]) {
+				this.userFields[this.fieldOverrides.scheduled] = this.scheduledDate;
+			}
+			effectiveScheduled = undefined;
+		}
+
 		const taskData: TaskCreationData = {
 			title: this.title.trim(),
-			due: this.dueDate || undefined,
-			scheduled: this.scheduledDate || undefined,
+			due: effectiveDue,
+			scheduled: effectiveScheduled,
 			priority: this.priority,
 			status: this.status,
 			contexts: contextList.length > 0 ? contextList : undefined,
@@ -1332,6 +1901,24 @@ export class TaskCreationModal extends TaskModal {
 			// Add user fields as custom frontmatter properties
 			customFrontmatter: this.buildCustomFrontmatter(),
 		};
+
+		// Carry forward per-view field mapping and provenance (ADR-011)
+		// These may come from options (explicit) or prePopulatedValues (from BasesViewBase)
+		const prePopulated = this.options.prePopulatedValues as any;
+		taskData.viewFieldMapping = this.options.viewFieldMapping || prePopulated?.viewFieldMapping;
+		taskData.sourceBaseId = this.options.sourceBaseId || prePopulated?.sourceBaseId;
+		taskData.sourceViewId = this.options.sourceViewId || prePopulated?.sourceViewId;
+
+		// Merge PropertyPicker field overrides into viewFieldMapping (ADR-011)
+		// User may have added/changed mappings via the Additional Properties UI
+		if (Object.keys(this.fieldOverrides).length > 0) {
+			if (!taskData.viewFieldMapping) {
+				taskData.viewFieldMapping = {} as any;
+			}
+			for (const [key, prop] of Object.entries(this.fieldOverrides)) {
+				(taskData.viewFieldMapping as any)[key] = prop;
+			}
+		}
 
 		const blockedDependencies = this.blockedByItems.map((item) => ({
 			...item.dependency,
@@ -1359,6 +1946,17 @@ export class TaskCreationModal extends TaskModal {
 			if (fieldValue !== null && fieldValue !== undefined && fieldValue !== "") {
 				customFrontmatter[fieldKey] = fieldValue;
 				console.debug(`[TaskCreationModal] Adding to frontmatter: ${fieldKey} = ${fieldValue}`);
+			}
+		}
+
+		// ADR-011: Always write tracking props for explicit user mappings.
+		// When the user maps "deadline" → Due date via PropertyPicker, the tracking prop
+		// (tnDueDateProp: deadline) should persist even if no value was set yet.
+		// This is a schema declaration: "deadline IS my due date field."
+		for (const [fieldKey, propName] of Object.entries(this.fieldOverrides)) {
+			const trackingProp = FIELD_OVERRIDE_PROPS[fieldKey as OverridableField];
+			if (trackingProp) {
+				customFrontmatter[trackingProp] = propName;
 			}
 		}
 
@@ -1429,9 +2027,44 @@ export class TaskCreationModal extends TaskModal {
 			this.nlpSuggest = null;
 		}
 
+		// Clean up property picker
+		if (this.propertyPickerInstance) {
+			this.propertyPickerInstance.destroy();
+			this.propertyPickerInstance = null;
+		}
+
 		// Remove all tracked event listeners
 		this.removeAllEventListeners();
 
 		super.onClose();
+	}
+
+	protected override hasDiscoveredProperties(): boolean {
+		return this.discoveredProperties.length > 0;
+	}
+
+	protected override scrollToAndExpandPropertyPicker(): void {
+		if (!this.propertyPickerSectionContainer) return;
+
+		const isHidden = this.propertyPickerSectionContainer.classList.contains("tn-pp-section-hidden");
+		if (isHidden) {
+			// Expand details container first if modal is in compact mode
+			if (!this.isExpanded && this.detailsContainer) {
+				this.isExpanded = true;
+				this.detailsContainer.style.display = "";
+				if ((this as any).splitRightColumn) {
+					(this as any).splitRightColumn.style.display = "";
+				}
+			}
+
+			// Show and scroll to it
+			this.propertyPickerSectionContainer.classList.remove("tn-pp-section-hidden");
+			this.propertyPickerSectionContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+		} else {
+			// Hide it
+			this.propertyPickerSectionContainer.classList.add("tn-pp-section-hidden");
+		}
+
+		this.updateIconStates();
 	}
 }

@@ -169,6 +169,7 @@ export class CalendarView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.ensureCoreCardProperties = true;
 		// BasesView now provides this.data, this.config, and this.app directly
 		(this.dataAdapter as any).basesView = this;
 		// Note: Don't read config here - this.config is not set until after construction
@@ -406,13 +407,13 @@ export class CalendarView extends BasesViewBase {
 			const maxHours = allowMax24 ? 24 : 23;
 
 			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
 			// Special case: 24:XX is only valid as 24:00
 			if (hours === 24 && minutes !== 0) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
@@ -425,13 +426,13 @@ export class CalendarView extends BasesViewBase {
 			const maxHours = allowMax24 ? 24 : 23;
 
 			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
 			// Special case: 24:XX is only valid as 24:00
 			if (hours === 24 && minutes !== 0) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				this.plugin.debugLog.warn('CalendarView', `Invalid time value: ${value}, using default: ${defaultValue}`);
 				return defaultValue;
 			}
 
@@ -439,7 +440,7 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Invalid format
-		console.warn(`[TaskNotes][CalendarView] Invalid time format: ${value}, using default: ${defaultValue}`);
+		this.plugin.debugLog.warn('CalendarView', `Invalid time format: ${value}, using default: ${defaultValue}`);
 		return defaultValue;
 	}
 
@@ -634,11 +635,19 @@ export class CalendarView extends BasesViewBase {
 		try {
 			// Extract tasks from Bases
 			const dataItems = this.dataAdapter.extractDataItems();
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+
+			// Resolve view field mapping for read-path fallback
+			await this.resolveAndCacheViewMapping();
+
+			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);
 			this.currentTasks = filteredTasks;
+
+			// Store filtered items for bulk creation (matches what user sees)
+			const filteredPaths = new Set(filteredTasks.map(t => t.path));
+			this.lastFilteredDataItems = dataItems.filter(item => item.path != null && filteredPaths.has(item.path));
 
 			// Build Bases entry mapping for task enrichment
 			this.basesEntryByPath.clear();
@@ -781,6 +790,7 @@ export class CalendarView extends BasesViewBase {
 			dayMaxEvents: this.viewOptions.dayMaxEvents,
 			dayMaxEventRows: this.viewOptions.dayMaxEventRows,
 			eventMaxStack: this.viewOptions.eventMaxStack ?? undefined,
+			moreLinkClick: "day", // Navigate to day view instead of blocking popover
 			navLinks: true,
 			navLinkDayClick: (date: Date) => handleDateTitleClick(date, this.plugin),
 			editable: true,
@@ -1042,7 +1052,7 @@ export class CalendarView extends BasesViewBase {
 					},
 				});
 			} catch (error) {
-				console.warn(`[TaskNotes][CalendarView] Error processing property-based entry:`, error);
+				this.plugin.debugLog.warn('CalendarView', 'Error processing property-based entry:', error);
 			}
 		}
 
@@ -1191,7 +1201,7 @@ export class CalendarView extends BasesViewBase {
 		this.expectImmediateUpdate();
 
 		if (!info?.event?.extendedProps) {
-			console.warn("[TaskNotes][CalendarView] Event dropped without extendedProps");
+			this.plugin.debugLog.warn('CalendarView', 'Event dropped without extendedProps');
 			return;
 		}
 
@@ -1454,7 +1464,7 @@ export class CalendarView extends BasesViewBase {
 		this.expectImmediateUpdate();
 
 		if (!info?.event?.extendedProps) {
-			console.warn("[TaskNotes][CalendarView] Event resized without extendedProps");
+			this.plugin.debugLog.warn('CalendarView', 'Event resized without extendedProps');
 			return;
 		}
 

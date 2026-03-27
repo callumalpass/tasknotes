@@ -65,6 +65,7 @@ export class KanbanView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.ensureCoreCardProperties = true;
 		this.basesController = controller; // Store for groupBy detection
 		// BasesView now provides this.data, this.config, and this.app directly
 		(this.dataAdapter as any).basesView = this;
@@ -137,7 +138,7 @@ export class KanbanView extends BasesViewBase {
 			this.configLoaded = true;
 		} catch (e) {
 			// Use defaults
-			console.warn("[KanbanView] Failed to parse config:", e);
+			this.plugin.debugLog.warn('KanbanView', 'Failed to parse config:', e);
 		}
 	}
 
@@ -281,10 +282,17 @@ export class KanbanView extends BasesViewBase {
 			// Compute formulas before reading formula-based properties (swimlanes, etc.)
 			await this.computeFormulas(dataItems);
 
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			// Resolve view field mapping for read-path fallback
+			await this.resolveAndCacheViewMapping();
+
+			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);
+
+			// Store filtered items for bulk creation (matches what user sees)
+			const filteredPaths = new Set(filteredTasks.map(t => t.path));
+			this.lastFilteredDataItems = dataItems.filter(item => item.path != null && filteredPaths.has(item.path));
 
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
@@ -1926,15 +1934,21 @@ export class KanbanView extends BasesViewBase {
 	 * before swimlane/grouping reads them from cachedFormulaOutputs.
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		const ctxFormulas = (this.data as any)?.ctx?.formulas;
+		// Access formulas through the controller's context (not this.data — ctx lives on controller)
+		const ctxFormulas = this.getController()?.ctx?.formulas;
 		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const itemFormulaResults = item.basesData?.formulaResults;
-			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+			if (!item.basesData) continue;
+			if (!item.basesData.formulaResults) {
+				item.basesData.formulaResults = { cachedFormulaOutputs: {} };
+			} else if (!item.basesData.formulaResults.cachedFormulaOutputs) {
+				item.basesData.formulaResults.cachedFormulaOutputs = {};
+			}
+			const itemFormulaResults = item.basesData.formulaResults;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];

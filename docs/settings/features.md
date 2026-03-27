@@ -3,7 +3,7 @@
 These settings allow you to enable, disable, and configure the various features of the plugin, such as inline tasks, natural language processing, the Pomodoro timer, and notifications.
 
 
-![Features Settings](../assets/settings-features.png)
+![Features Settings](../assets/settings/settings-features.png)
 
 ## Inline Tasks
 
@@ -23,11 +23,21 @@ Pomodoro settings control interval lengths, long-break cadence, optional auto-st
 
 ## Notifications
 
-Use this section to enable reminders globally and choose whether notices are shown in-app or through system notifications.
+Enable reminders globally and choose the delivery type (in-app toast, system desktop notifications, or both). The **"Send test"** button fires a test notification to verify your setup.
+
+**Per-category behavior (advanced):** Expand this section to control how each time category (overdue, due today, due tomorrow, this week, scheduled) behaves after dismissal — snooze duration, bell count visibility, and popup visibility. This gives fine-grained control over which notifications are persistent vs awareness-only.
+
+For full details on the toast, bell icon, snooze, and seen tracking, see [Notification Delivery](../features/notification-delivery.md). For what generates notifications, see [Reminders](../features/reminders.md) and [View Notifications](../features/bases-notifications.md).
 
 ## Performance & Behavior
 
-Performance and behavior toggles let you refine overhead and interaction feel: exclude completed tasks from overdue calculations, disable indexing for very large vaults, and tune suggestion debounce timing.
+These settings let you trade off completeness for speed, and fine-tune interaction feel.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Hide completed from overdue | Off | When enabled, completed tasks are excluded from overdue sections even if their dates are in the past. Keeps overdue lists focused on actionable items. |
+| Disable note indexing | Off | Skips indexing of non-task notes to reduce overhead in large vaults. Task workflows still work, but features that rely on non-task note lookups (e.g., note-oriented UI elements) will have reduced functionality. Restart recommended after changing. |
+| Suggestion debounce | 0 ms | Delay before autosuggestion queries fire. Increase if suggestions cause lag in very large vaults. |
 
 ## Time Tracking
 

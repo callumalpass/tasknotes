@@ -1,11 +1,110 @@
 import { Page, chromium, Browser } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execSync } from 'child_process';
+import * as os from 'os';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const UNPACKED_DIR = path.join(PROJECT_ROOT, '.obsidian-unpacked');
 const E2E_VAULT_DIR = path.join(PROJECT_ROOT, 'tasknotes-e2e-vault');
+
+/** Detect if running inside WSL2 */
+function isWSL2(): boolean {
+  try {
+    const version = fs.readFileSync('/proc/version', 'utf-8');
+    return /microsoft/i.test(version);
+  } catch {
+    return false;
+  }
+}
+
+/** Convert a WSL2 Linux path to a Windows path (e.g., /mnt/c/... -> C:\...) */
+function toWindowsPath(linuxPath: string): string {
+  try {
+    return execSync(`wslpath -w "${linuxPath}"`, { encoding: 'utf-8' }).trim();
+  } catch {
+    return linuxPath;
+  }
+}
+
+/**
+ * Find Obsidian executable based on platform.
+ * Returns the path to Obsidian binary/exe, or null if not found.
+ */
+function findObsidianBinary(): string | null {
+  const platform = os.platform();
+
+  if (platform === 'win32') {
+    // Windows: Check common installation locations
+    const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    const candidates = [
+      path.join(localAppData, 'Obsidian', 'Obsidian.exe'),
+      path.join(localAppData, 'Programs', 'Obsidian', 'Obsidian.exe'),
+      'C:\\Program Files\\Obsidian\\Obsidian.exe',
+      'C:\\Program Files (x86)\\Obsidian\\Obsidian.exe',
+    ];
+
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+    return null;
+  } else if (platform === 'darwin') {
+    // macOS: Check Applications folder
+    const candidates = [
+      '/Applications/Obsidian.app/Contents/MacOS/Obsidian',
+      path.join(os.homedir(), 'Applications', 'Obsidian.app', 'Contents', 'MacOS', 'Obsidian'),
+    ];
+
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+    return null;
+  } else {
+    // WSL2: Use Windows Obsidian.exe via /mnt/c/... path
+    if (isWSL2()) {
+      // Find Windows username from /mnt/c/Users/
+      const usersDir = '/mnt/c/Users';
+      if (fs.existsSync(usersDir)) {
+        const users = fs.readdirSync(usersDir).filter(u =>
+          !['Public', 'Default', 'Default User', 'All Users'].includes(u)
+          && fs.statSync(path.join(usersDir, u)).isDirectory()
+        );
+        for (const user of users) {
+          const candidate = path.join(usersDir, user, 'AppData', 'Local', 'Obsidian', 'Obsidian.exe');
+          if (fs.existsSync(candidate)) {
+            return candidate;
+          }
+        }
+      }
+    }
+
+    // Linux: Check for extracted AppImage first, then common locations
+    const unpackedBinary = path.join(UNPACKED_DIR, 'obsidian');
+    if (fs.existsSync(unpackedBinary)) {
+      return unpackedBinary;
+    }
+
+    // Check for AppImage in common locations (can be run directly)
+    const homeDir = os.homedir();
+    const candidates = [
+      path.join(homeDir, 'Applications', 'Obsidian.AppImage'),
+      path.join(homeDir, 'Applications', 'Obsidian-1.8.10.AppImage'),
+      '/usr/local/bin/obsidian',
+      '/usr/bin/obsidian',
+    ];
+
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+}
 
 export interface ObsidianApp {
   browser?: Browser;
@@ -116,15 +215,30 @@ async function waitForCdpUrl(
 }
 
 export async function launchObsidian(): Promise<ObsidianApp> {
-  // Check that setup has been run
-  const obsidianBinary = path.join(UNPACKED_DIR, 'obsidian');
-  if (!fs.existsSync(obsidianBinary)) {
-    throw new Error(
-      'Obsidian unpacked directory not found. Run `npm run e2e:setup` first.'
-    );
+  // Find Obsidian binary (cross-platform)
+  const obsidianBinary = findObsidianBinary();
+  if (!obsidianBinary) {
+    const platform = os.platform();
+    if (platform === 'win32') {
+      throw new Error(
+        'Obsidian not found. Please install Obsidian from https://obsidian.md or check your installation path.'
+      );
+    } else if (platform === 'darwin') {
+      throw new Error(
+        'Obsidian not found. Please install Obsidian from https://obsidian.md or check /Applications/Obsidian.app'
+      );
+    } else {
+      throw new Error(
+        'Obsidian not found. Run `bun run e2e:setup` with your AppImage path, or install Obsidian.'
+      );
+    }
   }
 
-  const remoteDebuggingPort = 9222;
+  console.log(`Using Obsidian binary: ${obsidianBinary}`);
+
+  // Use a less common port to avoid conflicts with Chrome, other browsers, etc.
+  // 9222 is commonly used by Chrome DevTools, so we use 9333 instead
+  const remoteDebuggingPort = 9333;
 
   // First, try to connect to an already running instance
   const existingCdpUrl = await tryConnectExisting(remoteDebuggingPort);
@@ -136,23 +250,46 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     cdpUrl = existingCdpUrl;
   } else {
     // Launch Obsidian manually and connect via CDP.
-    // Pass the vault path directly to match the manual launch script.
+    const wsl = isWSL2();
+    const platform = os.platform();
+
+    // On WSL2, convert paths to Windows format for the Windows Obsidian.exe
+    const vaultPath = wsl ? toWindowsPath(E2E_VAULT_DIR) : E2E_VAULT_DIR;
+    const vaultUri = `obsidian://open?path=${encodeURIComponent(vaultPath)}`;
+
     // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
-    const userDataDir = path.join(PROJECT_ROOT, '.obsidian-config-e2e');
-    obsidianProcess = spawn(obsidianBinary, [
-      '--no-sandbox',
+    const userDataDirLinux = path.join(PROJECT_ROOT, '.obsidian-config-e2e');
+    const userDataDir = wsl ? toWindowsPath(userDataDirLinux) : userDataDirLinux;
+
+    // Build args based on platform
+    const args = [
       `--remote-debugging-port=${remoteDebuggingPort}`,
       `--user-data-dir=${userDataDir}`,
-      E2E_VAULT_DIR,
-    ], {
-      cwd: UNPACKED_DIR,
+      vaultUri,
+    ];
+
+    // Linux (non-WSL2) needs --no-sandbox for unpacked AppImages
+    if (platform === 'linux' && !wsl) {
+      args.unshift('--no-sandbox');
+    }
+
+    if (wsl) {
+      console.log('WSL2 detected, launching Windows Obsidian.exe with converted paths');
+      console.log(`  Vault path: ${vaultPath}`);
+      console.log(`  User data dir: ${userDataDir}`);
+    }
+
+    obsidianProcess = spawn(obsidianBinary, args, {
+      cwd: (platform === 'linux' && !wsl) ? path.dirname(obsidianBinary) : PROJECT_ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: {
         ...process.env,
-        OBSIDIAN_CONFIG_DIR: userDataDir,
+        OBSIDIAN_CONFIG_DIR: wsl ? userDataDir : userDataDirLinux,
       },
+      detached: false,
     });
 
+    // Use upstream's robust waitForCdpUrl helper (handles stdout/stderr, exit, timeouts)
     cdpUrl = await waitForCdpUrl(remoteDebuggingPort, obsidianProcess, 60000);
   }
 

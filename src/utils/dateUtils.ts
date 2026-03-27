@@ -4,6 +4,9 @@ import {
 	isSameDay,
 	isBefore,
 	isValid,
+	isToday as isTodayDateFns,
+	isTomorrow as isTomorrowDateFns,
+	getYear,
 	addDays as addDaysFns,
 	addWeeks,
 	addMonths,
@@ -389,6 +392,29 @@ export function parseDateAsLocal(dateString: string): Date {
 }
 
 /**
+ * Safe wrapper around parseDateAsLocal that returns null instead of throwing.
+ * Also handles Obsidian YAML Date objects (which are not strings).
+ * Use this when parsing user-provided or frontmatter date values that may be
+ * invalid, placeholder text, or Date objects from YAML parsing.
+ */
+export function tryParseDateAsLocal(value: unknown): Date | null {
+	if (!value) return null;
+
+	// Handle Obsidian YAML Date objects
+	if (value instanceof Date) {
+		return isNaN(value.getTime()) ? null : value;
+	}
+
+	if (typeof value !== "string") return null;
+
+	try {
+		return parseDateAsLocal(value);
+	} catch {
+		return null;
+	}
+}
+
+/**
  * Normalize a date string to YYYY-MM-DD format for storage/comparison
  */
 export function normalizeDateString(dateString: string): string {
@@ -753,12 +779,26 @@ export function hasTimeComponent(dateString: string): boolean {
 }
 
 /**
- * Extract just the date part from a date or datetime string
+ * Extract just the date part from a date or datetime value.
+ * Handles strings, Date objects, and various formats.
+ * Always returns YYYY-MM-DD format or empty string.
  */
-export function getDatePart(dateString: string): string {
-	if (!dateString) return "";
+export function getDatePart(dateValue: string | Date | unknown): string {
+	if (!dateValue) return "";
 
 	try {
+		// Handle Date objects (YAML may parse dates as Date objects)
+		if (dateValue instanceof Date) {
+			if (isNaN(dateValue.getTime())) return "";
+			return format(dateValue, "yyyy-MM-dd");
+		}
+
+		// Ensure we have a string
+		const dateString = String(dateValue);
+		if (!dateString || dateString === "undefined" || dateString === "null") {
+			return "";
+		}
+
 		// If it's already a date-only string (YYYY-MM-DD), return as-is
 		if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
 			return dateString;
@@ -774,8 +814,12 @@ export function getDatePart(dateString: string): string {
 		const parsed = parseDateToUTC(dateString);
 		return formatDateForStorage(parsed);
 	} catch (error) {
-		console.error("Error extracting date part:", { dateString, error });
-		return dateString;
+		console.error("Error extracting date part:", { dateValue, error });
+		// Try to return something useful rather than failing silently
+		if (dateValue instanceof Date) {
+			return "";
+		}
+		return String(dateValue);
 	}
 }
 
@@ -793,6 +837,125 @@ export function getTimePart(dateString: string): string | null {
 	} catch (error) {
 		console.error("Error extracting time part:", { dateString, error });
 		return null;
+	}
+}
+
+/**
+ * Date format type for Upcoming View display.
+ */
+export type UpcomingViewDateFormat = "iso" | "us" | "eu" | "relative" | "rich" | "custom";
+
+/**
+ * Settings needed for formatting dates in the Upcoming View.
+ */
+export interface UpcomingViewDateSettings {
+	upcomingViewDateFormat: UpcomingViewDateFormat;
+	upcomingViewCustomDateFormat: string;
+	upcomingViewUseRelativeDates: boolean;
+	upcomingViewRelativeDateThreshold: number;
+}
+
+/**
+ * Format a date for display in the Upcoming View.
+ * Handles the date format preset and relative date settings.
+ *
+ * @param dateValue - The date to format (Date object or string)
+ * @param settings - The Upcoming View date settings
+ * @param forceAbsolute - If true, skip relative date logic and always use absolute format
+ * @returns Formatted date string
+ */
+export function formatDateForUpcomingView(
+	dateValue: Date | string | unknown,
+	settings: UpcomingViewDateSettings,
+	forceAbsolute = false
+): string {
+	if (!dateValue) return "";
+
+	try {
+		// Parse the date
+		let d: Date;
+		if (dateValue instanceof Date) {
+			d = dateValue;
+		} else if (typeof dateValue === "string") {
+			d = parseDate(dateValue);
+		} else {
+			d = parseDate(String(dateValue));
+		}
+
+		if (!isValid(d)) {
+			return typeof dateValue === "string" ? dateValue : String(dateValue);
+		}
+
+		// Check if we should use relative dates
+		if (!forceAbsolute && settings.upcomingViewUseRelativeDates) {
+			const now = new Date();
+			now.setHours(0, 0, 0, 0);
+			const target = new Date(d);
+			target.setHours(0, 0, 0, 0);
+			const diffMs = target.getTime() - now.getTime();
+			const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+			const absDays = Math.abs(diffDays);
+
+			// Within threshold, use relative
+			if (absDays <= settings.upcomingViewRelativeDateThreshold) {
+				if (diffDays < -1) return `${absDays} days ago`;
+				if (diffDays === -1) return "Yesterday";
+				if (diffDays === 0) return "Today";
+				if (diffDays === 1) return "Tomorrow";
+				if (diffDays > 1) return `In ${diffDays} days`;
+			}
+		}
+
+		// Use absolute format based on setting
+		switch (settings.upcomingViewDateFormat) {
+			case "iso":
+				return format(d, "yyyy-MM-dd");
+			case "us":
+				return format(d, "MMM d, yyyy");
+			case "eu":
+				return format(d, "d MMM yyyy");
+			case "rich": {
+				// Context-aware rich format:
+				// - Same year: "Feb 5 • Wednesday" (skip redundant year)
+				// - Today: "Feb 3 • Today • Monday"
+				// - Tomorrow: "Feb 4 • Tomorrow • Tuesday"
+				// - Different year: "Feb 5, 2027 • Wednesday"
+				const dayName = format(d, "EEEE");
+				const currentYear = getYear(new Date());
+				const dateYear = getYear(d);
+				const sameYear = currentYear === dateYear;
+
+				// Build the date part (with or without year)
+				const datePart = sameYear
+					? format(d, "MMM d")
+					: format(d, "MMM d, yyyy");
+
+				// Check for Today/Tomorrow labels
+				if (isTodayDateFns(d)) {
+					return `${datePart} • Today • ${dayName}`;
+				} else if (isTomorrowDateFns(d)) {
+					return `${datePart} • Tomorrow • ${dayName}`;
+				}
+
+				return `${datePart} • ${dayName}`;
+			}
+			case "relative":
+				// "relative" preset means always use relative when possible
+				// If we got here, it's beyond threshold, so use US format as fallback
+				return format(d, "MMM d, yyyy");
+			case "custom":
+				try {
+					return format(d, settings.upcomingViewCustomDateFormat || "MMM d, yyyy");
+				} catch {
+					// Invalid custom format, fall back to US
+					return format(d, "MMM d, yyyy");
+				}
+			default:
+				return format(d, "MMM d, yyyy");
+		}
+	} catch (error) {
+		console.error("Error formatting date for Upcoming View:", { dateValue, error });
+		return typeof dateValue === "string" ? dateValue : String(dateValue);
 	}
 }
 

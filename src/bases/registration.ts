@@ -5,7 +5,14 @@ import { buildTaskListViewFactory } from "./TaskListView";
 import { buildKanbanViewFactory } from "./KanbanView";
 import { buildCalendarViewFactory } from "./CalendarView";
 import { buildMiniCalendarViewFactory } from "./MiniCalendarView";
+import { buildUpcomingViewFactory } from "./UpcomingView";
 import { registerBasesView, unregisterBasesView } from "./api";
+
+// NOTE: Notification controls (notify, notifyOn, notifyThreshold) and showTaskNotesUI
+// are now managed by BasesToolbarInjector's injected TaskNotes section in the Configure
+// view panel. This provides a consistent branded UI across ALL view types (native + TN).
+// BasesQueryWatcher reads notification config directly from YAML.
+// BasesViewBase reads showTaskNotesUI directly from YAML via shouldShowTaskNotesUI().
 
 /**
  * Register TaskNotes views with Bases plugin
@@ -514,8 +521,58 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 				],
 			});
 
+			// Register Upcoming view using public API (Todoist-style aggregated view)
+			const upcomingSuccess = registerBasesView(plugin, "tasknotesUpcoming", {
+				name: "TaskNotes Upcoming",
+				icon: "bell",
+				factory: buildUpcomingViewFactory(plugin),
+				options: () => [
+					{
+						type: "dropdown" as const,
+						key: "groupByDate",
+						displayName: "Group by date",
+						default: "due",
+						options: {
+							"due": "Due date",
+							"scheduled": "Scheduled date",
+						} as Record<string, string>,
+					},
+					{
+						type: "toggle",
+						key: "showTodayTomorrow",
+						displayName: "Always show Today/Tomorrow sections",
+						default: true,
+					},
+					{
+						type: "toggle",
+						key: "includeAggregated",
+						displayName: "Include items from all notification-enabled bases",
+						default: true,
+					},
+					{
+						type: "dropdown",
+						key: "dateFormat",
+						displayName: "Date format",
+						default: "default",
+						options: {
+							"default": "Use default",
+							"rich": "Rich (Jan 31, 2026 • Friday)",
+							"us": "US (Jan 31, 2026)",
+							"eu": "EU (31 Jan 2026)",
+							"iso": "ISO (2026-01-31)",
+						},
+					},
+					{
+						type: "toggle",
+						key: "useRelativeDates",
+						displayName: "Use relative dates for recent items",
+						default: true,
+					},
+				],
+			});
+
 			// Consider it successful if any view registered successfully
-			if (!taskListSuccess && !kanbanSuccess && !calendarSuccess && !miniCalendarSuccess) {
+			if (!taskListSuccess && !kanbanSuccess && !calendarSuccess && !miniCalendarSuccess && !upcomingSuccess) {
 				console.debug("[TaskNotes][Bases] Bases plugin not available for registration");
 				return false;
 			}
@@ -539,7 +596,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 			return true;
 		} catch (error) {
-			console.warn("[TaskNotes][Bases] Registration attempt failed:", error);
+			plugin.debugLog.warn('BasesRegistration', 'Registration attempt failed:', error);
 			return false;
 		}
 	};
@@ -557,7 +614,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 		}
 	}
 
-	console.warn("[TaskNotes][Bases] Failed to register views after multiple attempts");
+	plugin.debugLog.warn('BasesRegistration', 'Failed to register views after multiple attempts');
 }
 
 /**
@@ -570,6 +627,7 @@ export function unregisterBasesViews(plugin: TaskNotesPlugin): void {
 		unregisterBasesView(plugin, "tasknotesKanban");
 		unregisterBasesView(plugin, "tasknotesCalendar");
 		unregisterBasesView(plugin, "tasknotesMiniCalendar");
+		unregisterBasesView(plugin, "tasknotesUpcoming");
 	} catch (error) {
 		console.error("[TaskNotes][Bases] Error during view unregistration:", error);
 	}

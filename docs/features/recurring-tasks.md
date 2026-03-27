@@ -1,7 +1,21 @@
 # Recurring Tasks
 
+<!--
+Recording Script
+SETUP (need tasks with recurrence field):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
 
-TaskNotes recurring tasks use RFC 5545 RRule strings with `DTSTART` support and dynamic next-occurrence scheduling. The model separates recurrence patterns from the next planned instance.
+Use: TaskNotes/Demos/Recurring Tasks Demo.base
+Show creating a recurring task with "every weekday" preset
+Show completing one occurrence → scheduled date advances
+Show the recurring tasks demo base with different recurrence types
+
+CLEANUP (completing occurrences modifies task files):
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
+TaskNotes recurring tasks use standard recurrence rules with dynamic next-occurrence scheduling. The model separates the **pattern** (when it repeats) from the **next occurrence** (when you plan to do it next).
 
 If you are new to recurring tasks in TaskNotes, think of the recurrence rule as the long-term plan and the `scheduled` field as the next concrete commitment. Most day-to-day editing affects `scheduled`, while recurrence editing changes the plan itself.
 
@@ -15,6 +29,9 @@ Recurring tasks operate on two independent levels:
 This separation lets you reschedule the next occurrence without changing the pattern.
 
 ## Setting Up Recurring Tasks
+
+<!-- GIF: Creating a recurring task for every week -->
+![recurring tasks create weekly pattern](../assets/recurring-tasks/recurring-tasks-create-weekly-pattern.gif)
 
 In practice, setup is usually a two-step flow: choose a pattern, then check whether the next scheduled occurrence matches how you actually want to execute the next instance.
 
@@ -33,12 +50,11 @@ Recurring tasks require:
 - **Recurrence Rule**: RRule string with `DTSTART`
 - **Scheduled Date**: Next occurrence date (independent from the pattern)
 
-### DTSTART Integration
-
-`DTSTART` is the anchor for pattern generation. It controls where the rule begins and, when time is included, the default time for future pattern instances.
-
-- **Date-only**: `DTSTART:20250804;FREQ=DAILY`
-- **Date and time**: `DTSTART:20250804T090000Z;FREQ=DAILY`
+> [!abstract]- Technical: DTSTART integration
+> `DTSTART` is the anchor for pattern generation. It controls where the rule begins and, when time is included, the default time for future pattern instances.
+>
+> - **Date-only**: `DTSTART:20250804;FREQ=DAILY`
+> - **Date and time**: `DTSTART:20250804T090000Z;FREQ=DAILY`
 
 ## Recurring Task Due Date
 
@@ -111,7 +127,7 @@ Recurring tasks can show:
 - **Next occurrence** (solid border): dragging updates only `scheduled`
 - **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
 
-![Recurring tasks in calendar week view](../assets/views-calendar-week.png)
+![recurring tasks drag pattern instances](../assets/recurring-tasks/recurring-tasks-drag-pattern-instances.gif)
 
 ## Completion Tracking
 
@@ -129,36 +145,36 @@ This means completion history and next-action planning stay synchronized automat
 
 ## Flexible Scheduling
 
-TaskNotes intentionally allows off-pattern scheduling so recurring tasks can absorb real-world disruptions without rewriting the entire recurrence rule.
+You can reschedule the next occurrence to any date without breaking the recurrence pattern. TaskNotes keeps the two independent — your pattern stays intact even if real-world disruptions move individual instances around.
 
-The next occurrence can be:
+> [!abstract]- Advanced: Off-pattern scheduling details
+> The next occurrence can be:
+>
+> - Before `DTSTART`
+> - Outside the pattern day
+> - At a different time than pattern instances
+> - Far ahead while pattern continues unchanged
+>
+> **Examples:**
+>
+> ```yaml
+> # Early start before DTSTART
+> recurrence: "DTSTART:20250810T090000Z;FREQ=WEEKLY;BYDAY=MO"
+> scheduled: "2025-08-07T14:00"
+> ```
+>
+> ```yaml
+> # Off-pattern next occurrence
+> recurrence: "DTSTART:20250804T090000Z;FREQ=WEEKLY;BYDAY=MO"
+> scheduled: "2025-08-06T15:30"
+> ```
 
-- Before `DTSTART`
-- Outside the pattern day
-- At a different time than pattern instances
-- Far ahead while pattern continues unchanged
-
-### Examples
-
-```yaml
-# Early start before DTSTART
-recurrence: "DTSTART:20250810T090000Z;FREQ=WEEKLY;BYDAY=MO"
-scheduled: "2025-08-07T14:00"
-```
-
-```yaml
-# Off-pattern next occurrence
-recurrence: "DTSTART:20250804T090000Z;FREQ=WEEKLY;BYDAY=MO"
-scheduled: "2025-08-06T15:30"
-```
-
-## Timezone Handling
-
-Recurring task logic uses a UTC anchor approach:
-
-- Pattern generation uses UTC dates
-- `DTSTART` dates are interpreted as UTC anchors
-- Display adapts to local timezone
+> [!abstract]- Technical: Timezone handling
+> Recurring task logic uses a UTC anchor approach:
+>
+> - Pattern generation uses UTC dates
+> - `DTSTART` dates are interpreted as UTC anchors
+> - Display adapts to local timezone
 - Prevents common off-by-one date issues
 
 In other words, calculations stay stable internally while display remains local, which avoids drift when traveling or sharing vaults across timezones.

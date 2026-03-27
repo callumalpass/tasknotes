@@ -729,7 +729,7 @@ export class OAuthService {
 		const config = this.configs[provider];
 
 		if (!config.revocationEndpoint) {
-			console.warn(`No revocation endpoint configured for ${provider}`);
+			this.plugin.debugLog.warn('OAuthService', `No revocation endpoint configured for ${provider}`);
 			return;
 		}
 

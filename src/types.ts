@@ -465,6 +465,13 @@ export interface TaskInfo {
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
 	isBlocking?: boolean; // True if this task blocks at least one other task
 	details?: string; // Optional task body content
+	/** Per-task overrides: maps internal field key to custom frontmatter property name.
+	 *  e.g., { due: "deadline", scheduled: "review_date" } */
+	fieldOverrides?: Record<string, string>;
+	/** Whether file has the task identification property. When false, card views
+	 *  render a note-style icon instead of status dot / priority indicator.
+	 *  Defaults to true when unset (backward compatibility). */
+	isTask?: boolean;
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
@@ -472,6 +479,12 @@ export interface TaskCreationData extends Partial<TaskInfo> {
 	parentNote?: string; // Optional parent note name/path for template variable
 	creationContext?: "inline-conversion" | "manual-creation" | "modal-inline-creation" | "api" | "import" | "ics-event"; // Context for folder determination
 	customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
+	/** Per-view field mapping from a .base file's tnFieldMapping (ADR-011). */
+	viewFieldMapping?: import("./identity/BaseIdentityService").ViewFieldMapping;
+	/** Source base ID for provenance tracking (ADR-011). Only written when baseIdentityTrackSourceView is enabled. */
+	sourceBaseId?: string;
+	/** Source view ID for provenance tracking (ADR-011). Only written when baseIdentityTrackSourceView is enabled. */
+	sourceViewId?: string;
 }
 
 export interface TimeEntry {
@@ -487,7 +500,7 @@ export interface Reminder {
 	type: "absolute" | "relative";
 
 	// For relative reminders
-	relatedTo?: "due" | "scheduled"; // The anchor date property
+	relatedTo?: string; // The anchor date property (e.g., "due", "scheduled", "dateCreated", or custom date fields)
 	offset?: string; // ISO 8601 duration format, e.g., "-PT5M", "-PT1H", "-P2D"
 
 	// For absolute reminders
@@ -495,6 +508,12 @@ export interface Reminder {
 
 	// Common properties
 	description?: string; // The notification message (optional, can be auto-generated)
+
+	// Semantic reminder metadata (Phase 8d)
+	semanticType?: import("./types/settings").ReminderSemanticType; // Behavioral intent
+	isVirtual?: boolean; // Generated at runtime from global rules, never persisted to frontmatter
+	repeatIntervalHours?: number; // For overdue/persistent: repeat interval in hours
+	sourceRuleId?: string; // ID of the GlobalReminderRule that generated this virtual reminder
 }
 
 // Timeblocking types

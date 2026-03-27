@@ -1,0 +1,153 @@
+name: Release Obsidian Plugin
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release even if version unchanged'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version-changed: ${{ steps.version-check.outputs.changed }}
+      new-version: ${{ steps.version-check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if version changed
+        id: version-check
+        run: |
+          current_version=$(node -p "require('./package.json').version")
+          previous_version=$(git show HEAD~1:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).version" 2>/dev/null || echo "0.0.0")
+
+          echo "Current version: $current_version"
+          echo "Previous version: $previous_version"
+
+          if [ "$current_version" != "$previous_version" ] || [ "${{ github.event.inputs.force_release }}" == "true" ]; then
+            echo "Version changed from $previous_version to $current_version (or force_release=true)"
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$current_version" >> $GITHUB_OUTPUT
+          else
+            echo "Version unchanged"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-release:
+    needs: check-version
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+
+      - name: Install dependencies
+        run: npm install
+
+      # Step 1: Generate release notes from CHANGELOG.md BEFORE build
+      - name: Generate release notes from CHANGELOG.md
+        id: changelog
+        run: |
+          tag="${{ needs.check-version.outputs.new-version }}"
+          echo "Extracting notes for version $tag from CHANGELOG.md"
+
+          # Extract section between this version header and the next version header (or end markers)
+          notes=$(awk -v ver="$tag" '
+            /^## \[/ {
+              if (found) exit
+              if ($0 ~ "\\[" ver "\\]") found=1
+              next
+            }
+            /^---/ { if (found) exit }
+            found { print }
+          ' CHANGELOG.md)
+
+          # Fallback if no notes found
+          if [ -z "$notes" ]; then
+            notes="Release $tag"
+            echo "Warning: No changelog entry found for $tag, using fallback"
+          fi
+
+          # Write to file for GitHub Release
+          echo "$notes" > release_notes.md
+          echo "=== Release notes for GitHub Release ==="
+          cat release_notes.md
+
+          # Create docs/releases/{version}.md for What's New page (if missing)
+          release_file="docs/releases/${tag}.md"
+          if [ ! -f "$release_file" ]; then
+            echo "Creating $release_file for What's New page"
+            {
+              echo "# TaskNotes $tag (Fork)"
+              echo ""
+              echo "*This release is from the [cybersader/tasknotes](https://github.com/cybersader/tasknotes) fork.*"
+              echo ""
+              echo "$notes"
+            } > "$release_file"
+            echo "created=true" >> $GITHUB_OUTPUT
+          else
+            echo "$release_file already exists, skipping"
+            echo "created=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 2: Build plugin (now includes the release notes file)
+      - name: Build plugin
+        run: npm run build
+
+      - name: Verify build outputs
+        run: |
+          echo "=== Checking build outputs ==="
+          ls -la main.js styles.css manifest.json
+          echo "=== main.js size ==="
+          wc -c main.js
+          echo "=== styles.css size ==="
+          wc -c styles.css
+
+      # Step 3: Commit release notes file if we created it
+      - name: Commit release notes file if created
+        if: steps.changelog.outputs.created == 'true'
+        run: |
+          tag="${{ needs.check-version.outputs.new-version }}"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add "docs/releases/${tag}.md"
+          git commit -m "docs: auto-generate release notes for $tag [skip ci]"
+          git push origin main
+
+      # Step 4: Create tag and GitHub release
+      - name: Create tag and release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ needs.check-version.outputs.new-version }}"
+
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          # Delete tag if it already exists (re-run scenario)
+          git tag -d "$tag" 2>/dev/null || true
+          git push origin ":refs/tags/$tag" 2>/dev/null || true
+
+          git tag "$tag"
+          git push origin "$tag"
+
+          # Create release with notes from CHANGELOG.md
+          gh release create "$tag" \
+            --title="$tag" \
+            --notes-file release_notes.md \
+            main.js manifest.json styles.css

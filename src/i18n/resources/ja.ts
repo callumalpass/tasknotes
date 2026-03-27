@@ -998,8 +998,8 @@ export const ja: TranslationTree = {
 				filtersOn: "フィルター有効",
 			},
 			titleCard: {
-				storeTitleInFilename: "タイトルをファイル名に保存:",
-				storedInFilename: "ファイル名に保存",
+				storeTitleInFilename: "タイトルをファイル名として使用：",
+				storedInFilename: "タイトルがファイル名",
 				filenameUpdatesWithTitle: "タスクタイトルが変更されると、ファイル名は自動的に更新されます。",
 				filenameFormat: "ファイル名形式:",
 				customTemplate: "カスタムテンプレート:",
@@ -1204,7 +1204,7 @@ export const ja: TranslationTree = {
 				header: "タスクファイル名",
 				description: "タスクファイル作成時の命名方法を設定します。",
 				storeTitleInFilename: {
-					name: "ファイル名にタイトルを保存",
+					name: "タイトルをファイル名として使用",
 					description: "タスクタイトルをファイル名として使用。タスクタイトルが変更されるとファイル名も更新されます（推奨）。",
 				},
 				filenameFormat: {

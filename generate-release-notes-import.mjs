@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, readdirSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
 import { execSync } from "child_process";
 
 // Read current version from manifest.json
@@ -28,8 +28,70 @@ function getVersionDate(version) {
 	}
 }
 
+// Parse CHANGELOG.md and extract all version entries
+function parseChangelog() {
+	const changelog = readFileSync("CHANGELOG.md", "utf8");
+	const versions = [];
+	const versionRegex = /^## \[(\d+\.\d+\.\d+(?:-[\w.]+)?)\]/gm;
+	let match;
+
+	while ((match = versionRegex.exec(changelog)) !== null) {
+		versions.push(match[1]);
+	}
+
+	return versions;
+}
+
+// Extract release notes content for a specific version from CHANGELOG.md
+function extractVersionNotes(version) {
+	const changelog = readFileSync("CHANGELOG.md", "utf8");
+	const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const versionHeaderRegex = new RegExp(`^## \\[${escapedVersion}\\].*$`, 'm');
+
+	const match = changelog.match(versionHeaderRegex);
+	if (!match) return null;
+
+	const startIndex = match.index + match[0].length;
+	const remainingContent = changelog.slice(startIndex);
+
+	// Find the next version header or the "---" separator or end of file
+	const nextHeaderMatch = remainingContent.match(/^## \[|^---/m);
+	const endIndex = nextHeaderMatch ? nextHeaderMatch.index : remainingContent.length;
+
+	return remainingContent.slice(0, endIndex).trim();
+}
+
+// Create missing release notes file from CHANGELOG.md
+function createMissingReleaseNotes(version) {
+	const filePath = `docs/releases/${version}.md`;
+
+	if (existsSync(filePath)) {
+		return false; // Already exists
+	}
+
+	const notes = extractVersionNotes(version);
+	if (!notes) {
+		console.warn(`  ⚠ No changelog entry found for ${version}, skipping`);
+		return false;
+	}
+
+	// Determine if this is a fork release (check if notes mention "fork" or version contains "fork")
+	const isFork = version.includes('fork') ||
+		notes.toLowerCase().includes('fork') ||
+		parseVersion(version)?.major === 4; // Assume 4.x are fork versions
+
+	const content = `# TaskNotes ${version}${isFork ? ' (Fork)' : ''}
+
+${isFork ? '*This release is from the [cybersader/tasknotes](https://github.com/cybersader/tasknotes) fork.*\n\n' : ''}${notes}
+`;
+
+	writeFileSync(filePath, content);
+	console.log(`  ✓ Created missing release notes: ${filePath}`);
+	return true;
+}
+
 // Get all release note files and bundle versions since last minor (includes pre-release versions)
-const releaseFiles = readdirSync("docs/releases")
+let releaseFiles = readdirSync("docs/releases")
 	.filter(f => f.match(/^\d+\.\d+\.\d+(?:-[\w.]+)?\.md$/))
 	.map(f => f.replace('.md', ''))
 	.map(v => parseVersion(v))
@@ -44,6 +106,42 @@ const current = parseVersion(currentVersion);
 if (!current) {
 	console.error(`Invalid version format: ${currentVersion}`);
 	process.exit(1);
+}
+
+// Parse CHANGELOG.md to find versions that should have release notes
+const changelogVersions = parseChangelog()
+	.map(v => parseVersion(v))
+	.filter(v => v !== null);
+
+// Find versions in CHANGELOG that are in current or previous minor series but missing release notes
+const versionsToCheck = changelogVersions.filter(v =>
+	v.major === current.major &&
+	(v.minor === current.minor || v.minor === current.minor - 1)
+);
+
+// Check for and create missing release notes
+let createdAny = false;
+for (const v of versionsToCheck) {
+	const filePath = `docs/releases/${v.full}.md`;
+	if (!existsSync(filePath)) {
+		if (createMissingReleaseNotes(v.full)) {
+			createdAny = true;
+		}
+	}
+}
+
+// Re-scan release files if we created any
+if (createdAny) {
+	releaseFiles = readdirSync("docs/releases")
+		.filter(f => f.match(/^\d+\.\d+\.\d+(?:-[\w.]+)?\.md$/))
+		.map(f => f.replace('.md', ''))
+		.map(v => parseVersion(v))
+		.filter(v => v !== null)
+		.sort((a, b) => {
+			if (a.major !== b.major) return b.major - a.major;
+			if (a.minor !== b.minor) return b.minor - a.minor;
+			return b.patch - a.patch;
+		});
 }
 
 // Find all versions in current minor series (e.g., 3.25.x)
@@ -67,12 +165,23 @@ const versionsWithDates = versionsToBundle.map(version => ({
 	version,
 	date: getVersionDate(version)
 })).sort((a, b) => {
-	// Versions without dates go to the end
-	if (!a.date && !b.date) return 0;
-	if (!a.date) return 1;
-	if (!b.date) return -1;
-	// Sort by date descending (newest first)
-	return new Date(b.date).getTime() - new Date(a.date).getTime();
+	// If both have dates, sort by date descending (newest first)
+	if (a.date && b.date) {
+		const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
+		if (dateCompare !== 0) return dateCompare;
+	}
+
+	// Fall back to semantic version comparison (newest first)
+	const vA = parseVersion(a.version);
+	const vB = parseVersion(b.version);
+	if (vA && vB) {
+		if (vA.major !== vB.major) return vB.major - vA.major;
+		if (vA.minor !== vB.minor) return vB.minor - vA.minor;
+		return vB.patch - vA.patch;
+	}
+
+	// Last resort: string comparison
+	return b.version.localeCompare(a.version);
 });
 
 // Generate imports and metadata

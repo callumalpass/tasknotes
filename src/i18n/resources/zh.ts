@@ -998,8 +998,8 @@ export const zh: TranslationTree = {
 				filtersOn: "过滤器开启",
 			},
 			titleCard: {
-				storeTitleInFilename: "在文件名中存储标题：",
-				storedInFilename: "存储在文件名中",
+				storeTitleInFilename: "使用标题作为文件名：",
+				storedInFilename: "标题作为文件名",
 				filenameUpdatesWithTitle: "文件名将在任务标题更改时自动更新。",
 				filenameFormat: "文件名格式：",
 				customTemplate: "自定义模板：",
@@ -1204,7 +1204,7 @@ export const zh: TranslationTree = {
 				header: "任务文件名",
 				description: "配置创建任务文件时的命名方式。",
 				storeTitleInFilename: {
-					name: "在文件名中存储标题",
+					name: "使用标题作为文件名",
 					description: "使用任务标题作为文件名。任务标题更改时文件名会更新（推荐）。",
 				},
 				filenameFormat: {

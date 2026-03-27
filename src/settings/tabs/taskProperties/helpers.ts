@@ -1,5 +1,6 @@
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../main";
+import { migratePropertyName } from "../../../utils/settingsMigration";
 import { FieldMapping } from "../../../types";
 import type { TranslationKey } from "../../../i18n";
 import {
@@ -164,9 +165,19 @@ export function renderSimplePropertyCard(
 		plugin.settings.fieldMapping[config.propertyId]
 	);
 
-	propertyKeyInput.addEventListener("change", () => {
-		plugin.settings.fieldMapping[config.propertyId] = propertyKeyInput.value;
+	propertyKeyInput.addEventListener("change", async () => {
+		const newValue = propertyKeyInput.value.trim();
+		const oldValue = plugin.settings.fieldMapping[config.propertyId];
+		if (newValue && newValue !== oldValue) {
+			const result = await migratePropertyName({
+				app: plugin.app, plugin, oldPropertyName: oldValue, newPropertyName: newValue, description: "task files",
+			});
+			if (result === "cancelled") { propertyKeyInput.value = oldValue; return; }
+		}
+		plugin.settings.fieldMapping[config.propertyId] = newValue || oldValue;
 		save();
+		const secondary = propertyKeyInput.closest("[data-card-id]")?.querySelector(".tasknotes-settings__card-secondary-text");
+		if (secondary) secondary.textContent = plugin.settings.fieldMapping[config.propertyId];
 	});
 
 	// Create description element
@@ -250,9 +261,19 @@ export function renderMetadataPropertyCard(
 		plugin.settings.fieldMapping[propertyId]
 	);
 
-	propertyKeyInput.addEventListener("change", () => {
-		plugin.settings.fieldMapping[propertyId] = propertyKeyInput.value;
+	propertyKeyInput.addEventListener("change", async () => {
+		const newValue = propertyKeyInput.value.trim();
+		const oldValue = plugin.settings.fieldMapping[propertyId];
+		if (newValue && newValue !== oldValue) {
+			const result = await migratePropertyName({
+				app: plugin.app, plugin, oldPropertyName: oldValue, newPropertyName: newValue, description: "task files",
+			});
+			if (result === "cancelled") { propertyKeyInput.value = oldValue; return; }
+		}
+		plugin.settings.fieldMapping[propertyId] = newValue || oldValue;
 		save();
+		const secondary = propertyKeyInput.closest("[data-card-id]")?.querySelector(".tasknotes-settings__card-secondary-text");
+		if (secondary) secondary.textContent = plugin.settings.fieldMapping[propertyId];
 	});
 
 	// Create description element

@@ -53,8 +53,8 @@ export class ViewStateManager extends EventEmitter {
 			!Array.isArray(state.children) ||
 			typeof state.conjunction !== "string"
 		) {
-			console.warn(
-				`ViewStateManager: Ignoring old format filter state for ${viewType}, will use default`
+			this.plugin.debugLog.warn(
+				"ViewState", `Ignoring old format filter state for ${viewType}, will use default`
 			);
 			// Clear the old format data
 			delete this.filterState[viewType];
@@ -139,7 +139,7 @@ export class ViewStateManager extends EventEmitter {
 				this.filterState = JSON.parse(stored);
 			}
 		} catch (error) {
-			console.warn("Failed to load view filter state from storage:", error);
+			this.plugin.debugLog.warn("ViewState", "Failed to load view filter state from storage:", error);
 			this.filterState = {};
 		}
 	}
@@ -151,7 +151,7 @@ export class ViewStateManager extends EventEmitter {
 		try {
 			this.app.saveLocalStorage(this.storageKey, JSON.stringify(this.filterState));
 		} catch (error) {
-			console.warn("Failed to save view filter state to storage:", error);
+			this.plugin.debugLog.warn("ViewState", "Failed to save view filter state to storage:", error);
 		}
 	}
 
@@ -165,7 +165,7 @@ export class ViewStateManager extends EventEmitter {
 				this.viewPreferences = JSON.parse(stored);
 			}
 		} catch (error) {
-			console.warn("Failed to load view preferences from storage:", error);
+			this.plugin.debugLog.warn("ViewState", "Failed to load view preferences from storage:", error);
 			this.viewPreferences = {};
 		}
 	}
@@ -180,7 +180,7 @@ export class ViewStateManager extends EventEmitter {
 				JSON.stringify(this.viewPreferences)
 			);
 		} catch (error) {
-			console.warn("Failed to save view preferences to storage:", error);
+			this.plugin.debugLog.warn("ViewState", "Failed to save view preferences to storage:", error);
 		}
 	}
 
@@ -365,7 +365,7 @@ export class ViewStateManager extends EventEmitter {
 				typeof localStorageData === "string" &&
 				this.savedViews.length === 0
 			) {
-				console.log("TaskNotes: Migrating saved views from localStorage to plugin data...");
+				this.plugin.debugLog.log("ViewState", "Migrating saved views from localStorage to plugin data...");
 
 				// Parse localStorage data
 				const localStorageViews: SavedView[] = JSON.parse(localStorageData);
@@ -377,12 +377,12 @@ export class ViewStateManager extends EventEmitter {
 				// Clear localStorage after successful migration
 				this.app.saveLocalStorage(this.savedViewsStorageKey, null);
 
-				console.log(
-					`TaskNotes: Successfully migrated ${localStorageViews.length} saved views to plugin data.`
+				this.plugin.debugLog.log(
+					"ViewState", `Successfully migrated ${localStorageViews.length} saved views to plugin data.`
 				);
 			}
 		} catch (error) {
-			console.warn("Failed to load/migrate saved views:", error);
+			this.plugin.debugLog.warn("ViewState", "Failed to load/migrate saved views:", error);
 			this.savedViews = [];
 		}
 	}
@@ -398,7 +398,7 @@ export class ViewStateManager extends EventEmitter {
 			// Save to data.json
 			await this.plugin.saveSettings();
 		} catch (error) {
-			console.warn("Failed to save saved views to plugin data:", error);
+			this.plugin.debugLog.warn("ViewState", "Failed to save saved views to plugin data:", error);
 		}
 	}
 

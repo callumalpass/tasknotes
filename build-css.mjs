@@ -23,6 +23,7 @@ const CSS_FILES = [
     'styles/unscheduled-tasks-selector-modal.css', // UnscheduledTasksSelectorModal component with proper BEM scoping
     'styles/task-action-palette-modal.css', // TaskActionPaletteModal component with proper BEM scoping
     'styles/time-entry-editor-modal.css', // TimeEntryEditorModal component with proper BEM scoping
+    'styles/notification-modal.css', // BasesNotificationModal component with proper BEM scoping
     'styles/relationships.css',  // RelationshipsWidget component with proper BEM scoping
     'styles/task-card-note-widget.css',  // TaskCardNoteWidget component with proper BEM scoping
     
@@ -38,7 +39,13 @@ const CSS_FILES = [
     'styles/settings-view.css',      // SettingsView component with proper BEM scoping
     'styles/webhook-settings.css',   // Webhook settings UI with proper BEM scoping
     'styles/status-bar.css',         // StatusBar component with proper BEM scoping
-    'styles/bases-views.css'         // Bases integration views (list and kanban)
+    'styles/bases-views.css',        // Bases integration views (list and kanban)
+    'styles/upcoming-view.css',      // UpcomingView (Todoist-style aggregated notifications)
+    'styles/toast-notification.css', // ToastNotification (compact bottom-right indicator)
+    'styles/person-avatar.css',       // PersonAvatar (circular avatar with initials)
+    'styles/person-group-picker.css', // PersonGroupPicker (multi-select with search)
+    'styles/property-picker.css',     // PropertyPicker (inline property selector with type badges)
+    'styles/bulk-modal.css'           // BulkTaskCreationModal (Edit Task modal inspired)
 ];
 
 const MAIN_CSS_TEMPLATE = `/* TaskNotes Plugin Styles */

@@ -36,6 +36,8 @@ jobs:
     - name: Build documentation
       run: node build.js
       working-directory: docs-builder
+      env:
+        BASE_PATH: /tasknotes/
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3

@@ -644,6 +644,191 @@ body {
 }
 
 /* ============================================================
+   Badges (inline labels for headings)
+   ============================================================ */
+
+.badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.55em;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.15em 0.55em;
+  border-radius: 3px;
+  vertical-align: middle;
+  position: relative;
+  top: -0.1em;
+}
+
+.badge--experimental {
+  color: var(--amber);
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-border);
+}
+
+/* ============================================================
+   Callouts (Obsidian-style > [!type] blocks)
+   ============================================================ */
+
+/* Colour tokens — each callout type maps to one of these */
+:root {
+  --callout-blue:        #4a86c8;
+  --callout-blue-bg:     rgba(74,134,200,0.08);
+  --callout-blue-border: rgba(74,134,200,0.25);
+
+  --callout-green:        #3a9a5c;
+  --callout-green-bg:     rgba(58,154,92,0.08);
+  --callout-green-border: rgba(58,154,92,0.25);
+
+  --callout-orange:        #c87a2a;
+  --callout-orange-bg:     rgba(200,122,42,0.08);
+  --callout-orange-border: rgba(200,122,42,0.25);
+
+  --callout-red:        #c84a4a;
+  --callout-red-bg:     rgba(200,74,74,0.08);
+  --callout-red-border: rgba(200,74,74,0.25);
+
+  --callout-yellow:        #b8a025;
+  --callout-yellow-bg:     rgba(184,160,37,0.08);
+  --callout-yellow-border: rgba(184,160,37,0.25);
+
+  --callout-purple:        #8a5cc8;
+  --callout-purple-bg:     rgba(138,92,200,0.08);
+  --callout-purple-border: rgba(138,92,200,0.25);
+
+  --callout-cyan:        #3a9a9a;
+  --callout-cyan-bg:     rgba(58,154,154,0.08);
+  --callout-cyan-border: rgba(58,154,154,0.25);
+
+  --callout-gray:        #8a8a8a;
+  --callout-gray-bg:     rgba(138,138,138,0.08);
+  --callout-gray-border: rgba(138,138,138,0.25);
+}
+
+.callout {
+  margin: 1.75rem 0;
+  border: 1px solid var(--callout-blue-border);
+  border-left: 3px solid var(--callout-blue);
+  border-radius: 4px;
+  background: var(--callout-blue-bg);
+  overflow: hidden;
+}
+
+.callout__title {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--callout-blue);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.callout__icon {
+  font-style: normal;
+  font-size: 1.1em;
+}
+
+.callout__body {
+  padding: 0 1rem 0.75rem;
+  font-size: 0.92rem;
+}
+
+.callout__body > p:first-child { margin-top: 0; }
+.callout__body > p:last-child  { margin-bottom: 0; }
+
+/* Foldable callouts (uses <details> inside .callout) */
+.callout details { border: none; background: none; margin: 0; }
+.callout details summary {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.callout details summary::-webkit-details-marker { display: none; }
+.callout details summary::after {
+  content: '\25B6';
+  font-size: 0.55em;
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+.callout details[open] summary::after { transform: rotate(90deg); }
+.callout details summary:hover { background: rgba(128,128,128,0.08); }
+
+/* ── Colour variants ── */
+.callout--green  { border-color: var(--callout-green-border);  border-left-color: var(--callout-green);  background: var(--callout-green-bg); }
+.callout--green  .callout__title,
+.callout--green  details summary { color: var(--callout-green); }
+
+.callout--orange { border-color: var(--callout-orange-border); border-left-color: var(--callout-orange); background: var(--callout-orange-bg); }
+.callout--orange .callout__title,
+.callout--orange details summary { color: var(--callout-orange); }
+
+.callout--red    { border-color: var(--callout-red-border);    border-left-color: var(--callout-red);    background: var(--callout-red-bg); }
+.callout--red    .callout__title,
+.callout--red    details summary { color: var(--callout-red); }
+
+.callout--yellow { border-color: var(--callout-yellow-border); border-left-color: var(--callout-yellow); background: var(--callout-yellow-bg); }
+.callout--yellow .callout__title,
+.callout--yellow details summary { color: var(--callout-yellow); }
+
+.callout--purple { border-color: var(--callout-purple-border); border-left-color: var(--callout-purple); background: var(--callout-purple-bg); }
+.callout--purple .callout__title,
+.callout--purple details summary { color: var(--callout-purple); }
+
+.callout--cyan   { border-color: var(--callout-cyan-border);   border-left-color: var(--callout-cyan);   background: var(--callout-cyan-bg); }
+.callout--cyan   .callout__title,
+.callout--cyan   details summary { color: var(--callout-cyan); }
+
+.callout--gray   { border-color: var(--callout-gray-border);   border-left-color: var(--callout-gray);   background: var(--callout-gray-bg); }
+.callout--gray   .callout__title,
+.callout--gray   details summary { color: var(--callout-gray); }
+
+/* ============================================================
+   Collapsible details (standalone, non-callout)
+   ============================================================ */
+
+.prose > details {
+  margin: 1.75rem 0;
+  border: 1px solid var(--amber-border);
+  border-radius: 4px;
+  background: var(--amber-bg);
+  overflow: hidden;
+}
+
+.prose > details > summary {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--amber);
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.prose > details > summary::-webkit-details-marker { display: none; }
+.prose > details > summary::before {
+  content: '\25B6';
+  font-size: 0.6em;
+  transition: transform 0.15s ease;
+}
+.prose > details[open] > summary::before { transform: rotate(90deg); }
+.prose > details > summary:hover { background: var(--amber-border); }
+.prose > details > :not(summary) { padding: 0 1rem; }
+.prose > details > p:last-child { padding-bottom: 0.75rem; }
+
+/* ============================================================
    Images / figures
    ============================================================ */
 

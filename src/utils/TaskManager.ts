@@ -85,10 +85,15 @@ export class TaskManager extends Events {
 		if (this.settings.taskIdentificationMethod === "property") {
 			const propName = this.settings.taskPropertyName;
 			const propValue = this.settings.taskPropertyValue;
-			if (!propName || !propValue) return false; // Not configured
+			if (!propName) return false; // Property name not configured
 
 			const frontmatterValue = frontmatter[propName];
 			if (frontmatterValue === undefined) return false;
+
+			// Empty propValue = property existence check (any truthy value matches)
+			if (!propValue) {
+				return frontmatterValue !== null && frontmatterValue !== false && frontmatterValue !== "";
+			}
 
 			// Handle both single and multi-value properties
 			if (Array.isArray(frontmatterValue)) {

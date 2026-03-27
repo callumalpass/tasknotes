@@ -1,7 +1,18 @@
 # Settings
 
+<!--
+Recording Script
+No test data setup needed — settings are static UI.
+
+Show the settings panel, click through each tab (General, Task Properties, Modal Fields, Appearance, Features, Integrations)
+Pause briefly on each tab to show the layout
+-->
+
 TaskNotes settings are organized into tabs. Each tab controls a different part of plugin behavior.
 
+<!-- SCREENSHOT: TaskNotes settings panel showing the tab navigation with General, Task Properties, Modal Fields, Appearance, Features, and Integrations -->
+
+![TaskNotes settings panel with tab navigation](assets/settings/screenshot-settings-overview.png)
 
 ## General
 
@@ -11,7 +22,7 @@ For more information, see the [General Settings](settings/general.md) documentat
 
 ## Task Properties
 
-Task Properties defines the schema TaskNotes writes to frontmatter, including status, priority, dates, reminders, projects, and user fields. Each property card lets you remap key names and behavior so TaskNotes can match existing metadata rather than forcing a migration.
+Task Properties defines the schema TaskNotes writes to frontmatter, including status, priority, dates, reminders, projects, and custom properties. Each property card lets you remap key names and behavior so TaskNotes can match existing metadata rather than forcing a migration.
 
 For more detailed information, see the [Task Properties Settings](settings/task-properties.md) documentation.
 

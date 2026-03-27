@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="{{base_path}}styles/main.css">
 </head>
 <body>
   <!-- Left-edge reading progress -->
@@ -20,7 +20,7 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="js-sidebar">
       <div class="sidebar__header">
-        <a href="/" class="logotype">
+        <a href="{{base_path}}" class="logotype">
           <span class="logotype__name">{{site_title}}</span>
           <span class="logotype__sub">documentation</span>
         </a>
@@ -61,7 +61,7 @@
             <line x1="2" y1="13.5" x2="16" y2="13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </button>
-        <a href="/" class="topbar__title">{{site_title}}</a>
+        <a href="{{base_path}}" class="topbar__title">{{site_title}}</a>
       </header>
 
       <div class="content-row">
@@ -79,6 +79,11 @@
   <!-- Sidebar overlay (mobile) -->
   <div class="overlay" id="js-overlay" aria-hidden="true"></div>
 
-  <script src="/js/main.js"></script>
+  <script src="{{base_path}}js/main.js"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+    mermaid.initialize({ startOnLoad: true, theme });
+  </script>
 </body>
 </html>

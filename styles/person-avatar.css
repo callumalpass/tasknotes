@@ -1,0 +1,160 @@
+/**
+ * PersonAvatar - Circular avatar with initials
+ */
+
+/* Base avatar styles */
+.tn-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	color: white;
+	font-weight: 600;
+	text-transform: uppercase;
+	flex-shrink: 0;
+	position: relative;
+	user-select: none;
+	cursor: default;
+	letter-spacing: -0.02em;
+	font-family: var(--font-interface);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Ring for better visibility on light backgrounds */
+.tn-avatar::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+	pointer-events: none;
+}
+
+/* Size variants */
+.tn-avatar--xs {
+	width: 20px;
+	height: 20px;
+	font-size: 10px;
+}
+
+.tn-avatar--sm {
+	width: 24px;
+	height: 24px;
+	font-size: 11px;
+}
+
+.tn-avatar--md {
+	width: 32px;
+	height: 32px;
+	font-size: 13px;
+}
+
+.tn-avatar--lg {
+	width: 40px;
+	height: 40px;
+	font-size: 16px;
+}
+
+/* Group indicator (folder icon in corner) */
+.tn-avatar--group .tn-avatar__group-indicator {
+	position: absolute;
+	bottom: -2px;
+	right: -2px;
+	width: 14px;
+	height: 14px;
+	background: var(--background-primary);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.tn-avatar--group .tn-avatar__group-indicator svg {
+	color: var(--text-muted);
+}
+
+/* Overflow indicator (+N) */
+.tn-avatar--overflow {
+	background: var(--background-modifier-border) !important;
+	color: var(--text-muted) !important;
+	font-size: 10px !important;
+	font-weight: 500;
+}
+
+/* Avatar stack (overlapping avatars) */
+.tn-avatar-stack {
+	display: inline-flex;
+	flex-direction: row-reverse; /* For correct z-index stacking */
+}
+
+.tn-avatar-stack .tn-avatar {
+	margin-left: -8px;
+	border: 2px solid var(--background-primary);
+}
+
+.tn-avatar-stack .tn-avatar:last-child {
+	margin-left: 0;
+}
+
+/* Avatar row (avatar + name + subtitle) */
+.tn-avatar-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 0;
+}
+
+.tn-avatar-row__text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0; /* Allow text truncation */
+}
+
+.tn-avatar-row__name {
+	font-size: var(--font-ui-small);
+	font-weight: 500;
+	color: var(--text-normal);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tn-avatar-row__subtitle {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Hover effect for clickable avatars */
+.tn-avatar[role="button"],
+.tn-avatar-row[role="button"] {
+	cursor: pointer;
+}
+
+.tn-avatar[role="button"]:hover {
+	transform: scale(1.05);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.tn-avatar-row[role="button"]:hover {
+	background: var(--background-modifier-hover);
+	border-radius: var(--radius-s);
+}
+
+/* In suggestion/dropdown lists */
+.suggestion-item .tn-avatar-row,
+.dropdown-item .tn-avatar-row {
+	padding: 2px 0;
+}
+
+/* Settings display */
+.setting-item .tn-avatar {
+	margin-right: 8px;
+}
+
+.setting-item .tn-avatar-row {
+	padding: 0;
+}

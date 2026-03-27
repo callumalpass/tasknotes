@@ -737,6 +737,21 @@ ${orderYaml}
 `;
 		}
 
+		case 'open-upcoming-view': {
+			// Upcoming view aggregates notifications from multiple sources
+			// No filter needed - the view fetches from VaultWideNotificationService
+			return `# Upcoming
+# Aggregates tasks and notifications from across your vault
+# Shows overdue, today, tomorrow, this week, and later items
+
+${formulasSection}
+
+views:
+  - type: tasknotesUpcoming
+    name: "Upcoming"
+`;
+		}
+
 		default:
 			return '';
 	}

@@ -7,6 +7,7 @@ import { renderModalFieldsTab } from "./tabs/modalFieldsTab";
 import { renderAppearanceTab } from "./tabs/appearanceTab";
 import { renderFeaturesTab } from "./tabs/featuresTab";
 import { renderIntegrationsTab } from "./tabs/integrationsTab";
+import { renderSharedVaultTab } from "./tabs/sharedVaultTab";
 import type { TranslationKey } from "../i18n";
 
 interface TabConfig {
@@ -85,6 +86,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				id: "integrations",
 				nameKey: "settings.tabs.integrations",
 				renderFn: renderIntegrationsTab,
+			},
+			{
+				id: "team-attribution",
+				nameKey: "settings.tabs.teamAttribution" as TranslationKey,
+				renderFn: renderSharedVaultTab,
 			},
 		];
 
@@ -246,6 +252,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				id: "integrations",
 				nameKey: "settings.tabs.integrations",
 				renderFn: renderIntegrationsTab,
+			},
+			{
+				id: "team-attribution",
+				nameKey: "settings.tabs.teamAttribution" as TranslationKey,
+				renderFn: renderSharedVaultTab,
 			},
 		];
 	}

@@ -183,9 +183,31 @@
     border-radius: var(--radius-s);
 }
 
-.tasknotes-plugin .reminder-modal__action-btn:hover {
+.tasknotes-plugin .reminder-modal__edit-btn:hover {
+    color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .reminder-modal__remove-btn:hover {
     color: var(--text-error);
     background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .reminder-modal__reminder-card--editing {
+    border-color: var(--interactive-accent);
+    background: var(--background-primary);
+    box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.tasknotes-plugin .reminder-modal__cancel-edit {
+    cursor: pointer;
+    color: var(--text-accent);
+    font-size: 0.85em;
+    margin-left: 8px;
+}
+
+.tasknotes-plugin .reminder-add-btn--edit {
+    background: var(--interactive-accent);
 }
 
 /* =====================================================================
@@ -240,6 +262,567 @@
 
 .tasknotes-plugin .reminder-modal__quick-btn-label {
     font-weight: 500;
+}
+
+/* Semantic preset row */
+.tasknotes-plugin .reminder-modal__semantic-presets {
+    margin-top: var(--size-4-1);
+    padding-top: var(--size-4-1);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .reminder-modal__semantic-btn {
+    border: 1px solid var(--interactive-accent);
+    color: var(--interactive-accent);
+    padding: var(--size-4-2) var(--size-4-3);
+    border-radius: var(--radius-s);
+    min-height: 42px;
+}
+
+.tasknotes-plugin .reminder-modal__semantic-btn:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* Semantic type badge on reminder cards */
+.tasknotes-plugin .reminder-modal__semantic-badge {
+    display: inline-block;
+    font-size: var(--font-ui-smaller);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+    background: var(--background-modifier-hover);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.tasknotes-plugin .reminder-modal__semantic-badge--persistent {
+    background: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+    color: var(--interactive-accent);
+}
+
+/* Semantic preset button subtitles */
+.tasknotes-plugin .reminder-modal__quick-btn-label-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.tasknotes-plugin .reminder-modal__quick-btn-subtitle {
+    font-size: 0.7em;
+    color: var(--text-muted);
+    font-weight: normal;
+    line-height: 1.2;
+}
+
+/* Expandable help text for anchor date groupings */
+.tasknotes-plugin .reminder-modal__help-text {
+    background: var(--background-secondary);
+    padding: 8px 12px;
+    border-radius: var(--radius-s);
+    border-left: 3px solid var(--interactive-accent);
+    margin-bottom: 8px;
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.tasknotes-plugin .reminder-modal__help-text summary {
+    cursor: pointer;
+    color: var(--text-normal);
+    font-weight: 500;
+    user-select: none;
+}
+
+.tasknotes-plugin .reminder-modal__help-text summary:hover {
+    color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .reminder-modal__help-text[open] > div {
+    margin-top: 6px;
+}
+
+/* =====================================================================
+   DATE PROPERTIES SECTION - Shared classes for modal + settings
+   ===================================================================== */
+
+.tasknotes-plugin .tn-date-props {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-left: 3px solid var(--interactive-accent);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-2) var(--size-4-3);
+}
+
+.tasknotes-plugin .tn-date-props-summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    user-select: none;
+    list-style: none; /* Firefox: hide default marker */
+}
+
+.tasknotes-plugin .tn-date-props-summary::-webkit-details-marker {
+    display: none;
+}
+
+.tasknotes-plugin .tn-date-props-summary::before {
+    content: "\25B6";
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 10px;
+    transition: transform 0.2s ease;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .tn-date-props[open] > .tn-date-props-summary::before {
+    transform: rotate(90deg);
+}
+
+.tasknotes-plugin .tn-date-props-summary h3 {
+    margin: 0;
+    font-size: var(--font-ui-small);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tasknotes-plugin .tn-date-props-summary:hover h3 {
+    color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .tn-date-props-header-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tasknotes-plugin .tn-date-props-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    cursor: help;
+    color: var(--text-faint);
+    transition: color 0.15s ease;
+}
+
+.tasknotes-plugin .tn-date-props-help:hover {
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .tn-date-props-help svg {
+    width: 14px;
+    height: 14px;
+}
+
+.tasknotes-plugin .tn-date-props[open] .tn-date-props-list {
+    margin-top: var(--size-4-2);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Group headers */
+.tasknotes-plugin .tn-date-props-group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-ui-smaller);
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--size-4-1) 0 2px 0;
+    margin-top: var(--size-4-1);
+}
+
+.tasknotes-plugin .tn-date-props-group-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    cursor: help;
+    color: var(--text-faint);
+    transition: color 0.15s ease;
+    text-transform: none;
+}
+
+.tasknotes-plugin .tn-date-props-group-help:hover {
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .tn-date-props-group-help svg {
+    width: 12px;
+    height: 12px;
+}
+
+.tasknotes-plugin .tn-date-props-group-header:first-child {
+    margin-top: 0;
+}
+
+/* Property rows */
+.tasknotes-plugin .tn-date-prop-row {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding: 6px 8px;
+    border-radius: var(--radius-s);
+    transition: background 0.15s ease;
+    min-height: 32px;
+}
+
+.tasknotes-plugin .tn-date-prop-row:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* Origin badge */
+.tasknotes-plugin .tn-date-prop-badge {
+    font-size: 0.65em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 1px 5px;
+    border-radius: var(--radius-s);
+    flex-shrink: 0;
+    min-width: 38px;
+    text-align: center;
+}
+
+.tasknotes-plugin .tn-date-prop-row--core .tn-date-prop-badge {
+    background: color-mix(in srgb, var(--color-blue) 15%, transparent);
+    color: var(--color-blue);
+}
+
+.tasknotes-plugin .tn-date-prop-row--settings .tn-date-prop-badge {
+    background: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+    color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .tn-date-prop-row--discovered .tn-date-prop-badge {
+    background: color-mix(in srgb, var(--color-orange) 15%, transparent);
+    color: var(--color-orange);
+}
+
+/* Property name */
+.tasknotes-plugin .tn-date-prop-name {
+    font-size: var(--font-ui-small);
+    font-weight: 500;
+    color: var(--text-normal);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Muted key hint after display name */
+.tasknotes-plugin .tn-date-prop-key-hint {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-faint);
+    font-weight: 400;
+    margin-left: 4px;
+}
+
+/* Value display */
+.tasknotes-plugin .tn-date-prop-value {
+    font-size: var(--font-ui-smaller);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .tn-date-prop-value--set {
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .tn-date-prop-value--empty {
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+/* Inline date input — replaces static value text */
+.tasknotes-plugin .tn-date-prop-date-input {
+    font-size: var(--font-ui-smaller);
+    padding: 1px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--text-normal);
+    min-width: 110px;
+    max-width: 130px;
+    cursor: pointer;
+}
+
+.tasknotes-plugin .tn-date-prop-date-input:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 1px var(--interactive-accent);
+    outline: none;
+}
+
+.tasknotes-plugin .tn-date-prop-date-input--empty {
+    color: var(--text-faint);
+    border-style: dashed;
+}
+
+/* Promote button for discovered properties */
+.tasknotes-plugin .tn-date-prop-promote-btn {
+    font-size: var(--font-ui-smaller);
+    padding: 1px 6px;
+    background: transparent;
+    border: 1px solid var(--text-warning);
+    color: var(--text-warning);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    opacity: 0.7;
+}
+
+.tasknotes-plugin .tn-date-prop-row:hover .tn-date-prop-promote-btn {
+    opacity: 1;
+}
+
+.tasknotes-plugin .tn-date-prop-promote-btn:hover {
+    background: color-mix(in srgb, var(--text-warning) 12%, transparent);
+}
+
+.tasknotes-plugin .tn-date-prop-promote-btn:disabled {
+    border-color: var(--text-success);
+    opacity: 1;
+    cursor: default;
+}
+
+/* Demote button for global (settings-origin) properties */
+.tasknotes-plugin .tn-date-prop-demote-btn {
+    font-size: var(--font-ui-smaller);
+    padding: 1px 6px;
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    opacity: 0.7;
+}
+
+.tasknotes-plugin .tn-date-prop-row:hover .tn-date-prop-demote-btn {
+    opacity: 1;
+}
+
+.tasknotes-plugin .tn-date-prop-demote-btn:hover {
+    border-color: var(--text-warning);
+    color: var(--text-warning);
+    background: color-mix(in srgb, var(--text-warning) 12%, transparent);
+}
+
+.tasknotes-plugin .tn-date-prop-demote-btn:disabled {
+    border-color: var(--text-warning);
+    opacity: 1;
+    cursor: default;
+}
+
+/* Add date property section */
+.tasknotes-plugin .tn-date-props-add {
+    margin-top: var(--size-4-2);
+    padding-top: var(--size-4-2);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .tn-date-prop-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-ui-smaller);
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px dashed var(--background-modifier-border);
+    color: var(--text-muted);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tasknotes-plugin .tn-date-prop-add-btn:hover {
+    border-color: var(--interactive-accent);
+    color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .tn-date-prop-add-icon {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+}
+
+.tasknotes-plugin .tn-date-props-add-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.tasknotes-plugin .tn-date-props-add-name {
+    font-size: var(--font-ui-smaller);
+    padding: 3px 8px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    flex: 1;
+    min-width: 0;
+}
+
+.tasknotes-plugin .tn-date-props-add-name:focus {
+    border-color: var(--interactive-accent);
+    outline: none;
+}
+
+.tasknotes-plugin .tn-date-props-add-date {
+    font-size: var(--font-ui-smaller);
+    padding: 2px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    min-width: 110px;
+}
+
+.tasknotes-plugin .tn-date-props-add-submit,
+.tasknotes-plugin .tn-date-props-add-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+}
+
+.tasknotes-plugin .tn-date-props-add-submit:hover {
+    border-color: var(--text-success);
+    color: var(--text-success);
+    background: color-mix(in srgb, var(--text-success) 8%, transparent);
+}
+
+.tasknotes-plugin .tn-date-props-add-cancel:hover {
+    border-color: var(--text-error);
+    color: var(--text-error);
+}
+
+/* "Use as anchor" button — always visible, highlights on hover */
+.tasknotes-plugin .tn-date-prop-use-btn {
+    font-size: var(--font-ui-smaller);
+    padding: 2px 8px;
+    background: transparent;
+    border: 1px solid var(--interactive-accent);
+    color: var(--interactive-accent);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    opacity: 0.7;
+}
+
+.tasknotes-plugin .tn-date-prop-row:hover .tn-date-prop-use-btn {
+    opacity: 1;
+}
+
+.tasknotes-plugin .tn-date-prop-use-btn:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* File count for vault-wide discovered */
+.tasknotes-plugin .tn-date-prop-file-count {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-faint);
+    flex-shrink: 0;
+}
+
+/* Promote hint */
+.tasknotes-plugin .tn-date-props-promote-hint {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    padding: var(--size-4-1) var(--size-4-2);
+    margin-top: var(--size-4-1);
+    border-top: 1px solid var(--background-modifier-border);
+    line-height: 1.5;
+}
+
+/* Description text under header */
+.tasknotes-plugin .tn-date-props-description {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: var(--size-4-2) 0 0 0;
+}
+
+/* Warning note for discovered properties */
+.tasknotes-plugin .tn-date-props-warning {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-warning);
+    background: color-mix(in srgb, var(--text-warning) 8%, transparent);
+    padding: 6px 10px;
+    border-radius: var(--radius-s);
+    margin-top: var(--size-4-1);
+    line-height: 1.5;
+}
+
+/* PropertyPicker wrapper inside date properties section */
+.tasknotes-plugin .tn-date-props-picker-wrapper {
+    margin: var(--size-4-2) 0;
+}
+
+/* Help text below PropertyPicker */
+.tasknotes-plugin .tn-date-props-picker-help {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    margin: var(--size-4-1) 0 0 0;
+    line-height: 1.5;
+}
+
+/* Recently demoted section below PropertyPicker */
+.tasknotes-plugin .tn-date-props-demoted {
+    margin-top: var(--size-4-2);
+    border: 1px dashed color-mix(in srgb, var(--text-warning) 30%, transparent);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-1);
+}
+
+.tasknotes-plugin .tn-date-props-demoted-header {
+    font-size: var(--font-ui-smaller);
+    font-weight: 600;
+    color: var(--text-warning);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--size-4-1);
+    padding: 0 4px;
+}
+
+.tasknotes-plugin .tn-date-prop-row--demoted {
+    background: color-mix(in srgb, var(--text-warning) 5%, transparent);
+}
+
+/* Settings note for promote/demote immediacy */
+.tasknotes-plugin .tn-date-props-settings-note {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-warning);
+    font-style: italic;
+    margin: 0 0 8px 0;
+}
+
+/* PropertyPicker inside reminder modal */
+.tasknotes-plugin .tn-reminder-property-picker {
+    margin-bottom: var(--size-4-2);
 }
 
 /* =====================================================================

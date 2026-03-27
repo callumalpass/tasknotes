@@ -433,6 +433,7 @@ export const en: TranslationTree = {
 			appearance: "Appearance & UI",
 			features: "Features",
 			integrations: "Integrations",
+			teamAttribution: "Team & Attribution",
 		},
 		features: {
 			inlineTasks: {
@@ -873,6 +874,8 @@ export const en: TranslationTree = {
 				metadataPropertiesDesc: "System-managed properties for tracking task history.",
 				featureProperties: "Feature Properties",
 				featurePropertiesDesc: "Properties used by specific TaskNotes features like Pomodoro timer and calendar sync.",
+				teamAttributionProperties: "Team & Attribution Properties",
+				teamAttributionPropertiesDesc: "Configure how task creator is tracked for team workflows in shared vaults.",
 			},
 			// Property card common fields
 			propertyCard: {
@@ -943,7 +946,7 @@ export const en: TranslationTree = {
 				title: {
 					name: "Title",
 					description:
-						"The task name. Can be stored in frontmatter or in the filename (when 'Store title in filename' is enabled).",
+						"The task name. Can be stored in frontmatter or in the filename (when 'Use title as filename' is enabled).",
 				},
 				dateCreated: {
 					name: "Date Created",
@@ -1017,8 +1020,8 @@ export const en: TranslationTree = {
 				filtersOn: "Filters On",
 			},
 			titleCard: {
-				storeTitleInFilename: "Store title in filename:",
-				storedInFilename: "Stored in filename",
+				storeTitleInFilename: "Use title as filename:",
+				storedInFilename: "Title as filename",
 				filenameUpdatesWithTitle: "Filename will automatically update when the task title changes.",
 				filenameFormat: "Filename format:",
 				customTemplate: "Custom template:",
@@ -1151,17 +1154,17 @@ export const en: TranslationTree = {
 				},
 			},
 			customUserFields: {
-				header: "Custom User Fields",
+				header: "Custom Properties",
 				description:
-					"Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.",
+					"Register custom frontmatter fields that integrate across the entire plugin — task modals, autocomplete, NLP recognition, task creation defaults, Bases views (filtering, sorting, grouping), and bulk operations. Control how they appear in modals via Modal Fields.",
 				addNew: {
-					name: "Add new user field",
-					description: "Create a new custom field that will appear in filters and views",
-					buttonText: "Add user field",
+					name: "Add custom property",
+					description: "Create a new custom property that integrates across modals, views, NLP, and defaults",
+					buttonText: "Add property",
 				},
 				emptyState:
-					"No custom user fields configured. Add a field to create custom properties for your tasks.",
-				emptyStateButton: "Add User Field",
+					"No custom properties configured. Add a property to extend your tasks with custom frontmatter fields.",
+				emptyStateButton: "Add Custom Property",
 				fields: {
 					displayName: "Display Name:",
 					propertyKey: "Property Key:",
@@ -1229,9 +1232,9 @@ export const en: TranslationTree = {
 				header: "Task Filenames",
 				description: "Configure how task files are named when created.",
 				storeTitleInFilename: {
-					name: "Store title in filename",
+					name: "Use title as filename",
 					description:
-						"Use the task title as the filename. Filename will update when the task title is changed (Recommended).",
+						"Use the task title as the filename instead of a generated ID. Zettel/timestamp prefix is only added on collision (Recommended).",
 				},
 				filenameFormat: {
 					name: "Filename format",
@@ -1539,6 +1542,7 @@ export const en: TranslationTree = {
 						advancedCalendar: "Open advanced calendar view",
 						agenda: "Open agenda view",
 						relationships: "Relationships widget",
+						upcoming: "Open upcoming view",
 					},
 					fileLabel: "File: {path}",
 					resetButton: "Reset",
@@ -2102,6 +2106,145 @@ export const en: TranslationTree = {
 				daysAgo: "{days} day{plural} ago",
 			},
 		},
+		// Team & Attribution settings (shared vaults, device identity)
+		teamAttribution: {
+			overview: {
+				header: "How team attribution works",
+				description:
+					"In shared vaults with multiple users, TaskNotes tracks who creates each task and enables directed notifications. Instead of everyone receiving every reminder, notifications are routed to specific people based on creator or assignee fields.",
+				creatorVsAssignee: {
+					title: "Understanding creator and assignee fields",
+					creator:
+						"A creator field is auto-populated when you create tasks based on this device's registration. Default type: text (single person).",
+					assignee:
+						"An assignees field lets you manually assign tasks to team members for directed notifications. Default type: list (multiple people).",
+					fieldNote:
+						"Both field names and types can be customized in Task Properties to match your workflow.",
+				},
+				useCase:
+					"Example: When a task's due date approaches, only the assigned person gets notified—not everyone using the vault.",
+			},
+			creatorFieldStatus: {
+				header: "Creator field status",
+				description:
+					"The creator field links new tasks to your person note for team attribution.",
+				configured: {
+					title: "Creator field configured",
+					description: "Using field: {fieldKey} ({fieldType})",
+					button: "Edit in Task Properties",
+				},
+				notConfigured: {
+					title: "Creator field not configured",
+					description:
+						"Go to Task Properties to set up the creator field and enable auto-attribution for team workflows.",
+					button: "Go to Task Properties",
+				},
+			},
+			attributionFields: {
+				header: "Team attribution fields",
+				description:
+					"Fields used for task attribution and directed notifications.",
+				creator: {
+					configured: "Creator field",
+					notConfigured: "Creator field not configured",
+					cardDescription:
+						"The person who created this task. Uses wikilinks to person notes for autocompletion.",
+				},
+				assignee: {
+					configured: "Assignees field",
+					notConfigured: "Assignees field not configured",
+					cardDescription:
+						"People assigned to work on this task. Can link to multiple person notes.",
+				},
+				typeHelp: {
+					text: "Single person (one wikilink)",
+					list: "Multiple people (array of wikilinks)",
+				},
+			},
+			deleteField: {
+				tooltip: "Remove this field",
+			},
+			personNotesSource: {
+				header: "Person notes source",
+				description:
+					"Configure where person notes live in your vault. These are notes representing team members that can be linked as task creators.",
+				folder: {
+					name: "Person notes folder",
+					description:
+						"Folder containing person notes (e.g., 'User-DB' or 'People'). Leave empty to search all folders.",
+					placeholder: "User-DB",
+				},
+				tag: {
+					name: "Person tag filter (optional)",
+					description:
+						"Only show notes with this tag when selecting person notes. Leave empty to show all notes in the folder.",
+					placeholder: "person",
+				},
+			},
+			yourIdentity: {
+				header: "Your identity",
+				description:
+					"Link this device to your person note. This determines who gets credited as the creator when you make new tasks.",
+				deviceId: "Device ID",
+				deviceIdDescription:
+					"This unique ID identifies your device. It's stored locally and never synced.",
+				registered: "Registered as",
+				notRegistered: "Not registered",
+				registerButton: "Register this device",
+				unregisterButton: "Unregister",
+				selectPersonNote: "Select your person note",
+				registrationSuccess: "Device registered successfully",
+				unregistrationSuccess: "Device unregistered",
+			},
+			autoAttribution: {
+				header: "Task creation attribution",
+				description:
+					"When enabled, new tasks automatically get a creator field linking to your person note.",
+				enabled: {
+					name: "Auto-set creator on new tasks",
+					description:
+						"Automatically populate the creator field when you create tasks.",
+				},
+				usesField: 'Uses creator field: "{field}"',
+				configureInTaskProperties: "Configure in Task Properties",
+				fieldNotConfigured: "Creator field not configured",
+				notConfigured: {
+					title: "Creator field not configured",
+					description:
+						'The field "{field}" needs to be added as a User Field in Task Properties before auto-attribution will work.',
+					createButton: "Create field automatically",
+					goToButton: "Go to Task Properties",
+				},
+				configured: {
+					title: "Creator field configured",
+					type: "Type: {type}",
+					editButton: "Edit in Task Properties",
+				},
+			},
+			teamSettings: {
+				name: "Team settings",
+				description:
+					"Configure device identity, person notes, and team member registration.",
+				button: "Open Team & Attribution",
+			},
+			teamMembers: {
+				header: "Registered team members",
+				description:
+					"All devices that have registered with person notes in this vault. Each team member registers their own device.",
+				noMembers: "No team members registered yet.",
+				device: "Device",
+				person: "Person",
+				lastSeen: "Last seen",
+				actions: "Actions",
+				removeDevice: "Remove",
+				confirmRemove: {
+					title: "Remove device registration",
+					message:
+						"Are you sure you want to remove this device registration? The user will need to re-register their device.",
+					confirm: "Remove",
+				},
+			},
+		},
 	},
 	notices: {
 		languageChanged: "Language changed to {language}.",
@@ -2141,6 +2284,7 @@ export const en: TranslationTree = {
 		openKanbanView: "Open kanban board",
 		openPomodoroStats: "Open pomodoro statistics",
 		openStatisticsView: "Open task & project statistics",
+		openUpcomingView: "Open upcoming view",
 		createNewTask: "Create new task",
 		convertCurrentNoteToTask: {
 			name: "Convert current note to task",
@@ -2165,6 +2309,15 @@ export const en: TranslationTree = {
 		startTimeTrackingWithSelector: "Start time tracking (select task)",
 		editTimeEntries: "Edit time entries (select task)",
 		createOrOpenTask: "Create or open task",
+		// Debug commands (for development)
+		toggleDebugLog: "Toggle debug logging to file",
+		clearDebugLog: "Clear debug log file",
+		// Notification commands
+		showNotificationToast: "Show notification toast",
+		syncBaseNotifications: "Sync base notifications",
+		// Migration commands
+		migrateFrontmatter: "Migrate frontmatter properties",
+		checkRemindersNow: "Check reminders now",
 	},
 	modals: {
 		deviceCode: {
@@ -2392,6 +2545,7 @@ export const en: TranslationTree = {
 				priority: "Set priority",
 				recurrence: "Set recurrence",
 				reminders: "Set reminders",
+				assignee: "Set assignee",
 			},
 			buttons: {
 				openNote: "Open note",

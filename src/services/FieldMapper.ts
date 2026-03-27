@@ -6,6 +6,41 @@ import {
 	serializeDependencies,
 } from "../utils/dependencyUtils";
 import { validateCompleteInstances } from "../utils/dateUtils";
+import {
+	readFieldOverrides,
+	writeFieldOverrides,
+	resolveFieldName,
+	resolveFieldNameWithViewFallback,
+	type OverridableField,
+	FIELD_OVERRIDE_PROPS,
+} from "../utils/fieldOverrideUtils";
+
+/**
+ * Normalize a reminder object from frontmatter.
+ * Handles legacy format (numeric offset + unit + direction) and converts to
+ * the canonical ISO 8601 duration format used by the plugin.
+ */
+function normalizeReminderData(r: any): any {
+	if (!r || typeof r !== "object") return r;
+	// Already in canonical format (offset is an ISO 8601 string like "-PT2H")
+	if (typeof r.offset === "string" && r.offset.includes("P")) return r;
+	// Legacy format: { offset: 2, unit: "hours", direction: "before" }
+	if ((typeof r.offset === "number" || !isNaN(Number(r.offset))) && r.unit) {
+		const num = Number(r.offset);
+		const unit = String(r.unit).toLowerCase();
+		let iso: string;
+		if (unit.startsWith("minute")) iso = `PT${num}M`;
+		else if (unit.startsWith("hour")) iso = `PT${num}H`;
+		else if (unit.startsWith("day")) iso = `P${num}D`;
+		else iso = `PT${num}M`; // fallback
+		const prefix = r.direction === "after" ? "" : "-";
+		const normalized = { ...r, offset: `${prefix}${iso}` };
+		delete normalized.unit;
+		delete normalized.direction;
+		return normalized;
+	}
+	return r;
+}
 
 /**
  * Service for mapping between internal field names and user-configured property names
@@ -35,18 +70,27 @@ export class FieldMapper {
 	}
 
 	/**
-	 * Convert frontmatter object using mapping to internal task data
+	 * Convert frontmatter object using mapping to internal task data.
+	 * @param viewMapping Optional per-view field mapping (from .base tnFieldMapping)
+	 *   used as a fallback between per-task overrides and global mapping.
 	 */
 	mapFromFrontmatter(
 		frontmatter: any,
 		filePath: string,
-		storeTitleInFilename?: boolean
+		storeTitleInFilename?: boolean,
+		viewMapping?: Record<string, string>
 	): Partial<TaskInfo> {
 		if (!frontmatter) return {};
 
 		const mapped: Partial<TaskInfo> = {
 			path: filePath,
 		};
+
+		// Read per-task field overrides (e.g., tnDueDateProp: "deadline")
+		const overrides = readFieldOverrides(frontmatter);
+		if (Object.keys(overrides).length > 0) {
+			mapped.fieldOverrides = overrides;
+		}
 
 		// Map each field if it exists in frontmatter
 		if (frontmatter[this.mapping.title] !== undefined) {
@@ -76,12 +120,20 @@ export class FieldMapper {
 			mapped.priority = frontmatter[this.mapping.priority];
 		}
 
-		if (frontmatter[this.mapping.due] !== undefined) {
-			mapped.due = frontmatter[this.mapping.due];
+		// Date fields with per-task override support:
+		// Check tn*Prop first, then view mapping, then global mapping
+		{
+			const dueProp = resolveFieldNameWithViewFallback("due", overrides, viewMapping, this.mapping.due);
+			if (frontmatter[dueProp] !== undefined) {
+				mapped.due = frontmatter[dueProp];
+			}
 		}
 
-		if (frontmatter[this.mapping.scheduled] !== undefined) {
-			mapped.scheduled = frontmatter[this.mapping.scheduled];
+		{
+			const schedProp = resolveFieldNameWithViewFallback("scheduled", overrides, viewMapping, this.mapping.scheduled);
+			if (frontmatter[schedProp] !== undefined) {
+				mapped.scheduled = frontmatter[schedProp];
+			}
 		}
 
 		if (frontmatter[this.mapping.contexts] !== undefined) {
@@ -100,8 +152,11 @@ export class FieldMapper {
 			mapped.timeEstimate = frontmatter[this.mapping.timeEstimate];
 		}
 
-		if (frontmatter[this.mapping.completedDate] !== undefined) {
-			mapped.completedDate = frontmatter[this.mapping.completedDate];
+		{
+			const completedProp = resolveFieldNameWithViewFallback("completedDate", overrides, viewMapping, this.mapping.completedDate);
+			if (frontmatter[completedProp] !== undefined) {
+				mapped.completedDate = frontmatter[completedProp];
+			}
 		}
 
 		if (frontmatter[this.mapping.recurrence] !== undefined) {
@@ -119,8 +174,11 @@ export class FieldMapper {
 			}
 		}
 
-		if (frontmatter[this.mapping.dateCreated] !== undefined) {
-			mapped.dateCreated = frontmatter[this.mapping.dateCreated];
+		{
+			const createdProp = resolveFieldNameWithViewFallback("dateCreated", overrides, viewMapping, this.mapping.dateCreated);
+			if (frontmatter[createdProp] !== undefined) {
+				mapped.dateCreated = frontmatter[createdProp];
+			}
 		}
 
 		if (frontmatter[this.mapping.dateModified] !== undefined) {
@@ -168,12 +226,14 @@ export class FieldMapper {
 			const reminders = frontmatter[this.mapping.reminders];
 			// Ensure reminders is always an array and filter out null/undefined values
 			if (Array.isArray(reminders)) {
-				const filteredReminders = reminders.filter((r) => r != null);
+				const filteredReminders = reminders
+					.filter((r) => r != null)
+					.map((r) => normalizeReminderData(r));
 				if (filteredReminders.length > 0) {
 					mapped.reminders = filteredReminders;
 				}
 			} else if (reminders != null) {
-				mapped.reminders = [reminders];
+				mapped.reminders = [normalizeReminderData(reminders)];
 			}
 		}
 
@@ -195,6 +255,7 @@ export class FieldMapper {
 		storeTitleInFilename?: boolean
 	): any {
 		const frontmatter: any = {};
+		const overrides = taskData.fieldOverrides || {};
 
 		// Map each field if it exists in task data
 		if (taskData.title !== undefined) {
@@ -216,12 +277,16 @@ export class FieldMapper {
 			frontmatter[this.mapping.priority] = taskData.priority;
 		}
 
+		// Date fields with per-task override support:
+		// Write to custom property name when overridden, otherwise use global mapping
 		if (taskData.due !== undefined) {
-			frontmatter[this.mapping.due] = taskData.due;
+			const dueProp = resolveFieldName("due", overrides, this.mapping.due);
+			frontmatter[dueProp] = taskData.due;
 		}
 
 		if (taskData.scheduled !== undefined) {
-			frontmatter[this.mapping.scheduled] = taskData.scheduled;
+			const schedProp = resolveFieldName("scheduled", overrides, this.mapping.scheduled);
+			frontmatter[schedProp] = taskData.scheduled;
 		}
 
 		if (taskData.contexts !== undefined && (!Array.isArray(taskData.contexts) || taskData.contexts.length > 0)) {
@@ -237,7 +302,8 @@ export class FieldMapper {
 		}
 
 		if (taskData.completedDate !== undefined) {
-			frontmatter[this.mapping.completedDate] = taskData.completedDate;
+			const completedProp = resolveFieldName("completedDate", overrides, this.mapping.completedDate);
+			frontmatter[completedProp] = taskData.completedDate;
 		}
 
 		if (taskData.recurrence !== undefined) {
@@ -249,11 +315,17 @@ export class FieldMapper {
 		}
 
 		if (taskData.dateCreated !== undefined) {
-			frontmatter[this.mapping.dateCreated] = taskData.dateCreated;
+			const createdProp = resolveFieldName("dateCreated", overrides, this.mapping.dateCreated);
+			frontmatter[createdProp] = taskData.dateCreated;
 		}
 
 		if (taskData.dateModified !== undefined) {
 			frontmatter[this.mapping.dateModified] = taskData.dateModified;
+		}
+
+		// Write per-task field override tracking properties (tnDueDateProp, etc.)
+		if (Object.keys(overrides).length > 0) {
+			writeFieldOverrides(frontmatter, overrides);
 		}
 
 		if (taskData.timeEntries !== undefined) {

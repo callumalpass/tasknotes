@@ -7,6 +7,7 @@ import {
 	Notice,
 } from "obsidian";
 import type TaskNotesPlugin from "../main";
+import { createAvatar, type AvatarSize } from "../ui/PersonAvatar";
 
 export type FileSelectorResult =
 	| { type: "selected"; file: TAbstractFile }
@@ -24,6 +25,10 @@ export interface FileSelectorOptions {
 	filter?: "markdown" | "all" | ((file: TAbstractFile) => boolean);
 	/** Folder to create new files in (default: vault root) */
 	newFileFolder?: string;
+	/** Show avatars for person/group notes (detected via frontmatter type) */
+	showAvatars?: boolean;
+	/** Avatar size when showAvatars is true */
+	avatarSize?: AvatarSize;
 }
 
 /**
@@ -263,42 +268,118 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 	renderSuggestion(file: TAbstractFile, el: HTMLElement): void {
 		const container = el.createDiv({ cls: "file-selector-suggestion" });
 
-		// File name
-		container.createDiv({
-			cls: "file-selector-suggestion__name",
-			text: file.name,
-		});
+		// Check if this is a person/group note and avatars are enabled
+		let isPerson = false;
+		let isGroup = false;
+		let displayName = file.name.replace(/\.md$/, "");
+		let subtitle = "";
 
-		// Title or aliases (for markdown files)
-		if (file instanceof TFile) {
+		if (file instanceof TFile && this.options.showAvatars) {
 			const cache = this.app.metadataCache.getFileCache(file);
-			if (cache?.frontmatter) {
-				const titleField = this.plugin.fieldMapper.toUserField("title");
-				const title = cache.frontmatter[titleField];
+			const frontmatter = cache?.frontmatter;
 
-				if (title) {
-					container.createDiv({
-						cls: "file-selector-suggestion__title",
-						text: title,
-					});
-				} else {
-					const aliases = parseFrontMatterAliases(cache.frontmatter);
-					if (aliases && aliases.length > 0) {
-						container.createDiv({
-							cls: "file-selector-suggestion__aliases",
-							text: aliases.join(", "),
-						});
-					}
+			if (frontmatter) {
+				// Use configurable property names for person/group detection
+				const typeProperty = this.plugin.settings.identityTypePropertyName || "type";
+				const personValue = this.plugin.settings.personTypeValue || "person";
+				const groupValue = this.plugin.settings.groupTypeValue || "group";
+				isPerson = frontmatter[typeProperty] === personValue;
+				isGroup = frontmatter[typeProperty] === groupValue;
+
+				// Use title field if available, otherwise file basename
+				const titleField = this.plugin.fieldMapper.toUserField("title");
+				if (frontmatter[titleField]) {
+					displayName = frontmatter[titleField];
+				}
+
+				// Build subtitle from role/department for persons, or member count for groups
+				if (isPerson) {
+					const parts: string[] = [];
+					if (frontmatter.role) parts.push(frontmatter.role);
+					if (frontmatter.department) parts.push(frontmatter.department);
+					subtitle = parts.join(" · ");
+				} else if (isGroup && Array.isArray(frontmatter.members)) {
+					const count = frontmatter.members.length;
+					subtitle = `${count} member${count !== 1 ? "s" : ""}`;
 				}
 			}
 		}
 
-		// Path (if not in root)
-		if (file.parent && file.parent.path !== "/") {
-			container.createDiv({
-				cls: "file-selector-suggestion__path",
-				text: file.parent.path,
+		// Render with avatar for person/group notes
+		if ((isPerson || isGroup) && this.options.showAvatars) {
+			container.addClass("file-selector-suggestion--with-avatar");
+
+			// Avatar
+			const avatar = createAvatar({
+				name: displayName,
+				size: this.options.avatarSize || "sm",
+				isGroup: isGroup,
+				tooltip: displayName,
 			});
+			container.appendChild(avatar);
+
+			// Text container
+			const textContainer = container.createDiv({
+				cls: "file-selector-suggestion__text",
+			});
+
+			textContainer.createDiv({
+				cls: "file-selector-suggestion__name",
+				text: displayName,
+			});
+
+			if (subtitle) {
+				textContainer.createDiv({
+					cls: "file-selector-suggestion__subtitle",
+					text: subtitle,
+				});
+			}
+
+			// Path (if not in root)
+			if (file.parent && file.parent.path !== "/") {
+				textContainer.createDiv({
+					cls: "file-selector-suggestion__path",
+					text: file.parent.path,
+				});
+			}
+		} else {
+			// Standard rendering (no avatar)
+			container.createDiv({
+				cls: "file-selector-suggestion__name",
+				text: file.name,
+			});
+
+			// Title or aliases (for markdown files)
+			if (file instanceof TFile) {
+				const cache = this.app.metadataCache.getFileCache(file);
+				if (cache?.frontmatter) {
+					const titleField = this.plugin.fieldMapper.toUserField("title");
+					const title = cache.frontmatter[titleField];
+
+					if (title) {
+						container.createDiv({
+							cls: "file-selector-suggestion__title",
+							text: title,
+						});
+					} else {
+						const aliases = parseFrontMatterAliases(cache.frontmatter);
+						if (aliases && aliases.length > 0) {
+							container.createDiv({
+								cls: "file-selector-suggestion__aliases",
+								text: aliases.join(", "),
+							});
+						}
+					}
+				}
+			}
+
+			// Path (if not in root)
+			if (file.parent && file.parent.path !== "/") {
+				container.createDiv({
+					cls: "file-selector-suggestion__path",
+					text: file.parent.path,
+				});
+			}
 		}
 	}
 
@@ -338,6 +419,8 @@ export function openFileSelector(
 		title?: string;
 		filter?: "markdown" | "all" | ((file: TAbstractFile) => boolean);
 		newFileFolder?: string;
+		showAvatars?: boolean;
+		avatarSize?: AvatarSize;
 	}
 ): void {
 	const modal = new FileSelectorModal(plugin.app, plugin, {
@@ -345,6 +428,8 @@ export function openFileSelector(
 		title: options?.title,
 		filter: options?.filter,
 		newFileFolder: options?.newFileFolder,
+		showAvatars: options?.showAvatars,
+		avatarSize: options?.avatarSize,
 		onResult: (result) => {
 			if (result.type === "selected" || result.type === "created") {
 				onChoose(result.file);

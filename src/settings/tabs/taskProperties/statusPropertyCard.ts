@@ -15,6 +15,7 @@ import {
 } from "../../components/CardComponent";
 import { createIconInput } from "../../components/IconSuggest";
 import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
+import { migratePropertyName } from "../../../utils/settingsMigration";
 
 /**
  * Renders the Status property card with nested status value cards
@@ -46,9 +47,19 @@ export function renderStatusPropertyCard(
 		plugin.settings.defaultTaskStatus
 	);
 
-	propertyKeyInput.addEventListener("change", () => {
-		plugin.settings.fieldMapping.status = propertyKeyInput.value;
+	propertyKeyInput.addEventListener("change", async () => {
+		const newValue = propertyKeyInput.value.trim();
+		const oldValue = plugin.settings.fieldMapping.status;
+		if (newValue && newValue !== oldValue) {
+			const result = await migratePropertyName({
+				app: plugin.app, plugin, oldPropertyName: oldValue, newPropertyName: newValue, description: "task files",
+			});
+			if (result === "cancelled") { propertyKeyInput.value = oldValue; return; }
+		}
+		plugin.settings.fieldMapping.status = newValue || oldValue;
 		save();
+		const secondary = propertyKeyInput.closest("[data-card-id]")?.querySelector(".tasknotes-settings__card-secondary-text");
+		if (secondary) secondary.textContent = plugin.settings.fieldMapping.status;
 	});
 
 	defaultSelect.addEventListener("change", () => {

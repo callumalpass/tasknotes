@@ -123,8 +123,8 @@ export class MicrosoftCalendarService extends CalendarProvider {
 				const jitter = Math.random() * 0.3 * backoffMs; // 0-30% jitter
 				const delay = Math.min(backoffMs + jitter, MAX_BACKOFF_MS);
 
-				console.warn(
-					`[MicrosoftCalendar] ${context} failed (${error.status}), ` +
+				this.plugin.debugLog.warn('MicrosoftCalendar',
+					`${context} failed (${error.status}), ` +
 					`retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})`
 				);
 
@@ -508,7 +508,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 										cachedEvents.push(icsEvent);
 									}
 								} catch (conversionError) {
-									console.warn("[MicrosoftCalendar] Failed to convert event during refresh", msEvent.id, conversionError);
+									this.plugin.debugLog.warn('MicrosoftCalendar', `Failed to convert event during refresh: ${msEvent.id}`, conversionError);
 								}
 							}
 						}
@@ -531,7 +531,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 
 			// If it's an auth error, show notice to reconnect
 			if (error.message && error.message.includes("401")) {
-				console.warn("[MicrosoftCalendar] Authentication expired - caller should handle re-authentication");
+				this.plugin.debugLog.warn('MicrosoftCalendar', 'Authentication expired - caller should handle re-authentication');
 			}
 		}
 	}
@@ -568,7 +568,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			try {
 				results.push(this.convertToICSEvent(event, calendarId));
 			} catch (conversionError) {
-				console.warn("[MicrosoftCalendar] Skipping event due to conversion failure", event.id, conversionError);
+				this.plugin.debugLog.warn('MicrosoftCalendar', `Skipping event due to conversion failure: ${event.id}`, conversionError);
 			}
 		}
 
@@ -957,7 +957,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		}
 
 		if (timeZone && timeZone.toUpperCase() !== "UTC") {
-			console.warn(`[MicrosoftCalendar] Falling back to UTC conversion for timezone "${timeZone}"`);
+			this.plugin.debugLog.warn('MicrosoftCalendar', `Falling back to UTC conversion for timezone "${timeZone}"`);
 		}
 
 		// Append Z (UTC) and trim trailing fractional seconds to keep parseISO happy

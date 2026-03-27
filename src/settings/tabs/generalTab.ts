@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { Notice, Setting } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import {
 	createSettingGroup,
@@ -6,8 +6,11 @@ import {
 	configureToggleSetting,
 	configureDropdownSetting,
 } from "../components/settingHelpers";
+import { FolderSuggest } from "../components/FolderSuggest";
 import { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
+import { migrateTag, migratePropertyValue, migratePropertyName } from "../../utils/settingsMigration";
+import { LOG_CATEGORY_GROUPS } from "../../utils/DebugLog";
 
 /**
  * Renders the General tab - foundational settings for task identification and storage
@@ -30,19 +33,27 @@ export function renderGeneralTab(
 			description: translate("settings.general.taskStorage.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				configureTextSetting(setting, {
-					name: translate("settings.general.taskStorage.defaultFolder.name"),
-					desc: translate("settings.general.taskStorage.defaultFolder.description"),
-					placeholder: "TaskNotes",
-					getValue: () => plugin.settings.tasksFolder,
-					setValue: async (value: string) => {
-						plugin.settings.tasksFolder = value;
-						save();
-					},
-					ariaLabel: "Default folder path for new tasks",
-				})
-			);
+			group.addSetting((setting) => {
+				setting
+					.setName(translate("settings.general.taskStorage.defaultFolder.name"))
+					.setDesc(translate("settings.general.taskStorage.defaultFolder.description"));
+
+				// Create text input with folder suggest
+				const inputEl = setting.controlEl.createEl("input", {
+					type: "text",
+					cls: "tasknotes-settings__card-input folder-suggest-input",
+					attr: { placeholder: "TaskNotes" },
+				});
+				inputEl.value = plugin.settings.tasksFolder;
+
+				// Attach folder suggester
+				new FolderSuggest(plugin.app, inputEl);
+
+				inputEl.addEventListener("input", () => {
+					plugin.settings.tasksFolder = inputEl.value.trim();
+					save();
+				});
+			});
 
 			// Folder for converted inline tasks (only shown when instant convert is enabled)
 			if (plugin.settings.enableInstantTaskConvert) {
@@ -76,19 +87,27 @@ export function renderGeneralTab(
 			);
 
 			if (plugin.settings.moveArchivedTasks) {
-				group.addSetting((setting) =>
-					configureTextSetting(setting, {
-						name: translate("settings.general.taskStorage.archiveFolder.name"),
-						desc: translate("settings.general.taskStorage.archiveFolder.description"),
-						placeholder: "TaskNotes/Archive",
-						getValue: () => plugin.settings.archiveFolder,
-						setValue: async (value: string) => {
-							plugin.settings.archiveFolder = value;
-							save();
-						},
-						ariaLabel: "Archive folder path",
-					})
-				);
+				group.addSetting((setting) => {
+					setting
+						.setName(translate("settings.general.taskStorage.archiveFolder.name"))
+						.setDesc(translate("settings.general.taskStorage.archiveFolder.description"));
+
+					// Create text input with folder suggest
+					const inputEl = setting.controlEl.createEl("input", {
+						type: "text",
+						cls: "tasknotes-settings__card-input folder-suggest-input",
+						attr: { placeholder: "TaskNotes/Archive" },
+					});
+					inputEl.value = plugin.settings.archiveFolder;
+
+					// Attach folder suggester
+					new FolderSuggest(plugin.app, inputEl);
+
+					inputEl.addEventListener("input", () => {
+						plugin.settings.archiveFolder = inputEl.value.trim();
+						save();
+					});
+				});
 			}
 		}
 	);
@@ -132,9 +151,31 @@ export function renderGeneralTab(
 						name: translate("settings.general.taskIdentification.taskTag.name"),
 						desc: translate("settings.general.taskIdentification.taskTag.description"),
 						placeholder: "task",
+						commitOnBlur: true,
 						getValue: () => plugin.settings.taskTag,
 						setValue: async (value: string) => {
-							plugin.settings.taskTag = value;
+							const newVal = value.trim();
+							const oldVal = plugin.settings.taskTag;
+							if (newVal === oldVal || !oldVal) {
+								plugin.settings.taskTag = newVal;
+								save();
+								return;
+							}
+
+							const result = await migrateTag({
+								app: plugin.app,
+								plugin,
+								oldTag: oldVal,
+								newTag: newVal,
+								description: "task notes",
+							});
+
+							if (result === "cancelled") {
+								const inputEl = setting.controlEl.querySelector("input");
+								if (inputEl) (inputEl as HTMLInputElement).value = oldVal;
+								return;
+							}
+							plugin.settings.taskTag = newVal;
 							save();
 						},
 						ariaLabel: "Task identification tag",
@@ -158,9 +199,31 @@ export function renderGeneralTab(
 						name: translate("settings.general.taskIdentification.taskProperty.name"),
 						desc: translate("settings.general.taskIdentification.taskProperty.description"),
 						placeholder: "category",
+						commitOnBlur: true,
 						getValue: () => plugin.settings.taskPropertyName,
 						setValue: async (value: string) => {
-							plugin.settings.taskPropertyName = value;
+							const newVal = value.trim();
+							const oldVal = plugin.settings.taskPropertyName;
+							if (newVal === oldVal || !oldVal) {
+								plugin.settings.taskPropertyName = newVal;
+								save();
+								return;
+							}
+
+							const result = await migratePropertyName({
+								app: plugin.app,
+								plugin,
+								oldPropertyName: oldVal,
+								newPropertyName: newVal,
+								description: "task notes",
+							});
+
+							if (result === "cancelled") {
+								const inputEl = setting.controlEl.querySelector("input");
+								if (inputEl) (inputEl as HTMLInputElement).value = oldVal;
+								return;
+							}
+							plugin.settings.taskPropertyName = newVal;
 							save();
 						},
 					})
@@ -171,9 +234,39 @@ export function renderGeneralTab(
 						name: translate("settings.general.taskIdentification.taskPropertyValue.name"),
 						desc: translate("settings.general.taskIdentification.taskPropertyValue.description"),
 						placeholder: "task",
+						commitOnBlur: true,
 						getValue: () => plugin.settings.taskPropertyValue,
 						setValue: async (value: string) => {
-							plugin.settings.taskPropertyValue = value;
+							const newVal = value.trim();
+							const oldVal = plugin.settings.taskPropertyValue;
+							if (newVal === oldVal || !oldVal) {
+								plugin.settings.taskPropertyValue = newVal;
+								save();
+								return;
+							}
+
+							const propName = plugin.settings.taskPropertyName;
+							if (!propName) {
+								plugin.settings.taskPropertyValue = newVal;
+								save();
+								return;
+							}
+
+							const result = await migratePropertyValue({
+								app: plugin.app,
+								plugin,
+								propertyName: propName,
+								oldValue: oldVal,
+								newValue: newVal,
+								description: "task notes",
+							});
+
+							if (result === "cancelled") {
+								const inputEl = setting.controlEl.querySelector("input");
+								if (inputEl) (inputEl as HTMLInputElement).value = oldVal;
+								return;
+							}
+							plugin.settings.taskPropertyValue = newVal;
 							save();
 						},
 					})
@@ -214,6 +307,11 @@ export function renderGeneralTab(
 			id: 'relationships',
 			nameKey: 'relationships' as const,
 			defaultPath: 'TaskNotes/Views/relationships.base',
+		},
+		{
+			id: 'open-upcoming-view',
+			nameKey: 'upcoming' as const,
+			defaultPath: 'TaskNotes/Views/upcoming-default.base',
 		},
 	];
 
@@ -485,6 +583,192 @@ export function renderGeneralTab(
 								await plugin.activateReleaseNotesView();
 							})
 					);
+			});
+		}
+	);
+
+	// Developer Options Section
+	createSettingGroup(
+		container,
+		{
+			heading: "Developer options",
+			description: "Settings for debugging and development. Enable debug logging to write diagnostics to debug.log in your vault root.",
+		},
+		(group) => {
+			// Container for the category filters (shown/hidden with toggle)
+			let categoryContainer: HTMLElement | null = null;
+			// Stable anchor element — categories are always inserted after this
+			let categoryAnchor: HTMLElement | null = null;
+
+			const renderCategories = (_parentEl: HTMLElement, show: boolean): void => {
+				categoryContainer?.remove();
+				categoryContainer = null;
+				if (!show || !categoryAnchor) return;
+
+				categoryContainer = createDiv({ cls: "tn-debug-categories" });
+				categoryAnchor.after(categoryContainer);
+				const cats: Record<string, boolean> = { ...(plugin.settings.debugLogCategories ?? {}) };
+
+				// "Select all" / "Deselect all" controls
+				const controlRow = categoryContainer.createDiv({ cls: "setting-item" });
+				controlRow.style.cssText = "padding: 4px 0; border: none; display: flex; gap: 8px;";
+				const selectAll = controlRow.createEl("a", { text: "Select all" });
+				selectAll.style.cssText = "cursor: pointer; color: var(--text-accent); font-size: var(--font-ui-small);";
+				const deselectAll = controlRow.createEl("a", { text: "Deselect all" });
+				deselectAll.style.cssText = "cursor: pointer; color: var(--text-accent); font-size: var(--font-ui-small);";
+
+				const allCheckboxes: HTMLInputElement[] = [];
+
+				// Render each group
+				for (const [groupName, tags] of Object.entries(LOG_CATEGORY_GROUPS)) {
+					const groupEl = categoryContainer.createDiv();
+					groupEl.createEl("div", {
+						text: groupName,
+						cls: "setting-item-name",
+					}).style.cssText = "font-size: var(--font-ui-small); font-weight: var(--font-semibold); margin: 8px 0 4px; color: var(--text-muted);";
+
+					const tagGrid = groupEl.createDiv();
+					tagGrid.style.cssText = "display: flex; flex-wrap: wrap; gap: 4px 12px;";
+
+					for (const tag of tags) {
+						const label = tagGrid.createEl("label");
+						label.style.cssText = "display: flex; align-items: center; gap: 4px; font-size: var(--font-ui-small); cursor: pointer;";
+						const cb = label.createEl("input", { type: "checkbox" });
+						cb.checked = cats[tag] !== false;
+						label.appendText(tag);
+						allCheckboxes.push(cb);
+
+						cb.addEventListener("change", () => {
+							if (cb.checked) {
+								delete cats[tag]; // Remove = default enabled
+							} else {
+								cats[tag] = false;
+							}
+							plugin.settings.debugLogCategories = { ...cats };
+							plugin.debugLog.setCategories(plugin.settings.debugLogCategories);
+							save();
+						});
+					}
+				}
+
+				selectAll.addEventListener("click", (e) => {
+					e.preventDefault();
+					allCheckboxes.forEach(cb => { cb.checked = true; cb.dispatchEvent(new Event("change")); });
+				});
+				deselectAll.addEventListener("click", (e) => {
+					e.preventDefault();
+					allCheckboxes.forEach(cb => { cb.checked = false; cb.dispatchEvent(new Event("change")); });
+				});
+			};
+
+			// Expandable details container — revealed by master toggle
+			let detailsContainer: HTMLElement | null = null;
+
+			const renderDetails = (parentEl: HTMLElement, show: boolean): void => {
+				// Tear down previous
+				detailsContainer?.remove();
+				detailsContainer = null;
+				categoryContainer?.remove();
+				categoryContainer = null;
+				if (!show) return;
+
+				detailsContainer = createDiv({ cls: "tn-debug-details" });
+				detailsContainer.style.cssText = "padding: 0 0 0 12px; border-left: 2px solid var(--background-modifier-border);";
+
+				// -- Destination checkboxes --
+				const destSetting = new Setting(detailsContainer)
+					.setName("Log output")
+					.setDesc("Choose where diagnostic logs are written.");
+
+				const destRow = destSetting.settingEl.createDiv();
+				destRow.style.cssText = "display: flex; gap: 16px; margin-top: 6px;";
+
+				const makeDestCheckbox = (label: string, checked: boolean, onChange: (v: boolean) => void) => {
+					const lbl = destRow.createEl("label");
+					lbl.style.cssText = "display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: var(--font-ui-small);";
+					const cb = lbl.createEl("input", { type: "checkbox" });
+					cb.checked = checked;
+					lbl.appendText(label);
+					cb.addEventListener("change", () => onChange(cb.checked));
+					return cb;
+				};
+
+				makeDestCheckbox("File (debug.log)", plugin.settings.enableDebugLogging ?? false, (v) => {
+					plugin.settings.enableDebugLogging = v;
+					plugin.debugLog.setEnabled(v);
+					save();
+				});
+
+				makeDestCheckbox("Console (Ctrl+Shift+I)", plugin.settings.debugLogConsoleOutput ?? false, (v) => {
+					plugin.settings.debugLogConsoleOutput = v;
+					plugin.debugLog.consoleOutput = v;
+					save();
+				});
+
+				// -- Category filters --
+				categoryAnchor = destSetting.settingEl;
+				renderCategories(parentEl, true);
+				// Move categories inside the details container
+				if (categoryContainer) {
+					detailsContainer.appendChild(categoryContainer);
+				}
+
+				// -- Clear debug log --
+				new Setting(detailsContainer)
+					.setName("Clear debug log")
+					.setDesc("Clear the contents of the debug.log file")
+					.addButton((button) =>
+						button
+							.setButtonText("Clear log")
+							.onClick(async () => {
+								await plugin.debugLog.clear();
+								new Notice("Debug log cleared");
+							})
+					);
+
+				// Insert after the master toggle's anchor
+				categoryAnchor = masterSettingEl;
+				masterSettingEl.after(detailsContainer);
+			};
+
+			// -- Master toggle --
+			let masterSettingEl: HTMLElement;
+			const isAnyLoggingOn = () =>
+				(plugin.settings.enableDebugLogging ?? false) || (plugin.settings.debugLogConsoleOutput ?? false);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Enable debug logging",
+					desc: "Errors always reach the console. Turn on to choose where other diagnostic logs go.",
+					getValue: () => isAnyLoggingOn(),
+					setValue: async (value: boolean) => {
+						if (value) {
+							// Turn on: enable file output by default
+							plugin.settings.enableDebugLogging = true;
+							plugin.settings.debugLogConsoleOutput = true;
+							plugin.debugLog.setEnabled(true);
+							plugin.debugLog.consoleOutput = true;
+						} else {
+							// Turn off: disable both
+							plugin.settings.enableDebugLogging = false;
+							plugin.settings.debugLogConsoleOutput = false;
+							plugin.debugLog.setEnabled(false);
+							plugin.debugLog.consoleOutput = false;
+						}
+						save();
+						renderDetails(setting.settingEl.parentElement!, value);
+					},
+				})
+			);
+
+			// Capture the master toggle element and render details if already on
+			group.addSetting((setting) => {
+				// Use previous sibling as the master setting element
+				masterSettingEl = setting.settingEl.previousElementSibling as HTMLElement;
+				setting.settingEl.style.display = "none";
+				if (isAnyLoggingOn()) {
+					renderDetails(setting.settingEl.parentElement!, true);
+				}
 			});
 		}
 	);

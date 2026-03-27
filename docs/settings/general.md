@@ -3,7 +3,7 @@
 These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior.
 
 
-![General Settings](../assets/settings-general.png)
+![General Settings](../assets/settings/settings-general.png)
 
 ## Task Storage
 
@@ -29,7 +29,7 @@ The **Hide identification tags in task cards** setting allows you to do this. Wh
 - Other tags that don't match the identification pattern will still be displayed
 - The setting only affects the visual display—tags remain in the frontmatter
 
-![Hide identification tags demo](../assets/demo-hide-identification-tags.gif)
+![Hide identification tags demo](../assets/task-management/demo-hide-identification-tags.gif)
 
 **Example:**
 

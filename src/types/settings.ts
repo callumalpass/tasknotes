@@ -89,6 +89,52 @@ export interface ProjectAutosuggestSettings {
 	propertyValue?: string; // Expected value for the property (empty = property must exist)
 }
 
+/**
+ * Mapping between a device and a user note in the vault.
+ * Used by the device identity system for auto-attribution in shared vaults.
+ */
+export interface DeviceUserMapping {
+	deviceId: string;
+	userNotePath: string;
+	deviceName: string;
+	lastSeen: number;
+	userDisplayName?: string;
+	/** Custom avatar color (hex). If not set, color is generated from name. */
+	avatarColor?: string;
+}
+
+/**
+ * Mapping for a discovered group note in the vault.
+ * Used by GroupRegistry for caching group membership.
+ */
+export interface GroupNoteMapping {
+	notePath: string;
+	displayName: string;
+	memberPaths: string[]; // Direct members (before recursive resolution)
+	lastUpdated: number;
+}
+
+/**
+ * Lead time configuration for reminder notifications.
+ * Specifies how far in advance to notify before a task is due.
+ */
+export interface LeadTime {
+	value: number;
+	unit: "minutes" | "hours" | "days" | "weeks";
+}
+
+/**
+ * Preferences for a person note, used for per-assignee notifications.
+ * Read from frontmatter of person notes with type: person.
+ */
+export interface PersonPreferences {
+	availableFrom: string; // "09:00" format, start of availability window
+	availableUntil: string; // "17:00" format, end of availability window
+	reminderLeadTimes: LeadTime[];
+	notificationEnabled: boolean;
+	overrideGlobalReminders: boolean; // true = replace global lead-time rules, false = add to them
+}
+
 export interface TaskNotesSettings {
 	tasksFolder: string; // Now just a default location for new tasks
 	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived
@@ -103,9 +149,13 @@ export interface TaskNotesSettings {
 	defaultTaskStatus: string; // Changed to string to support custom statuses
 	taskOrgFiltersCollapsed: boolean; // Save collapse state of task organization filters
 	// Task filename settings
-	taskFilenameFormat: "title" | "zettel" | "timestamp" | "custom";
+	taskFilenameFormat: "title" | "zettel" | "zettel-title" | "timestamp" | "custom";
 	storeTitleInFilename: boolean;
 	customFilenameTemplate: string; // Template for custom format
+	filenameCollisionBehavior: "silent" | "notify" | "ask"; // How to handle filename collisions
+	collisionRetrySuffix: "timestamp" | "random" | "zettel"; // What to append when retrying
+	zettelDateSource: "creation" | "due"; // Legacy - kept for backwards compatibility
+	zettelDateChain: ("due" | "scheduled" | "creation")[]; // Fallback chain for zettel date
 	// Task creation defaults
 	taskCreationDefaults: TaskCreationDefaults;
 	// Calendar view settings
@@ -182,7 +232,7 @@ export interface TaskNotesSettings {
 	savedViews: SavedView[];
 	// Notification settings
 	enableNotifications: boolean;
-	notificationType: "in-app" | "system";
+	notificationType: "in-app" | "system" | "both";
 	// HTTP API settings
 	enableAPI: boolean;
 	apiPort: number;
@@ -198,6 +248,8 @@ export interface TaskNotesSettings {
 	modalFieldsConfig?: TaskModalFieldsConfig;
 	// Split layout for task modals on wide screens
 	enableModalSplitLayout: boolean;
+	// Collapse the property mapping section in task modals by default
+	propertyPickerCollapsed: boolean;
 	// Default visible properties for task cards (when no saved view is active)
 	defaultVisibleProperties?: string[];
 	// Default visible properties for inline task cards (task link widgets in editor)
@@ -206,6 +258,10 @@ export interface TaskNotesSettings {
 	enableBases: boolean;
 	enableMdbaseSpec: boolean;
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
+	enableBulkActionsButton: boolean; // Show the "Bulk tasking" button in Bases view toolbars (key kept for backward compat)
+	enableUniversalBasesButtons: boolean; // Show TaskNotes buttons on all Bases views (not just TaskNotes view types)
+	defaultBulkMode: "generate" | "convert" | "bulkEdit"; // Default mode for the bulk tasking modal
+	suppressBulkEditConfirmation: boolean; // Suppress confirmation dialog for bulk edit operations
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
 		'open-calendar-view': string;
@@ -238,13 +294,201 @@ export interface TaskNotesSettings {
 	microsoftCalendarSyncTokens: Record<string, string>; // Maps calendar ID to delta link
 	// Google Calendar task export settings
 	googleCalendarExport: GoogleCalendarExportSettings;
+	// Device identity settings (for shared vaults)
+	deviceUserMappings: DeviceUserMapping[];
+	autoSetCreator: boolean;
+	creatorFieldName: string;
+	assigneeFieldName: string;
+	// Person notes configuration (for Team & Attribution)
+	personNotesFolder: string;
+	personNotesTag: string;
+	// Group notes configuration (for team assignment)
+	groupNotesFolder: string; // Can be same as personNotesFolder
+	groupNotesTag: string; // Optional filter tag
+	groupNoteMappings: GroupNoteMapping[]; // Cached discovered groups
+	// Configurable type property names (for enterprise compatibility)
+	identityTypePropertyName: string; // Property name for person/group type detection (default: "type")
+	personTypeValue: string; // Value that identifies person notes (default: "person")
+	groupTypeValue: string; // Value that identifies group notes (default: "group")
+	// Vault-wide notification settings
+	vaultWideNotifications: VaultWideNotificationSettings;
+	// Debug logging (persists between restarts)
+	enableDebugLogging: boolean;
+	// Whether debug logs also appear in the developer console (default: true)
+	debugLogConsoleOutput: boolean;
+	// Per-category log filters (empty = all enabled when debug logging is on)
+	debugLogCategories: Record<string, boolean>;
+	// Note UUID settings (for persistent identity across renames)
+	noteUuidPropertyName: string; // Empty = feature disabled
+	noteUuidAutoGenerate: boolean;
+	// Base identity settings (for per-base property mapping, see ADR-011)
+	baseIdentityTrackSourceView: boolean; // Write tnSourceViewId/tnSourceBaseId on created tasks
+	// Global reminder rules (virtual reminders applied to all tasks at runtime)
+	globalReminderRules: GlobalReminderRule[];
+	// Upcoming View date format settings
+	upcomingViewDateFormat: "iso" | "us" | "eu" | "relative" | "rich" | "custom";
+	upcomingViewCustomDateFormat: string; // date-fns format string when "custom"
+	upcomingViewUseRelativeDates: boolean; // "2 days ago" vs "Jan 29, 2026"
+	upcomingViewRelativeDateThreshold: number; // Days within which to use relative (default: 7)
+}
+
+/**
+ * Time category for grouping notification items in the unified modal.
+ */
+export type TimeCategory = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'thisMonth' | 'later';
+
+/**
+ * Source that triggered a notification item.
+ */
+export interface NotificationSource {
+	type: 'base' | 'reminder-view' | 'upstream' | 'view-entry';
+	path?: string;
+	name: string;
+}
+
+/**
+ * An aggregated notification item for the unified modal.
+ * Combines items from multiple notification sources (bases, reminders, view-entry tracking).
+ */
+export interface AggregatedNotificationItem {
+	path: string;
+	title: string;
+	isTask: boolean;
+	status?: string;
+	dueDate?: string;
+	scheduledDate?: string;
+	assignees?: string[];
+	/** Project(s) this task belongs to - shown as grey text in UpcomingView */
+	projects?: string | string[];
+	/** Sources that triggered this notification (may come from multiple bases) */
+	sources: NotificationSource[];
+	/** Time-based grouping category */
+	timeCategory: TimeCategory;
+	/** Human-readable time context (e.g., "Due 2 days ago", "In queue for 3 days") */
+	timeContext?: string;
+	/** Whether this is a base notification task (type: base-notification) */
+	isBaseNotification?: boolean;
+	/** For base notifications: number of items matching the base filter */
+	matchCount?: number;
+	/** For base notifications: path to the source .base file */
+	sourceBasePath?: string;
+}
+
+/**
+ * Settings for the vault-wide notification system.
+ */
+export interface VaultWideNotificationSettings {
+	enabled: boolean;
+	showOnStartup: boolean;
+	checkInterval: number; // minutes
+	enabledSources: {
+		bases: boolean;
+		reminderViews: boolean;
+		upstreamReminders: boolean;
+		viewEntry: boolean;
+	};
+	defaultReminderTime: string; // HH:MM format
+	/** Path to the .base file to open when clicking toast (optional, uses convention if not set) */
+	upcomingViewPath?: string;
+	/** Only notify for tasks assigned to current device's user (or groups containing them) */
+	onlyNotifyIfAssignedToMe: boolean;
+	/** Whether to notify for tasks with no assignee (when onlyNotifyIfAssignedToMe is true) */
+	notifyForUnassignedTasks: boolean;
+	/**
+	 * How to display base notifications in toast/upcoming view:
+	 * - "rollup": Show one item per base with match count (e.g., "Documents Coming Due (3 items)")
+	 * - "individual": Show each matching item separately
+	 * Default: "rollup" - bases represent queries, not individual items
+	 */
+	baseNotificationDisplay: "rollup" | "individual";
+	/** Per-category reminder behavior configuration */
+	reminderTypeSettings?: ReminderTypeSettings;
+}
+
+/**
+ * Behavior when user dismisses a notification item.
+ * Different categories may need different dismiss semantics.
+ */
+export type DismissBehavior =
+	| "until-restart"       // Returns on Obsidian restart (current default)
+	| "until-data-change"   // Returns when due date/content changes
+	| "until-complete"      // Persistent until task completed (for overdue)
+	| "snooze-1h"           // Auto-snooze for 1 hour, then return
+	| "snooze-4h"           // Auto-snooze for 4 hours
+	| "snooze-1d"           // Auto-snooze for 1 day
+	| "until-next-reminder" // For lead-time: dismiss this one, next scheduled fires later
+	| "permanent";          // Gone forever (user can re-enable via Upcoming View)
+
+/**
+ * Configuration for how a specific time category behaves in the notification system.
+ * Each category (overdue, today, tomorrow, etc.) can have independent settings.
+ */
+export interface TimeCategoryBehavior {
+	/** Whether items in this category contribute to the bell count */
+	showInBellCount: boolean;
+	/** Whether items in this category trigger toast popups */
+	showToast: boolean;
+	/** What happens when user clicks "Got it" / dismisses */
+	dismissBehavior: DismissBehavior;
+	/** Force return after X hours even if dismissed (0 = never auto-return) */
+	autoReturnHours: number;
+}
+
+/**
+ * Per-category behavior configuration for the notification system.
+ * Allows different treatment for overdue vs today vs upcoming items.
+ */
+export interface ReminderTypeSettings {
+	/** Overdue items (past due date) — typically most persistent */
+	overdue: TimeCategoryBehavior;
+	/** Due today items */
+	today: TimeCategoryBehavior;
+	/** Tomorrow items (heads up) */
+	tomorrow: TimeCategoryBehavior;
+	/** This week items (planning horizon) */
+	thisWeek: TimeCategoryBehavior;
+	/** Scheduled/start date reminders (awareness) */
+	scheduled: TimeCategoryBehavior;
+	/** Base query notifications (different paradigm - about query results, not individual items) */
+	queryBased: TimeCategoryBehavior;
+}
+
+/**
+ * Semantic type of a reminder, describing its behavioral intent.
+ * Determines persistence, repeat logic, and auto-cancellation behavior.
+ */
+export type ReminderSemanticType =
+	| "lead-time"    // Fire X before anchor date, one-shot, dismissed forever
+	| "due-date"     // Fire on due date, persistent until task completed
+	| "overdue"      // Fire after due date, repeats at interval until actioned
+	| "start-date"   // Fire on start/scheduled date, one-shot
+	| "custom";      // User-defined, no special semantics (existing behavior)
+
+/**
+ * Global reminder rule that applies to all tasks at runtime.
+ * Virtual reminders are generated during evaluation — never written to task frontmatter.
+ */
+export interface GlobalReminderRule {
+	id: string;
+	enabled: boolean;
+	semanticType: ReminderSemanticType;
+	/** Human-readable description (e.g., "1 day before due") */
+	description: string;
+	/** Date property to anchor to (e.g., "due", "scheduled") */
+	anchorProperty: string;
+	/** ISO 8601 offset from anchor (e.g., "-P1D" for 1 day before, "PT0S" for at time) */
+	offset: string;
+	/** For overdue: repeat interval in hours (0 = don't repeat) */
+	repeatIntervalHours?: number;
+	/** Skip if task already has an explicit reminder with this semanticType */
+	skipIfExplicitExists: boolean;
 }
 
 export interface DefaultReminder {
 	id: string;
 	type: "relative" | "absolute";
 	// For relative reminders
-	relatedTo?: "due" | "scheduled";
+	relatedTo?: string; // Any date property (e.g., "due", "scheduled", custom date fields)
 	offset?: number; // Amount in specified unit
 	unit?: "minutes" | "hours" | "days";
 	direction?: "before" | "after";

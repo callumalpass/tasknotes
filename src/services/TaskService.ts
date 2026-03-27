@@ -43,10 +43,13 @@ import {
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
 import { format } from "date-fns";
+import { FIELD_OVERRIDE_PROPS, type OverridableField } from "../utils/fieldOverrideUtils";
+import type { ViewFieldMapping } from "../identity/BaseIdentityService";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
+import { FilenameCollisionModal } from "../modals/FilenameCollisionModal";
 
 export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
@@ -95,6 +98,30 @@ export class TaskService {
 			console.error("Error sanitizing title:", error);
 			return "untitled";
 		}
+	}
+
+	/**
+	 * Check if a filename would collide with an existing file (case-insensitive)
+	 * Used when filenameCollisionBehavior is "ask" to detect collisions before auto-resolving
+	 */
+	private async checkFilenameCollision(filename: string, folderPath: string): Promise<boolean> {
+		const vault = this.plugin.app.vault;
+		const folder = vault.getAbstractFileByPath(folderPath);
+
+		if (!folder || !("children" in folder)) {
+			return false; // Folder doesn't exist or has no children
+		}
+
+		const targetLower = filename.toLowerCase();
+		const children = (folder as any).children as any[];
+		for (const child of children) {
+			if ("extension" in child && child.extension === "md") {
+				if (child.basename.toLowerCase() === targetLower) {
+					return true; // Collision detected
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -313,12 +340,70 @@ export class TaskService {
 				await ensureFolderExists(this.plugin.app.vault, folder);
 			}
 
-			// Generate unique filename
-			const uniqueFilename = await generateUniqueFilename(
-				baseFilename,
-				folder,
-				this.plugin.app.vault
-			);
+			// Generate unique filename (handling collision behavior setting)
+			const collisionBehavior = this.plugin.settings.filenameCollisionBehavior || "silent";
+			let uniqueFilename: string;
+			let collisionResolved = false;
+
+			// Check for collision first if user wants to be asked
+			if (collisionBehavior === "ask") {
+				// Check if base filename would collide (case-insensitive)
+				const wouldCollide = await this.checkFilenameCollision(baseFilename, folder);
+				if (wouldCollide) {
+					// Show modal immediately instead of auto-resolving
+					const retrySuffixFormat = this.plugin.settings.collisionRetrySuffix || "timestamp";
+					// Get effective due date for zettel: due → scheduled → undefined (creation)
+					const effectiveDueDate = taskData.due || taskData.scheduled || undefined;
+					const modal = new FilenameCollisionModal(
+						this.plugin.app,
+						baseFilename,
+						this.plugin.settings.taskFilenameFormat,
+						retrySuffixFormat,
+						effectiveDueDate,
+						this.plugin.settings.zettelDateSource
+					);
+					const result = await modal.waitForResult();
+
+					if (result.action === "retry") {
+						// User wants to retry with configured suffix
+						uniqueFilename = `${baseFilename}-${result.retrySuffix || Date.now().toString(36)}`;
+					} else if (result.action === "change-format") {
+						// Update setting and retry with new format
+						if (result.newFormat) {
+							this.plugin.settings.taskFilenameFormat = result.newFormat;
+							if (result.newFormat === "custom" && result.customTemplate) {
+								this.plugin.settings.customFilenameTemplate = result.customTemplate;
+							}
+							await this.plugin.saveSettings();
+						}
+						// Recursive retry with new format
+						return this.createTask(taskData);
+					} else if (result.action === "open-settings") {
+						(this.plugin.app as any).setting?.open();
+						(this.plugin.app as any).setting?.openTabById?.("tasknotes");
+						throw new Error("Task creation cancelled - opening settings");
+					} else if (result.action === "edit-task") {
+						// User wants to go back and edit the task - throw special error
+						const editError = new Error("EDIT_TASK_REQUESTED");
+						(editError as any).isEditRequest = true;
+						(editError as any).taskData = taskData;
+						throw editError;
+					} else {
+						throw new Error("Task creation cancelled by user");
+					}
+				} else {
+					uniqueFilename = baseFilename;
+				}
+			} else {
+				// Auto-resolve (silent or notify mode)
+				uniqueFilename = await generateUniqueFilename(
+					baseFilename,
+					folder,
+					this.plugin.app.vault
+				);
+				collisionResolved = uniqueFilename !== baseFilename;
+			}
+
 			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
 
 			// Create complete TaskInfo object with all the data
@@ -382,12 +467,17 @@ export class TaskService {
 			if (this.plugin.settings.taskIdentificationMethod === "property") {
 				const propName = this.plugin.settings.taskPropertyName;
 				const propValue = this.plugin.settings.taskPropertyValue;
-				if (propName && propValue) {
-					// Coerce boolean-like strings to actual booleans for compatibility with Obsidian properties
-					const lower = propValue.toLowerCase();
-					const coercedValue =
-						lower === "true" || lower === "false" ? lower === "true" : propValue;
-					frontmatter[propName] = coercedValue as any;
+				if (propName) {
+					if (propValue) {
+						// Coerce boolean-like strings to actual booleans for compatibility with Obsidian properties
+						const lower = propValue.toLowerCase();
+						const coercedValue =
+							lower === "true" || lower === "false" ? lower === "true" : propValue;
+						frontmatter[propName] = coercedValue as any;
+					} else {
+						// Empty propValue = default to true (boolean)
+						frontmatter[propName] = true;
+					}
 				}
 				if (tagsArray.length > 0) {
 					frontmatter.tags = tagsArray;
@@ -417,6 +507,33 @@ export class TaskService {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
 
+			// Apply per-view field mapping (ADR-011): remap core fields to custom
+			// property names and write tracking properties so the task is self-describing.
+			if (taskData.viewFieldMapping) {
+				finalFrontmatter = this.applyViewFieldMapping(
+					finalFrontmatter,
+					taskData.viewFieldMapping
+				);
+			}
+
+			// Write provenance tracking properties if enabled (ADR-011)
+			if (this.plugin.settings.baseIdentityTrackSourceView) {
+				if (taskData.sourceBaseId) {
+					finalFrontmatter["tnSourceBaseId"] = taskData.sourceBaseId;
+				}
+				if (taskData.sourceViewId) {
+					finalFrontmatter["tnSourceViewId"] = taskData.sourceViewId;
+				}
+			}
+
+			// Add note UUID if enabled and auto-generate is on
+			if (this.plugin.noteUuidService?.shouldAutoGenerate()) {
+				const uuidPropName = this.plugin.noteUuidService.getPropertyName();
+				if (!finalFrontmatter[uuidPropName]) {
+					finalFrontmatter[uuidPropName] = this.plugin.noteUuidService.generateUuid();
+				}
+			}
+
 			// Prepare file content
 			const yamlHeader = stringifyYaml(finalFrontmatter);
 			let content = `---\n${yamlHeader}---\n\n`;
@@ -425,8 +542,69 @@ export class TaskService {
 				content += `${normalizedBody}\n`;
 			}
 
-			// Create the file
-			const file = await this.plugin.app.vault.create(fullPath, content);
+			// Create the file (with collision recovery)
+			let file: TFile;
+			try {
+				file = await this.plugin.app.vault.create(fullPath, content);
+			} catch (createError) {
+				// Check if this is a filename collision error
+				const errorMsg = createError instanceof Error ? createError.message : String(createError);
+				if (errorMsg.toLowerCase().includes("already exists")) {
+					// Show collision recovery modal
+					const retrySuffixFormat = this.plugin.settings.collisionRetrySuffix || "timestamp";
+					// Get effective due date for zettel: due → scheduled → undefined (creation)
+					const effectiveDueDate = taskData.due || taskData.scheduled || undefined;
+					const modal = new FilenameCollisionModal(
+						this.plugin.app,
+						uniqueFilename,
+						this.plugin.settings.taskFilenameFormat,
+						retrySuffixFormat,
+						effectiveDueDate,
+						this.plugin.settings.zettelDateSource
+					);
+					const result = await modal.waitForResult();
+
+					if (result.action === "retry") {
+						// Retry with configured suffix
+						const retryFilename = `${uniqueFilename}-${result.retrySuffix || Date.now().toString(36)}`;
+						const retryPath = folder ? `${folder}/${retryFilename}.md` : `${retryFilename}.md`;
+						file = await this.plugin.app.vault.create(retryPath, content);
+					} else if (result.action === "change-format") {
+						// Update setting and retry with new format
+						if (result.newFormat) {
+							this.plugin.settings.taskFilenameFormat = result.newFormat;
+							if (result.newFormat === "custom" && result.customTemplate) {
+								this.plugin.settings.customFilenameTemplate = result.customTemplate;
+							}
+							await this.plugin.saveSettings();
+						}
+						// Recursive retry with new format
+						return this.createTask(taskData);
+					} else if (result.action === "open-settings") {
+						// Open settings tab
+						(this.plugin.app as any).setting?.open();
+						(this.plugin.app as any).setting?.openTabById?.("tasknotes");
+						throw new Error("Task creation cancelled - opening settings");
+					} else if (result.action === "edit-task") {
+						// User wants to go back and edit the task
+						const editError = new Error("EDIT_TASK_REQUESTED");
+						(editError as any).isEditRequest = true;
+						(editError as any).taskData = taskData;
+						throw editError;
+					} else {
+						// User cancelled
+						throw new Error("Task creation cancelled by user");
+					}
+				} else {
+					// Re-throw non-collision errors
+					throw createError;
+				}
+			}
+
+			// Show notice if collision was auto-resolved and user wants to be notified
+			if (collisionResolved && collisionBehavior === "notify") {
+				new Notice(`Created "${uniqueFilename}.md" (filename adjusted to avoid collision)`);
+			}
 
 			// Create final TaskInfo object for cache and events
 			// Ensure required fields are present by using the complete task data as base
@@ -465,7 +643,7 @@ export class TaskService {
 				try {
 					await this.webhookNotifier.triggerWebhook("task.created", { task: taskInfo });
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task creation:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task creation:", error);
 				}
 			}
 
@@ -475,7 +653,7 @@ export class TaskService {
 				this.plugin.settings.googleCalendarExport.syncOnTaskCreate
 			) {
 				this.plugin.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {
-					console.warn("Failed to sync task to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync task to Google Calendar:", error);
 				});
 			}
 
@@ -541,7 +719,7 @@ export class TaskService {
 			} else {
 				// Template file not found, log error and return details as-is
 				// eslint-disable-next-line no-console
-				console.warn(`Task body template not found: ${templatePath}`);
+				this.plugin.debugLog.warn("TaskService", `Task body template not found: ${templatePath}`);
 				new Notice(
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
 				);
@@ -563,6 +741,74 @@ export class TaskService {
 				body: taskData.details?.trim() || "",
 			};
 		}
+	}
+
+	/**
+	 * Apply per-view field mapping to frontmatter (ADR-011).
+	 *
+	 * For each field in the ViewFieldMapping, this:
+	 * 1. Renames the global property to the view-specific name
+	 *    (e.g., "due" → "deadline")
+	 * 2. Writes a tracking property (e.g., tnDueDateProp: "deadline")
+	 *    so the system knows where to find the canonical value.
+	 *
+	 * The task becomes self-describing: it works correctly without the view context.
+	 */
+	private applyViewFieldMapping(
+		frontmatter: Record<string, any>,
+		mapping: ViewFieldMapping
+	): Record<string, any> {
+		const result = { ...frontmatter };
+		const fm = this.plugin.fieldMapper;
+
+		// Fields that use FieldMapping (via FieldMapper.toUserField)
+		const fieldMappingEntries: Array<{
+			viewKey: keyof ViewFieldMapping;
+			internalKey: OverridableField;
+			fieldMappingKey: keyof import("../types").FieldMapping;
+		}> = [
+			{ viewKey: "due", internalKey: "due", fieldMappingKey: "due" },
+			{ viewKey: "scheduled", internalKey: "scheduled", fieldMappingKey: "scheduled" },
+			{ viewKey: "completedDate", internalKey: "completedDate", fieldMappingKey: "completedDate" },
+			{ viewKey: "dateCreated", internalKey: "dateCreated", fieldMappingKey: "dateCreated" },
+		];
+
+		for (const { viewKey, internalKey, fieldMappingKey } of fieldMappingEntries) {
+			const customPropName = mapping[viewKey];
+			if (!customPropName?.trim()) continue;
+
+			const globalPropName = fm.toUserField(fieldMappingKey);
+
+			// Skip if the custom name is the same as the global name
+			if (customPropName === globalPropName) continue;
+
+			// Rename: move value from global property to custom property
+			const hasGlobalValue = result[globalPropName] !== undefined;
+			if (hasGlobalValue) {
+				result[customPropName] = result[globalPropName];
+				delete result[globalPropName];
+			}
+
+			// Always write tracking property when mapping exists — makes
+			// the task self-describing even without a value yet
+			const trackingProp = FIELD_OVERRIDE_PROPS[internalKey];
+			result[trackingProp] = customPropName;
+		}
+
+		// Handle assignee separately (uses settings.assigneeFieldName, not FieldMapping)
+		if (mapping.assignee?.trim()) {
+			const globalAssigneeProp = this.plugin.settings.assigneeFieldName || "assignee";
+			if (mapping.assignee !== globalAssigneeProp) {
+				const hasAssigneeValue = result[globalAssigneeProp] !== undefined;
+				if (hasAssigneeValue) {
+					result[mapping.assignee] = result[globalAssigneeProp];
+					delete result[globalAssigneeProp];
+				}
+				result[FIELD_OVERRIDE_PROPS.assignee] = mapping.assignee;
+			}
+		}
+
+		return result;
 	}
 
 	/**
@@ -832,7 +1078,7 @@ export class TaskService {
 						});
 					}
 				} catch (error) {
-					console.warn("Failed to trigger webhook for property update:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for property update:", error);
 				}
 			}
 
@@ -853,7 +1099,7 @@ export class TaskService {
 							);
 
 				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync task update to Google Calendar:", error);
 				});
 			}
 
@@ -876,8 +1122,8 @@ export class TaskService {
 						}
 					}
 				} catch (error) {
-					console.warn(
-						"Failed to handle auto-archive for status property change:",
+					this.plugin.debugLog.warn(
+						"TaskService", "Failed to handle auto-archive for status property change:",
 						error
 					);
 				}
@@ -1076,7 +1322,7 @@ export class TaskService {
 					});
 				}
 			} catch (error) {
-				console.warn("Failed to trigger webhook for task archive/unarchive:", error);
+				this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task archive/unarchive:", error);
 			}
 		}
 
@@ -1089,14 +1335,14 @@ export class TaskService {
 				this.plugin.taskCalendarSyncService
 					.deleteTaskFromCalendar(updatedTask)
 					.catch((error) => {
-						console.warn("Failed to delete archived task from Google Calendar:", error);
+						this.plugin.debugLog.warn("TaskService", "Failed to delete archived task from Google Calendar:", error);
 					});
 			} else if (!updatedTask.archived) {
 				// Task is being unarchived - sync it back if eligible
 				this.plugin.taskCalendarSyncService
 					.updateTaskInCalendar(updatedTask, task)
 					.catch((error) => {
-						console.warn("Failed to sync unarchived task to Google Calendar:", error);
+						this.plugin.debugLog.warn("TaskService", "Failed to sync unarchived task to Google Calendar:", error);
 					});
 			}
 		}
@@ -1186,7 +1432,7 @@ export class TaskService {
 					session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for time tracking start:", error);
+				this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for time tracking start:", error);
 			}
 		}
 
@@ -1281,7 +1527,7 @@ export class TaskService {
 					session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for time tracking stop:", error);
+				this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for time tracking stop:", error);
 			}
 		}
 
@@ -1455,8 +1701,10 @@ export class TaskService {
 							// Remove the property if value is null
 							delete frontmatter[key];
 						} else {
-							// Set the property value
-							frontmatter[key] = value;
+							// Deduplicate arrays (e.g. assignees) before writing
+							frontmatter[key] = Array.isArray(value)
+								? [...new Set(value)]
+								: value;
 						}
 					});
 				}
@@ -1612,7 +1860,7 @@ export class TaskService {
 						});
 					}
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task update:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task update:", error);
 				}
 			}
 
@@ -1634,7 +1882,7 @@ export class TaskService {
 							);
 
 				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync task update to Google Calendar:", error);
 				});
 			}
 
@@ -1661,7 +1909,7 @@ export class TaskService {
 						}
 					}
 				} catch (error) {
-					console.warn("Failed to handle auto-archive for status change:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to handle auto-archive for status change:", error);
 				}
 			}
 
@@ -1806,7 +2054,7 @@ export class TaskService {
 					await this.plugin.taskCalendarSyncService
 						.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);
 				} catch (error) {
-					console.warn("Failed to delete task from Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to delete task from Google Calendar:", error);
 				}
 			}
 
@@ -1828,7 +2076,7 @@ export class TaskService {
 				try {
 					await this.webhookNotifier.triggerWebhook("task.deleted", { task });
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task deletion:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to trigger webhook for task deletion:", error);
 				}
 			}
 		} catch (error) {
@@ -2052,7 +2300,7 @@ export class TaskService {
 			this.plugin.taskCalendarSyncService
 				.updateTaskInCalendar(updatedTask, freshTask)
 				.catch((error) => {
-					console.warn("Failed to sync recurring task update to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync recurring task update to Google Calendar:", error);
 				});
 		}
 
@@ -2204,7 +2452,7 @@ export class TaskService {
 			this.plugin.taskCalendarSyncService
 				.updateTaskInCalendar(updatedTask, freshTask)
 				.catch((error) => {
-					console.warn("Failed to sync recurring task skip to Google Calendar:", error);
+					this.plugin.debugLog.warn("TaskService", "Failed to sync recurring task skip to Google Calendar:", error);
 				});
 		}
 

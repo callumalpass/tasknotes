@@ -3,6 +3,7 @@ import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
 import { ReminderModal } from "../modals/ReminderModal";
+import { getAvailableDateAnchors, resolveAnchorDate } from "../utils/dateAnchorUtils";
 import { CalendarExportService } from "../services/CalendarExportService";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
@@ -24,6 +25,34 @@ export interface TaskContextMenuOptions {
 	plugin: TaskNotesPlugin;
 	targetDate: Date;
 	onUpdate?: () => void;
+}
+
+/**
+ * Check if a person/group is assigned by matching against stored assignee values.
+ * Handles multiple storage formats:
+ *  - Wikilinks: "[[User]]", "[[User-DB/People/User]]", "[[User|Display Name]]"
+ *  - Plain paths: "User-DB/People/User"
+ *  - Display names: "User"
+ */
+function isAssigneeMatch(currentAssignees: string[], pathNoExt: string, displayName: string): boolean {
+	// Extract just the filename (no folder, no extension) for matching
+	const fileName = pathNoExt.split("/").pop() || pathNoExt;
+
+	return currentAssignees.some(a => {
+		// Direct path match (stored as full or partial path)
+		if (a.includes(pathNoExt)) return true;
+		// Wikilink with just display name: "[[User]]"
+		if (a.includes(`[[${fileName}]]`)) return true;
+		if (a.includes(`[[${displayName}]]`)) return true;
+		// Wikilink with path: "[[User-DB/People/User]]"
+		if (a.includes(`[[${pathNoExt}]]`)) return true;
+		// Wikilink with alias: "[[User-DB/People/User|User]]"
+		if (a.includes(`[[${pathNoExt}|`)) return true;
+		if (a.includes(`[[${fileName}|`)) return true;
+		// Plain display name match
+		if (a === displayName || a === fileName) return true;
+		return false;
+	});
 }
 
 export class TaskContextMenu {
@@ -202,21 +231,17 @@ export class TaskContextMenu {
 
 			const submenu = (item as any).setSubmenu();
 
-			// Quick Add sections
-			this.addQuickRemindersSection(
-				submenu,
-				task,
-				plugin,
-				"due",
-				this.t("contextMenus.task.remindBeforeDue")
-			);
-			this.addQuickRemindersSection(
-				submenu,
-				task,
-				plugin,
-				"scheduled",
-				this.t("contextMenus.task.remindBeforeScheduled")
-			);
+			// Quick Add sections - dynamically enumerate all date anchors
+			const anchors = getAvailableDateAnchors(plugin, task);
+			for (const anchor of anchors) {
+				this.addQuickRemindersSection(
+					submenu,
+					task,
+					plugin,
+					anchor.key,
+					`Remind before ${anchor.displayName.toLowerCase()}`,
+				);
+			}
 
 			submenu.addSeparator();
 
@@ -339,7 +364,26 @@ export class TaskContextMenu {
 			});
 		});
 
+		// Assign submenu
+		this.menu.addItem((item) => {
+			item.setTitle("Assign");
+			item.setIcon("user");
+
+			const submenu = (item as any).setSubmenu();
+			this.addAssignOptions(submenu, task, plugin);
+		});
+
 		this.menu.addSeparator();
+
+		// Edit task (opens full edit modal)
+		this.menu.addItem((item) => {
+			item.setTitle("Edit task");
+			item.setIcon("pencil");
+			item.onClick(() => {
+				this.menu.hide();
+				plugin.openTaskEditModal(task);
+			});
+		});
 
 		// Open Note
 		this.menu.addItem((item) => {
@@ -449,7 +493,7 @@ export class TaskContextMenu {
 								plugin.taskCalendarSyncService
 									.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
 									.catch((error) => {
-										console.warn("Failed to delete task from Google Calendar:", error);
+										plugin.debugLog.warn('TaskContextMenu', 'Failed to delete task from Google Calendar:', error);
 									});
 							}
 							plugin.app.vault.trash(file, true);
@@ -934,6 +978,158 @@ export class TaskContextMenu {
 		});
 	}
 
+	private addAssignOptions(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const assigneeFieldName = plugin.settings.assigneeFieldName || "assignee";
+
+		// Get current assignees from frontmatter (normalize to array)
+		const file = plugin.app.vault.getAbstractFileByPath(task.path);
+		const frontmatter = file instanceof TFile
+			? plugin.app.metadataCache.getFileCache(file)?.frontmatter
+			: null;
+		const currentAssignee = frontmatter?.[assigneeFieldName];
+		const currentAssignees: string[] = Array.isArray(currentAssignee)
+			? currentAssignee
+			: currentAssignee ? [currentAssignee] : [];
+
+		// Discover persons
+		const persons = plugin.personNoteService?.discoverPersons() || [];
+
+		// Unassign all option (only if currently assigned)
+		if (currentAssignees.length > 0) {
+			menu.addItem((subItem: any) => {
+				subItem.setTitle("Unassign all");
+				subItem.setIcon("user-x");
+				subItem.onClick(async () => {
+					await this.toggleAssignee(task, plugin, null, []);
+				});
+			});
+
+			menu.addSeparator();
+		}
+
+		// People section
+		if (persons.length > 0) {
+			for (const person of persons) {
+				const personPath = person.path.replace(/\.md$/, "");
+				const isAssigned = isAssigneeMatch(currentAssignees, personPath, person.displayName);
+
+				menu.addItem((subItem: any) => {
+					subItem.setTitle(person.displayName);
+					subItem.setIcon(isAssigned ? "check" : "user");
+					subItem.onClick(async () => {
+						await this.toggleAssignee(task, plugin, person.path, currentAssignees);
+					});
+				});
+			}
+		}
+
+		// Groups section (sync discovery — may be empty if not yet loaded)
+		const groups = plugin.groupRegistry?.getAllGroups() || [];
+		if (groups.length > 0 && persons.length > 0) {
+			menu.addSeparator();
+		}
+		for (const group of groups) {
+			const groupPath = group.notePath.replace(/\.md$/, "");
+			const isAssigned = isAssigneeMatch(currentAssignees, groupPath, group.displayName);
+
+			menu.addItem((subItem: any) => {
+				subItem.setTitle(group.displayName);
+				subItem.setIcon(isAssigned ? "check" : "users");
+				subItem.onClick(async () => {
+					await this.toggleAssignee(task, plugin, group.notePath, currentAssignees);
+				});
+			});
+		}
+
+		if (persons.length === 0 && groups.length === 0) {
+			menu.addItem((subItem: any) => {
+				subItem.setTitle("No people or groups found");
+				subItem.setDisabled(true);
+			});
+		}
+	}
+
+	/**
+	 * Toggle an assignee in/out of the assignees list using shortest wikilink format.
+	 * Pass filePath=null to clear all assignees.
+	 */
+	private async toggleAssignee(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		filePath: string | null,
+		currentAssignees: string[]
+	): Promise<void> {
+		const assigneeFieldName = plugin.settings.assigneeFieldName || "assignee";
+		const file = plugin.app.vault.getAbstractFileByPath(task.path);
+		if (!(file instanceof TFile)) return;
+
+		try {
+			let displayName = "";
+
+			await plugin.app.fileManager.processFrontMatter(file, (fm) => {
+				if (filePath === null) {
+					// Clear all
+					delete fm[assigneeFieldName];
+					return;
+				}
+
+				const targetPath = filePath.replace(/\.md$/, "");
+				const alreadyIndex = currentAssignees.findIndex(a => a.includes(targetPath));
+
+				// Generate shortest wikilink
+				const targetFile = plugin.app.vault.getAbstractFileByPath(filePath);
+				const linktext = targetFile instanceof TFile
+					? plugin.app.metadataCache.fileToLinktext(targetFile, file.path, true)
+					: targetPath;
+				const wikilink = `[[${linktext}]]`;
+				displayName = this.extractName(wikilink);
+
+				if (alreadyIndex >= 0) {
+					// Remove this assignee
+					const updated = currentAssignees.filter((_, i) => i !== alreadyIndex);
+					if (updated.length === 0) {
+						delete fm[assigneeFieldName];
+					} else if (updated.length === 1) {
+						fm[assigneeFieldName] = updated[0];
+					} else {
+						fm[assigneeFieldName] = updated;
+					}
+					displayName = ""; // signal removal
+				} else {
+					// Add this assignee (deduplicate to prevent double entries)
+					const updated = [...new Set([...currentAssignees, wikilink])];
+					if (updated.length === 1) {
+						fm[assigneeFieldName] = updated[0];
+					} else {
+						fm[assigneeFieldName] = updated;
+					}
+				}
+			});
+
+			this.options.onUpdate?.();
+			if (filePath === null) {
+				new Notice("Unassigned all");
+			} else if (displayName) {
+				new Notice(`Added ${displayName}`);
+			} else {
+				new Notice("Removed assignee");
+			}
+		} catch (error) {
+			console.error("Error toggling assignee:", error);
+			new Notice("Failed to update assignee");
+		}
+	}
+
+	private extractName(wikilink: string): string {
+		const match = wikilink.match(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/);
+		if (match) {
+			if (match[2]) return match[2];
+			const parts = match[1].split("/");
+			return parts[parts.length - 1].replace(/\.md$/, "");
+		}
+		return wikilink;
+	}
+
 	private async openProjectSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
 		try {
 			const selector = new ProjectSelectModal(plugin.app, plugin, async (projectFile) => {
@@ -1415,10 +1611,10 @@ export class TaskContextMenu {
 		submenu: any,
 		task: TaskInfo,
 		plugin: TaskNotesPlugin,
-		anchor: "due" | "scheduled",
+		anchor: string,
 		title: string
 	): void {
-		const anchorDate = anchor === "due" ? task.due : task.scheduled;
+		const anchorDate = resolveAnchorDate(task, anchor, plugin);
 
 		if (!anchorDate) {
 			// If no anchor date, show disabled option
@@ -1460,7 +1656,7 @@ export class TaskContextMenu {
 	private async addQuickReminder(
 		task: TaskInfo,
 		plugin: TaskNotesPlugin,
-		anchor: "due" | "scheduled",
+		anchor: string,
 		offset: string,
 		description: string
 	): Promise<void> {

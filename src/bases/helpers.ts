@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
-import { setIcon } from "obsidian";
+import { setIcon, TFile } from "obsidian";
 import { calculateTotalTimeSpent } from "../utils/helpers";
 import { format } from "date-fns";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
@@ -170,17 +170,37 @@ function createTaskInfoFromProperties(
 
 export function createTaskInfoFromBasesData(
 	basesItem: BasesDataItem,
-	plugin?: TaskNotesPlugin
+	plugin?: TaskNotesPlugin,
+	viewMapping?: Record<string, string>
 ): TaskInfo | null {
 	if (!basesItem?.path) return null;
 
 	const props = basesItem.properties || basesItem.frontmatter || {};
 
+	// Check task identification using the canonical method.
+	// Defaults to true when plugin is unavailable (safety: treat as task if unknown).
+	let isTask = plugin?.cacheManager
+		? plugin.cacheManager.isTaskFile(props)
+		: true;
+
+	// Bases' cached properties can be stale after convert-to-task.
+	// If Bases says non-task, double-check against live metadataCache.
+	if (!isTask && plugin?.app && basesItem.path) {
+		const file = plugin.app.vault.getAbstractFileByPath(basesItem.path);
+		if (file instanceof TFile) {
+			const cache = plugin.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter && plugin.cacheManager.isTaskFile(cache.frontmatter)) {
+				isTask = true;
+			}
+		}
+	}
+
 	if (plugin?.fieldMapper) {
 		const mappedTaskInfo = plugin.fieldMapper.mapFromFrontmatter(
 			props,
 			basesItem.path,
-			plugin.settings.storeTitleInFilename
+			plugin.settings.storeTitleInFilename,
+			viewMapping
 		);
 		const taskInfo = createTaskInfoFromProperties(mappedTaskInfo, basesItem, plugin);
 
@@ -195,6 +215,7 @@ export function createTaskInfoFromBasesData(
 		// Merge file properties with existing custom properties
 		return {
 			...taskInfo,
+			isTask,
 			customProperties: {
 				...mappedTaskInfo.customProperties,
 				...taskInfo.customProperties,
@@ -202,7 +223,10 @@ export function createTaskInfoFromBasesData(
 			},
 		};
 	} else {
-		return createTaskInfoFromProperties(props, basesItem, plugin);
+		return {
+			...createTaskInfoFromProperties(props, basesItem, plugin),
+			isTask,
+		};
 	}
 }
 
@@ -212,17 +236,18 @@ export function createTaskInfoFromBasesData(
 export async function identifyTaskNotesFromBasesData(
 	dataItems: BasesDataItem[],
 	plugin?: TaskNotesPlugin,
-	toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin) => TaskInfo | null
+	toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin, viewMapping?: Record<string, string>) => TaskInfo | null,
+	viewMapping?: Record<string, string>
 ): Promise<TaskInfo[]> {
 	const taskInfoConverter = toTaskInfo || createTaskInfoFromBasesData;
 	const taskNotes: TaskInfo[] = [];
 	for (const item of dataItems) {
 		if (!item?.path) continue;
 		try {
-			const taskInfo = taskInfoConverter(item, plugin);
+			const taskInfo = taskInfoConverter(item, plugin, viewMapping);
 			if (taskInfo) taskNotes.push(taskInfo);
 		} catch (error) {
-			console.warn("[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:", error);
+			if (plugin?.debugLog) plugin.debugLog.warn("BasesHelpers", "Error converting Bases item to TaskInfo:", error);
 		}
 	}
 	return taskNotes;
@@ -329,7 +354,7 @@ export async function renderTaskNotesInBasesView(
 	taskElementsMap?: Map<string, HTMLElement>,
 	precomputedVisibleProperties?: string[]
 ): Promise<void> {
-	console.log("[TaskNotes][Bases] renderTaskNotesInBasesView ENTRY - tasks:", taskNotes.length, "basesContainer:", !!basesContainer, "precomputed props:", precomputedVisibleProperties?.length);
+	plugin.debugLog.log("BasesHelpers", `renderTaskNotesInBasesView ENTRY - tasks: ${taskNotes.length}, basesContainer: ${!!basesContainer}, precomputed props: ${precomputedVisibleProperties?.length}`);
 	const { createTaskCard } = await import("../ui/TaskCard");
 
 	// Use container's document for pop-out window support
@@ -345,26 +370,26 @@ export async function renderTaskNotesInBasesView(
 
 	// Only extract properties if not precomputed
 	if (!visibleProperties && basesContainer) {
-		console.log("[TaskNotes][Bases] basesContainer type:", typeof basesContainer, "keys:", basesContainer ? Object.keys(basesContainer).slice(0, 10) : []);
+		plugin.debugLog.log("BasesHelpers", `basesContainer type: ${typeof basesContainer}, keys: ${basesContainer ? Object.keys(basesContainer).slice(0, 10) : []}`);
 		const basesVisibleProperties = getBasesVisibleProperties(basesContainer);
-		console.log("[TaskNotes][Bases] getBasesVisibleProperties returned:", basesVisibleProperties.length, "properties");
+		plugin.debugLog.log("BasesHelpers", `getBasesVisibleProperties returned: ${basesVisibleProperties.length} properties`);
 
 		if (basesVisibleProperties.length > 0) {
 			// Extract just the property IDs for TaskCard
 			visibleProperties = basesVisibleProperties.map((p) => p.id);
-			console.log("[TaskNotes][Bases] Raw property IDs from Bases:", visibleProperties);
+			plugin.debugLog.log("BasesHelpers", "Raw property IDs from Bases:", visibleProperties);
 
 			// Map Bases property IDs to TaskCard-compatible property names
 			const hasBlockedByRequested = basesVisibleProperties.some(p =>
 				p.id === "blockedBy" || p.id === "note.blockedBy" || p.id === "task.blockedBy"
 			);
-			console.log("[TaskNotes][Bases] hasBlockedByRequested:", hasBlockedByRequested);
+			plugin.debugLog.log("BasesHelpers", "hasBlockedByRequested:", hasBlockedByRequested);
 
 			visibleProperties = visibleProperties
 				.map((propId) => {
 					const mapped = mapBasesPropertyToTaskCardProperty(propId, plugin);
 					if (propId !== mapped) {
-						console.log(`[TaskNotes][Bases] Mapped ${propId} → ${mapped}`);
+						plugin.debugLog.log("BasesHelpers", `Mapped ${propId} → ${mapped}`);
 					}
 					return mapped;
 				})
@@ -372,12 +397,12 @@ export async function renderTaskNotesInBasesView(
 				.filter((propId) => {
 					if (propId === "blocked" || propId === "blocking") {
 						const keep = hasBlockedByRequested;
-						console.log(`[TaskNotes][Bases] Filtering ${propId}: ${keep ? "KEEP" : "REMOVE"}`);
+						plugin.debugLog.log("BasesHelpers", `Filtering ${propId}: ${keep ? "KEEP" : "REMOVE"}`);
 						return keep;
 					}
 					return true;
 				});
-			console.log("[TaskNotes][Bases] Final visible properties:", visibleProperties);
+			plugin.debugLog.log("BasesHelpers", "Final visible properties:", visibleProperties);
 		}
 	}
 
@@ -393,7 +418,7 @@ export async function renderTaskNotesInBasesView(
 		// Filter out blocked/blocking from defaults since they're computed properties
 		// that should only show when explicitly requested via blockedBy
 		visibleProperties = visibleProperties.filter((p) => p !== "blocked" && p !== "blocking");
-		console.log("[TaskNotes][Bases] Using default properties (filtered):", visibleProperties);
+		plugin.debugLog.log("BasesHelpers", "Using default properties (filtered):", visibleProperties);
 	}
 
 	for (const taskInfo of taskNotes) {
@@ -416,7 +441,7 @@ export async function renderTaskNotesInBasesView(
 				taskElementsMap.set(taskInfo.path, taskCard);
 			}
 		} catch (error) {
-			console.warn("[TaskNotes][BasesPOC] Error creating task card:", error);
+			plugin.debugLog.warn("BasesHelpers", "Error creating task card:", error);
 		}
 	}
 }
@@ -447,19 +472,19 @@ export async function renderGroupedTasksInBasesView(
 
 	if (basesVisibleProperties.length > 0) {
 		visibleProperties = basesVisibleProperties.map((p) => p.id);
-		console.log("[TaskNotes][Bases][Grouped] Raw property IDs from Bases:", visibleProperties);
+		plugin.debugLog.log("BasesHelpers", "Grouped raw property IDs from Bases:", visibleProperties);
 
 		// Map Bases property IDs to TaskCard-compatible property names
 		const hasBlockedByRequested = basesVisibleProperties.some(p =>
 			p.id === "blockedBy" || p.id === "note.blockedBy" || p.id === "task.blockedBy"
 		);
-		console.log("[TaskNotes][Bases][Grouped] hasBlockedByRequested:", hasBlockedByRequested);
+		plugin.debugLog.log("BasesHelpers", "Grouped hasBlockedByRequested:", hasBlockedByRequested);
 
 		visibleProperties = visibleProperties
 			.map((propId) => {
 				const mapped = mapBasesPropertyToTaskCardProperty(propId, plugin);
 				if (propId !== mapped) {
-					console.log(`[TaskNotes][Bases][Grouped] Mapped ${propId} → ${mapped}`);
+					plugin.debugLog.log("BasesHelpers", `Grouped mapped ${propId} → ${mapped}`);
 				}
 				return mapped;
 			})
@@ -467,12 +492,12 @@ export async function renderGroupedTasksInBasesView(
 			.filter((propId) => {
 				if (propId === "blocked" || propId === "blocking") {
 					const keep = hasBlockedByRequested;
-					console.log(`[TaskNotes][Bases][Grouped] Filtering ${propId}: ${keep ? "KEEP" : "REMOVE"}`);
+					plugin.debugLog.log("BasesHelpers", `Grouped filtering ${propId}: ${keep ? "KEEP" : "REMOVE"}`);
 					return keep;
 				}
 				return true;
 			});
-		console.log("[TaskNotes][Bases][Grouped] Final visible properties:", visibleProperties);
+		plugin.debugLog.log("BasesHelpers", "Grouped final visible properties:", visibleProperties);
 	}
 
 	// Use plugin default properties if no Bases properties available
@@ -487,7 +512,7 @@ export async function renderGroupedTasksInBasesView(
 		// Filter out blocked/blocking from defaults since they're computed properties
 		// that should only show when explicitly requested via blockedBy
 		visibleProperties = visibleProperties.filter((p) => p !== "blocked" && p !== "blocking");
-		console.log("[TaskNotes][Bases] Using default properties (filtered):", visibleProperties);
+		plugin.debugLog.log("BasesHelpers", "Using default properties (filtered):", visibleProperties);
 	}
 
 	// Get groupedData from public API
@@ -656,7 +681,7 @@ export async function renderGroupedTasksInBasesView(
 					taskElementsMap.set(task.path, taskCard);
 				}
 			} catch (error) {
-				console.warn("[TaskNotes][Bases] Error creating task card:", error);
+				plugin.debugLog.warn("BasesHelpers", "Error creating task card:", error);
 			}
 		}
 	}

@@ -228,24 +228,24 @@ function renderUserFieldsList(
 		plugin.settings.userFields = [];
 	}
 
-	if (plugin.settings.userFields.length === 0) {
+	// Filter out creator and assignee fields - they're rendered separately in Team & Attribution Properties section
+	const creatorFieldKey = plugin.settings.creatorFieldName || "creator";
+	const assigneeFieldKey = plugin.settings.assigneeFieldName || "assignee";
+	const fieldsToRender = plugin.settings.userFields.filter(
+		(f) => f.key !== creatorFieldKey && f.key !== assigneeFieldKey
+	);
+
+	if (fieldsToRender.length === 0) {
+		// Show informational empty state WITHOUT a button
+		// The "Add new user field" Setting button below handles adding
 		showCardEmptyState(
 			container,
-			translate("settings.taskProperties.customUserFields.emptyState"),
-			translate("settings.taskProperties.customUserFields.emptyStateButton"),
-			() => {
-				const addUserFieldButton = document.querySelector(
-					'[data-setting-name="Add new user field"] button'
-				);
-				if (addUserFieldButton) {
-					(addUserFieldButton as HTMLElement).click();
-				}
-			}
+			translate("settings.taskProperties.customUserFields.emptyState")
 		);
 		return;
 	}
 
-	plugin.settings.userFields.forEach((field, index) => {
+	fieldsToRender.forEach((field, index) => {
 		const nameInput = createCardInput(
 			"text",
 			translate("settings.taskProperties.customUserFields.placeholders.displayName"),
@@ -314,7 +314,7 @@ function renderUserFieldsList(
 			// Update the card header secondary text directly without re-rendering
 			const card = container.querySelector(`[data-card-id="${field.id}"]`);
 			if (card) {
-				const secondaryText = card.querySelector(".tasknotes-settings__card-header-secondary");
+				const secondaryText = card.querySelector(".tasknotes-settings__card-secondary-text");
 				if (secondaryText) {
 					secondaryText.textContent = field.key ||
 						translate("settings.taskProperties.customUserFields.defaultNames.noKey");

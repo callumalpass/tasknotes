@@ -31,6 +31,38 @@
 }
 
 /* ================================================
+   AVATAR-ENABLED SUGGESTIONS (Person/Group notes)
+   ================================================ */
+
+.file-selector-suggestion--with-avatar {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+}
+
+.file-selector-suggestion--with-avatar .file-selector-suggestion__text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0; /* Allow text truncation */
+    flex: 1;
+}
+
+.file-selector-suggestion--with-avatar .file-selector-suggestion__name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-selector-suggestion__subtitle {
+    font-size: var(--tn-font-size-sm);
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ================================================
    CREATE FOOTER
    ================================================ */
 

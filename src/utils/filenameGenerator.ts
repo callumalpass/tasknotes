@@ -137,13 +137,42 @@ export function generateTaskFilename(
 		return sanitizeForFilename(context.title);
 	}
 
+	// Determine the date to use for zettel ID based on fallback chain
+	// Chain is an ordered array like ["due", "scheduled", "creation"]
+	let dateForZettelId: Date | undefined;
+	const chain = settings.zettelDateChain || (settings.zettelDateSource === "due" ? ["due", "scheduled", "creation"] : ["creation"]);
+
+	for (const source of chain) {
+		let dateStr: string | undefined;
+
+		if (source === "due" && context.dueDate) {
+			dateStr = context.dueDate;
+		} else if (source === "scheduled" && context.scheduledDate) {
+			dateStr = context.scheduledDate;
+		} else if (source === "creation") {
+			// Creation date uses "now" - no need to set dateForZettelId
+			break;
+		}
+
+		if (dateStr) {
+			const [year, month, day] = dateStr.split("-").map(Number);
+			if (year && month && day) {
+				dateForZettelId = new Date(year, month - 1, day);
+				break; // Found a valid date, stop the chain
+			}
+		}
+	}
+
 	try {
 		switch (settings.taskFilenameFormat) {
 			case "title":
 				return sanitizeForFilename(context.title);
 
 			case "zettel":
-				return generateZettelId(now);
+				return generateZettelId(now, dateForZettelId);
+
+			case "zettel-title":
+				return `${generateZettelId(now, dateForZettelId)}-${sanitizeForFilename(context.title)}`;
 
 			case "timestamp":
 				return generateTimestampFilename(now);
@@ -153,30 +182,36 @@ export function generateTaskFilename(
 
 			default:
 				// Fallback to zettel format
-				return generateZettelId(now);
+				return generateZettelId(now, dateForZettelId);
 		}
 	} catch (error) {
 		console.error("Error generating filename:", error);
 		// Fallback to safe zettel format
-		return generateZettelId(now);
+		return generateZettelId(now, dateForZettelId);
 	}
 }
 
 /**
- * Generates the traditional zettelkasten ID (YYMMDD + base36 seconds since midnight)
+ * Generates the zettelkasten ID with options for date source and millisecond precision.
+ * Format: YYMMDD + base36 time component
+ *
+ * @param creationDate - The current date/time (always used for time component for uniqueness)
+ * @param dateForId - Optional date to use for YYMMDD portion (e.g., due date). Falls back to creationDate.
  */
-function generateZettelId(date: Date): string {
-	const datePart = format(date, "yyMMdd");
+function generateZettelId(creationDate: Date, dateForId?: Date): string {
+	// Use dateForId (e.g., due date) for the date portion if provided, otherwise use creation date
+	const dateSource = dateForId || creationDate;
+	const datePart = format(dateSource, "yyMMdd");
 
-	// Calculate seconds since midnight
-	const midnight = new Date(date);
+	// Calculate milliseconds since midnight for better uniqueness (fixes sub-second collision)
+	const midnight = new Date(creationDate);
 	midnight.setHours(0, 0, 0, 0);
-	const secondsSinceMidnight = Math.floor((date.getTime() - midnight.getTime()) / 1000);
+	const msSinceMidnight = creationDate.getTime() - midnight.getTime();
 
-	// Convert to base36 for compactness
-	const randomPart = secondsSinceMidnight.toString(36);
+	// Convert to base36 for compactness (ms gives more precision than seconds)
+	const timePart = msSinceMidnight.toString(36);
 
-	return `${datePart}${randomPart}`;
+	return `${datePart}${timePart}`;
 }
 
 /**
@@ -292,6 +327,14 @@ function generateCustomFilename(
 			// Date-based identifiers
 			zettel: generateZettelId(date),
 			nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+
+			// Collision-proof variables (for custom templates)
+			// Zero-padded milliseconds for proper chronological sorting
+			millisecondsPadded: date.getMilliseconds().toString().padStart(3, "0"),
+			msPadded: date.getMilliseconds().toString().padStart(3, "0"),
+			// Random suffixes for same-millisecond uniqueness (base36)
+			random: Math.floor(Math.random() * 1296).toString(36).padStart(2, "0"), // 00-zz (2 chars)
+			randomLong: Math.floor(Math.random() * 46656).toString(36).padStart(3, "0"), // 000-zzz (3 chars)
 
 			// Merge any additional variables
 			...(additionalVariables || {}),
@@ -442,7 +485,8 @@ export function validateFilename(filename: string): {
 }
 
 /**
- * Generates a unique filename by appending a number if needed
+ * Generates a unique filename by appending a number if needed.
+ * Uses case-insensitive comparison to handle Windows NTFS filesystem behavior.
  */
 export async function generateUniqueFilename(
 	baseFilename: string,
@@ -472,16 +516,34 @@ export async function generateUniqueFilename(
 	const sanitizedFolderPath = folderPath.replace(/\.\./g, "").trim();
 
 	try {
-		const basePath = normalizePath(`${sanitizedFolderPath}/${sanitizedFilename}.md`);
+		// Build a set of existing filenames (lowercase) for case-insensitive comparison
+		// This handles Windows NTFS where "Test.md" and "test.md" are the same file
+		const existingNames = new Set<string>();
+		const folder = vault.getAbstractFileByPath(sanitizedFolderPath);
+
+		if (folder && "children" in folder) {
+			for (const child of folder.children) {
+				if ("extension" in child && child.extension === "md") {
+					// Store lowercase basename (without extension) for comparison
+					existingNames.add(child.basename.toLowerCase());
+				}
+			}
+		}
+
+		// Helper to check if name exists (case-insensitive)
+		const nameExists = (name: string): boolean => {
+			return existingNames.has(name.toLowerCase());
+		};
 
 		// Validate path length
+		const basePath = normalizePath(`${sanitizedFolderPath}/${sanitizedFilename}.md`);
 		if (basePath.length > 260) {
 			// Windows path limit
 			throw new Error("Generated path too long");
 		}
 
-		// Check if the base filename is available
-		if (!vault.getAbstractFileByPath(basePath)) {
+		// Check if the base filename is available (case-insensitive)
+		if (!nameExists(sanitizedFilename)) {
 			return sanitizedFilename;
 		}
 
@@ -495,7 +557,7 @@ export async function generateUniqueFilename(
 				break; // Stop if paths become too long
 			}
 
-			if (!vault.getAbstractFileByPath(candidatePath)) {
+			if (!nameExists(candidateFilename)) {
 				return candidateFilename;
 			}
 		}

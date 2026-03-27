@@ -1,32 +1,51 @@
 # Inline Task Integration
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+  Open a note that contains task wikilinks (e.g., a document from Document Library)
+
+Show hovering over a task wikilink → overlay widget with status dot, priority, action menu
+Show clicking the convert button next to a checkbox → task file created, line replaced with wikilink
+
+RELATIONSHIPS WIDGET section (open a task note that has subtasks/dependencies, e.g., "Launch Project Beta"):
+  Show the Relationships Widget embedded in the note
+  Show clicking through tabs: Subtasks (Kanban), Projects (List), Blocked By (List), Blocking (Kanban)
+  Show collapsing/expanding the widget
+  Show real-time update after adding a new subtask
+  Show subtask chevron on a task card → expand/collapse child tasks inline
+  Show both left and right chevron position options
+
+CLEANUP (subtask creation / dependency changes modify files):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 TaskNotes integrates with the Obsidian editor to allow task management directly within notes. This is achieved through interactive widgets, a conversion feature for checkboxes, and natural language processing.
 Inline features support capture and task updates without leaving the current note.
 
 ## Task Link Overlays
 
+<!-- GIF: Hovering over a task wikilink and seeing the overlay widget with status dot, priority, and action menu -->
+
 When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Features` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
 
-![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
+![Task Link Overlays in Live Preview mode](../assets/general/2025-07-17_21-03-55.png)
 
 *Task link overlays in Live Preview mode show interactive widgets with status, dates, and quick actions*
 
-![Task Link Overlays in Source mode](../assets/2025-07-17_21-04-24.png)
+![Task Link Overlays in Source mode](../assets/general/2025-07-17_21-04-24.png)
 
 *In Source mode, task links appear as standard wikilinks until rendered*
 
 ### Widget Features
 
-The task link overlay displays:
+<!-- GIF: Interacting with a task link overlay — clicking status dot, opening action menu, changing due date -->
 
-- **Status Dot**: Clickable circular indicator showing current task status. Click to cycle through available statuses.
-- **Priority Dot**: Color-coded indicator for task priority (only shown when assigned).
-- **Task Title**: Displays the task name (truncated to 80 characters). Click to open the task edit modal.
-- **Date Information**: Shows due dates (calendar icon) and scheduled dates (clock icon) with clickable context menus.
-- **Recurrence Indicator**: Rotating arrow icon for recurring tasks with modification options.
-- **Action Menu**: Ellipsis icon (shown on hover) provides additional task actions.
-The widget exposes common task actions at the link location, so status and metadata can be updated in-place.
+Each overlay shows the task's **status dot** (click to cycle), **priority dot**, **title** (click to edit), **dates** (calendar/clock icons), and a **recurrence indicator** if applicable. An **action menu** (ellipsis, shown on hover) provides additional options. This lets you update status and metadata in-place without opening the task file.
 
 ### Mode-Specific Behavior
 
@@ -44,6 +63,8 @@ The `Create inline task` command allows you to create a new task from the curren
 When you run the command, the current line is used as the title of the new task. The line is then replaced with a link to the new task file.
 
 ## Instant Task Conversion
+
+<!-- GIF: Clicking the convert button next to a checkbox, seeing the task file created and the line replaced with a wikilink -->
 
 The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Features` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
 This supports progressive conversion from draft notes to dedicated task files.
@@ -84,48 +105,42 @@ The feature handles edge cases like nested blockquotes and maintains proper inde
 
 The **Bulk Task Conversion** command converts all checkbox tasks in the current note to TaskNotes in a single operation. This command is available in the command palette as "Convert all tasks in note to TaskNotes".
 
-### How It Works
-
-The command:
-
-1. Scans the entire current note for checkbox tasks (`- [ ]`, `* [ ]`, `1. [ ]`, etc.)
-2. Includes tasks inside blockquotes (e.g., `> - [ ] task in callout`)
-3. Applies the same enhanced conversion logic as instant task conversion
-4. Creates individual TaskNote files for each task
-5. Replaces the original checkboxes with links to the new task files
-6. Preserves original indentation and formatting (including blockquote markers)
-
-The bulk conversion uses the same content processing as instant conversion, automatically removing special characters from task titles while preserving original formatting in the note.
-
 ### Usage
 
-To use bulk conversion:
+<!-- GIF: Running "Convert all tasks in note to TaskNotes" from the command palette — checkboxes replaced with wikilinks -->
 
 1. Open a note containing checkbox tasks
-2. Access the command palette (`Ctrl+P` / `Cmd+P`)
-3. Search for "Convert all tasks in note to TaskNotes"
-4. Execute the command
+2. Open the command palette (`Ctrl+P` / `Cmd+P`)
+3. Run **Convert all tasks in note to TaskNotes**
 
-The command displays progress and shows a summary when complete (for example, "Successfully converted 5 tasks to TaskNotes.").
+The command scans for all checkbox tasks (`- [ ]`, `* [ ]`, `1. [ ]`, etc.), including tasks inside blockquotes, creates individual task files, and replaces each checkbox with a wikilink. It displays progress and shows a summary when complete (for example, "Successfully converted 5 tasks to TaskNotes.").
 
-!!! warning "Important Considerations"
+> [!info]- How it works under the hood
+> The command:
+>
+> 1. Scans the entire note for checkbox tasks
+> 2. Includes tasks inside blockquotes (e.g., `> - [ ] task in callout`)
+> 3. Applies the same conversion logic as instant task conversion
+> 4. Creates individual TaskNote files for each task
+> 5. Replaces the original checkboxes with links to the new task files
+> 6. Preserves original indentation and formatting (including blockquote markers)
 
-    **This command modifies note content permanently.** Before using:
+> [!warning] Important considerations
+> **This command modifies note content permanently.** Before using:
+>
+> - **Create a backup** of your note if it contains important data
+> - **Review the tasks** to ensure they should become individual TaskNotes
+> - **Expect processing time** — notes with many tasks may take several seconds
+> - **Avoid interruption** — do not edit the note while conversion is running
 
-    - **Create a backup** of your note if it contains important data
-    - **Review the tasks** to ensure they should become individual TaskNotes
-    - **Expect processing time** - notes with many tasks may take several seconds to process
-    - **Avoid interruption** - do not edit the note while conversion is running
-
-!!! note "Performance"
-
-    Processing time depends on the number of tasks:
-
-    - Small notes (1-10 tasks): Near-instant
-    - Medium notes (10-50 tasks): 2-5 seconds
-    - Large notes (50+ tasks): 10+ seconds
-
-    The operation creates multiple files and updates the note content, which requires disk I/O and editor updates.
+> [!note]- Performance
+> Processing time depends on the number of tasks:
+>
+> - Small notes (1–10 tasks): Near-instant
+> - Medium notes (10–50 tasks): 2–5 seconds
+> - Large notes (50+ tasks): 10+ seconds
+>
+> The operation creates multiple files and updates note content, which requires disk I/O and editor updates.
 
 ### Error Handling
 
@@ -146,6 +161,9 @@ For large notes, converting a small section first helps validate folder and file
 
 **New in v4**: The Relationships Widget consolidates what were previously three separate widgets (project subtasks, task dependencies, and blocking tasks) into a single dynamic interface.
 
+<!-- SCREENSHOT: Relationships Widget embedded in a task note showing the Subtasks tab with Kanban cards -->
+
+
 The widget appears in task notes and automatically displays up to four tabs based on available relationship data:
 
 - **Subtasks Tab (Kanban)**: Shows tasks that reference the current note as a project. Uses Kanban layout for visual task management.
@@ -153,10 +171,13 @@ The widget appears in task notes and automatically displays up to four tabs base
 - **Blocked By Tab (List)**: Shows tasks that are blocking the current task. Uses list layout.
 - **Blocking Tab (Kanban)**: Shows tasks that the current task is blocking. Uses Kanban layout.
 
+<!-- GIF: Clicking through the four Relationships Widget tabs -- Subtasks (Kanban), Projects (List), Blocked By (List), Blocking (Kanban) -->
+
 ### Automatic Tab Management
 
-Tabs automatically show or hide based on the presence of relationship data. If a task has no subtasks, the Subtasks tab does not appear. If there are no blocking relationships, those tabs remain hidden. This keeps the interface focused on relevant information.
-The widget layout changes with available data, so simple tasks show fewer sections.
+<!-- GIF: Opening two different task notes — one with all four tabs, one with only Subtasks — to show automatic tab visibility -->
+
+The widget only shows tabs that have data. For example, a task with subtasks but no dependencies displays just the **Subtasks** tab. A task that is blocked by another and also blocks a third shows **Blocked By** and **Blocking** tabs alongside any others. If you add a dependency to a task, the relevant tab appears immediately without reloading the note.
 
 ### Features
 
@@ -169,6 +190,8 @@ Additional behavior:
 - **Task Details**: Each task shows its status, priority, due date, and other configured properties.
 - **Real-time Updates**: The widget updates automatically when tasks are added, modified, or deleted via Bases views.
 
+<!-- GIF: Collapsing and expanding the Relationships Widget, then showing it update in real-time after adding a new subtask -->
+
 ### Configuration
 
 Enable or disable the widget in `Settings -> TaskNotes -> Appearance` (`Show relationships widget`).
@@ -177,14 +200,18 @@ Position the widget at the top (after frontmatter) or bottom of the note using t
 
 ### Expandable Subtasks Chevron
 
+<!-- GIF: Clicking the subtask chevron on a task card to expand/collapse child tasks inline, showing both left and right chevron positions -->
+
 Tasks with subtasks can display an expand/collapse chevron that toggles subtask visibility.
 
 - The chevron can be positioned on the Right (default, hover to show) or on the Left (always visible, matches group chevrons).
 - Configure this in `Settings -> TaskNotes -> Appearance` (`Subtask chevron position`).
 
-![Left subtask chevron](../assets/left-task-subtask-chevron.gif)
+![Left subtask chevron](../assets/task-list/left-task-subtask-chevron.gif)
 
 ### Migration from v3
+
+> See the full [Migration Guide (v3 → v4)](../migration-v3-to-v4.md) for all breaking changes.
 
 In v3, TaskNotes provided three separate widgets controlled by individual settings:
 
@@ -200,61 +227,6 @@ If you had project subtasks enabled in v3, the relationships widget is enabled a
 
 ## Natural Language Processing
 
-TaskNotes includes a **Natural Language Processor (NLP)** that parses task descriptions to extract structured data. This allows for task creation from conversational language, such as "Prepare quarterly report due Friday #work high priority," which would automatically set the due date, tag, and priority.
+TaskNotes includes a natural language parser that extracts dates, priority, status, tags, contexts, projects, time estimates, recurrence, and custom property values from task descriptions. The same engine powers the [task creation modal](task-management.md), [inline conversion](#instant-task-conversion), and [bulk operations](bulk-tasking.md).
 
-The NLP engine supports multiple languages, including English, Spanish, French, German, Italian, Japanese, Dutch, Portuguese, Russian, Swedish, Chinese, and Ukrainian.
-
-### Supported Syntax
-
-The NLP engine recognizes:
-
--   **Tags and Contexts**: `#tag` and `@context` syntax (triggers are customizable).
--   **Projects**: `+project` for simple projects or `+[[Project Name]]` for projects with spaces.
--   **Priority Levels**: Keywords like "high," "normal," and "low". Also supports a trigger character (default: `!`).
--   **Status Assignment**: Keywords like "open," "in-progress," and "done". Also supports a trigger character (default: `*`).
--   **Dates and Times**: Phrases like "tomorrow," "next Friday," and "January 15th at 3pm".
--   **Time Estimates**: Formats like "2h," "30min," and "1h30m".
--   **Recurrence Patterns**: Phrases like "daily," "weekly," and "every Monday".
--   **User-Defined Fields**: Custom fields can be assigned using configured triggers (e.g., `effort: high`). Supports quoted values for multi-word entries.
-NLP parses common patterns during capture; fields can be refined in the modal afterward.
-
-### Rich Markdown Editor
-
-**New in v4**: The task creation modal uses a rich CodeMirror markdown editor instead of a plain textarea.
-
-Features include:
-
--   **Live Preview**: Rendered markdown preview as you type.
--   **Syntax Highlighting**: Code blocks, links, and formatting are highlighted.
--   **Wikilink Support**: Create links to other notes using `[[Note Name]]` syntax.
--   **Keyboard Shortcuts**:
-    - `Ctrl/Cmd+Enter` saves the task
-    - `Esc` or `Tab` to navigate out of the editor
--   **Placeholder Text**: Shows an example task (e.g., "Buy groceries tomorrow at 3pm @home #errands") when the editor is empty.
-
-### Customizable Triggers
-
-**New in v4**: Triggers for NLP properties can be customized in `Settings -> TaskNotes -> Features` (`NLP Triggers`).
-
-You can configure trigger characters or strings for:
-
--   **Tags** (default: `#`) - When set to `#`, Obsidian's native tag suggester is used
--   **Contexts** (default: `@`)
--   **Projects** (default: `+`)
--   **Status** (default: `*`)
--   **Priority** (default: `!`, disabled by default)
--   **User-Defined Fields** (default: `fieldname:`) - Each custom field can have its own trigger
-
-Triggers support up to 10 characters and can include trailing spaces (e.g., `"def: "` for a custom field).
-
-### Autocomplete
-
-**New in v4**: When typing a trigger in the NLP editor, an autocomplete menu appears with available values.
-
--   Navigate suggestions with arrow keys
--   Select with `Enter` or `Tab`
--   Autocomplete works for tags, contexts, projects, status, priority, and user-defined fields
--   Tag autocomplete uses Obsidian's native tag suggester when using the `#` trigger
--   For user fields with multi-word values, wrap the value in quotes (e.g., `effort: "very high"`)
-
-The NLP engine is integrated with the task creation modal and bulk conversion features. Typing a natural language description populates the corresponding task fields automatically.
+See **[Natural Language Input](natural-language.md)** for the full syntax reference, trigger configuration, auto-suggestion behavior, and language support.

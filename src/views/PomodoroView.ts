@@ -796,7 +796,7 @@ export class PomodoroView extends ItemView {
 		try {
 			// Check if pomodoroService is available
 			if (!this.plugin.pomodoroService) {
-				console.log("PomodoroView: pomodoroService not available, skipping restore");
+				this.plugin.debugLog.log('PomodoroView', 'pomodoroService not available, skipping restore');
 				return;
 			}
 

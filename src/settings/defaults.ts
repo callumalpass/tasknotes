@@ -7,6 +7,10 @@ import {
 	ProjectAutosuggestSettings,
 	NLPTriggersConfig,
 	GoogleCalendarExportSettings,
+	VaultWideNotificationSettings,
+	ReminderTypeSettings,
+	TimeCategoryBehavior,
+	GlobalReminderRule,
 } from "../types/settings";
 
 /**
@@ -20,6 +24,18 @@ export const DEFAULT_INTERNAL_VISIBLE_PROPERTIES: (keyof FieldMapping)[] = [
 	"scheduled",
 	"projects",
 	"contexts",
+];
+
+/**
+ * Core fields that task card views (TaskList, Kanban, Calendar) always need
+ * for proper rendering — status dot, priority indicator, due date badge.
+ * These are injected into visibleProperties regardless of the .base file's
+ * order: config so that task cards never appear as plain text.
+ */
+export const CORE_TASK_CARD_FIELDS: (keyof FieldMapping)[] = [
+	"status",
+	"priority",
+	"due",
 ];
 
 // Default field mapping maintains backward compatibility
@@ -224,6 +240,98 @@ export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 	propertyValue: "",
 };
 
+// Default global reminder rules (virtual reminders applied to all tasks at runtime)
+// All disabled by default — users opt in via Settings > Task Properties > Reminders
+export const DEFAULT_GLOBAL_REMINDER_RULES: GlobalReminderRule[] = [
+	{
+		id: "global-lead-1d",
+		enabled: false,
+		semanticType: "lead-time",
+		description: "1 day before due",
+		anchorProperty: "due",
+		offset: "-P1D",
+		skipIfExplicitExists: true,
+	},
+	{
+		id: "global-due-date",
+		enabled: false,
+		semanticType: "due-date",
+		description: "On due date",
+		anchorProperty: "due",
+		offset: "PT0S",
+		skipIfExplicitExists: true,
+	},
+	{
+		id: "global-overdue",
+		enabled: false,
+		semanticType: "overdue",
+		description: "Daily when overdue",
+		anchorProperty: "due",
+		offset: "P1D",
+		repeatIntervalHours: 24,
+		skipIfExplicitExists: true,
+	},
+];
+
+// Default per-category reminder behavior
+// Sensible defaults: overdue is persistent, today shows toast, future items are quieter
+export const DEFAULT_REMINDER_TYPE_SETTINGS: ReminderTypeSettings = {
+	overdue: {
+		showInBellCount: true,
+		showToast: true,
+		dismissBehavior: "snooze-4h", // Comes back after 4 hours - overdue items are persistent
+		autoReturnHours: 24, // Force return after 24h even if snoozed again
+	} as TimeCategoryBehavior,
+	today: {
+		showInBellCount: true,
+		showToast: true,
+		dismissBehavior: "until-restart", // Gone until Obsidian restarts
+		autoReturnHours: 0, // No forced return
+	} as TimeCategoryBehavior,
+	tomorrow: {
+		showInBellCount: true,
+		showToast: false, // Don't popup for tomorrow items (awareness only)
+		dismissBehavior: "until-restart",
+		autoReturnHours: 0,
+	} as TimeCategoryBehavior,
+	thisWeek: {
+		showInBellCount: true,
+		showToast: false, // Don't popup for this week items
+		dismissBehavior: "until-restart",
+		autoReturnHours: 0,
+	} as TimeCategoryBehavior,
+	scheduled: {
+		showInBellCount: true,
+		showToast: true, // Show toast when scheduled/start date arrives
+		dismissBehavior: "until-next-reminder", // One-shot per reminder instance
+		autoReturnHours: 0,
+	} as TimeCategoryBehavior,
+	queryBased: {
+		showInBellCount: true,
+		showToast: true,
+		dismissBehavior: "until-data-change", // Returns when query results change
+		autoReturnHours: 0,
+	} as TimeCategoryBehavior,
+};
+
+// Default vault-wide notification settings
+export const DEFAULT_VAULT_WIDE_NOTIFICATIONS: VaultWideNotificationSettings = {
+	enabled: true,
+	showOnStartup: false,
+	checkInterval: 5, // minutes
+	enabledSources: {
+		bases: true,
+		reminderViews: true,
+		upstreamReminders: true,
+		viewEntry: true,
+	},
+	defaultReminderTime: "09:00",
+	onlyNotifyIfAssignedToMe: false, // Default: notify for all tasks
+	notifyForUnassignedTasks: true, // When filtering, still show unassigned tasks
+	baseNotificationDisplay: "individual", // Default: show each item separately (most intuitive)
+	reminderTypeSettings: DEFAULT_REMINDER_TYPE_SETTINGS, // Per-category behavior configuration
+};
+
 // Default NLP triggers configuration
 export const DEFAULT_NLP_TRIGGERS: NLPTriggersConfig = {
 	triggers: [
@@ -272,6 +380,10 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	taskFilenameFormat: "zettel", // Keep existing behavior as default
 	storeTitleInFilename: true,
 	customFilenameTemplate: "{title}", // Simple title template
+	filenameCollisionBehavior: "silent", // Auto-resolve silently by default
+	collisionRetrySuffix: "timestamp", // Base36 timestamp suffix when retrying
+	zettelDateSource: "creation", // Legacy - kept for backwards compatibility
+	zettelDateChain: ["creation"], // Default: just use creation date
 	// Task creation defaults
 	taskCreationDefaults: DEFAULT_TASK_CREATION_DEFAULTS,
 	// Calendar view defaults
@@ -360,6 +472,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	modalFieldsConfig: undefined, // Initialized on first use via migration
 	// Split layout for task modals on wide screens
 	enableModalSplitLayout: true, // Enabled by default
+	// Collapse the property mapping section in task modals by default
+	propertyPickerCollapsed: true,
 	// Default visible properties for task cards
 	defaultVisibleProperties: [
 		"status", // Status dot
@@ -378,6 +492,10 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enableBases: true,
 	enableMdbaseSpec: false,
 	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
+	enableBulkActionsButton: true, // Show the "Bulk tasking" button in Bases view toolbars
+	enableUniversalBasesButtons: true, // Show TaskNotes buttons on all Bases views (not just TaskNotes view types)
+	defaultBulkMode: "convert" as const, // Default mode for the bulk tasking modal
+	suppressBulkEditConfirmation: false, // Suppress confirmation dialog for bulk edit operations
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
 		'open-calendar-view': 'TaskNotes/Views/mini-calendar-default.base',
@@ -386,6 +504,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		'open-advanced-calendar-view': 'TaskNotes/Views/calendar-default.base',
 		'open-agenda-view': 'TaskNotes/Views/agenda-default.base',
 		'relationships': 'TaskNotes/Views/relationships.base',
+		'open-upcoming-view': 'TaskNotes/Views/upcoming-default.base',
 	},
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,
@@ -409,4 +528,38 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftCalendarSyncTokens: {},
 	// Google Calendar task export settings
 	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
+	// Device identity settings (for shared vaults)
+	deviceUserMappings: [],
+	autoSetCreator: true,
+	creatorFieldName: "creator",
+	assigneeFieldName: "assignee",
+	// Person notes configuration
+	personNotesFolder: "",
+	personNotesTag: "",
+	// Group notes configuration
+	groupNotesFolder: "", // Defaults to same as personNotesFolder when empty
+	groupNotesTag: "",
+	groupNoteMappings: [],
+	// Configurable type property names (for enterprise compatibility - namespaced defaults)
+	identityTypePropertyName: "tnType", // Default property name for type detection (namespaced to avoid conflicts)
+	personTypeValue: "tn-person", // Default value that identifies person notes
+	groupTypeValue: "tn-group", // Default value that identifies group notes
+	// Vault-wide notification settings
+	vaultWideNotifications: DEFAULT_VAULT_WIDE_NOTIFICATIONS,
+	// Debug logging (off by default)
+	enableDebugLogging: false,
+	debugLogConsoleOutput: false,
+	debugLogCategories: {},
+	// Note UUID settings (for persistent identity across renames)
+	noteUuidPropertyName: "tnId",
+	noteUuidAutoGenerate: true,
+	// Base identity (ADR-011): off by default — only useful for migration/debugging
+	baseIdentityTrackSourceView: false,
+	// Global reminder rules (virtual reminders for all tasks at runtime)
+	globalReminderRules: DEFAULT_GLOBAL_REMINDER_RULES,
+	// Upcoming View date format settings
+	upcomingViewDateFormat: "us",
+	upcomingViewCustomDateFormat: "MMM d, yyyy",
+	upcomingViewUseRelativeDates: true,
+	upcomingViewRelativeDateThreshold: 7,
 };

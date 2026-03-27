@@ -220,8 +220,8 @@ export class ProjectSubtasksService {
 
 			this.indexLastBuilt = Date.now();
 			const duration = Date.now() - startTime;
-			console.log(
-				`[ProjectSubtasksService] Built project index: ${this.projectIndex.size} projects from ${Object.keys(resolvedLinks).length} files in ${duration}ms`
+			this.plugin.debugLog.log('ProjectSubtasks',
+				`Built project index: ${this.projectIndex.size} projects from ${Object.keys(resolvedLinks).length} files in ${duration}ms`
 			);
 		} catch (error) {
 			console.error("Error building project index:", error);

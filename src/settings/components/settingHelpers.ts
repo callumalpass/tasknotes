@@ -15,6 +15,7 @@ export interface TextSettingOptions {
 	setValue: (value: string) => void;
 	ariaLabel?: string;
 	debounceMs?: number; // Optional debounce time in milliseconds
+	commitOnBlur?: boolean; // Fire setValue on blur (native "change") instead of per-keystroke
 }
 
 export interface DropdownSettingOptions {
@@ -167,8 +168,12 @@ export function configureTextSetting(setting: Setting, options: TextSettingOptio
 		.addText((text) => {
 			text.setValue(options.getValue());
 
-			// Use debounced onChange if debounceMs is specified
-			if (options.debounceMs && options.debounceMs > 0) {
+			if (options.commitOnBlur) {
+				// Fire setValue on blur (native "change" event) — prevents per-keystroke triggers
+				text.inputEl.addEventListener("change", () => {
+					options.setValue(text.inputEl.value);
+				});
+			} else if (options.debounceMs && options.debounceMs > 0) {
 				const debouncedSetValue = debounce(options.setValue, options.debounceMs);
 				text.onChange(debouncedSetValue);
 			} else {

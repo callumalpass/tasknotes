@@ -105,6 +105,87 @@ export function renderAppearanceTab(
 		}
 	);
 
+	// Upcoming View Date Format Section
+	createSettingGroup(
+		container,
+		{
+			heading: "Upcoming view",
+			description: "Configure how dates are displayed in the Upcoming View",
+		},
+		(group) => {
+			group.addSetting((setting) =>
+				configureDropdownSetting(setting, {
+					name: "Date format",
+					desc: "Choose how dates appear in the Upcoming View",
+					options: [
+						{ value: "rich", label: "Rich (Jan 31, 2026 • Friday)" },
+						{ value: "us", label: "US (Jan 31, 2026)" },
+						{ value: "eu", label: "EU (31 Jan 2026)" },
+						{ value: "iso", label: "ISO (2026-01-31)" },
+						{ value: "relative", label: "Relative only (2 days ago)" },
+						{ value: "custom", label: "Custom format" },
+					],
+					getValue: () => plugin.settings.upcomingViewDateFormat,
+					setValue: async (value: string) => {
+						plugin.settings.upcomingViewDateFormat = value as "iso" | "us" | "eu" | "relative" | "rich" | "custom";
+						save();
+						// Re-render to show/hide custom format field
+						renderAppearanceTab(container, plugin, save);
+					},
+				})
+			);
+
+			// Show custom format input when "custom" is selected
+			if (plugin.settings.upcomingViewDateFormat === "custom") {
+				group.addSetting((setting) =>
+					configureTextSetting(setting, {
+						name: "Custom format pattern",
+						desc: "Uses date-fns format (e.g., EEEE, MMMM d, yyyy for \"Monday, January 31, 2026\")",
+						placeholder: "MMM d, yyyy",
+						debounceMs: 500,
+						getValue: () => plugin.settings.upcomingViewCustomDateFormat,
+						setValue: async (value: string) => {
+							plugin.settings.upcomingViewCustomDateFormat = value || "MMM d, yyyy";
+							save();
+						},
+					})
+				);
+			}
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Use relative dates for recent items",
+					desc: "Show \"2 days ago\" or \"Tomorrow\" instead of absolute dates for items within the threshold",
+					getValue: () => plugin.settings.upcomingViewUseRelativeDates,
+					setValue: async (value: boolean) => {
+						plugin.settings.upcomingViewUseRelativeDates = value;
+						save();
+						// Re-render to show/hide threshold field
+						renderAppearanceTab(container, plugin, save);
+					},
+				})
+			);
+
+			// Show threshold when relative dates are enabled
+			if (plugin.settings.upcomingViewUseRelativeDates) {
+				group.addSetting((setting) =>
+					configureNumberSetting(setting, {
+						name: "Relative date threshold",
+						desc: "Show relative dates for items within this many days from today",
+						placeholder: "7",
+						min: 1,
+						max: 30,
+						getValue: () => plugin.settings.upcomingViewRelativeDateThreshold,
+						setValue: async (value: number) => {
+							plugin.settings.upcomingViewRelativeDateThreshold = value;
+							save();
+						},
+					})
+				);
+			}
+		}
+	);
+
 	// Calendar View Section
 	createSettingGroup(
 		container,
@@ -608,6 +689,22 @@ export function renderAppearanceTab(
 					})
 				);
 			}
+
+			// Cross-link to Modal Fields tab for modal layout settings
+			group.addSetting((setting) => {
+				const descFrag = document.createDocumentFragment();
+				descFrag.appendText("Controls like split layout and property mapping visibility are in ");
+				const link = descFrag.createEl("a", { text: "Modal fields" });
+				link.style.cssText = "cursor: pointer; color: var(--text-accent)";
+				link.addEventListener("click", (e) => {
+					e.preventDefault();
+					const tabBtn = container.closest(".tasknotes-settings")
+						?.querySelector("#tab-button-modal-fields") as HTMLElement | null;
+					if (tabBtn) tabBtn.click();
+				});
+				descFrag.appendText(" settings.");
+				setting.setName("Modal layout").setDesc(descFrag);
+			});
 
 			group.addSetting((setting) =>
 				configureDropdownSetting(setting, {

@@ -1,48 +1,24 @@
 # <img src="tasknotes-gradient.svg" width="32" height="32" style="vertical-align: middle;"> TaskNotes for Obsidian
 
-A task management plugin where each task is a separate Markdown note, and all views are powered by [Obsidian Bases](https://help.obsidian.md/bases).
-
-<img src="https://github.com/callumalpass/tasknotes/blob/main/media/2025-12-07T15-43-26.png?raw=true" />
-
-## Overview
-
-Each task is a Markdown note with YAML frontmatter. Every view is a [Bases](https://help.obsidian.md/bases) query.
-
-Bases is Obsidian's core plugin for turning notes into databases—it reads properties from your notes and lets you filter, sort, and group them without writing code. TaskNotes stores tasks as notes with structured frontmatter, then uses Bases to query and display them. The Task List, Kanban, Calendar, and Agenda views are all `.base` files.
-
-This keeps your data portable. Tasks are just Markdown files with YAML, so you can read them with any tool, transform them with scripts, or migrate them elsewhere. There's no plugin-specific database.
-
-The frontmatter is extensible—add fields like `energy-level` or `client` and they're immediately available in Bases for filtering and grouping. The `.base` files are plain text too, so you can edit filters and sorting directly or duplicate them to create new views.
-
-![Screenshot of TaskNotes plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
+The most practical way to manage tasks in Obsidian. Each task is a plain Markdown note with structured frontmatter, and every view -- task list, kanban, calendar, upcoming, agenda -- is a [Bases](https://help.obsidian.md/bases) query you can inspect and customize. No hidden databases, no proprietary formats. Your tasks are just files.
 
 **[Full Documentation](https://tasknotes.dev/)**
 
-## Quick start
+![Views Tour](docs/assets/views/views-tour.gif)
 
-Create a task with **TaskNotes: Create new task**. The plugin parses natural language—type "Buy groceries tomorrow #errands" and it extracts the due date and context automatically.
+## Quick Start
 
-Tasks are stored as Markdown files in your vault. Open them directly, edit the frontmatter, or use the plugin's views to manage them.
+1. Install from **Community Plugins** in Obsidian settings
+2. Create a task: Command palette → **TaskNotes: Create new task**
+3. Open a view: **TaskNotes: Open tasks view** or **TaskNotes: Open kanban board**
 
-Open a view with commands like **TaskNotes: Open tasks view** or **TaskNotes: Open kanban board**. These open the corresponding `.base` files from `TaskNotes/Views/`.
+Natural language works out of the box -- type "Buy groceries tomorrow #errands @home !high" and it extracts the due date, context, tag, and priority automatically.
 
-## How it works with Bases
+## How It Works
 
-TaskNotes registers as a Bases data source and provides custom view types: `tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`, and `tasknotesMiniCalendar`. The default Agenda file is a preconfigured `tasknotesCalendar` list view (`listWeek`). Your task notes become rows; frontmatter properties become columns.
+Each task is a Markdown note with YAML frontmatter. Every view is a [Bases](https://help.obsidian.md/bases) query.
 
-The default `.base` files include formula properties for computed values:
-
-```yaml
-formulas:
-  daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
-  isOverdue: due && date(due) < today() && status != "done"
-  urgencyScore: formula.priorityWeight + max(0, 10 - formula.daysUntilDue)
-  efficiencyRatio: (timeTracked / timeEstimate * 100).round()
-```
-
-You can sort by `urgencyScore`, filter to show only `isOverdue` tasks, or add these as columns. Edit the `.base` files directly or use the Bases UI. See [default base templates](./docs/views/default-base-templates.md) for the full list of included formulas.
-
-## Task structure
+Bases is Obsidian's core plugin for turning notes into databases. TaskNotes stores tasks as notes with structured frontmatter, then uses Bases to query and display them. The Task List, Kanban, Calendar, and Agenda views are all `.base` files -- plain text, editable, duplicatable.
 
 ```yaml
 title: "Complete documentation"
@@ -52,73 +28,118 @@ priority: "high"
 contexts: ["work"]
 projects: ["[[Website Redesign]]"]
 timeEstimate: 120
-timeEntries:
-  - startTime: "2024-01-15T10:30:00Z"
-    endTime: "2024-01-15T11:15:00Z"
-```
-
-Recurring tasks use RRULE format with per-instance completion tracking:
-
-```yaml
-title: "Weekly meeting"
-recurrence: "FREQ=WEEKLY;BYDAY=MO"
-complete_instances: ["2024-01-08"]
 ```
 
 All property names are configurable. If you already use `deadline` instead of `due`, remap it in settings.
 
-## Other features
+## Views
 
-Calendar sync with Google and Microsoft (OAuth) or any ICS feed. Time tracking with start/stop per task, Pomodoro timer, and session history. Recurring tasks with fixed or flexible schedules and per-instance completion tracking. Dependencies between tasks. Natural language parsing for task creation. Custom statuses, priorities, and user-defined fields.
+| View | Description |
+|------|-------------|
+| **Task List** | Sortable, groupable list with inline subtask expansion |
+| **Kanban** | Drag-and-drop board with configurable columns |
+| **Calendar** | Month/week/day views with drag-to-reschedule |
+| **Upcoming** | Todoist-style time-grouped view (overdue, today, tomorrow, this week) |
+| **Agenda** | Date-navigated daily/weekly agenda |
+| **Mini Calendar** | Compact month calendar with task dots |
 
-## Integrations
+## Features
 
-TaskNotes has an optional HTTP API. There's a [browser extension](https://github.com/callumalpass/tasknotes-browser-extension) and a [CLI](https://github.com/callumalpass/tasknotes-cli). Webhooks can notify external services on task changes. See [HTTP API docs](./docs/HTTP_API.md) and [Webhooks docs](./docs/webhooks.md).
+### Bulk Tasking
 
-## Language support
+Generate tasks from any Bases view, convert existing notes to tasks in-place, or batch-edit properties across multiple tasks. Access via toolbar buttons on any Bases view or right-click in the file explorer.
 
-UI: English, German, Spanish, French, Japanese, Russian, Chinese, Portuguese, Korean.
+- **Generate mode** -- create task files from view results (meeting notes → action items)
+- **Convert mode** -- add task metadata to existing notes without moving them
+- **Edit mode** -- batch-update priority, dates, assignees across selected tasks
+- **Action bar** -- set due, scheduled, status, priority, reminders, and assignees for the batch
+- **Property picker** -- add custom properties with type detection and conversion
 
-Natural language parsing: English, German, Spanish, French, Italian, Japanese, Dutch, Portuguese, Russian, Swedish, Ukrainian, Chinese.
+### Notification System
 
-## Screenshots
+Three-tier reminder architecture with a unified toast + bell delivery system:
+
+- **Per-task reminders** -- stored in frontmatter, portable and scriptable
+- **Default reminders** -- auto-added to every new task at creation time
+- **Global reminders** -- vault-wide rules evaluated at runtime, never written to files
+- **Per-person overrides** -- customize reminder behavior per team member in shared vaults
+- **Per-category behavior** -- fine-tune how overdue, today, tomorrow, and this-week items are handled
+
+### Shared Vault & Team Attribution
+
+- **Device identity** -- each device gets a UUID mapped to a person note
+- **Auto-attribution** -- `creator` field auto-filled on task creation
+- **Person/group picker** -- assign tasks to people or groups
+- **Assignee-aware notifications** -- filter notifications to only your tasks
+
+### Property Mapping & Migration
+
+- **Per-task field overrides** -- map `deadline` to Due, `review_date` to Scheduled per task
+- **Per-view field mapping** -- configure property mappings per `.base` view
+- **Migration tool** -- rename property keys across all files with file count and confirmation
+- **Autocomplete** -- property name suggestions in the migration command
+
+### Core Features
+
+- **Natural language input** with configurable triggers (@, #, +, *, !)
+- **Recurring tasks** with RRULE support, calendar drag-and-drop, and per-instance completion tracking
+- **Task dependencies** with blockedBy/blocking relationships
+- **Time tracking** with start/stop per task and Pomodoro timer
+- **Calendar sync** with Google, Microsoft (OAuth), or any ICS feed
+- **Custom statuses and priorities** with colors, icons, and auto-archive
+- **Inline task conversion** -- turn checkboxes into tracked tasks
+- **Note vs task differentiation** -- non-task items in views show file icon instead of status dot
+- **HTTP API** with browser extension and CLI support
+- **9 languages** -- EN, DE, ES, FR, JA, RU, ZH, PT, KO
 
 <details>
-<summary>View screenshots</summary>
-
-Screenshots are generated from the Playwright documentation suite (`npm run e2e:docs`).
+<summary>Screenshots</summary>
 
 ### Calendar
 
-![Month](media/docs/views-calendar-month.png)
+![Month](docs/assets/calendar-views/views-calendar-month.png)
 
-![Week](media/docs/views-calendar-week.png)
+![Week](docs/assets/calendar-views/views-calendar-week.png)
 
-![Day](media/docs/views-calendar-day.png)
+### Task Views
 
-![Year](media/docs/views-calendar-year.png)
+![Tasks](docs/assets/task-list/views-tasks-list.png)
 
-### Task views
-
-![Tasks](media/docs/views-tasks-list.png)
-
-![Kanban](media/docs/views-kanban.png)
-
-![Agenda](media/docs/views-agenda.png)
-
-![Mini Calendar](media/docs/views-mini-calendar.png)
+![Kanban](docs/assets/views/views-kanban.png)
 
 ### Features
 
-![Task Modal](media/docs/modal-task-create.png)
+![Task Creation Modal](docs/assets/task-management/task-creation-modal-overview.png)
 
-![Pomodoro](media/docs/feature-pomodoro-timer.png)
+![Reminders Settings](docs/assets/reminders/reminders-settings-configuration-overview.gif)
 
-![Stats](media/docs/feature-task-statistics.png)
-
-![Settings](media/docs/ui-settings-panel.png)
+![Per-Category Notifications](docs/assets/notification-delivery/notification-per-category-behavior.gif)
 
 </details>
+
+## Development
+
+```bash
+bun install              # Install dependencies
+bun run dev              # Watch mode (rebuilds on change)
+bun run build            # Production build (type-check + bundle)
+bun test                 # Run Jest unit/integration tests
+```
+
+Open the dev vault in Obsidian with [Hot Reload](https://github.com/pjeby/hot-reload) for instant iteration.
+
+**E2E tests** connect to a running Obsidian instance via Chrome DevTools Protocol:
+
+```bash
+bun run build:test       # Build and copy to e2e vault
+bun run e2e              # Run full Playwright suite (100+ tests)
+```
+
+See the [contributing guide](./docs/contributing.md) for full development setup.
+
+## Known Limitations
+
+- **System notifications on Windows**: Electron may not register as a notification sender. Use "In-app" delivery type as a workaround.
 
 ## Credits
 
@@ -126,4 +147,4 @@ Calendar components by [FullCalendar.io](https://fullcalendar.io/).
 
 ## License
 
-MIT—see [LICENSE](LICENSE).
+MIT -- see [LICENSE](LICENSE).

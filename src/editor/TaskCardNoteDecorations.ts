@@ -362,7 +362,7 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 			// RISK: This relies on CodeMirror's internal DOM structure
 			const targetContainer = view.dom.closest('.markdown-source-view')?.querySelector<HTMLElement>('.cm-sizer');
 			if (!targetContainer) {
-				console.warn('[TaskNotes] Could not find .cm-sizer container for task card widget');
+				this.plugin.debugLog.warn('TaskCardDecorations', 'Could not find .cm-sizer container for task card widget');
 				return;
 			}
 
@@ -467,7 +467,7 @@ async function injectReadingModeWidget(
 		// RISK: Relies on Obsidian's internal DOM structure
 		const sizer = containerEl.querySelector<HTMLElement>('.markdown-preview-sizer');
 		if (!sizer) {
-			console.warn('[TaskNotes] Could not find .markdown-preview-sizer for task card in reading mode');
+			plugin.debugLog.warn('TaskCardDecorations', 'Could not find .markdown-preview-sizer for task card in reading mode');
 			return;
 		}
 

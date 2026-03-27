@@ -1,13 +1,15 @@
-import { Component, App, setIcon } from "obsidian";
+import { Component, App, setIcon, TFile, parseYaml, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
 import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
-import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
+import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES, CORE_TASK_CARD_FIELDS } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
+import type { NotificationItem } from "../modals/BasesNotificationModal";
+import { BulkTaskCreationModal } from "../bulk/BulkTaskCreationModal";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -40,11 +42,35 @@ export abstract class BasesViewBase extends Component {
 	protected selectionModeCleanup: (() => void) | null = null;
 	protected selectionIndicatorEl: HTMLElement | null = null;
 
+	// Filtered items cache — updated by subclass render(), consumed by handleBulkCreation()
+	protected lastFilteredDataItems: import("./helpers").BasesDataItem[] = [];
+
+	// Cached view field mapping — resolved once per render cycle for read-path fallback
+	protected cachedViewFieldMapping: Record<string, string> | undefined;
+
+	// When true, getVisibleProperties() ensures core task card fields (status,
+	// priority, due) are always present so cards render with full styling even
+	// if the .base file's order: config omits them. Subclasses that render task
+	// cards (TaskListView, KanbanView, CalendarView) set this to true.
+	protected ensureCoreCardProperties = false;
+
+	// Notification state - prevent duplicate notifications per session
+	private notifyChecked = false;
+
+	// Store reference to toolbar parent for cleanup
+	private toolbarParentEl: HTMLElement | null = null;
+
+	// Controller reference — needed to access ctx.formulas for formula computation.
+	// Stored in constructor, but also discoverable at runtime via getController()
+	// in case hot reload created a new plugin without recreating the Bases view instance.
+	protected controller: any;
+
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		// Call Component constructor
 		super();
 		this.plugin = plugin;
 		this.containerEl = containerEl;
+		this.controller = controller;
 
 		// Note: app, config, and data will be set by Bases when it creates the view
 		// We just need to ensure our types match the BasesView interface
@@ -55,6 +81,25 @@ export abstract class BasesViewBase extends Component {
 		// Bind createFileForView to ensure Bases can find it
 		// Some versions of Bases may check hasOwnProperty rather than prototype chain
 		this.createFileForView = this.createFileForView.bind(this);
+	}
+
+	/**
+	 * Get the Bases controller for this view. Uses stored reference first,
+	 * then falls back to workspace search (needed after hot reload, which
+	 * creates a new plugin instance but Bases keeps old view instances).
+	 */
+	protected getController(): any {
+		if (this.controller?.ctx) return this.controller;
+		// Hot reload fallback: find our controller by matching view references
+		const basesLeaves = (this as any).app?.workspace?.getLeavesOfType?.("bases") || [];
+		for (const leaf of basesLeaves) {
+			const ctrl = (leaf.view as any)?.controller;
+			if (ctrl?.view === this) {
+				this.controller = ctrl; // Cache for next call
+				return ctrl;
+			}
+		}
+		return this.controller;
 	}
 
 	/**
@@ -90,7 +135,11 @@ export abstract class BasesViewBase extends Component {
 		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			try {
+				this.updateRelevantPathsCache();
 				this.render();
+				// DISABLED: Old BasesNotificationModal auto-trigger
+				// Replaced by new Upcoming View + Toast system (see ADR-009)
+				// this.checkAndTriggerNotification();
 			} catch (error) {
 				console.error(`[TaskNotes][${this.type}] Render error:`, error);
 				this.renderError(error as Error);
@@ -137,7 +186,7 @@ export abstract class BasesViewBase extends Component {
 				this.rootElement.scrollTop = state.scrollTop;
 			}
 		} catch (e) {
-			console.debug("[TaskNotes][Bases] Failed to restore ephemeral state:", e);
+			this.plugin.debugLog.log("BasesViewBase", "Failed to restore ephemeral state", e);
 		}
 	}
 
@@ -150,7 +199,7 @@ export abstract class BasesViewBase extends Component {
 				this.rootElement.focus();
 			}
 		} catch (e) {
-			console.debug("[TaskNotes][Bases] Failed to focus view:", e);
+			this.plugin.debugLog.log("BasesViewBase", "Failed to focus view", e);
 		}
 	}
 
@@ -187,6 +236,9 @@ export abstract class BasesViewBase extends Component {
 
 		// Add custom "New Task" button and hide the default Bases "New" button
 		this.setupNewTaskButton();
+
+		// Add "Generate Tasks" button for bulk task creation from Bases items
+		this.setupBulkCreationButton();
 	}
 
 	/**
@@ -194,32 +246,89 @@ export abstract class BasesViewBase extends Component {
 	 * Injects the button into the Bases toolbar and hides the default "New" button.
 	 */
 	protected setupNewTaskButton(): void {
-		// Defer to allow Bases to render its toolbar first
-		setTimeout(() => this.injectNewTaskButton(), 100);
+		// Defer to allow Bases to render its toolbar first.
+		// Retry a few times -- after YAML changes Bases may re-mount the toolbar
+		// asynchronously, so it may not exist at the first attempt.
+		let attempts = 0;
+		const tryInject = (): void => {
+			attempts++;
+			const basesViewEl = this.containerEl.closest(".bases-view");
+			const toolbar = basesViewEl?.parentElement?.querySelector(".bases-toolbar");
+			if (toolbar || attempts >= 5) {
+				this.injectNewTaskButton();
+			} else {
+				setTimeout(tryInject, 200);
+			}
+		};
+		setTimeout(tryInject, 100);
 
-		// Register cleanup to toggle off the active class when view is unloaded
-		this.register(() => this.cleanupNewTaskButton());
+		// Register cleanup to remove buttons and class when view is unloaded
+		this.register(() => this.cleanupToolbarButtons());
 	}
 
 	/**
-	 * Clean up: just remove the "active" class, keep the button for reuse.
+	 * Clean up: remove buttons and active class when view unloads.
+	 * This ensures buttons don't persist when switching to non-TaskNotes view types.
+	 *
+	 * Uses a deferred check: when Bases re-mounts (e.g. YAML change), the old view
+	 * unloads while a new TN view may be loading into the SAME toolbar.  If we
+	 * immediately remove buttons the new view just injected, the "New task" button
+	 * disappears.  Instead we remove the active class immediately, defer button
+	 * removal 300ms, and check if a new TN view has reclaimed the toolbar
+	 * (indicated by `tasknotes-view-active` being re-added by the new view).
 	 */
-	private cleanupNewTaskButton(): void {
-		const basesViewEl = this.containerEl.closest(".bases-view");
-		const parentEl = basesViewEl?.parentElement;
+	private cleanupToolbarButtons(): void {
+		const parent = this.toolbarParentEl;
+		this.toolbarParentEl = null; // Release reference immediately
 
-		// Only remove the "active" class - button stays for potential reuse
-		parentEl?.classList.remove("tasknotes-view-active");
+		if (!parent) return;
+
+		// Remove active class immediately — if a new TN view mounts it will re-add
+		// it within ~100ms.  This lets the deferred check distinguish "TN→TN remount"
+		// (class re-added) from "TN→Table switch" (class stays gone).
+		parent.classList.remove("tasknotes-view-active");
+
+		// Defer button removal to avoid racing with the new view's injection
+		setTimeout(() => {
+			// If a new TN view has already reclaimed this toolbar, skip cleanup
+			if (parent.classList.contains("tasknotes-view-active")) return;
+
+			// No TN view owns this toolbar any more — safe to remove
+			parent.querySelectorAll(".tn-bases-new-task-btn").forEach(btn => btn.remove());
+			parent.querySelectorAll(".tn-bases-bulk-create-btn").forEach(btn => btn.remove());
+		}, 300);
+	}
+
+	/**
+	 * Check if TaskNotes UI should be shown for this view by reading the .base YAML directly.
+	 * Defaults to true if the .base file can't be read or showTaskNotesUI is not set.
+	 */
+	private async shouldShowUI(): Promise<boolean> {
+		const baseFile = this.findBaseFile();
+		if (!baseFile) return true;
+		try {
+			const content = await this.plugin.app.vault.read(baseFile);
+			const parsed = parseYaml(content);
+			if (!parsed?.views || !Array.isArray(parsed.views)) return true;
+			const myType = (this as any).type as string;
+			const viewConfig = parsed.views.find((v: any) => v?.type === myType);
+			return viewConfig?.showTaskNotesUI !== false;
+		} catch {
+			return true;
+		}
 	}
 
 	/**
 	 * Inject the custom "New Task" button into the Bases toolbar.
+	 * Always injected on TaskNotes-managed views (TaskList, Kanban, etc.)
+	 * regardless of showTaskNotesUI -- this is the primary create action
+	 * and hiding it leaves users with no way to create tasks.
 	 */
-	private injectNewTaskButton(): void {
+	private async injectNewTaskButton(): Promise<void> {
 		// Find the Bases view container
 		const basesViewEl = this.containerEl.closest(".bases-view");
 		if (!basesViewEl) {
-			console.debug("[TaskNotes][Bases] No .bases-view found");
+			this.plugin.debugLog.log("BasesViewBase", "No .bases-view found");
 			return;
 		}
 
@@ -227,28 +336,37 @@ export abstract class BasesViewBase extends Component {
 		// Look in the parent container for the toolbar
 		const parentEl = basesViewEl.parentElement;
 		if (!parentEl) {
-			console.debug("[TaskNotes][Bases] No parent element found");
+			this.plugin.debugLog.log("BasesViewBase", "No parent element found");
 			return;
 		}
 
 		// Mark parent as having an active TaskNotes view (controls visibility via CSS)
 		parentEl.classList.add("tasknotes-view-active");
 
+		// Store reference for cleanup
+		this.toolbarParentEl = parentEl as HTMLElement;
+
 		const toolbarEl = parentEl.querySelector(".bases-toolbar");
 		if (!toolbarEl) {
-			console.debug("[TaskNotes][Bases] No .bases-toolbar found in parent");
+			this.plugin.debugLog.log("BasesViewBase", "No .bases-toolbar found in parent");
 			return;
 		}
 
-		// Check if we already added the button (reuse existing)
-		if (toolbarEl.querySelector(".tn-bases-new-task-btn")) return;
+		// Idempotent: remove ALL TaskNotes buttons (universal or ours) before injecting.
+		// Bases can re-render toolbars in ways that bypass dedup checks, so always start clean.
+		toolbarEl.querySelectorAll(".tn-universal-injected").forEach(btn => btn.remove());
+		toolbarEl.querySelectorAll(".tn-bases-new-task-btn").forEach(btn => btn.remove());
 
 		// Use correct document for pop-out window support
 		const doc = this.containerEl.ownerDocument;
 
-		// Create "New Task" button matching Bases' text-icon-button style
+		// Create "New Task" button matching Bases' text-icon-button style.
+		// Inline display:flex overrides the CSS rule `.tn-bases-new-task-btn { display: none }`
+		// which normally requires `.tasknotes-view-active` on the parent. This ensures the
+		// button is always visible on TN views regardless of parent class state.
 		const newTaskBtn = doc.createElement("div");
 		newTaskBtn.className = "bases-toolbar-item tn-bases-new-task-btn";
+		newTaskBtn.style.display = "flex";
 
 		const innerBtn = doc.createElement("div");
 		innerBtn.className = "text-icon-button";
@@ -282,7 +400,145 @@ export abstract class BasesViewBase extends Component {
 			toolbarEl.appendChild(newTaskBtn);
 		}
 
-		console.debug("[TaskNotes][Bases] Injected New Task button into toolbar");
+		this.plugin.debugLog.log("BasesViewBase", "Injected New Task button into toolbar");
+	}
+
+	/**
+	 * Setup the "Bulk tasking" button for bulk task creation/conversion.
+	 * Injects the button into the Bases toolbar.
+	 */
+	protected setupBulkCreationButton(): void {
+		// Defer to allow Bases to render its toolbar first.
+		// Retry like setupNewTaskButton — toolbar may not exist yet after YAML changes.
+		let attempts = 0;
+		const tryInject = (): void => {
+			attempts++;
+			const basesViewEl = this.containerEl.closest(".bases-view");
+			const toolbar = basesViewEl?.parentElement?.querySelector(".bases-toolbar");
+			if (toolbar || attempts >= 5) {
+				this.injectBulkCreationButton();
+			} else {
+				setTimeout(tryInject, 200);
+			}
+		};
+		setTimeout(tryInject, 150);
+	}
+
+	/**
+	 * Inject the "Bulk tasking" button into the Bases toolbar.
+	 */
+	private async injectBulkCreationButton(): Promise<void> {
+		// Respect settings toggle
+		if (!this.plugin.settings.enableBulkActionsButton) return;
+
+		// Check if TaskNotes UI is disabled for this view
+		const showUI = await this.shouldShowUI();
+		if (!showUI) return;
+
+		// Find the Bases view container
+		const basesViewEl = this.containerEl.closest(".bases-view");
+		if (!basesViewEl) {
+			return;
+		}
+
+		const parentEl = basesViewEl.parentElement;
+		if (!parentEl) {
+			return;
+		}
+
+		const toolbarEl = parentEl.querySelector(".bases-toolbar");
+		if (!toolbarEl) {
+			return;
+		}
+
+		// Idempotent: remove existing bulk button before re-injecting
+		toolbarEl.querySelectorAll(".tn-bases-bulk-create-btn").forEach(btn => btn.remove());
+
+		// Use correct document for pop-out window support
+		const doc = this.containerEl.ownerDocument;
+
+		// Create "Bulk tasking" button matching Bases' text-icon-button style.
+		// Inline display:flex to override CSS default `display: none`.
+		const bulkBtn = doc.createElement("div");
+		bulkBtn.className = "bases-toolbar-item tn-bases-bulk-create-btn";
+		bulkBtn.style.display = "flex";
+
+		const innerBtn = doc.createElement("div");
+		innerBtn.className = "text-icon-button";
+		innerBtn.tabIndex = 0;
+
+		// Add icon (layers icon to represent multiple items)
+		const iconSpan = doc.createElement("span");
+		iconSpan.className = "text-button-icon";
+		setIcon(iconSpan, "layers");
+		innerBtn.appendChild(iconSpan);
+
+		// Add label
+		const labelSpan = doc.createElement("span");
+		labelSpan.className = "text-button-label";
+		labelSpan.textContent = "Bulk tasking";
+		innerBtn.appendChild(labelSpan);
+
+		bulkBtn.appendChild(innerBtn);
+
+		bulkBtn.addEventListener("click", () => {
+			this.handleBulkCreation();
+		});
+
+		// Find our "New Task" button and insert after it
+		const newTaskBtn = toolbarEl.querySelector(".tn-bases-new-task-btn");
+		if (newTaskBtn) {
+			newTaskBtn.after(bulkBtn);
+		} else {
+			// Fallback: append to end of toolbar
+			toolbarEl.appendChild(bulkBtn);
+		}
+
+		this.plugin.debugLog.log("BasesViewBase", "Injected Bulk tasking button into toolbar");
+	}
+
+	/**
+	 * Handle click on the "Bulk tasking" button.
+	 * Opens the bulk task modal with current Bases items.
+	 */
+	private async handleBulkCreation(): Promise<void> {
+		try {
+			// Use filtered items from last render (matches what user sees).
+			// Falls back to unfiltered if view hasn't rendered yet.
+			const dataItems = this.lastFilteredDataItems.length > 0
+				? this.lastFilteredDataItems
+				: this.dataAdapter.extractDataItems();
+
+			if (dataItems.length === 0) {
+				new Notice("No items in this view to create tasks from");
+				return;
+			}
+
+			// Get the .base file path for Convert mode linking
+			const baseFile = this.findBaseFile();
+			const baseFilePath = baseFile?.path;
+
+			// Resolve per-view field mapping context (ADR-011)
+			const mappingCtx = await this.resolveViewMappingContext();
+
+			// Open the bulk tasking modal
+			const app = this.app || this.plugin.app;
+			const modal = new BulkTaskCreationModal(app, this.plugin, dataItems, {
+				onTasksCreated: () => {
+					// Refresh the view after tasks are created/converted
+					this.refresh();
+				},
+				viewFieldMapping: mappingCtx?.viewFieldMapping,
+				sourceBaseId: mappingCtx?.baseId,
+				sourceViewId: mappingCtx?.viewId,
+				viewIndex: mappingCtx?.viewIndex,
+			}, baseFilePath);
+
+			modal.open();
+		} catch (error) {
+			console.error("[TaskNotes][Bases] Error opening bulk creation modal:", error);
+			new Notice("Failed to open bulk task creation: " + (error instanceof Error ? error.message : String(error)));
+		}
 	}
 
 	/**
@@ -294,7 +550,27 @@ export abstract class BasesViewBase extends Component {
 
 		this.taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
 			try {
-				const updatedTask = eventData?.task || eventData?.taskInfo;
+				const updatedTask = eventData?.task || eventData?.taskInfo || eventData?.updatedTask;
+
+				// Convert-to-task: Bases will eventually call onDataUpdated() when it
+				// detects the metadata change, but the properties in Bases' cache may
+				// still be stale when our render() reads them. Mark that a convert
+				// happened so the next onDataUpdated() forces a cache rebuild.
+				if (eventData?.converted) {
+					// Don't render immediately — Bases will call onDataUpdated()
+					// when it detects the frontmatter change. But the first
+					// onDataUpdated() render may lack formula values (Bases hasn't
+					// recomputed them yet). Schedule a delayed re-render to catch
+					// the fully-settled state with all formula metadata.
+					const win = this.containerEl?.ownerDocument?.defaultView || window;
+					win.setTimeout(() => {
+						if (this.rootElement?.isConnected) {
+							this.render();
+						}
+					}, 2000);
+					return;
+				}
+
 				if (!updatedTask?.path) return;
 
 				// Skip if view is not visible (no point updating hidden views)
@@ -467,6 +743,18 @@ export abstract class BasesViewBase extends Component {
 			taskCreationData.customFrontmatter = customFrontmatter;
 		}
 
+		// Inject per-view field mapping context (ADR-011)
+		const mappingCtx = await this.resolveViewMappingContext();
+		if (mappingCtx?.viewFieldMapping) {
+			taskCreationData.viewFieldMapping = mappingCtx.viewFieldMapping;
+		}
+		if (mappingCtx?.baseId) {
+			taskCreationData.sourceBaseId = mappingCtx.baseId;
+		}
+		if (mappingCtx?.viewId) {
+			taskCreationData.sourceViewId = mappingCtx.viewId;
+		}
+
 		// Open TaskNotes creation modal
 		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
 		const app = this.app || this.plugin.app;
@@ -484,6 +772,10 @@ export abstract class BasesViewBase extends Component {
 	/**
 	 * Get visible properties for rendering task cards.
 	 * Uses BasesView's config API directly.
+	 *
+	 * When `ensureCoreCardProperties` is true (task card views), core fields
+	 * (status, priority, due) are always included so cards render with full
+	 * styling even if the .base file's order: config omits them.
 	 */
 	protected getVisibleProperties(): string[] {
 		// Get ordered properties from Bases config (configured by user in Bases UI)
@@ -498,6 +790,20 @@ export abstract class BasesViewBase extends Component {
 			];
 			// Convert internal field names to user-configured property names
 			visibleProperties = convertInternalToUserProperties(internalDefaults, this.plugin);
+		}
+
+		// For task card views, ensure core card fields are always present so
+		// status dot, priority indicator, and due date badge always render.
+		if (this.ensureCoreCardProperties && visibleProperties.length > 0) {
+			const coreUserProps = convertInternalToUserProperties(
+				[...CORE_TASK_CARD_FIELDS],
+				this.plugin,
+			);
+			for (const prop of coreUserProps) {
+				if (!visibleProperties.includes(prop)) {
+					visibleProperties.push(prop);
+				}
+			}
 		}
 
 		return visibleProperties;
@@ -545,7 +851,7 @@ export abstract class BasesViewBase extends Component {
 				visibleProperties = this.getVisibleProperties();
 			}
 		} catch (e) {
-			console.debug(`[${this.type}] Could not get visible properties during search setup:`, e);
+			this.plugin.debugLog.log("BasesViewBase", `Could not get visible properties during search setup (${this.type})`, e);
 		}
 		this.searchFilter = new TaskSearchFilter(visibleProperties);
 
@@ -589,9 +895,7 @@ export abstract class BasesViewBase extends Component {
 
 		// Log slow searches for performance monitoring
 		if (filterTime > 200) {
-			console.warn(
-				`[${this.type}] Slow search: ${filterTime.toFixed(2)}ms for search term "${term}"`
-			);
+			this.plugin.debugLog.warn("BasesViewBase", `Slow search (${this.type}): ${filterTime.toFixed(2)}ms for search term "${term}"`);
 		}
 	}
 
@@ -610,9 +914,7 @@ export abstract class BasesViewBase extends Component {
 
 		// Log filter performance for monitoring
 		if (filterTime > 100) {
-			console.warn(
-				`[${this.type}] Filter operation took ${filterTime.toFixed(2)}ms for ${tasks.length} tasks`
-			);
+			this.plugin.debugLog.warn("BasesViewBase", `Filter operation (${this.type}) took ${filterTime.toFixed(2)}ms for ${tasks.length} tasks`);
 		}
 
 		return filtered;
@@ -886,6 +1188,204 @@ export abstract class BasesViewBase extends Component {
 			}
 		}
 		return paths;
+	}
+
+	// =====================
+	// Notification Methods
+	// =====================
+
+	/**
+	 * Check if this view's .base file has `notify: true` and trigger notification.
+	 * Only fires once per view session to avoid notification spam.
+	 *
+	 * IMPORTANT: The notifyChecked flag is set AFTER successful validation to allow
+	 * retry if initial checks fail (e.g., due to race conditions with view loading).
+	 */
+	private async checkAndTriggerNotification(): Promise<void> {
+		// Only check once per view session (after successful completion)
+		if (this.notifyChecked) return;
+
+		// Ensure watcher is available
+		if (!this.plugin.basesQueryWatcher) {
+			this.plugin.debugLog.log("BasesViewBase", "No basesQueryWatcher available, will retry on next update");
+			return;
+		}
+
+		try {
+			// Find the .base file for this view
+			const baseFile = this.findBaseFile();
+			if (!baseFile) {
+				this.plugin.debugLog.log("BasesViewBase", "findBaseFile() returned null, will retry on next update");
+				return; // Don't set notifyChecked - allow retry
+			}
+
+			// Read the file and check for notify: true (either top-level or in views[])
+			const content = await this.plugin.app.vault.read(baseFile);
+			const parsed = parseYaml(content);
+
+			// Check both top-level notify and per-view notify
+			let hasNotify = parsed?.notify === true;
+			if (!hasNotify && Array.isArray(parsed?.views)) {
+				hasNotify = parsed.views.some((v: any) => v?.notify === true);
+			}
+
+			if (!hasNotify) {
+				// No notify setting - mark as checked so we don't keep re-reading the file
+				this.notifyChecked = true;
+				return;
+			}
+
+			// Extract data items from the view
+			const dataItems = this.dataAdapter.extractDataItems();
+			if (!dataItems || dataItems.length === 0) {
+				this.plugin.debugLog.log("BasesViewBase", "No data items yet, will retry on next update");
+				return; // Don't set notifyChecked - allow retry when data arrives
+			}
+
+			// SUCCESS: We have a valid base file with notify:true and data
+			// Now we can set the flag to prevent duplicate notifications
+			this.notifyChecked = true;
+
+			// Build notification items from the Bases data
+			const items: NotificationItem[] = [];
+			for (const item of dataItems) {
+				const frontmatter =
+					item.properties ||
+					(item.file instanceof TFile
+						? this.plugin.app.metadataCache.getFileCache(item.file)?.frontmatter
+						: null);
+
+				const isTask = frontmatter
+					? this.plugin.cacheManager.isTaskFile(frontmatter)
+					: false;
+
+				const title =
+					(frontmatter as any)?.title ||
+					(frontmatter as any)?.[this.plugin.fieldMapper.toUserField("title")] ||
+					item.file?.basename ||
+					item.path ||
+					"Untitled";
+
+				items.push({
+					path: item.path || "",
+					title,
+					isTask,
+					status: isTask ? (frontmatter as any)?.status : undefined,
+				});
+			}
+
+			// Register with watcher for background monitoring AND show notification
+			const baseName = parsed.name || baseFile.basename;
+			this.plugin.debugLog.log("BasesViewBase", `Registering view with watcher: ${baseFile.path} (${items.length} items)`);
+			this.plugin.basesQueryWatcher.registerViewForNotifications(
+				baseFile.path,
+				baseName,
+				items
+			);
+		} catch (error) {
+			this.plugin.debugLog.log("BasesViewBase", "Notification check failed:", error);
+			// Don't set notifyChecked on error - allow retry
+		}
+	}
+
+	/**
+	 * Find the .base file associated with this view by traversing workspace leaves.
+	 */
+	private findBaseFile(): TFile | null {
+		const app = this.app || this.plugin.app;
+		let foundFile: TFile | null = null;
+		let leafsChecked = 0;
+		const viewTypesFound: string[] = [];
+
+		app.workspace.iterateAllLeaves((leaf) => {
+			if (foundFile) return; // Already found
+			leafsChecked++;
+
+			const viewType = leaf.view?.getViewType?.();
+			if (viewType) {
+				viewTypesFound.push(viewType);
+			}
+
+			// Check for bases view type
+			if (viewType === "bases") {
+				const view = leaf.view as any;
+				// Check if this leaf's DOM contains our container
+				if (view.containerEl?.contains(this.containerEl)) {
+					if (view.file instanceof TFile) {
+						foundFile = view.file;
+						this.plugin.debugLog.log("BasesViewBase", `Found base file: ${view.file.path}`);
+					} else {
+						this.plugin.debugLog.log("BasesViewBase", "Found bases view but no file attached");
+					}
+				}
+			}
+		});
+
+		if (!foundFile) {
+			// Log diagnostic info to help debug view type issues
+			const uniqueTypes = [...new Set(viewTypesFound)];
+			this.plugin.debugLog.log("BasesViewBase", `findBaseFile found no match. Checked ${leafsChecked} leaves. View types present: ${uniqueTypes.join(", ") || "none"}`);
+		}
+
+		return foundFile;
+	}
+
+	/**
+	 * Resolve the current view's tnFieldMapping and identity from the .base file.
+	 * Matches by view type; falls back to first view of matching type.
+	 * Returns null if no .base file found or no tnFieldMapping configured.
+	 */
+	protected async resolveViewMappingContext(): Promise<{
+		viewFieldMapping?: import("../identity/BaseIdentityService").ViewFieldMapping;
+		baseId?: string;
+		viewId?: string;
+		viewIndex?: number;
+	} | null> {
+		const baseFile = this.findBaseFile();
+		if (!baseFile) return null;
+
+		try {
+			const content = await this.plugin.app.vault.read(baseFile);
+			const parsed = parseYaml(content);
+			if (!parsed?.views || !Array.isArray(parsed.views)) return null;
+
+			// Find the view that matches this view's type
+			// Subclasses define `type` (e.g., "tasknotesTaskList")
+			const myType = (this as any).type as string;
+			const viewIndex = parsed.views.findIndex(
+				(v: any) => v?.type === myType
+			);
+			const matchingView = viewIndex >= 0 ? parsed.views[viewIndex] : null;
+
+			if (!matchingView) return null;
+
+			return {
+				viewFieldMapping: matchingView.tnFieldMapping || undefined,
+				baseId: parsed.tnBaseId || undefined,
+				viewId: matchingView.tnViewId || undefined,
+				viewIndex,
+			};
+		} catch {
+			return null;
+		}
+	}
+
+	/**
+	 * Resolve and cache the view's field mapping for read-path fallback.
+	 * Call at the start of render() so identifyTaskNotesFromBasesData
+	 * can use it to resolve fields without per-task tracking properties.
+	 */
+	protected async resolveAndCacheViewMapping(): Promise<void> {
+		try {
+			const ctx = await this.resolveViewMappingContext();
+			this.cachedViewFieldMapping = ctx?.viewFieldMapping
+				? Object.fromEntries(
+					Object.entries(ctx.viewFieldMapping).filter(([, v]) => !!v)
+				)
+				: undefined;
+		} catch {
+			this.cachedViewFieldMapping = undefined;
+		}
 	}
 
 	// Abstract methods that subclasses must implement

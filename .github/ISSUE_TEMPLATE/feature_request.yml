@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest a new feature or enhancement for TaskNotes
+description: Suggest a new feature or enhancement for TaskNotes (fork)
 title: "[FR]: "
 labels: ["enhancement"]
 body:
@@ -8,13 +8,64 @@ body:
       value: |
         Thanks for suggesting a new feature!
 
-        Please provide as much detail as possible. 
+        This fork adds notifications, bulk tasking, convert-to-task, device identity, and per-view property mapping on top of upstream TaskNotes. Your request might already be on the [roadmap](https://cybersader.github.io/tasknotes/contributing/) -- check before submitting.
 
   - type: textarea
-    id: description
+    id: problem
     attributes:
-      label: Feature Description
-      description: Please describe your feature request
+      label: Problem or Use Case
+      description: What problem does this feature solve? What workflow does it improve?
+      placeholder: "I often need to reschedule 20+ tasks at once, but currently I have to open each task individually..."
     validations:
       required: true
 
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How do you envision this working? Be as specific or as general as you like.
+      placeholder: "A 'Reschedule all' button in the bulk edit action bar that lets me pick a new date and apply it to every selected task..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you tried any workarounds? Are there other approaches that could solve this?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature Area
+      description: Which part of TaskNotes does this relate to?
+      options:
+        - Task creation / editing
+        - Bulk tasking (generate / convert / edit)
+        - Views (Bases, Upcoming, Kanban, etc.)
+        - Notifications / reminders
+        - Team & attribution (device identity, person/group notes)
+        - Property system (custom properties, user fields, per-view mapping)
+        - Inline tasks (overlays, conversion, relationships widget)
+        - Settings / configuration
+        - NLP / natural language processing
+        - Calendar / external integrations
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Screenshots, mockups, links to related issues, or anything else that helps explain your request.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have checked the [roadmap / contributing page](https://cybersader.github.io/tasknotes/contributing/) for planned features
+          required: false

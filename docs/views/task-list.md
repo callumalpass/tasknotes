@@ -1,10 +1,23 @@
 # Task List View
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Show sorting the task list by priority descending, then grouping by status
+Show adding a filter in the .base file YAML → task list updates live
+-->
 
 The Task List View displays tasks in a scrollable list format with filtering, sorting, and grouping capabilities. In TaskNotes v4, this view operates as a Bases view configured through YAML.
 This view is optimized for high task volume and explicit filter definitions.
 
-![Task List View](../assets/views-tasks-list.png)
+![Task List View](../assets/task-list/views-tasks-list.png)
+
+> [!info] No implicit task filter
+> The `tasknotesTaskList` view type does **not** impose its own filter on top of the `.base` file's `filters:` block. It renders whatever items the Bases engine returns. This means you can use it to display non-task notes too -- for example, a list of documents eligible for conversion. If your view shows zero items, check your `.base` filter YAML rather than assuming `isTask` or the `task` tag is required.
 
 ## Bases Architecture
 
@@ -75,6 +88,38 @@ filters:
 ```
 Start with one or two simple filters, verify results, then layer complexity. Incremental edits are much easier to debug than large one-shot query rewrites.
 
+### How Card Rendering Works
+
+> [!info] `order:` and card display
+> In **table** views, the `order:` array directly controls which columns appear. In **task card** views (`tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`), `order:` serves a different role — it tells the card renderer which properties are "visible." The card renderer uses this list to decide whether to show elements like the status dot, priority indicator, and due date badge on each card.
+>
+> Obsidian's Bases plugin designed `order:` for table column control. TaskNotes reuses it for card views, but the connection between `order:` and what appears on a task card is not obvious from the Bases UI alone.
+
+**Core property auto-injection:** Task card views automatically include **status**, **priority**, and **due** in the visible property set at render time, even if your `order:` list omits them. This ensures the three core card elements always appear:
+
+- **Status dot** — colored circle (left edge of card) showing the task's current status
+- **Priority indicator** — colored dot reflecting the priority level
+- **Due date badge** — date display with relative formatting ("today", "overdue", etc.)
+
+This injection is read-only — it does not modify your `.base` file or the `order:` config. Switching between view types (e.g., table and task list) within the same `.base` file is safe; the table view still reads the original `order:` without the injected properties.
+
+**What `order:` still controls on cards:** Properties beyond the three core fields — such as `note.scheduled`, `note.projects`, `note.contexts`, `file.tags`, and `file.tasks` (checklist progress) — only appear on cards when they are listed in `order:`. Adding or removing these from `order:` (via YAML or the Bases property picker) changes what metadata is shown on each card.
+
+**Recommended `order:` for task card views:**
+```yaml
+order:
+  - note.status
+  - note.priority
+  - note.due
+  - note.scheduled
+  - note.projects
+  - note.contexts
+  - file.tags
+  - file.tasks
+```
+
+Including the core properties in `order:` is not required for card display (they are auto-injected), but it keeps them visible in the Bases property picker for reordering alongside your other fields.
+
 ### Property Mapping
 
 TaskNotes properties are accessed in Bases YAML using these paths:
@@ -97,6 +142,8 @@ TaskNotes properties are accessed in Bases YAML using these paths:
 | Modified | `file.mtime` | File modification date |
 
 The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Task Properties`). The table above shows default mappings.
+
+<!-- TODO GIF: Sorting the task list by priority descending, then grouping by status -->
 
 ## Filtering and Sorting
 
@@ -228,6 +275,10 @@ To recreate a v3 saved view:
 4. Save the file
 
 The v3 FilterBar UI component no longer exists - all configuration is done through YAML editing.
+
+<!-- GIF: Adding a filter in the .base file YAML and seeing the task list update live -->
+
+![Task list with applied filters](../assets/task-list/screenshot-tasks-list.png)
 
 ## Task Actions
 

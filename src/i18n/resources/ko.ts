@@ -967,8 +967,8 @@ export const ko: TranslationTree = {
 				filtersOn: "필터 켜짐",
 			},
 			titleCard: {
-				storeTitleInFilename: "파일명에 제목 저장:",
-				storedInFilename: "파일명에 저장됨",
+				storeTitleInFilename: "제목을 파일명으로 사용：",
+				storedInFilename: "제목이 파일명",
 				filenameUpdatesWithTitle: "작업 제목이 변경되면 파일명이 자동으로 업데이트됩니다.",
 				filenameFormat: "파일명 형식:",
 				customTemplate: "사용자 지정 템플릿:",
@@ -1166,7 +1166,7 @@ export const ko: TranslationTree = {
 				header: "작업 파일명",
 				description: "생성 시 작업 파일 이름 지정 방법을 설정합니다.",
 				storeTitleInFilename: {
-					name: "파일명에 제목 저장",
+					name: "제목을 파일명으로 사용",
 					description: "작업 제목을 파일명으로 사용. 작업 제목이 변경되면 파일명이 업데이트됩니다 (권장).",
 				},
 				filenameFormat: {

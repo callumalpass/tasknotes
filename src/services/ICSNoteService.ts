@@ -106,7 +106,7 @@ export class ICSNoteService {
 			// Timed event: store local wall-clock without seconds
 			return format(start, "yyyy-MM-dd'T'HH:mm");
 		} catch (error) {
-			console.warn("Failed to compute scheduled from ICS event start:", {
+			this.plugin.debugLog.warn('ICSNote', 'Failed to compute scheduled from ICS event start:', {
 				start: icsEvent.start,
 				error,
 			});
@@ -144,7 +144,7 @@ export class ICSNoteService {
 			const endDate = new Date(endDateStr);
 			return format(endDate, "yyyy-MM-dd'T'HH:mm");
 		} catch (error) {
-			console.warn("Failed to compute due from ICS event end:", {
+			this.plugin.debugLog.warn('ICSNote', 'Failed to compute due from ICS event end:', {
 				end: icsEvent.end,
 				error,
 			});
@@ -268,7 +268,7 @@ export class ICSNoteService {
 						frontmatter = { ...frontmatter, ...processed.frontmatter };
 						bodyContent = processed.body || bodyContent;
 					} else {
-						console.warn(`ICS note template not found: ${templatePath}`);
+						this.plugin.debugLog.warn('ICSNote', `ICS note template not found: ${templatePath}`);
 						new Notice(
 							this.translate("services.icsNote.notices.templateNotFound", {
 								path: templatePath,
@@ -514,7 +514,7 @@ export class ICSNoteService {
 			// Return duration only if it's positive and reasonable (less than 24 hours)
 			return durationMinutes > 0 && durationMinutes < 1440 ? durationMinutes : undefined;
 		} catch (error) {
-			console.warn("Error calculating event duration:", error);
+			this.plugin.debugLog.warn('ICSNote', 'Error calculating event duration:', error);
 			return undefined;
 		}
 	}

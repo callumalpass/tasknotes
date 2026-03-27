@@ -1,0 +1,178 @@
+/**
+ * Bases Notification Modal Styles
+ *
+ * Rich modal UI for displaying Bases query results
+ * with action buttons (Open, Complete, Snooze, Dismiss).
+ */
+
+/* Modal container */
+.tn-notification-modal {
+	padding: var(--size-4-4);
+	max-width: 500px;
+}
+
+/* Header */
+.tn-notification-modal__header {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-1);
+	margin-bottom: var(--size-4-4);
+	padding-bottom: var(--size-4-3);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tn-notification-modal__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-radius: var(--radius-m);
+	margin-bottom: var(--size-4-2);
+}
+
+.tn-notification-modal__icon svg {
+	width: 24px;
+	height: 24px;
+}
+
+.tn-notification-modal__title {
+	margin: 0;
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-semibold);
+	color: var(--text-normal);
+}
+
+.tn-notification-modal__subtitle {
+	margin: 0;
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+/* Items list */
+.tn-notification-modal__items {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	margin-bottom: var(--size-4-4);
+}
+
+/* Individual item */
+.tn-notification-modal__item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--size-4-3);
+	padding: var(--size-4-2) var(--size-4-3);
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.tn-notification-modal__item:hover {
+	background: var(--background-secondary-alt);
+}
+
+.tn-notification-modal__item--completed {
+	opacity: 0.5;
+	text-decoration: line-through;
+	transform: translateX(10px);
+}
+
+.tn-notification-modal__item-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.tn-notification-modal__item-title {
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tn-notification-modal__item-context {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	margin-top: 2px;
+}
+
+/* Item actions */
+.tn-notification-modal__item-actions {
+	display: flex;
+	gap: var(--size-4-1);
+	flex-shrink: 0;
+}
+
+/* "X more items" indicator */
+.tn-notification-modal__more {
+	text-align: center;
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	padding: var(--size-4-2);
+}
+
+.tn-notification-modal__more-link {
+	color: var(--text-accent);
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.tn-notification-modal__more-link:hover {
+	text-decoration: underline;
+	color: var(--text-accent-hover);
+}
+
+/* Footer */
+.tn-notification-modal__footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--size-4-2);
+	padding-top: var(--size-4-3);
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Buttons */
+.tn-notification-modal__btn {
+	padding: var(--size-4-1) var(--size-4-3);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+	transition: background 0.15s ease;
+	border: none;
+}
+
+.tn-notification-modal__btn--primary {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.tn-notification-modal__btn--primary:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.tn-notification-modal__btn--secondary {
+	background: var(--background-modifier-border);
+	color: var(--text-normal);
+}
+
+.tn-notification-modal__btn--secondary:hover {
+	background: var(--background-modifier-border-hover);
+}
+
+/* Icon-only button styling */
+.tn-notification-modal__item-actions .tn-notification-modal__btn svg {
+	width: 14px;
+	height: 14px;
+}
+
+.tn-notification-modal__item-actions .tn-notification-modal__btn {
+	padding: var(--size-4-1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+}

@@ -1,10 +1,24 @@
 # Calendar Views
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Show switching between month, week, and day views using calendar toolbar buttons
+Show dragging a task from one date to another in month view to reschedule
+
+CLEANUP (dragging tasks changes due dates):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 TaskNotes provides two calendar-based views: the **Mini Calendar** and the **Calendar View**. Both operate as Bases views (`.base` files) and require the Bases core plugin to be enabled in Obsidian.
 Mini Calendar is date-density and navigation focused, while Calendar View is scheduling focused.
 
-![Calendar Month View](../assets/views-calendar-month.png)
+![Calendar Month View](../assets/calendar-views/views-calendar-month.png)
 
 ## Bases View Architecture
 
@@ -20,7 +34,7 @@ This architecture makes calendar behavior auditable. Filters, formulas, and disp
 
 The Mini Calendar displays a month-based view that shows which days contain tasks or other dated notes. It provides navigation and an overview of your task distribution across time.
 
-![Mini Calendar View](../assets/views-mini-calendar.png)
+![Mini Calendar View](../assets/views/views-mini-calendar.png)
 
 ### Features
 
@@ -34,6 +48,10 @@ Mini Calendar is commonly used as an entry view: select a date, then open Task L
 ## Calendar View
 
 The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times.
+
+<!-- GIF: Switching between month, week, and day views using the calendar toolbar buttons -->
+
+![Calendar month view with tasks on dates](../assets/calendar-views/screenshot-calendar-month.png)
 
 ### View Modes
 
@@ -49,7 +67,7 @@ View modes can be switched within a single `.base` file based on planning horizo
 
 | Week View | Day View | Year View |
 |-----------|----------|-----------|
-| ![Week View](../assets/views-calendar-week.png) | ![Day View](../assets/views-calendar-day.png) | ![Year View](../assets/views-calendar-year.png) |
+| ![Week View](../assets/calendar-views/views-calendar-week.png) | ![Day View](../assets/views/views-calendar-day.png) | ![Year View](../assets/views/views-calendar-year.png) |
 
 ### Performance Improvements
 
@@ -79,6 +97,10 @@ The Custom Days view is particularly useful for:
 1. **Select the View**: Choose "Custom Days" from the calendar toolbar alongside Month, Week, Day, and Year views
 2. **Adjust Day Count**: Navigate to Settings > Calendar > Custom view day count and use the slider to select 2-10 days
 3. **Set as Default**: Optionally set "Custom Days" as your default view in Settings > Calendar > Default view
+
+<!-- GIF: Dragging a task from one date to another in month view to reschedule it -->
+
+![Calendar month view for task scheduling](../assets/calendar-views/screenshot-calendar-month.png)
 
 ### Recurring Task Support
 
@@ -148,6 +170,9 @@ The **Span tasks between scheduled and due dates** option provides a visual repr
 This option is useful for project planning and visualizing how long tasks are expected to take, similar to Gantt chart-style views.
 
 These display options are preserved when you save a view, allowing you to create specialized calendar views that show only specific types of events and maintain those preferences across sessions.
+
+> [!note] Core card properties are always rendered
+> The Calendar view automatically includes **status**, **priority**, and **due** at render time so the status dot, priority indicator, and due date badge always appear on task cards — even if your `order:` list omits them. This does not modify your `.base` file. See [How Card Rendering Works](task-list.md#how-card-rendering-works) for the full explanation.
 
 ### OAuth Calendar Integration
 

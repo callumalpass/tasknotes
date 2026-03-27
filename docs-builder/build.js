@@ -45,9 +45,100 @@ function slugify(str) {
     .replace(/-+/g, '-');
 }
 
+// ── Obsidian callout preprocessor ────────────────────────────────────
+// Converts > [!type] Title\n> content  →  styled HTML before marked runs.
+// Supports foldable (+/-) syntax: > [!type]+ or > [!type]-
+
+const CALLOUT_ICONS = {
+  note:     '&#9998;',   // pencil
+  tip:      '&#128161;', // lightbulb
+  hint:     '&#128161;',
+  important:'&#128161;',
+  info:     '&#8505;',   // info
+  warning:  '&#9888;',   // warning triangle
+  caution:  '&#9888;',
+  attention:'&#9888;',
+  danger:   '&#9889;',   // zap
+  error:    '&#9889;',
+  bug:      '&#128027;', // bug
+  example:  '&#128220;', // list
+  quote:    '&#10078;',  // quote mark
+  cite:     '&#10078;',
+  abstract: '&#128203;', // clipboard
+  summary:  '&#128203;',
+  tldr:     '&#128203;',
+  todo:     '&#9745;',   // checkbox
+  success:  '&#10004;',  // check
+  check:    '&#10004;',
+  done:     '&#10004;',
+  failure:  '&#10008;',  // x
+  fail:     '&#10008;',
+  missing:  '&#10008;',
+  question: '&#10067;',  // question
+  help:     '&#10067;',
+  faq:      '&#10067;',
+};
+
+// Map types to color classes
+const CALLOUT_COLORS = {
+  tip: 'green', hint: 'green', important: 'green',
+  success: 'green', check: 'green', done: 'green',
+  info: 'blue', note: 'blue', todo: 'blue',
+  abstract: 'cyan', summary: 'cyan', tldr: 'cyan',
+  question: 'yellow', help: 'yellow', faq: 'yellow',
+  warning: 'orange', caution: 'orange', attention: 'orange',
+  danger: 'red', error: 'red', bug: 'red',
+  failure: 'red', fail: 'red', missing: 'red',
+  example: 'purple',
+  quote: 'gray', cite: 'gray',
+};
+
+function preprocessCallouts(md) {
+  // Extract fenced code blocks so the callout regex doesn't touch them
+  const codeBlocks = [];
+  const placeholder = (i) => `\x00CODEBLOCK${i}\x00`;
+
+  // Pull out ``` and ~~~  fenced blocks (and ```` four-tick, etc.)
+  let safeMd = md.replace(/^(`{3,}|~{3,}).*\n[\s\S]*?^\1\s*$/gm, (m) => {
+    codeBlocks.push(m);
+    return placeholder(codeBlocks.length - 1);
+  });
+
+  // Convert callout blocks in the remaining markdown
+  safeMd = safeMd.replace(
+    /^(?:> *)\[!(\w+)\]([+-])?(?: (.+))?\n((?:^>.*\n?)*)/gm,
+    (_, type, fold, title, body) => {
+      const t = type.toLowerCase();
+      const displayTitle = title || type.charAt(0).toUpperCase() + type.slice(1);
+      const icon = CALLOUT_ICONS[t] || '&#8505;';
+      const color = CALLOUT_COLORS[t] || 'blue';
+      const content = body
+        .replace(/^> ?/gm, '')  // strip leading > from each line
+        .trim();
+
+      // If foldable, use <details>; otherwise a static div
+      if (fold) {
+        const open = fold === '+' ? ' open' : '';
+        return `<div class="callout callout--${color}"${open}>` +
+          `<details${open}><summary class="callout__title">` +
+          `<span class="callout__icon">${icon}</span> ${displayTitle}</summary>` +
+          `<div class="callout__body">\n\n${content}\n\n</div></details></div>\n\n`;
+      }
+
+      return `<div class="callout callout--${color}">` +
+        `<div class="callout__title"><span class="callout__icon">${icon}</span> ${displayTitle}</div>` +
+        `<div class="callout__body">\n\n${content}\n\n</div></div>\n\n`;
+    }
+  );
+
+  // Restore code blocks
+  return safeMd.replace(/\x00CODEBLOCK(\d+)\x00/g, (_, i) => codeBlocks[Number(i)]);
+}
+
 function parseMarkdown(raw) {
   const { data: fm, content } = matter(raw);
-  let html = marked.parse(content);
+  const preprocessed = preprocessCallouts(content);
+  let html = marked.parse(preprocessed);
 
   // Add IDs to headings for TOC / anchor links
   html = html.replace(/<(h[2-4])([^>]*)>([\s\S]*?)<\/h[2-4]>/g, (_, tag, attrs, inner) => {
@@ -58,6 +149,19 @@ function parseMarkdown(raw) {
 
   // Wrap tables so wide ones scroll horizontally rather than overflowing into the TOC
   html = html.replace(/(<table[\s\S]*?<\/table>)/g, '<div class="table-wrap">$1</div>');
+
+  // Convert ```mermaid code blocks into <pre class="mermaid"> for client-side rendering
+  html = html.replace(
+    /<pre><code class="hljs language-mermaid">([\s\S]*?)<\/code><\/pre>/g,
+    (_, code) => {
+      // Strip only hljs <span> wrappers, then decode HTML entities
+      const decoded = code
+        .replace(/<\/?span[^>]*>/g, '')   // remove hljs spans only
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"');
+      return `<pre class="mermaid">${decoded}</pre>`;
+    }
+  );
 
   return { fm, html };
 }
@@ -90,7 +194,8 @@ function resolveAssetPaths(html, mdPath) {
   return html.replace(/(<(?:img|source|video)[^>]+src=")([^"]+)(")/g, (_, pre, src, post) => {
     if (/^(https?:\/\/|\/|data:)/.test(src)) return _;
     const resolved = path.posix.resolve(pageDir || '/', src);
-    return pre + resolved + post;
+    // Prefix with BASE_PATH for subdirectory hosting
+    return pre + BASE_PATH + resolved.replace(/^\/+/, '') + post;
   });
 }
 
@@ -115,7 +220,11 @@ function resolveMarkdownLinks(html, mdPath) {
 function extractTitle(html, fm) {
   if (fm.title) return fm.title;
   const m = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
-  return m ? m[1].replace(/<[^>]+>/g, '') : 'Untitled';
+  if (!m) return 'Untitled';
+  // Strip HTML tags, then decode entities so escHtml() doesn't double-encode
+  return m[1].replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
 
 // Strip the first <h1> — rendered separately in the page header
@@ -142,7 +251,16 @@ function buildToc(html) {
 
 // ── Navigation ──────────────────────────────────────────────────────
 
+const BASE_PATH = process.env.BASE_PATH || '/';
+
+/** URL for HTML links (includes BASE_PATH prefix) */
 function mdPathToUrl(p) {
+  if (p === 'index.md') return BASE_PATH;
+  return BASE_PATH + p.replace(/\.md$/, '/');
+}
+
+/** Path for output directory (no BASE_PATH — the hosting handles that) */
+function mdPathToOutputUrl(p) {
   if (p === 'index.md') return '/';
   return '/' + p.replace(/\.md$/, '/');
 }
@@ -272,7 +390,8 @@ async function main() {
 
     const { fm, html: rawHtml } = parseMarkdown(raw);
     const html     = resolveMarkdownLinks(resolveAssetPaths(rawHtml, mdPath), mdPath);
-    const url      = mdPathToUrl(mdPath);
+    const url      = mdPathToUrl(mdPath);       // For links (includes BASE_PATH)
+    const outUrl   = mdPathToOutputUrl(mdPath);  // For filesystem output (no BASE_PATH)
     const title    = extractTitle(html, fm);
     const body     = stripH1(html);
     const toc      = buildToc(body);
@@ -281,13 +400,14 @@ async function main() {
     const page = template
       .replaceAll('{{title}}',      escHtml(title))
       .replaceAll('{{site_title}}', 'TaskNotes')
+      .replaceAll('{{base_path}}',  BASE_PATH)
       .replaceAll('{{nav}}',        navHtml)
       .replaceAll('{{toc}}',        toc)
       .replaceAll('{{content}}',    `<h1 class="page-title">${escHtml(title)}</h1>\n${body}`);
 
-    const outDir = url === '/'
+    const outDir = outUrl === '/'
       ? DIST
-      : path.join(DIST, ...url.split('/').filter(Boolean));
+      : path.join(DIST, ...outUrl.split('/').filter(Boolean));
     await ensureDir(outDir);
     await fs.writeFile(path.join(outDir, 'index.html'), page);
     built++;

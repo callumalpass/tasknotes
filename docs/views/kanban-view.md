@@ -1,10 +1,24 @@
 # Kanban View
 
+<!--
+Recording Script
+SETUP:
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+  Reload plugin in Obsidian
+
+Show dragging a task card from "Open" column to "In Progress" → status updates
+Show kanban board with swimlanes (priority rows, status columns)
+
+CLEANUP (dragging changes task status):
+  cd .obsidian/plugins/tasknotes
+  node scripts/generate-test-data.mjs --clean   # or: bun run generate-test-data:clean
+-->
 
 The Kanban View displays tasks as cards organized in columns, where each column represents a distinct value of a grouped property.
 Kanban emphasizes state transitions and drag operations over dense list scanning.
 
-![Kanban View](../assets/views-kanban.png)
+![Kanban View](../assets/views/views-kanban.png)
 
 ## Configuration
 
@@ -29,6 +43,13 @@ Access these options through the Bases view settings panel:
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
+> [!note] Core card properties are always rendered
+> The Kanban view automatically includes **status**, **priority**, and **due** at render time so the status dot, priority indicator, and due date badge always appear on task cards — even if your `order:` list omits them. This does not modify your `.base` file. See [How Card Rendering Works](task-list.md#how-card-rendering-works) for the full explanation.
+
+<!-- GIF: Dragging a task card from the "Open" column to "In Progress" and seeing the status update -->
+
+![Kanban board with task cards in status columns](../assets/kanban-view/screenshot-kanban.png)
+
 ## Interface Layout
 
 ### Standard Layout
@@ -41,6 +62,10 @@ Each column includes:
 - Drag-and-drop functionality for reordering columns or moving tasks between columns
 
 ### Swimlane Layout
+
+<!-- SCREENSHOT: Kanban board with swimlanes showing priority rows and status columns -->
+
+![Kanban board showing status columns with task cards](../assets/kanban-view/screenshot-kanban.png)
 
 When a `swimLane` property is configured, the board displays a grid layout. The horizontal axis represents columns (groupBy values), and the vertical axis represents swimlanes.
 

@@ -32,6 +32,7 @@ export class TaskListView extends BasesViewBase {
 	private collapsedSubGroups = new Set<string>(); // Track collapsed sub-group keys
 	private subGroupPropertyId: string | null = null; // Property ID for sub-grouping
 	private configLoaded = false; // Track if we've successfully loaded config
+	private _currentDataItems: BasesDataItem[] = []; // Set during render(), used by sub-renders
 
 	/**
 	 * Threshold for enabling virtual scrolling in task list view.
@@ -43,6 +44,7 @@ export class TaskListView extends BasesViewBase {
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.ensureCoreCardProperties = true;
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
 		(this.dataAdapter as any).basesView = this;
@@ -78,7 +80,7 @@ export class TaskListView extends BasesViewBase {
 			this.configLoaded = true;
 		} catch (e) {
 			// Use defaults
-			console.warn('[TaskListView] Failed to parse config:', e);
+			this.plugin.debugLog.warn('TaskListView', 'Failed to parse config:', e);
 		}
 	}
 
@@ -126,11 +128,16 @@ export class TaskListView extends BasesViewBase {
 
 			// Extract data using adapter (adapter now uses this as basesView)
 			const dataItems = this.dataAdapter.extractDataItems();
+			// Store for sub-render methods to update lastFilteredDataItems
+			this._currentDataItems = dataItems;
 
 			// Compute Bases formulas for TaskNotes items
 			await this.computeFormulas(dataItems);
 
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			// Resolve view field mapping for read-path fallback (tasks without tracking props)
+			await this.resolveAndCacheViewMapping();
+
+			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 
 			if (taskNotes.length === 0) {
 				this.clearAllTaskElements();
@@ -176,16 +183,23 @@ export class TaskListView extends BasesViewBase {
 	 * This ensures formulas have access to TaskNote-specific properties.
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		// Access formulas through the data context
-		const ctxFormulas = (this.data as any)?.ctx?.formulas;
+		// Access formulas through the controller's context (not this.data — ctx lives on controller)
+		const ctxFormulas = this.getController()?.ctx?.formulas;
 		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const itemFormulaResults = item.basesData?.formulaResults;
-			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+			if (!item.basesData) continue;
+			// Initialize formula results structure if Bases hasn't done so yet
+			// (happens for freshly re-indexed items after convert-to-task)
+			if (!item.basesData.formulaResults) {
+				item.basesData.formulaResults = { cachedFormulaOutputs: {} };
+			} else if (!item.basesData.formulaResults.cachedFormulaOutputs) {
+				item.basesData.formulaResults.cachedFormulaOutputs = {};
+			}
+			const itemFormulaResults = item.basesData.formulaResults;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];
@@ -226,6 +240,10 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
+
+		// Store filtered items for bulk creation (matches what user sees)
+		const filteredPaths = new Set(filteredTasks.map(t => t.path));
+		this.lastFilteredDataItems = this._currentDataItems.filter(item => item.path != null && filteredPaths.has(item.path));
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -456,6 +474,10 @@ export class TaskListView extends BasesViewBase {
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
 
+		// Store filtered items for bulk creation (matches what user sees)
+		const filteredPaths = new Set(filteredTasks.map(t => t.path));
+		this.lastFilteredDataItems = this._currentDataItems.filter(item => item.path != null && filteredPaths.has(item.path));
+
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
 			this.clearAllTaskElements();
@@ -541,6 +563,10 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
+
+		// Store filtered items for bulk creation (matches what user sees)
+		const filteredPaths = new Set(filteredTasks.map(t => t.path));
+		this.lastFilteredDataItems = this._currentDataItems.filter(item => item.path != null && filteredPaths.has(item.path));
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -870,9 +896,10 @@ export class TaskListView extends BasesViewBase {
 	private registerContainerListeners(): void {
 		if (!this.itemsContainer || this.containerListenersRegistered) return;
 
-		// Register click listener for group header collapse/expand using Component API
+		// Register click and context menu listeners using Component API
 		// This automatically cleans up on component unload
 		this.registerDomEvent(this.itemsContainer, "click", this.handleItemClick);
+		this.registerDomEvent(this.itemsContainer, "contextmenu", this.handleItemContextMenu);
 		this.containerListenersRegistered = true;
 	}
 
@@ -950,7 +977,7 @@ export class TaskListView extends BasesViewBase {
 
 		const dataItems = this.dataAdapter.extractDataItems();
 		await this.computeFormulas(dataItems);
-		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 		const groups = this.dataAdapter.getGroupedData();
 
 		// Build flattened list of items using shared method
@@ -1452,8 +1479,19 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private buildTaskSignature(task: TaskInfo): string {
-		// Fast signature using only fields that affect rendering
-		return `${task.path}|${task.title}|${task.status}|${task.priority}|${task.due}|${task.scheduled}|${task.recurrence}|${task.archived}|${task.complete_instances?.join(',')}|${task.reminders?.length}|${task.blocking?.length}|${task.blockedBy?.length}`;
+		// Fast signature using only fields that affect rendering.
+		// Include isTask + formula outputs so cards re-render when formulas
+		// settle after convert-to-task (Bases re-indexes the file, formula
+		// cache is stale on the first render, then catches up).
+		let formulaSig = "";
+		const cached = task.basesData?.formulaResults?.cachedFormulaOutputs;
+		if (cached && typeof cached === "object") {
+			for (const key of Object.keys(cached)) {
+				const v = cached[key];
+				formulaSig += `|f.${key}=${v != null ? String(v).substring(0, 50) : ""}`;
+			}
+		}
+		return `${task.path}|${task.title}|${task.status}|${task.priority}|${task.due}|${task.scheduled}|${task.recurrence}|${task.archived}|${task.complete_instances?.join(',')}|${task.reminders?.length}|${task.blocking?.length}|${task.blockedBy?.length}|${task.isTask}${formulaSig}`;
 	}
 }
 

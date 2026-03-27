@@ -1,0 +1,588 @@
+/**
+ * UpcomingView - Todoist-style aggregated notification view
+ * Styles for the tasknotesUpcoming Bases view type
+ */
+
+/* Root container */
+.tn-upcoming-view {
+	background: var(--background-primary);
+}
+
+.tn-upcoming-items-container {
+	padding: 12px 16px;
+}
+
+/* ============================================
+   Agenda-Style Date Navigation
+   Layout: < > Today Refresh | Date Range | Y M W 3D D L
+   ============================================ */
+
+.tn-upcoming-nav {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 0 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	margin-bottom: 16px;
+	gap: 8px;
+}
+
+/* Left section: < > Today Refresh */
+.tn-upcoming-nav__left {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* Center section: date range label */
+.tn-upcoming-nav__center {
+	font-weight: 600;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+	text-align: center;
+	flex: 1;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Right section: Y M W 3D D L period buttons */
+.tn-upcoming-nav__right {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+/* Navigation buttons (Today, arrows, refresh) */
+.tn-upcoming-nav__button {
+	padding: 4px 8px;
+	border-radius: var(--radius-s);
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+	font-weight: 500;
+	transition: all 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.tn-upcoming-nav__button:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+/* Arrow buttons */
+.tn-upcoming-nav__arrow {
+	padding: 4px;
+}
+
+.tn-upcoming-nav__arrow svg {
+	width: 16px;
+	height: 16px;
+}
+
+/* Icon-only buttons (refresh) */
+.tn-upcoming-nav__icon-btn {
+	padding: 4px;
+}
+
+.tn-upcoming-nav__icon-btn svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* Period selector buttons (Y M W 3D D L) */
+.tn-upcoming-nav__period {
+	padding: 4px 8px;
+	border-radius: var(--radius-s);
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+	font-weight: 600;
+	transition: all 0.15s ease;
+	min-width: 24px;
+	text-align: center;
+}
+
+.tn-upcoming-nav__period:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.tn-upcoming-nav__period--active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.tn-upcoming-nav__period--active:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-on-accent);
+}
+
+/* Legacy tabs (hidden, kept for backward compatibility) */
+.tn-upcoming-tabs {
+	display: none;
+}
+
+/* Time category sections */
+.tn-upcoming-section {
+	margin-bottom: 8px;
+}
+
+/* Section header - Todoist style: [chevron] [title] [count] ... [reschedule] */
+.tn-upcoming-section__header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 0;
+	cursor: pointer;
+	user-select: none;
+}
+
+.tn-upcoming-section__header:hover .tn-upcoming-section__collapse {
+	color: var(--text-normal);
+}
+
+/* Collapse chevron - FIRST element (far left) */
+.tn-upcoming-section__collapse {
+	display: flex;
+	align-items: center;
+	color: var(--text-faint);
+	transition: color 0.15s ease;
+}
+
+.tn-upcoming-section__collapse svg {
+	width: 16px;
+	height: 16px;
+}
+
+/* Section title */
+.tn-upcoming-section__title {
+	font-weight: 600;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+}
+
+/* Count */
+.tn-upcoming-section__count {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+/* Spacer pushes reschedule to right */
+.tn-upcoming-section__spacer {
+	flex: 1;
+}
+
+/* Reschedule link on far right (Todoist style - BOLD) */
+.tn-upcoming-section__reschedule {
+	color: var(--text-accent);
+	font-size: var(--font-ui-small);
+	font-weight: 600;
+	cursor: pointer;
+	padding: 4px 12px;
+	border-radius: var(--radius-s);
+	background: transparent;
+	transition: all 0.15s ease;
+}
+
+.tn-upcoming-section__reschedule:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-accent);
+}
+
+/* Section variants - color-coded headers matching Todoist-style date colors */
+.tn-upcoming-section--overdue .tn-upcoming-section__title {
+	color: var(--text-error);
+}
+
+.tn-upcoming-section--today .tn-upcoming-section__title {
+	color: var(--color-green);
+}
+
+.tn-upcoming-section--tomorrow .tn-upcoming-section__title {
+	color: var(--color-orange);
+}
+
+/* Visual separator line after header */
+.tn-upcoming-section__header {
+	border-bottom: 1px solid var(--background-modifier-border);
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+}
+
+/* Section content */
+.tn-upcoming-section__content {
+	padding-left: 22px; /* Align with title after chevron */
+}
+
+/* Individual items - Todoist style */
+.tn-upcoming-item {
+	padding: 12px 0;
+	border-bottom: 1px solid var(--background-modifier-border-hover);
+	transition: background 0.1s ease;
+}
+
+.tn-upcoming-item:hover {
+	background: var(--background-secondary);
+	margin: 0 -8px;
+	padding: 12px 8px;
+	border-radius: var(--radius-s);
+	border-bottom-color: transparent;
+}
+
+/* Row 1: indicator + title + avatars */
+.tn-upcoming-item__row1 {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Row 2: date/time (left) + context/project (right) */
+.tn-upcoming-item__row2 {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-left: 26px; /* Align with title (past indicator) */
+	margin-top: 3px;
+	min-height: 18px;
+}
+
+/* Checkbox/indicator */
+.tn-upcoming-item__indicator {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+}
+
+.tn-upcoming-item__indicator svg {
+	width: 18px;
+	height: 18px;
+}
+
+.tn-upcoming-item__indicator--task {
+	color: var(--text-muted);
+	cursor: pointer;
+	border: 2px solid var(--text-muted);
+	border-radius: 50%;
+	background: transparent;
+	transition: all 0.15s ease;
+}
+
+.tn-upcoming-item__indicator--task svg {
+	display: none; /* Hide circle SVG — use CSS border as the indicator */
+}
+
+.tn-upcoming-item__indicator--task:hover {
+	border-color: var(--next-status-color, var(--interactive-accent));
+	background: color-mix(in srgb, var(--next-status-color, var(--interactive-accent)) 20%, transparent);
+}
+
+/* Completed: filled circle with status color */
+.tn-upcoming-item__indicator--completed {
+	background-color: var(--status-color, var(--text-muted));
+	border-color: var(--status-color, var(--text-muted));
+}
+
+/* Icon mode: show status icon instead of border circle */
+.tn-upcoming-item__indicator--icon {
+	border: none;
+	background: transparent;
+}
+
+.tn-upcoming-item__indicator--icon svg {
+	display: flex;
+	width: 18px;
+	height: 18px;
+}
+
+.tn-upcoming-item__indicator--icon:hover svg {
+	color: var(--next-status-color, var(--interactive-accent));
+}
+
+.tn-upcoming-item__indicator--note {
+	color: var(--text-faint);
+}
+
+.tn-upcoming-item__indicator--note svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* Title */
+.tn-upcoming-item__title {
+	flex: 1;
+	cursor: pointer;
+	color: var(--text-normal);
+	font-size: var(--font-ui-small);
+	line-height: 1.4;
+}
+
+.tn-upcoming-item__title:hover {
+	color: var(--text-accent);
+}
+
+/* Avatars container in row 1 (right-aligned) */
+.tn-upcoming-item__avatars {
+	flex-shrink: 0;
+	margin-left: auto;
+}
+
+/* Context/project - right side of row 2 */
+.tn-upcoming-item__context {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 40%;
+	text-align: right;
+	margin-left: auto;
+}
+
+/* Date/time - left side of row 2 */
+.tn-upcoming-item__date {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+/* Clock icon for time display */
+.tn-upcoming-item__date-icon {
+	display: inline-flex;
+	align-items: center;
+}
+
+.tn-upcoming-item__date-icon svg {
+	width: 12px;
+	height: 12px;
+}
+
+/* Time category color coding (Todoist-style) */
+.tn-upcoming-item__date--overdue {
+	color: var(--text-error); /* Red for overdue */
+}
+
+.tn-upcoming-item__date--today {
+	color: var(--color-green); /* Green for today */
+}
+
+.tn-upcoming-item__date--tomorrow {
+	color: var(--color-orange); /* Orange for tomorrow */
+}
+
+.tn-upcoming-item__date--thisWeek,
+.tn-upcoming-item__date--thisMonth {
+	color: var(--text-accent); /* Accent for this week/month */
+}
+
+.tn-upcoming-item__date--later,
+.tn-upcoming-item__date--noDueDate {
+	color: var(--text-muted); /* Muted for later/no date */
+}
+
+/* Add task button - Todoist style */
+.tn-upcoming-add-task {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+	padding-left: 4px; /* Subtle indent */
+	cursor: pointer;
+	color: var(--text-muted);
+	transition: color 0.15s ease;
+}
+
+.tn-upcoming-add-task:hover {
+	color: var(--interactive-accent);
+}
+
+.tn-upcoming-add-task__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+	font-weight: 300;
+	line-height: 1;
+	color: var(--interactive-accent);
+	border-radius: 50%;
+	transition: all 0.15s ease;
+}
+
+.tn-upcoming-add-task:hover .tn-upcoming-add-task__icon {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.tn-upcoming-add-task__text {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	transition: color 0.15s ease;
+}
+
+.tn-upcoming-add-task:hover .tn-upcoming-add-task__text {
+	color: var(--interactive-accent);
+}
+
+/* Empty state */
+.tn-upcoming-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 48px 24px;
+	text-align: center;
+}
+
+.tn-upcoming-empty__icon {
+	margin-bottom: 16px;
+	color: var(--text-success);
+}
+
+.tn-upcoming-empty__icon svg {
+	width: 48px;
+	height: 48px;
+}
+
+.tn-upcoming-empty__text {
+	font-size: var(--font-ui-large);
+	font-weight: 600;
+	color: var(--text-normal);
+	margin-bottom: 8px;
+}
+
+.tn-upcoming-empty__subtext {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+/* Error state */
+.tn-upcoming-error {
+	padding: 24px;
+	background: var(--background-modifier-error);
+	border-radius: var(--radius-m);
+	color: var(--text-error);
+}
+
+.tn-upcoming-error pre {
+	margin-top: 8px;
+	padding: 8px;
+	background: var(--background-primary);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	overflow-x: auto;
+}
+
+/* ============================================
+   Base Notification Items
+   Special styling for notification tasks (type: base-notification)
+   ============================================ */
+
+/* Base notification item - right-side accent delineation */
+.tn-upcoming-item--base-notification {
+	/* Remove gray background, keep transparent */
+	background: transparent;
+	/* Consistent padding to prevent jitter */
+	padding: 12px 0;
+	/* Right-side accent border for visual delineation - subtle color */
+	border-right: 3px solid var(--text-accent);
+	padding-right: 12px;
+	margin-right: -4px;
+	/* Standard bottom border */
+	border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+/* Override parent hover styles to prevent jitter - keep consistent dimensions */
+.tn-upcoming-item--base-notification:hover {
+	background: var(--background-secondary);
+	/* Keep same margins/padding as non-hover to prevent jitter */
+	margin: 0;
+	margin-right: -4px;
+	padding: 12px 0;
+	padding-right: 12px;
+	border-radius: 0;
+	/* Brighten the right accent on hover */
+	border-right: 3px solid var(--interactive-accent);
+	border-bottom-color: transparent;
+}
+
+/* Base notification right-side indicator: icon + count */
+.tn-upcoming-item__base-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.tn-upcoming-item__base-indicator svg {
+	width: 14px;
+	height: 14px;
+	color: var(--text-accent);
+}
+
+.tn-upcoming-item__base-indicator__count {
+	font-weight: 500;
+	color: var(--text-muted);
+}
+
+/* Make title slightly larger for base notifications */
+.tn-upcoming-item--base-notification .tn-upcoming-item__title {
+	font-weight: 500;
+}
+
+/* Base indicator in row 2 acts as context for base notifications */
+
+/* ============================================
+   Seen/Unseen State Indicators (Phase 8c)
+   Items marked as "seen" in the reminder queue
+   ============================================ */
+
+/* Seen items: muted styling to indicate user has acknowledged */
+.tn-upcoming-item--seen {
+	opacity: 0.6;
+}
+
+.tn-upcoming-item--seen .tn-upcoming-item__title {
+	color: var(--text-muted);
+	font-weight: normal;
+}
+
+.tn-upcoming-item--seen .tn-upcoming-item__indicator {
+	opacity: 0.5;
+}
+
+/* Seen badge (optional - can be enabled if users want explicit indicator) */
+.tn-upcoming-item--seen::after {
+	content: "✓";
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.tn-upcoming-item--seen:hover::after {
+	opacity: 1;
+}
+
+/* Position relative for the badge */
+.tn-upcoming-item--seen {
+	position: relative;
+}

@@ -1,9 +1,17 @@
 # Integrations Settings
 
+<!--
+Recording Script
+No test data setup needed — settings are static UI.
+
+Show the integrations settings tab
+Show a connected Google Calendar account with email, sync time, disconnect button
+-->
+
 These settings control the integration with other plugins and services, such as Bases and external calendars.
 
 
-![Integrations Settings](../assets/settings-integrations.png)
+![Integrations Settings](../assets/settings/settings-integrations.png)
 
 ## Bases Integration
 
@@ -27,6 +35,10 @@ Default mappings:
 Each command allows you to specify a custom `.base` file path and includes a reset button to restore the default path.
 
 **Create Default Files**: Button to generate all default `.base` files in the `TaskNotes/Views/` directory. Existing files are not overwritten.
+
+<!-- SCREENSHOT: OAuth calendar section showing a connected Google Calendar account with email, sync time, and disconnect button -->
+
+![Integrations settings showing calendar OAuth configuration](../assets/settings/screenshot-settings-integrations.png)
 
 ## OAuth Calendar Integration
 
@@ -78,8 +90,8 @@ HTTP API settings control the local server lifecycle, listening port, and reques
 
 Changes to API enablement or port require an Obsidian restart to take effect.
 
-!!! warning
-    If the authentication token is empty, API requests are unauthenticated. Set a token unless your environment is fully trusted.
+> [!warning]
+> If the authentication token is empty, API requests are unauthenticated. Set a token unless your environment is fully trusted.
 
 ## Webhooks
 

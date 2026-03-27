@@ -492,7 +492,7 @@ export class ICSSubscriptionService extends EventEmitter {
 						events.push(icsEvent);
 					}
 				} catch (eventError) {
-					console.warn("Failed to parse individual event:", eventError);
+					this.plugin.debugLog.warn('ICSSubscription', 'Failed to parse individual event:', eventError);
 				}
 			});
 

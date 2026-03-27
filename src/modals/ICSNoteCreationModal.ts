@@ -124,7 +124,7 @@ export class ICSNoteCreationModal extends Modal {
 		createButton.onclick = (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			console.log("Create button clicked");
+			this.plugin.debugLog.log('ICSNoteCreation', 'Create button clicked');
 			this.handleCreate();
 		};
 
@@ -134,7 +134,7 @@ export class ICSNoteCreationModal extends Modal {
 		cancelButton.onclick = (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			console.log("Cancel button clicked");
+			this.plugin.debugLog.log('ICSNoteCreation', 'Cancel button clicked');
 			this.close();
 		};
 

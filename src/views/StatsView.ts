@@ -244,7 +244,7 @@ export class StatsView extends ItemView {
 				results.forEach((result, index) => {
 					if (result.status === "rejected") {
 						const sections = ["overview", "today", "week", "month", "projects"];
-						console.warn(`Failed to update ${sections[index]} stats:`, result.reason);
+						this.plugin.debugLog.warn('StatsView', `Failed to update ${sections[index]} stats:`, result.reason);
 					}
 				});
 			}

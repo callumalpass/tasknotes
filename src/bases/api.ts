@@ -54,7 +54,7 @@ export interface DropdownOption {
 	type: "dropdown";
 	key: string;
 	displayName: string;
-	options: string[];
+	options: string[] | Record<string, string>;
 	default?: string;
 }
 
@@ -94,7 +94,7 @@ export interface MultitextOption {
 export interface GroupOption {
 	type: "group";
 	displayName: string;
-	options: ViewOption[];
+	items: ViewOption[];
 }
 
 /**

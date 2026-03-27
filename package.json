@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "4.4.0",
+	"version": "4.3.65",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -36,7 +36,10 @@
 		"i18n:check-usage": "i18n-state check-usage",
 		"i18n:find-unused": "i18n-state find-unused",
 		"i18n:check-duplicates": "i18n-state check-duplicates",
-		"i18n:generate-template": "i18n-state generate-template"
+		"i18n:generate-template": "i18n-state generate-template",
+		"reset": "node reset-test-data.mjs",
+		"generate-test-data": "node scripts/generate-test-data.mjs",
+		"generate-test-data:clean": "node scripts/generate-test-data.mjs --clean"
 	},
 	"keywords": [],
 	"author": "",

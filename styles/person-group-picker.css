@@ -1,0 +1,170 @@
+/* ================================================
+   PERSON GROUP PICKER
+   Reusable multi-select component for people and groups
+   ================================================ */
+
+.tn-person-group-picker {
+    position: relative;
+    width: 100%;
+}
+
+/* Selected pills container */
+.tn-pgp-selected {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+    min-height: 0;
+}
+
+.tn-pgp-selected:empty {
+    display: none;
+}
+
+/* Individual pill */
+.tn-pgp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px 2px 2px;
+    background: var(--background-modifier-hover);
+    border-radius: var(--radius-m);
+    font-size: var(--font-ui-small);
+    cursor: default;
+}
+
+.tn-pgp-pill-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tn-pgp-pill-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.tn-pgp-pill-remove:hover {
+    opacity: 1;
+    background: var(--background-modifier-hover);
+}
+
+.tn-pgp-pill-remove svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Search input */
+.tn-pgp-input-container {
+    position: relative;
+}
+
+.tn-pgp-search {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    font-size: var(--font-ui-small);
+}
+
+.tn-pgp-search:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* Dropdown - uses fixed positioning to escape modal overflow */
+.tn-pgp-dropdown {
+    position: fixed;
+    max-height: 200px;
+    min-width: 200px;
+    overflow-y: auto;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    box-shadow: var(--shadow-s);
+    z-index: 10000;
+}
+
+/* Section headers */
+.tn-pgp-section {
+    padding: 4px 0;
+}
+
+.tn-pgp-section:not(:last-child) {
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tn-pgp-section-header {
+    padding: 4px 10px;
+    font-size: var(--font-ui-smaller);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Dropdown items */
+.tn-pgp-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.tn-pgp-item:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tn-pgp-item-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.tn-pgp-item-name {
+    font-size: var(--font-ui-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tn-pgp-item-subtitle {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Empty state */
+.tn-pgp-empty {
+    padding: 12px 10px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+    font-style: italic;
+}
+
+.tn-pgp-empty-title {
+    font-weight: 500;
+    font-style: normal;
+    color: var(--text-normal);
+    margin-bottom: 4px;
+}
+
+.tn-pgp-empty-hint {
+    font-size: var(--font-ui-smaller);
+    font-style: normal;
+    line-height: 1.4;
+}

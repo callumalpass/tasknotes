@@ -6,6 +6,7 @@ import {
 	Editor,
 	MarkdownView,
 	TFile,
+	TFolder,
 	Platform,
 	addIcon,
 	Command,
@@ -45,6 +46,7 @@ import { TaskCreationModal } from "./modals/TaskCreationModal";
 import { TaskEditModal } from "./modals/TaskEditModal";
 import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { TimeEntryEditorModal } from "./modals/TimeEntryEditorModal";
+import { MigrationModal } from "./modals/MigrationModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
 import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
@@ -85,6 +87,7 @@ import { StatusBarService } from "./services/StatusBarService";
 import { ProjectSubtasksService } from "./services/ProjectSubtasksService";
 import { ExpandedProjectsService } from "./services/ExpandedProjectsService";
 import { NotificationService } from "./services/NotificationService";
+import { BasesQueryWatcher, VaultWideNotificationService, ToastNotification, BaseNotificationSyncService, NotificationCache } from "./notifications";
 import { AutoExportService } from "./services/AutoExportService";
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from "./services/HTTPAPIService";
@@ -96,6 +99,14 @@ import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import { DeviceIdentityManager } from "./identity/DeviceIdentityManager";
+import { UserRegistry } from "./identity/UserRegistry";
+import { GroupRegistry } from "./identity/GroupRegistry";
+import { PersonNoteService } from "./identity/PersonNoteService";
+import { NoteUuidService } from "./identity/NoteUuidService";
+import { BaseIdentityService } from "./identity/BaseIdentityService";
+import { DevicePreferencesManager } from "./identity/DevicePreferences";
+import { DebugLog } from "./utils/DebugLog";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -196,6 +207,24 @@ export default class TaskNotesPlugin extends Plugin {
 	// Notification service
 	notificationService: NotificationService;
 
+	// Bases query notification watcher
+	basesQueryWatcher: BasesQueryWatcher;
+
+	// Vault-wide notification service
+	vaultWideNotificationService: VaultWideNotificationService;
+
+	// Notification cache for performance (45s TTL, smart invalidation)
+	notificationCache: NotificationCache;
+
+	// Toast notification component (bottom-right indicator)
+	toastNotification: ToastNotification;
+
+	// Periodic toast check interval ID
+	private toastCheckIntervalId?: number;
+
+	// Base notification sync service (creates TaskNote files for notification-enabled bases)
+	baseNotificationSyncService: BaseNotificationSyncService;
+
 	// HTTP API service
 	apiService?: HTTPAPIService;
 
@@ -213,6 +242,18 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
+
+	// Device identity services (for shared vaults)
+	deviceIdentityManager: DeviceIdentityManager;
+	userRegistry: UserRegistry;
+	groupRegistry: GroupRegistry;
+	personNoteService: PersonNoteService;
+	noteUuidService: NoteUuidService;
+	baseIdentityService: BaseIdentityService;
+	devicePrefs: DevicePreferencesManager;
+
+	// Debug logging utility (writes to debug.log file when enabled)
+	debugLog: DebugLog;
 
 	// mdbase-spec generation service
 	mdbaseSpecService: import("./services/MdbaseSpecService").MdbaseSpecService;
@@ -364,7 +405,37 @@ export default class TaskNotesPlugin extends Plugin {
 		this.dragDropManager = new DragDropManager(this);
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);
+		this.basesQueryWatcher = new BasesQueryWatcher(this);
+		this.vaultWideNotificationService = new VaultWideNotificationService(this);
+		this.notificationCache = new NotificationCache(this);
+		this.toastNotification = new ToastNotification(this);
+		this.baseNotificationSyncService = new BaseNotificationSyncService(this);
 		this.viewPerformanceService = new ViewPerformanceService(this);
+
+		// Initialize device identity services (for shared vaults)
+		this.deviceIdentityManager = new DeviceIdentityManager();
+		this.userRegistry = new UserRegistry(this, this.deviceIdentityManager);
+		this.groupRegistry = new GroupRegistry(this);
+		this.personNoteService = new PersonNoteService(this);
+		this.noteUuidService = new NoteUuidService(this);
+		this.baseIdentityService = new BaseIdentityService(this);
+		this.devicePrefs = new DevicePreferencesManager(this);
+
+		// Initialize debug logging utility (writes to debug.log when enabled)
+		// Reads initial state from settings and persists changes back
+		this.debugLog = new DebugLog(
+			this.app,
+			this.settings?.enableDebugLogging ?? false,
+			async (enabled) => {
+				if (this.settings) {
+					this.settings.enableDebugLogging = enabled;
+					await this.saveSettings();
+				}
+			}
+		);
+		// Apply per-category filters and console output preference from settings
+		this.debugLog.setCategories(this.settings?.debugLogCategories ?? {});
+		this.debugLog.consoleOutput = this.settings?.debugLogConsoleOutput ?? true;
 
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");
@@ -419,6 +490,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Add commands
 		this.addCommands();
+
+		// Register file explorer right-click menu items
+		this.registerFileMenuHandlers();
 
 		// Add settings tab
 		this.addSettingTab(new TaskNotesSettingTab(this.app, this));
@@ -559,6 +633,75 @@ export default class TaskNotesPlugin extends Plugin {
 			// Initialize notification service
 			await this.notificationService.initialize();
 
+			// Initialize Bases query watcher for background notifications
+			await this.basesQueryWatcher.initialize();
+
+			// Initialize Base Notification Sync Service (creates TaskNote files for notification-enabled bases)
+			await this.baseNotificationSyncService.initialize();
+
+			// Show toast notification on startup if configured
+			this.debugLog.log("ToastNotification", "Checking startup settings", {
+				vaultWideNotifications: this.settings?.vaultWideNotifications,
+				enabled: this.settings?.vaultWideNotifications?.enabled,
+				showOnStartup: this.settings?.vaultWideNotifications?.showOnStartup
+			});
+
+			if (this.settings?.vaultWideNotifications?.enabled) {
+				// Delay slightly to let the UI settle
+				window.setTimeout(async () => {
+					if (this.settings?.vaultWideNotifications?.showOnStartup) {
+						this.debugLog.log("ToastNotification", "Startup timer fired - calling checkAndShow (with toast)");
+						await this.toastNotification.checkAndShow();
+					} else {
+						// Still update status bar even if toast isn't shown on startup
+						this.debugLog.log("ToastNotification", "Startup timer fired - updating status bar only");
+						try {
+							const items = await this.notificationCache.getAggregatedItems();
+							this.toastNotification.updateStatusBar(items.length);
+							this.debugLog.log("ToastNotification", `Status bar updated: ${items.length} items`);
+						} catch (error) {
+							this.debugLog.error("ToastNotification", "Error updating status bar:", error);
+						}
+					}
+				}, 3000);
+
+				// Set up periodic toast check interval
+				const checkIntervalMinutes = this.settings?.vaultWideNotifications?.checkInterval || 5;
+				const checkIntervalMs = checkIntervalMinutes * 60 * 1000;
+				this.debugLog.log("ToastNotification", `Setting up periodic check every ${checkIntervalMinutes} minutes`);
+
+				this.toastCheckIntervalId = window.setInterval(async () => {
+					this.debugLog.log("ToastNotification", "Periodic check triggered");
+
+					// Respect toast-level snooze — skip everything (status bar + toast)
+					if (this.toastNotification.isSnoozed()) {
+						this.debugLog.log("ToastNotification", "Periodic check skipped — snoozed");
+						return;
+					}
+
+					try {
+						// Use cache for performance - returns instantly if cached
+						const items = await this.notificationCache.getAggregatedItems();
+						this.toastNotification.updateStatusBar(items.length);
+
+						// Only show toast if there are overdue or today items (don't spam)
+						const hasUrgent = items.some(i => i.timeCategory === 'overdue' || i.timeCategory === 'today');
+						if (hasUrgent) {
+							this.debugLog.log("ToastNotification", `Periodic check found ${items.length} items with urgent items - showing toast`);
+							await this.toastNotification.checkAndShow();
+						} else {
+							this.debugLog.log("ToastNotification", `Periodic check found ${items.length} items - status bar only (no urgent)`);
+						}
+					} catch (error) {
+						this.debugLog.error("ToastNotification", "Error in periodic check:", error);
+					}
+				}, checkIntervalMs);
+
+				this.registerInterval(this.toastCheckIntervalId);
+			} else {
+				this.debugLog.log("ToastNotification", "Vault-wide notifications disabled");
+			}
+
 			// Warm up TaskManager indexes for better performance
 			await this.warmupProjectIndexes();
 
@@ -579,6 +722,18 @@ export default class TaskNotesPlugin extends Plugin {
 					this.basesRegistered = true;
 				} catch (e) {
 					console.debug("[TaskNotes][Bases] Registration failed:", e);
+				}
+			}
+
+			// Start universal Bases toolbar injector (adds buttons to non-TaskNotes views)
+			if (this.settings?.enableUniversalBasesButtons) {
+				try {
+					const { BasesToolbarInjector } = await import("./bases/BasesToolbarInjector");
+					const injector = new BasesToolbarInjector(this);
+					injector.start();
+					this.register(() => injector.stop());
+				} catch (e) {
+					console.debug("[TaskNotes][Bases] Universal toolbar injector failed:", e);
 				}
 			}
 		} catch (error) {
@@ -633,7 +788,7 @@ export default class TaskNotesPlugin extends Plugin {
 							this.taskCalendarSyncService
 								.deleteTaskFromCalendarByPath(data.path, eventId)
 								.catch((error) => {
-									console.warn("Failed to delete task from Google Calendar on file deletion:", error);
+									this.debugLog.warn('TaskNotes', 'Failed to delete task from Google Calendar on file deletion:', error);
 								});
 						}
 					})
@@ -760,8 +915,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const duration = Date.now() - warmupStartTime;
 			// Only log slow warmup for debugging large vaults
 			if (duration > 2000) {
-				// eslint-disable-next-line no-console
-				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms`);
+				this.debugLog.log('TaskNotes', `Project indexes warmed up in ${duration}ms`);
 			}
 		} catch (error) {
 			console.error("[TaskNotes] Error during project index warmup:", error);
@@ -778,6 +932,168 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		await this.readyPromise;
+	}
+
+	/**
+	 * Register context menu items for the file explorer.
+	 * - Single file: "Edit task" (if task) or "Convert to task" (if not)
+	 * - Multi-select: "Bulk convert to tasks"
+	 */
+	private registerFileMenuHandlers(): void {
+		// Single file right-click
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, file) => {
+				if (!(file instanceof TFile) || file.extension !== "md") return;
+
+				const cache = this.app.metadataCache.getFileCache(file);
+				const frontmatter = cache?.frontmatter;
+				const isTask = frontmatter ? this.cacheManager.isTaskFile(frontmatter) : false;
+
+				if (isTask) {
+					// Show quick context menu option to edit task
+					menu.addItem((item) => {
+						item.setTitle("Edit task")
+							.setIcon("pencil")
+							.onClick(async () => {
+								const task = await this.cacheManager.getTaskInfo(file.path);
+								if (task) {
+									this.openTaskEditModal(task);
+								}
+							});
+					});
+				} else {
+					// Show convert to task option
+					menu.addItem((item) => {
+						item.setTitle("Convert to task")
+							.setIcon("check-square")
+							.onClick(async () => {
+								// Reuse the convertCurrentNoteToTask logic but for a specific file
+								await this.convertFileToTask(file);
+							});
+					});
+				}
+			})
+		);
+
+		// Multi-file right-click
+		this.registerEvent(
+			this.app.workspace.on("files-menu", (menu, files) => {
+				const mdFiles = files.filter(
+					(f): f is TFile => f instanceof TFile && f.extension === "md"
+				);
+				if (mdFiles.length === 0) return;
+
+				menu.addItem((item) => {
+					item.setTitle(`Bulk tasking (${mdFiles.length} files)`)
+						.setIcon("check-square")
+						.onClick(async () => {
+							const { BulkTaskCreationModal } = await import(
+								"./bulk/BulkTaskCreationModal"
+							);
+							// Build BasesDataItem[] from selected files
+							const items = mdFiles.map((f) => ({
+								path: f.path,
+								file: f,
+								name: f.basename,
+								properties: this.app.metadataCache.getFileCache(f)?.frontmatter || {},
+							}));
+							// No baseFilePath — opened from file explorer, not a Bases view
+							new BulkTaskCreationModal(this.app, this, items).open();
+						});
+				});
+			})
+		);
+
+		// Folder right-click → Bulk tasking for all markdown files under the folder
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, file) => {
+				if (!(file instanceof TFolder)) return;
+
+				const folderPath = file.path;
+				const mdFiles = this.app.vault.getMarkdownFiles().filter(
+					(f) => f.path.startsWith(folderPath + "/")
+				);
+				if (mdFiles.length === 0) return;
+
+				menu.addItem((item) => {
+					item.setTitle(`Bulk tasking (${mdFiles.length} files in folder)`)
+						.setIcon("check-square")
+						.onClick(async () => {
+							const { BulkTaskCreationModal } = await import(
+								"./bulk/BulkTaskCreationModal"
+							);
+							const items = mdFiles.map((f) => ({
+								path: f.path,
+								file: f,
+								name: f.basename,
+								properties: this.app.metadataCache.getFileCache(f)?.frontmatter || {},
+							}));
+							new BulkTaskCreationModal(this.app, this, items).open();
+						});
+				});
+			})
+		);
+	}
+
+	/**
+	 * Convert a specific file to a task (used by file explorer context menu).
+	 * Similar to convertCurrentNoteToTask() but accepts a file parameter.
+	 */
+	async convertFileToTask(file: TFile): Promise<void> {
+		// Check if already a task
+		const existingTask = await this.cacheManager.getTaskInfo(file.path);
+		if (existingTask) {
+			new Notice(this.i18n.translate("commands.convertCurrentNoteToTask.alreadyTask"));
+			return;
+		}
+
+		const metadata = this.app.metadataCache.getFileCache(file);
+		const frontmatter: Record<string, any> = metadata?.frontmatter || {};
+		const content = await this.app.vault.read(file);
+
+		let details = "";
+		const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n*/);
+		if (frontmatterMatch) {
+			details = content.slice(frontmatterMatch[0].length).trim();
+		} else {
+			details = content.trim();
+		}
+
+		const now = getCurrentTimestamp();
+		const taskInfo: TaskInfo = {
+			path: file.path,
+			title: frontmatter.title || file.basename,
+			status: frontmatter.status ?? this.settings.defaultTaskStatus,
+			priority: frontmatter.priority ?? this.settings.defaultTaskPriority,
+			archived: false,
+			due: frontmatter.due || undefined,
+			scheduled: frontmatter.scheduled || undefined,
+			contexts: frontmatter.contexts
+				? (Array.isArray(frontmatter.contexts) ? frontmatter.contexts : [frontmatter.contexts])
+				: undefined,
+			projects: frontmatter.projects
+				? (Array.isArray(frontmatter.projects) ? frontmatter.projects : [frontmatter.projects])
+				: undefined,
+			tags: frontmatter.tags
+				? (Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags])
+				: [],
+			timeEstimate: frontmatter.timeEstimate || undefined,
+			recurrence: frontmatter.recurrence || undefined,
+			dateCreated: frontmatter.dateCreated || now,
+			dateModified: now,
+			details: details,
+		};
+
+		new TaskEditModal(this.app, this, {
+			task: taskInfo,
+			onTaskUpdated: (updatedTask) => {
+				new Notice(
+					this.i18n.translate("commands.convertCurrentNoteToTask.success", {
+						title: updatedTask.title,
+					})
+				);
+			},
+		}).open();
 	}
 
 	/**
@@ -903,7 +1219,7 @@ export default class TaskNotesPlugin extends Plugin {
 						new Notice(`Auto-stopped time tracking for: ${updatedTask.title}`);
 					}
 
-					console.log(
+					this.debugLog.log('TaskNotes',
 						`Auto-stopped time tracking for completed task: ${updatedTask.title}`
 					);
 				} catch (error) {
@@ -943,14 +1259,14 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	private async performEarlyMigrationCheck(): Promise<void> {
 		try {
-			console.log("TaskNotes: Starting early migration check...");
+			this.debugLog.log('TaskNotes', 'Starting early migration check...');
 
 			// Initialize saved views (handles migration if needed)
 			await this.viewStateManager.initializeSavedViews();
 
 			// Perform view state migration if needed (this is silent and fast)
 			if (this.viewStateManager.needsMigration()) {
-				console.log("TaskNotes: Performing view state migration...");
+				this.debugLog.log('TaskNotes', 'Performing view state migration...');
 				await this.viewStateManager.performMigration();
 			}
 
@@ -1031,6 +1347,17 @@ export default class TaskNotesPlugin extends Plugin {
 			if (this.taskLinkDetectionService) {
 				this.taskLinkDetectionService.clearCacheForFile(filePath);
 			}
+
+			// Invalidate person/group note preference caches when relevant files change
+			if (this.personNoteService) {
+				this.personNoteService.invalidateCache(filePath);
+			}
+			if (this.groupRegistry) {
+				const groupFolder = this.settings.groupNotesFolder || this.settings.personNotesFolder;
+				if (groupFolder && filePath.startsWith(groupFolder)) {
+					this.groupRegistry.clearCache();
+				}
+			}
 		} else if (force) {
 			// Full cache clear if forcing
 			this.cacheManager.clearAllCaches();
@@ -1038,6 +1365,14 @@ export default class TaskNotesPlugin extends Plugin {
 			// Clear task link detection cache completely
 			if (this.taskLinkDetectionService) {
 				this.taskLinkDetectionService.clearCache();
+			}
+
+			// Clear person/group caches on full rebuild
+			if (this.personNoteService) {
+				this.personNoteService.clearCache();
+			}
+			if (this.groupRegistry) {
+				this.groupRegistry.clearCache();
 			}
 		}
 
@@ -1135,6 +1470,11 @@ export default class TaskNotesPlugin extends Plugin {
 			this.viewPerformanceService.destroy();
 		}
 
+		// Clean up toast notification
+		if (this.toastNotification) {
+			this.toastNotification.destroy();
+		}
+
 		// Clean up task card reading mode handlers
 		if (this.taskCardReadingModeCleanup) {
 			this.taskCardReadingModeCleanup();
@@ -1214,6 +1554,16 @@ export default class TaskNotesPlugin extends Plugin {
 		// Clean up notification service
 		if (this.notificationService) {
 			this.notificationService.destroy();
+		}
+
+		// Clean up Bases query watcher
+		if (this.basesQueryWatcher) {
+			this.basesQueryWatcher.destroy();
+		}
+
+		// Clean up Base Notification Sync Service
+		if (this.baseNotificationSyncService) {
+			this.baseNotificationSyncService.destroy();
 		}
 
 		// Clean up task manager
@@ -1313,6 +1663,13 @@ export default class TaskNotesPlugin extends Plugin {
 				undefined,
 				loadedData.userFields
 			);
+		}
+
+		// Migration: Ensure creator/assignee user fields have matching modal config entries
+		if (loadedData?.modalFieldsConfig && loadedData?.userFields?.length) {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { ensurePersonFieldsInModalConfig } = require("./utils/fieldConfigDefaults");
+			ensurePersonFieldsInModalConfig(loadedData);
 		}
 
 		// Migration: Force enableBases to true (issue #1187)
@@ -1564,6 +1921,13 @@ export default class TaskNotesPlugin extends Plugin {
 				},
 			},
 			{
+				id: "open-upcoming-view",
+				nameKey: "commands.openUpcomingView",
+				callback: async () => {
+					await this.openBasesFileForCommand('open-upcoming-view');
+				},
+			},
+			{
 				id: "create-new-task",
 				nameKey: "commands.createNewTask",
 				callback: () => {
@@ -1747,6 +2111,74 @@ export default class TaskNotesPlugin extends Plugin {
 				nameKey: "commands.createOrOpenTask",
 				callback: async () => {
 					await this.openTaskSelectorWithCreate();
+				},
+			},
+			// Debug logging commands (for development)
+			{
+				id: "toggle-debug-log",
+				nameKey: "commands.toggleDebugLog" as TranslationKey,
+				callback: () => {
+					const enabled = this.debugLog.toggle();
+					new Notice(`Debug logging ${enabled ? "enabled" : "disabled"}`);
+				},
+			},
+			{
+				id: "clear-debug-log",
+				nameKey: "commands.clearDebugLog" as TranslationKey,
+				callback: async () => {
+					await this.debugLog.clear();
+					new Notice("Debug log cleared");
+				},
+			},
+			// Toast notification test command
+			{
+				id: "show-notification-toast",
+				nameKey: "commands.showNotificationToast" as TranslationKey,
+				callback: async () => {
+					await this.toastNotification.checkAndShow();
+				},
+			},
+			// Sync base notifications command
+			{
+				id: "sync-base-notifications",
+				nameKey: "commands.syncBaseNotifications" as TranslationKey,
+				callback: async () => {
+					const result = await this.baseNotificationSyncService.manualSync();
+					new Notice(`Base notifications synced: ${result.created} created, ${result.updated} updated, ${result.completed} completed`);
+				},
+			},
+			// Frontmatter migration command
+			{
+				id: "migrate-frontmatter",
+				nameKey: "commands.migrateFrontmatter" as TranslationKey,
+				callback: () => {
+					new MigrationModal(this.app, this).open();
+				},
+			},
+			// Force reminder check (debugging/demos)
+			{
+				id: "check-reminders-now",
+				nameKey: "commands.checkRemindersNow" as TranslationKey,
+				callback: async () => {
+					if (this.notificationService) {
+						// Clear seen items so toast shows even for previously dismissed items
+						if (this.toastNotification) {
+							this.toastNotification.clearSeenItems();
+						}
+						// Clear snooze state
+						localStorage.removeItem("tasknotes-toast-snoozed-until");
+						// Clear processed reminders so they can re-fire
+						this.notificationService.clearAllProcessed();
+
+						const result = await this.notificationService.checkNow();
+						// Trigger toast refresh immediately
+						if (this.toastNotification) {
+							await this.toastNotification.checkAndShow();
+						}
+						new Notice(`Reminder check: ${result.queued} queued, ${result.fired} grace-fired`);
+					} else {
+						new Notice("Notification service not available");
+					}
 				},
 			},
 		];
@@ -1940,8 +2372,25 @@ export default class TaskNotesPlugin extends Plugin {
 			return;
 		}
 
-		const leaf = this.app.workspace.getLeaf();
-		await leaf.openFile(file);
+		// Check if the file is already open in a tab - switch to it instead of opening duplicate
+		const existingLeaf = this.app.workspace.getLeavesOfType("markdown").find(leaf => {
+			const viewState = leaf.getViewState();
+			return viewState.state?.file === normalizedPath;
+		}) || this.app.workspace.getLeavesOfType("bases").find(leaf => {
+			// Bases files use their own view type
+			const viewState = leaf.getViewState();
+			return viewState.state?.file === normalizedPath;
+		});
+
+		if (existingLeaf) {
+			// Switch to existing tab
+			this.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+			this.app.workspace.revealLeaf(existingLeaf);
+		} else {
+			// Open in new/reused leaf
+			const leaf = this.app.workspace.getLeaf();
+			await leaf.openFile(file);
+		}
 	}
 
 	/**
@@ -2046,7 +2495,7 @@ export default class TaskNotesPlugin extends Plugin {
 				created.push(rawPath);
 			}
 		} catch (error) {
-			console.warn("[TaskNotes][Bases] Failed to ensure Bases command files:", error);
+			this.debugLog.warn('TaskNotes', 'Failed to ensure Bases command files:', error);
 		}
 
 		return { created, skipped };
@@ -2068,7 +2517,7 @@ export default class TaskNotesPlugin extends Plugin {
 				const leftLeaf = workspace.getLeftLeaf(false);
 
 				if (!leftLeaf) {
-					console.warn("Could not get left leaf for search pane");
+					this.debugLog.warn('TaskNotes', 'Could not get left leaf for search pane');
 					return false;
 				}
 
@@ -2079,14 +2528,14 @@ export default class TaskNotesPlugin extends Plugin {
 					});
 					searchLeaf = leftLeaf;
 				} catch (error) {
-					console.warn("Failed to create search view:", error);
+					this.debugLog.warn('TaskNotes', 'Failed to create search view:', error);
 					return false;
 				}
 			}
 
 			// Ensure we have a valid search leaf
 			if (!searchLeaf || !searchLeaf.view) {
-				console.warn("No search leaf available");
+				this.debugLog.warn('TaskNotes', 'No search leaf available');
 				return false;
 			}
 
@@ -2109,7 +2558,7 @@ export default class TaskNotesPlugin extends Plugin {
 					searchView.startSearch();
 				}
 			} else {
-				console.warn("[TaskNotes] Could not find method to set search query");
+				this.debugLog.warn('TaskNotes', 'Could not find method to set search query');
 				new Notice("Search pane opened but could not set tag query");
 				return false;
 			}
@@ -2322,7 +2771,50 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
-		new TaskCreationModal(this.app, this, { prePopulatedValues }).open();
+		const values: Partial<TaskInfo> = { ...prePopulatedValues };
+		let contextItemPaths: string[] | undefined;
+		let currentFilePath: string | undefined;
+
+		// Detect active context for PropertyPicker scope
+		const activeLeaf = this.app.workspace.activeLeaf;
+
+		// Check if active leaf is a Bases view — extract item paths
+		if (activeLeaf?.view?.getViewType?.() === "bases") {
+			const view = activeLeaf.view as any;
+			const controller = view.controller ||
+				(view.basesContainer || view.container)?.controller;
+			if (controller?.results) {
+				const paths: string[] = [];
+				for (const [, entry] of controller.results) {
+					const file = (entry as any).file;
+					if (file?.path) paths.push(file.path);
+				}
+				if (paths.length > 0) contextItemPaths = paths;
+			}
+		}
+
+		// Always capture active file for "This note" scope
+		const activeFile = this.app.workspace.getActiveFile();
+		if (activeFile) {
+			currentFilePath = activeFile.path;
+		}
+
+		// Include current note as project if enabled (fixes missing functionality)
+		if (this.settings.taskCreationDefaults.useParentNoteAsProject && !values.projects?.length) {
+			if (activeFile) {
+				const parentNote = this.app.fileManager.generateMarkdownLink(
+					activeFile,
+					activeFile.path
+				);
+				values.projects = [parentNote];
+			}
+		}
+
+		new TaskCreationModal(this.app, this, {
+			prePopulatedValues: Object.keys(values).length > 0 ? values : undefined,
+			contextItemPaths,
+			currentFilePath,
+		}).open();
 	}
 
 	/**

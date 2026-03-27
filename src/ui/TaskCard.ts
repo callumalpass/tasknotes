@@ -663,8 +663,18 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 				// BasesEntry is from Obsidian's Bases API (1.10.0+)
 				const value = basesData.getValue(propertyId as any);
 
-				// Handle null/undefined
+				// Handle null/undefined — fall back to cachedFormulaOutputs
+				// (computed by TaskListView/KanbanView.computeFormulas()).
+				// Bases' internal formula cache can be stale for freshly
+				// re-indexed items (e.g. after convert-to-task).
 				if (value === null || value === undefined) {
+					const formulaName = propertyId.substring(8); // Remove "formula." prefix
+					const cached = basesData?.formulaResults?.cachedFormulaOutputs?.[formulaName];
+					if (cached !== undefined && cached !== null) {
+						// Cached value may be a Bases Value object — extract it
+						const extracted = extractBasesValue(cached);
+						return extracted !== "" ? extracted : "";
+					}
 					return "";
 				}
 
@@ -702,7 +712,7 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 
 		return null;
 	} catch (error) {
-		console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
+		plugin.debugLog.warn("TaskCard", `Error getting property ${propertyId}:`, error);
 		return null;
 	}
 }
@@ -746,7 +756,7 @@ function getFrontmatterValue(taskPath: string, key: string, plugin: TaskNotesPlu
 		const frontmatter = fileMetadata.frontmatter as Record<string, unknown>;
 		return frontmatter[key];
 	} catch (error) {
-		console.warn(`TaskCard: Error accessing frontmatter for ${taskPath}:`, error);
+		plugin.debugLog.warn("TaskCard", `Error accessing frontmatter for ${taskPath}:`, error);
 		return undefined;
 	}
 }
@@ -793,7 +803,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 					const searchTag = context.startsWith("@") ? context.slice(1) : context;
 					const success = await plugin.openTagsPane(`#${searchTag}`);
 					if (!success) {
-						console.log("Could not open search pane, context clicked:", context);
+						plugin.debugLog.log("TaskCard", "Could not open search pane, context clicked:", context);
 					}
 				},
 			};
@@ -825,7 +835,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 						const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
 						const success = await plugin.openTagsPane(`#${searchTag}`);
 						if (!success) {
-							console.log("Could not open search pane, tag clicked:", tag);
+							plugin.debugLog.log("TaskCard", "Could not open search pane, tag clicked:", tag);
 						}
 					},
 				};
@@ -1047,7 +1057,7 @@ function renderPropertyMetadata(
 
 		return element;
 	} catch (error) {
-		console.warn(`TaskCard: Error rendering property ${propertyId}:`, error);
+		plugin.debugLog.warn("TaskCard", `Error rendering property ${propertyId}:`, error);
 		element.textContent = `${propertyId}: (error)`;
 		return element;
 	}
@@ -1222,8 +1232,8 @@ function renderPropertyValue(
 					const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
 					const success = await plugin.openTagsPane(`#${searchTag}`);
 					if (!success) {
-						console.log(
-							"Could not open search pane, generic property tag clicked:",
+						plugin.debugLog.log(
+							"TaskCard", "Could not open search pane, generic property tag clicked:",
 							tag
 						);
 					}
@@ -1547,6 +1557,13 @@ export function createTaskCard(
 		card.style.setProperty("--next-status-color", nextStatusConfig.color);
 	}
 
+	// Determine if this item is a recognized task (has task identification property).
+	// When isTask is undefined (backward compat) or true, render as task.
+	const itemIsTask = task.isTask !== false;
+	if (!itemIsTask) {
+		card.classList.add("task-card--note");
+	}
+
 	// Status indicator dot (conditional based on visible properties and options)
 	let statusDot: HTMLElement | null = null;
 	const shouldShowStatus =
@@ -1554,18 +1571,24 @@ export function createTaskCard(
 		(!visibleProperties ||
 			visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin)));
 	if (shouldShowStatus) {
-		statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
-		if (statusConfig) {
-			statusDot.style.borderColor = statusConfig.color;
-			// If status has an icon configured, render it instead of colored dot
-			if (statusConfig.icon) {
-				statusDot.addClass("task-card__status-dot--icon");
-				setIcon(statusDot, statusConfig.icon);
+		if (itemIsTask) {
+			statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
+			if (statusConfig) {
+				statusDot.style.borderColor = statusConfig.color;
+				// If status has an icon configured, render it instead of colored dot
+				if (statusConfig.icon) {
+					statusDot.addClass("task-card__status-dot--icon");
+					setIcon(statusDot, statusConfig.icon);
+				}
 			}
+		} else {
+			// Non-task: show file-text icon instead of status dot
+			const noteIcon = mainRow.createEl("span", { cls: "task-card__note-icon" });
+			setIcon(noteIcon, "file-text");
 		}
 	}
 
-	// Add click handler to cycle through statuses
+	// Add click handler to cycle through statuses (tasks only)
 	if (statusDot) {
 		// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
 		statusDot.addEventListener("mousedown", (e) => {
@@ -1575,11 +1598,11 @@ export function createTaskCard(
 		statusDot.addEventListener("click", createStatusCycleHandler(task, plugin, card, statusDot, targetDate));
 	}
 
-	// Priority indicator dot (conditional based on visible properties)
+	// Priority indicator dot (conditional based on visible properties, tasks only)
 	const shouldShowPriority =
 		!visibleProperties ||
 		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
-	if (task.priority && priorityConfig && shouldShowPriority) {
+	if (itemIsTask && task.priority && priorityConfig && shouldShowPriority) {
 		const priorityDot = mainRow.createEl("span", {
 			cls: "task-card__priority-dot",
 			attr: { "aria-label": `Priority: ${priorityConfig.label}` },
@@ -1982,13 +2005,26 @@ export function updateTaskCard(
 		checkbox.checked = plugin.statusManager.isCompletedStatus(effectiveStatus);
 	}
 
+	// Determine task vs note mode
+	const itemIsTask = task.isTask !== false;
+
+	// Update note modifier class
+	if (!itemIsTask) {
+		element.classList.add("task-card--note");
+	} else {
+		element.classList.remove("task-card--note");
+	}
+
 	// Update status dot (conditional based on visible properties)
 	const shouldShowStatus =
 		!visibleProperties ||
 		visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
 	const statusDot = element.querySelector(".task-card__status-dot") as HTMLElement;
+	const existingNoteIcon = element.querySelector(".task-card__note-icon") as HTMLElement;
 
-	if (shouldShowStatus) {
+	if (shouldShowStatus && itemIsTask) {
+		// Task mode: show/update status dot
+		if (existingNoteIcon) existingNoteIcon.remove();
 		if (statusDot) {
 			// Update existing dot
 			if (statusConfig) {
@@ -2018,15 +2054,24 @@ export function updateTaskCard(
 				mainRow.insertBefore(newStatusDot, mainRow.firstChild);
 			}
 		}
-	} else if (statusDot) {
-		// Remove dot if it shouldn't be visible
-		statusDot.remove();
+	} else if (shouldShowStatus && !itemIsTask) {
+		// Note mode: show file-text icon instead
+		if (statusDot) statusDot.remove();
+		if (!existingNoteIcon && mainRow) {
+			const noteIcon = mainRow.createEl("span", { cls: "task-card__note-icon" });
+			setIcon(noteIcon, "file-text");
+			mainRow.insertBefore(noteIcon, mainRow.firstChild);
+		}
+	} else {
+		// Not showing status at all
+		if (statusDot) statusDot.remove();
+		if (existingNoteIcon) existingNoteIcon.remove();
 	}
 
-	// Update priority indicator (conditional based on visible properties)
+	// Update priority indicator (conditional based on visible properties, tasks only)
 	const shouldShowPriority =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
+		itemIsTask && (!visibleProperties ||
+		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin)));
 	const existingPriorityDot = element.querySelector(".task-card__priority-dot") as HTMLElement;
 
 	if (shouldShowPriority && task.priority && priorityConfig) {
@@ -2511,7 +2556,7 @@ export async function toggleSubtasks(
 				for (const subtask of sortedSubtasks) {
 					// Check for circular reference in the parent chain
 					if (parentChain.includes(subtask.path)) {
-						console.warn("Circular reference detected in task chain:", {
+						plugin.debugLog.warn("TaskCard", "Circular reference detected in task chain:", {
 							subtask: subtask.path,
 							parentChain,
 							cycle: [...parentChain, subtask.path],

@@ -259,8 +259,8 @@ export class HTTPAPIService implements IWebhookNotifier {
 				});
 
 				this.server.listen(this.plugin.settings.apiPort, () => {
-					console.log(
-						`TaskNotes API server started on port ${this.plugin.settings.apiPort}`
+					this.plugin.debugLog.log('HTTPAPIService',
+						`API server started on port ${this.plugin.settings.apiPort}`
 					);
 					resolve();
 				});
@@ -279,7 +279,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 		return new Promise((resolve) => {
 			if (this.server) {
 				this.server.close(() => {
-					console.log("TaskNotes API server stopped");
+					this.plugin.debugLog.log('HTTPAPIService', 'API server stopped');
 					resolve();
 				});
 			} else {
