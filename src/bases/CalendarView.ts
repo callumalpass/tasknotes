@@ -635,7 +635,11 @@ export class CalendarView extends BasesViewBase {
 		try {
 			// Extract tasks from Bases
 			const dataItems = this.dataAdapter.extractDataItems();
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+
+			// Resolve view field mapping for read-path fallback
+			await this.resolveAndCacheViewMapping();
+
+			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);

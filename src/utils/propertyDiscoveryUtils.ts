@@ -42,6 +42,8 @@ export interface PropertyCatalogEntry {
 	allFiles: string[];
 	/** Whether all values are the same type */
 	isConsistent: boolean;
+	/** First non-null sample value discovered (for pre-filling UI) */
+	sampleValue?: any;
 }
 
 /**
@@ -225,11 +227,12 @@ export function buildPropertyCatalog(
 
 	const skipKeys = buildSkipKeys(plugin);
 
-	// key -> { typeBreakdown, files by type }
+	// key -> { typeBreakdown, files by type, sampleValue }
 	const catalog = new Map<string, {
 		typeBreakdown: Record<string, number>;
 		filesByType: Record<string, string[]>;
 		fileCount: number;
+		sampleValue?: any;
 	}>();
 
 	for (const filePath of filePaths) {
@@ -255,6 +258,11 @@ export function buildPropertyCatalog(
 			if (!entry.filesByType[type]) entry.filesByType[type] = [];
 			entry.filesByType[type].push(filePath);
 			entry.fileCount++;
+
+			// Capture first non-null sample value for UI pre-filling
+			if (entry.sampleValue === undefined && value != null && value !== "") {
+				entry.sampleValue = value;
+			}
 		}
 	}
 
@@ -294,6 +302,7 @@ export function buildPropertyCatalog(
 			mismatchedFiles,
 			allFiles,
 			isConsistent: mismatchedFiles.length === 0,
+			sampleValue: data.sampleValue,
 		});
 	}
 
