@@ -90,6 +90,7 @@ nav:
     - Appearance & UI: settings/appearance.md
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md
+    - Misc Settings: settings/misc-settings.md
     - Integrations: settings/integrations.md
   - APIs & Integration:
     - HTTP API: HTTP_API.md

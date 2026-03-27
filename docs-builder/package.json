@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "node build.js",
-    "dev": "node build.js && node serve.js"
+    "dev": "node build.js && python3 -m http.server 4321 --directory dist"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
