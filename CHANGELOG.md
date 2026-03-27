@@ -4,6 +4,11 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.63] - 2026-03-27
+
+### Fixed
+- **Re-apply property mapping to existing tasks** — When "Skip notes already recognized as tasks" is toggled OFF in the Convert tab, existing tasks are now re-processed to apply field mapping and custom properties. Previously already-task files were always skipped regardless of the toggle. Status message now shows "X new, Y re-apply" breakdown.
+
 ## [4.3.62] - 2026-03-27
 
 ### Fixed
