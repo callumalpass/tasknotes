@@ -2539,6 +2539,15 @@ export class BulkTaskCreationModal extends Modal {
 			: `Ready to process ${actionableCount} file${actionableCount !== 1 ? "s" : ""} (${preCheck.toConvert} new, ${preCheck.alreadyTasks} re-apply)`;
 		this.statusContainer.createSpan({ text: label });
 
+		// Hint: when all items are already tasks and view mapping exists,
+		// nudge the user to toggle off "skip" for re-applying mapping
+		if (this.skipAlreadyTasks && preCheck.toConvert === 0 && preCheck.alreadyTasks > 0
+			&& this.modalOptions.viewFieldMapping && Object.keys(this.modalOptions.viewFieldMapping).some(k => !!(this.modalOptions.viewFieldMapping as any)?.[k])) {
+			const hint = this.statusContainer.createDiv({ cls: "tn-bulk-modal__hint" });
+			hint.style.cssText = "margin-top: 6px; font-size: 12px; color: var(--text-muted); line-height: 1.4;";
+			hint.setText("All items are already tasks. Toggle off \"Skip already tasks\" below to re-apply property mapping and normalize fields.");
+		}
+
 		// Render the inline compatibility badges
 		this.renderCompatibilityBadges(preCheck);
 

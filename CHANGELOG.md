@@ -4,6 +4,12 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.64] - 2026-03-27
+
+### Fixed
+- **Type conversion no longer corrupts null values** — PropertyPicker's "Use as" type conversion now skips null, undefined, and empty values instead of converting them to string `"null"`. Prevents corrupted date fields after converting properties with missing values.
+- **Convert tab nudge for re-apply** — When all items are already tasks and the view has field mapping configured, a hint now appears: "Toggle off 'Skip already tasks' to re-apply property mapping and normalize fields."
+
 ## [4.3.63] - 2026-03-27
 
 ### Fixed
