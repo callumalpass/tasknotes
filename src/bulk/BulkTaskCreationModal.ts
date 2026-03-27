@@ -2411,7 +2411,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		new Setting(optionsBox)
 			.setName("Skip notes already recognized as tasks")
-			.setDesc("Skip items that TaskNotes already identifies as tasks")
+			.setDesc("When on, only new notes are converted. Turn off to re-process existing tasks — useful for applying property mapping, updating defaults, or normalizing fields after changing view settings.")
 			.addToggle((toggle) =>
 				toggle.setValue(this.skipAlreadyTasks).onChange((value) => {
 					this.skipAlreadyTasks = value;
@@ -2545,7 +2545,7 @@ export class BulkTaskCreationModal extends Modal {
 			&& this.modalOptions.viewFieldMapping && Object.keys(this.modalOptions.viewFieldMapping).some(k => !!(this.modalOptions.viewFieldMapping as any)?.[k])) {
 			const hint = this.statusContainer.createDiv({ cls: "tn-bulk-modal__hint" });
 			hint.style.cssText = "margin-top: 6px; font-size: 12px; color: var(--text-muted); line-height: 1.4;";
-			hint.setText("All items are already tasks. Toggle off \"Skip already tasks\" below to re-apply property mapping and normalize fields.");
+			hint.setText("All items are already tasks. Turn off \"Skip already tasks\" below to re-process them — this will apply any property mapping from view settings, write tracking properties, and normalize fields.");
 		}
 
 		// Render the inline compatibility badges
