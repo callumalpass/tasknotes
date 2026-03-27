@@ -10,6 +10,7 @@ import {
 	readFieldOverrides,
 	writeFieldOverrides,
 	resolveFieldName,
+	resolveFieldNameWithViewFallback,
 	type OverridableField,
 	FIELD_OVERRIDE_PROPS,
 } from "../utils/fieldOverrideUtils";
@@ -69,12 +70,15 @@ export class FieldMapper {
 	}
 
 	/**
-	 * Convert frontmatter object using mapping to internal task data
+	 * Convert frontmatter object using mapping to internal task data.
+	 * @param viewMapping Optional per-view field mapping (from .base tnFieldMapping)
+	 *   used as a fallback between per-task overrides and global mapping.
 	 */
 	mapFromFrontmatter(
 		frontmatter: any,
 		filePath: string,
-		storeTitleInFilename?: boolean
+		storeTitleInFilename?: boolean,
+		viewMapping?: Record<string, string>
 	): Partial<TaskInfo> {
 		if (!frontmatter) return {};
 
@@ -117,16 +121,16 @@ export class FieldMapper {
 		}
 
 		// Date fields with per-task override support:
-		// Check tn*Prop first, fall back to global mapping
+		// Check tn*Prop first, then view mapping, then global mapping
 		{
-			const dueProp = resolveFieldName("due", overrides, this.mapping.due);
+			const dueProp = resolveFieldNameWithViewFallback("due", overrides, viewMapping, this.mapping.due);
 			if (frontmatter[dueProp] !== undefined) {
 				mapped.due = frontmatter[dueProp];
 			}
 		}
 
 		{
-			const schedProp = resolveFieldName("scheduled", overrides, this.mapping.scheduled);
+			const schedProp = resolveFieldNameWithViewFallback("scheduled", overrides, viewMapping, this.mapping.scheduled);
 			if (frontmatter[schedProp] !== undefined) {
 				mapped.scheduled = frontmatter[schedProp];
 			}
@@ -149,7 +153,7 @@ export class FieldMapper {
 		}
 
 		{
-			const completedProp = resolveFieldName("completedDate", overrides, this.mapping.completedDate);
+			const completedProp = resolveFieldNameWithViewFallback("completedDate", overrides, viewMapping, this.mapping.completedDate);
 			if (frontmatter[completedProp] !== undefined) {
 				mapped.completedDate = frontmatter[completedProp];
 			}
@@ -171,7 +175,7 @@ export class FieldMapper {
 		}
 
 		{
-			const createdProp = resolveFieldName("dateCreated", overrides, this.mapping.dateCreated);
+			const createdProp = resolveFieldNameWithViewFallback("dateCreated", overrides, viewMapping, this.mapping.dateCreated);
 			if (frontmatter[createdProp] !== undefined) {
 				mapped.dateCreated = frontmatter[createdProp];
 			}

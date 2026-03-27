@@ -921,7 +921,7 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 							}
 							onConversionEnd?.();
 						}
-						onSelect(entry.key, option.requiresType, undefined, option.key);
+						onSelect(entry.key, option.requiresType, entry.sampleValue, option.key);
 					} catch (err) {
 						console.error("[PropertyPicker] Use-as error:", err);
 					}

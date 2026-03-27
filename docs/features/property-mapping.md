@@ -51,6 +51,16 @@ The tracking properties are internal to TaskNotes:
 
 These are hidden from the PropertyPicker and should not be edited manually. They make each task self-describing: the notification system, overdue calculations, sorting, and views all read the tracking property first, then fall back to the global field mapping.
 
+### Verifying the mapping
+
+After creating or converting a task with a property mapping, you can verify it worked by opening the task note and checking its Properties view (the frontmatter panel at the top of the note). Look for the corresponding tracking property:
+
+- If you mapped `next_assessment_due` to Due, the task should have `tnDueDateProp: next_assessment_due` in its frontmatter.
+- If the tracking property is missing, the mapping was not applied during creation/conversion.
+
+> [!tip] View-level fallback
+> Even if a task is missing its tracking property, views with a configured per-view mapping will still resolve the field correctly. For example, if your `.base` file maps `due` to `next_assessment_due`, tasks displayed in that view will use `next_assessment_due` as the due date regardless of whether `tnDueDateProp` is present. This "belt-and-suspenders" fallback ensures views work correctly even for tasks that were converted before the mapping was configured.
+
 ## Which Fields Can Be Mapped
 
 Five core fields support mapping (at both per-task and per-view scope):

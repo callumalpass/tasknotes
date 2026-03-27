@@ -347,6 +347,7 @@ export class BulkConvertEngine {
 			// Step 2.9: Apply per-view field mapping (ADR-011)
 			// Renames global property names to view-specific names and writes tracking props
 			if (options.viewFieldMapping) {
+				this.plugin.debugLog?.log("BulkConvert", `Applying viewFieldMapping to ${file.path}`, options.viewFieldMapping);
 				const mapping = options.viewFieldMapping;
 				const fieldMappingEntries: Array<{
 					viewKey: keyof typeof mapping;
@@ -365,16 +366,16 @@ export class BulkConvertEngine {
 					const globalPropName = fieldMapper.toUserField(fieldMappingKey);
 					if (customPropName === globalPropName) continue;
 
-					// Rename property
+					// Rename property: move value from global name to custom name
 					const hasGlobalValue = frontmatter[globalPropName] !== undefined;
 					if (hasGlobalValue) {
 						frontmatter[customPropName] = frontmatter[globalPropName];
 						delete frontmatter[globalPropName];
 					}
-					// Only write tracking property when value exists
-					if (hasGlobalValue || frontmatter[customPropName] !== undefined) {
-						frontmatter[trackingProp] = customPropName;
-					}
+					// Always write tracking property when mapping exists — makes
+					// the task self-describing even if the custom property has no
+					// value yet (belt-and-suspenders for retroactive mapping)
+					frontmatter[trackingProp] = customPropName;
 				}
 
 				// Handle assignee separately (uses settings, not FieldMapping)
@@ -386,9 +387,7 @@ export class BulkConvertEngine {
 							frontmatter[mapping.assignee] = frontmatter[globalAssigneeProp];
 							delete frontmatter[globalAssigneeProp];
 						}
-						if (hasAssigneeValue || frontmatter[mapping.assignee] !== undefined) {
-							frontmatter[FIELD_OVERRIDE_PROPS.assignee] = mapping.assignee;
-						}
+						frontmatter[FIELD_OVERRIDE_PROPS.assignee] = mapping.assignee;
 					}
 				}
 			}

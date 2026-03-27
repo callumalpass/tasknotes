@@ -145,3 +145,22 @@ export function resolveFieldName(
 ): string {
 	return overrides[internalKey] || globalMapping;
 }
+
+/**
+ * Resolve the frontmatter property name with an additional view-mapping
+ * fallback layer. Resolution order:
+ *   1. Per-task override (tnDueDateProp etc.)
+ *   2. Per-view mapping (tnFieldMapping from .base file)
+ *   3. Global mapping (settings)
+ *
+ * Use this when reading tasks in the context of a specific Bases view
+ * so that tasks without tracking properties still resolve correctly.
+ */
+export function resolveFieldNameWithViewFallback(
+	internalKey: string,
+	overrides: Record<string, string>,
+	viewMapping: Record<string, string> | undefined,
+	globalMapping: string
+): string {
+	return overrides[internalKey] || viewMapping?.[internalKey] || globalMapping;
+}

@@ -170,7 +170,8 @@ function createTaskInfoFromProperties(
 
 export function createTaskInfoFromBasesData(
 	basesItem: BasesDataItem,
-	plugin?: TaskNotesPlugin
+	plugin?: TaskNotesPlugin,
+	viewMapping?: Record<string, string>
 ): TaskInfo | null {
 	if (!basesItem?.path) return null;
 
@@ -198,7 +199,8 @@ export function createTaskInfoFromBasesData(
 		const mappedTaskInfo = plugin.fieldMapper.mapFromFrontmatter(
 			props,
 			basesItem.path,
-			plugin.settings.storeTitleInFilename
+			plugin.settings.storeTitleInFilename,
+			viewMapping
 		);
 		const taskInfo = createTaskInfoFromProperties(mappedTaskInfo, basesItem, plugin);
 
@@ -234,14 +236,15 @@ export function createTaskInfoFromBasesData(
 export async function identifyTaskNotesFromBasesData(
 	dataItems: BasesDataItem[],
 	plugin?: TaskNotesPlugin,
-	toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin) => TaskInfo | null
+	toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin, viewMapping?: Record<string, string>) => TaskInfo | null,
+	viewMapping?: Record<string, string>
 ): Promise<TaskInfo[]> {
 	const taskInfoConverter = toTaskInfo || createTaskInfoFromBasesData;
 	const taskNotes: TaskInfo[] = [];
 	for (const item of dataItems) {
 		if (!item?.path) continue;
 		try {
-			const taskInfo = taskInfoConverter(item, plugin);
+			const taskInfo = taskInfoConverter(item, plugin, viewMapping);
 			if (taskInfo) taskNotes.push(taskInfo);
 		} catch (error) {
 			if (plugin?.debugLog) plugin.debugLog.warn("BasesHelpers", "Error converting Bases item to TaskInfo:", error);

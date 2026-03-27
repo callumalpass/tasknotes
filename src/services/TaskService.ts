@@ -789,12 +789,10 @@ export class TaskService {
 				delete result[globalPropName];
 			}
 
-			// Only write tracking property when task has a value for this field
-			// Avoids frontmatter clutter (e.g., tnDueDateProp without a deadline value)
-			if (hasGlobalValue || result[customPropName] !== undefined) {
-				const trackingProp = FIELD_OVERRIDE_PROPS[internalKey];
-				result[trackingProp] = customPropName;
-			}
+			// Always write tracking property when mapping exists — makes
+			// the task self-describing even without a value yet
+			const trackingProp = FIELD_OVERRIDE_PROPS[internalKey];
+			result[trackingProp] = customPropName;
 		}
 
 		// Handle assignee separately (uses settings.assigneeFieldName, not FieldMapping)
@@ -806,10 +804,7 @@ export class TaskService {
 					result[mapping.assignee] = result[globalAssigneeProp];
 					delete result[globalAssigneeProp];
 				}
-				// Only write tracking prop if assignee has a value
-				if (hasAssigneeValue || result[mapping.assignee] !== undefined) {
-					result[FIELD_OVERRIDE_PROPS.assignee] = mapping.assignee;
-				}
+				result[FIELD_OVERRIDE_PROPS.assignee] = mapping.assignee;
 			}
 		}
 

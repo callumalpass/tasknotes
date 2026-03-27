@@ -45,6 +45,9 @@ export abstract class BasesViewBase extends Component {
 	// Filtered items cache — updated by subclass render(), consumed by handleBulkCreation()
 	protected lastFilteredDataItems: import("./helpers").BasesDataItem[] = [];
 
+	// Cached view field mapping — resolved once per render cycle for read-path fallback
+	protected cachedViewFieldMapping: Record<string, string> | undefined;
+
 	// When true, getVisibleProperties() ensures core task card fields (status,
 	// priority, due) are always present so cards render with full styling even
 	// if the .base file's order: config omits them. Subclasses that render task
@@ -1364,6 +1367,24 @@ export abstract class BasesViewBase extends Component {
 			};
 		} catch {
 			return null;
+		}
+	}
+
+	/**
+	 * Resolve and cache the view's field mapping for read-path fallback.
+	 * Call at the start of render() so identifyTaskNotesFromBasesData
+	 * can use it to resolve fields without per-task tracking properties.
+	 */
+	protected async resolveAndCacheViewMapping(): Promise<void> {
+		try {
+			const ctx = await this.resolveViewMappingContext();
+			this.cachedViewFieldMapping = ctx?.viewFieldMapping
+				? Object.fromEntries(
+					Object.entries(ctx.viewFieldMapping).filter(([, v]) => !!v)
+				)
+				: undefined;
+		} catch {
+			this.cachedViewFieldMapping = undefined;
 		}
 	}
 

@@ -282,7 +282,10 @@ export class KanbanView extends BasesViewBase {
 			// Compute formulas before reading formula-based properties (swimlanes, etc.)
 			await this.computeFormulas(dataItems);
 
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			// Resolve view field mapping for read-path fallback
+			await this.resolveAndCacheViewMapping();
+
+			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);

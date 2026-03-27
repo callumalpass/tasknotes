@@ -134,7 +134,10 @@ export class TaskListView extends BasesViewBase {
 			// Compute Bases formulas for TaskNotes items
 			await this.computeFormulas(dataItems);
 
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			// Resolve view field mapping for read-path fallback (tasks without tracking props)
+			await this.resolveAndCacheViewMapping();
+
+			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 
 			if (taskNotes.length === 0) {
 				this.clearAllTaskElements();
@@ -974,7 +977,7 @@ export class TaskListView extends BasesViewBase {
 
 		const dataItems = this.dataAdapter.extractDataItems();
 		await this.computeFormulas(dataItems);
-		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin, undefined, this.cachedViewFieldMapping);
 		const groups = this.dataAdapter.getGroupedData();
 
 		// Build flattened list of items using shared method
