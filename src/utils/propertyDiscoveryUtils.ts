@@ -386,7 +386,8 @@ export async function convertPropertyType(
 		try {
 			await plugin.app.fileManager.processFrontMatter(file, (fm) => {
 				const currentValue = fm[propertyKey];
-				if (currentValue === undefined) return;
+				// Skip null, undefined, and empty — nothing meaningful to convert
+				if (currentValue === undefined || currentValue === null || currentValue === "") return;
 
 				const converted = coerceValue(currentValue, targetType);
 
@@ -424,6 +425,9 @@ export async function convertPropertyType(
  * Coerce a value to the target type.
  */
 function coerceValue(value: unknown, targetType: PropertyType): any {
+	// Preserve null/undefined as-is — don't convert to string "null"
+	if (value === null || value === undefined) return null;
+
 	switch (targetType) {
 		case "date": {
 			// Date object -> YYYY-MM-DD

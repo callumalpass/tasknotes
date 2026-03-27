@@ -4,6 +4,33 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.65] - 2026-03-27
+
+### Improved
+- **Convert tab "skip already tasks" description** — Toggle description now explains what turning it OFF does: re-process existing tasks to apply property mapping, update defaults, or normalize fields after changing view settings.
+- **Convert tab hint for re-apply** — When all items are already tasks and view mapping exists, the hint now explains that turning off the toggle will apply property mapping, write tracking properties, and normalize fields.
+
+## [4.3.64] - 2026-03-27
+
+### Fixed
+- **Type conversion no longer corrupts null values** — PropertyPicker's "Use as" type conversion now skips null, undefined, and empty values instead of converting them to string `"null"`. Prevents corrupted date fields after converting properties with missing values.
+- **Convert tab nudge for re-apply** — When all items are already tasks and the view has field mapping configured, a hint now appears: "Toggle off 'Skip already tasks' to re-apply property mapping and normalize fields."
+
+## [4.3.63] - 2026-03-27
+
+### Fixed
+- **Re-apply property mapping to existing tasks** — When "Skip notes already recognized as tasks" is toggled OFF in the Convert tab, existing tasks are now re-processed to apply field mapping and custom properties. Previously already-task files were always skipped regardless of the toggle. Status message now shows "X new, Y re-apply" breakdown.
+
+## [4.3.62] - 2026-03-27
+
+### Fixed
+- **Property remapping: tracking props always written** — `tnDueDateProp` and other tracking properties are now unconditionally written when a view field mapping exists, even if the custom property has no value yet. Previously gated on value existence, causing tracking props to be silently skipped.
+- **Property remapping: read-path view fallback** — Views with `tnFieldMapping` now resolve custom property names (e.g., `next_assessment_due` as due date) even for tasks that lack tracking properties in their frontmatter. Three-layer resolution: per-task override → per-view mapping → global mapping.
+- **PropertyPicker "null" after Use-as remove/re-add** — Catalog view's "Use as" handler now passes a sample value from the property catalog instead of `undefined`. Added `sampleValue` field to `PropertyCatalogEntry`.
+
+### Added
+- **Property mapping verification docs** — New "Verifying the mapping" section in property-mapping.md explaining how to check tracking properties and the view-level fallback behavior.
+
 ## [4.3.61] - 2026-03-25
 
 ### Added

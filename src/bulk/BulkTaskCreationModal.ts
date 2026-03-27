@@ -2411,7 +2411,7 @@ export class BulkTaskCreationModal extends Modal {
 
 		new Setting(optionsBox)
 			.setName("Skip notes already recognized as tasks")
-			.setDesc("Skip items that TaskNotes already identifies as tasks")
+			.setDesc("When on, only new notes are converted. Turn off to re-process existing tasks — useful for applying property mapping, updating defaults, or normalizing fields after changing view settings.")
 			.addToggle((toggle) =>
 				toggle.setValue(this.skipAlreadyTasks).onChange((value) => {
 					this.skipAlreadyTasks = value;
@@ -2526,11 +2526,27 @@ export class BulkTaskCreationModal extends Modal {
 
 		const preCheck = await this.convertEngine.preCheck(this.items);
 
+		// When "skip already tasks" is OFF, existing tasks will be re-processed
+		// (mapping and custom props applied) so they count as actionable
+		const actionableCount = this.skipAlreadyTasks
+			? preCheck.toConvert
+			: preCheck.toConvert + preCheck.alreadyTasks;
+
 		// Update status with ready count
 		this.statusContainer.empty();
-		this.statusContainer.createSpan({
-			text: `Ready to convert ${preCheck.toConvert} markdown file${preCheck.toConvert !== 1 ? "s" : ""}`,
-		});
+		const label = this.skipAlreadyTasks
+			? `Ready to convert ${actionableCount} markdown file${actionableCount !== 1 ? "s" : ""}`
+			: `Ready to process ${actionableCount} file${actionableCount !== 1 ? "s" : ""} (${preCheck.toConvert} new, ${preCheck.alreadyTasks} re-apply)`;
+		this.statusContainer.createSpan({ text: label });
+
+		// Hint: when all items are already tasks and view mapping exists,
+		// nudge the user to toggle off "skip" for re-applying mapping
+		if (this.skipAlreadyTasks && preCheck.toConvert === 0 && preCheck.alreadyTasks > 0
+			&& this.modalOptions.viewFieldMapping && Object.keys(this.modalOptions.viewFieldMapping).some(k => !!(this.modalOptions.viewFieldMapping as any)?.[k])) {
+			const hint = this.statusContainer.createDiv({ cls: "tn-bulk-modal__hint" });
+			hint.style.cssText = "margin-top: 6px; font-size: 12px; color: var(--text-muted); line-height: 1.4;";
+			hint.setText("All items are already tasks. Turn off \"Skip already tasks\" below to re-process them — this will apply any property mapping from view settings, write tracking properties, and normalize fields.");
+		}
 
 		// Render the inline compatibility badges
 		this.renderCompatibilityBadges(preCheck);
@@ -2552,7 +2568,7 @@ export class BulkTaskCreationModal extends Modal {
 		this.updateItemsSummaryWithSkips(totalSkips);
 
 		if (this.actionButton) {
-			this.actionButton.disabled = preCheck.toConvert === 0;
+			this.actionButton.disabled = actionableCount === 0;
 		}
 	}
 
@@ -2943,6 +2959,8 @@ export class BulkTaskCreationModal extends Modal {
 			viewFieldMapping: this.modalOptions.viewFieldMapping,
 			sourceBaseId: this.modalOptions.sourceBaseId,
 			sourceViewId: this.modalOptions.sourceViewId,
+			// Re-apply mapping to existing tasks when "skip already tasks" is OFF
+			reapplyToExistingTasks: !this.skipAlreadyTasks,
 			onProgress: (current, total, status) => {
 				const percent = Math.round((current / total) * 100);
 				if (this.progressBarInner) {
