@@ -35,6 +35,8 @@ export interface BulkConvertOptions {
 	sourceBaseId?: string;
 	/** Source view ID for provenance tracking (ADR-011). */
 	sourceViewId?: string;
+	/** Re-process files that are already tasks (apply mapping/custom props without re-identifying). */
+	reapplyToExistingTasks?: boolean;
 	/** Callback for progress updates */
 	onProgress?: (current: number, total: number, status: string) => void;
 }
@@ -163,8 +165,8 @@ export class BulkConvertEngine {
 				continue;
 			}
 
-			// Skip if already a task
-			if (preCheck.alreadyTaskPaths.has(sourcePath)) {
+			// Skip if already a task (unless reapply mode is on)
+			if (preCheck.alreadyTaskPaths.has(sourcePath) && !options.reapplyToExistingTasks) {
 				this.plugin.debugLog.log("BulkConvertEngine", `Skipping (already task): ${sourcePath}`);
 				result.skipped++;
 				continue;

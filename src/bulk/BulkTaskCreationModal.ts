@@ -2526,11 +2526,18 @@ export class BulkTaskCreationModal extends Modal {
 
 		const preCheck = await this.convertEngine.preCheck(this.items);
 
+		// When "skip already tasks" is OFF, existing tasks will be re-processed
+		// (mapping and custom props applied) so they count as actionable
+		const actionableCount = this.skipAlreadyTasks
+			? preCheck.toConvert
+			: preCheck.toConvert + preCheck.alreadyTasks;
+
 		// Update status with ready count
 		this.statusContainer.empty();
-		this.statusContainer.createSpan({
-			text: `Ready to convert ${preCheck.toConvert} markdown file${preCheck.toConvert !== 1 ? "s" : ""}`,
-		});
+		const label = this.skipAlreadyTasks
+			? `Ready to convert ${actionableCount} markdown file${actionableCount !== 1 ? "s" : ""}`
+			: `Ready to process ${actionableCount} file${actionableCount !== 1 ? "s" : ""} (${preCheck.toConvert} new, ${preCheck.alreadyTasks} re-apply)`;
+		this.statusContainer.createSpan({ text: label });
 
 		// Render the inline compatibility badges
 		this.renderCompatibilityBadges(preCheck);
@@ -2552,7 +2559,7 @@ export class BulkTaskCreationModal extends Modal {
 		this.updateItemsSummaryWithSkips(totalSkips);
 
 		if (this.actionButton) {
-			this.actionButton.disabled = preCheck.toConvert === 0;
+			this.actionButton.disabled = actionableCount === 0;
 		}
 	}
 
@@ -2943,6 +2950,8 @@ export class BulkTaskCreationModal extends Modal {
 			viewFieldMapping: this.modalOptions.viewFieldMapping,
 			sourceBaseId: this.modalOptions.sourceBaseId,
 			sourceViewId: this.modalOptions.sourceViewId,
+			// Re-apply mapping to existing tasks when "skip already tasks" is OFF
+			reapplyToExistingTasks: !this.skipAlreadyTasks,
 			onProgress: (current, total, status) => {
 				const percent = Math.round((current / total) * 100);
 				if (this.progressBarInner) {
