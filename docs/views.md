@@ -19,8 +19,6 @@ For details on Bases integration and how to enable it, see [Core Concepts](core-
 <!-- TODO: Embed the quick tour video/GIF here — user has already recorded one -->
 <!-- SCREENSHOT: Side-by-side comparison showing the same tasks in Task List, Kanban, and Calendar views -->
 
-
-
 ## Task-Focused Views
 
 Task-focused views are different entry points into the same underlying task notes. The [Task List View](views/task-list.md) is a common starting view for day-to-day planning because it exposes filters, sorting, and grouping in list format.

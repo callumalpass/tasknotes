@@ -143,9 +143,7 @@ TaskNotes properties are accessed in Bases YAML using these paths:
 
 The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Task Properties`). The table above shows default mappings.
 
-<!-- GIF: Sorting the task list by priority descending, then grouping by status -->
-
-![Task list sorted and grouped by status](../assets/task-list/screenshot-tasks-list.png)
+<!-- TODO GIF: Sorting the task list by priority descending, then grouping by status -->
 
 ## Filtering and Sorting
 

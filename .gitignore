@@ -26,6 +26,11 @@ data.json
 obsidian-developer-docs/
 .claude
 
+# Syncthing
+.stfolder
+.stversions
+.stignore
+
 # Exclude video files (except docs assets)
 *.mp4
 *.avi
