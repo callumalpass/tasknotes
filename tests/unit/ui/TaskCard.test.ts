@@ -193,6 +193,12 @@ describe('TaskCard Component', () => {
       },
       i18n: {
         translate: jest.fn((key, vars) => {
+          if (key === 'ui.taskCard.priorityAriaLabel') {
+            return `Priority: ${vars?.label ?? ''}`;
+          }
+          if (key === 'ui.taskCard.taskOptions') {
+            return 'Task options';
+          }
           if (key === 'ui.taskCard.blockingToggle') {
             return `Blocking ${vars?.count ?? 0}`;
           }
