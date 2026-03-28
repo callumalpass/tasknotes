@@ -27,7 +27,7 @@ Example:
 ## Fixed
 
 - Improved custom view and search-pane activation reliability by using Obsidian's deferred-leaf APIs when revealing existing leaves, so TaskNotes waits for deferred tabs to load before interacting with them
-- Refactored internal plugin bootstrap, task mutation flows, filter query planning, Bases adapter boundaries, and task card/modal helper modules to reduce coupling and make future maintenance safer, including extraction of modal editor and organization/dependency field setup helpers
+- Refactored internal plugin bootstrap, main plugin coordination, command registration, workspace navigation, settings lifecycle, task mutation flows, filter query planning, Bases adapter boundaries, and task card/modal helper modules to reduce coupling and make future maintenance safer, including extraction of modal editor and organization/dependency field setup helpers
 - (#1720) Fixed Bases Task List cards showing Lucide icon tokens such as `clock` instead of formatted date-like values, and fixed generic property labels to use configured Bases display names instead of raw property IDs
   - Thanks to @Sirnii for reporting
 - (#1633) Fixed interactive Task Card labels and ribbon labels so Bases-backed cards use translated labels and configured Bases display names instead of hardcoded English/raw property IDs
@@ -56,7 +56,7 @@ Example:
 
 - (#1678) Added task-first timeblock creation and editing helpers, including prefilled task-title context-menu creation, prefilled task attachments, Add Task actions in the create/edit modals, auto-fill of empty titles from selected attachments, and configurable attachment search ordering
   - Thanks to @Lorite for the fix
-- Added a `tasknotes:capture` Obsidian CLI command for task creation, with shared NLP-to-task conversion across CLI, modal, and API capture flows plus explicit override flags for title, details, dates, tags, contexts, projects, recurrence, recurrence anchor, reminders, estimate, and literal-title capture
+- Added TaskNotes Obsidian CLI commands for task creation and time tracking, with shared NLP-to-task conversion across CLI, modal, and API capture flows plus explicit override flags for title, details, dates, tags, contexts, projects, recurrence, recurrence anchor, reminders, estimate, literal-title capture, and task-targeted start/stop time tracking
 - (#1619, #386, #621) Added drag-to-reorder for Kanban and Task List views, including grouped Task List moves, manual ordering support via the `tasknotes_manual_order` property, updated generated `.base` templates, and polished drag/drop feedback for swimlanes, filtered views, and interactive task controls
   - Thanks to @ac8318740 for the original contribution in PR #1619
   - Thanks to @iholston and @dsebastien for opening #386 and #621
