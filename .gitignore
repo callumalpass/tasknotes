@@ -85,3 +85,4 @@ tasknotes-e2e-vault/*.ics
 /.ops
 AGENTS.md
 /docs-builder/dist
+.ops/
