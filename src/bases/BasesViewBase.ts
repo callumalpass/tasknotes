@@ -9,6 +9,7 @@ import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import type { TaskCardOptions } from "../ui/TaskCard";
+import { BasesConfigLike, BasesQueryResultLike } from "./types";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -19,8 +20,8 @@ export abstract class BasesViewBase extends Component {
 	// BasesView properties (provided by Bases when factory returns this instance)
 	// These match the BasesView interface from Obsidian's internal Bases API
 	app!: App;
-	config!: any; // BasesViewConfig - using any since not exported from public API
-	data!: any; // BasesQueryResult - using any since not exported from public API
+	config!: BasesConfigLike;
+	data!: BasesQueryResultLike;
 	protected plugin: TaskNotesPlugin;
 	protected dataAdapter: BasesDataAdapter;
 	protected propertyMapper: PropertyMappingService;

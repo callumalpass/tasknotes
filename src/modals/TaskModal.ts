@@ -10,6 +10,8 @@ import {
 	setTooltip,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { getOrderedModalGroups, shouldShowFieldForModal } from "./taskModalFieldConfig";
+import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { StatusContextMenu } from "../components/StatusContextMenu";
@@ -33,6 +35,7 @@ import {
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import { createTaskModalListField } from "./taskModalOrganizationFields";
 
 interface DependencyItem {
 	dependency: TaskDependency;
@@ -770,7 +773,7 @@ export abstract class TaskModal extends Modal {
 			const detailsEditorContainer = rightColumn.createDiv("details-markdown-editor");
 
 			// Create embeddable markdown editor for details using shared method
-			this.detailsMarkdownEditor = this.createMarkdownEditor(detailsEditorContainer, {
+			this.detailsMarkdownEditor = createTaskModalMarkdownEditor(this.app, detailsEditorContainer, {
 				value: this.details,
 				placeholder: this.t("modals.task.detailsPlaceholder"),
 				cls: "details-editor",
@@ -801,21 +804,7 @@ export abstract class TaskModal extends Modal {
 	 * Check if a field should be shown based on field configuration
 	 */
 	protected shouldShowField(fieldId: string, config?: any): boolean {
-		// If no config, show all fields (legacy behavior)
-		if (!config || !config.fields) {
-			return true;
-		}
-
-		// Find the field in config
-		const field = config.fields.find((f: any) => f.id === fieldId);
-		if (!field) {
-			// Field not in config, show it by default
-			return true;
-		}
-
-		// Check if field is enabled and visible for this modal type
-		const isVisible = this.isCreationMode() ? field.visibleInCreation : field.visibleInEdit;
-		return field.enabled && isVisible;
+		return shouldShowFieldForModal(fieldId, config, this.isCreationMode());
 	}
 
 	protected createAdditionalFields(container: HTMLElement): void {
@@ -831,18 +820,9 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createFieldsFromConfig(container: HTMLElement, config: any): void {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const { getFieldsByGroup } = require("../utils/fieldConfigDefaults");
-		const fieldGroups = getFieldsByGroup(config, this.isCreationMode());
-
-		// Render fields by group
-		const groupsToRender = [...config.groups].sort((a: any, b: any) => a.order - b.order);
+		const groupsToRender = getOrderedModalGroups(config, this.isCreationMode());
 
 		for (const groupConfig of groupsToRender) {
-			const fields = fieldGroups.get(groupConfig.id);
-			if (!fields || fields.length === 0) continue;
-
-			// Skip basic group (title and details are handled separately)
 			if (groupConfig.id === "basic") continue;
 
 			// Create a section for this group if it has fields
@@ -854,7 +834,7 @@ export abstract class TaskModal extends Modal {
 			}
 
 			// Render fields in this group
-			for (const field of fields) {
+			for (const field of groupConfig.fields) {
 				this.createField(groupContainer, field);
 			}
 		}
@@ -937,88 +917,60 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createProjectsField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.organization.projects"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.organization.addToProjectButton"))
-					.setTooltip(this.t("modals.task.projectsTooltip"))
-					.onClick(() => {
-						const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
-							this.addProject(file);
-						});
-						modal.open();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Projects list container (create if it doesn't exist)
-		if (!this.projectsList) {
-			this.projectsList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.projectsList = createTaskModalListField(container, {
+			label: this.t("modals.task.organization.projects"),
+			buttonText: this.t("modals.task.organization.addToProjectButton"),
+			buttonTooltip: this.t("modals.task.projectsTooltip"),
+			onButtonClick: () => {
+				const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
+					this.addProject(file);
+				});
+				modal.open();
+			},
+			listElement: this.projectsList,
+		});
 
 		this.renderOrganizationLists();
 	}
 
 	protected createSubtasksField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.organization.subtasks"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.organization.addSubtasksButton"))
-					.setTooltip(this.t("modals.task.organization.addSubtasksTooltip"))
-					.onClick(() => {
-						void this.openSubtaskSelector();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Subtasks list container (create if it doesn't exist)
-		if (!this.subtasksList) {
-			this.subtasksList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.subtasksList = createTaskModalListField(container, {
+			label: this.t("modals.task.organization.subtasks"),
+			buttonText: this.t("modals.task.organization.addSubtasksButton"),
+			buttonTooltip: this.t("modals.task.organization.addSubtasksTooltip"),
+			onButtonClick: () => {
+				void this.openSubtaskSelector();
+			},
+			listElement: this.subtasksList,
+		});
 
 		this.renderOrganizationLists();
 	}
 
 	protected createBlockedByField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.dependencies.blockedBy"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.dependencies.addTaskButton"))
-					.setTooltip(this.t("modals.task.dependencies.selectTaskTooltip"))
-					.onClick(() => {
-						void this.openBlockedBySelector();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Blocked by list container (create if it doesn't exist)
-		if (!this.blockedByList) {
-			this.blockedByList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.blockedByList = createTaskModalListField(container, {
+			label: this.t("modals.task.dependencies.blockedBy"),
+			buttonText: this.t("modals.task.dependencies.addTaskButton"),
+			buttonTooltip: this.t("modals.task.dependencies.selectTaskTooltip"),
+			onButtonClick: () => {
+				void this.openBlockedBySelector();
+			},
+			listElement: this.blockedByList,
+		});
 
 		this.renderDependencyLists();
 	}
 
 	protected createBlockingField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.dependencies.blocking"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.dependencies.addTaskButton"))
-					.setTooltip(this.t("modals.task.dependencies.selectTaskTooltip"))
-					.onClick(() => {
-						void this.openBlockingSelector();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Blocking list container (create if it doesn't exist)
-		if (!this.blockingList) {
-			this.blockingList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.blockingList = createTaskModalListField(container, {
+			label: this.t("modals.task.dependencies.blocking"),
+			buttonText: this.t("modals.task.dependencies.addTaskButton"),
+			buttonTooltip: this.t("modals.task.dependencies.selectTaskTooltip"),
+			onButtonClick: () => {
+				void this.openBlockingSelector();
+			},
+			listElement: this.blockingList,
+		});
 
 		this.renderDependencyLists();
 	}
@@ -2009,58 +1961,6 @@ export abstract class TaskModal extends Modal {
 				this.timeEstimateInput.focus();
 			}
 		}, 50);
-	}
-
-	/**
-	 * Creates an embeddable markdown editor with standard configuration and error handling
-	 * @param container - The parent HTML element
-	 * @param options - Editor configuration options
-	 * @returns The created editor instance or null if creation fails
-	 */
-	protected createMarkdownEditor(
-		container: HTMLElement,
-		options: {
-			value: string;
-			placeholder: string;
-			cls: string;
-			onChange: (value: string) => void;
-			onSubmit: () => void;
-			onEscape: () => void;
-			onTab: () => boolean;
-			extensions?: any[];
-		}
-	): EmbeddableMarkdownEditor | null {
-		try {
-			return new EmbeddableMarkdownEditor(this.app, container, options);
-		} catch (error) {
-			console.error("Failed to create markdown editor:", error);
-
-			// Create fallback textarea
-			const fallbackTextarea = container.createEl("textarea", {
-				cls: options.cls + "-fallback",
-				placeholder: options.placeholder,
-			});
-			fallbackTextarea.value = options.value;
-			fallbackTextarea.addEventListener("input", (e) => {
-				options.onChange((e.target as HTMLTextAreaElement).value);
-			});
-			fallbackTextarea.addEventListener("keydown", (e) => {
-				if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-					e.preventDefault();
-					options.onSubmit();
-				} else if (e.key === "Escape") {
-					e.preventDefault();
-					options.onEscape();
-				} else if (e.key === "Tab") {
-					const shouldPreventDefault = options.onTab();
-					if (shouldPreventDefault) {
-						e.preventDefault();
-					}
-				}
-			});
-
-			return null;
-		}
 	}
 
 	onClose(): void {

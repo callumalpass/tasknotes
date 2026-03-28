@@ -40,6 +40,13 @@ import {
 	resolveTaskCardPropertyLabel,
 	type TaskCardPresentationOptions,
 } from "./taskCardPresentation";
+import {
+	getChevronTooltip,
+	getRecurrenceTooltip,
+	getReminderTooltip,
+	getTaskCardPropertyLabel,
+	getTaskCardPropertyValue,
+} from "./taskCardHelpers";
 
 export interface TaskCardOptions {
 	targetDate?: Date;
@@ -53,6 +60,14 @@ export interface TaskCardOptions {
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 	layout: "default",
 };
+
+function tTaskCard(
+	plugin: TaskNotesPlugin,
+	key: string,
+	vars?: Record<string, string | number>
+): string {
+	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
+}
 
 /* =================================================================
    BADGE INDICATOR HELPERS
@@ -541,245 +556,6 @@ function calculateChecklistProgress(cache: CachedMetadata | null): ChecklistProg
 }
 
 /**
- * Property value extractors for better type safety and error handling
- */
-const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
-	due: (task) => task.due,
-	scheduled: (task) => task.scheduled,
-	projects: (task) => task.projects,
-	contexts: (task) => task.contexts,
-	tags: (task) => task.tags,
-	blocked: (task) => task.isBlocked,
-	blocking: (task) => task.isBlocking,
-	blockedBy: (task) => task.blockedBy,
-	blockingTasks: (task) => task.blocking,
-	timeEstimate: (task) => task.timeEstimate,
-	timeEntries: (task) => task.timeEntries,
-	totalTrackedTime: (task) => task.totalTrackedTime,
-	recurrence: (task) => task.recurrence,
-	completedDate: (task) => task.completedDate,
-	reminders: (task) => task.reminders,
-	icsEventId: (task) => task.icsEventId,
-	completeInstances: (task) => task.complete_instances,
-	skippedInstances: (task) => task.skipped_instances,
-	dateCreated: (task) => task.dateCreated,
-	dateModified: (task) => task.dateModified,
-	googleCalendarSync: (task) => task.path, // Used to check if task is synced via plugin settings
-	checklistProgress: (task) => task.path, // Used to compute checklist progress from metadata cache listItems
-};
-
-function tTaskCard(
-	plugin: TaskNotesPlugin,
-	key: string,
-	vars?: Record<string, string | number>
-): string {
-	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
-}
-
-function getTaskCardPropertyLabel(
-	propertyId: string,
-	plugin: TaskNotesPlugin,
-	propertyLabels?: Record<string, string>
-): string {
-	const fallbackLabels: Record<string, string> = {
-		due: tTaskCard(plugin, "labels.due"),
-		scheduled: tTaskCard(plugin, "labels.scheduled"),
-		recurrence: tTaskCard(plugin, "labels.recurrence"),
-		completedDate: tTaskCard(plugin, "labels.completed"),
-		dateCreated: tTaskCard(plugin, "labels.created"),
-		dateModified: tTaskCard(plugin, "labels.modified"),
-		blocked: tTaskCard(plugin, "labels.blocked"),
-		blocking: tTaskCard(plugin, "labels.blocking"),
-	};
-
-	return resolveTaskCardPropertyLabel(
-		propertyId,
-		{ propertyLabels },
-		fallbackLabels[propertyId]
-	);
-}
-
-function getRecurrenceTooltip(
-	plugin: TaskNotesPlugin,
-	recurrence: string,
-	propertyLabels?: Record<string, string>
-): string {
-	return tTaskCard(plugin, "recurrenceTooltip", {
-		label: getTaskCardPropertyLabel("recurrence", plugin, propertyLabels),
-		value: getRecurrenceDisplayText(recurrence),
-	});
-}
-
-function getReminderTooltip(plugin: TaskNotesPlugin, count: number): string {
-	return count === 1
-		? tTaskCard(plugin, "reminderTooltipOne")
-		: tTaskCard(plugin, "reminderTooltipMany", { count });
-}
-
-function getChevronTooltip(plugin: TaskNotesPlugin, expanded: boolean): string {
-	return expanded
-		? tTaskCard(plugin, "collapseSubtasks")
-		: tTaskCard(plugin, "expandSubtasks");
-}
-
-/**
- * Get property value from a task with improved error handling and type safety.
- *
- * @param task - The task to extract the property from
- * @param propertyId - The property identifier (user-configured or internal name)
- * @param plugin - TaskNotes plugin instance
- * @returns The property value, or undefined if not found
- */
-function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesPlugin): unknown {
-	try {
-		// Check if this is a user-configured name for a mapped field
-		const mappingKey = plugin.fieldMapper.lookupMappingKey(propertyId);
-		if (mappingKey) {
-			// Use the mapping key as the extractor key (e.g., "due", "scheduled")
-			if (mappingKey in PROPERTY_EXTRACTORS) {
-				return PROPERTY_EXTRACTORS[mappingKey](task);
-			}
-		}
-
-		// Try direct property lookup (for non-mapped properties)
-		if (propertyId in PROPERTY_EXTRACTORS) {
-			return PROPERTY_EXTRACTORS[propertyId](task);
-		}
-
-		// Handle user properties
-		if (propertyId.startsWith("user:")) {
-			return getUserPropertyValue(task, propertyId, plugin);
-		}
-
-		// Check custom properties from Bases or other sources
-		// Values may be Bases Value objects, so extract the raw value
-		if (task.customProperties && propertyId in task.customProperties) {
-			return extractBasesValue(task.customProperties[propertyId]);
-		}
-
-		// Check for file properties (stored as "file.name", "file.basename", etc.)
-		if (task.customProperties) {
-			const filePropertyId = `file.${propertyId}`;
-			if (filePropertyId in task.customProperties) {
-				return extractBasesValue(task.customProperties[filePropertyId]);
-			}
-		}
-
-		// Lazy fetch for file.* properties (backlinks, links, embeds, etc.)
-		// These are NOT pre-extracted for performance - only computed when visible
-		if (propertyId.startsWith("file.") && task.basesData && typeof task.basesData.getValue === "function") {
-			try {
-				const value = task.basesData.getValue(propertyId as any);
-				if (value !== null && value !== undefined) {
-					return extractBasesValue(value);
-				}
-			} catch (error) {
-				// Property doesn't exist or error fetching
-			}
-		}
-
-		// Handle Bases formula properties
-		if (propertyId.startsWith("formula.")) {
-			try {
-				const basesData = task.basesData;
-
-				if (!basesData || typeof basesData.getValue !== "function") {
-					return "";
-				}
-
-				// Use BasesEntry.getValue() to get formula result
-				// BasesEntry is from Obsidian's Bases API (1.10.0+)
-				const value = basesData.getValue(propertyId as any);
-
-				// Handle null/undefined
-				if (value === null || value === undefined) {
-					return "";
-				}
-
-				// Extract raw value from Bases Value object
-				const extracted = extractBasesValue(value);
-				return extracted !== "" ? extracted : "";
-			} catch (error) {
-				console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
-				return "[Formula Error]";
-			}
-		}
-
-		// Try to get property from Bases API first (for custom properties)
-		// This ensures we get the same value that Bases is displaying
-		if (task.basesData && typeof task.basesData.getValue === "function") {
-			try {
-				// Try with "note." prefix first (most common for custom frontmatter properties)
-				const notePropertyId = `note.${propertyId}`;
-				const value = task.basesData.getValue(notePropertyId as any);
-				if (value !== null && value !== undefined) {
-					return extractBasesValue(value);
-				}
-			} catch (error) {
-				// Property doesn't exist in Bases, try fallback
-			}
-		}
-
-		// Fallback: try to get arbitrary property from frontmatter
-		if (task.path) {
-			const value = getFrontmatterValue(task.path, propertyId, plugin);
-			if (value !== undefined) {
-				return value;
-			}
-		}
-
-		return null;
-	} catch (error) {
-		console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
-		return null;
-	}
-}
-
-/**
- * Extract user property value with improved error handling and type safety
- */
-function getUserPropertyValue(
-	task: TaskInfo,
-	propertyId: string,
-	plugin: TaskNotesPlugin
-): unknown {
-	const fieldId = propertyId.slice(5);
-	const userField = plugin.settings.userFields?.find((f) => f.id === fieldId);
-
-	if (!userField?.key) {
-		return null;
-	}
-
-	// Try task object first (backward compatibility)
-	let value = (task as unknown as Record<string, unknown>)[userField.key];
-
-	// Fall back to frontmatter if needed
-	if (value === undefined) {
-		value = getFrontmatterValue(task.path, userField.key, plugin);
-	}
-
-	return value;
-}
-
-/**
- * Safely extract frontmatter value with proper typing
- */
-function getFrontmatterValue(taskPath: string, key: string, plugin: TaskNotesPlugin): unknown {
-	try {
-		const fileMetadata = plugin.app.metadataCache.getCache(taskPath);
-		if (!fileMetadata?.frontmatter) {
-			return undefined;
-		}
-
-		const frontmatter = fileMetadata.frontmatter as Record<string, unknown>;
-		return frontmatter[key];
-	} catch (error) {
-		console.warn(`TaskCard: Error accessing frontmatter for ${taskPath}:`, error);
-		return undefined;
-	}
-}
-
-/**
  * Property renderer function type for better type safety
  */
 type PropertyRenderer = (
@@ -1048,7 +824,7 @@ function renderPropertyMetadata(
 	plugin: TaskNotesPlugin,
 	options: Partial<TaskCardOptions> = {}
 ): HTMLElement | null {
-	const value = getPropertyValue(task, propertyId, plugin);
+	const value = getTaskCardPropertyValue(task, propertyId, plugin);
 
 	if (!hasValidValue(value)) {
 		return null;
