@@ -1,5 +1,6 @@
 import type { CliData } from "obsidian";
 import type { CliCommandDefinition } from "../types";
+import { formatCliJson, formatTaskSummary } from "../helpers/formatters";
 import { buildTaskCreationDataFromCli } from "../../utils/buildTaskCreationDataFromCli";
 
 export const captureCliCommand: CliCommandDefinition = {
@@ -69,16 +70,9 @@ export const captureCliCommand: CliCommandDefinition = {
 	async handler(plugin, params: CliData): Promise<string> {
 		const { taskData, usedNlp } = buildTaskCreationDataFromCli(plugin, params);
 		const result = await plugin.taskService.createTask(taskData);
-		return JSON.stringify(
-			{
-				title: result.taskInfo.title,
-				path: result.taskInfo.path,
-				status: result.taskInfo.status,
-				priority: result.taskInfo.priority,
-				usedNlp,
-			},
-			null,
-			2
-		);
+		return formatCliJson({
+			...formatTaskSummary(result.taskInfo),
+			usedNlp,
+		});
 	},
 };
