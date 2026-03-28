@@ -2193,25 +2193,32 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	/**
-	 * Opens a simple due date modal (placeholder for now)
+	 * Opens a date/time picker modal for the given task date field.
 	 */
 	async openDueDateModal(task: TaskInfo) {
-		try {
-			const { DueDateModal } = await import("./modals/DueDateModal");
-			const modal = new DueDateModal(this.app, task, this);
-			modal.open();
-		} catch (error) {
-			console.error("Error loading DueDateModal:", error);
-		}
+		this.openTaskDatePicker(task, "due");
 	}
 
 	async openScheduledDateModal(task: TaskInfo) {
+		this.openTaskDatePicker(task, "scheduled");
+	}
+
+	private async openTaskDatePicker(task: TaskInfo, field: "due" | "scheduled") {
 		try {
-			const { ScheduledDateModal } = await import("./modals/ScheduledDateModal");
-			const modal = new ScheduledDateModal(this.app, task, this);
+			const { DateTimePickerModal } = await import("./modals/DateTimePickerModal");
+			const { getDatePart, getTimePart, combineDateAndTime } = await import("./utils/dateUtils");
+			const currentValue = (field === "due" ? task.due : task.scheduled) || "";
+			const modal = new DateTimePickerModal(this.app, {
+				currentDate: getDatePart(currentValue) || null,
+				currentTime: getTimePart(currentValue) || null,
+				onSelect: async (date, time) => {
+					const value = date && time ? combineDateAndTime(date, time) : date || undefined;
+					await this.taskService.updateProperty(task, field, value);
+				},
+			});
 			modal.open();
 		} catch (error) {
-			console.error("Error loading ScheduledDateModal:", error);
+			console.error("Error loading DateTimePickerModal:", error);
 		}
 	}
 
