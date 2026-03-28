@@ -50,7 +50,10 @@ Example:
 - Fixed a broken docs cross-reference from Property Types Reference to Task Properties settings
 - Fixed docs site link generation so internal Markdown links resolve to route URLs instead of broken `.md` paths (for example `/views/default-base-templates/`)
 - Fixed docs release-note links by building all Markdown docs pages, including pages not listed directly in sidebar nav
-- Added drag-to-reorder for Kanban and Task List views, including grouped Task List moves and safer handling for swimlanes, filtered views, sparse manual-order data, and large multi-note reorders
-- Improved drag-to-reorder feedback and interaction quality so drop previews stay aligned with the final result, grouped Task List sections behave more like Kanban, and interactive controls like subtask and dependency toggles remain clickable during reorder mode
-- Manual ordering now uses the clearer `tasknotes_manual_order` property by default, is exposed in settings as "Manual Order", uses the i18n system for drag-related prompts, and is surfaced by default in generated Kanban, Relationships, and Tasks `.base` files where manual ordering is appropriate
-- Thanks to @ac8318740 for the original drag-to-reorder groundwork in PR #1619
+
+## Added
+
+- (#1619, #386, #621) Added drag-to-reorder for Kanban and Task List views, including grouped Task List moves, manual ordering support via the `tasknotes_manual_order` property, updated generated `.base` templates, and polished drag/drop feedback for swimlanes, filtered views, and interactive task controls
+  - Thanks to @ac8318740 for the original contribution in PR #1619
+  - Thanks to @iholston and @dsebastien for opening #386 and #621
+  - Thanks to @kanzaki1201 for the swimlane drag-order discussion in #1474 that helped shape the follow-up robustness work
