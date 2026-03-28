@@ -1405,6 +1405,15 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
+	private async revealLeafReady(leaf: WorkspaceLeaf): Promise<void> {
+		const { workspace } = this.app;
+		workspace.setActiveLeaf(leaf, { focus: true });
+		await workspace.revealLeaf(leaf);
+		if (leaf.isDeferred) {
+			await leaf.loadIfDeferred();
+		}
+	}
+
 	// Helper method to create or activate a view of specific type
 	async activateView(viewType: string) {
 		const { workspace } = this.app;
@@ -1424,9 +1433,7 @@ export default class TaskNotesPlugin extends Plugin {
 			});
 		}
 
-		// Make this leaf active and ensure it's visible
-		workspace.setActiveLeaf(leaf, { focus: true });
-		workspace.revealLeaf(leaf);
+		await this.revealLeafReady(leaf);
 
 		return leaf;
 	}
@@ -1466,9 +1473,7 @@ export default class TaskNotesPlugin extends Plugin {
 				}
 			}
 
-			// Make this leaf active and ensure it's visible
-			workspace.setActiveLeaf(leaf, { focus: true });
-			workspace.revealLeaf(leaf);
+			await this.revealLeafReady(leaf);
 
 			return leaf;
 		}
@@ -1671,11 +1676,12 @@ export default class TaskNotesPlugin extends Plugin {
 				}
 			}
 
-			// Ensure we have a valid search leaf
-			if (!searchLeaf || !searchLeaf.view) {
+			if (!searchLeaf) {
 				console.warn("No search leaf available");
 				return false;
 			}
+
+			await this.revealLeafReady(searchLeaf);
 
 			// Set the search query to "tag:#tagname"
 			const searchQuery = `tag:${tag}`;
@@ -1701,10 +1707,6 @@ export default class TaskNotesPlugin extends Plugin {
 				return false;
 			}
 
-			// Reveal and focus the search pane
-			workspace.revealLeaf(searchLeaf);
-			workspace.setActiveLeaf(searchLeaf, { focus: true });
-
 			return true;
 		} catch (error) {
 			console.error("[TaskNotes] Error opening search pane with tag:", error);
@@ -1716,13 +1718,6 @@ export default class TaskNotesPlugin extends Plugin {
 	getLeafOfType(viewType: string): WorkspaceLeaf | null {
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType(viewType);
-		// Find the first leaf with an actually loaded view (not deferred)
-		for (const leaf of leaves) {
-			if (leaf.view && leaf.view.getViewType() === viewType) {
-				return leaf;
-			}
-		}
-		// If no loaded view found, return the first leaf (might be deferred)
 		return leaves.length > 0 ? leaves[0] : null;
 	}
 

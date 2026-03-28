@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- Improved custom view and search-pane activation reliability by using Obsidian's deferred-leaf APIs when revealing existing leaves, so TaskNotes waits for deferred tabs to load before interacting with them
 - Refactored internal plugin bootstrap, task mutation flows, filter query planning, Bases adapter boundaries, and task card/modal helper modules to reduce coupling and make future maintenance safer, including extraction of modal editor and organization/dependency field setup helpers
 - (#1720) Fixed Bases Task List cards showing Lucide icon tokens such as `clock` instead of formatted date-like values, and fixed generic property labels to use configured Bases display names instead of raw property IDs
   - Thanks to @Sirnii for reporting
