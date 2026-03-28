@@ -23,6 +23,7 @@ import {
 	computeTaskTimeData,
 } from "../utils/timeTrackingUtils";
 import { collectCalendarEvents } from "../utils/calendarUtils";
+import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
 
 /**
  * MCP (Model Context Protocol) server for TaskNotes.
@@ -326,22 +327,9 @@ export class MCPService {
 			async ({ text }: any) => {
 				try {
 					const parsed = this.nlParser.parseInput(text);
-					const taskData: TaskCreationData = {
-						title: parsed.title,
-						path: "",
-						archived: false,
-						status: parsed.status || this.plugin.settings.defaultTaskStatus,
-						priority: parsed.priority || this.plugin.settings.defaultTaskPriority,
-						due: parsed.dueDate,
-						scheduled: parsed.scheduledDate,
-						tags: parsed.tags,
-						contexts: parsed.contexts,
-						projects: parsed.projects,
-						recurrence: parsed.recurrence,
-						timeEstimate: parsed.estimate,
-						details: parsed.details,
+					const taskData = buildTaskCreationDataFromParsed(this.plugin, parsed, {
 						creationContext: "api",
-					};
+					});
 					const result = await this.taskService.createTask(taskData);
 
 					return this.jsonResult({ parsed, task: result.taskInfo });

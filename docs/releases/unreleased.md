@@ -56,6 +56,7 @@ Example:
 
 - (#1678) Added task-first timeblock creation and editing helpers, including prefilled task-title context-menu creation, prefilled task attachments, Add Task actions in the create/edit modals, auto-fill of empty titles from selected attachments, and configurable attachment search ordering
   - Thanks to @Lorite for the fix
+- Added a `tasknotes:capture` Obsidian CLI command for task creation, with shared NLP-to-task conversion across CLI, modal, and API capture flows plus explicit override flags for title, details, dates, tags, contexts, projects, recurrence, recurrence anchor, reminders, estimate, and literal-title capture
 - (#1619, #386, #621) Added drag-to-reorder for Kanban and Task List views, including grouped Task List moves, manual ordering support via the `tasknotes_manual_order` property, updated generated `.base` templates, and polished drag/drop feedback for swimlanes, filtered views, and interactive task controls
   - Thanks to @ac8318740 for the original contribution in PR #1619
   - Thanks to @iholston and @dsebastien for opening #386 and #621

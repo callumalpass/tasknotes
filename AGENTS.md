@@ -9,7 +9,7 @@ This is an Obsidian plugin. The plugin ID is `tasknotes`.
 npm run build:test
 
 # After building, reload the plugin in the running Obsidian instance
-obsidian plugin:reload id=tasknotes
+obsidian plugin:reload id=tasknotes vault=test
 ```
 
 Always run both commands after making changes. Obsidian must be running for the CLI to work.
@@ -18,19 +18,19 @@ Always run both commands after making changes. Obsidian must be running for the 
 
 ```bash
 # Check for JavaScript errors after reload
-obsidian dev:errors
+obsidian dev:errors vault=test
 
 # View console output
-obsidian dev:console
+obsidian dev:console vault=test
 
 # Run JavaScript in the Obsidian context
-obsidian dev:eval code="app.vault.getFiles().length"
+obsidian dev:eval code="app.vault.getFiles().length" vault=test
 
 # Take a screenshot to verify UI changes
-obsidian dev:screenshot path=screenshot.png
+obsidian dev:screenshot path=screenshot.png vault=test
 
 # Open developer tools
-obsidian dev:open
+obsidian dev:open vault=test
 ```
 
 ## Other Build Commands

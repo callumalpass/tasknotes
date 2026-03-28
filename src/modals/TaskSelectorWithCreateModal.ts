@@ -1,7 +1,6 @@
 import { App, SuggestModal, TFile, Notice, setIcon, debounce } from "obsidian";
 import { TaskInfo, TaskCreationData } from "../types";
-import { combineDateAndTime, getCurrentTimestamp } from "../utils/dateUtils";
-import { filterEmptyProjects, sanitizeTags } from "../utils/helpers";
+import { filterEmptyProjects } from "../utils/helpers";
 import type TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
 import {
@@ -9,6 +8,7 @@ import {
 	ParsedTaskData,
 } from "../services/NaturalLanguageParser";
 import { createTaskCard } from "../ui/TaskCard";
+import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
 
 export type TaskSelectorWithCreateResult =
 	| { type: "selected"; task: TaskInfo }
@@ -306,74 +306,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	}
 
 	private buildTaskDataFromParsed(parsed: ParsedTaskData): TaskCreationData {
-		const now = getCurrentTimestamp();
-
-		const taskData: TaskCreationData = {
-			title: parsed.title.trim(),
-			status: parsed.status || this.plugin.settings.defaultTaskStatus,
-			priority: parsed.priority || this.plugin.settings.defaultTaskPriority,
-			dateCreated: now,
-			dateModified: now,
-		};
-
-		// Handle due date with time
-		if (parsed.dueDate) {
-			taskData.due = parsed.dueTime
-				? combineDateAndTime(parsed.dueDate, parsed.dueTime)
-				: parsed.dueDate;
-		}
-
-		// Handle scheduled date with time
-		if (parsed.scheduledDate) {
-			taskData.scheduled = parsed.scheduledTime
-				? combineDateAndTime(parsed.scheduledDate, parsed.scheduledTime)
-				: parsed.scheduledDate;
-		}
-
-		if (parsed.contexts && parsed.contexts.length > 0) {
-			taskData.contexts = parsed.contexts;
-		}
-
-		if (parsed.projects && parsed.projects.length > 0) {
-			taskData.projects = parsed.projects;
-		}
-
-		if (parsed.tags && parsed.tags.length > 0) {
-			taskData.tags = parsed.tags.map((t) => sanitizeTags(t));
-		}
-
-		if (parsed.details) {
-			taskData.details = parsed.details;
-		}
-
-		if (parsed.recurrence) {
-			taskData.recurrence = parsed.recurrence;
-		}
-
-		if (parsed.estimate && parsed.estimate > 0) {
-			taskData.timeEstimate = parsed.estimate;
-		}
-
-		// Handle NLP-parsed user fields - convert from fieldId to frontmatter key
-		// Default values for user fields are applied by TaskService.createTask()
-		if (parsed.userFields) {
-			const userFieldDefs = this.plugin.settings.userFields || [];
-			const customFrontmatter: Record<string, any> = {};
-
-			for (const [fieldId, value] of Object.entries(parsed.userFields)) {
-				const fieldDef = userFieldDefs.find((f) => f.id === fieldId);
-				if (fieldDef) {
-					// Use the frontmatter key from the field definition
-					customFrontmatter[fieldDef.key] = Array.isArray(value) ? value.join(", ") : value;
-				}
-			}
-
-			if (Object.keys(customFrontmatter).length > 0) {
-				taskData.customFrontmatter = customFrontmatter;
-			}
-		}
-
-		return taskData;
+		return buildTaskCreationDataFromParsed(this.plugin, parsed);
 	}
 
 	getSuggestions(query: string): TaskInfo[] {

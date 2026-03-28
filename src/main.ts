@@ -87,6 +87,7 @@ import {
 	registerRibbonIcons,
 	registerTaskNotesIcon,
 } from "./bootstrap/pluginBootstrap";
+import { registerCliHandlers } from "./cli/registerCliHandlers";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -297,6 +298,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Add commands
 		this.addCommands();
+		registerCliHandlers(this);
 
 		// Add settings tab
 		this.addSettingTab(new TaskNotesSettingTab(this.app, this));
