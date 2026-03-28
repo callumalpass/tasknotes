@@ -7,13 +7,11 @@ import {
 	MarkdownView,
 	TFile,
 	Platform,
-	addIcon,
 	Command,
 	Hotkey,
 	getLanguage,
 	normalizePath,
 } from "obsidian";
-import { EditorView } from "@codemirror/view";
 import { format } from "date-fns";
 import {
 	createDailyNote,
@@ -37,10 +35,6 @@ import {
 	EVENT_DATE_CHANGED,
 } from "./types";
 
-// Active views
-import { PomodoroView } from "./views/PomodoroView";
-import { PomodoroStatsView } from "./views/PomodoroStatsView";
-import { StatsView } from "./views/StatsView";
 import { TaskCreationModal } from "./modals/TaskCreationModal";
 import { TaskEditModal } from "./modals/TaskEditModal";
 import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
@@ -62,16 +56,6 @@ import { TaskStatsService } from "./services/TaskStatsService";
 import { ViewPerformanceService } from "./services/ViewPerformanceService";
 import { AutoArchiveService } from "./services/AutoArchiveService";
 import { ViewStateManager } from "./services/ViewStateManager";
-import { createTaskLinkOverlay, dispatchTaskUpdate } from "./editor/TaskLinkOverlay";
-import { createReadingModeTaskLinkProcessor } from "./editor/ReadingModeTaskLinkProcessor";
-import {
-	createRelationshipsDecorations,
-	setupReadingModeHandlers as setupRelationshipsReadingMode,
-} from "./editor/RelationshipsDecorations";
-import {
-	createTaskCardNoteDecorations,
-	setupReadingModeHandlers as setupTaskCardReadingMode,
-} from "./editor/TaskCardNoteDecorations";
 import { DragDropManager } from "./utils/DragDropManager";
 import {
 	formatDateForStorage,
@@ -89,13 +73,20 @@ import { AutoExportService } from "./services/AutoExportService";
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService, TranslationKey } from "./i18n";
-import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesView";
-import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
+import { RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesView";
 import { OAuthService } from "./services/OAuthService";
 import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import {
+	initializeAfterLayoutReady,
+	initializeCalendarProviders,
+	initializeCoreServices,
+	registerBasesIntegration,
+	registerRibbonIcons,
+	registerTaskNotesIcon,
+} from "./bootstrap/pluginBootstrap";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -225,20 +216,20 @@ export default class TaskNotesPlugin extends Plugin {
 	private registeredCommands = new Map<string, string>();
 
 	// Event listener cleanup
-	private taskUpdateListenerForEditor: import("obsidian").EventRef | null = null;
+	taskUpdateListenerForEditor: import("obsidian").EventRef | null = null;
 	private autoStopTimeTrackingListener: import("obsidian").EventRef | null = null;
-	private relationshipsReadingModeCleanup: (() => void) | null = null;
-	private taskCardReadingModeCleanup: (() => void) | null = null;
+	relationshipsReadingModeCleanup: (() => void) | null = null;
+	taskCardReadingModeCleanup: (() => void) | null = null;
 
 	// Initialization guard to prevent duplicate initialization
-	private initializationComplete = false;
+	initializationComplete = false;
 
 	// Migration state management
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
 
 	// Bases registration state management
-	private basesRegistered = false;
+	basesRegistered = false;
 
 	/**
 	 * Get the system UI locale with proper priority order for TaskNotes plugin.
@@ -300,122 +291,9 @@ export default class TaskNotesPlugin extends Plugin {
 			this.refreshCommandTranslations();
 		});
 
-		// Register TaskNotes icon with transparent cutouts
-		addIcon(
-			"tasknotes-simple",
-			`<g>
-			<defs>
-				<mask id="tasknotes-mask">
-					<rect width="100" height="100" fill="white"/>
-					<path fill="black" d="m 5.9,52.4 -0.09,4.51 c 4.71,0.09 7.61,1.48 9.95,3.57 2.35,2.09 4.11,5.01 5.90,8.14 1.80,3.13 3.62,6.46 6.45,9.12 2.23,2.09 5.14,3.67 8.83,4.21 0.46,-1.51 1.05,-2.95 1.77,-4.33 -3.44,-0.21 -5.62,-1.39 -7.53,-3.17 -2.14,-2.01 -3.82,-4.92 -5.63,-8.08 -1.81,-3.16 -3.77,-6.56 -6.82,-9.27 -3.05,-2.71 -7.07,-4.59 -11.83,-4.70 z"/>
-					<path fill="black" d="M 73.6,18.3 69.9,20.9 c 4.06,5.75 4.40,11.33 2.77,16.78 -1.63,5.45 -5.41,10.67 -9.65,14.78 -8.49,8.20 -16.59,14.11 -21.83,21.18 -5.24,7.07 -7.22,15.59 -3.13,27.21 l 4.25,-1.50 c -3.74,-10.62 -2.11,-16.80 2.50,-23.01 4.61,-6.21 12.63,-12.19 21.34,-20.64 4.65,-4.50 8.89,-10.23 10.84,-16.72 1.95,-6.49 1.42,-13.86 -3.40,-20.68 z"/>
-				</mask>
-			</defs>
-			<path fill="currentColor" mask="url(#tasknotes-mask)" d="m 98.5,0.6 c -0.38,0 -0.83,0.09 -1.33,0.23 -2,0.59 -4.66,2.18 -5.78,3.22 -1.25,1.16 -4.16,4.93 -6.08,7.19 -2.67,3.12 -5.65,6.58 -9.32,11.13 2.58,5.61 2.61,11.38 1.05,16.60 -1.95,6.49 -6.19,12.22 -10.84,16.72 -8.71,8.43 -16.73,14.41 -21.34,20.64 -4.47,6.03 -6.13,12.03 -2.81,22.08 0.19,-0.23 0.37,-0.49 0.54,-0.80 10.57,-19.70 17.89,-27.30 41.9,-47.08 v 0 c 2.40,-1.97 3.71,-4.33 4.52,-7.14 0.81,-2.82 1.11,-6.10 1.52,-9.92 0.81,-7.64 2.02,-17.43 8.43,-29.95 0.37,-0.73 0.57,-1.30 0.62,-1.72 0.05,-0.43 -0.04,-0.71 -0.22,-0.90 -0.19,-0.18 -0.48,-0.27 -0.86,-0.26 z M 72.7,26.3 c -0.75,0.92 -1.51,1.84 -2.27,2.78 -9.09,11.05 -19.45,22.93 -28.54,29.97 -1.48,1.14 -2.98,1.54 -4.46,1.38 -1.49,-0.16 -2.97,-0.89 -4.43,-1.96 -2.91,-2.16 -5.74,-5.74 -8.35,-9.19 -2.62,-3.45 -5.04,-6.77 -7.12,-8.39 -1.04,-0.81 -1.99,-1.19 -2.83,-0.97 -0.84,0.22 -1.60,1.05 -2.26,2.70 -1.03,2.61 -1.60,6.22 -3.42,10.05 4.08,0.62 7.27,2.27 9.73,4.45 3.05,2.71 5.01,6.11 6.82,9.27 1.81,3.16 3.49,6.07 5.63,8.08 1.90,1.78 4.08,2.96 7.53,3.17 0.71,-1.37 1.55,-2.69 2.49,-3.95 5.24,-7.07 13.34,-12.98 21.83,-21.18 4.24,-4.11 8.02,-9.33 9.65,-14.78 1.12,-3.73 1.31,-7.53 0.01,-11.42 z M 10.3,49.1 c -0.09,0.29 -0.18,0.56 -0.28,0.85 0.10,-0.29 0.19,-0.56 0.28,-0.85 z m -4.02,7.84 c -0.01,0.01 -0.02,0.02 -0.03,0.03 0.01,-0.01 0.02,-0.02 0.03,-0.03 0,0 0,0 0,0 z m 0.12,0 c -1.08,1.40 -2.40,2.79 -4.05,4.12 -1.20,1.0 -1.85,1.86 -2.03,2.71 -0.18,0.85 0.10,1.67 0.76,2.53 1.32,1.71 4.16,3.54 7.81,5.91 7.28,4.73 17.75,11.63 25.63,24.16 0.64,1.02 1.74,2.04 2.95,2.65 -0.91,-5.36 -0.91,-8.78 -0.54,-11.88 -3.33,-0.55 -6.07,-2.12 -8.39,-4.72 -2.83,-3.17 -4.69,-6.59 -6.54,-9.85 -1.85,-3.26 -3.69,-6.37 -6.08,-8.47 -2.06,-1.81 -4.61,-3.0 -8.49,-3.17 z"/>
-		</g>`
-		);
-
-		// Initialize only essential services that are needed for app registration
-		this.fieldMapper = new FieldMapper(this.settings.fieldMapping);
-		this.statusManager = new StatusManager(this.settings.customStatuses, this.settings.defaultTaskStatus);
-		this.priorityManager = new PriorityManager(this.settings.customPriorities);
-
-		// Initialize performance optimization utilities (lightweight)
-		this.requestDeduplicator = new RequestDeduplicator();
-		this.predictivePrefetcher = new PredictivePrefetcher(this.requestDeduplicator);
-		this.domReconciler = new DOMReconciler();
-		this.uiStateManager = new UIStateManager();
-
-		// Initialize task manager for just-in-time task lookups
-		this.cacheManager = new TaskManager(this.app, this.settings, this.fieldMapper);
-
-		// Use same instance for event emitting
-		this.emitter = this.cacheManager;
-
-		// Initialize dependency cache for relationships
-		this.dependencyCache = new DependencyCache(
-			this.app,
-			this.settings,
-			this.fieldMapper,
-			this.statusManager,
-			(frontmatter: any) => this.cacheManager.isTaskFile(frontmatter)
-		);
-
-		// Connect dependency cache to task manager
-		this.cacheManager.setDependencyCache(this.dependencyCache);
-
-		// Initialize business logic services (lightweight constructors)
-		this.taskService = new TaskService(this);
-		this.filterService = new FilterService(
-			this.cacheManager,
-			this.statusManager,
-			this.priorityManager,
-			this
-		);
-		this.taskStatsService = new TaskStatsService(this.cacheManager, this.statusManager);
-		this.viewStateManager = new ViewStateManager(this.app, this);
-		this.projectSubtasksService = new ProjectSubtasksService(this);
-		this.expandedProjectsService = new ExpandedProjectsService(this);
-		this.autoArchiveService = new AutoArchiveService(this);
-
-		// Initialize task selection service for batch operations
-		const { TaskSelectionService } = require("./services/TaskSelectionService");
-		this.taskSelectionService = new TaskSelectionService(this);
-		this.dragDropManager = new DragDropManager(this);
-		this.statusBarService = new StatusBarService(this);
-		this.notificationService = new NotificationService(this);
-		this.viewPerformanceService = new ViewPerformanceService(this);
-
-		// Initialize Bases filter converter for saved view export
-		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");
-		this.basesFilterConverter = new BasesFilterConverter(this);
-
-		// Initialize mdbase-spec generation service
-		const { MdbaseSpecService } = await import("./services/MdbaseSpecService");
-		this.mdbaseSpecService = new MdbaseSpecService(this);
-
-		// Create ICS services early so views can register event listeners
-		// (initialization will be deferred to lazy loading)
-		this.icsSubscriptionService = new ICSSubscriptionService(this);
-		this.icsNoteService = new ICSNoteService(this);
-
-		// Connect AutoArchiveService to TaskService for status-based auto-archiving
-		this.taskService.setAutoArchiveService(this.autoArchiveService);
-
-		// Note: View registration and heavy operations moved to onLayoutReady
-
-		// Add ribbon icons
-		this.addRibbonIcon("calendar-days", this.i18n.translate("commands.openCalendarView"), async () => {
-			await this.activateCalendarView();
-		});
-
-		this.addRibbonIcon("calendar", this.i18n.translate("commands.openAdvancedCalendarView"), async () => {
-			await this.openBasesFileForCommand('open-advanced-calendar-view');
-		});
-
-		this.addRibbonIcon("check-square", this.i18n.translate("commands.openTasksView"), async () => {
-			await this.openBasesFileForCommand('open-tasks-view');
-		});
-
-		this.addRibbonIcon("list", this.i18n.translate("commands.openAgendaView"), async () => {
-			await this.openBasesFileForCommand('open-agenda-view');
-		});
-
-		this.addRibbonIcon("columns-3", this.i18n.translate("commands.openKanbanView"), async () => {
-			await this.openBasesFileForCommand('open-kanban-view');
-		});
-
-		this.addRibbonIcon("timer", this.i18n.translate("commands.openPomodoroView"), async () => {
-			await this.activatePomodoroView();
-		});
-
-		this.addRibbonIcon("bar-chart-3", this.i18n.translate("commands.openPomodoroStats"), async () => {
-			await this.activatePomodoroStatsView();
-		});
-
-		this.addRibbonIcon("tasknotes-simple", this.i18n.translate("commands.createNewTask"), () => {
-			this.openTaskCreationModal();
-		});
+		registerTaskNotesIcon();
+		await initializeCoreServices(this);
+		registerRibbonIcons(this);
 
 		// Add commands
 		this.addCommands();
@@ -426,28 +304,8 @@ export default class TaskNotesPlugin extends Plugin {
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
-		// Initialize OAuth and Calendar services early (before Bases registration)
-		// This ensures the calendar toggles appear in Bases calendar views
-		this.oauthService = new OAuthService(this);
-		this.googleCalendarService = new GoogleCalendarService(this, this.oauthService);
-		this.microsoftCalendarService = new MicrosoftCalendarService(this, this.oauthService);
-
-		// Initialize calendar provider registry and register calendar providers
-		this.calendarProviderRegistry = new CalendarProviderRegistry();
-		this.calendarProviderRegistry.register(this.googleCalendarService);
-		this.calendarProviderRegistry.register(this.microsoftCalendarService);
-
-		// Early registration attempt for Bases integration
-		if (this.settings?.enableBases && !this.basesRegistered) {
-			try {
-				const { registerBasesTaskList } = await import("./bases/registration");
-				await registerBasesTaskList(this);
-				this.basesRegistered = true;
-			} catch (e) {
-				// eslint-disable-next-line no-console
-				console.debug("[TaskNotes][Bases] Early registration failed:", e);
-			}
-		}
+		initializeCalendarProviders(this);
+		await registerBasesIntegration(this);
 
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
@@ -461,294 +319,23 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Initialize HTTP API service (desktop only)
 	 */
-	private async initializeHTTPAPI(): Promise<void> {
-		// Only initialize on desktop and if API is enabled
-		if (Platform.isMobile || !this.settings.enableAPI) {
-			return;
-		}
-
-		try {
-			// Use dynamic import() to load HTTPAPIService only on desktop
-			const { HTTPAPIService } = await import("./services/HTTPAPIService");
-
-			this.apiService = new HTTPAPIService(
-				this,
-				this.taskService,
-				this.filterService,
-				this.cacheManager
-			);
-
-			// Connect webhook notifier to TaskService for file-based operations
-			this.taskService.setWebhookNotifier(this.apiService);
-
-			// Connect webhook notifier to PomodoroService for pomodoro events
-			this.pomodoroService.setWebhookNotifier(this.apiService);
-
-			// Start the API server
-			await this.apiService.start();
-			new Notice(`TaskNotes API started on port ${this.apiService.getPort()}`);
-		} catch (error) {
-			console.error("Failed to initialize HTTP API:", error);
-			new Notice("Failed to start TaskNotes API server. Check console for details.");
-		}
-	}
-
-	/**
-	 * Initialize expensive operations after layout is ready
-	 */
-	private async initializeAfterLayoutReady(): Promise<void> {
-		// Guard against multiple initialization calls
-		if (this.initializationComplete) {
-			return;
-		}
-		this.initializationComplete = true;
-
-		try {
-			// Ensure default Bases command files exist (if auto-creation is enabled)
-			// Deferred to here (after layout ready) to avoid race conditions with file explorer cache
-			if (this.settings.autoCreateDefaultBasesFiles) {
-				await this.ensureBasesViewFiles();
-			}
-
-			// Inject dynamic styles for custom statuses and priorities
-			this.injectCustomStyles();
-
-			// Register active view types
-			this.registerView(POMODORO_VIEW_TYPE, (leaf) => new PomodoroView(leaf, this));
-			this.registerView(
-				POMODORO_STATS_VIEW_TYPE,
-				(leaf) => new PomodoroStatsView(leaf, this)
-			);
-			this.registerView(STATS_VIEW_TYPE, (leaf) => new StatsView(leaf, this));
-
-			this.registerView(
-				RELEASE_NOTES_VIEW_TYPE,
-				(leaf) => new ReleaseNotesView(leaf, this, RELEASE_NOTES_BUNDLE, CURRENT_VERSION)
-			);
-
-			// Register essential editor extensions (now safe after layout ready)
-			this.registerEditorExtension(createTaskLinkOverlay(this));
-
-			// Register task card note decorations for live preview (before relationships to ensure proper ordering)
-			this.registerEditorExtension(createTaskCardNoteDecorations(this));
-
-			// Setup task card widget for reading mode
-			this.taskCardReadingModeCleanup = setupTaskCardReadingMode(this);
-
-			// Register relationships decorations for live preview
-			this.registerEditorExtension(createRelationshipsDecorations(this));
-
-			// Setup relationships widget for reading mode
-			this.relationshipsReadingModeCleanup = setupRelationshipsReadingMode(this);
-
-			// Register reading mode task link processor
-			this.registerMarkdownPostProcessor(createReadingModeTaskLinkProcessor(this));
-
-			// Initialize task manager (lightweight - no index building)
-			this.cacheManager.initialize();
-
-			// Initialize dependency cache (lightweight - lazy index building)
-			this.dependencyCache.initialize();
-
-			// Initialize FilterService and set up event listeners (lightweight)
-			this.filterService.initialize();
-
-			// Initialize status bar service
-			this.statusBarService.initialize();
-
-			// Initialize notification service
-			await this.notificationService.initialize();
-
-			// Warm up TaskManager indexes for better performance
-			await this.warmupProjectIndexes();
-
-			// Initialize and start auto-archive service
-			await this.autoArchiveService.start();
-
-			// Initialize date change detection to refresh tasks at midnight
-			this.setupDateChangeDetection();
-
-			// Defer heavy service initialization until needed
-			this.initializeServicesLazily();
-
-			// Register TaskNotes views with Bases plugin (if enabled and not already registered)
-			if (this.settings?.enableBases && !this.basesRegistered) {
-				try {
-					const { registerBasesTaskList } = await import("./bases/registration");
-					await registerBasesTaskList(this);
-					this.basesRegistered = true;
-				} catch (e) {
-					console.debug("[TaskNotes][Bases] Registration failed:", e);
-				}
-			}
-		} catch (error) {
-			console.error("Error during post-layout initialization:", error);
-		}
+	async initializeAfterLayoutReady(): Promise<void> {
+		await initializeAfterLayoutReady(this);
 	}
 
 	/**
 	 * Initialize heavy services lazily in the background
 	 */
-	private initializeServicesLazily(): void {
-		// Use setTimeout to defer initialization to next tick
-		setTimeout(async () => {
-			try {
-				// Initialize Pomodoro service
-				this.pomodoroService = new PomodoroService(this);
-				await this.pomodoroService.initialize();
-
-				// Initialize ICS subscription service (instance already created in onload)
-				await this.icsSubscriptionService.initialize();
-
-				// Initialize auto export service
-				this.autoExportService = new AutoExportService(this);
-				this.autoExportService.start();
-
-				// Connect calendar data changes to view refreshes BEFORE initialization
-				// This ensures we catch the initial data-changed event from initialize()
-
-				// Google Calendar
-				this.googleCalendarService.on("data-changed", () => {
-					// Trigger calendar view refreshes when Google Calendar events change
-					this.notifyDataChanged(undefined, false, true);
-				});
-
-				// Initialize Google Calendar service (instance already created in onload)
-				// This triggers the actual data fetching and will emit data-changed
-				await this.googleCalendarService.initialize();
-
-				// Initialize Task Calendar Sync service for pushing tasks to Google Calendar
-				this.taskCalendarSyncService = new TaskCalendarSyncService(
-					this,
-					this.googleCalendarService
-				);
-
-				// Clean up Google Calendar events when task files are deleted externally
-				this.registerEvent(
-					this.emitter.on("file-deleted", (data: { path: string; prevCache?: any }) => {
-						if (!this.taskCalendarSyncService?.isEnabled()) return;
-						const eventIdKey = this.fieldMapper.toUserField("googleCalendarEventId");
-						const eventId = data.prevCache?.frontmatter?.[eventIdKey];
-						if (eventId) {
-							this.taskCalendarSyncService
-								.deleteTaskFromCalendarByPath(data.path, eventId)
-								.catch((error) => {
-									console.warn("Failed to delete task from Google Calendar on file deletion:", error);
-								});
-						}
-					})
-				);
-
-				// Microsoft Calendar
-				this.microsoftCalendarService.on("data-changed", () => {
-					// Trigger calendar view refreshes when Microsoft Calendar events change
-					this.notifyDataChanged(undefined, false, true);
-				});
-
-				// Initialize Microsoft Calendar service (instance already created in onload)
-				// This triggers the actual data fetching and will emit data-changed
-				await this.microsoftCalendarService.initialize();
-
-				// Initialize HTTP API service if enabled (desktop only)
-				await this.initializeHTTPAPI();
-
-				// Initialize editor services (async imports)
-				const { TaskLinkDetectionService } = await import(
-					"./services/TaskLinkDetectionService"
-				);
-				this.taskLinkDetectionService = new TaskLinkDetectionService(this);
-
-				const { InstantTaskConvertService } = await import(
-					"./services/InstantTaskConvertService"
-				);
-				this.instantTaskConvertService = new InstantTaskConvertService(
-					this,
-					this.statusManager,
-					this.priorityManager
-				);
-
-				// Register additional editor extensions
-				const { createInstantConvertButtons } = await import(
-					"./editor/InstantConvertButtons"
-				);
-				this.registerEditorExtension(createInstantConvertButtons(this));
-
-				// Set up global event listener for task updates to refresh editor decorations
-				this.taskUpdateListenerForEditor = this.emitter.on(
-					EVENT_TASK_UPDATED,
-					(data: { path?: string; updatedTask?: TaskInfo }) => {
-						// Trigger decoration refresh in all active markdown views using proper state effects
-						this.app.workspace.iterateRootLeaves((leaf) => {
-							// Use instanceof check for deferred view compatibility
-							if (leaf.view && leaf.view.getViewType() === "markdown") {
-								const editor = (leaf.view as MarkdownView).editor;
-								if (editor && (editor as Editor & { cm?: EditorView }).cm) {
-									// Use the proper CodeMirror state effect pattern
-									// Pass the updated task path to ensure specific widget refreshing
-									const taskPath = data?.path || data?.updatedTask?.path;
-									dispatchTaskUpdate(
-										(editor as Editor & { cm: EditorView }).cm,
-										taskPath
-									);
-								}
-							}
-						});
-					}
-				);
-
-				// Set up workspace event listener for active leaf changes to refresh task overlays
-				this.registerEvent(
-					this.app.workspace.on("active-leaf-change", (leaf) => {
-						// Small delay to ensure editor is fully initialized
-						setTimeout(() => {
-							if (leaf && leaf.view && leaf.view.getViewType() === "markdown") {
-								const editor = (leaf.view as MarkdownView).editor;
-								if (editor && (editor as Editor & { cm?: EditorView }).cm) {
-									// Dispatch task update to refresh overlays when returning to a note
-									dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
-
-								}
-							}
-						}, 50);
-					})
-				);
-
-				// Set up workspace event listener for layout changes to detect mode switches
-				this.registerEvent(
-					this.app.workspace.on("layout-change", () => {
-						// Small delay to ensure mode switch is complete
-						setTimeout(() => {
-							const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-							if (activeView) {
-								const editor = activeView.editor;
-								if (editor && (editor as Editor & { cm?: EditorView }).cm) {
-									// Refresh overlays when switching to Live Preview mode
-									dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
-
-								}
-							}
-						}, 100);
-					})
-				);
-
-				// Set up status bar event listeners for real-time updates
-				this.setupStatusBarEventListeners();
-
-				// Set up time tracking event listeners
-				this.setupTimeTrackingEventListeners();
-
-				// Check for version updates and show release notes if needed
-				await this.checkForVersionUpdate();
-			} catch (error) {
-				console.error("Error during lazy service initialization:", error);
-			}
-		}, 10); // Small delay to ensure startup completes first
+	initializeServicesLazily(): void {
+		import("./bootstrap/pluginBootstrap").then(({ initializeServicesLazily }) => {
+			initializeServicesLazily(this);
+		});
 	}
 
 	/**
 	 * Warm up TaskManager indexes for better performance
 	 */
-	private async warmupProjectIndexes(): Promise<void> {
+	async warmupProjectIndexes(): Promise<void> {
 		try {
 			// Simple approach: just trigger the lazy index building once
 			// This is much more efficient than processing individual files
@@ -783,7 +370,7 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Set up event listeners for status bar updates
 	 */
-	private setupStatusBarEventListeners(): void {
+	setupStatusBarEventListeners(): void {
 		if (!this.statusBarService) {
 			return;
 		}
@@ -842,7 +429,7 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Set up time tracking event listeners based on settings
 	 */
-	private setupTimeTrackingEventListeners(): void {
+	setupTimeTrackingEventListeners(): void {
 		// Clear existing listener to avoid duplicate handlers across settings reloads/changes
 		if (this.autoStopTimeTrackingListener) {
 			this.emitter.offref(this.autoStopTimeTrackingListener);
@@ -966,7 +553,7 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Check for version updates and show release notes if needed
 	 */
-	private async checkForVersionUpdate(): Promise<void> {
+	async checkForVersionUpdate(): Promise<void> {
 		try {
 			const currentVersion = this.manifest.version;
 			const lastSeenVersion = this.settings.lastSeenVersion;
@@ -1053,7 +640,7 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Set up date change detection to refresh task states when the date rolls over
 	 */
-	private setupDateChangeDetection(): void {
+	setupDateChangeDetection(): void {
 		// Check for date changes every minute
 		const checkDateChange = () => {
 			const currentDate = new Date().toDateString();
@@ -2000,7 +1587,7 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
-	private async ensureBasesViewFiles(): Promise<{ created: string[]; skipped: string[] }> {
+	async ensureBasesViewFiles(): Promise<{ created: string[]; skipped: string[] }> {
 		const created: string[] = [];
 		const skipped: string[] = [];
 
@@ -2207,7 +1794,7 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Inject dynamic CSS for custom statuses and priorities
 	 */
-	private injectCustomStyles(): void {
+	injectCustomStyles(): void {
 		// Remove existing custom styles
 		const existingStyle = document.getElementById("tasknotes-custom-styles");
 		if (existingStyle) {

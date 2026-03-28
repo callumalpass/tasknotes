@@ -215,7 +215,7 @@ export class PomodoroStatsView extends ItemView {
 
 		const history = await this.plugin.pomodoroService.getSessionHistory();
 		const recentSessions = history
-			.filter((session) => session.type === "work")
+			.filter((session: PomodoroSessionHistory) => session.type === "work")
 			.slice(-10)
 			.reverse();
 
@@ -457,7 +457,7 @@ export class PomodoroStatsView extends ItemView {
 		const normalizedEndDate = startOfDay(endDate);
 
 		// Filter sessions within date range
-		const rangeSessions = history.filter((session) => {
+		const rangeSessions = history.filter((session: PomodoroSessionHistory) => {
 			try {
 				// Parse the session timestamp safely and normalize to start of day
 				const sessionTimestamp = parseTimestamp(session.startTime);
