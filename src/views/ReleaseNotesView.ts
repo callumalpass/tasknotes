@@ -8,6 +8,26 @@ export const RELEASE_NOTES_VIEW_TYPE = "tasknotes-release-notes";
 const GITHUB_RELEASES_URL = "https://github.com/callumalpass/tasknotes/releases";
 const GITHUB_REPO_URL = "https://github.com/callumalpass/tasknotes";
 
+/**
+ * Transform parenthesized issue/PR references like (#123) or (#123, #456)
+ * into clickable GitHub links while preserving the surrounding parentheses.
+ */
+export function transformReleaseNoteIssueLinks(markdown: string, repoUrl = GITHUB_REPO_URL): string {
+	return markdown.replace(/\(((?:#\d+\s*)(?:,\s*#\d+\s*)*)\)/g, (_match, refs: string) => {
+		const linkedRefs = refs
+			.split(",")
+			.map((ref) => ref.trim())
+			.filter(Boolean)
+			.map((ref) => {
+				const issueNumber = ref.slice(1);
+				return `[#${issueNumber}](${repoUrl}/issues/${issueNumber})`;
+			})
+			.join(", ");
+
+		return `(${linkedRefs})`;
+	});
+}
+
 export class ReleaseNotesView extends ItemView {
 	plugin: TaskNotesPlugin;
 	private releaseNotesBundle: ReleaseNoteVersion[];
@@ -36,8 +56,7 @@ export class ReleaseNotesView extends ItemView {
 	 * Transform issue references like (#123) into clickable GitHub issue links
 	 */
 	private transformIssueLinks(markdown: string): string {
-		const repoUrl = "https://github.com/callumalpass/tasknotes";
-		return markdown.replace(/\(#(\d+)\)/g, `([#$1](${repoUrl}/issues/$1))`);
+		return transformReleaseNoteIssueLinks(markdown);
 	}
 
 	/**
