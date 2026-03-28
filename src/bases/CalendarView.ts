@@ -39,6 +39,10 @@ import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { formatDateForStorage, hasTimeComponent, parseDateToLocal, parseDateToUTC } from "../utils/dateUtils";
+import {
+	CalendarRecreateNavigationState,
+	shouldPreserveVisibleDateOnCalendarRecreate,
+} from "./calendarRecreateUtils";
 
 /**
  * Normalize date-like inputs to UTC-anchored strings for all-day values, or
@@ -113,6 +117,8 @@ export class CalendarView extends BasesViewBase {
 
 	// Flag to indicate config changed and calendar needs recreation
 	private _configChangedNeedsRecreate = false;
+	// Preserve visible date when calendar is re-created.
+	private _recreateTargetDate: Date | null = null;
 	
 	private viewOptions: {
 		// Events
@@ -615,8 +621,16 @@ export class CalendarView extends BasesViewBase {
 			// If config changed, re-read ALL options and destroy calendar for recreation
 			if (this._configChangedNeedsRecreate) {
 				this._configChangedNeedsRecreate = false;
+				const previousNavigationState = this.getNavigationConfigState();
 				this.readViewOptions();
 				if (this.calendar) {
+					const nextNavigationState = this.getNavigationConfigState();
+					this._recreateTargetDate = shouldPreserveVisibleDateOnCalendarRecreate(
+						previousNavigationState,
+						nextNavigationState
+					)
+						? this.calendar.getDate()
+						: null;
 					this.calendar.destroy();
 					this.calendar = null;
 				}
@@ -675,7 +689,7 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendarEl) return;
 
 		// Determine initial date
-		const initialDate = this.determineInitialDate(taskNotes);
+		const initialDate = this._recreateTargetDate ?? this.determineInitialDate(taskNotes);
 
 		// Build calendar options
 		const calendarOptions: CalendarOptions = {
@@ -822,6 +836,7 @@ export class CalendarView extends BasesViewBase {
 		// Create calendar
 		this.calendar = new Calendar(this.calendarEl, calendarOptions);
 		this.calendar.render();
+		this._recreateTargetDate = null;
 
 		// Apply showTodayHighlight option via CSS
 		this.applyTodayHighlightStyling();
@@ -917,6 +932,14 @@ export class CalendarView extends BasesViewBase {
 
 		// Default to today
 		return undefined;
+	}
+
+	private getNavigationConfigState(): CalendarRecreateNavigationState {
+		return {
+			initialDate: this.viewOptions.initialDate,
+			initialDateProperty: this.viewOptions.initialDateProperty,
+			initialDateStrategy: this.viewOptions.initialDateStrategy,
+		};
 	}
 
 	private async fetchEvents(fetchInfo: any, successCallback: any, failureCallback: any): Promise<void> {
