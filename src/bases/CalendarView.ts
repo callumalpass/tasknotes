@@ -39,6 +39,10 @@ import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { formatDateForStorage, hasTimeComponent, parseDateToLocal, parseDateToUTC } from "../utils/dateUtils";
+import {
+	CalendarRecreateNavigationState,
+	shouldPreserveVisibleDateOnCalendarRecreate,
+} from "./calendarRecreateUtils";
 
 /**
  * Normalize date-like inputs to UTC-anchored strings for all-day values, or
@@ -617,9 +621,16 @@ export class CalendarView extends BasesViewBase {
 			// If config changed, re-read ALL options and destroy calendar for recreation
 			if (this._configChangedNeedsRecreate) {
 				this._configChangedNeedsRecreate = false;
+				const previousNavigationState = this.getNavigationConfigState();
 				this.readViewOptions();
 				if (this.calendar) {
-					this._recreateTargetDate = this.calendar.getDate();
+					const nextNavigationState = this.getNavigationConfigState();
+					this._recreateTargetDate = shouldPreserveVisibleDateOnCalendarRecreate(
+						previousNavigationState,
+						nextNavigationState
+					)
+						? this.calendar.getDate()
+						: null;
 					this.calendar.destroy();
 					this.calendar = null;
 				}
@@ -921,6 +932,14 @@ export class CalendarView extends BasesViewBase {
 
 		// Default to today
 		return undefined;
+	}
+
+	private getNavigationConfigState(): CalendarRecreateNavigationState {
+		return {
+			initialDate: this.viewOptions.initialDate,
+			initialDateProperty: this.viewOptions.initialDateProperty,
+			initialDateStrategy: this.viewOptions.initialDateStrategy,
+		};
 	}
 
 	private async fetchEvents(fetchInfo: any, successCallback: any, failureCallback: any): Promise<void> {
