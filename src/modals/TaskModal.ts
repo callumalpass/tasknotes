@@ -10,6 +10,7 @@ import {
 	setTooltip,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { getOrderedModalGroups, shouldShowFieldForModal } from "./taskModalFieldConfig";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { StatusContextMenu } from "../components/StatusContextMenu";
@@ -801,21 +802,7 @@ export abstract class TaskModal extends Modal {
 	 * Check if a field should be shown based on field configuration
 	 */
 	protected shouldShowField(fieldId: string, config?: any): boolean {
-		// If no config, show all fields (legacy behavior)
-		if (!config || !config.fields) {
-			return true;
-		}
-
-		// Find the field in config
-		const field = config.fields.find((f: any) => f.id === fieldId);
-		if (!field) {
-			// Field not in config, show it by default
-			return true;
-		}
-
-		// Check if field is enabled and visible for this modal type
-		const isVisible = this.isCreationMode() ? field.visibleInCreation : field.visibleInEdit;
-		return field.enabled && isVisible;
+		return shouldShowFieldForModal(fieldId, config, this.isCreationMode());
 	}
 
 	protected createAdditionalFields(container: HTMLElement): void {
@@ -831,18 +818,9 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createFieldsFromConfig(container: HTMLElement, config: any): void {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const { getFieldsByGroup } = require("../utils/fieldConfigDefaults");
-		const fieldGroups = getFieldsByGroup(config, this.isCreationMode());
-
-		// Render fields by group
-		const groupsToRender = [...config.groups].sort((a: any, b: any) => a.order - b.order);
+		const groupsToRender = getOrderedModalGroups(config, this.isCreationMode());
 
 		for (const groupConfig of groupsToRender) {
-			const fields = fieldGroups.get(groupConfig.id);
-			if (!fields || fields.length === 0) continue;
-
-			// Skip basic group (title and details are handled separately)
 			if (groupConfig.id === "basic") continue;
 
 			// Create a section for this group if it has fields
@@ -854,7 +832,7 @@ export abstract class TaskModal extends Modal {
 			}
 
 			// Render fields in this group
-			for (const field of fields) {
+			for (const field of groupConfig.fields) {
 				this.createField(groupContainer, field);
 			}
 		}
