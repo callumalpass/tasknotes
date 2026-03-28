@@ -35,12 +35,19 @@ import {
 	isPropertyForField,
 } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
+import {
+	extractBasesValue,
+	resolveTaskCardPropertyLabel,
+	type TaskCardPresentationOptions,
+} from "./taskCardPresentation";
 
 export interface TaskCardOptions {
 	targetDate?: Date;
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
+	/** Optional display labels for properties, typically sourced from Bases config. */
+	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -365,7 +372,7 @@ function createChevronClickHandler(
 			}
 			const newExpanded = plugin.expandedProjectsService.toggle(task.path);
 			chevron.classList.toggle("task-card__chevron--expanded", newExpanded);
-			const newTooltip = newExpanded ? "Collapse subtasks" : "Expand subtasks";
+			const newTooltip = getChevronTooltip(plugin, newExpanded);
 			chevron.setAttribute("aria-label", newTooltip);
 			setTooltip(chevron, newTooltip, { placement: "top" });
 			await toggleSubtasks(card, task, plugin, newExpanded);
@@ -539,59 +546,58 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
 	checklistProgress: (task) => task.path, // Used to compute checklist progress from metadata cache listItems
 };
 
-/**
- * Extract raw value from a Bases Value object.
- * Bases API may return objects like {icon: "...", data: ...} or {icon: "...", link: "..."}
- * instead of raw primitive values. This function extracts the actual value.
- *
- * For link values (icon: "lucide-link"), Bases strips the [[]] from wikilinks,
- * so we need to restore them to ensure proper rendering.
- */
-function extractBasesValue(value: unknown): unknown {
-	if (value && typeof value === "object" && "icon" in value) {
-		const v = value as Record<string, unknown>;
+function tTaskCard(
+	plugin: TaskNotesPlugin,
+	key: string,
+	vars?: Record<string, string | number>
+): string {
+	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
+}
 
-		// Handle link results (icon: "lucide-link") - restore wikilink format for internal links
-		// Bases stores the link path in "data" field for links
-		if (v.icon === "lucide-link" && "data" in v && v.data !== null && v.data !== undefined) {
-			const linkPath = String(v.data);
-			// Check if it's an internal link (not a URL) - restore wikilink format
-			if (!linkPath.match(/^[a-z]+:\/\//i)) {
-				// Get display text if available
-				const display = "display" in v && v.display ? String(v.display) : null;
-				if (display && display !== linkPath) {
-					return `[[${linkPath}|${display}]]`;
-				}
-				return `[[${linkPath}]]`;
-			}
-			// External URL - return as markdown link if we have display text
-			const display = "display" in v && v.display ? String(v.display) : null;
-			if (display) {
-				return `[${display}](${linkPath})`;
-			}
-			return linkPath;
-		}
+function getTaskCardPropertyLabel(
+	propertyId: string,
+	plugin: TaskNotesPlugin,
+	propertyLabels?: Record<string, string>
+): string {
+	const fallbackLabels: Record<string, string> = {
+		due: tTaskCard(plugin, "labels.due"),
+		scheduled: tTaskCard(plugin, "labels.scheduled"),
+		recurrence: tTaskCard(plugin, "labels.recurrence"),
+		completedDate: tTaskCard(plugin, "labels.completed"),
+		dateCreated: tTaskCard(plugin, "labels.created"),
+		dateModified: tTaskCard(plugin, "labels.modified"),
+		blocked: tTaskCard(plugin, "labels.blocked"),
+		blocking: tTaskCard(plugin, "labels.blocking"),
+	};
 
-		// Return data value if present (for non-link types)
-		if ("data" in v && v.data !== null && v.data !== undefined) {
-			return v.data;
-		}
-		// Handle date results
-		if (v.icon === "lucide-calendar" && "date" in v) {
-			return v.date;
-		}
-		// Handle text results with display property
-		if ("display" in v && v.display !== null && v.display !== undefined) {
-			return v.display;
-		}
-		// Handle missing/empty data indicators
-		if (v.icon === "lucide-file-question" || v.icon === "lucide-help-circle") {
-			return "";
-		}
-		// Fallback for other icon-only results
-		return v.icon ? String(v.icon).replace("lucide-", "") : "";
-	}
-	return value;
+	return resolveTaskCardPropertyLabel(
+		propertyId,
+		{ propertyLabels },
+		fallbackLabels[propertyId]
+	);
+}
+
+function getRecurrenceTooltip(
+	plugin: TaskNotesPlugin,
+	recurrence: string,
+	propertyLabels?: Record<string, string>
+): string {
+	return tTaskCard(plugin, "recurrenceTooltip", {
+		label: getTaskCardPropertyLabel("recurrence", plugin, propertyLabels),
+		value: getRecurrenceDisplayText(recurrence),
+	});
+}
+
+function getReminderTooltip(plugin: TaskNotesPlugin, count: number): string {
+	return count === 1
+		? tTaskCard(plugin, "reminderTooltipOne")
+		: tTaskCard(plugin, "reminderTooltipMany", { count });
+}
+
+function getChevronTooltip(plugin: TaskNotesPlugin, expanded: boolean): string {
+	return expanded
+		? tTaskCard(plugin, "collapseSubtasks")
+		: tTaskCard(plugin, "expandSubtasks");
 }
 
 /**
@@ -758,21 +764,22 @@ type PropertyRenderer = (
 	element: HTMLElement,
 	value: unknown,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	options?: Partial<TaskCardOptions>
 ) => void;
 
 /**
  * Property renderers for cleaner separation of concerns
  */
 const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
-	due: (element, value, task, plugin) => {
+	due: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			renderDueDateProperty(element, value, task, plugin);
+			renderDueDateProperty(element, value, task, plugin, options?.propertyLabels);
 		}
 	},
-	scheduled: (element, value, task, plugin) => {
+	scheduled: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			renderScheduledDateProperty(element, value, task, plugin);
+			renderScheduledDateProperty(element, value, task, plugin, options?.propertyLabels);
 		}
 	},
 	projects: (element, value, task, plugin) => {
@@ -843,9 +850,9 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.textContent = `${plugin.formatTime(value)} tracked`;
 		}
 	},
-	recurrence: (element, value) => {
+	recurrence: (element, value, _task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Recurring: ${getRecurrenceDisplayText(value)}`;
+			element.textContent = getRecurrenceTooltip(plugin, value, options?.propertyLabels);
 		}
 	},
 	completeInstances: (element, value, task) => {
@@ -871,46 +878,51 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.classList.add("task-card__metadata-pill--skipped-instances");
 		}
 	},
-	completedDate: (element, value, task, plugin) => {
+	completedDate: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Completed: ${formatDateTimeForDisplay(value, {
+			const label = getTaskCardPropertyLabel("completedDate", plugin, options?.propertyLabels);
+			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
 			})}`;
 		}
 	},
-	dateCreated: (element, value, task, plugin) => {
+	dateCreated: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Created: ${formatDateTimeForDisplay(value, {
+			const label = getTaskCardPropertyLabel("dateCreated", plugin, options?.propertyLabels);
+			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
 			})}`;
 		}
 	},
-	dateModified: (element, value, task, plugin) => {
+	dateModified: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Modified: ${formatDateTimeForDisplay(value, {
+			const label = getTaskCardPropertyLabel("dateModified", plugin, options?.propertyLabels);
+			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
 			})}`;
 		}
 	},
-	blocked: (element, value, task) => {
+	blocked: (element, value, task, plugin, options) => {
 		// Show blocked status with count if available
 		if (value === true) {
 			const blockedCount = task.blockedBy?.length ?? 0;
-			element.textContent = blockedCount > 0 ? `Blocked (${blockedCount})` : "Blocked";
+			const label = getTaskCardPropertyLabel("blocked", plugin, options?.propertyLabels);
+			element.textContent = blockedCount > 0 ? `${label} (${blockedCount})` : label;
 			element.classList.add("task-card__metadata-pill--blocked");
 		}
 	},
-	blocking: (element, value, task) => {
+	blocking: (element, value, task, plugin, options) => {
 		// Show blocking status with count if available
 		if (value === true) {
 			const blockingCount = task.blocking?.length ?? 0;
-			element.textContent = blockingCount > 0 ? `Blocking (${blockingCount})` : "Blocking";
+			const label = getTaskCardPropertyLabel("blocking", plugin, options?.propertyLabels);
+			element.textContent = blockingCount > 0 ? `${label} (${blockingCount})` : label;
 			element.classList.add("task-card__metadata-pill--blocking");
 		}
 	},
@@ -1011,7 +1023,8 @@ function renderPropertyMetadata(
 	container: HTMLElement,
 	propertyId: string,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	options: Partial<TaskCardOptions> = {}
 ): HTMLElement | null {
 	const value = getPropertyValue(task, propertyId, plugin);
 
@@ -1031,12 +1044,18 @@ function renderPropertyMetadata(
 		const rendererKey = mappingKey || propertyId;
 
 		if (rendererKey in PROPERTY_RENDERERS) {
-			PROPERTY_RENDERERS[rendererKey](element, value, task, plugin);
+			PROPERTY_RENDERERS[rendererKey](element, value, task, plugin, options);
 		} else if (propertyId.startsWith("user:")) {
 			renderUserProperty(element, propertyId, value, plugin);
 		} else {
 			// Fallback: render arbitrary property with generic format
-			renderGenericProperty(element, propertyId, value, plugin);
+			renderGenericProperty(
+				element,
+				propertyId,
+				value,
+				plugin,
+				getTaskCardPropertyLabel(propertyId, plugin, options.propertyLabels)
+			);
 		}
 
 		// If the renderer didn't add any content, remove the element and return null
@@ -1164,15 +1183,10 @@ function renderGenericProperty(
 	element: HTMLElement,
 	propertyId: string,
 	value: unknown,
-	plugin?: TaskNotesPlugin
+	plugin?: TaskNotesPlugin,
+	displayNameOverride?: string
 ): void {
-	// Handle formula properties - show just the formula name, not "formula.TESTST"
-	let displayName: string;
-	if (propertyId.startsWith("formula.")) {
-		displayName = propertyId.substring(8); // Remove "formula." prefix
-	} else {
-		displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
-	}
+	const displayName = resolveTaskCardPropertyLabel(propertyId, {}, displayNameOverride);
 
 	// Add property label
 	element.createEl("span", { text: `${displayName}: ` });
@@ -1321,7 +1335,8 @@ function renderDueDateProperty(
 	element: HTMLElement,
 	due: string,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	propertyLabels?: Record<string, string>
 ): void {
 	const isDueToday = isTodayTimeAware(due);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
@@ -1329,6 +1344,7 @@ function renderDueDateProperty(
 	const isDueOverdue = isOverdueTimeAware(due, isCompleted, hideCompletedFromOverdue);
 
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
+	const dueLabel = getTaskCardPropertyLabel("due", plugin, propertyLabels);
 	let dueDateText = "";
 	if (isDueToday) {
 		const timeDisplay = formatDateTimeForDisplay(due, {
@@ -1336,21 +1352,24 @@ function renderDueDateProperty(
 			showTime: true,
 			userTimeFormat,
 		});
-		dueDateText = timeDisplay.trim() === "" ? "Due: Today" : `Due: Today at ${timeDisplay}`;
+		dueDateText =
+			timeDisplay.trim() === ""
+				? tTaskCard(plugin, "dueToday", { label: dueLabel })
+				: tTaskCard(plugin, "dueTodayAt", { label: dueLabel, time: timeDisplay });
 	} else if (isDueOverdue) {
 		const display = formatDateTimeForDisplay(due, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		dueDateText = `Due: ${display} (overdue)`;
+		dueDateText = tTaskCard(plugin, "dueOverdue", { label: dueLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(due, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		dueDateText = `Due: ${display}`;
+		dueDateText = tTaskCard(plugin, "dueLabel", { label: dueLabel, display });
 	}
 
 	element.textContent = dueDateText;
@@ -1371,7 +1390,8 @@ function renderScheduledDateProperty(
 	element: HTMLElement,
 	scheduled: string,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	propertyLabels?: Record<string, string>
 ): void {
 	const isScheduledToday = isTodayTimeAware(scheduled);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
@@ -1379,6 +1399,7 @@ function renderScheduledDateProperty(
 	const isScheduledPast = isOverdueTimeAware(scheduled, isCompleted, hideCompletedFromOverdue);
 
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
+	const scheduledLabel = getTaskCardPropertyLabel("scheduled", plugin, propertyLabels);
 	let scheduledDateText = "";
 	if (isScheduledToday) {
 		const timeDisplay = formatDateTimeForDisplay(scheduled, {
@@ -1387,21 +1408,23 @@ function renderScheduledDateProperty(
 			userTimeFormat,
 		});
 		scheduledDateText =
-			timeDisplay.trim() === "" ? "Scheduled: Today" : `Scheduled: Today at ${timeDisplay}`;
+			timeDisplay.trim() === ""
+				? tTaskCard(plugin, "scheduledToday", { label: scheduledLabel })
+				: tTaskCard(plugin, "scheduledTodayAt", { label: scheduledLabel, time: timeDisplay });
 	} else if (isScheduledPast) {
 		const display = formatDateTimeForDisplay(scheduled, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		scheduledDateText = `Scheduled: ${display} (past)`;
+		scheduledDateText = tTaskCard(plugin, "scheduledPast", { label: scheduledLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(scheduled, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		scheduledDateText = `Scheduled: ${display}`;
+		scheduledDateText = tTaskCard(plugin, "scheduledLabel", { label: scheduledLabel, display });
 	}
 
 	element.textContent = scheduledDateText;
@@ -1582,7 +1605,7 @@ export function createTaskCard(
 	if (task.priority && priorityConfig && shouldShowPriority) {
 		const priorityDot = mainRow.createEl("span", {
 			cls: "task-card__priority-dot",
-			attr: { "aria-label": `Priority: ${priorityConfig.label}` },
+			attr: { "aria-label": tTaskCard(plugin, "priorityAriaLabel", { label: priorityConfig.label }) },
 		});
 		priorityDot.style.borderColor = priorityConfig.color;
 		priorityDot.addEventListener("click", createPriorityClickHandler(task, plugin));
@@ -1597,7 +1620,7 @@ export function createTaskCard(
 	if (badgesContainer) {
 		// Recurring indicator
 		if (task.recurrence) {
-			const recurrenceTooltip = `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`;
+			const recurrenceTooltip = getRecurrenceTooltip(plugin, task.recurrence, opts.propertyLabels);
 			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__recurring-indicator",
@@ -1610,7 +1633,7 @@ export function createTaskCard(
 		// Reminder indicator
 		if (task.reminders && task.reminders.length > 0) {
 			const count = task.reminders.length;
-			const reminderTooltip = count === 1 ? "1 reminder set (click to manage)" : `${count} reminders set (click to manage)`;
+			const reminderTooltip = getReminderTooltip(plugin, count);
 			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__reminder-indicator",
@@ -1627,7 +1650,7 @@ export function createTaskCard(
 				container: badgesContainer,
 				className: "task-card__project-indicator",
 				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
+				tooltip: tTaskCard(plugin, "projectTooltip"),
 				onClick: createProjectClickHandler(task, plugin),
 			});
 
@@ -1638,7 +1661,7 @@ export function createTaskCard(
 					container: badgesContainer,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+					tooltip: getChevronTooltip(plugin, isExpanded),
 				});
 
 				// Chevron needs special handler since it updates its own state
@@ -1682,13 +1705,13 @@ export function createTaskCard(
 	const contextIcon = mainRow.createEl("div", {
 		cls: "task-card__context-menu",
 		attr: {
-			"aria-label": "Task options",
+			"aria-label": tTaskCard(plugin, "taskOptions"),
 		},
 	});
 
 	// Use Obsidian's built-in ellipsis-vertical icon
 	setIcon(contextIcon, "ellipsis-vertical");
-	setTooltip(contextIcon, "Task options", { placement: "top" });
+	setTooltip(contextIcon, tTaskCard(plugin, "taskOptions"), { placement: "top" });
 
 	contextIcon.addEventListener("click", async (e) => {
 		e.stopPropagation();
@@ -1787,7 +1810,13 @@ export function createTaskCard(
 			continue;
 		}
 
-		const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
+		const element = renderPropertyMetadata(
+			metadataLine,
+			propertyId,
+			task,
+			plugin,
+			opts
+		);
 		if (element) {
 			metadataElements.push(element);
 		}
@@ -2101,7 +2130,7 @@ export function updateTaskCard(
 
 	// Update recurring indicator
 	const recurrenceTooltip = task.recurrence
-		? `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`
+		? getRecurrenceTooltip(plugin, task.recurrence, opts.propertyLabels)
 		: "";
 	updateBadgeIndicator(element, ".task-card__recurring-indicator", {
 		shouldExist: !!task.recurrence,
@@ -2114,9 +2143,7 @@ export function updateTaskCard(
 	// Update reminder indicator
 	const hasReminders = !!(task.reminders && task.reminders.length > 0);
 	const reminderCount = task.reminders?.length || 0;
-	const reminderTooltip = reminderCount === 1
-		? "1 reminder set (click to manage)"
-		: `${reminderCount} reminders set (click to manage)`;
+	const reminderTooltip = getReminderTooltip(plugin, reminderCount);
 	updateBadgeIndicator(element, ".task-card__reminder-indicator", {
 		shouldExist: hasReminders,
 		className: "task-card__reminder-indicator",
@@ -2138,7 +2165,7 @@ export function updateTaskCard(
 				shouldExist: isProject,
 				className: "task-card__project-indicator",
 				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
+				tooltip: tTaskCard(plugin, "projectTooltip"),
 				onClick: createProjectClickHandler(task, plugin),
 			});
 
@@ -2152,7 +2179,7 @@ export function updateTaskCard(
 					container: badgesContainer || mainRow,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+					tooltip: getChevronTooltip(plugin, isExpanded),
 				});
 
 				if (chevron) {
@@ -2291,7 +2318,7 @@ export function updateTaskCard(
 				continue;
 			}
 
-			const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
+			const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin, opts);
 			if (element) {
 				metadataElements.push(element);
 			}

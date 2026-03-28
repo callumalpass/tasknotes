@@ -18,114 +18,50 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import {
+	extractBasesValue,
+	resolveTaskCardPropertyLabel,
+} from "../../../src/ui/taskCardPresentation";
 
 describe('Issue #1720: Bases date-like value rendering', () => {
-	/**
-	 * Simulates the extractBasesValue logic to demonstrate the bug.
-	 * This mirrors the current implementation in src/ui/TaskCard.ts lines 550-595.
-	 */
-	function extractBasesValueCurrent(value: unknown): unknown {
-		if (value && typeof value === 'object' && 'icon' in value) {
-			const v = value as Record<string, unknown>;
+	it('prefers display and date fields before raw Bases data', () => {
+		expect(
+			extractBasesValue({
+				icon: "lucide-clock",
+				data: "clock",
+				display: "13 days ago",
+			})
+		).toBe("13 days ago");
 
-			// Handle link results
-			if (v.icon === 'lucide-link' && 'data' in v && v.data !== null && v.data !== undefined) {
-				return v.data;
-			}
+		expect(
+			extractBasesValue({
+				icon: "lucide-clock",
+				date: "2026-03-13",
+				display: "Mar 13",
+			})
+		).toBe("Mar 13");
 
-			// BUG: Returns data first, which may be the icon token for date-like values
-			if ('data' in v && v.data !== null && v.data !== undefined) {
-				return v.data;
-			}
-			// BUG: Only checks lucide-calendar, misses lucide-clock
-			if (v.icon === 'lucide-calendar' && 'date' in v) {
-				return v.date;
-			}
-			if ('display' in v && v.display !== null && v.display !== undefined) {
-				return v.display;
-			}
-			if (v.icon === 'lucide-file-question' || v.icon === 'lucide-help-circle') {
-				return '';
-			}
-			return v.icon ? String(v.icon).replace('lucide-', '') : '';
-		}
-		return value;
-	}
-
-	describe('extractBasesValue with date-like Bases objects', () => {
-		it.skip('reproduces issue #1720: relative date formula returns icon token instead of display text', () => {
-			// Bases value object for file.mtime.relative() formula
-			const basesValue = {
-				icon: 'lucide-clock',
-				data: 'clock',
-				display: '13 days ago',
-			};
-
-			const result = extractBasesValueCurrent(basesValue);
-
-			// BUG: Currently returns "clock" (the data field) instead of "13 days ago"
-			// Expected: should return "13 days ago" (the display field)
-			expect(result).toBe('13 days ago');
-			// Actual: returns "clock"
-		});
-
-		it.skip('reproduces issue #1720: date property with lucide-clock icon falls through to wrong value', () => {
-			// Bases value object for a date property rendered with clock icon
-			const basesValue = {
-				icon: 'lucide-clock',
-				date: '2026-03-13',
-				display: 'Mar 13',
-			};
-
-			const result = extractBasesValueCurrent(basesValue);
-
-			// BUG: Falls through because icon !== "lucide-calendar", returns icon name
-			// Expected: should return the date or display value
-			expect(result).toBe('Mar 13');
-			// Actual: returns "clock" from the fallback
-		});
-
-		it.skip('reproduces issue #1720: calendar date should still work with display preference', () => {
-			// Bases value object with both display and date
-			const basesValue = {
-				icon: 'lucide-calendar',
-				data: 'calendar',
-				date: '2026-03-13',
-				display: 'Mar 13, 2026',
-			};
-
-			const result = extractBasesValueCurrent(basesValue);
-
-			// BUG: Returns "calendar" (data field) because data is checked first
-			// Expected: should return "Mar 13, 2026" (display field)
-			expect(result).toBe('Mar 13, 2026');
-		});
+		expect(
+			extractBasesValue({
+				icon: "lucide-calendar",
+				data: "calendar",
+				date: "2026-03-13",
+				display: "Mar 13, 2026",
+			})
+		).toBe("Mar 13, 2026");
 	});
 
-	describe('renderGenericProperty label derivation', () => {
-		it.skip('reproduces issue #1720: formula property label uses raw ID instead of display name', () => {
-			// Current logic: propertyId.startsWith("formula.") -> substring(8)
-			const propertyId = 'formula.lastTouched';
-			const expectedLabel = 'Last touched'; // Configured Bases display name
+	it('uses Bases display-name plumbing for generic property labels', () => {
+		expect(
+			resolveTaskCardPropertyLabel("formula.lastTouched", {
+				propertyLabels: { "formula.lastTouched": "Last touched" },
+			})
+		).toBe("Last touched");
 
-			// Current implementation just strips "formula." prefix
-			const currentLabel = propertyId.substring(8); // "lastTouched"
-
-			// BUG: Returns raw formula name instead of configured display name
-			expect(currentLabel).toBe(expectedLabel);
-			// Actual: returns "lastTouched"
-		});
-
-		it.skip('reproduces issue #1720: custom property label uses raw ID with incorrect casing', () => {
-			const propertyId = 'modified-c';
-			const expectedLabel = 'Modified c'; // Or whatever Bases configures
-
-			// Current implementation: charAt(0).toUpperCase() + slice(1)
-			const currentLabel = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
-
-			// Returns "Modified-c" with the hyphen, not the Bases display name
-			expect(currentLabel).toBe('Modified-c'); // This actually passes but is wrong
-			// The label should come from Bases display name configuration, not derived from ID
-		});
+		expect(
+			resolveTaskCardPropertyLabel("modified-c", {
+				propertyLabels: { "modified-c": "Modified" },
+			})
+		).toBe("Modified");
 	});
 });

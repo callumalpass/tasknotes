@@ -724,7 +724,12 @@ export class TaskListView extends BasesViewBase {
 			const existingElement = this.currentTaskElements.get(task.path);
 			if (existingElement && existingElement.isConnected) {
 				const visibleProperties = this.getVisibleProperties();
-				const replacement = createTaskCard(task, this.plugin, visibleProperties, this.getCardOptions(this.currentTargetDate));
+				const replacement = createTaskCard(
+					task,
+					this.plugin,
+					visibleProperties,
+					this.getCardOptions(this.currentTargetDate)
+				);
 				existingElement.replaceWith(replacement);
 				replacement.classList.add("task-card--updated");
 				// Use correct window for pop-out window support
@@ -853,9 +858,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private getCardOptions(targetDate: Date) {
-		return {
-			targetDate,
-		};
+		return this.buildTaskCardOptions({ targetDate });
 	}
 
 	private clearClickTimeouts(): void {

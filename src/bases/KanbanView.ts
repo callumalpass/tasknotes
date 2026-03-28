@@ -2171,10 +2171,10 @@ export class KanbanView extends BasesViewBase {
 		// Hide status indicators on cards when consolidation is enabled and grouped by status
 		const hideStatusIndicator = this.consolidateStatusIcon && this.isGroupedByStatus();
 
-		return {
+		return this.buildTaskCardOptions({
 			targetDate,
 			hideStatusIndicator,
-		};
+		});
 	}
 
 	/**

@@ -8,6 +8,7 @@ import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
+import type { TaskCardOptions } from "../ui/TaskCard";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -501,6 +502,33 @@ export abstract class BasesViewBase extends Component {
 		}
 
 		return visibleProperties;
+	}
+
+	/**
+	 * Get Bases-configured display labels keyed by the TaskCard property IDs we render.
+	 */
+	protected getVisiblePropertyLabels(): Record<string, string> {
+		const labels: Record<string, string> = {};
+		const basesPropertyIds = this.config.getOrder();
+
+		for (const basesPropertyId of basesPropertyIds) {
+			const taskCardPropertyId = this.propertyMapper.basesToTaskCardProperty(basesPropertyId);
+			const displayName = this.config.getDisplayName?.(basesPropertyId);
+			if (taskCardPropertyId && typeof displayName === "string" && displayName.trim() !== "") {
+				labels[taskCardPropertyId] = displayName;
+			}
+		}
+
+		return labels;
+	}
+
+	protected buildTaskCardOptions(
+		options: Partial<TaskCardOptions> = {}
+	): Partial<TaskCardOptions> {
+		return {
+			propertyLabels: this.getVisiblePropertyLabels(),
+			...options,
+		};
 	}
 
 	/**

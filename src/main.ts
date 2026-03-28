@@ -385,35 +385,35 @@ export default class TaskNotesPlugin extends Plugin {
 		// Note: View registration and heavy operations moved to onLayoutReady
 
 		// Add ribbon icons
-		this.addRibbonIcon("calendar-days", "Open mini calendar", async () => {
+		this.addRibbonIcon("calendar-days", this.i18n.translate("commands.openCalendarView"), async () => {
 			await this.activateCalendarView();
 		});
 
-		this.addRibbonIcon("calendar", "Open advanced calendar", async () => {
+		this.addRibbonIcon("calendar", this.i18n.translate("commands.openAdvancedCalendarView"), async () => {
 			await this.openBasesFileForCommand('open-advanced-calendar-view');
 		});
 
-		this.addRibbonIcon("check-square", "Open task list", async () => {
+		this.addRibbonIcon("check-square", this.i18n.translate("commands.openTasksView"), async () => {
 			await this.openBasesFileForCommand('open-tasks-view');
 		});
 
-		this.addRibbonIcon("list", "Open agenda", async () => {
+		this.addRibbonIcon("list", this.i18n.translate("commands.openAgendaView"), async () => {
 			await this.openBasesFileForCommand('open-agenda-view');
 		});
 
-		this.addRibbonIcon("columns-3", "Open kanban board", async () => {
+		this.addRibbonIcon("columns-3", this.i18n.translate("commands.openKanbanView"), async () => {
 			await this.openBasesFileForCommand('open-kanban-view');
 		});
 
-		this.addRibbonIcon("timer", "Open pomodoro", async () => {
+		this.addRibbonIcon("timer", this.i18n.translate("commands.openPomodoroView"), async () => {
 			await this.activatePomodoroView();
 		});
 
-		this.addRibbonIcon("bar-chart-3", "Open pomodoro stats", async () => {
+		this.addRibbonIcon("bar-chart-3", this.i18n.translate("commands.openPomodoroStats"), async () => {
 			await this.activatePomodoroStatsView();
 		});
 
-		this.addRibbonIcon("tasknotes-simple", "Create new task", () => {
+		this.addRibbonIcon("tasknotes-simple", this.i18n.translate("commands.createNewTask"), () => {
 			this.openTaskCreationModal();
 		});
 

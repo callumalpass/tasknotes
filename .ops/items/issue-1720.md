@@ -11,7 +11,7 @@ remote_title: >-
   [Bug]: tasknotesTaskList renders date-like Bases values as icon names (e.g. clock) and ignores property display names
 remote_author: Sirnii
 remote_url: 'https://github.com/callumalpass/tasknotes/issues/1720'
-local_status: triaged
+local_status: done
 priority: high
 difficulty: easy
 risk: low
@@ -39,8 +39,17 @@ notes: |-
 
   Fallback options:
   - Only fix the value extraction order and leave display name labels for a follow-up.
-command_id: triage-issue
-last_analyzed_at: '2026-03-26T00:03:00Z'
+
+  Progress update 2026-03-29:
+  - Updating `extractBasesValue()` to prefer `display`, then `date`, then `data` for non-link
+    Bases values so date-like fields stop rendering icon tokens such as `clock`.
+  - Threading Bases `config.getDisplayName(...)` labels into TaskCard generic-property rendering
+    for Bases-backed views.
+  - Adding focused regression coverage for the extraction order and display-name plumbing.
+  - Verified with `pnpm exec jest tests/unit/issues/issue-1720-bases-date-value-icon-rendering.test.ts --runInBand`,
+    `npm run build:test`, `obsidian plugin:reload id=tasknotes`, and `obsidian dev:errors`.
+command_id: address-issue
+last_analyzed_at: '2026-03-29T09:30:00Z'
 sync_state: clean
 type: item_state
 ---

@@ -26,6 +26,10 @@ Example:
 
 ## Fixed
 
+- (#1720) Fixed Bases Task List cards showing Lucide icon tokens such as `clock` instead of formatted date-like values, and fixed generic property labels to use configured Bases display names instead of raw property IDs
+  - Thanks to @Sirnii for reporting
+- (#1633) Fixed interactive Task Card labels and ribbon labels so Bases-backed cards use translated labels and configured Bases display names instead of hardcoded English/raw property IDs
+  - Thanks to @Sarryaz for reporting
 - (#1651) Fixed date `is` query filtering so date-only searches also match timed `scheduled` and `due` values during TaskManager prefiltering
   - Thanks to @36mimu36 for reporting
 - (#1644) Fixed generated default task views so recurring tasks without a `complete_instances` property are still treated as incomplete and appear in views like This Week, Today, and Overdue

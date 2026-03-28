@@ -1810,9 +1810,9 @@ export class CalendarView extends BasesViewBase {
 				// Use shared UTC-anchored target date logic
 				const targetDate = getTargetDateForEvent(arg);
 
-				cardElement = createTaskCard(enrichedTask, this.plugin, visibleProperties, {
+				cardElement = createTaskCard(enrichedTask, this.plugin, visibleProperties, this.buildTaskCardOptions({
 					targetDate: targetDate,
-				});
+				}));
 			}
 			// Render ICS events with ICSCard
 			else if (icsEvent && eventType === 'ics') {
