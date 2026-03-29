@@ -1,11 +1,15 @@
 import { requireApiVersion } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { captureCliCommand } from "./commands/captureCommand";
+import { pomodoroCliCommand } from "./commands/pomodoroCommand";
 import { startTimeTrackingCliCommand } from "./commands/startTimeTrackingCommand";
 import { stopTimeTrackingCliCommand } from "./commands/stopTimeTrackingCommand";
+import { timeStatusCliCommand } from "./commands/timeStatusCommand";
 import type { CliCommandDefinition } from "./types";
 
 const CLI_COMMANDS: CliCommandDefinition[] = [
+	pomodoroCliCommand,
+	timeStatusCliCommand,
 	startTimeTrackingCliCommand,
 	stopTimeTrackingCliCommand,
 	// Keep capture registered last. In live Obsidian CLI testing, this ordering
