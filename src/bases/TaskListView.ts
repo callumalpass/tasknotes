@@ -4,7 +4,7 @@ import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData, BasesDataItem } from "./helpers";
-import { createTaskCard, showTaskContextMenu } from "../ui/TaskCard";
+import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
@@ -61,6 +61,9 @@ export class TaskListView extends BasesViewBase {
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
 	private collapsedSubGroups = new Set<string>(); // Track collapsed sub-group keys
 	private subGroupPropertyId: string | null = null; // Property ID for sub-grouping
+	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
+		"inherit";
+	private currentVisibleTaskPaths = new Set<string>();
 	private configLoaded = false; // Track if we've successfully loaded config
 
 	// Drag-to-reorder state
@@ -127,6 +130,11 @@ export class TaskListView extends BasesViewBase {
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get('enableSearch');
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			const expandedRelationshipFilterModeValue = this.config.get(
+				"expandedRelationshipFilterMode"
+			);
+			this.expandedRelationshipFilterMode =
+				expandedRelationshipFilterModeValue === "show-all" ? "show-all" : "inherit";
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
@@ -982,6 +990,7 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
+		this.setCurrentVisibleTaskPaths(filteredTasks);
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -1228,6 +1237,7 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
+		this.setCurrentVisibleTaskPaths(filteredTasks);
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -1315,6 +1325,7 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
+		this.setCurrentVisibleTaskPaths(filteredTasks);
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -1672,7 +1683,18 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private getCardOptions(targetDate: Date) {
-		return this.buildTaskCardOptions({ targetDate });
+		return this.buildTaskCardOptions({
+			targetDate,
+			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
+			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
+		});
+	}
+
+	private setCurrentVisibleTaskPaths(tasks: TaskInfo[]): void {
+		this.currentVisibleTaskPaths.clear();
+		for (const task of tasks) {
+			this.currentVisibleTaskPaths.add(task.path);
+		}
 	}
 
 	private clearClickTimeouts(): void {

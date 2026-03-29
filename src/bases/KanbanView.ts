@@ -4,7 +4,7 @@ import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData, BasesDataItem } from "./helpers";
-import { createTaskCard } from "../ui/TaskCard";
+import { createTaskCard, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
@@ -47,6 +47,9 @@ export class KanbanView extends BasesViewBase {
 	private sortScopeTaskPaths = new Map<string, string[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
+	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
+		"inherit";
+	private currentVisibleTaskPaths = new Set<string>();
 	private suppressRenderUntil: number = 0;
 	private postDropTimer: number | null = null;
 	private dropQueue = new DropOperationQueue();
@@ -176,6 +179,11 @@ export class KanbanView extends BasesViewBase {
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			const expandedRelationshipFilterModeValue = this.config.get(
+				"expandedRelationshipFilterMode"
+			);
+			this.expandedRelationshipFilterMode =
+				expandedRelationshipFilterModeValue === "show-all" ? "show-all" : "inherit";
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;
@@ -336,6 +344,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);
+			this.setCurrentVisibleTaskPaths(filteredTasks);
 
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
@@ -2982,7 +2991,16 @@ export class KanbanView extends BasesViewBase {
 		return this.buildTaskCardOptions({
 			targetDate,
 			hideStatusIndicator,
+			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
+			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
 		});
+	}
+
+	private setCurrentVisibleTaskPaths(tasks: TaskInfo[]): void {
+		this.currentVisibleTaskPaths.clear();
+		for (const task of tasks) {
+			this.currentVisibleTaskPaths.add(task.path);
+		}
 	}
 
 	/**

@@ -40,6 +40,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						displayName: "Enable search box",
 						default: false,
 					},
+					{
+						type: "dropdown",
+						key: "expandedRelationshipFilterMode",
+						displayName: "Expanded relationships",
+						default: "inherit",
+						options: ["inherit", "show-all"],
+					},
 				],
 			});
 
@@ -107,6 +114,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						displayName: "Column Order (Advanced)",
 						placeholder: "Auto-managed when dragging columns",
 						default: "{}",
+					},
+					{
+						type: "dropdown",
+						key: "expandedRelationshipFilterMode",
+						displayName: "Expanded relationships",
+						default: "inherit",
+						options: ["inherit", "show-all"],
 					},
 				],
 			});
