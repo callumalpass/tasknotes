@@ -92,6 +92,7 @@ nav:
     - Workflows: workflows.md
     - Calendar Setup: calendar-setup.md
   - Specification:
+    - About the Spec: spec.md
     - Overview: spec/00-overview.md
     - Terminology: spec/01-terminology.md
     - Model & Mapping: spec/02-model-and-mapping.md
