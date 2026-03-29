@@ -63,3 +63,9 @@ Example:
   - Thanks to @ac8318740 for the original contribution in PR #1619
   - Thanks to @iholston and @dsebastien for opening #386 and #621
   - Thanks to @kanzaki1201 for the swimlane drag-order discussion in #1474 that helped shape the follow-up robustness work
+- Published the [TaskNotes Specification](https://github.com/callumalpass/tasknotes-spec) as a standalone repo, formalizing the rules for task data model, field mapping, temporal semantics, recurrence, operations, validation, and conformance that TaskNotes and other implementations follow
+  - The spec includes an executable conformance suite with ~5,000 JSON test fixtures that any implementation can run against
+  - Documentation site now includes a [Specification section](/spec/) with the full spec content
+- Released [tasknotes-tui](https://github.com/callumalpass/tasknotes-tui), a terminal UI for managing TaskNotes vaults, built in Rust on top of mdbase-rs
+  - Keyboard-driven interface with configurable views, date navigation, time tracking, recurring task support, and a fuzzy command palette
+  - Spec-compliant: reads and writes the same markdown task files as the Obsidian plugin
