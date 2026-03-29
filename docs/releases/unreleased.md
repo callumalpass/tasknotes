@@ -54,7 +54,7 @@ Example:
 
 ## Added
 
-- Added TaskNotes Obsidian CLI commands for task creation, time tracking, and Pomodoro control, with shared NLP-to-task conversion across CLI, modal, and API capture flows plus explicit override flags for title, details, dates, tags, contexts, projects, recurrence, recurrence anchor, reminders, estimate, literal-title capture, task-targeted start/stop time tracking, active time-status reporting, and action-based Pomodoro automation
+- Added TaskNotes Obsidian CLI commands for task creation, time tracking, and Pomodoro control, with shared NLP-to-task conversion across CLI, modal, and API capture flows plus explicit override flags for title, details, dates, tags, contexts, projects, recurrence, recurrence anchor, reminders, estimate, literal-title capture, task-targeted start/stop time tracking, active time-status reporting, action-based Pomodoro automation, and dedicated user documentation for the built-in Obsidian CLI surface
 - (#1619, #386, #621) Added drag-to-reorder for Kanban and Task List views, including grouped Task List moves, manual ordering support via the `tasknotes_manual_order` property, updated generated `.base` templates, and polished drag/drop feedback for swimlanes, filtered views, and interactive task controls
   - Thanks to @ac8318740 for the original contribution in PR #1619
   - Thanks to @iholston and @dsebastien for opening #386 and #621

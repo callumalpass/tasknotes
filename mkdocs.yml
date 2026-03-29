@@ -85,6 +85,7 @@ nav:
     - Advanced Settings: settings/advanced-settings.md
   - APIs & Integration:
     - HTTP API: HTTP_API.md
+    - TaskNotes Obsidian CLI: obsidian-cli.md
     - NLP API: nlp-api.md
     - mdbase-tasknotes CLI: mdbase-tasknotes-cli.md
     - Webhooks: webhooks.md
