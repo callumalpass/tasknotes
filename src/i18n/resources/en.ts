@@ -251,6 +251,7 @@ export const en: TranslationTree = {
 					showWeekends: "Show weekends",
 					showAllDaySlot: "Show all-day slot",
 					showTodayHighlight: "Show today highlight",
+					todayColumnWidthMultiplier: "Today column width multiplier",
 					showSelectionPreview: "Show selection preview",
 					timeFormat: "Time format",
 					timeFormat12: "12-hour (AM/PM)",

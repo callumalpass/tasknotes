@@ -26,8 +26,13 @@ Example:
 
 ## Fixed
 
+- (#1601, #1709) Fixed reading-mode relationship widgets rendering multiple times during startup by serializing per-note widget injection requests and coalescing overlapping refreshes
+  - Applied the same reading-mode injection guard to task cards so both note widgets use the same safer lifecycle
+  - Thanks to @wealthychef1 and @CarlJohnson99 for reporting
 - (#1713) Fixed ICS export so date-only scheduled tasks are emitted as proper all-day events instead of midnight-timed events, improving compatibility with calendar apps like Thunderbird and Evolution
   - Thanks to @bepolymathe for the feature request and clear calendar interoperability report
+- (#1704) Added an option to widen the current day column in multi-day calendar time-grid views, with separate settings for width multiplier and whether the effect applies to week view, custom multi-day view, or both
+  - Thanks to @dictionarymouse for the feature request
 - (#267, #948, #1682, #1717, #1725) Fixed expanded subtasks and dependency cards in Bases Task List and Kanban views so related items can inherit the current view's filters instead of always showing every linked task, and added a per-view "Expanded relationships" option to switch between inheriting filters and showing all related tasks
   - Thanks to @mdbraber, @GardarikanetS, @Glint-Eye, @prepare4robots, and @robmcphers0n for the reports and feature requests that surfaced the same filtering gap from different angles
 - Improved custom view and search-pane activation reliability by using Obsidian's deferred-leaf APIs when revealing existing leaves, so TaskNotes waits for deferred tabs to load before interacting with them

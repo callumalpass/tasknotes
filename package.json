@@ -11,6 +11,7 @@
 		"build-css": "node build-css.mjs",
 		"e2e": "playwright test",
 		"e2e:docs": "playwright test e2e/docs-screenshots.spec.ts",
+		"e2e:release-gifs": "playwright test e2e/release-gifs.spec.ts",
 		"e2e:docs:copy": "mkdir -p media/docs && cp test-results/docs/*.png media/docs/",
 		"e2e:setup": "bash e2e-setup.sh",
 		"e2e:launch": "bash e2e-launch.sh",

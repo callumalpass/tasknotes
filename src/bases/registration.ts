@@ -314,6 +314,15 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										default: calendarSettings.showTodayHighlight,
 									},
 									{
+										type: "slider",
+										key: "todayColumnWidthMultiplier",
+										displayName: t("layout.todayColumnWidthMultiplier"),
+										default: 1,
+										min: 1,
+										max: 5,
+										step: 0.5,
+									},
+									{
 										type: "toggle",
 										key: "selectMirror",
 										displayName: t("layout.showSelectionPreview"),
