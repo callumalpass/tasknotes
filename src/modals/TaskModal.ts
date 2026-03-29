@@ -36,6 +36,7 @@ import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { createTaskModalListField } from "./taskModalOrganizationFields";
+import { createTaskCard } from "../ui/TaskCard";
 
 interface DependencyItem {
 	dependency: TaskDependency;
@@ -173,24 +174,24 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected renderBlockedByList(): void {
-		this.renderDependencyList(this.blockedByList, this.blockedByItems, (index) => {
+		void this.renderDependencyList(this.blockedByList, this.blockedByItems, (index) => {
 			this.blockedByItems.splice(index, 1);
 			this.renderBlockedByList();
 		});
 	}
 
 	protected renderBlockingList(): void {
-		this.renderDependencyList(this.blockingList, this.blockingItems, (index) => {
+		void this.renderDependencyList(this.blockingList, this.blockingItems, (index) => {
 			this.blockingItems.splice(index, 1);
 			this.renderBlockingList();
 		});
 	}
 
-	private renderDependencyList(
+	private async renderDependencyList(
 		listEl: HTMLElement | undefined,
 		items: DependencyItem[],
 		onRemove: (index: number) => void
-	): void {
+	): Promise<void> {
 		if (!listEl) {
 			return;
 		}
@@ -203,8 +204,12 @@ export abstract class TaskModal extends Modal {
 
 		const linkServices = this.getLinkServices();
 
-		items.forEach((item, index) => {
-			const itemEl = listEl.createDiv({ cls: "task-project-item" });
+		for (const [index, item] of items.entries()) {
+			const itemEl = listEl.createDiv({
+				cls: item.path && !item.unresolved
+					? "task-project-item task-project-item--task-card"
+					: "task-project-item",
+			});
 			if (item.unresolved) {
 				itemEl.addClass("task-project-item--unresolved");
 				setTooltip(
@@ -216,29 +221,41 @@ export abstract class TaskModal extends Modal {
 				);
 			}
 
-			const infoEl = itemEl.createDiv({ cls: "task-project-info" });
-			const nameEl = infoEl.createSpan({ cls: "task-project-name" });
+			const contentEl = itemEl.createDiv({
+				cls: item.path && !item.unresolved ? "task-project-card-host" : "task-project-info",
+			});
 
 			if (item.path && !item.unresolved) {
-				nameEl.addClass("clickable-dependency");
-				appendInternalLink(
-					nameEl,
-					item.path,
-					item.name,
-					linkServices,
-					{
-						cssClass: "task-dependency-link internal-link",
-						hoverSource: "tasknotes-dependency-link",
-						showErrorNotices: true,
+				const taskInfo = await this.plugin.cacheManager.getCachedTaskInfo(item.path);
+				if (taskInfo) {
+					const taskCard = createTaskCard(taskInfo, this.plugin, undefined, {
+						layout: "default",
+						showSecondaryBadges: false,
+						enableHoverPreview: false,
+					});
+					contentEl.appendChild(taskCard);
+				} else {
+					const nameEl = contentEl.createSpan({ cls: "task-project-name clickable-dependency" });
+					appendInternalLink(
+						nameEl,
+						item.path,
+						item.name,
+						linkServices,
+						{
+							cssClass: "task-dependency-link internal-link",
+							hoverSource: "tasknotes-dependency-link",
+							showErrorNotices: true,
+						}
+					);
+					if (item.path !== item.name) {
+						contentEl.createDiv({ cls: "task-project-path", text: item.path });
 					}
-				);
-				if (item.path !== item.name) {
-					infoEl.createDiv({ cls: "task-project-path", text: item.path });
 				}
 			} else {
+				const nameEl = contentEl.createSpan({ cls: "task-project-name" });
 				nameEl.textContent = item.name;
 				const pathText = item.path ?? item.dependency.uid;
-				infoEl.createDiv({ cls: "task-project-path", text: pathText });
+				contentEl.createDiv({ cls: "task-project-path", text: pathText });
 			}
 
 			const removeBtn = itemEl.createEl("button", {
@@ -253,7 +270,7 @@ export abstract class TaskModal extends Modal {
 				event.stopPropagation();
 				onRemove(index);
 			});
-		});
+		}
 	}
 
 	protected extractDetailsFromContent(content: string): string {
@@ -1864,17 +1881,17 @@ export abstract class TaskModal extends Modal {
 		}
 
 		this.selectedSubtaskFiles.push(file);
-		this.renderSubtasksList();
+		void this.renderSubtasksList();
 	}
 
 	protected removeSubtask(file: TAbstractFile): void {
 		this.selectedSubtaskFiles = this.selectedSubtaskFiles.filter(
 			(existing) => existing.path !== file.path
 		);
-		this.renderSubtasksList();
+		void this.renderSubtasksList();
 	}
 
-	protected renderSubtasksList(): void {
+	protected async renderSubtasksList(): Promise<void> {
 		if (!this.subtasksList) return;
 
 		this.subtasksList.empty();
@@ -1883,24 +1900,38 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 
-		this.selectedSubtaskFiles.forEach((file) => {
+		for (const file of this.selectedSubtaskFiles) {
 			if (!(file instanceof TFile)) return;
 
-			const subtaskItem = this.subtasksList.createDiv({ cls: "task-project-item" });
-			const infoEl = subtaskItem.createDiv({ cls: "task-project-info" });
-			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
+			const subtaskItem = this.subtasksList.createDiv({
+				cls: "task-project-item task-project-item--task-card",
+			});
+			const cardHost = subtaskItem.createDiv({ cls: "task-project-card-host" });
 
-			const taskLink = generateLinkWithDisplay(
-				this.app,
-				file,
-				this.getCurrentTaskPath() || "",
-				file.name
-			);
-			this.renderProjectLinksWithoutPrefix(nameEl, [taskLink]);
+			const taskInfo = await this.plugin.cacheManager.getCachedTaskInfo(file.path);
+			if (taskInfo) {
+				const taskCard = createTaskCard(taskInfo, this.plugin, undefined, {
+					layout: "default",
+					showSecondaryBadges: false,
+					enableHoverPreview: false,
+				});
+				cardHost.appendChild(taskCard);
+			} else {
+				const infoEl = cardHost.createDiv({ cls: "task-project-info" });
+				const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
-			if (file.path !== file.name) {
-				const pathEl = infoEl.createDiv({ cls: "task-project-path" });
-				pathEl.textContent = file.path;
+				const taskLink = generateLinkWithDisplay(
+					this.app,
+					file,
+					this.getCurrentTaskPath() || "",
+					file.name
+				);
+				this.renderProjectLinksWithoutPrefix(nameEl, [taskLink]);
+
+				if (file.path !== file.name) {
+					const pathEl = infoEl.createDiv({ cls: "task-project-path" });
+					pathEl.textContent = file.path;
+				}
 			}
 
 			const removeBtn = subtaskItem.createEl("button", {
@@ -1913,12 +1944,12 @@ export abstract class TaskModal extends Modal {
 			removeBtn.addEventListener("click", () => {
 				this.removeSubtask(file);
 			});
-		});
+		}
 	}
 
 	protected renderOrganizationLists(): void {
 		this.renderProjectsList();
-		this.renderSubtasksList();
+		void this.renderSubtasksList();
 	}
 
 	protected renderProjectLinksWithoutPrefix(container: HTMLElement, links: string[]): void {

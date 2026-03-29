@@ -53,13 +53,44 @@ export interface TaskCardOptions {
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
+	/** When false, omit secondary badge controls such as reminders, project badges, and toggles. */
+	showSecondaryBadges?: boolean;
+	/** When false, disable hover preview wiring for the card. */
+	enableHoverPreview?: boolean;
 	/** Optional display labels for properties, typically sourced from Bases config. */
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
+	/** How expanded subtasks/dependencies should interact with the current view filter. */
+	expandedRelationshipFilterMode?: "inherit" | "show-all";
+	/** Paths visible in the current view after Bases/search filtering. */
+	expandedRelationshipTaskPaths?: ReadonlySet<string>;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 	layout: "default",
+	showSecondaryBadges: true,
+	enableHoverPreview: true,
 };
+
+function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
+	return ((card as any)._taskCardOptions ?? {}) as Partial<TaskCardOptions>;
+}
+
+function filterExpandedRelationshipTasks(
+	card: HTMLElement,
+	tasks: TaskInfo[]
+): TaskInfo[] {
+	const options = getStoredTaskCardOptions(card);
+	if (options.expandedRelationshipFilterMode !== "inherit") {
+		return tasks;
+	}
+
+	const allowedTaskPaths = options.expandedRelationshipTaskPaths;
+	if (!allowedTaskPaths) {
+		return tasks;
+	}
+
+	return tasks.filter((relatedTask) => allowedTaskPaths.has(relatedTask.path));
+}
 
 function tTaskCard(
 	plugin: TaskNotesPlugin,
@@ -1295,6 +1326,7 @@ export function createTaskCard(
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
+	(card as any)._taskCardOptions = opts;
 
 	const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
 	const isCompleted = task.recurrence
@@ -1412,7 +1444,7 @@ export function createTaskCard(
 	// Badge area for secondary indicators (only in non-inline mode)
 	const badgesContainer = layout !== "inline" ? mainRow.createEl("div", { cls: "task-card__badges" }) : null;
 
-	if (badgesContainer) {
+	if (badgesContainer && opts.showSecondaryBadges) {
 		// Recurring indicator
 		if (task.recurrence) {
 			const recurrenceTooltip = getRecurrenceTooltip(plugin, task.recurrence, opts.propertyLabels);
@@ -1633,8 +1665,9 @@ export function createTaskCard(
 	card.addEventListener("dblclick", dblclickHandler);
 	card.addEventListener("contextmenu", contextmenuHandler);
 
-	// Hover preview
-	card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));
+	if (opts.enableHoverPreview) {
+		card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));
+	}
 
 	return card;
 }
@@ -2285,12 +2318,10 @@ export async function toggleSubtasks(
 					throw new Error("projectSubtasksService not initialized");
 				}
 
-				const subtasks = await plugin.projectSubtasksService.getTasksLinkedToProject(file);
-
-				// Apply current filter to subtasks if available
-				// For now, we'll show all subtasks to keep the implementation simple
-				// Future enhancement: Apply the current view's filter to subtasks
-				// This could be implemented by accessing the FilterService's evaluateFilterNode method
+				const subtasks = filterExpandedRelationshipTasks(
+					card,
+					await plugin.projectSubtasksService.getTasksLinkedToProject(file)
+				);
 
 				// Remove loading indicator
 				loadingEl.remove();
@@ -2336,7 +2367,12 @@ export async function toggleSubtasks(
 						continue;
 					}
 
-					const subtaskCard = createTaskCard(subtask, plugin, undefined);
+					const subtaskCard = createTaskCard(
+						subtask,
+						plugin,
+						undefined,
+						getStoredTaskCardOptions(card)
+					);
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
@@ -2403,7 +2439,10 @@ export async function toggleBlockingTasks(
 		const dependentInfos = task.blocking
 			? await Promise.all(task.blocking.map((path) => plugin.cacheManager.getTaskInfo(path)))
 			: [];
-		const dependents = dependentInfos.filter((info): info is TaskInfo => Boolean(info));
+		const dependents = filterExpandedRelationshipTasks(
+			card,
+			dependentInfos.filter((info): info is TaskInfo => Boolean(info))
+		);
 
 		loadingEl.remove();
 
@@ -2416,7 +2455,12 @@ export async function toggleBlockingTasks(
 		}
 
 		dependents.forEach((dependentTask) => {
-			const dependentCard = createTaskCard(dependentTask, plugin, undefined);
+			const dependentCard = createTaskCard(
+				dependentTask,
+				plugin,
+				undefined,
+				getStoredTaskCardOptions(card)
+			);
 			dependentCard.classList.add("task-card--dependency");
 			container!.appendChild(dependentCard);
 		});

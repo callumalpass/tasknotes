@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#267, #948, #1682, #1717, #1725) Fixed expanded subtasks and dependency cards in Bases Task List and Kanban views so related items can inherit the current view's filters instead of always showing every linked task, and added a per-view "Expanded relationships" option to switch between inheriting filters and showing all related tasks
+  - Thanks to @mdbraber, @GardarikanetS, @Glint-Eye, @prepare4robots, and @robmcphers0n for the reports and feature requests that surfaced the same filtering gap from different angles
 - Improved custom view and search-pane activation reliability by using Obsidian's deferred-leaf APIs when revealing existing leaves, so TaskNotes waits for deferred tabs to load before interacting with them
 - Refactored internal plugin bootstrap, main plugin coordination, command registration, workspace navigation, settings lifecycle, task mutation flows, filter query planning, Bases adapter boundaries, and task card/modal helper modules to reduce coupling and make future maintenance safer, including extraction of modal editor and organization/dependency field setup helpers
 - (#1720) Fixed Bases Task List cards showing Lucide icon tokens such as `clock` instead of formatted date-like values, and fixed generic property labels to use configured Bases display names instead of raw property IDs
@@ -55,6 +57,8 @@ Example:
 ## Added
 
 - Added TaskNotes Obsidian CLI commands for task creation, time tracking, and Pomodoro control, with shared NLP-to-task conversion across CLI, modal, and API capture flows plus explicit override flags for title, details, dates, tags, contexts, projects, recurrence, recurrence anchor, reminders, estimate, literal-title capture, task-targeted start/stop time tracking, active time-status reporting, action-based Pomodoro automation, and dedicated user documentation for the built-in Obsidian CLI surface
+- (#1716) Added roomier TaskCard rendering for subtasks and dependency lists inside the task modal, keeping the task options menu while reducing extra card chrome compared with full default cards
+  - Thanks to @hokfujow for the feature request
 - (#1619, #386, #621) Added drag-to-reorder for Kanban and Task List views, including grouped Task List moves, manual ordering support via the `tasknotes_manual_order` property, updated generated `.base` templates, and polished drag/drop feedback for swimlanes, filtered views, and interactive task controls
   - Thanks to @ac8318740 for the original contribution in PR #1619
   - Thanks to @iholston and @dsebastien for opening #386 and #621
