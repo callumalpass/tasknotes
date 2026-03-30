@@ -561,7 +561,7 @@ export class BasesToolbarInjector {
 	private async handleBulkCreation(event: MouseEvent): Promise<void> {
 		try {
 			const button = event.currentTarget as HTMLElement;
-			const items = this.extractItemsFromToolbarContext(button);
+			const items = await this.extractItemsFromToolbarContext(button);
 
 			if (!items || items.length === 0) {
 				new Notice("No items found in this view. Try switching to a different view or waiting for data to load.");
@@ -615,7 +615,7 @@ export class BasesToolbarInjector {
 			const mappingCtx = await this.resolveViewMappingFromLeaf(leaf, baseFilePath);
 
 			// Extract item paths from the view for PropertyPicker discovery context
-			const viewItems = this.extractItemsFromToolbarContext(button);
+			const viewItems = await this.extractItemsFromToolbarContext(button);
 			const contextItemPaths = viewItems
 				.map((item: any) => item.path)
 				.filter((p: any): p is string => typeof p === "string");
@@ -707,7 +707,7 @@ export class BasesToolbarInjector {
 	 *
 	 * This is the same proven pattern used by BasesQueryWatcher.extractResultsFromView().
 	 */
-	private extractItemsFromToolbarContext(button: HTMLElement): any[] {
+	private async extractItemsFromToolbarContext(button: HTMLElement): Promise<any[]> {
 		const leaf = this.findLeafFromToolbar(button);
 		if (!leaf) {
 			this.plugin.debugLog.log("BasesToolbarInjector", "Could not find workspace leaf for toolbar");
@@ -724,13 +724,49 @@ export class BasesToolbarInjector {
 				(view.basesContainer || view.container)?.controller;
 			if (controller?.results) {
 				const results = controller.results;
+
+				// Get property keys from .base file order (for extracting via getValue over SMB)
+				let viewOrderKeys: string[] = [];
+				try {
+					const baseFilePath = leaf ? (leaf.getViewState()?.state?.file as string) : undefined;
+					if (baseFilePath) {
+						const baseFile = this.plugin.app.vault.getAbstractFileByPath(baseFilePath);
+						if (baseFile instanceof TFile) {
+							const baseContent = await this.plugin.app.vault.cachedRead(baseFile);
+							if (baseContent) {
+								const parsed = parseYaml(baseContent);
+								if (parsed?.views?.[0]?.order) {
+									viewOrderKeys = parsed.views[0].order;
+								}
+							}
+						}
+					}
+				} catch { /* best effort */ }
+
 				for (const [, entry] of results) {
 					const file = (entry as any).file;
 					if (!file?.path) continue;
 
-					const frontmatter =
+					// Try frontmatter first, then metadataCache
+					let frontmatter =
 						(entry as any).frontmatter ||
 						this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+
+					// SMB resilience: if frontmatter is empty/missing, extract via getValue()
+					if ((!frontmatter || Object.keys(frontmatter).filter(k => k !== "position").length < 2) && viewOrderKeys.length > 0) {
+						const extracted: Record<string, any> = { ...frontmatter };
+						for (const colId of viewOrderKeys) {
+							if (colId.startsWith("file.") || colId.startsWith("formula.")) continue;
+							try {
+								const val = entry.getValue(colId);
+								if (val == null || val.constructor?.name === "NullValue") continue;
+								if (val.date instanceof Date) extracted[colId] = val.date.toISOString().slice(0, 10);
+								else if (typeof val.data !== "undefined") extracted[colId] = val.data;
+								else if (typeof val === "string" || typeof val === "number" || typeof val === "boolean") extracted[colId] = val;
+							} catch { /* column may not exist */ }
+						}
+						frontmatter = extracted;
+					}
 
 					items.push({
 						path: file.path,
@@ -1205,7 +1241,7 @@ export class BasesToolbarInjector {
 
 			// Short delay for menu close, then open BulkTaskCreationModal to view settings
 			setTimeout(async () => {
-				const items = toolbar ? this.extractItemsFromToolbarContext(toolbar) : [];
+				const items = toolbar ? await this.extractItemsFromToolbarContext(toolbar) : [];
 				const modal = new BulkTaskCreationModal(
 					this.plugin.app,
 					this.plugin,
