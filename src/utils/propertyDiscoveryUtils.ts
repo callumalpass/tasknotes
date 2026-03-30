@@ -221,7 +221,9 @@ export function discoverCustomProperties(
 export function buildPropertyCatalog(
 	plugin: TaskNotesPlugin,
 	filePaths: string[],
-	excludeKeys?: Set<string>
+	excludeKeys?: Set<string>,
+	/** Optional pre-extracted frontmatter to use instead of metadataCache (for SMB resilience). */
+	frontmatterOverrides?: Map<string, Record<string, any>>
 ): PropertyCatalogEntry[] {
 	if (!plugin.app) return [];
 
@@ -239,10 +241,12 @@ export function buildPropertyCatalog(
 		const file = plugin.app.vault.getAbstractFileByPath(filePath);
 		if (!(file instanceof TFile)) continue;
 
-		const cache = plugin.app.metadataCache.getFileCache(file);
-		if (!cache?.frontmatter) continue;
+		// Use pre-extracted frontmatter if available (SMB resilience), fall back to cache
+		const frontmatter = frontmatterOverrides?.get(filePath)
+			?? plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+		if (!frontmatter) continue;
 
-		for (const [key, value] of Object.entries(cache.frontmatter)) {
+		for (const [key, value] of Object.entries(frontmatter)) {
 			if (skipKeys.has(key)) continue;
 			if (excludeKeys?.has(key)) continue;
 

@@ -283,11 +283,14 @@ export class UpcomingView extends BasesViewBase {
 			const matchCount = isBaseNotification ? frontmatter?.matchCount : undefined;
 			const sourceBasePath = isBaseNotification ? this.extractWikilinkPath(frontmatter?.sourceBase) : undefined;
 
-			// Get dates — normalize to handle YAML Date objects and invalid placeholders
-			const rawDueDate = frontmatter?.[this.plugin.fieldMapper.toUserField("due")] ||
-				frontmatter?.due || frontmatter?.Review_date;
-			const rawScheduledDate = frontmatter?.[this.plugin.fieldMapper.toUserField("scheduled")] ||
-				frontmatter?.scheduled;
+			// Get dates — resolve per-task field overrides (tnDueDateProp etc.) then
+			// fall back to global field mapping. Ensures remapped properties like
+			// "next_assessment_due" are correctly read as due dates.
+			const overrides = frontmatter ? readFieldOverrides(frontmatter) : {};
+			const duePropName = resolveFieldName("due", overrides, this.plugin.fieldMapper.toUserField("due"));
+			const schedPropName = resolveFieldName("scheduled", overrides, this.plugin.fieldMapper.toUserField("scheduled"));
+			const rawDueDate = frontmatter?.[duePropName] || frontmatter?.Review_date;
+			const rawScheduledDate = frontmatter?.[schedPropName];
 			const dueDate = normalizeDateValue(rawDueDate) ?? undefined;
 			const scheduledDate = normalizeDateValue(rawScheduledDate) ?? undefined;
 
