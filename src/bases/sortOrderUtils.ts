@@ -16,6 +16,7 @@ export interface SortOrderComputationOptions {
 	scopeFilters?: SortOrderScopeFilter[];
 	taskInfoCache?: Map<string, TaskInfo>;
 	visibleTaskPaths?: string[];
+	candidateTaskPaths?: string[];
 }
 
 export interface SortOrderWrite {
@@ -438,10 +439,17 @@ export function getGroupTasks(
 ): TaskInfo[] {
 	const sortOrderField = plugin.settings.fieldMapping.sortOrder;
 	const visibleOrder = buildVisibleOrderLookup(options.visibleTaskPaths);
+	const candidateTaskPathSet = options.candidateTaskPaths
+		? new Set(options.candidateTaskPaths)
+		: null;
 	const allFiles = plugin.app.vault.getMarkdownFiles();
 	const tasks: TaskInfo[] = [];
 
 	for (const file of allFiles) {
+		if (candidateTaskPathSet && !candidateTaskPathSet.has(file.path)) {
+			continue;
+		}
+
 		const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
 		if (!frontmatter) continue;
 

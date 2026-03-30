@@ -77,6 +77,7 @@ export class TaskListView extends BasesViewBase {
 	private pendingRender: boolean = false;
 	private taskGroupKeys = new Map<string, string>(); // task path → group key (set during grouped render)
 	private sortScopeTaskPaths = new Map<string, string[]>();
+	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
 	private dragOverRafId: number = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
 	private currentDropSlotElement: HTMLElement | null = null;
@@ -205,6 +206,7 @@ export class TaskListView extends BasesViewBase {
 			if (taskNotes.length === 0) {
 				this.clearAllTaskElements();
 				this.sortScopeTaskPaths.clear();
+				this.sortScopeCandidateTaskPaths.clear();
 				this.renderEmptyState();
 				this.lastRenderWasGrouped = false;
 				return;
@@ -239,6 +241,7 @@ export class TaskListView extends BasesViewBase {
 			console.error("[TaskNotes][TaskListView] Error rendering:", error);
 			this.clearAllTaskElements();
 			this.sortScopeTaskPaths.clear();
+			this.sortScopeCandidateTaskPaths.clear();
 			this.renderError(error);
 		}
 	}
@@ -269,10 +272,21 @@ export class TaskListView extends BasesViewBase {
 		return this.sortScopeTaskPaths.get(this.getSortScopeKey(groupKey));
 	}
 
+	private getCandidateSortScopePaths(groupKey: string | null): string[] | undefined {
+		return this.sortScopeCandidateTaskPaths.get(this.getSortScopeKey(groupKey));
+	}
+
 	private setSortScopePaths(entries: Iterable<[string | null, string[]]>): void {
 		this.sortScopeTaskPaths.clear();
 		for (const [groupKey, paths] of entries) {
 			this.sortScopeTaskPaths.set(this.getSortScopeKey(groupKey), [...paths]);
+		}
+	}
+
+	private setSortScopeCandidatePaths(entries: Iterable<[string | null, string[]]>): void {
+		this.sortScopeCandidateTaskPaths.clear();
+		for (const [groupKey, paths] of entries) {
+			this.sortScopeCandidateTaskPaths.set(this.getSortScopeKey(groupKey), [...paths]);
 		}
 	}
 
@@ -538,17 +552,51 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private getVisibleSortScopePathsForDrag(groupKey: string | null): string[] | undefined {
-		if (this.dragBaselineCards.length > 0) {
-			const scopeKey = this.getSortScopeKey(groupKey);
-			const visiblePaths = this.dragBaselineCards
-				.filter((entry) => this.getSortScopeKey(entry.groupKey) === scopeKey)
-				.map((entry) => entry.path);
-			if (visiblePaths.length > 0) {
-				return visiblePaths;
-			}
+		return this.getVisibleSortScopePaths(groupKey);
+	}
+
+	private getReorderScopeQueueKey(groupKey: string | null, groupByPropertyId: string | null): string {
+		if (!groupByPropertyId) {
+			return "manual-sort:list";
 		}
 
-		return this.getVisibleSortScopePaths(groupKey);
+		return `manual-sort:${groupByPropertyId}:${this.getSortScopeKey(groupKey)}`;
+	}
+
+	private syncGroupedDragMetadata(items: any[]): void {
+		this.taskGroupKeys.clear();
+		const groupedPaths = new Map<string | null, string[]>();
+		for (const item of items) {
+			if (item.type !== "task") continue;
+			this.taskGroupKeys.set(item.task.path, item.groupKey);
+			const paths = groupedPaths.get(item.groupKey) || [];
+			paths.push(item.task.path);
+			groupedPaths.set(item.groupKey, paths);
+		}
+		this.setSortScopePaths(groupedPaths);
+	}
+
+	private buildGroupedScopePaths(groups: any[], taskNotes: TaskInfo[]): Map<string | null, string[]> {
+		const taskPaths = new Set(taskNotes.map((task) => task.path));
+		const groupedPaths = new Map<string | null, string[]>();
+
+		for (const group of groups) {
+			const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
+			const paths = group.entries
+				.map((entry: any) => entry.file?.path)
+				.filter((path: string | undefined): path is string => !!path && taskPaths.has(path));
+			groupedPaths.set(groupKey, paths);
+		}
+
+		return groupedPaths;
+	}
+
+	private buildSubPropertyScopePaths(groupedTasks: Map<string, TaskInfo[]>): Map<string | null, string[]> {
+		const groupedPaths = new Map<string | null, string[]>();
+		for (const [groupKey, tasks] of groupedTasks) {
+			groupedPaths.set(groupKey, tasks.map((task) => task.path));
+		}
+		return groupedPaths;
 	}
 
 	private updateDropSlotPreview(slot: TaskListInsertionSlot): void {
@@ -803,8 +851,9 @@ export class TaskListView extends BasesViewBase {
 		sourceGroupKey: string | null,
 		targetVisiblePaths?: string[]
 	): Promise<void> {
-		await this.dropQueue.enqueue(draggedPath, async () => {
-			const groupByPropertyId = this.getGroupByPropertyId();
+		const groupByPropertyId = this.getGroupByPropertyId();
+		const reorderScopeKey = this.getReorderScopeQueueKey(targetGroupKey, groupByPropertyId);
+		await this.dropQueue.enqueue(reorderScopeKey, async () => {
 			const cleanGroupBy = groupByPropertyId ? stripPropertyPrefix(groupByPropertyId) : null;
 			const isFormulaGrouping = !!groupByPropertyId?.startsWith("formula.");
 			const isListGrouping = !!cleanGroupBy && this.isListTypeProperty(cleanGroupBy);
@@ -814,7 +863,8 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
-			const needsGroupUpdate = !!groupByPropertyId && targetGroupKey !== null && targetGroupKey !== sourceGroupKey;
+			const normalizedTargetGroupKey = targetGroupKey === "None" ? null : targetGroupKey;
+			const needsGroupUpdate = !!groupByPropertyId && normalizedTargetGroupKey !== sourceGroupKey;
 
 			// Detect if the groupBy property maps to a known TaskInfo field
 			const groupByTaskProp = cleanGroupBy
@@ -832,6 +882,7 @@ export class TaskListView extends BasesViewBase {
 				{
 					taskInfoCache: this.taskInfoCache,
 					visibleTaskPaths: targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
+					candidateTaskPaths: this.getCandidateSortScopePaths(targetGroupKey),
 				}
 			);
 			if (sortOrderPlan.sortOrder === null) return;
@@ -869,19 +920,32 @@ export class TaskListView extends BasesViewBase {
 							currentValue = currentValue ? [currentValue] : [];
 						}
 						const newValue = currentValue.filter((value: string) => value !== sourceGroupKey);
-						if (!newValue.includes(targetGroupKey) && targetGroupKey !== "None") {
-							newValue.push(targetGroupKey);
+						if (
+							normalizedTargetGroupKey !== null &&
+							!newValue.includes(normalizedTargetGroupKey)
+						) {
+							newValue.push(normalizedTargetGroupKey);
 						}
-						fm[frontmatterKey] = newValue.length > 0 ? newValue : [];
+						if (newValue.length > 0) {
+							fm[frontmatterKey] = newValue;
+						} else {
+							delete fm[frontmatterKey];
+						}
+					} else if (normalizedTargetGroupKey === null) {
+						delete fm[frontmatterKey];
 					} else {
-						fm[frontmatterKey] = targetGroupKey;
+						fm[frontmatterKey] = normalizedTargetGroupKey;
 					}
 
 					// Derivative writes for status changes (completedDate + dateModified)
-					if (groupByTaskProp === "status" && targetGroupKey !== null) {
+					if (groupByTaskProp === "status" && normalizedTargetGroupKey !== null) {
 						const task = this.taskInfoCache.get(draggedPath);
 						const isRecurring = !!(task?.recurrence);
-						this.plugin.taskService.updateCompletedDateInFrontmatter(fm, targetGroupKey, isRecurring);
+						this.plugin.taskService.updateCompletedDateInFrontmatter(
+							fm,
+							normalizedTargetGroupKey,
+							isRecurring
+						);
 						const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 						fm[dateModifiedField] = getCurrentTimestamp();
 					}
@@ -905,25 +969,34 @@ export class TaskListView extends BasesViewBase {
 									? [String((originalTask as any)[groupByTaskProp])]
 									: [];
 							const nextValues = currentValues.filter((value: string) => value !== sourceGroupKey);
-							if (targetGroupKey !== "None" && !nextValues.includes(targetGroupKey)) {
-								nextValues.push(targetGroupKey);
+							if (
+								normalizedTargetGroupKey !== null &&
+								!nextValues.includes(normalizedTargetGroupKey)
+							) {
+								nextValues.push(normalizedTargetGroupKey);
 							}
 							(updatedTask as any)[groupByTaskProp] = nextValues;
 						} else {
-							(updatedTask as any)[groupByTaskProp] = targetGroupKey;
+							(updatedTask as any)[groupByTaskProp] = normalizedTargetGroupKey;
 						}
 						updatedTask.dateModified = getCurrentTimestamp();
 						if (groupByTaskProp === "status" && !originalTask.recurrence) {
-							if (this.plugin.statusManager.isCompletedStatus(targetGroupKey as string)) {
+							if (
+								normalizedTargetGroupKey !== null &&
+								this.plugin.statusManager.isCompletedStatus(normalizedTargetGroupKey)
+							) {
 								updatedTask.completedDate = new Date().toISOString().split("T")[0];
 							} else {
 								updatedTask.completedDate = undefined;
 							}
 						}
 						await this.plugin.taskService.applyPropertyChangeSideEffects(
-							file, originalTask, updatedTask,
+							file,
+							originalTask,
+							updatedTask,
 							groupByTaskProp as keyof TaskInfo,
-							sourceGroupKey, targetGroupKey
+							sourceGroupKey,
+							normalizedTargetGroupKey
 						);
 					}
 				} catch (sideEffectError) {
@@ -987,6 +1060,7 @@ export class TaskListView extends BasesViewBase {
 
 	private async renderFlat(taskNotes: TaskInfo[]): Promise<void> {
 		const visibleProperties = this.getVisibleProperties();
+		this.setSortScopeCandidatePaths([[null, taskNotes.map((task) => task.path)]]);
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
@@ -996,6 +1070,7 @@ export class TaskListView extends BasesViewBase {
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
 			this.clearAllTaskElements();
 			this.sortScopeTaskPaths.clear();
+			this.sortScopeCandidateTaskPaths.clear();
 			if (this.itemsContainer) {
 				this.renderSearchNoResults(this.itemsContainer);
 			}
@@ -1243,6 +1318,7 @@ export class TaskListView extends BasesViewBase {
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
 			this.clearAllTaskElements();
 			this.sortScopeTaskPaths.clear();
+			this.sortScopeCandidateTaskPaths.clear();
 			if (this.itemsContainer) {
 				this.renderSearchNoResults(this.itemsContainer);
 			}
@@ -1256,6 +1332,8 @@ export class TaskListView extends BasesViewBase {
 		// Group tasks by sub-property
 		const pathToProps = this.buildPathToPropsMap();
 		const groupedTasks = this.groupTasksBySubProperty(filteredTasks, this.subGroupPropertyId!, pathToProps);
+		const allGroupedTasks = this.groupTasksBySubProperty(taskNotes, this.subGroupPropertyId!, pathToProps);
+		this.setSortScopeCandidatePaths(this.buildSubPropertyScopePaths(allGroupedTasks));
 
 		// Build flat items array (treat sub-groups as primary groups)
 		type RenderItem =
@@ -1290,6 +1368,7 @@ export class TaskListView extends BasesViewBase {
 
 		// Switch rendering mode if needed
 		if (this.useVirtualScrolling && shouldUseVirtualScrolling && this.virtualScroller) {
+			this.syncGroupedDragMetadata(items);
 			this.virtualScroller.updateItems(items);
 			this.lastFlatPaths = taskNotes.map((task) => task.path);
 			return;
@@ -1331,6 +1410,7 @@ export class TaskListView extends BasesViewBase {
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
 			this.clearAllTaskElements();
 			this.sortScopeTaskPaths.clear();
+			this.sortScopeCandidateTaskPaths.clear();
 			if (this.itemsContainer) {
 				this.renderSearchNoResults(this.itemsContainer);
 			}
@@ -1343,12 +1423,14 @@ export class TaskListView extends BasesViewBase {
 
 		// Build flattened list of items using shared method
 		const items = this.buildGroupedRenderItems(groups, filteredTasks);
+		this.setSortScopeCandidatePaths(this.buildGroupedScopePaths(groups, taskNotes));
 
 		// Use virtual scrolling if we have many items
 		const shouldUseVirtualScrolling = items.length >= this.VIRTUAL_SCROLL_THRESHOLD;
 
 		// If already using virtual scrolling and still need it, just update items
 		if (this.useVirtualScrolling && shouldUseVirtualScrolling && this.virtualScroller) {
+			this.syncGroupedDragMetadata(items);
 			this.virtualScroller.updateItems(items);
 			this.lastFlatPaths = taskNotes.map((task) => task.path);
 			return;
@@ -1384,17 +1466,7 @@ export class TaskListView extends BasesViewBase {
 		cardOptions: any
 	): Promise<void> {
 		// Populate group key lookup for cross-group drag detection
-		this.taskGroupKeys.clear();
-		const groupedPaths = new Map<string | null, string[]>();
-		for (const item of items) {
-			if (item.type === 'task') {
-				this.taskGroupKeys.set(item.task.path, item.groupKey);
-				const paths = groupedPaths.get(item.groupKey) || [];
-				paths.push(item.task.path);
-				groupedPaths.set(item.groupKey, paths);
-			}
-		}
-		this.setSortScopePaths(groupedPaths);
+		this.syncGroupedDragMetadata(items);
 
 		if (!this.virtualScroller) {
 			this.virtualScroller = new VirtualScroller<any>({
@@ -1442,17 +1514,7 @@ export class TaskListView extends BasesViewBase {
 		cardOptions: any
 	): Promise<void> {
 		// Populate group key lookup for cross-group drag detection
-		this.taskGroupKeys.clear();
-		const groupedPaths = new Map<string | null, string[]>();
-		for (const item of items) {
-			if (item.type === 'task') {
-				this.taskGroupKeys.set(item.task.path, item.groupKey);
-				const paths = groupedPaths.get(item.groupKey) || [];
-				paths.push(item.task.path);
-				groupedPaths.set(item.groupKey, paths);
-			}
-		}
-		this.setSortScopePaths(groupedPaths);
+		this.syncGroupedDragMetadata(items);
 
 		for (const item of items) {
 			if (item.type === 'primary-header' || item.type === 'sub-header') {
