@@ -21,10 +21,12 @@ import {
 } from "../utils/templateProcessor";
 import {
 	addDTSTARTToRecurrenceRule,
-	calculateDefaultDate,
 	updateDTSTARTInRecurrenceRule,
-	ensureFolderExists,
 	updateToNextScheduledOccurrence,
+} from "../core/recurrence";
+import {
+	calculateDefaultDate,
+	ensureFolderExists,
 	splitFrontmatterAndBody,
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";

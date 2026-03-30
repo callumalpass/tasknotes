@@ -5,8 +5,9 @@ import {
 	TaskCreationData,
 	TaskInfo,
 } from "../../types";
+import { addDTSTARTToRecurrenceRule } from "../../core/recurrence";
 import { FilenameContext, generateTaskFilename, generateUniqueFilename } from "../../utils/filenameGenerator";
-import { addDTSTARTToRecurrenceRule, ensureFolderExists } from "../../utils/helpers";
+import { ensureFolderExists } from "../../utils/helpers";
 import { getCurrentTimestamp } from "../../utils/dateUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
 import type TaskNotesPlugin from "../../main";

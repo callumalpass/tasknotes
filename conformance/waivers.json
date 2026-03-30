@@ -1,0 +1,10 @@
+{
+  "waivers": [
+    {
+      "id": "link.0028",
+      "scope": "host-controlled",
+      "reason": "Ambiguous simple-name wikilink resolution is delegated to Obsidian",
+      "justification": "TaskNotes parses link text and passes the target to metadataCache.getFirstLinkpathDest, but it does not own Obsidian's final candidate tie-break behavior for ambiguous basename matches."
+    }
+  ]
+}

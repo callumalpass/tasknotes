@@ -4,8 +4,10 @@ import type TaskNotesPlugin from "../../main";
 import { EVENT_TASK_UPDATED, IWebhookNotifier, TaskInfo } from "../../types";
 import {
 	addDTSTARTToRecurrenceRule,
-	splitFrontmatterAndBody,
 	updateToNextScheduledOccurrence,
+} from "../../core/recurrence";
+import {
+	splitFrontmatterAndBody,
 } from "../../utils/helpers";
 import { generateUniqueFilename } from "../../utils/filenameGenerator";
 import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
