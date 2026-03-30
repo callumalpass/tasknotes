@@ -8,6 +8,12 @@ export const fr: TranslationTree = {
 		confirm: "Confirmer",
 		close: "Fermer",
 		save: "Enregistrer",
+		reorder: {
+			confirmLargeTitle: "Confirmer la réorganisation importante",
+			confirmButton: "Réorganiser les notes",
+			confirmLargeMessage:
+				'La réorganisation ici mettra à jour "{field}" dans {count} notes afin de créer un ordre manuel persistant pour {scope}. Les notes masquées ou filtrées dans le même périmètre peuvent aussi être mises à jour. Continuer ?',
+		},
 		language: "Langue",
 		systemDefault: "Langue du système",
 		loading: "Chargement...",
@@ -88,6 +94,16 @@ export const fr: TranslationTree = {
 			expandAllGroups: "Déplier tous les groupes",
 			collapseAllGroups: "Replier tous les groupes",
 			noTasksFound: "Aucune tâche trouvée pour les filtres sélectionnés.",
+			reorder: {
+				scope: {
+					ungrouped: "cette liste non groupée",
+					group: 'groupe "{group}"',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"Impossible de réorganiser les tâches dans des groupes basés sur des formules. Les valeurs calculées ne peuvent pas être modifiées directement.",
+			},
 		},
 		notes: {
 			title: "Bloc-notes",
@@ -237,6 +253,7 @@ export const fr: TranslationTree = {
 					showWeekends: "Afficher les week-ends",
 					showAllDaySlot: "Afficher la plage toute la journée",
 					showTodayHighlight: "Mettre en surbrillance aujourd'hui",
+					todayColumnWidthMultiplier: "Multiplicateur de largeur de la colonne du jour",
 					showSelectionPreview: "Afficher l'aperçu de sélection",
 					timeFormat: "Format de l'heure",
 					timeFormat12: "12 heures (AM/PM)",
@@ -271,6 +288,12 @@ export const fr: TranslationTree = {
 			noTasks: "Aucune tâche",
 			uncategorized: "Non catégorisé",
 			noProject: "Aucun projet",
+			reorder: {
+				scope: {
+					column: 'colonne "{group}"',
+					columnInSwimlane: 'colonne "{group}" dans la swimlane "{swimlane}"',
+				},
+			},
 			notices: {
 				loadFailed: "Échec du chargement du tableau Kanban",
 				movedTask: "Tâche déplacée vers \"{0}\"",
@@ -600,6 +623,13 @@ export const fr: TranslationTree = {
 			recurringSection: {
 				header: "Tâches récurrentes",
 				description: "Configurez le comportement pour la gestion des tâches récurrentes.",
+			},
+			debugLogging: {
+				header: "Journalisation du débogage",
+				description: "Configure la sortie des journaux de débogage pour la résolution des problèmes.",
+				enableName: "Activer la journalisation de débogage",
+				enableDesc:
+					"Consigner les diagnostics détaillés de glisser-déposer et de vue dans la console développeur. Utile pour le dépannage.",
 			},
 		},
 		defaults: {
@@ -966,6 +996,11 @@ export const fr: TranslationTree = {
 					description:
 						"Liens vers les tâches qui doivent être terminées avant celle-ci. Stocké comme wikilinks. Les tâches bloquées affichent un indicateur visuel.",
 				},
+				sortOrder: {
+					name: "Ordre manuel",
+					description:
+						"Propriété de frontmatter utilisée pour le classement manuel par glisser-déposer. Une vue doit être triée par cette propriété pour que le glisser-déposer fonctionne.",
+				},
 				pomodoros: {
 					name: "Pomodoros",
 					description:
@@ -1122,6 +1157,7 @@ export const fr: TranslationTree = {
 					timeEntries: "Entrées de temps",
 					completeInstances: "Instances complètes",
 					blockedBy: "Bloqué par",
+					sortOrder: "Ordre manuel",
 					pomodoros: "Sessions Pomodoro",
 					icsEventId: "ID d'événement ICS",
 					icsEventTag: "Tag d'événement ICS",
@@ -2891,11 +2927,37 @@ export const fr: TranslationTree = {
 			dailyTooltip: "Note quotidienne",
 		},
 		taskCard: {
+			labels: {
+				due: "Échéance",
+				scheduled: "Planifié",
+				recurrence: "Récurrent",
+				completed: "Terminé",
+				created: "Créé",
+				modified: "Modifié",
+				blocked: "Bloqué",
+				blocking: "Bloquant",
+			},
 			blockedBadge: "Bloqué",
 			blockedBadgeTooltip: "Cette tâche attend une autre tâche",
 			blockingBadge: "Bloquant",
 			blockingBadgeTooltip: "Cette tâche bloque une autre tâche",
 			blockingToggle: "Bloque {count} tâches",
+			priorityAriaLabel: "Priorité : {label}",
+			taskOptions: "Options de tâche",
+			recurrenceTooltip: "{label}: {value} (cliquer pour modifier)",
+			reminderTooltipOne: "1 rappel défini (cliquer pour gérer)",
+			reminderTooltipMany: "{count} rappels définis (cliquer pour gérer)",
+			projectTooltip: "Cette tâche est utilisée comme projet (cliquer pour filtrer les sous-tâches)",
+			expandSubtasks: "Déplier les sous-tâches",
+			collapseSubtasks: "Replier les sous-tâches",
+			dueToday: "{label}: Aujourd'hui",
+			dueTodayAt: "{label}: Aujourd'hui à {time}",
+			dueOverdue: "{label}: {display} (en retard)",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: Aujourd'hui",
+			scheduledTodayAt: "{label}: Aujourd'hui à {time}",
+			scheduledPast: "{label}: {display} (passé)",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "Chargement des dépendances…",
 			blockingEmpty: "Aucune tâche dépendante",
 			blockingLoadError: "Échec du chargement des dépendances",

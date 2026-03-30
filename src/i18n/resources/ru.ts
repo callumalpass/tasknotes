@@ -8,6 +8,12 @@ export const ru: TranslationTree = {
 		confirm: "Подтвердить",
 		close: "Закрыть",
 		save: "Сохранить",
+		reorder: {
+			confirmLargeTitle: "Подтвердить большое переупорядочивание",
+			confirmButton: "Переупорядочить заметки",
+			confirmLargeMessage:
+				'При переупорядочивании здесь поле "{field}" будет обновлено в {count} заметках, чтобы создать постоянный ручной порядок для {scope}. Скрытые или отфильтрованные заметки в той же области тоже могут быть обновлены. Продолжить?',
+		},
 		language: "Язык",
 		systemDefault: "Системный по умолчанию",
 		loading: "Загрузка...",
@@ -88,6 +94,16 @@ export const ru: TranslationTree = {
 			expandAllGroups: "Развернуть все группы",
 			collapseAllGroups: "Свернуть все группы",
 			noTasksFound: "Задачи не найдены для выбранных фильтров.",
+			reorder: {
+				scope: {
+					ungrouped: "этот негруппированный список",
+					group: 'группа "{group}"',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"Нельзя переупорядочивать задачи в группах на основе формул. Значения формул вычисляются и не могут быть изменены напрямую.",
+			},
 		},
 		notes: {
 			title: "Заметки",
@@ -237,6 +253,7 @@ export const ru: TranslationTree = {
 					showWeekends: "Показать выходные",
 					showAllDaySlot: "Показать слот на весь день",
 					showTodayHighlight: "Выделить сегодня",
+					todayColumnWidthMultiplier: "Множитель ширины колонки сегодняшнего дня",
 					showSelectionPreview: "Показать предпросмотр выбора",
 					timeFormat: "Формат времени",
 					timeFormat12: "12-часовой (AM/PM)",
@@ -271,6 +288,12 @@ export const ru: TranslationTree = {
 			noTasks: "Нет задач",
 			uncategorized: "Без категории",
 			noProject: "Без проекта",
+			reorder: {
+				scope: {
+					column: 'колонка "{group}"',
+					columnInSwimlane: 'колонка "{group}" в swimlane "{swimlane}"',
+				},
+			},
 			notices: {
 				loadFailed: "Не удалось загрузить доску Канбан",
 				movedTask: "Задача перемещена в \"{0}\"",
@@ -600,6 +623,13 @@ export const ru: TranslationTree = {
 			recurringSection: {
 				header: "Повторяющиеся задачи",
 				description: "Настройка поведения для управления повторяющимися задачами.",
+			},
+			debugLogging: {
+				header: "Отладочное журналирование",
+				description: "Настройте вывод отладочного лога для устранения неполадок.",
+				enableName: "Включить отладочное ведение журнала",
+				enableDesc:
+					"Записывать подробную диагностику перетаскивания и представления в консоль разработчика. Полезно для устранения неполадок.",
 			},
 		},
 		defaults: {
@@ -966,6 +996,11 @@ export const ru: TranslationTree = {
 					description:
 						"Ссылки на задачи, которые должны быть выполнены до этой. Хранится как викиссылки. Заблокированные задачи отображают визуальный индикатор.",
 				},
+				sortOrder: {
+					name: "Ручной порядок",
+					description:
+						"Свойство frontmatter, используемое для ручной сортировки перетаскиванием. Для работы перетаскивания представление должно быть отсортировано по этому свойству.",
+				},
 				pomodoros: {
 					name: "Помодоро",
 					description:
@@ -1122,6 +1157,7 @@ export const ru: TranslationTree = {
 					timeEntries: "Записи времени",
 					completeInstances: "Завершенные экземпляры",
 					blockedBy: "Заблокировано",
+					sortOrder: "Ручной порядок",
 					pomodoros: "Помодоро",
 					icsEventId: "ID события ICS",
 					icsEventTag: "Тег события ICS",
@@ -2891,11 +2927,37 @@ export const ru: TranslationTree = {
 			dailyTooltip: "Ежедневная заметка",
 		},
 		taskCard: {
+			labels: {
+				due: "Срок",
+				scheduled: "Запланировано",
+				recurrence: "Повторяющееся",
+				completed: "Завершено",
+				created: "Создано",
+				modified: "Изменено",
+				blocked: "Заблокировано",
+				blocking: "Блокирует",
+			},
 			blockedBadge: "Заблокирована",
 			blockedBadgeTooltip: "Эта задача ожидает другую задачу",
 			blockingBadge: "Блокирует",
 			blockingBadgeTooltip: "Эта задача блокирует другую задачу",
 			blockingToggle: "Блокирует {count} задач",
+			priorityAriaLabel: "Приоритет: {label}",
+			taskOptions: "Параметры задачи",
+			recurrenceTooltip: "{label}: {value} (нажмите, чтобы изменить)",
+			reminderTooltipOne: "1 напоминание установлено (нажмите, чтобы управлять)",
+			reminderTooltipMany: "{count} напоминаний установлено (нажмите, чтобы управлять)",
+			projectTooltip: "Эта задача используется как проект (нажмите, чтобы отфильтровать подзадачи)",
+			expandSubtasks: "Развернуть подзадачи",
+			collapseSubtasks: "Свернуть подзадачи",
+			dueToday: "{label}: Сегодня",
+			dueTodayAt: "{label}: Сегодня в {time}",
+			dueOverdue: "{label}: {display} (просрочено)",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: Сегодня",
+			scheduledTodayAt: "{label}: Сегодня в {time}",
+			scheduledPast: "{label}: {display} (в прошлом)",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "Загрузка зависимостей…",
 			blockingEmpty: "Нет зависимых задач",
 			blockingLoadError: "Не удалось загрузить зависимости",

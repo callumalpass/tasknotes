@@ -3,6 +3,7 @@ import type { SpecFieldMapping } from "./specFieldMapping";
 import { denormalizeFrontmatter, resolveField } from "./specFieldMapping";
 
 type UnknownRecord = Record<string, unknown>;
+const INVALID_PATH_SEGMENT_CHARS = new Set(['<', '>', ':', '"', '|', '?', '*']);
 
 interface TaskTypeDefLike {
 	path_pattern?: string;
@@ -323,10 +324,18 @@ function readStringList(value: unknown): string[] {
 function sanitizeForPathSegment(value: string): string {
 	return value
 		.trim()
-		.replace(/[<>:"|?*\u0000-\u001f]/g, "")
+		.split("")
+		.filter((char) => !INVALID_PATH_SEGMENT_CHARS.has(char) && !isControlCharacter(char))
+		.join("")
 		.replace(/[\\/]+/g, "-")
 		.replace(/\s+/g, " ")
 		.trim();
+}
+
+function isControlCharacter(value: string): boolean {
+	if (value.length === 0) return false;
+	const code = value.charCodeAt(0);
+	return code >= 0 && code <= 31;
 }
 
 function normalizeRelativePath(value: string): string {
