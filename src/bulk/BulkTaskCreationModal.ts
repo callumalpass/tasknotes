@@ -2481,7 +2481,30 @@ export class BulkTaskCreationModal extends Modal {
 		const columns: Array<{ id: string; label: string }> = [];
 		const seen = new Set<string>();
 
-		// Get frontmatter property keys from all items
+		// 1. View's column order from .base YAML (most reliable — the actual visible columns)
+		if (this._cachedViewOrder) {
+			for (const colId of this._cachedViewOrder) {
+				if (seen.has(colId)) continue;
+				// formula.* columns are handled separately below with better labels
+				if (colId.startsWith("formula.")) continue;
+				seen.add(colId);
+				columns.push({ id: colId, label: colId });
+			}
+		}
+
+		// 2. Formula columns from .base YAML (skip empty/Untitled definitions)
+		if (this._cachedBaseFormulas) {
+			for (const [name, expr] of Object.entries(this._cachedBaseFormulas)) {
+				if (!expr || name.startsWith("Untitled")) continue;
+				const id = `formula.${name}`;
+				if (!seen.has(id)) {
+					seen.add(id);
+					columns.push({ id, label: `formula: ${name}` });
+				}
+			}
+		}
+
+		// 3. Fallback: frontmatter property keys from items (may load late over SMB)
 		for (const item of this.items) {
 			const props = item.properties || item.frontmatter || {};
 			for (const key of Object.keys(props)) {
@@ -2493,25 +2516,16 @@ export class BulkTaskCreationModal extends Modal {
 			}
 		}
 
-		// Discover formula columns from cached .base YAML (parsed during preload)
-		if (this._cachedBaseFormulas) {
-			for (const formulaName of Object.keys(this._cachedBaseFormulas)) {
-				const id = `formula.${formulaName}`;
-				if (!seen.has(id)) {
-					seen.add(id);
-					columns.push({ id, label: `formula: ${formulaName}` });
-				}
-			}
-		}
-
 		return columns.sort((a, b) => a.label.localeCompare(b.label));
 	}
 
-	/** Cached formula names from the .base file. Populated by loadBaseFormulas(). */
+	/** Cached formula definitions from the .base file. Populated by loadBaseFormulas(). */
 	private _cachedBaseFormulas: Record<string, string> | null = null;
+	/** Cached column order from the active view in the .base file. */
+	private _cachedViewOrder: string[] | null = null;
 
 	/**
-	 * Read and cache formula definitions from the .base file.
+	 * Read and cache formula definitions + view column order from the .base file.
 	 * .base files are raw YAML (not markdown), so we read + parse directly.
 	 */
 	private async loadBaseFormulas(): Promise<void> {
@@ -2524,8 +2538,16 @@ export class BulkTaskCreationModal extends Modal {
 			if (parsed?.formulas && typeof parsed.formulas === "object") {
 				this._cachedBaseFormulas = parsed.formulas;
 			}
+			// Cache the active view's column order
+			if (parsed?.views && Array.isArray(parsed.views)) {
+				const viewIndex = this.modalOptions.viewIndex ?? 0;
+				const view = parsed.views[viewIndex] || parsed.views[0];
+				if (view?.order && Array.isArray(view.order)) {
+					this._cachedViewOrder = view.order;
+				}
+			}
 		} catch {
-			// Best-effort — formulas are optional
+			// Best-effort — formulas and order are optional
 		}
 	}
 
