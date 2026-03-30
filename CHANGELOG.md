@@ -4,6 +4,11 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.67] - 2026-03-30
+
+### Added
+- **Assign from column (Edit tab)** — New "Assign from column" section in the bulk Edit modal. Pick a source column from the current view (including formula columns) and a target frontmatter property. On execute, each file's column value is written to the target property. Use case: compute dates via Bases formulas, then write the results to frontmatter.
+
 ## [4.3.66] - 2026-03-30
 
 ### Performance

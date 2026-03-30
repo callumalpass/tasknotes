@@ -90,6 +90,7 @@ export class BulkTaskCreationModal extends Modal {
 	private bulkReminders: Reminder[] = []; // Stackable reminders via ReminderModal
 	private bulkCustomProperties: Record<string, { type: PropertyType; value: any }> = {}; // Custom properties from PropertyPicker
 	private bulkFieldOverrides: Record<string, string> = {}; // Per-task field overrides (e.g., { due: "deadline" })
+	private columnAssignments: Record<string, string> = {}; // "Assign from column": target prop → source column ID
 	private propertyPickerInstance: { refresh: () => void; destroy: () => void } | null = null;
 	private customPropsPanel: HTMLElement | null = null; // Picker lives here (createPropertyPicker takes it over)
 	private activeListEl: HTMLElement | null = null; // Property rows — sibling of panel, safe from picker's container.empty()
@@ -2460,6 +2461,140 @@ export class BulkTaskCreationModal extends Modal {
 		const warningIconEl = warningEl.createSpan();
 		setIcon(warningIconEl, "alert-triangle");
 		warningEl.createSpan({ text: "This will overwrite selected properties on existing task files. Only fields you've set above will be changed." });
+
+		// "Assign from column" section — copy view column values to frontmatter
+		this.renderColumnAssignmentSection(optionsBox);
+	}
+
+	/**
+	 * Discover available columns from the current view's data items.
+	 * Returns column IDs and display-friendly names, including formula columns.
+	 */
+	private discoverViewColumns(): Array<{ id: string; label: string }> {
+		const columns: Array<{ id: string; label: string }> = [];
+		const seen = new Set<string>();
+
+		// Scan first item's basesData for available properties
+		const sampleItem = this.items.find(i => i.basesData);
+		if (!sampleItem?.basesData) return columns;
+
+		// Get frontmatter property keys from all items
+		for (const item of this.items) {
+			const props = item.properties || item.frontmatter || {};
+			for (const key of Object.keys(props)) {
+				if (key === "position" || key.startsWith("tn")) continue;
+				if (!seen.has(key)) {
+					seen.add(key);
+					columns.push({ id: key, label: key });
+				}
+			}
+		}
+
+		// Discover formula columns by checking if getValue works on formula.* patterns
+		// Read from the .base file's formulas section if available
+		try {
+			const basePath = this.baseFilePath;
+			if (basePath) {
+				const baseFile = this.app.vault.getAbstractFileByPath(basePath);
+				if (baseFile) {
+					const cache = this.app.metadataCache.getFileCache(baseFile as any);
+					// .base files are YAML — frontmatter IS the content
+					const fm = cache?.frontmatter;
+					if (fm?.formulas) {
+						for (const formulaName of Object.keys(fm.formulas)) {
+							const id = `formula.${formulaName}`;
+							if (!seen.has(id)) {
+								seen.add(id);
+								columns.push({ id, label: `formula: ${formulaName}` });
+							}
+						}
+					}
+				}
+			}
+		} catch {
+			// Formula discovery is best-effort
+		}
+
+		return columns.sort((a, b) => a.label.localeCompare(b.label));
+	}
+
+	/**
+	 * Render the "Assign from column" UI section in the Edit tab.
+	 */
+	private renderColumnAssignmentSection(container: HTMLElement) {
+		const section = container.createDiv({ cls: "tn-bulk-modal__column-assign" });
+		section.style.cssText = "margin-top: 12px; padding: 10px 12px; border-radius: 6px; background: var(--background-secondary); border: 1px solid var(--background-modifier-border);";
+
+		const sectionHeader = section.createDiv();
+		sectionHeader.style.cssText = "display: flex; align-items: center; gap: 6px; margin-bottom: 8px;";
+		const headerIcon = sectionHeader.createSpan();
+		setIcon(headerIcon, "columns");
+		sectionHeader.createSpan({ text: "Assign from column", attr: { style: "font-weight: 600; font-size: var(--font-ui-small);" } });
+
+		const helpIcon = sectionHeader.createSpan({ cls: "tn-bulk-modal__help" });
+		setIcon(helpIcon, "help-circle");
+		setTooltip(helpIcon, "Assign values from a column in this view (including formula columns) to a frontmatter property on each file. One-shot value copy.", { placement: "top" });
+
+		// Active assignments list
+		const activeList = section.createDiv({ cls: "tn-bulk-modal__column-assign-list" });
+
+		const renderActiveAssignments = () => {
+			activeList.empty();
+			for (const [targetProp, sourceCol] of Object.entries(this.columnAssignments)) {
+				const row = activeList.createDiv();
+				row.style.cssText = "display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: var(--font-ui-small);";
+				row.createSpan({ text: sourceCol, attr: { style: "color: var(--text-accent); font-family: var(--font-monospace);" } });
+				row.createSpan({ text: "→" });
+				row.createSpan({ text: targetProp, attr: { style: "font-weight: 600;" } });
+
+				const removeBtn = row.createEl("button", { attr: { style: "margin-left: auto; padding: 2px 6px; font-size: 11px; cursor: pointer; background: none; border: 1px solid var(--background-modifier-border); border-radius: 4px; color: var(--text-muted);" } });
+				setIcon(removeBtn, "x");
+				removeBtn.addEventListener("click", () => {
+					delete this.columnAssignments[targetProp];
+					renderActiveAssignments();
+				});
+			}
+		};
+
+		renderActiveAssignments();
+
+		// Add assignment controls
+		const addRow = section.createDiv();
+		addRow.style.cssText = "display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap;";
+
+		const columns = this.discoverViewColumns();
+		if (columns.length === 0) {
+			addRow.createSpan({ text: "No columns available", attr: { style: "color: var(--text-muted); font-size: var(--font-ui-small);" } });
+			return;
+		}
+
+		// Source column dropdown
+		const sourceSelect = addRow.createEl("select", { attr: { style: "flex: 1; min-width: 120px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-normal); font-size: var(--font-ui-small);" } });
+		sourceSelect.createEl("option", { value: "", text: "Source column..." });
+		for (const col of columns) {
+			sourceSelect.createEl("option", { value: col.id, text: col.label });
+		}
+
+		addRow.createSpan({ text: "→", attr: { style: "color: var(--text-muted);" } });
+
+		// Target property input
+		const targetInput = addRow.createEl("input", {
+			type: "text",
+			placeholder: "Target property...",
+			attr: { style: "flex: 1; min-width: 120px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-normal); font-size: var(--font-ui-small);" },
+		});
+
+		// Add button
+		const addBtn = addRow.createEl("button", { text: "Add", attr: { style: "padding: 4px 12px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--interactive-accent); color: var(--text-on-accent); font-size: var(--font-ui-small); cursor: pointer;" } });
+		addBtn.addEventListener("click", () => {
+			const source = sourceSelect.value;
+			const target = targetInput.value.trim();
+			if (!source || !target) return;
+			this.columnAssignments[target] = source;
+			sourceSelect.value = "";
+			targetInput.value = "";
+			renderActiveAssignments();
+		});
 	}
 
 	/**
@@ -3045,6 +3180,7 @@ export class BulkTaskCreationModal extends Modal {
 			viewFieldMapping: this.modalOptions.viewFieldMapping,
 			sourceBaseId: this.modalOptions.sourceBaseId,
 			sourceViewId: this.modalOptions.sourceViewId,
+			columnAssignments: Object.keys(this.columnAssignments).length > 0 ? this.columnAssignments : undefined,
 			onProgress: (current, total, status) => {
 				const percent = Math.round((current / total) * 100);
 				if (this.progressBarInner) {

@@ -31,6 +31,8 @@ export interface BulkEditOptions {
 	sourceBaseId?: string;
 	/** Source view ID for provenance tracking (ADR-011) */
 	sourceViewId?: string;
+	/** Column-to-property assignments: maps target frontmatter property → source column ID (e.g., "formula.nextDue") */
+	columnAssignments?: Record<string, string>;
 	/** Callback for progress updates */
 	onProgress?: (current: number, total: number, status: string) => void;
 }
@@ -183,7 +185,7 @@ export class BulkEditEngine {
 					return { success: false as const, error: `File not found: ${sourcePath}`, sourcePath };
 				}
 				try {
-					await this.editSingleTask(file, options);
+					await this.editSingleTask(file, options, item);
 					return { success: true as const, sourcePath };
 				} catch (error) {
 					const errorMsg = error instanceof Error ? error.message : String(error);
@@ -214,7 +216,7 @@ export class BulkEditEngine {
 	 * Edit a single task file by modifying its frontmatter.
 	 * Only writes fields that are explicitly set — unlike Convert, this OVERWRITES existing values.
 	 */
-	private async editSingleTask(file: TFile, options: BulkEditOptions): Promise<void> {
+	private async editSingleTask(file: TFile, options: BulkEditOptions, item?: any): Promise<void> {
 		const settings = this.plugin.settings;
 		const fieldMapper = this.plugin.fieldMapper;
 
@@ -329,6 +331,21 @@ export class BulkEditEngine {
 				}
 			}
 
+			// Apply column assignments: read value from Bases column → write to frontmatter property
+			if (options.columnAssignments && item?.basesData) {
+				for (const [targetProp, sourceColumnId] of Object.entries(options.columnAssignments)) {
+					try {
+						const rawValue = item.basesData.getValue(sourceColumnId);
+						const nativeValue = this.convertBasesValueToNative(rawValue);
+						if (nativeValue !== null && nativeValue !== undefined) {
+							frontmatter[targetProp] = nativeValue;
+						}
+					} catch {
+						// Skip — column may not exist for this item
+					}
+				}
+			}
+
 			// Always update dateModified
 			const dateModifiedField = fieldMapper.toUserField("dateModified");
 			frontmatter[dateModifiedField] = getCurrentTimestamp();
@@ -338,5 +355,35 @@ export class BulkEditEngine {
 		if (this.plugin.cacheManager.waitForFreshTaskData) {
 			await this.plugin.cacheManager.waitForFreshTaskData(file);
 		}
+	}
+
+	/** Convert a Bases Value object to a native JS value suitable for YAML frontmatter. */
+	private convertBasesValueToNative(value: any): any {
+		if (value == null || value.constructor?.name === "NullValue") return null;
+		// DateValue — format as YYYY-MM-DD
+		if (value.constructor?.name === "DateValue" || value instanceof Date) {
+			const d = value instanceof Date ? value : value.value;
+			if (d instanceof Date && !isNaN(d.getTime())) {
+				return d.toISOString().slice(0, 10);
+			}
+			return String(value);
+		}
+		// ListValue — convert each element
+		if (value.constructor?.name === "ListValue" || Array.isArray(value)) {
+			const arr = Array.isArray(value) ? value : (value.value || []);
+			return arr.map((v: any) => this.convertBasesValueToNative(v));
+		}
+		// PrimitiveValue (string, number, boolean)
+		if (value.value !== undefined) return value.value;
+		// FileValue — return as wikilink
+		if (value.constructor?.name === "FileValue" && value.path) {
+			const basename = value.path.replace(/\.md$/, "").split("/").pop();
+			return `[[${basename}]]`;
+		}
+		// Already native
+		if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+			return value;
+		}
+		return String(value);
 	}
 }
