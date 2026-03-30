@@ -575,6 +575,7 @@ export class BulkTaskCreationModal extends Modal {
 				itemPaths: this.items.map(i => i.path).filter((p): p is string => !!p),
 				excludeKeys: this.excludeKeysSet,
 				frontmatterOverrides: this.buildFrontmatterOverrides(),
+				additionalKeys: this._cachedViewOrder?.filter(k => !k.startsWith("file.") && !k.startsWith("formula.")) || undefined,
 				useAsOptions: Object.entries(OVERRIDABLE_FIELD_LABELS).map(([key, label]) => ({
 					key,
 					label,
@@ -1698,6 +1699,7 @@ export class BulkTaskCreationModal extends Modal {
 			excludeKeys: new Set(Object.keys(this.viewDefaultProperties)),
 			includeNonTaskFiles: true,
 			frontmatterOverrides: this.buildFrontmatterOverrides(),
+			additionalKeys: this._cachedViewOrder?.filter(k => !k.startsWith("file.") && !k.startsWith("formula.")) || undefined,
 			useAsOptions: Object.entries(OVERRIDABLE_FIELD_LABELS).map(([key, label]) => ({
 				key,
 				label,
