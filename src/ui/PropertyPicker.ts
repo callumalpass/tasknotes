@@ -80,6 +80,8 @@ export interface PropertyPickerOptions {
 	includeNonTaskFiles?: boolean;
 	/** Pre-extracted frontmatter for SMB resilience. Keyed by file path. */
 	frontmatterOverrides?: Map<string, Record<string, any>>;
+	/** Additional property keys to show even if no file has them (e.g., from .base view order). */
+	additionalKeys?: string[];
 }
 
 /** Type badge color mapping */
@@ -205,6 +207,7 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 		onConversionEnd,
 		includeNonTaskFiles,
 		frontmatterOverrides,
+		additionalKeys,
 	} = options;
 
 	// State — resolve initial scope from options (with backward compat for initialVaultWide)
@@ -293,25 +296,25 @@ export function createPropertyPicker(options: PropertyPickerOptions): {
 					catalogEntries = [];
 				} else {
 					// Shouldn't happen (chip hidden when no currentFilePath), but fall back gracefully
-					catalogEntries = buildPropertyCatalog(plugin, getAllTaskFilePaths(plugin), excludeKeys, frontmatterOverrides);
+					catalogEntries = buildPropertyCatalog(plugin, getAllTaskFilePaths(plugin), excludeKeys, frontmatterOverrides, additionalKeys);
 					discoveredProps = [];
 				}
 				break;
 			case "viewItems":
 				if (itemPaths?.length) {
-					catalogEntries = buildPropertyCatalog(plugin, itemPaths, excludeKeys, frontmatterOverrides);
+					catalogEntries = buildPropertyCatalog(plugin, itemPaths, excludeKeys, frontmatterOverrides, additionalKeys);
 					discoveredProps = [];
 				} else {
-					catalogEntries = buildPropertyCatalog(plugin, getAllTaskFilePaths(plugin), excludeKeys, frontmatterOverrides);
+					catalogEntries = buildPropertyCatalog(plugin, getAllTaskFilePaths(plugin), excludeKeys, frontmatterOverrides, additionalKeys);
 					discoveredProps = [];
 				}
 				break;
 			case "allTasks":
-				catalogEntries = buildPropertyCatalog(plugin, getAllTaskFilePaths(plugin), excludeKeys, frontmatterOverrides);
+				catalogEntries = buildPropertyCatalog(plugin, getAllTaskFilePaths(plugin), excludeKeys, frontmatterOverrides, additionalKeys);
 				discoveredProps = [];
 				break;
 			case "allFiles":
-				catalogEntries = buildPropertyCatalog(plugin, getAllMarkdownFilePaths(plugin), excludeKeys, frontmatterOverrides);
+				catalogEntries = buildPropertyCatalog(plugin, getAllMarkdownFilePaths(plugin), excludeKeys, frontmatterOverrides, additionalKeys);
 				discoveredProps = [];
 				break;
 		}

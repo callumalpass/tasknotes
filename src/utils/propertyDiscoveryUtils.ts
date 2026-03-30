@@ -223,7 +223,9 @@ export function buildPropertyCatalog(
 	filePaths: string[],
 	excludeKeys?: Set<string>,
 	/** Optional pre-extracted frontmatter to use instead of metadataCache (for SMB resilience). */
-	frontmatterOverrides?: Map<string, Record<string, any>>
+	frontmatterOverrides?: Map<string, Record<string, any>>,
+	/** Additional property keys to include even if no file has them (e.g., from .base view order). */
+	additionalKeys?: string[]
 ): PropertyCatalogEntry[] {
 	if (!plugin.app) return [];
 
@@ -308,6 +310,29 @@ export function buildPropertyCatalog(
 			isConsistent: mismatchedFiles.length === 0,
 			sampleValue: data.sampleValue,
 		});
+	}
+
+	// Add synthetic entries for additional keys not found in any file
+	// (e.g., columns from .base view order that exist in the view but not on files yet)
+	if (additionalKeys) {
+		const existingKeys = new Set(entries.map(e => e.key));
+		for (const key of additionalKeys) {
+			if (existingKeys.has(key)) continue;
+			if (skipKeys.has(key)) continue;
+			if (excludeKeys?.has(key)) continue;
+			if (key.startsWith("file.") || key.startsWith("formula.")) continue;
+			entries.push({
+				key,
+				displayName: keyToDisplayName(key),
+				dominantType: "text",
+				typeBreakdown: {},
+				fileCount: 0,
+				mismatchedFiles: [],
+				allFiles: [],
+				isConsistent: true,
+				sampleValue: undefined,
+			});
+		}
 	}
 
 	// Sort by file count descending
