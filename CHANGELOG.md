@@ -4,6 +4,11 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.66] - 2026-03-30
+
+### Performance
+- **Parallel bulk convert and edit** — Both engines now process files in parallel batches of 5 (matching the existing Generate engine). Significantly improves performance on SMB/network vaults where per-file I/O latency is high.
+
 ## [4.3.65] - 2026-03-27
 
 ### Improved

@@ -150,45 +150,61 @@ export class BulkConvertEngine {
 		options.onProgress?.(0, items.length, "Checking existing tasks...");
 		const preCheck = await this.preCheck(items);
 
-		const total = items.length;
-
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
+		// Filter to actionable items (skip non-markdown and already-tasks upfront)
+		const actionableItems: typeof items = [];
+		for (const item of items) {
 			const sourcePath = item.path || "";
-
-			options.onProgress?.(i + 1, total, `Converting ${i + 1} of ${total}...`);
-
-			// Skip non-markdown files (e.g., .xlsx, .pdf, .png)
+			if (!sourcePath) continue;
 			if (preCheck.nonMarkdownPaths.has(sourcePath)) {
 				this.plugin.debugLog.log("BulkConvertEngine", `Skipping (non-markdown): ${sourcePath}`);
 				result.skipped++;
 				continue;
 			}
-
-			// Skip if already a task (unless reapply mode is on)
 			if (preCheck.alreadyTaskPaths.has(sourcePath) && !options.reapplyToExistingTasks) {
 				this.plugin.debugLog.log("BulkConvertEngine", `Skipping (already task): ${sourcePath}`);
 				result.skipped++;
 				continue;
 			}
+			actionableItems.push(item);
+		}
 
-			// Skip if no valid file
-			const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
-			if (!(file instanceof TFile)) {
-				result.failed++;
-				result.errors.push(`File not found: ${sourcePath}`);
-				continue;
+		// Process in parallel batches (matches bulk-task-engine pattern)
+		const CONCURRENCY_LIMIT = 5;
+		let completed = 0;
+		const actionableTotal = actionableItems.length;
+
+		for (let i = 0; i < actionableTotal; i += CONCURRENCY_LIMIT) {
+			const batch = actionableItems.slice(i, i + CONCURRENCY_LIMIT);
+
+			const batchPromises = batch.map(async (item) => {
+				const sourcePath = item.path || "";
+				const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+				if (!(file instanceof TFile)) {
+					return { success: false as const, error: `File not found: ${sourcePath}`, sourcePath };
+				}
+				try {
+					await this.convertSingleNote(file, options);
+					return { success: true as const, sourcePath };
+				} catch (error) {
+					const errorMsg = error instanceof Error ? error.message : String(error);
+					return { success: false as const, error: `Error for ${sourcePath}: ${errorMsg}`, sourcePath };
+				}
+			});
+
+			const batchResults = await Promise.all(batchPromises);
+
+			for (const batchResult of batchResults) {
+				completed++;
+				if (batchResult.success) {
+					result.converted++;
+					result.convertedPaths.push(batchResult.sourcePath);
+				} else {
+					result.failed++;
+					result.errors.push(batchResult.error);
+				}
 			}
 
-			try {
-				await this.convertSingleNote(file, options);
-				result.converted++;
-				result.convertedPaths.push(sourcePath);
-			} catch (error) {
-				result.failed++;
-				const errorMsg = error instanceof Error ? error.message : String(error);
-				result.errors.push(`Error for ${sourcePath}: ${errorMsg}`);
-			}
+			options.onProgress?.(completed, actionableTotal, `Converting ${completed} of ${actionableTotal}...`);
 		}
 
 		return result;

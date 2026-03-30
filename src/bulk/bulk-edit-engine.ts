@@ -150,45 +150,61 @@ export class BulkEditEngine {
 		options.onProgress?.(0, items.length, "Checking task files...");
 		const preCheck = await this.preCheck(items);
 
-		const total = items.length;
-
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
+		// Filter to actionable items (skip non-markdown and non-tasks upfront)
+		const actionableItems: typeof items = [];
+		for (const item of items) {
 			const sourcePath = item.path || "";
-
-			options.onProgress?.(i + 1, total, `Editing ${i + 1} of ${total}...`);
-
-			// Skip non-markdown files
+			if (!sourcePath) continue;
 			if (preCheck.nonMarkdownPaths.has(sourcePath)) {
 				this.plugin.debugLog.log("BulkEditEngine", `Skipping (non-markdown): ${sourcePath}`);
 				result.skipped++;
 				continue;
 			}
-
-			// Skip non-task files
 			if (preCheck.notTaskPaths.has(sourcePath)) {
 				this.plugin.debugLog.log("BulkEditEngine", `Skipping (not a task): ${sourcePath}`);
 				result.skipped++;
 				continue;
 			}
+			actionableItems.push(item);
+		}
 
-			// Skip if no valid file
-			const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
-			if (!(file instanceof TFile)) {
-				result.failed++;
-				result.errors.push(`File not found: ${sourcePath}`);
-				continue;
+		// Process in parallel batches
+		const CONCURRENCY_LIMIT = 5;
+		let completed = 0;
+		const actionableTotal = actionableItems.length;
+
+		for (let i = 0; i < actionableTotal; i += CONCURRENCY_LIMIT) {
+			const batch = actionableItems.slice(i, i + CONCURRENCY_LIMIT);
+
+			const batchPromises = batch.map(async (item) => {
+				const sourcePath = item.path || "";
+				const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+				if (!(file instanceof TFile)) {
+					return { success: false as const, error: `File not found: ${sourcePath}`, sourcePath };
+				}
+				try {
+					await this.editSingleTask(file, options);
+					return { success: true as const, sourcePath };
+				} catch (error) {
+					const errorMsg = error instanceof Error ? error.message : String(error);
+					return { success: false as const, error: `Error for ${sourcePath}: ${errorMsg}`, sourcePath };
+				}
+			});
+
+			const batchResults = await Promise.all(batchPromises);
+
+			for (const batchResult of batchResults) {
+				completed++;
+				if (batchResult.success) {
+					result.edited++;
+					result.editedPaths.push(batchResult.sourcePath);
+				} else {
+					result.failed++;
+					result.errors.push(batchResult.error);
+				}
 			}
 
-			try {
-				await this.editSingleTask(file, options);
-				result.edited++;
-				result.editedPaths.push(sourcePath);
-			} catch (error) {
-				result.failed++;
-				const errorMsg = error instanceof Error ? error.message : String(error);
-				result.errors.push(`Error for ${sourcePath}: ${errorMsg}`);
-			}
+			options.onProgress?.(completed, actionableTotal, `Editing ${completed} of ${actionableTotal}...`);
 		}
 
 		return result;
