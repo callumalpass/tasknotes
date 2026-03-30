@@ -1,13 +1,5 @@
 /**
- * Issue #1652: API/MCP task creation ignores filename format setting (Zettelkasten)
- *
- * Reported behavior:
- * - `storeTitleInFilename = false`
- * - `taskFilenameFormat = "zettel"`
- * - UI task creation uses zettel filenames (expected)
- * - API/MCP/NLP task creation uses title filenames (unexpected)
- *
- * This file documents the reported reproduction as skipped tests so CI is unaffected.
+ * Issue #1652: API/MCP task creation should respect configured filename format
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1652
  */
@@ -35,7 +27,7 @@ function createTaskServiceWithZettelSettings(): TaskService {
 }
 
 describe("Issue #1652: API/MCP filename format mismatch", () => {
-	it.skip("reproduces issue #1652: POST /api/tasks uses title filename instead of zettel", async () => {
+	it("uses zettel filenames for POST /api/tasks payloads", async () => {
 		const taskService = createTaskServiceWithZettelSettings();
 
 		// Equivalent shape to HTTP API POST /api/tasks payload.
@@ -45,14 +37,12 @@ describe("Issue #1652: API/MCP filename format mismatch", () => {
 			priority: "normal",
 		});
 
-		// Reported bug behavior: file basename is the title.
-		expect(file.basename).toBe("Test Task");
-
-		// Expected behavior after fix:
-		// expect(file.basename).toMatch(/^\\d{6}[0-9a-z]+$/i);
+		expect(file.path).toMatch(/^TaskNotes\/Tasks\/\d{6}[0-9a-z]+\.md$/i);
+		expect(file.basename).toMatch(/^\d{6}[0-9a-z]+$/i);
+		expect(file.basename).not.toBe("Test Task");
 	});
 
-	it.skip("reproduces issue #1652: tasknotes_create_task uses title filename instead of zettel", async () => {
+	it("uses zettel filenames for tasknotes_create_task payloads", async () => {
 		const taskService = createTaskServiceWithZettelSettings();
 
 		// Equivalent shape to MCP tasknotes_create_task payload mapping.
@@ -65,14 +55,12 @@ describe("Issue #1652: API/MCP filename format mismatch", () => {
 			creationContext: "api",
 		});
 
-		// Reported bug behavior: file basename is the title.
-		expect(file.basename).toBe("MCP Task");
-
-		// Expected behavior after fix:
-		// expect(file.basename).toMatch(/^\\d{6}[0-9a-z]+$/i);
+		expect(file.path).toMatch(/^TaskNotes\/Tasks\/\d{6}[0-9a-z]+\.md$/i);
+		expect(file.basename).toMatch(/^\d{6}[0-9a-z]+$/i);
+		expect(file.basename).not.toBe("MCP Task");
 	});
 
-	it.skip("reproduces issue #1652: /api/nlp/create uses title filename instead of zettel", async () => {
+	it("uses zettel filenames for /api/nlp/create payloads", async () => {
 		const taskService = createTaskServiceWithZettelSettings();
 
 		// Equivalent shape after NLP parse in SystemController.handleNLPCreate().
@@ -83,11 +71,8 @@ describe("Issue #1652: API/MCP filename format mismatch", () => {
 			creationContext: "api",
 		});
 
-		// Reported bug behavior: file basename is the title.
-		expect(file.basename).toBe("NLP parsed title");
-
-		// Expected behavior after fix:
-		// expect(file.basename).toMatch(/^\\d{6}[0-9a-z]+$/i);
+		expect(file.path).toMatch(/^TaskNotes\/Tasks\/\d{6}[0-9a-z]+\.md$/i);
+		expect(file.basename).toMatch(/^\d{6}[0-9a-z]+$/i);
+		expect(file.basename).not.toBe("NLP parsed title");
 	});
 });
-

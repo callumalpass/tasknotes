@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1652) Fixed API, MCP, and NLP task creation to respect the configured task filename format instead of falling back to title-based filenames when title storage in filenames is disabled
+  - Thanks to @36mimu36 for reporting
 - (#1601, #1709) Fixed reading-mode relationship widgets rendering multiple times during startup by serializing per-note widget injection requests and coalescing overlapping refreshes
   - Applied the same reading-mode injection guard to task cards so both note widgets use the same safer lifecycle
   - Thanks to @wealthychef1 and @CarlJohnson99 for reporting

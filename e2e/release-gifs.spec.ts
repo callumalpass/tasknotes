@@ -33,9 +33,13 @@ class GifRecorder {
 		return path.join(this.frameDir, `frame-${String(this.frameIndex).padStart(3, "0")}.png`);
 	}
 
-	async capture(page: Page, holdFrames = 1): Promise<void> {
+	async capture(
+		page: Page,
+		holdFrames = 1,
+		options?: { clip?: { x: number; y: number; width: number; height: number } }
+	): Promise<void> {
 		const firstFramePath = this.nextFramePath();
-		await page.screenshot({ path: firstFramePath });
+		await page.screenshot({ path: firstFramePath, ...options });
 		this.frameIndex += 1;
 
 		for (let i = 1; i < holdFrames; i += 1) {
@@ -314,8 +318,9 @@ test("current-day-column-width", async () => {
 	const page = getPage();
 	const today = new Date();
 	const taskPath = "TaskNotes/Release GIF Fixtures/today-width-demo.md";
-	const basePath = "TaskNotes/Views/release-gif-calendar-width.base";
-	const backup = backupFiles([taskPath, basePath]);
+	const normalBasePath = "TaskNotes/Views/release-gif-calendar-normal.base";
+	const wideBasePath = "TaskNotes/Views/release-gif-calendar-wide.base";
+	const backup = backupFiles([taskPath, normalBasePath, wideBasePath]);
 
 	try {
 		writeVaultFile(
@@ -333,13 +338,30 @@ tags:
 # Today width demo
 `
 		);
-		writeVaultFile(basePath, createCalendarBase("Today Width Demo", "      todayColumnWidthMultiplier: 1\n"));
+		writeVaultFile(normalBasePath, createCalendarBase("Today Width Demo", "      todayColumnWidthMultiplier: 1\n"));
+		writeVaultFile(wideBasePath, createCalendarBase("Today Width Demo", "      todayColumnWidthMultiplier: 5\n"));
 
 		await ensureCleanState(page);
 		const recorder = new GifRecorder("release-1704-today-column-width");
+		const getCalendarClip = async () => {
+			const calendar = page.locator(".workspace-leaf.mod-active .fc").first();
+			const box = await calendar.boundingBox();
+			if (!box) return undefined;
+			return {
+				x: Math.max(0, Math.floor(box.x)),
+				y: Math.max(0, Math.floor(box.y)),
+				width: Math.floor(box.width),
+				height: Math.min(Math.floor(box.height), 260),
+			};
+		};
 
-		await openCalendarByPath(page, basePath);
-		await recorder.capture(page, 4);
+		await openCalendarByPath(page, normalBasePath);
+		const weekButton = page.locator('.workspace-leaf.mod-active button.fc-timeGridWeek-button').first();
+		if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+			await weekButton.click();
+			await page.waitForTimeout(700);
+		}
+		await recorder.capture(page, 4, { clip: await getCalendarClip() });
 
 		const propertiesButton = page.locator('button:has-text("Properties"), [aria-label*="Properties"]').first();
 		if (await propertiesButton.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -350,9 +372,12 @@ tags:
 			await page.waitForTimeout(300);
 		}
 
-		writeVaultFile(basePath, createCalendarBase("Today Width Demo", "      todayColumnWidthMultiplier: 3\n"));
-		await openCalendarByPath(page, basePath);
-		await recorder.capture(page, 6);
+		await openCalendarByPath(page, wideBasePath);
+		if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+			await weekButton.click();
+			await page.waitForTimeout(700);
+		}
+		await recorder.capture(page, 6, { clip: await getCalendarClip() });
 
 		recorder.finalize();
 	} finally {
