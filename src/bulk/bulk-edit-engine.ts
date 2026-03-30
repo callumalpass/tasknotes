@@ -357,33 +357,66 @@ export class BulkEditEngine {
 		}
 	}
 
-	/** Convert a Bases Value object to a native JS value suitable for YAML frontmatter. */
+	/**
+	 * Convert a Bases Value object to a native JS value suitable for YAML frontmatter.
+	 * Mirrors BasesDataAdapter.convertValueToNative() property access patterns.
+	 */
 	private convertBasesValueToNative(value: any): any {
 		if (value == null || value.constructor?.name === "NullValue") return null;
-		// DateValue — format as YYYY-MM-DD
-		if (value.constructor?.name === "DateValue" || value instanceof Date) {
-			const d = value instanceof Date ? value : value.value;
-			if (d instanceof Date && !isNaN(d.getTime())) {
-				return d.toISOString().slice(0, 10);
+
+		// Already native primitives — return as-is
+		if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+			return value;
+		}
+		if (value instanceof Date) {
+			return !isNaN(value.getTime()) ? value.toISOString().slice(0, 10) : null;
+		}
+
+		// PrimitiveValue — uses .data property
+		if (typeof value.data !== "undefined") {
+			return value.data;
+		}
+
+		// DateValue — uses .date property (Date object) or .toISOString()
+		if (value.date instanceof Date) {
+			return !isNaN(value.date.getTime()) ? value.date.toISOString().slice(0, 10) : null;
+		}
+		if (value.constructor?.name === "DateValue") {
+			if (value.toISOString) return value.toISOString().slice(0, 10);
+			if (value.value instanceof Date) return value.value.toISOString().slice(0, 10);
+			return null;
+		}
+
+		// ListValue — uses .length() function and .at(i)
+		if (typeof value.length === "function") {
+			const len = value.length();
+			const result = [];
+			for (let i = 0; i < len; i++) {
+				const item = value.at(i);
+				result.push(this.convertBasesValueToNative(item));
 			}
-			return String(value);
+			return result;
 		}
-		// ListValue — convert each element
-		if (value.constructor?.name === "ListValue" || Array.isArray(value)) {
-			const arr = Array.isArray(value) ? value : (value.value || []);
-			return arr.map((v: any) => this.convertBasesValueToNative(v));
+		// Also handle plain arrays
+		if (Array.isArray(value)) {
+			return value.map((v: any) => this.convertBasesValueToNative(v));
 		}
-		// PrimitiveValue (string, number, boolean)
-		if (value.value !== undefined) return value.value;
-		// FileValue — return as wikilink
+
+		// FileValue — uses .file.path
+		if (value.file?.path) {
+			const basename = value.file.path.replace(/\.md$/, "").split("/").pop();
+			return `[[${basename}]]`;
+		}
+		// Legacy FileValue with .path directly
 		if (value.constructor?.name === "FileValue" && value.path) {
 			const basename = value.path.replace(/\.md$/, "").split("/").pop();
 			return `[[${basename}]]`;
 		}
-		// Already native
-		if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-			return value;
-		}
+
+		// PrimitiveValue fallback — .value property
+		if (value.value !== undefined) return value.value;
+
+		// Last resort
 		return String(value);
 	}
 }
