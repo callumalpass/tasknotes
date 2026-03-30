@@ -4,6 +4,11 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.69] - 2026-03-30
+
+### Fixed
+- **"Assign from column" now shows all view columns** — Column discovery reads the active view's `order:` list from the `.base` YAML as the primary source. All visible columns (frontmatter properties + formula columns) now appear in the dropdown. Empty and "Untitled" formula entries are filtered out.
+
 ## [4.3.68] - 2026-03-30
 
 ### Fixed
