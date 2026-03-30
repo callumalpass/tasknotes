@@ -4,6 +4,12 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.68] - 2026-03-30
+
+### Fixed
+- **"Assign from column" shows formula columns** — Column discovery now reads `.base` file directly via `vault.read()` instead of metadata cache (which doesn't work for non-markdown YAML files). Formula columns now appear in the dropdown.
+- **Blue dot appears on remap icon after view defaults load** — Action icon states now refresh after `preloadBulkFromViewSettings()` completes, fixing the missing indicator on SMB vaults where async loading is slow.
+
 ## [4.3.67] - 2026-03-30
 
 ### Added
