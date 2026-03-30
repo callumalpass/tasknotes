@@ -4,6 +4,11 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.70] - 2026-03-30
+
+### Improved
+- **"Assign from column" target is now a dropdown** — Target property selector shows all existing non-formula properties from the view, with a "Custom (type name)..." option for creating new properties. Prevents typos when targeting existing fields.
+
 ## [4.3.69] - 2026-03-30
 
 ### Fixed
