@@ -4,6 +4,12 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.71] - 2026-03-30
+
+### Fixed
+- **"Assign from column" now actually writes values** — Items from the toolbar path were missing `basesData`, causing column assignments to silently skip every file. Now stores Bases entries on all item extraction paths.
+- **Value conversion handles all Bases types** — Rewrote `convertBasesValueToNative` to use correct property access (`.date` for dates, `.data` for primitives) instead of minified constructor names. Dates, booleans, numbers, strings, and file links all convert correctly.
+
 ## [4.3.70] - 2026-03-30
 
 ### Improved
