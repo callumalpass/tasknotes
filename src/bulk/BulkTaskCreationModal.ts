@@ -574,6 +574,7 @@ export class BulkTaskCreationModal extends Modal {
 				plugin: this.plugin,
 				itemPaths: this.items.map(i => i.path).filter((p): p is string => !!p),
 				excludeKeys: this.excludeKeysSet,
+				frontmatterOverrides: this.buildFrontmatterOverrides(),
 				useAsOptions: Object.entries(OVERRIDABLE_FIELD_LABELS).map(([key, label]) => ({
 					key,
 					label,
@@ -1696,6 +1697,7 @@ export class BulkTaskCreationModal extends Modal {
 			itemPaths: this.items.map(i => i.path).filter((p): p is string => !!p),
 			excludeKeys: new Set(Object.keys(this.viewDefaultProperties)),
 			includeNonTaskFiles: true,
+			frontmatterOverrides: this.buildFrontmatterOverrides(),
 			useAsOptions: Object.entries(OVERRIDABLE_FIELD_LABELS).map(([key, label]) => ({
 				key,
 				label,
@@ -2472,6 +2474,22 @@ export class BulkTaskCreationModal extends Modal {
 
 		// "Assign from column" section — copy view column values to frontmatter
 		this.renderColumnAssignmentSection(optionsBox);
+	}
+
+	/**
+	 * Build a frontmatter overrides map from items' pre-extracted properties.
+	 * Used by PropertyPicker to discover properties even when metadataCache is stale (SMB).
+	 */
+	private buildFrontmatterOverrides(): Map<string, Record<string, any>> {
+		const overrides = new Map<string, Record<string, any>>();
+		for (const item of this.items) {
+			if (!item.path) continue;
+			const fm = item.properties || item.frontmatter;
+			if (fm && Object.keys(fm).length > 0) {
+				overrides.set(item.path, fm);
+			}
+		}
+		return overrides;
 	}
 
 	/**
