@@ -63,6 +63,7 @@ Example:
 - Fixed a broken docs cross-reference from Property Types Reference to Task Properties settings
 - Fixed docs site link generation so internal Markdown links resolve to route URLs instead of broken `.md` paths (for example `/views/default-base-templates/`)
 - Fixed docs release-note links by building all Markdown docs pages, including pages not listed directly in sidebar nav
+- Expanded Task List and Kanban docs for drag-to-reorder, covering required manual-order sorting, grouped and swimlane reorder scope, and important constraints around filtered views and formula-based groups
 
 ## Added
 
@@ -70,6 +71,7 @@ Example:
 - (#1716) Added roomier TaskCard rendering for subtasks and dependency lists inside the task modal, keeping the task options menu while reducing extra card chrome compared with full default cards
   - Thanks to @hokfujow for the feature request
 - (#1619, #386, #621) Added drag-to-reorder for Kanban and Task List views, including grouped Task List moves, manual ordering support via the `tasknotes_manual_order` property, updated generated `.base` templates, and polished drag/drop feedback for swimlanes, filtered views, and interactive task controls
+  - Enable it by sorting the view by the Manual Order field (`tasknotes_manual_order` by default), or use **Settings → TaskNotes → General → Create Default Files** to get the updated built-in `.base` templates
   - Thanks to @ac8318740 for the original contribution in PR #1619
   - Thanks to @iholston and @dsebastien for opening #386 and #621
   - Thanks to @kanzaki1201 for the swimlane drag-order discussion in #1474 that helped shape the follow-up robustness work
