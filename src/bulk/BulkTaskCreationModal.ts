@@ -6,7 +6,7 @@
  *   - Bulk Edit: Modify properties on existing task files
  */
 
-import { App, Modal, Notice, Setting, TFile, setIcon, setTooltip } from "obsidian";
+import { App, Modal, Notice, Setting, TFile, setIcon, setTooltip, parseYaml } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataItem } from "../bases/helpers";
 import { BulkTaskEngine, BulkCreationOptions, BulkCreationResult } from "./bulk-task-engine";
@@ -210,6 +210,9 @@ export class BulkTaskCreationModal extends Modal {
 
 		// Discover groups asynchronously and rebuild options when done
 		this.discoverGroupsAsync();
+
+		// Pre-load formula definitions from .base file for "Assign from column"
+		this.loadBaseFormulas();
 	}
 
 	/**
@@ -1157,6 +1160,10 @@ export class BulkTaskCreationModal extends Modal {
 		// 4. Refresh the PropertyPicker and active list to reflect new state
 		this.refreshPropertyPicker();
 		this.renderCustomPropsActiveList();
+
+		// 5. Update action icon states — preload may have populated bulkFieldOverrides
+		// (e.g., remap properties from view defaults) after initial render
+		this.updateActionIconStates();
 	}
 
 	/**
@@ -2474,10 +2481,6 @@ export class BulkTaskCreationModal extends Modal {
 		const columns: Array<{ id: string; label: string }> = [];
 		const seen = new Set<string>();
 
-		// Scan first item's basesData for available properties
-		const sampleItem = this.items.find(i => i.basesData);
-		if (!sampleItem?.basesData) return columns;
-
 		// Get frontmatter property keys from all items
 		for (const item of this.items) {
 			const props = item.properties || item.frontmatter || {};
@@ -2490,32 +2493,40 @@ export class BulkTaskCreationModal extends Modal {
 			}
 		}
 
-		// Discover formula columns by checking if getValue works on formula.* patterns
-		// Read from the .base file's formulas section if available
-		try {
-			const basePath = this.baseFilePath;
-			if (basePath) {
-				const baseFile = this.app.vault.getAbstractFileByPath(basePath);
-				if (baseFile) {
-					const cache = this.app.metadataCache.getFileCache(baseFile as any);
-					// .base files are YAML — frontmatter IS the content
-					const fm = cache?.frontmatter;
-					if (fm?.formulas) {
-						for (const formulaName of Object.keys(fm.formulas)) {
-							const id = `formula.${formulaName}`;
-							if (!seen.has(id)) {
-								seen.add(id);
-								columns.push({ id, label: `formula: ${formulaName}` });
-							}
-						}
-					}
+		// Discover formula columns from cached .base YAML (parsed during preload)
+		if (this._cachedBaseFormulas) {
+			for (const formulaName of Object.keys(this._cachedBaseFormulas)) {
+				const id = `formula.${formulaName}`;
+				if (!seen.has(id)) {
+					seen.add(id);
+					columns.push({ id, label: `formula: ${formulaName}` });
 				}
 			}
-		} catch {
-			// Formula discovery is best-effort
 		}
 
 		return columns.sort((a, b) => a.label.localeCompare(b.label));
+	}
+
+	/** Cached formula names from the .base file. Populated by loadBaseFormulas(). */
+	private _cachedBaseFormulas: Record<string, string> | null = null;
+
+	/**
+	 * Read and cache formula definitions from the .base file.
+	 * .base files are raw YAML (not markdown), so we read + parse directly.
+	 */
+	private async loadBaseFormulas(): Promise<void> {
+		if (!this.baseFilePath) return;
+		try {
+			const baseFile = this.app.vault.getAbstractFileByPath(this.baseFilePath);
+			if (!(baseFile instanceof TFile)) return;
+			const content = await this.app.vault.read(baseFile);
+			const parsed = parseYaml(content);
+			if (parsed?.formulas && typeof parsed.formulas === "object") {
+				this._cachedBaseFormulas = parsed.formulas;
+			}
+		} catch {
+			// Best-effort — formulas are optional
+		}
 	}
 
 	/**
