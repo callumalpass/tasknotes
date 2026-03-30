@@ -45,6 +45,7 @@ export class KanbanView extends BasesViewBase {
 	private draggedSourceSwimlanes: Map<string, string> = new Map(); // Track source swimlane per task for batch operations
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private sortScopeTaskPaths = new Map<string, string[]>();
+	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
@@ -350,6 +351,7 @@ export class KanbanView extends BasesViewBase {
 			this.destroyColumnScrollers();
 			this.boardEl.empty();
 			this.sortScopeTaskPaths.clear();
+			this.sortScopeCandidateTaskPaths.clear();
 
 			if (filteredTasks.length === 0) {
 				// Show "no results" if search returned empty but we had tasks
@@ -375,17 +377,20 @@ export class KanbanView extends BasesViewBase {
 
 			// Group tasks
 			const groups = this.groupTasks(filteredTasks, groupByPropertyId, pathToProps);
+			const allGroups = this.groupTasks(taskNotes, groupByPropertyId, pathToProps);
 
 			// Render swimlanes if configured
 			if (this.swimLanePropertyId) {
 				await this.renderWithSwimLanes(
 					groups,
 					filteredTasks,
+					allGroups,
+					taskNotes,
 					pathToProps,
 					groupByPropertyId
 				);
 			} else {
-				await this.renderFlat(groups);
+				await this.renderFlat(groups, allGroups);
 			}
 		} catch (error: any) {
 			console.error("[TaskNotes][KanbanView] Error rendering:", error);
@@ -431,6 +436,17 @@ export class KanbanView extends BasesViewBase {
 
 	private getVisibleSortScopePaths(groupKey: string, swimLaneKey: string | null = null): string[] | undefined {
 		return this.sortScopeTaskPaths.get(this.getSortScopeKey(groupKey, swimLaneKey));
+	}
+
+	private getCandidateSortScopePaths(groupKey: string, swimLaneKey: string | null = null): string[] | undefined {
+		return this.sortScopeCandidateTaskPaths.get(this.getSortScopeKey(groupKey, swimLaneKey));
+	}
+
+	private setSortScopeCandidatePaths(entries: Iterable<[string, string[]]>): void {
+		this.sortScopeCandidateTaskPaths.clear();
+		for (const [scopeKey, paths] of entries) {
+			this.sortScopeCandidateTaskPaths.set(scopeKey, [...paths]);
+		}
 	}
 
 	private async confirmLargeReorder(
@@ -686,9 +702,18 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
-	private async renderFlat(groups: Map<string, TaskInfo[]>): Promise<void> {
+	private async renderFlat(
+		groups: Map<string, TaskInfo[]>,
+		allGroups: Map<string, TaskInfo[]>
+	): Promise<void> {
 		if (!this.boardEl) return;
 		this.sortScopeTaskPaths.clear();
+		this.setSortScopeCandidatePaths(
+			Array.from(allGroups.entries()).map(([groupKey, tasks]) => [
+				this.getSortScopeKey(groupKey),
+				tasks.map((task) => task.path),
+			])
+		);
 
 		// Set CSS variable for column width (allows responsive override)
 		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
@@ -729,6 +754,8 @@ export class KanbanView extends BasesViewBase {
 	private async renderWithSwimLanes(
 		groups: Map<string, TaskInfo[]>,
 		allTasks: TaskInfo[],
+		allGroups: Map<string, TaskInfo[]>,
+		allTasksForCandidateScopes: TaskInfo[],
 		pathToProps: Map<string, Record<string, any>>,
 		groupByPropertyId: string
 	): Promise<void> {
@@ -783,6 +810,47 @@ export class KanbanView extends BasesViewBase {
 				}
 			}
 		}
+
+		const candidateSwimLanes = new Map<string, Map<string, TaskInfo[]>>();
+		const candidateSwimLaneValues = new Set<string>();
+
+		for (const task of allTasksForCandidateScopes) {
+			const props = pathToProps.get(task.path) || {};
+			const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
+			const swimLaneKey = this.valueToString(swimLaneValue);
+			candidateSwimLaneValues.add(swimLaneKey);
+		}
+
+		for (const swimLaneKey of candidateSwimLaneValues) {
+			const swimLaneMap = new Map<string, TaskInfo[]>();
+			candidateSwimLanes.set(swimLaneKey, swimLaneMap);
+
+			for (const [columnKey] of allGroups) {
+				swimLaneMap.set(columnKey, []);
+			}
+		}
+
+		for (const [columnKey, columnTasks] of allGroups) {
+			for (const task of columnTasks) {
+				const props = pathToProps.get(task.path) || {};
+				const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
+				const swimLaneKey = this.valueToString(swimLaneValue);
+				const swimLane = candidateSwimLanes.get(swimLaneKey);
+				if (!swimLane) continue;
+				if (swimLane.has(columnKey)) {
+					swimLane.get(columnKey)!.push(task);
+				}
+			}
+		}
+
+		this.setSortScopeCandidatePaths(
+			Array.from(candidateSwimLanes.entries()).flatMap(([swimLaneKey, columns]) =>
+				Array.from(columns.entries()).map(([columnKey, tasks]) => [
+					this.getSortScopeKey(columnKey, swimLaneKey),
+					tasks.map((task) => task.path),
+				] as [string, string[]])
+			)
+		);
 
 		// Apply column ordering
 		const columnKeys = Array.from(groups.keys());
@@ -2409,6 +2477,7 @@ export class KanbanView extends BasesViewBase {
 				? [{ property: cleanSwimLaneForSort, value: newSwimLaneValue }]
 				: undefined;
 			const visibleTaskPaths = this.getVisibleSortScopePaths(newGroupValue, newSwimLaneValue);
+			const candidateTaskPaths = this.getCandidateSortScopePaths(newGroupValue, newSwimLaneValue);
 
 			this.debugLog("SORT-ORDER-CHECK", {
 				hasDropTarget: !!dropTarget,
@@ -2474,6 +2543,7 @@ export class KanbanView extends BasesViewBase {
 								scopeFilters: sortScopeFilters,
 								taskInfoCache: this.taskInfoCache,
 								visibleTaskPaths,
+								candidateTaskPaths,
 							}
 						);
 						if (sortOrderPlan.sortOrder === null) {
