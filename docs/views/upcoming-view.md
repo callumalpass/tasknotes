@@ -31,6 +31,9 @@ The Upcoming View groups your tasks by when they are due and lays them out in a 
 
 ![upcoming view scroll time sections](../assets/upcoming-view/upcoming-view-scroll-time-sections.gif)
 
+> [!info] Property mapping support
+> The Upcoming View respects per-task property remapping. If a task has `tnDueDateProp: next_assessment_due` in its frontmatter, the view reads the due date from `next_assessment_due` instead of the default `due` property. This means tasks converted with [property mapping](../features/property-mapping.md) show up in the correct time category automatically. The same applies to scheduled dates via `tnScheduledDateProp`.
+
 ## How to Open It
 
 Open the Upcoming View from the command palette with **TaskNotes: Open upcoming view**.
