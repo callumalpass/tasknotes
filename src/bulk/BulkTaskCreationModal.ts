@@ -91,6 +91,7 @@ export class BulkTaskCreationModal extends Modal {
 	private bulkCustomProperties: Record<string, { type: PropertyType; value: any }> = {}; // Custom properties from PropertyPicker
 	private bulkFieldOverrides: Record<string, string> = {}; // Per-task field overrides (e.g., { due: "deadline" })
 	private columnAssignments: Record<string, string> = {}; // "Assign from column": target prop → source column ID
+	private preResolvedColumnValues: Map<string, Map<string, any>> = new Map(); // target prop → (filePath → nativeValue)
 	private propertyPickerInstance: { refresh: () => void; destroy: () => void } | null = null;
 	private customPropsPanel: HTMLElement | null = null; // Picker lives here (createPropertyPicker takes it over)
 	private activeListEl: HTMLElement | null = null; // Property rows — sibling of panel, safe from picker's container.empty()
@@ -2630,7 +2631,7 @@ export class BulkTaskCreationModal extends Modal {
 			if (targetSelect.value === "__custom__") customTargetInput.focus();
 		});
 
-		// Add button
+		// Add button — pre-resolves all per-file values immediately while Bases entries are live
 		const addBtn = addRow.createEl("button", { text: "Add", attr: { style: "padding: 4px 12px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--interactive-accent); color: var(--text-on-accent); font-size: var(--font-ui-small); cursor: pointer;" } });
 		addBtn.addEventListener("click", () => {
 			const source = sourceSelect.value;
@@ -2638,13 +2639,70 @@ export class BulkTaskCreationModal extends Modal {
 				? customTargetInput.value.trim()
 				: targetSelect.value;
 			if (!source || !target) return;
+
+			// Pre-resolve values NOW while Bases entries are still live
+			const valueMap = new Map<string, any>();
+			let resolved = 0;
+			for (const item of this.items) {
+				if (!item.path) continue;
+				let nativeValue: any = null;
+
+				// Try basesData.getValue() first (works for formula + property columns)
+				if (item.basesData) {
+					try {
+						const raw = item.basesData.getValue(source);
+						nativeValue = this.convertColumnValueToNative(raw);
+					} catch { /* entry may not support this column */ }
+				}
+
+				// Fallback: read from frontmatter directly (for non-formula columns)
+				if (nativeValue === null && !source.startsWith("formula.")) {
+					const fm = item.properties || item.frontmatter || {};
+					const fmVal = fm[source];
+					if (fmVal !== null && fmVal !== undefined) {
+						nativeValue = fmVal instanceof Date ? fmVal.toISOString().slice(0, 10) : fmVal;
+					}
+				}
+
+				if (nativeValue !== null && nativeValue !== undefined) {
+					valueMap.set(item.path, nativeValue);
+					resolved++;
+				}
+			}
+
+			this.plugin.debugLog?.log("BulkModal", `Assign from column: ${source} → ${target}, pre-resolved ${resolved}/${this.items.length} values`);
+
 			this.columnAssignments[target] = source;
+			this.preResolvedColumnValues.set(target, valueMap);
 			sourceSelect.value = "";
 			targetSelect.value = "";
 			customTargetInput.value = "";
 			customTargetInput.style.display = "none";
 			renderActiveAssignments();
 		});
+	}
+
+	/**
+	 * Convert a Bases Value object to a native JS value for YAML frontmatter.
+	 * Handles DateValue (.date), PrimitiveValue (.data), ListValue (.length()),
+	 * FileValue (.file), and plain primitives.
+	 */
+	private convertColumnValueToNative(value: any): any {
+		if (value == null || value.constructor?.name === "NullValue") return null;
+		if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
+		if (value instanceof Date) return !isNaN(value.getTime()) ? value.toISOString().slice(0, 10) : null;
+		if (value.date instanceof Date) return !isNaN(value.date.getTime()) ? value.date.toISOString().slice(0, 10) : null;
+		if (typeof value.data !== "undefined") return value.data;
+		if (typeof value.length === "function") {
+			const len = value.length();
+			const result = [];
+			for (let i = 0; i < len; i++) result.push(this.convertColumnValueToNative(value.at(i)));
+			return result;
+		}
+		if (Array.isArray(value)) return value.map((v: any) => this.convertColumnValueToNative(v));
+		if (value.file?.path) return `[[${value.file.path.replace(/\.md$/, "").split("/").pop()}]]`;
+		if (value.value !== undefined) return value.value;
+		return String(value);
 	}
 
 	/**
@@ -3231,6 +3289,7 @@ export class BulkTaskCreationModal extends Modal {
 			sourceBaseId: this.modalOptions.sourceBaseId,
 			sourceViewId: this.modalOptions.sourceViewId,
 			columnAssignments: Object.keys(this.columnAssignments).length > 0 ? this.columnAssignments : undefined,
+			preResolvedColumnValues: this.preResolvedColumnValues.size > 0 ? this.preResolvedColumnValues : undefined,
 			onProgress: (current, total, status) => {
 				const percent = Math.round((current / total) * 100);
 				if (this.progressBarInner) {

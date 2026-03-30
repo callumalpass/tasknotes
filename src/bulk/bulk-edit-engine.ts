@@ -33,6 +33,8 @@ export interface BulkEditOptions {
 	sourceViewId?: string;
 	/** Column-to-property assignments: maps target frontmatter property → source column ID (e.g., "formula.nextDue") */
 	columnAssignments?: Record<string, string>;
+	/** Pre-resolved column values: target prop → Map<filePath, nativeValue>. Takes priority over basesData.getValue(). */
+	preResolvedColumnValues?: Map<string, Map<string, any>>;
 	/** Callback for progress updates */
 	onProgress?: (current: number, total: number, status: string) => void;
 }
@@ -331,8 +333,17 @@ export class BulkEditEngine {
 				}
 			}
 
-			// Apply column assignments: read value from Bases column → write to frontmatter property
-			if (options.columnAssignments && item?.basesData) {
+			// Apply column assignments using pre-resolved values (resolved at "Add" time while Bases entries were live)
+			if (options.preResolvedColumnValues) {
+				for (const [targetProp, valueMap] of options.preResolvedColumnValues) {
+					const value = valueMap.get(file.path);
+					if (value !== null && value !== undefined) {
+						frontmatter[targetProp] = value;
+						this.plugin.debugLog?.log("BulkEditEngine", `Column assign: ${targetProp} = ${JSON.stringify(value)} for ${file.basename}`);
+					}
+				}
+			} else if (options.columnAssignments && item?.basesData) {
+				// Legacy fallback: resolve at edit time (may fail if entries are stale)
 				for (const [targetProp, sourceColumnId] of Object.entries(options.columnAssignments)) {
 					try {
 						const rawValue = item.basesData.getValue(sourceColumnId);
@@ -341,7 +352,7 @@ export class BulkEditEngine {
 							frontmatter[targetProp] = nativeValue;
 						}
 					} catch {
-						// Skip — column may not exist for this item
+						this.plugin.debugLog?.warn("BulkEditEngine", `getValue failed for ${sourceColumnId} on ${file.basename}`);
 					}
 				}
 			}
