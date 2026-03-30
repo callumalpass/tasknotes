@@ -738,6 +738,9 @@ export class BasesToolbarInjector {
 						title:
 							frontmatter?.title ||
 							file.basename,
+						properties: frontmatter || {},
+						frontmatter: frontmatter || {},
+						basesData: entry,
 					});
 				}
 				if (items.length > 0) {
@@ -768,6 +771,9 @@ export class BasesToolbarInjector {
 								title:
 									frontmatter?.title ||
 									file.basename,
+								properties: frontmatter || {},
+								frontmatter: frontmatter || {},
+								basesData: entry,
 							});
 						}
 					}
@@ -825,6 +831,9 @@ export class BasesToolbarInjector {
 					path: file.path,
 					itemType: "generic" as const,
 					title: fm?.title || file.basename,
+					properties: fm || {},
+					frontmatter: fm || {},
+					// basesData unavailable in this fallback path — formula columns won't resolve
 				});
 			}
 
