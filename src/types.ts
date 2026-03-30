@@ -466,6 +466,8 @@ export interface TaskInfo {
 	isBlocking?: boolean; // True if this task blocks at least one other task
 	details?: string; // Optional task body content
 	sortOrder?: string; // LexoRank string for ordering within column
+	rawTitle?: string; // Raw title with [[wikilinks]] preserved (for H1 heading)
+	displayTitle?: string; // Title resolved from H1 heading (for rendering with links)
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {

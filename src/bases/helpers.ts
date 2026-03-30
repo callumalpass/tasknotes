@@ -195,6 +195,7 @@ export function createTaskInfoFromBasesData(
 		// Merge file properties with existing custom properties
 		return {
 			...taskInfo,
+			displayTitle: taskInfo.rawTitle || undefined,
 			customProperties: {
 				...mappedTaskInfo.customProperties,
 				...taskInfo.customProperties,

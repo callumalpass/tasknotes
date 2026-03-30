@@ -284,6 +284,7 @@ export class TaskManager extends Events {
 				id: path, // Add id field for API consistency
 				path, // Ensure path is set (FieldMapper should set this, but be explicit)
 				title: mappedTask.title || "Untitled task",
+				displayTitle: mappedTask.rawTitle || undefined,
 				status: mappedTask.status || this.settings.defaultTaskStatus,
 				priority: mappedTask.priority || "normal",
 				archived: mappedTask.archived || false,

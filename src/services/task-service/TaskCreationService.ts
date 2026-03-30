@@ -161,6 +161,11 @@ export class TaskCreationService {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
 
+			// Store raw title with [[wikilinks]] preserved in frontmatter
+			if (taskData.rawTitle && taskData.rawTitle !== title) {
+				finalFrontmatter.rawTitle = taskData.rawTitle;
+			}
+
 			const yamlHeader = stringifyYaml(finalFrontmatter);
 			let content = `---\n${yamlHeader}---\n\n`;
 			if (normalizedBody.length > 0) {

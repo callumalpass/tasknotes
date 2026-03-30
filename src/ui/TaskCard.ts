@@ -1544,9 +1544,15 @@ export function createTaskCard(
 		await showTaskContextMenu(e as MouseEvent, task.path, plugin, targetDate);
 	});
 
-	// First line: Task title
+	// First line: Task title (rendered with link support)
 	const titleEl = contentContainer.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__title" });
-	const titleTextEl = titleEl.createSpan({ cls: "task-card__title-text", text: task.title });
+	const titleTextEl = titleEl.createSpan({ cls: "task-card__title-text" });
+	const titleLinkServices: LinkServices = {
+		metadataCache: plugin.app.metadataCache,
+		workspace: plugin.app.workspace,
+		sourcePath: task.path,
+	};
+	renderTextWithLinks(titleTextEl, task.displayTitle || task.title, titleLinkServices);
 
 	if (isCompleted) {
 		titleEl.classList.add("completed");
@@ -2066,7 +2072,13 @@ export function updateTaskCard(
 	const titleContainer = element.querySelector(".task-card__title") as HTMLElement;
 	const titleIsCompleted = isCompleted;
 	if (titleText) {
-		titleText.textContent = task.title;
+		titleText.innerHTML = "";
+		const updateLinkServices: LinkServices = {
+			metadataCache: plugin.app.metadataCache,
+			workspace: plugin.app.workspace,
+			sourcePath: task.path,
+		};
+		renderTextWithLinks(titleText, task.displayTitle || task.title, updateLinkServices);
 		titleText.classList.toggle("completed", titleIsCompleted);
 	}
 	if (titleContainer) {
