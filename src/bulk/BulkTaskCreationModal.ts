@@ -2610,22 +2610,39 @@ export class BulkTaskCreationModal extends Modal {
 
 		addRow.createSpan({ text: "→", attr: { style: "color: var(--text-muted);" } });
 
-		// Target property input
-		const targetInput = addRow.createEl("input", {
+		// Target property dropdown (non-formula columns + custom option)
+		const targetProps = columns.filter(c => !c.id.startsWith("formula."));
+		const targetSelect = addRow.createEl("select", { attr: { style: "flex: 1; min-width: 120px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-normal); font-size: var(--font-ui-small);" } });
+		targetSelect.createEl("option", { value: "", text: "Target property..." });
+		for (const prop of targetProps) {
+			targetSelect.createEl("option", { value: prop.id, text: prop.label });
+		}
+		targetSelect.createEl("option", { value: "__custom__", text: "Custom (type name)..." });
+
+		// Custom target input (hidden until "Custom" selected)
+		const customTargetInput = addRow.createEl("input", {
 			type: "text",
-			placeholder: "Target property...",
-			attr: { style: "flex: 1; min-width: 120px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-normal); font-size: var(--font-ui-small);" },
+			placeholder: "Property name...",
+			attr: { style: "flex: 1; min-width: 100px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-normal); font-size: var(--font-ui-small); display: none;" },
+		});
+		targetSelect.addEventListener("change", () => {
+			customTargetInput.style.display = targetSelect.value === "__custom__" ? "" : "none";
+			if (targetSelect.value === "__custom__") customTargetInput.focus();
 		});
 
 		// Add button
 		const addBtn = addRow.createEl("button", { text: "Add", attr: { style: "padding: 4px 12px; border-radius: 4px; border: 1px solid var(--background-modifier-border); background: var(--interactive-accent); color: var(--text-on-accent); font-size: var(--font-ui-small); cursor: pointer;" } });
 		addBtn.addEventListener("click", () => {
 			const source = sourceSelect.value;
-			const target = targetInput.value.trim();
+			const target = targetSelect.value === "__custom__"
+				? customTargetInput.value.trim()
+				: targetSelect.value;
 			if (!source || !target) return;
 			this.columnAssignments[target] = source;
 			sourceSelect.value = "";
-			targetInput.value = "";
+			targetSelect.value = "";
+			customTargetInput.value = "";
+			customTargetInput.style.display = "none";
 			renderActiveAssignments();
 		});
 	}
