@@ -182,6 +182,11 @@ export class FieldMapper {
 			mapped.sortOrder = typeof val === "string" ? val : String(val);
 		}
 
+		// Preserve raw title with [[wikilinks]] for display
+		if (frontmatter.rawTitle !== undefined) {
+			mapped.rawTitle = frontmatter.rawTitle;
+		}
+
 		// Handle tags array (includes archive tag)
 		if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
 			mapped.tags = frontmatter.tags;

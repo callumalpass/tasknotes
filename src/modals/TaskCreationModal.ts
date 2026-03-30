@@ -1310,8 +1310,14 @@ export class TaskCreationModal extends TaskModal {
 			tagList.push(this.plugin.settings.taskTag);
 		}
 
+		// Capture raw NLP input for H1 heading (preserves [[wikilinks]])
+		const rawTitle = this.plugin.settings.enableNaturalLanguageInput
+			? this.getNLPInputValue().trim().split("\n")[0] || this.title.trim()
+			: this.title.trim();
+
 		const taskData: TaskCreationData = {
 			title: this.title.trim(),
+			rawTitle,
 			due: this.dueDate || undefined,
 			scheduled: this.scheduledDate || undefined,
 			priority: this.priority,
