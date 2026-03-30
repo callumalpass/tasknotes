@@ -23,10 +23,10 @@ function readRepoFile(relativePath: string): string {
 describe("Issue #1633: TaskCard label localization + property display names", () => {
 	it("uses presentation helpers and translation-backed labels instead of hardcoded strings", () => {
 		const taskCardSource = readRepoFile("src/ui/TaskCard.ts");
-		const mainSource = readRepoFile("src/main.ts");
+		const bootstrapSource = readRepoFile("src/bootstrap/pluginBootstrap.ts");
 
-		const addRibbonIconCalls = (mainSource.match(/addRibbonIcon\(/g) || []).length;
-		const translatedRibbonIconCalls = (mainSource.match(/addRibbonIcon\([^\n]*i18n\.translate\(/g) || []).length;
+		const addRibbonIconCalls = (bootstrapSource.match(/addRibbonIcon\(/g) || []).length;
+		const translatedRibbonIconCalls = (bootstrapSource.match(/addRibbonIcon\([\s\S]*?i18n\.translate\(/g) || []).length;
 
 		expect(addRibbonIconCalls).toBeGreaterThan(0);
 		expect(translatedRibbonIconCalls).toBe(addRibbonIconCalls);

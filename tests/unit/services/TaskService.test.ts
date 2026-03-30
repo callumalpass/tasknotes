@@ -17,10 +17,14 @@ import { TaskCreationData, TaskService } from '../../../src/services/TaskService
 import { TaskInfo, TimeEntry } from '../../../src/types';
 
 // Mock external dependencies
-jest.mock('../../../src/utils/dateUtils', () => ({
-  getCurrentTimestamp: jest.fn(() => '2025-01-01T12:00:00Z'),
-  getCurrentDateString: jest.fn(() => '2025-01-01')
-}));
+jest.mock('../../../src/utils/dateUtils', () => {
+  const actual = jest.requireActual('../../../src/utils/dateUtils');
+  return {
+    ...actual,
+    getCurrentTimestamp: jest.fn(() => '2025-01-01T12:00:00Z'),
+    getCurrentDateString: jest.fn(() => '2025-01-01')
+  };
+});
 
 jest.mock('../../../src/utils/filenameGenerator', () => ({
   generateTaskFilename: jest.fn((context) => `${context.title.toLowerCase().replace(/\s+/g, '-')}`),
@@ -123,7 +127,7 @@ describe('TaskService', () => {
         scheduled: '2025-01-10',
         contexts: ['work', 'urgent'],
         timeEstimate: 120,
-        recurrence: 'DTSTART:20250110T120000Z;FREQ=DAILY;INTERVAL=1'
+        recurrence: 'DTSTART:20250110;FREQ=DAILY;INTERVAL=1'
       });
       // With default tag-based identification, task tag should be included
       expect(taskInfo.tags).toContain('task');

@@ -48,6 +48,7 @@ Example:
 - (#1644) Fixed generated default task views so recurring tasks without a `complete_instances` property are still treated as incomplete and appear in views like This Week, Today, and Overdue
   - Thanks to @bkennedy-improving for reporting
 - Updated generated `_types/task.md` mdbase schema output so `dateCreated` and `dateModified` include generated values (`now` and `now_on_write`) for automatic timestamp handling on create/write
+- Updated generated `_types/task.md` mdbase schema output so `recurrence_anchor` now declares its default value as `scheduled`, keeping the generated schema aligned with TaskNotes recurrence behavior
 - (#1513, #1686) Fixed a calendar view issue where creating or modifying events, timeblocks, etc. could reset the visible date back to today
   - Preserves the visible date for in-place calendar recreation without overriding explicit initial-date navigation settings
   - Thanks to @Lorite for the fix
