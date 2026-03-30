@@ -141,6 +141,34 @@ This is useful for batch updates: reschedule 20 tasks to next week, change the p
 - Only fields you explicitly set are written -- blank fields in the action bar are left untouched on the target files
 - Non-Markdown files and non-task files are skipped with a count shown in the pre-check
 
+### Assign from column
+
+The "Assign from column" section at the bottom of the Edit tab lets you copy values from any column in the current view -- including formula columns -- into a frontmatter property on each file.
+
+<!-- GIF: Using "Assign from column" to write a formula column's computed dates to a frontmatter property -->
+
+**How it works:**
+
+1. Select a **source column** from the dropdown. This lists all columns visible in the current view, plus any Bases formula columns defined in the `.base` file.
+2. Type a **target property** name -- this is the frontmatter key that will be written to each file.
+3. Click **Add** to queue the assignment. You can add multiple assignments.
+4. Click **Edit tasks** to execute. Each file's source column value is read and written to the target property.
+
+**Use case example:** You have `last_assessed` dates on compliance controls and want to compute `next_assessment_due` as one year later. Add a Bases formula in the `.base` file:
+
+```yaml
+formulas:
+  next_due: if(last_assessed, date(last_assessed) + '1y', null)
+```
+
+Then in the Edit tab, assign `formula: next_due` → `next_assessment_due`. Every file gets its computed date written to frontmatter.
+
+> [!tip] Formula columns vs property columns
+> Formula columns (prefixed with `formula:` in the dropdown) are computed by Bases at display time. "Assign from column" reads the computed value and writes it permanently to frontmatter. Regular property columns copy the existing frontmatter value as-is.
+
+> [!warning] One-shot operation
+> This writes values once. If the source data changes later, you need to run the assignment again. It does not set up a live sync.
+
 ## Generate Mode <span class="badge badge--experimental">Experimental</span>
 
 > [!warning] Under active development
