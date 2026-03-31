@@ -23,3 +23,10 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1742) Fixed calendar view timeline alignment shifting away from the left edge after the 4.5.0 calendar width changes
+  - Narrowed the calendar width reset logic so it only resets dated day columns and does not clear FullCalendar's time-axis column width
+  - Fixes the week/day time axis appearing shifted toward the center even when the today-column width multiplier is left at its default
+  - Thanks to @ysafonov for reporting

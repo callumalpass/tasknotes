@@ -905,7 +905,13 @@ export class CalendarView extends BasesViewBase {
 	private applyTodayColumnWidth(): void {
 		if (!this.calendarEl || !this.calendar) return;
 
-		this.resetTodayColumnWidths();
+		const headerCells = Array.from(
+			this.calendarEl.querySelectorAll<HTMLElement>(".fc-col-header-cell[data-date]")
+		);
+		const dateKeys = headerCells
+			.map((cell) => cell.dataset.date)
+			.filter((date): date is string => Boolean(date));
+		this.resetTodayColumnWidths(dateKeys);
 
 		if (
 			!shouldWidenTodayColumn(this.calendar.view.type, this.viewOptions.todayColumnWidthMultiplier)
@@ -913,12 +919,6 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		const headerCells = Array.from(
-			this.calendarEl.querySelectorAll<HTMLElement>(".fc-col-header-cell[data-date]")
-		);
-		const dateKeys = headerCells
-			.map((cell) => cell.dataset.date)
-			.filter((date): date is string => Boolean(date));
 		const todayCell = headerCells.find((cell) => cell.classList.contains("fc-day-today"));
 		const todayDate = todayCell?.dataset.date;
 		if (!todayDate) return;
@@ -957,7 +957,7 @@ export class CalendarView extends BasesViewBase {
 		});
 	}
 
-	private resetTodayColumnWidths(): void {
+	private resetTodayColumnWidths(dateKeys: string[] = []): void {
 		if (!this.calendarEl) return;
 
 		const dayElements = this.calendarEl.querySelectorAll<HTMLElement>(
@@ -969,8 +969,17 @@ export class CalendarView extends BasesViewBase {
 			element.style.removeProperty("max-width");
 		});
 
-		this.calendarEl.querySelectorAll("colgroup col").forEach((col) => {
-			(col as HTMLElement).style.removeProperty("width");
+		if (dateKeys.length === 0) return;
+
+		this.calendarEl.querySelectorAll("colgroup").forEach((group) => {
+			const cols = Array.from(group.querySelectorAll<HTMLTableColElement>("col"));
+			if (cols.length < dateKeys.length) return;
+			const dayCols = cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
+			if (dayCols.length !== dateKeys.length) return;
+
+			dayCols.forEach((col) => {
+				col.style.removeProperty("width");
+			});
 		});
 	}
 
