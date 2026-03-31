@@ -514,7 +514,7 @@ export class MCPService {
 			"tasknotes_get_time_summary",
 			"Get time tracking summary for a period",
 			{
-				period: z.enum(["today", "week", "month", "all"]).optional().describe("Time period (default: today)"),
+				period: z.enum(["today", "week", "month", "all", "custom"]).optional().describe("Time period (default: today)"),
 				from: z.string().optional().describe("Start date (ISO string) for custom range"),
 				to: z.string().optional().describe("End date (ISO string) for custom range"),
 			},
