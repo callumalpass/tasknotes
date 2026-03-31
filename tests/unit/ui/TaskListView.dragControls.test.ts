@@ -374,7 +374,7 @@ describe("TaskListView drag controls", () => {
 		});
 	});
 
-	it("prefers the drag baseline order over cached sort scope paths when computing visible scope", () => {
+	it("uses cached sort scope paths rather than the drag baseline when computing visible scope", () => {
 		const view = createView();
 		const itemsContainer = document.createElement("div");
 		const firstCard = document.createElement("div");
@@ -408,9 +408,6 @@ describe("TaskListView drag controls", () => {
 		(view as any).sortScopeTaskPaths.set("alpha", ["tasks/stale.md"]);
 		(view as any).captureDropBaseline();
 
-		expect((view as any).getVisibleSortScopePathsForDrag("alpha")).toEqual([
-			"tasks/first.md",
-			"tasks/second.md",
-		]);
+		expect((view as any).getVisibleSortScopePathsForDrag("alpha")).toEqual(["tasks/stale.md"]);
 	});
 });
