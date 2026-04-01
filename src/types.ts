@@ -485,6 +485,8 @@ export interface TaskCreationData extends Partial<TaskInfo> {
 	sourceBaseId?: string;
 	/** Source view ID for provenance tracking (ADR-011). Only written when baseIdentityTrackSourceView is enabled. */
 	sourceViewId?: string;
+	/** Override folder for task file creation — from .base source folder. */
+	outputTaskFolder?: string;
 }
 
 export interface TimeEntry {

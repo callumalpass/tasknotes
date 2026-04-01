@@ -623,6 +623,38 @@ export class BasesToolbarInjector {
 			// Dynamically import to avoid circular dependencies
 			const { TaskCreationModal } = await import("../modals/TaskCreationModal");
 
+			// Extract source folder from .base YAML so new tasks are created
+			// in the view's source folder (not the default tasks folder)
+			let outputTaskFolder: string | undefined;
+			if (baseFilePath) {
+				try {
+					const baseFile = this.plugin.app.vault.getAbstractFileByPath(baseFilePath);
+					if (baseFile instanceof TFile) {
+						const baseContent = await this.plugin.app.vault.cachedRead(baseFile);
+						const parsed = parseYaml(baseContent);
+						// Extract folder from sources array
+						if (parsed?.sources && Array.isArray(parsed.sources)) {
+							for (const source of parsed.sources) {
+								if (source?.folder && typeof source.folder === "string") {
+									outputTaskFolder = source.folder;
+									break;
+								}
+							}
+						}
+						// Fallback: check for top-level folder filter patterns
+						if (!outputTaskFolder && parsed?.filters) {
+							const filterStr = JSON.stringify(parsed.filters);
+							const folderMatch = filterStr.match(/file\.inFolder\("([^"]+)"\)/);
+							if (folderMatch) {
+								outputTaskFolder = folderMatch[1];
+							}
+						}
+					}
+				} catch {
+					// Best-effort — fall back to default tasks folder
+				}
+			}
+
 			const modal = new TaskCreationModal(
 				this.plugin.app,
 				this.plugin,
@@ -634,6 +666,7 @@ export class BasesToolbarInjector {
 					sourceBaseId: mappingCtx?.baseId,
 					sourceViewId: mappingCtx?.viewId,
 					contextItemPaths: contextItemPaths.length > 0 ? contextItemPaths : undefined,
+					outputTaskFolder,
 				}
 			);
 			modal.open();
