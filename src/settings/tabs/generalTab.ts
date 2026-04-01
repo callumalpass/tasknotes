@@ -770,6 +770,45 @@ export function renderGeneralTab(
 					renderDetails(setting.settingEl.parentElement!, true);
 				}
 			});
+
+			// Copy configuration to clipboard button
+			group.addSetting((setting) => {
+				setting
+					.setName("Copy configuration to clipboard")
+					.setDesc("Copies your TaskNotes settings as JSON (sensitive fields like OAuth tokens are redacted). Useful for bug reports and support.")
+					.addButton((button) => {
+						button.setButtonText("Copy config").onClick(async () => {
+							try {
+								// Deep copy and sanitize
+								const config = JSON.parse(JSON.stringify(plugin.settings));
+								// Redact sensitive fields
+								const sensitiveKeys = [
+									"googleOAuthClientId", "googleOAuthClientSecret",
+									"microsoftOAuthClientId", "microsoftOAuthClientSecret",
+									"apiKey", "webhookSecret", "accessToken", "refreshToken",
+								];
+								const redact = (obj: any) => {
+									if (!obj || typeof obj !== "object") return;
+									for (const key of Object.keys(obj)) {
+										if (sensitiveKeys.some(s => key.toLowerCase().includes(s.toLowerCase())) && obj[key]) {
+											obj[key] = "[REDACTED]";
+										} else if (typeof obj[key] === "object") {
+											redact(obj[key]);
+										}
+									}
+								};
+								redact(config);
+
+								const json = JSON.stringify(config, null, 2);
+								await navigator.clipboard.writeText(json);
+								button.setButtonText("Copied!");
+								setTimeout(() => button.setButtonText("Copy config"), 2000);
+							} catch (err) {
+								new Notice("Failed to copy: " + (err instanceof Error ? err.message : String(err)));
+							}
+						});
+					});
+			});
 		}
 	);
 }
