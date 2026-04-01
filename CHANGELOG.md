@@ -4,6 +4,27 @@ All notable changes to this TaskNotes fork will be documented in this file.
 
 This fork (`cybersader/tasknotes`) adds bulk tasking, notifications, and other enhancements to the upstream [TaskNotes](https://github.com/callumalpass/tasknotes) plugin.
 
+## [4.3.75] - 2026-03-30
+
+### Fixed
+- **PropertyPicker shows all view columns** — Properties defined in the `.base` view's `order:` list now appear in the PropertyPicker even if no file has them in frontmatter yet. Fixes the issue where only `dateCreated` and `dateModified` appeared on vaults with files that have no frontmatter (e.g., Excalidraw).
+
+## [4.3.74] - 2026-03-30
+
+### Fixed
+- **Toolbar property extraction uses getValue for SMB resilience** — When metadata cache is stale over SMB, the toolbar item extractor now reads properties directly from Bases entries via `getValue()` using the `.base` file's column order. Ensures PropertyPicker and frontmatter overrides work on slow network vaults.
+
+## [4.3.73] - 2026-03-30
+
+### Fixed
+- **Upcoming View respects remapped due dates** — Tasks with `tnDueDateProp` (e.g., `next_assessment_due` mapped to Due) now show in the correct time category instead of "No due date". Same for `tnScheduledDateProp`.
+- **PropertyPicker uses pre-extracted frontmatter over SMB** — Both Convert/Generate and View Settings PropertyPickers now pass items' pre-extracted frontmatter, bypassing stale metadata cache on network vaults.
+
+## [4.3.72] - 2026-03-30
+
+### Fixed
+- **"Assign from column" pre-resolves values at Add time** — Formula column values are now resolved immediately when clicking "Add", while Bases entries are still live. Eliminates stale reference issues over SMB/network vaults.
+
 ## [4.3.71] - 2026-03-30
 
 ### Fixed

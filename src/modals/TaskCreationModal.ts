@@ -60,6 +60,8 @@ export interface TaskCreationOptions {
 	contextItemPaths?: string[];
 	/** Active file path when modal was opened — used for "This note" scope in PropertyPicker. */
 	currentFilePath?: string;
+	/** Override the default tasks folder — used when creating from a .base view with a source folder. */
+	outputTaskFolder?: string;
 }
 
 /**
@@ -1908,6 +1910,7 @@ export class TaskCreationModal extends TaskModal {
 		taskData.viewFieldMapping = this.options.viewFieldMapping || prePopulated?.viewFieldMapping;
 		taskData.sourceBaseId = this.options.sourceBaseId || prePopulated?.sourceBaseId;
 		taskData.sourceViewId = this.options.sourceViewId || prePopulated?.sourceViewId;
+		taskData.outputTaskFolder = this.options.outputTaskFolder;
 
 		// Merge PropertyPicker field overrides into viewFieldMapping (ADR-011)
 		// User may have added/changed mappings via the Additional Properties UI

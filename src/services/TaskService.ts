@@ -329,6 +329,9 @@ export class TaskService {
 					const tasksFolder = this.plugin.settings.tasksFolder || "";
 					folder = this.processFolderTemplate(tasksFolder, taskData);
 				}
+			} else if (taskData.outputTaskFolder) {
+				// Use the .base view's source folder when creating from a Bases view
+				folder = taskData.outputTaskFolder;
 			} else {
 				// For manual creation and other contexts, use the general tasks folder
 				const tasksFolder = this.plugin.settings.tasksFolder || "";
