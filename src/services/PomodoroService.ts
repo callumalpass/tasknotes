@@ -332,7 +332,7 @@ export class PomodoroService {
 		if (this.state.currentSession && this.state.currentSession.activePeriods.length > 0) {
 			const currentPeriod =
 				this.state.currentSession.activePeriods[
-					this.state.currentSession.activePeriods.length - 1
+				this.state.currentSession.activePeriods.length - 1
 				];
 			if (!currentPeriod.endTime) {
 				currentPeriod.endTime = getCurrentTimestamp();
@@ -424,7 +424,7 @@ export class PomodoroService {
 			if (this.state.currentSession.activePeriods.length > 0) {
 				const currentPeriod =
 					this.state.currentSession.activePeriods[
-						this.state.currentSession.activePeriods.length - 1
+					this.state.currentSession.activePeriods.length - 1
 					];
 				if (!currentPeriod.endTime) {
 					currentPeriod.endTime = getCurrentTimestamp();
@@ -796,7 +796,7 @@ export class PomodoroService {
 			// Clean up audio context after sounds complete
 			const cleanupTimeout = setTimeout(() => {
 				this.activeAudioContexts.delete(audioContext);
-				audioContext.close().catch(() => {});
+				audioContext.close().catch(() => { });
 			}, 300);
 			this.cleanupTimeouts.add(cleanupTimeout as unknown as number);
 		} catch (error) {
@@ -1010,7 +1010,8 @@ export class PomodoroService {
 
 		// Filter sessions for the specific date
 		const dayHistory = history.filter((session) => {
-			const sessionDate = formatDateForStorage(new Date(session.startTime));
+			const d = new Date(session.startTime);
+			const sessionDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 			return sessionDate === dateStr;
 		});
 
@@ -1049,8 +1050,7 @@ export class PomodoroService {
 	async getTodayStats(): Promise<PomodoroHistoryStats> {
 		// Use UTC-anchored today for consistent timezone handling
 		const todayLocal = getTodayLocal();
-		const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
-		return this.getStatsForDate(todayUTCAnchor);
+		return this.getStatsForDate(todayLocal);
 	}
 
 	cleanup() {
@@ -1065,7 +1065,7 @@ export class PomodoroService {
 		this.cleanupTimeouts.clear();
 		for (const audioContext of this.activeAudioContexts) {
 			if (audioContext.state !== "closed") {
-				audioContext.close().catch(() => {});
+				audioContext.close().catch(() => { });
 			}
 		}
 		this.activeAudioContexts.clear();
