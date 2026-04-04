@@ -7,6 +7,8 @@ describe("TaskCalendarSyncService", () => {
     let mockGoogleCalendarService: any;
 
     beforeEach(() => {
+        jest.useFakeTimers();
+
         mockPlugin = {
             settings: {
                 googleCalendarExport: {
@@ -34,20 +36,24 @@ describe("TaskCalendarSyncService", () => {
         };
 
         syncService = new TaskCalendarSyncService(mockPlugin, mockGoogleCalendarService);
-        
+
         // Mock internal methods to avoid testing downstream serialization logic which might be complex
         syncService.executeTaskUpdate = jest.fn().mockResolvedValue(undefined);
     });
 
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
     it("should use the most recently passed task explicitly, avoiding stale cacheManager payloads during debounce", async () => {
         const taskPath = "test/path.md";
-        
+
         const firstPayload: TaskInfo = {
             path: taskPath,
             title: "Task Title",
             scheduled: "2026-04-04"
         };
-        
+
         const secondPayload: TaskInfo = {
             path: taskPath,
             title: "Task Title",
@@ -61,11 +67,12 @@ describe("TaskCalendarSyncService", () => {
         syncService.updateTaskInCalendar(firstPayload);
         syncService.updateTaskInCalendar(secondPayload);
 
-        // Fast-forward the 500ms debounce
-        await new Promise(r => setTimeout(r, 600));
+        // Fast-forward past the 500ms debounce
+        jest.advanceTimersByTime(500);
 
-        // Let the event loop flush the internal promises
-        await new Promise(process.nextTick);
+        // Flush the microtask queue so the async debounce handler completes
+        await Promise.resolve();
+        await Promise.resolve();
 
         // Assert: It should execute only once, and pass the explicit secondPayload, not the stale cache!
         expect(syncService.executeTaskUpdate).toHaveBeenCalledTimes(1);
