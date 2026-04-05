@@ -32,7 +32,7 @@ import { TaskEditModal } from "./modals/TaskEditModal";
 import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
+import { convertUTCToLocalCalendarDate, getCurrentTimestamp, getDatePart, parseDateToUTC } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -1063,11 +1063,13 @@ export default class TaskNotesPlugin extends Plugin {
 			// Let TaskService handle the date logic (defaults to local today, not selectedDate)
 			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, date);
 
-			// For notification, determine the actual completion date from the task
-			// Use local today if no explicit date provided
+			// Use the same implicit-date resolution as TaskService (#396)
 			const targetDate =
 				date ||
 				(() => {
+					if (task.recurrence_anchor !== "completion" && task.scheduled) {
+						return parseDateToUTC(getDatePart(task.scheduled));
+					}
 					const todayLocal = getTodayLocal();
 					return createUTCDateFromLocalCalendarDate(todayLocal);
 				})();
