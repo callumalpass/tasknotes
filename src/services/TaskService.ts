@@ -39,10 +39,12 @@ import {
 import { getProjectDisplayName } from "../utils/linkUtils";
 import {
 	formatDateForStorage,
+	getDatePart,
 	getCurrentDateString,
 	getCurrentTimestamp,
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
+	parseDateToUTC,
 } from "../utils/dateUtils";
 import { format } from "date-fns";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
@@ -1288,11 +1290,14 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
-		// Default to local today instead of selectedDate for recurring task completion
-		// This ensures completion is recorded for user's actual calendar day unless explicitly overridden
+		// For scheduled-anchor recurring tasks, default to the scheduled occurrence
+		// date — not today — so late completions mark the correct instance (#396)
 		const targetDate =
 			date ||
 			(() => {
+				if (freshTask.recurrence_anchor !== "completion" && freshTask.scheduled) {
+					return parseDateToUTC(getDatePart(freshTask.scheduled));
+				}
 				const todayLocal = getTodayLocal();
 				return createUTCDateFromLocalCalendarDate(todayLocal);
 			})();
@@ -1514,10 +1519,14 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
-		// Default to local today
+		// For scheduled-anchor recurring tasks, default to the scheduled occurrence
+		// date — not today — so late skips mark the correct instance (#396)
 		const targetDate =
 			date ||
 			(() => {
+				if (freshTask.recurrence_anchor !== "completion" && freshTask.scheduled) {
+					return parseDateToUTC(getDatePart(freshTask.scheduled));
+				}
 				const todayLocal = getTodayLocal();
 				return createUTCDateFromLocalCalendarDate(todayLocal);
 			})();
