@@ -1060,19 +1060,20 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
-			// Let TaskService handle the date logic (defaults to local today, not selectedDate)
-			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, date);
-
-			// Use the same implicit-date resolution as TaskService (#396)
+			// Resolve the implicit date from cacheManager — the same authoritative
+			// source the service uses — before the service mutates state (#396)
+			const freshTask = (await this.cacheManager.getTaskInfo(task.path)) || task;
 			const targetDate =
 				date ||
 				(() => {
-					if (task.recurrence_anchor !== "completion" && task.scheduled) {
-						return parseDateToUTC(getDatePart(task.scheduled));
+					if (freshTask.recurrence_anchor !== "completion" && freshTask.scheduled) {
+						return parseDateToUTC(getDatePart(freshTask.scheduled));
 					}
 					const todayLocal = getTodayLocal();
 					return createUTCDateFromLocalCalendarDate(todayLocal);
 				})();
+
+			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, date);
 
 			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
