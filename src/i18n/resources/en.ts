@@ -487,8 +487,8 @@ export const en: TranslationTree = {
 				},
 			},
 			switchFocusOnTab: {
-				name: "Cambia el foco con la tecla Tab",
-				description: "Al editar los detalles de una tarea, cambia el foco de entrada con la tecla Tab",
+				name: "Switch focus on Tab",
+				description: "Switch input focus to the next field when presssing the Tab key while editing details of a task",
 			},
 			nlp: {
 				header: "Natural Language Processing",
