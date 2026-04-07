@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import TaskNotesPlugin from "../main";
 import { UserMappedField } from "../types/settings";
-
+import { join as join_path } from "path";
 /**
  * Service that generates mdbase-spec v0.2.0 type definition files
  * (mdbase.yaml and _types/task.md) at the vault root.
@@ -41,24 +41,26 @@ export class MdbaseSpecService {
 		try {
 			const vault = this.plugin.app.vault;
 
+			const typesFolder = this.getTypeFolderName();
+			const taskDefPath = join_path(typesFolder, this._defaultTaskDefinitionFile);
 			// Ensure _types folder exists
-			const typesFolderExists = await vault.adapter.exists("_types");
+			const typesFolderExists = await vault.adapter.exists(typesFolder);
 			if (!typesFolderExists) {
-				await vault.createFolder("_types");
+				await vault.createFolder(typesFolder);
 			}
 
 			const taskTypeDef = this.buildTaskTypeDef();
-			await this.writeFile("_types/task.md", taskTypeDef);
+			await this.writeFile(taskDefPath, taskTypeDef);
 
 			// Only create mdbase.yaml if it doesn't already exist so that
 			// user customisations (extra excludes, description, etc.) are preserved.
-			const mdbaseExists = await vault.adapter.exists("mdbase.yaml");
+			const mdbaseExists = await vault.adapter.exists(this._defaultMdbConfigFile);
 			if (!mdbaseExists) {
 				const mdbaseYaml = this.buildMdbaseYaml();
-				await this.writeFile("mdbase.yaml", mdbaseYaml);
+				await this.writeFile(this._defaultMdbConfigFile, mdbaseYaml);
 			}
 
-			console.debug("[TaskNotes][mdbase-spec] Generated mdbase.yaml and _types/task.md");
+			console.debug(`[TaskNotes][mdbase-spec] Generated ${this._defaultMdbConfigFile}, and ${taskDefPath}`);
 		} catch (error) {
 			console.error("[TaskNotes][mdbase-spec] Failed to generate files:", error);
 		}
