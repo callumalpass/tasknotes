@@ -481,6 +481,10 @@ export const ko: TranslationTree = {
 					description: "체크박스에서 변환된 작업이 생성될 폴더. 기본 작업 폴더를 사용하려면 비워두세요. {{currentNotePath}}는 현재 노트 폴더, {{currentNoteTitle}}은 현재 노트 이름의 하위 폴더입니다.",
 				},
 			},
+			switchFocusOnTab: {
+				name: "탭 키를 사용하여 포커스를 이동합니다",
+				description: "작업 세부 정보를 편집할 때 탭 키를 사용하여 입력 포커스를 이동합니다",
+			},
 			nlp: {
 				header: "자연어 처리",
 				description: "텍스트 입력에서 날짜, 우선순위 및 기타 속성을 파싱합니다.",

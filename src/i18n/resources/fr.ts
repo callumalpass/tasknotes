@@ -485,6 +485,10 @@ export const fr: TranslationTree = {
 					description: "Dossier où les tâches converties depuis les cases à cocher seront créées. Laisser vide pour utiliser le dossier de tâches par défaut. Utilisez {{currentNotePath}} pour le dossier de la note actuelle, ou {{currentNoteTitle}} pour un sous-dossier nommé d'après la note.",
 				},
 			},
+			switchFocusOnTab: {
+				name: "Déplacer le curseur à l'aide de la touche Tab",
+				description: "Lors de la modification des détails d'une tâche, utilisez la touche Tab pour déplacer le curseur",
+			},
 			nlp: {
 				header: "Traitement du langage naturel",
 				description: "Analyse les dates, priorités et autres propriétés depuis le texte saisi.",

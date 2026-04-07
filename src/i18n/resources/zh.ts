@@ -485,6 +485,10 @@ export const zh: TranslationTree = {
 					description: "从复选框转换的任务将在其中创建的文件夹。留空则使用默认任务文件夹。使用{{currentNotePath}}表示当前笔记的文件夹，或使用{{currentNoteTitle}}表示以笔记标题命名的子文件夹。",
 				},
 			},
+			switchFocusOnTab: {
+				name: "使用 Tab 键切换焦点",
+				description: "在编辑任务详情时，使用 Tab 键切换输入焦点",
+			},
 			nlp: {
 				header: "自然语言处理",
 				description: "从文本输入解析日期、优先级和其他属性。",

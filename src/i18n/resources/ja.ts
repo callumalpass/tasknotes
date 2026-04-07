@@ -485,6 +485,10 @@ export const ja: TranslationTree = {
 					description: "チェックボックスから変換されたタスクが作成されるフォルダー。空白のままにするとデフォルトのタスクフォルダーが使用されます。{{currentNotePath}}で現在のノートのフォルダー、{{currentNoteTitle}}でノートのタイトルを持つサブフォルダーを指定できます。",
 				},
 			},
+			switchFocusOnTab: {
+				name: "Tabキーでフォーカスを移動します",
+				description: "タスクの詳細を編集する際は、Tabキーで入力フォーカスを移動してください",
+			},
 			nlp: {
 				header: "自然言語処理",
 				description: "テキスト入力から日付、優先度、その他のプロパティを解析します。",

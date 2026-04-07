@@ -485,6 +485,10 @@ export const de: TranslationTree = {
 					description: "Ordner, in dem aus Checkboxen konvertierte Aufgaben erstellt werden. Leer lassen, um den Standard-Aufgabenordner zu verwenden. Verwende {{currentNotePath}} für den Ordner der aktuellen Notiz oder {{currentNoteTitle}} für einen Unterordner mit dem Notiztitel.",
 				},
 			},
+			switchFocusOnTab: {
+				name: "Fokus mit Tabulatortaste wechseln",
+				description: "Wechsle beim Bearbeiten von Aufgabendetails mit der Tabulatortaste den Eingabefokus",
+			},
 			nlp: {
 				header: "Natürliche Sprachverarbeitung",
 				description: "Analysiere Daten, Prioritäten und andere Eigenschaften aus Texteingaben.",

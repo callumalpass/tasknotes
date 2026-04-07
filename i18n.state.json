@@ -1292,6 +1292,14 @@
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "17486005628baac00ec8c047ea023cb1c42fce50"
     },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "d4898917a4e5398fbb049772a34ed36bfa50ddf1"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "617c809a80a2bf9bd040b9010175474ea3f4a2c8"
+    },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
       "translation": "306d0086d726996ee9e2e6f0f9060f7b31dcbbd1"
@@ -9561,6 +9569,14 @@
     "settings.features.instantConvert.folder.description": {
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "1fb23ba9dabd5414106abea7f0e36b1e845102a5"
+    },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "a14785bd58840d00deeda04998e5ff0df6543cac"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -17832,6 +17848,14 @@
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "7b8143d67c72876fb9930fd00b005d09381da471"
     },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "bfcf2376999f1a3e14170c55f02adc8654c7b3d0"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "84a4350357e4181bde8c8e82653da351fee5a445"
+    },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
       "translation": "b1e8011b64c3e540c76e7200f83e8d4882c3f2b2"
@@ -26101,6 +26125,14 @@
     "settings.features.instantConvert.folder.description": {
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "54963b20aa549d3d17d76b9f7bf70f683ae0017a"
+    },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "ad1756dc9d71b6ca475c2de9f95e9db424a35532"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "6c2061f8087c23186344b858f78e49805da179c8"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -34372,6 +34404,14 @@
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "8fc3e9f020fa4481cdf1c7114b8091c2ffd64bdc"
     },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "e64d41a76e45c6935009a3ad15b4351ba89bf83c"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "7578770d53a5253f6693f0738f49883a22e6150e"
+    },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
       "translation": "4b046cbf82ae9d360a12fd3c7631834919812a55"
@@ -42641,6 +42681,14 @@
     "settings.features.instantConvert.folder.description": {
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "74a241bba4f841528a71eee9cdadcf31086c21c2"
+    },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "69a2ee93469ee562dd557c698e091e46c1f7ceb2"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "6d4ebba516f2d9cc99ac105a5e20219eab8fad74"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -50912,6 +50960,14 @@
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "79a9fdc5ec3efd53d942c87a77d1024d8bf00326"
     },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "aa7ab02810e0ea2c6ede0462c3983a462cc0769b"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "2cf586d43dd2271e986f53bbf54c18037a38baec"
+    },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
       "translation": "2c59d2dd46678464aad80724320867faf0bee86d"
@@ -59181,6 +59237,14 @@
     "settings.features.instantConvert.folder.description": {
       "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
       "translation": "ec72bd6d2d63718c6c9ccfcf1e88e4ce93402840"
+    },
+    "settings.features.switchFocusOnTab.name": {
+      "source": "9b72eba19c06b7ceb9c15c126a0ffffcf689c8ee",
+      "translation": "3ff9f0a8532808d51a9398827db789b0b918db05"
+    },
+    "settings.features.switchFocusOnTab.description": {
+      "source": "a14785bd58840d00deeda04998e5ff0df6543cac",
+      "translation": "a2843c8634654664d021938f01df7d7a6c6212aa"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",

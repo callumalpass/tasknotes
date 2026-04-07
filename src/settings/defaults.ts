@@ -295,6 +295,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	disableOverlayOnAlias: false,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
+	switchFocusOnTab: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,
 	nlpLanguage: "en", // Default to English

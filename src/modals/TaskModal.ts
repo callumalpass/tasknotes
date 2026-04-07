@@ -789,6 +789,10 @@ export abstract class TaskModal extends Modal {
 			// Create container for the markdown editor
 			const detailsEditorContainer = rightColumn.createDiv("details-markdown-editor");
 
+			const onTabCallback = this.plugin.settings.switchFocusOnTab
+						? () => {this.focusNextField(); return true;} // jump to next input field & prevent default tab behavior
+						: () => false; // default behavior
+
 			// Create embeddable markdown editor for details using shared method
 			this.detailsMarkdownEditor = createTaskModalMarkdownEditor(this.app, detailsEditorContainer, {
 				value: this.details,
@@ -805,11 +809,7 @@ export abstract class TaskModal extends Modal {
 					// ESC - close the modal
 					this.close();
 				},
-				onTab: () => {
-					// Tab - jump to next input field
-					this.focusNextField();
-					return true; // Prevent default tab behavior
-				},
+				onTab: onTabCallback,
 			});
 		}
 

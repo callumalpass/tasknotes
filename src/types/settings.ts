@@ -127,6 +127,7 @@ export interface TaskNotesSettings {
 	disableOverlayOnAlias: boolean;
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
+	switchFocusOnTab: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
 	nlpLanguage: string; // Language code for natural language processing (e.g., 'en', 'es', 'fr')

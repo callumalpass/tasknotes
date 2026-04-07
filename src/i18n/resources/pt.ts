@@ -485,6 +485,10 @@ export const pt: TranslationTree = {
 					description: "Pasta onde tarefas convertidas de caixas de seleção serão criadas. Deixe vazio para usar a pasta de tarefas padrão. Use {{currentNotePath}} para a pasta da nota atual, ou {{currentNoteTitle}} para uma subpasta com o título da nota."
 				}
 			},
+			switchFocusOnTab: {
+				name: "Alterar o foco com a tecla Tab",
+				description: "Ao editar os detalhes de uma tarefa, utilize a tecla Tab para alterar o foco de entrada",
+			},
 			nlp: {
 				header: "Processamento de Linguagem Natural",
 				description: "Analisa datas, prioridades e outras propriedades do texto inserido.",
