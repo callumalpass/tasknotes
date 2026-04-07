@@ -205,6 +205,7 @@ export interface TaskNotesSettings {
 	// Bases integration settings
 	enableBases: boolean;
 	enableMdbaseSpec: boolean;
+	userMdbaseSpecLocation?: string; // Location of types folder.  Vault-relative path
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {

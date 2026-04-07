@@ -12,6 +12,14 @@ import { UserMappedField } from "../types/settings";
 export class MdbaseSpecService {
 	private plugin: TaskNotesPlugin;
 
+
+	// NOTE: Must be `mdbase.yaml` because mdbase/cli expects it here
+	private _defaultMdbConfigFile = "mdbase.yaml";
+	// NOTE: Configurable, but path must be correct in mdbase.yaml
+	private _defaultTypesFolder = "_types";
+	// NOTE: The file we will define the task schema in
+	private _defaultTaskDefinitionFile = "task.md";
+
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
 	}
@@ -459,6 +467,11 @@ export class MdbaseSpecService {
 			due: fm.toUserField("due"),
 			scheduled: fm.toUserField("scheduled"),
 		};
+	}
+
+
+	private getTypeFolderName(): string {
+		return this.plugin.settings.userMdbaseSpecLocation ?? this._defaultTypesFolder;
 	}
 }
 
