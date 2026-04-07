@@ -84,15 +84,16 @@ export class MdbaseSpecService {
 	 * Build the mdbase.yaml content.
 	 */
 	buildMdbaseYaml(): string {
+		const typesFolder = this.getTypeFolderName();
 		return [
 			'spec_version: "0.2.0"',
 			'name: "TaskNotes"',
 			'description: "Task collection managed by TaskNotes for Obsidian"',
 			"settings:",
-			'  types_folder: "_types"',
+			`  types_folder: ${typesFolder}`,
 			"  default_strict: false",
 			"  exclude:",
-			'    - "_types"',
+			`    - "${typesFolder}"`,
 			"",
 		].join("\n");
 	}
