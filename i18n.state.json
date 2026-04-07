@@ -4892,6 +4892,18 @@
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
+    },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
       "translation": "21f6d0d8e28cd7e719df96c9bdd5f61362ea1ca9"
@@ -13161,6 +13173,18 @@
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -21432,6 +21456,18 @@
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
+    },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
       "translation": "67cf83bbaf476fbf6821b4d9d98451683577f593"
@@ -29701,6 +29737,18 @@
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -37972,6 +38020,18 @@
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
+    },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
       "translation": "aec5ef394a22fbbf4d506aa06f4c3871d05bd8c6"
@@ -46241,6 +46301,18 @@
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -54512,6 +54584,18 @@
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
     },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
+    },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
       "translation": "bacd8f654b8fd695aed4a8563f02d9ef5acc17bb"
@@ -62781,6 +62865,18 @@
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
       "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.name": {
+      "source": "389848eee4256abb3db28169ac371c494339e292",
+      "translation": "389848eee4256abb3db28169ac371c494339e292"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.description": {
+      "source": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0",
+      "translation": "fef97a6f229717c1badbb72b1ab8cd3e4df743c0"
+    },
+    "settings.integrations.mdbaseSpec.typesFolder.placeholder": {
+      "source": "5045c6237f4739efef4d22d22836cf116bcd7d36",
+      "translation": "5045c6237f4739efef4d22d22836cf116bcd7d36"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",

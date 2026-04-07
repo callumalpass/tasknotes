@@ -2030,6 +2030,11 @@ export const ko: TranslationTree = {
 					name: "Generate mdbase type definitions",
 					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
 				},
+				typesFolder: {
+					name: "Path to the vault types folder",
+					description: "The local path where mdbase schema files are located.",
+					placeholder: "_types"
+				}
 			},
 			timeFormats: {
 				justNow: "방금",
