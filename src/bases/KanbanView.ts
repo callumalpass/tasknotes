@@ -2982,7 +2982,7 @@ export class KanbanView extends BasesViewBase {
 		const hasNone = swimLaneValues.has(noneKey);
 		const rawKeys = Array.from(swimLaneValues);
 		const valueKeys = rawKeys.filter((key) => key !== noneKey);
-		const cleanProperty = this.stripPropertyPrefix(this.swimLanePropertyId);
+		const cleanProperty = stripPropertyPrefix(this.swimLanePropertyId);
 
 		const statusField = this.plugin.fieldMapper.toUserField("status");
 		if (cleanProperty === statusField) {
