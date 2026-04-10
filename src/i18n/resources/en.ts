@@ -8,6 +8,12 @@ export const en: TranslationTree = {
 		confirm: "Confirm",
 		close: "Close",
 		save: "Save",
+		reorder: {
+			confirmLargeTitle: "Confirm large reorder",
+			confirmButton: "Reorder notes",
+			confirmLargeMessage:
+				'Reordering here will update "{field}" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?',
+		},
 		language: "Language",
 		systemDefault: "System default",
 		loading: "Loading...",
@@ -88,6 +94,16 @@ export const en: TranslationTree = {
 			expandAllGroups: "Expand All Groups",
 			collapseAllGroups: "Collapse All Groups",
 			noTasksFound: "No tasks found for the selected filters.",
+			reorder: {
+				scope: {
+					ungrouped: "this ungrouped list",
+					group: 'group "{group}"',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"Cannot reorder tasks in formula-based groups. Formula values are computed and cannot be directly modified.",
+			},
 		},
 		notes: {
 			title: "Notes",
@@ -235,6 +251,7 @@ export const en: TranslationTree = {
 					showWeekends: "Show weekends",
 					showAllDaySlot: "Show all-day slot",
 					showTodayHighlight: "Show today highlight",
+					todayColumnWidthMultiplier: "Today column width multiplier",
 					showSelectionPreview: "Show selection preview",
 					timeFormat: "Time format",
 					timeFormat12: "12-hour (AM/PM)",
@@ -269,6 +286,12 @@ export const en: TranslationTree = {
 			noTasks: "No tasks",
 			uncategorized: "Uncategorized",
 			noProject: "No Project",
+			reorder: {
+				scope: {
+					column: 'column "{group}"',
+					columnInSwimlane: 'column "{group}" in swimlane "{swimlane}"',
+				},
+			},
 			notices: {
 				loadFailed: "Failed to load Kanban board",
 				movedTask: 'Task moved to "{0}"',
@@ -610,6 +633,12 @@ export const en: TranslationTree = {
 			recurringSection: {
 				header: "Recurring Tasks",
 				description: "Configure behavior for recurring task management.",
+			},
+			debugLogging: {
+				header: "Debug Logging",
+				description: "Configure debug log output for troubleshooting.",
+				enableName: "Enable debug logging",
+				enableDesc: "Log detailed drag-and-drop and view diagnostics to the developer console. Useful for troubleshooting.",
 			},
 		},
 		defaults: {
@@ -985,6 +1014,11 @@ export const en: TranslationTree = {
 					description:
 						"Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator.",
 				},
+				sortOrder: {
+					name: "Manual Order",
+					description:
+						"Frontmatter property used for drag-to-reorder manual ordering. A view must be sorted by this property for drag-and-drop reordering to work.",
+				},
 				pomodoros: {
 					name: "Pomodoros",
 					description:
@@ -1144,6 +1178,7 @@ export const en: TranslationTree = {
 					timeEntries: "Time entries",
 					completeInstances: "Complete instances",
 					blockedBy: "Blocked by",
+					sortOrder: "Manual order",
 					pomodoros: "Pomodoros",
 					icsEventId: "ICS Event ID",
 					icsEventTag: "ICS Event Tag",
@@ -2961,11 +2996,37 @@ export const en: TranslationTree = {
 			dailyTooltip: "Daily note",
 		},
 		taskCard: {
+			labels: {
+				due: "Due",
+				scheduled: "Scheduled",
+				recurrence: "Recurring",
+				completed: "Completed",
+				created: "Created",
+				modified: "Modified",
+				blocked: "Blocked",
+				blocking: "Blocking",
+			},
 			blockedBadge: "Blocked",
 			blockedBadgeTooltip: "This task is waiting on another task",
 			blockingBadge: "Blocking",
 			blockingBadgeTooltip: "This task is blocking another task",
 			blockingToggle: "Blocking {count} tasks",
+			priorityAriaLabel: "Priority: {label}",
+			taskOptions: "Task options",
+			recurrenceTooltip: "{label}: {value} (click to change)",
+			reminderTooltipOne: "1 reminder set (click to manage)",
+			reminderTooltipMany: "{count} reminders set (click to manage)",
+			projectTooltip: "This task is used as a project (click to filter subtasks)",
+			expandSubtasks: "Expand subtasks",
+			collapseSubtasks: "Collapse subtasks",
+			dueToday: "{label}: Today",
+			dueTodayAt: "{label}: Today at {time}",
+			dueOverdue: "{label}: {display} (overdue)",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: Today",
+			scheduledTodayAt: "{label}: Today at {time}",
+			scheduledPast: "{label}: {display} (past)",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "Loading dependencies...",
 			blockingEmpty: "No dependent tasks",
 			blockingLoadError: "Failed to load dependencies",

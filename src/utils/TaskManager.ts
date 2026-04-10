@@ -7,6 +7,7 @@ import {
 	getTodayString,
 	formatDateForStorage,
 	isBeforeDateSafe,
+	getDatePart,
 } from "./dateUtils";
 import { calculateTotalTimeSpent } from "./helpers";
 import { TaskNotesSettings } from "../types/settings";
@@ -100,9 +101,12 @@ export class TaskManager extends Events {
 		} else {
 			// Fallback to legacy tag-based method with hierarchical support
 			if (!Array.isArray(frontmatter.tags)) return false;
-			return frontmatter.tags.some((tag: string) =>
-				typeof tag === 'string' && FilterUtils.matchesHierarchicalTagExact(tag, this.taskTag)
-			);
+			return frontmatter.tags.some((tag: string) => {
+				if (typeof tag !== 'string') return false;
+				// Obsidian metadata cache prepends '#' to frontmatter tags
+				const cleanTag = tag.startsWith('#') ? tag.slice(1) : tag;
+				return FilterUtils.matchesHierarchicalTagExact(cleanTag, this.taskTag);
+			});
 		}
 	}
 
@@ -342,6 +346,7 @@ export class TaskManager extends Events {
 	getTasksForDate(date: string): string[] {
 		const taskPaths: string[] = [];
 		const files = this.app.vault.getMarkdownFiles();
+		const targetDate = getDatePart(date);
 
 		const scheduledField = this.fieldMapper?.toUserField("scheduled") || "scheduled";
 		const dueField = this.fieldMapper?.toUserField("due") || "due";
@@ -355,8 +360,15 @@ export class TaskManager extends Events {
 			const scheduled = metadata.frontmatter[scheduledField];
 			const due = metadata.frontmatter[dueField];
 
-			// Check if task is scheduled or due on this date
-			if (scheduled === date || due === date) {
+			const scheduledDate =
+				typeof scheduled === "string" && scheduled.length > 0
+					? getDatePart(scheduled)
+					: undefined;
+			const dueDate =
+				typeof due === "string" && due.length > 0 ? getDatePart(due) : undefined;
+
+			// Match date-only queries against both date-only and datetime frontmatter values.
+			if (scheduledDate === targetDate || dueDate === targetDate) {
 				taskPaths.push(file.path);
 			}
 		}

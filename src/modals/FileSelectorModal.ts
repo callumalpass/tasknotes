@@ -24,6 +24,16 @@ export interface FileSelectorOptions {
 	filter?: "markdown" | "all" | ((file: TAbstractFile) => boolean);
 	/** Folder to create new files in (default: vault root) */
 	newFileFolder?: string;
+	/** Sort order for results */
+	sortOrder?:
+		| "name-asc"
+		| "name-desc"
+		| "path-asc"
+		| "path-desc"
+		| "created-recent"
+		| "created-oldest"
+		| "modified-recent"
+		| "modified-oldest";
 }
 
 /**
@@ -223,12 +233,39 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 			);
 		}
 
+		const sortOrder = this.options.sortOrder || "name-asc";
+		const sorted = [...filtered].sort((a, b) => {
+			const aCreated = a instanceof TFile ? a.stat.ctime : 0;
+			const bCreated = b instanceof TFile ? b.stat.ctime : 0;
+			const aModified = a instanceof TFile ? a.stat.mtime : 0;
+			const bModified = b instanceof TFile ? b.stat.mtime : 0;
+			switch (sortOrder) {
+				case "name-desc":
+					return b.name.localeCompare(a.name);
+				case "path-asc":
+					return a.path.localeCompare(b.path);
+				case "path-desc":
+					return b.path.localeCompare(a.path);
+				case "created-recent":
+					return bCreated - aCreated;
+				case "created-oldest":
+					return aCreated - bCreated;
+				case "modified-recent":
+					return bModified - aModified;
+				case "modified-oldest":
+					return aModified - bModified;
+				case "name-asc":
+				default:
+					return a.name.localeCompare(b.name);
+			}
+		});
+
 		// Filter by query
 		if (!query) {
-			return filtered.slice(0, 50); // Limit initial results
+			return sorted.slice(0, 50); // Limit initial results
 		}
 
-		return filtered
+		return sorted
 			.filter((file) => {
 				const searchText = this.getSearchText(file).toLowerCase();
 				return searchText.includes(lowerQuery);
@@ -338,6 +375,15 @@ export function openFileSelector(
 		title?: string;
 		filter?: "markdown" | "all" | ((file: TAbstractFile) => boolean);
 		newFileFolder?: string;
+		sortOrder?:
+			| "name-asc"
+			| "name-desc"
+			| "path-asc"
+			| "path-desc"
+			| "created-recent"
+			| "created-oldest"
+			| "modified-recent"
+			| "modified-oldest";
 	}
 ): void {
 	const modal = new FileSelectorModal(plugin.app, plugin, {
@@ -345,6 +391,7 @@ export function openFileSelector(
 		title: options?.title,
 		filter: options?.filter,
 		newFileFolder: options?.newFileFolder,
+		sortOrder: options?.sortOrder,
 		onResult: (result) => {
 			if (result.type === "selected" || result.type === "created") {
 				onChoose(result.file);

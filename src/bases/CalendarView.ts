@@ -39,6 +39,10 @@ import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { formatDateForStorage, hasTimeComponent, parseDateToLocal, parseDateToUTC } from "../utils/dateUtils";
+import {
+	CalendarRecreateNavigationState,
+	shouldPreserveVisibleDateOnCalendarRecreate,
+} from "./calendarRecreateUtils";
 
 /**
  * Normalize date-like inputs to UTC-anchored strings for all-day values, or
@@ -88,6 +92,32 @@ export function normalizeDateValueForCalendar(
 	return null;
 }
 
+export function shouldWidenTodayColumn(viewType: string, todayColumnWidthMultiplier: number): boolean {
+	if (todayColumnWidthMultiplier <= 1) return false;
+	return viewType === "timeGridWeek" || viewType === "timeGridCustom";
+}
+
+export function getTodayColumnWidths(
+	dateKeys: string[],
+	todayDate: string,
+	todayColumnWidthMultiplier: number
+): Map<string, string> | null {
+	if (todayColumnWidthMultiplier <= 1 || dateKeys.length <= 1) return null;
+
+	const uniqueDates = Array.from(new Set(dateKeys));
+	if (!uniqueDates.includes(todayDate)) return null;
+
+	const baseWidth = 100 / (uniqueDates.length - 1 + todayColumnWidthMultiplier);
+	const todayWidth = baseWidth * todayColumnWidthMultiplier;
+
+	return new Map(
+		uniqueDates.map((dateKey) => [
+			dateKey,
+			`${dateKey === todayDate ? todayWidth : baseWidth}%`,
+		])
+	);
+}
+
 export class CalendarView extends BasesViewBase {
 	type = "tasknotesCalendar";
 	calendar: Calendar | null = null; // Made public for factory access
@@ -113,6 +143,8 @@ export class CalendarView extends BasesViewBase {
 
 	// Flag to indicate config changed and calendar needs recreation
 	private _configChangedNeedsRecreate = false;
+	// Preserve visible date when calendar is re-created.
+	private _recreateTargetDate: Date | null = null;
 	
 	private viewOptions: {
 		// Events
@@ -142,6 +174,7 @@ export class CalendarView extends BasesViewBase {
 		showWeekends: boolean;
 		showAllDaySlot: boolean;
 		showTodayHighlight: boolean;
+		todayColumnWidthMultiplier: number;
 		selectMirror: boolean;
 		timeFormat: string;
 		scrollTime: string;
@@ -204,6 +237,7 @@ export class CalendarView extends BasesViewBase {
 			showWeekends: calendarSettings.showWeekends,
 			showAllDaySlot: true,
 			showTodayHighlight: calendarSettings.showTodayHighlight,
+			todayColumnWidthMultiplier: 1,
 			selectMirror: calendarSettings.selectMirror,
 			timeFormat: calendarSettings.timeFormat,
 			eventMinHeight: calendarSettings.eventMinHeight,
@@ -240,6 +274,7 @@ export class CalendarView extends BasesViewBase {
 	onResize(): void {
 		if (this.calendar) {
 			this.calendar.updateSize();
+			this.scheduleTodayColumnWidthUpdate();
 		}
 	}
 
@@ -333,6 +368,7 @@ export class CalendarView extends BasesViewBase {
 			this.config.get('showWeekends'),
 			this.config.get('showAllDaySlot'),
 			this.config.get('showTodayHighlight'),
+			this.config.get('todayColumnWidthMultiplier'),
 			this.config.get('selectMirror'),
 			this.config.get('timeFormat'),
 			this.config.get('scrollTime'),
@@ -545,6 +581,11 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.showWeekends = this.config.get('showWeekends') ?? this.viewOptions.showWeekends;
 			this.viewOptions.showAllDaySlot = this.config.get('showAllDaySlot') ?? this.viewOptions.showAllDaySlot;
 			this.viewOptions.showTodayHighlight = this.config.get('showTodayHighlight') ?? this.viewOptions.showTodayHighlight;
+			const todayColumnWidthMultiplier = Number(this.config.get('todayColumnWidthMultiplier') ?? 1);
+			this.viewOptions.todayColumnWidthMultiplier =
+				todayColumnWidthMultiplier >= 1 && todayColumnWidthMultiplier <= 5
+					? Math.round(todayColumnWidthMultiplier * 2) / 2
+					: 1;
 			this.viewOptions.selectMirror = this.config.get('selectMirror') ?? this.viewOptions.selectMirror;
 			this.viewOptions.timeFormat = this.config.get('timeFormat') ?? this.viewOptions.timeFormat;
 			this.viewOptions.eventMinHeight = this.config.get('eventMinHeight') ?? this.viewOptions.eventMinHeight;
@@ -583,6 +624,7 @@ export class CalendarView extends BasesViewBase {
 			// Apply today highlight styling if calendar is already initialized
 			if (this.calendar) {
 				this.applyTodayHighlightStyling();
+				this.scheduleTodayColumnWidthUpdate();
 			}
 		} catch (e) {
 			console.error("[TaskNotes][CalendarView] Error reading view options:", e);
@@ -615,8 +657,16 @@ export class CalendarView extends BasesViewBase {
 			// If config changed, re-read ALL options and destroy calendar for recreation
 			if (this._configChangedNeedsRecreate) {
 				this._configChangedNeedsRecreate = false;
+				const previousNavigationState = this.getNavigationConfigState();
 				this.readViewOptions();
 				if (this.calendar) {
+					const nextNavigationState = this.getNavigationConfigState();
+					this._recreateTargetDate = shouldPreserveVisibleDateOnCalendarRecreate(
+						previousNavigationState,
+						nextNavigationState
+					)
+						? this.calendar.getDate()
+						: null;
 					this.calendar.destroy();
 					this.calendar = null;
 				}
@@ -675,7 +725,7 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendarEl) return;
 
 		// Determine initial date
-		const initialDate = this.determineInitialDate(taskNotes);
+		const initialDate = this._recreateTargetDate ?? this.determineInitialDate(taskNotes);
 
 		// Build calendar options
 		const calendarOptions: CalendarOptions = {
@@ -816,15 +866,19 @@ export class CalendarView extends BasesViewBase {
 					this.viewOptions.calendarView = newViewType;
 					this.debouncedSaveViewType(newViewType);
 				}
+				this.scheduleTodayColumnWidthUpdate();
 			},
+			datesSet: () => this.scheduleTodayColumnWidthUpdate(),
 		};
 
 		// Create calendar
 		this.calendar = new Calendar(this.calendarEl, calendarOptions);
 		this.calendar.render();
+		this._recreateTargetDate = null;
 
 		// Apply showTodayHighlight option via CSS
 		this.applyTodayHighlightStyling();
+		this.scheduleTodayColumnWidthUpdate();
 	}
 
 	/**
@@ -841,6 +895,92 @@ export class CalendarView extends BasesViewBase {
 			// Add the existing CSS class to hide today highlighting
 			this.calendarEl.classList.add('hide-today-highlight');
 		}
+	}
+
+	private scheduleTodayColumnWidthUpdate(): void {
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		win.setTimeout(() => this.applyTodayColumnWidth(), 0);
+	}
+
+	private applyTodayColumnWidth(): void {
+		if (!this.calendarEl || !this.calendar) return;
+
+		const headerCells = Array.from(
+			this.calendarEl.querySelectorAll<HTMLElement>(".fc-col-header-cell[data-date]")
+		);
+		const dateKeys = headerCells
+			.map((cell) => cell.dataset.date)
+			.filter((date): date is string => Boolean(date));
+		this.resetTodayColumnWidths(dateKeys);
+
+		if (
+			!shouldWidenTodayColumn(this.calendar.view.type, this.viewOptions.todayColumnWidthMultiplier)
+		) {
+			return;
+		}
+
+		const todayCell = headerCells.find((cell) => cell.classList.contains("fc-day-today"));
+		const todayDate = todayCell?.dataset.date;
+		if (!todayDate) return;
+
+		const widths = getTodayColumnWidths(
+			dateKeys,
+			todayDate,
+			this.viewOptions.todayColumnWidthMultiplier
+		);
+		if (!widths) return;
+
+		const dayElements = this.calendarEl.querySelectorAll<HTMLElement>(
+			".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date]"
+		);
+		dayElements.forEach((element) => {
+			const dateKey = element.dataset.date;
+			if (!dateKey) return;
+			const width = widths.get(dateKey);
+			if (!width) return;
+			element.style.width = width;
+			element.style.minWidth = width;
+			element.style.maxWidth = width;
+		});
+
+		this.calendarEl.querySelectorAll("colgroup").forEach((group) => {
+			const cols = Array.from(group.querySelectorAll<HTMLTableColElement>("col"));
+			if (cols.length < dateKeys.length) return;
+			const dayCols = cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
+			if (dayCols.length !== dateKeys.length) return;
+
+			dayCols.forEach((col, index) => {
+				const width = widths.get(dateKeys[index]);
+				if (!width) return;
+				col.style.width = width;
+			});
+		});
+	}
+
+	private resetTodayColumnWidths(dateKeys: string[] = []): void {
+		if (!this.calendarEl) return;
+
+		const dayElements = this.calendarEl.querySelectorAll<HTMLElement>(
+			".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date]"
+		);
+		dayElements.forEach((element) => {
+			element.style.removeProperty("width");
+			element.style.removeProperty("min-width");
+			element.style.removeProperty("max-width");
+		});
+
+		if (dateKeys.length === 0) return;
+
+		this.calendarEl.querySelectorAll("colgroup").forEach((group) => {
+			const cols = Array.from(group.querySelectorAll<HTMLTableColElement>("col"));
+			if (cols.length < dateKeys.length) return;
+			const dayCols = cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
+			if (dayCols.length !== dateKeys.length) return;
+
+			dayCols.forEach((col) => {
+				col.style.removeProperty("width");
+			});
+		});
 	}
 
 	/**
@@ -917,6 +1057,14 @@ export class CalendarView extends BasesViewBase {
 
 		// Default to today
 		return undefined;
+	}
+
+	private getNavigationConfigState(): CalendarRecreateNavigationState {
+		return {
+			initialDate: this.viewOptions.initialDate,
+			initialDateProperty: this.viewOptions.initialDateProperty,
+			initialDateStrategy: this.viewOptions.initialDateStrategy,
+		};
 	}
 
 	private async fetchEvents(fetchInfo: any, successCallback: any, failureCallback: any): Promise<void> {
@@ -1810,9 +1958,9 @@ export class CalendarView extends BasesViewBase {
 				// Use shared UTC-anchored target date logic
 				const targetDate = getTargetDateForEvent(arg);
 
-				cardElement = createTaskCard(enrichedTask, this.plugin, visibleProperties, {
+				cardElement = createTaskCard(enrichedTask, this.plugin, visibleProperties, this.buildTaskCardOptions({
 					targetDate: targetDate,
-				});
+				}));
 			}
 			// Render ICS events with ICSCard
 			else if (icsEvent && eventType === 'ics') {

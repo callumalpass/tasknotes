@@ -336,3 +336,24 @@
         font-size: var(--tn-font-size-sm);
     }
 }
+
+/* Gap/slot drag-to-reorder: open real layout space at the insertion boundary */
+.tasknotes-plugin .task-list-view__drop-slot-before,
+.tasknotes-plugin .task-list-view__drop-slot-after {
+    transition: margin 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.tasknotes-plugin .task-list-view__drop-slot-before {
+    margin-top: var(--tn-drag-gap, 60px);
+}
+
+.tasknotes-plugin .task-list-view__drop-slot-after {
+    margin-bottom: var(--tn-drag-gap, 60px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .task-list-view__drop-slot-before,
+    .tasknotes-plugin .task-list-view__drop-slot-after {
+        transition: none;
+    }
+}

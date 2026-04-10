@@ -15,6 +15,10 @@ export class AutoArchiveService {
 		this.plugin = plugin;
 	}
 
+	private hasGoogleCalendarLink(task: TaskInfo): boolean {
+		return !!task.googleCalendarEventId;
+	}
+
 	/**
 	 * Start the auto-archive service and begin periodic processing
 	 */
@@ -146,13 +150,34 @@ export class AutoArchiveService {
 		}
 
 		if (currentTask.archived) {
+			if (
+				this.plugin.taskCalendarSyncService?.isEnabled() &&
+				this.hasGoogleCalendarLink(currentTask)
+			) {
+				const deleted =
+					await this.plugin.taskCalendarSyncService.deleteTaskFromCalendar(currentTask);
+				if (!deleted) {
+					console.warn(
+						`Auto-archive Google cleanup still pending for ${item.taskPath}`
+					);
+				}
+				return deleted;
+			}
+
 			// Task already archived, consider processed
 			return true;
 		}
 
 		// Archive the task
 		try {
-			await this.plugin.taskService.toggleArchive(currentTask);
+			const archivedTask = await this.plugin.taskService.toggleArchive(currentTask);
+			if (
+				archivedTask.archived &&
+				this.plugin.taskCalendarSyncService?.isEnabled() &&
+				this.hasGoogleCalendarLink(archivedTask)
+			) {
+				return false;
+			}
 			return true;
 		} catch (error) {
 			console.error(`Failed to archive task ${item.taskPath}:`, error);

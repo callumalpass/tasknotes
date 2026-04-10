@@ -85,11 +85,27 @@ nav:
     - Advanced Settings: settings/advanced-settings.md
   - APIs & Integration:
     - HTTP API: HTTP_API.md
+    - TaskNotes Obsidian CLI: obsidian-cli.md
     - NLP API: nlp-api.md
     - mdbase-tasknotes CLI: mdbase-tasknotes-cli.md
     - Webhooks: webhooks.md
     - Workflows: workflows.md
     - Calendar Setup: calendar-setup.md
+  - Specification:
+    - About the Spec: spec.md
+    - Overview: spec/00-overview.md
+    - Terminology: spec/01-terminology.md
+    - Model & Mapping: spec/02-model-and-mapping.md
+    - Temporal Semantics: spec/03-temporal-semantics.md
+    - Recurrence: spec/04-recurrence.md
+    - Operations: spec/05-operations.md
+    - Validation: spec/06-validation.md
+    - Conformance: spec/07-conformance.md
+    - Compatibility & Migrations: spec/08-compatibility-and-migrations.md
+    - Configuration: spec/09-configuration.md
+    - Dependencies & Reminders: spec/10-dependencies-and-reminders.md
+    - Links: spec/11-links.md
+    - Changelog: spec/CHANGELOG.md
   - Migration Guide: migration-v3-to-v4.md
   - Development:
     - Translation Workflow: development/translations.md

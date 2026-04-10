@@ -8,6 +8,12 @@ export const pt: TranslationTree = {
 		confirm: "Confirmar",
 		close: "Fechar",
 		save: "Salvar",
+		reorder: {
+			confirmLargeTitle: "Confirmar grande reordenação",
+			confirmButton: "Reordenar notas",
+			confirmLargeMessage:
+				'Reordenar aqui atualizará "{field}" em {count} notas para criar uma ordem manual persistente para {scope}. Notas ocultas ou filtradas no mesmo escopo também podem ser atualizadas. Continuar?',
+		},
 		language: "Idioma",
 		systemDefault: "Padrão do sistema",
 		loading: "Carregando...",
@@ -87,7 +93,17 @@ export const pt: TranslationTree = {
 			title: "Tarefas",
 			expandAllGroups: "Expandir Todos os Grupos",
 			collapseAllGroups: "Recolher Todos os Grupos",
-			noTasksFound: "Nenhuma tarefa encontrada para os filtros selecionados."
+			noTasksFound: "Nenhuma tarefa encontrada para os filtros selecionados.",
+			reorder: {
+				scope: {
+					ungrouped: "esta lista sem grupos",
+					group: 'grupo "{group}"',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"Não é possível reordenar tarefas em grupos baseados em fórmulas. Valores de fórmula são calculados e não podem ser alterados diretamente.",
+			},
 		},
 		notes: {
 			title: "Notas",
@@ -237,6 +253,7 @@ export const pt: TranslationTree = {
 					showWeekends: "Mostrar fins de semana",
 					showAllDaySlot: "Mostrar slot de dia inteiro",
 					showTodayHighlight: "Mostrar destaque de hoje",
+					todayColumnWidthMultiplier: "Multiplicador de largura da coluna de hoje",
 					showSelectionPreview: "Mostrar pré-visualização da seleção",
 					timeFormat: "Formato da hora",
 					timeFormat12: "12 horas (AM/PM)",
@@ -271,6 +288,12 @@ export const pt: TranslationTree = {
 			noTasks: "Sem tarefas",
 			uncategorized: "Sem categoria",
 			noProject: "Sem Projeto",
+			reorder: {
+				scope: {
+					column: 'coluna "{group}"',
+					columnInSwimlane: 'coluna "{group}" na swimlane "{swimlane}"',
+				},
+			},
 			notices: {
 				loadFailed: "Falha ao carregar o quadro Kanban",
 				movedTask: 'Tarefa movida para "{0}"'
@@ -603,7 +626,14 @@ export const pt: TranslationTree = {
 			recurringSection: {
 				header: "Tarefas Recorrentes",
 				description: "Configure o comportamento para gerenciamento de tarefas recorrentes."
-			}
+			},
+			debugLogging: {
+				header: "Registro de depuração",
+				description: "Configurar a saída do log de depuração para solução de problemas.",
+				enableName: "Habilitar log de depuração",
+				enableDesc:
+					"Registrar diagnósticos detalhados de arrastar e soltar e de visualização no console do desenvolvedor. Útil para solução de problemas.",
+			},
 		},
 		defaults: {
 			header: {
@@ -969,6 +999,11 @@ export const pt: TranslationTree = {
 					description:
 						"Links para tarefas que devem ser concluídas antes desta. Armazenado como wikilinks. Tarefas bloqueadas exibem um indicador visual.",
 				},
+				sortOrder: {
+					name: "Ordem manual",
+					description:
+						"Propriedade de frontmatter usada para a ordem manual com arrastar e soltar. A visualização deve estar ordenada por esta propriedade para que a reordenação por arrastar e soltar funcione.",
+				},
 				pomodoros: {
 					name: "Pomodoros",
 					description:
@@ -1125,6 +1160,7 @@ export const pt: TranslationTree = {
 					timeEntries: "Registros de tempo",
 					completeInstances: "Instâncias concluídas",
 					blockedBy: "Bloqueada por",
+					sortOrder: "Ordem manual",
 					pomodoros: "Pomodoros",
 					icsEventId: "ID do Evento ICS",
 					icsEventTag: "Tag do Evento ICS",
@@ -2905,11 +2941,37 @@ export const pt: TranslationTree = {
 			dailyTooltip: "Nota diária"
 		},
 		taskCard: {
+			labels: {
+				due: "Vencimento",
+				scheduled: "Programado",
+				recurrence: "Recorrente",
+				completed: "Concluído",
+				created: "Criado",
+				modified: "Modificado",
+				blocked: "Bloqueado",
+				blocking: "Bloqueando",
+			},
 			blockedBadge: "Bloqueada",
 			blockedBadgeTooltip: "Esta tarefa está aguardando outra tarefa",
 			blockingBadge: "Bloqueando",
 			blockingBadgeTooltip: "Esta tarefa está bloqueando outra tarefa",
 			blockingToggle: "Bloqueando {count} tarefas",
+			priorityAriaLabel: "Prioridade: {label}",
+			taskOptions: "Opções da tarefa",
+			recurrenceTooltip: "{label}: {value} (clique para alterar)",
+			reminderTooltipOne: "1 lembrete definido (clique para gerenciar)",
+			reminderTooltipMany: "{count} lembretes definidos (clique para gerenciar)",
+			projectTooltip: "Esta tarefa é usada como projeto (clique para filtrar subtarefas)",
+			expandSubtasks: "Expandir subtarefas",
+			collapseSubtasks: "Recolher subtarefas",
+			dueToday: "{label}: Hoje",
+			dueTodayAt: "{label}: Hoje às {time}",
+			dueOverdue: "{label}: {display} (atrasada)",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: Hoje",
+			scheduledTodayAt: "{label}: Hoje às {time}",
+			scheduledPast: "{label}: {display} (passado)",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "Carregando dependências...",
 			blockingEmpty: "Nenhuma tarefa dependente",
 			blockingLoadError: "Falha ao carregar dependências",

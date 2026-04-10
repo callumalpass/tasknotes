@@ -8,6 +8,12 @@ export const ja: TranslationTree = {
 		confirm: "確認",
 		close: "閉じる",
 		save: "保存",
+		reorder: {
+			confirmLargeTitle: "大規模な並べ替えを確認",
+			confirmButton: "ノートを並べ替える",
+			confirmLargeMessage:
+				'ここで並べ替えると、{scope} の永続的な手動順序を作るために {count} 件のノートの "{field}" が更新されます。同じ範囲内の非表示または絞り込み済みのノートも更新される場合があります。続行しますか？',
+		},
 		language: "言語",
 		systemDefault: "システムの既定",
 		loading: "読み込み中...",
@@ -88,6 +94,16 @@ export const ja: TranslationTree = {
 			expandAllGroups: "すべてのグループを展開",
 			collapseAllGroups: "すべてのグループを折りたたみ",
 			noTasksFound: "選択されたフィルターにタスクが見つかりませんでした。",
+			reorder: {
+				scope: {
+					ungrouped: "この未グループ化リスト",
+					group: 'グループ "{group}"',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"数式ベースのグループではタスクを並べ替えできません。数式の値は計算結果のため、直接変更できません。",
+			},
 		},
 		notes: {
 			title: "ノート",
@@ -237,6 +253,7 @@ export const ja: TranslationTree = {
 					showWeekends: "週末を表示",
 					showAllDaySlot: "終日スロットを表示",
 					showTodayHighlight: "今日をハイライト",
+					todayColumnWidthMultiplier: "今日列の幅倍率",
 					showSelectionPreview: "選択プレビューを表示",
 					timeFormat: "時刻形式",
 					timeFormat12: "12時間制（AM/PM）",
@@ -271,6 +288,12 @@ export const ja: TranslationTree = {
 			noTasks: "タスクなし",
 			uncategorized: "未分類",
 			noProject: "プロジェクトなし",
+			reorder: {
+				scope: {
+					column: '列 "{group}"',
+					columnInSwimlane: 'スイムレーン "{swimlane}" の列 "{group}"',
+				},
+			},
 			notices: {
 				loadFailed: "かんばんボードの読み込みに失敗しました",
 				movedTask: "タスクを\"{0}\"に移動しました",
@@ -600,6 +623,13 @@ export const ja: TranslationTree = {
 			recurringSection: {
 				header: "繰り返しタスク",
 				description: "繰り返しタスク管理の動作を設定します。",
+			},
+			debugLogging: {
+				header: "デバッグログ",
+				description: "トラブルシューティングのためにデバッグログ出力を設定します。",
+				enableName: "デバッグログを有効化",
+				enableDesc:
+					"ドラッグ・アンド・ドロップや表示の詳細な診断情報を開発者コンソールに記録します。トラブルシューティングに役立ちます。",
 			},
 		},
 		defaults: {
@@ -966,6 +996,11 @@ export const ja: TranslationTree = {
 					description:
 						"このタスクの前に完了する必要があるタスクへのリンク。ウィキリンクとして保存されます。ブロックされたタスクは視覚的なインジケーターを表示します。",
 				},
+				sortOrder: {
+					name: "手動順序",
+					description:
+						"ドラッグ＆ドロップで手動並べ替えを行うために使用するフロントマターのプロパティ。ビューはこのプロパティでソートされている必要があります。",
+				},
 				pomodoros: {
 					name: "ポモドーロ",
 					description:
@@ -1122,6 +1157,7 @@ export const ja: TranslationTree = {
 					timeEntries: "時間エントリ",
 					completeInstances: "完了インスタンス",
 					blockedBy: "ブロック元",
+					sortOrder: "手動順序",
 					pomodoros: "ポモドーロ",
 					icsEventId: "ICSイベントID",
 					icsEventTag: "ICSイベントタグ",
@@ -2891,11 +2927,37 @@ export const ja: TranslationTree = {
 			dailyTooltip: "デイリーノート",
 		},
 		taskCard: {
+			labels: {
+				due: "期限",
+				scheduled: "予定",
+				recurrence: "繰り返し",
+				completed: "完了",
+				created: "作成",
+				modified: "更新",
+				blocked: "ブロック",
+				blocking: "ブロック中",
+			},
 			blockedBadge: "ブロック中",
 			blockedBadgeTooltip: "このタスクは他のタスクを待っています",
 			blockingBadge: "ブロックしている",
 			blockingBadgeTooltip: "このタスクは他のタスクをブロックしています",
 			blockingToggle: "{count} 件のタスクをブロック",
+			priorityAriaLabel: "優先度: {label}",
+			taskOptions: "タスクオプション",
+			recurrenceTooltip: "{label}: {value} (クリックして変更)",
+			reminderTooltipOne: "リマインダーが1件設定されています (クリックして管理)",
+			reminderTooltipMany: "{count}件のリマインダーが設定されています (クリックして管理)",
+			projectTooltip: "このタスクはプロジェクトとして使用されています（サブタスクをフィルタするにはクリック）",
+			expandSubtasks: "サブタスクを展開",
+			collapseSubtasks: "サブタスクを折りたたむ",
+			dueToday: "{label}: 今日",
+			dueTodayAt: "{label}: 今日 {time}",
+			dueOverdue: "{label}: {display} (期限超過)",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: 今日",
+			scheduledTodayAt: "{label}: 今日 {time}",
+			scheduledPast: "{label}: {display} (過去)",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "依存関係を読み込み中…",
 			blockingEmpty: "依存タスクはありません",
 			blockingLoadError: "依存関係の読み込みに失敗しました",

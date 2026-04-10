@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "4.4.0",
+	"version": "4.5.1",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -11,6 +11,7 @@
 		"build-css": "node build-css.mjs",
 		"e2e": "playwright test",
 		"e2e:docs": "playwright test e2e/docs-screenshots.spec.ts",
+		"e2e:release-gifs": "playwright test e2e/release-gifs.spec.ts",
 		"e2e:docs:copy": "mkdir -p media/docs && cp test-results/docs/*.png media/docs/",
 		"e2e:setup": "bash e2e-setup.sh",
 		"e2e:launch": "bash e2e-launch.sh",
@@ -25,6 +26,7 @@
 		"test:unit": "jest --testPathPatterns=unit",
 		"test:performance": "jest --testPathPatterns=performance --detectOpenHandles --passWithNoTests",
 		"test:build": "node -e \"console.log('Build test passed - plugin bundle created successfully')\"",
+		"conformance:test": "node scripts/run-tasknotes-spec-conformance.mjs",
 		"lint": "eslint src/ --ext .ts",
 		"lint:fix": "eslint src/ --ext .ts --fix",
 		"format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
@@ -80,6 +82,7 @@
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
 		"ical.js": "^2.2.1",
+		"lexorank": "1.0.5",
 		"obsidian-daily-notes-interface": "^0.9.4",
 		"reflect-metadata": "^0.2.2",
 		"rrule": "^2.8.1",

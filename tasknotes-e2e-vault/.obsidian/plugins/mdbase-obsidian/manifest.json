@@ -1,0 +1,9 @@
+{
+  "id": "mdbase-obsidian",
+  "name": "mdbase",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Schema, type, and validation tools for mdbase collections in Obsidian.",
+  "author": "calluma",
+  "authorUrl": "https://github.com/callumalpass"
+}

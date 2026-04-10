@@ -139,12 +139,19 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     // Pass the vault path directly to match the manual launch script.
     // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
     const userDataDir = path.join(PROJECT_ROOT, '.obsidian-config-e2e');
-    obsidianProcess = spawn(obsidianBinary, [
+    const obsidianArgs = [
       '--no-sandbox',
       `--remote-debugging-port=${remoteDebuggingPort}`,
       `--user-data-dir=${userDataDir}`,
       E2E_VAULT_DIR,
-    ], {
+    ];
+    const launchWithoutDisplay = !process.env.DISPLAY;
+    const spawnCommand = launchWithoutDisplay ? 'xvfb-run' : obsidianBinary;
+    const spawnArgs = launchWithoutDisplay
+      ? ['-a', obsidianBinary, ...obsidianArgs]
+      : obsidianArgs;
+
+    obsidianProcess = spawn(spawnCommand, spawnArgs, {
       cwd: UNPACKED_DIR,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: {
