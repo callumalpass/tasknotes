@@ -35,17 +35,70 @@ import {
 	isPropertyForField,
 } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
+import {
+	extractBasesValue,
+	resolveTaskCardPropertyLabel,
+	type TaskCardPresentationOptions,
+} from "./taskCardPresentation";
+import {
+	getChevronTooltip,
+	getRecurrenceTooltip,
+	getReminderTooltip,
+	getTaskCardPropertyLabel,
+	getTaskCardPropertyValue,
+} from "./taskCardHelpers";
 
 export interface TaskCardOptions {
 	targetDate?: Date;
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
+	/** When false, omit secondary badge controls such as reminders, project badges, and toggles. */
+	showSecondaryBadges?: boolean;
+	/** When false, disable hover preview wiring for the card. */
+	enableHoverPreview?: boolean;
+	/** Optional display labels for properties, typically sourced from Bases config. */
+	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
+	/** How expanded subtasks/dependencies should interact with the current view filter. */
+	expandedRelationshipFilterMode?: "inherit" | "show-all";
+	/** Paths visible in the current view after Bases/search filtering. */
+	expandedRelationshipTaskPaths?: ReadonlySet<string>;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 	layout: "default",
+	showSecondaryBadges: true,
+	enableHoverPreview: true,
 };
+
+function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
+	return ((card as any)._taskCardOptions ?? {}) as Partial<TaskCardOptions>;
+}
+
+function filterExpandedRelationshipTasks(
+	card: HTMLElement,
+	tasks: TaskInfo[]
+): TaskInfo[] {
+	const options = getStoredTaskCardOptions(card);
+	if (options.expandedRelationshipFilterMode !== "inherit") {
+		return tasks;
+	}
+
+	const allowedTaskPaths = options.expandedRelationshipTaskPaths;
+	if (!allowedTaskPaths) {
+		return tasks;
+	}
+
+	return tasks.filter((relatedTask) => allowedTaskPaths.has(relatedTask.path));
+}
+
+function tTaskCard(
+	plugin: TaskNotesPlugin,
+	key: string,
+	vars?: Record<string, string | number>
+): string {
+	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
+}
 
 /* =================================================================
    BADGE INDICATOR HELPERS
@@ -79,6 +132,7 @@ function createBadgeIndicator(config: BadgeIndicatorConfig): HTMLElement | null 
 	setTooltip(indicator, tooltip, { placement: "top" });
 
 	if (onClick) {
+		prepareInteractiveControl(indicator);
 		indicator.addEventListener("click", (e) => {
 			e.stopPropagation();
 			onClick(e);
@@ -108,6 +162,9 @@ function updateBadgeIndicator(
 		// Update existing indicator
 		existing.setAttribute("aria-label", config.ariaLabel || config.tooltip);
 		setTooltip(existing, config.tooltip, { placement: "top" });
+		if (config.onClick) {
+			prepareInteractiveControl(existing);
+		}
 		return existing;
 	}
 
@@ -120,6 +177,23 @@ function updateBadgeIndicator(
 	return createBadgeIndicator({
 		container: targetContainer,
 		...config,
+	});
+}
+
+/**
+ * Mark interactive task-card controls so draggable parent cards do not swallow clicks.
+ */
+function prepareInteractiveControl(element: HTMLElement): void {
+	if (element.dataset.tnNoDrag === "true") {
+		element.setAttribute("draggable", "false");
+		return;
+	}
+
+	element.dataset.tnNoDrag = "true";
+	element.setAttribute("draggable", "false");
+	element.addEventListener("mousedown", (e) => {
+		e.preventDefault();
+		e.stopPropagation();
 	});
 }
 
@@ -365,7 +439,7 @@ function createChevronClickHandler(
 			}
 			const newExpanded = plugin.expandedProjectsService.toggle(task.path);
 			chevron.classList.toggle("task-card__chevron--expanded", newExpanded);
-			const newTooltip = newExpanded ? "Collapse subtasks" : "Expand subtasks";
+			const newTooltip = getChevronTooltip(plugin, newExpanded);
 			chevron.setAttribute("aria-label", newTooltip);
 			setTooltip(chevron, newTooltip, { placement: "top" });
 			await toggleSubtasks(card, task, plugin, newExpanded);
@@ -400,6 +474,7 @@ function attachDateClickHandler(
 	plugin: TaskNotesPlugin,
 	dateType: "due" | "scheduled"
 ): void {
+	prepareInteractiveControl(span);
 	span.addEventListener("click", (e) => {
 		e.stopPropagation(); // Don't trigger card click
 		const currentValue = dateType === "due" ? task.due : task.scheduled;
@@ -512,267 +587,28 @@ function calculateChecklistProgress(cache: CachedMetadata | null): ChecklistProg
 }
 
 /**
- * Property value extractors for better type safety and error handling
- */
-const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
-	due: (task) => task.due,
-	scheduled: (task) => task.scheduled,
-	projects: (task) => task.projects,
-	contexts: (task) => task.contexts,
-	tags: (task) => task.tags,
-	blocked: (task) => task.isBlocked,
-	blocking: (task) => task.isBlocking,
-	blockedBy: (task) => task.blockedBy,
-	blockingTasks: (task) => task.blocking,
-	timeEstimate: (task) => task.timeEstimate,
-	timeEntries: (task) => task.timeEntries,
-	totalTrackedTime: (task) => task.totalTrackedTime,
-	recurrence: (task) => task.recurrence,
-	completedDate: (task) => task.completedDate,
-	reminders: (task) => task.reminders,
-	icsEventId: (task) => task.icsEventId,
-	completeInstances: (task) => task.complete_instances,
-	skippedInstances: (task) => task.skipped_instances,
-	dateCreated: (task) => task.dateCreated,
-	dateModified: (task) => task.dateModified,
-	googleCalendarSync: (task) => task.path, // Used to check if task is synced via plugin settings
-	checklistProgress: (task) => task.path, // Used to compute checklist progress from metadata cache listItems
-};
-
-/**
- * Extract raw value from a Bases Value object.
- * Bases API may return objects like {icon: "...", data: ...} or {icon: "...", link: "..."}
- * instead of raw primitive values. This function extracts the actual value.
- *
- * For link values (icon: "lucide-link"), Bases strips the [[]] from wikilinks,
- * so we need to restore them to ensure proper rendering.
- */
-function extractBasesValue(value: unknown): unknown {
-	if (value && typeof value === "object" && "icon" in value) {
-		const v = value as Record<string, unknown>;
-
-		// Handle link results (icon: "lucide-link") - restore wikilink format for internal links
-		// Bases stores the link path in "data" field for links
-		if (v.icon === "lucide-link" && "data" in v && v.data !== null && v.data !== undefined) {
-			const linkPath = String(v.data);
-			// Check if it's an internal link (not a URL) - restore wikilink format
-			if (!linkPath.match(/^[a-z]+:\/\//i)) {
-				// Get display text if available
-				const display = "display" in v && v.display ? String(v.display) : null;
-				if (display && display !== linkPath) {
-					return `[[${linkPath}|${display}]]`;
-				}
-				return `[[${linkPath}]]`;
-			}
-			// External URL - return as markdown link if we have display text
-			const display = "display" in v && v.display ? String(v.display) : null;
-			if (display) {
-				return `[${display}](${linkPath})`;
-			}
-			return linkPath;
-		}
-
-		// Return data value if present (for non-link types)
-		if ("data" in v && v.data !== null && v.data !== undefined) {
-			return v.data;
-		}
-		// Handle date results
-		if (v.icon === "lucide-calendar" && "date" in v) {
-			return v.date;
-		}
-		// Handle text results with display property
-		if ("display" in v && v.display !== null && v.display !== undefined) {
-			return v.display;
-		}
-		// Handle missing/empty data indicators
-		if (v.icon === "lucide-file-question" || v.icon === "lucide-help-circle") {
-			return "";
-		}
-		// Fallback for other icon-only results
-		return v.icon ? String(v.icon).replace("lucide-", "") : "";
-	}
-	return value;
-}
-
-/**
- * Get property value from a task with improved error handling and type safety.
- *
- * @param task - The task to extract the property from
- * @param propertyId - The property identifier (user-configured or internal name)
- * @param plugin - TaskNotes plugin instance
- * @returns The property value, or undefined if not found
- */
-function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesPlugin): unknown {
-	try {
-		// Check if this is a user-configured name for a mapped field
-		const mappingKey = plugin.fieldMapper.lookupMappingKey(propertyId);
-		if (mappingKey) {
-			// Use the mapping key as the extractor key (e.g., "due", "scheduled")
-			if (mappingKey in PROPERTY_EXTRACTORS) {
-				return PROPERTY_EXTRACTORS[mappingKey](task);
-			}
-		}
-
-		// Try direct property lookup (for non-mapped properties)
-		if (propertyId in PROPERTY_EXTRACTORS) {
-			return PROPERTY_EXTRACTORS[propertyId](task);
-		}
-
-		// Handle user properties
-		if (propertyId.startsWith("user:")) {
-			return getUserPropertyValue(task, propertyId, plugin);
-		}
-
-		// Check custom properties from Bases or other sources
-		// Values may be Bases Value objects, so extract the raw value
-		if (task.customProperties && propertyId in task.customProperties) {
-			return extractBasesValue(task.customProperties[propertyId]);
-		}
-
-		// Check for file properties (stored as "file.name", "file.basename", etc.)
-		if (task.customProperties) {
-			const filePropertyId = `file.${propertyId}`;
-			if (filePropertyId in task.customProperties) {
-				return extractBasesValue(task.customProperties[filePropertyId]);
-			}
-		}
-
-		// Lazy fetch for file.* properties (backlinks, links, embeds, etc.)
-		// These are NOT pre-extracted for performance - only computed when visible
-		if (propertyId.startsWith("file.") && task.basesData && typeof task.basesData.getValue === "function") {
-			try {
-				const value = task.basesData.getValue(propertyId as any);
-				if (value !== null && value !== undefined) {
-					return extractBasesValue(value);
-				}
-			} catch (error) {
-				// Property doesn't exist or error fetching
-			}
-		}
-
-		// Handle Bases formula properties
-		if (propertyId.startsWith("formula.")) {
-			try {
-				const basesData = task.basesData;
-
-				if (!basesData || typeof basesData.getValue !== "function") {
-					return "";
-				}
-
-				// Use BasesEntry.getValue() to get formula result
-				// BasesEntry is from Obsidian's Bases API (1.10.0+)
-				const value = basesData.getValue(propertyId as any);
-
-				// Handle null/undefined
-				if (value === null || value === undefined) {
-					return "";
-				}
-
-				// Extract raw value from Bases Value object
-				const extracted = extractBasesValue(value);
-				return extracted !== "" ? extracted : "";
-			} catch (error) {
-				console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
-				return "[Formula Error]";
-			}
-		}
-
-		// Try to get property from Bases API first (for custom properties)
-		// This ensures we get the same value that Bases is displaying
-		if (task.basesData && typeof task.basesData.getValue === "function") {
-			try {
-				// Try with "note." prefix first (most common for custom frontmatter properties)
-				const notePropertyId = `note.${propertyId}`;
-				const value = task.basesData.getValue(notePropertyId as any);
-				if (value !== null && value !== undefined) {
-					return extractBasesValue(value);
-				}
-			} catch (error) {
-				// Property doesn't exist in Bases, try fallback
-			}
-		}
-
-		// Fallback: try to get arbitrary property from frontmatter
-		if (task.path) {
-			const value = getFrontmatterValue(task.path, propertyId, plugin);
-			if (value !== undefined) {
-				return value;
-			}
-		}
-
-		return null;
-	} catch (error) {
-		console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
-		return null;
-	}
-}
-
-/**
- * Extract user property value with improved error handling and type safety
- */
-function getUserPropertyValue(
-	task: TaskInfo,
-	propertyId: string,
-	plugin: TaskNotesPlugin
-): unknown {
-	const fieldId = propertyId.slice(5);
-	const userField = plugin.settings.userFields?.find((f) => f.id === fieldId);
-
-	if (!userField?.key) {
-		return null;
-	}
-
-	// Try task object first (backward compatibility)
-	let value = (task as unknown as Record<string, unknown>)[userField.key];
-
-	// Fall back to frontmatter if needed
-	if (value === undefined) {
-		value = getFrontmatterValue(task.path, userField.key, plugin);
-	}
-
-	return value;
-}
-
-/**
- * Safely extract frontmatter value with proper typing
- */
-function getFrontmatterValue(taskPath: string, key: string, plugin: TaskNotesPlugin): unknown {
-	try {
-		const fileMetadata = plugin.app.metadataCache.getCache(taskPath);
-		if (!fileMetadata?.frontmatter) {
-			return undefined;
-		}
-
-		const frontmatter = fileMetadata.frontmatter as Record<string, unknown>;
-		return frontmatter[key];
-	} catch (error) {
-		console.warn(`TaskCard: Error accessing frontmatter for ${taskPath}:`, error);
-		return undefined;
-	}
-}
-
-/**
  * Property renderer function type for better type safety
  */
 type PropertyRenderer = (
 	element: HTMLElement,
 	value: unknown,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	options?: Partial<TaskCardOptions>
 ) => void;
 
 /**
  * Property renderers for cleaner separation of concerns
  */
 const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
-	due: (element, value, task, plugin) => {
+	due: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			renderDueDateProperty(element, value, task, plugin);
+			renderDueDateProperty(element, value, task, plugin, options?.propertyLabels);
 		}
 	},
-	scheduled: (element, value, task, plugin) => {
+	scheduled: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			renderScheduledDateProperty(element, value, task, plugin);
+			renderScheduledDateProperty(element, value, task, plugin, options?.propertyLabels);
 		}
 	},
 	projects: (element, value, task, plugin) => {
@@ -843,9 +679,9 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.textContent = `${plugin.formatTime(value)} tracked`;
 		}
 	},
-	recurrence: (element, value) => {
+	recurrence: (element, value, _task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Recurring: ${getRecurrenceDisplayText(value)}`;
+			element.textContent = getRecurrenceTooltip(plugin, value, options?.propertyLabels);
 		}
 	},
 	completeInstances: (element, value, task) => {
@@ -871,46 +707,51 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.classList.add("task-card__metadata-pill--skipped-instances");
 		}
 	},
-	completedDate: (element, value, task, plugin) => {
+	completedDate: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Completed: ${formatDateTimeForDisplay(value, {
+			const label = getTaskCardPropertyLabel("completedDate", plugin, options?.propertyLabels);
+			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
 			})}`;
 		}
 	},
-	dateCreated: (element, value, task, plugin) => {
+	dateCreated: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Created: ${formatDateTimeForDisplay(value, {
+			const label = getTaskCardPropertyLabel("dateCreated", plugin, options?.propertyLabels);
+			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
 			})}`;
 		}
 	},
-	dateModified: (element, value, task, plugin) => {
+	dateModified: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = `Modified: ${formatDateTimeForDisplay(value, {
+			const label = getTaskCardPropertyLabel("dateModified", plugin, options?.propertyLabels);
+			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
 			})}`;
 		}
 	},
-	blocked: (element, value, task) => {
+	blocked: (element, value, task, plugin, options) => {
 		// Show blocked status with count if available
 		if (value === true) {
 			const blockedCount = task.blockedBy?.length ?? 0;
-			element.textContent = blockedCount > 0 ? `Blocked (${blockedCount})` : "Blocked";
+			const label = getTaskCardPropertyLabel("blocked", plugin, options?.propertyLabels);
+			element.textContent = blockedCount > 0 ? `${label} (${blockedCount})` : label;
 			element.classList.add("task-card__metadata-pill--blocked");
 		}
 	},
-	blocking: (element, value, task) => {
+	blocking: (element, value, task, plugin, options) => {
 		// Show blocking status with count if available
 		if (value === true) {
 			const blockingCount = task.blocking?.length ?? 0;
-			element.textContent = blockingCount > 0 ? `Blocking (${blockingCount})` : "Blocking";
+			const label = getTaskCardPropertyLabel("blocking", plugin, options?.propertyLabels);
+			element.textContent = blockingCount > 0 ? `${label} (${blockingCount})` : label;
 			element.classList.add("task-card__metadata-pill--blocking");
 		}
 	},
@@ -1011,9 +852,10 @@ function renderPropertyMetadata(
 	container: HTMLElement,
 	propertyId: string,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	options: Partial<TaskCardOptions> = {}
 ): HTMLElement | null {
-	const value = getPropertyValue(task, propertyId, plugin);
+	const value = getTaskCardPropertyValue(task, propertyId, plugin);
 
 	if (!hasValidValue(value)) {
 		return null;
@@ -1031,12 +873,18 @@ function renderPropertyMetadata(
 		const rendererKey = mappingKey || propertyId;
 
 		if (rendererKey in PROPERTY_RENDERERS) {
-			PROPERTY_RENDERERS[rendererKey](element, value, task, plugin);
+			PROPERTY_RENDERERS[rendererKey](element, value, task, plugin, options);
 		} else if (propertyId.startsWith("user:")) {
 			renderUserProperty(element, propertyId, value, plugin);
 		} else {
 			// Fallback: render arbitrary property with generic format
-			renderGenericProperty(element, propertyId, value, plugin);
+			renderGenericProperty(
+				element,
+				propertyId,
+				value,
+				plugin,
+				getTaskCardPropertyLabel(propertyId, plugin, options.propertyLabels)
+			);
 		}
 
 		// If the renderer didn't add any content, remove the element and return null
@@ -1164,15 +1012,10 @@ function renderGenericProperty(
 	element: HTMLElement,
 	propertyId: string,
 	value: unknown,
-	plugin?: TaskNotesPlugin
+	plugin?: TaskNotesPlugin,
+	displayNameOverride?: string
 ): void {
-	// Handle formula properties - show just the formula name, not "formula.TESTST"
-	let displayName: string;
-	if (propertyId.startsWith("formula.")) {
-		displayName = propertyId.substring(8); // Remove "formula." prefix
-	} else {
-		displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
-	}
+	const displayName = resolveTaskCardPropertyLabel(propertyId, {}, displayNameOverride);
 
 	// Add property label
 	element.createEl("span", { text: `${displayName}: ` });
@@ -1321,7 +1164,8 @@ function renderDueDateProperty(
 	element: HTMLElement,
 	due: string,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	propertyLabels?: Record<string, string>
 ): void {
 	const isDueToday = isTodayTimeAware(due);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
@@ -1329,6 +1173,7 @@ function renderDueDateProperty(
 	const isDueOverdue = isOverdueTimeAware(due, isCompleted, hideCompletedFromOverdue);
 
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
+	const dueLabel = getTaskCardPropertyLabel("due", plugin, propertyLabels);
 	let dueDateText = "";
 	if (isDueToday) {
 		const timeDisplay = formatDateTimeForDisplay(due, {
@@ -1336,21 +1181,24 @@ function renderDueDateProperty(
 			showTime: true,
 			userTimeFormat,
 		});
-		dueDateText = timeDisplay.trim() === "" ? "Due: Today" : `Due: Today at ${timeDisplay}`;
+		dueDateText =
+			timeDisplay.trim() === ""
+				? tTaskCard(plugin, "dueToday", { label: dueLabel })
+				: tTaskCard(plugin, "dueTodayAt", { label: dueLabel, time: timeDisplay });
 	} else if (isDueOverdue) {
 		const display = formatDateTimeForDisplay(due, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		dueDateText = `Due: ${display} (overdue)`;
+		dueDateText = tTaskCard(plugin, "dueOverdue", { label: dueLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(due, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		dueDateText = `Due: ${display}`;
+		dueDateText = tTaskCard(plugin, "dueLabel", { label: dueLabel, display });
 	}
 
 	element.textContent = dueDateText;
@@ -1371,7 +1219,8 @@ function renderScheduledDateProperty(
 	element: HTMLElement,
 	scheduled: string,
 	task: TaskInfo,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	propertyLabels?: Record<string, string>
 ): void {
 	const isScheduledToday = isTodayTimeAware(scheduled);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
@@ -1379,6 +1228,7 @@ function renderScheduledDateProperty(
 	const isScheduledPast = isOverdueTimeAware(scheduled, isCompleted, hideCompletedFromOverdue);
 
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
+	const scheduledLabel = getTaskCardPropertyLabel("scheduled", plugin, propertyLabels);
 	let scheduledDateText = "";
 	if (isScheduledToday) {
 		const timeDisplay = formatDateTimeForDisplay(scheduled, {
@@ -1387,21 +1237,23 @@ function renderScheduledDateProperty(
 			userTimeFormat,
 		});
 		scheduledDateText =
-			timeDisplay.trim() === "" ? "Scheduled: Today" : `Scheduled: Today at ${timeDisplay}`;
+			timeDisplay.trim() === ""
+				? tTaskCard(plugin, "scheduledToday", { label: scheduledLabel })
+				: tTaskCard(plugin, "scheduledTodayAt", { label: scheduledLabel, time: timeDisplay });
 	} else if (isScheduledPast) {
 		const display = formatDateTimeForDisplay(scheduled, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		scheduledDateText = `Scheduled: ${display} (past)`;
+		scheduledDateText = tTaskCard(plugin, "scheduledPast", { label: scheduledLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(scheduled, {
 			dateFormat: "MMM d",
 			showTime: true,
 			userTimeFormat,
 		});
-		scheduledDateText = `Scheduled: ${display}`;
+		scheduledDateText = tTaskCard(plugin, "scheduledLabel", { label: scheduledLabel, display });
 	}
 
 	element.textContent = scheduledDateText;
@@ -1474,6 +1326,7 @@ export function createTaskCard(
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
+	(card as any)._taskCardOptions = opts;
 
 	const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
 	const isCompleted = task.recurrence
@@ -1567,11 +1420,7 @@ export function createTaskCard(
 
 	// Add click handler to cycle through statuses
 	if (statusDot) {
-		// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
-		statusDot.addEventListener("mousedown", (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-		});
+		prepareInteractiveControl(statusDot);
 		statusDot.addEventListener("click", createStatusCycleHandler(task, plugin, card, statusDot, targetDate));
 	}
 
@@ -1582,9 +1431,10 @@ export function createTaskCard(
 	if (task.priority && priorityConfig && shouldShowPriority) {
 		const priorityDot = mainRow.createEl("span", {
 			cls: "task-card__priority-dot",
-			attr: { "aria-label": `Priority: ${priorityConfig.label}` },
+			attr: { "aria-label": tTaskCard(plugin, "priorityAriaLabel", { label: priorityConfig.label }) },
 		});
 		priorityDot.style.borderColor = priorityConfig.color;
+		prepareInteractiveControl(priorityDot);
 		priorityDot.addEventListener("click", createPriorityClickHandler(task, plugin));
 	}
 
@@ -1594,10 +1444,10 @@ export function createTaskCard(
 	// Badge area for secondary indicators (only in non-inline mode)
 	const badgesContainer = layout !== "inline" ? mainRow.createEl("div", { cls: "task-card__badges" }) : null;
 
-	if (badgesContainer) {
+	if (badgesContainer && opts.showSecondaryBadges) {
 		// Recurring indicator
 		if (task.recurrence) {
-			const recurrenceTooltip = `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`;
+			const recurrenceTooltip = getRecurrenceTooltip(plugin, task.recurrence, opts.propertyLabels);
 			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__recurring-indicator",
@@ -1610,7 +1460,7 @@ export function createTaskCard(
 		// Reminder indicator
 		if (task.reminders && task.reminders.length > 0) {
 			const count = task.reminders.length;
-			const reminderTooltip = count === 1 ? "1 reminder set (click to manage)" : `${count} reminders set (click to manage)`;
+			const reminderTooltip = getReminderTooltip(plugin, count);
 			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__reminder-indicator",
@@ -1627,27 +1477,25 @@ export function createTaskCard(
 				container: badgesContainer,
 				className: "task-card__project-indicator",
 				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
+				tooltip: tTaskCard(plugin, "projectTooltip"),
 				onClick: createProjectClickHandler(task, plugin),
 			});
 
 			// Chevron for expandable subtasks
 			if (plugin.settings?.showExpandableSubtasks) {
 				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
+				createBadgeIndicator({
 					container: badgesContainer,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+					tooltip: getChevronTooltip(plugin, isExpanded),
+					onClick: () => {
+						const chevron = card.querySelector(".task-card__chevron") as HTMLElement | null;
+						if (chevron) {
+							void createChevronClickHandler(task, plugin, card, chevron)();
+						}
+					},
 				});
-
-				// Chevron needs special handler since it updates its own state
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, card, chevron)();
-					});
-				}
 
 				// Show subtasks if already expanded
 				if (isExpanded) {
@@ -1662,19 +1510,18 @@ export function createTaskCard(
 		const hasBlocking = task.blocking && task.blocking.length > 0;
 		if (hasBlocking) {
 			const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", { count: task.blocking!.length });
-			const toggle = createBadgeIndicator({
+			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__blocking-toggle is-visible",
 				icon: "git-branch",
 				tooltip: toggleLabel,
+				onClick: () => {
+					const toggle = card.querySelector(".task-card__blocking-toggle") as HTMLElement | null;
+					if (toggle) {
+						void createBlockingToggleClickHandler(task, plugin, card, toggle)();
+					}
+				},
 			});
-
-			if (toggle) {
-				toggle.addEventListener("click", (e) => {
-					e.stopPropagation();
-					createBlockingToggleClickHandler(task, plugin, card, toggle)();
-				});
-			}
 		}
 	}
 
@@ -1682,13 +1529,14 @@ export function createTaskCard(
 	const contextIcon = mainRow.createEl("div", {
 		cls: "task-card__context-menu",
 		attr: {
-			"aria-label": "Task options",
+			"aria-label": tTaskCard(plugin, "taskOptions"),
 		},
 	});
 
 	// Use Obsidian's built-in ellipsis-vertical icon
 	setIcon(contextIcon, "ellipsis-vertical");
-	setTooltip(contextIcon, "Task options", { placement: "top" });
+	setTooltip(contextIcon, tTaskCard(plugin, "taskOptions"), { placement: "top" });
+	prepareInteractiveControl(contextIcon);
 
 	contextIcon.addEventListener("click", async (e) => {
 		e.stopPropagation();
@@ -1787,7 +1635,13 @@ export function createTaskCard(
 			continue;
 		}
 
-		const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
+		const element = renderPropertyMetadata(
+			metadataLine,
+			propertyId,
+			task,
+			plugin,
+			opts
+		);
 		if (element) {
 			metadataElements.push(element);
 		}
@@ -1811,8 +1665,9 @@ export function createTaskCard(
 	card.addEventListener("dblclick", dblclickHandler);
 	card.addEventListener("contextmenu", contextmenuHandler);
 
-	// Hover preview
-	card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));
+	if (opts.enableHoverPreview) {
+		card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));
+	}
 
 	return card;
 }
@@ -2000,11 +1855,7 @@ export function updateTaskCard(
 			if (statusConfig) {
 				newStatusDot.style.borderColor = statusConfig.color;
 			}
-			// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
-			newStatusDot.addEventListener("mousedown", (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-			});
+			prepareInteractiveControl(newStatusDot);
 			newStatusDot.addEventListener(
 				"click",
 				createStatusCycleHandler(task, plugin, element, newStatusDot, targetDate)
@@ -2037,6 +1888,7 @@ export function updateTaskCard(
 				attr: { "aria-label": `Priority: ${priorityConfig.label}` },
 			});
 			priorityDot.style.borderColor = priorityConfig.color;
+			prepareInteractiveControl(priorityDot);
 
 			// Add click context menu for priority
 			priorityDot.addEventListener("click", (e) => {
@@ -2073,6 +1925,7 @@ export function updateTaskCard(
 
 			// Remove old event listener and add new one with updated task data
 			const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
+			prepareInteractiveControl(newPriorityDot);
 			newPriorityDot.addEventListener("click", (e) => {
 				e.stopPropagation(); // Don't trigger card click
 				const menu = new PriorityContextMenu({
@@ -2101,7 +1954,7 @@ export function updateTaskCard(
 
 	// Update recurring indicator
 	const recurrenceTooltip = task.recurrence
-		? `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`
+		? getRecurrenceTooltip(plugin, task.recurrence, opts.propertyLabels)
 		: "";
 	updateBadgeIndicator(element, ".task-card__recurring-indicator", {
 		shouldExist: !!task.recurrence,
@@ -2114,9 +1967,7 @@ export function updateTaskCard(
 	// Update reminder indicator
 	const hasReminders = !!(task.reminders && task.reminders.length > 0);
 	const reminderCount = task.reminders?.length || 0;
-	const reminderTooltip = reminderCount === 1
-		? "1 reminder set (click to manage)"
-		: `${reminderCount} reminders set (click to manage)`;
+	const reminderTooltip = getReminderTooltip(plugin, reminderCount);
 	updateBadgeIndicator(element, ".task-card__reminder-indicator", {
 		shouldExist: hasReminders,
 		className: "task-card__reminder-indicator",
@@ -2138,7 +1989,7 @@ export function updateTaskCard(
 				shouldExist: isProject,
 				className: "task-card__project-indicator",
 				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
+				tooltip: tTaskCard(plugin, "projectTooltip"),
 				onClick: createProjectClickHandler(task, plugin),
 			});
 
@@ -2148,19 +1999,18 @@ export function updateTaskCard(
 
 			if (showChevron && !existingChevron) {
 				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
+				createBadgeIndicator({
 					container: badgesContainer || mainRow,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+					tooltip: getChevronTooltip(plugin, isExpanded),
+					onClick: () => {
+						const chevron = element.querySelector(".task-card__chevron") as HTMLElement | null;
+						if (chevron) {
+							void createChevronClickHandler(task, plugin, element, chevron)();
+						}
+					},
 				});
-
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, element, chevron)();
-					});
-				}
 
 				if (isExpanded) {
 					toggleSubtasks(element, task, plugin, true).catch((error) => {
@@ -2291,7 +2141,7 @@ export function updateTaskCard(
 				continue;
 			}
 
-			const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
+			const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin, opts);
 			if (element) {
 				metadataElements.push(element);
 			}
@@ -2468,12 +2318,10 @@ export async function toggleSubtasks(
 					throw new Error("projectSubtasksService not initialized");
 				}
 
-				const subtasks = await plugin.projectSubtasksService.getTasksLinkedToProject(file);
-
-				// Apply current filter to subtasks if available
-				// For now, we'll show all subtasks to keep the implementation simple
-				// Future enhancement: Apply the current view's filter to subtasks
-				// This could be implemented by accessing the FilterService's evaluateFilterNode method
+				const subtasks = filterExpandedRelationshipTasks(
+					card,
+					await plugin.projectSubtasksService.getTasksLinkedToProject(file)
+				);
 
 				// Remove loading indicator
 				loadingEl.remove();
@@ -2519,7 +2367,12 @@ export async function toggleSubtasks(
 						continue;
 					}
 
-					const subtaskCard = createTaskCard(subtask, plugin, undefined);
+					const subtaskCard = createTaskCard(
+						subtask,
+						plugin,
+						undefined,
+						getStoredTaskCardOptions(card)
+					);
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
@@ -2586,7 +2439,10 @@ export async function toggleBlockingTasks(
 		const dependentInfos = task.blocking
 			? await Promise.all(task.blocking.map((path) => plugin.cacheManager.getTaskInfo(path)))
 			: [];
-		const dependents = dependentInfos.filter((info): info is TaskInfo => Boolean(info));
+		const dependents = filterExpandedRelationshipTasks(
+			card,
+			dependentInfos.filter((info): info is TaskInfo => Boolean(info))
+		);
 
 		loadingEl.remove();
 
@@ -2599,7 +2455,12 @@ export async function toggleBlockingTasks(
 		}
 
 		dependents.forEach((dependentTask) => {
-			const dependentCard = createTaskCard(dependentTask, plugin, undefined);
+			const dependentCard = createTaskCard(
+				dependentTask,
+				plugin,
+				undefined,
+				getStoredTaskCardOptions(card)
+			);
 			dependentCard.classList.add("task-card--dependency");
 			container!.appendChild(dependentCard);
 		});

@@ -15,6 +15,11 @@ export interface ICSExportOptions {
 
 type TranslateFn = (key: TranslationKey, variables?: Record<string, any>) => string;
 
+interface ICSDateProperties {
+	startLine: string | null;
+	endLine: string | null;
+}
+
 export class CalendarExportService {
 	/**
 	 * Generate a calendar URL for adding a task as an event
@@ -188,12 +193,12 @@ export class CalendarExportService {
 		lines.push(`SUMMARY:${this.escapeICSText(task.title)}`);
 
 		// Add dates
-		const { startICS, endICS } = this.getICSDateFormat(task, true, options);
-		if (startICS) {
-			lines.push(`DTSTART:${startICS}`);
+		const { startLine, endLine } = this.getICSDateProperties(task, true, options);
+		if (startLine) {
+			lines.push(startLine);
 		}
-		if (endICS) {
-			lines.push(`DTEND:${endICS}`);
+		if (endLine) {
+			lines.push(endLine);
 		}
 
 		// Add description
@@ -394,6 +399,33 @@ export class CalendarExportService {
 	}
 
 	/**
+	 * Build RFC 5545-compliant DTSTART/DTEND lines.
+	 * Date-only task dates are exported as all-day events using VALUE=DATE.
+	 */
+	private static getICSDateProperties(
+		task: TaskInfo,
+		useScheduledAsDue = true,
+		options?: ICSExportOptions
+	): ICSDateProperties {
+		if (task.scheduled && !this.hasTimeComponent(task.scheduled)) {
+			const startDate = task.scheduled;
+			const endDateExclusive = this.getAllDayEndDate(task, useScheduledAsDue, options) || startDate;
+
+			return {
+				startLine: `DTSTART;VALUE=DATE:${this.formatDateOnlyToICS(startDate)}`,
+				endLine: `DTEND;VALUE=DATE:${this.formatDateOnlyToICS(endDateExclusive)}`,
+			};
+		}
+
+		const { startICS, endICS } = this.getICSDateFormat(task, useScheduledAsDue, options);
+
+		return {
+			startLine: startICS ? `DTSTART:${startICS}` : null,
+			endLine: endICS ? `DTEND:${endICS}` : null,
+		};
+	}
+
+	/**
 	 * Format a Date object to ICS date format
 	 */
 	private static formatDateToICS(date: Date): string {
@@ -430,6 +462,43 @@ export class CalendarExportService {
 			// Date only - assume start of day
 			return parseISO(`${dateStr}T00:00:00`);
 		}
+	}
+
+	private static hasTimeComponent(dateStr: string): boolean {
+		return dateStr.includes("T");
+	}
+
+	private static formatDateOnlyToICS(dateStr: string): string {
+		return dateStr.split("T")[0].replace(/-/g, "");
+	}
+
+	private static getAllDayEndDate(
+		task: TaskInfo,
+		useScheduledAsDue: boolean,
+		options?: ICSExportOptions
+	): string | null {
+		if (!task.scheduled) return null;
+
+		let inclusiveEndDate = task.scheduled;
+
+		if (options?.useDurationForExport && task.timeEstimate && task.timeEstimate > 0) {
+			const dayCount = Math.max(1, Math.ceil(task.timeEstimate / (24 * 60)));
+			return this.addDaysToDateString(task.scheduled, dayCount);
+		}
+
+		if (task.due) {
+			inclusiveEndDate = task.due;
+		} else if (!useScheduledAsDue) {
+			return null;
+		}
+
+		return this.addDaysToDateString(inclusiveEndDate, 1);
+	}
+
+	private static addDaysToDateString(dateStr: string, days: number): string {
+		const baseDate = parseISO(`${dateStr.split("T")[0]}T00:00:00`);
+		baseDate.setDate(baseDate.getDate() + days);
+		return format(baseDate, "yyyy-MM-dd");
 	}
 
 	/**
@@ -498,10 +567,10 @@ export class CalendarExportService {
 			lines.push(`SUMMARY:${this.escapeICSText(task.title)}`);
 
 			// Add dates - ensure every event has a DTSTART (required by ICS standard)
-			let { startICS, endICS } = this.getICSDateFormat(task, true, options);
+			let { startLine, endLine } = this.getICSDateProperties(task, true, options);
 
 			// If no start date, use task creation date or current date as fallback
-			if (!startICS) {
+			if (!startLine) {
 				let fallbackDate: Date;
 				if (task.dateCreated) {
 					// Use task creation date if available
@@ -510,22 +579,32 @@ export class CalendarExportService {
 					// Fallback to current date
 					fallbackDate = new Date();
 				}
-				startICS = this.formatDateToICS(fallbackDate);
+				const startICS = this.formatDateToICS(fallbackDate);
+				startLine = `DTSTART:${startICS}`;
 
 				// Set end time to 1 hour after start for tasks without duration
-				if (!endICS) {
+				if (!endLine) {
 					const endDate = new Date(fallbackDate.getTime() + 60 * 60 * 1000); // +1 hour
-					endICS = this.formatDateToICS(endDate);
+					endLine = `DTEND:${this.formatDateToICS(endDate)}`;
 				}
-			} else if (!endICS) {
-				// If we have start but no end, add 1 hour duration
-				const startDate = this.parseICSDate(startICS);
-				const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour
-				endICS = this.formatDateToICS(endDate);
+			} else if (!endLine) {
+				const startValue = startLine.split(":", 2)[1];
+				if (startLine.includes("VALUE=DATE")) {
+					const startDate = parseISO(
+						`${startValue.slice(0, 4)}-${startValue.slice(4, 6)}-${startValue.slice(6, 8)}T00:00:00`
+					);
+					startDate.setDate(startDate.getDate() + 1);
+					endLine = `DTEND;VALUE=DATE:${format(startDate, "yyyyMMdd")}`;
+				} else {
+					// If we have start but no end, add 1 hour duration
+					const startDate = this.parseICSDate(startValue);
+					const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour
+					endLine = `DTEND:${this.formatDateToICS(endDate)}`;
+				}
 			}
 
-			lines.push(`DTSTART:${startICS}`);
-			lines.push(`DTEND:${endICS}`);
+			lines.push(startLine);
+			lines.push(endLine);
 
 			// Add description
 			const description = this.buildDescription(task);

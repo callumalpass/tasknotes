@@ -71,6 +71,31 @@ Drag task cards between columns to update the `groupBy` property value. In swiml
 When grouping by a list property (contexts, tags, projects) with "Show items in multiple columns" enabled, dragging a task between columns modifies the list rather than replacing it. The source column's value is removed and the target column's value is added. For example, dragging a task from the "work" column to the "home" column changes `contexts: [work, call]` to `contexts: [call, home]`.
 Drag operations write directly to task metadata, so consistent grouping values reduce ambiguity.
 
+### Manual Reordering Within Columns
+
+Kanban also supports drag-to-reorder within a column or swimlane cell when the view is sorted by the manual-order property. With the default field mapping, that property is `tasknotes_manual_order`.
+
+To enable persistent manual ordering within Kanban columns:
+
+```yaml
+sort:
+  - column: tasknotes_manual_order
+    direction: DESC
+```
+
+Once the first sort criterion is the manual-order property, dragging a card within the same column updates stored frontmatter values so the new order persists across refreshes and sessions.
+
+In swimlane mode, the reorder scope is a single cell, not the entire board. A reorder inside the "In Progress" column for the "High" swimlane only adjusts the tasks in that cell.
+
+Important constraints:
+
+- Manual drag-to-reorder only works when the view sort includes the manual-order property.
+- Moving a card to a different column or swimlane still updates the grouped property values as usual.
+- In filtered or partially visible columns, TaskNotes may also update hidden or filtered notes in the same reorder scope to preserve a stable persistent order.
+- Large reorder operations may show a confirmation dialog before writing changes.
+
+The default generated TaskNotes templates use manual-order sorting in places where drag-to-reorder should work immediately, such as relationship views and manual-order task lists.
+
 ## Performance Optimization
 
 The Kanban view implements virtual scrolling for columns or swimlane cells containing 30 or more tasks. This optimization reduces memory usage by approximately 85% and maintains 60fps scrolling performance for columns with 200+ tasks.

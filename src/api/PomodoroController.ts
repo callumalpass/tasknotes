@@ -3,6 +3,7 @@ import { parse } from "url";
 import { BaseController } from "./BaseController";
 import { TaskManager } from "../utils/TaskManager";
 import TaskNotesPlugin from "../main";
+import { PomodoroSessionHistory } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Get, Post } from "../utils/OpenAPIDecorators";
 
@@ -186,7 +187,7 @@ export class PomodoroController extends BaseController {
 			// Filter by date if specified
 			if (query.date && typeof query.date === "string") {
 				const targetDate = query.date;
-				sessions = sessions.filter((session) => {
+				sessions = sessions.filter((session: PomodoroSessionHistory) => {
 					const sessionDate = new Date(session.startTime).toISOString().split("T")[0];
 					return sessionDate === targetDate;
 				});

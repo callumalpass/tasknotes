@@ -856,10 +856,11 @@ body {
   }
 
   .overlay {
-    display: block;
+    display: none;
   }
 
   .overlay.is-visible {
+    display: block;
     opacity: 1;
     pointer-events: auto;
   }

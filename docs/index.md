@@ -64,4 +64,8 @@ Use [Core Concepts](core-concepts.md) to understand the data model, [Features](f
     <span class="card__title">Troubleshooting</span>
     <span class="card__desc">Common issues and how to resolve them</span>
   </a>
+  <a class="card" href="/spec/">
+    <span class="card__title">Specification</span>
+    <span class="card__desc">The formal spec behind TaskNotes: data model, operations, recurrence, and conformance</span>
+  </a>
 </div>

@@ -58,6 +58,10 @@ import {
 import { Extension } from "@codemirror/state";
 
 import TaskNotesPlugin from "../main";
+import {
+	ReadingModeInjectionContext,
+	ReadingModeInjectionScheduler,
+} from "./ReadingModeInjectionScheduler";
 
 // CSS class for identifying plugin-generated elements
 const CSS_RELATIONSHIPS_WIDGET = 'tasknotes-relationships-widget';
@@ -423,7 +427,8 @@ export function createRelationshipsDecorations(plugin: TaskNotesPlugin): Extensi
  */
 async function injectReadingModeWidget(
 	leaf: WorkspaceLeaf,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	context?: ReadingModeInjectionContext
 ): Promise<void> {
 	const view = leaf.view;
 	if (!(view instanceof MarkdownView) || view.getMode() !== 'preview') {
@@ -487,6 +492,11 @@ async function injectReadingModeWidget(
 
 		// Create the widget
 		const widget = await createRelationshipsWidget(plugin, notePath);
+		if (context && !context.isCurrent()) {
+			widget.component?.unload();
+			widget.remove();
+			return;
+		}
 
 		// Find the markdown-preview-sizer or markdown-preview-section
 		// RISK: Relies on Obsidian's internal DOM structure
@@ -534,6 +544,10 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	// Track event refs by source for proper cleanup
 	const workspaceRefs: EventRef[] = [];
 	const metadataCacheRefs: EventRef[] = [];
+	const scheduler = new ReadingModeInjectionScheduler();
+	const scheduleInjection = (leaf: WorkspaceLeaf) => {
+		scheduler.schedule(leaf, (context) => injectReadingModeWidget(leaf, plugin, context));
+	};
 
 	// Debounce to prevent excessive re-renders
 	let debounceTimer: number | null = null;
@@ -542,7 +556,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		debounceTimer = window.setTimeout(() => {
 			const leaves = plugin.app.workspace.getLeavesOfType('markdown');
 			leaves.forEach(leaf => {
-				injectReadingModeWidget(leaf, plugin);
+				scheduleInjection(leaf);
 			});
 		}, 100);
 	};
@@ -554,7 +568,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	// Inject widget when active leaf changes
 	const activeLeafChangeRef = plugin.app.workspace.on('active-leaf-change', (leaf) => {
 		if (leaf) {
-			injectReadingModeWidget(leaf, plugin);
+			scheduleInjection(leaf);
 		}
 	});
 	workspaceRefs.push(activeLeafChangeRef);
@@ -573,7 +587,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 			leaves.forEach(leaf => {
 				const view = leaf.view;
 				if (view instanceof MarkdownView && view.file === file) {
-					injectReadingModeWidget(leaf, plugin);
+					scheduleInjection(leaf);
 				}
 			});
 		}, 500);
@@ -584,7 +598,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	// Initial injection for any already-open reading views
 	const leaves = plugin.app.workspace.getLeavesOfType('markdown');
 	leaves.forEach(leaf => {
-		injectReadingModeWidget(leaf, plugin);
+		scheduleInjection(leaf);
 	});
 
 	// Return cleanup function

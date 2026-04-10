@@ -602,6 +602,38 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.calendarViewSettings.enableTimeblocking) {
 				group.addSetting((setting) =>
+					configureDropdownSetting(setting, {
+						name: "Attachment Search Order",
+						desc: "Controls how files are ordered in the Add Attachment search window for timeblocks.",
+						options: [
+							{ value: "name-asc", label: "Name (A to Z)" },
+							{ value: "name-desc", label: "Name (Z to A)" },
+							{ value: "path-asc", label: "Path (A to Z)" },
+							{ value: "path-desc", label: "Path (Z to A)" },
+							{ value: "created-recent", label: "Created (Newest first)" },
+							{ value: "created-oldest", label: "Created (Oldest first)" },
+							{ value: "modified-recent", label: "Modified (Newest first)" },
+							{ value: "modified-oldest", label: "Modified (Oldest first)" },
+						],
+						getValue: () =>
+							plugin.settings.calendarViewSettings.timeblockAttachmentSearchOrder,
+						setValue: async (value: string) => {
+							plugin.settings.calendarViewSettings.timeblockAttachmentSearchOrder =
+								value as
+									| "name-asc"
+									| "name-desc"
+									| "path-asc"
+									| "path-desc"
+									| "created-recent"
+									| "created-oldest"
+									| "modified-recent"
+									| "modified-oldest";
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
 					configureToggleSetting(setting, {
 						name: translate("settings.features.timeblocking.showBlocksName"),
 						desc: translate("settings.features.timeblocking.showBlocksDesc"),
@@ -632,6 +664,28 @@ export function renderFeaturesTab(
 					setting.settingEl.addClass("settings-view__group-description");
 				});
 			}
+		}
+	);
+
+	// Debug Logging Section
+	createSettingGroup(
+		container,
+		{
+			heading: translate("settings.features.debugLogging.header"),
+			description: translate("settings.features.debugLogging.description"),
+		},
+		(group) => {
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: translate("settings.features.debugLogging.enableName"),
+					desc: translate("settings.features.debugLogging.enableDesc"),
+					getValue: () => plugin.settings.enableDebugLogging,
+					setValue: async (value: boolean) => {
+						plugin.settings.enableDebugLogging = value;
+						save();
+					},
+				})
+			);
 		}
 	);
 }

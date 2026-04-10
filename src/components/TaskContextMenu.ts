@@ -18,6 +18,8 @@ import {
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
+import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
+import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -311,6 +313,25 @@ export class TaskContextMenu {
 				plugin.openTimeEntryEditor(task);
 			});
 		});
+
+		// Create timeblock from task
+		if (plugin.settings.calendarViewSettings.enableTimeblocking) {
+			this.menu.addItem((item) => {
+				item.setTitle("Create timeblock");
+				item.setIcon("calendar-plus");
+				item.onClick(() => {
+					const prefill = buildTimeblockPrefillForTask(task, this.options.targetDate);
+					const modal = new TimeblockCreationModal(plugin.app, plugin, {
+						date: prefill.date,
+						startTime: prefill.startTime,
+						endTime: prefill.endTime,
+						prefilledTitle: task.title,
+						prefilledAttachmentPaths: [task.path],
+					});
+					modal.open();
+				});
+			});
+		}
 
 		// Archive/Unarchive
 		this.menu.addItem((item) => {

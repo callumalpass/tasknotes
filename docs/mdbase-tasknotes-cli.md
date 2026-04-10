@@ -3,7 +3,9 @@
 [mdbase-tasknotes](https://github.com/callumalpass/mdbase-tasknotes) (`mtn`) is a standalone command-line tool for managing TaskNotes tasks directly on markdown files. It uses [mdbase](https://mdbase.dev) to read and write task files and [tasknotes-nlp-core](https://github.com/callumalpass/tasknotes-nlp-core) for natural language parsing.
 
 
-## When to use this vs tasknotes-cli
+## When to use this vs TaskNotes Obsidian CLI
+
+If you are looking for the built-in `obsidian tasknotes:*` commands exposed by the plugin itself, see [TaskNotes Obsidian CLI](obsidian-cli.md).
 
 TaskNotes ships with [tasknotes-cli](https://github.com/callumalpass/tasknotes-cli) (`tn`), which communicates with the Obsidian plugin over its HTTP API. `mdbase-tasknotes` operates directly on the markdown files instead.
 

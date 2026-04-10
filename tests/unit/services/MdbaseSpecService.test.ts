@@ -391,11 +391,13 @@ describe("MdbaseSpecService", () => {
 			const block = getFieldBlock(fm, "dateCreated");
 			expect(block).toContain("type: datetime");
 			expect(block).toContain("required: true");
+			expect(block).toContain("generated: now");
 		});
 
 		it("should define dateModified as datetime", () => {
 			const block = getFieldBlock(fm, "dateModified");
 			expect(block).toContain("type: datetime");
+			expect(block).toContain("generated: now_on_write");
 		});
 
 		it("should define recurrence as string", () => {

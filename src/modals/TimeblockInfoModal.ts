@@ -11,6 +11,7 @@ import {
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { openFileSelector } from "./FileSelectorModal";
+import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import {
 	getDailyNote,
 	getAllDailyNotes,
@@ -18,6 +19,7 @@ import {
 } from "obsidian-daily-notes-interface";
 import { formatDateForStorage } from "../utils/dateUtils";
 import { TranslationKey } from "../i18n";
+import { TaskInfo } from "../types";
 
 export interface TimeBlock {
 	title: string;
@@ -140,7 +142,18 @@ export class TimeblockInfoModal extends Modal {
 						}, {
 							placeholder: "Search files or type to create new...",
 							filter: "all",
+							sortOrder:
+								this.plugin.settings.calendarViewSettings
+									.timeblockAttachmentSearchOrder,
 						});
+					});
+			})
+			.addButton((button) => {
+				button
+					.setButtonText("Add task")
+					.setTooltip("Select task")
+					.onClick(() => {
+						void this.openTaskSelectorForTitle();
 					});
 			});
 
@@ -220,9 +233,47 @@ export class TimeblockInfoModal extends Modal {
 			return;
 		}
 
+		// If title is empty, default it to the first selected attachment name.
+		if (this.titleInput && !this.titleInput.value.trim()) {
+			const derivedTitle = file instanceof TFile ? file.basename : file.name;
+			this.titleInput.value = derivedTitle;
+			this.timeblock.title = derivedTitle;
+			this.validateForm();
+		}
+
 		this.selectedAttachments.push(file);
 		this.renderAttachmentsList();
 		new Notice(this.translate("notices.timeblockAttachmentAdded", { fileName: file.name }));
+	}
+
+	private async openTaskSelectorForTitle(): Promise<void> {
+		try {
+			const allTasks: TaskInfo[] = (await this.plugin.cacheManager.getAllTasks?.()) ?? [];
+			const candidates = allTasks.filter((task) => !task.archived);
+
+			if (candidates.length === 0) {
+				new Notice("No tasks available to select");
+				return;
+			}
+
+			openTaskSelector(this.plugin, candidates, (selectedTask) => {
+				if (!selectedTask) return;
+
+				this.titleInput.value = selectedTask.title || "";
+				this.timeblock.title = selectedTask.title || "";
+				this.validateForm();
+
+				const taskFile = this.app.vault.getAbstractFileByPath(selectedTask.path);
+				if (taskFile) {
+					this.addAttachment(taskFile);
+				}
+			}, {
+				title: "Select task",
+			});
+		} catch (error) {
+			console.error("Failed to open task selector for timeblock edit:", error);
+			new Notice("Failed to open task selector");
+		}
 	}
 
 	private removeAttachment(file: TAbstractFile): void {

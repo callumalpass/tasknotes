@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { parseYaml } from "obsidian";
+import YAML from "yaml";
 // YAML not needed in template processor
 
 export interface TemplateData {
@@ -60,7 +60,7 @@ export function processTemplate(
 /**
  * Parse template into frontmatter and body sections
  */
-function parseTemplateSections(templateContent: string): {
+export function parseTemplateSections(templateContent: string): {
 	frontmatter: string | null;
 	body: string;
 } {
@@ -112,7 +112,7 @@ function processTemplateFrontmatter(
 		const processedYamlText = processTemplateVariablesForYaml(frontmatterContent, taskData);
 
 		// Then parse the processed YAML
-		const parsedFrontmatter = parseYaml(processedYamlText);
+		const parsedFrontmatter = YAML.parse(processedYamlText);
 
 		// Return empty object if parsing failed or result is not an object
 		if (typeof parsedFrontmatter !== "object" || parsedFrontmatter === null) {
@@ -351,7 +351,7 @@ function escapeYamlString(str: string): string {
  * Process task template variables like {{title}}, {{priority}}, {{status}}, etc.
  * This is the core variable replacement function used by both frontmatter and body processing
  */
-function processTemplateVariables(
+export function processTemplateVariables(
 	template: string,
 	taskData: TemplateData | ICSTemplateData
 ): string {

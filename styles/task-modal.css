@@ -1249,6 +1249,31 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     background-color: var(--background-modifier-hover);
 }
 
+.tasknotes-plugin .task-project-item--task-card {
+    align-items: flex-start;
+    padding: 0;
+    background: transparent;
+}
+
+.tasknotes-plugin .task-project-item--task-card:hover {
+    background: transparent;
+}
+
+.tasknotes-plugin .task-project-card-host {
+    flex: 1;
+    min-width: 0;
+    border-radius: var(--radius-s);
+    overflow: hidden;
+}
+
+.tasknotes-plugin .task-project-item--task-card .task-card {
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .task-project-item--task-card .task-project-remove {
+    margin-top: var(--size-4-2);
+}
+
 .tasknotes-plugin .task-project-info {
     flex: 1;
     min-width: 0;
