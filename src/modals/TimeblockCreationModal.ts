@@ -4,14 +4,16 @@ import {
 	Setting,
 	Notice,
 	TAbstractFile,
+	TFile,
 	parseYaml,
 	stringifyYaml,
 	setTooltip,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { TimeBlock, DailyNoteFrontmatter } from "../types";
+import { TimeBlock, DailyNoteFrontmatter, TaskInfo } from "../types";
 import { generateTimeblockId } from "../utils/helpers";
 import { openFileSelector } from "./FileSelectorModal";
+import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { parseDateAsLocal } from "../utils/dateUtils";
 import {
 	createDailyNote,
@@ -26,6 +28,7 @@ export interface TimeblockCreationOptions {
 	startTime?: string; // HH:MM format
 	endTime?: string; // HH:MM format
 	prefilledTitle?: string;
+	prefilledAttachmentPaths?: string[];
 }
 
 export class TimeblockCreationModal extends Modal {
@@ -153,12 +156,24 @@ export class TimeblockCreationModal extends Modal {
 						}, {
 							placeholder: "Search files or type to create new...",
 							filter: "all",
+							sortOrder:
+								this.plugin.settings.calendarViewSettings
+									.timeblockAttachmentSearchOrder,
 						});
+					});
+			})
+			.addButton((button) => {
+				button
+					.setButtonText("Add task")
+					.setTooltip("Select task")
+					.onClick(() => {
+						void this.openTaskSelectorForTitle();
 					});
 			});
 
 		// Attachments list container
 		this.attachmentsList = contentEl.createDiv({ cls: "timeblock-attachments-list" });
+		this.initializePrefilledAttachments();
 		this.renderAttachmentsList(); // Initialize empty state
 
 		// Buttons
@@ -209,6 +224,21 @@ export class TimeblockCreationModal extends Modal {
 
 		createButton.disabled = !isValid;
 		createButton.style.opacity = isValid ? "1" : "0.5";
+	}
+
+	private initializePrefilledAttachments(): void {
+		const prefilledPaths = this.options.prefilledAttachmentPaths || [];
+		if (prefilledPaths.length === 0) {
+			return;
+		}
+
+		const uniquePaths = new Set(prefilledPaths.filter((path) => typeof path === "string" && path.trim().length > 0));
+		for (const path of uniquePaths) {
+			const file = this.app.vault.getAbstractFileByPath(path);
+			if (file) {
+				this.selectedAttachments.push(file);
+			}
+		}
 	}
 
 	private async handleSubmit(): Promise<void> {
@@ -343,9 +373,45 @@ export class TimeblockCreationModal extends Modal {
 			return;
 		}
 
+		// If title is empty, default it to the selected attachment name.
+		if (this.titleInput && !this.titleInput.value.trim()) {
+			const derivedTitle = file instanceof TFile ? file.basename : file.name;
+			this.titleInput.value = derivedTitle;
+			this.validateForm();
+		}
+
 		this.selectedAttachments.push(file);
 		this.renderAttachmentsList();
 		new Notice(this.translate("notices.timeblockAttachmentAdded", { fileName: file.name }));
+	}
+
+	private async openTaskSelectorForTitle(): Promise<void> {
+		try {
+			const allTasks: TaskInfo[] = (await this.plugin.cacheManager.getAllTasks?.()) ?? [];
+			const candidates = allTasks.filter((task) => !task.archived);
+
+			if (candidates.length === 0) {
+				new Notice("No tasks available to select");
+				return;
+			}
+
+			openTaskSelector(this.plugin, candidates, (selectedTask) => {
+				if (!selectedTask) return;
+
+				this.titleInput.value = selectedTask.title || "";
+				this.validateForm();
+
+				const taskFile = this.app.vault.getAbstractFileByPath(selectedTask.path);
+				if (taskFile) {
+					this.addAttachment(taskFile);
+				}
+			}, {
+				title: "Select task",
+			});
+		} catch (error) {
+			console.error("Failed to open task selector for timeblock creation:", error);
+			new Notice("Failed to open task selector");
+		}
 	}
 
 	private removeAttachment(file: TAbstractFile): void {

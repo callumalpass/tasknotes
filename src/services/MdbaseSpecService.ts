@@ -151,8 +151,15 @@ export class MdbaseSpecService {
 			description: "Estimated time in minutes.",
 		});
 		this.addRoleField(lines, "completedDate", { type: "date" });
-		this.addRoleField(lines, "dateCreated", { type: "datetime", required: true });
-		this.addRoleField(lines, "dateModified", { type: "datetime" });
+		this.addRoleField(lines, "dateCreated", {
+			type: "datetime",
+			required: true,
+			generated: "now",
+		});
+		this.addRoleField(lines, "dateModified", {
+			type: "datetime",
+			generated: "now_on_write",
+		});
 		this.addRoleField(lines, "recurrence", { type: "string" });
 		this.addRoleField(lines, "recurrenceAnchor", {
 			type: "enum",
@@ -289,6 +296,9 @@ export class MdbaseSpecService {
 
 		if (def.required) {
 			lines.push(`${pad}required: true`);
+		}
+		if (def.generated) {
+			lines.push(`${pad}generated: ${def.generated}`);
 		}
 		if (def.values) {
 			lines.push(`${pad}values: [${def.values.join(", ")}]`);
@@ -458,6 +468,7 @@ export class MdbaseSpecService {
 interface FieldDef {
 	type: string;
 	required?: boolean;
+	generated?: string;
 	values?: string[];
 	tn_completed_values?: string[];
 	default?: string;

@@ -8,6 +8,12 @@ export const de: TranslationTree = {
 		confirm: "Bestätigen",
 		close: "Schließen",
 		save: "Speichern",
+		reorder: {
+			confirmLargeTitle: "Große Neuordnung bestätigen",
+			confirmButton: "Notizen neu anordnen",
+			confirmLargeMessage:
+				'Durch das Neuordnen werden in {count} Notizen die Werte von "{field}" aktualisiert, um eine dauerhafte manuelle Reihenfolge für {scope} zu erstellen. Versteckte oder herausgefilterte Notizen im selben Bereich können ebenfalls aktualisiert werden. Fortfahren?',
+		},
 		language: "Sprache",
 		systemDefault: "Systemstandard",
 		loading: "Lädt...",
@@ -88,6 +94,16 @@ export const de: TranslationTree = {
 			expandAllGroups: "Alle Gruppen ausklappen",
 			collapseAllGroups: "Alle Gruppen einklappen",
 			noTasksFound: "Keine Aufgaben für die gewählten Filter gefunden.",
+			reorder: {
+				scope: {
+					ungrouped: "diese ungegliederte Liste",
+					group: 'Gruppe "{group}"',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"Aufgaben in formelbasierten Gruppen können nicht neu angeordnet werden. Formelwerte werden berechnet und können nicht direkt geändert werden.",
+			},
 		},
 		notes: {
 			title: "Notizen",
@@ -237,6 +253,7 @@ export const de: TranslationTree = {
 					showWeekends: "Wochenenden anzeigen",
 					showAllDaySlot: "Ganztägigen Slot anzeigen",
 					showTodayHighlight: "Heute hervorheben",
+					todayColumnWidthMultiplier: "Multiplikator der heutigen Spaltenbreite",
 					showSelectionPreview: "Auswahlvorschau anzeigen",
 					timeFormat: "Zeitformat",
 					timeFormat12: "12-Stunden (AM/PM)",
@@ -271,6 +288,12 @@ export const de: TranslationTree = {
 			noTasks: "Keine Aufgaben",
 			uncategorized: "Nicht kategorisiert",
 			noProject: "Kein Projekt",
+			reorder: {
+				scope: {
+					column: 'Spalte "{group}"',
+					columnInSwimlane: 'Spalte "{group}" in Swimlane "{swimlane}"',
+				},
+			},
 			notices: {
 				loadFailed: "Kanban-Board konnte nicht geladen werden",
 				movedTask: "Aufgabe verschoben zu \"{0}\"",
@@ -600,6 +623,13 @@ export const de: TranslationTree = {
 			recurringSection: {
 				header: "Wiederkehrende Aufgaben",
 				description: "Konfiguriere Verhalten für wiederkehrende Aufgabenverwaltung.",
+			},
+			debugLogging: {
+				header: "Debug-Protokollierung",
+				description: "Konfiguriere Debug-Protokollausgaben für die Fehlerbehebung.",
+				enableName: "Debug-Protokollierung aktivieren",
+				enableDesc:
+					"Protokolliere detaillierte Drag-and-Drop- und Ansichtsdiagnosen in der Entwicklerkonsole. Nützlich zur Fehlerbehebung.",
 			},
 		},
 		defaults: {
@@ -966,6 +996,11 @@ export const de: TranslationTree = {
 					description:
 						"Links zu Aufgaben, die vor dieser abgeschlossen werden müssen. Wird als Wikilinks gespeichert. Blockierte Aufgaben zeigen einen visuellen Indikator an.",
 				},
+				sortOrder: {
+					name: "Manuelle Reihenfolge",
+					description:
+						"Die Frontmatter-Eigenschaft für die manuelle Sortierung per Drag-and-Drop. Die Ansicht muss nach dieser Eigenschaft sortiert sein, damit Drag-and-Drop-Reihenfolge funktioniert.",
+				},
 				pomodoros: {
 					name: "Pomodoros",
 					description:
@@ -1122,6 +1157,7 @@ export const de: TranslationTree = {
 					timeEntries: "Zeiteinträge",
 					completeInstances: "Abgeschlossene Instanzen",
 					blockedBy: "Blockiert von",
+					sortOrder: "Manuelle Reihenfolge",
 					pomodoros: "Pomodoros",
 					icsEventId: "ICS-Event-ID",
 					icsEventTag: "ICS-Event-Tag",
@@ -2891,11 +2927,37 @@ export const de: TranslationTree = {
 			dailyTooltip: "Tägliche Notiz",
 		},
 		taskCard: {
+			labels: {
+				due: "Fällig",
+				scheduled: "Geplant",
+				recurrence: "Wiederkehrend",
+				completed: "Abgeschlossen",
+				created: "Erstellt",
+				modified: "Geändert",
+				blocked: "Blockiert",
+				blocking: "Blockierend",
+			},
 			blockedBadge: "Blockiert",
 			blockedBadgeTooltip: "Diese Aufgabe wartet auf eine andere Aufgabe",
 			blockingBadge: "Blockierend",
 			blockingBadgeTooltip: "Diese Aufgabe blockiert eine andere Aufgabe",
 			blockingToggle: "Blockiert {count} Aufgaben",
+			priorityAriaLabel: "Priorität: {label}",
+			taskOptions: "Aufgabenoptionen",
+			recurrenceTooltip: "{label}: {value} (zum Ändern klicken)",
+			reminderTooltipOne: "1 Erinnerung gesetzt (zum Verwalten klicken)",
+			reminderTooltipMany: "{count} Erinnerungen gesetzt (zum Verwalten klicken)",
+			projectTooltip: "Diese Aufgabe wird als Projekt verwendet (zum Filtern von Unteraufgaben klicken)",
+			expandSubtasks: "Unteraufgaben ausklappen",
+			collapseSubtasks: "Unteraufgaben einklappen",
+			dueToday: "{label}: Heute",
+			dueTodayAt: "{label}: Heute um {time}",
+			dueOverdue: "{label}: {display} (überfällig)",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: Heute",
+			scheduledTodayAt: "{label}: Heute um {time}",
+			scheduledPast: "{label}: {display} (vergangen)",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "Abhängigkeiten werden geladen…",
 			blockingEmpty: "Keine abhängigen Aufgaben",
 			blockingLoadError: "Abhängigkeiten konnten nicht geladen werden",

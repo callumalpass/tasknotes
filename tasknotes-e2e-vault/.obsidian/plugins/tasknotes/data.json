@@ -48,6 +48,7 @@
     "enableTimeblocking": true,
     "defaultShowTimeblocks": true,
     "defaultTimeblockColor": "#6366f1",
+    "timeblockAttachmentSearchOrder": "name-asc",
     "nowIndicator": true,
     "selectMirror": true,
     "weekNumbers": false,
@@ -146,7 +147,8 @@
     "icsEventId": "icsEventId",
     "icsEventTag": "ics_event",
     "googleCalendarEventId": "googleCalendarEventId",
-    "reminders": "reminders"
+    "reminders": "reminders",
+    "sortOrder": "tasknotes_manual_order"
   },
   "customStatuses": [
     {
@@ -222,7 +224,7 @@
     }
   ],
   "recurrenceMigrated": false,
-  "lastSeenVersion": "4.3.2",
+  "lastSeenVersion": "4.4.0",
   "showReleaseNotesOnUpdate": true,
   "showTrackedTasksInStatusBar": false,
   "autoStopTimeTrackingOnComplete": true,
@@ -466,5 +468,7 @@
     "includeObsidianLink": true,
     "defaultReminderMinutes": null
   },
-  "enableMCP": false
+  "enableMCP": false,
+  "resetCheckboxesOnRecurrence": false,
+  "enableDebugLogging": false
 }

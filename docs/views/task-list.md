@@ -148,6 +148,35 @@ sort:
     direction: ASC
 ```
 
+### Drag-to-Reorder
+
+Task List supports drag-to-reorder when the view is sorted by the manual-order property. With the default field mapping, that property is `tasknotes_manual_order`.
+
+To enable persistent manual ordering in a Task List view:
+
+```yaml
+sort:
+  - column: tasknotes_manual_order
+    direction: DESC
+```
+
+Once the first sort criterion is the manual-order property, you can drag task cards to reorder them. TaskNotes writes updated LexoRank-style values into task frontmatter so the order persists across refreshes and sessions.
+
+If your field mapping changes the sort-order property name, use that mapped property name instead of `tasknotes_manual_order`.
+
+### Drag-to-Reorder with Grouping
+
+Grouped Task List views can also be reordered, but the reorder scope is the current group. For example, when grouping by status, dragging within the "In Progress" group updates the manual order for tasks in that group.
+
+Important constraints:
+
+- Drag-to-reorder only works when the view sort includes the manual-order property.
+- Reordering in formula-based groups is blocked because formula values are computed and cannot be edited directly.
+- In filtered or partially visible lists, TaskNotes may also update hidden or filtered notes in the same reorder scope to preserve a stable persistent order.
+- Large reorder operations may show a confirmation dialog before writing changes.
+
+The default generated TaskNotes task-list templates include a **Manual Order** view that is already configured for this behavior.
+
 ## Grouping
 
 Groups organize tasks under collapsible headers based on a property value.

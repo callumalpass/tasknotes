@@ -8,6 +8,12 @@ export const ko: TranslationTree = {
 		confirm: "확인",
 		close: "닫기",
 		save: "저장",
+		reorder: {
+			confirmLargeTitle: "대규모 재정렬 확인",
+			confirmButton: "노트 재정렬",
+			confirmLargeMessage:
+				'여기서 재정렬하면 {scope}에 대한 지속적인 수동 순서를 만들기 위해 {count}개 노트의 "{field}" 값이 업데이트됩니다. 같은 범위의 숨겨진 노트나 필터링된 노트도 함께 업데이트될 수 있습니다. 계속하시겠습니까?',
+		},
 		language: "언어",
 		systemDefault: "시스템 기본값",
 		loading: "로딩 중...",
@@ -88,6 +94,16 @@ export const ko: TranslationTree = {
 			expandAllGroups: "모든 그룹 펼치기",
 			collapseAllGroups: "모든 그룹 접기",
 			noTasksFound: "선택한 필터에 해당하는 작업이 없습니다.",
+			reorder: {
+				scope: {
+					ungrouped: "이 그룹 없는 목록",
+					group: '"{group}" 그룹',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"수식 기반 그룹에서는 작업을 재정렬할 수 없습니다. 수식 값은 계산된 값이므로 직접 수정할 수 없습니다.",
+			},
 		},
 		notes: {
 			title: "노트",
@@ -233,6 +249,7 @@ export const ko: TranslationTree = {
 					showWeekends: "주말 표시",
 					showAllDaySlot: "종일 슬롯 표시",
 					showTodayHighlight: "오늘 강조 표시",
+					todayColumnWidthMultiplier: "오늘 열 너비 배수",
 					showSelectionPreview: "선택 미리보기 표시",
 					timeFormat: "시간 형식",
 					timeFormat12: "12시간 (오전/오후)",
@@ -267,6 +284,12 @@ export const ko: TranslationTree = {
 			noTasks: "작업 없음",
 			uncategorized: "미분류",
 			noProject: "프로젝트 없음",
+			reorder: {
+				scope: {
+					column: '"{group}" 열',
+					columnInSwimlane: '"{swimlane}" 스윔레인의 "{group}" 열',
+				},
+			},
 			notices: {
 				loadFailed: "칸반 보드 로드 실패",
 				movedTask: "작업이 \"{0}\"(으)로 이동되었습니다",
@@ -596,6 +619,13 @@ export const ko: TranslationTree = {
 			recurringSection: {
 				header: "반복 작업",
 				description: "반복 작업 관리 동작을 설정합니다.",
+			},
+			debugLogging: {
+				header: "디버그 로깅",
+				description: "문제 해결을 위해 디버그 로그 출력을 구성합니다.",
+				enableName: "디버그 로그 사용",
+				enableDesc:
+					"드래그 앤 드롭 및 보기 진단의 자세한 내용을 개발자 콘솔에 기록합니다. 문제 해결에 유용합니다.",
 			},
 		},
 		defaults: {
@@ -939,6 +969,11 @@ export const ko: TranslationTree = {
 					name: "차단 원인",
 					description: "이 작업 전에 완료해야 하는 작업 링크. 위키링크로 저장됩니다. 차단된 작업은 시각적 표시기를 표시합니다.",
 				},
+				sortOrder: {
+					name: "수동 순서",
+					description:
+						"드래그 앤 드롭으로 재정렬할 때 사용되는 frontmatter 속성입니다. 뷰는 이 속성으로 정렬되어 있어야 재정렬이 작동합니다.",
+				},
 				pomodoros: {
 					name: "뽀모도로",
 					description: "완료된 뽀모도로 세션 수. 데이터 저장이 '데일리 노트'로 설정되면 작업 파일 대신 데일리 노트에 기록됩니다.",
@@ -1084,6 +1119,7 @@ export const ko: TranslationTree = {
 					timeEntries: "시간 기록",
 					completeInstances: "완료 인스턴스",
 					blockedBy: "차단 원인",
+					sortOrder: "수동 순서",
 					pomodoros: "뽀모도로",
 					icsEventId: "ICS 이벤트 ID",
 					icsEventTag: "ICS 이벤트 태그",
@@ -2841,11 +2877,37 @@ export const ko: TranslationTree = {
 			dailyTooltip: "데일리 노트",
 		},
 		taskCard: {
+			labels: {
+				due: "마감일",
+				scheduled: "예정일",
+				recurrence: "반복",
+				completed: "완료",
+				created: "생성일",
+				modified: "수정일",
+				blocked: "차단됨",
+				blocking: "차단 중",
+			},
 			blockedBadge: "차단됨",
 			blockedBadgeTooltip: "이 작업은 다른 작업을 기다리고 있습니다",
 			blockingBadge: "차단 중",
 			blockingBadgeTooltip: "이 작업이 다른 작업을 차단하고 있습니다",
 			blockingToggle: "{count}개의 작업을 차단 중",
+			priorityAriaLabel: "우선순위: {label}",
+			taskOptions: "작업 옵션",
+			recurrenceTooltip: "{label}: {value} (변경하려면 클릭)",
+			reminderTooltipOne: "알림 1개 설정됨 (관리하려면 클릭)",
+			reminderTooltipMany: "{count}개 알림 설정됨 (관리하려면 클릭)",
+			projectTooltip: "이 작업은 프로젝트로 사용됩니다 (하위 작업을 필터링하려면 클릭)",
+			expandSubtasks: "하위 작업 펼치기",
+			collapseSubtasks: "하위 작업 접기",
+			dueToday: "{label}: 오늘",
+			dueTodayAt: "{label}: 오늘 {time}",
+			dueOverdue: "{label}: {display} (기한 지남)",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: 오늘",
+			scheduledTodayAt: "{label}: 오늘 {time}",
+			scheduledPast: "{label}: {display} (지난)",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "종속성 로딩 중...",
 			blockingEmpty: "종속 작업 없음",
 			blockingLoadError: "종속성 로드 실패",
