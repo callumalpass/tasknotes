@@ -16,6 +16,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Checkout tasknotes-nlp-core
       run: git clone --depth 1 https://github.com/callumalpass/tasknotes-nlp-core.git ../tasknotes-nlp-core
@@ -126,6 +128,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Checkout tasknotes-nlp-core
       run: git clone --depth 1 https://github.com/callumalpass/tasknotes-nlp-core.git ../tasknotes-nlp-core
