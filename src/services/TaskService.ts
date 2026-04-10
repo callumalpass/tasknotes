@@ -21,10 +21,12 @@ import {
 } from "../utils/templateProcessor";
 import {
 	addDTSTARTToRecurrenceRule,
-	calculateDefaultDate,
 	updateDTSTARTInRecurrenceRule,
-	ensureFolderExists,
 	updateToNextScheduledOccurrence,
+} from "../core/recurrence";
+import {
+	calculateDefaultDate,
+	ensureFolderExists,
 	splitFrontmatterAndBody,
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";
@@ -47,12 +49,66 @@ import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplate
 
 import TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
+import { TaskCreationService } from "./task-service/TaskCreationService";
+import { TaskUpdateService } from "./task-service/TaskUpdateService";
 
 export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
 	private autoArchiveService?: AutoArchiveService;
+	private readonly taskCreationService: TaskCreationService;
+	private readonly taskUpdateService: TaskUpdateService;
 
-	constructor(private plugin: TaskNotesPlugin) {}
+	constructor(private plugin: TaskNotesPlugin) {
+		this.taskCreationService = new TaskCreationService({
+			plugin: this.plugin,
+			webhookNotifier: this.webhookNotifier,
+			applyTaskCreationDefaults: (taskData) => this.applyTaskCreationDefaults(taskData),
+			applyTemplate: (taskData) => this.applyTemplate(taskData),
+			processFolderTemplate: (folderTemplate, taskData, date) =>
+				this.processFolderTemplate(folderTemplate, taskData, date),
+			sanitizeTitleForFilename: (input) => this.sanitizeTitleForFilename(input),
+			sanitizeTitleForStorage: (input) => this.sanitizeTitleForStorage(input),
+		});
+		this.taskUpdateService = new TaskUpdateService({
+			plugin: this.plugin,
+			webhookNotifier: this.webhookNotifier,
+			autoArchiveService: this.autoArchiveService,
+			updateCompletedDateInFrontmatter: (frontmatter, newStatus, isRecurring) =>
+				this.updateCompletedDateInFrontmatter(frontmatter, newStatus, isRecurring),
+		});
+	}
+
+	private hasGoogleCalendarLink(task: TaskInfo): boolean {
+		return !!task.googleCalendarEventId;
+	}
+
+	private createArchiveCalendarDeletionTask(task: TaskInfo, updatedTask: TaskInfo): TaskInfo {
+		return {
+			...updatedTask,
+			googleCalendarEventId: task.googleCalendarEventId,
+		};
+	}
+
+	private clearGoogleCalendarMetadata(task: TaskInfo): void {
+		task.googleCalendarEventId = undefined;
+	}
+
+	private async deleteArchivedTaskFromCalendar(task: TaskInfo): Promise<boolean> {
+		if (!this.plugin.taskCalendarSyncService) {
+			return true;
+		}
+
+		const deleted = await this.plugin.taskCalendarSyncService.deleteTaskFromCalendar(task);
+		if (deleted) {
+			return true;
+		}
+
+		console.warn("Failed to delete archived task from Google Calendar during archive:", {
+			taskPath: task.path,
+			eventId: task.googleCalendarEventId,
+		});
+		return false;
+	}
 
 	private translate(key: TranslationKey, variables?: Record<string, any>): string {
 		return this.plugin.i18n.translate(key, variables);
@@ -137,6 +193,8 @@ export class TaskService {
 	 */
 	setWebhookNotifier(notifier: IWebhookNotifier): void {
 		this.webhookNotifier = notifier;
+		this.taskCreationService.setWebhookNotifier(notifier);
+		this.taskUpdateService.setWebhookNotifier(notifier);
 	}
 
 	/**
@@ -144,6 +202,7 @@ export class TaskService {
 	 */
 	setAutoArchiveService(service: AutoArchiveService): void {
 		this.autoArchiveService = service;
+		this.taskUpdateService.setAutoArchiveService(service);
 	}
 
 	/**
@@ -218,279 +277,7 @@ export class TaskService {
 		taskData: TaskCreationData,
 		options: { applyDefaults?: boolean } = {}
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
-		const { applyDefaults = true } = options;
-
-		try {
-			// Apply task creation defaults if enabled
-			if (applyDefaults) {
-				taskData = await this.applyTaskCreationDefaults(taskData);
-			}
-
-			// Validate required fields
-			if (!taskData.title || !taskData.title.trim()) {
-				throw new Error("Title is required");
-			}
-
-			// Apply defaults for missing fields and sanitize title
-			// Use stricter sanitization only when title is used in filename
-			const title = this.plugin.settings.storeTitleInFilename
-				? this.sanitizeTitleForFilename(taskData.title.trim())
-				: this.sanitizeTitleForStorage(taskData.title.trim());
-			const priority = taskData.priority || this.plugin.settings.defaultTaskPriority;
-			const status = taskData.status || this.plugin.settings.defaultTaskStatus;
-			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
-			const dateModified = taskData.dateModified || getCurrentTimestamp();
-
-			// Prepare contexts, projects, and tags arrays
-			const contextsArray = taskData.contexts || [];
-			const projectsArray = taskData.projects || [];
-			// Handle tags based on identification method
-			let tagsArray = taskData.tags || [];
-
-			// Only add task tag if using tag-based identification
-			if (this.plugin.settings.taskIdentificationMethod === "tag") {
-				if (!tagsArray.includes(this.plugin.settings.taskTag)) {
-					tagsArray = [this.plugin.settings.taskTag, ...tagsArray];
-				}
-			}
-
-			// Generate filename
-			const filenameContext: FilenameContext = {
-				title: title,
-				priority: priority,
-				status: status,
-				date: new Date(),
-				dueDate: taskData.due,
-				scheduledDate: taskData.scheduled,
-			};
-
-			const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
-
-			// Determine folder based on creation context
-			// Process folder templates with task and date variables for dynamic folder organization
-			let folder = "";
-			if (taskData.creationContext === "inline-conversion" || taskData.creationContext === "modal-inline-creation") {
-				// For inline conversion and modal-based inline task creation, use the inline task folder setting with variable support
-				const inlineFolder = this.plugin.settings.inlineTaskConvertFolder || "";
-				if (inlineFolder.trim()) {
-					// Inline folder is configured, use it
-					folder = inlineFolder;
-
-					// Handle currentNotePath and currentNoteTitle template variables
-					if (
-						inlineFolder.includes("{{currentNotePath}}") ||
-						inlineFolder.includes("{{currentNoteTitle}}")
-					) {
-						const currentFile = this.plugin.app.workspace.getActiveFile();
-
-						if (inlineFolder.includes("{{currentNotePath}}")) {
-							// Get current file's folder path
-							const currentFolderPath = currentFile?.parent?.path || "";
-							folder = folder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);
-						}
-
-						if (inlineFolder.includes("{{currentNoteTitle}}")) {
-							// Get current file's title (basename without extension)
-							const currentNoteTitle = currentFile?.basename || "";
-							folder = folder.replace(/\{\{currentNoteTitle\}\}/g, currentNoteTitle);
-						}
-					}
-					// Process task and date variables in the inline folder path
-					folder = this.processFolderTemplate(folder, taskData);
-				} else {
-					// Fallback to default tasks folder when inline folder is empty (#128)
-					const tasksFolder = this.plugin.settings.tasksFolder || "";
-					folder = this.processFolderTemplate(tasksFolder, taskData);
-				}
-			} else {
-				// For manual creation and other contexts, use the general tasks folder
-				const tasksFolder = this.plugin.settings.tasksFolder || "";
-				folder = this.processFolderTemplate(tasksFolder, taskData);
-			}
-
-			// Ensure folder exists
-			if (folder) {
-				await ensureFolderExists(this.plugin.app.vault, folder);
-			}
-
-			// Generate unique filename
-			const uniqueFilename = await generateUniqueFilename(
-				baseFilename,
-				folder,
-				this.plugin.app.vault
-			);
-			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
-
-			// Create complete TaskInfo object with all the data
-			const completeTaskData: Partial<TaskInfo> = {
-				title: title,
-				status: status,
-				priority: priority,
-				due: taskData.due || undefined,
-				scheduled: taskData.scheduled || undefined,
-				contexts: contextsArray.length > 0 ? contextsArray : undefined,
-				projects: projectsArray.length > 0 ? projectsArray : undefined,
-				timeEstimate:
-					taskData.timeEstimate && taskData.timeEstimate > 0
-						? taskData.timeEstimate
-						: undefined,
-				dateCreated: dateCreated,
-				dateModified: dateModified,
-				recurrence: taskData.recurrence || undefined,
-				recurrence_anchor: taskData.recurrence_anchor || undefined,
-				reminders:
-					taskData.reminders && taskData.reminders.length > 0
-						? taskData.reminders
-						: undefined,
-				icsEventId: taskData.icsEventId || undefined,
-			};
-
-			// Add DTSTART to recurrence rule if it doesn't have one
-			// This ensures Google Calendar sync works correctly from the start
-			if (
-				completeTaskData.recurrence &&
-				typeof completeTaskData.recurrence === "string" &&
-				!completeTaskData.recurrence.includes("DTSTART:")
-			) {
-				const tempTaskInfo: TaskInfo = {
-					...completeTaskData,
-					title: title,
-					status: status,
-					priority: priority,
-					path: "", // Path not yet known, but not needed for DTSTART calculation
-					archived: false,
-				};
-				const recurrenceWithDTSTART = addDTSTARTToRecurrenceRule(tempTaskInfo);
-				if (recurrenceWithDTSTART) {
-					completeTaskData.recurrence = recurrenceWithDTSTART;
-				}
-			}
-
-			const shouldAddTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
-			const taskTagForFrontmatter = shouldAddTaskTag
-				? this.plugin.settings.taskTag
-				: undefined;
-
-			// Use field mapper to convert to frontmatter with proper field mapping
-			const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(
-				completeTaskData,
-				taskTagForFrontmatter,
-				this.plugin.settings.storeTitleInFilename
-			);
-
-			// Handle task identification based on settings
-			if (this.plugin.settings.taskIdentificationMethod === "property") {
-				const propName = this.plugin.settings.taskPropertyName;
-				const propValue = this.plugin.settings.taskPropertyValue;
-				if (propName && propValue) {
-					// Coerce boolean-like strings to actual booleans for compatibility with Obsidian properties
-					const lower = propValue.toLowerCase();
-					const coercedValue =
-						lower === "true" || lower === "false" ? lower === "true" : propValue;
-					frontmatter[propName] = coercedValue as any;
-				}
-				if (tagsArray.length > 0) {
-					frontmatter.tags = tagsArray;
-				}
-			} else {
-				// Tags are handled separately (not via field mapper)
-				frontmatter.tags = tagsArray;
-			}
-
-			// Apply template processing (both frontmatter and body)
-			const templateResult = await this.applyTemplate(taskData);
-			const normalizedBody = templateResult.body
-				? templateResult.body.replace(/\r\n/g, "\n").trimEnd()
-				: taskData.details
-					? taskData.details.replace(/\r\n/g, "\n").trimEnd()
-					: "";
-
-			// Merge template frontmatter with base frontmatter
-			// User-defined values take precedence over template frontmatter
-			let finalFrontmatter = mergeTemplateFrontmatter(
-				frontmatter,
-				templateResult.frontmatter
-			);
-
-			// Add custom frontmatter properties (including user fields)
-			if (taskData.customFrontmatter) {
-				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
-			}
-
-			// Prepare file content
-			const yamlHeader = stringifyYaml(finalFrontmatter);
-			let content = `---\n${yamlHeader}---\n\n`;
-
-			if (normalizedBody.length > 0) {
-				content += `${normalizedBody}\n`;
-			}
-
-			// Create the file
-			const file = await this.plugin.app.vault.create(fullPath, content);
-
-			// Create final TaskInfo object for cache and events
-			// Ensure required fields are present by using the complete task data as base
-			const taskInfo: TaskInfo = {
-				...completeTaskData,
-				...finalFrontmatter,
-				// Ensure required fields are always defined
-				title: finalFrontmatter.title || completeTaskData.title || title,
-				status: finalFrontmatter.status || completeTaskData.status || status,
-				priority: finalFrontmatter.priority || completeTaskData.priority || priority,
-				path: file.path,
-				tags: tagsArray,
-				archived: false,
-				details: normalizedBody,
-			};
-
-			// Wait for fresh data and update cache
-			try {
-				// Wait for the metadata cache to have the updated data for new tasks
-				if (this.plugin.cacheManager.waitForFreshTaskData) {
-					await this.plugin.cacheManager.waitForFreshTaskData(file);
-				}
-				this.plugin.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
-			} catch (cacheError) {
-				console.error("Error updating cache for new task:", cacheError);
-			}
-
-			// Emit task created event
-			this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-				path: file.path,
-				updatedTask: taskInfo,
-			});
-
-			// Trigger webhook for task creation
-			if (this.webhookNotifier) {
-				try {
-					await this.webhookNotifier.triggerWebhook("task.created", { task: taskInfo });
-				} catch (error) {
-					console.warn("Failed to trigger webhook for task creation:", error);
-				}
-			}
-
-			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
-			if (
-				this.plugin.taskCalendarSyncService?.isEnabled() &&
-				this.plugin.settings.googleCalendarExport.syncOnTaskCreate
-			) {
-				this.plugin.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {
-					console.warn("Failed to sync task to Google Calendar:", error);
-				});
-			}
-
-			return { file, taskInfo };
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			// eslint-disable-next-line no-console
-			console.error("Error creating task:", {
-				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				taskData,
-			});
-
-			throw new Error(`Failed to create task: ${errorMessage}`);
-		}
+		return this.taskCreationService.createTask(taskData, options);
 	}
 
 	/**
@@ -743,147 +530,12 @@ export class TaskService {
 				frontmatter[dateModifiedField] = updatedTask.dateModified;
 			});
 
-			// Step 3: Wait for fresh data and update cache
-			try {
-				// Wait for the metadata cache to have the updated data
-				if (this.plugin.cacheManager.waitForFreshTaskData) {
-					await this.plugin.cacheManager.waitForFreshTaskData(file);
-				}
-				this.plugin.cacheManager.updateTaskInfoInCache(
-					task.path,
-					updatedTask as TaskInfo
-				);
-			} catch (cacheError) {
-				// Cache errors shouldn't break the operation, just log them
-				// eslint-disable-next-line no-console
-				console.error("Error updating task cache:", {
-					error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-					taskPath: task.path,
-				});
-			}
+			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
+			await this.applyPropertyChangeSideEffects(
+				file, task, updatedTask as TaskInfo, property, task[property], value
+			);
 
-			// Step 4: Notify system of change
-			try {
-				this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-					path: task.path,
-					originalTask: task,
-					updatedTask: updatedTask as TaskInfo,
-				});
-
-				// Step 5: If status changed, trigger UI updates for dependent tasks
-				if (property === "status") {
-					const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-					const isNowCompleted = this.plugin.statusManager.isCompletedStatus(value);
-
-					if (wasCompleted !== isNowCompleted) {
-						// Get tasks that this task blocks (they need UI updates for their blocked state)
-						const dependentTaskPaths = this.plugin.cacheManager.getBlockedTaskPaths(
-							task.path
-						);
-
-						// Trigger updates for each dependent task so their UI can refresh
-						for (const dependentPath of dependentTaskPaths) {
-							try {
-								const dependentTask =
-									await this.plugin.cacheManager.getTaskInfo(dependentPath);
-								if (dependentTask) {
-									this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-										path: dependentPath,
-										originalTask: dependentTask,
-										updatedTask: dependentTask, // The dependent task itself didn't change, just needs UI refresh
-									});
-								}
-							} catch (dependentError) {
-								console.error(
-									`Error triggering update for dependent task ${dependentPath}:`,
-									dependentError
-								);
-							}
-						}
-					}
-				}
-			} catch (eventError) {
-				// eslint-disable-next-line no-console
-				console.error("Error emitting task update event:", {
-					error: eventError instanceof Error ? eventError.message : String(eventError),
-					taskPath: task.path,
-				});
-				// Event emission errors shouldn't break the operation
-			}
-
-			// Trigger webhooks for property updates
-			if (this.webhookNotifier) {
-				try {
-					// Check if this was a completion
-					const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-					const isCompleted =
-						property === "status" && this.plugin.statusManager.isCompletedStatus(value);
-
-					if (property === "status" && !wasCompleted && isCompleted) {
-						// Task was completed
-						await this.webhookNotifier.triggerWebhook("task.completed", {
-							task: updatedTask as TaskInfo,
-						});
-					} else {
-						// Regular property update
-						await this.webhookNotifier.triggerWebhook("task.updated", {
-							task: updatedTask as TaskInfo,
-							previous: task,
-						});
-					}
-				} catch (error) {
-					console.warn("Failed to trigger webhook for property update:", error);
-				}
-			}
-
-			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
-			if (this.plugin.taskCalendarSyncService?.isEnabled()) {
-				const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-				const isCompleted =
-					property === "status" && this.plugin.statusManager.isCompletedStatus(value);
-
-				const syncPromise =
-					property === "status" && !wasCompleted && isCompleted
-						? this.plugin.taskCalendarSyncService.completeTaskInCalendar(
-								updatedTask as TaskInfo
-							)
-						: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
-								updatedTask as TaskInfo,
-								task
-							);
-
-				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
-				});
-			}
-
-			// Handle auto-archive if status property changed
-			if (this.autoArchiveService && property === "status" && value !== task.status) {
-				try {
-					const statusConfig = this.plugin.statusManager.getStatusConfig(value as string);
-					if (statusConfig) {
-						if (statusConfig.autoArchive) {
-							// Schedule for auto-archive
-							await this.autoArchiveService.scheduleAutoArchive(
-								updatedTask as TaskInfo,
-								statusConfig
-							);
-						} else {
-							// Cancel any pending auto-archive since new status doesn't have auto-archive
-							await this.autoArchiveService.cancelAutoArchive(
-								(updatedTask as TaskInfo).path
-							);
-						}
-					}
-				} catch (error) {
-					console.warn(
-						"Failed to handle auto-archive for status property change:",
-						error
-					);
-				}
-			}
-
-			// Step 5: Return authoritative data
+			// Step 4: Return authoritative data
 			return updatedTask as TaskInfo;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -897,6 +549,148 @@ export class TaskService {
 			});
 
 			throw new Error(`Failed to update task property: ${errorMessage}`);
+		}
+	}
+
+	/**
+	 * Run all post-write side effects for a property change WITHOUT performing a
+	 * frontmatter write. This includes: cache update, EVENT_TASK_UPDATED,
+	 * dependent-task UI refresh, webhooks, Google Calendar sync, and auto-archive.
+	 *
+	 * Callers are responsible for having already persisted the change to frontmatter.
+	 */
+	async applyPropertyChangeSideEffects(
+		file: TFile,
+		originalTask: TaskInfo,
+		updatedTask: TaskInfo,
+		property: keyof TaskInfo,
+		oldValue: any,
+		newValue: any
+	): Promise<void> {
+		// Update cache
+		try {
+			if (this.plugin.cacheManager.waitForFreshTaskData) {
+				await this.plugin.cacheManager.waitForFreshTaskData(file);
+			}
+			this.plugin.cacheManager.updateTaskInfoInCache(
+				originalTask.path,
+				updatedTask
+			);
+		} catch (cacheError) {
+			// eslint-disable-next-line no-console
+			console.error("Error updating task cache:", {
+				error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+				taskPath: originalTask.path,
+			});
+		}
+
+		// Notify system of change
+		try {
+			this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+				path: originalTask.path,
+				originalTask,
+				updatedTask,
+			});
+
+			// If status changed, trigger UI updates for dependent tasks
+			if (property === "status") {
+				const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
+				const isNowCompleted = this.plugin.statusManager.isCompletedStatus(newValue);
+
+				if (wasCompleted !== isNowCompleted) {
+					const dependentTaskPaths = this.plugin.cacheManager.getBlockedTaskPaths(
+						originalTask.path
+					);
+
+					for (const dependentPath of dependentTaskPaths) {
+						try {
+							const dependentTask =
+								await this.plugin.cacheManager.getTaskInfo(dependentPath);
+							if (dependentTask) {
+								this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+									path: dependentPath,
+									originalTask: dependentTask,
+									updatedTask: dependentTask,
+								});
+							}
+						} catch (dependentError) {
+							console.error(
+								`Error triggering update for dependent task ${dependentPath}:`,
+								dependentError
+							);
+						}
+					}
+				}
+			}
+		} catch (eventError) {
+			// eslint-disable-next-line no-console
+			console.error("Error emitting task update event:", {
+				error: eventError instanceof Error ? eventError.message : String(eventError),
+				taskPath: originalTask.path,
+			});
+		}
+
+		// Trigger webhooks
+		if (this.webhookNotifier) {
+			try {
+				const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
+				const isCompleted =
+					property === "status" && this.plugin.statusManager.isCompletedStatus(newValue);
+
+				if (property === "status" && !wasCompleted && isCompleted) {
+					await this.webhookNotifier.triggerWebhook("task.completed", {
+						task: updatedTask,
+					});
+				} else {
+					await this.webhookNotifier.triggerWebhook("task.updated", {
+						task: updatedTask,
+						previous: originalTask,
+					});
+				}
+			} catch (error) {
+				console.warn("Failed to trigger webhook for property update:", error);
+			}
+		}
+
+		// Sync to Google Calendar if enabled
+		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+			const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
+			const isCompleted =
+				property === "status" && this.plugin.statusManager.isCompletedStatus(newValue);
+
+			const syncPromise =
+				property === "status" && !wasCompleted && isCompleted
+					? this.plugin.taskCalendarSyncService.completeTaskInCalendar(updatedTask)
+					: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
+							updatedTask,
+							originalTask
+						);
+
+			syncPromise.catch((error) => {
+				console.warn("Failed to sync task update to Google Calendar:", error);
+			});
+		}
+
+		// Handle auto-archive if status property changed
+		if (this.autoArchiveService && property === "status" && newValue !== oldValue) {
+			try {
+				const statusConfig = this.plugin.statusManager.getStatusConfig(newValue as string);
+				if (statusConfig) {
+					if (statusConfig.autoArchive) {
+						await this.autoArchiveService.scheduleAutoArchive(
+							updatedTask,
+							statusConfig
+						);
+					} else {
+						await this.autoArchiveService.cancelAutoArchive(updatedTask.path);
+					}
+				}
+			} catch (error) {
+				console.warn(
+					"Failed to handle auto-archive for status property change:",
+					error
+				);
+			}
 		}
 	}
 
@@ -1045,6 +839,21 @@ export class TaskService {
 			}
 		}
 
+		let archiveCalendarCleanupComplete = true;
+		if (this.plugin.taskCalendarSyncService?.isEnabled() && updatedTask.archived) {
+			if (this.hasGoogleCalendarLink(task)) {
+				const archiveCalendarTask = this.createArchiveCalendarDeletionTask(
+					task,
+					updatedTask
+				);
+				archiveCalendarCleanupComplete =
+					await this.deleteArchivedTaskFromCalendar(archiveCalendarTask);
+				if (archiveCalendarCleanupComplete) {
+					this.clearGoogleCalendarMetadata(updatedTask);
+				}
+			}
+		}
+
 		// Step 3: Wait for fresh data and update cache
 		try {
 			// Wait for the metadata cache to have the updated data
@@ -1084,20 +893,18 @@ export class TaskService {
 		// Archiving removes from calendar (archived tasks aren't synced)
 		// Unarchiving may re-add to calendar
 		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
-			if (updatedTask.archived && task.googleCalendarEventId) {
-				// Task is being archived - delete the calendar event
-				this.plugin.taskCalendarSyncService
-					.deleteTaskFromCalendar(updatedTask)
-					.catch((error) => {
-						console.warn("Failed to delete archived task from Google Calendar:", error);
-					});
-			} else if (!updatedTask.archived) {
+			if (!updatedTask.archived) {
 				// Task is being unarchived - sync it back if eligible
 				this.plugin.taskCalendarSyncService
 					.updateTaskInCalendar(updatedTask, task)
 					.catch((error) => {
 						console.warn("Failed to sync unarchived task to Google Calendar:", error);
 					});
+			} else if (!archiveCalendarCleanupComplete && this.hasGoogleCalendarLink(updatedTask)) {
+				console.warn(
+					"Archived task still has Google Calendar links and will need retry cleanup:",
+					updatedTask.path
+				);
 			}
 		}
 
@@ -1297,386 +1104,7 @@ export class TaskService {
 		originalTask: TaskInfo,
 		updates: Partial<TaskInfo> & { details?: string }
 	): Promise<TaskInfo> {
-		try {
-			const file = this.plugin.app.vault.getAbstractFileByPath(originalTask.path);
-			if (!(file instanceof TFile)) {
-				throw new Error(`Cannot find task file: ${originalTask.path}`);
-			}
-
-			if (Array.isArray(updates.timeEntries)) {
-				updates.timeEntries = updates.timeEntries.map((entry) => {
-					const sanitizedEntry = { ...entry };
-					delete sanitizedEntry.duration;
-					return sanitizedEntry;
-				});
-			}
-
-			const isRenameNeeded =
-				this.plugin.settings.storeTitleInFilename &&
-				updates.title &&
-				updates.title !== originalTask.title;
-			let newPath = originalTask.path;
-
-			if (isRenameNeeded) {
-				const parentPath = file.parent ? file.parent.path : "";
-				const newFilename = await generateUniqueFilename(
-					updates.title!,
-					parentPath,
-					this.plugin.app.vault
-				);
-				newPath = parentPath ? `${parentPath}/${newFilename}.md` : `${newFilename}.md`;
-			}
-
-			// Check if recurrence rule changed and update scheduled date if needed
-			let recurrenceUpdates: Partial<TaskInfo> = {};
-			if (
-				updates.recurrence !== undefined &&
-				updates.recurrence !== originalTask.recurrence
-			) {
-				// Recurrence rule changed, calculate new scheduled date
-				const tempTask: TaskInfo = { ...originalTask, ...updates };
-				const nextDates = updateToNextScheduledOccurrence(
-					tempTask,
-					this.plugin.settings.maintainDueDateOffsetInRecurring
-				);
-				if (nextDates.scheduled) {
-					recurrenceUpdates.scheduled = nextDates.scheduled;
-				}
-				if (nextDates.due) {
-					recurrenceUpdates.due = nextDates.due;
-				}
-
-				// Add DTSTART to recurrence rule if it's missing (scenario 1: editing recurrence rule)
-				if (
-					typeof updates.recurrence === "string" &&
-					updates.recurrence &&
-					!updates.recurrence.includes("DTSTART:")
-				) {
-					const tempTaskWithRecurrence: TaskInfo = {
-						...originalTask,
-						...updates,
-						...recurrenceUpdates,
-					};
-					const updatedRecurrence = addDTSTARTToRecurrenceRule(tempTaskWithRecurrence);
-					if (updatedRecurrence) {
-						recurrenceUpdates.recurrence = updatedRecurrence;
-					}
-				}
-			} else if (
-				updates.recurrence !== undefined &&
-				!originalTask.recurrence &&
-				updates.recurrence
-			) {
-				// Scenario 2: Converting non-recurring to recurring task
-				if (
-					typeof updates.recurrence === "string" &&
-					!updates.recurrence.includes("DTSTART:")
-				) {
-					const tempTask: TaskInfo = { ...originalTask, ...updates };
-					const updatedRecurrence = addDTSTARTToRecurrenceRule(tempTask);
-					if (updatedRecurrence) {
-						recurrenceUpdates.recurrence = updatedRecurrence;
-					}
-				}
-			}
-
-			// Scenario 3: Scheduled date update for recurring tasks
-			if (
-				updates.scheduled !== undefined &&
-				updates.scheduled !== originalTask.scheduled &&
-				originalTask.recurrence
-			) {
-				if (
-					typeof originalTask.recurrence === "string" &&
-					!originalTask.recurrence.includes("DTSTART:")
-				) {
-					const tempTask: TaskInfo = { ...originalTask, ...updates };
-					const updatedRecurrence = addDTSTARTToRecurrenceRule(tempTask);
-					if (updatedRecurrence) {
-						recurrenceUpdates.recurrence = updatedRecurrence;
-					}
-				}
-			}
-
-			// Step 1: Persist frontmatter changes to the file at its original path
-			let normalizedDetails: string | null = null;
-			if (Object.prototype.hasOwnProperty.call(updates, "details")) {
-				normalizedDetails =
-					typeof updates.details === "string"
-						? updates.details.replace(/\r\n/g, "\n")
-						: "";
-			}
-
-			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				const completeTaskData: Partial<TaskInfo> = {
-					...originalTask,
-					...updates,
-					...recurrenceUpdates,
-					dateModified: getCurrentTimestamp(),
-				};
-
-				const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(
-					completeTaskData,
-					this.plugin.settings.taskIdentificationMethod === "tag"
-						? this.plugin.settings.taskTag
-						: undefined,
-					this.plugin.settings.storeTitleInFilename
-				);
-
-				Object.keys(mappedFrontmatter).forEach((key) => {
-					if (mappedFrontmatter[key] !== undefined) {
-						frontmatter[key] = mappedFrontmatter[key];
-					}
-				});
-
-				// Handle completedDate for status changes (non-recurring tasks only)
-				if (updates.status !== undefined) {
-					this.updateCompletedDateInFrontmatter(frontmatter, updates.status, !!originalTask.recurrence);
-				}
-
-				// Handle task identification based on settings
-				if (this.plugin.settings.taskIdentificationMethod === "property") {
-					const propName = this.plugin.settings.taskPropertyName;
-					const propValue = this.plugin.settings.taskPropertyValue;
-					if (propName && propValue) {
-						// Coerce boolean-like strings to actual booleans for compatibility with Obsidian properties
-						const lower = propValue.toLowerCase();
-						const coercedValue =
-							lower === "true" || lower === "false" ? lower === "true" : propValue;
-						frontmatter[propName] = coercedValue as any;
-					}
-				}
-
-				// Handle custom frontmatter properties (including user fields)
-				if ((updates as any).customFrontmatter) {
-					Object.keys((updates as any).customFrontmatter).forEach((key) => {
-						const value = (updates as any).customFrontmatter[key];
-						if (value === null) {
-							// Remove the property if value is null
-							delete frontmatter[key];
-						} else {
-							// Set the property value
-							frontmatter[key] = value;
-						}
-					});
-				}
-
-				if (updates.hasOwnProperty("due") && updates.due === undefined)
-					delete frontmatter[this.plugin.fieldMapper.toUserField("due")];
-				if (updates.hasOwnProperty("scheduled") && updates.scheduled === undefined)
-					delete frontmatter[this.plugin.fieldMapper.toUserField("scheduled")];
-				if (updates.hasOwnProperty("contexts") && updates.contexts === undefined)
-					delete frontmatter[this.plugin.fieldMapper.toUserField("contexts")];
-				if (updates.hasOwnProperty("projects")) {
-					const projectsField = this.plugin.fieldMapper.toUserField("projects");
-					const projectsToSet = Array.isArray(updates.projects) ? updates.projects : [];
-					if (projectsToSet.length > 0) {
-						frontmatter[projectsField] = projectsToSet;
-					} else {
-						delete frontmatter[projectsField];
-					}
-				}
-				if (updates.hasOwnProperty("timeEstimate") && updates.timeEstimate === undefined)
-					delete frontmatter[this.plugin.fieldMapper.toUserField("timeEstimate")];
-				if (updates.hasOwnProperty("completedDate") && updates.completedDate === undefined)
-					delete frontmatter[this.plugin.fieldMapper.toUserField("completedDate")];
-				if (updates.hasOwnProperty("recurrence") && updates.recurrence === undefined)
-					delete frontmatter[this.plugin.fieldMapper.toUserField("recurrence")];
-				if (updates.hasOwnProperty("blockedBy") && updates.blockedBy === undefined)
-					delete frontmatter[this.plugin.fieldMapper.toUserField("blockedBy")];
-
-				if (isRenameNeeded) {
-					delete frontmatter[this.plugin.fieldMapper.toUserField("title")];
-				}
-
-				if (updates.hasOwnProperty("tags")) {
-					const tagsToSet = Array.isArray(updates.tags) ? [...updates.tags] : [];
-					if (tagsToSet.length > 0) {
-						frontmatter.tags = tagsToSet;
-					} else {
-						delete frontmatter.tags;
-					}
-				}
-			});
-
-			// Step 2: Rename the file if needed, after frontmatter is updated
-			if (isRenameNeeded) {
-				await this.plugin.app.fileManager.renameFile(file, newPath);
-			}
-
-			// Step 2b: Update body content if details changed
-			if (normalizedDetails !== null) {
-				const targetFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
-				if (targetFile instanceof TFile) {
-					const currentContent = await this.plugin.app.vault.read(targetFile);
-					const { frontmatter: frontmatterText } =
-						splitFrontmatterAndBody(currentContent);
-					const frontmatterBlock =
-						frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
-					const bodyContent = normalizedDetails.trimEnd();
-					const finalBody = bodyContent.length > 0 ? `${bodyContent}\n` : "";
-					await this.plugin.app.vault.modify(
-						targetFile,
-						`${frontmatterBlock}${finalBody}`
-					);
-				}
-			}
-
-			// Step 3: Construct the final authoritative state
-			const updatedTask: TaskInfo = {
-				...originalTask,
-				...updates,
-				...recurrenceUpdates,
-				path: newPath,
-				dateModified: getCurrentTimestamp(),
-			};
-
-			if (normalizedDetails !== null) {
-				updatedTask.details = normalizedDetails;
-			}
-
-			if (updates.status !== undefined && !originalTask.recurrence) {
-				if (this.plugin.statusManager.isCompletedStatus(updates.status)) {
-					if (!originalTask.completedDate) {
-						updatedTask.completedDate = getCurrentDateString();
-					}
-				} else {
-					updatedTask.completedDate = undefined;
-				}
-			}
-
-			// Step 4: Wait for fresh data and update cache
-			if (isRenameNeeded) {
-				this.plugin.cacheManager.clearCacheEntry(originalTask.path);
-			}
-			try {
-				// Wait for the metadata cache to have the updated data
-				const finalFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
-				if (finalFile instanceof TFile && this.plugin.cacheManager.waitForFreshTaskData) {
-					// Wait for key changes to be reflected
-					const keyChanges: Partial<TaskInfo> = {};
-					if (updates.title !== undefined) keyChanges.title = updates.title;
-					if (updates.status !== undefined) keyChanges.status = updates.status;
-					if (updates.priority !== undefined) keyChanges.priority = updates.priority;
-					if (Object.keys(keyChanges).length > 0) {
-						await this.plugin.cacheManager.waitForFreshTaskData(finalFile);
-					}
-				}
-				this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
-			} catch (cacheError) {
-				// Cache errors shouldn't break the operation, just log them
-				// eslint-disable-next-line no-console
-				console.error("Error updating task cache:", {
-					error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-					taskPath: newPath,
-				});
-			}
-
-			// Step 5: Notify system of change
-			try {
-				this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-					path: newPath,
-					originalTask: originalTask,
-					updatedTask: updatedTask,
-				});
-			} catch (eventError) {
-				// eslint-disable-next-line no-console
-				console.error("Error emitting task update event:", {
-					error: eventError instanceof Error ? eventError.message : String(eventError),
-					taskPath: newPath,
-				});
-				// Event emission errors shouldn't break the operation
-			}
-
-			// Trigger webhooks for task update/completion
-			if (this.webhookNotifier) {
-				try {
-					// Check if this was a completion
-					const wasCompleted = this.plugin.statusManager.isCompletedStatus(
-						originalTask.status
-					);
-					const isCompleted = this.plugin.statusManager.isCompletedStatus(
-						updatedTask.status
-					);
-
-					if (!wasCompleted && isCompleted) {
-						// Task was completed
-						await this.webhookNotifier.triggerWebhook("task.completed", {
-							task: updatedTask,
-						});
-					} else {
-						// Regular update
-						await this.webhookNotifier.triggerWebhook("task.updated", {
-							task: updatedTask,
-							previous: originalTask,
-						});
-					}
-				} catch (error) {
-					console.warn("Failed to trigger webhook for task update:", error);
-				}
-			}
-
-			// Sync to Google Calendar if enabled (fire-and-forget to avoid blocking modal)
-			if (this.plugin.taskCalendarSyncService?.isEnabled()) {
-				const wasCompleted = this.plugin.statusManager.isCompletedStatus(
-					originalTask.status
-				);
-				const isCompleted = this.plugin.statusManager.isCompletedStatus(
-					updatedTask.status
-				);
-
-				const syncPromise =
-					!wasCompleted && isCompleted
-						? this.plugin.taskCalendarSyncService.completeTaskInCalendar(updatedTask)
-						: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
-								updatedTask,
-								originalTask
-							);
-
-				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
-				});
-			}
-
-			// Handle auto-archive if status changed
-			if (
-				this.autoArchiveService &&
-				updates.status !== undefined &&
-				updates.status !== originalTask.status
-			) {
-				try {
-					const statusConfig = this.plugin.statusManager.getStatusConfig(
-						updatedTask.status
-					);
-					if (statusConfig) {
-						if (statusConfig.autoArchive) {
-							// Schedule for auto-archive
-							await this.autoArchiveService.scheduleAutoArchive(
-								updatedTask,
-								statusConfig
-							);
-						} else {
-							// Cancel any pending auto-archive since new status doesn't have auto-archive
-							await this.autoArchiveService.cancelAutoArchive(updatedTask.path);
-						}
-					}
-				} catch (error) {
-					console.warn("Failed to handle auto-archive for status change:", error);
-				}
-			}
-
-			return updatedTask;
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error updating task:", {
-				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				taskPath: originalTask.path,
-				updates,
-			});
-
-			throw new Error(`Failed to update task: ${errorMessage}`);
-		}
+		return this.taskUpdateService.updateTask(originalTask, updates);
 	}
 
 	async updateBlockingRelationships(
@@ -2284,7 +1712,7 @@ export class TaskService {
 	 * @param newStatus - The new status value
 	 * @param isRecurring - Whether the task is recurring
 	 */
-	private updateCompletedDateInFrontmatter(
+	updateCompletedDateInFrontmatter(
 		frontmatter: Record<string, any>,
 		newStatus: string,
 		isRecurring: boolean

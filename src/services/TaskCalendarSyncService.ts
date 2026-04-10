@@ -809,7 +809,10 @@ export class TaskCalendarSyncService {
 		// If task no longer meets sync criteria, delete the event
 		if (!this.shouldSyncTask(task)) {
 			if (existingEventId) {
-				await this.deleteTaskFromCalendar(task);
+				const deleted = await this.deleteTaskFromCalendar(task);
+				if (!deleted) {
+					throw new Error(`Failed to delete task from Google Calendar: ${task.path}`);
+				}
 			}
 			// Clean up previous state
 			this.previousTaskState.delete(task.path);
@@ -916,16 +919,18 @@ export class TaskCalendarSyncService {
 	/**
 	 * Delete a task's calendar event
 	 */
-	async deleteTaskFromCalendar(task: TaskInfo): Promise<void> {
+	async deleteTaskFromCalendar(task: TaskInfo): Promise<boolean> {
 		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
-			return;
+			return true;
 		}
 
 		const settings = this.plugin.settings.googleCalendarExport;
 		const existingEventId = this.getTaskEventId(task);
 		if (!existingEventId) {
-			return;
+			return true;
 		}
+
+		let deleteFailed = false;
 
 		try {
 			await this.withGoogleRateLimit(() =>
@@ -937,12 +942,18 @@ export class TaskCalendarSyncService {
 		} catch (error: any) {
 			// 404 or 410 means event is already gone - that's fine
 			if (error.status !== 404 && error.status !== 410) {
+				deleteFailed = true;
 				console.error("[TaskCalendarSync] Failed to delete event:", task.path, error);
 			}
 		}
 
-		// Always remove the event ID from frontmatter
+		if (deleteFailed) {
+			return false;
+		}
+
+		// Only remove the event ID when deletion succeeded or the event is already gone
 		await this.removeTaskEventId(task.path);
+		return true;
 	}
 
 	/**

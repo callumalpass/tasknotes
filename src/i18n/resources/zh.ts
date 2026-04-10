@@ -8,6 +8,12 @@ export const zh: TranslationTree = {
 		confirm: "确认",
 		close: "关闭",
 		save: "保存",
+		reorder: {
+			confirmLargeTitle: "确认大规模重排",
+			confirmButton: "重排笔记",
+			confirmLargeMessage:
+				'在此处重排会更新 {count} 条笔记中的“{field}”，以便为 {scope} 建立持久的手动顺序。同一范围内被隐藏或被筛选掉的笔记也可能会一起更新。是否继续？',
+		},
 		language: "语言",
 		systemDefault: "系统默认",
 		loading: "加载中...",
@@ -88,6 +94,16 @@ export const zh: TranslationTree = {
 			expandAllGroups: "展开所有分组",
 			collapseAllGroups: "折叠所有分组",
 			noTasksFound: "未找到符合所选筛选条件的任务。",
+			reorder: {
+				scope: {
+					ungrouped: "这个未分组列表",
+					group: '分组“{group}”',
+				},
+			},
+			errors: {
+				formulaGroupingReadOnly:
+					"无法在基于公式的分组中重排任务。公式值是计算结果，不能直接修改。",
+			},
 		},
 		notes: {
 			title: "笔记",
@@ -237,6 +253,7 @@ export const zh: TranslationTree = {
 					showWeekends: "显示周末",
 					showAllDaySlot: "显示全天时段",
 					showTodayHighlight: "突出显示今天",
+					todayColumnWidthMultiplier: "今天列宽倍率",
 					showSelectionPreview: "显示选择预览",
 					slotEventOverlap: "允许事件重叠",
 					enableSearch: "启用搜索框",
@@ -271,6 +288,12 @@ export const zh: TranslationTree = {
 			noTasks: "没有任务",
 			uncategorized: "未分类",
 			noProject: "无项目",
+			reorder: {
+				scope: {
+					column: '列 "{group}"',
+					columnInSwimlane: '"{swimlane}" 泳道中的列 "{group}"',
+				},
+			},
 			notices: {
 				loadFailed: "看板加载失败",
 				movedTask: "任务已移动到\"{0}\"",
@@ -600,6 +623,12 @@ export const zh: TranslationTree = {
 			recurringSection: {
 				header: "重复任务",
 				description: "配置重复任务管理的行为。",
+			},
+			debugLogging: {
+				header: "调试日志",
+				description: "设置用于故障排查的调试日志输出。",
+				enableName: "启用调试日志",
+				enableDesc: "将拖放和视图的详细诊断信息记录到开发者控制台，有助于故障排查。",
 			},
 		},
 		defaults: {
@@ -966,6 +995,11 @@ export const zh: TranslationTree = {
 					description:
 						"必须在此任务之前完成的任务链接。存储为wikilinks。被阻止的任务显示视觉指示器。",
 				},
+				sortOrder: {
+					name: "手动顺序",
+					description:
+						"用于拖拽重排的 frontmatter 属性。视图必须按此属性排序，拖拽重排才能生效。",
+				},
 				pomodoros: {
 					name: "番茄钟",
 					description:
@@ -1122,6 +1156,7 @@ export const zh: TranslationTree = {
 					timeEntries: "时间条目",
 					completeInstances: "完成实例",
 					blockedBy: "被阻止",
+					sortOrder: "手动顺序",
 					pomodoros: "番茄钟",
 					icsEventId: "ICS事件ID",
 					icsEventTag: "ICS事件标签",
@@ -2891,11 +2926,37 @@ export const zh: TranslationTree = {
 			dailyTooltip: "日记",
 		},
 		taskCard: {
+			labels: {
+				due: "截止日期",
+				scheduled: "已计划",
+				recurrence: "重复",
+				completed: "已完成",
+				created: "创建于",
+				modified: "修改于",
+				blocked: "被阻塞",
+				blocking: "阻塞中",
+			},
 			blockedBadge: "已阻塞",
 			blockedBadgeTooltip: "此任务正在等待其他任务",
 			blockingBadge: "阻塞中",
 			blockingBadgeTooltip: "此任务正在阻塞其他任务",
 			blockingToggle: "阻塞 {count} 个任务",
+			priorityAriaLabel: "优先级: {label}",
+			taskOptions: "任务选项",
+			recurrenceTooltip: "{label}: {value}（点击更改）",
+			reminderTooltipOne: "已设置 1 个提醒（点击管理）",
+			reminderTooltipMany: "已设置 {count} 个提醒（点击管理）",
+			projectTooltip: "此任务用作项目（点击可筛选子任务）",
+			expandSubtasks: "展开子任务",
+			collapseSubtasks: "折叠子任务",
+			dueToday: "{label}: 今天",
+			dueTodayAt: "{label}: 今天 {time}",
+			dueOverdue: "{label}: {display}（逾期）",
+			dueLabel: "{label}: {display}",
+			scheduledToday: "{label}: 今天",
+			scheduledTodayAt: "{label}: 今天 {time}",
+			scheduledPast: "{label}: {display}（过期）",
+			scheduledLabel: "{label}: {display}",
 			loadingDependencies: "正在加载依赖…",
 			blockingEmpty: "没有依赖的任务",
 			blockingLoadError: "无法加载依赖",

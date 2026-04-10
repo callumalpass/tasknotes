@@ -73,6 +73,8 @@ TaskNotes uses several property types:
 
 Property keys are configurable. If your vault uses `deadline` instead of `due`, you can map TaskNotes to use your existing field names without modifying your files.
 
+The exact rules for how fields map to semantic roles, how dates are interpreted, and how operations like completion and recurrence behave are defined in the [TaskNotes Specification](spec.md). The spec is the shared contract between the Obsidian plugin, the terminal UI, and any other tool that reads or writes TaskNotes data.
+
 ### Custom Fields
 
 Add any frontmatter property to your tasks. User-defined fields work in filtering, sorting, and templates. Define custom fields in `Settings -> TaskNotes -> Task Properties` to include them in task modals and views.

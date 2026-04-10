@@ -39,6 +39,7 @@ import {
 	isTodayUTC,
 } from "../utils/dateUtils";
 import { TranslationKey } from "../i18n";
+import { FilterQueryPlanner } from "./filter-service/FilterQueryPlanner";
 
 /**
  * Unified filtering, sorting, and grouping service for all task views.
@@ -50,10 +51,7 @@ export class FilterService extends EventEmitter {
 	private statusManager: StatusManager;
 	private priorityManager: PriorityManager;
 
-	// Query result caching for repeated filter operations
-	private indexQueryCache = new Map<string, Set<string>>();
-	private cacheTimeout = 30000; // 30 seconds
-	private cacheTimers = new Map<string, ReturnType<typeof setTimeout>>();
+	private readonly queryPlanner: FilterQueryPlanner;
 
 	// Filter options caching for better performance
 	private filterOptionsCache: FilterOptions | null = null;
@@ -74,6 +72,7 @@ export class FilterService extends EventEmitter {
 		this.cacheManager = cacheManager;
 		this.statusManager = statusManager;
 		this.priorityManager = priorityManager;
+		this.queryPlanner = new FilterQueryPlanner({ cacheManager });
 		FilterService.lastInstance = this;
 	}
 
@@ -191,7 +190,7 @@ export class FilterService extends EventEmitter {
 			FilterUtils.validateFilterNode(query, false);
 
 			// PHASE 1 OPTIMIZATION: Use query-first approach with index-backed filtering
-			let candidateTaskPaths = this.getIndexOptimizedTaskPaths(query);
+			let candidateTaskPaths = this.queryPlanner.getIndexOptimizedTaskPaths(query);
 
 			// Convert paths to TaskInfo objects (only for candidates)
 			const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
@@ -242,7 +241,7 @@ export class FilterService extends EventEmitter {
 			FilterUtils.validateFilterNode(query, false);
 
 			// Reuse the same pipeline as getGroupedTasks to avoid behavior drift
-			let candidateTaskPaths = this.getIndexOptimizedTaskPaths(query);
+			let candidateTaskPaths = this.queryPlanner.getIndexOptimizedTaskPaths(query);
 			const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
 			const filteredTasks = candidateTasks.filter((task) =>
 				this.evaluateFilterNode(query, task, targetDate)
@@ -361,345 +360,8 @@ export class FilterService extends EventEmitter {
 		}
 	}
 
-	/**
-	 * Get optimized task paths using index-backed filtering
-	 * Analyzes the filter query to find safe optimization opportunities
-	 * Returns a reduced set of candidate task paths for further processing
-	 * CRITICAL: Only optimizes when it's guaranteed to not exclude valid results
-	 */
-	private getIndexOptimizedTaskPaths(query: FilterQuery): Set<string> {
-		// Analyze if optimization is safe for this query structure
-		const optimizationAnalysis = this.analyzeQueryOptimizationSafety(query);
-
-		if (!optimizationAnalysis.canOptimize) {
-			// Optimization not safe - return all task paths to ensure correctness
-			return this.cacheManager.getAllTaskPaths();
-		}
-
-		// Safe to optimize - apply the optimization strategy
-		if (optimizationAnalysis.strategy === "intersect") {
-			// All indexable conditions are in AND relationship - intersect them
-			let candidatePaths = this.getPathsForIndexableCondition(
-				optimizationAnalysis.conditions[0]
-			);
-
-			for (let i = 1; i < optimizationAnalysis.conditions.length; i++) {
-				const conditionPaths = this.getPathsForIndexableCondition(
-					optimizationAnalysis.conditions[i]
-				);
-				candidatePaths = this.intersectPathSets(candidatePaths, conditionPaths);
-			}
-
-			return candidatePaths;
-		} else if (optimizationAnalysis.strategy === "single") {
-			// Single indexable condition that's safe to use
-			const candidatePaths = this.getPathsForIndexableCondition(
-				optimizationAnalysis.conditions[0]
-			);
-			return candidatePaths;
-		}
-
-		// Fallback to all tasks
-		return this.cacheManager.getAllTaskPaths();
-	}
-
-	/**
-	 * Analyze query structure to determine if optimization is safe and what strategy to use
-	 */
-	private analyzeQueryOptimizationSafety(query: FilterQuery): {
-		canOptimize: boolean;
-		strategy?: "intersect" | "single";
-		conditions: FilterCondition[];
-		reason?: string;
-	} {
-		// Find all indexable conditions in the query
-		const indexableConditions = this.findIndexableConditions(query);
-
-		if (indexableConditions.length === 0) {
-			return {
-				canOptimize: false,
-				conditions: [],
-				reason: "No indexable conditions found",
-			};
-		}
-
-		// For simple queries (single condition or only AND at root level), optimization is safe
-		if (this.isSimpleQuery(query, indexableConditions)) {
-			return {
-				canOptimize: true,
-				strategy: indexableConditions.length === 1 ? "single" : "intersect",
-				conditions: indexableConditions,
-			};
-		}
-
-		// For complex queries with OR conditions involving indexable conditions,
-		// we need to be very careful. Conservative approach: don't optimize.
-		return {
-			canOptimize: false,
-			conditions: indexableConditions,
-			reason: "Complex query structure with OR conditions - optimization not safe",
-		};
-	}
-
-	/**
-	 * Check if query is simple enough for safe optimization
-	 * A simple query is one where all indexable conditions are in AND relationship
-	 */
-	private isSimpleQuery(query: FilterQuery, indexableConditions: FilterCondition[]): boolean {
-		// If no indexable conditions, nothing to optimize
-		if (indexableConditions.length === 0) {
-			return false;
-		}
-
-		// CRITICAL: Check if any indexable condition is part of an OR group
-		// This would make pre-filtering unsafe as it could exclude valid results
-		if (this.hasIndexableConditionInOrGroup(query, indexableConditions)) {
-			return false;
-		}
-
-		// If only one indexable condition AND it's not in an OR group, safe to optimize
-		if (indexableConditions.length === 1) {
-			return true;
-		}
-
-		// Check if all indexable conditions are at the root level and root is AND
-		if (query.type === "group" && query.conjunction === "and") {
-			const rootIndexableConditions = query.children.filter(
-				(child) => child.type === "condition" && this.isIndexableCondition(child)
-			);
-
-			// If all indexable conditions are at root level in an AND group, safe to intersect
-			if (rootIndexableConditions.length === indexableConditions.length) {
-				return true;
-			}
-		}
-
-		// Any other structure is potentially unsafe
-		return false;
-	}
-
-	/**
-	 * Check if any indexable condition is part of an OR group
-	 * This makes optimization unsafe as it would exclude valid results
-	 */
-	private hasIndexableConditionInOrGroup(
-		query: FilterQuery,
-		indexableConditions: FilterCondition[]
-	): boolean {
-		return this.checkNodeForOrWithIndexable(query, indexableConditions);
-	}
-
-	/**
-	 * Recursively check if any indexable condition is in an OR group
-	 */
-	private checkNodeForOrWithIndexable(
-		node: FilterQuery | FilterCondition,
-		indexableConditions: FilterCondition[]
-	): boolean {
-		if (node.type === "condition") {
-			return false; // Conditions themselves can't contain OR
-		}
-
-		if (node.type === "group") {
-			// If this group is OR and contains any indexable conditions, optimization is unsafe
-			if (node.conjunction === "or") {
-				const hasIndexableChild = node.children.some(
-					(child) => child.type === "condition" && indexableConditions.includes(child)
-				);
-				if (hasIndexableChild) {
-					return true;
-				}
-			}
-
-			// Recursively check child groups
-			for (const child of node.children) {
-				if (this.checkNodeForOrWithIndexable(child, indexableConditions)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Recursively find all indexable conditions in a filter query
-	 */
-	private findIndexableConditions(node: FilterQuery | FilterCondition): FilterCondition[] {
-		const conditions: FilterCondition[] = [];
-
-		if (node.type === "condition") {
-			if (this.isIndexableCondition(node)) {
-				conditions.push(node);
-			}
-		} else if (node.type === "group") {
-			for (const child of node.children) {
-				conditions.push(...this.findIndexableConditions(child));
-			}
-		}
-
-		return conditions;
-	}
-
-	/**
-	 * Check if a condition can be optimized using existing indexes
-	 */
-	private isIndexableCondition(condition: FilterCondition): boolean {
-		const { property, operator, value } = condition;
-
-		// Status-based conditions (uses tasksByStatus index)
-		if (property === "status" && operator === "is" && value) {
-			return true;
-		}
-
-		// Due date conditions (uses tasksByDate index)
-		if (
-			property === "due" &&
-			(operator === "is" || operator === "is-before" || operator === "is-after") &&
-			value
-		) {
-			return true;
-		}
-
-		// Scheduled date conditions (uses tasksByDate index)
-		if (
-			property === "scheduled" &&
-			(operator === "is" || operator === "is-before" || operator === "is-after") &&
-			value
-		) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Get cached index query result with automatic expiration
-	 * Returns a copy of the cached result to avoid mutation issues
-	 */
-	private getCachedIndexResult(cacheKey: string, computer: () => Set<string>): Set<string> {
-		const cached = this.indexQueryCache.get(cacheKey);
-		if (cached) {
-			// Cache hit - return copy to avoid mutation of cached data
-			return new Set(cached);
-		}
-
-		// Cache miss - compute the result
-		const result = computer();
-
-		// Cache the result
-		this.indexQueryCache.set(cacheKey, new Set(result));
-
-		// Clear any existing timer for this key
-		const existingTimer = this.cacheTimers.get(cacheKey);
-		if (existingTimer) {
-			clearTimeout(existingTimer);
-		}
-
-		// Auto-expire cache entry after timeout
-		const timer = setTimeout(() => {
-			this.indexQueryCache.delete(cacheKey);
-			this.cacheTimers.delete(cacheKey);
-		}, this.cacheTimeout);
-
-		this.cacheTimers.set(cacheKey, timer);
-
-		return result;
-	}
-
-	/**
-	 * Clear all cached index query results
-	 * Called when underlying data changes to ensure cache consistency
-	 */
-	private clearIndexQueryCache(): void {
-		// Clear all timers
-		for (const timer of this.cacheTimers.values()) {
-			clearTimeout(timer);
-		}
-
-		// Clear caches
-		this.indexQueryCache.clear();
-		this.cacheTimers.clear();
-	}
-
-	/**
-	 * Get query cache statistics for monitoring performance
-	 */
-	getCacheStats(): {
-		entryCount: number;
-		cacheKeys: string[];
-		timeoutMs: number;
-	} {
-		return {
-			entryCount: this.indexQueryCache.size,
-			cacheKeys: Array.from(this.indexQueryCache.keys()),
-			timeoutMs: this.cacheTimeout,
-		};
-	}
-
-	/**
-	 * Get task paths for a specific indexable condition with caching
-	 */
-	private getPathsForIndexableCondition(condition: FilterCondition): Set<string> {
-		const { property, operator, value } = condition;
-
-		// Create cache key from condition properties
-		const cacheKey = `${property}:${operator}:${value}`;
-
-		return this.getCachedIndexResult(cacheKey, () => {
-			// Original logic for computing paths
-			if (property === "status" && operator === "is" && value && typeof value === "string") {
-				return new Set(this.cacheManager.getTaskPathsByStatus(value));
-			}
-
-			if (
-				(property === "due" || property === "scheduled") &&
-				operator === "is" &&
-				value &&
-				typeof value === "string"
-			) {
-				return new Set(this.cacheManager.getTasksForDate(value));
-			}
-
-			// For date range conditions, we'll need to implement range queries
-			if (
-				(property === "due" || property === "scheduled") &&
-				(operator === "is-before" || operator === "is-after") &&
-				value &&
-				typeof value === "string"
-			) {
-				return this.getTaskPathsForDateRange(property, operator, value);
-			}
-
-			// Fallback - return all paths if we can't optimize
-			return this.cacheManager.getAllTaskPaths();
-		});
-	}
-
-	/**
-	 * Get task paths for date range queries (before/after operators)
-	 */
-	private getTaskPathsForDateRange(
-		property: string,
-		operator: string,
-		value: string
-	): Set<string> {
-		// For now, return all paths and let the full filter handle the range logic
-		// This could be optimized further by implementing date range indexes
-		return this.cacheManager.getAllTaskPaths();
-	}
-
-	/**
-	 * Intersect two sets of task paths
-	 */
-	private intersectPathSets(set1: Set<string>, set2: Set<string>): Set<string> {
-		const intersection = new Set<string>();
-		for (const path of set1) {
-			if (set2.has(path)) {
-				intersection.add(path);
-			}
-		}
-		return intersection;
+	getCacheStats(): { entryCount: number; cacheKeys: string[]; timeoutMs: number } {
+		return this.queryPlanner.getCacheStats();
 	}
 
 	/**
@@ -2368,31 +2030,31 @@ export class FilterService extends EventEmitter {
 	 */
 	initialize(): void {
 		this.cacheManager.on("file-updated", () => {
-			this.clearIndexQueryCache();
+			this.queryPlanner.clearIndexQueryCache();
 			this.checkAndInvalidateFilterOptionsCache();
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("file-added", () => {
-			this.clearIndexQueryCache();
+			this.queryPlanner.clearIndexQueryCache();
 			this.checkAndInvalidateFilterOptionsCache();
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("file-deleted", () => {
-			this.clearIndexQueryCache();
+			this.queryPlanner.clearIndexQueryCache();
 			this.checkAndInvalidateFilterOptionsCache();
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("file-renamed", () => {
-			this.clearIndexQueryCache();
+			this.queryPlanner.clearIndexQueryCache();
 			this.checkAndInvalidateFilterOptionsCache();
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("indexes-built", () => {
-			this.clearIndexQueryCache();
+			this.queryPlanner.clearIndexQueryCache();
 			this.checkAndInvalidateFilterOptionsCache();
 			this.emit("data-changed");
 		});
@@ -2403,7 +2065,7 @@ export class FilterService extends EventEmitter {
 	 */
 	cleanup(): void {
 		// Clear query result cache and timers
-		this.clearIndexQueryCache();
+		this.queryPlanner.clearIndexQueryCache();
 
 		// Clear filter options cache
 		this.invalidateFilterOptionsCache();

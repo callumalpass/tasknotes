@@ -10,6 +10,8 @@ import {
 	setTooltip,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { getOrderedModalGroups, shouldShowFieldForModal } from "./taskModalFieldConfig";
+import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { StatusContextMenu } from "../components/StatusContextMenu";
@@ -33,6 +35,8 @@ import {
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import { createTaskModalListField } from "./taskModalOrganizationFields";
+import { createTaskCard } from "../ui/TaskCard";
 
 interface DependencyItem {
 	dependency: TaskDependency;
@@ -170,24 +174,24 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected renderBlockedByList(): void {
-		this.renderDependencyList(this.blockedByList, this.blockedByItems, (index) => {
+		void this.renderDependencyList(this.blockedByList, this.blockedByItems, (index) => {
 			this.blockedByItems.splice(index, 1);
 			this.renderBlockedByList();
 		});
 	}
 
 	protected renderBlockingList(): void {
-		this.renderDependencyList(this.blockingList, this.blockingItems, (index) => {
+		void this.renderDependencyList(this.blockingList, this.blockingItems, (index) => {
 			this.blockingItems.splice(index, 1);
 			this.renderBlockingList();
 		});
 	}
 
-	private renderDependencyList(
+	private async renderDependencyList(
 		listEl: HTMLElement | undefined,
 		items: DependencyItem[],
 		onRemove: (index: number) => void
-	): void {
+	): Promise<void> {
 		if (!listEl) {
 			return;
 		}
@@ -200,8 +204,12 @@ export abstract class TaskModal extends Modal {
 
 		const linkServices = this.getLinkServices();
 
-		items.forEach((item, index) => {
-			const itemEl = listEl.createDiv({ cls: "task-project-item" });
+		for (const [index, item] of items.entries()) {
+			const itemEl = listEl.createDiv({
+				cls: item.path && !item.unresolved
+					? "task-project-item task-project-item--task-card"
+					: "task-project-item",
+			});
 			if (item.unresolved) {
 				itemEl.addClass("task-project-item--unresolved");
 				setTooltip(
@@ -213,29 +221,41 @@ export abstract class TaskModal extends Modal {
 				);
 			}
 
-			const infoEl = itemEl.createDiv({ cls: "task-project-info" });
-			const nameEl = infoEl.createSpan({ cls: "task-project-name" });
+			const contentEl = itemEl.createDiv({
+				cls: item.path && !item.unresolved ? "task-project-card-host" : "task-project-info",
+			});
 
 			if (item.path && !item.unresolved) {
-				nameEl.addClass("clickable-dependency");
-				appendInternalLink(
-					nameEl,
-					item.path,
-					item.name,
-					linkServices,
-					{
-						cssClass: "task-dependency-link internal-link",
-						hoverSource: "tasknotes-dependency-link",
-						showErrorNotices: true,
+				const taskInfo = await this.plugin.cacheManager.getCachedTaskInfo(item.path);
+				if (taskInfo) {
+					const taskCard = createTaskCard(taskInfo, this.plugin, undefined, {
+						layout: "default",
+						showSecondaryBadges: false,
+						enableHoverPreview: false,
+					});
+					contentEl.appendChild(taskCard);
+				} else {
+					const nameEl = contentEl.createSpan({ cls: "task-project-name clickable-dependency" });
+					appendInternalLink(
+						nameEl,
+						item.path,
+						item.name,
+						linkServices,
+						{
+							cssClass: "task-dependency-link internal-link",
+							hoverSource: "tasknotes-dependency-link",
+							showErrorNotices: true,
+						}
+					);
+					if (item.path !== item.name) {
+						contentEl.createDiv({ cls: "task-project-path", text: item.path });
 					}
-				);
-				if (item.path !== item.name) {
-					infoEl.createDiv({ cls: "task-project-path", text: item.path });
 				}
 			} else {
+				const nameEl = contentEl.createSpan({ cls: "task-project-name" });
 				nameEl.textContent = item.name;
 				const pathText = item.path ?? item.dependency.uid;
-				infoEl.createDiv({ cls: "task-project-path", text: pathText });
+				contentEl.createDiv({ cls: "task-project-path", text: pathText });
 			}
 
 			const removeBtn = itemEl.createEl("button", {
@@ -250,7 +270,7 @@ export abstract class TaskModal extends Modal {
 				event.stopPropagation();
 				onRemove(index);
 			});
-		});
+		}
 	}
 
 	protected extractDetailsFromContent(content: string): string {
@@ -770,7 +790,7 @@ export abstract class TaskModal extends Modal {
 			const detailsEditorContainer = rightColumn.createDiv("details-markdown-editor");
 
 			// Create embeddable markdown editor for details using shared method
-			this.detailsMarkdownEditor = this.createMarkdownEditor(detailsEditorContainer, {
+			this.detailsMarkdownEditor = createTaskModalMarkdownEditor(this.app, detailsEditorContainer, {
 				value: this.details,
 				placeholder: this.t("modals.task.detailsPlaceholder"),
 				cls: "details-editor",
@@ -801,21 +821,7 @@ export abstract class TaskModal extends Modal {
 	 * Check if a field should be shown based on field configuration
 	 */
 	protected shouldShowField(fieldId: string, config?: any): boolean {
-		// If no config, show all fields (legacy behavior)
-		if (!config || !config.fields) {
-			return true;
-		}
-
-		// Find the field in config
-		const field = config.fields.find((f: any) => f.id === fieldId);
-		if (!field) {
-			// Field not in config, show it by default
-			return true;
-		}
-
-		// Check if field is enabled and visible for this modal type
-		const isVisible = this.isCreationMode() ? field.visibleInCreation : field.visibleInEdit;
-		return field.enabled && isVisible;
+		return shouldShowFieldForModal(fieldId, config, this.isCreationMode());
 	}
 
 	protected createAdditionalFields(container: HTMLElement): void {
@@ -831,18 +837,9 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createFieldsFromConfig(container: HTMLElement, config: any): void {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const { getFieldsByGroup } = require("../utils/fieldConfigDefaults");
-		const fieldGroups = getFieldsByGroup(config, this.isCreationMode());
-
-		// Render fields by group
-		const groupsToRender = [...config.groups].sort((a: any, b: any) => a.order - b.order);
+		const groupsToRender = getOrderedModalGroups(config, this.isCreationMode());
 
 		for (const groupConfig of groupsToRender) {
-			const fields = fieldGroups.get(groupConfig.id);
-			if (!fields || fields.length === 0) continue;
-
-			// Skip basic group (title and details are handled separately)
 			if (groupConfig.id === "basic") continue;
 
 			// Create a section for this group if it has fields
@@ -854,7 +851,7 @@ export abstract class TaskModal extends Modal {
 			}
 
 			// Render fields in this group
-			for (const field of fields) {
+			for (const field of groupConfig.fields) {
 				this.createField(groupContainer, field);
 			}
 		}
@@ -937,88 +934,60 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createProjectsField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.organization.projects"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.organization.addToProjectButton"))
-					.setTooltip(this.t("modals.task.projectsTooltip"))
-					.onClick(() => {
-						const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
-							this.addProject(file);
-						});
-						modal.open();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Projects list container (create if it doesn't exist)
-		if (!this.projectsList) {
-			this.projectsList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.projectsList = createTaskModalListField(container, {
+			label: this.t("modals.task.organization.projects"),
+			buttonText: this.t("modals.task.organization.addToProjectButton"),
+			buttonTooltip: this.t("modals.task.projectsTooltip"),
+			onButtonClick: () => {
+				const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
+					this.addProject(file);
+				});
+				modal.open();
+			},
+			listElement: this.projectsList,
+		});
 
 		this.renderOrganizationLists();
 	}
 
 	protected createSubtasksField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.organization.subtasks"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.organization.addSubtasksButton"))
-					.setTooltip(this.t("modals.task.organization.addSubtasksTooltip"))
-					.onClick(() => {
-						void this.openSubtaskSelector();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Subtasks list container (create if it doesn't exist)
-		if (!this.subtasksList) {
-			this.subtasksList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.subtasksList = createTaskModalListField(container, {
+			label: this.t("modals.task.organization.subtasks"),
+			buttonText: this.t("modals.task.organization.addSubtasksButton"),
+			buttonTooltip: this.t("modals.task.organization.addSubtasksTooltip"),
+			onButtonClick: () => {
+				void this.openSubtaskSelector();
+			},
+			listElement: this.subtasksList,
+		});
 
 		this.renderOrganizationLists();
 	}
 
 	protected createBlockedByField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.dependencies.blockedBy"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.dependencies.addTaskButton"))
-					.setTooltip(this.t("modals.task.dependencies.selectTaskTooltip"))
-					.onClick(() => {
-						void this.openBlockedBySelector();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Blocked by list container (create if it doesn't exist)
-		if (!this.blockedByList) {
-			this.blockedByList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.blockedByList = createTaskModalListField(container, {
+			label: this.t("modals.task.dependencies.blockedBy"),
+			buttonText: this.t("modals.task.dependencies.addTaskButton"),
+			buttonTooltip: this.t("modals.task.dependencies.selectTaskTooltip"),
+			onButtonClick: () => {
+				void this.openBlockedBySelector();
+			},
+			listElement: this.blockedByList,
+		});
 
 		this.renderDependencyLists();
 	}
 
 	protected createBlockingField(container: HTMLElement): void {
-		new Setting(container)
-			.setName(this.t("modals.task.dependencies.blocking"))
-			.addButton((button) => {
-				button
-					.setButtonText(this.t("modals.task.dependencies.addTaskButton"))
-					.setTooltip(this.t("modals.task.dependencies.selectTaskTooltip"))
-					.onClick(() => {
-						void this.openBlockingSelector();
-					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-			});
-
-		// Blocking list container (create if it doesn't exist)
-		if (!this.blockingList) {
-			this.blockingList = container.createDiv({ cls: "task-projects-list" });
-		}
+		this.blockingList = createTaskModalListField(container, {
+			label: this.t("modals.task.dependencies.blocking"),
+			buttonText: this.t("modals.task.dependencies.addTaskButton"),
+			buttonTooltip: this.t("modals.task.dependencies.selectTaskTooltip"),
+			onButtonClick: () => {
+				void this.openBlockingSelector();
+			},
+			listElement: this.blockingList,
+		});
 
 		this.renderDependencyLists();
 	}
@@ -1912,17 +1881,17 @@ export abstract class TaskModal extends Modal {
 		}
 
 		this.selectedSubtaskFiles.push(file);
-		this.renderSubtasksList();
+		void this.renderSubtasksList();
 	}
 
 	protected removeSubtask(file: TAbstractFile): void {
 		this.selectedSubtaskFiles = this.selectedSubtaskFiles.filter(
 			(existing) => existing.path !== file.path
 		);
-		this.renderSubtasksList();
+		void this.renderSubtasksList();
 	}
 
-	protected renderSubtasksList(): void {
+	protected async renderSubtasksList(): Promise<void> {
 		if (!this.subtasksList) return;
 
 		this.subtasksList.empty();
@@ -1931,24 +1900,38 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 
-		this.selectedSubtaskFiles.forEach((file) => {
+		for (const file of this.selectedSubtaskFiles) {
 			if (!(file instanceof TFile)) return;
 
-			const subtaskItem = this.subtasksList.createDiv({ cls: "task-project-item" });
-			const infoEl = subtaskItem.createDiv({ cls: "task-project-info" });
-			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
+			const subtaskItem = this.subtasksList.createDiv({
+				cls: "task-project-item task-project-item--task-card",
+			});
+			const cardHost = subtaskItem.createDiv({ cls: "task-project-card-host" });
 
-			const taskLink = generateLinkWithDisplay(
-				this.app,
-				file,
-				this.getCurrentTaskPath() || "",
-				file.name
-			);
-			this.renderProjectLinksWithoutPrefix(nameEl, [taskLink]);
+			const taskInfo = await this.plugin.cacheManager.getCachedTaskInfo(file.path);
+			if (taskInfo) {
+				const taskCard = createTaskCard(taskInfo, this.plugin, undefined, {
+					layout: "default",
+					showSecondaryBadges: false,
+					enableHoverPreview: false,
+				});
+				cardHost.appendChild(taskCard);
+			} else {
+				const infoEl = cardHost.createDiv({ cls: "task-project-info" });
+				const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
-			if (file.path !== file.name) {
-				const pathEl = infoEl.createDiv({ cls: "task-project-path" });
-				pathEl.textContent = file.path;
+				const taskLink = generateLinkWithDisplay(
+					this.app,
+					file,
+					this.getCurrentTaskPath() || "",
+					file.name
+				);
+				this.renderProjectLinksWithoutPrefix(nameEl, [taskLink]);
+
+				if (file.path !== file.name) {
+					const pathEl = infoEl.createDiv({ cls: "task-project-path" });
+					pathEl.textContent = file.path;
+				}
 			}
 
 			const removeBtn = subtaskItem.createEl("button", {
@@ -1961,12 +1944,12 @@ export abstract class TaskModal extends Modal {
 			removeBtn.addEventListener("click", () => {
 				this.removeSubtask(file);
 			});
-		});
+		}
 	}
 
 	protected renderOrganizationLists(): void {
 		this.renderProjectsList();
-		this.renderSubtasksList();
+		void this.renderSubtasksList();
 	}
 
 	protected renderProjectLinksWithoutPrefix(container: HTMLElement, links: string[]): void {
@@ -2009,58 +1992,6 @@ export abstract class TaskModal extends Modal {
 				this.timeEstimateInput.focus();
 			}
 		}, 50);
-	}
-
-	/**
-	 * Creates an embeddable markdown editor with standard configuration and error handling
-	 * @param container - The parent HTML element
-	 * @param options - Editor configuration options
-	 * @returns The created editor instance or null if creation fails
-	 */
-	protected createMarkdownEditor(
-		container: HTMLElement,
-		options: {
-			value: string;
-			placeholder: string;
-			cls: string;
-			onChange: (value: string) => void;
-			onSubmit: () => void;
-			onEscape: () => void;
-			onTab: () => boolean;
-			extensions?: any[];
-		}
-	): EmbeddableMarkdownEditor | null {
-		try {
-			return new EmbeddableMarkdownEditor(this.app, container, options);
-		} catch (error) {
-			console.error("Failed to create markdown editor:", error);
-
-			// Create fallback textarea
-			const fallbackTextarea = container.createEl("textarea", {
-				cls: options.cls + "-fallback",
-				placeholder: options.placeholder,
-			});
-			fallbackTextarea.value = options.value;
-			fallbackTextarea.addEventListener("input", (e) => {
-				options.onChange((e.target as HTMLTextAreaElement).value);
-			});
-			fallbackTextarea.addEventListener("keydown", (e) => {
-				if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-					e.preventDefault();
-					options.onSubmit();
-				} else if (e.key === "Escape") {
-					e.preventDefault();
-					options.onEscape();
-				} else if (e.key === "Tab") {
-					const shouldPreventDefault = options.onTab();
-					if (shouldPreventDefault) {
-						e.preventDefault();
-					}
-				}
-			});
-
-			return null;
-		}
 	}
 
 	onClose(): void {
