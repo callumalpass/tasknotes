@@ -20,6 +20,7 @@ module.exports = {
     '^yaml$': '<rootDir>/tests/__mocks__/yaml.ts',
     '^rrule$': '<rootDir>/tests/__mocks__/rrule.ts',
     '^date-fns$': '<rootDir>/tests/__mocks__/date-fns.ts',
+    '^lexorank$': '<rootDir>/tests/__mocks__/lexorank.ts',
     // Mock utility modules
     '^../../src/utils/helpers$': '<rootDir>/tests/__mocks__/utils.ts',
     '^../../src/utils/filenameGenerator$': '<rootDir>/tests/__mocks__/utils.ts',

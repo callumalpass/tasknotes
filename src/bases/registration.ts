@@ -43,6 +43,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					},
 					{
 						type: "dropdown",
+						key: "defaultCollapsedState",
+						displayName: "Default collapsed state",
+						default: "Expanded",
+						options: ["Expanded", "Collapsed"],
+					},
+					{
+						type: "dropdown",
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",
 						default: "inherit",
