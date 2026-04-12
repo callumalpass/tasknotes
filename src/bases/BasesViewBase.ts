@@ -10,6 +10,7 @@ import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import type { TaskCardOptions } from "../ui/TaskCard";
 import { BasesConfigLike, BasesQueryResultLike } from "./types";
+import { parseLinkToPath } from "../utils/linkUtils";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -530,6 +531,53 @@ export abstract class BasesViewBase extends Component {
 			propertyLabels: this.getVisiblePropertyLabels(),
 			...options,
 		};
+	}
+
+	/**
+	 * Filter out tasks that are subtasks of other tasks in the result set.
+	 * A task is considered a subtask if its `projects` field contains a link
+	 * to another task that is also present in the current result set.
+	 * Tasks linked to non-task project notes are NOT filtered out.
+	 */
+	protected filterSubtasksFromTopLevel(tasks: TaskInfo[]): TaskInfo[] {
+		// Build a set of all task paths in the current result
+		const taskPathSet = new Set<string>();
+		for (const task of tasks) {
+			taskPathSet.add(task.path);
+		}
+
+		return tasks.filter((task) => {
+			// Keep tasks that have no projects
+			if (!task.projects || task.projects.length === 0) {
+				return true;
+			}
+
+			// Check if any of this task's projects resolve to another task in the result set
+			for (const project of task.projects) {
+				if (!project || typeof project !== "string") continue;
+
+				const linkPath = parseLinkToPath(project);
+
+				// Skip plain text that isn't a link
+				if (linkPath === project && !project.startsWith("[[")) {
+					continue;
+				}
+
+				// Resolve the link to get the actual file path
+				const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
+					linkPath,
+					task.path
+				);
+
+				if (resolvedFile && taskPathSet.has(resolvedFile.path)) {
+					// This task's project is another task in the view — it's a subtask
+					return false;
+				}
+			}
+
+			// No projects resolve to tasks in the view — keep it
+			return true;
+		});
 	}
 
 	/**

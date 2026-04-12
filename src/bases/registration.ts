@@ -47,6 +47,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: "inherit",
 						options: ["inherit", "show-all"],
 					},
+					{
+						type: "toggle",
+						key: "collapseSubtasks",
+						displayName: "Collapse subtasks into parent",
+						default: false,
+					},
 				],
 			});
 
@@ -121,6 +127,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						displayName: "Expanded relationships",
 						default: "inherit",
 						options: ["inherit", "show-all"],
+					},
+					{
+						type: "toggle",
+						key: "collapseSubtasks",
+						displayName: "Collapse subtasks into parent",
+						default: false,
 					},
 				],
 			});

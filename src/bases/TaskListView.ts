@@ -64,6 +64,7 @@ export class TaskListView extends BasesViewBase {
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
+	private collapseSubtasks = false; // Hide subtasks from top-level when their parent is also in the view
 	private configLoaded = false; // Track if we've successfully loaded config
 
 	// Drag-to-reorder state
@@ -136,6 +137,12 @@ export class TaskListView extends BasesViewBase {
 			);
 			this.expandedRelationshipFilterMode =
 				expandedRelationshipFilterModeValue === "show-all" ? "show-all" : "inherit";
+			// Read collapseSubtasks option (default: false)
+			this.collapseSubtasks = (this.config.get("collapseSubtasks") as boolean) === true;
+			// When collapsing subtasks, force show-all so expanded subtasks still display
+			if (this.collapseSubtasks && this.expandedRelationshipFilterMode !== "show-all") {
+				this.expandedRelationshipFilterMode = "show-all";
+			}
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
@@ -201,7 +208,12 @@ export class TaskListView extends BasesViewBase {
 			// Compute Bases formulas for TaskNotes items
 			await this.computeFormulas(dataItems);
 
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			let taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+
+			// Filter out subtasks from top-level when collapseSubtasks is enabled
+			if (this.collapseSubtasks) {
+				taskNotes = this.filterSubtasksFromTopLevel(taskNotes);
+			}
 
 			if (taskNotes.length === 0) {
 				this.clearAllTaskElements();
@@ -244,6 +256,34 @@ export class TaskListView extends BasesViewBase {
 			this.sortScopeCandidateTaskPaths.clear();
 			this.renderError(error);
 		}
+	}
+
+	/**
+	 * Sort groups by StatusConfig.order when grouped by the status property.
+	 * This ensures the group order respects the user-configured status ordering
+	 * (drag-to-reorder in Settings → Task Properties → Statuses) rather than
+	 * the alphabetical order that Obsidian Bases applies.
+	 */
+	private sortGroupsByStatusOrder(groups: ReturnType<typeof this.dataAdapter.getGroupedData>): ReturnType<typeof this.dataAdapter.getGroupedData> {
+		const groupByPropertyId = this.getGroupByPropertyId();
+		if (!groupByPropertyId) return groups;
+
+		const cleanedGroupBy = stripPropertyPrefix(groupByPropertyId);
+		const statusFieldKey = this.plugin.settings.fieldMapping.status;
+		if (cleanedGroupBy !== statusFieldKey && cleanedGroupBy !== 'status') return groups;
+
+		const orderedStatuses = this.plugin.statusManager.getStatusesByOrder();
+		const statusOrderMap = new Map<string, number>(
+			orderedStatuses.map((s, i) => [s.value, i])
+		);
+
+		return [...groups].sort((a, b) => {
+			const aKey = this.dataAdapter.convertGroupKeyToString(a.key);
+			const bKey = this.dataAdapter.convertGroupKeyToString(b.key);
+			const aOrder = statusOrderMap.has(aKey) ? statusOrderMap.get(aKey)! : Number.MAX_SAFE_INTEGER;
+			const bOrder = statusOrderMap.has(bKey) ? statusOrderMap.get(bKey)! : Number.MAX_SAFE_INTEGER;
+			return aOrder - bOrder;
+		});
 	}
 
 	// ── Drag-to-reorder ────────────────────────────────────────────────
@@ -1400,7 +1440,7 @@ export class TaskListView extends BasesViewBase {
 
 	private async renderGrouped(taskNotes: TaskInfo[]): Promise<void> {
 		const visibleProperties = this.getVisibleProperties();
-		const groups = this.dataAdapter.getGroupedData();
+		const groups = this.sortGroupsByStatusOrder(this.dataAdapter.getGroupedData());
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
@@ -1852,7 +1892,7 @@ export class TaskListView extends BasesViewBase {
 		const dataItems = this.dataAdapter.extractDataItems();
 		await this.computeFormulas(dataItems);
 		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
-		const groups = this.dataAdapter.getGroupedData();
+		const groups = this.sortGroupsByStatusOrder(this.dataAdapter.getGroupedData());
 
 		// Build flattened list of items using shared method
 		const items = this.buildGroupedRenderItems(groups, taskNotes);
