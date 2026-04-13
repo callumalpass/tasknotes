@@ -145,6 +145,8 @@
 
 .time-entry-editor-modal__time-container .setting-item:has(.time-entry-editor-modal__description-editor-container) .setting-item-control {
     width: 100%;
+    justify-content: flex-start;
+    text-align: left;
 }
 
 .time-entry-editor-modal__description-editor-container {
