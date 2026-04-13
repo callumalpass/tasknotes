@@ -1,8 +1,10 @@
 /* eslint-disable @microsoft/sdl/no-inner-html */
 import { App, Modal, Notice, Setting } from "obsidian";
+import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { TimeEntry, TaskInfo } from "../types";
 import type TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
+import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 
 export class TimeEntryEditorModal extends Modal {
 	private plugin: TaskNotesPlugin;
@@ -12,6 +14,8 @@ export class TimeEntryEditorModal extends Modal {
 	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 	private entriesContainerEl: HTMLElement;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
+	private totalEl: HTMLElement | null = null;
+	private descriptionEditors: EmbeddableMarkdownEditor[] = [];
 
 	constructor(
 		app: App,
@@ -30,6 +34,7 @@ export class TimeEntryEditorModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
+		this.cleanupDescriptionEditors();
 		contentEl.empty();
 		contentEl.addClass("time-entry-editor-modal");
 
@@ -39,6 +44,10 @@ export class TimeEntryEditorModal extends Modal {
 		);
 
 		// Add global keyboard shortcut handler for CMD/Ctrl+Enter
+		if (this.keyboardHandler) {
+			this.containerEl.removeEventListener("keydown", this.keyboardHandler);
+		}
+
 		this.keyboardHandler = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
@@ -65,22 +74,10 @@ export class TimeEntryEditorModal extends Modal {
 		// Footer with total time and actions
 		const footer = contentEl.createDiv({ cls: "time-entry-editor-modal__footer" });
 
-		const totalMinutes = this.calculateTotalMinutes();
-		const totalHours = Math.floor(totalMinutes / 60);
-		const remainingMinutes = totalMinutes % 60;
-		const totalText = totalHours > 0
-			? this.translate("modals.timeEntryEditor.totalTime", {
-				hours: totalHours.toString(),
-				minutes: remainingMinutes.toString()
-			})
-			: this.translate("modals.timeEntryEditor.totalMinutes", {
-				minutes: totalMinutes.toString()
-			});
-
-		footer.createDiv({
+		this.totalEl = footer.createDiv({
 			cls: "time-entry-editor-modal__total",
-			text: totalText
 		});
+		this.updateTotalDisplay();
 
 		const buttonContainer = footer.createDiv({ cls: "time-entry-editor-modal__buttons" });
 
@@ -97,6 +94,7 @@ export class TimeEntryEditorModal extends Modal {
 	}
 
 	private renderEntries() {
+		this.cleanupDescriptionEditors();
 		this.entriesContainerEl.empty();
 
 		if (this.timeEntries.length === 0) {
@@ -112,7 +110,7 @@ export class TimeEntryEditorModal extends Modal {
 			return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
 		});
 
-		sortedEntries.forEach((entry, originalIndex) => {
+		sortedEntries.forEach((entry) => {
 			// Find original index in unsorted array
 			const idx = this.timeEntries.indexOf(entry);
 			this.renderEntry(entry, idx);
@@ -154,6 +152,7 @@ export class TimeEntryEditorModal extends Modal {
 			const newDate = new Date(startInput.value);
 			if (!isNaN(newDate.getTime())) {
 				entry.startTime = newDate.toISOString();
+					this.updateTotalDisplay();
 			}
 		});
 
@@ -173,23 +172,62 @@ export class TimeEntryEditorModal extends Modal {
 				const newDate = new Date(endInput.value);
 				if (!isNaN(newDate.getTime())) {
 					entry.endTime = newDate.toISOString();
+						this.updateTotalDisplay();
 				}
 			} else {
 				entry.endTime = undefined;
+					this.updateTotalDisplay();
 			}
 		});
 
 		// Description
-		new Setting(timeContainer)
-			.setName(this.translate("modals.timeEntryEditor.description"))
-			.addTextArea((text) => {
-				text.setValue(entry.description || "")
-					.setPlaceholder(this.translate("modals.timeEntryEditor.descriptionPlaceholder"))
-					.onChange((value) => {
-						entry.description = value || undefined;
-					});
-				text.inputEl.rows = 2;
+			const descriptionSetting = new Setting(timeContainer)
+				.setName(this.translate("modals.timeEntryEditor.description"));
+
+			const editorContainer = descriptionSetting.controlEl.createDiv({
+				cls: "time-entry-editor-modal__description-editor-container",
 			});
+
+			const editor = createTaskModalMarkdownEditor(this.app, editorContainer, {
+				value: entry.description || "",
+				placeholder: this.translate("modals.timeEntryEditor.descriptionPlaceholder"),
+				cls: "time-entry-editor-modal__description-editor",
+				onChange: (value) => {
+					entry.description = value || undefined;
+				},
+				onSubmit: () => this.save(),
+				onEscape: () => {},
+				onTab: () => false,
+			});
+
+			if (editor) {
+				this.descriptionEditors.push(editor);
+			}
+	}
+
+	private cleanupDescriptionEditors(): void {
+		this.descriptionEditors.forEach((editor) => editor.destroy());
+		this.descriptionEditors = [];
+	}
+
+	private updateTotalDisplay(): void {
+		if (!this.totalEl) {
+			return;
+		}
+
+		const totalMinutes = this.calculateTotalMinutes();
+		const totalHours = Math.floor(totalMinutes / 60);
+		const remainingMinutes = totalMinutes % 60;
+		const totalText = totalHours > 0
+			? this.translate("modals.timeEntryEditor.totalTime", {
+				hours: totalHours.toString(),
+				minutes: remainingMinutes.toString()
+			})
+			: this.translate("modals.timeEntryEditor.totalMinutes", {
+				minutes: totalMinutes.toString()
+			});
+
+		this.totalEl.setText(totalText);
 	}
 
 	private calculateDuration(entry: TimeEntry): number {
@@ -223,12 +261,13 @@ export class TimeEntryEditorModal extends Modal {
 
 		this.timeEntries.push(newEntry);
 		this.renderEntries();
+		this.updateTotalDisplay();
 	}
 
 	private deleteEntry(index: number) {
 		this.timeEntries.splice(index, 1);
 		this.renderEntries();
-		this.onOpen(); // Re-render to update total
+		this.updateTotalDisplay();
 	}
 
 	private formatDateTimeForInput(date: Date): string {
@@ -269,6 +308,9 @@ export class TimeEntryEditorModal extends Modal {
 	}
 
 	onClose() {
+		this.cleanupDescriptionEditors();
+		this.totalEl = null;
+
 		// Clean up keyboard handler
 		if (this.keyboardHandler) {
 			this.containerEl.removeEventListener("keydown", this.keyboardHandler);
