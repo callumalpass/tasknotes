@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { FieldMapping, TaskInfo } from "../types";
+import type { UserMappedField } from "../types/settings";
 import {
 	normalizeDependencyEntry,
 	normalizeDependencyList,
@@ -23,7 +24,8 @@ export function mapTaskFromFrontmatter(
 	mapping: FieldMapping,
 	frontmatter: Record<string, any> | undefined | null,
 	filePath: string,
-	storeTitleInFilename?: boolean
+	storeTitleInFilename?: boolean,
+	userFields: UserMappedField[] = []
 ): Partial<TaskInfo> {
 	if (!frontmatter) return {};
 
@@ -151,6 +153,15 @@ export function mapTaskFromFrontmatter(
 		mapped.archived = frontmatter.tags.includes(mapping.archiveTag);
 	}
 
+	if (userFields.length > 0) {
+		const mappedAny = mapped as Record<string, any>;
+		for (const field of userFields) {
+			if (frontmatter[field.key] !== undefined) {
+				mappedAny[field.key] = frontmatter[field.key];
+			}
+		}
+	}
+
 	return mapped;
 }
 
@@ -158,7 +169,8 @@ export function mapTaskToFrontmatter(
 	mapping: FieldMapping,
 	taskData: Partial<TaskInfo>,
 	taskTag?: string,
-	storeTitleInFilename?: boolean
+	storeTitleInFilename?: boolean,
+	userFields: UserMappedField[] = []
 ): Record<string, any> {
 	const frontmatter: Record<string, any> = {};
 
@@ -274,6 +286,15 @@ export function mapTaskToFrontmatter(
 
 	if (tags.length > 0) {
 		frontmatter.tags = tags;
+	}
+
+	if (userFields.length > 0) {
+		const taskAny = taskData as Record<string, any>;
+		for (const field of userFields) {
+			if (Object.prototype.hasOwnProperty.call(taskAny, field.key) && taskAny[field.key] !== undefined) {
+				frontmatter[field.key] = taskAny[field.key];
+			}
+		}
 	}
 
 	void storeTitleInFilename;

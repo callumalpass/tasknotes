@@ -106,6 +106,20 @@ export class TaskCreationService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			// Thread user-defined field values from taskData through to frontmatter.
+			// completeTaskData only lists hardcoded core fields, so we copy any user
+			// field values here before mapToFrontmatter is called.
+			const userFields = plugin.fieldMapper.getUserFields();
+			if (userFields.length > 0) {
+				const taskDataAny = taskData as Record<string, any>;
+				const completeAny = completeTaskData as Record<string, any>;
+				for (const field of userFields) {
+					if (Object.prototype.hasOwnProperty.call(taskDataAny, field.key) && taskDataAny[field.key] !== undefined) {
+						completeAny[field.key] = taskDataAny[field.key];
+					}
+				}
+			}
+
 			if (
 				completeTaskData.recurrence &&
 				typeof completeTaskData.recurrence === "string" &&
