@@ -131,6 +131,32 @@ export function mapTaskFromFrontmatter(
 		mapped.googleCalendarEventId = frontmatter[mapping.googleCalendarEventId];
 	}
 
+	if (
+		mapping.googleCalendarExceptionEventId &&
+		frontmatter[mapping.googleCalendarExceptionEventId] !== undefined
+	) {
+		mapped.googleCalendarExceptionEventId =
+			frontmatter[mapping.googleCalendarExceptionEventId];
+	}
+
+	if (
+		mapping.googleCalendarExceptionOriginalScheduled &&
+		frontmatter[mapping.googleCalendarExceptionOriginalScheduled] !== undefined
+	) {
+		mapped.googleCalendarExceptionOriginalScheduled =
+			frontmatter[mapping.googleCalendarExceptionOriginalScheduled];
+	}
+
+	if (
+		mapping.googleCalendarMovedOriginalDates &&
+		frontmatter[mapping.googleCalendarMovedOriginalDates] !== undefined
+	) {
+		const movedDates = frontmatter[mapping.googleCalendarMovedOriginalDates];
+		mapped.googleCalendarMovedOriginalDates = Array.isArray(movedDates)
+			? movedDates
+			: [movedDates];
+	}
+
 	if (frontmatter[mapping.reminders] !== undefined) {
 		const reminders = frontmatter[mapping.reminders];
 		if (Array.isArray(reminders)) {
@@ -266,6 +292,25 @@ export function mapTaskToFrontmatter(
 
 	if (taskData.icsEventId !== undefined && taskData.icsEventId.length > 0) {
 		frontmatter[mapping.icsEventId] = taskData.icsEventId;
+	}
+
+	if (taskData.googleCalendarEventId !== undefined) {
+		frontmatter[mapping.googleCalendarEventId] = taskData.googleCalendarEventId;
+	}
+
+	if (taskData.googleCalendarExceptionEventId !== undefined) {
+		frontmatter[mapping.googleCalendarExceptionEventId] =
+			taskData.googleCalendarExceptionEventId;
+	}
+
+	if (taskData.googleCalendarExceptionOriginalScheduled !== undefined) {
+		frontmatter[mapping.googleCalendarExceptionOriginalScheduled] =
+			taskData.googleCalendarExceptionOriginalScheduled;
+	}
+
+	if (taskData.googleCalendarMovedOriginalDates !== undefined) {
+		frontmatter[mapping.googleCalendarMovedOriginalDates] =
+			taskData.googleCalendarMovedOriginalDates;
 	}
 
 	if (taskData.reminders !== undefined && taskData.reminders.length > 0) {

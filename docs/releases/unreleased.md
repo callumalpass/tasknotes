@@ -23,3 +23,10 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1696) Fixed Google Calendar recurring tasks creating duplicate moved occurrences instead of converging on one series instance plus one detached exception event
+  - Scheduled-anchor recurring moves now preserve the original series date, add the correct Google `EXDATE`, and create or remove the detached Google event as the moved occurrence is resolved
+  - Archive, delete, and retry flows now clean up both the recurring master link and any detached exception link so stale Google events do not linger
+  - Thanks to @martinbowling for reporting, reproducing, and patching the recurring exception sync failure

@@ -466,9 +466,16 @@ export class TaskContextMenu {
 						});
 						if (confirmed) {
 							// Delete from Google Calendar before trashing file
-							if (plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
+							if (
+								plugin.taskCalendarSyncService?.isEnabled() &&
+								(task.googleCalendarEventId || task.googleCalendarExceptionEventId)
+							) {
 								plugin.taskCalendarSyncService
-									.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
+									.deleteTaskFromCalendarByPath(
+										task.path,
+										task.googleCalendarEventId,
+										task.googleCalendarExceptionEventId
+									)
 									.catch((error) => {
 										console.warn("Failed to delete task from Google Calendar:", error);
 									});

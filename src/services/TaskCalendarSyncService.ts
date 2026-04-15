@@ -4,6 +4,7 @@ import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
 import { TaskInfo } from "../types";
 import { convertToGoogleRecurrence } from "../utils/rruleConverter";
+import { getDatePart } from "../utils/dateUtils";
 import { TokenRefreshError } from "./errors";
 
 /** Debounce delay for rapid task updates (ms) */
@@ -152,6 +153,13 @@ export class TaskCalendarSyncService {
 	}
 
 	/**
+	 * Get the detached recurring exception event ID from the task's frontmatter.
+	 */
+	getTaskExceptionEventId(task: TaskInfo): string | undefined {
+		return task.googleCalendarExceptionEventId;
+	}
+
+	/**
 	 * Determines if a task should be synced as a Google Calendar recurring event.
 	 * Only scheduled-based recurring tasks are synced as recurring events.
 	 * Completion-based recurring tasks remain as single events (since their
@@ -168,18 +176,132 @@ export class TaskCalendarSyncService {
 	}
 
 	/**
+	 * True when the task still has any Google recurring exception metadata.
+	 */
+	private hasStoredRecurringExceptionMetadata(task: TaskInfo): boolean {
+		return Boolean(
+			task.googleCalendarExceptionEventId ||
+				task.googleCalendarExceptionOriginalScheduled ||
+				(task.googleCalendarMovedOriginalDates &&
+					task.googleCalendarMovedOriginalDates.length > 0)
+		);
+	}
+
+	/**
+	 * Additional recurrence exclusions beyond completed/skipped instances.
+	 */
+	private getAdditionalRecurringExdates(task: TaskInfo): string[] {
+		const excluded = new Set<string>();
+
+		if (Array.isArray(task.googleCalendarMovedOriginalDates)) {
+			for (const date of task.googleCalendarMovedOriginalDates) {
+				const normalized = getDatePart(date);
+				if (normalized) {
+					excluded.add(normalized);
+				}
+			}
+		}
+
+		const pendingOriginal = getDatePart(task.googleCalendarExceptionOriginalScheduled || "");
+		if (pendingOriginal) {
+			excluded.add(pendingOriginal);
+		}
+
+		return Array.from(excluded).sort();
+	}
+
+	/**
 	 * Save the Google Calendar event ID to the task's frontmatter
 	 */
 	private async saveTaskEventId(taskPath: string, eventId: string): Promise<void> {
+		await this.saveTaskGoogleCalendarMetadata(taskPath, {
+			googleCalendarEventId: eventId,
+		});
+	}
+
+	/**
+	 * Save Google Calendar metadata fields to frontmatter.
+	 */
+	private async saveTaskGoogleCalendarMetadata(
+		taskPath: string,
+		updates: Partial<
+			Pick<
+				TaskInfo,
+				| "googleCalendarEventId"
+				| "googleCalendarExceptionEventId"
+				| "googleCalendarExceptionOriginalScheduled"
+				| "googleCalendarMovedOriginalDates"
+			>
+		>
+	): Promise<void> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
 		if (!(file instanceof TFile)) {
-			console.warn(`Cannot save event ID: file not found at ${taskPath}`);
+			console.warn(`Cannot save Google Calendar metadata: file not found at ${taskPath}`);
 			return;
 		}
 
-		const fieldName = this.plugin.fieldMapper.toUserField("googleCalendarEventId");
+		const eventIdField =
+			this.plugin.fieldMapper.toUserField("googleCalendarEventId") ||
+			"googleCalendarEventId";
+		const exceptionEventIdField =
+			this.plugin.fieldMapper.toUserField("googleCalendarExceptionEventId") ||
+			"googleCalendarExceptionEventId";
+		const exceptionOriginalField =
+			this.plugin.fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled") ||
+			"googleCalendarExceptionOriginalScheduled";
+		const movedDatesField =
+			this.plugin.fieldMapper.toUserField("googleCalendarMovedOriginalDates") ||
+			"googleCalendarMovedOriginalDates";
+
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-			frontmatter[fieldName] = eventId;
+			if ("googleCalendarEventId" in updates) {
+				if (updates.googleCalendarEventId) {
+					frontmatter[eventIdField] = updates.googleCalendarEventId;
+				} else {
+					delete frontmatter[eventIdField];
+				}
+			}
+
+			if ("googleCalendarExceptionEventId" in updates) {
+				if (updates.googleCalendarExceptionEventId) {
+					frontmatter[exceptionEventIdField] =
+						updates.googleCalendarExceptionEventId;
+				} else {
+					delete frontmatter[exceptionEventIdField];
+				}
+			}
+
+			if ("googleCalendarExceptionOriginalScheduled" in updates) {
+				if (updates.googleCalendarExceptionOriginalScheduled) {
+					frontmatter[exceptionOriginalField] =
+						updates.googleCalendarExceptionOriginalScheduled;
+				} else {
+					delete frontmatter[exceptionOriginalField];
+				}
+			}
+
+			if ("googleCalendarMovedOriginalDates" in updates) {
+				if (
+					updates.googleCalendarMovedOriginalDates &&
+					updates.googleCalendarMovedOriginalDates.length > 0
+				) {
+					frontmatter[movedDatesField] = updates.googleCalendarMovedOriginalDates;
+				} else {
+					delete frontmatter[movedDatesField];
+				}
+			}
+		});
+	}
+
+	/**
+	 * Remove all Google Calendar metadata from frontmatter.
+	 */
+	private async clearTaskGoogleCalendarMetadata(taskPath: string): Promise<void> {
+		await this.saveTaskGoogleCalendarMetadata(taskPath, {
+			googleCalendarEventId: undefined,
+			googleCalendarExceptionEventId: undefined,
+			googleCalendarExceptionOriginalScheduled: undefined,
+			googleCalendarMovedOriginalDates: undefined,
 		});
 	}
 
@@ -187,15 +309,8 @@ export class TaskCalendarSyncService {
 	 * Remove the Google Calendar event ID from the task's frontmatter
 	 */
 	private async removeTaskEventId(taskPath: string): Promise<void> {
-		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
-		if (!(file instanceof TFile)) {
-			console.warn(`Cannot remove event ID: file not found at ${taskPath}`);
-			return;
-		}
-
-		const fieldName = this.plugin.fieldMapper.toUserField("googleCalendarEventId");
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-			delete frontmatter[fieldName];
+		await this.saveTaskGoogleCalendarMetadata(taskPath, {
+			googleCalendarEventId: undefined,
 		});
 	}
 
@@ -630,6 +745,7 @@ export class TaskCalendarSyncService {
 			const recurrenceData = convertToGoogleRecurrence(task.recurrence, {
 				completedInstances: task.complete_instances,
 				skippedInstances: task.skipped_instances,
+				additionalExcludedDates: this.getAdditionalRecurringExdates(task),
 			});
 
 			if (recurrenceData) {
@@ -668,6 +784,180 @@ export class TaskCalendarSyncService {
 		}
 
 		return event;
+	}
+
+	/**
+	 * Whether a recurring task currently needs a detached Google exception event.
+	 */
+	private shouldCreateDetachedRecurringException(task: TaskInfo): boolean {
+		if (!this.shouldSyncAsRecurring(task)) {
+			return false;
+		}
+
+		const movedScheduled = getDatePart(task.scheduled || "");
+		const originalScheduled = getDatePart(task.googleCalendarExceptionOriginalScheduled || "");
+
+		return Boolean(movedScheduled && originalScheduled && movedScheduled !== originalScheduled);
+	}
+
+	/**
+	 * Build payload for detached recurring exception event.
+	 * This always tracks the concrete moved scheduled occurrence, not the RRULE.
+	 */
+	private buildRecurringExceptionEvent(task: TaskInfo): {
+		summary: string;
+		description?: string;
+		start: { date?: string; dateTime?: string; timeZone?: string };
+		end: { date?: string; dateTime?: string; timeZone?: string };
+		colorId?: string;
+		reminders?: {
+			useDefault: boolean;
+			overrides?: Array<{ method: string; minutes: number }>;
+		};
+	} | null {
+		if (!task.scheduled) {
+			return null;
+		}
+
+		const settings = this.plugin.settings.googleCalendarExport;
+		const startInfo = this.parseDateForEvent(task.scheduled);
+
+		let start: { date?: string; dateTime?: string; timeZone?: string };
+		if (settings.createAsAllDay && !startInfo.isAllDay) {
+			const localDate = new Date(task.scheduled);
+			start = { date: format(localDate, "yyyy-MM-dd") };
+		} else if (startInfo.isAllDay) {
+			start = { date: startInfo.date };
+		} else {
+			start = { dateTime: startInfo.dateTime, timeZone: startInfo.timeZone };
+		}
+
+		const adjustedStartInfo = {
+			...startInfo,
+			isAllDay: settings.createAsAllDay || startInfo.isAllDay,
+			date: start.date,
+			dateTime: start.dateTime,
+		};
+		const end = this.getEventEnd(adjustedStartInfo, task);
+
+		const event: {
+			summary: string;
+			description?: string;
+			start: { date?: string; dateTime?: string; timeZone?: string };
+			end: { date?: string; dateTime?: string; timeZone?: string };
+			colorId?: string;
+			reminders?: {
+				useDefault: boolean;
+				overrides?: Array<{ method: string; minutes: number }>;
+			};
+		} = {
+			summary: this.applyTitleTemplate(task),
+			start,
+			end,
+		};
+
+		if (settings.includeDescription) {
+			event.description = this.buildEventDescription(task);
+		}
+
+		if (settings.eventColorId) {
+			event.colorId = settings.eventColorId;
+		}
+
+		const taskReminders = this.convertTaskRemindersToGoogleFormat(
+			task,
+			task.scheduled,
+			"scheduled"
+		);
+
+		if (taskReminders && taskReminders.length > 0) {
+			event.reminders = {
+				useDefault: false,
+				overrides: taskReminders,
+			};
+		}
+
+		return event;
+	}
+
+	/**
+	 * Create/update/delete the detached Google event for the current moved recurring occurrence.
+	 */
+	private async syncRecurringExceptionEvent(task: TaskInfo): Promise<void> {
+		const settings = this.plugin.settings.googleCalendarExport;
+		const hasActiveException = this.shouldCreateDetachedRecurringException(task);
+		const existingExceptionEventId = this.getTaskExceptionEventId(task);
+
+		if (!hasActiveException) {
+			if (existingExceptionEventId) {
+				try {
+					await this.withGoogleRateLimit(() =>
+						this.googleCalendarService.deleteEvent(
+							settings.targetCalendarId,
+							existingExceptionEventId
+						)
+					);
+				} catch (error: any) {
+					if (error.status !== 404 && error.status !== 410) {
+						throw error;
+					}
+				}
+			}
+
+			await this.saveTaskGoogleCalendarMetadata(task.path, {
+				googleCalendarExceptionEventId: undefined,
+				googleCalendarExceptionOriginalScheduled: undefined,
+			});
+			return;
+		}
+
+		const eventData = this.buildRecurringExceptionEvent(task);
+		if (!eventData) {
+			return;
+		}
+
+		try {
+			if (existingExceptionEventId) {
+				await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.updateEvent(
+						settings.targetCalendarId,
+						existingExceptionEventId,
+						eventData
+					)
+				);
+				return;
+			}
+
+			const createdEvent = await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.createEvent(settings.targetCalendarId, {
+					...eventData,
+					isAllDay: !!eventData.start.date,
+				})
+			);
+
+			const prefix = `google-${settings.targetCalendarId}-`;
+			const eventId = createdEvent.id.startsWith(prefix)
+				? createdEvent.id.slice(prefix.length)
+				: createdEvent.id;
+
+			await this.saveTaskGoogleCalendarMetadata(task.path, {
+				googleCalendarExceptionEventId: eventId,
+				googleCalendarExceptionOriginalScheduled: getDatePart(
+					task.googleCalendarExceptionOriginalScheduled || ""
+				),
+			});
+		} catch (error: any) {
+			if (error.status === 404 && existingExceptionEventId) {
+				await this.saveTaskGoogleCalendarMetadata(task.path, {
+					googleCalendarExceptionEventId: undefined,
+				});
+				const updatedTask = await this.plugin.cacheManager.getTaskInfo(task.path);
+				if (updatedTask) {
+					return this.syncRecurringExceptionEvent(updatedTask);
+				}
+			}
+			throw error;
+		}
 	}
 
 	/**
@@ -723,11 +1013,18 @@ export class TaskCalendarSyncService {
 				// Save the event ID to the task's frontmatter
 				await this.saveTaskEventId(task.path, eventId);
 			}
+
+			// Keep the detached recurring exception event aligned with the current moved occurrence.
+			if (this.shouldSyncAsRecurring(task) || task.googleCalendarExceptionEventId) {
+				await this.syncRecurringExceptionEvent(task);
+			}
 		} catch (error: any) {
 			// Check if it's a 404 error (event was deleted externally)
 			if (error.status === 404 && existingEventId) {
 				// Clear the stale link and retry as create
-				await this.removeTaskEventId(task.path);
+				await this.saveTaskGoogleCalendarMetadata(task.path, {
+					googleCalendarEventId: undefined,
+				});
 				// Retry without the link - refetch task to get updated version
 				const updatedTask = await this.plugin.cacheManager.getTaskInfo(task.path);
 				if (updatedTask) {
@@ -820,7 +1117,7 @@ export class TaskCalendarSyncService {
 
 		// If task no longer meets sync criteria, delete the event
 		if (!this.shouldSyncTask(task)) {
-			if (existingEventId) {
+			if (existingEventId || this.hasStoredRecurringExceptionMetadata(task)) {
 				const deleted = await this.deleteTaskFromCalendar(task);
 				if (!deleted) {
 					throw new Error(`Failed to delete task from Google Calendar: ${task.path}`);
@@ -905,6 +1202,7 @@ export class TaskCalendarSyncService {
 			const recurrenceData = convertToGoogleRecurrence(task.recurrence, {
 				completedInstances: task.complete_instances,
 				skippedInstances: task.skipped_instances,
+				additionalExcludedDates: this.getAdditionalRecurringExdates(task),
 			});
 
 			if (recurrenceData) {
@@ -938,54 +1236,66 @@ export class TaskCalendarSyncService {
 
 		const settings = this.plugin.settings.googleCalendarExport;
 		const existingEventId = this.getTaskEventId(task);
-		if (!existingEventId) {
+		const exceptionEventId = this.getTaskExceptionEventId(task);
+		if (!existingEventId && !this.hasStoredRecurringExceptionMetadata(task)) {
 			return true;
 		}
 
-		let deleteFailed = false;
+		let hadDeleteFailure = false;
+		for (const eventId of [existingEventId, exceptionEventId]) {
+			if (!eventId) {
+				continue;
+			}
 
-		try {
-			await this.withGoogleRateLimit(() =>
-				this.googleCalendarService.deleteEvent(
-					settings.targetCalendarId,
-					existingEventId
-				)
-			);
-		} catch (error: any) {
-			// 404 or 410 means event is already gone - that's fine
-			if (error.status !== 404 && error.status !== 410) {
-				deleteFailed = true;
-				console.error("[TaskCalendarSync] Failed to delete event:", task.path, error);
+			try {
+				await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId)
+				);
+			} catch (error: any) {
+				// 404 or 410 means event is already gone - that's fine
+				if (error.status !== 404 && error.status !== 410) {
+					hadDeleteFailure = true;
+					console.error("[TaskCalendarSync] Failed to delete event:", task.path, error);
+				}
 			}
 		}
 
-		if (deleteFailed) {
+		if (hadDeleteFailure) {
 			return false;
 		}
 
-		// Only remove the event ID when deletion succeeded or the event is already gone
-		await this.removeTaskEventId(task.path);
+		await this.clearTaskGoogleCalendarMetadata(task.path);
 		return true;
 	}
 
 	/**
 	 * Delete a task's calendar event by path (used when task is being deleted)
 	 */
-	async deleteTaskFromCalendarByPath(taskPath: string, eventId: string): Promise<void> {
+	async deleteTaskFromCalendarByPath(
+		taskPath: string,
+		eventId?: string,
+		exceptionEventId?: string
+	): Promise<void> {
 		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return;
 		}
 
 		const settings = this.plugin.settings.googleCalendarExport;
 
-		try {
-			await this.withGoogleRateLimit(() =>
-				this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId)
-			);
-		} catch (error: any) {
-			// 404 or 410 means event is already gone - that's fine
-			if (error.status !== 404 && error.status !== 410) {
-				console.error("[TaskCalendarSync] Failed to delete event:", taskPath, error);
+		for (const id of [eventId, exceptionEventId]) {
+			if (!id) {
+				continue;
+			}
+
+			try {
+				await this.withGoogleRateLimit(() =>
+					this.googleCalendarService.deleteEvent(settings.targetCalendarId, id)
+				);
+			} catch (error: any) {
+				// 404 or 410 means event is already gone - that's fine
+				if (error.status !== 404 && error.status !== 410) {
+					console.error("[TaskCalendarSync] Failed to delete event:", taskPath, error);
+				}
 			}
 		}
 		// No need to remove from frontmatter since the task file is being deleted
@@ -1052,26 +1362,35 @@ export class TaskCalendarSyncService {
 		let unlinkedCount = 0;
 
 		for (const task of tasks) {
-			if (!task.googleCalendarEventId) {
+			if (!task.googleCalendarEventId && !this.hasStoredRecurringExceptionMetadata(task)) {
 				continue;
 			}
 
-			const eventId = task.googleCalendarEventId;
 			if (deleteEvents) {
-				try {
-					await this.withGoogleRateLimit(() =>
-						this.googleCalendarService.deleteEvent(
-							settings.targetCalendarId,
-							eventId
-						)
-					);
-				} catch (error) {
-					console.warn(`[TaskCalendarSync] Failed to delete event for ${task.path}:`, error);
+				for (const eventId of [
+					task.googleCalendarEventId,
+					task.googleCalendarExceptionEventId,
+				]) {
+					if (!eventId) {
+						continue;
+					}
+					try {
+						await this.withGoogleRateLimit(() =>
+							this.googleCalendarService.deleteEvent(
+								settings.targetCalendarId,
+								eventId
+							)
+						);
+					} catch (error) {
+						console.warn(
+							`[TaskCalendarSync] Failed to delete event for ${task.path}:`,
+							error
+						);
+					}
 				}
 			}
 
-			// Remove the event ID from task frontmatter
-			await this.removeTaskEventId(task.path);
+			await this.clearTaskGoogleCalendarMetadata(task.path);
 			unlinkedCount++;
 		}
 

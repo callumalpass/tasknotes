@@ -336,10 +336,14 @@ export class BatchContextMenu {
 						// Delete from Google Calendar before trashing file
 						if (plugin.taskCalendarSyncService?.isEnabled()) {
 							const task = await plugin.cacheManager.getTaskInfo(path);
-							if (task?.googleCalendarEventId) {
+							if (task?.googleCalendarEventId || task?.googleCalendarExceptionEventId) {
 								try {
 									await plugin.taskCalendarSyncService
-										.deleteTaskFromCalendarByPath(path, task.googleCalendarEventId);
+										.deleteTaskFromCalendarByPath(
+											path,
+											task.googleCalendarEventId,
+											task.googleCalendarExceptionEventId
+										);
 								} catch (error) {
 									console.warn("Failed to delete task from Google Calendar:", error);
 								}

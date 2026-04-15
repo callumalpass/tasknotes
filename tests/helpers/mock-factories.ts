@@ -230,9 +230,16 @@ export const SettingsFactory = {
     archiveTag: 'archived',
     timeEntries: 'timeEntries',
     completeInstances: 'complete_instances',
+    skippedInstances: 'skipped_instances',
     pomodoros: 'pomodoros',
     icsEventId: 'icsEventId',
+    icsEventTag: 'ics_event',
+    googleCalendarEventId: 'googleCalendarEventId',
+    googleCalendarExceptionEventId: 'googleCalendarExceptionEventId',
+    googleCalendarExceptionOriginalScheduled: 'googleCalendarExceptionOriginalScheduled',
+    googleCalendarMovedOriginalDates: 'googleCalendarMovedOriginalDates',
     reminders: 'reminders',
+    sortOrder: 'tasknotes_manual_order',
     ...overrides
   }),
 
