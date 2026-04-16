@@ -744,6 +744,75 @@ export function createRecurringEvent(
 	};
 }
 
+function buildRecurringInstanceExclusionSet(
+	task: TaskInfo,
+	nextScheduledDate: string
+): Set<string> {
+	const exclusions = new Set<string>();
+	const normalizeDateValue = (value: unknown): string | undefined => {
+		if (typeof value === "string") {
+			const normalized = getDatePart(value);
+			return typeof normalized === "string" && normalized ? normalized : undefined;
+		}
+		if (value instanceof Date) {
+			if (Number.isNaN(value.getTime())) return undefined;
+			return formatDateForStorage(value);
+		}
+		if (typeof value === "number") {
+			const date = new Date(value);
+			if (Number.isNaN(date.getTime())) return undefined;
+			return formatDateForStorage(date);
+		}
+		if (value && typeof value === "object") {
+			const record = value as Record<string, unknown>;
+			if (record.date instanceof Date) {
+				if (Number.isNaN(record.date.getTime())) return undefined;
+				return formatDateForStorage(record.date);
+			}
+			if (typeof record.data === "string") {
+				return normalizeDateValue(record.data);
+			}
+			if (typeof (value as { toISOString?: () => string }).toISOString === "function") {
+				try {
+					return normalizeDateValue(
+						(value as { toISOString: () => string }).toISOString()
+					);
+				} catch {
+					return undefined;
+				}
+			}
+		}
+		return undefined;
+	};
+	const addDate = (value: unknown): void => {
+		const normalized = normalizeDateValue(value);
+		if (normalized) exclusions.add(normalized);
+	};
+
+	addDate(nextScheduledDate);
+	addDate(task.googleCalendarExceptionOriginalScheduled);
+
+	if (Array.isArray(task.googleCalendarMovedOriginalDates)) {
+		for (const date of task.googleCalendarMovedOriginalDates) {
+			addDate(date);
+		}
+	}
+
+	// Calendar pipeline sometimes flattens these values into customProperties.
+	const customProperties = task.customProperties as Record<string, unknown> | undefined;
+	if (customProperties) {
+		addDate(customProperties.googleCalendarExceptionOriginalScheduled);
+		const movedDates = customProperties.googleCalendarMovedOriginalDates;
+		if (Array.isArray(movedDates)) {
+			for (const date of movedDates) {
+				addDate(date);
+			}
+		}
+	}
+
+	return exclusions;
+}
+
 /**
  * Generate recurring task instances for calendar display
  */
@@ -761,6 +830,10 @@ export function generateRecurringTaskInstances(
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
 	const nextScheduledDate = getDatePart(task.scheduled);
+	const recurringInstanceExclusions = buildRecurringInstanceExclusionSet(
+		task,
+		nextScheduledDate
+	);
 
 	// 1. Create next scheduled occurrence event
 	const scheduledTime = hasOriginalTime ? getTimePart(task.scheduled) : null;
@@ -802,8 +875,9 @@ export function generateRecurringTaskInstances(
 			continue;
 		}
 
-		// Skip if conflicts with next scheduled occurrence
-		if (instanceDate === nextScheduledDate) {
+		// Skip if this date is already represented by the concrete current occurrence
+		// or by known moved-occurrence exclusions.
+		if (recurringInstanceExclusions.has(instanceDate)) {
 			continue;
 		}
 
