@@ -282,7 +282,7 @@ export const ja: TranslationTree = {
 			},
 		},
 		kanban: {
-			title: "かんばん",
+			title: "カンバン",
 			newTask: "新しいタスク",
 			addCard: "+ カードを追加",
 			noTasks: "タスクなし",
@@ -295,12 +295,12 @@ export const ja: TranslationTree = {
 				},
 			},
 			notices: {
-				loadFailed: "かんばんボードの読み込みに失敗しました",
+				loadFailed: "カンバンボードの読み込みに失敗しました",
 				movedTask: "タスクを\"{0}\"に移動しました",
 			},
 			errors: {
 				loadingBoard: "ボードの読み込みエラー。",
-				noGroupBy: "かんばんビューには「グループ化」プロパティの設定が必要です。「並び替え」ボタンをクリックし、「グループ化」でプロパティを選択してください。",
+				noGroupBy: "カンバンビューには「グループ化」プロパティの設定が必要です。「並び替え」ボタンをクリックし、「グループ化」でプロパティを選択してください。",
 				formulaGroupingReadOnly: "数式ベースの列間でタスクを移動することはできません。数式の値は計算されるため、直接変更することはできません。",
 				formulaSwimlaneReadOnly: "数式ベースのスイムレーン間でタスクを移動することはできません。数式の値は計算されるため、直接変更することはできません。",
 			},
@@ -2119,7 +2119,7 @@ export const ja: TranslationTree = {
 		openNotesView: "ノートビューを開く",
 		openAgendaView: "アジェンダビューを開く",
 		openPomodoroView: "ポモドーロタイマーを開く",
-		openKanbanView: "かんばんボードを開く",
+		openKanbanView: "カンバンボードを開く",
 		openPomodoroStats: "ポモドーロ統計を開く",
 		openStatisticsView: "タスクとプロジェクト統計を開く",
 		createNewTask: "新しいタスクを作成",
