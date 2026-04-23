@@ -72,10 +72,7 @@ import {
 	initializeAfterLayoutReady,
 	initializeCalendarProviders,
 } from "./bootstrap/pluginBootstrap";
-import {
-	cleanupPluginRuntime,
-	initializePluginRuntime,
-} from "./bootstrap/pluginRuntime";
+import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
@@ -573,7 +570,11 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		// Migration: Migrate statusSuggestionTrigger to nlpTriggers if needed
-		if (loadedData && !loadedData.nlpTriggers && loadedData.statusSuggestionTrigger !== undefined) {
+		if (
+			loadedData &&
+			!loadedData.nlpTriggers &&
+			loadedData.statusSuggestionTrigger !== undefined
+		) {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const { DEFAULT_NLP_TRIGGERS } = require("./settings/defaults");
 			loadedData.nlpTriggers = {
@@ -593,10 +594,7 @@ export default class TaskNotesPlugin extends Plugin {
 		if (loadedData && !loadedData.modalFieldsConfig) {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const { initializeFieldConfig } = require("./utils/fieldConfigDefaults");
-			loadedData.modalFieldsConfig = initializeFieldConfig(
-				undefined,
-				loadedData.userFields
-			);
+			loadedData.modalFieldsConfig = initializeFieldConfig(undefined, loadedData.userFields);
 		}
 
 		// Migration: Force enableBases to true (issue #1187)
@@ -640,7 +638,8 @@ export default class TaskNotesPlugin extends Plugin {
 			nlpTriggers: {
 				...DEFAULT_SETTINGS.nlpTriggers,
 				...(loadedData?.nlpTriggers || {}),
-				triggers: loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
+				triggers:
+					loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
 			},
 			// Modal fields configuration (already migrated above if needed)
 			modalFieldsConfig: loadedData?.modalFieldsConfig,
@@ -657,7 +656,7 @@ export default class TaskNotesPlugin extends Plugin {
 		const hasNewCalendarSettings = Object.keys(DEFAULT_SETTINGS.calendarViewSettings).some(
 			(key) =>
 				!loadedData?.calendarViewSettings?.[
-				key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings
+					key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings
 				]
 		);
 		const hasNewCommandMappings = Object.keys(DEFAULT_SETTINGS.commandFileMapping).some(
@@ -756,16 +755,13 @@ export default class TaskNotesPlugin extends Plugin {
 
 		if (created.length > 0) {
 			new Notice(
-				`Created ${created.length} default Bases file(s):\n${created.join('\n')}`,
+				`Created ${created.length} default Bases file(s):\n${created.join("\n")}`,
 				8000
 			);
 		}
 
 		if (skipped.length > 0 && created.length === 0) {
-			new Notice(
-				`Default Bases files already exist:\n${skipped.join('\n')}`,
-				8000
-			);
+			new Notice(`Default Bases files already exist:\n${skipped.join("\n")}`, 8000);
 		}
 	}
 
@@ -837,7 +833,8 @@ export default class TaskNotesPlugin extends Plugin {
 
 				// Only create folder hierarchy if we're actually creating the file
 				const lastSlashIndex = normalizedPath.lastIndexOf("/");
-				const directory = lastSlashIndex >= 0 ? normalizedPath.substring(0, lastSlashIndex) : "";
+				const directory =
+					lastSlashIndex >= 0 ? normalizedPath.substring(0, lastSlashIndex) : "";
 
 				if (directory) {
 					// eslint-disable-next-line no-await-in-loop
@@ -1161,13 +1158,19 @@ export default class TaskNotesPlugin extends Plugin {
 			due: frontmatter.due || undefined,
 			scheduled: frontmatter.scheduled || undefined,
 			contexts: frontmatter.contexts
-				? (Array.isArray(frontmatter.contexts) ? frontmatter.contexts : [frontmatter.contexts])
+				? Array.isArray(frontmatter.contexts)
+					? frontmatter.contexts
+					: [frontmatter.contexts]
 				: undefined,
 			projects: frontmatter.projects
-				? (Array.isArray(frontmatter.projects) ? frontmatter.projects : [frontmatter.projects])
+				? Array.isArray(frontmatter.projects)
+					? frontmatter.projects
+					: [frontmatter.projects]
 				: undefined,
 			tags: frontmatter.tags
-				? (Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags])
+				? Array.isArray(frontmatter.tags)
+					? frontmatter.tags
+					: [frontmatter.tags]
 				: [],
 			timeEstimate: frontmatter.timeEstimate || undefined,
 			recurrence: frontmatter.recurrence || undefined,
@@ -1361,7 +1364,8 @@ export default class TaskNotesPlugin extends Plugin {
 	private async openTaskDatePicker(task: TaskInfo, field: "due" | "scheduled") {
 		try {
 			const { DateTimePickerModal } = await import("./modals/DateTimePickerModal");
-			const { getDatePart, getTimePart, combineDateAndTime } = await import("./utils/dateUtils");
+			const { getDatePart, getTimePart, combineDateAndTime } =
+				await import("./utils/dateUtils");
 			const currentValue = (field === "due" ? task.due : task.scheduled) || "";
 			const modal = new DateTimePickerModal(this.app, {
 				currentDate: getDatePart(currentValue) || null,
@@ -1644,7 +1648,8 @@ export default class TaskNotesPlugin extends Plugin {
 			// Open task creation modal with callback to insert link
 			// Use modal-inline-creation context for inline folder behavior (Issue #1424)
 			const modal = new TaskCreationModal(this.app, this, {
-				prePopulatedValues: Object.keys(prePopulatedValues).length > 0 ? prePopulatedValues : undefined,
+				prePopulatedValues:
+					Object.keys(prePopulatedValues).length > 0 ? prePopulatedValues : undefined,
 				onTaskCreated: (task: TaskInfo) => {
 					this.handleInlineTaskCreated(task, insertionContext);
 				},
@@ -1703,5 +1708,4 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice("Failed to insert task link");
 		}
 	}
-
 }

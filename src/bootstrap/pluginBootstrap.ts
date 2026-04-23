@@ -1,7 +1,14 @@
 import { Editor, MarkdownView, Notice, Platform, addIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import type TaskNotesPlugin from "../main";
-import { EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, POMODORO_STATS_VIEW_TYPE, POMODORO_VIEW_TYPE, STATS_VIEW_TYPE, TaskInfo } from "../types";
+import {
+	EVENT_DATA_CHANGED,
+	EVENT_TASK_UPDATED,
+	POMODORO_STATS_VIEW_TYPE,
+	POMODORO_VIEW_TYPE,
+	STATS_VIEW_TYPE,
+	TaskInfo,
+} from "../types";
 import { RequestDeduplicator, PredictivePrefetcher } from "../utils/RequestDeduplicator";
 import { DOMReconciler, UIStateManager } from "../utils/DOMReconciler";
 import { FieldMapper } from "../services/FieldMapper";
@@ -119,25 +126,41 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 }
 
 export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
-	plugin.addRibbonIcon("calendar-days", plugin.i18n.translate("commands.openCalendarView"), async () => {
-		await plugin.activateCalendarView();
-	});
+	plugin.addRibbonIcon(
+		"calendar-days",
+		plugin.i18n.translate("commands.openCalendarView"),
+		async () => {
+			await plugin.activateCalendarView();
+		}
+	);
 
-	plugin.addRibbonIcon("calendar", plugin.i18n.translate("commands.openAdvancedCalendarView"), async () => {
-		await plugin.openBasesFileForCommand("open-advanced-calendar-view");
-	});
+	plugin.addRibbonIcon(
+		"calendar",
+		plugin.i18n.translate("commands.openAdvancedCalendarView"),
+		async () => {
+			await plugin.openBasesFileForCommand("open-advanced-calendar-view");
+		}
+	);
 
-	plugin.addRibbonIcon("check-square", plugin.i18n.translate("commands.openTasksView"), async () => {
-		await plugin.openBasesFileForCommand("open-tasks-view");
-	});
+	plugin.addRibbonIcon(
+		"check-square",
+		plugin.i18n.translate("commands.openTasksView"),
+		async () => {
+			await plugin.openBasesFileForCommand("open-tasks-view");
+		}
+	);
 
 	plugin.addRibbonIcon("list", plugin.i18n.translate("commands.openAgendaView"), async () => {
 		await plugin.openBasesFileForCommand("open-agenda-view");
 	});
 
-	plugin.addRibbonIcon("columns-3", plugin.i18n.translate("commands.openKanbanView"), async () => {
-		await plugin.openBasesFileForCommand("open-kanban-view");
-	});
+	plugin.addRibbonIcon(
+		"columns-3",
+		plugin.i18n.translate("commands.openKanbanView"),
+		async () => {
+			await plugin.openBasesFileForCommand("open-kanban-view");
+		}
+	);
 
 	plugin.addRibbonIcon("timer", plugin.i18n.translate("commands.openPomodoroView"), async () => {
 		await plugin.activatePomodoroView();
@@ -151,9 +174,13 @@ export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
 		}
 	);
 
-	plugin.addRibbonIcon("tasknotes-simple", plugin.i18n.translate("commands.createNewTask"), () => {
-		plugin.openTaskCreationModal();
-	});
+	plugin.addRibbonIcon(
+		"tasknotes-simple",
+		plugin.i18n.translate("commands.createNewTask"),
+		() => {
+			plugin.openTaskCreationModal();
+		}
+	);
 }
 
 export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
@@ -268,8 +295,9 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 			});
 			await plugin.googleCalendarService.initialize();
 
-			plugin.taskCalendarSyncService = new (await import("../services/TaskCalendarSyncService"))
-				.TaskCalendarSyncService(plugin, plugin.googleCalendarService);
+			plugin.taskCalendarSyncService = new (
+				await import("../services/TaskCalendarSyncService")
+			).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
 
 			plugin.registerEvent(
 				plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
@@ -278,7 +306,9 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					}
 
 					const eventIdKey = plugin.fieldMapper.toUserField("googleCalendarEventId");
-					const prevCache = data.prevCache as { frontmatter?: Record<string, unknown> } | undefined;
+					const prevCache = data.prevCache as
+						| { frontmatter?: Record<string, unknown> }
+						| undefined;
 					const eventId = prevCache?.frontmatter?.[eventIdKey];
 
 					if (typeof eventId === "string" && eventId.length > 0) {
@@ -301,12 +331,12 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 			await initializeHTTPAPI(plugin);
 
-			const { TaskLinkDetectionService } = await import("../services/TaskLinkDetectionService");
+			const { TaskLinkDetectionService } =
+				await import("../services/TaskLinkDetectionService");
 			plugin.taskLinkDetectionService = new TaskLinkDetectionService(plugin);
 
-			const { InstantTaskConvertService } = await import(
-				"../services/InstantTaskConvertService"
-			);
+			const { InstantTaskConvertService } =
+				await import("../services/InstantTaskConvertService");
 			plugin.instantTaskConvertService = new InstantTaskConvertService(
 				plugin,
 				plugin.statusManager,
@@ -324,7 +354,10 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 							const editor = (leaf.view as MarkdownView).editor;
 							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
 								const taskPath = data?.path || data?.updatedTask?.path;
-								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm, taskPath);
+								dispatchTaskUpdate(
+									(editor as Editor & { cm: EditorView }).cm,
+									taskPath
+								);
 							}
 						}
 					});
