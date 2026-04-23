@@ -71,6 +71,7 @@ import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
 import {
 	initializeAfterLayoutReady,
 	initializeCalendarProviders,
+	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
 
@@ -253,6 +254,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		initializeCalendarProviders(this);
+		registerBasesIntegration(this);
 
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {

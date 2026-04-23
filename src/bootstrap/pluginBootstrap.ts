@@ -53,6 +53,7 @@ import { AutoExportService } from "../services/AutoExportService";
 import { TaskSelectionService } from "../services/TaskSelectionService";
 import { BasesFilterConverter } from "../services/BasesFilterConverter";
 import { MdbaseSpecService } from "../services/MdbaseSpecService";
+import { registerBasesTaskList } from "../bases/registration";
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
 
@@ -192,14 +193,14 @@ export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
 	plugin.calendarProviderRegistry.register(plugin.microsoftCalendarService);
 }
 
-export async function registerBasesIntegration(plugin: TaskNotesPlugin): Promise<void> {
+export function registerBasesIntegration(plugin: TaskNotesPlugin): void {
 	if (!plugin.settings?.enableBases || plugin.basesRegistered) {
 		return;
 	}
 
 	try {
-		const { registerBasesTaskList } = await import("../bases/registration");
-		await registerBasesTaskList(plugin);
+		// Call without await to prevent blocking if it enters its retry loop
+		registerBasesTaskList(plugin).catch((e) => console.debug(e));
 		plugin.basesRegistered = true;
 	} catch (error) {
 		console.debug("[TaskNotes][Bases] Registration failed:", error);
