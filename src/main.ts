@@ -71,7 +71,6 @@ import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
 import {
 	initializeAfterLayoutReady,
 	initializeCalendarProviders,
-	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import {
 	cleanupPluginRuntime,
@@ -240,7 +239,8 @@ export default class TaskNotesPlugin extends Plugin {
 			getSystemLocale: () => this.getSystemUILocale(),
 		});
 
-		this.i18n.on("locale-changed", ({ current }) => {
+		this.i18n.on("locale-changed", (event: any) => {
+			const current: string = event.current;
 			if (!this.initializationComplete) {
 				return;
 			}
@@ -256,7 +256,6 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		initializeCalendarProviders(this);
-		await registerBasesIntegration(this);
 
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
@@ -658,7 +657,7 @@ export default class TaskNotesPlugin extends Plugin {
 		const hasNewCalendarSettings = Object.keys(DEFAULT_SETTINGS.calendarViewSettings).some(
 			(key) =>
 				!loadedData?.calendarViewSettings?.[
-					key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings
+				key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings
 				]
 		);
 		const hasNewCommandMappings = Object.keys(DEFAULT_SETTINGS.commandFileMapping).some(

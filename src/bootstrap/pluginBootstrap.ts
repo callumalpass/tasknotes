@@ -43,6 +43,9 @@ import { MicrosoftCalendarService } from "../services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "../services/CalendarProvider";
 import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
+import { TaskSelectionService } from "../services/TaskSelectionService";
+import { BasesFilterConverter } from "../services/BasesFilterConverter";
+import { MdbaseSpecService } from "../services/MdbaseSpecService";
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
 
@@ -100,17 +103,14 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 	plugin.expandedProjectsService = new ExpandedProjectsService(plugin);
 	plugin.autoArchiveService = new AutoArchiveService(plugin);
 
-	const { TaskSelectionService } = await import("../services/TaskSelectionService");
 	plugin.taskSelectionService = new TaskSelectionService(plugin);
 	plugin.dragDropManager = new DragDropManager(plugin);
 	plugin.statusBarService = new StatusBarService(plugin);
 	plugin.notificationService = new NotificationService(plugin);
 	plugin.viewPerformanceService = new ViewPerformanceService(plugin);
 
-	const { BasesFilterConverter } = await import("../services/BasesFilterConverter");
 	plugin.basesFilterConverter = new BasesFilterConverter(plugin);
 
-	const { MdbaseSpecService } = await import("../services/MdbaseSpecService");
 	plugin.mdbaseSpecService = new MdbaseSpecService(plugin);
 
 	plugin.icsSubscriptionService = new ICSSubscriptionService(plugin);
