@@ -25608,7 +25608,7 @@
     },
     "views.kanban.title": {
       "source": "3895546730917a6946acbef9a935ec44eb167ab7",
-      "translation": "aac432e010c04301f12f69c499d0dab775dccaea"
+      "translation": "9a344e31aa8767960095b96b6faeba8818958d6c"
     },
     "views.kanban.newTask": {
       "source": "17b2b838c5ce22c961a36736534a5029d6ba0087",
@@ -25640,7 +25640,7 @@
     },
     "views.kanban.notices.loadFailed": {
       "source": "9d744b2d44937cda77d20fc3bf2c1fc0242cc3c4",
-      "translation": "d7250542b58b0390f8751e5378f719ff54201f22"
+      "translation": "d1ae86b7decd14a0845bb8d3e8f05792a5ed5dab"
     },
     "views.kanban.notices.movedTask": {
       "source": "5d1d44647568b19ebc6ddfd9612b4fcbcfabaff8",
@@ -25652,7 +25652,7 @@
     },
     "views.kanban.errors.noGroupBy": {
       "source": "992584b6f54d292885de8a89782fa15e32d7aa60",
-      "translation": "e61f10689866172075f375b51dddfe575bb9b4d9"
+      "translation": "ba84124121f44140ed4041e11d5de4e0d710488c"
     },
     "views.kanban.errors.formulaGroupingReadOnly": {
       "source": "9263f6058daf42ed30369e1e1f2f3a53391fa555",
@@ -29828,7 +29828,7 @@
     },
     "commands.openKanbanView": {
       "source": "55371d31ef02417119568e5d18662fa3567de9a5",
-      "translation": "dc5ecf34d9c6dace6a2490a74677baeb62d6ad18"
+      "translation": "95147f95cc43f63a46da2b73c855ea3d50a5d1da"
     },
     "commands.openPomodoroStats": {
       "source": "4beae2ec6f89c2fb78f208b3a74917e0d8f4d35d",
