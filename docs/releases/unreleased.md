@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1633) Fixed Bases task cards using fallback labels instead of Bases display names for mapped task fields and file properties.
+  - Thanks to @Sarryaz for reporting the Bases task card i18n and field-mapping issue.
 - (#884) Fixed untranslated strings and English placeholder examples across non-English interface translations.
   - Thanks to @berzernberg for reporting Russian translation gaps.
 - (#1765, #1769) Fixed auto-archived tasks leaving stale Google Calendar events when cleanup runs before calendar sync is ready or after the task moves into the archive folder.

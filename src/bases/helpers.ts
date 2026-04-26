@@ -6,6 +6,7 @@ import { calculateTotalTimeSpent } from "../utils/helpers";
 import { format } from "date-fns";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
+import type { TaskCardOptions } from "../ui/TaskCard";
 
 export interface BasesDataItem {
 	key?: string;
@@ -237,6 +238,27 @@ interface BasesSelectedProperty {
 	visible: boolean;
 }
 
+function buildTaskCardPropertyLabels(
+	basesVisibleProperties: BasesSelectedProperty[],
+	plugin: TaskNotesPlugin
+): NonNullable<TaskCardOptions["propertyLabels"]> {
+	const labels: NonNullable<TaskCardOptions["propertyLabels"]> = {};
+
+	for (const property of basesVisibleProperties) {
+		const displayName = property.displayName?.trim();
+		if (!displayName) {
+			continue;
+		}
+
+		const taskCardPropertyId = mapBasesPropertyToTaskCardProperty(property.id, plugin);
+		if (taskCardPropertyId) {
+			labels[taskCardPropertyId] = displayName;
+		}
+	}
+
+	return labels;
+}
+
 export function getBasesVisibleProperties(basesContainer: any): BasesSelectedProperty[] {
 	try {
 		const controller = (basesContainer?.controller ?? basesContainer) as any;
@@ -327,7 +349,8 @@ export async function renderTaskNotesInBasesView(
 	plugin: TaskNotesPlugin,
 	basesContainer?: any,
 	taskElementsMap?: Map<string, HTMLElement>,
-	precomputedVisibleProperties?: string[]
+	precomputedVisibleProperties?: string[],
+	precomputedCardOptions?: Partial<TaskCardOptions>
 ): Promise<void> {
 	console.log("[TaskNotes][Bases] renderTaskNotesInBasesView ENTRY - tasks:", taskNotes.length, "basesContainer:", !!basesContainer, "precomputed props:", precomputedVisibleProperties?.length);
 	const { createTaskCard } = await import("../ui/TaskCard");
@@ -341,7 +364,7 @@ export async function renderTaskNotesInBasesView(
 
 	// Get visible properties from Bases
 	let visibleProperties: string[] | undefined = precomputedVisibleProperties;
-	let cardOptions = {};
+	let cardOptions: Partial<TaskCardOptions> = precomputedCardOptions || {};
 
 	// Only extract properties if not precomputed
 	if (!visibleProperties && basesContainer) {
@@ -350,6 +373,11 @@ export async function renderTaskNotesInBasesView(
 		console.log("[TaskNotes][Bases] getBasesVisibleProperties returned:", basesVisibleProperties.length, "properties");
 
 		if (basesVisibleProperties.length > 0) {
+			cardOptions = {
+				...cardOptions,
+				propertyLabels: buildTaskCardPropertyLabels(basesVisibleProperties, plugin),
+			};
+
 			// Extract just the property IDs for TaskCard
 			visibleProperties = basesVisibleProperties.map((p) => p.id);
 			console.log("[TaskNotes][Bases] Raw property IDs from Bases:", visibleProperties);
@@ -444,8 +472,16 @@ export async function renderGroupedTasksInBasesView(
 	// Get visible properties from Bases FIRST (needed for both grouped and ungrouped rendering)
 	const basesVisibleProperties = getBasesVisibleProperties(viewContext);
 	let visibleProperties: string[] | undefined;
+	let cardOptions: Partial<TaskCardOptions> = {
+		targetDate: new Date(),
+	};
 
 	if (basesVisibleProperties.length > 0) {
+		cardOptions = {
+			...cardOptions,
+			propertyLabels: buildTaskCardPropertyLabels(basesVisibleProperties, plugin),
+		};
+
 		visibleProperties = basesVisibleProperties.map((p) => p.id);
 		console.log("[TaskNotes][Bases][Grouped] Raw property IDs from Bases:", visibleProperties);
 
@@ -494,7 +530,7 @@ export async function renderGroupedTasksInBasesView(
 	const groupedData = viewContext?.data?.groupedData;
 	if (!Array.isArray(groupedData) || groupedData.length === 0) {
 		// No groups, fall back to flat rendering (pass precomputed properties)
-		await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap, visibleProperties);
+		await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap, visibleProperties, cardOptions);
 		return;
 	}
 
@@ -506,7 +542,7 @@ export async function renderGroupedTasksInBasesView(
 		// If the key is null, undefined, empty string, or "Unknown", treat as ungrouped
 		if (groupKey === null || groupKey === undefined || groupKey === "" || groupKeyStr === "null" || groupKeyStr === "undefined" || groupKeyStr === "Unknown") {
 			// Render as flat list without group headers (pass precomputed properties)
-			await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap, visibleProperties);
+			await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap, visibleProperties, cardOptions);
 			return;
 		}
 	}
@@ -518,10 +554,6 @@ export async function renderGroupedTasksInBasesView(
 	const listWrapper = doc.createElement("div");
 	listWrapper.className = "tn-bases-tasknotes-list";
 	container.appendChild(listWrapper);
-
-	const cardOptions = {
-		targetDate: new Date(),
-	};
 
 	// Create a map from file path to TaskInfo for quick lookup
 	const tasksByPath = new Map<string, TaskInfo>();

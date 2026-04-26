@@ -14,10 +14,35 @@
 import { describe, expect, it } from "@jest/globals";
 import * as fs from "fs";
 import * as path from "path";
+import { getTaskCardPropertyLabel } from "../../../src/ui/taskCardHelpers";
 import { resolveTaskCardPropertyLabel } from "../../../src/ui/taskCardPresentation";
 
 function readRepoFile(relativePath: string): string {
 	return fs.readFileSync(path.resolve(__dirname, "../../../", relativePath), "utf8");
+}
+
+function createLabelPlugin(mapping: Record<string, string>): any {
+	return {
+		fieldMapper: {
+			lookupMappingKey: (propertyId: string) => mapping[propertyId] ?? null,
+		},
+		i18n: {
+			translate: (key: string) => {
+				const translations: Record<string, string> = {
+					"ui.taskCard.labels.due": "Due fallback",
+					"ui.taskCard.labels.scheduled": "Scheduled fallback",
+					"ui.taskCard.labels.recurrence": "Recurring fallback",
+					"ui.taskCard.labels.completed": "Completed fallback",
+					"ui.taskCard.labels.created": "Created fallback",
+					"ui.taskCard.labels.modified": "Modified fallback",
+					"ui.taskCard.labels.blocked": "Blocked fallback",
+					"ui.taskCard.labels.blocking": "Blocking fallback",
+				};
+
+				return translations[key] ?? key;
+			},
+		},
+	};
 }
 
 describe("Issue #1633: TaskCard label localization + property display names", () => {
@@ -39,5 +64,22 @@ describe("Issue #1633: TaskCard label localization + property display names", ()
 		expect(
 			resolveTaskCardPropertyLabel("file.tags", { propertyLabels: { "file.tags": "Tags" } })
 		).toBe("Tags");
+	});
+
+	it("uses Bases display names for user-mapped TaskCard renderer labels", () => {
+		const plugin = createLabelPlugin({
+			faellig: "due",
+			geplant: "scheduled",
+			wiederholung: "recurrence",
+		});
+		const propertyLabels = {
+			faellig: "Fällig",
+			geplant: "Geplant",
+			wiederholung: "Wiederholung",
+		};
+
+		expect(getTaskCardPropertyLabel("due", plugin, propertyLabels)).toBe("Fällig");
+		expect(getTaskCardPropertyLabel("scheduled", plugin, propertyLabels)).toBe("Geplant");
+		expect(getTaskCardPropertyLabel("recurrence", plugin, propertyLabels)).toBe("Wiederholung");
 	});
 });

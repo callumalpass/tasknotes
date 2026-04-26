@@ -41,6 +41,12 @@ export function getTaskCardPropertyLabel(
 	plugin: TaskNotesPlugin,
 	propertyLabels?: Record<string, string>
 ): string {
+	const directOverride = propertyLabels?.[propertyId];
+	if (directOverride && directOverride.trim() !== "") {
+		return directOverride;
+	}
+
+	const mappedOverride = getMappedPropertyLabel(propertyId, plugin, propertyLabels);
 	const fallbackLabels: Record<string, string> = {
 		due: tTaskCard(plugin, "labels.due"),
 		scheduled: tTaskCard(plugin, "labels.scheduled"),
@@ -54,9 +60,31 @@ export function getTaskCardPropertyLabel(
 
 	return resolveTaskCardPropertyLabel(
 		propertyId,
-		{ propertyLabels },
+		{ propertyLabels: mappedOverride ? { [propertyId]: mappedOverride } : propertyLabels },
 		fallbackLabels[propertyId]
 	);
+}
+
+function getMappedPropertyLabel(
+	propertyId: string,
+	plugin: TaskNotesPlugin,
+	propertyLabels?: Record<string, string>
+): string | undefined {
+	if (!propertyLabels) {
+		return undefined;
+	}
+
+	for (const [candidatePropertyId, label] of Object.entries(propertyLabels)) {
+		if (candidatePropertyId === propertyId || label.trim() === "") {
+			continue;
+		}
+
+		if (plugin.fieldMapper?.lookupMappingKey?.(candidatePropertyId) === propertyId) {
+			return label;
+		}
+	}
+
+	return undefined;
 }
 
 export function getRecurrenceTooltip(
