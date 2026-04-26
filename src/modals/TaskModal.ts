@@ -55,6 +55,12 @@ interface ProjectItem {
 export abstract class TaskModal extends Modal {
 	plugin: TaskNotesPlugin;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
+	private guardedTitleInputs = new WeakSet<HTMLInputElement>();
+	private pendingTitleFocusScrollPositions: Array<{
+		element: HTMLElement;
+		scrollTop: number;
+		scrollLeft: number;
+	}> | null = null;
 
 	// Dependency item definition
 	protected createDependencyItemFromFile(
@@ -615,6 +621,7 @@ export abstract class TaskModal extends Modal {
 		this.titleInput.addEventListener("input", (e) => {
 			this.title = (e.target as HTMLInputElement).value;
 		});
+		this.attachTitleFocusScrollGuard(this.titleInput);
 	}
 
 	protected createActionBar(container: HTMLElement): void {
@@ -772,6 +779,7 @@ export abstract class TaskModal extends Modal {
 			titleInputDetailed.addEventListener("input", (e) => {
 				this.title = (e.target as HTMLInputElement).value;
 			});
+			this.attachTitleFocusScrollGuard(titleInputDetailed);
 
 			// Store reference for modals that use this as their title input
 			if ((isEditModal || isCreationWithNLP) && !this.titleInput) {
@@ -1651,9 +1659,101 @@ export abstract class TaskModal extends Modal {
 
 	protected focusTitleInput(): void {
 		setTimeout(() => {
-			this.titleInput.focus();
+			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(this.titleInput);
+			this.titleInput.focus({ preventScroll: true });
 			this.titleInput.select();
+			this.restoreTitleFocusScrollPositions(this.pendingTitleFocusScrollPositions);
 		}, 100);
+	}
+
+	private shouldPreserveTitleFocusScroll(): boolean {
+		const doc = this.containerEl.ownerDocument;
+		const win = doc.defaultView || window;
+		return doc.body.classList.contains("is-mobile") || win.matchMedia?.("(pointer: coarse)")?.matches === true;
+	}
+
+	private attachTitleFocusScrollGuard(input: HTMLInputElement): void {
+		if (this.guardedTitleInputs.has(input)) return;
+		this.guardedTitleInputs.add(input);
+
+		const capture = () => {
+			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(input);
+		};
+
+		input.addEventListener("pointerdown", capture, { capture: true });
+		input.addEventListener("touchstart", capture, { capture: true });
+		input.addEventListener("focus", () => {
+			if (!this.pendingTitleFocusScrollPositions) return;
+			this.scheduleTitleFocusScrollRestore(this.pendingTitleFocusScrollPositions);
+		});
+	}
+
+	private captureTitleFocusScrollPositions(input: HTMLInputElement): Array<{
+		element: HTMLElement;
+		scrollTop: number;
+		scrollLeft: number;
+	}> | null {
+		if (!this.shouldPreserveTitleFocusScroll()) {
+			return null;
+		}
+
+		const elements = new Set<HTMLElement>();
+		const addElement = (element: Element | null | undefined) => {
+			const elementWindow = element?.ownerDocument.defaultView;
+			const HTMLElementConstructor = elementWindow?.HTMLElement ?? HTMLElement;
+			if (element instanceof HTMLElementConstructor) {
+				elements.add(element);
+			}
+		};
+
+		addElement(this.containerEl);
+		addElement(this.modalEl);
+		addElement(this.contentEl);
+		this.modalEl
+			.querySelectorAll<HTMLElement>(
+				".modal-content, .minimalist-modal-container, .modal-split-content, .modal-split-left, .modal-split-right, .details-container"
+			)
+			.forEach(addElement);
+
+		let parent = input.parentElement;
+		while (parent && parent !== this.containerEl.parentElement) {
+			addElement(parent);
+			parent = parent.parentElement;
+		}
+
+		return Array.from(elements).map((element) => ({
+			element,
+			scrollTop: element.scrollTop,
+			scrollLeft: element.scrollLeft,
+		}));
+	}
+
+	private restoreTitleFocusScrollPositions(
+		positions: Array<{ element: HTMLElement; scrollTop: number; scrollLeft: number }> | null
+	): void {
+		if (!positions) return;
+		for (const { element, scrollTop, scrollLeft } of positions) {
+			element.scrollTop = scrollTop;
+			element.scrollLeft = scrollLeft;
+		}
+	}
+
+	private scheduleTitleFocusScrollRestore(
+		positions: Array<{ element: HTMLElement; scrollTop: number; scrollLeft: number }>
+	): void {
+		this.restoreTitleFocusScrollPositions(positions);
+
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		const requestAnimationFrame =
+			win.requestAnimationFrame ?? ((callback: FrameRequestCallback) => win.setTimeout(callback, 16));
+		requestAnimationFrame(() => this.restoreTitleFocusScrollPositions(positions));
+		win.setTimeout(() => this.restoreTitleFocusScrollPositions(positions), 50);
+		win.setTimeout(() => {
+			this.restoreTitleFocusScrollPositions(positions);
+			if (this.pendingTitleFocusScrollPositions === positions) {
+				this.pendingTitleFocusScrollPositions = null;
+			}
+		}, 250);
 	}
 
 	protected addProject(file: TAbstractFile): void {

@@ -67,6 +67,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 				});
 
 				const dateChangeListener = plugin.emitter.on(EVENT_DATE_CHANGED, () => {
+					lastKnownWidgets.clear();
 					this.refreshDecorations();
 				});
 

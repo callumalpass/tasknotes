@@ -36,6 +36,49 @@ import { TaskListView } from '../../../src/bases/TaskListView';
 import { formatDateForStorage, createUTCDateFromLocalCalendarDate } from '../../../src/utils/dateUtils';
 import { getEffectiveTaskStatus } from '../../../src/utils/helpers';
 import { TaskInfo } from '../../../src/types';
+import { TaskLinkWidget } from '../../../src/editor/TaskLinkWidget';
+
+describe('Issue #1045: Inline linked recurring task refresh after midnight', () => {
+    const plugin = {} as any;
+
+    const createRecurringTask = (): TaskInfo => ({
+        title: 'Daily linked task',
+        status: 'open',
+        path: 'tasks/daily-linked.md',
+        scheduled: '2025-01-01',
+        recurrence: 'RRULE:FREQ=DAILY',
+        complete_instances: ['2025-01-06'],
+        skipped_instances: [],
+    });
+
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    it('does not consider two inline widgets equal when the local calendar day changes', () => {
+        jest.setSystemTime(new Date('2025-01-06T12:00:00'));
+        const mondayWidget = new TaskLinkWidget(createRecurringTask(), plugin, '[[Daily linked task]]');
+
+        jest.setSystemTime(new Date('2025-01-07T08:00:00'));
+        const tuesdayWidget = new TaskLinkWidget(createRecurringTask(), plugin, '[[Daily linked task]]');
+
+        expect(mondayWidget.eq(tuesdayWidget)).toBe(false);
+    });
+
+    it('still considers unchanged inline widgets equal within the same local calendar day', () => {
+        jest.setSystemTime(new Date('2025-01-07T08:00:00'));
+        const firstWidget = new TaskLinkWidget(createRecurringTask(), plugin, '[[Daily linked task]]');
+
+        jest.setSystemTime(new Date('2025-01-07T18:00:00'));
+        const secondWidget = new TaskLinkWidget(createRecurringTask(), plugin, '[[Daily linked task]]');
+
+        expect(firstWidget.eq(secondWidget)).toBe(true);
+    });
+});
 
 describe('Issue #1045: Daily tasks linked in notes only update status after restarting Obsidian', () => {
     describe('Core bug demonstration', () => {
