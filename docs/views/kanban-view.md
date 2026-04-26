@@ -27,6 +27,7 @@ Access these options through the Bases view settings panel:
 - **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
+- **Pinned Columns**: Comma-separated values that always render as columns, even when empty. Exempt from "Hide Empty Columns" so they remain available as drop targets
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
 ## Interface Layout
@@ -120,6 +121,7 @@ views:
       swimLane: task.priority
       columnWidth: 300
       hideEmptyColumns: true
+      pinnedColumns: to-do, in-progress, done
 ---
 ```
 
@@ -127,7 +129,7 @@ This configuration creates a Kanban board with:
 - Columns based on task status
 - Swimlanes based on task priority
 - 300px column width
-- Empty columns hidden
+- Empty columns hidden, except for the pinned `to-do`, `in-progress`, and `done` columns which always render
 
 ## Filtering and Sorting
 

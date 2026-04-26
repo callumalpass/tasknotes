@@ -120,6 +120,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: "{}",
 					},
 					{
+						type: "text",
+						key: "pinnedColumns",
+						displayName: "Pinned Columns",
+						placeholder: "Comma-separated column values",
+						default: "",
+					},
+					{
 						type: "dropdown",
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",
