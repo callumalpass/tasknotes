@@ -19,6 +19,20 @@ export class AutoArchiveService {
 		return !!task.googleCalendarEventId;
 	}
 
+	private getCalendarCleanupState(): "ready" | "retry" | "skip" {
+		const googleCalendarExport = this.plugin.settings.googleCalendarExport;
+
+		if (!googleCalendarExport?.enabled || !googleCalendarExport?.syncOnTaskDelete) {
+			return "skip";
+		}
+
+		if (!this.plugin.taskCalendarSyncService) {
+			return "retry";
+		}
+
+		return this.plugin.taskCalendarSyncService.isEnabled() ? "ready" : "retry";
+	}
+
 	/**
 	 * Start the auto-archive service and begin periodic processing
 	 */
@@ -150,10 +164,19 @@ export class AutoArchiveService {
 		}
 
 		if (currentTask.archived) {
-			if (
-				this.plugin.taskCalendarSyncService?.isEnabled() &&
-				this.hasGoogleCalendarLink(currentTask)
-			) {
+			if (this.hasGoogleCalendarLink(currentTask)) {
+				const calendarCleanupState = this.getCalendarCleanupState();
+				if (calendarCleanupState === "skip") {
+					return true;
+				}
+
+				if (calendarCleanupState === "retry") {
+					console.warn(
+						`Auto-archive Google cleanup deferred until calendar sync is ready for ${item.taskPath}`
+					);
+					return false;
+				}
+
 				const deleted =
 					await this.plugin.taskCalendarSyncService.deleteTaskFromCalendar(currentTask);
 				if (!deleted) {
@@ -171,11 +194,18 @@ export class AutoArchiveService {
 		// Archive the task
 		try {
 			const archivedTask = await this.plugin.taskService.toggleArchive(currentTask);
-			if (
-				archivedTask.archived &&
-				this.plugin.taskCalendarSyncService?.isEnabled() &&
-				this.hasGoogleCalendarLink(archivedTask)
-			) {
+			if (archivedTask.archived && this.hasGoogleCalendarLink(archivedTask)) {
+				item.taskPath = archivedTask.path;
+				const calendarCleanupState = this.getCalendarCleanupState();
+				if (calendarCleanupState === "skip") {
+					return true;
+				}
+
+				if (calendarCleanupState === "retry") {
+					console.warn(
+						`Auto-archive Google cleanup deferred until calendar sync is ready for ${item.taskPath}`
+					);
+				}
 				return false;
 			}
 			return true;

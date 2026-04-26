@@ -44,6 +44,30 @@ type TaskListInsertionSlot = {
 	position: "before" | "after";
 };
 
+function normalizeExpandedRelationshipFilterMode(
+	value: unknown
+): "inherit" | "show-all" {
+	if (typeof value === "number") {
+		return value === 1 ? "show-all" : "inherit";
+	}
+
+	const normalized = String(value ?? "")
+		.trim()
+		.toLowerCase()
+		.replace(/^['"]|['"]$/g, "")
+		.replace(/[_\s]+/g, "-");
+
+	if (normalized === "show-all" || normalized === "1") {
+		return "show-all";
+	}
+
+	if (normalized === "inherit" || normalized === "0") {
+		return "inherit";
+	}
+
+	return "inherit";
+}
+
 export class TaskListView extends BasesViewBase {
 	type = "tasknotesTaskList";
 
@@ -135,7 +159,7 @@ export class TaskListView extends BasesViewBase {
 				"expandedRelationshipFilterMode"
 			);
 			this.expandedRelationshipFilterMode =
-				expandedRelationshipFilterModeValue === "show-all" ? "show-all" : "inherit";
+				normalizeExpandedRelationshipFilterMode(expandedRelationshipFilterModeValue);
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
@@ -179,8 +203,9 @@ export class TaskListView extends BasesViewBase {
 			return;
 		}
 
-		// Ensure view options are read (in case config wasn't available in onload)
-		if (!this.configLoaded && this.config) {
+		// Always re-read view options to catch config changes such as
+		// switching expanded relationship filtering modes in Bases.
+		if (this.config) {
 			this.readViewOptions();
 		}
 
@@ -1748,6 +1773,7 @@ export class TaskListView extends BasesViewBase {
 		return this.buildTaskCardOptions({
 			targetDate,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
+			resolveExpandedRelationshipFilterMode: () => this.config?.get("expandedRelationshipFilterMode"),
 			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
 		});
 	}

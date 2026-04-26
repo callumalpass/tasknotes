@@ -39,10 +39,12 @@ import {
 import { getProjectDisplayName } from "../utils/linkUtils";
 import {
 	formatDateForStorage,
+	getDatePart,
 	getCurrentDateString,
 	getCurrentTimestamp,
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
+	parseDateToUTC,
 } from "../utils/dateUtils";
 import { format } from "date-fns";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
@@ -1275,6 +1277,28 @@ export class TaskService {
 	/**
 	 * Toggle completion status for recurring tasks on a specific date
 	 */
+	async resolveRecurringTaskActionDate(task: TaskInfo, date?: Date): Promise<Date> {
+		if (date) {
+			return date;
+		}
+
+		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
+		return this.getRecurringTaskActionDate(freshTask);
+	}
+
+	private getRecurringTaskActionDate(task: TaskInfo, date?: Date): Date {
+		if (date) {
+			return date;
+		}
+
+		if (task.recurrence_anchor !== "completion" && task.scheduled) {
+			return parseDateToUTC(getDatePart(task.scheduled));
+		}
+
+		const todayLocal = getTodayLocal();
+		return createUTCDateFromLocalCalendarDate(todayLocal);
+	}
+
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
@@ -1288,14 +1312,7 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
-		// Default to local today instead of selectedDate for recurring task completion
-		// This ensures completion is recorded for user's actual calendar day unless explicitly overridden
-		const targetDate =
-			date ||
-			(() => {
-				const todayLocal = getTodayLocal();
-				return createUTCDateFromLocalCalendarDate(todayLocal);
-			})();
+		const targetDate = this.getRecurringTaskActionDate(freshTask, date);
 		const dateStr = formatDateForStorage(targetDate);
 
 		// Check current completion status for this date using fresh data
@@ -1514,13 +1531,7 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
-		// Default to local today
-		const targetDate =
-			date ||
-			(() => {
-				const todayLocal = getTodayLocal();
-				return createUTCDateFromLocalCalendarDate(todayLocal);
-			})();
+		const targetDate = this.getRecurringTaskActionDate(freshTask, date);
 		const dateStr = formatDateForStorage(targetDate);
 
 		// Check current skip status for this date

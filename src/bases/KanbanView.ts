@@ -23,6 +23,30 @@ import {
 	DropOperationQueue,
 } from "./sortOrderUtils";
 
+function normalizeExpandedRelationshipFilterMode(
+	value: unknown
+): "inherit" | "show-all" {
+	if (typeof value === "number") {
+		return value === 1 ? "show-all" : "inherit";
+	}
+
+	const normalized = String(value ?? "")
+		.trim()
+		.toLowerCase()
+		.replace(/^['"]|['"]$/g, "")
+		.replace(/[_\s]+/g, "-");
+
+	if (normalized === "show-all" || normalized === "1") {
+		return "show-all";
+	}
+
+	if (normalized === "inherit" || normalized === "0") {
+		return "inherit";
+	}
+
+	return "inherit";
+}
+
 export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
 
@@ -184,7 +208,7 @@ export class KanbanView extends BasesViewBase {
 				"expandedRelationshipFilterMode"
 			);
 			this.expandedRelationshipFilterMode =
-				expandedRelationshipFilterModeValue === "show-all" ? "show-all" : "inherit";
+				normalizeExpandedRelationshipFilterMode(expandedRelationshipFilterModeValue);
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;
@@ -3062,6 +3086,7 @@ export class KanbanView extends BasesViewBase {
 			targetDate,
 			hideStatusIndicator,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
+			resolveExpandedRelationshipFilterMode: () => this.config?.get("expandedRelationshipFilterMode"),
 			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
 		});
 	}
