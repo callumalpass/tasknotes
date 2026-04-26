@@ -166,6 +166,28 @@
 .tasknotes-plugin .task-subgroup.is-collapsed .task-cards { display: none; }
 .tasknotes-plugin .task-group.is-collapsed .task-subgroups-container { display: none; }
 
+/* Sub-header indentation for data-level attribute */
+.tasknotes-plugin .task-group[data-level="sub"] {
+    padding-left: 16px;
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .task-group[data-level="sub"] .task-group-header {
+    font-size: 0.95em;
+    font-weight: 500;
+    color: var(--tn-text-muted);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .task-group[data-level="sub"] .task-group-toggle {
+    opacity: 0.8;
+}
+
+.tasknotes-plugin .task-group[data-level="sub"] .task-group-toggle svg {
+    width: 14px;
+    height: 14px;
+}
+
 /* Per-group subgroup actions */
 .tasknotes-plugin .task-subgroup-actions { display:flex; align-items:center; gap: 4px; margin-left: 0; }
 .tasknotes-plugin .task-subgroup-action { border:none; background:transparent; color: var(--tn-text-muted); cursor: var(--cursor, pointer); padding: 0; }
