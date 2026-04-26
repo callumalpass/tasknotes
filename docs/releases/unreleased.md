@@ -40,6 +40,8 @@ Example:
 
 ## Fixed
 
+- (#1828) Fixed subtask creation from a task card dropping the parent task project when natural-language input also adds projects.
+  - Thanks to @prepare4robots for reporting.
 - (#1786) Fixed TaskNotes task cards and relationships/subtasks widgets appearing inside embedded task-note heading or block sections.
   - Skips note-level widget injection in detached or embedded Markdown editor contexts used by plugins such as Block Link Plus.
   - Thanks to @3zra47 for reporting.

@@ -1757,17 +1757,18 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected addProject(file: TAbstractFile): void {
-		// Avoid duplicates
-		if (this.selectedProjectItems.some((existing) => existing.file?.path === file.path)) {
-			return;
-		}
-
 		if (file instanceof TFile) {
-			this.selectedProjectItems.push({
+			const projectItem = {
 				file,
 				name: file.basename,
 				link: this.buildProjectReference(file, this.getCurrentTaskPath() || ""),
-			});
+			};
+
+			if (this.hasProjectItem(projectItem)) {
+				return;
+			}
+
+			this.selectedProjectItems.push(projectItem);
 		}
 		this.updateProjectsFromFiles();
 		this.renderProjectsList();
@@ -1798,91 +1799,133 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected initializeProjectsFromStrings(projects: string[]): void {
-		// Convert project string to ProjectItem objects
-		// This handles both old plain string projects and new [[link]] format
 		this.selectedProjectItems = [];
+		this.addProjectsFromStrings(projects);
+		// Don't render immediately - let the caller decide when to render
+	}
+
+	protected addProjectsFromStrings(projects: string[]): void {
+		// Convert project strings to ProjectItem objects.
+		// This handles both old plain string projects and new [[link]] format.
 
 		// Use the task's path as the source for resolving relative links
 		const sourcePath = this.getCurrentTaskPath() || "";
 
 		for (const projectString of projects) {
-			// Skip null, undefined, or empty strings
-			if (
-				!projectString ||
-				typeof projectString !== "string" ||
-				projectString.trim() === ""
-			) {
-				continue;
-			}
-
-			// Check if it's a wiki link format
-			const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
-			if (linkMatch) {
-				const linkPath = linkMatch[1];
-				const file = this.resolveLink(linkPath, sourcePath);
-				if (file) {
-					// Resolved link
-					this.selectedProjectItems.push({
-						file,
-						name: file.basename,
-						link: projectString,
-					});
-				} else {
-					// Unresolved link - still add it!
-					const displayName = linkPath.split("|")[0]; // Strip alias if present
-					this.selectedProjectItems.push({
-						name: displayName,
-						link: projectString,
-						unresolved: true,
-					});
-				}
-			} else {
-				// Check if it's a markdown link format [text](path)
-				const markdownMatch = projectString.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
-				if (markdownMatch) {
-					const linkPath = parseLinkToPath(projectString);
-					const file = this.resolveLink(linkPath, sourcePath);
-					if (file) {
-						// Resolved markdown link
-						this.selectedProjectItems.push({
-							file,
-							name: file.basename,
-							link: projectString,
-						});
-					} else {
-						// Unresolved markdown link
-						const displayName = markdownMatch[1] || linkPath;
-						this.selectedProjectItems.push({
-							name: displayName,
-							link: projectString,
-							unresolved: true,
-						});
-					}
-				} else {
-					// For backwards compatibility, try to find a file with this name
-					const files = this.getMarkdownFiles();
-					const matchingFile = files.find(
-						(f) => f.basename === projectString || f.name === projectString + ".md"
-					);
-					if (matchingFile) {
-						this.selectedProjectItems.push({
-							file: matchingFile,
-							name: matchingFile.basename,
-							link: `[[${matchingFile.basename}]]`,
-						});
-					} else {
-						// Plain text - preserve as-is
-						this.selectedProjectItems.push({
-							name: projectString,
-							link: projectString,
-							unresolved: true,
-						});
-					}
-				}
-			}
+			const projectItem = this.createProjectItemFromString(projectString, sourcePath);
+			if (!projectItem || this.hasProjectItem(projectItem)) continue;
+			this.selectedProjectItems.push(projectItem);
 		}
 		this.updateProjectsFromFiles();
 		// Don't render immediately - let the caller decide when to render
+	}
+
+	private createProjectItemFromString(projectString: string, sourcePath: string): ProjectItem | null {
+		// Skip null, undefined, or empty strings
+		if (
+			!projectString ||
+			typeof projectString !== "string" ||
+			projectString.trim() === ""
+		) {
+			return null;
+		}
+
+		// Check if it's a wiki link format
+		const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
+		if (linkMatch) {
+			const linkPath = linkMatch[1];
+			const file = this.resolveLink(linkPath, sourcePath);
+			if (file) {
+				// Resolved link
+				return {
+					file,
+					name: file.basename,
+					link: projectString,
+				};
+			} else {
+				// Unresolved link - still add it!
+				const displayName = linkPath.split("|")[0]; // Strip alias if present
+				return {
+					name: displayName,
+					link: projectString,
+					unresolved: true,
+				};
+			}
+		} else {
+			// Check if it's a markdown link format [text](path)
+			const markdownMatch = projectString.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+			if (markdownMatch) {
+				const linkPath = parseLinkToPath(projectString);
+				const file = this.resolveLink(linkPath, sourcePath);
+				if (file) {
+					// Resolved markdown link
+					return {
+						file,
+						name: file.basename,
+						link: projectString,
+					};
+				} else {
+					// Unresolved markdown link
+					const displayName = markdownMatch[1] || linkPath;
+					return {
+						name: displayName,
+						link: projectString,
+						unresolved: true,
+					};
+				}
+			} else {
+				// For backwards compatibility, try to find a file with this name
+				const files = this.getMarkdownFiles();
+				const matchingFile = files.find(
+					(f) => f.basename === projectString || f.name === projectString + ".md"
+				);
+				if (matchingFile) {
+					return {
+						file: matchingFile,
+						name: matchingFile.basename,
+						link: `[[${matchingFile.basename}]]`,
+					};
+				} else {
+					// Plain text - preserve as-is
+					return {
+						name: projectString,
+						link: projectString,
+						unresolved: true,
+					};
+				}
+			}
+		}
+	}
+
+	private hasProjectItem(candidate: ProjectItem): boolean {
+		const candidateKeys = this.getProjectDedupKeys(candidate);
+		return this.selectedProjectItems.some((existing) => {
+			const existingKeys = this.getProjectDedupKeys(existing);
+			return candidateKeys.some((key) => existingKeys.includes(key));
+		});
+	}
+
+	private getProjectDedupKeys(item: ProjectItem): string[] {
+		const keys = new Set<string>();
+
+		if (item.file?.path) {
+			keys.add(`path:${this.normalizeProjectPath(item.file.path)}`);
+		}
+
+		const parsedPath = parseLinkToPath(item.link);
+		if (parsedPath) {
+			keys.add(`path:${this.normalizeProjectPath(parsedPath)}`);
+		}
+
+		if (item.link) {
+			keys.add(`link:${item.link.trim().toLowerCase()}`);
+		}
+
+		return Array.from(keys);
+	}
+
+	private normalizeProjectPath(path: string): string {
+		return path.trim().replace(/\.md$/i, "").toLowerCase();
 	}
 
 	protected renderProjectsList(): void {
