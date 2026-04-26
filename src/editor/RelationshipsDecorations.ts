@@ -62,6 +62,10 @@ import {
 	ReadingModeInjectionContext,
 	ReadingModeInjectionScheduler,
 } from "./ReadingModeInjectionScheduler";
+import {
+	shouldSkipMarkdownWidgetEditor,
+	shouldSkipMarkdownWidgetLeaf,
+} from "./MarkdownWidgetContext";
 
 // CSS class for identifying plugin-generated elements
 const CSS_RELATIONSHIPS_WIDGET = 'tasknotes-relationships-widget';
@@ -221,6 +225,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			const editorElement = view.dom;
 			if (!editorElement) return false;
 
+			if (shouldSkipMarkdownWidgetEditor(view)) return true;
+
 			const tableCell = editorElement.closest("td, th");
 			if (tableCell) return true;
 
@@ -303,15 +309,15 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		// Remove any existing widget first
 		this.removeWidget();
 
+		// Don't show note-level widgets in embedded or detached markdown editors
+		if (this.isTableCellEditor(view)) {
+			return;
+		}
+
 		// Also clean up any orphaned widgets
 		this.cleanupOrphanedWidgets(view);
 
 		try {
-			// Don't show widget in table cell editors
-			if (this.isTableCellEditor(view)) {
-				return;
-			}
-
 			// Check if relationships widget is enabled
 			if (!this.plugin.settings.showRelationships) {
 				return;
@@ -432,6 +438,10 @@ async function injectReadingModeWidget(
 ): Promise<void> {
 	const view = leaf.view;
 	if (!(view instanceof MarkdownView) || view.getMode() !== 'preview') {
+		return;
+	}
+
+	if (shouldSkipMarkdownWidgetLeaf(leaf)) {
 		return;
 	}
 

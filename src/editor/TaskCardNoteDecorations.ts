@@ -68,6 +68,10 @@ import {
 	ReadingModeInjectionContext,
 	ReadingModeInjectionScheduler,
 } from "./ReadingModeInjectionScheduler";
+import {
+	shouldSkipMarkdownWidgetEditor,
+	shouldSkipMarkdownWidgetLeaf,
+} from "./MarkdownWidgetContext";
 
 // CSS class for identifying plugin-generated elements
 const CSS_TASK_CARD_WIDGET = 'tasknotes-task-card-note-widget';
@@ -293,6 +297,8 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 			const editorElement = view.dom;
 			if (!editorElement) return false;
 
+			if (shouldSkipMarkdownWidgetEditor(view)) return true;
+
 			const tableCell = editorElement.closest("td, th");
 			if (tableCell) return true;
 
@@ -343,15 +349,15 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 		// Remove any existing widget first
 		this.removeWidget();
 
+		// Don't show note-level widgets in embedded or detached markdown editors
+		if (this.isTableCellEditor(view)) {
+			return;
+		}
+
 		// Also clean up any orphaned widgets
 		this.cleanupOrphanedWidgets(view);
 
 		try {
-			// Don't show widget in table cell editors
-			if (this.isTableCellEditor(view)) {
-				return;
-			}
-
 			// Check if task card widget is enabled
 			if (!this.plugin.settings.showTaskCardInNote) {
 				return;
@@ -424,6 +430,10 @@ async function injectReadingModeWidget(
 ): Promise<void> {
 	const view = leaf.view;
 	if (!(view instanceof MarkdownView) || view.getMode() !== 'preview') {
+		return;
+	}
+
+	if (shouldSkipMarkdownWidgetLeaf(leaf)) {
 		return;
 	}
 

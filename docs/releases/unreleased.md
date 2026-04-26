@@ -40,6 +40,9 @@ Example:
 
 ## Fixed
 
+- (#1786) Fixed TaskNotes task cards and relationships/subtasks widgets appearing inside embedded task-note heading or block sections.
+  - Skips note-level widget injection in detached or embedded Markdown editor contexts used by plugins such as Block Link Plus.
+  - Thanks to @3zra47 for reporting.
 - (#1815) Fixed the Priority property settings so the NLP trigger character field is visible and editable even when priority NLP parsing is disabled.
   - Thanks to @spiv for reporting.
 - (#1035) Fixed the task modal title field causing the modal to jump to the bottom when focused on iPhone.
