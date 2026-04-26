@@ -105,6 +105,7 @@ export class KanbanView extends BasesViewBase {
 	private explodeListColumns = true; // Show items with list properties in multiple columns
 	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
+	private pinnedColumns: string[] = [];
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
@@ -200,6 +201,23 @@ export class KanbanView extends BasesViewBase {
 			// Read column orders
 			const columnOrderStr = (this.config.get("columnOrder") as string) || "{}";
 			this.columnOrders = JSON.parse(columnOrderStr);
+
+			// Read pinned columns. Comma-separated string (settings panel) or
+			// YAML array (authored in `.base`). Normalize either shape.
+			const rawPinned = this.config.get("pinnedColumns");
+			const pinnedSource: unknown[] = Array.isArray(rawPinned)
+				? rawPinned
+				: typeof rawPinned === "string"
+					? rawPinned.split(",")
+					: [];
+			const seenPinned = new Set<string>();
+			this.pinnedColumns = [];
+			for (const value of pinnedSource) {
+				const str = String(value ?? "").trim();
+				if (str.length === 0 || seenPinned.has(str)) continue;
+				seenPinned.add(str);
+				this.pinnedColumns.push(str);
+			}
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
@@ -583,6 +601,9 @@ export class KanbanView extends BasesViewBase {
 		// Augment with empty priority columns if grouping by priority
 		this.augmentWithEmptyPriorityColumns(groups, groupByPropertyId);
 
+		// Augment with pinned columns regardless of groupBy property
+		this.augmentWithPinnedColumns(groups);
+
 		return groups;
 	}
 
@@ -726,6 +747,18 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
+	/**
+	 * Augment groups with empty buckets for pinned column keys.
+	 * Runs regardless of groupBy.
+	 */
+	private augmentWithPinnedColumns(groups: Map<string, TaskInfo[]>): void {
+		for (const key of this.pinnedColumns) {
+			if (!groups.has(key)) {
+				groups.set(key, []);
+			}
+		}
+	}
+
 	private async renderFlat(
 		groups: Map<string, TaskInfo[]>,
 		allGroups: Map<string, TaskInfo[]>
@@ -760,8 +793,13 @@ export class KanbanView extends BasesViewBase {
 		for (const groupKey of orderedKeys) {
 			const tasks = groups.get(groupKey) || [];
 
-			// Filter empty columns if option enabled
-			if (this.hideEmptyColumns && tasks.length === 0) {
+			// Filter empty columns if option enabled. Pinned columns are exempt
+			// so they remain visible as drop targets.
+			if (
+				this.hideEmptyColumns &&
+				tasks.length === 0 &&
+				!this.pinnedColumns.includes(groupKey)
+			) {
 				continue;
 			}
 
@@ -3031,8 +3069,16 @@ export class KanbanView extends BasesViewBase {
 		const savedOrder = this.columnOrders[groupBy];
 
 		if (!savedOrder || savedOrder.length === 0) {
-			// No saved order - use natural order (alphabetical)
-			return actualKeys.sort();
+			// No saved order: pinned columns first (in pinnedColumns array order),
+			// remaining keys alphabetical.
+			if (this.pinnedColumns.length === 0) {
+				return actualKeys.sort();
+			}
+			const pinnedPresent = this.pinnedColumns.filter((k) => actualKeys.includes(k));
+			const remaining = actualKeys
+				.filter((k) => !this.pinnedColumns.includes(k))
+				.sort();
+			return [...pinnedPresent, ...remaining];
 		}
 
 		const ordered: string[] = [];
