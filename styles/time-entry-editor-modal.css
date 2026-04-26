@@ -137,6 +137,75 @@
     font-family: var(--font-text);
 }
 
+/* Description editor – Setting row must stack so the editor gets full width */
+.time-entry-editor-modal__time-container .setting-item:has(.time-entry-editor-modal__description-editor-container) {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.time-entry-editor-modal__time-container .setting-item:has(.time-entry-editor-modal__description-editor-container) .setting-item-control {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.time-entry-editor-modal__description-editor-container {
+    width: 100%;
+}
+
+.time-entry-editor-modal__description-editor,
+.time-entry-editor-modal__description-editor-fallback {
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    width: 100%;
+    min-height: 80px;
+    max-height: 200px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.time-entry-editor-modal__description-editor .cm-editor {
+    height: 100%;
+    min-height: 80px;
+    max-height: 200px;
+}
+
+.time-entry-editor-modal__description-editor .cm-scroller {
+    overflow: auto;
+    max-height: 200px;
+    padding-top: var(--size-4-2);
+    padding-bottom: var(--size-4-2);
+}
+
+.time-entry-editor-modal__description-editor .cm-content {
+    padding-left: var(--size-4-2) !important;
+    padding-right: var(--size-4-2) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    font-family: var(--font-text);
+    font-size: var(--font-ui-medium);
+    line-height: var(--line-height-normal);
+}
+
+.time-entry-editor-modal__description-editor .cm-placeholder {
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+.time-entry-editor-modal__description-editor-fallback {
+    padding: var(--size-4-1) var(--size-4-2);
+    font-family: var(--font-text);
+    resize: vertical;
+    min-height: 80px;
+    max-height: 200px;
+}
+
+/* Focus ring on the description editor */
+.time-entry-editor-modal__description-editor:focus-within {
+    border-color: var(--interactive-accent);
+}
+
 .time-entry-editor-modal__duration-info {
     margin-top: var(--size-4-1);
     padding: var(--size-4-1) var(--size-4-2);
