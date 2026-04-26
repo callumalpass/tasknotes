@@ -152,7 +152,7 @@ export class TimeEntryEditorModal extends Modal {
 			const newDate = new Date(startInput.value);
 			if (!isNaN(newDate.getTime())) {
 				entry.startTime = newDate.toISOString();
-					this.updateTotalDisplay();
+				this.updateTotalDisplay();
 			}
 		});
 
@@ -172,37 +172,37 @@ export class TimeEntryEditorModal extends Modal {
 				const newDate = new Date(endInput.value);
 				if (!isNaN(newDate.getTime())) {
 					entry.endTime = newDate.toISOString();
-						this.updateTotalDisplay();
+					this.updateTotalDisplay();
 				}
 			} else {
 				entry.endTime = undefined;
-					this.updateTotalDisplay();
+				this.updateTotalDisplay();
 			}
 		});
 
 		// Description
-			const descriptionSetting = new Setting(timeContainer)
-				.setName(this.translate("modals.timeEntryEditor.description"));
+		const descriptionSetting = new Setting(timeContainer)
+			.setName(this.translate("modals.timeEntryEditor.description"));
 
-			const editorContainer = descriptionSetting.controlEl.createDiv({
-				cls: "time-entry-editor-modal__description-editor-container",
-			});
+		const editorContainer = descriptionSetting.controlEl.createDiv({
+			cls: "time-entry-editor-modal__description-editor-container",
+		});
 
-			const editor = createTaskModalMarkdownEditor(this.app, editorContainer, {
-				value: entry.description || "",
-				placeholder: this.translate("modals.timeEntryEditor.descriptionPlaceholder"),
-				cls: "time-entry-editor-modal__description-editor",
-				onChange: (value) => {
-					entry.description = value || undefined;
-				},
-				onSubmit: () => this.save(),
-				onEscape: () => {},
-				onTab: () => false,
-			});
+		const editor = createTaskModalMarkdownEditor(this.app, editorContainer, {
+			value: entry.description || "",
+			placeholder: this.translate("modals.timeEntryEditor.descriptionPlaceholder"),
+			cls: "time-entry-editor-modal__description-editor",
+			onChange: (value) => {
+				entry.description = value || undefined;
+			},
+			onSubmit: () => this.save(),
+			onEscape: () => this.close(),
+			onTab: () => false,
+		});
 
-			if (editor) {
-				this.descriptionEditors.push(editor);
-			}
+		if (editor) {
+			this.descriptionEditors.push(editor);
+		}
 	}
 
 	private cleanupDescriptionEditors(): void {

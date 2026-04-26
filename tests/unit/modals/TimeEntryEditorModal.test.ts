@@ -40,6 +40,26 @@ describe("TimeEntryEditorModal", () => {
 		]);
 	});
 
+	it("closes the modal when Escape is pressed inside the markdown editor", () => {
+		const plugin = PluginFactory.createMockPlugin();
+		const task = TaskFactory.createTask({
+			timeEntries: [TimeEntryFactory.createEntry()],
+		});
+
+		createTaskModalMarkdownEditorMock.mockReturnValue({
+			destroy: jest.fn(),
+		} as any);
+
+		const modal = new TimeEntryEditorModal(plugin.app as any, plugin as any, task, jest.fn());
+		const closeSpy = jest.spyOn(modal, "close").mockImplementation(jest.fn());
+		modal.onOpen();
+
+		const editorOptions = createTaskModalMarkdownEditorMock.mock.calls[0][2];
+		editorOptions.onEscape();
+
+		expect(closeSpy).toHaveBeenCalledTimes(1);
+	});
+
 	it("destroys markdown editors before rerendering and when closing", () => {
 		const plugin = PluginFactory.createMockPlugin();
 		const task = TaskFactory.createTask({
