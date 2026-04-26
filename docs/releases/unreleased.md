@@ -29,6 +29,9 @@ Example:
 - (#1764) Fixed Google Calendar sync using stale task metadata after rapid task updates, and fixed late recurring completions/skips recording the completion day instead of the scheduled occurrence date.
   - Thanks to @martin-forge for the PR and to @jpmoo for reporting the recurring completion issues.
 - Fixed CI test runs resolving the NLP parser package from a local sibling checkout instead of the published dependency.
+- Published `mdbase-tasknotes` 0.1.3 with compatibility fixes for TaskNotes-generated mdbase schemas.
+  - Includes clearer create-path diagnostics, natural-language `mtn list --due` filters, timer log datetime filters, home-directory path expansion, project wikilink preservation, and correct `mtn --version` reporting.
+  - Thanks to @tparsons9, @anomatomato, @npondel, @plashal, and @waspeer for the reports and PR.
 - (#1667) Fixed NLP scheduled-date parsing so standalone `scheduled` and `start` triggers can set scheduled dates alongside due dates.
   - Thanks to @hokfujow for reporting and @UniqueClone for the NLP core PR.
 - (#1658) Fixed Pomodoro stats date bucketing for sessions near local midnight
