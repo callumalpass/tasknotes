@@ -2,6 +2,8 @@ import {
 	calculatePomodoroStats,
 	filterPomodoroSessionsByDate,
 	filterPomodoroSessionsByDateRange,
+	getPomodoroSessionDateKey,
+	getPomodoroTimestampDateKey,
 	getPomodoroDateKeysInRange,
 	sortPomodoroSessions,
 } from "../../../src/utils/pomodoroStats";
@@ -96,6 +98,53 @@ describe("pomodoroStats", () => {
 				new Date(Date.UTC(2026, 3, 27))
 			)
 		).toEqual(["2026-04-25", "2026-04-26", "2026-04-27"]);
+	});
+
+	it("uses the recorded Pomodoro timestamp date instead of shifting through UTC", () => {
+		const eveningSession = session({
+			startTime: "2026-04-02T21:09:25.755-04:00",
+			endTime: "2026-04-02T21:34:25.755-04:00",
+		});
+
+		expect(getPomodoroSessionDateKey(eveningSession)).toBe("2026-04-02");
+		expect(
+			filterPomodoroSessionsByDate(
+				[eveningSession],
+				new Date(Date.UTC(2026, 3, 2))
+			).map((item) => item.id)
+		).toEqual(["session"]);
+		expect(
+			filterPomodoroSessionsByDate(
+				[eveningSession],
+				new Date(Date.UTC(2026, 3, 3))
+			).map((item) => item.id)
+		).toEqual([]);
+	});
+
+	it("keeps stored Pomodoro timestamp dates stable across reader timezones", () => {
+		const originalTimezone = process.env.TZ;
+
+		try {
+			for (const timezone of ["America/New_York", "Asia/Tokyo", "Europe/London"]) {
+				process.env.TZ = timezone;
+				expect(getPomodoroTimestampDateKey("2026-04-02T21:09:25.755-04:00")).toBe(
+					"2026-04-02"
+				);
+			}
+		} finally {
+			if (originalTimezone) {
+				process.env.TZ = originalTimezone;
+			} else {
+				delete process.env.TZ;
+			}
+		}
+	});
+
+	it("falls back to UTC storage dates for legacy non-ISO timestamp values", () => {
+		expect(getPomodoroTimestampDateKey("April 2, 2026 21:09:25 GMT-0400")).toBe(
+			"2026-04-03"
+		);
+		expect(getPomodoroTimestampDateKey("not a timestamp")).toBe("");
 	});
 
 	it("sorts sessions without mutating the input array", () => {

@@ -29,6 +29,11 @@ Example:
 - (#1764) Fixed Google Calendar sync using stale task metadata after rapid task updates, and fixed late recurring completions/skips recording the completion day instead of the scheduled occurrence date.
   - Thanks to @martin-forge for the PR and to @jpmoo for reporting the recurring completion issues.
 - Fixed CI test runs resolving the NLP parser package from a local sibling checkout instead of the published dependency.
+- (#1658) Fixed Pomodoro stats date bucketing for sessions near local midnight
+  - Pomodoro session stats now compare the recorded session calendar date against UTC-anchored target days without shifting through UTC or the reader's current timezone
+  - Pomodoro daily-note storage now writes sessions to the daily note matching the recorded session date
+  - Thanks to @ewgdg for reporting and @ITblacksheep for PR #1758
+
 - (#1813) Fixed Pomodoro timer UI stalls caused by refreshing session statistics on every timer tick
   - Pomodoro stats now refresh on initial render and session completion instead of once per second
   - Pomodoro daily-note stats now read the relevant date/range instead of routing through all history

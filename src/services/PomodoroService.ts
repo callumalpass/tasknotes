@@ -33,6 +33,7 @@ import {
 	filterPomodoroSessionsByDateKey,
 	filterPomodoroSessionsByDateRange,
 	getPomodoroDateKeysInRange,
+	getPomodoroSessionDateKey,
 	sortPomodoroSessions,
 } from "../utils/pomodoroStats";
 
@@ -1262,8 +1263,11 @@ export class PomodoroService {
 		const grouped = new Map<string, PomodoroSessionHistory[]>();
 
 		for (const session of history) {
-			const date = new Date(session.startTime);
-			const dateStr = formatDateForStorage(date);
+			const dateStr = getPomodoroSessionDateKey(session);
+
+			if (!dateStr) {
+				continue;
+			}
 
 			if (!grouped.has(dateStr)) {
 				grouped.set(dateStr, []);
@@ -1279,7 +1283,12 @@ export class PomodoroService {
 	 */
 	private async addSingleSessionToDailyNote(session: PomodoroSessionHistory): Promise<void> {
 		try {
-			const sessionDate = new Date(session.startTime);
+			const sessionDateKey = getPomodoroSessionDateKey(session);
+			if (!sessionDateKey) {
+				throw new Error(`Invalid Pomodoro session start time: ${session.startTime}`);
+			}
+
+			const sessionDate = parseDateToLocal(sessionDateKey);
 			const moment = (window as any).moment(sessionDate);
 
 			// Get or create daily note

@@ -10,14 +10,22 @@ export function sortPomodoroSessions(
 	);
 }
 
-export function getPomodoroSessionDateKey(session: PomodoroSessionHistory): string {
-	const date = new Date(session.startTime);
+export function getPomodoroTimestampDateKey(timestamp: string): string {
+	const storedCalendarDate = timestamp.match(/^(\d{4}-\d{2}-\d{2})(?:[T\s]|$)/)?.[1];
+	if (storedCalendarDate) {
+		return storedCalendarDate;
+	}
 
+	const date = new Date(timestamp);
 	if (isNaN(date.getTime())) {
 		return "";
 	}
 
 	return formatDateForStorage(date);
+}
+
+export function getPomodoroSessionDateKey(session: PomodoroSessionHistory): string {
+	return getPomodoroTimestampDateKey(session.startTime);
 }
 
 export function filterPomodoroSessionsByDateKey(

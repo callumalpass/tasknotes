@@ -65,6 +65,17 @@ function createMockPlugin(options: {
 			};
 		}),
 	};
+	const fileManager = {
+		processFrontMatter: jest.fn(
+			async (file: { path: string }, callback: (frontmatter: any) => void) => {
+				const dateKey = file.path.match(/(\d{4}-\d{2}-\d{2})/)?.[1] ?? "";
+				const frontmatter = {
+					pomodoros: dailyNoteSessions[dateKey] ?? [],
+				};
+				callback(frontmatter);
+			}
+		),
+	};
 
 	mockedGetAllDailyNotes.mockReturnValue(dailyNotes as any);
 	mockedGetDailyNote.mockImplementation((momentValue: any, notes: Record<string, any>) => {
@@ -86,6 +97,7 @@ function createMockPlugin(options: {
 		saveData: jest.fn().mockResolvedValue(undefined),
 		app: {
 			metadataCache,
+			fileManager,
 		},
 		fieldMapper: {
 			toUserField: jest.fn(() => "pomodoros"),
@@ -163,5 +175,39 @@ describe("PomodoroService stats reads", () => {
 			"Daily/2026-04-25.md",
 			"Daily/2026-04-26.md",
 		]);
+	});
+
+	it("writes completed sessions to the daily note matching the recorded timestamp date", async () => {
+		const originalTimezone = process.env.TZ;
+
+		try {
+			process.env.TZ = "Asia/Tokyo";
+			const plugin = createMockPlugin({
+				dailyNoteSessions: {
+					"2026-04-02": [],
+					"2026-04-03": [],
+				},
+			});
+			const service = new PomodoroService(plugin as any);
+
+			await service.addSessionToHistory(
+				createSession("evening-session", "2026-04-02T21:09:25.755-04:00") as any
+			);
+
+			expect(plugin.app.fileManager.processFrontMatter).toHaveBeenCalledWith(
+				{ path: "Daily/2026-04-02.md" },
+				expect.any(Function)
+			);
+			expect(plugin.app.fileManager.processFrontMatter).not.toHaveBeenCalledWith(
+				{ path: "Daily/2026-04-03.md" },
+				expect.any(Function)
+			);
+		} finally {
+			if (originalTimezone) {
+				process.env.TZ = originalTimezone;
+			} else {
+				delete process.env.TZ;
+			}
+		}
 	});
 });
