@@ -26,6 +26,8 @@ Example:
 
 ## Added
 
+- (#1756, #1798) Added HTTP API support for configured custom user fields so task responses include them and create/update requests can round-trip their values.
+  - Thanks to @Treygec for the request and PR.
 - (#1777) Added a Modal Fields setting to choose whether Tab/Shift+Tab move focus out of the task details editor or use the markdown editor's indentation behavior.
   - Thanks to @P-Sc for the PR.
 
@@ -63,4 +65,4 @@ Example:
 
 - (#1744) Fixed Bases Task List views so changing the per-view `Expanded relationships` option takes effect on re-render
   - Restores the expected `show-all` behavior for setups that hide subtasks at the top level with `note.projects.isEmpty()`
-  - Thanks to @minol-dev for reporting
+  - Thanks to @minol-dev for reporting and @stanley-910 for PR #1792 exploring the related standalone-subtask workflow
