@@ -88,3 +88,6 @@ AGENTS.md
 .ops/
 .serena/
 /.codex
+
+# Hyperframes release-announcement videos (assets + renders)
+/release-videos/

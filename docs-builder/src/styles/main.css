@@ -1,28 +1,33 @@
 /* ============================================================
    TaskNotes Documentation
 
-   Aesthetic: Scholarly Reference / Technical Manual
+   Aesthetic: friendly chrome around scholarly content.
    ──────────────────────────────────────────────────────────
-   Display  — Cormorant Garamond  (refined optical serif)
-   Body     — IBM Plex Serif      (technical warmth)
-   UI / Nav — IBM Plex Mono       (the weird part: the sidebar
-                                   reads like a file listing
-                                   while content reads like
-                                   a typeset book)
+   Brand    — Bungee                (logotype + h1 — chunky display)
+   Friendly — Comic Neue            (h2, occasional CTA — the warmth)
+   Body     — IBM Plex Serif        (long-form reading)
+   UI / Nav — IBM Plex Mono         (sidebar reads like a directory)
    ──────────────────────────────────────────────────────────
-   One accent colour: amber. Used sparingly.
+   Accent: pink (with a cyan secondary used sparingly).
+   The TaskNotes icon stands in for typographic ornaments.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Comic+Neue:wght@400;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
 
 /* ============================================================
    Tokens
    ============================================================ */
 
 :root {
-  --font-display : 'Cormorant Garamond', Georgia, serif;
   --font-body    : 'IBM Plex Serif', Georgia, serif;
   --font-mono    : 'IBM Plex Mono', 'Courier New', monospace;
+  --font-marquee : 'Bungee', 'Comic Neue', 'Comic Sans MS', cursive;
+  --font-friendly: 'Comic Neue', 'Comic Sans MS', cursive;
+
+  /* TaskNotes icon as a CSS mask — for tiny inline glyphs.
+     The full logo's negative-space cuts muddy at <14px, so this is
+     the silhouette path only. Color via background-color. */
+  --tn-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="black" d="m 98.5,0.6 c -0.38,0 -0.83,0.09 -1.33,0.23 -2,0.59 -4.66,2.18 -5.78,3.22 -1.25,1.16 -4.16,4.93 -6.08,7.19 -2.67,3.12 -5.65,6.58 -9.32,11.13 2.58,5.61 2.61,11.38 1.05,16.60 -1.95,6.49 -6.19,12.22 -10.84,16.72 -8.71,8.43 -16.73,14.41 -21.34,20.64 -4.47,6.03 -6.13,12.03 -2.81,22.08 0.19,-0.23 0.37,-0.49 0.54,-0.80 10.57,-19.70 17.89,-27.30 41.9,-47.08 v 0 c 2.40,-1.97 3.71,-4.33 4.52,-7.14 0.81,-2.82 1.11,-6.10 1.52,-9.92 0.81,-7.64 2.02,-17.43 8.43,-29.95 0.37,-0.73 0.57,-1.30 0.62,-1.72 0.05,-0.43 -0.04,-0.71 -0.22,-0.90 -0.19,-0.18 -0.48,-0.27 -0.86,-0.26 z M 72.7,26.3 c -0.75,0.92 -1.51,1.84 -2.27,2.78 -9.09,11.05 -19.45,22.93 -28.54,29.97 -1.48,1.14 -2.98,1.54 -4.46,1.38 -1.49,-0.16 -2.97,-0.89 -4.43,-1.96 -2.91,-2.16 -5.74,-5.74 -8.35,-9.19 -2.62,-3.45 -5.04,-6.77 -7.12,-8.39 -1.04,-0.81 -1.99,-1.19 -2.83,-0.97 -0.84,0.22 -1.60,1.05 -2.26,2.70 -1.03,2.61 -1.60,6.22 -3.42,10.05 4.08,0.62 7.27,2.27 9.73,4.45 3.05,2.71 5.01,6.11 6.82,9.27 1.81,3.16 3.49,6.07 5.63,8.08 1.90,1.78 4.08,2.96 7.53,3.17 0.71,-1.37 1.55,-2.69 2.49,-3.95 5.24,-7.07 13.34,-12.98 21.83,-21.18 4.24,-4.11 8.02,-9.33 9.65,-14.78 1.12,-3.73 1.31,-7.53 0.01,-11.42 z m -66.42,30.6 c -1.08,1.40 -2.40,2.79 -4.05,4.12 -1.20,1.0 -1.85,1.86 -2.03,2.71 -0.18,0.85 0.10,1.67 0.76,2.53 1.32,1.71 4.16,3.54 7.81,5.91 7.28,4.73 17.75,11.63 25.63,24.16 0.64,1.02 1.74,2.04 2.95,2.65 -0.91,-5.36 -0.91,-8.78 -0.54,-11.88 -3.33,-0.55 -6.07,-2.12 -8.39,-4.72 -2.83,-3.17 -4.69,-6.59 -6.54,-9.85 -1.85,-3.26 -3.69,-6.37 -6.08,-8.47 -2.06,-1.81 -4.61,-3.0 -8.49,-3.17 z"/></svg>');
 
   /* Light */
   --bg            : #f9f7f4;
@@ -34,9 +39,14 @@
   --text-faint    : #a09890;
   --border        : #e0dbd4;
   --border-strong : #c8c2ba;
-  --amber         : #b76b1c;
-  --amber-bg      : rgba(183, 107, 28, 0.08);
-  --amber-border  : rgba(183, 107, 28, 0.25);
+  /* The accent — kept under the legacy "--amber" name so all existing
+     selectors pick up the new value without churn. The hue is now pink,
+     paired with a cyan secondary used sparingly (sidebar accent stripe). */
+  --amber         : #d92a85;
+  --amber-bg      : rgba(217, 42, 133, 0.08);
+  --amber-border  : rgba(217, 42, 133, 0.25);
+  --cyan          : #0a9bb8;
+  --ink           : #1a1714;
 
   --sidebar-w  : 256px;
   --content-max: 680px;
@@ -53,9 +63,11 @@
   --text-faint    : #564e48;
   --border        : #2d2925;
   --border-strong : #403b36;
-  --amber         : #d4832a;
-  --amber-bg      : rgba(212, 131, 42, 0.08);
-  --amber-border  : rgba(212, 131, 42, 0.25);
+  --amber         : #ff5fa3;
+  --amber-bg      : rgba(255, 95, 163, 0.08);
+  --amber-border  : rgba(255, 95, 163, 0.28);
+  --cyan          : #2db4cf;
+  --ink           : #e6e2da;
 }
 
 /* ============================================================
@@ -157,6 +169,58 @@ body {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Drifting TaskNotes-icon ornaments — quiet ambient personality.
+   Two pseudo-element floaters; lower opacity than the mockup so they
+   don't compete with long-form reading. */
+.stage::before,
+.stage::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  background: var(--amber);
+  -webkit-mask: var(--tn-mask) center / contain no-repeat;
+          mask: var(--tn-mask) center / contain no-repeat;
+  z-index: 0;
+}
+
+.stage::before {
+  top: 100px;
+  right: 60px;
+  width: 56px;
+  height: 56px;
+  opacity: 0.18;
+  animation: tn-drift-a 22s ease-in-out infinite;
+}
+
+.stage::after {
+  top: 540px;
+  right: 110px;
+  width: 36px;
+  height: 36px;
+  opacity: 0.12;
+  background: var(--cyan);
+  animation: tn-drift-b 28s ease-in-out infinite;
+}
+
+@keyframes tn-drift-a {
+  0%, 100% { transform: translate(0, 0) rotate(-8deg); }
+  50%      { transform: translate(-14px, 18px) rotate(10deg); }
+}
+@keyframes tn-drift-b {
+  0%, 100% { transform: translate(0, 0) rotate(6deg); }
+  50%      { transform: translate(18px, -12px) rotate(-10deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage::before,
+  .stage::after,
+  .logotype__mark {
+    animation: none;
+  }
 }
 
 /* Content row: prose + TOC */
@@ -165,6 +229,8 @@ body {
   flex: 1;
   gap: 0;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 /* ============================================================
@@ -173,18 +239,41 @@ body {
 
 .logotype {
   display: flex;
-  flex-direction: column;
-  gap: 0.1em;
+  align-items: center;
+  gap: 0.7rem;
   text-decoration: none;
   color: var(--text);
 }
 
+.logotype__mark {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  color: var(--amber);
+  /* gentle bob — present, not loud */
+  animation: tn-bob 5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes tn-bob {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+
+.logotype__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  min-width: 0;
+}
+
 .logotype__name {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: var(--font-marquee);
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.005em;
   line-height: 1;
+  color: var(--text);
 }
 
 .logotype__sub {
@@ -227,6 +316,18 @@ body {
 .nav-link.is-active {
   color: var(--amber);
   font-weight: 500;
+}
+
+.nav-link.is-active::after {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 0.45em;
+  vertical-align: -1px;
+  background: var(--amber);
+  -webkit-mask: var(--tn-mask) center / contain no-repeat;
+          mask: var(--tn-mask) center / contain no-repeat;
 }
 
 /* Section groups */
@@ -356,12 +457,12 @@ body {
 }
 
 .topbar__title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-family: var(--font-marquee);
+  font-size: 1rem;
+  font-weight: 400;
   color: var(--text);
   text-decoration: none;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.005em;
 }
 
 .menu-btn {
@@ -386,21 +487,22 @@ body {
 }
 
 .page-title {
-  font-family: var(--font-display);
+  font-family: var(--font-marquee);
   font-weight: 400;
-  font-size: 2.8rem;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-bottom: 2.5rem;
+  font-size: 2.4rem;
+  letter-spacing: 0.005em;
+  line-height: 1;
+  margin-bottom: 2.25rem;
   color: var(--text);
+  text-shadow: 3px 3px 0 var(--amber);
 }
 
 /* Headings */
 .prose h2 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 1.9rem;
-  letter-spacing: -0.02em;
+  font-family: var(--font-friendly);
+  font-weight: 700;
+  font-size: 1.55rem;
+  letter-spacing: 0;
   line-height: 1.2;
   margin-top: 3.5rem;
   margin-bottom: 1rem;
@@ -408,24 +510,27 @@ body {
   position: relative;
 }
 
-/* The ornament: a small amber marker before each h2.
-   Reads like a typographic chapter marker. */
+/* The ornament: a small TaskNotes-icon glyph before each h2,
+   sitting on the same baseline as the heading text. */
 .prose h2::before {
-  content: '—';
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--amber);
-  letter-spacing: 0.2em;
-  margin-bottom: 0.5rem;
-  opacity: 0.8;
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.5em;
+  vertical-align: -0.05em;
+  background: var(--amber);
+  -webkit-mask: var(--tn-mask) center / contain no-repeat;
+          mask: var(--tn-mask) center / contain no-repeat;
+  opacity: 0.9;
 }
 
 .prose h3 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 1.3rem;
-  letter-spacing: -0.01em;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 1.2rem;
+  letter-spacing: 0;
   line-height: 1.3;
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
@@ -731,9 +836,9 @@ body {
 }
 
 .card__title {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 500;
+  font-family: var(--font-friendly);
+  font-size: 1.02rem;
+  font-weight: 700;
   color: var(--text);
   line-height: 1.2;
 }
