@@ -27,7 +27,14 @@ import {
 	parseDateToLocal,
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
-import { getSessionDuration, timerWorker } from "../utils/pomodoroUtils";
+import { timerWorker } from "../utils/pomodoroUtils";
+import {
+	calculatePomodoroStats,
+	filterPomodoroSessionsByDateKey,
+	filterPomodoroSessionsByDateRange,
+	getPomodoroDateKeysInRange,
+	sortPomodoroSessions,
+} from "../utils/pomodoroStats";
 
 export class PomodoroService {
 	private plugin: TaskNotesPlugin;
@@ -268,7 +275,7 @@ export class PomodoroService {
 			}
 		}
 
-		new Notification(`Pomodoro started${task ? ` for: ${task.title}` : ""}`);
+		this.showPomodoroNotification(`Pomodoro started${task ? ` for: ${task.title}` : ""}`);
 	}
 
 	async startBreak(isLongBreak = false) {
@@ -693,17 +700,13 @@ export class PomodoroService {
 			}
 		}
 
-		// Show notification
-		if (this.plugin.settings.pomodoroNotifications) {
-			const message =
-				session.type === "work" ? `🍅 Pomodoro completed!` : "☕ Break completed!";
-			const body =
-				session.type === "work"
-					? `Time for a ${shouldTakeLongBreak ? "long break 💤" : "short break ☕"}`
-					: "Ready for the next pomodoro?";
-
-			new Notification(message, { body });
-		}
+		const message =
+			session.type === "work" ? `🍅 Pomodoro completed!` : "☕ Break completed!";
+		const body =
+			session.type === "work"
+				? `Time for a ${shouldTakeLongBreak ? "long break 💤" : "short break ☕"}`
+				: "Ready for the next pomodoro?";
+		this.showPomodoroNotification(message, { body });
 
 		// Play sound if enabled
 		if (this.plugin.settings.pomodoroSoundEnabled) {
@@ -801,6 +804,22 @@ export class PomodoroService {
 			this.cleanupTimeouts.add(cleanupTimeout as unknown as number);
 		} catch (error) {
 			console.error("Failed to play completion sound:", error);
+		}
+	}
+
+	private showPomodoroNotification(title: string, options?: NotificationOptions): void {
+		if (!this.plugin.settings.pomodoroNotifications) {
+			return;
+		}
+
+		if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+			return;
+		}
+
+		try {
+			new Notification(title, options);
+		} catch (error) {
+			console.warn("Failed to show Pomodoro notification:", error);
 		}
 	}
 
@@ -926,11 +945,8 @@ export class PomodoroService {
 	// Session History Management
 	async getSessionHistory(): Promise<PomodoroSessionHistory[]> {
 		try {
-			let history: PomodoroSessionHistory[] = [];
-
-			// Load from plugin data (legacy or current storage)
-			const data = await this.plugin.loadData();
-			const pluginHistory = data?.pomodoroHistory || [];
+			const pluginHistory = await this.loadPluginHistory();
+			let history: PomodoroSessionHistory[];
 
 			if (this.plugin.settings.pomodoroStorageLocation === "daily-notes") {
 				// Load from daily notes when that's the primary storage
@@ -948,11 +964,64 @@ export class PomodoroService {
 			}
 
 			// Sort by start time to maintain chronological order
-			return history.sort(
-				(a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-			);
+			return sortPomodoroSessions(history);
 		} catch (error) {
 			console.error("Failed to load session history:", error);
+			return [];
+		}
+	}
+
+	async getSessionsForDate(date: Date): Promise<PomodoroSessionHistory[]> {
+		try {
+			const dateKey = formatDateForStorage(date);
+			if (!dateKey) {
+				return [];
+			}
+
+			const pluginHistory = await this.loadPluginHistoryForDateKey(dateKey);
+			let history: PomodoroSessionHistory[];
+
+			if (this.plugin.settings.pomodoroStorageLocation === "daily-notes") {
+				const dailyNotesHistory = await this.loadHistoryFromDailyNoteForDateKey(dateKey);
+				history =
+					pluginHistory.length > 0
+						? this.mergeHistories(pluginHistory, dailyNotesHistory)
+						: dailyNotesHistory;
+			} else {
+				history = pluginHistory;
+			}
+
+			return sortPomodoroSessions(history);
+		} catch (error) {
+			console.error("Failed to load session history for date:", error);
+			return [];
+		}
+	}
+
+	async getSessionsForDateRange(
+		startDate: Date,
+		endDate: Date
+	): Promise<PomodoroSessionHistory[]> {
+		try {
+			const pluginHistory = await this.loadPluginHistoryForDateRange(startDate, endDate);
+			let history: PomodoroSessionHistory[];
+
+			if (this.plugin.settings.pomodoroStorageLocation === "daily-notes") {
+				const dailyNotesHistory = await this.loadHistoryFromDailyNotesForDateRange(
+					startDate,
+					endDate
+				);
+				history =
+					pluginHistory.length > 0
+						? this.mergeHistories(pluginHistory, dailyNotesHistory)
+						: dailyNotesHistory;
+			} else {
+				history = pluginHistory;
+			}
+
+			return sortPomodoroSessions(history);
+		} catch (error) {
+			console.error("Failed to load session history for date range:", error);
 			return [];
 		}
 	}
@@ -1005,45 +1074,18 @@ export class PomodoroService {
 	}
 
 	async getStatsForDate(date: Date): Promise<PomodoroHistoryStats> {
-		const dateStr = formatDateForStorage(date);
+		const dayHistory = await this.getSessionsForDate(date);
+		return calculatePomodoroStats(dayHistory);
+	}
+
+	async getStatsForDateRange(startDate: Date, endDate: Date): Promise<PomodoroHistoryStats> {
+		const rangeHistory = await this.getSessionsForDateRange(startDate, endDate);
+		return calculatePomodoroStats(rangeHistory);
+	}
+
+	async getOverallStats(): Promise<PomodoroHistoryStats> {
 		const history = await this.getSessionHistory();
-
-		// Filter sessions for the specific date
-		const dayHistory = history.filter((session) => {
-			const sessionDate = formatDateForStorage(new Date(session.startTime));
-			return sessionDate === dateStr;
-		});
-
-		// Calculate stats for work sessions only
-		const workSessions = dayHistory.filter((session) => session.type === "work");
-		const completedWork = workSessions.filter((session) => session.completed);
-
-		// Calculate current streak (consecutive completed work sessions from latest backwards)
-		let currentStreak = 0;
-		for (let i = workSessions.length - 1; i >= 0; i--) {
-			if (workSessions[i].completed) {
-				currentStreak++;
-			} else {
-				break;
-			}
-		}
-
-		const totalMinutes = completedWork.reduce(
-			(sum, session) => sum + getSessionDuration(session),
-			0
-		);
-		const averageSessionLength =
-			completedWork.length > 0 ? totalMinutes / completedWork.length : 0;
-		const completionRate =
-			workSessions.length > 0 ? (completedWork.length / workSessions.length) * 100 : 0;
-
-		return {
-			pomodorosCompleted: completedWork.length,
-			currentStreak,
-			totalMinutes,
-			averageSessionLength: Math.round(averageSessionLength),
-			completionRate: Math.round(completionRate),
-		};
+		return calculatePomodoroStats(history);
 	}
 
 	async getTodayStats(): Promise<PomodoroHistoryStats> {
@@ -1072,6 +1114,29 @@ export class PomodoroService {
 		this.saveState();
 	}
 
+	private async loadPluginHistory(): Promise<PomodoroSessionHistory[]> {
+		const data = await this.plugin.loadData();
+		const pluginHistory = data?.pomodoroHistory;
+		return Array.isArray(pluginHistory) ? pluginHistory : [];
+	}
+
+	private async loadPluginHistoryForDateKey(
+		dateKey: string
+	): Promise<PomodoroSessionHistory[]> {
+		return filterPomodoroSessionsByDateKey(await this.loadPluginHistory(), dateKey);
+	}
+
+	private async loadPluginHistoryForDateRange(
+		startDate: Date,
+		endDate: Date
+	): Promise<PomodoroSessionHistory[]> {
+		return filterPomodoroSessionsByDateRange(
+			await this.loadPluginHistory(),
+			startDate,
+			endDate
+		);
+	}
+
 	/**
 	 * Save pomodoro history to daily notes frontmatter
 	 */
@@ -1095,6 +1160,58 @@ export class PomodoroService {
 		}
 	}
 
+	private async loadHistoryFromDailyNotesForDateRange(
+		startDate: Date,
+		endDate: Date
+	): Promise<PomodoroSessionHistory[]> {
+		try {
+			if (!appHasDailyNotesPluginLoaded()) {
+				return [];
+			}
+
+			const allDailyNotes = getAllDailyNotes();
+			const history: PomodoroSessionHistory[] = [];
+
+			for (const dateKey of getPomodoroDateKeysInRange(startDate, endDate)) {
+				const sessions = await this.loadHistoryFromDailyNoteForDateKey(
+					dateKey,
+					allDailyNotes
+				);
+				history.push(...sessions);
+			}
+
+			return history;
+		} catch (error) {
+			console.error("Failed to load history from daily notes for date range:", error);
+			return [];
+		}
+	}
+
+	private async loadHistoryFromDailyNoteForDateKey(
+		dateKey: string,
+		allDailyNotes?: Record<string, any>
+	): Promise<PomodoroSessionHistory[]> {
+		try {
+			if (!dateKey || !appHasDailyNotesPluginLoaded()) {
+				return [];
+			}
+
+			const dailyNotes = allDailyNotes ?? getAllDailyNotes();
+			const date = parseDateToLocal(dateKey);
+			const moment = (window as any).moment(date);
+			const dailyNote = getDailyNote(moment, dailyNotes);
+
+			if (!dailyNote) {
+				return [];
+			}
+
+			return this.readPomodoroSessionsFromDailyNote(dailyNote);
+		} catch (error) {
+			console.warn(`Failed to load pomodoro history for daily note ${dateKey}:`, error);
+			return [];
+		}
+	}
+
 	/**
 	 * Load pomodoro history from daily notes frontmatter
 	 */
@@ -1107,20 +1224,11 @@ export class PomodoroService {
 
 			const allHistory: PomodoroSessionHistory[] = [];
 			const allDailyNotes = getAllDailyNotes();
-			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
 
 			// Read from each daily note
 			for (const [, file] of Object.entries(allDailyNotes)) {
 				try {
-					const cache = this.plugin.app.metadataCache.getFileCache(file);
-					const frontmatter = cache?.frontmatter;
-
-					if (frontmatter && frontmatter[pomodoroField]) {
-						const sessions = frontmatter[pomodoroField];
-						if (Array.isArray(sessions)) {
-							allHistory.push(...sessions);
-						}
-					}
+					allHistory.push(...this.readPomodoroSessionsFromDailyNote(file));
 				} catch (error) {
 					console.warn(
 						`Failed to read pomodoro data from daily note ${file.path}:`,
@@ -1134,6 +1242,15 @@ export class PomodoroService {
 			console.error("Failed to load history from daily notes:", error);
 			return [];
 		}
+	}
+
+	private readPomodoroSessionsFromDailyNote(file: any): PomodoroSessionHistory[] {
+		const cache = this.plugin.app.metadataCache.getFileCache(file);
+		const frontmatter = cache?.frontmatter;
+		const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
+		const sessions = frontmatter?.[pomodoroField];
+
+		return Array.isArray(sessions) ? sessions : [];
 	}
 
 	/**

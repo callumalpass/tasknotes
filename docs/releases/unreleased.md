@@ -29,6 +29,12 @@ Example:
 - (#1764) Fixed Google Calendar sync using stale task metadata after rapid task updates, and fixed late recurring completions/skips recording the completion day instead of the scheduled occurrence date.
   - Thanks to @martin-forge for the PR and to @jpmoo for reporting the recurring completion issues.
 - Fixed CI test runs resolving the NLP parser package from a local sibling checkout instead of the published dependency.
+- (#1813) Fixed Pomodoro timer UI stalls caused by refreshing session statistics on every timer tick
+  - Pomodoro stats now refresh on initial render and session completion instead of once per second
+  - Pomodoro daily-note stats now read the relevant date/range instead of routing through all history
+  - Native Pomodoro notifications now respect the notification setting and granted permission before showing
+  - Thanks to @Szu-Szu for reporting and @its-thex for confirming
+
 - (#1744) Fixed Bases Task List views so changing the per-view `Expanded relationships` option takes effect on re-render
   - Restores the expected `show-all` behavior for setups that hide subtasks at the top level with `note.projects.isEmpty()`
   - Thanks to @minol-dev for reporting

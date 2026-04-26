@@ -52,6 +52,12 @@ export class PomodoroView extends ItemView {
 	// Event listeners
 	private listeners: EventRef[] = [];
 
+	private refreshStats(): void {
+		this.updateStats().catch((error) => {
+			console.error("Failed to update stats:", error);
+		});
+	}
+
 	constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
 		super(leaf);
 		this.plugin = plugin;
@@ -95,12 +101,9 @@ export class PomodoroView extends ItemView {
 		);
 		this.listeners.push(completeListener);
 
-		const interruptListener = this.plugin.emitter.on(
-			EVENT_POMODORO_INTERRUPT,
-			({ session }) => {
-				this.updateDisplay();
-			}
-		);
+		const interruptListener = this.plugin.emitter.on(EVENT_POMODORO_INTERRUPT, () => {
+			this.updateDisplay(undefined, undefined, { refreshStats: true });
+		});
 		this.listeners.push(interruptListener);
 
 		const tickListener = this.plugin.emitter.on(
@@ -438,9 +441,7 @@ export class PomodoroView extends ItemView {
 
 		// Initial display update
 		this.updateDisplay();
-		this.updateStats().catch((error) => {
-			console.error("Failed to update initial stats:", error);
-		});
+		this.refreshStats();
 
 		// Update initial timer based on current state
 		if (this.plugin.pomodoroService) {
@@ -862,7 +863,11 @@ export class PomodoroView extends ItemView {
 		}
 	}
 
-	private updateDisplay(session?: PomodoroSession, task?: TaskInfo) {
+	private updateDisplay(
+		session?: PomodoroSession,
+		task?: TaskInfo,
+		options: { refreshStats?: boolean } = {}
+	) {
 		// Check if pomodoroService is available
 		if (!this.plugin.pomodoroService) {
 			// Set default UI state when service is not available
@@ -978,9 +983,9 @@ export class PomodoroView extends ItemView {
 			this.subtractTimeButton.removeClass("pomodoro-view__time-adjust-button--hidden");
 		}
 
-		this.updateStats().catch((error) => {
-			console.error("Failed to update stats:", error);
-		});
+		if (options.refreshStats) {
+			this.refreshStats();
+		}
 	}
 
 	private updateTimer(seconds: number) {
@@ -1123,7 +1128,7 @@ export class PomodoroView extends ItemView {
 	}
 
 	private onPomodoroComplete(session: PomodoroSession, nextType: string) {
-		this.updateDisplay();
+		this.updateDisplay(undefined, undefined, { refreshStats: true });
 
 		// Show completion message and skip break option
 		if (this.statusDisplay) {

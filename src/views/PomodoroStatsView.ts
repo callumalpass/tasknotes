@@ -1,13 +1,13 @@
 import { ItemView, WorkspaceLeaf, Setting } from "obsidian";
-import { format, startOfWeek, endOfWeek, startOfDay } from "date-fns";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { POMODORO_STATS_VIEW_TYPE, PomodoroHistoryStats, PomodoroSessionHistory } from "../types";
 import {
-	parseTimestamp,
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
 import { getSessionDuration } from "../utils/pomodoroUtils";
+import { calculatePomodoroStats } from "../utils/pomodoroStats";
 
 export class PomodoroStatsView extends ItemView {
 	plugin: TaskNotesPlugin;
@@ -38,22 +38,6 @@ export class PomodoroStatsView extends ItemView {
 
 	private t(key: string, params?: Record<string, string | number>): string {
 		return this.plugin.i18n.translate(key, params);
-	}
-
-	/**
-	 * Calculate actual duration in minutes with backward compatibility
-	 */
-	private calculateActualDuration(
-		activePeriods: Array<{ startTime: string; endTime?: string }>
-	): number {
-		return activePeriods
-			.filter((period) => period.endTime) // Only completed periods
-			.reduce((total, period) => {
-				const start = new Date(period.startTime);
-				const end = period.endTime ? new Date(period.endTime) : new Date();
-				const durationMs = end.getTime() - start.getTime();
-				return total + Math.round(durationMs / (1000 * 60)); // Convert to minutes
-			}, 0);
 	}
 
 	async onOpen() {
@@ -144,85 +128,65 @@ export class PomodoroStatsView extends ItemView {
 
 	private async refreshStats() {
 		try {
-			await Promise.all([
-				this.updateOverviewStats(),
-				this.updateTodayStats(),
-				this.updateWeekStats(),
-				this.updateOverallStats(),
-				this.updateRecentSessions(),
+			const todayLocal = getTodayLocal();
+			const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
+			const yesterdayLocal = new Date(todayLocal);
+			yesterdayLocal.setDate(yesterdayLocal.getDate() - 1);
+			const yesterdayUTCAnchor = createUTCDateFromLocalCalendarDate(yesterdayLocal);
+			const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
+			const weekStartOptions = {
+				weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6,
+			};
+			const weekStart = startOfWeek(todayUTCAnchor, weekStartOptions);
+			const weekEnd = endOfWeek(todayUTCAnchor, weekStartOptions);
+
+			const [todayStats, yesterdayStats, weekStats, history] = await Promise.all([
+				this.plugin.pomodoroService.getTodayStats(),
+				this.plugin.pomodoroService.getStatsForDate(yesterdayUTCAnchor),
+				this.plugin.pomodoroService.getStatsForDateRange(weekStart, weekEnd),
+				this.plugin.pomodoroService.getSessionHistory(),
 			]);
+			const overallStats = calculatePomodoroStats(history);
+
+			if (this.overviewStatsEl) {
+				this.renderOverviewStats(
+					this.overviewStatsEl,
+					todayStats,
+					overallStats,
+					yesterdayStats
+				);
+			}
+
+			if (this.todayStatsEl) {
+				this.renderStatsGrid(this.todayStatsEl, todayStats);
+			}
+
+			if (this.weekStatsEl) {
+				this.renderStatsGrid(this.weekStatsEl, weekStats);
+			}
+
+			if (this.overallStatsEl) {
+				this.renderStatsGrid(this.overallStatsEl, overallStats);
+			}
+
+			if (this.recentSessionsEl) {
+				this.renderRecentSessions(this.recentSessionsEl, history);
+			}
 		} catch (error) {
 			console.error("Failed to refresh stats:", error);
 		}
 	}
 
-	private async updateOverviewStats() {
-		if (!this.overviewStatsEl) return;
-
-		const todayStats = await this.plugin.pomodoroService.getTodayStats();
-		const overallStats = await this.calculateOverallStatsFromHistory();
-
-		// Use UTC-anchored dates for consistent timezone handling
-		const todayLocal = getTodayLocal();
-		const yesterdayLocal = new Date(todayLocal);
-		yesterdayLocal.setDate(yesterdayLocal.getDate() - 1);
-		const yesterdayUTCAnchor = createUTCDateFromLocalCalendarDate(yesterdayLocal);
-		const yesterdayStats = await this.calculateStatsForRange(
-			yesterdayUTCAnchor,
-			yesterdayUTCAnchor
-		);
-
-		this.renderOverviewStats(this.overviewStatsEl, todayStats, overallStats, yesterdayStats);
-	}
-
-	private async updateTodayStats() {
-		if (!this.todayStatsEl) return;
-
-		const stats = await this.plugin.pomodoroService.getTodayStats();
-		this.renderStatsGrid(this.todayStatsEl, stats);
-	}
-
-	private async updateWeekStats() {
-		if (!this.weekStatsEl) return;
-
-		// Use UTC-anchored today for consistent timezone handling
-		const todayLocal = getTodayLocal();
-		const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
-		const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
-		const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
-		const weekStart = startOfWeek(todayUTCAnchor, weekStartOptions);
-		const weekEnd = endOfWeek(todayUTCAnchor, weekStartOptions);
-
-		const stats = await this.calculateStatsForRange(weekStart, weekEnd);
-		this.renderStatsGrid(this.weekStatsEl, stats);
-	}
-
-	private async updateOverallStats() {
-		if (!this.overallStatsEl) return;
-
-		const history = await this.plugin.pomodoroService.getSessionHistory();
-		const stats = this.calculateOverallStats(history);
-		this.renderStatsGrid(this.overallStatsEl, stats);
-	}
-
-	private async calculateOverallStatsFromHistory(): Promise<PomodoroHistoryStats> {
-		const history = await this.plugin.pomodoroService.getSessionHistory();
-		return this.calculateOverallStats(history);
-	}
-
-	private async updateRecentSessions() {
-		if (!this.recentSessionsEl) return;
-
-		const history = await this.plugin.pomodoroService.getSessionHistory();
+	private renderRecentSessions(container: HTMLElement, history: PomodoroSessionHistory[]) {
 		const recentSessions = history
 			.filter((session: PomodoroSessionHistory) => session.type === "work")
 			.slice(-10)
 			.reverse();
 
-		this.recentSessionsEl.empty();
+		container.empty();
 
 		if (recentSessions.length === 0) {
-			this.recentSessionsEl.createDiv({
+			container.createDiv({
 				cls: "pomodoro-no-sessions pomodoro-stats-view__no-sessions",
 				text: this.t("views.pomodoroStats.recents.empty"),
 			});
@@ -230,7 +194,7 @@ export class PomodoroStatsView extends ItemView {
 		}
 
 		for (const session of recentSessions) {
-			const sessionEl = this.recentSessionsEl.createDiv({
+			const sessionEl = container.createDiv({
 				cls: "pomodoro-session-item pomodoro-stats-view__session-item",
 			});
 
@@ -444,73 +408,5 @@ export class PomodoroStatsView extends ItemView {
 			cls: "stat-label pomodoro-stats-view__stat-label",
 			text: this.t("views.pomodoroStats.stats.completion"),
 		});
-	}
-
-	private async calculateStatsForRange(
-		startDate: Date,
-		endDate: Date
-	): Promise<PomodoroHistoryStats> {
-		const history = await this.plugin.pomodoroService.getSessionHistory();
-
-		// Normalize range boundaries to start of day for safe comparison
-		const normalizedStartDate = startOfDay(startDate);
-		const normalizedEndDate = startOfDay(endDate);
-
-		// Filter sessions within date range
-		const rangeSessions = history.filter((session: PomodoroSessionHistory) => {
-			try {
-				// Parse the session timestamp safely and normalize to start of day
-				const sessionTimestamp = parseTimestamp(session.startTime);
-				const sessionDate = startOfDay(sessionTimestamp);
-
-				// Safe date comparison using normalized dates
-				return sessionDate >= normalizedStartDate && sessionDate <= normalizedEndDate;
-			} catch (error) {
-				console.error("Error parsing session timestamp for filtering:", {
-					sessionStartTime: session.startTime,
-					error,
-				});
-				return false; // Exclude sessions with invalid timestamps
-			}
-		});
-
-		return this.calculateStatsFromSessions(rangeSessions);
-	}
-
-	private calculateOverallStats(history: PomodoroSessionHistory[]): PomodoroHistoryStats {
-		return this.calculateStatsFromSessions(history);
-	}
-
-	private calculateStatsFromSessions(sessions: PomodoroSessionHistory[]): PomodoroHistoryStats {
-		// Filter work sessions only
-		const workSessions = sessions.filter((session) => session.type === "work");
-		const completedWork = workSessions.filter((session) => session.completed);
-
-		// Calculate streak from most recent sessions
-		let currentStreak = 0;
-		for (let i = workSessions.length - 1; i >= 0; i--) {
-			if (workSessions[i].completed) {
-				currentStreak++;
-			} else {
-				break;
-			}
-		}
-
-		const totalMinutes = completedWork.reduce(
-			(sum, session) => sum + getSessionDuration(session),
-			0
-		);
-		const averageSessionLength =
-			completedWork.length > 0 ? totalMinutes / completedWork.length : 0;
-		const completionRate =
-			workSessions.length > 0 ? (completedWork.length / workSessions.length) * 100 : 0;
-
-		return {
-			pomodorosCompleted: completedWork.length,
-			currentStreak,
-			totalMinutes,
-			averageSessionLength: Math.round(averageSessionLength),
-			completionRate: Math.round(completionRate),
-		};
 	}
 }
