@@ -578,11 +578,17 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 			subscriptionName = subscription.name;
 		}
 
+		const { start, end } = normalizeExternalTimedEventRange(
+			icsEvent.start,
+			icsEvent.end,
+			icsEvent.allDay
+		);
+
 		return {
 			id: icsEvent.id,
 			title: icsEvent.title,
-			start: icsEvent.start,
-			end: icsEvent.end,
+			start: start,
+			end: end,
 			allDay: icsEvent.allDay,
 			backgroundColor: backgroundColor,
 			borderColor: borderColor,
@@ -600,6 +606,60 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 		console.error("Error creating ICS event:", error);
 		return null;
 	}
+}
+
+/**
+ * FullCalendar list views can render a timed external event under multiple day
+ * headers when the provider supplies a true zero-duration range (end === start).
+ * Clamp those point-in-time external events to a minimal positive duration
+ * before handing them to FullCalendar, while preserving the raw provider event
+ * unchanged in extendedProps for display and debugging.
+ */
+function normalizeExternalTimedEventRange(
+	start: string,
+	end: string | undefined,
+	allDay: boolean
+): { start: string; end?: string } {
+	if (allDay || !end) {
+		return { start, end };
+	}
+
+	const startDate = new Date(start);
+	const endDate = new Date(end);
+
+	if (
+		Number.isNaN(startDate.getTime()) ||
+		Number.isNaN(endDate.getTime()) ||
+		endDate.getTime() !== startDate.getTime()
+	) {
+		return { start, end };
+	}
+
+	const normalizedEnd = new Date(endDate.getTime() + 1);
+	return {
+		start,
+		end: formatExternalTimedEventEnd(normalizedEnd, end),
+	};
+}
+
+function formatExternalTimedEventEnd(date: Date, originalEnd: string): string {
+	if (/Z$/i.test(originalEnd)) {
+		return date.toISOString();
+	}
+
+	const offsetMatch = originalEnd.match(/([+-])(\d{2}):?(\d{2})$/);
+	if (offsetMatch) {
+		const [, sign, hours, minutes] = offsetMatch;
+		const offsetMinutes = Number(hours) * 60 + Number(minutes);
+		const offsetMs = offsetMinutes * 60 * 1000 * (sign === "+" ? 1 : -1);
+		const shifted = new Date(date.getTime() + offsetMs);
+		const pad = (value: number, length = 2) => String(value).padStart(length, "0");
+		const datePart = `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
+		const timePart = `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}.${pad(shifted.getUTCMilliseconds(), 3)}`;
+		return `${datePart}T${timePart}${sign}${hours}:${minutes}`;
+	}
+
+	return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSS");
 }
 
 /**

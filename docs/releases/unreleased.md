@@ -23,3 +23,10 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1823) Fixed zero-duration timed external calendar events rendering on multiple days in list-style calendar views
+  - Adds a minimal display duration before passing point-in-time external events to FullCalendar
+  - Preserves the original provider event data for context menus and debugging
+  - Thanks to @martin-forge for reporting and debugging
