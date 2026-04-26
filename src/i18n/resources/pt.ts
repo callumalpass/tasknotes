@@ -204,18 +204,14 @@ export const pt: TranslationTree = {
 				customDays: "Visualização de {count} dias"
 			},
 			settings: {
-		header: {
-			documentation: "Documentation",
-			documentationUrl: "https://tasknotes.dev",
-		},
 				groups: {
 					dateNavigation: "Navegação de Data",
 					events: "Eventos",
 					layout: "Layout",
 					propertyBasedEvents: "Eventos baseados em propriedade",
 					calendarSubscriptions: "Inscrições de calendário",
-					googleCalendars: "Google Calendars",
-					microsoftCalendars: "Microsoft Calendars"
+					googleCalendars: "Calendários do Google",
+					microsoftCalendars: "Calendários da Microsoft"
 				},
 				dateNavigation: {
 					navigateToDate: "Navegar para data",
@@ -447,7 +443,7 @@ export const pt: TranslationTree = {
 	},
 	settings: {
 		header: {
-			documentation: "Documentation",
+			documentation: "Documentação",
 			documentationUrl: "https://tasknotes.dev",
 		},
 		tabs: {
@@ -962,17 +958,17 @@ export const pt: TranslationTree = {
 				dateCreated: {
 					name: "Data de Criação",
 					description:
-						"Timestamp de quando a tarefa foi criada. Definido automaticamente e usado para ordenação por ordem de criação.",
+						"Carimbo de data/hora de quando a tarefa foi criada. Definido automaticamente e usado para ordenação por ordem de criação.",
 				},
 				dateModified: {
 					name: "Data de Modificação",
 					description:
-						"Timestamp da última alteração na tarefa. Atualizado automaticamente quando qualquer propriedade da tarefa muda.",
+						"Carimbo de data/hora da última alteração na tarefa. Atualizado automaticamente quando qualquer propriedade da tarefa muda.",
 				},
 				completedDate: {
 					name: "Data de Conclusão",
 					description:
-						"Timestamp de quando a tarefa foi marcada como concluída. Definido automaticamente quando o status muda para um estado concluído.",
+						"Carimbo de data/hora de quando a tarefa foi marcada como concluída. Definido automaticamente quando o status muda para um estado concluído.",
 				},
 				archiveTag: {
 					name: "Tag de Arquivo",
@@ -982,7 +978,7 @@ export const pt: TranslationTree = {
 				timeEntries: {
 					name: "Entradas de Tempo",
 					description:
-						"Registros de sessões de rastreamento de tempo para esta tarefa. Cada entrada armazena timestamps de início e fim. Usado para calcular o tempo total gasto.",
+						"Registros de sessões de rastreamento de tempo para esta tarefa. Cada entrada armazena carimbos de data/hora de início e fim. Usado para calcular o tempo total gasto.",
 				},
 				completeInstances: {
 					name: "Instâncias Concluídas",
@@ -1227,7 +1223,7 @@ export const pt: TranslationTree = {
 					scheduled: "Data Agendada",
 					timeEstimate: "Estimativa de Tempo",
 					totalTrackedTime: "Tempo Total Registrado",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "Progresso da lista de verificação",
 					recurrence: "Recorrência",
 					completedDate: "Data de Conclusão",
 					createdDate: "Data de Criação",
@@ -1252,7 +1248,7 @@ export const pt: TranslationTree = {
 					options: {
 						title: "Título da tarefa (Não atualiza)",
 						zettel: "Formato Zettelkasten (AAMMDD + segundos base36 desde a meia-noite)",
-						timestamp: "Timestamp completo (AAAA-MM-DD-HHMMSS)",
+						timestamp: "Carimbo de data/hora completo (AAAA-MM-DD-HHMMSS)",
 						custom: "Modelo personalizado"
 					}
 				},
@@ -1591,7 +1587,7 @@ export const pt: TranslationTree = {
 					options: {
 						title: "Título do evento",
 						zettel: "Formato Zettelkasten",
-						timestamp: "Timestamp",
+						timestamp: "Carimbo de data/hora",
 						custom: "Modelo personalizado"
 					}
 				},
@@ -1682,7 +1678,7 @@ export const pt: TranslationTree = {
 				filePath: {
 					name: "Caminho do arquivo de exportação",
 					description: "Caminho onde o arquivo ICS será salvo (relativo à raiz do cofre)",
-					placeholder: "tasknotes-calendar.ics"
+					placeholder: "tasknotes-calendario.ics"
 				},
 				interval: {
 					name: "Intervalo de atualização (entre 5 e 1440 minutos)",
@@ -1716,19 +1712,19 @@ export const pt: TranslationTree = {
 				}
 			},
 			googleCalendarExport: {
-				header: "Exportar tarefas para o Google Calendar",
+				header: "Exportar tarefas para o Google Agenda",
 				description:
-					"Sincronize automaticamente suas tarefas para o Google Calendar como eventos. Requer que o Google Calendar esteja conectado acima.",
+					"Sincronize automaticamente suas tarefas para o Google Agenda como eventos. Requer que o Google Agenda esteja conectado acima.",
 				enable: {
 					name: "Ativar exportação de tarefas",
 					description:
-						"Quando ativado, tarefas com datas serão automaticamente sincronizadas para o Google Calendar como eventos."
+						"Quando ativado, tarefas com datas serão automaticamente sincronizadas para o Google Agenda como eventos."
 				},
 				targetCalendar: {
 					name: "Calendário de destino",
 					description: "Selecione em qual calendário criar eventos de tarefas.",
 					placeholder: "Selecionar um calendário...",
-					connectFirst: "Conecte o Google Calendar primeiro",
+					connectFirst: "Conecte o Google Agenda primeiro",
 					primarySuffix: " (Principal)"
 				},
 				syncTrigger: {
@@ -1769,7 +1765,7 @@ export const pt: TranslationTree = {
 				defaultReminder: {
 					name: "Lembrete padrão",
 					description:
-						"Adicionar um lembrete popup aos eventos do Google Calendar. Defina minutos antes do evento (0 = sem lembrete). Valores comuns: 15, 30, 60, 1440 (1 dia)."
+						"Adicionar um lembrete popup aos eventos do Google Agenda. Defina minutos antes do evento (0 = sem lembrete). Valores comuns: 15, 30, 60, 1440 (1 dia)."
 				},
 				automaticSyncBehavior: {
 					header: "Comportamento de sincronização automática"
@@ -1800,7 +1796,7 @@ export const pt: TranslationTree = {
 				syncAllTasks: {
 					name: "Sincronizar todas as tarefas",
 					description:
-						"Sincronizar todas as tarefas existentes para o Google Calendar. Isso criará eventos para tarefas que ainda não foram sincronizadas.",
+						"Sincronizar todas as tarefas existentes para o Google Agenda. Isso criará eventos para tarefas que ainda não foram sincronizadas.",
 					buttonText: "Sincronizar tudo"
 				},
 				unlinkAllTasks: {
@@ -1815,19 +1811,19 @@ export const pt: TranslationTree = {
 				},
 				notices: {
 					notEnabled:
-						"Exportação para o Google Calendar não está ativada. Configure em Configurações > Integrações.",
+						"Exportação para o Google Agenda não está ativada. Configure em Configurações > Integrações.",
 					notEnabledOrConfigured:
-						"Exportação para o Google Calendar não está ativada ou configurada",
+						"Exportação para o Google Agenda não está ativada ou configurada",
 					serviceNotAvailable: "Serviço de sincronização de calendário não disponível",
 					syncResults: "Sincronizados: {synced}, Falharam: {failed}, Ignorados: {skipped}",
-					taskSynced: "Tarefa sincronizada para o Google Calendar",
+					taskSynced: "Tarefa sincronizada para o Google Agenda",
 					noActiveFile: "Nenhum arquivo está atualmente ativo",
 					notATask: "O arquivo atual não é uma tarefa",
 					noDateToSync: "Tarefa não tem data agendada ou de vencimento para sincronizar",
-					syncFailed: "Falha ao sincronizar tarefa para o Google Calendar: {message}",
+					syncFailed: "Falha ao sincronizar tarefa para o Google Agenda: {message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
-					syncingTasks: "Sincronizando {total} tarefas para o Google Calendar...",
+						"A conexão com o Google Agenda expirou. Reconecte em Configurações > Integrações.",
+					syncingTasks: "Sincronizando {total} tarefas para o Google Agenda...",
 					syncComplete:
 						"Sincronização completa: {synced} sincronizadas, {failed} falharam, {skipped} ignoradas",
 					eventsDeletedAndUnlinked: "Todos os eventos excluídos e desvinculados",
@@ -1865,8 +1861,8 @@ export const pt: TranslationTree = {
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "Ativar servidor MCP",
+						description: "Exponha as ferramentas do TaskNotes via Model Context Protocol no endpoint /mcp. Requer que a API HTTP esteja ativada.",
 					},
 				},
 				endpoints: {
@@ -2078,10 +2074,10 @@ export const pt: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "Definições de tipos mdbase",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "Saiba mais sobre mdbase-spec",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "Gerar definições de tipos mdbase",
+					description: "Gere e mantenha arquivos de tipos mdbase (mdbase.yaml e _types/task.md) na raiz do cofre conforme suas configurações mudam.",
 				},
 			},
 			timeFormats: {
@@ -2152,14 +2148,14 @@ export const pt: TranslationTree = {
 		startTimeTrackingWithSelector: "Iniciar registro de tempo (selecionar tarefa)",
 		editTimeEntries: "Editar registros de tempo (selecionar tarefa)",
 		createOrOpenTask: "Criar ou abrir tarefa",
-		syncAllTasksGoogleCalendar: "Sincronizar todas as tarefas para o Google Calendar",
-		syncCurrentTaskGoogleCalendar: "Sincronizar tarefa atual para o Google Calendar"
+		syncAllTasksGoogleCalendar: "Sincronizar todas as tarefas para o Google Agenda",
+		syncCurrentTaskGoogleCalendar: "Sincronizar tarefa atual para o Google Agenda"
 	},
 	modals: {
 		deviceCode: {
-			title: "Autorização do Google Calendar",
+			title: "Autorização do Google Agenda",
 			instructions: {
-				intro: "Para conectar seu Google Calendar, por favor, siga estes passos:"
+				intro: "Para conectar seu Google Agenda, por favor, siga estes passos:"
 			},
 			steps: {
 				open: "Abra",
@@ -2341,7 +2337,7 @@ export const pt: TranslationTree = {
 			contextsLabel: "Contextos",
 			contextsPlaceholder: "contexto1, contexto2",
 			tagsLabel: "Tags",
-			tagsPlaceholder: "tag1, tag2",
+			tagsPlaceholder: "etiqueta1, etiqueta2",
 			timeEstimateLabel: "Estimativa de tempo (minutos)",
 			timeEstimatePlaceholder: "30",
 			unsavedChanges: {
@@ -2403,7 +2399,7 @@ export const pt: TranslationTree = {
 				textPlaceholder: "Digite {field}...",
 				numberPlaceholder: "0",
 				datePlaceholder: "AAAA-MM-DD",
-				listPlaceholder: "item1, item2, item3",
+				listPlaceholder: "item 1, item 2, item 3",
 				pickDate: "Escolher data {field}"
 			},
 			recurrence: {
@@ -2672,14 +2668,14 @@ export const pt: TranslationTree = {
 			showInExplorer: "Mostrar no explorador de arquivos",
 			addToCalendar: "Adicionar ao calendário",
 			calendar: {
-				google: "Google Calendar",
-				outlook: "Outlook Calendar",
-				yahoo: "Yahoo Calendar",
+				google: "Google Agenda",
+				outlook: "Calendário do Outlook",
+				yahoo: "Calendário do Yahoo",
 				downloadIcs: "Baixar arquivo .ics",
-				syncToGoogle: "Sincronizar com o Google Calendar",
-				syncToGoogleNotConfigured: "Sincronização com Google Calendar não configurada",
-				syncToGoogleSuccess: "Tarefa sincronizada com o Google Calendar",
-				syncToGoogleFailed: "Falha ao sincronizar com o Google Calendar"
+				syncToGoogle: "Sincronizar com o Google Agenda",
+				syncToGoogleNotConfigured: "Sincronização com Google Agenda não configurada",
+				syncToGoogleSuccess: "Tarefa sincronizada com o Google Agenda",
+				syncToGoogleFailed: "Falha ao sincronizar com o Google Agenda"
 			},
 			recurrence: "Recorrência",
 			clearRecurrence: "Limpar recorrência",
@@ -2975,7 +2971,7 @@ export const pt: TranslationTree = {
 			loadingDependencies: "Carregando dependências...",
 			blockingEmpty: "Nenhuma tarefa dependente",
 			blockingLoadError: "Falha ao carregar dependências",
-			googleCalendarSyncTooltip: "Sincronizado com o Google Calendar"
+			googleCalendarSyncTooltip: "Sincronizado com o Google Agenda"
 		},
 		propertyEventCard: {
 			unknownFile: "Arquivo desconhecido"
@@ -3118,7 +3114,7 @@ export const pt: TranslationTree = {
 				scheduledDate: "Data Agendada",
 				timeEstimate: "Estimativa de Tempo",
 				totalTrackedTime: "Tempo Total Registrado",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "Progresso da lista de verificação",
 				recurrence: "Recorrência",
 				completedDate: "Data de Conclusão",
 				createdDate: "Data de Criação",

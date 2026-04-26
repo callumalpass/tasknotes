@@ -204,10 +204,6 @@ export const zh: TranslationTree = {
 				customDays: "{count}天视图",
 			},
 			settings: {
-		header: {
-			documentation: "Documentation",
-			documentationUrl: "https://tasknotes.dev",
-		},
 				groups: {
 					dateNavigation: "日期导航",
 					events: "事件",
@@ -447,7 +443,7 @@ export const zh: TranslationTree = {
 	},
 	settings: {
 		header: {
-			documentation: "Documentation",
+			documentation: "文档",
 			documentationUrl: "https://tasknotes.dev",
 		},
 		tabs: {
@@ -743,7 +739,7 @@ export const zh: TranslationTree = {
 				bodyTemplateFile: {
 					name: "正文模板文件",
 					description: "任务正文内容的模板文件路径。支持模板变量如{{title}}、{{date}}、{{time}}、{{priority}}、{{status}}等。",
-					placeholder: "Templates/Task Template.md",
+					placeholder: "模板/任务模板.md",
 					ariaLabel: "正文模板文件路径",
 				},
 				variablesHeader: "模板变量：",
@@ -1223,7 +1219,7 @@ export const zh: TranslationTree = {
 					scheduled: "安排日期",
 					timeEstimate: "时间估计",
 					totalTrackedTime: "总跟踪时间",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "清单进度",
 					recurrence: "重复",
 					completedDate: "完成日期",
 					createdDate: "创建日期",
@@ -1454,12 +1450,12 @@ export const zh: TranslationTree = {
 				requiredPropertyKey: {
 					name: "必需属性键",
 					description: "仅显示此前置属性与下面值匹配的笔记。留空以忽略。",
-					placeholder: "type",
+					placeholder: "类型",
 				},
 				requiredPropertyValue: {
 					name: "必需属性值",
 					description: "仅建议属性等于此值的笔记。留空以要求属性存在。",
-					placeholder: "project",
+					placeholder: "项目",
 				},
 				customizeDisplay: {
 					name: "自定义建议显示",
@@ -1474,17 +1470,17 @@ export const zh: TranslationTree = {
 					row1: {
 						name: "第1行",
 						description: "格式：{property|flags}。属性：title、aliases、file.path、file.parent。标志：n(Label)显示标签，s使其可搜索。示例：{title|n(Title)|s}",
-						placeholder: "{title|n(Title)}",
+						placeholder: "{title|n(标题)}",
 					},
 					row2: {
 						name: "第2行（可选）",
 						description: "常见模式：{aliases|n(Aliases)}、{file.parent|n(Folder)}、literal:自定义文本",
-						placeholder: "{aliases|n(Aliases)}",
+						placeholder: "{aliases|n(别名)}",
 					},
 					row3: {
 						name: "第3行（可选）",
 						description: "其他信息如{file.path|n(Path)}或自定义前置字段",
-						placeholder: "{file.path|n(Path)}",
+						placeholder: "{file.path|n(路径)}",
 					},
 				},
 				quickReference: {
@@ -1574,12 +1570,12 @@ export const zh: TranslationTree = {
 				defaultNoteTemplate: {
 					name: "默认笔记模板",
 					description: "从ICS事件创建笔记的模板文件路径",
-					placeholder: "Templates/Event Template.md",
+					placeholder: "模板/事件模板.md",
 				},
 				defaultNoteFolder: {
 					name: "默认笔记文件夹",
 					description: "从ICS事件创建笔记的文件夹",
-					placeholder: "Calendar/Events",
+					placeholder: "日历/事件",
 				},
 				filenameFormat: {
 					name: "ICS笔记文件名格式",
@@ -1643,9 +1639,9 @@ export const zh: TranslationTree = {
 				},
 				placeholders: {
 					calendarName: "日历名称",
-					url: "ICS/iCal URL",
+					url: "ICS/iCal 地址",
 					filePath: "本地文件路径（例如，Calendar.ics）",
-					localFile: "Calendar.ics",
+					localFile: "日历.ics",
 				},
 				statusLabels: {
 					enabled: "已启用",
@@ -1678,7 +1674,7 @@ export const zh: TranslationTree = {
 				filePath: {
 					name: "导出文件路径",
 					description: "ICS文件保存的路径（相对于库根目录）",
-					placeholder: "tasknotes-calendar.ics",
+					placeholder: "tasknotes-日历.ics",
 				},
 				interval: {
 					name: "更新间隔（5到1440分钟之间）",
@@ -1822,7 +1818,7 @@ export const zh: TranslationTree = {
 					noDateToSync: "任务没有可同步的计划日期或截止日期",
 					syncFailed: "同步任务到Google日历失败：{message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
+						"Google 日历连接已过期。请在“设置 > 集成”中重新连接。",
 					syncingTasks: "正在同步{total}个任务到Google日历...",
 					syncComplete:
 						"同步完成：{synced}个已同步，{failed}个失败，{skipped}个跳过",
@@ -1857,12 +1853,12 @@ export const zh: TranslationTree = {
 				authToken: {
 					name: "API认证令牌",
 					description: "API认证所需的令牌（留空表示无认证）",
-					placeholder: "your-secret-token",
+					placeholder: "你的秘密令牌",
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "启用 MCP 服务器",
+						description: "通过 /mcp 端点使用 Model Context Protocol 暴露 TaskNotes 工具。需要启用 HTTP API。",
 					},
 				},
 				endpoints: {
@@ -1893,7 +1889,7 @@ export const zh: TranslationTree = {
 					transform: "转换：",
 				},
 				placeholders: {
-					url: "Webhook URL",
+					url: "Webhook 地址",
 					noEventsSelected: "未选择事件",
 					rawPayload: "原始载荷（无转换）",
 				},
@@ -2032,7 +2028,7 @@ export const zh: TranslationTree = {
 						transformSection: "转换配置（可选）",
 						headersSection: "标头配置",
 						url: {
-							name: "Webhook URL",
+							name: "Webhook 地址",
 							description: "将发送webhook载荷的端点",
 							placeholder: "https://your-service.com/webhook",
 						},
@@ -2074,10 +2070,10 @@ export const zh: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "mdbase类型定义",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "了解更多关于 mdbase-spec 的信息",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "生成 mdbase 类型定义",
+					description: "随着设置变化，在库根目录生成并维护 mdbase 类型文件（mdbase.yaml 和 _types/task.md）。",
 				},
 			},
 			timeFormats: {
@@ -2265,7 +2261,7 @@ export const zh: TranslationTree = {
 			useTemplateDesc: "创建内容时应用模板",
 			templatePathLabel: "模板路径",
 			templatePathDesc: "模板文件的路径",
-			templatePathPlaceholder: "templates/ics-note-template.md",
+			templatePathPlaceholder: "模板/ics笔记模板.md",
 		},
 		unscheduledTasksSelector: {
 			title: "未计划的任务",
@@ -3103,7 +3099,7 @@ export const zh: TranslationTree = {
 				scheduledDate: "安排日期",
 				timeEstimate: "时间估计",
 				totalTrackedTime: "总跟踪时间",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "清单进度",
 				recurrence: "重复",
 				completedDate: "完成日期",
 				createdDate: "创建日期",

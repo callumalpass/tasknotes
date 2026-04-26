@@ -204,18 +204,14 @@ export const ja: TranslationTree = {
 				customDays: "{count}日表示",
 			},
 			settings: {
-		header: {
-			documentation: "Documentation",
-			documentationUrl: "https://tasknotes.dev",
-		},
 				groups: {
 					dateNavigation: "日付ナビゲーション",
 					events: "イベント",
 					layout: "レイアウト",
 					propertyBasedEvents: "プロパティベースのイベント",
 					calendarSubscriptions: "カレンダー購読",
-					googleCalendars: "Google Calendars",
-					microsoftCalendars: "Microsoft Calendars",
+					googleCalendars: "Google カレンダー",
+					microsoftCalendars: "Microsoft カレンダー",
 				},
 				dateNavigation: {
 					navigateToDate: "日付に移動",
@@ -447,7 +443,7 @@ export const ja: TranslationTree = {
 	},
 	settings: {
 		header: {
-			documentation: "Documentation",
+			documentation: "ドキュメント",
 			documentationUrl: "https://tasknotes.dev",
 		},
 		tabs: {
@@ -659,12 +655,12 @@ export const ja: TranslationTree = {
 				defaultContexts: {
 					name: "デフォルトコンテキスト",
 					description: "デフォルトコンテキストのカンマ区切りリスト（例：@home、@work）",
-					placeholder: "@home, @work",
+					placeholder: "@自宅, @仕事",
 				},
 				defaultTags: {
 					name: "デフォルトタグ",
 					description: "デフォルトタグのカンマ区切りリスト（#なし）",
-					placeholder: "important, urgent",
+					placeholder: "重要, 緊急",
 				},
 				defaultProjects: {
 					name: "デフォルトプロジェクト",
@@ -744,7 +740,7 @@ export const ja: TranslationTree = {
 				bodyTemplateFile: {
 					name: "ボディテンプレートファイル",
 					description: "タスクボディコンテンツのテンプレートファイルへのパス。{{title}}、{{date}}、{{time}}、{{priority}}、{{status}}などのテンプレート変数をサポート。",
-					placeholder: "Templates/Task Template.md",
+					placeholder: "テンプレート/タスクテンプレート.md",
 					ariaLabel: "ボディテンプレートファイルへのパス",
 				},
 				variablesHeader: "テンプレート変数：",
@@ -1077,7 +1073,7 @@ export const ja: TranslationTree = {
 					delayMinutes: "遅延（分）：",
 				},
 				placeholders: {
-					value: "in-progress",
+					value: "進行中",
 					label: "進行中",
 					icon: "check, circle, clock",
 				},
@@ -1115,7 +1111,7 @@ export const ja: TranslationTree = {
 					weight: "重み：",
 				},
 				placeholders: {
-					value: "high",
+					value: "高",
 					label: "高優先度",
 				},
 				weightLabel: "重み：{weight}",
@@ -1182,7 +1178,7 @@ export const ja: TranslationTree = {
 				},
 				placeholders: {
 					displayName: "表示名",
-					propertyKey: "property-name",
+					propertyKey: "プロパティ名",
 					defaultValue: "デフォルト値",
 					defaultValueList: "デフォルト値（カンマ区切り）",
 				},
@@ -1195,7 +1191,7 @@ export const ja: TranslationTree = {
 				},
 				defaultNames: {
 					unnamedField: "名前なしフィールド",
-					noKey: "no-key",
+					noKey: "キーなし",
 				},
 				deleteTooltip: "フィールドを削除",
 				autosuggestFilters: {
@@ -1224,7 +1220,7 @@ export const ja: TranslationTree = {
 					scheduled: "予定日",
 					timeEstimate: "時間見積もり",
 					totalTrackedTime: "総追跡時間",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "チェックリストの進捗",
 					recurrence: "繰り返し",
 					completedDate: "完了日",
 					createdDate: "作成日",
@@ -1445,22 +1441,22 @@ export const ja: TranslationTree = {
 				requiredTags: {
 					name: "必須タグ",
 					description: "これらのタグのいずれかを持つノートのみを表示（カンマ区切り）。すべてのノートを表示するには空白のままにします。",
-					placeholder: "project, active, important",
+					placeholder: "プロジェクト, アクティブ, 重要",
 				},
 				includeFolders: {
 					name: "含めるフォルダー",
 					description: "これらのフォルダー内のノートのみを表示（カンマ区切りパス）。すべてのフォルダーを表示するには空白のままにします。",
-					placeholder: "Projects/, Work/Active, Personal",
+					placeholder: "プロジェクト/, 仕事/アクティブ, 個人",
 				},
 				requiredPropertyKey: {
 					name: "必須プロパティキー",
 					description: "このフロントマタープロパティが下記の値と一致するノートのみを表示。無視するには空白のままにします。",
-					placeholder: "type",
+					placeholder: "タイプ",
 				},
 				requiredPropertyValue: {
 					name: "必須プロパティ値",
 					description: "プロパティがこの値と等しいノートのみが提案されます。プロパティの存在を要求するには空白のままにします。",
-					placeholder: "project",
+					placeholder: "プロジェクト",
 				},
 				customizeDisplay: {
 					name: "提案表示をカスタマイズ",
@@ -1475,17 +1471,17 @@ export const ja: TranslationTree = {
 					row1: {
 						name: "行1",
 						description: "形式：{property|flags}。プロパティ：title、aliases、file.path、file.parent。フラグ：n(Label)はラベルを表示、sは検索可能にします。例：{title|n(Title)|s}",
-						placeholder: "{title|n(Title)}",
+						placeholder: "{title|n(タイトル)}",
 					},
 					row2: {
 						name: "行2（オプション）",
 						description: "一般的なパターン：{aliases|n(Aliases)}、{file.parent|n(Folder)}、literal:カスタムテキスト",
-						placeholder: "{aliases|n(Aliases)}",
+						placeholder: "{aliases|n(エイリアス)}",
 					},
 					row3: {
 						name: "行3（オプション）",
 						description: "{file.path|n(Path)}やカスタムフロントマターフィールドなどの追加情報",
-						placeholder: "{file.path|n(Path)}",
+						placeholder: "{file.path|n(パス)}",
 					},
 				},
 				quickReference: {
@@ -1575,12 +1571,12 @@ export const ja: TranslationTree = {
 				defaultNoteTemplate: {
 					name: "デフォルトノートテンプレート",
 					description: "ICSイベントから作成されるノートのテンプレートファイルへのパス",
-					placeholder: "Templates/Event Template.md",
+					placeholder: "テンプレート/イベントテンプレート.md",
 				},
 				defaultNoteFolder: {
 					name: "デフォルトノートフォルダー",
 					description: "ICSイベントから作成されるノートのフォルダー",
-					placeholder: "Calendar/Events",
+					placeholder: "カレンダー/イベント",
 				},
 				filenameFormat: {
 					name: "ICSノートファイル名形式",
@@ -1644,9 +1640,9 @@ export const ja: TranslationTree = {
 				},
 				placeholders: {
 					calendarName: "カレンダー名",
-					url: "ICS/iCal URL",
+					url: "ICS/iCal のURL",
 					filePath: "ローカルファイルパス（例：Calendar.ics）",
-					localFile: "Calendar.ics",
+					localFile: "カレンダー.ics",
 				},
 				statusLabels: {
 					enabled: "有効",
@@ -1679,7 +1675,7 @@ export const ja: TranslationTree = {
 				filePath: {
 					name: "エクスポートファイルパス",
 					description: "ICSファイルを保存するパス（ボルトルートからの相対パス）",
-					placeholder: "tasknotes-calendar.ics",
+					placeholder: "tasknotes-カレンダー.ics",
 				},
 				interval: {
 					name: "更新間隔（5から1440分の間）",
@@ -1823,7 +1819,7 @@ export const ja: TranslationTree = {
 					noDateToSync: "タスクに同期する予定日または期限がありません",
 					syncFailed: "タスクのGoogleカレンダーへの同期に失敗しました：{message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
+						"Google カレンダーの接続が期限切れです。設定 > 統合で再接続してください。",
 					syncingTasks: "{total}件のタスクをGoogleカレンダーに同期中...",
 					syncComplete:
 						"同期完了：{synced}件同期、{failed}件失敗、{skipped}件スキップ",
@@ -1858,12 +1854,12 @@ export const ja: TranslationTree = {
 				authToken: {
 					name: "API認証トークン",
 					description: "API認証に必要なトークン（認証なしの場合は空白のままにする）",
-					placeholder: "your-secret-token",
+					placeholder: "あなたのシークレットトークン",
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "MCP サーバーを有効にする",
+						description: "Model Context Protocol を介して /mcp エンドポイントで TaskNotes ツールを公開します。HTTP API を有効にする必要があります。",
 					},
 				},
 				endpoints: {
@@ -1894,7 +1890,7 @@ export const ja: TranslationTree = {
 					transform: "変換：",
 				},
 				placeholders: {
-					url: "Webhook URL",
+					url: "Webhook のURL",
 					noEventsSelected: "イベントが選択されていません",
 					rawPayload: "Rawペイロード（変換なし）",
 				},
@@ -2033,7 +2029,7 @@ export const ja: TranslationTree = {
 						transformSection: "変換設定（オプション）",
 						headersSection: "ヘッダー設定",
 						url: {
-							name: "Webhook URL",
+							name: "Webhook のURL",
 							description: "Webhookペイロードが送信されるエンドポイント",
 							placeholder: "https://your-service.com/webhook",
 						},
@@ -2075,10 +2071,10 @@ export const ja: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "mdbase型定義",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "mdbase-spec について詳しく見る",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "mdbase 型定義を生成",
+					description: "設定の変更に合わせて、ボルトルートに mdbase 型ファイル（mdbase.yaml と _types/task.md）を生成して維持します。",
 				},
 			},
 			timeFormats: {
@@ -2266,7 +2262,7 @@ export const ja: TranslationTree = {
 			useTemplateDesc: "コンテンツ作成時にテンプレートを適用",
 			templatePathLabel: "テンプレートパス",
 			templatePathDesc: "テンプレートファイルへのパス",
-			templatePathPlaceholder: "templates/ics-note-template.md",
+			templatePathPlaceholder: "テンプレート/ICSノートテンプレート.md",
 		},
 		unscheduledTasksSelector: {
 			title: "予定されていないタスク",
@@ -2331,9 +2327,9 @@ export const ja: TranslationTree = {
 			projectsTooltip: "ファジー検索を使用してプロジェクトノートを選択",
 			projectsRemoveTooltip: "プロジェクトを削除",
 			contextsLabel: "コンテキスト",
-			contextsPlaceholder: "context1, context2",
+			contextsPlaceholder: "コンテキスト1, コンテキスト2",
 			tagsLabel: "タグ",
-			tagsPlaceholder: "tag1, tag2",
+			tagsPlaceholder: "タグ1, タグ2",
 			timeEstimateLabel: "時間見積もり（分）",
 			timeEstimatePlaceholder: "30",
 			unsavedChanges: {
@@ -2395,7 +2391,7 @@ export const ja: TranslationTree = {
 				textPlaceholder: "{field}を入力...",
 				numberPlaceholder: "0",
 				datePlaceholder: "YYYY-MM-DD",
-				listPlaceholder: "item1, item2, item3",
+				listPlaceholder: "項目1, 項目2, 項目3",
 				pickDate: "{field}日付を選択",
 			},
 			recurrence: {
@@ -3104,7 +3100,7 @@ export const ja: TranslationTree = {
 				scheduledDate: "予定日",
 				timeEstimate: "時間見積もり",
 				totalTrackedTime: "総追跡時間",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "チェックリストの進捗",
 				recurrence: "繰り返し",
 				completedDate: "完了日",
 				createdDate: "作成日",

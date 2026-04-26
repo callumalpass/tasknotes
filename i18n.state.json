@@ -590,11 +590,11 @@
     },
     "views.basesCalendar.settings.groups.googleCalendars": {
       "source": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a",
-      "translation": "567dd668015587a7ed69597e1f6f5a8fc6aff8d9"
+      "translation": "2edd020ea3d01fdc09b9374ac1839e9b258484bf"
     },
     "views.basesCalendar.settings.groups.microsoftCalendars": {
       "source": "2edac69ff3c043d662037911af60ea54cc1c3746",
-      "translation": "0326a4482509b7f06b6e0ebc12bb75df45b01291"
+      "translation": "2d78acd402e41ccea50d9ae466d7c5dbe3d0ce09"
     },
     "views.basesCalendar.settings.dateNavigation.navigateToDate": {
       "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
@@ -1218,7 +1218,7 @@
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
-      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+      "translation": "0401e23e6030c9e8bdb8c202fb8721e3e91ff3a3"
     },
     "settings.header.documentationUrl": {
       "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
@@ -2962,7 +2962,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "a3d319e8e6001389c53ea0871eb363c0747db606"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -3902,7 +3902,7 @@
     },
     "settings.integrations.subscriptionsList.typeOptions.remote": {
       "source": "861ea4efba4bc4f08584c5e9c2b9ae7f681fd930",
-      "translation": "861ea4efba4bc4f08584c5e9c2b9ae7f681fd930"
+      "translation": "8ff90e9a92a8c3ceb216912e6ec4059c3517a1bc"
     },
     "settings.integrations.subscriptionsList.typeOptions.local": {
       "source": "9c144c5d5cfa62acaa96561f0c34f8ff9505e433",
@@ -3914,7 +3914,7 @@
     },
     "settings.integrations.subscriptionsList.placeholders.url": {
       "source": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05",
-      "translation": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05"
+      "translation": "a2aa85b08f2d82237c7016e65eadb185822cf3bf"
     },
     "settings.integrations.subscriptionsList.placeholders.filePath": {
       "source": "5e0150752956631aec10e6d6c2afa36a8c01f6e7",
@@ -4306,7 +4306,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "5eebe96cf4d27de68c373a26609c5f4eebaabd0f"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
@@ -4406,11 +4406,11 @@
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "3d62432d148d92013350507461a7cf5fff6e0e4d"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "d539a6ab82e96474578334a60fe198421ed1b4a4"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -4474,7 +4474,7 @@
     },
     "settings.integrations.webhooks.placeholders.url": {
       "source": "fa7517b6b6b06cccf039eb795c9e0d9184d37002",
-      "translation": "fa7517b6b6b06cccf039eb795c9e0d9184d37002"
+      "translation": "279f3c1f7adbe8efd509dd515590754c61e3810e"
     },
     "settings.integrations.webhooks.placeholders.noEventsSelected": {
       "source": "73427849b05b6cdda2d7a7de8a8e69ca610d8b04",
@@ -4782,7 +4782,7 @@
     },
     "settings.integrations.webhooks.modals.add.url.name": {
       "source": "fa7517b6b6b06cccf039eb795c9e0d9184d37002",
-      "translation": "fa7517b6b6b06cccf039eb795c9e0d9184d37002"
+      "translation": "279f3c1f7adbe8efd509dd515590754c61e3810e"
     },
     "settings.integrations.webhooks.modals.add.url.description": {
       "source": "7e97eade845fca964072f4491f0b260000ed8ca6",
@@ -4882,15 +4882,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "2ebc76bde9fde223aadce2ad115af34fd1b5f8e3"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "b6fc0f38dd097206b6f9ba48bbe550a35a6332c4"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "ebfc6b461b985f416d6c864764157f6a55b2d61c"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -5118,11 +5118,11 @@
     },
     "modals.deviceCode.title": {
       "source": "15d49719fa9a20f697d38e6af17a00b8ae4a529d",
-      "translation": "d9773cd7807685cbb53ffdc1410ab2cbf7b78b85"
+      "translation": "4ae489e473a5a1d2bf9aaf0efed4a3aed66c8526"
     },
     "modals.deviceCode.instructions.intro": {
       "source": "6f588f0b7cb402c539b8814f65a4798e8da218e0",
-      "translation": "042e3c2acbbf4f227d4a3e42887f9ed736baebf3"
+      "translation": "897bbb5c10219f7cd8e5b0c21d6c3918bfe1c106"
     },
     "modals.deviceCode.steps.open": {
       "source": "cf9b77061f7b3126b49d50a6fa68f7ca8c26b7a3",
@@ -5530,7 +5530,7 @@
     },
     "modals.icsNoteCreation.templatePathPlaceholder": {
       "source": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0",
-      "translation": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0"
+      "translation": "c1de7730061a52f8bb0679e11ccdf92a9c5c54bc"
     },
     "modals.unscheduledTasksSelector.title": {
       "source": "1c97535d510286cde7d544601250ab4df5b52f55",
@@ -5710,7 +5710,7 @@
     },
     "modals.task.tagsPlaceholder": {
       "source": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694",
-      "translation": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694"
+      "translation": "62578b900886b4f6ffe6fb8b77fc9d419d49d997"
     },
     "modals.task.timeEstimateLabel": {
       "source": "ce5a59dd02e94a92ea5c826ad85caaa16db7a8dc",
@@ -7934,7 +7934,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "a3d319e8e6001389c53ea0871eb363c0747db606"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -8860,11 +8860,11 @@
     },
     "views.basesCalendar.settings.groups.googleCalendars": {
       "source": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a",
-      "translation": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a"
+      "translation": "f092e32485daec972ad008629a5e8a9bf808cb46"
     },
     "views.basesCalendar.settings.groups.microsoftCalendars": {
       "source": "2edac69ff3c043d662037911af60ea54cc1c3746",
-      "translation": "2edac69ff3c043d662037911af60ea54cc1c3746"
+      "translation": "ec1cd95d9cd8c101fb7b49ee83eb6ac2613051c4"
     },
     "views.basesCalendar.settings.dateNavigation.navigateToDate": {
       "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
@@ -9488,7 +9488,7 @@
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
-      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+      "translation": "60f92f2f9b4fbbfa88b9226f9e42abd30dd32c51"
     },
     "settings.header.documentationUrl": {
       "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
@@ -11232,7 +11232,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "2c15974747ed06f0aec1a4d5cad454742b31cfae"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -12356,11 +12356,11 @@
     },
     "settings.integrations.googleCalendarExport.header": {
       "source": "9e0a0bc16806048547459b3a18c319118b5ac2fe",
-      "translation": "bffe55366f0229768f0fac7c883f3ae6cbed49be"
+      "translation": "abb32d18731f96e26b868ea02bddaf56a3a26bd7"
     },
     "settings.integrations.googleCalendarExport.description": {
       "source": "7bf2b738d7caa0d4b7bda1fe3d2cb8229697d053",
-      "translation": "1c5f0a6cffc9b23a23abd554e402016812e33c3c"
+      "translation": "07c2dca9a7336c43c4b84da99c3d878591d36424"
     },
     "settings.integrations.googleCalendarExport.enable.name": {
       "source": "d13b7fcc23ce56c4596bacd4adcf371d7b51375b",
@@ -12368,7 +12368,7 @@
     },
     "settings.integrations.googleCalendarExport.enable.description": {
       "source": "833a82630d348f84d1ffffd1fdf6edea47ae9348",
-      "translation": "45c266cbd9b0249011840cf53bbc05cc47dd44e0"
+      "translation": "fe871bd97649463a5b602aaef887924aadc3c721"
     },
     "settings.integrations.googleCalendarExport.targetCalendar.name": {
       "source": "038cb9973aca6b47e77437690d0db87eda040948",
@@ -12384,7 +12384,7 @@
     },
     "settings.integrations.googleCalendarExport.targetCalendar.connectFirst": {
       "source": "ed44f996f5d6d975172c0b447ea79f9c4c68070c",
-      "translation": "5e21eb2b5109b1c86a8c3ba1ccb8552e3b77e5aa"
+      "translation": "ae1e056d60d7ef8db5462cb17a6927f6ab3d10b3"
     },
     "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix": {
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
@@ -12460,7 +12460,7 @@
     },
     "settings.integrations.googleCalendarExport.defaultReminder.description": {
       "source": "766fa723249615aeebf7d1cfe9b78e935bef79b6",
-      "translation": "0472bf7734896b6db50aa78b3d7509eea81624ba"
+      "translation": "b496e864f7fe7ffa0172933b72a7e89d981bb7db"
     },
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": {
       "source": "937fe30dfe4713c5d91f84d395517664cf8010ab",
@@ -12508,7 +12508,7 @@
     },
     "settings.integrations.googleCalendarExport.syncAllTasks.description": {
       "source": "78cc848b82544b3e885314da90643b3c669d15fb",
-      "translation": "b35cb8920ff11fea069c71e0866cb584c2ef84cc"
+      "translation": "27051298f4c10d03447cecedd3bdbc354d596a4c"
     },
     "settings.integrations.googleCalendarExport.syncAllTasks.buttonText": {
       "source": "870265e59f8fb9eccf9517600487190be187e0dd",
@@ -12540,11 +12540,11 @@
     },
     "settings.integrations.googleCalendarExport.notices.notEnabled": {
       "source": "7c29daa48f8202207d12928dc8ee7167e719aebc",
-      "translation": "4d567b61694b7d218a3209acd249631a8599875f"
+      "translation": "21d4f5a1224afd55cae8e4b2fe95af44991116dc"
     },
     "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured": {
       "source": "92cade59912ab66a0e3ff572d03ebe725cad1356",
-      "translation": "9c0b9816e27df66d0a573c5e7c608a1a9845e6ce"
+      "translation": "8ba85ce9afab8493aaa9f79ae4305db9a356ea25"
     },
     "settings.integrations.googleCalendarExport.notices.serviceNotAvailable": {
       "source": "8aa1556edc129b64f58d4a4e21a9f9966c3b8396",
@@ -12556,7 +12556,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.taskSynced": {
       "source": "002e68af1aae01f1c0fdcc551308dbdf4589e124",
-      "translation": "d47e0156f9b418c667c84677eb82448c4f8accbe"
+      "translation": "49bc00bc13aee78b964296fe374e62af1493fb57"
     },
     "settings.integrations.googleCalendarExport.notices.noActiveFile": {
       "source": "75d16ace81b583f789e31ebd123030e22a8ea8dc",
@@ -12572,15 +12572,15 @@
     },
     "settings.integrations.googleCalendarExport.notices.syncFailed": {
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
-      "translation": "36f5fedb80209c5a392142701c1d189a4b81ee39"
+      "translation": "c914a8878886b205a39762eb24b65d4cda551136"
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "b7841f9b7d28573dcc3772e5181b0534bab5ada9"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
-      "translation": "9ade27e5f156dec6b71b2089dcff8f29429d858c"
+      "translation": "6ef8dc2902d864f13ed57f57581ba155a3a98c7a"
     },
     "settings.integrations.googleCalendarExport.notices.syncComplete": {
       "source": "7cf19e37c30b10260d12ec55585fd7098e28f4ae",
@@ -12676,11 +12676,11 @@
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "cf9fc24bbaf5ab33ed3ff8fc2b4a8ed0642163fe"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "de80c6ff0dcf123b646783a09bdd281ce7263536"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -13152,15 +13152,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "7fd9a8ce788bd086cd773985ae5c7c4f64a0a549"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "e503e991ef813b0bb3c2581f8951b5b2eb5d9f26"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "ef875c2cc49e12517f43866969d0cefb860f339e"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -13364,11 +13364,11 @@
     },
     "commands.syncAllTasksGoogleCalendar": {
       "source": "a142233976ac0191e2a4d0221f7a9cd24054e7b3",
-      "translation": "dcb9ec19b07b18757e5e42111e989a52efddbe51"
+      "translation": "5840b0229d932d02e001c43f80f20fa8eb1a7845"
     },
     "commands.syncCurrentTaskGoogleCalendar": {
       "source": "b3a2c7b2038e709301e677d8c1070ee0b8b257a1",
-      "translation": "f3a68bf0429447bc8bcf2c1538ece4485c96387e"
+      "translation": "3ed42167300178735bf00da3b2b1cb7e958591fc"
     },
     "commands.viewReleaseNotes": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -13388,11 +13388,11 @@
     },
     "modals.deviceCode.title": {
       "source": "15d49719fa9a20f697d38e6af17a00b8ae4a529d",
-      "translation": "69974268e1a96961aa677e2cbc376113498dcce8"
+      "translation": "b751828a1280ee6986bb981e927b7233e89f770f"
     },
     "modals.deviceCode.instructions.intro": {
       "source": "6f588f0b7cb402c539b8814f65a4798e8da218e0",
-      "translation": "b1d676ed51a6ea6fbf2c59103f71bcd486a2c23b"
+      "translation": "e2c5f032c1754be77c3a8fb38480d0812a5f67d6"
     },
     "modals.deviceCode.steps.open": {
       "source": "cf9b77061f7b3126b49d50a6fa68f7ca8c26b7a3",
@@ -13800,7 +13800,7 @@
     },
     "modals.icsNoteCreation.templatePathPlaceholder": {
       "source": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0",
-      "translation": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0"
+      "translation": "17fe8f993ad5f2fad9d1b312b8ac8bba6e8167e4"
     },
     "modals.unscheduledTasksSelector.title": {
       "source": "1c97535d510286cde7d544601250ab4df5b52f55",
@@ -14860,15 +14860,15 @@
     },
     "contextMenus.task.calendar.google": {
       "source": "570374e4e4cc42f26e069bb5d791b5bbe89e4068",
-      "translation": "570374e4e4cc42f26e069bb5d791b5bbe89e4068"
+      "translation": "a894b57ee68e7bf4ca7abbb5f18123f8d6a83ce6"
     },
     "contextMenus.task.calendar.outlook": {
       "source": "fc2327823b94fa65b207e92718f76e162abe08f4",
-      "translation": "fc2327823b94fa65b207e92718f76e162abe08f4"
+      "translation": "f61d7a58753564a261bcf5590ee3f5447cfc83e9"
     },
     "contextMenus.task.calendar.yahoo": {
       "source": "120ca537dd07874066d335e71f9a0df171d8ec28",
-      "translation": "120ca537dd07874066d335e71f9a0df171d8ec28"
+      "translation": "b146bbd87df268ca7f043de231b06ffe850ad7a2"
     },
     "contextMenus.task.calendar.downloadIcs": {
       "source": "8b180d4c410e3d9062bd65d6dbefe626eec813d8",
@@ -14876,19 +14876,19 @@
     },
     "contextMenus.task.calendar.syncToGoogle": {
       "source": "6bcb0757c7198a7caa3dd59c635a4b5555559938",
-      "translation": "cd8ca9855e6747678159676646846c0e71c9c156"
+      "translation": "0b818ffa44b0fcd92f45ac6e1a954de9ead0e087"
     },
     "contextMenus.task.calendar.syncToGoogleNotConfigured": {
       "source": "f8de13fc800a02f249186b43c628d89f6c69b9d9",
-      "translation": "7392f0c32bdacfdbf7c6886428811dd00cd567f4"
+      "translation": "aefc736f6f7ad9ab941fbad69a11b4407acb4438"
     },
     "contextMenus.task.calendar.syncToGoogleSuccess": {
       "source": "002e68af1aae01f1c0fdcc551308dbdf4589e124",
-      "translation": "7a94b8dfeeea560ef2375f60fccc0464f4673c3d"
+      "translation": "40b9bc37e26c947a451b2fb4cdd7ac0fca37aa5a"
     },
     "contextMenus.task.calendar.syncToGoogleFailed": {
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
-      "translation": "cac0657f04b646c916739ab4326ea78b7ec5114e"
+      "translation": "34bcf63e4e3e7f74d9c19d25fdd2ddccc39e4987"
     },
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -15716,7 +15716,7 @@
     },
     "ui.taskCard.googleCalendarSyncTooltip": {
       "source": "9ff5d85645b7b7bcfb1d12fe5c66ecba0487b1ca",
-      "translation": "555c9932e8930ad817864d0acf758d2891e40cc4"
+      "translation": "1540958591a43c5110a4f279c181edb674e33c6f"
     },
     "ui.propertyEventCard.unknownFile": {
       "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
@@ -16204,7 +16204,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "2c15974747ed06f0aec1a4d5cad454742b31cfae"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -17130,11 +17130,11 @@
     },
     "views.basesCalendar.settings.groups.googleCalendars": {
       "source": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a",
-      "translation": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a"
+      "translation": "87288b88188cb773f5a27f8828b1f3f8de0a3c50"
     },
     "views.basesCalendar.settings.groups.microsoftCalendars": {
       "source": "2edac69ff3c043d662037911af60ea54cc1c3746",
-      "translation": "2edac69ff3c043d662037911af60ea54cc1c3746"
+      "translation": "ee7114e6852e694f46938134d56836dbac94ea3b"
     },
     "views.basesCalendar.settings.dateNavigation.navigateToDate": {
       "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
@@ -19502,7 +19502,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "bb811af8d75cbd9f303475a810b90a8df0ee5bb5"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -20626,11 +20626,11 @@
     },
     "settings.integrations.googleCalendarExport.header": {
       "source": "9e0a0bc16806048547459b3a18c319118b5ac2fe",
-      "translation": "0c35cf28cf8c176cb308f835477e61fbabd8bad3"
+      "translation": "d231af5d1306ed74e3916500a39af6a46a9ab3d3"
     },
     "settings.integrations.googleCalendarExport.description": {
       "source": "7bf2b738d7caa0d4b7bda1fe3d2cb8229697d053",
-      "translation": "5bb0569b156542f461aaec814859c86ea0267a16"
+      "translation": "da6f9cad5d1e1b6f263608e5d79d67a0aa5d7941"
     },
     "settings.integrations.googleCalendarExport.enable.name": {
       "source": "d13b7fcc23ce56c4596bacd4adcf371d7b51375b",
@@ -20638,7 +20638,7 @@
     },
     "settings.integrations.googleCalendarExport.enable.description": {
       "source": "833a82630d348f84d1ffffd1fdf6edea47ae9348",
-      "translation": "504d7cc7862abb71596a96cc51e9b22ec4b012d0"
+      "translation": "43ab58f71c34f1e062ce6208a257d066a7171326"
     },
     "settings.integrations.googleCalendarExport.targetCalendar.name": {
       "source": "038cb9973aca6b47e77437690d0db87eda040948",
@@ -20654,7 +20654,7 @@
     },
     "settings.integrations.googleCalendarExport.targetCalendar.connectFirst": {
       "source": "ed44f996f5d6d975172c0b447ea79f9c4c68070c",
-      "translation": "c59148a58fa4ff60fbeb84c9d7fe2d8a2a325c30"
+      "translation": "c929c997308e2e1869ee6006abca80a1996196c4"
     },
     "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix": {
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
@@ -20730,7 +20730,7 @@
     },
     "settings.integrations.googleCalendarExport.defaultReminder.description": {
       "source": "766fa723249615aeebf7d1cfe9b78e935bef79b6",
-      "translation": "505aaac2824c6ae74fb9f3e83241f1eb8ac3bae4"
+      "translation": "f9c128fb487dd7c29486259c889cb05cfe574e89"
     },
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": {
       "source": "937fe30dfe4713c5d91f84d395517664cf8010ab",
@@ -20778,7 +20778,7 @@
     },
     "settings.integrations.googleCalendarExport.syncAllTasks.description": {
       "source": "78cc848b82544b3e885314da90643b3c669d15fb",
-      "translation": "5d29cd5ada090bdb1d19f698ba32f0d0e3c1cd2e"
+      "translation": "ee502102dff76459fbdfb20dd50c9a9450c10717"
     },
     "settings.integrations.googleCalendarExport.syncAllTasks.buttonText": {
       "source": "870265e59f8fb9eccf9517600487190be187e0dd",
@@ -20810,11 +20810,11 @@
     },
     "settings.integrations.googleCalendarExport.notices.notEnabled": {
       "source": "7c29daa48f8202207d12928dc8ee7167e719aebc",
-      "translation": "cfe3c2b2988eec3700e504539eb9bb35715dbbd2"
+      "translation": "2a327c60d7e4f6d0b64fdafa1269e9dd3ca1031e"
     },
     "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured": {
       "source": "92cade59912ab66a0e3ff572d03ebe725cad1356",
-      "translation": "50f09934dba6fdbc683b6c1f3a6a7f8fef22420a"
+      "translation": "c5c0886bc588c2ea96a36ad6c2f9a776d97bb6de"
     },
     "settings.integrations.googleCalendarExport.notices.serviceNotAvailable": {
       "source": "8aa1556edc129b64f58d4a4e21a9f9966c3b8396",
@@ -20826,7 +20826,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.taskSynced": {
       "source": "002e68af1aae01f1c0fdcc551308dbdf4589e124",
-      "translation": "ae430e4235f55917f361971a112a8e01863ae965"
+      "translation": "573a2748c0b626f424c5fa8fba5a6f9ee5972476"
     },
     "settings.integrations.googleCalendarExport.notices.noActiveFile": {
       "source": "75d16ace81b583f789e31ebd123030e22a8ea8dc",
@@ -20842,15 +20842,15 @@
     },
     "settings.integrations.googleCalendarExport.notices.syncFailed": {
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
-      "translation": "cf98643b82e793b6184e2098c89301f70316a59e"
+      "translation": "ebb133ad08cae921251b75bc97e632609f49a635"
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "c6ae50b915d7fadb7c361de2ca602e013fa5a49d"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
-      "translation": "733a4d1f58cdf8379212d4d8b6fc6353d0dbfbd2"
+      "translation": "f1f3ecb4317e427a097f68a1a7dd4d25ab98b2cd"
     },
     "settings.integrations.googleCalendarExport.notices.syncComplete": {
       "source": "7cf19e37c30b10260d12ec55585fd7098e28f4ae",
@@ -20946,11 +20946,11 @@
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "ddac067aded4023f161b7c3ba9c0e7b46a1a5b1b"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "0a2b68d220e48440112253e7e7c0354b6f3022fe"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -21422,15 +21422,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "2f345a699a67a52a372eda0b52ece21495d1f7f5"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "4504794663d5d575827777ad7db35315607d4609"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "aec57eb1e62a2212d0ee9b3612708a7a50f0a2ba"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -21634,11 +21634,11 @@
     },
     "commands.syncAllTasksGoogleCalendar": {
       "source": "a142233976ac0191e2a4d0221f7a9cd24054e7b3",
-      "translation": "2fac7132b39d51e7eab81c737acd139ccaf1b156"
+      "translation": "28640215f1b03cb801ffb8dc756830c98f42e3a4"
     },
     "commands.syncCurrentTaskGoogleCalendar": {
       "source": "b3a2c7b2038e709301e677d8c1070ee0b8b257a1",
-      "translation": "8687822ff26b8cd109b9ea28c74eac2f1457cdbc"
+      "translation": "a72b2c5cc268d540831c322fc114fc0960da450f"
     },
     "commands.viewReleaseNotes": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -21658,11 +21658,11 @@
     },
     "modals.deviceCode.title": {
       "source": "15d49719fa9a20f697d38e6af17a00b8ae4a529d",
-      "translation": "95908c6ccf03e20fef6c5c1c2d9628e08e3a2d4b"
+      "translation": "3fd7f1097ffdd1ec563ab5714dcdee521c89ec5f"
     },
     "modals.deviceCode.instructions.intro": {
       "source": "6f588f0b7cb402c539b8814f65a4798e8da218e0",
-      "translation": "cc6d264d46c10d13039f9c76495ebbd818bd6956"
+      "translation": "648d029acaafe340954b7a254e277f2f9c9d93c4"
     },
     "modals.deviceCode.steps.open": {
       "source": "cf9b77061f7b3126b49d50a6fa68f7ca8c26b7a3",
@@ -22070,7 +22070,7 @@
     },
     "modals.icsNoteCreation.templatePathPlaceholder": {
       "source": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0",
-      "translation": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0"
+      "translation": "cc37b118a415b0c3be384873c2cc248096c80656"
     },
     "modals.unscheduledTasksSelector.title": {
       "source": "1c97535d510286cde7d544601250ab4df5b52f55",
@@ -23134,11 +23134,11 @@
     },
     "contextMenus.task.calendar.outlook": {
       "source": "fc2327823b94fa65b207e92718f76e162abe08f4",
-      "translation": "ec7adb1576bc1d64d09ec28732373ad1bd6e8d8e"
+      "translation": "ea933ce2b31e5635a802f22db5cc0015b684e33c"
     },
     "contextMenus.task.calendar.yahoo": {
       "source": "120ca537dd07874066d335e71f9a0df171d8ec28",
-      "translation": "bc67ac511aa90df5b1b9d6c9a6b1244f0d6eba15"
+      "translation": "2b17a97550a103f135a2466cc757151d4026378e"
     },
     "contextMenus.task.calendar.downloadIcs": {
       "source": "8b180d4c410e3d9062bd65d6dbefe626eec813d8",
@@ -23146,19 +23146,19 @@
     },
     "contextMenus.task.calendar.syncToGoogle": {
       "source": "6bcb0757c7198a7caa3dd59c635a4b5555559938",
-      "translation": "a6a7149184b062fcb3bebc50ecd2ebe81207e3d0"
+      "translation": "a36efc3bb7d4b4176250a0bac2f4b069cf830a4b"
     },
     "contextMenus.task.calendar.syncToGoogleNotConfigured": {
       "source": "f8de13fc800a02f249186b43c628d89f6c69b9d9",
-      "translation": "732096ef7dc6e8fcae04be21519f9c6a8d4cb940"
+      "translation": "ee4523321de09b1582abff4a09df263dc33ddb29"
     },
     "contextMenus.task.calendar.syncToGoogleSuccess": {
       "source": "002e68af1aae01f1c0fdcc551308dbdf4589e124",
-      "translation": "fdeb86433c0ee04cdfe5fe96f6c9b0f94d12ae01"
+      "translation": "26726ca96345869579aa24c350cf9041ebdc798a"
     },
     "contextMenus.task.calendar.syncToGoogleFailed": {
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
-      "translation": "b06ad7af70f4a4e694b559108cc76abd35d77578"
+      "translation": "02277fdd5360b4c6b808b996179dfd63a682156a"
     },
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -23986,7 +23986,7 @@
     },
     "ui.taskCard.googleCalendarSyncTooltip": {
       "source": "9ff5d85645b7b7bcfb1d12fe5c66ecba0487b1ca",
-      "translation": "1ec1c8d3ab94baaba510a25f4350caebb507a12f"
+      "translation": "53a21c82a92b9e1a8c2b9b2686b00987ae057e7c"
     },
     "ui.propertyEventCard.unknownFile": {
       "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
@@ -24474,7 +24474,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "bb811af8d75cbd9f303475a810b90a8df0ee5bb5"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -25400,11 +25400,11 @@
     },
     "views.basesCalendar.settings.groups.googleCalendars": {
       "source": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a",
-      "translation": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a"
+      "translation": "47c1185f53d1312f2e65f49918f7dca64d1deb35"
     },
     "views.basesCalendar.settings.groups.microsoftCalendars": {
       "source": "2edac69ff3c043d662037911af60ea54cc1c3746",
-      "translation": "2edac69ff3c043d662037911af60ea54cc1c3746"
+      "translation": "d1fcbc3503e0e64af998bf82ca1aad3afbe4a1a6"
     },
     "views.basesCalendar.settings.dateNavigation.navigateToDate": {
       "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
@@ -26028,7 +26028,7 @@
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
-      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+      "translation": "427e87e11f2aee5d1161c1d76a4b55d46588413c"
     },
     "settings.header.documentationUrl": {
       "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
@@ -26508,7 +26508,7 @@
     },
     "settings.defaults.basicDefaults.defaultContexts.placeholder": {
       "source": "eb5351be12fa774b4a50a1a81f0d4ad1dbad6469",
-      "translation": "eb5351be12fa774b4a50a1a81f0d4ad1dbad6469"
+      "translation": "1cbd5a94abc846d6c8297d575948e83a257f7b73"
     },
     "settings.defaults.basicDefaults.defaultTags.name": {
       "source": "270b0f369b5f266751f63c8385d02eb0b0af52f9",
@@ -26520,7 +26520,7 @@
     },
     "settings.defaults.basicDefaults.defaultTags.placeholder": {
       "source": "9edb91dcdc2ed1b8bd5dc3f07584a82bc839de55",
-      "translation": "9edb91dcdc2ed1b8bd5dc3f07584a82bc839de55"
+      "translation": "285acaeca9f3536f285d8cbdc8cf6043f2fa08bd"
     },
     "settings.defaults.basicDefaults.defaultProjects.name": {
       "source": "59b2ab51cbab743f865ef605d839a2ca89509f3f",
@@ -26704,7 +26704,7 @@
     },
     "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder": {
       "source": "505e5277ec9adf731c105828e0f2939e6bc165fe",
-      "translation": "505e5277ec9adf731c105828e0f2939e6bc165fe"
+      "translation": "5d2bf46ee428af67adc340aafcaf6451b77cc206"
     },
     "settings.defaults.bodyTemplate.bodyTemplateFile.ariaLabel": {
       "source": "2869220f1deea766831798736f09706780b721f4",
@@ -27396,7 +27396,7 @@
     },
     "settings.taskProperties.taskStatuses.placeholders.value": {
       "source": "23766ca6dac0b9ef9b1f220c3305262d21be9c21",
-      "translation": "23766ca6dac0b9ef9b1f220c3305262d21be9c21"
+      "translation": "c573867b5fca81967f6487423d702786c72051b9"
     },
     "settings.taskProperties.taskStatuses.placeholders.label": {
       "source": "f61eadaf153a7ccf995f48d19a000c62df62384c",
@@ -27476,7 +27476,7 @@
     },
     "settings.taskProperties.taskPriorities.placeholders.value": {
       "source": "9235afd3e98802411861a961aa9cf61e90c1c977",
-      "translation": "9235afd3e98802411861a961aa9cf61e90c1c977"
+      "translation": "b096b3f5acd628b9535183af5c243631423a6259"
     },
     "settings.taskProperties.taskPriorities.placeholders.label": {
       "source": "c9ccd692742b394172624fce3b7d795099797618",
@@ -27668,7 +27668,7 @@
     },
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
-      "translation": "52ab656f5995d7d6458361c5531afcee9f3ed69a"
+      "translation": "99076334e91d62ab016682267981ce827a120b10"
     },
     "settings.taskProperties.customUserFields.placeholders.defaultValue": {
       "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
@@ -27704,7 +27704,7 @@
     },
     "settings.taskProperties.customUserFields.defaultNames.noKey": {
       "source": "576426d52f216a70835ec62c0172ee7f762f8199",
-      "translation": "576426d52f216a70835ec62c0172ee7f762f8199"
+      "translation": "6f8c643a0783c0308922700936260fc24f0b996e"
     },
     "settings.taskProperties.customUserFields.deleteTooltip": {
       "source": "5ac477c267332c84ac6f5fe5509d523e08a4af94",
@@ -27772,7 +27772,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "b867baf64967423f97db4b50b3b355dc741b0fa3"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -28240,7 +28240,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredTags.placeholder": {
       "source": "a775fd915accfb6c2637dbea2dee57088c975a5c",
-      "translation": "a775fd915accfb6c2637dbea2dee57088c975a5c"
+      "translation": "e99e09d729d6edf0d2fe7f65b8192114e6a44c35"
     },
     "settings.appearance.projectAutosuggest.includeFolders.name": {
       "source": "5507cbfd472d676840b7abd4f3714ff49d5279aa",
@@ -28252,7 +28252,7 @@
     },
     "settings.appearance.projectAutosuggest.includeFolders.placeholder": {
       "source": "4ec67f231cf21897bf5b9a1390979d7d5d8eec7d",
-      "translation": "4ec67f231cf21897bf5b9a1390979d7d5d8eec7d"
+      "translation": "029ce26ccffa21fff4a8c280cf7977c1abc14f80"
     },
     "settings.appearance.projectAutosuggest.requiredPropertyKey.name": {
       "source": "bd40523bc90fdd1c0ecb19c3f745c47cd4f040d2",
@@ -28264,7 +28264,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder": {
       "source": "d0a3e7f81a9885e99049d1cae0336d269d5e47a9",
-      "translation": "d0a3e7f81a9885e99049d1cae0336d269d5e47a9"
+      "translation": "3fc53d516938a86fba7eb635f4647254bd4d93ab"
     },
     "settings.appearance.projectAutosuggest.requiredPropertyValue.name": {
       "source": "41788e0dbabcac0f45a127b9a15c50823fbe911e",
@@ -28276,7 +28276,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder": {
       "source": "98f54143ab4e86b28c3afee0f50f2f51cfb2ed38",
-      "translation": "98f54143ab4e86b28c3afee0f50f2f51cfb2ed38"
+      "translation": "598ab78312d81dc734208e1af4111acd9de08fac"
     },
     "settings.appearance.projectAutosuggest.customizeDisplay.name": {
       "source": "8a7210b95c69b2a52b0ce87041695adfa1ec77e7",
@@ -28308,7 +28308,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row1.placeholder": {
       "source": "398d2038b85f84f7a4c973f0a6682363b6892f12",
-      "translation": "398d2038b85f84f7a4c973f0a6682363b6892f12"
+      "translation": "3360643b09b20e6c3814fcb6c4aaf05ce068ab59"
     },
     "settings.appearance.projectAutosuggest.displayRows.row2.name": {
       "source": "67d0756ccdcc47818b53ebc1f5579ac77c550fe2",
@@ -28320,7 +28320,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row2.placeholder": {
       "source": "51b7434e9885414ebb0d1440edc7aca00395e5fb",
-      "translation": "51b7434e9885414ebb0d1440edc7aca00395e5fb"
+      "translation": "a6f2079b9f41d64b0da5cfa4c97df653bc475f21"
     },
     "settings.appearance.projectAutosuggest.displayRows.row3.name": {
       "source": "14696a15f0ca131b3e5a75b6496e7bf258410cff",
@@ -28332,7 +28332,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row3.placeholder": {
       "source": "37885afc8c11c54b8beaae2d2b9106587ee01b47",
-      "translation": "37885afc8c11c54b8beaae2d2b9106587ee01b47"
+      "translation": "06bf9a5b1fe6055883304ed0af6cfe69a661ebc1"
     },
     "settings.appearance.projectAutosuggest.quickReference.header": {
       "source": "c1477a08bbc119a706dea90b93268ceb957f433a",
@@ -28544,7 +28544,7 @@
     },
     "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder": {
       "source": "407271b9437780b13207e94cd8e15555445fd2c9",
-      "translation": "407271b9437780b13207e94cd8e15555445fd2c9"
+      "translation": "01ba88e6f3d8b92b334d0a30872e32fce7b71f1a"
     },
     "settings.integrations.calendarSubscriptions.defaultNoteFolder.name": {
       "source": "725e47db9f5f753d6888917e2cf31326086c5e1c",
@@ -28556,7 +28556,7 @@
     },
     "settings.integrations.calendarSubscriptions.defaultNoteFolder.placeholder": {
       "source": "1c2841e501fd1c8368c9c2fefed7bd1e3d62acc1",
-      "translation": "1c2841e501fd1c8368c9c2fefed7bd1e3d62acc1"
+      "translation": "0ab513006df55c26447b8340f0489931724f9670"
     },
     "settings.integrations.calendarSubscriptions.filenameFormat.name": {
       "source": "52ddeb943a8fdb7b6fbfc5aa22da1f36e38a493c",
@@ -28724,7 +28724,7 @@
     },
     "settings.integrations.subscriptionsList.placeholders.url": {
       "source": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05",
-      "translation": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05"
+      "translation": "f3b9775747dbaad73b09fa0d1602ad1d798586c5"
     },
     "settings.integrations.subscriptionsList.placeholders.filePath": {
       "source": "5e0150752956631aec10e6d6c2afa36a8c01f6e7",
@@ -28732,7 +28732,7 @@
     },
     "settings.integrations.subscriptionsList.placeholders.localFile": {
       "source": "519edd5d8a5071ef8699535df1f1530b0ebb328a",
-      "translation": "519edd5d8a5071ef8699535df1f1530b0ebb328a"
+      "translation": "03729980bde1f0bc3823562a407ada65e70b6de3"
     },
     "settings.integrations.subscriptionsList.statusLabels.enabled": {
       "source": "df174a3f2faa31814e06540acda7af8825403fac",
@@ -28816,7 +28816,7 @@
     },
     "settings.integrations.autoExport.filePath.placeholder": {
       "source": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9",
-      "translation": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9"
+      "translation": "13ecf529a60e03e074b79bc136ce671cf0386578"
     },
     "settings.integrations.autoExport.interval.name": {
       "source": "556715bd2aecbd24fb83bc1f8cef895487c2d007",
@@ -29116,7 +29116,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "af602d87357ecdea122d2abdc33ff8e1231e6815"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
@@ -29212,15 +29212,15 @@
     },
     "settings.integrations.httpApi.authToken.placeholder": {
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
-      "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
+      "translation": "e8d93404df7e13401d44c85b36b6b66ab9242ba0"
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "a1844678f57a09891167dd2153b179c9994e6f28"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "17219a9dc25121a68893c3b9359cf964ff03e211"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -29284,7 +29284,7 @@
     },
     "settings.integrations.webhooks.placeholders.url": {
       "source": "fa7517b6b6b06cccf039eb795c9e0d9184d37002",
-      "translation": "fa7517b6b6b06cccf039eb795c9e0d9184d37002"
+      "translation": "fb96f3d5d55d0ea98fbae45af28be3960900e2a6"
     },
     "settings.integrations.webhooks.placeholders.noEventsSelected": {
       "source": "73427849b05b6cdda2d7a7de8a8e69ca610d8b04",
@@ -29592,7 +29592,7 @@
     },
     "settings.integrations.webhooks.modals.add.url.name": {
       "source": "fa7517b6b6b06cccf039eb795c9e0d9184d37002",
-      "translation": "fa7517b6b6b06cccf039eb795c9e0d9184d37002"
+      "translation": "fb96f3d5d55d0ea98fbae45af28be3960900e2a6"
     },
     "settings.integrations.webhooks.modals.add.url.description": {
       "source": "7e97eade845fca964072f4491f0b260000ed8ca6",
@@ -29692,15 +29692,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "bdf3046eb079ff776e4d3cfac72c439bd43b789b"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "535be58eceda8f215f968f44317afbabe28fd881"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "b57acce5acce6d6fd92e8dfc978103091127dec0"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -30340,7 +30340,7 @@
     },
     "modals.icsNoteCreation.templatePathPlaceholder": {
       "source": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0",
-      "translation": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0"
+      "translation": "12e94992fa79a6235b3dc4f2c294f5a7a14de1e1"
     },
     "modals.unscheduledTasksSelector.title": {
       "source": "1c97535d510286cde7d544601250ab4df5b52f55",
@@ -30512,7 +30512,7 @@
     },
     "modals.task.contextsPlaceholder": {
       "source": "ed25bc348d5d2e3aa87e1d6137ae17dcfdf27e00",
-      "translation": "ed25bc348d5d2e3aa87e1d6137ae17dcfdf27e00"
+      "translation": "dfc8b30fb04d8793c0f8478e26566244202802a2"
     },
     "modals.task.tagsLabel": {
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
@@ -30520,7 +30520,7 @@
     },
     "modals.task.tagsPlaceholder": {
       "source": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694",
-      "translation": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694"
+      "translation": "384fc6a1ae443122d7d6ae72fb10ec2885ffde28"
     },
     "modals.task.timeEstimateLabel": {
       "source": "ce5a59dd02e94a92ea5c826ad85caaa16db7a8dc",
@@ -30700,7 +30700,7 @@
     },
     "modals.task.userFields.listPlaceholder": {
       "source": "7631d4338d79002f6b387619bb4c0c29a3a1b7bb",
-      "translation": "7631d4338d79002f6b387619bb4c0c29a3a1b7bb"
+      "translation": "ec988a1ce6599913584bb3cb2deedbf06edf3c28"
     },
     "modals.task.userFields.pickDate": {
       "source": "1efc8ee6cdc1e9089a679e3ea26bc4805d1c57a1",
@@ -32744,7 +32744,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "b867baf64967423f97db4b50b3b355dc741b0fa3"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -34778,7 +34778,7 @@
     },
     "settings.defaults.basicDefaults.defaultContexts.placeholder": {
       "source": "eb5351be12fa774b4a50a1a81f0d4ad1dbad6469",
-      "translation": "eb5351be12fa774b4a50a1a81f0d4ad1dbad6469"
+      "translation": "6fc41cfb9621c93f807493a08a12a78d07c940cd"
     },
     "settings.defaults.basicDefaults.defaultTags.name": {
       "source": "270b0f369b5f266751f63c8385d02eb0b0af52f9",
@@ -34790,7 +34790,7 @@
     },
     "settings.defaults.basicDefaults.defaultTags.placeholder": {
       "source": "9edb91dcdc2ed1b8bd5dc3f07584a82bc839de55",
-      "translation": "9edb91dcdc2ed1b8bd5dc3f07584a82bc839de55"
+      "translation": "b587db1ed2a9db9c2210d977d7a6b8acaf38c110"
     },
     "settings.defaults.basicDefaults.defaultProjects.name": {
       "source": "59b2ab51cbab743f865ef605d839a2ca89509f3f",
@@ -34974,7 +34974,7 @@
     },
     "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder": {
       "source": "505e5277ec9adf731c105828e0f2939e6bc165fe",
-      "translation": "505e5277ec9adf731c105828e0f2939e6bc165fe"
+      "translation": "df293d240404cc05d3e67a0c6b3595c1046b602c"
     },
     "settings.defaults.bodyTemplate.bodyTemplateFile.ariaLabel": {
       "source": "2869220f1deea766831798736f09706780b721f4",
@@ -35666,7 +35666,7 @@
     },
     "settings.taskProperties.taskStatuses.placeholders.value": {
       "source": "23766ca6dac0b9ef9b1f220c3305262d21be9c21",
-      "translation": "23766ca6dac0b9ef9b1f220c3305262d21be9c21"
+      "translation": "0dae9079ff6d7f2bb03c630aa3e65d34c16fbb90"
     },
     "settings.taskProperties.taskStatuses.placeholders.label": {
       "source": "f61eadaf153a7ccf995f48d19a000c62df62384c",
@@ -35746,7 +35746,7 @@
     },
     "settings.taskProperties.taskPriorities.placeholders.value": {
       "source": "9235afd3e98802411861a961aa9cf61e90c1c977",
-      "translation": "9235afd3e98802411861a961aa9cf61e90c1c977"
+      "translation": "962636f483b354327c696d2b9d73fb2862c0f76e"
     },
     "settings.taskProperties.taskPriorities.placeholders.label": {
       "source": "c9ccd692742b394172624fce3b7d795099797618",
@@ -35938,7 +35938,7 @@
     },
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
-      "translation": "52ab656f5995d7d6458361c5531afcee9f3ed69a"
+      "translation": "e737302323bb8e1eb6a70f05a66f036b53febeb7"
     },
     "settings.taskProperties.customUserFields.placeholders.defaultValue": {
       "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
@@ -35974,7 +35974,7 @@
     },
     "settings.taskProperties.customUserFields.defaultNames.noKey": {
       "source": "576426d52f216a70835ec62c0172ee7f762f8199",
-      "translation": "576426d52f216a70835ec62c0172ee7f762f8199"
+      "translation": "75720d4643d81c7cca86586d21959299d22e7365"
     },
     "settings.taskProperties.customUserFields.deleteTooltip": {
       "source": "5ac477c267332c84ac6f5fe5509d523e08a4af94",
@@ -36042,7 +36042,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "4a2cbb13cacee0c13e6509009b34b4323c8878fe"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -36510,7 +36510,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredTags.placeholder": {
       "source": "a775fd915accfb6c2637dbea2dee57088c975a5c",
-      "translation": "a775fd915accfb6c2637dbea2dee57088c975a5c"
+      "translation": "47ed1bdef15679a69bc452c269d5b087e47a5904"
     },
     "settings.appearance.projectAutosuggest.includeFolders.name": {
       "source": "5507cbfd472d676840b7abd4f3714ff49d5279aa",
@@ -36522,7 +36522,7 @@
     },
     "settings.appearance.projectAutosuggest.includeFolders.placeholder": {
       "source": "4ec67f231cf21897bf5b9a1390979d7d5d8eec7d",
-      "translation": "4ec67f231cf21897bf5b9a1390979d7d5d8eec7d"
+      "translation": "6bea6747041da9abdb0d45416ceb2d8c3209b996"
     },
     "settings.appearance.projectAutosuggest.requiredPropertyKey.name": {
       "source": "bd40523bc90fdd1c0ecb19c3f745c47cd4f040d2",
@@ -36534,7 +36534,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder": {
       "source": "d0a3e7f81a9885e99049d1cae0336d269d5e47a9",
-      "translation": "d0a3e7f81a9885e99049d1cae0336d269d5e47a9"
+      "translation": "80577c5f499ea0c68e091b38589cd0ac12aa200e"
     },
     "settings.appearance.projectAutosuggest.requiredPropertyValue.name": {
       "source": "41788e0dbabcac0f45a127b9a15c50823fbe911e",
@@ -36546,7 +36546,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder": {
       "source": "98f54143ab4e86b28c3afee0f50f2f51cfb2ed38",
-      "translation": "98f54143ab4e86b28c3afee0f50f2f51cfb2ed38"
+      "translation": "65281a189635d891eacffef53dd841d76301f6ff"
     },
     "settings.appearance.projectAutosuggest.customizeDisplay.name": {
       "source": "8a7210b95c69b2a52b0ce87041695adfa1ec77e7",
@@ -36578,7 +36578,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row1.placeholder": {
       "source": "398d2038b85f84f7a4c973f0a6682363b6892f12",
-      "translation": "398d2038b85f84f7a4c973f0a6682363b6892f12"
+      "translation": "e09a93b4642e0c97b8c78c239c324477b07d6f6e"
     },
     "settings.appearance.projectAutosuggest.displayRows.row2.name": {
       "source": "67d0756ccdcc47818b53ebc1f5579ac77c550fe2",
@@ -36590,7 +36590,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row2.placeholder": {
       "source": "51b7434e9885414ebb0d1440edc7aca00395e5fb",
-      "translation": "51b7434e9885414ebb0d1440edc7aca00395e5fb"
+      "translation": "88175c77ca20c2d4ce888d20c88e9c784678ae53"
     },
     "settings.appearance.projectAutosuggest.displayRows.row3.name": {
       "source": "14696a15f0ca131b3e5a75b6496e7bf258410cff",
@@ -36602,7 +36602,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row3.placeholder": {
       "source": "37885afc8c11c54b8beaae2d2b9106587ee01b47",
-      "translation": "37885afc8c11c54b8beaae2d2b9106587ee01b47"
+      "translation": "f4f9443f68971010762f9c32a81fae6e99c700e1"
     },
     "settings.appearance.projectAutosuggest.quickReference.header": {
       "source": "c1477a08bbc119a706dea90b93268ceb957f433a",
@@ -36814,7 +36814,7 @@
     },
     "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder": {
       "source": "407271b9437780b13207e94cd8e15555445fd2c9",
-      "translation": "407271b9437780b13207e94cd8e15555445fd2c9"
+      "translation": "82ad3cdfb5ef13d17d37d3288cd1cbe96418404e"
     },
     "settings.integrations.calendarSubscriptions.defaultNoteFolder.name": {
       "source": "725e47db9f5f753d6888917e2cf31326086c5e1c",
@@ -36826,7 +36826,7 @@
     },
     "settings.integrations.calendarSubscriptions.defaultNoteFolder.placeholder": {
       "source": "1c2841e501fd1c8368c9c2fefed7bd1e3d62acc1",
-      "translation": "1c2841e501fd1c8368c9c2fefed7bd1e3d62acc1"
+      "translation": "a173bbd2e11af3111c9e0633b66dbe50f172d045"
     },
     "settings.integrations.calendarSubscriptions.filenameFormat.name": {
       "source": "52ddeb943a8fdb7b6fbfc5aa22da1f36e38a493c",
@@ -36994,7 +36994,7 @@
     },
     "settings.integrations.subscriptionsList.placeholders.url": {
       "source": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05",
-      "translation": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05"
+      "translation": "2b9f49d625e41ea0f883e520e808eb4c0b3162ac"
     },
     "settings.integrations.subscriptionsList.placeholders.filePath": {
       "source": "5e0150752956631aec10e6d6c2afa36a8c01f6e7",
@@ -37002,7 +37002,7 @@
     },
     "settings.integrations.subscriptionsList.placeholders.localFile": {
       "source": "519edd5d8a5071ef8699535df1f1530b0ebb328a",
-      "translation": "519edd5d8a5071ef8699535df1f1530b0ebb328a"
+      "translation": "f9ce693cacb31e6a590d7550511e1f0b1be6ad79"
     },
     "settings.integrations.subscriptionsList.statusLabels.enabled": {
       "source": "df174a3f2faa31814e06540acda7af8825403fac",
@@ -37086,7 +37086,7 @@
     },
     "settings.integrations.autoExport.filePath.placeholder": {
       "source": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9",
-      "translation": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9"
+      "translation": "e53e142ff20d10924a96d12c248c1a4dd2b78578"
     },
     "settings.integrations.autoExport.interval.name": {
       "source": "556715bd2aecbd24fb83bc1f8cef895487c2d007",
@@ -37386,7 +37386,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "4f194f30b3dbff7c941e7ad207701f670302e9ef"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
@@ -37482,15 +37482,15 @@
     },
     "settings.integrations.httpApi.authToken.placeholder": {
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
-      "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
+      "translation": "a7e751d48f382c535ad55ee337d2f63dafe1fb73"
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "0b2025de762dc4d4e475bc0f3ed758210dd818b3"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "a669f8e39f8efa0e0355bf4315560150d95a3b8a"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -37962,15 +37962,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "5c2dc0c54d2da30af544ab02e5a59d5e383c5241"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "b00132dbabeb57102936bb2a9a799e922e766401"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "42ded92793032f7a7916222635afcd83b6bbe1c2"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -38570,7 +38570,7 @@
     },
     "modals.icsNoteCreation.folderPlaceholder": {
       "source": "c7cbb4b45068905aef0f0961bdfb1c7fe9988b52",
-      "translation": "c7cbb4b45068905aef0f0961bdfb1c7fe9988b52"
+      "translation": "7c6479499abbacbb756cecb98f64b28b81bac877"
     },
     "modals.icsNoteCreation.createButton": {
       "source": "6e157c5da4410b7e9de85f5c93026b9176e69064",
@@ -38610,7 +38610,7 @@
     },
     "modals.icsNoteCreation.templatePathPlaceholder": {
       "source": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0",
-      "translation": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0"
+      "translation": "f40b9f22af9f79c4e7b42f1c280e88faa9020f24"
     },
     "modals.unscheduledTasksSelector.title": {
       "source": "1c97535d510286cde7d544601250ab4df5b52f55",
@@ -38782,7 +38782,7 @@
     },
     "modals.task.contextsPlaceholder": {
       "source": "ed25bc348d5d2e3aa87e1d6137ae17dcfdf27e00",
-      "translation": "ed25bc348d5d2e3aa87e1d6137ae17dcfdf27e00"
+      "translation": "46215aa6f67600482f0a978c28ffab4eac591e43"
     },
     "modals.task.tagsLabel": {
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
@@ -38790,7 +38790,7 @@
     },
     "modals.task.tagsPlaceholder": {
       "source": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694",
-      "translation": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694"
+      "translation": "d4ddbd693b9653d2d87cc13691cd2e2bb5257ad9"
     },
     "modals.task.timeEstimateLabel": {
       "source": "ce5a59dd02e94a92ea5c826ad85caaa16db7a8dc",
@@ -41014,7 +41014,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "4a2cbb13cacee0c13e6509009b34b4323c8878fe"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -41940,11 +41940,11 @@
     },
     "views.basesCalendar.settings.groups.googleCalendars": {
       "source": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a",
-      "translation": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a"
+      "translation": "19e55941caf9ef86e3fa38e5be8ca9f845e12693"
     },
     "views.basesCalendar.settings.groups.microsoftCalendars": {
       "source": "2edac69ff3c043d662037911af60ea54cc1c3746",
-      "translation": "2edac69ff3c043d662037911af60ea54cc1c3746"
+      "translation": "d0def7be25f86c5ffac9600ebd776119dc16c0a9"
     },
     "views.basesCalendar.settings.dateNavigation.navigateToDate": {
       "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
@@ -42568,7 +42568,7 @@
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
-      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+      "translation": "7ee3f754f8c51477442e8aae4964e38fac6921da"
     },
     "settings.header.documentationUrl": {
       "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
@@ -43688,7 +43688,7 @@
     },
     "settings.taskProperties.properties.dateCreated.description": {
       "source": "a1883ed7d61c98487374e27115f587c69e42f8ab",
-      "translation": "c0696c09c088b14ed846046d83c0929eb86d2f18"
+      "translation": "67775d17ecdeb1ae17403fd89f05a0cd63aa1e5f"
     },
     "settings.taskProperties.properties.dateModified.name": {
       "source": "f20bd941fd9d88bd37f6bef52b729756ad7f1545",
@@ -43696,7 +43696,7 @@
     },
     "settings.taskProperties.properties.dateModified.description": {
       "source": "4ef47658b8bc1c0b1eaa0d7cbd2ecd612696fc72",
-      "translation": "1f2de77d7f1895bcd219b724c40e0a4ab2012fc0"
+      "translation": "08fa029401a15d3784ec7bdb41f8d80e839e1bcf"
     },
     "settings.taskProperties.properties.completedDate.name": {
       "source": "0089d3b136526c1dfbe0487bc7c3c8ef99812909",
@@ -43704,7 +43704,7 @@
     },
     "settings.taskProperties.properties.completedDate.description": {
       "source": "73d1b0db7dc181c5c4a44ad779426e033241b030",
-      "translation": "d4c2a2dbd1d32fa086e66ced88db89d00c14afc4"
+      "translation": "d9e1291c6bebbf096ede5703f9ca0aab413609a2"
     },
     "settings.taskProperties.properties.archiveTag.name": {
       "source": "6cbf3083f89024980523b94958aa8e3adc3337d2",
@@ -43720,7 +43720,7 @@
     },
     "settings.taskProperties.properties.timeEntries.description": {
       "source": "42707e6d67884d64ef73dac9067a7dee663c3945",
-      "translation": "c7642a03947a9368862cf0a7ef1ff2dacf93572a"
+      "translation": "9c0c8e52a52d208c1135b20ef00d5a9974c23d1a"
     },
     "settings.taskProperties.properties.completeInstances.name": {
       "source": "0bdad37998da001877c73de475592a9d4df98714",
@@ -44312,7 +44312,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "4963608df7eb2f8ad5791063eecc5066695114e7"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -44384,7 +44384,7 @@
     },
     "settings.appearance.taskFilenames.filenameFormat.options.timestamp": {
       "source": "3e93fff4c0704e6ec6f66da90214b4e8faadda61",
-      "translation": "21d9bc3c841f507fef513aecf00b735235b66891"
+      "translation": "c83b8b326d55192e928d6e30f04449c0ec1436ef"
     },
     "settings.appearance.taskFilenames.filenameFormat.options.custom": {
       "source": "ee5ac739c10d86287af5928583fd7de10a587fd6",
@@ -45116,7 +45116,7 @@
     },
     "settings.integrations.calendarSubscriptions.filenameFormat.options.timestamp": {
       "source": "19eabc961735d78f12fc7be906ffcb033853cf85",
-      "translation": "19eabc961735d78f12fc7be906ffcb033853cf85"
+      "translation": "62c948c4253d060333258dd5540ab192aeae14ae"
     },
     "settings.integrations.calendarSubscriptions.filenameFormat.options.custom": {
       "source": "ee5ac739c10d86287af5928583fd7de10a587fd6",
@@ -45356,7 +45356,7 @@
     },
     "settings.integrations.autoExport.filePath.placeholder": {
       "source": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9",
-      "translation": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9"
+      "translation": "31f536b3e8d8dd136b9b77d58544cb9eb448f48f"
     },
     "settings.integrations.autoExport.interval.name": {
       "source": "556715bd2aecbd24fb83bc1f8cef895487c2d007",
@@ -45436,11 +45436,11 @@
     },
     "settings.integrations.googleCalendarExport.header": {
       "source": "9e0a0bc16806048547459b3a18c319118b5ac2fe",
-      "translation": "7c6d2d7635d5fe548373ddabae534dae0d0af9fd"
+      "translation": "0015bccda7fce65912d30b88714f53debc6bcede"
     },
     "settings.integrations.googleCalendarExport.description": {
       "source": "7bf2b738d7caa0d4b7bda1fe3d2cb8229697d053",
-      "translation": "d282b9651d9a215c755a122e27d20552c444f6a7"
+      "translation": "b393885920d041135d98e8ac8c83aee344ff1309"
     },
     "settings.integrations.googleCalendarExport.enable.name": {
       "source": "d13b7fcc23ce56c4596bacd4adcf371d7b51375b",
@@ -45448,7 +45448,7 @@
     },
     "settings.integrations.googleCalendarExport.enable.description": {
       "source": "833a82630d348f84d1ffffd1fdf6edea47ae9348",
-      "translation": "8f6a5202b93ee99c1c7876cf06386c4221c97de2"
+      "translation": "93737244617d2107524f9118ff27fe21661a1cea"
     },
     "settings.integrations.googleCalendarExport.targetCalendar.name": {
       "source": "038cb9973aca6b47e77437690d0db87eda040948",
@@ -45464,7 +45464,7 @@
     },
     "settings.integrations.googleCalendarExport.targetCalendar.connectFirst": {
       "source": "ed44f996f5d6d975172c0b447ea79f9c4c68070c",
-      "translation": "23982fc108a1b5d0e06af7f871c684ca4e6c7b8e"
+      "translation": "e73fa9d9b7e8649ba82271f270278621bc147f98"
     },
     "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix": {
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
@@ -45540,7 +45540,7 @@
     },
     "settings.integrations.googleCalendarExport.defaultReminder.description": {
       "source": "766fa723249615aeebf7d1cfe9b78e935bef79b6",
-      "translation": "874acd6285ab407885c2a3973aa32868210eb42c"
+      "translation": "b9ccad09e1d2532ae2c26e181816316b305c0ce1"
     },
     "settings.integrations.googleCalendarExport.automaticSyncBehavior.header": {
       "source": "937fe30dfe4713c5d91f84d395517664cf8010ab",
@@ -45588,7 +45588,7 @@
     },
     "settings.integrations.googleCalendarExport.syncAllTasks.description": {
       "source": "78cc848b82544b3e885314da90643b3c669d15fb",
-      "translation": "e83ab8127776d3496885d68a529b0ed05c859416"
+      "translation": "8fa369ea9f114659d42f0888203f18ee3eabf538"
     },
     "settings.integrations.googleCalendarExport.syncAllTasks.buttonText": {
       "source": "870265e59f8fb9eccf9517600487190be187e0dd",
@@ -45620,11 +45620,11 @@
     },
     "settings.integrations.googleCalendarExport.notices.notEnabled": {
       "source": "7c29daa48f8202207d12928dc8ee7167e719aebc",
-      "translation": "545dd218ac97063de9fc464662112d2ddb9d92db"
+      "translation": "57bd3bd0a177e1d9e3806f448ff0cde559ace2ea"
     },
     "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured": {
       "source": "92cade59912ab66a0e3ff572d03ebe725cad1356",
-      "translation": "97d76beb310cdd5b82bb8afd43cb05114f823ffc"
+      "translation": "10c4646d02f394bf4ff7576c27534c811f493aac"
     },
     "settings.integrations.googleCalendarExport.notices.serviceNotAvailable": {
       "source": "8aa1556edc129b64f58d4a4e21a9f9966c3b8396",
@@ -45636,7 +45636,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.taskSynced": {
       "source": "002e68af1aae01f1c0fdcc551308dbdf4589e124",
-      "translation": "6445a10915de8ce7d4665fb60e0a2f93a877ba53"
+      "translation": "c015cd211f611282ba45f299d2ecc8f1209cd474"
     },
     "settings.integrations.googleCalendarExport.notices.noActiveFile": {
       "source": "75d16ace81b583f789e31ebd123030e22a8ea8dc",
@@ -45652,15 +45652,15 @@
     },
     "settings.integrations.googleCalendarExport.notices.syncFailed": {
       "source": "e260cf9e4f67bc503e435d6cd753b53f8284a087",
-      "translation": "1707144d30124dd65bbaef57b093b762805af3cd"
+      "translation": "3444258f3d651c09fac13bae9f1492f0c52a04df"
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "44174ca6208149bf1cceca9f130abf56136aebfd"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
-      "translation": "fa4fe08ec4d8255a48cbe5da23b7e4739f1da8d9"
+      "translation": "a7887b0689db7e1db371088d1e344886cfb2a751"
     },
     "settings.integrations.googleCalendarExport.notices.syncComplete": {
       "source": "7cf19e37c30b10260d12ec55585fd7098e28f4ae",
@@ -45756,11 +45756,11 @@
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "cd4e28f9c8a82999c2f5018a66b506f08797312d"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "fa2544dc41797945998edb82004508a6b0f6e1e5"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -46232,15 +46232,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "cfafdd3be6c1be69bf944f4c56e0f5b59ee371a4"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "d7d76e86302ba213d5a09eaeb547e1e6fcf7702d"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "d727aedb73b9a418d4f1a360053b98e5125af01f"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -46444,11 +46444,11 @@
     },
     "commands.syncAllTasksGoogleCalendar": {
       "source": "a142233976ac0191e2a4d0221f7a9cd24054e7b3",
-      "translation": "16fdd3694c0ee4eef431998a40960994353c7fd9"
+      "translation": "7cd83f6cce0ee4ba9504a050d0a511511f24aa6b"
     },
     "commands.syncCurrentTaskGoogleCalendar": {
       "source": "b3a2c7b2038e709301e677d8c1070ee0b8b257a1",
-      "translation": "9ab149e86042a1c68a5d80792536279fdac57195"
+      "translation": "dc339de24650421ffc37cd5bbce5fba92128651a"
     },
     "commands.viewReleaseNotes": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -46468,11 +46468,11 @@
     },
     "modals.deviceCode.title": {
       "source": "15d49719fa9a20f697d38e6af17a00b8ae4a529d",
-      "translation": "70487189f54d0d36192b055d8fe4de61e26d2d97"
+      "translation": "593a2468a8efaddbd38aadc53f01098d23309cd8"
     },
     "modals.deviceCode.instructions.intro": {
       "source": "6f588f0b7cb402c539b8814f65a4798e8da218e0",
-      "translation": "b8cdf78648a404bcffec8f7ad62e219795407cab"
+      "translation": "59772d60b04805e303dad2cb8adf25168ce93f6e"
     },
     "modals.deviceCode.steps.open": {
       "source": "cf9b77061f7b3126b49d50a6fa68f7ca8c26b7a3",
@@ -47060,7 +47060,7 @@
     },
     "modals.task.tagsPlaceholder": {
       "source": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694",
-      "translation": "d4f8c9916b6b36cae1e28d9ec466d7abe3aa8694"
+      "translation": "381b755934d4445d0c57c240abec794951eceb0c"
     },
     "modals.task.timeEstimateLabel": {
       "source": "ce5a59dd02e94a92ea5c826ad85caaa16db7a8dc",
@@ -47240,7 +47240,7 @@
     },
     "modals.task.userFields.listPlaceholder": {
       "source": "7631d4338d79002f6b387619bb4c0c29a3a1b7bb",
-      "translation": "7631d4338d79002f6b387619bb4c0c29a3a1b7bb"
+      "translation": "d352f25a4ce866fd982c1dcb4191f2a4b2b5b2a4"
     },
     "modals.task.userFields.pickDate": {
       "source": "1efc8ee6cdc1e9089a679e3ea26bc4805d1c57a1",
@@ -47940,15 +47940,15 @@
     },
     "contextMenus.task.calendar.google": {
       "source": "570374e4e4cc42f26e069bb5d791b5bbe89e4068",
-      "translation": "570374e4e4cc42f26e069bb5d791b5bbe89e4068"
+      "translation": "4b1ce8dde21eb07d470031753f1b2b6da54e3fac"
     },
     "contextMenus.task.calendar.outlook": {
       "source": "fc2327823b94fa65b207e92718f76e162abe08f4",
-      "translation": "fc2327823b94fa65b207e92718f76e162abe08f4"
+      "translation": "62d0a6e6f49b035093b9ea31af83d856595b11dd"
     },
     "contextMenus.task.calendar.yahoo": {
       "source": "120ca537dd07874066d335e71f9a0df171d8ec28",
-      "translation": "120ca537dd07874066d335e71f9a0df171d8ec28"
+      "translation": "4469762aecd4618a37a36bf87e1926c2bc621a0b"
     },
     "contextMenus.task.calendar.downloadIcs": {
       "source": "8b180d4c410e3d9062bd65d6dbefe626eec813d8",
@@ -47956,19 +47956,19 @@
     },
     "contextMenus.task.calendar.syncToGoogle": {
       "source": "6bcb0757c7198a7caa3dd59c635a4b5555559938",
-      "translation": "17592fcc9d088bc00c2a8f9b35fbfefa9d8c4f43"
+      "translation": "192e6dff8789db430420318cdbfb5398452a0c1a"
     },
     "contextMenus.task.calendar.syncToGoogleNotConfigured": {
       "source": "f8de13fc800a02f249186b43c628d89f6c69b9d9",
-      "translation": "1fef647dc605d37882a411faacb5b221b1cb1cf9"
+      "translation": "f0d4ce9b7eb8b14fff905bff7381b36866d51bc8"
     },
     "contextMenus.task.calendar.syncToGoogleSuccess": {
       "source": "002e68af1aae01f1c0fdcc551308dbdf4589e124",
-      "translation": "eb112de5d5e0b74d4abe222166ada6aca49f0f87"
+      "translation": "9f610776f03e5016dfda3113dd60ef0cfa51f1f2"
     },
     "contextMenus.task.calendar.syncToGoogleFailed": {
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
-      "translation": "19237e47f2b9a5b9d02f081023fe4b36e2821eb3"
+      "translation": "ff19cf0404444a18eabca7e54501155614a09775"
     },
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -48796,7 +48796,7 @@
     },
     "ui.taskCard.googleCalendarSyncTooltip": {
       "source": "9ff5d85645b7b7bcfb1d12fe5c66ecba0487b1ca",
-      "translation": "64683823336e3c4bb05bdac107099f464c18db66"
+      "translation": "743936515a4197ea9b712f51e2762bca34eb3ab1"
     },
     "ui.propertyEventCard.unknownFile": {
       "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
@@ -49284,7 +49284,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "4963608df7eb2f8ad5791063eecc5066695114e7"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -50210,11 +50210,11 @@
     },
     "views.basesCalendar.settings.groups.googleCalendars": {
       "source": "cfa0f6bb3b4422195fc4abb06c02bca780fce33a",
-      "translation": "9d7627c4afa50c30b37c6e65ea57fe5e0ae04c8c"
+      "translation": "50729a4aeab3930cb0c7f3d7359169ea139457ba"
     },
     "views.basesCalendar.settings.groups.microsoftCalendars": {
       "source": "2edac69ff3c043d662037911af60ea54cc1c3746",
-      "translation": "c16c20ed4e51086b6d670585eaeffa4cf0b5dd96"
+      "translation": "a44f01dc7e29b987641fd5b74256fc2e825e1808"
     },
     "views.basesCalendar.settings.dateNavigation.navigateToDate": {
       "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
@@ -50838,7 +50838,7 @@
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
-      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+      "translation": "c53a5edce43fe80a9022054388e569531bbe9756"
     },
     "settings.header.documentationUrl": {
       "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
@@ -52582,7 +52582,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "076ddca3551491d5c3ac902745b4982483a246bb"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -53626,7 +53626,7 @@
     },
     "settings.integrations.autoExport.filePath.placeholder": {
       "source": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9",
-      "translation": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9"
+      "translation": "028ca3d27a511cec04b8048cd401bc9438081000"
     },
     "settings.integrations.autoExport.interval.name": {
       "source": "556715bd2aecbd24fb83bc1f8cef895487c2d007",
@@ -53926,7 +53926,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "3b82fb58a0d336211823acb7a44160121124f8e5"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
@@ -54026,11 +54026,11 @@
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "1a94add6599c02eb78cae258b9bda1f48ba0d9b4"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "50d25db3b96a4a6e793806e951828a083f3199c4"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -54502,15 +54502,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "ca1c480770ecf414593592eb6441a670c5491962"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "7cf1e5f8543b6c20c115dba775f2142c04b9a505"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "af8dc8a1409628d92f943542761d3b7bb30b4c22"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -54742,7 +54742,7 @@
     },
     "modals.deviceCode.instructions.intro": {
       "source": "6f588f0b7cb402c539b8814f65a4798e8da218e0",
-      "translation": "f70a21a4a66dc520495bf6ab234774aa92abed71"
+      "translation": "5574215f27cc53b299435107494fab5a4956c5c3"
     },
     "modals.deviceCode.steps.open": {
       "source": "cf9b77061f7b3126b49d50a6fa68f7ca8c26b7a3",
@@ -57554,7 +57554,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "076ddca3551491d5c3ac902745b4982483a246bb"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -59108,7 +59108,7 @@
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
-      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+      "translation": "1069127253faaccd1c8c27b04bd4dcc97dfe112d"
     },
     "settings.header.documentationUrl": {
       "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
@@ -59784,7 +59784,7 @@
     },
     "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder": {
       "source": "505e5277ec9adf731c105828e0f2939e6bc165fe",
-      "translation": "505e5277ec9adf731c105828e0f2939e6bc165fe"
+      "translation": "9b913d31ee96d0e9ef8be4aa4f11cc81bf3be3fd"
     },
     "settings.defaults.bodyTemplate.bodyTemplateFile.ariaLabel": {
       "source": "2869220f1deea766831798736f09706780b721f4",
@@ -60852,7 +60852,7 @@
     },
     "settings.appearance.taskCards.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "ac29008fe9bd2282f801aee4cb9dd9eca04101bf"
     },
     "settings.appearance.taskCards.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
@@ -61344,7 +61344,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder": {
       "source": "d0a3e7f81a9885e99049d1cae0336d269d5e47a9",
-      "translation": "d0a3e7f81a9885e99049d1cae0336d269d5e47a9"
+      "translation": "e4e46c7235d165987c4994b3bf698841f8ce2e26"
     },
     "settings.appearance.projectAutosuggest.requiredPropertyValue.name": {
       "source": "41788e0dbabcac0f45a127b9a15c50823fbe911e",
@@ -61356,7 +61356,7 @@
     },
     "settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder": {
       "source": "98f54143ab4e86b28c3afee0f50f2f51cfb2ed38",
-      "translation": "98f54143ab4e86b28c3afee0f50f2f51cfb2ed38"
+      "translation": "22336e6b892f14855e9f71b6ff9d861510dbe57b"
     },
     "settings.appearance.projectAutosuggest.customizeDisplay.name": {
       "source": "8a7210b95c69b2a52b0ce87041695adfa1ec77e7",
@@ -61388,7 +61388,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row1.placeholder": {
       "source": "398d2038b85f84f7a4c973f0a6682363b6892f12",
-      "translation": "398d2038b85f84f7a4c973f0a6682363b6892f12"
+      "translation": "a134d382e1f9cec45f35696b354b42a8f9116297"
     },
     "settings.appearance.projectAutosuggest.displayRows.row2.name": {
       "source": "67d0756ccdcc47818b53ebc1f5579ac77c550fe2",
@@ -61400,7 +61400,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row2.placeholder": {
       "source": "51b7434e9885414ebb0d1440edc7aca00395e5fb",
-      "translation": "51b7434e9885414ebb0d1440edc7aca00395e5fb"
+      "translation": "f0fb127d98e2ea1311dbf9fe98b867c8ace2f18a"
     },
     "settings.appearance.projectAutosuggest.displayRows.row3.name": {
       "source": "14696a15f0ca131b3e5a75b6496e7bf258410cff",
@@ -61412,7 +61412,7 @@
     },
     "settings.appearance.projectAutosuggest.displayRows.row3.placeholder": {
       "source": "37885afc8c11c54b8beaae2d2b9106587ee01b47",
-      "translation": "37885afc8c11c54b8beaae2d2b9106587ee01b47"
+      "translation": "31778850394d580e56d1a7fc596deacd1f7add89"
     },
     "settings.appearance.projectAutosuggest.quickReference.header": {
       "source": "c1477a08bbc119a706dea90b93268ceb957f433a",
@@ -61624,7 +61624,7 @@
     },
     "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder": {
       "source": "407271b9437780b13207e94cd8e15555445fd2c9",
-      "translation": "407271b9437780b13207e94cd8e15555445fd2c9"
+      "translation": "ff3378534084e80c94963848e00ce38168f58080"
     },
     "settings.integrations.calendarSubscriptions.defaultNoteFolder.name": {
       "source": "725e47db9f5f753d6888917e2cf31326086c5e1c",
@@ -61636,7 +61636,7 @@
     },
     "settings.integrations.calendarSubscriptions.defaultNoteFolder.placeholder": {
       "source": "1c2841e501fd1c8368c9c2fefed7bd1e3d62acc1",
-      "translation": "1c2841e501fd1c8368c9c2fefed7bd1e3d62acc1"
+      "translation": "d9de1b428b3d7250172a49a3c3aaa9adc58e4c7d"
     },
     "settings.integrations.calendarSubscriptions.filenameFormat.name": {
       "source": "52ddeb943a8fdb7b6fbfc5aa22da1f36e38a493c",
@@ -61804,7 +61804,7 @@
     },
     "settings.integrations.subscriptionsList.placeholders.url": {
       "source": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05",
-      "translation": "87f1d5a8dd89ab809d235e46cf57acf4211a5b05"
+      "translation": "cd5067f386a1c7b8b87b2136709f9143dc607d7f"
     },
     "settings.integrations.subscriptionsList.placeholders.filePath": {
       "source": "5e0150752956631aec10e6d6c2afa36a8c01f6e7",
@@ -61812,7 +61812,7 @@
     },
     "settings.integrations.subscriptionsList.placeholders.localFile": {
       "source": "519edd5d8a5071ef8699535df1f1530b0ebb328a",
-      "translation": "519edd5d8a5071ef8699535df1f1530b0ebb328a"
+      "translation": "d997f0c4dbb0117e4f739a0cdd5ecf7f9c500fb2"
     },
     "settings.integrations.subscriptionsList.statusLabels.enabled": {
       "source": "df174a3f2faa31814e06540acda7af8825403fac",
@@ -61896,7 +61896,7 @@
     },
     "settings.integrations.autoExport.filePath.placeholder": {
       "source": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9",
-      "translation": "ce0e09817cb45784ae67f01c2efe379e8ffa6bd9"
+      "translation": "40bbf5afceb8150a92c924763ce6f55176844d4d"
     },
     "settings.integrations.autoExport.interval.name": {
       "source": "556715bd2aecbd24fb83bc1f8cef895487c2d007",
@@ -62196,7 +62196,7 @@
     },
     "settings.integrations.googleCalendarExport.notices.connectionExpired": {
       "source": "84783064e6e5db03158e0b4e3f3b514b6f9e8027",
-      "translation": "84783064e6e5db03158e0b4e3f3b514b6f9e8027"
+      "translation": "8e6407e661df2f63c8d9b77e5538736afcc2a5ea"
     },
     "settings.integrations.googleCalendarExport.notices.syncingTasks": {
       "source": "14a62327146b2d7ca0b391b34aea8564dbbbd26c",
@@ -62292,15 +62292,15 @@
     },
     "settings.integrations.httpApi.authToken.placeholder": {
       "source": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
-      "translation": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c"
+      "translation": "eeac0dc0391a193f4dafd764092a9cdeee037f72"
     },
     "settings.integrations.httpApi.mcp.enable.name": {
       "source": "1b4cc187a8ef57308b16a947dd993833e1910e12",
-      "translation": "1b4cc187a8ef57308b16a947dd993833e1910e12"
+      "translation": "fddf5e0b4570006aa5a94b39dff2db4fc0a40490"
     },
     "settings.integrations.httpApi.mcp.enable.description": {
       "source": "8d7793dc5646fed97cd0505769894e69227f59c4",
-      "translation": "8d7793dc5646fed97cd0505769894e69227f59c4"
+      "translation": "15d1fa9d8f674cb73774b7a3c2f26f64473c0e17"
     },
     "settings.integrations.httpApi.endpoints.header": {
       "source": "0a8a75f95705a22596bf8a466d95bc6f53a613cf",
@@ -62364,7 +62364,7 @@
     },
     "settings.integrations.webhooks.placeholders.url": {
       "source": "fa7517b6b6b06cccf039eb795c9e0d9184d37002",
-      "translation": "fa7517b6b6b06cccf039eb795c9e0d9184d37002"
+      "translation": "94398e9a1f1a692f2b5eac0cd9611fd6d094651f"
     },
     "settings.integrations.webhooks.placeholders.noEventsSelected": {
       "source": "73427849b05b6cdda2d7a7de8a8e69ca610d8b04",
@@ -62672,7 +62672,7 @@
     },
     "settings.integrations.webhooks.modals.add.url.name": {
       "source": "fa7517b6b6b06cccf039eb795c9e0d9184d37002",
-      "translation": "fa7517b6b6b06cccf039eb795c9e0d9184d37002"
+      "translation": "94398e9a1f1a692f2b5eac0cd9611fd6d094651f"
     },
     "settings.integrations.webhooks.modals.add.url.description": {
       "source": "7e97eade845fca964072f4491f0b260000ed8ca6",
@@ -62772,15 +62772,15 @@
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
-      "translation": "698859ca41e7c55409c85ecc3e624db48e036ee3"
+      "translation": "621b3188c4a250fc071dcdc5eb3c54dbbca2139c"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
       "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4dd758ea2e869c2d28334d1d05ac113c1041488d"
+      "translation": "9fab51011201f685b326d21c96ceb9c6a245717b"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
       "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "5099f3310b8be8de073cdf93685ce2038279c93a"
+      "translation": "7acafc42bc2c3414072ea1f228ebb6d56dbb3631"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -63420,7 +63420,7 @@
     },
     "modals.icsNoteCreation.templatePathPlaceholder": {
       "source": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0",
-      "translation": "26f6cf53c168c01cf655bf6f3010f6bc772af4e0"
+      "translation": "78587692595cffa7e040d861959e37427fac4dc3"
     },
     "modals.unscheduledTasksSelector.title": {
       "source": "1c97535d510286cde7d544601250ab4df5b52f55",
@@ -65824,7 +65824,7 @@
     },
     "components.propertyVisibilityDropdown.properties.checklistProgress": {
       "source": "396a57b5107038f90d53659042a82157500053e9",
-      "translation": "396a57b5107038f90d53659042a82157500053e9"
+      "translation": "ac29008fe9bd2282f801aee4cb9dd9eca04101bf"
     },
     "components.propertyVisibilityDropdown.properties.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",

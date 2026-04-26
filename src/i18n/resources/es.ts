@@ -204,18 +204,14 @@ export const es: TranslationTree = {
 				customDays: "Vista de {count} días",
 			},
 			settings: {
-		header: {
-			documentation: "Documentation",
-			documentationUrl: "https://tasknotes.dev",
-		},
 				groups: {
 					dateNavigation: "Navegación por fecha",
 					events: "Eventos",
 					layout: "Diseño",
 					propertyBasedEvents: "Eventos basados en propiedades",
 					calendarSubscriptions: "Suscripciones de calendario",
-					googleCalendars: "Google Calendars",
-					microsoftCalendars: "Microsoft Calendars",
+					googleCalendars: "Calendarios de Google",
+					microsoftCalendars: "Calendarios de Microsoft",
 				},
 				dateNavigation: {
 					navigateToDate: "Navegar a la fecha",
@@ -447,7 +443,7 @@ export const es: TranslationTree = {
 	},
 	settings: {
 		header: {
-			documentation: "Documentation",
+			documentation: "Documentación",
 			documentationUrl: "https://tasknotes.dev",
 		},
 		tabs: {
@@ -1224,7 +1220,7 @@ export const es: TranslationTree = {
 					scheduled: "Fecha programada",
 					timeEstimate: "Estimación de tiempo",
 					totalTrackedTime: "Tiempo total rastreado",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "Progreso de la lista de verificación",
 					recurrence: "Recurrencia",
 					completedDate: "Fecha de finalización",
 					createdDate: "Fecha de creación",
@@ -1713,19 +1709,19 @@ export const es: TranslationTree = {
 				},
 			},
 			googleCalendarExport: {
-				header: "Exportar tareas a Google Calendar",
+				header: "Exportar tareas al Calendario de Google",
 				description:
-					"Sincroniza automáticamente tus tareas a Google Calendar como eventos. Requiere que Google Calendar esté conectado arriba.",
+					"Sincroniza automáticamente tus tareas al Calendario de Google como eventos. Requiere que el Calendario de Google esté conectado arriba.",
 				enable: {
 					name: "Habilitar exportación de tareas",
 					description:
-						"Cuando está habilitado, las tareas con fechas se sincronizarán automáticamente a Google Calendar como eventos.",
+						"Cuando está habilitado, las tareas con fechas se sincronizarán automáticamente al Calendario de Google como eventos.",
 				},
 				targetCalendar: {
 					name: "Calendario destino",
 					description: "Selecciona en qué calendario crear los eventos de tareas.",
 					placeholder: "Seleccionar un calendario...",
-					connectFirst: "Conecta Google Calendar primero",
+					connectFirst: "Conecta el Calendario de Google primero",
 					primarySuffix: " (Principal)",
 				},
 				syncTrigger: {
@@ -1766,7 +1762,7 @@ export const es: TranslationTree = {
 				defaultReminder: {
 					name: "Recordatorio predeterminado",
 					description:
-						"Agregar un recordatorio emergente a los eventos de Google Calendar. Establece minutos antes del evento (0 = sin recordatorio). Valores comunes: 15, 30, 60, 1440 (1 día).",
+						"Agregar un recordatorio emergente a los eventos del Calendario de Google. Establece minutos antes del evento (0 = sin recordatorio). Valores comunes: 15, 30, 60, 1440 (1 día).",
 				},
 				automaticSyncBehavior: {
 					header: "Comportamiento de sincronización automática",
@@ -1797,7 +1793,7 @@ export const es: TranslationTree = {
 				syncAllTasks: {
 					name: "Sincronizar todas las tareas",
 					description:
-						"Sincronizar todas las tareas existentes a Google Calendar. Esto creará eventos para tareas que aún no han sido sincronizadas.",
+						"Sincronizar todas las tareas existentes al Calendario de Google. Esto creará eventos para tareas que aún no han sido sincronizadas.",
 					buttonText: "Sincronizar todo",
 				},
 				unlinkAllTasks: {
@@ -1812,19 +1808,19 @@ export const es: TranslationTree = {
 				},
 				notices: {
 					notEnabled:
-						"La exportación a Google Calendar no está habilitada. Configúrala en Ajustes > Integraciones.",
+						"La exportación al Calendario de Google no está habilitada. Configúrala en Ajustes > Integraciones.",
 					notEnabledOrConfigured:
-						"La exportación a Google Calendar no está habilitada o configurada",
+						"La exportación al Calendario de Google no está habilitada o configurada",
 					serviceNotAvailable: "Servicio de sincronización de calendario no disponible",
 					syncResults: "Sincronizados: {synced}, Fallidos: {failed}, Omitidos: {skipped}",
-					taskSynced: "Tarea sincronizada a Google Calendar",
+					taskSynced: "Tarea sincronizada al Calendario de Google",
 					noActiveFile: "No hay archivo actualmente activo",
 					notATask: "El archivo actual no es una tarea",
 					noDateToSync: "La tarea no tiene fecha programada o de vencimiento para sincronizar",
-					syncFailed: "Error al sincronizar tarea a Google Calendar: {message}",
+					syncFailed: "Error al sincronizar tarea al Calendario de Google: {message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
-					syncingTasks: "Sincronizando {total} tareas a Google Calendar...",
+						"La conexión con el Calendario de Google ha caducado. Vuelve a conectarla en Configuración > Integraciones.",
+					syncingTasks: "Sincronizando {total} tareas al Calendario de Google...",
 					syncComplete:
 						"Sincronización completa: {synced} sincronizadas, {failed} fallidas, {skipped} omitidas",
 					eventsDeletedAndUnlinked: "Todos los eventos eliminados y desvinculados",
@@ -1862,8 +1858,8 @@ export const es: TranslationTree = {
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "Habilitar servidor MCP",
+						description: "Expone las herramientas de TaskNotes mediante Model Context Protocol en el endpoint /mcp. Requiere que la API HTTP esté habilitada.",
 					},
 				},
 				endpoints: {
@@ -2075,10 +2071,10 @@ export const es: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "Definiciones de tipos mdbase",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "Más información sobre mdbase-spec",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "Generar definiciones de tipos mdbase",
+					description: "Genera y mantiene archivos de tipos mdbase (mdbase.yaml y _types/task.md) en la raíz de la bóveda cuando cambien tus ajustes.",
 				},
 			},
 			timeFormats: {
@@ -2144,14 +2140,14 @@ export const es: TranslationTree = {
 		startTimeTrackingWithSelector: "Iniciar seguimiento de tiempo (seleccionar tarea)",
 		editTimeEntries: "Editar entradas de tiempo (seleccionar tarea)",
 		createOrOpenTask: "Crear o abrir tarea",
-		syncAllTasksGoogleCalendar: "Sincronizar todas las tareas a Google Calendar",
-		syncCurrentTaskGoogleCalendar: "Sincronizar tarea actual a Google Calendar",
+		syncAllTasksGoogleCalendar: "Sincronizar todas las tareas al Calendario de Google",
+		syncCurrentTaskGoogleCalendar: "Sincronizar tarea actual al Calendario de Google",
 	},
 	modals: {
 		deviceCode: {
-			title: "Autorización de Google Calendar",
+			title: "Autorización del Calendario de Google",
 			instructions: {
-				intro: "Para conectar su Google Calendar, siga estos pasos:",
+				intro: "Para conectar su Calendario de Google, siga estos pasos:",
 			},
 			steps: {
 				open: "Abrir",
@@ -2266,7 +2262,7 @@ export const es: TranslationTree = {
 			useTemplateDesc: "Aplicar una plantilla al crear el contenido",
 			templatePathLabel: "Ruta de plantilla",
 			templatePathDesc: "Ruta al archivo de plantilla",
-			templatePathPlaceholder: "templates/ics-note-template.md",
+			templatePathPlaceholder: "plantillas/plantilla-nota-ics.md",
 		},
 		unscheduledTasksSelector: {
 			title: "Tareas no programadas",
@@ -2664,14 +2660,14 @@ export const es: TranslationTree = {
 			showInExplorer: "Mostrar en explorador de archivos",
 			addToCalendar: "Agregar al calendario",
 			calendar: {
-				google: "Google Calendar",
-				outlook: "Outlook Calendar",
-				yahoo: "Yahoo Calendar",
+				google: "Calendario de Google",
+				outlook: "Calendario de Outlook",
+				yahoo: "Calendario de Yahoo",
 				downloadIcs: "Descargar archivo .ics",
-				syncToGoogle: "Sincronizar con Google Calendar",
-				syncToGoogleNotConfigured: "Sincronización con Google Calendar no configurada",
-				syncToGoogleSuccess: "Tarea sincronizada con Google Calendar",
-				syncToGoogleFailed: "Error al sincronizar con Google Calendar",
+				syncToGoogle: "Sincronizar con el Calendario de Google",
+				syncToGoogleNotConfigured: "Sincronización con el Calendario de Google no configurada",
+				syncToGoogleSuccess: "Tarea sincronizada con el Calendario de Google",
+				syncToGoogleFailed: "Error al sincronizar con el Calendario de Google",
 			},
 			recurrence: "Recurrencia",
 			clearRecurrence: "Limpiar recurrencia",
@@ -2961,7 +2957,7 @@ export const es: TranslationTree = {
 			loadingDependencies: "Cargando dependencias...",
 			blockingEmpty: "Sin tareas dependientes",
 			blockingLoadError: "No se pudieron cargar las dependencias",
-			googleCalendarSyncTooltip: "Sincronizado con Google Calendar",
+			googleCalendarSyncTooltip: "Sincronizado con el Calendario de Google",
 		},
 		propertyEventCard: {
 			unknownFile: "Archivo desconocido",
@@ -3104,7 +3100,7 @@ export const es: TranslationTree = {
 				scheduledDate: "Fecha programada",
 				timeEstimate: "Estimación de tiempo",
 				totalTrackedTime: "Tiempo total rastreado",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "Progreso de la lista de verificación",
 				recurrence: "Recurrencia",
 				completedDate: "Fecha de finalización",
 				createdDate: "Fecha de creación",

@@ -655,12 +655,12 @@ export const ko: TranslationTree = {
 				defaultContexts: {
 					name: "기본 컨텍스트",
 					description: "쉼표로 구분된 기본 컨텍스트 목록 (예: @home, @work)",
-					placeholder: "@home, @work",
+					placeholder: "@집, @직장",
 				},
 				defaultTags: {
 					name: "기본 태그",
 					description: "# 없이 쉼표로 구분된 기본 태그 목록",
-					placeholder: "important, urgent",
+					placeholder: "중요, 긴급",
 				},
 				defaultProjects: {
 					name: "기본 프로젝트",
@@ -740,7 +740,7 @@ export const ko: TranslationTree = {
 				bodyTemplateFile: {
 					name: "본문 템플릿 파일",
 					description: "작업 본문 콘텐츠용 템플릿 파일 경로. {{title}}, {{date}}, {{time}}, {{priority}}, {{status}} 등의 템플릿 변수를 지원합니다.",
-					placeholder: "Templates/Task Template.md",
+					placeholder: "템플릿/작업 템플릿.md",
 					ariaLabel: "본문 템플릿 파일 경로",
 				},
 				variablesHeader: "템플릿 변수:",
@@ -1046,7 +1046,7 @@ export const ko: TranslationTree = {
 					delayMinutes: "지연 (분):",
 				},
 				placeholders: {
-					value: "in-progress",
+					value: "진행중",
 					label: "진행 중",
 					icon: "check, circle, clock",
 				},
@@ -1078,7 +1078,7 @@ export const ko: TranslationTree = {
 					color: "색상:",
 				},
 				placeholders: {
-					value: "high",
+					value: "높음",
 					label: "높은 우선순위",
 				},
 				deleteConfirm: "최소 하나의 우선순위가 있어야 합니다",
@@ -1144,7 +1144,7 @@ export const ko: TranslationTree = {
 				},
 				placeholders: {
 					displayName: "표시 이름",
-					propertyKey: "property-name",
+					propertyKey: "속성-이름",
 					defaultValue: "기본값",
 					defaultValueList: "기본값 (쉼표로 구분)",
 				},
@@ -1157,7 +1157,7 @@ export const ko: TranslationTree = {
 				},
 				defaultNames: {
 					unnamedField: "이름 없는 필드",
-					noKey: "no-key",
+					noKey: "키-없음",
 				},
 				deleteTooltip: "필드 삭제",
 				autosuggestFilters: {
@@ -1186,7 +1186,7 @@ export const ko: TranslationTree = {
 					scheduled: "예정일",
 					timeEstimate: "시간 예상",
 					totalTrackedTime: "총 기록 시간",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "체크리스트 진행률",
 					recurrence: "반복",
 					completedDate: "완료일",
 					createdDate: "생성일",
@@ -1395,22 +1395,22 @@ export const ko: TranslationTree = {
 				requiredTags: {
 					name: "필수 태그",
 					description: "이러한 태그 중 하나가 있는 노트만 표시 (쉼표로 구분). 모든 노트를 표시하려면 비워두세요.",
-					placeholder: "project, active, important",
+					placeholder: "프로젝트, 활성, 중요",
 				},
 				includeFolders: {
 					name: "포함 폴더",
 					description: "이러한 폴더의 노트만 표시 (쉼표로 구분된 경로). 모든 폴더를 표시하려면 비워두세요.",
-					placeholder: "Projects/, Work/Active, Personal",
+					placeholder: "프로젝트/, 업무/활성, 개인",
 				},
 				requiredPropertyKey: {
 					name: "필수 속성 키",
 					description: "이 프론트매터 속성이 아래 값과 일치하는 노트만 표시. 무시하려면 비워두세요.",
-					placeholder: "type",
+					placeholder: "유형",
 				},
 				requiredPropertyValue: {
 					name: "필수 속성 값",
 					description: "속성이 이 값과 같은 노트만 제안됩니다. 속성 존재만 요구하려면 비워두세요.",
-					placeholder: "project",
+					placeholder: "프로젝트",
 				},
 				customizeDisplay: {
 					name: "제안 표시 사용자 지정",
@@ -1425,17 +1425,17 @@ export const ko: TranslationTree = {
 					row1: {
 						name: "행 1",
 						description: "형식: {property|flags}. 속성: title, aliases, file.path, file.parent. 플래그: n(Label)은 레이블 표시, s는 검색 가능. 예: {title|n(Title)|s}",
-						placeholder: "{title|n(Title)}",
+						placeholder: "{title|n(제목)}",
 					},
 					row2: {
 						name: "행 2 (선택사항)",
 						description: "일반적인 패턴: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Custom Text",
-						placeholder: "{aliases|n(Aliases)}",
+						placeholder: "{aliases|n(별칭)}",
 					},
 					row3: {
 						name: "행 3 (선택사항)",
 						description: "{file.path|n(Path)} 또는 사용자 지정 프론트매터 필드 같은 추가 정보",
-						placeholder: "{file.path|n(Path)}",
+						placeholder: "{file.path|n(경로)}",
 					},
 				},
 				quickReference: {
@@ -1525,12 +1525,12 @@ export const ko: TranslationTree = {
 				defaultNoteTemplate: {
 					name: "기본 노트 템플릿",
 					description: "ICS 이벤트에서 생성된 노트용 템플릿 파일 경로",
-					placeholder: "Templates/Event Template.md",
+					placeholder: "템플릿/이벤트 템플릿.md",
 				},
 				defaultNoteFolder: {
 					name: "기본 노트 폴더",
 					description: "ICS 이벤트에서 생성된 노트용 폴더",
-					placeholder: "Calendar/Events",
+					placeholder: "캘린더/이벤트",
 				},
 				filenameFormat: {
 					name: "ICS 노트 파일명 형식",
@@ -1594,9 +1594,9 @@ export const ko: TranslationTree = {
 				},
 				placeholders: {
 					calendarName: "캘린더 이름",
-					url: "ICS/iCal URL",
+					url: "ICS/iCal 주소",
 					filePath: "로컬 파일 경로 (예: Calendar.ics)",
-					localFile: "Calendar.ics",
+					localFile: "캘린더.ics",
 				},
 				statusLabels: {
 					enabled: "활성화됨",
@@ -1629,7 +1629,7 @@ export const ko: TranslationTree = {
 				filePath: {
 					name: "내보내기 파일 경로",
 					description: "ICS 파일이 저장될 경로 (보관소 루트 기준)",
-					placeholder: "tasknotes-calendar.ics",
+					placeholder: "tasknotes-캘린더.ics",
 				},
 				interval: {
 					name: "업데이트 간격 (5~1440분)",
@@ -1773,7 +1773,7 @@ export const ko: TranslationTree = {
 					noDateToSync: "동기화할 예정 날짜 또는 마감 날짜가 없습니다",
 					syncFailed: "Google 캘린더에 작업 동기화 실패: {message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
+						"Google 캘린더 연결이 만료되었습니다. 설정 > 통합에서 다시 연결하세요.",
 					syncingTasks: "{total}개의 작업을 Google 캘린더에 동기화 중...",
 					syncComplete:
 						"동기화 완료: {synced}개 동기화됨, {failed}개 실패, {skipped}개 건너뜀",
@@ -1808,12 +1808,12 @@ export const ko: TranslationTree = {
 				authToken: {
 					name: "API 인증 토큰",
 					description: "API 인증에 필요한 토큰 (인증 없이 사용하려면 비워두세요)",
-					placeholder: "your-secret-token",
+					placeholder: "비밀-토큰",
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "MCP 서버 활성화",
+						description: "Model Context Protocol을 통해 /mcp 엔드포인트에서 TaskNotes 도구를 노출합니다. HTTP API가 활성화되어 있어야 합니다.",
 					},
 				},
 				endpoints: {
@@ -2025,10 +2025,10 @@ export const ko: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "mdbase 타입 정의",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "mdbase-spec에 대해 자세히 알아보기",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "mdbase 타입 정의 생성",
+					description: "설정이 변경될 때 보관소 루트에 mdbase 타입 파일(mdbase.yaml 및 _types/task.md)을 생성하고 유지합니다.",
 				},
 			},
 			timeFormats: {
@@ -2206,7 +2206,7 @@ export const ko: TranslationTree = {
 			titleDesc: "새 콘텐츠의 제목",
 			folderLabel: "폴더",
 			folderDesc: "대상 폴더 (보관소 루트를 사용하려면 비워두세요)",
-			folderPlaceholder: "folder/subfolder",
+			folderPlaceholder: "폴더/하위폴더",
 			createButton: "생성",
 			startLabel: "시작: ",
 			endLabel: "종료: ",
@@ -2216,7 +2216,7 @@ export const ko: TranslationTree = {
 			useTemplateDesc: "콘텐츠 생성 시 템플릿 적용",
 			templatePathLabel: "템플릿 경로",
 			templatePathDesc: "템플릿 파일 경로",
-			templatePathPlaceholder: "templates/ics-note-template.md",
+			templatePathPlaceholder: "템플릿/ICS 노트 템플릿.md",
 		},
 		unscheduledTasksSelector: {
 			title: "예정되지 않은 작업",
@@ -2281,9 +2281,9 @@ export const ko: TranslationTree = {
 			projectsTooltip: "퍼지 검색을 사용하여 프로젝트 노트 선택",
 			projectsRemoveTooltip: "프로젝트 제거",
 			contextsLabel: "컨텍스트",
-			contextsPlaceholder: "context1, context2",
+			contextsPlaceholder: "컨텍스트1, 컨텍스트2",
 			tagsLabel: "태그",
-			tagsPlaceholder: "tag1, tag2",
+			tagsPlaceholder: "태그1, 태그2",
 			timeEstimateLabel: "시간 예상 (분)",
 			timeEstimatePlaceholder: "30",
 			unsavedChanges: {
@@ -3054,7 +3054,7 @@ export const ko: TranslationTree = {
 				scheduledDate: "예정일",
 				timeEstimate: "시간 예상",
 				totalTrackedTime: "총 기록 시간",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "체크리스트 진행률",
 				recurrence: "반복",
 				completedDate: "완료일",
 				createdDate: "생성일",

@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#884) Fixed untranslated strings and English placeholder examples across non-English interface translations.
+  - Thanks to @berzernberg for reporting Russian translation gaps.
 - (#1765, #1769) Fixed auto-archived tasks leaving stale Google Calendar events when cleanup runs before calendar sync is ready or after the task moves into the archive folder.
   - Thanks to @martin-forge for reporting and the PR.
 - (#1764) Fixed Google Calendar sync using stale task metadata after rapid task updates, and fixed late recurring completions/skips recording the completion day instead of the scheduled occurrence date.

@@ -204,18 +204,14 @@ export const ru: TranslationTree = {
 				customDays: "Вид на {count} дней",
 			},
 			settings: {
-		header: {
-			documentation: "Documentation",
-			documentationUrl: "https://tasknotes.dev",
-		},
 				groups: {
 					dateNavigation: "Навигация по датам",
 					events: "События",
 					layout: "Макет",
 					propertyBasedEvents: "События на основе свойств",
 					calendarSubscriptions: "Подписки календаря",
-					googleCalendars: "Google Календари",
-					microsoftCalendars: "Microsoft Календари",
+					googleCalendars: "Календари Google",
+					microsoftCalendars: "Календари Microsoft",
 				},
 				dateNavigation: {
 					navigateToDate: "Перейти к дате",
@@ -447,7 +443,7 @@ export const ru: TranslationTree = {
 	},
 	settings: {
 		header: {
-			documentation: "Documentation",
+			documentation: "Документация",
 			documentationUrl: "https://tasknotes.dev",
 		},
 		tabs: {
@@ -1224,7 +1220,7 @@ export const ru: TranslationTree = {
 					scheduled: "Запланированная дата",
 					timeEstimate: "Оценка времени",
 					totalTrackedTime: "Общее отслеженное время",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "Прогресс чек-листа",
 					recurrence: "Повторение",
 					completedDate: "Дата завершения",
 					createdDate: "Дата создания",
@@ -1679,7 +1675,7 @@ export const ru: TranslationTree = {
 				filePath: {
 					name: "Путь к файлу экспорта",
 					description: "Путь, где будет сохранен файл ICS (относительно корня хранилища)",
-					placeholder: "tasknotes-calendar.ics",
+					placeholder: "tasknotes-kalendar.ics",
 				},
 				interval: {
 					name: "Интервал обновления (между 5 и 1440 минут)",
@@ -1823,7 +1819,7 @@ export const ru: TranslationTree = {
 					noDateToSync: "У задачи нет запланированной даты или срока для синхронизации",
 					syncFailed: "Не удалось синхронизировать задачу с Google Календарём: {message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
+						"Срок действия подключения к Google Календарю истёк. Подключитесь заново в разделе Настройки > Интеграции.",
 					syncingTasks: "Синхронизация {total} задач с Google Календарём...",
 					syncComplete:
 						"Синхронизация завершена: {synced} синхронизировано, {failed} ошибок, {skipped} пропущено",
@@ -1862,8 +1858,8 @@ export const ru: TranslationTree = {
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "Включить сервер MCP",
+						description: "Предоставляет инструменты TaskNotes через Model Context Protocol на конечной точке /mcp. Требуется включённый HTTP API.",
 					},
 				},
 				endpoints: {
@@ -2075,10 +2071,10 @@ export const ru: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "Определения типов mdbase",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "Подробнее о mdbase-spec",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "Создавать определения типов mdbase",
+					description: "Создаёт и поддерживает файлы типов mdbase (mdbase.yaml и _types/task.md) в корне хранилища при изменении настроек.",
 				},
 			},
 			timeFormats: {
@@ -2151,7 +2147,7 @@ export const ru: TranslationTree = {
 		deviceCode: {
 			title: "Авторизация Google Календаря",
 			instructions: {
-				intro: "До connect your Google Calendar, please follow these steps:",
+				intro: "Чтобы подключить Google Календарь, выполните следующие шаги:",
 			},
 			steps: {
 				open: "Открыть",
@@ -3104,7 +3100,7 @@ export const ru: TranslationTree = {
 				scheduledDate: "Запланированная дата",
 				timeEstimate: "Оценка времени",
 				totalTrackedTime: "Общее отслеженное время",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "Прогресс чек-листа",
 				recurrence: "Повторение",
 				completedDate: "Дата завершения",
 				createdDate: "Дата создания",

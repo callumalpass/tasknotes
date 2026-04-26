@@ -204,18 +204,14 @@ export const de: TranslationTree = {
 				customDays: "{count}-Tage-Ansicht",
 			},
 			settings: {
-		header: {
-			documentation: "Documentation",
-			documentationUrl: "https://tasknotes.dev",
-		},
 				groups: {
 					dateNavigation: "Datumsnavigation",
 					events: "Ereignisse",
 					layout: "Layout",
 					propertyBasedEvents: "Eigenschaftsbasierte Ereignisse",
 					calendarSubscriptions: "Kalenderabonnements",
-					googleCalendars: "Google Kalender",
-					microsoftCalendars: "Microsoft Kalender",
+					googleCalendars: "Google-Kalender",
+					microsoftCalendars: "Microsoft-Kalender",
 				},
 				dateNavigation: {
 					navigateToDate: "Zum Datum navigieren",
@@ -447,7 +443,7 @@ export const de: TranslationTree = {
 	},
 	settings: {
 		header: {
-			documentation: "Documentation",
+			documentation: "Dokumentation",
 			documentationUrl: "https://tasknotes.dev",
 		},
 		tabs: {
@@ -1224,7 +1220,7 @@ export const de: TranslationTree = {
 					scheduled: "Planungsdatum",
 					timeEstimate: "Zeitschätzung",
 					totalTrackedTime: "Gesamte erfasste Zeit",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "Checklistenfortschritt",
 					recurrence: "Wiederholung",
 					completedDate: "Abschlussdatum",
 					createdDate: "Erstellungsdatum",
@@ -1639,12 +1635,12 @@ export const de: TranslationTree = {
 					refreshMinutes: "Aktualisierung (Min):",
 				},
 				typeOptions: {
-					remote: "Remote URL",
+					remote: "Remote-URL",
 					local: "Lokale Datei",
 				},
 				placeholders: {
 					calendarName: "Kalendername",
-					url: "ICS/iCal URL",
+					url: "ICS/iCal-URL",
 					filePath: "Lokaler Dateipfad (z.B. Kalender.ics)",
 					localFile: "Kalender.ics",
 				},
@@ -1823,7 +1819,7 @@ export const de: TranslationTree = {
 					noDateToSync: "Aufgabe hat kein geplantes oder Fälligkeitsdatum zum Synchronisieren",
 					syncFailed: "Synchronisierung der Aufgabe mit Google Kalender fehlgeschlagen: {message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
+						"Die Google Kalender-Verbindung ist abgelaufen. Bitte verbinde sie unter Einstellungen > Integrationen erneut.",
 					syncingTasks: "Synchronisiere {total} Aufgaben mit Google Kalender...",
 					syncComplete:
 						"Synchronisierung abgeschlossen: {synced} synchronisiert, {failed} fehlgeschlagen, {skipped} übersprungen",
@@ -1862,8 +1858,8 @@ export const de: TranslationTree = {
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "MCP-Server aktivieren",
+						description: "TaskNotes-Werkzeuge über Model Context Protocol am Endpunkt /mcp bereitstellen. Erfordert, dass die HTTP API aktiviert ist.",
 					},
 				},
 				endpoints: {
@@ -1894,7 +1890,7 @@ export const de: TranslationTree = {
 					transform: "Transformation:",
 				},
 				placeholders: {
-					url: "Webhook URL",
+					url: "Webhook-URL",
 					noEventsSelected: "Keine Events ausgewählt",
 					rawPayload: "Raw-Payload (keine Transformation)",
 				},
@@ -2033,7 +2029,7 @@ export const de: TranslationTree = {
 						transformSection: "Transformationskonfiguration (Optional)",
 						headersSection: "Header-Konfiguration",
 						url: {
-							name: "Webhook URL",
+							name: "Webhook-URL",
 							description: "Der Endpunkt, an den Webhook-Payloads gesendet werden",
 							placeholder: "https://dein-service.com/webhook",
 						},
@@ -2075,10 +2071,10 @@ export const de: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "mdbase-Typdefinitionen",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "Mehr über mdbase-spec erfahren",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "mdbase-Typdefinitionen generieren",
+					description: "mdbase-Typdateien (mdbase.yaml und _types/task.md) im Stammverzeichnis des Vaults generieren und pflegen, wenn sich deine Einstellungen ändern.",
 				},
 			},
 			timeFormats: {
@@ -2149,9 +2145,9 @@ export const de: TranslationTree = {
 	},
 	modals: {
 		deviceCode: {
-			title: "Google Calendar Autorisierung",
+			title: "Google Kalender-Autorisierung",
 			instructions: {
-				intro: "Um Ihren Google Calendar zu verbinden, folgen Sie bitte diesen Schritten:",
+				intro: "Um Ihren Google Kalender zu verbinden, folgen Sie bitte diesen Schritten:",
 			},
 			steps: {
 				open: "Öffnen Sie",
@@ -2266,7 +2262,7 @@ export const de: TranslationTree = {
 			useTemplateDesc: "Eine Vorlage beim Erstellen des Inhalts anwenden",
 			templatePathLabel: "Vorlagenpfad",
 			templatePathDesc: "Pfad zur Vorlagendatei",
-			templatePathPlaceholder: "templates/ics-note-template.md",
+			templatePathPlaceholder: "vorlagen/ics-notiz-vorlage.md",
 		},
 		unscheduledTasksSelector: {
 			title: "Ungeplante Aufgaben",
@@ -2333,7 +2329,7 @@ export const de: TranslationTree = {
 			contextsLabel: "Kontexte",
 			contextsPlaceholder: "kontext1, kontext2",
 			tagsLabel: "Tags",
-			tagsPlaceholder: "tag1, tag2",
+			tagsPlaceholder: "schlagwort1, schlagwort2",
 			timeEstimateLabel: "Zeitschätzung (Minuten)",
 			timeEstimatePlaceholder: "30",
 			unsavedChanges: {
@@ -3104,7 +3100,7 @@ export const de: TranslationTree = {
 				scheduledDate: "Planungsdatum",
 				timeEstimate: "Zeitschätzung",
 				totalTrackedTime: "Gesamte erfasste Zeit",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "Checklistenfortschritt",
 				recurrence: "Wiederholung",
 				completedDate: "Abschlussdatum",
 				createdDate: "Erstellungsdatum",

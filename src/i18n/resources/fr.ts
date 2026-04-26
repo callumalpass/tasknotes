@@ -204,18 +204,14 @@ export const fr: TranslationTree = {
 				customDays: "Vue {count} jours",
 			},
 			settings: {
-		header: {
-			documentation: "Documentation",
-			documentationUrl: "https://tasknotes.dev",
-		},
 				groups: {
 					dateNavigation: "Navigation par date",
 					events: "Événements",
 					layout: "Mise en page",
 					propertyBasedEvents: "Événements basés sur les propriétés",
 					calendarSubscriptions: "Abonnements au calendrier",
-					googleCalendars: "Google Calendars",
-					microsoftCalendars: "Microsoft Calendars",
+					googleCalendars: "Agendas Google",
+					microsoftCalendars: "Calendriers Microsoft",
 				},
 				dateNavigation: {
 					navigateToDate: "Naviguer vers la date",
@@ -1224,7 +1220,7 @@ export const fr: TranslationTree = {
 					scheduled: "Date planifiée",
 					timeEstimate: "Estimation de temps",
 					totalTrackedTime: "Temps suivi total",
-					checklistProgress: "Checklist Progress",
+					checklistProgress: "Progression de la liste de contrôle",
 					recurrence: "Récurrence",
 					completedDate: "Date d'achèvement",
 					createdDate: "Date de création",
@@ -1713,19 +1709,19 @@ export const fr: TranslationTree = {
 				},
 			},
 			googleCalendarExport: {
-				header: "Exporter les tâches vers Google Calendar",
+				header: "Exporter les tâches vers Google Agenda",
 				description:
-					"Synchronisez automatiquement vos tâches vers Google Calendar en tant qu'événements. Nécessite que Google Calendar soit connecté ci-dessus.",
+					"Synchronisez automatiquement vos tâches vers Google Agenda en tant qu'événements. Nécessite que Google Agenda soit connecté ci-dessus.",
 				enable: {
 					name: "Activer l'export des tâches",
 					description:
-						"Lorsqu'activé, les tâches avec des dates seront automatiquement synchronisées vers Google Calendar en tant qu'événements.",
+						"Lorsqu'activé, les tâches avec des dates seront automatiquement synchronisées vers Google Agenda en tant qu'événements.",
 				},
 				targetCalendar: {
 					name: "Calendrier cible",
 					description: "Sélectionnez dans quel calendrier créer les événements de tâches.",
 					placeholder: "Sélectionner un calendrier...",
-					connectFirst: "Connectez d'abord Google Calendar",
+					connectFirst: "Connectez d'abord Google Agenda",
 					primarySuffix: " (Principal)",
 				},
 				syncTrigger: {
@@ -1766,7 +1762,7 @@ export const fr: TranslationTree = {
 				defaultReminder: {
 					name: "Rappel par défaut",
 					description:
-						"Ajouter un rappel popup aux événements Google Calendar. Définir les minutes avant l'événement (0 = pas de rappel). Valeurs courantes : 15, 30, 60, 1440 (1 jour).",
+						"Ajouter un rappel popup aux événements Google Agenda. Définir les minutes avant l'événement (0 = pas de rappel). Valeurs courantes : 15, 30, 60, 1440 (1 jour).",
 				},
 				automaticSyncBehavior: {
 					header: "Comportement de synchronisation automatique",
@@ -1797,7 +1793,7 @@ export const fr: TranslationTree = {
 				syncAllTasks: {
 					name: "Synchroniser toutes les tâches",
 					description:
-						"Synchroniser toutes les tâches existantes vers Google Calendar. Cela créera des événements pour les tâches qui n'ont pas encore été synchronisées.",
+						"Synchroniser toutes les tâches existantes vers Google Agenda. Cela créera des événements pour les tâches qui n'ont pas encore été synchronisées.",
 					buttonText: "Tout synchroniser",
 				},
 				unlinkAllTasks: {
@@ -1812,19 +1808,19 @@ export const fr: TranslationTree = {
 				},
 				notices: {
 					notEnabled:
-						"L'export Google Calendar n'est pas activé. Configurez-le dans Paramètres > Intégrations.",
+						"L'export Google Agenda n'est pas activé. Configurez-le dans Paramètres > Intégrations.",
 					notEnabledOrConfigured:
-						"L'export Google Calendar n'est pas activé ou configuré",
+						"L'export Google Agenda n'est pas activé ou configuré",
 					serviceNotAvailable: "Service de synchronisation calendrier non disponible",
 					syncResults: "Synchronisés : {synced}, Échoués : {failed}, Ignorés : {skipped}",
-					taskSynced: "Tâche synchronisée vers Google Calendar",
+					taskSynced: "Tâche synchronisée vers Google Agenda",
 					noActiveFile: "Aucun fichier n'est actuellement actif",
 					notATask: "Le fichier actuel n'est pas une tâche",
 					noDateToSync: "La tâche n'a pas de date planifiée ou d'échéance à synchroniser",
-					syncFailed: "Échec de la synchronisation de la tâche vers Google Calendar : {message}",
+					syncFailed: "Échec de la synchronisation de la tâche vers Google Agenda : {message}",
 					connectionExpired:
-						"Google Calendar connection expired. Please reconnect in Settings > Integrations.",
-					syncingTasks: "Synchronisation de {total} tâches vers Google Calendar...",
+						"La connexion à Google Agenda a expiré. Veuillez vous reconnecter dans Paramètres > Intégrations.",
+					syncingTasks: "Synchronisation de {total} tâches vers Google Agenda...",
 					syncComplete:
 						"Synchronisation terminée : {synced} synchronisées, {failed} échouées, {skipped} ignorées",
 					eventsDeletedAndUnlinked: "Tous les événements supprimés et dissociés",
@@ -1862,8 +1858,8 @@ export const fr: TranslationTree = {
 				},
 				mcp: {
 					enable: {
-						name: "Enable MCP Server",
-						description: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.",
+						name: "Activer le serveur MCP",
+						description: "Expose les outils TaskNotes via le Model Context Protocol sur le point de terminaison /mcp. Nécessite l'activation de l'API HTTP.",
 					},
 				},
 				endpoints: {
@@ -2075,10 +2071,10 @@ export const fr: TranslationTree = {
 			},
 			mdbaseSpec: {
 				header: "Définitions de types mdbase",
-				learnMore: "Learn more about mdbase-spec",
+				learnMore: "En savoir plus sur mdbase-spec",
 				enable: {
-					name: "Generate mdbase type definitions",
-					description: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.",
+					name: "Générer les définitions de types mdbase",
+					description: "Génère et maintient les fichiers de types mdbase (mdbase.yaml et _types/task.md) à la racine du coffre lorsque vos paramètres changent.",
 				},
 			},
 			timeFormats: {
@@ -2144,14 +2140,14 @@ export const fr: TranslationTree = {
 		startTimeTrackingWithSelector: "Démarrer le suivi du temps (sélectionner une tâche)",
 		editTimeEntries: "Modifier les entrées de temps (sélectionner une tâche)",
 		createOrOpenTask: "Créer ou ouvrir une tâche",
-		syncAllTasksGoogleCalendar: "Synchroniser toutes les tâches vers Google Calendar",
-		syncCurrentTaskGoogleCalendar: "Synchroniser la tâche actuelle vers Google Calendar",
+		syncAllTasksGoogleCalendar: "Synchroniser toutes les tâches vers Google Agenda",
+		syncCurrentTaskGoogleCalendar: "Synchroniser la tâche actuelle vers Google Agenda",
 	},
 	modals: {
 		deviceCode: {
-			title: "Autorisation Google Calendar",
+			title: "Autorisation Google Agenda",
 			instructions: {
-				intro: "Pour connecter votre Google Calendar, veuillez suivre ces étapes :",
+				intro: "Pour connecter votre Google Agenda, veuillez suivre ces étapes :",
 			},
 			steps: {
 				open: "Ouvrir",
@@ -2266,7 +2262,7 @@ export const fr: TranslationTree = {
 			useTemplateDesc: "Appliquer un modèle lors de la création du contenu",
 			templatePathLabel: "Chemin du modèle",
 			templatePathDesc: "Chemin vers le fichier de modèle",
-			templatePathPlaceholder: "templates/ics-note-template.md",
+			templatePathPlaceholder: "modeles/modele-note-ics.md",
 		},
 		unscheduledTasksSelector: {
 			title: "Tâches non planifiées",
@@ -2665,13 +2661,13 @@ export const fr: TranslationTree = {
 			addToCalendar: "Ajouter au calendrier",
 			calendar: {
 				google: "Google Agenda",
-				outlook: "Outlook Agenda",
-				yahoo: "Yahoo Agenda",
+				outlook: "Calendrier Outlook",
+				yahoo: "Calendrier Yahoo",
 				downloadIcs: "Télécharger le fichier .ics",
-				syncToGoogle: "Synchroniser avec Google Calendar",
-				syncToGoogleNotConfigured: "Synchronisation Google Calendar non configurée",
-				syncToGoogleSuccess: "Tâche synchronisée avec Google Calendar",
-				syncToGoogleFailed: "Échec de la synchronisation avec Google Calendar",
+				syncToGoogle: "Synchroniser avec Google Agenda",
+				syncToGoogleNotConfigured: "Synchronisation Google Agenda non configurée",
+				syncToGoogleSuccess: "Tâche synchronisée avec Google Agenda",
+				syncToGoogleFailed: "Échec de la synchronisation avec Google Agenda",
 			},
 			recurrence: "Récurrence",
 			clearRecurrence: "Effacer la récurrence",
@@ -2961,7 +2957,7 @@ export const fr: TranslationTree = {
 			loadingDependencies: "Chargement des dépendances…",
 			blockingEmpty: "Aucune tâche dépendante",
 			blockingLoadError: "Échec du chargement des dépendances",
-			googleCalendarSyncTooltip: "Synchronisé avec Google Calendar",
+			googleCalendarSyncTooltip: "Synchronisé avec Google Agenda",
 		},
 		propertyEventCard: {
 			unknownFile: "Fichier inconnu",
@@ -3104,7 +3100,7 @@ export const fr: TranslationTree = {
 				scheduledDate: "Date planifiée",
 				timeEstimate: "Estimation de temps",
 				totalTrackedTime: "Temps suivi total",
-				checklistProgress: "Checklist Progress",
+				checklistProgress: "Progression de la liste de contrôle",
 				recurrence: "Récurrence",
 				completedDate: "Date d'achèvement",
 				createdDate: "Date de création",
