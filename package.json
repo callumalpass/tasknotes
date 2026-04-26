@@ -86,7 +86,7 @@
 		"obsidian-daily-notes-interface": "^0.9.4",
 		"reflect-metadata": "^0.2.2",
 		"rrule": "^2.8.1",
-		"tasknotes-nlp-core": "^0.1.1",
+		"tasknotes-nlp-core": "^0.1.2",
 		"yaml": "^2.3.1",
 		"zod": "^3.24.0"
 	}

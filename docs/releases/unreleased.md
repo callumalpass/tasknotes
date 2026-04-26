@@ -29,6 +29,8 @@ Example:
 - (#1764) Fixed Google Calendar sync using stale task metadata after rapid task updates, and fixed late recurring completions/skips recording the completion day instead of the scheduled occurrence date.
   - Thanks to @martin-forge for the PR and to @jpmoo for reporting the recurring completion issues.
 - Fixed CI test runs resolving the NLP parser package from a local sibling checkout instead of the published dependency.
+- (#1667) Fixed NLP scheduled-date parsing so standalone `scheduled` and `start` triggers can set scheduled dates alongside due dates.
+  - Thanks to @hokfujow for reporting and @UniqueClone for the NLP core PR.
 - (#1658) Fixed Pomodoro stats date bucketing for sessions near local midnight
   - Pomodoro session stats now compare the recorded session calendar date against UTC-anchored target days without shifting through UTC or the reader's current timezone
   - Pomodoro daily-note storage now writes sessions to the daily note matching the recorded session date
