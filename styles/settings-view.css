@@ -283,6 +283,29 @@ select.tasknotes-settings__card-input {
     border-color: var(--color-red);
 }
 
+/* Card Warning */
+.tasknotes-settings__card-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    margin-top: 4px;
+    background: var(--background-modifier-error);
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-muted);
+}
+
+.tasknotes-settings__card-warning-icon {
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.tasknotes-settings__card-warning-text {
+    flex: 1;
+}
+
 /* Header Actions */
 .tasknotes-settings__card-header-actions {
     display: flex;
