@@ -32,7 +32,7 @@ import { TaskEditModal } from "./modals/TaskEditModal";
 import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { convertUTCToLocalCalendarDate, getCurrentTimestamp, getDatePart, parseDateToUTC } from "./utils/dateUtils";
+import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -49,7 +49,6 @@ import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
 import {
 	formatDateForStorage,
-	createUTCDateFromLocalCalendarDate,
 	parseDateToLocal,
 	getTodayLocal,
 } from "./utils/dateUtils";
@@ -1060,20 +1059,8 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
-			// Resolve the implicit date from cacheManager — the same authoritative
-			// source the service uses — before the service mutates state (#396)
-			const freshTask = (await this.cacheManager.getTaskInfo(task.path)) || task;
-			const targetDate =
-				date ||
-				(() => {
-					if (freshTask.recurrence_anchor !== "completion" && freshTask.scheduled) {
-						return parseDateToUTC(getDatePart(freshTask.scheduled));
-					}
-					const todayLocal = getTodayLocal();
-					return createUTCDateFromLocalCalendarDate(todayLocal);
-				})();
-
-			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, date);
+			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
+			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, targetDate);
 
 			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);

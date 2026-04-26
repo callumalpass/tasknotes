@@ -19,8 +19,6 @@ const GOOGLE_API_CALL_SPACING_MS = 100;
 /**
  * Service for syncing TaskNotes tasks to Google Calendar.
  * Handles creating, updating, and deleting calendar events when tasks change.
- * 
- * Patched locally: __codexTaskCalendarDebounceStaleCachePatch20260404
  */
 export class TaskCalendarSyncService {
 	private plugin: TaskNotesPlugin;
@@ -789,9 +787,9 @@ export class TaskCalendarSyncService {
 				const latestTask = this.pendingTasks.get(taskPath);
 				this.pendingTasks.delete(taskPath);
 
-				// Fallback to cache ONLY if for some reason the pending task is missing
+				// Fallback to cache only if the pending task is missing
 				const freshTask = latestTask || await this.plugin.cacheManager.getTaskInfo(taskPath);
-				
+
 				if (!freshTask) {
 					resolve();
 					return;
