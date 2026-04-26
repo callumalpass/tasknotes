@@ -1,4 +1,5 @@
 import { Component, App, setIcon } from "obsidian";
+import type { BasesPropertyId, BasesQueryResult, BasesView, BasesViewConfig } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -9,19 +10,19 @@ import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import type { TaskCardOptions } from "../ui/TaskCard";
-import { BasesConfigLike, BasesQueryResultLike } from "./types";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
  * Properly extends Component to leverage lifecycle, and implements BasesView interface.
  * Note: Bases types (BasesView, BasesViewConfig) are available from obsidian-api declarations.
  */
-export abstract class BasesViewBase extends Component {
+export abstract class BasesViewBase extends Component implements BasesView {
 	// BasesView properties (provided by Bases when factory returns this instance)
 	// These match the BasesView interface from Obsidian's internal Bases API
 	app!: App;
-	config!: BasesConfigLike;
-	data!: BasesQueryResultLike;
+	config!: BasesViewConfig;
+	data!: BasesQueryResult;
+	allProperties!: BasesPropertyId[];
 	protected plugin: TaskNotesPlugin;
 	protected dataAdapter: BasesDataAdapter;
 	protected propertyMapper: PropertyMappingService;
@@ -356,7 +357,7 @@ export abstract class BasesViewBase extends Component {
 	 * @param frontmatterProcessor - Optional callback that Bases uses to set default frontmatter values
 	 */
 	async createFileForView(
-		baseFileName: string,
+		baseFileName?: string,
 		frontmatterProcessor?: (frontmatter: any) => void
 	): Promise<void> {
 		const { TaskCreationModal } = await import("../modals/TaskCreationModal");

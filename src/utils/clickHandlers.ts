@@ -11,6 +11,18 @@ export interface ClickHandlerOptions {
 	contextMenuHandler?: (e: MouseEvent) => Promise<void>; // Optional context menu handler
 }
 
+const DEFAULT_EXCLUDE_SELECTOR = [
+	"a",
+	"button",
+	"input",
+	"textarea",
+	"select",
+	"[role=\"button\"]",
+	"[data-tn-no-drag=\"true\"]",
+	"[data-tn-click-exclude=\"true\"]",
+	".tag",
+].join(", ");
+
 /**
  * Creates a reusable click handler that supports single/double click distinction
  * based on user settings.
@@ -19,6 +31,9 @@ export interface ClickHandlerOptions {
 export function createTaskClickHandler(options: ClickHandlerOptions) {
 	const { task, plugin, excludeSelector, onSingleClick, onDoubleClick, contextMenuHandler } =
 		options;
+	const clickExcludeSelector = excludeSelector
+		? `${DEFAULT_EXCLUDE_SELECTOR}, ${excludeSelector}`
+		: DEFAULT_EXCLUDE_SELECTOR;
 
 	let clickTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -71,11 +86,9 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 	};
 
 	const clickHandler = async (e: MouseEvent) => {
-		if (excludeSelector) {
-			const target = e.target as HTMLElement;
-			if (target.closest(excludeSelector)) {
-				return;
-			}
+		const target = e.target as HTMLElement;
+		if (target.closest(clickExcludeSelector)) {
+			return;
 		}
 
 		// Check for selection mode - only shift+click triggers selection

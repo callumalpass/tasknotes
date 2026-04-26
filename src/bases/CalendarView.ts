@@ -479,6 +479,11 @@ export class CalendarView extends BasesViewBase {
 		return defaultValue;
 	}
 
+	private getConfigOption<T>(key: string, fallback: T): T {
+		const value = this.config.get(key);
+		return value === null || value === undefined ? fallback : (value as T);
+	}
+
 	/**
 	 * Read event toggle options from config.
 	 * These should be re-read on every render to respond to toggle changes.
@@ -490,20 +495,20 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		try {
-			this.viewOptions.showScheduled = this.config.get('showScheduled') ?? this.viewOptions.showScheduled;
-			this.viewOptions.showDue = this.config.get('showDue') ?? this.viewOptions.showDue;
-			this.viewOptions.showScheduledToDueSpan = this.config.get('showScheduledToDueSpan') ?? this.viewOptions.showScheduledToDueSpan;
-			this.viewOptions.showRecurring = this.config.get('showRecurring') ?? this.viewOptions.showRecurring;
-			this.viewOptions.showTimeEntries = this.config.get('showTimeEntries') ?? this.viewOptions.showTimeEntries;
-			this.viewOptions.showTimeblocks = this.config.get('showTimeblocks') ?? this.viewOptions.showTimeblocks;
-			this.viewOptions.showPropertyBasedEvents = this.config.get('showPropertyBasedEvents') ?? this.viewOptions.showPropertyBasedEvents;
+			this.viewOptions.showScheduled = this.getConfigOption('showScheduled', this.viewOptions.showScheduled);
+			this.viewOptions.showDue = this.getConfigOption('showDue', this.viewOptions.showDue);
+			this.viewOptions.showScheduledToDueSpan = this.getConfigOption('showScheduledToDueSpan', this.viewOptions.showScheduledToDueSpan);
+			this.viewOptions.showRecurring = this.getConfigOption('showRecurring', this.viewOptions.showRecurring);
+			this.viewOptions.showTimeEntries = this.getConfigOption('showTimeEntries', this.viewOptions.showTimeEntries);
+			this.viewOptions.showTimeblocks = this.getConfigOption('showTimeblocks', this.viewOptions.showTimeblocks);
+			this.viewOptions.showPropertyBasedEvents = this.getConfigOption('showPropertyBasedEvents', this.viewOptions.showPropertyBasedEvents);
 
 			// ICS calendar toggles
 			if (this.plugin.icsSubscriptionService) {
 				const subscriptions = this.plugin.icsSubscriptionService.getSubscriptions();
 				for (const sub of subscriptions) {
 					const key = `showICS_${sub.id}`;
-					this.icsCalendarToggles.set(sub.id, this.config.get(key) ?? true);
+					this.icsCalendarToggles.set(sub.id, this.getConfigOption(key, true));
 				}
 			}
 
@@ -512,7 +517,7 @@ export class CalendarView extends BasesViewBase {
 				const calendars = this.plugin.googleCalendarService.getAvailableCalendars();
 				for (const cal of calendars) {
 					const key = `showGoogleCalendar_${cal.id}`;
-					this.googleCalendarToggles.set(cal.id, this.config.get(key) ?? true);
+					this.googleCalendarToggles.set(cal.id, this.getConfigOption(key, true));
 				}
 			}
 
@@ -521,7 +526,7 @@ export class CalendarView extends BasesViewBase {
 				const calendars = this.plugin.microsoftCalendarService.getAvailableCalendars();
 				for (const cal of calendars) {
 					const key = `showMicrosoftCalendar_${cal.id}`;
-					this.microsoftCalendarToggles.set(cal.id, this.config.get(key) ?? true);
+					this.microsoftCalendarToggles.set(cal.id, this.getConfigOption(key, true));
 				}
 			}
 		} catch (e) {
@@ -544,75 +549,75 @@ export class CalendarView extends BasesViewBase {
 			this.readEventToggles();
 
 			// Date navigation
-			this.viewOptions.initialDate = this.config.get('initialDate') ?? this.viewOptions.initialDate;
-			this.viewOptions.initialDateProperty = this.config.get('initialDateProperty') ?? this.viewOptions.initialDateProperty;
-			this.viewOptions.initialDateStrategy = this.config.get('initialDateStrategy') ?? this.viewOptions.initialDateStrategy;
+			this.viewOptions.initialDate = this.getConfigOption('initialDate', this.viewOptions.initialDate);
+			this.viewOptions.initialDateProperty = this.getConfigOption('initialDateProperty', this.viewOptions.initialDateProperty);
+			this.viewOptions.initialDateStrategy = this.getConfigOption('initialDateStrategy', this.viewOptions.initialDateStrategy);
 
 			// Layout
-			this.viewOptions.calendarView = this.config.get('calendarView') ?? this.viewOptions.calendarView;
-			this.viewOptions.customDayCount = this.config.get('customDayCount') ?? this.viewOptions.customDayCount;
-			this.viewOptions.listDayCount = this.config.get('listDayCount') ?? this.viewOptions.listDayCount;
+			this.viewOptions.calendarView = this.getConfigOption('calendarView', this.viewOptions.calendarView);
+			this.viewOptions.customDayCount = this.getConfigOption('customDayCount', this.viewOptions.customDayCount);
+			this.viewOptions.listDayCount = this.getConfigOption('listDayCount', this.viewOptions.listDayCount);
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
-				this.config.get('slotMinTime'),
+				this.getConfigOption<string | undefined>('slotMinTime', undefined),
 				this.viewOptions.slotMinTime,
 				false
 			);
 			this.viewOptions.slotMaxTime = this.validateTimeValue(
-				this.config.get('slotMaxTime'),
+				this.getConfigOption<string | undefined>('slotMaxTime', undefined),
 				this.viewOptions.slotMaxTime,
 				true // Allow 24:00 for end time
 			);
 			this.viewOptions.slotDuration = this.validateTimeValue(
-				this.config.get('slotDuration'),
+				this.getConfigOption<string | undefined>('slotDuration', undefined),
 				this.viewOptions.slotDuration,
 				false
 			);
 			this.viewOptions.scrollTime = this.validateTimeValue(
-				this.config.get('scrollTime'),
+				this.getConfigOption<string | undefined>('scrollTime', undefined),
 				this.viewOptions.scrollTime,
 				false
 			);
 
-			this.viewOptions.firstDay = Number(this.config.get('firstDay') ?? this.viewOptions.firstDay);
-			this.viewOptions.weekNumbers = this.config.get('weekNumbers') ?? this.viewOptions.weekNumbers;
-			this.viewOptions.nowIndicator = this.config.get('nowIndicator') ?? this.viewOptions.nowIndicator;
-			this.viewOptions.showWeekends = this.config.get('showWeekends') ?? this.viewOptions.showWeekends;
-			this.viewOptions.showAllDaySlot = this.config.get('showAllDaySlot') ?? this.viewOptions.showAllDaySlot;
-			this.viewOptions.showTodayHighlight = this.config.get('showTodayHighlight') ?? this.viewOptions.showTodayHighlight;
-			const todayColumnWidthMultiplier = Number(this.config.get('todayColumnWidthMultiplier') ?? 1);
+			this.viewOptions.firstDay = Number(this.getConfigOption('firstDay', this.viewOptions.firstDay));
+			this.viewOptions.weekNumbers = this.getConfigOption('weekNumbers', this.viewOptions.weekNumbers);
+			this.viewOptions.nowIndicator = this.getConfigOption('nowIndicator', this.viewOptions.nowIndicator);
+			this.viewOptions.showWeekends = this.getConfigOption('showWeekends', this.viewOptions.showWeekends);
+			this.viewOptions.showAllDaySlot = this.getConfigOption('showAllDaySlot', this.viewOptions.showAllDaySlot);
+			this.viewOptions.showTodayHighlight = this.getConfigOption('showTodayHighlight', this.viewOptions.showTodayHighlight);
+			const todayColumnWidthMultiplier = Number(this.getConfigOption('todayColumnWidthMultiplier', 1));
 			this.viewOptions.todayColumnWidthMultiplier =
 				todayColumnWidthMultiplier >= 1 && todayColumnWidthMultiplier <= 5
 					? Math.round(todayColumnWidthMultiplier * 2) / 2
 					: 1;
-			this.viewOptions.selectMirror = this.config.get('selectMirror') ?? this.viewOptions.selectMirror;
-			this.viewOptions.timeFormat = this.config.get('timeFormat') ?? this.viewOptions.timeFormat;
-			this.viewOptions.eventMinHeight = this.config.get('eventMinHeight') ?? this.viewOptions.eventMinHeight;
-			this.viewOptions.slotEventOverlap = this.config.get('slotEventOverlap') ?? this.viewOptions.slotEventOverlap;
+			this.viewOptions.selectMirror = this.getConfigOption('selectMirror', this.viewOptions.selectMirror);
+			this.viewOptions.timeFormat = this.getConfigOption('timeFormat', this.viewOptions.timeFormat);
+			this.viewOptions.eventMinHeight = this.getConfigOption('eventMinHeight', this.viewOptions.eventMinHeight);
+			this.viewOptions.slotEventOverlap = this.getConfigOption('slotEventOverlap', this.viewOptions.slotEventOverlap);
 
 			// Convert slider values: 0 means special behavior (null/true/false)
-			const eventMaxStackValue = this.config.get('eventMaxStack');
+			const eventMaxStackValue = this.getConfigOption<number | undefined>('eventMaxStack', undefined);
 			if (eventMaxStackValue !== undefined) {
 				this.viewOptions.eventMaxStack = eventMaxStackValue === 0 ? null : eventMaxStackValue;
 			}
 
-			const dayMaxEventsValue = this.config.get('dayMaxEvents');
+			const dayMaxEventsValue = this.getConfigOption<number | undefined>('dayMaxEvents', undefined);
 			if (dayMaxEventsValue !== undefined) {
 				// 0 = auto (true), positive number = limit
 				this.viewOptions.dayMaxEvents = dayMaxEventsValue === 0 ? true : dayMaxEventsValue;
 			}
 
-			const dayMaxEventRowsValue = this.config.get('dayMaxEventRows');
+			const dayMaxEventRowsValue = this.getConfigOption<number | undefined>('dayMaxEventRows', undefined);
 			if (dayMaxEventRowsValue !== undefined) {
 				// 0 = unlimited (false), positive number = limit
 				this.viewOptions.dayMaxEventRows = dayMaxEventRowsValue === 0 ? false : dayMaxEventRowsValue;
 			}
 
 			// Property-based events
-			this.viewOptions.startDateProperty = this.config.get('startDateProperty') ?? this.viewOptions.startDateProperty;
-			this.viewOptions.endDateProperty = this.config.get('endDateProperty') ?? this.viewOptions.endDateProperty;
-			this.viewOptions.titleProperty = this.config.get('titleProperty') ?? this.viewOptions.titleProperty;
+			this.viewOptions.startDateProperty = this.getConfigOption('startDateProperty', this.viewOptions.startDateProperty);
+			this.viewOptions.endDateProperty = this.getConfigOption('endDateProperty', this.viewOptions.endDateProperty);
+			this.viewOptions.titleProperty = this.getConfigOption('titleProperty', this.viewOptions.titleProperty);
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get('enableSearch');

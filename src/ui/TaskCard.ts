@@ -37,6 +37,8 @@ import {
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import {
 	extractBasesValue,
+	isNullBasesValue,
+	renderBasesValue,
 	resolveTaskCardPropertyLabel,
 	type TaskCardPresentationOptions,
 } from "./taskCardPresentation";
@@ -938,6 +940,7 @@ function hasValidValue(value: any): boolean {
 	return (
 		value !== null &&
 		value !== undefined &&
+		!isNullBasesValue(value) &&
 		!(Array.isArray(value) && value.length === 0) &&
 		!(typeof value === "string" && value.trim() === "")
 	);
@@ -967,7 +970,9 @@ function renderUserProperty(
 	element.createEl("span", { text: `${fieldName}: ` });
 
 	// Create value container
-	const valueContainer = element.createEl("span");
+	const valueContainer = element.createEl("span", {
+		cls: "task-card__metadata-value",
+	});
 
 	// Create shared services to avoid redundant object creation
 	const linkServices: LinkServices = {
@@ -1051,7 +1056,9 @@ function renderGenericProperty(
 	element.createEl("span", { text: `${displayName}: ` });
 
 	// Create value container
-	const valueContainer = element.createEl("span");
+	const valueContainer = element.createEl("span", {
+		cls: "task-card__metadata-value",
+	});
 
 	if (Array.isArray(value)) {
 		// Handle arrays - render each item separately to detect links
@@ -1076,6 +1083,10 @@ function renderPropertyValue(
 	value: unknown,
 	plugin?: TaskNotesPlugin
 ): void {
+	if (plugin && renderBasesValue(container, value, plugin.app.renderContext)) {
+		return;
+	}
+
 	if (typeof value === "string" && plugin) {
 		// Check if string contains links and render appropriately
 		const linkServices: LinkServices = {

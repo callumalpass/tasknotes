@@ -1,16 +1,57 @@
+import type { RenderContext, Value } from "obsidian";
+
 export interface TaskCardPresentationOptions {
 	propertyLabels?: Record<string, string>;
 }
 
+export function isBasesValue(value: unknown): value is Value {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		typeof (value as { renderTo?: unknown }).renderTo === "function" &&
+		typeof (value as { toString?: unknown }).toString === "function"
+	);
+}
+
+export function isNullBasesValue(value: unknown): boolean {
+	return value === null || (value as { constructor?: { name?: string } } | undefined)?.constructor?.name === "NullValue";
+}
+
+export function renderBasesValue(
+	container: HTMLElement,
+	value: unknown,
+	renderContext: RenderContext
+): boolean {
+	if (!isBasesValue(value) || isNullBasesValue(value)) {
+		return false;
+	}
+
+	try {
+		value.renderTo(container, renderContext);
+		if (!container.hasChildNodes() && !container.textContent) {
+			container.textContent = value.toString();
+		}
+	} catch (error) {
+		console.debug("[TaskNotes] Error rendering Bases value:", error);
+		container.textContent = value.toString();
+	}
+
+	return true;
+}
+
 /**
- * Extract raw value from a Bases Value object.
- * Bases API may return objects like {icon: "...", data: ...} or {icon: "...", link: "..."}
- * instead of raw primitive values. This function extracts the actual value.
- *
- * For link values (icon: "lucide-link"), Bases strips the [[]] from wikilinks,
- * so we need to restore them to ensure proper rendering.
+ * Normalize older Bases-like wrapper objects. Official Bases Value instances are
+ * returned intact so TaskCard can render them with Value.renderTo().
  */
 export function extractBasesValue(value: unknown): unknown {
+	if (isNullBasesValue(value)) {
+		return "";
+	}
+
+	if (isBasesValue(value)) {
+		return value;
+	}
+
 	if (value && typeof value === "object" && "icon" in value) {
 		const v = value as Record<string, unknown>;
 

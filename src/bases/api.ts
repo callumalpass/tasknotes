@@ -6,6 +6,7 @@
  */
 
 import { App, Plugin } from "obsidian";
+import type { BasesViewRegistration as ObsidianBasesViewRegistration } from "obsidian";
 
 export interface BasesQuery {
 	on?: (event: string, callback: () => void) => void;
@@ -31,82 +32,7 @@ export interface BasesContainer {
 	};
 }
 
-// View Option Types (Obsidian 1.10.0+ Public API)
-export type ViewOption =
-	| PropertyOption
-	| DropdownOption
-	| SliderOption
-	| ToggleOption
-	| TextOption
-	| MultitextOption
-	| GroupOption;
-
-export interface PropertyOption {
-	type: "property";
-	key: string;
-	displayName: string;
-	default?: string;
-	placeholder?: string;
-	filter?: (prop: string) => boolean;
-}
-
-export interface DropdownOption {
-	type: "dropdown";
-	key: string;
-	displayName: string;
-	options: string[];
-	default?: string;
-}
-
-export interface SliderOption {
-	type: "slider";
-	key: string;
-	displayName: string;
-	min: number;
-	max: number;
-	step: number;
-	default?: number;
-}
-
-export interface ToggleOption {
-	type: "toggle";
-	key: string;
-	displayName: string;
-	default?: boolean;
-}
-
-export interface TextOption {
-	type: "text";
-	key: string;
-	displayName: string;
-	default?: string;
-	placeholder?: string;
-}
-
-export interface MultitextOption {
-	type: "multitext";
-	key: string;
-	displayName: string;
-	default?: string;
-	placeholder?: string;
-}
-
-export interface GroupOption {
-	type: "group";
-	displayName: string;
-	options: ViewOption[];
-}
-
-/**
- * Bases View Registration interface (Obsidian 1.10.0+ Public API)
- * Updated to match official BasesViewFactory signature.
- */
-export interface BasesViewRegistration {
-	name: string;
-	icon: string;
-	factory: (controller: any, containerEl: HTMLElement) => any;
-	options?: () => ViewOption[];
-}
+export type BasesViewRegistration = ObsidianBasesViewRegistration;
 
 export interface BasesAPI {
 	registrations: Record<string, BasesViewRegistration>;
@@ -169,9 +95,9 @@ export function registerBasesView(
 	registration: BasesViewRegistration
 ): boolean {
 	// Use public API (Obsidian 1.10.0+)
-	if (typeof (plugin as any).registerBasesView === "function") {
+	if (typeof plugin.registerBasesView === "function") {
 		try {
-			const success = (plugin as any).registerBasesView(viewId, registration);
+			const success = plugin.registerBasesView(viewId, registration);
 			if (success) {
 				console.debug(
 					`[TaskNotes][Bases] Successfully registered view via public API: ${viewId}`

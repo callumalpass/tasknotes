@@ -119,6 +119,37 @@
     white-space: nowrap;
 }
 
+.tasknotes-plugin .task-card__metadata-property {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.tasknotes-plugin .task-card__metadata-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .task-card__metadata-property:has(.tag),
+.tasknotes-plugin .task-card__metadata-value:has(.tag) {
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .task-card__metadata-property .tag {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 .tasknotes-plugin .task-card__metadata-pill {
     display: inline-flex;
     align-items: center;

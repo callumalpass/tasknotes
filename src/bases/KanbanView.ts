@@ -3086,7 +3086,8 @@ export class KanbanView extends BasesViewBase {
 			targetDate,
 			hideStatusIndicator,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
-			resolveExpandedRelationshipFilterMode: () => this.config?.get("expandedRelationshipFilterMode"),
+			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
+				normalizeExpandedRelationshipFilterMode(this.config?.get("expandedRelationshipFilterMode")),
 			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
 		});
 	}

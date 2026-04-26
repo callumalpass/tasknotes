@@ -33,8 +33,17 @@ Example:
 - (#1777) Added a Modal Fields setting to choose whether Tab/Shift+Tab move focus out of the task details editor or use the markdown editor's indentation behavior.
   - Thanks to @P-Sc for the PR.
 
+## Changed
+
+- Updated the Obsidian API dependency to 1.12.3 and switched the Bases integration to the official API type declarations.
+- Bases task cards and property-event cards now render metadata values through Obsidian's native Bases value renderer so links, dates, lists, icons, and formula values display more faithfully.
+
 ## Fixed
 
+- (#1035) Fixed the task modal title field causing the modal to jump to the bottom when focused on iPhone.
+  - Thanks to @3zra47 for reporting and following up.
+- (#1045) Fixed inline linked recurring tasks keeping the previous day's completed state after the calendar day changes.
+  - Thanks to @3zra47 for reporting and following up.
 - (#1788) Fixed Task List subgroup headers and cards rendering without clear indentation.
   - Thanks to @renatomen for the PR.
 - (#1810) Updated Japanese Kanban terminology to use the more natural katakana spelling.
@@ -68,3 +77,4 @@ Example:
 - (#1744) Fixed Bases Task List views so changing the per-view `Expanded relationships` option takes effect on re-render
   - Restores the expected `show-all` behavior for setups that hide subtasks at the top level with `note.projects.isEmpty()`
   - Thanks to @minol-dev for reporting and @stanley-910 for PR #1792 exploring the related standalone-subtask workflow
+- Fixed tag clicks in task cards opening the task edit modal in addition to the tag search panel, and kept rendered tag metadata on a single row inside task cards.

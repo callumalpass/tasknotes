@@ -20,6 +20,7 @@
 import { describe, it, expect } from '@jest/globals';
 import {
 	extractBasesValue,
+	renderBasesValue,
 	resolveTaskCardPropertyLabel,
 } from "../../../src/ui/taskCardPresentation";
 
@@ -63,5 +64,19 @@ describe('Issue #1720: Bases date-like value rendering', () => {
 				propertyLabels: { "modified-c": "Modified" },
 			})
 		).toBe("Modified");
+	});
+
+	it('preserves official Bases Values for native rendering', () => {
+		const value = {
+			renderTo: (el: HTMLElement) => {
+				el.textContent = "Native Bases value";
+			},
+			toString: () => "Fallback Bases value",
+		};
+		const container = document.createElement("span");
+
+		expect(extractBasesValue(value)).toBe(value);
+		expect(renderBasesValue(container, value, {} as any)).toBe(true);
+		expect(container.textContent).toBe("Native Bases value");
 	});
 });

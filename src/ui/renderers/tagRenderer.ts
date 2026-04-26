@@ -19,6 +19,7 @@ export function renderTag(container: HTMLElement, tag: string, services?: TagSer
 			href: normalized,
 			role: "button",
 			tabindex: "0",
+			"data-tn-click-exclude": "true",
 		},
 	});
 
@@ -34,6 +35,7 @@ export function renderTag(container: HTMLElement, tag: string, services?: TagSer
 		el.addEventListener("keydown", (e) => {
 			if (e.key === "Enter" || e.key === " ") {
 				e.preventDefault();
+				e.stopPropagation();
 				services.onTagClick!(normalized, e as any);
 			}
 		});
@@ -81,6 +83,7 @@ export function renderContextsValue(
 				attr: {
 					role: "button",
 					tabindex: "0",
+					"data-tn-click-exclude": "true",
 				},
 			});
 
@@ -94,6 +97,7 @@ export function renderContextsValue(
 				el.addEventListener("keydown", (e) => {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
+						e.stopPropagation();
 						services.onTagClick!(normalized, e);
 					}
 				});
@@ -120,6 +124,7 @@ export function renderContextsValue(
 					attr: {
 						role: "button",
 						tabindex: "0",
+						"data-tn-click-exclude": "true",
 					},
 				});
 
@@ -133,6 +138,7 @@ export function renderContextsValue(
 					el.addEventListener("keydown", (e) => {
 						if (e.key === "Enter" || e.key === " ") {
 							e.preventDefault();
+							e.stopPropagation();
 							services.onTagClick!(normalized, e);
 						}
 					});

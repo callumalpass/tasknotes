@@ -1,12 +1,33 @@
 import { BasesDataItem } from "./helpers";
-import { BasesEntryLike, BasesGroupLike, BasesValueLike, BasesViewLike } from "./types";
+import type { BasesEntry, BasesEntryGroup, BasesPropertyId, BasesView, TFile, Value } from "obsidian";
+
+type BasesViewDataSource = Pick<BasesView, "config" | "data">;
+
+type BasesValueInternals = Value & {
+	data?: unknown;
+	date?: Date;
+	file?: TFile;
+	value?: unknown[];
+	get?: (index: number) => Value | unknown;
+	at?: (index: number) => Value | unknown;
+	length?: () => number;
+	toISOString?: () => string;
+	constructor?: {
+		name?: string;
+	};
+};
+
+type BasesEntryInternals = BasesEntry & {
+	frontmatter?: Record<string, unknown>;
+	properties?: Record<string, unknown>;
+};
 
 /**
  * Adapter for accessing Bases data using public API (1.10.0+).
  * Eliminates all internal API dependencies.
  */
 export class BasesDataAdapter {
-	constructor(private basesView: BasesViewLike) {}
+	constructor(private basesView: BasesViewDataSource) {}
 
 	/**
 	 * Extract all data items from Bases query result.
@@ -18,7 +39,7 @@ export class BasesDataAdapter {
 	 */
 	extractDataItems(): BasesDataItem[] {
 		const entries = this.basesView.data.data;
-		return entries.map((entry: BasesEntryLike) => ({
+		return entries.map((entry: BasesEntry) => ({
 			key: entry.file.path,
 			data: entry,
 			file: entry.file,
@@ -34,7 +55,7 @@ export class BasesDataAdapter {
 	 *
 	 * Note: Returns pre-grouped data. Bases has already applied groupBy configuration.
 	 */
-	getGroupedData(): BasesGroupLike[] {
+	getGroupedData(): BasesEntryGroup[] {
 		return this.basesView.data.groupedData;
 	}
 
@@ -82,16 +103,16 @@ export class BasesDataAdapter {
 	 * Uses public API: basesView.config.getDisplayName()
 	 */
 	getPropertyDisplayName(propertyId: string): string {
-		return this.basesView.config.getDisplayName(propertyId);
+		return this.basesView.config.getDisplayName(propertyId as BasesPropertyId);
 	}
 
 	/**
 	 * Get property value from a Bases entry.
 	 * Uses public API: entry.getValue()
 	 */
-	getPropertyValue(entry: BasesEntryLike, propertyId: string): unknown {
+	getPropertyValue(entry: BasesEntry, propertyId: string): unknown {
 		try {
-			const value = entry.getValue(propertyId);
+			const value = entry.getValue(propertyId as BasesPropertyId);
 			return this.convertValueToNative(value);
 		} catch (e) {
 			console.warn(`[BasesDataAdapter] Failed to get property ${propertyId}:`, e);
@@ -104,8 +125,8 @@ export class BasesDataAdapter {
 	 * Convert Bases Value object to native JavaScript value.
 	 * Handles: PrimitiveValue, ListValue, DateValue, FileValue, NullValue, etc.
 	 */
-	private convertValueToNative(value: BasesValueLike | unknown): unknown {
-		const basesValue = value as BasesValueLike | null | undefined;
+	private convertValueToNative(value: Value | unknown): unknown {
+		const basesValue = value as BasesValueInternals | null | undefined;
 		if (basesValue == null || basesValue.constructor?.name === "NullValue") {
 			return null;
 		}
@@ -116,11 +137,16 @@ export class BasesDataAdapter {
 		}
 
 		// ListValue
-		if (typeof basesValue.length === "function" && typeof basesValue.at === "function") {
+		const getListItem = typeof basesValue.get === "function"
+			? basesValue.get.bind(basesValue)
+			: typeof basesValue.at === "function"
+				? basesValue.at.bind(basesValue)
+				: null;
+		if (typeof basesValue.length === "function" && getListItem) {
 			const len = basesValue.length();
 			const result = [];
 			for (let i = 0; i < len; i++) {
-				const item = basesValue.at(i);
+				const item = getListItem(i);
 				result.push(this.convertValueToNative(item));
 			}
 			return result;
@@ -143,7 +169,14 @@ export class BasesDataAdapter {
 		}
 
 		// Fallback: try to extract raw data
-		return basesValue;
+		if (typeof basesValue.toString === "function") {
+			const stringValue = basesValue.toString();
+			if (stringValue !== "[object Object]") {
+				return stringValue;
+			}
+		}
+
+		return value;
 	}
 
 	/**
@@ -151,10 +184,10 @@ export class BasesDataAdapter {
 	 * Handles Bases Value objects, particularly DateValue which has special structure.
 	 * For FileValue (links), returns the file path which can be rendered as a clickable link.
 	 */
-	convertGroupKeyToString(key: BasesValueLike | unknown): string {
-		const basesKey = key as BasesValueLike | null | undefined;
+	convertGroupKeyToString(key: Value | unknown): string {
+		const basesKey = key as BasesValueInternals | null | undefined;
 		// Check if key exists and is valid
-		if (basesKey == null || (basesKey.hasKey && !basesKey.hasKey())) {
+		if (basesKey == null || basesKey.constructor?.name === "NullValue") {
 			return "Unknown";
 		}
 
@@ -210,11 +243,12 @@ export class BasesDataAdapter {
 	 * Extracts frontmatter and basic file properties only (cheap operations).
 	 * Computed file properties (backlinks, links, etc.) are fetched lazily via getComputedProperty().
 	 */
-	private extractEntryProperties(entry: BasesEntryLike): Record<string, unknown> {
+	private extractEntryProperties(entry: BasesEntry): Record<string, unknown> {
 		// Extract all properties from the entry's frontmatter
 		// We don't filter by visible properties here - that happens during rendering
 		// This ensures all properties are available for TaskInfo creation
-		const frontmatter = entry.frontmatter || entry.properties || {};
+		const entryInternals = entry as BasesEntryInternals;
+		const frontmatter = entryInternals.frontmatter || entryInternals.properties || {};
 
 		// Start with frontmatter properties
 		const result = { ...frontmatter };
@@ -249,11 +283,11 @@ export class BasesDataAdapter {
 	 * Call this during rendering for visible items only - NOT during bulk extraction.
 	 * This is much more efficient for expensive properties like backlinks.
 	 */
-	getComputedProperty(basesEntry: BasesEntryLike | null | undefined, propertyId: string): unknown {
+	getComputedProperty(basesEntry: BasesEntry | null | undefined, propertyId: string): unknown {
 		if (!basesEntry) return null;
 
 		try {
-			const value = basesEntry.getValue(propertyId);
+			const value = basesEntry.getValue(propertyId as BasesPropertyId);
 			return this.convertValueToNative(value);
 		} catch (e) {
 			return null;

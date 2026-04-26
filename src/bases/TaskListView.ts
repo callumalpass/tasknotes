@@ -1773,7 +1773,8 @@ export class TaskListView extends BasesViewBase {
 		return this.buildTaskCardOptions({
 			targetDate,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
-			resolveExpandedRelationshipFilterMode: () => this.config?.get("expandedRelationshipFilterMode"),
+			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
+				normalizeExpandedRelationshipFilterMode(this.config?.get("expandedRelationshipFilterMode")),
 			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
 		});
 	}

@@ -226,6 +226,7 @@ export function renderTextWithLinks(
 					href: tag,
 					role: "button",
 					tabindex: "0",
+					"data-tn-click-exclude": "true",
 				},
 			});
 
@@ -238,6 +239,7 @@ export function renderTextWithLinks(
 			tagEl.addEventListener("keydown", (e) => {
 				if (e.key === "Enter" || e.key === " ") {
 					e.preventDefault();
+					e.stopPropagation();
 					options.onTagClick!(tag, e as any);
 				}
 			});

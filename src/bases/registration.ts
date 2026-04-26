@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import TaskNotesPlugin from "../main";
 import { requireApiVersion } from "obsidian";
+import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildTaskListViewFactory } from "./TaskListView";
 import { buildKanbanViewFactory } from "./KanbanView";
 import { buildCalendarViewFactory } from "./CalendarView";
@@ -45,7 +46,10 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",
 						default: "inherit",
-						options: ["inherit", "show-all"],
+						options: {
+							inherit: "Inherit",
+							"show-all": "Show all",
+						},
 					},
 				],
 			});
@@ -109,7 +113,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: false,
 					},
 					{
-						type: "multitext",
+						type: "text",
 						key: "columnOrder",
 						displayName: "Column Order (Advanced)",
 						placeholder: "Auto-managed when dragging columns",
@@ -120,7 +124,10 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",
 						default: "inherit",
-						options: ["inherit", "show-all"],
+						options: {
+							inherit: "Inherit",
+							"show-all": "Show all",
+						},
 					},
 				],
 			});
@@ -134,7 +141,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						const calendarSettings = plugin.settings.calendarViewSettings;
 						const t = (key: string) => plugin.i18n.translate(`views.basesCalendar.settings.${key}`);
 
-						const options: any[] = [
+						const options: BasesAllOptions[] = [
 							{
 								type: "group",
 								displayName: t("groups.events"),
@@ -444,7 +451,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
 							if (subscriptions.length > 0) {
 								// Create a group for ICS calendars
-								const icsToggles: any[] = subscriptions.map(sub => ({
+								const icsToggles: BasesOptions[] = subscriptions.map(sub => ({
 									type: "toggle",
 									key: `showICS_${sub.id}`,
 									displayName: sub.name,
@@ -465,7 +472,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							const availableCalendars = plugin.googleCalendarService.getAvailableCalendars();
 							if (availableCalendars.length > 0) {
 								// Create toggles for Google calendars
-								const googleToggles: any[] = availableCalendars.map(cal => ({
+								const googleToggles: BasesOptions[] = availableCalendars.map(cal => ({
 									type: "toggle",
 									key: `showGoogleCalendar_${cal.id}`,
 									displayName: cal.summary || cal.id,
@@ -486,7 +493,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							const availableCalendars = plugin.microsoftCalendarService.getAvailableCalendars();
 							if (availableCalendars.length > 0) {
 								// Create toggles for Microsoft calendars
-								const microsoftToggles: any[] = availableCalendars.map(cal => ({
+								const microsoftToggles: BasesOptions[] = availableCalendars.map(cal => ({
 									type: "toggle",
 									key: `showMicrosoftCalendar_${cal.id}`,
 									displayName: cal.summary || cal.id,

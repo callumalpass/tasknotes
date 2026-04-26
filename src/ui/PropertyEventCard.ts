@@ -1,5 +1,7 @@
 import { setIcon } from "obsidian";
+import type { BasesEntry, BasesPropertyId, BasesViewConfig } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { isNullBasesValue, renderBasesValue } from "./taskCardPresentation";
 
 export interface PropertyEventCardOptions {
 	showProperties: boolean;
@@ -14,9 +16,9 @@ export const DEFAULT_PROPERTY_EVENT_CARD_OPTIONS: PropertyEventCardOptions = {
  * Shows file title and Bases properties configured as visible in the view
  */
 export function createPropertyEventCard(
-	entry: any, // BasesEntry from Bases
+	entry: BasesEntry,
 	plugin: TaskNotesPlugin,
-	viewConfig?: any, // BasesViewConfig
+	viewConfig?: BasesViewConfig,
 	options: Partial<PropertyEventCardOptions> = {}
 ): HTMLElement {
 	const opts = { ...DEFAULT_PROPERTY_EVENT_CARD_OPTIONS, ...options };
@@ -65,9 +67,10 @@ export function createPropertyEventCard(
 	// Metadata line: show visible properties from Bases view
 	if (opts.showProperties && viewConfig) {
 		const metadata = content.createEl("div", { cls: "task-card__metadata" });
-		const parts: string[] = [];
+		let renderedProperties = 0;
 
 		try {
+			const doc = metadata.ownerDocument;
 			// Get visible properties from Bases view configuration
 			const visibleProperties = viewConfig.getOrder?.() || [];
 
@@ -83,30 +86,33 @@ export function createPropertyEventCard(
 				}
 
 				// Get property value from Bases entry
-				const value = entry.getValue?.(propertyId);
+				const value = entry.getValue(propertyId as BasesPropertyId);
 
-				if (value && value.data !== null && value.data !== undefined) {
-					// Get user-friendly property name
-					const displayName = viewConfig.getDisplayName?.(propertyId) || propertyId;
-
-					// Format the value
-					let displayValue = String(value.data);
-
-					// Truncate long values
-					if (displayValue.length > 30) {
-						displayValue = displayValue.substring(0, 27) + "...";
+				if (!isNullBasesValue(value)) {
+					if (renderedProperties > 0) {
+						metadata.appendChild(doc.createTextNode(" • "));
 					}
 
-					parts.push(`${displayName}: ${displayValue}`);
+					// Get user-friendly property name
+					const displayName = viewConfig.getDisplayName(propertyId as BasesPropertyId) || propertyId;
+
+					const propertyEl = metadata.createSpan({
+						cls: "property-event-card__metadata-property",
+					});
+					propertyEl.createSpan({ text: `${displayName}: ` });
+					const valueEl = propertyEl.createSpan({
+						cls: "property-event-card__metadata-value",
+					});
+					renderBasesValue(valueEl, value, plugin.app.renderContext);
+
+					renderedProperties++;
 				}
 			}
 		} catch (error) {
 			console.debug("[TaskNotes][PropertyEventCard] Error reading properties:", error);
 		}
 
-		if (parts.length > 0) {
-			metadata.textContent = parts.join(" • ");
-		} else {
+		if (renderedProperties === 0) {
 			// Fallback: show file path if no properties
 			metadata.textContent = file.path;
 		}

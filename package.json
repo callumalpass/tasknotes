@@ -45,7 +45,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@codemirror/autocomplete": "^6.19.1",
-		"@codemirror/state": "^6.5.2",
+		"@codemirror/state": "^6.5.0",
 		"@electron/asar": "^3.4.1",
 		"@playwright/test": "^1.57.0",
 		"@types/jest": "^30.0.0",
@@ -63,7 +63,7 @@
 		"jest": "^30.1.1",
 		"jest-environment-jsdom": "^30.1.1",
 		"monkey-around": "^3.0.0",
-		"obsidian": "latest",
+		"obsidian": "^1.12.3",
 		"obsidian-typings": "^4.49.0",
 		"prettier": "^3.6.2",
 		"ts-jest": "^29.1.1",
@@ -71,7 +71,7 @@
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
-		"@codemirror/view": "^6.37.2",
+		"@codemirror/view": "^6.38.6",
 		"@fullcalendar/core": "^6.1.17",
 		"@fullcalendar/daygrid": "^6.1.17",
 		"@fullcalendar/interaction": "^6.1.17",

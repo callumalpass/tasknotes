@@ -593,6 +593,35 @@ describe('TaskCard Component', () => {
       expect(mockPlugin.openTaskEditModal).toHaveBeenCalledWith(task);
     });
 
+    it('should not open the edit modal when clicking a Bases-rendered tag', async () => {
+      const basesTagsValue = {
+        renderTo: (el: HTMLElement) => {
+          el.createEl('a', {
+            cls: 'tag',
+            text: '#client',
+            attr: { href: '#client' },
+          });
+        },
+        toString: () => '#client',
+      };
+      const tagTask = TaskFactory.createTask({
+        customProperties: {
+          'file.tags': basesTagsValue,
+        },
+      });
+      mockPlugin.fieldMapper.lookupMappingKey = jest.fn(() => null);
+      const tagCard = createTaskCard(tagTask, mockPlugin, ['file.tags']);
+      container.appendChild(tagCard);
+
+      const tag = tagCard.querySelector('.tag') as HTMLElement;
+      expect(tag).toBeTruthy();
+
+      tag.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(mockPlugin.openTaskEditModal).not.toHaveBeenCalled();
+    });
+
     it('should handle Ctrl+click to open source note', async () => {
       const mockFile = new TFile('test.md');
       mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
