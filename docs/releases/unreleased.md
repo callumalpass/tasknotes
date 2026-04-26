@@ -31,6 +31,8 @@ Example:
 
 ## Fixed
 
+- (#1810) Updated Japanese Kanban terminology to use the more natural katakana spelling.
+  - Thanks to @sigma7863 for the PR.
 - (#1633) Fixed Bases task cards using fallback labels instead of Bases display names for mapped task fields and file properties.
   - Thanks to @Sarryaz for reporting the Bases task card i18n and field-mapping issue.
 - (#884) Fixed untranslated strings and English placeholder examples across non-English interface translations.
