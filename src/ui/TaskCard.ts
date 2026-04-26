@@ -61,6 +61,8 @@ export interface TaskCardOptions {
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
 	/** How expanded subtasks/dependencies should interact with the current view filter. */
 	expandedRelationshipFilterMode?: "inherit" | "show-all";
+	/** Optional live resolver for the current expanded relationship filter mode. */
+	resolveExpandedRelationshipFilterMode?: () => "inherit" | "show-all";
 	/** Paths visible in the current view after Bases/search filtering. */
 	expandedRelationshipTaskPaths?: ReadonlySet<string>;
 }
@@ -75,12 +77,40 @@ function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
 	return ((card as any)._taskCardOptions ?? {}) as Partial<TaskCardOptions>;
 }
 
+function parseExpandedRelationshipFilterMode(
+	value: unknown
+): "inherit" | "show-all" {
+	if (typeof value === "number") {
+		return value === 1 ? "show-all" : "inherit";
+	}
+
+	const normalized = String(value ?? "")
+		.trim()
+		.toLowerCase()
+		.replace(/^['"]|['"]$/g, "")
+		.replace(/[_\s]+/g, "-");
+
+	if (normalized === "show-all" || normalized === "1") {
+		return "show-all";
+	}
+
+	if (normalized === "inherit" || normalized === "0") {
+		return "inherit";
+	}
+
+	return "inherit";
+}
+
 function filterExpandedRelationshipTasks(
 	card: HTMLElement,
 	tasks: TaskInfo[]
 ): TaskInfo[] {
 	const options = getStoredTaskCardOptions(card);
-	if (options.expandedRelationshipFilterMode !== "inherit") {
+	const filterMode = parseExpandedRelationshipFilterMode(
+		options.resolveExpandedRelationshipFilterMode?.()
+			?? options.expandedRelationshipFilterMode
+	);
+	if (filterMode !== "inherit") {
 		return tasks;
 	}
 
