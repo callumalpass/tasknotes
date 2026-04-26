@@ -49,7 +49,6 @@ import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
 import {
 	formatDateForStorage,
-	createUTCDateFromLocalCalendarDate,
 	parseDateToLocal,
 	getTodayLocal,
 } from "./utils/dateUtils";
@@ -1060,17 +1059,8 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
-			// Let TaskService handle the date logic (defaults to local today, not selectedDate)
-			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, date);
-
-			// For notification, determine the actual completion date from the task
-			// Use local today if no explicit date provided
-			const targetDate =
-				date ||
-				(() => {
-					const todayLocal = getTodayLocal();
-					return createUTCDateFromLocalCalendarDate(todayLocal);
-				})();
+			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
+			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, targetDate);
 
 			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);

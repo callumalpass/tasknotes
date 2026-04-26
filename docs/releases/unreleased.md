@@ -23,3 +23,8 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1764) Fixed Google Calendar sync using stale task metadata after rapid task updates, and fixed late recurring completions/skips recording the completion day instead of the scheduled occurrence date.
+  - Thanks to @martin-forge for the PR and to @jpmoo for reporting the recurring completion issues.

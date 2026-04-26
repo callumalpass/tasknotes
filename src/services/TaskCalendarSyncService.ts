@@ -35,6 +35,9 @@ export class TaskCalendarSyncService {
 	/** Track previous task state for detecting recurrence removal */
 	private previousTaskState: Map<string, TaskInfo> = new Map();
 
+	/** Store the latest explicitly passed task object during debounce to avoid cache race conditions */
+	private pendingTasks: Map<string, TaskInfo> = new Map();
+
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
@@ -49,6 +52,7 @@ export class TaskCalendarSyncService {
 		}
 		this.pendingSyncs.clear();
 		this.previousTaskState.clear();
+		this.pendingTasks.clear();
 	}
 
 	/**
@@ -765,6 +769,9 @@ export class TaskCalendarSyncService {
 			clearTimeout(existingTimer);
 		}
 
+		// Store the authoritative task state passed to us so we don't rely on the async metadata cache
+		this.pendingTasks.set(taskPath, task);
+
 		// Return a promise that resolves when the debounced sync completes
 		return new Promise((resolve, reject) => {
 			const timer = setTimeout(async () => {
@@ -776,8 +783,13 @@ export class TaskCalendarSyncService {
 					await inFlight.catch(() => {}); // Ignore errors from previous sync
 				}
 
-				// Re-fetch the task to get the latest state after debounce
-				const freshTask = await this.plugin.cacheManager.getTaskInfo(taskPath);
+				// Use the latest task data that was passed to us explicitly
+				const latestTask = this.pendingTasks.get(taskPath);
+				this.pendingTasks.delete(taskPath);
+
+				// Fallback to cache only if the pending task is missing
+				const freshTask = latestTask || await this.plugin.cacheManager.getTaskInfo(taskPath);
+
 				if (!freshTask) {
 					resolve();
 					return;
