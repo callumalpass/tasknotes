@@ -40,6 +40,8 @@ Example:
 
 ## Fixed
 
+- (#1815) Fixed the Priority property settings so the NLP trigger character field is visible and editable even when priority NLP parsing is disabled.
+  - Thanks to @spiv for reporting.
 - (#1035) Fixed the task modal title field causing the modal to jump to the bottom when focused on iPhone.
   - Thanks to @3zra47 for reporting and following up.
 - (#1045) Fixed inline linked recurring tasks keeping the previous day's completed state after the calendar day changes.

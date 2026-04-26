@@ -110,26 +110,24 @@ export function createNLPTriggerRows(
 		},
 	];
 
-	if (config.enabled) {
-		const triggerInput = createCardInput("text", defaultTrigger, config.trigger);
-		triggerInput.style.width = "80px";
-		triggerInput.addEventListener("change", () => {
-			const value = triggerInput.value;
-			if (value.trim().length === 0) {
-				new Notice(translate("settings.taskProperties.propertyCard.triggerEmpty"));
-				return;
-			}
-			if (value.length > 10) {
-				new Notice(translate("settings.taskProperties.propertyCard.triggerTooLong"));
-				return;
-			}
-			updateNLPTrigger(plugin, propertyId, { trigger: value }, defaultTrigger, save);
-		});
-		rows.push({
-			label: translate("settings.taskProperties.propertyCard.triggerChar"),
-			input: triggerInput,
-		});
-	}
+	const triggerInput = createCardInput("text", defaultTrigger, config.trigger);
+	triggerInput.style.width = "80px";
+	triggerInput.addEventListener("change", () => {
+		const value = triggerInput.value;
+		if (value.trim().length === 0) {
+			new Notice(translate("settings.taskProperties.propertyCard.triggerEmpty"));
+			return;
+		}
+		if (value.length > 10) {
+			new Notice(translate("settings.taskProperties.propertyCard.triggerTooLong"));
+			return;
+		}
+		updateNLPTrigger(plugin, propertyId, { trigger: value }, defaultTrigger, save);
+	});
+	rows.push({
+		label: translate("settings.taskProperties.propertyCard.triggerChar"),
+		input: triggerInput,
+	});
 
 	return rows;
 }
