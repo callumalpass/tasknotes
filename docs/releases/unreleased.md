@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Added
+
+- (#1777) Added a Modal Fields setting to choose whether Tab/Shift+Tab move focus out of the task details editor or use the markdown editor's indentation behavior.
+  - Thanks to @P-Sc for the PR.
+
 ## Fixed
 
 - (#1633) Fixed Bases task cards using fallback labels instead of Bases display names for mapped task fields and file properties.

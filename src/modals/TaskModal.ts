@@ -805,10 +805,12 @@ export abstract class TaskModal extends Modal {
 					// ESC - close the modal
 					this.close();
 				},
-				onTab: () => {
-					// Tab - jump to next input field
-					this.focusNextField();
-					return true; // Prevent default tab behavior
+				onTab: (shift) => {
+					if (!this.plugin.settings.taskModalTabMovesFocus) {
+						return false;
+					}
+
+					return shift ? this.focusPreviousField() : this.focusNextField();
 				},
 			});
 		}
@@ -1981,17 +1983,28 @@ export abstract class TaskModal extends Modal {
 		return this.title.trim().length > 0;
 	}
 
-	protected focusNextField(): void {
+	protected focusNextField(): boolean {
 		// Try to focus the contexts input as the next field after details
+		const nextField = this.contextsInput || this.tagsInput || this.timeEstimateInput;
+		if (!nextField) {
+			return false;
+		}
+
 		setTimeout(() => {
-			if (this.contextsInput) {
-				this.contextsInput.focus();
-			} else if (this.tagsInput) {
-				this.tagsInput.focus();
-			} else if (this.timeEstimateInput) {
-				this.timeEstimateInput.focus();
-			}
+			nextField.focus();
 		}, 50);
+		return true;
+	}
+
+	protected focusPreviousField(): boolean {
+		if (!this.titleInput) {
+			return false;
+		}
+
+		setTimeout(() => {
+			this.titleInput?.focus();
+		}, 50);
+		return true;
 	}
 
 	onClose(): void {
