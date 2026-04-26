@@ -81,6 +81,7 @@ export class KanbanView extends BasesViewBase {
 	private explodeListColumns = true; // Show items with list properties in multiple columns
 	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
+	private collapseSubtasks = false; // Hide subtasks from top-level when their parent is also in the view
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
@@ -185,6 +186,12 @@ export class KanbanView extends BasesViewBase {
 			);
 			this.expandedRelationshipFilterMode =
 				expandedRelationshipFilterModeValue === "show-all" ? "show-all" : "inherit";
+			// Read collapseSubtasks option (default: false)
+			this.collapseSubtasks = (this.config.get("collapseSubtasks") as boolean) === true;
+			// When collapsing subtasks, force show-all so expanded subtasks still display
+			if (this.collapseSubtasks && this.expandedRelationshipFilterMode !== "show-all") {
+				this.expandedRelationshipFilterMode = "show-all";
+			}
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;
@@ -341,7 +348,12 @@ export class KanbanView extends BasesViewBase {
 			// Compute formulas before reading formula-based properties (swimlanes, etc.)
 			await this.computeFormulas(dataItems);
 
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			let taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+
+			// Filter out subtasks from top-level when collapseSubtasks is enabled
+			if (this.collapseSubtasks) {
+				taskNotes = this.filterSubtasksFromTopLevel(taskNotes);
+			}
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);
