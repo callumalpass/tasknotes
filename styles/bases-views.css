@@ -94,23 +94,23 @@
 }
 
 /* Sub-group header styling */
-.tn-tasknoteTaskList .task-group[data-level="sub"] {
+.tn-tasknotesTaskList .task-group[data-level="sub"] {
     padding-left: 16px; /* Subtle indentation */
     margin-bottom: var(--tn-spacing-sm);
 }
 
-.tn-tasknoteTaskList .task-group[data-level="sub"] .task-group-header {
+.tn-tasknotesTaskList .task-group[data-level="sub"] .task-group-header {
     font-size: 0.95em;
     font-weight: 500; /* Less bold than primary */
     color: var(--tn-text-muted);
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
 }
 
-.tn-tasknoteTaskList .task-group[data-level="sub"] .task-group-toggle {
+.tn-tasknotesTaskList .task-group[data-level="sub"] .task-group-toggle {
     opacity: 0.8; /* Slightly more subtle chevron */
 }
 
-.tn-tasknoteTaskList .task-group[data-level="sub"] .task-group-toggle svg {
+.tn-tasknotesTaskList .task-group[data-level="sub"] .task-group-toggle svg {
     width: 14px;
     height: 14px;
 }
@@ -121,6 +121,17 @@
     flex-direction: column;
     gap: var(--tn-spacing-xs);
     padding-left: var(--tn-spacing-md);
+}
+
+/* Reset indentation for task cards after a primary group header */
+.tn-tasknotesTaskList .task-group[data-level="primary"] ~ .task-card {
+    margin-left: 0;
+}
+
+/* Indent task cards under subgroups to align chevrons with subgroup header chevron.
+   This rule comes after the primary reset so it wins for cards following a subgroup. */
+.tn-tasknotesTaskList .task-group[data-level="sub"] ~ .task-card {
+    margin-left: 16px;
 }
 
 /* Empty state */

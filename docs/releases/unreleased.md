@@ -31,6 +31,8 @@ Example:
 
 ## Fixed
 
+- (#1788) Fixed Task List subgroup headers and cards rendering without clear indentation.
+  - Thanks to @renatomen for the PR.
 - (#1810) Updated Japanese Kanban terminology to use the more natural katakana spelling.
   - Thanks to @sigma7863 for the PR.
 - (#1633) Fixed Bases task cards using fallback labels instead of Bases display names for mapped task fields and file properties.
