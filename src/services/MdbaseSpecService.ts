@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import TaskNotesPlugin from "../main";
 import { UserMappedField } from "../types/settings";
-
+import { join as join_path } from "path";
 /**
  * Service that generates mdbase-spec v0.2.0 type definition files
  * (mdbase.yaml and _types/task.md) at the vault root.
@@ -11,6 +11,14 @@ import { UserMappedField } from "../types/settings";
  */
 export class MdbaseSpecService {
 	private plugin: TaskNotesPlugin;
+
+
+	// NOTE: Must be `mdbase.yaml` because mdbase/cli expects it here
+	private _defaultMdbConfigFile = "mdbase.yaml";
+	// NOTE: Configurable, but path must be correct in mdbase.yaml
+	private _defaultTypesFolder = "_types";
+	// NOTE: The file we will define the task schema in
+	private _defaultTaskDefinitionFile = "task.md";
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
@@ -33,24 +41,26 @@ export class MdbaseSpecService {
 		try {
 			const vault = this.plugin.app.vault;
 
+			const typesFolder = this.getTypeFolderName();
+			const taskDefPath = join_path(typesFolder, this._defaultTaskDefinitionFile);
 			// Ensure _types folder exists
-			const typesFolderExists = await vault.adapter.exists("_types");
+			const typesFolderExists = await vault.adapter.exists(typesFolder);
 			if (!typesFolderExists) {
-				await vault.createFolder("_types");
+				await vault.createFolder(typesFolder);
 			}
 
 			const taskTypeDef = this.buildTaskTypeDef();
-			await this.writeFile("_types/task.md", taskTypeDef);
+			await this.writeFile(taskDefPath, taskTypeDef);
 
 			// Only create mdbase.yaml if it doesn't already exist so that
 			// user customisations (extra excludes, description, etc.) are preserved.
-			const mdbaseExists = await vault.adapter.exists("mdbase.yaml");
+			const mdbaseExists = await vault.adapter.exists(this._defaultMdbConfigFile);
 			if (!mdbaseExists) {
 				const mdbaseYaml = this.buildMdbaseYaml();
-				await this.writeFile("mdbase.yaml", mdbaseYaml);
+				await this.writeFile(this._defaultMdbConfigFile, mdbaseYaml);
 			}
 
-			console.debug("[TaskNotes][mdbase-spec] Generated mdbase.yaml and _types/task.md");
+			console.debug(`[TaskNotes][mdbase-spec] Generated ${this._defaultMdbConfigFile}, and ${taskDefPath}`);
 		} catch (error) {
 			console.error("[TaskNotes][mdbase-spec] Failed to generate files:", error);
 		}
@@ -74,15 +84,16 @@ export class MdbaseSpecService {
 	 * Build the mdbase.yaml content.
 	 */
 	buildMdbaseYaml(): string {
+		const typesFolder = this.getTypeFolderName();
 		return [
 			'spec_version: "0.2.0"',
 			'name: "TaskNotes"',
 			'description: "Task collection managed by TaskNotes for Obsidian"',
 			"settings:",
-			'  types_folder: "_types"',
+			`  types_folder: ${typesFolder}`,
 			"  default_strict: false",
 			"  exclude:",
-			'    - "_types"',
+			`    - "${typesFolder}"`,
 			"",
 		].join("\n");
 	}
@@ -459,6 +470,11 @@ export class MdbaseSpecService {
 			due: fm.toUserField("due"),
 			scheduled: fm.toUserField("scheduled"),
 		};
+	}
+
+
+	private getTypeFolderName(): string {
+		return this.plugin.settings.userMdbaseSpecLocation ?? this._defaultTypesFolder;
 	}
 }
 

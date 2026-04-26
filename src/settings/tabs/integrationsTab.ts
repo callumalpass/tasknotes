@@ -108,6 +108,18 @@ export function renderIntegrationsTab(
 				});
 				link.setAttr("target", "_blank");
 			});
+			group.addSetting((setting) => {
+				configureTextSetting(setting, {
+					name: translate("settings.integrations.mdbaseSpec.typesFolder.name"),
+					desc: translate("settings.integrations.mdbaseSpec.typesFolder.description"),
+					placeholder: translate("settings.integrations.mdbaseSpec.typesFolder.placeholder"),
+					getValue: () => plugin.settings.userMdbaseSpecLocation || "_types",
+					setValue: async (value: string) => {
+						plugin.settings.userMdbaseSpecLocation = value || "_types";
+						save();
+					}
+				})
+			})
 		}
 	);
 
