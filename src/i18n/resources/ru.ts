@@ -2940,7 +2940,7 @@ export const ru: TranslationTree = {
 			blockingToggle: "Блокирует {count} задач",
 			priorityAriaLabel: "Приоритет: {label}",
 			taskOptions: "Параметры задачи",
-			recurrenceTooltip: "{label}: {value} (нажмите, чтобы изменить)",
+			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 напоминание установлено (нажмите, чтобы управлять)",
 			reminderTooltipMany: "{count} напоминаний установлено (нажмите, чтобы управлять)",
 			projectTooltip: "Эта задача используется как проект (нажмите, чтобы отфильтровать подзадачи)",

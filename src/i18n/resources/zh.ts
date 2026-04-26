@@ -2939,7 +2939,7 @@ export const zh: TranslationTree = {
 			blockingToggle: "阻塞 {count} 个任务",
 			priorityAriaLabel: "优先级: {label}",
 			taskOptions: "任务选项",
-			recurrenceTooltip: "{label}: {value}（点击更改）",
+			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "已设置 1 个提醒（点击管理）",
 			reminderTooltipMany: "已设置 {count} 个提醒（点击管理）",
 			projectTooltip: "此任务用作项目（点击可筛选子任务）",

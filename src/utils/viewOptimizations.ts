@@ -113,7 +113,13 @@ export function shouldRefreshForPropertyBasedView(
  * This can be used by TaskListView, KanbanView, etc.
  */
 export async function selectiveUpdateForListView(
-	view: ItemView & { taskElements?: Map<string, HTMLElement>; plugin: TaskNotesPlugin },
+	view: ItemView & {
+		taskElements?: Map<string, HTMLElement>;
+		plugin: TaskNotesPlugin;
+		getCurrentVisibleProperties?: () => string[];
+		getVisibleProperties?: () => string[];
+		getVisiblePropertyLabels?: () => Record<string, string>;
+	},
 	taskPath: string,
 	operation: "update" | "delete" | "create"
 ): Promise<void> {
@@ -132,18 +138,22 @@ export async function selectiveUpdateForListView(
 				const updatedTask = await view.plugin.cacheManager.getTaskInfo(taskPath);
 				if (updatedTask) {
 					// Get visible properties from the view instead of extracting from DOM
-					const visibleProperties = (view as any).getCurrentVisibleProperties?.() || [
-						"due",
-						"scheduled",
-						"projects",
-						"contexts",
-						"tags",
-					];
+					const visibleProperties =
+						view.getCurrentVisibleProperties?.() ||
+						view.getVisibleProperties?.() || [
+							"due",
+							"scheduled",
+							"projects",
+							"contexts",
+							"tags",
+						];
+					const propertyLabels = view.getVisiblePropertyLabels?.();
 					await updateTaskElementInPlace(
 						taskElement,
 						updatedTask,
 						view.plugin,
-						visibleProperties
+						visibleProperties,
+						propertyLabels
 					);
 				} else {
 					// Task was deleted, remove from view
@@ -176,13 +186,14 @@ async function updateTaskElementInPlace(
 	element: HTMLElement,
 	taskInfo: TaskInfo,
 	plugin: TaskNotesPlugin,
-	visibleProperties: string[]
+	visibleProperties: string[],
+	propertyLabels?: Record<string, string>
 ): Promise<void> {
 	try {
 		// Use the existing updateTaskCard function if available
 		const { updateTaskCard } = await import("../ui/TaskCard");
 
-		updateTaskCard(element, taskInfo, plugin, visibleProperties);
+		updateTaskCard(element, taskInfo, plugin, visibleProperties, { propertyLabels });
 
 		// Add update animation
 		element.classList.add("task-card--updated");

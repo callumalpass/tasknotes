@@ -217,6 +217,19 @@ export class PropertyMappingService {
 	 * @returns TaskCard property IDs for rendering
 	 */
 	mapVisibleProperties(basesPropertyIds: string[]): TaskCardPropertyId[] {
-		return basesPropertyIds.map((id) => this.basesToTaskCardProperty(id));
+		const seen = new Set<TaskCardPropertyId>();
+		const visibleProperties: TaskCardPropertyId[] = [];
+
+		for (const id of basesPropertyIds) {
+			const mappedId = this.basesToTaskCardProperty(id);
+			if (seen.has(mappedId)) {
+				continue;
+			}
+
+			seen.add(mappedId);
+			visibleProperties.push(mappedId);
+		}
+
+		return visibleProperties;
 	}
 }

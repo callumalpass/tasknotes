@@ -40,6 +40,12 @@ Example:
 
 ## Fixed
 
+- (#1778) Fixed MCP initialize requests using newer protocol versions such as `2025-11-25` failing instead of negotiating down to TaskNotes' supported MCP version.
+  - Thanks to @SakulaPor for reporting.
+- (#1781) Fixed duplicate metadata properties on Bases task cards when bare and `note.`-prefixed property IDs map to the same TaskNotes field.
+  - Thanks to @loukandr for reporting and tracing the issue.
+- (#1787) Removed the "(click to change)" helper text from recurrence tooltips on task cards.
+  - Thanks to @kazerniel for reporting.
 - (#1828) Fixed subtask creation from a task card dropping the parent task project when natural-language input also adds projects.
   - Thanks to @prepare4robots for reporting.
 - (#1786) Fixed TaskNotes task cards and relationships/subtasks widgets appearing inside embedded task-note heading or block sections.
@@ -63,7 +69,8 @@ Example:
   - Thanks to @martin-forge for reporting and the PR.
 - (#1764) Fixed Google Calendar sync using stale task metadata after rapid task updates, and fixed late recurring completions/skips recording the completion day instead of the scheduled occurrence date.
   - Thanks to @martin-forge for the PR and to @jpmoo for reporting the recurring completion issues.
-- Fixed CI test runs resolving the NLP parser package from a local sibling checkout instead of the published dependency.
+- (#1782) Fixed CI test runs resolving the NLP parser package from a local sibling checkout instead of the published dependency.
+  - Thanks to @martin-forge for reporting.
 - Published [`mdbase-tasknotes`](https://github.com/callumalpass/mdbase-tasknotes) 0.1.3 with compatibility fixes for TaskNotes-generated mdbase schemas.
   - Includes clearer create-path diagnostics, natural-language `mtn list --due` filters, timer log datetime filters, home-directory path expansion, project wikilink preservation, and correct `mtn --version` reporting.
   - Thanks to @tparsons9, @anomatomato, @npondel, @plashal, and @waspeer for the reports and PR.

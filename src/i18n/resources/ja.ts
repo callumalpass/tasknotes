@@ -2940,7 +2940,7 @@ export const ja: TranslationTree = {
 			blockingToggle: "{count} 件のタスクをブロック",
 			priorityAriaLabel: "優先度: {label}",
 			taskOptions: "タスクオプション",
-			recurrenceTooltip: "{label}: {value} (クリックして変更)",
+			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "リマインダーが1件設定されています (クリックして管理)",
 			reminderTooltipMany: "{count}件のリマインダーが設定されています (クリックして管理)",
 			projectTooltip: "このタスクはプロジェクトとして使用されています（サブタスクをフィルタするにはクリック）",

@@ -2940,7 +2940,7 @@ export const de: TranslationTree = {
 			blockingToggle: "Blockiert {count} Aufgaben",
 			priorityAriaLabel: "Priorität: {label}",
 			taskOptions: "Aufgabenoptionen",
-			recurrenceTooltip: "{label}: {value} (zum Ändern klicken)",
+			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 Erinnerung gesetzt (zum Verwalten klicken)",
 			reminderTooltipMany: "{count} Erinnerungen gesetzt (zum Verwalten klicken)",
 			projectTooltip: "Diese Aufgabe wird als Projekt verwendet (zum Filtern von Unteraufgaben klicken)",

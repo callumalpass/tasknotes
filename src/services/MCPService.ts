@@ -24,6 +24,10 @@ import {
 } from "../utils/timeTrackingUtils";
 import { collectCalendarEvents } from "../utils/calendarUtils";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
+import {
+	JsonRpcBody,
+	normalizeMcpInitializeProtocol,
+} from "./mcpProtocol";
 
 /**
  * MCP (Model Context Protocol) server for TaskNotes.
@@ -46,7 +50,7 @@ export class MCPService {
 	async handleRequest(
 		req: IncomingMessage,
 		res: ServerResponse,
-		parsedBody: Record<string, unknown>
+		parsedBody: JsonRpcBody
 	): Promise<void> {
 		if (req.method !== "POST") {
 			res.writeHead(405, { Allow: "POST" });
@@ -61,6 +65,8 @@ export class MCPService {
 		}
 
 		try {
+			normalizeMcpInitializeProtocol(parsedBody);
+
 			const transport = new StreamableHTTPServerTransport({
 				sessionIdGenerator: undefined, // stateless mode
 			});
