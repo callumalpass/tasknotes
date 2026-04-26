@@ -108,19 +108,6 @@ export function renderFeaturesTab(
 					},
 				})
 			);
-
-			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
-					name: translate("settings.features.switchFocusOnTab.name"),
-					desc: translate("settings.features.switchFocusOnTab.description"),
-					getValue: () => plugin.settings.switchFocusOnTab,
-					setValue: async (value: boolean) => {
-						plugin.settings.switchFocusOnTab = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
-			);
 		}
 	);
 

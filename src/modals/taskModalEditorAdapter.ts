@@ -8,7 +8,7 @@ export interface TaskModalEditorOptions {
 	onChange: (value: string) => void;
 	onSubmit: () => void;
 	onEscape: () => void;
-	onTab: () => boolean;
+	onTab: (shift: boolean) => boolean;
 	extensions?: any[];
 }
 
@@ -18,7 +18,10 @@ export function createTaskModalMarkdownEditor(
 	options: TaskModalEditorOptions
 ): EmbeddableMarkdownEditor | null {
 	try {
-		return new EmbeddableMarkdownEditor(app, container, options);
+		return new EmbeddableMarkdownEditor(app, container, {
+			...options,
+			onTab: (_editor, shift) => options.onTab(shift),
+		});
 	} catch (error) {
 		console.error("Failed to create markdown editor:", error);
 
@@ -38,7 +41,7 @@ export function createTaskModalMarkdownEditor(
 				e.preventDefault();
 				options.onEscape();
 			} else if (e.key === "Tab") {
-				const shouldPreventDefault = options.onTab();
+				const shouldPreventDefault = options.onTab(e.shiftKey);
 				if (shouldPreventDefault) {
 					e.preventDefault();
 				}

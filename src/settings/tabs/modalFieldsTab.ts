@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
-import { TranslationKey } from "../../i18n";
 import { createSettingGroup, configureToggleSetting } from "../components/settingHelpers";
 import { createFieldManager, addFieldManagerStyles } from "../components/FieldManagerComponent";
 import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
@@ -16,9 +15,6 @@ export function renderModalFieldsTab(
 	save: () => void
 ): void {
 	container.empty();
-
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
-		plugin.i18n.translate(key, params);
 
 	// Add styles for field manager
 	addFieldManagerStyles();
@@ -48,6 +44,18 @@ export function renderModalFieldsTab(
 					getValue: () => plugin.settings.enableModalSplitLayout,
 					setValue: (value) => {
 						plugin.settings.enableModalSplitLayout = value;
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Tab moves focus in details editor",
+					desc: "When enabled, Tab moves from the details editor to the next modal field and Shift+Tab moves to the previous field. When disabled, Tab and Shift+Tab use the markdown editor's indentation behavior.",
+					getValue: () => plugin.settings.taskModalTabMovesFocus,
+					setValue: (value) => {
+						plugin.settings.taskModalTabMovesFocus = value;
 						save();
 					},
 				})

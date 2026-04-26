@@ -485,10 +485,6 @@ export const es: TranslationTree = {
 					description: "Carpeta donde se crearán las tareas convertidas desde casillas de verificación. Dejar vacío para usar la carpeta de tareas predeterminada. Usa {{currentNotePath}} para la carpeta de la nota actual, o {{currentNoteTitle}} para una subcarpeta con el título de la nota.",
 				},
 			},
-			switchFocusOnTab: {
-				name: "Cambia el foco con la tecla Tab",
-				description: "Al editar los detalles de una tarea, cambia el foco de entrada con la tecla Tab",
-			},
 			nlp: {
 				header: "Procesamiento de lenguaje natural",
 				description: "Analiza fechas, prioridades y otras propiedades desde texto de entrada.",

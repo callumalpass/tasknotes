@@ -486,10 +486,6 @@ export const en: TranslationTree = {
 						"Folder where tasks converted from checkboxes will be created. Leave empty to use the default tasks folder. Use {{currentNotePath}} for the current note's folder, or {{currentNoteTitle}} for a subfolder named after the current note.",
 				},
 			},
-			switchFocusOnTab: {
-				name: "Switch focus on Tab",
-				description: "Switch input focus to the next field when presssing the Tab key while editing details of a task",
-			},
 			nlp: {
 				header: "Natural Language Processing",
 				description: "Parse dates, priorities, and other properties from text input.",
