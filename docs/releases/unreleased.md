@@ -26,6 +26,8 @@ Example:
 
 ## Added
 
+- (#1342, #1793) Added native tag autocomplete to time entry descriptions by using the embedded markdown editor in the time entry editor modal.
+  - Thanks to @renatomen for the PR.
 - (#1756, #1798) Added HTTP API support for configured custom user fields so task responses include them and create/update requests can round-trip their values.
   - Thanks to @Treygec for the request and PR.
 - (#1777) Added a Modal Fields setting to choose whether Tab/Shift+Tab move focus out of the task details editor or use the markdown editor's indentation behavior.
