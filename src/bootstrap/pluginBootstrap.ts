@@ -63,7 +63,7 @@ export function registerTaskNotesIcon(): void {
 }
 
 export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<void> {
-	plugin.fieldMapper = new FieldMapper(plugin.settings.fieldMapping);
+	plugin.fieldMapper = new FieldMapper(plugin.settings.fieldMapping, plugin.settings.userFields ?? []);
 	plugin.statusManager = new StatusManager(
 		plugin.settings.customStatuses,
 		plugin.settings.defaultTaskStatus

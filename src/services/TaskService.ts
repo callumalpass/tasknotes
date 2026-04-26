@@ -363,13 +363,16 @@ export class TaskService {
 		const defaults = this.plugin.settings.taskCreationDefaults;
 		const result = { ...taskData };
 
-		// Apply default due date if not provided
-		if (!result.due && defaults.defaultDueDate !== "none") {
+		// Apply default due date if not provided.
+		// Use === undefined (not !result.due) so that an explicit null from the API
+		// is treated as "clear this field" rather than "apply the default".
+		if (result.due === undefined && defaults.defaultDueDate !== "none") {
 			result.due = calculateDefaultDate(defaults.defaultDueDate);
 		}
 
-		// Apply default scheduled date if not provided
-		if (!result.scheduled && defaults.defaultScheduledDate !== "none") {
+		// Apply default scheduled date if not provided.
+		// Same null-vs-undefined distinction as due above.
+		if (result.scheduled === undefined && defaults.defaultScheduledDate !== "none") {
 			result.scheduled = calculateDefaultDate(defaults.defaultScheduledDate);
 		}
 

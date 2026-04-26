@@ -60,6 +60,7 @@ export class SettingsLifecycleService {
 		const timeTrackingSettingsChanged = this.haveTimeTrackingSettingsChanged();
 
 		this.plugin.fieldMapper?.updateMapping(this.plugin.settings.fieldMapping);
+		this.plugin.fieldMapper?.updateUserFields(this.plugin.settings.userFields ?? []);
 		this.plugin.statusManager?.updateStatuses(this.plugin.settings.customStatuses);
 		this.plugin.priorityManager?.updatePriorities(this.plugin.settings.customPriorities);
 
@@ -87,6 +88,7 @@ export class SettingsLifecycleService {
 		this.plugin.apiService?.syncWebhookSettings?.();
 
 		this.plugin.fieldMapper?.updateMapping(this.plugin.settings.fieldMapping);
+		this.plugin.fieldMapper?.updateUserFields(this.plugin.settings.userFields ?? []);
 		this.plugin.statusManager?.updateStatuses(this.plugin.settings.customStatuses);
 		this.plugin.priorityManager?.updatePriorities(this.plugin.settings.customPriorities);
 

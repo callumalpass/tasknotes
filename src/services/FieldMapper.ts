@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { FieldMapping, TaskInfo } from "../types";
+import type { UserMappedField } from "../types/settings";
 import {
 	isPropertyForField,
 	isRecognizedProperty,
@@ -15,7 +16,24 @@ import {
  * Service for mapping between internal field names and user-configured property names
  */
 export class FieldMapper {
-	constructor(private mapping: FieldMapping) {}
+	constructor(
+		private mapping: FieldMapping,
+		private userFields: UserMappedField[] = []
+	) {}
+
+	/**
+	 * Update user-defined field definitions (call when settings change)
+	 */
+	updateUserFields(fields: UserMappedField[]): void {
+		this.userFields = fields;
+	}
+
+	/**
+	 * Get current user-defined field definitions
+	 */
+	getUserFields(): UserMappedField[] {
+		return [...this.userFields];
+	}
 
 	/**
 	 * Convert internal field name to user's property name
@@ -25,25 +43,29 @@ export class FieldMapper {
 	}
 
 	/**
-	 * Convert frontmatter object using mapping to internal task data
+	 * Convert frontmatter object using mapping to internal task data.
+	 * User-defined fields (settings.userFields) are written as top-level properties
+	 * on the returned object, keyed by their frontmatter key (e.g. "start_date").
 	 */
 	mapFromFrontmatter(
 		frontmatter: any,
 		filePath: string,
 		storeTitleInFilename?: boolean
 	): Partial<TaskInfo> {
-		return mapTaskFromFrontmatter(this.mapping, frontmatter, filePath, storeTitleInFilename);
+		return mapTaskFromFrontmatter(this.mapping, frontmatter, filePath, storeTitleInFilename, this.userFields);
 	}
 
 	/**
-	 * Convert internal task data to frontmatter using mapping
+	 * Convert internal task data to frontmatter using mapping.
+	 * User-defined fields are read from top-level task properties and written
+	 * back to frontmatter using each field's configured frontmatter key.
 	 */
 	mapToFrontmatter(
 		taskData: Partial<TaskInfo>,
 		taskTag?: string,
 		storeTitleInFilename?: boolean
 	): any {
-		return mapTaskToFrontmatter(this.mapping, taskData, taskTag, storeTitleInFilename);
+		return mapTaskToFrontmatter(this.mapping, taskData, taskTag, storeTitleInFilename, this.userFields);
 	}
 
 	/**

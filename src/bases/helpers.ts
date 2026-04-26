@@ -98,6 +98,10 @@ function createTaskInfoFromProperties(
 		"skipped_instances",
 		"blockedBy",
 		"blocking",
+		// Prevent double-nesting: when this function is called with a Partial<TaskInfo>
+		// that already has customProperties populated (e.g. from mapFromFrontmatter),
+		// we must not re-classify it as an unknown property.
+		"customProperties",
 	]);
 
 	const customProperties: Record<string, any> = {};
