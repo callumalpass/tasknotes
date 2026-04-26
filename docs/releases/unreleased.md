@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Added
+
+- (#1777) Added a Modal Fields setting to choose whether Tab/Shift+Tab move focus out of the task details editor or use the markdown editor's indentation behavior.
+  - Thanks to @P-Sc for the PR.
+
 ## Fixed
 
 - (#1765, #1769) Fixed auto-archived tasks leaving stale Google Calendar events when cleanup runs before calendar sync is ready or after the task moves into the archive folder.

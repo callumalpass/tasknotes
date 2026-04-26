@@ -103,7 +103,7 @@ export interface MarkdownEditorProps {
 	/** Handler for Escape key */
 	onEscape?: (editor: EmbeddableMarkdownEditor) => void;
 	/** Handler for Tab key (return false to use default behavior) */
-	onTab?: (editor: EmbeddableMarkdownEditor) => boolean;
+	onTab?: (editor: EmbeddableMarkdownEditor, shift: boolean) => boolean;
 	/** Handler for Ctrl/Cmd+Enter */
 	onSubmit?: (editor: EmbeddableMarkdownEditor) => void;
 	/** Handler for blur event */
@@ -338,7 +338,13 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 					{
 						key: "Tab",
 						run: (cm) => {
-							return this.options.onTab(this);
+							return this.options.onTab(this, false);
+						},
+					},
+					{
+						key: "Shift-Tab",
+						run: (cm) => {
+							return this.options.onTab(this, true);
 						},
 					},
 				])
