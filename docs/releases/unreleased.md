@@ -34,6 +34,7 @@ Example:
   - Thanks to @tparsons9, @anomatomato, @npondel, @plashal, and @waspeer for the reports and PR.
 - (#1667) Fixed NLP scheduled-date parsing so standalone `scheduled` and `start` triggers can set scheduled dates alongside due dates.
   - Thanks to @hokfujow for reporting and @UniqueClone for the NLP core PR.
+- Fixed NLP parser title cleanup for explicit date triggers and Japanese/Chinese priority phrases.
 - (#1658) Fixed Pomodoro stats date bucketing for sessions near local midnight
   - Pomodoro session stats now compare the recorded session calendar date against UTC-anchored target days without shifting through UTC or the reader's current timezone
   - Pomodoro daily-note storage now writes sessions to the daily note matching the recorded session date
