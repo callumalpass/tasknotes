@@ -198,12 +198,10 @@ export class KanbanView extends BasesViewBase {
 			const consolidateValue = this.config.get('consolidateStatusIcon');
 			this.consolidateStatusIcon = consolidateValue === true; // Default to false if not set
 
-			// Read column orders
-			const columnOrderStr = (this.config.get("columnOrder") as string) || "{}";
-			this.columnOrders = JSON.parse(columnOrderStr);
-
 			// Read pinned columns. Comma-separated string (settings panel) or
 			// YAML array (authored in `.base`). Normalize either shape.
+			// Parsed before the columnOrder JSON.parse below so a malformed
+			// columnOrder cannot leave stale pinnedColumns state.
 			const rawPinned = this.config.get("pinnedColumns");
 			const pinnedSource: unknown[] = Array.isArray(rawPinned)
 				? rawPinned
@@ -218,6 +216,10 @@ export class KanbanView extends BasesViewBase {
 				seenPinned.add(str);
 				this.pinnedColumns.push(str);
 			}
+
+			// Read column orders
+			const columnOrderStr = (this.config.get("columnOrder") as string) || "{}";
+			this.columnOrders = JSON.parse(columnOrderStr);
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
