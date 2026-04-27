@@ -36,6 +36,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	// Search functionality (opt-in via enableSearch flag)
 	protected enableSearch = false;
 	protected searchBox: SearchBox | null = null;
+	protected searchContainerEl: HTMLElement | null = null;
 	protected searchFilter: TaskSearchFilter | null = null;
 	protected currentSearchTerm = "";
 
@@ -539,6 +540,12 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 * Requires enableSearch to be true and will only create the UI once.
 	 */
 	protected setupSearch(container: HTMLElement): void {
+		// Tear down search UI if it exists but search has been disabled
+		if (this.searchBox && !this.enableSearch) {
+			this.teardownSearch();
+			return;
+		}
+
 		// Idempotency: if search UI is already created, restore value and return
 		if (this.searchBox) {
 			// Restore search term if it was cleared during re-render
@@ -557,6 +564,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		// Create search container
 		const searchContainer = doc.createElement("div");
 		searchContainer.className = "tn-search-container";
+		this.searchContainerEl = searchContainer;
 
 		// Insert search container at the top of the container so it appears above
 		// the main items/content (e.g., the task list). This keeps the search box
@@ -593,14 +601,22 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		}
 
 		// Register cleanup using Component lifecycle
-		this.register(() => {
-			if (this.searchBox) {
-				this.searchBox.destroy();
-				this.searchBox = null;
-			}
-			this.searchFilter = null;
-			this.currentSearchTerm = "";
-		});
+		this.register(() => this.teardownSearch());
+	}
+
+	/**
+	 * Remove the search UI and reset search state.
+	 * Called when enableSearch is toggled off.
+	 */
+	protected teardownSearch(): void {
+		if (this.searchBox) {
+			this.searchBox.destroy();
+			this.searchBox = null;
+		}
+		this.searchContainerEl?.remove();
+		this.searchContainerEl = null;
+		this.searchFilter = null;
+		this.currentSearchTerm = "";
 	}
 
 	/**

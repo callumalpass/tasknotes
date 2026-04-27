@@ -59,6 +59,18 @@
     margin-right: 0;
 }
 
+.tn-tasknotesTaskList .tn-search-container {
+	display: flex;
+	align-items: center;
+	gap: var(--tn-spacing-sm);
+	min-width: 0;
+}
+
+.tn-tasknotesTaskList .tn-search-box {
+	flex: 1;
+	min-width: 0;
+}
+
 /* Toggle button for groups */
 .tn-bases-tasknotes-list .task-group-toggle {
     display: flex;

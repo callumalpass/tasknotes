@@ -43,13 +43,20 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					},
 					{
 						type: "dropdown",
+						key: "defaultCollapsedState",
+						displayName: "Default collapsed state",
+						default: "Expanded",
+						options: { Expanded: "Expanded", Collapsed: "Collapsed" } as Record<string, string>,
+					},
+					{
+						type: "dropdown",
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",
 						default: "inherit",
 						options: {
 							inherit: "Inherit",
 							"show-all": "Show all",
-						},
+						} as Record<string, string>,
 					},
 				],
 			});
@@ -127,7 +134,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						options: {
 							inherit: "Inherit",
 							"show-all": "Show all",
-						},
+						} as Record<string, string>,
 					},
 				],
 			});
