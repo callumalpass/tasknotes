@@ -281,7 +281,7 @@ export class TaskListView extends BasesViewBase {
 			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
 			
 			this.defaultCollapsedState =
-				defaultCollapsedStateValue === "Collapsed" ? "Collapsed" : "Expanded";
+				defaultCollapsedStateValue === "Collapsed" || defaultCollapsedStateValue === "1" ? "Collapsed" : "Expanded";
 			const expandedRelationshipFilterModeValue = this.config.get(
 				"expandedRelationshipFilterMode"
 			);
