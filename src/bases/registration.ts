@@ -46,7 +46,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						key: "defaultCollapsedState",
 						displayName: "Default collapsed state",
 						default: "Expanded",
-						options: ["Expanded", "Collapsed"],
+						options: { Expanded: "Expanded", Collapsed: "Collapsed" },
 					},
 					{
 						type: "dropdown",

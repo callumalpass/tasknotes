@@ -279,9 +279,9 @@ export class TaskListView extends BasesViewBase {
 			const enableSearchValue = this.config.get('enableSearch');
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
 			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
-			// Bases returns the array index as a string for string[] dropdown options: "0" = "Expanded", "1" = "Collapsed"
+			
 			this.defaultCollapsedState =
-				defaultCollapsedStateValue === "1" ? "Collapsed" : "Expanded";
+				defaultCollapsedStateValue === "Collapsed" ? "Collapsed" : "Expanded";
 			const expandedRelationshipFilterModeValue = this.config.get(
 				"expandedRelationshipFilterMode"
 			);
