@@ -108,13 +108,17 @@ export function shouldWidenTodayColumn(viewType: string, todayColumnWidthMultipl
  * axis col to receive a width and the time labels to render in the middle of
  * the grid (issue #1742).
  *
- * Returns null if the cell is not in a table, the table has no colgroup, or
- * no col exists at the cell's cellIndex.
+ * Returns null if the cell is not in a table, the table has no direct-child
+ * colgroup, or no col exists at the cell's cellIndex. The colgroup lookup is
+ * restricted to the table's own children to avoid descending into nested
+ * tables (e.g., user content rendered inside a calendar cell).
  */
 export function findColForCell(cell: HTMLTableCellElement): HTMLTableColElement | null {
 	const table = cell.closest("table");
 	if (!table) return null;
-	const colgroup = table.querySelector("colgroup");
+	const colgroup = Array.from(table.children).find(
+		(child) => child.tagName === "COLGROUP"
+	);
 	if (!colgroup) return null;
 	const col = colgroup.children[cell.cellIndex];
 	return col instanceof HTMLTableColElement ? col : null;

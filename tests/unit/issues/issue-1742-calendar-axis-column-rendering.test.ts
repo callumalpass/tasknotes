@@ -180,6 +180,27 @@ describe("Issue #1742 - Calendar view timeline shifted to center", () => {
 			expect(findColForCell(orphan)).toBeNull();
 		});
 
+		test("ignores nested table colgroups when outer table has none", () => {
+			const outerTable = document.createElement("table");
+			const tbody = document.createElement("tbody");
+			const outerRow = document.createElement("tr");
+			const outerCell = document.createElement("td");
+			outerCell.dataset.date = "2026-04-28";
+
+			const innerTable = document.createElement("table");
+			const innerColgroup = document.createElement("colgroup");
+			const innerCol = document.createElement("col");
+			innerColgroup.appendChild(innerCol);
+			innerTable.appendChild(innerColgroup);
+			outerCell.appendChild(innerTable);
+
+			outerRow.appendChild(outerCell);
+			tbody.appendChild(outerRow);
+			outerTable.appendChild(tbody);
+
+			expect(findColForCell(outerCell)).toBeNull();
+		});
+
 		test("returns null when no col exists at the cell index", () => {
 			const table = document.createElement("table");
 			const colgroup = document.createElement("colgroup");
