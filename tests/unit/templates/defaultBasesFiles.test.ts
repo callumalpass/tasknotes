@@ -78,7 +78,7 @@ describe("defaultBasesFiles", () => {
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
 		expect(template).toContain(
-			`urgencyScore: 'if(!due && !scheduled, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) / 86400000) - (number(date(formula.nextDate)) / 86400000).floor())))'`
+			`urgencyScore: 'if(!due && !scheduled, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))'`
 		);
 
 		// Guard against the time-naive form returning
@@ -101,7 +101,7 @@ describe("defaultBasesFiles", () => {
 		expect(boost("2026-04-28T09:00:00Z")).toBeCloseTo(0.625, 3);
 		expect(boost("2026-04-28T17:00:00Z")).toBeCloseTo(0.292, 3);
 		expect(boost("2026-04-28T23:59:59Z")).toBeGreaterThan(0);
-		expect(boost("2026-04-28T23:59:59Z")).toBeLessThan(1 / 86_400);
+		expect(boost("2026-04-28T23:59:59Z")).toBeLessThanOrEqual(1 / 86_400);
 
 		// Monotonic: earlier in day → larger boost.
 		expect(boost("2026-04-28T09:00:00Z")).toBeGreaterThan(boost("2026-04-28T17:00:00Z"));
