@@ -180,7 +180,7 @@ export function findColForCell(cell: HTMLTableCellElement): HTMLTableColElement 
 	);
 	if (!colgroup) return null;
 	const col = colgroup.children[cell.cellIndex];
-	return col instanceof HTMLTableColElement ? col : null;
+	return col?.tagName === "COL" ? (col as HTMLTableColElement) : null;
 }
 
 export function getTodayColumnWidths(
