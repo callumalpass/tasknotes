@@ -243,7 +243,6 @@ describe("Issue #1742 - Calendar view timeline shifted to center", () => {
 		});
 
 		test("extra colgroup cols (transitional state) do not leak widths to axis", () => {
-			const dateKeys = ["2026-04-28"];
 			const table = document.createElement("table");
 			const colgroup = document.createElement("colgroup");
 			const axisCol = document.createElement("col");
