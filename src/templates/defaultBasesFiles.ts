@@ -381,9 +381,10 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 
 		// === SORTING/SCORING FORMULAS ===
 
-		// Urgency score: combines priority weight and days until next date (due or scheduled)
-		// Higher score = more urgent. Overdue tasks get bonus, no date gets just priority
-		urgencyScore: `if(!${dueProperty} && !${scheduledProperty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext))`,
+		// Urgency score: combines priority weight, days until next date (due or scheduled), and time-of-day.
+		// Higher = more urgent. The 0..1 time-of-day term ranks earlier-in-day tasks above later same-day
+		// tasks at the same priority. Date-only values fall back to midnight.
+		urgencyScore: `if(!${dueProperty} && !${scheduledProperty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) / 86400000) - (number(date(formula.nextDate)) / 86400000).floor())))`,
 
 		// === DISPLAY FORMULAS ===
 

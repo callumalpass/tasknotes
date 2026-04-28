@@ -29,6 +29,8 @@ Example:
 - Enabled lint checks that mirror Obsidian community plugin review findings, including dynamic code execution, Promise handling, deprecated APIs, unsafe stringification, directive comments, Node built-in imports, and explicit `any` usage.
 - Clarified privacy documentation for optional integrations that make periodic background network refreshes.
 - Cleaned up internal Obsidian and Bases compatibility adapters used by search and grouped views.
+- Updated default Base urgency scoring so timed tasks earlier in the day sort above later tasks with the same priority and date.
+  - Thanks to @loukandr for the contribution.
 
 ## Fixed
 
