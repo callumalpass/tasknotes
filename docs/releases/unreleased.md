@@ -23,3 +23,12 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1124) Fixed `tasks-default.base` views and formulas excluding tasks scheduled or due today at a non-midnight time from day-level comparisons
+  - `today()` returns midnight, so `date(due) == today()` and `date(due) <= today() + "7d"` evaluated to false for any value with a non-zero time
+  - Affected views: Today, This Week
+  - Affected formulas: `isDueThisWeek`, `isThisWeek`, `dueDateCategory`, `nextDateCategory`, `dueDateDisplay`
+  - Added `.date()` to strip the time component before comparing, matching the pattern already used in `isDueToday` and `isScheduledToday`
+  - Thanks to @kmaustral for reporting
