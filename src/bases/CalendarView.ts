@@ -97,6 +97,33 @@ export function shouldWidenTodayColumn(viewType: string, todayColumnWidthMultipl
 	return viewType === "timeGridWeek" || viewType === "timeGridCustom";
 }
 
+/**
+ * Find the colgroup col element corresponding to a dated FullCalendar table cell.
+ *
+ * Cross-references the cell's position via cellIndex against its own table's
+ * colgroup. This guarantees we never touch the time-axis col, which is at a
+ * different cellIndex (typically 0 in timeGrid views) and has no [data-date]
+ * attribute. Position-based slice math on colgroup cols is unsafe here because
+ * the col indices can shift mid-render during view transitions, causing the
+ * axis col to receive a width and the time labels to render in the middle of
+ * the grid (issue #1742).
+ *
+ * Returns null if the cell is not in a table, the table has no direct-child
+ * colgroup, or no col exists at the cell's cellIndex. The colgroup lookup is
+ * restricted to the table's own children to avoid descending into nested
+ * tables (e.g., user content rendered inside a calendar cell).
+ */
+export function findColForCell(cell: HTMLTableCellElement): HTMLTableColElement | null {
+	const table = cell.closest("table");
+	if (!table) return null;
+	const colgroup = Array.from(table.children).find(
+		(child) => child.tagName === "COLGROUP"
+	);
+	if (!colgroup) return null;
+	const col = colgroup.children[cell.cellIndex];
+	return col instanceof HTMLTableColElement ? col : null;
+}
+
 export function getTodayColumnWidths(
 	dateKeys: string[],
 	todayDate: string,
@@ -916,7 +943,7 @@ export class CalendarView extends BasesViewBase {
 		const dateKeys = headerCells
 			.map((cell) => cell.dataset.date)
 			.filter((date): date is string => Boolean(date));
-		this.resetTodayColumnWidths(dateKeys);
+		this.resetTodayColumnWidths();
 
 		if (
 			!shouldWidenTodayColumn(this.calendar.view.type, this.viewOptions.todayColumnWidthMultiplier)
@@ -935,7 +962,7 @@ export class CalendarView extends BasesViewBase {
 		);
 		if (!widths) return;
 
-		const dayElements = this.calendarEl.querySelectorAll<HTMLElement>(
+		const dayElements = this.calendarEl.querySelectorAll<HTMLTableCellElement>(
 			".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date]"
 		);
 		dayElements.forEach((element) => {
@@ -946,45 +973,34 @@ export class CalendarView extends BasesViewBase {
 			element.style.width = width;
 			element.style.minWidth = width;
 			element.style.maxWidth = width;
-		});
 
-		this.calendarEl.querySelectorAll("colgroup").forEach((group) => {
-			const cols = Array.from(group.querySelectorAll<HTMLTableColElement>("col"));
-			if (cols.length < dateKeys.length) return;
-			const dayCols = cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
-			if (dayCols.length !== dateKeys.length) return;
-
-			dayCols.forEach((col, index) => {
-				const width = widths.get(dateKeys[index]);
-				if (!width) return;
+			const col = findColForCell(element);
+			if (col) {
 				col.style.width = width;
-			});
+			} else {
+				console.warn(
+					`[TaskNotes][CalendarView] No <col> found for dated cell (date=${dateKey}). ` +
+						`FullCalendar DOM may have changed; today-column width skipped.`
+				);
+			}
 		});
 	}
 
-	private resetTodayColumnWidths(dateKeys: string[] = []): void {
+	private resetTodayColumnWidths(): void {
 		if (!this.calendarEl) return;
 
-		const dayElements = this.calendarEl.querySelectorAll<HTMLElement>(
+		const dayElements = this.calendarEl.querySelectorAll<HTMLTableCellElement>(
 			".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date]"
 		);
 		dayElements.forEach((element) => {
 			element.style.removeProperty("width");
 			element.style.removeProperty("min-width");
 			element.style.removeProperty("max-width");
-		});
 
-		if (dateKeys.length === 0) return;
-
-		this.calendarEl.querySelectorAll("colgroup").forEach((group) => {
-			const cols = Array.from(group.querySelectorAll<HTMLTableColElement>("col"));
-			if (cols.length < dateKeys.length) return;
-			const dayCols = cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
-			if (dayCols.length !== dateKeys.length) return;
-
-			dayCols.forEach((col) => {
+			const col = findColForCell(element);
+			if (col) {
 				col.style.removeProperty("width");
-			});
+			}
 		});
 	}
 
