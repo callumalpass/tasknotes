@@ -41,7 +41,7 @@ The formula set is broad so views can reuse shared computed properties without c
 |---------|-------------|------------|
 | `isOverdue` | True if task has a past due date and is not completed | `due && date(due) < today() && status != "done"` |
 | `isDueToday` | True if task is due today | `due && date(due).date() == today()` |
-| `isDueThisWeek` | True if task is due within the next 7 days | `due && date(due) >= today() && date(due) <= today() + "7d"` |
+| `isDueThisWeek` | True if task is due within the next 7 days | `due && date(due).date() >= today() && date(due).date() <= today() + "7d"` |
 | `isScheduledToday` | True if task is scheduled for today | `scheduled && date(scheduled).date() == today()` |
 | `isRecurring` | True if task has a recurrence rule | `recurrence && !recurrence.isEmpty()` |
 | `hasTimeEstimate` | True if task has a time estimate > 0 | `timeEstimate && timeEstimate > 0` |
@@ -65,7 +65,7 @@ These formulas return string values useful for grouping tasks in views:
 | `dueWeek` | Due date as year-week | "2025-W01", "No due date" | `if(due, date(due).format("YYYY-[W]WW"), "No due date")` |
 | `scheduledMonth` | Scheduled date as year-month | "2025-01", "Not scheduled" | `if(scheduled, date(scheduled).format("YYYY-MM"), "Not scheduled")` |
 | `scheduledWeek` | Scheduled date as year-week | "2025-W01", "Not scheduled" | `if(scheduled, date(scheduled).format("YYYY-[W]WW"), "Not scheduled")` |
-| `dueDateCategory` | Human-readable due date bucket | "Overdue", "Today", "Tomorrow", "This week", "Later", "No due date" | `if(!due, "No due date", if(date(due) < today(), "Overdue", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due) <= today() + "7d", "This week", "Later")))))` |
+| `dueDateCategory` | Human-readable due date bucket | "Overdue", "Today", "Tomorrow", "This week", "Later", "No due date" | `if(!due, "No due date", if(date(due) < today(), "Overdue", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due).date() <= today() + "7d", "This week", "Later")))))` |
 | `timeEstimateCategory` | Task size by time estimate | "No estimate", "Quick (<30m)", "Medium (30m-2h)", "Long (>2h)" | `if(!timeEstimate \|\| timeEstimate == 0 \|\| timeEstimate == null, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))` |
 | `ageCategory` | Task age bucket | "Today", "This week", "This month", "Older" | `if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))` |
 | `createdMonth` | Creation date as year-month | "2025-01" | `file.ctime.format("YYYY-MM")` |
@@ -85,8 +85,8 @@ These formulas work with either due date or scheduled date, useful for finding t
 | `daysUntilNext` | Days until next date (due or scheduled, whichever is sooner) | -2, 0, 5, null | `if(due && scheduled, min(formula.daysUntilDue, formula.daysUntilScheduled), if(due, formula.daysUntilDue, formula.daysUntilScheduled))` |
 | `hasDate` | True if task has either a due or scheduled date | true, false | `due \|\| scheduled` |
 | `isToday` | True if due OR scheduled today | true, false | `(due && date(due).date() == today()) \|\| (scheduled && date(scheduled).date() == today())` |
-| `isThisWeek` | True if due OR scheduled within 7 days | true, false | `(due && date(due) >= today() && date(due) <= today() + "7d") \|\| (scheduled && date(scheduled) >= today() && date(scheduled) <= today() + "7d")` |
-| `nextDateCategory` | Human-readable bucket for next date | "Overdue/Past", "Today", "Tomorrow", "This week", "Later", "No date" | `if(!due && !scheduled, "No date", if((due && date(due) < today()) \|\| (scheduled && date(scheduled) < today()), "Overdue/Past", if((due && date(due).date() == today()) \|\| (scheduled && date(scheduled).date() == today()), "Today", if((due && date(due).date() == today() + "1d") \|\| (scheduled && date(scheduled).date() == today() + "1d"), "Tomorrow", if((due && date(due) <= today() + "7d") \|\| (scheduled && date(scheduled) <= today() + "7d"), "This week", "Later")))))` |
+| `isThisWeek` | True if due OR scheduled within 7 days | true, false | `(due && date(due).date() >= today() && date(due).date() <= today() + "7d") \|\| (scheduled && date(scheduled).date() >= today() && date(scheduled).date() <= today() + "7d")` |
+| `nextDateCategory` | Human-readable bucket for next date | "Overdue/Past", "Today", "Tomorrow", "This week", "Later", "No date" | `if(!due && !scheduled, "No date", if((due && date(due) < today()) \|\| (scheduled && date(scheduled) < today()), "Overdue/Past", if((due && date(due).date() == today()) \|\| (scheduled && date(scheduled).date() == today()), "Today", if((due && date(due).date() == today() + "1d") \|\| (scheduled && date(scheduled).date() == today() + "1d"), "Tomorrow", if((due && date(due).date() <= today() + "7d") \|\| (scheduled && date(scheduled).date() <= today() + "7d"), "This week", "Later")))))` |
 | `nextDateMonth` | Next date as year-month | "2025-01", "No date" | `if(due && scheduled, if(date(due) < date(scheduled), date(due).format("YYYY-MM"), date(scheduled).format("YYYY-MM")), if(due, date(due).format("YYYY-MM"), if(scheduled, date(scheduled).format("YYYY-MM"), "No date")))` |
 | `nextDateWeek` | Next date as year-week | "2025-W01", "No date" | `if(due && scheduled, if(date(due) < date(scheduled), date(due).format("YYYY-[W]WW"), date(scheduled).format("YYYY-[W]WW")), if(due, date(due).format("YYYY-[W]WW"), if(scheduled, date(scheduled).format("YYYY-[W]WW"), "No date")))` |
 
@@ -102,7 +102,7 @@ These formulas work with either due date or scheduled date, useful for finding t
 | Formula | Description | Example values | Expression |
 |---------|-------------|----------------|------------|
 | `timeTrackedFormatted` | Total time tracked as readable text | "2h 30m", "45m", "0m" | `if(timeEntries, if(list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")` |
-| `dueDateDisplay` | Due date as relative text | "Today", "Tomorrow", "Yesterday", "3d ago", "Mon", "Dec 15" | `if(!due, "", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due).date() == today() - "1d", "Yesterday", if(date(due) < today(), formula.daysUntilDue * -1 + "d ago", if(date(due) <= today() + "7d", date(due).format("ddd"), date(due).format("MMM D")))))))` |
+| `dueDateDisplay` | Due date as relative text | "Today", "Tomorrow", "Yesterday", "3d ago", "Mon", "Dec 15" | `if(!due, "", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due).date() == today() - "1d", "Yesterday", if(date(due) < today(), formula.daysUntilDue * -1 + "d ago", if(date(due).date() <= today() + "7d", date(due).format("ddd"), date(due).format("MMM D")))))))` |
 
 ## Mini Calendar
 
@@ -129,7 +129,7 @@ formulas:
   # Booleans
   isOverdue: 'due && date(due) < today() && status != "done"'
   isDueToday: 'due && date(due).date() == today()'
-  isDueThisWeek: 'due && date(due) >= today() && date(due) <= today() + "7d"'
+  isDueThisWeek: 'due && date(due).date() >= today() && date(due).date() <= today() + "7d"'
   isScheduledToday: 'scheduled && date(scheduled).date() == today()'
   isRecurring: 'recurrence && !recurrence.isEmpty()'
   hasTimeEstimate: 'timeEstimate && timeEstimate > 0'
@@ -144,7 +144,7 @@ formulas:
   dueWeek: 'if(due, date(due).format("YYYY-[W]WW"), "No due date")'
   scheduledMonth: 'if(scheduled, date(scheduled).format("YYYY-MM"), "Not scheduled")'
   scheduledWeek: 'if(scheduled, date(scheduled).format("YYYY-[W]WW"), "Not scheduled")'
-  dueDateCategory: 'if(!due, "No due date", if(date(due) < today(), "Overdue", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due) <= today() + "7d", "This week", "Later")))))'
+  dueDateCategory: 'if(!due, "No due date", if(date(due) < today(), "Overdue", if(date(due).date() == today(), "Today", if(date(due).date() == today() + "1d", "Tomorrow", if(date(due).date() <= today() + "7d", "This week", "Later")))))'
   dueDateDisplay: '...'  # Shows "Today", "Tomorrow", "3d ago", "Mon", "Dec 15"
   timeEstimateCategory: 'if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))'
   ageCategory: 'if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))'
@@ -159,7 +159,7 @@ formulas:
   daysUntilNext: 'if(due && scheduled, min(formula.daysUntilDue, formula.daysUntilScheduled), if(due, formula.daysUntilDue, formula.daysUntilScheduled))'
   hasDate: 'due || scheduled'
   isToday: '(due && date(due).date() == today()) || (scheduled && date(scheduled).date() == today())'
-  isThisWeek: '(due && date(due) >= today() && date(due) <= today() + "7d") || (scheduled && date(scheduled) >= today() && date(scheduled) <= today() + "7d")'
+  isThisWeek: '(due && date(due).date() >= today() && date(due).date() <= today() + "7d") || (scheduled && date(scheduled).date() >= today() && date(scheduled).date() <= today() + "7d")'
   nextDateCategory: '...'  # "Overdue/Past", "Today", "Tomorrow", "This week", "Later", "No date"
   nextDateMonth: '...'  # YYYY-MM format for next date
   nextDateWeek: '...'  # YYYY-[W]WW format for next date
@@ -350,8 +350,8 @@ views:
               - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Due or scheduled today
         - or:
-          - date(due) == today()
-          - date(scheduled) == today()
+          - date(due).date() == today()
+          - date(scheduled).date() == today()
     order:
       - status
       - priority
@@ -421,11 +421,11 @@ views:
         # Due or scheduled this week
         - or:
           - and:
-            - date(due) >= today()
-            - date(due) <= today() + "7 days"
+            - date(due).date() >= today()
+            - date(due).date() <= today() + "7 days"
           - and:
-            - date(scheduled) >= today()
-            - date(scheduled) <= today() + "7 days"
+            - date(scheduled).date() >= today()
+            - date(scheduled).date() <= today() + "7 days"
     order:
       - status
       - priority

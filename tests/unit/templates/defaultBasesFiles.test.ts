@@ -68,4 +68,40 @@ describe("defaultBasesFiles", () => {
 		expect((template.match(/column: tasknotes_manual_order/g) ?? []).length).toBe(3);
 		expect(template).toContain('name: "Projects"');
 	});
+
+	it("strips time component in view filters and formulas that compare against today()", () => {
+		// today() returns midnight in the Bases formula language. Without .date(),
+		// equality comparisons (date(x) == today()) never match a value that carries
+		// a time, and upper-bound window checks (date(x) <= today() + "7d") drop the
+		// last day of the window for any value past midnight. Calling .date() on the
+		// left side strips the time so every comparison runs at day-level granularity.
+		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
+
+		// Today and This Week view filters
+		expect(template).toContain("date(due).date() == today()");
+		expect(template).toContain("date(scheduled).date() == today()");
+		expect(template).toContain("date(due).date() >= today()");
+		expect(template).toContain('date(due).date() <= today() + "7 days"');
+		expect(template).toContain("date(scheduled).date() >= today()");
+		expect(template).toContain('date(scheduled).date() <= today() + "7 days"');
+
+		// Pin full bodies of the affected formulas so a regression in any single
+		// clause (lower bound, upper bound, due half, scheduled half) breaks the test.
+		expect(template).toContain(
+			`isDueThisWeek: 'due && date(due).date() >= today() && date(due).date() <= today() + "7d"'`
+		);
+		expect(template).toContain(
+			`isThisWeek: '(due && date(due).date() >= today() && date(due).date() <= today() + "7d") || (scheduled && date(scheduled).date() >= today() && date(scheduled).date() <= today() + "7d")'`
+		);
+
+		// Negative guards against any reappearance of the time-naive shape on a
+		// single comparison side (the formula pins above already protect the full
+		// expressions; these catch edits that introduce the bug elsewhere).
+		expect(template).not.toMatch(/date\(due\) == today\(\)/);
+		expect(template).not.toMatch(/date\(scheduled\) == today\(\)/);
+		expect(template).not.toMatch(/date\(due\) >= today\(\)/);
+		expect(template).not.toMatch(/date\(scheduled\) >= today\(\)/);
+		expect(template).not.toMatch(/date\(due\) <= today\(\) \+ "7d"/);
+		expect(template).not.toMatch(/date\(scheduled\) <= today\(\) \+ "7d"/);
+	});
 });
