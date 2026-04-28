@@ -33,6 +33,8 @@ Example:
 ## Fixed
 
 - Fixed project autocomplete searches so non-empty `+` queries only return files matching the query in the basename, title, aliases, or explicitly searchable metadata rows.
+- (#1124) Fixed default Base views and formulas excluding tasks scheduled or due today at a non-midnight time from day-level comparisons.
+  - Thanks to @kmaustral for reporting and @loukandr for the fix.
 
 ## Removed
 
