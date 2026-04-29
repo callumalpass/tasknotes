@@ -422,6 +422,47 @@ describe('GoogleCalendarService', () => {
 			);
 		});
 
+		test('should restore cancelled events when updating existing event IDs', async () => {
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'event1',
+					status: 'cancelled',
+					summary: 'Deleted Task',
+					start: { date: '2026-04-29' },
+					end: { date: '2026-04-30' }
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: 'event1',
+					status: 'confirmed',
+					summary: 'Restored Task',
+					start: { date: '2026-04-29' },
+					end: { date: '2026-04-30' },
+					htmlLink: 'https://calendar.google.com/event'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			await service.updateEvent('primary', 'event1', {
+				summary: 'Restored Task',
+				start: { date: '2026-04-29' },
+				end: { date: '2026-04-30' }
+			});
+
+			const requestBody = JSON.parse(mockRequestUrl.mock.calls[1][0].body as string);
+			expect(requestBody.status).toBe('confirmed');
+			expect(requestBody.summary).toBe('Restored Task');
+		});
+
 		test('should handle converting timed event to all-day', async () => {
 			const updates = {
 				start: '2025-10-23',
