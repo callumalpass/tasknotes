@@ -847,6 +847,23 @@ export interface PendingAutoArchive {
 	statusValue: string;
 }
 
+export interface PendingGoogleCalendarDeletion {
+	taskPath: string;
+	calendarId: string;
+	eventId: string;
+	createdAt: number;
+	attempts: number;
+	lastAttemptAt?: number;
+	lastError?: string;
+}
+
+export interface GoogleCalendarEventIndexEntry {
+	taskPath: string;
+	calendarId: string;
+	eventId: string;
+	updatedAt: number;
+}
+
 // Webhook notification interface for loose coupling
 export interface IWebhookNotifier {
 	triggerWebhook(event: WebhookEvent, data: any): Promise<void>;

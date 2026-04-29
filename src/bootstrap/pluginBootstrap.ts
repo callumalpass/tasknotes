@@ -270,10 +270,11 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 			plugin.taskCalendarSyncService = new (await import("../services/TaskCalendarSyncService"))
 				.TaskCalendarSyncService(plugin, plugin.googleCalendarService);
+			plugin.taskCalendarSyncService.startDeletionQueueProcessor();
 
 			plugin.registerEvent(
 				plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
-					if (!plugin.taskCalendarSyncService?.isEnabled()) {
+					if (!plugin.taskCalendarSyncService) {
 						return;
 					}
 

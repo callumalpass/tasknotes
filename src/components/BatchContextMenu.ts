@@ -334,7 +334,7 @@ export class BatchContextMenu {
 					const file = plugin.app.vault.getAbstractFileByPath(path);
 					if (file) {
 						// Delete from Google Calendar before trashing file
-						if (plugin.taskCalendarSyncService?.isEnabled()) {
+						if (plugin.taskCalendarSyncService) {
 							const task = await plugin.cacheManager.getTaskInfo(path);
 							if (task?.googleCalendarEventId) {
 								try {

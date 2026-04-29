@@ -466,14 +466,15 @@ export class TaskContextMenu {
 						});
 						if (confirmed) {
 							// Delete from Google Calendar before trashing file
-							if (plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
-								plugin.taskCalendarSyncService
-									.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
-									.catch((error) => {
-										console.warn("Failed to delete task from Google Calendar:", error);
-									});
+							if (plugin.taskCalendarSyncService && task.googleCalendarEventId) {
+								try {
+									await plugin.taskCalendarSyncService
+										.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);
+								} catch (error) {
+									console.warn("Failed to delete task from Google Calendar:", error);
+								}
 							}
-							plugin.app.vault.trash(file, true);
+							await plugin.app.vault.trash(file, true);
 						}
 					});
 				});

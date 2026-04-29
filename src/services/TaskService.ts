@@ -1234,7 +1234,7 @@ export class TaskService {
 			}
 
 			// Delete from Google Calendar first (before file deletion, so we have the event ID)
-			if (this.plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
+			if (this.plugin.taskCalendarSyncService && task.googleCalendarEventId) {
 				try {
 					await this.plugin.taskCalendarSyncService
 						.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);

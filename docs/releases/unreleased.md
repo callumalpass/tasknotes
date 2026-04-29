@@ -23,3 +23,9 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- Persist failed Google Calendar task-event deletions in plugin data and retry them after restart or reconnect, preventing orphaned task events when a task file is deleted while Google cleanup fails or sync is not ready.
+- Track exported Google Calendar task events in plugin data so startup can recover cleanup for task files deleted while Obsidian was closed.
+- Prevent duplicate Google Calendar task events when concurrent syncs race before the newly created event ID reaches Obsidian metadata.
