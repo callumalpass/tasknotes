@@ -2,7 +2,12 @@ import { Notice, TFile } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
-import { GoogleCalendarEventIndexEntry, PendingGoogleCalendarDeletion, TaskInfo } from "../types";
+import {
+	GoogleCalendarEventIndexEntry,
+	PendingGoogleCalendarDeletion,
+	PendingGoogleCalendarSync,
+	TaskInfo,
+} from "../types";
 import { convertToGoogleRecurrence } from "../utils/rruleConverter";
 import { TokenRefreshError } from "./errors";
 
@@ -22,8 +27,11 @@ const GOOGLE_CALENDAR_DELETION_QUEUE_KEY = "googleCalendarDeletionQueue";
 /** Persistent plugin-data key for task paths that currently own Google Calendar events */
 const GOOGLE_CALENDAR_EVENT_INDEX_KEY = "googleCalendarEventIndex";
 
-/** How often to retry queued Google Calendar deletions */
-const DELETION_QUEUE_PROCESSOR_INTERVAL_MS = 60000;
+/** Persistent plugin-data key for task paths that need Google Calendar sync replay */
+const GOOGLE_CALENDAR_SYNC_QUEUE_KEY = "googleCalendarSyncQueue";
+
+/** How often to retry queued Google Calendar recovery work */
+const RECOVERY_QUEUE_PROCESSOR_INTERVAL_MS = 60000;
 
 type CalendarEventPayload = {
 	summary: string;
@@ -47,7 +55,7 @@ export class TaskCalendarSyncService {
 	private googleCalendarService: GoogleCalendarService;
 	private rateLimitChain: Promise<unknown> = Promise.resolve();
 	private lastApiCallAt = 0;
-	private deletionQueueProcessorInterval: ReturnType<typeof setInterval> | null = null;
+	private recoveryQueueProcessorInterval: ReturnType<typeof setInterval> | null = null;
 
 	/** Debounce timers for pending syncs, keyed by task path */
 	private pendingSyncs: Map<string, ReturnType<typeof setTimeout>> = new Map();
@@ -79,9 +87,9 @@ export class TaskCalendarSyncService {
 		for (const timer of this.pendingSyncs.values()) {
 			clearTimeout(timer);
 		}
-		if (this.deletionQueueProcessorInterval) {
-			clearInterval(this.deletionQueueProcessorInterval);
-			this.deletionQueueProcessorInterval = null;
+		if (this.recoveryQueueProcessorInterval) {
+			clearInterval(this.recoveryQueueProcessorInterval);
+			this.recoveryQueueProcessorInterval = null;
 		}
 		this.pendingSyncs.clear();
 		this.previousTaskState.clear();
@@ -156,28 +164,34 @@ export class TaskCalendarSyncService {
 	}
 
 	/**
-	 * Start retrying persisted calendar deletion work.
+	 * Start retrying persisted calendar recovery work.
 	 */
 	startDeletionQueueProcessor(): void {
-		if (this.deletionQueueProcessorInterval) {
+		if (this.recoveryQueueProcessorInterval) {
 			return;
 		}
 
 		this.processStartupDeletionRecovery().catch((error) => {
-			console.error("[TaskCalendarSync] Failed to process deletion queue:", error);
+			console.error("[TaskCalendarSync] Failed to process recovery queues:", error);
 		});
 
-		this.deletionQueueProcessorInterval = setInterval(() => {
-			this.processDeletionQueue().catch((error) => {
-				console.error("[TaskCalendarSync] Failed to process deletion queue:", error);
+		this.recoveryQueueProcessorInterval = setInterval(() => {
+			this.processRecoveryQueues().catch((error) => {
+				console.error("[TaskCalendarSync] Failed to process recovery queues:", error);
 			});
-		}, DELETION_QUEUE_PROCESSOR_INTERVAL_MS);
+		}, RECOVERY_QUEUE_PROCESSOR_INTERVAL_MS);
 	}
 
 	private isDeletionQueueReady(): boolean {
 		const settings = this.plugin.settings.googleCalendarExport;
 		const isConnected = this.googleCalendarService.getAvailableCalendars().length > 0;
 		return !!settings?.enabled && !!settings?.syncOnTaskDelete && isConnected;
+	}
+
+	private isSyncQueueReady(): boolean {
+		const settings = this.plugin.settings.googleCalendarExport;
+		const isConnected = this.googleCalendarService.getAvailableCalendars().length > 0;
+		return !!settings?.enabled && !!settings?.targetCalendarId && isConnected;
 	}
 
 	private getDeletionQueueKey(item: Pick<PendingGoogleCalendarDeletion, "calendarId" | "eventId">): string {
@@ -221,6 +235,17 @@ export class TaskCalendarSyncService {
 	private async saveEventIndex(index: GoogleCalendarEventIndexEntry[]): Promise<void> {
 		const data = (await this.plugin.loadData()) || {};
 		data[GOOGLE_CALENDAR_EVENT_INDEX_KEY] = index;
+		await this.plugin.saveData(data);
+	}
+
+	private async getSyncQueue(): Promise<PendingGoogleCalendarSync[]> {
+		const data = await this.plugin.loadData();
+		return data?.[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] || [];
+	}
+
+	private async saveSyncQueue(queue: PendingGoogleCalendarSync[]): Promise<void> {
+		const data = (await this.plugin.loadData()) || {};
+		data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] = queue;
 		await this.plugin.saveData(data);
 	}
 
@@ -279,6 +304,34 @@ export class TaskCalendarSyncService {
 			return String(error.message);
 		}
 		return String(error);
+	}
+
+	private async queueTaskSync(taskPath: string, error?: any, attempted = false): Promise<void> {
+		const now = Date.now();
+		const queue = await this.getSyncQueue();
+		const existing = queue.find((item) => item.taskPath === taskPath);
+		const lastError = error ? this.getErrorMessage(error) : undefined;
+
+		if (existing) {
+			existing.requestedAt = now;
+			if (attempted) {
+				existing.attempts += 1;
+				existing.lastAttemptAt = now;
+			}
+			if (lastError) {
+				existing.lastError = lastError;
+			}
+		} else {
+			queue.push({
+				taskPath,
+				requestedAt: now,
+				attempts: attempted ? 1 : 0,
+				lastAttemptAt: attempted ? now : undefined,
+				lastError,
+			});
+		}
+
+		await this.saveSyncQueue(queue);
 	}
 
 	private async removeFromDeletionQueue(calendarId: string, eventId: string): Promise<void> {
@@ -390,7 +443,12 @@ export class TaskCalendarSyncService {
 
 	async processStartupDeletionRecovery(): Promise<void> {
 		await this.recoverDeletedTaskEventsFromIndex();
+		await this.processRecoveryQueues();
+	}
+
+	async processRecoveryQueues(): Promise<void> {
 		await this.processDeletionQueue();
+		await this.processPendingSyncQueue();
 	}
 
 	async recoverDeletedTaskEventsFromIndex(): Promise<void> {
@@ -436,6 +494,67 @@ export class TaskCalendarSyncService {
 					: new Error("Indexed task file no longer exists")
 			);
 		}
+	}
+
+	async processPendingSyncQueue(): Promise<{ synced: number; failed: number; deleted: number; dropped: number; remaining: number }> {
+		const results = { synced: 0, failed: 0, deleted: 0, dropped: 0, remaining: 0 };
+		const queue = await this.getSyncQueue();
+
+		if (queue.length === 0) {
+			return results;
+		}
+
+		if (!this.isSyncQueueReady()) {
+			results.remaining = queue.length;
+			return results;
+		}
+
+		const dedupedQueue = new Map<string, PendingGoogleCalendarSync>();
+		for (const item of queue) {
+			dedupedQueue.set(item.taskPath, item);
+		}
+
+		const remainingItems: PendingGoogleCalendarSync[] = [];
+
+		for (const item of dedupedQueue.values()) {
+			const task = await this.plugin.cacheManager.getTaskInfo(item.taskPath);
+			if (!task) {
+				results.dropped++;
+				continue;
+			}
+
+			if (!this.isTaskCalendarEligible(task)) {
+				const eventId = this.getTaskEventId(task);
+				if (eventId) {
+					const deleted = await this.deleteTaskFromCalendar(task);
+					if (!deleted) {
+						console.warn(`[TaskCalendarSync] Calendar deletion queued while replaying sync for ${item.taskPath}`);
+					}
+					results.deleted++;
+				} else {
+					results.dropped++;
+				}
+				continue;
+			}
+
+			const synced = await this.syncTaskToCalendar(task, undefined, { queueOnFailure: false });
+			if (synced) {
+				results.synced++;
+				continue;
+			}
+
+			results.failed++;
+			remainingItems.push({
+				...item,
+				attempts: item.attempts + 1,
+				lastAttemptAt: Date.now(),
+				lastError: "Failed to replay queued Google Calendar sync",
+			});
+		}
+
+		results.remaining = remainingItems.length;
+		await this.saveSyncQueue(remainingItems);
+		return results;
 	}
 
 	async processDeletionQueue(): Promise<{ deleted: number; failed: number; remaining: number }> {
@@ -1063,9 +1182,15 @@ export class TaskCalendarSyncService {
 	/**
 	 * Sync a task to Google Calendar (create or update)
 	 */
-	async syncTaskToCalendar(task: TaskInfo, previous?: TaskInfo): Promise<void> {
-		if (!this.shouldSyncTask(task)) {
-			return;
+	async syncTaskToCalendar(
+		task: TaskInfo,
+		previous?: TaskInfo,
+		options: { queueOnFailure?: boolean } = {}
+	): Promise<boolean> {
+		const queueOnFailure = options.queueOnFailure ?? true;
+
+		if (!this.isTaskCalendarEligible(task)) {
+			return true;
 		}
 
 		const settings = this.plugin.settings.googleCalendarExport;
@@ -1073,18 +1198,34 @@ export class TaskCalendarSyncService {
 		const targetCalendarId = settings.targetCalendarId;
 
 		try {
+			if (!this.isEnabled()) {
+				if (queueOnFailure) {
+					await this.queueTaskSync(
+						task.path,
+						new Error("Google Calendar sync is not ready")
+					);
+				}
+				return false;
+			}
+
 			// Check if recurrence was removed (previous had recurrence, current doesn't)
 			const clearRecurrence = !!(previous?.recurrence && !task.recurrence);
 			
 			const eventData = this.taskToCalendarEvent(task, clearRecurrence);
 			if (!eventData) {
 				console.warn("[TaskCalendarSync] Could not convert task to event:", task.path);
-				return;
+				return false;
 			}
 
 			if (!targetCalendarId) {
 				console.warn("[TaskCalendarSync] Cannot sync task without target calendar:", task.path);
-				return;
+				if (queueOnFailure) {
+					await this.queueTaskSync(
+						task.path,
+						new Error("Google Calendar target calendar is not configured")
+					);
+				}
+				return false;
 			}
 
 			if (existingEventId) {
@@ -1103,7 +1244,7 @@ export class TaskCalendarSyncService {
 					await this.withGoogleRateLimit(() =>
 						this.googleCalendarService.updateEvent(targetCalendarId, eventId, eventData)
 					);
-					return;
+					return true;
 				}
 
 				const createPromise = this.createCalendarEventForTask(task, eventData, targetCalendarId);
@@ -1116,6 +1257,8 @@ export class TaskCalendarSyncService {
 					}
 				}
 			}
+
+			return true;
 		} catch (error: any) {
 			// Check if it's a 404 error (event was deleted externally)
 			if (error.status === 404 && existingEventId) {
@@ -1124,11 +1267,14 @@ export class TaskCalendarSyncService {
 				// Retry without the link - refetch task to get updated version
 				const updatedTask = await this.plugin.cacheManager.getTaskInfo(task.path);
 				if (updatedTask) {
-					return this.syncTaskToCalendar(updatedTask, previous);
+					return this.syncTaskToCalendar(updatedTask, previous, options);
 				}
 			}
 
 			console.error("[TaskCalendarSync] Failed to sync task:", task.path, error);
+			if (queueOnFailure) {
+				await this.queueTaskSync(task.path, error, true);
+			}
 
 			// Show user-friendly message for token refresh errors
 			// TokenRefreshError indicates the OAuth connection expired and user needs to reconnect
@@ -1137,6 +1283,8 @@ export class TaskCalendarSyncService {
 			} else {
 				new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncFailed", { message: error.message }));
 			}
+
+			return false;
 		}
 	}
 
@@ -1212,11 +1360,11 @@ export class TaskCalendarSyncService {
 		const existingEventId = this.getTaskEventId(task);
 
 		// If task no longer meets sync criteria, delete the event
-		if (!this.shouldSyncTask(task)) {
+		if (!this.isTaskCalendarEligible(task)) {
 			if (existingEventId) {
 				const deleted = await this.deleteTaskFromCalendar(task);
 				if (!deleted) {
-					throw new Error(`Failed to delete task from Google Calendar: ${task.path}`);
+					console.warn(`Google Calendar deletion queued for ${task.path}`);
 				}
 			}
 			// Clean up previous state
@@ -1427,8 +1575,12 @@ export class TaskCalendarSyncService {
 		// Process tasks in parallel with concurrency limit
 		await this.processInParallel(tasksToSync, async (task) => {
 			try {
-				await this.syncTaskToCalendar(task);
-				results.synced++;
+				const synced = await this.syncTaskToCalendar(task);
+				if (synced) {
+					results.synced++;
+				} else {
+					results.failed++;
+				}
 			} catch (error) {
 				results.failed++;
 				console.error(`[TaskCalendarSync] Failed to sync task ${task.path}:`, error);

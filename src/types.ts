@@ -864,6 +864,14 @@ export interface GoogleCalendarEventIndexEntry {
 	updatedAt: number;
 }
 
+export interface PendingGoogleCalendarSync {
+	taskPath: string;
+	requestedAt: number;
+	attempts: number;
+	lastAttemptAt?: number;
+	lastError?: string;
+}
+
 // Webhook notification interface for loose coupling
 export interface IWebhookNotifier {
 	triggerWebhook(event: WebhookEvent, data: any): Promise<void>;

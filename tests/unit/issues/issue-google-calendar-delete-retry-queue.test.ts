@@ -48,6 +48,14 @@ const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {
 		}
 		Object.assign(pluginData, nextData);
 	});
+	plugin.statusManager = {
+		...plugin.statusManager,
+		getStatusConfig: jest.fn().mockReturnValue(null),
+	};
+	plugin.priorityManager = {
+		...plugin.priorityManager,
+		getPriorityConfig: jest.fn().mockReturnValue(null),
+	};
 
 	return plugin;
 };
@@ -328,5 +336,181 @@ describe("Google Calendar deletion retry queue", () => {
 				eventId: "active-event",
 			}),
 		]);
+	});
+
+	it("queues scheduled task sync when Google Calendar is not connected", async () => {
+		const pluginData: Record<string, any> = {};
+		const plugin = createPlugin(pluginData);
+		const googleCalendarService = createGoogleCalendarService({
+			getAvailableCalendars: jest.fn().mockReturnValue([]),
+		});
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const synced = await syncService.syncTaskToCalendar(
+			TaskFactory.createTask({
+				path: "TaskNotes/Tasks/offline-scheduled.md",
+				scheduled: "2026-04-29",
+			})
+		);
+
+		expect(synced).toBe(false);
+		expect(googleCalendarService.createEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarSyncQueue).toEqual([
+			expect.objectContaining({
+				taskPath: "TaskNotes/Tasks/offline-scheduled.md",
+				attempts: 0,
+				lastError: "Google Calendar sync is not ready",
+			}),
+		]);
+	});
+
+	it("queues due-date task sync when the calendar trigger is configured for due dates", async () => {
+		const pluginData: Record<string, any> = {};
+		const plugin = createPlugin(pluginData, { syncTrigger: "due" });
+		const googleCalendarService = createGoogleCalendarService({
+			getAvailableCalendars: jest.fn().mockReturnValue([]),
+		});
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const synced = await syncService.syncTaskToCalendar(
+			TaskFactory.createTask({
+				path: "TaskNotes/Tasks/offline-due.md",
+				due: "2026-04-30",
+			})
+		);
+
+		expect(synced).toBe(false);
+		expect(pluginData.googleCalendarSyncQueue).toEqual([
+			expect.objectContaining({
+				taskPath: "TaskNotes/Tasks/offline-due.md",
+			}),
+		]);
+	});
+
+	it("queues task sync when the calendar trigger is configured for scheduled or due dates", async () => {
+		const pluginData: Record<string, any> = {};
+		const plugin = createPlugin(pluginData, { syncTrigger: "both" });
+		const googleCalendarService = createGoogleCalendarService({
+			getAvailableCalendars: jest.fn().mockReturnValue([]),
+		});
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const synced = await syncService.syncTaskToCalendar(
+			TaskFactory.createTask({
+				path: "TaskNotes/Tasks/offline-both.md",
+				due: "2026-05-01",
+			})
+		);
+
+		expect(synced).toBe(false);
+		expect(pluginData.googleCalendarSyncQueue).toEqual([
+			expect.objectContaining({
+				taskPath: "TaskNotes/Tasks/offline-both.md",
+			}),
+		]);
+	});
+
+	it("replays queued task sync by creating the current task event after reconnect", async () => {
+		const pluginData = {
+			googleCalendarSyncQueue: [
+				{
+					taskPath: "TaskNotes/Tasks/replay-create.md",
+					requestedAt: 1,
+					attempts: 0,
+					lastError: "Google Calendar sync is not ready",
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getTaskInfo = jest.fn().mockResolvedValue(
+			TaskFactory.createTask({
+				path: "TaskNotes/Tasks/replay-create.md",
+				scheduled: "2026-04-29",
+			})
+		);
+		const googleCalendarService = createGoogleCalendarService({
+			createEvent: jest.fn().mockResolvedValue({ id: "google-primary-created-event-id" }),
+		});
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const result = await syncService.processPendingSyncQueue();
+
+		expect(result).toEqual({ synced: 1, failed: 0, deleted: 0, dropped: 0, remaining: 0 });
+		expect(googleCalendarService.createEvent).toHaveBeenCalledWith(
+			"primary",
+			expect.objectContaining({
+				start: { date: "2026-04-29" },
+			})
+		);
+		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
+		expect(pluginData.googleCalendarEventIndex).toEqual([
+			expect.objectContaining({
+				taskPath: "TaskNotes/Tasks/replay-create.md",
+				calendarId: "primary",
+				eventId: "created-event-id",
+			}),
+		]);
+	});
+
+	it("replays queued task sync by updating the current task event after reconnect", async () => {
+		const pluginData = {
+			googleCalendarSyncQueue: [
+				{
+					taskPath: "TaskNotes/Tasks/replay-update.md",
+					requestedAt: 1,
+					attempts: 0,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getTaskInfo = jest.fn().mockResolvedValue(
+			TaskFactory.createTask({
+				path: "TaskNotes/Tasks/replay-update.md",
+				scheduled: "2026-05-02",
+				googleCalendarEventId: "existing-event-id",
+			})
+		);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const result = await syncService.processPendingSyncQueue();
+
+		expect(result).toEqual({ synced: 1, failed: 0, deleted: 0, dropped: 0, remaining: 0 });
+		expect(googleCalendarService.updateEvent).toHaveBeenCalledWith(
+			"primary",
+			"existing-event-id",
+			expect.objectContaining({
+				start: { date: "2026-05-02" },
+			})
+		);
+		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
+	});
+
+	it("replays queued task sync by deleting the event when the task no longer has the configured date", async () => {
+		const pluginData = {
+			googleCalendarSyncQueue: [
+				{
+					taskPath: "TaskNotes/Tasks/replay-delete.md",
+					requestedAt: 1,
+					attempts: 0,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getTaskInfo = jest.fn().mockResolvedValue(
+			TaskFactory.createTask({
+				path: "TaskNotes/Tasks/replay-delete.md",
+				scheduled: undefined,
+				googleCalendarEventId: "event-to-delete",
+			})
+		);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const result = await syncService.processPendingSyncQueue();
+
+		expect(result).toEqual({ synced: 0, failed: 0, deleted: 1, dropped: 0, remaining: 0 });
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-to-delete");
+		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
 	});
 });
