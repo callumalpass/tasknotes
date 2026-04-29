@@ -266,12 +266,12 @@ export class TaskCalendarSyncService {
 
 		// Add contexts
 		if (task.contexts && task.contexts.length > 0) {
-			parts.push(t("contexts", { value: task.contexts.map((c) => `@${c}`).join(", ") }));
+			parts.push(t("contexts", { value: task.contexts.map((c) => `@${this.toCalendarDescriptionLabel(c)}`).join(", ") }));
 		}
 
 		// Add projects
 		if (task.projects && task.projects.length > 0) {
-			parts.push(t("projects", { value: task.projects.join(", ") }));
+			parts.push(t("projects", { value: task.projects.map((p) => this.toCalendarDescriptionLabel(p)).join(", ") }));
 		}
 
 		// Add separator before link
@@ -285,12 +285,26 @@ export class TaskCalendarSyncService {
 			const vaultName = this.plugin.app.vault.getName();
 			const encodedPath = encodeURIComponent(task.path);
 			const obsidianUri = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodedPath}`;
-			// Google Calendar renders HTML in descriptions, so use an anchor tag
 			const linkText = t("openInObsidian");
-			parts.push(`<a href="${obsidianUri}">${linkText}</a>`);
+			parts.push(`${linkText}: ${obsidianUri}`);
 		}
 
 		return parts.join("\n");
+	}
+
+	private toCalendarDescriptionLabel(value: string): string {
+		return value
+			.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, "$2")
+			.replace(/\[\[([^\]]+)\]\]/g, (_match, target: string) => this.basenameForDisplay(target))
+			.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
+			.trim();
+	}
+
+	private basenameForDisplay(target: string): string {
+		const withoutHeading = target.split("#")[0];
+		const withoutExtension = withoutHeading.replace(/\.md$/i, "");
+		const basename = withoutExtension.split("/").pop();
+		return basename || withoutExtension || target;
 	}
 
 	/**

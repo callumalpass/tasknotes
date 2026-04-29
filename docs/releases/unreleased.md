@@ -23,3 +23,7 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- Google Calendar task descriptions now use mobile-friendly plain text for Obsidian links and display labels for wiki-style project/context links.
