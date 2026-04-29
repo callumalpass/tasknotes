@@ -256,7 +256,17 @@ export class TaskCalendarSyncService {
 	): Promise<void> {
 		const index = await this.getEventIndex();
 		const key = this.getDeletionQueueKey({ calendarId, eventId });
-		const filteredIndex = index.filter((item) => this.getDeletionQueueKey(item) !== key);
+		const replacedEntries = index.filter(
+			(item) =>
+				item.taskPath === taskPath &&
+				item.calendarId === calendarId &&
+				item.eventId !== eventId
+		);
+		const filteredIndex = index.filter(
+			(item) =>
+				this.getDeletionQueueKey(item) !== key &&
+				!(item.taskPath === taskPath && item.calendarId === calendarId)
+		);
 
 		filteredIndex.push({
 			taskPath,
@@ -266,6 +276,19 @@ export class TaskCalendarSyncService {
 		});
 
 		await this.saveEventIndex(filteredIndex);
+
+		for (const item of replacedEntries) {
+			const deleted = await this.deleteOrQueueCalendarEvent(
+				item.taskPath,
+				item.calendarId,
+				item.eventId
+			);
+			if (!deleted) {
+				console.warn(
+					`[TaskCalendarSync] Replaced event cleanup queued for ${item.taskPath}`
+				);
+			}
+		}
 	}
 
 	private async removeEventIndexForTask(taskPath: string): Promise<void> {
@@ -1353,6 +1376,22 @@ export class TaskCalendarSyncService {
 		});
 	}
 
+	private cancelPendingTaskUpdate(taskPath: string): void {
+		const existingTimer = this.pendingSyncs.get(taskPath);
+		if (existingTimer) {
+			clearTimeout(existingTimer);
+			this.pendingSyncs.delete(taskPath);
+			this.pendingTasks.delete(taskPath);
+		}
+	}
+
+	private async waitForInFlightTaskSync(taskPath: string): Promise<void> {
+		const inFlight = this.inFlightSyncs.get(taskPath);
+		if (inFlight) {
+			await inFlight.catch(() => {});
+		}
+	}
+
 	/**
 	 * Internal method that performs the actual task update sync
 	 */
@@ -1392,10 +1431,33 @@ export class TaskCalendarSyncService {
 			return;
 		}
 
+		this.cancelPendingTaskUpdate(task.path);
+		await this.waitForInFlightTaskSync(task.path);
+
+		const completionPromise = this.executeTaskCompletion(task);
+		this.inFlightSyncs.set(task.path, completionPromise);
+
+		try {
+			await completionPromise;
+		} finally {
+			if (this.inFlightSyncs.get(task.path) === completionPromise) {
+				this.inFlightSyncs.delete(task.path);
+			}
+		}
+	}
+
+	private async executeTaskCompletion(task: TaskInfo): Promise<void> {
 		const settings = this.plugin.settings.googleCalendarExport;
-		const existingEventId = this.getTaskEventId(task);
+		let existingEventId = this.getTaskEventId(task);
 		if (!existingEventId) {
-			return;
+			const synced = await this.syncTaskToCalendar(task);
+			if (!synced) {
+				return;
+			}
+			existingEventId = this.getTaskEventId(task);
+			if (!existingEventId) {
+				return;
+			}
 		}
 
 		// For recurring tasks, update EXDATE to exclude completed instance

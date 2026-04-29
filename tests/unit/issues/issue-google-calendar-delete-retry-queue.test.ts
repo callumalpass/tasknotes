@@ -292,6 +292,42 @@ describe("Google Calendar deletion retry queue", () => {
 		expect(googleCalendarService.deleteEvent).not.toHaveBeenCalled();
 	});
 
+	it("cleans up an older indexed event when the same task receives a replacement event id", async () => {
+		const pluginData = {
+			googleCalendarEventIndex: [
+				{
+					taskPath: "TaskNotes/Tasks/status-race.md",
+					calendarId: "primary",
+					eventId: "old-event",
+					updatedAt: 1,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		const googleCalendarService = createGoogleCalendarService({
+			createEvent: jest.fn().mockResolvedValue({ id: "google-primary-new-event" }),
+		});
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const synced = await syncService.syncTaskToCalendar(
+			TaskFactory.createTask({
+				path: "TaskNotes/Tasks/status-race.md",
+				scheduled: "2026-04-29",
+			})
+		);
+
+		expect(synced).toBe(true);
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "old-event");
+		expect(pluginData.googleCalendarDeletionQueue).toBeUndefined();
+		expect(pluginData.googleCalendarEventIndex).toEqual([
+			expect.objectContaining({
+				taskPath: "TaskNotes/Tasks/status-race.md",
+				calendarId: "primary",
+				eventId: "new-event",
+			}),
+		]);
+	});
+
 	it("drops queued cleanup without deleting Google events when the task still exists and remains calendar-eligible", async () => {
 		const pluginData = {
 			googleCalendarDeletionQueue: [

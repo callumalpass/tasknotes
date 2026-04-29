@@ -13,7 +13,10 @@ describe("TaskCalendarSyncService", () => {
             settings: {
                 googleCalendarExport: {
                     syncOnTaskUpdate: true,
+                    syncOnTaskComplete: true,
                     targetCalendarId: "test-calendar",
+                    eventTitleTemplate: "{{title}}",
+                    includeDescription: false,
                 }
             },
             cacheManager: {
@@ -77,5 +80,40 @@ describe("TaskCalendarSyncService", () => {
         // Assert: It should execute only once, and pass the explicit secondPayload, not the stale cache!
         expect(syncService.executeTaskUpdate).toHaveBeenCalledTimes(1);
         expect(syncService.executeTaskUpdate).toHaveBeenCalledWith(secondPayload);
+    });
+
+    it("should cancel a pending status update before syncing completion", async () => {
+        syncService.withGoogleRateLimit = (fn: () => Promise<unknown>) => fn();
+
+        const taskPath = "test/path.md";
+        const somedayPayload: TaskInfo = {
+            path: taskPath,
+            title: "Task Title",
+            status: "someday",
+            scheduled: "2026-04-29",
+            googleCalendarEventId: "event-1"
+        };
+        const donePayload: TaskInfo = {
+            ...somedayPayload,
+            status: "done"
+        };
+
+        syncService.updateTaskInCalendar(somedayPayload);
+        await syncService.completeTaskInCalendar(donePayload);
+
+        jest.advanceTimersByTime(500);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(syncService.executeTaskUpdate).not.toHaveBeenCalled();
+        expect(mockGoogleCalendarService.updateEvent).toHaveBeenCalledTimes(1);
+        expect(mockGoogleCalendarService.updateEvent).toHaveBeenCalledWith(
+            "test-calendar",
+            "event-1",
+            {
+                summary: "✓ Task Title",
+                description: undefined
+            }
+        );
     });
 });
