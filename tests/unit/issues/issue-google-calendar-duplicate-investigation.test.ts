@@ -55,6 +55,7 @@ const createPlugin = (frontmatter: Record<string, any>) => ({
 	},
 	statusManager: {
 		getStatusConfig: jest.fn().mockReturnValue(null),
+		isCompletedStatus: jest.fn((status?: string) => status === "done"),
 	},
 	i18n: {
 		translate: jest.fn((key: string) => key),
