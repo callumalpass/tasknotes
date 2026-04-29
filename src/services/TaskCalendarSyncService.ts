@@ -750,6 +750,13 @@ export class TaskCalendarSyncService {
 			.trim();
 	}
 
+	private getCalendarEventTitle(task: TaskInfo): string {
+		const title = this.applyTitleTemplate(task);
+		return this.plugin.statusManager.isCompletedStatus(task.status)
+			? `✓ ${title}`
+			: title;
+	}
+
 	/**
 	 * Build the event description from task properties
 	 */
@@ -1080,7 +1087,7 @@ export class TaskCalendarSyncService {
 		const end = this.getEventEnd(adjustedStartInfo, task);
 
 		const event: CalendarEventPayload = {
-			summary: this.applyTitleTemplate(task),
+			summary: this.getCalendarEventTitle(task),
 			start,
 			end,
 		};
@@ -1468,7 +1475,6 @@ export class TaskCalendarSyncService {
 
 		try {
 			// Update the event title to indicate completion
-			const completedTitle = `✓ ${this.applyTitleTemplate(task)}`;
 			const description = settings.includeDescription
 				? this.buildEventDescription(task)
 				: undefined;
@@ -1478,7 +1484,7 @@ export class TaskCalendarSyncService {
 					settings.targetCalendarId,
 					existingEventId,
 					{
-						summary: completedTitle,
+						summary: this.getCalendarEventTitle(task),
 						description,
 					}
 				)

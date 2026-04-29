@@ -14,16 +14,21 @@ describe("TaskCalendarSyncService", () => {
                 googleCalendarExport: {
                     syncOnTaskUpdate: true,
                     syncOnTaskComplete: true,
+                    enabled: true,
                     targetCalendarId: "test-calendar",
                     eventTitleTemplate: "{{title}}",
                     includeDescription: false,
+                    syncTrigger: "scheduled",
+                    createAsAllDay: true,
+                    defaultEventDuration: 60,
                 }
             },
             cacheManager: {
                 getTaskInfo: jest.fn()
             },
             statusManager: {
-                getStatusConfig: jest.fn().mockReturnValue({ label: "Todo" })
+                getStatusConfig: jest.fn().mockReturnValue({ label: "Todo" }),
+                isCompletedStatus: jest.fn((status?: string) => status === "done")
             },
             priorityManager: {
                 getPriorityConfig: jest.fn().mockReturnValue({ label: "High" })
@@ -34,6 +39,7 @@ describe("TaskCalendarSyncService", () => {
         };
 
         mockGoogleCalendarService = {
+            getAvailableCalendars: jest.fn().mockReturnValue([{ id: "test-calendar" }]),
             updateEvent: jest.fn().mockResolvedValue({}),
             createEvent: jest.fn().mockResolvedValue({ id: "test-id" })
         };
@@ -114,6 +120,22 @@ describe("TaskCalendarSyncService", () => {
                 summary: "✓ Task Title",
                 description: undefined
             }
+        );
+    });
+
+    it("should mark already-completed tasks when a later schedule change creates a calendar event", () => {
+        const event = syncService.taskToCalendarEvent({
+            path: "test/path.md",
+            title: "Task Title",
+            status: "done",
+            scheduled: "2026-04-29"
+        } as TaskInfo);
+
+        expect(event).toEqual(
+            expect.objectContaining({
+                summary: "✓ Task Title",
+                start: { date: "2026-04-29" }
+            })
         );
     });
 });

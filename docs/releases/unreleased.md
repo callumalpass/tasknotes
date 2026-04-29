@@ -32,3 +32,4 @@ Example:
 - Restore cancelled Google Calendar event tombstones when a task is synced to an existing event ID, so deleted-but-still-addressable events become visible again.
 - Prevent duplicate Google Calendar task events when concurrent syncs race before the newly created event ID reaches Obsidian metadata.
 - Prevent pending intermediate status updates from overwriting completed Google Calendar task events when users quickly cycle a task to done.
+- Mark Google Calendar events as completed when tasks were already done before they became calendar-eligible.
