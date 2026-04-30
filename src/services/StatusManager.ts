@@ -6,6 +6,10 @@ import { StatusConfig } from "../types";
 export class StatusManager {
 	constructor(private statuses: StatusConfig[], private defaultStatus: string = "open") {}
 
+	private normalizeStatusValue(value: unknown): string {
+		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
+	}
+
 	/**
 	 * Get next status in cycle from current status
 	 */
@@ -44,7 +48,10 @@ export class StatusManager {
 	 * Get status configuration by value
 	 */
 	getStatusConfig(value: string): StatusConfig | undefined {
-		return this.statuses.find((s) => s.value === value);
+		const normalizedValue = this.normalizeStatusValue(value);
+		return this.statuses.find(
+			(s) => this.normalizeStatusValue(s.value) === normalizedValue
+		);
 	}
 
 	/**

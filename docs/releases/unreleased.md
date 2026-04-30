@@ -23,3 +23,8 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1836) Fixed TaskNotes Bases views not refreshing task cards after status, archive, and auto-archive updates.
+  - A big thanks to @kmaustral for reporting.

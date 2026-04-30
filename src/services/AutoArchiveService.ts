@@ -19,6 +19,10 @@ export class AutoArchiveService {
 		return !!task.googleCalendarEventId;
 	}
 
+	private normalizeStatusValue(value: unknown): string {
+		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
+	}
+
 	private getCalendarCleanupState(): "ready" | "retry" | "skip" {
 		const googleCalendarExport = this.plugin.settings.googleCalendarExport;
 
@@ -158,7 +162,10 @@ export class AutoArchiveService {
 			return true;
 		}
 
-		if (currentTask.status !== item.statusValue) {
+		if (
+			this.normalizeStatusValue(currentTask.status) !==
+			this.normalizeStatusValue(item.statusValue)
+		) {
 			// Task status changed since scheduling, consider processed
 			return true;
 		}

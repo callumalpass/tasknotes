@@ -297,7 +297,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 
 		this.taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
 			try {
-				const updatedTask = eventData?.task || eventData?.taskInfo;
+				const updatedTask = eventData?.updatedTask || eventData?.task || eventData?.taskInfo;
 				if (!updatedTask?.path) return;
 
 				// Skip if view is not visible (no point updating hidden views)

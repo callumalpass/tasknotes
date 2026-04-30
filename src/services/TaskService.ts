@@ -207,6 +207,10 @@ export class TaskService {
 		this.taskUpdateService.setAutoArchiveService(service);
 	}
 
+	private normalizeStatusValue(value: unknown): string {
+		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
+	}
+
 	/**
 	 * Process a folder path template with task and date variables
 	 *
@@ -494,12 +498,13 @@ export class TaskService {
 
 			// Step 1: Construct new state in memory using fresh data
 			const updatedTask = { ...freshTask } as Record<string, any>;
-			updatedTask[property] = value;
+			const normalizedValue = property === "status" ? this.normalizeStatusValue(value) : value;
+			updatedTask[property] = normalizedValue;
 			updatedTask.dateModified = getCurrentTimestamp();
 
 			// Handle derivative changes for status updates
 			if (property === "status" && !freshTask.recurrence) {
-				if (this.plugin.statusManager.isCompletedStatus(value)) {
+				if (this.plugin.statusManager.isCompletedStatus(normalizedValue)) {
 					updatedTask.completedDate = getCurrentDateString();
 				} else {
 					updatedTask.completedDate = undefined;
@@ -515,19 +520,23 @@ export class TaskService {
 
 				if (property === "status") {
 					// Coerce boolean-like status strings to actual booleans for compatibility with Obsidian checkbox properties
-					const lower = String(value).toLowerCase();
+					const lower = String(normalizedValue).toLowerCase();
 					const coercedValue =
-						lower === "true" || lower === "false" ? lower === "true" : value;
+						lower === "true" || lower === "false" ? lower === "true" : normalizedValue;
 					frontmatter[fieldName] = coercedValue;
 
 					// Update completed date when marking as complete (non-recurring tasks only)
 					// FIX: Use freshTask instead of stale task to check recurrence
-					this.updateCompletedDateInFrontmatter(frontmatter, value, !!freshTask.recurrence);
+					this.updateCompletedDateInFrontmatter(
+						frontmatter,
+						normalizedValue,
+						!!freshTask.recurrence
+					);
 				} else if ((property === "due" || property === "scheduled") && !value) {
 					// Remove empty due/scheduled dates
 					delete frontmatter[fieldName];
 				} else {
-					frontmatter[fieldName] = value;
+					frontmatter[fieldName] = normalizedValue;
 				}
 
 				// Always update the modification timestamp using field mapper
@@ -537,7 +546,7 @@ export class TaskService {
 
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
 			await this.applyPropertyChangeSideEffects(
-				file, task, updatedTask as TaskInfo, property, task[property], value
+				file, task, updatedTask as TaskInfo, property, task[property], normalizedValue
 			);
 
 			// Step 4: Return authoritative data
