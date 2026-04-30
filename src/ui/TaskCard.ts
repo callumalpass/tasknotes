@@ -1660,7 +1660,7 @@ export function createTaskCard(
 		// Google Calendar sync indicator
 		if (propertyId === "googleCalendarSync") {
 			// Check if task has a Google Calendar event ID in frontmatter
-			if (task.googleCalendarEventId) {
+			if (task.googleCalendarEventId || task.googleCalendarExceptionEventId) {
 				const syncPill = metadataLine.createSpan({
 					cls: "task-card__metadata-pill task-card__metadata-pill--google-calendar",
 				});
