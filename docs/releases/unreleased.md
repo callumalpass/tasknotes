@@ -23,10 +23,3 @@ Example:
 ```
 
 -->
-
-## Fixed
-
-- (#1834, #1847) Fixed empty Bases formula and custom properties showing `null` or `undefined` on TaskNotes task cards.
-  - A big thanks to @Glint-Eye and @3zra47 for reporting.
-- (#1836) Fixed TaskNotes Bases views not refreshing task cards after status, archive, and auto-archive updates.
-  - A big thanks to @kmaustral for reporting.
