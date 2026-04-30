@@ -1,7 +1,7 @@
 import { setIcon } from "obsidian";
 import type { BasesEntry, BasesPropertyId, BasesViewConfig } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { isNullBasesValue, renderBasesValue } from "./taskCardPresentation";
+import { isEmptyCardDisplayValue, renderBasesValue } from "./taskCardPresentation";
 
 export interface PropertyEventCardOptions {
 	showProperties: boolean;
@@ -88,7 +88,7 @@ export function createPropertyEventCard(
 				// Get property value from Bases entry
 				const value = entry.getValue(propertyId as BasesPropertyId);
 
-				if (!isNullBasesValue(value)) {
+				if (!isEmptyCardDisplayValue(value)) {
 					if (renderedProperties > 0) {
 						metadata.appendChild(doc.createTextNode(" • "));
 					}
