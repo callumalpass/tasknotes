@@ -578,11 +578,17 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 			subscriptionName = subscription.name;
 		}
 
+		const { start, end } = normalizeExternalTimedEventRange(
+			icsEvent.start,
+			icsEvent.end,
+			icsEvent.allDay
+		);
+
 		return {
 			id: icsEvent.id,
 			title: icsEvent.title,
-			start: icsEvent.start,
-			end: icsEvent.end,
+			start: start,
+			end: end,
 			allDay: icsEvent.allDay,
 			backgroundColor: backgroundColor,
 			borderColor: borderColor,
@@ -600,6 +606,60 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 		console.error("Error creating ICS event:", error);
 		return null;
 	}
+}
+
+/**
+ * FullCalendar list views can render a timed external event under multiple day
+ * headers when the provider supplies a true zero-duration range (end === start).
+ * Clamp those point-in-time external events to a minimal positive duration
+ * before handing them to FullCalendar, while preserving the raw provider event
+ * unchanged in extendedProps for display and debugging.
+ */
+function normalizeExternalTimedEventRange(
+	start: string,
+	end: string | undefined,
+	allDay: boolean
+): { start: string; end?: string } {
+	if (allDay || !end) {
+		return { start, end };
+	}
+
+	const startDate = new Date(start);
+	const endDate = new Date(end);
+
+	if (
+		Number.isNaN(startDate.getTime()) ||
+		Number.isNaN(endDate.getTime()) ||
+		endDate.getTime() !== startDate.getTime()
+	) {
+		return { start, end };
+	}
+
+	const normalizedEnd = new Date(endDate.getTime() + 1);
+	return {
+		start,
+		end: formatExternalTimedEventEnd(normalizedEnd, end),
+	};
+}
+
+function formatExternalTimedEventEnd(date: Date, originalEnd: string): string {
+	if (/Z$/i.test(originalEnd)) {
+		return date.toISOString();
+	}
+
+	const offsetMatch = originalEnd.match(/([+-])(\d{2}):?(\d{2})$/);
+	if (offsetMatch) {
+		const [, sign, hours, minutes] = offsetMatch;
+		const offsetMinutes = Number(hours) * 60 + Number(minutes);
+		const offsetMs = offsetMinutes * 60 * 1000 * (sign === "+" ? 1 : -1);
+		const shifted = new Date(date.getTime() + offsetMs);
+		const pad = (value: number, length = 2) => String(value).padStart(length, "0");
+		const datePart = `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
+		const timePart = `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}.${pad(shifted.getUTCMilliseconds(), 3)}`;
+		return `${datePart}T${timePart}${sign}${hours}:${minutes}`;
+	}
+
+	return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSS");
 }
 
 /**
@@ -744,6 +804,75 @@ export function createRecurringEvent(
 	};
 }
 
+function buildRecurringInstanceExclusionSet(
+	task: TaskInfo,
+	nextScheduledDate: string
+): Set<string> {
+	const exclusions = new Set<string>();
+	const normalizeDateValue = (value: unknown): string | undefined => {
+		if (typeof value === "string") {
+			const normalized = getDatePart(value);
+			return typeof normalized === "string" && normalized ? normalized : undefined;
+		}
+		if (value instanceof Date) {
+			if (Number.isNaN(value.getTime())) return undefined;
+			return formatDateForStorage(value);
+		}
+		if (typeof value === "number") {
+			const date = new Date(value);
+			if (Number.isNaN(date.getTime())) return undefined;
+			return formatDateForStorage(date);
+		}
+		if (value && typeof value === "object") {
+			const record = value as Record<string, unknown>;
+			if (record.date instanceof Date) {
+				if (Number.isNaN(record.date.getTime())) return undefined;
+				return formatDateForStorage(record.date);
+			}
+			if (typeof record.data === "string") {
+				return normalizeDateValue(record.data);
+			}
+			if (typeof (value as { toISOString?: () => string }).toISOString === "function") {
+				try {
+					return normalizeDateValue(
+						(value as { toISOString: () => string }).toISOString()
+					);
+				} catch {
+					return undefined;
+				}
+			}
+		}
+		return undefined;
+	};
+	const addDate = (value: unknown): void => {
+		const normalized = normalizeDateValue(value);
+		if (normalized) exclusions.add(normalized);
+	};
+
+	addDate(nextScheduledDate);
+	addDate(task.googleCalendarExceptionOriginalScheduled);
+
+	if (Array.isArray(task.googleCalendarMovedOriginalDates)) {
+		for (const date of task.googleCalendarMovedOriginalDates) {
+			addDate(date);
+		}
+	}
+
+	// Calendar pipeline sometimes flattens these values into customProperties.
+	const customProperties = task.customProperties as Record<string, unknown> | undefined;
+	if (customProperties) {
+		addDate(customProperties.googleCalendarExceptionOriginalScheduled);
+		const movedDates = customProperties.googleCalendarMovedOriginalDates;
+		if (Array.isArray(movedDates)) {
+			for (const date of movedDates) {
+				addDate(date);
+			}
+		}
+	}
+
+	return exclusions;
+}
+
 /**
  * Generate recurring task instances for calendar display
  */
@@ -761,6 +890,10 @@ export function generateRecurringTaskInstances(
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
 	const nextScheduledDate = getDatePart(task.scheduled);
+	const recurringInstanceExclusions = buildRecurringInstanceExclusionSet(
+		task,
+		nextScheduledDate
+	);
 
 	// 1. Create next scheduled occurrence event
 	const scheduledTime = hasOriginalTime ? getTimePart(task.scheduled) : null;
@@ -802,8 +935,9 @@ export function generateRecurringTaskInstances(
 			continue;
 		}
 
-		// Skip if conflicts with next scheduled occurrence
-		if (instanceDate === nextScheduledDate) {
+		// Skip if this date is already represented by the concrete current occurrence
+		// or by known moved-occurrence exclusions.
+		if (recurringInstanceExclusions.has(instanceDate)) {
 			continue;
 		}
 

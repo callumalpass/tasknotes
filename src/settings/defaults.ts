@@ -46,6 +46,9 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	icsEventId: "icsEventId",
 	icsEventTag: "ics_event",
 	googleCalendarEventId: "googleCalendarEventId",
+	googleCalendarExceptionEventId: "googleCalendarExceptionEventId",
+	googleCalendarExceptionOriginalScheduled: "googleCalendarExceptionOriginalScheduled",
+	googleCalendarMovedOriginalDates: "googleCalendarMovedOriginalDates",
 	reminders: "reminders",
 	sortOrder: "tasknotes_manual_order",
 };

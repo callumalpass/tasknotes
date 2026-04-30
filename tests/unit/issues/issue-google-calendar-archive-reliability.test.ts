@@ -31,6 +31,7 @@ const createGoogleCleanupEnabledPlugin = () =>
 describe("Google Calendar archive reliability", () => {
 	it("preserves the Google Calendar event ID when deletion fails so cleanup can be retried", async () => {
 		const frontmatter: Record<string, any> = {};
+		const pluginData: Record<string, any> = {};
 		const plugin: any = {
 			settings: {
 				googleCalendarExport: {
@@ -83,6 +84,14 @@ describe("Google Calendar archive reliability", () => {
 				getTaskInfo: jest.fn().mockResolvedValue(null),
 				getAllTasks: jest.fn().mockResolvedValue([]),
 			},
+			loadData: jest.fn().mockImplementation(async () => pluginData),
+			saveData: jest.fn().mockImplementation(async (data: Record<string, any>) => {
+				const nextData = { ...data };
+				for (const key of Object.keys(pluginData)) {
+					delete pluginData[key];
+				}
+				Object.assign(pluginData, nextData);
+			}),
 		};
 		const googleCalendarService = {
 			getAvailableCalendars: jest.fn().mockReturnValue([{ id: "primary", name: "Primary" }]),
@@ -105,6 +114,13 @@ describe("Google Calendar archive reliability", () => {
 
 		expect(deleted).toBe(false);
 		expect(frontmatter.googleCalendarEventId).toBe("master-event-id");
+		expect(pluginData.googleCalendarDeletionQueue).toEqual([
+			expect.objectContaining({
+				calendarId: "primary",
+				eventId: "master-event-id",
+				taskPath: "TaskNotes/Tasks/archive-me.md",
+			}),
+		]);
 	});
 
 	it("keeps an auto-archive queue item pending when Google cleanup is still incomplete after archiving", async () => {

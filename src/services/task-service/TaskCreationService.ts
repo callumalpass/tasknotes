@@ -1,4 +1,4 @@
-import { Notice, TFile, normalizePath, stringifyYaml } from "obsidian";
+import { TFile, stringifyYaml } from "obsidian";
 import {
 	EVENT_TASK_UPDATED,
 	IWebhookNotifier,
@@ -219,7 +219,7 @@ export class TaskCreationService {
 			}
 
 			if (
-				plugin.taskCalendarSyncService?.isEnabled() &&
+				plugin.taskCalendarSyncService &&
 				plugin.settings.googleCalendarExport.syncOnTaskCreate
 			) {
 				plugin.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {

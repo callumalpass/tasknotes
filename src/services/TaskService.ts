@@ -80,19 +80,28 @@ export class TaskService {
 		});
 	}
 
-	private hasGoogleCalendarLink(task: TaskInfo): boolean {
-		return !!task.googleCalendarEventId;
+	private hasGoogleCalendarLinks(task: TaskInfo): boolean {
+		return Boolean(task.googleCalendarEventId || task.googleCalendarExceptionEventId);
 	}
 
 	private createArchiveCalendarDeletionTask(task: TaskInfo, updatedTask: TaskInfo): TaskInfo {
 		return {
 			...updatedTask,
 			googleCalendarEventId: task.googleCalendarEventId,
+			googleCalendarExceptionEventId: task.googleCalendarExceptionEventId,
+			googleCalendarExceptionOriginalScheduled:
+				task.googleCalendarExceptionOriginalScheduled,
+			googleCalendarMovedOriginalDates: task.googleCalendarMovedOriginalDates
+				? [...task.googleCalendarMovedOriginalDates]
+				: undefined,
 		};
 	}
 
 	private clearGoogleCalendarMetadata(task: TaskInfo): void {
 		task.googleCalendarEventId = undefined;
+		task.googleCalendarExceptionEventId = undefined;
+		task.googleCalendarExceptionOriginalScheduled = undefined;
+		task.googleCalendarMovedOriginalDates = undefined;
 	}
 
 	private async deleteArchivedTaskFromCalendar(task: TaskInfo): Promise<boolean> {
@@ -114,6 +123,90 @@ export class TaskService {
 
 	private translate(key: TranslationKey, variables?: Record<string, any>): string {
 		return this.plugin.i18n.translate(key, variables);
+	}
+
+	private shouldTrackGoogleCalendarRecurringException(
+		recurrence?: string,
+		recurrenceAnchor?: "scheduled" | "completion"
+	): boolean {
+		return Boolean(recurrence) && (recurrenceAnchor || "scheduled") === "scheduled";
+	}
+
+	private applyGoogleCalendarRecurringExceptionForScheduledChange(
+		task: TaskInfo,
+		newScheduledValue: unknown,
+		updatedTask: TaskInfo
+	): void {
+		if (
+			!this.shouldTrackGoogleCalendarRecurringException(task.recurrence, task.recurrence_anchor) ||
+			newScheduledValue === task.scheduled
+		) {
+			return;
+		}
+
+		const priorOccurrence =
+			task.googleCalendarExceptionOriginalScheduled || task.scheduled || task.due;
+		if (!priorOccurrence) {
+			return;
+		}
+
+		if (!newScheduledValue || newScheduledValue === priorOccurrence) {
+			updatedTask.googleCalendarExceptionOriginalScheduled = undefined;
+			return;
+		}
+
+		updatedTask.googleCalendarExceptionOriginalScheduled = getDatePart(priorOccurrence);
+	}
+
+	private resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
+		task: TaskInfo,
+		actionDate: string,
+		updatedTask: TaskInfo
+	): void {
+		const originalScheduled = task.googleCalendarExceptionOriginalScheduled;
+		if (!originalScheduled) {
+			return;
+		}
+
+		const currentScheduled = getDatePart(task.scheduled || "");
+		if (!currentScheduled || actionDate !== currentScheduled) {
+			return;
+		}
+
+		const originalDate = getDatePart(originalScheduled);
+		if (!originalDate) {
+			return;
+		}
+
+		updatedTask.googleCalendarMovedOriginalDates = Array.from(
+			new Set([...(task.googleCalendarMovedOriginalDates || []), originalDate])
+		).sort();
+		updatedTask.googleCalendarExceptionOriginalScheduled = undefined;
+	}
+
+	private applyGoogleCalendarRecurringExceptionCleanup(
+		recurrence: TaskInfo["recurrence"],
+		recurrenceAnchor: TaskInfo["recurrence_anchor"],
+		updatedTask: TaskInfo
+	): void {
+		if (this.shouldTrackGoogleCalendarRecurringException(recurrence, recurrenceAnchor)) {
+			return;
+		}
+
+		updatedTask.googleCalendarExceptionOriginalScheduled = undefined;
+		updatedTask.googleCalendarMovedOriginalDates = undefined;
+	}
+
+	private writeOptionalFrontmatterField(
+		frontmatter: Record<string, unknown>,
+		fieldName: string,
+		value: unknown
+	): void {
+		if (value == null || (Array.isArray(value) && value.length === 0)) {
+			delete frontmatter[fieldName];
+			return;
+		}
+		frontmatter[fieldName] = value;
 	}
 
 	/**
@@ -506,6 +599,28 @@ export class TaskService {
 				}
 			}
 
+			if (property === "scheduled") {
+				this.applyGoogleCalendarRecurringExceptionForScheduledChange(
+					freshTask,
+					value,
+					updatedTask as TaskInfo
+				);
+			}
+
+			if (property === "recurrence") {
+				this.applyGoogleCalendarRecurringExceptionCleanup(
+					value as TaskInfo["recurrence"],
+					updatedTask.recurrence_anchor,
+					updatedTask as TaskInfo
+				);
+			} else if (property === "recurrence_anchor") {
+				this.applyGoogleCalendarRecurringExceptionCleanup(
+					updatedTask.recurrence,
+					value as TaskInfo["recurrence_anchor"],
+					updatedTask as TaskInfo
+				);
+			}
+
 			// Step 2: Persist to file
 			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				// Use field mapper to get the correct frontmatter property name
@@ -533,6 +648,23 @@ export class TaskService {
 				// Always update the modification timestamp using field mapper
 				const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 				frontmatter[dateModifiedField] = updatedTask.dateModified;
+
+				const exceptionOriginalField = this.plugin.fieldMapper.toUserField(
+					"googleCalendarExceptionOriginalScheduled"
+				);
+				const movedOriginalDatesField = this.plugin.fieldMapper.toUserField(
+					"googleCalendarMovedOriginalDates"
+				);
+				this.writeOptionalFrontmatterField(
+					frontmatter,
+					exceptionOriginalField,
+					(updatedTask as TaskInfo).googleCalendarExceptionOriginalScheduled
+				);
+				this.writeOptionalFrontmatterField(
+					frontmatter,
+					movedOriginalDatesField,
+					(updatedTask as TaskInfo).googleCalendarMovedOriginalDates
+				);
 			});
 
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
@@ -846,7 +978,7 @@ export class TaskService {
 
 		let archiveCalendarCleanupComplete = true;
 		if (this.plugin.taskCalendarSyncService?.isEnabled() && updatedTask.archived) {
-			if (this.hasGoogleCalendarLink(task)) {
+			if (this.hasGoogleCalendarLinks(task)) {
 				const archiveCalendarTask = this.createArchiveCalendarDeletionTask(
 					task,
 					updatedTask
@@ -905,7 +1037,10 @@ export class TaskService {
 					.catch((error) => {
 						console.warn("Failed to sync unarchived task to Google Calendar:", error);
 					});
-			} else if (!archiveCalendarCleanupComplete && this.hasGoogleCalendarLink(updatedTask)) {
+			} else if (
+				!archiveCalendarCleanupComplete &&
+				this.hasGoogleCalendarLinks(updatedTask)
+			) {
 				console.warn(
 					"Archived task still has Google Calendar links and will need retry cleanup:",
 					updatedTask.path
@@ -1234,10 +1369,14 @@ export class TaskService {
 			}
 
 			// Delete from Google Calendar first (before file deletion, so we have the event ID)
-			if (this.plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
+			if (this.plugin.taskCalendarSyncService && this.hasGoogleCalendarLinks(task)) {
 				try {
 					await this.plugin.taskCalendarSyncService
-						.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);
+						.deleteTaskFromCalendarByPath(
+							task.path,
+							task.googleCalendarEventId,
+							task.googleCalendarExceptionEventId
+						);
 				} catch (error) {
 					console.warn("Failed to delete task from Google Calendar:", error);
 				}
@@ -1383,6 +1522,16 @@ export class TaskService {
 		if (nextDates.due) {
 			updatedTask.due = nextDates.due;
 		}
+		this.resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
+			freshTask,
+			dateStr,
+			updatedTask
+		);
+		this.applyGoogleCalendarRecurringExceptionCleanup(
+			updatedTask.recurrence,
+			updatedTask.recurrence_anchor,
+			updatedTask
+		);
 
 		// Step 2: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -1392,6 +1541,12 @@ export class TaskService {
 			const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 			const dueField = this.plugin.fieldMapper.toUserField("due");
 			const recurrenceField = this.plugin.fieldMapper.toUserField("recurrence");
+			const exceptionOriginalField = this.plugin.fieldMapper.toUserField(
+				"googleCalendarExceptionOriginalScheduled"
+			) || "googleCalendarExceptionOriginalScheduled";
+			const movedDatesField = this.plugin.fieldMapper.toUserField(
+				"googleCalendarMovedOriginalDates"
+			) || "googleCalendarMovedOriginalDates";
 
 			// Ensure complete_instances array exists
 			if (!frontmatter[completeInstancesField]) {
@@ -1432,6 +1587,17 @@ export class TaskService {
 			if (updatedTask.due) {
 				frontmatter[dueField] = updatedTask.due;
 			}
+
+			this.writeOptionalFrontmatterField(
+				frontmatter,
+				exceptionOriginalField,
+				updatedTask.googleCalendarExceptionOriginalScheduled
+			);
+			this.writeOptionalFrontmatterField(
+				frontmatter,
+				movedDatesField,
+				updatedTask.googleCalendarMovedOriginalDates
+			);
 
 			frontmatter[dateModifiedField] = updatedTask.dateModified;
 		});
@@ -1576,6 +1742,16 @@ export class TaskService {
 		if (nextDates.due) {
 			updatedTask.due = nextDates.due;
 		}
+		this.resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
+			freshTask,
+			dateStr,
+			updatedTask
+		);
+		this.applyGoogleCalendarRecurringExceptionCleanup(
+			updatedTask.recurrence,
+			updatedTask.recurrence_anchor,
+			updatedTask
+		);
 
 		// Step 3: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -1584,6 +1760,12 @@ export class TaskService {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 			const dueField = this.plugin.fieldMapper.toUserField("due");
+			const exceptionOriginalField = this.plugin.fieldMapper.toUserField(
+				"googleCalendarExceptionOriginalScheduled"
+			) || "googleCalendarExceptionOriginalScheduled";
+			const movedDatesField = this.plugin.fieldMapper.toUserField(
+				"googleCalendarMovedOriginalDates"
+			) || "googleCalendarMovedOriginalDates";
 
 			// Ensure skipped_instances array exists
 			if (!frontmatter[skippedField]) {
@@ -1606,6 +1788,17 @@ export class TaskService {
 			if (updatedTask.due) {
 				frontmatter[dueField] = updatedTask.due;
 			}
+
+			this.writeOptionalFrontmatterField(
+				frontmatter,
+				exceptionOriginalField,
+				updatedTask.googleCalendarExceptionOriginalScheduled
+			);
+			this.writeOptionalFrontmatterField(
+				frontmatter,
+				movedDatesField,
+				updatedTask.googleCalendarMovedOriginalDates
+			);
 
 			frontmatter[dateModifiedField] = updatedTask.dateModified;
 		});

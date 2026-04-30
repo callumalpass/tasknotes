@@ -16,7 +16,7 @@ export class AutoArchiveService {
 	}
 
 	private hasGoogleCalendarLink(task: TaskInfo): boolean {
-		return !!task.googleCalendarEventId;
+		return !!(task.googleCalendarEventId || task.googleCalendarExceptionEventId);
 	}
 
 	private getCalendarCleanupState(): "ready" | "retry" | "skip" {

@@ -10,7 +10,11 @@ import {
 	splitFrontmatterAndBody,
 } from "../../utils/helpers";
 import { generateUniqueFilename } from "../../utils/filenameGenerator";
-import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
+import {
+	getCurrentDateString,
+	getCurrentTimestamp,
+	getDatePart,
+} from "../../utils/dateUtils";
 
 export interface TaskUpdateServiceDependencies {
 	plugin: TaskNotesPlugin;
@@ -71,6 +75,7 @@ export class TaskUpdateService {
 			}
 
 			const recurrenceUpdates = this.getRecurrenceUpdates(originalTask, updates);
+			const effectiveUpdates: Partial<TaskInfo> = { ...updates, ...recurrenceUpdates };
 			let normalizedDetails: string | null = null;
 			if (Object.prototype.hasOwnProperty.call(updates, "details")) {
 				normalizedDetails =
@@ -130,7 +135,7 @@ export class TaskUpdateService {
 					});
 				}
 
-				this.removeUnsetMappedFields(frontmatter, updates);
+				this.removeUnsetMappedFields(frontmatter, effectiveUpdates);
 
 				if (isRenameNeeded) {
 					delete frontmatter[plugin.fieldMapper.toUserField("title")];
@@ -329,7 +334,46 @@ export class TaskUpdateService {
 			}
 		}
 
+		if (
+			Object.prototype.hasOwnProperty.call(updates, "scheduled") &&
+			updates.scheduled !== originalTask.scheduled &&
+			this.shouldTrackGoogleCalendarRecurringException(
+				originalTask.recurrence,
+				originalTask.recurrence_anchor
+			)
+		) {
+			const priorOccurrence = this.getRecurringExceptionOriginalDate(originalTask);
+			if (priorOccurrence) {
+				const nextScheduled = getDatePart(updates.scheduled || "");
+				recurrenceUpdates.googleCalendarExceptionOriginalScheduled =
+					nextScheduled && nextScheduled !== priorOccurrence ? priorOccurrence : undefined;
+			}
+		}
+
+		const nextRecurrence =
+			updates.recurrence !== undefined ? updates.recurrence : originalTask.recurrence;
+		const nextAnchor =
+			updates.recurrence_anchor !== undefined
+				? updates.recurrence_anchor
+				: originalTask.recurrence_anchor;
+		if (!this.shouldTrackGoogleCalendarRecurringException(nextRecurrence, nextAnchor)) {
+			recurrenceUpdates.googleCalendarExceptionOriginalScheduled = undefined;
+			recurrenceUpdates.googleCalendarMovedOriginalDates = undefined;
+		}
+
 		return recurrenceUpdates;
+	}
+
+	private shouldTrackGoogleCalendarRecurringException(
+		recurrence?: string,
+		recurrenceAnchor?: "scheduled" | "completion"
+	): boolean {
+		return Boolean(recurrence) && (recurrenceAnchor || "scheduled") === "scheduled";
+	}
+
+	private getRecurringExceptionOriginalDate(task: TaskInfo): string | undefined {
+		const original = task.googleCalendarExceptionOriginalScheduled || task.scheduled || task.due;
+		return getDatePart(original || "");
 	}
 
 	private removeUnsetMappedFields(
@@ -384,6 +428,23 @@ export class TaskUpdateService {
 			updates.blockedBy === undefined
 		) {
 			delete frontmatter[plugin.fieldMapper.toUserField("blockedBy")];
+		}
+		if (
+			Object.prototype.hasOwnProperty.call(updates, "googleCalendarExceptionOriginalScheduled") &&
+			updates.googleCalendarExceptionOriginalScheduled === undefined
+		) {
+			delete frontmatter[
+				plugin.fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled")
+			];
+		}
+		if (
+			Object.prototype.hasOwnProperty.call(updates, "googleCalendarMovedOriginalDates") &&
+			(!Array.isArray(updates.googleCalendarMovedOriginalDates) ||
+				updates.googleCalendarMovedOriginalDates.length === 0)
+		) {
+			delete frontmatter[
+				plugin.fieldMapper.toUserField("googleCalendarMovedOriginalDates")
+			];
 		}
 	}
 
