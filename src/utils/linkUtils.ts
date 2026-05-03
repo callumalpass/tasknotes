@@ -11,11 +11,18 @@ export function parseLinkToPath(linkText: string): string {
 	if (!linkText) return linkText;
 
 	const trimmed = linkText.trim();
+	const stripAnchor = (value: string): string => {
+		const hashIndex = value.indexOf("#");
+		const blockIndex = value.indexOf("^");
+		if (hashIndex === -1 && blockIndex === -1) return value;
+		if (hashIndex === -1) return value.slice(0, blockIndex);
+		if (blockIndex === -1) return value.slice(0, hashIndex);
+		return value.slice(0, Math.min(hashIndex, blockIndex));
+	};
 
 	// Handle plain angle-bracket autolink style: <path/to/note.md>
 	if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
 		let inner = trimmed.slice(1, -1).trim();
-		const hasMdExt = /\.md$/i.test(inner);
 		try {
 			inner = decodeURIComponent(inner);
 		} catch (error) {
@@ -23,7 +30,8 @@ export function parseLinkToPath(linkText: string): string {
 		}
 
 		const parsed = parseLinktext(inner);
-		return hasMdExt ? inner : parsed.path || inner;
+		const path = parsed.path || inner;
+		return stripAnchor(path);
 	}
 
 	// Handle wikilinks: [[path]] or [[path|alias]]
@@ -36,7 +44,8 @@ export function parseLinkToPath(linkText: string): string {
 		const pathOnly = pipeIndex !== -1 ? inner.substring(0, pipeIndex) : inner;
 		const parsed = parseLinktext(pathOnly);
 
-		return parsed.path;
+		const path = parsed.path || pathOnly;
+		return stripAnchor(path);
 	}
 
 	// Handle markdown links: [text](path)
@@ -49,8 +58,6 @@ export function parseLinkToPath(linkText: string): string {
 			linkPath = linkPath.slice(1, -1).trim();
 		}
 
-		const hasMdExt = /\.md$/i.test(linkPath);
-
 		// URL decode the link path - crucial for paths with spaces like Car%20Maintenance.md
 		try {
 			linkPath = decodeURIComponent(linkPath);
@@ -61,11 +68,12 @@ export function parseLinkToPath(linkText: string): string {
 
 		// Use parseLinktext to handle subpaths/headings
 		const parsed = parseLinktext(linkPath);
-		return hasMdExt ? linkPath : parsed.path;
+		const path = parsed.path || linkPath;
+		return stripAnchor(path);
 	}
 
 	// Not a link format, return as-is
-	return trimmed;
+	return stripAnchor(trimmed);
 }
 
 /**
@@ -74,11 +82,17 @@ export function parseLinkToPath(linkText: string): string {
  *
  * @param projectValue - The raw project value
  * @param app - Optional Obsidian app for resolving to basename
+ * @param sourcePath - Optional source path to resolve relative links
  */
-export function getProjectDisplayName(projectValue: string, app?: App): string {
+export function getProjectDisplayName(
+	projectValue: string,
+	app?: App,
+	sourcePath?: string
+): string {
 	if (!projectValue) return "";
 
 	const trimmed = projectValue.trim();
+	const resolvedSourcePath = sourcePath ?? "";
 
 	// Handle markdown links: [text](path)
 	const markdownMatch = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
@@ -89,7 +103,7 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 			return displayText;
 		}
 		const linkPath = parseLinkToPath(rawPath);
-		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, "");
+		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, resolvedSourcePath);
 		if (resolved) return resolved.basename;
 		const cleanPath = linkPath.replace(/\.md$/i, "");
 		const parts = cleanPath.split("/");
@@ -106,7 +120,7 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 		}
 		const parsed = parseLinktext(linkContent.split("|")[0] || linkContent);
 		const linkPath = parsed.path || parseLinkToPath(trimmed);
-		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, "");
+		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, resolvedSourcePath);
 		if (resolved) return resolved.basename;
 		const cleanPath = linkPath.replace(/\.md$/i, "");
 		const parts = cleanPath.split("/");
