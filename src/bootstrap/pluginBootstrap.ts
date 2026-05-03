@@ -1,7 +1,14 @@
 import { Editor, MarkdownView, Notice, Platform, addIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import type TaskNotesPlugin from "../main";
-import { EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, POMODORO_STATS_VIEW_TYPE, POMODORO_VIEW_TYPE, STATS_VIEW_TYPE, TaskInfo } from "../types";
+import {
+	EVENT_DATA_CHANGED,
+	EVENT_TASK_UPDATED,
+	POMODORO_STATS_VIEW_TYPE,
+	POMODORO_VIEW_TYPE,
+	STATS_VIEW_TYPE,
+	TaskInfo,
+} from "../types";
 import { RequestDeduplicator, PredictivePrefetcher } from "../utils/RequestDeduplicator";
 import { DOMReconciler, UIStateManager } from "../utils/DOMReconciler";
 import { FieldMapper } from "../services/FieldMapper";
@@ -43,6 +50,10 @@ import { MicrosoftCalendarService } from "../services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "../services/CalendarProvider";
 import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
+import { TaskSelectionService } from "../services/TaskSelectionService";
+import { BasesFilterConverter } from "../services/BasesFilterConverter";
+import { MdbaseSpecService } from "../services/MdbaseSpecService";
+import { registerBasesTaskList } from "../bases/registration";
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
 
@@ -100,17 +111,14 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 	plugin.expandedProjectsService = new ExpandedProjectsService(plugin);
 	plugin.autoArchiveService = new AutoArchiveService(plugin);
 
-	const { TaskSelectionService } = await import("../services/TaskSelectionService");
 	plugin.taskSelectionService = new TaskSelectionService(plugin);
 	plugin.dragDropManager = new DragDropManager(plugin);
 	plugin.statusBarService = new StatusBarService(plugin);
 	plugin.notificationService = new NotificationService(plugin);
 	plugin.viewPerformanceService = new ViewPerformanceService(plugin);
 
-	const { BasesFilterConverter } = await import("../services/BasesFilterConverter");
 	plugin.basesFilterConverter = new BasesFilterConverter(plugin);
 
-	const { MdbaseSpecService } = await import("../services/MdbaseSpecService");
 	plugin.mdbaseSpecService = new MdbaseSpecService(plugin);
 
 	plugin.icsSubscriptionService = new ICSSubscriptionService(plugin);
@@ -119,25 +127,41 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 }
 
 export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
-	plugin.addRibbonIcon("calendar-days", plugin.i18n.translate("commands.openCalendarView"), async () => {
-		await plugin.activateCalendarView();
-	});
+	plugin.addRibbonIcon(
+		"calendar-days",
+		plugin.i18n.translate("commands.openCalendarView"),
+		async () => {
+			await plugin.activateCalendarView();
+		}
+	);
 
-	plugin.addRibbonIcon("calendar", plugin.i18n.translate("commands.openAdvancedCalendarView"), async () => {
-		await plugin.openBasesFileForCommand("open-advanced-calendar-view");
-	});
+	plugin.addRibbonIcon(
+		"calendar",
+		plugin.i18n.translate("commands.openAdvancedCalendarView"),
+		async () => {
+			await plugin.openBasesFileForCommand("open-advanced-calendar-view");
+		}
+	);
 
-	plugin.addRibbonIcon("check-square", plugin.i18n.translate("commands.openTasksView"), async () => {
-		await plugin.openBasesFileForCommand("open-tasks-view");
-	});
+	plugin.addRibbonIcon(
+		"check-square",
+		plugin.i18n.translate("commands.openTasksView"),
+		async () => {
+			await plugin.openBasesFileForCommand("open-tasks-view");
+		}
+	);
 
 	plugin.addRibbonIcon("list", plugin.i18n.translate("commands.openAgendaView"), async () => {
 		await plugin.openBasesFileForCommand("open-agenda-view");
 	});
 
-	plugin.addRibbonIcon("columns-3", plugin.i18n.translate("commands.openKanbanView"), async () => {
-		await plugin.openBasesFileForCommand("open-kanban-view");
-	});
+	plugin.addRibbonIcon(
+		"columns-3",
+		plugin.i18n.translate("commands.openKanbanView"),
+		async () => {
+			await plugin.openBasesFileForCommand("open-kanban-view");
+		}
+	);
 
 	plugin.addRibbonIcon("timer", plugin.i18n.translate("commands.openPomodoroView"), async () => {
 		await plugin.activatePomodoroView();
@@ -151,9 +175,13 @@ export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
 		}
 	);
 
-	plugin.addRibbonIcon("tasknotes-simple", plugin.i18n.translate("commands.createNewTask"), () => {
-		plugin.openTaskCreationModal();
-	});
+	plugin.addRibbonIcon(
+		"tasknotes-simple",
+		plugin.i18n.translate("commands.createNewTask"),
+		() => {
+			plugin.openTaskCreationModal();
+		}
+	);
 }
 
 export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
@@ -165,14 +193,14 @@ export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
 	plugin.calendarProviderRegistry.register(plugin.microsoftCalendarService);
 }
 
-export async function registerBasesIntegration(plugin: TaskNotesPlugin): Promise<void> {
+export function registerBasesIntegration(plugin: TaskNotesPlugin): void {
 	if (!plugin.settings?.enableBases || plugin.basesRegistered) {
 		return;
 	}
 
 	try {
-		const { registerBasesTaskList } = await import("../bases/registration");
-		await registerBasesTaskList(plugin);
+		// Call without await to prevent blocking if it enters its retry loop
+		registerBasesTaskList(plugin).catch((e) => console.debug(e));
 		plugin.basesRegistered = true;
 	} catch (error) {
 		console.debug("[TaskNotes][Bases] Registration failed:", error);
@@ -268,8 +296,9 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 			});
 			await plugin.googleCalendarService.initialize();
 
-			plugin.taskCalendarSyncService = new (await import("../services/TaskCalendarSyncService"))
-				.TaskCalendarSyncService(plugin, plugin.googleCalendarService);
+			plugin.taskCalendarSyncService = new (
+				await import("../services/TaskCalendarSyncService")
+			).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
 
 			plugin.registerEvent(
 				plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
@@ -278,7 +307,9 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					}
 
 					const eventIdKey = plugin.fieldMapper.toUserField("googleCalendarEventId");
-					const prevCache = data.prevCache as { frontmatter?: Record<string, unknown> } | undefined;
+					const prevCache = data.prevCache as
+						| { frontmatter?: Record<string, unknown> }
+						| undefined;
 					const eventId = prevCache?.frontmatter?.[eventIdKey];
 
 					if (typeof eventId === "string" && eventId.length > 0) {
@@ -301,12 +332,12 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 			await initializeHTTPAPI(plugin);
 
-			const { TaskLinkDetectionService } = await import("../services/TaskLinkDetectionService");
+			const { TaskLinkDetectionService } =
+				await import("../services/TaskLinkDetectionService");
 			plugin.taskLinkDetectionService = new TaskLinkDetectionService(plugin);
 
-			const { InstantTaskConvertService } = await import(
-				"../services/InstantTaskConvertService"
-			);
+			const { InstantTaskConvertService } =
+				await import("../services/InstantTaskConvertService");
 			plugin.instantTaskConvertService = new InstantTaskConvertService(
 				plugin,
 				plugin.statusManager,
@@ -324,7 +355,10 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 							const editor = (leaf.view as MarkdownView).editor;
 							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
 								const taskPath = data?.path || data?.updatedTask?.path;
-								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm, taskPath);
+								dispatchTaskUpdate(
+									(editor as Editor & { cm: EditorView }).cm,
+									taskPath
+								);
 							}
 						}
 					});
