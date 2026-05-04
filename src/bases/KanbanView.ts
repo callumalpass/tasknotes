@@ -22,6 +22,11 @@ import {
 	applySortOrderPlan,
 	DropOperationQueue,
 } from "./sortOrderUtils";
+import {
+	mergeUserSwimLaneOrder,
+	mergeReorderedVisibleKeys,
+	parseSwimLaneOrderConfig,
+} from "./swimLaneOrdering";
 
 function normalizeExpandedRelationshipFilterMode(
 	value: unknown
@@ -105,6 +110,7 @@ export class KanbanView extends BasesViewBase {
 	private explodeListColumns = true; // Show items with list properties in multiple columns
 	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
+	private swimLaneOrders: Record<string, string[]> = {};
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
@@ -200,6 +206,12 @@ export class KanbanView extends BasesViewBase {
 			// Read column orders
 			const columnOrderStr = (this.config.get("columnOrder") as string) || "{}";
 			this.columnOrders = JSON.parse(columnOrderStr);
+
+			// Read swim lane orders via the safe parser — malformed user input
+			// returns {} rather than throwing, so it can't disable other config.
+			this.swimLaneOrders = parseSwimLaneOrderConfig(
+				this.config.get("swimLaneOrder")
+			);
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
@@ -427,9 +439,21 @@ export class KanbanView extends BasesViewBase {
 		// Must use internal API to detect if groupBy is configured.
 		// We can't rely on isGrouped() because it returns false when all items have null values.
 
-		const controller = this.basesController;
-
 		// Try to get groupBy from internal API (controller.query.views)
+		const view = this.getActiveViewConfig();
+		if (view?.groupBy) {
+			if (typeof view.groupBy === "object" && view.groupBy.property) {
+				return view.groupBy.property;
+			} else if (typeof view.groupBy === "string") {
+				return view.groupBy;
+			}
+		}
+
+		return null;
+	}
+
+	private getActiveViewConfig(): any | null {
+		const controller = this.basesController;
 		if (controller?.query?.views && controller?.viewName) {
 			const views = controller.query.views;
 			const viewName = controller.viewName;
@@ -437,16 +461,7 @@ export class KanbanView extends BasesViewBase {
 			for (let i = 0; i < views.length; i++) {
 				const view = views[i];
 				if (view && view.name === viewName) {
-					if (view.groupBy) {
-						if (typeof view.groupBy === "object" && view.groupBy.property) {
-							return view.groupBy.property;
-						} else if (typeof view.groupBy === "string") {
-							return view.groupBy;
-						}
-					}
-
-					// View found but no groupBy configured
-					return null;
+					return view;
 				}
 			}
 		}
@@ -739,6 +754,9 @@ export class KanbanView extends BasesViewBase {
 			])
 		);
 
+		this.boardEl.removeClass("kanban-view__board--swimlanes");
+		this.boardEl.style.removeProperty("--kanban-swimlane-max-height");
+
 		// Set CSS variable for column width (allows responsive override)
 		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
 
@@ -799,9 +817,18 @@ export class KanbanView extends BasesViewBase {
 			swimLaneValues.add(swimLaneKey);
 		}
 
+		// Default order from upstream semantic logic (status order, priority weight,
+		// alpha, "None" last). Layered with persisted user reorder on top: saved
+		// keys keep their saved positions, new keys append in default's order.
+		const defaultOrderedKeys = this.getOrderedSwimLaneKeys(swimLaneValues);
+		const savedOrder = this.swimLanePropertyId
+			? this.swimLaneOrders[this.swimLanePropertyId] ?? []
+			: [];
+		const orderedSwimLaneKeys = mergeUserSwimLaneOrder(savedOrder, defaultOrderedKeys);
+
 		// Initialize swimlane -> column -> tasks structure
 		// Note: groups already includes empty status columns from augmentWithEmptyStatusColumns()
-		for (const swimLaneKey of swimLaneValues) {
+		for (const swimLaneKey of orderedSwimLaneKeys) {
 			const swimLaneMap = new Map<string, TaskInfo[]>();
 			swimLanes.set(swimLaneKey, swimLaneMap);
 
@@ -835,53 +862,16 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 
-		const candidateSwimLanes = new Map<string, Map<string, TaskInfo[]>>();
-		const candidateSwimLaneValues = new Set<string>();
-
-		for (const task of allTasksForCandidateScopes) {
-			const props = pathToProps.get(task.path) || {};
-			const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
-			const swimLaneKey = this.valueToString(swimLaneValue);
-			candidateSwimLaneValues.add(swimLaneKey);
-		}
-
-		for (const swimLaneKey of candidateSwimLaneValues) {
-			const swimLaneMap = new Map<string, TaskInfo[]>();
-			candidateSwimLanes.set(swimLaneKey, swimLaneMap);
-
-			for (const [columnKey] of allGroups) {
-				swimLaneMap.set(columnKey, []);
-			}
-		}
-
-		for (const [columnKey, columnTasks] of allGroups) {
-			for (const task of columnTasks) {
-				const props = pathToProps.get(task.path) || {};
-				const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
-				const swimLaneKey = this.valueToString(swimLaneValue);
-				const swimLane = candidateSwimLanes.get(swimLaneKey);
-				if (!swimLane) continue;
-				if (swimLane.has(columnKey)) {
-					swimLane.get(columnKey)!.push(task);
-				}
-			}
-		}
-
-		this.setSortScopeCandidatePaths(
-			Array.from(candidateSwimLanes.entries()).flatMap(([swimLaneKey, columns]) =>
-				Array.from(columns.entries()).map(([columnKey, tasks]) => [
-					this.getSortScopeKey(columnKey, swimLaneKey),
-					tasks.map((task) => task.path),
-				] as [string, string[]])
-			)
-		);
+		const swimLanesToRender = this.shouldHideEmptySwimLanes()
+			? this.filterEmptySwimLanes(swimLanes, orderedSwimLaneKeys)
+			: swimLanes;
 
 		// Apply column ordering
 		const columnKeys = Array.from(groups.keys());
 		const orderedKeys = this.applyColumnOrder(groupByPropertyId, columnKeys);
 
 		// Render swimlane table
-		await this.renderSwimLaneTable(swimLanes, orderedKeys, pathToProps);
+		await this.renderSwimLaneTable(swimLanesToRender, orderedKeys, pathToProps);
 	}
 
 	private async renderSwimLaneTable(
@@ -948,8 +938,18 @@ export class KanbanView extends BasesViewBase {
 		for (const [swimLaneKey, columns] of swimLanes) {
 			const row = this.boardEl.createEl("div", { cls: "kanban-view__swimlane-row" });
 
-			// Swimlane label cell
-			const labelCell = row.createEl("div", { cls: "kanban-view__swimlane-label" });
+			// Swimlane label cell — draggable so users can reorder rows
+			const labelCell = row.createEl("div", {
+				cls: "kanban-view__swimlane-label",
+				attr: {
+					"data-swimlane-key": swimLaneKey,
+					draggable: "true",
+				},
+			});
+
+			// Drag handle
+			const dragHandle = labelCell.createSpan({ cls: "kanban-view__swimlane-drag-handle" });
+			dragHandle.textContent = "⋮⋮";
 
 			// Add swimlane title and count
 			const titleEl = labelCell.createEl("div", { cls: "kanban-view__swimlane-title" });
@@ -964,6 +964,8 @@ export class KanbanView extends BasesViewBase {
 				cls: "kanban-view__swimlane-count",
 				text: `${totalTasks}`,
 			});
+
+			this.setupSwimLaneLabelDragHandlers(labelCell);
 
 			// Render columns in this swimlane
 			for (const columnKey of columnKeys) {
@@ -1396,6 +1398,80 @@ export class KanbanView extends BasesViewBase {
 		});
 	}
 
+	private setupSwimLaneLabelDragHandlers(label: HTMLElement): void {
+		const swimLaneKey = label.dataset.swimlaneKey;
+		if (!swimLaneKey) return;
+
+		const draggingClass = "kanban-view__swimlane-label--dragging";
+		const dragoverClass = "kanban-view__swimlane-label--dragover";
+
+		label.addEventListener("dragstart", (e: DragEvent) => {
+			if (!e.dataTransfer) return;
+			e.dataTransfer.effectAllowed = "move";
+			e.dataTransfer.setData("text/x-kanban-swimlane", swimLaneKey);
+			label.classList.add(draggingClass);
+		});
+
+		label.addEventListener("dragover", (e: DragEvent) => {
+			// Only handle swimlane drags
+			if (!e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
+			e.preventDefault();
+			e.stopPropagation();
+			e.dataTransfer.dropEffect = "move";
+			label.classList.add(dragoverClass);
+		});
+
+		label.addEventListener("dragleave", (e: DragEvent) => {
+			if (!e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
+			if (e.target === label) {
+				label.classList.remove(dragoverClass);
+			}
+		});
+
+		label.addEventListener("drop", async (e: DragEvent) => {
+			if (!e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
+			e.preventDefault();
+			e.stopPropagation();
+
+			label.classList.remove(dragoverClass);
+
+			const draggedKey = e.dataTransfer.getData("text/x-kanban-swimlane");
+			const targetKey = label.dataset.swimlaneKey;
+			if (!targetKey || !draggedKey || draggedKey === targetKey) return;
+
+			const swimLanePropId = this.swimLanePropertyId;
+			if (!swimLanePropId) return;
+
+			// Read visible row order from the DOM. With filters/search active,
+			// hidden rows aren't here; mergeReorderedVisibleKeys anchors them.
+			const visibleOrder = Array.from(
+				this.boardEl!.querySelectorAll(".kanban-view__swimlane-label[data-swimlane-key]")
+			)
+				.map((el) => (el as HTMLElement).dataset.swimlaneKey)
+				.filter((k): k is string => !!k);
+
+			// Reorder within the visible list
+			const dragIndex = visibleOrder.indexOf(draggedKey);
+			const dropIndex = visibleOrder.indexOf(targetKey);
+			if (dragIndex === -1 || dropIndex === -1) return;
+
+			const reorderedVisible = [...visibleOrder];
+			reorderedVisible.splice(dragIndex, 1);
+			reorderedVisible.splice(dropIndex, 0, draggedKey);
+
+			// Merge onto the previous saved order so hidden rows aren't lost.
+			const previousOrder = this.swimLaneOrders[swimLanePropId] ?? [];
+			const mergedOrder = mergeReorderedVisibleKeys(previousOrder, reorderedVisible);
+
+			await this.saveSwimLaneOrder(swimLanePropId, mergedOrder);
+			await this.render();
+		});
+
+		label.addEventListener("dragend", () => {
+			label.classList.remove(draggingClass);
+		});
+	}
+
 	private setupColumnDragDrop(
 		column: HTMLElement,
 		cardsContainer: HTMLElement,
@@ -1403,8 +1479,9 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Drag over handler
 		column.addEventListener("dragover", (e: DragEvent) => {
-			// Only handle task drags (not column drags)
+			// Only handle task drags (not column or swimlane-label drags)
 			if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
@@ -1425,8 +1502,9 @@ export class KanbanView extends BasesViewBase {
 
 		// Drop handler
 		column.addEventListener("drop", async (e: DragEvent) => {
-			// Only handle task drags (not column drags)
+			// Only handle task drags (not column or swimlane-label drags)
 			if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 
@@ -1511,6 +1589,9 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Drag over handler
 		cell.addEventListener("dragover", (e: DragEvent) => {
+			// Bail before preventDefault so swimlane-label drags pass through to
+			// the label drop targets — otherwise we'd visibly highlight the cell.
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
@@ -1531,6 +1612,8 @@ export class KanbanView extends BasesViewBase {
 
 		// Drop handler
 		cell.addEventListener("drop", async (e: DragEvent) => {
+			// Same MIME guard as dragover — keep label drops from being claimed here.
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 
@@ -3026,6 +3109,203 @@ export class KanbanView extends BasesViewBase {
 		renderGroupTitle(container, displayTitle, linkServices);
 	}
 
+	private getOrderedSwimLaneKeys(swimLaneValues: Set<string>): string[] {
+		if (!this.swimLanePropertyId) {
+			return Array.from(swimLaneValues);
+		}
+
+		const noneKey = "None";
+		const hasNone = swimLaneValues.has(noneKey);
+		const rawKeys = Array.from(swimLaneValues);
+		const valueKeys = rawKeys.filter((key) => key !== noneKey);
+		const cleanProperty = stripPropertyPrefix(this.swimLanePropertyId);
+
+		const statusField = this.plugin.fieldMapper.toUserField("status");
+		if (cleanProperty === statusField) {
+			const statusValues = this.plugin.statusManager.getStatusesByOrder().map((s) => s.value);
+			const extras = this.sortSwimLaneKeysAlphabetical(
+				valueKeys.filter((key) => !statusValues.includes(key))
+			);
+			const ordered = [...statusValues, ...extras];
+			if (hasNone && !ordered.includes(noneKey)) {
+				ordered.push(noneKey);
+			}
+			return ordered;
+		}
+
+		const priorityField = this.plugin.fieldMapper.toUserField("priority");
+		if (cleanProperty === priorityField) {
+			const priorityValues = this.plugin.priorityManager
+				.getPrioritiesByWeight()
+				.map((p) => p.value);
+			const extras = this.sortSwimLaneKeysAlphabetical(
+				valueKeys.filter((key) => !priorityValues.includes(key))
+			);
+			const ordered = [...priorityValues, ...extras];
+			if (hasNone && !ordered.includes(noneKey)) {
+				ordered.push(noneKey);
+			}
+			return ordered;
+		}
+
+		if (cleanProperty.startsWith("user:")) {
+			return this.sortUserFieldSwimLaneKeys(rawKeys, cleanProperty);
+		}
+
+		const ordered = this.sortSwimLaneKeysAlphabetical(valueKeys);
+		if (hasNone) {
+			ordered.push(noneKey);
+		}
+		return ordered;
+	}
+
+	private sortSwimLaneKeysAlphabetical(keys: string[]): string[] {
+		return [...keys].sort((a, b) =>
+			a.localeCompare(b, undefined, { sensitivity: "base" })
+		);
+	}
+
+	private sortUserFieldSwimLaneKeys(keys: string[], cleanProperty: string): string[] {
+		const noneKey = "None";
+		const hasNone = keys.includes(noneKey);
+		const valueKeys = keys.filter((key) => key !== noneKey);
+		const fieldId = cleanProperty.slice("user:".length);
+		const fields = this.plugin.settings?.userFields || [];
+		const field = fields.find((f: any) => (f.id || f.key) === fieldId);
+
+		let ordered: string[];
+
+		if (!field) {
+			ordered = this.sortSwimLaneKeysAlphabetical(valueKeys);
+		} else {
+			switch (field.type) {
+				case "number":
+					ordered = [...valueKeys].sort((a, b) => {
+						const numA = parseFloat(a);
+						const numB = parseFloat(b);
+						const isNumA = !isNaN(numA);
+						const isNumB = !isNaN(numB);
+						if (isNumA && isNumB) return numB - numA;
+						if (isNumA && !isNumB) return -1;
+						if (!isNumA && isNumB) return 1;
+						return a.localeCompare(b, undefined, { sensitivity: "base" });
+					});
+					break;
+				case "boolean":
+					ordered = [...valueKeys].sort((a, b) => {
+						const aLower = a.toLowerCase();
+						const bLower = b.toLowerCase();
+						if (aLower === "true" && bLower === "false") return -1;
+						if (aLower === "false" && bLower === "true") return 1;
+						return a.localeCompare(b, undefined, { sensitivity: "base" });
+					});
+					break;
+				case "date":
+					ordered = [...valueKeys].sort((a, b) => {
+						const tA = Date.parse(a);
+						const tB = Date.parse(b);
+						const isValidA = !isNaN(tA);
+						const isValidB = !isNaN(tB);
+						if (isValidA && isValidB) return tA - tB;
+						if (isValidA && !isValidB) return -1;
+						if (!isValidA && isValidB) return 1;
+						return a.localeCompare(b, undefined, { sensitivity: "base" });
+					});
+					break;
+				case "text":
+				case "list":
+				default:
+					ordered = this.sortSwimLaneKeysAlphabetical(valueKeys);
+					break;
+			}
+		}
+
+		if (hasNone) {
+			ordered.push(noneKey);
+		}
+		return ordered;
+	}
+
+	private shouldHideEmptySwimLanes(): boolean {
+		if (this.currentSearchTerm?.length) {
+			return true;
+		}
+
+		return this.hasActiveBasesFilters();
+	}
+
+	private hasActiveBasesFilters(): boolean {
+		const viewConfig = this.getActiveViewConfig();
+		if (this.isNonEmptyFilterConfig(this.extractFilterConfig(viewConfig))) {
+			return true;
+		}
+
+		const controller = this.basesController;
+		const query = controller?.query;
+		const config = controller?.getViewConfig?.() ?? query?.getViewConfig?.();
+		return this.isNonEmptyFilterConfig(this.extractFilterConfig(config));
+	}
+
+	private extractFilterConfig(config: any): any {
+		if (!config || typeof config !== "object") {
+			return null;
+		}
+
+		return (
+			config.filter ??
+			config.filters ??
+			config.query?.filter ??
+			config.query?.filters ??
+			config.where ??
+			config.conditions ??
+			null
+		);
+	}
+
+	private isNonEmptyFilterConfig(value: any): boolean {
+		if (!value) return false;
+		if (Array.isArray(value)) return value.length > 0;
+		if (typeof value === "string") return value.trim().length > 0;
+		if (typeof value === "object") {
+			const rules =
+				value.rules ??
+				value.conditions ??
+				value.filters ??
+				value.groups ??
+				null;
+			if (Array.isArray(rules)) return rules.length > 0;
+			if (rules && typeof rules === "object") return Object.keys(rules).length > 0;
+			return Object.keys(value).length > 0;
+		}
+		return false;
+	}
+
+	private filterEmptySwimLanes(
+		swimLanes: Map<string, Map<string, TaskInfo[]>>,
+		orderedKeys: string[]
+	): Map<string, Map<string, TaskInfo[]>> {
+		const filtered = new Map<string, Map<string, TaskInfo[]>>();
+
+		for (const swimLaneKey of orderedKeys) {
+			const columns = swimLanes.get(swimLaneKey);
+			if (!columns) continue;
+
+			let hasTasks = false;
+			for (const tasks of columns.values()) {
+				if (tasks.length > 0) {
+					hasTasks = true;
+					break;
+				}
+			}
+
+			if (hasTasks) {
+				filtered.set(swimLaneKey, columns);
+			}
+		}
+
+		return filtered;
+	}
+
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
 		// Get saved order for this grouping property
 		const savedOrder = this.columnOrders[groupBy];
@@ -3068,6 +3348,17 @@ export class KanbanView extends BasesViewBase {
 			this.config.set("columnOrder", orderJson);
 		} catch (error) {
 			console.error("[KanbanView] Failed to save column order:", error);
+		}
+	}
+
+	private async saveSwimLaneOrder(swimLanePropId: string, order: string[]): Promise<void> {
+		this.swimLaneOrders[swimLanePropId] = order;
+
+		try {
+			const orderJson = JSON.stringify(this.swimLaneOrders);
+			this.config.set("swimLaneOrder", orderJson);
+		} catch (error) {
+			console.error("[KanbanView] Failed to save swim lane order:", error);
 		}
 	}
 

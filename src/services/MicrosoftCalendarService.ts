@@ -175,7 +175,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			return;
 		}
 		this.plugin.settings.microsoftCalendarSyncTokens[calendarId] = syncToken;
-		await this.persistSettingsDataOnly();
+		await this.plugin.saveSettingsDataOnly?.();
 	}
 
 	/**
@@ -189,14 +189,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			return;
 		}
 		delete this.plugin.settings.microsoftCalendarSyncTokens[calendarId];
-		await this.persistSettingsDataOnly();
-	}
-
-	private async persistSettingsDataOnly(): Promise<void> {
-		const saveSettingsDataOnly = (this.plugin as unknown as { saveSettingsDataOnly?: () => Promise<void> }).saveSettingsDataOnly;
-		if (typeof saveSettingsDataOnly === "function") {
-			await saveSettingsDataOnly.call(this.plugin);
-		}
+		await this.plugin.saveSettingsDataOnly?.();
 	}
 
 	async initialize(): Promise<void> {

@@ -345,6 +345,44 @@
     z-index: 5;
 }
 
+.kanban-view__swimlane-label[draggable="true"] {
+    cursor: grab;
+    user-select: none;
+    transition: all var(--tn-transition-fast);
+}
+
+.kanban-view__swimlane-label[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.kanban-view__swimlane-label--dragging {
+    opacity: 0.5;
+    transform: rotate(1deg);
+    box-shadow: var(--tn-shadow-medium);
+}
+
+.kanban-view__swimlane-label--dragover {
+    box-shadow: inset 0 2px 0 var(--tn-interactive-accent);
+}
+
+/* Swimlane drag handle */
+.kanban-view__swimlane-drag-handle {
+    color: var(--tn-text-muted);
+    cursor: grab;
+    font-size: var(--tn-font-size-sm);
+    opacity: 0.5;
+    transition: opacity var(--tn-transition-fast);
+    flex-shrink: 0;
+}
+
+.kanban-view__swimlane-label:hover .kanban-view__swimlane-drag-handle {
+    opacity: 1;
+}
+
+.kanban-view__swimlane-drag-handle:active {
+    cursor: grabbing;
+}
+
 /* Swimlane title */
 .kanban-view__swimlane-title {
     font-weight: var(--tn-font-weight-medium);

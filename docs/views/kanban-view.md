@@ -27,6 +27,7 @@ Access these options through the Bases view settings panel:
 - **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
+- **Swim Lane Order**: Managed automatically when dragging swimlane labels. Stores custom row ordering, layered on top of the default semantic order (status order, priority weight, alphabetical, "None" last)
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
 ## Interface Layout
@@ -48,6 +49,10 @@ Each swimlane row includes:
 - A label cell showing the swimlane property value and total task count
 - Multiple cells, each representing a column within that swimlane
 - Scrollable cells containing task cards
+
+Drag a swimlane label cell to reorder rows. The new order persists per `.base` file in the `swimLaneOrder` config and survives reloads. Default ordering follows property semantics — configured status order for status, weight for priority, alphabetical otherwise, with `None` always last. A custom user order layers on top: when a previously unseen value first appears, it slots in using the default rule. Row reorder is desktop-only — no touch/mobile support yet.
+
+When a search or filter is active, only matching rows are visible. Reordering while filtered is safe — hidden rows are anchored at their previous positions instead of being lost.
 
 ## Task Cards
 
@@ -116,10 +121,13 @@ views:
     type: tasknotesKanban
     groupBy:
       property: task.status
+      direction: ASC
     config:
       swimLane: task.priority
       columnWidth: 300
       hideEmptyColumns: true
+      # Auto-managed when dragging swimlane labels:
+      swimLaneOrder: '{"task.priority":["high","normal","low","None"]}'
 ---
 ```
 
@@ -128,6 +136,7 @@ This configuration creates a Kanban board with:
 - Swimlanes based on task priority
 - 300px column width
 - Empty columns hidden
+- Custom swimlane row order pinned via `swimLaneOrder`
 
 ## Filtering and Sorting
 
