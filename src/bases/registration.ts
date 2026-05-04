@@ -116,6 +116,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: "{}",
 					},
 					{
+						type: "text",
+						key: "swimLaneOrder",
+						displayName: "Swim Lane Order (Advanced)",
+						placeholder: "Auto-managed when dragging swimlane labels",
+						default: "{}",
+					},
+					{
 						type: "dropdown",
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",

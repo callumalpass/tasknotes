@@ -22,6 +22,10 @@ import {
 	applySortOrderPlan,
 	DropOperationQueue,
 } from "./sortOrderUtils";
+import {
+	mergeUserSwimLaneOrder,
+	parseSwimLaneOrderConfig,
+} from "./swimLaneOrdering";
 
 export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
@@ -81,6 +85,7 @@ export class KanbanView extends BasesViewBase {
 	private explodeListColumns = true; // Show items with list properties in multiple columns
 	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
+	private swimLaneOrders: Record<string, string[]> = {};
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
@@ -176,6 +181,12 @@ export class KanbanView extends BasesViewBase {
 			// Read column orders
 			const columnOrderStr = (this.config.get("columnOrder") as string) || "{}";
 			this.columnOrders = JSON.parse(columnOrderStr);
+
+			// Read swim lane orders via the safe parser — malformed user input
+			// returns {} rather than throwing, so it can't disable other config.
+			this.swimLaneOrders = parseSwimLaneOrderConfig(
+				this.config.get("swimLaneOrder")
+			);
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
@@ -781,7 +792,14 @@ export class KanbanView extends BasesViewBase {
 			swimLaneValues.add(swimLaneKey);
 		}
 
-		const orderedSwimLaneKeys = this.getOrderedSwimLaneKeys(swimLaneValues);
+		// Default order from upstream semantic logic (status order, priority weight,
+		// alpha, "None" last). Layered with persisted user reorder on top: saved
+		// keys keep their saved positions, new keys append in default's order.
+		const defaultOrderedKeys = this.getOrderedSwimLaneKeys(swimLaneValues);
+		const savedOrder = this.swimLanePropertyId
+			? this.swimLaneOrders[this.swimLanePropertyId] ?? []
+			: [];
+		const orderedSwimLaneKeys = mergeUserSwimLaneOrder(savedOrder, defaultOrderedKeys);
 
 		// Initialize swimlane -> column -> tasks structure
 		// Note: groups already includes empty status columns from augmentWithEmptyStatusColumns()
