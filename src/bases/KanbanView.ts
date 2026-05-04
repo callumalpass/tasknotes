@@ -24,6 +24,7 @@ import {
 } from "./sortOrderUtils";
 import {
 	mergeUserSwimLaneOrder,
+	mergeReorderedVisibleKeys,
 	parseSwimLaneOrderConfig,
 } from "./swimLaneOrdering";
 
@@ -913,8 +914,18 @@ export class KanbanView extends BasesViewBase {
 		for (const [swimLaneKey, columns] of swimLanes) {
 			const row = this.boardEl.createEl("div", { cls: "kanban-view__swimlane-row" });
 
-			// Swimlane label cell
-			const labelCell = row.createEl("div", { cls: "kanban-view__swimlane-label" });
+			// Swimlane label cell — draggable so users can reorder rows
+			const labelCell = row.createEl("div", {
+				cls: "kanban-view__swimlane-label",
+				attr: {
+					"data-swimlane-key": swimLaneKey,
+					draggable: "true",
+				},
+			});
+
+			// Drag handle
+			const dragHandle = labelCell.createSpan({ cls: "kanban-view__swimlane-drag-handle" });
+			dragHandle.textContent = "⋮⋮";
 
 			// Add swimlane title and count
 			const titleEl = labelCell.createEl("div", { cls: "kanban-view__swimlane-title" });
@@ -929,6 +940,8 @@ export class KanbanView extends BasesViewBase {
 				cls: "kanban-view__swimlane-count",
 				text: `${totalTasks}`,
 			});
+
+			this.setupSwimLaneLabelDragHandlers(labelCell);
 
 			// Render columns in this swimlane
 			for (const columnKey of columnKeys) {
@@ -1361,6 +1374,80 @@ export class KanbanView extends BasesViewBase {
 		});
 	}
 
+	private setupSwimLaneLabelDragHandlers(label: HTMLElement): void {
+		const swimLaneKey = label.dataset.swimlaneKey;
+		if (!swimLaneKey) return;
+
+		const draggingClass = "kanban-view__swimlane-label--dragging";
+		const dragoverClass = "kanban-view__swimlane-label--dragover";
+
+		label.addEventListener("dragstart", (e: DragEvent) => {
+			if (!e.dataTransfer) return;
+			e.dataTransfer.effectAllowed = "move";
+			e.dataTransfer.setData("text/x-kanban-swimlane", swimLaneKey);
+			label.classList.add(draggingClass);
+		});
+
+		label.addEventListener("dragover", (e: DragEvent) => {
+			// Only handle swimlane drags
+			if (!e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
+			e.preventDefault();
+			e.stopPropagation();
+			e.dataTransfer.dropEffect = "move";
+			label.classList.add(dragoverClass);
+		});
+
+		label.addEventListener("dragleave", (e: DragEvent) => {
+			if (!e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
+			if (e.target === label) {
+				label.classList.remove(dragoverClass);
+			}
+		});
+
+		label.addEventListener("drop", async (e: DragEvent) => {
+			if (!e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
+			e.preventDefault();
+			e.stopPropagation();
+
+			label.classList.remove(dragoverClass);
+
+			const draggedKey = e.dataTransfer.getData("text/x-kanban-swimlane");
+			const targetKey = label.dataset.swimlaneKey;
+			if (!targetKey || !draggedKey || draggedKey === targetKey) return;
+
+			const swimLanePropId = this.swimLanePropertyId;
+			if (!swimLanePropId) return;
+
+			// Read visible row order from the DOM. With filters/search active,
+			// hidden rows aren't here; mergeReorderedVisibleKeys anchors them.
+			const visibleOrder = Array.from(
+				this.boardEl!.querySelectorAll(".kanban-view__swimlane-label[data-swimlane-key]")
+			)
+				.map((el) => (el as HTMLElement).dataset.swimlaneKey)
+				.filter((k): k is string => !!k);
+
+			// Reorder within the visible list
+			const dragIndex = visibleOrder.indexOf(draggedKey);
+			const dropIndex = visibleOrder.indexOf(targetKey);
+			if (dragIndex === -1 || dropIndex === -1) return;
+
+			const reorderedVisible = [...visibleOrder];
+			reorderedVisible.splice(dragIndex, 1);
+			reorderedVisible.splice(dropIndex, 0, draggedKey);
+
+			// Merge onto the previous saved order so hidden rows aren't lost.
+			const previousOrder = this.swimLaneOrders[swimLanePropId] ?? [];
+			const mergedOrder = mergeReorderedVisibleKeys(previousOrder, reorderedVisible);
+
+			await this.saveSwimLaneOrder(swimLanePropId, mergedOrder);
+			await this.render();
+		});
+
+		label.addEventListener("dragend", () => {
+			label.classList.remove(draggingClass);
+		});
+	}
+
 	private setupColumnDragDrop(
 		column: HTMLElement,
 		cardsContainer: HTMLElement,
@@ -1368,8 +1455,9 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Drag over handler
 		column.addEventListener("dragover", (e: DragEvent) => {
-			// Only handle task drags (not column drags)
+			// Only handle task drags (not column or swimlane-label drags)
 			if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
@@ -1390,8 +1478,9 @@ export class KanbanView extends BasesViewBase {
 
 		// Drop handler
 		column.addEventListener("drop", async (e: DragEvent) => {
-			// Only handle task drags (not column drags)
+			// Only handle task drags (not column or swimlane-label drags)
 			if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 
@@ -1476,6 +1565,9 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Drag over handler
 		cell.addEventListener("dragover", (e: DragEvent) => {
+			// Bail before preventDefault so swimlane-label drags pass through to
+			// the label drop targets — otherwise we'd visibly highlight the cell.
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
@@ -1496,6 +1588,8 @@ export class KanbanView extends BasesViewBase {
 
 		// Drop handler
 		cell.addEventListener("drop", async (e: DragEvent) => {
+			// Same MIME guard as dragover — keep label drops from being claimed here.
+			if (e.dataTransfer?.types.includes("text/x-kanban-swimlane")) return;
 			e.preventDefault();
 			e.stopPropagation();
 
@@ -3230,6 +3324,17 @@ export class KanbanView extends BasesViewBase {
 			this.config.set("columnOrder", orderJson);
 		} catch (error) {
 			console.error("[KanbanView] Failed to save column order:", error);
+		}
+	}
+
+	private async saveSwimLaneOrder(swimLanePropId: string, order: string[]): Promise<void> {
+		this.swimLaneOrders[swimLanePropId] = order;
+
+		try {
+			const orderJson = JSON.stringify(this.swimLaneOrders);
+			this.config.set("swimLaneOrder", orderJson);
+		} catch (error) {
+			console.error("[KanbanView] Failed to save swim lane order:", error);
 		}
 	}
 

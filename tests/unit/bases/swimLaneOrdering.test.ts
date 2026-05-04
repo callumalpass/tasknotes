@@ -1,6 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
 import {
 	mergeUserSwimLaneOrder,
+	mergeReorderedVisibleKeys,
 	parseSwimLaneOrderConfig,
 } from "../../../src/bases/swimLaneOrdering";
 
@@ -80,5 +81,58 @@ describe("parseSwimLaneOrderConfig", () => {
 		expect(parseSwimLaneOrderConfig(input)).toEqual({
 			good: ["a", "b"],
 		});
+	});
+});
+
+describe("mergeReorderedVisibleKeys", () => {
+	it("returns reordered keys as-is when nothing is hidden", () => {
+		const result = mergeReorderedVisibleKeys(
+			["A", "B", "C"],
+			["C", "A", "B"]
+		);
+		expect(result).toEqual(["C", "A", "B"]);
+	});
+
+	it("anchors a single hidden key at its previous position", () => {
+		// prev=[A,B,C,D], B hidden, user reorders visible to [D,A,C]
+		const result = mergeReorderedVisibleKeys(
+			["A", "B", "C", "D"],
+			["D", "A", "C"]
+		);
+		expect(result).toEqual(["D", "B", "A", "C"]);
+	});
+
+	it("anchors multiple hidden keys at their previous positions", () => {
+		// prev=[A,B,C,D,E], B and D hidden, user reorders visible to [E,A,C]
+		const result = mergeReorderedVisibleKeys(
+			["A", "B", "C", "D", "E"],
+			["E", "A", "C"]
+		);
+		expect(result).toEqual(["E", "B", "A", "D", "C"]);
+	});
+
+	it("appends newly visible keys (not in previousOrder) to the end", () => {
+		// prev=[A,B,C], all visible, NEW just appeared and was placed first by user
+		const result = mergeReorderedVisibleKeys(
+			["A", "B", "C"],
+			["NEW", "A", "B", "C"]
+		);
+		// Visible positions in prev fill from reorderedVisibleKeys[0..2],
+		// then "NEW" goes at the end as a leftover.
+		expect(result).toEqual(["NEW", "A", "B", "C"]);
+	});
+
+	it("preserves a previous key that is neither visible nor in the reorder", () => {
+		// prev=[A,B,C], B hidden and not in visible list, user reorders [C,A]
+		const result = mergeReorderedVisibleKeys(
+			["A", "B", "C"],
+			["C", "A"]
+		);
+		expect(result).toEqual(["C", "B", "A"]);
+	});
+
+	it("returns previousOrder unchanged when reorderedVisibleKeys is empty", () => {
+		const result = mergeReorderedVisibleKeys(["A", "B", "C"], []);
+		expect(result).toEqual(["A", "B", "C"]);
 	});
 });

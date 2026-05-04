@@ -21,6 +21,36 @@ export function parseSwimLaneOrderConfig(value: unknown): Record<string, string[
 	return result;
 }
 
+/**
+ * Merge a reordered list of visible swimlane keys onto the previous saved order.
+ * Used after a drag-to-reorder when filters/search may be hiding rows: the DOM
+ * only reports visible-row order, so we anchor hidden keys at their previous
+ * positions while the visible slots take the new order in sequence.
+ */
+export function mergeReorderedVisibleKeys(
+	previousOrder: string[],
+	reorderedVisibleKeys: string[]
+): string[] {
+	const visibleSet = new Set(reorderedVisibleKeys);
+	const result: string[] = [];
+	let visibleCursor = 0;
+	for (const key of previousOrder) {
+		if (visibleSet.has(key)) {
+			// Visible slot — take the next key from the reordered list
+			result.push(reorderedVisibleKeys[visibleCursor++]);
+		} else {
+			// Hidden — anchor in place
+			result.push(key);
+		}
+	}
+	// Any reordered keys not consumed (newly visible, not in previousOrder)
+	// go at the end
+	for (; visibleCursor < reorderedVisibleKeys.length; visibleCursor++) {
+		result.push(reorderedVisibleKeys[visibleCursor]);
+	}
+	return result;
+}
+
 export function mergeUserSwimLaneOrder(
 	savedOrder: string[],
 	defaultOrderedKeys: string[]
