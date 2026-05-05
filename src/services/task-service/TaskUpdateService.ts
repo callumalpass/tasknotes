@@ -13,8 +13,11 @@ import { generateUniqueFilename } from "../../utils/filenameGenerator";
 import {
 	getCurrentDateString,
 	getCurrentTimestamp,
-	getDatePart,
 } from "../../utils/dateUtils";
+import {
+	getGoogleCalendarRecurringExceptionForScheduledChange,
+	shouldTrackGoogleCalendarRecurringException,
+} from "../googleCalendarRecurringException";
 
 export interface TaskUpdateServiceDependencies {
 	plugin: TaskNotesPlugin;
@@ -336,17 +339,15 @@ export class TaskUpdateService {
 
 		if (
 			Object.prototype.hasOwnProperty.call(updates, "scheduled") &&
-			updates.scheduled !== originalTask.scheduled &&
-			this.shouldTrackGoogleCalendarRecurringException(
-				originalTask.recurrence,
-				originalTask.recurrence_anchor
-			)
+			updates.scheduled !== originalTask.scheduled
 		) {
-			const priorOccurrence = this.getRecurringExceptionOriginalDate(originalTask);
-			if (priorOccurrence) {
-				const nextScheduled = getDatePart(updates.scheduled || "");
+			const exceptionChange = getGoogleCalendarRecurringExceptionForScheduledChange(
+				originalTask,
+				updates.scheduled
+			);
+			if (exceptionChange.changed) {
 				recurrenceUpdates.googleCalendarExceptionOriginalScheduled =
-					nextScheduled && nextScheduled !== priorOccurrence ? priorOccurrence : undefined;
+					exceptionChange.originalScheduled;
 			}
 		}
 
@@ -356,24 +357,12 @@ export class TaskUpdateService {
 			updates.recurrence_anchor !== undefined
 				? updates.recurrence_anchor
 				: originalTask.recurrence_anchor;
-		if (!this.shouldTrackGoogleCalendarRecurringException(nextRecurrence, nextAnchor)) {
+		if (!shouldTrackGoogleCalendarRecurringException(nextRecurrence, nextAnchor)) {
 			recurrenceUpdates.googleCalendarExceptionOriginalScheduled = undefined;
 			recurrenceUpdates.googleCalendarMovedOriginalDates = undefined;
 		}
 
 		return recurrenceUpdates;
-	}
-
-	private shouldTrackGoogleCalendarRecurringException(
-		recurrence?: string,
-		recurrenceAnchor?: "scheduled" | "completion"
-	): boolean {
-		return Boolean(recurrence) && (recurrenceAnchor || "scheduled") === "scheduled";
-	}
-
-	private getRecurringExceptionOriginalDate(task: TaskInfo): string | undefined {
-		const original = task.googleCalendarExceptionOriginalScheduled || task.scheduled || task.due;
-		return getDatePart(original || "");
 	}
 
 	private removeUnsetMappedFields(

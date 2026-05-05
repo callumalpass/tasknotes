@@ -103,6 +103,23 @@ function createGoogleSyncPlugin(frontmatter: Record<string, any> = {}) {
 	} as any;
 }
 
+function createScheduledAnchorRecurringTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
+	return {
+		path: "TaskNotes/Tasks/Phone pharmacy.md",
+		title: "Phone pharmacy",
+		status: "ready",
+		priority: "normal",
+		archived: false,
+		scheduled: "2026-05-06",
+		recurrence: "DTSTART:20260506;FREQ=WEEKLY;INTERVAL=4;BYDAY=WE",
+		recurrence_anchor: "scheduled",
+		complete_instances: [],
+		skipped_instances: [],
+		googleCalendarEventId: "master-event-id",
+		...overrides,
+	} as TaskInfo;
+}
+
 describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -162,6 +179,72 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 
 		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBe("2026-04-13");
 		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBe("2026-04-13");
+	});
+
+	it("ignores stale exception metadata when bulk-moving an on-pattern scheduled occurrence", async () => {
+		const frontmatter: Record<string, any> = {};
+		const plugin = createGoogleSyncPlugin(frontmatter);
+		const taskService = new TaskService(plugin);
+		const task = createScheduledAnchorRecurringTask({
+			googleCalendarExceptionOriginalScheduled: "2026-05-11",
+		});
+
+		const updatedTask = await taskService.updateTask(task, {
+			scheduled: "2026-05-08",
+		});
+
+		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
+		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
+	});
+
+	it("ignores stale exception metadata when a single scheduled property update moves an on-pattern occurrence", async () => {
+		const frontmatter: Record<string, any> = {};
+		const plugin = createGoogleSyncPlugin(frontmatter);
+		const taskService = new TaskService(plugin);
+		const task = createScheduledAnchorRecurringTask({
+			googleCalendarExceptionOriginalScheduled: "2026-05-11",
+		});
+
+		const updatedTask = await taskService.updateProperty(task, "scheduled", "2026-05-08");
+
+		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
+		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
+	});
+
+	it("preserves the original series date when an already moved occurrence moves again", async () => {
+		const frontmatter: Record<string, any> = {};
+		const plugin = createGoogleSyncPlugin(frontmatter);
+		const taskService = new TaskService(plugin);
+		const task = createScheduledAnchorRecurringTask({
+			scheduled: "2026-05-08",
+			googleCalendarExceptionOriginalScheduled: "2026-05-06",
+		});
+
+		const updatedTask = await taskService.updateTask(task, {
+			scheduled: "2026-05-09",
+		});
+
+		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
+		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
+	});
+
+	it("clears pending exception metadata when a moved occurrence returns to its original date", async () => {
+		const frontmatter: Record<string, any> = {
+			googleCalendarExceptionOriginalScheduled: "2026-05-06",
+		};
+		const plugin = createGoogleSyncPlugin(frontmatter);
+		const taskService = new TaskService(plugin);
+		const task = createScheduledAnchorRecurringTask({
+			scheduled: "2026-05-08",
+			googleCalendarExceptionOriginalScheduled: "2026-05-06",
+		});
+
+		const updatedTask = await taskService.updateTask(task, {
+			scheduled: "2026-05-06",
+		});
+
+		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBeUndefined();
+		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBeUndefined();
 	});
 
 	it("adds moved original dates to the recurring master's EXDATE list", () => {

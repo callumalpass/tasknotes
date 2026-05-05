@@ -53,6 +53,10 @@ import TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
 import { TaskCreationService } from "./task-service/TaskCreationService";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
+import {
+	getGoogleCalendarRecurringExceptionForScheduledChange,
+	shouldTrackGoogleCalendarRecurringException,
+} from "./googleCalendarRecurringException";
 
 export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
@@ -125,37 +129,20 @@ export class TaskService {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
-	private shouldTrackGoogleCalendarRecurringException(
-		recurrence?: string,
-		recurrenceAnchor?: "scheduled" | "completion"
-	): boolean {
-		return Boolean(recurrence) && (recurrenceAnchor || "scheduled") === "scheduled";
-	}
-
 	private applyGoogleCalendarRecurringExceptionForScheduledChange(
 		task: TaskInfo,
 		newScheduledValue: unknown,
 		updatedTask: TaskInfo
 	): void {
-		if (
-			!this.shouldTrackGoogleCalendarRecurringException(task.recurrence, task.recurrence_anchor) ||
-			newScheduledValue === task.scheduled
-		) {
+		const exceptionChange = getGoogleCalendarRecurringExceptionForScheduledChange(
+			task,
+			newScheduledValue
+		);
+		if (!exceptionChange.changed) {
 			return;
 		}
 
-		const priorOccurrence =
-			task.googleCalendarExceptionOriginalScheduled || task.scheduled || task.due;
-		if (!priorOccurrence) {
-			return;
-		}
-
-		if (!newScheduledValue || newScheduledValue === priorOccurrence) {
-			updatedTask.googleCalendarExceptionOriginalScheduled = undefined;
-			return;
-		}
-
-		updatedTask.googleCalendarExceptionOriginalScheduled = getDatePart(priorOccurrence);
+		updatedTask.googleCalendarExceptionOriginalScheduled = exceptionChange.originalScheduled;
 	}
 
 	private resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
@@ -189,7 +176,7 @@ export class TaskService {
 		recurrenceAnchor: TaskInfo["recurrence_anchor"],
 		updatedTask: TaskInfo
 	): void {
-		if (this.shouldTrackGoogleCalendarRecurringException(recurrence, recurrenceAnchor)) {
+		if (shouldTrackGoogleCalendarRecurringException(recurrence, recurrenceAnchor)) {
 			return;
 		}
 

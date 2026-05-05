@@ -28,6 +28,7 @@ Example:
 
 - (#1696) Fixed Google Calendar recurring tasks creating duplicate moved occurrences instead of converging on one series instance plus one detached exception event
   - Scheduled-anchor recurring moves now preserve the original series date, add the correct Google `EXDATE`, and create or remove the detached Google event as the moved occurrence is resolved
+  - Stale recurring exception metadata is now ignored when moving an on-pattern scheduled occurrence, preventing the old exception date from replacing the true original series date
   - Archive, delete, and retry flows now clean up both the recurring master link and any detached exception link so stale Google events do not linger
   - Thanks to @martin-forge for reporting, reproducing, and patching the recurring exception sync failure
 - (#1823) Fixed zero-duration timed external calendar events rendering on multiple days in list-style calendar views
