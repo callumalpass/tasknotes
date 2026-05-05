@@ -28,7 +28,8 @@ jest.mock('../../../src/utils/dateUtils', () => {
 
 jest.mock('../../../src/utils/filenameGenerator', () => ({
   generateTaskFilename: jest.fn((context) => `${context.title.toLowerCase().replace(/\s+/g, '-')}`),
-  generateUniqueFilename: jest.fn((base) => base)
+  generateUniqueFilename: jest.fn((base) => base),
+  sanitizeForFilename: jest.fn((input) => input.trim().replace(/[<>:"/\\|?*#[\]]/g, ""))
 }));
 
 jest.mock('../../../src/utils/helpers', () => ({
@@ -183,6 +184,29 @@ describe('TaskService', () => {
       expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
         'Tasks/Projects/MyProject/inline-task.md',
         expect.stringContaining('title: Inline Task')
+      );
+    });
+
+    it('should route TaskForge inline conversions to the canonical TaskNotes list folder', async () => {
+      mockPlugin.settings.tasksFolder = 'TaskNotes';
+      mockPlugin.settings.inlineTaskConvertFolder = '{{currentNotePath}}';
+
+      const mockCurrentFile = new TFile('Projects/TaskForge/legal.md');
+      Object.defineProperty(mockCurrentFile, 'basename', { value: 'legal', writable: false });
+      Object.defineProperty(mockCurrentFile, 'extension', { value: 'md', writable: false });
+      mockCurrentFile.parent = { path: 'Projects/TaskForge' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Follow up on lawyers',
+        creationContext: 'inline-conversion'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Projects/TaskNotes/legal/follow-up-on-lawyers.md',
+        expect.stringContaining('title: Follow up on lawyers')
       );
     });
 

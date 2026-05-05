@@ -14,6 +14,7 @@ import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
+import { formatTaskTitle } from "../utils/taskTitleFormatter";
 import { TranslationKey } from "../i18n";
 
 export class InstantTaskConvertService {
@@ -254,6 +255,11 @@ export class InstantTaskConvertService {
 				new Notice(this.translate("services.instantTaskConvert.notices.invalidTaskData"));
 				return;
 			}
+
+			parsedData = {
+				...parsedData,
+				title: this.formatConvertedTaskTitle(currentLine, parsedData).canonicalTitle,
+			};
 
 			// Create the task file with default settings and details
 			const file = await this.createTaskFile(parsedData, details);
@@ -694,6 +700,23 @@ export class InstantTaskConvertService {
 	private sanitizeTitle(title: string): string {
 		if (!title) return "";
 		return title.trim().substring(0, 200);
+	}
+
+	private formatConvertedTaskTitle(originalLine: string, parsedData: ParsedTaskData) {
+		const currentFile = this.plugin.app.workspace.getActiveFile();
+		return formatTaskTitle(
+			{
+				rawLine: originalLine,
+				parsedTitle: parsedData.title,
+				sourcePath: currentFile?.path,
+				sourceFolder: currentFile?.parent?.path,
+				sourceBasename: currentFile?.basename,
+				tags: parsedData.tags,
+				priority: parsedData.priority,
+				status: parsedData.status,
+			},
+			this.plugin.settings.taskTitleFormatting
+		);
 	}
 
 	/**

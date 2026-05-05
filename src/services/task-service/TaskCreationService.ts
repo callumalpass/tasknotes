@@ -10,6 +10,7 @@ import { FilenameContext, generateTaskFilename, generateUniqueFilename } from ".
 import { ensureFolderExists } from "../../utils/helpers";
 import { getCurrentTimestamp } from "../../utils/dateUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
+import { formatTaskTitle } from "../../utils/taskTitleFormatter";
 import type TaskNotesPlugin from "../../main";
 
 interface TemplateApplicationResult {
@@ -247,6 +248,23 @@ export class TaskCreationService {
 			taskData.creationContext === "inline-conversion" ||
 			taskData.creationContext === "modal-inline-creation"
 		) {
+			const currentFile = plugin.app.workspace.getActiveFile();
+			const formatted = formatTaskTitle(
+				{
+					parsedTitle: taskData.title,
+					sourcePath: currentFile?.path,
+					sourceFolder: currentFile?.parent?.path,
+					sourceBasename: currentFile?.basename,
+					tags: taskData.tags,
+					priority: taskData.priority,
+					status: taskData.status,
+				},
+				plugin.settings.taskTitleFormatting
+			);
+			if (formatted.noteFolder) {
+				return this.deps.processFolderTemplate(formatted.noteFolder, taskData);
+			}
+
 			const inlineFolder = plugin.settings.inlineTaskConvertFolder || "";
 			if (inlineFolder.trim()) {
 				folder = inlineFolder;
@@ -254,7 +272,6 @@ export class TaskCreationService {
 					inlineFolder.includes("{{currentNotePath}}") ||
 					inlineFolder.includes("{{currentNoteTitle}}")
 				) {
-					const currentFile = plugin.app.workspace.getActiveFile();
 					if (inlineFolder.includes("{{currentNotePath}}")) {
 						const currentFolderPath = currentFile?.parent?.path || "";
 						folder = folder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);

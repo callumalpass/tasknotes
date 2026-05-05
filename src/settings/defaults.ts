@@ -7,6 +7,7 @@ import {
 	ProjectAutosuggestSettings,
 	NLPTriggersConfig,
 	GoogleCalendarExportSettings,
+	TaskTitleFormattingSettings,
 } from "../types/settings";
 
 /**
@@ -226,6 +227,13 @@ export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 	propertyValue: "",
 };
 
+export const DEFAULT_TASK_TITLE_FORMATTING: TaskTitleFormattingSettings = {
+	enabled: true,
+	preset: "taskforge",
+	maxLength: 200,
+	rules: [],
+};
+
 // Default NLP triggers configuration
 export const DEFAULT_NLP_TRIGGERS: NLPTriggersConfig = {
 	triggers: [
@@ -258,7 +266,7 @@ export const DEFAULT_NLP_TRIGGERS: NLPTriggersConfig = {
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
-	tasksFolder: "TaskNotes/Tasks",
+	tasksFolder: "TaskNotes",
 	moveArchivedTasks: false,
 	archiveFolder: "TaskNotes/Archive",
 	taskTag: "task",
@@ -312,6 +320,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 
 	// Inline task conversion defaults
 	inlineTaskConvertFolder: "{{currentNotePath}}",
+	taskTitleFormatting: DEFAULT_TASK_TITLE_FORMATTING,
 	// Performance defaults
 	disableNoteIndexing: false,
 	// Suggestion performance defaults
