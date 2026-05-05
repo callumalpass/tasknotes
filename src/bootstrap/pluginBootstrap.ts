@@ -45,6 +45,7 @@ import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
+type FileUpdatedEventData = { path: string; file?: unknown };
 
 export function registerTaskNotesIcon(): void {
 	addIcon(
@@ -270,7 +271,25 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 			plugin.taskCalendarSyncService = new (await import("../services/TaskCalendarSyncService"))
 				.TaskCalendarSyncService(plugin, plugin.googleCalendarService);
+			await plugin.taskCalendarSyncService.initializeExternalFileReconciliation();
 			plugin.taskCalendarSyncService.startDeletionQueueProcessor();
+
+			plugin.registerEvent(
+				plugin.emitter.on("file-updated", (data: FileUpdatedEventData) => {
+					if (!plugin.taskCalendarSyncService || !data?.file) {
+						return;
+					}
+
+					plugin.taskCalendarSyncService
+						.handleExternalTaskFileUpdated(data.path)
+						.catch((error) => {
+							console.warn(
+								"Failed to reconcile externally updated task with Google Calendar:",
+								error
+							);
+						});
+				})
+			);
 
 			plugin.registerEvent(
 				plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
@@ -279,12 +298,18 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					}
 
 					const eventIdKey = plugin.fieldMapper.toUserField("googleCalendarEventId");
+					const exceptionEventIdKey = plugin.fieldMapper.toUserField("googleCalendarExceptionEventId");
 					const prevCache = data.prevCache as { frontmatter?: Record<string, unknown> } | undefined;
 					const eventId = prevCache?.frontmatter?.[eventIdKey];
+					const exceptionEventId = prevCache?.frontmatter?.[exceptionEventIdKey];
 
-					if (typeof eventId === "string" && eventId.length > 0) {
+					const eventIds = [eventId, exceptionEventId].filter(
+						(id): id is string => typeof id === "string" && id.length > 0
+					);
+
+					if (eventIds.length > 0) {
 						plugin.taskCalendarSyncService
-							.deleteTaskFromCalendarByPath(data.path, eventId)
+							.deleteTaskFromCalendarByPath(data.path, ...eventIds)
 							.catch((error) => {
 								console.warn(
 									"Failed to delete task from Google Calendar on file deletion:",

@@ -31,6 +31,9 @@ const GOOGLE_CALENDAR_EVENT_INDEX_KEY = "googleCalendarEventIndex";
 /** Persistent plugin-data key for task paths that need Google Calendar sync replay */
 const GOOGLE_CALENDAR_SYNC_QUEUE_KEY = "googleCalendarSyncQueue";
 
+/** Persistent plugin-data key for the last task state known to match Google Calendar */
+const GOOGLE_CALENDAR_FINGERPRINTS_KEY = "googleCalendarTaskFingerprints";
+
 /** How often to retry queued Google Calendar recovery work */
 const RECOVERY_QUEUE_PROCESSOR_INTERVAL_MS = 60000;
 
@@ -76,6 +79,9 @@ export class TaskCalendarSyncService {
 	/** Event IDs written during this session, used while Obsidian metadata catches up */
 	private taskEventIdCache: Map<string, string> = new Map();
 
+	/** Last calendar-relevant task fingerprint persisted after successful syncs */
+	private calendarFingerprints: Map<string, string> | null = null;
+
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
@@ -97,6 +103,7 @@ export class TaskCalendarSyncService {
 		this.pendingTasks.clear();
 		this.pendingEventCreates.clear();
 		this.taskEventIdCache.clear();
+		this.calendarFingerprints = null;
 	}
 
 	/**
@@ -248,6 +255,125 @@ export class TaskCalendarSyncService {
 		const data = (await this.plugin.loadData()) || {};
 		data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] = queue;
 		await this.plugin.saveData(data);
+	}
+
+	private async getCalendarFingerprints(): Promise<Map<string, string>> {
+		if (this.calendarFingerprints) {
+			return this.calendarFingerprints;
+		}
+
+		const data = await this.plugin.loadData();
+		const rawFingerprints = data?.[GOOGLE_CALENDAR_FINGERPRINTS_KEY];
+		const fingerprints = new Map<string, string>();
+
+		if (rawFingerprints && typeof rawFingerprints === "object") {
+			for (const [path, fingerprint] of Object.entries(rawFingerprints)) {
+				if (typeof path === "string" && typeof fingerprint === "string") {
+					fingerprints.set(path, fingerprint);
+				}
+			}
+		}
+
+		this.calendarFingerprints = fingerprints;
+		return fingerprints;
+	}
+
+	private async saveCalendarFingerprints(fingerprints?: Map<string, string>): Promise<void> {
+		const map = fingerprints || (await this.getCalendarFingerprints());
+		const data = (await this.plugin.loadData()) || {};
+		data[GOOGLE_CALENDAR_FINGERPRINTS_KEY] = Object.fromEntries(map.entries());
+		await this.plugin.saveData(data);
+	}
+
+	private getCalendarRelevantFingerprint(task: TaskInfo): string {
+		const fingerprintData = {
+			title: task.title || "",
+			status: task.status || "",
+			priority: task.priority || "",
+			archived: !!task.archived,
+			scheduled: task.scheduled || null,
+			due: task.due || null,
+			timeEstimate: task.timeEstimate ?? null,
+			recurrence: task.recurrence || null,
+			recurrence_anchor: task.recurrence_anchor || null,
+			complete_instances: task.complete_instances || [],
+			skipped_instances: task.skipped_instances || [],
+			reminders: task.reminders || [],
+			tags: task.tags || [],
+			contexts: task.contexts || [],
+			projects: task.projects || [],
+			googleCalendarExceptionOriginalScheduled:
+				task.googleCalendarExceptionOriginalScheduled || null,
+			googleCalendarMovedOriginalDates: task.googleCalendarMovedOriginalDates || [],
+		};
+
+		return JSON.stringify(fingerprintData);
+	}
+
+	private parseCalendarRelevantFingerprint(
+		fingerprint: string | undefined
+	): Record<string, unknown> | null {
+		if (!fingerprint) {
+			return null;
+		}
+
+		try {
+			const parsed = JSON.parse(fingerprint);
+			return parsed && typeof parsed === "object" ? parsed : null;
+		} catch {
+			return null;
+		}
+	}
+
+	private getTaskStateFromFingerprint(
+		task: TaskInfo,
+		fingerprint: string | undefined
+	): TaskInfo | undefined {
+		const fingerprintData = this.parseCalendarRelevantFingerprint(fingerprint);
+		if (!fingerprintData) {
+			return undefined;
+		}
+
+		const recurrence =
+			typeof fingerprintData.recurrence === "string"
+				? fingerprintData.recurrence
+				: undefined;
+		const recurrence_anchor =
+			fingerprintData.recurrence_anchor === "scheduled" ||
+			fingerprintData.recurrence_anchor === "completion"
+				? fingerprintData.recurrence_anchor
+				: undefined;
+
+		return {
+			...task,
+			recurrence,
+			recurrence_anchor,
+		};
+	}
+
+	private hasTaskCalendarLink(task: TaskInfo): boolean {
+		return !!this.getTaskEventId(task) || this.hasStoredRecurringExceptionMetadata(task);
+	}
+
+	private async recordCalendarSyncFingerprint(task: TaskInfo): Promise<void> {
+		const fingerprints = await this.getCalendarFingerprints();
+		const fingerprint = this.getCalendarRelevantFingerprint(task);
+
+		if (fingerprints.get(task.path) === fingerprint) {
+			return;
+		}
+
+		fingerprints.set(task.path, fingerprint);
+		await this.saveCalendarFingerprints(fingerprints);
+	}
+
+	private async removeCalendarSyncFingerprint(taskPath: string): Promise<void> {
+		const fingerprints = await this.getCalendarFingerprints();
+		if (!fingerprints.delete(taskPath)) {
+			return;
+		}
+
+		await this.saveCalendarFingerprints(fingerprints);
 	}
 
 	private async upsertEventIndex(
@@ -505,6 +631,98 @@ export class TaskCalendarSyncService {
 	async processRecoveryQueues(): Promise<void> {
 		await this.processDeletionQueue();
 		await this.processPendingSyncQueue();
+	}
+
+	async initializeExternalFileReconciliation(): Promise<void> {
+		const settings = this.plugin.settings.googleCalendarExport;
+		if (!settings.enabled) {
+			return;
+		}
+
+		const fingerprints = await this.getCalendarFingerprints();
+		const tasks = await this.plugin.cacheManager.getAllTasks();
+		const activeTaskPaths = new Set<string>();
+		let changed = false;
+
+		for (const task of tasks) {
+			activeTaskPaths.add(task.path);
+			const fingerprint = this.getCalendarRelevantFingerprint(task);
+			const previousFingerprint = fingerprints.get(task.path);
+
+			if (
+				this.hasTaskCalendarLink(task) &&
+				previousFingerprint &&
+				previousFingerprint !== fingerprint
+			) {
+				if (settings.syncOnTaskUpdate) {
+					await this.executeTaskUpdate(
+						task,
+						this.getTaskStateFromFingerprint(task, previousFingerprint)
+					);
+				} else {
+					fingerprints.set(task.path, fingerprint);
+					changed = true;
+				}
+				continue;
+			}
+
+			if (previousFingerprint !== fingerprint) {
+				fingerprints.set(task.path, fingerprint);
+				changed = true;
+			}
+		}
+
+		for (const path of Array.from(fingerprints.keys())) {
+			if (!activeTaskPaths.has(path)) {
+				fingerprints.delete(path);
+				changed = true;
+			}
+		}
+
+		if (changed) {
+			await this.saveCalendarFingerprints(fingerprints);
+		}
+	}
+
+	async handleExternalTaskFileUpdated(taskPath: string): Promise<void> {
+		const settings = this.plugin.settings.googleCalendarExport;
+		if (!settings.enabled) {
+			return;
+		}
+
+		const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
+		if (!task) {
+			await this.removeCalendarSyncFingerprint(taskPath);
+			return;
+		}
+
+		const fingerprints = await this.getCalendarFingerprints();
+		const fingerprint = this.getCalendarRelevantFingerprint(task);
+		const previousFingerprint = fingerprints.get(task.path);
+
+		if (previousFingerprint === fingerprint) {
+			return;
+		}
+
+		if (this.hasTaskCalendarLink(task)) {
+			if (settings.syncOnTaskUpdate) {
+				await this.updateTaskInCalendar(task);
+			} else {
+				await this.recordCalendarSyncFingerprint(task);
+			}
+			return;
+		}
+
+		if (this.isTaskCalendarEligible(task)) {
+			if (settings.syncOnTaskCreate) {
+				await this.syncTaskToCalendar(task);
+			} else {
+				await this.recordCalendarSyncFingerprint(task);
+			}
+			return;
+		}
+
+		await this.recordCalendarSyncFingerprint(task);
 	}
 
 	async recoverDeletedTaskEventsFromIndex(): Promise<void> {
@@ -1606,9 +1824,12 @@ export class TaskCalendarSyncService {
 				return false;
 			}
 
-			// Check if recurrence was removed (previous had recurrence, current doesn't)
-			const clearRecurrence = !!(previous?.recurrence && !task.recurrence);
-			
+			const clearRecurrence = !!(
+				previous &&
+				this.shouldSyncAsRecurring(previous) &&
+				!this.shouldSyncAsRecurring(task)
+			);
+
 			const eventData = this.taskToCalendarEvent(task, clearRecurrence);
 			if (!eventData) {
 				console.warn("[TaskCalendarSync] Could not convert task to event:", task.path);
@@ -1642,6 +1863,7 @@ export class TaskCalendarSyncService {
 					await this.withGoogleRateLimit(() =>
 						this.googleCalendarService.updateEvent(targetCalendarId, eventId, eventData)
 					);
+					await this.recordCalendarSyncFingerprint(task);
 					return true;
 				}
 
@@ -1661,6 +1883,7 @@ export class TaskCalendarSyncService {
 				await this.syncRecurringExceptionEvent(task);
 			}
 
+			await this.recordCalendarSyncFingerprint(task);
 			return true;
 		} catch (error: any) {
 			// Check if it's a 404 error (event was deleted externally)
@@ -1777,7 +2000,10 @@ export class TaskCalendarSyncService {
 	/**
 	 * Internal method that performs the actual task update sync
 	 */
-	private async executeTaskUpdate(task: TaskInfo): Promise<void> {
+	private async executeTaskUpdate(
+		task: TaskInfo,
+		previousOverride?: TaskInfo
+	): Promise<void> {
 		const existingEventId = this.getTaskEventId(task);
 
 		// If task no longer meets sync criteria, delete the event
@@ -1786,6 +2012,8 @@ export class TaskCalendarSyncService {
 				const deleted = await this.deleteTaskFromCalendar(task);
 				if (!deleted) {
 					console.warn(`Google Calendar deletion queued for ${task.path}`);
+				} else {
+					await this.removeCalendarSyncFingerprint(task.path);
 				}
 			}
 			// Clean up previous state
@@ -1794,13 +2022,14 @@ export class TaskCalendarSyncService {
 		}
 
 		// Get previous state for recurrence change detection
-		const previousState = this.previousTaskState.get(task.path);
+		const previousState = previousOverride || this.previousTaskState.get(task.path);
 
 		// Sync the updated task
-		await this.syncTaskToCalendar(task, previousState);
-		
-		// Update previous state with current task
-		this.previousTaskState.set(task.path, task);
+		const synced = await this.syncTaskToCalendar(task, previousState);
+		if (synced) {
+			// Update previous state with current task
+			this.previousTaskState.set(task.path, task);
+		}
 	}
 
 	/**
@@ -1821,6 +2050,7 @@ export class TaskCalendarSyncService {
 
 		try {
 			await completionPromise;
+			await this.recordCalendarSyncFingerprint(task);
 		} finally {
 			if (this.inFlightSyncs.get(task.path) === completionPromise) {
 				this.inFlightSyncs.delete(task.path);
@@ -1956,6 +2186,7 @@ export class TaskCalendarSyncService {
 		}
 
 		await this.clearTaskGoogleCalendarMetadata(task.path);
+		await this.removeCalendarSyncFingerprint(task.path);
 		return true;
 	}
 
@@ -1996,6 +2227,9 @@ export class TaskCalendarSyncService {
 		}
 
 		// No need to remove from frontmatter since the task file is being deleted.
+		if (results.every(Boolean)) {
+			await this.removeCalendarSyncFingerprint(taskPath);
+		}
 		return results.every(Boolean);
 	}
 

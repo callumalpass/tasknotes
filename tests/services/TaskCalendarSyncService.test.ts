@@ -39,6 +39,8 @@ describe("TaskCalendarSyncService", () => {
             priorityManager: {
                 getPriorityConfig: jest.fn((priority: string) => ({ label: priority === "2-high" ? "High" : "Medium" }))
             },
+            loadData: jest.fn().mockResolvedValue({}),
+            saveData: jest.fn().mockResolvedValue(undefined),
             i18n: {
                 translate: jest.fn((key: string, params?: Record<string, string | number>) => {
                     const translations: Record<string, string> = {
