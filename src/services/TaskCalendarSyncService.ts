@@ -649,11 +649,7 @@ export class TaskCalendarSyncService {
 			const fingerprint = this.getCalendarRelevantFingerprint(task);
 			const previousFingerprint = fingerprints.get(task.path);
 
-			if (
-				this.hasTaskCalendarLink(task) &&
-				previousFingerprint &&
-				previousFingerprint !== fingerprint
-			) {
+			if (this.hasTaskCalendarLink(task) && previousFingerprint !== fingerprint) {
 				if (settings.syncOnTaskUpdate) {
 					await this.executeTaskUpdate(
 						task,

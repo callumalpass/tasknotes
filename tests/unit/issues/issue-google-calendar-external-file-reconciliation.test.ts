@@ -151,6 +151,28 @@ describe("Google Calendar external file reconciliation", () => {
 		);
 	});
 
+	it("reconciles already-linked tasks on first startup without an existing fingerprint", async () => {
+		const task = TaskFactory.createTask({
+			path: "TaskNotes/Tasks/pre-fingerprint-linked.md",
+			title: "Pre-fingerprint linked task",
+			status: "done",
+			scheduled: "2026-05-05",
+			googleCalendarEventId: "event-1",
+		});
+		const pluginData: Record<string, any> = {};
+		const plugin = createPlugin([task], pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		await syncService.initializeExternalFileReconciliation();
+
+		expect(googleCalendarService.updateEvent).toHaveBeenCalledTimes(1);
+		expect(googleCalendarService.createEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarTaskFingerprints?.[task.path]).toBe(
+			(syncService as any).getCalendarRelevantFingerprint(task)
+		);
+	});
+
 	it("clears Google recurrence when a linked recurring task was made non-recurring while Obsidian was closed", async () => {
 		const oldTask = TaskFactory.createTask({
 			path: "TaskNotes/Tasks/offline-recurring.md",
