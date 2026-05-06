@@ -755,6 +755,22 @@ describe('TaskService', () => {
       );
     });
 
+    it.each([
+      ['recurrence_anchor', 'recurrence_anchor', 'scheduled'],
+      ['complete_instances', 'complete_instances', ['2026-05-08']],
+      ['skipped_instances', 'skipped_instances', ['2026-05-08']]
+    ] as const)('should map %s updates to %s frontmatter', async (property, frontmatterKey, value) => {
+      const frontmatter: Record<string, unknown> = {};
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementationOnce(async (_file: TFile, fn: (fm: Record<string, unknown>) => void) => {
+        fn(frontmatter);
+      });
+
+      await taskService.updateProperty(task, property, value);
+
+      expect(frontmatter[frontmatterKey]).toEqual(value);
+      expect(frontmatter.undefined).toBeUndefined();
+    });
+
     it('should use fresh task data to prevent overwrites', async () => {
       const freshTask = { ...task, priority: 'medium' };
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(freshTask);

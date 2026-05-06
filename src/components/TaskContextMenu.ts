@@ -20,11 +20,16 @@ import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
 import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
+import {
+	getScheduledDateContextValue,
+	getTaskWithScheduledDateContext,
+} from "../utils/scheduledDateContext";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	targetDate: Date;
+	scheduledDateContext?: Date;
 	onUpdate?: () => void;
 }
 
@@ -171,12 +176,23 @@ export class TaskContextMenu {
 			item.setIcon("calendar-clock");
 
 			const submenu = (item as any).setSubmenu();
+			const scheduledDateContextValue = getScheduledDateContextValue(
+				task,
+				this.options.scheduledDateContext
+			);
 			this.addDateOptions(
 				submenu,
-				task.scheduled,
+				scheduledDateContextValue,
 				async (value: string | null) => {
 					try {
-						await plugin.updateTaskProperty(task, "scheduled", value || undefined);
+						await plugin.updateTaskProperty(
+							getTaskWithScheduledDateContext(
+								task,
+								this.options.scheduledDateContext
+							),
+							"scheduled",
+							value || undefined
+						);
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);

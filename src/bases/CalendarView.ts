@@ -1878,7 +1878,16 @@ export class CalendarView extends BasesViewBase {
 	private handleEventDidMount(arg: any): void {
 		if (!arg?.event?.extendedProps) return;
 
-		const { taskInfo, timeblock, icsEvent, eventType, basesEntry } = arg.event.extendedProps;
+		const {
+			taskInfo,
+			timeblock,
+			icsEvent,
+			eventType,
+			basesEntry,
+			isRecurringInstance,
+			isNextScheduledOccurrence,
+			isPatternInstance,
+		} = arg.event.extendedProps;
 
 		// Add calendar icon to provider-managed calendar events in grid views
 		if (icsEvent && arg.view.type !== 'listWeek') {
@@ -1962,9 +1971,15 @@ export class CalendarView extends BasesViewBase {
 
 				// Use shared UTC-anchored target date logic
 				const targetDate = getTargetDateForEvent(arg);
+				const scheduledDateContext =
+					taskInfo.recurrence &&
+					(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)
+						? targetDate
+						: undefined;
 
 				cardElement = createTaskCard(enrichedTask, this.plugin, visibleProperties, this.buildTaskCardOptions({
 					targetDate: targetDate,
+					scheduledDateContext,
 				}));
 			}
 			// Render ICS events with ICSCard

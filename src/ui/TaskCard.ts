@@ -49,6 +49,10 @@ import {
 	getTaskCardPropertyLabel,
 	getTaskCardPropertyValue,
 } from "./taskCardHelpers";
+import {
+	getScheduledDateContextValue,
+	getTaskWithScheduledDateContext,
+} from "../utils/scheduledDateContext";
 
 export interface TaskCardOptions {
 	targetDate?: Date;
@@ -67,6 +71,8 @@ export interface TaskCardOptions {
 	resolveExpandedRelationshipFilterMode?: () => "inherit" | "show-all";
 	/** Paths visible in the current view after Bases/search filtering. */
 	expandedRelationshipTaskPaths?: ReadonlySet<string>;
+	/** Date represented by this card when it renders a specific recurring scheduled instance. */
+	scheduledDateContext?: Date;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -504,12 +510,16 @@ function attachDateClickHandler(
 	span: HTMLElement,
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
-	dateType: "due" | "scheduled"
+	dateType: "due" | "scheduled",
+	scheduledDateContext?: Date
 ): void {
 	prepareInteractiveControl(span);
 	span.addEventListener("click", (e) => {
 		e.stopPropagation(); // Don't trigger card click
-		const currentValue = dateType === "due" ? task.due : task.scheduled;
+		const currentValue =
+			dateType === "due"
+				? task.due
+				: getScheduledDateContextValue(task, scheduledDateContext);
 		const menu = new DateContextMenu({
 			currentValue: getDatePart(currentValue || ""),
 			currentTime: getTimePart(currentValue || ""),
@@ -523,7 +533,11 @@ function attachDateClickHandler(
 					} else {
 						finalValue = dateValue;
 					}
-					await plugin.updateTaskProperty(task, dateType, finalValue);
+					const updateTask =
+						dateType === "scheduled"
+							? getTaskWithScheduledDateContext(task, scheduledDateContext)
+							: task;
+					await plugin.updateTaskProperty(updateTask, dateType, finalValue);
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
 					console.error(`Error updating ${dateType} date:`, errorMessage);
@@ -640,7 +654,14 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	scheduled: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
-			renderScheduledDateProperty(element, value, task, plugin, options?.propertyLabels);
+			renderScheduledDateProperty(
+				element,
+				value,
+				task,
+				plugin,
+				options?.propertyLabels,
+				options?.scheduledDateContext
+			);
 		}
 	},
 	projects: (element, value, task, plugin) => {
@@ -1261,7 +1282,8 @@ function renderScheduledDateProperty(
 	scheduled: string,
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
-	propertyLabels?: Record<string, string>
+	propertyLabels?: Record<string, string>,
+	scheduledDateContext?: Date
 ): void {
 	const isScheduledToday = isTodayTimeAware(scheduled);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
@@ -1305,7 +1327,7 @@ function renderScheduledDateProperty(
 	element.dataset.tnAction = "edit-date";
 	element.dataset.tnDateType = "scheduled";
 
-	attachDateClickHandler(element, task, plugin, "scheduled");
+	attachDateClickHandler(element, task, plugin, "scheduled", scheduledDateContext);
 }
 
 /**
@@ -1582,7 +1604,9 @@ export function createTaskCard(
 	contextIcon.addEventListener("click", async (e) => {
 		e.stopPropagation();
 		e.preventDefault();
-		await showTaskContextMenu(e as MouseEvent, task.path, plugin, targetDate);
+		await showTaskContextMenu(e as MouseEvent, task.path, plugin, targetDate, {
+			scheduledDateContext: opts.scheduledDateContext,
+		});
 	});
 
 	// First line: Task title
@@ -1698,7 +1722,9 @@ export function createTaskCard(
 		contextMenuHandler: async (e) => {
 			const path = card.dataset.taskPath;
 			if (!path) return;
-			await showTaskContextMenu(e, path, plugin, targetDate);
+			await showTaskContextMenu(e, path, plugin, targetDate, {
+				scheduledDateContext: opts.scheduledDateContext,
+			});
 		},
 	});
 
@@ -1720,7 +1746,8 @@ export async function showTaskContextMenu(
 	event: MouseEvent,
 	taskPath: string,
 	plugin: TaskNotesPlugin,
-	targetDate: Date
+	targetDate: Date,
+	options: { scheduledDateContext?: Date } = {}
 ) {
 	const file = plugin.app.vault.getAbstractFileByPath(taskPath);
 	const showFileMenuFallback = () => {
@@ -1741,6 +1768,7 @@ export async function showTaskContextMenu(
 			task: task,
 			plugin: plugin,
 			targetDate: targetDate,
+			scheduledDateContext: options.scheduledDateContext,
 			onUpdate: () => {
 				// Trigger refresh of views
 				plugin.app.workspace.trigger("tasknotes:refresh-views");

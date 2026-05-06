@@ -1,6 +1,7 @@
 import {
 	EVENT_TASK_DELETED,
 	EVENT_TASK_UPDATED,
+	FieldMapping,
 	TaskCreationData,
 	TaskDependency,
 	TaskInfo,
@@ -57,6 +58,12 @@ import {
 	getGoogleCalendarRecurringExceptionForScheduledChange,
 	shouldTrackGoogleCalendarRecurringException,
 } from "./googleCalendarRecurringException";
+
+const TASK_INFO_TO_FIELD_MAPPING_KEY: Partial<Record<keyof TaskInfo, keyof FieldMapping>> = {
+	recurrence_anchor: "recurrenceAnchor",
+	complete_instances: "completeInstances",
+	skipped_instances: "skippedInstances",
+};
 
 export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
@@ -194,6 +201,13 @@ export class TaskService {
 			return;
 		}
 		frontmatter[fieldName] = value;
+	}
+
+	private getFrontmatterFieldForTaskProperty(property: keyof TaskInfo): string {
+		const mappingKey =
+			TASK_INFO_TO_FIELD_MAPPING_KEY[property] || (property as keyof FieldMapping);
+		const mappedField = this.plugin.fieldMapper.toUserField(mappingKey);
+		return mappedField || String(property);
 	}
 
 	/**
@@ -587,8 +601,18 @@ export class TaskService {
 			}
 
 			if (property === "scheduled") {
+				const exceptionSourceTask =
+					task.scheduled !== freshTask.scheduled
+						? ({
+								...freshTask,
+								scheduled: task.scheduled,
+								googleCalendarExceptionOriginalScheduled:
+									task.googleCalendarExceptionOriginalScheduled ??
+									freshTask.googleCalendarExceptionOriginalScheduled,
+						  } as TaskInfo)
+						: freshTask;
 				this.applyGoogleCalendarRecurringExceptionForScheduledChange(
-					freshTask,
+					exceptionSourceTask,
 					value,
 					updatedTask as TaskInfo
 				);
@@ -611,9 +635,7 @@ export class TaskService {
 			// Step 2: Persist to file
 			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				// Use field mapper to get the correct frontmatter property name
-				const fieldName = this.plugin.fieldMapper.toUserField(
-					property as keyof import("../types").FieldMapping
-				);
+				const fieldName = this.getFrontmatterFieldForTaskProperty(property);
 
 				if (property === "status") {
 					// Coerce boolean-like status strings to actual booleans for compatibility with Obsidian checkbox properties

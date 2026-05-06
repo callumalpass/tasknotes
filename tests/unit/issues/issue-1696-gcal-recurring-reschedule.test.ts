@@ -4,6 +4,10 @@ import { TFile } from "obsidian";
 import { TaskCalendarSyncService } from "../../../src/services/TaskCalendarSyncService";
 import { TaskService } from "../../../src/services/TaskService";
 import { TaskInfo } from "../../../src/types";
+import {
+	getScheduledDateContextValue,
+	getTaskWithScheduledDateContext,
+} from "../../../src/utils/scheduledDateContext";
 
 jest.mock("obsidian", () => ({
 	Notice: jest.fn(),
@@ -209,6 +213,48 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 
 		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
 		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBe("2026-05-06");
+	});
+
+	it("uses the displayed occurrence date when cached task data already has the target scheduled date", async () => {
+		const frontmatter: Record<string, any> = {};
+		const plugin = createGoogleSyncPlugin(frontmatter);
+		const taskService = new TaskService(plugin);
+		const displayedOccurrence = createScheduledAnchorRecurringTask({
+			title: "Collect medication",
+			scheduled: "2026-05-08",
+			recurrence: "DTSTART:20260508;FREQ=WEEKLY;INTERVAL=4;BYDAY=FR",
+			googleCalendarExceptionOriginalScheduled: "2026-05-11",
+			googleCalendarMovedOriginalDates: ["2026-03-16", "2026-04-13"],
+		});
+		plugin.cacheManager.getTaskInfo.mockResolvedValue({
+			...displayedOccurrence,
+			scheduled: "2026-05-07",
+			googleCalendarExceptionOriginalScheduled: "2026-05-11",
+		});
+
+		const updatedTask = await taskService.updateProperty(
+			displayedOccurrence,
+			"scheduled",
+			"2026-05-07"
+		);
+
+		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBe("2026-05-08");
+		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBe("2026-05-08");
+	});
+
+	it("uses the clicked recurring instance as the scheduled date menu context", () => {
+		const task = createScheduledAnchorRecurringTask({
+			scheduled: "2026-05-07",
+			recurrence: "DTSTART:20260508;FREQ=WEEKLY;INTERVAL=4;BYDAY=FR",
+			googleCalendarExceptionOriginalScheduled: "2026-05-11",
+		});
+		const clickedInstance = new Date("2026-05-08T00:00:00.000Z");
+
+		expect(getScheduledDateContextValue(task, clickedInstance)).toBe("2026-05-08");
+		expect(getTaskWithScheduledDateContext(task, clickedInstance)).toMatchObject({
+			scheduled: "2026-05-08",
+			googleCalendarExceptionOriginalScheduled: "2026-05-11",
+		});
 	});
 
 	it("preserves the original series date when an already moved occurrence moves again", async () => {
