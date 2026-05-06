@@ -14,6 +14,7 @@ import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
+import { formatTaskTitle } from "../utils/taskTitleFormatter";
 import { TranslationKey } from "../i18n";
 
 export class InstantTaskConvertService {
@@ -119,7 +120,17 @@ export class InstantTaskConvertService {
 					throw new Error("Failed to parse task");
 				}
 
-				const file = await this.createTaskFile(parsedData);
+				const formattedTitle = this.formatConvertedTaskTitle(
+					task.line,
+					parsedData,
+					this.extractPreNlpTitle(task.line) || parsedData.title
+				);
+				const formattedData = {
+					...parsedData,
+					title: formattedTitle.canonicalTitle,
+				};
+
+				const file = await this.createTaskFile(formattedData, "", formattedTitle.fullPath);
 				const linkText = this.generateLinkText(task.line, file);
 
 				return { lineNumber: task.lineNumber, line: task.line, file, linkText };
@@ -173,6 +184,7 @@ export class InstantTaskConvertService {
 
 			// Parse the current line for Tasks plugin format, with NLP fallback
 			let parsedData: ParsedTaskData;
+			let titleForFormatting = "";
 
 			const taskLineInfo = TasksPluginParser.parseTaskLine(currentLine);
 
@@ -180,6 +192,7 @@ export class InstantTaskConvertService {
 				// Line is not a checkbox task, but we can still convert it to a tasknote
 				// Extract the line content as the task title, removing any leading list markers
 				const taskTitle = this.extractLineContentAsTitle(currentLine);
+				titleForFormatting = taskTitle;
 
 				if (!taskTitle.trim()) {
 					new Notice(this.translate("services.instantTaskConvert.notices.emptyLine"));
@@ -215,6 +228,7 @@ export class InstantTaskConvertService {
 					);
 					return;
 				}
+				titleForFormatting = taskLineInfo.parsedData.title;
 
 				// Always try NLP on the clean title to extract additional metadata
 				// Then merge results, with TasksPlugin explicit metadata taking priority
@@ -255,8 +269,18 @@ export class InstantTaskConvertService {
 				return;
 			}
 
+			const formattedTitle = this.formatConvertedTaskTitle(
+				currentLine,
+				parsedData,
+				titleForFormatting || parsedData.title
+			);
+			parsedData = {
+				...parsedData,
+				title: formattedTitle.canonicalTitle,
+			};
+
 			// Create the task file with default settings and details
-			const file = await this.createTaskFile(parsedData, details);
+			const file = await this.createTaskFile(parsedData, details, formattedTitle.fullPath);
 
 			// Replace the original line(s) with a link (includes race condition protection)
 			const replaceResult = await this.replaceOriginalTaskLines(
@@ -302,6 +326,9 @@ export class InstantTaskConvertService {
 			// Trigger immediate refresh of task link overlays to show the inline widget
 			await this.refreshTaskLinkOverlays(editor, file);
 		} catch (error) {
+			if (error.message.includes("TaskNote conversion cancelled")) {
+				return;
+			}
 			console.error("Error during instant task conversion:", error);
 			if (error.message.includes("file already exists")) {
 				new Notice(this.translate("services.instantTaskConvert.notices.fileExists"));
@@ -437,7 +464,11 @@ export class InstantTaskConvertService {
 	/**
 	 * Create a task file using default settings and parsed data
 	 */
-	private async createTaskFile(parsedData: ParsedTaskData, details = ""): Promise<TFile> {
+	private async createTaskFile(
+		parsedData: ParsedTaskData,
+		details = "",
+		targetPath?: string
+	): Promise<TFile> {
 		// Sanitize and validate input data
 		// Check if title will be truncated and preserve overflow text (issue #1310)
 		const originalTitle = parsedData.title?.trim() || "";
@@ -677,6 +708,7 @@ export class InstantTaskConvertService {
 			details: enhancedDetails, // Use enhanced details with any overflow from title truncation
 			parentNote: parentNote, // Include parent note for template variable
 			creationContext: "inline-conversion", // Mark as inline conversion for folder logic
+			targetPath: targetPath?.trim() || undefined,
 			dateCreated: getCurrentTimestamp(),
 			dateModified: getCurrentTimestamp(),
 			customFrontmatter: Object.keys(customFrontmatter).length > 0 ? customFrontmatter : undefined,
@@ -694,6 +726,35 @@ export class InstantTaskConvertService {
 	private sanitizeTitle(title: string): string {
 		if (!title) return "";
 		return title.trim().substring(0, 200);
+	}
+
+	private formatConvertedTaskTitle(
+		originalLine: string,
+		parsedData: ParsedTaskData,
+		titleForFormatting = parsedData.title
+	) {
+		const currentFile = this.plugin.app.workspace.getActiveFile();
+		return formatTaskTitle(
+			{
+				rawLine: originalLine,
+				parsedTitle: titleForFormatting,
+				sourcePath: currentFile?.path,
+				sourceFolder: currentFile?.parent?.path,
+				sourceBasename: currentFile?.basename,
+				tags: parsedData.tags,
+				priority: parsedData.priority,
+				status: parsedData.status,
+			},
+			this.plugin.settings.taskTitleFormatting
+		);
+	}
+
+	private extractPreNlpTitle(line: string): string {
+		const taskLineInfo = TasksPluginParser.parseTaskLine(line);
+		if (taskLineInfo.isTaskLine && taskLineInfo.parsedData?.title) {
+			return taskLineInfo.parsedData.title;
+		}
+		return this.extractLineContentAsTitle(line);
 	}
 
 	/**
@@ -958,8 +1019,8 @@ export class InstantTaskConvertService {
 		};
 
 		return {
-			// Use NLP title (cleaner, with NL phrases removed) unless it's empty
-			title: nlpData.title?.trim() || tasksPluginData.title,
+			// Keep the existing task title stable; NLP only enriches metadata.
+			title: tasksPluginData.title,
 
 			// TasksPlugin explicit values take priority, fall back to NLP
 			dueDate: tasksPluginData.dueDate || nlpData.dueDate,

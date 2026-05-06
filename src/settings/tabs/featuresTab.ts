@@ -108,6 +108,37 @@ export function renderFeaturesTab(
 					},
 				})
 			);
+
+			if (plugin.settings.enableInstantTaskConvert) {
+				group.addSetting((setting) =>
+					configureDropdownSetting(setting, {
+						name: translate("settings.features.instantConvert.existingTaskNoteConflict.name"),
+						desc: translate("settings.features.instantConvert.existingTaskNoteConflict.description"),
+						options: [
+							{
+								value: "ask",
+								label: translate("settings.features.instantConvert.existingTaskNoteConflict.options.ask"),
+							},
+							{
+								value: "reuse",
+								label: translate("settings.features.instantConvert.existingTaskNoteConflict.options.reuse"),
+							},
+							{
+								value: "create-unique",
+								label: translate("settings.features.instantConvert.existingTaskNoteConflict.options.createUnique"),
+							},
+						],
+						getValue: () => plugin.settings.existingTaskNoteConflictBehavior || "ask",
+						setValue: async (value: string) => {
+							plugin.settings.existingTaskNoteConflictBehavior = value as
+								| "ask"
+								| "reuse"
+								| "create-unique";
+							save();
+						},
+					})
+				);
+			}
 		}
 	);
 

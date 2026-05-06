@@ -28,7 +28,14 @@ jest.mock('../../../src/utils/dateUtils', () => ({
 
 jest.mock('../../../src/utils/filenameGenerator', () => ({
   generateTaskFilename: jest.fn((context) => `${context.title.toLowerCase().replace(/\s+/g, '-')}.md`),
-  generateUniqueFilename: jest.fn((base) => base)
+  generateUniqueFilename: jest.fn((base) => base),
+  sanitizeForFilename: jest.fn((name) => name.replace(/[<>:"/\\|?*]/g, '').trim()),
+  formatTitleForFilename: jest.fn((name, style = 'readable') => {
+    const sanitized = name.replace(/[<>:"/\\|?*]/g, '').trim();
+    return style === 'lowercase-snake'
+      ? sanitized.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+      : sanitized;
+  })
 }));
 
 jest.mock('../../../src/utils/helpers', () => ({
@@ -76,6 +83,46 @@ describe('InstantTaskConvertService', () => {
     
     // Replace the nlParser with our mock
     (service as any).nlParser = mockNLParser;
+  });
+
+  describe('TaskForge Title Formatting', () => {
+    it('keeps the existing task title for canonical inline conversion filenames', () => {
+      mockPlugin.app.workspace.getActiveFile = jest.fn().mockReturnValue({
+        path: '10_journal/TaskForge/skills.md',
+        parent: { path: '10_journal/TaskForge' },
+        basename: 'skills'
+      });
+
+      const result = (service as any).formatConvertedTaskTitle(
+        '- [ ] Monthly skill review #skill/workflow [duration:: 30m]',
+        { title: 'skill review duration', isCompleted: false },
+        'Monthly skill review [duration:: 30m]'
+      );
+
+      expect(result.canonicalTitle).toBe('Monthly skill review');
+      expect(result.fullPath).toBe('10_journal/TaskNotes/skills/Monthly skill review.md');
+    });
+
+    it('does not let NLP rename an existing checkbox task title', () => {
+      const result = (service as any).mergeParseResults(
+        {
+          title: 'Monthly skill review',
+          isCompleted: false
+        },
+        {
+          title: 'skill review',
+          recurrence: 'FREQ=MONTHLY',
+          timeEstimate: 30,
+          isCompleted: false,
+          tags: ['skill']
+        }
+      );
+
+      expect(result.title).toBe('Monthly skill review');
+      expect(result.recurrence).toBe('FREQ=MONTHLY');
+      expect(result.timeEstimate).toBe(30);
+      expect(result.tags).toEqual(['skill']);
+    });
   });
 
   describe('Context Detection - Natural Language Tasks', () => {
@@ -1049,7 +1096,7 @@ describe('InstantTaskConvertService', () => {
       // Scenario: "- [ ] Buy milk tomorrow #groceries"
       // TasksPlugin extracts: tags: ["groceries"], title: "Buy milk tomorrow"
       // NLP parses "Buy milk tomorrow": dueDate/scheduledDate, title: "Buy milk"
-      // Result should have BOTH the tag AND the date
+      // Result should keep the existing title and add the date
 
       const tasksPluginData: ParsedTaskData = {
         title: 'Buy milk tomorrow',
@@ -1065,7 +1112,7 @@ describe('InstantTaskConvertService', () => {
 
       const merged = service['mergeParseResults'](tasksPluginData, nlpData);
 
-      expect(merged.title).toBe('Buy milk'); // NLP cleaned title
+      expect(merged.title).toBe('Buy milk tomorrow'); // Existing title preserved
       expect(merged.tags).toEqual(['groceries']); // TasksPlugin tag preserved
       expect(merged.scheduledDate).toBe('2025-01-15'); // NLP date extracted
       expect(merged.isCompleted).toBe(false);
@@ -1092,7 +1139,7 @@ describe('InstantTaskConvertService', () => {
       const merged = service['mergeParseResults'](tasksPluginData, nlpData);
 
       expect(merged.dueDate).toBe('2025-02-01'); // TasksPlugin explicit date wins
-      expect(merged.title).toBe('Meeting'); // NLP cleaned title
+      expect(merged.title).toBe('Meeting tomorrow'); // Existing title preserved
     });
 
     it('should combine tags from both sources without duplicates', () => {
@@ -1190,7 +1237,7 @@ describe('InstantTaskConvertService', () => {
       });
     });
 
-    it('should use NLP title when it is cleaner (NL phrases removed)', () => {
+    it('should preserve the existing title even when NLP returns a cleaner title', () => {
       const tasksPluginData: ParsedTaskData = {
         title: 'Call mom tomorrow at 3pm',
         tags: ['family'],
@@ -1206,7 +1253,7 @@ describe('InstantTaskConvertService', () => {
 
       const merged = service['mergeParseResults'](tasksPluginData, nlpData);
 
-      expect(merged.title).toBe('Call mom'); // Cleaner NLP title
+      expect(merged.title).toBe('Call mom tomorrow at 3pm'); // Existing title preserved
       expect(merged.scheduledDate).toBe('2025-01-15');
       expect(merged.scheduledTime).toBe('15:00');
       expect(merged.tags).toEqual(['family']);
@@ -1226,7 +1273,7 @@ describe('InstantTaskConvertService', () => {
 
       const merged = service['mergeParseResults'](tasksPluginData, nlpData);
 
-      expect(merged.title).toBe('Valid title'); // Falls back to TasksPlugin
+      expect(merged.title).toBe('Valid title'); // Existing title preserved
     });
   });
 });

@@ -621,6 +621,11 @@ export default class TaskNotesPlugin extends Plugin {
 				...DEFAULT_SETTINGS.taskCreationDefaults,
 				...(loadedData?.taskCreationDefaults || {}),
 			},
+			taskTitleFormatting: {
+				...DEFAULT_SETTINGS.taskTitleFormatting,
+				...(loadedData?.taskTitleFormatting || {}),
+				rules: loadedData?.taskTitleFormatting?.rules || DEFAULT_SETTINGS.taskTitleFormatting.rules,
+			},
 			// Deep merge calendar view settings to ensure new fields get default values
 			calendarViewSettings: {
 				...DEFAULT_SETTINGS.calendarViewSettings,

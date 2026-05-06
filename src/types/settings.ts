@@ -89,6 +89,42 @@ export interface ProjectAutosuggestSettings {
 	propertyValue?: string; // Expected value for the property (empty = property must exist)
 }
 
+export type TaskTitleFormattingPreset = "default" | "taskforge" | "raw" | "custom";
+export type TaskFilenameStyle = "readable" | "lowercase-snake";
+export type TaskSourceFolderStyle = "preserve" | "title-case";
+
+export type TaskTitleFormattingRuleOperation =
+	| "from"
+	| "replace"
+	| "match"
+	| "trim"
+	| "collapseWhitespace"
+	| "maxLength"
+	| "sanitizeFilename";
+
+export interface TaskTitleFormattingRule {
+	enabled?: boolean;
+	handle: string;
+	op: TaskTitleFormattingRuleOperation;
+	pattern?: string;
+	flags?: string;
+	with?: string;
+	value?: string;
+	target?: string;
+	length?: number;
+}
+
+export interface TaskTitleFormattingSettings {
+	enabled: boolean;
+	preset: TaskTitleFormattingPreset;
+	maxLength: number;
+	filenameStyle: TaskFilenameStyle;
+	sourceFolderStyle: TaskSourceFolderStyle;
+	rules: TaskTitleFormattingRule[];
+}
+
+export type ExistingTaskNoteConflictBehavior = "ask" | "reuse" | "create-unique";
+
 export interface TaskNotesSettings {
 	tasksFolder: string; // Now just a default location for new tasks
 	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived
@@ -146,6 +182,8 @@ export interface TaskNotesSettings {
 	doubleClickAction: "edit" | "openNote" | "none";
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}} and {{currentNoteTitle}}
+	taskTitleFormatting: TaskTitleFormattingSettings;
+	existingTaskNoteConflictBehavior: ExistingTaskNoteConflictBehavior;
 	// Performance settings
 	disableNoteIndexing: boolean;
 	/** Optional debounce in milliseconds for inline file suggestions (0 = disabled) */
