@@ -470,5 +470,13 @@
   },
   "enableMCP": false,
   "resetCheckboxesOnRecurrence": false,
-  "enableDebugLogging": false
+  "enableDebugLogging": false,
+  "taskTitleFormatting": {
+    "enabled": true,
+    "preset": "taskforge",
+    "maxLength": 200,
+    "filenameStyle": "lowercase-snake",
+    "sourceFolderStyle": "title-case",
+    "rules": []
+  }
 }

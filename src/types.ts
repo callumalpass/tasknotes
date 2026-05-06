@@ -473,6 +473,7 @@ export interface TaskCreationData extends Partial<TaskInfo> {
 	parentNote?: string; // Optional parent note name/path for template variable
 	creationContext?: "inline-conversion" | "manual-creation" | "modal-inline-creation" | "api" | "import" | "ics-event"; // Context for folder determination
 	customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
+	targetPath?: string; // Optional exact note path for conversions that already carry a canonical link
 }
 
 export interface TimeEntry {

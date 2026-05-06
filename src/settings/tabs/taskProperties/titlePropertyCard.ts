@@ -8,6 +8,7 @@ import {
 	CardRow,
 } from "../../components/CardComponent";
 import { createPropertyDescription, TranslateFn } from "./helpers";
+import type { TaskTitleFormattingSettings } from "../../../types/settings";
 
 /**
  * Renders the Title property card with filename settings
@@ -108,6 +109,67 @@ function renderFilenameSettingsContent(
 ): void {
 	container.empty();
 
+	// Filename style applies whenever the title is used to derive a filename,
+	// including title-stored tasks and TaskForge inline conversion paths.
+	const styleContainer = container.createDiv("tasknotes-settings__card-config-row");
+	styleContainer.createSpan({
+		text: translate("settings.taskProperties.titleCard.filenameStyle"),
+		cls: "tasknotes-settings__card-config-label",
+	});
+
+	const styleSelect = createCardSelect(
+		[
+			{
+				value: "readable",
+				label: translate("settings.appearance.taskFilenames.filenameStyle.options.readable"),
+			},
+			{
+				value: "lowercase-snake",
+				label: translate("settings.appearance.taskFilenames.filenameStyle.options.lowercaseSnake"),
+			},
+		],
+		plugin.settings.taskTitleFormatting?.filenameStyle || "readable"
+	);
+	styleSelect.addEventListener("change", () => {
+		ensureTaskTitleFormattingSettings(plugin).filenameStyle = styleSelect.value as
+			| "readable"
+			| "lowercase-snake";
+		save();
+	});
+	styleContainer.appendChild(styleSelect);
+
+	const folderStyleContainer = container.createDiv("tasknotes-settings__card-config-row");
+	folderStyleContainer.createSpan({
+		text: translate("settings.taskProperties.titleCard.sourceFolderStyle"),
+		cls: "tasknotes-settings__card-config-label",
+	});
+
+	const folderStyleSelect = createCardSelect(
+		[
+			{
+				value: "preserve",
+				label: translate("settings.appearance.taskFilenames.sourceFolderStyle.options.preserve"),
+			},
+			{
+				value: "title-case",
+				label: translate("settings.appearance.taskFilenames.sourceFolderStyle.options.titleCase"),
+			},
+		],
+		plugin.settings.taskTitleFormatting?.sourceFolderStyle || "preserve"
+	);
+	folderStyleSelect.addEventListener("change", () => {
+		ensureTaskTitleFormattingSettings(plugin).sourceFolderStyle = folderStyleSelect.value as
+			| "preserve"
+			| "title-case";
+		save();
+	});
+	folderStyleContainer.appendChild(folderStyleSelect);
+
+	container.createDiv({
+		text: translate("settings.appearance.taskFilenames.filenameStyle.description"),
+		cls: "setting-item-description",
+	});
+
 	// Only show filename format settings when storeTitleInFilename is off
 	if (plugin.settings.storeTitleInFilename) {
 		container.createDiv({
@@ -207,4 +269,24 @@ function renderFilenameSettingsContent(
 		// Initial warning check
 		updateWarning();
 	}
+}
+
+function ensureTaskTitleFormattingSettings(plugin: TaskNotesPlugin): TaskTitleFormattingSettings {
+	if (!plugin.settings.taskTitleFormatting) {
+		plugin.settings.taskTitleFormatting = {
+			enabled: true,
+			preset: "taskforge",
+			maxLength: 200,
+			filenameStyle: "readable",
+			sourceFolderStyle: "preserve",
+			rules: [],
+		};
+	}
+	if (!plugin.settings.taskTitleFormatting.filenameStyle) {
+		plugin.settings.taskTitleFormatting.filenameStyle = "readable";
+	}
+	if (!plugin.settings.taskTitleFormatting.sourceFolderStyle) {
+		plugin.settings.taskTitleFormatting.sourceFolderStyle = "preserve";
+	}
+	return plugin.settings.taskTitleFormatting;
 }

@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { normalizePath } from "obsidian";
-import { TaskNotesSettings } from "../types/settings";
+import type { TaskFilenameStyle, TaskNotesSettings } from "../types/settings";
 
 export interface FilenameContext {
 	title: string;
@@ -134,13 +134,13 @@ export function generateTaskFilename(
 	}
 
 	if (settings.storeTitleInFilename) {
-		return sanitizeForFilename(context.title);
+		return formatTitleForFilename(context.title, settings.taskTitleFormatting?.filenameStyle);
 	}
 
 	try {
 		switch (settings.taskFilenameFormat) {
 			case "title":
-				return sanitizeForFilename(context.title);
+				return formatTitleForFilename(context.title, settings.taskTitleFormatting?.filenameStyle);
 
 			case "zettel":
 				return generateZettelId(now);
@@ -402,6 +402,25 @@ export function sanitizeForFilename(input: string): string {
 		console.error("Error sanitizing filename:", error);
 		return "untitled";
 	}
+}
+
+export function formatTitleForFilename(
+	input: string,
+	style: TaskFilenameStyle = "readable"
+): string {
+	if (style !== "lowercase-snake") {
+		return sanitizeForFilename(input);
+	}
+
+	const sanitized = sanitizeForFilename(input)
+		.toLowerCase()
+		.normalize("NFKD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/['’]/g, "")
+		.replace(/[^\p{L}\p{N}]+/gu, "_")
+		.replace(/^_+|_+$/g, "");
+
+	return sanitizeForFilename(sanitized || "untitled");
 }
 
 /**

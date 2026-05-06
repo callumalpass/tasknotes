@@ -16,6 +16,63 @@ describe("taskTitleFormatter", () => {
 		expect(result.fullPath).toBe("Projects/TaskNotes/legal/Eb2 visa (self-petition).md");
 	});
 
+	it("uses an existing note alias link as the canonical task note target", () => {
+		const result = formatTaskTitle({
+			rawLine:
+				"- [ ] Live technical storytelling with diagrams #skill/interview [[10_journal/TaskNotes/Skills/Live technical storytelling with diagrams|note]] [duration:: 30m]",
+			parsedTitle: "Live technical storytelling with diagrams duration",
+			sourcePath: "10_journal/TaskForge/Skills.md",
+		});
+
+		expect(result.canonicalTitle).toBe("Live technical storytelling with diagrams");
+		expect(result.filenameTitle).toBe("Live technical storytelling with diagrams");
+		expect(result.noteFolder).toBe("10_journal/TaskNotes/Skills");
+		expect(result.fullPath).toBe(
+			"10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md"
+		);
+	});
+
+	it("does not treat TaskForge inline fields as part of the canonical title", () => {
+		const result = formatTaskTitle({
+			rawLine:
+				"- [ ] Monthly skill review #skill/workflow [duration:: 30m] [scheduled:: 2026-05-08]",
+			parsedTitle: "Monthly skill review [duration:: 30m] [scheduled:: 2026-05-08]",
+			sourcePath: "10_journal/TaskForge/skills.md",
+		});
+
+		expect(result.canonicalTitle).toBe("Monthly skill review");
+		expect(result.filenameTitle).toBe("Monthly skill review");
+		expect(result.noteFolder).toBe("10_journal/TaskNotes/skills");
+		expect(result.fullPath).toBe("10_journal/TaskNotes/skills/Monthly skill review.md");
+	});
+
+	it("can create Title Case source folders and lowercase snake_case filenames", () => {
+		const result = formatTaskTitle(
+			{
+				rawLine:
+					"- [ ] Inventory possessions into keep, store, sell, donate, trash [duration:: 30m]",
+				parsedTitle:
+					"Inventory possessions into keep, store, sell, donate, trash [duration:: 30m]",
+				sourcePath: "10_journal/TaskForge/minimalism.md",
+			},
+			{
+				enabled: true,
+				preset: "taskforge",
+				maxLength: 200,
+				filenameStyle: "lowercase-snake",
+				sourceFolderStyle: "title-case",
+				rules: [],
+			}
+		);
+
+		expect(result.canonicalTitle).toBe("Inventory possessions into keep, store, sell, donate, trash");
+		expect(result.filenameTitle).toBe("inventory_possessions_into_keep_store_sell_donate_trash");
+		expect(result.noteFolder).toBe("10_journal/TaskNotes/Minimalism");
+		expect(result.fullPath).toBe(
+			"10_journal/TaskNotes/Minimalism/inventory_possessions_into_keep_store_sell_donate_trash.md"
+		);
+	});
+
 	it("allows custom regex rules to populate handles", () => {
 		const result = formatTaskTitle(
 			{

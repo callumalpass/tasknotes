@@ -485,6 +485,16 @@ export const en: TranslationTree = {
 					description:
 						"Folder where tasks converted from checkboxes will be created. Leave empty to use the default tasks folder. Use {{currentNotePath}} for the current note's folder, or {{currentNoteTitle}} for a subfolder named after the current note.",
 				},
+				existingTaskNoteConflict: {
+					name: "When converted TaskNote already exists",
+					description:
+						"Choose what happens when an inline task has a canonical [[...|note]] link pointing to an existing TaskNote.",
+					options: {
+						ask: "Ask with diff",
+						reuse: "Reuse existing note",
+						createUnique: "Create unique copy",
+					},
+				},
 			},
 			nlp: {
 				header: "Natural Language Processing",
@@ -1054,6 +1064,8 @@ export const en: TranslationTree = {
 				storeTitleInFilename: "Store title in filename:",
 				storedInFilename: "Stored in filename",
 				filenameUpdatesWithTitle: "Filename will automatically update when the task title changes.",
+				filenameStyle: "Title filename style:",
+				sourceFolderStyle: "Source folder style:",
 				filenameFormat: "Filename format:",
 				customTemplate: "Custom template:",
 				legacySyntaxWarning: "Single-brace syntax like {title} is deprecated. Please use double-brace syntax {{title}} instead for consistency with body templates.",
@@ -1276,6 +1288,24 @@ export const en: TranslationTree = {
 						zettel: "Zettelkasten format (YYMMDD + base36 seconds since midnight)",
 						timestamp: "Full timestamp (YYYY-MM-DD-HHMMSS)",
 						custom: "Custom template",
+					},
+				},
+				filenameStyle: {
+					name: "Title filename style",
+					description:
+						"Used when task titles generate filenames, including title-stored tasks and TaskForge inline conversion paths.",
+					options: {
+						readable: "Readable title",
+						lowercaseSnake: "Lowercase snake_case slug",
+					},
+				},
+				sourceFolderStyle: {
+					name: "Source folder style",
+					description:
+						"Used for TaskForge source-list folders when creating TaskNotes folders.",
+					options: {
+						preserve: "Preserve source name",
+						titleCase: "Title Case",
 					},
 				},
 				customTemplate: {

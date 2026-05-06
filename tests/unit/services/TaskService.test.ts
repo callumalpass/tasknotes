@@ -29,7 +29,13 @@ jest.mock('../../../src/utils/dateUtils', () => {
 jest.mock('../../../src/utils/filenameGenerator', () => ({
   generateTaskFilename: jest.fn((context) => `${context.title.toLowerCase().replace(/\s+/g, '-')}`),
   generateUniqueFilename: jest.fn((base) => base),
-  sanitizeForFilename: jest.fn((input) => input.trim().replace(/[<>:"/\\|?*#[\]]/g, ""))
+  sanitizeForFilename: jest.fn((input) => input.trim().replace(/[<>:"/\\|?*#[\]]/g, "")),
+  formatTitleForFilename: jest.fn((input, style = "readable") => {
+    const sanitized = input.trim().replace(/[<>:"/\\|?*#[\]]/g, "");
+    return style === "lowercase-snake"
+      ? sanitized.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "")
+      : sanitized;
+  })
 }));
 
 jest.mock('../../../src/utils/helpers', () => ({
@@ -45,7 +51,12 @@ jest.mock('../../../src/utils/helpers', () => ({
   addDTSTARTToRecurrenceRule: jest.fn((task: { recurrence?: string }) => task.recurrence ? `DTSTART:20250110T120000Z;${task.recurrence}` : null),
   updateDTSTARTInRecurrenceRule: jest.fn((rule: string) => rule),
   updateToNextScheduledOccurrence: jest.fn(),
-  splitFrontmatterAndBody: jest.fn(() => ({ frontmatter: {}, body: '' }))
+  splitFrontmatterAndBody: jest.fn((content: string) => {
+    const match = content.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?([\s\S]*)$/);
+    return match
+      ? { frontmatter: match[1], body: match[2] || '' }
+      : { frontmatter: null, body: content || '' };
+  })
 }));
 
 jest.mock('../../../src/utils/templateProcessor', () => ({
@@ -207,6 +218,121 @@ describe('TaskService', () => {
       expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
         'Projects/TaskNotes/legal/follow-up-on-lawyers.md',
         expect.stringContaining('title: Follow up on lawyers')
+      );
+    });
+
+    it('should create inline conversions at an explicit canonical target path', async () => {
+      mockPlugin.settings.inlineTaskConvertFolder = '{{currentNotePath}}';
+      mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(null);
+
+      const mockCurrentFile = new TFile('10_journal/TaskForge/Skills.md');
+      mockCurrentFile.parent = { path: '10_journal/TaskForge' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Live technical storytelling with diagrams',
+        creationContext: 'inline-conversion',
+        targetPath: '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md',
+        expect.stringContaining('title: Live technical storytelling with diagrams')
+      );
+    });
+
+    it('should reuse an existing explicit canonical target path', async () => {
+      mockPlugin.settings.existingTaskNoteConflictBehavior = 'reuse';
+      const existingFile = new TFile(
+        '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      );
+      mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(existingFile);
+      mockPlugin.app.vault.read.mockResolvedValue('---\nstatus: old\n---\n\nExisting body\n');
+
+      const taskData: TaskCreationData = {
+        title: 'Live technical storytelling with diagrams',
+        creationContext: 'inline-conversion',
+        targetPath: '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      };
+
+      const { file, taskInfo } = await taskService.createTask(taskData);
+
+      expect(file).toBe(existingFile);
+      expect(taskInfo.path).toBe(
+        '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      );
+      expect(mockPlugin.app.vault.create).not.toHaveBeenCalled();
+      expect(mockPlugin.app.vault.modify).toHaveBeenCalledWith(
+        existingFile,
+        expect.stringContaining('Existing body')
+      );
+    });
+
+    it('should ask before updating an existing explicit canonical target path', async () => {
+      mockPlugin.settings.existingTaskNoteConflictBehavior = 'ask';
+      const existingFile = new TFile(
+        '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      );
+      mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(existingFile);
+      mockPlugin.app.vault.read.mockResolvedValue('---\nstatus: old\n---\n\nExisting body\n');
+
+      const resolver = jest.fn().mockResolvedValue({
+        action: 'apply',
+        metadataChoice: 'incoming',
+        bodyChoice: 'incoming'
+      });
+      (taskService as any).taskCreationService.deps.resolveExistingTaskNoteConflict = resolver;
+
+      const taskData: TaskCreationData = {
+        title: 'Live technical storytelling with diagrams',
+        details: 'Incoming body',
+        creationContext: 'inline-conversion',
+        targetPath: '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(resolver).toHaveBeenCalledWith(expect.objectContaining({
+        path: '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md',
+        existingFrontmatter: expect.any(Object),
+        existingBody: 'Existing body',
+        incomingBody: 'Incoming body'
+      }));
+      expect(mockPlugin.app.vault.modify).toHaveBeenCalledWith(
+        existingFile,
+        expect.stringContaining('title: Live technical storytelling with diagrams')
+      );
+      expect(mockPlugin.app.vault.modify).toHaveBeenCalledWith(
+        existingFile,
+        expect.stringContaining('Incoming body')
+      );
+    });
+
+    it('should create a unique copy when configured for existing explicit canonical target paths', async () => {
+      const filenameGenerator = require('../../../src/utils/filenameGenerator');
+      filenameGenerator.generateUniqueFilename.mockResolvedValueOnce(
+        'Live technical storytelling with diagrams-2'
+      );
+      mockPlugin.settings.existingTaskNoteConflictBehavior = 'create-unique';
+      const existingFile = new TFile(
+        '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      );
+      mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(existingFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Live technical storytelling with diagrams',
+        creationContext: 'inline-conversion',
+        targetPath: '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams.md'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.modify).not.toHaveBeenCalled();
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        '10_journal/TaskNotes/Skills/Live technical storytelling with diagrams-2.md',
+        expect.stringContaining('title: Live technical storytelling with diagrams')
       );
     });
 

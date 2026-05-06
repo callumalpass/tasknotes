@@ -1,8 +1,10 @@
 import type {
+	TaskFilenameStyle,
+	TaskSourceFolderStyle,
 	TaskTitleFormattingRule,
 	TaskTitleFormattingSettings,
 } from "../types/settings";
-import { sanitizeForFilename } from "./filenameGenerator";
+import { formatTitleForFilename, sanitizeForFilename } from "./filenameGenerator";
 
 export interface TaskTitleFormatContext {
 	rawLine?: string;
@@ -60,7 +62,10 @@ export function formatTaskTitle(
 	const sourceFolder = context.sourceFolder || folderFromPath(context.sourcePath || "");
 	const sourceBasename = context.sourceBasename || basenameFromPath(context.sourcePath || "");
 	const taskNotesRoot = taskNotesRootFromSourceFolder(sourceFolder);
+	const sourceFolderStyle = settings?.sourceFolderStyle || "preserve";
+	const filenameStyle = settings?.filenameStyle || "readable";
 	const baseTitle = (context.parsedTitle || context.rawLine || "").trim();
+	const styledTaskForgeList = formatSourceFolderName(taskForgeList, sourceFolderStyle);
 	const handles: Record<string, string> = {
 		rawLine: context.rawLine || "",
 		parsedTitle: baseTitle,
@@ -68,6 +73,7 @@ export function formatTaskTitle(
 		sourceFolder,
 		sourceBasename,
 		taskForgeList,
+		styledTaskForgeList,
 		taskNotesRoot,
 		tags: (context.tags || []).join(" "),
 		priority: context.priority || "",
@@ -85,8 +91,16 @@ export function formatTaskTitle(
 	for (const rule of presetRules(settings?.preset)) {
 		applyRule(rule, handles, warnings, maxLength);
 	}
-	if (!handles.noteFolder.trim() && taskForgeList && taskNotesRoot) {
-		handles.noteFolder = `${taskNotesRoot}/${taskForgeList}`;
+	if (!handles.noteFolder.trim() && styledTaskForgeList && taskNotesRoot) {
+		handles.noteFolder = `${taskNotesRoot}/${styledTaskForgeList}`;
+	}
+
+	const canonicalNotePath = extractCanonicalNotePath(context.rawLine || "");
+	if (canonicalNotePath) {
+		handles.canonicalTitle = basenameFromPath(canonicalNotePath);
+		handles.filenameTitle = handles.canonicalTitle;
+		handles.noteFolder = folderFromPath(canonicalNotePath);
+		handles.fullPath = ensureMarkdownExtension(canonicalNotePath);
 	}
 
 	for (const rule of settings?.rules || []) {
@@ -99,11 +113,14 @@ export function formatTaskTitle(
 	if (!handles.filenameTitle.trim()) {
 		handles.filenameTitle = handles.canonicalTitle;
 	}
+	if (filenameStyle !== "readable" && !handles.fullPath.trim()) {
+		handles.filenameTitle = formatTitleForFilename(handles.filenameTitle, filenameStyle);
+	}
 	if (!handles.fullPath.trim() && handles.noteFolder.trim()) {
-		handles.fullPath = `${handles.noteFolder}/${sanitizeForFilename(handles.filenameTitle)}.md`;
+		handles.fullPath = `${handles.noteFolder}/${formatTitleForFilename(handles.filenameTitle, filenameStyle)}.md`;
 	}
 
-	return finalizeHandles(handles, maxLength, warnings);
+	return finalizeHandles(handles, maxLength, warnings, filenameStyle);
 }
 
 function presetRules(preset?: string): TaskTitleFormattingRule[] {
@@ -199,14 +216,15 @@ function expandTemplate(template: string, handles: Record<string, string>): stri
 function finalizeHandles(
 	handles: Record<string, string>,
 	maxLength: number,
-	warnings: string[]
+	warnings: string[],
+	filenameStyle: TaskFilenameStyle = "readable"
 ): TaskTitleFormatResult {
 	const canonicalTitle = (handles.canonicalTitle || handles.parsedTitle || "Untitled Task")
 		.substring(0, maxLength)
 		.trim() || "Untitled Task";
 	const filenameTitle = (handles.filenameTitle || canonicalTitle).substring(0, maxLength).trim();
 	const noteFolder = normalizeFolder(handles.noteFolder || "");
-	const fullPath = handles.fullPath || (noteFolder ? `${noteFolder}/${sanitizeForFilename(filenameTitle)}.md` : "");
+	const fullPath = handles.fullPath || (noteFolder ? `${noteFolder}/${formatTitleForFilename(filenameTitle, filenameStyle)}.md` : "");
 	return {
 		handles: {
 			...handles,
@@ -236,6 +254,30 @@ function folderFromPath(path: string): string {
 function basenameFromPath(path: string): string {
 	const name = path.substring(path.lastIndexOf("/") + 1);
 	return name.endsWith(".md") ? name.substring(0, name.length - 3) : name;
+}
+
+function formatSourceFolderName(name: string, style: TaskSourceFolderStyle): string {
+	if (!name || style !== "title-case") {
+		return name;
+	}
+
+	return name
+		.replace(/[_-]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim()
+		.split(" ")
+		.filter(Boolean)
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
+}
+
+function extractCanonicalNotePath(rawLine: string): string {
+	const match = rawLine.match(/\[\[([^\]|#]+)(?:#[^\]|]+)?\|note\]\]/i);
+	return match?.[1]?.trim() || "";
+}
+
+function ensureMarkdownExtension(path: string): string {
+	return path.endsWith(".md") ? path : `${path}.md`;
 }
 
 function normalizeFolder(folder: string): string {

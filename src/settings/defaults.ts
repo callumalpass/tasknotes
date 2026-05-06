@@ -231,6 +231,8 @@ export const DEFAULT_TASK_TITLE_FORMATTING: TaskTitleFormattingSettings = {
 	enabled: true,
 	preset: "taskforge",
 	maxLength: 200,
+	filenameStyle: "readable",
+	sourceFolderStyle: "preserve",
 	rules: [],
 };
 
@@ -321,6 +323,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Inline task conversion defaults
 	inlineTaskConvertFolder: "{{currentNotePath}}",
 	taskTitleFormatting: DEFAULT_TASK_TITLE_FORMATTING,
+	existingTaskNoteConflictBehavior: "ask",
 	// Performance defaults
 	disableNoteIndexing: false,
 	// Suggestion performance defaults
