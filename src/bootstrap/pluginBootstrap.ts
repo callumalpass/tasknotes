@@ -276,6 +276,17 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 			plugin.registerEvent(
 				plugin.emitter.on("file-updated", (data: FileUpdatedEventData) => {
+					if (data?.file) {
+						plugin.autoArchiveService
+							.reconcileTaskByPath(data.path)
+							.catch((error) => {
+								console.warn(
+									"Failed to reconcile externally updated task with auto-archive:",
+									error
+								);
+							});
+					}
+
 					if (!plugin.taskCalendarSyncService || !data?.file) {
 						return;
 					}

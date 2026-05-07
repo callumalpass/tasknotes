@@ -1,4 +1,4 @@
-import { describe, it, expect, jest } from "@jest/globals";
+import { afterEach, describe, it, expect, jest } from "@jest/globals";
 import { TFile } from "obsidian";
 
 import { AutoArchiveService } from "../../../src/services/AutoArchiveService";
@@ -17,6 +17,10 @@ jest.mock("obsidian", () => ({
 	},
 }));
 
+afterEach(() => {
+	jest.restoreAllMocks();
+});
+
 const createGoogleCleanupEnabledPlugin = () =>
 	PluginFactory.createMockPlugin({
 		settings: {
@@ -28,7 +32,178 @@ const createGoogleCleanupEnabledPlugin = () =>
 		},
 	});
 
+const createAutoArchivePlugin = (pluginData: Record<string, any> = {}) => {
+	const plugin = PluginFactory.createMockPlugin();
+	plugin.statusManager.getStatusConfig = jest.fn((status: string) => {
+		if (status === "done") {
+			return {
+				id: "done",
+				value: "done",
+				label: "Done",
+				color: "#22c55e",
+				isCompleted: true,
+				order: 2,
+				autoArchive: true,
+				autoArchiveDelay: 1440,
+			};
+		}
+
+		return {
+			id: status,
+			value: status,
+			label: status,
+			color: "#888888",
+			isCompleted: false,
+			order: 1,
+			autoArchive: false,
+			autoArchiveDelay: 1440,
+		};
+	});
+	plugin.loadData = jest.fn().mockImplementation(async () => pluginData);
+	plugin.saveData = jest.fn().mockImplementation(async (data: Record<string, any>) => {
+		const nextData = { ...data };
+		for (const key of Object.keys(pluginData)) {
+			delete pluginData[key];
+		}
+		Object.assign(pluginData, nextData);
+	});
+
+	return plugin;
+};
+
 describe("Google Calendar archive reliability", () => {
+	it("queues externally completed tasks using the completion file timestamp", async () => {
+		const pluginData: Record<string, any> = {};
+		const plugin = createAutoArchivePlugin(pluginData);
+		const autoArchiveService = new AutoArchiveService(plugin);
+		const task = TaskFactory.createTask({
+			path: "TaskNotes/Tasks/process-flagged-email.md",
+			status: "done",
+			completedDate: "2026-05-05",
+			dateModified: "2026-05-05T10:41:00.000Z",
+		});
+
+		await autoArchiveService.reconcileTask(task);
+
+		const statusChangeTimestamp = Date.parse("2026-05-05T10:41:00.000Z");
+		expect(pluginData.autoArchiveQueue).toEqual([
+			{
+				taskPath: task.path,
+				statusChangeTimestamp,
+				archiveAfterTimestamp: statusChangeTimestamp + 1440 * 60 * 1000,
+				statusValue: "done",
+			},
+		]);
+	});
+
+	it("archives due externally completed tasks after live file reconciliation", async () => {
+		const now = Date.parse("2026-05-07T12:00:00.000Z");
+		jest.spyOn(Date, "now").mockReturnValue(now);
+
+		const pluginData: Record<string, any> = {};
+		const plugin = createAutoArchivePlugin(pluginData);
+		const autoArchiveService = new AutoArchiveService(plugin);
+		const task = TaskFactory.createTask({
+			path: "TaskNotes/Tasks/invest-trading-212.md",
+			status: "done",
+			completedDate: "2026-05-05",
+			dateModified: "2026-05-05T14:15:00.000Z",
+			googleCalendarEventId: "event-id",
+		});
+		const archivedTask = {
+			...task,
+			path: "TaskNotes/Archive/invest-trading-212.md",
+			archived: true,
+			tags: ["task", "archived"],
+		};
+
+		plugin.cacheManager.getTaskInfo = jest.fn().mockResolvedValue(task);
+		plugin.cacheManager.getTaskByPath = jest.fn().mockResolvedValue(task);
+		plugin.taskService.toggleArchive = jest.fn().mockResolvedValue(archivedTask);
+		plugin.taskCalendarSyncService = {
+			isEnabled: jest.fn().mockReturnValue(false),
+			deleteTaskFromCalendar: jest.fn(),
+		};
+
+		await autoArchiveService.reconcileTaskByPath(task.path);
+
+		expect(plugin.taskService.toggleArchive).toHaveBeenCalledWith(task);
+		expect(pluginData.autoArchiveQueue).toEqual([]);
+		expect(plugin.taskCalendarSyncService.deleteTaskFromCalendar).not.toHaveBeenCalled();
+	});
+
+	it("does not reset an existing auto-archive timer during file reconciliation", async () => {
+		const existingItem = {
+			taskPath: "TaskNotes/Tasks/complete-me.md",
+			statusChangeTimestamp: 1000,
+			archiveAfterTimestamp: 2000,
+			statusValue: "done",
+		};
+		const pluginData: Record<string, any> = {
+			autoArchiveQueue: [existingItem],
+		};
+		const plugin = createAutoArchivePlugin(pluginData);
+		const autoArchiveService = new AutoArchiveService(plugin);
+		const task = TaskFactory.createTask({
+			path: existingItem.taskPath,
+			status: "done",
+			completedDate: "2026-05-07",
+			dateModified: "2026-05-07T12:00:00.000Z",
+		});
+
+		await autoArchiveService.reconcileTask(task);
+
+		expect(plugin.saveData).not.toHaveBeenCalled();
+		expect(pluginData.autoArchiveQueue).toEqual([existingItem]);
+	});
+
+	it("cancels queued auto-archive when external edits move the task out of an auto-archive status", async () => {
+		const existingItem = {
+			taskPath: "TaskNotes/Tasks/reopened.md",
+			statusChangeTimestamp: 1000,
+			archiveAfterTimestamp: 2000,
+			statusValue: "done",
+		};
+		const pluginData: Record<string, any> = {
+			autoArchiveQueue: [existingItem],
+		};
+		const plugin = createAutoArchivePlugin(pluginData);
+		const autoArchiveService = new AutoArchiveService(plugin);
+		const task = TaskFactory.createTask({
+			path: existingItem.taskPath,
+			status: "open",
+		});
+
+		await autoArchiveService.reconcileTask(task);
+
+		expect(pluginData.autoArchiveQueue).toEqual([]);
+	});
+
+	it("keeps queued archived linked tasks so calendar cleanup can retry after startup reconciliation", async () => {
+		const existingItem = {
+			taskPath: "TaskNotes/Archive/archive-me.md",
+			statusChangeTimestamp: 1000,
+			archiveAfterTimestamp: 2000,
+			statusValue: "done",
+		};
+		const pluginData: Record<string, any> = {
+			autoArchiveQueue: [existingItem],
+		};
+		const plugin = createAutoArchivePlugin(pluginData);
+		const autoArchiveService = new AutoArchiveService(plugin);
+		const task = TaskFactory.createTask({
+			path: existingItem.taskPath,
+			status: "done",
+			archived: true,
+			googleCalendarEventId: "event-id",
+		});
+
+		await autoArchiveService.reconcileTask(task);
+
+		expect(plugin.saveData).not.toHaveBeenCalled();
+		expect(pluginData.autoArchiveQueue).toEqual([existingItem]);
+	});
+
 	it("preserves the Google Calendar event ID when deletion fails so cleanup can be retried", async () => {
 		const frontmatter: Record<string, any> = {};
 		const pluginData: Record<string, any> = {};
