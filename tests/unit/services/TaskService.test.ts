@@ -724,6 +724,72 @@ describe('TaskService', () => {
       expect(result.completedDate).toBe('2025-01-01');
     });
 
+    it('should normalize boolean status updates before completion side effects', async () => {
+      const checkboxTask = TaskFactory.createTask({
+        status: 'false',
+        recurrence: undefined
+      });
+      const frontmatter: Record<string, unknown> = { status: false };
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(checkboxTask);
+      mockPlugin.statusManager.isCompletedStatus.mockImplementation(
+        (status: unknown) => status === 'true'
+      );
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementationOnce(
+        async (_file: TFile, fn: (fm: Record<string, unknown>) => void) => {
+          fn(frontmatter);
+        }
+      );
+
+      const result = await taskService.updateProperty(checkboxTask, 'status', true as any);
+
+      expect(result.status).toBe('true');
+      expect(result.completedDate).toBe('2025-01-01');
+      expect(frontmatter.status).toBe(true);
+      expect(frontmatter.completedDate).toBe('2025-01-01');
+      expect(mockPlugin.statusManager.isCompletedStatus).toHaveBeenCalledWith('true');
+    });
+
+    it('should use normalized boolean status for auto-archive scheduling', async () => {
+      const checkboxTask = TaskFactory.createTask({
+        status: 'false',
+        recurrence: undefined
+      });
+      const statusConfig = {
+        id: 'status-true',
+        value: 'true',
+        label: 'Complete',
+        color: '#00aa00',
+        isCompleted: true,
+        order: 1,
+        autoArchive: true,
+        autoArchiveDelay: 1440
+      };
+      const autoArchiveService = {
+        scheduleAutoArchive: jest.fn().mockResolvedValue(undefined),
+        cancelAutoArchive: jest.fn().mockResolvedValue(undefined)
+      };
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(checkboxTask);
+      mockPlugin.statusManager.isCompletedStatus.mockImplementation(
+        (status: unknown) => status === 'true'
+      );
+      mockPlugin.statusManager.getStatusConfig = jest.fn((status: unknown) =>
+        status === 'true' ? statusConfig : undefined
+      );
+      taskService.setAutoArchiveService(autoArchiveService as any);
+
+      await taskService.updateProperty(checkboxTask, 'status', true as any);
+
+      expect(mockPlugin.statusManager.getStatusConfig).toHaveBeenCalledWith('true');
+      expect(autoArchiveService.scheduleAutoArchive).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'true',
+          completedDate: '2025-01-01'
+        }),
+        statusConfig
+      );
+      expect(autoArchiveService.cancelAutoArchive).not.toHaveBeenCalled();
+    });
+
     it('should not set completion date for recurring tasks', async () => {
       const recurringTask = TaskFactory.createTask({ recurrence: 'FREQ=DAILY' });
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
