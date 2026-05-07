@@ -301,6 +301,10 @@ export class TaskService {
 		this.taskUpdateService.setAutoArchiveService(service);
 	}
 
+	private normalizeStatusValue(value: unknown): string {
+		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
+	}
+
 	/**
 	 * Process a folder path template with task and date variables
 	 *
@@ -657,7 +661,7 @@ export class TaskService {
 					// Remove empty due/scheduled dates
 					delete frontmatter[fieldName];
 				} else {
-					frontmatter[fieldName] = value;
+					frontmatter[fieldName] = normalizedValue;
 				}
 
 				// Always update the modification timestamp using field mapper
@@ -702,10 +706,6 @@ export class TaskService {
 
 			throw new Error(`Failed to update task property: ${errorMessage}`);
 		}
-	}
-
-	private normalizeStatusValue(value: unknown): string {
-		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
 	}
 
 	/**

@@ -4,6 +4,12 @@ export interface TaskCardPresentationOptions {
 	propertyLabels?: Record<string, string>;
 }
 
+const NULLISH_DISPLAY_STRINGS = new Set(["null", "undefined"]);
+
+function isNullishDisplayString(value: string): boolean {
+	return NULLISH_DISPLAY_STRINGS.has(value.trim().toLowerCase());
+}
+
 export function isBasesValue(value: unknown): value is Value {
 	return (
 		typeof value === "object" &&
@@ -14,7 +20,36 @@ export function isBasesValue(value: unknown): value is Value {
 }
 
 export function isNullBasesValue(value: unknown): boolean {
-	return value === null || (value as { constructor?: { name?: string } } | undefined)?.constructor?.name === "NullValue";
+	if (value === null || value === undefined) {
+		return true;
+	}
+
+	const basesValue = value as { constructor?: { name?: string }; toString?: () => string };
+	if (basesValue.constructor?.name === "NullValue") {
+		return true;
+	}
+
+	return isBasesValue(value) && isNullishDisplayString(value.toString());
+}
+
+export function isEmptyCardDisplayValue(value: unknown): boolean {
+	if (isNullBasesValue(value)) {
+		return true;
+	}
+
+	if (Array.isArray(value)) {
+		return value.every(isEmptyCardDisplayValue);
+	}
+
+	if (typeof value === "string") {
+		return value.trim() === "" || isNullishDisplayString(value);
+	}
+
+	if (isBasesValue(value)) {
+		return value.toString().trim() === "";
+	}
+
+	return false;
 }
 
 export function renderBasesValue(

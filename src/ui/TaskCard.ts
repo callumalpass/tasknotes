@@ -37,7 +37,7 @@ import {
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import {
 	extractBasesValue,
-	isNullBasesValue,
+	isEmptyCardDisplayValue,
 	renderBasesValue,
 	resolveTaskCardPropertyLabel,
 	type TaskCardPresentationOptions,
@@ -958,13 +958,7 @@ function renderPropertyMetadata(
  * Check if a value is valid for display
  */
 function hasValidValue(value: any): boolean {
-	return (
-		value !== null &&
-		value !== undefined &&
-		!isNullBasesValue(value) &&
-		!(Array.isArray(value) && value.length === 0) &&
-		!(typeof value === "string" && value.trim() === "")
-	);
+	return !isEmptyCardDisplayValue(value);
 }
 
 
@@ -1019,7 +1013,7 @@ function renderUserProperty(
 		}
 	} else if (userField.type === "list" && Array.isArray(value)) {
 		// Handle list fields - avoid recursive renderPropertyValue call to prevent stack overflow
-		const validItems = value.filter((item) => item !== null && item !== undefined);
+		const validItems = value.map((item) => extractBasesValue(item)).filter(hasValidValue);
 		validItems.forEach((item, idx) => {
 			if (idx > 0) valueContainer.appendChild(document.createTextNode(", "));
 
@@ -1086,7 +1080,7 @@ function renderGenericProperty(
 		// Extract Bases values from array items as they may be wrapped objects
 		const filtered = value
 			.map((v) => extractBasesValue(v))
-			.filter((v) => v !== null && v !== undefined && v !== "");
+			.filter(hasValidValue);
 		filtered.forEach((item, idx) => {
 			if (idx > 0) valueContainer.appendChild(document.createTextNode(", "));
 			renderPropertyValue(valueContainer, item, plugin);
@@ -1104,6 +1098,10 @@ function renderPropertyValue(
 	value: unknown,
 	plugin?: TaskNotesPlugin
 ): void {
+	if (!hasValidValue(value)) {
+		return;
+	}
+
 	if (plugin && renderBasesValue(container, value, plugin.app.renderContext)) {
 		return;
 	}
