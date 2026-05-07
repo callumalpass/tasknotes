@@ -109,8 +109,8 @@ function createGoogleSyncPlugin(frontmatter: Record<string, any> = {}) {
 
 function createScheduledAnchorRecurringTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
-		path: "TaskNotes/Tasks/Phone pharmacy.md",
-		title: "Phone pharmacy",
+		path: "TaskNotes/Tasks/Call supplier.md",
+		title: "Call supplier",
 		status: "ready",
 		priority: "normal",
 		archived: false,

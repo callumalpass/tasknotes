@@ -77,7 +77,7 @@ describe("Google Calendar archive reliability", () => {
 		const plugin = createAutoArchivePlugin(pluginData);
 		const autoArchiveService = new AutoArchiveService(plugin);
 		const task = TaskFactory.createTask({
-			path: "TaskNotes/Tasks/process-flagged-email.md",
+			path: "TaskNotes/Tasks/external-completed-task.md",
 			status: "done",
 			completedDate: "2026-05-05",
 			dateModified: "2026-05-05T10:41:00.000Z",
@@ -104,7 +104,7 @@ describe("Google Calendar archive reliability", () => {
 		const plugin = createAutoArchivePlugin(pluginData);
 		const autoArchiveService = new AutoArchiveService(plugin);
 		const task = TaskFactory.createTask({
-			path: "TaskNotes/Tasks/invest-trading-212.md",
+			path: "TaskNotes/Tasks/due-external-task.md",
 			status: "done",
 			completedDate: "2026-05-05",
 			dateModified: "2026-05-05T14:15:00.000Z",
@@ -112,7 +112,7 @@ describe("Google Calendar archive reliability", () => {
 		});
 		const archivedTask = {
 			...task,
-			path: "TaskNotes/Archive/invest-trading-212.md",
+			path: "TaskNotes/Archive/due-external-task.md",
 			archived: true,
 			tags: ["task", "archived"],
 		};
