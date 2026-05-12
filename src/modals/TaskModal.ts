@@ -22,7 +22,6 @@ import { ProjectSelectModal } from "./ProjectSelectModal";
 import { TaskDependency, TaskInfo, Reminder } from "../types";
 import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
 import {
-	appendInternalLink,
 	renderProjectLinks,
 	type LinkServices,
 } from "../ui/renderers/linkRenderer";

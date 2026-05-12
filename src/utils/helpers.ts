@@ -18,9 +18,7 @@ import {
 	updateToNextScheduledOccurrence as updateToNextScheduledOccurrenceCore,
 } from "../core/recurrence";
 import {
-	getTodayString,
 	parseDateToLocal,
-	formatDateForStorage,
 	isBeforeDateSafe as _isBeforeDateSafe,
 	getTodayLocal as _getTodayLocal,
 } from "./dateUtils";

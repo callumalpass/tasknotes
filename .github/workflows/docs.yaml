@@ -39,12 +39,27 @@ jobs:
       run: node build.js
       working-directory: docs-builder
 
+    - name: Detect release video sources
+      id: release-videos
+      shell: bash
+      run: |
+        shopt -s nullglob
+        sources=(release-videos/*/index.html)
+        if (( ${#sources[@]} == 0 )); then
+          echo "found=false" >> "$GITHUB_OUTPUT"
+          echo "No release video sources found; skipping video rendering."
+        else
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          printf 'Found %s release video source(s).\n' "${#sources[@]}"
+        fi
+
     # ----- Render hyperframes release videos and stage them as docs assets -----
     # Source HTML lives in /release-videos/<version>/. Rendering uses headless
     # Chrome with CanvasDrawElement enabled for the HTML-in-canvas CRT pass.
     # Cached output is keyed on the source files so we only re-render when
     # the HTML, shared scripts, or audio actually change.
     - name: Install Chrome dev channel
+      if: steps.release-videos.outputs.found == 'true'
       run: |
         wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-linux-signing-keyring.gpg
         echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
@@ -52,12 +67,14 @@ jobs:
         sudo apt-get install -y google-chrome-unstable
 
     - name: Cache hyperframes Chromium
+      if: steps.release-videos.outputs.found == 'true'
       uses: actions/cache@v4
       with:
         path: ~/.cache/hyperframes
         key: hyperframes-cache-v1
 
     - name: Cache rendered release videos
+      if: steps.release-videos.outputs.found == 'true'
       id: video-cache
       uses: actions/cache@v4
       with:
@@ -65,8 +82,9 @@ jobs:
         key: release-videos-${{ hashFiles('release-videos/**/index.html', 'release-videos/_shared/**/*.js', 'release-videos/render-with-crt.sh', 'release-videos/_audio/track.mp3') }}
 
     - name: Render release videos
-      if: steps.video-cache.outputs.cache-hit != 'true'
+      if: steps.release-videos.outputs.found == 'true' && steps.video-cache.outputs.cache-hit != 'true'
       run: |
+        shopt -s nullglob
         mkdir -p docs-builder/dist/assets/release-videos
         for src in release-videos/*/index.html; do
           version=$(basename "$(dirname "$src")")
@@ -80,7 +98,7 @@ jobs:
     # actions/cache restore happens before docs build (which wipes dist/),
     # so re-stage them after.
     - name: Restore cached videos into fresh dist/
-      if: steps.video-cache.outputs.cache-hit == 'true'
+      if: steps.release-videos.outputs.found == 'true' && steps.video-cache.outputs.cache-hit == 'true'
       run: |
         # cache restore puts files at docs-builder/dist/assets/release-videos
         # but the build above wiped dist/. Re-fetch from the cache by re-running

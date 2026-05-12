@@ -1,6 +1,6 @@
 import TaskNotesPlugin from "../main";
 import { FieldMapper } from "../services/FieldMapper";
-import type { FrontmatterPropertyName, TaskCardPropertyId } from "../types";
+import type { TaskCardPropertyId } from "../types";
 
 /**
  * PropertyMappingService - Centralized property name mapping for Bases integration
