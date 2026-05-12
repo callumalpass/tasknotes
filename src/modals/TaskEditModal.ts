@@ -3,31 +3,18 @@ import { App, Notice, TFile, TAbstractFile, setIcon, setTooltip } from "obsidian
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
-import {
-	getCurrentTimestamp,
-	formatDateForStorage,
-	generateUTCCalendarDates,
-	getUTCStartOfWeek,
-	getUTCEndOfWeek,
-	getUTCStartOfMonth,
-	getUTCEndOfMonth,
-	getTodayLocal,
-	parseDateAsLocal,
-} from "../utils/dateUtils";
 import { formatTimestampForDisplay } from "../utils/dateUtils";
 import {
-	generateRecurringInstances,
 	extractTaskInfo,
 	calculateTotalTimeSpent,
 	formatTime,
-	updateToNextScheduledOccurrence,
 	sanitizeTags,
 } from "../utils/helpers";
-import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
-import { generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { ConfirmationModal } from "./ConfirmationModal";
+import { createCompletionsCalendarSection } from "./taskEditCompletions";
+import { BlockingUpdates, buildTaskEditChanges } from "./taskEditChanges";
 
 export interface TaskEditOptions {
 	task: TaskInfo;
@@ -41,14 +28,9 @@ export class TaskEditModal extends TaskModal {
 	private editModalKeyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 	// Changed from Set to array for consistency with other state management
 	private completedInstancesChanges: string[] = [];
-	private calendarWrapper: HTMLElement | null = null;
 	private initialBlockedBy: TaskDependency[] = [];
 	private initialBlockingPaths: string[] = [];
-	private pendingBlockingUpdates: {
-		added: string[];
-		removed: string[];
-		raw: Record<string, TaskDependency>;
-	} = { added: [], removed: [], raw: {} };
+	private pendingBlockingUpdates: BlockingUpdates = { added: [], removed: [], raw: {} };
 	private unresolvedBlockingEntries: string[] = [];
 	private initialTags = "";
 	private isShowingConfirmation = false;
@@ -169,32 +151,6 @@ export class TaskEditModal extends TaskModal {
 		} catch (error) {
 			console.error("Error initializing user fields:", error);
 		}
-	}
-
-	private dependenciesEqual(a: TaskDependency[], b: TaskDependency[]): boolean {
-		if (a.length !== b.length) {
-			return false;
-		}
-
-		const sortDependencies = (deps: TaskDependency[]) =>
-			[...deps].sort((left, right) => left.uid.localeCompare(right.uid));
-
-		const sortedA = sortDependencies(a);
-		const sortedB = sortDependencies(b);
-
-		for (let i = 0; i < sortedA.length; i++) {
-			const depA = sortedA[i];
-			const depB = sortedB[i];
-			if (
-				depA.uid !== depB.uid ||
-				depA.reltype !== depB.reltype ||
-				(depA.gap || "") !== (depB.gap || "")
-			) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	protected showReminderContextMenu(event: MouseEvent): void {
@@ -321,7 +277,12 @@ export class TaskEditModal extends TaskModal {
 	 * Add completions calendar and metadata sections after details
 	 */
 	protected createAdditionalSections(container: HTMLElement): void {
-		this.createCompletionsCalendarSection(container);
+		createCompletionsCalendarSection(container, {
+			task: this.task,
+			plugin: this.plugin,
+			completedInstancesChanges: this.completedInstancesChanges,
+			translate: (key, params) => this.t(key, params),
+		});
 		this.createMetadataSection(container);
 	}
 
@@ -432,19 +393,6 @@ export class TaskEditModal extends TaskModal {
 		super.onClose();
 	}
 
-	private createCompletionsCalendarSection(container: HTMLElement): void {
-		// Only show calendar for recurring tasks
-		if (this.task.recurrence) {
-			const calendarContainer = container.createDiv("completions-calendar-container");
-
-			const calendarLabel = calendarContainer.createDiv("detail-label");
-			calendarLabel.textContent = this.t("modals.taskEdit.sections.completions");
-
-			const calendarContent = calendarContainer.createDiv("completions-calendar-content");
-			this.createRecurringCalendar(calendarContent);
-		}
-	}
-
 	private createMetadataSection(container: HTMLElement): void {
 		this.metadataContainer = container.createDiv("metadata-container");
 
@@ -488,149 +436,6 @@ export class TaskEditModal extends TaskModal {
 			pathDiv.createSpan("metadata-key").textContent =
 				this.t("modals.taskEdit.metadata.file") + " ";
 			pathDiv.createSpan("metadata-value").textContent = this.task.path;
-		}
-	}
-
-	private createRecurringCalendar(container: HTMLElement): void {
-		// Calendar wrapper
-		this.calendarWrapper = container.createDiv("recurring-calendar");
-
-		// Show current month by default, or the month with most recent completions
-		// Use local dates for calendar display
-		const currentDate = getTodayLocal();
-		let mostRecentCompletion = currentDate;
-
-		if (this.task.complete_instances && this.task.complete_instances.length > 0) {
-			const validCompletions = this.task.complete_instances
-				.filter((d) => d && typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.trim())) // Only valid YYYY-MM-DD dates
-				.map((d) => parseDateAsLocal(d).getTime())
-				.filter((time) => !isNaN(time)); // Filter out invalid dates
-
-			if (validCompletions.length > 0) {
-				mostRecentCompletion = new Date(Math.max(...validCompletions));
-			}
-		}
-
-		this.renderCalendarMonth(this.calendarWrapper, mostRecentCompletion);
-	}
-
-	private renderCalendarMonth(container: HTMLElement, displayDate: Date): void {
-		container.empty();
-
-		// Minimalist header
-		const header = container.createDiv("recurring-calendar__header");
-		const prevButton = header.createEl("button", {
-			cls: "recurring-calendar__nav",
-			text: "‹",
-		});
-		const monthLabel = header.createSpan("recurring-calendar__month");
-		const locale = this.plugin.i18n.getCurrentLocale() || "en";
-		const monthFormatter = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
-		monthLabel.textContent = monthFormatter.format(displayDate);
-		const nextButton = header.createEl("button", {
-			cls: "recurring-calendar__nav",
-			text: "›",
-		});
-
-		// Minimalist grid
-		const grid = container.createDiv("recurring-calendar__grid");
-
-		// Get all dates to display (including padding from previous/next month)
-		// Use UTC dates consistently to avoid timezone issues
-		const monthStart = getUTCStartOfMonth(displayDate);
-		const monthEnd = getUTCEndOfMonth(displayDate);
-
-		// Respect the week start setting from calendar view settings
-		const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
-
-		const calendarStart = getUTCStartOfWeek(monthStart, firstDaySetting);
-		const calendarEnd = getUTCEndOfWeek(monthEnd, firstDaySetting);
-		const allDays = generateUTCCalendarDates(calendarStart, calendarEnd);
-
-		// Generate recurring instances for this month (with some buffer)
-		const bufferStart = getUTCStartOfMonth(displayDate);
-		bufferStart.setUTCMonth(bufferStart.getUTCMonth() - 1);
-		const bufferEnd = getUTCEndOfMonth(displayDate);
-		bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
-
-		const recurringDates = generateRecurringInstances(this.task, bufferStart, bufferEnd);
-		const recurringDateStrings = new Set(recurringDates.map((d) => formatDateForStorage(d)));
-
-		// Get current completed instances (original + changes)
-		const completedInstances = new Set(this.task.complete_instances || []);
-		for (const dateStr of this.completedInstancesChanges) {
-			if (completedInstances.has(dateStr)) {
-				completedInstances.delete(dateStr);
-			} else {
-				completedInstances.add(dateStr);
-			}
-		}
-
-		// Get skipped instances (read-only display)
-		const skippedInstances = new Set(this.task.skipped_instances || []);
-
-		// Render each day (no headers, just numbers)
-		allDays.forEach((day) => {
-			const dayStr = formatDateForStorage(day);
-			// FIX: Use UTC-to-UTC comparison instead of mixing local and UTC dates
-			const isCurrentMonth = day.getUTCMonth() === displayDate.getUTCMonth();
-			const isRecurring = recurringDateStrings.has(dayStr);
-			const isCompleted = completedInstances.has(dayStr);
-			const isSkipped = skippedInstances.has(dayStr);
-
-			const dayElement = grid.createDiv("recurring-calendar__day");
-			// FIX: Use UTC date method instead of timezone-sensitive format()
-			dayElement.textContent = String(day.getUTCDate());
-
-			// Apply BEM modifier classes
-			if (!isCurrentMonth) {
-				dayElement.addClass("recurring-calendar__day--faded");
-			}
-
-			// Make all dates clickable
-			dayElement.addClass("recurring-calendar__day--clickable");
-
-			if (isRecurring) {
-				dayElement.addClass("recurring-calendar__day--recurring");
-			}
-
-			if (isCompleted) {
-				dayElement.addClass("recurring-calendar__day--completed");
-			}
-
-			if (isSkipped) {
-				dayElement.addClass("recurring-calendar__day--skipped");
-			}
-
-			// Make all dates clickable
-			dayElement.addEventListener("click", () => {
-				this.toggleCompletedInstance(dayStr);
-				this.renderCalendarMonth(container, displayDate);
-			});
-		});
-
-		// Navigation event handlers
-		prevButton.addEventListener("click", () => {
-			// FIX: Use UTC methods to prevent timezone drift
-			const prevMonth = new Date(displayDate);
-			prevMonth.setUTCMonth(prevMonth.getUTCMonth() - 1);
-			this.renderCalendarMonth(container, prevMonth);
-		});
-
-		nextButton.addEventListener("click", () => {
-			// FIX: Use UTC methods to prevent timezone drift
-			const nextMonth = new Date(displayDate);
-			nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
-			this.renderCalendarMonth(container, nextMonth);
-		});
-	}
-
-	private toggleCompletedInstance(dateStr: string): void {
-		const index = this.completedInstancesChanges.indexOf(dateStr);
-		if (index !== -1) {
-			this.completedInstancesChanges.splice(index, 1);
-		} else {
-			this.completedInstancesChanges.push(dateStr);
 		}
 	}
 
@@ -724,287 +529,52 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private getChanges(): Partial<TaskInfo> {
-		const changes: Partial<TaskInfo> = {};
-
-		// Check for changes and only include modified fields
-		if (this.title.trim() !== this.task.title) {
-			changes.title = this.title.trim();
-		}
-
-		if (this.dueDate !== (this.task.due || "")) {
-			changes.due = this.dueDate || undefined;
-		}
-
-		if (this.scheduledDate !== (this.task.scheduled || "")) {
-			changes.scheduled = this.scheduledDate || undefined;
-		}
-
-		if (this.priority !== this.task.priority) {
-			changes.priority = this.priority;
-		}
-
-		if (this.status !== this.task.status) {
-			changes.status = this.status;
-		}
-
-		// Parse and compare contexts
-		const newContexts = this.contexts
-			.split(",")
-			.map((c) => c.trim())
-			.filter((c) => c.length > 0);
-		const oldContexts = this.task.contexts || [];
-
-		if (JSON.stringify(newContexts.sort()) !== JSON.stringify(oldContexts.sort())) {
-			changes.contexts = newContexts.length > 0 ? newContexts : undefined;
-		}
-
-		// Parse and compare projects
-		const newProjects = splitListPreservingLinksAndQuotes(this.projects);
-		const oldProjects = this.task.projects || [];
-
-		const normalizeProjectList = (projects: string[]): string[] =>
-			projects
-				.map((project) => {
-					if (!project || typeof project !== "string") return "";
-					const trimmed = project.trim();
-					if (!trimmed) return "";
-					return parseLinkToPath(trimmed).trim();
-				})
-				.filter((project) => project.length > 0);
-
-		const normalizedNewProjects = normalizeProjectList(newProjects).sort();
-		const normalizedOldProjects = normalizeProjectList(oldProjects).sort();
-
-		if (
-			JSON.stringify(normalizedNewProjects) !== JSON.stringify(normalizedOldProjects)
-		) {
-			changes.projects = newProjects.length > 0 ? newProjects : [];
-		}
-
-		// Parse and compare tags
-		const tagsUnchanged =
-			sanitizeTags(this.tags) === sanitizeTags(this.initialTags);
-		const newTags = this.tags
-			.split(",")
-			.map((t) => t.trim())
-			.filter((t) => t.length > 0);
-
-		// Add the task tag if using tag-based identification and it's not already present
-		if (
-			this.plugin.settings.taskIdentificationMethod === 'tag' &&
-			this.plugin.settings.taskTag &&
-			!newTags.includes(this.plugin.settings.taskTag)
-		) {
-			newTags.push(this.plugin.settings.taskTag);
-		}
-
-		const oldTags = this.task.tags || [];
-
-		if (!tagsUnchanged && JSON.stringify(newTags.sort()) !== JSON.stringify(oldTags.sort())) {
-			changes.tags = newTags.length > 0 ? newTags : undefined;
-		}
-
-		// Compare time estimate
-		const newTimeEstimate = this.timeEstimate > 0 ? this.timeEstimate : undefined;
-		const oldTimeEstimate = this.task.timeEstimate;
-
-		if (newTimeEstimate !== oldTimeEstimate) {
-			changes.timeEstimate = newTimeEstimate;
-		}
-
-		// Compare recurrence
-		const oldRecurrence = typeof this.task.recurrence === "string" ? this.task.recurrence : "";
-
-		if (this.recurrenceRule !== oldRecurrence) {
-			changes.recurrence = this.recurrenceRule || undefined;
-		}
-
-		// Compare recurrence anchor
-		const oldRecurrenceAnchor = this.task.recurrence_anchor || 'scheduled';
-
-		if (this.recurrenceAnchor !== oldRecurrenceAnchor) {
-			changes.recurrence_anchor = this.recurrenceAnchor;
-		}
-
-		// Compare reminders
-		const oldReminders = this.task.reminders || [];
-		const newReminders = this.reminders || [];
-
-		if (JSON.stringify(newReminders) !== JSON.stringify(oldReminders)) {
-			changes.reminders = newReminders.length > 0 ? newReminders : undefined;
-		}
-
-		const newBlockedDependencies = this.blockedByItems.map((item) => ({
-			...item.dependency,
-		}));
-		if (!this.dependenciesEqual(newBlockedDependencies, this.initialBlockedBy)) {
-			changes.blockedBy =
-				newBlockedDependencies.length > 0 ? newBlockedDependencies : undefined;
-		}
-
-		const resolvedBlocking = new Map<string, TaskDependency>();
-		const unresolvedEntries: string[] = [];
-
-		this.blockingItems.forEach((item) => {
-			if (item.path) {
-				resolvedBlocking.set(item.path, { ...item.dependency });
-			} else {
-				unresolvedEntries.push(item.dependency.uid);
-			}
-		});
-
-		const newBlockingPaths = Array.from(resolvedBlocking.keys());
-		const originalPaths = new Set(this.initialBlockingPaths);
-		const newPathSet = new Set(newBlockingPaths);
-
-		const addedPaths = newBlockingPaths.filter((path) => !originalPaths.has(path));
-		const removedPaths = this.initialBlockingPaths.filter((path) => !newPathSet.has(path));
-
-		const rawAdditions: Record<string, TaskDependency> = {};
-		for (const path of addedPaths) {
-			const raw = resolvedBlocking.get(path);
-			if (raw) {
-				rawAdditions[path] = { ...raw };
-			}
-		}
-
-		this.pendingBlockingUpdates = {
-			added: addedPaths,
-			removed: removedPaths,
-			raw: rawAdditions,
-		};
-		this.unresolvedBlockingEntries = unresolvedEntries;
-
-		const normalizedDetails = this.normalizeDetails(this.details);
-		const normalizedOriginal = this.normalizeDetails(this.originalDetails);
-		if (normalizedDetails !== normalizedOriginal) {
-			changes.details = normalizedDetails.trimEnd();
-		}
-
-		// Apply completed instances changes
-		if (this.completedInstancesChanges.length > 0) {
-			const currentCompleted = new Set(this.task.complete_instances || []);
-			let latestAddedCompletion: string | null = null;
-
-			for (const dateStr of this.completedInstancesChanges) {
-				if (currentCompleted.has(dateStr)) {
-					currentCompleted.delete(dateStr);
-				} else {
-					currentCompleted.add(dateStr);
-					// Track the latest date being added (for completion-based recurrence)
-					if (!latestAddedCompletion || dateStr > latestAddedCompletion) {
-						latestAddedCompletion = dateStr;
-					}
-				}
-			}
-			changes.complete_instances = Array.from(currentCompleted);
-
-			// If task has recurrence, handle DTSTART update and scheduled date calculation
-			if (this.task.recurrence && typeof this.task.recurrence === 'string') {
-				const recurrenceAnchor = this.task.recurrence_anchor || 'scheduled';
-
-				// For completion-based recurrence, update DTSTART when adding a completion
-				if (recurrenceAnchor === 'completion' && latestAddedCompletion) {
-					const { updateDTSTARTInRecurrenceRule } = require('../utils/helpers');
-					const updatedRecurrence = updateDTSTARTInRecurrenceRule(
-						this.task.recurrence,
-						latestAddedCompletion
-					);
-					if (updatedRecurrence) {
-						changes.recurrence = updatedRecurrence;
-					}
-				}
-
-				// Calculate next scheduled date
-				const tempTask: TaskInfo = {
-					...this.task,
-					...changes,
-					// Use updated recurrence if it was changed
-					recurrence: changes.recurrence || this.task.recurrence
-				};
-				const nextDates = updateToNextScheduledOccurrence(
-					tempTask,
-					this.plugin.settings.maintainDueDateOffsetInRecurring
-				);
-				if (nextDates.scheduled) {
-					changes.scheduled = nextDates.scheduled;
-				}
-				if (nextDates.due) {
-					changes.due = nextDates.due;
-				}
-			}
-		}
-
-		// Compare user fields and add to changes if modified
-		const userFieldsChanges = this.getUserFieldChanges();
-		if (Object.keys(userFieldsChanges).length > 0) {
-			(changes as any).customFrontmatter = userFieldsChanges;
-		}
-
-		// Always update modified timestamp if there are changes
-		if (Object.keys(changes).length > 0) {
-			changes.dateModified = getCurrentTimestamp();
-		}
-
-		return changes;
-	}
-
-	private getUserFieldChanges(): Record<string, any> {
-		const userFieldsChanges: Record<string, any> = {};
-
+		let frontmatter: Record<string, any> = {};
 		try {
-			// Get current frontmatter values
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
-			if (!file || !(file instanceof TFile)) {
-				return userFieldsChanges;
-			}
-
-			const metadata = this.app.metadataCache.getFileCache(file);
-			const frontmatter: Record<string, any> = metadata?.frontmatter || {};
-
-			// Compare current values with original frontmatter
-			const userFieldConfigs = this.plugin.settings?.userFields || [];
-			for (const field of userFieldConfigs) {
-				if (!field || !field.key) continue;
-
-				const newValue = this.userFields[field.key];
-				const oldValue = frontmatter[field.key];
-
-				// Check if values are different
-				if (this.isDifferent(newValue, oldValue)) {
-					// Set to null if empty value, otherwise use the new value
-					userFieldsChanges[field.key] =
-						newValue === null || newValue === undefined || newValue === ""
-							? null
-							: newValue;
-				}
+			if (file instanceof TFile) {
+				frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter || {};
 			}
 		} catch (error) {
-			console.error("Error comparing user fields:", error);
+			console.error("Error reading user field frontmatter:", error);
 		}
 
-		return userFieldsChanges;
-	}
+		const result = buildTaskEditChanges({
+			task: this.task,
+			title: this.title,
+			dueDate: this.dueDate,
+			scheduledDate: this.scheduledDate,
+			priority: this.priority,
+			status: this.status,
+			contexts: this.contexts,
+			projects: this.projects,
+			tags: this.tags,
+			initialTags: this.initialTags,
+			timeEstimate: this.timeEstimate,
+			recurrenceRule: this.recurrenceRule,
+			recurrenceAnchor: this.recurrenceAnchor,
+			reminders: this.reminders,
+			blockedByItems: this.blockedByItems,
+			initialBlockedBy: this.initialBlockedBy,
+			blockingItems: this.blockingItems,
+			initialBlockingPaths: this.initialBlockingPaths,
+			details: this.details,
+			originalDetails: this.originalDetails,
+			completedInstancesChanges: this.completedInstancesChanges,
+			userFields: this.userFields,
+			frontmatter,
+			userFieldConfigs: this.plugin.settings?.userFields || [],
+			taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
+			taskTag: this.plugin.settings.taskTag,
+			maintainDueDateOffsetInRecurring:
+				this.plugin.settings.maintainDueDateOffsetInRecurring,
+			normalizeDetails: (value) => this.normalizeDetails(value),
+		});
 
-	private isDifferent(newValue: any, oldValue: any): boolean {
-		// Handle null/undefined/empty comparisons
-		const normalizeEmpty = (value: any) => {
-			if (value === null || value === undefined || value === "") {
-				return null;
-			}
-			return value;
-		};
+		this.pendingBlockingUpdates = result.blockingUpdates;
+		this.unresolvedBlockingEntries = result.unresolvedBlockingEntries;
 
-		const normalizedNew = normalizeEmpty(newValue);
-		const normalizedOld = normalizeEmpty(oldValue);
-
-		// For arrays (list fields), compare as JSON strings
-		if (Array.isArray(normalizedNew) || Array.isArray(normalizedOld)) {
-			return JSON.stringify(normalizedNew) !== JSON.stringify(normalizedOld);
-		}
-
-		// For other values, direct comparison
-		return normalizedNew !== normalizedOld;
+		return result.changes;
 	}
 
 	private async openTaskNote(): Promise<void> {
