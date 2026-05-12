@@ -74,7 +74,7 @@ export class DateTimePickerModal extends Modal {
 			);
 
 		// Focus date input
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.dateInput.focus();
 		}, 100);
 

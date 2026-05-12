@@ -4,7 +4,7 @@ import { StatusConfig } from "../types";
  * Service for managing custom task statuses
  */
 export class StatusManager {
-	constructor(private statuses: StatusConfig[], private defaultStatus: string = "open") {}
+	constructor(private statuses: StatusConfig[], private defaultStatus = "open") {}
 
 	private normalizeStatusValue(value: unknown): string {
 		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);

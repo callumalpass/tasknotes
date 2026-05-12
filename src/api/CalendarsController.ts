@@ -6,7 +6,7 @@ import { OAuthService } from "../services/OAuthService";
 import { ICSSubscriptionService } from "../services/ICSSubscriptionService";
 import { CalendarProviderRegistry } from "../services/CalendarProvider";
 import { OAuthProvider } from "../types";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 import { Get } from "../utils/OpenAPIDecorators";
 import { collectCalendarEvents } from "../utils/calendarUtils";
 

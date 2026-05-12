@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import {
 	Notice,
 	Plugin,
@@ -297,7 +297,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const duration = Date.now() - warmupStartTime;
 			// Only log slow warmup for debugging large vaults
 			if (duration > 2000) {
-				// eslint-disable-next-line no-console
+				 
 				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms`);
 			}
 		} catch (error) {
@@ -329,7 +329,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.registerEvent(
 			this.emitter.on(EVENT_TASK_UPDATED, () => {
 				// Small delay to ensure task state changes are fully propagated
-				setTimeout(() => {
+				window.setTimeout(() => {
 					this.statusBarService.requestUpdate();
 				}, 100);
 			})
@@ -339,7 +339,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.registerEvent(
 			this.emitter.on(EVENT_DATA_CHANGED, () => {
 				// Small delay to ensure data changes are fully propagated
-				setTimeout(() => {
+				window.setTimeout(() => {
 					this.statusBarService.requestUpdate();
 				}, 100);
 			})
@@ -350,7 +350,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// Listen for Pomodoro start events
 			this.registerEvent(
 				this.emitter.on("pomodoro-start", () => {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						this.statusBarService.requestUpdate();
 					}, 100);
 				})
@@ -359,7 +359,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// Listen for Pomodoro stop events
 			this.registerEvent(
 				this.emitter.on("pomodoro-stop", () => {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						this.statusBarService.requestUpdate();
 					}, 100);
 				})
@@ -368,7 +368,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// Listen for Pomodoro state changes
 			this.registerEvent(
 				this.emitter.on("pomodoro-state-changed", () => {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						this.statusBarService.requestUpdate();
 					}, 100);
 				})
@@ -419,7 +419,7 @@ export default class TaskNotesPlugin extends Plugin {
 				const showReleaseNotes = this.settings.showReleaseNotesOnUpdate ?? true;
 				if (showReleaseNotes) {
 					// Show release notes after a delay to ensure UI is ready
-					setTimeout(async () => {
+					window.setTimeout(async () => {
 						await this.activateReleaseNotesView();
 						// Update lastSeenVersion immediately after showing the release notes
 						// This ensures they only show once per version
@@ -453,7 +453,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Additional safety check - wait until migration is marked complete
 		while (!this.migrationComplete) {
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
 		}
 	}
 
@@ -487,7 +487,7 @@ export default class TaskNotesPlugin extends Plugin {
 		// Only emit refresh event if triggerRefresh is true
 		if (triggerRefresh) {
 			// Use requestAnimationFrame for better UI timing instead of setTimeout
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				this.emitter.trigger(EVENT_DATA_CHANGED);
 			});
 		}
@@ -666,7 +666,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		if (hasNewFields || hasNewCalendarSettings || hasNewCommandMappings) {
 			// Save the migrated settings to include new field mappings (non-blocking)
-			setTimeout(async () => {
+			window.setTimeout(async () => {
 				try {
 					const data = (await this.loadData()) || {};
 					// Merge only settings properties, preserving non-settings data
@@ -786,16 +786,16 @@ export default class TaskNotesPlugin extends Plugin {
 		for (const segment of segments) {
 			currentPath = currentPath ? `${currentPath}/${segment}` : segment;
 
-			// eslint-disable-next-line no-await-in-loop
+			 
 			if (await adapter.exists(currentPath)) {
 				continue;
 			}
 
 			try {
-				// eslint-disable-next-line no-await-in-loop
+				 
 				await this.app.vault.createFolder(currentPath);
 			} catch (error) {
-				// eslint-disable-next-line no-await-in-loop
+				 
 				if (!(await adapter.exists(currentPath))) {
 					throw error;
 				}
@@ -822,7 +822,7 @@ export default class TaskNotesPlugin extends Plugin {
 				}
 
 				const normalizedPath = normalizePath(rawPath);
-				// eslint-disable-next-line no-await-in-loop
+				 
 				if (await adapter.exists(normalizedPath)) {
 					skipped.push(rawPath);
 					continue;
@@ -840,11 +840,11 @@ export default class TaskNotesPlugin extends Plugin {
 				const directory = lastSlashIndex >= 0 ? normalizedPath.substring(0, lastSlashIndex) : "";
 
 				if (directory) {
-					// eslint-disable-next-line no-await-in-loop
+					 
 					await this.ensureFolderHierarchy(directory);
 				}
 
-				// eslint-disable-next-line no-await-in-loop
+				 
 				await this.app.vault.create(normalizedPath, template);
 				created.push(rawPath);
 			}
@@ -1446,11 +1446,11 @@ export default class TaskNotesPlugin extends Plugin {
 				if (selectedTask) {
 					// Create link using Obsidian's generateMarkdownLink (respects user's link format settings)
 					const file = this.app.vault.getAbstractFileByPath(selectedTask.path);
-					if (file) {
+					if (file instanceof TFile) {
 						const currentFile = this.app.workspace.getActiveFile();
 						const sourcePath = currentFile?.path || "";
 						const properLink = this.app.fileManager.generateMarkdownLink(
-							file as TFile,
+							file,
 							sourcePath,
 							"",
 							selectedTask.title // Use task title as alias
@@ -1664,7 +1664,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Create link using Obsidian's generateMarkdownLink
 			const file = this.app.vault.getAbstractFileByPath(task.path);
-			if (!file) {
+			if (!(file instanceof TFile)) {
 				new Notice("Failed to create link - file not found");
 				return;
 			}
@@ -1672,7 +1672,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const currentFile = this.app.workspace.getActiveFile();
 			const sourcePath = currentFile?.path || "";
 			const properLink = this.app.fileManager.generateMarkdownLink(
-				file as TFile,
+				file,
 				sourcePath,
 				"",
 				task.title // Use task title as alias

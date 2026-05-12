@@ -101,7 +101,7 @@ export class StatsView extends ItemView {
 	private statsCache = new Map<string, TaskInfo[]>();
 	private lastCacheTime = 0;
 	private readonly CACHE_DURATION = 60000; // 1 minute
-	private debounceTimeout: ReturnType<typeof setTimeout> | null = null;
+	private debounceTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
 		super(leaf);
@@ -764,10 +764,10 @@ export class StatsView extends ItemView {
 	 */
 	private async applyFilters() {
 		if (this.debounceTimeout) {
-			clearTimeout(this.debounceTimeout);
+			window.clearTimeout(this.debounceTimeout);
 		}
 
-		this.debounceTimeout = setTimeout(async () => {
+		this.debounceTimeout = window.setTimeout(async () => {
 			await this.refreshStats();
 			this.debounceTimeout = null;
 		}, 300);

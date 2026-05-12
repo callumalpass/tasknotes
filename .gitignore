@@ -89,5 +89,15 @@ AGENTS.md
 .serena/
 /.codex
 
-# Hyperframes release-announcement videos (assets + renders)
-/release-videos/
+# Hyperframes release-announcement videos
+# Track HTML source + audio + docs in git; ignore rendered mp4s and experimental dirs.
+/release-videos/*
+!/release-videos/_audio/
+!/release-videos/_shared/
+!/release-videos/_shared/**
+!/release-videos/INSTRUCTIONS.md
+!/release-videos/render-with-crt.sh
+!/release-videos/4.5.2/
+/release-videos/_audio/*.wav
+/release-videos/_audio/__pycache__/
+/release-videos/4.5.2/*.mp4

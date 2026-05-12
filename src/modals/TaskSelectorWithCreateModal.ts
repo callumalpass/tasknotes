@@ -41,8 +41,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 	private nlParser: NaturalLanguageParser;
 	private createFooterEl: HTMLElement | null = null;
-	private currentQuery: string = "";
-	private resultHandled: boolean = false;
+	private currentQuery = "";
+	private resultHandled = false;
 
 	constructor(
 		app: App,
@@ -104,7 +104,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Create footer after DOM is ready.
 		// SuggestModal builds its DOM asynchronously, so we defer to the next tick.
-		setTimeout(() => this.createFooter(), 0);
+		window.setTimeout(() => this.createFooter(), 0);
 	}
 
 	private createFooter(): void {
@@ -400,7 +400,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Obsidian's SuggestModal calls onClose() BEFORE onChooseSuggestion().
 		// Defer the cancelled check to the next tick so onChooseSuggestion() can set resultHandled first.
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (!this.resultHandled) {
 				this.options.onResult({ type: "cancelled" });
 			}

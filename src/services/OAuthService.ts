@@ -285,7 +285,7 @@ export class OAuthService {
 			try {
 				httpModule = ensureHttpModule();
 			} catch (error) {
-				reject(error);
+			reject(error instanceof Error ? error : new Error(String(error)));
 				return;
 			}
 
@@ -407,7 +407,7 @@ export class OAuthService {
 			pending.reject = reject;
 
 			// Set timeout
-			setTimeout(() => {
+			window.setTimeout(() => {
 				if (this.pendingOAuthState.has(state)) {
 					this.pendingOAuthState.delete(state);
 					reject(new Error("OAuth timeout - authorization took too long"));

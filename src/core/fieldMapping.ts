@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { FieldMapping, TaskInfo } from "../types";
 import type { UserMappedField } from "../types/settings";
 import {

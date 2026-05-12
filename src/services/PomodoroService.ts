@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
@@ -729,7 +729,7 @@ export class PomodoroService {
 
 			// Auto-start break if configured, otherwise just prepare the timer
 			if (this.plugin.settings.pomodoroAutoStartBreaks) {
-				const timeout = setTimeout(
+				const timeout = window.setTimeout(
 					() => this.startBreak(shouldTakeLongBreak),
 					1000
 				) as unknown as number;
@@ -742,7 +742,7 @@ export class PomodoroService {
 
 			// Auto-start work if configured, otherwise just prepare the timer
 			if (this.plugin.settings.pomodoroAutoStartWork) {
-				const timeout = setTimeout(() => {
+				const timeout = window.setTimeout(() => {
 					this.autoStartWorkSession();
 				}, 1000) as unknown as number;
 				this.cleanupTimeouts.add(timeout);
@@ -783,7 +783,7 @@ export class PomodoroService {
 			this.activeAudioContexts.add(audioContext);
 
 			// Second beep
-			const beepTimeout = setTimeout(() => {
+			const beepTimeout = window.setTimeout(() => {
 				try {
 					const osc2 = audioContext.createOscillator();
 					osc2.connect(gainNode);
@@ -798,7 +798,7 @@ export class PomodoroService {
 			this.cleanupTimeouts.add(beepTimeout as unknown as number);
 
 			// Clean up audio context after sounds complete
-			const cleanupTimeout = setTimeout(() => {
+			const cleanupTimeout = window.setTimeout(() => {
 				this.activeAudioContexts.delete(audioContext);
 				audioContext.close().catch(() => {});
 			}, 300);
@@ -1103,7 +1103,7 @@ export class PomodoroService {
 			this.timerWorker = null;
 		}
 		for (const timeout of this.cleanupTimeouts) {
-			clearTimeout(timeout);
+			window.clearTimeout(timeout);
 		}
 		this.cleanupTimeouts.clear();
 		for (const audioContext of this.activeAudioContexts) {

@@ -333,7 +333,7 @@ export class TaskService {
 				return processTemplate(templateContent, templateTaskData);
 			} else {
 				// Template file not found, log error and return details as-is
-				// eslint-disable-next-line no-console
+				 
 				console.warn(`Task body template not found: ${templatePath}`);
 				new Notice(
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
@@ -553,7 +553,7 @@ export class TaskService {
 			return updatedTask as TaskInfo;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			// eslint-disable-next-line no-console
+			 
 			console.error("Error updating task property:", {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
@@ -591,7 +591,7 @@ export class TaskService {
 				updatedTask
 			);
 		} catch (cacheError) {
-			// eslint-disable-next-line no-console
+			 
 			console.error("Error updating task cache:", {
 				error: cacheError instanceof Error ? cacheError.message : String(cacheError),
 				taskPath: originalTask.path,
@@ -637,7 +637,7 @@ export class TaskService {
 				}
 			}
 		} catch (eventError) {
-			// eslint-disable-next-line no-console
+			 
 			console.error("Error emitting task update event:", {
 				error: eventError instanceof Error ? eventError.message : String(eventError),
 				taskPath: originalTask.path,
@@ -804,7 +804,11 @@ export class TaskService {
 					await this.plugin.app.fileManager.renameFile(file, newPath);
 
 					// Update the file reference and task path
-					movedFile = this.plugin.app.vault.getAbstractFileByPath(newPath) as TFile;
+					const archivedFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
+					if (!(archivedFile instanceof TFile)) {
+						throw new Error(`Failed to resolve moved task file: ${newPath}`);
+					}
+					movedFile = archivedFile;
 					updatedTask.path = newPath;
 
 					// Clear old cache entry and update path in task object
@@ -831,7 +835,11 @@ export class TaskService {
 					await this.plugin.app.fileManager.renameFile(file, newPath);
 
 					// Update the file reference and task path
-					movedFile = this.plugin.app.vault.getAbstractFileByPath(newPath) as TFile;
+					const unarchivedFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
+					if (!(unarchivedFile instanceof TFile)) {
+						throw new Error(`Failed to resolve moved task file: ${newPath}`);
+					}
+					movedFile = unarchivedFile;
 					updatedTask.path = newPath;
 
 					// Clear old cache entry and update path in task object
@@ -1275,7 +1283,7 @@ export class TaskService {
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			// eslint-disable-next-line no-console
+			 
 			console.error("Error deleting task:", {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,

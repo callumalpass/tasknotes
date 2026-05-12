@@ -27,7 +27,7 @@ export class SearchBox {
 	constructor(
 		container: HTMLElement,
 		onSearch: (term: string) => void,
-		debounceMs: number = 300
+		debounceMs = 300
 	) {
 		this.container = container;
 		this.onSearch = onSearch;

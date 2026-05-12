@@ -84,7 +84,7 @@ export class StatusContextMenu {
 		this.menu.show(event);
 
 		// Apply color styling after menu is shown
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.applyColorStyling();
 		}, 10);
 	}
@@ -98,7 +98,7 @@ export class StatusContextMenu {
 		});
 
 		// Apply color styling after menu is shown
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.applyColorStyling();
 		}, 10);
 	}

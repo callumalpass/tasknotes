@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
@@ -34,7 +34,7 @@ export class AutoExportService {
 		// Set next export time
 		this.nextExportTime = new Date(Date.now() + intervalMs);
 
-		this.intervalId = setInterval(async () => {
+		this.intervalId = window.setInterval(async () => {
 			await this.performExport();
 			// Update next export time
 			this.nextExportTime = new Date(Date.now() + intervalMs);
@@ -48,7 +48,7 @@ export class AutoExportService {
 	 */
 	stop(): void {
 		if (this.intervalId) {
-			clearInterval(this.intervalId);
+			window.clearInterval(this.intervalId);
 			this.intervalId = null;
 			this.nextExportTime = null;
 		}

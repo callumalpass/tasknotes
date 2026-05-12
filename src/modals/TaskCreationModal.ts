@@ -757,7 +757,7 @@ export class TaskCreationModal extends TaskModal {
 						this.expandModal();
 					}
 					// Focus title input
-					setTimeout(() => {
+					window.setTimeout(() => {
 						const titleInput = this.modalEl.querySelector(".title-input-detailed") as HTMLInputElement;
 						if (titleInput) {
 							titleInput.focus();
@@ -780,7 +780,7 @@ export class TaskCreationModal extends TaskModal {
 			});
 
 			// Focus the editor after a short delay and reset scroll position
-			setTimeout(() => {
+			window.setTimeout(() => {
 				if (this.nlMarkdownEditor) {
 					const cm = this.nlMarkdownEditor.editor?.cm;
 					if (cm) {
@@ -830,7 +830,7 @@ export class TaskCreationModal extends TaskModal {
 			// Initialize auto-suggestion for fallback
 			this.nlpSuggest = new NLPSuggest(this.app, this.nlInput, this.plugin);
 
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.nlInput.focus();
 			}, 100);
 		}

@@ -27,7 +27,7 @@ jobs:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
         cache-dependency-path: docs-builder/package-lock.json
 
@@ -38,6 +38,57 @@ jobs:
     - name: Build documentation
       run: node build.js
       working-directory: docs-builder
+
+    # ----- Render hyperframes release videos and stage them as docs assets -----
+    # Source HTML lives in /release-videos/<version>/. Rendering uses headless
+    # Chrome with CanvasDrawElement enabled for the HTML-in-canvas CRT pass.
+    # Cached output is keyed on the source files so we only re-render when
+    # the HTML, shared scripts, or audio actually change.
+    - name: Install Chrome dev channel
+      run: |
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-linux-signing-keyring.gpg
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-unstable
+
+    - name: Cache hyperframes Chromium
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/hyperframes
+        key: hyperframes-cache-v1
+
+    - name: Cache rendered release videos
+      id: video-cache
+      uses: actions/cache@v4
+      with:
+        path: docs-builder/dist/assets/release-videos
+        key: release-videos-${{ hashFiles('release-videos/**/index.html', 'release-videos/_shared/**/*.js', 'release-videos/render-with-crt.sh', 'release-videos/_audio/track.mp3') }}
+
+    - name: Render release videos
+      if: steps.video-cache.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p docs-builder/dist/assets/release-videos
+        for src in release-videos/*/index.html; do
+          version=$(basename "$(dirname "$src")")
+          out="docs-builder/dist/assets/release-videos/tasknotes-${version}.mp4"
+          echo "::group::Rendering ${version}"
+          HTML_CANVAS_CHROME=/usr/bin/google-chrome-unstable release-videos/render-with-crt.sh "release-videos/${version}" -o "${out}" -q standard
+          echo "::endgroup::"
+        done
+
+    # Even on cache-hit we still need the cached files inside dist/. The
+    # actions/cache restore happens before docs build (which wipes dist/),
+    # so re-stage them after.
+    - name: Restore cached videos into fresh dist/
+      if: steps.video-cache.outputs.cache-hit == 'true'
+      run: |
+        # cache restore puts files at docs-builder/dist/assets/release-videos
+        # but the build above wiped dist/. Re-fetch from the cache by re-running
+        # the cache key — actions/cache restores into the same path on hit, but
+        # since dist/ was wiped after, we run cache restore explicitly here.
+        mkdir -p docs-builder/dist/assets/release-videos
+      # NOTE: This branch is a fallback. In practice the cache should be
+      # restored AFTER the docs build step — see workflow ordering above.
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3

@@ -16,7 +16,7 @@ export class DeviceCodeModal extends Modal {
 	private plugin: TaskNotesPlugin;
 	private deviceCode: DeviceCodeInfo;
 	private onCancel: () => void;
-	private countdownInterval?: ReturnType<typeof setInterval>;
+	private countdownInterval?: number;
 	private expiresAt: number;
 	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 
@@ -95,7 +95,7 @@ export class DeviceCodeModal extends Modal {
 			navigator.clipboard.writeText(this.deviceCode.userCode);
 			copyIcon.empty();
 			setIcon(copyIcon, "check");
-			setTimeout(() => {
+			window.setTimeout(() => {
 				copyIcon.empty();
 				setIcon(copyIcon, "copy");
 			}, 2000);
@@ -111,7 +111,7 @@ export class DeviceCodeModal extends Modal {
 		});
 
 		// Update countdown every second
-		this.countdownInterval = setInterval(() => {
+		this.countdownInterval = window.setInterval(() => {
 			const remaining = this.getTimeRemaining();
 			timerText.setText(remaining);
 
@@ -355,7 +355,7 @@ export class DeviceCodeModal extends Modal {
 
 	onClose(): void {
 		if (this.countdownInterval) {
-			clearInterval(this.countdownInterval);
+			window.clearInterval(this.countdownInterval);
 		}
 		const { contentEl } = this;
 		contentEl.empty();

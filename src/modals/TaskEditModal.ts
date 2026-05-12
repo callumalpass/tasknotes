@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { App, Notice, TFile, TAbstractFile, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
@@ -1012,14 +1012,14 @@ export class TaskEditModal extends TaskModal {
 			// Get the file from the task path
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
 
-			if (!file) {
+			if (!(file instanceof TFile)) {
 				new Notice(this.t("modals.taskEdit.notices.fileMissing", { path: this.task.path }));
 				return;
 			}
 
 			// Open the file in a new leaf
 			const leaf = this.app.workspace.getLeaf(true);
-			await leaf.openFile(file as TFile);
+			await leaf.openFile(file);
 
 			// Close the modal
 			this.close();

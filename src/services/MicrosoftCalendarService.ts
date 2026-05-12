@@ -66,7 +66,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	private oauthService: OAuthService;
 	private baseUrl = "https://graph.microsoft.com/v1.0";
 	private cache: Map<string, ICSEvent[]> = new Map();
-	private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimer: number | null = null;
 	private availableCalendars: ProviderCalendar[] = [];
 	private lastManualRefresh = 0; // Timestamp of last manual refresh for rate limiting
 
@@ -80,7 +80,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 * Sleep helper for exponential backoff
 	 */
 	private sleep(ms: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, ms));
+		return new Promise(resolve => window.setTimeout(resolve, ms));
 	}
 
 	/**
@@ -136,7 +136,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		}
 
 		// Should never reach here, but TypeScript needs it
-		throw lastError;
+		throw lastError instanceof Error ? lastError : new Error(String(lastError));
 	}
 
 	/**
@@ -216,11 +216,11 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 */
 	private startRefreshTimer(): void {
 		if (this.refreshTimer) {
-			clearInterval(this.refreshTimer);
+			window.clearInterval(this.refreshTimer);
 		}
 
 		// Refresh every 15 minutes
-		this.refreshTimer = setInterval(() => {
+		this.refreshTimer = window.setInterval(() => {
 			this.refreshAllCalendars().catch(error => {
 				console.error("Microsoft Calendar refresh failed:", error);
 			});
@@ -232,7 +232,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 */
 	private stopRefreshTimer(): void {
 		if (this.refreshTimer) {
-			clearInterval(this.refreshTimer);
+			window.clearInterval(this.refreshTimer);
 			this.refreshTimer = null;
 		}
 	}

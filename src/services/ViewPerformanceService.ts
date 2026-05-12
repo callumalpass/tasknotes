@@ -64,7 +64,7 @@ export class ViewPerformanceService {
 		// Clean up debounce timer
 		const timer = this.viewDebounceTimers.get(viewId);
 		if (timer) {
-			clearTimeout(timer);
+			window.clearTimeout(timer);
 			this.viewDebounceTimers.delete(viewId);
 		}
 
@@ -148,7 +148,7 @@ export class ViewPerformanceService {
 		// Clear existing timer
 		const existingTimer = this.viewDebounceTimers.get(viewId);
 		if (existingTimer) {
-			clearTimeout(existingTimer);
+			window.clearTimeout(existingTimer);
 		}
 
 		// Schedule debounced update
@@ -266,7 +266,7 @@ export class ViewPerformanceService {
 			const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
 			const existingPaths = new Set(allTaskPaths);
 
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			 
 			for (const taskPath of this.globalTaskVersionCache.keys()) {
 				if (!existingPaths.has(taskPath)) {
 					this.globalTaskVersionCache.delete(taskPath);
@@ -324,7 +324,7 @@ export class ViewPerformanceService {
 
 		// Clean up all timers
 		for (const timer of this.viewDebounceTimers.values()) {
-			clearTimeout(timer);
+			window.clearTimeout(timer);
 		}
 
 		// Clear all state

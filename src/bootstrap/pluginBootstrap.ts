@@ -254,7 +254,7 @@ function registerEditorIntegrations(plugin: TaskNotesPlugin): void {
 }
 
 export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
-	setTimeout(async () => {
+	window.setTimeout(async () => {
 		try {
 			plugin.pomodoroService = new PomodoroService(plugin);
 			await plugin.pomodoroService.initialize();
@@ -333,7 +333,7 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 			plugin.registerEvent(
 				plugin.app.workspace.on("active-leaf-change", (leaf) => {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						if (leaf && leaf.view && leaf.view.getViewType() === "markdown") {
 							const editor = (leaf.view as MarkdownView).editor;
 							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
@@ -346,7 +346,7 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 			plugin.registerEvent(
 				plugin.app.workspace.on("layout-change", () => {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						const activeView = plugin.app.workspace.getActiveViewOfType(MarkdownView);
 						if (activeView) {
 							const editor = activeView.editor;

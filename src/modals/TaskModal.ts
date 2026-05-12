@@ -3,10 +3,9 @@ import {
 	Modal,
 	Notice,
 	Setting,
-	setIcon,
 	TAbstractFile,
 	TFile,
-	AbstractInputSuggest,
+	setIcon,
 	setTooltip,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -21,12 +20,7 @@ import { getDatePart, getTimePart, combineDateAndTime } from "../utils/dateUtils
 import { sanitizeTags, splitFrontmatterAndBody } from "../utils/helpers";
 import { ProjectSelectModal } from "./ProjectSelectModal";
 import { TaskDependency, TaskInfo, Reminder } from "../types";
-import {
-	DEFAULT_DEPENDENCY_RELTYPE,
-	formatDependencyLink,
-	normalizeDependencyEntry,
-	resolveDependencyEntry,
-} from "../utils/dependencyUtils";
+import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
 import {
 	appendInternalLink,
 	renderProjectLinks,
@@ -37,13 +31,16 @@ import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { createTaskModalListField } from "./taskModalOrganizationFields";
 import { createTaskCard } from "../ui/TaskCard";
-
-interface DependencyItem {
-	dependency: TaskDependency;
-	name: string;
-	path?: string;
-	unresolved?: boolean;
-}
+import {
+	candidateDependencyUid,
+	createDependencyItemFromDependency as createDependencyItemFromDependencyHelper,
+	createDependencyItemFromFile as createDependencyItemFromFileHelper,
+	createDependencyItemFromPath as createDependencyItemFromPathHelper,
+	dependencyItemExists,
+	DependencyItem,
+	renderDependencyList,
+} from "./taskModalDependencies";
+import { ContextSuggest, TagSuggest, UserFieldSuggest } from "./taskModalSuggests";
 
 interface ProjectItem {
 	file?: TFile;
@@ -67,94 +64,27 @@ export abstract class TaskModal extends Modal {
 		file: TFile,
 		options: { sourcePath?: string } = {}
 	): DependencyItem {
-		const sourcePath = options.sourcePath ?? this.getDependencySourcePath();
-		const uid = formatDependencyLink(
-			this.plugin.app,
-			sourcePath,
-			file.path,
-			this.plugin.settings.useFrontmatterMarkdownLinks
+		return createDependencyItemFromFileHelper(
+			{ plugin: this.plugin, sourcePath: options.sourcePath ?? this.getDependencySourcePath() },
+			file
 		);
-		return {
-			dependency: { uid, reltype: DEFAULT_DEPENDENCY_RELTYPE },
-			path: file.path,
-			name: file.basename,
-		};
 	}
 
 	protected createDependencyItemFromDependency(
 		dependency: TaskDependency,
 		sourcePath?: string
 	): DependencyItem {
-		const normalized = normalizeDependencyEntry(dependency);
-		if (!normalized) {
-			const fallbackName =
-				(typeof dependency === "object" && dependency && "uid" in dependency && typeof dependency.uid === "string"
-					? dependency.uid
-					: String(dependency));
-			return {
-				dependency: { uid: fallbackName, reltype: DEFAULT_DEPENDENCY_RELTYPE },
-				name: fallbackName,
-				unresolved: true,
-			};
-		}
-
-		const resolution = resolveDependencyEntry(
-			this.plugin.app,
-			sourcePath ?? this.getDependencySourcePath(),
-			normalized
+		return createDependencyItemFromDependencyHelper(
+			{ plugin: this.plugin, sourcePath: sourcePath ?? this.getDependencySourcePath() },
+			dependency
 		);
-		if (resolution) {
-			const name =
-				resolution.file?.basename || resolution.path.split("/").pop() || normalized.uid;
-			return {
-				dependency: normalized,
-				path: resolution.path,
-				name,
-			};
-		}
-
-		const cleaned = normalized.uid.replace(/^\[\[/, "").replace(/\]\]$/, "");
-		return {
-			dependency: normalized,
-			name: cleaned || dependency.uid,
-			unresolved: true,
-		};
 	}
 
 	protected createDependencyItemFromPath(path: string): DependencyItem {
-		const sourcePath = this.getDependencySourcePath();
-		const file = this.plugin.app.vault.getAbstractFileByPath(path);
-		if (file instanceof TFile) {
-			return {
-				dependency: {
-					uid: formatDependencyLink(
-						this.plugin.app,
-						sourcePath,
-						file.path,
-						this.plugin.settings.useFrontmatterMarkdownLinks
-					),
-					reltype: DEFAULT_DEPENDENCY_RELTYPE,
-				},
-				path: file.path,
-				name: file.basename,
-			};
-		}
-
-		// For unresolved dependencies, create a minimal file-like object to generate link
-		const basename = path.split("/").pop() || path;
-		const nameWithoutExt = basename.replace(/\.md$/i, "");
-
-		// Use a simple wikilink format for unresolved dependencies
-		// This will be resolved when the file is created
-		return {
-			dependency: {
-				uid: `[[${nameWithoutExt}]]`,
-				reltype: DEFAULT_DEPENDENCY_RELTYPE,
-			},
-			path,
-			name: nameWithoutExt,
-			unresolved: true,
-		};
+		return createDependencyItemFromPathHelper(
+			{ plugin: this.plugin, sourcePath: this.getDependencySourcePath() },
+			path
+		);
 	}
 
 	protected getDependencySourcePath(): string {
@@ -202,81 +132,14 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 
-		listEl.empty();
-
-		if (items.length === 0) {
-			return;
-		}
-
-		const linkServices = this.getLinkServices();
-
-		for (const [index, item] of items.entries()) {
-			const itemEl = listEl.createDiv({
-				cls: item.path && !item.unresolved
-					? "task-project-item task-project-item--task-card"
-					: "task-project-item",
-			});
-			if (item.unresolved) {
-				itemEl.addClass("task-project-item--unresolved");
-				setTooltip(
-					itemEl,
-					this.t("contextMenus.task.dependencies.notices.unresolved", {
-						entries: item.dependency.uid,
-					}),
-					{ placement: "top" }
-				);
-			}
-
-			const contentEl = itemEl.createDiv({
-				cls: item.path && !item.unresolved ? "task-project-card-host" : "task-project-info",
-			});
-
-			if (item.path && !item.unresolved) {
-				const taskInfo = await this.plugin.cacheManager.getCachedTaskInfo(item.path);
-				if (taskInfo) {
-					const taskCard = createTaskCard(taskInfo, this.plugin, undefined, {
-						layout: "default",
-						showSecondaryBadges: false,
-						enableHoverPreview: false,
-					});
-					contentEl.appendChild(taskCard);
-				} else {
-					const nameEl = contentEl.createSpan({ cls: "task-project-name clickable-dependency" });
-					appendInternalLink(
-						nameEl,
-						item.path,
-						item.name,
-						linkServices,
-						{
-							cssClass: "task-dependency-link internal-link",
-							hoverSource: "tasknotes-dependency-link",
-							showErrorNotices: true,
-						}
-					);
-					if (item.path !== item.name) {
-						contentEl.createDiv({ cls: "task-project-path", text: item.path });
-					}
-				}
-			} else {
-				const nameEl = contentEl.createSpan({ cls: "task-project-name" });
-				nameEl.textContent = item.name;
-				const pathText = item.path ?? item.dependency.uid;
-				contentEl.createDiv({ cls: "task-project-path", text: pathText });
-			}
-
-			const removeBtn = itemEl.createEl("button", {
-				cls: "task-project-remove",
-				text: "×",
-			});
-			setTooltip(removeBtn, this.t("modals.task.dependencies.removeTaskTooltip"), {
-				placement: "top",
-			});
-			removeBtn.addEventListener("click", (event) => {
-				event.preventDefault();
-				event.stopPropagation();
-				onRemove(index);
-			});
-		}
+		await renderDependencyList({
+			plugin: this.plugin,
+			listEl,
+			items,
+			linkServices: this.getLinkServices(),
+			translate: (key, params) => this.t(key, params),
+			onRemove,
+		});
 	}
 
 	protected extractDetailsFromContent(content: string): string {
@@ -308,12 +171,7 @@ export abstract class TaskModal extends Modal {
 	protected addBlockedByDependency(dependency: TaskDependency): void {
 		const sourcePath = this.getDependencySourcePath();
 		const item = this.createDependencyItemFromDependency(dependency, sourcePath);
-		const exists = this.blockedByItems.some(
-			(existing) =>
-				existing.dependency.uid === item.dependency.uid ||
-				(item.path && existing.path === item.path)
-		);
-		if (exists) {
+		if (dependencyItemExists(this.blockedByItems, item)) {
 			return;
 		}
 		this.blockedByItems.push(item);
@@ -326,11 +184,7 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 		const item = this.createDependencyItemFromPath(path);
-		const exists = this.blockingItems.some(
-			(existing) =>
-				existing.path === item.path || existing.dependency.uid === item.dependency.uid
-		);
-		if (exists) {
+		if (dependencyItemExists(this.blockingItems, item)) {
 			return;
 		}
 		this.blockingItems.push(item);
@@ -347,12 +201,7 @@ export abstract class TaskModal extends Modal {
 				if (currentPath && candidate.path === currentPath) {
 					return false;
 				}
-				const candidateUid = formatDependencyLink(
-					this.plugin.app,
-					sourcePath,
-					candidate.path,
-					this.plugin.settings.useFrontmatterMarkdownLinks
-				);
+				const candidateUid = candidateDependencyUid(this.plugin, sourcePath, candidate);
 				return !existingUids.has(candidateUid);
 			},
 			(selected) => {
@@ -383,12 +232,7 @@ export abstract class TaskModal extends Modal {
 				if (existingPaths.has(candidate.path)) {
 					return false;
 				}
-				const candidateUid = formatDependencyLink(
-					this.plugin.app,
-					sourcePath,
-					candidate.path,
-					this.plugin.settings.useFrontmatterMarkdownLinks
-				);
+				const candidateUid = candidateDependencyUid(this.plugin, sourcePath, candidate);
 				return !existingUids.has(candidateUid);
 			},
 			(selected) => {
@@ -1255,7 +1099,7 @@ export abstract class TaskModal extends Modal {
 		this.detailsContainer.style.opacity = "0";
 		this.detailsContainer.style.transform = "translateY(-10px)";
 
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.detailsContainer.style.opacity = "1";
 			this.detailsContainer.style.transform = "translateY(0)";
 		}, 50);
@@ -1658,7 +1502,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected focusTitleInput(): void {
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(this.titleInput);
 			this.titleInput.focus({ preventScroll: true });
 			this.titleInput.select();
@@ -2133,7 +1977,7 @@ export abstract class TaskModal extends Modal {
 			return false;
 		}
 
-		setTimeout(() => {
+		window.setTimeout(() => {
 			nextField.focus();
 		}, 50);
 		return true;
@@ -2144,7 +1988,7 @@ export abstract class TaskModal extends Modal {
 			return false;
 		}
 
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.titleInput?.focus();
 		}, 50);
 		return true;
@@ -2163,316 +2007,5 @@ export abstract class TaskModal extends Modal {
 			this.detailsMarkdownEditor = null;
 		}
 		super.onClose();
-	}
-}
-
-/**
- * Context suggestion object for compatibility with other plugins
- */
-interface ContextSuggestion {
-	value: string;
-	display: string;
-	type: "context";
-	toString(): string;
-}
-
-/**
- * Context suggestion provider using AbstractInputSuggest
- */
-class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
-	private plugin: TaskNotesPlugin;
-	private input: HTMLInputElement;
-
-	constructor(app: App, inputEl: HTMLInputElement, plugin: TaskNotesPlugin) {
-		super(app, inputEl);
-		this.plugin = plugin;
-		this.input = inputEl;
-	}
-
-	protected async getSuggestions(_: string): Promise<ContextSuggestion[]> {
-		// Handle comma-separated values
-		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
-		const currentQuery = currentValues[currentValues.length - 1];
-
-		const contexts = this.plugin.cacheManager.getAllContexts();
-		const alreadySelected = currentValues.slice(0, -1);
-		return contexts
-			.filter((context) => context && typeof context === "string")
-			.filter(
-				(context) =>
-					!alreadySelected.includes(context) &&
-					(!currentQuery || context.toLowerCase().includes(currentQuery.toLowerCase()))
-			)
-			.slice(0, 10)
-			.map((context) => ({
-				value: context,
-				display: context,
-				type: "context" as const,
-				toString() {
-					return this.value;
-				},
-			}));
-	}
-
-	public renderSuggestion(contextSuggestion: ContextSuggestion, el: HTMLElement): void {
-		el.textContent = contextSuggestion.display;
-	}
-
-	public selectSuggestion(contextSuggestion: ContextSuggestion): void {
-		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
-		currentValues[currentValues.length - 1] = contextSuggestion.value;
-		this.input.value = currentValues.join(", ") + ", ";
-
-		// Trigger input event to update internal state
-		this.input.dispatchEvent(new Event("input", { bubbles: true }));
-		this.input.focus();
-	}
-}
-
-/**
- * Tag suggestion object for compatibility with other plugins
- */
-interface TagSuggestion {
-	value: string;
-	display: string;
-	type: "tag";
-	toString(): string;
-}
-
-/**
- * Tag suggestion provider using AbstractInputSuggest
- */
-class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
-	private plugin: TaskNotesPlugin;
-	private input: HTMLInputElement;
-
-	constructor(app: App, inputEl: HTMLInputElement, plugin: TaskNotesPlugin) {
-		super(app, inputEl);
-		this.plugin = plugin;
-		this.input = inputEl;
-	}
-
-	protected async getSuggestions(_: string): Promise<TagSuggestion[]> {
-		// Handle comma-separated values
-		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
-		const currentQuery = currentValues[currentValues.length - 1];
-
-		const tags = this.plugin.cacheManager.getAllTags();
-		const alreadySelected = currentValues.slice(0, -1);
-		return tags
-			.filter((tag) => tag && typeof tag === "string")
-			.filter(
-				(tag) =>
-					!alreadySelected.includes(tag) &&
-					(!currentQuery || tag.toLowerCase().includes(currentQuery.toLowerCase()))
-			)
-			.slice(0, 10)
-			.map((tag) => ({
-				value: tag,
-				display: tag,
-				type: "tag" as const,
-				toString() {
-					return this.value;
-				},
-			}));
-	}
-
-	public renderSuggestion(tagSuggestion: TagSuggestion, el: HTMLElement): void {
-		el.textContent = tagSuggestion.display;
-	}
-
-	public selectSuggestion(tagSuggestion: TagSuggestion): void {
-		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
-		currentValues[currentValues.length - 1] = tagSuggestion.value;
-		this.input.value = currentValues.join(", ") + ", ";
-
-		// Trigger input event to update internal state
-		this.input.dispatchEvent(new Event("input", { bubbles: true }));
-		this.input.focus();
-	}
-}
-
-/**
- * User field suggestion object
- */
-interface UserFieldSuggestion {
-	value: string;
-	display: string;
-	type: "user-field";
-	fieldKey: string;
-	toString(): string;
-}
-
-/**
- * User field suggestion provider using AbstractInputSuggest
- */
-class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
-	private plugin: TaskNotesPlugin;
-	private input: HTMLInputElement;
-	private fieldConfig: any; // UserMappedField from settings
-
-	constructor(app: App, inputEl: HTMLInputElement, plugin: TaskNotesPlugin, fieldConfig: any) {
-		super(app, inputEl);
-		this.plugin = plugin;
-		this.input = inputEl;
-		this.fieldConfig = fieldConfig;
-	}
-
-	protected async getSuggestions(_: string): Promise<UserFieldSuggestion[]> {
-		const isListField = this.fieldConfig.type === "list";
-
-		// Get current token or full value
-		let currentQuery = "";
-		let currentValues: string[] = [];
-		if (isListField) {
-			currentValues = this.input.value.split(",").map((v: string) => v.trim());
-			currentQuery = currentValues[currentValues.length - 1] || "";
-		} else {
-			currentQuery = this.input.value.trim();
-		}
-		if (!currentQuery) return [];
-
-		// Detect wikilink trigger [[... and delegate to file suggester
-		const wikiMatch = currentQuery.match(/\[\[([^\]]*)$/);
-		if (wikiMatch) {
-			const partial = wikiMatch[1] || "";
-			const { FileSuggestHelper } = await import("../suggest/FileSuggestHelper");
-			// Apply custom field filter if configured, otherwise show all files
-			const list = await FileSuggestHelper.suggest(
-				this.plugin,
-				partial,
-				20,
-				this.fieldConfig.autosuggestFilter
-			);
-			return list.map((item) => ({
-				value: item.insertText,
-				display: item.displayText,
-				type: "user-field" as const,
-				fieldKey: this.fieldConfig.key,
-				toString() {
-					return this.value;
-				},
-			}));
-		}
-
-		// Fallback to existing-values suggestion
-		const existingValues = await this.getExistingUserFieldValues(this.fieldConfig.key);
-		return existingValues
-			.filter((value) => value && typeof value === "string")
-			.filter(
-				(value) =>
-					value.toLowerCase().includes(currentQuery.toLowerCase()) &&
-					(!isListField || !currentValues.slice(0, -1).includes(value))
-			)
-			.slice(0, 10)
-			.map((value) => ({
-				value: value,
-				display: value,
-				type: "user-field" as const,
-				fieldKey: this.fieldConfig.key,
-				toString() {
-					return this.value;
-				},
-			}));
-	}
-
-	private async getExistingUserFieldValues(fieldKey: string): Promise<string[]> {
-		const run = async (): Promise<string[]> => {
-			try {
-				// Get all files and extract unique values for this field
-				const allFiles = this.plugin.app.vault.getMarkdownFiles();
-				const values = new Set<string>();
-
-				// Process all files, but with early termination for performance
-				for (const file of allFiles) {
-					try {
-						const metadata = this.plugin.app.metadataCache.getFileCache(file);
-						const frontmatter = metadata?.frontmatter;
-
-						if (frontmatter && frontmatter[fieldKey] !== undefined) {
-							const value = frontmatter[fieldKey];
-
-							if (Array.isArray(value)) {
-								// Handle list fields
-								value.forEach((v) => {
-									if (typeof v === "string" && v.trim()) {
-										values.add(v.trim());
-									}
-								});
-							} else if (typeof value === "string" && value.trim()) {
-								values.add(value.trim());
-							} else if (typeof value === "number") {
-								values.add(value.toString());
-							} else if (typeof value === "boolean") {
-								values.add(value.toString());
-							}
-						}
-
-						// Early termination: stop after finding many unique values for performance
-						// This ensures we get comprehensive suggestions without processing every file
-						if (values.size >= 200) {
-							break;
-						}
-					} catch (error) {
-						// Skip files with errors
-						continue;
-					}
-				}
-
-				return Array.from(values).sort();
-			} catch (error) {
-				console.error("Error getting user field values:", error);
-				return [];
-			}
-		};
-
-		// Use debouncing for performance in large vaults (same pattern as FileSuggestHelper)
-		const debounceMs = this.plugin.settings?.suggestionDebounceMs ?? 0;
-		if (!debounceMs) {
-			return run();
-		}
-
-		return new Promise<string[]>((resolve) => {
-			const anyPlugin = this.plugin as unknown as { __userFieldSuggestTimer?: number };
-			if (anyPlugin.__userFieldSuggestTimer) {
-				clearTimeout(anyPlugin.__userFieldSuggestTimer);
-			}
-			anyPlugin.__userFieldSuggestTimer = setTimeout(async () => {
-				const results = await run();
-				resolve(results);
-			}, debounceMs) as unknown as number;
-		});
-	}
-
-	public renderSuggestion(suggestion: UserFieldSuggestion, el: HTMLElement): void {
-		el.textContent = suggestion.display;
-	}
-
-	public selectSuggestion(suggestion: UserFieldSuggestion): void {
-		const isListField = this.fieldConfig.type === "list";
-
-		if (isListField) {
-			// Replace last token with the selected suggestion. If user is typing a
-			// wikilink region ([[...), replace that partial region; otherwise
-			// replace the token entirely with the suggestion value.
-			const parts = this.input.value.split(",");
-			const last = parts.pop() ?? "";
-			const before = parts.join(",");
-			const trimmed = last.trim();
-			const replacement = /\[\[/.test(trimmed)
-				? trimmed.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`)
-				: suggestion.value;
-			const rebuilt = (before ? before + ", " : "") + replacement;
-			this.input.value = rebuilt.endsWith(",") ? rebuilt + " " : rebuilt + ", ";
-		} else {
-			// Replace the active [[... region or entire value
-			const val = this.input.value;
-			const replaced = val.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`);
-			this.input.value = replaced === val ? suggestion.value : replaced;
-		}
-
-		// Trigger input event to update internal state
-		this.input.dispatchEvent(new Event("input", { bubbles: true }));
-		this.input.focus();
 	}
 }

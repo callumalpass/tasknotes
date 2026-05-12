@@ -38,7 +38,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	private oauthService: OAuthService;
 	private baseUrl = "https://www.googleapis.com/calendar/v3";
 	private cache: Map<string, ICSEvent[]> = new Map();
-	private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimer: number | null = null;
 	private availableCalendars: ProviderCalendar[] = [];
 	private calendarColors: Map<string, string> = new Map(); // Map calendar ID to color
 	private lastManualRefresh = 0; // Timestamp of last manual refresh for rate limiting
@@ -53,7 +53,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	 * Sleep helper for exponential backoff
 	 */
 	private sleep(ms: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, ms));
+		return new Promise(resolve => window.setTimeout(resolve, ms));
 	}
 
 	/**
@@ -109,7 +109,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		}
 
 		// Should never reach here, but TypeScript needs it
-		throw lastError;
+		throw lastError instanceof Error ? lastError : new Error(String(lastError));
 	}
 
 	/**
@@ -183,11 +183,11 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	private startRefreshTimer(): void {
 		if (this.refreshTimer) {
-			clearInterval(this.refreshTimer);
+			window.clearInterval(this.refreshTimer);
 		}
 
 		// Refresh every 15 minutes
-		this.refreshTimer = setInterval(() => {
+		this.refreshTimer = window.setInterval(() => {
 			this.refreshAllCalendars().catch(error => {
 				console.error("Google Calendar refresh failed:", error);
 			});
@@ -199,7 +199,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	private stopRefreshTimer(): void {
 		if (this.refreshTimer) {
-			clearInterval(this.refreshTimer);
+			window.clearInterval(this.refreshTimer);
 			this.refreshTimer = null;
 		}
 	}

@@ -1,10 +1,10 @@
-/* eslint-disable no-console */
+ 
 import { IncomingMessage, ServerResponse } from "http";
 import { BaseController } from "./BaseController";
 import { WebhookConfig, WebhookDelivery, WebhookEvent, WebhookPayload } from "../types";
 import { createHash, createHmac } from "crypto";
 import TaskNotesPlugin from "../main";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 import { Get, Post, Delete } from "../utils/OpenAPIDecorators";
 
 export class WebhookController extends BaseController {
@@ -265,7 +265,7 @@ export class WebhookController extends BaseController {
 			if (retryCount < maxRetries) {
 				// Exponential backoff: 1s, 2s, 4s
 				const delay = Math.pow(2, retryCount) * 1000;
-				setTimeout(() => {
+				window.setTimeout(() => {
 					this.deliverWebhook(webhook, delivery, retryCount + 1);
 				}, delay);
 			} else {
@@ -389,6 +389,8 @@ export class WebhookController extends BaseController {
 			console.log(`🔧 Executing transform function for event: ${payload.event}`);
 
 			// Create a safe execution context
+			// User-authored transform files are an explicit trusted scripting feature.
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
 			const transform = new Function(
 				"payload",
 				`

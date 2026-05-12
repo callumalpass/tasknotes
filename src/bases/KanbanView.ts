@@ -10,10 +10,7 @@ import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
-	getDatePart,
 	getCurrentTimestamp,
-	parseDateToUTC,
-	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
 import {
 	stripPropertyPrefix,
@@ -22,6 +19,10 @@ import {
 	applySortOrderPlan,
 	DropOperationQueue,
 } from "./sortOrderUtils";
+import {
+	getKanbanTaskActionDate,
+	handleKanbanCardAction,
+} from "./kanbanCardActions";
 
 function normalizeExpandedRelationshipFilterMode(
 	value: unknown
@@ -58,11 +59,11 @@ export class KanbanView extends BasesViewBase {
 	private draggedFromColumn: string | null = null; // Track source column for list property handling
 	private draggedFromSwimlane: string | null = null; // Track source swimlane for list property handling
 	private dropTargetPath: string | null = null; // Card-level drop position tracking
-	private pendingRender: boolean = false; // Deferred render while dragging
-	private dropAbove: boolean = true; // Whether drop is above or below target card
-	private dragOverRafId: number = 0; // rAF handle for throttled dragover
+	private pendingRender = false; // Deferred render while dragging
+	private dropAbove = true; // Whether drop is above or below target card
+	private dragOverRafId = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
-	private currentInsertionIndex: number = -1; // Current gap/slot position
+	private currentInsertionIndex = -1; // Current gap/slot position
 	private dragSourceColumnEl: HTMLElement | null = null; // Source column element (height-locked during drag)
 	private dragTargetColumnEl: HTMLElement | null = null; // Target column element (max-height expanded during drag)
 	private draggedSourceColumns: Map<string, string> = new Map(); // Track source column per task for batch operations
@@ -75,7 +76,7 @@ export class KanbanView extends BasesViewBase {
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
-	private suppressRenderUntil: number = 0;
+	private suppressRenderUntil = 0;
 	private postDropTimer: number | null = null;
 	private dropQueue = new DropOperationQueue();
 	private activeDropCount = 0;
@@ -85,8 +86,8 @@ export class KanbanView extends BasesViewBase {
 	private touchDragGhost: HTMLElement | null = null;
 	private touchStartX = 0;
 	private touchStartY = 0;
-	private longPressTimer: ReturnType<typeof setTimeout> | null = null;
-	private autoScrollTimer: ReturnType<typeof setInterval> | null = null;
+	private longPressTimer: number | null = null;
+	private autoScrollTimer: number | null = null;
 	private autoScrollDirection = 0;
 	private readonly LONG_PRESS_DELAY = 350;
 	private readonly TOUCH_MOVE_THRESHOLD = 10;
@@ -158,7 +159,7 @@ export class KanbanView extends BasesViewBase {
 		// cancel postDropTimer — Bases has fresh data, render now.
 		if (this.postDropTimer) {
 			this.debugLog("ON-DATA-UPDATED: cancelling postDropTimer, rendering with fresh Bases data");
-			clearTimeout(this.postDropTimer);
+			window.clearTimeout(this.postDropTimer);
 			this.postDropTimer = null;
 		} else {
 			this.debugLog("ON-DATA-UPDATED: normal render (no suppression active)");
@@ -275,7 +276,7 @@ export class KanbanView extends BasesViewBase {
 
 		// Restore board-level horizontal scroll
 		if (state.scrollTop !== undefined && this.rootElement) {
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				if (this.rootElement && this.rootElement.isConnected) {
 					this.rootElement.scrollTop = state.scrollTop;
 				}
@@ -285,7 +286,7 @@ export class KanbanView extends BasesViewBase {
 		// Restore column scroll positions after render completes
 		if (state.columnScroll && typeof state.columnScroll === "object") {
 			// Use requestAnimationFrame to ensure DOM and VirtualScrollers are ready
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				// Restore virtual scroller positions
 				for (const [columnKey, scroller] of this.columnScrollers) {
 					const scrollTop = state.columnScroll[columnKey];
@@ -561,12 +562,14 @@ export class KanbanView extends BasesViewBase {
 		if (isSortOrderInSortConfig(this.dataAdapter, sortOrderField)) {
 			for (const [, tasks] of groups) {
 				tasks.sort((a, b) => {
-					const fmA = this.plugin.app.metadataCache.getFileCache(
-						this.plugin.app.vault.getAbstractFileByPath(a.path) as TFile
-					)?.frontmatter;
-					const fmB = this.plugin.app.metadataCache.getFileCache(
-						this.plugin.app.vault.getAbstractFileByPath(b.path) as TFile
-					)?.frontmatter;
+					const fileA = this.plugin.app.vault.getAbstractFileByPath(a.path);
+					const fileB = this.plugin.app.vault.getAbstractFileByPath(b.path);
+					const fmA = fileA instanceof TFile
+						? this.plugin.app.metadataCache.getFileCache(fileA)?.frontmatter
+						: undefined;
+					const fmB = fileB instanceof TFile
+						? this.plugin.app.metadataCache.getFileCache(fileB)?.frontmatter
+						: undefined;
 					const soA = fmA?.[sortOrderField];
 					const soB = fmB?.[sortOrderField];
 					if (soA != null && soB != null) return String(soA).localeCompare(String(soB));
@@ -1302,7 +1305,7 @@ export class KanbanView extends BasesViewBase {
 				const touch = e.touches[0];
 				this.touchStartX = touch.clientX;
 				this.touchStartY = touch.clientY;
-				this.longPressTimer = setTimeout(() => {
+				this.longPressTimer = window.setTimeout(() => {
 					this.touchDragActive = true;
 					this.touchDragType = "column";
 					this.draggedColumnKey = columnKey;
@@ -1326,7 +1329,7 @@ export class KanbanView extends BasesViewBase {
 					const dx = Math.abs(touch.clientX - this.touchStartX);
 					const dy = Math.abs(touch.clientY - this.touchStartY);
 					if (dx > this.TOUCH_MOVE_THRESHOLD || dy > this.TOUCH_MOVE_THRESHOLD) {
-						clearTimeout(this.longPressTimer);
+						window.clearTimeout(this.longPressTimer);
 						this.longPressTimer = null;
 					}
 					return;
@@ -1344,7 +1347,7 @@ export class KanbanView extends BasesViewBase {
 
 		header.addEventListener("touchend", async (e: TouchEvent) => {
 			if (this.longPressTimer) {
-				clearTimeout(this.longPressTimer);
+				window.clearTimeout(this.longPressTimer);
 				this.longPressTimer = null;
 			}
 			header.classList.remove(draggingClass);
@@ -1724,7 +1727,7 @@ export class KanbanView extends BasesViewBase {
 		this.stopAutoScroll();
 
 		if (this.longPressTimer) {
-			clearTimeout(this.longPressTimer);
+			window.clearTimeout(this.longPressTimer);
 			this.longPressTimer = null;
 		}
 
@@ -1759,7 +1762,7 @@ export class KanbanView extends BasesViewBase {
 			this.stopAutoScroll();
 			this.autoScrollDirection = newDirection;
 			if (newDirection !== 0) {
-				this.autoScrollTimer = setInterval(() => {
+				this.autoScrollTimer = window.setInterval(() => {
 					if (this.boardEl) {
 						this.boardEl.scrollLeft += this.autoScrollDirection * this.AUTO_SCROLL_SPEED;
 					}
@@ -1770,7 +1773,7 @@ export class KanbanView extends BasesViewBase {
 
 	private stopAutoScroll(): void {
 		if (this.autoScrollTimer) {
-			clearInterval(this.autoScrollTimer);
+			window.clearInterval(this.autoScrollTimer);
 			this.autoScrollTimer = null;
 		}
 		this.autoScrollDirection = 0;
@@ -1819,7 +1822,7 @@ export class KanbanView extends BasesViewBase {
 			// Throttle the visual update via rAF
 			const clientY = e.clientY;
 			if (!this.dragOverRafId) {
-				this.dragOverRafId = requestAnimationFrame(() => {
+				this.dragOverRafId = window.requestAnimationFrame(() => {
 					this.dragOverRafId = 0;
 
 					const rect = cardWrapper.getBoundingClientRect();
@@ -2037,7 +2040,7 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Collapse dragged cards on next frame (after browser captures drag image)
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				for (const path of this.draggedTaskPaths) {
 					const wrapper = this.currentTaskElements.get(path);
 					if (wrapper) {
@@ -2332,7 +2335,7 @@ export class KanbanView extends BasesViewBase {
 				const touch = e.touches[0];
 				this.touchStartX = touch.clientX;
 				this.touchStartY = touch.clientY;
-				this.longPressTimer = setTimeout(() => {
+				this.longPressTimer = window.setTimeout(() => {
 					this.initiateTouchDrag(cardWrapper, task, touch.clientX, touch.clientY);
 				}, this.LONG_PRESS_DELAY);
 			},
@@ -2349,7 +2352,7 @@ export class KanbanView extends BasesViewBase {
 					const dx = Math.abs(touch.clientX - this.touchStartX);
 					const dy = Math.abs(touch.clientY - this.touchStartY);
 					if (dx > this.TOUCH_MOVE_THRESHOLD || dy > this.TOUCH_MOVE_THRESHOLD) {
-						clearTimeout(this.longPressTimer);
+						window.clearTimeout(this.longPressTimer);
 						this.longPressTimer = null;
 					}
 					return;
@@ -2367,7 +2370,7 @@ export class KanbanView extends BasesViewBase {
 
 		cardWrapper.addEventListener("touchend", async (e: TouchEvent) => {
 			if (this.longPressTimer) {
-				clearTimeout(this.longPressTimer);
+				window.clearTimeout(this.longPressTimer);
 				this.longPressTimer = null;
 			}
 
@@ -2754,7 +2757,7 @@ export class KanbanView extends BasesViewBase {
 	protected debouncedRefresh(): void {
 		if ((this as any).updateDebounceTimer) {
 			this.debugLog("DEBOUNCED-REFRESH: cancelling previous pending timer");
-			clearTimeout((this as any).updateDebounceTimer);
+			window.clearTimeout((this as any).updateDebounceTimer);
 		}
 
 		this.debugLog("DEBOUNCED-REFRESH: scheduling render in 150ms", {
@@ -2807,7 +2810,7 @@ export class KanbanView extends BasesViewBase {
 		this.suppressRenderUntil = Date.now() + KanbanView.POST_DROP_RENDER_DELAY;
 		this.pendingRender = false;
 
-		if (this.postDropTimer) clearTimeout(this.postDropTimer);
+		if (this.postDropTimer) window.clearTimeout(this.postDropTimer);
 
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.postDropTimer = win.setTimeout(() => {
@@ -3174,7 +3177,7 @@ export class KanbanView extends BasesViewBase {
 			event,
 			context.task.path,
 			this.plugin,
-			this.getTaskActionDate(context.task)
+			getKanbanTaskActionDate(context.task)
 		);
 	};
 
@@ -3184,220 +3187,29 @@ export class KanbanView extends BasesViewBase {
 		target: HTMLElement,
 		event: MouseEvent
 	): Promise<void> {
-		// Import handlers dynamically to avoid circular dependencies
-		const [
-			{ DateContextMenu },
-			{ PriorityContextMenu },
-			{ RecurrenceContextMenu },
-			{ ReminderModal },
-			{ showTaskContextMenu },
-		] = await Promise.all([
-			import("../components/DateContextMenu"),
-			import("../components/PriorityContextMenu"),
-			import("../components/RecurrenceContextMenu"),
-			import("../modals/ReminderModal"),
-			import("../ui/TaskCard"),
-		]);
-
-		switch (action) {
-			case "toggle-status":
-				await this.handleToggleStatus(task, event);
-				return;
-			case "priority-menu":
-				this.showPriorityMenu(task, event, PriorityContextMenu);
-				return;
-			case "recurrence-menu":
-				this.showRecurrenceMenu(task, event, RecurrenceContextMenu);
-				return;
-			case "reminder-menu":
-				this.showReminderModal(task, ReminderModal);
-				return;
-			case "task-context-menu":
-				await showTaskContextMenu(
-					event,
-					task.path,
-					this.plugin,
-					this.getTaskActionDate(task)
-				);
-				return;
-			case "edit-date":
-				await this.openDateContextMenu(
-					task,
-					target.dataset.tnDateType as "due" | "scheduled" | undefined,
-					event,
-					DateContextMenu
-				);
-				return;
-			case "toggle-subtasks":
-				await this.handleToggleSubtasks(task, target);
-				return;
-			case "toggle-blocking-tasks":
-				await this.handleToggleBlockingTasks(task, target);
-				return;
-		}
-	}
-
-	private async handleToggleStatus(task: TaskInfo, event: MouseEvent): Promise<void> {
-		try {
-			if (task.recurrence) {
-				const actionDate = this.getTaskActionDate(task);
-				await this.plugin.toggleRecurringTaskComplete(task, actionDate);
-			} else {
-				await this.plugin.toggleTaskStatus(task);
-			}
-		} catch (error) {
-			console.error("[TaskNotes][KanbanView] Failed to toggle status", error);
-		}
-	}
-
-	/**
-	 * Determine the date to use when completing a recurring task from Bases.
-	 * Prefers the task's scheduled (or due) date to avoid marking the wrong instance.
-	 */
-	private getTaskActionDate(task: TaskInfo): Date {
-		const dateStr = getDatePart(task.scheduled || task.due || "");
-		if (dateStr) {
-			return parseDateToUTC(dateStr);
-		}
-
-		// Fallback to today's date, UTC-anchored to preserve local calendar day
-		return createUTCDateFromLocalCalendarDate(new Date());
-	}
-
-	private showPriorityMenu(task: TaskInfo, event: MouseEvent, PriorityContextMenu: any): void {
-		const menu = new PriorityContextMenu({
-			currentValue: task.priority,
-			onSelect: async (newPriority: any) => {
-				try {
-					await this.plugin.updateTaskProperty(task, "priority", newPriority);
-				} catch (error) {
-					console.error("[TaskNotes][KanbanView] Failed to update priority", error);
-				}
-			},
-			plugin: this.plugin,
-		});
-		menu.show(event);
-	}
-
-	private showRecurrenceMenu(
-		task: TaskInfo,
-		event: MouseEvent,
-		RecurrenceContextMenu: any
-	): void {
-		const menu = new RecurrenceContextMenu({
-			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
-			currentAnchor: task.recurrence_anchor || "scheduled",
-			scheduledDate: task.scheduled,
-			onSelect: async (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
-				try {
-					await this.plugin.updateTaskProperty(
-						task,
-						"recurrence",
-						newRecurrence || undefined
-					);
-					if (anchor !== undefined) {
-						await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
-					}
-				} catch (error) {
-					console.error("[TaskNotes][KanbanView] Failed to update recurrence", error);
-				}
-			},
-			app: this.plugin.app,
-			plugin: this.plugin,
-		});
-		menu.show(event);
-	}
-
-	private showReminderModal(task: TaskInfo, ReminderModal: any): void {
-		const modal = new ReminderModal(
-			this.plugin.app,
-			this.plugin,
+		await handleKanbanCardAction({
+			action,
 			task,
-			async (reminders: any) => {
-				try {
-					await this.plugin.updateTaskProperty(
-						task,
-						"reminders",
-						reminders.length > 0 ? reminders : undefined
-					);
-				} catch (error) {
-					console.error("[TaskNotes][KanbanView] Failed to update reminders", error);
-				}
-			}
-		);
-		modal.open();
-	}
-
-	private async openDateContextMenu(
-		task: TaskInfo,
-		dateType: "due" | "scheduled" | undefined,
-		event: MouseEvent,
-		DateContextMenu: any
-	): Promise<void> {
-		if (!dateType) return;
-
-		const { getDatePart, getTimePart } = await import("../utils/dateUtils");
-		const currentValue = dateType === "due" ? task.due : task.scheduled;
-
-		const menu = new DateContextMenu({
-			currentValue: getDatePart(currentValue || ""),
-			currentTime: getTimePart(currentValue || ""),
-			onSelect: async (dateValue: string, timeValue: string) => {
-				try {
-					let finalValue: string | undefined;
-					if (!dateValue) {
-						finalValue = undefined;
-					} else if (timeValue) {
-						finalValue = `${dateValue}T${timeValue}`;
-					} else {
-						finalValue = dateValue;
-					}
-					await this.plugin.updateTaskProperty(task, dateType, finalValue);
-				} catch (error) {
-					console.error("[TaskNotes][KanbanView] Failed to update date", error);
-				}
-			},
+			target,
+			event,
 			plugin: this.plugin,
 			app: this.app || this.plugin.app,
 		});
-		menu.show(event);
 	}
 
-	private async handleToggleSubtasks(task: TaskInfo, chevronElement: HTMLElement): Promise<void> {
-		const { toggleSubtasks } = await import("../ui/TaskCard");
-		const card = chevronElement.closest<HTMLElement>(".task-card");
-		if (!card) return;
-
-		// Toggle expansion state
-		const isExpanded = this.plugin.expandedProjectsService?.isExpanded(task.path) || false;
-		const newExpanded = !isExpanded;
-
-		if (newExpanded) {
-			this.plugin.expandedProjectsService?.setExpanded(task.path, true);
-		} else {
-			this.plugin.expandedProjectsService?.setExpanded(task.path, false);
-		}
-
-		// Update chevron rotation
-		chevronElement.classList.toggle("is-rotated", newExpanded);
-
-		// Toggle subtasks display
-		await toggleSubtasks(card, task, this.plugin, newExpanded);
+	private async handleToggleStatus(task: TaskInfo, event: MouseEvent): Promise<void> {
+		await handleKanbanCardAction({
+			action: "toggle-status",
+			task,
+			target: this.containerEl,
+			event,
+			plugin: this.plugin,
+			app: this.app || this.plugin.app,
+		});
 	}
 
-	private async handleToggleBlockingTasks(
-		task: TaskInfo,
-		toggleElement: HTMLElement
-	): Promise<void> {
-		const { toggleBlockingTasks } = await import("../ui/TaskCard");
-		const card = toggleElement.closest<HTMLElement>(".task-card");
-		if (!card) return;
-
-		// Toggle expansion state via CSS class
-		const expanded = toggleElement.classList.toggle("task-card__blocking-toggle--expanded");
-
-		// Toggle blocking tasks display
-		await toggleBlockingTasks(card, task, this.plugin, expanded);
+	private getTaskActionDate(task: TaskInfo): Date {
+		return getKanbanTaskActionDate(task);
 	}
 
 	private destroyColumnScrollers(): void {
@@ -3413,7 +3225,7 @@ export class KanbanView extends BasesViewBase {
 	 */
 	onunload(): void {
 		if (this.postDropTimer) {
-			clearTimeout(this.postDropTimer);
+			window.clearTimeout(this.postDropTimer);
 			this.postDropTimer = null;
 		}
 		this.suppressRenderUntil = 0;

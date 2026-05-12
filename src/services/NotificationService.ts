@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { Notice, TFile, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from "../types";
@@ -54,10 +54,10 @@ export class NotificationService {
 
 	destroy(): void {
 		if (this.broadScanInterval) {
-			clearInterval(this.broadScanInterval);
+			window.clearInterval(this.broadScanInterval);
 		}
 		if (this.quickCheckInterval) {
-			clearInterval(this.quickCheckInterval);
+			window.clearInterval(this.quickCheckInterval);
 		}
 		if (this.taskUpdateListener) {
 			this.plugin.emitter.offref(this.taskUpdateListener);
@@ -67,7 +67,7 @@ export class NotificationService {
 	}
 
 	private startBroadScan(): void {
-		this.broadScanInterval = setInterval(async () => {
+		this.broadScanInterval = window.setInterval(async () => {
 			const now = Date.now();
 			const timeSinceLastScan = now - this.lastBroadScanTime;
 
@@ -86,7 +86,7 @@ export class NotificationService {
 	}
 
 	private startQuickCheck(): void {
-		this.quickCheckInterval = setInterval(() => {
+		this.quickCheckInterval = window.setInterval(() => {
 			const now = Date.now();
 			const timeSinceLastCheck = now - this.lastQuickCheckTime;
 
@@ -239,8 +239,8 @@ export class NotificationService {
 
 	private async triggerNotification(item: NotificationQueueItem): Promise<void> {
 		// Get the task info for the notification
-		const file = this.plugin.app.vault.getAbstractFileByPath(item.taskPath) as TFile;
-		if (!file) {
+		const file = this.plugin.app.vault.getAbstractFileByPath(item.taskPath);
+		if (!(file instanceof TFile)) {
 			return;
 		}
 

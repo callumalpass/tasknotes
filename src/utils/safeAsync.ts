@@ -67,7 +67,7 @@ export class SafeAsync {
 				lastError = error instanceof Error ? error : new Error(String(error));
 
 				if (attempt < maxRetries) {
-					await new Promise((resolve) => setTimeout(resolve, retryDelay));
+					await new Promise((resolve) => window.setTimeout(resolve, retryDelay));
 					continue;
 				}
 

@@ -9,7 +9,7 @@ import { EditorSelection, Extension, Prec } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
 import { around } from "monkey-around";
 
-/* eslint-disable no-undef, no-restricted-globals */
+ 
 declare const app: App;
 
 // Internal Obsidian type - not exported in official API
@@ -42,10 +42,15 @@ interface WidgetEditorView {
  * @returns The ScrollableMarkdownEditor constructor
  */
 function resolveEditorPrototype(app: App): Constructor<ScrollableMarkdownEditor> {
+	const activeFile = app.workspace.getActiveFile();
+	if (!(activeFile instanceof TFile)) {
+		throw new Error("Cannot resolve markdown editor prototype without an active markdown file.");
+	}
+
 	// @ts-expect-error - Using internal API
 	const widgetEditorView = app.embedRegistry.embedByExtension.md(
 		{ app, containerEl: document.createElement("div") },
-		null as unknown as TFile,
+		activeFile,
 		""
 	) as WidgetEditorView;
 
@@ -74,7 +79,7 @@ function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 			editorEl: HTMLElement = document.createElement('div');
 			activeCM: any;
 			owner: any = { editMode: null, editor: null };
-			_loaded: boolean = false;
+			_loaded = false;
 			set(value: string): void {}
 			onUpdate(update: ViewUpdate, changed: boolean): void {}
 			buildLocalExtensions(): Extension[] { return []; }
@@ -244,7 +249,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	 */
 	private enterVimInsertMode(): void {
 		// Use a small delay to ensure vim extension has initialized
-		setTimeout(() => {
+		window.setTimeout(() => {
 			try {
 				// Check if vim mode is enabled in Obsidian settings
 				const vimModeEnabled = (this.app.vault as any).getConfig("vimMode");

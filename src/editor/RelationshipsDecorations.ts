@@ -172,7 +172,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	destroy() {
 		// Clean up debounce timer
 		if (this.debounceTimer) {
-			clearTimeout(this.debounceTimer);
+			window.clearTimeout(this.debounceTimer);
 			this.debounceTimer = null;
 		}
 
@@ -202,7 +202,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	}
 
 	private debouncedInjectWidget(view: EditorView): void {
-		if (this.debounceTimer) clearTimeout(this.debounceTimer);
+		if (this.debounceTimer) window.clearTimeout(this.debounceTimer);
 		this.debounceTimer = window.setTimeout(() => {
 			this.injectWidget(view);
 		}, 100);
@@ -562,7 +562,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	// Debounce to prevent excessive re-renders
 	let debounceTimer: number | null = null;
 	const debouncedRefresh = () => {
-		if (debounceTimer) clearTimeout(debounceTimer);
+		if (debounceTimer) window.clearTimeout(debounceTimer);
 		debounceTimer = window.setTimeout(() => {
 			const leaves = plugin.app.workspace.getLeavesOfType('markdown');
 			leaves.forEach(leaf => {
@@ -588,7 +588,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const metadataChangeRef = plugin.app.metadataCache.on('changed', (file) => {
 		// Clear existing timer for this file
 		const existingTimer = metadataDebounceTimers.get(file.path);
-		if (existingTimer) clearTimeout(existingTimer);
+		if (existingTimer) window.clearTimeout(existingTimer);
 
 		// Debounce per file to avoid freezing during typing
 		const timer = window.setTimeout(() => {
@@ -613,7 +613,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 
 	// Return cleanup function
 	return () => {
-		if (debounceTimer) clearTimeout(debounceTimer);
+		if (debounceTimer) window.clearTimeout(debounceTimer);
 
 		// Clean up each type of event ref with the correct method
 		workspaceRefs.forEach(ref => plugin.app.workspace.offref(ref));

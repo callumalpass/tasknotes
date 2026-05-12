@@ -95,14 +95,14 @@ export class TaskListView extends BasesViewBase {
 	private draggedTaskPath: string | null = null;
 	private dragGroupKey: string | null = null;
 	private currentInsertionGroupKey: string | null = null;
-	private currentInsertionSegmentIndex: number = -1;
-	private currentInsertionIndex: number = -1;
+	private currentInsertionSegmentIndex = -1;
+	private currentInsertionIndex = -1;
 	private pendingDragClientY: number | null = null;
-	private pendingRender: boolean = false;
+	private pendingRender = false;
 	private taskGroupKeys = new Map<string, string>(); // task path → group key (set during grouped render)
 	private sortScopeTaskPaths = new Map<string, string[]>();
 	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
-	private dragOverRafId: number = 0; // rAF handle for throttled dragover
+	private dragOverRafId = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
 	private currentDropSlotElement: HTMLElement | null = null;
 	private currentDropSlotPosition: "before" | "after" | null = null;
@@ -424,7 +424,7 @@ export class TaskListView extends BasesViewBase {
 			const container = this.itemsContainer;
 
 			// Collapse dragged card on next frame (after browser captures drag image)
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				cardEl.style.height = "0";
 				cardEl.style.overflow = "hidden";
 				cardEl.style.padding = "0";
@@ -811,7 +811,7 @@ export class TaskListView extends BasesViewBase {
 			// Throttle visual updates via rAF
 			this.pendingDragClientY = e.clientY;
 			if (!this.dragOverRafId) {
-				this.dragOverRafId = requestAnimationFrame(() => {
+				this.dragOverRafId = window.requestAnimationFrame(() => {
 					this.dragOverRafId = 0;
 
 					const clientY = this.pendingDragClientY;
@@ -1166,7 +1166,7 @@ export class TaskListView extends BasesViewBase {
 			});
 
 			// Force recalculation after DOM settles
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.virtualScroller?.recalculate();
 			}, 0);
 		} else {
@@ -1238,7 +1238,7 @@ export class TaskListView extends BasesViewBase {
 					// Clean up related state in the same pass
 					const timeout = this.clickTimeouts.get(path);
 					if (timeout) {
-						clearTimeout(timeout);
+						window.clearTimeout(timeout);
 						this.clickTimeouts.delete(path);
 					}
 					this.taskInfoCache.delete(path);
@@ -1525,7 +1525,7 @@ export class TaskListView extends BasesViewBase {
 				},
 			});
 
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.virtualScroller?.recalculate();
 			}, 0);
 		} else {
@@ -1745,7 +1745,7 @@ export class TaskListView extends BasesViewBase {
 		// Restore scroll position after render completes
 		if (state.scrollTop !== undefined && this.rootElement) {
 			// Use requestAnimationFrame to ensure DOM is ready
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				if (this.rootElement && this.rootElement.isConnected) {
 					this.rootElement.scrollTop = state.scrollTop;
 				}
@@ -1789,7 +1789,7 @@ export class TaskListView extends BasesViewBase {
 	private clearClickTimeouts(): void {
 		for (const timeout of this.clickTimeouts.values()) {
 			if (timeout) {
-				clearTimeout(timeout);
+				window.clearTimeout(timeout);
 			}
 		}
 		this.clickTimeouts.clear();
@@ -2121,7 +2121,7 @@ export class TaskListView extends BasesViewBase {
 
 		const existingTimeout = this.clickTimeouts.get(task.path);
 		if (existingTimeout) {
-			clearTimeout(existingTimeout);
+			window.clearTimeout(existingTimeout);
 			this.clickTimeouts.delete(task.path);
 			await this.executeDoubleClickAction(task, event);
 		} else {

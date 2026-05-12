@@ -27,7 +27,7 @@ export class TaskCalendarSyncService {
 	private lastApiCallAt = 0;
 
 	/** Debounce timers for pending syncs, keyed by task path */
-	private pendingSyncs: Map<string, ReturnType<typeof setTimeout>> = new Map();
+	private pendingSyncs: Map<string, number> = new Map();
 
 	/** In-flight sync operations to prevent concurrent syncs for the same task */
 	private inFlightSyncs: Map<string, Promise<void>> = new Map();
@@ -48,7 +48,7 @@ export class TaskCalendarSyncService {
 	 */
 	destroy(): void {
 		for (const timer of this.pendingSyncs.values()) {
-			clearTimeout(timer);
+			window.clearTimeout(timer);
 		}
 		this.pendingSyncs.clear();
 		this.previousTaskState.clear();
@@ -89,7 +89,7 @@ export class TaskCalendarSyncService {
 				const now = Date.now();
 				const wait = Math.max(0, GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt));
 				if (wait > 0) {
-					await new Promise((r) => setTimeout(r, wait));
+					await new Promise((r) => window.setTimeout(r, wait));
 				}
 				try {
 					const result = await fn();
@@ -97,7 +97,7 @@ export class TaskCalendarSyncService {
 					resolve(result);
 				} catch (e) {
 					this.lastApiCallAt = Date.now();
-					reject(e);
+					reject(e instanceof Error ? e : new Error(String(e)));
 				}
 			}, () => {
 				// Previous call in chain failed; continue the chain
@@ -766,7 +766,7 @@ export class TaskCalendarSyncService {
 		// Cancel any pending debounced sync for this task
 		const existingTimer = this.pendingSyncs.get(taskPath);
 		if (existingTimer) {
-			clearTimeout(existingTimer);
+			window.clearTimeout(existingTimer);
 		}
 
 		// Store the authoritative task state passed to us so we don't rely on the async metadata cache
@@ -774,7 +774,7 @@ export class TaskCalendarSyncService {
 
 		// Return a promise that resolves when the debounced sync completes
 		return new Promise((resolve, reject) => {
-			const timer = setTimeout(async () => {
+			const timer = window.setTimeout(async () => {
 				this.pendingSyncs.delete(taskPath);
 
 				// Wait for any in-flight sync to complete before starting a new one
@@ -802,7 +802,7 @@ export class TaskCalendarSyncService {
 					await syncPromise;
 					resolve();
 				} catch (error) {
-					reject(error);
+					reject(error instanceof Error ? error : new Error(String(error)));
 				} finally {
 					this.inFlightSyncs.delete(taskPath);
 				}
@@ -1046,7 +1046,7 @@ export class TaskCalendarSyncService {
 	 * Remove all task-event links and optionally delete events.
 	 * Iterates over all tasks and removes the googleCalendarEventId from frontmatter.
 	 */
-	async unlinkAllTasks(deleteEvents: boolean = false): Promise<void> {
+	async unlinkAllTasks(deleteEvents = false): Promise<void> {
 		const settings = this.plugin.settings.googleCalendarExport;
 		const tasks = await this.plugin.cacheManager.getAllTasks();
 		let unlinkedCount = 0;

@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TFile, App, Events, EventRef } from "obsidian";
 import { FieldMapper } from "../services/FieldMapper";
 import { normalizeDependencyList, resolveDependencyEntry } from "./dependencyUtils";

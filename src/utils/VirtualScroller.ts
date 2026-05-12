@@ -252,7 +252,7 @@ export class VirtualScroller<T> {
 
 			// Debounce the actual measurement update
 			if (this.measurementRAF === null) {
-				this.measurementRAF = requestAnimationFrame(() => {
+				this.measurementRAF = window.requestAnimationFrame(() => {
 					this.processPendingMeasurements();
 					this.measurementRAF = null;
 				});
@@ -328,7 +328,7 @@ export class VirtualScroller<T> {
 			return;
 		}
 
-		this.scrollRAF = requestAnimationFrame(() => {
+		this.scrollRAF = window.requestAnimationFrame(() => {
 			this.updateVisibleRange();
 			this.scrollRAF = null;
 		});
@@ -458,7 +458,7 @@ export class VirtualScroller<T> {
 		}
 
 		// Schedule measurement after render
-		requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
 			this.measureRenderedItems();
 		});
 	}

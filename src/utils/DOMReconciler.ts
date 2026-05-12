@@ -17,7 +17,7 @@ export class DOMReconciler {
 
 		if (!this.isProcessing) {
 			this.isProcessing = true;
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				this.processUpdates();
 			});
 		}
@@ -44,7 +44,7 @@ export class DOMReconciler {
 
 			// If more updates were queued during processing, schedule another frame
 			if (this.updateQueue.length > 0) {
-				requestAnimationFrame(() => {
+				window.requestAnimationFrame(() => {
 					this.processUpdates();
 				});
 			}
@@ -116,7 +116,7 @@ export class DOMReconciler {
 		};
 
 		// Preserve text selection for input elements
-		if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+		if (element.instanceOf(HTMLInputElement) || element.instanceOf(HTMLTextAreaElement)) {
 			state.selection = {
 				start: element.selectionStart || 0,
 				end: element.selectionEnd || 0,
@@ -150,7 +150,7 @@ export class DOMReconciler {
 		// Restore text selection for input elements
 		if (
 			state.selection &&
-			(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)
+			(element.instanceOf(HTMLInputElement) || element.instanceOf(HTMLTextAreaElement))
 		) {
 			element.setSelectionRange(state.selection.start, state.selection.end);
 		}
@@ -166,7 +166,7 @@ export class DOMReconciler {
 	): void {
 		element.classList.add(`task-${animation}`);
 
-		const timeout = setTimeout(() => {
+		const timeout = window.setTimeout(() => {
 			element.classList.remove(`task-${animation}`);
 			this.activeTimeouts.delete(timeout as unknown as number);
 		}, duration);
@@ -268,7 +268,7 @@ export class DOMReconciler {
 
 		// Clear all active timeouts
 		for (const timeout of this.activeTimeouts) {
-			clearTimeout(timeout);
+			window.clearTimeout(timeout);
 		}
 		this.activeTimeouts.clear();
 	}

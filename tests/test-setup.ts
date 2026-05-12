@@ -203,6 +203,14 @@ jest.mock('date-fns', () => ({
 // Configure Jest globals
 jest.setTimeout(10000);
 
+const quietConsoleMethods = ["debug", "error", "info", "log", "warn"] as const;
+
+beforeEach(() => {
+  for (const method of quietConsoleMethods) {
+    jest.spyOn(console, method).mockImplementation(() => undefined);
+  }
+});
+
 // Add custom matchers if needed in the future
 // expect.extend({
 //   toBeValidTaskInfo(received) {

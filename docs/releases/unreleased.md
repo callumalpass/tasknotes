@@ -23,3 +23,7 @@ Example:
 ```
 
 -->
+
+## Changed
+
+- TaskNotes now requires Obsidian 1.12.2 or later, matching the Obsidian APIs used by the plugin.

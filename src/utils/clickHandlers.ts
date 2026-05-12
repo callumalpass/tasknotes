@@ -35,7 +35,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		? `${DEFAULT_EXCLUDE_SELECTOR}, ${excludeSelector}`
 		: DEFAULT_EXCLUDE_SELECTOR;
 
-	let clickTimeout: ReturnType<typeof setTimeout> | null = null;
+	let clickTimeout: number | null = null;
 
 	const openNote = (newTab = false) => {
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -123,11 +123,11 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		}
 
 		if (clickTimeout) {
-			clearTimeout(clickTimeout);
+			window.clearTimeout(clickTimeout);
 			clickTimeout = null;
 			await handleDoubleClick(e);
 		} else {
-			clickTimeout = setTimeout(() => {
+			clickTimeout = window.setTimeout(() => {
 				clickTimeout = null;
 				handleSingleClick(e);
 			}, 250);
@@ -203,7 +203,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		contextmenuHandler,
 		cleanup: () => {
 			if (clickTimeout) {
-				clearTimeout(clickTimeout);
+				window.clearTimeout(clickTimeout);
 				clickTimeout = null;
 			}
 		},
@@ -232,7 +232,7 @@ export function createTaskHoverHandler(task: TaskInfo, plugin: TaskNotesPlugin) 
 /**
  * Calendar click timeout tracker to distinguish single/double clicks
  */
-const calendarClickTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+const calendarClickTimeouts = new Map<string, number>();
 
 /**
  * Handle calendar event clicks with single/double click detection
@@ -294,12 +294,12 @@ export async function handleCalendarTaskClick(
 
 	if (existingTimeout) {
 		// This is a double-click
-		clearTimeout(existingTimeout);
+		window.clearTimeout(existingTimeout);
 		calendarClickTimeouts.delete(eventId);
 		await handleDoubleClick(jsEvent);
 	} else {
 		// This might be a single-click, wait to see if double-click follows
-		const timeout = setTimeout(() => {
+		const timeout = window.setTimeout(() => {
 			calendarClickTimeouts.delete(eventId);
 			handleSingleClick(jsEvent);
 		}, 250);
@@ -313,7 +313,7 @@ export async function handleCalendarTaskClick(
 export function cleanupCalendarClickTimeout(eventId: string) {
 	const timeout = calendarClickTimeouts.get(eventId);
 	if (timeout) {
-		clearTimeout(timeout);
+		window.clearTimeout(timeout);
 		calendarClickTimeouts.delete(eventId);
 	}
 }

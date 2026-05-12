@@ -500,7 +500,7 @@ export class TimeblockInfoModal extends Modal {
 			modal.open();
 
 			// Focus the cancel button by default for safety
-			setTimeout(() => cancelBtn.focus(), 50);
+			window.setTimeout(() => cancelBtn.focus(), 50);
 		});
 	}
 

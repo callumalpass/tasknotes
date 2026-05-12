@@ -652,9 +652,9 @@ export function renderFeaturesTab(
 						.addText((text) => {
 							text.inputEl.type = "color";
 							text.setValue(plugin.settings.calendarViewSettings.defaultTimeblockColor);
-							text.onChange(async (value) => {
+							text.onChange((value) => {
 								plugin.settings.calendarViewSettings.defaultTimeblockColor = value;
-								await save();
+								save();
 							});
 						});
 				});

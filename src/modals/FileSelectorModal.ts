@@ -44,8 +44,8 @@ export interface FileSelectorOptions {
 export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 	private plugin: TaskNotesPlugin;
 	private options: FileSelectorOptions;
-	private currentQuery: string = "";
-	private resultHandled: boolean = false;
+	private currentQuery = "";
+	private resultHandled = false;
 	private createFooterEl: HTMLElement | null = null;
 
 	constructor(
@@ -96,7 +96,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 		// Create footer after DOM is ready.
 		// SuggestModal builds its DOM asynchronously, so we defer to the next tick.
-		setTimeout(() => this.createFooter(), 0);
+		window.setTimeout(() => this.createFooter(), 0);
 	}
 
 	private handleInputChange = (): void => {
@@ -354,7 +354,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 		// Obsidian's SuggestModal calls onClose() BEFORE onChooseSuggestion().
 		// Defer the cancelled check to the next tick so onChooseSuggestion() can set resultHandled first.
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (!this.resultHandled) {
 				this.options.onResult({ type: "cancelled" });
 			}

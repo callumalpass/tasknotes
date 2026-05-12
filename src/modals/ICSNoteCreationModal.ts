@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, NoteInfo } from "../types";
@@ -139,7 +139,7 @@ export class ICSNoteCreationModal extends Modal {
 		};
 
 		// Focus title input
-		setTimeout(() => this.titleInput?.focus(), 100);
+		window.setTimeout(() => this.titleInput?.focus(), 100);
 	}
 
 	private createEventPreview(container: HTMLElement): void {

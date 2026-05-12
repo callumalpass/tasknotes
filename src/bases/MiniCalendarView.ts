@@ -132,7 +132,7 @@ export class MiniCalendarView extends BasesViewBase {
 				this.shouldRestoreFocus = false;
 
 				// Focus the grid after rendering (with slight delay to ensure DOM is ready)
-				setTimeout(() => {
+				window.setTimeout(() => {
 					const grid = this.calendarEl?.querySelector('.mini-calendar-view__grid') as HTMLElement;
 					if (grid) {
 						grid.focus();

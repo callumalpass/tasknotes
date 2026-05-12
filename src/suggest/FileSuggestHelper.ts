@@ -204,9 +204,9 @@ export const FileSuggestHelper = {
 		return new Promise<FileSuggestionItem[]>((resolve) => {
 			const anyPlugin = plugin as unknown as { __fileSuggestTimer?: number };
 			if (anyPlugin.__fileSuggestTimer) {
-				clearTimeout(anyPlugin.__fileSuggestTimer);
+				window.clearTimeout(anyPlugin.__fileSuggestTimer);
 			}
-			anyPlugin.__fileSuggestTimer = setTimeout(async () => {
+			anyPlugin.__fileSuggestTimer = window.setTimeout(async () => {
 				const results = await run();
 				resolve(results);
 			}, debounceMs) as unknown as number;

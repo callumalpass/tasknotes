@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { TFile, App, Events, EventRef } from "obsidian";
 import { TaskInfo, NoteInfo } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
@@ -750,7 +750,7 @@ export class TaskManager extends Events {
 
 		if (!(file instanceof TFile)) {
 			// File doesn't exist yet, just wait a bit
-			await new Promise(resolve => setTimeout(resolve, 100));
+			await new Promise(resolve => window.setTimeout(resolve, 100));
 			return;
 		}
 
@@ -762,7 +762,7 @@ export class TaskManager extends Events {
 				return;
 			}
 			// Wait before retrying (50ms, 100ms, 150ms, etc.)
-			await new Promise(resolve => setTimeout(resolve, 50 * (i + 1)));
+			await new Promise(resolve => window.setTimeout(resolve, 50 * (i + 1)));
 		}
 
 		// If we still don't have metadata after retries, log a warning but continue

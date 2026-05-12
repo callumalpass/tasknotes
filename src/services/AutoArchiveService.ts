@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { PendingAutoArchive, TaskInfo, StatusConfig } from "../types";
 import TaskNotesPlugin from "../main";
 
@@ -8,7 +8,7 @@ import TaskNotesPlugin from "../main";
  */
 export class AutoArchiveService {
 	private plugin: TaskNotesPlugin;
-	private processorInterval: ReturnType<typeof setInterval> | null = null;
+	private processorInterval: number | null = null;
 	private readonly PROCESSOR_INTERVAL_MS = 60000; // Check every 60 seconds
 
 	constructor(plugin: TaskNotesPlugin) {
@@ -45,7 +45,7 @@ export class AutoArchiveService {
 		await this.processQueue();
 
 		// Start periodic processor
-		this.processorInterval = setInterval(() => {
+		this.processorInterval = window.setInterval(() => {
 			this.processQueue().catch((error) => {
 				console.error("Error processing auto-archive queue:", error);
 			});
@@ -57,7 +57,7 @@ export class AutoArchiveService {
 	 */
 	stop(): void {
 		if (this.processorInterval) {
-			clearInterval(this.processorInterval);
+			window.clearInterval(this.processorInterval);
 			this.processorInterval = null;
 		}
 	}

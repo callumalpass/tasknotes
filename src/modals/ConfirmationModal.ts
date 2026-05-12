@@ -86,7 +86,7 @@ export class ConfirmationModal extends Modal {
 
 		// Focus the appropriate button based on defaultToConfirm option
 		// Use setTimeout to ensure the DOM is fully rendered before focusing
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (this.options.defaultToConfirm) {
 				confirmButton.focus();
 			} else {

@@ -205,7 +205,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		}
 
 		// Focus the newly active tab button
-		setTimeout(() => {
+		window.setTimeout(() => {
 			const activeTabButton = this.containerEl.querySelector(
 				`#tab-button-${tabId}`
 			) as HTMLElement;

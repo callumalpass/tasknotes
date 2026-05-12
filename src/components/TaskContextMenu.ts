@@ -676,7 +676,7 @@ export class TaskContextMenu {
 		});
 
 		// Apply main menu icon colors after menu is built
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.updateMainMenuIconColors(task, plugin);
 		}, 10);
 	}
@@ -1137,7 +1137,7 @@ export class TaskContextMenu {
 
 				// Apply color directly to this item
 				if (option.color) {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						const itemEl = item.dom || item.domEl;
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");
@@ -1184,7 +1184,7 @@ export class TaskContextMenu {
 
 				// Apply color directly to this item
 				if (priority.color) {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						const itemEl = item.dom || item.domEl;
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");

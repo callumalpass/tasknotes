@@ -85,7 +85,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 
 		// Debounce data updates to avoid freezing during typing
 		if (this.dataUpdateDebounceTimer) {
-			clearTimeout(this.dataUpdateDebounceTimer);
+			window.clearTimeout(this.dataUpdateDebounceTimer);
 		}
 
 		// Use correct window for pop-out window support
@@ -198,7 +198,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 */
 	protected setupNewTaskButton(): void {
 		// Defer to allow Bases to render its toolbar first
-		setTimeout(() => this.injectNewTaskButton(), 100);
+		window.setTimeout(() => this.injectNewTaskButton(), 100);
 
 		// Register cleanup to toggle off the active class when view is unloaded
 		this.register(() => this.cleanupNewTaskButton());
@@ -330,7 +330,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 */
 	protected debouncedRefresh(): void {
 		if (this.updateDebounceTimer) {
-			clearTimeout(this.updateDebounceTimer);
+			window.clearTimeout(this.updateDebounceTimer);
 		}
 
 		// Use correct window for pop-out window support

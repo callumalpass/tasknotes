@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { TaskManager } from "../utils/TaskManager";
 import { TaskInfo } from "../types";
 import { StatusManager } from "./StatusManager";

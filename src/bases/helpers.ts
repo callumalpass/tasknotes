@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { setIcon } from "obsidian";

@@ -159,7 +159,7 @@ export class TaskActionCoordinator {
 
 	private requestStatusBarUpdate(): void {
 		if (this.plugin.statusBarService) {
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.plugin.statusBarService.requestUpdate();
 			}, 50);
 		}

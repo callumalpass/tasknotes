@@ -1,4 +1,4 @@
-import { TAbstractFile } from "obsidian";
+import { setIcon, TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {
 	createCard,
@@ -203,9 +203,15 @@ function renderProjectAutosuggestSettings(
 	const updateFilterBadge = () => {
 		if (hasActiveFilters()) {
 			filterBadge.style.display = "inline-flex";
-			filterBadge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg><span>${translate("settings.taskProperties.projectsCard.filtersOn")}</span>`;
+			filterBadge.empty();
+			const iconEl = filterBadge.createSpan();
+			setIcon(iconEl, "filter");
+			filterBadge.createSpan({
+				text: translate("settings.taskProperties.projectsCard.filtersOn"),
+			});
 		} else {
 			filterBadge.style.display = "none";
+			filterBadge.empty();
 		}
 	};
 	updateFilterBadge();

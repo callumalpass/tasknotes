@@ -47,3 +47,18 @@ npm run build         # Production build (without copying to vault)
 When you make changes, update docs/releases/unreleased.md. If your changes are related to a GitHub issue or PR, include acknowledgement of the individual who opened the issue or submitted the PR. Do not update unreleased.md for the addition of tests; unreleased.md is user-facing. 
 
 You may update `.ops/` files locally as you work on items, but do not commit `.ops/` files. `.ops/` is local-only working state.
+
+## Prepare for a release. 
+
+When asked to prepare for a release: 
+
+1. Run through the @I18N_GUIDE.md and make sure translations are up-to-date. 
+2. Make sure ALL `npm run test` tests are passing. 
+3. Make sure there are no linting errors.
+4. Make sure all items in @docs/releases/unreleased.md thank the correct issue/pr opener (double check), as well as those who have commented on the issue/pr. Make sure the copy is appropriate--it is user facing so it should not be overly technical. Make sure it is free from anything that resembles marketing copy. do not thank callumalpass 
+5. Move the body of unreleased.md to <VERSION NUMBER>.md, following the pattern of previous released. Leave the comments that explain unreleased.md inside unreleased.md.
+6. Update @manifest.json and @package.json. 
+7. Commit changes as \"release <VERSION NUMBER>\" (you can choose the version number unless it is specified). 
+8. Tag the commit. (Just version number, no 'v' prefix. 
+
+

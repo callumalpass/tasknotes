@@ -383,7 +383,7 @@ export function debounce<T extends (...args: any[]) => any>(
 	wait: number,
 	immediate = false
 ): DebouncedFunction<T> {
-	let timeout: ReturnType<typeof setTimeout> | undefined;
+	let timeout: number | undefined;
 	let lastArgs: Parameters<T> | undefined;
 	let lastThis: any;
 
@@ -399,15 +399,15 @@ export function debounce<T extends (...args: any[]) => any>(
 		};
 
 		const callNow = immediate && !timeout;
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
+		window.clearTimeout(timeout);
+		timeout = window.setTimeout(later, wait);
 
 		if (callNow) func.apply(this, args);
 	} as DebouncedFunction<T>;
 
 	debounced.flush = () => {
 		if (timeout && lastArgs) {
-			clearTimeout(timeout);
+			window.clearTimeout(timeout);
 			timeout = undefined;
 			func.apply(lastThis, lastArgs);
 			lastArgs = undefined;

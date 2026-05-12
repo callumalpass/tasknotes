@@ -128,7 +128,7 @@ export class DateContextMenu {
 	}
 
 	public getDateOptions(): DateOption[] {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const today = (window as any).moment();
 		const options: DateOption[] = [];
 

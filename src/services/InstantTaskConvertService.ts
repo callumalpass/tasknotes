@@ -872,7 +872,7 @@ export class InstantTaskConvertService {
 			await this.forceMetadataCacheUpdate(taskFile);
 
 			// Small delay to allow the editor to process the line replacement and cache update
-			setTimeout(() => {
+			window.setTimeout(() => {
 				try {
 					// Access the CodeMirror instance from the editor
 					const cmEditor = (editor as any).cm;
@@ -884,7 +884,7 @@ export class InstantTaskConvertService {
 						dispatchTaskUpdate(cmEditor, taskFile.path);
 
 						// Restore cursor position after a brief delay
-						setTimeout(() => {
+						window.setTimeout(() => {
 							try {
 								editor.setCursor(cursorPos);
 							} catch (error) {
@@ -914,7 +914,7 @@ export class InstantTaskConvertService {
 			if (this.plugin.app.metadataCache.getFileCache(file) === null) {
 				// If cache is still null, trigger a manual update
 				// by reading the file again with a small delay
-				setTimeout(async () => {
+				window.setTimeout(async () => {
 					try {
 						await this.plugin.app.vault.cachedRead(file);
 					} catch (error) {

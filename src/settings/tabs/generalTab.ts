@@ -254,9 +254,9 @@ export function renderGeneralTab(
 					setting.addText(text => {
 						text.setPlaceholder(defaultPath)
 							.setValue(plugin.settings.commandFileMapping[id])
-							.onChange(async (value) => {
+							.onChange((value) => {
 								plugin.settings.commandFileMapping[id] = value;
-								await save();
+								save();
 								// Update description
 								setting.setDesc(translate("settings.integrations.basesIntegration.viewCommands.fileLabel", {
 									path: value
@@ -270,9 +270,9 @@ export function renderGeneralTab(
 					setting.addButton(button => {
 						button.setButtonText(translate("settings.integrations.basesIntegration.viewCommands.resetButton"))
 							.setTooltip(translate("settings.integrations.basesIntegration.viewCommands.resetTooltip"))
-							.onClick(async () => {
+							.onClick(() => {
 								plugin.settings.commandFileMapping[id] = defaultPath;
-								await save();
+								save();
 								// Refresh the entire settings display
 								if (app.setting.activeTab) {
 									app.setting.openTabById(app.setting.activeTab.id);
@@ -290,9 +290,9 @@ export function renderGeneralTab(
 					.setDesc(translate("settings.integrations.basesIntegration.autoCreateDefaultFiles.description"))
 					.addToggle(toggle => {
 						toggle.setValue(plugin.settings.autoCreateDefaultBasesFiles)
-							.onChange(async (value) => {
+							.onChange((value) => {
 								plugin.settings.autoCreateDefaultBasesFiles = value;
-								await save();
+								save();
 							});
 						return toggle;
 					});

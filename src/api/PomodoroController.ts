@@ -4,7 +4,7 @@ import { BaseController } from "./BaseController";
 import { TaskManager } from "../utils/TaskManager";
 import TaskNotesPlugin from "../main";
 import { PomodoroSessionHistory } from "../types";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 import { Get, Post } from "../utils/OpenAPIDecorators";
 
 export class PomodoroController extends BaseController {

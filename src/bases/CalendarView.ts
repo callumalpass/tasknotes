@@ -139,7 +139,7 @@ export class CalendarView extends BasesViewBase {
 	private _previousConfigSnapshot: string | null = null;
 
 	// Debounce timer for saving view type to config
-	private _saveViewTypeTimer: ReturnType<typeof setTimeout> | null = null;
+	private _saveViewTypeTimer: number | null = null;
 
 	// Flag to indicate config changed and calendar needs recreation
 	private _configChangedNeedsRecreate = false;
@@ -291,7 +291,7 @@ export class CalendarView extends BasesViewBase {
 
 		// Clear any existing debounce timer
 		if (this.dataUpdateDebounceTimer) {
-			clearTimeout(this.dataUpdateDebounceTimer);
+			window.clearTimeout(this.dataUpdateDebounceTimer);
 			this.dataUpdateDebounceTimer = null;
 		}
 
@@ -332,7 +332,7 @@ export class CalendarView extends BasesViewBase {
 	expectImmediateUpdate(): void {
 		this._expectingImmediateUpdate = true;
 		// Auto-reset after a short delay in case the update never comes
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this._expectingImmediateUpdate = false;
 		}, 2000);
 	}
@@ -722,7 +722,7 @@ export class CalendarView extends BasesViewBase {
 		if (this._pendingRender) {
 			this._pendingRender = false;
 			// Use setTimeout to avoid deep call stack
-			setTimeout(() => this.render(), 0);
+			window.setTimeout(() => this.render(), 0);
 		}
 	}
 
@@ -997,11 +997,11 @@ export class CalendarView extends BasesViewBase {
 	private debouncedSaveViewType(viewType: string): void {
 		// Clear any pending save
 		if (this._saveViewTypeTimer) {
-			clearTimeout(this._saveViewTypeTimer);
+			window.clearTimeout(this._saveViewTypeTimer);
 		}
 
 		// Debounce the save to avoid rapid recreation
-		this._saveViewTypeTimer = setTimeout(() => {
+		this._saveViewTypeTimer = window.setTimeout(() => {
 			this._saveViewTypeTimer = null;
 			try {
 				if (this.config && typeof this.config.set === 'function') {
@@ -2201,7 +2201,7 @@ export class CalendarView extends BasesViewBase {
 
 		// Clean up any pending view type save timer
 		if (this._saveViewTypeTimer) {
-			clearTimeout(this._saveViewTypeTimer);
+			window.clearTimeout(this._saveViewTypeTimer);
 			this._saveViewTypeTimer = null;
 		}
 

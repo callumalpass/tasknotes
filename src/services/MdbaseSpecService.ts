@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import TaskNotesPlugin from "../main";
 import { UserMappedField } from "../types/settings";
 

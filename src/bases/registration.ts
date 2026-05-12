@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import TaskNotesPlugin from "../main";
 import { requireApiVersion } from "obsidian";
 import type { BasesAllOptions, BasesOptions } from "obsidian";
@@ -581,7 +581,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 	// If that fails, try a few more times with short delays
 	for (let i = 0; i < 5; i++) {
-		await new Promise((r) => setTimeout(r, 200));
+		await new Promise((r) => window.setTimeout(r, 200));
 		if (await attemptRegistration()) {
 			return;
 		}

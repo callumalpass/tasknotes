@@ -137,7 +137,7 @@ export class BatchContextMenu {
 
 				// Apply color to icon
 				if (status.color) {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						const itemEl = item.dom || item.domEl;
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");
@@ -164,7 +164,7 @@ export class BatchContextMenu {
 
 				// Apply color to icon
 				if (priority.color) {
-					setTimeout(() => {
+					window.setTimeout(() => {
 						const itemEl = item.dom || item.domEl;
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");

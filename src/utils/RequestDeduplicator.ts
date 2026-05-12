@@ -39,7 +39,7 @@ export class RequestDeduplicator {
 			const result = await requestFn();
 
 			// Schedule cleanup after TTL
-			const timeout = setTimeout(() => {
+			const timeout = window.setTimeout(() => {
 				this.inFlightRequests.delete(key);
 				this.activeTimeouts.delete(timeout as unknown as number);
 			}, ttl);
@@ -76,7 +76,8 @@ export class RequestDeduplicator {
 				});
 			} else {
 				// Fallback for browsers without requestIdleCallback
-				const timeout = setTimeout(() => {
+				const browserWindow = window as Window;
+				const timeout = browserWindow.setTimeout(() => {
 					this.processPrefetchQueue(key, requestFn);
 					this.activeTimeouts.delete(timeout as unknown as number);
 				}, 50);
@@ -96,7 +97,7 @@ export class RequestDeduplicator {
 			await prefetchPromise;
 
 			// Keep prefetch result available for a short time
-			const timeout = setTimeout(() => {
+			const timeout = window.setTimeout(() => {
 				this.prefetchPromises.delete(key);
 				this.activeTimeouts.delete(timeout as unknown as number);
 			}, 30000); // 30 seconds
@@ -143,7 +144,7 @@ export class RequestDeduplicator {
 
 		// Clear all active timeouts
 		for (const timeout of this.activeTimeouts) {
-			clearTimeout(timeout);
+			window.clearTimeout(timeout);
 		}
 		this.activeTimeouts.clear();
 	}

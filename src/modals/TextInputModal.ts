@@ -47,7 +47,7 @@ export class TextInputModal extends Modal {
 				});
 
 			// Focus the input
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.inputEl.focus();
 				this.inputEl.select();
 			}, 100);

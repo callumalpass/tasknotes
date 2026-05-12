@@ -69,7 +69,7 @@ export class TaskLinkWidget extends WidgetType {
 		// Trigger update after status changes (for editor sync)
 		// Listen for task updates within the card
 		card.addEventListener("tasknotes:task-updated", () => {
-			setTimeout(() => {
+			window.setTimeout(() => {
 				if (view && typeof view.dispatch === "function") {
 					dispatchTaskUpdate(view, this.taskInfo.path);
 				}

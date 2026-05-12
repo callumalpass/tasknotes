@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { ItemView, WorkspaceLeaf, Notice, EventRef, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
@@ -161,7 +161,7 @@ export class PomodoroView extends ItemView {
 		// Also listen for workspace ready event as an additional safeguard
 		if (this.plugin.app.workspace.layoutReady) {
 			// Workspace is already ready
-			setTimeout(() => this.ensureResizeHandlingSetup(), 50);
+			window.setTimeout(() => this.ensureResizeHandlingSetup(), 50);
 		} else {
 			// Wait for workspace to be ready
 			this.plugin.app.workspace.onLayoutReady(() => {
@@ -513,7 +513,7 @@ export class PomodoroView extends ItemView {
 		const maxAttempts = 10;
 		const delay = Math.min(100 * Math.pow(1.5, attempt), 1000); // Exponential backoff, max 1s
 
-		setTimeout(() => {
+		window.setTimeout(() => {
 			// Check if we need to set up resize handling
 			if (!this.resizeObserver) {
 				const pomodoroContainer = this.contentEl.querySelector(

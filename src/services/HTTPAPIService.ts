@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { createServer, IncomingMessage, ServerResponse, Server } from "http";
 import { parse } from "url";
 import { IWebhookNotifier } from "../types";
@@ -9,7 +9,7 @@ import { NaturalLanguageParser } from "./NaturalLanguageParser";
 import { StatusManager } from "./StatusManager";
 import { TaskStatsService } from "./TaskStatsService";
 import TaskNotesPlugin from "../main";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 import { OpenAPIController } from "../utils/OpenAPIDecorators";
 import { APIRouter } from "../api/APIRouter";
 import { TasksController } from "../api/TasksController";
@@ -22,7 +22,7 @@ import { MCPService } from "./MCPService";
 import { parseJSONBody, sendJSONResponse, setCORSHeaders } from "../api/httpUtils";
 
 @OpenAPIController
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export class HTTPAPIService implements IWebhookNotifier {
 	private server?: Server;
 	private plugin: TaskNotesPlugin;
@@ -270,7 +270,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 					reject(err);
 				});
 			} catch (error) {
-				reject(error);
+					reject(error instanceof Error ? error : new Error(String(error)));
 			}
 		});
 	}
