@@ -23,8 +23,3 @@ Example:
 ```
 
 -->
-
-## Changed
-
-- TaskNotes now requires Obsidian 1.12.2 or later, matching the Obsidian APIs used by the plugin.
-- Improved internal code quality by resolving lint warnings, moving static inline styles into CSS utilities, and extending sentence-case lint coverage to English localization strings, with no intended behavior changes.
