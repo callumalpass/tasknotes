@@ -19,9 +19,18 @@ import {
 	parseDateToUTC,
 	getTodayLocal,
 } from "../utils/dateUtils";
-import { generateRecurringInstances, updateTimeblockInDailyNote, addDTSTARTToRecurrenceRuleWithDraggedTime } from "../utils/helpers";
+import {
+	generateRecurringInstances,
+	updateTimeblockInDailyNote,
+	addDTSTARTToRecurrenceRuleWithDraggedTime,
+} from "../utils/helpers";
 import { Notice } from "obsidian";
-import { getAllDailyNotes, getDailyNote, appHasDailyNotesPluginLoaded, createDailyNote } from "obsidian-daily-notes-interface";
+import {
+	getAllDailyNotes,
+	getDailyNote,
+	appHasDailyNotesPluginLoaded,
+	createDailyNote,
+} from "obsidian-daily-notes-interface";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
@@ -40,7 +49,15 @@ export interface CalendarEvent {
 		taskInfo?: TaskInfo;
 		icsEvent?: ICSEvent;
 		timeblock?: TimeBlock;
-		eventType: "scheduled" | "due" | "scheduledToDueSpan" | "timeEntry" | "recurring" | "ics" | "timeblock" | "property-based";
+		eventType:
+			| "scheduled"
+			| "due"
+			| "scheduledToDueSpan"
+			| "timeEntry"
+			| "recurring"
+			| "ics"
+			| "timeblock"
+			| "property-based";
 		filePath?: string; // For property-based events
 		file?: any; // For property-based events
 		basesEntry?: any; // For property-based events - full Bases entry with getValue()
@@ -96,7 +113,7 @@ export function hexToRgba(hex: string, alpha: number): string {
  * Uses activeDocument to support pop-out windows
  */
 export function isDarkMode(): boolean {
-	return activeDocument.body.classList.contains('theme-dark');
+	return activeDocument.body.classList.contains("theme-dark");
 }
 
 /**
@@ -105,10 +122,10 @@ export function isDarkMode(): boolean {
  */
 export function getEventTextColor(useThemeColor = false): string {
 	if (useThemeColor) {
-		return isDarkMode() ? '#e8eaed' : '#202124'; // Light text in dark mode, dark text in light mode
+		return isDarkMode() ? "#e8eaed" : "#202124"; // Light text in dark mode, dark text in light mode
 	}
 	// For non-themed events, return empty (use border color)
-	return '';
+	return "";
 }
 
 /**
@@ -168,34 +185,45 @@ export function applyRecurringTaskStyling(
 
 	if (isNextScheduledOccurrence) {
 		// Next scheduled occurrence: Normal task styling (solid border, full opacity)
-		element.style.borderStyle = "solid";
-		element.style.borderWidth = "2px";
+		element.classList.remove("tn-static-border-style-dashed-12296c91");
+		element.classList.add("tn-static-border-style-solid-11080b69");
+		element.classList.add("tn-static-border-width-2px-a1222254");
 		element.setAttribute("data-next-scheduled", "true");
 		element.classList.add("fc-next-scheduled-event");
 
 		// Apply dimmed appearance for completed instances
 		if (isCompleted) {
-			element.style.opacity = "0.6";
+			element.classList.remove(
+				"tn-static-opacity-0-8d919cb5",
+				"tn-static-opacity-1-c6e7979d"
+			);
+			element.classList.add("tn-static-opacity-0-6-d95b59ac");
 		}
 	} else if (isPatternInstance) {
 		// Pattern occurrences: Recurring preview styling (dashed border, reduced opacity)
-		element.style.borderStyle = "dashed";
-		element.style.borderWidth = "2px";
+		element.classList.remove("tn-static-border-style-solid-11080b69");
+		element.classList.add("tn-static-border-style-dashed-12296c91");
+		element.classList.add("tn-static-border-width-2px-a1222254");
 		element.style.opacity = isCompleted ? "0.4" : "0.7"; // Reduced opacity for pattern instances
 
 		element.setAttribute("data-pattern-instance", "true");
 		element.classList.add("fc-pattern-instance-event");
 	} else if (isRecurringInstance) {
 		// Legacy recurring instances (for backward compatibility)
-		element.style.borderStyle = "dashed";
-		element.style.borderWidth = "2px";
+		element.classList.remove("tn-static-border-style-solid-11080b69");
+		element.classList.add("tn-static-border-style-dashed-12296c91");
+		element.classList.add("tn-static-border-width-2px-a1222254");
 
 		element.setAttribute("data-recurring", "true");
 		element.classList.add("fc-recurring-event");
 
 		// Apply dimmed appearance for completed instances
 		if (isCompleted) {
-			element.style.opacity = "0.6";
+			element.classList.remove(
+				"tn-static-opacity-0-8d919cb5",
+				"tn-static-opacity-1-c6e7979d"
+			);
+			element.classList.add("tn-static-opacity-0-6-d95b59ac");
 		}
 	}
 
@@ -203,10 +231,16 @@ export function applyRecurringTaskStyling(
 	if (isCompleted) {
 		const titleElement = element.querySelector(".fc-event-title, .fc-event-title-container");
 		if (titleElement) {
-			(titleElement as HTMLElement).style.textDecoration = "line-through";
+			(titleElement as HTMLElement).classList.remove(
+				"tn-static-text-decoration-none-80d654f9"
+			);
+			(titleElement as HTMLElement).classList.add(
+				"tn-static-text-decoration-line-through-7059a4e5"
+			);
 		} else {
 			// Fallback: apply to the entire event element
-			element.style.textDecoration = "line-through";
+			element.classList.remove("tn-static-text-decoration-none-80d654f9");
+			element.classList.add("tn-static-text-decoration-line-through-7059a4e5");
 		}
 		element.classList.add("fc-completed-event");
 	}
@@ -288,11 +322,8 @@ export async function handleRecurringTaskDrop(
 	taskInfo: TaskInfo,
 	plugin: TaskNotesPlugin
 ): Promise<void> {
-	const {
-		isRecurringInstance,
-		isNextScheduledOccurrence,
-		isPatternInstance,
-	} = dropInfo.event.extendedProps;
+	const { isRecurringInstance, isNextScheduledOccurrence, isPatternInstance } =
+		dropInfo.event.extendedProps;
 
 	const newStart = dropInfo.event.start;
 	const allDay = dropInfo.event.allDay;
@@ -337,16 +368,11 @@ export async function handleRecurringTaskDrop(
  * Uses the same UTC-anchored logic as AdvancedCalendarView
  */
 export function getTargetDateForEvent(eventArg: any): Date {
-
 	// Extract from eventArg.event if it's an event mount arg, or directly if it's the event
 	const event = eventArg.event || eventArg;
 	const extendedProps = event.extendedProps || {};
-	const {
-		isRecurringInstance,
-		isNextScheduledOccurrence,
-		isPatternInstance,
-		instanceDate,
-	} = extendedProps;
+	const { isRecurringInstance, isNextScheduledOccurrence, isPatternInstance, instanceDate } =
+		extendedProps;
 
 	// For recurring tasks, use UTC anchor for instance date (matches AdvancedCalendarView)
 	if ((isRecurringInstance || isNextScheduledOccurrence || isPatternInstance) && instanceDate) {
@@ -369,24 +395,28 @@ export function getTargetDateForEvent(eventArg: any): Date {
 /**
  * Calculate all-day end date based on time estimate
  */
-export function calculateAllDayEndDate(startDate: string, timeEstimate?: number): string | undefined {
+export function calculateAllDayEndDate(
+	startDate: string,
+	timeEstimate?: number
+): string | undefined {
 	if (!timeEstimate) return undefined;
 
 	// For all-day events, add days based on time estimate (24 hours = 1 day)
 	const days = Math.ceil(timeEstimate / (24 * 60));
 	const start = parseDateToUTC(startDate);
-	const end = new Date(Date.UTC(
-		start.getUTCFullYear(),
-		start.getUTCMonth(),
-		start.getUTCDate() + days
-	));
+	const end = new Date(
+		Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + days)
+	);
 	return formatDateForStorage(end);
 }
 
 /**
  * Create scheduled event from task
  */
-export function createScheduledEvent(task: TaskInfo, plugin: TaskNotesPlugin): CalendarEvent | null {
+export function createScheduledEvent(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): CalendarEvent | null {
 	if (!task.scheduled) return null;
 
 	const hasTime = hasTimeComponent(task.scheduled);
@@ -470,7 +500,10 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
  * Create a spanning event from scheduled date to due date.
  * Shows the task as a multi-day bar from when work starts to when it's due.
  */
-export function createScheduledToDueSpanEvent(task: TaskInfo, plugin: TaskNotesPlugin): CalendarEvent | null {
+export function createScheduledToDueSpanEvent(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): CalendarEvent | null {
 	if (!task.scheduled || !task.due) return null;
 
 	// Parse dates to compare them
@@ -818,7 +851,11 @@ export function generateRecurringTaskInstances(
 /**
  * Create timeblock calendar event
  */
-export function createTimeblockEvent(timeblock: TimeBlock, date: string, defaultColor = "#6366f1"): CalendarEvent {
+export function createTimeblockEvent(
+	timeblock: TimeBlock,
+	date: string,
+	defaultColor = "#6366f1"
+): CalendarEvent {
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
 	const endDateTime = `${date}T${timeblock.endTime}:00`;
 
@@ -854,7 +891,12 @@ function extractTimeblocksFromCache(frontmatter: any, path: string): TimeBlock[]
 	const validTimeblocks: TimeBlock[] = [];
 	for (const tb of frontmatter.timeblocks) {
 		// Basic validation - must have id, startTime, endTime
-		if (tb && typeof tb.id === "string" && typeof tb.startTime === "string" && typeof tb.endTime === "string") {
+		if (
+			tb &&
+			typeof tb.id === "string" &&
+			typeof tb.startTime === "string" &&
+			typeof tb.endTime === "string"
+		) {
 			validTimeblocks.push(tb as TimeBlock);
 		}
 	}
@@ -878,7 +920,7 @@ export async function generateTimeblockEvents(
 	try {
 		// Use cached daily notes if available and fresh
 		const now = Date.now();
-		if (!_dailyNotesCache || (now - _dailyNotesCacheTime) > DAILY_NOTES_CACHE_TTL) {
+		if (!_dailyNotesCache || now - _dailyNotesCacheTime > DAILY_NOTES_CACHE_TTL) {
 			_dailyNotesCache = getAllDailyNotes();
 			_dailyNotesCacheTime = now;
 		}
@@ -901,9 +943,18 @@ export async function generateTimeblockEvents(
 				// Use metadataCache instead of reading file
 				const cache = plugin.app.metadataCache.getFileCache(dailyNote);
 				if (cache?.frontmatter) {
-					const timeblocks = extractTimeblocksFromCache(cache.frontmatter, dailyNote.path);
+					const timeblocks = extractTimeblocksFromCache(
+						cache.frontmatter,
+						dailyNote.path
+					);
 					for (const timeblock of timeblocks) {
-						events.push(createTimeblockEvent(timeblock, dateString, plugin.settings.calendarViewSettings.defaultTimeblockColor));
+						events.push(
+							createTimeblockEvent(
+								timeblock,
+								dateString,
+								plugin.settings.calendarViewSettings.defaultTimeblockColor
+							)
+						);
 					}
 				}
 			}
@@ -996,8 +1047,10 @@ export async function generateCalendarEvents(
 					const spanEvent = createScheduledToDueSpanEvent(task, plugin);
 					if (spanEvent) {
 						// Check if span is in visible range (use scheduled date for range check)
-						if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd) ||
-							isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
+						if (
+							isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd) ||
+							isDateInVisibleRange(task.due, visibleStart, visibleEnd)
+						) {
 							events.push(spanEvent);
 							showedSpan = true;
 						}
@@ -1007,7 +1060,14 @@ export async function generateCalendarEvents(
 				// Only show individual scheduled/due events if we didn't show a span
 				if (!showedSpan) {
 					if (showScheduled && task.scheduled) {
-						if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
+						if (
+							isDateInVisibleRange(
+								task.scheduled,
+								visibleStart,
+								visibleEnd,
+								task.timeEstimate
+							)
+						) {
 							const scheduledEvent = createScheduledEvent(task, plugin);
 							if (scheduledEvent) events.push(scheduledEvent);
 						}
@@ -1035,7 +1095,10 @@ export async function generateCalendarEvents(
 		} catch (error) {
 			// Log error but continue processing other tasks
 			// This prevents a single task with invalid dates from breaking the entire calendar
-			console.warn(`[TaskNotes][Calendar] Error processing task "${task.title}" (${task.path}):`, error);
+			console.warn(
+				`[TaskNotes][Calendar] Error processing task "${task.title}" (${task.path}):`,
+				error
+			);
 		}
 	}
 
@@ -1070,7 +1133,6 @@ export async function handleTimeblockCreation(
 	allDay: boolean,
 	plugin: TaskNotesPlugin
 ): Promise<void> {
-
 	// Don't create timeblocks for all-day selections
 	if (allDay) {
 		new Notice(
@@ -1101,12 +1163,9 @@ export async function handleTimeEntryCreation(
 	allDay: boolean,
 	plugin: TaskNotesPlugin
 ): Promise<void> {
-
 	// Don't create time entries for all-day selections
 	if (allDay) {
-		new Notice(
-			plugin.i18n.translate("modals.timeEntry.mustHaveSpecificTime")
-		);
+		new Notice(plugin.i18n.translate("modals.timeEntry.mustHaveSpecificTime"));
 		return;
 	}
 
@@ -1125,9 +1184,7 @@ export async function handleTimeEntryCreation(
 			if (selectedTask) {
 				try {
 					// Calculate duration
-					const durationMinutes = Math.round(
-						(end.getTime() - start.getTime()) / 60000
-					);
+					const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
 
 					// Create new time entry
 					const newEntry = {
@@ -1152,7 +1209,7 @@ export async function handleTimeEntryCreation(
 
 					// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
 					// We just need to trigger EVENT_DATA_CHANGED
-						plugin.emitter.trigger(EVENT_DATA_CHANGED);
+					plugin.emitter.trigger(EVENT_DATA_CHANGED);
 
 					new Notice(
 						plugin.i18n.translate("modals.timeEntry.created", {
@@ -1181,7 +1238,6 @@ export async function handleTimeblockDrop(
 	originalDate: string,
 	plugin: TaskNotesPlugin
 ): Promise<void> {
-
 	try {
 		const newStart = dropInfo.event.start;
 		const newEnd = dropInfo.event.end;
@@ -1218,7 +1274,6 @@ export async function handleTimeblockResize(
 	originalDate: string,
 	plugin: TaskNotesPlugin
 ): Promise<void> {
-
 	try {
 		const start = resizeInfo.event.start;
 		const end = resizeInfo.event.end;
@@ -1260,7 +1315,6 @@ export async function showTimeblockInfoModal(
 	plugin: TaskNotesPlugin,
 	onChange?: () => void
 ): Promise<void> {
-
 	const modal = new TimeblockInfoModal(
 		plugin.app,
 		plugin,
@@ -1280,8 +1334,9 @@ export function applyTimeblockStyling(element: HTMLElement, timeblock: TimeBlock
 	element.setAttribute("data-timeblock-id", timeblock.id || "");
 
 	// Add visual styling for timeblocks
-	element.style.borderStyle = "solid";
-	element.style.borderWidth = "2px";
+	element.classList.remove("tn-static-border-style-dashed-12296c91");
+	element.classList.add("tn-static-border-style-solid-11080b69");
+	element.classList.add("tn-static-border-width-2px-a1222254");
 	element.classList.add("fc-timeblock-event");
 }
 
@@ -1325,7 +1380,7 @@ export async function handleDateTitleClick(date: Date, plugin: TaskNotesPlugin):
 		// Check if Daily Notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
 			new Notice(
-				"Daily Notes core plugin is not enabled. Please enable it in Settings > Core plugins."
+				"Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
 			);
 			return;
 		}

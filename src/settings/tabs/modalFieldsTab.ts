@@ -33,7 +33,8 @@ export function renderModalFieldsTab(
 		container,
 		{
 			heading: "Task Modal Fields Configuration",
-			description: "Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.",
+			description:
+				"Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.",
 		},
 		(group) => {
 			// Split layout toggle
@@ -64,11 +65,13 @@ export function renderModalFieldsTab(
 			// Sync button
 			group.addSetting((setting) => {
 				setting
-					.setName("Sync User Fields")
-					.setDesc("Click to sync custom user fields from Task Properties settings into this configuration.")
+					.setName("Sync user fields")
+					.setDesc(
+						"Click to sync custom user fields from task properties settings into this configuration."
+					)
 					.addButton((button) => {
 						button
-							.setButtonText("Sync User Fields")
+							.setButtonText("Sync user fields")
 							.setCta()
 							.onClick(() => {
 								syncUserFieldsToConfig(plugin);
@@ -83,16 +86,19 @@ export function renderModalFieldsTab(
 			// Reset button
 			group.addSetting((setting) => {
 				setting
-					.setName("Reset to Defaults")
-					.setDesc("Reset all field configurations to their default values. This will remove any custom configurations.")
+					.setName("Reset to defaults")
+					.setDesc(
+						"Reset all field configurations to their default values. This will remove any custom configurations."
+					)
 					.addButton((button) => {
 						button
-							.setButtonText("Reset to Defaults")
+							.setButtonText("Reset to defaults")
 							.setWarning()
 							.onClick(async () => {
 								const confirmed = await showConfirmationModal(plugin.app, {
 									title: "Reset Field Configuration",
-									message: "Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
+									message:
+										"Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
 									confirmText: "Reset",
 									cancelText: "Cancel",
 									isDestructive: true,
@@ -163,9 +169,10 @@ function syncUserFieldsToConfig(plugin: TaskNotesPlugin): void {
 		if (!existingUserFieldIds.has(userField.id)) {
 			// Find the highest order in custom group
 			const customGroupFields = config.fields.filter((f) => f.group === "custom");
-			const maxOrder = customGroupFields.length > 0
-				? Math.max(...customGroupFields.map((f) => f.order))
-				: -1;
+			const maxOrder =
+				customGroupFields.length > 0
+					? Math.max(...customGroupFields.map((f) => f.order))
+					: -1;
 
 			config.fields.push({
 				id: userField.id,
@@ -187,7 +194,9 @@ function syncUserFieldsToConfig(plugin: TaskNotesPlugin): void {
 	});
 
 	// Remove user fields that no longer exist in userFields
-	const currentUserFieldIds = new Set(plugin.settings.userFields.map((f: UserMappedField) => f.id));
+	const currentUserFieldIds = new Set(
+		plugin.settings.userFields.map((f: UserMappedField) => f.id)
+	);
 	config.fields = config.fields.filter(
 		(f) => f.fieldType !== "user" || currentUserFieldIds.has(f.id)
 	);

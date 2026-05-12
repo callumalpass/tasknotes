@@ -1,3 +1,5 @@
+import { requestUrl } from "obsidian";
+
 async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise<void> {
 	// Show loading message first
 	const loadingEl = container.createEl("p", {
@@ -6,19 +8,16 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
 	});
 
 	try {
-		 
-		console.log(`Fetching API documentation from http://localhost:${apiPort}/api/docs`);
-		const response = await fetch(`http://localhost:${apiPort}/api/docs`);
-		 
-		console.log("API docs response:", response.status, response.statusText);
+		const response = await requestUrl({
+			url: `http://localhost:${apiPort}/api/docs`,
+			throw: false,
+		});
 
-		if (!response.ok) {
-			throw new Error(`API unavailable (${response.status}: ${response.statusText})`);
+		if (response.status < 200 || response.status >= 300) {
+			throw new Error(`API unavailable (${response.status})`);
 		}
 
-		const openApiSpec = await response.json();
-		 
-		console.log("OpenAPI spec loaded:", openApiSpec);
+		const openApiSpec = response.json;
 
 		// Remove loading message
 		loadingEl.remove();

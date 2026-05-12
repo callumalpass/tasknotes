@@ -259,7 +259,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 					try {
 						await navigator.clipboard.writeText(task.title);
 						new Notice("Task title copied to clipboard");
-					} catch (error) {
+					} catch {
 						new Notice("Failed to copy to clipboard");
 					}
 				},
@@ -283,7 +283,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 							await navigator.clipboard.writeText(`[[${linkText}]]`);
 							new Notice("Task link copied to clipboard");
 						}
-					} catch (error) {
+					} catch {
 						new Notice("Failed to copy to clipboard");
 					}
 				},

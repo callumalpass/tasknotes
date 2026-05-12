@@ -111,7 +111,7 @@ export class DOMReconciler {
 		const state = {
 			scrollTop: element.scrollTop,
 			scrollLeft: element.scrollLeft,
-			focused: document.activeElement === element,
+			focused: activeDocument.activeElement === element,
 			selection: null as { start: number; end: number } | null,
 		};
 
@@ -197,7 +197,7 @@ export class DOMReconciler {
 		});
 
 		const newKeys = new Set(newItems.map(getKey));
-		const fragment = document.createDocumentFragment();
+		const fragment = activeDocument.createDocumentFragment();
 
 		// Process new items
 		newItems.forEach((item) => {

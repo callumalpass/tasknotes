@@ -1,12 +1,11 @@
-import { Notice, TFile, normalizePath, stringifyYaml } from "obsidian";
-import {
-	EVENT_TASK_UPDATED,
-	IWebhookNotifier,
-	TaskCreationData,
-	TaskInfo,
-} from "../../types";
+import { TFile, stringifyYaml } from "obsidian";
+import { EVENT_TASK_UPDATED, IWebhookNotifier, TaskCreationData, TaskInfo } from "../../types";
 import { addDTSTARTToRecurrenceRule } from "../../core/recurrence";
-import { FilenameContext, generateTaskFilename, generateUniqueFilename } from "../../utils/filenameGenerator";
+import {
+	FilenameContext,
+	generateTaskFilename,
+	generateUniqueFilename,
+} from "../../utils/filenameGenerator";
 import { ensureFolderExists } from "../../utils/helpers";
 import { getCurrentTimestamp } from "../../utils/dateUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
@@ -84,7 +83,11 @@ export class TaskCreationService {
 				await ensureFolderExists(plugin.app.vault, folder);
 			}
 
-			const uniqueFilename = await generateUniqueFilename(baseFilename, folder, plugin.app.vault);
+			const uniqueFilename = await generateUniqueFilename(
+				baseFilename,
+				folder,
+				plugin.app.vault
+			);
 			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
 
 			const completeTaskData: Partial<TaskInfo> = {
@@ -96,13 +99,17 @@ export class TaskCreationService {
 				contexts: contextsArray.length > 0 ? contextsArray : undefined,
 				projects: projectsArray.length > 0 ? projectsArray : undefined,
 				timeEstimate:
-					taskData.timeEstimate && taskData.timeEstimate > 0 ? taskData.timeEstimate : undefined,
+					taskData.timeEstimate && taskData.timeEstimate > 0
+						? taskData.timeEstimate
+						: undefined,
 				dateCreated,
 				dateModified,
 				recurrence: taskData.recurrence || undefined,
 				recurrence_anchor: taskData.recurrence_anchor || undefined,
 				reminders:
-					taskData.reminders && taskData.reminders.length > 0 ? taskData.reminders : undefined,
+					taskData.reminders && taskData.reminders.length > 0
+						? taskData.reminders
+						: undefined,
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
@@ -114,7 +121,10 @@ export class TaskCreationService {
 				const taskDataAny = taskData as Record<string, any>;
 				const completeAny = completeTaskData as Record<string, any>;
 				for (const field of userFields) {
-					if (Object.prototype.hasOwnProperty.call(taskDataAny, field.key) && taskDataAny[field.key] !== undefined) {
+					if (
+						Object.prototype.hasOwnProperty.call(taskDataAny, field.key) &&
+						taskDataAny[field.key] !== undefined
+					) {
 						completeAny[field.key] = taskDataAny[field.key];
 					}
 				}
@@ -171,7 +181,10 @@ export class TaskCreationService {
 					? taskData.details.replace(/\r\n/g, "\n").trimEnd()
 					: "";
 
-			let finalFrontmatter = mergeTemplateFrontmatter(frontmatter, templateResult.frontmatter);
+			let finalFrontmatter = mergeTemplateFrontmatter(
+				frontmatter,
+				templateResult.frontmatter
+			);
 			if (taskData.customFrontmatter) {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
@@ -189,7 +202,9 @@ export class TaskCreationService {
 				...finalFrontmatter,
 				title: String(finalFrontmatter.title || completeTaskData.title || title),
 				status: String(finalFrontmatter.status || completeTaskData.status || status),
-				priority: String(finalFrontmatter.priority || completeTaskData.priority || priority),
+				priority: String(
+					finalFrontmatter.priority || completeTaskData.priority || priority
+				),
 				path: file.path,
 				tags: tagsArray,
 				archived: false,
@@ -212,7 +227,9 @@ export class TaskCreationService {
 
 			if (this.deps.webhookNotifier) {
 				try {
-					await this.deps.webhookNotifier.triggerWebhook("task.created", { task: taskInfo });
+					await this.deps.webhookNotifier.triggerWebhook("task.created", {
+						task: taskInfo,
+					});
 				} catch (error) {
 					console.warn("Failed to trigger webhook for task creation:", error);
 				}

@@ -31,7 +31,7 @@ export interface TaskContextMenuOptions {
 export class TaskContextMenu {
 	private menu: ContextMenu;
 	private options: TaskContextMenuOptions;
-	private targetDoc: Document = document;
+	private targetDoc: Document = activeDocument;
 
 	constructor(options: TaskContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -382,7 +382,7 @@ export class TaskContextMenu {
 				try {
 					await navigator.clipboard.writeText(task.title);
 					new Notice(this.t("contextMenus.task.notices.copyTitleSuccess"));
-				} catch (error) {
+				} catch {
 					new Notice(this.t("contextMenus.task.notices.copyFailure"));
 				}
 			});
@@ -402,7 +402,7 @@ export class TaskContextMenu {
 				try {
 					// Trigger the file-menu event to populate with default actions
 					plugin.app.workspace.trigger("file-menu", submenu, file, "file-explorer");
-				} catch (error) {
+				} catch {
 					console.debug("Native file menu not available, using fallback");
 				}
 
@@ -466,14 +466,23 @@ export class TaskContextMenu {
 						});
 						if (confirmed) {
 							// Delete from Google Calendar before trashing file
-							if (plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
+							if (
+								plugin.taskCalendarSyncService?.isEnabled() &&
+								task.googleCalendarEventId
+							) {
 								plugin.taskCalendarSyncService
-									.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId)
+									.deleteTaskFromCalendarByPath(
+										task.path,
+										task.googleCalendarEventId
+									)
 									.catch((error) => {
-										console.warn("Failed to delete task from Google Calendar:", error);
+										console.warn(
+											"Failed to delete task from Google Calendar:",
+											error
+										);
 									});
 							}
-							plugin.app.vault.trash(file, true);
+							plugin.app.fileManager.trashFile(file);
 						}
 					});
 				});
@@ -487,7 +496,7 @@ export class TaskContextMenu {
 						try {
 							await navigator.clipboard.writeText(file.path);
 							new Notice(this.t("contextMenus.task.notices.copyPathSuccess"));
-						} catch (error) {
+						} catch {
 							new Notice(this.t("contextMenus.task.notices.copyFailure"));
 						}
 					});
@@ -501,7 +510,7 @@ export class TaskContextMenu {
 							const url = `obsidian://open?vault=${encodeURIComponent(plugin.app.vault.getName())}&file=${encodeURIComponent(file.path)}`;
 							await navigator.clipboard.writeText(url);
 							new Notice(this.t("contextMenus.task.notices.copyUrlSuccess"));
-						} catch (error) {
+						} catch {
 							new Notice(this.t("contextMenus.task.notices.copyFailure"));
 						}
 					});
@@ -667,7 +676,14 @@ export class TaskContextMenu {
 			item.onClick(() => {
 				const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
 				if (taskFile instanceof TFile) {
-					const projectReference = generateLink(plugin.app, taskFile, task.path, "", "", plugin.settings.useFrontmatterMarkdownLinks);
+					const projectReference = generateLink(
+						plugin.app,
+						taskFile,
+						task.path,
+						"",
+						"",
+						plugin.settings.useFrontmatterMarkdownLinks
+					);
 					plugin.openTaskCreationModal({
 						projects: [projectReference],
 					});
@@ -699,7 +715,9 @@ export class TaskContextMenu {
 				const innerMenu = (subItem as any).setSubmenu();
 				blockedByEntries.forEach((entry, index) => {
 					innerMenu.addItem((item: any) => {
-						const uid = extractDependencyUid(entry) || this.t("contextMenus.task.dependencies.unknownDependency");
+						const uid =
+							extractDependencyUid(entry) ||
+							this.t("contextMenus.task.dependencies.unknownDependency");
 						item.setTitle(uid);
 						item.onClick(async () => {
 							try {
@@ -799,13 +817,20 @@ export class TaskContextMenu {
 
 	private async openBlockedBySelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
 		const existingUids = new Set(
-			(Array.isArray(task.blockedBy) ? task.blockedBy : []).map((dependency) => dependency.uid)
+			(Array.isArray(task.blockedBy) ? task.blockedBy : []).map(
+				(dependency) => dependency.uid
+			)
 		);
 		await this.openTaskDependencySelector(
 			plugin,
 			(candidate) => {
 				if (candidate.path === task.path) return false;
-				const candidateUid = formatDependencyLink(plugin.app, task.path, candidate.path, plugin.settings.useFrontmatterMarkdownLinks);
+				const candidateUid = formatDependencyLink(
+					plugin.app,
+					task.path,
+					candidate.path,
+					plugin.settings.useFrontmatterMarkdownLinks
+				);
 				return !existingUids.has(candidateUid);
 			},
 			async (selected) => {
@@ -839,9 +864,7 @@ export class TaskContextMenu {
 			const candidates = allTasks.filter(filter);
 
 			if (candidates.length === 0) {
-				new Notice(
-					this.t("contextMenus.task.dependencies.notices.noEligibleTasks")
-				);
+				new Notice(this.t("contextMenus.task.dependencies.notices.noEligibleTasks"));
 				return;
 			}
 
@@ -866,7 +889,12 @@ export class TaskContextMenu {
 
 		try {
 			const dependency: TaskDependency = {
-				uid: formatDependencyLink(plugin.app, task.path, selectedTask.path, plugin.settings.useFrontmatterMarkdownLinks),
+				uid: formatDependencyLink(
+					plugin.app,
+					task.path,
+					selectedTask.path,
+					plugin.settings.useFrontmatterMarkdownLinks
+				),
 				reltype: DEFAULT_DEPENDENCY_RELTYPE,
 			};
 			const existing = Array.isArray(task.blockedBy) ? task.blockedBy : [];
@@ -903,7 +931,12 @@ export class TaskContextMenu {
 
 		try {
 			const rawEntry: TaskDependency = {
-				uid: formatDependencyLink(plugin.app, blockedPath, task.path, plugin.settings.useFrontmatterMarkdownLinks),
+				uid: formatDependencyLink(
+					plugin.app,
+					blockedPath,
+					task.path,
+					plugin.settings.useFrontmatterMarkdownLinks
+				),
 				reltype: DEFAULT_DEPENDENCY_RELTYPE,
 			};
 			await plugin.taskService.updateBlockingRelationships(task, [blockedPath], [], {
@@ -968,13 +1001,16 @@ export class TaskContextMenu {
 		}
 	}
 
-	private async openSubtaskAssignmentSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
+	private async openSubtaskAssignmentSelector(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin
+	): Promise<void> {
 		try {
 			const cacheManager: any = plugin.cacheManager;
 			const allTasks: TaskInfo[] = (await cacheManager?.getAllTasks?.()) ?? [];
 
 			// Filter out the current task
-			const candidates = allTasks.filter(candidate => candidate.path !== task.path);
+			const candidates = allTasks.filter((candidate) => candidate.path !== task.path);
 
 			if (candidates.length === 0) {
 				new Notice(this.t("contextMenus.task.organization.notices.noEligibleSubtasks"));
@@ -991,14 +1027,25 @@ export class TaskContextMenu {
 		}
 	}
 
-	private async addTaskToProject(task: TaskInfo, plugin: TaskNotesPlugin, projectFile: any): Promise<void> {
+	private async addTaskToProject(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		projectFile: any
+	): Promise<void> {
 		try {
 			if (!(projectFile instanceof TFile)) {
 				new Notice(this.t("contextMenus.task.organization.notices.projectSelectFailed"));
 				return;
 			}
 
-			const projectReference = generateLink(plugin.app, projectFile, task.path, "", "", plugin.settings.useFrontmatterMarkdownLinks);
+			const projectReference = generateLink(
+				plugin.app,
+				projectFile,
+				task.path,
+				"",
+				"",
+				plugin.settings.useFrontmatterMarkdownLinks
+			);
 			const legacyReference = `[[${projectFile.basename}]]`;
 			const currentProjects = Array.isArray(task.projects) ? task.projects : [];
 
@@ -1015,9 +1062,11 @@ export class TaskContextMenu {
 			const updatedTask = await plugin.updateTaskProperty(task, "projects", updatedProjects);
 			Object.assign(task, updatedTask);
 
-			new Notice(this.t("contextMenus.task.organization.notices.addedToProject", {
-				project: projectFile.basename
-			}));
+			new Notice(
+				this.t("contextMenus.task.organization.notices.addedToProject", {
+					project: projectFile.basename,
+				})
+			);
 			this.options.onUpdate?.();
 		} catch (error) {
 			console.error("Failed to add task to project:", error);
@@ -1025,7 +1074,11 @@ export class TaskContextMenu {
 		}
 	}
 
-	private async assignTaskAsSubtask(task: TaskInfo, plugin: TaskNotesPlugin, subtask: TaskInfo): Promise<void> {
+	private async assignTaskAsSubtask(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		subtask: TaskInfo
+	): Promise<void> {
 		try {
 			const currentTaskFile = plugin.app.vault.getAbstractFileByPath(task.path);
 			if (!(currentTaskFile instanceof TFile)) {
@@ -1033,7 +1086,14 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const projectReference = generateLink(plugin.app, currentTaskFile, subtask.path, "", "", plugin.settings.useFrontmatterMarkdownLinks);
+			const projectReference = generateLink(
+				plugin.app,
+				currentTaskFile,
+				subtask.path,
+				"",
+				"",
+				plugin.settings.useFrontmatterMarkdownLinks
+			);
 			const legacyReference = `[[${currentTaskFile.basename}]]`;
 			const subtaskProjects = Array.isArray(subtask.projects) ? subtask.projects : [];
 
@@ -1047,13 +1107,19 @@ export class TaskContextMenu {
 
 			const sanitizedProjects = subtaskProjects.filter((entry) => entry !== legacyReference);
 			const updatedProjects = [...sanitizedProjects, projectReference];
-			const updatedSubtask = await plugin.updateTaskProperty(subtask, "projects", updatedProjects);
+			const updatedSubtask = await plugin.updateTaskProperty(
+				subtask,
+				"projects",
+				updatedProjects
+			);
 			Object.assign(subtask, updatedSubtask);
 
-			new Notice(this.t("contextMenus.task.organization.notices.addedAsSubtask", {
-				subtask: subtask.title,
-				parent: currentTaskFile.basename
-			}));
+			new Notice(
+				this.t("contextMenus.task.organization.notices.addedAsSubtask", {
+					subtask: subtask.title,
+					parent: currentTaskFile.basename,
+				})
+			);
 			this.options.onUpdate?.();
 		} catch (error) {
 			console.error("Failed to assign task as subtask:", error);
@@ -1061,8 +1127,19 @@ export class TaskContextMenu {
 		}
 	}
 
-	private buildProjectReference(targetFile: TFile, sourcePath: string, plugin: TaskNotesPlugin): string {
-		return generateLink(plugin.app, targetFile, sourcePath, "", "", plugin.settings.useFrontmatterMarkdownLinks);
+	private buildProjectReference(
+		targetFile: TFile,
+		sourcePath: string,
+		plugin: TaskNotesPlugin
+	): string {
+		return generateLink(
+			plugin.app,
+			targetFile,
+			sourcePath,
+			"",
+			"",
+			plugin.settings.useFrontmatterMarkdownLinks
+		);
 	}
 
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
@@ -1387,7 +1464,7 @@ export class TaskContextMenu {
 			item.onClick(() => {
 				const recurrenceMenu = new RecurrenceContextMenu({
 					currentValue: typeof currentValue === "string" ? currentValue : undefined,
-					currentAnchor: this.options.task.recurrence_anchor || 'scheduled',
+					currentAnchor: this.options.task.recurrence_anchor || "scheduled",
 					scheduledDate: this.options.task.scheduled,
 					onSelect: onSelect,
 					app: plugin.app,

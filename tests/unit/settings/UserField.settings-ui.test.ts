@@ -38,11 +38,9 @@ describe('Settings UI - User Fields (optional)', () => {
 
     const container = (tab as any).tabContents['task-properties'];
     // Heading text may not render in mock; verify controls/descriptions instead
-    expect(container.textContent).toContain('Custom User Fields');
+    expect(container.textContent).toContain('Custom user fields');
     expect(container.textContent).toContain('Define custom frontmatter properties');
-    expect(container.textContent).toContain('Display Name');
-    expect(container.textContent).toContain('Property Name');
-    expect(container.textContent).toContain('Type');
+    expect(container.textContent).toContain('Display name, property name, type');
     expect(container.textContent).toContain('Add user field');
   });
 });

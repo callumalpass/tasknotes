@@ -162,7 +162,6 @@ export class ProjectSubtasksService {
 	 * Build reverse index of all project files (one scan instead of per-task scans)
 	 */
 	private buildProjectIndex(): void {
-		const startTime = Date.now();
 		this.projectIndex.clear();
 		this.stats.indexBuilds++;
 
@@ -219,10 +218,6 @@ export class ProjectSubtasksService {
 			}
 
 			this.indexLastBuilt = Date.now();
-			const duration = Date.now() - startTime;
-			console.log(
-				`[ProjectSubtasksService] Built project index: ${this.projectIndex.size} projects from ${Object.keys(resolvedLinks).length} files in ${duration}ms`
-			);
 		} catch (error) {
 			console.error("Error building project index:", error);
 		}

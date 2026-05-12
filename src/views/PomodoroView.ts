@@ -1,4 +1,3 @@
- 
 import { ItemView, WorkspaceLeaf, Notice, EventRef, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
@@ -223,7 +222,7 @@ export class PomodoroView extends ItemView {
 		});
 
 		// Create SVG progress circle
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const svg = activeDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("class", "pomodoro-view__progress-svg");
 		svg.setAttribute("width", "300");
 		svg.setAttribute("height", "300");
@@ -231,7 +230,7 @@ export class PomodoroView extends ItemView {
 		this.progressContainer.appendChild(svg);
 
 		// Background circle
-		const bgCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		const bgCircle = activeDocument.createElementNS("http://www.w3.org/2000/svg", "circle");
 		bgCircle.setAttributeNS(null, "cx", "150");
 		bgCircle.setAttributeNS(null, "cy", "150");
 		bgCircle.setAttributeNS(null, "r", "140");
@@ -241,7 +240,7 @@ export class PomodoroView extends ItemView {
 		svg.appendChild(bgCircle);
 
 		// Progress circle
-		this.progressCircle = document.createElementNS(
+		this.progressCircle = activeDocument.createElementNS(
 			"http://www.w3.org/2000/svg",
 			"circle"
 		) as SVGCircleElement;
@@ -777,13 +776,12 @@ export class PomodoroView extends ItemView {
 			// Create a task card with appropriate options for pomodoro view
 			// Convert internal property names to user-configured frontmatter property names
 			const visibleProperties = this.plugin.settings.defaultVisibleProperties
-				? convertInternalToUserProperties(this.plugin.settings.defaultVisibleProperties, this.plugin)
+				? convertInternalToUserProperties(
+						this.plugin.settings.defaultVisibleProperties,
+						this.plugin
+					)
 				: undefined;
-			const taskCard = createTaskCard(
-				task,
-				this.plugin,
-				visibleProperties
-			);
+			const taskCard = createTaskCard(task, this.plugin, visibleProperties);
 
 			// Add the task card to the container
 			this.taskCardContainer.appendChild(taskCard);
@@ -797,7 +795,6 @@ export class PomodoroView extends ItemView {
 		try {
 			// Check if pomodoroService is available
 			if (!this.plugin.pomodoroService) {
-				console.log("PomodoroView: pomodoroService not available, skipping restore");
 				return;
 			}
 

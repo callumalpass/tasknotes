@@ -94,16 +94,16 @@ export function createIconInput(
 	value?: string,
 	onChange?: (value: string) => void
 ): { container: HTMLElement; input: HTMLInputElement } {
-	const container = document.createElement("div");
+	const container = activeDocument.createElement("div");
 	container.addClass("icon-input-container");
 
 	// Create preview element
-	const preview = document.createElement("span");
+	const preview = activeDocument.createElement("span");
 	preview.addClass("icon-input-preview");
 	container.appendChild(preview);
 
 	// Create input
-	const input = document.createElement("input");
+	const input = activeDocument.createElement("input");
 	input.type = "text";
 	input.addClass("tasknotes-settings__card-input");
 	input.addClass("icon-input");
@@ -111,7 +111,17 @@ export function createIconInput(
 	if (value) {
 		input.value = value;
 		setIcon(preview, value);
-		preview.style.display = "flex";
+		preview.classList.remove(
+			"tn-static-display-block-2a1b75c9",
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		preview.classList.add("tn-static-display-flex-75816cae");
 	}
 	container.appendChild(input);
 
@@ -121,9 +131,29 @@ export function createIconInput(
 		if (iconName && getIconIds().includes(iconName as any)) {
 			preview.empty();
 			setIcon(preview, iconName);
-			preview.style.display = "flex";
+			preview.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			preview.classList.add("tn-static-display-flex-75816cae");
 		} else {
-			preview.style.display = "none";
+			preview.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			preview.classList.add("tn-static-display-none-6b99de8b");
 		}
 	};
 

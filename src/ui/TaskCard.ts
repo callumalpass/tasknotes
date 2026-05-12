@@ -1,32 +1,16 @@
- 
 import { TFile, setIcon, Notice, setTooltip, parseLinktext, Menu } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { TaskContextMenu } from "../components/TaskContextMenu";
-import {
-	getEffectiveTaskStatus,
-	filterEmptyProjects,
-	sanitizeForCssClass,
-} from "../utils/helpers";
-import {
-	formatDateForStorage,
-} from "../utils/dateUtils";
+import { getEffectiveTaskStatus, filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
+import { formatDateForStorage } from "../utils/dateUtils";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
 import { ReminderModal } from "../modals/ReminderModal";
-import {
-	convertInternalToUserProperties,
-	isPropertyForField,
-} from "../utils/propertyMapping";
-import {
-	type TaskCardPresentationOptions,
-} from "./taskCardPresentation";
-import {
-	getChevronTooltip,
-	getRecurrenceTooltip,
-	getReminderTooltip,
-} from "./taskCardHelpers";
+import { convertInternalToUserProperties, isPropertyForField } from "../utils/propertyMapping";
+import { type TaskCardPresentationOptions } from "./taskCardPresentation";
+import { getChevronTooltip, getRecurrenceTooltip, getReminderTooltip } from "./taskCardHelpers";
 import {
 	getDefaultVisibleProperties,
 	renderPropertyMetadata,
@@ -65,9 +49,7 @@ function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
 	return ((card as any)._taskCardOptions ?? {}) as Partial<TaskCardOptions>;
 }
 
-function parseExpandedRelationshipFilterMode(
-	value: unknown
-): "inherit" | "show-all" {
+function parseExpandedRelationshipFilterMode(value: unknown): "inherit" | "show-all" {
 	if (typeof value === "number") {
 		return value === 1 ? "show-all" : "inherit";
 	}
@@ -89,14 +71,10 @@ function parseExpandedRelationshipFilterMode(
 	return "inherit";
 }
 
-function filterExpandedRelationshipTasks(
-	card: HTMLElement,
-	tasks: TaskInfo[]
-): TaskInfo[] {
+function filterExpandedRelationshipTasks(card: HTMLElement, tasks: TaskInfo[]): TaskInfo[] {
 	const options = getStoredTaskCardOptions(card);
 	const filterMode = parseExpandedRelationshipFilterMode(
-		options.resolveExpandedRelationshipFilterMode?.()
-			?? options.expandedRelationshipFilterMode
+		options.resolveExpandedRelationshipFilterMode?.() ?? options.expandedRelationshipFilterMode
 	);
 	if (filterMode !== "inherit") {
 		return tasks;
@@ -188,7 +166,8 @@ function updateBadgeIndicator(
 
 	// Create new indicator
 	const badgesContainer = container.querySelector(".task-card__badges") as HTMLElement;
-	const targetContainer = badgesContainer || container.querySelector(".task-card__main-row") as HTMLElement;
+	const targetContainer =
+		badgesContainer || (container.querySelector(".task-card__main-row") as HTMLElement);
 
 	if (!targetContainer) return null;
 
@@ -241,7 +220,7 @@ function createStatusCycleHandler(
 				if (statusConfig?.color) {
 					statusDot.style.borderColor = statusConfig.color;
 				} else {
-					statusDot.style.borderColor = "";
+					statusDot.style.removeProperty("border-color");
 				}
 
 				if (statusConfig?.icon) {
@@ -267,7 +246,9 @@ function createStatusCycleHandler(
 					card.style.removeProperty("--next-status-color");
 				}
 
-				const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement | null;
+				const checkbox = card.querySelector(
+					".task-card__checkbox"
+				) as HTMLInputElement | null;
 				if (checkbox) {
 					checkbox.checked = isCompleted;
 				}
@@ -278,7 +259,11 @@ function createStatusCycleHandler(
 			if (task.recurrence) {
 				// For recurring tasks, toggle completion for the target date
 				const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
-				const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate, plugin.statusManager.getCompletedStatuses()[0]);
+				const newEffectiveStatus = getEffectiveTaskStatus(
+					updatedTask,
+					targetDate,
+					plugin.statusManager.getCompletedStatuses()[0]
+				);
 				const isNowCompleted = plugin.statusManager.isCompletedStatus(newEffectiveStatus);
 				updateStatusVisuals(updatedTask, newEffectiveStatus, isNowCompleted);
 			} else {
@@ -292,13 +277,20 @@ function createStatusCycleHandler(
 				const nextStatus = e.shiftKey
 					? plugin.statusManager.getPreviousStatus(currentStatus)
 					: plugin.statusManager.getNextStatus(currentStatus);
-				const updatedTask = await plugin.updateTaskProperty(freshTask, "status", nextStatus);
+				const updatedTask = await plugin.updateTaskProperty(
+					freshTask,
+					"status",
+					nextStatus
+				);
 				const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
 				updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error cycling task status:", { error: errorMessage, taskPath: task.path });
+			console.error("Error cycling task status:", {
+				error: errorMessage,
+				taskPath: task.path,
+			});
 			new Notice(`Failed to update task status: ${errorMessage}`);
 		}
 	};
@@ -316,9 +308,15 @@ function updateCardCompletionState(
 ): void {
 	card.classList.toggle("task-card--completed", isCompleted);
 	card.classList.toggle("task-card--archived", !!task.archived);
-	card.classList.toggle("task-card--actively-tracked", plugin.getActiveTimeSession(task) !== null);
+	card.classList.toggle(
+		"task-card--actively-tracked",
+		plugin.getActiveTimeSession(task) !== null
+	);
 	card.classList.toggle("task-card--recurring", !!task.recurrence);
-	card.classList.toggle("task-card--chevron-left", plugin.settings?.subtaskChevronPosition === "left");
+	card.classList.toggle(
+		"task-card--chevron-left",
+		plugin.settings?.subtaskChevronPosition === "left"
+	);
 
 	for (const className of Array.from(card.classList)) {
 		if (className.startsWith("task-card--priority-")) {
@@ -406,14 +404,15 @@ function createRecurrenceClickHandler(
 /**
  * Creates a click handler for reminder indicator
  */
-function createReminderClickHandler(
-	task: TaskInfo,
-	plugin: TaskNotesPlugin
-): () => void {
+function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): () => void {
 	return () => {
 		const modal = new ReminderModal(plugin.app, plugin, task, async (reminders) => {
 			try {
-				await plugin.updateTaskProperty(task, "reminders", reminders.length > 0 ? reminders : undefined);
+				await plugin.updateTaskProperty(
+					task,
+					"reminders",
+					reminders.length > 0 ? reminders : undefined
+				);
 			} catch (error) {
 				console.error("Error updating reminders:", error);
 				new Notice("Failed to update reminders");
@@ -426,10 +425,7 @@ function createReminderClickHandler(
 /**
  * Creates a click handler for project indicator
  */
-function createProjectClickHandler(
-	task: TaskInfo,
-	plugin: TaskNotesPlugin
-): () => Promise<void> {
+function createProjectClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): () => Promise<void> {
 	return async () => {
 		try {
 			await plugin.applyProjectSubtaskFilter(task);
@@ -516,10 +512,14 @@ export function createTaskCard(
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
 	// Use fresh UTC-anchored "today" if no targetDate provided
 	// This ensures recurring tasks show correct completion status for the current day
-	const targetDate = opts.targetDate || (() => {
-		const todayLocal = new Date();
-		return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
-	})();
+	const targetDate =
+		opts.targetDate ||
+		(() => {
+			const todayLocal = new Date();
+			return new Date(
+				Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate())
+			);
+		})();
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
@@ -531,7 +531,7 @@ export function createTaskCard(
 
 	// Main container with BEM class structure
 	// Use span for inline layout to ensure proper inline flow in CodeMirror
-	const card = document.createElement(layout === "inline" ? "span" : "div");
+	const card = activeDocument.createElement(layout === "inline" ? "span" : "div");
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
@@ -589,7 +589,9 @@ export function createTaskCard(
 
 	// Create main row container for horizontal layout
 	// Use span for inline layout to maintain inline flow
-	const mainRow = card.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__main-row" });
+	const mainRow = card.createEl(layout === "inline" ? "span" : "div", {
+		cls: "task-card__main-row",
+	});
 
 	// Apply priority and status colors as CSS custom properties
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
@@ -630,7 +632,10 @@ export function createTaskCard(
 	// Add click handler to cycle through statuses
 	if (statusDot) {
 		prepareInteractiveControl(statusDot);
-		statusDot.addEventListener("click", createStatusCycleHandler(task, plugin, card, statusDot, targetDate));
+		statusDot.addEventListener(
+			"click",
+			createStatusCycleHandler(task, plugin, card, statusDot, targetDate)
+		);
 	}
 
 	// Priority indicator dot (conditional based on visible properties)
@@ -640,7 +645,11 @@ export function createTaskCard(
 	if (task.priority && priorityConfig && shouldShowPriority) {
 		const priorityDot = mainRow.createEl("span", {
 			cls: "task-card__priority-dot",
-			attr: { "aria-label": tTaskCard(plugin, "priorityAriaLabel", { label: priorityConfig.label }) },
+			attr: {
+				"aria-label": tTaskCard(plugin, "priorityAriaLabel", {
+					label: priorityConfig.label,
+				}),
+			},
 		});
 		priorityDot.style.borderColor = priorityConfig.color;
 		prepareInteractiveControl(priorityDot);
@@ -648,15 +657,22 @@ export function createTaskCard(
 	}
 
 	// Content container
-	const contentContainer = mainRow.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__content" });
+	const contentContainer = mainRow.createEl(layout === "inline" ? "span" : "div", {
+		cls: "task-card__content",
+	});
 
 	// Badge area for secondary indicators (only in non-inline mode)
-	const badgesContainer = layout !== "inline" ? mainRow.createEl("div", { cls: "task-card__badges" }) : null;
+	const badgesContainer =
+		layout !== "inline" ? mainRow.createEl("div", { cls: "task-card__badges" }) : null;
 
 	if (badgesContainer && opts.showSecondaryBadges) {
 		// Recurring indicator
 		if (task.recurrence) {
-			const recurrenceTooltip = getRecurrenceTooltip(plugin, task.recurrence, opts.propertyLabels);
+			const recurrenceTooltip = getRecurrenceTooltip(
+				plugin,
+				task.recurrence,
+				opts.propertyLabels
+			);
 			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__recurring-indicator",
@@ -699,7 +715,9 @@ export function createTaskCard(
 					icon: "chevron-right",
 					tooltip: getChevronTooltip(plugin, isExpanded),
 					onClick: () => {
-						const chevron = card.querySelector(".task-card__chevron") as HTMLElement | null;
+						const chevron = card.querySelector(
+							".task-card__chevron"
+						) as HTMLElement | null;
 						if (chevron) {
 							void createChevronClickHandler(task, plugin, card, chevron)();
 						}
@@ -718,14 +736,19 @@ export function createTaskCard(
 		// Blocking toggle
 		const hasBlocking = task.blocking && task.blocking.length > 0;
 		if (hasBlocking) {
-			const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", { count: task.blocking!.length });
+			const blockingCount = task.blocking?.length ?? 0;
+			const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", {
+				count: blockingCount,
+			});
 			createBadgeIndicator({
 				container: badgesContainer,
 				className: "task-card__blocking-toggle is-visible",
 				icon: "git-branch",
 				tooltip: toggleLabel,
 				onClick: () => {
-					const toggle = card.querySelector(".task-card__blocking-toggle") as HTMLElement | null;
+					const toggle = card.querySelector(
+						".task-card__blocking-toggle"
+					) as HTMLElement | null;
 					if (toggle) {
 						void createBlockingToggleClickHandler(task, plugin, card, toggle)();
 					}
@@ -754,7 +777,9 @@ export function createTaskCard(
 	});
 
 	// First line: Task title
-	const titleEl = contentContainer.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__title" });
+	const titleEl = contentContainer.createEl(layout === "inline" ? "span" : "div", {
+		cls: "task-card__title",
+	});
 	const titleTextEl = titleEl.createSpan({ cls: "task-card__title-text", text: task.title });
 
 	if (isCompleted) {
@@ -763,7 +788,9 @@ export function createTaskCard(
 	}
 
 	// Second line: Metadata (dynamic based on visible properties)
-	const metadataLine = contentContainer.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__metadata" });
+	const metadataLine = contentContainer.createEl(layout === "inline" ? "span" : "div", {
+		cls: "task-card__metadata",
+	});
 	const metadataElements: HTMLElement[] = [];
 
 	// Get properties to display
@@ -793,13 +820,9 @@ export function createTaskCard(
 					cls: "task-card__metadata-pill task-card__metadata-pill--blocked",
 					text: pillText,
 				});
-				setTooltip(
-					blockedPill,
-					plugin.i18n.translate("ui.taskCard.blockedBadgeTooltip"),
-					{
-						placement: "top",
-					}
-				);
+				setTooltip(blockedPill, plugin.i18n.translate("ui.taskCard.blockedBadgeTooltip"), {
+					placement: "top",
+				});
 				metadataElements.push(blockedPill);
 			}
 			continue;
@@ -844,13 +867,7 @@ export function createTaskCard(
 			continue;
 		}
 
-		const element = renderPropertyMetadata(
-			metadataLine,
-			propertyId,
-			task,
-			plugin,
-			opts
-		);
+		const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin, opts);
 		if (element) {
 			metadataElements.push(element);
 		}
@@ -934,7 +951,7 @@ function showFileContextMenu(event: MouseEvent, file: TFile, plugin: TaskNotesPl
 	try {
 		plugin.app.workspace.trigger("file-menu", menu, file, "tasknotes-bases-view");
 		populated = (menu as any).items?.length > 0;
-	} catch (error) {
+	} catch {
 		populated = false;
 	}
 
@@ -971,10 +988,14 @@ export function updateTaskCard(
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
 	// Use fresh UTC-anchored "today" if no targetDate provided
 	// This ensures recurring tasks show correct completion status for the current day
-	const targetDate = opts.targetDate || (() => {
-		const todayLocal = new Date();
-		return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
-	})();
+	const targetDate =
+		opts.targetDate ||
+		(() => {
+			const todayLocal = new Date();
+			return new Date(
+				Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate())
+			);
+		})();
 
 	// Update effective status
 	const effectiveStatus = task.recurrence
@@ -1214,7 +1235,9 @@ export function updateTaskCard(
 					icon: "chevron-right",
 					tooltip: getChevronTooltip(plugin, isExpanded),
 					onClick: () => {
-						const chevron = element.querySelector(".task-card__chevron") as HTMLElement | null;
+						const chevron = element.querySelector(
+							".task-card__chevron"
+						) as HTMLElement | null;
 						if (chevron) {
 							void createChevronClickHandler(task, plugin, element, chevron)();
 						}
@@ -1229,7 +1252,9 @@ export function updateTaskCard(
 			} else if (!showChevron && existingChevron) {
 				existingChevron.remove();
 				// Clean up subtasks container
-				const subtasksContainer = element.querySelector(".task-card__subtasks") as HTMLElement;
+				const subtasksContainer = element.querySelector(
+					".task-card__subtasks"
+				) as HTMLElement;
 				if (subtasksContainer) {
 					const clickHandler = (subtasksContainer as any)._clickHandler;
 					if (clickHandler) {
@@ -1582,7 +1607,9 @@ export async function toggleBlockingTasks(
 				getStoredTaskCardOptions(card)
 			);
 			dependentCard.classList.add("task-card--dependency");
-			container!.appendChild(dependentCard);
+			if (container) {
+				container.appendChild(dependentCard);
+			}
 		});
 	} catch (error) {
 		console.error("Error loading blocking tasks:", error);
@@ -1616,7 +1643,7 @@ export async function refreshParentTaskSubtasks(
 				// Cache has been updated
 				break;
 			}
-		} catch (error) {
+		} catch {
 			// Cache not ready yet
 		}
 		await new Promise((resolve) => window.setTimeout(resolve, 10));

@@ -50,7 +50,7 @@ export function getNLPTrigger(
 	);
 	return {
 		propertyId,
-		enabled: triggerConfig?.enabled ?? (propertyId !== "priority"), // priority disabled by default
+		enabled: triggerConfig?.enabled ?? propertyId !== "priority", // priority disabled by default
 		trigger: triggerConfig?.trigger || defaultTrigger,
 	};
 }
@@ -111,7 +111,15 @@ export function createNLPTriggerRows(
 	];
 
 	const triggerInput = createCardInput("text", defaultTrigger, config.trigger);
-	triggerInput.style.width = "80px";
+	triggerInput.classList.remove(
+		"tn-static-width-100-0466783d",
+		"tn-static-width-12px-fbf353fb",
+		"tn-static-width-16px-7375d50b",
+		"tn-static-width-1px-aa77e27e",
+		"tn-static-width-200px-2acaf3b5",
+		"tn-static-width-60px-bd09c419"
+	);
+	triggerInput.classList.add("tn-static-width-80px-8573bae3");
 	triggerInput.addEventListener("change", () => {
 		const value = triggerInput.value;
 		if (value.trim().length === 0) {
@@ -138,10 +146,29 @@ export function createNLPTriggerRows(
  * Creates a description element for property cards
  */
 export function createPropertyDescription(text: string): HTMLElement {
-	const descEl = document.createElement("p");
+	const descEl = activeDocument.createElement("p");
 	descEl.className = "setting-item-description";
-	descEl.style.marginTop = "0";
-	descEl.style.marginBottom = "0.75rem";
+	descEl.classList.remove(
+		"tn-static-font-size-12px-b0cc7e05",
+		"tn-static-margin-top-0-5rem-3dc98b5e",
+		"tn-static-margin-top-12px-91e0f558",
+		"tn-static-margin-top-16px-1b0f4999",
+		"tn-static-margin-top-1rem-2239d6d5",
+		"tn-static-margin-top-20px-a26bda7d",
+		"tn-static-margin-top-30px-2fbbbcd4",
+		"tn-static-margin-top-4px-96ad6099",
+		"tn-static-margin-top-8px-8a77e5a3",
+		"tn-static-margin-top-8px-f4f01e68"
+	);
+	descEl.classList.add("tn-static-margin-top-0-d462248a");
+	descEl.classList.remove(
+		"tn-static-font-size-12px-65574819",
+		"tn-static-font-weight-bold-0fe8c30d",
+		"tn-static-font-weight-bold-e0b452bd",
+		"tn-static-margin-bottom-20px-49f14f8f",
+		"tn-static-margin-bottom-8px-fdf33f23"
+	);
+	descEl.classList.add("tn-static-margin-bottom-0-75rem-c05a3c6e");
 	descEl.textContent = text;
 	return descEl;
 }
@@ -172,27 +199,40 @@ export function renderSimplePropertyCard(
 
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
-		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
+		{
+			label: translate("settings.taskProperties.propertyCard.propertyKey"),
+			input: propertyKeyInput,
+		},
 	];
 
 	// Add default value input if configured
 	if (config.hasDefault && config.getDefaultValue && config.setDefaultValue) {
+		const setDefaultValue = config.setDefaultValue;
 		let defaultInput: HTMLElement;
 
 		if (config.defaultType === "dropdown" || config.defaultType === "date-preset") {
 			defaultInput = createCardSelect(config.defaultOptions || [], config.getDefaultValue());
 			(defaultInput as HTMLSelectElement).addEventListener("change", () => {
-				config.setDefaultValue!((defaultInput as HTMLSelectElement).value);
+				setDefaultValue((defaultInput as HTMLSelectElement).value);
 			});
 		} else if (config.defaultType === "number") {
-			defaultInput = createCardNumberInput(0, undefined, 1, parseInt(config.getDefaultValue()) || 0);
+			defaultInput = createCardNumberInput(
+				0,
+				undefined,
+				1,
+				parseInt(config.getDefaultValue()) || 0
+			);
 			defaultInput.addEventListener("change", () => {
-				config.setDefaultValue!((defaultInput as HTMLInputElement).value);
+				setDefaultValue((defaultInput as HTMLInputElement).value);
 			});
 		} else {
-			defaultInput = createCardInput("text", config.defaultPlaceholder || "", config.getDefaultValue());
+			defaultInput = createCardInput(
+				"text",
+				config.defaultPlaceholder || "",
+				config.getDefaultValue()
+			);
 			defaultInput.addEventListener("change", () => {
-				config.setDefaultValue!((defaultInput as HTMLInputElement).value);
+				setDefaultValue((defaultInput as HTMLInputElement).value);
 			});
 		}
 
@@ -265,12 +305,17 @@ export function renderMetadataPropertyCard(
 			secondaryText: plugin.settings.fieldMapping[propertyId],
 		},
 		content: {
-			sections: [{
-				rows: [
-					{ label: "", input: descriptionEl, fullWidth: true },
-					{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
-				],
-			}],
+			sections: [
+				{
+					rows: [
+						{ label: "", input: descriptionEl, fullWidth: true },
+						{
+							label: translate("settings.taskProperties.propertyCard.propertyKey"),
+							input: propertyKeyInput,
+						},
+					],
+				},
+			],
 		},
 	});
 }

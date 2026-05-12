@@ -30,13 +30,13 @@ export function createNoteCard(
 ): HTMLElement {
 	const opts = { ...DEFAULT_NOTE_CARD_OPTIONS, ...options };
 
-	const item = document.createElement("div");
+	const item = activeDocument.createElement("div");
 	// Check if this is a daily note using the core plugin
 	let isDailyNote = false;
 	try {
 		const allDailyNotes = getAllDailyNotes();
 		isDailyNote = Object.values(allDailyNotes).some((file) => file.path === note.path);
-	} catch (error) {
+	} catch {
 		// Daily Notes interface not available, fallback to false
 		isDailyNote = false;
 	}
@@ -179,7 +179,7 @@ export function updateNoteCard(
 	try {
 		const allDailyNotes = getAllDailyNotes();
 		isDailyNote = Object.values(allDailyNotes).some((file) => file.path === note.path);
-	} catch (error) {
+	} catch {
 		// Daily Notes interface not available, fallback to false
 		isDailyNote = false;
 	}

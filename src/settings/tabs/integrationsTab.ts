@@ -101,7 +101,9 @@ export function renderIntegrationsTab(
 					},
 				});
 				const descEl = setting.descEl;
-				descEl.createSpan({ text: translate("settings.integrations.mdbaseSpec.enable.description") + " " });
+				descEl.createSpan({
+					text: translate("settings.integrations.mdbaseSpec.enable.description") + " ",
+				});
 				const link = descEl.createEl("a", {
 					text: translate("settings.integrations.mdbaseSpec.learnMore"),
 					href: "https://mdbase.dev",
@@ -119,11 +121,15 @@ export function renderIntegrationsTab(
 		},
 		(group) => {
 			group.addSetting((setting) => {
-				setting.setDesc("Connect your Google Calendar or Microsoft Outlook to sync events directly into TaskNotes.");
+				setting.setDesc(
+					"Connect your Google calendar or Microsoft outlook to sync events directly into tasknotes."
+				);
 				const descEl = setting.descEl;
-				descEl.createSpan({ text: " You'll need to create OAuth credentials with Google and/or Microsoft. This takes approximately 15 minutes for initial setup. " });
+				descEl.createSpan({
+					text: " You'll need to create OAuth credentials with Google and/or Microsoft. This takes approximately 15 minutes for initial setup. ",
+				});
 				const link = descEl.createEl("a", {
-					text: "View Calendar Setup Guide",
+					text: "View calendar setup guide",
 					href: "https://callumalpass.github.io/tasknotes/calendar-setup",
 				});
 				link.setAttr("target", "_blank");
@@ -139,12 +145,12 @@ export function renderIntegrationsTab(
 		googleCalendarContainer.empty();
 
 		if (!plugin.oauthService) {
-			const errorCard = createCard(googleCalendarContainer, {
+			createCard(googleCalendarContainer, {
 				header: {
 					primaryText: "Google Calendar",
 					secondaryText: "OAuth service not available",
-					meta: [createStatusBadge("Error", "inactive")]
-				}
+					meta: [createStatusBadge("Error", "inactive")],
+				},
 			});
 			return;
 		}
@@ -158,11 +164,11 @@ export function renderIntegrationsTab(
 			const timeAgo = connectedDate ? getRelativeTime(connectedDate, translate) : "";
 
 			// Create info displays
-			const connectedInfo = document.createElement("div");
+			const connectedInfo = activeDocument.createElement("div");
 			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
-			const lastRefreshInfo = document.createElement("div");
+			const lastRefreshInfo = activeDocument.createElement("div");
 			lastRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
@@ -175,20 +181,22 @@ export function renderIntegrationsTab(
 				collapsible: true,
 				defaultCollapsed: false,
 				colorIndicator: {
-					color: "#4285F4" // Google blue
+					color: "#4285F4", // Google blue
 				},
 				header: {
 					primaryText: "Google Calendar",
 					secondaryText: "OAuth 2.0 Connection",
-					meta: [createStatusBadge("Connected", "active")]
+					meta: [createStatusBadge("Connected", "active")],
 				},
 				content: {
-					sections: [{
-						rows: [
-							{ label: "Status:", input: connectedInfo },
-							{ label: "Sync:", input: lastRefreshInfo }
-						]
-					}]
+					sections: [
+						{
+							rows: [
+								{ label: "Status:", input: connectedInfo },
+								{ label: "Sync:", input: lastRefreshInfo },
+							],
+						},
+					],
 				},
 				actions: {
 					buttons: [
@@ -200,14 +208,14 @@ export function renderIntegrationsTab(
 								try {
 									if (plugin.googleCalendarService) {
 										await plugin.googleCalendarService.refresh();
-										new Notice("Google Calendar refreshed successfully");
+										new Notice("Google calendar refreshed successfully");
 										renderGoogleCalendarCard(); // Re-render to update timestamp
 									}
 								} catch (error) {
 									console.error("Failed to refresh:", error);
-									new Notice("Failed to refresh Google Calendar");
+									new Notice("Failed to refresh Google calendar");
 								}
-							}
+							},
 						},
 						{
 							text: "Disconnect",
@@ -215,77 +223,87 @@ export function renderIntegrationsTab(
 							variant: "warning",
 							onClick: async () => {
 								try {
-									await plugin.oauthService!.disconnect("google");
-									new Notice("Disconnected from Google Calendar");
+									const oauthService = plugin.oauthService;
+									if (!oauthService) return;
+									await oauthService.disconnect("google");
+									new Notice("Disconnected from Google calendar");
 									renderGoogleCalendarCard(); // Re-render to show disconnected state
 								} catch (error) {
 									console.error("Failed to disconnect:", error);
-									new Notice("Failed to disconnect from Google Calendar");
+									new Notice("Failed to disconnect from Google calendar");
 								}
-							}
-						}
-					]
-				}
+							},
+						},
+					],
+				},
 			});
 		} else {
 			// Disconnected state card
-			const helpText = document.createElement("div");
+			const helpText = activeDocument.createElement("div");
 			helpText.className = "tasknotes-calendar-help";
-			helpText.innerHTML = "Connect your Google Calendar account to sync events directly into TaskNotes. Events will automatically refresh every 15 minutes.";
+			helpText.textContent =
+				"Connect your Google calendar account to sync events directly into tasknotes. Events will automatically refresh every 15 minutes.";
 
-				// Build sections and credential inputs
-				const sections: any[] = [
-					{
-						rows: [
-							{ label: "Info:", input: helpText, fullWidth: true }
-						]
-					}
-				];
+			// Build sections and credential inputs
+			const sections: any[] = [
+				{
+					rows: [{ label: "Info:", input: helpText, fullWidth: true }],
+				},
+			];
 
-				const clientIdInput = createCardInput("text", "your-client-id.apps.googleusercontent.com", plugin.settings.googleOAuthClientId);
-				clientIdInput.addEventListener("blur", async () => {
-					plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
+			const clientIdInput = createCardInput(
+				"text",
+				"your-client-id.apps.googleusercontent.com",
+				plugin.settings.googleOAuthClientId
+			);
+			clientIdInput.addEventListener("blur", async () => {
+				plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
 
-				const clientSecretInput = createCardInput("text", "your-client-secret", plugin.settings.googleOAuthClientSecret);
-				clientSecretInput.setAttribute("type", "password");
-				clientSecretInput.addEventListener("blur", async () => {
-					plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
+			const clientSecretInput = createCardInput(
+				"text",
+				"your-client-secret",
+				plugin.settings.googleOAuthClientSecret
+			);
+			clientSecretInput.setAttribute("type", "password");
+			clientSecretInput.addEventListener("blur", async () => {
+				plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
 
-				const credentialNote = document.createElement("div");
-				credentialNote.className = "tasknotes-credential-note";
-				credentialNote.textContent = "Enter your OAuth app credentials from Google Cloud Console.";
+			const credentialNote = activeDocument.createElement("div");
+			credentialNote.className = "tasknotes-credential-note";
+			credentialNote.textContent =
+				"Enter your OAUTH app credentials from Google cloud console.";
 
-				sections.push({
-					rows: [
-						{ label: "Client ID:", input: clientIdInput },
-						{ label: "Client Secret:", input: clientSecretInput },
-						{ label: "", input: credentialNote, fullWidth: true }
-					]
-				});
+			sections.push({
+				rows: [
+					{ label: "Client ID:", input: clientIdInput },
+					{ label: "Client Secret:", input: clientSecretInput },
+					{ label: "", input: credentialNote, fullWidth: true },
+				],
+			});
 
 			createCard(googleCalendarContainer, {
 				collapsible: true,
 				defaultCollapsed: false,
 				colorIndicator: {
-					color: "#9AA0A6" // Google gray
+					color: "#9AA0A6", // Google gray
 				},
 				header: {
 					primaryText: "Google Calendar",
 					secondaryText: "OAuth 2.0 Connection",
-					meta: [createStatusBadge("Not Connected", "inactive")]
+					meta: [createStatusBadge("Not Connected", "inactive")],
 				},
 				content: {
-					sections: sections
+					sections: sections,
 				},
 				actions: {
 					buttons: [
@@ -295,17 +313,19 @@ export function renderIntegrationsTab(
 							variant: "primary",
 							onClick: async () => {
 								try {
-									await plugin.oauthService!.authenticate("google");
-									new Notice("Google Calendar connected successfully!");
+									const oauthService = plugin.oauthService;
+									if (!oauthService) return;
+									await oauthService.authenticate("google");
+									new Notice("Google calendar connected successfully!");
 									renderGoogleCalendarCard(); // Re-render to show connected state
 								} catch (error) {
 									console.error("Failed to connect:", error);
 									new Notice(`Failed to connect: ${error.message}`);
 								}
-							}
-						}
-					]
-				}
+							},
+						},
+					],
+				},
 			});
 		}
 	};
@@ -314,7 +334,9 @@ export function renderIntegrationsTab(
 	renderGoogleCalendarCard();
 
 	// Microsoft Calendar container for card-based UI
-	const microsoftCalendarContainer = container.createDiv("microsoft-calendar-integration-container");
+	const microsoftCalendarContainer = container.createDiv(
+		"microsoft-calendar-integration-container"
+	);
 
 	// Check connection status and render card
 	const renderMicrosoftCalendarCard = async () => {
@@ -325,14 +347,16 @@ export function renderIntegrationsTab(
 				header: {
 					primaryText: "Microsoft Outlook Calendar",
 					secondaryText: "OAuth service not available",
-					meta: [createStatusBadge("Error", "inactive")]
-				}
+					meta: [createStatusBadge("Error", "inactive")],
+				},
 			});
 			return;
 		}
 
 		const isConnected = await plugin.oauthService.isConnected("microsoft");
-		const connection = isConnected ? await plugin.oauthService.getConnection("microsoft") : null;
+		const connection = isConnected
+			? await plugin.oauthService.getConnection("microsoft")
+			: null;
 
 		if (isConnected && connection) {
 			// Connected state card
@@ -340,11 +364,11 @@ export function renderIntegrationsTab(
 			const timeAgo = connectedDate ? getRelativeTime(connectedDate, translate) : "";
 
 			// Create info displays
-			const connectedInfo = document.createElement("div");
+			const connectedInfo = activeDocument.createElement("div");
 			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
-			const lastRefreshInfo = document.createElement("div");
+			const lastRefreshInfo = activeDocument.createElement("div");
 			lastRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
@@ -357,20 +381,22 @@ export function renderIntegrationsTab(
 				collapsible: true,
 				defaultCollapsed: false,
 				colorIndicator: {
-					color: "#0078D4" // Microsoft blue
+					color: "#0078D4", // Microsoft blue
 				},
 				header: {
 					primaryText: "Microsoft Outlook Calendar",
 					secondaryText: "OAuth 2.0 Connection",
-					meta: [createStatusBadge("Connected", "active")]
+					meta: [createStatusBadge("Connected", "active")],
 				},
 				content: {
-					sections: [{
-						rows: [
-							{ label: "Status:", input: connectedInfo },
-							{ label: "Sync:", input: lastRefreshInfo }
-						]
-					}]
+					sections: [
+						{
+							rows: [
+								{ label: "Status:", input: connectedInfo },
+								{ label: "Sync:", input: lastRefreshInfo },
+							],
+						},
+					],
 				},
 				actions: {
 					buttons: [
@@ -380,77 +406,86 @@ export function renderIntegrationsTab(
 							variant: "warning",
 							onClick: async () => {
 								try {
-									await plugin.oauthService!.disconnect("microsoft");
-									new Notice("Disconnected from Microsoft Calendar");
+									const oauthService = plugin.oauthService;
+									if (!oauthService) return;
+									await oauthService.disconnect("microsoft");
+									new Notice("Disconnected from Microsoft calendar");
 									renderMicrosoftCalendarCard();
 								} catch (error) {
 									console.error("Failed to disconnect:", error);
-									new Notice("Failed to disconnect from Microsoft Calendar");
+									new Notice("Failed to disconnect from Microsoft calendar");
 								}
-							}
-						}
-					]
-				}
+							},
+						},
+					],
+				},
 			});
 		} else {
 			// Disconnected state card
-			const helpText = document.createElement("div");
+			const helpText = activeDocument.createElement("div");
 			helpText.className = "tasknotes-calendar-help";
-			helpText.innerHTML = "Connect your Microsoft Outlook calendar to sync events directly into TaskNotes.";
+			helpText.textContent =
+				"Connect your Microsoft outlook calendar to sync events directly into tasknotes.";
 
-				// Build sections and credential inputs
-				const sections: any[] = [
-					{
-						rows: [
-							{ label: "Info:", input: helpText, fullWidth: true }
-						]
-					}
-				];
+			// Build sections and credential inputs
+			const sections: any[] = [
+				{
+					rows: [{ label: "Info:", input: helpText, fullWidth: true }],
+				},
+			];
 
-				const clientIdInput = createCardInput("text", "your-microsoft-client-id", plugin.settings.microsoftOAuthClientId);
-				clientIdInput.addEventListener("blur", async () => {
-					plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
+			const clientIdInput = createCardInput(
+				"text",
+				"your-microsoft-client-id",
+				plugin.settings.microsoftOAuthClientId
+			);
+			clientIdInput.addEventListener("blur", async () => {
+				plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
 
-				const clientSecretInput = createCardInput("text", "your-microsoft-client-secret", plugin.settings.microsoftOAuthClientSecret);
-				clientSecretInput.setAttribute("type", "password");
-				clientSecretInput.addEventListener("blur", async () => {
-					plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
+			const clientSecretInput = createCardInput(
+				"text",
+				"your-microsoft-client-secret",
+				plugin.settings.microsoftOAuthClientSecret
+			);
+			clientSecretInput.setAttribute("type", "password");
+			clientSecretInput.addEventListener("blur", async () => {
+				plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
 
-				const credentialNote = document.createElement("div");
-				credentialNote.className = "tasknotes-credential-note";
-				credentialNote.textContent = "Enter your OAuth app credentials from Azure Portal.";
+			const credentialNote = activeDocument.createElement("div");
+			credentialNote.className = "tasknotes-credential-note";
+			credentialNote.textContent = "Enter your OAUTH app credentials from azure portal.";
 
-				sections.push({
-					rows: [
-						{ label: "Client ID:", input: clientIdInput },
-						{ label: "Client Secret:", input: clientSecretInput },
-						{ label: "", input: credentialNote, fullWidth: true }
-					]
-				});
+			sections.push({
+				rows: [
+					{ label: "Client ID:", input: clientIdInput },
+					{ label: "Client Secret:", input: clientSecretInput },
+					{ label: "", input: credentialNote, fullWidth: true },
+				],
+			});
 
 			createCard(microsoftCalendarContainer, {
 				collapsible: true,
 				defaultCollapsed: false,
 				colorIndicator: {
-					color: "#737373" // Microsoft gray
+					color: "#737373", // Microsoft gray
 				},
 				header: {
 					primaryText: "Microsoft Outlook Calendar",
 					secondaryText: "OAuth 2.0 Connection",
-					meta: [createStatusBadge("Not Connected", "inactive")]
+					meta: [createStatusBadge("Not Connected", "inactive")],
 				},
 				content: {
-					sections: sections
+					sections: sections,
 				},
 				actions: {
 					buttons: [
@@ -460,17 +495,19 @@ export function renderIntegrationsTab(
 							variant: "primary",
 							onClick: async () => {
 								try {
-									await plugin.oauthService!.authenticate("microsoft");
-									new Notice("Microsoft Calendar connected successfully!");
+									const oauthService = plugin.oauthService;
+									if (!oauthService) return;
+									await oauthService.authenticate("microsoft");
+									new Notice("Microsoft calendar connected successfully!");
 									renderMicrosoftCalendarCard();
 								} catch (error) {
 									console.error("Failed to connect:", error);
 									new Notice(`Failed to connect: ${error.message}`);
 								}
-							}
-						}
-					]
-				}
+							},
+						},
+					],
+				},
 			});
 		}
 	};
@@ -490,7 +527,9 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.enable.name"),
-					desc: translate("settings.integrations.googleCalendarExport.enable.description"),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.enable.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.enabled,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.enabled = value;
@@ -501,17 +540,33 @@ export function renderIntegrationsTab(
 
 			// Target calendar dropdown (populated dynamically)
 			group.addSetting((setting) => {
-				setting.setName(translate("settings.integrations.googleCalendarExport.targetCalendar.name"));
-				setting.setDesc(translate("settings.integrations.googleCalendarExport.targetCalendar.description"));
+				setting.setName(
+					translate("settings.integrations.googleCalendarExport.targetCalendar.name")
+				);
+				setting.setDesc(
+					translate(
+						"settings.integrations.googleCalendarExport.targetCalendar.description"
+					)
+				);
 
 				const dropdown = setting.controlEl.createEl("select", {
 					cls: "dropdown",
 				});
-				dropdown.style.width = "200px";
+				dropdown.classList.remove(
+					"tn-static-width-100-0466783d",
+					"tn-static-width-12px-fbf353fb",
+					"tn-static-width-16px-7375d50b",
+					"tn-static-width-1px-aa77e27e",
+					"tn-static-width-60px-bd09c419",
+					"tn-static-width-80px-8573bae3"
+				);
+				dropdown.classList.add("tn-static-width-200px-2acaf3b5");
 
 				// Add placeholder option
-				const placeholderOption = dropdown.createEl("option", {
-					text: translate("settings.integrations.googleCalendarExport.targetCalendar.placeholder"),
+				dropdown.createEl("option", {
+					text: translate(
+						"settings.integrations.googleCalendarExport.targetCalendar.placeholder"
+					),
 					value: "",
 				});
 
@@ -522,12 +577,19 @@ export function renderIntegrationsTab(
 						dropdown.remove(1);
 					}
 
-					const isConnected = plugin.oauthService && await plugin.oauthService.isConnected("google");
+					const isConnected =
+						plugin.oauthService && (await plugin.oauthService.isConnected("google"));
 					if (isConnected && plugin.googleCalendarService) {
 						const calendars = plugin.googleCalendarService.getAvailableCalendars();
 						for (const cal of calendars) {
 							const option = dropdown.createEl("option", {
-								text: cal.summary + (cal.primary ? translate("settings.integrations.googleCalendarExport.targetCalendar.primarySuffix") : ""),
+								text:
+									cal.summary +
+									(cal.primary
+										? translate(
+												"settings.integrations.googleCalendarExport.targetCalendar.primarySuffix"
+											)
+										: ""),
 								value: cal.id,
 							});
 							if (cal.id === plugin.settings.googleCalendarExport.targetCalendarId) {
@@ -536,7 +598,9 @@ export function renderIntegrationsTab(
 						}
 					} else {
 						dropdown.createEl("option", {
-							text: translate("settings.integrations.googleCalendarExport.targetCalendar.connectFirst"),
+							text: translate(
+								"settings.integrations.googleCalendarExport.targetCalendar.connectFirst"
+							),
 							value: "",
 						});
 					}
@@ -592,15 +656,35 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) =>
 				configureDropdownSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncTrigger.name"),
-					desc: translate("settings.integrations.googleCalendarExport.syncTrigger.description"),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.syncTrigger.description"
+					),
 					options: [
-						{ value: "scheduled", label: translate("settings.integrations.googleCalendarExport.syncTrigger.options.scheduled") },
-						{ value: "due", label: translate("settings.integrations.googleCalendarExport.syncTrigger.options.due") },
-						{ value: "both", label: translate("settings.integrations.googleCalendarExport.syncTrigger.options.both") },
+						{
+							value: "scheduled",
+							label: translate(
+								"settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
+							),
+						},
+						{
+							value: "due",
+							label: translate(
+								"settings.integrations.googleCalendarExport.syncTrigger.options.due"
+							),
+						},
+						{
+							value: "both",
+							label: translate(
+								"settings.integrations.googleCalendarExport.syncTrigger.options.both"
+							),
+						},
 					],
 					getValue: () => plugin.settings.googleCalendarExport.syncTrigger,
 					setValue: async (value: string) => {
-						plugin.settings.googleCalendarExport.syncTrigger = value as "scheduled" | "due" | "both";
+						plugin.settings.googleCalendarExport.syncTrigger = value as
+							| "scheduled"
+							| "due"
+							| "both";
 						save();
 					},
 				})
@@ -610,7 +694,9 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.allDayEvents.name"),
-					desc: translate("settings.integrations.googleCalendarExport.allDayEvents.description"),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.allDayEvents.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.createAsAllDay,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.createAsAllDay = value;
@@ -622,8 +708,12 @@ export function renderIntegrationsTab(
 			// Default duration (only relevant for timed events)
 			group.addSetting((setting) =>
 				configureNumberSetting(setting, {
-					name: translate("settings.integrations.googleCalendarExport.defaultDuration.name"),
-					desc: translate("settings.integrations.googleCalendarExport.defaultDuration.description"),
+					name: translate(
+						"settings.integrations.googleCalendarExport.defaultDuration.name"
+					),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.defaultDuration.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.defaultEventDuration,
 					setValue: async (value: number) => {
 						plugin.settings.googleCalendarExport.defaultEventDuration = value;
@@ -637,12 +727,19 @@ export function renderIntegrationsTab(
 			// Event title template
 			group.addSetting((setting) =>
 				configureTextSetting(setting, {
-					name: translate("settings.integrations.googleCalendarExport.eventTitleTemplate.name"),
-					desc: translate("settings.integrations.googleCalendarExport.eventTitleTemplate.description"),
-					placeholder: translate("settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder"),
+					name: translate(
+						"settings.integrations.googleCalendarExport.eventTitleTemplate.name"
+					),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.eventTitleTemplate.description"
+					),
+					placeholder: translate(
+						"settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.eventTitleTemplate,
 					setValue: async (value: string) => {
-						plugin.settings.googleCalendarExport.eventTitleTemplate = value || "{{title}}";
+						plugin.settings.googleCalendarExport.eventTitleTemplate =
+							value || "{{title}}";
 						save();
 					},
 				})
@@ -651,8 +748,12 @@ export function renderIntegrationsTab(
 			// Include description
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
-					name: translate("settings.integrations.googleCalendarExport.includeDescription.name"),
-					desc: translate("settings.integrations.googleCalendarExport.includeDescription.description"),
+					name: translate(
+						"settings.integrations.googleCalendarExport.includeDescription.name"
+					),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.includeDescription.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.includeDescription,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.includeDescription = value;
@@ -664,8 +765,12 @@ export function renderIntegrationsTab(
 			// Include Obsidian link
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
-					name: translate("settings.integrations.googleCalendarExport.includeObsidianLink.name"),
-					desc: translate("settings.integrations.googleCalendarExport.includeObsidianLink.description"),
+					name: translate(
+						"settings.integrations.googleCalendarExport.includeObsidianLink.name"
+					),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.includeObsidianLink.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.includeObsidianLink,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.includeObsidianLink = value;
@@ -677,11 +782,17 @@ export function renderIntegrationsTab(
 			// Default reminder minutes
 			group.addSetting((setting) =>
 				configureNumberSetting(setting, {
-					name: translate("settings.integrations.googleCalendarExport.defaultReminder.name"),
-					desc: translate("settings.integrations.googleCalendarExport.defaultReminder.description"),
-					getValue: () => plugin.settings.googleCalendarExport.defaultReminderMinutes ?? 0,
+					name: translate(
+						"settings.integrations.googleCalendarExport.defaultReminder.name"
+					),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.defaultReminder.description"
+					),
+					getValue: () =>
+						plugin.settings.googleCalendarExport.defaultReminderMinutes ?? 0,
 					setValue: async (value: number) => {
-						plugin.settings.googleCalendarExport.defaultReminderMinutes = value === 0 ? null : value;
+						plugin.settings.googleCalendarExport.defaultReminderMinutes =
+							value === 0 ? null : value;
 						save();
 					},
 					min: 0,
@@ -691,14 +802,20 @@ export function renderIntegrationsTab(
 
 			// Sync behavior toggles - section header
 			group.addSetting((setting) => {
-				setting.setName(translate("settings.integrations.googleCalendarExport.automaticSyncBehavior.header"));
+				setting.setName(
+					translate(
+						"settings.integrations.googleCalendarExport.automaticSyncBehavior.header"
+					)
+				);
 				setting.setHeading();
 			});
 
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncOnCreate.name"),
-					desc: translate("settings.integrations.googleCalendarExport.syncOnCreate.description"),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.syncOnCreate.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskCreate,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.syncOnTaskCreate = value;
@@ -710,7 +827,9 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncOnUpdate.name"),
-					desc: translate("settings.integrations.googleCalendarExport.syncOnUpdate.description"),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.syncOnUpdate.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskUpdate,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.syncOnTaskUpdate = value;
@@ -721,8 +840,12 @@ export function renderIntegrationsTab(
 
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
-					name: translate("settings.integrations.googleCalendarExport.syncOnComplete.name"),
-					desc: translate("settings.integrations.googleCalendarExport.syncOnComplete.description"),
+					name: translate(
+						"settings.integrations.googleCalendarExport.syncOnComplete.name"
+					),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.syncOnComplete.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskComplete,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.syncOnTaskComplete = value;
@@ -734,7 +857,9 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncOnDelete.name"),
-					desc: translate("settings.integrations.googleCalendarExport.syncOnDelete.description"),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.syncOnDelete.description"
+					),
 					getValue: () => plugin.settings.googleCalendarExport.syncOnTaskDelete,
 					setValue: async (value: boolean) => {
 						plugin.settings.googleCalendarExport.syncOnTaskDelete = value;
@@ -745,44 +870,75 @@ export function renderIntegrationsTab(
 
 			// Manual sync actions - section header
 			group.addSetting((setting) => {
-				setting.setName(translate("settings.integrations.googleCalendarExport.manualSyncActions.header"));
+				setting.setName(
+					translate("settings.integrations.googleCalendarExport.manualSyncActions.header")
+				);
 				setting.setHeading();
 			});
 
 			group.addSetting((setting) =>
 				configureButtonSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncAllTasks.name"),
-					desc: translate("settings.integrations.googleCalendarExport.syncAllTasks.description"),
-					buttonText: translate("settings.integrations.googleCalendarExport.syncAllTasks.buttonText"),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.syncAllTasks.description"
+					),
+					buttonText: translate(
+						"settings.integrations.googleCalendarExport.syncAllTasks.buttonText"
+					),
 					onClick: async () => {
 						if (!plugin.taskCalendarSyncService?.isEnabled()) {
-							new Notice(translate("settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"));
+							new Notice(
+								translate(
+									"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
+								)
+							);
 							return;
 						}
 						const results = await plugin.taskCalendarSyncService.syncAllTasks();
-						new Notice(translate("settings.integrations.googleCalendarExport.notices.syncResults", {
-							synced: results.synced,
-							failed: results.failed,
-							skipped: results.skipped,
-						}));
+						new Notice(
+							translate(
+								"settings.integrations.googleCalendarExport.notices.syncResults",
+								{
+									synced: results.synced,
+									failed: results.failed,
+									skipped: results.skipped,
+								}
+							)
+						);
 					},
 				})
 			);
 
 			group.addSetting((setting) =>
 				configureButtonSetting(setting, {
-					name: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.name"),
-					desc: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.description"),
-					buttonText: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText"),
+					name: translate(
+						"settings.integrations.googleCalendarExport.unlinkAllTasks.name"
+					),
+					desc: translate(
+						"settings.integrations.googleCalendarExport.unlinkAllTasks.description"
+					),
+					buttonText: translate(
+						"settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText"
+					),
 					onClick: async () => {
 						if (!plugin.taskCalendarSyncService) {
-							new Notice(translate("settings.integrations.googleCalendarExport.notices.serviceNotAvailable"));
+							new Notice(
+								translate(
+									"settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
+								)
+							);
 							return;
 						}
 						const confirmed = await showConfirmationModal(plugin.app, {
-							title: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle"),
-							message: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage"),
-							confirmText: translate("settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText"),
+							title: translate(
+								"settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle"
+							),
+							message: translate(
+								"settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage"
+							),
+							confirmText: translate(
+								"settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText"
+							),
 							isDestructive: true,
 						});
 						if (confirmed) {
@@ -805,7 +961,9 @@ export function renderIntegrationsTab(
 			// Default settings for ICS integration
 			group.addSetting((setting) =>
 				configureTextSetting(setting, {
-					name: translate("settings.integrations.calendarSubscriptions.defaultNoteTemplate.name"),
+					name: translate(
+						"settings.integrations.calendarSubscriptions.defaultNoteTemplate.name"
+					),
 					desc: translate(
 						"settings.integrations.calendarSubscriptions.defaultNoteTemplate.description"
 					),
@@ -822,7 +980,9 @@ export function renderIntegrationsTab(
 
 			group.addSetting((setting) =>
 				configureTextSetting(setting, {
-					name: translate("settings.integrations.calendarSubscriptions.defaultNoteFolder.name"),
+					name: translate(
+						"settings.integrations.calendarSubscriptions.defaultNoteFolder.name"
+					),
 					desc: translate(
 						"settings.integrations.calendarSubscriptions.defaultNoteFolder.description"
 					),
@@ -839,8 +999,12 @@ export function renderIntegrationsTab(
 
 			group.addSetting((setting) =>
 				configureDropdownSetting(setting, {
-					name: translate("settings.integrations.calendarSubscriptions.filenameFormat.name"),
-					desc: translate("settings.integrations.calendarSubscriptions.filenameFormat.description"),
+					name: translate(
+						"settings.integrations.calendarSubscriptions.filenameFormat.name"
+					),
+					desc: translate(
+						"settings.integrations.calendarSubscriptions.filenameFormat.description"
+					),
 					options: [
 						{
 							value: "title",
@@ -880,14 +1044,17 @@ export function renderIntegrationsTab(
 			if (plugin.settings.icsIntegration.icsNoteFilenameFormat === "custom") {
 				group.addSetting((setting) =>
 					configureTextSetting(setting, {
-						name: translate("settings.integrations.calendarSubscriptions.customTemplate.name"),
+						name: translate(
+							"settings.integrations.calendarSubscriptions.customTemplate.name"
+						),
 						desc: translate(
 							"settings.integrations.calendarSubscriptions.customTemplate.description"
 						),
 						placeholder: translate(
 							"settings.integrations.calendarSubscriptions.customTemplate.placeholder"
 						),
-						getValue: () => plugin.settings.icsIntegration.customICSNoteFilenameTemplate,
+						getValue: () =>
+							plugin.settings.icsIntegration.customICSNoteFilenameTemplate,
 						setValue: async (value: string) => {
 							plugin.settings.icsIntegration.customICSNoteFilenameTemplate = value;
 							save();
@@ -899,8 +1066,12 @@ export function renderIntegrationsTab(
 			// Task creation settings
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
-					name: translate("settings.integrations.calendarSubscriptions.useICSEndAsDue.name"),
-					desc: translate("settings.integrations.calendarSubscriptions.useICSEndAsDue.description"),
+					name: translate(
+						"settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
+					),
+					desc: translate(
+						"settings.integrations.calendarSubscriptions.useICSEndAsDue.description"
+					),
 					getValue: () => plugin.settings.icsIntegration.useICSEndAsDue ?? false,
 					setValue: async (value: boolean) => {
 						plugin.settings.icsIntegration.useICSEndAsDue = value;
@@ -922,12 +1093,18 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) =>
 				configureButtonSetting(setting, {
 					name: translate("settings.integrations.subscriptionsList.addSubscription.name"),
-					desc: translate("settings.integrations.subscriptionsList.addSubscription.description"),
-					buttonText: translate("settings.integrations.subscriptionsList.addSubscription.buttonText"),
+					desc: translate(
+						"settings.integrations.subscriptionsList.addSubscription.description"
+					),
+					buttonText: translate(
+						"settings.integrations.subscriptionsList.addSubscription.buttonText"
+					),
 					onClick: async () => {
 						// Create a new subscription with temporary values
 						const newSubscription = {
-							name: translate("settings.integrations.subscriptionsList.newCalendarName"),
+							name: translate(
+								"settings.integrations.subscriptionsList.newCalendarName"
+							),
 							url: "",
 							color: "#6366f1",
 							enabled: false, // Start disabled until user fills in details
@@ -937,19 +1114,29 @@ export function renderIntegrationsTab(
 
 						if (!plugin.icsSubscriptionService) {
 							new Notice(
-								translate("settings.integrations.subscriptionsList.notices.serviceUnavailable")
+								translate(
+									"settings.integrations.subscriptionsList.notices.serviceUnavailable"
+								)
 							);
 							return;
 						}
 
 						try {
 							await plugin.icsSubscriptionService.addSubscription(newSubscription);
-							new Notice(translate("settings.integrations.subscriptionsList.notices.addSuccess"));
+							new Notice(
+								translate(
+									"settings.integrations.subscriptionsList.notices.addSuccess"
+								)
+							);
 							// Re-render to show the new subscription card
 							renderICSSubscriptionsList(icsContainer, plugin, save);
 						} catch (error) {
 							console.error("Error adding subscription:", error);
-							new Notice(translate("settings.integrations.subscriptionsList.notices.addFailure"));
+							new Notice(
+								translate(
+									"settings.integrations.subscriptionsList.notices.addFailure"
+								)
+							);
 						}
 					},
 				})
@@ -959,19 +1146,27 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) =>
 				configureButtonSetting(setting, {
 					name: translate("settings.integrations.subscriptionsList.refreshAll.name"),
-					desc: translate("settings.integrations.subscriptionsList.refreshAll.description"),
-					buttonText: translate("settings.integrations.subscriptionsList.refreshAll.buttonText"),
+					desc: translate(
+						"settings.integrations.subscriptionsList.refreshAll.description"
+					),
+					buttonText: translate(
+						"settings.integrations.subscriptionsList.refreshAll.buttonText"
+					),
 					onClick: async () => {
 						if (plugin.icsSubscriptionService) {
 							try {
 								await plugin.icsSubscriptionService.refreshAllSubscriptions();
 								new Notice(
-									translate("settings.integrations.subscriptionsList.notices.refreshSuccess")
+									translate(
+										"settings.integrations.subscriptionsList.notices.refreshSuccess"
+									)
 								);
 							} catch (error) {
 								console.error("Error refreshing subscriptions:", error);
 								new Notice(
-									translate("settings.integrations.subscriptionsList.notices.refreshFailure")
+									translate(
+										"settings.integrations.subscriptionsList.notices.refreshFailure"
+									)
 								);
 							}
 						}
@@ -1000,7 +1195,9 @@ export function renderIntegrationsTab(
 					setValue: async (value: boolean) => {
 						plugin.settings.icsIntegration.enableAutoExport = value;
 						save();
-						new Notice(translate("settings.integrations.autoExport.notices.reloadRequired"));
+						new Notice(
+							translate("settings.integrations.autoExport.notices.reloadRequired")
+						);
 						// Re-render to show/hide export settings
 						renderIntegrationsTab(container, plugin, save);
 					},
@@ -1012,10 +1209,13 @@ export function renderIntegrationsTab(
 					configureTextSetting(setting, {
 						name: translate("settings.integrations.autoExport.filePath.name"),
 						desc: translate("settings.integrations.autoExport.filePath.description"),
-						placeholder: translate("settings.integrations.autoExport.filePath.placeholder"),
+						placeholder: translate(
+							"settings.integrations.autoExport.filePath.placeholder"
+						),
 						getValue: () => plugin.settings.icsIntegration.autoExportPath,
 						setValue: async (value: string) => {
-							plugin.settings.icsIntegration.autoExportPath = value || "tasknotes-calendar.ics";
+							plugin.settings.icsIntegration.autoExportPath =
+								value || "tasknotes-calendar.ics";
 							save();
 						},
 					})
@@ -1025,12 +1225,17 @@ export function renderIntegrationsTab(
 					configureNumberSetting(setting, {
 						name: translate("settings.integrations.autoExport.interval.name"),
 						desc: translate("settings.integrations.autoExport.interval.description"),
-						placeholder: translate("settings.integrations.autoExport.interval.placeholder"),
+						placeholder: translate(
+							"settings.integrations.autoExport.interval.placeholder"
+						),
 						min: 5,
 						max: 1440, // 24 hours max
 						getValue: () => plugin.settings.icsIntegration.autoExportInterval,
 						setValue: async (value: number) => {
-							plugin.settings.icsIntegration.autoExportInterval = Math.max(5, value || 60);
+							plugin.settings.icsIntegration.autoExportInterval = Math.max(
+								5,
+								value || 60
+							);
 							save();
 							// Restart the auto export service with new interval
 							if (plugin.autoExportService) {
@@ -1046,7 +1251,8 @@ export function renderIntegrationsTab(
 					configureToggleSetting(setting, {
 						name: translate("settings.integrations.autoExport.useDuration.name"),
 						desc: translate("settings.integrations.autoExport.useDuration.description"),
-						getValue: () => plugin.settings.icsIntegration.useDurationForExport ?? false,
+						getValue: () =>
+							plugin.settings.icsIntegration.useDurationForExport ?? false,
 						setValue: async (value: boolean) => {
 							plugin.settings.icsIntegration.useDurationForExport = value;
 							save();
@@ -1059,25 +1265,33 @@ export function renderIntegrationsTab(
 					configureButtonSetting(setting, {
 						name: translate("settings.integrations.autoExport.exportNow.name"),
 						desc: translate("settings.integrations.autoExport.exportNow.description"),
-						buttonText: translate("settings.integrations.autoExport.exportNow.buttonText"),
+						buttonText: translate(
+							"settings.integrations.autoExport.exportNow.buttonText"
+						),
 						onClick: async () => {
 							if (plugin.autoExportService) {
 								try {
 									await plugin.autoExportService.exportNow();
 									new Notice(
-										translate("settings.integrations.autoExport.notices.exportSuccess")
+										translate(
+											"settings.integrations.autoExport.notices.exportSuccess"
+										)
 									);
 									// Re-render to update status
 									renderIntegrationsTab(container, plugin, save);
 								} catch (error) {
 									console.error("Manual export failed:", error);
 									new Notice(
-										translate("settings.integrations.autoExport.notices.exportFailure")
+										translate(
+											"settings.integrations.autoExport.notices.exportFailure"
+										)
 									);
 								}
 							} else {
 								new Notice(
-									translate("settings.integrations.autoExport.notices.serviceUnavailable")
+									translate(
+										"settings.integrations.autoExport.notices.serviceUnavailable"
+									)
 								);
 							}
 						},
@@ -1094,15 +1308,21 @@ export function renderIntegrationsTab(
 						const nextExport = plugin.autoExportService.getNextExportTime();
 
 						const lastExportText = lastExport
-							? translate("settings.integrations.autoExport.status.lastExport", { time: lastExport.toLocaleString() })
+							? translate("settings.integrations.autoExport.status.lastExport", {
+									time: lastExport.toLocaleString(),
+								})
 							: translate("settings.integrations.autoExport.status.noExports");
 						const nextExportText = nextExport
-							? translate("settings.integrations.autoExport.status.nextExport", { time: nextExport.toLocaleString() })
+							? translate("settings.integrations.autoExport.status.nextExport", {
+									time: nextExport.toLocaleString(),
+								})
 							: translate("settings.integrations.autoExport.status.notScheduled");
 
 						descEl.textContent = lastExportText + "\n" + nextExportText;
 					} else {
-						descEl.textContent = translate("settings.integrations.autoExport.status.serviceNotInitialized");
+						descEl.textContent = translate(
+							"settings.integrations.autoExport.status.serviceNotInitialized"
+						);
 						descEl.addClass("tasknotes-auto-export-status__error");
 					}
 				});
@@ -1138,7 +1358,9 @@ export function renderIntegrationsTab(
 						configureNumberSetting(setting, {
 							name: translate("settings.integrations.httpApi.port.name"),
 							desc: translate("settings.integrations.httpApi.port.description"),
-							placeholder: translate("settings.integrations.httpApi.port.placeholder"),
+							placeholder: translate(
+								"settings.integrations.httpApi.port.placeholder"
+							),
 							min: 1024,
 							max: 65535,
 							getValue: () => plugin.settings.apiPort,
@@ -1153,7 +1375,9 @@ export function renderIntegrationsTab(
 						configureTextSetting(setting, {
 							name: translate("settings.integrations.httpApi.authToken.name"),
 							desc: translate("settings.integrations.httpApi.authToken.description"),
-							placeholder: translate("settings.integrations.httpApi.authToken.placeholder"),
+							placeholder: translate(
+								"settings.integrations.httpApi.authToken.placeholder"
+							),
 							getValue: () => plugin.settings.apiAuthToken,
 							setValue: async (value: string) => {
 								plugin.settings.apiAuthToken = value;
@@ -1198,7 +1422,18 @@ export function renderIntegrationsTab(
 			const apiEndpointsContent = apiInfoContainer.createDiv(
 				"tasknotes-settings__collapsible-content"
 			);
-			apiEndpointsContent.style.display = "none"; // Start collapsed
+			apiEndpointsContent.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			apiEndpointsContent.classList.add("tn-static-display-none-6b99de8b");
+			// Start collapsed
 
 			// Toggle functionality
 			apiHeader.addEventListener("click", () => {
@@ -1218,7 +1453,10 @@ export function renderIntegrationsTab(
 			container,
 			{
 				heading: translate("settings.integrations.webhooks.header"),
-				description: translate("settings.integrations.webhooks.description.overview") + " " + translate("settings.integrations.webhooks.description.usage"),
+				description:
+					translate("settings.integrations.webhooks.description.overview") +
+					" " +
+					translate("settings.integrations.webhooks.description.usage"),
 			},
 			(group) => {
 				// Add webhook button
@@ -1226,7 +1464,9 @@ export function renderIntegrationsTab(
 					configureButtonSetting(setting, {
 						name: translate("settings.integrations.webhooks.addWebhook.name"),
 						desc: translate("settings.integrations.webhooks.addWebhook.description"),
-						buttonText: translate("settings.integrations.webhooks.addWebhook.buttonText"),
+						buttonText: translate(
+							"settings.integrations.webhooks.addWebhook.buttonText"
+						),
 						onClick: async () => {
 							const modal = new WebhookModal(
 								plugin.app,
@@ -1262,7 +1502,9 @@ export function renderIntegrationsTab(
 
 									// Show success message with secret
 									new SecretNoticeModal(plugin.app, webhook.secret).open();
-									new Notice(translate("settings.integrations.webhooks.notices.created"));
+									new Notice(
+										translate("settings.integrations.webhooks.notices.created")
+									);
 								}
 							);
 							modal.open();
@@ -1275,7 +1517,6 @@ export function renderIntegrationsTab(
 		// Webhook cards (rendered after the heading/button group)
 		renderWebhookList(container, plugin, save);
 	}
-
 }
 
 function renderICSSubscriptionsList(
@@ -1318,18 +1559,18 @@ function renderICSSubscriptionsList(
 		const nameInput = createCardInput("text", "Calendar name", subscription.name);
 
 		// Create type dropdown
-		const typeSelect = document.createElement("select");
+		const typeSelect = activeDocument.createElement("select");
 		typeSelect.className = "tasknotes-settings__card-input";
 
-		const remoteOption = document.createElement("option");
+		const remoteOption = activeDocument.createElement("option");
 		remoteOption.value = "remote";
 		remoteOption.textContent = "Remote URL";
 		remoteOption.selected = subscription.type === "remote";
 		typeSelect.appendChild(remoteOption);
 
-		const localOption = document.createElement("option");
+		const localOption = activeDocument.createElement("option");
 		localOption.value = "local";
-		localOption.textContent = "Local File";
+		localOption.textContent = "Local file";
 		localOption.selected = subscription.type === "local";
 		typeSelect.appendChild(localOption);
 
@@ -1353,7 +1594,9 @@ function renderICSSubscriptionsList(
 		// Update handlers
 		const updateSubscription = async (updates: Partial<typeof subscription>) => {
 			try {
-				await plugin.icsSubscriptionService!.updateSubscription(subscription.id, updates);
+				const subscriptionService = plugin.icsSubscriptionService;
+				if (!subscriptionService) return;
+				await subscriptionService.updateSubscription(subscription.id, updates);
 				save();
 				renderICSSubscriptionsList(container, plugin, save);
 			} catch (error) {
@@ -1542,9 +1785,9 @@ function renderICSSubscriptionsList(
 
 						if (confirmed) {
 							try {
-								await plugin.icsSubscriptionService!.removeSubscription(
-									subscription.id
-								);
+								const subscriptionService = plugin.icsSubscriptionService;
+								if (!subscriptionService) return;
+								await subscriptionService.removeSubscription(subscription.id);
 								new Notice(
 									translate(
 										"settings.integrations.subscriptionsList.notices.deleteSuccess",
@@ -1586,9 +1829,9 @@ function renderICSSubscriptionsList(
 							}
 
 							try {
-								await plugin.icsSubscriptionService!.refreshSubscription(
-									subscription.id
-								);
+								const subscriptionService = plugin.icsSubscriptionService;
+								if (!subscriptionService) return;
+								await subscriptionService.refreshSubscription(subscription.id);
 								new Notice(
 									translate(
 										"settings.integrations.subscriptionsList.notices.refreshSuccess",
@@ -1707,11 +1950,11 @@ function renderWebhookList(
 			: "Creation date unknown";
 
 		// Create events display as a formatted string
-		const eventsDisplay = document.createElement("div");
+		const eventsDisplay = activeDocument.createElement("div");
 		eventsDisplay.className = "tasknotes-webhook-events";
 
 		if (webhook.events.length === 0) {
-			const noEventsSpan = document.createElement("span");
+			const noEventsSpan = activeDocument.createElement("span");
 			noEventsSpan.className = "tasknotes-webhook-events--empty";
 			noEventsSpan.textContent = translate(
 				"settings.integrations.webhooks.eventsDisplay.noEvents"
@@ -1724,7 +1967,7 @@ function renderWebhookList(
 		}
 
 		// Create transform file display if exists
-		const transformDisplay = document.createElement("span");
+		const transformDisplay = activeDocument.createElement("span");
 		if (webhook.transformFile) {
 			transformDisplay.className = "tasknotes-transform-file";
 			transformDisplay.textContent = webhook.transformFile;
@@ -1910,7 +2153,7 @@ class WebhookEditModal extends Modal {
 		const header = contentEl.createDiv({ cls: "tasknotes-webhook-modal-header" });
 		const headerIcon = header.createSpan({ cls: "tasknotes-webhook-modal-icon" });
 		setIcon(headerIcon, "webhook");
-		header.createEl("h2", { text: "Edit Webhook", cls: "tasknotes-webhook-modal-title" });
+		header.createEl("h2", { text: "Edit webhook", cls: "tasknotes-webhook-modal-title" });
 
 		// Events selection section
 		const eventsSection = contentEl.createDiv({ cls: "tasknotes-webhook-modal-section" });
@@ -1993,10 +2236,10 @@ class WebhookEditModal extends Modal {
 		});
 		const transformIcon = transformHeader.createSpan();
 		setIcon(transformIcon, "file-code");
-		transformHeader.createEl("h3", { text: "Transform Configuration (Optional)" });
+		transformHeader.createEl("h3", { text: "Transform configuration (optional)" });
 
 		new Setting(transformSection)
-			.setName("Transform File")
+			.setName("Transform file")
 			.setDesc("Path to a .js or .json file in your vault that transforms webhook payloads")
 			.addText((text) => {
 				text.inputEl.setAttribute("aria-label", "Transform file path");
@@ -2015,12 +2258,12 @@ class WebhookEditModal extends Modal {
 		});
 		const corsIcon = corsHeader.createSpan();
 		setIcon(corsIcon, "settings");
-		corsHeader.createEl("h3", { text: "Headers Configuration" });
+		corsHeader.createEl("h3", { text: "Headers configuration" });
 
 		new Setting(corsSection)
 			.setName("Include custom headers")
 			.setDesc(
-				"Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies."
+				"Include tasknotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict cors policies."
 			)
 			.addToggle((toggle) => {
 				toggle.toggleEl.setAttribute("aria-label", "Include custom headers");
@@ -2042,7 +2285,7 @@ class WebhookEditModal extends Modal {
 		cancelBtn.onclick = () => this.close();
 
 		const saveBtn = buttonContainer.createEl("button", {
-			text: "Save Changes",
+			text: "Save changes",
 			cls: "tasknotes-webhook-modal-btn save mod-cta",
 			attr: { "aria-label": "Save webhook changes" },
 		});
@@ -2095,7 +2338,7 @@ class WebhookModal extends Modal {
 		const header = contentEl.createDiv({ cls: "tasknotes-webhook-modal-header" });
 		const headerIcon = header.createSpan({ cls: "tasknotes-webhook-modal-icon" });
 		setIcon(headerIcon, "webhook");
-		header.createEl("h2", { text: "Add Webhook", cls: "tasknotes-webhook-modal-title" });
+		header.createEl("h2", { text: "Add webhook", cls: "tasknotes-webhook-modal-title" });
 
 		// URL input section
 		const urlSection = contentEl.createDiv({ cls: "tasknotes-webhook-modal-section" });
@@ -2105,7 +2348,7 @@ class WebhookModal extends Modal {
 			.addText((text) => {
 				text.inputEl.setAttribute("aria-label", "Webhook URL");
 				return text
-					.setPlaceholder("https://your-service.com/webhook")
+					.setPlaceholder("HTTPS://your-service.com/webhook")
 					.setValue(this.url)
 					.onChange((value) => {
 						this.url = value;
@@ -2193,10 +2436,10 @@ class WebhookModal extends Modal {
 		});
 		const transformIcon = transformHeader.createSpan();
 		setIcon(transformIcon, "file-code");
-		transformHeader.createEl("h3", { text: "Transform Configuration (Optional)" });
+		transformHeader.createEl("h3", { text: "Transform configuration (optional)" });
 
 		new Setting(transformSection)
-			.setName("Transform File")
+			.setName("Transform file")
 			.setDesc("Path to a .js or .json file in your vault that transforms webhook payloads")
 			.addText((text) => {
 				text.inputEl.setAttribute("aria-label", "Transform file path");
@@ -2243,12 +2486,12 @@ class WebhookModal extends Modal {
 		});
 		const corsIcon = corsHeader.createSpan();
 		setIcon(corsIcon, "settings");
-		corsHeader.createEl("h3", { text: "Headers Configuration" });
+		corsHeader.createEl("h3", { text: "Headers configuration" });
 
 		new Setting(corsSection)
 			.setName("Include custom headers")
 			.setDesc(
-				"Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies."
+				"Include tasknotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict cors policies."
 			)
 			.addToggle((toggle) => {
 				toggle.toggleEl.setAttribute("aria-label", "Include custom headers");
@@ -2270,7 +2513,7 @@ class WebhookModal extends Modal {
 		cancelBtn.onclick = () => this.close();
 
 		const saveBtn = buttonContainer.createEl("button", {
-			text: "Add Webhook",
+			text: "Add webhook",
 			cls: "tasknotes-webhook-modal-btn save mod-cta",
 			attr: { "aria-label": "Create webhook" },
 		});

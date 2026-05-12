@@ -7,7 +7,7 @@ import { FilterService } from "../services/FilterService";
 import { TaskManager } from "../utils/TaskManager";
 import { TaskStatsService } from "../services/TaskStatsService";
 import TaskNotesPlugin from "../main";
- 
+
 import { Get, Post, Put, Delete } from "../utils/OpenAPIDecorators";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -108,7 +108,7 @@ export class TasksController extends BaseController {
 				} else if ("path" in adapter && typeof adapter.path === "string") {
 					vaultPath = adapter.path;
 				}
-			} catch (error) {
+			} catch {
 				// Silently fail if vault path isn't accessible
 			}
 
@@ -351,7 +351,7 @@ export class TasksController extends BaseController {
 				} else if ("path" in adapter && typeof adapter.path === "string") {
 					vaultPath = adapter.path;
 				}
-			} catch (error) {
+			} catch {
 				// Silently fail if vault path isn't accessible
 			}
 
@@ -403,5 +403,4 @@ export class TasksController extends BaseController {
 			this.sendResponse(res, 500, this.errorResponse(error.message));
 		}
 	}
-
 }

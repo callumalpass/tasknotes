@@ -1,15 +1,8 @@
-import {
-	App,
-	Constructor,
-	Scope,
-	TFile,
-	WorkspaceLeaf,
-} from "obsidian";
+import { App, Constructor, Scope, TFile } from "obsidian";
 import { EditorSelection, Extension, Prec } from "@codemirror/state";
-import { EditorView, keymap, lineNumbers, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
+import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
 import { around } from "monkey-around";
 
- 
 declare const app: App;
 
 // Internal Obsidian type - not exported in official API
@@ -44,12 +37,14 @@ interface WidgetEditorView {
 function resolveEditorPrototype(app: App): Constructor<ScrollableMarkdownEditor> {
 	const activeFile = app.workspace.getActiveFile();
 	if (!(activeFile instanceof TFile)) {
-		throw new Error("Cannot resolve markdown editor prototype without an active markdown file.");
+		throw new Error(
+			"Cannot resolve markdown editor prototype without an active markdown file."
+		);
 	}
 
 	// @ts-expect-error - Using internal API
 	const widgetEditorView = app.embedRegistry.embedByExtension.md(
-		{ app, containerEl: document.createElement("div") },
+		{ app, containerEl: activeDocument.createElement("div") },
 		activeFile,
 		""
 	) as WidgetEditorView;
@@ -57,9 +52,13 @@ function resolveEditorPrototype(app: App): Constructor<ScrollableMarkdownEditor>
 	widgetEditorView.editable = true;
 	widgetEditorView.showEditor();
 
-	const MarkdownEditor = Object.getPrototypeOf(
-		Object.getPrototypeOf(widgetEditorView.editMode!)
-	);
+	const editMode = widgetEditorView.editMode;
+	if (!editMode) {
+		widgetEditorView.unload();
+		throw new Error("Markdown editor edit mode was not initialized");
+	}
+
+	const MarkdownEditor = Object.getPrototypeOf(Object.getPrototypeOf(editMode));
 
 	widgetEditorView.unload();
 	return MarkdownEditor.constructor as Constructor<ScrollableMarkdownEditor>;
@@ -71,18 +70,20 @@ function resolveEditorPrototype(app: App): Constructor<ScrollableMarkdownEditor>
  */
 function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 	// In test environments, app won't be defined, so return a mock base class
-	if (typeof app === 'undefined') {
+	if (typeof app === "undefined") {
 		return class MockScrollableMarkdownEditor {
 			app: any;
-			containerEl: HTMLElement = document.createElement('div');
+			containerEl: HTMLElement = activeDocument.createElement("div");
 			editor: any;
-			editorEl: HTMLElement = document.createElement('div');
+			editorEl: HTMLElement = activeDocument.createElement("div");
 			activeCM: any;
 			owner: any = { editMode: null, editor: null };
 			_loaded = false;
 			set(value: string): void {}
 			onUpdate(update: ViewUpdate, changed: boolean): void {}
-			buildLocalExtensions(): Extension[] { return []; }
+			buildLocalExtensions(): Extension[] {
+				return [];
+			}
 			destroy(): void {}
 			unload(): void {}
 			constructor(app: App, container: HTMLElement, options: any) {
@@ -299,7 +300,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 
 		extensions.push(
 			tooltips({
-				parent: document.body,
+				parent: activeDocument.body,
 			})
 		);
 

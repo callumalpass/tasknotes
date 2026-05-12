@@ -85,24 +85,30 @@ export class TaskCalendarSyncService {
 	 */
 	private withGoogleRateLimit<T>(fn: () => Promise<T>): Promise<T> {
 		return new Promise<T>((resolve, reject) => {
-			this.rateLimitChain = this.rateLimitChain.then(async () => {
-				const now = Date.now();
-				const wait = Math.max(0, GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt));
-				if (wait > 0) {
-					await new Promise((r) => window.setTimeout(r, wait));
+			this.rateLimitChain = this.rateLimitChain.then(
+				async () => {
+					const now = Date.now();
+					const wait = Math.max(
+						0,
+						GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt)
+					);
+					if (wait > 0) {
+						await new Promise((r) => window.setTimeout(r, wait));
+					}
+					try {
+						const result = await fn();
+						this.lastApiCallAt = Date.now();
+						resolve(result);
+					} catch (e) {
+						this.lastApiCallAt = Date.now();
+						reject(e instanceof Error ? e : new Error(String(e)));
+					}
+				},
+				() => {
+					// Previous call in chain failed; continue the chain
+					fn().then(resolve, reject);
 				}
-				try {
-					const result = await fn();
-					this.lastApiCallAt = Date.now();
-					resolve(result);
-				} catch (e) {
-					this.lastApiCallAt = Date.now();
-					reject(e instanceof Error ? e : new Error(String(e)));
-				}
-			}, () => {
-				// Previous call in chain failed; continue the chain
-				fn().then(resolve, reject);
-			});
+			);
 		});
 	}
 
@@ -213,7 +219,9 @@ export class TaskCalendarSyncService {
 			? this.plugin.priorityManager.getPriorityConfig(task.priority)
 			: null;
 
-		const untitledTask = this.plugin.i18n.translate("settings.integrations.googleCalendarExport.eventDescription.untitledTask");
+		const untitledTask = this.plugin.i18n.translate(
+			"settings.integrations.googleCalendarExport.eventDescription.untitledTask"
+		);
 		return template
 			.replace(/\{\{title\}\}/g, task.title || untitledTask)
 			.replace(/\{\{status\}\}/g, statusConfig?.label || task.status || "")
@@ -229,7 +237,10 @@ export class TaskCalendarSyncService {
 	private buildEventDescription(task: TaskInfo): string {
 		const settings = this.plugin.settings.googleCalendarExport;
 		const t = (key: string, params?: Record<string, string | number>) =>
-			this.plugin.i18n.translate(`settings.integrations.googleCalendarExport.eventDescription.${key}` as any, params);
+			this.plugin.i18n.translate(
+				`settings.integrations.googleCalendarExport.eventDescription.${key}` as any,
+				params
+			);
 		const parts: string[] = [];
 
 		// Add task metadata
@@ -360,14 +371,20 @@ export class TaskCalendarSyncService {
 				return { date: format(endDate, "yyyy-MM-dd") };
 			}
 			// Fallback for dateTime that should be all-day
-			const startDate = new Date(startInfo.dateTime!);
+			if (!startInfo.dateTime) {
+				return {};
+			}
+			const startDate = new Date(startInfo.dateTime);
 			const endDate = new Date(startDate);
 			endDate.setDate(endDate.getDate() + 1);
 			return { date: format(endDate, "yyyy-MM-dd") };
 		} else {
 			// Timed events: use duration
 			const duration = task.timeEstimate || settings.defaultEventDuration;
-			const startDate = new Date(startInfo.dateTime!);
+			if (!startInfo.dateTime) {
+				return {};
+			}
+			const startDate = new Date(startInfo.dateTime);
 			const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 			return {
 				dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
@@ -410,7 +427,7 @@ export class TaskCalendarSyncService {
 	/**
 	 * Convert task reminders to Google Calendar reminder format.
 	 * Returns an array of reminder overrides in the format Google Calendar API expects.
-	 * 
+	 *
 	 * @param task - The task with reminders
 	 * @param eventStartTime - The event start time (ISO string or date string)
 	 * @param eventDateSource - Which date field was used for the event ('due' or 'scheduled')
@@ -419,7 +436,7 @@ export class TaskCalendarSyncService {
 	private convertTaskRemindersToGoogleFormat(
 		task: TaskInfo,
 		eventStartTime: string,
-		eventDateSource: 'due' | 'scheduled'
+		eventDateSource: "due" | "scheduled"
 	): Array<{ method: string; minutes: number }> | null {
 		if (!task.reminders || !Array.isArray(task.reminders) || task.reminders.length === 0) {
 			return null;
@@ -432,26 +449,26 @@ export class TaskCalendarSyncService {
 		let eventStartMs: number;
 		try {
 			// Handle both ISO timestamps and date-only strings
-			if (eventStartTime.includes('T')) {
+			if (eventStartTime.includes("T")) {
 				eventStartMs = new Date(eventStartTime).getTime();
 			} else {
 				// Date-only string - assume start of day in local timezone
-				eventStartMs = new Date(eventStartTime + 'T00:00:00').getTime();
+				eventStartMs = new Date(eventStartTime + "T00:00:00").getTime();
 			}
 
 			if (isNaN(eventStartMs)) {
-				console.warn('[TaskCalendarSync] Invalid event start time:', eventStartTime);
+				console.warn("[TaskCalendarSync] Invalid event start time:", eventStartTime);
 				return null;
 			}
 		} catch (error) {
-			console.warn('[TaskCalendarSync] Error parsing event start time:', error);
+			console.warn("[TaskCalendarSync] Error parsing event start time:", error);
 			return null;
 		}
 
 		for (const reminder of task.reminders) {
 			if (!reminder.type) continue;
 
-			if (reminder.type === 'relative') {
+			if (reminder.type === "relative") {
 				// Only include relative reminders that match the event's date source
 				if (reminder.relatedTo !== eventDateSource) {
 					continue;
@@ -461,7 +478,7 @@ export class TaskCalendarSyncService {
 				if (!reminder.offset) continue;
 				const durationMs = this.parseISO8601Duration(reminder.offset);
 				if (durationMs === null) {
-					console.warn('[TaskCalendarSync] Invalid duration format:', reminder.offset);
+					console.warn("[TaskCalendarSync] Invalid duration format:", reminder.offset);
 					continue;
 				}
 
@@ -473,7 +490,7 @@ export class TaskCalendarSyncService {
 
 				// Skip if reminder is after the event (positive duration without negative sign)
 				if (durationMs > 0) {
-					console.warn('[TaskCalendarSync] Skipping reminder after event:', reminder);
+					console.warn("[TaskCalendarSync] Skipping reminder after event:", reminder);
 					continue;
 				}
 
@@ -482,16 +499,19 @@ export class TaskCalendarSyncService {
 
 				// Include 0-minute reminders (at event time)
 				if (cappedMinutes >= 0) {
-					googleReminders.push({ method: 'popup', minutes: cappedMinutes });
+					googleReminders.push({ method: "popup", minutes: cappedMinutes });
 				}
-			} else if (reminder.type === 'absolute') {
+			} else if (reminder.type === "absolute") {
 				// Calculate minutes before event start
 				if (!reminder.absoluteTime) continue;
 
 				try {
 					const reminderTimeMs = new Date(reminder.absoluteTime).getTime();
 					if (isNaN(reminderTimeMs)) {
-						console.warn('[TaskCalendarSync] Invalid absolute time:', reminder.absoluteTime);
+						console.warn(
+							"[TaskCalendarSync] Invalid absolute time:",
+							reminder.absoluteTime
+						);
 						continue;
 					}
 
@@ -501,16 +521,19 @@ export class TaskCalendarSyncService {
 
 					// Skip if reminder is after the event start
 					if (minutesBefore < 0) {
-						console.warn('[TaskCalendarSync] Skipping absolute reminder after event:', reminder);
+						console.warn(
+							"[TaskCalendarSync] Skipping absolute reminder after event:",
+							reminder
+						);
 						continue;
 					}
 
 					// Cap at Google Calendar's limit
 					const cappedMinutes = Math.min(minutesBefore, GOOGLE_MAX_REMINDER_MINUTES);
 					// Include 0-minute reminders (at event time)
-					googleReminders.push({ method: 'popup', minutes: cappedMinutes });
+					googleReminders.push({ method: "popup", minutes: cappedMinutes });
 				} catch (error) {
-					console.warn('[TaskCalendarSync] Error parsing absolute reminder time:', error);
+					console.warn("[TaskCalendarSync] Error parsing absolute reminder time:", error);
 					continue;
 				}
 			}
@@ -522,7 +545,10 @@ export class TaskCalendarSyncService {
 	/**
 	 * Convert a task to a Google Calendar event payload
 	 */
-	private taskToCalendarEvent(task: TaskInfo, clearRecurrence?: boolean): {
+	private taskToCalendarEvent(
+		task: TaskInfo,
+		clearRecurrence?: boolean
+	): {
 		summary: string;
 		description?: string;
 		start: { date?: string; dateTime?: string; timeZone?: string };
@@ -589,11 +615,14 @@ export class TaskCalendarSyncService {
 		}
 
 		// Determine which date field was used for the event (for reminder conversion)
-		let eventDateSource: 'due' | 'scheduled';
-		if (settings.syncTrigger === 'scheduled' || (settings.syncTrigger === 'both' && task.scheduled)) {
-			eventDateSource = 'scheduled';
+		let eventDateSource: "due" | "scheduled";
+		if (
+			settings.syncTrigger === "scheduled" ||
+			(settings.syncTrigger === "both" && task.scheduled)
+		) {
+			eventDateSource = "scheduled";
 		} else {
-			eventDateSource = 'due';
+			eventDateSource = "due";
 		}
 
 		// Add reminders - prioritize task reminders, fall back to default
@@ -609,7 +638,10 @@ export class TaskCalendarSyncService {
 				useDefault: false,
 				overrides: taskReminders,
 			};
-		} else if (settings.defaultReminderMinutes !== null && settings.defaultReminderMinutes > 0) {
+		} else if (
+			settings.defaultReminderMinutes !== null &&
+			settings.defaultReminderMinutes > 0
+		) {
 			// For all-day events, use Google Calendar's default all-day notifications
 			// (configured by the user in their Google Calendar settings) rather than
 			// overriding with minutes-based reminders which would fire at the wrong time
@@ -684,7 +716,7 @@ export class TaskCalendarSyncService {
 		try {
 			// Check if recurrence was removed (previous had recurrence, current doesn't)
 			const clearRecurrence = !!(previous?.recurrence && !task.recurrence);
-			
+
 			const eventData = this.taskToCalendarEvent(task, clearRecurrence);
 			if (!eventData) {
 				console.warn("[TaskCalendarSync] Could not convert task to event:", task.path);
@@ -703,13 +735,10 @@ export class TaskCalendarSyncService {
 			} else {
 				// Create new event — pass structured start/end objects to preserve timeZone
 				const createdEvent = await this.withGoogleRateLimit(() =>
-					this.googleCalendarService.createEvent(
-						settings.targetCalendarId,
-						{
-							...eventData,
-							isAllDay: !!eventData.start.date,
-						}
-					)
+					this.googleCalendarService.createEvent(settings.targetCalendarId, {
+						...eventData,
+						isAllDay: !!eventData.start.date,
+					})
 				);
 
 				// Extract the actual event ID from the ICSEvent ID format
@@ -740,9 +769,18 @@ export class TaskCalendarSyncService {
 			// Show user-friendly message for token refresh errors
 			// TokenRefreshError indicates the OAuth connection expired and user needs to reconnect
 			if (error instanceof TokenRefreshError) {
-				new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.connectionExpired"));
+				new Notice(
+					this.plugin.i18n.translate(
+						"settings.integrations.googleCalendarExport.notices.connectionExpired"
+					)
+				);
 			} else {
-				new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncFailed", { message: error.message }));
+				new Notice(
+					this.plugin.i18n.translate(
+						"settings.integrations.googleCalendarExport.notices.syncFailed",
+						{ message: error.message }
+					)
+				);
 			}
 		}
 	}
@@ -788,7 +826,8 @@ export class TaskCalendarSyncService {
 				this.pendingTasks.delete(taskPath);
 
 				// Fallback to cache only if the pending task is missing
-				const freshTask = latestTask || await this.plugin.cacheManager.getTaskInfo(taskPath);
+				const freshTask =
+					latestTask || (await this.plugin.cacheManager.getTaskInfo(taskPath));
 
 				if (!freshTask) {
 					resolve();
@@ -836,7 +875,7 @@ export class TaskCalendarSyncService {
 
 		// Sync the updated task
 		await this.syncTaskToCalendar(task, previousState);
-		
+
 		// Update previous state with current task
 		this.previousTaskState.set(task.path, task);
 	}
@@ -871,14 +910,10 @@ export class TaskCalendarSyncService {
 				: undefined;
 
 			await this.withGoogleRateLimit(() =>
-				this.googleCalendarService.updateEvent(
-					settings.targetCalendarId,
-					existingEventId,
-					{
-						summary: completedTitle,
-						description,
-					}
-				)
+				this.googleCalendarService.updateEvent(settings.targetCalendarId, existingEventId, {
+					summary: completedTitle,
+					description,
+				})
 			);
 		} catch (error: any) {
 			if (error.status === 404) {
@@ -909,11 +944,9 @@ export class TaskCalendarSyncService {
 
 			if (recurrenceData) {
 				await this.withGoogleRateLimit(() =>
-					this.googleCalendarService.updateEvent(
-						settings.targetCalendarId,
-						eventId,
-						{ recurrence: recurrenceData.recurrence }
-					)
+					this.googleCalendarService.updateEvent(settings.targetCalendarId, eventId, {
+						recurrence: recurrenceData.recurrence,
+					})
 				);
 			}
 		} catch (error: any) {
@@ -922,7 +955,11 @@ export class TaskCalendarSyncService {
 				await this.removeTaskEventId(task.path);
 				return;
 			}
-			console.error("[TaskCalendarSync] Failed to update recurring event EXDATEs:", task.path, error);
+			console.error(
+				"[TaskCalendarSync] Failed to update recurring event EXDATEs:",
+				task.path,
+				error
+			);
 			// Fall back to full resync
 			await this.syncTaskToCalendar(task);
 		}
@@ -946,10 +983,7 @@ export class TaskCalendarSyncService {
 
 		try {
 			await this.withGoogleRateLimit(() =>
-				this.googleCalendarService.deleteEvent(
-					settings.targetCalendarId,
-					existingEventId
-				)
+				this.googleCalendarService.deleteEvent(settings.targetCalendarId, existingEventId)
 			);
 		} catch (error: any) {
 			// 404 or 410 means event is already gone - that's fine
@@ -1002,7 +1036,11 @@ export class TaskCalendarSyncService {
 		const results = { synced: 0, failed: 0, skipped: 0 };
 
 		if (!this.isEnabled()) {
-			new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"));
+			new Notice(
+				this.plugin.i18n.translate(
+					"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
+				)
+			);
 			return results;
 		}
 
@@ -1018,7 +1056,12 @@ export class TaskCalendarSyncService {
 		});
 
 		const total = allTasks.length;
-		new Notice(this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncingTasks", { total }));
+		new Notice(
+			this.plugin.i18n.translate(
+				"settings.integrations.googleCalendarExport.notices.syncingTasks",
+				{ total }
+			)
+		);
 
 		// Process tasks in parallel with concurrency limit
 		await this.processInParallel(tasksToSync, async (task) => {
@@ -1032,11 +1075,14 @@ export class TaskCalendarSyncService {
 		});
 
 		new Notice(
-			this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.syncComplete", {
-				synced: results.synced,
-				failed: results.failed,
-				skipped: results.skipped,
-			})
+			this.plugin.i18n.translate(
+				"settings.integrations.googleCalendarExport.notices.syncComplete",
+				{
+					synced: results.synced,
+					failed: results.failed,
+					skipped: results.skipped,
+				}
+			)
 		);
 
 		return results;
@@ -1060,13 +1106,13 @@ export class TaskCalendarSyncService {
 			if (deleteEvents) {
 				try {
 					await this.withGoogleRateLimit(() =>
-						this.googleCalendarService.deleteEvent(
-							settings.targetCalendarId,
-							eventId
-						)
+						this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId)
 					);
 				} catch (error) {
-					console.warn(`[TaskCalendarSync] Failed to delete event for ${task.path}:`, error);
+					console.warn(
+						`[TaskCalendarSync] Failed to delete event for ${task.path}:`,
+						error
+					);
 				}
 			}
 
@@ -1077,8 +1123,14 @@ export class TaskCalendarSyncService {
 
 		new Notice(
 			deleteEvents
-				? this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked", { count: unlinkedCount })
-				: this.plugin.i18n.translate("settings.integrations.googleCalendarExport.notices.tasksUnlinked", { count: unlinkedCount })
+				? this.plugin.i18n.translate(
+						"settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked",
+						{ count: unlinkedCount }
+					)
+				: this.plugin.i18n.translate(
+						"settings.integrations.googleCalendarExport.notices.tasksUnlinked",
+						{ count: unlinkedCount }
+					)
 		);
 	}
 }

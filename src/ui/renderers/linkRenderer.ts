@@ -164,7 +164,7 @@ export function renderTextWithLinks(
 		const start = match.index;
 
 		if (start > lastIndex) {
-			container.appendChild(document.createTextNode(text.slice(lastIndex, start)));
+			container.appendChild(activeDocument.createTextNode(text.slice(lastIndex, start)));
 		}
 
 		if (wikiInner) {
@@ -209,13 +209,13 @@ export function renderTextWithLinks(
 			// Add text before the tag
 			if (tagStart > tagLastIndex) {
 				container.appendChild(
-					document.createTextNode(remainingText.slice(tagLastIndex, tagStart))
+					activeDocument.createTextNode(remainingText.slice(tagLastIndex, tagStart))
 				);
 			}
 
 			// Add the prefix (space or start of string)
 			if (prefix) {
-				container.appendChild(document.createTextNode(prefix));
+				container.appendChild(activeDocument.createTextNode(prefix));
 			}
 
 			// Create clickable tag
@@ -249,11 +249,11 @@ export function renderTextWithLinks(
 
 		// Add any remaining text after the last tag
 		if (tagLastIndex < remainingText.length) {
-			container.appendChild(document.createTextNode(remainingText.slice(tagLastIndex)));
+			container.appendChild(activeDocument.createTextNode(remainingText.slice(tagLastIndex)));
 		}
 	} else if (remainingText) {
 		// No tag handling, just add the remaining text
-		container.appendChild(document.createTextNode(remainingText));
+		container.appendChild(activeDocument.createTextNode(remainingText));
 	}
 }
 
@@ -269,13 +269,13 @@ export function renderValueWithLinks(
 	}
 	if (Array.isArray(value)) {
 		value.forEach((item, idx) => {
-			if (idx > 0) container.appendChild(document.createTextNode(", "));
+			if (idx > 0) container.appendChild(activeDocument.createTextNode(", "));
 			if (typeof item === "string") renderTextWithLinks(container, item, deps);
-			else container.appendChild(document.createTextNode(String(item)));
+			else container.appendChild(activeDocument.createTextNode(String(item)));
 		});
 		return;
 	}
-	container.appendChild(document.createTextNode(String(value)));
+	container.appendChild(activeDocument.createTextNode(String(value)));
 }
 
 /**
@@ -371,11 +371,11 @@ export function renderProjectLinks(
 
 	validProjects.forEach((project, index) => {
 		if (index > 0) {
-			container.appendChild(document.createTextNode(", "));
+			container.appendChild(activeDocument.createTextNode(", "));
 		}
 
 		// Add + prefix for projects
-		container.appendChild(document.createTextNode("+"));
+		container.appendChild(activeDocument.createTextNode("+"));
 
 		if (isWikilink(project)) {
 			// Parse the wikilink to separate path and display text
@@ -415,11 +415,11 @@ export function renderProjectLinks(
 				});
 			} else {
 				// Fallback to plain text if parsing fails
-				container.appendChild(document.createTextNode(project));
+				container.appendChild(activeDocument.createTextNode(project));
 			}
 		} else {
 			// Plain text project
-			container.appendChild(document.createTextNode(project));
+			container.appendChild(activeDocument.createTextNode(project));
 		}
 	});
 }
@@ -445,11 +445,11 @@ export function renderArrayWithLinks(
 
 	validItems.forEach((item, index) => {
 		if (index > 0) {
-			container.appendChild(document.createTextNode(separator));
+			container.appendChild(activeDocument.createTextNode(separator));
 		}
 
 		if (prefix) {
-			container.appendChild(document.createTextNode(prefix));
+			container.appendChild(activeDocument.createTextNode(prefix));
 		}
 
 		renderTextWithLinks(container, item, deps, {

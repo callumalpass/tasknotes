@@ -94,7 +94,7 @@ export class ICSEventContextMenu {
 					try {
 						await navigator.clipboard.writeText(icsEvent.title);
 						new Notice(this.t("contextMenus.ics.notices.copyTitleSuccess"));
-					} catch (error) {
+					} catch {
 						new Notice(this.t("contextMenus.ics.notices.copyFailure"));
 					}
 				})
@@ -110,7 +110,7 @@ export class ICSEventContextMenu {
 						try {
 							await navigator.clipboard.writeText(icsEvent.location || "");
 							new Notice(this.t("contextMenus.ics.notices.copyLocationSuccess"));
-						} catch (error) {
+						} catch {
 							new Notice(this.t("contextMenus.ics.notices.copyFailure"));
 						}
 					})
@@ -127,7 +127,7 @@ export class ICSEventContextMenu {
 						try {
 							await navigator.clipboard.writeText(icsEvent.url || "");
 							new Notice(this.t("contextMenus.ics.notices.copyUrlSuccess"));
-						} catch (error) {
+						} catch {
 							new Notice(this.t("contextMenus.ics.notices.copyFailure"));
 						}
 					})
@@ -144,7 +144,7 @@ export class ICSEventContextMenu {
 					try {
 						await navigator.clipboard.writeText(markdown);
 						new Notice(this.t("contextMenus.ics.notices.copyMarkdownSuccess"));
-					} catch (error) {
+					} catch {
 						new Notice(this.t("contextMenus.ics.notices.copyFailure"));
 					}
 				})
@@ -205,34 +205,38 @@ export class ICSEventContextMenu {
 	private async linkExistingNote(): Promise<void> {
 		await SafeAsync.execute(
 			async () => {
-				openFileSelector(this.options.plugin, async (file) => {
-					if (!file) return;
+				openFileSelector(
+					this.options.plugin,
+					async (file) => {
+						if (!file) return;
 
-					await SafeAsync.execute(
-						async () => {
-							await this.options.plugin.icsNoteService.linkNoteToICS(
-								file.path,
-								this.options.icsEvent
-							);
-							new Notice(
-								this.t("contextMenus.ics.notices.linkSuccess", {
-									name: file.name,
-								})
-							);
+						await SafeAsync.execute(
+							async () => {
+								await this.options.plugin.icsNoteService.linkNoteToICS(
+									file.path,
+									this.options.icsEvent
+								);
+								new Notice(
+									this.t("contextMenus.ics.notices.linkSuccess", {
+										name: file.name,
+									})
+								);
 
-							// Trigger update callback if provided
-							if (this.options.onUpdate) {
-								this.options.onUpdate();
+								// Trigger update callback if provided
+								if (this.options.onUpdate) {
+									this.options.onUpdate();
+								}
+							},
+							{
+								errorMessage: this.t("contextMenus.ics.notices.linkFailure"),
 							}
-						},
-						{
-							errorMessage: this.t("contextMenus.ics.notices.linkFailure"),
-						}
-					);
-				}, {
-					placeholder: "Search notes to link...",
-					filter: "markdown",
-				});
+						);
+					},
+					{
+						placeholder: "Search notes to link...",
+						filter: "markdown",
+					}
+				);
 			},
 			{
 				errorMessage: this.t("contextMenus.ics.notices.linkSelectionFailure"),
@@ -254,9 +258,10 @@ export class ICSEventContextMenu {
 
 		const locale = this.getLocale();
 		// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
-		const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-			? icsEvent.start + 'T00:00:00'
-			: icsEvent.start;
+		const startDateStr =
+			icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+				? icsEvent.start + "T00:00:00"
+				: icsEvent.start;
 		const startDate = new Date(startDateStr);
 		const dateFormatter = new Intl.DateTimeFormat(locale, {
 			weekday: "long",
@@ -276,7 +281,7 @@ export class ICSEventContextMenu {
 			});
 			if (icsEvent.end) {
 				const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
-					? icsEvent.end + 'T00:00:00'
+					? icsEvent.end + "T00:00:00"
 					: icsEvent.end;
 				const endDate = new Date(endDateStr);
 				dateText += ` - ${timeFormatter.format(endDate)}`;

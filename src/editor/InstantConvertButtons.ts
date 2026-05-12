@@ -16,12 +16,12 @@ class ConvertButtonWidget extends WidgetType {
 
 	toDOM(view: EditorView): HTMLElement {
 		// Create container with proper class structure
-		const container = document.createElement("span");
+		const container = activeDocument.createElement("span");
 		container.className = "tasknotes-plugin";
 
 		const button = container.createEl("button", {
 			cls: "instant-convert-button",
-			attr: { "aria-label": "Convert to TaskNote" },
+			attr: { "aria-label": "Convert to tasknote" },
 		});
 		setTooltip(button, "Convert to TaskNote", { placement: "top" });
 

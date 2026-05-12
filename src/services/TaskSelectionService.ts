@@ -1,4 +1,3 @@
-import { Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 
@@ -76,9 +75,8 @@ export class TaskSelectionService {
 			this.selectedTaskPaths.delete(taskPath);
 			// If we removed the primary, pick a new one
 			if (this.primarySelectedPath === taskPath) {
-				this.primarySelectedPath = this.selectedTaskPaths.size > 0
-					? Array.from(this.selectedTaskPaths)[0]
-					: null;
+				this.primarySelectedPath =
+					this.selectedTaskPaths.size > 0 ? Array.from(this.selectedTaskPaths)[0] : null;
 			}
 		} else {
 			// First selected task becomes primary

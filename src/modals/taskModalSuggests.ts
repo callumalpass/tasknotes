@@ -213,7 +213,7 @@ export class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> 
 						if (values.size >= 200) {
 							break;
 						}
-					} catch (error) {
+					} catch {
 						continue;
 					}
 				}

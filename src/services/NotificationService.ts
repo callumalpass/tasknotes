@@ -1,4 +1,3 @@
- 
 import { Notice, TFile, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from "../types";
@@ -74,9 +73,6 @@ export class NotificationService {
 			// Check for system sleep/wake - if gap is significantly larger than interval, handle catch-up
 			if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) {
 				// 1 minute tolerance
-				console.log(
-					"NotificationService: Detected potential system sleep, performing catch-up scan"
-				);
 				await this.handleSystemWakeUp();
 			}
 
@@ -93,9 +89,6 @@ export class NotificationService {
 			// Check for system sleep/wake for quick checks too
 			if (timeSinceLastCheck > this.QUICK_CHECK_INTERVAL + 60000) {
 				// 1 minute tolerance
-				console.log(
-					"NotificationService: Detected potential system sleep during quick check"
-				);
 				// Don't spam with catch-up, just process current queue
 			}
 
@@ -303,7 +296,11 @@ export class NotificationService {
 		});
 
 		// Add styling to make it clickable
-		(notice as any).noticeEl.style.cursor = "pointer";
+		(notice as any).noticeEl.classList.remove(
+			"tn-static-cursor-grab-dad79857",
+			"tn-static-cursor-pointer-2723efcc"
+		);
+		(notice as any).noticeEl.classList.add("tn-static-cursor-pointer-3b6a3a65");
 	}
 
 	private generateDefaultMessage(task: TaskInfo, reminder: Reminder): string {
@@ -438,7 +435,7 @@ export class NotificationService {
 						}
 					}
 				}
-			} catch (error) {
+			} catch {
 				// If we can't get the task, remove the processed reminder anyway
 				keysToRemove.push(key);
 			}

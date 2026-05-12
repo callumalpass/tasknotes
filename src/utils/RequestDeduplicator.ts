@@ -102,7 +102,7 @@ export class RequestDeduplicator {
 				this.activeTimeouts.delete(timeout as unknown as number);
 			}, 30000); // 30 seconds
 			this.activeTimeouts.add(timeout as unknown as number);
-		} catch (error) {
+		} catch {
 			// Ignore prefetch errors
 			this.prefetchPromises.delete(key);
 		}

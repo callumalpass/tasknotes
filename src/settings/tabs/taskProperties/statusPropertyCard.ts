@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {
 	createCard,
@@ -25,15 +26,14 @@ export function renderStatusPropertyCard(
 	save: () => void,
 	translate: TranslateFn
 ): void {
-	const propertyKeyInput = createCardInput(
-		"text",
-		"status",
-		plugin.settings.fieldMapping.status
-	);
+	const propertyKeyInput = createCardInput("text", "status", plugin.settings.fieldMapping.status);
 
 	// Validate defaultTaskStatus - if it doesn't exist in customStatuses, reset to first available
 	const validStatusValues = plugin.settings.customStatuses.map((s) => s.value);
-	if (!validStatusValues.includes(plugin.settings.defaultTaskStatus) && validStatusValues.length > 0) {
+	if (
+		!validStatusValues.includes(plugin.settings.defaultTaskStatus) &&
+		validStatusValues.length > 0
+	) {
 		plugin.settings.defaultTaskStatus = validStatusValues[0];
 		save();
 	}
@@ -57,18 +57,29 @@ export function renderStatusPropertyCard(
 	});
 
 	// Create nested content for status values
-	const nestedContainer = document.createElement("div");
+	const nestedContainer = activeDocument.createElement("div");
 	nestedContainer.addClass("tasknotes-settings__nested-cards");
 
 	// Create collapsible section for status values
-	const statusValuesSection = nestedContainer.createDiv("tasknotes-settings__collapsible-section");
+	const statusValuesSection = nestedContainer.createDiv(
+		"tasknotes-settings__collapsible-section"
+	);
 
-	const statusValuesHeader = statusValuesSection.createDiv("tasknotes-settings__collapsible-section-header");
-	statusValuesHeader.createSpan({ text: translate("settings.taskProperties.statusCard.valuesHeader"), cls: "tasknotes-settings__collapsible-section-title" });
-	const chevron = statusValuesHeader.createSpan("tasknotes-settings__collapsible-section-chevron");
-	chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+	const statusValuesHeader = statusValuesSection.createDiv(
+		"tasknotes-settings__collapsible-section-header"
+	);
+	statusValuesHeader.createSpan({
+		text: translate("settings.taskProperties.statusCard.valuesHeader"),
+		cls: "tasknotes-settings__collapsible-section-title",
+	});
+	const chevron = statusValuesHeader.createSpan(
+		"tasknotes-settings__collapsible-section-chevron"
+	);
+	setIcon(chevron, "chevron-down");
 
-	const statusValuesContent = statusValuesSection.createDiv("tasknotes-settings__collapsible-section-content");
+	const statusValuesContent = statusValuesSection.createDiv(
+		"tasknotes-settings__collapsible-section-content"
+	);
 
 	// Help text explaining how statuses work
 	const statusHelpContainer = statusValuesContent.createDiv("tasknotes-settings__help-section");
@@ -120,7 +131,19 @@ export function renderStatusPropertyCard(
 		text: translate("settings.taskProperties.taskStatuses.addNew.buttonText"),
 		cls: "tn-btn tn-btn--ghost",
 	});
-	addStatusButton.style.marginTop = "0.5rem";
+	addStatusButton.classList.remove(
+		"tn-static-font-size-12px-b0cc7e05",
+		"tn-static-margin-top-0-d462248a",
+		"tn-static-margin-top-12px-91e0f558",
+		"tn-static-margin-top-16px-1b0f4999",
+		"tn-static-margin-top-1rem-2239d6d5",
+		"tn-static-margin-top-20px-a26bda7d",
+		"tn-static-margin-top-30px-2fbbbcd4",
+		"tn-static-margin-top-4px-96ad6099",
+		"tn-static-margin-top-8px-8a77e5a3",
+		"tn-static-margin-top-8px-f4f01e68"
+	);
+	addStatusButton.classList.add("tn-static-margin-top-0-5rem-3dc98b5e");
 	addStatusButton.onclick = () => {
 		const newId = `status_${Date.now()}`;
 		const newStatus = {
@@ -152,8 +175,10 @@ export function renderStatusPropertyCard(
 
 	// Toggle collapse
 	statusValuesHeader.addEventListener("click", () => {
-		statusValuesSection.toggleClass("tasknotes-settings__collapsible-section--collapsed",
-			!statusValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed"));
+		statusValuesSection.toggleClass(
+			"tasknotes-settings__collapsible-section--collapsed",
+			!statusValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed")
+		);
 	});
 
 	const nlpRows = createNLPTriggerRows(plugin, "status", "*", save, translate);
@@ -165,7 +190,10 @@ export function renderStatusPropertyCard(
 
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
-		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
+		{
+			label: translate("settings.taskProperties.propertyCard.propertyKey"),
+			input: propertyKeyInput,
+		},
 		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultSelect },
 		...nlpRows,
 		{ label: "", input: nestedContainer, fullWidth: true },
@@ -198,10 +226,7 @@ function renderStatusList(
 	container.empty();
 
 	if (!plugin.settings.customStatuses || plugin.settings.customStatuses.length === 0) {
-		showCardEmptyState(
-			container,
-			translate("settings.taskProperties.taskStatuses.emptyState")
-		);
+		showCardEmptyState(container, translate("settings.taskProperties.taskStatuses.emptyState"));
 		return;
 	}
 
@@ -324,31 +349,45 @@ function renderStatusList(
 					{
 						rows: [
 							{
-								label: translate("settings.taskProperties.taskStatuses.fields.value"),
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.value"
+								),
 								input: valueInput,
 							},
 							{
-								label: translate("settings.taskProperties.taskStatuses.fields.label"),
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.label"
+								),
 								input: labelInput,
 							},
 							{
-								label: translate("settings.taskProperties.taskStatuses.fields.color"),
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.color"
+								),
 								input: colorInput,
 							},
 							{
-								label: translate("settings.taskProperties.taskStatuses.fields.icon"),
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.icon"
+								),
 								input: iconInputContainer,
 							},
 							{
-								label: translate("settings.taskProperties.taskStatuses.fields.completed"),
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.completed"
+								),
 								input: completedToggle,
 							},
 							{
-								label: translate("settings.taskProperties.taskStatuses.fields.autoArchive"),
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.autoArchive"
+								),
 								input: autoArchiveToggle,
 							},
 							{
-								label: translate("settings.taskProperties.taskStatuses.fields.delayMinutes"),
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.delayMinutes"
+								),
 								input: autoArchiveDelayInput,
 							},
 						],

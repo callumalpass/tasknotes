@@ -108,11 +108,15 @@ export function renderGeneralTab(
 					options: [
 						{
 							value: "tag",
-							label: translate("settings.general.taskIdentification.identifyBy.options.tag"),
+							label: translate(
+								"settings.general.taskIdentification.identifyBy.options.tag"
+							),
 						},
 						{
 							value: "property",
-							label: translate("settings.general.taskIdentification.identifyBy.options.property"),
+							label: translate(
+								"settings.general.taskIdentification.identifyBy.options.property"
+							),
 						},
 					],
 					getValue: () => plugin.settings.taskIdentificationMethod,
@@ -143,8 +147,12 @@ export function renderGeneralTab(
 
 				group.addSetting((setting) =>
 					configureToggleSetting(setting, {
-						name: translate("settings.general.taskIdentification.hideIdentifyingTags.name"),
-						desc: translate("settings.general.taskIdentification.hideIdentifyingTags.description"),
+						name: translate(
+							"settings.general.taskIdentification.hideIdentifyingTags.name"
+						),
+						desc: translate(
+							"settings.general.taskIdentification.hideIdentifyingTags.description"
+						),
 						getValue: () => plugin.settings.hideIdentifyingTagsInCards,
 						setValue: async (value: boolean) => {
 							plugin.settings.hideIdentifyingTagsInCards = value;
@@ -156,7 +164,9 @@ export function renderGeneralTab(
 				group.addSetting((setting) =>
 					configureTextSetting(setting, {
 						name: translate("settings.general.taskIdentification.taskProperty.name"),
-						desc: translate("settings.general.taskIdentification.taskProperty.description"),
+						desc: translate(
+							"settings.general.taskIdentification.taskProperty.description"
+						),
 						placeholder: "category",
 						getValue: () => plugin.settings.taskPropertyName,
 						setValue: async (value: string) => {
@@ -168,8 +178,12 @@ export function renderGeneralTab(
 
 				group.addSetting((setting) =>
 					configureTextSetting(setting, {
-						name: translate("settings.general.taskIdentification.taskPropertyValue.name"),
-						desc: translate("settings.general.taskIdentification.taskPropertyValue.description"),
+						name: translate(
+							"settings.general.taskIdentification.taskPropertyValue.name"
+						),
+						desc: translate(
+							"settings.general.taskIdentification.taskPropertyValue.description"
+						),
 						placeholder: "task",
 						getValue: () => plugin.settings.taskPropertyValue,
 						setValue: async (value: string) => {
@@ -186,34 +200,34 @@ export function renderGeneralTab(
 	// Command file mappings data
 	const commandMappings = [
 		{
-			id: 'open-calendar-view',
-			nameKey: 'miniCalendar' as const,
-			defaultPath: 'TaskNotes/Views/mini-calendar-default.base',
+			id: "open-calendar-view",
+			nameKey: "miniCalendar" as const,
+			defaultPath: "TaskNotes/Views/mini-calendar-default.base",
 		},
 		{
-			id: 'open-kanban-view',
-			nameKey: 'kanban' as const,
-			defaultPath: 'TaskNotes/Views/kanban-default.base',
+			id: "open-kanban-view",
+			nameKey: "kanban" as const,
+			defaultPath: "TaskNotes/Views/kanban-default.base",
 		},
 		{
-			id: 'open-tasks-view',
-			nameKey: 'tasks' as const,
-			defaultPath: 'TaskNotes/Views/tasks-default.base',
+			id: "open-tasks-view",
+			nameKey: "tasks" as const,
+			defaultPath: "TaskNotes/Views/tasks-default.base",
 		},
 		{
-			id: 'open-advanced-calendar-view',
-			nameKey: 'advancedCalendar' as const,
-			defaultPath: 'TaskNotes/Views/calendar-default.base',
+			id: "open-advanced-calendar-view",
+			nameKey: "advancedCalendar" as const,
+			defaultPath: "TaskNotes/Views/calendar-default.base",
 		},
 		{
-			id: 'open-agenda-view',
-			nameKey: 'agenda' as const,
-			defaultPath: 'TaskNotes/Views/agenda-default.base',
+			id: "open-agenda-view",
+			nameKey: "agenda" as const,
+			defaultPath: "TaskNotes/Views/agenda-default.base",
 		},
 		{
-			id: 'relationships',
-			nameKey: 'relationships' as const,
-			defaultPath: 'TaskNotes/Views/relationships.base',
+			id: "relationships",
+			nameKey: "relationships" as const,
+			defaultPath: "TaskNotes/Views/relationships.base",
 		},
 	];
 
@@ -221,12 +235,18 @@ export function renderGeneralTab(
 		container,
 		{
 			heading: translate("settings.integrations.basesIntegration.viewCommands.header"),
-			description: translate("settings.integrations.basesIntegration.viewCommands.description"),
+			description: translate(
+				"settings.integrations.basesIntegration.viewCommands.description"
+			),
 		},
 		(group) => {
 			// Additional description
 			group.addSetting((setting) => {
-				setting.setDesc(translate("settings.integrations.basesIntegration.viewCommands.descriptionRegen"));
+				setting.setDesc(
+					translate(
+						"settings.integrations.basesIntegration.viewCommands.descriptionRegen"
+					)
+				);
 				setting.settingEl.addClass("settings-view__group-description");
 			});
 
@@ -235,7 +255,9 @@ export function renderGeneralTab(
 				const descEl = setting.descEl;
 				const docsLink = descEl.createEl("a", {
 					text: translate("settings.integrations.basesIntegration.viewCommands.docsLink"),
-					href: translate("settings.integrations.basesIntegration.viewCommands.docsLinkUrl"),
+					href: translate(
+						"settings.integrations.basesIntegration.viewCommands.docsLinkUrl"
+					),
 				});
 				docsLink.setAttr("target", "_blank");
 				setting.settingEl.addClass("settings-view__group-description");
@@ -244,38 +266,64 @@ export function renderGeneralTab(
 			// Command file mappings
 			commandMappings.forEach(({ id, nameKey, defaultPath }) => {
 				group.addSetting((setting) => {
-					const commandName = translate(`settings.integrations.basesIntegration.viewCommands.commands.${nameKey}` as any);
+					const commandName = translate(
+						`settings.integrations.basesIntegration.viewCommands.commands.${nameKey}` as any
+					);
 					setting.setName(commandName);
-					setting.setDesc(translate("settings.integrations.basesIntegration.viewCommands.fileLabel", {
-						path: plugin.settings.commandFileMapping[id]
-					}));
+					setting.setDesc(
+						translate("settings.integrations.basesIntegration.viewCommands.fileLabel", {
+							path: plugin.settings.commandFileMapping[id],
+						})
+					);
 
 					// Text input for file path
-					setting.addText(text => {
+					setting.addText((text) => {
 						text.setPlaceholder(defaultPath)
 							.setValue(plugin.settings.commandFileMapping[id])
 							.onChange((value) => {
 								plugin.settings.commandFileMapping[id] = value;
 								save();
 								// Update description
-								setting.setDesc(translate("settings.integrations.basesIntegration.viewCommands.fileLabel", {
-									path: value
-								}));
+								setting.setDesc(
+									translate(
+										"settings.integrations.basesIntegration.viewCommands.fileLabel",
+										{
+											path: value,
+										}
+									)
+								);
 							});
-						text.inputEl.style.width = '100%';
+						text.inputEl.classList.remove(
+							"tn-static-width-12px-fbf353fb",
+							"tn-static-width-16px-7375d50b",
+							"tn-static-width-1px-aa77e27e",
+							"tn-static-width-200px-2acaf3b5",
+							"tn-static-width-60px-bd09c419",
+							"tn-static-width-80px-8573bae3"
+						);
+						text.inputEl.classList.add("tn-static-width-100-0466783d");
 						return text;
 					});
 
 					// Reset button
-					setting.addButton(button => {
-						button.setButtonText(translate("settings.integrations.basesIntegration.viewCommands.resetButton"))
-							.setTooltip(translate("settings.integrations.basesIntegration.viewCommands.resetTooltip"))
+					setting.addButton((button) => {
+						button
+							.setButtonText(
+								translate(
+									"settings.integrations.basesIntegration.viewCommands.resetButton"
+								)
+							)
+							.setTooltip(
+								translate(
+									"settings.integrations.basesIntegration.viewCommands.resetTooltip"
+								)
+							)
 							.onClick(() => {
 								plugin.settings.commandFileMapping[id] = defaultPath;
 								save();
 								// Refresh the entire settings display
-								if (app.setting.activeTab) {
-									app.setting.openTabById(app.setting.activeTab.id);
+								if (plugin.app.setting.activeTab) {
+									plugin.app.setting.openTabById(plugin.app.setting.activeTab.id);
 								}
 							});
 						return button;
@@ -286,10 +334,19 @@ export function renderGeneralTab(
 			// Auto-create default files toggle
 			group.addSetting((setting) => {
 				setting
-					.setName(translate("settings.integrations.basesIntegration.autoCreateDefaultFiles.name"))
-					.setDesc(translate("settings.integrations.basesIntegration.autoCreateDefaultFiles.description"))
-					.addToggle(toggle => {
-						toggle.setValue(plugin.settings.autoCreateDefaultBasesFiles)
+					.setName(
+						translate(
+							"settings.integrations.basesIntegration.autoCreateDefaultFiles.name"
+						)
+					)
+					.setDesc(
+						translate(
+							"settings.integrations.basesIntegration.autoCreateDefaultFiles.description"
+						)
+					)
+					.addToggle((toggle) => {
+						toggle
+							.setValue(plugin.settings.autoCreateDefaultBasesFiles)
 							.onChange((value) => {
 								plugin.settings.autoCreateDefaultBasesFiles = value;
 								save();
@@ -301,10 +358,21 @@ export function renderGeneralTab(
 			// Create Default Files button
 			group.addSetting((setting) => {
 				setting
-					.setName(translate("settings.integrations.basesIntegration.createDefaultFiles.name"))
-					.setDesc(translate("settings.integrations.basesIntegration.createDefaultFiles.description"))
-					.addButton(button => {
-						button.setButtonText(translate("settings.integrations.basesIntegration.createDefaultFiles.buttonText"))
+					.setName(
+						translate("settings.integrations.basesIntegration.createDefaultFiles.name")
+					)
+					.setDesc(
+						translate(
+							"settings.integrations.basesIntegration.createDefaultFiles.description"
+						)
+					)
+					.addButton((button) => {
+						button
+							.setButtonText(
+								translate(
+									"settings.integrations.basesIntegration.createDefaultFiles.buttonText"
+								)
+							)
 							.setCta()
 							.onClick(async () => {
 								await plugin.createDefaultBasesFiles();
@@ -317,51 +385,88 @@ export function renderGeneralTab(
 			group.addSetting((setting) => {
 				setting
 					.setName(translate("settings.integrations.basesIntegration.exportV3Views.name"))
-					.setDesc(translate("settings.integrations.basesIntegration.exportV3Views.description"))
-					.addButton(button => {
-						button.setButtonText(translate("settings.integrations.basesIntegration.exportV3Views.buttonText"))
+					.setDesc(
+						translate(
+							"settings.integrations.basesIntegration.exportV3Views.description"
+						)
+					)
+					.addButton((button) => {
+						button
+							.setButtonText(
+								translate(
+									"settings.integrations.basesIntegration.exportV3Views.buttonText"
+								)
+							)
 							.onClick(async () => {
 								try {
 									const savedViews = plugin.viewStateManager.getSavedViews();
 
 									if (savedViews.length === 0) {
-										new Notice(translate("settings.integrations.basesIntegration.exportV3Views.noViews"));
+										new Notice(
+											translate(
+												"settings.integrations.basesIntegration.exportV3Views.noViews"
+											)
+										);
 										return;
 									}
 
-									const basesContent = plugin.basesFilterConverter.convertAllSavedViewsToBasesFile(savedViews);
-									const fileName = 'all-saved-views.base';
+									const basesContent =
+										plugin.basesFilterConverter.convertAllSavedViewsToBasesFile(
+											savedViews
+										);
+									const fileName = "all-saved-views.base";
 									const filePath = `TaskNotes/Views/${fileName}`;
 
 									// Create folder if needed (check on-disk via adapter, not in-memory cache)
-									if (!(await plugin.app.vault.adapter.exists('TaskNotes/Views'))) {
-										await plugin.app.vault.createFolder('TaskNotes/Views');
+									if (
+										!(await plugin.app.vault.adapter.exists("TaskNotes/Views"))
+									) {
+										await plugin.app.vault.createFolder("TaskNotes/Views");
 									}
 
 									// Handle file overwrite confirmation
-									const existingFile = plugin.app.vault.getAbstractFileByPath(filePath);
+									const existingFile =
+										plugin.app.vault.getAbstractFileByPath(filePath);
 									if (existingFile) {
 										const confirmed = await showConfirmationModal(plugin.app, {
-											title: translate("settings.integrations.basesIntegration.exportV3Views.fileExists"),
-											message: translate("settings.integrations.basesIntegration.exportV3Views.confirmOverwrite", { fileName }),
+											title: translate(
+												"settings.integrations.basesIntegration.exportV3Views.fileExists"
+											),
+											message: translate(
+												"settings.integrations.basesIntegration.exportV3Views.confirmOverwrite",
+												{ fileName }
+											),
 											isDestructive: false,
 										});
 										if (!confirmed) return;
-										await plugin.app.vault.modify(existingFile as any, basesContent);
+										await plugin.app.vault.modify(
+											existingFile as any,
+											basesContent
+										);
 									} else {
 										await plugin.app.vault.create(filePath, basesContent);
 									}
 
-									new Notice(translate("settings.integrations.basesIntegration.exportV3Views.success", {
-										count: savedViews.length.toString(),
-										filePath
-									}));
-									await plugin.app.workspace.openLinkText(filePath, '', true);
+									new Notice(
+										translate(
+											"settings.integrations.basesIntegration.exportV3Views.success",
+											{
+												count: savedViews.length.toString(),
+												filePath,
+											}
+										)
+									);
+									await plugin.app.workspace.openLinkText(filePath, "", true);
 								} catch (error) {
-									console.error('Error exporting all views to Bases:', error);
-									new Notice(translate("settings.integrations.basesIntegration.exportV3Views.error", {
-										message: error.message
-									}));
+									console.error("Error exporting all views to Bases:", error);
+									new Notice(
+										translate(
+											"settings.integrations.basesIntegration.exportV3Views.error",
+											{
+												message: error.message,
+											}
+										)
+									);
 								}
 							});
 						return button;
@@ -378,7 +483,9 @@ export function renderGeneralTab(
 			group.addSetting((setting) =>
 				configureTextSetting(setting, {
 					name: translate("settings.general.folderManagement.excludedFolders.name"),
-					desc: translate("settings.general.folderManagement.excludedFolders.description"),
+					desc: translate(
+						"settings.general.folderManagement.excludedFolders.description"
+					),
 					placeholder: "Templates, Archive",
 					getValue: () => plugin.settings.excludedFolders,
 					setValue: async (value: string) => {
@@ -429,7 +536,7 @@ export function renderGeneralTab(
 	);
 
 	// Frontmatter Section - only show if user has markdown links enabled globally
-	const useMarkdownLinks = plugin.app.vault.getConfig('useMarkdownLinks');
+	const useMarkdownLinks = plugin.app.vault.getConfig("useMarkdownLinks");
 	if (useMarkdownLinks) {
 		createSettingGroup(
 			container,
@@ -441,7 +548,9 @@ export function renderGeneralTab(
 				group.addSetting((setting) =>
 					configureToggleSetting(setting, {
 						name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
-						desc: translate("settings.general.frontmatter.useMarkdownLinks.description"),
+						desc: translate(
+							"settings.general.frontmatter.useMarkdownLinks.description"
+						),
 						getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
 						setValue: async (value: boolean) => {
 							plugin.settings.useFrontmatterMarkdownLinks = value;
@@ -458,7 +567,9 @@ export function renderGeneralTab(
 		container,
 		{
 			heading: translate("settings.general.releaseNotes.header"),
-			description: translate("settings.general.releaseNotes.description", { version: plugin.manifest.version }),
+			description: translate("settings.general.releaseNotes.description", {
+				version: plugin.manifest.version,
+			}),
 		},
 		(group) => {
 			group.addSetting((setting) =>
@@ -479,7 +590,9 @@ export function renderGeneralTab(
 					.setDesc(translate("settings.general.releaseNotes.viewButton.description"))
 					.addButton((button) =>
 						button
-							.setButtonText(translate("settings.general.releaseNotes.viewButton.buttonText"))
+							.setButtonText(
+								translate("settings.general.releaseNotes.viewButton.buttonText")
+							)
 							.setCta()
 							.onClick(async () => {
 								await plugin.activateReleaseNotesView();

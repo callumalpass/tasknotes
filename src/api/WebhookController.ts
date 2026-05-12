@@ -1,10 +1,10 @@
- 
 import { IncomingMessage, ServerResponse } from "http";
+import { requestUrl } from "obsidian";
 import { BaseController } from "./BaseController";
 import { WebhookConfig, WebhookDelivery, WebhookEvent, WebhookPayload } from "../types";
 import { createHash, createHmac } from "crypto";
 import TaskNotesPlugin from "../main";
- 
+
 import { Get, Post, Delete } from "../utils/OpenAPIDecorators";
 
 export class WebhookController extends BaseController {
@@ -172,7 +172,7 @@ export class WebhookController extends BaseController {
 			} else if ("path" in adapter && typeof adapter.path === "string") {
 				vaultPath = adapter.path;
 			}
-		} catch (error) {
+		} catch {
 			// Silently fail if vault path isn't accessible
 		}
 
@@ -243,20 +243,22 @@ export class WebhookController extends BaseController {
 				headers["X-TaskNotes-Delivery-ID"] = delivery.id;
 			}
 
-			const response = await fetch(webhook.url, {
+			const response = await requestUrl({
+				url: webhook.url,
 				method: "POST",
 				headers,
 				body: JSON.stringify(delivery.payload),
+				throw: false,
 			});
 
 			delivery.responseStatus = response.status;
 
-			if (response.ok) {
+			if (response.status >= 200 && response.status < 300) {
 				delivery.status = "success";
 				webhook.successCount++;
 				webhook.lastTriggered = new Date().toISOString();
 			} else {
-				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				throw new Error(`HTTP ${response.status}: ${response.text}`);
 			}
 		} catch (error: any) {
 			delivery.error = error.message;
@@ -333,8 +335,6 @@ export class WebhookController extends BaseController {
 		payload: WebhookPayload
 	): Promise<any> {
 		try {
-			console.log(`🔧 Applying transformation: ${transformFile}`);
-
 			if (transformFile.endsWith(".js")) {
 				return await this.applyJSTransformation(transformFile, payload);
 			} else if (transformFile.endsWith(".json")) {
@@ -357,15 +357,10 @@ export class WebhookController extends BaseController {
 		payload: WebhookPayload
 	): Promise<any> {
 		try {
-			console.log(`📂 Reading transform file: ${transformFile}`);
-
 			// Read transformation file from vault
 			let transformCode: string;
 			try {
 				transformCode = await this.plugin.app.vault.adapter.read(transformFile);
-				console.log(
-					`✅ Transform file loaded successfully (${transformCode.length} characters)`
-				);
 			} catch (readError: any) {
 				throw new Error(
 					`Failed to read transform file '${transformFile}': ${readError.message}. Please check the file path and ensure it exists in your vault.`
@@ -386,8 +381,6 @@ export class WebhookController extends BaseController {
 				);
 			}
 
-			console.log(`🔧 Executing transform function for event: ${payload.event}`);
-
 			// Create a safe execution context
 			// User-authored transform files are an explicit trusted scripting feature.
 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
@@ -405,7 +398,6 @@ export class WebhookController extends BaseController {
 			);
 
 			const result = transform(payload);
-			console.log(`✅ Transform completed successfully for ${transformFile}`);
 			return result;
 		} catch (error: any) {
 			console.error(`❌ JS transformation error for '${transformFile}':`, error.message);
@@ -418,15 +410,10 @@ export class WebhookController extends BaseController {
 		payload: WebhookPayload
 	): Promise<any> {
 		try {
-			console.log(`📂 Reading JSON template file: ${transformFile}`);
-
 			// Read template file from vault
 			let templateContent: string;
 			try {
 				templateContent = await this.plugin.app.vault.adapter.read(transformFile);
-				console.log(
-					`✅ JSON template file loaded successfully (${templateContent.length} characters)`
-				);
 			} catch (readError: any) {
 				throw new Error(
 					`Failed to read template file '${transformFile}': ${readError.message}. Please check the file path and ensure it exists in your vault.`
@@ -450,8 +437,6 @@ export class WebhookController extends BaseController {
 				);
 			}
 
-			console.log(`🔧 Applying JSON template for event: ${payload.event}`);
-
 			// Get template for this event or use default
 			const template = templates[payload.event] || templates.default;
 			if (!template) {
@@ -463,7 +448,6 @@ export class WebhookController extends BaseController {
 
 			// Apply template variable substitution
 			const result = this.interpolateTemplate(template, payload);
-			console.log(`✅ JSON template applied successfully for ${transformFile}`);
 			return result;
 		} catch (error: any) {
 			console.error(`❌ JSON transformation error for '${transformFile}':`, error.message);

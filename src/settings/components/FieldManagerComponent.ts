@@ -4,9 +4,8 @@ import type { ModalFieldConfig, FieldGroup, TaskModalFieldsConfig } from "../../
 import {
 	createCard,
 	setupCardDragAndDrop,
-	createCardInput,
 	createCardSelect,
-	createCardToggle
+	createCardToggle,
 } from "./CardComponent";
 
 /**
@@ -19,15 +18,14 @@ export function createFieldManager(
 	onUpdate: (config: TaskModalFieldsConfig) => void,
 	app: App
 ): void {
-	const translate = (key: string, params?: Record<string, string | number>) =>
-		plugin.i18n.translate(key as any, params);
-
 	container.empty();
 	container.addClass("field-manager");
 
 	// Safety check
 	if (!config || !config.groups || !config.fields) {
-		container.createDiv({ text: "Error: Invalid field configuration. Please reset to defaults." });
+		container.createDiv({
+			text: "Error: Invalid field configuration. Please reset to defaults.",
+		});
 		return;
 	}
 
@@ -76,9 +74,6 @@ function renderFieldGroup(
 ): void {
 	container.empty();
 
-	const translate = (key: string, params?: Record<string, string | number>) =>
-		plugin.i18n.translate(key as any, params);
-
 	// Get fields for this group
 	const groupFields = config.fields
 		.filter((f) => f.group === groupId)
@@ -112,11 +107,8 @@ function createFieldCard(
 	app: App,
 	groupId: FieldGroup
 ): void {
-	const translate = (key: string, params?: Record<string, string | number>) =>
-		plugin.i18n.translate(key as any, params);
-
 	// Create type badge
-	const typeBadge = document.createElement("span");
+	const typeBadge = activeDocument.createElement("span");
 	typeBadge.classList.add("field-card__type");
 	typeBadge.classList.add(`field-card__type--${field.fieldType}`);
 	typeBadge.textContent = field.fieldType;
@@ -128,13 +120,27 @@ function createFieldCard(
 			config.fields[fieldIndex].enabled = value;
 			onUpdate(config);
 			// Re-render to update visibility
-			const activeTab = document.querySelector(".field-manager__tab--active") as HTMLElement;
+			const activeTab = activeDocument.querySelector(
+				".field-manager__tab--active"
+			) as HTMLElement;
 			if (activeTab) {
-				const tabIndex = Array.from(activeTab.parentElement!.children).indexOf(activeTab);
+				const tabParent = activeTab.parentElement;
+				const contentParent = container.parentElement;
+				if (!tabParent || !contentParent) {
+					return;
+				}
+				const tabIndex = Array.from(tabParent.children).indexOf(activeTab);
 				const groups = [...config.groups].sort((a, b) => a.order - b.order);
 				const groupToRender = groups[tabIndex];
 				if (groupToRender) {
-					renderFieldGroup(container.parentElement!, groupToRender.id, config, plugin, onUpdate, app);
+					renderFieldGroup(
+						contentParent,
+						groupToRender.id,
+						config,
+						plugin,
+						onUpdate,
+						app
+					);
 				}
 			}
 		}
@@ -167,7 +173,9 @@ function createFieldCard(
 			config.fields[fieldIndex].group = groupSelect.value as FieldGroup;
 			onUpdate(config);
 			// Re-render to show field in new group
-			const activeTab = document.querySelector(".field-manager__tab--active") as HTMLElement;
+			const activeTab = activeDocument.querySelector(
+				".field-manager__tab--active"
+			) as HTMLElement;
 			if (activeTab) {
 				activeTab.click();
 			}
@@ -190,9 +198,7 @@ function createFieldCard(
 		content: {
 			sections: [
 				{
-					rows: [
-						{ label: "Enabled:", input: enabledToggle },
-					],
+					rows: [{ label: "Enabled:", input: enabledToggle }],
 				},
 				...(field.enabled
 					? [
@@ -203,7 +209,7 @@ function createFieldCard(
 									{ label: "Group:", input: groupSelect, fullWidth: true },
 								],
 							},
-					  ]
+						]
 					: []),
 			],
 		},
@@ -211,36 +217,44 @@ function createFieldCard(
 
 	// Setup drag and drop for reordering (only for fields that can be reordered)
 	if (canReorder) {
-		setupCardDragAndDrop(card, container, (draggedId: string, targetId: string, insertBefore: boolean) => {
-			const draggedIndex = config.fields.findIndex((f) => f.id === draggedId && f.group === groupId);
-			const targetIndex = config.fields.findIndex((f) => f.id === targetId && f.group === groupId);
+		setupCardDragAndDrop(
+			card,
+			container,
+			(draggedId: string, targetId: string, insertBefore: boolean) => {
+				const draggedIndex = config.fields.findIndex(
+					(f) => f.id === draggedId && f.group === groupId
+				);
+				const targetIndex = config.fields.findIndex(
+					(f) => f.id === targetId && f.group === groupId
+				);
 
-			if (draggedIndex === -1 || targetIndex === -1) return;
+				if (draggedIndex === -1 || targetIndex === -1) return;
 
-			// Get only fields in this group
-			const groupFields = config.fields.filter((f) => f.group === groupId);
+				// Get only fields in this group
+				const groupFields = config.fields.filter((f) => f.group === groupId);
 
-			// Find positions within the group
-			const draggedGroupIndex = groupFields.findIndex((f) => f.id === draggedId);
-			const targetGroupIndex = groupFields.findIndex((f) => f.id === targetId);
+				// Find positions within the group
+				const draggedGroupIndex = groupFields.findIndex((f) => f.id === draggedId);
+				const targetGroupIndex = groupFields.findIndex((f) => f.id === targetId);
 
-			// Reorder within group
-			const [movedField] = groupFields.splice(draggedGroupIndex, 1);
-			const insertIndex = targetGroupIndex + (insertBefore ? 0 : 1);
-			groupFields.splice(insertIndex, 0, movedField);
+				// Reorder within group
+				const [movedField] = groupFields.splice(draggedGroupIndex, 1);
+				const insertIndex = targetGroupIndex + (insertBefore ? 0 : 1);
+				groupFields.splice(insertIndex, 0, movedField);
 
-			// Update order values
-			groupFields.forEach((f, i) => {
-				const fieldIndex = config.fields.findIndex((cf) => cf.id === f.id);
-				if (fieldIndex !== -1) {
-					config.fields[fieldIndex].order = i;
-				}
-			});
+				// Update order values
+				groupFields.forEach((f, i) => {
+					const fieldIndex = config.fields.findIndex((cf) => cf.id === f.id);
+					if (fieldIndex !== -1) {
+						config.fields[fieldIndex].order = i;
+					}
+				});
 
-			onUpdate(config);
-			// Re-render the group
-			renderFieldGroup(container, groupId, config, plugin, onUpdate, app);
-		});
+				onUpdate(config);
+				// Re-render the group
+				renderFieldGroup(container, groupId, config, plugin, onUpdate, app);
+			}
+		);
 	}
 }
 
@@ -249,9 +263,9 @@ function createFieldCard(
  */
 export function addFieldManagerStyles(): void {
 	const styleId = "field-manager-styles";
-	if (document.getElementById(styleId)) return;
+	if (activeDocument.getElementById(styleId)) return;
 
-	const style = document.createElement("style");
+	const style = activeDocument.createElement("style");
 	style.id = styleId;
 	style.textContent = `
 		.field-manager {
@@ -327,5 +341,5 @@ export function addFieldManagerStyles(): void {
 		}
 	`;
 
-	document.head.appendChild(style);
+	activeDocument.head.appendChild(style);
 }

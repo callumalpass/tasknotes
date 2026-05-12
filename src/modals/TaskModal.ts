@@ -1,13 +1,4 @@
-import {
-	App,
-	Modal,
-	Notice,
-	Setting,
-	TAbstractFile,
-	TFile,
-	setIcon,
-	setTooltip,
-} from "obsidian";
+import { App, Modal, Notice, Setting, TAbstractFile, TFile, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { getOrderedModalGroups, shouldShowFieldForModal } from "./taskModalFieldConfig";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
@@ -21,13 +12,10 @@ import { sanitizeTags, splitFrontmatterAndBody } from "../utils/helpers";
 import { ProjectSelectModal } from "./ProjectSelectModal";
 import { TaskDependency, TaskInfo, Reminder } from "../types";
 import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
-import {
-	renderProjectLinks,
-	type LinkServices,
-} from "../ui/renderers/linkRenderer";
+import { renderProjectLinks, type LinkServices } from "../ui/renderers/linkRenderer";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
-import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { createTaskModalListField } from "./taskModalOrganizationFields";
 import { createTaskCard } from "../ui/TaskCard";
 import {
@@ -64,7 +52,10 @@ export abstract class TaskModal extends Modal {
 		options: { sourcePath?: string } = {}
 	): DependencyItem {
 		return createDependencyItemFromFileHelper(
-			{ plugin: this.plugin, sourcePath: options.sourcePath ?? this.getDependencySourcePath() },
+			{
+				plugin: this.plugin,
+				sourcePath: options.sourcePath ?? this.getDependencySourcePath(),
+			},
 			file
 		);
 	}
@@ -104,7 +95,8 @@ export abstract class TaskModal extends Modal {
 		return {
 			metadataCache: this.plugin.app.metadataCache,
 			workspace: this.plugin.app.workspace,
-			sourcePath: this.getCurrentTaskPath() || this.plugin.app.workspace.getActiveFile()?.path || "",
+			sourcePath:
+				this.getCurrentTaskPath() || this.plugin.app.workspace.getActiveFile()?.path || "",
 		};
 	}
 
@@ -589,10 +581,30 @@ export abstract class TaskModal extends Modal {
 			: container.createDiv("details-container");
 
 		if (!this.isExpanded) {
-			this.detailsContainer.style.display = "none";
+			this.detailsContainer.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.detailsContainer.classList.add("tn-static-display-none-6b99de8b");
 			// Also hide the right column when collapsed
 			if (this.splitRightColumn) {
-				this.splitRightColumn.style.display = "none";
+				this.splitRightColumn.classList.remove(
+					"tn-static-display-block-2a1b75c9",
+					"tn-static-display-flex-4d51fc62",
+					"tn-static-display-flex-75816cae",
+					"tn-static-display-flex-8bb39979",
+					"tn-static-display-inline-block-60e32dcb",
+					"tn-static-display-inline-cccfa456",
+					"tn-static-display-inline-flex-f984c520",
+					"tn-static-min-height-800px-997b4c8c"
+				);
+				this.splitRightColumn.classList.add("tn-static-display-none-6b99de8b");
 			}
 		}
 
@@ -641,29 +653,33 @@ export abstract class TaskModal extends Modal {
 			const detailsEditorContainer = rightColumn.createDiv("details-markdown-editor");
 
 			// Create embeddable markdown editor for details using shared method
-			this.detailsMarkdownEditor = createTaskModalMarkdownEditor(this.app, detailsEditorContainer, {
-				value: this.details,
-				placeholder: this.t("modals.task.detailsPlaceholder"),
-				cls: "details-editor",
-				onChange: (value) => {
-					this.details = value;
-				},
-				onSubmit: () => {
-					// Ctrl/Cmd+Enter - save the task
-					this.handleSave();
-				},
-				onEscape: () => {
-					// ESC - close the modal
-					this.close();
-				},
-				onTab: (shift) => {
-					if (!this.plugin.settings.taskModalTabMovesFocus) {
-						return false;
-					}
+			this.detailsMarkdownEditor = createTaskModalMarkdownEditor(
+				this.app,
+				detailsEditorContainer,
+				{
+					value: this.details,
+					placeholder: this.t("modals.task.detailsPlaceholder"),
+					cls: "details-editor",
+					onChange: (value) => {
+						this.details = value;
+					},
+					onSubmit: () => {
+						// Ctrl/Cmd+Enter - save the task
+						this.handleSave();
+					},
+					onEscape: () => {
+						// ESC - close the modal
+						this.close();
+					},
+					onTab: (shift) => {
+						if (!this.plugin.settings.taskModalTabMovesFocus) {
+							return false;
+						}
 
-					return shift ? this.focusPreviousField() : this.focusNextField();
-				},
-			});
+						return shift ? this.focusPreviousField() : this.focusNextField();
+					},
+				}
+			);
 		}
 
 		// Additional form fields (contexts, tags, etc.) go in the details container (left side)
@@ -1086,21 +1102,52 @@ export abstract class TaskModal extends Modal {
 		if (this.isExpanded) return;
 
 		this.isExpanded = true;
-		this.detailsContainer.style.display = "block";
+		this.detailsContainer.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		this.detailsContainer.classList.add("tn-static-display-block-2a1b75c9");
 		this.containerEl.addClass("expanded");
 
 		// Also show the right column (details editor) when expanding
 		if (this.splitRightColumn) {
-			this.splitRightColumn.style.display = "";
+			this.splitRightColumn.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.splitRightColumn.style.removeProperty("display");
 		}
 
 		// Animate the expansion
-		this.detailsContainer.style.opacity = "0";
-		this.detailsContainer.style.transform = "translateY(-10px)";
+		this.detailsContainer.classList.remove(
+			"tn-static-opacity-0-6-d95b59ac",
+			"tn-static-opacity-1-c6e7979d"
+		);
+		this.detailsContainer.classList.add("tn-static-opacity-0-8d919cb5");
+		this.detailsContainer.classList.remove("tn-static-transform-translatey-0-1b976432");
+		this.detailsContainer.classList.add("tn-static-transform-translatey-10px-5b91bf02");
 
 		window.setTimeout(() => {
-			this.detailsContainer.style.opacity = "1";
-			this.detailsContainer.style.transform = "translateY(0)";
+			this.detailsContainer.classList.remove(
+				"tn-static-opacity-0-6-d95b59ac",
+				"tn-static-opacity-0-8d919cb5"
+			);
+			this.detailsContainer.classList.add("tn-static-opacity-1-c6e7979d");
+			this.detailsContainer.classList.remove("tn-static-transform-translatey-10px-5b91bf02");
+			this.detailsContainer.classList.add("tn-static-transform-translatey-0-1b976432");
 		}, 50);
 	}
 
@@ -1418,7 +1465,24 @@ export abstract class TaskModal extends Modal {
 			if (iconEl && statusConfig && statusConfig.color) {
 				iconEl.style.color = statusConfig.color;
 			} else if (iconEl) {
-				iconEl.style.color = ""; // Reset to default
+				iconEl.classList.remove(
+					"tn-static-color-var-color-accent-d2cad743",
+					"tn-static-color-var-text-accent-65b47ee3",
+					"tn-static-color-var-text-muted-5872de20",
+					"tn-static-color-var-text-on-accent-f3e1679d",
+					"tn-static-color-var-text-warning-783d5f03",
+					"tn-static-color-var-tn-text-muted-a90fb6f3",
+					"tn-static-color-white-0a43e56a",
+					"tn-static-cursor-pointer-2723efcc",
+					"tn-static-font-size-12px-65574819",
+					"tn-static-font-weight-bold-0fe8c30d",
+					"tn-static-font-weight-bold-e0b452bd",
+					"tn-static-margin-2px-0-edce9b14",
+					"tn-static-padding-20px-7a035d95",
+					"tn-static-padding-20px-ebe8e48c"
+				);
+				iconEl.style.removeProperty("color");
+				// Reset to default
 			}
 		}
 
@@ -1454,7 +1518,24 @@ export abstract class TaskModal extends Modal {
 			if (iconEl && priorityConfig && priorityConfig.color) {
 				iconEl.style.color = priorityConfig.color;
 			} else if (iconEl) {
-				iconEl.style.color = ""; // Reset to default
+				iconEl.classList.remove(
+					"tn-static-color-var-color-accent-d2cad743",
+					"tn-static-color-var-text-accent-65b47ee3",
+					"tn-static-color-var-text-muted-5872de20",
+					"tn-static-color-var-text-on-accent-f3e1679d",
+					"tn-static-color-var-text-warning-783d5f03",
+					"tn-static-color-var-tn-text-muted-a90fb6f3",
+					"tn-static-color-white-0a43e56a",
+					"tn-static-cursor-pointer-2723efcc",
+					"tn-static-font-size-12px-65574819",
+					"tn-static-font-weight-bold-0fe8c30d",
+					"tn-static-font-weight-bold-e0b452bd",
+					"tn-static-margin-2px-0-edce9b14",
+					"tn-static-padding-20px-7a035d95",
+					"tn-static-padding-20px-ebe8e48c"
+				);
+				iconEl.style.removeProperty("color");
+				// Reset to default
 			}
 		}
 
@@ -1502,7 +1583,9 @@ export abstract class TaskModal extends Modal {
 
 	protected focusTitleInput(): void {
 		window.setTimeout(() => {
-			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(this.titleInput);
+			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(
+				this.titleInput
+			);
 			this.titleInput.focus({ preventScroll: true });
 			this.titleInput.select();
 			this.restoreTitleFocusScrollPositions(this.pendingTitleFocusScrollPositions);
@@ -1512,7 +1595,10 @@ export abstract class TaskModal extends Modal {
 	private shouldPreserveTitleFocusScroll(): boolean {
 		const doc = this.containerEl.ownerDocument;
 		const win = doc.defaultView || window;
-		return doc.body.classList.contains("is-mobile") || win.matchMedia?.("(pointer: coarse)")?.matches === true;
+		return (
+			doc.body.classList.contains("is-mobile") ||
+			win.matchMedia?.("(pointer: coarse)")?.matches === true
+		);
 	}
 
 	private attachTitleFocusScrollGuard(input: HTMLInputElement): void {
@@ -1588,7 +1674,8 @@ export abstract class TaskModal extends Modal {
 
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		const requestAnimationFrame =
-			win.requestAnimationFrame ?? ((callback: FrameRequestCallback) => win.setTimeout(callback, 16));
+			win.requestAnimationFrame ??
+			((callback: FrameRequestCallback) => win.setTimeout(callback, 16));
 		requestAnimationFrame(() => this.restoreTitleFocusScrollPositions(positions));
 		win.setTimeout(() => this.restoreTitleFocusScrollPositions(positions), 50);
 		win.setTimeout(() => {
@@ -1663,13 +1750,12 @@ export abstract class TaskModal extends Modal {
 		// Don't render immediately - let the caller decide when to render
 	}
 
-	private createProjectItemFromString(projectString: string, sourcePath: string): ProjectItem | null {
+	private createProjectItemFromString(
+		projectString: string,
+		sourcePath: string
+	): ProjectItem | null {
 		// Skip null, undefined, or empty strings
-		if (
-			!projectString ||
-			typeof projectString !== "string" ||
-			projectString.trim() === ""
-		) {
+		if (!projectString || typeof projectString !== "string" || projectString.trim() === "") {
 			return null;
 		}
 

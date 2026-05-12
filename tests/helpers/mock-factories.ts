@@ -363,6 +363,7 @@ export const PluginFactory = {
           const mockFrontmatter = {};
           fn(mockFrontmatter);
         }),
+        trashFile: jest.fn().mockResolvedValue(undefined),
         generateMarkdownLink: jest.fn().mockResolvedValue('[[link]]')
       },
       metadataCache: {

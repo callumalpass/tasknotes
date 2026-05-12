@@ -248,7 +248,7 @@ export class StatsView extends ItemView {
 					}
 				});
 			}
-		} catch (error) {
+		} catch {
 			// Failed to refresh stats - continue silently
 		}
 	}
@@ -274,7 +274,7 @@ export class StatsView extends ItemView {
 				if (task) {
 					tasks.push(task);
 				}
-			} catch (error) {
+			} catch {
 				// Failed to get task info - continue silently
 			}
 		}
@@ -651,10 +651,22 @@ export class StatsView extends ItemView {
 		});
 		const dateOptions = [
 			{ value: "all", text: this.plugin.i18n.translate("views.stats.timeRanges.allTime") },
-			{ value: "7days", text: this.plugin.i18n.translate("views.stats.timeRanges.last7Days") },
-			{ value: "30days", text: this.plugin.i18n.translate("views.stats.timeRanges.last30Days") },
-			{ value: "90days", text: this.plugin.i18n.translate("views.stats.timeRanges.last90Days") },
-			{ value: "custom", text: this.plugin.i18n.translate("views.stats.timeRanges.customRange") },
+			{
+				value: "7days",
+				text: this.plugin.i18n.translate("views.stats.timeRanges.last7Days"),
+			},
+			{
+				value: "30days",
+				text: this.plugin.i18n.translate("views.stats.timeRanges.last30Days"),
+			},
+			{
+				value: "90days",
+				text: this.plugin.i18n.translate("views.stats.timeRanges.last90Days"),
+			},
+			{
+				value: "custom",
+				text: this.plugin.i18n.translate("views.stats.timeRanges.customRange"),
+			},
 		];
 
 		for (const option of dateOptions) {
@@ -730,7 +742,10 @@ export class StatsView extends ItemView {
 			const startDateContainer = customDatesContainer.createDiv({
 				cls: "stats-view__date-input-container",
 			});
-			startDateContainer.createDiv({ cls: "stats-view__date-label", text: this.plugin.i18n.translate("views.stats.dateRangeFrom") });
+			startDateContainer.createDiv({
+				cls: "stats-view__date-label",
+				text: this.plugin.i18n.translate("views.stats.dateRangeFrom"),
+			});
 			const startInput = startDateContainer.createEl("input", {
 				cls: "stats-view__date-input",
 				type: "date",
@@ -740,7 +755,10 @@ export class StatsView extends ItemView {
 			const endDateContainer = customDatesContainer.createDiv({
 				cls: "stats-view__date-input-container",
 			});
-			endDateContainer.createDiv({ cls: "stats-view__date-label", text: this.plugin.i18n.translate("views.stats.dateRangeTo") });
+			endDateContainer.createDiv({
+				cls: "stats-view__date-label",
+				text: this.plugin.i18n.translate("views.stats.dateRangeTo"),
+			});
 			const endInput = endDateContainer.createEl("input", {
 				cls: "stats-view__date-input",
 				type: "date",
@@ -805,7 +823,7 @@ export class StatsView extends ItemView {
 					.filter((project) => typeof project === "string" && project.length > 0);
 			}
 			return [this.plugin.i18n.translate("views.stats.noProject")];
-		} catch (error) {
+		} catch {
 			return [this.plugin.i18n.translate("views.stats.noProject")];
 		}
 	}
@@ -951,7 +969,10 @@ export class StatsView extends ItemView {
 			cls: "stat-value stats-view__stat-value",
 			text: stats.overall.totalTasks.toString(),
 		});
-		tasksCard.createDiv({ cls: "stat-label stats-view__stat-label", text: this.plugin.i18n.translate("views.stats.labels.tasks") });
+		tasksCard.createDiv({
+			cls: "stat-label stats-view__stat-label",
+			text: this.plugin.i18n.translate("views.stats.labels.tasks"),
+		});
 
 		// Completed
 		const completedCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
@@ -959,7 +980,10 @@ export class StatsView extends ItemView {
 			cls: "stat-value stats-view__stat-value",
 			text: stats.overall.completedTasks.toString(),
 		});
-		completedCard.createDiv({ cls: "stat-label stats-view__stat-label", text: this.plugin.i18n.translate("views.stats.labels.completed") });
+		completedCard.createDiv({
+			cls: "stat-label stats-view__stat-label",
+			text: this.plugin.i18n.translate("views.stats.labels.completed"),
+		});
 
 		// Projects
 		const projectsCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
@@ -967,7 +991,10 @@ export class StatsView extends ItemView {
 			cls: "stat-value stats-view__stat-value",
 			text: stats.overall.activeProjects.toString(),
 		});
-		projectsCard.createDiv({ cls: "stat-label stats-view__stat-label", text: this.plugin.i18n.translate("views.stats.labels.projects") });
+		projectsCard.createDiv({
+			cls: "stat-label stats-view__stat-label",
+			text: this.plugin.i18n.translate("views.stats.labels.projects"),
+		});
 	}
 
 	private async renderProjectStats(container: HTMLElement, projects: ProjectStats[]) {
@@ -1062,12 +1089,28 @@ export class StatsView extends ItemView {
 					timePercentage = (project.totalTimeSpent / project.totalTimeEstimate) * 100;
 				} else if (project.totalTimeSpent > 0) {
 					timePercentage = 100; // No estimate, but time spent
-					timeBarFill.style.backgroundColor = "var(--color-base-40)"; // Use a neutral color
+					timeBarFill.classList.remove(
+						"tn-static-background-color-var-background-mo-94b219f0",
+						"tn-static-background-color-var-background-se-9087a23e",
+						"tn-static-background-color-var-color-red-134bc721",
+						"tn-static-background-color-var-text-accent-a954c70f"
+					);
+					timeBarFill.classList.add(
+						"tn-static-background-color-var-color-base-40-ef5f175e"
+					);
+					// Use a neutral color
 				}
 
 				timeBarFill.style.width = `${Math.min(timePercentage, 100)}%`;
 				if (timePercentage > 100) {
-					timeBarFill.style.backgroundColor = "var(--color-red)"; // Over budget
+					timeBarFill.classList.remove(
+						"tn-static-background-color-var-background-mo-94b219f0",
+						"tn-static-background-color-var-background-se-9087a23e",
+						"tn-static-background-color-var-color-base-40-ef5f175e",
+						"tn-static-background-color-var-text-accent-a954c70f"
+					);
+					timeBarFill.classList.add("tn-static-background-color-var-color-red-134bc721");
+					// Over budget
 				}
 
 				const timeLabel = timeBar.createDiv({ cls: "stats-view__time-bar-label" });
@@ -1103,7 +1146,7 @@ export class StatsView extends ItemView {
 				} else {
 					trendContainer.remove();
 				}
-			} catch (error) {
+			} catch {
 				// Error loading trend data - remove container
 				trendContainer.remove();
 			}
@@ -1122,19 +1165,25 @@ export class StatsView extends ItemView {
 		const circumference = 2 * Math.PI * radius;
 		const offset = circumference - (percentage / 100) * circumference;
 
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const svg = activeDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("width", size.toString());
 		svg.setAttribute("height", size.toString());
 		svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
 		svg.classList.add("stats-view__progress-circle-svg");
 
-		const backgroundCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		const backgroundCircle = activeDocument.createElementNS(
+			"http://www.w3.org/2000/svg",
+			"circle"
+		);
 		backgroundCircle.setAttribute("cx", (size / 2).toString());
 		backgroundCircle.setAttribute("cy", (size / 2).toString());
 		backgroundCircle.setAttribute("r", radius.toString());
 		backgroundCircle.classList.add("stats-view__progress-circle-bg");
 
-		const foregroundCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		const foregroundCircle = activeDocument.createElementNS(
+			"http://www.w3.org/2000/svg",
+			"circle"
+		);
 		foregroundCircle.setAttribute("cx", (size / 2).toString());
 		foregroundCircle.setAttribute("cy", (size / 2).toString());
 		foregroundCircle.setAttribute("r", radius.toString());
@@ -1142,7 +1191,7 @@ export class StatsView extends ItemView {
 		foregroundCircle.setAttribute("stroke-dashoffset", offset.toString());
 		foregroundCircle.classList.add("stats-view__progress-circle-fg");
 
-		const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		const text = activeDocument.createElementNS("http://www.w3.org/2000/svg", "text");
 		text.setAttribute("x", "50%");
 		text.setAttribute("y", "50%");
 		text.setAttribute("dy", "0.3em");
@@ -1178,7 +1227,7 @@ export class StatsView extends ItemView {
 							projectTasks.push(task);
 						}
 					}
-				} catch (error) {
+				} catch {
 					// Failed to get task info - continue silently
 				}
 			}
@@ -1212,7 +1261,7 @@ export class StatsView extends ItemView {
 			}
 
 			return trendData;
-		} catch (error) {
+		} catch {
 			// Error calculating project trend
 			return [];
 		}
@@ -1236,14 +1285,14 @@ export class StatsView extends ItemView {
 			return;
 		}
 
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const svg = activeDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("width", width.toString());
 		svg.setAttribute("height", height.toString());
 		svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 		svg.classList.add("stats-view__sparkline-svg");
 
 		// Create path
-		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		const path = activeDocument.createElementNS("http://www.w3.org/2000/svg", "path");
 
 		let pathD = "";
 		data.forEach((point, index) => {
@@ -1543,9 +1592,18 @@ export class StatsView extends ItemView {
 		// Add filter controls for tasks
 		const taskFilters = tasksHeaderContainer.createDiv({ cls: "stats-view__task-filters" });
 		const statusFilter = taskFilters.createEl("select", { cls: "stats-view__filter-select" });
-		statusFilter.createEl("option", { value: "all", text: this.plugin.i18n.translate("views.stats.filters.allTasks") });
-		statusFilter.createEl("option", { value: "active", text: this.plugin.i18n.translate("views.stats.filters.activeOnly") });
-		statusFilter.createEl("option", { value: "completed", text: this.plugin.i18n.translate("views.stats.filters.completedOnly") });
+		statusFilter.createEl("option", {
+			value: "all",
+			text: this.plugin.i18n.translate("views.stats.filters.allTasks"),
+		});
+		statusFilter.createEl("option", {
+			value: "active",
+			text: this.plugin.i18n.translate("views.stats.filters.activeOnly"),
+		});
+		statusFilter.createEl("option", {
+			value: "completed",
+			text: this.plugin.i18n.translate("views.stats.filters.completedOnly"),
+		});
 
 		const taskList = tasksSection.createDiv({ cls: "stats-view__task-list" });
 
@@ -1587,7 +1645,10 @@ export class StatsView extends ItemView {
 			});
 
 			if (filteredTasks.length === 0) {
-				taskList.createDiv({ cls: "stats-view__no-data", text: this.plugin.i18n.translate("views.stats.noTasks") });
+				taskList.createDiv({
+					cls: "stats-view__no-data",
+					text: this.plugin.i18n.translate("views.stats.noTasks"),
+				});
 				return;
 			}
 
@@ -1598,13 +1659,12 @@ export class StatsView extends ItemView {
 			for (const task of filteredTasks) {
 				// Create TaskCard with checkbox disabled as requested
 				const visibleProperties = this.plugin.settings.defaultVisibleProperties
-					? convertInternalToUserProperties(this.plugin.settings.defaultVisibleProperties, this.plugin)
+					? convertInternalToUserProperties(
+							this.plugin.settings.defaultVisibleProperties,
+							this.plugin
+						)
 					: undefined;
-				const taskCard = createTaskCard(
-					task,
-					this.plugin,
-					visibleProperties
-				);
+				const taskCard = createTaskCard(task, this.plugin, visibleProperties);
 
 				taskList.appendChild(taskCard);
 			}

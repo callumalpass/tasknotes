@@ -38,7 +38,12 @@ import { createPropertyEventCard } from "../ui/PropertyEventCard";
 import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
-import { formatDateForStorage, hasTimeComponent, parseDateToLocal, parseDateToUTC } from "../utils/dateUtils";
+import {
+	formatDateForStorage,
+	hasTimeComponent,
+	parseDateToLocal,
+	parseDateToUTC,
+} from "../utils/dateUtils";
 import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
@@ -92,7 +97,10 @@ export function normalizeDateValueForCalendar(
 	return null;
 }
 
-export function shouldWidenTodayColumn(viewType: string, todayColumnWidthMultiplier: number): boolean {
+export function shouldWidenTodayColumn(
+	viewType: string,
+	todayColumnWidthMultiplier: number
+): boolean {
 	if (todayColumnWidthMultiplier <= 1) return false;
 	return viewType === "timeGridWeek" || viewType === "timeGridCustom";
 }
@@ -145,7 +153,7 @@ export class CalendarView extends BasesViewBase {
 	private _configChangedNeedsRecreate = false;
 	// Preserve visible date when calendar is re-created.
 	private _recreateTargetDate: Date | null = null;
-	
+
 	private viewOptions: {
 		// Events
 		showScheduled: boolean;
@@ -190,9 +198,7 @@ export class CalendarView extends BasesViewBase {
 		startDateProperty: string | null;
 		endDateProperty: string | null;
 		titleProperty: string | null;
-
 	};
-
 
 	// ICS/Google/Microsoft calendar toggles (dynamic)
 	private icsCalendarToggles = new Map<string, boolean>();
@@ -228,9 +234,9 @@ export class CalendarView extends BasesViewBase {
 			customDayCount: calendarSettings.customDayCount,
 			listDayCount: 7,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00", false),
-			slotMaxTime: this.validateTimeValue(calendarSettings.slotMaxTime, "24:00:00", true), 
-			slotDuration: this.validateTimeValue( calendarSettings.slotDuration, "00:30:00", false),
-			scrollTime: this.validateTimeValue( calendarSettings.scrollTime, "08:00:00", false),
+			slotMaxTime: this.validateTimeValue(calendarSettings.slotMaxTime, "24:00:00", true),
+			slotDuration: this.validateTimeValue(calendarSettings.slotDuration, "00:30:00", false),
+			scrollTime: this.validateTimeValue(calendarSettings.scrollTime, "08:00:00", false),
 			firstDay: calendarSettings.firstDay,
 			weekNumbers: calendarSettings.weekNumbers,
 			nowIndicator: calendarSettings.nowIndicator,
@@ -322,7 +328,7 @@ export class CalendarView extends BasesViewBase {
 		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			this.render();
-		}, 5000);  // 5 second debounce - outlasts Obsidian's save interval
+		}, 5000); // 5 second debounce - outlasts Obsidian's save interval
 	}
 
 	/**
@@ -342,49 +348,49 @@ export class CalendarView extends BasesViewBase {
 	 * Used to detect user-initiated config changes.
 	 */
 	private getConfigSnapshot(): string {
-		if (!this.config || typeof this.config.get !== 'function') {
-			return '';
+		if (!this.config || typeof this.config.get !== "function") {
+			return "";
 		}
 		// Include all config values that affect the calendar
 		const values: any[] = [
 			// Event toggles
-			this.config.get('showScheduled'),
-			this.config.get('showDue'),
-			this.config.get('showScheduledToDueSpan'),
-			this.config.get('showRecurring'),
-			this.config.get('showTimeEntries'),
-			this.config.get('showTimeblocks'),
-			this.config.get('showPropertyBasedEvents'),
+			this.config.get("showScheduled"),
+			this.config.get("showDue"),
+			this.config.get("showScheduledToDueSpan"),
+			this.config.get("showRecurring"),
+			this.config.get("showTimeEntries"),
+			this.config.get("showTimeblocks"),
+			this.config.get("showPropertyBasedEvents"),
 			// Layout options
-			this.config.get('calendarView'),
-			this.config.get('customDayCount'),
-			this.config.get('listDayCount'),
-			this.config.get('slotMinTime'),
-			this.config.get('slotMaxTime'),
-			this.config.get('slotDuration'),
-			this.config.get('firstDay'),
-			this.config.get('weekNumbers'),
-			this.config.get('nowIndicator'),
-			this.config.get('showWeekends'),
-			this.config.get('showAllDaySlot'),
-			this.config.get('showTodayHighlight'),
-			this.config.get('todayColumnWidthMultiplier'),
-			this.config.get('selectMirror'),
-			this.config.get('timeFormat'),
-			this.config.get('scrollTime'),
-			this.config.get('eventMinHeight'),
-			this.config.get('slotEventOverlap'),
-			this.config.get('eventMaxStack'),
-			this.config.get('dayMaxEvents'),
-			this.config.get('dayMaxEventRows'),
+			this.config.get("calendarView"),
+			this.config.get("customDayCount"),
+			this.config.get("listDayCount"),
+			this.config.get("slotMinTime"),
+			this.config.get("slotMaxTime"),
+			this.config.get("slotDuration"),
+			this.config.get("firstDay"),
+			this.config.get("weekNumbers"),
+			this.config.get("nowIndicator"),
+			this.config.get("showWeekends"),
+			this.config.get("showAllDaySlot"),
+			this.config.get("showTodayHighlight"),
+			this.config.get("todayColumnWidthMultiplier"),
+			this.config.get("selectMirror"),
+			this.config.get("timeFormat"),
+			this.config.get("scrollTime"),
+			this.config.get("eventMinHeight"),
+			this.config.get("slotEventOverlap"),
+			this.config.get("eventMaxStack"),
+			this.config.get("dayMaxEvents"),
+			this.config.get("dayMaxEventRows"),
 			// Property-based events
-			this.config.get('startDateProperty'),
-			this.config.get('endDateProperty'),
-			this.config.get('titleProperty'),
+			this.config.get("startDateProperty"),
+			this.config.get("endDateProperty"),
+			this.config.get("titleProperty"),
 			// Date navigation
-			this.config.get('initialDate'),
-			this.config.get('initialDateProperty'),
-			this.config.get('initialDateStrategy'),
+			this.config.get("initialDate"),
+			this.config.get("initialDateProperty"),
+			this.config.get("initialDateStrategy"),
 		];
 
 		// Include ICS calendar toggles
@@ -433,22 +439,30 @@ export class CalendarView extends BasesViewBase {
 	 * Validate and format time string (HH:MM or HH:MM:SS format).
 	 * Returns the validated time in HH:MM:SS format, or the default value if invalid.
 	 */
-	private validateTimeValue(value: string | undefined, defaultValue: string, allowMax24 = false): string {
+	private validateTimeValue(
+		value: string | undefined,
+		defaultValue: string,
+		allowMax24 = false
+	): string {
 		if (!value) return defaultValue;
 
 		// If already in HH:MM:SS format, validate it
 		if (/^\d{2}:\d{2}:\d{2}$/.test(value)) {
-			const [hours, minutes] = value.split(':').map(Number);
+			const [hours, minutes] = value.split(":").map(Number);
 			const maxHours = allowMax24 ? 24 : 23;
 
 			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				console.warn(
+					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
+				);
 				return defaultValue;
 			}
 
 			// Special case: 24:XX is only valid as 24:00
 			if (hours === 24 && minutes !== 0) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				console.warn(
+					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
+				);
 				return defaultValue;
 			}
 
@@ -457,17 +471,21 @@ export class CalendarView extends BasesViewBase {
 
 		// If in HH:MM format, validate and convert to HH:MM:SS
 		if (/^\d{2}:\d{2}$/.test(value)) {
-			const [hours, minutes] = value.split(':').map(Number);
+			const [hours, minutes] = value.split(":").map(Number);
 			const maxHours = allowMax24 ? 24 : 23;
 
 			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				console.warn(
+					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
+				);
 				return defaultValue;
 			}
 
 			// Special case: 24:XX is only valid as 24:00
 			if (hours === 24 && minutes !== 0) {
-				console.warn(`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`);
+				console.warn(
+					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
+				);
 				return defaultValue;
 			}
 
@@ -475,7 +493,9 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Invalid format
-		console.warn(`[TaskNotes][CalendarView] Invalid time format: ${value}, using default: ${defaultValue}`);
+		console.warn(
+			`[TaskNotes][CalendarView] Invalid time format: ${value}, using default: ${defaultValue}`
+		);
 		return defaultValue;
 	}
 
@@ -490,18 +510,36 @@ export class CalendarView extends BasesViewBase {
 	 */
 	private readEventToggles(): void {
 		// Guard: config may not be set yet if called too early
-		if (!this.config || typeof this.config.get !== 'function') {
+		if (!this.config || typeof this.config.get !== "function") {
 			return;
 		}
 
 		try {
-			this.viewOptions.showScheduled = this.getConfigOption('showScheduled', this.viewOptions.showScheduled);
-			this.viewOptions.showDue = this.getConfigOption('showDue', this.viewOptions.showDue);
-			this.viewOptions.showScheduledToDueSpan = this.getConfigOption('showScheduledToDueSpan', this.viewOptions.showScheduledToDueSpan);
-			this.viewOptions.showRecurring = this.getConfigOption('showRecurring', this.viewOptions.showRecurring);
-			this.viewOptions.showTimeEntries = this.getConfigOption('showTimeEntries', this.viewOptions.showTimeEntries);
-			this.viewOptions.showTimeblocks = this.getConfigOption('showTimeblocks', this.viewOptions.showTimeblocks);
-			this.viewOptions.showPropertyBasedEvents = this.getConfigOption('showPropertyBasedEvents', this.viewOptions.showPropertyBasedEvents);
+			this.viewOptions.showScheduled = this.getConfigOption(
+				"showScheduled",
+				this.viewOptions.showScheduled
+			);
+			this.viewOptions.showDue = this.getConfigOption("showDue", this.viewOptions.showDue);
+			this.viewOptions.showScheduledToDueSpan = this.getConfigOption(
+				"showScheduledToDueSpan",
+				this.viewOptions.showScheduledToDueSpan
+			);
+			this.viewOptions.showRecurring = this.getConfigOption(
+				"showRecurring",
+				this.viewOptions.showRecurring
+			);
+			this.viewOptions.showTimeEntries = this.getConfigOption(
+				"showTimeEntries",
+				this.viewOptions.showTimeEntries
+			);
+			this.viewOptions.showTimeblocks = this.getConfigOption(
+				"showTimeblocks",
+				this.viewOptions.showTimeblocks
+			);
+			this.viewOptions.showPropertyBasedEvents = this.getConfigOption(
+				"showPropertyBasedEvents",
+				this.viewOptions.showPropertyBasedEvents
+			);
 
 			// ICS calendar toggles
 			if (this.plugin.icsSubscriptionService) {
@@ -540,7 +578,7 @@ export class CalendarView extends BasesViewBase {
 	 */
 	private readViewOptions(): void {
 		// Guard: config may not be set yet if called too early
-		if (!this.config || typeof this.config.get !== 'function') {
+		if (!this.config || typeof this.config.get !== "function") {
 			return;
 		}
 
@@ -549,78 +587,147 @@ export class CalendarView extends BasesViewBase {
 			this.readEventToggles();
 
 			// Date navigation
-			this.viewOptions.initialDate = this.getConfigOption('initialDate', this.viewOptions.initialDate);
-			this.viewOptions.initialDateProperty = this.getConfigOption('initialDateProperty', this.viewOptions.initialDateProperty);
-			this.viewOptions.initialDateStrategy = this.getConfigOption('initialDateStrategy', this.viewOptions.initialDateStrategy);
+			this.viewOptions.initialDate = this.getConfigOption(
+				"initialDate",
+				this.viewOptions.initialDate
+			);
+			this.viewOptions.initialDateProperty = this.getConfigOption(
+				"initialDateProperty",
+				this.viewOptions.initialDateProperty
+			);
+			this.viewOptions.initialDateStrategy = this.getConfigOption(
+				"initialDateStrategy",
+				this.viewOptions.initialDateStrategy
+			);
 
 			// Layout
-			this.viewOptions.calendarView = this.getConfigOption('calendarView', this.viewOptions.calendarView);
-			this.viewOptions.customDayCount = this.getConfigOption('customDayCount', this.viewOptions.customDayCount);
-			this.viewOptions.listDayCount = this.getConfigOption('listDayCount', this.viewOptions.listDayCount);
+			this.viewOptions.calendarView = this.getConfigOption(
+				"calendarView",
+				this.viewOptions.calendarView
+			);
+			this.viewOptions.customDayCount = this.getConfigOption(
+				"customDayCount",
+				this.viewOptions.customDayCount
+			);
+			this.viewOptions.listDayCount = this.getConfigOption(
+				"listDayCount",
+				this.viewOptions.listDayCount
+			);
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
-				this.getConfigOption<string | undefined>('slotMinTime', undefined),
+				this.getConfigOption<string | undefined>("slotMinTime", undefined),
 				this.viewOptions.slotMinTime,
 				false
 			);
 			this.viewOptions.slotMaxTime = this.validateTimeValue(
-				this.getConfigOption<string | undefined>('slotMaxTime', undefined),
+				this.getConfigOption<string | undefined>("slotMaxTime", undefined),
 				this.viewOptions.slotMaxTime,
 				true // Allow 24:00 for end time
 			);
 			this.viewOptions.slotDuration = this.validateTimeValue(
-				this.getConfigOption<string | undefined>('slotDuration', undefined),
+				this.getConfigOption<string | undefined>("slotDuration", undefined),
 				this.viewOptions.slotDuration,
 				false
 			);
 			this.viewOptions.scrollTime = this.validateTimeValue(
-				this.getConfigOption<string | undefined>('scrollTime', undefined),
+				this.getConfigOption<string | undefined>("scrollTime", undefined),
 				this.viewOptions.scrollTime,
 				false
 			);
 
-			this.viewOptions.firstDay = Number(this.getConfigOption('firstDay', this.viewOptions.firstDay));
-			this.viewOptions.weekNumbers = this.getConfigOption('weekNumbers', this.viewOptions.weekNumbers);
-			this.viewOptions.nowIndicator = this.getConfigOption('nowIndicator', this.viewOptions.nowIndicator);
-			this.viewOptions.showWeekends = this.getConfigOption('showWeekends', this.viewOptions.showWeekends);
-			this.viewOptions.showAllDaySlot = this.getConfigOption('showAllDaySlot', this.viewOptions.showAllDaySlot);
-			this.viewOptions.showTodayHighlight = this.getConfigOption('showTodayHighlight', this.viewOptions.showTodayHighlight);
-			const todayColumnWidthMultiplier = Number(this.getConfigOption('todayColumnWidthMultiplier', 1));
+			this.viewOptions.firstDay = Number(
+				this.getConfigOption("firstDay", this.viewOptions.firstDay)
+			);
+			this.viewOptions.weekNumbers = this.getConfigOption(
+				"weekNumbers",
+				this.viewOptions.weekNumbers
+			);
+			this.viewOptions.nowIndicator = this.getConfigOption(
+				"nowIndicator",
+				this.viewOptions.nowIndicator
+			);
+			this.viewOptions.showWeekends = this.getConfigOption(
+				"showWeekends",
+				this.viewOptions.showWeekends
+			);
+			this.viewOptions.showAllDaySlot = this.getConfigOption(
+				"showAllDaySlot",
+				this.viewOptions.showAllDaySlot
+			);
+			this.viewOptions.showTodayHighlight = this.getConfigOption(
+				"showTodayHighlight",
+				this.viewOptions.showTodayHighlight
+			);
+			const todayColumnWidthMultiplier = Number(
+				this.getConfigOption("todayColumnWidthMultiplier", 1)
+			);
 			this.viewOptions.todayColumnWidthMultiplier =
 				todayColumnWidthMultiplier >= 1 && todayColumnWidthMultiplier <= 5
 					? Math.round(todayColumnWidthMultiplier * 2) / 2
 					: 1;
-			this.viewOptions.selectMirror = this.getConfigOption('selectMirror', this.viewOptions.selectMirror);
-			this.viewOptions.timeFormat = this.getConfigOption('timeFormat', this.viewOptions.timeFormat);
-			this.viewOptions.eventMinHeight = this.getConfigOption('eventMinHeight', this.viewOptions.eventMinHeight);
-			this.viewOptions.slotEventOverlap = this.getConfigOption('slotEventOverlap', this.viewOptions.slotEventOverlap);
+			this.viewOptions.selectMirror = this.getConfigOption(
+				"selectMirror",
+				this.viewOptions.selectMirror
+			);
+			this.viewOptions.timeFormat = this.getConfigOption(
+				"timeFormat",
+				this.viewOptions.timeFormat
+			);
+			this.viewOptions.eventMinHeight = this.getConfigOption(
+				"eventMinHeight",
+				this.viewOptions.eventMinHeight
+			);
+			this.viewOptions.slotEventOverlap = this.getConfigOption(
+				"slotEventOverlap",
+				this.viewOptions.slotEventOverlap
+			);
 
 			// Convert slider values: 0 means special behavior (null/true/false)
-			const eventMaxStackValue = this.getConfigOption<number | undefined>('eventMaxStack', undefined);
+			const eventMaxStackValue = this.getConfigOption<number | undefined>(
+				"eventMaxStack",
+				undefined
+			);
 			if (eventMaxStackValue !== undefined) {
-				this.viewOptions.eventMaxStack = eventMaxStackValue === 0 ? null : eventMaxStackValue;
+				this.viewOptions.eventMaxStack =
+					eventMaxStackValue === 0 ? null : eventMaxStackValue;
 			}
 
-			const dayMaxEventsValue = this.getConfigOption<number | undefined>('dayMaxEvents', undefined);
+			const dayMaxEventsValue = this.getConfigOption<number | undefined>(
+				"dayMaxEvents",
+				undefined
+			);
 			if (dayMaxEventsValue !== undefined) {
 				// 0 = auto (true), positive number = limit
 				this.viewOptions.dayMaxEvents = dayMaxEventsValue === 0 ? true : dayMaxEventsValue;
 			}
 
-			const dayMaxEventRowsValue = this.getConfigOption<number | undefined>('dayMaxEventRows', undefined);
+			const dayMaxEventRowsValue = this.getConfigOption<number | undefined>(
+				"dayMaxEventRows",
+				undefined
+			);
 			if (dayMaxEventRowsValue !== undefined) {
 				// 0 = unlimited (false), positive number = limit
-				this.viewOptions.dayMaxEventRows = dayMaxEventRowsValue === 0 ? false : dayMaxEventRowsValue;
+				this.viewOptions.dayMaxEventRows =
+					dayMaxEventRowsValue === 0 ? false : dayMaxEventRowsValue;
 			}
 
 			// Property-based events
-			this.viewOptions.startDateProperty = this.getConfigOption('startDateProperty', this.viewOptions.startDateProperty);
-			this.viewOptions.endDateProperty = this.getConfigOption('endDateProperty', this.viewOptions.endDateProperty);
-			this.viewOptions.titleProperty = this.getConfigOption('titleProperty', this.viewOptions.titleProperty);
+			this.viewOptions.startDateProperty = this.getConfigOption(
+				"startDateProperty",
+				this.viewOptions.startDateProperty
+			);
+			this.viewOptions.endDateProperty = this.getConfigOption(
+				"endDateProperty",
+				this.viewOptions.endDateProperty
+			);
+			this.viewOptions.titleProperty = this.getConfigOption(
+				"titleProperty",
+				this.viewOptions.titleProperty
+			);
 
 			// Read enableSearch toggle (default: false for backward compatibility)
-			const enableSearchValue = this.config.get('enableSearch');
+			const enableSearchValue = this.config.get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
 
 			// Mark config as successfully loaded
@@ -734,13 +841,19 @@ export class CalendarView extends BasesViewBase {
 
 		// Build calendar options
 		const calendarOptions: CalendarOptions = {
-			plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, multiMonthPlugin],
+			plugins: [
+				dayGridPlugin,
+				timeGridPlugin,
+				listPlugin,
+				interactionPlugin,
+				multiMonthPlugin,
+			],
 			initialView: this.viewOptions.calendarView,
 			initialDate: initialDate,
 			headerToolbar: {
 				left: "prev,next today refreshCalendars",
 				center: "title",
-				right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeekButton"
+				right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeekButton",
 			},
 			buttonText: {
 				today: this.plugin.i18n.translate("views.basesCalendar.today"),
@@ -751,10 +864,12 @@ export class CalendarView extends BasesViewBase {
 				list: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
 			},
 			buttonHints: {
-				today: this.plugin.i18n.translate("views.basesCalendar.hints.today") || "Go to today",
+				today:
+					this.plugin.i18n.translate("views.basesCalendar.hints.today") || "Go to today",
 				prev: this.plugin.i18n.translate("views.basesCalendar.hints.prev") || "Previous",
 				next: this.plugin.i18n.translate("views.basesCalendar.hints.next") || "Next",
-				month: this.plugin.i18n.translate("views.basesCalendar.hints.month") || "Month view",
+				month:
+					this.plugin.i18n.translate("views.basesCalendar.hints.month") || "Month view",
 				week: this.plugin.i18n.translate("views.basesCalendar.hints.week") || "Week view",
 				day: this.plugin.i18n.translate("views.basesCalendar.hints.day") || "Day view",
 				year: this.plugin.i18n.translate("views.basesCalendar.hints.year") || "Year view",
@@ -763,19 +878,24 @@ export class CalendarView extends BasesViewBase {
 			customButtons: {
 				listWeekButton: {
 					text: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
-					hint: this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
+					hint:
+						this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
 					click: () => {
 						if (this.calendar) {
 							const currentView = this.calendar.view?.type;
-							if (currentView !== 'listWeek') {
-								this.calendar.changeView('listWeek');
+							if (currentView !== "listWeek") {
+								this.calendar.changeView("listWeek");
 							}
 						}
 					},
 				},
 				refreshCalendars: {
-					text: this.plugin.i18n.translate("views.basesCalendar.buttonText.refresh") || "Refresh",
-					hint: this.plugin.i18n.translate("views.basesCalendar.hints.refresh") || "Refresh calendar subscriptions",
+					text:
+						this.plugin.i18n.translate("views.basesCalendar.buttonText.refresh") ||
+						"Refresh",
+					hint:
+						this.plugin.i18n.translate("views.basesCalendar.hints.refresh") ||
+						"Refresh calendar subscriptions",
 					click: async () => {
 						try {
 							// Refresh ICS subscriptions
@@ -798,7 +918,10 @@ export class CalendarView extends BasesViewBase {
 								this.calendar.refetchEvents();
 							}
 						} catch (error) {
-							console.error("[TaskNotes][CalendarView] Error refreshing calendars:", error);
+							console.error(
+								"[TaskNotes][CalendarView] Error refreshing calendars:",
+								error
+							);
 						}
 					},
 				},
@@ -807,24 +930,32 @@ export class CalendarView extends BasesViewBase {
 				timeGridCustom: {
 					type: "timeGrid",
 					duration: { days: this.viewOptions.customDayCount },
-					buttonText: this.plugin.i18n.translate("views.basesCalendar.buttonText.customDays", {
-						count: this.viewOptions.customDayCount.toString()
-					}),
+					buttonText: this.plugin.i18n.translate(
+						"views.basesCalendar.buttonText.customDays",
+						{
+							count: this.viewOptions.customDayCount.toString(),
+						}
+					),
 					titleFormat: { year: "numeric", month: "short", day: "numeric" },
 				},
 				listWeek: {
 					type: "list",
 					duration: { days: this.viewOptions.listDayCount },
-					buttonText: this.plugin.i18n.translate("views.basesCalendar.buttonText.listDays", {
-						count: this.viewOptions.listDayCount.toString()
-					}) || `${this.viewOptions.listDayCount}d List`,
-				}
+					buttonText:
+						this.plugin.i18n.translate("views.basesCalendar.buttonText.listDays", {
+							count: this.viewOptions.listDayCount.toString(),
+						}) || `${this.viewOptions.listDayCount}d List`,
+				},
 			},
 			height: "100%",
 			expandRows: true,
 			handleWindowResize: true,
 			stickyHeaderDates: false,
-			locale: this.viewOptions.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
+			locale:
+				this.viewOptions.locale ||
+				this.plugin.settings.uiLanguage ||
+				navigator.language ||
+				"en",
 			slotMinTime: this.viewOptions.slotMinTime,
 			slotMaxTime: this.viewOptions.slotMaxTime,
 			slotDuration: this.viewOptions.slotDuration,
@@ -895,10 +1026,10 @@ export class CalendarView extends BasesViewBase {
 
 		if (this.viewOptions.showTodayHighlight) {
 			// Remove the class that hides today highlighting
-			this.calendarEl.classList.remove('hide-today-highlight');
+			this.calendarEl.classList.remove("hide-today-highlight");
 		} else {
 			// Add the existing CSS class to hide today highlighting
-			this.calendarEl.classList.add('hide-today-highlight');
+			this.calendarEl.classList.add("hide-today-highlight");
 		}
 	}
 
@@ -919,7 +1050,10 @@ export class CalendarView extends BasesViewBase {
 		this.resetTodayColumnWidths(dateKeys);
 
 		if (
-			!shouldWidenTodayColumn(this.calendar.view.type, this.viewOptions.todayColumnWidthMultiplier)
+			!shouldWidenTodayColumn(
+				this.calendar.view.type,
+				this.viewOptions.todayColumnWidthMultiplier
+			)
 		) {
 			return;
 		}
@@ -951,7 +1085,8 @@ export class CalendarView extends BasesViewBase {
 		this.calendarEl.querySelectorAll("colgroup").forEach((group) => {
 			const cols = Array.from(group.querySelectorAll<HTMLTableColElement>("col"));
 			if (cols.length < dateKeys.length) return;
-			const dayCols = cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
+			const dayCols =
+				cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
 			if (dayCols.length !== dateKeys.length) return;
 
 			dayCols.forEach((col, index) => {
@@ -979,7 +1114,8 @@ export class CalendarView extends BasesViewBase {
 		this.calendarEl.querySelectorAll("colgroup").forEach((group) => {
 			const cols = Array.from(group.querySelectorAll<HTMLTableColElement>("col"));
 			if (cols.length < dateKeys.length) return;
-			const dayCols = cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
+			const dayCols =
+				cols.length === dateKeys.length ? cols : cols.slice(cols.length - dateKeys.length);
 			if (dayCols.length !== dateKeys.length) return;
 
 			dayCols.forEach((col) => {
@@ -1004,12 +1140,12 @@ export class CalendarView extends BasesViewBase {
 		this._saveViewTypeTimer = window.setTimeout(() => {
 			this._saveViewTypeTimer = null;
 			try {
-				if (this.config && typeof this.config.set === 'function') {
-					this.config.set('calendarView', viewType);
-					console.debug('[TaskNotes][CalendarView] View type saved to config:', viewType);
+				if (this.config && typeof this.config.set === "function") {
+					this.config.set("calendarView", viewType);
+					console.debug("[TaskNotes][CalendarView] View type saved to config:", viewType);
 				}
 			} catch (error) {
-				console.error('[TaskNotes][CalendarView] Failed to save view type:', error);
+				console.error("[TaskNotes][CalendarView] Failed to save view type:", error);
 			}
 		}, 1000);
 	}
@@ -1033,9 +1169,9 @@ export class CalendarView extends BasesViewBase {
 				const normalized = normalizeDateValueForCalendar(value);
 				if (!normalized) continue;
 
-					const compareDate = normalized.isAllDay
-						? parseDateToUTC(normalized.value as string)
-						: new Date(normalized.value as Date);
+				const compareDate = normalized.isAllDay
+					? parseDateToUTC(normalized.value as string)
+					: new Date(normalized.value as Date);
 				if (isNaN(compareDate.getTime())) continue;
 
 				dates.push({ compare: compareDate, value: normalized.value });
@@ -1072,7 +1208,11 @@ export class CalendarView extends BasesViewBase {
 		};
 	}
 
-	private async fetchEvents(fetchInfo: any, successCallback: any, failureCallback: any): Promise<void> {
+	private async fetchEvents(
+		fetchInfo: any,
+		successCallback: any,
+		failureCallback: any
+	): Promise<void> {
 		try {
 			const events = await this.buildAllEvents(fetchInfo);
 			successCallback(events);
@@ -1148,20 +1288,32 @@ export class CalendarView extends BasesViewBase {
 				if (!file) continue;
 
 				// Use BasesDataAdapter to get the property value (handles all Bases Value types)
-				const startValue = this.dataAdapter.getPropertyValue(entry, this.viewOptions.startDateProperty);
+				const startValue = this.dataAdapter.getPropertyValue(
+					entry,
+					this.viewOptions.startDateProperty
+				);
 				const startNormalized = normalizeDateValueForCalendar(startValue);
 				if (!startNormalized) continue;
 
-				const startDateStr = typeof startNormalized.value === "string" ? startNormalized.value : format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
+				const startDateStr =
+					typeof startNormalized.value === "string"
+						? startNormalized.value
+						: format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
 
 				// Try to get end date if property is configured
 				let endDateStr: string | undefined;
 				let isEndAllDay = startNormalized.isAllDay;
 				if (this.viewOptions.endDateProperty) {
-					const endValue = this.dataAdapter.getPropertyValue(entry, this.viewOptions.endDateProperty);
+					const endValue = this.dataAdapter.getPropertyValue(
+						entry,
+						this.viewOptions.endDateProperty
+					);
 					const endNormalized = normalizeDateValueForCalendar(endValue);
 					if (endNormalized) {
-						endDateStr = typeof endNormalized.value === "string" ? endNormalized.value : format(endNormalized.value, "yyyy-MM-dd'T'HH:mm");
+						endDateStr =
+							typeof endNormalized.value === "string"
+								? endNormalized.value
+								: format(endNormalized.value, "yyyy-MM-dd'T'HH:mm");
 						isEndAllDay = endNormalized.isAllDay;
 					}
 				}
@@ -1169,8 +1321,11 @@ export class CalendarView extends BasesViewBase {
 				// Try to get title from configured property
 				let eventTitle: string | undefined;
 				if (this.viewOptions.titleProperty) {
-					const titleValue = this.dataAdapter.getPropertyValue(entry, this.viewOptions.titleProperty);
-					if (titleValue && typeof titleValue === 'string' && titleValue.trim()) {
+					const titleValue = this.dataAdapter.getPropertyValue(
+						entry,
+						this.viewOptions.titleProperty
+					);
+					if (titleValue && typeof titleValue === "string" && titleValue.trim()) {
 						eventTitle = titleValue.trim();
 					}
 				}
@@ -1195,7 +1350,10 @@ export class CalendarView extends BasesViewBase {
 					},
 				});
 			} catch (error) {
-				console.warn(`[TaskNotes][CalendarView] Error processing property-based entry:`, error);
+				console.warn(
+					`[TaskNotes][CalendarView] Error processing property-based entry:`,
+					error
+				);
 			}
 		}
 
@@ -1264,7 +1422,6 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-
 	private async updateCalendarEvents(taskNotes: TaskInfo[]): Promise<void> {
 		if (!this.calendar) return;
 
@@ -1299,13 +1456,16 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventClick(info: any): Promise<void> {
-		const { taskInfo, timeblock, eventType, filePath, icsEvent, subscriptionName } = info.event.extendedProps || {};
+		const { taskInfo, timeblock, eventType, filePath, icsEvent, subscriptionName } =
+			info.event.extendedProps || {};
 		const jsEvent = info.jsEvent;
 
 		// Handle timeblock click
 		if (eventType === "timeblock" && timeblock) {
 			const originalDate = format(info.event.start, "yyyy-MM-dd");
-			showTimeblockInfoModal(timeblock, info.event.start, originalDate, this.plugin, () => this.expectImmediateUpdate());
+			showTimeblockInfoModal(timeblock, info.event.start, originalDate, this.plugin, () =>
+				this.expectImmediateUpdate()
+			);
 			return;
 		}
 
@@ -1317,7 +1477,12 @@ export class CalendarView extends BasesViewBase {
 
 		// Handle ICS event click - show info modal
 		if (eventType === "ics" && icsEvent) {
-			const modal = new ICSEventInfoModal(this.plugin.app, this.plugin, icsEvent, subscriptionName);
+			const modal = new ICSEventInfoModal(
+				this.plugin.app,
+				this.plugin,
+				icsEvent,
+				subscriptionName
+			);
 			modal.open();
 			return;
 		}
@@ -1335,7 +1500,9 @@ export class CalendarView extends BasesViewBase {
 
 		// Handle task click with single/double click detection based on user settings
 		if (taskInfo?.path && jsEvent.button === 0) {
-			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id, () => this.expectImmediateUpdate());
+			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id, () =>
+				this.expectImmediateUpdate()
+			);
 		}
 	}
 
@@ -1385,12 +1552,13 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				// Strip property prefix if present
-				const startProp = startDateProperty.includes('.')
-					? startDateProperty.split('.').pop()
+				const startProp = startDateProperty.includes(".")
+					? startDateProperty.split(".").pop()
 					: startDateProperty;
-				const endProp = endDateProperty && endDateProperty.includes('.')
-					? endDateProperty.split('.').pop()
-					: endDateProperty;
+				const endProp =
+					endDateProperty && endDateProperty.includes(".")
+						? endDateProperty.split(".").pop()
+						: endDateProperty;
 
 				if (!startProp) {
 					info.revert();
@@ -1411,7 +1579,10 @@ export class CalendarView extends BasesViewBase {
 						if (isNaN(oldStartDate.getTime())) return;
 						const newStartDate = new Date(oldStartDate.getTime() + timeDiffMs);
 						if (isNaN(newStartDate.getTime())) return;
-						frontmatter[startProp] = format(newStartDate, info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
+						frontmatter[startProp] = format(
+							newStartDate,
+							info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm"
+						);
 					}
 
 					// Update end date if configured
@@ -1422,12 +1593,18 @@ export class CalendarView extends BasesViewBase {
 							if (isNaN(oldEndDate.getTime())) return;
 							const newEndDate = new Date(oldEndDate.getTime() + timeDiffMs);
 							if (isNaN(newEndDate.getTime())) return;
-							frontmatter[endProp] = format(newEndDate, info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
+							frontmatter[endProp] = format(
+								newEndDate,
+								info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm"
+							);
 						}
 					}
 				});
 			} catch (error) {
-				console.error("[TaskNotes][CalendarView] Error updating property-based event:", error);
+				console.error(
+					"[TaskNotes][CalendarView] Error updating property-based event:",
+					error
+				);
 				info.revert();
 			}
 			return;
@@ -1457,20 +1634,23 @@ export class CalendarView extends BasesViewBase {
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
 					} else {
-						const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+						const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 						updates.start = {
 							dateTime: format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
-							timeZone: timezone
+							timeZone: timezone,
 						};
 						updates.end = {
 							dateTime: format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
-							timeZone: timezone
+							timeZone: timezone,
 						};
 					}
 
 					await provider.updateEvent(calendarId, eventId, updates);
 				} catch (error) {
-					console.error(`[TaskNotes][CalendarView] Error updating ${provider.providerName} event:`, error);
+					console.error(
+						`[TaskNotes][CalendarView] Error updating ${provider.providerName} event:`,
+						error
+					);
 					info.revert();
 				}
 				return;
@@ -1589,10 +1769,13 @@ export class CalendarView extends BasesViewBase {
 						const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 						const dueField = this.plugin.fieldMapper.toUserField("due");
 
-						await this.plugin.app.fileManager.processFrontMatter(spanFile, (frontmatter) => {
-							if (scheduledString) frontmatter[scheduledField] = scheduledString;
-							if (dueString) frontmatter[dueField] = dueString;
-						});
+						await this.plugin.app.fileManager.processFrontMatter(
+							spanFile,
+							(frontmatter) => {
+								if (scheduledString) frontmatter[scheduledField] = scheduledString;
+								if (dueString) frontmatter[dueField] = dueString;
+							}
+						);
 					}
 				}
 			} catch (error) {
@@ -1611,7 +1794,8 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		const { taskInfo, timeblock, eventType, filePath, timeEntryIndex, icsEvent } = info.event.extendedProps;
+		const { taskInfo, timeblock, eventType, filePath, timeEntryIndex, icsEvent } =
+			info.event.extendedProps;
 
 		// Handle time entry resize
 		if (eventType === "timeEntry") {
@@ -1681,8 +1865,8 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				// Strip property prefix
-				const endProp = endDateProperty.includes('.')
-					? endDateProperty.split('.').pop()
+				const endProp = endDateProperty.includes(".")
+					? endDateProperty.split(".").pop()
 					: endDateProperty;
 
 				if (!endProp) {
@@ -1699,10 +1883,16 @@ export class CalendarView extends BasesViewBase {
 				// Update frontmatter
 				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 					if (isNaN(newEnd.getTime())) return;
-					frontmatter[endProp] = format(newEnd, info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
+					frontmatter[endProp] = format(
+						newEnd,
+						info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm"
+					);
 				});
 			} catch (error) {
-				console.error("[TaskNotes][CalendarView] Error resizing property-based event:", error);
+				console.error(
+					"[TaskNotes][CalendarView] Error resizing property-based event:",
+					error
+				);
 				info.revert();
 			}
 			return;
@@ -1730,20 +1920,23 @@ export class CalendarView extends BasesViewBase {
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
 					} else {
-						const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+						const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 						updates.start = {
 							dateTime: format(newStart, "yyyy-MM-dd'T'HH:mm:ss"),
-							timeZone: timezone
+							timeZone: timezone,
 						};
 						updates.end = {
 							dateTime: format(newEnd, "yyyy-MM-dd'T'HH:mm:ss"),
-							timeZone: timezone
+							timeZone: timezone,
 						};
 					}
 
 					await provider.updateEvent(calendarId, eventId, updates);
 				} catch (error) {
-					console.error(`[TaskNotes][CalendarView] Error resizing ${provider.providerName} event:`, error);
+					console.error(
+						`[TaskNotes][CalendarView] Error resizing ${provider.providerName} event:`,
+						error
+					);
 					info.revert();
 				}
 				return;
@@ -1767,7 +1960,9 @@ export class CalendarView extends BasesViewBase {
 				if (info.event.allDay) {
 					// For all-day events, FullCalendar's end date is exclusive (next day at midnight)
 					const dayDurationMillis = 24 * 60 * 60 * 1000;
-					const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
+					const daysDuration = Math.round(
+						(end.getTime() - start.getTime()) / dayDurationMillis
+					);
 					const minutesPerDay = 60 * 24;
 					durationMinutes = daysDuration * minutesPerDay;
 				} else {
@@ -1775,7 +1970,11 @@ export class CalendarView extends BasesViewBase {
 					durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
 				}
 
-				await this.plugin.taskService.updateProperty(taskInfo, "timeEstimate", durationMinutes);
+				await this.plugin.taskService.updateProperty(
+					taskInfo,
+					"timeEstimate",
+					durationMinutes
+				);
 			}
 		} catch (error) {
 			console.error("[TaskNotes][CalendarView] Error updating task duration:", error);
@@ -1793,7 +1992,8 @@ export class CalendarView extends BasesViewBase {
 				.onClick(async () => {
 					// Parse slot duration to get minutes (default to 30 if not set)
 					const slotDurationParts = this.viewOptions.slotDuration.split(":");
-					const slotDurationMinutes = parseInt(slotDurationParts[0]) * 60 + parseInt(slotDurationParts[1] || "0");
+					const slotDurationMinutes =
+						parseInt(slotDurationParts[0]) * 60 + parseInt(slotDurationParts[1] || "0");
 
 					const values = calculateTaskCreationValues(
 						info.start,
@@ -1802,14 +2002,10 @@ export class CalendarView extends BasesViewBase {
 						slotDurationMinutes
 					);
 
-					const modal = new TaskCreationModal(
-						this.plugin.app,
-						this.plugin,
-						{
-							prePopulatedValues: values,
-							onTaskCreated: () => this.expectImmediateUpdate()
-						}
-					);
+					const modal = new TaskCreationModal(this.plugin.app, this.plugin, {
+						prePopulatedValues: values,
+						onTaskCreated: () => this.expectImmediateUpdate(),
+					});
 					modal.open();
 				});
 		});
@@ -1821,7 +2017,12 @@ export class CalendarView extends BasesViewBase {
 					.setIcon("clock")
 					.onClick(async () => {
 						this.expectImmediateUpdate();
-						await handleTimeblockCreation(info.start, info.end, info.allDay, this.plugin);
+						await handleTimeblockCreation(
+							info.start,
+							info.end,
+							info.allDay,
+							this.plugin
+						);
 					});
 			});
 		}
@@ -1838,9 +2039,9 @@ export class CalendarView extends BasesViewBase {
 		// Show "Create calendar event" if any external calendars are connected
 		const registry = this.plugin.calendarProviderRegistry;
 		if (registry) {
-			const hasWritableCalendars = registry.getAllProviders().some(
-				(p) => p.getAvailableCalendars().length > 0
-			);
+			const hasWritableCalendars = registry
+				.getAllProviders()
+				.some((p) => p.getAvailableCalendars().length > 0);
 			if (hasWritableCalendars) {
 				menu.addSeparator();
 				menu.addItem((item) => {
@@ -1881,24 +2082,65 @@ export class CalendarView extends BasesViewBase {
 		const { taskInfo, timeblock, icsEvent, eventType, basesEntry } = arg.event.extendedProps;
 
 		// Add calendar icon to provider-managed calendar events in grid views
-		if (icsEvent && arg.view.type !== 'listWeek') {
+		if (icsEvent && arg.view.type !== "listWeek") {
 			const provider = this.plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
 			if (provider) {
-				const titleEl = arg.el.querySelector('.fc-event-title');
+				const titleEl = arg.el.querySelector(".fc-event-title");
 				if (titleEl) {
 					// Use correct document for pop-out window support
 					const doc = arg.el.ownerDocument;
-					const iconContainer = doc.createElement('span');
-					iconContainer.style.marginRight = '4px';
-					iconContainer.style.display = 'inline-flex';
-					iconContainer.style.alignItems = 'center';
+					const iconContainer = doc.createElement("span");
+					iconContainer.classList.remove("tn-static-margin-right-8px-539fa9a0");
+					iconContainer.classList.add("tn-static-margin-right-4px-c6b76b85");
+					iconContainer.classList.remove(
+						"tn-static-display-block-2a1b75c9",
+						"tn-static-display-flex-4d51fc62",
+						"tn-static-display-flex-75816cae",
+						"tn-static-display-flex-8bb39979",
+						"tn-static-display-inline-block-60e32dcb",
+						"tn-static-display-inline-cccfa456",
+						"tn-static-display-none-6b99de8b",
+						"tn-static-min-height-800px-997b4c8c"
+					);
+					iconContainer.classList.add("tn-static-display-inline-flex-f984c520");
+					iconContainer.classList.remove(
+						"tn-static-align-items-baseline-4b95b5c7",
+						"tn-static-align-items-flex-start-0486f781"
+					);
+					iconContainer.classList.add("tn-static-align-items-center-7c619740");
 
-					const iconEl = doc.createElement('span');
-					iconEl.style.width = '12px';
-					iconEl.style.height = '12px';
-					iconEl.style.display = 'inline-flex';
-					iconEl.style.flexShrink = '0';
-					setIcon(iconEl, 'calendar');
+					const iconEl = doc.createElement("span");
+					iconEl.classList.remove(
+						"tn-static-width-100-0466783d",
+						"tn-static-width-16px-7375d50b",
+						"tn-static-width-1px-aa77e27e",
+						"tn-static-width-200px-2acaf3b5",
+						"tn-static-width-60px-bd09c419",
+						"tn-static-width-80px-8573bae3"
+					);
+					iconEl.classList.add("tn-static-width-12px-fbf353fb");
+					iconEl.classList.remove(
+						"tn-static-display-flex-4d51fc62",
+						"tn-static-height-0-7a31cef0",
+						"tn-static-height-100-62264068",
+						"tn-static-height-16px-30de4aee",
+						"tn-static-height-24px-29a11d37",
+						"tn-static-min-height-800px-997b4c8c"
+					);
+					iconEl.classList.add("tn-static-height-12px-06c0747e");
+					iconEl.classList.remove(
+						"tn-static-display-block-2a1b75c9",
+						"tn-static-display-flex-4d51fc62",
+						"tn-static-display-flex-75816cae",
+						"tn-static-display-flex-8bb39979",
+						"tn-static-display-inline-block-60e32dcb",
+						"tn-static-display-inline-cccfa456",
+						"tn-static-display-none-6b99de8b",
+						"tn-static-min-height-800px-997b4c8c"
+					);
+					iconEl.classList.add("tn-static-display-inline-flex-f984c520");
+					iconEl.classList.add("tn-static-flex-shrink-0-6ee0661e");
+					setIcon(iconEl, "calendar");
 
 					iconContainer.appendChild(iconEl);
 					titleEl.insertBefore(iconContainer, titleEl.firstChild);
@@ -1907,9 +2149,9 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Custom rendering for list view - replace with card components
-		if (arg.view.type === 'listWeek') {
+		if (arg.view.type === "listWeek") {
 			// Clear the default content
-			arg.el.innerHTML = '';
+			arg.el.innerHTML = "";
 
 			let cardElement: HTMLElement | null = null;
 
@@ -1917,7 +2159,7 @@ export class CalendarView extends BasesViewBase {
 			const visibleProperties = this.getVisibleProperties();
 
 			// Render task events with TaskCard
-			if (taskInfo && eventType !== 'ics' && eventType !== 'property-based') {
+			if (taskInfo && eventType !== "ics" && eventType !== "property-based") {
 				// Enrich TaskInfo with Bases data for formula and file property access
 				const enrichedTask = { ...taskInfo };
 				const basesEntry = this.basesEntryByPath.get(taskInfo.path);
@@ -1930,12 +2172,16 @@ export class CalendarView extends BasesViewBase {
 					// Pre-populate formula results for performance (formulas are accessed frequently)
 					if (visibleProperties) {
 						for (const propId of visibleProperties) {
-							if (propId.startsWith('formula.')) {
+							if (propId.startsWith("formula.")) {
 								try {
 									// Just trigger the getValue to ensure it's cached by Bases
 									basesEntry.getValue?.(propId);
 								} catch (error) {
-									console.debug('[TaskNotes][CalendarView] Error getting formula:', propId, error);
+									console.debug(
+										"[TaskNotes][CalendarView] Error getting formula:",
+										propId,
+										error
+									);
 								}
 							}
 						}
@@ -1944,18 +2190,24 @@ export class CalendarView extends BasesViewBase {
 					// Add file properties if not already present
 					if (!enrichedTask.dateCreated) {
 						try {
-							const ctimeValue = basesEntry.getValue?.('file.ctime');
+							const ctimeValue = basesEntry.getValue?.("file.ctime");
 							if (ctimeValue?.data) enrichedTask.dateCreated = ctimeValue.data;
 						} catch (error) {
-							console.debug('[TaskNotes][CalendarView] Error getting file.ctime:', error);
+							console.debug(
+								"[TaskNotes][CalendarView] Error getting file.ctime:",
+								error
+							);
 						}
 					}
 					if (!enrichedTask.dateModified) {
 						try {
-							const mtimeValue = basesEntry.getValue?.('file.mtime');
+							const mtimeValue = basesEntry.getValue?.("file.mtime");
 							if (mtimeValue?.data) enrichedTask.dateModified = mtimeValue.data;
 						} catch (error) {
-							console.debug('[TaskNotes][CalendarView] Error getting file.mtime:', error);
+							console.debug(
+								"[TaskNotes][CalendarView] Error getting file.mtime:",
+								error
+							);
 						}
 					}
 				}
@@ -1963,25 +2215,28 @@ export class CalendarView extends BasesViewBase {
 				// Use shared UTC-anchored target date logic
 				const targetDate = getTargetDateForEvent(arg);
 
-				cardElement = createTaskCard(enrichedTask, this.plugin, visibleProperties, this.buildTaskCardOptions({
-					targetDate: targetDate,
-				}));
+				cardElement = createTaskCard(
+					enrichedTask,
+					this.plugin,
+					visibleProperties,
+					this.buildTaskCardOptions({
+						targetDate: targetDate,
+					})
+				);
 			}
 			// Render ICS events with ICSCard
-			else if (icsEvent && eventType === 'ics') {
+			else if (icsEvent && eventType === "ics") {
 				cardElement = createICSEventCard(icsEvent, this.plugin);
 			}
 			// Render property-based events with PropertyEventCard
-			else if (eventType === 'property-based' && basesEntry) {
-				cardElement = createPropertyEventCard(
-					basesEntry,
-					this.plugin,
-					this.config
-				);
+			else if (eventType === "property-based" && basesEntry) {
+				cardElement = createPropertyEventCard(basesEntry, this.plugin, this.config);
 			}
 			// Render timeblock events with TimeBlockCard
-			else if (eventType === 'timeblock' && timeblock) {
-				const originalDate = arg.event.start ? format(arg.event.start, "yyyy-MM-dd") : undefined;
+			else if (eventType === "timeblock" && timeblock) {
+				const originalDate = arg.event.start
+					? format(arg.event.start, "yyyy-MM-dd")
+					: undefined;
 				cardElement = createTimeBlockCard(timeblock, this.plugin, {
 					eventDate: arg.event.start,
 					originalDate: originalDate,
@@ -1992,11 +2247,11 @@ export class CalendarView extends BasesViewBase {
 			if (cardElement) {
 				arg.el.appendChild(cardElement);
 				// Remove default FullCalendar classes that interfere with card styling
-				arg.el.classList.remove('fc-event', 'fc-event-start', 'fc-event-end');
+				arg.el.classList.remove("fc-event", "fc-event-start", "fc-event-end");
 				return; // Skip default handling
 			} else {
 				// Fallback: Add consistent styling to events without custom cards
-				arg.el.classList.add('fc-event-default-list');
+				arg.el.classList.add("fc-event-default-list");
 			}
 		}
 
@@ -2118,7 +2373,9 @@ export class CalendarView extends BasesViewBase {
 		// Add hover preview for property-based events (Ctrl+hover to preview note)
 		if (eventType === "property-based" && arg.event.extendedProps.filePath) {
 			arg.el.addEventListener("mouseover", (event: MouseEvent) => {
-				const file = this.plugin.app.vault.getAbstractFileByPath(arg.event.extendedProps.filePath);
+				const file = this.plugin.app.vault.getAbstractFileByPath(
+					arg.event.extendedProps.filePath
+				);
 				if (file) {
 					this.plugin.app.workspace.trigger("hover-link", {
 						event,
@@ -2138,13 +2395,20 @@ export class CalendarView extends BasesViewBase {
 				e.preventDefault();
 				e.stopPropagation();
 
-				const file = this.plugin.app.vault.getAbstractFileByPath(arg.event.extendedProps.filePath);
+				const file = this.plugin.app.vault.getAbstractFileByPath(
+					arg.event.extendedProps.filePath
+				);
 
 				if (file instanceof TFile) {
 					const menu = new Menu();
 
 					// Trigger Obsidian's default file menu
-					this.plugin.app.workspace.trigger("file-menu", menu, file, "tasknotes-bases-calendar");
+					this.plugin.app.workspace.trigger(
+						"file-menu",
+						menu,
+						file,
+						"tasknotes-bases-calendar"
+					);
 
 					// Show menu at mouse position
 					menu.showAtPosition({ x: e.clientX, y: e.clientY });
@@ -2159,8 +2423,26 @@ export class CalendarView extends BasesViewBase {
 		// Add calendar-specific classes and styles to root
 		if (this.rootElement) {
 			// Remove base classes that interfere with calendar layout, keep only what we need
-			this.rootElement.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
-			this.rootElement.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
+			this.rootElement.className =
+				"tn-bases-integration tasknotes-plugin advanced-calendar-view";
+			this.rootElement.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-flex-1-14e3b769",
+				"tn-static-flex-direction-column-06c8b5ed",
+				"tn-static-height-0-7a31cef0",
+				"tn-static-height-100-62264068",
+				"tn-static-height-12px-06c0747e",
+				"tn-static-height-16px-30de4aee",
+				"tn-static-height-24px-29a11d37"
+			);
+			this.rootElement.classList.add("tn-static-min-height-800px-997b4c8c");
 
 			// Use correct document for pop-out window support
 			const doc = this.containerEl.ownerDocument;
@@ -2168,7 +2450,13 @@ export class CalendarView extends BasesViewBase {
 			// Calendar element for FullCalendar to render into
 			const calendarEl = doc.createElement("div");
 			calendarEl.id = "bases-calendar";
-			calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
+			calendarEl.classList.remove(
+				"tn-static-flex-1-97445a8d",
+				"tn-static-margin-top-12px-91e0f558",
+				"tn-static-min-height-800px-997b4c8c",
+				"tn-static-overflow-hidden-69824400"
+			);
+			calendarEl.classList.add("tn-static-flex-1-14e3b769");
 			this.rootElement.appendChild(calendarEl);
 			this.calendarEl = calendarEl;
 		}
@@ -2187,8 +2475,36 @@ export class CalendarView extends BasesViewBase {
 		const doc = this.calendarEl.ownerDocument;
 		const errorEl = doc.createElement("div");
 		errorEl.className = "tn-bases-error";
-		errorEl.style.cssText =
-			"padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;";
+		errorEl.classList.remove(
+			"tn-static-border-radius-4px-c290c56e",
+			"tn-static-border-radius-6px-0dc8408c",
+			"tn-static-color-var-color-accent-d2cad743",
+			"tn-static-color-var-text-accent-65b47ee3",
+			"tn-static-color-var-text-muted-5872de20",
+			"tn-static-color-var-text-on-accent-f3e1679d",
+			"tn-static-color-var-text-warning-783d5f03",
+			"tn-static-color-var-tn-text-muted-a90fb6f3",
+			"tn-static-color-white-0a43e56a",
+			"tn-static-cursor-pointer-2723efcc",
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-0-11696618",
+			"tn-static-margin-0-auto-266e9b04",
+			"tn-static-margin-0-db0d5f36",
+			"tn-static-margin-0-var-size-4-2-77f7dc08",
+			"tn-static-margin-2px-0-edce9b14",
+			"tn-static-margin-8px-0-0-0-a2eb8382",
+			"tn-static-padding-0-16px-16px-16px-f1aa998c",
+			"tn-static-padding-0-41d7d7e2",
+			"tn-static-padding-12px-43bef435",
+			"tn-static-padding-16px-287f770e",
+			"tn-static-padding-20px-769fed37",
+			"tn-static-padding-20px-7a035d95",
+			"tn-static-padding-2px-8px-c8eea84a",
+			"tn-static-padding-2rem-42aa6d9c"
+		);
+		errorEl.classList.add("tn-static-padding-20px-ebe8e48c");
 		errorEl.textContent = `Error loading calendar: ${error.message || "Unknown error"}`;
 		this.calendarEl.appendChild(errorEl);
 	}

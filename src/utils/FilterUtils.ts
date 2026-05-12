@@ -309,7 +309,7 @@ export class FilterUtils {
 		try {
 			this.validateFilterNode(node, true); // Use strict validation
 			return true;
-		} catch (error) {
+		} catch {
 			return false;
 		}
 	}
@@ -497,7 +497,7 @@ export class FilterUtils {
 
 		// Check if taskTag is a child of conditionTag
 		// 't/ef/project' should match when searching for 't/ef'
-		if (taskTagLower.startsWith(conditionTagLower + '/')) {
+		if (taskTagLower.startsWith(conditionTagLower + "/")) {
 			return true; // Hierarchical child match
 		}
 
@@ -533,7 +533,7 @@ export class FilterUtils {
 
 		// Check if taskTag is a child of conditionTag
 		// 't/ef/project' should match when searching for 't/ef'
-		if (taskTagLower.startsWith(conditionTagLower + '/')) {
+		if (taskTagLower.startsWith(conditionTagLower + "/")) {
 			return true; // Hierarchical child match
 		}
 
@@ -557,19 +557,19 @@ export class FilterUtils {
 
 		// Separate inclusion and exclusion patterns
 		for (const condTag of conditionTags) {
-			if (typeof condTag === 'string' && condTag.startsWith('-')) {
+			if (typeof condTag === "string" && condTag.startsWith("-")) {
 				const excludePattern = condTag.slice(1);
 				if (excludePattern) {
 					exclusions.push(excludePattern);
 				}
-			} else if (typeof condTag === 'string') {
+			} else if (typeof condTag === "string") {
 				inclusions.push(condTag);
 			}
 		}
 
 		// Check exclusions first - if any excluded tag is found, reject
 		for (const excludePattern of exclusions) {
-			const hasExcludedTag = taskTags.some(taskTag =>
+			const hasExcludedTag = taskTags.some((taskTag) =>
 				this.matchesHierarchicalTag(taskTag, excludePattern)
 			);
 			if (hasExcludedTag) {
@@ -579,10 +579,8 @@ export class FilterUtils {
 
 		// If there are inclusion patterns, at least one must match
 		if (inclusions.length > 0) {
-			return inclusions.some(includePattern =>
-				taskTags.some(taskTag =>
-					this.matchesHierarchicalTag(taskTag, includePattern)
-				)
+			return inclusions.some((includePattern) =>
+				taskTags.some((taskTag) => this.matchesHierarchicalTag(taskTag, includePattern))
 			);
 		}
 
@@ -605,7 +603,9 @@ export class FilterUtils {
 				if (property === "tags") {
 					// Use hierarchical tag matching for tags with proper exclusion handling
 					const taskTags = taskValue.filter((tv): tv is string => typeof tv === "string");
-					const condTags = conditionValue.filter((cv): cv is string => typeof cv === "string");
+					const condTags = conditionValue.filter(
+						(cv): cv is string => typeof cv === "string"
+					);
 					return FilterUtils.matchesTagConditions(taskTags, condTags);
 				} else {
 					// Use default substring matching for other properties
@@ -640,13 +640,16 @@ export class FilterUtils {
 				// Task has string, condition is array
 				if (property === "tags") {
 					// Use hierarchical tag matching for tags with proper exclusion handling
-					const condTags = conditionValue.filter((cv): cv is string => typeof cv === "string");
+					const condTags = conditionValue.filter(
+						(cv): cv is string => typeof cv === "string"
+					);
 					return FilterUtils.matchesTagConditions([taskValue], condTags);
 				} else {
 					// Use default substring matching for other properties
 					return conditionValue.some(
 						(cv) =>
-							typeof cv === "string" && taskValue.toLowerCase().includes(cv.toLowerCase())
+							typeof cv === "string" &&
+							taskValue.toLowerCase().includes(cv.toLowerCase())
 					);
 				}
 			} else {

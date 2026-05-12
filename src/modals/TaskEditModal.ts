@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { App, Notice, TFile, TAbstractFile, setIcon, setTooltip } from "obsidian";
+import { App, Notice, TFile, TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
@@ -11,7 +11,6 @@ import {
 	sanitizeTags,
 } from "../utils/helpers";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
-import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
 import { BlockingUpdates, buildTaskEditChanges } from "./taskEditChanges";
@@ -80,8 +79,7 @@ export class TaskEditModal extends TaskModal {
 			this.selectedProjectItems = [];
 		}
 
-		const shouldFilterTaskTag =
-			this.plugin.settings.taskIdentificationMethod === "tag";
+		const shouldFilterTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
 		const rawTags = this.task.tags || [];
 		const visibleTags = shouldFilterTaskTag
 			? rawTags.filter((tag) => tag !== this.plugin.settings.taskTag)
@@ -94,7 +92,7 @@ export class TaskEditModal extends TaskModal {
 		this.recurrenceRule = this.task.recurrence || "";
 
 		// Initialize recurrence anchor
-		this.recurrenceAnchor = this.task.recurrence_anchor || 'scheduled';
+		this.recurrenceAnchor = this.task.recurrence_anchor || "scheduled";
 
 		// Initialize reminders
 		this.reminders = this.task.reminders ? [...this.task.reminders] : [];
@@ -228,8 +226,8 @@ export class TaskEditModal extends TaskModal {
 			// Check if this file is actually a task (has task tag/property)
 			// If not, keep the original task data (e.g., for "convert note to task" flow)
 			const metadata = this.app.metadataCache.getFileCache(file);
-			const isRecognizedTask = metadata?.frontmatter &&
-				this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
+			const isRecognizedTask =
+				metadata?.frontmatter && this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
 
 			if (!isRecognizedTask) {
 				// File is not yet a task - keep the original task data passed to constructor
@@ -566,8 +564,7 @@ export class TaskEditModal extends TaskModal {
 			userFieldConfigs: this.plugin.settings?.userFields || [],
 			taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
 			taskTag: this.plugin.settings.taskTag,
-			maintainDueDateOffsetInRecurring:
-				this.plugin.settings.maintainDueDateOffsetInRecurring,
+			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
 
@@ -682,7 +679,8 @@ export class TaskEditModal extends TaskModal {
 			const taskFile = this.app.vault.getAbstractFileByPath(this.task.path);
 			if (!(taskFile instanceof TFile)) return;
 
-			const subtasks = await this.plugin.projectSubtasksService.getTasksLinkedToProject(taskFile);
+			const subtasks =
+				await this.plugin.projectSubtasksService.getTasksLinkedToProject(taskFile);
 			this.selectedSubtaskFiles = [];
 			this.initialSubtaskFiles = [];
 
@@ -700,28 +698,30 @@ export class TaskEditModal extends TaskModal {
 
 	protected hasSubtaskChanges(): boolean {
 		// Check if subtasks have changed
-		const current = this.selectedSubtaskFiles.map(f => f.path).sort();
-		const initial = this.initialSubtaskFiles.map(f => f.path).sort();
+		const current = this.selectedSubtaskFiles.map((f) => f.path).sort();
+		const initial = this.initialSubtaskFiles.map((f) => f.path).sort();
 
-		return current.length !== initial.length ||
-			   current.some((path, index) => path !== initial[index]);
+		return (
+			current.length !== initial.length ||
+			current.some((path, index) => path !== initial[index])
+		);
 	}
 
 	protected async applySubtaskChanges(task: TaskInfo): Promise<void> {
 		const currentTaskFile = this.app.vault.getAbstractFileByPath(task.path);
 		if (!(currentTaskFile instanceof TFile)) return;
 
-		const currentPaths = new Set(this.selectedSubtaskFiles.map(f => f.path));
-		const initialPaths = new Set(this.initialSubtaskFiles.map(f => f.path));
+		const currentPaths = new Set(this.selectedSubtaskFiles.map((f) => f.path));
+		const initialPaths = new Set(this.initialSubtaskFiles.map((f) => f.path));
 
 		// Remove current task from tasks that should no longer be subtasks
-		const toRemove = this.initialSubtaskFiles.filter(f => !currentPaths.has(f.path));
+		const toRemove = this.initialSubtaskFiles.filter((f) => !currentPaths.has(f.path));
 		for (const file of toRemove) {
 			await this.removeSubtaskRelation(file, currentTaskFile);
 		}
 
 		// Add current task to tasks that should become subtasks
-		const toAdd = this.selectedSubtaskFiles.filter(f => !initialPaths.has(f.path));
+		const toAdd = this.selectedSubtaskFiles.filter((f) => !initialPaths.has(f.path));
 		for (const file of toAdd) {
 			await this.addSubtaskRelation(file, currentTaskFile);
 		}
@@ -730,7 +730,10 @@ export class TaskEditModal extends TaskModal {
 		this.initialSubtaskFiles = [...this.selectedSubtaskFiles];
 	}
 
-	protected async addSubtaskRelation(subtaskFile: TAbstractFile, parentTaskFile: TFile): Promise<void> {
+	protected async addSubtaskRelation(
+		subtaskFile: TAbstractFile,
+		parentTaskFile: TFile
+	): Promise<void> {
 		try {
 			const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
 			if (!subtaskInfo) return;
@@ -754,7 +757,10 @@ export class TaskEditModal extends TaskModal {
 		}
 	}
 
-	protected async removeSubtaskRelation(subtaskFile: TAbstractFile, parentTaskFile: TFile): Promise<void> {
+	protected async removeSubtaskRelation(
+		subtaskFile: TAbstractFile,
+		parentTaskFile: TFile
+	): Promise<void> {
 		try {
 			const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
 			if (!subtaskInfo) return;

@@ -1,4 +1,4 @@
-import { App, setIcon } from "obsidian";
+import { App } from "obsidian";
 import { ContextMenu } from "./ContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
 import { addDaysToDateTime } from "../utils/dateUtils";
@@ -128,7 +128,6 @@ export class DateContextMenu {
 	}
 
 	public getDateOptions(): DateOption[] {
-		 
 		const today = (window as any).moment();
 		const options: DateOption[] = [];
 

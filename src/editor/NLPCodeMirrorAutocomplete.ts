@@ -5,7 +5,7 @@ import {
 	Completion,
 	acceptCompletion,
 	moveCompletionSelection,
-	closeCompletion
+	closeCompletion,
 } from "@codemirror/autocomplete";
 import { Extension, Prec } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
@@ -139,12 +139,12 @@ export function createNLPAutocomplete(plugin: TaskNotesPlugin): Extension[] {
 					// Only render custom content for project suggestions with metadata
 					if (!completion.projectMetadata) return null;
 
-					const container = document.createElement("div");
+					const container = activeDocument.createElement("div");
 					container.className = "cm-project-suggestion__metadata";
 
 					const metadata = completion.projectMetadata;
 					for (const row of metadata) {
-						const metaRow = document.createElement("div");
+						const metaRow = activeDocument.createElement("div");
 						metaRow.className = "cm-project-suggestion__meta";
 						metaRow.textContent = row;
 						container.appendChild(metaRow);
@@ -315,7 +315,9 @@ async function getFileSuggestions(
 
 					const title = typeof mapped.title === "string" ? mapped.title : "";
 					const aliases = Array.isArray(frontmatter["aliases"])
-						? (frontmatter["aliases"] as any[]).filter((a: any) => typeof a === "string")
+						? (frontmatter["aliases"] as any[]).filter(
+								(a: any) => typeof a === "string"
+							)
 						: [];
 
 					const fileData: ProjectEntry = {
@@ -328,7 +330,11 @@ async function getFileSuggestions(
 						frontmatter,
 					};
 
-					metadataRows = resolver.buildMetadataRows(rowConfigs, fileData, parseDisplayFieldsRow);
+					metadataRows = resolver.buildMetadataRows(
+						rowConfigs,
+						fileData,
+						parseDisplayFieldsRow
+					);
 				}
 
 				return {

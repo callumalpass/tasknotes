@@ -30,7 +30,7 @@ export class DeviceCodeModal extends Modal {
 		this.plugin = plugin;
 		this.deviceCode = deviceCode;
 		this.onCancel = onCancel;
-		this.expiresAt = Date.now() + (deviceCode.expiresIn * 1000);
+		this.expiresAt = Date.now() + deviceCode.expiresIn * 1000;
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
 	}
 
@@ -43,7 +43,10 @@ export class DeviceCodeModal extends Modal {
 		const header = contentEl.createDiv({ cls: "tasknotes-device-code-header" });
 		const headerIcon = header.createSpan({ cls: "tasknotes-device-code-icon" });
 		setIcon(headerIcon, "shield-check");
-		header.createEl("h2", { text: this.translate("modals.deviceCode.title"), cls: "tasknotes-device-code-title" });
+		header.createEl("h2", {
+			text: this.translate("modals.deviceCode.title"),
+			cls: "tasknotes-device-code-title",
+		});
 
 		// Instructions
 		const instructions = contentEl.createDiv({ cls: "tasknotes-device-code-instructions" });
@@ -59,7 +62,7 @@ export class DeviceCodeModal extends Modal {
 		const linkSpan = step1.createEl("a", {
 			text: this.deviceCode.verificationUrl,
 			href: this.deviceCode.verificationUrl,
-			cls: "tasknotes-device-code-link"
+			cls: "tasknotes-device-code-link",
 		});
 		linkSpan.setAttribute("target", "_blank");
 		step1.createSpan({ text: " " + this.translate("modals.deviceCode.steps.inBrowser") });
@@ -77,18 +80,18 @@ export class DeviceCodeModal extends Modal {
 		const codeContainer = contentEl.createDiv({ cls: "tasknotes-device-code-container" });
 		codeContainer.createEl("div", {
 			text: this.translate("modals.deviceCode.codeLabel"),
-			cls: "tasknotes-device-code-label"
+			cls: "tasknotes-device-code-label",
 		});
 
 		const codeBox = codeContainer.createEl("div", { cls: "tasknotes-device-code-box" });
 		codeBox.createEl("code", {
 			text: this.formatUserCode(this.deviceCode.userCode),
-			cls: "tasknotes-device-code-text"
+			cls: "tasknotes-device-code-text",
 		});
 
 		const copyIcon = codeBox.createEl("button", {
 			cls: "tasknotes-device-code-copy",
-			attr: { "aria-label": this.translate("modals.deviceCode.copyCodeAriaLabel") }
+			attr: { "aria-label": this.translate("modals.deviceCode.copyCodeAriaLabel") },
 		});
 		setIcon(copyIcon, "copy");
 		copyIcon.addEventListener("click", () => {
@@ -107,7 +110,7 @@ export class DeviceCodeModal extends Modal {
 		setIcon(timerIcon, "clock");
 		const timerText = timerContainer.createEl("span", {
 			text: this.getTimeRemaining(),
-			cls: "tasknotes-device-code-timer-text"
+			cls: "tasknotes-device-code-timer-text",
 		});
 
 		// Update countdown every second
@@ -128,7 +131,7 @@ export class DeviceCodeModal extends Modal {
 		statusIcon.addClass("tasknotes-device-code-spinner");
 		statusContainer.createEl("span", {
 			text: this.translate("modals.deviceCode.waitingForAuthorization"),
-			cls: "tasknotes-device-code-status-text"
+			cls: "tasknotes-device-code-status-text",
 		});
 
 		// Buttons
@@ -137,7 +140,7 @@ export class DeviceCodeModal extends Modal {
 		// Open browser button
 		const openButton = buttonContainer.createEl("button", {
 			text: this.translate("modals.deviceCode.openBrowserButton"),
-			cls: "mod-cta"
+			cls: "mod-cta",
 		});
 		const openIcon = openButton.createSpan({ cls: "tasknotes-device-code-button-icon" });
 		setIcon(openIcon, "external-link");
@@ -150,7 +153,7 @@ export class DeviceCodeModal extends Modal {
 		// Cancel button
 		const cancelButton = buttonContainer.createEl("button", {
 			text: this.translate("modals.deviceCode.cancelButton"),
-			cls: "tasknotes-device-code-cancel"
+			cls: "tasknotes-device-code-cancel",
 		});
 		const cancelIcon = cancelButton.createSpan({ cls: "tasknotes-device-code-button-icon" });
 		setIcon(cancelIcon, "x");
@@ -160,8 +163,8 @@ export class DeviceCodeModal extends Modal {
 		});
 
 		// Add some helpful CSS for spinner animation
-		if (!document.getElementById("tasknotes-device-code-styles")) {
-			const style = document.createElement("style");
+		if (!activeDocument.getElementById("tasknotes-device-code-styles")) {
+			const style = activeDocument.createElement("style");
 			style.id = "tasknotes-device-code-styles";
 			style.textContent = `
 				.tasknotes-device-code-modal {
@@ -349,7 +352,7 @@ export class DeviceCodeModal extends Modal {
 					height: 16px;
 				}
 			`;
-			document.head.appendChild(style);
+			activeDocument.head.appendChild(style);
 		}
 	}
 

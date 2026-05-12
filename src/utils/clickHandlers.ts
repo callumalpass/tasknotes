@@ -1,6 +1,7 @@
 import { TFile } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
+import { BatchContextMenu } from "../components/BatchContextMenu";
 
 export interface ClickHandlerOptions {
 	task: TaskInfo;
@@ -17,9 +18,9 @@ const DEFAULT_EXCLUDE_SELECTOR = [
 	"input",
 	"textarea",
 	"select",
-	"[role=\"button\"]",
-	"[data-tn-no-drag=\"true\"]",
-	"[data-tn-click-exclude=\"true\"]",
+	'[role="button"]',
+	'[data-tn-no-drag="true"]',
+	'[data-tn-click-exclude="true"]',
 	".tag",
 ].join(", ");
 
@@ -155,7 +156,6 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 
 			// Show batch context menu if we have selections
 			if (selectionService.getSelectionCount() > 0) {
-				const { BatchContextMenu } = require("../components/BatchContextMenu");
 				const menu = new BatchContextMenu({
 					plugin,
 					selectedPaths: selectionService.getSelectedPaths(),
@@ -174,7 +174,6 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 			}
 
 			// Import and show batch context menu
-			const { BatchContextMenu } = require("../components/BatchContextMenu");
 			const menu = new BatchContextMenu({
 				plugin,
 				selectedPaths: selectionService.getSelectedPaths(),

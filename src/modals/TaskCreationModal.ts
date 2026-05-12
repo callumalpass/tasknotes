@@ -10,17 +10,30 @@ import {
 import { combineDateAndTime } from "../utils/dateUtils";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 
-import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import type {
+	EmbeddableMarkdownEditor,
+	MarkdownEditorProps,
+} from "../editor/EmbeddableMarkdownEditor";
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
 import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreationData";
 import { NLPSuggest } from "./taskCreationSuggest";
 export type { StatusSuggestion } from "./taskCreationSuggest";
 
-
 export interface TaskCreationOptions {
 	prePopulatedValues?: Partial<TaskInfo>;
 	onTaskCreated?: (task: TaskInfo) => void;
 	creationContext?: "manual-creation" | "modal-inline-creation"; // Folder behavior context
+}
+
+function createEmbeddableMarkdownEditor(
+	app: App,
+	container: HTMLElement,
+	options: Partial<MarkdownEditorProps>
+): EmbeddableMarkdownEditor {
+	// Lazy-load because the editor module resolves Obsidian internals during evaluation.
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const editorModule = require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
+	return new editorModule.EmbeddableMarkdownEditor(app, container, options);
 }
 
 export class TaskCreationModal extends TaskModal {
@@ -39,11 +52,7 @@ export class TaskCreationModal extends TaskModal {
 		handler: EventListener;
 	}> = [];
 
-	constructor(
-		app: App,
-		plugin: TaskNotesPlugin,
-		options: TaskCreationOptions = {}
-	) {
+	constructor(app: App, plugin: TaskNotesPlugin, options: TaskCreationOptions = {}) {
 		super(app, plugin);
 		this.options = options;
 		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
@@ -128,7 +137,7 @@ export class TaskCreationModal extends TaskModal {
 			const nlpAutocomplete = createNLPAutocomplete(this.plugin);
 
 			// Create embeddable markdown editor with autocomplete
-			this.nlMarkdownEditor = new EmbeddableMarkdownEditor(this.app, editorContainer, {
+			this.nlMarkdownEditor = createEmbeddableMarkdownEditor(this.app, editorContainer, {
 				value: "",
 				placeholder: this.t("modals.taskCreation.nlPlaceholder"),
 				cls: "nlp-editor",
@@ -161,7 +170,9 @@ export class TaskCreationModal extends TaskModal {
 					}
 					// Focus title input
 					window.setTimeout(() => {
-						const titleInput = this.modalEl.querySelector(".title-input-detailed") as HTMLInputElement;
+						const titleInput = this.modalEl.querySelector(
+							".title-input-detailed"
+						) as HTMLInputElement;
 						if (titleInput) {
 							titleInput.focus();
 						}
@@ -247,7 +258,17 @@ export class TaskCreationModal extends TaskModal {
 
 		if (previewData.length > 0 && parsed.title) {
 			this.nlPreviewContainer.empty();
-			this.nlPreviewContainer.style.display = "block";
+			this.nlPreviewContainer.classList.remove(
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.nlPreviewContainer.classList.add("tn-static-display-block-2a1b75c9");
 
 			previewData.forEach((item) => {
 				const previewItem = this.nlPreviewContainer.createDiv("nl-preview-item");
@@ -261,7 +282,17 @@ export class TaskCreationModal extends TaskModal {
 	private clearNaturalLanguagePreview(): void {
 		if (this.nlPreviewContainer) {
 			this.nlPreviewContainer.empty();
-			this.nlPreviewContainer.style.display = "none";
+			this.nlPreviewContainer.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.nlPreviewContainer.classList.add("tn-static-display-none-6b99de8b");
 		}
 	}
 
@@ -324,10 +355,41 @@ export class TaskCreationModal extends TaskModal {
 
 			// Add separator
 			const separator = this.actionBar.createDiv("action-separator");
-			separator.style.width = "1px";
-			separator.style.height = "24px";
-			separator.style.backgroundColor = "var(--background-modifier-border)";
-			separator.style.margin = "0 var(--size-4-2)";
+			separator.classList.remove(
+				"tn-static-width-100-0466783d",
+				"tn-static-width-12px-fbf353fb",
+				"tn-static-width-16px-7375d50b",
+				"tn-static-width-200px-2acaf3b5",
+				"tn-static-width-60px-bd09c419",
+				"tn-static-width-80px-8573bae3"
+			);
+			separator.classList.add("tn-static-width-1px-aa77e27e");
+			separator.classList.remove(
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-height-0-7a31cef0",
+				"tn-static-height-100-62264068",
+				"tn-static-height-12px-06c0747e",
+				"tn-static-height-16px-30de4aee",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			separator.classList.add("tn-static-height-24px-29a11d37");
+			separator.classList.remove(
+				"tn-static-background-color-var-background-se-9087a23e",
+				"tn-static-background-color-var-color-base-40-ef5f175e",
+				"tn-static-background-color-var-color-red-134bc721",
+				"tn-static-background-color-var-text-accent-a954c70f"
+			);
+			separator.classList.add("tn-static-background-color-var-background-mo-94b219f0");
+			separator.classList.remove(
+				"tn-static-margin-0-11696618",
+				"tn-static-margin-0-auto-266e9b04",
+				"tn-static-margin-0-db0d5f36",
+				"tn-static-margin-2px-0-edce9b14",
+				"tn-static-margin-8px-0-0-0-a2eb8382",
+				"tn-static-padding-12px-43bef435",
+				"tn-static-padding-20px-ebe8e48c"
+			);
+			separator.classList.add("tn-static-margin-0-var-size-4-2-77f7dc08");
 		}
 
 		// Due date icon
@@ -458,13 +520,22 @@ export class TaskCreationModal extends TaskModal {
 
 		// Handle user-defined fields
 		if (parsed.userFields) {
-			console.debug("[TaskCreationModal] applyParsedData - parsed.userFields:", parsed.userFields);
-			console.debug("[TaskCreationModal] applyParsedData - available user field definitions:", this.plugin.settings.userFields);
+			console.debug(
+				"[TaskCreationModal] applyParsedData - parsed.userFields:",
+				parsed.userFields
+			);
+			console.debug(
+				"[TaskCreationModal] applyParsedData - available user field definitions:",
+				this.plugin.settings.userFields
+			);
 
 			for (const [fieldId, value] of Object.entries(parsed.userFields)) {
 				// Find the user field definition
 				const userField = this.plugin.settings.userFields?.find((f) => f.id === fieldId);
-				console.debug(`[TaskCreationModal] Looking for field ${fieldId}, found:`, userField);
+				console.debug(
+					`[TaskCreationModal] Looking for field ${fieldId}, found:`,
+					userField
+				);
 
 				if (userField) {
 					// Store in userFields using the frontmatter key
@@ -473,10 +544,14 @@ export class TaskCreationModal extends TaskModal {
 					} else {
 						this.userFields[userField.key] = value;
 					}
-					console.debug(`[TaskCreationModal] Applied user field ${userField.displayName} (key: ${userField.key}): ${value}`);
+					console.debug(
+						`[TaskCreationModal] Applied user field ${userField.displayName} (key: ${userField.key}): ${value}`
+					);
 					console.debug(`[TaskCreationModal] Current this.userFields:`, this.userFields);
 				} else {
-					console.warn(`[TaskCreationModal] No user field definition found for field ID: ${fieldId}`);
+					console.warn(
+						`[TaskCreationModal] No user field definition found for field ID: ${fieldId}`
+					);
 				}
 			}
 		} else {
@@ -491,7 +566,17 @@ export class TaskCreationModal extends TaskModal {
 		if (this.isExpanded) {
 			// Collapse
 			this.isExpanded = false;
-			this.detailsContainer.style.display = "none";
+			this.detailsContainer.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.detailsContainer.classList.add("tn-static-display-none-6b99de8b");
 			this.containerEl.removeClass("expanded");
 		} else {
 			// Expand
@@ -543,7 +628,11 @@ export class TaskCreationModal extends TaskModal {
 				if (field.defaultValue !== undefined) {
 					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
 					if (field.type === "date" && typeof field.defaultValue === "string") {
-						const datePreset = field.defaultValue as "none" | "today" | "tomorrow" | "next-week";
+						const datePreset = field.defaultValue as
+							| "none"
+							| "today"
+							| "tomorrow"
+							| "next-week";
 						const calculatedDate = calculateDefaultDate(datePreset);
 						if (calculatedDate) {
 							this.userFields[field.key] = calculatedDate;
@@ -616,7 +705,9 @@ export class TaskCreationModal extends TaskModal {
 		try {
 			const taskData = this.buildTaskData();
 			// Disable defaults since they were already applied to form fields in initializeFormData()
-			const result = await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
+			const result = await this.plugin.taskService.createTask(taskData, {
+				applyDefaults: false,
+			});
 			let createdTask = result.taskInfo;
 
 			// Check if filename was changed due to length constraints
@@ -720,9 +811,14 @@ export class TaskCreationModal extends TaskModal {
 				const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
 				if (!subtaskInfo) continue;
 
-				const projectReference = this.buildProjectReference(currentTaskFile, subtaskFile.path);
+				const projectReference = this.buildProjectReference(
+					currentTaskFile,
+					subtaskFile.path
+				);
 				const legacyReference = `[[${currentTaskFile.basename}]]`;
-				const currentProjects = Array.isArray(subtaskInfo.projects) ? subtaskInfo.projects : [];
+				const currentProjects = Array.isArray(subtaskInfo.projects)
+					? subtaskInfo.projects
+					: [];
 
 				if (
 					currentProjects.includes(projectReference) ||
@@ -731,7 +827,9 @@ export class TaskCreationModal extends TaskModal {
 					continue;
 				}
 
-				const sanitizedProjects = currentProjects.filter((entry) => entry !== legacyReference);
+				const sanitizedProjects = currentProjects.filter(
+					(entry) => entry !== legacyReference
+				);
 				const updatedProjects = [...sanitizedProjects, projectReference];
 				await this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects);
 			} catch (error) {

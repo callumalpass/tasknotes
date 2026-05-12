@@ -1125,7 +1125,7 @@ describe('TaskService', () => {
     it('should delete a task successfully', async () => {
       await taskService.deleteTask(task);
 
-      expect(mockPlugin.app.vault.delete).toHaveBeenCalledWith(mockFile);
+      expect(mockPlugin.app.fileManager.trashFile).toHaveBeenCalledWith(mockFile);
       expect(mockPlugin.cacheManager.clearCacheEntry).toHaveBeenCalledWith(task.path);
       expect(mockPlugin.emitter.trigger).toHaveBeenCalledWith('task-deleted', {
         path: task.path,
@@ -1141,7 +1141,7 @@ describe('TaskService', () => {
     });
 
     it('should handle vault deletion errors', async () => {
-      mockPlugin.app.vault.delete.mockRejectedValue(new Error('Deletion failed'));
+      mockPlugin.app.fileManager.trashFile.mockRejectedValue(new Error('Deletion failed'));
 
       await expect(taskService.deleteTask(task))
         .rejects.toThrow('Failed to delete task');

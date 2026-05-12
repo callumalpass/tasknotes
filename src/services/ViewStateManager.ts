@@ -1,4 +1,3 @@
- 
 import { FilterQuery, ViewFilterState, ViewPreferences, SavedView } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
 import { FilterUtils } from "../utils/FilterUtils";
@@ -365,8 +364,6 @@ export class ViewStateManager extends EventEmitter {
 				typeof localStorageData === "string" &&
 				this.savedViews.length === 0
 			) {
-				console.log("TaskNotes: Migrating saved views from localStorage to plugin data...");
-
 				// Parse localStorage data
 				const localStorageViews: SavedView[] = JSON.parse(localStorageData);
 
@@ -376,10 +373,6 @@ export class ViewStateManager extends EventEmitter {
 
 				// Clear localStorage after successful migration
 				this.app.saveLocalStorage(this.savedViewsStorageKey, null);
-
-				console.log(
-					`TaskNotes: Successfully migrated ${localStorageViews.length} saved views to plugin data.`
-				);
 			}
 		} catch (error) {
 			console.warn("Failed to load/migrate saved views:", error);

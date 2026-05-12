@@ -134,9 +134,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 		const contexts = this.plugin.cacheManager.getAllContexts();
 		return contexts
 			.filter((context) => context && typeof context === "string")
-			.filter((context) =>
-				context.toLowerCase().includes(query.toLowerCase())
-			)
+			.filter((context) => context.toLowerCase().includes(query.toLowerCase()))
 			.slice(0, 10)
 			.map((context) => ({
 				value: context,
@@ -153,7 +151,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 	 */
 	private getStatusSuggestions(query: string): StatusSuggestion[] {
 		const parser = NaturalLanguageParser.fromPlugin(this.plugin);
-		return parser.getStatusSuggestions(query, 10).map(s => ({
+		return parser.getStatusSuggestions(query, 10).map((s) => ({
 			...s,
 			type: "status" as const,
 			toString() {
@@ -278,7 +276,12 @@ export class NLPSuggest extends AbstractInputSuggest<
 					frontmatter: frontmatter,
 				};
 
-				const displayName = this.generateProjectDisplayName(rowConfigs, fileData, resolver, file.basename);
+				const displayName = this.generateProjectDisplayName(
+					rowConfigs,
+					fileData,
+					resolver,
+					file.basename
+				);
 
 				return {
 					basename: item.insertText,
@@ -359,7 +362,8 @@ export class NLPSuggest extends AbstractInputSuggest<
 		const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
 
 		// Find the active trigger
-		const { trigger, triggerIndex, queryAfterTrigger } = this.findActiveTrigger(textBeforeCursor);
+		const { trigger, triggerIndex, queryAfterTrigger } =
+			this.findActiveTrigger(textBeforeCursor);
 
 		if (!trigger || triggerIndex === -1) {
 			this.currentTrigger = null;
@@ -396,9 +400,10 @@ export class NLPSuggest extends AbstractInputSuggest<
 		// Add ARIA attributes for accessibility
 		el.setAttribute("role", "option");
 		// Get display text - ProjectSuggestion uses displayName, others use display
-		const displayText = suggestion.type === "project"
-			? (suggestion as ProjectSuggestion).displayName
-			: (suggestion as TagSuggestion | ContextSuggestion | StatusSuggestion).display;
+		const displayText =
+			suggestion.type === "project"
+				? (suggestion as ProjectSuggestion).displayName
+				: (suggestion as TagSuggestion | ContextSuggestion | StatusSuggestion).display;
 		el.setAttribute("aria-label", `${suggestion.type}: ${displayText}`);
 
 		const icon = el.createSpan("nlp-suggest-icon");
@@ -434,20 +439,20 @@ export class NLPSuggest extends AbstractInputSuggest<
 							filtered.push(m);
 					}
 					if (!filtered.length) return;
-					const frag = document.createDocumentFragment();
+					const frag = activeDocument.createDocumentFragment();
 					let last = 0;
 					for (const m of filtered) {
 						if (m.start > last)
 							frag.appendChild(
-								document.createTextNode(original.slice(last, m.start))
+								activeDocument.createTextNode(original.slice(last, m.start))
 							);
-						const mark = document.createElement("mark");
+						const mark = activeDocument.createElement("mark");
 						mark.textContent = original.slice(m.start, m.end);
 						frag.appendChild(mark);
 						last = m.end;
 					}
 					if (last < original.length)
-						frag.appendChild(document.createTextNode(original.slice(last)));
+						frag.appendChild(activeDocument.createTextNode(original.slice(last)));
 					node.parentNode?.replaceChild(frag, node);
 				} else if (
 					node.nodeType === Node.ELEMENT_NODE &&
@@ -497,8 +502,8 @@ export class NLPSuggest extends AbstractInputSuggest<
 								const lit = t.property.slice(8);
 								if (lit) {
 									if (metaRow.childNodes.length)
-										metaRow.appendChild(document.createTextNode(" "));
-									metaRow.appendChild(document.createTextNode(lit));
+										metaRow.appendChild(activeDocument.createTextNode(" "));
+									metaRow.appendChild(activeDocument.createTextNode(lit));
 									appended = true;
 								}
 								continue;
@@ -506,15 +511,15 @@ export class NLPSuggest extends AbstractInputSuggest<
 							const value = resolver.resolve(t.property, (suggestion as any).entry);
 							if (!value) continue;
 							if (metaRow.childNodes.length)
-								metaRow.appendChild(document.createTextNode(" "));
+								metaRow.appendChild(activeDocument.createTextNode(" "));
 							if (t.showName) {
-								const labelSpan = document.createElement("span");
+								const labelSpan = activeDocument.createElement("span");
 								labelSpan.className = "nlp-suggest-project__meta-label";
 								labelSpan.textContent = `${t.displayName ?? t.property}:`;
 								metaRow.appendChild(labelSpan);
-								metaRow.appendChild(document.createTextNode(" "));
+								metaRow.appendChild(activeDocument.createTextNode(" "));
 							}
-							const valueSpan = document.createElement("span");
+							const valueSpan = activeDocument.createElement("span");
 							valueSpan.className = "nlp-suggest-project__meta-value";
 							valueSpan.textContent = value;
 							metaRow.appendChild(valueSpan);

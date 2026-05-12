@@ -91,11 +91,12 @@ export class VirtualScroller<T> {
 		this.container.empty();
 
 		// Container should just be relative, parent handles overflow
-		this.container.style.position = 'relative';
+		this.container.classList.remove("tn-static-margin-top-12px-91e0f558");
+		this.container.classList.add("tn-static-position-relative-d461c96d");
 
 		// Create spacer to maintain scroll height
 		this.spacer = this.container.createDiv({
-			cls: 'virtual-scroller__spacer',
+			cls: "virtual-scroller__spacer",
 		});
 		this.spacer.style.cssText = `
 			position: absolute;
@@ -108,7 +109,7 @@ export class VirtualScroller<T> {
 
 		// Create content container for rendered items
 		this.contentContainer = this.container.createDiv({
-			cls: 'virtual-scroller__content',
+			cls: "virtual-scroller__content",
 		});
 		this.contentContainer.style.cssText = `
 			position: relative;
@@ -128,7 +129,7 @@ export class VirtualScroller<T> {
 
 		// Temporarily render sample items for measurement
 		const tempContainer = this.contentContainer.createDiv({
-			cls: 'virtual-scroller__sample',
+			cls: "virtual-scroller__sample",
 		});
 		tempContainer.style.cssText = `
 			position: absolute;
@@ -168,7 +169,7 @@ export class VirtualScroller<T> {
 			const style = window.getComputedStyle(current);
 			const overflowY = style.overflowY;
 
-			if (overflowY === 'scroll' || overflowY === 'auto') {
+			if (overflowY === "scroll" || overflowY === "auto") {
 				return current;
 			}
 
@@ -243,7 +244,7 @@ export class VirtualScroller<T> {
 			// Collect indices that need remeasurement
 			for (const entry of entries) {
 				const element = entry.target as HTMLElement;
-				const index = parseInt(element.dataset.virtualIndex || '-1', 10);
+				const index = parseInt(element.dataset.virtualIndex || "-1", 10);
 
 				if (index >= 0 && index < this.items.length) {
 					this.pendingMeasurements.add(index);
@@ -297,11 +298,11 @@ export class VirtualScroller<T> {
 	 * Measure all currently rendered items
 	 */
 	private measureRenderedItems(): void {
-		const elements = this.contentContainer.querySelectorAll('[data-virtual-index]');
+		const elements = this.contentContainer.querySelectorAll("[data-virtual-index]");
 		let heightsChanged = false;
 
 		for (const element of elements) {
-			const index = parseInt((element as HTMLElement).dataset.virtualIndex || '-1', 10);
+			const index = parseInt((element as HTMLElement).dataset.virtualIndex || "-1", 10);
 			if (index >= 0 && index < this.items.length) {
 				const newHeight = element.getBoundingClientRect().height;
 				const oldHeight = this.itemHeights.get(index);
@@ -319,7 +320,7 @@ export class VirtualScroller<T> {
 	}
 
 	private attachScrollListener(): void {
-		this.scrollContainer.addEventListener('scroll', this.handleScroll);
+		this.scrollContainer.addEventListener("scroll", this.handleScroll);
 	}
 
 	private handleScroll = (): void => {
@@ -346,7 +347,7 @@ export class VirtualScroller<T> {
 		if (containerHeight === 0) {
 			// Fall back to window height as last resort
 			containerHeight = window.innerHeight;
-			console.warn('[VirtualScroller] Using window height as fallback:', containerHeight);
+			console.warn("[VirtualScroller] Using window height as fallback:", containerHeight);
 		}
 
 		// Use binary search to find visible range based on actual positions
@@ -507,7 +508,7 @@ export class VirtualScroller<T> {
 	/**
 	 * Scroll to a specific item index
 	 */
-	scrollToIndex(index: number, behavior: ScrollBehavior = 'smooth'): void {
+	scrollToIndex(index: number, behavior: ScrollBehavior = "smooth"): void {
 		const targetScroll = this.getItemPosition(index);
 		this.scrollContainer.scrollTo({
 			top: targetScroll,
@@ -532,7 +533,7 @@ export class VirtualScroller<T> {
 		const element = this.renderedElements.get(key);
 		if (element) {
 			// Get the index from the element
-			const index = parseInt(element.dataset.virtualIndex || '-1', 10);
+			const index = parseInt(element.dataset.virtualIndex || "-1", 10);
 
 			// Clear height measurement for this index
 			if (index >= 0) {
@@ -580,7 +581,7 @@ export class VirtualScroller<T> {
 			this.resizeObserver.disconnect();
 			this.resizeObserver = null;
 		}
-		this.scrollContainer.removeEventListener('scroll', this.handleScroll);
+		this.scrollContainer.removeEventListener("scroll", this.handleScroll);
 		this.renderedElements.clear();
 		this.contentContainer.empty();
 		this.itemHeights.clear();

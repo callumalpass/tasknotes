@@ -261,7 +261,7 @@ export function extractTaskInfo(
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
 				title: mappedTask.title || "Untitled task",
-				status: mappedTask.status || (defaultStatus || "open"),
+				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
@@ -288,7 +288,7 @@ export function extractTaskInfo(
 
 			return {
 				title: mappedTask.title || "Untitled task",
-				status: mappedTask.status || (defaultStatus || "open"),
+				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
@@ -634,7 +634,11 @@ export function extractTimeblocksFromNote(content: string, path: string): TimeBl
  * Converts a timeblock to a calendar event format
  * Uses proper timezone handling following UTC Anchor pattern to prevent date shift issues
  */
-export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string, defaultColor = "#6366f1"): any {
+export function timeblockToCalendarEvent(
+	timeblock: TimeBlock,
+	date: string,
+	defaultColor = "#6366f1"
+): any {
 	// Create datetime strings that FullCalendar interprets consistently
 	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
@@ -902,10 +906,7 @@ export function addDTSTARTToRecurrenceRule(task: TaskInfo): string | null {
  * @param dateStr - Date string in YYYY-MM-DD format (or with time component)
  * @returns Updated RRULE string with new DTSTART, or null on error
  */
-export function updateDTSTARTInRecurrenceRule(
-	recurrence: string,
-	dateStr: string
-): string | null {
+export function updateDTSTARTInRecurrenceRule(recurrence: string, dateStr: string): string | null {
 	return updateDTSTARTInRecurrenceRuleCore(recurrence, dateStr);
 }
 

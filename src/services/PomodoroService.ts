@@ -215,8 +215,6 @@ export class PomodoroService {
 		// Convert to minutes for planned duration
 		const plannedDurationMinutes = durationSeconds / 60;
 
-		console.log("Starting pomodoro with planned duration:", plannedDurationMinutes, "minutes");
-
 		const sessionStartTime = getCurrentTimestamp();
 
 		const session: PomodoroSession = {
@@ -701,8 +699,7 @@ export class PomodoroService {
 			}
 		}
 
-		const message =
-			session.type === "work" ? `🍅 Pomodoro completed!` : "☕ Break completed!";
+		const message = session.type === "work" ? `🍅 Pomodoro completed!` : "☕ Break completed!";
 		const body =
 			session.type === "work"
 				? `Time for a ${shouldTakeLongBreak ? "long break 💤" : "short break ☕"}`
@@ -878,8 +875,6 @@ export class PomodoroService {
 			// Ensure minimum 1 second duration
 			this.state.timeRemaining = Math.max(1, newTimeInSeconds);
 			this.saveState();
-
-			console.log("Adjusted prepared timer to:", this.state.timeRemaining, "seconds");
 
 			// Trigger tick event to update UI
 			this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
@@ -1121,9 +1116,7 @@ export class PomodoroService {
 		return Array.isArray(pluginHistory) ? pluginHistory : [];
 	}
 
-	private async loadPluginHistoryForDateKey(
-		dateKey: string
-	): Promise<PomodoroSessionHistory[]> {
+	private async loadPluginHistoryForDateKey(dateKey: string): Promise<PomodoroSessionHistory[]> {
 		return filterPomodoroSessionsByDateKey(await this.loadPluginHistory(), dateKey);
 	}
 

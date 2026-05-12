@@ -1,4 +1,3 @@
- 
 import { createServer, IncomingMessage, ServerResponse, Server } from "http";
 import { parse } from "url";
 import { IWebhookNotifier } from "../types";
@@ -9,7 +8,7 @@ import { NaturalLanguageParser } from "./NaturalLanguageParser";
 import { StatusManager } from "./StatusManager";
 import { TaskStatsService } from "./TaskStatsService";
 import TaskNotesPlugin from "../main";
- 
+
 import { OpenAPIController } from "../utils/OpenAPIDecorators";
 import { APIRouter } from "../api/APIRouter";
 import { TasksController } from "../api/TasksController";
@@ -22,7 +21,6 @@ import { MCPService } from "./MCPService";
 import { parseJSONBody, sendJSONResponse, setCORSHeaders } from "../api/httpUtils";
 
 @OpenAPIController
- 
 export class HTTPAPIService implements IWebhookNotifier {
 	private server?: Server;
 	private plugin: TaskNotesPlugin;
@@ -52,7 +50,10 @@ export class HTTPAPIService implements IWebhookNotifier {
 			plugin.settings.nlpTriggers,
 			plugin.settings.userFields
 		);
-		const statusManager = new StatusManager(plugin.settings.customStatuses, plugin.settings.defaultTaskStatus);
+		const statusManager = new StatusManager(
+			plugin.settings.customStatuses,
+			plugin.settings.defaultTaskStatus
+		);
 		const taskStatsService = new TaskStatsService(cacheManager, statusManager);
 
 		// Initialize controllers
@@ -259,9 +260,6 @@ export class HTTPAPIService implements IWebhookNotifier {
 				});
 
 				this.server.listen(this.plugin.settings.apiPort, () => {
-					console.log(
-						`TaskNotes API server started on port ${this.plugin.settings.apiPort}`
-					);
 					resolve();
 				});
 
@@ -270,7 +268,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 					reject(err);
 				});
 			} catch (error) {
-					reject(error instanceof Error ? error : new Error(String(error)));
+				reject(error instanceof Error ? error : new Error(String(error)));
 			}
 		});
 	}
@@ -279,7 +277,6 @@ export class HTTPAPIService implements IWebhookNotifier {
 		return new Promise((resolve) => {
 			if (this.server) {
 				this.server.close(() => {
-					console.log("TaskNotes API server stopped");
 					resolve();
 				});
 			} else {

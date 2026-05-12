@@ -47,11 +47,12 @@ export class ICSNoteService {
 				title: overrides?.title || icsEvent.title,
 				status: overrides?.status || this.plugin.settings.defaultTaskStatus,
 				priority: overrides?.priority || this.plugin.settings.defaultTaskPriority,
-				due: overrides?.due !== undefined
-				? overrides.due
-				: this.plugin.settings.icsIntegration?.useICSEndAsDue
-					? this.computeDueFromICSEnd(icsEvent)
-					: undefined,
+				due:
+					overrides?.due !== undefined
+						? overrides.due
+						: this.plugin.settings.icsIntegration?.useICSEndAsDue
+							? this.computeDueFromICSEnd(icsEvent)
+							: undefined,
 				// Safe date handling per guidelines:
 				// - all-day: YYYY-MM-DD (UTC-anchored calendar day)
 				// - timed: YYYY-MM-DDTHH:mm (local)
@@ -69,7 +70,7 @@ export class ICSNoteService {
 				dateModified: getCurrentTimestamp(),
 				// Spread overrides but exclude 'due' since we handle it specially above
 				...Object.fromEntries(
-					Object.entries(overrides || {}).filter(([key]) => key !== 'due')
+					Object.entries(overrides || {}).filter(([key]) => key !== "due")
 				),
 			};
 
@@ -96,9 +97,10 @@ export class ICSNoteService {
 		try {
 			if (!icsEvent.start) return undefined;
 			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
-			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-				? icsEvent.start + 'T00:00:00'
-				: icsEvent.start;
+			const startDateStr =
+				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+					? icsEvent.start + "T00:00:00"
+					: icsEvent.start;
 			const start = new Date(startDateStr);
 			if (icsEvent.allDay) {
 				return formatDateForStorage(start);
@@ -131,7 +133,7 @@ export class ICSNoteService {
 			if (icsEvent.allDay) {
 				if (!icsEvent.start) return undefined;
 				const startDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-					? icsEvent.start + 'T00:00:00'
+					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
 				const startDate = new Date(startDateStr);
 				return formatDateForStorage(startDate);
@@ -139,7 +141,7 @@ export class ICSNoteService {
 
 			// Timed event: use the actual end time
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
-				? icsEvent.end + 'T00:00:00'
+				? icsEvent.end + "T00:00:00"
 				: icsEvent.end;
 			const endDate = new Date(endDateStr);
 			return format(endDate, "yyyy-MM-dd'T'HH:mm");
@@ -167,15 +169,15 @@ export class ICSNoteService {
 			const subscriptionName = subscription?.name || "Unknown Calendar";
 
 			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
-			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-				? icsEvent.start + 'T00:00:00'
-				: icsEvent.start;
+			const startDateStr =
+				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+					? icsEvent.start + "T00:00:00"
+					: icsEvent.start;
 			const eventStartDate = new Date(startDateStr);
 
 			// Determine note title
 			const noteTitle =
-				overrides?.title ||
-				`${icsEvent.title} - ${format(eventStartDate, "PPP")}`;
+				overrides?.title || `${icsEvent.title} - ${format(eventStartDate, "PPP")}`;
 
 			// Determine folder (safely handle missing icsIntegration settings)
 			const rawFolder =
@@ -356,7 +358,7 @@ export class ICSNoteService {
 						};
 						relatedNotes.push(noteInfo);
 					}
-				} catch (error) {
+				} catch {
 					// Skip files that can't be read
 					continue;
 				}
@@ -427,16 +429,17 @@ export class ICSNoteService {
 
 		if (icsEvent.start) {
 			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
-			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-				? icsEvent.start + 'T00:00:00'
-				: icsEvent.start;
+			const startDateStr =
+				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+					? icsEvent.start + "T00:00:00"
+					: icsEvent.start;
 			const startDate = new Date(startDateStr);
 			details.push(`**Start:** ${format(startDate, "PPPp")}`);
 		}
 
 		if (icsEvent.end && !icsEvent.allDay) {
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
-				? icsEvent.end + 'T00:00:00'
+				? icsEvent.end + "T00:00:00"
 				: icsEvent.end;
 			const endDate = new Date(endDateStr);
 			details.push(`**End:** ${format(endDate, "PPPp")}`);
@@ -494,12 +497,14 @@ export class ICSNoteService {
 
 		try {
 			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
-			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-				? icsEvent.start + 'T00:00:00'
-				: icsEvent.start;
-			const endDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
-				? icsEvent.end + 'T00:00:00'
-				: icsEvent.end;
+			const startDateStr =
+				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+					? icsEvent.start + "T00:00:00"
+					: icsEvent.start;
+			const endDateStr =
+				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
+					? icsEvent.end + "T00:00:00"
+					: icsEvent.end;
 
 			const startTime = new Date(startDateStr).getTime();
 			const endTime = new Date(endDateStr).getTime();

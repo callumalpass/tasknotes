@@ -4,9 +4,7 @@ import { TaskInfo } from "../types";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { FilterUtils } from "../utils/FilterUtils";
-import {
-	calculateTotalTimeSpent,
-} from "../utils/helpers";
+import { calculateTotalTimeSpent } from "../utils/helpers";
 import {
 	formatDateTimeForDisplay,
 	getDatePart,
@@ -192,10 +190,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			const tagServices: TagServices = {
 				onTagClick: async (context) => {
 					const searchTag = context.startsWith("@") ? context.slice(1) : context;
-					const success = await plugin.openTagsPane(`#${searchTag}`);
-					if (!success) {
-						console.log("Could not open search pane, context clicked:", context);
-					}
+					await plugin.openTagsPane(`#${searchTag}`);
 				},
 			};
 			renderContextsValue(element, value, tagServices);
@@ -217,10 +212,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 				const tagServices: TagServices = {
 					onTagClick: async (tag) => {
 						const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
-						const success = await plugin.openTagsPane(`#${searchTag}`);
-						if (!success) {
-							console.log("Could not open search pane, tag clicked:", tag);
-						}
+						await plugin.openTagsPane(`#${searchTag}`);
 					},
 				};
 				renderTagsValue(element, tagsToRender, tagServices);
@@ -265,7 +257,11 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	completedDate: (element, value, _task, plugin, options) => {
 		if (typeof value === "string") {
-			const label = getTaskCardPropertyLabel("completedDate", plugin, options?.propertyLabels);
+			const label = getTaskCardPropertyLabel(
+				"completedDate",
+				plugin,
+				options?.propertyLabels
+			);
 			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
@@ -314,7 +310,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.createEl("span", { text: "Blocked by: " });
 			const linksContainer = element.createEl("span");
 			value.forEach((dep, index) => {
-				if (index > 0) linksContainer.appendChild(document.createTextNode(", "));
+				if (index > 0) linksContainer.appendChild(activeDocument.createTextNode(", "));
 				const depPath = typeof dep === "string" ? dep : dep.path;
 				if (depPath) {
 					const linkEl = linksContainer.createEl("a", {
@@ -336,7 +332,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.createEl("span", { text: "Blocking: " });
 			const linksContainer = element.createEl("span");
 			value.forEach((path, index) => {
-				if (index > 0) linksContainer.appendChild(document.createTextNode(", "));
+				if (index > 0) linksContainer.appendChild(activeDocument.createTextNode(", "));
 				const linkEl = linksContainer.createEl("a", {
 					cls: "internal-link",
 					attr: { href: path },
@@ -379,7 +375,8 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		const progressFill = progressBar.createEl("span", { cls: "task-card__progress-fill" });
 		progressFill.style.width = `${progress.percent}%`;
 		if (progress.percent > 0 && progress.percent < 5) {
-			progressFill.style.minWidth = "2px";
+			progressFill.classList.remove("tn-static-min-width-0-3922d326");
+			progressFill.classList.add("tn-static-min-width-2px-709d7da0");
 		}
 
 		progressEl.createEl("span", {
@@ -387,9 +384,13 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			text: `${progress.completed}/${progress.total}`,
 		});
 
-		setTooltip(progressEl, `${progress.percent}% complete (${progress.completed}/${progress.total})`, {
-			placement: "top",
-		});
+		setTooltip(
+			progressEl,
+			`${progress.percent}% complete (${progress.completed}/${progress.total})`,
+			{
+				placement: "top",
+			}
+		);
 	},
 };
 
@@ -479,17 +480,17 @@ function renderUserProperty(
 	} else if (userField.type === "list" && Array.isArray(value)) {
 		const validItems = value.map((item) => extractBasesValue(item)).filter(hasValidValue);
 		validItems.forEach((item, index) => {
-			if (index > 0) valueContainer.appendChild(document.createTextNode(", "));
+			if (index > 0) valueContainer.appendChild(activeDocument.createTextNode(", "));
 			if (typeof item === "string" && item.trim() !== "") {
 				const itemString = item.trim();
 				if (containsRichTextLink(itemString)) {
 					const itemContainer = valueContainer.createEl("span");
 					renderTextWithLinks(itemContainer, itemString, linkServices);
 				} else {
-					valueContainer.appendChild(document.createTextNode(String(item)));
+					valueContainer.appendChild(activeDocument.createTextNode(String(item)));
 				}
 			} else {
-				valueContainer.appendChild(document.createTextNode(String(item)));
+				valueContainer.appendChild(activeDocument.createTextNode(String(item)));
 			}
 		});
 	} else {
@@ -521,7 +522,7 @@ function renderGenericProperty(
 	if (Array.isArray(value)) {
 		const filtered = value.map((item) => extractBasesValue(item)).filter(hasValidValue);
 		filtered.forEach((item, index) => {
-			if (index > 0) valueContainer.appendChild(document.createTextNode(", "));
+			if (index > 0) valueContainer.appendChild(activeDocument.createTextNode(", "));
 			renderPropertyValue(valueContainer, item, plugin);
 		});
 	} else {
@@ -552,16 +553,13 @@ function renderPropertyValue(
 			renderTextWithLinks(container, value, linkServices, {
 				onTagClick: async (tag) => {
 					const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
-					const success = await plugin.openTagsPane(`#${searchTag}`);
-					if (!success) {
-						console.log("Could not open search pane, generic property tag clicked:", tag);
-					}
+					await plugin.openTagsPane(`#${searchTag}`);
 				},
 			});
 			return;
 		}
 
-		container.appendChild(document.createTextNode(value));
+		container.appendChild(activeDocument.createTextNode(value));
 		return;
 	}
 
@@ -578,9 +576,10 @@ function renderPropertyValue(
 			displayValue = value.toString();
 		} else {
 			const entries = Object.entries(value as Record<string, any>);
-			displayValue = entries.length <= 3
-				? entries.map(([key, item]) => `${key}: ${item}`).join(", ")
-				: JSON.stringify(value);
+			displayValue =
+				entries.length <= 3
+					? entries.map(([key, item]) => `${key}: ${item}`).join(", ")
+					: JSON.stringify(value);
 		}
 	} else if (typeof value === "boolean") {
 		displayValue = value ? "✓" : "✗";
@@ -594,7 +593,7 @@ function renderPropertyValue(
 		displayValue = displayValue.substring(0, 97) + "...";
 	}
 
-	container.appendChild(document.createTextNode(displayValue));
+	container.appendChild(activeDocument.createTextNode(displayValue));
 }
 
 function containsRichTextLink(value: string): boolean {
@@ -657,9 +656,10 @@ function renderDueDateProperty(
 			showTime: true,
 			userTimeFormat,
 		});
-		dueDateText = timeDisplay.trim() === ""
-			? tTaskCard(plugin, "dueToday", { label: dueLabel })
-			: tTaskCard(plugin, "dueTodayAt", { label: dueLabel, time: timeDisplay });
+		dueDateText =
+			timeDisplay.trim() === ""
+				? tTaskCard(plugin, "dueToday", { label: dueLabel })
+				: tTaskCard(plugin, "dueTodayAt", { label: dueLabel, time: timeDisplay });
 	} else if (isDueOverdue) {
 		const display = formatDateTimeForDisplay(due, {
 			dateFormat: "MMM d",
@@ -708,9 +708,13 @@ function renderScheduledDateProperty(
 			showTime: true,
 			userTimeFormat,
 		});
-		scheduledDateText = timeDisplay.trim() === ""
-			? tTaskCard(plugin, "scheduledToday", { label: scheduledLabel })
-			: tTaskCard(plugin, "scheduledTodayAt", { label: scheduledLabel, time: timeDisplay });
+		scheduledDateText =
+			timeDisplay.trim() === ""
+				? tTaskCard(plugin, "scheduledToday", { label: scheduledLabel })
+				: tTaskCard(plugin, "scheduledTodayAt", {
+						label: scheduledLabel,
+						time: timeDisplay,
+					});
 	} else if (isScheduledPast) {
 		const display = formatDateTimeForDisplay(scheduled, {
 			dateFormat: "MMM d",

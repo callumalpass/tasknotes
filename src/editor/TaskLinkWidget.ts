@@ -43,22 +43,27 @@ export class TaskLinkWidget extends WidgetType {
 		const visibleProperties = convertInternalToUserProperties(internalProperties, this.plugin);
 
 		// Create a wrapper span with the tasknotes-plugin class for CSS scoping
-		const wrapper = document.createElement("span");
+		const wrapper = activeDocument.createElement("span");
 		wrapper.className = "tasknotes-plugin tasknotes-inline-widget";
 		// Ensure wrapper displays inline to prevent line breaks
-		wrapper.style.display = "inline";
-		wrapper.style.verticalAlign = "baseline";
+		wrapper.classList.remove(
+			"tn-static-display-block-2a1b75c9",
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		wrapper.classList.add("tn-static-display-inline-cccfa456");
+		wrapper.classList.add("tn-static-vertical-align-baseline-657d9c46");
 
 		// Use createTaskCard with inline layout
-		const card = createTaskCard(
-			this.taskInfo,
-			this.plugin,
-			visibleProperties,
-			{
-				layout: "inline",
-				targetDate: this.targetDate,
-			}
-		);
+		const card = createTaskCard(this.taskInfo, this.plugin, visibleProperties, {
+			layout: "inline",
+			targetDate: this.targetDate,
+		});
 
 		// Add card to wrapper
 		wrapper.appendChild(card);

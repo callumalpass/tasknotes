@@ -1,4 +1,3 @@
- 
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
@@ -39,8 +38,6 @@ export class AutoExportService {
 			// Update next export time
 			this.nextExportTime = new Date(Date.now() + intervalMs);
 		}, intervalMs) as unknown as number;
-
-		console.log(`TaskNotes: Auto export started (interval: ${intervalMinutes} minutes)`);
 	}
 
 	/**
@@ -96,7 +93,6 @@ export class AutoExportService {
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 
 			if (allTasks.length === 0) {
-				console.log("TaskNotes: Auto export skipped - no tasks found");
 				return;
 			}
 
@@ -104,7 +100,10 @@ export class AutoExportService {
 			const exportOptions = {
 				useDurationForExport: this.plugin.settings.icsIntegration.useDurationForExport,
 			};
-			const icsContent = CalendarExportService.generateMultipleTasksICSContent(allTasks, exportOptions);
+			const icsContent = CalendarExportService.generateMultipleTasksICSContent(
+				allTasks,
+				exportOptions
+			);
 
 			// Write to file - use path as-is since Obsidian handles normalization
 			const normalizedPath = exportPath;
@@ -121,9 +120,6 @@ export class AutoExportService {
 			}
 
 			this.lastExportTime = new Date();
-			console.log(
-				`TaskNotes: Auto export completed - ${allTasks.length} tasks exported to ${exportPath}`
-			);
 		} catch (error) {
 			console.error("TaskNotes: Auto export failed:", error);
 

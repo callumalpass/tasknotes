@@ -29,7 +29,7 @@ export class BatchContextMenu {
 	}
 
 	private buildMenu(): void {
-		const { plugin, selectedPaths } = this.options;
+		const { selectedPaths } = this.options;
 		const count = selectedPaths.length;
 
 		// Header showing selection count
@@ -294,7 +294,9 @@ export class BatchContextMenu {
 			if (failCount === 0) {
 				new Notice(`${archive ? "Archived" : "Unarchived"} ${successCount} tasks`);
 			} else {
-				new Notice(`${archive ? "Archived" : "Unarchived"} ${successCount} tasks, ${failCount} failed`);
+				new Notice(
+					`${archive ? "Archived" : "Unarchived"} ${successCount} tasks, ${failCount} failed`
+				);
 			}
 
 			// Clear selection after successful batch operation
@@ -338,14 +340,19 @@ export class BatchContextMenu {
 							const task = await plugin.cacheManager.getTaskInfo(path);
 							if (task?.googleCalendarEventId) {
 								try {
-									await plugin.taskCalendarSyncService
-										.deleteTaskFromCalendarByPath(path, task.googleCalendarEventId);
+									await plugin.taskCalendarSyncService.deleteTaskFromCalendarByPath(
+										path,
+										task.googleCalendarEventId
+									);
 								} catch (error) {
-									console.warn("Failed to delete task from Google Calendar:", error);
+									console.warn(
+										"Failed to delete task from Google Calendar:",
+										error
+									);
 								}
 							}
 						}
-						await plugin.app.vault.trash(file, true);
+						await plugin.app.fileManager.trashFile(file);
 						successCount++;
 					} else {
 						failCount++;

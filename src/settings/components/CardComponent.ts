@@ -175,7 +175,7 @@
  * - Content and actions sections hide when collapsed
  */
 
-import { setIcon } from "obsidian";
+import { Setting, setIcon } from "obsidian";
 
 /**
  * Main configuration interface for creating cards
@@ -290,10 +290,26 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
 	// Left side of header with color indicator and info
 	const headerLeft = header.createDiv();
-	headerLeft.style.display = "flex";
-	headerLeft.style.alignItems = "center";
-	headerLeft.style.flex = "1";
-	headerLeft.style.minWidth = "0";
+	headerLeft.classList.remove(
+		"tn-static-display-block-2a1b75c9",
+		"tn-static-display-flex-4d51fc62",
+		"tn-static-display-flex-8bb39979",
+		"tn-static-display-inline-block-60e32dcb",
+		"tn-static-display-inline-cccfa456",
+		"tn-static-display-inline-flex-f984c520",
+		"tn-static-display-none-6b99de8b",
+		"tn-static-min-height-800px-997b4c8c"
+	);
+	headerLeft.classList.add("tn-static-display-flex-75816cae");
+	headerLeft.classList.remove(
+		"tn-static-align-items-baseline-4b95b5c7",
+		"tn-static-align-items-flex-start-0486f781"
+	);
+	headerLeft.classList.add("tn-static-align-items-center-7c619740");
+	headerLeft.classList.remove("tn-static-flex-1-14e3b769", "tn-static-margin-top-12px-91e0f558");
+	headerLeft.classList.add("tn-static-flex-1-97445a8d");
+	headerLeft.classList.remove("tn-static-min-width-2px-709d7da0");
+	headerLeft.classList.add("tn-static-min-width-0-3922d326");
 
 	// Color indicator
 	if (config.colorIndicator) {
@@ -316,9 +332,30 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
 	// Right side of header with meta elements and actions
 	const headerRight = header.createDiv();
-	headerRight.style.display = "flex";
-	headerRight.style.alignItems = "center";
-	headerRight.style.gap = "0.5rem";
+	headerRight.classList.remove(
+		"tn-static-display-block-2a1b75c9",
+		"tn-static-display-flex-4d51fc62",
+		"tn-static-display-flex-8bb39979",
+		"tn-static-display-inline-block-60e32dcb",
+		"tn-static-display-inline-cccfa456",
+		"tn-static-display-inline-flex-f984c520",
+		"tn-static-display-none-6b99de8b",
+		"tn-static-min-height-800px-997b4c8c"
+	);
+	headerRight.classList.add("tn-static-display-flex-75816cae");
+	headerRight.classList.remove(
+		"tn-static-align-items-baseline-4b95b5c7",
+		"tn-static-align-items-flex-start-0486f781"
+	);
+	headerRight.classList.add("tn-static-align-items-center-7c619740");
+	headerRight.classList.remove(
+		"tn-static-display-flex-8bb39979",
+		"tn-static-gap-10px-f3d7ce77",
+		"tn-static-gap-12px-ed7b3d87",
+		"tn-static-gap-6px-f0abc1db",
+		"tn-static-gap-8px-33fcd4c3"
+	);
+	headerRight.classList.add("tn-static-gap-0-5rem-ce2fca4d");
 
 	// Meta elements
 	if (config.header.meta && config.header.meta.length > 0) {
@@ -399,9 +436,25 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 				const configRow = content.createDiv("tasknotes-settings__card-config-row");
 
 				if (row.fullWidth) {
-					configRow.style.flexDirection = "column";
-					configRow.style.alignItems = "flex-start";
-					configRow.style.gap = "0.5rem";
+					configRow.classList.remove(
+						"tn-static-display-flex-4d51fc62",
+						"tn-static-display-flex-8bb39979",
+						"tn-static-min-height-800px-997b4c8c"
+					);
+					configRow.classList.add("tn-static-flex-direction-column-06c8b5ed");
+					configRow.classList.remove(
+						"tn-static-align-items-baseline-4b95b5c7",
+						"tn-static-align-items-center-7c619740"
+					);
+					configRow.classList.add("tn-static-align-items-flex-start-0486f781");
+					configRow.classList.remove(
+						"tn-static-display-flex-8bb39979",
+						"tn-static-gap-10px-f3d7ce77",
+						"tn-static-gap-12px-ed7b3d87",
+						"tn-static-gap-6px-f0abc1db",
+						"tn-static-gap-8px-33fcd4c3"
+					);
+					configRow.classList.add("tn-static-gap-0-5rem-ce2fca4d");
 				}
 
 				const label = configRow.createSpan("tasknotes-settings__card-config-label");
@@ -453,7 +506,7 @@ export function createStatusBadge(
 	text: string,
 	variant: "active" | "inactive" | "completed" | "default" = "default"
 ): HTMLElement {
-	const badge = document.createElement("span");
+	const badge = activeDocument.createElement("span");
 	badge.addClass("tasknotes-settings__card-status-badge");
 	badge.addClass(`tasknotes-settings__card-status-badge--${variant}`);
 	badge.textContent = text;
@@ -480,7 +533,7 @@ export function createCardInput(
 	placeholder?: string,
 	value?: string
 ): HTMLInputElement {
-	const input = document.createElement("input");
+	const input = activeDocument.createElement("input");
 	input.type = type;
 	input.addClass("tasknotes-settings__card-input");
 
@@ -499,13 +552,14 @@ export function createCardInput(
  * Creates an Obsidian-style toggle switch for card content
  * Returns the toggle component's toggleEl directly
  */
-export function createCardToggle(initialValue = false, onChange?: (value: boolean) => void): HTMLElement {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const { Setting } = require("obsidian");
-	const tempContainer = document.createElement("div");
+export function createCardToggle(
+	initialValue = false,
+	onChange?: (value: boolean) => void
+): HTMLElement {
+	const tempContainer = activeDocument.createElement("div");
 	const setting = new Setting(tempContainer);
 
-	let toggleEl: HTMLElement;
+	let toggleEl: HTMLElement | null = null;
 	setting.addToggle((toggle: any) => {
 		toggle.setValue(initialValue);
 		if (onChange) {
@@ -514,7 +568,11 @@ export function createCardToggle(initialValue = false, onChange?: (value: boolea
 		toggleEl = toggle.toggleEl;
 	});
 
-	return toggleEl!;
+	if (!toggleEl) {
+		throw new Error("Failed to create card toggle");
+	}
+
+	return toggleEl;
 }
 
 /**
@@ -524,7 +582,7 @@ export function createCardSelect(
 	options: Array<{ value: string; label: string }>,
 	selectedValue?: string
 ): HTMLSelectElement {
-	const select = document.createElement("select");
+	const select = activeDocument.createElement("select");
 	select.addClass("tasknotes-settings__card-input");
 
 	options.forEach((option) => {
@@ -602,7 +660,10 @@ export function setupCardDragAndDrop(
 			"tasknotes-settings__card--drag-over-bottom"
 		);
 
-		const draggedCardId = e.dataTransfer!.getData("text/plain");
+		const draggedCardId = e.dataTransfer?.getData("text/plain");
+		if (!draggedCardId) {
+			return;
+		}
 		const targetCardId = cardId;
 
 		if (draggedCardId !== targetCardId) {
@@ -639,7 +700,7 @@ export function createCardTextarea(
 	value?: string,
 	rows = 3
 ): HTMLTextAreaElement {
-	const textarea = document.createElement("textarea");
+	const textarea = activeDocument.createElement("textarea");
 	textarea.addClass("tasknotes-settings__card-input");
 	textarea.rows = rows;
 
@@ -694,9 +755,7 @@ export function createCardNumberInput(
 export function normalizeCalendarUrl(url: string): string {
 	if (!url) return url;
 
-	return url
-		.replace(/^webcal:\/\//i, 'http://')
-		.replace(/^webcals:\/\//i, 'https://');
+	return url.replace(/^webcal:\/\//i, "http://").replace(/^webcals:\/\//i, "https://");
 }
 
 /**
@@ -708,7 +767,7 @@ export function normalizeCalendarUrl(url: string): string {
  * http/https when the URL is saved.
  */
 export function createCardUrlInput(placeholder?: string, value?: string): HTMLInputElement {
-	const input = document.createElement("input");
+	const input = activeDocument.createElement("input");
 	// Use type="text" instead of type="url" to allow webcal:// and webcals:// protocols
 	// HTML5 type="url" validation only accepts http://, https://, and ftp://
 	input.type = "text";
@@ -716,7 +775,7 @@ export function createCardUrlInput(placeholder?: string, value?: string): HTMLIn
 
 	// Add pattern validation to accept calendar URL protocols
 	input.pattern = "^(https?|webcals?)://.*";
-	input.title = "Enter an http://, https://, webcal://, or webcals:// URL";
+	input.title = "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL";
 
 	if (placeholder) {
 		input.placeholder = placeholder;
@@ -747,7 +806,7 @@ export function createSimpleCard(container: HTMLElement, rows: CardRow[]): HTMLE
  * Creates an info badge for displaying read-only information
  */
 export function createInfoBadge(text: string): HTMLElement {
-	const badge = document.createElement("span");
+	const badge = activeDocument.createElement("span");
 	badge.addClass("tasknotes-settings__card-info-badge");
 	badge.textContent = text;
 	return badge;
@@ -760,9 +819,36 @@ export function showCardLoading(container: HTMLElement, message = "Loading..."):
 	container.empty();
 	const loadingCard = container.createDiv("tasknotes-settings__card");
 	const loadingContent = loadingCard.createDiv("tasknotes-settings__card-content");
-	loadingContent.style.textAlign = "center";
-	loadingContent.style.padding = "2rem";
-	loadingContent.style.color = "var(--text-muted)";
+	loadingContent.classList.remove("tn-static-padding-20px-7a035d95");
+	loadingContent.classList.add("tn-static-text-align-center-91a87015");
+	loadingContent.classList.remove(
+		"tn-static-margin-8px-0-0-0-a2eb8382",
+		"tn-static-padding-0-16px-16px-16px-f1aa998c",
+		"tn-static-padding-0-41d7d7e2",
+		"tn-static-padding-12px-43bef435",
+		"tn-static-padding-16px-287f770e",
+		"tn-static-padding-20px-769fed37",
+		"tn-static-padding-20px-7a035d95",
+		"tn-static-padding-20px-ebe8e48c",
+		"tn-static-padding-2px-8px-c8eea84a"
+	);
+	loadingContent.classList.add("tn-static-padding-2rem-42aa6d9c");
+	loadingContent.classList.remove(
+		"tn-static-color-var-color-accent-d2cad743",
+		"tn-static-color-var-text-accent-65b47ee3",
+		"tn-static-color-var-text-on-accent-f3e1679d",
+		"tn-static-color-var-text-warning-783d5f03",
+		"tn-static-color-var-tn-text-muted-a90fb6f3",
+		"tn-static-color-white-0a43e56a",
+		"tn-static-cursor-pointer-2723efcc",
+		"tn-static-font-size-12px-65574819",
+		"tn-static-font-weight-bold-0fe8c30d",
+		"tn-static-font-weight-bold-e0b452bd",
+		"tn-static-margin-2px-0-edce9b14",
+		"tn-static-padding-20px-7a035d95",
+		"tn-static-padding-20px-ebe8e48c"
+	);
+	loadingContent.classList.add("tn-static-color-var-text-muted-5872de20");
 	loadingContent.textContent = message;
 }
 
@@ -788,7 +874,19 @@ export function showCardEmptyState(
 			text: actionText,
 			cls: "tn-btn tn-btn--primary",
 		});
-		actionButton.style.marginTop = "1rem";
+		actionButton.classList.remove(
+			"tn-static-font-size-12px-b0cc7e05",
+			"tn-static-margin-top-0-5rem-3dc98b5e",
+			"tn-static-margin-top-0-d462248a",
+			"tn-static-margin-top-12px-91e0f558",
+			"tn-static-margin-top-16px-1b0f4999",
+			"tn-static-margin-top-20px-a26bda7d",
+			"tn-static-margin-top-30px-2fbbbcd4",
+			"tn-static-margin-top-4px-96ad6099",
+			"tn-static-margin-top-8px-8a77e5a3",
+			"tn-static-margin-top-8px-f4f01e68"
+		);
+		actionButton.classList.add("tn-static-margin-top-1rem-2239d6d5");
 		actionButton.onclick = onAction;
 	}
 }

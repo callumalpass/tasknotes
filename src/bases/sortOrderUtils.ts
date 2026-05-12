@@ -129,7 +129,9 @@ function getVisibleOrderedTasks(
 		.map((path) => taskByPath.get(path))
 		.filter((task): task is TaskInfo => !!task);
 
-	return orderedVisibleTasks.length > 0 ? orderedVisibleTasks : columnTasks.filter((task) => task.path !== draggedPath);
+	return orderedVisibleTasks.length > 0
+		? orderedVisibleTasks
+		: columnTasks.filter((task) => task.path !== draggedPath);
 }
 
 function inferSortDirection(tasks: TaskInfo[]): SortDirection {
@@ -164,7 +166,11 @@ function nextRankInDisplay(currentRank: LexoRank, direction: SortDirection): Lex
 	return direction === "asc" ? safeGenNext(currentRank) : safeGenPrev(currentRank);
 }
 
-function betweenInDisplayOrder(leftRank: LexoRank, rightRank: LexoRank, direction: SortDirection): string {
+function betweenInDisplayOrder(
+	leftRank: LexoRank,
+	rightRank: LexoRank,
+	direction: SortDirection
+): string {
 	return direction === "asc"
 		? safeBetween(leftRank, rightRank)
 		: safeBetween(rightRank, leftRank);
@@ -190,13 +196,14 @@ function safeGenNext(rank: LexoRank): LexoRank {
 	const firstChar = value.charAt(0);
 
 	if (firstChar !== "z") {
-		const nextFirst = firstChar >= "0" && firstChar <= "8"
-			? String.fromCharCode(firstChar.charCodeAt(0) + 1)
-			: firstChar === "9"
-				? "a"
-				: firstChar >= "a" && firstChar <= "y"
-					? String.fromCharCode(firstChar.charCodeAt(0) + 1)
-					: "z";
+		const nextFirst =
+			firstChar >= "0" && firstChar <= "8"
+				? String.fromCharCode(firstChar.charCodeAt(0) + 1)
+				: firstChar === "9"
+					? "a"
+					: firstChar >= "a" && firstChar <= "y"
+						? String.fromCharCode(firstChar.charCodeAt(0) + 1)
+						: "z";
 		const upperStr = `${bucket}|${nextFirst}${value.slice(1)}:`;
 		const result = rank.between(LexoRank.parse(upperStr));
 		if (result.toString() > str) return result;
@@ -227,13 +234,14 @@ function safeGenPrev(rank: LexoRank): LexoRank {
 	if (firstChar === "0") {
 		lowerStr = `${bucket}|0:`;
 	} else {
-		const prevFirst = firstChar >= "1" && firstChar <= "9"
-			? String.fromCharCode(firstChar.charCodeAt(0) - 1)
-			: firstChar === "a"
-				? "9"
-				: firstChar >= "b" && firstChar <= "z"
-					? String.fromCharCode(firstChar.charCodeAt(0) - 1)
-					: "0";
+		const prevFirst =
+			firstChar >= "1" && firstChar <= "9"
+				? String.fromCharCode(firstChar.charCodeAt(0) - 1)
+				: firstChar === "a"
+					? "9"
+					: firstChar >= "b" && firstChar <= "z"
+						? String.fromCharCode(firstChar.charCodeAt(0) - 1)
+						: "0";
 		lowerStr = `${bucket}|${prevFirst}${value.slice(1)}:`;
 	}
 
@@ -288,7 +296,8 @@ function getContiguousVisibleSparseRun(
 	let start = targetVisibleIndex;
 	while (start > 0) {
 		const previousTask = taskByPath.get(visibleTaskPaths[start - 1]);
-		if (!previousTask || hasValidLexoRank(previousTask) || previousTask.path === draggedPath) break;
+		if (!previousTask || hasValidLexoRank(previousTask) || previousTask.path === draggedPath)
+			break;
 		start--;
 	}
 
@@ -376,24 +385,35 @@ function createSparsePlan(
 			.filter((path) => path !== draggedPath);
 	}
 
-	const firstRunIndex = runPaths.length > 0
-		? columnTasks.findIndex((task) => task.path === runPaths[0])
-		: targetIndex;
-	const previousRank = getNearestPreviousRank(columnTasks, firstRunIndex >= 0 ? firstRunIndex : targetIndex);
+	const firstRunIndex =
+		runPaths.length > 0
+			? columnTasks.findIndex((task) => task.path === runPaths[0])
+			: targetIndex;
+	const previousRank = getNearestPreviousRank(
+		columnTasks,
+		firstRunIndex >= 0 ? firstRunIndex : targetIndex
+	);
 	if (shouldRebalanceRank(previousRank)) {
 		return createRebalancePlan(columnTasks, targetIndex, above, direction);
 	}
 	const targetRunIndex = runPaths.indexOf(targetTask.path);
 	if (above && targetRunIndex === 0) {
 		return {
-			sortOrder: previousRank ? nextRankInDisplay(previousRank, direction).toString() : LexoRank.middle().toString(),
+			sortOrder: previousRank
+				? nextRankInDisplay(previousRank, direction).toString()
+				: LexoRank.middle().toString(),
 			additionalWrites: [],
 			reason: "boundary",
 		};
 	}
-	const insertAt = targetRunIndex === -1
-		? (above ? 0 : runPaths.length)
-		: (above ? targetRunIndex : targetRunIndex + 1);
+	const insertAt =
+		targetRunIndex === -1
+			? above
+				? 0
+				: runPaths.length
+			: above
+				? targetRunIndex
+				: targetRunIndex + 1;
 	const orderedPaths: Array<string | null> = [...runPaths];
 	orderedPaths.splice(insertAt, 0, null);
 
@@ -402,7 +422,9 @@ function createSparsePlan(
 	let currentRank = previousRank;
 
 	for (const path of orderedPaths) {
-		const nextRank = currentRank ? nextRankInDisplay(currentRank, direction) : LexoRank.middle();
+		const nextRank = currentRank
+			? nextRankInDisplay(currentRank, direction)
+			: LexoRank.middle();
 		const nextRankString = nextRank.toString();
 		if (path === null) {
 			draggedSortOrder = nextRankString;
@@ -453,11 +475,19 @@ export function getGroupTasks(
 		const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
 		if (!frontmatter) continue;
 
-		if (groupKey !== null && groupByProperty && !matchesGroupValue(frontmatter[groupByProperty], groupKey)) {
+		if (
+			groupKey !== null &&
+			groupByProperty &&
+			!matchesGroupValue(frontmatter[groupByProperty], groupKey)
+		) {
 			continue;
 		}
 
-		if (options.scopeFilters?.some((filter) => !matchesGroupValue(frontmatter[filter.property], filter.value))) {
+		if (
+			options.scopeFilters?.some(
+				(filter) => !matchesGroupValue(frontmatter[filter.property], filter.value)
+			)
+		) {
 			continue;
 		}
 
@@ -503,7 +533,11 @@ export function getGroupTasks(
 	return tasks;
 }
 
-async function writeSortOrder(path: string, sortOrder: string, plugin: TaskNotesPlugin): Promise<void> {
+async function writeSortOrder(
+	path: string,
+	sortOrder: string,
+	plugin: TaskNotesPlugin
+): Promise<void> {
 	const file = plugin.app.vault.getAbstractFileByPath(path);
 	if (!(file instanceof TFile)) return;
 
@@ -525,8 +559,9 @@ export async function prepareSortOrderUpdate(
 	plugin: TaskNotesPlugin,
 	options: SortOrderComputationOptions = {}
 ): Promise<SortOrderPlan> {
-	const columnTasks = getGroupTasks(groupKey, groupByProperty, plugin, options)
-		.filter((task) => task.path !== draggedPath);
+	const columnTasks = getGroupTasks(groupKey, groupByProperty, plugin, options).filter(
+		(task) => task.path !== draggedPath
+	);
 	const orderedTasks = getVisibleOrderedTasks(columnTasks, options.visibleTaskPaths, draggedPath);
 	const sortDirection = inferSortDirection(orderedTasks);
 
@@ -541,10 +576,9 @@ export async function prepareSortOrderUpdate(
 	const targetIndex = orderedTasks.findIndex((task) => task.path === targetTaskPath);
 	if (targetIndex === -1) {
 		const lastRankedTask = [...orderedTasks].reverse().find((task) => hasValidLexoRank(task));
+		const lastRank = lastRankedTask ? tryParseLexoRank(lastRankedTask.sortOrder) : null;
 		return {
-			sortOrder: lastRankedTask
-				? safeGenNext(tryParseLexoRank(lastRankedTask.sortOrder)!).toString()
-				: LexoRank.middle().toString(),
+			sortOrder: lastRank ? safeGenNext(lastRank).toString() : LexoRank.middle().toString(),
 			additionalWrites: [],
 			reason: "boundary",
 		};
@@ -558,7 +592,14 @@ export async function prepareSortOrderUpdate(
 	const nextRank = nextTask ? tryParseLexoRank(nextTask.sortOrder) : null;
 
 	if (!targetRank) {
-		return createSparsePlan(orderedTasks, targetIndex, above, draggedPath, options.visibleTaskPaths, sortDirection);
+		return createSparsePlan(
+			orderedTasks,
+			targetIndex,
+			above,
+			draggedPath,
+			options.visibleTaskPaths,
+			sortDirection
+		);
 	}
 
 	const previousBoundaryInvalid = previousRank
@@ -572,17 +613,22 @@ export async function prepareSortOrderUpdate(
 		return createRebalancePlan(orderedTasks, targetIndex, above, sortDirection);
 	}
 
-	if (shouldRebalanceRank(previousRank) || shouldRebalanceRank(targetRank) || shouldRebalanceRank(nextRank)) {
+	if (
+		shouldRebalanceRank(previousRank) ||
+		shouldRebalanceRank(targetRank) ||
+		shouldRebalanceRank(nextRank)
+	) {
 		return createRebalancePlan(orderedTasks, targetIndex, above, sortDirection);
 	}
 
 	if (above) {
 		return {
-			sortOrder: targetIndex === 0
-				? rankBeforeInDisplay(targetRank, sortDirection).toString()
-				: previousRank
-					? betweenInDisplayOrder(previousRank, targetRank, sortDirection)
-					: rankBeforeInDisplay(targetRank, sortDirection).toString(),
+			sortOrder:
+				targetIndex === 0
+					? rankBeforeInDisplay(targetRank, sortDirection).toString()
+					: previousRank
+						? betweenInDisplayOrder(previousRank, targetRank, sortDirection)
+						: rankBeforeInDisplay(targetRank, sortDirection).toString(),
 			additionalWrites: [],
 			reason: targetIndex === 0 ? "boundary" : "midpoint",
 		};

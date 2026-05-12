@@ -4,7 +4,7 @@ import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { TaskCreationData } from "../types";
 import { TaskService } from "../services/TaskService";
 import TaskNotesPlugin from "../main";
- 
+
 import { generateOpenAPISpec, Get, Post } from "../utils/OpenAPIDecorators";
 
 export class SystemController extends BaseController {
@@ -31,7 +31,7 @@ export class SystemController extends BaseController {
 			} else if ("path" in adapter && typeof adapter.path === "string") {
 				vaultPath = adapter.path;
 			}
-		} catch (error) {
+		} catch {
 			// Silently fail if vault path isn't accessible
 		}
 

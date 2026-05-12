@@ -1,4 +1,3 @@
- 
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, NoteInfo } from "../types";
@@ -124,7 +123,6 @@ export class ICSNoteCreationModal extends Modal {
 		createButton.onclick = (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			console.log("Create button clicked");
 			this.handleCreate();
 		};
 
@@ -134,7 +132,6 @@ export class ICSNoteCreationModal extends Modal {
 		cancelButton.onclick = (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			console.log("Cancel button clicked");
 			this.close();
 		};
 
@@ -151,18 +148,21 @@ export class ICSNoteCreationModal extends Modal {
 
 		if (icsEvent.start) {
 			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
-			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-				? icsEvent.start + 'T00:00:00'
-				: icsEvent.start;
+			const startDateStr =
+				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+					? icsEvent.start + "T00:00:00"
+					: icsEvent.start;
 			const startDate = new Date(startDateStr);
 			const startDiv = details.createDiv();
-			startDiv.createEl("strong", { text: this.translate("modals.icsNoteCreation.startLabel") });
+			startDiv.createEl("strong", {
+				text: this.translate("modals.icsNoteCreation.startLabel"),
+			});
 			startDiv.appendText(format(startDate, "PPPp"));
 		}
 
 		if (icsEvent.end && !icsEvent.allDay) {
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
-				? icsEvent.end + 'T00:00:00'
+				? icsEvent.end + "T00:00:00"
 				: icsEvent.end;
 			const endDate = new Date(endDateStr);
 			const endDiv = details.createDiv();
@@ -172,12 +172,16 @@ export class ICSNoteCreationModal extends Modal {
 
 		if (icsEvent.location) {
 			const locationDiv = details.createDiv();
-			locationDiv.createEl("strong", { text: this.translate("modals.icsNoteCreation.locationLabel") });
+			locationDiv.createEl("strong", {
+				text: this.translate("modals.icsNoteCreation.locationLabel"),
+			});
 			locationDiv.appendText(icsEvent.location);
 		}
 
 		const calendarDiv = details.createDiv();
-		calendarDiv.createEl("strong", { text: this.translate("modals.icsNoteCreation.calendarLabel") });
+		calendarDiv.createEl("strong", {
+			text: this.translate("modals.icsNoteCreation.calendarLabel"),
+		});
 		calendarDiv.appendText(subscriptionName);
 	}
 
@@ -202,7 +206,9 @@ export class ICSNoteCreationModal extends Modal {
 				.addText((text) => {
 					this.templateInput = text.inputEl;
 					text.setValue(this.template)
-						.setPlaceholder(this.translate("modals.icsNoteCreation.templatePathPlaceholder"))
+						.setPlaceholder(
+							this.translate("modals.icsNoteCreation.templatePathPlaceholder")
+						)
 						.onChange((value) => {
 							this.template = value;
 							this.updatePreview();
@@ -254,7 +260,7 @@ export class ICSNoteCreationModal extends Modal {
 
 		// Show available template variables
 		const variablesDiv = this.previewContainer.createDiv("template-variables");
-		variablesDiv.createEl("h5", { text: "Available Template Variables" });
+		variablesDiv.createEl("h5", { text: "Available template variables" });
 
 		const variables = [
 			"{{title}}",
@@ -282,9 +288,10 @@ export class ICSNoteCreationModal extends Modal {
 	private generateDefaultTitle(): string {
 		const { icsEvent } = this.options;
 		// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
-		const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
-			? icsEvent.start + 'T00:00:00'
-			: icsEvent.start;
+		const startDateStr =
+			icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+				? icsEvent.start + "T00:00:00"
+				: icsEvent.start;
 		const startDate = new Date(startDateStr);
 		return `${icsEvent.title} - ${format(startDate, "PPP")}`;
 	}

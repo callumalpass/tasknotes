@@ -328,14 +328,19 @@ export class CalendarExportService {
 			try {
 				const scheduledDate = this.parseTaskDate(task.scheduled);
 				startISO = scheduledDate.toISOString();
-			} catch (e) {
+			} catch {
 				console.warn("Invalid scheduled date:", task.scheduled);
 			}
 		}
 
 		// When useDurationForExport is enabled, use timeEstimate to calculate end time
 		// instead of using due date
-		if (options?.useDurationForExport && startISO && task.timeEstimate && task.timeEstimate > 0) {
+		if (
+			options?.useDurationForExport &&
+			startISO &&
+			task.timeEstimate &&
+			task.timeEstimate > 0
+		) {
 			// Use scheduled + timeEstimate (in minutes) as end time
 			const start = new Date(startISO);
 			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
@@ -344,7 +349,7 @@ export class CalendarExportService {
 			try {
 				const dueDate = this.parseTaskDate(task.due);
 				endISO = dueDate.toISOString();
-			} catch (e) {
+			} catch {
 				console.warn("Invalid due date:", task.due);
 			}
 		} else if (useScheduledAsDue && startISO) {
@@ -409,7 +414,8 @@ export class CalendarExportService {
 	): ICSDateProperties {
 		if (task.scheduled && !this.hasTimeComponent(task.scheduled)) {
 			const startDate = task.scheduled;
-			const endDateExclusive = this.getAllDayEndDate(task, useScheduledAsDue, options) || startDate;
+			const endDateExclusive =
+				this.getAllDayEndDate(task, useScheduledAsDue, options) || startDate;
 
 			return {
 				startLine: `DTSTART;VALUE=DATE:${this.formatDateOnlyToICS(startDate)}`,
@@ -659,7 +665,11 @@ export class CalendarExportService {
 	/**
 	 * Download ICS file for all tasks
 	 */
-	static downloadAllTasksICSFile(tasks: TaskInfo[], translate?: TranslateFn, options?: ICSExportOptions): void {
+	static downloadAllTasksICSFile(
+		tasks: TaskInfo[],
+		translate?: TranslateFn,
+		options?: ICSExportOptions
+	): void {
 		try {
 			if (!tasks || tasks.length === 0) {
 				new Notice(
@@ -677,7 +687,7 @@ export class CalendarExportService {
 			const date = new Date().toISOString().split("T")[0];
 			const filename = `tasknotes-all-tasks-${date}.ics`;
 
-			const a = document.createElement("a");
+			const a = activeDocument.createElement("a");
 			a.href = url;
 			a.download = filename;
 			a.click();
@@ -707,7 +717,11 @@ export class CalendarExportService {
 	/**
 	 * Download ICS file for a task
 	 */
-	static downloadICSFile(task: TaskInfo, translate?: TranslateFn, options?: ICSExportOptions): void {
+	static downloadICSFile(
+		task: TaskInfo,
+		translate?: TranslateFn,
+		options?: ICSExportOptions
+	): void {
 		try {
 			const icsContent = this.generateICSContent(task, options);
 			const blob = new Blob([icsContent], { type: "text/calendar" });
@@ -715,7 +729,7 @@ export class CalendarExportService {
 
 			const filename = `${task.title.replace(/[^a-zA-Z0-9]/g, "-")}.ics`;
 
-			const a = document.createElement("a");
+			const a = activeDocument.createElement("a");
 			a.href = url;
 			a.download = filename;
 			a.click();

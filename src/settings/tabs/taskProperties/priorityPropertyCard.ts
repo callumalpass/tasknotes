@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Notice } from "obsidian";
+import { Notice, setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {
 	createCard,
@@ -29,8 +29,12 @@ export function renderPriorityPropertyCard(
 
 	// Validate defaultTaskPriority - if it doesn't exist in customPriorities (and isn't empty), reset to empty
 	const validPriorityValues = plugin.settings.customPriorities.map((p) => p.value);
-	if (plugin.settings.defaultTaskPriority !== "" && !validPriorityValues.includes(plugin.settings.defaultTaskPriority)) {
-		plugin.settings.defaultTaskPriority = validPriorityValues.length > 0 ? validPriorityValues[0] : "";
+	if (
+		plugin.settings.defaultTaskPriority !== "" &&
+		!validPriorityValues.includes(plugin.settings.defaultTaskPriority)
+	) {
+		plugin.settings.defaultTaskPriority =
+			validPriorityValues.length > 0 ? validPriorityValues[0] : "";
 		save();
 	}
 
@@ -56,21 +60,34 @@ export function renderPriorityPropertyCard(
 	});
 
 	// Create nested content for priority values
-	const nestedContainer = document.createElement("div");
+	const nestedContainer = activeDocument.createElement("div");
 	nestedContainer.addClass("tasknotes-settings__nested-cards");
 
 	// Create collapsible section for priority values
-	const priorityValuesSection = nestedContainer.createDiv("tasknotes-settings__collapsible-section");
+	const priorityValuesSection = nestedContainer.createDiv(
+		"tasknotes-settings__collapsible-section"
+	);
 
-	const priorityValuesHeader = priorityValuesSection.createDiv("tasknotes-settings__collapsible-section-header");
-	priorityValuesHeader.createSpan({ text: translate("settings.taskProperties.priorityCard.valuesHeader"), cls: "tasknotes-settings__collapsible-section-title" });
-	const chevron = priorityValuesHeader.createSpan("tasknotes-settings__collapsible-section-chevron");
-	chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+	const priorityValuesHeader = priorityValuesSection.createDiv(
+		"tasknotes-settings__collapsible-section-header"
+	);
+	priorityValuesHeader.createSpan({
+		text: translate("settings.taskProperties.priorityCard.valuesHeader"),
+		cls: "tasknotes-settings__collapsible-section-title",
+	});
+	const chevron = priorityValuesHeader.createSpan(
+		"tasknotes-settings__collapsible-section-chevron"
+	);
+	setIcon(chevron, "chevron-down");
 
-	const priorityValuesContent = priorityValuesSection.createDiv("tasknotes-settings__collapsible-section-content");
+	const priorityValuesContent = priorityValuesSection.createDiv(
+		"tasknotes-settings__collapsible-section-content"
+	);
 
 	// Help text explaining how priorities work
-	const priorityHelpContainer = priorityValuesContent.createDiv("tasknotes-settings__help-section");
+	const priorityHelpContainer = priorityValuesContent.createDiv(
+		"tasknotes-settings__help-section"
+	);
 	priorityHelpContainer.createEl("h4", {
 		text: translate("settings.taskProperties.taskPriorities.howTheyWork.title"),
 	});
@@ -113,7 +130,19 @@ export function renderPriorityPropertyCard(
 		text: translate("settings.taskProperties.taskPriorities.addNew.buttonText"),
 		cls: "tn-btn tn-btn--ghost",
 	});
-	addPriorityButton.style.marginTop = "0.5rem";
+	addPriorityButton.classList.remove(
+		"tn-static-font-size-12px-b0cc7e05",
+		"tn-static-margin-top-0-d462248a",
+		"tn-static-margin-top-12px-91e0f558",
+		"tn-static-margin-top-16px-1b0f4999",
+		"tn-static-margin-top-1rem-2239d6d5",
+		"tn-static-margin-top-20px-a26bda7d",
+		"tn-static-margin-top-30px-2fbbbcd4",
+		"tn-static-margin-top-4px-96ad6099",
+		"tn-static-margin-top-8px-8a77e5a3",
+		"tn-static-margin-top-8px-f4f01e68"
+	);
+	addPriorityButton.classList.add("tn-static-margin-top-0-5rem-3dc98b5e");
 	addPriorityButton.onclick = () => {
 		const newId = `priority_${Date.now()}`;
 		const maxWeight = plugin.settings.customPriorities.reduce(
@@ -152,8 +181,10 @@ export function renderPriorityPropertyCard(
 
 	// Toggle collapse
 	priorityValuesHeader.addEventListener("click", () => {
-		priorityValuesSection.toggleClass("tasknotes-settings__collapsible-section--collapsed",
-			!priorityValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed"));
+		priorityValuesSection.toggleClass(
+			"tasknotes-settings__collapsible-section--collapsed",
+			!priorityValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed")
+		);
 	});
 
 	const nlpRows = createNLPTriggerRows(plugin, "priority", "!", save, translate);
@@ -165,7 +196,10 @@ export function renderPriorityPropertyCard(
 
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
-		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
+		{
+			label: translate("settings.taskProperties.propertyCard.propertyKey"),
+			input: propertyKeyInput,
+		},
 		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultSelect },
 		...nlpRows,
 		{ label: "", input: nestedContainer, fullWidth: true },
@@ -243,7 +277,8 @@ function renderPriorityList(
 						);
 						if (priorityIndex !== -1) {
 							// Check if we're deleting the default priority
-							const wasDefault = plugin.settings.defaultTaskPriority === priority.value;
+							const wasDefault =
+								plugin.settings.defaultTaskPriority === priority.value;
 
 							plugin.settings.customPriorities.splice(priorityIndex, 1);
 							plugin.settings.customPriorities
@@ -254,13 +289,20 @@ function renderPriorityList(
 
 							// If deleted priority was the default, update to first available or empty
 							if (wasDefault) {
-								plugin.settings.defaultTaskPriority = plugin.settings.customPriorities.length > 0
-									? plugin.settings.customPriorities[0].value
-									: "";
+								plugin.settings.defaultTaskPriority =
+									plugin.settings.customPriorities.length > 0
+										? plugin.settings.customPriorities[0].value
+										: "";
 							}
 
 							save();
-							renderPriorityList(container, plugin, save, translate, onPrioritiesChanged);
+							renderPriorityList(
+								container,
+								plugin,
+								save,
+								translate,
+								onPrioritiesChanged
+							);
 							if (onPrioritiesChanged) onPrioritiesChanged();
 						}
 					}, translate("settings.taskProperties.taskPriorities.deleteTooltip")),
@@ -271,15 +313,21 @@ function renderPriorityList(
 					{
 						rows: [
 							{
-								label: translate("settings.taskProperties.taskPriorities.fields.value"),
+								label: translate(
+									"settings.taskProperties.taskPriorities.fields.value"
+								),
 								input: valueInput,
 							},
 							{
-								label: translate("settings.taskProperties.taskPriorities.fields.label"),
+								label: translate(
+									"settings.taskProperties.taskPriorities.fields.label"
+								),
 								input: labelInput,
 							},
 							{
-								label: translate("settings.taskProperties.taskPriorities.fields.color"),
+								label: translate(
+									"settings.taskProperties.taskPriorities.fields.color"
+								),
 								input: colorInput,
 							},
 						],
@@ -326,12 +374,8 @@ function renderPriorityList(
 			const reorderedPriorities = [...plugin.settings.customPriorities].sort(
 				(a, b) => a.weight - b.weight
 			);
-			const draggedPriorityIndex = reorderedPriorities.findIndex(
-				(p) => p.id === draggedId
-			);
-			const targetPriorityIndex = reorderedPriorities.findIndex(
-				(p) => p.id === targetId
-			);
+			const draggedPriorityIndex = reorderedPriorities.findIndex((p) => p.id === draggedId);
+			const targetPriorityIndex = reorderedPriorities.findIndex((p) => p.id === targetId);
 
 			const [draggedPriority] = reorderedPriorities.splice(draggedPriorityIndex, 1);
 

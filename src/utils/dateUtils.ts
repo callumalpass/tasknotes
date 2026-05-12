@@ -463,7 +463,7 @@ export function validateDateInput(dateValue: string): boolean {
 	try {
 		parseDate(dateValue);
 		return true;
-	} catch (error) {
+	} catch {
 		return false;
 	}
 }
@@ -1095,7 +1095,7 @@ export function validateDateTimeInput(dateValue: string, timeValue?: string): bo
 		}
 
 		return true;
-	} catch (error) {
+	} catch {
 		return false;
 	}
 }

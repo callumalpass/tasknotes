@@ -25,7 +25,11 @@ export class StatusBarService {
 		// Create status bar element
 		this.statusBarElement = this.plugin.addStatusBarItem();
 		this.statusBarElement.addClass("tasknotes-status-bar");
-		this.statusBarElement.style.cursor = "pointer";
+		this.statusBarElement.classList.remove(
+			"tn-static-cursor-grab-dad79857",
+			"tn-static-cursor-pointer-2723efcc"
+		);
+		this.statusBarElement.classList.add("tn-static-cursor-pointer-3b6a3a65");
 
 		// Add click handler to open tasks view filtered to tracked tasks
 		this.statusBarElement.addEventListener("click", () => {
@@ -83,12 +87,33 @@ export class StatusBarService {
 
 		if (count === 0) {
 			// Hide status bar when no tasks are being tracked
-			this.statusBarElement.style.display = "none";
+			this.statusBarElement.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.statusBarElement.classList.add("tn-static-display-none-6b99de8b");
 			return;
 		}
 
 		// Show status bar
-		this.statusBarElement.style.display = "";
+		this.statusBarElement.classList.remove(
+			"tn-static-display-block-2a1b75c9",
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		this.statusBarElement.style.removeProperty("display");
 
 		// Clear previous content
 		this.statusBarElement.empty();
@@ -199,7 +224,17 @@ export class StatusBarService {
 	 */
 	private hide(): void {
 		if (this.statusBarElement) {
-			this.statusBarElement.style.display = "none";
+			this.statusBarElement.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.statusBarElement.classList.add("tn-static-display-none-6b99de8b");
 		}
 	}
 

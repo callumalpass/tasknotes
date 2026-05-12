@@ -31,7 +31,11 @@ export class DragDropManager {
 		this.draggableInstances.set(element, draggable);
 
 		// Add visual feedback
-		element.style.cursor = "grab";
+		element.classList.remove(
+			"tn-static-cursor-pointer-2723efcc",
+			"tn-static-cursor-pointer-3b6a3a65"
+		);
+		element.classList.add("tn-static-cursor-grab-dad79857");
 
 		// Override dragstart to set proper data transfer for editor drops
 		element.addEventListener("dragstart", (e) => {

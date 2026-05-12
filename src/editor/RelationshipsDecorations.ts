@@ -39,19 +39,13 @@
  * 3. Using Obsidian's registerMarkdownPostProcessor for reading mode only
  */
 
-import {
-	EditorView,
-	PluginValue,
-	ViewPlugin,
-	ViewUpdate,
-} from "@codemirror/view";
+import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import {
 	Component,
 	EventRef,
 	MarkdownView,
 	TFile,
 	editorInfoField,
-	editorLivePreviewField,
 	MarkdownRenderer,
 	WorkspaceLeaf,
 } from "obsidian";
@@ -68,10 +62,10 @@ import {
 } from "./MarkdownWidgetContext";
 
 // CSS class for identifying plugin-generated elements
-const CSS_RELATIONSHIPS_WIDGET = 'tasknotes-relationships-widget';
+const CSS_RELATIONSHIPS_WIDGET = "tasknotes-relationships-widget";
 
 // Event to listen for task card injection
-const EVENT_TASK_CARD_INJECTED = 'task-card-injected';
+const EVENT_TASK_CARD_INJECTED = "task-card-injected";
 
 // Interface to track component lifecycle
 interface HTMLElementWithComponent extends HTMLElement {
@@ -85,7 +79,7 @@ async function createRelationshipsWidget(
 	plugin: TaskNotesPlugin,
 	notePath: string
 ): Promise<HTMLElementWithComponent> {
-	const container = document.createElement("div") as HTMLElementWithComponent;
+	const container = activeDocument.createElement("div") as HTMLElementWithComponent;
 	container.className = `tasknotes-plugin ${CSS_RELATIONSHIPS_WIDGET}`;
 
 	container.setAttribute("contenteditable", "false");
@@ -93,7 +87,7 @@ async function createRelationshipsWidget(
 	container.setAttribute("data-widget-type", "relationships");
 
 	// Create container for embedded Bases view
-	const basesContainer = document.createElement("div");
+	const basesContainer = activeDocument.createElement("div");
 	basesContainer.className = "relationships__bases-container";
 	container.appendChild(basesContainer);
 
@@ -104,9 +98,9 @@ async function createRelationshipsWidget(
 
 	try {
 		// Get the Bases file path from settings
-		const basesFilePath = plugin.settings.commandFileMapping['relationships'];
+		const basesFilePath = plugin.settings.commandFileMapping["relationships"];
 		if (!basesFilePath) {
-			const errorDiv = document.createElement("div");
+			const errorDiv = activeDocument.createElement("div");
 			errorDiv.className = "relationships__error";
 			errorDiv.textContent = "Relationships view not configured";
 			basesContainer.appendChild(errorDiv);
@@ -123,10 +117,9 @@ async function createRelationshipsWidget(
 			notePath, // Source path provides context for 'this' keyword
 			component
 		);
-
 	} catch (error) {
 		console.error("[TaskNotes] Error rendering Bases view in relationships widget:", error);
-		const errorDiv = document.createElement("div");
+		const errorDiv = activeDocument.createElement("div");
 		errorDiv.className = "relationships__error";
 		errorDiv.textContent = "Failed to load relationships view";
 		basesContainer.appendChild(errorDiv);
@@ -195,7 +188,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		this.eventListeners.push(taskCardListener);
 
 		// Listen for settings changes (might affect position or visibility)
-		const settingsListener = this.plugin.emitter.on('settings-changed', () => {
+		const settingsListener = this.plugin.emitter.on("settings-changed", () => {
 			this.debouncedInjectWidget(this.view);
 		});
 		this.eventListeners.push(settingsListener);
@@ -214,7 +207,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			const editorInfo = view.state.field(editorInfoField, false);
 			return editorInfo?.file || null;
 		} catch (error) {
-			console.debug('[TaskNotes] Error getting file from editor view:', error);
+			console.debug("[TaskNotes] Error getting file from editor view:", error);
 			return null;
 		}
 	}
@@ -245,7 +238,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				let depth = 0;
 				const MAX_DEPTH = 20; // Prevent infinite loops
 
-				while (parent && parent !== document.body && depth < MAX_DEPTH) {
+				while (parent && parent !== activeDocument.body && depth < MAX_DEPTH) {
 					if (
 						parent.tagName === "TABLE" ||
 						parent.tagName === "TD" ||
@@ -254,11 +247,16 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 					) {
 						return true;
 					}
-					if (parent.classList.contains("popover") || parent.classList.contains("hover-popover")) {
+					if (
+						parent.classList.contains("popover") ||
+						parent.classList.contains("hover-popover")
+					) {
 						return true;
 					}
-					if (parent.classList.contains("markdown-embed") &&
-					    parent.getAttribute("data-type") === "footnote") {
+					if (
+						parent.classList.contains("markdown-embed") &&
+						parent.getAttribute("data-type") === "footnote"
+					) {
 						return true;
 					}
 					parent = parent.parentElement;
@@ -287,13 +285,15 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	private cleanupOrphanedWidgets(view: EditorView): void {
 		try {
 			// Remove any orphaned widgets that might exist from previous instances
-			const container = view.dom.closest('.workspace-leaf-content');
+			const container = view.dom.closest(".workspace-leaf-content");
 			if (!container) {
-				console.debug('[TaskNotes] Could not find workspace-leaf-content for orphan cleanup');
+				console.debug(
+					"[TaskNotes] Could not find workspace-leaf-content for orphan cleanup"
+				);
 				return;
 			}
 
-			container.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach(el => {
+			container.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach((el) => {
 				if (el !== this.currentWidget) {
 					const holder = el as HTMLElementWithComponent;
 					holder.component?.unload();
@@ -301,7 +301,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				}
 			});
 		} catch (error) {
-			console.error('[TaskNotes] Error cleaning up orphaned relationships widgets:', error);
+			console.error("[TaskNotes] Error cleaning up orphaned relationships widgets:", error);
 		}
 	}
 
@@ -337,14 +337,15 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			if (!metadata?.frontmatter) {
 				// Check if this is a project note (referenced by tasks via the project property)
 				// Some project notes will not have frontmatter
-				isProjectNote = this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+				isProjectNote =
+					this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
 			} else {
 				// Check if this is a task note
 				isTaskNote = this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
 				// Check if this is a project note (referenced by tasks via the project property)
-				isProjectNote = this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+				isProjectNote =
+					this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
 			}
-
 
 			// Only show widget if it's either a task note or a project note
 			if (!isTaskNote && !isProjectNote) {
@@ -357,10 +358,14 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 
 			// Find .cm-sizer which contains the scrollable content area
 			// RISK: This relies on CodeMirror's internal DOM structure
-			const targetContainer = view.dom.closest('.markdown-source-view')?.querySelector<HTMLElement>('.cm-sizer');
+			const targetContainer = view.dom
+				.closest(".markdown-source-view")
+				?.querySelector<HTMLElement>(".cm-sizer");
 
 			if (!targetContainer) {
-				console.warn('[TaskNotes] Could not find .cm-sizer container for relationships widget');
+				console.warn(
+					"[TaskNotes] Could not find .cm-sizer container for relationships widget"
+				);
 				return;
 			}
 
@@ -376,17 +381,22 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			if (position === "top") {
 				// Try to find task card widget first (should come before relationships)
 				// RISK: Relies on task card widget class name
-				const taskCardWidget = targetContainer.querySelector('.tasknotes-task-card-note-widget');
+				const taskCardWidget = targetContainer.querySelector(
+					".tasknotes-task-card-note-widget"
+				);
 				if (taskCardWidget && taskCardWidget.nextSibling) {
 					// Insert after task card widget to maintain order
 					taskCardWidget.parentElement?.insertBefore(widget, taskCardWidget.nextSibling);
 				} else {
 					// No task card, insert after metadata/properties container
 					// RISK: Relies on .metadata-container class from Obsidian
-					const metadataContainer = targetContainer.querySelector('.metadata-container');
+					const metadataContainer = targetContainer.querySelector(".metadata-container");
 					if (metadataContainer && metadataContainer.nextSibling) {
 						// Insert after properties
-						metadataContainer.parentElement?.insertBefore(widget, metadataContainer.nextSibling);
+						metadataContainer.parentElement?.insertBefore(
+							widget,
+							metadataContainer.nextSibling
+						);
 					} else {
 						// No properties, insert at beginning
 						targetContainer.insertBefore(widget, targetContainer.firstChild);
@@ -395,7 +405,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			} else {
 				// Try to insert before backlinks if they exist
 				// RISK: Relies on .embedded-backlinks class from Obsidian
-				const backlinks = targetContainer.parentElement?.querySelector('.embedded-backlinks');
+				const backlinks =
+					targetContainer.parentElement?.querySelector(".embedded-backlinks");
 				if (backlinks) {
 					backlinks.parentElement?.insertBefore(widget, backlinks);
 				} else {
@@ -437,7 +448,7 @@ async function injectReadingModeWidget(
 	context?: ReadingModeInjectionContext
 ): Promise<void> {
 	const view = leaf.view;
-	if (!(view instanceof MarkdownView) || view.getMode() !== 'preview') {
+	if (!(view instanceof MarkdownView) || view.getMode() !== "preview") {
 		return;
 	}
 
@@ -476,13 +487,16 @@ async function injectReadingModeWidget(
 		try {
 			const previewView = view.previewMode;
 			const containerEl = previewView.containerEl;
-			containerEl.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach(el => {
+			containerEl.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach((el) => {
 				const holder = el as HTMLElementWithComponent;
 				holder.component?.unload();
 				el.remove();
 			});
 		} catch (error) {
-			console.debug('[TaskNotes] Error cleaning up relationships widget in reading mode:', error);
+			console.debug(
+				"[TaskNotes] Error cleaning up relationships widget in reading mode:",
+				error
+			);
 		}
 		return;
 	}
@@ -491,7 +505,7 @@ async function injectReadingModeWidget(
 		// Remove any existing widgets first
 		const previewView = view.previewMode;
 		const containerEl = previewView.containerEl;
-		containerEl.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach(el => {
+		containerEl.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach((el) => {
 			const holder = el as HTMLElementWithComponent;
 			holder.component?.unload();
 			el.remove();
@@ -510,22 +524,24 @@ async function injectReadingModeWidget(
 
 		// Find the markdown-preview-sizer or markdown-preview-section
 		// RISK: Relies on Obsidian's internal DOM structure
-		const sizer = containerEl.querySelector<HTMLElement>('.markdown-preview-sizer');
+		const sizer = containerEl.querySelector<HTMLElement>(".markdown-preview-sizer");
 		if (!sizer) {
-			console.warn('[TaskNotes] Could not find .markdown-preview-sizer for relationships in reading mode');
+			console.warn(
+				"[TaskNotes] Could not find .markdown-preview-sizer for relationships in reading mode"
+			);
 			return;
 		}
 
 		// Position the widget
 		if (position === "top") {
 			// Try to find task card widget first (should come before relationships)
-			const taskCardWidget = sizer.querySelector('.tasknotes-task-card-note-widget');
+			const taskCardWidget = sizer.querySelector(".tasknotes-task-card-note-widget");
 			if (taskCardWidget?.nextSibling) {
 				// Insert after task card widget to maintain order
 				sizer.insertBefore(widget, taskCardWidget.nextSibling);
 			} else {
 				// No task card, insert after properties if present, otherwise at the beginning
-				const metadataContainer = sizer.querySelector('.metadata-container');
+				const metadataContainer = sizer.querySelector(".metadata-container");
 				if (metadataContainer?.nextSibling) {
 					sizer.insertBefore(widget, metadataContainer.nextSibling);
 				} else {
@@ -534,7 +550,7 @@ async function injectReadingModeWidget(
 			}
 		} else {
 			// Insert before backlinks if present, otherwise at the end
-			const backlinks = containerEl.querySelector('.embedded-backlinks');
+			const backlinks = containerEl.querySelector(".embedded-backlinks");
 			if (backlinks?.parentElement) {
 				backlinks.parentElement.insertBefore(widget, backlinks);
 			} else {
@@ -542,7 +558,7 @@ async function injectReadingModeWidget(
 			}
 		}
 	} catch (error) {
-		console.error('[TaskNotes] Error injecting relationships widget in reading mode:', error);
+		console.error("[TaskNotes] Error injecting relationships widget in reading mode:", error);
 	}
 }
 
@@ -564,19 +580,19 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const debouncedRefresh = () => {
 		if (debounceTimer) window.clearTimeout(debounceTimer);
 		debounceTimer = window.setTimeout(() => {
-			const leaves = plugin.app.workspace.getLeavesOfType('markdown');
-			leaves.forEach(leaf => {
+			const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+			leaves.forEach((leaf) => {
 				scheduleInjection(leaf);
 			});
 		}, 100);
 	};
 
 	// Inject widget when layout changes (file opened, switched, etc.)
-	const layoutChangeRef = plugin.app.workspace.on('layout-change', debouncedRefresh);
+	const layoutChangeRef = plugin.app.workspace.on("layout-change", debouncedRefresh);
 	workspaceRefs.push(layoutChangeRef);
 
 	// Inject widget when active leaf changes
-	const activeLeafChangeRef = plugin.app.workspace.on('active-leaf-change', (leaf) => {
+	const activeLeafChangeRef = plugin.app.workspace.on("active-leaf-change", (leaf) => {
 		if (leaf) {
 			scheduleInjection(leaf);
 		}
@@ -585,7 +601,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 
 	// Inject widget when file is modified (metadata changes) - debounced per file
 	const metadataDebounceTimers = new Map<string, number>();
-	const metadataChangeRef = plugin.app.metadataCache.on('changed', (file) => {
+	const metadataChangeRef = plugin.app.metadataCache.on("changed", (file) => {
 		// Clear existing timer for this file
 		const existingTimer = metadataDebounceTimers.get(file.path);
 		if (existingTimer) window.clearTimeout(existingTimer);
@@ -593,8 +609,8 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		// Debounce per file to avoid freezing during typing
 		const timer = window.setTimeout(() => {
 			metadataDebounceTimers.delete(file.path);
-			const leaves = plugin.app.workspace.getLeavesOfType('markdown');
-			leaves.forEach(leaf => {
+			const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+			leaves.forEach((leaf) => {
 				const view = leaf.view;
 				if (view instanceof MarkdownView && view.file === file) {
 					scheduleInjection(leaf);
@@ -606,8 +622,8 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	metadataCacheRefs.push(metadataChangeRef);
 
 	// Initial injection for any already-open reading views
-	const leaves = plugin.app.workspace.getLeavesOfType('markdown');
-	leaves.forEach(leaf => {
+	const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+	leaves.forEach((leaf) => {
 		scheduleInjection(leaf);
 	});
 
@@ -616,7 +632,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		if (debounceTimer) window.clearTimeout(debounceTimer);
 
 		// Clean up each type of event ref with the correct method
-		workspaceRefs.forEach(ref => plugin.app.workspace.offref(ref));
-		metadataCacheRefs.forEach(ref => plugin.app.metadataCache.offref(ref));
+		workspaceRefs.forEach((ref) => plugin.app.workspace.offref(ref));
+		metadataCacheRefs.forEach((ref) => plugin.app.metadataCache.offref(ref));
 	};
 }

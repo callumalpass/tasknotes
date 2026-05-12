@@ -1,4 +1,3 @@
- 
 import { ItemView } from "obsidian";
 import {
 	ViewPerformanceService,
@@ -138,8 +137,7 @@ export async function selectiveUpdateForListView(
 				const updatedTask = await view.plugin.cacheManager.getTaskInfo(taskPath);
 				if (updatedTask) {
 					// Get visible properties from the view instead of extracting from DOM
-					const visibleProperties =
-						view.getCurrentVisibleProperties?.() ||
+					const visibleProperties = view.getCurrentVisibleProperties?.() ||
 						view.getVisibleProperties?.() || [
 							"due",
 							"scheduled",
@@ -206,7 +204,6 @@ async function updateTaskElementInPlace(
 	}
 }
 
-
 /**
  * Performance monitoring utility for debugging
  */
@@ -223,10 +220,6 @@ export class ViewPerformanceMonitor {
 
 		const elapsed = performance.now() - startTime;
 		this.startTimes.delete(operation);
-
-		if (elapsed > logThreshold) {
-			console.log(`[Performance] ${operation} took ${elapsed.toFixed(2)}ms`);
-		}
 
 		return elapsed;
 	}

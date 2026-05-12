@@ -274,11 +274,11 @@ function renderProjectLinksForSelector(
 
 	projects.forEach((project, index) => {
 		if (index > 0) {
-			const separator = document.createTextNode(", ");
+			const separator = activeDocument.createTextNode(", ");
 			container.appendChild(separator);
 		}
 
-		const plusText = document.createTextNode("+");
+		const plusText = activeDocument.createTextNode("+");
 		container.appendChild(plusText);
 
 		if (isWikilinkProject(project)) {
@@ -303,7 +303,7 @@ function renderProjectLinksForSelector(
 			}
 		} else {
 			// Plain text project
-			const textNode = document.createTextNode(project);
+			const textNode = activeDocument.createTextNode(project);
 			container.appendChild(textNode);
 		}
 	});

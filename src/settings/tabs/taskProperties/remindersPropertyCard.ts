@@ -1,3 +1,4 @@
+import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import { DefaultReminder } from "../../../types/settings";
 import type { TranslationKey } from "../../../i18n";
@@ -33,18 +34,25 @@ export function renderRemindersPropertyCard(
 	});
 
 	// Create nested content for default reminders
-	const nestedContainer = document.createElement("div");
+	const nestedContainer = activeDocument.createElement("div");
 	nestedContainer.addClass("tasknotes-settings__nested-cards");
 
 	// Create collapsible section for default reminders
 	const remindersSection = nestedContainer.createDiv("tasknotes-settings__collapsible-section");
 
-	const remindersHeader = remindersSection.createDiv("tasknotes-settings__collapsible-section-header");
-	remindersHeader.createSpan({ text: translate("settings.taskProperties.remindersCard.defaultReminders"), cls: "tasknotes-settings__collapsible-section-title" });
+	const remindersHeader = remindersSection.createDiv(
+		"tasknotes-settings__collapsible-section-header"
+	);
+	remindersHeader.createSpan({
+		text: translate("settings.taskProperties.remindersCard.defaultReminders"),
+		cls: "tasknotes-settings__collapsible-section-title",
+	});
 	const chevron = remindersHeader.createSpan("tasknotes-settings__collapsible-section-chevron");
-	chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+	setIcon(chevron, "chevron-down");
 
-	const remindersContent = remindersSection.createDiv("tasknotes-settings__collapsible-section-content");
+	const remindersContent = remindersSection.createDiv(
+		"tasknotes-settings__collapsible-section-content"
+	);
 
 	// Render reminder cards
 	const remindersListContainer = remindersContent.createDiv("tasknotes-reminders-container");
@@ -55,7 +63,19 @@ export function renderRemindersPropertyCard(
 		text: translate("settings.defaults.reminders.addReminder.buttonText"),
 		cls: "tn-btn tn-btn--ghost",
 	});
-	addReminderButton.style.marginTop = "0.5rem";
+	addReminderButton.classList.remove(
+		"tn-static-font-size-12px-b0cc7e05",
+		"tn-static-margin-top-0-d462248a",
+		"tn-static-margin-top-12px-91e0f558",
+		"tn-static-margin-top-16px-1b0f4999",
+		"tn-static-margin-top-1rem-2239d6d5",
+		"tn-static-margin-top-20px-a26bda7d",
+		"tn-static-margin-top-30px-2fbbbcd4",
+		"tn-static-margin-top-4px-96ad6099",
+		"tn-static-margin-top-8px-8a77e5a3",
+		"tn-static-margin-top-8px-f4f01e68"
+	);
+	addReminderButton.classList.add("tn-static-margin-top-0-5rem-3dc98b5e");
 	addReminderButton.onclick = () => {
 		const newId = `reminder_${Date.now()}`;
 		const newReminder = {
@@ -76,8 +96,10 @@ export function renderRemindersPropertyCard(
 
 	// Toggle collapse
 	remindersHeader.addEventListener("click", () => {
-		remindersSection.toggleClass("tasknotes-settings__collapsible-section--collapsed",
-			!remindersSection.hasClass("tasknotes-settings__collapsible-section--collapsed"));
+		remindersSection.toggleClass(
+			"tasknotes-settings__collapsible-section--collapsed",
+			!remindersSection.hasClass("tasknotes-settings__collapsible-section--collapsed")
+		);
 	});
 
 	// Create description element
@@ -87,7 +109,10 @@ export function renderRemindersPropertyCard(
 
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
-		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
+		{
+			label: translate("settings.taskProperties.propertyCard.propertyKey"),
+			input: propertyKeyInput,
+		},
 		{ label: "", input: nestedContainer, fullWidth: true },
 	];
 
@@ -120,10 +145,7 @@ function renderRemindersList(
 		!plugin.settings.taskCreationDefaults.defaultReminders ||
 		plugin.settings.taskCreationDefaults.defaultReminders.length === 0
 	) {
-		showCardEmptyState(
-			container,
-			translate("settings.defaults.reminders.emptyState")
-		);
+		showCardEmptyState(container, translate("settings.defaults.reminders.emptyState"));
 		return;
 	}
 
@@ -314,10 +336,7 @@ function renderAbsoluteReminderConfig(
 	];
 }
 
-function formatReminderTiming(
-	reminder: DefaultReminder,
-	translate: TranslateFn
-): string {
+function formatReminderTiming(reminder: DefaultReminder, translate: TranslateFn): string {
 	if (reminder.type === "relative") {
 		const direction =
 			reminder.direction === "before"

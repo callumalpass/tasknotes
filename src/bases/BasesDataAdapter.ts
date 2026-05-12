@@ -1,5 +1,12 @@
 import { BasesDataItem } from "./helpers";
-import type { BasesEntry, BasesEntryGroup, BasesPropertyId, BasesView, TFile, Value } from "obsidian";
+import type {
+	BasesEntry,
+	BasesEntryGroup,
+	BasesPropertyId,
+	BasesView,
+	TFile,
+	Value,
+} from "obsidian";
 
 type BasesViewDataSource = Pick<BasesView, "config" | "data">;
 
@@ -120,7 +127,6 @@ export class BasesDataAdapter {
 		}
 	}
 
-
 	/**
 	 * Convert Bases Value object to native JavaScript value.
 	 * Handles: PrimitiveValue, ListValue, DateValue, FileValue, NullValue, etc.
@@ -137,11 +143,12 @@ export class BasesDataAdapter {
 		}
 
 		// ListValue
-		const getListItem = typeof basesValue.get === "function"
-			? basesValue.get.bind(basesValue)
-			: typeof basesValue.at === "function"
-				? basesValue.at.bind(basesValue)
-				: null;
+		const getListItem =
+			typeof basesValue.get === "function"
+				? basesValue.get.bind(basesValue)
+				: typeof basesValue.at === "function"
+					? basesValue.at.bind(basesValue)
+					: null;
 		if (typeof basesValue.length === "function" && getListItem) {
 			const len = basesValue.length();
 			const result = [];
@@ -220,8 +227,8 @@ export class BasesDataAdapter {
 		// Format Date objects as YYYY-MM-DD (date only, no time)
 		if (actualValue instanceof Date) {
 			const year = actualValue.getFullYear();
-			const month = String(actualValue.getMonth() + 1).padStart(2, '0');
-			const day = String(actualValue.getDate()).padStart(2, '0');
+			const month = String(actualValue.getMonth() + 1).padStart(2, "0");
+			const day = String(actualValue.getDate()).padStart(2, "0");
 			return `${year}-${month}-${day}`;
 		}
 
@@ -289,7 +296,7 @@ export class BasesDataAdapter {
 		try {
 			const value = basesEntry.getValue(propertyId as BasesPropertyId);
 			return this.convertValueToNative(value);
-		} catch (e) {
+		} catch {
 			return null;
 		}
 	}

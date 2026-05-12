@@ -98,7 +98,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 				console.error(`[TaskNotes][${this.type}] Render error:`, error);
 				this.renderError(error as Error);
 			}
-		}, 500);  // 500ms debounce for data updates
+		}, 500); // 500ms debounce for data updates
 	}
 
 	/**
@@ -295,25 +295,29 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	protected setupTaskUpdateListener(): void {
 		if (this.taskUpdateListener) return;
 
-		this.taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
-			try {
-				const updatedTask = eventData?.updatedTask || eventData?.task || eventData?.taskInfo;
-				if (!updatedTask?.path) return;
+		this.taskUpdateListener = this.plugin.emitter.on(
+			EVENT_TASK_UPDATED,
+			async (eventData: any) => {
+				try {
+					const updatedTask =
+						eventData?.updatedTask || eventData?.task || eventData?.taskInfo;
+					if (!updatedTask?.path) return;
 
-				// Skip if view is not visible (no point updating hidden views)
-				if (!this.rootElement?.isConnected) return;
+					// Skip if view is not visible (no point updating hidden views)
+					if (!this.rootElement?.isConnected) return;
 
-				// Use cached Set for O(1) lookup instead of O(n) iteration
-				const isRelevant = this.relevantPathsCache.has(updatedTask.path);
+					// Use cached Set for O(1) lookup instead of O(n) iteration
+					const isRelevant = this.relevantPathsCache.has(updatedTask.path);
 
-				if (isRelevant) {
-					await this.handleTaskUpdate(updatedTask);
+					if (isRelevant) {
+						await this.handleTaskUpdate(updatedTask);
+					}
+				} catch (error) {
+					console.error("[TaskNotes][Bases] Error in task update handler:", error);
+					this.debouncedRefresh();
 				}
-			} catch (error) {
-				console.error("[TaskNotes][Bases] Error in task update handler:", error);
-				this.debouncedRefresh();
 			}
-		});
+		);
 
 		// Register cleanup using Component lifecycle
 		this.register(() => {
@@ -338,7 +342,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		this.updateDebounceTimer = win.setTimeout(() => {
 			this.render();
 			this.updateDebounceTimer = null;
-		}, 300);  // Increased from 150ms for better typing performance
+		}, 300); // Increased from 150ms for better typing performance
 
 		// Note: We don't need to explicitly register cleanup for this timer
 		// because it's short-lived (300ms) and clears itself. If the component
@@ -412,16 +416,24 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			}
 
 			if (mockFrontmatter[fm.toUserField("timeEstimate")]) {
-				prePopulatedValues.timeEstimate = Number(mockFrontmatter[fm.toUserField("timeEstimate")]);
+				prePopulatedValues.timeEstimate = Number(
+					mockFrontmatter[fm.toUserField("timeEstimate")]
+				);
 			}
 			if (mockFrontmatter[fm.toUserField("recurrence")]) {
-				prePopulatedValues.recurrence = String(mockFrontmatter[fm.toUserField("recurrence")]);
+				prePopulatedValues.recurrence = String(
+					mockFrontmatter[fm.toUserField("recurrence")]
+				);
 			}
 			if (mockFrontmatter[fm.toUserField("completedDate")]) {
-				prePopulatedValues.completedDate = String(mockFrontmatter[fm.toUserField("completedDate")]);
+				prePopulatedValues.completedDate = String(
+					mockFrontmatter[fm.toUserField("completedDate")]
+				);
 			}
 			if (mockFrontmatter[fm.toUserField("dateCreated")]) {
-				prePopulatedValues.dateCreated = String(mockFrontmatter[fm.toUserField("dateCreated")]);
+				prePopulatedValues.dateCreated = String(
+					mockFrontmatter[fm.toUserField("dateCreated")]
+				);
 			}
 			if (mockFrontmatter[fm.toUserField("blockedBy")]) {
 				const blockedBy = mockFrontmatter[fm.toUserField("blockedBy")];
@@ -454,7 +466,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 				fm.toUserField("completedDate"),
 				fm.toUserField("dateCreated"),
 				fm.toUserField("blockedBy"),
-				...userFields.map(uf => uf.key),
+				...userFields.map((uf) => uf.key),
 			]);
 
 			for (const [key, value] of Object.entries(mockFrontmatter)) {
@@ -516,7 +528,11 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		for (const basesPropertyId of basesPropertyIds) {
 			const taskCardPropertyId = this.propertyMapper.basesToTaskCardProperty(basesPropertyId);
 			const displayName = this.config.getDisplayName?.(basesPropertyId);
-			if (taskCardPropertyId && typeof displayName === "string" && displayName.trim() !== "") {
+			if (
+				taskCardPropertyId &&
+				typeof displayName === "string" &&
+				displayName.trim() !== ""
+			) {
 				labels[taskCardPropertyId] = displayName;
 			}
 		}
@@ -575,7 +591,10 @@ export abstract class BasesViewBase extends Component implements BasesView {
 				visibleProperties = this.getVisibleProperties();
 			}
 		} catch (e) {
-			console.debug(`[${this.type}] Could not get visible properties during search setup:`, e);
+			console.debug(
+				`[${this.type}] Could not get visible properties during search setup:`,
+				e
+			);
 		}
 		this.searchFilter = new TaskSearchFilter(visibleProperties);
 
@@ -702,7 +721,11 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			}
 
 			// Ctrl/Cmd + A to select all visible tasks (only when in selection mode)
-			if ((e.ctrlKey || e.metaKey) && e.key === "a" && selectionService.isSelectionModeActive()) {
+			if (
+				(e.ctrlKey || e.metaKey) &&
+				e.key === "a" &&
+				selectionService.isSelectionModeActive()
+			) {
 				e.preventDefault();
 				const visiblePaths = this.getVisibleTaskPaths();
 				selectionService.selectAll(visiblePaths);
@@ -779,7 +802,9 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		}
 
 		// Also update kanban card wrappers (for visual consistency)
-		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper");
+		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(
+			".kanban-view__card-wrapper"
+		);
 		for (const wrapper of cardWrappers) {
 			const path = wrapper.dataset.taskPath;
 			if (path) {
@@ -810,7 +835,9 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			card.classList.remove("task-card--selected-primary");
 		}
 
-		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper--selected");
+		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(
+			".kanban-view__card-wrapper--selected"
+		);
 		for (const wrapper of cardWrappers) {
 			wrapper.classList.remove("kanban-view__card-wrapper--selected");
 			wrapper.classList.remove("kanban-view__card-wrapper--selected-primary");
@@ -837,9 +864,29 @@ export abstract class BasesViewBase extends Component implements BasesView {
 				this.rootElement.appendChild(this.selectionIndicatorEl);
 			}
 			this.selectionIndicatorEl.textContent = `${count} selected`;
-			this.selectionIndicatorEl.style.display = "block";
+			this.selectionIndicatorEl.classList.remove(
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.selectionIndicatorEl.classList.add("tn-static-display-block-2a1b75c9");
 		} else if (this.selectionIndicatorEl) {
-			this.selectionIndicatorEl.style.display = "none";
+			this.selectionIndicatorEl.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.selectionIndicatorEl.classList.add("tn-static-display-none-6b99de8b");
 		}
 	}
 
@@ -852,7 +899,12 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		if (!selectionService) return false;
 
 		// If not in selection mode and no modifier keys, don't handle
-		if (!selectionService.isSelectionModeActive() && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+		if (
+			!selectionService.isSelectionModeActive() &&
+			!event.shiftKey &&
+			!event.ctrlKey &&
+			!event.metaKey
+		) {
 			return false;
 		}
 

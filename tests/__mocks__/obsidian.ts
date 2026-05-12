@@ -385,6 +385,10 @@ export class MetadataCache {
 
 // FileManager mock class
 export class FileManager {
+  trashFile = jest.fn(async (file: TAbstractFile): Promise<void> => {
+    mockFileSystem.delete(file.path);
+  });
+
   generateMarkdownLink(file: TFile, sourcePath?: string, subpath?: string, alias?: string): string {
     // Simulate Obsidian's behavior of respecting user settings
     // For testing, we'll generate markdown link format when this is called

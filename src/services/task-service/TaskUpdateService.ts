@@ -2,13 +2,8 @@ import { TFile } from "obsidian";
 import { AutoArchiveService } from "../AutoArchiveService";
 import type TaskNotesPlugin from "../../main";
 import { EVENT_TASK_UPDATED, IWebhookNotifier, TaskInfo } from "../../types";
-import {
-	addDTSTARTToRecurrenceRule,
-	updateToNextScheduledOccurrence,
-} from "../../core/recurrence";
-import {
-	splitFrontmatterAndBody,
-} from "../../utils/helpers";
+import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../../core/recurrence";
+import { splitFrontmatterAndBody } from "../../utils/helpers";
 import { generateUniqueFilename } from "../../utils/filenameGenerator";
 import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
 
@@ -60,10 +55,10 @@ export class TaskUpdateService {
 				updates.title !== originalTask.title;
 			let newPath = originalTask.path;
 
-			if (isRenameNeeded) {
+			if (isRenameNeeded && updates.title) {
 				const parentPath = file.parent ? file.parent.path : "";
 				const newFilename = await generateUniqueFilename(
-					updates.title!,
+					updates.title,
 					parentPath,
 					plugin.app.vault
 				);
@@ -74,7 +69,9 @@ export class TaskUpdateService {
 			let normalizedDetails: string | null = null;
 			if (Object.prototype.hasOwnProperty.call(updates, "details")) {
 				normalizedDetails =
-					typeof updates.details === "string" ? updates.details.replace(/\r\n/g, "\n") : "";
+					typeof updates.details === "string"
+						? updates.details.replace(/\r\n/g, "\n")
+						: "";
 			}
 
 			await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -118,8 +115,9 @@ export class TaskUpdateService {
 					}
 				}
 
-				const customFrontmatter = (updates as { customFrontmatter?: Record<string, unknown> })
-					.customFrontmatter;
+				const customFrontmatter = (
+					updates as { customFrontmatter?: Record<string, unknown> }
+				).customFrontmatter;
 				if (customFrontmatter) {
 					Object.entries(customFrontmatter).forEach(([key, value]) => {
 						if (value === null) {
@@ -154,7 +152,8 @@ export class TaskUpdateService {
 				const targetFile = plugin.app.vault.getAbstractFileByPath(newPath);
 				if (targetFile instanceof TFile) {
 					const currentContent = await plugin.app.vault.read(targetFile);
-					const { frontmatter: frontmatterText } = splitFrontmatterAndBody(currentContent);
+					const { frontmatter: frontmatterText } =
+						splitFrontmatterAndBody(currentContent);
 					const frontmatterBlock =
 						frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
 					const bodyContent = normalizedDetails.trimEnd();
@@ -222,7 +221,9 @@ export class TaskUpdateService {
 
 			if (this.deps.webhookNotifier) {
 				try {
-					const wasCompleted = plugin.statusManager.isCompletedStatus(originalTask.status);
+					const wasCompleted = plugin.statusManager.isCompletedStatus(
+						originalTask.status
+					);
 					const isCompleted = plugin.statusManager.isCompletedStatus(updatedTask.status);
 
 					if (!wasCompleted && isCompleted) {
@@ -247,7 +248,10 @@ export class TaskUpdateService {
 				const syncPromise =
 					!wasCompleted && isCompleted
 						? plugin.taskCalendarSyncService.completeTaskInCalendar(updatedTask)
-						: plugin.taskCalendarSyncService.updateTaskInCalendar(updatedTask, originalTask);
+						: plugin.taskCalendarSyncService.updateTaskInCalendar(
+								updatedTask,
+								originalTask
+							);
 
 				syncPromise.catch((error) => {
 					console.warn("Failed to sync task update to Google Calendar:", error);
@@ -302,7 +306,11 @@ export class TaskUpdateService {
 					recurrenceUpdates.recurrence = updatedRecurrence;
 				}
 			}
-		} else if (updates.recurrence !== undefined && !originalTask.recurrence && updates.recurrence) {
+		} else if (
+			updates.recurrence !== undefined &&
+			!originalTask.recurrence &&
+			updates.recurrence
+		) {
 			if (
 				typeof updates.recurrence === "string" &&
 				!updates.recurrence.includes("DTSTART:")
@@ -392,7 +400,11 @@ export class TaskUpdateService {
 		updatedTask: TaskInfo,
 		newStatus: string | undefined
 	): Promise<void> {
-		if (!this.deps.autoArchiveService || newStatus === undefined || newStatus === originalTask.status) {
+		if (
+			!this.deps.autoArchiveService ||
+			newStatus === undefined ||
+			newStatus === originalTask.status
+		) {
 			return;
 		}
 

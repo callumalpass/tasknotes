@@ -1,12 +1,9 @@
-import { App, SuggestModal, TFile, Notice, setIcon, debounce } from "obsidian";
+import { App, SuggestModal, Notice, setIcon } from "obsidian";
 import { TaskInfo, TaskCreationData } from "../types";
 import { filterEmptyProjects } from "../utils/helpers";
 import type TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
-import {
-	NaturalLanguageParser,
-	ParsedTaskData,
-} from "../services/NaturalLanguageParser";
+import { NaturalLanguageParser, ParsedTaskData } from "../services/NaturalLanguageParser";
 import { createTaskCard } from "../ui/TaskCard";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
 
@@ -113,7 +110,17 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		const modalContentEl = this.modalEl.querySelector(".prompt")?.parentElement || this.modalEl;
 
 		this.createFooterEl = createDiv({ cls: "task-selector-create-footer" });
-		this.createFooterEl.style.display = "none";
+		this.createFooterEl.classList.remove(
+			"tn-static-display-block-2a1b75c9",
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		this.createFooterEl.classList.add("tn-static-display-none-6b99de8b");
 		modalContentEl.appendChild(this.createFooterEl);
 	}
 
@@ -127,7 +134,17 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		if (!this.createFooterEl) return;
 
 		if (!query) {
-			this.createFooterEl.style.display = "none";
+			this.createFooterEl.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.createFooterEl.classList.add("tn-static-display-none-6b99de8b");
 			this.createFooterEl.empty();
 			return;
 		}
@@ -136,17 +153,33 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		if (parsed.title && parsed.title !== "Untitled Task") {
 			this.createFooterEl.empty();
-			this.createFooterEl.style.display = "flex";
+			this.createFooterEl.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.createFooterEl.classList.add("tn-static-display-flex-75816cae");
 
 			// Icon
-			const iconDiv = this.createFooterEl.createDiv({ cls: "task-selector-create-footer__icon" });
+			const iconDiv = this.createFooterEl.createDiv({
+				cls: "task-selector-create-footer__icon",
+			});
 			setIcon(iconDiv, "plus-circle");
 
 			// Content
-			const contentDiv = this.createFooterEl.createDiv({ cls: "task-selector-create-footer__content" });
+			const contentDiv = this.createFooterEl.createDiv({
+				cls: "task-selector-create-footer__content",
+			});
 
 			// Title line
-			const titleLine = contentDiv.createDiv({ cls: "task-selector-create-footer__title-line" });
+			const titleLine = contentDiv.createDiv({
+				cls: "task-selector-create-footer__title-line",
+			});
 			titleLine.createSpan({
 				cls: "task-selector-create-footer__title",
 				text: parsed.title,
@@ -158,11 +191,16 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				const metaLine = contentDiv.createDiv({ cls: "task-selector-create-footer__meta" });
 				metaParts.forEach((part) => {
 					const chipEl = metaLine.createSpan({
-						cls: `task-selector-create-footer__chip task-selector-create-footer__chip--${part.type}`
+						cls: `task-selector-create-footer__chip task-selector-create-footer__chip--${part.type}`,
 					});
-					const chipIconEl = chipEl.createSpan({ cls: "task-selector-create-footer__chip-icon" });
+					const chipIconEl = chipEl.createSpan({
+						cls: "task-selector-create-footer__chip-icon",
+					});
 					setIcon(chipIconEl, part.icon);
-					chipEl.createSpan({ cls: "task-selector-create-footer__chip-text", text: part.text });
+					chipEl.createSpan({
+						cls: "task-selector-create-footer__chip-text",
+						text: part.text,
+					});
 				});
 			}
 
@@ -177,12 +215,24 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				text: this.translate("modals.taskSelectorWithCreate.footer.createLabel"),
 			});
 		} else {
-			this.createFooterEl.style.display = "none";
+			this.createFooterEl.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.createFooterEl.classList.add("tn-static-display-none-6b99de8b");
 			this.createFooterEl.empty();
 		}
 	}
 
-	private buildMetadataParts(parsed: ParsedTaskData): Array<{ icon: string; text: string; type: string }> {
+	private buildMetadataParts(
+		parsed: ParsedTaskData
+	): Array<{ icon: string; text: string; type: string }> {
 		const parts: Array<{ icon: string; text: string; type: string }> = [];
 
 		// Due date
@@ -193,7 +243,9 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Scheduled date
 		if (parsed.scheduledDate) {
-			const dateStr = parsed.scheduledTime ? `${parsed.scheduledDate} ${parsed.scheduledTime}` : parsed.scheduledDate;
+			const dateStr = parsed.scheduledTime
+				? `${parsed.scheduledDate} ${parsed.scheduledTime}`
+				: parsed.scheduledDate;
 			parts.push({ icon: "calendar-clock", text: dateStr, type: "scheduled" });
 		}
 
@@ -208,27 +260,31 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			parts.push({
 				icon: "circle-dot",
 				text: statusConfig?.label || parsed.status,
-				type: "status"
+				type: "status",
 			});
 		}
 
 		// Contexts
 		if (parsed.contexts && parsed.contexts.length > 0) {
-			parsed.contexts.forEach(ctx => {
+			parsed.contexts.forEach((ctx) => {
 				parts.push({ icon: "at-sign", text: ctx, type: "context" });
 			});
 		}
 
 		// Projects
 		if (parsed.projects && parsed.projects.length > 0) {
-			parsed.projects.forEach(proj => {
-				parts.push({ icon: "folder", text: proj.replace(/^\[\[|\]\]$/g, ""), type: "project" });
+			parsed.projects.forEach((proj) => {
+				parts.push({
+					icon: "folder",
+					text: proj.replace(/^\[\[|\]\]$/g, ""),
+					type: "project",
+				});
 			});
 		}
 
 		// Tags
 		if (parsed.tags && parsed.tags.length > 0) {
-			parsed.tags.forEach(tag => {
+			parsed.tags.forEach((tag) => {
 				parts.push({ icon: "hash", text: tag, type: "tag" });
 			});
 		}
@@ -248,9 +304,10 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Details (truncated)
 		if (parsed.details) {
-			const truncated = parsed.details.length > 30
-				? parsed.details.substring(0, 30) + "..."
-				: parsed.details;
+			const truncated =
+				parsed.details.length > 30
+					? parsed.details.substring(0, 30) + "..."
+					: parsed.details;
 			parts.push({ icon: "file-text", text: truncated, type: "details" });
 		}
 
@@ -261,7 +318,11 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				const fieldDef = userFieldDefs.find((f) => f.id === fieldId);
 				const displayName = fieldDef?.displayName || fieldId;
 				const displayValue = Array.isArray(value) ? value.join(", ") : value;
-				parts.push({ icon: "sliders-horizontal", text: `${displayName}: ${displayValue}`, type: "userfield" });
+				parts.push({
+					icon: "sliders-horizontal",
+					text: `${displayName}: ${displayValue}`,
+					type: "userfield",
+				});
 			}
 		}
 
@@ -291,7 +352,9 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			const result = await this.plugin.taskService.createTask(taskData);
 
 			new Notice(
-				this.translate("modals.taskCreation.notices.success", { title: result.taskInfo.title })
+				this.translate("modals.taskCreation.notices.success", {
+					title: result.taskInfo.title,
+				})
 			);
 
 			// Close modal and return result
@@ -329,15 +392,21 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				if (task.due && task.due.toLowerCase().includes(lowerQuery)) return true;
 
 				// Search in priority
-				if (task.priority && task.priority !== "normal" && task.priority.toLowerCase().includes(lowerQuery))
+				if (
+					task.priority &&
+					task.priority !== "normal" &&
+					task.priority.toLowerCase().includes(lowerQuery)
+				)
 					return true;
 
 				// Search in contexts (filter out null/undefined values)
-				if (task.contexts?.some((c) => c && c.toLowerCase().includes(lowerQuery))) return true;
+				if (task.contexts?.some((c) => c && c.toLowerCase().includes(lowerQuery)))
+					return true;
 
 				// Search in projects (filter out null/undefined values)
 				const filteredProjects = filterEmptyProjects(task.projects || []);
-				if (filteredProjects.some((p) => p && p.toLowerCase().includes(lowerQuery))) return true;
+				if (filteredProjects.some((p) => p && p.toLowerCase().includes(lowerQuery)))
+					return true;
 
 				return false;
 			})

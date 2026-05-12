@@ -1,14 +1,4 @@
- 
-import {
-	Notice,
-	Plugin,
-	WorkspaceLeaf,
-	Editor,
-	MarkdownView,
-	TFile,
-	getLanguage,
-	normalizePath,
-} from "obsidian";
+import { Notice, Plugin, WorkspaceLeaf, Editor, TFile, getLanguage, normalizePath } from "obsidian";
 import { format } from "date-fns";
 import {
 	createDailyNote,
@@ -47,11 +37,7 @@ import { ViewPerformanceService } from "./services/ViewPerformanceService";
 import { AutoArchiveService } from "./services/AutoArchiveService";
 import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
-import {
-	formatDateForStorage,
-	parseDateToLocal,
-	getTodayLocal,
-} from "./utils/dateUtils";
+import { formatDateForStorage, parseDateToLocal, getTodayLocal } from "./utils/dateUtils";
 import { ICSSubscriptionService } from "./services/ICSSubscriptionService";
 import { ICSNoteService } from "./services/ICSNoteService";
 import { StatusBarService } from "./services/StatusBarService";
@@ -72,10 +58,7 @@ import {
 	initializeCalendarProviders,
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
-import {
-	cleanupPluginRuntime,
-	initializePluginRuntime,
-} from "./bootstrap/pluginRuntime";
+import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
@@ -208,7 +191,7 @@ export default class TaskNotesPlugin extends Plugin {
 			if (obsidianLanguage) {
 				return obsidianLanguage;
 			}
-		} catch (error) {
+		} catch {
 			// Silently continue to next attempt if getLanguage() fails
 		}
 
@@ -289,17 +272,8 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			// Simple approach: just trigger the lazy index building once
 			// This is much more efficient than processing individual files
-			const warmupStartTime = Date.now();
-
 			// Trigger index building with a single call - this will process all files internally
 			this.cacheManager.getTasksForDate(new Date().toISOString().split("T")[0]);
-
-			const duration = Date.now() - warmupStartTime;
-			// Only log slow warmup for debugging large vaults
-			if (duration > 2000) {
-				 
-				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms`);
-			}
 		} catch (error) {
 			console.error("[TaskNotes] Error during project index warmup:", error);
 		}
@@ -386,14 +360,11 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	private async performEarlyMigrationCheck(): Promise<void> {
 		try {
-			console.log("TaskNotes: Starting early migration check...");
-
 			// Initialize saved views (handles migration if needed)
 			await this.viewStateManager.initializeSavedViews();
 
 			// Perform view state migration if needed (this is silent and fast)
 			if (this.viewStateManager.needsMigration()) {
-				console.log("TaskNotes: Performing view state migration...");
 				await this.viewStateManager.performMigration();
 			}
 
@@ -573,7 +544,11 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		// Migration: Migrate statusSuggestionTrigger to nlpTriggers if needed
-		if (loadedData && !loadedData.nlpTriggers && loadedData.statusSuggestionTrigger !== undefined) {
+		if (
+			loadedData &&
+			!loadedData.nlpTriggers &&
+			loadedData.statusSuggestionTrigger !== undefined
+		) {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const { DEFAULT_NLP_TRIGGERS } = require("./settings/defaults");
 			loadedData.nlpTriggers = {
@@ -593,10 +568,7 @@ export default class TaskNotesPlugin extends Plugin {
 		if (loadedData && !loadedData.modalFieldsConfig) {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const { initializeFieldConfig } = require("./utils/fieldConfigDefaults");
-			loadedData.modalFieldsConfig = initializeFieldConfig(
-				undefined,
-				loadedData.userFields
-			);
+			loadedData.modalFieldsConfig = initializeFieldConfig(undefined, loadedData.userFields);
 		}
 
 		// Migration: Force enableBases to true (issue #1187)
@@ -640,7 +612,8 @@ export default class TaskNotesPlugin extends Plugin {
 			nlpTriggers: {
 				...DEFAULT_SETTINGS.nlpTriggers,
 				...(loadedData?.nlpTriggers || {}),
-				triggers: loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
+				triggers:
+					loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
 			},
 			// Modal fields configuration (already migrated above if needed)
 			modalFieldsConfig: loadedData?.modalFieldsConfig,
@@ -756,16 +729,13 @@ export default class TaskNotesPlugin extends Plugin {
 
 		if (created.length > 0) {
 			new Notice(
-				`Created ${created.length} default Bases file(s):\n${created.join('\n')}`,
+				`Created ${created.length} default Bases file(s):\n${created.join("\n")}`,
 				8000
 			);
 		}
 
 		if (skipped.length > 0 && created.length === 0) {
-			new Notice(
-				`Default Bases files already exist:\n${skipped.join('\n')}`,
-				8000
-			);
+			new Notice(`Default Bases files already exist:\n${skipped.join("\n")}`, 8000);
 		}
 	}
 
@@ -786,16 +756,13 @@ export default class TaskNotesPlugin extends Plugin {
 		for (const segment of segments) {
 			currentPath = currentPath ? `${currentPath}/${segment}` : segment;
 
-			 
 			if (await adapter.exists(currentPath)) {
 				continue;
 			}
 
 			try {
-				 
 				await this.app.vault.createFolder(currentPath);
 			} catch (error) {
-				 
 				if (!(await adapter.exists(currentPath))) {
 					throw error;
 				}
@@ -822,7 +789,7 @@ export default class TaskNotesPlugin extends Plugin {
 				}
 
 				const normalizedPath = normalizePath(rawPath);
-				 
+
 				if (await adapter.exists(normalizedPath)) {
 					skipped.push(rawPath);
 					continue;
@@ -837,14 +804,13 @@ export default class TaskNotesPlugin extends Plugin {
 
 				// Only create folder hierarchy if we're actually creating the file
 				const lastSlashIndex = normalizedPath.lastIndexOf("/");
-				const directory = lastSlashIndex >= 0 ? normalizedPath.substring(0, lastSlashIndex) : "";
+				const directory =
+					lastSlashIndex >= 0 ? normalizedPath.substring(0, lastSlashIndex) : "";
 
 				if (directory) {
-					 
 					await this.ensureFolderHierarchy(directory);
 				}
 
-				 
 				await this.app.vault.create(normalizedPath, template);
 				created.push(rawPath);
 			}
@@ -946,7 +912,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// Check if Daily Notes plugin is enabled
 			if (!appHasDailyNotesPluginLoaded()) {
 				new Notice(
-					"Daily Notes core plugin is not enabled. Please enable it in Settings > Core plugins."
+					"Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
 				);
 				return;
 			}
@@ -1000,7 +966,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	injectCustomStyles(): void {
 		// Remove existing custom styles
-		const existingStyle = document.getElementById("tasknotes-custom-styles");
+		const existingStyle = activeDocument.getElementById("tasknotes-custom-styles");
 		if (existingStyle) {
 			existingStyle.remove();
 		}
@@ -1010,7 +976,7 @@ export default class TaskNotesPlugin extends Plugin {
 		const priorityStyles = this.priorityManager.getPriorityStyles();
 
 		// Create style element
-		const styleEl = document.createElement("style");
+		const styleEl = activeDocument.createElement("style");
 		styleEl.id = "tasknotes-custom-styles";
 		styleEl.textContent = `
 		${statusStyles}
@@ -1018,7 +984,7 @@ export default class TaskNotesPlugin extends Plugin {
 	`;
 
 		// Inject into document head
-		document.head.appendChild(styleEl);
+		activeDocument.head.appendChild(styleEl);
 	}
 
 	async updateTaskProperty(
@@ -1060,7 +1026,10 @@ export default class TaskNotesPlugin extends Plugin {
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, targetDate);
+			const updatedTask = await this.taskService.toggleRecurringTaskComplete(
+				task,
+				targetDate
+			);
 
 			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
@@ -1152,13 +1121,19 @@ export default class TaskNotesPlugin extends Plugin {
 			due: frontmatter.due || undefined,
 			scheduled: frontmatter.scheduled || undefined,
 			contexts: frontmatter.contexts
-				? (Array.isArray(frontmatter.contexts) ? frontmatter.contexts : [frontmatter.contexts])
+				? Array.isArray(frontmatter.contexts)
+					? frontmatter.contexts
+					: [frontmatter.contexts]
 				: undefined,
 			projects: frontmatter.projects
-				? (Array.isArray(frontmatter.projects) ? frontmatter.projects : [frontmatter.projects])
+				? Array.isArray(frontmatter.projects)
+					? frontmatter.projects
+					: [frontmatter.projects]
 				: undefined,
 			tags: frontmatter.tags
-				? (Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags])
+				? Array.isArray(frontmatter.tags)
+					? frontmatter.tags
+					: [frontmatter.tags]
 				: [],
 			timeEstimate: frontmatter.timeEstimate || undefined,
 			recurrence: frontmatter.recurrence || undefined,
@@ -1352,7 +1327,9 @@ export default class TaskNotesPlugin extends Plugin {
 	private async openTaskDatePicker(task: TaskInfo, field: "due" | "scheduled") {
 		try {
 			const { DateTimePickerModal } = await import("./modals/DateTimePickerModal");
-			const { getDatePart, getTimePart, combineDateAndTime } = await import("./utils/dateUtils");
+			const { getDatePart, getTimePart, combineDateAndTime } = await import(
+				"./utils/dateUtils"
+			);
 			const currentValue = (field === "due" ? task.due : task.scheduled) || "";
 			const modal = new DateTimePickerModal(this.app, {
 				currentDate: getDatePart(currentValue) || null,
@@ -1374,7 +1351,7 @@ export default class TaskNotesPlugin extends Plugin {
 	async refreshCache(): Promise<void> {
 		try {
 			// Show loading notice
-			const loadingNotice = new Notice("Refreshing TaskNotes cache...", 0);
+			const loadingNotice = new Notice("Refreshing tasknotes cache...", 0);
 
 			// Clear all caches
 			await this.cacheManager.clearAllCaches();
@@ -1384,7 +1361,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Hide loading notice and show success
 			loadingNotice.hide();
-			new Notice("TaskNotes cache refreshed successfully");
+			new Notice("Tasknotes cache refreshed successfully");
 		} catch (error) {
 			console.error("Error refreshing cache:", error);
 			new Notice("Failed to refresh cache. Please try again.");
@@ -1566,7 +1543,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// Check if it's a TaskNote
 			const taskInfo = await this.cacheManager.getTaskInfo(activeFile.path);
 			if (!taskInfo) {
-				new Notice("Current file is not a TaskNote");
+				new Notice("Current file is not a tasknote");
 				return;
 			}
 
@@ -1635,7 +1612,8 @@ export default class TaskNotesPlugin extends Plugin {
 			// Open task creation modal with callback to insert link
 			// Use modal-inline-creation context for inline folder behavior (Issue #1424)
 			const modal = new TaskCreationModal(this.app, this, {
-				prePopulatedValues: Object.keys(prePopulatedValues).length > 0 ? prePopulatedValues : undefined,
+				prePopulatedValues:
+					Object.keys(prePopulatedValues).length > 0 ? prePopulatedValues : undefined,
 				onTaskCreated: (task: TaskInfo) => {
 					this.handleInlineTaskCreated(task, insertionContext);
 				},
@@ -1694,5 +1672,4 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice("Failed to insert task link");
 		}
 	}
-
 }

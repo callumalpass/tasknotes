@@ -270,7 +270,7 @@ export class InstantTaskConvertService {
 				new Notice(this.translate("services.instantTaskConvert.notices.replaceLineFailed"));
 				// Clean up the created file since replacement failed
 				try {
-					await this.plugin.app.vault.delete(file);
+					await this.plugin.app.fileManager.trashFile(file);
 				} catch (cleanupError) {
 					console.warn(
 						"Failed to clean up created file after replacement failure:",
@@ -474,7 +474,10 @@ export class InstantTaskConvertService {
 		let scheduledDate: string | undefined;
 		let contextsArray: string[] = [];
 		// Only add task tag if using tag-based identification
-		let tagsArray = this.plugin.settings.taskIdentificationMethod === 'tag' ? [this.plugin.settings.taskTag] : [];
+		let tagsArray =
+			this.plugin.settings.taskIdentificationMethod === "tag"
+				? [this.plugin.settings.taskTag]
+				: [];
 		let timeEstimate: number | undefined;
 		let recurrence: string | undefined;
 
@@ -528,7 +531,10 @@ export class InstantTaskConvertService {
 			contextsArray = [...new Set(contextsArray)];
 
 			// Apply tags: start with task tag (if using tag mode), add parsed tags, then add default tags
-			tagsArray = this.plugin.settings.taskIdentificationMethod === 'tag' ? [this.plugin.settings.taskTag] : [];
+			tagsArray =
+				this.plugin.settings.taskIdentificationMethod === "tag"
+					? [this.plugin.settings.taskTag]
+					: [];
 			if (parsedTags.length > 0) {
 				tagsArray.push(...parsedTags);
 			}
@@ -584,7 +590,10 @@ export class InstantTaskConvertService {
 				contextsArray.push(...parsedContexts);
 			}
 			// Apply tags: start with task tag (if using tag mode), add parsed tags
-			tagsArray = this.plugin.settings.taskIdentificationMethod === 'tag' ? [this.plugin.settings.taskTag] : [];
+			tagsArray =
+				this.plugin.settings.taskIdentificationMethod === "tag"
+					? [this.plugin.settings.taskTag]
+					: [];
 			if (parsedTags.length > 0) {
 				tagsArray.push(...parsedTags);
 			}
@@ -656,7 +665,9 @@ export class InstantTaskConvertService {
 						customFrontmatter[userField.key] = value;
 					}
 				} else {
-					console.warn(`[InstantTaskConvert] No user field definition found for field ID: ${fieldId}`);
+					console.warn(
+						`[InstantTaskConvert] No user field definition found for field ID: ${fieldId}`
+					);
 				}
 			}
 		}
@@ -679,7 +690,8 @@ export class InstantTaskConvertService {
 			creationContext: "inline-conversion", // Mark as inline conversion for folder logic
 			dateCreated: getCurrentTimestamp(),
 			dateModified: getCurrentTimestamp(),
-			customFrontmatter: Object.keys(customFrontmatter).length > 0 ? customFrontmatter : undefined,
+			customFrontmatter:
+				Object.keys(customFrontmatter).length > 0 ? customFrontmatter : undefined,
 		};
 
 		// Use the centralized task creation service

@@ -156,31 +156,7 @@ export class PerformanceMonitor {
 	 */
 	logSummary(): void {
 		if (!this.enabled) return;
-
-		console.group("[Performance Summary]");
-
-		const stats = this.getAllStats();
-		const importantMetrics = [
-			"cache-file-read",
-			"task-list-render",
-			"calendar-render",
-			"task-update",
-			"file-index",
-			"dom-update",
-		];
-
-		importantMetrics.forEach((metric) => {
-			const stat = stats[metric];
-			if (stat) {
-				console.log(`${metric}:`, {
-					average: `${stat.average.toFixed(2)}ms`,
-					p95: `${stat.p95.toFixed(2)}ms`,
-					count: stat.count,
-				});
-			}
-		});
-
-		console.groupEnd();
+		this.getAllStats();
 	}
 
 	/**
@@ -263,7 +239,7 @@ export class PerformanceMonitor {
 		try {
 			observer.observe({ entryTypes: ["longtask"] });
 			this.performanceObservers.add(observer);
-		} catch (error) {
+		} catch {
 			// Some browsers might not support longtask observation
 			console.warn("Long task monitoring not supported");
 		}
@@ -282,7 +258,7 @@ export class PerformanceMonitor {
 
 		try {
 			performance.mark(`tasknotes-${name}`);
-		} catch (error) {
+		} catch {
 			// Ignore errors in browsers that don't support performance marks
 		}
 	}
@@ -299,7 +275,7 @@ export class PerformanceMonitor {
 				`tasknotes-${startMark}`,
 				`tasknotes-${endMark}`
 			);
-		} catch (error) {
+		} catch {
 			// Ignore errors in browsers that don't support performance measures
 		}
 	}

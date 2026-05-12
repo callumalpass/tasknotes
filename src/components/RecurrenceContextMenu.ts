@@ -7,14 +7,14 @@ export interface RecurrenceOption {
 	label: string;
 	value: string;
 	icon?: string;
-	anchor?: 'scheduled' | 'completion'; // NEW: Determines if recurrence is from scheduled date or completion date
+	anchor?: "scheduled" | "completion"; // NEW: Determines if recurrence is from scheduled date or completion date
 }
 
 export interface RecurrenceContextMenuOptions {
 	currentValue?: string;
-	currentAnchor?: 'scheduled' | 'completion';
+	currentAnchor?: "scheduled" | "completion";
 	scheduledDate?: string; // Task's scheduled date to extract time from
-	onSelect: (value: string | null, anchor?: 'scheduled' | 'completion') => void;
+	onSelect: (value: string | null, anchor?: "scheduled" | "completion") => void;
 	app: App;
 	plugin: TaskNotesPlugin;
 }
@@ -57,7 +57,7 @@ export class RecurrenceContextMenu {
 				item.setTitle(title);
 
 				item.onClick(async () => {
-					const anchorValue = option.anchor || 'scheduled';
+					const anchorValue = option.anchor || "scheduled";
 					this.options.onSelect(option.value, anchorValue);
 				});
 			});
@@ -252,7 +252,7 @@ export class RecurrenceContextMenu {
 		new CustomRecurrenceModal(
 			this.options.app,
 			this.options.currentValue || "",
-			this.options.currentAnchor || 'scheduled',
+			this.options.currentAnchor || "scheduled",
 			this.options.scheduledDate,
 			(result, anchor) => {
 				if (result) {
@@ -270,7 +270,7 @@ export class RecurrenceContextMenu {
 class CustomRecurrenceModal extends Modal {
 	private currentValue: string;
 	private scheduledDate?: string;
-	private onSubmit: (result: string | null, anchor?: 'scheduled' | 'completion') => void;
+	private onSubmit: (result: string | null, anchor?: "scheduled" | "completion") => void;
 	private frequency = "DAILY";
 	private interval = 1;
 	private byDay: string[] = [];
@@ -282,9 +282,15 @@ class CustomRecurrenceModal extends Modal {
 	private endType: "never" | "count" | "until" = "never";
 	private dtstart = "";
 	private dtstartTime = "";
-	private recurrenceAnchor: 'scheduled' | 'completion' = 'scheduled'; // NEW: Recurrence anchor
+	private recurrenceAnchor: "scheduled" | "completion" = "scheduled"; // NEW: Recurrence anchor
 
-	constructor(app: App, currentValue: string, currentAnchor: 'scheduled' | 'completion', scheduledDate: string | undefined, onSubmit: (result: string | null, anchor?: 'scheduled' | 'completion') => void) {
+	constructor(
+		app: App,
+		currentValue: string,
+		currentAnchor: "scheduled" | "completion",
+		scheduledDate: string | undefined,
+		onSubmit: (result: string | null, anchor?: "scheduled" | "completion") => void
+	) {
 		super(app);
 		this.currentValue = currentValue;
 		this.recurrenceAnchor = currentAnchor;
@@ -297,7 +303,7 @@ class CustomRecurrenceModal extends Modal {
 		if (!this.currentValue) {
 			// Set default DTSTART to today
 			this.dtstart = this.formatTodayForInput();
-			
+
 			// Check if we should preserve time from scheduled date
 			if (this.scheduledDate && this.scheduledDate.includes("T")) {
 				const timeMatch = this.scheduledDate.match(/T(\d{2}):(\d{2})/);
@@ -405,7 +411,7 @@ class CustomRecurrenceModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		contentEl.createEl("h2", { text: "Custom Recurrence" });
+		contentEl.createEl("h2", { text: "Custom recurrence" });
 
 		// Start date selection
 		new Setting(contentEl)
@@ -435,11 +441,11 @@ class CustomRecurrenceModal extends Modal {
 			.setDesc("When should the next occurrence be calculated from?")
 			.addDropdown((dropdown) => {
 				dropdown
-					.addOption('scheduled', 'Scheduled date (fixed schedule)')
-					.addOption('completion', 'Completion date (flexible schedule)')
+					.addOption("scheduled", "Scheduled date (fixed schedule)")
+					.addOption("completion", "Completion date (flexible schedule)")
 					.setValue(this.recurrenceAnchor)
 					.onChange((value) => {
-						this.recurrenceAnchor = value as 'scheduled' | 'completion';
+						this.recurrenceAnchor = value as "scheduled" | "completion";
 					});
 			});
 
@@ -485,8 +491,19 @@ class CustomRecurrenceModal extends Modal {
 
 		days.forEach((day) => {
 			const dayEl = daysContainer.createEl("label", { cls: "day-checkbox" });
-			dayEl.style.display = "inline-block";
-			dayEl.style.marginRight = "8px";
+			dayEl.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			dayEl.classList.add("tn-static-display-inline-block-60e32dcb");
+			dayEl.classList.remove("tn-static-margin-right-4px-c6b76b85");
+			dayEl.classList.add("tn-static-margin-right-8px-539fa9a0");
 
 			const checkbox = dayEl.createEl("input", { type: "checkbox" });
 			checkbox.checked = this.byDay.includes(day.key);
@@ -511,8 +528,25 @@ class CustomRecurrenceModal extends Modal {
 		const monthlyTypeContainer = monthlyTypeSetting.controlEl.createDiv("monthly-options");
 
 		const monthlyByDateRadio = monthlyTypeContainer.createEl("label", { cls: "radio-option" });
-		monthlyByDateRadio.style.display = "block";
-		monthlyByDateRadio.style.marginBottom = "8px";
+		monthlyByDateRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		monthlyByDateRadio.classList.add("tn-static-display-block-2a1b75c9");
+		monthlyByDateRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		monthlyByDateRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
 		const monthlyByDateInput = monthlyByDateRadio.createEl("input", {
 			type: "radio",
 			value: "bydate",
@@ -523,8 +557,9 @@ class CustomRecurrenceModal extends Modal {
 		monthlyByDateRadio.createSpan({ text: " On day " });
 
 		const monthlyDateSelect = monthlyByDateRadio.createEl("select");
-		monthlyDateSelect.style.marginLeft = "4px";
-		monthlyDateSelect.style.marginRight = "4px";
+		monthlyDateSelect.classList.add("tn-static-margin-left-4px-46cec891");
+		monthlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		monthlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		for (let i = 1; i <= 31; i++) {
 			const option = monthlyDateSelect.createEl("option", {
 				value: i.toString(),
@@ -539,8 +574,25 @@ class CustomRecurrenceModal extends Modal {
 		monthlyByDateRadio.createSpan({ text: " of each month" });
 
 		const monthlyByDayRadio = monthlyTypeContainer.createEl("label", { cls: "radio-option" });
-		monthlyByDayRadio.style.display = "block";
-		monthlyByDayRadio.style.marginBottom = "8px";
+		monthlyByDayRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		monthlyByDayRadio.classList.add("tn-static-display-block-2a1b75c9");
+		monthlyByDayRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		monthlyByDayRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
 		const monthlyByDayInput = monthlyByDayRadio.createEl("input", {
 			type: "radio",
 			value: "byday",
@@ -550,8 +602,9 @@ class CustomRecurrenceModal extends Modal {
 		monthlyByDayRadio.createSpan({ text: " On the " });
 
 		const monthlyWeekSelect = monthlyByDayRadio.createEl("select");
-		monthlyWeekSelect.style.marginLeft = "4px";
-		monthlyWeekSelect.style.marginRight = "4px";
+		monthlyWeekSelect.classList.add("tn-static-margin-left-4px-46cec891");
+		monthlyWeekSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		monthlyWeekSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		const weekOptions = [
 			{ value: "1", text: "first" },
 			{ value: "2", text: "second" },
@@ -572,8 +625,9 @@ class CustomRecurrenceModal extends Modal {
 		});
 
 		const monthlyDaySelect = monthlyByDayRadio.createEl("select");
-		monthlyDaySelect.style.marginLeft = "4px";
-		monthlyDaySelect.style.marginRight = "4px";
+		monthlyDaySelect.classList.add("tn-static-margin-left-4px-46cec891");
+		monthlyDaySelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		monthlyDaySelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		const dayOptions = [
 			{ value: "MO", text: "Monday" },
 			{ value: "TU", text: "Tuesday" },
@@ -606,8 +660,25 @@ class CustomRecurrenceModal extends Modal {
 		const yearlyTypeContainer = yearlyTypeSetting.controlEl.createDiv("yearly-options");
 
 		const yearlyByDateRadio = yearlyTypeContainer.createEl("label", { cls: "radio-option" });
-		yearlyByDateRadio.style.display = "block";
-		yearlyByDateRadio.style.marginBottom = "8px";
+		yearlyByDateRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		yearlyByDateRadio.classList.add("tn-static-display-block-2a1b75c9");
+		yearlyByDateRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		yearlyByDateRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
 		const yearlyByDateInput = yearlyByDateRadio.createEl("input", {
 			type: "radio",
 			value: "bydate",
@@ -618,8 +689,9 @@ class CustomRecurrenceModal extends Modal {
 		yearlyByDateRadio.createSpan({ text: " On " });
 
 		const yearlyMonthSelect = yearlyByDateRadio.createEl("select");
-		yearlyMonthSelect.style.marginLeft = "4px";
-		yearlyMonthSelect.style.marginRight = "4px";
+		yearlyMonthSelect.classList.add("tn-static-margin-left-4px-46cec891");
+		yearlyMonthSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		yearlyMonthSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		const monthNames = [
 			"January",
 			"February",
@@ -647,8 +719,9 @@ class CustomRecurrenceModal extends Modal {
 		});
 
 		const yearlyDateSelect = yearlyByDateRadio.createEl("select");
-		yearlyDateSelect.style.marginLeft = "4px";
-		yearlyDateSelect.style.marginRight = "4px";
+		yearlyDateSelect.classList.add("tn-static-margin-left-4px-46cec891");
+		yearlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		yearlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		for (let i = 1; i <= 31; i++) {
 			const option = yearlyDateSelect.createEl("option", {
 				value: i.toString(),
@@ -663,8 +736,25 @@ class CustomRecurrenceModal extends Modal {
 		yearlyByDateRadio.createSpan({ text: " each year" });
 
 		const yearlyByDayRadio = yearlyTypeContainer.createEl("label", { cls: "radio-option" });
-		yearlyByDayRadio.style.display = "block";
-		yearlyByDayRadio.style.marginBottom = "8px";
+		yearlyByDayRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		yearlyByDayRadio.classList.add("tn-static-display-block-2a1b75c9");
+		yearlyByDayRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		yearlyByDayRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
 		const yearlyByDayInput = yearlyByDayRadio.createEl("input", {
 			type: "radio",
 			value: "byday",
@@ -674,8 +764,9 @@ class CustomRecurrenceModal extends Modal {
 		yearlyByDayRadio.createSpan({ text: " On the " });
 
 		const yearlyWeekSelect = yearlyByDayRadio.createEl("select");
-		yearlyWeekSelect.style.marginLeft = "4px";
-		yearlyWeekSelect.style.marginRight = "4px";
+		yearlyWeekSelect.classList.add("tn-static-margin-left-4px-46cec891");
+		yearlyWeekSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		yearlyWeekSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		weekOptions.forEach((opt) => {
 			const option = yearlyWeekSelect.createEl("option", {
 				value: opt.value,
@@ -689,8 +780,9 @@ class CustomRecurrenceModal extends Modal {
 		});
 
 		const yearlyDaySelect = yearlyByDayRadio.createEl("select");
-		yearlyDaySelect.style.marginLeft = "4px";
-		yearlyDaySelect.style.marginRight = "4px";
+		yearlyDaySelect.classList.add("tn-static-margin-left-4px-46cec891");
+		yearlyDaySelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		yearlyDaySelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		dayOptions.forEach((opt) => {
 			const option = yearlyDaySelect.createEl("option", { value: opt.value, text: opt.text });
 			if (this.byDay.length > 0 && this.byDay[0] === opt.value) {
@@ -701,8 +793,9 @@ class CustomRecurrenceModal extends Modal {
 		});
 
 		const yearlyByDayMonthSelect = yearlyByDayRadio.createEl("select");
-		yearlyByDayMonthSelect.style.marginLeft = "4px";
-		yearlyByDayMonthSelect.style.marginRight = "4px";
+		yearlyByDayMonthSelect.classList.add("tn-static-margin-left-4px-46cec891");
+		yearlyByDayMonthSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		yearlyByDayMonthSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		monthNames.forEach((month, index) => {
 			const option = yearlyByDayMonthSelect.createEl("option", {
 				value: (index + 1).toString(),
@@ -725,8 +818,25 @@ class CustomRecurrenceModal extends Modal {
 
 		// Never ends
 		const neverRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
-		neverRadio.style.display = "block";
-		neverRadio.style.marginBottom = "8px";
+		neverRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		neverRadio.classList.add("tn-static-display-block-2a1b75c9");
+		neverRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		neverRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
 		const neverInput = neverRadio.createEl("input", { type: "radio", value: "never" });
 		neverInput.name = "end-type";
 		neverInput.checked = this.endType === "never";
@@ -734,29 +844,72 @@ class CustomRecurrenceModal extends Modal {
 
 		// End after X occurrences
 		const countRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
-		countRadio.style.display = "block";
-		countRadio.style.marginBottom = "8px";
+		countRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		countRadio.classList.add("tn-static-display-block-2a1b75c9");
+		countRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		countRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
 		const countInput = countRadio.createEl("input", { type: "radio", value: "count" });
 		countInput.name = "end-type";
 		countInput.checked = this.endType === "count";
 		countRadio.createSpan({ text: " End after " });
 		const countText = countRadio.createEl("input", { type: "number", placeholder: "10" });
-		countText.style.width = "60px";
-		countText.style.marginLeft = "4px";
-		countText.style.marginRight = "4px";
+		countText.classList.remove(
+			"tn-static-width-100-0466783d",
+			"tn-static-width-12px-fbf353fb",
+			"tn-static-width-16px-7375d50b",
+			"tn-static-width-1px-aa77e27e",
+			"tn-static-width-200px-2acaf3b5",
+			"tn-static-width-80px-8573bae3"
+		);
+		countText.classList.add("tn-static-width-60px-bd09c419");
+		countText.classList.add("tn-static-margin-left-4px-46cec891");
+		countText.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		countText.classList.add("tn-static-margin-right-4px-c6b76b85");
 		countText.value = this.count ? this.count.toString() : "";
 		countRadio.createSpan({ text: " occurrences" });
 
 		// End on date
 		const untilRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
-		untilRadio.style.display = "block";
-		untilRadio.style.marginBottom = "8px";
+		untilRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		untilRadio.classList.add("tn-static-display-block-2a1b75c9");
+		untilRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		untilRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
 		const untilInput = untilRadio.createEl("input", { type: "radio", value: "until" });
 		untilInput.name = "end-type";
 		untilInput.checked = this.endType === "until";
 		untilRadio.createSpan({ text: " End on " });
 		const untilDate = untilRadio.createEl("input", { type: "date" });
-		untilDate.style.marginLeft = "4px";
+		untilDate.classList.add("tn-static-margin-left-4px-46cec891");
 		untilDate.value = this.until ? this.until.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3") : "";
 
 		// Event listeners for end condition
@@ -797,10 +950,43 @@ class CustomRecurrenceModal extends Modal {
 
 		// Buttons
 		const buttonContainer = contentEl.createDiv("button-container");
-		buttonContainer.style.display = "flex";
-		buttonContainer.style.justifyContent = "flex-end";
-		buttonContainer.style.gap = "8px";
-		buttonContainer.style.marginTop = "16px";
+		buttonContainer.classList.remove(
+			"tn-static-display-block-2a1b75c9",
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		buttonContainer.classList.add("tn-static-display-flex-75816cae");
+		buttonContainer.classList.remove(
+			"tn-static-justify-content-center-03c4bb6f",
+			"tn-static-justify-content-space-between-a562f4fd"
+		);
+		buttonContainer.classList.add("tn-static-justify-content-flex-end-455f8cca");
+		buttonContainer.classList.remove(
+			"tn-static-display-flex-8bb39979",
+			"tn-static-gap-0-5rem-ce2fca4d",
+			"tn-static-gap-10px-f3d7ce77",
+			"tn-static-gap-12px-ed7b3d87",
+			"tn-static-gap-6px-f0abc1db"
+		);
+		buttonContainer.classList.add("tn-static-gap-8px-33fcd4c3");
+		buttonContainer.classList.remove(
+			"tn-static-font-size-12px-b0cc7e05",
+			"tn-static-margin-top-0-5rem-3dc98b5e",
+			"tn-static-margin-top-0-d462248a",
+			"tn-static-margin-top-12px-91e0f558",
+			"tn-static-margin-top-1rem-2239d6d5",
+			"tn-static-margin-top-20px-a26bda7d",
+			"tn-static-margin-top-30px-2fbbbcd4",
+			"tn-static-margin-top-4px-96ad6099",
+			"tn-static-margin-top-8px-8a77e5a3",
+			"tn-static-margin-top-8px-f4f01e68"
+		);
+		buttonContainer.classList.add("tn-static-margin-top-16px-1b0f4999");
 
 		const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
 		cancelButton.addEventListener("click", () => {

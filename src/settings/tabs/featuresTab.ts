@@ -29,7 +29,11 @@ export function renderFeaturesTab(
 	// Inline Tasks Section
 	const availableProperties = getAvailableProperties(plugin);
 	const currentInlineProperties = plugin.settings.inlineVisibleProperties || [
-		"status", "priority", "due", "scheduled", "recurrence",
+		"status",
+		"priority",
+		"due",
+		"scheduled",
+		"recurrence",
 	];
 	const currentInlineLabels = getPropertyLabels(plugin, currentInlineProperties);
 
@@ -68,7 +72,7 @@ export function renderFeaturesTab(
 
 				group.addSetting((setting) => {
 					setting
-						.setName("Inline Task Card Properties")
+						.setName("Inline task card properties")
 						.setDesc("Select which properties to show in inline task cards.")
 						.addButton((button) => {
 							button.setButtonText("Configure").onClick(() => {
@@ -186,8 +190,12 @@ export function renderFeaturesTab(
 				group.addSetting((setting) =>
 					configureTextSetting(setting, {
 						name: translate("settings.defaults.bodyTemplate.bodyTemplateFile.name"),
-						desc: translate("settings.defaults.bodyTemplate.bodyTemplateFile.description"),
-						placeholder: translate("settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"),
+						desc: translate(
+							"settings.defaults.bodyTemplate.bodyTemplateFile.description"
+						),
+						placeholder: translate(
+							"settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
+						),
 						getValue: () => plugin.settings.taskCreationDefaults.bodyTemplate,
 						setValue: async (value: string) => {
 							plugin.settings.taskCreationDefaults.bodyTemplate = value;
@@ -216,8 +224,12 @@ export function renderFeaturesTab(
 
 			group.addSetting((setting) =>
 				configureToggleSetting(setting, {
-					name: translate("settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"),
-					desc: translate("settings.defaults.instantConversion.useDefaultsOnInstantConvert.description"),
+					name: translate(
+						"settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
+					),
+					desc: translate(
+						"settings.defaults.instantConversion.useDefaultsOnInstantConvert.description"
+					),
 					getValue: () => plugin.settings.useDefaultsOnInstantConvert,
 					setValue: async (value: boolean) => {
 						plugin.settings.useDefaultsOnInstantConvert = value;
@@ -367,8 +379,14 @@ export function renderFeaturesTab(
 					name: translate("settings.features.dataStorage.name"),
 					desc: translate("settings.features.dataStorage.description"),
 					options: [
-						{ value: "plugin", label: translate("settings.features.dataStorage.pluginData") },
-						{ value: "daily-notes", label: translate("settings.features.dataStorage.dailyNotes") },
+						{
+							value: "plugin",
+							label: translate("settings.features.dataStorage.pluginData"),
+						},
+						{
+							value: "daily-notes",
+							label: translate("settings.features.dataStorage.dailyNotes"),
+						},
 					],
 					getValue: () => plugin.settings.pomodoroStorageLocation,
 					setValue: async (value: string) => {
@@ -380,18 +398,28 @@ export function renderFeaturesTab(
 								Array.isArray(data.pomodoroHistory) &&
 								data.pomodoroHistory.length > 0;
 
-							const confirmed = await showStorageLocationConfirmationModal(plugin, hasExistingData);
+							const confirmed = await showStorageLocationConfirmationModal(
+								plugin,
+								hasExistingData
+							);
 
 							if (confirmed) {
 								plugin.settings.pomodoroStorageLocation = newLocation;
 								save();
 								new Notice(
-									translate("settings.features.dataStorage.notices.locationChanged", {
-										location:
-											newLocation === "plugin"
-												? translate("settings.features.dataStorage.pluginData")
-												: translate("settings.features.dataStorage.dailyNotes"),
-									})
+									translate(
+										"settings.features.dataStorage.notices.locationChanged",
+										{
+											location:
+												newLocation === "plugin"
+													? translate(
+															"settings.features.dataStorage.pluginData"
+														)
+													: translate(
+															"settings.features.dataStorage.dailyNotes"
+														),
+										}
+									)
 								);
 							} else {
 								renderFeaturesTab(container, plugin, save);
@@ -406,9 +434,18 @@ export function renderFeaturesTab(
 					name: translate("settings.features.pomodoro.mobileSidebar.name"),
 					desc: translate("settings.features.pomodoro.mobileSidebar.description"),
 					options: [
-						{ value: "tab", label: translate("settings.features.pomodoro.mobileSidebar.tab") },
-						{ value: "left", label: translate("settings.features.pomodoro.mobileSidebar.left") },
-						{ value: "right", label: translate("settings.features.pomodoro.mobileSidebar.right") },
+						{
+							value: "tab",
+							label: translate("settings.features.pomodoro.mobileSidebar.tab"),
+						},
+						{
+							value: "left",
+							label: translate("settings.features.pomodoro.mobileSidebar.left"),
+						},
+						{
+							value: "right",
+							label: translate("settings.features.pomodoro.mobileSidebar.right"),
+						},
 					],
 					getValue: () => plugin.settings.pomodoroMobileSidebar,
 					setValue: async (value: string) => {
@@ -447,8 +484,14 @@ export function renderFeaturesTab(
 						name: translate("settings.features.notifications.typeName"),
 						desc: translate("settings.features.notifications.typeDesc"),
 						options: [
-							{ value: "in-app", label: translate("settings.features.notifications.inAppLabel") },
-							{ value: "system", label: translate("settings.features.notifications.systemLabel") },
+							{
+								value: "in-app",
+								label: translate("settings.features.notifications.inAppLabel"),
+							},
+							{
+								value: "system",
+								label: translate("settings.features.notifications.systemLabel"),
+							},
 						],
 						getValue: () => plugin.settings.notificationType,
 						setValue: async (value: string) => {
@@ -651,7 +694,9 @@ export function renderFeaturesTab(
 						.setDesc(translate("settings.features.timeblocking.defaultColorDesc"))
 						.addText((text) => {
 							text.inputEl.type = "color";
-							text.setValue(plugin.settings.calendarViewSettings.defaultTimeblockColor);
+							text.setValue(
+								plugin.settings.calendarViewSettings.defaultTimeblockColor
+							);
 							text.onChange((value) => {
 								plugin.settings.calendarViewSettings.defaultTimeblockColor = value;
 								save();

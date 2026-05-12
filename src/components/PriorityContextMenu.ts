@@ -12,7 +12,7 @@ export class PriorityContextMenu {
 	private menu: ContextMenu;
 	private options: PriorityContextMenuOptions;
 	private sortedPriorities: PriorityConfig[];
-	private targetDoc: Document = document;
+	private targetDoc: Document = activeDocument;
 
 	constructor(options: PriorityContextMenuOptions) {
 		this.menu = new ContextMenu();

@@ -38,7 +38,8 @@ const CSS_FILES = [
     'styles/settings-view.css',      // SettingsView component with proper BEM scoping
     'styles/webhook-settings.css',   // Webhook settings UI with proper BEM scoping
     'styles/status-bar.css',         // StatusBar component with proper BEM scoping
-    'styles/bases-views.css'         // Bases integration views (list and kanban)
+    'styles/bases-views.css',        // Bases integration views (list and kanban)
+    'styles/static-style-utilities.css' // Static style utility classes migrated from inline styles
 ];
 
 const MAIN_CSS_TEMPLATE = `/* TaskNotes Plugin Styles */

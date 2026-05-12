@@ -17,7 +17,7 @@ export interface StatusContextMenuOptions {
 export class StatusContextMenu {
 	private menu: ContextMenu;
 	private options: StatusContextMenuOptions;
-	private targetDoc: Document = document;
+	private targetDoc: Document = activeDocument;
 
 	constructor(options: StatusContextMenuOptions) {
 		this.menu = new ContextMenu();

@@ -146,7 +146,6 @@ export class SettingsLifecycleService {
 			if (this.plugin.settings.autoStopTimeTrackingNotification) {
 				new Notice(`Auto-stopped time tracking for: ${updatedTask.title}`);
 			}
-			console.log(`Auto-stopped time tracking for completed task: ${updatedTask.title}`);
 		} catch (error) {
 			console.error("Error auto-stopping time tracking:", error);
 		}

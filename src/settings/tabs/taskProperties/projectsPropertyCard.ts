@@ -3,7 +3,6 @@ import TaskNotesPlugin from "../../../main";
 import {
 	createCard,
 	createCardInput,
-	createDeleteHeaderButton,
 	createCardToggle,
 	CardRow,
 } from "../../components/CardComponent";
@@ -40,7 +39,7 @@ export function renderProjectsPropertyCard(
 		});
 
 		// Create nested content for default projects
-		const nestedContainer = document.createElement("div");
+		const nestedContainer = activeDocument.createElement("div");
 		nestedContainer.addClass("tasknotes-settings__nested-content");
 
 		// Default projects container
@@ -72,33 +71,37 @@ export function renderProjectsPropertyCard(
 			cls: "tn-btn tn-btn--ghost",
 		});
 		selectButton.onclick = () => {
-			const modal = new ProjectSelectModal(
-				plugin.app,
-				plugin,
-				(file: TAbstractFile) => {
-					if (!selectedDefaultProjectFiles.includes(file)) {
-						selectedDefaultProjectFiles.push(file);
-						const projectLinks = selectedDefaultProjectFiles
-							.map((f) => `[[${f.path.replace(/\.md$/, "")}]]`)
-							.join(", ");
-						plugin.settings.taskCreationDefaults.defaultProjects = projectLinks;
-						save();
-						renderDefaultProjectsList(
-							projectsListContainer,
-							plugin,
-							save,
-							selectedDefaultProjectFiles,
-							translate
-						);
-					}
+			const modal = new ProjectSelectModal(plugin.app, plugin, (file: TAbstractFile) => {
+				if (!selectedDefaultProjectFiles.includes(file)) {
+					selectedDefaultProjectFiles.push(file);
+					const projectLinks = selectedDefaultProjectFiles
+						.map((f) => `[[${f.path.replace(/\.md$/, "")}]]`)
+						.join(", ");
+					plugin.settings.taskCreationDefaults.defaultProjects = projectLinks;
+					save();
+					renderDefaultProjectsList(
+						projectsListContainer,
+						plugin,
+						save,
+						selectedDefaultProjectFiles,
+						translate
+					);
 				}
-			);
+			});
 			modal.open();
 		};
 
 		// Projects list
-		const projectsListContainer = defaultProjectsContainer.createDiv("default-projects-list-container");
-		renderDefaultProjectsList(projectsListContainer, plugin, save, selectedDefaultProjectFiles, translate);
+		const projectsListContainer = defaultProjectsContainer.createDiv(
+			"default-projects-list-container"
+		);
+		renderDefaultProjectsList(
+			projectsListContainer,
+			plugin,
+			save,
+			selectedDefaultProjectFiles,
+			translate
+		);
 
 		// Use parent note as project toggle
 		const useParentNoteToggle = createCardToggle(
@@ -117,15 +120,25 @@ export function renderProjectsPropertyCard(
 		);
 
 		// Create autosuggest settings section
-		const autosuggestSection = document.createElement("div");
+		const autosuggestSection = activeDocument.createElement("div");
 		autosuggestSection.addClass("tasknotes-settings__nested-content");
 		renderProjectAutosuggestSettings(autosuggestSection, plugin, save, translate, renderCard);
 
 		const rows: CardRow[] = [
 			{ label: "", input: descriptionEl, fullWidth: true },
-			{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
-			{ label: translate("settings.taskProperties.projectsCard.defaultProjects"), input: nestedContainer, fullWidth: true },
-			{ label: translate("settings.taskProperties.projectsCard.useParentNote"), input: useParentNoteToggle },
+			{
+				label: translate("settings.taskProperties.propertyCard.propertyKey"),
+				input: propertyKeyInput,
+			},
+			{
+				label: translate("settings.taskProperties.projectsCard.defaultProjects"),
+				input: nestedContainer,
+				fullWidth: true,
+			},
+			{
+				label: translate("settings.taskProperties.projectsCard.useParentNote"),
+				input: useParentNoteToggle,
+			},
 			...nlpRows,
 			{ label: "", input: autosuggestSection, fullWidth: true },
 		];
@@ -187,11 +200,20 @@ function renderProjectAutosuggestSettings(
 	};
 
 	// ===== AUTOSUGGEST FILTERS SECTION =====
+	const projectAutosuggest = plugin.settings.projectAutosuggest;
+	if (!projectAutosuggest) {
+		return;
+	}
+
 	const filterSectionWrapper = container.createDiv("tasknotes-settings__collapsible-section");
 	filterSectionWrapper.addClass("tasknotes-settings__collapsible-section--collapsed");
 
-	const filterHeader = filterSectionWrapper.createDiv("tasknotes-settings__collapsible-section-header");
-	const filterHeaderLeft = filterHeader.createDiv("tasknotes-settings__collapsible-section-header-left");
+	const filterHeader = filterSectionWrapper.createDiv(
+		"tasknotes-settings__collapsible-section-header"
+	);
+	const filterHeaderLeft = filterHeader.createDiv(
+		"tasknotes-settings__collapsible-section-header-left"
+	);
 
 	filterHeaderLeft.createSpan({
 		text: translate("settings.taskProperties.projectsCard.autosuggestFilters"),
@@ -202,7 +224,17 @@ function renderProjectAutosuggestSettings(
 	const filterBadge = filterHeaderLeft.createSpan("tasknotes-settings__filter-badge");
 	const updateFilterBadge = () => {
 		if (hasActiveFilters()) {
-			filterBadge.style.display = "inline-flex";
+			filterBadge.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-none-6b99de8b",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			filterBadge.classList.add("tn-static-display-inline-flex-f984c520");
 			filterBadge.empty();
 			const iconEl = filterBadge.createSpan();
 			setIcon(iconEl, "filter");
@@ -210,30 +242,44 @@ function renderProjectAutosuggestSettings(
 				text: translate("settings.taskProperties.projectsCard.filtersOn"),
 			});
 		} else {
-			filterBadge.style.display = "none";
+			filterBadge.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			filterBadge.classList.add("tn-static-display-none-6b99de8b");
 			filterBadge.empty();
 		}
 	};
 	updateFilterBadge();
 
-	const filterChevron = filterHeader.createSpan("tasknotes-settings__collapsible-section-chevron");
-	filterChevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+	const filterChevron = filterHeader.createSpan(
+		"tasknotes-settings__collapsible-section-chevron"
+	);
+	setIcon(filterChevron, "chevron-down");
 
-	const filterContent = filterSectionWrapper.createDiv("tasknotes-settings__collapsible-section-content");
+	const filterContent = filterSectionWrapper.createDiv(
+		"tasknotes-settings__collapsible-section-content"
+	);
 
 	createFilterSettingsInputs(
 		filterContent,
 		{
-			requiredTags: plugin.settings.projectAutosuggest.requiredTags,
-			includeFolders: plugin.settings.projectAutosuggest.includeFolders,
-			propertyKey: plugin.settings.projectAutosuggest.propertyKey,
-			propertyValue: plugin.settings.projectAutosuggest.propertyValue,
+			requiredTags: projectAutosuggest.requiredTags,
+			includeFolders: projectAutosuggest.includeFolders,
+			propertyKey: projectAutosuggest.propertyKey,
+			propertyValue: projectAutosuggest.propertyValue,
 		},
 		(updated) => {
-			plugin.settings.projectAutosuggest!.requiredTags = updated.requiredTags;
-			plugin.settings.projectAutosuggest!.includeFolders = updated.includeFolders;
-			plugin.settings.projectAutosuggest!.propertyKey = updated.propertyKey;
-			plugin.settings.projectAutosuggest!.propertyValue = updated.propertyValue;
+			projectAutosuggest.requiredTags = updated.requiredTags;
+			projectAutosuggest.includeFolders = updated.includeFolders;
+			projectAutosuggest.propertyKey = updated.propertyKey;
+			projectAutosuggest.propertyValue = updated.propertyValue;
 			updateFilterBadge();
 			save();
 		},
@@ -251,18 +297,26 @@ function renderProjectAutosuggestSettings(
 	const displaySectionWrapper = container.createDiv("tasknotes-settings__collapsible-section");
 	displaySectionWrapper.addClass("tasknotes-settings__collapsible-section--collapsed");
 
-	const displayHeader = displaySectionWrapper.createDiv("tasknotes-settings__collapsible-section-header");
-	const displayHeaderLeft = displayHeader.createDiv("tasknotes-settings__collapsible-section-header-left");
+	const displayHeader = displaySectionWrapper.createDiv(
+		"tasknotes-settings__collapsible-section-header"
+	);
+	const displayHeaderLeft = displayHeader.createDiv(
+		"tasknotes-settings__collapsible-section-header-left"
+	);
 
 	displayHeaderLeft.createSpan({
 		text: translate("settings.taskProperties.projectsCard.customizeDisplay"),
 		cls: "tasknotes-settings__collapsible-section-title",
 	});
 
-	const displayChevron = displayHeader.createSpan("tasknotes-settings__collapsible-section-chevron");
-	displayChevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+	const displayChevron = displayHeader.createSpan(
+		"tasknotes-settings__collapsible-section-chevron"
+	);
+	setIcon(displayChevron, "chevron-down");
 
-	const displayContent = displaySectionWrapper.createDiv("tasknotes-settings__collapsible-section-content");
+	const displayContent = displaySectionWrapper.createDiv(
+		"tasknotes-settings__collapsible-section-content"
+	);
 
 	// Fuzzy matching toggle
 	const fuzzyRow = displayContent.createDiv("tasknotes-settings__card-config-row");
@@ -270,13 +324,10 @@ function renderProjectAutosuggestSettings(
 		text: translate("settings.appearance.projectAutosuggest.enableFuzzyMatching.name"),
 		cls: "tasknotes-settings__card-config-label",
 	});
-	const fuzzyToggle = createCardToggle(
-		plugin.settings.projectAutosuggest.enableFuzzy,
-		(value) => {
-			plugin.settings.projectAutosuggest!.enableFuzzy = value;
-			save();
-		}
-	);
+	const fuzzyToggle = createCardToggle(projectAutosuggest.enableFuzzy, (value) => {
+		projectAutosuggest.enableFuzzy = value;
+		save();
+	});
 	fuzzyRow.appendChild(fuzzyToggle);
 
 	// Display rows help text
@@ -397,8 +448,11 @@ function renderDefaultProjectsList(
 		const removeButton = projectItem.createEl("button", {
 			cls: "tasknotes-settings__card-header-btn tasknotes-settings__card-header-btn--delete",
 		});
-		removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-		removeButton.title = translate("settings.defaults.basicDefaults.defaultProjects.removeTooltip", { name: file.name });
+		setIcon(removeButton, "x");
+		removeButton.title = translate(
+			"settings.defaults.basicDefaults.defaultProjects.removeTooltip",
+			{ name: file.name }
+		);
 		removeButton.onclick = () => {
 			const index = selectedFiles.indexOf(file);
 			if (index > -1) {

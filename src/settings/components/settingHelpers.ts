@@ -106,8 +106,9 @@ export function createSettingGroup(
 
 		// Add description as help text if provided
 		if (options.description) {
+			const description = options.description;
 			group.addSetting((setting) => {
-				setting.setDesc(options.description!);
+				setting.setDesc(description);
 				setting.settingEl.addClass("settings-view__group-description");
 			});
 		}
@@ -124,8 +125,9 @@ export function createSettingGroup(
 
 		// Add description as help text if provided
 		if (options.description) {
+			const description = options.description;
 			group.addSetting((setting) => {
-				setting.setDesc(options.description!);
+				setting.setDesc(description);
 				setting.settingEl.addClass("settings-view__group-description");
 			});
 		}
@@ -200,7 +202,10 @@ export function createTextSetting(container: HTMLElement, options: TextSettingOp
 /**
  * Helper for configuring a dropdown setting (works with SettingGroup.addSetting)
  */
-export function configureDropdownSetting(setting: Setting, options: DropdownSettingOptions): Setting {
+export function configureDropdownSetting(
+	setting: Setting,
+	options: DropdownSettingOptions
+): Setting {
 	return setting
 		.setName(options.name)
 		.setDesc(options.desc)

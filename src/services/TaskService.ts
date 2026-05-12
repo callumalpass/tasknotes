@@ -8,17 +8,8 @@ import {
 	IWebhookNotifier,
 } from "../types";
 import { AutoArchiveService } from "./AutoArchiveService";
-import {
-	FilenameContext,
-	generateTaskFilename,
-	generateUniqueFilename,
-} from "../utils/filenameGenerator";
-import { Notice, TFile, normalizePath, stringifyYaml } from "obsidian";
-import {
-	TemplateData,
-	mergeTemplateFrontmatter,
-	processTemplate,
-} from "../utils/templateProcessor";
+import { Notice, TFile, normalizePath } from "obsidian";
+import { TemplateData, processTemplate } from "../utils/templateProcessor";
 import {
 	addDTSTARTToRecurrenceRule,
 	updateDTSTARTInRecurrenceRule,
@@ -46,7 +37,6 @@ import {
 	createUTCDateFromLocalCalendarDate,
 	parseDateToUTC,
 } from "../utils/dateUtils";
-import { format } from "date-fns";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
@@ -260,7 +250,7 @@ export class TaskService {
 					projects: taskData.projects,
 					due: taskData.due,
 					scheduled: taskData.scheduled,
-			  }
+				}
 			: undefined;
 
 		// Use the shared folder template processor utility
@@ -333,7 +323,7 @@ export class TaskService {
 				return processTemplate(templateContent, templateTaskData);
 			} else {
 				// Template file not found, log error and return details as-is
-				 
+
 				console.warn(`Task body template not found: ${templatePath}`);
 				new Notice(
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
@@ -410,7 +400,11 @@ export class TaskService {
 		}
 
 		// Apply default recurrence if not provided
-		if (!result.recurrence && defaults.defaultRecurrence && defaults.defaultRecurrence !== "none") {
+		if (
+			!result.recurrence &&
+			defaults.defaultRecurrence &&
+			defaults.defaultRecurrence !== "none"
+		) {
 			const freqMap: Record<string, string> = {
 				daily: "FREQ=DAILY",
 				weekly: "FREQ=WEEKLY",
@@ -421,7 +415,11 @@ export class TaskService {
 		}
 
 		// Apply default reminders if not provided
-		if (!result.reminders && defaults.defaultReminders && defaults.defaultReminders.length > 0) {
+		if (
+			!result.reminders &&
+			defaults.defaultReminders &&
+			defaults.defaultReminders.length > 0
+		) {
 			const { convertDefaultRemindersToReminders } = await import("../utils/settingsUtils");
 			result.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
 		}
@@ -434,7 +432,10 @@ export class TaskService {
 			}
 			for (const field of userFields) {
 				// Only apply default if the field isn't already set
-				if (field.defaultValue !== undefined && result.customFrontmatter[field.key] === undefined) {
+				if (
+					field.defaultValue !== undefined &&
+					result.customFrontmatter[field.key] === undefined
+				) {
 					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
 					if (field.type === "date" && typeof field.defaultValue === "string") {
 						const calculatedDate = calculateDefaultDate(
@@ -498,7 +499,8 @@ export class TaskService {
 
 			// Step 1: Construct new state in memory using fresh data
 			const updatedTask = { ...freshTask } as Record<string, any>;
-			const normalizedValue = property === "status" ? this.normalizeStatusValue(value) : value;
+			const normalizedValue =
+				property === "status" ? this.normalizeStatusValue(value) : value;
 			updatedTask[property] = normalizedValue;
 			updatedTask.dateModified = getCurrentTimestamp();
 
@@ -546,14 +548,19 @@ export class TaskService {
 
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
 			await this.applyPropertyChangeSideEffects(
-				file, task, updatedTask as TaskInfo, property, task[property], normalizedValue
+				file,
+				task,
+				updatedTask as TaskInfo,
+				property,
+				task[property],
+				normalizedValue
 			);
 
 			// Step 4: Return authoritative data
 			return updatedTask as TaskInfo;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			 
+
 			console.error("Error updating task property:", {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
@@ -586,12 +593,8 @@ export class TaskService {
 			if (this.plugin.cacheManager.waitForFreshTaskData) {
 				await this.plugin.cacheManager.waitForFreshTaskData(file);
 			}
-			this.plugin.cacheManager.updateTaskInfoInCache(
-				originalTask.path,
-				updatedTask
-			);
+			this.plugin.cacheManager.updateTaskInfoInCache(originalTask.path, updatedTask);
 		} catch (cacheError) {
-			 
 			console.error("Error updating task cache:", {
 				error: cacheError instanceof Error ? cacheError.message : String(cacheError),
 				taskPath: originalTask.path,
@@ -637,7 +640,6 @@ export class TaskService {
 				}
 			}
 		} catch (eventError) {
-			 
 			console.error("Error emitting task update event:", {
 				error: eventError instanceof Error ? eventError.message : String(eventError),
 				taskPath: originalTask.path,
@@ -700,10 +702,7 @@ export class TaskService {
 					}
 				}
 			} catch (error) {
-				console.warn(
-					"Failed to handle auto-archive for status property change:",
-					error
-				);
+				console.warn("Failed to handle auto-archive for status property change:", error);
 			}
 		}
 	}
@@ -977,11 +976,13 @@ export class TaskService {
 				frontmatter[timeEntriesField] = [];
 			}
 			if (Array.isArray(frontmatter[timeEntriesField])) {
-				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map((entry: TimeEntry) => {
-					const sanitizedEntry = { ...entry };
-					delete sanitizedEntry.duration;
-					return sanitizedEntry;
-				});
+				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map(
+					(entry: TimeEntry) => {
+						const sanitizedEntry = { ...entry };
+						delete sanitizedEntry.duration;
+						return sanitizedEntry;
+					}
+				);
 			}
 
 			// Add new time entry with start time
@@ -1066,11 +1067,13 @@ export class TaskService {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 
 			if (frontmatter[timeEntriesField] && Array.isArray(frontmatter[timeEntriesField])) {
-				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map((entry: TimeEntry) => {
-					const sanitizedEntry = { ...entry };
-					delete sanitizedEntry.duration;
-					return sanitizedEntry;
-				});
+				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map(
+					(entry: TimeEntry) => {
+						const sanitizedEntry = { ...entry };
+						delete sanitizedEntry.duration;
+						return sanitizedEntry;
+					}
+				);
 				// Find and update the active session
 				const entryIndex = frontmatter[timeEntriesField].findIndex(
 					(entry: TimeEntry) =>
@@ -1221,7 +1224,12 @@ export class TaskService {
 
 		if (action === "add" && !hasExistingEntry) {
 			const normalizedIncoming = rawEntry ? normalizeDependencyEntry(rawEntry) : null;
-			const uid = formatDependencyLink(this.plugin.app, blockedTask.path, blockingTaskPath, this.plugin.settings.useFrontmatterMarkdownLinks);
+			const uid = formatDependencyLink(
+				this.plugin.app,
+				blockedTask.path,
+				blockingTaskPath,
+				this.plugin.settings.useFrontmatterMarkdownLinks
+			);
 			const dependency: TaskDependency = {
 				uid,
 				reltype: normalizedIncoming?.reltype ?? DEFAULT_DEPENDENCY_RELTYPE,
@@ -1253,15 +1261,17 @@ export class TaskService {
 			// Delete from Google Calendar first (before file deletion, so we have the event ID)
 			if (this.plugin.taskCalendarSyncService?.isEnabled() && task.googleCalendarEventId) {
 				try {
-					await this.plugin.taskCalendarSyncService
-						.deleteTaskFromCalendarByPath(task.path, task.googleCalendarEventId);
+					await this.plugin.taskCalendarSyncService.deleteTaskFromCalendarByPath(
+						task.path,
+						task.googleCalendarEventId
+					);
 				} catch (error) {
 					console.warn("Failed to delete task from Google Calendar:", error);
 				}
 			}
 
 			// Step 1: Delete the file from the vault
-			await this.plugin.app.vault.delete(file);
+			await this.plugin.app.fileManager.trashFile(file);
 
 			// Step 2: Remove from cache and indexes (this will be done by the file delete event)
 			// But we'll also do it proactively to ensure immediate UI updates
@@ -1283,7 +1293,7 @@ export class TaskService {
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			 
+
 			console.error("Error deleting task:", {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
@@ -1463,7 +1473,8 @@ export class TaskService {
 				const frontmatterBlock =
 					frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
 				const finalBody = resetBody.trimEnd();
-				const newContent = finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
+				const newContent =
+					finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
 				await this.plugin.app.vault.modify(file, newContent);
 
 				// Update the details field in the returned task

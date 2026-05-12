@@ -1,5 +1,15 @@
 import { App } from "obsidian";
-import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+
+type EmbeddableMarkdownEditorConstructor =
+	typeof import("../editor/EmbeddableMarkdownEditor").EmbeddableMarkdownEditor;
+
+function loadEmbeddableMarkdownEditor(): EmbeddableMarkdownEditorConstructor {
+	// Lazy-load because the editor module resolves Obsidian internals during evaluation.
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	const editorModule = require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
+	return editorModule.EmbeddableMarkdownEditor;
+}
 
 export interface TaskModalEditorOptions {
 	value: string;
@@ -18,6 +28,7 @@ export function createTaskModalMarkdownEditor(
 	options: TaskModalEditorOptions
 ): EmbeddableMarkdownEditor | null {
 	try {
+		const EmbeddableMarkdownEditor = loadEmbeddableMarkdownEditor();
 		return new EmbeddableMarkdownEditor(app, container, {
 			...options,
 			onTab: (_editor, shift) => options.onTab(shift),

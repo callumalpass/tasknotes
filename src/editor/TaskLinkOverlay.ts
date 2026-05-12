@@ -7,7 +7,13 @@ import {
 	ViewUpdate,
 	WidgetType,
 } from "@codemirror/view";
-import { editorInfoField, editorLivePreviewField, EventRef, MarkdownView, parseLinktext } from "obsidian";
+import {
+	editorInfoField,
+	editorLivePreviewField,
+	EventRef,
+	MarkdownView,
+	parseLinktext,
+} from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
 	EVENT_DATA_CHANGED,
@@ -59,12 +65,15 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					this.refreshDecorations();
 				});
 
-				const taskDeleteListener = plugin.emitter.on(EVENT_TASK_DELETED, (data?: { path?: string }) => {
-					if (data?.path) {
-						lastKnownWidgets.delete(data.path);
+				const taskDeleteListener = plugin.emitter.on(
+					EVENT_TASK_DELETED,
+					(data?: { path?: string }) => {
+						if (data?.path) {
+							lastKnownWidgets.delete(data.path);
+						}
+						this.refreshDecorations();
 					}
-					this.refreshDecorations();
-				});
+				);
 
 				const dateChangeListener = plugin.emitter.on(EVENT_DATE_CHANGED, () => {
 					lastKnownWidgets.clear();
@@ -94,7 +103,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 							activeWidgets.clear();
 
 							this.view.dispatch({
-								effects: [taskUpdateEffect.of({ })],
+								effects: [taskUpdateEffect.of({})],
 							});
 						} catch (error) {
 							console.error("Error dispatching task link update:", error);
@@ -120,7 +129,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 						this.decorations = Decoration.none;
 						return;
 					}
-				} catch (error) {
+				} catch {
 					this.decorations = Decoration.none;
 					return;
 				}
@@ -171,7 +180,13 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					const editorInfo = view.state.field(editorInfoField, false);
 					const currentFile = editorInfo?.file?.path;
 
-					return buildTaskLinkDecorations(view.state, plugin, activeWidgets, currentFile, lastKnownWidgets);
+					return buildTaskLinkDecorations(
+						view.state,
+						plugin,
+						activeWidgets,
+						currentFile,
+						lastKnownWidgets
+					);
 				} catch (error) {
 					console.error("Error building task link decorations:", error);
 					return Decoration.none;
@@ -362,7 +377,10 @@ export function buildTaskLinkDecorations(
 						continue;
 					}
 
-					const fallbackWidget = lastKnownWidgets.get(resolvedPath)!;
+					const fallbackWidget = lastKnownWidgets.get(resolvedPath);
+					if (!fallbackWidget) {
+						continue;
+					}
 					const widgetKey = `${resolvedPath}-${link.start}-${link.end}`;
 					activeWidgets.set(widgetKey, fallbackWidget);
 
@@ -373,7 +391,7 @@ export function buildTaskLinkDecorations(
 
 					builder.add(link.start, link.end, decoration);
 				}
-			} catch (error) {
+			} catch {
 				// If there's any error, skip this link
 				continue;
 			}
@@ -479,7 +497,7 @@ function parseMarkdownLinkSync(
 	// URL decode the link path - this is crucial for markdown links
 	try {
 		linkPath = decodeURIComponent(linkPath);
-	} catch (error) {
+	} catch {
 		// If decoding fails, use the original path
 	}
 
@@ -525,7 +543,7 @@ function resolveLinkPathSync(
 		}
 
 		return file.path;
-	} catch (error) {
+	} catch {
 		return null;
 	}
 }
@@ -567,7 +585,7 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
 		}
 
 		return null;
-	} catch (error) {
+	} catch {
 		return null;
 	}
 }
