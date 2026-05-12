@@ -5,6 +5,80 @@ import obsidianmd from "eslint-plugin-obsidianmd";
 import prettier from "eslint-config-prettier";
 import globals from "globals";
 
+const englishLocaleSentenceCaseOptions = {
+	allowAutoFix: true,
+	brands: [
+		"Bases",
+		"Brazil",
+		"CORS",
+		"Discord",
+		"Farsi",
+		"Friday",
+		"German",
+		"GitHub",
+		"Google",
+		"Google Calendar",
+		"GTD",
+		"HH",
+		"iCal",
+		"ICS",
+		"ISO",
+		"JavaScript",
+		"Kanban",
+		"Markdown",
+		"MCP",
+		"Microsoft",
+		"Microsoft Outlook",
+		"Model Context Protocol",
+		"Monday",
+		"N/A",
+		"NLP",
+		"Obsidian",
+		"Outlook Calendar",
+		"Persian",
+		"Pomodoro",
+		"RRULE",
+		"Saturday",
+		"Slack",
+		"Sunday",
+		"TaskNotes",
+		"Thursday",
+		"Tuesday",
+		"UID",
+		"UTC",
+		"Wednesday",
+		"Yahoo Calendar",
+		"YYMMDD",
+		"fr-FR",
+		"mdbase",
+	],
+	ignoreRegex: [
+		"\\b(?:YYYY-MM-DD(?:-HHMMSS)?|YYMMDD|HH:MM|HH:mm(?::ss)?|AM/PM)\\b",
+		"\\.(?:ics|ICS)\\b",
+		"^\\+ Add a card$",
+		"^\\d+\\s+[a-z]+(?:\\s+[a-z]+)*(?: \\(click to manage\\))?$",
+		"^[a-z0-9_-]+(?:, [a-z0-9_-]+)*$",
+		"^[a-z0-9_-]+/[a-z0-9_/-]+$",
+		"^(?:this ungrouped list|estimated|tracked|short|long|completed today|minutes|hours|days|before|after|due date|scheduled date)$",
+		"^(?:in your browser|to navigate|to schedule|to dismiss|to select|to cancel|to create new task| to create: |of the following are true:)$",
+		"^(?:Projects/, Work/Active, Personal|Calendar/Events)$",
+		"^[A-Za-z0-9 _./{}|-]+\\.[A-Za-z0-9]+$",
+		"#[0-9a-fA-F]{6}",
+		"\\[\\[[^\\]]+\\]\\]",
+		"\\{[^}]+\\|n\\(",
+		"[Ee]\\.g\\.,",
+		"'Timeblock'",
+		"literal:",
+		"Make sure you have backups",
+		"obsidian-frontmatter-markdown-links",
+		"Settings > Integrations",
+		"Warning: TaskNotes",
+		"/mcp endpoint",
+		"^https?://",
+		"TaskNotes/Views/",
+	],
+};
+
 export default [
 	{
 		ignores: [
@@ -93,6 +167,16 @@ export default [
 		files: ["src/editor/**/*.ts"],
 		rules: {
 			"import/no-extraneous-dependencies": "off",
+		},
+	},
+
+	{
+		files: ["src/i18n/resources/en.ts"],
+		rules: {
+			"obsidianmd/ui/sentence-case-locale-module": [
+				"warn",
+				englishLocaleSentenceCaseOptions,
+			],
 		},
 	},
 
