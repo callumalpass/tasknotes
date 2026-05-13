@@ -29,6 +29,14 @@ import {
 	DropOperationQueue,
 } from "./sortOrderUtils";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
+import {
+	appendCachedFormulaOutputs,
+	evaluateBasesFormula,
+	getBasesFormulaContext,
+	getBasesFormulaData,
+	hasFormulaGetter,
+	isObsidianListProperty,
+} from "./basesViewAdapters";
 
 type TaskListDropBaselineCard = {
 	path: string;
@@ -64,12 +72,6 @@ type TaskListControllerView = {
 type TaskListController = {
 	query?: { views?: TaskListControllerView[] };
 	viewName?: string;
-};
-
-type MetadataTypeManagerApp = {
-	metadataTypeManager?: {
-		properties?: Record<string, { type?: string }>;
-	};
 };
 
 type TaskListGroupEntry = {
@@ -110,15 +112,6 @@ type TaskListTaskItem = {
 type TaskListHeaderItem = TaskListPrimaryHeaderItem | TaskListSubHeaderItem;
 type TaskListRenderItem = TaskListHeaderItem | TaskListTaskItem;
 type TaskListVirtualItem = TaskInfo | TaskListRenderItem;
-
-type FormulaContext = Record<string, { getValue?: (data: unknown) => unknown }>;
-
-type FormulaBaseData = {
-	frontmatter?: Record<string, unknown>;
-	formulaResults?: {
-		cachedFormulaOutputs?: Record<string, unknown>;
-	};
-};
 
 type TaskListEphemeralState = {
 	collapsedGroups?: unknown;
@@ -447,15 +440,8 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private isListTypeProperty(propertyName: string): boolean {
-		const metadataTypeManager = (this.plugin.app as MetadataTypeManagerApp).metadataTypeManager;
-		if (metadataTypeManager?.properties) {
-			const propertyInfo = metadataTypeManager.properties[propertyName.toLowerCase()];
-			if (propertyInfo?.type) {
-				const listTypes = new Set(["multitext", "tags", "aliases"]);
-				if (listTypes.has(propertyInfo.type)) {
-					return true;
-				}
-			}
+		if (isObsidianListProperty(this.plugin.app, propertyName)) {
+			return true;
 		}
 
 		const contextsField = this.plugin.fieldMapper.toUserField("contexts");
@@ -1263,41 +1249,23 @@ export class TaskListView extends BasesViewBase {
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
 		// Access formulas through the data context
-		const ctxFormulas = (this.data as { ctx?: { formulas?: FormulaContext } } | undefined)?.ctx
-			?.formulas;
-		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
+		const ctxFormulas = getBasesFormulaContext(this.data);
+		if (!ctxFormulas || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const baseData = item.basesData as FormulaBaseData | undefined;
+			const baseData = getBasesFormulaData(item);
 			const itemFormulaResults = baseData?.formulaResults;
-			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+			if (!baseData || !itemFormulaResults?.cachedFormulaOutputs) continue;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];
-				if (formula && typeof formula.getValue === "function") {
+				if (hasFormulaGetter(formula)) {
 					try {
-						if (!baseData) {
-							continue;
-						}
 						const taskProperties = item.properties || {};
-
-						let result;
-
-						// Temporarily merge TaskNote properties into frontmatter for formula access
-						if (baseData.frontmatter && Object.keys(taskProperties).length > 0) {
-							const originalFrontmatter = baseData.frontmatter;
-							baseData.frontmatter = {
-								...originalFrontmatter,
-								...taskProperties,
-							};
-							result = formula.getValue(baseData);
-							baseData.frontmatter = originalFrontmatter; // Restore original state
-						} else {
-							result = formula.getValue(baseData);
-						}
+						const result = evaluateBasesFormula(formula, baseData, taskProperties);
 
 						// Store computed result for TaskCard rendering
 						if (result !== undefined) {
@@ -2635,15 +2603,7 @@ export class TaskListView extends BasesViewBase {
 				// Merge regular properties with formula results
 				const props = { ...(item.properties || {}) };
 
-				// Add formula results if available
-				const formulaOutputs = (item.basesData as FormulaBaseData | undefined)
-					?.formulaResults?.cachedFormulaOutputs;
-				if (formulaOutputs && typeof formulaOutputs === "object") {
-					for (const [formulaName, value] of Object.entries(formulaOutputs)) {
-						// Store with formula. prefix for easy lookup
-						props[`formula.${formulaName}`] = value;
-					}
-				}
+				appendCachedFormulaOutputs(props, item);
 
 				map.set(item.path, props);
 			}

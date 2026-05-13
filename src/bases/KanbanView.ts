@@ -20,6 +20,14 @@ import {
 } from "./sortOrderUtils";
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
+import {
+	appendCachedFormulaOutputs,
+	evaluateBasesFormula,
+	getBasesFormulaContext,
+	getBasesFormulaData,
+	hasFormulaGetter,
+	isObsidianListProperty,
+} from "./basesViewAdapters";
 
 type KanbanDataAdapterWithView = {
 	basesView: KanbanView;
@@ -35,12 +43,6 @@ type KanbanController = {
 	viewName?: string;
 };
 
-type MetadataTypeManagerApp = {
-	metadataTypeManager?: {
-		properties?: Record<string, { type?: string }>;
-	};
-};
-
 type VirtualScrollerWithContainer = {
 	scrollContainer?: HTMLElement;
 };
@@ -48,15 +50,6 @@ type VirtualScrollerWithContainer = {
 type KanbanEphemeralState = {
 	scrollTop?: unknown;
 	columnScroll?: unknown;
-};
-
-type FormulaContext = Record<string, { getValue?: (data: unknown) => unknown }>;
-
-type FormulaBaseData = {
-	frontmatter?: Record<string, unknown>;
-	formulaResults?: {
-		cachedFormulaOutputs?: Record<string, unknown>;
-	};
 };
 
 type BasesDisplayValue = {
@@ -680,17 +673,8 @@ export class KanbanView extends BasesViewBase {
 	 * Uses Obsidian's metadataTypeManager to dynamically detect property types.
 	 */
 	private isListTypeProperty(propertyName: string): boolean {
-		// Check Obsidian's property type registry
-		const metadataTypeManager = (this.plugin.app as MetadataTypeManagerApp).metadataTypeManager;
-		if (metadataTypeManager?.properties) {
-			const propertyInfo = metadataTypeManager.properties[propertyName.toLowerCase()];
-			if (propertyInfo?.type) {
-				// Obsidian list types: "multitext", "tags", "aliases"
-				const listTypes = new Set(["multitext", "tags", "aliases"]);
-				if (listTypes.has(propertyInfo.type)) {
-					return true;
-				}
-			}
+		if (isObsidianListProperty(this.plugin.app, propertyName)) {
+			return true;
 		}
 
 		// Fallback: check against known TaskNotes list properties
@@ -3184,40 +3168,23 @@ export class KanbanView extends BasesViewBase {
 	 * before swimlane/grouping reads them from cachedFormulaOutputs.
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		const ctxFormulas = (this.data as { ctx?: { formulas?: FormulaContext } } | undefined)?.ctx
-			?.formulas;
-		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
+		const ctxFormulas = getBasesFormulaContext(this.data);
+		if (!ctxFormulas || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const baseData = item.basesData as FormulaBaseData | undefined;
+			const baseData = getBasesFormulaData(item);
 			const itemFormulaResults = baseData?.formulaResults;
-			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+			if (!baseData || !itemFormulaResults?.cachedFormulaOutputs) continue;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];
-				if (formula && typeof formula.getValue === "function") {
+				if (hasFormulaGetter(formula)) {
 					try {
-						if (!baseData) {
-							continue;
-						}
 						const taskProperties = item.properties || {};
-
-						let result;
-
-						if (baseData.frontmatter && Object.keys(taskProperties).length > 0) {
-							const originalFrontmatter = baseData.frontmatter;
-							baseData.frontmatter = {
-								...originalFrontmatter,
-								...taskProperties,
-							};
-							result = formula.getValue(baseData);
-							baseData.frontmatter = originalFrontmatter;
-						} else {
-							result = formula.getValue(baseData);
-						}
+						const result = evaluateBasesFormula(formula, baseData, taskProperties);
 
 						if (result !== undefined) {
 							itemFormulaResults.cachedFormulaOutputs[formulaName] = result;
@@ -3240,15 +3207,7 @@ export class KanbanView extends BasesViewBase {
 			// Merge regular properties with formula results
 			const props = { ...(item.properties || {}) };
 
-			// Add formula results if available
-			const formulaOutputs = (item.basesData as FormulaBaseData | undefined)?.formulaResults
-				?.cachedFormulaOutputs;
-			if (formulaOutputs && typeof formulaOutputs === "object") {
-				for (const [formulaName, value] of Object.entries(formulaOutputs)) {
-					// Store with formula. prefix for easy lookup
-					props[`formula.${formulaName}`] = value;
-				}
-			}
+			appendCachedFormulaOutputs(props, item);
 
 			map.set(item.path, props);
 		}

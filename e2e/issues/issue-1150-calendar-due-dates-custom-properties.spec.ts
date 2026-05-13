@@ -257,7 +257,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         const page = app.page;
 
         // Open a Bases view with calendar configuration
-        await runCommand(page, 'TaskNotes: Open bases view');
+        await runCommand(page, 'Open calendar view');
         await page.waitForTimeout(1000);
 
         const basesContainer = page.locator('.bases-container, .tasknotes-bases');
@@ -335,7 +335,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         const page = app.page;
 
         // Open a calendar view in Bases
-        await runCommand(page, 'TaskNotes: Open bases view');
+        await runCommand(page, 'Open calendar view');
         await page.waitForTimeout(1000);
 
         // Configure to show property-based events for a custom date field
@@ -394,7 +394,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         const page = app.page;
 
         // Open calendar settings or Bases view configuration
-        await runCommand(page, 'TaskNotes: Open bases view');
+        await runCommand(page, 'Open calendar view');
         await page.waitForTimeout(1000);
 
         // Look for view configuration options

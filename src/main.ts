@@ -16,9 +16,6 @@ import {
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED,
 	EVENT_DATE_CHANGED,
-	FilterCondition,
-	FilterGroup,
-	FilterNode,
 } from "./types";
 
 import { TaskCreationModal } from "./modals/TaskCreationModal";
@@ -64,26 +61,12 @@ import {
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
+import { applySearchQueryToView } from "./utils/obsidianSearchView";
 
 type LoadedSettingsData = Partial<TaskNotesSettings> &
 	Record<string, unknown> & {
 		statusSuggestionTrigger?: string;
 	};
-
-type SearchViewLike = {
-	setQuery?: (query: string) => void;
-	searchComponent?: {
-		setValue?: (query: string) => void;
-	};
-	searchInputEl?: HTMLInputElement;
-	startSearch?: () => void;
-};
-
-type ProjectFilterBarLike = {
-	currentQuery: FilterGroup;
-	updateFilterBuilder: () => void;
-	emit: (eventName: string, query: FilterGroup) => void;
-};
 
 function frontmatterString(value: unknown): string | undefined {
 	if (value === null || value === undefined) return undefined;
@@ -901,25 +884,8 @@ export default class TaskNotesPlugin extends Plugin {
 
 			await this.revealLeafReady(searchLeaf);
 
-			// Set the search query to "tag:#tagname"
 			const searchQuery = `tag:${tag}`;
-			const searchView = searchLeaf.view as SearchViewLike;
-
-			// Try different methods to set the search query based on Obsidian version
-			if (typeof searchView.setQuery === "function") {
-				// Newer Obsidian versions
-				searchView.setQuery(searchQuery);
-			} else if (typeof searchView.searchComponent?.setValue === "function") {
-				// Alternative method
-				searchView.searchComponent.setValue(searchQuery);
-			} else if (searchView.searchInputEl) {
-				// Fallback: set the input value directly
-				searchView.searchInputEl.value = searchQuery;
-				// Trigger search if possible
-				if (typeof searchView.startSearch === "function") {
-					searchView.startSearch();
-				}
-			} else {
+			if (!applySearchQueryToView(searchLeaf.view, searchQuery)) {
 				console.warn("[TaskNotes] Could not find method to set search query");
 				new Notice("Search pane opened but could not set tag query");
 				return false;
@@ -1212,88 +1178,6 @@ export default class TaskNotesPlugin extends Plugin {
 			console.error("Error applying project subtask filter:", error);
 			new Notice("Failed to apply project filter");
 		}
-	}
-
-	/**
-	 * Legacy method: Add a project filter condition (no longer used)
-	 * Uses the same pattern as search to ensure correct AND/OR logic
-	 */
-	private addProjectCondition(filterBar: ProjectFilterBarLike, projectName: string): void {
-		// Remove existing project conditions first
-		this.removeProjectConditions(filterBar);
-
-		// Defensive check: ensure children array exists
-		if (!Array.isArray(filterBar.currentQuery.children)) {
-			filterBar.currentQuery.children = [];
-		}
-
-		// Create condition for wikilink format [[Project Name]]
-		const projectCondition: FilterCondition = {
-			type: "condition",
-			id: `project_${this.generateFilterId()}`,
-			property: "projects",
-			operator: "contains",
-			value: `[[${projectName}]]`,
-		};
-
-		// Get existing non-project filters
-		const existingFilters = filterBar.currentQuery.children.filter((child: FilterNode) => {
-			return !(
-				child.type === "condition" &&
-				child.property === "projects" &&
-				child.operator === "contains" &&
-				child.id.startsWith("project_")
-			);
-		});
-
-		if (existingFilters.length === 0) {
-			// No existing filters, just add the project condition
-			filterBar.currentQuery.children = [projectCondition];
-		} else {
-			// Create a group containing all existing filters
-			const existingFiltersGroup: FilterGroup = {
-				type: "group",
-				id: this.generateFilterId(),
-				conjunction: filterBar.currentQuery.conjunction, // Preserve the current conjunction
-				children: existingFilters,
-			};
-
-			// Replace query children with the project condition AND the existing filters group
-			filterBar.currentQuery.children = [projectCondition, existingFiltersGroup];
-			filterBar.currentQuery.conjunction = "and"; // Connect project with existing filters using AND
-		}
-
-		// Update the filter bar UI and emit changes
-		filterBar.updateFilterBuilder();
-		filterBar.emit("queryChange", filterBar.currentQuery);
-	}
-
-	/**
-	 * Remove existing project filter conditions
-	 */
-	private removeProjectConditions(filterBar: ProjectFilterBarLike): void {
-		if (!Array.isArray(filterBar.currentQuery.children)) {
-			filterBar.currentQuery.children = [];
-			return;
-		}
-
-		filterBar.currentQuery.children = filterBar.currentQuery.children.filter((child) => {
-			if (child.type === "condition") {
-				return !(
-					child.property === "projects" &&
-					child.operator === "contains" &&
-					child.id.startsWith("project_")
-				);
-			}
-			return true;
-		});
-	}
-
-	/**
-	 * Generate a unique filter ID
-	 */
-	private generateFilterId(): string {
-		return `filter-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 	}
 
 	/**

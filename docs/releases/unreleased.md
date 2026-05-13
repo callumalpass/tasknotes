@@ -28,6 +28,11 @@ Example:
 
 - Enabled lint checks that mirror Obsidian community plugin review findings, including dynamic code execution, Promise handling, deprecated APIs, unsafe stringification, directive comments, Node built-in imports, and explicit `any` usage.
 - Clarified privacy documentation for optional integrations that make periodic background network refreshes.
+- Cleaned up internal Obsidian and Bases compatibility adapters used by search and grouped views.
+
+## Fixed
+
+- Fixed project autocomplete searches so non-empty `+` queries only return files matching the query in the basename, title, aliases, or explicitly searchable metadata rows.
 
 ## Removed
 

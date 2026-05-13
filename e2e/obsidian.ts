@@ -14,6 +14,92 @@ export interface ObsidianApp {
   isExistingInstance?: boolean;
 }
 
+type ScreenshotClip = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type E2EScreenshotOptions = {
+  path?: string;
+  clip?: ScreenshotClip;
+  fullPage?: boolean;
+};
+
+async function normalizeScreenshotOptions(
+  page: Page,
+  options: E2EScreenshotOptions = {}
+): Promise<E2EScreenshotOptions> {
+  if (!options.clip) {
+    return options;
+  }
+
+  const viewport = page.viewportSize();
+  if (!viewport) {
+    return options;
+  }
+
+  const x = Math.max(0, Math.min(Math.round(options.clip.x), viewport.width - 1));
+  const y = Math.max(0, Math.min(Math.round(options.clip.y), viewport.height - 1));
+  const width = Math.max(1, Math.min(Math.round(options.clip.width), viewport.width - x));
+  const height = Math.max(1, Math.min(Math.round(options.clip.height), viewport.height - y));
+
+  return {
+    ...options,
+    clip: { x, y, width, height },
+  };
+}
+
+async function captureElectronScreenshot(
+  page: Page,
+  options: E2EScreenshotOptions = {}
+): Promise<Buffer> {
+  const screenshotData = await page.evaluate(async (clip) => {
+    const electron = (window as any).require?.('electron');
+    const currentWindow = electron?.remote?.getCurrentWindow?.();
+    if (!currentWindow) return null;
+    const roundedClip = clip
+      ? {
+          x: Math.max(0, Math.round(clip.x)),
+          y: Math.max(0, Math.round(clip.y)),
+          width: Math.max(1, Math.round(clip.width)),
+          height: Math.max(1, Math.round(clip.height)),
+        }
+      : undefined;
+    const image = await currentWindow.capturePage(roundedClip);
+    return image.toPNG().toString('base64');
+  }, options.clip ?? null);
+
+  if (!screenshotData) {
+    throw new Error('Electron screenshot capture is unavailable');
+  }
+
+  const buffer = Buffer.from(screenshotData, 'base64');
+  if (options.path) {
+    fs.mkdirSync(path.dirname(options.path), { recursive: true });
+    fs.writeFileSync(options.path, buffer);
+  }
+
+  return buffer;
+}
+
+function installElectronScreenshotCapture(page: Page): void {
+  const originalScreenshot = page.screenshot.bind(page);
+  page.screenshot = async (options = {}) => {
+    const normalizedOptions = await normalizeScreenshotOptions(
+      page,
+      options as E2EScreenshotOptions
+    );
+    try {
+      return await captureElectronScreenshot(page, normalizedOptions);
+    } catch (error) {
+      console.warn('Electron screenshot capture failed, falling back to Playwright:', error);
+      return originalScreenshot(normalizedOptions);
+    }
+  };
+}
+
 async function tryConnectExisting(remoteDebuggingPort: number): Promise<string | null> {
   try {
     const http = await import('http');
@@ -124,10 +210,16 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     );
   }
 
-  const remoteDebuggingPort = 9222;
+  const reuseExistingInstance = process.env.TASKNOTES_E2E_REUSE_OBSIDIAN === '1';
+  const remoteDebuggingPort = Number(
+    process.env.TASKNOTES_E2E_REMOTE_DEBUGGING_PORT ?? (reuseExistingInstance ? 9222 : 9223)
+  );
 
-  // First, try to connect to an already running instance
-  const existingCdpUrl = await tryConnectExisting(remoteDebuggingPort);
+  // Use an isolated instance by default so test results do not depend on a dirty
+  // manually opened Obsidian workspace. Reuse remains available for local debugging.
+  const existingCdpUrl = reuseExistingInstance
+    ? await tryConnectExisting(remoteDebuggingPort)
+    : null;
   let cdpUrl = '';
   let obsidianProcess: ChildProcess | undefined;
 
@@ -139,6 +231,26 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     // Pass the vault path directly to match the manual launch script.
     // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
     const userDataDir = path.join(PROJECT_ROOT, '.obsidian-config-e2e');
+    if (process.env.TASKNOTES_E2E_PRESERVE_WORKSPACE !== '1') {
+      fs.rmSync(path.join(E2E_VAULT_DIR, '.obsidian', 'workspace.json'), { force: true });
+    }
+    fs.mkdirSync(userDataDir, { recursive: true });
+    const obsidianConfigPath = path.join(userDataDir, 'obsidian.json');
+    let obsidianConfig: { vaults?: Record<string, { path: string; ts: number; open?: boolean }> } = {};
+    try {
+      obsidianConfig = JSON.parse(fs.readFileSync(obsidianConfigPath, 'utf8'));
+    } catch {
+      obsidianConfig = {};
+    }
+    obsidianConfig.vaults = {
+      ...(obsidianConfig.vaults ?? {}),
+      'tasknotes-e2e': {
+        path: E2E_VAULT_DIR,
+        ts: Date.now(),
+        open: true,
+      },
+    };
+    fs.writeFileSync(obsidianConfigPath, JSON.stringify(obsidianConfig));
     const obsidianArgs = [
       '--no-sandbox',
       `--remote-debugging-port=${remoteDebuggingPort}`,
@@ -199,6 +311,7 @@ export async function launchObsidian(): Promise<ObsidianApp> {
 
   // Wait for Obsidian to fully load
   await page.waitForLoadState('domcontentloaded');
+  installElectronScreenshotCapture(page);
 
   // Give Obsidian time to initialize
   await page.waitForTimeout(3000);

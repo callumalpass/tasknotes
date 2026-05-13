@@ -10,6 +10,9 @@ export const Platform = {
 };
 
 import { EventEmitter } from 'events';
+import momentModule from 'moment';
+
+export const moment = momentModule;
 
 // Mock file system data structure
 interface MockFile {

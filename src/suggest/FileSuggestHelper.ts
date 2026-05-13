@@ -116,12 +116,24 @@ export const FileSuggestHelper = {
 
 				// Compute score: keep best among fields to rank the file
 				let bestScore = 0;
-				bestScore = Math.max(bestScore, scoreMultiword(query, basename) + 15); // basename weight
-				if (title) bestScore = Math.max(bestScore, scoreMultiword(query, title) + 5);
+				const hasQuery = qLower.length > 0;
+				const basenameScore = hasQuery ? scoreMultiword(query, basename) : 1;
+				if (basenameScore > 0) {
+					bestScore = Math.max(bestScore, basenameScore + 15); // basename weight
+				}
+				if (title) {
+					const titleScore = scoreMultiword(query, title);
+					if (titleScore > 0) {
+						bestScore = Math.max(bestScore, titleScore + 5);
+					}
+				}
 				if (Array.isArray(aliases)) {
 					for (const a of aliases) {
 						if (typeof a === "string") {
-							bestScore = Math.max(bestScore, scoreMultiword(query, a));
+							const aliasScore = scoreMultiword(query, a);
+							if (aliasScore > 0) {
+								bestScore = Math.max(bestScore, aliasScore);
+							}
 						}
 					}
 				}

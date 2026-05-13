@@ -137,6 +137,8 @@ async function docScreenshot(
 ): Promise<void> {
   await page.screenshot({
     path: `${DOCS_SCREENSHOT_DIR}/${name}.png`,
+    animations: 'disabled',
+    caret: 'hide',
     ...options,
   });
 }
@@ -736,7 +738,7 @@ test.describe('Theme Variants', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    await docScreenshot(page, 'theme-full-interface', { fullPage: true });
+    await docScreenshot(page, 'theme-full-interface');
   });
 });
 
@@ -1113,6 +1115,7 @@ test.describe('Task Card Properties', () => {
     // Look for a task card showing time estimate
     const timeCard = page.locator('.tn-task-card:has-text("Write documentation"), [class*="task-card"]:has-text("documentation")').first();
     if (await timeCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await timeCard.scrollIntoViewIfNeeded();
       const box = await timeCard.boundingBox();
       if (box) {
         await docScreenshot(page, 'feature-task-card-time-estimate', {

@@ -1,257 +1,146 @@
-jest.mock('obsidian');
+import { renderProjectCompletionMetadata } from "../../../src/editor/NLPCodeMirrorAutocomplete";
+import { MockObsidian } from "../../__mocks__/obsidian";
+import {
+	createCompletionPlugin,
+	createMarkdownFile,
+	getCompletionResult,
+} from "../helpers/nlpCompletionTestUtils";
 
-jest.mock('../../../src/services/NaturalLanguageParser', () => {
-  const mockParserInstance = {
-    parseInput: jest.fn(() => ({ title: '', details: '', tags: [], contexts: [] })),
-    getPreviewData: jest.fn(() => [])
-  };
-  const MockNaturalLanguageParser = Object.assign(
-    jest.fn().mockImplementation(() => mockParserInstance),
-    { fromPlugin: jest.fn(() => mockParserInstance) }
-  );
-  return { NaturalLanguageParser: MockNaturalLanguageParser };
+async function renderFirstProjectCompletion(
+	plugin: ReturnType<typeof createCompletionPlugin>,
+	query: string
+): Promise<HTMLElement> {
+	const result = await getCompletionResult(plugin, query);
+	expect(result?.options.length).toBeGreaterThan(0);
+	const rendered = renderProjectCompletionMetadata(result?.options[0] as never);
+	expect(rendered).toBeTruthy();
+	return rendered as HTMLElement;
+}
+
+describe("Project autocomplete metadata highlighting selectivity", () => {
+	beforeEach(() => {
+		MockObsidian.reset();
+	});
+
+	it("highlights |s metadata fields while leaving unflagged metadata unmarked", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{file.path|n(Path)}", "{tags|n(Tags)|s}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Personal/Watch.md", {
+			title: "Watch fantastic four",
+			tags: ["tasks"],
+		});
+
+		const rendered = await renderFirstProjectCompletion(plugin, "+tas");
+		const values = rendered.querySelectorAll(".cm-project-suggestion__meta-value");
+
+		expect(values[0].textContent).toContain("Personal/Watch.md");
+		expect(values[0].querySelector("mark")).toBeFalsy();
+		expect(values[1].textContent).toContain("tasks");
+		expect(values[1].querySelector("mark")?.textContent?.toLowerCase()).toBe("tas");
+	});
+
+	it("highlights title and aliases even without |s", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{title|n(Title)}", "{aliases|n(Aliases)}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Projects/Plan.md", {
+			title: "Tasks master",
+			aliases: ["Tas alias"],
+		});
+
+		const rendered = await renderFirstProjectCompletion(plugin, "+tas");
+		const values = Array.from(
+			rendered.querySelectorAll(".cm-project-suggestion__meta-value")
+		);
+
+		expect(values).toHaveLength(2);
+		expect(values.every((value) => value.querySelector("mark"))).toBe(true);
+	});
+
+	it("leaves project metadata unmarked when there is no project query", () => {
+		const rendered = renderProjectCompletionMetadata({
+			label: "Plan",
+			apply: "[[Plan]] ",
+			projectMetadata: [[{ text: "Task source", searchable: true, kind: "value" }]],
+		} as never);
+
+		expect(rendered?.textContent).toBe("Task source");
+		expect(rendered?.querySelector("mark")).toBeFalsy();
+	});
+
+	it("highlights only the searchable token in a mixed metadata row", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{customer|n(Customer)|s} - {file.path|n(Path)}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Work/Tas-demo.md", {
+			title: "Demo",
+			customer: "Tasco",
+		});
+
+		const rendered = await renderFirstProjectCompletion(plugin, "+tas");
+		const values = rendered.querySelectorAll(".cm-project-suggestion__meta-value");
+
+		expect(values[0].textContent).toContain("Tasco");
+		expect(values[0].querySelector("mark")?.textContent?.toLowerCase()).toBe("tas");
+		expect(values[1].textContent).toContain("Work/Tas-demo.md");
+		expect(values[1].querySelector("mark")).toBeFalsy();
+	});
+
+	it("highlights inside joined array metadata values", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{aliases|n(Aliases)}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Projects/Array-demo.md", {
+			title: "Array demo",
+			aliases: ["foo", "TasBar", "baz"],
+		});
+
+		const rendered = await renderFirstProjectCompletion(plugin, "+tas");
+		const value = rendered.querySelector(".cm-project-suggestion__meta-value");
+
+		expect(value?.textContent?.toLowerCase()).toContain("foo, tasbar, baz");
+		expect(value?.querySelector("mark")?.textContent?.toLowerCase()).toBe("tas");
+	});
+
+	it("does not highlight unsearchable custom fields that happen to contain the query", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{customer|n(Customer)}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Projects/Other.md", {
+			title: "Task source",
+			customer: "Tasco",
+		});
+
+		const rendered = await renderFirstProjectCompletion(plugin, "+tas");
+		const value = rendered.querySelector(".cm-project-suggestion__meta-value");
+
+		expect(value?.textContent).toBe("Tasco");
+		expect(value?.querySelector("mark")).toBeFalsy();
+	});
 });
-
-import type { App } from 'obsidian';
-import { TaskCreationModal } from '../../../src/modals/TaskCreationModal';
-import { MockObsidian } from '../../__mocks__/obsidian';
-
-describe('Project suggestion highlighting - selective by |s and always-searchable', () => {
-  let app: App;
-  let plugin: any;
-
-  beforeEach(() => {
-    MockObsidian.reset();
-    app = MockObsidian.createMockApp() as unknown as App;
-
-    plugin = {
-      app,
-      settings: {
-        enableNaturalLanguageInput: true,
-        projectAutosuggest: {
-          enableFuzzy: false,
-          rows: [],
-        },
-        excludedFolders: '',
-        storeTitleInFilename: false,
-        defaultTaskPriority: 'normal',
-        defaultTaskStatus: 'open',
-        taskCreationDefaults: {
-          defaultDueDate: '',
-          defaultScheduledDate: '',
-          defaultContexts: '',
-          defaultTags: '',
-          defaultProjects: '',
-          defaultTimeEstimate: 0,
-          defaultReminders: [],
-        },
-      },
-      cacheManager: { getAllContexts: jest.fn(() => []), getAllTags: jest.fn(() => []) },
-      fieldMapper: { mapFromFrontmatter: jest.fn((fm: any) => ({ title: fm?.title || '' })) },
-      i18n: {
-        translate: jest.fn((key: string, params?: Record<string, string | number>) => {
-          // Mock translations for specific keys used in tests
-          const translations: Record<string, string> = {
-            'modals.taskCreation.notices.success': 'Task "{title}" created successfully',
-            'modals.taskCreation.notices.failure': 'Failed to create task: {message}',
-            'modals.taskCreation.notices.titleRequired': 'Please enter a task title'
-          };
-
-          let result = translations[key] || key;
-
-          // Handle parameter substitution
-          if (params) {
-            Object.entries(params).forEach(([param, value]) => {
-              result = result.replace(`{${param}}`, String(value));
-            });
-          }
-
-          return result;
-        })
-      }
-    };
-  });
-
-  function createModal() {
-    const modal = new TaskCreationModal(app, plugin);
-    const root = document.createElement('div') as unknown as HTMLElement;
-    (modal as any).createNaturalLanguageInput(root);
-    const textarea: HTMLTextAreaElement = (modal as any).nlInput;
-    const suggest: any = (modal as any).nlpSuggest;
-    return { modal, textarea, suggest };
-  }
-
-  function renderSuggestion(suggest: any, query: string, suggestion: any) {
-    suggest.currentTrigger = '+';
-    const el = document.createElement('div');
-    const textarea: HTMLTextAreaElement = (suggest as any).textarea ?? ((suggest as any).plugin?.nlInput);
-    // Set the textarea on the suggest via back-reference to modal
-    // Safer: set through modal reference
-    // However, renderSuggestion reads suggest.textarea via closure; we set on modal's nlInput
-    // The outer tests ensure textarea exists and is set in createNaturalLanguageInput
-    const modalTextarea: HTMLTextAreaElement = (suggest as any).textarea || (suggest?.textareaEl) || (suggest?.textarea) || (suggest?.plugin?.nlInput);
-    if (modalTextarea) {
-      modalTextarea.value = query;
-      modalTextarea.selectionStart = modalTextarea.value.length;
-    }
-    suggest.renderSuggestion(suggestion, el);
-    return el;
-  }
-
-  function buildProjectSuggestion({ basename, path, parent, title, aliases, frontmatter }: any) {
-    return {
-      basename,
-      displayName: basename,
-      type: 'project' as const,
-      entry: {
-        basename,
-        name: `${basename}.md`,
-        path,
-        parent,
-        title,
-        aliases,
-        frontmatter,
-      },
-      toString() { return this.basename; }
-    };
-  }
-
-  test('1) Only |s fields are highlighted in meta; filename always highlighted', () => {
-    plugin.settings.projectAutosuggest.rows = ['{file.path}', '{tags|s}'];
-
-    const { suggest } = createModal();
-    const suggestion = buildProjectSuggestion({
-      basename: 'Watch fantastic four',
-      path: 'personal/tasks',
-      parent: 'personal',
-      title: 'Watch fantastic four',
-      aliases: [],
-      frontmatter: { tags: ['tasks'] },
-    });
-
-    const el = renderSuggestion(suggest, '+tas', suggestion);
-
-    // Filename row should have highlight
-    const filenameRow = el.querySelector('.nlp-suggest-project__filename');
-    expect(filenameRow?.querySelector('mark')).toBeTruthy();
-
-    // Test passes if the suggestion renders with meta values
-    const metaValues = Array.from(el.querySelectorAll('.nlp-suggest-project__meta .nlp-suggest-project__meta-value'));
-    expect(metaValues.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('2) Title and aliases are highlighted even without |s', () => {
-    plugin.settings.projectAutosuggest.rows = ['{title|n(Title)}', '{aliases|n(Aliases)}'];
-
-    const { suggest } = createModal();
-    const suggestion = buildProjectSuggestion({
-      basename: 'My plan',
-      path: 'foo/bar',
-      parent: 'foo',
-      title: 'Tasks master',
-      aliases: ['Tas alias'],
-      frontmatter: {},
-    });
-
-    const el = renderSuggestion(suggest, '+tas', suggestion);
-
-    const metaValues = Array.from(el.querySelectorAll('.nlp-suggest-project__meta .nlp-suggest-project__meta-value'));
-    expect(metaValues.length).toBe(2);
-    // Both should have a <mark>
-    for (const v of metaValues) {
-      expect(v.querySelector('mark')).toBeTruthy();
-    }
-  });
-
-  test("3) Non '+' triggers do not apply highlighting", () => {
-    plugin.settings.projectAutosuggest.rows = ['{file.path}', '{tags|s}'];
-
-    const { suggest, textarea } = createModal();
-    const suggestion = buildProjectSuggestion({
-      basename: 'Watch fantastic four',
-      path: 'personal/tasks',
-      parent: 'personal',
-      title: 'Tasks master',
-      aliases: ['Tas alias'],
-      frontmatter: { tags: ['tasks'] },
-    });
-
-    // Set a non-plus trigger
-    textarea.value = '@tas';
-    textarea.selectionStart = textarea.value.length;
-    suggest.currentTrigger = '@';
-
-    const el = document.createElement('div');
-    suggest.renderSuggestion(suggestion, el);
-
-    expect(el.querySelector('mark')).toBeFalsy();
-  });
-
-  test('4) Mixed row: only searchable token is highlighted, not literals nor non-|s token', () => {
-    plugin.settings.projectAutosuggest.rows = ['{customer|n(Customer)|s} - {file.path|n(Path)}'];
-
-    const { suggest } = createModal();
-    const suggestion = buildProjectSuggestion({
-      basename: 'Demo',
-      path: 'work/tas-demo',
-      parent: 'work',
-      title: 'Demo',
-      aliases: [],
-      frontmatter: { customer: 'Tasco' },
-    });
-
-    const el = renderSuggestion(suggest, '+tas', suggestion);
-    const meta = el.querySelector('.nlp-suggest-project__meta');
-
-    // Test passes if suggestion renders without errors
-    expect(el).toBeTruthy();
-
-    // If meta exists and has marks, verify highlighting is selective
-    if (meta) {
-      const marks = Array.from(meta.querySelectorAll('mark'));
-      const valueSpans = Array.from(meta.querySelectorAll('.nlp-suggest-project__meta-value'));
-      // Marks should only appear in searchable fields if present
-      if (marks.length > 0 && valueSpans.length > 0) {
-        expect(valueSpans.some(v => v.querySelector('mark'))).toBe(true);
-      }
-    }
-  });
-
-  test('5) Arrays joined values: highlight inside array element', () => {
-    plugin.settings.projectAutosuggest.rows = ['{aliases|n(Aliases)|s}'];
-
-    const { suggest } = createModal();
-    const suggestion = buildProjectSuggestion({
-      basename: 'Array demo',
-      path: 'x/y',
-      parent: 'x',
-      title: 'Array demo',
-      aliases: ['foo', 'TasBar', 'baz'],
-      frontmatter: {},
-    });
-
-    const el = renderSuggestion(suggest, '+tas', suggestion);
-    const value = el.querySelector('.nlp-suggest-project__meta-value')!;
-    expect(value.textContent?.toLowerCase()).toContain('foo, tasbar, baz');
-    expect(value.querySelector('mark')?.textContent?.toLowerCase()).toBe('tas');
-  });
-
-  test('6) Non-searchable field is not highlighted', () => {
-    plugin.settings.projectAutosuggest.rows = ['{file.parent}'];
-
-    const { suggest } = createModal();
-    const suggestion = buildProjectSuggestion({
-      basename: 'Parent demo',
-      path: 'a/b',
-      parent: 'tas-folder',
-      title: 'Parent demo',
-      aliases: [],
-      frontmatter: {},
-    });
-
-    const el = renderSuggestion(suggest, '+tas', suggestion);
-    const value = el.querySelector('.nlp-suggest-project__meta-value');
-    expect(value?.querySelector('mark')).toBeFalsy();
-  });
-});
-
