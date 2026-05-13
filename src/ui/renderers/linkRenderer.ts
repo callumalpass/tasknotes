@@ -67,54 +67,58 @@ export function appendInternalLink(
 		},
 	});
 
-	linkEl.addEventListener("click", async (e) => {
+	linkEl.addEventListener("click", (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		try {
-			if (e.ctrlKey || e.metaKey) {
-				// Ctrl/Cmd+Click opens in new tab
-				void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
-				return;
-			}
-
-			if (onPrimaryNavigate) {
-				const handled = await onPrimaryNavigate(normalizedPath, e);
-				if (handled !== false) {
+		void (async () => {
+			try {
+				if (e.ctrlKey || e.metaKey) {
+					// Ctrl/Cmd+Click opens in new tab
+					void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
 					return;
 				}
-			}
 
-			const file =
-				deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
-				deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
-			if (file instanceof TFile) {
-				await deps.workspace.getLeaf(false).openFile(file);
-			} else if (showErrorNotices) {
-				new Notice(`Note "${displayText}" not found`);
-			}
-		} catch (error) {
-			console.error("[TaskNotes] Error opening internal link:", { filePath, error });
-			if (showErrorNotices) {
-				new Notice(`Failed to open note "${displayText}"`);
-			}
-		}
-	});
+				if (onPrimaryNavigate) {
+					const handled = await onPrimaryNavigate(normalizedPath, e);
+					if (handled !== false) {
+						return;
+					}
+				}
 
-	// Middle-click opens in new tab
-	linkEl.addEventListener("auxclick", async (e) => {
-		if (e.button === 1) {
-			e.preventDefault();
-			e.stopPropagation();
-			try {
 				const file =
 					deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
 					deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
 				if (file instanceof TFile) {
-					void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
+					await deps.workspace.getLeaf(false).openFile(file);
+				} else if (showErrorNotices) {
+					new Notice(`Note "${displayText}" not found`);
 				}
 			} catch (error) {
 				console.error("[TaskNotes] Error opening internal link:", { filePath, error });
+				if (showErrorNotices) {
+					new Notice(`Failed to open note "${displayText}"`);
+				}
 			}
+		})();
+	});
+
+	// Middle-click opens in new tab
+	linkEl.addEventListener("auxclick", (e) => {
+		if (e.button === 1) {
+			e.preventDefault();
+			e.stopPropagation();
+			void (async () => {
+				try {
+					const file =
+						deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
+						deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+					if (file instanceof TFile) {
+						void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
+					}
+				} catch (error) {
+					console.error("[TaskNotes] Error opening internal link:", { filePath, error });
+				}
+			})();
 		}
 	});
 
@@ -240,7 +244,7 @@ export function renderTextWithLinks(
 				if (e.key === "Enter" || e.key === " ") {
 					e.preventDefault();
 					e.stopPropagation();
-						void options.onTagClick!(tag, e);
+					void options.onTagClick!(tag, e);
 				}
 			});
 

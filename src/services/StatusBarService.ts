@@ -175,13 +175,17 @@ export class StatusBarService {
 				}
 			} else {
 				// Multiple tracked tasks - show selector modal
-				openTaskSelector(this.plugin, trackedTasks, async (selectedTask) => {
-					if (selectedTask) {
-						const file = this.plugin.app.vault.getAbstractFileByPath(selectedTask.path);
-						if (file instanceof TFile) {
-							await this.plugin.app.workspace.getLeaf(false).openFile(file);
+				openTaskSelector(this.plugin, trackedTasks, (selectedTask) => {
+					void (async () => {
+						if (selectedTask) {
+							const file = this.plugin.app.vault.getAbstractFileByPath(
+								selectedTask.path
+							);
+							if (file instanceof TFile) {
+								await this.plugin.app.workspace.getLeaf(false).openFile(file);
+							}
 						}
-					}
+					})();
 				});
 			}
 		} catch (error) {

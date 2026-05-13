@@ -422,7 +422,7 @@ export function getTargetDateForEvent(eventArg: unknown): Date {
 	}
 
 	// For regular events, convert FullCalendar date to UTC anchor
-		const eventDate = event.start;
+	const eventDate = event.start;
 	if (eventDate) {
 		// Convert FullCalendar Date to date string preserving local date
 		const dateStr = format(eventDate, "yyyy-MM-dd");
@@ -1214,7 +1214,7 @@ export async function handleTimeEntryCreation(
 	try {
 		// Get all tasks
 		const allTasks = await plugin.cacheManager.getAllTasks();
-			const unarchivedTasks = allTasks.filter((task) => !task.archived);
+		const unarchivedTasks = allTasks.filter((task) => !task.archived);
 
 		if (unarchivedTasks.length === 0) {
 			new Notice(plugin.i18n.translate("modals.timeEntry.noTasksAvailable"));
@@ -1222,48 +1222,53 @@ export async function handleTimeEntryCreation(
 		}
 
 		// Open task selector modal
-			openTaskSelector(plugin, unarchivedTasks, async (selectedTask: TaskInfo) => {
-			if (selectedTask) {
-				try {
-					// Calculate duration
-					const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+		openTaskSelector(plugin, unarchivedTasks, (selectedTask: TaskInfo) => {
+			void (async () => {
+				if (selectedTask) {
+					try {
+						// Calculate duration
+						const durationMinutes = Math.round(
+							(end.getTime() - start.getTime()) / 60000
+						);
 
-					// Create new time entry
-					const newEntry = {
-						startTime: start.toISOString(),
-						endTime: end.toISOString(),
-						description: "",
-					};
+						// Create new time entry
+						const newEntry = {
+							startTime: start.toISOString(),
+							endTime: end.toISOString(),
+							description: "",
+						};
 
-					// Add to task's time entries
-					const updatedTimeEntries = [...(selectedTask.timeEntries || []), newEntry].map(
-						(entry) => {
-								const sanitizedEntry: Record<string, unknown> = { ...entry };
-								delete sanitizedEntry.duration;
-								return sanitizedEntry as typeof entry;
-						}
-					);
+						// Add to task's time entries
+						const updatedTimeEntries = [
+							...(selectedTask.timeEntries || []),
+							newEntry,
+						].map((entry) => {
+							const sanitizedEntry: Record<string, unknown> = { ...entry };
+							delete sanitizedEntry.duration;
+							return sanitizedEntry as typeof entry;
+						});
 
-					// Save to file
-					await plugin.taskService.updateTask(selectedTask, {
-						timeEntries: updatedTimeEntries,
-					});
+						// Save to file
+						await plugin.taskService.updateTask(selectedTask, {
+							timeEntries: updatedTimeEntries,
+						});
 
-					// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
-					// We just need to trigger EVENT_DATA_CHANGED
-					plugin.emitter.trigger(EVENT_DATA_CHANGED);
+						// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
+						// We just need to trigger EVENT_DATA_CHANGED
+						plugin.emitter.trigger(EVENT_DATA_CHANGED);
 
-					new Notice(
-						plugin.i18n.translate("modals.timeEntry.created", {
-							taskTitle: selectedTask.title,
-							duration: durationMinutes.toString(),
-						})
-					);
-				} catch (error) {
-					console.error("Error creating time entry:", error);
-					new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
+						new Notice(
+							plugin.i18n.translate("modals.timeEntry.created", {
+								taskTitle: selectedTask.title,
+								duration: durationMinutes.toString(),
+							})
+						);
+					} catch (error) {
+						console.error("Error creating time entry:", error);
+						new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
+					}
 				}
-			}
+			})();
 		});
 	} catch (error) {
 		console.error("Error opening task selector for time entry:", error);
@@ -1281,12 +1286,12 @@ export async function handleTimeblockDrop(
 	plugin: TaskNotesPlugin
 ): Promise<void> {
 	try {
-			const newStart = dropInfo.event.start;
-			const newEnd = dropInfo.event.end;
-			if (!newStart || !newEnd) {
-				dropInfo.revert();
-				return;
-			}
+		const newStart = dropInfo.event.start;
+		const newEnd = dropInfo.event.end;
+		if (!newStart || !newEnd) {
+			dropInfo.revert();
+			return;
+		}
 
 		// Calculate new date and times
 		const newDate = format(newStart, "yyyy-MM-dd");
@@ -1432,7 +1437,7 @@ export async function handleDateTitleClick(date: Date, plugin: TaskNotesPlugin):
 		}
 
 		// Convert date to moment for the API
-			const moment = getWindowMoment(date);
+		const moment = getWindowMoment(date);
 
 		// Get all daily notes to check if one exists for this date
 		const allDailyNotes = getAllDailyNotes();

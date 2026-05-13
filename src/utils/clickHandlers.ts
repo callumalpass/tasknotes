@@ -7,9 +7,9 @@ export interface ClickHandlerOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	excludeSelector?: string; // CSS selector for elements that should not trigger click behavior
-	onSingleClick?: (e: MouseEvent) => Promise<void>; // Optional override for single click
-	onDoubleClick?: (e: MouseEvent) => Promise<void>; // Optional override for double click
-	contextMenuHandler?: (e: MouseEvent) => Promise<void>; // Optional context menu handler
+	onSingleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for single click
+	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
+	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
 }
 
 const DEFAULT_EXCLUDE_SELECTOR = [
@@ -86,7 +86,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		}
 	};
 
-	const clickHandler = async (e: MouseEvent) => {
+	const handleClick = async (e: MouseEvent) => {
 		const target = e.target as HTMLElement;
 		if (target.closest(clickExcludeSelector)) {
 			return;
@@ -135,11 +135,15 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		}
 	};
 
-	const dblclickHandler = async (e: MouseEvent) => {
+	const clickHandler = (event: MouseEvent) => {
+		void handleClick(event);
+	};
+
+	const dblclickHandler = (_event: MouseEvent) => {
 		// This is handled by the clickHandler to distinguish single/double clicks
 	};
 
-	const contextmenuHandler = async (e: MouseEvent) => {
+	const handleContextMenu = async (e: MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation(); // Prevent event from bubbling to parent cards
 
@@ -194,6 +198,10 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		if (contextMenuHandler) {
 			await contextMenuHandler(e);
 		}
+	};
+
+	const contextmenuHandler = (event: MouseEvent) => {
+		void handleContextMenu(event);
 	};
 
 	return {

@@ -185,10 +185,12 @@ export class ICSEventInfoModal extends Modal {
 			const modal = new ICSNoteCreationModal(this.app, this.plugin, {
 				icsEvent: this.icsEvent,
 				subscriptionName: this.subscriptionName || "Unknown Calendar",
-				onContentCreated: async (file: TFile, info: NoteInfo) => {
-					new Notice(this.translate("notices.icsNoteCreatedSuccess"));
-					void this.refreshRelatedNotes();
-					await this.safeOpenFile(file.path);
+				onContentCreated: (file: TFile, _info: NoteInfo) => {
+					void (async () => {
+						new Notice(this.translate("notices.icsNoteCreatedSuccess"));
+						void this.refreshRelatedNotes();
+						await this.safeOpenFile(file.path);
+					})();
 				},
 			});
 
@@ -204,10 +206,10 @@ export class ICSEventInfoModal extends Modal {
 			async () => {
 				openFileSelector(
 					this.plugin,
-					async (file) => {
+					(file) => {
 						if (!file) return;
 
-						await SafeAsync.execute(
+						void SafeAsync.execute(
 							async () => {
 								await this.plugin.icsNoteService.linkNoteToICS(
 									file.path,

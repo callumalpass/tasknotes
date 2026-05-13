@@ -184,14 +184,16 @@ export class ICSEventContextMenu {
 				icsEvent: this.options.icsEvent,
 				subscriptionName:
 					this.options.subscriptionName || this.t("contextMenus.ics.subscriptionUnknown"),
-				onContentCreated: async (file: TFile) => {
-					new Notice(this.t("contextMenus.ics.notices.noteCreated"));
-					await this.options.plugin.app.workspace.getLeaf().openFile(file);
+				onContentCreated: (file: TFile) => {
+					void (async () => {
+						new Notice(this.t("contextMenus.ics.notices.noteCreated"));
+						await this.options.plugin.app.workspace.getLeaf().openFile(file);
 
-					// Trigger update callback if provided
-					if (this.options.onUpdate) {
-						this.options.onUpdate();
-					}
+						// Trigger update callback if provided
+						if (this.options.onUpdate) {
+							this.options.onUpdate();
+						}
+					})();
 				},
 			});
 
@@ -207,10 +209,10 @@ export class ICSEventContextMenu {
 			async () => {
 				openFileSelector(
 					this.options.plugin,
-					async (file) => {
+					(file) => {
 						if (!file) return;
 
-						await SafeAsync.execute(
+						void SafeAsync.execute(
 							async () => {
 								await this.options.plugin.icsNoteService.linkNoteToICS(
 									file.path,

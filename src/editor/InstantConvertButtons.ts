@@ -30,40 +30,41 @@ class ConvertButtonWidget extends WidgetType {
 		setIcon(iconSpan, "file-plus");
 
 		// Handle mousedown to capture selection before it gets cleared by click
-		button.addEventListener("mousedown", async (e) => {
+		button.addEventListener("mousedown", (e) => {
 			e.preventDefault();
 			e.stopPropagation();
+			void (async () => {
+				try {
+					// Validate button state before proceeding
+					if (!this.validateButtonClick()) {
+						return;
+					}
 
-			try {
-				// Validate button state before proceeding
-				if (!this.validateButtonClick()) {
-					return;
-				}
+					// Get the editor from the active markdown view
+					const activeMarkdownView =
+						this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
+					if (!activeMarkdownView) {
+						console.warn("No active markdown view available for task conversion");
+						return;
+					}
+					const editor = activeMarkdownView.editor;
 
-				// Get the editor from the active markdown view
-				const activeMarkdownView =
-					this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
-				if (!activeMarkdownView) {
-					console.warn("No active markdown view available for task conversion");
-					return;
-				}
-				const editor = activeMarkdownView.editor;
+					// Validate editor and line number
+					if (!this.validateEditorState(editor)) {
+						return;
+					}
 
-				// Validate editor and line number
-				if (!this.validateEditorState(editor)) {
-					return;
+					// Call the instant convert service
+					if (this.plugin.instantTaskConvertService && editor) {
+						await this.plugin.instantTaskConvertService.instantConvertTask(
+							editor,
+							this.lineNumber
+						);
+					}
+				} catch (error) {
+					console.error("Error in convert button click handler:", error);
 				}
-
-				// Call the instant convert service
-				if (this.plugin.instantTaskConvertService && editor) {
-					await this.plugin.instantTaskConvertService.instantConvertTask(
-						editor,
-						this.lineNumber
-					);
-				}
-			} catch (error) {
-				console.error("Error in convert button click handler:", error);
-			}
+			})();
 		});
 
 		return container;

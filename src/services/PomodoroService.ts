@@ -740,10 +740,9 @@ export class PomodoroService {
 
 			// Auto-start break if configured, otherwise just prepare the timer
 			if (this.plugin.settings.pomodoroAutoStartBreaks) {
-				const timeout = window.setTimeout(
-					() => this.startBreak(shouldTakeLongBreak),
-					1000
-				);
+				const timeout = window.setTimeout(() => {
+					void this.startBreak(shouldTakeLongBreak);
+				}, 1000);
 				this.cleanupTimeouts.add(timeout);
 			}
 		} else {
@@ -1316,12 +1315,12 @@ export class PomodoroService {
 			// Update frontmatter
 			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
 
-				await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
-					// Get existing sessions
-					const existingSessions = Array.isArray(frontmatter[pomodoroField])
-						? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
-						: [];
-					const existingIds = new Set(existingSessions.map((s) => s.id));
+			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
+				// Get existing sessions
+				const existingSessions = Array.isArray(frontmatter[pomodoroField])
+					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
+					: [];
+				const existingIds = new Set(existingSessions.map((s) => s.id));
 
 				// Only add session if it doesn't already exist
 				if (!existingIds.has(session.id)) {
@@ -1340,9 +1339,9 @@ export class PomodoroService {
 		dateStr: string,
 		sessions: PomodoroSessionHistory[]
 	): Promise<void> {
-			try {
-				const date = parseDateToLocal(dateStr); // Use local date for daily note creation
-				const dailyNoteMoment = getDailyNoteMoment(date);
+		try {
+			const date = parseDateToLocal(dateStr); // Use local date for daily note creation
+			const dailyNoteMoment = getDailyNoteMoment(date);
 
 			// Get or create daily note
 			const allDailyNotes = getAllDailyNotes();
@@ -1362,12 +1361,12 @@ export class PomodoroService {
 			// Update frontmatter
 			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
 
-				await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
-					// Get existing sessions and append new ones
-					const existingSessions = Array.isArray(frontmatter[pomodoroField])
-						? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
-						: [];
-					const existingIds = new Set(existingSessions.map((s) => s.id));
+			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
+				// Get existing sessions and append new ones
+				const existingSessions = Array.isArray(frontmatter[pomodoroField])
+					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
+					: [];
+				const existingIds = new Set(existingSessions.map((s) => s.id));
 
 				// Only add sessions that don't already exist
 				const newSessions = sessions.filter((session) => !existingIds.has(session.id));

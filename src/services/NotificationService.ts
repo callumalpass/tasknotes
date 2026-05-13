@@ -66,18 +66,20 @@ export class NotificationService {
 	}
 
 	private startBroadScan(): void {
-		this.broadScanInterval = window.setInterval(async () => {
-			const now = Date.now();
-			const timeSinceLastScan = now - this.lastBroadScanTime;
+		this.broadScanInterval = window.setInterval(() => {
+			void (async () => {
+				const now = Date.now();
+				const timeSinceLastScan = now - this.lastBroadScanTime;
 
-			// Check for system sleep/wake - if gap is significantly larger than interval, handle catch-up
-			if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) {
-				// 1 minute tolerance
-				await this.handleSystemWakeUp();
-			}
+				// Check for system sleep/wake - if gap is significantly larger than interval, handle catch-up
+				if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) {
+					// 1 minute tolerance
+					await this.handleSystemWakeUp();
+				}
 
-			await this.scanTasksAndBuildQueue();
-			this.lastBroadScanTime = now;
+				await this.scanTasksAndBuildQueue();
+				this.lastBroadScanTime = now;
+			})();
 		}, this.BROAD_SCAN_INTERVAL);
 	}
 

@@ -27,7 +27,7 @@
 		"test:performance": "jest --testPathPatterns=performance --detectOpenHandles --passWithNoTests",
 		"test:build": "node -e \"console.log('Build test passed - plugin bundle created successfully')\"",
 		"conformance:test": "node scripts/run-tasknotes-spec-conformance.mjs",
-		"lint": "eslint src/",
+		"lint": "eslint src/ --max-warnings=0",
 		"lint:fix": "eslint src/ --fix",
 		"format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
 		"format:check": "prettier --check \"src/**/*.{ts,js,json,md}\"",

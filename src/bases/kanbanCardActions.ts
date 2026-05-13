@@ -21,8 +21,7 @@ type PriorityContextMenuConstructor =
 type RecurrenceContextMenuConstructor =
 	typeof import("../components/RecurrenceContextMenu").RecurrenceContextMenu;
 type ReminderModalConstructor = typeof import("../modals/ReminderModal").ReminderModal;
-type DateContextMenuConstructor =
-	typeof import("../components/DateContextMenu").DateContextMenu;
+type DateContextMenuConstructor = typeof import("../components/DateContextMenu").DateContextMenu;
 
 export async function handleKanbanCardAction({
 	action,
@@ -114,12 +113,14 @@ function showPriorityMenu(
 ): void {
 	const menu = new PriorityContextMenu({
 		currentValue: task.priority,
-			onSelect: async (newPriority: string) => {
-			try {
-				await plugin.updateTaskProperty(task, "priority", newPriority);
-			} catch (error) {
-				console.error("[TaskNotes][KanbanView] Failed to update priority", error);
-			}
+		onSelect: (newPriority: string) => {
+			void (async () => {
+				try {
+					await plugin.updateTaskProperty(task, "priority", newPriority);
+				} catch (error) {
+					console.error("[TaskNotes][KanbanView] Failed to update priority", error);
+				}
+			})();
 		},
 		plugin,
 	});
@@ -136,15 +137,17 @@ function showRecurrenceMenu(
 		currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
 		currentAnchor: task.recurrence_anchor || "scheduled",
 		scheduledDate: task.scheduled,
-		onSelect: async (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
-			try {
-				await plugin.updateTaskProperty(task, "recurrence", newRecurrence || undefined);
-				if (anchor !== undefined) {
-					await plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+		onSelect: (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
+			void (async () => {
+				try {
+					await plugin.updateTaskProperty(task, "recurrence", newRecurrence || undefined);
+					if (anchor !== undefined) {
+						await plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+					}
+				} catch (error) {
+					console.error("[TaskNotes][KanbanView] Failed to update recurrence", error);
 				}
-			} catch (error) {
-				console.error("[TaskNotes][KanbanView] Failed to update recurrence", error);
-			}
+			})();
 		},
 		app: plugin.app,
 		plugin,
@@ -157,16 +160,18 @@ function showReminderModal(
 	plugin: TaskNotesPlugin,
 	ReminderModal: ReminderModalConstructor
 ): void {
-	const modal = new ReminderModal(plugin.app, plugin, task, async (reminders: Reminder[]) => {
-		try {
-			await plugin.updateTaskProperty(
-				task,
-				"reminders",
-				reminders.length > 0 ? reminders : undefined
-			);
-		} catch (error) {
-			console.error("[TaskNotes][KanbanView] Failed to update reminders", error);
-		}
+	const modal = new ReminderModal(plugin.app, plugin, task, (reminders: Reminder[]) => {
+		void (async () => {
+			try {
+				await plugin.updateTaskProperty(
+					task,
+					"reminders",
+					reminders.length > 0 ? reminders : undefined
+				);
+			} catch (error) {
+				console.error("[TaskNotes][KanbanView] Failed to update reminders", error);
+			}
+		})();
 	});
 	modal.open();
 }
@@ -187,20 +192,22 @@ async function openDateContextMenu(
 	const menu = new DateContextMenu({
 		currentValue: getDatePart(currentValue || ""),
 		currentTime: getTimePart(currentValue || ""),
-			onSelect: async (dateValue: string | null, timeValue?: string | null) => {
-			try {
-				let finalValue: string | undefined;
-				if (!dateValue) {
-					finalValue = undefined;
-				} else if (timeValue) {
-					finalValue = `${dateValue}T${timeValue}`;
-				} else {
-					finalValue = dateValue;
+		onSelect: (dateValue: string | null, timeValue?: string | null) => {
+			void (async () => {
+				try {
+					let finalValue: string | undefined;
+					if (!dateValue) {
+						finalValue = undefined;
+					} else if (timeValue) {
+						finalValue = `${dateValue}T${timeValue}`;
+					} else {
+						finalValue = dateValue;
+					}
+					await plugin.updateTaskProperty(task, dateType, finalValue);
+				} catch (error) {
+					console.error("[TaskNotes][KanbanView] Failed to update date", error);
 				}
-				await plugin.updateTaskProperty(task, dateType, finalValue);
-			} catch (error) {
-				console.error("[TaskNotes][KanbanView] Failed to update date", error);
-			}
+			})();
 		},
 		plugin,
 		app,

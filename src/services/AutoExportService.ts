@@ -33,10 +33,12 @@ export class AutoExportService {
 		// Set next export time
 		this.nextExportTime = new Date(Date.now() + intervalMs);
 
-		this.intervalId = window.setInterval(async () => {
-			await this.performExport();
-			// Update next export time
-			this.nextExportTime = new Date(Date.now() + intervalMs);
+		this.intervalId = window.setInterval(() => {
+			void (async () => {
+				await this.performExport();
+				// Update next export time
+				this.nextExportTime = new Date(Date.now() + intervalMs);
+			})();
 		}, intervalMs);
 	}
 

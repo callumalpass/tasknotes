@@ -38,7 +38,7 @@ export function renderModalFieldsTab(
 		},
 		(group) => {
 			// Split layout toggle
-			group.addSetting((setting) =>
+			group.addSetting((setting) => {
 				configureToggleSetting(setting, {
 					name: "Split layout on wide screens",
 					desc: "When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
@@ -47,10 +47,10 @@ export function renderModalFieldsTab(
 						plugin.settings.enableModalSplitLayout = value;
 						save();
 					},
-				})
-			);
+				});
+			});
 
-			group.addSetting((setting) =>
+			group.addSetting((setting) => {
 				configureToggleSetting(setting, {
 					name: "Tab moves focus in details editor",
 					desc: "When enabled, Tab moves from the details editor to the next modal field and Shift+Tab moves to the previous field. When disabled, Tab and Shift+Tab use the markdown editor's indentation behavior.",
@@ -59,8 +59,8 @@ export function renderModalFieldsTab(
 						plugin.settings.taskModalTabMovesFocus = value;
 						save();
 					},
-				})
-			);
+				});
+			});
 
 			// Sync button
 			group.addSetting((setting) => {

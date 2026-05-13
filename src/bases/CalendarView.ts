@@ -864,7 +864,7 @@ export class CalendarView extends BasesViewBase {
 		if (this._pendingRender) {
 			this._pendingRender = false;
 			// Use setTimeout to avoid deep call stack
-			window.setTimeout(() => this.render(), 0);
+			window.setTimeout(() => void this.render(), 0);
 		}
 	}
 
@@ -931,33 +931,8 @@ export class CalendarView extends BasesViewBase {
 					hint:
 						this.plugin.i18n.translate("views.basesCalendar.hints.refresh") ||
 						"Refresh calendar subscriptions",
-					click: async () => {
-						try {
-							// Refresh ICS subscriptions
-							if (this.plugin.icsSubscriptionService) {
-								await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
-							}
-
-							// Refresh Google Calendar events
-							if (this.plugin.googleCalendarService) {
-								await this.plugin.googleCalendarService.refreshAllCalendars();
-							}
-
-							// Refresh Microsoft Calendar events
-							if (this.plugin.microsoftCalendarService) {
-								await this.plugin.microsoftCalendarService.refreshAllCalendars();
-							}
-
-							// Refetch calendar events to show updated data
-							if (this.calendar) {
-								this.calendar.refetchEvents();
-							}
-						} catch (error) {
-							console.error(
-								"[TaskNotes][CalendarView] Error refreshing calendars:",
-								error
-							);
-						}
+					click: () => {
+						void this.refreshExternalCalendars();
 					},
 				},
 			},
@@ -1003,7 +978,9 @@ export class CalendarView extends BasesViewBase {
 			dayMaxEventRows: this.viewOptions.dayMaxEventRows,
 			eventMaxStack: this.viewOptions.eventMaxStack ?? undefined,
 			navLinks: true,
-			navLinkDayClick: (date: Date) => handleDateTitleClick(date, this.plugin),
+			navLinkDayClick: (date: Date) => {
+				void handleDateTitleClick(date, this.plugin);
+			},
 			editable: true,
 			selectable: true,
 			selectMirror: this.viewOptions.selectMirror,
@@ -1025,10 +1002,18 @@ export class CalendarView extends BasesViewBase {
 				void this.fetchEvents(fetchInfo, successCallback, failureCallback);
 			},
 			eventDidMount: (arg) => this.handleEventDidMount(arg),
-			eventClick: (info) => this.handleEventClick(info),
-			eventDrop: (info) => this.handleEventDrop(info),
-			eventResize: (info) => this.handleEventResize(info),
-			select: (info) => this.handleDateSelect(info),
+			eventClick: (info) => {
+				void this.handleEventClick(info);
+			},
+			eventDrop: (info) => {
+				void this.handleEventDrop(info);
+			},
+			eventResize: (info) => {
+				void this.handleEventResize(info);
+			},
+			select: (info) => {
+				void this.handleDateSelect(info);
+			},
 			viewDidMount: (arg) => {
 				// Track view type changes and save to config with debounce
 				// Debouncing prevents rapid view recreation when clicking through views quickly
@@ -1050,6 +1035,26 @@ export class CalendarView extends BasesViewBase {
 		// Apply showTodayHighlight option via CSS
 		this.applyTodayHighlightStyling();
 		this.scheduleTodayColumnWidthUpdate();
+	}
+
+	private async refreshExternalCalendars(): Promise<void> {
+		try {
+			if (this.plugin.icsSubscriptionService) {
+				await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
+			}
+
+			if (this.plugin.googleCalendarService) {
+				await this.plugin.googleCalendarService.refreshAllCalendars();
+			}
+
+			if (this.plugin.microsoftCalendarService) {
+				await this.plugin.microsoftCalendarService.refreshAllCalendars();
+			}
+
+			this.calendar?.refetchEvents();
+		} catch (error) {
+			console.error("[TaskNotes][CalendarView] Error refreshing calendars:", error);
+		}
 	}
 
 	/**

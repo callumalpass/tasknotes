@@ -734,22 +734,22 @@ export class InstantTaskConvertService {
 	/**
 	 * Sanitize priority input
 	 */
-		private sanitizePriority(priority: string): string {
-			const validPriorities = this.priorityManager
-				.getAllPriorities()
-				.map((p) => p.value)
-				.filter((value) => value != null);
+	private sanitizePriority(priority: string): string {
+		const validPriorities = this.priorityManager
+			.getAllPriorities()
+			.map((p) => p.value)
+			.filter((value) => value != null);
 		return validPriorities.includes(priority) ? priority : "";
 	}
 
 	/**
 	 * Sanitize status input
 	 */
-		private sanitizeStatus(status: string): string {
-			const validStatuses = this.statusManager
-				.getAllStatuses()
-				.map((s) => s.value)
-				.filter((value) => value != null);
+	private sanitizeStatus(status: string): string {
+		const validStatuses = this.statusManager
+			.getAllStatuses()
+			.map((s) => s.value)
+			.filter((value) => value != null);
 		return validStatuses.includes(status) ? status : "";
 	}
 
@@ -887,8 +887,8 @@ export class InstantTaskConvertService {
 			// Small delay to allow the editor to process the line replacement and cache update
 			window.setTimeout(() => {
 				try {
-						// Access the CodeMirror instance from the editor
-						const cmEditor = (editor as unknown as { cm?: EditorView }).cm;
+					// Access the CodeMirror instance from the editor
+					const cmEditor = (editor as unknown as { cm?: EditorView }).cm;
 					if (cmEditor) {
 						// Preserve cursor position before dispatching update
 						const cursorPos = editor.getCursor();
@@ -927,12 +927,14 @@ export class InstantTaskConvertService {
 			if (this.plugin.app.metadataCache.getFileCache(file) === null) {
 				// If cache is still null, trigger a manual update
 				// by reading the file again with a small delay
-				window.setTimeout(async () => {
-					try {
-						await this.plugin.app.vault.cachedRead(file);
-					} catch (error) {
-						console.debug("Error in delayed cache update:", error);
-					}
+				window.setTimeout(() => {
+					void (async () => {
+						try {
+							await this.plugin.app.vault.cachedRead(file);
+						} catch (error) {
+							console.debug("Error in delayed cache update:", error);
+						}
+					})();
 				}, 10);
 			}
 		} catch (error) {

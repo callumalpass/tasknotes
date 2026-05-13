@@ -41,10 +41,10 @@ export const FileSuggestHelper = {
 			const extraProps = new Set<string>();
 			for (const row of rows) {
 				try {
-						const tokens = parseDisplayFieldsRow(row);
-						for (const t of tokens) {
-							if (t.searchable && !t.property.startsWith("literal:")) {
-								extraProps.add(t.property);
+					const tokens = parseDisplayFieldsRow(row);
+					for (const t of tokens) {
+						if (t.searchable && !t.property.startsWith("literal:")) {
+							extraProps.add(t.property);
 						}
 					}
 				} catch {
@@ -134,7 +134,7 @@ export const FileSuggestHelper = {
 						if (prop === "file.path") {
 							val = file.path;
 						} else if (prop === "file.parent") {
-							val = (file.parent?.path || "");
+							val = file.parent?.path || "";
 						} else if (prop === "file.basename") {
 							val = basename; // already default, but harmless
 						} else if (prop === "title") {
@@ -144,8 +144,8 @@ export const FileSuggestHelper = {
 								? aliases.filter((a) => typeof a === "string")
 								: [];
 							val = aList.join(" ");
-							} else {
-								const raw = (fm as Record<string, unknown>)[prop];
+						} else {
+							const raw = (fm as Record<string, unknown>)[prop];
 							if (raw != null) {
 								if (Array.isArray(raw))
 									val = raw.filter((x) => typeof x === "string").join(" ");
@@ -206,9 +206,11 @@ export const FileSuggestHelper = {
 			if (anyPlugin.__fileSuggestTimer) {
 				window.clearTimeout(anyPlugin.__fileSuggestTimer);
 			}
-			anyPlugin.__fileSuggestTimer = window.setTimeout(async () => {
-				const results = await run();
-				resolve(results);
+			anyPlugin.__fileSuggestTimer = window.setTimeout(() => {
+				void (async () => {
+					const results = await run();
+					resolve(results);
+				})();
 			}, debounceMs);
 		});
 	},

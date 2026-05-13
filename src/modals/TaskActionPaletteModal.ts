@@ -241,10 +241,10 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["open", "file", "editor", "edit"],
 				isApplicable: () => true,
 				execute: async (task) => {
-						const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
-						if (file instanceof TFile) {
-							await this.plugin.app.workspace.getLeaf(true).openFile(file);
-						}
+					const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+					if (file instanceof TFile) {
+						await this.plugin.app.workspace.getLeaf(true).openFile(file);
+					}
 				},
 			},
 			{
@@ -274,12 +274,9 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				isApplicable: () => true,
 				execute: async (task) => {
 					try {
-							const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
-							if (file instanceof TFile) {
-								const linkText = this.plugin.app.metadataCache.fileToLinktext(
-									file,
-									""
-								);
+						const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+						if (file instanceof TFile) {
+							const linkText = this.plugin.app.metadataCache.fileToLinktext(file, "");
 							await navigator.clipboard.writeText(`[[${linkText}]]`);
 							new Notice("Task link copied to clipboard");
 						}
@@ -373,7 +370,14 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 		});
 	}
 
-	async onChooseItem(action: TaskAction, evt: MouseEvent | KeyboardEvent) {
+	onChooseItem(action: TaskAction, evt: MouseEvent | KeyboardEvent): void {
+		void this.executeAction(action, evt);
+	}
+
+	private async executeAction(
+		action: TaskAction,
+		evt: MouseEvent | KeyboardEvent
+	): Promise<void> {
 		try {
 			// Refresh task data to ensure we have the latest information
 			const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);

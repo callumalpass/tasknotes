@@ -236,7 +236,9 @@ export class TimeblockInfoModal extends Modal {
 			text: this.translate("modals.timeblockInfo.deleteButton"),
 			cls: "mod-warning timeblock-delete-button",
 		});
-		deleteButton.addEventListener("click", () => this.handleDelete());
+		deleteButton.addEventListener("click", () => {
+			void this.handleDelete();
+		});
 
 		// Right side buttons container
 		const rightButtons = buttonContainer.createDiv({ cls: "timeblock-modal-buttons-right" });
@@ -269,7 +271,9 @@ export class TimeblockInfoModal extends Modal {
 			text: this.translate("modals.timeblockInfo.saveButton"),
 			cls: "mod-cta timeblock-save-button",
 		});
-		saveButton.addEventListener("click", () => this.handleSave());
+		saveButton.addEventListener("click", () => {
+			void this.handleSave();
+		});
 
 		// Initial validation
 		this.validateForm();
@@ -494,8 +498,8 @@ export class TimeblockInfoModal extends Modal {
 				const frontmatterText = content.substring(3, endOfFrontmatter);
 				bodyContent = content.substring(endOfFrontmatter + 3);
 
-					try {
-						frontmatter = parseFrontmatterRecord(frontmatterText);
+				try {
+					frontmatter = parseFrontmatterRecord(frontmatterText);
 				} catch (error) {
 					console.error("Error parsing existing frontmatter:", error);
 					frontmatter = {};
@@ -661,8 +665,8 @@ export class TimeblockInfoModal extends Modal {
 				const frontmatterText = content.substring(3, endOfFrontmatter);
 				bodyContent = content.substring(endOfFrontmatter + 3);
 
-					try {
-						frontmatter = parseFrontmatterRecord(frontmatterText);
+				try {
+					frontmatter = parseFrontmatterRecord(frontmatterText);
 				} catch (error) {
 					console.error("Error parsing existing frontmatter:", error);
 					frontmatter = {};

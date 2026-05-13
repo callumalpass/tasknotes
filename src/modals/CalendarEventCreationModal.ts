@@ -1,6 +1,10 @@
 import { App, Modal, Setting, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { CalendarProvider, ProviderCalendar, type CalendarEventData } from "../services/CalendarProvider";
+import {
+	CalendarProvider,
+	ProviderCalendar,
+	type CalendarEventData,
+} from "../services/CalendarProvider";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { format } from "date-fns";
 
@@ -103,9 +107,7 @@ export class CalendarEventCreationModal extends Modal {
 						dropdown.addOption(String(i), label);
 					}
 					// Default to primary calendar if available
-					const primaryIdx = this.writableCalendars.findIndex(
-						(e) => e.calendar.primary
-					);
+					const primaryIdx = this.writableCalendars.findIndex((e) => e.calendar.primary);
 					if (primaryIdx >= 0) {
 						dropdown.setValue(String(primaryIdx));
 					}
@@ -147,7 +149,9 @@ export class CalendarEventCreationModal extends Modal {
 			text: this.translate("modals.calendarEventCreation.createButton"),
 			cls: "mod-cta calendar-event-create-button",
 		});
-		createButton.addEventListener("click", () => this.handleSubmit());
+		createButton.addEventListener("click", () => {
+			void this.handleSubmit();
+		});
 
 		this.validateForm();
 	}
@@ -171,9 +175,7 @@ export class CalendarEventCreationModal extends Modal {
 		}
 
 		// Determine which calendar to use
-		const selectedIdx = this.calendarDropdown
-			? parseInt(this.calendarDropdown.value)
-			: 0;
+		const selectedIdx = this.calendarDropdown ? parseInt(this.calendarDropdown.value) : 0;
 		const entry = this.writableCalendars[selectedIdx];
 		if (!entry) {
 			new Notice(this.translate("modals.calendarEventCreation.noCalendarSelected"));
@@ -184,7 +186,7 @@ export class CalendarEventCreationModal extends Modal {
 			const { start, end, allDay } = this.options;
 			const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-				const eventData: CalendarEventData = {
+			const eventData: CalendarEventData = {
 				summary: title,
 				start: allDay
 					? { date: format(start, "yyyy-MM-dd") }
@@ -202,9 +204,7 @@ export class CalendarEventCreationModal extends Modal {
 
 			await entry.provider.createEvent(entry.calendar.id, eventData);
 
-			new Notice(
-				this.translate("modals.calendarEventCreation.success", { title })
-			);
+			new Notice(this.translate("modals.calendarEventCreation.success", { title }));
 			this.options.onEventCreated?.();
 			this.close();
 		} catch (error) {

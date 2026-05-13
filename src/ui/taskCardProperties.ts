@@ -72,26 +72,28 @@ function attachDateClickHandler(
 		const menu = new DateContextMenu({
 			currentValue: getDatePart(currentValue || ""),
 			currentTime: getTimePart(currentValue || ""),
-			onSelect: async (dateValue, timeValue) => {
-				try {
-					let finalValue: string | undefined;
-					if (!dateValue) {
-						finalValue = undefined;
-					} else if (timeValue) {
-						finalValue = `${dateValue}T${timeValue}`;
-					} else {
-						finalValue = dateValue;
+			onSelect: (dateValue, timeValue) => {
+				void (async () => {
+					try {
+						let finalValue: string | undefined;
+						if (!dateValue) {
+							finalValue = undefined;
+						} else if (timeValue) {
+							finalValue = `${dateValue}T${timeValue}`;
+						} else {
+							finalValue = dateValue;
+						}
+						await plugin.updateTaskProperty(task, dateType, finalValue);
+					} catch (error) {
+						const errorMessage = error instanceof Error ? error.message : String(error);
+						console.error(`Error updating ${dateType} date:`, errorMessage);
+						const noticeKey =
+							dateType === "due"
+								? "contextMenus.task.notices.updateDueDateFailure"
+								: "contextMenus.task.notices.updateScheduledFailure";
+						new Notice(plugin.i18n.translate(noticeKey, { message: errorMessage }));
 					}
-					await plugin.updateTaskProperty(task, dateType, finalValue);
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error(`Error updating ${dateType} date:`, errorMessage);
-					const noticeKey =
-						dateType === "due"
-							? "contextMenus.task.notices.updateDueDateFailure"
-							: "contextMenus.task.notices.updateScheduledFailure";
-					new Notice(plugin.i18n.translate(noticeKey, { message: errorMessage }));
-				}
+				})();
 			},
 			plugin,
 			app: plugin.app,

@@ -100,16 +100,18 @@ class DeleteTaskConfirmationModal extends Modal {
 		);
 		deleteButton.classList.add("tn-static-color-white-0a43e56a");
 
-		deleteButton.addEventListener("click", async () => {
-			try {
-				await this.onConfirm();
-				this.close();
-				new Notice("Task deleted successfully");
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error);
-				new Notice(`Failed to delete task: ${errorMessage}`);
-				console.error("Error in delete confirmation:", error);
-			}
+		deleteButton.addEventListener("click", () => {
+			void (async () => {
+				try {
+					await this.onConfirm();
+					this.close();
+					new Notice("Task deleted successfully");
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					new Notice(`Failed to delete task: ${errorMessage}`);
+					console.error("Error in delete confirmation:", error);
+				}
+			})();
 		});
 
 		cancelButton.focus();

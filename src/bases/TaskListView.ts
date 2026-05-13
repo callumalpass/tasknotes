@@ -447,8 +447,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private isListTypeProperty(propertyName: string): boolean {
-		const metadataTypeManager = (this.plugin.app as MetadataTypeManagerApp)
-			.metadataTypeManager;
+		const metadataTypeManager = (this.plugin.app as MetadataTypeManagerApp).metadataTypeManager;
 		if (metadataTypeManager?.properties) {
 			const propertyInfo = metadataTypeManager.properties[propertyName.toLowerCase()];
 			if (propertyInfo?.type) {
@@ -1028,46 +1027,48 @@ export class TaskListView extends BasesViewBase {
 			}
 		});
 
-		this.itemsContainer.addEventListener("drop", async (e: DragEvent) => {
-			e.preventDefault();
-			if (!this.draggedTaskPath) return;
+		this.itemsContainer.addEventListener("drop", (e: DragEvent) => {
+			void (async () => {
+				e.preventDefault();
+				if (!this.draggedTaskPath) return;
 
-			if (!this.flushPendingInsertionSlot(e.clientY) && this.currentInsertionIndex < 0)
-				return;
+				if (!this.flushPendingInsertionSlot(e.clientY) && this.currentInsertionIndex < 0)
+					return;
 
-			const draggedPath = this.draggedTaskPath;
-			const sourceGroupKey = this.dragGroupKey;
-			const targetGroupKey = this.currentInsertionGroupKey;
-			const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
-			const insertionSegmentIndex = this.currentInsertionSegmentIndex;
-			const insertionIndex = this.currentInsertionIndex;
-			const dropTarget =
-				insertionSegmentIndex >= 0 && insertionIndex >= 0
-					? this.reconstructDropTargetFromInsertionSlot(
-							insertionSegmentIndex,
-							insertionIndex
-						)
-					: null;
-			if (!draggedPath || !dropTarget) return;
+				const draggedPath = this.draggedTaskPath;
+				const sourceGroupKey = this.dragGroupKey;
+				const targetGroupKey = this.currentInsertionGroupKey;
+				const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
+				const insertionSegmentIndex = this.currentInsertionSegmentIndex;
+				const insertionIndex = this.currentInsertionIndex;
+				const dropTarget =
+					insertionSegmentIndex >= 0 && insertionIndex >= 0
+						? this.reconstructDropTargetFromInsertionSlot(
+								insertionSegmentIndex,
+								insertionIndex
+							)
+						: null;
+				if (!draggedPath || !dropTarget) return;
 
-			this.clearDropIndicators();
-			this.cleanupDragShift();
+				this.clearDropIndicators();
+				this.cleanupDragShift();
 
-			this.draggedTaskPath = null;
-			this.dragGroupKey = null;
-			this.currentInsertionGroupKey = null;
-			this.currentInsertionSegmentIndex = -1;
-			this.currentInsertionIndex = -1;
-			this.pendingDragClientY = null;
+				this.draggedTaskPath = null;
+				this.dragGroupKey = null;
+				this.currentInsertionGroupKey = null;
+				this.currentInsertionSegmentIndex = -1;
+				this.currentInsertionIndex = -1;
+				this.pendingDragClientY = null;
 
-			await this.handleSortOrderDrop(
-				draggedPath,
-				dropTarget.taskPath,
-				dropTarget.above,
-				targetGroupKey,
-				sourceGroupKey,
-				targetVisiblePaths
-			);
+				await this.handleSortOrderDrop(
+					draggedPath,
+					dropTarget.taskPath,
+					dropTarget.above,
+					targetGroupKey,
+					sourceGroupKey,
+					targetVisiblePaths
+				);
+			})();
 		});
 	}
 
@@ -1147,10 +1148,7 @@ export class TaskListView extends BasesViewBase {
 			// Single atomic write: group property + sort_order + derivative fields
 			await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
 				if (needsGroupUpdate) {
-					const frontmatterKey = groupByPropertyId.replace(
-						/^(note\.|file\.|task\.)/,
-						""
-					);
+					const frontmatterKey = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "");
 					if (isListGrouping) {
 						let currentValue = fm[frontmatterKey];
 						if (!Array.isArray(currentValue)) {
@@ -1265,8 +1263,8 @@ export class TaskListView extends BasesViewBase {
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
 		// Access formulas through the data context
-		const ctxFormulas = (this.data as { ctx?: { formulas?: FormulaContext } } | undefined)
-			?.ctx?.formulas;
+		const ctxFormulas = (this.data as { ctx?: { formulas?: FormulaContext } } | undefined)?.ctx
+			?.formulas;
 		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
 			return;
 		}
@@ -1382,12 +1380,7 @@ export class TaskListView extends BasesViewBase {
 					}
 					const taskInfo = item;
 					// Create card using lazy mode
-					const card = createTaskCard(
-						item,
-						this.plugin,
-						visibleProperties,
-						cardOptions
-					);
+					const card = createTaskCard(item, this.plugin, visibleProperties, cardOptions);
 
 					// Attach drag handlers for sort_order reordering
 					if (
@@ -2081,7 +2074,9 @@ export class TaskListView extends BasesViewBase {
 
 		// Restore collapsed groups immediately
 		if (state.collapsedGroups && Array.isArray(state.collapsedGroups)) {
-			this.collapsedGroups = new Set(state.collapsedGroups.filter((value) => typeof value === "string"));
+			this.collapsedGroups = new Set(
+				state.collapsedGroups.filter((value) => typeof value === "string")
+			);
 		}
 
 		// Restore collapsed sub-groups immediately
@@ -2373,13 +2368,15 @@ export class TaskListView extends BasesViewBase {
 	private showPriorityMenu(task: TaskInfo, event: MouseEvent): void {
 		const menu = new PriorityContextMenu({
 			currentValue: task.priority,
-			onSelect: async (newPriority) => {
-				try {
-					await this.plugin.updateTaskProperty(task, "priority", newPriority);
-				} catch (error) {
-					console.error("[TaskNotes][TaskListView] Failed to update priority", error);
-					new Notice("Failed to update priority");
-				}
+			onSelect: (newPriority) => {
+				void (async () => {
+					try {
+						await this.plugin.updateTaskProperty(task, "priority", newPriority);
+					} catch (error) {
+						console.error("[TaskNotes][TaskListView] Failed to update priority", error);
+						new Notice("Failed to update priority");
+					}
+				})();
 			},
 			plugin: this.plugin,
 		});
@@ -2391,20 +2388,25 @@ export class TaskListView extends BasesViewBase {
 			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
 			currentAnchor: task.recurrence_anchor || "scheduled",
 			scheduledDate: task.scheduled,
-			onSelect: async (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
-				try {
-					await this.plugin.updateTaskProperty(
-						task,
-						"recurrence",
-						newRecurrence || undefined
-					);
-					if (anchor !== undefined) {
-						await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+			onSelect: (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
+				void (async () => {
+					try {
+						await this.plugin.updateTaskProperty(
+							task,
+							"recurrence",
+							newRecurrence || undefined
+						);
+						if (anchor !== undefined) {
+							await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+						}
+					} catch (error) {
+						console.error(
+							"[TaskNotes][TaskListView] Failed to update recurrence",
+							error
+						);
+						new Notice("Failed to update recurrence");
 					}
-				} catch (error) {
-					console.error("[TaskNotes][TaskListView] Failed to update recurrence", error);
-					new Notice("Failed to update recurrence");
-				}
+				})();
 			},
 			app: this.plugin.app,
 			plugin: this.plugin,
@@ -2413,17 +2415,19 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private showReminderModal(task: TaskInfo): void {
-		const modal = new ReminderModal(this.plugin.app, this.plugin, task, async (reminders) => {
-			try {
-				await this.plugin.updateTaskProperty(
-					task,
-					"reminders",
-					reminders.length > 0 ? reminders : undefined
-				);
-			} catch (error) {
-				console.error("[TaskNotes][TaskListView] Failed to update reminders", error);
-				new Notice("Failed to update reminders");
-			}
+		const modal = new ReminderModal(this.plugin.app, this.plugin, task, (reminders) => {
+			void (async () => {
+				try {
+					await this.plugin.updateTaskProperty(
+						task,
+						"reminders",
+						reminders.length > 0 ? reminders : undefined
+					);
+				} catch (error) {
+					console.error("[TaskNotes][TaskListView] Failed to update reminders", error);
+					new Notice("Failed to update reminders");
+				}
+			})();
 		});
 		modal.open();
 	}
@@ -2438,26 +2442,28 @@ export class TaskListView extends BasesViewBase {
 		const menu = new DateContextMenu({
 			currentValue: getDatePart(currentValue || ""),
 			currentTime: getTimePart(currentValue || ""),
-			onSelect: async (dateValue, timeValue) => {
-				try {
-					let finalValue: string | undefined;
-					if (!dateValue) {
-						finalValue = undefined;
-					} else if (timeValue) {
-						finalValue = `${dateValue}T${timeValue}`;
-					} else {
-						finalValue = dateValue;
+			onSelect: (dateValue, timeValue) => {
+				void (async () => {
+					try {
+						let finalValue: string | undefined;
+						if (!dateValue) {
+							finalValue = undefined;
+						} else if (timeValue) {
+							finalValue = `${dateValue}T${timeValue}`;
+						} else {
+							finalValue = dateValue;
+						}
+						await this.plugin.updateTaskProperty(task, dateType, finalValue);
+					} catch (error) {
+						const message = error instanceof Error ? error.message : String(error);
+						console.error("[TaskNotes][TaskListView] Failed to update date", {
+							error: message,
+							taskPath: task.path,
+							dateType,
+						});
+						new Notice(`Failed to update ${dateType} date: ${message}`);
 					}
-					await this.plugin.updateTaskProperty(task, dateType, finalValue);
-				} catch (error) {
-					const message = error instanceof Error ? error.message : String(error);
-					console.error("[TaskNotes][TaskListView] Failed to update date", {
-						error: message,
-						taskPath: task.path,
-						dateType,
-					});
-					new Notice(`Failed to update ${dateType} date: ${message}`);
-				}
+				})();
 			},
 			plugin: this.plugin,
 			app: this.app || this.plugin.app,
@@ -2484,9 +2490,11 @@ export class TaskListView extends BasesViewBase {
 		} else {
 			// Use correct window for pop-out window support
 			const win = this.containerEl.ownerDocument.defaultView || window;
-			const timeout = win.setTimeout(async () => {
-				this.clickTimeouts.delete(task.path);
-				await this.executeSingleClickAction(task, event);
+			const timeout = win.setTimeout(() => {
+				void (async () => {
+					this.clickTimeouts.delete(task.path);
+					await this.executeSingleClickAction(task, event);
+				})();
 			}, 250);
 			this.clickTimeouts.set(task.path, timeout);
 		}

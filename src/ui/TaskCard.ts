@@ -218,92 +218,99 @@ function createStatusCycleHandler(
 	card: HTMLElement,
 	statusDot: HTMLElement,
 	targetDate: Date
-): (e: MouseEvent) => Promise<void> {
-	return async (e: MouseEvent) => {
+): (e: MouseEvent) => void {
+	return (e: MouseEvent) => {
 		e.stopPropagation();
-		try {
-			const updateStatusVisuals = (
-				updatedTask: TaskInfo,
-				effectiveStatus: string,
-				isCompleted: boolean
-			) => {
-				const statusConfig = plugin.statusManager.getStatusConfig(effectiveStatus);
-				if (statusConfig?.color) {
-					statusDot.style.borderColor = statusConfig.color;
-				} else {
-					statusDot.style.removeProperty("border-color");
-				}
+		void (async () => {
+			try {
+				const updateStatusVisuals = (
+					updatedTask: TaskInfo,
+					effectiveStatus: string,
+					isCompleted: boolean
+				) => {
+					const statusConfig = plugin.statusManager.getStatusConfig(effectiveStatus);
+					if (statusConfig?.color) {
+						statusDot.style.borderColor = statusConfig.color;
+					} else {
+						statusDot.style.removeProperty("border-color");
+					}
 
-				if (statusConfig?.icon) {
-					statusDot.addClass("task-card__status-dot--icon");
-					statusDot.empty();
-					setIcon(statusDot, statusConfig.icon);
-				} else {
-					statusDot.removeClass("task-card__status-dot--icon");
-					statusDot.empty();
-				}
+					if (statusConfig?.icon) {
+						statusDot.addClass("task-card__status-dot--icon");
+						statusDot.empty();
+						setIcon(statusDot, statusConfig.icon);
+					} else {
+						statusDot.removeClass("task-card__status-dot--icon");
+						statusDot.empty();
+					}
 
-				if (statusConfig?.color) {
-					card.style.setProperty("--current-status-color", statusConfig.color);
-				} else {
-					card.style.removeProperty("--current-status-color");
-				}
+					if (statusConfig?.color) {
+						card.style.setProperty("--current-status-color", statusConfig.color);
+					} else {
+						card.style.removeProperty("--current-status-color");
+					}
 
-				const nextStatus = plugin.statusManager.getNextStatus(effectiveStatus);
-				const nextStatusConfig = plugin.statusManager.getStatusConfig(nextStatus);
-				if (nextStatusConfig?.color) {
-					card.style.setProperty("--next-status-color", nextStatusConfig.color);
-				} else {
-					card.style.removeProperty("--next-status-color");
-				}
+					const nextStatus = plugin.statusManager.getNextStatus(effectiveStatus);
+					const nextStatusConfig = plugin.statusManager.getStatusConfig(nextStatus);
+					if (nextStatusConfig?.color) {
+						card.style.setProperty("--next-status-color", nextStatusConfig.color);
+					} else {
+						card.style.removeProperty("--next-status-color");
+					}
 
-					const checkbox = card.querySelector<HTMLInputElement>(
-						".task-card__checkbox"
+					const checkbox = card.querySelector<HTMLInputElement>(".task-card__checkbox");
+					if (checkbox) {
+						checkbox.checked = isCompleted;
+					}
+
+					updateCardCompletionState(
+						card,
+						updatedTask,
+						plugin,
+						isCompleted,
+						effectiveStatus
 					);
-				if (checkbox) {
-					checkbox.checked = isCompleted;
-				}
+				};
 
-				updateCardCompletionState(card, updatedTask, plugin, isCompleted, effectiveStatus);
-			};
-
-			if (task.recurrence) {
-				// For recurring tasks, toggle completion for the target date
-				const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
-				const newEffectiveStatus = getEffectiveTaskStatus(
-					updatedTask,
-					targetDate,
-					plugin.statusManager.getCompletedStatuses()[0]
-				);
-				const isNowCompleted = plugin.statusManager.isCompletedStatus(newEffectiveStatus);
-				updateStatusVisuals(updatedTask, newEffectiveStatus, isNowCompleted);
-			} else {
-				// For regular tasks, cycle to next/previous status based on shift key
-				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-				if (!freshTask) {
-					new Notice("Task not found");
-					return;
+				if (task.recurrence) {
+					// For recurring tasks, toggle completion for the target date
+					const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
+					const newEffectiveStatus = getEffectiveTaskStatus(
+						updatedTask,
+						targetDate,
+						plugin.statusManager.getCompletedStatuses()[0]
+					);
+					const isNowCompleted =
+						plugin.statusManager.isCompletedStatus(newEffectiveStatus);
+					updateStatusVisuals(updatedTask, newEffectiveStatus, isNowCompleted);
+				} else {
+					// For regular tasks, cycle to next/previous status based on shift key
+					const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
+					if (!freshTask) {
+						new Notice("Task not found");
+						return;
+					}
+					const currentStatus = freshTask.status || plugin.settings.defaultTaskStatus;
+					const nextStatus = e.shiftKey
+						? plugin.statusManager.getPreviousStatus(currentStatus)
+						: plugin.statusManager.getNextStatus(currentStatus);
+					const updatedTask = await plugin.updateTaskProperty(
+						freshTask,
+						"status",
+						nextStatus
+					);
+					const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
+					updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
 				}
-				const currentStatus = freshTask.status || plugin.settings.defaultTaskStatus;
-				const nextStatus = e.shiftKey
-					? plugin.statusManager.getPreviousStatus(currentStatus)
-					: plugin.statusManager.getNextStatus(currentStatus);
-				const updatedTask = await plugin.updateTaskProperty(
-					freshTask,
-					"status",
-					nextStatus
-				);
-				const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
-				updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error);
+				console.error("Error cycling task status:", {
+					error: errorMessage,
+					taskPath: task.path,
+				});
+				new Notice(`Failed to update task status: ${errorMessage}`);
 			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error cycling task status:", {
-				error: errorMessage,
-				taskPath: task.path,
-			});
-			new Notice(`Failed to update task status: ${errorMessage}`);
-		}
+		})();
 	};
 }
 
@@ -367,13 +374,15 @@ function createPriorityClickHandler(
 		e.stopPropagation();
 		const menu = new PriorityContextMenu({
 			currentValue: task.priority,
-			onSelect: async (newPriority) => {
-				try {
-					await plugin.updateTaskProperty(task, "priority", newPriority);
-				} catch (error) {
-					console.error("Error updating priority:", error);
-					new Notice("Failed to update priority");
-				}
+			onSelect: (newPriority) => {
+				void (async () => {
+					try {
+						await plugin.updateTaskProperty(task, "priority", newPriority);
+					} catch (error) {
+						console.error("Error updating priority:", error);
+						new Notice("Failed to update priority");
+					}
+				})();
 			},
 			plugin: plugin,
 		});
@@ -394,16 +403,22 @@ function createRecurrenceClickHandler(
 			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
 			currentAnchor: task.recurrence_anchor || "scheduled",
 			scheduledDate: task.scheduled,
-			onSelect: async (newRecurrence, anchor) => {
-				try {
-					await plugin.updateTaskProperty(task, "recurrence", newRecurrence || undefined);
-					if (anchor !== undefined) {
-						await plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+			onSelect: (newRecurrence, anchor) => {
+				void (async () => {
+					try {
+						await plugin.updateTaskProperty(
+							task,
+							"recurrence",
+							newRecurrence || undefined
+						);
+						if (anchor !== undefined) {
+							await plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+						}
+					} catch (error) {
+						console.error("Error updating recurrence:", error);
+						new Notice("Failed to update recurrence");
 					}
-				} catch (error) {
-					console.error("Error updating recurrence:", error);
-					new Notice("Failed to update recurrence");
-				}
+				})();
 			},
 			app: plugin.app,
 			plugin: plugin,
@@ -417,17 +432,19 @@ function createRecurrenceClickHandler(
  */
 function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): () => void {
 	return () => {
-		const modal = new ReminderModal(plugin.app, plugin, task, async (reminders) => {
-			try {
-				await plugin.updateTaskProperty(
-					task,
-					"reminders",
-					reminders.length > 0 ? reminders : undefined
-				);
-			} catch (error) {
-				console.error("Error updating reminders:", error);
-				new Notice("Failed to update reminders");
-			}
+		const modal = new ReminderModal(plugin.app, plugin, task, (reminders) => {
+			void (async () => {
+				try {
+					await plugin.updateTaskProperty(
+						task,
+						"reminders",
+						reminders.length > 0 ? reminders : undefined
+					);
+				} catch (error) {
+					console.error("Error updating reminders:", error);
+					new Notice("Failed to update reminders");
+				}
+			})();
 		});
 		modal.open();
 	};
@@ -436,14 +453,16 @@ function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): ()
 /**
  * Creates a click handler for project indicator
  */
-function createProjectClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): () => Promise<void> {
-	return async () => {
-		try {
-			await plugin.applyProjectSubtaskFilter(task);
-		} catch (error) {
-			console.error("Error filtering project subtasks:", error);
-			new Notice("Failed to filter project subtasks");
-		}
+function createProjectClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): () => void {
+	return () => {
+		void (async () => {
+			try {
+				await plugin.applyProjectSubtaskFilter(task);
+			} catch (error) {
+				console.error("Error filtering project subtasks:", error);
+				new Notice("Failed to filter project subtasks");
+			}
+		})();
 	};
 }
 
@@ -455,23 +474,25 @@ function createChevronClickHandler(
 	plugin: TaskNotesPlugin,
 	card: HTMLElement,
 	chevron: HTMLElement
-): () => Promise<void> {
-	return async () => {
-		try {
-			if (!plugin.expandedProjectsService) {
-				new Notice("Service not available. Please try reloading the plugin.");
-				return;
+): () => void {
+	return () => {
+		void (async () => {
+			try {
+				if (!plugin.expandedProjectsService) {
+					new Notice("Service not available. Please try reloading the plugin.");
+					return;
+				}
+				const newExpanded = plugin.expandedProjectsService.toggle(task.path);
+				chevron.classList.toggle("task-card__chevron--expanded", newExpanded);
+				const newTooltip = getChevronTooltip(plugin, newExpanded);
+				chevron.setAttribute("aria-label", newTooltip);
+				setTooltip(chevron, newTooltip, { placement: "top" });
+				await toggleSubtasks(card, task, plugin, newExpanded);
+			} catch (error) {
+				console.error("Error toggling subtasks:", error);
+				new Notice("Failed to toggle subtasks");
 			}
-			const newExpanded = plugin.expandedProjectsService.toggle(task.path);
-			chevron.classList.toggle("task-card__chevron--expanded", newExpanded);
-			const newTooltip = getChevronTooltip(plugin, newExpanded);
-			chevron.setAttribute("aria-label", newTooltip);
-			setTooltip(chevron, newTooltip, { placement: "top" });
-			await toggleSubtasks(card, task, plugin, newExpanded);
-		} catch (error) {
-			console.error("Error toggling subtasks:", error);
-			new Notice("Failed to toggle subtasks");
-		}
+		})();
 	};
 }
 
@@ -483,10 +504,12 @@ function createBlockingToggleClickHandler(
 	plugin: TaskNotesPlugin,
 	card: HTMLElement,
 	toggle: HTMLElement
-): () => Promise<void> {
-	return async () => {
-		const expanded = toggle.classList.toggle("task-card__blocking-toggle--expanded");
-		await toggleBlockingTasks(card, task, plugin, expanded);
+): () => void {
+	return () => {
+		void (async () => {
+			const expanded = toggle.classList.toggle("task-card__blocking-toggle--expanded");
+			await toggleBlockingTasks(card, task, plugin, expanded);
+		})();
 	};
 }
 
@@ -545,9 +568,9 @@ export function createTaskCard(
 	const card = activeDocument.createElement(layout === "inline" ? "span" : "div");
 
 	// Store task path for circular reference detection
-		const taskCardElement = card as TaskCardElement;
-		taskCardElement._taskPath = task.path;
-		taskCardElement._taskCardOptions = opts;
+	const taskCardElement = card as TaskCardElement;
+	taskCardElement._taskPath = task.path;
+	taskCardElement._taskCardOptions = opts;
 
 	const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
 	const isCompleted = task.recurrence
@@ -727,9 +750,7 @@ export function createTaskCard(
 					icon: "chevron-right",
 					tooltip: getChevronTooltip(plugin, isExpanded),
 					onClick: () => {
-							const chevron = card.querySelector<HTMLElement>(
-								".task-card__chevron"
-							);
+						const chevron = card.querySelector<HTMLElement>(".task-card__chevron");
 						if (chevron) {
 							void createChevronClickHandler(task, plugin, card, chevron)();
 						}
@@ -758,9 +779,7 @@ export function createTaskCard(
 				icon: "git-branch",
 				tooltip: toggleLabel,
 				onClick: () => {
-						const toggle = card.querySelector<HTMLElement>(
-							".task-card__blocking-toggle"
-						);
+					const toggle = card.querySelector<HTMLElement>(".task-card__blocking-toggle");
 					if (toggle) {
 						void createBlockingToggleClickHandler(task, plugin, card, toggle)();
 					}
@@ -782,10 +801,10 @@ export function createTaskCard(
 	setTooltip(contextIcon, tTaskCard(plugin, "taskOptions"), { placement: "top" });
 	prepareInteractiveControl(contextIcon);
 
-	contextIcon.addEventListener("click", async (e) => {
+	contextIcon.addEventListener("click", (e) => {
 		e.stopPropagation();
 		e.preventDefault();
-		await showTaskContextMenu(e, task.path, plugin, targetDate);
+		void showTaskContextMenu(e, task.path, plugin, targetDate);
 	});
 
 	// First line: Task title
@@ -892,10 +911,10 @@ export function createTaskCard(
 	const { clickHandler, dblclickHandler, contextmenuHandler } = createTaskClickHandler({
 		task,
 		plugin,
-		contextMenuHandler: async (e) => {
+		contextMenuHandler: (e) => {
 			const path = card.dataset.taskPath;
 			if (!path) return;
-			await showTaskContextMenu(e, path, plugin, targetDate);
+			void showTaskContextMenu(e, path, plugin, targetDate);
 		},
 	});
 
@@ -962,7 +981,7 @@ function showFileContextMenu(event: MouseEvent, file: TFile, plugin: TaskNotesPl
 	let populated = false;
 	try {
 		plugin.app.workspace.trigger("file-menu", menu, file, "tasknotes-bases-view");
-			populated = ((menu as MenuWithItems).items?.length ?? 0) > 0;
+		populated = ((menu as MenuWithItems).items?.length ?? 0) > 0;
 	} catch {
 		populated = false;
 	}
@@ -1137,13 +1156,15 @@ export function updateTaskCard(
 				e.stopPropagation(); // Don't trigger card click
 				const menu = new PriorityContextMenu({
 					currentValue: task.priority,
-					onSelect: async (newPriority) => {
-						try {
-							await plugin.updateTaskProperty(task, "priority", newPriority);
-						} catch (error) {
-							console.error("Error updating priority:", error);
-							new Notice("Failed to update priority");
-						}
+					onSelect: (newPriority) => {
+						void (async () => {
+							try {
+								await plugin.updateTaskProperty(task, "priority", newPriority);
+							} catch (error) {
+								console.error("Error updating priority:", error);
+								new Notice("Failed to update priority");
+							}
+						})();
 					},
 					plugin: plugin,
 				});
@@ -1172,13 +1193,15 @@ export function updateTaskCard(
 				e.stopPropagation(); // Don't trigger card click
 				const menu = new PriorityContextMenu({
 					currentValue: task.priority,
-					onSelect: async (newPriority) => {
-						try {
-							await plugin.updateTaskProperty(task, "priority", newPriority);
-						} catch (error) {
-							console.error("Error updating priority:", error);
-							new Notice("Failed to update priority");
-						}
+					onSelect: (newPriority) => {
+						void (async () => {
+							try {
+								await plugin.updateTaskProperty(task, "priority", newPriority);
+							} catch (error) {
+								console.error("Error updating priority:", error);
+								new Notice("Failed to update priority");
+							}
+						})();
 					},
 					plugin: plugin,
 				});
@@ -1247,9 +1270,7 @@ export function updateTaskCard(
 					icon: "chevron-right",
 					tooltip: getChevronTooltip(plugin, isExpanded),
 					onClick: () => {
-							const chevron = element.querySelector<HTMLElement>(
-								".task-card__chevron"
-							);
+						const chevron = element.querySelector<HTMLElement>(".task-card__chevron");
 						if (chevron) {
 							void createChevronClickHandler(task, plugin, element, chevron)();
 						}
@@ -1264,16 +1285,15 @@ export function updateTaskCard(
 			} else if (!showChevron && existingChevron) {
 				existingChevron.remove();
 				// Clean up subtasks container
-					const subtasksContainer = element.querySelector<HTMLElement>(
-						".task-card__subtasks"
-					);
-					if (subtasksContainer) {
-						const taskCardSubtasks = subtasksContainer as TaskCardElement;
-						const clickHandler = taskCardSubtasks._clickHandler;
-						if (clickHandler) {
-							subtasksContainer.removeEventListener("click", clickHandler);
-							delete taskCardSubtasks._clickHandler;
-						}
+				const subtasksContainer =
+					element.querySelector<HTMLElement>(".task-card__subtasks");
+				if (subtasksContainer) {
+					const taskCardSubtasks = subtasksContainer as TaskCardElement;
+					const clickHandler = taskCardSubtasks._clickHandler;
+					if (clickHandler) {
+						subtasksContainer.removeEventListener("click", clickHandler);
+						delete taskCardSubtasks._clickHandler;
+					}
 					subtasksContainer.remove();
 				}
 			}
@@ -1449,7 +1469,7 @@ export async function toggleSubtasks(
 				subtasksContainer.addEventListener("click", clickHandler);
 
 				// Store handler reference for cleanup
-					(subtasksContainer as TaskCardElement)._clickHandler = clickHandler;
+				(subtasksContainer as TaskCardElement)._clickHandler = clickHandler;
 
 				card.appendChild(subtasksContainer);
 			}
@@ -1546,14 +1566,14 @@ export async function toggleSubtasks(
 			}
 		} else {
 			// Hide subtasks
-				if (subtasksContainer) {
-					// Clean up the click handler
-					const taskCardSubtasks = subtasksContainer as TaskCardElement;
-					const clickHandler = taskCardSubtasks._clickHandler;
-					if (clickHandler) {
-						subtasksContainer.removeEventListener("click", clickHandler);
-						delete taskCardSubtasks._clickHandler;
-					}
+			if (subtasksContainer) {
+				// Clean up the click handler
+				const taskCardSubtasks = subtasksContainer as TaskCardElement;
+				const clickHandler = taskCardSubtasks._clickHandler;
+				if (clickHandler) {
+					subtasksContainer.removeEventListener("click", clickHandler);
+					delete taskCardSubtasks._clickHandler;
+				}
 
 				// Remove the container (this will also clean up child elements and their listeners)
 				subtasksContainer.remove();

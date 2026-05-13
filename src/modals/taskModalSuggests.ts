@@ -241,8 +241,10 @@ export class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> 
 			if (pluginWithTimer.__userFieldSuggestTimer) {
 				window.clearTimeout(pluginWithTimer.__userFieldSuggestTimer);
 			}
-			pluginWithTimer.__userFieldSuggestTimer = window.setTimeout(async () => {
-				resolve(await run());
+			pluginWithTimer.__userFieldSuggestTimer = window.setTimeout(() => {
+				void (async () => {
+					resolve(await run());
+				})();
 			}, debounceMs);
 		});
 	}

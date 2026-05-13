@@ -95,7 +95,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		this.setupTaskUpdateListener();
 		this.setupSelectionHandling();
 		this.updateRelevantPathsCache();
-		this.render();
+		void this.render();
 	}
 
 	/**
@@ -119,7 +119,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			try {
-				this.render();
+				void this.render();
 			} catch (error) {
 				console.error(`[TaskNotes][${this.type}] Render error:`, error);
 				this.renderError(error as Error);
@@ -188,7 +188,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 * Lifecycle: Refresh/re-render the view.
 	 */
 	refresh(): void {
-		this.render();
+		void this.render();
 	}
 
 	/**
@@ -368,7 +368,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		// Use correct window for pop-out window support
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.updateDebounceTimer = win.setTimeout(() => {
-			this.render();
+			void this.render();
 			this.updateDebounceTimer = null;
 		}, 300); // Increased from 150ms for better typing performance
 
@@ -660,7 +660,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		this.currentSearchTerm = term;
 
 		// Re-render with filtered tasks
-		this.render();
+		void this.render();
 
 		const filterTime = performance.now() - startTime;
 
@@ -972,7 +972,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			plugin: this.plugin,
 			selectedPaths,
 			onUpdate: () => {
-				this.render();
+				void this.render();
 			},
 		});
 
@@ -1004,7 +1004,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 * Render the view with current data.
 	 * Subclasses implement view-specific rendering (list, kanban, calendar).
 	 */
-	abstract render(): void;
+	abstract render(): void | Promise<void>;
 
 	/**
 	 * Render an error state when rendering fails.

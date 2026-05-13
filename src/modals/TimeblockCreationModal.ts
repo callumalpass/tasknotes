@@ -76,11 +76,15 @@ export class TimeblockCreationModal extends Modal {
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
 
-		new Setting(contentEl).setName(this.translate("modals.timeblockCreation.heading")).setHeading();
+		new Setting(contentEl)
+			.setName(this.translate("modals.timeblockCreation.heading"))
+			.setHeading();
 
 		// Date display (read-only)
 		const dateDisplay = contentEl.createDiv({ cls: "timeblock-date-display" });
-		dateDisplay.createEl("strong", { text: this.translate("modals.timeblockCreation.dateLabel") });
+		dateDisplay.createEl("strong", {
+			text: this.translate("modals.timeblockCreation.dateLabel"),
+		});
 		// Parse the date string to get a proper date object for display (using local for UI)
 		const dateObj = parseDateAsLocal(this.options.date);
 		dateDisplay.createSpan({ text: dateObj.toLocaleDateString() });
@@ -135,7 +139,9 @@ export class TimeblockCreationModal extends Modal {
 			.setDesc(this.translate("modals.timeblockCreation.descriptionDesc"))
 			.addTextArea((text) => {
 				this.descriptionInput = text.inputEl;
-				text.setPlaceholder(this.translate("modals.timeblockCreation.descriptionPlaceholder")).setValue("");
+				text.setPlaceholder(
+					this.translate("modals.timeblockCreation.descriptionPlaceholder")
+				).setValue("");
 				this.descriptionInput.rows = 3;
 			});
 
@@ -145,7 +151,9 @@ export class TimeblockCreationModal extends Modal {
 			.setDesc(this.translate("modals.timeblockCreation.colorDesc"))
 			.addText((text) => {
 				this.colorInput = text.inputEl;
-				text.setPlaceholder(this.translate("modals.timeblockCreation.colorPlaceholder")).setValue(this.plugin.settings.calendarViewSettings.defaultTimeblockColor);
+				text.setPlaceholder(
+					this.translate("modals.timeblockCreation.colorPlaceholder")
+				).setValue(this.plugin.settings.calendarViewSettings.defaultTimeblockColor);
 				this.colorInput.type = "color";
 			});
 
@@ -158,15 +166,19 @@ export class TimeblockCreationModal extends Modal {
 					.setButtonText(this.translate("modals.timeblockCreation.addAttachmentButton"))
 					.setTooltip(this.translate("modals.timeblockCreation.addAttachmentTooltip"))
 					.onClick(() => {
-						openFileSelector(this.plugin, (file) => {
-							if (file) this.addAttachment(file);
-						}, {
-							placeholder: "Search files or type to create new...",
-							filter: "all",
-							sortOrder:
-								this.plugin.settings.calendarViewSettings
-									.timeblockAttachmentSearchOrder,
-						});
+						openFileSelector(
+							this.plugin,
+							(file) => {
+								if (file) this.addAttachment(file);
+							},
+							{
+								placeholder: "Search files or type to create new...",
+								filter: "all",
+								sortOrder:
+									this.plugin.settings.calendarViewSettings
+										.timeblockAttachmentSearchOrder,
+							}
+						);
 					});
 			})
 			.addButton((button) => {
@@ -186,14 +198,18 @@ export class TimeblockCreationModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: "timeblock-modal-buttons" });
 
-		const cancelButton = buttonContainer.createEl("button", { text: this.translate("common.cancel") });
+		const cancelButton = buttonContainer.createEl("button", {
+			text: this.translate("common.cancel"),
+		});
 		cancelButton.addEventListener("click", () => this.close());
 
 		const createButton = buttonContainer.createEl("button", {
 			text: this.translate("modals.timeblockCreation.createButton"),
 			cls: "mod-cta timeblock-create-button",
 		});
-		createButton.addEventListener("click", () => this.handleSubmit());
+		createButton.addEventListener("click", () => {
+			void this.handleSubmit();
+		});
 
 		// Initial validation
 		this.validateForm();
@@ -239,7 +255,9 @@ export class TimeblockCreationModal extends Modal {
 			return;
 		}
 
-		const uniquePaths = new Set(prefilledPaths.filter((path) => typeof path === "string" && path.trim().length > 0));
+		const uniquePaths = new Set(
+			prefilledPaths.filter((path) => typeof path === "string" && path.trim().length > 0)
+		);
 		for (const path of uniquePaths) {
 			const file = this.app.vault.getAbstractFileByPath(path);
 			if (file) {
@@ -376,7 +394,9 @@ export class TimeblockCreationModal extends Modal {
 	private addAttachment(file: TAbstractFile): void {
 		// Avoid duplicates
 		if (this.selectedAttachments.some((existing) => existing.path === file.path)) {
-			new Notice(this.translate("notices.timeblockAttachmentExists", { fileName: file.name }));
+			new Notice(
+				this.translate("notices.timeblockAttachmentExists", { fileName: file.name })
+			);
 			return;
 		}
 
@@ -402,19 +422,24 @@ export class TimeblockCreationModal extends Modal {
 				return;
 			}
 
-			openTaskSelector(this.plugin, candidates, (selectedTask) => {
-				if (!selectedTask) return;
+			openTaskSelector(
+				this.plugin,
+				candidates,
+				(selectedTask) => {
+					if (!selectedTask) return;
 
-				this.titleInput.value = selectedTask.title || "";
-				this.validateForm();
+					this.titleInput.value = selectedTask.title || "";
+					this.validateForm();
 
-				const taskFile = this.app.vault.getAbstractFileByPath(selectedTask.path);
-				if (taskFile) {
-					this.addAttachment(taskFile);
+					const taskFile = this.app.vault.getAbstractFileByPath(selectedTask.path);
+					if (taskFile) {
+						this.addAttachment(taskFile);
+					}
+				},
+				{
+					title: "Select task",
 				}
-			}, {
-				title: "Select task",
-			});
+			);
 		} catch (error) {
 			console.error("Failed to open task selector for timeblock creation:", error);
 			new Notice("Failed to open task selector");

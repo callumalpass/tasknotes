@@ -1,4 +1,12 @@
-import { TFile, FuzzySuggestModal, FuzzyMatch, setTooltip, Notice, App, moment as obsidianMoment } from "obsidian";
+import {
+	TFile,
+	FuzzySuggestModal,
+	FuzzyMatch,
+	setTooltip,
+	Notice,
+	App,
+	moment as obsidianMoment,
+} from "obsidian";
 import type { BasesEntry, BasesPropertyId } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -775,95 +783,97 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 
 		// Create new handler
-		this.keyboardHandler = async (e: KeyboardEvent) => {
-			// Arrow keys - navigate between days
-			if (
-				e.key === "ArrowLeft" ||
-				e.key === "ArrowRight" ||
-				e.key === "ArrowUp" ||
-				e.key === "ArrowDown"
-			) {
-				e.preventDefault();
-				this.navigateByArrowKey(e.key);
-				return;
-			}
-
-			// Page Up/Down - navigate months
-			if (e.key === "PageUp") {
-				e.preventDefault();
-				if (e.shiftKey) {
-					// Shift+PageUp - previous year
-					this.navigateToYear(-1);
-				} else {
-					this.navigateToPreviousMonth();
-				}
-				return;
-			}
-
-			if (e.key === "PageDown") {
-				e.preventDefault();
-				if (e.shiftKey) {
-					// Shift+PageDown - next year
-					this.navigateToYear(1);
-				} else {
-					this.navigateToNextMonth();
-				}
-				return;
-			}
-
-			// Home/End - navigate to start/end of week or month
-			if (e.key === "Home") {
-				e.preventDefault();
-				if (e.ctrlKey || e.metaKey) {
-					// Ctrl+Home - first day of month
-					this.navigateToStartOfMonth();
-				} else {
-					// Home - start of week
-					this.navigateToStartOfWeek();
-				}
-				return;
-			}
-
-			if (e.key === "End") {
-				e.preventDefault();
-				if (e.ctrlKey || e.metaKey) {
-					// Ctrl+End - last day of month
-					this.navigateToEndOfMonth();
-				} else {
-					// End - end of week
-					this.navigateToEndOfWeek();
-				}
-				return;
-			}
-
-			// T - jump to today
-			if (e.key === "t" || e.key === "T") {
-				e.preventDefault();
-				this.navigateToToday();
-				return;
-			}
-
-			// Escape - clear multi-select mode
-			if (e.key === "Escape") {
-				if (this.multiSelectMode) {
+		this.keyboardHandler = (e: KeyboardEvent) => {
+			void (async () => {
+				// Arrow keys - navigate between days
+				if (
+					e.key === "ArrowLeft" ||
+					e.key === "ArrowRight" ||
+					e.key === "ArrowUp" ||
+					e.key === "ArrowDown"
+				) {
 					e.preventDefault();
-					this.multiSelectMode = false;
-					this.selectedDates.clear();
-					this.refresh();
+					this.navigateByArrowKey(e.key);
+					return;
 				}
-				return;
-			}
 
-			// Enter/Space - select date or open fuzzy selector
-			if (e.key === "Enter" || e.key === " ") {
-				e.preventDefault();
-				if (e.ctrlKey || e.metaKey) {
-					await this.openDailyNoteForDate(this.selectedDate);
-				} else {
-					await this.handleDayClick(this.selectedDate);
+				// Page Up/Down - navigate months
+				if (e.key === "PageUp") {
+					e.preventDefault();
+					if (e.shiftKey) {
+						// Shift+PageUp - previous year
+						this.navigateToYear(-1);
+					} else {
+						this.navigateToPreviousMonth();
+					}
+					return;
 				}
-				return;
-			}
+
+				if (e.key === "PageDown") {
+					e.preventDefault();
+					if (e.shiftKey) {
+						// Shift+PageDown - next year
+						this.navigateToYear(1);
+					} else {
+						this.navigateToNextMonth();
+					}
+					return;
+				}
+
+				// Home/End - navigate to start/end of week or month
+				if (e.key === "Home") {
+					e.preventDefault();
+					if (e.ctrlKey || e.metaKey) {
+						// Ctrl+Home - first day of month
+						this.navigateToStartOfMonth();
+					} else {
+						// Home - start of week
+						this.navigateToStartOfWeek();
+					}
+					return;
+				}
+
+				if (e.key === "End") {
+					e.preventDefault();
+					if (e.ctrlKey || e.metaKey) {
+						// Ctrl+End - last day of month
+						this.navigateToEndOfMonth();
+					} else {
+						// End - end of week
+						this.navigateToEndOfWeek();
+					}
+					return;
+				}
+
+				// T - jump to today
+				if (e.key === "t" || e.key === "T") {
+					e.preventDefault();
+					this.navigateToToday();
+					return;
+				}
+
+				// Escape - clear multi-select mode
+				if (e.key === "Escape") {
+					if (this.multiSelectMode) {
+						e.preventDefault();
+						this.multiSelectMode = false;
+						this.selectedDates.clear();
+						this.refresh();
+					}
+					return;
+				}
+
+				// Enter/Space - select date or open fuzzy selector
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					if (e.ctrlKey || e.metaKey) {
+						await this.openDailyNoteForDate(this.selectedDate);
+					} else {
+						await this.handleDayClick(this.selectedDate);
+					}
+					return;
+				}
+			})();
 		};
 
 		calendarGrid.addEventListener("keydown", this.keyboardHandler);

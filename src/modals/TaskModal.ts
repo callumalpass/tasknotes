@@ -880,9 +880,7 @@ export abstract class TaskModal extends Modal {
 		fieldConfig: ModalFieldConfigLike
 	): void {
 		// Find the user field definition
-		const userField = this.plugin.settings.userFields?.find(
-			(f) => f.id === fieldConfig.id
-		);
+		const userField = this.plugin.settings.userFields?.find((f) => f.id === fieldConfig.id);
 		if (!userField) return;
 
 		// Create the field based on its type (existing logic from createUserFields)
@@ -892,12 +890,12 @@ export abstract class TaskModal extends Modal {
 			case "text":
 			case "list": {
 				setting.addText((text) => {
-						const currentValue = this.userFields[userField.key];
-						const displayValue = Array.isArray(currentValue)
-							? currentValue.map(userFieldValueToString).join(", ")
-							: userFieldValueToString(currentValue);
+					const currentValue = this.userFields[userField.key];
+					const displayValue = Array.isArray(currentValue)
+						? currentValue.map(userFieldValueToString).join(", ")
+						: userFieldValueToString(currentValue);
 
-						text.setValue(displayValue).onChange((value) => {
+					text.setValue(displayValue).onChange((value) => {
 						if (userField.type === "list") {
 							this.userFields[userField.key] = value
 								.split(",")
@@ -913,22 +911,22 @@ export abstract class TaskModal extends Modal {
 				});
 				break;
 			}
-				case "number": {
-					setting.addText((text) => {
-						const currentValue = this.userFields[userField.key];
-						text.setValue(userFieldValueToString(currentValue)).onChange((value) => {
-							const numValue = parseFloat(value);
-							this.userFields[userField.key] = isNaN(numValue) ? null : numValue;
+			case "number": {
+				setting.addText((text) => {
+					const currentValue = this.userFields[userField.key];
+					text.setValue(userFieldValueToString(currentValue)).onChange((value) => {
+						const numValue = parseFloat(value);
+						this.userFields[userField.key] = isNaN(numValue) ? null : numValue;
 					});
 					text.inputEl.type = "number";
 				});
 				break;
 			}
-				case "date": {
-					setting.addText((text) => {
-						const currentValue = this.userFields[userField.key];
-						text.setValue(userFieldValueToString(currentValue)).onChange((value) => {
-							this.userFields[userField.key] = value;
+			case "date": {
+				setting.addText((text) => {
+					const currentValue = this.userFields[userField.key];
+					text.setValue(userFieldValueToString(currentValue)).onChange((value) => {
+						this.userFields[userField.key] = value;
 					});
 					text.inputEl.type = "date";
 				});
@@ -1084,9 +1082,9 @@ export abstract class TaskModal extends Modal {
 				text: this.t("modals.task.buttons.openNote"),
 			});
 
-				openNoteButton.addEventListener("click", async () => {
-					await this.openTaskNote();
-				});
+			openNoteButton.addEventListener("click", () => {
+				void this.openTaskNote();
+			});
 		}
 
 		// Save button (primary action)
@@ -1095,14 +1093,16 @@ export abstract class TaskModal extends Modal {
 			text: this.t("modals.task.buttons.save"),
 		});
 
-		saveButton.addEventListener("click", async () => {
-			saveButton.disabled = true;
-			try {
-				await this.handleSave();
-				this.close();
-			} finally {
-				saveButton.disabled = false;
-			}
+		saveButton.addEventListener("click", () => {
+			void (async () => {
+				saveButton.disabled = true;
+				try {
+					await this.handleSave();
+					this.close();
+				} finally {
+					saveButton.disabled = false;
+				}
+			})();
 		});
 
 		// Cancel button
@@ -1935,10 +1935,10 @@ export abstract class TaskModal extends Modal {
 	// Subtask management methods
 	protected async openSubtaskSelector(): Promise<void> {
 		try {
-				const allTasks = await this.plugin.cacheManager.getAllTasks();
+			const allTasks = await this.plugin.cacheManager.getAllTasks();
 
-				// Filter out tasks that are already subtasks and the current task (if editing)
-				const currentTaskPath = this.getCurrentTaskPath();
+			// Filter out tasks that are already subtasks and the current task (if editing)
+			const currentTaskPath = this.getCurrentTaskPath();
 			const candidates = allTasks.filter((candidate) => {
 				if (currentTaskPath && candidate.path === currentTaskPath) return false;
 				return !this.selectedSubtaskFiles.some(
@@ -1951,7 +1951,7 @@ export abstract class TaskModal extends Modal {
 				return;
 			}
 
-			openTaskSelector(this.plugin, candidates, async (subtask) => {
+			openTaskSelector(this.plugin, candidates, (subtask) => {
 				if (!subtask) return;
 				const file = this.app.vault.getAbstractFileByPath(subtask.path);
 				if (file) {

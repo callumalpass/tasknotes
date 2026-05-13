@@ -176,7 +176,11 @@ export class TaskEditModal extends TaskModal {
 		menu.show(event);
 	}
 
-	async onOpen() {
+	onOpen(): void {
+		void this.openEditModal();
+	}
+
+	private async openEditModal(): Promise<void> {
 		// Clear any previous completion changes
 		this.completedInstancesChanges = [];
 
@@ -193,11 +197,13 @@ export class TaskEditModal extends TaskModal {
 		this.titleEl.setText(this.getModalTitle());
 
 		// Add global keyboard shortcut handler for CMD/Ctrl+Enter
-		this.editModalKeyboardHandler = async (e: KeyboardEvent) => {
+		this.editModalKeyboardHandler = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				await this.handleSave();
-				this.forceClose();
+				void (async () => {
+					await this.handleSave();
+					this.forceClose();
+				})();
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.editModalKeyboardHandler);
@@ -470,13 +476,13 @@ export class TaskEditModal extends TaskModal {
 			let updatedTask = this.task;
 
 			if (hasTaskChanges) {
-					updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
-					this.task = updatedTask;
-					if (Object.prototype.hasOwnProperty.call(changes, "details")) {
-						const updatedDetails = stringifyUnknown(
-							(changes as Record<string, unknown>).details
-						);
-						this.details = updatedDetails;
+				updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
+				this.task = updatedTask;
+				if (Object.prototype.hasOwnProperty.call(changes, "details")) {
+					const updatedDetails = stringifyUnknown(
+						(changes as Record<string, unknown>).details
+					);
+					this.details = updatedDetails;
 					this.originalDetails = updatedDetails;
 				}
 			}
@@ -635,8 +641,8 @@ export class TaskEditModal extends TaskModal {
 			text: this.t("modals.task.buttons.openNote"),
 		});
 
-		openNoteButton.addEventListener("click", async () => {
-			await this.openTaskNote();
+		openNoteButton.addEventListener("click", () => {
+			void this.openTaskNote();
 		});
 
 		// Add "Archive" button
@@ -647,8 +653,8 @@ export class TaskEditModal extends TaskModal {
 				: this.t("modals.taskEdit.buttons.archive"),
 		});
 
-		archiveButton.addEventListener("click", async () => {
-			await this.archiveTask();
+		archiveButton.addEventListener("click", () => {
+			void this.archiveTask();
 		});
 
 		// Save button (primary action)
@@ -657,14 +663,16 @@ export class TaskEditModal extends TaskModal {
 			text: this.t("modals.task.buttons.save"),
 		});
 
-		saveButton.addEventListener("click", async () => {
-			saveButton.disabled = true;
-			try {
-				await this.handleSave();
-				this.forceClose();
-			} finally {
-				saveButton.disabled = false;
-			}
+		saveButton.addEventListener("click", () => {
+			void (async () => {
+				saveButton.disabled = true;
+				try {
+					await this.handleSave();
+					this.forceClose();
+				} finally {
+					saveButton.disabled = false;
+				}
+			})();
 		});
 
 		// Cancel button

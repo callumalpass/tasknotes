@@ -791,9 +791,11 @@ export class StatsView extends ItemView {
 			window.clearTimeout(this.debounceTimeout);
 		}
 
-		this.debounceTimeout = window.setTimeout(async () => {
-			await this.refreshStats();
-			this.debounceTimeout = null;
+		this.debounceTimeout = window.setTimeout(() => {
+			void (async () => {
+				await this.refreshStats();
+				this.debounceTimeout = null;
+			})();
 		}, 300);
 	}
 

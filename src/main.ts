@@ -431,12 +431,14 @@ export default class TaskNotesPlugin extends Plugin {
 				const showReleaseNotes = this.settings.showReleaseNotesOnUpdate ?? true;
 				if (showReleaseNotes) {
 					// Show release notes after a delay to ensure UI is ready
-					window.setTimeout(async () => {
-						await this.activateReleaseNotesView();
-						// Update lastSeenVersion immediately after showing the release notes
-						// This ensures they only show once per version
-						this.settings.lastSeenVersion = currentVersion;
-						await this.saveSettings();
+					window.setTimeout(() => {
+						void (async () => {
+							await this.activateReleaseNotesView();
+							// Update lastSeenVersion immediately after showing the release notes
+							// This ensures they only show once per version
+							this.settings.lastSeenVersion = currentVersion;
+							await this.saveSettings();
+						})();
 					}, 1500); // Slightly longer delay than migration to avoid conflicts
 				} else {
 					// Still update lastSeenVersion even if not showing release notes
@@ -585,28 +587,28 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		// Migration: Migrate statusSuggestionTrigger to nlpTriggers if needed
-			if (
-				loadedData &&
-				!loadedData.nlpTriggers &&
-				loadedData.statusSuggestionTrigger !== undefined
-			) {
-				loadedData.nlpTriggers = {
-					triggers: [...DEFAULT_NLP_TRIGGERS.triggers],
-				};
-				// Update status trigger if it was customized
-				const statusTriggerIndex = loadedData.nlpTriggers.triggers.findIndex(
-					(trigger) => trigger.propertyId === "status"
-				);
+		if (
+			loadedData &&
+			!loadedData.nlpTriggers &&
+			loadedData.statusSuggestionTrigger !== undefined
+		) {
+			loadedData.nlpTriggers = {
+				triggers: [...DEFAULT_NLP_TRIGGERS.triggers],
+			};
+			// Update status trigger if it was customized
+			const statusTriggerIndex = loadedData.nlpTriggers.triggers.findIndex(
+				(trigger) => trigger.propertyId === "status"
+			);
 			if (statusTriggerIndex !== -1 && loadedData.statusSuggestionTrigger) {
 				loadedData.nlpTriggers.triggers[statusTriggerIndex].trigger =
 					loadedData.statusSuggestionTrigger;
 			}
 		}
 
-			// Migration: Initialize modal fields configuration if not present
-			if (loadedData && !loadedData.modalFieldsConfig) {
-				loadedData.modalFieldsConfig = initializeFieldConfig(undefined, loadedData.userFields);
-			}
+		// Migration: Initialize modal fields configuration if not present
+		if (loadedData && !loadedData.modalFieldsConfig) {
+			loadedData.modalFieldsConfig = initializeFieldConfig(undefined, loadedData.userFields);
+		}
 
 		// Migration: Force enableBases to true (issue #1187)
 		// The enableBases toggle was removed in V4 (bases is always-on), but users who
@@ -660,10 +662,10 @@ export default class TaskNotesPlugin extends Plugin {
 			savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
 		};
 
-			// Check if we added any new field mappings or calendar settings and save if needed
-			const hasNewFields = Object.keys(DEFAULT_SETTINGS.fieldMapping).some(
-				(key) => !loadedData?.fieldMapping?.[key as keyof typeof DEFAULT_SETTINGS.fieldMapping]
-			);
+		// Check if we added any new field mappings or calendar settings and save if needed
+		const hasNewFields = Object.keys(DEFAULT_SETTINGS.fieldMapping).some(
+			(key) => !loadedData?.fieldMapping?.[key as keyof typeof DEFAULT_SETTINGS.fieldMapping]
+		);
 		const hasNewCalendarSettings = Object.keys(DEFAULT_SETTINGS.calendarViewSettings).some(
 			(key) =>
 				!loadedData?.calendarViewSettings?.[
@@ -676,20 +678,22 @@ export default class TaskNotesPlugin extends Plugin {
 
 		if (hasNewFields || hasNewCalendarSettings || hasNewCommandMappings) {
 			// Save the migrated settings to include new field mappings (non-blocking)
-			window.setTimeout(async () => {
-				try {
-					const data = (await this.loadData()) || {};
-					// Merge only settings properties, preserving non-settings data
-					const settingsKeys = Object.keys(
-						DEFAULT_SETTINGS
-					) as (keyof TaskNotesSettings)[];
-					for (const key of settingsKeys) {
-						data[key] = this.settings[key];
+			window.setTimeout(() => {
+				void (async () => {
+					try {
+						const data = (await this.loadData()) || {};
+						// Merge only settings properties, preserving non-settings data
+						const settingsKeys = Object.keys(
+							DEFAULT_SETTINGS
+						) as (keyof TaskNotesSettings)[];
+						for (const key of settingsKeys) {
+							data[key] = this.settings[key];
+						}
+						await this.saveData(data);
+					} catch (error) {
+						console.error("Failed to save migrated settings:", error);
 					}
-					await this.saveData(data);
-				} catch (error) {
-					console.error("Failed to save migrated settings:", error);
-				}
+				})();
 			}, 100);
 		}
 
@@ -897,9 +901,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 			await this.revealLeafReady(searchLeaf);
 
-				// Set the search query to "tag:#tagname"
-				const searchQuery = `tag:${tag}`;
-				const searchView = searchLeaf.view as SearchViewLike;
+			// Set the search query to "tag:#tagname"
+			const searchQuery = `tag:${tag}`;
+			const searchView = searchLeaf.view as SearchViewLike;
 
 			// Try different methods to set the search query based on Obsidian version
 			if (typeof searchView.setQuery === "function") {
@@ -959,7 +963,9 @@ export default class TaskNotesPlugin extends Plugin {
 			// before passing to moment() to ensure correct day is used
 			// Fix for issue #1223: Skip conversion if the date is already local (e.g., from getTodayLocal())
 			const localDate = options?.isAlreadyLocal ? date : convertUTCToLocalCalendarDate(date);
-			const moment = (window as Window & { moment: (date: Date) => unknown }).moment(localDate);
+			const moment = (window as Window & { moment: (date: Date) => unknown }).moment(
+				localDate
+			);
 
 			// Get all daily notes to check if one exists for this date
 			const allDailyNotes = getAllDailyNotes();
@@ -1147,26 +1153,25 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Build a TaskInfo object from the note's existing data
 		// Use defaults for required fields that don't exist
-			// Use ?? (nullish coalescing) to properly handle empty string defaults
-			const now = getCurrentTimestamp();
-			const taskInfo: TaskInfo = {
-				path: activeFile.path,
-				title: frontmatterString(frontmatter.title) || activeFile.basename,
-				status: frontmatterString(frontmatter.status) ?? this.settings.defaultTaskStatus,
-				priority:
-					frontmatterString(frontmatter.priority) ?? this.settings.defaultTaskPriority,
-				archived: false,
-				due: frontmatterString(frontmatter.due),
-				scheduled: frontmatterString(frontmatter.scheduled),
-				contexts: frontmatterStringArray(frontmatter.contexts),
-				projects: frontmatterStringArray(frontmatter.projects),
-				tags: frontmatterStringArray(frontmatter.tags) ?? [],
-				timeEstimate: frontmatterNumber(frontmatter.timeEstimate),
-				recurrence: frontmatterString(frontmatter.recurrence),
-				dateCreated: frontmatterString(frontmatter.dateCreated) || now,
-				dateModified: now,
-				details: details,
-			};
+		// Use ?? (nullish coalescing) to properly handle empty string defaults
+		const now = getCurrentTimestamp();
+		const taskInfo: TaskInfo = {
+			path: activeFile.path,
+			title: frontmatterString(frontmatter.title) || activeFile.basename,
+			status: frontmatterString(frontmatter.status) ?? this.settings.defaultTaskStatus,
+			priority: frontmatterString(frontmatter.priority) ?? this.settings.defaultTaskPriority,
+			archived: false,
+			due: frontmatterString(frontmatter.due),
+			scheduled: frontmatterString(frontmatter.scheduled),
+			contexts: frontmatterStringArray(frontmatter.contexts),
+			projects: frontmatterStringArray(frontmatter.projects),
+			tags: frontmatterStringArray(frontmatter.tags) ?? [],
+			timeEstimate: frontmatterNumber(frontmatter.timeEstimate),
+			recurrence: frontmatterString(frontmatter.recurrence),
+			dateCreated: frontmatterString(frontmatter.dateCreated) || now,
+			dateModified: now,
+			details: details,
+		};
 
 		// Open the task edit modal with the constructed TaskInfo
 		new TaskEditModal(this.app, this, {
@@ -1213,7 +1218,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Legacy method: Add a project filter condition (no longer used)
 	 * Uses the same pattern as search to ensure correct AND/OR logic
 	 */
-		private addProjectCondition(filterBar: ProjectFilterBarLike, projectName: string): void {
+	private addProjectCondition(filterBar: ProjectFilterBarLike, projectName: string): void {
 		// Remove existing project conditions first
 		this.removeProjectConditions(filterBar);
 
@@ -1223,19 +1228,19 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		// Create condition for wikilink format [[Project Name]]
-			const projectCondition: FilterCondition = {
-				type: "condition",
-				id: `project_${this.generateFilterId()}`,
-				property: "projects",
-				operator: "contains",
-				value: `[[${projectName}]]`,
-			};
+		const projectCondition: FilterCondition = {
+			type: "condition",
+			id: `project_${this.generateFilterId()}`,
+			property: "projects",
+			operator: "contains",
+			value: `[[${projectName}]]`,
+		};
 
-			// Get existing non-project filters
-			const existingFilters = filterBar.currentQuery.children.filter((child: FilterNode) => {
-				return !(
-					child.type === "condition" &&
-					child.property === "projects" &&
+		// Get existing non-project filters
+		const existingFilters = filterBar.currentQuery.children.filter((child: FilterNode) => {
+			return !(
+				child.type === "condition" &&
+				child.property === "projects" &&
 				child.operator === "contains" &&
 				child.id.startsWith("project_")
 			);
@@ -1244,12 +1249,12 @@ export default class TaskNotesPlugin extends Plugin {
 		if (existingFilters.length === 0) {
 			// No existing filters, just add the project condition
 			filterBar.currentQuery.children = [projectCondition];
-			} else {
-				// Create a group containing all existing filters
-				const existingFiltersGroup: FilterGroup = {
-					type: "group",
-					id: this.generateFilterId(),
-					conjunction: filterBar.currentQuery.conjunction, // Preserve the current conjunction
+		} else {
+			// Create a group containing all existing filters
+			const existingFiltersGroup: FilterGroup = {
+				type: "group",
+				id: this.generateFilterId(),
+				conjunction: filterBar.currentQuery.conjunction, // Preserve the current conjunction
 				children: existingFilters,
 			};
 
@@ -1266,13 +1271,13 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Remove existing project filter conditions
 	 */
-		private removeProjectConditions(filterBar: ProjectFilterBarLike): void {
+	private removeProjectConditions(filterBar: ProjectFilterBarLike): void {
 		if (!Array.isArray(filterBar.currentQuery.children)) {
 			filterBar.currentQuery.children = [];
 			return;
 		}
 
-			filterBar.currentQuery.children = filterBar.currentQuery.children.filter((child) => {
+		filterBar.currentQuery.children = filterBar.currentQuery.children.filter((child) => {
 			if (child.type === "condition") {
 				return !(
 					child.property === "projects" &&
@@ -1360,9 +1365,12 @@ export default class TaskNotesPlugin extends Plugin {
 			const modal = new DateTimePickerModal(this.app, {
 				currentDate: getDatePart(currentValue) || null,
 				currentTime: getTimePart(currentValue) || null,
-				onSelect: async (date, time) => {
-					const value = date && time ? combineDateAndTime(date, time) : date || undefined;
-					await this.taskService.updateProperty(task, field, value);
+				onSelect: (date, time) => {
+					void (async () => {
+						const value =
+							date && time ? combineDateAndTime(date, time) : date || undefined;
+						await this.taskService.updateProperty(task, field, value);
+					})();
 				},
 			});
 			modal.open();

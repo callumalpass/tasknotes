@@ -152,8 +152,8 @@ export class ViewPerformanceService {
 		}
 
 		// Schedule debounced update
-		const timer = window.setTimeout(async () => {
-			await this.processPendingUpdatesForView(viewId);
+		const timer = window.setTimeout(() => {
+			void this.processPendingUpdatesForView(viewId);
 		}, config.debounceDelay);
 
 		this.viewDebounceTimers.set(viewId, timer);
@@ -266,7 +266,6 @@ export class ViewPerformanceService {
 			const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
 			const existingPaths = new Set(allTaskPaths);
 
-			 
 			for (const taskPath of this.globalTaskVersionCache.keys()) {
 				if (!existingPaths.has(taskPath)) {
 					this.globalTaskVersionCache.delete(taskPath);
