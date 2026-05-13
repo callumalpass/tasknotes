@@ -10,6 +10,8 @@ env:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -55,6 +57,14 @@ jobs:
           MICROSOFT_OAUTH_CLIENT_ID=${MICROSOFT_OAUTH_CLIENT_ID}
           EOF
           npm run build  # This includes CSS building via npm run build-css
+
+      - name: Generate artifact attestations
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
