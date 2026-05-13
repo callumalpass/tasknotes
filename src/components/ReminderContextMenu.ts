@@ -63,7 +63,7 @@ export class ReminderContextMenu {
 			});
 		}
 
-		menu.show(event)
+		menu.show(event);
 	}
 
 	private addQuickRemindersSection(menu: Menu, anchor: "due" | "scheduled", title: string): void {
@@ -77,12 +77,12 @@ export class ReminderContextMenu {
 			return;
 		}
 
-		menu.addItem(item => {
-			item.setTitle(title)
-			item.setIcon("bell")
+		menu.addItem((item) => {
+			item.setTitle(title);
+			item.setIcon("bell");
 
-			this.addQuickReminderSubmenu(item.setSubmenu(), anchor)
-		})
+			this.addQuickReminderSubmenu(item.setSubmenu(), anchor);
+		});
 	}
 
 	private addQuickReminderSubmenu(subMenu: Menu, anchor: "due" | "scheduled"): void {
@@ -189,8 +189,8 @@ export class ReminderContextMenu {
 			this.plugin.app,
 			this.plugin,
 			this.task,
-			async (reminders: Reminder[]) => {
-				await this.saveReminders(reminders);
+			(reminders: Reminder[]) => {
+				void this.saveReminders(reminders);
 			}
 		);
 		modal.open();

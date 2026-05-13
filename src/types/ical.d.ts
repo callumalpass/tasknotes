@@ -1,11 +1,18 @@
 declare module 'ical.js' {
     export interface ParsedComponent {
-        [key: string]: any;
+        [key: string]: unknown;
     }
 
     export class Component {
-        constructor(jcal: any);
+        constructor(jcal: unknown);
         getAllSubcomponents(name: string): Component[];
+        getFirstPropertyValue(name: string): unknown;
+        getAllProperties(name: string): Property[];
+    }
+
+    export interface Property {
+        getParameter(name: string): unknown;
+        getFirstValue(): unknown;
     }
 
     export class Event {
@@ -30,7 +37,7 @@ declare module 'ical.js' {
         hour: number;
         minute: number;
         second: number;
-        zone: any;
+        zone: unknown;
         fromJSDate(date: Date): void;
         toJSDate(): Date;
         toUnixTime(): number;
@@ -41,6 +48,10 @@ declare module 'ical.js' {
     export interface EventIterator {
         next(): Time | null;
     }
+
+    export const TimezoneService: {
+        register(component: Component): void;
+    };
 
     export function parse(input: string): ParsedComponent;
 }

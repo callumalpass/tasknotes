@@ -147,7 +147,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		this.setupEventListeners();
 
 		// Inject widget asynchronously to avoid blocking constructor
-		this.injectWidget(view);
+		void this.injectWidget(view);
 	}
 
 	update(update: ViewUpdate) {
@@ -197,7 +197,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	private debouncedInjectWidget(view: EditorView): void {
 		if (this.debounceTimer) window.clearTimeout(this.debounceTimer);
 		this.debounceTimer = window.setTimeout(() => {
-			this.injectWidget(view);
+			void this.injectWidget(view);
 		}, 100);
 	}
 

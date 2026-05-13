@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { normalizePath } from "obsidian";
+import { normalizePath, type Vault } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
 
 export interface FilenameContext {
@@ -447,7 +447,7 @@ export function validateFilename(filename: string): {
 export async function generateUniqueFilename(
 	baseFilename: string,
 	folderPath: string,
-	vault: any // Obsidian Vault
+	vault: Vault
 ): Promise<string> {
 	// Validate inputs
 	if (!baseFilename || typeof baseFilename !== "string") {

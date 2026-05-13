@@ -1,9 +1,24 @@
-import { Menu, Notice } from "obsidian";
+import { Menu, Notice, type MenuItem } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
-import { DateContextMenu } from "./DateContextMenu";
+import { DateContextMenu, type DateOption } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
+
+type SubmenuMenuItem = MenuItem & {
+	setSubmenu(): Menu;
+	dom?: HTMLElement;
+	domEl?: HTMLElement;
+};
+
+function getSubmenu(item: MenuItem): Menu {
+	return (item as SubmenuMenuItem).setSubmenu();
+}
+
+function getMenuItemElement(item: MenuItem): HTMLElement | null {
+	const menuItem = item as SubmenuMenuItem;
+	return menuItem.dom ?? menuItem.domEl ?? null;
+}
 
 export interface BatchContextMenuOptions {
 	plugin: TaskNotesPlugin;
@@ -46,7 +61,7 @@ export class BatchContextMenu {
 			item.setTitle(this.t("contextMenus.task.status"));
 			item.setIcon("circle");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addStatusOptions(submenu);
 		});
 
@@ -55,7 +70,7 @@ export class BatchContextMenu {
 			item.setTitle(this.t("contextMenus.task.priority"));
 			item.setIcon("star");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addPriorityOptions(submenu);
 		});
 
@@ -66,7 +81,7 @@ export class BatchContextMenu {
 			item.setTitle(this.t("contextMenus.task.dueDate"));
 			item.setIcon("calendar");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addDateOptions(submenu, "due");
 		});
 
@@ -75,7 +90,7 @@ export class BatchContextMenu {
 			item.setTitle(this.t("contextMenus.task.scheduledDate"));
 			item.setIcon("calendar-clock");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addDateOptions(submenu, "scheduled");
 		});
 
@@ -127,7 +142,7 @@ export class BatchContextMenu {
 		const sortedStatuses = [...statusConfigs].sort((a, b) => a.order - b.order);
 
 		for (const status of sortedStatuses) {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				item.setTitle(status.label);
 				// Use custom icon if configured, otherwise default to circle
 				item.setIcon(status.icon || "circle");
@@ -138,7 +153,7 @@ export class BatchContextMenu {
 				// Apply color to icon
 				if (status.color) {
 					window.setTimeout(() => {
-						const itemEl = item.dom || item.domEl;
+						const itemEl = getMenuItemElement(item);
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");
 							if (iconEl) {
@@ -155,7 +170,7 @@ export class BatchContextMenu {
 		const priorityOptions = this.options.plugin.priorityManager.getPrioritiesByWeight();
 
 		for (const priority of priorityOptions) {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				item.setTitle(priority.label);
 				item.setIcon("star");
 				item.onClick(async () => {
@@ -165,7 +180,7 @@ export class BatchContextMenu {
 				// Apply color to icon
 				if (priority.color) {
 					window.setTimeout(() => {
-						const itemEl = item.dom || item.domEl;
+						const itemEl = getMenuItemElement(item);
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");
 							if (iconEl) {
@@ -179,7 +194,7 @@ export class BatchContextMenu {
 
 		// Add option to clear priority
 		submenu.addSeparator();
-		submenu.addItem((item: any) => {
+		submenu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.priority.clearPriority"));
 			item.setIcon("x");
 			item.onClick(async () => {
@@ -199,9 +214,11 @@ export class BatchContextMenu {
 		const dateOptions = dateContextMenu.getDateOptions();
 
 		// Basic date options only (skip increment options as they don't work correctly for batch)
-		const basicOptions = dateOptions.filter((option: any) => option.category === "basic");
+		const basicOptions = dateOptions.filter(
+			(option: DateOption) => option.category === "basic"
+		);
 		for (const option of basicOptions) {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				if (option.icon) item.setIcon(option.icon);
 				item.setTitle(option.label);
 				item.onClick(async () => {
@@ -212,7 +229,7 @@ export class BatchContextMenu {
 
 		// Clear date option
 		submenu.addSeparator();
-		submenu.addItem((item: any) => {
+		submenu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.date.clearDate"));
 			item.setIcon("x");
 			item.onClick(async () => {
@@ -221,7 +238,7 @@ export class BatchContextMenu {
 		});
 	}
 
-	private async batchUpdateProperty(property: keyof TaskInfo, value: any): Promise<void> {
+	private async batchUpdateProperty(property: keyof TaskInfo, value: unknown): Promise<void> {
 		const { plugin, selectedPaths, onUpdate } = this.options;
 		const count = selectedPaths.length;
 

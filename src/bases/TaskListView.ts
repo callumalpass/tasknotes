@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Notice, TFile, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -19,6 +19,7 @@ import {
 	parseDateToUTC,
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
+import { stringifyUnknown } from "../utils/stringUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	stripPropertyPrefix,
@@ -28,6 +29,14 @@ import {
 	DropOperationQueue,
 } from "./sortOrderUtils";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
+import {
+	appendCachedFormulaOutputs,
+	evaluateBasesFormula,
+	getBasesFormulaContext,
+	getBasesFormulaData,
+	hasFormulaGetter,
+	isObsidianListProperty,
+} from "./basesViewAdapters";
 
 type TaskListDropBaselineCard = {
 	path: string;
@@ -51,12 +60,86 @@ type TaskListInsertionSlot = {
 	position: "before" | "after";
 };
 
+type TaskListDataAdapterWithView = {
+	basesView: TaskListView;
+};
+
+type TaskListControllerView = {
+	name?: string;
+	groupBy?: string | { property?: string };
+};
+
+type TaskListController = {
+	query?: { views?: TaskListControllerView[] };
+	viewName?: string;
+};
+
+type TaskListGroupEntry = {
+	file?: { path?: string };
+};
+
+type TaskListGroup = {
+	key: unknown;
+	entries: TaskListGroupEntry[];
+};
+
+type TaskListPrimaryHeaderItem = {
+	type: "primary-header";
+	groupKey: string;
+	groupTitle: string;
+	taskCount: number;
+	groupEntries: TaskListGroupEntry[];
+	isCollapsed: boolean;
+};
+
+type TaskListSubHeaderItem = {
+	type: "sub-header";
+	groupKey: string;
+	subGroupKey: string;
+	subGroupTitle: string;
+	taskCount: number;
+	isCollapsed: boolean;
+	parentKey: string;
+};
+
+type TaskListTaskItem = {
+	type: "task";
+	task: TaskInfo;
+	groupKey: string;
+	subGroupKey?: string;
+};
+
+type TaskListHeaderItem = TaskListPrimaryHeaderItem | TaskListSubHeaderItem;
+type TaskListRenderItem = TaskListHeaderItem | TaskListTaskItem;
+type TaskListVirtualItem = TaskInfo | TaskListRenderItem;
+
+type TaskListEphemeralState = {
+	collapsedGroups?: unknown;
+	collapsedSubGroups?: unknown;
+	scrollTop?: unknown;
+};
+
+type BasesDisplayValue = {
+	constructor?: { name?: string };
+	isTruthy?: () => boolean;
+	value?: unknown[];
+	toString(): string;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
+
+function isTaskListEphemeralState(value: unknown): value is TaskListEphemeralState {
+	return isRecord(value);
+}
+
 function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "show-all" {
 	if (typeof value === "number") {
 		return value === 1 ? "show-all" : "inherit";
 	}
 
-	const normalized = String(value ?? "")
+	const normalized = stringifyUnknown(value)
 		.trim()
 		.toLowerCase()
 		.replace(/^['"]|['"]$/g, "")
@@ -85,7 +168,7 @@ export class TaskListView extends BasesViewBase {
 	private clickTimeouts = new Map<string, number>();
 	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());
 	private containerListenersRegistered = false;
-	private virtualScroller: VirtualScroller<any> | null = null; // Can render TaskInfo or group headers
+	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
 	private collapsedSubGroups = new Set<string>(); // Track collapsed sub-group keys
@@ -96,7 +179,7 @@ export class TaskListView extends BasesViewBase {
 	private configLoaded = false; // Track if we've successfully loaded config
 
 	// Drag-to-reorder state
-	private basesController: any;
+	private basesController: TaskListController;
 	private draggedTaskPath: string | null = null;
 	private dragGroupKey: string | null = null;
 	private currentInsertionGroupKey: string | null = null;
@@ -126,12 +209,12 @@ export class TaskListView extends BasesViewBase {
 	private readonly CARD_NO_DRAG_SELECTOR =
 		'[data-tn-no-drag="true"], a, button, input, select, textarea, [contenteditable="true"]';
 
-	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
+	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
-		this.basesController = controller;
+		this.basesController = controller as TaskListController;
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
-		(this.dataAdapter as any).basesView = this;
+		(this.dataAdapter as unknown as TaskListDataAdapterWithView).basesView = this;
 	}
 
 	/**
@@ -302,12 +385,12 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			// Check if we have grouped data
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("[TaskNotes][TaskListView] Error rendering:", error);
 			this.clearAllTaskElements();
 			this.sortScopeTaskPaths.clear();
 			this.sortScopeCandidateTaskPaths.clear();
-			this.renderError(error);
+			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
 
@@ -357,15 +440,8 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private isListTypeProperty(propertyName: string): boolean {
-		const metadataTypeManager = (this.plugin.app as any).metadataTypeManager;
-		if (metadataTypeManager?.properties) {
-			const propertyInfo = metadataTypeManager.properties[propertyName.toLowerCase()];
-			if (propertyInfo?.type) {
-				const listTypes = new Set(["multitext", "tags", "aliases"]);
-				if (listTypes.has(propertyInfo.type)) {
-					return true;
-				}
-			}
+		if (isObsidianListProperty(this.plugin.app, propertyName)) {
+			return true;
 		}
 
 		const contextsField = this.plugin.fieldMapper.toUserField("contexts");
@@ -407,7 +483,7 @@ export class TaskListView extends BasesViewBase {
 
 	private getEventTargetElement(target: EventTarget | null): HTMLElement | null {
 		const node = target as Node | null;
-		if (!node || typeof (node as any).nodeType !== "number") {
+		if (!node || typeof node.nodeType !== "number") {
 			return null;
 		}
 
@@ -685,7 +761,7 @@ export class TaskListView extends BasesViewBase {
 		return `manual-sort:${groupByPropertyId}:${this.getSortScopeKey(groupKey)}`;
 	}
 
-	private syncGroupedDragMetadata(items: any[]): void {
+	private syncGroupedDragMetadata(items: TaskListRenderItem[]): void {
 		this.taskGroupKeys.clear();
 		const groupedPaths = new Map<string | null, string[]>();
 		for (const item of items) {
@@ -699,7 +775,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private buildGroupedScopePaths(
-		groups: any[],
+		groups: TaskListGroup[],
 		taskNotes: TaskInfo[]
 	): Map<string | null, string[]> {
 		const taskPaths = new Set(taskNotes.map((task) => task.path));
@@ -708,7 +784,7 @@ export class TaskListView extends BasesViewBase {
 		for (const group of groups) {
 			const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
 			const paths = group.entries
-				.map((entry: any) => entry.file?.path)
+				.map((entry) => entry.file?.path)
 				.filter(
 					(path: string | undefined): path is string => !!path && taskPaths.has(path)
 				);
@@ -937,46 +1013,48 @@ export class TaskListView extends BasesViewBase {
 			}
 		});
 
-		this.itemsContainer.addEventListener("drop", async (e: DragEvent) => {
-			e.preventDefault();
-			if (!this.draggedTaskPath) return;
+		this.itemsContainer.addEventListener("drop", (e: DragEvent) => {
+			void (async () => {
+				e.preventDefault();
+				if (!this.draggedTaskPath) return;
 
-			if (!this.flushPendingInsertionSlot(e.clientY) && this.currentInsertionIndex < 0)
-				return;
+				if (!this.flushPendingInsertionSlot(e.clientY) && this.currentInsertionIndex < 0)
+					return;
 
-			const draggedPath = this.draggedTaskPath;
-			const sourceGroupKey = this.dragGroupKey;
-			const targetGroupKey = this.currentInsertionGroupKey;
-			const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
-			const insertionSegmentIndex = this.currentInsertionSegmentIndex;
-			const insertionIndex = this.currentInsertionIndex;
-			const dropTarget =
-				insertionSegmentIndex >= 0 && insertionIndex >= 0
-					? this.reconstructDropTargetFromInsertionSlot(
-							insertionSegmentIndex,
-							insertionIndex
-						)
-					: null;
-			if (!draggedPath || !dropTarget) return;
+				const draggedPath = this.draggedTaskPath;
+				const sourceGroupKey = this.dragGroupKey;
+				const targetGroupKey = this.currentInsertionGroupKey;
+				const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
+				const insertionSegmentIndex = this.currentInsertionSegmentIndex;
+				const insertionIndex = this.currentInsertionIndex;
+				const dropTarget =
+					insertionSegmentIndex >= 0 && insertionIndex >= 0
+						? this.reconstructDropTargetFromInsertionSlot(
+								insertionSegmentIndex,
+								insertionIndex
+							)
+						: null;
+				if (!draggedPath || !dropTarget) return;
 
-			this.clearDropIndicators();
-			this.cleanupDragShift();
+				this.clearDropIndicators();
+				this.cleanupDragShift();
 
-			this.draggedTaskPath = null;
-			this.dragGroupKey = null;
-			this.currentInsertionGroupKey = null;
-			this.currentInsertionSegmentIndex = -1;
-			this.currentInsertionIndex = -1;
-			this.pendingDragClientY = null;
+				this.draggedTaskPath = null;
+				this.dragGroupKey = null;
+				this.currentInsertionGroupKey = null;
+				this.currentInsertionSegmentIndex = -1;
+				this.currentInsertionIndex = -1;
+				this.pendingDragClientY = null;
 
-			await this.handleSortOrderDrop(
-				draggedPath,
-				dropTarget.taskPath,
-				dropTarget.above,
-				targetGroupKey,
-				sourceGroupKey,
-				targetVisiblePaths
-			);
+				await this.handleSortOrderDrop(
+					draggedPath,
+					dropTarget.taskPath,
+					dropTarget.above,
+					targetGroupKey,
+					sourceGroupKey,
+					targetVisiblePaths
+				);
+			})();
 		});
 	}
 
@@ -1056,10 +1134,7 @@ export class TaskListView extends BasesViewBase {
 			// Single atomic write: group property + sort_order + derivative fields
 			await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
 				if (needsGroupUpdate) {
-					const frontmatterKey = groupByPropertyId!.replace(
-						/^(note\.|file\.|task\.)/,
-						""
-					);
+					const frontmatterKey = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "");
 					if (isListGrouping) {
 						let currentValue = fm[frontmatterKey];
 						if (!Array.isArray(currentValue)) {
@@ -1111,14 +1186,15 @@ export class TaskListView extends BasesViewBase {
 						this.taskInfoCache.get(draggedPath) ??
 						(await this.plugin.cacheManager.getTaskInfo(draggedPath));
 					if (originalTask) {
-						const updatedTask = { ...originalTask } as TaskInfo;
+						const updatedTask = { ...originalTask };
+						const originalRecord = originalTask as unknown as Record<string, unknown>;
+						const updatedRecord = updatedTask as unknown as Record<string, unknown>;
 						if (isListGrouping) {
-							const currentValues = Array.isArray(
-								(originalTask as any)[groupByTaskProp]
-							)
-								? [...(originalTask as any)[groupByTaskProp]]
-								: (originalTask as any)[groupByTaskProp]
-									? [String((originalTask as any)[groupByTaskProp])]
+							const originalValue = originalRecord[groupByTaskProp];
+							const currentValues = Array.isArray(originalValue)
+								? [...originalValue]
+								: originalValue
+									? [stringifyUnknown(originalValue)]
 									: [];
 							const nextValues = currentValues.filter(
 								(value: string) => value !== sourceGroupKey
@@ -1129,9 +1205,9 @@ export class TaskListView extends BasesViewBase {
 							) {
 								nextValues.push(normalizedTargetGroupKey);
 							}
-							(updatedTask as any)[groupByTaskProp] = nextValues;
+							updatedRecord[groupByTaskProp] = nextValues;
 						} else {
-							(updatedTask as any)[groupByTaskProp] = normalizedTargetGroupKey;
+							updatedRecord[groupByTaskProp] = normalizedTargetGroupKey;
 						}
 						updatedTask.dateModified = getCurrentTimestamp();
 						if (groupByTaskProp === "status" && !originalTask.recurrence) {
@@ -1173,37 +1249,23 @@ export class TaskListView extends BasesViewBase {
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
 		// Access formulas through the data context
-		const ctxFormulas = (this.data as any)?.ctx?.formulas;
-		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
+		const ctxFormulas = getBasesFormulaContext(this.data);
+		if (!ctxFormulas || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const itemFormulaResults = item.basesData?.formulaResults;
-			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+			const baseData = getBasesFormulaData(item);
+			const itemFormulaResults = baseData?.formulaResults;
+			if (!baseData || !itemFormulaResults?.cachedFormulaOutputs) continue;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];
-				if (formula && typeof formula.getValue === "function") {
+				if (hasFormulaGetter(formula)) {
 					try {
-						const baseData = item.basesData;
 						const taskProperties = item.properties || {};
-
-						let result;
-
-						// Temporarily merge TaskNote properties into frontmatter for formula access
-						if (baseData.frontmatter && Object.keys(taskProperties).length > 0) {
-							const originalFrontmatter = baseData.frontmatter;
-							baseData.frontmatter = {
-								...originalFrontmatter,
-								...taskProperties,
-							};
-							result = formula.getValue(baseData);
-							baseData.frontmatter = originalFrontmatter; // Restore original state
-						} else {
-							result = formula.getValue(baseData);
-						}
+						const result = evaluateBasesFormula(formula, baseData, taskProperties);
 
 						// Store computed result for TaskCard rendering
 						if (result !== undefined) {
@@ -1267,7 +1329,7 @@ export class TaskListView extends BasesViewBase {
 	private async renderFlatVirtual(
 		taskNotes: TaskInfo[],
 		visibleProperties: string[] | undefined,
-		cardOptions: any
+		cardOptions: TaskCardOptions
 	): Promise<void> {
 		if (!this.itemsContainer) return;
 		this.taskGroupKeys.clear(); // No groups in flat mode
@@ -1275,19 +1337,18 @@ export class TaskListView extends BasesViewBase {
 
 		if (!this.virtualScroller) {
 			// Initialize virtual scroller with automatic height calculation
-			this.virtualScroller = new VirtualScroller<TaskInfo>({
+			this.virtualScroller = new VirtualScroller<TaskListVirtualItem>({
 				container: this.itemsContainer,
 				items: taskNotes,
 				// itemHeight omitted - will be calculated automatically from sample
 				overscan: 5,
-				renderItem: (taskInfo: TaskInfo, index: number) => {
+				renderItem: (item: TaskListVirtualItem) => {
+					if ("type" in item) {
+						throw new Error("Unexpected grouped item in flat renderer");
+					}
+					const taskInfo = item;
 					// Create card using lazy mode
-					const card = createTaskCard(
-						taskInfo,
-						this.plugin,
-						visibleProperties,
-						cardOptions
-					);
+					const card = createTaskCard(item, this.plugin, visibleProperties, cardOptions);
 
 					// Attach drag handlers for sort_order reordering
 					if (
@@ -1306,7 +1367,12 @@ export class TaskListView extends BasesViewBase {
 
 					return card;
 				},
-				getItemKey: (taskInfo: TaskInfo) => taskInfo.path,
+				getItemKey: (item) => {
+					if ("type" in item) {
+						return `grouped-${item.groupKey}`;
+					}
+					return item.path;
+				},
 			});
 
 			// Force recalculation after DOM settles
@@ -1324,7 +1390,7 @@ export class TaskListView extends BasesViewBase {
 	private async renderFlatNormal(
 		taskNotes: TaskInfo[],
 		visibleProperties: string[] | undefined,
-		cardOptions: any
+		cardOptions: TaskCardOptions
 	): Promise<void> {
 		if (!this.itemsContainer) return;
 		this.taskGroupKeys.clear(); // No groups in flat mode
@@ -1357,8 +1423,8 @@ export class TaskListView extends BasesViewBase {
 				cardEl = newCard;
 			}
 
-			if (!cardEl!.isConnected) {
-				this.itemsContainer!.appendChild(cardEl!);
+			if (!cardEl.isConnected) {
+				this.itemsContainer.appendChild(cardEl);
 			}
 
 			// Attach drag handlers when the card was (re)created
@@ -1369,11 +1435,11 @@ export class TaskListView extends BasesViewBase {
 					this.plugin.settings.fieldMapping.sortOrder
 				)
 			) {
-				cardEl!.setAttribute("draggable", "true");
-				this.setupCardDragHandlers(cardEl!, taskInfo, null);
+				cardEl.setAttribute("draggable", "true");
+				this.setupCardDragHandlers(cardEl, taskInfo, null);
 			}
 
-			this.currentTaskElements.set(taskInfo.path, cardEl!);
+			this.currentTaskElements.set(taskInfo.path, cardEl);
 			this.taskInfoCache.set(taskInfo.path, taskInfo);
 			this.lastTaskSignatures.set(taskInfo.path, signature);
 			seenPaths.add(taskInfo.path);
@@ -1404,35 +1470,18 @@ export class TaskListView extends BasesViewBase {
 	 * Build flattened list of render items (headers + tasks) for grouped view
 	 * Shared between renderGrouped() and refreshGroupedView()
 	 */
-	private buildGroupedRenderItems(groups: any[], taskNotes: TaskInfo[]): any[] {
-		type RenderItem =
-			| {
-					type: "primary-header";
-					groupKey: string;
-					groupTitle: string;
-					taskCount: number;
-					groupEntries: any[];
-					isCollapsed: boolean;
-			  }
-			| {
-					type: "sub-header";
-					groupKey: string;
-					subGroupKey: string;
-					subGroupTitle: string;
-					taskCount: number;
-					isCollapsed: boolean;
-					parentKey: string;
-			  }
-			| { type: "task"; task: TaskInfo; groupKey: string; subGroupKey?: string };
-
-		const items: RenderItem[] = [];
+	private buildGroupedRenderItems(
+		groups: TaskListGroup[],
+		taskNotes: TaskInfo[]
+	): TaskListRenderItem[] {
+		const items: TaskListRenderItem[] = [];
 
 		// Build property map for sub-grouping if needed
 		const pathToProps = this.subGroupPropertyId ? this.buildPathToPropsMap() : new Map();
 
 		for (const group of groups) {
 			const primaryKey = this.dataAdapter.convertGroupKeyToString(group.key);
-			const groupPaths = new Set(group.entries.map((e: any) => e.file.path));
+			const groupPaths = new Set(group.entries.map((entry) => entry.file?.path));
 			const groupTasks = taskNotes.filter((t) => groupPaths.has(t.path));
 
 			// Skip groups with no matching tasks (e.g., after search filtering)
@@ -1543,18 +1592,7 @@ export class TaskListView extends BasesViewBase {
 		this.setSortScopeCandidatePaths(this.buildSubPropertyScopePaths(allGroupedTasks));
 
 		// Build flat items array (treat sub-groups as primary groups)
-		type RenderItem =
-			| {
-					type: "primary-header";
-					groupKey: string;
-					groupTitle: string;
-					taskCount: number;
-					groupEntries: any[];
-					isCollapsed: boolean;
-			  }
-			| { type: "task"; task: TaskInfo; groupKey: string };
-
-		const items: RenderItem[] = [];
+		const items: TaskListRenderItem[] = [];
 		for (const [groupKey, tasks] of groupedTasks) {
 			// Skip empty groups
 			if (tasks.length === 0) continue;
@@ -1614,7 +1652,7 @@ export class TaskListView extends BasesViewBase {
 
 	private async renderGrouped(taskNotes: TaskInfo[]): Promise<void> {
 		const visibleProperties = this.getVisibleProperties();
-		const groups = this.dataAdapter.getGroupedData();
+		const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
@@ -1675,20 +1713,23 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private async renderGroupedVirtual(
-		items: any[],
+		items: TaskListRenderItem[],
 		visibleProperties: string[] | undefined,
-		cardOptions: any
+		cardOptions: TaskCardOptions
 	): Promise<void> {
 		// Populate group key lookup for cross-group drag detection
 		this.syncGroupedDragMetadata(items);
 
 		if (!this.virtualScroller) {
-			this.virtualScroller = new VirtualScroller<any>({
+			this.virtualScroller = new VirtualScroller<TaskListVirtualItem>({
 				container: this.itemsContainer!,
 				items: items,
 				// itemHeight omitted - automatically calculated from sample (headers + cards)
 				overscan: 5,
-				renderItem: (item: any) => {
+				renderItem: (item) => {
+					if (!("type" in item)) {
+						throw new Error("Unexpected flat task item in grouped renderer");
+					}
 					if (item.type === "primary-header" || item.type === "sub-header") {
 						return this.createGroupHeader(item);
 					} else {
@@ -1716,7 +1757,10 @@ export class TaskListView extends BasesViewBase {
 						return cardEl;
 					}
 				},
-				getItemKey: (item: any) => {
+				getItemKey: (item) => {
+					if (!("type" in item)) {
+						return item.path;
+					}
 					if (item.type === "primary-header") {
 						return `primary-${item.groupKey}`;
 					} else if (item.type === "sub-header") {
@@ -1736,9 +1780,9 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private async renderGroupedNormal(
-		items: any[],
+		items: TaskListRenderItem[],
 		visibleProperties: string[] | undefined,
-		cardOptions: any
+		cardOptions: TaskCardOptions
 	): Promise<void> {
 		// Populate group key lookup for cross-group drag detection
 		this.syncGroupedDragMetadata(items);
@@ -1771,7 +1815,7 @@ export class TaskListView extends BasesViewBase {
 		}
 	}
 
-	private createGroupHeader(headerItem: any): HTMLElement {
+	private createGroupHeader(headerItem: TaskListHeaderItem): HTMLElement {
 		// Use correct document for pop-out window support
 		const doc = this.containerEl.ownerDocument;
 
@@ -1981,7 +2025,7 @@ export class TaskListView extends BasesViewBase {
 	 * Get ephemeral state to preserve across view reloads.
 	 * Saves scroll position, collapsed groups, and collapsed sub-groups.
 	 */
-	getEphemeralState(): any {
+	getEphemeralState(): unknown {
 		return {
 			scrollTop: this.rootElement?.scrollTop || 0,
 			collapsedGroups: Array.from(this.collapsedGroups),
@@ -1993,25 +2037,30 @@ export class TaskListView extends BasesViewBase {
 	 * Restore ephemeral state after view reload.
 	 * Restores scroll position, collapsed groups, and collapsed sub-groups.
 	 */
-	setEphemeralState(state: any): void {
-		if (!state) return;
+	setEphemeralState(state: unknown): void {
+		if (!isTaskListEphemeralState(state)) return;
 
 		// Restore collapsed groups immediately
 		if (state.collapsedGroups && Array.isArray(state.collapsedGroups)) {
-			this.collapsedGroups = new Set(state.collapsedGroups);
+			this.collapsedGroups = new Set(
+				state.collapsedGroups.filter((value) => typeof value === "string")
+			);
 		}
 
 		// Restore collapsed sub-groups immediately
 		if (state.collapsedSubGroups && Array.isArray(state.collapsedSubGroups)) {
-			this.collapsedSubGroups = new Set(state.collapsedSubGroups);
+			this.collapsedSubGroups = new Set(
+				state.collapsedSubGroups.filter((value) => typeof value === "string")
+			);
 		}
 
 		// Restore scroll position after render completes
-		if (state.scrollTop !== undefined && this.rootElement) {
+		if (typeof state.scrollTop === "number" && this.rootElement) {
+			const scrollTop = state.scrollTop;
 			// Use requestAnimationFrame to ensure DOM is ready
 			window.requestAnimationFrame(() => {
 				if (this.rootElement && this.rootElement.isConnected) {
-					this.rootElement.scrollTop = state.scrollTop;
+					this.rootElement.scrollTop = scrollTop;
 				}
 			});
 		}
@@ -2033,7 +2082,7 @@ export class TaskListView extends BasesViewBase {
 		this.sortScopeTaskPaths.clear();
 	}
 
-	private getCardOptions(targetDate: Date) {
+	private getCardOptions(targetDate: Date): TaskCardOptions {
 		return this.buildTaskCardOptions({
 			targetDate,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
@@ -2145,7 +2194,7 @@ export class TaskListView extends BasesViewBase {
 		const dataItems = this.dataAdapter.extractDataItems();
 		await this.computeFormulas(dataItems);
 		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
-		const groups = this.dataAdapter.getGroupedData();
+		const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
 
 		// Build flattened list of items using shared method
 		const items = this.buildGroupedRenderItems(groups, taskNotes);
@@ -2287,13 +2336,15 @@ export class TaskListView extends BasesViewBase {
 	private showPriorityMenu(task: TaskInfo, event: MouseEvent): void {
 		const menu = new PriorityContextMenu({
 			currentValue: task.priority,
-			onSelect: async (newPriority) => {
-				try {
-					await this.plugin.updateTaskProperty(task, "priority", newPriority);
-				} catch (error) {
-					console.error("[TaskNotes][TaskListView] Failed to update priority", error);
-					new Notice("Failed to update priority");
-				}
+			onSelect: (newPriority) => {
+				void (async () => {
+					try {
+						await this.plugin.updateTaskProperty(task, "priority", newPriority);
+					} catch (error) {
+						console.error("[TaskNotes][TaskListView] Failed to update priority", error);
+						new Notice("Failed to update priority");
+					}
+				})();
 			},
 			plugin: this.plugin,
 		});
@@ -2305,20 +2356,25 @@ export class TaskListView extends BasesViewBase {
 			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
 			currentAnchor: task.recurrence_anchor || "scheduled",
 			scheduledDate: task.scheduled,
-			onSelect: async (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
-				try {
-					await this.plugin.updateTaskProperty(
-						task,
-						"recurrence",
-						newRecurrence || undefined
-					);
-					if (anchor !== undefined) {
-						await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+			onSelect: (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
+				void (async () => {
+					try {
+						await this.plugin.updateTaskProperty(
+							task,
+							"recurrence",
+							newRecurrence || undefined
+						);
+						if (anchor !== undefined) {
+							await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+						}
+					} catch (error) {
+						console.error(
+							"[TaskNotes][TaskListView] Failed to update recurrence",
+							error
+						);
+						new Notice("Failed to update recurrence");
 					}
-				} catch (error) {
-					console.error("[TaskNotes][TaskListView] Failed to update recurrence", error);
-					new Notice("Failed to update recurrence");
-				}
+				})();
 			},
 			app: this.plugin.app,
 			plugin: this.plugin,
@@ -2327,17 +2383,19 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private showReminderModal(task: TaskInfo): void {
-		const modal = new ReminderModal(this.plugin.app, this.plugin, task, async (reminders) => {
-			try {
-				await this.plugin.updateTaskProperty(
-					task,
-					"reminders",
-					reminders.length > 0 ? reminders : undefined
-				);
-			} catch (error) {
-				console.error("[TaskNotes][TaskListView] Failed to update reminders", error);
-				new Notice("Failed to update reminders");
-			}
+		const modal = new ReminderModal(this.plugin.app, this.plugin, task, (reminders) => {
+			void (async () => {
+				try {
+					await this.plugin.updateTaskProperty(
+						task,
+						"reminders",
+						reminders.length > 0 ? reminders : undefined
+					);
+				} catch (error) {
+					console.error("[TaskNotes][TaskListView] Failed to update reminders", error);
+					new Notice("Failed to update reminders");
+				}
+			})();
 		});
 		modal.open();
 	}
@@ -2352,26 +2410,28 @@ export class TaskListView extends BasesViewBase {
 		const menu = new DateContextMenu({
 			currentValue: getDatePart(currentValue || ""),
 			currentTime: getTimePart(currentValue || ""),
-			onSelect: async (dateValue, timeValue) => {
-				try {
-					let finalValue: string | undefined;
-					if (!dateValue) {
-						finalValue = undefined;
-					} else if (timeValue) {
-						finalValue = `${dateValue}T${timeValue}`;
-					} else {
-						finalValue = dateValue;
+			onSelect: (dateValue, timeValue) => {
+				void (async () => {
+					try {
+						let finalValue: string | undefined;
+						if (!dateValue) {
+							finalValue = undefined;
+						} else if (timeValue) {
+							finalValue = `${dateValue}T${timeValue}`;
+						} else {
+							finalValue = dateValue;
+						}
+						await this.plugin.updateTaskProperty(task, dateType, finalValue);
+					} catch (error) {
+						const message = error instanceof Error ? error.message : String(error);
+						console.error("[TaskNotes][TaskListView] Failed to update date", {
+							error: message,
+							taskPath: task.path,
+							dateType,
+						});
+						new Notice(`Failed to update ${dateType} date: ${message}`);
 					}
-					await this.plugin.updateTaskProperty(task, dateType, finalValue);
-				} catch (error) {
-					const message = error instanceof Error ? error.message : String(error);
-					console.error("[TaskNotes][TaskListView] Failed to update date", {
-						error: message,
-						taskPath: task.path,
-						dateType,
-					});
-					new Notice(`Failed to update ${dateType} date: ${message}`);
-				}
+				})();
 			},
 			plugin: this.plugin,
 			app: this.app || this.plugin.app,
@@ -2398,9 +2458,11 @@ export class TaskListView extends BasesViewBase {
 		} else {
 			// Use correct window for pop-out window support
 			const win = this.containerEl.ownerDocument.defaultView || window;
-			const timeout = win.setTimeout(async () => {
-				this.clickTimeouts.delete(task.path);
-				await this.executeSingleClickAction(task, event);
+			const timeout = win.setTimeout(() => {
+				void (async () => {
+					this.clickTimeouts.delete(task.path);
+					await this.executeSingleClickAction(task, event);
+				})();
 			}, 250);
 			this.clickTimeouts.set(task.path, timeout);
 		}
@@ -2446,9 +2508,9 @@ export class TaskListView extends BasesViewBase {
 		const file = app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
 			if (newTab) {
-				app.workspace.openLinkText(task.path, "", true);
+				void app.workspace.openLinkText(task.path, "", true);
 			} else {
-				app.workspace.getLeaf(false).openFile(file);
+				void app.workspace.getLeaf(false).openFile(file);
 			}
 		}
 	}
@@ -2531,8 +2593,8 @@ export class TaskListView extends BasesViewBase {
 	 * Similar to KanbanView's pattern for swimlane grouping.
 	 * Includes both regular properties and formula results.
 	 */
-	private buildPathToPropsMap(): Map<string, Record<string, any>> {
-		const map = new Map<string, Record<string, any>>();
+	private buildPathToPropsMap(): Map<string, Record<string, unknown>> {
+		const map = new Map<string, Record<string, unknown>>();
 		if (!this.data?.data) return map;
 
 		const dataItems = this.dataAdapter.extractDataItems();
@@ -2541,14 +2603,7 @@ export class TaskListView extends BasesViewBase {
 				// Merge regular properties with formula results
 				const props = { ...(item.properties || {}) };
 
-				// Add formula results if available
-				const formulaOutputs = item.basesData?.formulaResults?.cachedFormulaOutputs;
-				if (formulaOutputs && typeof formulaOutputs === "object") {
-					for (const [formulaName, value] of Object.entries(formulaOutputs)) {
-						// Store with formula. prefix for easy lookup
-						props[`formula.${formulaName}`] = value;
-					}
-				}
+				appendCachedFormulaOutputs(props, item);
 
 				map.set(item.path, props);
 			}
@@ -2560,7 +2615,7 @@ export class TaskListView extends BasesViewBase {
 	 * Get property value from properties object using property ID.
 	 * Handles TaskInfo properties, Bases property IDs (note.*, task.*, file.*), and formulas (formula.*).
 	 */
-	private getPropertyValue(props: Record<string, any>, propertyId: string): any {
+	private getPropertyValue(props: Record<string, unknown>, propertyId: string): unknown {
 		if (!propertyId) return null;
 
 		// Formula properties are stored with their full prefix (formula.NAME)
@@ -2579,7 +2634,7 @@ export class TaskListView extends BasesViewBase {
 	 * Convert a property value to a display string for grouping.
 	 * Handles null, undefined, arrays, objects, primitives, and Bases Value objects.
 	 */
-	private valueToString(value: any): string {
+	private valueToString(value: unknown): string {
 		if (value === null || value === undefined) {
 			return "None";
 		}
@@ -2587,22 +2642,26 @@ export class TaskListView extends BasesViewBase {
 		// Handle Bases Value objects (they have a toString() method and often a type property)
 		// Check for Bases Value object by duck-typing (has toString and is an object with constructor)
 		if (typeof value === "object" && value !== null && typeof value.toString === "function") {
+			const basesValue = value as BasesDisplayValue;
 			// Check if it's a Bases NullValue
-			if (value.constructor?.name === "NullValue" || (value.isTruthy && !value.isTruthy())) {
+			if (
+				basesValue.constructor?.name === "NullValue" ||
+				(basesValue.isTruthy && !basesValue.isTruthy())
+			) {
 				return "None";
 			}
 
 			// Check if it's a Bases ListValue (array-like)
-			if (value.constructor?.name === "ListValue" || Array.isArray(value.value)) {
-				const arr = value.value || [];
+			if (basesValue.constructor?.name === "ListValue" || Array.isArray(basesValue.value)) {
+				const arr = basesValue.value || [];
 				if (arr.length === 0) return "None";
 				// Recursively convert each item
-				return arr.map((v: any) => this.valueToString(v)).join(", ");
+				return arr.map((v) => this.valueToString(v)).join(", ");
 			}
 
 			// For other Bases Value types (StringValue, NumberValue, BooleanValue, DateValue, etc.)
 			// Use their toString() method
-			const str = value.toString();
+			const str = basesValue.toString();
 			return str || "None";
 		}
 
@@ -2622,7 +2681,7 @@ export class TaskListView extends BasesViewBase {
 			return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
 		}
 
-		return String(value);
+		return stringifyUnknown(value) || "None";
 	}
 
 	/**
@@ -2632,7 +2691,7 @@ export class TaskListView extends BasesViewBase {
 	private groupTasksBySubProperty(
 		tasks: TaskInfo[],
 		propertyId: string,
-		pathToProps: Map<string, Record<string, any>>
+		pathToProps: Map<string, Record<string, unknown>>
 	): Map<string, TaskInfo[]> {
 		const subGroups = new Map<string, TaskInfo[]>();
 
@@ -2661,7 +2720,7 @@ export class TaskListView extends BasesViewBase {
  * Returns an actual TaskListView instance (extends BasesView).
  */
 export function buildTaskListViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: any, containerEl: HTMLElement): TaskListView {
+	return function (controller: unknown, containerEl: HTMLElement): TaskListView {
 		if (!containerEl) {
 			console.error("[TaskNotes][TaskListView] No containerEl provided");
 			throw new Error("TaskListView requires a containerEl");

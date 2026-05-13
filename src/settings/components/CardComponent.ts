@@ -175,7 +175,8 @@
  * - Content and actions sections hide when collapsed
  */
 
-import { Setting, setIcon } from "obsidian";
+import { Setting, ToggleComponent, setIcon } from "obsidian";
+import { runAsyncSettingCallback } from "./settingHelpers";
 
 /**
  * Main configuration interface for creating cards
@@ -222,7 +223,7 @@ export interface CardHeaderButton {
 	/** Tooltip text on hover */
 	tooltip?: string;
 	/** Click handler */
-	onClick: () => void;
+	onClick: () => unknown;
 }
 
 /** Content section containing form rows */
@@ -249,7 +250,7 @@ export interface CardButton {
 	/** Button style variant */
 	variant?: "primary" | "secondary" | "delete" | "warning" | "default";
 	/** Click handler */
-	onClick: () => void;
+	onClick: () => unknown;
 	/** Whether button is disabled */
 	disabled?: boolean;
 }
@@ -388,7 +389,7 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
 			button.onclick = (e) => {
 				e.stopPropagation(); // Prevent header click from firing
-				actionConfig.onClick();
+				runAsyncSettingCallback(actionConfig.onClick);
 			};
 		});
 	}
@@ -492,7 +493,9 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 				button.disabled = true;
 			}
 
-			button.onclick = buttonConfig.onClick;
+			button.onclick = () => {
+				runAsyncSettingCallback(buttonConfig.onClick);
+			};
 		});
 	}
 
@@ -516,7 +519,10 @@ export function createStatusBadge(
 /**
  * Creates a header delete button for compact card design
  */
-export function createDeleteHeaderButton(onClick: () => void, tooltip?: string): CardHeaderButton {
+export function createDeleteHeaderButton(
+	onClick: () => unknown,
+	tooltip?: string
+): CardHeaderButton {
 	return {
 		icon: "trash-2",
 		variant: "delete",
@@ -554,16 +560,18 @@ export function createCardInput(
  */
 export function createCardToggle(
 	initialValue = false,
-	onChange?: (value: boolean) => void
+	onChange?: (value: boolean) => unknown
 ): HTMLElement {
 	const tempContainer = activeDocument.createElement("div");
 	const setting = new Setting(tempContainer);
 
 	let toggleEl: HTMLElement | null = null;
-	setting.addToggle((toggle: any) => {
+	setting.addToggle((toggle: ToggleComponent) => {
 		toggle.setValue(initialValue);
 		if (onChange) {
-			toggle.onChange(onChange);
+			toggle.onChange((value) => {
+				runAsyncSettingCallback(() => onChange(value));
+			});
 		}
 		toggleEl = toggle.toggleEl;
 	});
@@ -683,7 +691,10 @@ export function setupCardDragAndDrop(
 /**
  * Creates an edit header button with consistent styling
  */
-export function createEditHeaderButton(onClick: () => void, tooltip?: string): CardHeaderButton {
+export function createEditHeaderButton(
+	onClick: () => unknown,
+	tooltip?: string
+): CardHeaderButton {
 	return {
 		icon: "edit",
 		variant: "edit",

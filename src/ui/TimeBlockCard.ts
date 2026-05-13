@@ -29,7 +29,7 @@ export function createTimeBlockCard(
 	const card = activeDocument.createElement("div");
 	card.className = "task-card task-card--timeblock";
 
-	(card as any).dataset.key = `timeblock-${timeblock.id}`;
+	card.dataset.key = `timeblock-${timeblock.id}`;
 
 	// Main row
 	const mainRow = card.createEl("div", { cls: "task-card__main-row" });
@@ -221,7 +221,7 @@ export function createTimeBlockCard(
 	// Click handler - open timeblock modal
 	card.addEventListener("click", (e) => {
 		if (opts.eventDate && opts.originalDate) {
-			showTimeblockInfoModal(timeblock, opts.eventDate, opts.originalDate, plugin);
+			void showTimeblockInfoModal(timeblock, opts.eventDate, opts.originalDate, plugin);
 		}
 	});
 

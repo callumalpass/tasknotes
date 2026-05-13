@@ -1,151 +1,86 @@
-jest.mock('obsidian', () => {
-  const base = jest.requireActual('obsidian');
-  return {
-    ...base,
-    parseFrontMatterAliases: (frontmatter: any): string[] => {
-      if (!frontmatter) return [];
-      const aliases = (frontmatter as any).aliases ?? (frontmatter as any).alias ?? [];
-      if (typeof aliases === 'string') return [aliases];
-      if (Array.isArray(aliases)) return aliases.filter(a => typeof a === 'string');
-      return [];
-    }
-  };
+import { MockObsidian } from "../../__mocks__/obsidian";
+import {
+	createCompletionPlugin,
+	createMarkdownFile,
+	getCompletionResult,
+} from "../helpers/nlpCompletionTestUtils";
+
+describe("+ project autocomplete searchable fields", () => {
+	beforeEach(() => {
+		MockObsidian.reset();
+	});
+
+	it("always searches basename, title, and aliases", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{customer|n(Customer)}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Projects/AcmePlan.md", {});
+		createMarkdownFile("Projects/TitleOnly.md", { title: "Foobar rollout" });
+		createMarkdownFile("Projects/AliasOnly.md", { aliases: ["Sidequest"] });
+
+		await expect(getCompletionResult(plugin, "+acme")).resolves.toMatchObject({
+			options: [expect.objectContaining({ apply: "[[AcmePlan]] " })],
+		});
+		await expect(getCompletionResult(plugin, "+foobar")).resolves.toMatchObject({
+			options: [expect.objectContaining({ apply: "[[TitleOnly]] " })],
+		});
+		await expect(getCompletionResult(plugin, "+side")).resolves.toMatchObject({
+			options: [expect.objectContaining({ apply: "[[AliasOnly]] " })],
+		});
+	});
+
+	it("only searches file.path when that displayed field is flagged with |s", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{title|n(Title)}", "{file.path|n(Path)}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Clients/Acme/Project.md", {
+			title: "Implementation",
+			customer: "Northwind",
+		});
+
+		await expect(getCompletionResult(plugin, "+acme")).resolves.toBeNull();
+
+		plugin.settings.projectAutosuggest.rows = [
+			"{title|n(Title)}",
+			"{file.path|n(Path)|s}",
+		];
+		await expect(getCompletionResult(plugin, "+acme")).resolves.toMatchObject({
+			options: [expect.objectContaining({ apply: "[[Project]] " })],
+		});
+	});
+
+	it("searches custom frontmatter fields only when they are flagged with |s", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				projectAutosuggest: {
+					rows: ["{title|n(Title)}", "{customer|n(Customer)}"],
+				},
+				storeTitleInFilename: false,
+			},
+		});
+		createMarkdownFile("Clients/Project.md", {
+			title: "Implementation",
+			customer: "Acme Corp",
+		});
+
+		await expect(getCompletionResult(plugin, "+acme")).resolves.toBeNull();
+
+		plugin.settings.projectAutosuggest.rows = [
+			"{title|n(Title)}",
+			"{customer|n(Customer)|s}",
+		];
+		await expect(getCompletionResult(plugin, "+acme")).resolves.toMatchObject({
+			options: [expect.objectContaining({ apply: "[[Project]] " })],
+		});
+	});
 });
-
-import { App, TFile } from 'obsidian';
-import { TaskCreationModal } from '../../../src/modals/TaskCreationModal';
-
-class MockPlugin {
-  app: App;
-  settings: any;
-  cacheManager: any;
-  fieldMapper: any;
-  constructor(app: App, settings: any) {
-    this.app = app;
-    this.settings = settings;
-    this.cacheManager = { getAllContexts: jest.fn(() => []), getAllTags: jest.fn(() => []) };
-    this.fieldMapper = { mapFromFrontmatter: (fm: any) => ({ title: fm?.title || '' }) };
-    this.i18n = {
-      translate: jest.fn((key: string, params?: Record<string, string | number>) => {
-        // Mock translations for specific keys used in tests
-        const translations: Record<string, string> = {
-          'modals.taskCreation.notices.success': 'Task "{title}" created successfully',
-          'modals.taskCreation.notices.failure': 'Failed to create task: {message}',
-          'modals.taskCreation.notices.titleRequired': 'Please enter a task title'
-        };
-
-        let result = translations[key] || key;
-
-        // Handle parameter substitution
-        if (params) {
-          Object.entries(params).forEach(([param, value]) => {
-            result = result.replace(`{${param}}`, String(value));
-          });
-        }
-
-        return result;
-      })
-    };
-  }
-}
-
-describe('+ project suggestions with |s searchable flag', () => {
-  let mockApp: App;
-  let mockPlugin: any;
-
-  beforeEach(() => {
-    // Build deterministic environment by injecting files and cache via DI (no shared FS reliance)
-    mockApp = new (require('obsidian').App)();
-    const file = new (require('obsidian').TFile)('Clients/Acme/Project.md');
-    (mockApp as any).vault.getMarkdownFiles = jest.fn(() => [file]);
-    (mockApp as any).metadataCache.getFileCache = jest.fn((f: any) => {
-      if (f.path === 'Clients/Acme/Project.md') {
-        return { frontmatter: { title: 'Foobar', customer: 'Acme Corp' } };
-      }
-      return null;
-    });
-
-    const settings = {
-      enableNaturalLanguageInput: true,
-      projectAutosuggest: {
-        enableFuzzy: false,
-        rows: [
-          '{title|n(Title)}',
-          '{file.path|n(Path)}',
-          '{customer|n(Customer)}'
-        ],
-      },
-      excludedFolders: '',
-      storeTitleInFilename: false,
-      defaultTaskPriority: 'normal',
-      defaultTaskStatus: 'open',
-      taskCreationDefaults: {
-        defaultDueDate: '',
-        defaultScheduledDate: '',
-        defaultContexts: '',
-        defaultTags: '',
-        defaultProjects: '',
-        defaultTimeEstimate: 0,
-        defaultReminders: [],
-      },
-    };
-
-    mockPlugin = new MockPlugin(mockApp, settings);
-  });
-
-  function setupModal() {
-    const modal = new TaskCreationModal(mockApp, mockPlugin);
-    const root = document.createElement('div') as unknown as HTMLElement;
-    (modal as any).createNaturalLanguageInput(root);
-    const textarea: HTMLTextAreaElement = (modal as any).nlInput;
-    const suggest: any = (modal as any).nlpSuggest;
-    // Ensure the NLPSuggest instance has explicit app and plugin references
-    suggest.plugin = mockPlugin;
-    suggest.obsidianApp = mockApp;
-    return { modal, textarea, suggest };
-  }
-
-  it('defaults searchable fields are always active (basename, title, aliases)', async () => {
-    const { textarea, suggest } = setupModal();
-    textarea.value = '+foo';
-    textarea.selectionStart = textarea.value.length;
-
-    const suggestions = await suggest.getSuggestions('');
-    const projects = (suggestions as any[]).filter(s => s.type === 'project');
-    // We don't assert a hit here; just ensure no exceptions and array shape is valid
-    expect(Array.isArray(projects)).toBe(true);
-  });
-
-  it('adds additional searchable fields (|s) on top of defaults', async () => {
-    // Mark file.path as searchable
-    mockPlugin.settings.projectAutosuggest.rows = [
-      '{title|n(Title)}',
-      '{file.path|n(Path)|s}',
-      '{customer|n(Customer)}'
-    ];
-
-    const { textarea, suggest } = setupModal();
-    textarea.value = '+acme';
-    textarea.selectionStart = textarea.value.length;
-
-    const suggestions = await suggest.getSuggestions('');
-    const projects = (suggestions as any[]).filter(s => s.type === 'project');
-    expect(projects.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('matches custom frontmatter fields when flagged with |s in addition to defaults', async () => {
-    mockPlugin.settings.projectAutosuggest.rows = [
-      '{customer|n(Customer)|s}',
-      '{title|n(Title)}'
-    ];
-
-    const { textarea, suggest } = setupModal();
-    textarea.value = '+acme';
-    textarea.selectionStart = textarea.value.length;
-
-    const suggestions = await suggest.getSuggestions('');
-    const projects = (suggestions as any[]).filter(s => s.type === 'project');
-    expect(projects.length).toBeGreaterThanOrEqual(1);
-  });
-});
-

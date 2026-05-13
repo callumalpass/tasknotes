@@ -2,11 +2,20 @@ import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
-import { Calendar, CalendarOptions } from "@fullcalendar/core";
+import {
+	Calendar,
+	CalendarOptions,
+	type DateSelectArg,
+	type EventClickArg,
+	type EventDropArg,
+	type EventInput,
+	type EventMountArg,
+	type EventSourceFuncArg,
+} from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { type EventResizeDoneArg } from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import {
 	generateCalendarEvents,
@@ -48,6 +57,32 @@ import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
 } from "./calendarRecreateUtils";
+import type { CalendarEventData } from "../services/CalendarProvider";
+
+type CalendarDataAdapterWithView = {
+	basesView: CalendarView;
+};
+
+type BasesEntryValue = {
+	data?: unknown;
+};
+
+type BasesEntryWithGetValue = {
+	getValue?: (propertyId: string) => BasesEntryValue | undefined;
+};
+
+type CalendarEphemeralState = {
+	calendarDate?: unknown;
+	calendarView?: unknown;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
+
+function isCalendarEphemeralState(value: unknown): value is CalendarEphemeralState {
+	return isRecord(value);
+}
 
 /**
  * Normalize date-like inputs to UTC-anchored strings for all-day values, or
@@ -131,7 +166,7 @@ export class CalendarView extends BasesViewBase {
 	calendar: Calendar | null = null; // Made public for factory access
 	private calendarEl: HTMLElement | null = null;
 	private currentTasks: TaskInfo[] = [];
-	private basesEntryByPath: Map<string, any> = new Map(); // Map task path to Bases entry for enrichment
+	private basesEntryByPath: Map<string, BasesEntryWithGetValue> = new Map(); // Map task path to Bases entry for enrichment
 
 	// Render lock to prevent duplicate renders
 	private _isRendering = false;
@@ -206,10 +241,10 @@ export class CalendarView extends BasesViewBase {
 	private microsoftCalendarToggles = new Map<string, boolean>();
 	private configLoaded = false; // Track if we've successfully loaded config
 
-	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
+	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
 		// BasesView now provides this.data, this.config, and this.app directly
-		(this.dataAdapter as any).basesView = this;
+		(this.dataAdapter as unknown as CalendarDataAdapterWithView).basesView = this;
 		// Note: Don't read config here - this.config is not set until after construction
 		// readViewOptions() will be called in onload()
 		// View options (read from config)
@@ -227,7 +262,7 @@ export class CalendarView extends BasesViewBase {
 			// Date navigation
 			initialDate: "",
 			initialDateProperty: null as string | null,
-			initialDateStrategy: "first" as "first" | "earliest" | "latest",
+			initialDateStrategy: "first",
 
 			// Layout
 			calendarView: calendarSettings.defaultView,
@@ -304,21 +339,21 @@ export class CalendarView extends BasesViewBase {
 		// First data update after load should be immediate (initial data population)
 		if (this._isFirstDataUpdate) {
 			this._isFirstDataUpdate = false;
-			this.render();
+			void this.render();
 			return;
 		}
 
 		// If expecting an immediate update from user action, render now
 		if (this._expectingImmediateUpdate) {
 			this._expectingImmediateUpdate = false;
-			this.render();
+			void this.render();
 			return;
 		}
 
 		// If config changed, mark for recreation and render immediately
 		if (this.hasConfigChanged()) {
 			this._configChangedNeedsRecreate = true;
-			this.render();
+			void this.render();
 			return;
 		}
 
@@ -327,7 +362,7 @@ export class CalendarView extends BasesViewBase {
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
-			this.render();
+			void this.render();
 		}, 5000); // 5 second debounce - outlasts Obsidian's save interval
 	}
 
@@ -352,7 +387,7 @@ export class CalendarView extends BasesViewBase {
 			return "";
 		}
 		// Include all config values that affect the calendar
-		const values: any[] = [
+		const values: unknown[] = [
 			// Event toggles
 			this.config.get("showScheduled"),
 			this.config.get("showDue"),
@@ -807,7 +842,7 @@ export class CalendarView extends BasesViewBase {
 			if (this.data?.data) {
 				for (const entry of this.data.data) {
 					if (entry.file?.path) {
-						this.basesEntryByPath.set(entry.file.path, entry);
+						this.basesEntryByPath.set(entry.file.path, entry as BasesEntryWithGetValue);
 					}
 				}
 			}
@@ -818,9 +853,9 @@ export class CalendarView extends BasesViewBase {
 			} else {
 				await this.updateCalendarEvents(taskNotes);
 			}
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("[TaskNotes][CalendarView] Error rendering:", error);
-			this.renderError(error);
+			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		} finally {
 			this._isRendering = false;
 		}
@@ -829,7 +864,7 @@ export class CalendarView extends BasesViewBase {
 		if (this._pendingRender) {
 			this._pendingRender = false;
 			// Use setTimeout to avoid deep call stack
-			window.setTimeout(() => this.render(), 0);
+			window.setTimeout(() => void this.render(), 0);
 		}
 	}
 
@@ -896,33 +931,8 @@ export class CalendarView extends BasesViewBase {
 					hint:
 						this.plugin.i18n.translate("views.basesCalendar.hints.refresh") ||
 						"Refresh calendar subscriptions",
-					click: async () => {
-						try {
-							// Refresh ICS subscriptions
-							if (this.plugin.icsSubscriptionService) {
-								await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
-							}
-
-							// Refresh Google Calendar events
-							if (this.plugin.googleCalendarService) {
-								await this.plugin.googleCalendarService.refreshAllCalendars();
-							}
-
-							// Refresh Microsoft Calendar events
-							if (this.plugin.microsoftCalendarService) {
-								await this.plugin.microsoftCalendarService.refreshAllCalendars();
-							}
-
-							// Refetch calendar events to show updated data
-							if (this.calendar) {
-								this.calendar.refetchEvents();
-							}
-						} catch (error) {
-							console.error(
-								"[TaskNotes][CalendarView] Error refreshing calendars:",
-								error
-							);
-						}
+					click: () => {
+						void this.refreshExternalCalendars();
 					},
 				},
 			},
@@ -968,7 +978,9 @@ export class CalendarView extends BasesViewBase {
 			dayMaxEventRows: this.viewOptions.dayMaxEventRows,
 			eventMaxStack: this.viewOptions.eventMaxStack ?? undefined,
 			navLinks: true,
-			navLinkDayClick: (date: Date) => handleDateTitleClick(date, this.plugin),
+			navLinkDayClick: (date: Date) => {
+				void handleDateTitleClick(date, this.plugin);
+			},
 			editable: true,
 			selectable: true,
 			selectMirror: this.viewOptions.selectMirror,
@@ -987,13 +999,21 @@ export class CalendarView extends BasesViewBase {
 			slotEventOverlap: this.viewOptions.slotEventOverlap,
 			eventAllow: () => true, // Allow all drops to proceed visually
 			events: (fetchInfo, successCallback, failureCallback) => {
-				this.fetchEvents(fetchInfo, successCallback, failureCallback);
+				void this.fetchEvents(fetchInfo, successCallback, failureCallback);
 			},
 			eventDidMount: (arg) => this.handleEventDidMount(arg),
-			eventClick: (info) => this.handleEventClick(info),
-			eventDrop: (info) => this.handleEventDrop(info),
-			eventResize: (info) => this.handleEventResize(info),
-			select: (info) => this.handleDateSelect(info),
+			eventClick: (info) => {
+				void this.handleEventClick(info);
+			},
+			eventDrop: (info) => {
+				void this.handleEventDrop(info);
+			},
+			eventResize: (info) => {
+				void this.handleEventResize(info);
+			},
+			select: (info) => {
+				void this.handleDateSelect(info);
+			},
 			viewDidMount: (arg) => {
 				// Track view type changes and save to config with debounce
 				// Debouncing prevents rapid view recreation when clicking through views quickly
@@ -1015,6 +1035,26 @@ export class CalendarView extends BasesViewBase {
 		// Apply showTodayHighlight option via CSS
 		this.applyTodayHighlightStyling();
 		this.scheduleTodayColumnWidthUpdate();
+	}
+
+	private async refreshExternalCalendars(): Promise<void> {
+		try {
+			if (this.plugin.icsSubscriptionService) {
+				await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
+			}
+
+			if (this.plugin.googleCalendarService) {
+				await this.plugin.googleCalendarService.refreshAllCalendars();
+			}
+
+			if (this.plugin.microsoftCalendarService) {
+				await this.plugin.microsoftCalendarService.refreshAllCalendars();
+			}
+
+			this.calendar?.refetchEvents();
+		} catch (error) {
+			console.error("[TaskNotes][CalendarView] Error refreshing calendars:", error);
+		}
 	}
 
 	/**
@@ -1160,18 +1200,18 @@ export class CalendarView extends BasesViewBase {
 		// Check for property-based navigation
 		if (this.viewOptions.initialDateProperty) {
 			const propertyId = this.viewOptions.initialDateProperty;
-			const internalFieldName = this.propertyMapper.basesToInternal(propertyId);
+			const internalFieldName = this.propertyMapper.basesToTaskCardProperty(propertyId);
 
 			// Collect dates from tasks
 			const dates: { compare: Date; value: string | Date }[] = [];
 			for (const task of taskNotes) {
-				const value = (task as any)[internalFieldName];
+				const value = (task as unknown as Record<string, unknown>)[internalFieldName];
 				const normalized = normalizeDateValueForCalendar(value);
 				if (!normalized) continue;
 
 				const compareDate = normalized.isAllDay
 					? parseDateToUTC(normalized.value as string)
-					: new Date(normalized.value as Date);
+					: new Date(normalized.value);
 				if (isNaN(compareDate.getTime())) continue;
 
 				dates.push({ compare: compareDate, value: normalized.value });
@@ -1209,21 +1249,21 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async fetchEvents(
-		fetchInfo: any,
-		successCallback: any,
-		failureCallback: any
+		fetchInfo: EventSourceFuncArg,
+		successCallback: (eventInputs: EventInput[]) => void,
+		failureCallback: (error: Error) => void
 	): Promise<void> {
 		try {
 			const events = await this.buildAllEvents(fetchInfo);
 			successCallback(events);
 		} catch (error) {
 			console.error("[TaskNotes][CalendarView] Error fetching events:", error);
-			failureCallback(error);
+			failureCallback(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
 
-	private async buildAllEvents(fetchInfo: any): Promise<any[]> {
-		const allEvents: any[] = [];
+	private async buildAllEvents(fetchInfo: EventSourceFuncArg): Promise<EventInput[]> {
+		const allEvents: EventInput[] = [];
 
 		// Build event configuration for generateCalendarEvents
 		// Let FullCalendar handle date filtering - it's optimized for this
@@ -1274,11 +1314,11 @@ export class CalendarView extends BasesViewBase {
 		return allEvents;
 	}
 
-	private async buildPropertyBasedEvents(): Promise<any[]> {
+	private async buildPropertyBasedEvents(): Promise<EventInput[]> {
 		if (!this.data?.data) return [];
 		if (!this.viewOptions.startDateProperty) return [];
 
-		const events: any[] = [];
+		const events: EventInput[] = [];
 
 		for (const entry of this.data.data) {
 			try {
@@ -1360,10 +1400,10 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildICSEvents(): Promise<any[]> {
+	private async buildICSEvents(): Promise<EventInput[]> {
 		if (!this.plugin.icsSubscriptionService) return [];
 
-		const events: any[] = [];
+		const events: EventInput[] = [];
 		const allICSEvents = this.plugin.icsSubscriptionService.getAllEvents();
 
 		for (const icsEvent of allICSEvents) {
@@ -1380,10 +1420,10 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildGoogleCalendarEvents(): Promise<any[]> {
+	private async buildGoogleCalendarEvents(): Promise<EventInput[]> {
 		if (!this.plugin.googleCalendarService) return [];
 
-		const events: any[] = [];
+		const events: EventInput[] = [];
 		const allGoogleEvents = this.plugin.googleCalendarService.getAllEvents();
 
 		for (const icsEvent of allGoogleEvents) {
@@ -1401,10 +1441,10 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildMicrosoftCalendarEvents(): Promise<any[]> {
+	private async buildMicrosoftCalendarEvents(): Promise<EventInput[]> {
 		if (!this.plugin.microsoftCalendarService) return [];
 
-		const events: any[] = [];
+		const events: EventInput[] = [];
 		const allMicrosoftEvents = this.plugin.microsoftCalendarService.getAllEvents();
 
 		for (const icsEvent of allMicrosoftEvents) {
@@ -1455,15 +1495,17 @@ export class CalendarView extends BasesViewBase {
 		}
 	}
 
-	private async handleEventClick(info: any): Promise<void> {
+	private async handleEventClick(info: EventClickArg): Promise<void> {
 		const { taskInfo, timeblock, eventType, filePath, icsEvent, subscriptionName } =
 			info.event.extendedProps || {};
 		const jsEvent = info.jsEvent;
 
 		// Handle timeblock click
 		if (eventType === "timeblock" && timeblock) {
-			const originalDate = format(info.event.start, "yyyy-MM-dd");
-			showTimeblockInfoModal(timeblock, info.event.start, originalDate, this.plugin, () =>
+			const eventStart = info.event.start;
+			if (!eventStart) return;
+			const originalDate = format(eventStart, "yyyy-MM-dd");
+			void showTimeblockInfoModal(timeblock, eventStart, originalDate, this.plugin, () =>
 				this.expectImmediateUpdate()
 			);
 			return;
@@ -1493,20 +1535,20 @@ export class CalendarView extends BasesViewBase {
 			if (file instanceof TFile) {
 				const isModKey = jsEvent.ctrlKey || jsEvent.metaKey;
 				const newLeaf = isModKey || jsEvent.button === 1; // Ctrl/Cmd+click or middle click
-				this.plugin.app.workspace.getLeaf(newLeaf).openFile(file);
+				void this.plugin.app.workspace.getLeaf(newLeaf).openFile(file);
 			}
 			return;
 		}
 
 		// Handle task click with single/double click detection based on user settings
 		if (taskInfo?.path && jsEvent.button === 0) {
-			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id, () =>
+			void handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, info.event.id, () =>
 				this.expectImmediateUpdate()
 			);
 		}
 	}
 
-	private async handleEventDrop(info: any): Promise<void> {
+	private async handleEventDrop(info: EventDropArg): Promise<void> {
 		// Expect immediate update since user is interacting with calendar
 		this.expectImmediateUpdate();
 
@@ -1528,6 +1570,10 @@ export class CalendarView extends BasesViewBase {
 
 		// Handle timeblock drops
 		if (eventType === "timeblock") {
+			if (!info.oldEvent.start) {
+				info.revert();
+				return;
+			}
 			const originalDate = format(info.oldEvent.start, "yyyy-MM-dd");
 			await handleTimeblockDrop(info, timeblock, originalDate, this.plugin);
 			return;
@@ -1568,6 +1614,10 @@ export class CalendarView extends BasesViewBase {
 				// Calculate time shift (in milliseconds)
 				const oldStart = info.oldEvent.start;
 				const newStart = info.event.start;
+				if (!oldStart || !newStart) {
+					info.revert();
+					return;
+				}
 				const timeDiffMs = newStart.getTime() - oldStart.getTime();
 
 				// Update frontmatter
@@ -1617,6 +1667,10 @@ export class CalendarView extends BasesViewBase {
 				try {
 					const { calendarId, eventId } = provider.extractEventIds(icsEvent);
 					const newStart = info.event.start;
+					if (!newStart) {
+						info.revert();
+						return;
+					}
 					const newAllDay = info.event.allDay;
 					let newEnd = info.event.end;
 					if (!newEnd) {
@@ -1629,7 +1683,7 @@ export class CalendarView extends BasesViewBase {
 					}
 
 					// Build update payload
-					const updates: any = {};
+					const updates: Partial<CalendarEventData> = {};
 					if (newAllDay) {
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
@@ -1680,6 +1734,10 @@ export class CalendarView extends BasesViewBase {
 
 				// Calculate time shift
 				const oldStart = info.oldEvent.start;
+				if (!oldStart) {
+					info.revert();
+					return;
+				}
 				const timeDiffMs = newStart.getTime() - oldStart.getTime();
 
 				// Update the time entry
@@ -1727,6 +1785,10 @@ export class CalendarView extends BasesViewBase {
 			try {
 				if (eventType === "scheduled" || eventType === "due") {
 					const newStart = info.event.start;
+					if (!newStart) {
+						info.revert();
+						return;
+					}
 					const allDay = info.event.allDay;
 					const newDateString = allDay
 						? format(newStart, "yyyy-MM-dd")
@@ -1785,7 +1847,7 @@ export class CalendarView extends BasesViewBase {
 		}
 	}
 
-	private async handleEventResize(info: any): Promise<void> {
+	private async handleEventResize(info: EventResizeDoneArg): Promise<void> {
 		// Expect immediate update since user is interacting with calendar
 		this.expectImmediateUpdate();
 
@@ -1842,6 +1904,10 @@ export class CalendarView extends BasesViewBase {
 
 		// Handle timeblock resize
 		if (eventType === "timeblock") {
+			if (!info.event.start) {
+				info.revert();
+				return;
+			}
 			const originalDate = format(info.event.start, "yyyy-MM-dd");
 			await handleTimeblockResize(info, timeblock, originalDate, this.plugin);
 			return;
@@ -1907,7 +1973,7 @@ export class CalendarView extends BasesViewBase {
 					const newStart = info.event.start;
 					const newEnd = info.event.end;
 
-					if (!newEnd) {
+					if (!newStart || !newEnd) {
 						info.revert();
 						return;
 					}
@@ -1915,7 +1981,7 @@ export class CalendarView extends BasesViewBase {
 					const newAllDay = info.event.allDay;
 
 					// Build update payload
-					const updates: any = {};
+					const updates: Partial<CalendarEventData> = {};
 					if (newAllDay) {
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
@@ -1982,7 +2048,7 @@ export class CalendarView extends BasesViewBase {
 		}
 	}
 
-	private async handleDateSelect(info: any): Promise<void> {
+	private async handleDateSelect(info: DateSelectArg): Promise<void> {
 		// Determine what type of event to create based on view
 		const menu = new Menu();
 
@@ -2058,7 +2124,7 @@ export class CalendarView extends BasesViewBase {
 									onEventCreated: () => {
 										this.expectImmediateUpdate();
 										// Refresh provider data to show the new event
-										registry.refreshAll();
+										void registry.refreshAll();
 									},
 								}
 							);
@@ -2068,7 +2134,11 @@ export class CalendarView extends BasesViewBase {
 			}
 		}
 
-		menu.showAtMouseEvent(info.jsEvent);
+		if (info.jsEvent) {
+			menu.showAtMouseEvent(info.jsEvent);
+		} else {
+			menu.showAtPosition({ x: 0, y: 0 });
+		}
 
 		// Unselect after handling
 		if (this.calendar) {
@@ -2076,7 +2146,7 @@ export class CalendarView extends BasesViewBase {
 		}
 	}
 
-	private handleEventDidMount(arg: any): void {
+	private handleEventDidMount(arg: EventMountArg): void {
 		if (!arg?.event?.extendedProps) return;
 
 		const { taskInfo, timeblock, icsEvent, eventType, basesEntry } = arg.event.extendedProps;
@@ -2238,7 +2308,7 @@ export class CalendarView extends BasesViewBase {
 					? format(arg.event.start, "yyyy-MM-dd")
 					: undefined;
 				cardElement = createTimeBlockCard(timeblock, this.plugin, {
-					eventDate: arg.event.start,
+					eventDate: arg.event.start ?? undefined,
 					originalDate: originalDate,
 				});
 			}
@@ -2342,7 +2412,7 @@ export class CalendarView extends BasesViewBase {
 					targetDate: targetDate,
 					onUpdate: () => {
 						// Refresh calendar with fresh task data when task is updated
-						this.refreshCalendarWithFreshData();
+						void this.refreshCalendarWithFreshData();
 					},
 				});
 				contextMenu.show(e);
@@ -2363,7 +2433,7 @@ export class CalendarView extends BasesViewBase {
 					subscriptionName: subscriptionName,
 					onUpdate: () => {
 						// Refresh calendar with fresh data when ICS event is updated
-						this.refreshCalendarWithFreshData();
+						void this.refreshCalendarWithFreshData();
 					},
 				});
 				contextMenu.show(e);
@@ -2536,15 +2606,16 @@ export class CalendarView extends BasesViewBase {
 	 * Get ephemeral state to preserve across view reloads.
 	 * Saves current calendar date and view type.
 	 */
-	getEphemeralState(): any {
+	getEphemeralState(): unknown {
 		const baseState = super.getEphemeralState();
+		const baseStateObject = isRecord(baseState) ? baseState : {};
 
 		if (this.calendar) {
 			const currentDate = this.calendar.getDate();
 			const currentView = this.calendar.view?.type;
 
 			return {
-				...baseState,
+				...baseStateObject,
 				calendarDate: currentDate ? currentDate.toISOString() : null,
 				calendarView: currentView || null,
 			};
@@ -2557,14 +2628,14 @@ export class CalendarView extends BasesViewBase {
 	 * Restore ephemeral state after view reload.
 	 * Restores calendar date and view type.
 	 */
-	setEphemeralState(state: any): void {
+	setEphemeralState(state: unknown): void {
 		super.setEphemeralState(state);
 
-		if (!state) return;
+		if (!isCalendarEphemeralState(state)) return;
 
 		// Restore calendar date and view after calendar is initialized
 		if (this.calendar) {
-			if (state.calendarDate) {
+			if (typeof state.calendarDate === "string") {
 				try {
 					this.calendar.gotoDate(new Date(state.calendarDate));
 				} catch (e) {
@@ -2572,7 +2643,10 @@ export class CalendarView extends BasesViewBase {
 				}
 			}
 
-			if (state.calendarView && state.calendarView !== this.calendar.view?.type) {
+			if (
+				typeof state.calendarView === "string" &&
+				state.calendarView !== this.calendar.view?.type
+			) {
 				try {
 					this.calendar.changeView(state.calendarView);
 				} catch (e) {
@@ -2589,7 +2663,7 @@ export class CalendarView extends BasesViewBase {
  * Returns an actual CalendarView instance (extends BasesView).
  */
 export function buildCalendarViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: any, containerEl: HTMLElement): CalendarView {
+	return function (controller: unknown, containerEl: HTMLElement): CalendarView {
 		if (!containerEl) {
 			console.error("[TaskNotes][CalendarView] No containerEl provided");
 			throw new Error("CalendarView requires a containerEl");

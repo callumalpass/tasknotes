@@ -118,13 +118,14 @@ export async function selectiveUpdateForListView(
 		getCurrentVisibleProperties?: () => string[];
 		getVisibleProperties?: () => string[];
 		getVisiblePropertyLabels?: () => Record<string, string>;
+		refresh?: () => void | Promise<void>;
 	},
 	taskPath: string,
 	operation: "update" | "delete" | "create"
 ): Promise<void> {
 	if (!view.taskElements) {
 		// Fallback to full refresh if view doesn't have taskElements tracking
-		await (view as any).refresh?.();
+		await view.refresh?.();
 		return;
 	}
 
@@ -169,10 +170,10 @@ export async function selectiveUpdateForListView(
 			}
 			break;
 
-		case "create":
-			// For new tasks, we generally need to check if they should be visible
-			// This is view-specific, so fallback to refresh for now
-			await (view as any).refresh?.();
+			case "create":
+				// For new tasks, we generally need to check if they should be visible
+				// This is view-specific, so fallback to refresh for now
+				await view.refresh?.();
 			break;
 	}
 }

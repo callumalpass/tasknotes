@@ -24,6 +24,7 @@ export const translationResources = {
 } satisfies TranslationResources;
 
 export type TranslationKey = string;
+export type { InterpolationValues } from "./types";
 
 export function createI18nService(options?: Partial<I18nServiceOptions>): I18nService {
 	return new I18nService({

@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf, Setting } from "obsidian";
 import { format, startOfWeek, endOfWeek } from "date-fns";
+import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { POMODORO_STATS_VIEW_TYPE, PomodoroHistoryStats, PomodoroSessionHistory } from "../types";
 import {
@@ -8,6 +9,10 @@ import {
 } from "../utils/dateUtils";
 import { getSessionDuration } from "../utils/pomodoroUtils";
 import { calculatePomodoroStats } from "../utils/pomodoroStats";
+
+function isDay(value: number): value is Day {
+	return Number.isInteger(value) && value >= 0 && value <= 6;
+}
 
 export class PomodoroStatsView extends ItemView {
 	plugin: TaskNotesPlugin;
@@ -66,7 +71,7 @@ export class PomodoroStatsView extends ItemView {
 			text: this.t("views.pomodoroStats.refresh"),
 		});
 		this.registerDomEvent(refreshButton, "click", () => {
-			this.refreshStats();
+			void this.refreshStats();
 		});
 
 		// Overview section (like TickTick)
@@ -133,10 +138,11 @@ export class PomodoroStatsView extends ItemView {
 			const yesterdayLocal = new Date(todayLocal);
 			yesterdayLocal.setDate(yesterdayLocal.getDate() - 1);
 			const yesterdayUTCAnchor = createUTCDateFromLocalCalendarDate(yesterdayLocal);
-			const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
-			const weekStartOptions = {
-				weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6,
-			};
+				const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
+				const weekStartsOn = isDay(firstDaySetting) ? firstDaySetting : 0;
+				const weekStartOptions: { weekStartsOn: Day } = {
+					weekStartsOn,
+				};
 			const weekStart = startOfWeek(todayUTCAnchor, weekStartOptions);
 			const weekEnd = endOfWeek(todayUTCAnchor, weekStartOptions);
 

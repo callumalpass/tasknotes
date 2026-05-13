@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Notice } from "obsidian";
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Pomodoro state transitions guard active sessions before dereferencing. */
+import { Notice, TFile, moment as obsidianMoment } from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
 	createDailyNote,
@@ -19,7 +19,7 @@ import {
 	TaskInfo,
 	IWebhookNotifier,
 } from "../types";
-import { TranslationKey } from "../i18n";
+import type { InterpolationValues, TranslationKey } from "../i18n";
 import {
 	getCurrentTimestamp,
 	formatDateForStorage,
@@ -37,6 +37,20 @@ import {
 	sortPomodoroSessions,
 } from "../utils/pomodoroStats";
 
+type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+
+function getDailyNoteMoment(date: Date): DailyNoteMoment {
+	return (obsidianMoment as unknown as (input: Date) => DailyNoteMoment)(date);
+}
+
+function isPomodoroSessionHistory(value: unknown): value is PomodoroSessionHistory {
+	return (
+		value !== null &&
+		typeof value === "object" &&
+		typeof (value as { id?: unknown }).id === "string"
+	);
+}
+
 export class PomodoroService {
 	private plugin: TaskNotesPlugin;
 	private timerWorker: Worker | null = null;
@@ -48,7 +62,7 @@ export class PomodoroService {
 	private lastSelectedTaskPathLoaded = false;
 	private lastWorkSessionTaskPath?: string;
 
-	private translate(key: TranslationKey, variables?: Record<string, any>): string {
+	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -83,7 +97,7 @@ export class PomodoroService {
 
 		this.timerWorker.onmessage = (e) => {
 			if (e.data.type === "done") {
-				this.completePomodoro();
+				void this.completePomodoro();
 			}
 
 			if (e.data.type === "tick") {
@@ -516,7 +530,7 @@ export class PomodoroService {
 			// Check for invalid start time (future dates)
 			if (startTime > now) {
 				// Reset session if start time is in the future
-				this.stopPomodoro();
+				void this.stopPomodoro();
 				return;
 			}
 
@@ -544,7 +558,7 @@ export class PomodoroService {
 				this.startTimer();
 			} else if (this.state.timeRemaining <= 0) {
 				// Timer would have completed while app was closed
-				this.completePomodoro();
+				void this.completePomodoro();
 			}
 		}
 	}
@@ -726,10 +740,9 @@ export class PomodoroService {
 
 			// Auto-start break if configured, otherwise just prepare the timer
 			if (this.plugin.settings.pomodoroAutoStartBreaks) {
-				const timeout = window.setTimeout(
-					() => this.startBreak(shouldTakeLongBreak),
-					1000
-				) as unknown as number;
+				const timeout = window.setTimeout(() => {
+					void this.startBreak(shouldTakeLongBreak);
+				}, 1000);
 				this.cleanupTimeouts.add(timeout);
 			}
 		} else {
@@ -740,8 +753,8 @@ export class PomodoroService {
 			// Auto-start work if configured, otherwise just prepare the timer
 			if (this.plugin.settings.pomodoroAutoStartWork) {
 				const timeout = window.setTimeout(() => {
-					this.autoStartWorkSession();
-				}, 1000) as unknown as number;
+					void this.autoStartWorkSession();
+				}, 1000);
 				this.cleanupTimeouts.add(timeout);
 			}
 		}
@@ -792,14 +805,14 @@ export class PomodoroService {
 					console.error("Failed to play second beep:", error);
 				}
 			}, 150);
-			this.cleanupTimeouts.add(beepTimeout as unknown as number);
+			this.cleanupTimeouts.add(beepTimeout);
 
 			// Clean up audio context after sounds complete
 			const cleanupTimeout = window.setTimeout(() => {
 				this.activeAudioContexts.delete(audioContext);
 				audioContext.close().catch(() => {});
 			}, 300);
-			this.cleanupTimeouts.add(cleanupTimeout as unknown as number);
+			this.cleanupTimeouts.add(cleanupTimeout);
 		} catch (error) {
 			console.error("Failed to play completion sound:", error);
 		}
@@ -855,7 +868,7 @@ export class PomodoroService {
 			const newTotalSeconds = totalActiveSeconds + this.state.timeRemaining;
 			this.state.currentSession.plannedDuration = Math.ceil(newTotalSeconds / 60);
 
-			this.saveState();
+			void this.saveState();
 			this.startTimer();
 
 			// Emit tick event to update UI
@@ -874,7 +887,7 @@ export class PomodoroService {
 
 			// Ensure minimum 1 second duration
 			this.state.timeRemaining = Math.max(1, newTimeInSeconds);
-			this.saveState();
+			void this.saveState();
 
 			// Trigger tick event to update UI
 			this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
@@ -1107,7 +1120,7 @@ export class PomodoroService {
 			}
 		}
 		this.activeAudioContexts.clear();
-		this.saveState();
+		void this.saveState();
 	}
 
 	private async loadPluginHistory(): Promise<PomodoroSessionHistory[]> {
@@ -1183,7 +1196,7 @@ export class PomodoroService {
 
 	private async loadHistoryFromDailyNoteForDateKey(
 		dateKey: string,
-		allDailyNotes?: Record<string, any>
+		allDailyNotes?: Record<string, TFile>
 	): Promise<PomodoroSessionHistory[]> {
 		try {
 			if (!dateKey || !appHasDailyNotesPluginLoaded()) {
@@ -1192,8 +1205,8 @@ export class PomodoroService {
 
 			const dailyNotes = allDailyNotes ?? getAllDailyNotes();
 			const date = parseDateToLocal(dateKey);
-			const moment = (window as any).moment(date);
-			const dailyNote = getDailyNote(moment, dailyNotes);
+			const dailyNoteMoment = getDailyNoteMoment(date);
+			const dailyNote = getDailyNote(dailyNoteMoment, dailyNotes);
 
 			if (!dailyNote) {
 				return [];
@@ -1238,13 +1251,13 @@ export class PomodoroService {
 		}
 	}
 
-	private readPomodoroSessionsFromDailyNote(file: any): PomodoroSessionHistory[] {
+	private readPomodoroSessionsFromDailyNote(file: TFile): PomodoroSessionHistory[] {
 		const cache = this.plugin.app.metadataCache.getFileCache(file);
 		const frontmatter = cache?.frontmatter;
 		const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
 		const sessions = frontmatter?.[pomodoroField];
 
-		return Array.isArray(sessions) ? sessions : [];
+		return Array.isArray(sessions) ? sessions.filter(isPomodoroSessionHistory) : [];
 	}
 
 	/**
@@ -1282,14 +1295,14 @@ export class PomodoroService {
 			}
 
 			const sessionDate = parseDateToLocal(sessionDateKey);
-			const moment = (window as any).moment(sessionDate);
+			const dailyNoteMoment = getDailyNoteMoment(sessionDate);
 
 			// Get or create daily note
 			const allDailyNotes = getAllDailyNotes();
-			let dailyNote = getDailyNote(moment, allDailyNotes);
+			let dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
 
 			if (!dailyNote) {
-				dailyNote = await createDailyNote(moment);
+				dailyNote = await createDailyNote(dailyNoteMoment);
 
 				// Validate that daily note was created successfully
 				if (!dailyNote) {
@@ -1304,8 +1317,10 @@ export class PomodoroService {
 
 			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
 				// Get existing sessions
-				const existingSessions = frontmatter[pomodoroField] || [];
-				const existingIds = new Set(existingSessions.map((s: any) => s.id));
+				const existingSessions = Array.isArray(frontmatter[pomodoroField])
+					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
+					: [];
+				const existingIds = new Set(existingSessions.map((s) => s.id));
 
 				// Only add session if it doesn't already exist
 				if (!existingIds.has(session.id)) {
@@ -1326,14 +1341,14 @@ export class PomodoroService {
 	): Promise<void> {
 		try {
 			const date = parseDateToLocal(dateStr); // Use local date for daily note creation
-			const moment = (window as any).moment(date);
+			const dailyNoteMoment = getDailyNoteMoment(date);
 
 			// Get or create daily note
 			const allDailyNotes = getAllDailyNotes();
-			let dailyNote = getDailyNote(moment, allDailyNotes);
+			let dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
 
 			if (!dailyNote) {
-				dailyNote = await createDailyNote(moment);
+				dailyNote = await createDailyNote(dailyNoteMoment);
 
 				// Validate that daily note was created successfully
 				if (!dailyNote) {
@@ -1348,8 +1363,10 @@ export class PomodoroService {
 
 			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
 				// Get existing sessions and append new ones
-				const existingSessions = frontmatter[pomodoroField] || [];
-				const existingIds = new Set(existingSessions.map((s: any) => s.id));
+				const existingSessions = Array.isArray(frontmatter[pomodoroField])
+					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
+					: [];
+				const existingIds = new Set(existingSessions.map((s) => s.id));
 
 				// Only add sessions that don't already exist
 				const newSessions = sessions.filter((session) => !existingIds.has(session.id));

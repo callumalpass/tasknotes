@@ -35,7 +35,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private tasks: TaskInfo[];
 	private options: TaskSelectorWithCreateOptions;
 	private plugin: TaskNotesPlugin;
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
 	private nlParser: NaturalLanguageParser;
 	private createFooterEl: HTMLElement | null = null;
 	private currentQuery = "";
@@ -92,7 +92,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		this.scope.register(["Shift"], "Enter", (e: KeyboardEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
-			this.createNewTask();
+			void this.createNewTask();
 			return false;
 		});
 

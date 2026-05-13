@@ -1,4 +1,13 @@
-import { TFile, FuzzySuggestModal, FuzzyMatch, setTooltip, Notice } from "obsidian";
+import {
+	TFile,
+	FuzzySuggestModal,
+	FuzzyMatch,
+	setTooltip,
+	Notice,
+	App,
+	moment as obsidianMoment,
+} from "obsidian";
+import type { BasesEntry, BasesPropertyId } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
@@ -11,6 +20,7 @@ import {
 	createSafeUTCDate,
 	getDatePart,
 } from "../utils/dateUtils";
+import { stringifyUnknown } from "../utils/stringUtils";
 import { isSameDay } from "../utils/helpers";
 import {
 	getAllDailyNotes,
@@ -24,7 +34,17 @@ interface NoteEntry {
 	title: string;
 	path: string;
 	dateValue: string; // The date string from the property
-	basesEntry?: any; // Reference to Bases entry for additional data
+	basesEntry?: BasesEntry; // Reference to Bases entry for additional data
+}
+
+type DataAdapterWithView = {
+	basesView?: MiniCalendarView;
+};
+
+type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+
+function getDailyNoteMoment(date: Date): DailyNoteMoment {
+	return (obsidianMoment as unknown as (input: Date) => DailyNoteMoment)(date);
 }
 
 export class MiniCalendarView extends BasesViewBase {
@@ -55,10 +75,10 @@ export class MiniCalendarView extends BasesViewBase {
 	// Keyboard navigation
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 
-	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
+	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
 		// BasesView now provides this.data, this.config, and this.app directly
-		(this.dataAdapter as any).basesView = this;
+		(this.dataAdapter as unknown as DataAdapterWithView).basesView = this;
 
 		// Initialize with today
 		const todayLocal = getTodayLocal();
@@ -150,13 +170,13 @@ export class MiniCalendarView extends BasesViewBase {
 					}
 				}, 10);
 			}
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("[TaskNotes][MiniCalendarView] Error rendering:", error);
-			this.renderError(error);
+			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
 
-	private indexNotesByDate(dataItems: any[]): void {
+	private indexNotesByDate(dataItems: BasesEntry[]): void {
 		this.notesByDate.clear();
 
 		if (!this.dateProperty) {
@@ -181,7 +201,7 @@ export class MiniCalendarView extends BasesViewBase {
 				if (this.titleProperty) {
 					try {
 						// Try using getValue directly on the Bases item (preferred method)
-						const titleValue = item.getValue?.(this.titleProperty);
+						const titleValue = item.getValue?.(this.titleProperty as BasesPropertyId);
 
 						if (titleValue !== null && titleValue !== undefined) {
 							// Bases values have a toString() method
@@ -194,7 +214,7 @@ export class MiniCalendarView extends BasesViewBase {
 							} else if (typeof titleValue === "string") {
 								title = titleValue;
 							} else {
-								const stringValue = String(titleValue);
+								const stringValue = stringifyUnknown(titleValue);
 								if (stringValue && stringValue !== "null" && stringValue !== "") {
 									title = stringValue;
 								}
@@ -206,8 +226,8 @@ export class MiniCalendarView extends BasesViewBase {
 								this.titleProperty
 							);
 							if (adapterValue !== null && adapterValue !== undefined) {
-								if (typeof adapterValue === "object" && adapterValue.toString) {
-									const stringValue = adapterValue.toString();
+								if (typeof adapterValue === "object") {
+									const stringValue = stringifyUnknown(adapterValue);
 									if (
 										stringValue &&
 										stringValue !== "null" &&
@@ -218,7 +238,7 @@ export class MiniCalendarView extends BasesViewBase {
 								} else if (typeof adapterValue === "string") {
 									title = adapterValue;
 								} else {
-									const stringValue = String(adapterValue);
+									const stringValue = stringifyUnknown(adapterValue);
 									if (
 										stringValue &&
 										stringValue !== "null" &&
@@ -260,7 +280,7 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 	}
 
-	private getDateValueFromProperty(item: any, propertyId: string): string | null {
+	private getDateValueFromProperty(item: BasesEntry, propertyId: string): string | null {
 		try {
 			// Use BasesDataAdapter to get the property value (handles all Bases Value types)
 			const value = this.dataAdapter.getPropertyValue(item, propertyId);
@@ -632,7 +652,7 @@ export class MiniCalendarView extends BasesViewBase {
 		dayEl.addEventListener("click", (e: MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
-			this.handleDayClick(dayDate, e);
+			void this.handleDayClick(dayDate, e);
 
 			// Return focus to the grid after handling the click
 			const grid = this.calendarEl?.querySelector(".mini-calendar-view__grid") as HTMLElement;
@@ -668,7 +688,7 @@ export class MiniCalendarView extends BasesViewBase {
 				(selectedNote) => {
 					if (selectedNote) {
 						// Open the selected note
-						this.plugin.app.workspace.getLeaf(false).openFile(selectedNote.file);
+						void this.plugin.app.workspace.getLeaf(false).openFile(selectedNote.file);
 					}
 				}
 			);
@@ -696,16 +716,16 @@ export class MiniCalendarView extends BasesViewBase {
 			0,
 			0
 		);
-		const moment = (window as any).moment(jsDate);
+		const dailyNoteMoment = getDailyNoteMoment(jsDate);
 
 		// Get all daily notes to check if one exists for this date
 		const allDailyNotes = getAllDailyNotes();
-		let dailyNote = getDailyNote(moment, allDailyNotes);
+		let dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
 
 		if (!dailyNote) {
 			// Daily note doesn't exist, create it
 			try {
-				dailyNote = await createDailyNote(moment);
+				dailyNote = await createDailyNote(dailyNoteMoment);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				console.error("Failed to create daily note:", error);
@@ -763,95 +783,97 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 
 		// Create new handler
-		this.keyboardHandler = async (e: KeyboardEvent) => {
-			// Arrow keys - navigate between days
-			if (
-				e.key === "ArrowLeft" ||
-				e.key === "ArrowRight" ||
-				e.key === "ArrowUp" ||
-				e.key === "ArrowDown"
-			) {
-				e.preventDefault();
-				this.navigateByArrowKey(e.key);
-				return;
-			}
-
-			// Page Up/Down - navigate months
-			if (e.key === "PageUp") {
-				e.preventDefault();
-				if (e.shiftKey) {
-					// Shift+PageUp - previous year
-					this.navigateToYear(-1);
-				} else {
-					this.navigateToPreviousMonth();
-				}
-				return;
-			}
-
-			if (e.key === "PageDown") {
-				e.preventDefault();
-				if (e.shiftKey) {
-					// Shift+PageDown - next year
-					this.navigateToYear(1);
-				} else {
-					this.navigateToNextMonth();
-				}
-				return;
-			}
-
-			// Home/End - navigate to start/end of week or month
-			if (e.key === "Home") {
-				e.preventDefault();
-				if (e.ctrlKey || e.metaKey) {
-					// Ctrl+Home - first day of month
-					this.navigateToStartOfMonth();
-				} else {
-					// Home - start of week
-					this.navigateToStartOfWeek();
-				}
-				return;
-			}
-
-			if (e.key === "End") {
-				e.preventDefault();
-				if (e.ctrlKey || e.metaKey) {
-					// Ctrl+End - last day of month
-					this.navigateToEndOfMonth();
-				} else {
-					// End - end of week
-					this.navigateToEndOfWeek();
-				}
-				return;
-			}
-
-			// T - jump to today
-			if (e.key === "t" || e.key === "T") {
-				e.preventDefault();
-				this.navigateToToday();
-				return;
-			}
-
-			// Escape - clear multi-select mode
-			if (e.key === "Escape") {
-				if (this.multiSelectMode) {
+		this.keyboardHandler = (e: KeyboardEvent) => {
+			void (async () => {
+				// Arrow keys - navigate between days
+				if (
+					e.key === "ArrowLeft" ||
+					e.key === "ArrowRight" ||
+					e.key === "ArrowUp" ||
+					e.key === "ArrowDown"
+				) {
 					e.preventDefault();
-					this.multiSelectMode = false;
-					this.selectedDates.clear();
-					this.refresh();
+					this.navigateByArrowKey(e.key);
+					return;
 				}
-				return;
-			}
 
-			// Enter/Space - select date or open fuzzy selector
-			if (e.key === "Enter" || e.key === " ") {
-				e.preventDefault();
-				if (e.ctrlKey || e.metaKey) {
-					await this.openDailyNoteForDate(this.selectedDate);
-				} else {
-					await this.handleDayClick(this.selectedDate);
+				// Page Up/Down - navigate months
+				if (e.key === "PageUp") {
+					e.preventDefault();
+					if (e.shiftKey) {
+						// Shift+PageUp - previous year
+						this.navigateToYear(-1);
+					} else {
+						this.navigateToPreviousMonth();
+					}
+					return;
 				}
-				return;
-			}
+
+				if (e.key === "PageDown") {
+					e.preventDefault();
+					if (e.shiftKey) {
+						// Shift+PageDown - next year
+						this.navigateToYear(1);
+					} else {
+						this.navigateToNextMonth();
+					}
+					return;
+				}
+
+				// Home/End - navigate to start/end of week or month
+				if (e.key === "Home") {
+					e.preventDefault();
+					if (e.ctrlKey || e.metaKey) {
+						// Ctrl+Home - first day of month
+						this.navigateToStartOfMonth();
+					} else {
+						// Home - start of week
+						this.navigateToStartOfWeek();
+					}
+					return;
+				}
+
+				if (e.key === "End") {
+					e.preventDefault();
+					if (e.ctrlKey || e.metaKey) {
+						// Ctrl+End - last day of month
+						this.navigateToEndOfMonth();
+					} else {
+						// End - end of week
+						this.navigateToEndOfWeek();
+					}
+					return;
+				}
+
+				// T - jump to today
+				if (e.key === "t" || e.key === "T") {
+					e.preventDefault();
+					this.navigateToToday();
+					return;
+				}
+
+				// Escape - clear multi-select mode
+				if (e.key === "Escape") {
+					if (this.multiSelectMode) {
+						e.preventDefault();
+						this.multiSelectMode = false;
+						this.selectedDates.clear();
+						this.refresh();
+					}
+					return;
+				}
+
+				// Enter/Space - select date or open fuzzy selector
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					if (e.ctrlKey || e.metaKey) {
+						await this.openDailyNoteForDate(this.selectedDate);
+					} else {
+						await this.handleDayClick(this.selectedDate);
+					}
+					return;
+				}
+			})();
 		};
 
 		calendarGrid.addEventListener("keydown", this.keyboardHandler);
@@ -1031,7 +1053,7 @@ export class MiniCalendarView extends BasesViewBase {
 				(selectedNote) => {
 					if (selectedNote) {
 						// Open the selected note
-						this.plugin.app.workspace.getLeaf(false).openFile(selectedNote.file);
+						void this.plugin.app.workspace.getLeaf(false).openFile(selectedNote.file);
 					}
 				}
 			);
@@ -1056,7 +1078,7 @@ export class MiniCalendarView extends BasesViewBase {
 			let line = `• ${note.title}`;
 
 			// Add note type if available from basesEntry
-			const noteTypeValue = note.basesEntry?.getValue?.("type");
+			const noteTypeValue = note.basesEntry?.getValue?.("note.type");
 			if (noteTypeValue) {
 				let noteType: string | null = null;
 				if (typeof noteTypeValue === "object" && noteTypeValue.toString) {
@@ -1166,7 +1188,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 	private plugin: TaskNotesPlugin;
 
 	constructor(
-		app: any,
+		app: App,
 		plugin: TaskNotesPlugin,
 		notes: NoteEntry[],
 		onChooseNote: (note: NoteEntry | null) => void
@@ -1223,7 +1245,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
  * Returns an actual MiniCalendarView instance (extends BasesView).
  */
 export function buildMiniCalendarViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: any, containerEl: HTMLElement): MiniCalendarView {
+	return function (controller: unknown, containerEl: HTMLElement): MiniCalendarView {
 		if (!containerEl) {
 			console.error("[TaskNotes][MiniCalendarView] No containerEl provided");
 			throw new Error("MiniCalendarView requires a containerEl");

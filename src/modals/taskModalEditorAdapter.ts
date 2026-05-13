@@ -1,4 +1,5 @@
 import { App } from "obsidian";
+import type { Extension } from "@codemirror/state";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 
 type EmbeddableMarkdownEditorConstructor =
@@ -6,7 +7,7 @@ type EmbeddableMarkdownEditorConstructor =
 
 function loadEmbeddableMarkdownEditor(): EmbeddableMarkdownEditorConstructor {
 	// Lazy-load because the editor module resolves Obsidian internals during evaluation.
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	// eslint-disable-next-line @typescript-eslint/no-require-imports -- Modal editor is lazy-loaded to avoid evaluating Obsidian internals during import.
 	const editorModule = require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
 	return editorModule.EmbeddableMarkdownEditor;
 }
@@ -19,7 +20,7 @@ export interface TaskModalEditorOptions {
 	onSubmit: () => void;
 	onEscape: () => void;
 	onTab: (shift: boolean) => boolean;
-	extensions?: any[];
+	extensions?: Extension[];
 }
 
 export function createTaskModalMarkdownEditor(

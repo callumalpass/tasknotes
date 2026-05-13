@@ -11,7 +11,7 @@ import {
 } from "../utils/filenameGenerator";
 import { ensureFolderExists } from "../utils/helpers";
 import { processTemplate, ICSTemplateData } from "../utils/templateProcessor";
-import { TranslationKey } from "../i18n";
+import type { InterpolationValues, TranslationKey } from "../i18n";
 
 /**
  * Service for creating notes and tasks from ICS calendar events
@@ -19,7 +19,7 @@ import { TranslationKey } from "../i18n";
 export class ICSNoteService {
 	constructor(private plugin: TaskNotesPlugin) {}
 
-	private translate(key: TranslationKey, variables?: Record<string, any>): string {
+	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -246,7 +246,7 @@ export class ICSNoteService {
 			// Process template if provided
 			const dateCreatedField = this.plugin.fieldMapper.toUserField("dateCreated");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
-			let frontmatter: Record<string, any> = {
+			let frontmatter: Record<string, unknown> = {
 				title: noteTitle,
 				[dateCreatedField]: getCurrentTimestamp(),
 				[dateModifiedField]: getCurrentTimestamp(),
@@ -296,17 +296,25 @@ export class ICSNoteService {
 					: "";
 			const content = `${yamlHeader}${bodyContent}`;
 
-			// Create the file
-			const file = await this.plugin.app.vault.create(fullPath, content);
+				// Create the file
+				const file = await this.plugin.app.vault.create(fullPath, content);
 
-			// Create NoteInfo object
-			const noteInfo: NoteInfo = {
-				title: noteTitle,
-				path: file.path,
-				tags: frontmatter.tags || [],
-				createdDate: frontmatter.dateCreated,
-				lastModified: Date.now(),
-			};
+				const noteTags = Array.isArray(frontmatter.tags)
+					? frontmatter.tags.filter((tag): tag is string => typeof tag === "string")
+					: [];
+				const createdDate =
+					typeof frontmatter[dateCreatedField] === "string"
+						? frontmatter[dateCreatedField]
+						: undefined;
+
+				// Create NoteInfo object
+				const noteInfo: NoteInfo = {
+					title: noteTitle,
+					path: file.path,
+					tags: noteTags,
+					createdDate,
+					lastModified: Date.now(),
+				};
 
 			return { file, noteInfo };
 		} catch (error) {
@@ -468,7 +476,7 @@ export class ICSNoteService {
 	/**
 	 * Format a value for YAML frontmatter
 	 */
-	private formatYamlValue(value: any): string {
+	private formatYamlValue(value: unknown): string {
 		if (typeof value === "string") {
 			// Simple check for strings that need quoting
 			if (

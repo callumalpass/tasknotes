@@ -33,11 +33,11 @@ export class StatusBarService {
 
 		// Add click handler to open tasks view filtered to tracked tasks
 		this.statusBarElement.addEventListener("click", () => {
-			this.handleStatusBarClick();
+			void this.handleStatusBarClick();
 		});
 
 		// Initial update
-		this.updateStatusBar();
+		void this.updateStatusBar();
 	}
 
 	/**
@@ -175,13 +175,17 @@ export class StatusBarService {
 				}
 			} else {
 				// Multiple tracked tasks - show selector modal
-				openTaskSelector(this.plugin, trackedTasks, async (selectedTask) => {
-					if (selectedTask) {
-						const file = this.plugin.app.vault.getAbstractFileByPath(selectedTask.path);
-						if (file instanceof TFile) {
-							await this.plugin.app.workspace.getLeaf(false).openFile(file);
+				openTaskSelector(this.plugin, trackedTasks, (selectedTask) => {
+					void (async () => {
+						if (selectedTask) {
+							const file = this.plugin.app.vault.getAbstractFileByPath(
+								selectedTask.path
+							);
+							if (file instanceof TFile) {
+								await this.plugin.app.workspace.getLeaf(false).openFile(file);
+							}
 						}
-					}
+					})();
 				});
 			}
 		} catch (error) {
@@ -200,7 +204,7 @@ export class StatusBarService {
 
 		// Debounce updates to prevent excessive re-renders
 		this.updateTimeout = window.setTimeout(() => {
-			this.updateStatusBar();
+			void this.updateStatusBar();
 		}, 100);
 	}
 
@@ -212,7 +216,7 @@ export class StatusBarService {
 			if (!this.statusBarElement) {
 				this.initialize();
 			} else {
-				this.updateStatusBar();
+				void this.updateStatusBar();
 			}
 		} else {
 			this.hide();

@@ -40,7 +40,7 @@ import {
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import type { InterpolationValues, TranslationKey } from "../i18n";
 import { TaskCreationService } from "./task-service/TaskCreationService";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
 
@@ -102,7 +102,7 @@ export class TaskService {
 		return false;
 	}
 
-	private translate(key: TranslationKey, variables?: Record<string, any>): string {
+	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -198,7 +198,10 @@ export class TaskService {
 	}
 
 	private normalizeStatusValue(value: unknown): string {
-		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
+		if (typeof value === "boolean") return value ? "true" : "false";
+		if (typeof value === "string") return value;
+		if (typeof value === "number") return String(value);
+		return "";
 	}
 
 	/**
@@ -281,7 +284,7 @@ export class TaskService {
 	 */
 	private async applyTemplate(
 		taskData: TaskCreationData
-	): Promise<{ frontmatter: Record<string, any>; body: string }> {
+	): Promise<{ frontmatter: Record<string, unknown>; body: string }> {
 		const defaults = this.plugin.settings.taskCreationDefaults;
 
 		// Check if body template is enabled and configured
@@ -485,7 +488,7 @@ export class TaskService {
 	async updateProperty(
 		task: TaskInfo,
 		property: keyof TaskInfo,
-		value: any,
+		value: unknown,
 		options: { silent?: boolean } = {}
 	): Promise<TaskInfo> {
 		try {
@@ -498,15 +501,16 @@ export class TaskService {
 			const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 
 			// Step 1: Construct new state in memory using fresh data
-			const updatedTask = { ...freshTask } as Record<string, any>;
-			const normalizedValue =
+			const updatedTask = { ...freshTask } as Record<string, unknown>;
+			const normalizedValue: unknown =
 				property === "status" ? this.normalizeStatusValue(value) : value;
 			updatedTask[property] = normalizedValue;
 			updatedTask.dateModified = getCurrentTimestamp();
 
 			// Handle derivative changes for status updates
 			if (property === "status" && !freshTask.recurrence) {
-				if (this.plugin.statusManager.isCompletedStatus(normalizedValue)) {
+				const normalizedStatus = this.normalizeStatusValue(normalizedValue);
+				if (this.plugin.statusManager.isCompletedStatus(normalizedStatus)) {
 					updatedTask.completedDate = getCurrentDateString();
 				} else {
 					updatedTask.completedDate = undefined;
@@ -522,16 +526,17 @@ export class TaskService {
 
 				if (property === "status") {
 					// Coerce boolean-like status strings to actual booleans for compatibility with Obsidian checkbox properties
-					const lower = String(normalizedValue).toLowerCase();
+					const normalizedStatus = this.normalizeStatusValue(normalizedValue);
+					const lower = normalizedStatus.toLowerCase();
 					const coercedValue =
-						lower === "true" || lower === "false" ? lower === "true" : normalizedValue;
+						lower === "true" || lower === "false" ? lower === "true" : normalizedStatus;
 					frontmatter[fieldName] = coercedValue;
 
 					// Update completed date when marking as complete (non-recurring tasks only)
 					// FIX: Use freshTask instead of stale task to check recurrence
 					this.updateCompletedDateInFrontmatter(
 						frontmatter,
-						normalizedValue,
+						normalizedStatus,
 						!!freshTask.recurrence
 					);
 				} else if ((property === "due" || property === "scheduled") && !value) {
@@ -550,14 +555,14 @@ export class TaskService {
 			await this.applyPropertyChangeSideEffects(
 				file,
 				task,
-				updatedTask as TaskInfo,
+				updatedTask as unknown as TaskInfo,
 				property,
 				task[property],
 				normalizedValue
 			);
 
 			// Step 4: Return authoritative data
-			return updatedTask as TaskInfo;
+			return updatedTask as unknown as TaskInfo;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -565,7 +570,7 @@ export class TaskService {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
 				taskPath: task.path,
-				property: String(property),
+				property,
 				value,
 			});
 
@@ -585,8 +590,8 @@ export class TaskService {
 		originalTask: TaskInfo,
 		updatedTask: TaskInfo,
 		property: keyof TaskInfo,
-		oldValue: any,
-		newValue: any
+		oldValue: unknown,
+		newValue: unknown
 	): Promise<void> {
 		// Update cache
 		try {
@@ -611,8 +616,12 @@ export class TaskService {
 
 			// If status changed, trigger UI updates for dependent tasks
 			if (property === "status") {
-				const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
-				const isNowCompleted = this.plugin.statusManager.isCompletedStatus(newValue);
+				const wasCompleted = this.plugin.statusManager.isCompletedStatus(
+					this.normalizeStatusValue(oldValue)
+				);
+				const isNowCompleted = this.plugin.statusManager.isCompletedStatus(
+					this.normalizeStatusValue(newValue)
+				);
 
 				if (wasCompleted !== isNowCompleted) {
 					const dependentTaskPaths = this.plugin.cacheManager.getBlockedTaskPaths(
@@ -646,12 +655,19 @@ export class TaskService {
 			});
 		}
 
-		// Trigger webhooks
-		if (this.webhookNotifier) {
-			try {
-				const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
-				const isCompleted =
-					property === "status" && this.plugin.statusManager.isCompletedStatus(newValue);
+			// Trigger webhooks
+			if (this.webhookNotifier) {
+				try {
+					const wasCompleted =
+						property === "status" &&
+						this.plugin.statusManager.isCompletedStatus(
+							this.normalizeStatusValue(oldValue)
+						);
+					const isCompleted =
+						property === "status" &&
+						this.plugin.statusManager.isCompletedStatus(
+							this.normalizeStatusValue(newValue)
+						);
 
 				if (property === "status" && !wasCompleted && isCompleted) {
 					await this.webhookNotifier.triggerWebhook("task.completed", {
@@ -668,11 +684,18 @@ export class TaskService {
 			}
 		}
 
-		// Sync to Google Calendar if enabled
-		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
-			const wasCompleted = this.plugin.statusManager.isCompletedStatus(oldValue);
-			const isCompleted =
-				property === "status" && this.plugin.statusManager.isCompletedStatus(newValue);
+			// Sync to Google Calendar if enabled
+			if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+				const wasCompleted =
+					property === "status" &&
+					this.plugin.statusManager.isCompletedStatus(
+						this.normalizeStatusValue(oldValue)
+					);
+				const isCompleted =
+					property === "status" &&
+					this.plugin.statusManager.isCompletedStatus(
+						this.normalizeStatusValue(newValue)
+					);
 
 			const syncPromise =
 				property === "status" && !wasCompleted && isCompleted
@@ -1714,7 +1737,7 @@ export class TaskService {
 			if (frontmatter[timeEntriesField] && Array.isArray(frontmatter[timeEntriesField])) {
 				// Remove the time entry at the specified index
 				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].filter(
-					(_: any, index: number) => index !== timeEntryIndex
+					(_: unknown, index: number) => index !== timeEntryIndex
 				);
 			}
 
@@ -1755,7 +1778,7 @@ export class TaskService {
 	 * @param isRecurring - Whether the task is recurring
 	 */
 	updateCompletedDateInFrontmatter(
-		frontmatter: Record<string, any>,
+		frontmatter: Record<string, unknown>,
 		newStatus: string,
 		isRecurring: boolean
 	): void {

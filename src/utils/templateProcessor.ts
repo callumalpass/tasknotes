@@ -27,7 +27,7 @@ export interface ICSTemplateData extends TemplateData {
 }
 
 export interface ProcessedTemplate {
-	frontmatter: Record<string, any>;
+	frontmatter: Record<string, unknown>;
 	body: string;
 }
 
@@ -106,7 +106,7 @@ export function parseTemplateSections(templateContent: string): {
 function processTemplateFrontmatter(
 	frontmatterContent: string,
 	taskData: TemplateData | ICSTemplateData
-): Record<string, any> {
+): Record<string, unknown> {
 	try {
 		// First, process template variables in the raw YAML text with YAML-safe replacements
 		const processedYamlText = processTemplateVariablesForYaml(frontmatterContent, taskData);
@@ -266,7 +266,7 @@ function processTemplateVariablesForYaml(
 
 	// ICS Event template variables (only available if taskData is ICSTemplateData)
 	if ("icsEventTitle" in taskData) {
-		const icsData = taskData as ICSTemplateData;
+		const icsData = taskData;
 
 		// {{icsEventTitle}} - ICS event title (quote if contains special characters)
 		const icsTitle = icsData.icsEventTitle || "";
@@ -472,7 +472,7 @@ export function processTemplateVariables(
 
 	// ICS Event template variables (only available if taskData is ICSTemplateData)
 	if ("icsEventTitle" in taskData) {
-		const icsData = taskData as ICSTemplateData;
+		const icsData = taskData;
 
 		// {{icsEventTitle}} - ICS event title
 		result = result.replace(/\{\{icsEventTitle\}\}/g, icsData.icsEventTitle || "");
@@ -510,9 +510,9 @@ export function processTemplateVariables(
  * User-defined values take precedence over template frontmatter
  */
 export function mergeTemplateFrontmatter(
-	baseFrontmatter: Record<string, any>,
-	templateFrontmatter: Record<string, any>
-): Record<string, any> {
+	baseFrontmatter: Record<string, unknown>,
+	templateFrontmatter: Record<string, unknown>
+): Record<string, unknown> {
 	// User-defined values (baseFrontmatter) take precedence over template values
 	return {
 		...templateFrontmatter,

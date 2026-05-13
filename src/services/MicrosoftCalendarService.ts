@@ -54,6 +54,31 @@ interface MicrosoftCalendarEvent {
 	};
 }
 
+type MicrosoftCalendarListResponse = {
+	value?: MicrosoftCalendar[];
+	"@odata.nextLink"?: string;
+};
+
+type MicrosoftEventPayload = {
+	subject?: string;
+	body?: {
+		contentType: "text";
+		content: string;
+	};
+	start?: {
+		dateTime?: string;
+		timeZone: string;
+	};
+	end?: {
+		dateTime?: string;
+		timeZone: string;
+	};
+	location?: {
+		displayName: string;
+	};
+	isAllDay?: boolean;
+};
+
 /**
  * MicrosoftCalendarService handles Microsoft Graph Calendar API interactions.
  * Uses OAuth for authentication and provides calendar event access.
@@ -249,8 +274,8 @@ export class MicrosoftCalendarService extends CalendarProvider {
 				let nextLink: string | undefined = `${this.baseUrl}/me/calendars`;
 
 				// Handle pagination
-				while (nextLink) {
-					const response: any = await requestUrl({
+					while (nextLink) {
+						const response = await requestUrl({
 						url: nextLink,
 						method: "GET",
 						headers: {
@@ -259,8 +284,8 @@ export class MicrosoftCalendarService extends CalendarProvider {
 						}
 					});
 
-					const data: any = response.json;
-					const calendars: MicrosoftCalendar[] = data.value || [];
+						const data = response.json as MicrosoftCalendarListResponse;
+						const calendars: MicrosoftCalendar[] = data.value || [];
 					allCalendars.push(...calendars);
 					nextLink = data["@odata.nextLink"];
 				}
@@ -415,7 +440,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			start = msEvent.start.dateTime.split("T")[0];
 			end = msEvent.end.dateTime.split("T")[0];
 		} else {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			// eslint-disable-next-line @typescript-eslint/no-require-imports -- date-fns is lazy-loaded inside Microsoft all-day event conversion.
 			const { format, parseISO } = require("date-fns");
 
 			const startIso = this.ensureUtcDateTime(msEvent.start.dateTime, msEvent.start.timeZone);
@@ -649,7 +674,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			const token = await this.oauthService.getValidToken("microsoft");
 
 			// Build Microsoft Graph update payload
-			const payload: any = {};
+				const payload: MicrosoftEventPayload = {};
 
 			// Support both 'title' and 'summary'
 			if (updates.title !== undefined || updates.summary !== undefined) {
@@ -788,9 +813,9 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			const token = await this.oauthService.getValidToken("microsoft");
 
 			// Build Microsoft Graph payload
-			const payload: any = {
-				subject: summary
-			};
+				const payload: MicrosoftEventPayload = {
+					subject: summary
+				};
 
 			if (event.description) {
 				payload.body = {
@@ -814,19 +839,22 @@ export class MicrosoftCalendarService extends CalendarProvider {
 					timeZone: "UTC"
 				};
 				payload.end = {
-					dateTime: event.end as string,
+					dateTime:
+						typeof event.end === "string" ? event.end : event.end.dateTime || event.end.date,
 					timeZone: "UTC"
 				};
 				payload.isAllDay = isAllDay;
-			} else {
-				payload.start = {
-					dateTime: event.start.dateTime || event.start.date,
-					timeZone: event.start.timeZone || "UTC"
-				};
-				payload.end = {
-					dateTime: typeof event.end === "string" ? event.end : event.end.dateTime || (event.end as any).date,
-					timeZone: (event.end as any).timeZone || "UTC"
-				};
+				} else {
+					const eventEnd = event.end;
+					payload.start = {
+						dateTime: event.start.dateTime || event.start.date,
+						timeZone: event.start.timeZone || "UTC"
+					};
+					payload.end = {
+						dateTime:
+							typeof eventEnd === "string" ? eventEnd : eventEnd.dateTime || eventEnd.date,
+						timeZone: typeof eventEnd === "string" ? "UTC" : eventEnd.timeZone || "UTC"
+					};
 				// If using 'date' field, it's all-day
 				if (event.start.date && !event.start.dateTime) {
 					payload.isAllDay = true;

@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import {
 	createSettingGroup,
@@ -31,7 +31,7 @@ export function renderGeneralTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate("settings.general.taskStorage.defaultFolder.name"),
 					desc: translate("settings.general.taskStorage.defaultFolder.description"),
 					placeholder: "TaskNotes",
@@ -47,7 +47,7 @@ export function renderGeneralTab(
 			// Folder for converted inline tasks (only shown when instant convert is enabled)
 			if (plugin.settings.enableInstantTaskConvert) {
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate("settings.features.instantConvert.folder.name"),
 						desc: translate("settings.features.instantConvert.folder.description"),
 						placeholder: "{{currentNotePath}}",
@@ -62,7 +62,7 @@ export function renderGeneralTab(
 			}
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.general.taskStorage.moveArchived.name"),
 					desc: translate("settings.general.taskStorage.moveArchived.description"),
 					getValue: () => plugin.settings.moveArchivedTasks,
@@ -77,7 +77,7 @@ export function renderGeneralTab(
 
 			if (plugin.settings.moveArchivedTasks) {
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate("settings.general.taskStorage.archiveFolder.name"),
 						desc: translate("settings.general.taskStorage.archiveFolder.description"),
 						placeholder: "TaskNotes/Archive",
@@ -102,7 +102,7 @@ export function renderGeneralTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.general.taskIdentification.identifyBy.name"),
 					desc: translate("settings.general.taskIdentification.identifyBy.description"),
 					options: [
@@ -132,7 +132,7 @@ export function renderGeneralTab(
 
 			if (plugin.settings.taskIdentificationMethod === "tag") {
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate("settings.general.taskIdentification.taskTag.name"),
 						desc: translate("settings.general.taskIdentification.taskTag.description"),
 						placeholder: "task",
@@ -146,7 +146,7 @@ export function renderGeneralTab(
 				);
 
 				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
+					void configureToggleSetting(setting, {
 						name: translate(
 							"settings.general.taskIdentification.hideIdentifyingTags.name"
 						),
@@ -162,7 +162,7 @@ export function renderGeneralTab(
 				);
 			} else {
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate("settings.general.taskIdentification.taskProperty.name"),
 						desc: translate(
 							"settings.general.taskIdentification.taskProperty.description"
@@ -177,7 +177,7 @@ export function renderGeneralTab(
 				);
 
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate(
 							"settings.general.taskIdentification.taskPropertyValue.name"
 						),
@@ -267,7 +267,7 @@ export function renderGeneralTab(
 			commandMappings.forEach(({ id, nameKey, defaultPath }) => {
 				group.addSetting((setting) => {
 					const commandName = translate(
-						`settings.integrations.basesIntegration.viewCommands.commands.${nameKey}` as any
+						`settings.integrations.basesIntegration.viewCommands.commands.${nameKey}`
 					);
 					setting.setName(commandName);
 					setting.setDesc(
@@ -428,6 +428,9 @@ export function renderGeneralTab(
 									const existingFile =
 										plugin.app.vault.getAbstractFileByPath(filePath);
 									if (existingFile) {
+										if (!(existingFile instanceof TFile)) {
+											throw new Error(`${filePath} exists but is not a file`);
+										}
 										const confirmed = await showConfirmationModal(plugin.app, {
 											title: translate(
 												"settings.integrations.basesIntegration.exportV3Views.fileExists"
@@ -439,10 +442,7 @@ export function renderGeneralTab(
 											isDestructive: false,
 										});
 										if (!confirmed) return;
-										await plugin.app.vault.modify(
-											existingFile as any,
-											basesContent
-										);
+										await plugin.app.vault.modify(existingFile, basesContent);
 									} else {
 										await plugin.app.vault.create(filePath, basesContent);
 									}
@@ -481,7 +481,7 @@ export function renderGeneralTab(
 		{ heading: translate("settings.general.folderManagement.header") },
 		(group) => {
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate("settings.general.folderManagement.excludedFolders.name"),
 					desc: translate(
 						"settings.general.folderManagement.excludedFolders.description"
@@ -519,7 +519,7 @@ export function renderGeneralTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.features.uiLanguage.dropdown.name"),
 					desc: translate("settings.features.uiLanguage.dropdown.description"),
 					options: uiLanguageOptions,
@@ -546,7 +546,7 @@ export function renderGeneralTab(
 			},
 			(group) => {
 				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
+					void configureToggleSetting(setting, {
 						name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
 						desc: translate(
 							"settings.general.frontmatter.useMarkdownLinks.description"
@@ -573,7 +573,7 @@ export function renderGeneralTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.general.releaseNotes.showOnUpdate.name"),
 					desc: translate("settings.general.releaseNotes.showOnUpdate.description"),
 					getValue: () => plugin.settings.showReleaseNotesOnUpdate ?? true,

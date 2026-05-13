@@ -39,7 +39,7 @@ export function getOrderedModalGroups(
 	config: ModalFieldsConfigLike,
 	isCreationMode: boolean
 ): Array<{ id: string; fields: ModalFieldConfigLike[] }> {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	// eslint-disable-next-line @typescript-eslint/no-require-imports -- Field config helpers are lazy-loaded to avoid modal import cycles.
 	const { getFieldsByGroup } = require("../utils/fieldConfigDefaults");
 	const fieldGroups = getFieldsByGroup(config, isCreationMode) as Map<string, ModalFieldConfigLike[]>;
 	const groups = [...(config.groups || [])].sort((a, b) => a.order - b.order);

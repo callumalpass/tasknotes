@@ -7,6 +7,7 @@ import type {
 	TFile,
 	Value,
 } from "obsidian";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 type BasesViewDataSource = Pick<BasesView, "config" | "data">;
 
@@ -15,8 +16,8 @@ type BasesValueInternals = Value & {
 	date?: Date;
 	file?: TFile;
 	value?: unknown[];
-	get?: (index: number) => Value | unknown;
-	at?: (index: number) => Value | unknown;
+	get?: (index: number) => unknown;
+	at?: (index: number) => unknown;
 	length?: () => number;
 	toISOString?: () => string;
 	constructor?: {
@@ -131,7 +132,7 @@ export class BasesDataAdapter {
 	 * Convert Bases Value object to native JavaScript value.
 	 * Handles: PrimitiveValue, ListValue, DateValue, FileValue, NullValue, etc.
 	 */
-	private convertValueToNative(value: Value | unknown): unknown {
+	private convertValueToNative(value: unknown): unknown {
 		const basesValue = value as BasesValueInternals | null | undefined;
 		if (basesValue == null || basesValue.constructor?.name === "NullValue") {
 			return null;
@@ -191,7 +192,7 @@ export class BasesDataAdapter {
 	 * Handles Bases Value objects, particularly DateValue which has special structure.
 	 * For FileValue (links), returns the file path which can be rendered as a clickable link.
 	 */
-	convertGroupKeyToString(key: Value | unknown): string {
+	convertGroupKeyToString(key: unknown): string {
 		const basesKey = key as BasesValueInternals | null | undefined;
 		// Check if key exists and is valid
 		if (basesKey == null || basesKey.constructor?.name === "NullValue") {
@@ -239,10 +240,10 @@ export class BasesDataAdapter {
 		if (typeof actualValue === "number") return String(actualValue);
 		if (typeof actualValue === "boolean") return actualValue ? "True" : "False";
 		if (Array.isArray(actualValue)) {
-			return actualValue.length > 0 ? actualValue.join(", ") : "None";
+			return actualValue.length > 0 ? actualValue.map(stringifyUnknown).join(", ") : "None";
 		}
 
-		return String(actualValue);
+		return stringifyUnknown(actualValue) || "None";
 	}
 
 	/**

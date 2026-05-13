@@ -156,10 +156,10 @@ export class ReminderModal extends Modal {
 	}
 
 	private setupKeyboardHandlers(): void {
-		const handleKeydown = async (e: KeyboardEvent) => {
+		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !this.saveBtn.disabled) {
 				e.preventDefault();
-				await this.save();
+				void this.save();
 			} else if (e.key === "Escape") {
 				e.preventDefault();
 				this.cancel();
@@ -408,7 +408,7 @@ export class ReminderModal extends Modal {
 		});
 
 		new Setting(relativeContainer).setName("Relative to").addDropdown((dropdown) => {
-			const options: any = {};
+			const options: Record<string, string> = {};
 			if (this.task.due) {
 				options.due = `Due date (${formatDateForDisplay(this.task.due)})`;
 			}
@@ -421,7 +421,7 @@ export class ReminderModal extends Modal {
 				dropdown.setDisabled(true);
 			} else {
 				Object.entries(options).forEach(([key, label]) => {
-					dropdown.addOption(key, label as string);
+					dropdown.addOption(key, label);
 				});
 				dropdown.setValue(this.relativeAnchor);
 			}

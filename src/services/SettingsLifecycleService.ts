@@ -77,7 +77,7 @@ export class SettingsLifecycleService {
 		}
 
 		this.plugin.statusBarService?.updateVisibility();
-		this.plugin.mdbaseSpecService?.onSettingsChanged();
+		void this.plugin.mdbaseSpecService?.onSettingsChanged();
 		this.plugin.filterService?.refreshFilterOptions();
 		this.plugin.notifyDataChanged();
 		this.plugin.emitter.trigger("settings-changed", this.plugin.settings);

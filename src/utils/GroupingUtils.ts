@@ -1,5 +1,13 @@
 import TaskNotesPlugin from "../main";
 
+type CollapsedGroups = Record<string, Record<string, boolean>>;
+type CollapsedSubgroups = Record<string, Record<string, Record<string, boolean>>>;
+
+type ViewGroupingPreferences = {
+	collapsedGroups?: CollapsedGroups;
+	collapsedSubgroups?: CollapsedSubgroups;
+};
+
 /**
  * Utility functions for task grouping functionality
  * Shared between TaskListView and subtask widget
@@ -67,7 +75,8 @@ export class GroupingUtils {
 		plugin: TaskNotesPlugin
 	): boolean {
 		try {
-			const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+			const prefs =
+				plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
 			const collapsed = prefs.collapsedGroups || {};
 			return !!collapsed?.[groupingKey]?.[groupName];
 		} catch {
@@ -85,7 +94,8 @@ export class GroupingUtils {
 		collapsed: boolean,
 		plugin: TaskNotesPlugin
 	): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
 		const next = { ...prefs };
 		if (!next.collapsedGroups) next.collapsedGroups = {};
 		if (!next.collapsedGroups[groupingKey]) next.collapsedGroups[groupingKey] = {};
@@ -97,11 +107,9 @@ export class GroupingUtils {
 	 * Expand all groups for a specific view and grouping key
 	 */
 	static expandAllGroups(viewType: string, groupingKey: string, plugin: TaskNotesPlugin): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
-		const next = { ...(prefs.collapsedGroups || {}) } as Record<
-			string,
-			Record<string, boolean>
-		>;
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
+		const next: CollapsedGroups = { ...(prefs.collapsedGroups || {}) };
 		next[groupingKey] = {};
 		plugin.viewStateManager.setViewPreferences(viewType, { ...prefs, collapsedGroups: next });
 	}
@@ -115,11 +123,9 @@ export class GroupingUtils {
 		groupNames: string[],
 		plugin: TaskNotesPlugin
 	): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
-		const next = { ...(prefs.collapsedGroups || {}) } as Record<
-			string,
-			Record<string, boolean>
-		>;
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
+		const next: CollapsedGroups = { ...(prefs.collapsedGroups || {}) };
 		const collapsed: Record<string, boolean> = {};
 		groupNames.forEach((name) => {
 			collapsed[name] = true;
@@ -141,7 +147,8 @@ export class GroupingUtils {
 		plugin: TaskNotesPlugin
 	): boolean {
 		try {
-			const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+			const prefs =
+				plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
 			const collapsed = prefs.collapsedSubgroups || {};
 			return !!collapsed?.[subgroupKey]?.[primaryGroup]?.[subgroupName];
 		} catch {
@@ -160,8 +167,9 @@ export class GroupingUtils {
 		collapsed: boolean,
 		plugin: TaskNotesPlugin
 	): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
-		const next = { ...prefs } as any;
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
+		const next = { ...prefs };
 		if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
 		if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
 		if (!next.collapsedSubgroups[subgroupKey][primaryGroup])
@@ -179,8 +187,9 @@ export class GroupingUtils {
 		subgroupKey: string,
 		plugin: TaskNotesPlugin
 	): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
-		const next = { ...prefs } as any;
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
+		const next = { ...prefs };
 		if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
 		if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
 		next.collapsedSubgroups[subgroupKey][primaryGroup] = {};
@@ -197,8 +206,9 @@ export class GroupingUtils {
 		subgroupNames: string[],
 		plugin: TaskNotesPlugin
 	): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
-		const next = { ...prefs } as any;
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
+		const next = { ...prefs };
 		if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
 		if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
 		const collapsed: Record<string, boolean> = {};
@@ -217,8 +227,9 @@ export class GroupingUtils {
 		subgroupKey: string,
 		plugin: TaskNotesPlugin
 	): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
-		const next = { ...prefs } as any;
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
+		const next = { ...prefs };
 		if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
 		next.collapsedSubgroups[subgroupKey] = {};
 		plugin.viewStateManager.setViewPreferences(viewType, next);
@@ -233,8 +244,9 @@ export class GroupingUtils {
 		items: { primaryGroup: string; subgroupName: string }[],
 		plugin: TaskNotesPlugin
 	): void {
-		const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
-		const next = { ...prefs } as any;
+		const prefs =
+			plugin.viewStateManager.getViewPreferences<ViewGroupingPreferences>(viewType) || {};
+		const next = { ...prefs };
 		if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
 		if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
 

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Performance observers are checked for support before callbacks run. */
 import { EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
@@ -152,8 +152,8 @@ export class ViewPerformanceService {
 		}
 
 		// Schedule debounced update
-		const timer = window.setTimeout(async () => {
-			await this.processPendingUpdatesForView(viewId);
+		const timer = window.setTimeout(() => {
+			void this.processPendingUpdatesForView(viewId);
 		}, config.debounceDelay);
 
 		this.viewDebounceTimers.set(viewId, timer);
@@ -266,7 +266,6 @@ export class ViewPerformanceService {
 			const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
 			const existingPaths = new Set(allTaskPaths);
 
-			 
 			for (const taskPath of this.globalTaskVersionCache.keys()) {
 				if (!existingPaths.has(taskPath)) {
 					this.globalTaskVersionCache.delete(taskPath);
@@ -299,7 +298,7 @@ export class ViewPerformanceService {
 	/**
 	 * Get performance statistics
 	 */
-	getStats(): Record<string, any> {
+	getStats(): Record<string, unknown> {
 		return {
 			registeredViews: Array.from(this.viewConfigs.keys()),
 			cacheSize: this.globalTaskVersionCache.size,

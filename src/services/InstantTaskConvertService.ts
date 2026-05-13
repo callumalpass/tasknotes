@@ -1,8 +1,9 @@
 import { Editor, TFile, Notice, EditorPosition } from "obsidian";
+import type { EditorView } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
 import { TasksPluginParser, ParsedTaskData } from "../utils/TasksPluginParser";
 import { NaturalLanguageParser } from "./NaturalLanguageParser";
-import { TaskCreationData } from "../types";
+import { Reminder, TaskCreationData } from "../types";
 import {
 	getCurrentTimestamp,
 	combineDateAndTime,
@@ -14,7 +15,7 @@ import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
-import { TranslationKey } from "../i18n";
+import type { InterpolationValues, TranslationKey } from "../i18n";
 
 export class InstantTaskConvertService {
 	private plugin: TaskNotesPlugin;
@@ -22,7 +23,7 @@ export class InstantTaskConvertService {
 	private priorityManager: PriorityManager;
 	private nlParser: NaturalLanguageParser;
 
-	private translate(key: TranslationKey, variables?: Record<string, any>): string {
+	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -638,7 +639,7 @@ export class InstantTaskConvertService {
 		const uniqueProjects = [...new Set(projectsArray)];
 
 		// Apply default reminders if enabled
-		let reminders: any[] | undefined = undefined;
+		let reminders: Reminder[] | undefined = undefined;
 		if (this.plugin.settings.useDefaultsOnInstantConvert) {
 			const defaults = this.plugin.settings.taskCreationDefaults;
 			if (defaults.defaultReminders && defaults.defaultReminders.length > 0) {
@@ -652,7 +653,7 @@ export class InstantTaskConvertService {
 
 		// Prepare custom frontmatter from NLP-parsed user fields
 		// Default values for user fields are applied by TaskService.createTask()
-		const customFrontmatter: Record<string, any> = {};
+		const customFrontmatter: Record<string, unknown> = {};
 		if (parsedData.userFields) {
 			for (const [fieldId, value] of Object.entries(parsedData.userFields)) {
 				// Find the user field definition to get the frontmatter key
@@ -736,7 +737,7 @@ export class InstantTaskConvertService {
 	private sanitizePriority(priority: string): string {
 		const validPriorities = this.priorityManager
 			.getAllPriorities()
-			.map((p: any) => (p && typeof p === "object" ? p.value : p))
+			.map((p) => p.value)
 			.filter((value) => value != null);
 		return validPriorities.includes(priority) ? priority : "";
 	}
@@ -747,7 +748,7 @@ export class InstantTaskConvertService {
 	private sanitizeStatus(status: string): string {
 		const validStatuses = this.statusManager
 			.getAllStatuses()
-			.map((s: any) => (s && typeof s === "object" ? s.value : s))
+			.map((s) => s.value)
 			.filter((value) => value != null);
 		return validStatuses.includes(status) ? status : "";
 	}
@@ -887,7 +888,7 @@ export class InstantTaskConvertService {
 			window.setTimeout(() => {
 				try {
 					// Access the CodeMirror instance from the editor
-					const cmEditor = (editor as any).cm;
+					const cmEditor = (editor as unknown as { cm?: EditorView }).cm;
 					if (cmEditor) {
 						// Preserve cursor position before dispatching update
 						const cursorPos = editor.getCursor();
@@ -926,12 +927,14 @@ export class InstantTaskConvertService {
 			if (this.plugin.app.metadataCache.getFileCache(file) === null) {
 				// If cache is still null, trigger a manual update
 				// by reading the file again with a small delay
-				window.setTimeout(async () => {
-					try {
-						await this.plugin.app.vault.cachedRead(file);
-					} catch (error) {
-						console.debug("Error in delayed cache update:", error);
-					}
+				window.setTimeout(() => {
+					void (async () => {
+						try {
+							await this.plugin.app.vault.cachedRead(file);
+						} catch (error) {
+							console.debug("Error in delayed cache update:", error);
+						}
+					})();
 				}, 10);
 			}
 		} catch (error) {

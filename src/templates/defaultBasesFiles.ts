@@ -286,7 +286,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		isDueToday: `${dueProperty} && date(${dueProperty}).date() == today()`,
 
 		// Boolean: is this task due within the next 7 days?
-		isDueThisWeek: `${dueProperty} && date(${dueProperty}) >= today() && date(${dueProperty}) <= today() + "7d"`,
+		isDueThisWeek: `${dueProperty} && date(${dueProperty}).date() >= today() && date(${dueProperty}).date() <= today() + "7d"`,
 
 		// Boolean: is this task scheduled for today?
 		isScheduledToday: `${scheduledProperty} && date(${scheduledProperty}).date() == today()`,
@@ -327,7 +327,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		scheduledWeek: `if(${scheduledProperty}, date(${scheduledProperty}).format("YYYY-[W]WW"), "Not scheduled")`,
 
 		// Due date category for grouping: Overdue, Today, Tomorrow, This Week, Later, No Due Date
-		dueDateCategory: `if(!${dueProperty}, "No due date", if(date(${dueProperty}) < today(), "Overdue", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}) <= today() + "7d", "This week", "Later")))))`,
+		dueDateCategory: `if(!${dueProperty}, "No due date", if(date(${dueProperty}) < today(), "Overdue", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}).date() <= today() + "7d", "This week", "Later")))))`,
 
 		// Time estimate category for grouping
 		timeEstimateCategory: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0 || ${timeEstimateProperty} == null, "No estimate", if(${timeEstimateProperty} < 30, "Quick (<30m)", if(${timeEstimateProperty} <= 120, "Medium (30m-2h)", "Long (>2h)")))`,
@@ -368,10 +368,10 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		isToday: `(${dueProperty} && date(${dueProperty}).date() == today()) || (${scheduledProperty} && date(${scheduledProperty}).date() == today())`,
 
 		// Boolean: is due or scheduled this week
-		isThisWeek: `(${dueProperty} && date(${dueProperty}) >= today() && date(${dueProperty}) <= today() + "7d") || (${scheduledProperty} && date(${scheduledProperty}) >= today() && date(${scheduledProperty}) <= today() + "7d")`,
+		isThisWeek: `(${dueProperty} && date(${dueProperty}).date() >= today() && date(${dueProperty}).date() <= today() + "7d") || (${scheduledProperty} && date(${scheduledProperty}).date() >= today() && date(${scheduledProperty}).date() <= today() + "7d")`,
 
 		// Next date category for grouping (combines due and scheduled)
-		nextDateCategory: `if(!${dueProperty} && !${scheduledProperty}, "No date", if((${dueProperty} && date(${dueProperty}) < today()) || (${scheduledProperty} && date(${scheduledProperty}) < today()), "Overdue/Past", if((${dueProperty} && date(${dueProperty}).date() == today()) || (${scheduledProperty} && date(${scheduledProperty}).date() == today()), "Today", if((${dueProperty} && date(${dueProperty}).date() == today() + "1d") || (${scheduledProperty} && date(${scheduledProperty}).date() == today() + "1d"), "Tomorrow", if((${dueProperty} && date(${dueProperty}) <= today() + "7d") || (${scheduledProperty} && date(${scheduledProperty}) <= today() + "7d"), "This week", "Later")))))`,
+		nextDateCategory: `if(!${dueProperty} && !${scheduledProperty}, "No date", if((${dueProperty} && date(${dueProperty}) < today()) || (${scheduledProperty} && date(${scheduledProperty}) < today()), "Overdue/Past", if((${dueProperty} && date(${dueProperty}).date() == today()) || (${scheduledProperty} && date(${scheduledProperty}).date() == today()), "Today", if((${dueProperty} && date(${dueProperty}).date() == today() + "1d") || (${scheduledProperty} && date(${scheduledProperty}).date() == today() + "1d"), "Tomorrow", if((${dueProperty} && date(${dueProperty}).date() <= today() + "7d") || (${scheduledProperty} && date(${scheduledProperty}).date() <= today() + "7d"), "This week", "Later")))))`,
 
 		// Next date as month for grouping
 		nextDateMonth: `if(${dueProperty} && ${scheduledProperty}, if(date(${dueProperty}) < date(${scheduledProperty}), date(${dueProperty}).format("YYYY-MM"), date(${scheduledProperty}).format("YYYY-MM")), if(${dueProperty}, date(${dueProperty}).format("YYYY-MM"), if(${scheduledProperty}, date(${scheduledProperty}).format("YYYY-MM"), "No date")))`,
@@ -381,9 +381,10 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 
 		// === SORTING/SCORING FORMULAS ===
 
-		// Urgency score: combines priority weight and days until next date (due or scheduled)
-		// Higher score = more urgent. Overdue tasks get bonus, no date gets just priority
-		urgencyScore: `if(!${dueProperty} && !${scheduledProperty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext))`,
+		// Urgency score: combines priority weight, days until next date (due or scheduled), and time-of-day.
+		// Higher = more urgent. The 0..1 time-of-day term ranks earlier-in-day tasks above later same-day
+		// tasks at the same priority. Date-only values fall back to midnight.
+		urgencyScore: `if(!${dueProperty} && !${scheduledProperty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))`,
 
 		// === DISPLAY FORMULAS ===
 
@@ -391,7 +392,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		timeTrackedFormatted: `if(${timeEntriesProperty}, if(list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")`,
 
 		// Due date as human-readable relative text
-		dueDateDisplay: `if(!${dueProperty}, "", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}).date() == today() - "1d", "Yesterday", if(date(${dueProperty}) < today(), formula.daysUntilDue * -1 + "d ago", if(date(${dueProperty}) <= today() + "7d", date(${dueProperty}).format("ddd"), date(${dueProperty}).format("MMM D")))))))`,
+		dueDateDisplay: `if(!${dueProperty}, "", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}).date() == today() - "1d", "Yesterday", if(date(${dueProperty}) < today(), formula.daysUntilDue * -1 + "d ago", if(date(${dueProperty}).date() <= today() + "7d", date(${dueProperty}).format("ddd"), date(${dueProperty}).format("MMM D")))))))`,
 	};
 }
 
@@ -572,8 +573,8 @@ ${orderYaml}
             - ${recurringIncompleteFilter}
         # Due or scheduled today
         - or:
-          - date(${dueProperty}) == today()
-          - date(${scheduledProperty}) == today()
+          - date(${dueProperty}).date() == today()
+          - date(${scheduledProperty}).date() == today()
     order:
 ${orderYaml}
     sort:
@@ -617,11 +618,11 @@ ${orderYaml}
         # Due or scheduled this week
         - or:
           - and:
-            - date(${dueProperty}) >= today()
-            - date(${dueProperty}) <= today() + "7 days"
+            - date(${dueProperty}).date() >= today()
+            - date(${dueProperty}).date() <= today() + "7 days"
           - and:
-            - date(${scheduledProperty}) >= today()
-            - date(${scheduledProperty}) <= today() + "7 days"
+            - date(${scheduledProperty}).date() >= today()
+            - date(${scheduledProperty}).date() <= today() + "7 days"
     order:
 ${orderYaml}
     sort:

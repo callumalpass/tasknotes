@@ -1,7 +1,6 @@
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import { DefaultReminder } from "../../../types/settings";
-import type { TranslationKey } from "../../../i18n";
 import {
 	createCard,
 	createCardInput,
@@ -343,7 +342,7 @@ function formatReminderTiming(reminder: DefaultReminder, translate: TranslateFn)
 				? translate("settings.defaults.reminders.directions.before")
 				: translate("settings.defaults.reminders.directions.after");
 		const unit = translate(
-			`settings.defaults.reminders.units.${reminder.unit || "hours"}` as TranslationKey
+			`settings.defaults.reminders.units.${reminder.unit || "hours"}`
 		);
 		const offset = reminder.offset ?? 1;
 		const relatedTo =

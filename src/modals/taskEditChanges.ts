@@ -1,4 +1,4 @@
-import { TaskDependency, TaskInfo } from "../types";
+import { Reminder, TaskDependency, TaskInfo } from "../types";
 import { UserMappedField } from "../types/settings";
 import { getCurrentTimestamp } from "../utils/dateUtils";
 import { updateToNextScheduledOccurrence, sanitizeTags, updateDTSTARTInRecurrenceRule } from "../utils/helpers";
@@ -30,7 +30,7 @@ export interface TaskEditChangeInput {
 	timeEstimate: number;
 	recurrenceRule: string;
 	recurrenceAnchor: "scheduled" | "completion";
-	reminders: any[];
+	reminders: Reminder[];
 	blockedByItems: DependencyItem[];
 	initialBlockedBy: TaskDependency[];
 	blockingItems: DependencyItem[];
@@ -38,8 +38,8 @@ export interface TaskEditChangeInput {
 	details: string;
 	originalDetails: string;
 	completedInstancesChanges: string[];
-	userFields: Record<string, any>;
-	frontmatter: Record<string, any>;
+	userFields: Record<string, unknown>;
+	frontmatter: Record<string, unknown>;
 	userFieldConfigs: UserMappedField[];
 	taskIdentificationMethod: string;
 	taskTag: string;
@@ -188,7 +188,7 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 		input.userFieldConfigs
 	);
 	if (Object.keys(userFieldsChanges).length > 0) {
-		(changes as any).customFrontmatter = userFieldsChanges;
+		(changes as Record<string, unknown>).customFrontmatter = userFieldsChanges;
 	}
 
 	if (Object.keys(changes).length > 0) {
@@ -305,11 +305,11 @@ function applyCompletedInstanceChanges(
 }
 
 function getUserFieldChanges(
-	userFields: Record<string, any>,
-	frontmatter: Record<string, any>,
+	userFields: Record<string, unknown>,
+	frontmatter: Record<string, unknown>,
 	userFieldConfigs: UserMappedField[]
-): Record<string, any> {
-	const userFieldsChanges: Record<string, any> = {};
+): Record<string, unknown> {
+	const userFieldsChanges: Record<string, unknown> = {};
 
 	for (const field of userFieldConfigs) {
 		if (!field || !field.key) continue;
@@ -328,8 +328,8 @@ function getUserFieldChanges(
 	return userFieldsChanges;
 }
 
-function isDifferent(newValue: any, oldValue: any): boolean {
-	const normalizeEmpty = (value: any) => {
+function isDifferent(newValue: unknown, oldValue: unknown): boolean {
+	const normalizeEmpty = (value: unknown) => {
 		if (value === null || value === undefined || value === "") {
 			return null;
 		}

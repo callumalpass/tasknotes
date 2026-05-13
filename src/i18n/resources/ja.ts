@@ -2009,7 +2009,7 @@ export const ja: TranslationTree = {
 						transformFile: {
 							name: "変換ファイル",
 							description: "Webhookペイロードを変換するボルト内の.jsまたは.jsonファイルへのパス",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "カスタムヘッダーを含める",
@@ -2036,7 +2036,7 @@ export const ja: TranslationTree = {
 						transformFile: {
 							name: "変換ファイル",
 							description: "Webhookペイロードを変換するボルト内の.jsまたは.jsonファイルへのパス",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "カスタムヘッダーを含める",
@@ -2052,7 +2052,7 @@ export const ja: TranslationTree = {
 							leaveEmpty: "空白のまま：",
 							leaveEmptyDescription: " Rawデータを送信",
 							example: "例：",
-							exampleFile: "discord-transform.js",
+							exampleFile: "simple-template.json",
 						},
 						buttons: {
 							cancel: "キャンセル",

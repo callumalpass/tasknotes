@@ -11,24 +11,24 @@ import type { BasesViewRegistration as ObsidianBasesViewRegistration } from "obs
 export interface BasesQuery {
 	on?: (event: string, callback: () => void) => void;
 	off?: (event: string, callback: () => void) => void;
-	getViewConfig?: (key: string) => any;
-	properties?: Record<string, any>;
+	getViewConfig?: (key: string) => unknown;
+	properties?: Record<string, unknown>;
 }
 
 export interface BasesController {
 	runQuery?: () => Promise<void>;
-	getViewConfig?: () => any;
-	results?: Map<any, any>;
+	getViewConfig?: () => unknown;
+	results?: Map<unknown, unknown>;
 	query?: BasesQuery;
 }
 
 export interface BasesContainer {
-	results?: Map<any, any>;
+	results?: Map<unknown, unknown>;
 	query?: BasesQuery;
 	viewContainerEl?: HTMLElement;
 	controller?: BasesController;
 	ctx?: {
-		formulas?: Record<string, any>;
+		formulas?: Record<string, unknown>;
 	};
 }
 
@@ -40,13 +40,28 @@ export interface BasesAPI {
 	version?: string;
 }
 
+type InternalPluginManager = {
+	getEnabledPluginById?: (id: string) => {
+		registrations?: Record<string, BasesViewRegistration>;
+		manifest?: { version?: string };
+	};
+};
+
+type AppWithInternalPlugins = {
+	internalPlugins?: InternalPluginManager;
+};
+
+function isObject(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === "object";
+}
+
 /**
  * Safely retrieves the Bases plugin API
  */
 export function getBasesAPI(app: App): BasesAPI | null {
 	try {
 		// Try the correct path for Bases plugin (internal plugins)
-		const internalPlugins = (app as any).internalPlugins;
+		const internalPlugins = (app as unknown as AppWithInternalPlugins).internalPlugins;
 		if (!internalPlugins) {
 			console.debug("[TaskNotes][Bases] Internal plugins manager not available");
 			return null;
@@ -108,9 +123,9 @@ export function registerBasesView(
 				`[TaskNotes][Bases] Public API returned false (Bases may be disabled)`
 			);
 			return false;
-		} catch (error: any) {
+		} catch (error: unknown) {
 			// Check if error is because view already exists - treat as success
-			if (error?.message?.includes("already exists")) {
+			if (error instanceof Error && error.message.includes("already exists")) {
 				console.debug(
 					`[TaskNotes][Bases] View ${viewId} already registered via public API`
 				);
@@ -153,14 +168,16 @@ export function unregisterBasesView(plugin: Plugin, viewId: string): boolean {
 /**
  * Type guard to check if a container is a valid BasesContainer
  */
-export function isValidBasesContainer(container: any): container is BasesContainer {
+export function isValidBasesContainer(container: unknown): container is BasesContainer {
+	if (!isObject(container)) {
+		return false;
+	}
+
 	// Use cross-window compatible instanceOf check for pop-out window support
 	const isValidViewContainer =
 		container.viewContainerEl === undefined ||
-		(container.viewContainerEl as Node)?.instanceOf?.(HTMLElement);
+		(container.viewContainerEl as Node)?.instanceOf?.(HTMLElement) === true;
 	return (
-		container &&
-		typeof container === "object" &&
 		(container.results instanceof Map || container.results === undefined) &&
 		isValidViewContainer
 	);

@@ -7,9 +7,9 @@ export interface ClickHandlerOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	excludeSelector?: string; // CSS selector for elements that should not trigger click behavior
-	onSingleClick?: (e: MouseEvent) => Promise<void>; // Optional override for single click
-	onDoubleClick?: (e: MouseEvent) => Promise<void>; // Optional override for double click
-	contextMenuHandler?: (e: MouseEvent) => Promise<void>; // Optional context menu handler
+	onSingleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for single click
+	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
+	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
 }
 
 const DEFAULT_EXCLUDE_SELECTOR = [
@@ -42,9 +42,9 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
 			if (newTab) {
-				plugin.app.workspace.openLinkText(task.path, "", true);
+				void plugin.app.workspace.openLinkText(task.path, "", true);
 			} else {
-				plugin.app.workspace.getLeaf(false).openFile(file);
+				void plugin.app.workspace.getLeaf(false).openFile(file);
 			}
 		}
 	};
@@ -86,7 +86,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		}
 	};
 
-	const clickHandler = async (e: MouseEvent) => {
+	const handleClick = async (e: MouseEvent) => {
 		const target = e.target as HTMLElement;
 		if (target.closest(clickExcludeSelector)) {
 			return;
@@ -130,16 +130,20 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		} else {
 			clickTimeout = window.setTimeout(() => {
 				clickTimeout = null;
-				handleSingleClick(e);
+				void handleSingleClick(e);
 			}, 250);
 		}
 	};
 
-	const dblclickHandler = async (e: MouseEvent) => {
+	const clickHandler = (event: MouseEvent) => {
+		void handleClick(event);
+	};
+
+	const dblclickHandler = (_event: MouseEvent) => {
 		// This is handled by the clickHandler to distinguish single/double clicks
 	};
 
-	const contextmenuHandler = async (e: MouseEvent) => {
+	const handleContextMenu = async (e: MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation(); // Prevent event from bubbling to parent cards
 
@@ -196,6 +200,10 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		}
 	};
 
+	const contextmenuHandler = (event: MouseEvent) => {
+		void handleContextMenu(event);
+	};
+
 	return {
 		clickHandler,
 		dblclickHandler,
@@ -248,9 +256,9 @@ export async function handleCalendarTaskClick(
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
 			if (newTab) {
-				plugin.app.workspace.openLinkText(task.path, "", true);
+				void plugin.app.workspace.openLinkText(task.path, "", true);
 			} else {
-				plugin.app.workspace.getLeaf(false).openFile(file);
+				void plugin.app.workspace.getLeaf(false).openFile(file);
 			}
 		}
 	};
@@ -300,7 +308,7 @@ export async function handleCalendarTaskClick(
 		// This might be a single-click, wait to see if double-click follows
 		const timeout = window.setTimeout(() => {
 			calendarClickTimeouts.delete(eventId);
-			handleSingleClick(jsEvent);
+			void handleSingleClick(jsEvent);
 		}, 250);
 		calendarClickTimeouts.set(eventId, timeout);
 	}

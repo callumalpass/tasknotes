@@ -10,6 +10,40 @@ import {
 } from "../components/settingHelpers";
 import { PropertySelectorModal } from "../../modals/PropertySelectorModal";
 import { getAvailableProperties, getPropertyLabels } from "../../utils/propertyHelpers";
+import type { CalendarViewSettings } from "../../types/settings";
+
+type CalendarDefaultView = CalendarViewSettings["defaultView"];
+type CalendarFirstDay = CalendarViewSettings["firstDay"];
+type CalendarSlotDuration = CalendarViewSettings["slotDuration"];
+
+const CALENDAR_DEFAULT_VIEWS: readonly CalendarDefaultView[] = [
+	"dayGridMonth",
+	"timeGridWeek",
+	"timeGridDay",
+	"multiMonthYear",
+	"timeGridCustom",
+];
+
+const CALENDAR_FIRST_DAYS: readonly CalendarFirstDay[] = [0, 1, 2, 3, 4, 5, 6];
+
+const CALENDAR_SLOT_DURATIONS: readonly CalendarSlotDuration[] = [
+	"00:15:00",
+	"00:30:00",
+	"01:00:00",
+];
+
+function isCalendarDefaultView(value: string): value is CalendarDefaultView {
+	return CALENDAR_DEFAULT_VIEWS.some((view) => view === value);
+}
+
+function parseCalendarFirstDay(value: string, fallback: CalendarFirstDay): CalendarFirstDay {
+	const parsed = Number.parseInt(value, 10);
+	return CALENDAR_FIRST_DAYS.find((day) => day === parsed) ?? fallback;
+}
+
+function isCalendarSlotDuration(value: string): value is CalendarSlotDuration {
+	return CALENDAR_SLOT_DURATIONS.some((duration) => duration === value);
+}
 
 /**
  * Renders the Appearance & UI tab - visual customization settings
@@ -84,7 +118,7 @@ export function renderAppearanceTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.appearance.displayFormatting.timeFormat.name"),
 					desc: translate("settings.appearance.displayFormatting.timeFormat.description"),
 					options: [
@@ -120,7 +154,7 @@ export function renderAppearanceTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.appearance.calendarView.defaultView.name"),
 					desc: translate("settings.appearance.calendarView.defaultView.description"),
 					options: [
@@ -157,7 +191,10 @@ export function renderAppearanceTab(
 					],
 					getValue: () => plugin.settings.calendarViewSettings.defaultView,
 					setValue: async (value: string) => {
-						plugin.settings.calendarViewSettings.defaultView = value as any;
+						if (!isCalendarDefaultView(value)) {
+							return;
+						}
+						plugin.settings.calendarViewSettings.defaultView = value;
 						save();
 						// Re-render to show custom day count if needed
 						renderAppearanceTab(container, plugin, save);
@@ -167,7 +204,7 @@ export function renderAppearanceTab(
 
 			if (plugin.settings.calendarViewSettings.defaultView === "timeGridCustom") {
 				group.addSetting((setting) =>
-					configureNumberSetting(setting, {
+					void configureNumberSetting(setting, {
 						name: translate("settings.appearance.calendarView.customDayCount.name"),
 						desc: translate(
 							"settings.appearance.calendarView.customDayCount.description"
@@ -187,7 +224,7 @@ export function renderAppearanceTab(
 			}
 
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.appearance.calendarView.firstDayOfWeek.name"),
 					desc: translate("settings.appearance.calendarView.firstDayOfWeek.description"),
 					options: [
@@ -201,14 +238,17 @@ export function renderAppearanceTab(
 					],
 					getValue: () => plugin.settings.calendarViewSettings.firstDay.toString(),
 					setValue: async (value: string) => {
-						plugin.settings.calendarViewSettings.firstDay = parseInt(value) as any;
+						plugin.settings.calendarViewSettings.firstDay = parseCalendarFirstDay(
+							value,
+							plugin.settings.calendarViewSettings.firstDay
+						);
 						save();
 					},
 				})
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.calendarView.showWeekends.name"),
 					desc: translate("settings.appearance.calendarView.showWeekends.description"),
 					getValue: () => plugin.settings.calendarViewSettings.showWeekends,
@@ -220,7 +260,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.calendarView.showWeekNumbers.name"),
 					desc: translate("settings.appearance.calendarView.showWeekNumbers.description"),
 					getValue: () => plugin.settings.calendarViewSettings.weekNumbers,
@@ -232,7 +272,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.calendarView.showTodayHighlight.name"),
 					desc: translate(
 						"settings.appearance.calendarView.showTodayHighlight.description"
@@ -246,7 +286,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.appearance.calendarView.showCurrentTimeIndicator.name"
 					),
@@ -262,7 +302,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.calendarView.selectionMirror.name"),
 					desc: translate("settings.appearance.calendarView.selectionMirror.description"),
 					getValue: () => plugin.settings.calendarViewSettings.selectMirror,
@@ -327,7 +367,7 @@ export function renderAppearanceTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showScheduledTasks.name"
 					),
@@ -343,7 +383,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.defaultEventVisibility.showDueDates.name"),
 					desc: translate(
 						"settings.appearance.defaultEventVisibility.showDueDates.description"
@@ -357,7 +397,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
 					),
@@ -374,7 +414,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showTimeEntries.name"
 					),
@@ -390,7 +430,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showRecurringTasks.name"
 					),
@@ -406,7 +446,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showICSEvents.name"
 					),
@@ -432,7 +472,7 @@ export function renderAppearanceTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.appearance.timeSettings.timeSlotDuration.name"),
 					desc: translate(
 						"settings.appearance.timeSettings.timeSlotDuration.description"
@@ -459,14 +499,17 @@ export function renderAppearanceTab(
 					],
 					getValue: () => plugin.settings.calendarViewSettings.slotDuration,
 					setValue: async (value: string) => {
-						plugin.settings.calendarViewSettings.slotDuration = value as any;
+						if (!isCalendarSlotDuration(value)) {
+							return;
+						}
+						plugin.settings.calendarViewSettings.slotDuration = value;
 						save();
 					},
 				})
 			);
 
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate("settings.appearance.timeSettings.startTime.name"),
 					desc: translate("settings.appearance.timeSettings.startTime.description"),
 					placeholder: translate(
@@ -505,7 +548,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate("settings.appearance.timeSettings.endTime.name"),
 					desc: translate("settings.appearance.timeSettings.endTime.description"),
 					placeholder: translate("settings.appearance.timeSettings.endTime.placeholder"),
@@ -546,7 +589,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate("settings.appearance.timeSettings.initialScrollTime.name"),
 					desc: translate(
 						"settings.appearance.timeSettings.initialScrollTime.description"
@@ -587,7 +630,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureNumberSetting(setting, {
+				void configureNumberSetting(setting, {
 					name: translate("settings.appearance.timeSettings.eventMinHeight.name"),
 					desc: translate("settings.appearance.timeSettings.eventMinHeight.description"),
 					placeholder: translate(
@@ -615,7 +658,7 @@ export function renderAppearanceTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
 					),
@@ -631,7 +674,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.uiElements.showRelationshipsWidget.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showRelationshipsWidget.description"
@@ -647,7 +690,7 @@ export function renderAppearanceTab(
 
 			if (plugin.settings.showRelationships) {
 				group.addSetting((setting) =>
-					configureDropdownSetting(setting, {
+					void configureDropdownSetting(setting, {
 						name: translate(
 							"settings.appearance.uiElements.relationshipsPosition.name"
 						),
@@ -678,7 +721,7 @@ export function renderAppearanceTab(
 			}
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.uiElements.showTaskCardInNote.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showTaskCardInNote.description"
@@ -692,7 +735,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.uiElements.showExpandableSubtasks.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showExpandableSubtasks.description"
@@ -708,7 +751,7 @@ export function renderAppearanceTab(
 
 			if (plugin.settings.showExpandableSubtasks) {
 				group.addSetting((setting) =>
-					configureDropdownSetting(setting, {
+					void configureDropdownSetting(setting, {
 						name: translate(
 							"settings.appearance.uiElements.subtaskChevronPosition.name"
 						),
@@ -739,7 +782,7 @@ export function renderAppearanceTab(
 			}
 
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),
 					desc: translate(
 						"settings.appearance.uiElements.viewsButtonAlignment.description"
@@ -777,7 +820,7 @@ export function renderAppearanceTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.general.taskInteraction.singleClick.name"),
 					desc: translate("settings.general.taskInteraction.singleClick.description"),
 					options: [
@@ -799,7 +842,7 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.general.taskInteraction.doubleClick.name"),
 					desc: translate("settings.general.taskInteraction.doubleClick.description"),
 					options: [

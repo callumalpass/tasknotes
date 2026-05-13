@@ -1,5 +1,6 @@
 import { AbstractInputSuggest, App } from "obsidian";
 import TaskNotesPlugin from "../main";
+import type { UserMappedField } from "../types/settings";
 
 interface ContextSuggestion {
 	value: string;
@@ -120,9 +121,14 @@ interface UserFieldSuggestion {
 export class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
 	private plugin: TaskNotesPlugin;
 	private input: HTMLInputElement;
-	private fieldConfig: any;
+	private fieldConfig: UserMappedField;
 
-	constructor(app: App, inputEl: HTMLInputElement, plugin: TaskNotesPlugin, fieldConfig: any) {
+	constructor(
+		app: App,
+		inputEl: HTMLInputElement,
+		plugin: TaskNotesPlugin,
+		fieldConfig: UserMappedField
+	) {
 		super(app, inputEl);
 		this.plugin = plugin;
 		this.input = inputEl;
@@ -235,8 +241,10 @@ export class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> 
 			if (pluginWithTimer.__userFieldSuggestTimer) {
 				window.clearTimeout(pluginWithTimer.__userFieldSuggestTimer);
 			}
-			pluginWithTimer.__userFieldSuggestTimer = window.setTimeout(async () => {
-				resolve(await run());
+			pluginWithTimer.__userFieldSuggestTimer = window.setTimeout(() => {
+				void (async () => {
+					resolve(await run());
+				})();
 			}, debounceMs);
 		});
 	}

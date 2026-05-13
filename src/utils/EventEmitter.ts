@@ -2,7 +2,7 @@
  * A simple event emitter class for communication between views
  */
 export class EventEmitter {
-	private events: { [key: string]: Array<(...args: any[]) => void> } = {};
+	private events: { [key: string]: Array<(...args: unknown[]) => void> } = {};
 
 	/**
 	 * Subscribe to an event
@@ -10,7 +10,7 @@ export class EventEmitter {
 	 * @param listener The callback function to execute when the event is triggered
 	 * @returns An unsubscribe function
 	 */
-	on(event: string, listener: (...args: any[]) => void): () => void {
+	on(event: string, listener: (...args: unknown[]) => void): () => void {
 		if (!this.events[event]) {
 			this.events[event] = [];
 		}
@@ -27,7 +27,7 @@ export class EventEmitter {
 	 * @param event The event name to emit
 	 * @param args The data to pass to the event listeners
 	 */
-	emit(event: string, ...args: any[]): void {
+	emit(event: string, ...args: unknown[]): void {
 		if (this.events[event]) {
 			this.events[event].forEach((listener) => {
 				listener(...args);

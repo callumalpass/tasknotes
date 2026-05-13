@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- FullCalendar callbacks provide checked DOM references after mount. */
 /**
  * Shared Calendar Core Logic
  *
@@ -24,7 +24,7 @@ import {
 	updateTimeblockInDailyNote,
 	addDTSTARTToRecurrenceRuleWithDraggedTime,
 } from "../utils/helpers";
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import {
 	getAllDailyNotes,
 	getDailyNote,
@@ -59,8 +59,8 @@ export interface CalendarEvent {
 			| "timeblock"
 			| "property-based";
 		filePath?: string; // For property-based events
-		file?: any; // For property-based events
-		basesEntry?: any; // For property-based events - full Bases entry with getValue()
+		file?: unknown; // For property-based events
+		basesEntry?: unknown; // For property-based events - full Bases entry with getValue()
 		isCompleted?: boolean;
 		isSkipped?: boolean;
 		isRecurringInstance?: boolean;
@@ -74,6 +74,42 @@ export interface CalendarEvent {
 		timeEntryIndex?: number;
 		originalDate?: string; // For timeblock events - tracks original date for move operations
 	};
+}
+
+type CalendarEventLike = {
+	start?: Date | null;
+	end?: Date | null;
+	allDay?: boolean;
+	extendedProps?: Record<string, unknown> & Partial<CalendarEvent["extendedProps"]>;
+};
+
+type CalendarEventArgLike = {
+	event?: CalendarEventLike;
+	start?: Date;
+	extendedProps?: Partial<CalendarEvent["extendedProps"]>;
+};
+
+type CalendarMutationInfo = {
+	event: CalendarEventLike;
+	revert: () => void;
+};
+
+type FrontmatterWithTimeblocks = {
+	timeblocks?: unknown[];
+};
+
+type ObsidianMoment = import("moment").Moment;
+
+type WindowWithMoment = Window & {
+	moment(input?: string | Date): ObsidianMoment;
+};
+
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
+function getWindowMoment(input?: string | Date): ObsidianMoment {
+	return (window as unknown as WindowWithMoment).moment(input);
 }
 
 export interface CalendarEventGenerationOptions {
@@ -318,15 +354,19 @@ export async function handlePatternInstanceDrop(
  * Handle dropping a recurring task event (next scheduled, pattern, or legacy)
  */
 export async function handleRecurringTaskDrop(
-	dropInfo: any,
+	dropInfo: CalendarMutationInfo,
 	taskInfo: TaskInfo,
 	plugin: TaskNotesPlugin
 ): Promise<void> {
 	const { isRecurringInstance, isNextScheduledOccurrence, isPatternInstance } =
-		dropInfo.event.extendedProps;
+		dropInfo.event.extendedProps ?? {};
 
 	const newStart = dropInfo.event.start;
-	const allDay = dropInfo.event.allDay;
+	if (!newStart) {
+		dropInfo.revert();
+		return;
+	}
+	const allDay = dropInfo.event.allDay ?? false;
 
 	if (isNextScheduledOccurrence) {
 		// Dragging Next Scheduled Occurrence: Updates only task.scheduled (manual reschedule)
@@ -367,9 +407,10 @@ export async function handleRecurringTaskDrop(
  * Get target date for calendar event context menu
  * Uses the same UTC-anchored logic as AdvancedCalendarView
  */
-export function getTargetDateForEvent(eventArg: any): Date {
+export function getTargetDateForEvent(eventArg: unknown): Date {
 	// Extract from eventArg.event if it's an event mount arg, or directly if it's the event
-	const event = eventArg.event || eventArg;
+	const eventContainer = eventArg as CalendarEventArgLike;
+	const event = eventContainer.event || eventContainer;
 	const extendedProps = event.extendedProps || {};
 	const { isRecurringInstance, isNextScheduledOccurrence, isPatternInstance, instanceDate } =
 		extendedProps;
@@ -883,21 +924,23 @@ export function createTimeblockEvent(
 /**
  * Validate and extract timeblocks from cached frontmatter
  */
-function extractTimeblocksFromCache(frontmatter: any, path: string): TimeBlock[] {
-	if (!frontmatter?.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
+function extractTimeblocksFromCache(frontmatter: unknown, path: string): TimeBlock[] {
+	const frontmatterData = frontmatter as FrontmatterWithTimeblocks | null | undefined;
+	if (!frontmatterData?.timeblocks || !Array.isArray(frontmatterData.timeblocks)) {
 		return [];
 	}
 
 	const validTimeblocks: TimeBlock[] = [];
-	for (const tb of frontmatter.timeblocks) {
+	for (const tb of frontmatterData.timeblocks) {
+		const timeblock = tb as Partial<TimeBlock> | null;
 		// Basic validation - must have id, startTime, endTime
 		if (
-			tb &&
-			typeof tb.id === "string" &&
-			typeof tb.startTime === "string" &&
-			typeof tb.endTime === "string"
+			timeblock &&
+			typeof timeblock.id === "string" &&
+			typeof timeblock.startTime === "string" &&
+			typeof timeblock.endTime === "string"
 		) {
-			validTimeblocks.push(tb as TimeBlock);
+			validTimeblocks.push(timeblock as TimeBlock);
 		}
 	}
 	return validTimeblocks;
@@ -908,7 +951,7 @@ function extractTimeblocksFromCache(frontmatter: any, path: string): TimeBlock[]
  * Uses metadataCache for performance - no file reads required
  */
 // Cache for daily notes to avoid repeated getAllDailyNotes() calls
-let _dailyNotesCache: Record<string, any> | null = null;
+let _dailyNotesCache: Record<string, TFile> | null = null;
 let _dailyNotesCacheTime = 0;
 const DAILY_NOTES_CACHE_TTL = 5000; // 5 seconds
 
@@ -936,8 +979,7 @@ export async function generateTimeblockEvents(
 		) {
 			const dateString = formatDateForStorage(currentUTC);
 			const currentDate = new Date(`${dateString}T12:00:00`);
-			const moment = (window as any).moment(currentDate);
-			const dailyNote = getDailyNote(moment, allDailyNotes);
+			const dailyNote = getDailyNote(getWindowMoment(currentDate), allDailyNotes);
 
 			if (dailyNote) {
 				// Use metadataCache instead of reading file
@@ -1172,7 +1214,7 @@ export async function handleTimeEntryCreation(
 	try {
 		// Get all tasks
 		const allTasks = await plugin.cacheManager.getAllTasks();
-		const unarchivedTasks = allTasks.filter((task: any) => !task.archived);
+		const unarchivedTasks = allTasks.filter((task) => !task.archived);
 
 		if (unarchivedTasks.length === 0) {
 			new Notice(plugin.i18n.translate("modals.timeEntry.noTasksAvailable"));
@@ -1180,48 +1222,53 @@ export async function handleTimeEntryCreation(
 		}
 
 		// Open task selector modal
-		openTaskSelector(plugin, unarchivedTasks, async (selectedTask: any) => {
-			if (selectedTask) {
-				try {
-					// Calculate duration
-					const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+		openTaskSelector(plugin, unarchivedTasks, (selectedTask: TaskInfo) => {
+			void (async () => {
+				if (selectedTask) {
+					try {
+						// Calculate duration
+						const durationMinutes = Math.round(
+							(end.getTime() - start.getTime()) / 60000
+						);
 
-					// Create new time entry
-					const newEntry = {
-						startTime: start.toISOString(),
-						endTime: end.toISOString(),
-						description: "",
-					};
+						// Create new time entry
+						const newEntry = {
+							startTime: start.toISOString(),
+							endTime: end.toISOString(),
+							description: "",
+						};
 
-					// Add to task's time entries
-					const updatedTimeEntries = [...(selectedTask.timeEntries || []), newEntry].map(
-						(entry) => {
-							const sanitizedEntry = { ...entry };
+						// Add to task's time entries
+						const updatedTimeEntries = [
+							...(selectedTask.timeEntries || []),
+							newEntry,
+						].map((entry) => {
+							const sanitizedEntry: Record<string, unknown> = { ...entry };
 							delete sanitizedEntry.duration;
-							return sanitizedEntry;
-						}
-					);
+							return sanitizedEntry as typeof entry;
+						});
 
-					// Save to file
-					await plugin.taskService.updateTask(selectedTask, {
-						timeEntries: updatedTimeEntries,
-					});
+						// Save to file
+						await plugin.taskService.updateTask(selectedTask, {
+							timeEntries: updatedTimeEntries,
+						});
 
-					// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
-					// We just need to trigger EVENT_DATA_CHANGED
-					plugin.emitter.trigger(EVENT_DATA_CHANGED);
+						// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
+						// We just need to trigger EVENT_DATA_CHANGED
+						plugin.emitter.trigger(EVENT_DATA_CHANGED);
 
-					new Notice(
-						plugin.i18n.translate("modals.timeEntry.created", {
-							taskTitle: selectedTask.title,
-							duration: durationMinutes.toString(),
-						})
-					);
-				} catch (error) {
-					console.error("Error creating time entry:", error);
-					new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
+						new Notice(
+							plugin.i18n.translate("modals.timeEntry.created", {
+								taskTitle: selectedTask.title,
+								duration: durationMinutes.toString(),
+							})
+						);
+					} catch (error) {
+						console.error("Error creating time entry:", error);
+						new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
+					}
 				}
-			}
+			})();
 		});
 	} catch (error) {
 		console.error("Error opening task selector for time entry:", error);
@@ -1233,7 +1280,7 @@ export async function handleTimeEntryCreation(
  * Handle timeblock drop (move to new date/time)
  */
 export async function handleTimeblockDrop(
-	dropInfo: any,
+	dropInfo: CalendarMutationInfo,
 	timeblock: TimeBlock,
 	originalDate: string,
 	plugin: TaskNotesPlugin
@@ -1241,6 +1288,10 @@ export async function handleTimeblockDrop(
 	try {
 		const newStart = dropInfo.event.start;
 		const newEnd = dropInfo.event.end;
+		if (!newStart || !newEnd) {
+			dropInfo.revert();
+			return;
+		}
 
 		// Calculate new date and times
 		const newDate = format(newStart, "yyyy-MM-dd");
@@ -1258,9 +1309,9 @@ export async function handleTimeblockDrop(
 		);
 
 		new Notice("Timeblock moved successfully");
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error moving timeblock:", error);
-		new Notice(`Failed to move timeblock: ${error.message}`);
+		new Notice(`Failed to move timeblock: ${getErrorMessage(error)}`);
 		dropInfo.revert();
 	}
 }
@@ -1269,7 +1320,7 @@ export async function handleTimeblockDrop(
  * Handle timeblock resize (change duration)
  */
 export async function handleTimeblockResize(
-	resizeInfo: any,
+	resizeInfo: CalendarMutationInfo,
 	timeblock: TimeBlock,
 	originalDate: string,
 	plugin: TaskNotesPlugin
@@ -1298,9 +1349,9 @@ export async function handleTimeblockResize(
 		);
 
 		new Notice("Timeblock duration updated");
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error resizing timeblock:", error);
-		new Notice(`Failed to resize timeblock: ${error.message}`);
+		new Notice(`Failed to resize timeblock: ${getErrorMessage(error)}`);
 		resizeInfo.revert();
 	}
 }
@@ -1386,7 +1437,7 @@ export async function handleDateTitleClick(date: Date, plugin: TaskNotesPlugin):
 		}
 
 		// Convert date to moment for the API
-		const moment = (window as any).moment(date);
+		const moment = getWindowMoment(date);
 
 		// Get all daily notes to check if one exists for this date
 		const allDailyNotes = getAllDailyNotes();

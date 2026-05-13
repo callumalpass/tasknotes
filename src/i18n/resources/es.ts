@@ -2009,7 +2009,7 @@ export const es: TranslationTree = {
 						transformFile: {
 							name: "Archivo de transformación",
 							description: "Ruta a un archivo .js o .json en tu bóveda que transforma cargas de webhook",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "Incluir encabezados personalizados",
@@ -2036,7 +2036,7 @@ export const es: TranslationTree = {
 						transformFile: {
 							name: "Archivo de transformación",
 							description: "Ruta a un archivo .js o .json en tu bóveda que transforma cargas de webhook",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "Incluir encabezados personalizados",
@@ -2052,7 +2052,7 @@ export const es: TranslationTree = {
 							leaveEmpty: "Dejar vacío:",
 							leaveEmptyDescription: " Enviar datos crudos",
 							example: "Ejemplo:",
-							exampleFile: "discord-transform.js",
+							exampleFile: "simple-template.json",
 						},
 						buttons: {
 							cancel: "Cancelar",

@@ -10,7 +10,7 @@ import {
 	FilterProperty,
 	FilterOperator,
 } from "../types";
-import { parseLinktext } from "obsidian";
+import { parseLinktext, TFile } from "obsidian";
 import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
 import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "./StatusManager";
@@ -40,6 +40,8 @@ import {
 } from "../utils/dateUtils";
 import { TranslationKey } from "../i18n";
 import { FilterQueryPlanner } from "./filter-service/FilterQueryPlanner";
+import type TaskNotesPlugin from "../main";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 /**
  * Unified filtering, sorting, and grouping service for all task views.
@@ -66,7 +68,7 @@ export class FilterService extends EventEmitter {
 		cacheManager: TaskManager,
 		statusManager: StatusManager,
 		priorityManager: PriorityManager,
-		private plugin?: any // Plugin reference for accessing settings
+		private plugin?: TaskNotesPlugin // Plugin reference for accessing settings
 	) {
 		super();
 		this.cacheManager = cacheManager;
@@ -260,7 +262,7 @@ export class FilterService extends EventEmitter {
 			const groups = this.groupTasks(sortedTasks, query.groupKey || "none", targetDate);
 
 			// Compute hierarchical grouping only when both keys are active
-			const subgroupKey = (query as any).subgroupKey as TaskGroupKey | undefined;
+			const subgroupKey = query.subgroupKey;
 			if (
 				subgroupKey &&
 				subgroupKey !== "none" &&
@@ -276,15 +278,15 @@ export class FilterService extends EventEmitter {
 				const resolver = (task: TaskInfo, fieldIdOrKey: string): string[] => {
 					const userFields = this.plugin?.settings?.userFields || [];
 					const field = userFields.find(
-						(f: any) => (f.id || f.key) === fieldIdOrKey || f.key === fieldIdOrKey
+						(f) => (f.id || f.key) === fieldIdOrKey || f.key === fieldIdOrKey
 					);
 					const missingLabel = `No ${field?.displayName || field?.key || fieldIdOrKey}`;
 					if (!field) return [missingLabel];
 					try {
-						const app = this.cacheManager.getApp();
-						const file = app.vault.getAbstractFileByPath(task.path);
-						if (!file) return [missingLabel];
-						const fm = app.metadataCache.getFileCache(file as any)?.frontmatter;
+							const app = this.cacheManager.getApp();
+							const file = app.vault.getAbstractFileByPath(task.path);
+							if (!(file instanceof TFile)) return [missingLabel];
+							const fm = app.metadataCache.getFileCache(file)?.frontmatter;
 						const raw = fm ? fm[field.key] : undefined;
 						switch (field.type) {
 							case "boolean": {
@@ -326,7 +328,7 @@ export class FilterService extends EventEmitter {
 				const svc = new HierarchicalGroupingService(resolver);
 				const hierarchicalGroups = svc.group(
 					sortedTasks,
-					query.groupKey as TaskGroupKey,
+					query.groupKey,
 					subgroupKey,
 					this.currentSortDirection,
 					this.plugin?.settings?.userFields || []
@@ -352,7 +354,7 @@ export class FilterService extends EventEmitter {
 		} catch (error) {
 			if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
 				console.error("Filter error (hierarchical):", error.message, {
-					nodeId: (error as any).nodeId,
+					nodeId: error.nodeId,
 				});
 				return { groups: new Map<string, TaskInfo[]>() };
 			}
@@ -446,7 +448,7 @@ export class FilterService extends EventEmitter {
 	 * - Extracts display text from wikilinks: [[file|Alias]] -> "Alias"; [[People/Chuck Norris]] -> "Chuck Norris"
 	 * - Also includes the raw token (e.g., "[[Chuck Norris]]") for exact-match scenarios
 	 */
-	private normalizeUserListValue(raw: any): string[] {
+	private normalizeUserListValue(raw: unknown): string[] {
 		const tokens: string[] = [];
 		const pushToken = (s: string) => {
 			if (!s) return;
@@ -465,12 +467,12 @@ export class FilterService extends EventEmitter {
 		};
 
 		if (Array.isArray(raw)) {
-			for (const v of raw) pushToken(String(v));
+			for (const v of raw) pushToken(stringifyUnknown(v));
 		} else if (typeof raw === "string") {
 			const parts = splitListPreservingLinksAndQuotes(raw);
 			for (const p of parts) pushToken(p);
 		} else if (raw != null) {
-			pushToken(String(raw));
+			pushToken(stringifyUnknown(raw));
 		}
 
 		// Deduplicate while preserving order
@@ -499,14 +501,14 @@ export class FilterService extends EventEmitter {
 		if (typeof property === "string" && property.startsWith("user:")) {
 			const fieldId = property.slice(5);
 			const userFields = this.plugin?.settings?.userFields || [];
-			const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+			const field = userFields.find((f) => (f.id || f.key) === fieldId);
 			let taskValue: TaskPropertyValue = undefined;
 			if (field) {
 				try {
-					const app = this.cacheManager.getApp();
-					const file = app.vault.getAbstractFileByPath(task.path);
-					if (file) {
-						const fm = app.metadataCache.getFileCache(file as any)?.frontmatter;
+						const app = this.cacheManager.getApp();
+						const file = app.vault.getAbstractFileByPath(task.path);
+						if (file instanceof TFile) {
+							const fm = app.metadataCache.getFileCache(file)?.frontmatter;
 						const raw = fm ? fm[field.key] : undefined;
 						// Normalize based on type
 						switch (field.type) {
@@ -541,11 +543,11 @@ export class FilterService extends EventEmitter {
 				(operator === "contains" || operator === "does-not-contain")
 			) {
 				const haystack = Array.isArray(taskValue)
-					? (taskValue as string[])
+					? (taskValue)
 					: taskValue != null
 						? [String(taskValue)]
 						: [];
-				const needles = Array.isArray(value) ? (value as string[]) : [String(value ?? "")];
+				const needles = Array.isArray(value) ? (value) : [String(value ?? "")];
 				const match = needles.some(
 					(n) =>
 						typeof n === "string" &&
@@ -559,10 +561,10 @@ export class FilterService extends EventEmitter {
 
 			// For date equality, trick date handling by passing a known date property id
 			const propForDate =
-				field?.type === "date" ? ("due" as FilterProperty) : (property as FilterProperty);
+				field?.type === "date" ? ("due" as FilterProperty) : (property);
 			return FilterUtils.applyOperator(
 				taskValue,
-				operator as FilterOperator,
+				operator,
 				value,
 				condition.id,
 				propForDate
@@ -572,7 +574,7 @@ export class FilterService extends EventEmitter {
 		// Get the actual value from the task
 		let taskValue: TaskPropertyValue = FilterUtils.getTaskPropertyValue(
 			task,
-			property as FilterProperty
+			property
 		);
 
 		// Handle special case for status.isCompleted
@@ -588,7 +590,7 @@ export class FilterService extends EventEmitter {
 		) {
 			const result = this.evaluateProjectsCondition(
 				taskValue,
-				operator as FilterOperator,
+				operator,
 				value
 			);
 			return result;
@@ -597,10 +599,10 @@ export class FilterService extends EventEmitter {
 		// Apply the operator
 		return FilterUtils.applyOperator(
 			taskValue,
-			operator as FilterOperator,
+			operator,
 			value,
 			condition.id,
-			property as FilterProperty
+			property
 		);
 	}
 
@@ -1052,16 +1054,16 @@ export class FilterService extends EventEmitter {
 	private compareByUserField(a: TaskInfo, b: TaskInfo, sortKey: `user:${string}`): number {
 		const fieldId = sortKey.slice(5);
 		const userFields = this.plugin?.settings?.userFields || [];
-		const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+		const field = userFields.find((f) => (f.id || f.key) === fieldId);
 		if (!field) return 0;
 
 		const getRaw = (t: TaskInfo) => {
 			try {
-				const app = this.cacheManager.getApp();
-				const file = app.vault.getAbstractFileByPath(t.path);
-				const fm = file
-					? app.metadataCache.getFileCache(file as any)?.frontmatter
-					: undefined;
+					const app = this.cacheManager.getApp();
+					const file = app.vault.getAbstractFileByPath(t.path);
+					const fm = file instanceof TFile
+						? app.metadataCache.getFileCache(file)?.frontmatter
+						: undefined;
 				return fm ? fm[field.key] : undefined;
 			} catch {
 				return undefined;
@@ -1085,10 +1087,10 @@ export class FilterService extends EventEmitter {
 				return 0;
 			}
 			case "boolean": {
-				const toBool = (v: any): boolean | undefined => {
+				const toBool = (v: unknown): boolean | undefined => {
 					if (typeof v === "boolean") return v;
 					if (v == null) return undefined;
-					const s = String(v).trim().toLowerCase();
+					const s = stringifyUnknown(v).trim().toLowerCase();
 					if (s === "true") return true;
 					if (s === "false") return false;
 					return undefined;
@@ -1113,7 +1115,7 @@ export class FilterService extends EventEmitter {
 				return 0;
 			}
 			case "list": {
-				const toFirst = (v: any): string | undefined => {
+				const toFirst = (v: unknown): string | undefined => {
 					if (Array.isArray(v)) {
 						const tokens = this.normalizeUserListValue(v);
 						return tokens[0];
@@ -1246,14 +1248,14 @@ export class FilterService extends EventEmitter {
 	private getUserFieldGroupValue(task: TaskInfo, groupKey: string): string {
 		const fieldId = groupKey.slice(5);
 		const userFields = this.plugin?.settings?.userFields || [];
-		const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+		const field = userFields.find((f) => (f.id || f.key) === fieldId);
 		if (!field) return "unknown-field";
 
 		try {
-			const app = this.cacheManager.getApp();
-			const file = app.vault.getAbstractFileByPath(task.path);
-			if (!file) return "no-value";
-			const fm = app.metadataCache.getFileCache(file as any)?.frontmatter;
+				const app = this.cacheManager.getApp();
+				const file = app.vault.getAbstractFileByPath(task.path);
+				if (!(file instanceof TFile)) return "no-value";
+				const fm = app.metadataCache.getFileCache(file)?.frontmatter;
 			const raw = fm ? fm[field.key] : undefined;
 
 			switch (field.type) {
@@ -1680,7 +1682,7 @@ export class FilterService extends EventEmitter {
 	private sortUserFieldGroups(groupKeys: string[], groupKey: string): string[] {
 		const fieldId = groupKey.slice(5);
 		const userFields = this.plugin?.settings?.userFields || [];
-		const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+		const field = userFields.find((f) => (f.id || f.key) === fieldId);
 		if (!field) return groupKeys.sort();
 
 		switch (field.type) {

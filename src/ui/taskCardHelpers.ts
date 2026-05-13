@@ -3,6 +3,21 @@ import { TaskInfo } from "../types";
 import { getRecurrenceDisplayText } from "../utils/helpers";
 import { extractBasesValue, resolveTaskCardPropertyLabel } from "./taskCardPresentation";
 
+type BasesDataWithGetter = {
+	getValue(propertyId: string): unknown;
+};
+
+function getBasesDataGetter(value: unknown): BasesDataWithGetter | null {
+	if (
+		value !== null &&
+		typeof value === "object" &&
+		typeof (value as { getValue?: unknown }).getValue === "function"
+	) {
+		return value as BasesDataWithGetter;
+	}
+	return null;
+}
+
 const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => unknown> = {
 	due: (task) => task.due,
 	scheduled: (task) => task.scheduled,
@@ -140,13 +155,12 @@ export function getTaskCardPropertyValue(
 			}
 		}
 
-		if (
-			propertyId.startsWith("file.") &&
-			task.basesData &&
-			typeof task.basesData.getValue === "function"
-		) {
-			try {
-				const value = task.basesData.getValue(propertyId as never);
+			if (
+				propertyId.startsWith("file.") &&
+				getBasesDataGetter(task.basesData)
+			) {
+				try {
+					const value = getBasesDataGetter(task.basesData)?.getValue(propertyId);
 				if (value !== null && value !== undefined) {
 					return extractBasesValue(value);
 				}
@@ -156,13 +170,13 @@ export function getTaskCardPropertyValue(
 		}
 
 		if (propertyId.startsWith("formula.")) {
-			try {
-				const basesData = task.basesData;
-				if (!basesData || typeof basesData.getValue !== "function") {
+				try {
+					const basesData = getBasesDataGetter(task.basesData);
+					if (!basesData) {
 					return "";
 				}
 
-				const value = basesData.getValue(propertyId as never);
+				const value = basesData.getValue(propertyId);
 				if (value === null || value === undefined) {
 					return "";
 				}
@@ -174,10 +188,11 @@ export function getTaskCardPropertyValue(
 			}
 		}
 
-		if (task.basesData && typeof task.basesData.getValue === "function") {
-			try {
-				const notePropertyId = `note.${propertyId}`;
-				const value = task.basesData.getValue(notePropertyId as never);
+			const basesData = getBasesDataGetter(task.basesData);
+			if (basesData) {
+				try {
+					const notePropertyId = `note.${propertyId}`;
+					const value = basesData.getValue(notePropertyId);
 				if (value !== null && value !== undefined) {
 					return extractBasesValue(value);
 				}

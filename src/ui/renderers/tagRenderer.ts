@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Renderer utilities check created elements before attaching interactions. */
 // Tag rendering utilities following TaskNotes coding standards
+import { stringifyUnknown } from "../../utils/stringUtils";
 
 export interface TagServices {
 	onTagClick?: (tag: string, event: MouseEvent | KeyboardEvent) => void | Promise<void>;
@@ -28,7 +29,7 @@ export function renderTag(container: HTMLElement, tag: string, services?: TagSer
 		el.addEventListener("click", (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			services.onTagClick!(normalized, e as MouseEvent);
+			void services.onTagClick!(normalized, e);
 		});
 
 		// Add keyboard support
@@ -36,7 +37,7 @@ export function renderTag(container: HTMLElement, tag: string, services?: TagSer
 			if (e.key === "Enter" || e.key === " ") {
 				e.preventDefault();
 				e.stopPropagation();
-				services.onTagClick!(normalized, e as any);
+				void services.onTagClick!(normalized, e);
 			}
 		});
 	}
@@ -64,7 +65,7 @@ export function renderTagsValue(
 		return;
 	}
 	// Fallback: not a recognizable tag value
-	if (value != null) container.appendChild(activeDocument.createTextNode(String(value)));
+	if (value != null) container.appendChild(activeDocument.createTextNode(stringifyUnknown(value)));
 }
 
 /** Render contexts with @ prefix */
@@ -91,14 +92,14 @@ export function renderContextsValue(
 				el.addEventListener("click", (e) => {
 					e.preventDefault();
 					e.stopPropagation();
-					services.onTagClick!(normalized, e as MouseEvent);
+					void services.onTagClick!(normalized, e);
 				});
 
 				el.addEventListener("keydown", (e) => {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
 						e.stopPropagation();
-						services.onTagClick!(normalized, e);
+						void services.onTagClick!(normalized, e);
 					}
 				});
 			}
@@ -132,14 +133,14 @@ export function renderContextsValue(
 					el.addEventListener("click", (e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						services.onTagClick!(normalized, e as MouseEvent);
+						void services.onTagClick!(normalized, e);
 					});
 
 					el.addEventListener("keydown", (e) => {
 						if (e.key === "Enter" || e.key === " ") {
 							e.preventDefault();
 							e.stopPropagation();
-							services.onTagClick!(normalized, e);
+							void services.onTagClick!(normalized, e);
 						}
 					});
 				}
@@ -151,7 +152,7 @@ export function renderContextsValue(
 		return;
 	}
 	// Fallback
-	if (value != null) container.appendChild(activeDocument.createTextNode(String(value)));
+	if (value != null) container.appendChild(activeDocument.createTextNode(stringifyUnknown(value)));
 }
 
 /**

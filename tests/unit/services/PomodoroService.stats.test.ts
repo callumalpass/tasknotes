@@ -79,7 +79,12 @@ function createMockPlugin(options: {
 
 	mockedGetAllDailyNotes.mockReturnValue(dailyNotes as any);
 	mockedGetDailyNote.mockImplementation((momentValue: any, notes: Record<string, any>) => {
-		const date = momentValue?.date instanceof Date ? momentValue.date : momentValue;
+		const date =
+			typeof momentValue?.toDate === "function"
+				? momentValue.toDate()
+				: momentValue?.date instanceof Date
+					? momentValue.date
+					: momentValue;
 		return notes[dateKeyFromLocalDate(date)];
 	});
 
@@ -113,15 +118,11 @@ function createMockPlugin(options: {
 }
 
 describe("PomodoroService stats reads", () => {
-	const originalMoment = (globalThis.window as any).moment;
-
 	beforeEach(() => {
 		mockedAppHasDailyNotesPluginLoaded.mockReturnValue(true);
-		(globalThis.window as any).moment = jest.fn((date: Date) => ({ date }));
 	});
 
 	afterEach(() => {
-		(globalThis.window as any).moment = originalMoment;
 		jest.clearAllMocks();
 	});
 

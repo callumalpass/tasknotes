@@ -1963,7 +1963,7 @@ export const ko: TranslationTree = {
 						transformFile: {
 							name: "변환 파일",
 							description: "웹훅 페이로드를 변환하는 보관소의 .js 또는 .json 파일 경로",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "사용자 지정 헤더 포함",
@@ -1990,7 +1990,7 @@ export const ko: TranslationTree = {
 						transformFile: {
 							name: "변환 파일",
 							description: "웹훅 페이로드를 변환하는 보관소의 .js 또는 .json 파일 경로",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "사용자 지정 헤더 포함",
@@ -2006,7 +2006,7 @@ export const ko: TranslationTree = {
 							leaveEmpty: "비워두기:",
 							leaveEmptyDescription: " 원본 데이터 전송",
 							example: "예:",
-							exampleFile: "discord-transform.js",
+							exampleFile: "simple-template.json",
 						},
 						buttons: {
 							cancel: "취소",

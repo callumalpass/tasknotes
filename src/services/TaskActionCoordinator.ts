@@ -28,7 +28,11 @@ export class TaskActionCoordinator {
 			let updatedTask = await this.plugin.taskService.startTimeTracking(task);
 
 			const trimmedDescription = description?.trim();
-			if (trimmedDescription && updatedTask.timeEntries && updatedTask.timeEntries.length > 0) {
+			if (
+				trimmedDescription &&
+				updatedTask.timeEntries &&
+				updatedTask.timeEntries.length > 0
+			) {
 				const latestEntry = updatedTask.timeEntries[updatedTask.timeEntries.length - 1];
 				if (latestEntry && !latestEntry.endTime) {
 					latestEntry.description = trimmedDescription;
@@ -41,9 +45,12 @@ export class TaskActionCoordinator {
 			new Notice("Time tracking started");
 			this.requestStatusBarUpdate();
 			return updatedTask;
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to start time tracking:", error);
-			if (error.message === "Time tracking is already active for this task") {
+			if (
+				error instanceof Error &&
+				error.message === "Time tracking is already active for this task"
+			) {
 				new Notice("Time tracking is already active for this task");
 			} else {
 				new Notice("Failed to start time tracking");
@@ -58,9 +65,12 @@ export class TaskActionCoordinator {
 			new Notice("Time tracking stopped");
 			this.requestStatusBarUpdate();
 			return updatedTask;
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to stop time tracking:", error);
-			if (error.message === "No active time tracking session for this task") {
+			if (
+				error instanceof Error &&
+				error.message === "No active time tracking session for this task"
+			) {
 				new Notice("No active time tracking session for this task");
 			} else {
 				new Notice("Failed to stop time tracking");
@@ -81,22 +91,24 @@ export class TaskActionCoordinator {
 				return;
 			}
 
-			openTaskSelector(this.plugin, availableTasks, async (selectedTask) => {
-				if (!selectedTask) {
-					return;
-				}
+			openTaskSelector(this.plugin, availableTasks, (selectedTask) => {
+				void (async () => {
+					if (!selectedTask) {
+						return;
+					}
 
-				try {
-					await this.startTimeTracking(selectedTask);
-					new Notice(
-						this.plugin.i18n.translate("modals.timeTracking.started", {
-							taskTitle: selectedTask.title,
-						})
-					);
-				} catch (error) {
-					console.error("Error starting time tracking:", error);
-					new Notice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));
-				}
+					try {
+						await this.startTimeTracking(selectedTask);
+						new Notice(
+							this.plugin.i18n.translate("modals.timeTracking.started", {
+								taskTitle: selectedTask.title,
+							})
+						);
+					} catch (error) {
+						console.error("Error starting time tracking:", error);
+						new Notice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));
+					}
+				})();
 			});
 		} catch (error) {
 			console.error("Error opening task selector for time tracking:", error);
@@ -132,25 +144,27 @@ export class TaskActionCoordinator {
 			this.plugin.app,
 			this.plugin,
 			task,
-			async (updatedEntries) => {
-				try {
-					const sanitizedEntries = updatedEntries.map((entry) => {
-						const sanitizedEntry = { ...entry };
-						delete sanitizedEntry.duration;
-						return sanitizedEntry;
-					});
+			(updatedEntries) => {
+				void (async () => {
+					try {
+						const sanitizedEntries = updatedEntries.map((entry) => {
+							const sanitizedEntry = { ...entry };
+							delete sanitizedEntry.duration;
+							return sanitizedEntry;
+						});
 
-					await this.plugin.taskService.updateTask(task, {
-						timeEntries: sanitizedEntries,
-					});
+						await this.plugin.taskService.updateTask(task, {
+							timeEntries: sanitizedEntries,
+						});
 
-					onSave?.();
-					this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
-					new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saved"));
-				} catch (error) {
-					console.error("Error saving time entries:", error);
-					new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saveFailed"));
-				}
+						onSave?.();
+						this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
+						new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saved"));
+					} catch (error) {
+						console.error("Error saving time entries:", error);
+						new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saveFailed"));
+					}
+				})();
 			}
 		);
 

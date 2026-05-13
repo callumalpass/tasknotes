@@ -18,7 +18,7 @@ export class DeviceCodeModal extends Modal {
 	private onCancel: () => void;
 	private countdownInterval?: number;
 	private expiresAt: number;
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
 
 	constructor(
 		app: App,
@@ -95,7 +95,7 @@ export class DeviceCodeModal extends Modal {
 		});
 		setIcon(copyIcon, "copy");
 		copyIcon.addEventListener("click", () => {
-			navigator.clipboard.writeText(this.deviceCode.userCode);
+			void navigator.clipboard.writeText(this.deviceCode.userCode);
 			copyIcon.empty();
 			setIcon(copyIcon, "check");
 			window.setTimeout(() => {

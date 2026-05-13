@@ -12,6 +12,7 @@ import {
 	isOverdueTimeAware,
 	isTodayTimeAware,
 } from "../utils/dateUtils";
+import { stringifyUnknown } from "../utils/stringUtils";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import {
 	extractBasesValue,
@@ -71,31 +72,33 @@ function attachDateClickHandler(
 		const menu = new DateContextMenu({
 			currentValue: getDatePart(currentValue || ""),
 			currentTime: getTimePart(currentValue || ""),
-			onSelect: async (dateValue, timeValue) => {
-				try {
-					let finalValue: string | undefined;
-					if (!dateValue) {
-						finalValue = undefined;
-					} else if (timeValue) {
-						finalValue = `${dateValue}T${timeValue}`;
-					} else {
-						finalValue = dateValue;
+			onSelect: (dateValue, timeValue) => {
+				void (async () => {
+					try {
+						let finalValue: string | undefined;
+						if (!dateValue) {
+							finalValue = undefined;
+						} else if (timeValue) {
+							finalValue = `${dateValue}T${timeValue}`;
+						} else {
+							finalValue = dateValue;
+						}
+						await plugin.updateTaskProperty(task, dateType, finalValue);
+					} catch (error) {
+						const errorMessage = error instanceof Error ? error.message : String(error);
+						console.error(`Error updating ${dateType} date:`, errorMessage);
+						const noticeKey =
+							dateType === "due"
+								? "contextMenus.task.notices.updateDueDateFailure"
+								: "contextMenus.task.notices.updateScheduledFailure";
+						new Notice(plugin.i18n.translate(noticeKey, { message: errorMessage }));
 					}
-					await plugin.updateTaskProperty(task, dateType, finalValue);
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error(`Error updating ${dateType} date:`, errorMessage);
-					const noticeKey =
-						dateType === "due"
-							? "contextMenus.task.notices.updateDueDateFailure"
-							: "contextMenus.task.notices.updateScheduledFailure";
-					new Notice(plugin.i18n.translate(noticeKey, { message: errorMessage }));
-				}
+				})();
 			},
 			plugin,
 			app: plugin.app,
 		});
-		menu.show(event as MouseEvent);
+		menu.show(event);
 	});
 }
 
@@ -321,7 +324,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 					linkEl.addEventListener("click", (event) => {
 						event.preventDefault();
 						event.stopPropagation();
-						plugin.app.workspace.openLinkText(depPath, "", false);
+						void plugin.app.workspace.openLinkText(depPath, "", false);
 					});
 				}
 			});
@@ -341,7 +344,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 				linkEl.addEventListener("click", (event) => {
 					event.preventDefault();
 					event.stopPropagation();
-					plugin.app.workspace.openLinkText(path, "", false);
+					void plugin.app.workspace.openLinkText(path, "", false);
 				});
 			});
 		}
@@ -442,7 +445,7 @@ export function renderPropertyMetadata(
 	}
 }
 
-function hasValidValue(value: any): boolean {
+function hasValidValue(value: unknown): boolean {
 	return !isEmptyCardDisplayValue(value);
 }
 
@@ -572,21 +575,19 @@ function renderPropertyValue(
 				timeFormat: "",
 				showTime: false,
 			});
-		} else if (typeof value.toString === "function" && value.toString() !== "[object Object]") {
-			displayValue = value.toString();
 		} else {
-			const entries = Object.entries(value as Record<string, any>);
+			const entries = Object.entries(value as Record<string, unknown>);
 			displayValue =
 				entries.length <= 3
-					? entries.map(([key, item]) => `${key}: ${item}`).join(", ")
-					: JSON.stringify(value);
+					? entries.map(([key, item]) => `${key}: ${stringifyUnknown(item)}`).join(", ")
+					: stringifyUnknown(value);
 		}
 	} else if (typeof value === "boolean") {
 		displayValue = value ? "✓" : "✗";
 	} else if (typeof value === "number") {
 		displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2);
 	} else {
-		displayValue = String(value);
+		displayValue = stringifyUnknown(value);
 	}
 
 	if (displayValue.length > 100) {
@@ -612,9 +613,9 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 		switch (userField.type) {
 			case "text":
 			case "number":
-				return String(value);
+				return stringifyUnknown(value);
 			case "date":
-				return formatDateTimeForDisplay(String(value), {
+				return formatDateTimeForDisplay(stringifyUnknown(value), {
 					dateFormat: "MMM d, yyyy",
 					timeFormat: "",
 					showTime: false,
@@ -623,15 +624,15 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 				return value ? "✓" : "✗";
 			case "list":
 				if (Array.isArray(value)) {
-					return (value as unknown[]).flat(2).join(", ");
+					return (value as unknown[]).flat(2).map(stringifyUnknown).join(", ");
 				}
-				return String(value);
+				return stringifyUnknown(value);
 			default:
-				return String(value);
+				return stringifyUnknown(value);
 		}
 	} catch (error) {
 		console.warn("TaskCard: Error formatting user property value:", error);
-		return String(value);
+		return stringifyUnknown(value);
 	}
 }
 

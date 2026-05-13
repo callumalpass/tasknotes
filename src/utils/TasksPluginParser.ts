@@ -17,6 +17,7 @@ export interface ParsedTaskData {
 		days_of_week?: string[];
 		day_of_month?: number;
 		month_of_year?: number;
+		raw?: string;
 	};
 	timeEstimate?: number;
 	tags?: string[];
@@ -283,7 +284,7 @@ export class TasksPluginParser {
 	 */
 	private static extractRecurrence(content: string): {
 		recurrence?: string;
-		recurrenceData?: any;
+		recurrenceData?: ParsedTaskData["recurrenceData"];
 	} {
 		// Create a fresh regex to avoid global state issues
 		const freshPattern = new RegExp(this.EMOJI_PATTERNS.RECURRENCE.source, "g");

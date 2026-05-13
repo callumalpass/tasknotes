@@ -1,7 +1,31 @@
-import { App } from "obsidian";
+import { App, Menu, moment as obsidianMoment, type MenuItem } from "obsidian";
+import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
 import { addDaysToDateTime } from "../utils/dateUtils";
+
+type SubmenuMenuItem = MenuItem & {
+	setSubmenu(): Menu;
+};
+
+type MomentLike = {
+	format(format: string): string;
+	clone(): MomentLike;
+	add(amount: number, unit: string): MomentLike;
+	day(day: number): MomentLike;
+	isSameOrBefore(other: MomentLike, unit: string): boolean;
+	isBefore(other: MomentLike): boolean;
+	isSame(other: MomentLike, unit: string): boolean;
+	startOf(unit: string): MomentLike;
+};
+
+function getMoment(): MomentLike {
+	return (obsidianMoment as unknown as () => MomentLike)();
+}
+
+function getSubmenu(item: MenuItem): Menu {
+	return (item as SubmenuMenuItem).setSubmenu();
+}
 
 export interface DateOption {
 	label: string;
@@ -21,7 +45,7 @@ export interface DateContextMenuOptions {
 	includeDue?: boolean;
 	showRelativeDates?: boolean;
 	title?: string;
-	plugin?: any;
+	plugin?: TaskNotesPlugin;
 	app?: App;
 }
 
@@ -86,9 +110,9 @@ export class DateContextMenu {
 			this.menu.addItem((item) => {
 				item.setTitle(this.t("contextMenus.date.weekdaysLabel", "Weekdays"));
 				item.setIcon("calendar");
-				const submenu = (item as any).setSubmenu();
+				const submenu = getSubmenu(item);
 				weekdayOptions.forEach((option) => {
-					submenu.addItem((subItem: any) => {
+					submenu.addItem((subItem) => {
 						const isSelected =
 							option.value && option.value === this.options.currentValue;
 						const title = isSelected
@@ -128,7 +152,7 @@ export class DateContextMenu {
 	}
 
 	public getDateOptions(): DateOption[] {
-		const today = (window as any).moment();
+		const today = getMoment();
 		const options: DateOption[] = [];
 
 		if (this.options.currentValue) {

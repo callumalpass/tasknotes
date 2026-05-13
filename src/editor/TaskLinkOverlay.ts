@@ -5,7 +5,6 @@ import {
 	EditorView,
 	ViewPlugin,
 	ViewUpdate,
-	WidgetType,
 } from "@codemirror/view";
 import {
 	editorInfoField,
@@ -361,7 +360,7 @@ export function buildTaskLinkDecorations(
 
 					// Create a replacement decoration that replaces the wikilink with our widget
 					const decoration = Decoration.replace({
-						widget: activeWidgets.get(widgetKey) as WidgetType,
+						widget: activeWidgets.get(widgetKey),
 						inclusive: true,
 					});
 
@@ -385,7 +384,7 @@ export function buildTaskLinkDecorations(
 					activeWidgets.set(widgetKey, fallbackWidget);
 
 					const decoration = Decoration.replace({
-						widget: fallbackWidget as WidgetType,
+						widget: fallbackWidget,
 						inclusive: true,
 					});
 

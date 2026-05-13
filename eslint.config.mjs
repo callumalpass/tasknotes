@@ -79,6 +79,54 @@ const englishLocaleSentenceCaseOptions = {
 	],
 };
 
+const pluginReviewRules = {
+	rules: {
+		"require-eslint-directive-description": {
+			meta: {
+				type: "suggestion",
+				docs: {
+					description:
+						"Require descriptions on ESLint directive comments, matching Obsidian plugin review output.",
+				},
+				messages: {
+					missingDescription:
+						"Unexpected undescribed directive comment. Include descriptions to explain why the comment is necessary.",
+				},
+				schema: [],
+			},
+			create(context) {
+				return {
+					Program() {
+						const sourceCode = context.sourceCode ?? context.getSourceCode();
+						const directivePattern =
+							/\beslint-(?:disable|disable-next-line|disable-line|enable)\b/u;
+
+						for (const comment of sourceCode.getAllComments()) {
+							const value = comment.value.trim();
+
+							if (!directivePattern.test(value)) {
+								continue;
+							}
+
+							const descriptionIndex = value.indexOf("--");
+							const hasDescription =
+								descriptionIndex >= 0 &&
+								value.slice(descriptionIndex + 2).trim().length > 0;
+
+							if (!hasDescription) {
+								context.report({
+									loc: comment.loc,
+									messageId: "missingDescription",
+								});
+							}
+						}
+					},
+				};
+			},
+		},
+	},
+};
+
 export default [
 	{
 		ignores: [
@@ -119,6 +167,7 @@ export default [
 		},
 		plugins: {
 			"@typescript-eslint": tseslint,
+			"plugin-review": pluginReviewRules,
 		},
 		rules: {
 			...tseslint.configs.recommended.rules,
@@ -128,16 +177,29 @@ export default [
 				"warn",
 				{ args: "none", varsIgnorePattern: "^_" },
 			],
-			"@typescript-eslint/ban-ts-comment": "off",
 			"no-prototype-builtins": "off",
 			"@typescript-eslint/no-empty-function": "off",
-			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/ban-ts-comment": [
+				"warn",
+				{
+					"ts-expect-error": "allow-with-description",
+					"ts-ignore": "allow-with-description",
+					"ts-nocheck": "allow-with-description",
+					"ts-check": false,
+					minimumDescriptionLength: 10,
+				},
+			],
+			"@typescript-eslint/no-explicit-any": [
+				"warn",
+				{ fixToUnknown: true },
+			],
 			"@typescript-eslint/no-inferrable-types": "warn",
 			"no-constant-condition": "warn",
 			"no-case-declarations": "warn",
 			"no-undef": "warn",
-			"no-restricted-globals": "warn",
+			"no-new-func": "error",
 			"@microsoft/sdl/no-inner-html": "warn",
+			"plugin-review/require-eslint-directive-description": "warn",
 			"obsidianmd/no-static-styles-assignment": "warn",
 			"obsidianmd/rule-custom-message": "warn",
 			"obsidianmd/ui/sentence-case": "warn",
@@ -150,16 +212,17 @@ export default [
 			"@typescript-eslint/no-unsafe-call": "off",
 			"@typescript-eslint/no-unsafe-argument": "off",
 			"@typescript-eslint/no-unsafe-return": "off",
-			"@typescript-eslint/no-misused-promises": "off",
-			"@typescript-eslint/no-floating-promises": "off",
-			"@typescript-eslint/no-unnecessary-type-assertion": "off",
-			"@typescript-eslint/no-deprecated": "off",
-			"@typescript-eslint/no-base-to-string": "off",
-			"@typescript-eslint/no-redundant-type-constituents": "off",
-			"@typescript-eslint/restrict-template-expressions": "off",
+			"@typescript-eslint/no-misused-promises": "warn",
+			"@typescript-eslint/no-floating-promises": "warn",
+			"@typescript-eslint/no-unnecessary-type-assertion": "warn",
+			"@typescript-eslint/no-deprecated": "warn",
+			"@typescript-eslint/no-base-to-string": "warn",
+			"@typescript-eslint/no-redundant-type-constituents": "warn",
+			"@typescript-eslint/restrict-template-expressions": "warn",
+			"@typescript-eslint/prefer-promise-reject-errors": "warn",
 			"@typescript-eslint/no-non-null-assertion": "warn",
 			"@typescript-eslint/no-require-imports": "warn",
-			"import/no-nodejs-modules": "off",
+			"import/no-nodejs-modules": "warn",
 		},
 	},
 

@@ -45,7 +45,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.overlays.taskLinkToggle.name"),
 					desc: translate("settings.features.overlays.taskLinkToggle.description"),
 					getValue: () => plugin.settings.enableTaskLinkOverlay,
@@ -59,7 +59,7 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.enableTaskLinkOverlay) {
 				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
+					void configureToggleSetting(setting, {
 						name: translate("settings.features.overlays.aliasExclusion.name"),
 						desc: translate("settings.features.overlays.aliasExclusion.description"),
 						getValue: () => plugin.settings.disableOverlayOnAlias,
@@ -101,7 +101,7 @@ export function renderFeaturesTab(
 			}
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.instantConvert.toggle.name"),
 					desc: translate("settings.features.instantConvert.toggle.description"),
 					getValue: () => plugin.settings.enableInstantTaskConvert,
@@ -124,7 +124,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.nlp.enable.name"),
 					desc: translate("settings.features.nlp.enable.description"),
 					getValue: () => plugin.settings.enableNaturalLanguageInput,
@@ -138,7 +138,7 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.enableNaturalLanguageInput) {
 				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
+					void configureToggleSetting(setting, {
 						name: translate("settings.features.nlp.defaultToScheduled.name"),
 						desc: translate("settings.features.nlp.defaultToScheduled.description"),
 						getValue: () => plugin.settings.nlpDefaultToScheduled,
@@ -150,7 +150,7 @@ export function renderFeaturesTab(
 				);
 
 				group.addSetting((setting) =>
-					configureDropdownSetting(setting, {
+					void configureDropdownSetting(setting, {
 						name: translate("settings.features.nlp.language.name"),
 						desc: translate("settings.features.nlp.language.description"),
 						options: getAvailableLanguages(),
@@ -174,7 +174,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.defaults.bodyTemplate.useBodyTemplate.name"),
 					desc: translate("settings.defaults.bodyTemplate.useBodyTemplate.description"),
 					getValue: () => plugin.settings.taskCreationDefaults.useBodyTemplate,
@@ -188,7 +188,7 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.taskCreationDefaults.useBodyTemplate) {
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate("settings.defaults.bodyTemplate.bodyTemplateFile.name"),
 						desc: translate(
 							"settings.defaults.bodyTemplate.bodyTemplateFile.description"
@@ -223,7 +223,7 @@ export function renderFeaturesTab(
 			}
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
 					),
@@ -249,7 +249,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureNumberSetting(setting, {
+				void configureNumberSetting(setting, {
 					name: translate("settings.features.pomodoro.workDuration.name"),
 					desc: translate("settings.features.pomodoro.workDuration.description"),
 					placeholder: "25",
@@ -264,7 +264,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureNumberSetting(setting, {
+				void configureNumberSetting(setting, {
 					name: translate("settings.features.pomodoro.shortBreak.name"),
 					desc: translate("settings.features.pomodoro.shortBreak.description"),
 					placeholder: "5",
@@ -279,7 +279,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureNumberSetting(setting, {
+				void configureNumberSetting(setting, {
 					name: translate("settings.features.pomodoro.longBreak.name"),
 					desc: translate("settings.features.pomodoro.longBreak.description"),
 					placeholder: "15",
@@ -294,7 +294,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureNumberSetting(setting, {
+				void configureNumberSetting(setting, {
 					name: translate("settings.features.pomodoro.longBreakInterval.name"),
 					desc: translate("settings.features.pomodoro.longBreakInterval.description"),
 					placeholder: "4",
@@ -309,7 +309,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.pomodoro.autoStartBreaks.name"),
 					desc: translate("settings.features.pomodoro.autoStartBreaks.description"),
 					getValue: () => plugin.settings.pomodoroAutoStartBreaks,
@@ -321,7 +321,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.pomodoro.autoStartWork.name"),
 					desc: translate("settings.features.pomodoro.autoStartWork.description"),
 					getValue: () => plugin.settings.pomodoroAutoStartWork,
@@ -333,7 +333,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.pomodoro.notifications.name"),
 					desc: translate("settings.features.pomodoro.notifications.description"),
 					getValue: () => plugin.settings.pomodoroNotifications,
@@ -345,7 +345,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.pomodoroSound.enabledName"),
 					desc: translate("settings.features.pomodoroSound.enabledDesc"),
 					getValue: () => plugin.settings.pomodoroSoundEnabled,
@@ -359,7 +359,7 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.pomodoroSoundEnabled) {
 				group.addSetting((setting) =>
-					configureNumberSetting(setting, {
+					void configureNumberSetting(setting, {
 						name: translate("settings.features.pomodoroSound.volumeName"),
 						desc: translate("settings.features.pomodoroSound.volumeDesc"),
 						placeholder: "50",
@@ -375,7 +375,7 @@ export function renderFeaturesTab(
 			}
 
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.features.dataStorage.name"),
 					desc: translate("settings.features.dataStorage.description"),
 					options: [
@@ -430,7 +430,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.features.pomodoro.mobileSidebar.name"),
 					desc: translate("settings.features.pomodoro.mobileSidebar.description"),
 					options: [
@@ -466,7 +466,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.notifications.enableName"),
 					desc: translate("settings.features.notifications.enableDesc"),
 					getValue: () => plugin.settings.enableNotifications,
@@ -480,7 +480,7 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.enableNotifications) {
 				group.addSetting((setting) =>
-					configureDropdownSetting(setting, {
+					void configureDropdownSetting(setting, {
 						name: translate("settings.features.notifications.typeName"),
 						desc: translate("settings.features.notifications.typeDesc"),
 						options: [
@@ -513,7 +513,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.overdue.hideCompletedName"),
 					desc: translate("settings.features.overdue.hideCompletedDesc"),
 					getValue: () => plugin.settings.hideCompletedFromOverdue,
@@ -525,7 +525,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.indexing.disableName"),
 					desc: translate("settings.features.indexing.disableDesc"),
 					getValue: () => plugin.settings.disableNoteIndexing,
@@ -538,7 +538,7 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.suggestionDebounceMs !== undefined) {
 				group.addSetting((setting) =>
-					configureNumberSetting(setting, {
+					void configureNumberSetting(setting, {
 						name: translate("settings.features.suggestions.debounceName"),
 						desc: translate("settings.features.suggestions.debounceDesc"),
 						placeholder: "300",
@@ -564,7 +564,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.timeTracking.autoStopName"),
 					desc: translate("settings.features.timeTracking.autoStopDesc"),
 					getValue: () => plugin.settings.autoStopTimeTrackingOnComplete,
@@ -576,7 +576,7 @@ export function renderFeaturesTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.timeTracking.stopNotificationName"),
 					desc: translate("settings.features.timeTracking.stopNotificationDesc"),
 					getValue: () => plugin.settings.autoStopTimeTrackingNotification,
@@ -598,7 +598,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.recurring.maintainOffsetName"),
 					desc: translate("settings.features.recurring.maintainOffsetDesc"),
 					getValue: () => plugin.settings.maintainDueDateOffsetInRecurring,
@@ -609,7 +609,7 @@ export function renderFeaturesTab(
 				})
 			);
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.recurring.resetCheckboxesName"),
 					desc: translate("settings.features.recurring.resetCheckboxesDesc"),
 					getValue: () => plugin.settings.resetCheckboxesOnRecurrence,
@@ -631,7 +631,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.timeblocking.enableName"),
 					desc: translate("settings.features.timeblocking.enableDesc"),
 					getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
@@ -645,7 +645,7 @@ export function renderFeaturesTab(
 
 			if (plugin.settings.calendarViewSettings.enableTimeblocking) {
 				group.addSetting((setting) =>
-					configureDropdownSetting(setting, {
+					void configureDropdownSetting(setting, {
 						name: "Attachment Search Order",
 						desc: "Controls how files are ordered in the Add Attachment search window for timeblocks.",
 						options: [
@@ -677,7 +677,7 @@ export function renderFeaturesTab(
 				);
 
 				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
+					void configureToggleSetting(setting, {
 						name: translate("settings.features.timeblocking.showBlocksName"),
 						desc: translate("settings.features.timeblocking.showBlocksDesc"),
 						getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeblocks,
@@ -721,7 +721,7 @@ export function renderFeaturesTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.features.debugLogging.enableName"),
 					desc: translate("settings.features.debugLogging.enableDesc"),
 					getValue: () => plugin.settings.enableDebugLogging,

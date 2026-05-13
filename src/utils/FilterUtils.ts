@@ -77,13 +77,14 @@ export class FilterUtils {
 			this.validateCondition(node, strict);
 		} else if (node.type === "group") {
 			this.validateGroup(node, strict);
-		} else {
-			throw new FilterValidationError(
-				`Unknown filter node type: ${(node as any).type}`,
-				undefined,
-				(node as any).id
-			);
-		}
+			} else {
+				const invalidNode = node as Record<string, unknown>;
+				throw new FilterValidationError(
+					`Unknown filter node type: ${String(invalidNode.type)}`,
+					undefined,
+					typeof invalidNode.id === "string" ? invalidNode.id : undefined
+				);
+			}
 	}
 
 	/**
@@ -118,9 +119,9 @@ export class FilterUtils {
 
 		// Validate that operator is supported for the property
 		const validOperators = this.getValidOperatorsForProperty(
-			condition.property as FilterProperty
+			condition.property
 		);
-		if (!validOperators.includes(condition.operator as FilterOperator)) {
+		if (!validOperators.includes(condition.operator)) {
 			throw new FilterValidationError(
 				`Operator '${condition.operator}' is not valid for property '${condition.property}'`,
 				"operator",
@@ -131,7 +132,7 @@ export class FilterUtils {
 		// Validate value based on operator requirements
 		// In non-strict mode, skip value validation to allow incomplete conditions during filter building
 		if (strict) {
-			const requiresValue = this.operatorRequiresValue(condition.operator as FilterOperator);
+			const requiresValue = this.operatorRequiresValue(condition.operator);
 			if (
 				requiresValue &&
 				(condition.value === null ||
@@ -365,7 +366,7 @@ export class FilterUtils {
 			case "timeEstimate":
 				return task.timeEstimate;
 			case "recurrence":
-				return task.recurrence as TaskPropertyValue;
+				return task.recurrence;
 			case "status.isCompleted":
 				// This requires StatusManager - will be handled by caller
 				return undefined;
@@ -423,7 +424,7 @@ export class FilterUtils {
 				case "is-less-than-or-equal":
 					return this.isLessThanOrEqual(taskValue, conditionValue);
 				default:
-					throw new FilterEvaluationError(`Unknown operator: ${operator}`, nodeId);
+					throw new FilterEvaluationError("Unknown operator", nodeId);
 			}
 		} catch (error) {
 			if (error instanceof FilterEvaluationError) {

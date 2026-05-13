@@ -6,6 +6,7 @@ import { LexoRank } from "lexorank";
 import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 export interface SortOrderScopeFilter {
 	property: string;
@@ -32,6 +33,16 @@ export interface SortOrderPlan {
 
 const REBALANCE_RANK_LENGTH_THRESHOLD = 32;
 type SortDirection = "asc" | "desc";
+type SortConfigItem = {
+	property?: unknown;
+	column?: unknown;
+	field?: unknown;
+	id?: unknown;
+	name?: unknown;
+};
+type SortConfigSource = {
+	getSortConfig(): SortConfigItem | SortConfigItem[] | null | undefined;
+};
 
 /**
  * Strip Bases property prefixes (note., file., formula., task.) from a property ID.
@@ -47,16 +58,16 @@ export function stripPropertyPrefix(propertyId: string): string {
 /**
  * Check whether the configured sort-order field is present in the view's sort configuration.
  */
-export function isSortOrderInSortConfig(dataAdapter: any, sortOrderField: string): boolean {
+export function isSortOrderInSortConfig(dataAdapter: SortConfigSource, sortOrderField: string): boolean {
 	try {
 		const sortConfig = dataAdapter.getSortConfig();
 		if (!sortConfig) return false;
 
 		const configs = Array.isArray(sortConfig) ? sortConfig : [sortConfig];
-		return configs.some((s: any) => {
+		return configs.some((s) => {
 			if (!s || typeof s !== "object") return false;
 			const candidate = s.property || s.column || s.field || s.id || s.name || "";
-			const clean = String(candidate).replace(/^(note\.|file\.|task\.)/, "");
+			const clean = stringifyUnknown(candidate).replace(/^(note\.|file\.|task\.)/, "");
 			return clean === sortOrderField;
 		});
 	} catch {
@@ -87,7 +98,7 @@ function frontmatterValueToGroupString(value: unknown): string {
 	if (typeof value === "string") return value;
 	if (typeof value === "boolean") return value ? "True" : "False";
 	if (typeof value === "number") return String(value);
-	return String(value);
+	return stringifyUnknown(value) || "None";
 }
 
 function getFrontmatterGroupValues(value: unknown): string[] {
@@ -507,7 +518,7 @@ export function getGroupTasks(
 			priority: frontmatter["priority"] || "",
 			archived: frontmatter["archived"] || false,
 			sortOrder,
-		} as TaskInfo);
+		});
 	}
 
 	tasks.sort((a, b) => {

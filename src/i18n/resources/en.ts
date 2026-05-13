@@ -2058,8 +2058,8 @@ export const en: TranslationTree = {
 						transformFile: {
 							name: "Transform file",
 							description:
-								"Path to a .js or .json file in your vault that transforms webhook payloads",
-							placeholder: "discord-transform.js",
+								"Path to a .json template file in your vault that transforms webhook payloads",
+							placeholder: "simple-template.jsonon",
 						},
 						customHeaders: {
 							name: "Include custom headers",
@@ -2087,8 +2087,8 @@ export const en: TranslationTree = {
 						transformFile: {
 							name: "Transform file",
 							description:
-								"Path to a .js or .json file in your vault that transforms webhook payloads",
-							placeholder: "discord-transform.js",
+								"Path to a .json template file in your vault that transforms webhook payloads",
+							placeholder: "simple-template.jsonon",
 						},
 						customHeaders: {
 							name: "Include custom headers",
@@ -2096,16 +2096,16 @@ export const en: TranslationTree = {
 								"Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.",
 						},
 						transformHelp: {
-							title: "Transform files allow you to customize webhook payloads:",
-							jsFiles: ".js files:",
-							jsDescription: " Custom JavaScript transforms",
+							title: "JSON transform templates customize webhook payloads:",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: ".json files:",
 							jsonDescription: " Templates with ",
 							jsonVariable: "${data.task.title}",
 							leaveEmpty: "Leave empty:",
 							leaveEmptyDescription: " Send raw data",
 							example: "Example:",
-							exampleFile: "discord-transform.js",
+							exampleFile: "simple-template.jsonon",
 						},
 						buttons: {
 							cancel: "Cancel",

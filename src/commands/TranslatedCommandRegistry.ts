@@ -3,6 +3,16 @@ import type TaskNotesPlugin from "../main";
 import { createTaskNotesCommandDefinitions } from "./taskNotesCommands";
 import type { TranslatedCommandDefinition } from "./types";
 
+type MutableCommand = Command & {
+	name: string;
+};
+
+type CommandsApiWithRegistry = {
+	removeCommand?: (id: string) => void;
+	commands?: Record<string, MutableCommand>;
+	updateCommand?: (id: string, command: MutableCommand) => void;
+};
+
 export class TranslatedCommandRegistry {
 	private definitions: TranslatedCommandDefinition[] = [];
 	private registeredCommands = new Map<string, string>();
@@ -24,9 +34,8 @@ export class TranslatedCommandRegistry {
 			return;
 		}
 
-		const removeCommand = (commandsApi as any).removeCommand as
-			| ((id: string) => void)
-			| undefined;
+		const internalCommandsApi = commandsApi as CommandsApiWithRegistry;
+		const removeCommand = internalCommandsApi.removeCommand;
 		if (typeof removeCommand === "function") {
 			for (const fullId of this.registeredCommands.values()) {
 				removeCommand.call(commandsApi, fullId);
@@ -39,11 +48,11 @@ export class TranslatedCommandRegistry {
 			const fullId =
 				this.registeredCommands.get(definition.id) ??
 				`${this.plugin.manifest.id}:${definition.id}`;
-			const command = (commandsApi as any).commands?.[fullId];
+			const command = internalCommandsApi.commands?.[fullId];
 			if (command) {
 				command.name = this.plugin.i18n.translate(definition.nameKey);
-				if (typeof (commandsApi as any).updateCommand === "function") {
-					(commandsApi as any).updateCommand(fullId, command);
+				if (typeof internalCommandsApi.updateCommand === "function") {
+					internalCommandsApi.updateCommand(fullId, command);
 				}
 			}
 		}

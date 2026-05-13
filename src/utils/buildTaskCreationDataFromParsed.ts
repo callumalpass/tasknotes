@@ -64,7 +64,7 @@ export function buildTaskCreationDataFromParsed(
 
 	if (parsed.userFields) {
 		const userFieldDefs = plugin.settings.userFields || [];
-		const customFrontmatter: Record<string, any> = {};
+		const customFrontmatter: Record<string, unknown> = {};
 
 		for (const [fieldId, value] of Object.entries(parsed.userFields)) {
 			const fieldDef = userFieldDefs.find((field) => field.id === fieldId);

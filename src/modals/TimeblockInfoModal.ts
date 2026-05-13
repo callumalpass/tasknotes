@@ -8,6 +8,7 @@ import {
 	stringifyYaml,
 	TFile,
 	setTooltip,
+	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { openFileSelector } from "./FileSelectorModal";
@@ -18,8 +19,24 @@ import {
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
 import { formatDateForStorage } from "../utils/dateUtils";
-import { TranslationKey } from "../i18n";
+import type { InterpolationValues, TranslationKey } from "../i18n";
 import { TaskInfo } from "../types";
+
+type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+
+function getDailyNoteMoment(input: string, format: string): DailyNoteMoment {
+	return (obsidianMoment as unknown as (input: string, format: string) => DailyNoteMoment)(
+		input,
+		format
+	);
+}
+
+function parseFrontmatterRecord(frontmatterText: string): Record<string, unknown> {
+	const parsed = parseYaml(frontmatterText);
+	return parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)
+		? (parsed as Record<string, unknown>)
+		: {};
+}
 
 export interface TimeBlock {
 	title: string;
@@ -40,7 +57,7 @@ export class TimeblockInfoModal extends Modal {
 	private timeblockDate: string;
 	private plugin: TaskNotesPlugin;
 	private originalTimeblock: TimeBlock;
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: InterpolationValues) => string;
 
 	// Form fields
 	private titleInput: HTMLInputElement;
@@ -82,7 +99,7 @@ export class TimeblockInfoModal extends Modal {
 		this.keyboardHandler = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				this.handleSave();
+				void this.handleSave();
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
@@ -219,7 +236,9 @@ export class TimeblockInfoModal extends Modal {
 			text: this.translate("modals.timeblockInfo.deleteButton"),
 			cls: "mod-warning timeblock-delete-button",
 		});
-		deleteButton.addEventListener("click", () => this.handleDelete());
+		deleteButton.addEventListener("click", () => {
+			void this.handleDelete();
+		});
 
 		// Right side buttons container
 		const rightButtons = buttonContainer.createDiv({ cls: "timeblock-modal-buttons-right" });
@@ -252,7 +271,9 @@ export class TimeblockInfoModal extends Modal {
 			text: this.translate("modals.timeblockInfo.saveButton"),
 			cls: "mod-cta timeblock-save-button",
 		});
-		saveButton.addEventListener("click", () => this.handleSave());
+		saveButton.addEventListener("click", () => {
+			void this.handleSave();
+		});
 
 		// Initial validation
 		this.validateForm();
@@ -355,7 +376,7 @@ export class TimeblockInfoModal extends Modal {
 
 	private openAttachment(file: TAbstractFile): void {
 		if (file instanceof TFile) {
-			this.app.workspace.getLeaf(false).openFile(file);
+			void this.app.workspace.getLeaf(false).openFile(file);
 		} else {
 			new Notice(
 				this.translate("notices.timeblockFileTypeNotSupported", { fileName: file.name })
@@ -456,9 +477,9 @@ export class TimeblockInfoModal extends Modal {
 
 		// Get daily note for the date
 		const dateStr = this.timeblockDate;
-		const moment = (window as any).moment(dateStr, "YYYY-MM-DD");
+		const dailyNoteMoment = getDailyNoteMoment(dateStr, "YYYY-MM-DD");
 		const allDailyNotes = getAllDailyNotes();
-		const dailyNote = getDailyNote(moment, allDailyNotes);
+		const dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
 
 		if (!dailyNote) {
 			throw new Error("Daily note not found");
@@ -468,7 +489,7 @@ export class TimeblockInfoModal extends Modal {
 		const content = await this.app.vault.read(dailyNote);
 
 		// Parse existing frontmatter
-		let frontmatter: any = {};
+		let frontmatter: Record<string, unknown> = {};
 		let bodyContent = content;
 
 		if (content.startsWith("---")) {
@@ -478,7 +499,7 @@ export class TimeblockInfoModal extends Modal {
 				bodyContent = content.substring(endOfFrontmatter + 3);
 
 				try {
-					frontmatter = parseYaml(frontmatterText) || {};
+					frontmatter = parseFrontmatterRecord(frontmatterText);
 				} catch (error) {
 					console.error("Error parsing existing frontmatter:", error);
 					frontmatter = {};
@@ -623,9 +644,9 @@ export class TimeblockInfoModal extends Modal {
 
 		// Get daily note for the date
 		const dateStr = this.timeblockDate;
-		const moment = (window as any).moment(dateStr, "YYYY-MM-DD");
+		const dailyNoteMoment = getDailyNoteMoment(dateStr, "YYYY-MM-DD");
 		const allDailyNotes = getAllDailyNotes();
-		const dailyNote = getDailyNote(moment, allDailyNotes);
+		const dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
 
 		if (!dailyNote) {
 			throw new Error("Daily note not found");
@@ -635,7 +656,7 @@ export class TimeblockInfoModal extends Modal {
 		const content = await this.app.vault.read(dailyNote);
 
 		// Parse existing frontmatter
-		let frontmatter: any = {};
+		let frontmatter: Record<string, unknown> = {};
 		let bodyContent = content;
 
 		if (content.startsWith("---")) {
@@ -645,7 +666,7 @@ export class TimeblockInfoModal extends Modal {
 				bodyContent = content.substring(endOfFrontmatter + 3);
 
 				try {
-					frontmatter = parseYaml(frontmatterText) || {};
+					frontmatter = parseFrontmatterRecord(frontmatterText);
 				} catch (error) {
 					console.error("Error parsing existing frontmatter:", error);
 					frontmatter = {};

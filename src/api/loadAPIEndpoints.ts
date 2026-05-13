@@ -1,5 +1,25 @@
 import { requestUrl } from "obsidian";
 
+type OpenAPIOperationSummary = {
+	tags?: string[];
+	summary?: string;
+	description?: string;
+};
+
+type OpenAPISpecSummary = {
+	paths?: Record<string, Record<string, OpenAPIOperationSummary>>;
+};
+
+type EndpointSummary = {
+	method: string;
+	path: string;
+	summary: string;
+};
+
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
 async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise<void> {
 	// Show loading message first
 	const loadingEl = container.createEl("p", {
@@ -17,18 +37,18 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
 			throw new Error(`API unavailable (${response.status})`);
 		}
 
-		const openApiSpec = response.json;
+		const openApiSpec = response.json as OpenAPISpecSummary;
 
 		// Remove loading message
 		loadingEl.remove();
 
 		// Group endpoints by tags/categories
-		const endpointsByTag: { [tag: string]: any[] } = {};
+		const endpointsByTag: Record<string, EndpointSummary[]> = {};
 
 		if (openApiSpec.paths) {
 			for (const [path, methods] of Object.entries(openApiSpec.paths)) {
-				for (const [method, operation] of Object.entries(methods as any)) {
-					const tags = (operation as any).tags || ["General"];
+				for (const [method, operation] of Object.entries(methods)) {
+					const tags = operation.tags || ["General"];
 					const tag = tags[0];
 
 					if (!endpointsByTag[tag]) {
@@ -38,10 +58,7 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
 					endpointsByTag[tag].push({
 						method: method.toUpperCase(),
 						path,
-						summary:
-							(operation as any).summary ||
-							(operation as any).description ||
-							"No description",
+						summary: operation.summary || operation.description || "No description",
 					});
 				}
 			}
@@ -69,7 +86,7 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
 				attr: { style: "color: var(--text-muted); margin: 16px 0;" },
 			});
 		}
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error loading API endpoints:", error);
 
 		// Remove loading message
@@ -77,7 +94,7 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
 
 		// Show error message with more details
 		container.createEl("p", {
-			text: `API server not accessible (${error.message}). Ensure the TaskNotes API server is running on port ${apiPort}.`,
+			text: `API server not accessible (${getErrorMessage(error)}). Ensure the TaskNotes API server is running on port ${apiPort}.`,
 			attr: { style: "color: var(--text-muted); font-style: italic; margin: 16px 0;" },
 		});
 	}

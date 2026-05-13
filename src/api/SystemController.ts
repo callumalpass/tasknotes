@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http";
+import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { TaskCreationData } from "../types";
@@ -7,20 +7,29 @@ import TaskNotesPlugin from "../main";
 
 import { generateOpenAPISpec, Get, Post } from "../utils/OpenAPIDecorators";
 
+type VaultAdapterWithPath = {
+	basePath?: string;
+	path?: string;
+};
+
+type OpenAPISpecProvider = {
+	generateOpenAPISpec(): unknown;
+};
+
 export class SystemController extends BaseController {
 	constructor(
 		private plugin: TaskNotesPlugin,
 		private taskService: TaskService,
 		private nlParser: NaturalLanguageParser,
-		private httpAPIService?: any
+		private httpAPIService?: OpenAPISpecProvider
 	) {
 		super();
 	}
 
 	@Get("/api/health")
-	async healthCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async healthCheck(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		const vaultName = this.plugin.app.vault.getName();
-		const adapter = this.plugin.app.vault.adapter as any;
+		const adapter = this.plugin.app.vault.adapter as VaultAdapterWithPath;
 
 		// Try to get vault path information
 		let vaultPath = null;
@@ -50,7 +59,7 @@ export class SystemController extends BaseController {
 	}
 
 	@Post("/api/nlp/parse")
-	async handleNLPParse(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async handleNLPParse(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
 
@@ -101,13 +110,13 @@ export class SystemController extends BaseController {
 					taskData: taskData,
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Post("/api/nlp/create")
-	async handleNLPCreate(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async handleNLPCreate(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
 
@@ -162,13 +171,13 @@ export class SystemController extends BaseController {
 					parsed: parsedData,
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/docs")
-	async handleOpenAPISpec(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async handleOpenAPISpec(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			// Use HTTPAPIService's method to get spec from all controllers
 			const spec =
@@ -180,14 +189,14 @@ export class SystemController extends BaseController {
 			res.setHeader("Content-Type", "application/json");
 			res.setHeader("Access-Control-Allow-Origin", "*");
 			res.end(JSON.stringify(spec, null, 2));
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("OpenAPI spec generation error:", error);
 			this.sendResponse(res, 500, this.errorResponse("Failed to generate API specification"));
 		}
 	}
 
 	@Get("/api/docs/ui")
-	async handleSwaggerUI(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async handleSwaggerUI(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const swaggerHTML = this.generateSwaggerUIHTML();
 
@@ -195,7 +204,7 @@ export class SystemController extends BaseController {
 			res.setHeader("Content-Type", "text/html");
 			res.setHeader("Access-Control-Allow-Origin", "*");
 			res.end(swaggerHTML);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Swagger UI generation error:", error);
 			this.sendResponse(res, 500, this.errorResponse("Failed to generate API documentation"));
 		}

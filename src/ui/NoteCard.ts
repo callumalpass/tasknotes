@@ -125,9 +125,9 @@ export function createNoteCard(
 		const file = plugin.app.vault.getAbstractFileByPath(note.path);
 		if (file instanceof TFile) {
 			if (e.ctrlKey || e.metaKey) {
-				plugin.app.workspace.openLinkText(note.path, "", true);
+				void plugin.app.workspace.openLinkText(note.path, "", true);
 			} else {
-				plugin.app.workspace.getLeaf(false).openFile(file);
+				void plugin.app.workspace.getLeaf(false).openFile(file);
 			}
 		}
 	});
@@ -139,7 +139,7 @@ export function createNoteCard(
 			e.preventDefault();
 			const file = plugin.app.vault.getAbstractFileByPath(note.path);
 			if (file instanceof TFile) {
-				plugin.app.workspace.openLinkText(note.path, "", true);
+				void plugin.app.workspace.openLinkText(note.path, "", true);
 			}
 		}
 	});

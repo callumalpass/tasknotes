@@ -1,3 +1,5 @@
+import type { TAbstractFile } from "obsidian";
+
 // View types (active views)
 export const MINI_CALENDAR_VIEW_TYPE = "tasknotes-mini-calendar-view";
 export const TASK_LIST_VIEW_TYPE = "tasknotes-task-list-view";
@@ -25,6 +27,13 @@ export const EVENT_TIMEBLOCKING_TOGGLED = "timeblocking-toggled";
 export const EVENT_TIMEBLOCK_UPDATED = "timeblock-updated";
 export const EVENT_TIMEBLOCK_DELETED = "timeblock-deleted";
 export const EVENT_DATE_CHANGED = "date-changed";
+
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
+
+export interface JsonObject {
+	[key: string]: JsonValue;
+}
 
 // Calendar colorization modes
 export type ColorizeMode = "tasks" | "notes" | "daily";
@@ -458,8 +467,8 @@ export interface TaskInfo {
 	icsEventId?: string[]; // Links to ICS calendar event IDs
 	googleCalendarEventId?: string; // Google Calendar event ID for sync
 	reminders?: Reminder[]; // Task reminders
-	customProperties?: Record<string, any>; // Custom properties from Bases or other sources
-	basesData?: any; // Raw Bases data for formula computation (internal use)
+	customProperties?: Record<string, unknown>; // Custom properties from Bases or other sources
+	basesData?: unknown; // Raw Bases data for formula computation (internal use)
 	blockedBy?: TaskDependency[]; // Dependencies that must be satisfied before this task can start
 	blocking?: string[]; // Task paths that this task is blocking
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
@@ -472,7 +481,7 @@ export interface TaskCreationData extends Partial<TaskInfo> {
 	details?: string; // Optional details/description for file content
 	parentNote?: string; // Optional parent note name/path for template variable
 	creationContext?: "inline-conversion" | "manual-creation" | "modal-inline-creation" | "api" | "import" | "ics-event"; // Context for folder determination
-	customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
+	customFrontmatter?: Record<string, unknown>; // Custom frontmatter properties (including user fields)
 }
 
 export interface TimeEntry {
@@ -570,10 +579,10 @@ export interface DailyNoteFrontmatter {
 
 // Event handler types
 export interface FileEventHandlers {
-	modify?: (file: any) => void;
-	delete?: (file: any) => void;
-	rename?: (file: any, oldPath: string) => void;
-	create?: (file: any) => void;
+	modify?: (file: TAbstractFile) => void;
+	delete?: (file: TAbstractFile) => void;
+	rename?: (file: TAbstractFile, oldPath: string) => void;
+	create?: (file: TAbstractFile) => void;
 }
 
 // Pomodoro types
@@ -750,7 +759,7 @@ export interface CalendarViewPreferences {
 
 // All view-specific preferences
 export interface ViewPreferences {
-	[viewType: string]: any; // Can be CalendarViewPreferences or other view-specific types
+	[viewType: string]: unknown; // Can be CalendarViewPreferences or other view-specific types
 }
 
 // ICS Subscription types
@@ -813,7 +822,7 @@ export interface WebhookConfig {
 	lastTriggered?: string;
 	failureCount: number;
 	successCount: number;
-	transformFile?: string; // Optional path to transformation file (.js or .json)
+	transformFile?: string; // Optional path to a JSON transformation file
 	corsHeaders?: boolean; // Whether to include custom headers (false for Discord, Slack, etc.)
 }
 
@@ -824,14 +833,14 @@ export interface WebhookPayload {
 		name: string;
 		path?: string;
 	};
-	data: any;
+	data: unknown;
 }
 
 export interface WebhookDelivery {
 	id: string;
 	webhookId: string;
 	event: WebhookEvent;
-	payload: WebhookPayload;
+	payload: unknown;
 	status: "pending" | "success" | "failed";
 	attempts: number;
 	lastAttempt?: string;
@@ -849,7 +858,7 @@ export interface PendingAutoArchive {
 
 // Webhook notification interface for loose coupling
 export interface IWebhookNotifier {
-	triggerWebhook(event: WebhookEvent, data: any): Promise<void>;
+	triggerWebhook(event: WebhookEvent, data: unknown): Promise<void>;
 }
 
 // OAuth types

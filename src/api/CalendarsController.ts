@@ -1,5 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { parse } from "url";
+import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import TaskNotesPlugin from "../main";
 import { OAuthService } from "../services/OAuthService";
@@ -21,7 +20,7 @@ export class CalendarsController extends BaseController {
 	}
 
 	@Get("/api/calendars")
-	async getCalendars(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getCalendars(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const providers = await this.getProvidersOverview();
 			const subscriptions = this.icsSubscriptionService.getSubscriptions();
@@ -37,33 +36,33 @@ export class CalendarsController extends BaseController {
 					},
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/calendars/google")
-	async getGoogleCalendars(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getGoogleCalendars(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const data = await this.getProviderDetails("google");
 			this.sendResponse(res, 200, this.successResponse(data));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/calendars/microsoft")
-	async getMicrosoftCalendars(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getMicrosoftCalendars(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const data = await this.getProviderDetails("microsoft");
 			this.sendResponse(res, 200, this.successResponse(data));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/calendars/subscriptions")
-	async getSubscriptions(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getSubscriptions(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const subscriptions = this.icsSubscriptionService.getSubscriptions();
 
@@ -80,19 +79,20 @@ export class CalendarsController extends BaseController {
 					subscriptions: subscriptionsWithStatus,
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/calendars/events")
-	async getEvents(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getEvents(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
-			const parsedUrl = parse(req.url || "", true);
-			const params = parsedUrl.query;
+			const params = parseRequestUrl(req).searchParams;
 
-			const startDate = params.start ? new Date(params.start as string) : null;
-			const endDate = params.end ? new Date(params.end as string) : null;
+			const start = params.get("start");
+			const end = params.get("end");
+			const startDate = start ? new Date(start) : null;
+			const endDate = end ? new Date(end) : null;
 
 			const result = collectCalendarEvents(
 				this.calendarProviderRegistry,
@@ -101,13 +101,13 @@ export class CalendarsController extends BaseController {
 			);
 
 			this.sendResponse(res, 200, this.successResponse(result));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
-	private async getProvidersOverview(): Promise<any[]> {
-		const providers: any[] = [];
+	private async getProvidersOverview(): Promise<unknown[]> {
+		const providers: unknown[] = [];
 
 		// Google Calendar
 		const googleConnected = await this.oauthService.isConnected("google");
@@ -147,7 +147,7 @@ export class CalendarsController extends BaseController {
 		return providers;
 	}
 
-	private async getProviderDetails(provider: OAuthProvider): Promise<any> {
+	private async getProviderDetails(provider: OAuthProvider): Promise<unknown> {
 		const connected = await this.oauthService.isConnected(provider);
 		const connection = connected ? await this.oauthService.getConnection(provider) : null;
 
