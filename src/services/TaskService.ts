@@ -837,7 +837,14 @@ export class TaskService {
 					this.plugin.cacheManager.clearCacheEntry(task.path);
 				} else if (isCurrentlyArchived && this.plugin.settings.tasksFolder?.trim()) {
 					// Unarchiving: Move to default tasks folder
-					const tasksFolder = this.plugin.settings.tasksFolder.trim();
+					const tasksFolderTemplate = this.plugin.settings.tasksFolder.trim();
+					const tasksFolder = this.processFolderTemplate(tasksFolderTemplate, {
+						title: updatedTask.title || "",
+						priority: updatedTask.priority,
+						status: updatedTask.status,
+						contexts: updatedTask.contexts,
+						projects: updatedTask.projects,
+					});
 
 					// Ensure tasks folder exists
 					await ensureFolderExists(this.plugin.app.vault, tasksFolder);

@@ -460,22 +460,23 @@ export class CalendarExportService {
 	 * Parse task date string to Date object
 	 */
 	private static parseTaskDate(dateStr: string): Date {
+		const normalizedDate = dateStr.trim().replace(" ", "T");
 		// Handle different date formats
-		if (dateStr.includes("T")) {
+		if (this.hasTimeComponent(normalizedDate)) {
 			// ISO format or local datetime
-			return parseISO(dateStr);
+			return parseISO(normalizedDate);
 		} else {
 			// Date only - assume start of day
-			return parseISO(`${dateStr}T00:00:00`);
+			return parseISO(`${normalizedDate}T00:00:00`);
 		}
 	}
 
 	private static hasTimeComponent(dateStr: string): boolean {
-		return dateStr.includes("T");
+		return /\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}/.test(dateStr);
 	}
 
 	private static formatDateOnlyToICS(dateStr: string): string {
-		return dateStr.split("T")[0].replace(/-/g, "");
+		return dateStr.split(/[T\s]/)[0].replace(/-/g, "");
 	}
 
 	private static getAllDayEndDate(
@@ -502,7 +503,7 @@ export class CalendarExportService {
 	}
 
 	private static addDaysToDateString(dateStr: string, days: number): string {
-		const baseDate = parseISO(`${dateStr.split("T")[0]}T00:00:00`);
+		const baseDate = parseISO(`${dateStr.split(/[T\s]/)[0]}T00:00:00`);
 		baseDate.setDate(baseDate.getDate() + days);
 		return format(baseDate, "yyyy-MM-dd");
 	}

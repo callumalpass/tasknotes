@@ -23,21 +23,3 @@ Example:
 ```
 
 -->
-
-## Changed
-
-- Enabled lint checks that mirror Obsidian community plugin review findings, including dynamic code execution, Promise handling, deprecated APIs, unsafe stringification, directive comments, Node built-in imports, and explicit `any` usage.
-- Clarified privacy documentation for optional integrations that make periodic background network refreshes.
-- Cleaned up internal Obsidian and Bases compatibility adapters used by search and grouped views.
-- Updated default Base urgency scoring so timed tasks earlier in the day sort above later tasks with the same priority and date.
-  - Thanks to @loukandr for the contribution.
-
-## Fixed
-
-- Fixed project autocomplete searches so non-empty `+` queries only return files matching the query in the basename, title, aliases, or explicitly searchable metadata rows.
-- (#1124) Fixed default Base views and formulas excluding tasks scheduled or due today at a non-midnight time from day-level comparisons.
-  - Thanks to @kmaustral for reporting and @loukandr for the fix.
-
-## Removed
-
-- Removed JavaScript webhook transform support and examples. JSON webhook transform templates remain supported.

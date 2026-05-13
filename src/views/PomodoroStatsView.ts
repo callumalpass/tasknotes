@@ -47,6 +47,7 @@ export class PomodoroStatsView extends ItemView {
 
 	async onOpen() {
 		await this.plugin.onReady();
+		await this.waitForPomodoroService();
 		await this.render();
 	}
 
@@ -55,6 +56,7 @@ export class PomodoroStatsView extends ItemView {
 	}
 
 	async render() {
+		this.contentEl.empty();
 		const container = this.contentEl.createDiv({
 			cls: "tasknotes-plugin tasknotes-container pomodoro-stats-container pomodoro-stats-view",
 		});
@@ -131,18 +133,29 @@ export class PomodoroStatsView extends ItemView {
 		await this.refreshStats();
 	}
 
+	private async waitForPomodoroService(): Promise<void> {
+		const startedAt = Date.now();
+		while (!this.plugin.pomodoroService && Date.now() - startedAt < 5000) {
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
+		}
+	}
+
 	private async refreshStats() {
 		try {
+			if (!this.plugin.pomodoroService) {
+				return;
+			}
+
 			const todayLocal = getTodayLocal();
 			const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
 			const yesterdayLocal = new Date(todayLocal);
 			yesterdayLocal.setDate(yesterdayLocal.getDate() - 1);
 			const yesterdayUTCAnchor = createUTCDateFromLocalCalendarDate(yesterdayLocal);
-				const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
-				const weekStartsOn = isDay(firstDaySetting) ? firstDaySetting : 0;
-				const weekStartOptions: { weekStartsOn: Day } = {
-					weekStartsOn,
-				};
+			const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
+			const weekStartsOn = isDay(firstDaySetting) ? firstDaySetting : 0;
+			const weekStartOptions: { weekStartsOn: Day } = {
+				weekStartsOn,
+			};
 			const weekStart = startOfWeek(todayUTCAnchor, weekStartOptions);
 			const weekEnd = endOfWeek(todayUTCAnchor, weekStartOptions);
 

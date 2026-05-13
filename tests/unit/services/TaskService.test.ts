@@ -829,6 +829,48 @@ describe('TaskService', () => {
       expect(result.tags).not.toContain('archived');
     });
 
+    it('should process task folder template variables when unarchiving a moved task', async () => {
+      const archivedTask = TaskFactory.createTask({
+        title: 'Repro task',
+        path: '_PROJECTS/Demo/tasks/archive/repro.md',
+        archived: true,
+        tags: ['task', 'archived'],
+        projects: ['[[_PROJECTS/Demo/Demo]]']
+      });
+      const archivedFile = new TFile(archivedTask.path);
+      const restoredPath = '_PROJECTS/Demo/tasks/repro.md';
+      const restoredFile = new TFile(restoredPath);
+      let renamed = false;
+
+      mockPlugin.settings.moveArchivedTasks = true;
+      mockPlugin.settings.tasksFolder = '_PROJECTS/{{project}}/tasks';
+      mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockImplementation((path: string) => {
+        if (path === '_PROJECTS/Demo/Demo') {
+          return { basename: 'Demo' };
+        }
+        return null;
+      });
+      mockPlugin.app.vault.getAbstractFileByPath.mockImplementation((path: string) => {
+        if (path === archivedTask.path) {
+          return archivedFile;
+        }
+        if (path === restoredPath && renamed) {
+          return restoredFile;
+        }
+        return null;
+      });
+      mockPlugin.app.fileManager.renameFile.mockImplementation(async () => {
+        renamed = true;
+      });
+
+      const result = await taskService.toggleArchive(archivedTask);
+
+      expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalledWith(archivedFile, restoredPath);
+      expect(result.path).toBe(restoredPath);
+      expect(result.archived).toBe(false);
+      expect(result.tags).not.toContain('archived');
+    });
+
     it('should handle tasks without existing tags', async () => {
       const taskWithoutTags = TaskFactory.createTask({ tags: undefined });
 

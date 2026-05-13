@@ -2059,7 +2059,7 @@ export const en: TranslationTree = {
 							name: "Transform file",
 							description:
 								"Path to a .json template file in your vault that transforms webhook payloads",
-							placeholder: "simple-template.jsonon",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "Include custom headers",
@@ -2088,7 +2088,7 @@ export const en: TranslationTree = {
 							name: "Transform file",
 							description:
 								"Path to a .json template file in your vault that transforms webhook payloads",
-							placeholder: "simple-template.jsonon",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "Include custom headers",
@@ -2105,7 +2105,7 @@ export const en: TranslationTree = {
 							leaveEmpty: "Leave empty:",
 							leaveEmptyDescription: " Send raw data",
 							example: "Example:",
-							exampleFile: "simple-template.jsonon",
+							exampleFile: "simple-template.json",
 						},
 						buttons: {
 							cancel: "Cancel",

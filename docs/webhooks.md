@@ -235,5 +235,5 @@ If failures continue and `failureCount` exceeds 10, webhook is disabled.
 ### Transform errors
 
 1. Confirm `transformFile` exists in vault.
-2. For JS, ensure `transform` function is defined.
+2. Confirm the file is a `.json` transform template.
 3. Check Obsidian console logs for transform exceptions.

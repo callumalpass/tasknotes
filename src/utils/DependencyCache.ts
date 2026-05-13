@@ -327,6 +327,11 @@ export class DependencyCache extends Events {
 			console.warn("DependencyCache: getBlockedTaskPaths called before indexes built, building now...");
 			this.buildIndexesSync();
 		}
+
+		if (this.isCompletedTask(taskPath)) {
+			return [];
+		}
+
 		const blocked = this.dependencyTargets.get(taskPath);
 		return blocked ? Array.from(blocked) : [];
 	}
@@ -367,6 +372,22 @@ export class DependencyCache extends Events {
 
 		// All blocking tasks are completed
 		return false;
+	}
+
+	private isCompletedTask(taskPath: string): boolean {
+		const file = this.app.vault.getAbstractFileByPath(taskPath);
+		if (!(file instanceof TFile)) {
+			return false;
+		}
+
+		const metadata = this.app.metadataCache.getFileCache(file);
+		if (!metadata?.frontmatter) {
+			return false;
+		}
+
+		const statusField = this.fieldMapper?.toUserField("status") || "status";
+		const status = metadata.frontmatter[statusField];
+		return Boolean(status && this.statusManager.isCompletedStatus(status));
 	}
 
 	/**

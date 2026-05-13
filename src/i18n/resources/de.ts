@@ -2008,7 +2008,7 @@ export const de: TranslationTree = {
 						headersSection: "Header-Konfiguration",
 						transformFile: {
 							name: "Transformationsdatei",
-							description: "Pfad zu einer .js oder .json Datei in deinem Vault, die Webhook-Payloads transformiert",
+							description: "Pfad zu einer .json Vorlagendatei in deinem Vault, die Webhook-Payloads transformiert",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2035,7 +2035,7 @@ export const de: TranslationTree = {
 						},
 						transformFile: {
 							name: "Transformationsdatei",
-							description: "Pfad zu einer .js oder .json Datei in deinem Vault, die Webhook-Payloads transformiert",
+							description: "Pfad zu einer .json Vorlagendatei in deinem Vault, die Webhook-Payloads transformiert",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2043,9 +2043,9 @@ export const de: TranslationTree = {
 							description: "TaskNotes-Header einschließen (Event-Typ, Signatur, Lieferungs-ID). Für Discord, Slack und andere Dienste mit strengen CORS-Richtlinien ausschalten.",
 						},
 						transformHelp: {
-							title: "Transformationsdateien ermöglichen es dir, Webhook-Payloads anzupassen:",
-							jsFiles: ".js Dateien:",
-							jsDescription: " Benutzerdefinierte JavaScript-Transformationen",
+							title: "JSON-Transformationsvorlagen ermöglichen es dir, Webhook-Payloads anzupassen:",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: ".json Dateien:",
 							jsonDescription: " Vorlagen mit ",
 							jsonVariable: "${data.task.title}",

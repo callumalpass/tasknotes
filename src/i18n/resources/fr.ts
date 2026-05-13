@@ -2008,7 +2008,7 @@ export const fr: TranslationTree = {
 						headersSection: "Configuration des en-têtes",
 						transformFile: {
 							name: "Fichier de transformation",
-							description: "Chemin vers un fichier .js ou .json dans votre coffre qui transforme les données du webhook",
+							description: "Chemin vers un fichier modèle .json dans votre coffre qui transforme les données du webhook",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2035,7 +2035,7 @@ export const fr: TranslationTree = {
 						},
 						transformFile: {
 							name: "Fichier de transformation",
-							description: "Chemin vers un fichier .js ou .json dans votre coffre qui transforme les données du webhook",
+							description: "Chemin vers un fichier modèle .json dans votre coffre qui transforme les données du webhook",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2043,9 +2043,9 @@ export const fr: TranslationTree = {
 							description: "Inclure les en-têtes TaskNotes (type d'événement, signature, ID de livraison). Désactivez pour Discord, Slack et autres services avec des politiques CORS strictes.",
 						},
 						transformHelp: {
-							title: "Les fichiers de transformation permettent de personnaliser les données du webhook :",
-							jsFiles: "Fichiers .js :",
-							jsDescription: " Transformations JavaScript personnalisées",
+							title: "Les modèles de transformation JSON permettent de personnaliser les données du webhook :",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: "Fichiers .json :",
 							jsonDescription: " Modèles avec ",
 							jsonVariable: "${data.task.title}",

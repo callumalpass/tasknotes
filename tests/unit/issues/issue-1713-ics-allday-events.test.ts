@@ -61,6 +61,25 @@ describe("Issue #1713 - export timeless tasks as all-day events", () => {
 		expect(icsContent).not.toContain("VALUE=DATE");
 	});
 
+	it("keeps space-separated local datetimes as timed VEVENTs", () => {
+		const task: TaskInfo = {
+			title: "Buy groceries",
+			path: "tasks/buy-groceries.md",
+			scheduled: "2025-08-12 18:00",
+			status: "todo",
+			tags: [],
+			projects: [],
+			contexts: [],
+		};
+
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent([task]);
+
+		expect(icsContent).toContain("DTSTART:");
+		expect(icsContent).toContain("DTEND:");
+		expect(icsContent).not.toContain("VALUE=DATE");
+		expect(icsContent).not.toContain("20250812 1800");
+	});
+
 	it("exports date-only tasks as all-day events in bulk ICS export", () => {
 		const tasks: TaskInfo[] = [
 			{

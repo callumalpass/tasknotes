@@ -2008,7 +2008,7 @@ export const ru: TranslationTree = {
 						headersSection: "Конфигурация заголовков",
 						transformFile: {
 							name: "Файл преобразования",
-							description: "Путь к файлу .js или .json в вашем хранилище, который преобразует данные веб-хука",
+							description: "Путь к файлу шаблона .json в вашем хранилище, который преобразует данные веб-хука",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2035,7 +2035,7 @@ export const ru: TranslationTree = {
 						},
 						transformFile: {
 							name: "Файл преобразования",
-							description: "Путь к файлу .js или .json в вашем хранилище, который преобразует данные веб-хука",
+							description: "Путь к файлу шаблона .json в вашем хранилище, который преобразует данные веб-хука",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2043,9 +2043,9 @@ export const ru: TranslationTree = {
 							description: "Включить заголовки TaskNotes (тип события, подпись, ID доставки). Отключите для Discord, Slack и других сервисов со строгими политиками CORS.",
 						},
 						transformHelp: {
-							title: "Файлы преобразования позволяют настроить данные веб-хука:",
-							jsFiles: "Файлы .js:",
-							jsDescription: " Пользовательские преобразования JavaScript",
+							title: "Шаблоны преобразования JSON позволяют настроить данные веб-хука:",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: "Файлы .json:",
 							jsonDescription: " Шаблоны с ",
 							jsonVariable: "${data.task.title}",

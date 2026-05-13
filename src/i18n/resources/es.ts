@@ -2008,7 +2008,7 @@ export const es: TranslationTree = {
 						headersSection: "Configuración de encabezados",
 						transformFile: {
 							name: "Archivo de transformación",
-							description: "Ruta a un archivo .js o .json en tu bóveda que transforma cargas de webhook",
+							description: "Ruta a un archivo de plantilla .json en tu bóveda que transforma cargas de webhook",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2035,7 +2035,7 @@ export const es: TranslationTree = {
 						},
 						transformFile: {
 							name: "Archivo de transformación",
-							description: "Ruta a un archivo .js o .json en tu bóveda que transforma cargas de webhook",
+							description: "Ruta a un archivo de plantilla .json en tu bóveda que transforma cargas de webhook",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2043,9 +2043,9 @@ export const es: TranslationTree = {
 							description: "Incluir encabezados de TaskNotes (tipo de evento, firma, ID de entrega). Desactivar para Discord, Slack y otros servicios con políticas CORS estrictas.",
 						},
 						transformHelp: {
-							title: "Los archivos de transformación te permiten personalizar cargas de webhook:",
-							jsFiles: "Archivos .js:",
-							jsDescription: " Transformaciones JavaScript personalizadas",
+							title: "Las plantillas de transformación JSON te permiten personalizar cargas de webhook:",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: "Archivos .json:",
 							jsonDescription: " Plantillas con ",
 							jsonVariable: "${data.task.title}",

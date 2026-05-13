@@ -2011,7 +2011,7 @@ export const pt: TranslationTree = {
 						headersSection: "Configuração de Cabeçalhos",
 						transformFile: {
 							name: "Arquivo de Transformação",
-							description: "Caminho para um arquivo .js ou .json em seu cofre que transforma payloads de webhook",
+							description: "Caminho para um arquivo de modelo .json em seu cofre que transforma payloads de webhook",
 							placeholder: "simple-template.json"
 						},
 						customHeaders: {
@@ -2038,7 +2038,7 @@ export const pt: TranslationTree = {
 						},
 						transformFile: {
 							name: "Arquivo de Transformação",
-							description: "Caminho para um arquivo .js ou .json em seu cofre que transforma payloads de webhook",
+							description: "Caminho para um arquivo de modelo .json em seu cofre que transforma payloads de webhook",
 							placeholder: "simple-template.json"
 						},
 						customHeaders: {
@@ -2046,9 +2046,9 @@ export const pt: TranslationTree = {
 							description: "Incluir cabeçalhos do TaskNotes (tipo de evento, assinatura, ID de entrega). Desative para Discord, Slack e outros serviços com políticas CORS rígidas.",
 						},
 						transformHelp: {
-							title: "Arquivos de transformação permitem personalizar payloads de webhook:",
-							jsFiles: "Arquivos .js:",
-							jsDescription: " Transformações JavaScript personalizadas",
+							title: "Modelos de transformação JSON permitem personalizar payloads de webhook:",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: "Arquivos .json:",
 							jsonDescription: " Modelos com ",
 							jsonVariable: "${data.task.title}",

@@ -2007,7 +2007,7 @@ export const zh: TranslationTree = {
 						headersSection: "标头配置",
 						transformFile: {
 							name: "转换文件",
-							description: "库中转换webhook载荷的.js或.json文件路径",
+							description: "库中转换webhook载荷的.json模板文件路径",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2034,7 +2034,7 @@ export const zh: TranslationTree = {
 						},
 						transformFile: {
 							name: "转换文件",
-							description: "库中转换webhook载荷的.js或.json文件路径",
+							description: "库中转换webhook载荷的.json模板文件路径",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2042,9 +2042,9 @@ export const zh: TranslationTree = {
 							description: "包含TaskNotes标头（事件类型、签名、交付ID）。对于Discord、Slack和其他具有严格CORS策略的服务，请关闭。",
 						},
 						transformHelp: {
-							title: "转换文件允许您自定义webhook载荷：",
-							jsFiles: ".js文件：",
-							jsDescription: " 自定义JavaScript转换",
+							title: "JSON转换模板允许您自定义webhook载荷：",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: ".json文件：",
 							jsonDescription: " 使用模板",
 							jsonVariable: "${data.task.title}",

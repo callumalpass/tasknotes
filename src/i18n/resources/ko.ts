@@ -1962,7 +1962,7 @@ export const ko: TranslationTree = {
 						headersSection: "헤더 구성",
 						transformFile: {
 							name: "변환 파일",
-							description: "웹훅 페이로드를 변환하는 보관소의 .js 또는 .json 파일 경로",
+							description: "웹훅 페이로드를 변환하는 보관소의 .json 템플릿 파일 경로",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -1989,7 +1989,7 @@ export const ko: TranslationTree = {
 						},
 						transformFile: {
 							name: "변환 파일",
-							description: "웹훅 페이로드를 변환하는 보관소의 .js 또는 .json 파일 경로",
+							description: "웹훅 페이로드를 변환하는 보관소의 .json 템플릿 파일 경로",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -1997,9 +1997,9 @@ export const ko: TranslationTree = {
 							description: "TaskNotes 헤더 (이벤트 유형, 서명, 전달 ID) 포함. Discord, Slack 및 엄격한 CORS 정책을 가진 다른 서비스에서는 비활성화하세요.",
 						},
 						transformHelp: {
-							title: "변환 파일을 사용하여 웹훅 페이로드를 사용자 지정할 수 있습니다:",
-							jsFiles: ".js 파일:",
-							jsDescription: " 사용자 지정 JavaScript 변환",
+							title: "JSON 변환 템플릿을 사용하여 웹훅 페이로드를 사용자 지정할 수 있습니다:",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: ".json 파일:",
 							jsonDescription: " ",
 							jsonVariable: "${data.task.title}",

@@ -2008,7 +2008,7 @@ export const ja: TranslationTree = {
 						headersSection: "ヘッダー設定",
 						transformFile: {
 							name: "変換ファイル",
-							description: "Webhookペイロードを変換するボルト内の.jsまたは.jsonファイルへのパス",
+							description: "Webhookペイロードを変換するボルト内の.jsonテンプレートファイルへのパス",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2035,7 +2035,7 @@ export const ja: TranslationTree = {
 						},
 						transformFile: {
 							name: "変換ファイル",
-							description: "Webhookペイロードを変換するボルト内の.jsまたは.jsonファイルへのパス",
+							description: "Webhookペイロードを変換するボルト内の.jsonテンプレートファイルへのパス",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2043,9 +2043,9 @@ export const ja: TranslationTree = {
 							description: "TaskNotesヘッダー（イベントタイプ、署名、配信ID）を含める。Discord、Slack、および厳格なCORSポリシーを持つその他のサービスではオフにしてください。",
 						},
 						transformHelp: {
-							title: "変換ファイルを使用してWebhookペイロードをカスタマイズできます：",
-							jsFiles: ".jsファイル：",
-							jsDescription: " カスタムJavaScript変換",
+							title: "JSON変換テンプレートを使用してWebhookペイロードをカスタマイズできます：",
+							jsFiles: "",
+							jsDescription: "",
 							jsonFiles: ".jsonファイル：",
 							jsonDescription: " テンプレートと ",
 							jsonVariable: "${data.task.title}",
