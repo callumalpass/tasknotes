@@ -27,6 +27,7 @@ Example:
 ## Changed
 
 - Enabled lint checks that mirror Obsidian community plugin review findings, including dynamic code execution, Promise handling, deprecated APIs, unsafe stringification, directive comments, Node built-in imports, and explicit `any` usage.
+- Clarified privacy documentation for optional integrations that make periodic background network refreshes.
 
 ## Removed
 

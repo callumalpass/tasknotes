@@ -18,6 +18,7 @@ Plugin settings are stored in Obsidian's local plugin configuration.
 ## Optional Network Features
 
 TaskNotes is local-first. Network requests occur only when you enable features that require them.
+Some enabled integrations perform periodic background refreshes, such as calendar provider sync and ICS subscription updates.
 
 Optional network features:
 
