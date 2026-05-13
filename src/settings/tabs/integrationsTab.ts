@@ -1110,6 +1110,7 @@ export function renderIntegrationsTab(
 							enabled: false, // Start disabled until user fills in details
 							type: "remote" as const,
 							refreshInterval: 60,
+							filter: ""
 						};
 
 						if (!plugin.icsSubscriptionService) {
@@ -1590,6 +1591,7 @@ function renderICSSubscriptionsList(
 
 		const colorInput = createCardInput("color", "", subscription.color);
 		const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60);
+		const filterInput = createCardInput("text", "", subscription.filter);
 
 		// Update handlers
 		const updateSubscription = async (updates: Partial<typeof subscription>) => {
@@ -1620,6 +1622,9 @@ function renderICSSubscriptionsList(
 			const minutes = parseInt(refreshInput.value) || 60;
 			updateSubscription({ refreshInterval: minutes });
 		});
+		filterInput.addEventListener("change", () =>
+			updateSubscription({ filter: filterInput.value })
+		);
 
 		// Type change handler - re-render the subscription list to update input type
 		typeSelect.addEventListener("change", async () => {
@@ -1753,6 +1758,7 @@ function renderICSSubscriptionsList(
 			},
 			{ label: "Color:", input: colorInput },
 			{ label: "Refresh (min):", input: refreshInput },
+			{ label: "Filter (regex):", input: filterInput }
 		];
 
 		createCard(container, {
