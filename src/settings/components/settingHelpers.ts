@@ -4,7 +4,7 @@ export interface ToggleSettingOptions {
 	name: string;
 	desc: string;
 	getValue: () => boolean;
-	setValue: (value: boolean) => void;
+	setValue: (value: boolean) => unknown;
 }
 
 export interface TextSettingOptions {
@@ -12,7 +12,7 @@ export interface TextSettingOptions {
 	desc: string;
 	placeholder?: string;
 	getValue: () => string;
-	setValue: (value: string) => void;
+	setValue: (value: string) => unknown;
 	ariaLabel?: string;
 	debounceMs?: number; // Optional debounce time in milliseconds
 }
@@ -22,7 +22,7 @@ export interface DropdownSettingOptions {
 	desc: string;
 	options: { value: string; label: string }[];
 	getValue: () => string;
-	setValue: (value: string) => void;
+	setValue: (value: string) => unknown;
 	ariaLabel?: string;
 }
 
@@ -31,7 +31,7 @@ export interface NumberSettingOptions {
 	desc: string;
 	placeholder?: string;
 	getValue: () => number;
-	setValue: (value: number) => void;
+	setValue: (value: number) => unknown;
 	min?: number;
 	max?: number;
 	ariaLabel?: string;
@@ -42,7 +42,7 @@ export interface ButtonSettingOptions {
 	name: string;
 	desc: string;
 	buttonText: string;
-	onClick: () => void | Promise<void>;
+	onClick: () => unknown;
 	buttonClass?: string;
 }
 
@@ -57,6 +57,14 @@ export interface SettingGroupOptions {
  */
 function supportsSettingGroup(): boolean {
 	return requireApiVersion("1.11.0");
+}
+
+export function runAsyncSettingCallback(callback: () => unknown): void {
+	void Promise.resolve()
+		.then(callback)
+		.catch((error: unknown) => {
+			console.error("TaskNotes settings callback failed:", error);
+		});
 }
 
 /**
@@ -145,7 +153,9 @@ export function configureToggleSetting(setting: Setting, options: ToggleSettingO
 		.setName(options.name)
 		.setDesc(options.desc)
 		.addToggle((toggle) => {
-			toggle.setValue(options.getValue()).onChange(options.setValue);
+			toggle.setValue(options.getValue()).onChange((value) => {
+				runAsyncSettingCallback(() => options.setValue(value));
+			});
 		});
 }
 
@@ -170,11 +180,14 @@ export function configureTextSetting(setting: Setting, options: TextSettingOptio
 			text.setValue(options.getValue());
 
 			// Use debounced onChange if debounceMs is specified
+			const handleChange = (value: string) => {
+				runAsyncSettingCallback(() => options.setValue(value));
+			};
 			if (options.debounceMs && options.debounceMs > 0) {
-				const debouncedSetValue = debounce(options.setValue, options.debounceMs);
+				const debouncedSetValue = debounce(handleChange, options.debounceMs);
 				text.onChange(debouncedSetValue);
 			} else {
-				text.onChange(options.setValue);
+				text.onChange(handleChange);
 			}
 
 			if (options.placeholder) {
@@ -214,7 +227,9 @@ export function configureDropdownSetting(
 				dropdown.addOption(option.value, option.label);
 			});
 
-			dropdown.setValue(options.getValue()).onChange(options.setValue);
+			dropdown.setValue(options.getValue()).onChange((value) => {
+				runAsyncSettingCallback(() => options.setValue(value));
+			});
 
 			if (options.ariaLabel) {
 				dropdown.selectEl.setAttribute("aria-label", options.ariaLabel);
@@ -239,8 +254,12 @@ export function createDropdownSetting(
  */
 export function configureNumberSetting(setting: Setting, options: NumberSettingOptions): Setting {
 	const setValue = options.debounceMs
-		? debounce(options.setValue, options.debounceMs)
-		: options.setValue;
+		? debounce((value: number) => {
+				runAsyncSettingCallback(() => options.setValue(value));
+			}, options.debounceMs)
+		: (value: number) => {
+				runAsyncSettingCallback(() => options.setValue(value));
+			};
 
 	return setting
 		.setName(options.name)
@@ -298,7 +317,9 @@ export function configureButtonSetting(setting: Setting, options: ButtonSettingO
 		.setName(options.name)
 		.setDesc(options.desc)
 		.addButton((button) => {
-			button.setButtonText(options.buttonText).onClick(options.onClick);
+			button.setButtonText(options.buttonText).onClick(() => {
+				runAsyncSettingCallback(options.onClick);
+			});
 
 			if (options.buttonClass) {
 				button.buttonEl.addClass(options.buttonClass);
@@ -373,7 +394,7 @@ export function createListHeaders(
 /**
  * Debounced function interface with flush capability
  */
-export interface DebouncedFunction<T extends (...args: any[]) => any> {
+export interface DebouncedFunction<T extends (...args: never[]) => unknown> {
 	(...args: Parameters<T>): void;
 	/** Immediately execute any pending debounced call */
 	flush: () => void;
@@ -383,31 +404,35 @@ export interface DebouncedFunction<T extends (...args: any[]) => any> {
  * Debounce function for reducing save calls
  * Returns a debounced function with a flush() method to immediately execute pending calls
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
 	func: T,
 	wait: number,
 	immediate = false
 ): DebouncedFunction<T> {
 	let timeout: number | undefined;
 	let lastArgs: Parameters<T> | undefined;
-	let lastThis: any;
+	let lastThis: unknown;
 
-	const debounced = function (this: any, ...args: Parameters<T>) {
+	const debounced = function (this: unknown, ...args: Parameters<T>) {
 		lastArgs = args;
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		// eslint-disable-next-line @typescript-eslint/no-this-alias -- Debounce preserves the caller's this binding for later invocation.
 		lastThis = this;
 
 		const later = () => {
 			timeout = undefined;
 			lastArgs = undefined;
-			if (!immediate) func.apply(lastThis, args);
+			if (!immediate) {
+				func.apply(lastThis, args);
+			}
 		};
 
 		const callNow = immediate && !timeout;
 		window.clearTimeout(timeout);
 		timeout = window.setTimeout(later, wait);
 
-		if (callNow) func.apply(this, args);
+		if (callNow) {
+			func.apply(this, args);
+		}
 	} as DebouncedFunction<T>;
 
 	debounced.flush = () => {

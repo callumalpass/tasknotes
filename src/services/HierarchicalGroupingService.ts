@@ -1,5 +1,13 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Group tree traversal checks parent nodes before dereferencing. */
 import { TaskGroupKey, TaskInfo } from "../types";
+import type { UserMappedField } from "../types/settings";
+
+function valueToGroupString(value: unknown): string {
+	if (value === null || value === undefined) return "";
+	if (typeof value === "string") return value.trim();
+	if (typeof value === "number" || typeof value === "boolean") return String(value);
+	return "";
+}
 
 /**
  * Pure service that computes hierarchical grouping
@@ -13,34 +21,34 @@ export class HierarchicalGroupingService {
 	group(
 		tasks: TaskInfo[],
 		primaryKey: TaskGroupKey,
-		subgroupKey: TaskGroupKey,
-		sortDirection: "asc" | "desc" = "asc",
-		userFields: any[] = []
+			subgroupKey: TaskGroupKey,
+			sortDirection: "asc" | "desc" = "asc",
+			userFields: UserMappedField[] = []
 	): Map<string, Map<string, TaskInfo[]>> {
 		const hierarchical = new Map<string, Map<string, TaskInfo[]>>();
 
 		const getValues = (task: TaskInfo, key: TaskGroupKey): string[] => {
 			if (!key || key === "none") return ["all"];
 
-			const normalizeArray = (arr: unknown[]): string[] => {
-				const cleaned = arr.map((v) => String(v ?? "").trim()).filter((s) => s !== "");
-				return cleaned.length ? cleaned : [];
-			};
+				const normalizeArray = (arr: unknown[]): string[] => {
+					const cleaned = arr.map(valueToGroupString).filter((s) => s !== "");
+					return cleaned.length ? cleaned : [];
+				};
 
 			if (key.startsWith("user:")) {
 				const fieldIdOrKey = key.slice("user:".length);
 				if (this.resolveUserFieldValues) {
 					const resolved = this.resolveUserFieldValues(task, fieldIdOrKey) || [];
-					const cleaned = normalizeArray(resolved as unknown as unknown[]);
+					const cleaned = normalizeArray(resolved);
 					return cleaned.length ? cleaned : [`No ${fieldIdOrKey}`];
-				}
-				// Fallback to customProperties if resolver not provided
-				const value = (task.customProperties as any)?.[fieldIdOrKey];
-				if (Array.isArray(value)) {
-					const cleaned = normalizeArray(value);
-					return cleaned.length ? cleaned : [`No ${fieldIdOrKey}`];
-				}
-				const str = String(value ?? "").trim();
+					}
+					// Fallback to customProperties if resolver not provided
+					const value = task.customProperties?.[fieldIdOrKey];
+					if (Array.isArray(value)) {
+						const cleaned = normalizeArray(value);
+						return cleaned.length ? cleaned : [`No ${fieldIdOrKey}`];
+					}
+					const str = valueToGroupString(value);
 				return str !== "" ? [str] : [`No ${fieldIdOrKey}`];
 			}
 
@@ -91,15 +99,15 @@ export class HierarchicalGroupingService {
 					const s = (task.scheduled ?? "").trim();
 					return s ? [s.split("T")[0]] : ["No Scheduled Date"];
 				}
-				default: {
-					// Fallback to a direct property if present
-					const anyTask: any = task as any;
-					const v = anyTask[key];
-					if (Array.isArray(v)) {
-						const arr = normalizeArray(v);
-						return arr.length ? arr : [`No ${key}`];
-					}
-					const str = String(v ?? "").trim();
+					default: {
+						// Fallback to a direct property if present
+						const anyTask = task as unknown as Record<string, unknown>;
+						const v = anyTask[key];
+						if (Array.isArray(v)) {
+							const arr = normalizeArray(v);
+							return arr.length ? arr : [`No ${key}`];
+						}
+						const str = valueToGroupString(v);
 					return str !== "" ? [str] : [`No ${key}`];
 				}
 			}
@@ -141,7 +149,7 @@ export class HierarchicalGroupingService {
 		subgroups: Map<string, TaskInfo[]>,
 		subgroupKey: TaskGroupKey,
 		sortDirection: "asc" | "desc",
-		userFields: any[]
+		userFields: UserMappedField[]
 	): Map<string, TaskInfo[]> {
 		const keys = Array.from(subgroups.keys());
 		const sortedKeys = this.sortSubgroupKeys(keys, subgroupKey, sortDirection, userFields);
@@ -156,18 +164,18 @@ export class HierarchicalGroupingService {
 	/**
 	 * Sort subgroup keys with "No <field>" positioning and type-aware sorting
 	 */
-	private sortSubgroupKeys(
-		keys: string[],
-		subgroupKey: TaskGroupKey,
-		sortDirection: "asc" | "desc",
-		userFields: any[]
-	): string[] {
+		private sortSubgroupKeys(
+			keys: string[],
+			subgroupKey: TaskGroupKey,
+			sortDirection: "asc" | "desc",
+			userFields: UserMappedField[]
+		): string[] {
 		const isMissing = (k: string) => /^No\s/i.test(k);
 
 		// Handle dynamic user fields with type-aware sorting
-		if (typeof subgroupKey === "string" && subgroupKey.startsWith("user:")) {
-			const fieldId = subgroupKey.slice(5);
-			const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+			if (typeof subgroupKey === "string" && subgroupKey.startsWith("user:")) {
+				const fieldId = subgroupKey.slice(5);
+				const field = userFields.find((f) => (f.id || f.key) === fieldId);
 
 			const ascCompare = (a: string, b: string) => {
 				if (isMissing(a) && !isMissing(b)) return -1;

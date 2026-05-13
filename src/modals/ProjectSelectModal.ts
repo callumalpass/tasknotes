@@ -109,12 +109,12 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 
 		// Parse searchable fields from configuration
 		for (const row of rows) {
-			try {
-				const tokens = parseDisplayFieldsRow(row);
-				for (const token of tokens) {
-					if ((token as any).searchable && !token.property.startsWith("literal:")) {
-						searchableFields.add(token.property);
-					}
+				try {
+					const tokens = parseDisplayFieldsRow(row);
+					for (const token of tokens) {
+						if (token.searchable && !token.property.startsWith("literal:")) {
+							searchableFields.add(token.property);
+						}
 				}
 			} catch {
 				// Ignore parse errors
@@ -213,7 +213,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 			const title = typeof mapped.title === "string" ? mapped.title : "";
 			const aliasesFm = parseFrontMatterAliases(frontmatter) || [];
 			const aliases = Array.isArray(aliasesFm)
-				? (aliasesFm.filter((a) => typeof a === "string") as string[])
+				? (aliasesFm.filter((a) => typeof a === "string"))
 				: [];
 
 			const fileData: ProjectEntry = {

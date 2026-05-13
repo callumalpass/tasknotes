@@ -9,6 +9,7 @@ import {
 } from "../services/NaturalLanguageParser";
 import { combineDateAndTime } from "../utils/dateUtils";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 import type {
 	EmbeddableMarkdownEditor,
@@ -31,7 +32,7 @@ function createEmbeddableMarkdownEditor(
 	options: Partial<MarkdownEditorProps>
 ): EmbeddableMarkdownEditor {
 	// Lazy-load because the editor module resolves Obsidian internals during evaluation.
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
+	// eslint-disable-next-line @typescript-eslint/no-require-imports -- Modal editor is lazy-loaded to avoid evaluating Obsidian internals during import.
 	const editorModule = require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
 	return new editorModule.EmbeddableMarkdownEditor(app, container, options);
 }
@@ -153,7 +154,7 @@ export class TaskCreationModal extends TaskModal {
 				},
 				onSubmit: () => {
 					// Ctrl+Enter - save the task
-					this.handleSave();
+					void this.handleSave();
 				},
 				onEscape: () => {
 					// ESC - close the modal (only when not in vim insert mode)
@@ -233,7 +234,7 @@ export class TaskCreationModal extends TaskModal {
 				const keyEvent = e as KeyboardEvent;
 				if (keyEvent.key === "Enter" && (keyEvent.ctrlKey || keyEvent.metaKey)) {
 					keyEvent.preventDefault();
-					this.handleSave();
+					void this.handleSave();
 				} else if (keyEvent.key === "Tab" && keyEvent.shiftKey) {
 					keyEvent.preventDefault();
 					this.parseAndFillForm(input);
@@ -545,7 +546,7 @@ export class TaskCreationModal extends TaskModal {
 						this.userFields[userField.key] = value;
 					}
 					console.debug(
-						`[TaskCreationModal] Applied user field ${userField.displayName} (key: ${userField.key}): ${value}`
+						`[TaskCreationModal] Applied user field ${userField.displayName} (key: ${userField.key}): ${stringifyUnknown(value)}`
 					);
 					console.debug(`[TaskCreationModal] Current this.userFields:`, this.userFields);
 				} else {

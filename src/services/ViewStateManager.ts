@@ -97,14 +97,17 @@ export class ViewStateManager extends EventEmitter {
 	/**
 	 * Get view preferences for a specific view
 	 */
-	getViewPreferences<T = any>(viewType: string): T | undefined {
-		return this.viewPreferences[viewType];
+	getViewPreferences<T extends object = Record<string, unknown>>(viewType: string): T | undefined {
+		return this.viewPreferences[viewType] as T | undefined;
 	}
 
 	/**
 	 * Set view preferences for a specific view
 	 */
-	setViewPreferences<T = any>(viewType: string, preferences: T): void {
+	setViewPreferences<T extends object = Record<string, unknown>>(
+		viewType: string,
+		preferences: T
+	): void {
 		this.viewPreferences[viewType] = { ...preferences };
 		this.savePreferencesToStorage();
 		this.emit("view-preferences-changed", { viewType, preferences });
@@ -223,7 +226,7 @@ export class ViewStateManager extends EventEmitter {
 		};
 
 		this.savedViews.push(view);
-		this.saveSavedViewsToPluginData();
+		void this.saveSavedViewsToPluginData();
 		this.emit("saved-views-changed", this.getSavedViews());
 
 		return view;
@@ -252,7 +255,7 @@ export class ViewStateManager extends EventEmitter {
 			...clonedUpdates,
 		};
 
-		this.saveSavedViewsToPluginData();
+		void this.saveSavedViewsToPluginData();
 		this.emit("saved-views-changed", this.getSavedViews());
 	}
 
@@ -266,7 +269,7 @@ export class ViewStateManager extends EventEmitter {
 		}
 
 		this.savedViews.splice(viewIndex, 1);
-		this.saveSavedViewsToPluginData();
+		void this.saveSavedViewsToPluginData();
 		this.emit("saved-views-changed", this.getSavedViews());
 	}
 
@@ -290,7 +293,7 @@ export class ViewStateManager extends EventEmitter {
 	 */
 	clearAllSavedViews(): void {
 		this.savedViews = [];
-		this.saveSavedViewsToPluginData();
+		void this.saveSavedViewsToPluginData();
 		this.emit("saved-views-changed", this.getSavedViews());
 	}
 
@@ -301,7 +304,7 @@ export class ViewStateManager extends EventEmitter {
 		const view = this.savedViews.find((v) => v.id === viewId);
 		if (view) {
 			view.visibleProperties = properties;
-			this.saveSavedViewsToPluginData();
+			void this.saveSavedViewsToPluginData();
 			this.emit("saved-views-changed", this.getSavedViews());
 		}
 	}
@@ -338,7 +341,7 @@ export class ViewStateManager extends EventEmitter {
 		this.savedViews.splice(toIndex, 0, movedView);
 
 		// Save the reordered views
-		this.saveSavedViewsToPluginData();
+		void this.saveSavedViewsToPluginData();
 		this.emit("saved-views-changed", this.getSavedViews());
 	}
 
@@ -346,7 +349,7 @@ export class ViewStateManager extends EventEmitter {
 	 * Generate a unique ID for saved views
 	 */
 	private generateId(): string {
-		return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+		return Date.now().toString(36) + Math.random().toString(36).slice(2, 11);
 	}
 
 	/**

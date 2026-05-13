@@ -243,7 +243,7 @@ export class PomodoroView extends ItemView {
 		this.progressCircle = activeDocument.createElementNS(
 			"http://www.w3.org/2000/svg",
 			"circle"
-		) as SVGCircleElement;
+		);
 		this.progressCircle.setAttributeNS(null, "cx", "150");
 		this.progressCircle.setAttributeNS(null, "cy", "150");
 		this.progressCircle.setAttributeNS(null, "r", "140");
@@ -367,7 +367,7 @@ export class PomodoroView extends ItemView {
 
 		// Make the stat clickable to open stats view
 		this.registerDomEvent(pomodoroStat, "click", () => {
-			this.plugin.activatePomodoroStatsView();
+			void this.plugin.activatePomodoroStatsView();
 		});
 
 		// Add event listeners
@@ -398,24 +398,24 @@ export class PomodoroView extends ItemView {
 		});
 
 		this.registerDomEvent(this.pauseButton, "click", () => {
-			this.plugin.pomodoroService.pausePomodoro();
+			void this.plugin.pomodoroService.pausePomodoro();
 		});
 
 		this.registerDomEvent(this.stopButton, "click", () => {
-			this.plugin.pomodoroService.stopPomodoro();
+			void this.plugin.pomodoroService.stopPomodoro();
 		});
 
 		this.registerDomEvent(this.skipBreakButton, "click", () => {
 			const state = this.plugin.pomodoroService.getState();
 			if (state.currentSession) {
 				// Currently in a break session, stop it
-				this.plugin.pomodoroService.stopPomodoro();
+				void this.plugin.pomodoroService.stopPomodoro();
 			} else if (
 				state.nextSessionType === "short-break" ||
 				state.nextSessionType === "long-break"
 			) {
 				// Break is prepared but user wants to skip, clear the break and prepare work
-				this.plugin.pomodoroService.startPomodoro(this.currentSelectedTask || undefined);
+				void this.plugin.pomodoroService.startPomodoro(this.currentSelectedTask || undefined);
 			}
 		});
 
@@ -436,7 +436,7 @@ export class PomodoroView extends ItemView {
 		});
 
 		// Load and restore last selected task
-		this.restoreLastSelectedTask();
+		void this.restoreLastSelectedTask();
 
 		// Initial display update
 		this.updateDisplay();
@@ -715,7 +715,7 @@ export class PomodoroView extends ItemView {
 
 			// Open task selector modal
 			openTaskSelector(this.plugin, unarchivedTasks, (selectedTask) => {
-				this.selectTask(selectedTask);
+				void this.selectTask(selectedTask);
 			});
 		} catch (error) {
 			console.error("Error opening task selector:", error);
@@ -919,7 +919,7 @@ export class PomodoroView extends ItemView {
 		if (this.taskSelectButton) {
 			if (state.currentSession?.taskPath && !this.currentSelectedTask) {
 				// Try to get the task info for display
-				this.updateTaskButtonFromPath(state.currentSession.taskPath);
+				void this.updateTaskButtonFromPath(state.currentSession.taskPath);
 			}
 		}
 

@@ -8,6 +8,7 @@ import {
 } from "../../utils/filenameGenerator";
 import { ensureFolderExists } from "../../utils/helpers";
 import { getCurrentTimestamp } from "../../utils/dateUtils";
+import { stringifyUnknown } from "../../utils/stringUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
 import type TaskNotesPlugin from "../../main";
 
@@ -118,8 +119,8 @@ export class TaskCreationService {
 			// field values here before mapToFrontmatter is called.
 			const userFields = plugin.fieldMapper.getUserFields();
 			if (userFields.length > 0) {
-				const taskDataAny = taskData as Record<string, any>;
-				const completeAny = completeTaskData as Record<string, any>;
+				const taskDataAny = taskData as Record<string, unknown>;
+				const completeAny = completeTaskData as Record<string, unknown>;
 				for (const field of userFields) {
 					if (
 						Object.prototype.hasOwnProperty.call(taskDataAny, field.key) &&
@@ -200,9 +201,9 @@ export class TaskCreationService {
 			const taskInfo: TaskInfo = {
 				...completeTaskData,
 				...finalFrontmatter,
-				title: String(finalFrontmatter.title || completeTaskData.title || title),
-				status: String(finalFrontmatter.status || completeTaskData.status || status),
-				priority: String(
+				title: stringifyUnknown(finalFrontmatter.title || completeTaskData.title || title),
+				status: stringifyUnknown(finalFrontmatter.status || completeTaskData.status || status),
+				priority: stringifyUnknown(
 					finalFrontmatter.priority || completeTaskData.priority || priority
 				),
 				path: file.path,

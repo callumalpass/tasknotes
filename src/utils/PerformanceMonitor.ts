@@ -1,5 +1,13 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Browser performance APIs are feature-detected before metric access. */
 import { Platform } from "obsidian";
+
+type PerformanceWithMemory = Performance & {
+	memory?: {
+		usedJSHeapSize: number;
+		totalJSHeapSize: number;
+		jsHeapSizeLimit: number;
+	};
+};
 
 /**
  * Performance Monitor
@@ -201,7 +209,8 @@ export class PerformanceMonitor {
 	recordMemoryUsage(label?: string): void {
 		if (!this.enabled || !("memory" in performance)) return;
 
-		const memory = (performance as any).memory;
+		const memory = (performance as PerformanceWithMemory).memory;
+		if (!memory) return;
 		const memoryUsage = {
 			used: memory.usedJSHeapSize / 1024 / 1024, // MB
 			total: memory.totalJSHeapSize / 1024 / 1024, // MB
@@ -336,7 +345,7 @@ export class PerformanceMonitor {
 				isMacOS: Platform.isMacOS,
 				isLinux: Platform.isLinux,
 			},
-			memoryInfo: "memory" in performance ? (performance as any).memory : null,
+				memoryInfo: "memory" in performance ? (performance as PerformanceWithMemory).memory : null,
 		};
 
 		return JSON.stringify(data, null, 2);
@@ -347,11 +356,11 @@ export class PerformanceMonitor {
  * Performance decorator for automatic method timing
  */
 export function measurePerformance(operation: string) {
-	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+	return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
 		const originalMethod = descriptor.value;
 		const monitor = PerformanceMonitor.getInstance();
 
-		descriptor.value = async function (...args: any[]) {
+		descriptor.value = async function (...args: unknown[]) {
 			return monitor.measure(`${operation}-${propertyKey}`, () => {
 				return originalMethod.apply(this, args);
 			});

@@ -1,5 +1,6 @@
 import { TaskManager } from "../../utils/TaskManager";
 import { FilterCondition, FilterQuery } from "../../types";
+import { stringifyUnknown } from "../../utils/stringUtils";
 
 export interface FilterQueryPlannerDependencies {
 	cacheManager: TaskManager;
@@ -213,7 +214,7 @@ export class FilterQueryPlanner {
 
 	private getPathsForIndexableCondition(condition: FilterCondition): Set<string> {
 		const { property, operator, value } = condition;
-		const cacheKey = `${property}:${operator}:${value}`;
+		const cacheKey = `${property}:${operator}:${stringifyUnknown(value)}`;
 
 		return this.getCachedIndexResult(cacheKey, () => {
 			if (property === "status" && operator === "is" && value && typeof value === "string") {

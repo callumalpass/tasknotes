@@ -11,6 +11,7 @@ import {
 } from "./dateUtils";
 import { calculateTotalTimeSpent } from "./helpers";
 import { TaskNotesSettings } from "../types/settings";
+import type { DependencyCache } from "./DependencyCache";
 
 /**
  * Just-in-time task manager that reads task information on-demand from Obsidian's
@@ -80,28 +81,31 @@ export class TaskManager extends Events {
 	/**
 	 * Check if a file is a task based on current settings
 	 */
-	isTaskFile(frontmatter: any): boolean {
-		if (!frontmatter) return false;
+	isTaskFile(frontmatter: unknown): boolean {
+		if (!frontmatter || typeof frontmatter !== "object" || Array.isArray(frontmatter)) {
+			return false;
+		}
+		const frontmatterRecord = frontmatter as Record<string, unknown>;
 
 		if (this.settings.taskIdentificationMethod === "property") {
 			const propName = this.settings.taskPropertyName;
 			const propValue = this.settings.taskPropertyValue;
 			if (!propName || !propValue) return false; // Not configured
 
-			const frontmatterValue = frontmatter[propName];
+			const frontmatterValue = frontmatterRecord[propName];
 			if (frontmatterValue === undefined) return false;
 
 			// Handle both single and multi-value properties
 			if (Array.isArray(frontmatterValue)) {
-				return frontmatterValue.some((val: any) =>
+				return frontmatterValue.some((val: unknown) =>
 					this.comparePropertyValues(val, propValue)
 				);
 			}
 			return this.comparePropertyValues(frontmatterValue, propValue);
-		} else {
-			// Fallback to legacy tag-based method with hierarchical support
-			if (!Array.isArray(frontmatter.tags)) return false;
-			return frontmatter.tags.some((tag: string) => {
+			} else {
+				// Fallback to legacy tag-based method with hierarchical support
+				if (!Array.isArray(frontmatterRecord.tags)) return false;
+				return frontmatterRecord.tags.some((tag) => {
 				if (typeof tag !== 'string') return false;
 				// Obsidian metadata cache prepends '#' to frontmatter tags
 				const cleanTag = tag.startsWith('#') ? tag.slice(1) : tag;
@@ -113,7 +117,7 @@ export class TaskManager extends Events {
 	/**
 	 * Compare frontmatter property values with settings value, with boolean coercion support.
 	 */
-	private comparePropertyValues(frontmatterValue: any, settingValue: string): boolean {
+	private comparePropertyValues(frontmatterValue: unknown, settingValue: string): boolean {
 		// Handle boolean frontmatter values compared to string settings (e.g., true vs "true")
 		if (typeof frontmatterValue === "boolean" && typeof settingValue === "string") {
 			const lower = settingValue.toLowerCase();
@@ -158,7 +162,7 @@ export class TaskManager extends Events {
 	/**
 	 * Handle file changes with debouncing to prevent excessive updates
 	 */
-	private handleFileChangedDebounced(file: TFile, cache: any): void {
+	private handleFileChangedDebounced(file: TFile, cache: unknown): void {
 		const path = file.path;
 
 		// Cancel existing debounced handler for this file
@@ -170,7 +174,7 @@ export class TaskManager extends Events {
 		// Schedule new handler
 		const timeoutId = window.setTimeout(() => {
 			this.debouncedHandlers.delete(path);
-			this.handleFileChanged(file, cache);
+			void this.handleFileChanged(file, cache);
 		}, this.DEBOUNCE_DELAY);
 
 		this.debouncedHandlers.set(path, timeoutId);
@@ -179,7 +183,7 @@ export class TaskManager extends Events {
 	/**
 	 * Handle file change - emit events for listeners
 	 */
-	private async handleFileChanged(file: TFile, cache: any): Promise<void> {
+	private async handleFileChanged(file: TFile, cache: unknown): Promise<void> {
 		// Just emit the event - no cache to update
 		this.trigger("file-updated", { path: file.path, file });
 		this.trigger("data-changed");
@@ -188,7 +192,7 @@ export class TaskManager extends Events {
 	/**
 	 * Handle file deletion
 	 */
-	private handleFileDeleted(path: string, prevCache: any): void {
+	private handleFileDeleted(path: string, prevCache: unknown): void {
 		// Cancel any pending debounced handlers
 		const timeoutId = this.debouncedHandlers.get(path);
 		if (timeoutId) {
@@ -244,7 +248,7 @@ export class TaskManager extends Events {
 	/**
 	 * Extract task info from native frontmatter
 	 */
-	private extractTaskInfoFromNative(path: string, frontmatter: any): TaskInfo | null {
+	private extractTaskInfoFromNative(path: string, frontmatter: unknown): TaskInfo | null {
 		if (!frontmatter || !this.fieldMapper) return null;
 
 		// Validate that the file is actually a task
@@ -693,9 +697,9 @@ export class TaskManager extends Events {
 	/**
 	 * Delegate dependency methods to DependencyCache (will be set by main.ts)
 	 */
-	private _dependencyCache?: any;
+	private _dependencyCache?: DependencyCache;
 
-	setDependencyCache(cache: any): void {
+	setDependencyCache(cache: DependencyCache): void {
 		this._dependencyCache = cache;
 	}
 
@@ -769,7 +773,7 @@ export class TaskManager extends Events {
 		console.warn(`TaskManager: Metadata cache not ready for ${path} after ${maxRetries} retries`);
 	}
 
-	updateConfig(settings: any): void {
+	updateConfig(settings: TaskNotesSettings): void {
 		// Update settings
 		this.settings = settings;
 		this.taskTag = settings.taskTag;
@@ -786,18 +790,18 @@ export class TaskManager extends Events {
 		this.trigger("data-changed");
 	}
 
-	subscribe(event: string, callback: (...args: any[]) => void): () => void {
+	subscribe(event: string, callback: (...args: unknown[]) => void): () => void {
 		this.on(event, callback);
 		return () => {
 			this.off(event, callback);
 		};
 	}
 
-	async getCalendarData(year: number, month: number): Promise<any> {
+	async getCalendarData(year: number, month: number): Promise<Record<string, TaskInfo[]>> {
 		// For now, return a simple calendar data structure
 		// This can be optimized later if needed
 		const tasks = await this.getAllTasks();
-		const calendarData: any = {};
+		const calendarData: Record<string, TaskInfo[]> = {};
 
 		for (const task of tasks) {
 			if (task.scheduled) {

@@ -13,7 +13,7 @@ export interface ICSExportOptions {
 	useDurationForExport?: boolean; // Use timeEstimate (duration) instead of due date for DTEND
 }
 
-type TranslateFn = (key: TranslationKey, variables?: Record<string, any>) => string;
+type TranslateFn = (key: TranslationKey, variables?: Record<string, unknown>) => string;
 
 interface ICSDateProperties {
 	startLine: string | null;
@@ -37,7 +37,7 @@ export class CalendarExportService {
 			case "ics":
 				return this.generateICSDownloadURL(task);
 			default:
-				throw new Error(`Unsupported calendar type: ${type}`);
+				throw new Error("Unsupported calendar type");
 		}
 	}
 
@@ -446,12 +446,12 @@ export class CalendarExportService {
 	 */
 	private static parseICSDate(icsDate: string): Date {
 		// YYYYMMDDTHHMMSSZ -> YYYY-MM-DDTHH:MM:SSZ
-		const year = icsDate.substr(0, 4);
-		const month = icsDate.substr(4, 2);
-		const day = icsDate.substr(6, 2);
-		const hour = icsDate.substr(9, 2);
-		const minute = icsDate.substr(11, 2);
-		const second = icsDate.substr(13, 2);
+		const year = icsDate.slice(0, 4);
+		const month = icsDate.slice(4, 6);
+		const day = icsDate.slice(6, 8);
+		const hour = icsDate.slice(9, 11);
+		const minute = icsDate.slice(11, 13);
+		const second = icsDate.slice(13, 15);
 
 		return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`);
 	}

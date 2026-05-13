@@ -2009,7 +2009,7 @@ export const ru: TranslationTree = {
 						transformFile: {
 							name: "Файл преобразования",
 							description: "Путь к файлу .js или .json в вашем хранилище, который преобразует данные веб-хука",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "Включить пользовательские заголовки",
@@ -2036,7 +2036,7 @@ export const ru: TranslationTree = {
 						transformFile: {
 							name: "Файл преобразования",
 							description: "Путь к файлу .js или .json в вашем хранилище, который преобразует данные веб-хука",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "Включить пользовательские заголовки",
@@ -2052,7 +2052,7 @@ export const ru: TranslationTree = {
 							leaveEmpty: "Оставьте пустым:",
 							leaveEmptyDescription: " Отправить сырые данные",
 							example: "Пример:",
-							exampleFile: "discord-transform.js",
+							exampleFile: "simple-template.json",
 						},
 						buttons: {
 							cancel: "Отмена",

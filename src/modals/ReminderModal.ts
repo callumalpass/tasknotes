@@ -408,7 +408,7 @@ export class ReminderModal extends Modal {
 		});
 
 		new Setting(relativeContainer).setName("Relative to").addDropdown((dropdown) => {
-			const options: any = {};
+				const options: Record<string, string> = {};
 			if (this.task.due) {
 				options.due = `Due date (${formatDateForDisplay(this.task.due)})`;
 			}
@@ -420,8 +420,8 @@ export class ReminderModal extends Modal {
 				options.none = "No dates available";
 				dropdown.setDisabled(true);
 			} else {
-				Object.entries(options).forEach(([key, label]) => {
-					dropdown.addOption(key, label as string);
+					Object.entries(options).forEach(([key, label]) => {
+						dropdown.addOption(key, label);
 				});
 				dropdown.setValue(this.relativeAnchor);
 			}

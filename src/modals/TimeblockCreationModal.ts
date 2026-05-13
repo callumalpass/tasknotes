@@ -8,6 +8,7 @@ import {
 	parseYaml,
 	stringifyYaml,
 	setTooltip,
+	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TimeBlock, DailyNoteFrontmatter, TaskInfo } from "../types";
@@ -23,6 +24,12 @@ import {
 } from "obsidian-daily-notes-interface";
 import { TranslationKey } from "../i18n";
 
+type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+
+function getDailyNoteMoment(input: string): DailyNoteMoment {
+	return (obsidianMoment as unknown as (input: string) => DailyNoteMoment)(input);
+}
+
 export interface TimeblockCreationOptions {
 	date: string; // YYYY-MM-DD format
 	startTime?: string; // HH:MM format
@@ -34,7 +41,7 @@ export interface TimeblockCreationOptions {
 export class TimeblockCreationModal extends Modal {
 	plugin: TaskNotesPlugin;
 	options: TimeblockCreationOptions;
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
 
 	// Form fields
 	private titleInput: HTMLInputElement;
@@ -64,7 +71,7 @@ export class TimeblockCreationModal extends Modal {
 		this.keyboardHandler = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				this.handleSubmit();
+				void this.handleSubmit();
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
@@ -303,14 +310,14 @@ export class TimeblockCreationModal extends Modal {
 		}
 
 		// Get or create daily note for the date
-		const moment = (window as any).moment(this.options.date);
+		const dailyNoteMoment = getDailyNoteMoment(this.options.date);
 		const allDailyNotes = getAllDailyNotes();
-		let dailyNote = getDailyNote(moment, allDailyNotes);
+		let dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
 
 		if (!dailyNote) {
 			// Create daily note if it doesn't exist
 			try {
-				dailyNote = await createDailyNote(moment);
+				dailyNote = await createDailyNote(dailyNoteMoment);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				throw new Error(

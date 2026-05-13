@@ -1,5 +1,3 @@
-import { basename } from "node:path";
-
 export type FieldRole =
 	| "title"
 	| "status"
@@ -39,6 +37,21 @@ const ALL_ROLES: FieldRole[] = [
 	"timeEntries",
 ];
 
+type SpecFieldDefinition = {
+	tn_role?: unknown;
+	tn_completed_values?: unknown;
+	values?: unknown;
+};
+
+function isSpecFieldDefinition(value: unknown): value is SpecFieldDefinition {
+	return value !== null && typeof value === "object";
+}
+
+function basenameWithoutMarkdown(path: string): string {
+	const name = path.split(/[\\/]/).pop() ?? path;
+	return name.endsWith(".md") ? name.slice(0, -3) : name;
+}
+
 export interface SpecFieldMapping {
 	roleToField: Record<FieldRole, string>;
 	fieldToRole: Record<string, FieldRole>;
@@ -64,7 +77,7 @@ export function defaultFieldMapping(): SpecFieldMapping {
 }
 
 export function buildFieldMapping(
-	fields: Record<string, any>,
+	fields: Record<string, unknown>,
 	displayNameKey?: string
 ): SpecFieldMapping {
 	const roleToField = {} as Record<FieldRole, string>;
@@ -72,7 +85,7 @@ export function buildFieldMapping(
 	const rolesSet = new Set<string>(ALL_ROLES);
 
 	for (const [fieldName, def] of Object.entries(fields)) {
-		if (def && typeof def === "object" && typeof def.tn_role === "string") {
+		if (isSpecFieldDefinition(def) && typeof def.tn_role === "string") {
 			const role = def.tn_role as FieldRole;
 			if (!rolesSet.has(role)) continue;
 			if (roleToField[role] !== undefined) {
@@ -110,9 +123,9 @@ export function buildFieldMapping(
 	};
 }
 
-function inferCompletedStatuses(fields: Record<string, any>, statusFieldName: string): string[] {
+function inferCompletedStatuses(fields: Record<string, unknown>, statusFieldName: string): string[] {
 	const statusDef = fields[statusFieldName];
-	if (!statusDef || typeof statusDef !== "object") {
+	if (!isSpecFieldDefinition(statusDef)) {
 		return ["done", "cancelled"];
 	}
 
@@ -195,7 +208,7 @@ export function resolveDisplayTitle(
 	}
 
 	if (typeof taskPath === "string" && taskPath.trim().length > 0) {
-		const fromPath = basename(taskPath, ".md").trim();
+		const fromPath = basenameWithoutMarkdown(taskPath).trim();
 		if (fromPath.length > 0) {
 			return fromPath;
 		}

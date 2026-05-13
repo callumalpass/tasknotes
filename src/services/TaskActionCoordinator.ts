@@ -41,11 +41,11 @@ export class TaskActionCoordinator {
 			new Notice("Time tracking started");
 			this.requestStatusBarUpdate();
 			return updatedTask;
-		} catch (error: any) {
-			console.error("Failed to start time tracking:", error);
-			if (error.message === "Time tracking is already active for this task") {
-				new Notice("Time tracking is already active for this task");
-			} else {
+			} catch (error: unknown) {
+				console.error("Failed to start time tracking:", error);
+				if (error instanceof Error && error.message === "Time tracking is already active for this task") {
+					new Notice("Time tracking is already active for this task");
+				} else {
 				new Notice("Failed to start time tracking");
 			}
 			throw error;
@@ -58,11 +58,11 @@ export class TaskActionCoordinator {
 			new Notice("Time tracking stopped");
 			this.requestStatusBarUpdate();
 			return updatedTask;
-		} catch (error: any) {
-			console.error("Failed to stop time tracking:", error);
-			if (error.message === "No active time tracking session for this task") {
-				new Notice("No active time tracking session for this task");
-			} else {
+			} catch (error: unknown) {
+				console.error("Failed to stop time tracking:", error);
+				if (error instanceof Error && error.message === "No active time tracking session for this task") {
+					new Notice("No active time tracking session for this task");
+				} else {
 				new Notice("Failed to stop time tracking");
 			}
 			throw error;

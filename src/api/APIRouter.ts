@@ -1,12 +1,11 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { parse } from "url";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Decorator metadata keeps route parameters aligned with controller signatures.
 import { getRoutes, RouteInfo } from "../utils/OpenAPIDecorators";
 
 export type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS";
 export type RouteHandler = (
-	req: IncomingMessage,
-	res: ServerResponse,
+	req: HTTPRequestLike,
+	res: HTTPResponseLike,
 	params?: Record<string, string>
 ) => Promise<void>;
 
@@ -63,9 +62,8 @@ export class APIRouter {
 		this.register("OPTIONS", pattern, handler);
 	}
 
-	async route(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
-		const parsedUrl = parse(req.url || "", true);
-		const pathname = parsedUrl.pathname || "";
+	async route(req: HTTPRequestLike, res: HTTPResponseLike): Promise<boolean> {
+		const pathname = parseRequestUrl(req).pathname;
 		const method = req.method as HTTPMethod;
 
 		for (const route of this.routes) {
@@ -96,16 +94,17 @@ export class APIRouter {
 	/**
 	 * Register a controller using decorator-based routes
 	 */
-	registerController(controllerInstance: any): void {
+	registerController(controllerInstance: object): void {
+		const controllerMethods = controllerInstance as Record<string, unknown>;
 		const routes = getRoutes(controllerInstance.constructor);
 
 		for (const routeInfo of routes) {
-			const handler = controllerInstance[routeInfo.handler];
+			const handler = controllerMethods[routeInfo.handler];
 			if (typeof handler === "function") {
 				this.register(
 					routeInfo.method.toUpperCase() as HTTPMethod,
 					routeInfo.path,
-					handler.bind(controllerInstance)
+					handler.bind(controllerInstance) as RouteHandler
 				);
 			}
 		}

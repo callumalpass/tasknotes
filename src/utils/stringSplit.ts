@@ -35,7 +35,7 @@ export function splitListPreservingLinksAndQuotes(input: string): string[] {
 
 		// Enter/exit quotes (only when not inside wikilink)
 		if (!inLink && (c === '"' || c === "'")) {
-			if (inQuote === null) inQuote = c as '"' | "'";
+			if (inQuote === null) inQuote = c;
 			else if (inQuote === c) inQuote = null;
 			buf += c;
 			continue;

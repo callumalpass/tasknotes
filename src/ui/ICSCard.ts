@@ -46,7 +46,7 @@ export function createICSEventCard(
 	const card = activeDocument.createElement("div");
 	// Reuse task-card base styling for visual consistency
 	card.className = "task-card task-card--ics";
-	(card as any).dataset.key = icsEvent.id;
+	card.dataset.key = icsEvent.id;
 
 	// Determine subscription color and name
 	const subscription = plugin.icsSubscriptionService
@@ -65,7 +65,7 @@ export function createICSEventCard(
 	});
 	setIcon(leftIcon, "calendar");
 	// Inline layout styling to mimic status area spacing without the ring
-	const wrapEl = leftIconWrap as HTMLElement;
+	const wrapEl = leftIconWrap;
 	wrapEl.classList.remove(
 		"tn-static-display-block-2a1b75c9",
 		"tn-static-display-flex-4d51fc62",
@@ -194,14 +194,14 @@ export function updateICSEventCard(
 
 	// Update icon color on wrapper to propagate to svg (icons use currentColor)
 	element.style.setProperty("--current-status-color", color);
-	const iconWrap = element.querySelector(".ics-card__icon") as HTMLElement | null;
+	const iconWrap = element.querySelector<HTMLElement>(".ics-card__icon");
 	if (iconWrap) iconWrap.style.color = color;
 
-	const titleEl = element.querySelector(".task-card__title") as HTMLElement | null;
+	const titleEl = element.querySelector(".task-card__title");
 	if (titleEl)
 		titleEl.textContent = icsEvent.title || plugin.i18n.translate("ui.icsCard.untitledEvent");
 
-	const metadata = element.querySelector(".task-card__metadata") as HTMLElement | null;
+	const metadata = element.querySelector(".task-card__metadata");
 	if (metadata) {
 		const parts: string[] = [];
 		const timeText = formatTimeRange(icsEvent, plugin);

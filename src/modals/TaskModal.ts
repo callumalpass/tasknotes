@@ -1,6 +1,7 @@
 import { App, Modal, Notice, Setting, TAbstractFile, TFile, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { getOrderedModalGroups, shouldShowFieldForModal } from "./taskModalFieldConfig";
+import type { ModalFieldConfigLike, ModalFieldsConfigLike } from "./taskModalFieldConfig";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
@@ -8,6 +9,7 @@ import { StatusContextMenu } from "../components/StatusContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
 import { getDatePart, getTimePart, combineDateAndTime } from "../utils/dateUtils";
+import { stringifyUnknown } from "../utils/stringUtils";
 import { sanitizeTags, splitFrontmatterAndBody } from "../utils/helpers";
 import { ProjectSelectModal } from "./ProjectSelectModal";
 import { TaskDependency, TaskInfo, Reminder } from "../types";
@@ -34,6 +36,14 @@ interface ProjectItem {
 	name: string;
 	link: string;
 	unresolved?: boolean;
+}
+
+function userFieldValueToString(value: unknown): string {
+	if (value === null || value === undefined) return "";
+	if (typeof value === "string") return value;
+	if (typeof value === "number" || typeof value === "boolean") return String(value);
+	if (Array.isArray(value)) return value.map(userFieldValueToString).join(", ");
+	return "";
 }
 
 export abstract class TaskModal extends Modal {
@@ -84,6 +94,10 @@ export abstract class TaskModal extends Modal {
 	// Overridden by subclasses that manage an existing task
 	protected getCurrentTaskPath(): string | undefined {
 		return undefined;
+	}
+
+	protected async openTaskNote(): Promise<void> {
+		// Creation modals do not have an existing task note to open.
 	}
 
 	protected renderDependencyLists(): void {
@@ -272,7 +286,7 @@ export abstract class TaskModal extends Modal {
 	protected reminders: Reminder[] = [];
 
 	// User-defined fields (dynamic based on settings)
-	protected userFields: Record<string, any> = {};
+	protected userFields: Record<string, unknown> = {};
 
 	// Dependency fields
 	protected blockedByItems: DependencyItem[] = [];
@@ -341,7 +355,7 @@ export abstract class TaskModal extends Modal {
 	/**
 	 * Get file cache - useful for testing with mocked metadataCache
 	 */
-	protected getFileCache(file: TFile): any {
+	protected getFileCache(file: TFile): unknown {
 		return this.app.metadataCache.getFileCache(file);
 	}
 
@@ -383,12 +397,12 @@ export abstract class TaskModal extends Modal {
 					return;
 				}
 				e.preventDefault();
-				this.handleSave();
+				void this.handleSave();
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
 
-		this.initializeFormData().then(() => {
+		void this.initializeFormData().then(() => {
 			this.createModalContent();
 			this.focusTitleInput();
 		});
@@ -665,7 +679,7 @@ export abstract class TaskModal extends Modal {
 					},
 					onSubmit: () => {
 						// Ctrl/Cmd+Enter - save the task
-						this.handleSave();
+						void this.handleSave();
 					},
 					onEscape: () => {
 						// ESC - close the modal
@@ -689,7 +703,7 @@ export abstract class TaskModal extends Modal {
 	/**
 	 * Check if a field should be shown based on field configuration
 	 */
-	protected shouldShowField(fieldId: string, config?: any): boolean {
+	protected shouldShowField(fieldId: string, config?: ModalFieldsConfigLike): boolean {
 		return shouldShowFieldForModal(fieldId, config, this.isCreationMode());
 	}
 
@@ -705,7 +719,7 @@ export abstract class TaskModal extends Modal {
 		this.createFieldsFromConfig(container, config);
 	}
 
-	protected createFieldsFromConfig(container: HTMLElement, config: any): void {
+	protected createFieldsFromConfig(container: HTMLElement, config: ModalFieldsConfigLike): void {
 		const groupsToRender = getOrderedModalGroups(config, this.isCreationMode());
 
 		for (const groupConfig of groupsToRender) {
@@ -726,7 +740,7 @@ export abstract class TaskModal extends Modal {
 		}
 	}
 
-	protected createField(container: HTMLElement, fieldConfig: any): void {
+	protected createField(container: HTMLElement, fieldConfig: ModalFieldConfigLike): void {
 		switch (fieldConfig.id) {
 			case "contexts":
 				this.createContextsField(container);
@@ -861,10 +875,13 @@ export abstract class TaskModal extends Modal {
 		this.renderDependencyLists();
 	}
 
-	protected createUserFieldByConfig(container: HTMLElement, fieldConfig: any): void {
+	protected createUserFieldByConfig(
+		container: HTMLElement,
+		fieldConfig: ModalFieldConfigLike
+	): void {
 		// Find the user field definition
 		const userField = this.plugin.settings.userFields?.find(
-			(f: any) => f.id === fieldConfig.id
+			(f) => f.id === fieldConfig.id
 		);
 		if (!userField) return;
 
@@ -875,12 +892,12 @@ export abstract class TaskModal extends Modal {
 			case "text":
 			case "list": {
 				setting.addText((text) => {
-					const currentValue = this.userFields[userField.key];
-					const displayValue = Array.isArray(currentValue)
-						? currentValue.join(", ")
-						: currentValue || "";
+						const currentValue = this.userFields[userField.key];
+						const displayValue = Array.isArray(currentValue)
+							? currentValue.map(userFieldValueToString).join(", ")
+							: userFieldValueToString(currentValue);
 
-					text.setValue(displayValue).onChange((value) => {
+						text.setValue(displayValue).onChange((value) => {
 						if (userField.type === "list") {
 							this.userFields[userField.key] = value
 								.split(",")
@@ -896,22 +913,22 @@ export abstract class TaskModal extends Modal {
 				});
 				break;
 			}
-			case "number": {
-				setting.addText((text) => {
-					const currentValue = this.userFields[userField.key];
-					text.setValue(currentValue?.toString() || "").onChange((value) => {
-						const numValue = parseFloat(value);
-						this.userFields[userField.key] = isNaN(numValue) ? null : numValue;
+				case "number": {
+					setting.addText((text) => {
+						const currentValue = this.userFields[userField.key];
+						text.setValue(userFieldValueToString(currentValue)).onChange((value) => {
+							const numValue = parseFloat(value);
+							this.userFields[userField.key] = isNaN(numValue) ? null : numValue;
 					});
 					text.inputEl.type = "number";
 				});
 				break;
 			}
-			case "date": {
-				setting.addText((text) => {
-					const currentValue = this.userFields[userField.key];
-					text.setValue(currentValue || "").onChange((value) => {
-						this.userFields[userField.key] = value;
+				case "date": {
+					setting.addText((text) => {
+						const currentValue = this.userFields[userField.key];
+						text.setValue(userFieldValueToString(currentValue)).onChange((value) => {
+							this.userFields[userField.key] = value;
 					});
 					text.inputEl.type = "date";
 				});
@@ -960,7 +977,7 @@ export abstract class TaskModal extends Modal {
 				case "number":
 					new Setting(container).setName(field.displayName).addText((text) => {
 						text.setPlaceholder(this.t("modals.task.userFields.numberPlaceholder"))
-							.setValue(currentValue ? String(currentValue) : "")
+							.setValue(currentValue ? stringifyUnknown(currentValue) : "")
 							.onChange((value) => {
 								const numValue = parseFloat(value);
 								this.userFields[field.key] = isNaN(numValue) ? null : numValue;
@@ -971,13 +988,13 @@ export abstract class TaskModal extends Modal {
 				case "date":
 					new Setting(container).setName(field.displayName).addText((text) => {
 						text.setPlaceholder(this.t("modals.task.userFields.datePlaceholder"))
-							.setValue(currentValue ? String(currentValue) : "")
+							.setValue(currentValue ? stringifyUnknown(currentValue) : "")
 							.onChange((value) => {
 								this.userFields[field.key] = value || null;
 							});
 						// Add date picker button/icon next to the input
 						// Ensure the input and button layout as a single row with proper sizing
-						const parent = text.inputEl.parentElement as HTMLElement | null;
+						const parent = text.inputEl.parentElement;
 						if (parent) parent.addClass("tn-date-control");
 						const btn = parent?.createEl("button", {
 							cls: "user-field-date-picker-btn",
@@ -1012,7 +1029,7 @@ export abstract class TaskModal extends Modal {
 						const displayValue = Array.isArray(currentValue)
 							? currentValue.join(", ")
 							: currentValue
-								? String(currentValue)
+								? stringifyUnknown(currentValue)
 								: "";
 
 						text.setPlaceholder(this.t("modals.task.userFields.listPlaceholder"))
@@ -1044,7 +1061,7 @@ export abstract class TaskModal extends Modal {
 								field: field.displayName,
 							})
 						)
-							.setValue(currentValue ? String(currentValue) : "")
+							.setValue(currentValue ? stringifyUnknown(currentValue) : "")
 							.onChange((value) => {
 								this.userFields[field.key] = value || null;
 							});
@@ -1067,9 +1084,9 @@ export abstract class TaskModal extends Modal {
 				text: this.t("modals.task.buttons.openNote"),
 			});
 
-			openNoteButton.addEventListener("click", async () => {
-				await (this as any).openTaskNote();
-			});
+				openNoteButton.addEventListener("click", async () => {
+					await this.openTaskNote();
+				});
 		}
 
 		// Save button (primary action)
@@ -1918,11 +1935,10 @@ export abstract class TaskModal extends Modal {
 	// Subtask management methods
 	protected async openSubtaskSelector(): Promise<void> {
 		try {
-			const cacheManager: any = this.plugin.cacheManager;
-			const allTasks: TaskInfo[] = (await cacheManager?.getAllTasks?.()) ?? [];
+				const allTasks = await this.plugin.cacheManager.getAllTasks();
 
-			// Filter out tasks that are already subtasks and the current task (if editing)
-			const currentTaskPath = this.isEditMode() ? (this as any).task?.path : undefined;
+				// Filter out tasks that are already subtasks and the current task (if editing)
+				const currentTaskPath = this.getCurrentTaskPath();
 			const candidates = allTasks.filter((candidate) => {
 				if (currentTaskPath && candidate.path === currentTaskPath) return false;
 				return !this.selectedSubtaskFiles.some(

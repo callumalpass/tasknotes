@@ -79,7 +79,7 @@ export class ICSEventContextMenu {
 				.setTitle(this.t("contextMenus.ics.linkNote"))
 				.setIcon("link")
 				.onClick(() => {
-					this.linkExistingNote();
+					void this.linkExistingNote();
 				})
 		);
 

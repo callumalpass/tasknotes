@@ -168,10 +168,10 @@ export class DOMReconciler {
 
 		const timeout = window.setTimeout(() => {
 			element.classList.remove(`task-${animation}`);
-			this.activeTimeouts.delete(timeout as unknown as number);
+			this.activeTimeouts.delete(timeout);
 		}, duration);
 
-		this.activeTimeouts.add(timeout as unknown as number);
+		this.activeTimeouts.add(timeout);
 	}
 
 	/**
@@ -278,7 +278,7 @@ export class DOMReconciler {
  * State management for preserving UI state across updates
  */
 export class UIStateManager {
-	private stateMap = new Map<string, any>();
+	private stateMap = new Map<string, ReturnType<DOMReconciler["preserveState"]>>();
 
 	/**
 	 * Save UI state for a specific element

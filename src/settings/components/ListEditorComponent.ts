@@ -3,7 +3,7 @@ import { createListHeaders } from "./settingHelpers";
 
 export interface ListEditorItem {
 	id: string;
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 export interface ListEditorConfig<T extends ListEditorItem> {

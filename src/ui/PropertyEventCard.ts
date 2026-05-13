@@ -1,5 +1,5 @@
 import { setIcon } from "obsidian";
-import type { BasesEntry, BasesPropertyId, BasesViewConfig } from "obsidian";
+import type { BasesEntry, BasesViewConfig } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { isEmptyCardDisplayValue, renderBasesValue } from "./taskCardPresentation";
 
@@ -32,7 +32,7 @@ export function createPropertyEventCard(
 		return card;
 	}
 
-	(card as any).dataset.key = `property-${file.path}`;
+	card.dataset.key = `property-${file.path}`;
 	card.dataset.filePath = file.path;
 
 	// Main row
@@ -152,7 +152,7 @@ export function createPropertyEventCard(
 				}
 
 				// Get property value from Bases entry
-				const value = entry.getValue(propertyId as BasesPropertyId);
+				const value = entry.getValue(propertyId);
 
 				if (!isEmptyCardDisplayValue(value)) {
 					if (renderedProperties > 0) {
@@ -161,7 +161,7 @@ export function createPropertyEventCard(
 
 					// Get user-friendly property name
 					const displayName =
-						viewConfig.getDisplayName(propertyId as BasesPropertyId) || propertyId;
+						viewConfig.getDisplayName(propertyId) || propertyId;
 
 					const propertyEl = metadata.createSpan({
 						cls: "property-event-card__metadata-property",
@@ -188,7 +188,7 @@ export function createPropertyEventCard(
 	// Click handler to open file
 	card.addEventListener("click", (e) => {
 		const openInNewTab = e.ctrlKey || e.metaKey;
-		plugin.app.workspace.openLinkText(file.path, "", openInNewTab);
+		void plugin.app.workspace.openLinkText(file.path, "", openInNewTab);
 	});
 
 	// Hover preview

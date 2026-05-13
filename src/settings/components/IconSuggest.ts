@@ -46,9 +46,9 @@ export class IconSuggest extends AbstractInputSuggest<IconSuggestion> {
 				"minus-circle",
 				"plus-circle",
 				"loader",
-			];
-			return popularIcons
-				.filter((id) => icons.includes(id as any))
+				];
+				return popularIcons
+					.filter((id) => icons.includes(id))
 				.map((id) => ({
 					id,
 					display: id,
@@ -128,7 +128,7 @@ export function createIconInput(
 	// Update preview on input change
 	const updatePreview = () => {
 		const iconName = input.value.trim();
-		if (iconName && getIconIds().includes(iconName as any)) {
+		if (iconName && getIconIds().includes(iconName)) {
 			preview.empty();
 			setIcon(preview, iconName);
 			preview.classList.remove(

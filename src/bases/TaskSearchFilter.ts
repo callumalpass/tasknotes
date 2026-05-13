@@ -1,4 +1,5 @@
 import { TaskInfo } from '../types';
+import { stringifyUnknown } from '../utils/stringUtils';
 
 /**
  * TaskSearchFilter - Filters tasks based on search term across visible columns
@@ -74,7 +75,7 @@ export class TaskSearchFilter {
 					if (Array.isArray(value)) {
 						parts.push(value.join(' '));
 					} else {
-						parts.push(String(value));
+						parts.push(stringifyUnknown(value));
 					}
 				}
 			}
@@ -94,4 +95,3 @@ export class TaskSearchFilter {
 		return term.trim().toLowerCase();
 	}
 }
-

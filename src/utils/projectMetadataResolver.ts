@@ -1,3 +1,5 @@
+import { stringifyUnknown } from "./stringUtils";
+
 export interface ProjectEntry {
 	basename: string;
 	name: string; // with extension
@@ -5,11 +7,11 @@ export interface ProjectEntry {
 	parent: string;
 	title?: string;
 	aliases?: string[];
-	frontmatter?: Record<string, any>;
+	frontmatter?: Record<string, unknown>;
 }
 
 export interface ResolverDeps {
-	getFrontmatter: (entry: ProjectEntry) => Record<string, any> | undefined;
+	getFrontmatter: (entry: ProjectEntry) => Record<string, unknown> | undefined;
 }
 
 export class ProjectMetadataResolver {
@@ -69,7 +71,7 @@ export class ProjectMetadataResolver {
 		return metadataRows;
 	}
 
-	private stringifyFmValue(value: any): string {
+	private stringifyFmValue(value: unknown): string {
 		if (value == null) return "";
 		if (Array.isArray(value)) {
 			const parts = value.map((v) => this.stringifyFmValue(v)).filter(Boolean);
@@ -99,13 +101,13 @@ export class ProjectMetadataResolver {
 				return ml[1].trim();
 			}
 			return trimmed; // plain string
-		}
-		if (t === "number" || t === "boolean") return String(value);
-		// Obsidian frontmatter links are objects with a path field
-		if (t === "object") {
-			const anyVal = value as any;
-			if (typeof anyVal.path === "string") {
-				const p = anyVal.path as string;
+			}
+			if (t === "number" || t === "boolean") return stringifyUnknown(value);
+			// Obsidian frontmatter links are objects with a path field
+			if (t === "object") {
+				const anyVal = value as { path?: unknown };
+				if (typeof anyVal.path === "string") {
+					const p = anyVal.path;
 				const base = p.split("/").pop() || p;
 				return base.replace(/\.md$/i, "");
 			}

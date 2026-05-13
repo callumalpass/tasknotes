@@ -1,7 +1,7 @@
 import { App, Modal, Setting, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { CalendarProvider, ProviderCalendar } from "../services/CalendarProvider";
-import { TranslationKey } from "../i18n";
+import { CalendarProvider, ProviderCalendar, type CalendarEventData } from "../services/CalendarProvider";
+import type { InterpolationValues, TranslationKey } from "../i18n";
 import { format } from "date-fns";
 
 export interface CalendarEventCreationOptions {
@@ -19,7 +19,7 @@ interface WritableCalendarEntry {
 export class CalendarEventCreationModal extends Modal {
 	plugin: TaskNotesPlugin;
 	options: CalendarEventCreationOptions;
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: InterpolationValues) => string;
 
 	private titleInput: HTMLInputElement;
 	private descriptionInput: HTMLTextAreaElement;
@@ -59,7 +59,7 @@ export class CalendarEventCreationModal extends Modal {
 		this.keyboardHandler = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				this.handleSubmit();
+				void this.handleSubmit();
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
@@ -184,7 +184,7 @@ export class CalendarEventCreationModal extends Modal {
 			const { start, end, allDay } = this.options;
 			const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-			const eventData: any = {
+				const eventData: CalendarEventData = {
 				summary: title,
 				start: allDay
 					? { date: format(start, "yyyy-MM-dd") }

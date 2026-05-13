@@ -1,5 +1,5 @@
 import TaskNotesPlugin from "../main";
-import { TaskInfo } from "../types";
+import { Reminder, TaskDependency, TaskInfo, TimeEntry } from "../types";
 import { setIcon } from "obsidian";
 import { calculateTotalTimeSpent } from "../utils/helpers";
 import { format } from "date-fns";
@@ -7,16 +7,92 @@ import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import type { TaskCardOptions } from "../ui/TaskCard";
 import { PropertyMappingService } from "./PropertyMappingService";
+import { normalizeDependencyList } from "../utils/dependencyUtils";
+import { stringifyUnknown, stringifyUnknownArray } from "../utils/stringUtils";
 
 export interface BasesDataItem {
 	key?: string;
-	data?: any;
-	file?: { path?: string } | any;
+	data?: unknown;
+	file?: unknown;
 	path?: string;
-	properties?: Record<string, any>;
-	frontmatter?: Record<string, any>;
+	properties?: Record<string, unknown>;
+	frontmatter?: Record<string, unknown>;
 	name?: string;
-	basesData?: any; // Raw Bases data for formula computation
+	basesData?: unknown; // Raw Bases data for formula computation
+}
+
+type BasesDisplayProperty = {
+	getDisplayName?: () => string;
+};
+
+type BasesQueryLike = {
+	properties?: Record<string, BasesDisplayProperty>;
+	getViewConfig?: (key: string) => string[] | undefined;
+};
+
+type BasesConfigLike = {
+	getOrder?: () => string[];
+};
+
+type BasesControllerLike = {
+	query?: BasesQueryLike;
+	config?: BasesConfigLike;
+	getViewConfig?: () => {
+		order?: string[];
+		columns?: { order?: string[] };
+	};
+};
+
+type BasesContainerLike = {
+	controller?: BasesControllerLike;
+	query?: BasesQueryLike;
+	config?: BasesConfigLike;
+	data?: {
+		groupedData?: BasesGroupData[];
+	};
+};
+
+type BasesGroupData = {
+	key?: {
+		date?: Date;
+		data?: unknown;
+	};
+	entries?: Array<{
+		file?: {
+			path?: string;
+		};
+	}>;
+};
+
+function toStringArray(value: unknown): string[] | undefined {
+	if (value === undefined || value === null) return undefined;
+	return stringifyUnknownArray(value);
+}
+
+function toOptionalString(value: unknown): string | undefined {
+	if (value === undefined || value === null) return undefined;
+	return stringifyUnknown(value);
+}
+
+function toOptionalNumber(value: unknown): number | undefined {
+	if (typeof value === "number") return value;
+	if (typeof value === "string" && value.trim() !== "") {
+		const parsed = Number(value);
+		return Number.isNaN(parsed) ? undefined : parsed;
+	}
+	return undefined;
+}
+
+function toTimeEntries(value: unknown): TimeEntry[] | undefined {
+	return Array.isArray(value) ? (value as TimeEntry[]) : undefined;
+}
+
+function toReminders(value: unknown): Reminder[] | undefined {
+	return Array.isArray(value) ? (value as Reminder[]) : undefined;
+}
+
+function toDependencies(value: unknown): TaskDependency[] | undefined {
+	return value === undefined ? undefined : normalizeDependencyList(value);
 }
 
 /**
@@ -70,7 +146,7 @@ function applySpecialTransformations(propId: string): string {
  * Create TaskInfo object from a single Bases data item
  */
 function createTaskInfoFromProperties(
-	props: Record<string, any>,
+	props: Record<string, unknown>,
 	basesItem: BasesDataItem,
 	plugin?: TaskNotesPlugin
 ): TaskInfo {
@@ -102,15 +178,15 @@ function createTaskInfoFromProperties(
 		"customProperties",
 	]);
 
-	const customProperties: Record<string, any> = {};
+	const customProperties: Record<string, unknown> = {};
 	Object.keys(props).forEach((key) => {
 		if (!knownProperties.has(key)) {
 			customProperties[key] = props[key];
 		}
 	});
 
-	// Calculate total tracked time from time entries
-	const totalTrackedTime = props.timeEntries ? calculateTotalTimeSpent(props.timeEntries) : 0;
+	const timeEntries = toTimeEntries(props.timeEntries);
+	const totalTrackedTime = timeEntries ? calculateTotalTimeSpent(timeEntries) : 0;
 
 	// Get dependency information from DependencyCache if plugin is available
 	let isBlocked = false;
@@ -128,39 +204,31 @@ function createTaskInfoFromProperties(
 
 	return {
 		title:
-			props.title ||
+			toOptionalString(props.title) ||
 			basesItem.name ||
 			basesItem.path?.split("/").pop()?.replace(".md", "") ||
 			"Untitled",
-		status: props.status || plugin?.settings?.defaultTaskStatus || "open",
-		priority: props.priority || "normal",
+		status: toOptionalString(props.status) || plugin?.settings?.defaultTaskStatus || "open",
+		priority: toOptionalString(props.priority) || "normal",
 		path: basesItem.path || "",
-		archived: props.archived || false,
-		due: props.due,
-		scheduled: props.scheduled,
-		contexts: Array.isArray(props.contexts)
-			? props.contexts
-			: props.contexts
-				? [props.contexts]
-				: undefined,
-		projects: Array.isArray(props.projects)
-			? props.projects
-			: props.projects
-				? [props.projects]
-				: undefined,
-		tags: Array.isArray(props.tags) ? props.tags : props.tags ? [props.tags] : undefined,
-		timeEstimate: props.timeEstimate,
-		completedDate: props.completedDate,
-		recurrence: props.recurrence,
-		dateCreated: props.dateCreated,
-		dateModified: props.dateModified,
-		timeEntries: props.timeEntries,
+		archived: props.archived === true,
+		due: toOptionalString(props.due),
+		scheduled: toOptionalString(props.scheduled),
+		contexts: toStringArray(props.contexts),
+		projects: toStringArray(props.projects),
+		tags: toStringArray(props.tags),
+		timeEstimate: toOptionalNumber(props.timeEstimate),
+		completedDate: toOptionalString(props.completedDate),
+		recurrence: toOptionalString(props.recurrence),
+		dateCreated: toOptionalString(props.dateCreated),
+		dateModified: toOptionalString(props.dateModified),
+		timeEntries,
 		totalTrackedTime: totalTrackedTime,
-		reminders: props.reminders,
-		icsEventId: props.icsEventId,
-		complete_instances: props.complete_instances,
-		skipped_instances: props.skipped_instances,
-		blockedBy: props.blockedBy,
+		reminders: toReminders(props.reminders),
+		icsEventId: toStringArray(props.icsEventId),
+		complete_instances: toStringArray(props.complete_instances),
+		skipped_instances: toStringArray(props.skipped_instances),
+		blockedBy: toDependencies(props.blockedBy),
 		blocking: blockingTasks.length > 0 ? blockingTasks : undefined,
 		isBlocked: isBlocked,
 		isBlocking: isBlocking,
@@ -186,7 +254,7 @@ export function createTaskInfoFromBasesData(
 		const taskInfo = createTaskInfoFromProperties(mappedTaskInfo, basesItem, plugin);
 
 		// Preserve file.* properties from original props (they won't be in mappedTaskInfo)
-		const fileProperties: Record<string, any> = {};
+		const fileProperties: Record<string, unknown> = {};
 		Object.keys(props).forEach((key) => {
 			if (key.startsWith("file.")) {
 				fileProperties[key] = props[key];
@@ -259,17 +327,18 @@ function buildTaskCardPropertyLabels(
 	return labels;
 }
 
-export function getBasesVisibleProperties(basesContainer: any): BasesSelectedProperty[] {
+export function getBasesVisibleProperties(basesContainer: unknown): BasesSelectedProperty[] {
 	try {
-		const controller = (basesContainer?.controller ?? basesContainer) as any;
-		const query = (basesContainer?.query ?? controller?.query) as any;
+		const viewContext = basesContainer as BasesContainerLike | undefined;
+		const controller = viewContext?.controller ?? (basesContainer as BasesControllerLike);
+		const query = viewContext?.query ?? controller?.query;
 
 		if (!controller) {
 			return [];
 		}
 
 		// Build index from available properties
-		const propsMap: Record<string, any> | undefined = query?.properties;
+		const propsMap = query?.properties;
 		const idIndex = new Map<string, string>();
 
 		if (propsMap && typeof propsMap === "object") {
@@ -292,7 +361,7 @@ export function getBasesVisibleProperties(basesContainer: any): BasesSelectedPro
 		let order: string[] | undefined;
 
 		// Try public API first (viewContext.config.getOrder())
-		const config = basesContainer?.config ?? controller?.config;
+		const config = viewContext?.config ?? controller?.config;
 		if (config && typeof config.getOrder === "function") {
 			try {
 				order = config.getOrder();
@@ -306,11 +375,11 @@ export function getBasesVisibleProperties(basesContainer: any): BasesSelectedPro
 			const fullCfg = controller?.getViewConfig?.() ?? {};
 			try {
 				order =
-					(query?.getViewConfig?.("order") as string[] | undefined) ??
-					(fullCfg as any)?.order ??
-					(fullCfg as any)?.columns?.order;
+					query?.getViewConfig?.("order") ??
+					fullCfg.order ??
+					fullCfg.columns?.order;
 			} catch {
-				order = (fullCfg as any)?.order ?? (fullCfg as any)?.columns?.order;
+				order = fullCfg.order ?? fullCfg.columns?.order;
 			}
 		}
 
@@ -339,7 +408,7 @@ export async function renderTaskNotesInBasesView(
 	container: HTMLElement,
 	taskNotes: TaskInfo[],
 	plugin: TaskNotesPlugin,
-	basesContainer?: any,
+	basesContainer?: unknown,
 	taskElementsMap?: Map<string, HTMLElement>,
 	precomputedVisibleProperties?: string[],
 	precomputedCardOptions?: Partial<TaskCardOptions>
@@ -455,8 +524,8 @@ export async function renderGroupedTasksInBasesView(
 	container: HTMLElement,
 	taskNotes: TaskInfo[],
 	plugin: TaskNotesPlugin,
-	viewContext: any,
-	pathToProps: Map<string, Record<string, any>>,
+	viewContext: unknown,
+	pathToProps: Map<string, Record<string, unknown>>,
 	taskElementsMap?: Map<string, HTMLElement>
 ): Promise<void> {
 	const { createTaskCard } = await import("../ui/TaskCard");
@@ -517,7 +586,7 @@ export async function renderGroupedTasksInBasesView(
 	}
 
 	// Get groupedData from public API
-	const groupedData = viewContext?.data?.groupedData;
+	const groupedData = (viewContext as BasesContainerLike | undefined)?.data?.groupedData;
 	if (!Array.isArray(groupedData) || groupedData.length === 0) {
 		// No groups, fall back to flat rendering (pass precomputed properties)
 		await renderTaskNotesInBasesView(
@@ -581,7 +650,7 @@ export async function renderGroupedTasksInBasesView(
 		// Extract value from Bases Value object
 		// Bases returns different structures: { date: Date } for date properties, { data: value } for others
 		const keyObj = group.key;
-		let groupKey: any;
+		let groupKey: unknown;
 
 		// Try to extract the actual value from the Bases Value object
 		if (keyObj?.date instanceof Date) {
@@ -606,7 +675,7 @@ export async function renderGroupedTasksInBasesView(
 		} else if (groupKey === null || groupKey === undefined || groupKey === "") {
 			groupName = "None";
 		} else {
-			groupName = String(groupKey);
+			groupName = stringifyUnknown(groupKey) || "None";
 		}
 		const groupEntries = group.entries || [];
 
@@ -787,7 +856,7 @@ export function renderBasesDataItem(
 	header.textContent = `Item ${index + 1}`;
 	itemEl.appendChild(header);
 
-	if ((item as any).path) {
+	if (item.path) {
 		const pathEl = doc.createElement("div");
 		pathEl.classList.remove(
 			"tn-static-color-var-color-accent-d2cad743",
@@ -816,11 +885,11 @@ export function renderBasesDataItem(
 			"tn-static-padding-20px-ebe8e48c"
 		);
 		pathEl.classList.add("tn-static-font-size-12px-65574819");
-		pathEl.textContent = `Path: ${(item as any).path}`;
+		pathEl.textContent = `Path: ${item.path}`;
 		itemEl.appendChild(pathEl);
 	}
 
-	const props = (item as any).properties;
+	const props = item.properties;
 	if (props && typeof props === "object") {
 		const propsEl = doc.createElement("div");
 		propsEl.classList.remove(

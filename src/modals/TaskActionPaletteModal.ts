@@ -1,4 +1,4 @@
-import { App, FuzzySuggestModal, FuzzyMatch, setIcon, Notice } from "obsidian";
+import { App, FuzzySuggestModal, FuzzyMatch, setIcon, Notice, TFile } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 
@@ -98,7 +98,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["due", "date", "deadline", "set", "change"],
 				isApplicable: () => true,
 				execute: async (task) => {
-					this.plugin.openDueDateModal(task);
+					void this.plugin.openDueDateModal(task);
 				},
 			},
 			{
@@ -110,7 +110,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["scheduled", "date", "schedule", "set", "change"],
 				isApplicable: () => true,
 				execute: async (task) => {
-					this.plugin.openScheduledDateModal(task);
+					void this.plugin.openScheduledDateModal(task);
 				},
 			},
 			{
@@ -241,10 +241,10 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["open", "file", "editor", "edit"],
 				isApplicable: () => true,
 				execute: async (task) => {
-					const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
-					if (file) {
-						await this.plugin.app.workspace.getLeaf(true).openFile(file as any);
-					}
+						const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+						if (file instanceof TFile) {
+							await this.plugin.app.workspace.getLeaf(true).openFile(file);
+						}
 				},
 			},
 			{
@@ -274,12 +274,12 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				isApplicable: () => true,
 				execute: async (task) => {
 					try {
-						const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
-						if (file) {
-							const linkText = this.plugin.app.metadataCache.fileToLinktext(
-								file as any,
-								""
-							);
+							const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+							if (file instanceof TFile) {
+								const linkText = this.plugin.app.metadataCache.fileToLinktext(
+									file,
+									""
+								);
 							await navigator.clipboard.writeText(`[[${linkText}]]`);
 							new Notice("Task link copied to clipboard");
 						}

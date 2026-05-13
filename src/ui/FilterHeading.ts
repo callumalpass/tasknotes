@@ -17,7 +17,7 @@ export class FilterHeading {
 	constructor(container: HTMLElement, plugin: TaskNotesPlugin) {
 		this.container = container;
 		this.plugin = plugin;
-		this.instanceId = "fh-" + Math.random().toString(36).substr(2, 9);
+		this.instanceId = "fh-" + Math.random().toString(36).slice(2, 11);
 		this.render();
 	}
 

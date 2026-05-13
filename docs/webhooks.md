@@ -147,48 +147,11 @@ A webhook can specify `transformFile` pointing to a file in your vault.
 
 Supported file types:
 
-- `.js`: JavaScript transform function
 - `.json`: event template map with variable interpolation
 
 If transform execution fails, TaskNotes falls back to original payload.
 
-### JavaScript Transform Files
-
-Expected format:
-
-```javascript
-function transform(payload) {
-  return payload;
-}
-```
-
-Execution model:
-
-- File is read from the vault.
-- Code is executed with `new Function(...)`.
-- Returned value becomes the outgoing request body.
-
-Important behavior:
-
-- Returning `null` does not skip delivery. Payload body becomes JSON `null`.
-- Returning an array does not fan out to multiple URLs. Array is posted to the configured single URL.
-- `console.log` is available because code runs in plugin runtime context.
-
-Example:
-
-```javascript
-function transform(payload) {
-  if (payload.event === "task.completed") {
-    return {
-      text: `Completed: ${payload.data.task.title}`,
-      event: payload.event,
-      at: payload.timestamp,
-    };
-  }
-
-  return payload;
-}
-```
+JavaScript transform files are no longer supported.
 
 ### JSON Transform Files
 

@@ -1,3 +1,5 @@
+import { stringifyUnknown } from "./stringUtils";
+
 export interface ProjectPropertyFilter {
 	key: string;
 	value: string;
@@ -49,7 +51,7 @@ export function matchesProjectProperty(
 		return false;
 	}
 
-	const actualValue = (frontmatter as Record<string, unknown>)[filter.key];
+	const actualValue = (frontmatter)[filter.key];
 
 	const expected = normalizePropertyValue(filter.value);
 	if (expected.length === 0) {
@@ -78,7 +80,7 @@ export function matchesProjectProperty(
 				return false;
 			}
 		}
-		return String(value).toLowerCase() === normalizedExpected;
+		return stringifyUnknown(value).toLowerCase() === normalizedExpected;
 	};
 
 	return matchesValue(actualValue);

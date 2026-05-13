@@ -16,6 +16,10 @@ import { FileSuggestHelper } from "../suggest/FileSuggestHelper";
 import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 
+type ProjectCompletion = Completion & {
+	projectMetadata?: string[];
+};
+
 /**
  * CodeMirror autocomplete extension for NLP triggers with configurable trigger support
  *
@@ -135,14 +139,15 @@ export function createNLPAutocomplete(plugin: TaskNotesPlugin): Extension[] {
 		// Custom rendering for project suggestions with metadata
 		addToOptions: [
 			{
-				render: (completion: any, _state: any, _view: any) => {
-					// Only render custom content for project suggestions with metadata
-					if (!completion.projectMetadata) return null;
+					render: (completion: Completion, _state: unknown, _view: unknown) => {
+						const projectCompletion = completion as ProjectCompletion;
+						// Only render custom content for project suggestions with metadata
+						if (!projectCompletion.projectMetadata) return null;
 
 					const container = activeDocument.createElement("div");
 					container.className = "cm-project-suggestion__metadata";
 
-					const metadata = completion.projectMetadata;
+						const metadata = projectCompletion.projectMetadata;
 					for (const row of metadata) {
 						const metaRow = activeDocument.createElement("div");
 						metaRow.className = "cm-project-suggestion__meta";
@@ -306,7 +311,7 @@ async function getFileSuggestions(
 				let metadataRows: string[] = [];
 				if (file && rowConfigs.length > 0) {
 					const cache = plugin.app.metadataCache.getFileCache(file);
-					const frontmatter: Record<string, any> = cache?.frontmatter || {};
+					const frontmatter: Record<string, unknown> = cache?.frontmatter || {};
 					const mapped = plugin.fieldMapper.mapFromFrontmatter(
 						frontmatter,
 						file.path,
@@ -315,8 +320,8 @@ async function getFileSuggestions(
 
 					const title = typeof mapped.title === "string" ? mapped.title : "";
 					const aliases = Array.isArray(frontmatter["aliases"])
-						? (frontmatter["aliases"] as any[]).filter(
-								(a: any) => typeof a === "string"
+						? (frontmatter["aliases"]).filter(
+								(a: unknown) => typeof a === "string"
 							)
 						: [];
 
@@ -344,7 +349,7 @@ async function getFileSuggestions(
 					info: "Project",
 					// Add metadata as a custom property for the render function
 					projectMetadata: metadataRows.length > 0 ? metadataRows : undefined,
-				} as any;
+				};
 			});
 		}
 

@@ -1,4 +1,4 @@
-/* eslint-disable @microsoft/sdl/no-inner-html */
+/* eslint-disable @microsoft/sdl/no-inner-html -- This modal renders controlled plugin-owned HTML fragments. */
 import { App, Modal, Notice, Setting } from "obsidian";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { TimeEntry, TaskInfo } from "../types";
@@ -11,7 +11,7 @@ export class TimeEntryEditorModal extends Modal {
 	private task: TaskInfo;
 	private timeEntries: TimeEntry[];
 	private onSave: (timeEntries: TimeEntry[]) => void;
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
 	private entriesContainerEl: HTMLElement;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 	private totalEl: HTMLElement | null = null;

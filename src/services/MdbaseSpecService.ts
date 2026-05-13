@@ -1,5 +1,6 @@
  
 import TaskNotesPlugin from "../main";
+import { FieldMapping } from "../types";
 import { UserMappedField } from "../types/settings";
 
 /**
@@ -279,11 +280,11 @@ export class MdbaseSpecService {
 	 */
 	private addRoleField(
 		lines: string[],
-		internalName: string,
+		internalName: keyof FieldMapping,
 		def: FieldDef,
 		indent = 2,
 	): void {
-		const fieldName = this.plugin.fieldMapper.toUserField(internalName as any);
+		const fieldName = this.plugin.fieldMapper.toUserField(internalName);
 		this.addField(lines, fieldName, { ...def, tn_role: internalName }, indent);
 	}
 

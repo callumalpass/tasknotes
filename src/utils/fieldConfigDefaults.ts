@@ -3,6 +3,7 @@ import type {
 	TaskModalFieldsConfig,
 	FieldGroupConfig,
 	FieldGroup,
+	UserMappedField,
 } from "../types/settings";
 
 /**
@@ -209,7 +210,7 @@ export function getFieldsByGroup(
  * Migrate existing user fields to the new field configuration system
  */
 export function migrateUserFieldsToFieldConfig(
-	existingUserFields: any[]
+	existingUserFields: UserMappedField[]
 ): ModalFieldConfig[] {
 	if (!existingUserFields || existingUserFields.length === 0) {
 		return [];
@@ -232,7 +233,7 @@ export function migrateUserFieldsToFieldConfig(
  */
 export function initializeFieldConfig(
 	existingConfig?: TaskModalFieldsConfig,
-	userFields?: any[]
+	userFields?: UserMappedField[]
 ): TaskModalFieldsConfig {
 	// If we have an existing config, return it
 	if (existingConfig) {

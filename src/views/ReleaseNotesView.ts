@@ -387,7 +387,7 @@ export class ReleaseNotesView extends ItemView {
 			releaseContentWithNotice,
 			content,
 			"",
-			this as any
+			this
 		);
 
 		// Toggle functionality

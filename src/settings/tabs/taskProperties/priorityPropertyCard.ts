@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { Notice, setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {

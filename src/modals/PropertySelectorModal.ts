@@ -7,7 +7,7 @@ import { Modal, App, Setting } from "obsidian";
 export class PropertySelectorModal extends Modal {
 	private availableProperties: Array<{ id: string; label: string }>;
 	private currentSelection: string[];
-	private onSubmit: (selected: string[]) => void;
+	private onSubmit: (selected: string[]) => unknown;
 	private tempSelection: string[];
 	private modalTitle: string;
 	private modalDescription: string;
@@ -17,7 +17,7 @@ export class PropertySelectorModal extends Modal {
 		app: App,
 		availableProperties: Array<{ id: string; label: string }>,
 		currentSelection: string[],
-		onSubmit: (selected: string[]) => void,
+		onSubmit: (selected: string[]) => unknown,
 		modalTitle = "Select Task Card Properties",
 		modalDescription = "Choose which properties to display in task cards. Selected properties will appear in the order shown below."
 	) {
@@ -38,7 +38,7 @@ export class PropertySelectorModal extends Modal {
 		this.keyboardHandler = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				this.onSubmit(this.tempSelection);
+				this.submitSelection();
 				this.close();
 			}
 		};
@@ -125,9 +125,17 @@ export class PropertySelectorModal extends Modal {
 			cls: "mod-cta",
 		});
 		saveButton.addEventListener("click", () => {
-			this.onSubmit(this.tempSelection);
+			this.submitSelection();
 			this.close();
 		});
+	}
+
+	private submitSelection(): void {
+		void Promise.resolve()
+			.then(() => this.onSubmit(this.tempSelection))
+			.catch((error: unknown) => {
+				console.error("TaskNotes property selection callback failed:", error);
+			});
 	}
 
 	onClose() {

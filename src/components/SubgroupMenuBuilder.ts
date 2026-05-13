@@ -1,4 +1,5 @@
 import { Menu } from "obsidian";
+import type { MenuItem } from "obsidian";
 import { FilterOptions, FilterQuery, TaskGroupKey } from "../types";
 import type TaskNotesPlugin from "../main";
 
@@ -89,21 +90,21 @@ export class SubgroupMenuBuilder {
 		onSelect: (key: TaskGroupKey) => void,
 		plugin: TaskNotesPlugin
 	): void {
-		const primary = (currentQuery.groupKey || "none") as TaskGroupKey;
-		const subKey = (currentQuery.subgroupKey || "none") as TaskGroupKey;
+		const primary = (currentQuery.groupKey || "none");
+		const subKey = (currentQuery.subgroupKey || "none");
 		const options = SubgroupMenuBuilder.buildOptions(primary, filterOptions, plugin);
 
 		// Visual separator and header
 		menu.addSeparator();
-		menu.addItem((item: any) => {
-			item.setTitle(
-				SubgroupMenuBuilder.translate(plugin, "ui.filterBar.subgroupLabel", "SUBGROUP")
-			);
+			menu.addItem((item: MenuItem) => {
+				item.setTitle(
+					SubgroupMenuBuilder.translate(plugin, "ui.filterBar.subgroupLabel", "SUBGROUP")
+				);
 			if (typeof item.setDisabled === "function") item.setDisabled(true);
 		});
 
 		Object.entries(options).forEach(([key, label]) => {
-			menu.addItem((item: any) => {
+			menu.addItem((item: MenuItem) => {
 				item.setTitle(label);
 				if (subKey === key) item.setIcon("check");
 				item.onClick(() => onSelect(key as TaskGroupKey));

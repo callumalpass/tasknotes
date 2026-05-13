@@ -7,7 +7,8 @@ import {
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
 import { TaskNotesSettings } from "./types/settings";
-import { DEFAULT_SETTINGS } from "./settings/defaults";
+import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./settings/defaults";
+import { initializeFieldConfig } from "./utils/fieldConfigDefaults";
 import { generateBasesFileTemplate } from "./templates/defaultBasesFiles";
 import {
 	MINI_CALENDAR_VIEW_TYPE,
@@ -15,6 +16,9 @@ import {
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED,
 	EVENT_DATE_CHANGED,
+	FilterCondition,
+	FilterGroup,
+	FilterNode,
 } from "./types";
 
 import { TaskCreationModal } from "./modals/TaskCreationModal";
@@ -38,6 +42,7 @@ import { AutoArchiveService } from "./services/AutoArchiveService";
 import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
 import { formatDateForStorage, parseDateToLocal, getTodayLocal } from "./utils/dateUtils";
+import { stringifyUnknownArray } from "./utils/stringUtils";
 import { ICSSubscriptionService } from "./services/ICSSubscriptionService";
 import { ICSNoteService } from "./services/ICSNoteService";
 import { StatusBarService } from "./services/StatusBarService";
@@ -59,6 +64,47 @@ import {
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
+
+type LoadedSettingsData = Partial<TaskNotesSettings> &
+	Record<string, unknown> & {
+		statusSuggestionTrigger?: string;
+	};
+
+type SearchViewLike = {
+	setQuery?: (query: string) => void;
+	searchComponent?: {
+		setValue?: (query: string) => void;
+	};
+	searchInputEl?: HTMLInputElement;
+	startSearch?: () => void;
+};
+
+type ProjectFilterBarLike = {
+	currentQuery: FilterGroup;
+	updateFilterBuilder: () => void;
+	emit: (eventName: string, query: FilterGroup) => void;
+};
+
+function frontmatterString(value: unknown): string | undefined {
+	if (value === null || value === undefined) return undefined;
+	if (typeof value === "string") return value;
+	if (typeof value === "number" || typeof value === "boolean") return String(value);
+	return undefined;
+}
+
+function frontmatterStringArray(value: unknown): string[] | undefined {
+	if (value === null || value === undefined) return undefined;
+	return stringifyUnknownArray(value);
+}
+
+function frontmatterNumber(value: unknown): number | undefined {
+	if (typeof value === "number") return value;
+	if (typeof value === "string" && value.trim() !== "") {
+		const parsed = Number(value);
+		return Number.isNaN(parsed) ? undefined : parsed;
+	}
+	return undefined;
+}
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
@@ -242,7 +288,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
-			this.initializeAfterLayoutReady();
+			void this.initializeAfterLayoutReady();
 		});
 
 		// At the very end of onload, resolve the promise to signal readiness
@@ -260,7 +306,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Initialize heavy services lazily in the background
 	 */
 	initializeServicesLazily(): void {
-		import("./bootstrap/pluginBootstrap").then(({ initializeServicesLazily }) => {
+		void import("./bootstrap/pluginBootstrap").then(({ initializeServicesLazily }) => {
 			initializeServicesLazily(this);
 		});
 	}
@@ -283,11 +329,6 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Public method for views to wait for readiness
 	 */
 	async onReady(): Promise<void> {
-		// If readyPromise doesn't exist, plugin hasn't started onload yet
-		if (!this.readyPromise) {
-			throw new Error("Plugin not yet initialized");
-		}
-
 		await this.readyPromise;
 	}
 
@@ -447,7 +488,7 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		} else if (force) {
 			// Full cache clear if forcing
-			this.cacheManager.clearAllCaches();
+			void this.cacheManager.clearAllCaches();
 
 			// Clear task link detection cache completely
 			if (this.taskLinkDetectionService) {
@@ -522,7 +563,7 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		const loadedData = await this.loadData();
+		const loadedData = (await this.loadData()) as LoadedSettingsData | null;
 
 		// Migration: Remove old useNativeMetadataCache setting if it exists
 		if (loadedData && "useNativeMetadataCache" in loadedData) {
@@ -544,32 +585,28 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		// Migration: Migrate statusSuggestionTrigger to nlpTriggers if needed
-		if (
-			loadedData &&
-			!loadedData.nlpTriggers &&
-			loadedData.statusSuggestionTrigger !== undefined
-		) {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const { DEFAULT_NLP_TRIGGERS } = require("./settings/defaults");
-			loadedData.nlpTriggers = {
-				triggers: [...DEFAULT_NLP_TRIGGERS.triggers],
-			};
-			// Update status trigger if it was customized
-			const statusTriggerIndex = loadedData.nlpTriggers.triggers.findIndex(
-				(t: any) => t.propertyId === "status"
-			);
+			if (
+				loadedData &&
+				!loadedData.nlpTriggers &&
+				loadedData.statusSuggestionTrigger !== undefined
+			) {
+				loadedData.nlpTriggers = {
+					triggers: [...DEFAULT_NLP_TRIGGERS.triggers],
+				};
+				// Update status trigger if it was customized
+				const statusTriggerIndex = loadedData.nlpTriggers.triggers.findIndex(
+					(trigger) => trigger.propertyId === "status"
+				);
 			if (statusTriggerIndex !== -1 && loadedData.statusSuggestionTrigger) {
 				loadedData.nlpTriggers.triggers[statusTriggerIndex].trigger =
 					loadedData.statusSuggestionTrigger;
 			}
 		}
 
-		// Migration: Initialize modal fields configuration if not present
-		if (loadedData && !loadedData.modalFieldsConfig) {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const { initializeFieldConfig } = require("./utils/fieldConfigDefaults");
-			loadedData.modalFieldsConfig = initializeFieldConfig(undefined, loadedData.userFields);
-		}
+			// Migration: Initialize modal fields configuration if not present
+			if (loadedData && !loadedData.modalFieldsConfig) {
+				loadedData.modalFieldsConfig = initializeFieldConfig(undefined, loadedData.userFields);
+			}
 
 		// Migration: Force enableBases to true (issue #1187)
 		// The enableBases toggle was removed in V4 (bases is always-on), but users who
@@ -623,10 +660,10 @@ export default class TaskNotesPlugin extends Plugin {
 			savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
 		};
 
-		// Check if we added any new field mappings or calendar settings and save if needed
-		const hasNewFields = Object.keys(DEFAULT_SETTINGS.fieldMapping).some(
-			(key) => !loadedData?.fieldMapping?.[key]
-		);
+			// Check if we added any new field mappings or calendar settings and save if needed
+			const hasNewFields = Object.keys(DEFAULT_SETTINGS.fieldMapping).some(
+				(key) => !loadedData?.fieldMapping?.[key as keyof typeof DEFAULT_SETTINGS.fieldMapping]
+			);
 		const hasNewCalendarSettings = Object.keys(DEFAULT_SETTINGS.calendarViewSettings).some(
 			(key) =>
 				!loadedData?.calendarViewSettings?.[
@@ -860,9 +897,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 			await this.revealLeafReady(searchLeaf);
 
-			// Set the search query to "tag:#tagname"
-			const searchQuery = `tag:${tag}`;
-			const searchView = searchLeaf.view as any;
+				// Set the search query to "tag:#tagname"
+				const searchQuery = `tag:${tag}`;
+				const searchView = searchLeaf.view as SearchViewLike;
 
 			// Try different methods to set the search query based on Obsidian version
 			if (typeof searchView.setQuery === "function") {
@@ -922,7 +959,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// before passing to moment() to ensure correct day is used
 			// Fix for issue #1223: Skip conversion if the date is already local (e.g., from getTodayLocal())
 			const localDate = options?.isAlreadyLocal ? date : convertUTCToLocalCalendarDate(date);
-			const moment = (window as Window & { moment: (date: Date) => any }).moment(localDate);
+			const moment = (window as Window & { moment: (date: Date) => unknown }).moment(localDate);
 
 			// Get all daily notes to check if one exists for this date
 			const allDailyNotes = getAllDailyNotes();
@@ -1096,7 +1133,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Read existing frontmatter and body from the file
 		const metadata = this.app.metadataCache.getFileCache(activeFile);
-		const frontmatter: Record<string, any> = metadata?.frontmatter || {};
+		const frontmatter: Record<string, unknown> = metadata?.frontmatter || {};
 		const content = await this.app.vault.read(activeFile);
 
 		// Extract body content (everything after frontmatter)
@@ -1110,37 +1147,26 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Build a TaskInfo object from the note's existing data
 		// Use defaults for required fields that don't exist
-		// Use ?? (nullish coalescing) to properly handle empty string defaults
-		const now = getCurrentTimestamp();
-		const taskInfo: TaskInfo = {
-			path: activeFile.path,
-			title: frontmatter.title || activeFile.basename,
-			status: frontmatter.status ?? this.settings.defaultTaskStatus,
-			priority: frontmatter.priority ?? this.settings.defaultTaskPriority,
-			archived: false,
-			due: frontmatter.due || undefined,
-			scheduled: frontmatter.scheduled || undefined,
-			contexts: frontmatter.contexts
-				? Array.isArray(frontmatter.contexts)
-					? frontmatter.contexts
-					: [frontmatter.contexts]
-				: undefined,
-			projects: frontmatter.projects
-				? Array.isArray(frontmatter.projects)
-					? frontmatter.projects
-					: [frontmatter.projects]
-				: undefined,
-			tags: frontmatter.tags
-				? Array.isArray(frontmatter.tags)
-					? frontmatter.tags
-					: [frontmatter.tags]
-				: [],
-			timeEstimate: frontmatter.timeEstimate || undefined,
-			recurrence: frontmatter.recurrence || undefined,
-			dateCreated: frontmatter.dateCreated || now,
-			dateModified: now,
-			details: details,
-		};
+			// Use ?? (nullish coalescing) to properly handle empty string defaults
+			const now = getCurrentTimestamp();
+			const taskInfo: TaskInfo = {
+				path: activeFile.path,
+				title: frontmatterString(frontmatter.title) || activeFile.basename,
+				status: frontmatterString(frontmatter.status) ?? this.settings.defaultTaskStatus,
+				priority:
+					frontmatterString(frontmatter.priority) ?? this.settings.defaultTaskPriority,
+				archived: false,
+				due: frontmatterString(frontmatter.due),
+				scheduled: frontmatterString(frontmatter.scheduled),
+				contexts: frontmatterStringArray(frontmatter.contexts),
+				projects: frontmatterStringArray(frontmatter.projects),
+				tags: frontmatterStringArray(frontmatter.tags) ?? [],
+				timeEstimate: frontmatterNumber(frontmatter.timeEstimate),
+				recurrence: frontmatterString(frontmatter.recurrence),
+				dateCreated: frontmatterString(frontmatter.dateCreated) || now,
+				dateModified: now,
+				details: details,
+			};
 
 		// Open the task edit modal with the constructed TaskInfo
 		new TaskEditModal(this.app, this, {
@@ -1187,7 +1213,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Legacy method: Add a project filter condition (no longer used)
 	 * Uses the same pattern as search to ensure correct AND/OR logic
 	 */
-	private addProjectCondition(filterBar: any, projectName: string): void {
+		private addProjectCondition(filterBar: ProjectFilterBarLike, projectName: string): void {
 		// Remove existing project conditions first
 		this.removeProjectConditions(filterBar);
 
@@ -1197,19 +1223,19 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		// Create condition for wikilink format [[Project Name]]
-		const projectCondition = {
-			type: "condition",
-			id: `project_${this.generateFilterId()}`,
-			property: "projects",
-			operator: "contains",
-			value: `[[${projectName}]]`,
-		};
+			const projectCondition: FilterCondition = {
+				type: "condition",
+				id: `project_${this.generateFilterId()}`,
+				property: "projects",
+				operator: "contains",
+				value: `[[${projectName}]]`,
+			};
 
-		// Get existing non-project filters
-		const existingFilters = filterBar.currentQuery.children.filter((child: any) => {
-			return !(
-				child.type === "condition" &&
-				child.property === "projects" &&
+			// Get existing non-project filters
+			const existingFilters = filterBar.currentQuery.children.filter((child: FilterNode) => {
+				return !(
+					child.type === "condition" &&
+					child.property === "projects" &&
 				child.operator === "contains" &&
 				child.id.startsWith("project_")
 			);
@@ -1218,12 +1244,12 @@ export default class TaskNotesPlugin extends Plugin {
 		if (existingFilters.length === 0) {
 			// No existing filters, just add the project condition
 			filterBar.currentQuery.children = [projectCondition];
-		} else {
-			// Create a group containing all existing filters
-			const existingFiltersGroup = {
-				type: "group",
-				id: this.generateFilterId(),
-				conjunction: filterBar.currentQuery.conjunction, // Preserve the current conjunction
+			} else {
+				// Create a group containing all existing filters
+				const existingFiltersGroup: FilterGroup = {
+					type: "group",
+					id: this.generateFilterId(),
+					conjunction: filterBar.currentQuery.conjunction, // Preserve the current conjunction
 				children: existingFilters,
 			};
 
@@ -1240,13 +1266,13 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Remove existing project filter conditions
 	 */
-	private removeProjectConditions(filterBar: any): void {
+		private removeProjectConditions(filterBar: ProjectFilterBarLike): void {
 		if (!Array.isArray(filterBar.currentQuery.children)) {
 			filterBar.currentQuery.children = [];
 			return;
 		}
 
-		filterBar.currentQuery.children = filterBar.currentQuery.children.filter((child: any) => {
+			filterBar.currentQuery.children = filterBar.currentQuery.children.filter((child) => {
 			if (child.type === "condition") {
 				return !(
 					child.property === "projects" &&
@@ -1262,7 +1288,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Generate a unique filter ID
 	 */
 	private generateFilterId(): string {
-		return `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+		return `filter-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 	}
 
 	/**
@@ -1317,11 +1343,11 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Opens a date/time picker modal for the given task date field.
 	 */
 	async openDueDateModal(task: TaskInfo) {
-		this.openTaskDatePicker(task, "due");
+		void this.openTaskDatePicker(task, "due");
 	}
 
 	async openScheduledDateModal(task: TaskInfo) {
-		this.openTaskDatePicker(task, "scheduled");
+		void this.openTaskDatePicker(task, "scheduled");
 	}
 
 	private async openTaskDatePicker(task: TaskInfo, field: "due" | "scheduled") {

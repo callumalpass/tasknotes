@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
-import { TranslationKey } from "../i18n";
+import type { InterpolationValues, TranslationKey } from "../i18n";
 
 export class AutoExportService {
 	private plugin: TaskNotesPlugin;
@@ -13,7 +13,7 @@ export class AutoExportService {
 		this.plugin = plugin;
 	}
 
-	private translate(key: TranslationKey, variables?: Record<string, any>): string {
+	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -37,7 +37,7 @@ export class AutoExportService {
 			await this.performExport();
 			// Update next export time
 			this.nextExportTime = new Date(Date.now() + intervalMs);
-		}, intervalMs) as unknown as number;
+		}, intervalMs);
 	}
 
 	/**

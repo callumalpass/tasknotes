@@ -1,11 +1,43 @@
-import { IncomingMessage, ServerResponse } from "http";
+import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 import { requestUrl } from "obsidian";
 import { BaseController } from "./BaseController";
 import { WebhookConfig, WebhookDelivery, WebhookEvent, WebhookPayload } from "../types";
-import { createHash, createHmac } from "crypto";
 import TaskNotesPlugin from "../main";
 
 import { Get, Post, Delete } from "../utils/OpenAPIDecorators";
+
+const WEBHOOK_EVENTS = new Set<WebhookEvent>([
+	"task.created",
+	"task.updated",
+	"task.deleted",
+	"task.completed",
+	"task.archived",
+	"task.unarchived",
+	"time.started",
+	"time.stopped",
+	"pomodoro.started",
+	"pomodoro.completed",
+	"pomodoro.interrupted",
+	"recurring.instance.completed",
+	"recurring.instance.skipped",
+	"reminder.triggered",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isWebhookEvent(value: unknown): value is WebhookEvent {
+	return typeof value === "string" && WEBHOOK_EVENTS.has(value as WebhookEvent);
+}
+
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
+function optionalString(value: unknown): string | undefined {
+	return typeof value === "string" && value.length > 0 ? value : undefined;
+}
 
 export class WebhookController extends BaseController {
 	private webhooks: Map<string, WebhookConfig> = new Map();
@@ -17,11 +49,12 @@ export class WebhookController extends BaseController {
 	}
 
 	@Post("/api/webhooks")
-	async registerWebhook(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async registerWebhook(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
+			const requestBody = isRecord(body) ? body : {};
 
-			if (!body.url || typeof body.url !== "string") {
+			if (typeof requestBody.url !== "string") {
 				this.sendResponse(
 					res,
 					400,
@@ -30,30 +63,36 @@ export class WebhookController extends BaseController {
 				return;
 			}
 
-			if (!body.events || !Array.isArray(body.events) || body.events.length === 0) {
+			if (
+				!Array.isArray(requestBody.events) ||
+				requestBody.events.length === 0 ||
+				!requestBody.events.every(isWebhookEvent)
+			) {
 				this.sendResponse(
 					res,
 					400,
-					this.errorResponse("Events array is required and must not be empty")
+					this.errorResponse(
+						"Events array is required and must contain valid webhook events"
+					)
 				);
 				return;
 			}
 
 			// Generate webhook ID and secret if not provided
-			const id = body.id || this.generateWebhookId();
-			const secret = body.secret || this.generateWebhookSecret();
+			const id = optionalString(requestBody.id) ?? this.generateWebhookId();
+			const secret = optionalString(requestBody.secret) ?? this.generateWebhookSecret();
 
 			const webhook: WebhookConfig = {
 				id,
-				url: body.url,
-				events: body.events,
+				url: requestBody.url,
+				events: requestBody.events,
 				secret,
-				active: body.active !== false,
+				active: requestBody.active !== false,
 				createdAt: new Date().toISOString(),
 				failureCount: 0,
 				successCount: 0,
-				transformFile: body.transformFile || undefined,
-				corsHeaders: body.corsHeaders !== false, // Default to true unless explicitly set to false
+				transformFile: optionalString(requestBody.transformFile),
+				corsHeaders: requestBody.corsHeaders !== false, // Default to true unless explicitly set to false
 			};
 
 			this.webhooks.set(id, webhook);
@@ -68,13 +107,13 @@ export class WebhookController extends BaseController {
 						"Webhook registered successfully. Save the secret for signature validation.",
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error) {
+			this.sendResponse(res, 400, this.errorResponse(getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/webhooks")
-	async listWebhooks(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async listWebhooks(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const webhooks = Array.from(this.webhooks.values()).map((webhook) => ({
 				...webhook,
@@ -89,15 +128,15 @@ export class WebhookController extends BaseController {
 					total: webhooks.length,
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error) {
+			this.sendResponse(res, 500, this.errorResponse(getErrorMessage(error)));
 		}
 	}
 
 	@Delete("/api/webhooks/:id")
 	async deleteWebhook(
-		req: IncomingMessage,
-		res: ServerResponse,
+		req: HTTPRequestLike,
+		res: HTTPResponseLike,
 		params?: Record<string, string>
 	): Promise<void> {
 		try {
@@ -122,13 +161,13 @@ export class WebhookController extends BaseController {
 					message: "Webhook deleted successfully",
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error) {
+			this.sendResponse(res, 500, this.errorResponse(getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/webhooks/deliveries")
-	async getWebhookDeliveries(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getWebhookDeliveries(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			// Return recent deliveries from queue
 			const deliveries = this.webhookDeliveryQueue.slice(-100); // Last 100 deliveries
@@ -141,12 +180,12 @@ export class WebhookController extends BaseController {
 					total: deliveries.length,
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error) {
+			this.sendResponse(res, 500, this.errorResponse(getErrorMessage(error)));
 		}
 	}
 
-	async triggerWebhook(event: WebhookEvent, data: any): Promise<void> {
+	async triggerWebhook(event: WebhookEvent, data: unknown): Promise<void> {
 		// Fire and forget - don't block the main operation
 		setImmediate(() => {
 			this.processWebhookTrigger(event, data).catch((error) => {
@@ -155,7 +194,7 @@ export class WebhookController extends BaseController {
 		});
 	}
 
-	private async processWebhookTrigger(event: WebhookEvent, data: any): Promise<void> {
+	private async processWebhookTrigger(event: WebhookEvent, data: unknown): Promise<void> {
 		const relevantWebhooks = Array.from(this.webhooks.values()).filter(
 			(webhook) => webhook.active && webhook.events.includes(event)
 		);
@@ -164,8 +203,11 @@ export class WebhookController extends BaseController {
 			return;
 		}
 
-		const adapter = this.plugin.app.vault.adapter as any;
-		let vaultPath = null;
+		const adapter = this.plugin.app.vault.adapter as {
+			basePath?: unknown;
+			path?: unknown;
+		};
+		let vaultPath: string | undefined;
 		try {
 			if ("basePath" in adapter && typeof adapter.basePath === "string") {
 				vaultPath = adapter.basePath;
@@ -188,7 +230,7 @@ export class WebhookController extends BaseController {
 
 		for (const webhook of relevantWebhooks) {
 			// Apply transformation if specified
-			let payload = basePayload;
+			let payload: unknown = basePayload;
 			if (webhook.transformFile) {
 				try {
 					payload = await this.applyTransformation(webhook.transformFile, basePayload);
@@ -210,7 +252,7 @@ export class WebhookController extends BaseController {
 			this.webhookDeliveryQueue.push(delivery);
 
 			// Process delivery
-			this.deliverWebhook(webhook, delivery);
+			void this.deliverWebhook(webhook, delivery);
 		}
 
 		// Clean up old deliveries (keep last 100)
@@ -230,7 +272,7 @@ export class WebhookController extends BaseController {
 			delivery.attempts++;
 			delivery.lastAttempt = new Date().toISOString();
 
-			const signature = this.generateSignature(delivery.payload, webhook.secret);
+			const signature = await this.generateSignature(delivery.payload, webhook.secret);
 
 			const headers: Record<string, string> = {
 				"Content-Type": "application/json",
@@ -260,15 +302,15 @@ export class WebhookController extends BaseController {
 			} else {
 				throw new Error(`HTTP ${response.status}: ${response.text}`);
 			}
-		} catch (error: any) {
-			delivery.error = error.message;
+		} catch (error) {
+			delivery.error = getErrorMessage(error);
 			webhook.failureCount++;
 
 			if (retryCount < maxRetries) {
 				// Exponential backoff: 1s, 2s, 4s
 				const delay = Math.pow(2, retryCount) * 1000;
 				window.setTimeout(() => {
-					this.deliverWebhook(webhook, delivery, retryCount + 1);
+					void this.deliverWebhook(webhook, delivery, retryCount + 1);
 				}, delay);
 			} else {
 				delivery.status = "failed";
@@ -287,10 +329,17 @@ export class WebhookController extends BaseController {
 		await this.saveWebhooks();
 	}
 
-	private generateSignature(payload: any, secret: string): string {
-		const hmac = createHmac("sha256", secret);
-		hmac.update(JSON.stringify(payload));
-		return hmac.digest("hex");
+	private async generateSignature(payload: unknown, secret: string): Promise<string> {
+		const encoder = new TextEncoder();
+		const key = await crypto.subtle.importKey(
+			"raw",
+			encoder.encode(secret),
+			{ name: "HMAC", hash: "SHA-256" },
+			false,
+			["sign"]
+		);
+		const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(JSON.stringify(payload)));
+		return this.bytesToHex(new Uint8Array(signature));
 	}
 
 	private generateWebhookId(): string {
@@ -298,13 +347,17 @@ export class WebhookController extends BaseController {
 	}
 
 	private generateWebhookSecret(): string {
-		return createHash("sha256")
-			.update(Date.now().toString() + Math.random().toString())
-			.digest("hex");
+		return this.bytesToHex(crypto.getRandomValues(new Uint8Array(32)));
 	}
 
 	private generateDeliveryId(): string {
 		return `del_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+	}
+
+	private bytesToHex(bytes: Uint8Array): string {
+		return Array.from(bytes)
+			.map((byte) => byte.toString(16).padStart(2, "0"))
+			.join("");
 	}
 
 	private async saveWebhooks(): Promise<void> {
@@ -333,10 +386,12 @@ export class WebhookController extends BaseController {
 	private async applyTransformation(
 		transformFile: string,
 		payload: WebhookPayload
-	): Promise<any> {
+	): Promise<unknown> {
 		try {
 			if (transformFile.endsWith(".js")) {
-				return await this.applyJSTransformation(transformFile, payload);
+				throw new Error(
+					"JavaScript webhook transforms are no longer supported. Use a JSON transform template instead."
+				);
 			} else if (transformFile.endsWith(".json")) {
 				return await this.applyJSONTransformation(transformFile, payload);
 			}
@@ -352,71 +407,18 @@ export class WebhookController extends BaseController {
 		}
 	}
 
-	private async applyJSTransformation(
-		transformFile: string,
-		payload: WebhookPayload
-	): Promise<any> {
-		try {
-			// Read transformation file from vault
-			let transformCode: string;
-			try {
-				transformCode = await this.plugin.app.vault.adapter.read(transformFile);
-			} catch (readError: any) {
-				throw new Error(
-					`Failed to read transform file '${transformFile}': ${readError.message}. Please check the file path and ensure it exists in your vault.`
-				);
-			}
-
-			// Validate file has content
-			if (!transformCode.trim()) {
-				throw new Error(
-					`Transform file '${transformFile}' is empty. Please add a transform function.`
-				);
-			}
-
-			// Check for transform function in the code
-			if (!transformCode.includes("function transform")) {
-				console.warn(
-					`⚠️ Transform file '${transformFile}' may not contain a 'transform' function`
-				);
-			}
-
-			// Create a safe execution context
-			// User-authored transform files are an explicit trusted scripting feature.
-			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-			const transform = new Function(
-				"payload",
-				`
-				${transformCode}
-				if (typeof transform === 'function') {
-					console.log("🔥 transform file loaded");
-					return transform(payload);
-				} else {
-					throw new Error('Transform file must export a transform function. Expected: function transform(payload) { ... }');
-				}
-			`
-			);
-
-			const result = transform(payload);
-			return result;
-		} catch (error: any) {
-			console.error(`❌ JS transformation error for '${transformFile}':`, error.message);
-			throw error;
-		}
-	}
-
 	private async applyJSONTransformation(
 		transformFile: string,
 		payload: WebhookPayload
-	): Promise<any> {
+	): Promise<unknown> {
 		try {
 			// Read template file from vault
 			let templateContent: string;
 			try {
 				templateContent = await this.plugin.app.vault.adapter.read(transformFile);
-			} catch (readError: any) {
+			} catch (readError) {
 				throw new Error(
-					`Failed to read template file '${transformFile}': ${readError.message}. Please check the file path and ensure it exists in your vault.`
+					`Failed to read template file '${transformFile}': ${getErrorMessage(readError)}. Please check the file path and ensure it exists in your vault.`
 				);
 			}
 
@@ -428,17 +430,22 @@ export class WebhookController extends BaseController {
 			}
 
 			// Parse JSON template
-			let templates: any;
+			let templates: unknown;
 			try {
 				templates = JSON.parse(templateContent);
-			} catch (parseError: any) {
+			} catch (parseError) {
 				throw new Error(
-					`Invalid JSON in template file '${transformFile}': ${parseError.message}`
+					`Invalid JSON in template file '${transformFile}': ${getErrorMessage(parseError)}`
+				);
+			}
+			if (!isRecord(templates)) {
+				throw new Error(
+					`Invalid JSON in template file '${transformFile}': expected an object with event templates`
 				);
 			}
 
 			// Get template for this event or use default
-			const template = templates[payload.event] || templates.default;
+			const template = templates[payload.event] ?? templates.default;
 			if (!template) {
 				const availableEvents = Object.keys(templates).filter((key) => key !== "default");
 				throw new Error(
@@ -449,21 +456,27 @@ export class WebhookController extends BaseController {
 			// Apply template variable substitution
 			const result = this.interpolateTemplate(template, payload);
 			return result;
-		} catch (error: any) {
-			console.error(`❌ JSON transformation error for '${transformFile}':`, error.message);
+		} catch (error) {
+			console.error(
+				`❌ JSON transformation error for '${transformFile}':`,
+				getErrorMessage(error)
+			);
 			throw error;
 		}
 	}
 
-	private interpolateTemplate(template: any, payload: any): any {
+	private interpolateTemplate(template: unknown, payload: WebhookPayload): unknown {
 		if (typeof template === "string") {
 			return template.replace(/\$\{([^}]+)\}/g, (match, path) => {
-				return this.getNestedValue(payload, path) || match;
+				const value = this.getNestedValue(payload, path);
+				return value === undefined || value === null
+					? match
+					: this.formatTemplateValue(value);
 			});
 		} else if (Array.isArray(template)) {
 			return template.map((item) => this.interpolateTemplate(item, payload));
-		} else if (template && typeof template === "object") {
-			const result: any = {};
+		} else if (isRecord(template)) {
+			const result: Record<string, unknown> = {};
 			for (const [key, value] of Object.entries(template)) {
 				result[key] = this.interpolateTemplate(value, payload);
 			}
@@ -473,9 +486,29 @@ export class WebhookController extends BaseController {
 		}
 	}
 
-	private getNestedValue(obj: any, path: string): any {
+	private getNestedValue(obj: unknown, path: string): unknown {
 		return path.split(".").reduce((current, key) => {
-			return current && current[key] !== undefined ? current[key] : undefined;
+			if (!isRecord(current)) {
+				return undefined;
+			}
+
+			return current[key] !== undefined ? current[key] : undefined;
 		}, obj);
+	}
+
+	private formatTemplateValue(value: unknown): string {
+		if (typeof value === "string") {
+			return value;
+		}
+		if (
+			typeof value === "number" ||
+			typeof value === "boolean" ||
+			typeof value === "bigint"
+		) {
+			return String(value);
+		}
+
+		const serialized = JSON.stringify(value);
+		return serialized ?? "";
 	}
 }

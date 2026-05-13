@@ -18,7 +18,7 @@ export class ICSNoteCreationModal extends Modal {
 	private folder = "";
 	private template = "";
 	private useTemplate = false;
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
 
 	// UI elements
 	private titleInput: HTMLInputElement;
@@ -47,7 +47,7 @@ export class ICSNoteCreationModal extends Modal {
 		this.keyboardHandler = (e: KeyboardEvent) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				this.handleCreate();
+				void this.handleCreate();
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
@@ -123,7 +123,7 @@ export class ICSNoteCreationModal extends Modal {
 		createButton.onclick = (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			this.handleCreate();
+			void this.handleCreate();
 		};
 
 		const cancelButton = buttonContainer.createEl("button", {

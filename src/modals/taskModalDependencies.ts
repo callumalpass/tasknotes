@@ -9,6 +9,7 @@ import {
 } from "../utils/dependencyUtils";
 import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
 import { createTaskCard } from "../ui/TaskCard";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 export interface DependencyItem {
 	dependency: TaskDependency;
@@ -60,7 +61,7 @@ export function createDependencyItemFromDependency(
 			"uid" in dependency &&
 			typeof dependency.uid === "string"
 				? dependency.uid
-				: String(dependency);
+				: stringifyUnknown(dependency);
 		return {
 			dependency: { uid: fallbackName, reltype: DEFAULT_DEPENDENCY_RELTYPE },
 			name: fallbackName,

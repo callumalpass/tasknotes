@@ -14,7 +14,7 @@ export class ICSEventInfoModal extends Modal {
 	private icsEvent: ICSEvent;
 	private subscriptionName?: string;
 	private relatedNotes: (TaskInfo | NoteInfo)[] = [];
-	private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
+	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
 
 	constructor(app: App, plugin: TaskNotesPlugin, icsEvent: ICSEvent, subscriptionName?: string) {
 		super(app);
@@ -158,12 +158,12 @@ export class ICSEventInfoModal extends Modal {
 			.setDesc(this.translate("modals.icsEventInfo.linkExistingDesc"))
 			.addButton((button) => {
 				button.setButtonText("Link note").onClick(() => {
-					this.linkExistingNote();
+					void this.linkExistingNote();
 				});
 			})
 			.addButton((button) => {
 				button.setButtonText("Refresh").onClick(() => {
-					this.refreshRelatedNotes();
+					void this.refreshRelatedNotes();
 				});
 			});
 	}
@@ -187,7 +187,7 @@ export class ICSEventInfoModal extends Modal {
 				subscriptionName: this.subscriptionName || "Unknown Calendar",
 				onContentCreated: async (file: TFile, info: NoteInfo) => {
 					new Notice(this.translate("notices.icsNoteCreatedSuccess"));
-					this.refreshRelatedNotes();
+					void this.refreshRelatedNotes();
 					await this.safeOpenFile(file.path);
 				},
 			});
@@ -218,7 +218,7 @@ export class ICSEventInfoModal extends Modal {
 										fileName: file.name,
 									})
 								);
-								this.refreshRelatedNotes();
+								void this.refreshRelatedNotes();
 							},
 							{
 								errorMessage: "Failed to link note",
@@ -251,7 +251,7 @@ export class ICSEventInfoModal extends Modal {
 				await this.safeOpenFile(result.file.path);
 
 				// Refresh the modal to show the new related task
-				this.refreshRelatedNotes();
+				void this.refreshRelatedNotes();
 			},
 			{
 				errorMessage: "Failed to create task from ICS event",

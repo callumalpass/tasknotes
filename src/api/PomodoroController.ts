@@ -1,11 +1,15 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { parse } from "url";
+import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import { TaskManager } from "../utils/TaskManager";
 import TaskNotesPlugin from "../main";
 import { PomodoroSessionHistory } from "../types";
  
 import { Get, Post } from "../utils/OpenAPIDecorators";
+
+type StartPomodoroRequestBody = {
+	taskId?: string;
+	duration?: string | number;
+};
 
 export class PomodoroController extends BaseController {
 	constructor(
@@ -16,9 +20,9 @@ export class PomodoroController extends BaseController {
 	}
 
 	@Post("/api/pomodoro/start")
-	async startPomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async startPomodoro(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
-			const body = await this.parseRequestBody(req);
+			const body = await this.parseRequestBody<StartPomodoroRequestBody>(req);
 			let task;
 
 			// Get task if taskId provided
@@ -45,7 +49,8 @@ export class PomodoroController extends BaseController {
 			}
 
 			// Start pomodoro with optional duration
-			const duration = body.duration ? parseInt(body.duration) : undefined;
+			const duration =
+				body.duration !== undefined ? parseInt(String(body.duration), 10) : undefined;
 			await this.plugin.pomodoroService.startPomodoro(task, duration);
 
 			// Get updated state
@@ -60,13 +65,13 @@ export class PomodoroController extends BaseController {
 					message: "Pomodoro session started",
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Post("/api/pomodoro/stop")
-	async stopPomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async stopPomodoro(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const currentState = this.plugin.pomodoroService.getState();
 			if (!currentState.currentSession) {
@@ -87,13 +92,13 @@ export class PomodoroController extends BaseController {
 					message: "Pomodoro session stopped and reset",
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Post("/api/pomodoro/pause")
-	async pausePomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async pausePomodoro(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const currentState = this.plugin.pomodoroService.getState();
 			if (!currentState.isRunning || !currentState.currentSession) {
@@ -117,13 +122,13 @@ export class PomodoroController extends BaseController {
 					message: "Pomodoro session paused",
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Post("/api/pomodoro/resume")
-	async resumePomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async resumePomodoro(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const currentState = this.plugin.pomodoroService.getState();
 			if (currentState.isRunning) {
@@ -152,13 +157,13 @@ export class PomodoroController extends BaseController {
 					message: "Pomodoro session resumed",
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/pomodoro/status")
-	async getPomodoroStatus(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getPomodoroStatus(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const state = this.plugin.pomodoroService.getState();
 
@@ -171,22 +176,22 @@ export class PomodoroController extends BaseController {
 			};
 
 			this.sendResponse(res, 200, this.successResponse(enhancedState));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/pomodoro/sessions")
-	async getPomodoroSessions(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getPomodoroSessions(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
-			const parsedUrl = parse(req.url || "", true);
-			const query = parsedUrl.query;
+			const query = parseRequestUrl(req).searchParams;
 
 			let sessions = await this.plugin.pomodoroService.getSessionHistory();
 
 			// Filter by date if specified
-			if (query.date && typeof query.date === "string") {
-				const targetDate = query.date;
+			const dateParam = query.get("date");
+			if (dateParam) {
+				const targetDate = dateParam;
 				sessions = sessions.filter((session: PomodoroSessionHistory) => {
 					const sessionDate = new Date(session.startTime).toISOString().split("T")[0];
 					return sessionDate === targetDate;
@@ -195,8 +200,9 @@ export class PomodoroController extends BaseController {
 
 			// Apply limit
 			const total = sessions.length;
-			if (query.limit && typeof query.limit === "string") {
-				const limit = parseInt(query.limit);
+			const limitParam = query.get("limit");
+			if (limitParam) {
+				const limit = parseInt(limitParam, 10);
 				if (limit > 0) {
 					sessions = sessions.slice(-limit); // Get most recent sessions
 				}
@@ -210,28 +216,28 @@ export class PomodoroController extends BaseController {
 					total,
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/pomodoro/stats")
-	async getPomodoroStats(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getPomodoroStats(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
-			const parsedUrl = parse(req.url || "", true);
-			const query = parsedUrl.query;
+			const query = parseRequestUrl(req).searchParams;
 
 			let stats;
-			if (query.date && typeof query.date === "string") {
-				const targetDate = new Date(query.date);
+			const dateParam = query.get("date");
+			if (dateParam) {
+				const targetDate = new Date(dateParam);
 				stats = await this.plugin.pomodoroService.getStatsForDate(targetDate);
 			} else {
 				stats = await this.plugin.pomodoroService.getTodayStats();
 			}
 
 			this.sendResponse(res, 200, this.successResponse(stats));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 }

@@ -1,27 +1,30 @@
-import type { Server, IncomingMessage, ServerResponse } from "http";
 import { Notice, requestUrl, Platform } from "obsidian";
-import { randomBytes, createHash } from "crypto";
 import TaskNotesPlugin from "../main";
 import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../types";
 import { OAUTH_CONSTANTS } from "./constants";
 import { OAuthNotConfiguredError, TokenExpiredError, TokenRefreshError } from "./errors";
+import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
 
-let cachedHttpModule: typeof import("http") | null = null;
+type HttpModuleLike = {
+	createServer(
+		handler?: (req: HTTPRequestLike, res: HTTPResponseLike) => void
+	): HTTPServerLike;
+};
 
-function ensureHttpModule(): typeof import("http") {
+let cachedHttpModule: HttpModuleLike | null = null;
+
+function ensureHttpModule(): HttpModuleLike {
 	if (!Platform.isDesktopApp) {
 		throw new Error("OAuth redirect handling is only available on desktop.");
 	}
 
 	if (!cachedHttpModule) {
-		// Lazy-load the Node http module so mobile builds don't crash at load time
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		cachedHttpModule = require("http");
+		// Lazy-load the Node http module so mobile builds don't crash at load time.
+		// eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-nodejs-modules -- OAuth redirect handling needs Node http only on desktop.
+		cachedHttpModule = require("http") as HttpModuleLike;
 	}
 
-	// TypeScript doesn't know we always set cachedHttpModule in the if block above
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	return cachedHttpModule!;
+	return cachedHttpModule;
 }
 
 /**
@@ -38,7 +41,7 @@ function ensureHttpModule(): typeof import("http") {
  */
 export class OAuthService {
 	private plugin: TaskNotesPlugin;
-	private callbackServer: Server | null = null;
+	private callbackServer: HTTPServerLike | null = null;
 	private pendingOAuthState: Map<
 		string,
 		{
@@ -82,7 +85,7 @@ export class OAuthService {
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
-		this.loadClientIds();
+		void this.loadClientIds();
 	}
 
 	/**
@@ -224,30 +227,33 @@ export class OAuthService {
 	 * Generates a random code verifier for PKCE
 	 */
 	private generateCodeVerifier(): string {
-		return randomBytes(32)
-			.toString("base64url")
-			.replace(/=/g, "")
-			.replace(/\+/g, "-")
-			.replace(/\//g, "_");
+		return this.base64UrlEncode(crypto.getRandomValues(new Uint8Array(32)));
 	}
 
 	/**
 	 * Generates code challenge from verifier (SHA256)
 	 */
 	private async generateCodeChallenge(verifier: string): Promise<string> {
-		const hash = createHash("sha256").update(verifier).digest();
-		return Buffer.from(hash)
-			.toString("base64url")
-			.replace(/=/g, "")
-			.replace(/\+/g, "-")
-			.replace(/\//g, "_");
+		const data = new TextEncoder().encode(verifier);
+		const hash = await crypto.subtle.digest("SHA-256", data);
+		return this.base64UrlEncode(new Uint8Array(hash));
 	}
 
 	/**
 	 * Generates a random state parameter for CSRF protection
 	 */
 	private generateState(): string {
-		return randomBytes(16).toString("hex");
+		return Array.from(crypto.getRandomValues(new Uint8Array(16)))
+			.map((byte) => byte.toString(16).padStart(2, "0"))
+			.join("");
+	}
+
+	private base64UrlEncode(bytes: Uint8Array): string {
+		let binary = "";
+		bytes.forEach((byte) => {
+			binary += String.fromCharCode(byte);
+		});
+		return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 	}
 
 	/**
@@ -292,7 +298,7 @@ export class OAuthService {
 			}
 
 			this.callbackServer = httpModule.createServer(
-				(req: IncomingMessage, res: ServerResponse) => {
+				(req: HTTPRequestLike, res: HTTPResponseLike) => {
 					this.handleCallback(req, res);
 				}
 			);
@@ -330,8 +336,10 @@ export class OAuthService {
 	/**
 	 * Handles incoming HTTP requests to the callback server
 	 */
-	private handleCallback(req: IncomingMessage, res: ServerResponse): void {
-		const url = new URL(req.url || "", `http://${req.headers.host}`);
+	private handleCallback(req: HTTPRequestLike, res: HTTPResponseLike): void {
+		const hostHeader = req.headers.host;
+		const host = Array.isArray(hostHeader) ? hostHeader[0] : (hostHeader ?? "localhost");
+		const url = new URL(req.url || "", `http://${host}`);
 		const code = url.searchParams.get("code");
 		const state = url.searchParams.get("state");
 		const error = url.searchParams.get("error");

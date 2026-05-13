@@ -1,7 +1,7 @@
-import { IncomingMessage, ServerResponse } from "http";
+import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 import { parseJSONBody, sendJSONResponse } from "./httpUtils";
 
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
 	success: boolean;
 	data?: T;
 	error?: string;
@@ -9,7 +9,7 @@ export interface APIResponse<T = any> {
 }
 
 export abstract class BaseController {
-	protected sendResponse(res: ServerResponse, statusCode: number, data: any): void {
+	protected sendResponse(res: HTTPResponseLike, statusCode: number, data: unknown): void {
 		sendJSONResponse(res, statusCode, data);
 	}
 
@@ -21,7 +21,13 @@ export abstract class BaseController {
 		return { success: false, error };
 	}
 
-	protected async parseRequestBody(req: IncomingMessage): Promise<any> {
-		return parseJSONBody(req);
+	protected getErrorMessage(error: unknown): string {
+		return error instanceof Error ? error.message : String(error);
+	}
+
+	protected async parseRequestBody<T extends object = Record<string, unknown>>(
+		req: HTTPRequestLike
+	): Promise<T> {
+		return (await parseJSONBody(req)) as T;
 	}
 }

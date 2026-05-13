@@ -27,3 +27,7 @@ Example:
 ## Changed
 
 - Enabled lint checks that mirror Obsidian community plugin review findings, including dynamic code execution, Promise handling, deprecated APIs, unsafe stringification, directive comments, Node built-in imports, and explicit `any` usage.
+
+## Removed
+
+- Removed JavaScript webhook transform support and examples. JSON webhook transform templates remain supported.

@@ -42,9 +42,9 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
 			if (newTab) {
-				plugin.app.workspace.openLinkText(task.path, "", true);
+				void plugin.app.workspace.openLinkText(task.path, "", true);
 			} else {
-				plugin.app.workspace.getLeaf(false).openFile(file);
+				void plugin.app.workspace.getLeaf(false).openFile(file);
 			}
 		}
 	};
@@ -130,7 +130,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		} else {
 			clickTimeout = window.setTimeout(() => {
 				clickTimeout = null;
-				handleSingleClick(e);
+				void handleSingleClick(e);
 			}, 250);
 		}
 	};
@@ -248,9 +248,9 @@ export async function handleCalendarTaskClick(
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
 			if (newTab) {
-				plugin.app.workspace.openLinkText(task.path, "", true);
+				void plugin.app.workspace.openLinkText(task.path, "", true);
 			} else {
-				plugin.app.workspace.getLeaf(false).openFile(file);
+				void plugin.app.workspace.getLeaf(false).openFile(file);
 			}
 		}
 	};
@@ -300,7 +300,7 @@ export async function handleCalendarTaskClick(
 		// This might be a single-click, wait to see if double-click follows
 		const timeout = window.setTimeout(() => {
 			calendarClickTimeouts.delete(eventId);
-			handleSingleClick(jsEvent);
+			void handleSingleClick(jsEvent);
 		}, 250);
 		calendarClickTimeouts.set(eventId, timeout);
 	}

@@ -1,4 +1,4 @@
-import { TaskCreationData, TaskDependency } from "../types";
+import { Reminder, TaskCreationData, TaskDependency } from "../types";
 import { getCurrentTimestamp } from "../utils/dateUtils";
 import { sanitizeTags } from "../utils/helpers";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
@@ -20,10 +20,10 @@ export interface TaskCreationDataInput {
 	timeEstimate: number;
 	recurrenceRule: string;
 	recurrenceAnchor: "scheduled" | "completion";
-	reminders: any[];
+	reminders: Reminder[];
 	blockedByItems: DependencyItem[];
 	details: string;
-	userFields: Record<string, any>;
+	userFields: Record<string, unknown>;
 	creationContext?: TaskCreationData["creationContext"];
 	taskIdentificationMethod: string;
 	taskTag: string;
@@ -111,8 +111,8 @@ export function buildCreationBlockingUpdates(
 	return { added, raw, unresolved };
 }
 
-function buildCustomFrontmatter(userFields: Record<string, any>): Record<string, any> {
-	const customFrontmatter: Record<string, any> = {};
+function buildCustomFrontmatter(userFields: Record<string, unknown>): Record<string, unknown> {
+	const customFrontmatter: Record<string, unknown> = {};
 
 	for (const [fieldKey, fieldValue] of Object.entries(userFields)) {
 		if (fieldValue !== null && fieldValue !== undefined && fieldValue !== "") {

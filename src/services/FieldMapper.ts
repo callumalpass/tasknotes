@@ -48,11 +48,21 @@ export class FieldMapper {
 	 * on the returned object, keyed by their frontmatter key (e.g. "start_date").
 	 */
 	mapFromFrontmatter(
-		frontmatter: any,
+		frontmatter: unknown,
 		filePath: string,
 		storeTitleInFilename?: boolean
 	): Partial<TaskInfo> {
-		return mapTaskFromFrontmatter(this.mapping, frontmatter, filePath, storeTitleInFilename, this.userFields);
+		const frontmatterRecord =
+			frontmatter !== null && typeof frontmatter === "object" && !Array.isArray(frontmatter)
+				? (frontmatter as Record<string, unknown>)
+				: undefined;
+		return mapTaskFromFrontmatter(
+			this.mapping,
+			frontmatterRecord,
+			filePath,
+			storeTitleInFilename,
+			this.userFields
+		);
 	}
 
 	/**
@@ -64,7 +74,7 @@ export class FieldMapper {
 		taskData: Partial<TaskInfo>,
 		taskTag?: string,
 		storeTitleInFilename?: boolean
-	): any {
+	): Record<string, unknown> {
 		return mapTaskToFrontmatter(this.mapping, taskData, taskTag, storeTitleInFilename, this.userFields);
 	}
 

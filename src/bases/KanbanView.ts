@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Notice, Platform, setIcon, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -10,6 +10,7 @@ import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import { getCurrentTimestamp } from "../utils/dateUtils";
+import { stringifyUnknown } from "../utils/stringUtils";
 import {
 	stripPropertyPrefix,
 	isSortOrderInSortConfig,
@@ -20,12 +21,78 @@ import {
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 
+type KanbanDataAdapterWithView = {
+	basesView: KanbanView;
+};
+
+type KanbanControllerView = {
+	name?: string;
+	groupBy?: string | { property?: string };
+};
+
+type KanbanController = {
+	query?: { views?: KanbanControllerView[] };
+	viewName?: string;
+};
+
+type MetadataTypeManagerApp = {
+	metadataTypeManager?: {
+		properties?: Record<string, { type?: string }>;
+	};
+};
+
+type VirtualScrollerWithContainer = {
+	scrollContainer?: HTMLElement;
+};
+
+type KanbanEphemeralState = {
+	scrollTop?: unknown;
+	columnScroll?: unknown;
+};
+
+type FormulaContext = Record<string, { getValue?: (data: unknown) => unknown }>;
+
+type FormulaBaseData = {
+	frontmatter?: Record<string, unknown>;
+	formulaResults?: {
+		cachedFormulaOutputs?: Record<string, unknown>;
+	};
+};
+
+type BasesDisplayValue = {
+	constructor?: { name?: string };
+	isTruthy?: () => boolean;
+	value?: unknown[];
+	toString(): string;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
+
+function isKanbanEphemeralState(value: unknown): value is KanbanEphemeralState {
+	return isRecord(value);
+}
+
+function getColumnScrollState(state: KanbanEphemeralState): Record<string, number> | null {
+	if (!isRecord(state.columnScroll)) {
+		return null;
+	}
+	const result: Record<string, number> = {};
+	for (const [key, value] of Object.entries(state.columnScroll)) {
+		if (typeof value === "number") {
+			result[key] = value;
+		}
+	}
+	return result;
+}
+
 function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "show-all" {
 	if (typeof value === "number") {
 		return value === 1 ? "show-all" : "inherit";
 	}
 
-	const normalized = String(value ?? "")
+	const normalized = stringifyUnknown(value)
 		.trim()
 		.toLowerCase()
 		.replace(/^['"]|['"]$/g, "")
@@ -46,7 +113,7 @@ export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
 
 	private boardEl: HTMLElement | null = null;
-	private basesController: any; // Store controller for accessing query.views
+	private basesController: KanbanController; // Store controller for accessing query.views
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private draggedTaskPath: string | null = null;
 	private draggedTaskPaths: string[] = []; // For batch drag operations
@@ -113,11 +180,11 @@ export class KanbanView extends BasesViewBase {
 	 */
 	private readonly VIRTUAL_SCROLL_THRESHOLD = 15;
 
-	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
+	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
-		this.basesController = controller; // Store for groupBy detection
+		this.basesController = controller as KanbanController; // Store for groupBy detection
 		// BasesView now provides this.data, this.config, and this.app directly
-		(this.dataAdapter as any).basesView = this;
+		(this.dataAdapter as unknown as KanbanDataAdapterWithView).basesView = this;
 		// Note: Don't read config here - this.config is not set until after construction
 		// readViewOptions() will be called in onload()
 	}
@@ -171,7 +238,7 @@ export class KanbanView extends BasesViewBase {
 
 		const savedState = this.getEphemeralState();
 		try {
-			this.render();
+			void this.render();
 		} catch (error) {
 			console.error(`[TaskNotes][${this.type}] Render error:`, error);
 			this.renderError(error as Error);
@@ -228,12 +295,13 @@ export class KanbanView extends BasesViewBase {
 	 * Save ephemeral state including scroll positions for all columns.
 	 * This preserves scroll position when the view is re-rendered (e.g., after task updates).
 	 */
-	getEphemeralState(): any {
+	getEphemeralState(): unknown {
 		const columnScroll: Record<string, number> = {};
 
 		// Save scroll position for virtual scrolling columns (from VirtualScroller)
 		for (const [columnKey, scroller] of this.columnScrollers) {
-			const scrollContainer = (scroller as any).scrollContainer as HTMLElement | undefined;
+			const scrollContainer = (scroller as unknown as VirtualScrollerWithContainer)
+				.scrollContainer;
 			if (scrollContainer) {
 				columnScroll[columnKey] = scrollContainer.scrollTop;
 			}
@@ -276,29 +344,30 @@ export class KanbanView extends BasesViewBase {
 	/**
 	 * Restore ephemeral state including scroll positions for all columns.
 	 */
-	setEphemeralState(state: any): void {
-		if (!state) return;
+	setEphemeralState(state: unknown): void {
+		if (!isKanbanEphemeralState(state)) return;
+		const columnScroll = getColumnScrollState(state);
 
 		// Restore board-level horizontal scroll
-		if (state.scrollTop !== undefined && this.rootElement) {
+		if (typeof state.scrollTop === "number" && this.rootElement) {
+			const scrollTop = state.scrollTop;
 			window.requestAnimationFrame(() => {
 				if (this.rootElement && this.rootElement.isConnected) {
-					this.rootElement.scrollTop = state.scrollTop;
+					this.rootElement.scrollTop = scrollTop;
 				}
 			});
 		}
 
 		// Restore column scroll positions after render completes
-		if (state.columnScroll && typeof state.columnScroll === "object") {
+		if (columnScroll) {
 			// Use requestAnimationFrame to ensure DOM and VirtualScrollers are ready
 			window.requestAnimationFrame(() => {
 				// Restore virtual scroller positions
 				for (const [columnKey, scroller] of this.columnScrollers) {
-					const scrollTop = state.columnScroll[columnKey];
+					const scrollTop = columnScroll[columnKey];
 					if (scrollTop !== undefined) {
-						const scrollContainer = (scroller as any).scrollContainer as
-							| HTMLElement
-							| undefined;
+						const scrollContainer = (scroller as unknown as VirtualScrollerWithContainer)
+							.scrollContainer;
 						if (scrollContainer) {
 							scrollContainer.scrollTop = scrollTop;
 						}
@@ -310,12 +379,12 @@ export class KanbanView extends BasesViewBase {
 					const columns = this.boardEl.querySelectorAll(".kanban-view__column");
 					columns.forEach((column) => {
 						const groupKey = column.getAttribute("data-group");
-						if (groupKey && state.columnScroll[groupKey] !== undefined) {
+						if (groupKey && columnScroll[groupKey] !== undefined) {
 							const cardsContainer = column.querySelector(
 								".kanban-view__cards"
 							) as HTMLElement;
 							if (cardsContainer && !this.columnScrollers.has(groupKey)) {
-								cardsContainer.scrollTop = state.columnScroll[groupKey];
+								cardsContainer.scrollTop = columnScroll[groupKey];
 							}
 						}
 					});
@@ -329,12 +398,12 @@ export class KanbanView extends BasesViewBase {
 						const swimlaneKey = cell.getAttribute("data-swimlane");
 						if (columnKey && swimlaneKey) {
 							const cellKey = `${swimlaneKey}:${columnKey}`;
-							if (state.columnScroll[cellKey] !== undefined) {
+							if (columnScroll[cellKey] !== undefined) {
 								const tasksContainer = cell.querySelector(
 									".kanban-view__tasks-container"
 								) as HTMLElement;
 								if (tasksContainer && !this.columnScrollers.has(cellKey)) {
-									tasksContainer.scrollTop = state.columnScroll[cellKey];
+									tasksContainer.scrollTop = columnScroll[cellKey];
 								}
 							}
 						}
@@ -422,9 +491,9 @@ export class KanbanView extends BasesViewBase {
 			} else {
 				await this.renderFlat(groups, allGroups);
 			}
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("[TaskNotes][KanbanView] Error rendering:", error);
-			this.renderError(error);
+			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
 
@@ -516,7 +585,7 @@ export class KanbanView extends BasesViewBase {
 	private groupTasks(
 		taskNotes: TaskInfo[],
 		groupByPropertyId: string,
-		pathToProps: Map<string, Record<string, any>>
+		pathToProps: Map<string, Record<string, unknown>>
 	): Map<string, TaskInfo[]> {
 		const groups = new Map<string, TaskInfo[]>();
 
@@ -611,7 +680,8 @@ export class KanbanView extends BasesViewBase {
 	 */
 	private isListTypeProperty(propertyName: string): boolean {
 		// Check Obsidian's property type registry
-		const metadataTypeManager = (this.plugin.app as any).metadataTypeManager;
+		const metadataTypeManager = (this.plugin.app as MetadataTypeManagerApp)
+			.metadataTypeManager;
 		if (metadataTypeManager?.properties) {
 			const propertyInfo = metadataTypeManager.properties[propertyName.toLowerCase()];
 			if (propertyInfo?.type) {
@@ -647,8 +717,8 @@ export class KanbanView extends BasesViewBase {
 	private getListPropertyValue(
 		task: TaskInfo,
 		propertyName: string,
-		pathToProps: Map<string, Record<string, any>>
-	): any {
+		pathToProps: Map<string, Record<string, unknown>>
+	): unknown {
 		// Map user field names to TaskInfo property names
 		const contextsField = this.plugin.fieldMapper.toUserField("contexts");
 		const projectsField = this.plugin.fieldMapper.toUserField("projects");
@@ -802,7 +872,7 @@ export class KanbanView extends BasesViewBase {
 		allTasks: TaskInfo[],
 		allGroups: Map<string, TaskInfo[]>,
 		allTasksForCandidateScopes: TaskInfo[],
-		pathToProps: Map<string, Record<string, any>>,
+		pathToProps: Map<string, Record<string, unknown>>,
 		groupByPropertyId: string
 	): Promise<void> {
 		if (!this.swimLanePropertyId) return;
@@ -912,7 +982,7 @@ export class KanbanView extends BasesViewBase {
 	private async renderSwimLaneTable(
 		swimLanes: Map<string, Map<string, TaskInfo[]>>,
 		columnKeys: string[],
-		pathToProps: Map<string, Record<string, any>>
+		pathToProps: Map<string, Record<string, unknown>>
 	): Promise<void> {
 		if (!this.boardEl) return;
 
@@ -1121,7 +1191,7 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		tasks: TaskInfo[],
 		visibleProperties: string[],
-		cardOptions: any
+		cardOptions: TaskCardOptions
 	): void {
 		// Use semantic class instead of inline style for easier maintenance.
 		cardsContainer.addClass("kanban-view__cards--virtual");
@@ -1196,7 +1266,7 @@ export class KanbanView extends BasesViewBase {
 		cardsContainer: HTMLElement,
 		tasks: TaskInfo[],
 		visibleProperties: string[],
-		cardOptions: any
+		cardOptions: TaskCardOptions
 	): void {
 		for (const task of tasks) {
 			const cardWrapper = cardsContainer.createDiv({ cls: "kanban-view__card-wrapper" });
@@ -1443,8 +1513,8 @@ export class KanbanView extends BasesViewBase {
 		column.addEventListener("dragleave", (e: DragEvent) => {
 			// Only remove if we're actually leaving the column (not just moving to a child)
 			const rect = column.getBoundingClientRect();
-			const x = (e as any).clientX;
-			const y = (e as any).clientY;
+			const x = e.clientX;
+			const y = e.clientY;
 
 			if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
 				column.classList.remove("kanban-view__column--dragover");
@@ -1482,9 +1552,7 @@ export class KanbanView extends BasesViewBase {
 			// For cross-column drops, the dropTarget may reference a card from
 			// the source column (stale from last dragover). Validate that the
 			// target card actually exists in the target column via DOM query.
-			const cardsContainer = column.querySelector(
-				".kanban-view__cards"
-			) as HTMLElement | null;
+			const cardsContainer = column.querySelector<HTMLElement>(".kanban-view__cards");
 			const isCrossColumn = this.draggedFromColumn !== groupKey;
 			if (isCrossColumn && dropTarget) {
 				const targetInColumn =
@@ -1521,7 +1589,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Optimistic DOM reorder: move card to correct position immediately
 			const paths =
-				this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath!];
+				this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath];
 			const optimisticResult = this.performOptimisticReorder(
 				paths,
 				dropTarget,
@@ -1563,8 +1631,8 @@ export class KanbanView extends BasesViewBase {
 		cell.addEventListener("dragleave", (e: DragEvent) => {
 			// Only remove if we're actually leaving the cell (not just moving to a child)
 			const rect = cell.getBoundingClientRect();
-			const x = (e as any).clientX;
-			const y = (e as any).clientY;
+			const x = e.clientX;
+			const y = e.clientY;
 
 			if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
 				cell.classList.remove("kanban-view__swimlane-column--dragover");
@@ -1599,9 +1667,7 @@ export class KanbanView extends BasesViewBase {
 				: undefined;
 
 			// For cross-column/swimlane drops, validate dropTarget is in this cell via DOM query
-			const cardsContainer = cell.querySelector(
-				".kanban-view__tasks-container"
-			) as HTMLElement | null;
+			const cardsContainer = cell.querySelector<HTMLElement>(".kanban-view__tasks-container");
 			const isCrossColumn = this.draggedFromColumn !== columnKey;
 			const isCrossSwimlane = this.draggedFromSwimlane !== swimLaneKey;
 			if ((isCrossColumn || isCrossSwimlane) && dropTarget) {
@@ -1623,7 +1689,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Optimistic DOM reorder: move card to correct position immediately
 			const paths =
-				this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath!];
+				this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath];
 			this.debugLog("SWIMLANE-CELL-DROP", {
 				draggedTask: this.draggedTaskPath?.split("/").pop(),
 				isCrossColumn,
@@ -1895,7 +1961,7 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Show single task context menu
-			showTaskContextMenu(e, task.path, this.plugin, new Date());
+			void showTaskContextMenu(e, task.path, this.plugin, new Date());
 		});
 
 		cardWrapper.addEventListener("dragover", (e: DragEvent) => {
@@ -2039,7 +2105,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Optimistic DOM reorder: move card to correct position immediately
 			const paths =
-				this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath!];
+				this.draggedTaskPaths.length > 0 ? this.draggedTaskPaths : [this.draggedTaskPath];
 			this.performOptimisticReorder(paths, dropTarget);
 
 			// Now clean up shift CSS — no visual change since DOM is already correct
@@ -2851,10 +2917,10 @@ export class KanbanView extends BasesViewBase {
 									(v: string) => v !== sourceSwimlane
 								);
 								if (
-									!newValue.includes(newSwimLaneValue!) &&
+									!newValue.includes(newSwimLaneValue) &&
 									newSwimLaneValue !== "None"
 								) {
-									newValue.push(newSwimLaneValue!);
+									newValue.push(newSwimLaneValue);
 								}
 								fm[swimKey] = newValue.length > 0 ? newValue : [];
 							} else {
@@ -2884,7 +2950,7 @@ export class KanbanView extends BasesViewBase {
 							const isRecurring = !!task?.recurrence;
 							this.plugin.taskService.updateCompletedDateInFrontmatter(
 								fm,
-								newSwimLaneValue!,
+								newSwimLaneValue,
 								isRecurring
 							);
 							const dateModifiedField =
@@ -2917,7 +2983,7 @@ export class KanbanView extends BasesViewBase {
 								const updatedTask = {
 									...originalTask,
 									[changedTaskProp]: newPropValue,
-								} as TaskInfo;
+								};
 								updatedTask.dateModified = getCurrentTimestamp();
 								if (changedTaskProp === "status" && !originalTask.recurrence) {
 									if (
@@ -2992,9 +3058,9 @@ export class KanbanView extends BasesViewBase {
 	 * Saves ephemeral state before render and restores it after.
 	 */
 	protected debouncedRefresh(): void {
-		if ((this as any).updateDebounceTimer) {
+		if (this.updateDebounceTimer) {
 			this.debugLog("DEBOUNCED-REFRESH: cancelling previous pending timer");
-			window.clearTimeout((this as any).updateDebounceTimer);
+			window.clearTimeout(this.updateDebounceTimer);
 		}
 
 		this.debugLog("DEBOUNCED-REFRESH: scheduling render in 150ms", {
@@ -3007,7 +3073,7 @@ export class KanbanView extends BasesViewBase {
 
 		// Use correct window for pop-out window support
 		const win = this.containerEl.ownerDocument.defaultView || window;
-		(this as any).updateDebounceTimer = win.setTimeout(async () => {
+		this.updateDebounceTimer = win.setTimeout(async () => {
 			// Respect render suppression — a drop is still in-flight.
 			// The post-drop render (schedulePostDropRender) will fire the
 			// guaranteed render once the writes have settled.
@@ -3016,7 +3082,7 @@ export class KanbanView extends BasesViewBase {
 					activeDropCount: this.activeDropCount,
 					suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 				});
-				(this as any).updateDebounceTimer = null;
+				this.updateDebounceTimer = null;
 				return;
 			}
 			this.debugLog("DEBOUNCED-REFRESH-TIMER-FIRED: executing render now", {
@@ -3024,7 +3090,7 @@ export class KanbanView extends BasesViewBase {
 				suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 			});
 			await this.render();
-			(this as any).updateDebounceTimer = null;
+			this.updateDebounceTimer = null;
 			// Restore scroll state after render completes
 			this.setEphemeralState(savedState);
 		}, 150);
@@ -3094,21 +3160,25 @@ export class KanbanView extends BasesViewBase {
 	 * before swimlane/grouping reads them from cachedFormulaOutputs.
 	 */
 	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		const ctxFormulas = (this.data as any)?.ctx?.formulas;
+		const ctxFormulas = (this.data as { ctx?: { formulas?: FormulaContext } } | undefined)
+			?.ctx?.formulas;
 		if (!ctxFormulas || typeof ctxFormulas !== "object" || dataItems.length === 0) {
 			return;
 		}
 
 		for (let i = 0; i < dataItems.length; i++) {
 			const item = dataItems[i];
-			const itemFormulaResults = item.basesData?.formulaResults;
+			const baseData = item.basesData as FormulaBaseData | undefined;
+			const itemFormulaResults = baseData?.formulaResults;
 			if (!itemFormulaResults?.cachedFormulaOutputs) continue;
 
 			for (const formulaName of Object.keys(ctxFormulas)) {
 				const formula = ctxFormulas[formulaName];
 				if (formula && typeof formula.getValue === "function") {
 					try {
-						const baseData = item.basesData;
+						if (!baseData) {
+							continue;
+						}
 						const taskProperties = item.properties || {};
 
 						let result;
@@ -3136,9 +3206,9 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
-	private buildPathToPropsMap(): Map<string, Record<string, any>> {
+	private buildPathToPropsMap(): Map<string, Record<string, unknown>> {
 		const dataItems = this.dataAdapter.extractDataItems();
-		const map = new Map<string, Record<string, any>>();
+		const map = new Map<string, Record<string, unknown>>();
 
 		for (const item of dataItems) {
 			if (!item.path) continue;
@@ -3147,7 +3217,8 @@ export class KanbanView extends BasesViewBase {
 			const props = { ...(item.properties || {}) };
 
 			// Add formula results if available
-			const formulaOutputs = item.basesData?.formulaResults?.cachedFormulaOutputs;
+			const formulaOutputs = (item.basesData as FormulaBaseData | undefined)
+				?.formulaResults?.cachedFormulaOutputs;
 			if (formulaOutputs && typeof formulaOutputs === "object") {
 				for (const [formulaName, value] of Object.entries(formulaOutputs)) {
 					// Store with formula. prefix for easy lookup
@@ -3161,7 +3232,7 @@ export class KanbanView extends BasesViewBase {
 		return map;
 	}
 
-	private getPropertyValue(props: Record<string, any>, propertyId: string): any {
+	private getPropertyValue(props: Record<string, unknown>, propertyId: string): unknown {
 		// Formula properties are stored with their full prefix (formula.NAME)
 		if (propertyId.startsWith("formula.")) {
 			return props[propertyId] ?? null;
@@ -3177,28 +3248,32 @@ export class KanbanView extends BasesViewBase {
 		return null;
 	}
 
-	private valueToString(value: any): string {
+	private valueToString(value: unknown): string {
 		if (value === null || value === undefined) return "None";
 
 		// Handle Bases Value objects (they have a toString() method and often a type property)
 		// Check for Bases Value object by duck-typing (has toString and is an object with constructor)
 		if (typeof value === "object" && value !== null && typeof value.toString === "function") {
+			const basesValue = value as BasesDisplayValue;
 			// Check if it's a Bases NullValue
-			if (value.constructor?.name === "NullValue" || (value.isTruthy && !value.isTruthy())) {
+			if (
+				basesValue.constructor?.name === "NullValue" ||
+				(basesValue.isTruthy && !basesValue.isTruthy())
+			) {
 				return "None";
 			}
 
 			// Check if it's a Bases ListValue (array-like)
-			if (value.constructor?.name === "ListValue" || Array.isArray(value.value)) {
-				const arr = value.value || [];
+			if (basesValue.constructor?.name === "ListValue" || Array.isArray(basesValue.value)) {
+				const arr = basesValue.value || [];
 				if (arr.length === 0) return "None";
 				// Recursively convert each item
-				return arr.map((v: any) => this.valueToString(v)).join(", ");
+				return arr.map((v) => this.valueToString(v)).join(", ");
 			}
 
 			// For other Bases Value types (StringValue, NumberValue, BooleanValue, DateValue, etc.)
 			// Use their toString() method
-			const str = value.toString();
+			const str = basesValue.toString();
 			return str || "None";
 		}
 
@@ -3207,7 +3282,7 @@ export class KanbanView extends BasesViewBase {
 		if (typeof value === "boolean") return value ? "True" : "False";
 		if (Array.isArray(value))
 			return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
-		return String(value);
+		return stringifyUnknown(value) || "None";
 	}
 
 	private getGroupDisplayTitle(title: string, propertyId?: string | null): string {
@@ -3317,7 +3392,7 @@ export class KanbanView extends BasesViewBase {
 	/**
 	 * Get consistent card rendering options for all kanban cards
 	 */
-	private getCardOptions() {
+	private getCardOptions(): TaskCardOptions {
 		// Use UTC-anchored "today" for correct recurring task completion status
 		const now = new Date();
 		const targetDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
@@ -3488,7 +3563,7 @@ export class KanbanView extends BasesViewBase {
  * Returns an actual KanbanView instance (extends BasesView).
  */
 export function buildKanbanViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: any, containerEl: HTMLElement): KanbanView {
+	return function (controller: unknown, containerEl: HTMLElement): KanbanView {
 		if (!containerEl) {
 			console.error("[TaskNotes][KanbanView] No containerEl provided");
 			throw new Error("KanbanView requires a containerEl");

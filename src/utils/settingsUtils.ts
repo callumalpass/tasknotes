@@ -1,6 +1,5 @@
 import { Reminder, TaskInfo } from "../types";
 import { DefaultReminder, UserFieldMapping, TaskNotesSettings } from "../types/settings";
-import type { UserMappedField } from "../types/settings";
 
 /**
  * Converts DefaultReminder objects to Reminder objects that can be used in tasks.
@@ -14,7 +13,7 @@ export function convertDefaultRemindersToReminders(
 	return defaultReminders
 		.map((defaultReminder) => {
 			const reminder: Reminder = {
-				id: `rem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+				id: `rem_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
 				type: defaultReminder.type,
 				description: defaultReminder.description,
 			};
@@ -68,7 +67,7 @@ export function convertDefaultRemindersToReminders(
  * Returns true if at least one user-mapped field is complete (displayName, key, type)
  */
 export function hasAnyUserFieldsEnabled(settings: TaskNotesSettings): boolean {
-	const fields = (settings as any).userFields as UserMappedField[] | undefined;
+	const fields = settings.userFields;
 	if (!fields || fields.length === 0) return false;
 	return fields.some((f) => Boolean(f && f.displayName && f.key && f.type));
 }
@@ -87,8 +86,8 @@ export function isUserFieldConfigComplete(mapping?: UserFieldMapping): boolean {
  */
 export function isUserFieldEnabled(settings: TaskNotesSettings): boolean {
 	// Backward compatibility: legacy single-field helper now true if any mapped field exists
-	if ((settings as any).userFields && (settings as any).userFields.length > 0) {
+	if (settings.userFields && settings.userFields.length > 0) {
 		return hasAnyUserFieldsEnabled(settings);
 	}
-	return isUserFieldConfigComplete((settings as any).userField);
+	return isUserFieldConfigComplete(settings.userField);
 }

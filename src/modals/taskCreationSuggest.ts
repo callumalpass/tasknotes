@@ -1,7 +1,7 @@
-import { App, AbstractInputSuggest, parseFrontMatterAliases } from "obsidian";
+import { App, AbstractInputSuggest, parseFrontMatterAliases, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
-import { ProjectMetadataResolver } from "../utils/projectMetadataResolver";
+import { ProjectEntry, ProjectMetadataResolver } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 
 /**
@@ -12,6 +12,7 @@ interface ProjectSuggestion {
 	basename: string;
 	displayName: string;
 	type: "project";
+	entry?: ProjectEntry;
 	toString(): string;
 }
 
@@ -184,13 +185,12 @@ export class NLPSuggest extends AbstractInputSuggest<
 	 */
 	private getProjectMetadataResolver(): ProjectMetadataResolver {
 		if (!this.projectMetadataResolver) {
-			const appRef: App | undefined =
-				(this as any).obsidianApp ?? (this as any).app ?? this.plugin?.app;
+			const appRef = this.obsidianApp ?? this.plugin.app;
 			this.projectMetadataResolver = new ProjectMetadataResolver({
 				getFrontmatter: (entry) => {
 					const file = appRef?.vault.getAbstractFileByPath(entry.path);
-					const cache = file
-						? appRef?.metadataCache.getFileCache(file as any)
+					const cache = file instanceof TFile
+						? appRef?.metadataCache.getFileCache(file)
 						: undefined;
 					return cache?.frontmatter || {};
 				},
@@ -221,8 +221,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 		);
 
 		// Filter out excluded folders
-		const appRef: App | undefined =
-			(this as any).obsidianApp ?? (this as any).app ?? this.plugin?.app;
+			const appRef = this.obsidianApp ?? this.plugin.app;
 		const filteredList = list.filter((item) => {
 			const file = appRef?.vault
 				.getMarkdownFiles()
@@ -237,7 +236,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 
 			const rowConfigs = (this.plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
 
-			return filteredList.map((item) => {
+			return filteredList.map((item): ProjectSuggestion => {
 				const file = appRef?.vault
 					.getMarkdownFiles()
 					.find((f) => f.basename === item.insertText);
@@ -263,7 +262,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 				const title = typeof mapped.title === "string" ? mapped.title : "";
 				const aliasesFm = parseFrontMatterAliases(frontmatter) || [];
 				const aliases = Array.isArray(aliasesFm)
-					? (aliasesFm.filter((a) => typeof a === "string") as string[])
+					? (aliasesFm.filter((a) => typeof a === "string"))
 					: [];
 
 				const fileData = {
@@ -286,7 +285,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 				return {
 					basename: item.insertText,
 					displayName: displayName,
-					type: "project" as const,
+					type: "project",
 					entry: {
 						basename: fileData.basename,
 						name: fileData.name,
@@ -299,7 +298,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 					toString() {
 						return this.basename;
 					},
-				} as ProjectSuggestion;
+				};
 			});
 		} catch (err) {
 			console.error(
@@ -322,7 +321,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 	 */
 	private generateProjectDisplayName(
 		rows: string[],
-		item: any,
+		item: ProjectEntry,
 		resolver: ProjectMetadataResolver,
 		fallback: string
 	): string {
@@ -402,8 +401,8 @@ export class NLPSuggest extends AbstractInputSuggest<
 		// Get display text - ProjectSuggestion uses displayName, others use display
 		const displayText =
 			suggestion.type === "project"
-				? (suggestion as ProjectSuggestion).displayName
-				: (suggestion as TagSuggestion | ContextSuggestion | StatusSuggestion).display;
+				? (suggestion).displayName
+				: (suggestion).display;
 		el.setAttribute("aria-label", `${suggestion.type}: ${displayText}`);
 
 		const icon = el.createSpan("nlp-suggest-icon");
@@ -486,7 +485,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 			if (activeQuery) highlightOccurrences(filenameRow, activeQuery);
 
 			const cfg = (this.plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
-			if (Array.isArray(cfg) && cfg.length > 0 && (suggestion as any).entry) {
+				if (Array.isArray(cfg) && cfg.length > 0 && suggestion.entry) {
 				// Use cached resolver for rendering too
 				const resolver = this.getProjectMetadataResolver();
 				for (let i = 0; i < Math.min(cfg.length, 3); i++) {
@@ -508,7 +507,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 								}
 								continue;
 							}
-							const value = resolver.resolve(t.property, (suggestion as any).entry);
+							const value = resolver.resolve(t.property, suggestion.entry);
 							if (!value) continue;
 							if (metaRow.childNodes.length)
 								metaRow.appendChild(activeDocument.createTextNode(" "));
@@ -524,8 +523,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 							valueSpan.textContent = value;
 							metaRow.appendChild(valueSpan);
 							appended = true;
-							const searchable =
-								(t as any).searchable === true || ALWAYS.has(t.property);
+								const searchable = t.searchable === true || ALWAYS.has(t.property);
 							if (activeQuery && searchable)
 								highlightOccurrences(valueSpan, activeQuery);
 						}

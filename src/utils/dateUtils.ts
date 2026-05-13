@@ -17,14 +17,7 @@ import {
 	// subDays, subWeeks, subMonths, subYears - removed unused imports
 } from "date-fns";
 
-/**
- * Smart date parsing that detects timezone info and handles appropriately
- * Supports various date formats including space-separated datetime and ISO week formats
- *
- * @deprecated Use parseDateToUTC for internal logic or parseDateToLocal for UI
- * This function will be renamed to parseDateToLocal to make its behavior explicit.
- */
-export function parseDate(dateString: string): Date {
+function parseDateToLocalInternal(dateString: string): Date {
 	if (!dateString) {
 		const error = new Error("Date string cannot be empty");
 		console.error("Date parsing error:", { dateString, error: error.message });
@@ -42,7 +35,7 @@ export function parseDate(dateString: string): Date {
 		if (dateWithDayNameMatch) {
 			// Extract just the date part and continue with normal parsing
 			const dateOnly = dateWithDayNameMatch[1];
-			return parseDate(dateOnly);
+			return parseDateToLocalInternal(dateOnly);
 		}
 
 		// Handle incomplete time format (e.g., "T00:00" without date)
@@ -277,7 +270,7 @@ export function parseDateToUTC(dateString: string): Date {
 		// For datetime strings, ISO week format, or any other format,
 		// delegate to parseDateToLocal to handle the complexity
 		// This maintains backward compatibility for complex formats
-		return parseDateToLocal(trimmed);
+		return parseDateToLocalInternal(trimmed);
 	} catch (error) {
 		const wrappedError = new Error(`Failed to parse date to UTC: ${trimmed}`);
 		console.error("Date parsing error:", {
@@ -298,7 +291,19 @@ export function parseDateToUTC(dateString: string): Date {
  * Use this for UI display and user-facing date operations.
  * For internal logic, prefer parseDateToUTC.
  */
-export const parseDateToLocal = parseDate;
+export function parseDateToLocal(dateString: string): Date {
+	return parseDateToLocalInternal(dateString);
+}
+
+/**
+ * Smart date parsing that detects timezone info and handles appropriately
+ * Supports various date formats including space-separated datetime and ISO week formats
+ *
+ * @deprecated Use parseDateToUTC for internal logic or parseDateToLocal for UI.
+ */
+export function parseDate(dateString: string): Date {
+	return parseDateToLocalInternal(dateString);
+}
 
 /**
  * Safe date comparison that handles mixed timezone contexts
@@ -384,8 +389,8 @@ export function parseDateAsLocal(dateString: string): Date {
 		return parsed;
 	}
 
-	// For datetime strings, use the existing parseDate logic
-	return parseDate(dateString);
+	// For datetime strings, use the shared local-date parser
+	return parseDateToLocalInternal(dateString);
 }
 
 /**
@@ -461,7 +466,7 @@ export function validateDateInput(dateValue: string): boolean {
 	}
 
 	try {
-		parseDate(dateValue);
+		parseDateToLocalInternal(dateValue);
 		return true;
 	} catch {
 		return false;
@@ -473,7 +478,7 @@ export function validateDateInput(dateValue: string): boolean {
  */
 export function addDaysToDateString(dateString: string, days: number): string {
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		const result = addDaysFns(parsed, days);
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
@@ -487,7 +492,7 @@ export function addDaysToDateString(dateString: string, days: number): string {
  */
 export function addWeeksToDateString(dateString: string, weeks: number): string {
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		const result = addWeeks(parsed, weeks);
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
@@ -501,7 +506,7 @@ export function addWeeksToDateString(dateString: string, weeks: number): string 
  */
 export function addMonthsToDateString(dateString: string, months: number): string {
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		const result = addMonths(parsed, months);
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
@@ -515,7 +520,7 @@ export function addMonthsToDateString(dateString: string, months: number): strin
  */
 export function addYearsToDateString(dateString: string, years: number): string {
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		const result = addYears(parsed, years);
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
@@ -643,7 +648,7 @@ export function isPastDate(dateString: string): boolean {
  */
 export function formatDateForDisplay(dateString: string, formatString = "MMM d, yyyy"): string {
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		return format(parsed, formatString);
 	} catch (error) {
 		console.error("Error formatting date for display:", { dateString, error });
@@ -788,7 +793,7 @@ export function getTimePart(dateString: string): string | null {
 	}
 
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		return format(parsed, "HH:mm");
 	} catch (error) {
 		console.error("Error extracting time part:", { dateString, error });
@@ -937,7 +942,7 @@ export function formatDateTimeForDisplay(
 	const finalTimeFormat = timeFormat || (userTimeFormat === "12" ? "h:mm a" : "HH:mm");
 
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		const hasTime = hasTimeComponent(dateString);
 
 		if (hasTime && showTime) {
@@ -1057,7 +1062,7 @@ export function isTodayTimeAware(dateString: string): boolean {
 
 	try {
 		const taskDate = hasTimeComponent(dateString)
-			? parseDate(dateString)
+			? parseDateToLocalInternal(dateString)
 			: parseDateAsLocal(dateString);
 		const now = new Date();
 
@@ -1104,13 +1109,13 @@ export function validateDateTimeInput(dateValue: string, timeValue?: string): bo
  * Validates and filters a complete_instances array to contain only valid YYYY-MM-DD dates
  * This prevents issues with invalid time-only entries like "T00:00"
  */
-export function validateCompleteInstances(instances: any[]): string[] {
+export function validateCompleteInstances(instances: unknown[]): string[] {
 	if (!Array.isArray(instances)) {
 		return [];
 	}
 
 	return instances
-		.filter((instance) => {
+		.filter((instance): instance is string => {
 			// Must be a non-empty string
 			if (typeof instance !== "string" || !instance.trim()) {
 				return false;
@@ -1132,7 +1137,7 @@ export function validateCompleteInstances(instances: any[]): string[] {
 
 			// Must be a valid date (this should not fail for YYYY-MM-DD format, but check anyway)
 			try {
-				parseDate(trimmed);
+				parseDateToLocalInternal(trimmed);
 				return true;
 			} catch (error) {
 				console.warn(
@@ -1159,7 +1164,7 @@ export function getCurrentDateTimeString(): string {
  */
 export function addDaysToDateTime(dateString: string, days: number): string {
 	try {
-		const parsed = parseDate(dateString);
+		const parsed = parseDateToLocalInternal(dateString);
 		const result = addDaysFns(parsed, days);
 
 		// Preserve time format if original had time
@@ -1463,7 +1468,7 @@ export function isValidDateInput(value: string): boolean {
 
 	// Check if it's a valid ISO date format
 	try {
-		const parsed = parseDate(trimmed);
+		const parsed = parseDateToLocalInternal(trimmed);
 		return isValid(parsed);
 	} catch {
 		return false;

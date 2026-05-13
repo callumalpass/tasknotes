@@ -2008,7 +2008,7 @@ export const zh: TranslationTree = {
 						transformFile: {
 							name: "转换文件",
 							description: "库中转换webhook载荷的.js或.json文件路径",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "包含自定义标头",
@@ -2035,7 +2035,7 @@ export const zh: TranslationTree = {
 						transformFile: {
 							name: "转换文件",
 							description: "库中转换webhook载荷的.js或.json文件路径",
-							placeholder: "discord-transform.js",
+							placeholder: "simple-template.json",
 						},
 						customHeaders: {
 							name: "包含自定义标头",
@@ -2051,7 +2051,7 @@ export const zh: TranslationTree = {
 							leaveEmpty: "留空：",
 							leaveEmptyDescription: " 发送原始数据",
 							example: "示例：",
-							exampleFile: "discord-transform.js",
+							exampleFile: "simple-template.json",
 						},
 						buttons: {
 							cancel: "取消",

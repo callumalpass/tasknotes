@@ -33,11 +33,11 @@ export class StatusBarService {
 
 		// Add click handler to open tasks view filtered to tracked tasks
 		this.statusBarElement.addEventListener("click", () => {
-			this.handleStatusBarClick();
+			void this.handleStatusBarClick();
 		});
 
 		// Initial update
-		this.updateStatusBar();
+		void this.updateStatusBar();
 	}
 
 	/**
@@ -200,7 +200,7 @@ export class StatusBarService {
 
 		// Debounce updates to prevent excessive re-renders
 		this.updateTimeout = window.setTimeout(() => {
-			this.updateStatusBar();
+			void this.updateStatusBar();
 		}, 100);
 	}
 
@@ -212,7 +212,7 @@ export class StatusBarService {
 			if (!this.statusBarElement) {
 				this.initialize();
 			} else {
-				this.updateStatusBar();
+				void this.updateStatusBar();
 			}
 		} else {
 			this.hide();

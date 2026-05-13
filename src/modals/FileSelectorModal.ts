@@ -74,7 +74,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 		this.scope.register(["Shift"], "Enter", (e: KeyboardEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
-			this.createNewFile();
+			void this.createNewFile();
 			return false;
 		});
 

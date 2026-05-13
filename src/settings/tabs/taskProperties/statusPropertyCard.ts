@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {
@@ -301,7 +301,7 @@ function renderStatusList(
 		};
 
 		const deleteStatus = () => {
-			// eslint-disable-next-line no-alert
+			// eslint-disable-next-line no-alert -- Native confirm matches existing destructive settings confirmation behavior.
 			const confirmDelete = confirm(
 				translate("settings.taskProperties.taskStatuses.deleteConfirm", {
 					label: status.label || status.value,

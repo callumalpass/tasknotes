@@ -1,5 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { parse } from "url";
+import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import { TaskService } from "../services/TaskService";
 import { TaskManager } from "../utils/TaskManager";
@@ -25,8 +24,8 @@ export class TimeTrackingController extends BaseController {
 
 	@Post("/api/tasks/:id/time/start")
 	async startTimeTracking(
-		req: IncomingMessage,
-		res: ServerResponse,
+		req: HTTPRequestLike,
+		res: HTTPResponseLike,
 		params?: Record<string, string>
 	): Promise<void> {
 		try {
@@ -46,15 +45,15 @@ export class TimeTrackingController extends BaseController {
 			const updatedTask = await this.taskService.startTimeTracking(task);
 
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Post("/api/tasks/:id/time/stop")
 	async stopTimeTracking(
-		req: IncomingMessage,
-		res: ServerResponse,
+		req: HTTPRequestLike,
+		res: HTTPResponseLike,
 		params?: Record<string, string>
 	): Promise<void> {
 		try {
@@ -74,15 +73,15 @@ export class TimeTrackingController extends BaseController {
 			const updatedTask = await this.taskService.stopTimeTracking(task);
 
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Post("/api/tasks/:id/time/start-with-description")
 	async startTimeTrackingWithDescription(
-		req: IncomingMessage,
-		res: ServerResponse,
+		req: HTTPRequestLike,
+		res: HTTPResponseLike,
 		params?: Record<string, string>
 	): Promise<void> {
 		try {
@@ -99,8 +98,8 @@ export class TimeTrackingController extends BaseController {
 				return;
 			}
 
-			const body = await this.parseRequestBody(req);
-			const description = body.description || "";
+			const body = await this.parseRequestBody<{ description?: string }>(req);
+			const description = body.description ?? "";
 
 			// Start time tracking using the existing service method
 			let updatedTask = await this.taskService.startTimeTracking(task);
@@ -127,13 +126,13 @@ export class TimeTrackingController extends BaseController {
 						: "Time tracking started",
 				})
 			);
-		} catch (error: any) {
-			this.sendResponse(res, 400, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/time/active")
-	async getActiveTimeSessions(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getActiveTimeSessions(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const allTasks = await this.cacheManager.getAllTasks();
 			const result = computeActiveTimeSessions(
@@ -141,21 +140,22 @@ export class TimeTrackingController extends BaseController {
 				(task) => this.plugin.getActiveTimeSession(task)
 			);
 			this.sendResponse(res, 200, this.successResponse(result));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/time/summary")
-	async getTimeSummary(req: IncomingMessage, res: ServerResponse): Promise<void> {
+	async getTimeSummary(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
-			const parsedUrl = parse(req.url || "", true);
-			const query = parsedUrl.query;
+			const query = parseRequestUrl(req).searchParams;
 
 			const allTasks = await this.cacheManager.getAllTasks();
-			const period = (query.period as string) || "today";
-			const fromDate = query.from ? new Date(query.from as string) : null;
-			const toDate = query.to ? new Date(query.to as string) : null;
+			const period = query.get("period") || "today";
+			const from = query.get("from");
+			const to = query.get("to");
+			const fromDate = from ? new Date(from) : null;
+			const toDate = to ? new Date(to) : null;
 
 			const result = computeTimeSummary(
 				allTasks,
@@ -164,15 +164,15 @@ export class TimeTrackingController extends BaseController {
 			);
 
 			this.sendResponse(res, 200, this.successResponse(result));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 
 	@Get("/api/tasks/:id/time")
 	async getTaskTimeData(
-		req: IncomingMessage,
-		res: ServerResponse,
+		req: HTTPRequestLike,
+		res: HTTPResponseLike,
 		params?: Record<string, string>
 	): Promise<void> {
 		try {
@@ -194,8 +194,8 @@ export class TimeTrackingController extends BaseController {
 				(t) => this.plugin.getActiveTimeSession(t)
 			);
 			this.sendResponse(res, 200, this.successResponse(result));
-		} catch (error: any) {
-			this.sendResponse(res, 500, this.errorResponse(error.message));
+		} catch (error: unknown) {
+			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}
 	}
 }

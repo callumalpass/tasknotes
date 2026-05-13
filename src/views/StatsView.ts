@@ -9,6 +9,7 @@ import {
 	endOfDay,
 	subDays,
 } from "date-fns";
+import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { STATS_VIEW_TYPE, TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import { calculateTotalTimeSpent, filterEmptyProjects } from "../utils/helpers";
@@ -16,6 +17,10 @@ import { getTodayLocal } from "../utils/dateUtils";
 import { createTaskCard } from "../ui/TaskCard";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { getProjectDisplayName } from "../utils/linkUtils";
+
+function isDay(value: number): value is Day {
+	return Number.isInteger(value) && value >= 0 && value <= 6;
+}
 
 interface ProjectStats {
 	projectName: string;
@@ -172,7 +177,7 @@ export class StatsView extends ItemView {
 			text: this.plugin.i18n.translate("views.stats.refreshButton"),
 		});
 		this.registerDomEvent(refreshButton, "click", () => {
-			this.refreshStats();
+			void this.refreshStats();
 		});
 
 		// Filters section
@@ -370,7 +375,8 @@ export class StatsView extends ItemView {
 
 		const todayLocal = getTodayLocal();
 		const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
-		const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
+		const weekStartsOn = isDay(firstDaySetting) ? firstDaySetting : 0;
+		const weekStartOptions: { weekStartsOn: Day } = { weekStartsOn };
 		const weekStart = startOfWeek(todayLocal, weekStartOptions);
 		const weekEnd = endOfWeek(todayLocal, weekStartOptions);
 
@@ -682,7 +688,7 @@ export class StatsView extends ItemView {
 		this.registerDomEvent(dateRangeSelect, "change", () => {
 			this.currentFilters.dateRange = dateRangeSelect.value as StatsFilters["dateRange"];
 			this.renderCustomDateInputs();
-			this.applyFilters();
+			void this.applyFilters();
 		});
 
 		// Custom date inputs container
@@ -705,7 +711,7 @@ export class StatsView extends ItemView {
 
 		this.registerDomEvent(minTimeInput, "input", () => {
 			this.currentFilters.minTimeSpent = parseInt(minTimeInput.value) || 0;
-			this.applyFilters();
+			void this.applyFilters();
 		});
 
 		// Apply/Reset buttons
@@ -723,7 +729,7 @@ export class StatsView extends ItemView {
 				minTimeSpent: 0,
 			};
 			this.renderFilters();
-			this.applyFilters();
+			void this.applyFilters();
 		});
 	}
 
@@ -767,12 +773,12 @@ export class StatsView extends ItemView {
 
 			this.registerDomEvent(startInput, "change", () => {
 				this.currentFilters.customStartDate = startInput.value;
-				this.applyFilters();
+				void this.applyFilters();
 			});
 
 			this.registerDomEvent(endInput, "change", () => {
 				this.currentFilters.customEndDate = endInput.value;
-				this.applyFilters();
+				void this.applyFilters();
 			});
 		}
 	}
@@ -1043,7 +1049,7 @@ export class StatsView extends ItemView {
 
 			// Make project clickable for drill-down
 			this.registerDomEvent(projectEl, "click", () => {
-				this.openProjectDrilldown(project.projectName);
+				void this.openProjectDrilldown(project.projectName);
 			});
 
 			// Project header with name and completion rate

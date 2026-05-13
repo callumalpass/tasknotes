@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Dependency graph traversal guards resolved task nodes before dereferencing. */
 import { TFile, App, Events, EventRef } from "obsidian";
 import { FieldMapper } from "../services/FieldMapper";
 import { normalizeDependencyList, resolveDependencyEntry } from "./dependencyUtils";
@@ -35,14 +35,14 @@ export class DependencyCache extends Events {
 	private eventListeners: EventRef[] = [];
 
 	// Callback to check if a file is a task
-	private isTaskFileCallback: (frontmatter: any) => boolean;
+	private isTaskFileCallback: (frontmatter: unknown) => boolean;
 
 	constructor(
 		app: App,
 		settings: TaskNotesSettings,
 		fieldMapper: FieldMapper | undefined,
 		statusManager: StatusManager,
-		isTaskFileCallback: (frontmatter: any) => boolean
+		isTaskFileCallback: (frontmatter: unknown) => boolean
 	) {
 		super();
 		this.app = app;
@@ -116,7 +116,7 @@ export class DependencyCache extends Events {
 	/**
 	 * Handle file changes
 	 */
-	private handleFileChanged(file: TFile, cache: any): void {
+	private handleFileChanged(file: TFile, cache: unknown): void {
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) {
 			this.clearFileFromIndexes(file.path);
@@ -179,7 +179,7 @@ export class DependencyCache extends Events {
 	/**
 	 * Index a task file's dependencies and project references
 	 */
-	private indexTaskFile(path: string, frontmatter: any): void {
+	private indexTaskFile(path: string, frontmatter: Record<string, unknown>): void {
 		const dependenciesField = this.fieldMapper?.toUserField("blockedBy") || "blockedBy";
 		const projectField = this.fieldMapper?.toUserField("projects") || "project";
 

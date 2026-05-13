@@ -551,10 +551,10 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 			}
 
 			// Refresh existing Bases views
-			plugin.app.workspace.iterateAllLeaves((leaf) => {
-				if (leaf.view?.getViewType?.() === "bases") {
-					const view = leaf.view as any;
-					if (typeof view.refresh === "function") {
+				plugin.app.workspace.iterateAllLeaves((leaf) => {
+					if (leaf.view?.getViewType?.() === "bases") {
+						const view = leaf.view as { refresh?: () => void };
+						if (typeof view.refresh === "function") {
 						try {
 							view.refresh();
 						} catch (refreshError) {

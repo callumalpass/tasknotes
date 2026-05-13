@@ -23,10 +23,24 @@ import {
 	getTodayLocal as _getTodayLocal,
 } from "./dateUtils";
 
+type ObsidianMoment = import("moment").Moment;
+
+type WindowWithMoment = Window & {
+	moment(input?: string | Date): ObsidianMoment;
+};
+
+type DailyNoteFrontmatterWithTimeblocks = DailyNoteFrontmatter & {
+	timeblocks?: TimeBlock[];
+};
+
+function getWindowMoment(input?: string | Date): ObsidianMoment {
+	return (window as unknown as WindowWithMoment).moment(input);
+}
+
 /**
  * Extracts frontmatter from a markdown file content using Obsidian's native parser
  */
-function extractFrontmatter(content: string): any {
+function extractFrontmatter(content: string): unknown {
 	if (!content.startsWith("---")) {
 		return {};
 	}
@@ -384,7 +398,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 /**
  * Gets the effective status of a task, considering recurrence
  */
-export function getEffectiveTaskStatus(task: any, date: Date, completedStatus?: string): string {
+export function getEffectiveTaskStatus(task: TaskInfo, date: Date, completedStatus?: string): string {
 	return getEffectiveTaskStatusCore(task, date, completedStatus);
 }
 
@@ -535,37 +549,38 @@ export function extractNoteInfo(
 /**
  * Validates a timeblock object against the expected schema
  */
-export function validateTimeBlock(timeblock: any): timeblock is TimeBlock {
+export function validateTimeBlock(timeblock: unknown): timeblock is TimeBlock {
 	if (!timeblock || typeof timeblock !== "object") {
 		return false;
 	}
+	const block = timeblock as Partial<TimeBlock>;
 
 	// Required fields
-	if (!timeblock.id || typeof timeblock.id !== "string") {
+	if (!block.id || typeof block.id !== "string") {
 		return false;
 	}
 
-	if (!timeblock.title || typeof timeblock.title !== "string") {
+	if (!block.title || typeof block.title !== "string") {
 		return false;
 	}
 
-	if (!timeblock.startTime || typeof timeblock.startTime !== "string") {
+	if (!block.startTime || typeof block.startTime !== "string") {
 		return false;
 	}
 
-	if (!timeblock.endTime || typeof timeblock.endTime !== "string") {
+	if (!block.endTime || typeof block.endTime !== "string") {
 		return false;
 	}
 
 	// Validate time format (HH:MM)
 	const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-	if (!timeRegex.test(timeblock.startTime) || !timeRegex.test(timeblock.endTime)) {
+	if (!timeRegex.test(block.startTime) || !timeRegex.test(block.endTime)) {
 		return false;
 	}
 
 	// Ensure end time is after start time
-	const [startHour, startMin] = timeblock.startTime.split(":").map(Number);
-	const [endHour, endMin] = timeblock.endTime.split(":").map(Number);
+	const [startHour, startMin] = block.startTime.split(":").map(Number);
+	const [endHour, endMin] = block.endTime.split(":").map(Number);
 	const startMinutes = startHour * 60 + startMin;
 	const endMinutes = endHour * 60 + endMin;
 
@@ -574,12 +589,12 @@ export function validateTimeBlock(timeblock: any): timeblock is TimeBlock {
 	}
 
 	// Optional fields validation
-	if (timeblock.attachments && !Array.isArray(timeblock.attachments)) {
+	if (block.attachments && !Array.isArray(block.attachments)) {
 		return false;
 	}
 
-	if (timeblock.attachments) {
-		for (const attachment of timeblock.attachments) {
+	if (block.attachments) {
+		for (const attachment of block.attachments) {
 			if (typeof attachment !== "string") {
 				return false;
 			}
@@ -591,11 +606,11 @@ export function validateTimeBlock(timeblock: any): timeblock is TimeBlock {
 		}
 	}
 
-	if (timeblock.color && typeof timeblock.color !== "string") {
+	if (block.color && typeof block.color !== "string") {
 		return false;
 	}
 
-	if (timeblock.description && typeof timeblock.description !== "string") {
+	if (block.description && typeof block.description !== "string") {
 		return false;
 	}
 
@@ -638,7 +653,7 @@ export function timeblockToCalendarEvent(
 	timeblock: TimeBlock,
 	date: string,
 	defaultColor = "#6366f1"
-): any {
+): unknown {
 	// Create datetime strings that FullCalendar interprets consistently
 	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
@@ -676,7 +691,7 @@ export function generateTimeblockId(): string {
  * Updates a timeblock in a daily note's frontmatter
  */
 export async function updateTimeblockInDailyNote(
-	app: any,
+	app: App,
 	timeblockId: string,
 	oldDate: string,
 	newDate: string,
@@ -694,7 +709,7 @@ export async function updateTimeblockInDailyNote(
 	const allDailyNotes = getAllDailyNotes();
 
 	// Get the timeblock from the old date
-	const oldMoment = (window as any).moment(oldDate);
+	const oldMoment = getWindowMoment(oldDate);
 	const oldDailyNote = getDailyNote(oldMoment, allDailyNotes);
 
 	if (!oldDailyNote) {
@@ -735,21 +750,22 @@ export async function updateTimeblockInDailyNote(
  * Updates timeblock times within the same daily note
  */
 async function updateTimeblockTimes(
-	app: any,
-	dailyNote: any,
+	app: App,
+	dailyNote: TFile,
 	timeblockId: string,
 	newStartTime: string,
 	newEndTime: string
 ): Promise<void> {
 	const content = await app.vault.read(dailyNote);
-	const frontmatter = extractFrontmatter(content) || {};
+	const frontmatter =
+		(extractFrontmatter(content) as DailyNoteFrontmatterWithTimeblocks | null) || {};
 
 	if (!frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
 		throw new Error("No timeblocks found in frontmatter");
 	}
 
 	// Update the timeblock
-	const timeblockIndex = frontmatter.timeblocks.findIndex((tb: any) => tb.id === timeblockId);
+	const timeblockIndex = frontmatter.timeblocks.findIndex((tb) => tb.id === timeblockId);
 	if (timeblockIndex === -1) {
 		throw new Error(`Timeblock ${timeblockId} not found`);
 	}
@@ -765,19 +781,20 @@ async function updateTimeblockTimes(
  * Removes a timeblock from a daily note
  */
 async function removeTimeblockFromDailyNote(
-	app: any,
-	dailyNote: any,
+	app: App,
+	dailyNote: TFile,
 	timeblockId: string
 ): Promise<void> {
 	const content = await app.vault.read(dailyNote);
-	const frontmatter = extractFrontmatter(content) || {};
+	const frontmatter =
+		(extractFrontmatter(content) as DailyNoteFrontmatterWithTimeblocks | null) || {};
 
 	if (!frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
 		return; // No timeblocks to remove
 	}
 
 	// Remove the timeblock
-	frontmatter.timeblocks = frontmatter.timeblocks.filter((tb: any) => tb.id !== timeblockId);
+	frontmatter.timeblocks = frontmatter.timeblocks.filter((tb) => tb.id !== timeblockId);
 
 	// Save back to file
 	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content);
@@ -787,7 +804,7 @@ async function removeTimeblockFromDailyNote(
  * Adds a timeblock to a daily note (creating the note if needed)
  */
 async function addTimeblockToDailyNote(
-	app: any,
+	app: App,
 	date: string,
 	timeblock: TimeBlock
 ): Promise<void> {
@@ -795,7 +812,7 @@ async function addTimeblockToDailyNote(
 		"obsidian-daily-notes-interface"
 	);
 
-	const moment = (window as any).moment(date);
+	const moment = getWindowMoment(date);
 	const allDailyNotes = getAllDailyNotes();
 	let dailyNote = getDailyNote(moment, allDailyNotes);
 
@@ -818,7 +835,8 @@ async function addTimeblockToDailyNote(
 	}
 
 	const content = await app.vault.read(dailyNote);
-	const frontmatter = extractFrontmatter(content) || {};
+	const frontmatter =
+		(extractFrontmatter(content) as DailyNoteFrontmatterWithTimeblocks | null) || {};
 
 	if (!frontmatter.timeblocks) {
 		frontmatter.timeblocks = [];
@@ -834,9 +852,9 @@ async function addTimeblockToDailyNote(
  * Updates daily note frontmatter while preserving body content
  */
 async function updateDailyNoteFrontmatter(
-	app: any,
-	dailyNote: any,
-	frontmatter: any,
+	app: App,
+	dailyNote: TFile,
+	frontmatter: DailyNoteFrontmatterWithTimeblocks,
 	originalContent: string
 ): Promise<void> {
 	// Get body content (everything after frontmatter)

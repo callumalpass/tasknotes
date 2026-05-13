@@ -3,6 +3,7 @@ import type { CliCommandDefinition } from "../types";
 import { formatCliJson } from "../helpers/formatters";
 import { resolveTaskForCli } from "../helpers/taskResolution";
 import type { PomodoroState, TaskInfo } from "../../types";
+import type TaskNotesPlugin from "../../main";
 
 type PomodoroAction =
 	| "status"
@@ -49,7 +50,7 @@ function hasTaskLookup(params: CliData): boolean {
 }
 
 async function resolvePomodoroTask(
-	plugin: any,
+	plugin: TaskNotesPlugin,
 	params: CliData,
 	required: boolean
 ): Promise<TaskInfo | undefined> {
@@ -67,7 +68,7 @@ async function resolvePomodoroTask(
 	});
 }
 
-async function formatPomodoroState(plugin: any, state: PomodoroState): Promise<Record<string, unknown>> {
+async function formatPomodoroState(plugin: TaskNotesPlugin, state: PomodoroState): Promise<Record<string, unknown>> {
 	const currentSession = state.currentSession;
 	const task =
 		currentSession?.taskPath

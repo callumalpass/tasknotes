@@ -1,4 +1,5 @@
 import type { RenderContext, Value } from "obsidian";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 export interface TaskCardPresentationOptions {
 	propertyLabels?: Record<string, string>;
@@ -91,15 +92,15 @@ export function extractBasesValue(value: unknown): unknown {
 		const v = value as Record<string, unknown>;
 
 		if (v.icon === "lucide-link" && "data" in v && v.data !== null && v.data !== undefined) {
-			const linkPath = String(v.data);
+			const linkPath = stringifyUnknown(v.data);
 			if (!linkPath.match(/^[a-z]+:\/\//i)) {
-				const display = "display" in v && v.display ? String(v.display) : null;
+				const display = "display" in v && v.display ? stringifyUnknown(v.display) : null;
 				if (display && display !== linkPath) {
 					return `[[${linkPath}|${display}]]`;
 				}
 				return `[[${linkPath}]]`;
 			}
-			const display = "display" in v && v.display ? String(v.display) : null;
+			const display = "display" in v && v.display ? stringifyUnknown(v.display) : null;
 			if (display) {
 				return `[${display}](${linkPath})`;
 			}
@@ -118,7 +119,7 @@ export function extractBasesValue(value: unknown): unknown {
 		if (v.icon === "lucide-file-question" || v.icon === "lucide-help-circle") {
 			return "";
 		}
-		return v.icon ? String(v.icon).replace("lucide-", "") : "";
+		return v.icon ? stringifyUnknown(v.icon).replace("lucide-", "") : "";
 	}
 	return value;
 }

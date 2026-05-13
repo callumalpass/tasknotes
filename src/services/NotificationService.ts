@@ -78,7 +78,7 @@ export class NotificationService {
 
 			await this.scanTasksAndBuildQueue();
 			this.lastBroadScanTime = now;
-		}, this.BROAD_SCAN_INTERVAL) as unknown as number;
+		}, this.BROAD_SCAN_INTERVAL);
 	}
 
 	private startQuickCheck(): void {
@@ -94,7 +94,7 @@ export class NotificationService {
 
 			this.checkNotificationQueue();
 			this.lastQuickCheckTime = now;
-		}, this.QUICK_CHECK_INTERVAL) as unknown as number;
+		}, this.QUICK_CHECK_INTERVAL);
 	}
 
 	private async scanTasksAndBuildQueue(): Promise<void> {
@@ -212,7 +212,7 @@ export class NotificationService {
 
 			if (item.notifyAt <= now) {
 				// Trigger the notification
-				this.triggerNotification(item);
+				void this.triggerNotification(item);
 				toRemove.push(i);
 
 				// Mark as processed to avoid duplicates
@@ -262,7 +262,7 @@ export class NotificationService {
 
 				// Open task note when notification is clicked
 				notification.onclick = () => {
-					this.plugin.app.workspace.openLinkText(item.taskPath, "", false);
+					void this.plugin.app.workspace.openLinkText(item.taskPath, "", false);
 					notification.close();
 				};
 			} else {
@@ -288,19 +288,20 @@ export class NotificationService {
 
 	private showInAppNotice(message: string, taskPath: string): void {
 		const notice = new Notice(message, 0); // 0 = persistent until clicked
+		const noticeEl = (notice as unknown as { noticeEl: HTMLElement }).noticeEl;
 
 		// Add click handler to open the task
-		(notice as any).noticeEl.addEventListener("click", () => {
-			this.plugin.app.workspace.openLinkText(taskPath, "", false);
+		noticeEl.addEventListener("click", () => {
+			void this.plugin.app.workspace.openLinkText(taskPath, "", false);
 			notice.hide();
 		});
 
 		// Add styling to make it clickable
-		(notice as any).noticeEl.classList.remove(
+		noticeEl.classList.remove(
 			"tn-static-cursor-grab-dad79857",
 			"tn-static-cursor-pointer-2723efcc"
 		);
-		(notice as any).noticeEl.classList.add("tn-static-cursor-pointer-3b6a3a65");
+		noticeEl.classList.add("tn-static-cursor-pointer-3b6a3a65");
 	}
 
 	private generateDefaultMessage(task: TaskInfo, reminder: Reminder): string {

@@ -1,6 +1,6 @@
 import { App } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { TaskInfo } from "../types";
+import { Reminder, TaskInfo } from "../types";
 import {
 	createUTCDateFromLocalCalendarDate,
 	getDatePart,
@@ -15,6 +15,14 @@ export interface KanbanCardActionContext {
 	plugin: TaskNotesPlugin;
 	app: App;
 }
+
+type PriorityContextMenuConstructor =
+	typeof import("../components/PriorityContextMenu").PriorityContextMenu;
+type RecurrenceContextMenuConstructor =
+	typeof import("../components/RecurrenceContextMenu").RecurrenceContextMenu;
+type ReminderModalConstructor = typeof import("../modals/ReminderModal").ReminderModal;
+type DateContextMenuConstructor =
+	typeof import("../components/DateContextMenu").DateContextMenu;
 
 export async function handleKanbanCardAction({
 	action,
@@ -102,11 +110,11 @@ function showPriorityMenu(
 	task: TaskInfo,
 	event: MouseEvent,
 	plugin: TaskNotesPlugin,
-	PriorityContextMenu: any
+	PriorityContextMenu: PriorityContextMenuConstructor
 ): void {
 	const menu = new PriorityContextMenu({
 		currentValue: task.priority,
-		onSelect: async (newPriority: any) => {
+			onSelect: async (newPriority: string) => {
 			try {
 				await plugin.updateTaskProperty(task, "priority", newPriority);
 			} catch (error) {
@@ -122,7 +130,7 @@ function showRecurrenceMenu(
 	task: TaskInfo,
 	event: MouseEvent,
 	plugin: TaskNotesPlugin,
-	RecurrenceContextMenu: any
+	RecurrenceContextMenu: RecurrenceContextMenuConstructor
 ): void {
 	const menu = new RecurrenceContextMenu({
 		currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
@@ -144,8 +152,12 @@ function showRecurrenceMenu(
 	menu.show(event);
 }
 
-function showReminderModal(task: TaskInfo, plugin: TaskNotesPlugin, ReminderModal: any): void {
-	const modal = new ReminderModal(plugin.app, plugin, task, async (reminders: any) => {
+function showReminderModal(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	ReminderModal: ReminderModalConstructor
+): void {
+	const modal = new ReminderModal(plugin.app, plugin, task, async (reminders: Reminder[]) => {
 		try {
 			await plugin.updateTaskProperty(
 				task,
@@ -165,7 +177,7 @@ async function openDateContextMenu(
 	event: MouseEvent,
 	plugin: TaskNotesPlugin,
 	app: App,
-	DateContextMenu: any
+	DateContextMenu: DateContextMenuConstructor
 ): Promise<void> {
 	if (!dateType) return;
 
@@ -175,7 +187,7 @@ async function openDateContextMenu(
 	const menu = new DateContextMenu({
 		currentValue: getDatePart(currentValue || ""),
 		currentTime: getTimePart(currentValue || ""),
-		onSelect: async (dateValue: string, timeValue: string) => {
+			onSelect: async (dateValue: string | null, timeValue?: string | null) => {
 			try {
 				let finalValue: string | undefined;
 				if (!dateValue) {

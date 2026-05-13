@@ -36,7 +36,7 @@ export function normalizeDependencyEntry(value: unknown): TaskDependency | null 
 		const normalizedUid = parseLinkToPath(rawUid);
 		const reltypeRaw = typeof raw.reltype === "string" ? raw.reltype.trim().toUpperCase() : "";
 		const reltype = isValidDependencyRelType(reltypeRaw)
-			? (reltypeRaw as TaskDependencyRelType)
+			? (reltypeRaw)
 			: DEFAULT_DEPENDENCY_RELTYPE;
 		const gap = typeof raw.gap === "string" && raw.gap.trim().length > 0 ? raw.gap.trim() : undefined;
 		return gap ? { uid: normalizedUid, reltype, gap } : { uid: normalizedUid, reltype };
@@ -62,7 +62,7 @@ export function normalizeDependencyList(value: unknown): TaskDependency[] | unde
 	return normalized.length > 0 ? normalized : undefined;
 }
 
-export function serializeDependencies(dependencies: TaskDependency[]): any[] {
+export function serializeDependencies(dependencies: TaskDependency[]): unknown[] {
 	return dependencies.map((dependency) => {
 		// Wrap uid in wikilink brackets if not already wrapped.
 		// normalizeDependencyEntry() strips link formatting from uids,

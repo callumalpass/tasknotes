@@ -9,10 +9,10 @@ declare const app: App;
 interface ScrollableMarkdownEditor {
 	app: App;
 	containerEl: HTMLElement;
-	editor: any;
+	editor: MarkdownEditorInternal;
 	editorEl: HTMLElement;
-	activeCM: any;
-	owner: any;
+	activeCM: unknown;
+	owner: MarkdownEditorOwner;
 	_loaded: boolean;
 	set(value: string): void;
 	onUpdate(update: ViewUpdate, changed: boolean): void;
@@ -24,10 +24,44 @@ interface ScrollableMarkdownEditor {
 // Internal Obsidian type - not exported in official API
 interface WidgetEditorView {
 	editable: boolean;
-	editMode: any;
+	editMode: unknown;
 	showEditor(): void;
 	unload(): void;
 }
+
+type MarkdownEditorInternal = {
+	cm: EditorView & {
+		cm?: unknown;
+		contentDOM: HTMLElement;
+	};
+};
+
+type MarkdownEditorOwner = {
+	editMode: unknown;
+	editor: MarkdownEditorInternal | null;
+};
+
+type WorkspaceWithActiveEditor = {
+	activeEditor: MarkdownEditorOwner;
+};
+
+type ActiveLeafContext = {
+	activeCM?: {
+		hasFocus?: boolean;
+	};
+};
+
+type VaultWithConfig = App["vault"] & {
+	getConfig(key: string): unknown;
+};
+
+type WindowWithCodeMirrorAdapter = Window & {
+	CodeMirrorAdapter?: {
+		Vim?: {
+			handleKey(cm: unknown, key: string, origin: string): void;
+		};
+	};
+};
 
 /**
  * Resolves the internal ScrollableMarkdownEditor prototype from Obsidian
@@ -72,12 +106,14 @@ function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 	// In test environments, app won't be defined, so return a mock base class
 	if (typeof app === "undefined") {
 		return class MockScrollableMarkdownEditor {
-			app: any;
+			app: App;
 			containerEl: HTMLElement = activeDocument.createElement("div");
-			editor: any;
+			editor: MarkdownEditorInternal = {
+				cm: new EditorView(),
+			};
 			editorEl: HTMLElement = activeDocument.createElement("div");
-			activeCM: any;
-			owner: any = { editMode: null, editor: null };
+			activeCM: unknown;
+			owner: MarkdownEditorOwner = { editMode: null, editor: null };
 			_loaded = false;
 			set(value: string): void {}
 			onUpdate(update: ViewUpdate, changed: boolean): void {}
@@ -86,11 +122,11 @@ function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 			}
 			destroy(): void {}
 			unload(): void {}
-			constructor(app: App, container: HTMLElement, options: any) {
+			constructor(app: App, container: HTMLElement, options: unknown) {
 				this.app = app;
 				this.containerEl = container;
 			}
-		} as any as Constructor<ScrollableMarkdownEditor>;
+		};
 	}
 	return resolveEditorPrototype(app);
 }
@@ -124,8 +160,11 @@ export interface MarkdownEditorProps {
 	enterVimInsertMode?: boolean;
 }
 
-const defaultProperties: Required<MarkdownEditorProps> = {
-	cursorLocation: undefined as any, // Don't set cursor by default
+type ResolvedMarkdownEditorProps = Required<Omit<MarkdownEditorProps, "cursorLocation">> &
+	Pick<MarkdownEditorProps, "cursorLocation">;
+
+const defaultProperties: ResolvedMarkdownEditorProps = {
+	cursorLocation: undefined, // Don't set cursor by default
 	value: "",
 	cls: "",
 	placeholder: "",
@@ -157,7 +196,7 @@ const defaultProperties: Required<MarkdownEditorProps> = {
  * ```
  */
 export class EmbeddableMarkdownEditor extends getEditorBase() {
-	options: Required<MarkdownEditorProps>;
+	options: ResolvedMarkdownEditorProps;
 	initial_value: string;
 	scope: Scope;
 	private uninstaller?: () => void;
@@ -185,8 +224,8 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 
 		// Prevent workspace from stealing focus when editing
 		this.uninstaller = around(this.app.workspace, {
-			setActiveLeaf: (oldMethod: any) => {
-				return function (this: any, ...args: any[]) {
+			setActiveLeaf: (oldMethod: (this: unknown, ...args: unknown[]) => unknown) => {
+				return function (this: ActiveLeafContext, ...args: unknown[]) {
 					if (!this.activeCM?.hasFocus) {
 						oldMethod.call(this, ...args);
 					}
@@ -205,7 +244,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		// Set up focus handler
 		this.editor.cm.contentDOM.addEventListener("focusin", () => {
 			this.app.keymap.pushScope(this.scope);
-			this.app.workspace.activeEditor = this.owner;
+			(this.app.workspace as unknown as WorkspaceWithActiveEditor).activeEditor = this.owner;
 
 			// Enter vim insert mode on first focus if requested and vim mode is enabled
 			if (this.options.enterVimInsertMode && !this.hasEnteredVimInsertMode) {
@@ -253,16 +292,16 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		window.setTimeout(() => {
 			try {
 				// Check if vim mode is enabled in Obsidian settings
-				const vimModeEnabled = (this.app.vault as any).getConfig("vimMode");
+				const vimModeEnabled = (this.app.vault as VaultWithConfig).getConfig("vimMode");
 				if (!vimModeEnabled) return;
 
 				// Access the Vim API from Obsidian's CodeMirrorAdapter
-				const Vim = (window as any).CodeMirrorAdapter?.Vim;
+				const Vim = (window as unknown as WindowWithCodeMirrorAdapter).CodeMirrorAdapter?.Vim;
 				if (!Vim) return;
 
 				// Get the CM5 adapter - Obsidian nests it at editor.cm.cm
 				// Fallback to activeCM if the standard path doesn't work
-				const cm5 = (this.editor as any)?.cm?.cm ?? (this as any).activeCM;
+				const cm5 = this.editor.cm.cm ?? this.activeCM;
 				if (!cm5) return;
 
 				// Enter insert mode by simulating the 'i' key

@@ -1,6 +1,7 @@
 import { Notice, Platform, Modal, Setting, setIcon, App } from "obsidian";
 import TaskNotesPlugin from "../../main";
-import { WebhookConfig } from "../../types";
+import type { WebhookConfig, WebhookEvent } from "../../types";
+import type { ICSIntegrationSettings } from "../../types/settings";
 import { TranslationKey } from "../../i18n";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
 import {
@@ -11,6 +12,7 @@ import {
 	configureNumberSetting,
 	configureButtonSetting,
 	createHelpText,
+	runAsyncSettingCallback,
 } from "../components/settingHelpers";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import {
@@ -24,6 +26,7 @@ import {
 	createInfoBadge,
 	showCardEmptyState,
 	normalizeCalendarUrl,
+	type CardSection,
 } from "../components/CardComponent";
 
 // interface WebhookItem extends ListEditorItem, WebhookConfig {}
@@ -69,6 +72,51 @@ function getRelativeTime(
 		return translate("settings.integrations.timeFormats.justNow");
 	}
 }
+
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
+type ICSNoteFilenameFormat = ICSIntegrationSettings["icsNoteFilenameFormat"];
+
+const ICS_NOTE_FILENAME_FORMATS: readonly ICSNoteFilenameFormat[] = [
+	"title",
+	"zettel",
+	"timestamp",
+	"custom",
+];
+
+function isICSNoteFilenameFormat(value: string): value is ICSNoteFilenameFormat {
+	return ICS_NOTE_FILENAME_FORMATS.some((format) => format === value);
+}
+
+const WEBHOOK_EVENT_OPTIONS: ReadonlyArray<{
+	id: WebhookEvent;
+	label: string;
+	desc: string;
+}> = [
+	{ id: "task.created", label: "Task Created", desc: "When new tasks are created" },
+	{ id: "task.updated", label: "Task Updated", desc: "When tasks are modified" },
+	{ id: "task.completed", label: "Task Completed", desc: "When tasks are marked complete" },
+	{ id: "task.deleted", label: "Task Deleted", desc: "When tasks are deleted" },
+	{ id: "task.archived", label: "Task Archived", desc: "When tasks are archived" },
+	{ id: "task.unarchived", label: "Task Unarchived", desc: "When tasks are unarchived" },
+	{ id: "time.started", label: "Time Started", desc: "When time tracking starts" },
+	{ id: "time.stopped", label: "Time Stopped", desc: "When time tracking stops" },
+	{ id: "pomodoro.started", label: "Pomodoro Started", desc: "When pomodoro sessions begin" },
+	{ id: "pomodoro.completed", label: "Pomodoro Completed", desc: "When pomodoro sessions finish" },
+	{
+		id: "pomodoro.interrupted",
+		label: "Pomodoro Interrupted",
+		desc: "When pomodoro sessions are stopped",
+	},
+	{
+		id: "recurring.instance.completed",
+		label: "Recurring Instance Completed",
+		desc: "When recurring task instances complete",
+	},
+	{ id: "reminder.triggered", label: "Reminder Triggered", desc: "When task reminders activate" },
+];
 
 /**
  * Renders the Integrations tab - external connections and API settings
@@ -206,11 +254,11 @@ export function renderIntegrationsTab(
 							variant: "primary",
 							onClick: async () => {
 								try {
-									if (plugin.googleCalendarService) {
-										await plugin.googleCalendarService.refresh();
-										new Notice("Google calendar refreshed successfully");
-										renderGoogleCalendarCard(); // Re-render to update timestamp
-									}
+										if (plugin.googleCalendarService) {
+											await plugin.googleCalendarService.refresh();
+											new Notice("Google calendar refreshed successfully");
+											void renderGoogleCalendarCard(); // Re-render to update timestamp
+										}
 								} catch (error) {
 									console.error("Failed to refresh:", error);
 									new Notice("Failed to refresh Google calendar");
@@ -227,7 +275,7 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									await oauthService.disconnect("google");
 									new Notice("Disconnected from Google calendar");
-									renderGoogleCalendarCard(); // Re-render to show disconnected state
+									void renderGoogleCalendarCard(); // Re-render to show disconnected state
 								} catch (error) {
 									console.error("Failed to disconnect:", error);
 									new Notice("Failed to disconnect from Google calendar");
@@ -245,7 +293,7 @@ export function renderIntegrationsTab(
 				"Connect your Google calendar account to sync events directly into tasknotes. Events will automatically refresh every 15 minutes.";
 
 			// Build sections and credential inputs
-			const sections: any[] = [
+			const sections: CardSection[] = [
 				{
 					rows: [{ label: "Info:", input: helpText, fullWidth: true }],
 				},
@@ -256,12 +304,14 @@ export function renderIntegrationsTab(
 				"your-client-id.apps.googleusercontent.com",
 				plugin.settings.googleOAuthClientId
 			);
-			clientIdInput.addEventListener("blur", async () => {
-				plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
-				}
+			clientIdInput.addEventListener("blur", () => {
+				runAsyncSettingCallback(async () => {
+					plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
 			});
 
 			const clientSecretInput = createCardInput(
@@ -270,12 +320,14 @@ export function renderIntegrationsTab(
 				plugin.settings.googleOAuthClientSecret
 			);
 			clientSecretInput.setAttribute("type", "password");
-			clientSecretInput.addEventListener("blur", async () => {
-				plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
-				}
+			clientSecretInput.addEventListener("blur", () => {
+				runAsyncSettingCallback(async () => {
+					plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
 			});
 
 			const credentialNote = activeDocument.createElement("div");
@@ -317,10 +369,10 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									await oauthService.authenticate("google");
 									new Notice("Google calendar connected successfully!");
-									renderGoogleCalendarCard(); // Re-render to show connected state
+									void renderGoogleCalendarCard(); // Re-render to show connected state
 								} catch (error) {
 									console.error("Failed to connect:", error);
-									new Notice(`Failed to connect: ${error.message}`);
+									new Notice(`Failed to connect: ${getErrorMessage(error)}`);
 								}
 							},
 						},
@@ -331,7 +383,7 @@ export function renderIntegrationsTab(
 	};
 
 	// Initial render
-	renderGoogleCalendarCard();
+	void renderGoogleCalendarCard();
 
 	// Microsoft Calendar container for card-based UI
 	const microsoftCalendarContainer = container.createDiv(
@@ -410,7 +462,7 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									await oauthService.disconnect("microsoft");
 									new Notice("Disconnected from Microsoft calendar");
-									renderMicrosoftCalendarCard();
+									void renderMicrosoftCalendarCard();
 								} catch (error) {
 									console.error("Failed to disconnect:", error);
 									new Notice("Failed to disconnect from Microsoft calendar");
@@ -428,7 +480,7 @@ export function renderIntegrationsTab(
 				"Connect your Microsoft outlook calendar to sync events directly into tasknotes.";
 
 			// Build sections and credential inputs
-			const sections: any[] = [
+			const sections: CardSection[] = [
 				{
 					rows: [{ label: "Info:", input: helpText, fullWidth: true }],
 				},
@@ -439,12 +491,14 @@ export function renderIntegrationsTab(
 				"your-microsoft-client-id",
 				plugin.settings.microsoftOAuthClientId
 			);
-			clientIdInput.addEventListener("blur", async () => {
-				plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
-				}
+			clientIdInput.addEventListener("blur", () => {
+				runAsyncSettingCallback(async () => {
+					plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
 			});
 
 			const clientSecretInput = createCardInput(
@@ -453,12 +507,14 @@ export function renderIntegrationsTab(
 				plugin.settings.microsoftOAuthClientSecret
 			);
 			clientSecretInput.setAttribute("type", "password");
-			clientSecretInput.addEventListener("blur", async () => {
-				plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
-				}
+			clientSecretInput.addEventListener("blur", () => {
+				runAsyncSettingCallback(async () => {
+					plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
 			});
 
 			const credentialNote = activeDocument.createElement("div");
@@ -499,10 +555,10 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									await oauthService.authenticate("microsoft");
 									new Notice("Microsoft calendar connected successfully!");
-									renderMicrosoftCalendarCard();
+									void renderMicrosoftCalendarCard();
 								} catch (error) {
 									console.error("Failed to connect:", error);
-									new Notice(`Failed to connect: ${error.message}`);
+									new Notice(`Failed to connect: ${getErrorMessage(error)}`);
 								}
 							},
 						},
@@ -513,7 +569,7 @@ export function renderIntegrationsTab(
 	};
 
 	// Initial render
-	renderMicrosoftCalendarCard();
+	void renderMicrosoftCalendarCard();
 
 	// Google Calendar Task Export Section
 	createSettingGroup(
@@ -525,7 +581,7 @@ export function renderIntegrationsTab(
 		(group) => {
 			// Master toggle
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.enable.name"),
 					desc: translate(
 						"settings.integrations.googleCalendarExport.enable.description"
@@ -606,7 +662,7 @@ export function renderIntegrationsTab(
 					}
 				};
 
-				populateCalendars();
+				void populateCalendars();
 
 				// Re-populate when calendar data is fetched after startup.
 				// Clean up the listener automatically when this settings control is detached.
@@ -644,17 +700,15 @@ export function renderIntegrationsTab(
 					subtree: true,
 				});
 
-				dropdown.addEventListener("change", async () => {
+				dropdown.addEventListener("change", () => {
 					plugin.settings.googleCalendarExport.targetCalendarId = dropdown.value;
 					save();
 				});
-
-				return setting;
 			});
 
 			// Sync trigger
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncTrigger.name"),
 					desc: translate(
 						"settings.integrations.googleCalendarExport.syncTrigger.description"
@@ -692,7 +746,7 @@ export function renderIntegrationsTab(
 
 			// Create as all-day
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.allDayEvents.name"),
 					desc: translate(
 						"settings.integrations.googleCalendarExport.allDayEvents.description"
@@ -707,7 +761,7 @@ export function renderIntegrationsTab(
 
 			// Default duration (only relevant for timed events)
 			group.addSetting((setting) =>
-				configureNumberSetting(setting, {
+				void configureNumberSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.defaultDuration.name"
 					),
@@ -726,7 +780,7 @@ export function renderIntegrationsTab(
 
 			// Event title template
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.eventTitleTemplate.name"
 					),
@@ -747,7 +801,7 @@ export function renderIntegrationsTab(
 
 			// Include description
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.includeDescription.name"
 					),
@@ -764,7 +818,7 @@ export function renderIntegrationsTab(
 
 			// Include Obsidian link
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.includeObsidianLink.name"
 					),
@@ -781,7 +835,7 @@ export function renderIntegrationsTab(
 
 			// Default reminder minutes
 			group.addSetting((setting) =>
-				configureNumberSetting(setting, {
+				void configureNumberSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.defaultReminder.name"
 					),
@@ -811,7 +865,7 @@ export function renderIntegrationsTab(
 			});
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncOnCreate.name"),
 					desc: translate(
 						"settings.integrations.googleCalendarExport.syncOnCreate.description"
@@ -825,7 +879,7 @@ export function renderIntegrationsTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncOnUpdate.name"),
 					desc: translate(
 						"settings.integrations.googleCalendarExport.syncOnUpdate.description"
@@ -839,7 +893,7 @@ export function renderIntegrationsTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.syncOnComplete.name"
 					),
@@ -855,7 +909,7 @@ export function renderIntegrationsTab(
 			);
 
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncOnDelete.name"),
 					desc: translate(
 						"settings.integrations.googleCalendarExport.syncOnDelete.description"
@@ -877,7 +931,7 @@ export function renderIntegrationsTab(
 			});
 
 			group.addSetting((setting) =>
-				configureButtonSetting(setting, {
+				void configureButtonSetting(setting, {
 					name: translate("settings.integrations.googleCalendarExport.syncAllTasks.name"),
 					desc: translate(
 						"settings.integrations.googleCalendarExport.syncAllTasks.description"
@@ -910,7 +964,7 @@ export function renderIntegrationsTab(
 			);
 
 			group.addSetting((setting) =>
-				configureButtonSetting(setting, {
+				void configureButtonSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.unlinkAllTasks.name"
 					),
@@ -960,7 +1014,7 @@ export function renderIntegrationsTab(
 		(group) => {
 			// Default settings for ICS integration
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate(
 						"settings.integrations.calendarSubscriptions.defaultNoteTemplate.name"
 					),
@@ -979,7 +1033,7 @@ export function renderIntegrationsTab(
 			);
 
 			group.addSetting((setting) =>
-				configureTextSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate(
 						"settings.integrations.calendarSubscriptions.defaultNoteFolder.name"
 					),
@@ -998,7 +1052,7 @@ export function renderIntegrationsTab(
 			);
 
 			group.addSetting((setting) =>
-				configureDropdownSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate(
 						"settings.integrations.calendarSubscriptions.filenameFormat.name"
 					),
@@ -1033,7 +1087,10 @@ export function renderIntegrationsTab(
 					],
 					getValue: () => plugin.settings.icsIntegration.icsNoteFilenameFormat,
 					setValue: async (value: string) => {
-						plugin.settings.icsIntegration.icsNoteFilenameFormat = value as any;
+						if (!isICSNoteFilenameFormat(value)) {
+							return;
+						}
+						plugin.settings.icsIntegration.icsNoteFilenameFormat = value;
 						save();
 						// Re-render to show custom template field if needed
 						renderIntegrationsTab(container, plugin, save);
@@ -1043,7 +1100,7 @@ export function renderIntegrationsTab(
 
 			if (plugin.settings.icsIntegration.icsNoteFilenameFormat === "custom") {
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate(
 							"settings.integrations.calendarSubscriptions.customTemplate.name"
 						),
@@ -1065,7 +1122,7 @@ export function renderIntegrationsTab(
 
 			// Task creation settings
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate(
 						"settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
 					),
@@ -1091,7 +1148,7 @@ export function renderIntegrationsTab(
 		(group) => {
 			// Add subscription button
 			group.addSetting((setting) =>
-				configureButtonSetting(setting, {
+				void configureButtonSetting(setting, {
 					name: translate("settings.integrations.subscriptionsList.addSubscription.name"),
 					desc: translate(
 						"settings.integrations.subscriptionsList.addSubscription.description"
@@ -1144,7 +1201,7 @@ export function renderIntegrationsTab(
 
 			// Refresh all subscriptions button
 			group.addSetting((setting) =>
-				configureButtonSetting(setting, {
+				void configureButtonSetting(setting, {
 					name: translate("settings.integrations.subscriptionsList.refreshAll.name"),
 					desc: translate(
 						"settings.integrations.subscriptionsList.refreshAll.description"
@@ -1188,7 +1245,7 @@ export function renderIntegrationsTab(
 		},
 		(group) => {
 			group.addSetting((setting) =>
-				configureToggleSetting(setting, {
+				void configureToggleSetting(setting, {
 					name: translate("settings.integrations.autoExport.enable.name"),
 					desc: translate("settings.integrations.autoExport.enable.description"),
 					getValue: () => plugin.settings.icsIntegration.enableAutoExport,
@@ -1206,7 +1263,7 @@ export function renderIntegrationsTab(
 
 			if (plugin.settings.icsIntegration.enableAutoExport) {
 				group.addSetting((setting) =>
-					configureTextSetting(setting, {
+					void configureTextSetting(setting, {
 						name: translate("settings.integrations.autoExport.filePath.name"),
 						desc: translate("settings.integrations.autoExport.filePath.description"),
 						placeholder: translate(
@@ -1222,7 +1279,7 @@ export function renderIntegrationsTab(
 				);
 
 				group.addSetting((setting) =>
-					configureNumberSetting(setting, {
+					void configureNumberSetting(setting, {
 						name: translate("settings.integrations.autoExport.interval.name"),
 						desc: translate("settings.integrations.autoExport.interval.description"),
 						placeholder: translate(
@@ -1248,7 +1305,7 @@ export function renderIntegrationsTab(
 				);
 
 				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
+					void configureToggleSetting(setting, {
 						name: translate("settings.integrations.autoExport.useDuration.name"),
 						desc: translate("settings.integrations.autoExport.useDuration.description"),
 						getValue: () =>
@@ -1262,7 +1319,7 @@ export function renderIntegrationsTab(
 
 				// Manual export trigger button
 				group.addSetting((setting) =>
-					configureButtonSetting(setting, {
+					void configureButtonSetting(setting, {
 						name: translate("settings.integrations.autoExport.exportNow.name"),
 						desc: translate("settings.integrations.autoExport.exportNow.description"),
 						buttonText: translate(
@@ -1340,7 +1397,7 @@ export function renderIntegrationsTab(
 			},
 			(group) => {
 				group.addSetting((setting) =>
-					configureToggleSetting(setting, {
+					void configureToggleSetting(setting, {
 						name: translate("settings.integrations.httpApi.enable.name"),
 						desc: translate("settings.integrations.httpApi.enable.description"),
 						getValue: () => plugin.settings.enableAPI,
@@ -1355,7 +1412,7 @@ export function renderIntegrationsTab(
 
 				if (plugin.settings.enableAPI) {
 					group.addSetting((setting) =>
-						configureNumberSetting(setting, {
+						void configureNumberSetting(setting, {
 							name: translate("settings.integrations.httpApi.port.name"),
 							desc: translate("settings.integrations.httpApi.port.description"),
 							placeholder: translate(
@@ -1372,7 +1429,7 @@ export function renderIntegrationsTab(
 					);
 
 					group.addSetting((setting) =>
-						configureTextSetting(setting, {
+						void configureTextSetting(setting, {
 							name: translate("settings.integrations.httpApi.authToken.name"),
 							desc: translate("settings.integrations.httpApi.authToken.description"),
 							placeholder: translate(
@@ -1387,7 +1444,7 @@ export function renderIntegrationsTab(
 					);
 
 					group.addSetting((setting) =>
-						configureToggleSetting(setting, {
+						void configureToggleSetting(setting, {
 							name: translate("settings.integrations.httpApi.mcp.enable.name"),
 							desc: translate("settings.integrations.httpApi.mcp.enable.description"),
 							getValue: () => plugin.settings.enableMCP,
@@ -1445,7 +1502,7 @@ export function renderIntegrationsTab(
 			});
 
 			// Fetch live API documentation
-			loadAPIEndpoints(apiEndpointsContent, plugin.settings.apiPort);
+			void loadAPIEndpoints(apiEndpointsContent, plugin.settings.apiPort);
 		}
 
 		// Webhooks Section
@@ -1461,7 +1518,7 @@ export function renderIntegrationsTab(
 			(group) => {
 				// Add webhook button
 				group.addSetting((setting) =>
-					configureButtonSetting(setting, {
+					void configureButtonSetting(setting, {
 						name: translate("settings.integrations.webhooks.addWebhook.name"),
 						desc: translate("settings.integrations.webhooks.addWebhook.description"),
 						buttonText: translate(
@@ -1470,7 +1527,7 @@ export function renderIntegrationsTab(
 						onClick: async () => {
 							const modal = new WebhookModal(
 								plugin.app,
-								async (webhookConfig: Partial<WebhookConfig>) => {
+								(webhookConfig: Partial<WebhookConfig>) => {
 									// Generate ID and secret
 									const webhook: WebhookConfig = {
 										id: `wh_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
@@ -1609,24 +1666,25 @@ function renderICSSubscriptionsList(
 			}
 		};
 
-		// Update handlers (enabledToggle handler is now in createCardToggle callback)
-		nameInput.addEventListener("blur", () =>
-			updateSubscription({ name: nameInput.value.trim() })
-		);
-		colorInput.addEventListener("change", () =>
-			updateSubscription({ color: colorInput.value })
-		);
-		refreshInput.addEventListener("blur", () => {
-			const minutes = parseInt(refreshInput.value) || 60;
-			updateSubscription({ refreshInterval: minutes });
-		});
+			// Update handlers (enabledToggle handler is now in createCardToggle callback)
+			nameInput.addEventListener("blur", () => {
+				void updateSubscription({ name: nameInput.value.trim() });
+			});
+			colorInput.addEventListener("change", () => {
+				void updateSubscription({ color: colorInput.value });
+			});
+			refreshInput.addEventListener("blur", () => {
+				const minutes = parseInt(refreshInput.value) || 60;
+				void updateSubscription({ refreshInterval: minutes });
+			});
 
-		// Type change handler - re-render the subscription list to update input type
-		typeSelect.addEventListener("change", async () => {
-			const newType = typeSelect.value as "remote" | "local";
+			// Type change handler - re-render the subscription list to update input type
+			typeSelect.addEventListener("change", () => {
+				runAsyncSettingCallback(async () => {
+					const newType = typeSelect.value as "remote" | "local";
 
-			// Update the subscription object
-			subscription.type = newType;
+					// Update the subscription object
+					subscription.type = newType;
 			if (newType === "remote") {
 				subscription.url = subscription.filePath || ""; // Transfer old local path to url if exists
 				subscription.filePath = undefined;
@@ -1667,11 +1725,11 @@ function renderICSSubscriptionsList(
 						if (subscription.type === "remote") {
 							// Normalize webcal:// and webcals:// URLs to http:// and https://
 							const normalizedUrl = normalizeCalendarUrl(value);
-							updateSubscription({ url: normalizedUrl });
-						} else {
-							updateSubscription({ filePath: value });
-						}
-					});
+								void updateSubscription({ url: normalizedUrl });
+							} else {
+								void updateSubscription({ filePath: value });
+							}
+						});
 
 					sourceInputContainer.appendChild(newSourceInput);
 
@@ -1700,8 +1758,9 @@ function renderICSSubscriptionsList(
 						typeBadge.textContent = newType === "remote" ? "Remote" : "Local File";
 					}
 				}
-			}
-		});
+				}
+				});
+			});
 
 		// Source input handler (URL or file path)
 		sourceInput.addEventListener("blur", () => {
@@ -1709,9 +1768,9 @@ function renderICSSubscriptionsList(
 			if (subscription.type === "remote") {
 				// Normalize webcal:// and webcals:// URLs to http:// and https://
 				const normalizedUrl = normalizeCalendarUrl(value);
-				updateSubscription({ url: normalizedUrl });
+				void updateSubscription({ url: normalizedUrl });
 			} else {
-				updateSubscription({ filePath: value });
+				void updateSubscription({ filePath: value });
 			}
 		});
 
@@ -2050,7 +2109,7 @@ function renderWebhookList(
 							const modal = new WebhookEditModal(
 								plugin.app,
 								webhook,
-								async (updatedConfig: Partial<WebhookConfig>) => {
+								(updatedConfig: Partial<WebhookConfig>) => {
 									Object.assign(webhook, updatedConfig);
 									save();
 									renderWebhookList(container, plugin, save);
@@ -2127,15 +2186,15 @@ class SecretNoticeModal extends Modal {
  * Modal for editing existing webhooks
  */
 class WebhookEditModal extends Modal {
-	private selectedEvents: string[];
+	private selectedEvents: WebhookEvent[];
 	private transformFile: string;
 	private corsHeaders: boolean;
-	private onSubmit: (config: Partial<WebhookConfig>) => void;
+	private onSubmit: (config: Partial<WebhookConfig>) => unknown;
 
 	constructor(
 		app: App,
 		webhook: WebhookConfig,
-		onSubmit: (config: Partial<WebhookConfig>) => void
+		onSubmit: (config: Partial<WebhookConfig>) => unknown
 	) {
 		super(app);
 		this.selectedEvents = [...webhook.events];
@@ -2165,47 +2224,7 @@ class WebhookEditModal extends Modal {
 		eventsHeader.createEl("h3", { text: "Events to subscribe to" });
 
 		const eventsGrid = eventsSection.createDiv({ cls: "tasknotes-webhook-events-list" });
-		const availableEvents = [
-			{ id: "task.created", label: "Task Created", desc: "When new tasks are created" },
-			{ id: "task.updated", label: "Task Updated", desc: "When tasks are modified" },
-			{
-				id: "task.completed",
-				label: "Task Completed",
-				desc: "When tasks are marked complete",
-			},
-			{ id: "task.deleted", label: "Task Deleted", desc: "When tasks are deleted" },
-			{ id: "task.archived", label: "Task Archived", desc: "When tasks are archived" },
-			{ id: "task.unarchived", label: "Task Unarchived", desc: "When tasks are unarchived" },
-			{ id: "time.started", label: "Time Started", desc: "When time tracking starts" },
-			{ id: "time.stopped", label: "Time Stopped", desc: "When time tracking stops" },
-			{
-				id: "pomodoro.started",
-				label: "Pomodoro Started",
-				desc: "When pomodoro sessions begin",
-			},
-			{
-				id: "pomodoro.completed",
-				label: "Pomodoro Completed",
-				desc: "When pomodoro sessions finish",
-			},
-			{
-				id: "pomodoro.interrupted",
-				label: "Pomodoro Interrupted",
-				desc: "When pomodoro sessions are stopped",
-			},
-			{
-				id: "recurring.instance.completed",
-				label: "Recurring Instance Completed",
-				desc: "When recurring task instances complete",
-			},
-			{
-				id: "reminder.triggered",
-				label: "Reminder Triggered",
-				desc: "When task reminders activate",
-			},
-		];
-
-		availableEvents.forEach((event) => {
+		WEBHOOK_EVENT_OPTIONS.forEach((event) => {
 			new Setting(eventsGrid)
 				.setName(event.label)
 				.setDesc(event.desc)
@@ -2240,11 +2259,11 @@ class WebhookEditModal extends Modal {
 
 		new Setting(transformSection)
 			.setName("Transform file")
-			.setDesc("Path to a .js or .json file in your vault that transforms webhook payloads")
+			.setDesc("Path to a .json template file in your vault that transforms webhook payloads")
 			.addText((text) => {
 				text.inputEl.setAttribute("aria-label", "Transform file path");
 				return text
-					.setPlaceholder("discord-transform.js")
+					.setPlaceholder("simple-template.json")
 					.setValue(this.transformFile)
 					.onChange((value) => {
 						this.transformFile = value;
@@ -2298,11 +2317,13 @@ class WebhookEditModal extends Modal {
 				return;
 			}
 
-			this.onSubmit({
-				events: this.selectedEvents as any[],
-				transformFile: this.transformFile.trim() || undefined,
-				corsHeaders: this.corsHeaders,
-			});
+			runAsyncSettingCallback(() =>
+				this.onSubmit({
+					events: this.selectedEvents,
+					transformFile: this.transformFile.trim() || undefined,
+					corsHeaders: this.corsHeaders,
+				})
+			);
 
 			this.close();
 		};
@@ -2319,12 +2340,12 @@ class WebhookEditModal extends Modal {
  */
 class WebhookModal extends Modal {
 	private url = "";
-	private selectedEvents: string[] = [];
+	private selectedEvents: WebhookEvent[] = [];
 	private transformFile = "";
 	private corsHeaders = true;
-	private onSubmit: (config: Partial<WebhookConfig>) => void;
+	private onSubmit: (config: Partial<WebhookConfig>) => unknown;
 
-	constructor(app: App, onSubmit: (config: Partial<WebhookConfig>) => void) {
+	constructor(app: App, onSubmit: (config: Partial<WebhookConfig>) => unknown) {
 		super(app);
 		this.onSubmit = onSubmit;
 	}
@@ -2365,47 +2386,8 @@ class WebhookModal extends Modal {
 		eventsHeader.createEl("h3", { text: "Events to subscribe to" });
 
 		const eventsGrid = eventsSection.createDiv({ cls: "tasknotes-webhook-events-list" });
-		const availableEvents = [
-			{ id: "task.created", label: "Task Created", desc: "When new tasks are created" },
-			{ id: "task.updated", label: "Task Updated", desc: "When tasks are modified" },
-			{
-				id: "task.completed",
-				label: "Task Completed",
-				desc: "When tasks are marked complete",
-			},
-			{ id: "task.deleted", label: "Task Deleted", desc: "When tasks are deleted" },
-			{ id: "task.archived", label: "Task Archived", desc: "When tasks are archived" },
-			{ id: "task.unarchived", label: "Task Unarchived", desc: "When tasks are unarchived" },
-			{ id: "time.started", label: "Time Started", desc: "When time tracking starts" },
-			{ id: "time.stopped", label: "Time Stopped", desc: "When time tracking stops" },
-			{
-				id: "pomodoro.started",
-				label: "Pomodoro Started",
-				desc: "When pomodoro sessions begin",
-			},
-			{
-				id: "pomodoro.completed",
-				label: "Pomodoro Completed",
-				desc: "When pomodoro sessions finish",
-			},
-			{
-				id: "pomodoro.interrupted",
-				label: "Pomodoro Interrupted",
-				desc: "When pomodoro sessions are stopped",
-			},
-			{
-				id: "recurring.instance.completed",
-				label: "Recurring Instance Completed",
-				desc: "When recurring task instances complete",
-			},
-			{
-				id: "reminder.triggered",
-				label: "Reminder Triggered",
-				desc: "When task reminders activate",
-			},
-		];
 
-		availableEvents.forEach((event) => {
+		WEBHOOK_EVENT_OPTIONS.forEach((event) => {
 			new Setting(eventsGrid)
 				.setName(event.label)
 				.setDesc(event.desc)
@@ -2440,11 +2422,11 @@ class WebhookModal extends Modal {
 
 		new Setting(transformSection)
 			.setName("Transform file")
-			.setDesc("Path to a .js or .json file in your vault that transforms webhook payloads")
+			.setDesc("Path to a .json template file in your vault that transforms webhook payloads")
 			.addText((text) => {
 				text.inputEl.setAttribute("aria-label", "Transform file path");
 				return text
-					.setPlaceholder("discord-transform.js")
+					.setPlaceholder("simple-template.json")
 					.setValue(this.transformFile)
 					.onChange((value) => {
 						this.transformFile = value;
@@ -2458,13 +2440,9 @@ class WebhookModal extends Modal {
 		const helpHeader = transformHelp.createDiv({ cls: "tasknotes-webhook-help-header" });
 		const helpIcon = helpHeader.createSpan();
 		setIcon(helpIcon, "info");
-		helpHeader.createSpan({ text: "Transform files allow you to customize webhook payloads:" });
+		helpHeader.createSpan({ text: "JSON transform templates customize webhook payloads:" });
 
 		const helpList = transformHelp.createEl("ul", { cls: "tasknotes-webhook-help-list" });
-		const jsLi = helpList.createEl("li");
-		jsLi.createEl("strong", { text: ".js files:" });
-		jsLi.appendText(" Custom JavaScript transforms");
-
 		const jsonLi = helpList.createEl("li");
 		jsonLi.createEl("strong", { text: ".json files:" });
 		jsonLi.appendText(" Templates with ");
@@ -2477,7 +2455,7 @@ class WebhookModal extends Modal {
 		const helpExample = transformHelp.createDiv({ cls: "tasknotes-webhook-help-example" });
 		helpExample.createEl("strong", { text: "Example:" });
 		helpExample.appendText(" ");
-		helpExample.createEl("code", { text: "discord-transform.js" });
+		helpExample.createEl("code", { text: "simple-template.json" });
 
 		// CORS headers section
 		const corsSection = contentEl.createDiv({ cls: "tasknotes-webhook-modal-section" });
@@ -2531,12 +2509,14 @@ class WebhookModal extends Modal {
 				return;
 			}
 
-			this.onSubmit({
-				url: this.url.trim(),
-				events: this.selectedEvents as any[],
-				transformFile: this.transformFile.trim() || undefined,
-				corsHeaders: this.corsHeaders,
-			});
+			runAsyncSettingCallback(() =>
+				this.onSubmit({
+					url: this.url.trim(),
+					events: this.selectedEvents,
+					transformFile: this.transformFile.trim() || undefined,
+					corsHeaders: this.corsHeaders,
+				})
+			);
 
 			this.close();
 		};

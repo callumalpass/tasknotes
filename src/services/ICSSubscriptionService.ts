@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- ICS parsing normalizes optional event fields before use. */
 import { Notice, requestUrl, TFile } from "obsidian";
 import ICAL from "ical.js";
 import { ICSSubscription, ICSEvent, ICSCache } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
 import TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import type { InterpolationValues, TranslationKey } from "../i18n";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 export class ICSSubscriptionService extends EventEmitter {
 	private plugin: TaskNotesPlugin;
@@ -19,7 +20,7 @@ export class ICSSubscriptionService extends EventEmitter {
 	// Grace period after cache expiration to show stale data while refreshing (5 minutes)
 	private readonly CACHE_GRACE_PERIOD = 5 * 60 * 1000;
 
-	private translate(key: TranslationKey, variables?: Record<string, any>): string {
+	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -304,7 +305,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			// Register VTIMEZONE components before processing events
 			const vtimezones = comp.getAllSubcomponents("vtimezone");
 			vtimezones.forEach((vtimezone: ICAL.Component) => {
-				(ICAL as any).TimezoneService.register(vtimezone);
+				ICAL.TimezoneService.register(vtimezone);
 			});
 
 			const vevents = comp.getAllSubcomponents("vevent");
@@ -321,29 +322,29 @@ export class ICSSubscriptionService extends EventEmitter {
 				if (!uid) return;
 
 				// Check if this is a modified instance (has RECURRENCE-ID)
-				const recurrenceId = (vevent as any).getFirstPropertyValue("recurrence-id");
+				const recurrenceId = vevent.getFirstPropertyValue("recurrence-id");
 				if (recurrenceId) {
 					if (!modifiedInstances.has(uid)) {
 						modifiedInstances.set(uid, new Map());
 					}
-					const recurrenceIdStr = recurrenceId.toString();
+					const recurrenceIdStr = stringifyUnknown(recurrenceId);
 					modifiedInstances.get(uid)!.set(recurrenceIdStr, event);
 				}
 			});
 
 			// Second pass: process events
 			vevents.forEach((vevent: ICAL.Component) => {
-				try {
-					const event = new ICAL.Event(vevent);
+					try {
+						const event = new ICAL.Event(vevent);
 
-					// Skip if this is a modified instance (will be handled as part of the recurring series)
-					const recurrenceId = (vevent as any).getFirstPropertyValue("recurrence-id");
+						// Skip if this is a modified instance (will be handled as part of the recurring series)
+						const recurrenceId = vevent.getFirstPropertyValue("recurrence-id");
 					if (recurrenceId) {
 						return;
 					}
 
-					// Skip cancelled events (STATUS:CANCELLED)
-					const status = (vevent as any).getFirstPropertyValue("status");
+						// Skip cancelled events (STATUS:CANCELLED)
+						const status = vevent.getFirstPropertyValue("status");
 					if (typeof status === "string" && status.toUpperCase() === "CANCELLED") {
 						return;
 					}
@@ -353,11 +354,11 @@ export class ICSSubscriptionService extends EventEmitter {
 					// entry carries their own PARTSTAT, so if any attendee is
 					// marked DECLINED the event was almost certainly declined
 					// by the calendar owner.
-					const attendees = (vevent as any).getAllProperties("attendee");
-					if (attendees && attendees.length > 0) {
-						const hasDeclined = attendees.some(
-							(a: any) => {
-								const partstat = a.getParameter("partstat");
+						const attendees = vevent.getAllProperties("attendee");
+						if (attendees && attendees.length > 0) {
+							const hasDeclined = attendees.some(
+								(a) => {
+									const partstat = a.getParameter("partstat");
 								return typeof partstat === "string" && partstat.toUpperCase() === "DECLINED";
 							}
 						);
@@ -403,8 +404,8 @@ export class ICSSubscriptionService extends EventEmitter {
 					if (event.isRecurring()) {
 						// Parse EXDATE (exception dates) - dates to exclude from the recurrence
 						const exdates = new Set<string>();
-						const exdateProp = (vevent as any).getAllProperties("exdate");
-						exdateProp.forEach((prop: any) => {
+							const exdateProp = vevent.getAllProperties("exdate");
+							exdateProp.forEach((prop) => {
 							const exdateValue = prop.getFirstValue();
 							if (exdateValue) {
 								// Handle both single dates and arrays of dates
@@ -519,7 +520,7 @@ export class ICSSubscriptionService extends EventEmitter {
 				// No cache exists - trigger immediate fetch
 				if (!this.pendingRefreshes.has(subscription.id)) {
 					this.pendingRefreshes.add(subscription.id);
-					this.fetchSubscription(subscription.id)
+					void this.fetchSubscription(subscription.id)
 						.finally(() => this.pendingRefreshes.delete(subscription.id));
 				}
 				return;
@@ -536,14 +537,14 @@ export class ICSSubscriptionService extends EventEmitter {
 				const isStale = now > expiryDate;
 				if (isStale && !this.pendingRefreshes.has(subscription.id)) {
 					this.pendingRefreshes.add(subscription.id);
-					this.fetchSubscription(subscription.id)
+					void this.fetchSubscription(subscription.id)
 						.finally(() => this.pendingRefreshes.delete(subscription.id));
 				}
 			} else {
 				// Cache is expired beyond grace period - trigger fetch
 				if (!this.pendingRefreshes.has(subscription.id)) {
 					this.pendingRefreshes.add(subscription.id);
-					this.fetchSubscription(subscription.id)
+					void this.fetchSubscription(subscription.id)
 						.finally(() => this.pendingRefreshes.delete(subscription.id));
 				}
 			}
@@ -559,7 +560,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			const subscription = this.subscriptions.find(sub => sub.id === subscriptionId);
 			if (subscription && subscription.enabled && !this.pendingRefreshes.has(subscriptionId)) {
 				this.pendingRefreshes.add(subscriptionId);
-				this.fetchSubscription(subscriptionId)
+				void this.fetchSubscription(subscriptionId)
 					.finally(() => this.pendingRefreshes.delete(subscriptionId));
 			}
 			return [];
@@ -574,7 +575,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			// Cache expired beyond grace period - trigger fetch
 			if (!this.pendingRefreshes.has(subscriptionId)) {
 				this.pendingRefreshes.add(subscriptionId);
-				this.fetchSubscription(subscriptionId)
+				void this.fetchSubscription(subscriptionId)
 					.finally(() => this.pendingRefreshes.delete(subscriptionId));
 			}
 			return [];
@@ -584,7 +585,7 @@ export class ICSSubscriptionService extends EventEmitter {
 		const isStale = now > expiryDate;
 		if (isStale && !this.pendingRefreshes.has(subscriptionId)) {
 			this.pendingRefreshes.add(subscriptionId);
-			this.fetchSubscription(subscriptionId)
+			void this.fetchSubscription(subscriptionId)
 				.finally(() => this.pendingRefreshes.delete(subscriptionId));
 		}
 
@@ -630,7 +631,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			if (file.path === subscription.filePath || oldPath === subscription.filePath) {
 				// Debounce file changes to avoid excessive updates
 				window.setTimeout(() => {
-					this.fetchSubscription(subscription.id);
+					void this.fetchSubscription(subscription.id);
 				}, 1000);
 			}
 		};
@@ -654,10 +655,10 @@ export class ICSSubscriptionService extends EventEmitter {
 		// Set up periodic refresh for local files (less frequent than remote)
 		const intervalMs = subscription.refreshInterval * 60 * 1000;
 		const timer = window.setInterval(() => {
-			this.fetchSubscription(subscription.id);
+			void this.fetchSubscription(subscription.id);
 		}, intervalMs);
 
-		this.refreshTimers.set(subscription.id, timer as unknown as number);
+		this.refreshTimers.set(subscription.id, timer);
 	}
 
 	private stopFileWatcher(id: string): void {
@@ -677,10 +678,10 @@ export class ICSSubscriptionService extends EventEmitter {
 
 		const intervalMs = subscription.refreshInterval * 60 * 1000; // Convert minutes to milliseconds
 		const timer = window.setInterval(() => {
-			this.fetchSubscription(subscription.id);
+			void this.fetchSubscription(subscription.id);
 		}, intervalMs);
 
-		this.refreshTimers.set(subscription.id, timer as unknown as number);
+		this.refreshTimers.set(subscription.id, timer);
 	}
 
 	private stopRefreshTimer(id: string): void {

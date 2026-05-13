@@ -1,15 +1,22 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Timer helpers check active interval state before clearing handles. */
 /**
  * Pomodoro Utility Functions
  */
 
 import { PomodoroTimePeriod } from "../types";
 
+type PomodoroSessionLike = {
+	activePeriods?: PomodoroTimePeriod[];
+	duration?: number;
+	startTime?: string;
+	endTime?: string;
+};
+
 /**
  * Backward compatibility helper for calculating duration
  * Can be used in stats calculations to handle both old and new formats
  */
-export function getSessionDuration(session: any): number {
+export function getSessionDuration(session: PomodoroSessionLike): number {
 	// New format: calculate from activePeriods
 	if (session.activePeriods && Array.isArray(session.activePeriods)) {
 		return session.activePeriods

@@ -1,4 +1,4 @@
-import { Menu, Notice, TFile } from "obsidian";
+import { Menu, Notice, TFile, type MenuItem, type TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
@@ -20,6 +20,32 @@ import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
 import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
+
+type SubmenuMenuItem = MenuItem & {
+	setSubmenu(): Menu;
+	dom?: HTMLElement;
+	domEl?: HTMLElement;
+};
+
+type FileExplorerView = {
+	revealInFolder(file: TFile): void;
+};
+
+type TaskStatusOption = {
+	label: string;
+	value: string;
+	color?: string;
+	icon?: string;
+};
+
+function getSubmenu(item: MenuItem): Menu {
+	return (item as SubmenuMenuItem).setSubmenu();
+}
+
+function getMenuItemElement(item: MenuItem): HTMLElement | null {
+	const menuItem = item as SubmenuMenuItem;
+	return menuItem.dom ?? menuItem.domEl ?? null;
+}
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -51,7 +77,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.status"));
 			item.setIcon("circle");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addStatusOptions(submenu, task, plugin);
 		});
 
@@ -127,7 +153,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.priority"));
 			item.setIcon("star");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addPriorityOptions(submenu, task, plugin);
 		});
 
@@ -138,7 +164,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.dueDate"));
 			item.setIcon("calendar");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addDateOptions(
 				submenu,
 				task.due,
@@ -160,7 +186,7 @@ export class TaskContextMenu {
 					}
 				},
 				() => {
-					plugin.openDueDateModal(task);
+					void plugin.openDueDateModal(task);
 				}
 			);
 		});
@@ -170,7 +196,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.scheduledDate"));
 			item.setIcon("calendar-clock");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addDateOptions(
 				submenu,
 				task.scheduled,
@@ -192,7 +218,7 @@ export class TaskContextMenu {
 					}
 				},
 				() => {
-					plugin.openScheduledDateModal(task);
+					void plugin.openScheduledDateModal(task);
 				}
 			);
 		});
@@ -202,7 +228,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.reminders"));
 			item.setIcon("bell");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 
 			// Quick Add sections
 			this.addQuickRemindersSection(
@@ -223,22 +249,26 @@ export class TaskContextMenu {
 			submenu.addSeparator();
 
 			// Manage reminders
-			submenu.addItem((subItem: any) => {
+			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.manageReminders"));
 				subItem.setIcon("settings");
 				subItem.onClick(() => {
-					const modal = new ReminderModal(plugin.app, plugin, task, async (reminders) => {
-						try {
-							await plugin.updateTaskProperty(
-								task,
-								"reminders",
-								reminders.length > 0 ? reminders : undefined
-							);
-							this.options.onUpdate?.();
-						} catch (error) {
-							console.error("Error updating reminders:", error);
-							new Notice(this.t("contextMenus.task.notices.updateRemindersFailure"));
-						}
+					const modal = new ReminderModal(plugin.app, plugin, task, (reminders) => {
+						void (async () => {
+							try {
+								await plugin.updateTaskProperty(
+									task,
+									"reminders",
+									reminders.length > 0 ? reminders : undefined
+								);
+								this.options.onUpdate?.();
+							} catch (error) {
+								console.error("Error updating reminders:", error);
+								new Notice(
+									this.t("contextMenus.task.notices.updateRemindersFailure")
+								);
+							}
+						})();
 					});
 					modal.open();
 				});
@@ -246,7 +276,7 @@ export class TaskContextMenu {
 
 			// Clear reminders (if any exist)
 			if (task.reminders && task.reminders.length > 0) {
-				submenu.addItem((subItem: any) => {
+				submenu.addItem((subItem) => {
 					subItem.setTitle(this.t("contextMenus.task.clearReminders"));
 					subItem.setIcon("trash");
 					subItem.onClick(async () => {
@@ -268,7 +298,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.dependencies.title"));
 			item.setIcon("git-branch");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addDependencyMenuItems(submenu, task, plugin);
 		});
 
@@ -279,7 +309,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.organization.title"));
 			item.setIcon("folder-tree");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			this.addOrganizationMenuItems(submenu, task, plugin);
 		});
 
@@ -369,7 +399,7 @@ export class TaskContextMenu {
 			item.onClick(() => {
 				const file = plugin.app.vault.getAbstractFileByPath(task.path);
 				if (file instanceof TFile) {
-					plugin.app.workspace.getLeaf(false).openFile(file);
+					void plugin.app.workspace.getLeaf(false).openFile(file);
 				}
 			});
 		});
@@ -393,7 +423,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.noteActions"));
 			item.setIcon("file-text");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 
 			// Get the file for the task
 			const file = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -407,7 +437,7 @@ export class TaskContextMenu {
 				}
 
 				// Add common file actions (these will either supplement or replace the native menu)
-				submenu.addItem((subItem: any) => {
+				submenu.addItem((subItem) => {
 					subItem.setTitle(this.t("contextMenus.task.rename"));
 					subItem.setIcon("pencil");
 					subItem.onClick(async () => {
@@ -452,7 +482,7 @@ export class TaskContextMenu {
 					});
 				});
 
-				submenu.addItem((subItem: any) => {
+				submenu.addItem((subItem) => {
 					subItem.setTitle(this.t("contextMenus.task.delete"));
 					subItem.setIcon("trash");
 					subItem.onClick(async () => {
@@ -482,48 +512,52 @@ export class TaskContextMenu {
 										);
 									});
 							}
-							plugin.app.fileManager.trashFile(file);
+							void plugin.app.fileManager.trashFile(file);
 						}
 					});
 				});
 
 				submenu.addSeparator();
 
-				submenu.addItem((subItem: any) => {
+				submenu.addItem((subItem) => {
 					subItem.setTitle(this.t("contextMenus.task.copyPath"));
 					subItem.setIcon("copy");
-					subItem.onClick(async () => {
-						try {
-							await navigator.clipboard.writeText(file.path);
-							new Notice(this.t("contextMenus.task.notices.copyPathSuccess"));
-						} catch {
-							new Notice(this.t("contextMenus.task.notices.copyFailure"));
-						}
+					subItem.onClick(() => {
+						void navigator.clipboard
+							.writeText(file.path)
+							.then(() => {
+								new Notice(this.t("contextMenus.task.notices.copyPathSuccess"));
+							})
+							.catch(() => {
+								new Notice(this.t("contextMenus.task.notices.copyFailure"));
+							});
 					});
 				});
 
-				submenu.addItem((subItem: any) => {
+				submenu.addItem((subItem) => {
 					subItem.setTitle(this.t("contextMenus.task.copyUrl"));
 					subItem.setIcon("link");
-					subItem.onClick(async () => {
-						try {
-							const url = `obsidian://open?vault=${encodeURIComponent(plugin.app.vault.getName())}&file=${encodeURIComponent(file.path)}`;
-							await navigator.clipboard.writeText(url);
-							new Notice(this.t("contextMenus.task.notices.copyUrlSuccess"));
-						} catch {
-							new Notice(this.t("contextMenus.task.notices.copyFailure"));
-						}
+					subItem.onClick(() => {
+						const url = `obsidian://open?vault=${encodeURIComponent(plugin.app.vault.getName())}&file=${encodeURIComponent(file.path)}`;
+						void navigator.clipboard
+							.writeText(url)
+							.then(() => {
+								new Notice(this.t("contextMenus.task.notices.copyUrlSuccess"));
+							})
+							.catch(() => {
+								new Notice(this.t("contextMenus.task.notices.copyFailure"));
+							});
 					});
 				});
 
 				submenu.addSeparator();
 
-				submenu.addItem((subItem: any) => {
+				submenu.addItem((subItem) => {
 					subItem.setTitle(this.t("contextMenus.task.showInExplorer"));
 					subItem.setIcon("folder-open");
 					subItem.onClick(() => {
 						// Reveal file in file explorer
-						plugin.app.workspace
+						void plugin.app.workspace
 							.getLeaf()
 							.setViewState({
 								type: "file-explorer",
@@ -534,8 +568,11 @@ export class TaskContextMenu {
 								const fileExplorer =
 									plugin.app.workspace.getLeavesOfType("file-explorer")[0];
 								if (fileExplorer?.view && "revealInFolder" in fileExplorer.view) {
-									(fileExplorer.view as any).revealInFolder(file);
+									(fileExplorer.view as FileExplorerView).revealInFolder(file);
 								}
+							})
+							.catch((error) => {
+								console.warn("Failed to reveal task in file explorer:", error);
 							});
 					});
 				});
@@ -549,10 +586,10 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.addToCalendar"));
 			item.setIcon("calendar-plus");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 
 			// Google Calendar
-			submenu.addItem((subItem: any) => {
+			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.calendar.google"));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
@@ -568,7 +605,7 @@ export class TaskContextMenu {
 			});
 
 			// Outlook Calendar
-			submenu.addItem((subItem: any) => {
+			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.calendar.outlook"));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
@@ -584,7 +621,7 @@ export class TaskContextMenu {
 			});
 
 			// Yahoo Calendar
-			submenu.addItem((subItem: any) => {
+			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.calendar.yahoo"));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
@@ -602,7 +639,7 @@ export class TaskContextMenu {
 			submenu.addSeparator();
 
 			// Download ICS file
-			submenu.addItem((subItem: any) => {
+			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.calendar.downloadIcs"));
 				subItem.setIcon("download");
 				subItem.onClick(() => {
@@ -613,7 +650,7 @@ export class TaskContextMenu {
 			submenu.addSeparator();
 
 			// Sync to Google Calendar (via API)
-			submenu.addItem((subItem: any) => {
+			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.calendar.syncToGoogle"));
 				subItem.setIcon("refresh-cw");
 				subItem.onClick(async () => {
@@ -640,7 +677,7 @@ export class TaskContextMenu {
 			item.setTitle(this.t("contextMenus.task.recurrence"));
 			item.setIcon("refresh-ccw");
 
-			const submenu = (item as any).setSubmenu();
+			const submenu = getSubmenu(item);
 			const currentRecurrence =
 				typeof task.recurrence === "string" ? task.recurrence : undefined;
 			this.addRecurrenceOptions(
@@ -698,7 +735,7 @@ export class TaskContextMenu {
 	}
 
 	private addDependencyMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
-		menu.addItem((subItem: any) => {
+		menu.addItem((subItem) => {
 			subItem.setTitle(this.t("contextMenus.task.dependencies.addBlockedBy"));
 			subItem.setIcon("link-2");
 			subItem.onClick(() => {
@@ -709,12 +746,12 @@ export class TaskContextMenu {
 
 		const blockedByEntries = task.blockedBy ?? [];
 		if (blockedByEntries.length > 0) {
-			menu.addItem((subItem: any) => {
+			menu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.dependencies.removeBlockedBy"));
 				subItem.setIcon("unlink");
-				const innerMenu = (subItem as any).setSubmenu();
+				const innerMenu = getSubmenu(subItem);
 				blockedByEntries.forEach((entry, index) => {
-					innerMenu.addItem((item: any) => {
+					innerMenu.addItem((item) => {
 						const uid =
 							extractDependencyUid(entry) ||
 							this.t("contextMenus.task.dependencies.unknownDependency");
@@ -748,7 +785,7 @@ export class TaskContextMenu {
 
 		menu.addSeparator();
 
-		menu.addItem((subItem: any) => {
+		menu.addItem((subItem) => {
 			subItem.setTitle(this.t("contextMenus.task.dependencies.addBlocking"));
 			subItem.setIcon("git-branch-plus");
 			subItem.onClick(() => {
@@ -759,17 +796,17 @@ export class TaskContextMenu {
 
 		const blockingEntries = task.blocking ?? [];
 		if (blockingEntries.length > 0) {
-			menu.addItem((subItem: any) => {
+			menu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.dependencies.removeBlocking"));
 				subItem.setIcon("git-branch-minus");
-				const innerMenu = (subItem as any).setSubmenu();
+				const innerMenu = getSubmenu(subItem);
 				blockingEntries.forEach((path) => {
 					const file = plugin.app.vault.getAbstractFileByPath(path);
 					const label =
 						file instanceof TFile
 							? plugin.app.metadataCache.fileToLinktext(file, task.path, false)
 							: path.split("/").pop() || path;
-					innerMenu.addItem((item: any) => {
+					innerMenu.addItem((item) => {
 						item.setTitle(label);
 						item.onClick(async () => {
 							try {
@@ -859,8 +896,7 @@ export class TaskContextMenu {
 		onSelect: (selected: TaskInfo) => Promise<void>
 	): Promise<void> {
 		try {
-			const cacheManager: any = plugin.cacheManager;
-			const allTasks: TaskInfo[] = (await cacheManager?.getAllTasks?.()) ?? [];
+			const allTasks = await plugin.cacheManager.getAllTasks();
 			const candidates = allTasks.filter(filter);
 
 			if (candidates.length === 0) {
@@ -868,9 +904,9 @@ export class TaskContextMenu {
 				return;
 			}
 
-			openTaskSelector(plugin, candidates, async (task) => {
+			openTaskSelector(plugin, candidates, (task) => {
 				if (!task) return;
-				await onSelect(task);
+				void onSelect(task);
 			});
 		} catch (error) {
 			console.error("Failed to open task selector for dependencies:", error);
@@ -968,7 +1004,7 @@ export class TaskContextMenu {
 
 	private addOrganizationMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
 		// Add to project
-		menu.addItem((subItem: any) => {
+		menu.addItem((subItem) => {
 			subItem.setTitle(this.t("contextMenus.task.organization.addToProject"));
 			subItem.setIcon("folder-plus");
 			subItem.onClick(() => {
@@ -978,7 +1014,7 @@ export class TaskContextMenu {
 		});
 
 		// Add subtasks
-		menu.addItem((subItem: any) => {
+		menu.addItem((subItem) => {
 			subItem.setTitle(this.t("contextMenus.task.organization.addSubtasks"));
 			subItem.setIcon("indent");
 			subItem.onClick(() => {
@@ -990,9 +1026,9 @@ export class TaskContextMenu {
 
 	private async openProjectSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
 		try {
-			const selector = new ProjectSelectModal(plugin.app, plugin, async (projectFile) => {
+			const selector = new ProjectSelectModal(plugin.app, plugin, (projectFile) => {
 				if (!projectFile) return;
-				await this.addTaskToProject(task, plugin, projectFile);
+				void this.addTaskToProject(task, plugin, projectFile);
 			});
 			selector.open();
 		} catch (error) {
@@ -1006,8 +1042,7 @@ export class TaskContextMenu {
 		plugin: TaskNotesPlugin
 	): Promise<void> {
 		try {
-			const cacheManager: any = plugin.cacheManager;
-			const allTasks: TaskInfo[] = (await cacheManager?.getAllTasks?.()) ?? [];
+			const allTasks = await plugin.cacheManager.getAllTasks();
 
 			// Filter out the current task
 			const candidates = allTasks.filter((candidate) => candidate.path !== task.path);
@@ -1017,9 +1052,9 @@ export class TaskContextMenu {
 				return;
 			}
 
-			openTaskSelector(plugin, candidates, async (subtask) => {
+			openTaskSelector(plugin, candidates, (subtask) => {
 				if (!subtask) return;
-				await this.assignTaskAsSubtask(task, plugin, subtask);
+				void this.assignTaskAsSubtask(task, plugin, subtask);
 			});
 		} catch (error) {
 			console.error("Failed to open subtask assignment selector:", error);
@@ -1030,7 +1065,7 @@ export class TaskContextMenu {
 	private async addTaskToProject(
 		task: TaskInfo,
 		plugin: TaskNotesPlugin,
-		projectFile: any
+		projectFile: TAbstractFile
 	): Promise<void> {
 		try {
 			if (!(projectFile instanceof TFile)) {
@@ -1181,11 +1216,11 @@ export class TaskContextMenu {
 		});
 	}
 
-	private addStatusOptions(submenu: any, task: TaskInfo, plugin: TaskNotesPlugin): void {
+	private addStatusOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const statusOptions = this.getStatusOptions(task, plugin);
 
 		statusOptions.forEach((option, index) => {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				let title = option.label;
 
 				// Use custom icon if configured, otherwise default to circle
@@ -1213,13 +1248,14 @@ export class TaskContextMenu {
 				});
 
 				// Apply color directly to this item
-				if (option.color) {
+				const optionColor = option.color;
+				if (optionColor) {
 					window.setTimeout(() => {
-						const itemEl = item.dom || item.domEl;
+						const itemEl = getMenuItemElement(item);
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");
 							if (iconEl) {
-								(iconEl as HTMLElement).style.color = option.color;
+								(iconEl as HTMLElement).style.color = optionColor;
 							}
 						}
 					}, 10);
@@ -1228,11 +1264,11 @@ export class TaskContextMenu {
 		});
 	}
 
-	private addPriorityOptions(submenu: any, task: TaskInfo, plugin: TaskNotesPlugin): void {
+	private addPriorityOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const priorityOptions = plugin.priorityManager.getPrioritiesByWeight();
 
 		priorityOptions.forEach((priority) => {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				let title = priority.label;
 
 				// Use consistent icon for all items
@@ -1262,7 +1298,7 @@ export class TaskContextMenu {
 				// Apply color directly to this item
 				if (priority.color) {
 					window.setTimeout(() => {
-						const itemEl = item.dom || item.domEl;
+						const itemEl = getMenuItemElement(item);
 						if (itemEl) {
 							const iconEl = itemEl.querySelector(".menu-item-icon");
 							if (iconEl) {
@@ -1276,7 +1312,7 @@ export class TaskContextMenu {
 	}
 
 	private addDateOptions(
-		submenu: any,
+		submenu: Menu,
 		currentValue: string | undefined,
 		onSelect: (value: string | null) => Promise<void>,
 		onCustomDate: () => void
@@ -1284,7 +1320,7 @@ export class TaskContextMenu {
 		const dateContextMenu = new DateContextMenu({
 			currentValue: currentValue,
 			onSelect: (value: string | null) => {
-				onSelect(value);
+				void onSelect(value);
 			},
 			onCustomDate: onCustomDate,
 			plugin: this.options.plugin,
@@ -1294,48 +1330,54 @@ export class TaskContextMenu {
 		const dateOptions = dateContextMenu.getDateOptions();
 
 		const incrementOptions = dateOptions.filter(
-			(option: any) => option.category === "increment"
+			(option) => option.category === "increment"
 		);
 		if (incrementOptions.length > 0) {
-			incrementOptions.forEach((option: any) => {
-				submenu.addItem((item: any) => {
+			incrementOptions.forEach((option) => {
+				submenu.addItem((item) => {
 					if (option.icon) item.setIcon(option.icon);
 					item.setTitle(option.label);
-					item.onClick(() => onSelect(option.value));
+					item.onClick(() => {
+						void onSelect(option.value);
+					});
 				});
 			});
 			submenu.addSeparator();
 		}
 
-		const basicOptions = dateOptions.filter((option: any) => option.category === "basic");
-		basicOptions.forEach((option: any) => {
-			submenu.addItem((item: any) => {
+		const basicOptions = dateOptions.filter((option) => option.category === "basic");
+		basicOptions.forEach((option) => {
+			submenu.addItem((item) => {
 				if (option.icon) item.setIcon(option.icon);
 				const isSelected = option.value === currentValue;
 				const title = isSelected
 					? this.t("contextMenus.date.selected", { label: option.label })
 					: option.label;
 				item.setTitle(title);
-				item.onClick(() => onSelect(option.value));
+				item.onClick(() => {
+					void onSelect(option.value);
+				});
 			});
 		});
 
-		const weekdayOptions = dateOptions.filter((option: any) => option.category === "weekday");
+		const weekdayOptions = dateOptions.filter((option) => option.category === "weekday");
 		if (weekdayOptions.length > 0) {
 			submenu.addSeparator();
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				item.setTitle(this.t("contextMenus.date.weekdaysLabel"));
 				item.setIcon("calendar");
-				const weekdaySubmenu = (item as any).setSubmenu();
-				weekdayOptions.forEach((option: any) => {
-					weekdaySubmenu.addItem((subItem: any) => {
+				const weekdaySubmenu = getSubmenu(item);
+				weekdayOptions.forEach((option) => {
+					weekdaySubmenu.addItem((subItem) => {
 						const isSelected = option.value === currentValue;
 						const title = isSelected
 							? this.t("contextMenus.date.selected", { label: option.label })
 							: option.label;
 						subItem.setTitle(title);
 						subItem.setIcon("calendar");
-						subItem.onClick(() => onSelect(option.value));
+						subItem.onClick(() => {
+							void onSelect(option.value);
+						});
 					});
 				});
 			});
@@ -1343,23 +1385,25 @@ export class TaskContextMenu {
 
 		submenu.addSeparator();
 
-		submenu.addItem((item: any) => {
+		submenu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.date.pickDateTime"));
 			item.setIcon("calendar");
-			item.onClick(() => onCustomDate());
+			item.onClick(onCustomDate);
 		});
 
 		if (currentValue) {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				item.setTitle(this.t("contextMenus.date.clearDate"));
 				item.setIcon("x");
-				item.onClick(() => onSelect(null));
+				item.onClick(() => {
+					void onSelect(null);
+				});
 			});
 		}
 	}
 
 	private addRecurrenceOptions(
-		submenu: any,
+		submenu: Menu,
 		currentValue: string | undefined,
 		onSelect: (value: string | null) => Promise<void>,
 		plugin: TaskNotesPlugin
@@ -1445,12 +1489,12 @@ export class TaskContextMenu {
 		];
 
 		recurrenceOptions.forEach((option) => {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				const isSelected = option.value === currentValue;
 				item.setTitle(isSelected ? `✓ ${option.label}` : option.label);
 				item.setIcon(option.icon);
 				item.onClick(() => {
-					onSelect(option.value);
+					void onSelect(option.value);
 				});
 			});
 		});
@@ -1458,7 +1502,7 @@ export class TaskContextMenu {
 		submenu.addSeparator();
 
 		// Custom recurrence option
-		submenu.addItem((item: any) => {
+		submenu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.task.customRecurrence"));
 			item.setIcon("settings");
 			item.onClick(() => {
@@ -1466,7 +1510,9 @@ export class TaskContextMenu {
 					currentValue: typeof currentValue === "string" ? currentValue : undefined,
 					currentAnchor: this.options.task.recurrence_anchor || "scheduled",
 					scheduledDate: this.options.task.scheduled,
-					onSelect: onSelect,
+					onSelect: (value) => {
+						void onSelect(value);
+					},
 					app: plugin.app,
 					plugin: plugin,
 				});
@@ -1476,11 +1522,11 @@ export class TaskContextMenu {
 
 		// Clear option if there's a current value
 		if (currentValue) {
-			submenu.addItem((item: any) => {
+			submenu.addItem((item) => {
 				item.setTitle(this.t("contextMenus.task.clearRecurrence"));
 				item.setIcon("x");
 				item.onClick(() => {
-					onSelect(null);
+					void onSelect(null);
 				});
 			});
 		}
@@ -1488,7 +1534,7 @@ export class TaskContextMenu {
 
 	private getStatusOptions(task: TaskInfo, plugin: TaskNotesPlugin) {
 		const statusConfigs = plugin.settings.customStatuses;
-		const statusOptions: any[] = [];
+		const statusOptions: TaskStatusOption[] = [];
 
 		// Use only the user-defined statuses from settings
 		if (statusConfigs && statusConfigs.length > 0) {
@@ -1510,7 +1556,7 @@ export class TaskContextMenu {
 	}
 
 	private addQuickRemindersSection(
-		submenu: any,
+		submenu: Menu,
 		task: TaskInfo,
 		plugin: TaskNotesPlugin,
 		anchor: "due" | "scheduled",
@@ -1520,7 +1566,7 @@ export class TaskContextMenu {
 
 		if (!anchorDate) {
 			// If no anchor date, show disabled option
-			submenu.addItem((subItem: any) => {
+			submenu.addItem((subItem) => {
 				subItem.setTitle(title);
 				subItem.setIcon("bell");
 				subItem.setDisabled(true);
@@ -1529,11 +1575,11 @@ export class TaskContextMenu {
 		}
 
 		// Add submenu for quick reminder options
-		submenu.addItem((subItem: any) => {
+		submenu.addItem((subItem) => {
 			subItem.setTitle(title);
 			subItem.setIcon("bell");
 
-			const reminderSubmenu = (subItem as any).setSubmenu();
+			const reminderSubmenu = getSubmenu(subItem);
 
 			const quickOptions = [
 				{ labelKey: "contextMenus.task.quickReminders.atTime", offset: "PT0M" },
@@ -1544,11 +1590,11 @@ export class TaskContextMenu {
 			];
 
 			quickOptions.forEach((option) => {
-				reminderSubmenu.addItem((reminderItem: any) => {
+				reminderSubmenu.addItem((reminderItem) => {
 					const label = this.t(option.labelKey);
 					reminderItem.setTitle(label);
-					reminderItem.onClick(async () => {
-						await this.addQuickReminder(task, plugin, anchor, option.offset, label);
+					reminderItem.onClick(() => {
+						void this.addQuickReminder(task, plugin, anchor, option.offset, label);
 					});
 				});
 			});

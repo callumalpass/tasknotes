@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Calendar sync validates credentials before accessing token fields. */
 import { requestUrl, Notice } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
@@ -31,6 +31,26 @@ const GOOGLE_CALENDAR_COLORS: Record<string, string> = {
 	"9": "#5484ed", // Blueberry
 	"10": "#51b749", // Basil
 	"11": "#dc2127", // Tomato
+};
+
+type GoogleCalendarDateTime = {
+	date?: string;
+	dateTime?: string;
+	timeZone?: string;
+};
+
+type GoogleCalendarEventPayload = Record<string, unknown> & {
+	summary?: string;
+	description?: string;
+	location?: string;
+	reminders?: {
+		useDefault: boolean;
+		overrides?: Array<{ method: string; minutes: number }>;
+	};
+	colorId?: string;
+	recurrence?: string[];
+	start?: GoogleCalendarDateTime;
+	end?: GoogleCalendarDateTime;
 };
 
 /**
@@ -613,10 +633,10 @@ export class GoogleCalendarService extends CalendarProvider {
 				});
 			}, `Get event ${eventId}`);
 
-			const currentEvent = getResponse.json;
+			const currentEvent = getResponse.json as GoogleCalendarEventPayload;
 
 			// Build update payload
-			const payload: any = { ...currentEvent };
+			const payload: GoogleCalendarEventPayload = { ...currentEvent };
 
 			// Support both 'title' and 'summary'
 			if (updates.title !== undefined || updates.summary !== undefined) {
@@ -654,7 +674,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			if (updates.end !== undefined) {
 				if (typeof updates.end === "string") {
-					const isAllDay = updates.isAllDay || !/T/.test(updates.end as string);
+					const isAllDay = updates.isAllDay || !/T/.test(updates.end);
 					if (isAllDay) {
 						payload.end = { date: updates.end };
 					} else {
@@ -759,7 +779,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			const token = await this.oauthService.getValidToken("google");
 
 			// Build Google Calendar API payload
-			const payload: any = {
+			const payload: GoogleCalendarEventPayload = {
 				summary: summary,
 				description: event.description,
 				location: event.location,
@@ -791,10 +811,13 @@ export class GoogleCalendarService extends CalendarProvider {
 					payload.start = { dateTime: event.start, timeZone: "UTC" };
 					payload.end = { dateTime: event.end as string, timeZone: "UTC" };
 				}
-			} else {
-				payload.start = event.start;
-				payload.end = event.end;
-			}
+				} else {
+					payload.start = event.start;
+					payload.end =
+						typeof event.end === "string"
+							? { dateTime: event.end, timeZone: "UTC" }
+							: event.end;
+				}
 
 			const response = await this.withRetry(async () => {
 				return await requestUrl({

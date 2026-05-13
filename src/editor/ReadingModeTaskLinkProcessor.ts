@@ -28,12 +28,12 @@ export class ReadingModeTaskLinkProcessor {
 			const allLinks = el.querySelectorAll("a");
 
 			for (const link of Array.from(allLinks)) {
-				const linkEl = link as HTMLAnchorElement;
+				const linkEl = link;
 				const href = linkEl.getAttribute("href");
 
 				// Process internal links (wikilinks) - these have .internal-link class
 				if (linkEl.classList.contains("internal-link")) {
-					this.processLink(linkEl, ctx.sourcePath, "internal");
+					void this.processLink(linkEl, ctx.sourcePath, "internal");
 				}
 				// Process other links that might be markdown links to internal files
 				else if (
@@ -42,7 +42,7 @@ export class ReadingModeTaskLinkProcessor {
 					!href.startsWith("https://") &&
 					!href.includes("://")
 				) {
-					this.processLink(linkEl, ctx.sourcePath, "external");
+					void this.processLink(linkEl, ctx.sourcePath, "external");
 				}
 			}
 		};

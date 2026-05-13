@@ -64,8 +64,8 @@ export async function cleanupPluginRuntime(plugin: TaskNotesPlugin): Promise<voi
 	plugin.autoExportService?.destroy();
 	plugin.taskLinkDetectionService?.cleanup();
 	plugin.dragDropManager?.destroy();
-	plugin.apiService?.stop();
-	plugin.oauthService?.destroy();
+	void plugin.apiService?.stop();
+	void plugin.oauthService?.destroy();
 	plugin.taskCalendarSyncService?.destroy();
 	plugin.googleCalendarService?.destroy();
 	plugin.microsoftCalendarService?.destroy();

@@ -16,6 +16,16 @@ const SYNC_CONCURRENCY_LIMIT = 5;
  *  Google Calendar enforces ~10 req/s per-user; 100ms keeps us comfortably under that. */
 const GOOGLE_API_CALL_SPACING_MS = 100;
 
+function getErrorStatus(error: unknown): number | undefined {
+	return error !== null && typeof error === "object" && typeof (error as { status?: unknown }).status === "number"
+		? (error as { status: number }).status
+		: undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
 /**
  * Service for syncing TaskNotes tasks to Google Calendar.
  * Handles creating, updating, and deleting calendar events when tasks change.
@@ -67,7 +77,7 @@ export class TaskCalendarSyncService {
 
 		for (const item of items) {
 			const promise = processor(item).then(() => {
-				executing.splice(executing.indexOf(promise), 1);
+				void executing.splice(executing.indexOf(promise), 1);
 			});
 			executing.push(promise);
 
@@ -238,7 +248,7 @@ export class TaskCalendarSyncService {
 		const settings = this.plugin.settings.googleCalendarExport;
 		const t = (key: string, params?: Record<string, string | number>) =>
 			this.plugin.i18n.translate(
-				`settings.integrations.googleCalendarExport.eventDescription.${key}` as any,
+				`settings.integrations.googleCalendarExport.eventDescription.${key}`,
 				params
 			);
 		const parts: string[] = [];
@@ -752,9 +762,9 @@ export class TaskCalendarSyncService {
 				// Save the event ID to the task's frontmatter
 				await this.saveTaskEventId(task.path, eventId);
 			}
-		} catch (error: any) {
-			// Check if it's a 404 error (event was deleted externally)
-			if (error.status === 404 && existingEventId) {
+			} catch (error: unknown) {
+				// Check if it's a 404 error (event was deleted externally)
+				if (getErrorStatus(error) === 404 && existingEventId) {
 				// Clear the stale link and retry as create
 				await this.removeTaskEventId(task.path);
 				// Retry without the link - refetch task to get updated version
@@ -777,10 +787,10 @@ export class TaskCalendarSyncService {
 			} else {
 				new Notice(
 					this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.syncFailed",
-						{ message: error.message }
-					)
-				);
+							"settings.integrations.googleCalendarExport.notices.syncFailed",
+							{ message: getErrorMessage(error) }
+						)
+					);
 			}
 		}
 	}
@@ -915,8 +925,8 @@ export class TaskCalendarSyncService {
 					description,
 				})
 			);
-		} catch (error: any) {
-			if (error.status === 404) {
+			} catch (error: unknown) {
+				if (getErrorStatus(error) === 404) {
 				// Event was deleted externally, clean up the link
 				await this.removeTaskEventId(task.path);
 				return;
@@ -949,8 +959,8 @@ export class TaskCalendarSyncService {
 					})
 				);
 			}
-		} catch (error: any) {
-			if (error.status === 404) {
+			} catch (error: unknown) {
+				if (getErrorStatus(error) === 404) {
 				// Event was deleted externally, clean up the link
 				await this.removeTaskEventId(task.path);
 				return;
@@ -985,9 +995,10 @@ export class TaskCalendarSyncService {
 			await this.withGoogleRateLimit(() =>
 				this.googleCalendarService.deleteEvent(settings.targetCalendarId, existingEventId)
 			);
-		} catch (error: any) {
-			// 404 or 410 means event is already gone - that's fine
-			if (error.status !== 404 && error.status !== 410) {
+			} catch (error: unknown) {
+				// 404 or 410 means event is already gone - that's fine
+				const status = getErrorStatus(error);
+				if (status !== 404 && status !== 410) {
 				deleteFailed = true;
 				console.error("[TaskCalendarSync] Failed to delete event:", task.path, error);
 			}
@@ -1016,9 +1027,10 @@ export class TaskCalendarSyncService {
 			await this.withGoogleRateLimit(() =>
 				this.googleCalendarService.deleteEvent(settings.targetCalendarId, eventId)
 			);
-		} catch (error: any) {
-			// 404 or 410 means event is already gone - that's fine
-			if (error.status !== 404 && error.status !== 410) {
+			} catch (error: unknown) {
+				// 404 or 410 means event is already gone - that's fine
+				const status = getErrorStatus(error);
+				if (status !== 404 && status !== 410) {
 				console.error("[TaskCalendarSync] Failed to delete event:", taskPath, error);
 			}
 		}

@@ -1,5 +1,6 @@
 import { Component, App, setIcon } from "obsidian";
 import type { BasesPropertyId, BasesQueryResult, BasesView, BasesViewConfig } from "obsidian";
+import type { EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -10,6 +11,31 @@ import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import type { TaskCardOptions } from "../ui/TaskCard";
+import { normalizeDependencyList } from "../utils/dependencyUtils";
+
+type BasesEphemeralState = {
+	scrollTop?: unknown;
+};
+
+type TaskUpdateEventData = {
+	updatedTask?: TaskInfo;
+	task?: TaskInfo;
+	taskInfo?: TaskInfo;
+};
+
+type BasesCreateFileFrontmatter = Record<string, unknown>;
+
+type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
+	customFrontmatter?: Record<string, unknown>;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function toStringArray(value: unknown): string[] {
+	return Array.isArray(value) ? value.map(String) : [String(value)];
+}
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -28,7 +54,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	protected propertyMapper: PropertyMappingService;
 	protected containerEl: HTMLElement;
 	protected rootElement: HTMLElement | null = null;
-	protected taskUpdateListener: any = null;
+	protected taskUpdateListener: EventRef | null = null;
 	protected updateDebounceTimer: number | null = null;
 	protected dataUpdateDebounceTimer: number | null = null;
 	protected relevantPathsCache: Set<string> = new Set();
@@ -43,7 +69,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	protected selectionModeCleanup: (() => void) | null = null;
 	protected selectionIndicatorEl: HTMLElement | null = null;
 
-	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
+	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		// Call Component constructor
 		super();
 		this.plugin = plugin;
@@ -123,7 +149,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	/**
 	 * Lifecycle: Save ephemeral state (scroll position, etc).
 	 */
-	getEphemeralState(): any {
+	getEphemeralState(): unknown {
 		return {
 			scrollTop: this.rootElement?.scrollTop || 0,
 		};
@@ -132,12 +158,13 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	/**
 	 * Lifecycle: Restore ephemeral state.
 	 */
-	setEphemeralState(state: any): void {
-		if (!state || !this.rootElement || !this.rootElement.isConnected) return;
+	setEphemeralState(state: unknown): void {
+		if (!isRecord(state) || !this.rootElement || !this.rootElement.isConnected) return;
 
 		try {
-			if (state.scrollTop !== undefined) {
-				this.rootElement.scrollTop = state.scrollTop;
+			const ephemeralState: BasesEphemeralState = state;
+			if (typeof ephemeralState.scrollTop === "number") {
+				this.rootElement.scrollTop = ephemeralState.scrollTop;
 			}
 		} catch (e) {
 			console.debug("[TaskNotes][Bases] Failed to restore ephemeral state:", e);
@@ -272,7 +299,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		newTaskBtn.appendChild(innerBtn);
 
 		newTaskBtn.addEventListener("click", () => {
-			this.createFileForView("New Task");
+			void this.createFileForView("New Task");
 		});
 
 		// Find the original "New" button position and insert our button there
@@ -297,10 +324,11 @@ export abstract class BasesViewBase extends Component implements BasesView {
 
 		this.taskUpdateListener = this.plugin.emitter.on(
 			EVENT_TASK_UPDATED,
-			async (eventData: any) => {
+			async (eventData: unknown) => {
 				try {
+					const taskEvent: TaskUpdateEventData = isRecord(eventData) ? eventData : {};
 					const updatedTask =
-						eventData?.updatedTask || eventData?.task || eventData?.taskInfo;
+						taskEvent.updatedTask ?? taskEvent.task ?? taskEvent.taskInfo;
 					if (!updatedTask?.path) return;
 
 					// Skip if view is not visible (no point updating hidden views)
@@ -362,17 +390,17 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 */
 	async createFileForView(
 		baseFileName?: string,
-		frontmatterProcessor?: (frontmatter: any) => void
+		frontmatterProcessor?: (frontmatter: BasesCreateFileFrontmatter) => void
 	): Promise<void> {
 		const { TaskCreationModal } = await import("../modals/TaskCreationModal");
 
 		// Extract any default values from the frontmatter processor if provided
 		const prePopulatedValues: Partial<TaskInfo> = {};
-		const customFrontmatter: Record<string, any> = {};
+		const customFrontmatter: Record<string, unknown> = {};
 
 		if (frontmatterProcessor) {
 			// Create a mock frontmatter object to extract defaults
-			const mockFrontmatter: any = {};
+			const mockFrontmatter: BasesCreateFileFrontmatter = {};
 			frontmatterProcessor(mockFrontmatter);
 
 			// Get field mapper for property name mapping
@@ -396,17 +424,17 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			}
 			if (mockFrontmatter[fm.toUserField("contexts")]) {
 				const contexts = mockFrontmatter[fm.toUserField("contexts")];
-				prePopulatedValues.contexts = Array.isArray(contexts) ? contexts : [contexts];
+				prePopulatedValues.contexts = toStringArray(contexts);
 			}
 			if (mockFrontmatter[fm.toUserField("projects")]) {
 				const projects = mockFrontmatter[fm.toUserField("projects")];
-				prePopulatedValues.projects = Array.isArray(projects) ? projects : [projects];
+				prePopulatedValues.projects = toStringArray(projects);
 			}
 
 			// Tags - check both the standard 'tags' property and archiveTag
 			if (mockFrontmatter.tags) {
 				const tags = mockFrontmatter.tags;
-				prePopulatedValues.tags = Array.isArray(tags) ? tags : [tags];
+				prePopulatedValues.tags = toStringArray(tags);
 			}
 
 			// Archived - check for archive tag
@@ -437,7 +465,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			}
 			if (mockFrontmatter[fm.toUserField("blockedBy")]) {
 				const blockedBy = mockFrontmatter[fm.toUserField("blockedBy")];
-				prePopulatedValues.blockedBy = Array.isArray(blockedBy) ? blockedBy : [blockedBy];
+				prePopulatedValues.blockedBy = normalizeDependencyList(blockedBy);
 			}
 
 			// Handle user-defined custom fields
@@ -477,7 +505,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		}
 
 		// Build the complete pre-populated values (TaskCreationData structure)
-		const taskCreationData: any = { ...prePopulatedValues };
+		const taskCreationData: TaskCreationPrepopulatedValues = { ...prePopulatedValues };
 		if (Object.keys(customFrontmatter).length > 0) {
 			taskCreationData.customFrontmatter = customFrontmatter;
 		}

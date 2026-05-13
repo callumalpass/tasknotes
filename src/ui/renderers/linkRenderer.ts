@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Renderer utilities check created elements before attaching interactions. */
 // Link and tag rendering utilities for UI components
 
 import { App, TFile, Notice } from "obsidian";
@@ -73,7 +73,7 @@ export function appendInternalLink(
 		try {
 			if (e.ctrlKey || e.metaKey) {
 				// Ctrl/Cmd+Click opens in new tab
-				deps.workspace.openLinkText(normalizedPath, sourcePath, true);
+				void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
 				return;
 			}
 
@@ -110,7 +110,7 @@ export function appendInternalLink(
 					deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
 					deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
 				if (file instanceof TFile) {
-					deps.workspace.openLinkText(normalizedPath, sourcePath, true);
+					void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
 				}
 			} catch (error) {
 				console.error("[TaskNotes] Error opening internal link:", { filePath, error });
@@ -131,7 +131,7 @@ export function appendInternalLink(
 			deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
 		if (file instanceof TFile) {
 			const hoverEvent: HoverLinkEvent = {
-				event: event as MouseEvent,
+				event: event,
 				source: hoverSource,
 				hoverParent: container,
 				targetEl: linkEl,
@@ -146,7 +146,7 @@ export function appendInternalLink(
 /** Render a text string, converting WikiLinks and Markdown links */
 export interface RenderLinksOptions {
 	renderPlain?: (container: HTMLElement, text: string, deps: LinkServices) => void;
-	onTagClick?: (tag: string, event: MouseEvent) => void | Promise<void>;
+	onTagClick?: (tag: string, event: MouseEvent | KeyboardEvent) => void | Promise<void>;
 }
 
 export function renderTextWithLinks(
@@ -160,7 +160,7 @@ export function renderTextWithLinks(
 
 	// First, handle wikilinks and markdown links
 	while ((match = LINK_REGEX.exec(text)) !== null) {
-		const [full, wikiInner, mdText, mdHref] = match as any;
+		const [full, wikiInner, mdText, mdHref] = match;
 		const start = match.index;
 
 		if (start > lastIndex) {
@@ -233,14 +233,14 @@ export function renderTextWithLinks(
 			tagEl.addEventListener("click", (e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				options.onTagClick!(tag, e as MouseEvent);
+				void options.onTagClick!(tag, e);
 			});
 
 			tagEl.addEventListener("keydown", (e) => {
 				if (e.key === "Enter" || e.key === " ") {
 					e.preventDefault();
 					e.stopPropagation();
-					options.onTagClick!(tag, e as any);
+						void options.onTagClick!(tag, e);
 				}
 			});
 

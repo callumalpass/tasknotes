@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Modal lifecycle initializes required controls before event handlers run. */
 import { App, Notice, TFile, TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
@@ -10,6 +10,7 @@ import {
 	formatTime,
 	sanitizeTags,
 } from "../utils/helpers";
+import { stringifyUnknown } from "../utils/stringUtils";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
@@ -201,7 +202,7 @@ export class TaskEditModal extends TaskModal {
 		};
 		this.containerEl.addEventListener("keydown", this.editModalKeyboardHandler);
 
-		this.initializeFormData().then(() => {
+		void this.initializeFormData().then(() => {
 			this.createModalContent();
 			// Render projects list after modal content is created
 			this.renderProjectsList();
@@ -321,7 +322,7 @@ export class TaskEditModal extends TaskModal {
 		}
 
 		// Show confirmation modal asynchronously
-		this.showUnsavedChangesConfirmation();
+		void this.showUnsavedChangesConfirmation();
 	}
 
 	/**
@@ -370,7 +371,7 @@ export class TaskEditModal extends TaskModal {
 				onThirdButton: () => resolve("cancel"),
 			});
 
-			modal.show().then((confirmed) => {
+			void modal.show().then((confirmed) => {
 				if (confirmed) {
 					resolve("save");
 				} else {
@@ -469,11 +470,13 @@ export class TaskEditModal extends TaskModal {
 			let updatedTask = this.task;
 
 			if (hasTaskChanges) {
-				updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
-				this.task = updatedTask;
-				if (Object.prototype.hasOwnProperty.call(changes as any, "details")) {
-					const updatedDetails = ((changes as any).details ?? "").toString();
-					this.details = updatedDetails;
+					updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
+					this.task = updatedTask;
+					if (Object.prototype.hasOwnProperty.call(changes, "details")) {
+						const updatedDetails = stringifyUnknown(
+							(changes as Record<string, unknown>).details
+						);
+						this.details = updatedDetails;
 					this.originalDetails = updatedDetails;
 				}
 			}
@@ -527,7 +530,7 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private getChanges(): Partial<TaskInfo> {
-		let frontmatter: Record<string, any> = {};
+		let frontmatter: Record<string, unknown> = {};
 		try {
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
 			if (file instanceof TFile) {
@@ -574,7 +577,7 @@ export class TaskEditModal extends TaskModal {
 		return result.changes;
 	}
 
-	private async openTaskNote(): Promise<void> {
+	protected async openTaskNote(): Promise<void> {
 		try {
 			// Get the file from the task path
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);

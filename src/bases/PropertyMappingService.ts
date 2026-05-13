@@ -136,7 +136,7 @@ export class PropertyMappingService {
 	 * @returns Internal field name (e.g., "status")
 	 */
 	userPropertyToInternal(userPropertyName: string): string {
-		return this.fieldMapper.fromUserField(userPropertyName) || userPropertyName;
+		return this.fieldMapper.lookupMappingKey(userPropertyName) || userPropertyName;
 	}
 
 	/**
@@ -144,7 +144,7 @@ export class PropertyMappingService {
 	 * Use this when you need to read/write frontmatter based on Bases config.
 	 */
 	basesToUserProperty(basesPropertyId: string): string {
-		const internal = this.basesToInternal(basesPropertyId);
+		const internal = this.basesToTaskCardProperty(basesPropertyId);
 		return this.internalToUserProperty(internal);
 	}
 
@@ -194,7 +194,7 @@ export class PropertyMappingService {
 		let cleanId = basesPropertyId.replace(/^(note\.|file\.|task\.)/, '');
 
 		// Try to map back from user-configured property name to internal field name
-		const internalField = this.fieldMapper?.fromUserField(cleanId);
+		const internalField = this.fieldMapper?.lookupMappingKey(cleanId);
 		if (internalField) {
 			return internalField;
 		}
