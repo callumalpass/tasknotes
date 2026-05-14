@@ -746,11 +746,15 @@ export class TaskManager extends Events {
 	 * This is necessary after creating/modifying files because the metadata cache
 	 * updates asynchronously.
 	 */
-	async waitForFreshTaskData(pathOrFile: string | TFile, maxRetries = 10): Promise<void> {
-		const path = pathOrFile instanceof TFile ? pathOrFile.path : pathOrFile;
-		const file = pathOrFile instanceof TFile
-			? pathOrFile
-			: this.app.vault.getAbstractFileByPath(path);
+	async waitForFreshTaskData(
+		pathOrFile: string | { path: string },
+		maxRetries = 10
+	): Promise<void> {
+		const path = typeof pathOrFile === "string" ? pathOrFile : pathOrFile.path;
+		const file =
+			typeof pathOrFile === "string"
+				? this.app.vault.getAbstractFileByPath(path)
+				: pathOrFile;
 
 		if (!(file instanceof TFile)) {
 			// File doesn't exist yet, just wait a bit

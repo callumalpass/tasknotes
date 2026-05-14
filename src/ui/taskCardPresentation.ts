@@ -25,6 +25,11 @@ export function isBasesValue(value: unknown): value is RenderableBasesValue {
 	);
 }
 
+function getBasesDisplayString(value: RenderableBasesValue): string {
+	const text = value.toString();
+	return text === "[object Object]" ? "" : text;
+}
+
 export function isNullBasesValue(value: unknown): boolean {
 	if (value === null || value === undefined) {
 		return true;
@@ -35,7 +40,7 @@ export function isNullBasesValue(value: unknown): boolean {
 		return true;
 	}
 
-	return isBasesValue(value) && isNullishDisplayString(stringifyUnknown(value));
+	return isBasesValue(value) && isNullishDisplayString(getBasesDisplayString(value));
 }
 
 export function isEmptyCardDisplayValue(value: unknown): boolean {
@@ -52,7 +57,7 @@ export function isEmptyCardDisplayValue(value: unknown): boolean {
 	}
 
 	if (isBasesValue(value)) {
-		return stringifyUnknown(value).trim() === "";
+		return getBasesDisplayString(value).trim() === "";
 	}
 
 	return false;
@@ -70,11 +75,11 @@ export function renderBasesValue(
 	try {
 		value.renderTo(container, renderContext);
 		if (!container.hasChildNodes() && !container.textContent) {
-			container.textContent = stringifyUnknown(value);
+			container.textContent = getBasesDisplayString(value);
 		}
 	} catch (error) {
 		console.debug("[TaskNotes] Error rendering Bases value:", error);
-		container.textContent = stringifyUnknown(value);
+		container.textContent = getBasesDisplayString(value);
 	}
 
 	return true;

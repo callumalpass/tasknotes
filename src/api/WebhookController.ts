@@ -500,14 +500,21 @@ export class WebhookController extends BaseController {
 		if (typeof value === "string") {
 			return value;
 		}
-		if (typeof value === "number" || typeof value === "bigint") {
-			return value.toString();
+		if (typeof value === "number") {
+			return Number.prototype.toString.call(value);
+		}
+		if (typeof value === "bigint") {
+			return BigInt.prototype.toString.call(value);
 		}
 		if (typeof value === "boolean") {
 			return value ? "true" : "false";
 		}
 
-		const serialized = JSON.stringify(value);
-		return serialized ?? "";
+		try {
+			const serialized = JSON.stringify(value);
+			return typeof serialized === "string" ? serialized : "";
+		} catch {
+			return "";
+		}
 	}
 }

@@ -7,8 +7,12 @@ export function stringifyUnknown(value: unknown): string {
 		return value;
 	}
 
-	if (typeof value === "number" || typeof value === "bigint") {
-		return value.toString();
+	if (typeof value === "number") {
+		return Number.prototype.toString.call(value);
+	}
+
+	if (typeof value === "bigint") {
+		return BigInt.prototype.toString.call(value);
 	}
 
 	if (typeof value === "boolean") {
@@ -28,14 +32,6 @@ export function stringifyUnknown(value: unknown): string {
 			.map((item) => stringifyUnknown(item))
 			.filter((item) => item.length > 0)
 			.join(", ");
-	}
-
-	const toString = (value as { toString?: unknown }).toString;
-	if (typeof toString === "function") {
-		const result = toString.call(value);
-		if (typeof result === "string" && result !== "[object Object]") {
-			return result;
-		}
 	}
 
 	try {

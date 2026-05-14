@@ -5,9 +5,10 @@ import type { InterpolationValues, TranslationKey } from "../i18n";
 
 export class AutoExportService {
 	private plugin: TaskNotesPlugin;
-	private intervalId: number | null = null;
+	private scheduledExportId: number | null = null;
 	private lastExportTime: Date | null = null;
 	private nextExportTime: Date | null = null;
+	private isRunning = false;
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
@@ -25,32 +26,22 @@ export class AutoExportService {
 			return;
 		}
 
-		this.stop(); // Stop any existing interval
+		this.stop();
+		this.isRunning = true;
 
-		const intervalMinutes = this.plugin.settings.icsIntegration.autoExportInterval;
-		const intervalMs = intervalMinutes * 60 * 1000;
-
-		// Set next export time
-		this.nextExportTime = new Date(Date.now() + intervalMs);
-
-		this.intervalId = window.setInterval(() => {
-			void (async () => {
-				await this.performExport();
-				// Update next export time
-				this.nextExportTime = new Date(Date.now() + intervalMs);
-			})();
-		}, intervalMs);
+		this.scheduleNextExport();
 	}
 
 	/**
 	 * Stop the automatic export service
 	 */
 	stop(): void {
-		if (this.intervalId) {
-			window.clearInterval(this.intervalId);
-			this.intervalId = null;
-			this.nextExportTime = null;
+		this.isRunning = false;
+		if (this.scheduledExportId !== null) {
+			window.clearTimeout(this.scheduledExportId);
+			this.scheduledExportId = null;
 		}
+		this.nextExportTime = null;
 	}
 
 	/**
@@ -81,6 +72,26 @@ export class AutoExportService {
 	 */
 	getNextExportTime(): Date | null {
 		return this.nextExportTime;
+	}
+
+	private scheduleNextExport(): void {
+		if (!this.isRunning || !this.plugin.settings.icsIntegration.enableAutoExport) {
+			this.nextExportTime = null;
+			return;
+		}
+
+		const intervalMinutes = this.plugin.settings.icsIntegration.autoExportInterval;
+		const intervalMs = intervalMinutes * 60 * 1000;
+		this.nextExportTime = new Date(Date.now() + intervalMs);
+
+		this.scheduledExportId = window.setTimeout(() => {
+			this.scheduledExportId = null;
+			void this.performExport().finally(() => {
+				if (this.isRunning) {
+					this.scheduleNextExport();
+				}
+			});
+		}, intervalMs);
 	}
 
 	/**
