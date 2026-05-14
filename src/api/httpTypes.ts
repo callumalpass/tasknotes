@@ -2,7 +2,7 @@ export interface HTTPRequestLike {
 	method?: string;
 	url?: string;
 	headers: Record<string, string | string[] | undefined>;
-	on(event: "data", listener: (chunk: Buffer | string) => void): void;
+	on(event: "data", listener: (chunk: string | { toString(): string }) => void): void;
 	on(event: "end", listener: () => void): void;
 	on(event: "error", listener: (error: Error) => void): void;
 }

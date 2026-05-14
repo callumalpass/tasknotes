@@ -124,6 +124,59 @@ const pluginReviewRules = {
 				};
 			},
 		},
+		"no-set-interval": {
+			meta: {
+				type: "problem",
+				docs: {
+					description:
+						"Disallow setInterval usage so periodic work uses explicit rescheduling and avoids Obsidian review telemetry heuristics.",
+				},
+				messages: {
+					noSetInterval:
+						"Use a self-rescheduling setTimeout instead of setInterval.",
+					noClearInterval:
+						"Use clearTimeout with the matching self-rescheduling setTimeout.",
+				},
+				schema: [],
+			},
+			create(context) {
+				function getCallName(callee) {
+					if (callee.type === "Identifier") {
+						return callee.name;
+					}
+
+					if (
+						callee.type === "MemberExpression" &&
+						!callee.computed &&
+						callee.property.type === "Identifier"
+					) {
+						return callee.property.name;
+					}
+
+					return null;
+				}
+
+				return {
+					CallExpression(node) {
+						const callName = getCallName(node.callee);
+
+						if (callName === "setInterval") {
+							context.report({
+								node: node.callee,
+								messageId: "noSetInterval",
+							});
+						}
+
+						if (callName === "clearInterval") {
+							context.report({
+								node: node.callee,
+								messageId: "noClearInterval",
+							});
+						}
+					},
+				};
+			},
+		},
 	},
 };
 
@@ -224,6 +277,7 @@ export default [
 			"no-new-func": "error",
 			"@microsoft/sdl/no-inner-html": "warn",
 			"plugin-review/require-eslint-directive-description": "warn",
+			"plugin-review/no-set-interval": "warn",
 			"obsidianmd/no-static-styles-assignment": "warn",
 			"obsidianmd/rule-custom-message": "warn",
 			"obsidianmd/ui/sentence-case": "warn",

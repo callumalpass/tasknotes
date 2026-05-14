@@ -95,6 +95,12 @@ class LegacySettingGroup {
 	}
 }
 
+interface SettingGroupLike {
+	setHeading(text: string | DocumentFragment): this;
+	addClass(cls: string): this;
+	addSetting(cb: (setting: Setting) => void): this;
+}
+
 /**
  * Helper for creating a setting group with heading
  * Uses native SettingGroup on Obsidian 1.11.0+, falls back to legacy pattern on older versions
@@ -102,8 +108,8 @@ class LegacySettingGroup {
 export function createSettingGroup(
 	container: HTMLElement,
 	options: SettingGroupOptions,
-	addSettings: (group: SettingGroup | LegacySettingGroup) => void
-): SettingGroup | LegacySettingGroup {
+	addSettings: (group: SettingGroupLike) => void
+): SettingGroupLike {
 	if (supportsSettingGroup()) {
 		// Use native SettingGroup on Obsidian 1.11.0+
 		const group = new SettingGroup(container).setHeading(options.heading);

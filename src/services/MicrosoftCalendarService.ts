@@ -241,14 +241,22 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 */
 	private startRefreshTimer(): void {
 		if (this.refreshTimer) {
-			window.clearInterval(this.refreshTimer);
+			window.clearTimeout(this.refreshTimer);
 		}
 
-		// Refresh every 15 minutes
-		this.refreshTimer = window.setInterval(() => {
-			this.refreshAllCalendars().catch(error => {
-				console.error("Microsoft Calendar refresh failed:", error);
-			});
+		this.refreshTimer = window.setTimeout(() => {
+			this.refreshTimer = null;
+			this.refreshAllCalendars()
+				.catch((error) => {
+					console.error("Microsoft Calendar refresh failed:", error);
+				})
+				.finally(() => {
+					void this.oauthService.isConnected("microsoft").then((isConnected) => {
+						if (isConnected) {
+							this.startRefreshTimer();
+						}
+					});
+				});
 		}, MICROSOFT_CALENDAR_CONSTANTS.REFRESH_INTERVAL_MS);
 	}
 
@@ -257,7 +265,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 */
 	private stopRefreshTimer(): void {
 		if (this.refreshTimer) {
-			window.clearInterval(this.refreshTimer);
+			window.clearTimeout(this.refreshTimer);
 			this.refreshTimer = null;
 		}
 	}

@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TFile } from "obsidian";
+import { App, Modal, Setting, Notice, TAbstractFile, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo, NoteInfo } from "../types";
 import { ICSNoteCreationModal } from "./ICSNoteCreationModal";
@@ -206,8 +206,8 @@ export class ICSEventInfoModal extends Modal {
 			async () => {
 				openFileSelector(
 					this.plugin,
-					(file) => {
-						if (!file) return;
+						(file) => {
+							if (!(file instanceof TAbstractFile)) return;
 
 						void SafeAsync.execute(
 							async () => {

@@ -211,14 +211,22 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	private startRefreshTimer(): void {
 		if (this.refreshTimer) {
-			window.clearInterval(this.refreshTimer);
+			window.clearTimeout(this.refreshTimer);
 		}
 
-		// Refresh every 15 minutes
-		this.refreshTimer = window.setInterval(() => {
-			this.refreshAllCalendars().catch((error) => {
-				console.error("Google Calendar refresh failed:", error);
-			});
+		this.refreshTimer = window.setTimeout(() => {
+			this.refreshTimer = null;
+			this.refreshAllCalendars()
+				.catch((error) => {
+					console.error("Google Calendar refresh failed:", error);
+				})
+				.finally(() => {
+					void this.oauthService.isConnected("google").then((isConnected) => {
+						if (isConnected) {
+							this.startRefreshTimer();
+						}
+					});
+				});
 		}, GOOGLE_CALENDAR_CONSTANTS.REFRESH_INTERVAL_MS);
 	}
 
@@ -227,7 +235,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	private stopRefreshTimer(): void {
 		if (this.refreshTimer) {
-			window.clearInterval(this.refreshTimer);
+			window.clearTimeout(this.refreshTimer);
 			this.refreshTimer = null;
 		}
 	}

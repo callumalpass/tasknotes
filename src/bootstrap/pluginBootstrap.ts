@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Notice, Platform, addIcon } from "obsidian";
+import { MarkdownView, Notice, Platform, addIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import type TaskNotesPlugin from "../main";
 import {
@@ -51,6 +51,18 @@ import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
+
+type EditorWithCodeMirror = {
+	cm?: unknown;
+};
+
+function getCodeMirrorEditor(editor: unknown): unknown {
+	if (!editor || typeof editor !== "object") {
+		return undefined;
+	}
+
+	return (editor as unknown as EditorWithCodeMirror).cm ?? null;
+}
 
 export function registerTaskNotesIcon(): void {
 	addIcon(
@@ -359,12 +371,10 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 						plugin.app.workspace.iterateRootLeaves((leaf) => {
 							if (leaf.view && leaf.view.getViewType() === "markdown") {
 								const editor = (leaf.view as MarkdownView).editor;
-								if (editor && (editor as Editor & { cm?: EditorView }).cm) {
+								const cm = getCodeMirrorEditor(editor);
+								if (cm) {
 									const taskPath = data?.path || data?.updatedTask?.path;
-									dispatchTaskUpdate(
-										(editor as Editor & { cm: EditorView }).cm,
-										taskPath
-									);
+									dispatchTaskUpdate(cm as EditorView, taskPath);
 								}
 							}
 						});
@@ -376,8 +386,9 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 						window.setTimeout(() => {
 							if (leaf && leaf.view && leaf.view.getViewType() === "markdown") {
 								const editor = (leaf.view as MarkdownView).editor;
-								if (editor && (editor as Editor & { cm?: EditorView }).cm) {
-									dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
+								const cm = getCodeMirrorEditor(editor);
+								if (cm) {
+									dispatchTaskUpdate(cm as EditorView);
 								}
 							}
 						}, 50);
@@ -391,8 +402,9 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 								plugin.app.workspace.getActiveViewOfType(MarkdownView);
 							if (activeView) {
 								const editor = activeView.editor;
-								if (editor && (editor as Editor & { cm?: EditorView }).cm) {
-									dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
+								const cm = getCodeMirrorEditor(editor);
+								if (cm) {
+									dispatchTaskUpdate(cm as EditorView);
 								}
 							}
 						}, 100);

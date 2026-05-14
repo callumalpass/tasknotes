@@ -1,4 +1,3 @@
-import { ItemView } from "obsidian";
 import {
 	ViewPerformanceService,
 	ViewPerformanceConfig,
@@ -14,6 +13,7 @@ export interface OptimizedView {
 	plugin: TaskNotesPlugin;
 	viewPerformanceService?: ViewPerformanceService;
 	performanceConfig?: ViewPerformanceConfig;
+	getViewType(): string;
 
 	// Methods that implementing views should provide
 	updateForTask(taskPath: string, operation: "update" | "delete" | "create"): Promise<void>;
@@ -25,7 +25,7 @@ export interface OptimizedView {
  * Initialize performance optimizations for a view
  */
 export function initializeViewPerformance(
-	view: OptimizedView & ItemView,
+	view: OptimizedView,
 	config: Partial<ViewPerformanceConfig>
 ): void {
 	const fullConfig: ViewPerformanceConfig = {
@@ -57,7 +57,7 @@ export function initializeViewPerformance(
 /**
  * Cleanup performance optimizations when view is closed
  */
-export function cleanupViewPerformance(view: OptimizedView & ItemView): void {
+export function cleanupViewPerformance(view: OptimizedView): void {
 	if (view.viewPerformanceService && view.performanceConfig) {
 		view.viewPerformanceService.unregisterView(view.performanceConfig.viewId);
 	}
@@ -112,7 +112,7 @@ export function shouldRefreshForPropertyBasedView(
  * This can be used by TaskListView, KanbanView, etc.
  */
 export async function selectiveUpdateForListView(
-	view: ItemView & {
+	view: {
 		taskElements?: Map<string, HTMLElement>;
 		plugin: TaskNotesPlugin;
 		getCurrentVisibleProperties?: () => string[];

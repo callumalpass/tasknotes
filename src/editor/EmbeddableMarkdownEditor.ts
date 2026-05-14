@@ -30,9 +30,17 @@ interface WidgetEditorView {
 }
 
 type MarkdownEditorInternal = {
-	cm: EditorView & {
+	cm: {
 		cm?: unknown;
 		contentDOM: HTMLElement;
+		focus(): void;
+		scrollDOM: HTMLElement;
+		dispatch(spec: unknown): void;
+		state: {
+			doc: {
+				toString(): string;
+			};
+		};
 	};
 };
 
@@ -51,7 +59,7 @@ type ActiveLeafContext = {
 	};
 };
 
-type VaultWithConfig = App["vault"] & {
+type VaultWithConfig = {
 	getConfig(key: string): unknown;
 };
 
@@ -257,6 +265,9 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		if (options.cls) {
 			this.editorEl.classList.add(options.cls);
 		}
+
+		// Avoid full-file source-view layout rules inside compact modal editors.
+		this.editorEl.classList.remove("markdown-source-view", "mod-cm6");
 
 		// Set initial cursor position
 		if (options.cursorLocation) {

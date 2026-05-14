@@ -32,6 +32,7 @@ export interface SortOrderPlan {
 }
 
 const REBALANCE_RANK_LENGTH_THRESHOLD = 32;
+
 type SortDirection = "asc" | "desc";
 type SortConfigItem = {
 	property?: unknown;

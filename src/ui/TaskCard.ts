@@ -52,7 +52,7 @@ type TaskCardElement = HTMLElement & {
 	_clickHandler?: EventListener;
 };
 
-type MenuWithItems = Menu & {
+type MenuWithItems = {
 	items?: unknown[];
 };
 

@@ -21,7 +21,7 @@ import { ContextMenu } from "./ContextMenu";
 import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 
-type SubmenuMenuItem = MenuItem & {
+type SubmenuMenuItem = {
 	setSubmenu(): Menu;
 	dom?: HTMLElement;
 	domEl?: HTMLElement;
@@ -39,11 +39,11 @@ type TaskStatusOption = {
 };
 
 function getSubmenu(item: MenuItem): Menu {
-	return (item as SubmenuMenuItem).setSubmenu();
+	return (item as unknown as SubmenuMenuItem).setSubmenu();
 }
 
 function getMenuItemElement(item: MenuItem): HTMLElement | null {
-	const menuItem = item as SubmenuMenuItem;
+	const menuItem = item as unknown as SubmenuMenuItem;
 	return menuItem.dom ?? menuItem.domEl ?? null;
 }
 

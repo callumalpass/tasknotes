@@ -25,7 +25,7 @@ interface TimeTrackingSettingsSnapshot {
 export class SettingsLifecycleService {
 	private previousCacheSettings: CacheSettingsSnapshot | null = null;
 	private previousTimeTrackingSettings: TimeTrackingSettingsSnapshot | null = null;
-	private autoStopTimeTrackingListener: EventRef | null = null;
+	private autoStopTimeTrackingListener: unknown = null;
 
 	constructor(private plugin: TaskNotesPlugin) {}
 
@@ -36,7 +36,7 @@ export class SettingsLifecycleService {
 
 	setupTimeTrackingEventListeners(): void {
 		if (this.autoStopTimeTrackingListener) {
-			this.plugin.emitter.offref(this.autoStopTimeTrackingListener);
+			this.plugin.emitter.offref(this.autoStopTimeTrackingListener as EventRef);
 			this.autoStopTimeTrackingListener = null;
 		}
 
@@ -106,7 +106,7 @@ export class SettingsLifecycleService {
 
 	destroy(): void {
 		if (this.autoStopTimeTrackingListener) {
-			this.plugin.emitter.offref(this.autoStopTimeTrackingListener);
+			this.plugin.emitter.offref(this.autoStopTimeTrackingListener as EventRef);
 			this.autoStopTimeTrackingListener = null;
 		}
 	}

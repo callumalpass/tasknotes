@@ -3,14 +3,20 @@ export function stringifyUnknown(value: unknown): string {
 		return "";
 	}
 
-	if (
-		typeof value === "string" ||
-		typeof value === "number" ||
-		typeof value === "boolean" ||
-		typeof value === "bigint" ||
-		typeof value === "symbol"
-	) {
-		return String(value);
+	if (typeof value === "string") {
+		return value;
+	}
+
+	if (typeof value === "number" || typeof value === "bigint") {
+		return value.toString();
+	}
+
+	if (typeof value === "boolean") {
+		return value ? "true" : "false";
+	}
+
+	if (typeof value === "symbol") {
+		return value.description ?? "";
 	}
 
 	if (value instanceof Date) {

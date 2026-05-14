@@ -1,4 +1,4 @@
-import { RRule } from "rrule";
+import { RRule as RRuleFactory } from "rrule";
 import { TaskInfo } from "../types";
 import {
 	createUTCDateForRRule,
@@ -59,6 +59,13 @@ export interface RecurrenceScheduleResult {
 	nextScheduled: string | null;
 	nextDue: string | null;
 }
+
+const RRule = RRuleFactory;
+
+type RRule = {
+	between(start: Date, end: Date, inclusive?: boolean): Date[];
+	after(date: Date, inclusive?: boolean): Date | null;
+};
 
 function parseDtstartFromRecurrence(recurrence: string): Date | null {
 	const dtstartMatch = recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
@@ -572,7 +579,7 @@ function computeNextDue(
 function buildRRuleFromRecurrence(
 	recurrence: string,
 	sourceDate: string
-): InstanceType<typeof RRule> | null {
+): RRule | null {
 	try {
 		const rruleString = recurrence.replace(/DTSTART:[^;]+;?/, "").replace(/^;/, "").trim();
 		if (!rruleString.includes("FREQ=")) {

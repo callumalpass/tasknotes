@@ -22,9 +22,9 @@ export function sendJSONResponse(res: HTTPResponseLike, statusCode: number, data
 export function parseJSONBody(req: HTTPRequestLike): Promise<Record<string, unknown>> {
 	return new Promise((resolve, reject) => {
 		let body = "";
-		req.on("data", (chunk: Buffer | string) => {
-			body += chunk.toString();
-		});
+			req.on("data", (chunk: string | { toString(): string }) => {
+				body += chunk.toString();
+			});
 		req.on("end", () => {
 			try {
 				resolve(body ? JSON.parse(body) : {});

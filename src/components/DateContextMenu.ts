@@ -4,7 +4,7 @@ import { ContextMenu } from "./ContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
 import { addDaysToDateTime } from "../utils/dateUtils";
 
-type SubmenuMenuItem = MenuItem & {
+type SubmenuMenuItem = {
 	setSubmenu(): Menu;
 };
 
@@ -24,7 +24,7 @@ function getMoment(): MomentLike {
 }
 
 function getSubmenu(item: MenuItem): Menu {
-	return (item as SubmenuMenuItem).setSubmenu();
+	return (item as unknown as SubmenuMenuItem).setSubmenu();
 }
 
 export interface DateOption {

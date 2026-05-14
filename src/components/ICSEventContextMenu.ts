@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { Notice, TAbstractFile, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent } from "../types";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
@@ -209,8 +209,8 @@ export class ICSEventContextMenu {
 			async () => {
 				openFileSelector(
 					this.options.plugin,
-					(file) => {
-						if (!file) return;
+						(file) => {
+							if (!(file instanceof TAbstractFile)) return;
 
 						void SafeAsync.execute(
 							async () => {

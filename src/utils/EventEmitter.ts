@@ -18,7 +18,17 @@ export class EventEmitter {
 
 		// Return unsubscribe function
 		return () => {
-			this.events[event] = this.events[event].filter((l) => l !== listener);
+			const listeners = this.events[event];
+			if (!listeners) {
+				return;
+			}
+
+			const remainingListeners = listeners.filter((l) => l !== listener);
+			if (remainingListeners.length > 0) {
+				this.events[event] = remainingListeners;
+			} else {
+				delete this.events[event];
+			}
 		};
 	}
 

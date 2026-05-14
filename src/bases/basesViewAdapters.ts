@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { BasesDataItem } from "./helpers";
 
-type MetadataTypeManagerApp = App & {
+type MetadataTypeManagerSource = {
 	metadataTypeManager?: {
 		properties?: Record<string, { type?: string }>;
 	};
@@ -31,7 +31,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function isObsidianListProperty(app: App, propertyName: string): boolean {
-	const metadataTypeManager = (app as MetadataTypeManagerApp).metadataTypeManager;
+	const metadataTypeManager = (app as unknown as MetadataTypeManagerSource)
+		.metadataTypeManager;
 	const propertyType = metadataTypeManager?.properties?.[propertyName.toLowerCase()]?.type;
 	return propertyType !== undefined && OBSIDIAN_LIST_PROPERTY_TYPES.has(propertyType);
 }

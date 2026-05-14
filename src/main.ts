@@ -1,4 +1,12 @@
-import { Notice, Plugin, WorkspaceLeaf, Editor, TFile, getLanguage, normalizePath } from "obsidian";
+import {
+	Notice,
+	Plugin,
+	WorkspaceLeaf,
+	Editor,
+	TFile,
+	getLanguage,
+	normalizePath,
+} from "obsidian";
 import { format } from "date-fns";
 import {
 	createDailyNote,
@@ -95,7 +103,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Date change detection for refreshing task states at midnight
 	private lastKnownDate: string = new Date().toDateString();
-	private dateCheckInterval: number;
+	private dateCheckTimer: number | null = null;
 	private midnightTimeout: number;
 
 	// Ready promise to signal when initialization is complete
@@ -187,7 +195,7 @@ export default class TaskNotesPlugin extends Plugin {
 	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
 
 	// Event listener cleanup
-	taskUpdateListenerForEditor: import("obsidian").EventRef | null = null;
+	taskUpdateListenerForEditor: unknown = null;
 	relationshipsReadingModeCleanup: (() => void) | null = null;
 	taskCardReadingModeCleanup: (() => void) | null = null;
 
@@ -504,9 +512,20 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		};
 
-		// Set up regular interval to check for date changes
-		this.dateCheckInterval = window.setInterval(checkDateChange, 60000); // Check every minute
-		this.registerInterval(this.dateCheckInterval);
+		const scheduleDateCheck = () => {
+			this.dateCheckTimer = window.setTimeout(() => {
+				checkDateChange();
+				scheduleDateCheck();
+			}, 60000);
+		};
+
+		scheduleDateCheck();
+		this.register(() => {
+			if (this.dateCheckTimer) {
+				window.clearTimeout(this.dateCheckTimer);
+				this.dateCheckTimer = null;
+			}
+		});
 
 		// Schedule precise check at next midnight for better timing
 		this.scheduleNextMidnightCheck();
@@ -899,11 +918,11 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
-	getLeafOfType(viewType: string): WorkspaceLeaf | null {
+	getLeafOfType(viewType: string): unknown {
 		return this.workspaceNavigationService.getLeafOfType(viewType);
 	}
 
-	getCalendarLeaf(): WorkspaceLeaf | null {
+	getCalendarLeaf(): unknown {
 		return this.getLeafOfType(MINI_CALENDAR_VIEW_TYPE);
 	}
 

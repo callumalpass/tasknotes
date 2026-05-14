@@ -384,7 +384,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
  */
 export function openFileSelector(
 	plugin: TaskNotesPlugin,
-	onChoose: (file: TAbstractFile | null) => void,
+	onChoose: (file: unknown) => void,
 	options?: {
 		placeholder?: string;
 		title?: string;

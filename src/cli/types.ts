@@ -4,6 +4,6 @@ import type TaskNotesPlugin from "../main";
 export interface CliCommandDefinition {
 	command: string;
 	description: string;
-	flags: CliFlags | null;
+	flags?: CliFlags;
 	handler: (plugin: TaskNotesPlugin, params: CliData) => string | Promise<string>;
 }

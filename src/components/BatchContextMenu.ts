@@ -5,18 +5,18 @@ import { DateContextMenu, type DateOption } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 
-type SubmenuMenuItem = MenuItem & {
+type SubmenuMenuItem = {
 	setSubmenu(): Menu;
 	dom?: HTMLElement;
 	domEl?: HTMLElement;
 };
 
 function getSubmenu(item: MenuItem): Menu {
-	return (item as SubmenuMenuItem).setSubmenu();
+	return (item as unknown as SubmenuMenuItem).setSubmenu();
 }
 
 function getMenuItemElement(item: MenuItem): HTMLElement | null {
-	const menuItem = item as SubmenuMenuItem;
+	const menuItem = item as unknown as SubmenuMenuItem;
 	return menuItem.dom ?? menuItem.domEl ?? null;
 }
 

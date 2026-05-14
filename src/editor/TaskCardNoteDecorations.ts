@@ -106,7 +106,7 @@ function createTaskCardWidget(plugin: TaskNotesPlugin, task: TaskInfo): HTMLElem
 
 export class TaskCardNoteDecorationsPlugin implements PluginValue {
 	private cachedTask: TaskInfo | null = null;
-	private currentFile: TFile | null = null;
+	private currentFile: unknown = null;
 	private eventListeners: EventRef[] = [];
 	private view: EditorView;
 	private currentWidget: HTMLElementWithComponent | null = null;
@@ -266,7 +266,7 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 		}
 	}
 
-	private getFileFromView(view: EditorView): TFile | null {
+	private getFileFromView(view: EditorView): unknown {
 		try {
 			// Get the file associated with this specific editor view
 			const editorInfo = view.state.field(editorInfoField, false);

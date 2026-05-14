@@ -18,6 +18,7 @@ export class NotificationService {
 	private taskUpdateListener?: EventRef;
 	private lastBroadScanTime: number = Date.now();
 	private lastQuickCheckTime: number = Date.now();
+	private destroyed = false;
 
 	// Configuration constants
 	private readonly BROAD_SCAN_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -32,6 +33,8 @@ export class NotificationService {
 		if (!this.plugin.settings.enableNotifications) {
 			return;
 		}
+
+		this.destroyed = false;
 
 		// Request notification permission if using system notifications
 		if (this.plugin.settings.notificationType === "system" && "Notification" in window) {
@@ -53,11 +56,14 @@ export class NotificationService {
 
 	destroy(): void {
 		if (this.broadScanInterval) {
-			window.clearInterval(this.broadScanInterval);
+			window.clearTimeout(this.broadScanInterval);
+			this.broadScanInterval = undefined;
 		}
 		if (this.quickCheckInterval) {
-			window.clearInterval(this.quickCheckInterval);
+			window.clearTimeout(this.quickCheckInterval);
+			this.quickCheckInterval = undefined;
 		}
+		this.destroyed = true;
 		if (this.taskUpdateListener) {
 			this.plugin.emitter.offref(this.taskUpdateListener);
 		}
@@ -66,25 +72,33 @@ export class NotificationService {
 	}
 
 	private startBroadScan(): void {
-		this.broadScanInterval = window.setInterval(() => {
-			void (async () => {
-				const now = Date.now();
-				const timeSinceLastScan = now - this.lastBroadScanTime;
+		this.broadScanInterval = window.setTimeout(() => {
+			this.broadScanInterval = undefined;
+			const scanStartedAt = Date.now();
+			const timeSinceLastScan = scanStartedAt - this.lastBroadScanTime;
 
-				// Check for system sleep/wake - if gap is significantly larger than interval, handle catch-up
+			void (async () => {
 				if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) {
-					// 1 minute tolerance
 					await this.handleSystemWakeUp();
 				}
 
 				await this.scanTasksAndBuildQueue();
-				this.lastBroadScanTime = now;
-			})();
+				this.lastBroadScanTime = scanStartedAt;
+			})()
+				.catch((error) => {
+					console.error("Error scanning notification reminders:", error);
+				})
+				.finally(() => {
+					if (!this.destroyed) {
+						this.startBroadScan();
+					}
+				});
 		}, this.BROAD_SCAN_INTERVAL);
 	}
 
 	private startQuickCheck(): void {
-		this.quickCheckInterval = window.setInterval(() => {
+		this.quickCheckInterval = window.setTimeout(() => {
+			this.quickCheckInterval = undefined;
 			const now = Date.now();
 			const timeSinceLastCheck = now - this.lastQuickCheckTime;
 
@@ -96,6 +110,9 @@ export class NotificationService {
 
 			this.checkNotificationQueue();
 			this.lastQuickCheckTime = now;
+			if (!this.destroyed) {
+				this.startQuickCheck();
+			}
 		}, this.QUICK_CHECK_INTERVAL);
 	}
 

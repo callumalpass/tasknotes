@@ -81,7 +81,7 @@ export function serializeDependencies(dependencies: TaskDependency[]): unknown[]
 
 export interface DependencyResolution {
 	path: string;
-	file: TFile | null;
+	file: TFile;
 }
 
 export function parseDependencyInput(value: string): string[] {

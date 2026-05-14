@@ -1,7 +1,6 @@
 import {
 	autocompletion,
 	CompletionContext,
-	CompletionResult,
 	Completion,
 	acceptCompletion,
 	moveCompletionSelection,
@@ -16,9 +15,15 @@ import { FileSuggestHelper } from "../suggest/FileSuggestHelper";
 import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 
-type ProjectCompletion = Completion & {
+type ProjectCompletion = {
 	projectMetadata?: ProjectCompletionMetadata;
 	projectQuery?: string;
+};
+type CompletionSourceResult = {
+	from: number;
+	to?: number;
+	options: Completion[];
+	validFor?: RegExp;
 };
 
 type ProjectCompletionMetadataPart = {
@@ -84,8 +89,8 @@ export function createNLPAutocomplete(plugin: TaskNotesPlugin): Extension[] {
 
 export function createNLPCompletionSource(
 	plugin: TaskNotesPlugin
-): (context: CompletionContext) => Promise<CompletionResult | null> {
-	return async (context: CompletionContext): Promise<CompletionResult | null> => {
+): (context: CompletionContext) => Promise<CompletionSourceResult | null> {
+	return async (context: CompletionContext): Promise<CompletionSourceResult | null> => {
 		const triggerConfig = new TriggerConfigService(
 			plugin.settings.nlpTriggers,
 			plugin.settings.userFields || []
@@ -163,7 +168,7 @@ export function createNLPCompletionSource(
 }
 
 export function renderProjectCompletionMetadata(completion: Completion): HTMLElement | null {
-	const projectCompletion = completion as ProjectCompletion;
+	const projectCompletion = completion as unknown as ProjectCompletion;
 	if (!projectCompletion.projectMetadata) return null;
 
 	const container = activeDocument.createElement("div");

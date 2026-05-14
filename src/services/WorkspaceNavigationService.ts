@@ -14,18 +14,24 @@ import {
 } from "../types";
 import { RELEASE_NOTES_VIEW_TYPE } from "../views/ReleaseNotesView";
 
+type WorkspaceLeafLike = {
+	isDeferred?: boolean;
+	loadIfDeferred(): Promise<void>;
+	setViewState(state: { type: string; active?: boolean }): Promise<void>;
+};
+
 export class WorkspaceNavigationService {
 	constructor(private plugin: TaskNotesPlugin) {}
 
-	getLeafOfType(viewType: string): WorkspaceLeaf | null {
+	getLeafOfType(viewType: string): WorkspaceLeafLike | null {
 		const leaves = this.plugin.app.workspace.getLeavesOfType(viewType);
 		return leaves.length > 0 ? leaves[0] : null;
 	}
 
-	async revealLeafReady(leaf: WorkspaceLeaf): Promise<void> {
+	async revealLeafReady(leaf: WorkspaceLeafLike): Promise<void> {
 		const { workspace } = this.plugin.app;
-		workspace.setActiveLeaf(leaf, { focus: true });
-		await workspace.revealLeaf(leaf);
+		workspace.setActiveLeaf(leaf as WorkspaceLeaf, { focus: true });
+		await workspace.revealLeaf(leaf as WorkspaceLeaf);
 		if (leaf.isDeferred) {
 			await leaf.loadIfDeferred();
 		}
@@ -44,7 +50,7 @@ export class WorkspaceNavigationService {
 		}
 
 		await this.revealLeafReady(leaf);
-		return leaf;
+		return leaf as WorkspaceLeaf;
 	}
 
 	async activateCalendarView(): Promise<void> {
@@ -78,7 +84,7 @@ export class WorkspaceNavigationService {
 			}
 
 			await this.revealLeafReady(leaf);
-			return leaf;
+			return leaf as WorkspaceLeaf;
 		}
 
 		return this.activateView(POMODORO_VIEW_TYPE);

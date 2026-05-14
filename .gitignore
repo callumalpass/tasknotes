@@ -101,3 +101,4 @@ AGENTS.md
 /release-videos/_audio/*.wav
 /release-videos/_audio/__pycache__/
 /release-videos/4.5.2/*.mp4
+/release-videos

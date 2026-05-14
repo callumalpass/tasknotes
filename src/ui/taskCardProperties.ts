@@ -128,8 +128,12 @@ function getChecklistProgress(taskPath: string, plugin: TaskNotesPlugin): Checkl
 	return calculateChecklistProgress(fileCache);
 }
 
-function calculateChecklistProgress(cache: CachedMetadata | null): ChecklistProgress | null {
-	const listItems = cache?.listItems;
+function calculateChecklistProgress(cache: unknown): ChecklistProgress | null {
+	if (cache === null || cache === undefined) {
+		return null;
+	}
+
+	const listItems = (cache as CachedMetadata).listItems;
 	if (!Array.isArray(listItems) || listItems.length === 0) {
 		return null;
 	}

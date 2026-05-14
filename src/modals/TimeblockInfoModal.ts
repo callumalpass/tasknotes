@@ -164,10 +164,10 @@ export class TimeblockInfoModal extends Modal {
 					.setTooltip(this.translate("modals.timeblockInfo.addAttachmentTooltip"))
 					.onClick(() => {
 						openFileSelector(
-							this.plugin,
-							(file) => {
-								if (file) this.addAttachment(file);
-							},
+								this.plugin,
+								(file) => {
+									if (file instanceof TAbstractFile) this.addAttachment(file);
+								},
 							{
 								placeholder: "Search files or type to create new...",
 								filter: "all",

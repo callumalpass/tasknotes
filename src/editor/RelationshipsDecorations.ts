@@ -129,7 +129,7 @@ async function createRelationshipsWidget(
 }
 
 class RelationshipsDecorationsPlugin implements PluginValue {
-	private currentFile: TFile | null = null;
+	private currentFile: unknown = null;
 	private view: EditorView;
 	private currentWidget: HTMLElementWithComponent | null = null;
 	private widgetContainer: HTMLElement | null = null;
@@ -201,7 +201,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		}, 100);
 	}
 
-	private getFileFromView(view: EditorView): TFile | null {
+		private getFileFromView(view: EditorView): unknown {
 		try {
 			// Get the file associated with this specific editor view
 			const editorInfo = view.state.field(editorInfoField, false);
@@ -325,7 +325,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 
 			// Get the current file
 			const file = this.currentFile || this.getFileFromView(view);
-			if (!file) {
+			if (!(file instanceof TFile)) {
 				return;
 			}
 

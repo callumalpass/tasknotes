@@ -36,7 +36,7 @@ export class ViewPerformanceService {
 
 	// Event coordination
 	private updateInProgress = new Set<string>();
-	private eventListener: EventRef | null = null;
+	private eventListener: unknown = null;
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
@@ -317,7 +317,7 @@ export class ViewPerformanceService {
 	destroy(): void {
 		// Clean up global event listener
 		if (this.eventListener) {
-			this.plugin.emitter.offref(this.eventListener);
+			this.plugin.emitter.offref(this.eventListener as EventRef);
 			this.eventListener = null;
 		}
 

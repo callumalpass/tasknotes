@@ -171,9 +171,9 @@
 }
 
 .timeblock-time-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--size-4-3);
 }
 
 .timeblock-modal-buttons {

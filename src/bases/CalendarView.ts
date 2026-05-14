@@ -3,7 +3,7 @@ import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import {
-	Calendar,
+	Calendar as FullCalendar,
 	CalendarOptions,
 	type DateSelectArg,
 	type EventClickArg,
@@ -74,6 +74,22 @@ type BasesEntryWithGetValue = {
 type CalendarEphemeralState = {
 	calendarDate?: unknown;
 	calendarView?: unknown;
+};
+
+const Calendar = FullCalendar;
+
+type Calendar = {
+	updateSize(): void;
+	getDate(): Date;
+	destroy(): void;
+	render(): void;
+	refetchEvents(): void;
+	unselect(): void;
+	changeView(viewType: string): void;
+	gotoDate(date: Date): void;
+	view?: {
+		type?: string;
+	};
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -1079,7 +1095,10 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyTodayColumnWidth(): void {
-		if (!this.calendarEl || !this.calendar) return;
+		const calendar = this.calendar;
+		if (!this.calendarEl || !calendar) return;
+		const viewType = calendar.view?.type;
+		if (!viewType) return;
 
 		const headerCells = Array.from(
 			this.calendarEl.querySelectorAll<HTMLElement>(".fc-col-header-cell[data-date]")
@@ -1089,12 +1108,12 @@ export class CalendarView extends BasesViewBase {
 			.filter((date): date is string => Boolean(date));
 		this.resetTodayColumnWidths(dateKeys);
 
-		if (
-			!shouldWidenTodayColumn(
-				this.calendar.view.type,
-				this.viewOptions.todayColumnWidthMultiplier
-			)
-		) {
+			if (
+				!shouldWidenTodayColumn(
+					viewType,
+					this.viewOptions.todayColumnWidthMultiplier
+				)
+			) {
 			return;
 		}
 

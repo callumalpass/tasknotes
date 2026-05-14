@@ -53,13 +53,13 @@
     font-family: var(--font-text);
     font-size: var(--font-ui-medium);
     line-height: var(--line-height-normal);
+    caret-color: var(--text-normal);
 }
 
-/* Ensure the editor line doesn't add extra padding */
-/* .details-markdown-editor .cm-line { */
-/*     padding-left: 0; */
-/*     padding-right: 0; */
-/* } */
+.details-markdown-editor .cm-cursor,
+.details-markdown-editor .cm-dropCursor {
+    border-left-color: var(--text-normal);
+}
 
 /* Placeholder styling */
 .details-markdown-editor .cm-placeholder {
@@ -122,6 +122,12 @@
     font-family: var(--font-text);
     font-size: var(--font-ui-medium);
     line-height: 1.5;
+    caret-color: var(--text-normal);
+}
+
+.nl-markdown-editor .cm-cursor,
+.nl-markdown-editor .cm-dropCursor {
+    border-left-color: var(--text-normal);
 }
 
 
@@ -218,6 +224,10 @@
     /* Modal container adjustments */
 }
 
+.tasknotes-plugin .task-modal__field-group + .task-modal__field-group {
+    margin-top: var(--size-4-3);
+}
+
 /* Modal header with TaskNotes icon */
 .modal-header-container {
     display: flex;
@@ -246,13 +256,6 @@
     margin-top: var(--size-4-4);
     border-top: 0.5px solid var(--background-modifier-border);
     padding-top: var(--size-4-3);
-}
-
-/* Section separator between field groups */
-.tasknotes-plugin .task-modal__section-separator {
-    border: none;
-    border-top: 0.5px solid var(--background-modifier-border);
-    margin: var(--size-4-3) 0;
 }
 
 .detail-label-section {
@@ -433,6 +436,7 @@
     border-radius: var(--radius-s);
     background: transparent;
     color: var(--text-normal);
+    margin-bottom: var(--size-4-3);
     transition: all 0.2s ease;
 }
 
@@ -591,7 +595,6 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
     flex-wrap: wrap;
     padding-top: var(--size-4-3);
     margin-top: var(--size-4-3);
-    border-top: 1px solid var(--background-modifier-border);
 }
 
 /* =====================================================================
@@ -662,7 +665,6 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     background: var(--modal-background);
     padding-top: var(--size-4-3);
     margin-top: var(--size-4-2);
-    border-top: 1px solid var(--background-modifier-border);
 }
 
 /* =====================================================================
@@ -776,6 +778,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     /* Right column - details editor takes full height, edge to edge */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
         min-width: 0;
+        min-height: 360px;
         display: flex;
         flex-direction: column;
         grid-column: 2;
@@ -822,6 +825,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor {
         flex: 1;
         min-height: 0;
+        height: 100%;
         max-height: none;
         display: flex;
         flex-direction: column;
@@ -833,12 +837,14 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .cm-editor {
         flex: 1;
+        height: 100%;
         max-height: none;
         border-radius: 0;
-        min-height: 0;
+        min-height: 320px;
     }
 
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .cm-scroller {
+        flex: 1;
         max-height: none;
         overflow-y: auto;
     }
@@ -846,7 +852,8 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .task-details-editor {
         max-height: none;
         flex: 1;
-        min-height: 0;
+        min-height: 320px;
+        height: 100%;
         overflow: hidden;
     }
 

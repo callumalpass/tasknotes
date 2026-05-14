@@ -288,17 +288,15 @@
 
 /* Better styling for Settings in modal */
 .tasknotes-webhook-modal .setting-item {
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  background: var(--background-modifier-form-field);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  padding: var(--size-4-3) 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .tasknotes-webhook-modal .setting-item:hover {
-  border-color: var(--interactive-accent);
-  background: var(--background-modifier-hover);
+  background: transparent;
 }
 
 .tasknotes-webhook-modal .setting-item:last-child {
@@ -378,11 +376,11 @@
 
 /* Events List */
 .tasknotes-webhook-events-list {
-  margin-top: 1rem;
+  margin-top: 0;
   max-width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0;
 }
 
 

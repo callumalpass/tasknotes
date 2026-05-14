@@ -3,14 +3,14 @@ import type TaskNotesPlugin from "../main";
 import { createTaskNotesCommandDefinitions } from "./taskNotesCommands";
 import type { TranslatedCommandDefinition } from "./types";
 
-type MutableCommand = Command & {
+type MutableCommand = {
 	name: string;
-};
+} & Record<string, unknown>;
 
 type CommandsApiWithRegistry = {
 	removeCommand?: (id: string) => void;
 	commands?: Record<string, MutableCommand>;
-	updateCommand?: (id: string, command: MutableCommand) => void;
+	updateCommand?: (id: string, command: Command) => void;
 };
 
 export class TranslatedCommandRegistry {
@@ -34,7 +34,7 @@ export class TranslatedCommandRegistry {
 			return;
 		}
 
-		const internalCommandsApi = commandsApi as CommandsApiWithRegistry;
+		const internalCommandsApi = commandsApi as unknown as CommandsApiWithRegistry;
 		const removeCommand = internalCommandsApi.removeCommand;
 		if (typeof removeCommand === "function") {
 			for (const fullId of this.registeredCommands.values()) {
@@ -52,7 +52,7 @@ export class TranslatedCommandRegistry {
 			if (command) {
 				command.name = this.plugin.i18n.translate(definition.nameKey);
 				if (typeof internalCommandsApi.updateCommand === "function") {
-					internalCommandsApi.updateCommand(fullId, command);
+					internalCommandsApi.updateCommand(fullId, command as unknown as Command);
 				}
 			}
 		}

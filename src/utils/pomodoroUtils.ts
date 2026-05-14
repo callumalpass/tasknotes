@@ -46,33 +46,37 @@ export function getSessionDuration(session: PomodoroSessionLike): number {
 }
 
 export const timerWorker = `
-  let timerInterval;
+  let timerTimeout;
 
   self.onmessage = function(e) {
     const { command, duration } = e.data;
 
     if (command === 'start') {
-      if (timerInterval) {
-        clearInterval(timerInterval);
+      if (timerTimeout) {
+        clearTimeout(timerTimeout);
       }
 
       let timeRemaining = duration;
-      timerInterval = setInterval(() => {
+      const tick = () => {
         timeRemaining--;
         // Notificar al hilo principal cada segundo para actualizar la UI
         self.postMessage({ type: 'tick', timeRemaining: timeRemaining });
 
         if (timeRemaining <= 0) {
           self.postMessage({ type: 'done' });
-          clearInterval(timerInterval);
-          timerInterval = null;
+          timerTimeout = null;
+          return;
         }
-      }, 1000);
+
+        timerTimeout = setTimeout(tick, 1000);
+      };
+
+      timerTimeout = setTimeout(tick, 1000);
 
     } else if (command === 'stop') {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
+      if (timerTimeout) {
+        clearTimeout(timerTimeout);
+        timerTimeout = null;
       }
     }
   };

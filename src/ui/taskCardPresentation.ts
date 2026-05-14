@@ -1,4 +1,4 @@
-import type { RenderContext, Value } from "obsidian";
+import type { RenderContext } from "obsidian";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 export interface TaskCardPresentationOptions {
@@ -7,11 +7,16 @@ export interface TaskCardPresentationOptions {
 
 const NULLISH_DISPLAY_STRINGS = new Set(["null", "undefined"]);
 
+type RenderableBasesValue = {
+	renderTo(container: HTMLElement, renderContext: RenderContext): void;
+	toString(): string;
+};
+
 function isNullishDisplayString(value: string): boolean {
 	return NULLISH_DISPLAY_STRINGS.has(value.trim().toLowerCase());
 }
 
-export function isBasesValue(value: unknown): value is Value {
+export function isBasesValue(value: unknown): value is RenderableBasesValue {
 	return (
 		typeof value === "object" &&
 		value !== null &&
@@ -30,7 +35,7 @@ export function isNullBasesValue(value: unknown): boolean {
 		return true;
 	}
 
-	return isBasesValue(value) && isNullishDisplayString(value.toString());
+	return isBasesValue(value) && isNullishDisplayString(stringifyUnknown(value));
 }
 
 export function isEmptyCardDisplayValue(value: unknown): boolean {
@@ -47,7 +52,7 @@ export function isEmptyCardDisplayValue(value: unknown): boolean {
 	}
 
 	if (isBasesValue(value)) {
-		return value.toString().trim() === "";
+		return stringifyUnknown(value).trim() === "";
 	}
 
 	return false;
@@ -65,11 +70,11 @@ export function renderBasesValue(
 	try {
 		value.renderTo(container, renderContext);
 		if (!container.hasChildNodes() && !container.textContent) {
-			container.textContent = value.toString();
+			container.textContent = stringifyUnknown(value);
 		}
 	} catch (error) {
 		console.debug("[TaskNotes] Error rendering Bases value:", error);
-		container.textContent = value.toString();
+		container.textContent = stringifyUnknown(value);
 	}
 
 	return true;

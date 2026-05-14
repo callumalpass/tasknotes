@@ -16,6 +16,7 @@ export class ICSSubscriptionService extends EventEmitter {
 	private pendingRefreshes: Set<string> = new Set(); // Track in-progress refreshes to avoid duplicates
 	private lastFetched: Map<string, string> = new Map(); // In-memory storage for last fetch timestamps (ISO strings)
 	private lastError: Map<string, string> = new Map(); // In-memory storage for last error messages
+	private destroyed = false;
 
 	// Grace period after cache expiration to show stale data while refreshing (5 minutes)
 	private readonly CACHE_GRACE_PERIOD = 5 * 60 * 1000;
@@ -61,6 +62,7 @@ export class ICSSubscriptionService extends EventEmitter {
 	}
 
 	async initialize(): Promise<void> {
+		this.destroyed = false;
 		// Load subscriptions from plugin data
 		await this.loadSubscriptions();
 
@@ -653,12 +655,7 @@ export class ICSSubscriptionService extends EventEmitter {
 		});
 
 		// Set up periodic refresh for local files (less frequent than remote)
-		const intervalMs = subscription.refreshInterval * 60 * 1000;
-		const timer = window.setInterval(() => {
-			void this.fetchSubscription(subscription.id);
-		}, intervalMs);
-
-		this.refreshTimers.set(subscription.id, timer);
+		this.startFileRefreshTimer(subscription);
 	}
 
 	private stopFileWatcher(id: string): void {
@@ -675,19 +672,45 @@ export class ICSSubscriptionService extends EventEmitter {
 
 	private startRefreshTimer(subscription: ICSSubscription): void {
 		this.stopRefreshTimer(subscription.id);
+		this.startRemoteRefreshTimer(subscription);
+	}
 
+	private startFileRefreshTimer(subscription: ICSSubscription): void {
 		const intervalMs = subscription.refreshInterval * 60 * 1000; // Convert minutes to milliseconds
-		const timer = window.setInterval(() => {
-			void this.fetchSubscription(subscription.id);
+		const timer = window.setTimeout(() => {
+			this.refreshTimers.delete(subscription.id);
+			void this.fetchSubscription(subscription.id).finally(() => {
+				if (this.shouldContinueRefresh(subscription.id)) {
+					this.startFileRefreshTimer(subscription);
+				}
+			});
 		}, intervalMs);
 
 		this.refreshTimers.set(subscription.id, timer);
 	}
 
+	private startRemoteRefreshTimer(subscription: ICSSubscription): void {
+		const intervalMs = subscription.refreshInterval * 60 * 1000;
+		const timer = window.setTimeout(() => {
+			this.refreshTimers.delete(subscription.id);
+			void this.fetchSubscription(subscription.id).finally(() => {
+				if (this.shouldContinueRefresh(subscription.id)) {
+					this.startRemoteRefreshTimer(subscription);
+				}
+			});
+		}, intervalMs);
+
+		this.refreshTimers.set(subscription.id, timer);
+	}
+
+	private shouldContinueRefresh(id: string): boolean {
+		return !this.destroyed && this.subscriptions.some((item) => item.id === id && item.enabled);
+	}
+
 	private stopRefreshTimer(id: string): void {
 		const timer = this.refreshTimers.get(id);
 		if (timer) {
-			window.clearInterval(timer);
+			window.clearTimeout(timer);
 			this.refreshTimers.delete(id);
 		}
 	}
@@ -697,8 +720,9 @@ export class ICSSubscriptionService extends EventEmitter {
 	}
 
 	destroy(): void {
+		this.destroyed = true;
 		// Clear all timers
-		this.refreshTimers.forEach((timer) => window.clearInterval(timer));
+		this.refreshTimers.forEach((timer) => window.clearTimeout(timer));
 		this.refreshTimers.clear();
 
 		// Clear all file watchers

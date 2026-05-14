@@ -1,4 +1,5 @@
 import type TaskNotesPlugin from "../main";
+import type { EventRef } from "obsidian";
 import { TaskNotesSettingTab } from "../settings/TaskNotesSettingTab";
 import { perfMonitor } from "../utils/PerformanceMonitor";
 import { registerCliHandlers } from "../cli/registerCliHandlers";
@@ -85,7 +86,7 @@ export async function cleanupPluginRuntime(plugin: TaskNotesPlugin): Promise<voi
 	}
 
 	if (plugin.taskUpdateListenerForEditor) {
-		plugin.emitter.offref(plugin.taskUpdateListenerForEditor);
+		plugin.emitter.offref(plugin.taskUpdateListenerForEditor as EventRef);
 	}
 
 	plugin.initializationComplete = false;

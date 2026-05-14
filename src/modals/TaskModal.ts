@@ -341,7 +341,7 @@ export abstract class TaskModal extends Modal {
 	/**
 	 * Get a file by path - useful for testing with mocked vault
 	 */
-	protected getFileByPath(path: string): TAbstractFile | null {
+	protected getFileByPath(path: string): unknown {
 		return this.app.vault.getAbstractFileByPath(path);
 	}
 
@@ -362,7 +362,7 @@ export abstract class TaskModal extends Modal {
 	/**
 	 * Resolve a link to a file - useful for testing with mocked metadataCache
 	 */
-	protected resolveLink(linkPath: string, sourcePath: string): TFile | null {
+	protected resolveLink(linkPath: string, sourcePath: string): unknown {
 		return this.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath);
 	}
 
@@ -732,11 +732,6 @@ export abstract class TaskModal extends Modal {
 
 			// Create a section for this group if it has fields
 			const groupContainer = container.createDiv({ cls: "task-modal__field-group" });
-
-			// Add separator before non-metadata groups
-			if (groupConfig.id !== "metadata") {
-				container.createEl("hr", { cls: "task-modal__section-separator" });
-			}
 
 			// Render fields in this group
 			for (const field of groupConfig.fields) {
@@ -1784,9 +1779,9 @@ export abstract class TaskModal extends Modal {
 		// Check if it's a wiki link format
 		const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
 		if (linkMatch) {
-			const linkPath = linkMatch[1];
-			const file = this.resolveLink(linkPath, sourcePath);
-			if (file) {
+				const linkPath = linkMatch[1];
+				const file = this.resolveLink(linkPath, sourcePath);
+				if (file instanceof TFile) {
 				// Resolved link
 				return {
 					file,
@@ -1808,7 +1803,7 @@ export abstract class TaskModal extends Modal {
 			if (markdownMatch) {
 				const linkPath = parseLinkToPath(projectString);
 				const file = this.resolveLink(linkPath, sourcePath);
-				if (file) {
+				if (file instanceof TFile) {
 					// Resolved markdown link
 					return {
 						file,

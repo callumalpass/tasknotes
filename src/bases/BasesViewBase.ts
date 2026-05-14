@@ -1,6 +1,11 @@
 import { Component, App, setIcon } from "obsidian";
-import type { BasesPropertyId, BasesQueryResult, BasesView, BasesViewConfig } from "obsidian";
-import type { EventRef } from "obsidian";
+import type {
+	BasesPropertyId,
+	BasesQueryResult,
+	BasesView,
+	BasesViewConfig,
+	EventRef,
+} from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -54,7 +59,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	protected propertyMapper: PropertyMappingService;
 	protected containerEl: HTMLElement;
 	protected rootElement: HTMLElement | null = null;
-	protected taskUpdateListener: EventRef | null = null;
+	protected taskUpdateListener: unknown = null;
 	protected updateDebounceTimer: number | null = null;
 	protected dataUpdateDebounceTimer: number | null = null;
 	protected relevantPathsCache: Set<string> = new Set();
@@ -350,7 +355,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		// Register cleanup using Component lifecycle
 		this.register(() => {
 			if (this.taskUpdateListener) {
-				this.plugin.emitter.offref(this.taskUpdateListener);
+				this.plugin.emitter.offref(this.taskUpdateListener as EventRef);
 				this.taskUpdateListener = null;
 			}
 		});

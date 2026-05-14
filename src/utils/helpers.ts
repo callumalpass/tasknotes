@@ -19,8 +19,6 @@ import {
 } from "../core/recurrence";
 import {
 	parseDateToLocal,
-	isBeforeDateSafe as _isBeforeDateSafe,
-	getTodayLocal as _getTodayLocal,
 } from "./dateUtils";
 
 type ObsidianMoment = import("moment").Moment;

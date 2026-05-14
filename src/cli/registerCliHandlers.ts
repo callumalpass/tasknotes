@@ -30,7 +30,7 @@ export function registerCliHandlers(plugin: TaskNotesPlugin): void {
 		plugin.registerCliHandler(
 			`${plugin.manifest.id}:${definition.command}`,
 			definition.description,
-			definition.flags,
+			definition.flags ?? null,
 			(params) => definition.handler(plugin, params)
 		);
 	}

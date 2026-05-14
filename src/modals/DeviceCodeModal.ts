@@ -113,16 +113,20 @@ export class DeviceCodeModal extends Modal {
 			cls: "tasknotes-device-code-timer-text",
 		});
 
-		// Update countdown every second
-		this.countdownInterval = window.setInterval(() => {
+		const updateCountdown = () => {
 			const remaining = this.getTimeRemaining();
 			timerText.setText(remaining);
 
 			// Close modal if expired
 			if (this.expiresAt <= Date.now()) {
 				this.close();
+				return;
 			}
-		}, 1000);
+
+			this.countdownInterval = window.setTimeout(updateCountdown, 1000);
+		};
+
+		this.countdownInterval = window.setTimeout(updateCountdown, 1000);
 
 		// Status indicator
 		const statusContainer = contentEl.createDiv({ cls: "tasknotes-device-code-status" });
@@ -358,7 +362,7 @@ export class DeviceCodeModal extends Modal {
 
 	onClose(): void {
 		if (this.countdownInterval) {
-			window.clearInterval(this.countdownInterval);
+			window.clearTimeout(this.countdownInterval);
 		}
 		const { contentEl } = this;
 		contentEl.empty();
