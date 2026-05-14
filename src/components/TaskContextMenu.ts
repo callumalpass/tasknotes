@@ -497,7 +497,7 @@ export class TaskContextMenu {
 						if (confirmed) {
 							// Delete from Google Calendar before trashing file
 							if (
-								plugin.taskCalendarSyncService?.isEnabled() &&
+								plugin.taskCalendarSyncService &&
 								task.googleCalendarEventId
 							) {
 								plugin.taskCalendarSyncService

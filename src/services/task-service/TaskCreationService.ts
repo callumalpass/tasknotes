@@ -1,5 +1,10 @@
 import { TFile, stringifyYaml } from "obsidian";
-import { EVENT_TASK_UPDATED, IWebhookNotifier, TaskCreationData, TaskInfo } from "../../types";
+import {
+	EVENT_TASK_UPDATED,
+	IWebhookNotifier,
+	TaskCreationData,
+	TaskInfo,
+} from "../../types";
 import { addDTSTARTToRecurrenceRule } from "../../core/recurrence";
 import {
 	FilenameContext,
@@ -237,7 +242,7 @@ export class TaskCreationService {
 			}
 
 			if (
-				plugin.taskCalendarSyncService?.isEnabled() &&
+				plugin.taskCalendarSyncService &&
 				plugin.settings.googleCalendarExport.syncOnTaskCreate
 			) {
 				plugin.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {

@@ -6,6 +6,14 @@ describe("TaskCalendarSyncService", () => {
     let mockPlugin: any;
     let mockGoogleCalendarService: any;
 
+    const deferred = () => {
+        let resolve!: () => void;
+        const promise = new Promise<void>((innerResolve) => {
+            resolve = innerResolve;
+        });
+        return { promise, resolve };
+    };
+
     beforeEach(() => {
         jest.useFakeTimers();
 
@@ -13,14 +21,22 @@ describe("TaskCalendarSyncService", () => {
             settings: {
                 googleCalendarExport: {
                     syncOnTaskUpdate: true,
+                    syncOnTaskComplete: true,
+                    enabled: true,
                     targetCalendarId: "test-calendar",
+                    eventTitleTemplate: "{{title}}",
+                    includeDescription: false,
+                    syncTrigger: "scheduled",
+                    createAsAllDay: true,
+                    defaultEventDuration: 60,
                 }
             },
             cacheManager: {
                 getTaskInfo: jest.fn()
             },
             statusManager: {
-                getStatusConfig: jest.fn().mockReturnValue({ label: "Todo" })
+                getStatusConfig: jest.fn().mockReturnValue({ label: "Todo" }),
+                isCompletedStatus: jest.fn((status?: string) => status === "done")
             },
             priorityManager: {
                 getPriorityConfig: jest.fn().mockReturnValue({ label: "High" })
@@ -31,6 +47,7 @@ describe("TaskCalendarSyncService", () => {
         };
 
         mockGoogleCalendarService = {
+            getAvailableCalendars: jest.fn().mockReturnValue([{ id: "test-calendar" }]),
             updateEvent: jest.fn().mockResolvedValue({}),
             createEvent: jest.fn().mockResolvedValue({ id: "test-id" })
         };
@@ -77,5 +94,89 @@ describe("TaskCalendarSyncService", () => {
         // Assert: It should execute only once, and pass the explicit secondPayload, not the stale cache!
         expect(syncService.executeTaskUpdate).toHaveBeenCalledTimes(1);
         expect(syncService.executeTaskUpdate).toHaveBeenCalledWith(secondPayload);
+    });
+
+    it("should cancel a pending status update before syncing completion", async () => {
+        syncService.withGoogleRateLimit = (fn: () => Promise<unknown>) => fn();
+
+        const taskPath = "test/path.md";
+        const somedayPayload: TaskInfo = {
+            path: taskPath,
+            title: "Task Title",
+            status: "someday",
+            scheduled: "2026-04-29",
+            googleCalendarEventId: "event-1"
+        };
+        const donePayload: TaskInfo = {
+            ...somedayPayload,
+            status: "done"
+        };
+
+        syncService.updateTaskInCalendar(somedayPayload);
+        await syncService.completeTaskInCalendar(donePayload);
+
+        jest.advanceTimersByTime(500);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(syncService.executeTaskUpdate).not.toHaveBeenCalled();
+        expect(mockGoogleCalendarService.updateEvent).toHaveBeenCalledTimes(1);
+        expect(mockGoogleCalendarService.updateEvent).toHaveBeenCalledWith(
+            "test-calendar",
+            "event-1",
+            {
+                summary: "✓ Task Title",
+                description: undefined
+            }
+        );
+    });
+
+    it("should mark already-completed tasks when a later schedule change creates a calendar event", () => {
+        const event = syncService.taskToCalendarEvent({
+            path: "test/path.md",
+            title: "Task Title",
+            status: "done",
+            scheduled: "2026-04-29"
+        } as TaskInfo);
+
+        expect(event).toEqual(
+            expect.objectContaining({
+                summary: "✓ Task Title",
+                start: { date: "2026-04-29" }
+            })
+        );
+    });
+
+    it("should retry recovery queues without overlapping runs", async () => {
+        const startupRecovery = deferred();
+        const firstRetry = deferred();
+
+        syncService.processStartupRecovery = jest.fn().mockReturnValue(startupRecovery.promise);
+        syncService.processRecoveryQueues = jest.fn().mockReturnValue(firstRetry.promise);
+
+        syncService.startRecoveryQueueProcessor();
+
+        expect(syncService.processStartupRecovery).toHaveBeenCalledTimes(1);
+        expect(syncService.processRecoveryQueues).not.toHaveBeenCalled();
+
+        jest.advanceTimersByTime(60000);
+        expect(syncService.processRecoveryQueues).not.toHaveBeenCalled();
+
+        startupRecovery.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        jest.advanceTimersByTime(60000);
+        expect(syncService.processRecoveryQueues).toHaveBeenCalledTimes(1);
+
+        jest.advanceTimersByTime(60000);
+        expect(syncService.processRecoveryQueues).toHaveBeenCalledTimes(1);
+
+        firstRetry.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        jest.advanceTimersByTime(60000);
+        expect(syncService.processRecoveryQueues).toHaveBeenCalledTimes(2);
     });
 });
