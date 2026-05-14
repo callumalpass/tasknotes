@@ -633,11 +633,13 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	protected createActionButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv("modal-button-container");
+		const buttonContainer = container.createDiv(
+			"modal-button-container tn-task-modal__button-bar"
+		);
 
 		// Add "Open note" button
 		const openNoteButton = buttonContainer.createEl("button", {
-			cls: "open-note-button",
+			cls: "tn-task-modal__open-note-button",
 			text: this.t("modals.task.buttons.openNote"),
 		});
 
@@ -647,7 +649,7 @@ export class TaskEditModal extends TaskModal {
 
 		// Add "Archive" button
 		const archiveButton = buttonContainer.createEl("button", {
-			cls: "mod-warning archive-button",
+			cls: "mod-warning tn-task-modal__archive-button",
 			text: this.task.archived
 				? this.t("modals.taskEdit.buttons.unarchive")
 				: this.t("modals.taskEdit.buttons.archive"),

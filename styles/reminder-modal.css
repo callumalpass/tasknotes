@@ -563,16 +563,6 @@
     border: 1px solid var(--border-color);
 }
 
-/* Modal button styling */
-.modal-button-container {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--size-4-2);
-    margin-top: var(--size-4-6);
-    padding-top: var(--size-4-4);
-    border-top: 1px solid var(--border-color);
-}
-
 /* =====================================================================
    REMINDER DEFAULTS SECTION - Settings Tab Styling
    ===================================================================== */

@@ -475,7 +475,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createActionBar(container: HTMLElement): void {
-		this.actionBar = container.createDiv("action-bar");
+		this.actionBar = container.createDiv("tn-task-modal__action-bar");
 
 		// Due date icon
 		this.createActionIcon(
@@ -669,7 +669,9 @@ export abstract class TaskModal extends Modal {
 			detailsLabel.textContent = this.t("modals.task.detailsLabel");
 
 			// Create container for the markdown editor
-			const detailsEditorContainer = rightColumn.createDiv("details-markdown-editor");
+			const detailsEditorContainer = rightColumn.createDiv(
+				"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--details"
+			);
 
 			// Create embeddable markdown editor for details using shared method
 			this.detailsMarkdownEditor = createTaskModalMarkdownEditor(
@@ -949,10 +951,10 @@ export abstract class TaskModal extends Modal {
 
 		// Add a section separator if there are user fields
 		if (userFieldConfigs.length > 0) {
-			const separator = container.createDiv({ cls: "user-fields-separator" });
+			const separator = container.createDiv({ cls: "tn-task-modal__user-fields" });
 			separator.createDiv({
 				text: this.t("modals.task.customFieldsLabel"),
-				cls: "detail-label-section",
+				cls: "tn-task-modal__section-label",
 			});
 		}
 
@@ -1073,12 +1075,14 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createActionButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv("modal-button-container");
+		const buttonContainer = container.createDiv(
+			"modal-button-container tn-task-modal__button-bar"
+		);
 
 		// Add "Open note" button for edit modals only
 		if (this.isEditMode()) {
 			const openNoteButton = buttonContainer.createEl("button", {
-				cls: "open-note-button",
+				cls: "tn-task-modal__open-note-button",
 				text: this.t("modals.task.buttons.openNote"),
 			});
 

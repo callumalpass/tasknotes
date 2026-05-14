@@ -27,4 +27,5 @@ Example:
 ## Fixed
 
 - Made the markdown editor areas in task modals easier to click and focus.
+- Strengthened local CSS linting to catch unscoped selectors, unknown CSS, and fixed-position overlays before review.
 - Reduced false-positive plugin review warnings by making background auto-export and auto-archive schedulers non-overlapping and tightening type/string conversion paths.

@@ -24,8 +24,6 @@
     /* Interactions & Accessibility - Smooth transitions */
     transition: all var(--tn-transition-fast);
     outline: none;
-    role: listitem;
-    tabindex: 0;
 }
 
 .tasknotes-plugin .task-card:hover {

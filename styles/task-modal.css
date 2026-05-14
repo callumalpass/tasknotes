@@ -15,7 +15,7 @@
    EMBEDDABLE MARKDOWN EDITOR
    ===================================================================== */
 
-.details-markdown-editor {
+.tn-task-modal__markdown-editor--details {
     margin-bottom: var(--size-4-3);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
@@ -24,20 +24,20 @@
     max-height: 400px;
 }
 
-.details-markdown-editor .task-details-editor {
+.tn-task-modal__markdown-editor--details .task-details-editor {
     min-height: 200px;
     max-height: 400px;
     overflow-y: auto;
 }
 
 /* Make the editor container scrollable */
-.details-markdown-editor .cm-editor {
+.tn-task-modal__markdown-editor--details .cm-editor {
     height: 100%;
     min-height: 200px;
     max-height: 400px;
 }
 
-.details-markdown-editor .cm-scroller {
+.tn-task-modal__markdown-editor--details .cm-scroller {
     overflow: auto;
     min-height: inherit;
     height: 100%;
@@ -45,22 +45,22 @@
     cursor: text;
 }
 
-.details-markdown-editor .cm-sizer,
-.details-markdown-editor .cm-contentContainer,
-.details-markdown-editor .cm-content {
+.tn-task-modal__markdown-editor--details .cm-sizer,
+.tn-task-modal__markdown-editor--details .cm-contentContainer,
+.tn-task-modal__markdown-editor--details .cm-content {
     box-sizing: border-box;
     min-height: inherit;
     min-width: 100%;
     width: 100%;
 }
 
-.details-markdown-editor .cm-sizer,
-.details-markdown-editor .cm-contentContainer {
+.tn-task-modal__markdown-editor--details .cm-sizer,
+.tn-task-modal__markdown-editor--details .cm-contentContainer {
     flex: 1 1 auto;
 }
 
 /* Style the editor content */
-.details-markdown-editor .cm-content {
+.tn-task-modal__markdown-editor--details .cm-content {
     padding-left: var(--size-4-2);
     padding-right: var(--size-4-2);
     padding-top: var(--size-4-2);
@@ -71,18 +71,18 @@
     caret-color: var(--text-normal);
 }
 
-.details-markdown-editor .cm-cursor,
-.details-markdown-editor .cm-dropCursor {
+.tn-task-modal__markdown-editor--details .cm-cursor,
+.tn-task-modal__markdown-editor--details .cm-dropCursor {
     border-left-color: var(--text-normal);
 }
 
-.details-markdown-editor .cm-lineNumbers,
-.details-markdown-editor .cm-gutters {
+.tn-task-modal__markdown-editor--details .cm-lineNumbers,
+.tn-task-modal__markdown-editor--details .cm-gutters {
     display: none;
 }
 
 /* Placeholder styling */
-.details-markdown-editor .cm-placeholder {
+.tn-task-modal__markdown-editor--details .cm-placeholder {
     color: var(--text-faint);
     font-style: italic;
 }
@@ -91,7 +91,7 @@
    NLP MARKDOWN EDITOR
    ===================================================================== */
 
-.nl-markdown-editor {
+.tn-task-modal__markdown-editor--nlp {
     margin-bottom: var(--size-4-2);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
@@ -102,13 +102,13 @@
     transition: all 0.2s ease;
 }
 
-.nl-markdown-editor .nlp-editor {
+.tn-task-modal__markdown-editor--nlp .nlp-editor {
     min-height: 80px;
     max-height: 200px;
     overflow-y: auto;
 }
 
-.nl-markdown-editor .cm-editor {
+.tn-task-modal__markdown-editor--nlp .cm-editor {
     height: 100%;
     min-height: 80px;
     max-height: 200px;
@@ -117,17 +117,17 @@
 }
 
 /* Focus state for NLP editor - match old nl-input styling */
-.nl-markdown-editor:focus-within {
+.tn-task-modal__markdown-editor--nlp:focus-within {
     border-color: var(--interactive-accent);
     background: transparent;
     box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
 }
 
-.nl-markdown-editor:focus-within .cm-editor {
+.tn-task-modal__markdown-editor--nlp:focus-within .cm-editor {
     background: transparent;
 }
 
-.nl-markdown-editor .cm-scroller {
+.tn-task-modal__markdown-editor--nlp .cm-scroller {
     overflow: auto;
     min-height: inherit;
     height: 100%;
@@ -135,21 +135,21 @@
     cursor: text;
 }
 
-.nl-markdown-editor .cm-sizer,
-.nl-markdown-editor .cm-contentContainer,
-.nl-markdown-editor .cm-content {
+.tn-task-modal__markdown-editor--nlp .cm-sizer,
+.tn-task-modal__markdown-editor--nlp .cm-contentContainer,
+.tn-task-modal__markdown-editor--nlp .cm-content {
     box-sizing: border-box;
     min-height: inherit;
     min-width: 100%;
     width: 100%;
 }
 
-.nl-markdown-editor .cm-sizer,
-.nl-markdown-editor .cm-contentContainer {
+.tn-task-modal__markdown-editor--nlp .cm-sizer,
+.tn-task-modal__markdown-editor--nlp .cm-contentContainer {
     flex: 1 1 auto;
 }
 
-.nl-markdown-editor .cm-content {
+.tn-task-modal__markdown-editor--nlp .cm-content {
     padding-left: var(--size-4-2);
     padding-right: var(--size-4-2);
     padding-top: var(--size-4-3);
@@ -160,18 +160,18 @@
     caret-color: var(--text-normal);
 }
 
-.nl-markdown-editor .cm-cursor,
-.nl-markdown-editor .cm-dropCursor {
+.tn-task-modal__markdown-editor--nlp .cm-cursor,
+.tn-task-modal__markdown-editor--nlp .cm-dropCursor {
     border-left-color: var(--text-normal);
 }
 
-.nl-markdown-editor .cm-lineNumbers,
-.nl-markdown-editor .cm-gutters {
+.tn-task-modal__markdown-editor--nlp .cm-lineNumbers,
+.tn-task-modal__markdown-editor--nlp .cm-gutters {
     display: none;
 }
 
 
-.nl-markdown-editor .cm-placeholder {
+.tn-task-modal__markdown-editor--nlp .cm-placeholder {
     color: var(--text-muted);
     font-style: italic;
 }
@@ -269,59 +269,20 @@
 }
 
 /* Modal header with TaskNotes icon */
-.modal-header-container {
-    display: flex;
-    align-items: center;
-    gap: var(--size-4-2);
-    margin-bottom: var(--size-4-3);
-}
-
-.modal-header-icon {
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 8px;
-    color: var(--color-accent);
-    width: 20px;
-    height: 20px;
-}
-
-.modal-header-icon svg {
-    width: 20px;
-    height: 20px;
-    color: var(--color-accent);
-}
-
 /* User fields section styling */
-.user-fields-separator {
+.tn-task-modal__user-fields {
     margin-top: var(--size-4-4);
     border-top: 0.5px solid var(--background-modifier-border);
     padding-top: var(--size-4-3);
 }
 
-.detail-label-section {
+.tn-task-modal__section-label {
     font-weight: 600;
     color: var(--text-muted);
     font-size: 0.9em;
     margin-bottom: var(--size-4-2);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.modal-header-icon .svg-icon {
-    width: 20px;
-    height: 20px;
-}
-
-.modal-header-icon .tasknotes-simple {
-    width: 20px;
-    height: 20px;
-    color: var(--color-accent);
-}
-
-.modal-header-title {
-    font-size: var(--font-ui-larger);
-    font-weight: var(--font-weight-bold);
-    color: var(--text-normal);
 }
 
 .tasknotes-plugin.minimalist-task-modal .modal-content {
@@ -390,7 +351,7 @@
    ACTION BAR - ICON-BASED CONTROLS
    ===================================================================== */
 
-.tasknotes-plugin .action-bar {
+.tasknotes-plugin .tn-task-modal__action-bar {
     display: flex;
     align-items: center;
     gap: var(--size-4-1);
@@ -554,7 +515,7 @@
    OPEN NOTE BUTTON (IN BUTTON BAR)
    ===================================================================== */
 
-.tasknotes-plugin .open-note-button {
+.tasknotes-plugin .tn-task-modal__open-note-button {
     padding: var(--size-4-2) var(--size-4-3);
     font-weight: 500;
     border: 1px solid var(--interactive-accent);
@@ -566,23 +527,23 @@
     min-width: 80px;
 }
 
-.tasknotes-plugin .open-note-button:hover {
+.tasknotes-plugin .tn-task-modal__open-note-button:hover {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border: 1px solid var(--interactive-accent);
 }
 
-.tasknotes-plugin .open-note-button:active {
+.tasknotes-plugin .tn-task-modal__open-note-button:active {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border: 1px solid var(--interactive-accent);
 }
 
-.tasknotes-plugin .open-note-button:focus-visible {
+.tasknotes-plugin .tn-task-modal__open-note-button:focus-visible {
 	box-shadow: 0 0 0 3px var(--background-modifier-border-focus);
 }
 
-.tasknotes-plugin .archive-button:focus-visible {
+.tasknotes-plugin .tn-task-modal__archive-button:focus-visible {
 	box-shadow: 0 0 0 3px var(--background-modifier-border-focus);
 }
 
@@ -651,7 +612,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
         padding: var(--size-4-3);
     }
 
-    .tasknotes-plugin .action-bar {
+    .tasknotes-plugin .tn-task-modal__action-bar {
         flex-wrap: wrap;
         gap: var(--size-4-2);
     }
@@ -726,12 +687,12 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
 /* Title input container - first item */
 .tasknotes-plugin.minimalist-task-modal .modal-split-left .title-input-container,
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .nl-markdown-editor {
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__markdown-editor--nlp {
     order: 1;
 }
 
 /* Action bar - second item */
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .action-bar {
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__action-bar {
     order: 2;
 }
 
@@ -805,8 +766,8 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     }
 
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .title-input-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .nl-markdown-editor,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .action-bar,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .tn-task-modal__markdown-editor--nlp,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .tn-task-modal__action-bar,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .details-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .completions-calendar-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .metadata-container {
@@ -846,8 +807,8 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     }
 
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .title-input-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .nl-markdown-editor,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .action-bar,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .tn-task-modal__markdown-editor--nlp,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .tn-task-modal__action-bar,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .details-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .completions-calendar-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .metadata-container {
@@ -862,7 +823,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     }
 
     /* Make details editor fill the right column completely */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor {
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details {
         flex: 1;
         min-height: 0;
         height: 100%;
@@ -875,7 +836,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
         overflow: hidden;
     }
 
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .cm-editor {
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details .cm-editor {
         flex: 1;
         height: 100%;
         max-height: none;
@@ -883,13 +844,13 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
         min-height: 320px;
     }
 
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .cm-scroller {
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details .cm-scroller {
         flex: 1;
         max-height: none;
         overflow-y: auto;
     }
 
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .task-details-editor {
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details .task-details-editor {
         max-height: none;
         flex: 1;
         min-height: 320px;

@@ -121,7 +121,9 @@ export class TaskCreationModal extends TaskModal {
 		const nlContainer = container.createDiv("nl-input-container");
 
 		// Create markdown editor container
-		const editorContainer = nlContainer.createDiv("nl-markdown-editor");
+		const editorContainer = nlContainer.createDiv(
+			"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--nlp"
+		);
 		editorContainer.setAttribute("role", "textbox");
 		editorContainer.setAttribute("aria-label", this.t("modals.taskCreation.nlPlaceholder"));
 		editorContainer.setAttribute("aria-multiline", "true");
@@ -310,7 +312,7 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	protected createActionBar(container: HTMLElement): void {
-		this.actionBar = container.createDiv("action-bar");
+		this.actionBar = container.createDiv("tn-task-modal__action-bar");
 
 		// NLP-specific icons (only if NLP is enabled)
 		if (this.plugin.settings.enableNaturalLanguageInput) {
