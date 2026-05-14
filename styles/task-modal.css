@@ -39,17 +39,32 @@
 
 .details-markdown-editor .cm-scroller {
     overflow: auto;
+    min-height: inherit;
+    height: 100%;
     max-height: 400px;
-    padding-top: var(--size-4-2);
-    padding-bottom: var(--size-4-2);
+    cursor: text;
+}
+
+.details-markdown-editor .cm-sizer,
+.details-markdown-editor .cm-contentContainer,
+.details-markdown-editor .cm-content {
+    box-sizing: border-box;
+    min-height: inherit;
+    min-width: 100%;
+    width: 100%;
+}
+
+.details-markdown-editor .cm-sizer,
+.details-markdown-editor .cm-contentContainer {
+    flex: 1 1 auto;
 }
 
 /* Style the editor content */
 .details-markdown-editor .cm-content {
     padding-left: var(--size-4-2);
     padding-right: var(--size-4-2);
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: var(--size-4-2);
+    padding-bottom: var(--size-4-2);
     font-family: var(--font-text);
     font-size: var(--font-ui-medium);
     line-height: var(--line-height-normal);
@@ -114,16 +129,31 @@
 
 .nl-markdown-editor .cm-scroller {
     overflow: auto;
+    min-height: inherit;
+    height: 100%;
     max-height: 200px;
-    padding-top: var(--size-4-3);
-    padding-bottom: var(--size-4-3);
+    cursor: text;
+}
+
+.nl-markdown-editor .cm-sizer,
+.nl-markdown-editor .cm-contentContainer,
+.nl-markdown-editor .cm-content {
+    box-sizing: border-box;
+    min-height: inherit;
+    min-width: 100%;
+    width: 100%;
+}
+
+.nl-markdown-editor .cm-sizer,
+.nl-markdown-editor .cm-contentContainer {
+    flex: 1 1 auto;
 }
 
 .nl-markdown-editor .cm-content {
     padding-left: var(--size-4-2);
     padding-right: var(--size-4-2);
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: var(--size-4-3);
+    padding-bottom: var(--size-4-3);
     font-family: var(--font-text);
     font-size: var(--font-ui-medium);
     line-height: 1.5;

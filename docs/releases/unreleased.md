@@ -23,3 +23,7 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- Made the markdown editor areas in task modals easier to click and focus.
