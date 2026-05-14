@@ -8,7 +8,6 @@ export class AutoExportService {
 	private intervalId: number | null = null;
 	private lastExportTime: Date | null = null;
 	private nextExportTime: Date | null = null;
-	private isRunning = false;
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
@@ -28,47 +27,30 @@ export class AutoExportService {
 
 		this.stop(); // Stop any existing interval
 
-		this.isRunning = true;
 		const intervalMinutes = this.plugin.settings.icsIntegration.autoExportInterval;
 		const intervalMs = intervalMinutes * 60 * 1000;
 
 		// Set next export time
 		this.nextExportTime = new Date(Date.now() + intervalMs);
 
-		const scheduleExport = () => {
-			if (!this.isRunning) {
-				return;
-			}
-
-			this.intervalId = window.setTimeout(() => {
-				this.intervalId = null;
-				this.performExport()
-					.catch((error) => {
-						console.error("Error performing automatic export:", error);
-					})
-					.finally(() => {
-						this.nextExportTime = new Date(Date.now() + intervalMs);
-						if (this.isRunning) {
-							scheduleExport();
-						}
-					});
-			}, intervalMs);
-		};
-
-		scheduleExport();
+		this.intervalId = window.setInterval(() => {
+			void (async () => {
+				await this.performExport();
+				// Update next export time
+				this.nextExportTime = new Date(Date.now() + intervalMs);
+			})();
+		}, intervalMs);
 	}
 
 	/**
 	 * Stop the automatic export service
 	 */
 	stop(): void {
-		this.isRunning = false;
-
 		if (this.intervalId) {
-			window.clearTimeout(this.intervalId);
+			window.clearInterval(this.intervalId);
 			this.intervalId = null;
+			this.nextExportTime = null;
 		}
-		this.nextExportTime = null;
 	}
 
 	/**

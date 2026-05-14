@@ -124,22 +124,28 @@ const pluginReviewRules = {
 				};
 			},
 		},
-		"no-set-interval": {
+		"no-network-interval": {
 			meta: {
 				type: "problem",
 				docs: {
 					description:
-						"Disallow setInterval usage so periodic work uses explicit rescheduling and avoids Obsidian review telemetry heuristics.",
+						"Disallow setInterval in files that perform network calls, matching Obsidian review telemetry heuristics.",
 				},
 				messages: {
 					noSetInterval:
-						"Use a self-rescheduling setTimeout instead of setInterval.",
-					noClearInterval:
-						"Use clearTimeout with the matching self-rescheduling setTimeout.",
+						"Use a self-rescheduling setTimeout instead of setInterval in files that perform network calls.",
 				},
 				schema: [],
 			},
 			create(context) {
+				const sourceCode = context.sourceCode ?? context.getSourceCode();
+				const hasNetworkCall =
+					/\b(?:requestUrl|fetch|XMLHttpRequest|sendBeacon)\b/u.test(sourceCode.text);
+
+				if (!hasNetworkCall) {
+					return {};
+				}
+
 				function getCallName(callee) {
 					if (callee.type === "Identifier") {
 						return callee.name;
@@ -164,13 +170,6 @@ const pluginReviewRules = {
 							context.report({
 								node: node.callee,
 								messageId: "noSetInterval",
-							});
-						}
-
-						if (callName === "clearInterval") {
-							context.report({
-								node: node.callee,
-								messageId: "noClearInterval",
 							});
 						}
 					},
@@ -277,7 +276,7 @@ export default [
 			"no-new-func": "error",
 			"@microsoft/sdl/no-inner-html": "warn",
 			"plugin-review/require-eslint-directive-description": "warn",
-			"plugin-review/no-set-interval": "warn",
+			"plugin-review/no-network-interval": "warn",
 			"obsidianmd/no-static-styles-assignment": "warn",
 			"obsidianmd/rule-custom-message": "warn",
 			"obsidianmd/ui/sentence-case": "warn",

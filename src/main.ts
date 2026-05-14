@@ -103,7 +103,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Date change detection for refreshing task states at midnight
 	private lastKnownDate: string = new Date().toDateString();
-	private dateCheckTimer: number | null = null;
+	private dateCheckInterval: number;
 	private midnightTimeout: number;
 
 	// Ready promise to signal when initialization is complete
@@ -512,20 +512,9 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		};
 
-		const scheduleDateCheck = () => {
-			this.dateCheckTimer = window.setTimeout(() => {
-				checkDateChange();
-				scheduleDateCheck();
-			}, 60000);
-		};
-
-		scheduleDateCheck();
-		this.register(() => {
-			if (this.dateCheckTimer) {
-				window.clearTimeout(this.dateCheckTimer);
-				this.dateCheckTimer = null;
-			}
-		});
+		// Set up regular interval to check for date changes
+		this.dateCheckInterval = window.setInterval(checkDateChange, 60000); // Check every minute
+		this.registerInterval(this.dateCheckInterval);
 
 		// Schedule precise check at next midnight for better timing
 		this.scheduleNextMidnightCheck();

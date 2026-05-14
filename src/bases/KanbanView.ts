@@ -1915,24 +1915,19 @@ export class KanbanView extends BasesViewBase {
 			this.stopAutoScroll();
 			this.autoScrollDirection = newDirection;
 			if (newDirection !== 0) {
-				const scroll = () => {
+				this.autoScrollTimer = window.setInterval(() => {
 					if (this.boardEl) {
 						this.boardEl.scrollLeft +=
 							this.autoScrollDirection * this.AUTO_SCROLL_SPEED;
 					}
-					if (this.autoScrollDirection !== 0) {
-						this.autoScrollTimer = window.setTimeout(scroll, 16);
-					}
-				};
-
-				this.autoScrollTimer = window.setTimeout(scroll, 16);
+				}, 16);
 			}
 		}
 	}
 
 	private stopAutoScroll(): void {
 		if (this.autoScrollTimer) {
-			window.clearTimeout(this.autoScrollTimer);
+			window.clearInterval(this.autoScrollTimer);
 			this.autoScrollTimer = null;
 		}
 		this.autoScrollDirection = 0;

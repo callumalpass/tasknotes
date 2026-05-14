@@ -9,7 +9,6 @@ import TaskNotesPlugin from "../main";
 export class AutoArchiveService {
 	private plugin: TaskNotesPlugin;
 	private processorInterval: number | null = null;
-	private isRunning = false;
 	private readonly PROCESSOR_INTERVAL_MS = 60000; // Check every 60 seconds
 
 	constructor(plugin: TaskNotesPlugin) {
@@ -42,43 +41,25 @@ export class AutoArchiveService {
 	 * Start the auto-archive service and begin periodic processing
 	 */
 	async start(): Promise<void> {
-		this.isRunning = true;
-
 		// Process any missed archives from when plugin was offline
 		await this.processQueue();
 
-		this.scheduleQueueProcessing();
+		// Start periodic processor
+		this.processorInterval = window.setInterval(() => {
+			this.processQueue().catch((error) => {
+				console.error("Error processing auto-archive queue:", error);
+			});
+		}, this.PROCESSOR_INTERVAL_MS);
 	}
 
 	/**
 	 * Stop the auto-archive service
 	 */
 	stop(): void {
-		this.isRunning = false;
-
 		if (this.processorInterval) {
-			window.clearTimeout(this.processorInterval);
+			window.clearInterval(this.processorInterval);
 			this.processorInterval = null;
 		}
-	}
-
-	private scheduleQueueProcessing(): void {
-		if (!this.isRunning) {
-			return;
-		}
-
-		this.processorInterval = window.setTimeout(() => {
-			this.processorInterval = null;
-			this.processQueue()
-				.catch((error) => {
-					console.error("Error processing auto-archive queue:", error);
-				})
-				.finally(() => {
-					if (this.isRunning) {
-						this.scheduleQueueProcessing();
-					}
-				});
-		}, this.PROCESSOR_INTERVAL_MS);
 	}
 
 	/**
