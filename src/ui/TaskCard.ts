@@ -56,6 +56,14 @@ type MenuWithItems = Menu & {
 	items?: unknown[];
 };
 
+function bindNestedCardHoverState(container: HTMLElement, card: HTMLElement): void {
+	const addNestedHover = () => card.classList.add("task-card--nested-interactive-hover");
+	const removeNestedHover = () => card.classList.remove("task-card--nested-interactive-hover");
+
+	container.addEventListener("mouseenter", addNestedHover);
+	container.addEventListener("mouseleave", removeNestedHover);
+}
+
 function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
 	return (card as TaskCardElement)._taskCardOptions ?? {};
 }
@@ -1470,6 +1478,7 @@ export async function toggleSubtasks(
 
 				// Store handler reference for cleanup
 				(subtasksContainer as TaskCardElement)._clickHandler = clickHandler;
+				bindNestedCardHoverState(subtasksContainer, card);
 
 				card.appendChild(subtasksContainer);
 			}
@@ -1591,10 +1600,11 @@ export async function toggleBlockingTasks(
 	plugin: TaskNotesPlugin,
 	shouldExpand: boolean
 ): Promise<void> {
-	let container = card.querySelector(".task-card__blocking");
+	let container = card.querySelector<HTMLElement>(".task-card__blocking");
 
 	if (!shouldExpand) {
 		if (container) {
+			card.classList.remove("task-card--nested-interactive-hover");
 			container.remove();
 		}
 		return;
@@ -1602,6 +1612,7 @@ export async function toggleBlockingTasks(
 
 	if (!container) {
 		container = card.createDiv({ cls: "task-card__blocking" });
+		bindNestedCardHoverState(container, card);
 		// Prevent clicks within the dependency list from bubbling up to the parent card.
 		// Otherwise both the blocking task and the dependent task modals would open.
 		container.addEventListener("click", (event) => event.stopPropagation());

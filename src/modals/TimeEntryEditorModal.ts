@@ -183,6 +183,7 @@ export class TimeEntryEditorModal extends Modal {
 		// Description
 		const descriptionSetting = new Setting(timeContainer)
 			.setName(this.translate("modals.timeEntryEditor.description"));
+		descriptionSetting.settingEl.addClass("time-entry-editor-modal__description-setting");
 
 		const editorContainer = descriptionSetting.controlEl.createDiv({
 			cls: "time-entry-editor-modal__description-editor-container",

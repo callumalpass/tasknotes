@@ -32,8 +32,7 @@
     background-color: var(--background-modifier-hover);
 }
 
-/* Prevent parent hover when hovering over subtasks or blocking tasks */
-.tasknotes-plugin .task-card:has(.task-card__subtasks:hover, .task-card__blocking:hover) {
+.tasknotes-plugin .task-card.task-card--nested-interactive-hover {
     background-color: transparent;
     box-shadow: none;
 }
@@ -135,12 +134,6 @@
     max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
-}
-
-.tasknotes-plugin .task-card__metadata-property:has(.tag),
-.tasknotes-plugin .task-card__metadata-value:has(.tag) {
-    flex-wrap: nowrap;
-    overflow: hidden;
 }
 
 .tasknotes-plugin .task-card__metadata-property .tag {
@@ -305,6 +298,7 @@
 
 .tasknotes-plugin .task-card[draggable="true"] {
     cursor: grab;
+    transition: all var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .task-card[draggable="true"]:active,
@@ -730,14 +724,11 @@
 .tasknotes-plugin .task-card__context-menu:hover {
     color: var(--tn-text-normal);
     background: var(--tn-interactive-hover);
+    opacity: 1;
 }
 
 .tasknotes-plugin .task-card:hover .task-card__context-menu {
     opacity: 0.6;
-}
-
-.tasknotes-plugin .task-card__context-menu:hover {
-    opacity: 1 !important;
 }
 
 .tasknotes-plugin .task-card__context-menu svg {
@@ -753,11 +744,6 @@
 
 
 /* Enhanced priority dot hover for context menu */
-.tasknotes-plugin .task-card__priority-dot {
-    transition: all var(--tn-transition-fast);
-    box-shadow: none;
-}
-
 .tasknotes-plugin .task-card__priority-dot:hover {
     opacity: 0.8;
 }
@@ -911,6 +897,8 @@
 
 /* Priority indicators - Use user's priority settings */
 .tasknotes-plugin .task-card__priority-dot {
+    transition: all var(--tn-transition-fast);
+    box-shadow: none;
     display: inline-block;
     width: 10px;
     height: 10px;
@@ -1009,10 +997,10 @@
     .tasknotes-plugin .task-card *,
     .tasknotes-plugin .task-card::before,
     .tasknotes-plugin .task-card::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
+        scroll-behavior: auto;
     }
 
     .tasknotes-plugin .task-card--dragging {
@@ -1023,17 +1011,16 @@
 /* Print styles */
 @media print {
     .tasknotes-plugin .task-card {
-        break-inside: avoid;
         page-break-inside: avoid;
-        background: white !important;
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
+        background: white;
+        box-shadow: none;
+        border: 1px solid #cccccc;
     }
 
     .tasknotes-plugin .task-card__quick-actions,
     .tasknotes-plugin .task-card__context-menu,
     .tasknotes-plugin .task-card__enhanced-info {
-        display: none !important;
+        display: none;
     }
 }
 
@@ -1059,11 +1046,6 @@
 /* =================================================================
    TASKCARD DRAG AND DROP STATES
    ================================================================= */
-
-/* Draggable task cards */
-.tasknotes-plugin .task-card[draggable="true"] {
-    transition: all var(--tn-transition-fast);
-}
 
 .tasknotes-plugin .task-card[draggable="true"]:hover {
     cursor: grab;
@@ -1156,7 +1138,7 @@
 /* Inline layout - single line, compact display for editor task links */
 .tasknotes-plugin .task-card--layout-inline {
     /* Use inline display to respect line boundaries */
-    display: inline !important;
+    display: inline;
 
     /* Minimal padding - no indentation needed in inline mode */
     padding: 2px 0;
@@ -1197,25 +1179,25 @@
 /* Remove chevron gutter padding in inline mode */
 .tasknotes-plugin .task-card--layout-inline,
 .tasknotes-plugin .task-card--layout-inline.task-card--chevron-left {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 /* Main row in inline mode - horizontal layout */
 .tasknotes-plugin .task-card--layout-inline .task-card__main-row {
-    display: inline !important;
+    display: inline;
     vertical-align: baseline;
 }
 
 /* Content in inline mode - horizontal, truncated */
 .tasknotes-plugin .task-card--layout-inline .task-card__content {
-    display: inline !important;
+    display: inline;
     vertical-align: baseline;
 }
 
 /* Title in inline mode - truncate with ellipsis */
 .tasknotes-plugin .task-card--layout-inline .task-card__title {
-    display: inline !important;
+    display: inline;
     font-size: inherit; /* Use editor's font size */
     font-weight: 400;
     margin: 0;
@@ -1224,13 +1206,13 @@
 
 /* Title text in inline mode - ensure ellipsis works */
 .tasknotes-plugin .task-card--layout-inline .task-card__title-text {
-    display: inline !important;
+    display: inline;
     vertical-align: baseline;
 }
 
 /* Metadata in inline mode - stays on same line, scrolls if needed */
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata {
-    display: inline-block !important;
+    display: inline-block;
     font-size: var(--tn-font-size-sm);
     margin: 0;
     padding: 0;
@@ -1280,7 +1262,7 @@
 }
 
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata > *:last-child {
-    margin-right: 0 !important;
+    margin-right: 0;
 }
 
 /* Smaller status dot in inline mode */

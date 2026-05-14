@@ -46,10 +46,10 @@
 
 /* Style the editor content */
 .details-markdown-editor .cm-content {
-    padding-left: var(--size-4-2) !important;
-    padding-right: var(--size-4-2) !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding-left: var(--size-4-2);
+    padding-right: var(--size-4-2);
+    padding-top: 0;
+    padding-bottom: 0;
     font-family: var(--font-text);
     font-size: var(--font-ui-medium);
     line-height: var(--line-height-normal);
@@ -57,8 +57,8 @@
 
 /* Ensure the editor line doesn't add extra padding */
 /* .details-markdown-editor .cm-line { */
-/*     padding-left: 0 !important; */
-/*     padding-right: 0 !important; */
+/*     padding-left: 0; */
+/*     padding-right: 0; */
 /* } */
 
 /* Placeholder styling */
@@ -115,10 +115,10 @@
 }
 
 .nl-markdown-editor .cm-content {
-    padding-left: var(--size-4-2) !important;
-    padding-right: var(--size-4-2) !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding-left: var(--size-4-2);
+    padding-right: var(--size-4-2);
+    padding-top: 0;
+    padding-bottom: 0;
     font-family: var(--font-text);
     font-size: var(--font-ui-medium);
     line-height: 1.5;
@@ -236,8 +236,8 @@
 }
 
 .modal-header-icon svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 20px;
+    height: 20px;
     color: var(--color-accent);
 }
 
@@ -265,14 +265,14 @@
 }
 
 .modal-header-icon .svg-icon {
-    width: 20px !important;
-    height: 20px !important;
+    width: 20px;
+    height: 20px;
 }
 
 .modal-header-icon .tasknotes-simple {
-    width: 20px !important;
-    height: 20px !important;
-    color: var(--color-accent) !important;
+    width: 20px;
+    height: 20px;
+    color: var(--color-accent);
 }
 
 .modal-header-title {
@@ -287,6 +287,7 @@
     box-shadow: var(--shadow-l);
     min-width: 480px;
     max-width: 600px;
+    transition: all 0.3s ease;
 }
 
 .tasknotes-plugin .minimalist-modal-container {
@@ -560,10 +561,6 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
    MODAL EXPANSION ANIMATION
    ===================================================================== */
 
-.tasknotes-plugin.minimalist-task-modal .modal-content {
-    transition: all 0.3s ease;
-}
-
 .tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
     min-height: 400px;
     max-height: 85vh;
@@ -681,7 +678,8 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
 /* Left column: contains title, action bar, and form fields */
 .tasknotes-plugin.minimalist-task-modal .modal-split-left {
-    display: contents;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Title input container - first item */
@@ -746,42 +744,43 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
     /* Split content wrapper - holds left and right columns side by side */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content {
-        display: flex;
-        flex-direction: row;
+        display: block;
         flex: 1;
         min-height: 0;
         gap: 0;
         overflow: visible;
     }
 
-    /* Left column - reset display:contents and use flex column */
+    /* Left column - use grid so the details editor can sit beside the form without display: contents. */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
-        flex: 0 0 380px;
         min-width: 0;
-        display: flex;
-        flex-direction: column;
-        padding-right: var(--size-4-4);
-        overflow-y: auto;
+        display: grid;
+        grid-template-columns: 380px minmax(0, 1fr);
+        gap: 0;
+        padding-right: 0;
+        overflow: visible;
         max-height: 70vh;
     }
 
-    /* Reset ordering for split layout - elements flow naturally in their DOM order */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .title-input-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .nl-markdown-editor,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .action-bar,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .details-container,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .completions-calendar-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .metadata-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .metadata-container {
         order: unset;
+        grid-column: 1;
+        margin-right: var(--size-4-4);
     }
 
     /* Right column - details editor takes full height, edge to edge */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
-        flex: 1;
         min-width: 0;
         display: flex;
         flex-direction: column;
+        grid-column: 2;
+        grid-row: 1 / span 20;
+        order: unset;
         border-left: 1px solid var(--background-modifier-border);
         margin: calc(-1 * var(--size-4-4)) 0;
         margin-right: calc(-1 * var(--size-4-4));
@@ -796,10 +795,20 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     }
 
     /* When right column is empty, left column takes full width */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right:empty ~ .modal-split-left,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content:has(.modal-split-right:empty) .modal-split-left {
-        flex: 1;
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
         padding-right: 0;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .title-input-container,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .nl-markdown-editor,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .action-bar,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .details-container,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .completions-calendar-container,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .metadata-container {
+        margin-right: 0;
     }
 
     /* Details label in right column */
@@ -860,7 +869,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
     /* Left column gets more space on wider screens */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
-        flex: 0 0 480px;
+        grid-template-columns: 480px minmax(0, 1fr);
     }
 }
 

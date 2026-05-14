@@ -423,13 +423,14 @@ export abstract class TaskModal extends Modal {
 		// Create split content wrapper at the top level for wide screen layout
 		this.splitContentWrapper = container.createDiv("modal-split-content");
 		this.splitLeftColumn = this.splitContentWrapper.createDiv("modal-split-left");
-		this.splitRightColumn = this.splitContentWrapper.createDiv("modal-split-right");
 
 		// Create primary input area (title or NLP) - subclasses can override
 		this.createPrimaryInput(this.splitLeftColumn);
 
 		// Create action bar with icons - goes in left column
 		this.createActionBar(this.splitLeftColumn);
+
+		this.splitRightColumn = this.splitLeftColumn.createDiv("modal-split-right");
 
 		// Create collapsible details section (fields in left, details editor in right)
 		this.createDetailsSection(container);
@@ -626,6 +627,10 @@ export abstract class TaskModal extends Modal {
 		const config = this.plugin.settings.modalFieldsConfig;
 		const shouldShowTitle = this.shouldShowField("title", config);
 		const shouldShowDetails = this.shouldShowField("details", config);
+		this.splitContentWrapper.classList.toggle(
+			"modal-split-content--right-empty",
+			!shouldShowDetails
+		);
 
 		// Title field appears in details section for:
 		// 1. Edit modals (always, if enabled in config)

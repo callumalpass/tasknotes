@@ -565,8 +565,7 @@ body {
 
 .prose a {
   color: var(--amber);
-  text-decoration-line: underline;
-  text-decoration-thickness: 1px;
+  text-decoration: underline;
   text-underline-offset: 2px;
   transition: opacity 0.1s;
 }
@@ -602,6 +601,7 @@ body {
   border-left: 3px solid var(--amber);
   border-radius: 0 4px 4px 0;
   overflow-x: auto;
+  position: relative;
   font-family: var(--font-mono);
   font-size: 0.84rem;
   line-height: 1.65;
@@ -630,10 +630,6 @@ body {
 /* ============================================================
    Copy button
    ============================================================ */
-
-.prose pre {
-  position: relative;
-}
 
 .copy-btn {
   position: absolute;

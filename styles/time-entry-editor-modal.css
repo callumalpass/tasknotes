@@ -138,12 +138,12 @@
 }
 
 /* Description editor – Setting row must stack so the editor gets full width */
-.time-entry-editor-modal__time-container .setting-item:has(.time-entry-editor-modal__description-editor-container) {
+.time-entry-editor-modal__time-container .time-entry-editor-modal__description-setting {
     flex-direction: column;
     align-items: flex-start;
 }
 
-.time-entry-editor-modal__time-container .setting-item:has(.time-entry-editor-modal__description-editor-container) .setting-item-control {
+.time-entry-editor-modal__time-container .time-entry-editor-modal__description-setting .setting-item-control {
     width: 100%;
     justify-content: flex-start;
     text-align: left;
@@ -179,10 +179,10 @@
 }
 
 .time-entry-editor-modal__description-editor .cm-content {
-    padding-left: var(--size-4-2) !important;
-    padding-right: var(--size-4-2) !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding-left: var(--size-4-2);
+    padding-right: var(--size-4-2);
+    padding-top: 0;
+    padding-bottom: 0;
     font-family: var(--font-text);
     font-size: var(--font-ui-medium);
     line-height: var(--line-height-normal);

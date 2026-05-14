@@ -53,8 +53,8 @@
 
 .tasknotes-plugin .settings-view__tab-button--active,
 .tasknotes-plugin .settings-view__tab-button.is-active {
-    background: var(--interactive-accent) !important;
-    color: var(--text-on-accent) !important;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
 }
 
 /* ================================================
@@ -136,8 +136,8 @@
 }
 
 .tasknotes-settings__card-secondary-text {
-    font-size: 12px !important;
-    color: var(--text-muted) !important;
+    font-size: 12px;
+    color: var(--text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -213,16 +213,16 @@ select.tasknotes-settings__card-input {
 }
 
 .tasknotes-settings__card-input[type="checkbox"] {
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px !important;
-    min-height: 16px !important;
-    max-width: 16px !important;
-    max-height: 16px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    flex-shrink: 0 !important;
-    align-self: center !important;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+    max-width: 16px;
+    max-height: 16px;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    align-self: center;
 }
 
 .tasknotes-settings__card-input[type="color"] {
@@ -293,7 +293,7 @@ select.tasknotes-settings__card-input {
 .tasknotes-settings__card-header-btn {
     width: 20px;
     height: 20px;
-    border: none !important;
+    border: none;
     background: transparent;
     color: var(--text-muted);
     cursor: var(--cursor, pointer);
@@ -301,15 +301,15 @@ select.tasknotes-settings__card-input {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: none !important;
-    outline: none !important;
+    box-shadow: none;
+    outline: none;
     padding: 0;
 }
 
 .tasknotes-settings__card-header-btn:focus {
-    box-shadow: none !important;
-    outline: none !important;
-    border: none !important;
+    box-shadow: none;
+    outline: none;
+    border: none;
 }
 
 .tasknotes-settings__card-header-btn:hover {

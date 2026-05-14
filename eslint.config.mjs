@@ -127,6 +127,30 @@ const pluginReviewRules = {
 	},
 };
 
+const sourceFilePatterns = [
+	"src/**/*.ts",
+	"src/**/*.tsx",
+	"src/**/*.js",
+	"src/**/*.jsx",
+];
+
+const obsidianRecommendedConfig = obsidianmd.configs.recommended.map((config) => {
+	const hasUnscopedObsidianRules =
+		config.files === undefined &&
+		Object.keys(config.rules ?? {}).some((ruleName) =>
+			ruleName.startsWith("obsidianmd/")
+		);
+
+	if (!hasUnscopedObsidianRules) {
+		return config;
+	}
+
+	return {
+		...config,
+		files: sourceFilePatterns,
+	};
+});
+
 export default [
 	{
 		ignores: [
@@ -149,7 +173,7 @@ export default [
 
 	js.configs.recommended,
 
-	...obsidianmd.configs.recommended,
+	...obsidianRecommendedConfig,
 
 	{
 		files: ["src/**/*.ts"],

@@ -771,77 +771,101 @@
    ================================================ */
 
 .tasknotes-plugin .tn-gap-0 {
-    gap: 0;
+    --tn-gap-row: 0;
+    --tn-gap-column: 0;
+    gap: var(--tn-gap-row) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-xs {
-    gap: var(--tn-spacing-xs);
+    --tn-gap-row: var(--tn-spacing-xs);
+    --tn-gap-column: var(--tn-spacing-xs);
+    gap: var(--tn-gap-row) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-sm {
-    gap: var(--tn-spacing-sm);
+    --tn-gap-row: var(--tn-spacing-sm);
+    --tn-gap-column: var(--tn-spacing-sm);
+    gap: var(--tn-gap-row) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-md {
-    gap: var(--tn-spacing-md);
+    --tn-gap-row: var(--tn-spacing-md);
+    --tn-gap-column: var(--tn-spacing-md);
+    gap: var(--tn-gap-row) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-lg {
-    gap: var(--tn-spacing-lg);
+    --tn-gap-row: var(--tn-spacing-lg);
+    --tn-gap-column: var(--tn-spacing-lg);
+    gap: var(--tn-gap-row) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-xl {
-    gap: var(--tn-spacing-xl);
+    --tn-gap-row: var(--tn-spacing-xl);
+    --tn-gap-column: var(--tn-spacing-xl);
+    gap: var(--tn-gap-row) var(--tn-gap-column);
 }
 
 /* Column Gap */
 .tasknotes-plugin .tn-gap-x-0 {
-    column-gap: 0;
+    --tn-gap-column: 0;
+    gap: var(--tn-gap-row, 0) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-x-xs {
-    column-gap: var(--tn-spacing-xs);
+    --tn-gap-column: var(--tn-spacing-xs);
+    gap: var(--tn-gap-row, 0) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-x-sm {
-    column-gap: var(--tn-spacing-sm);
+    --tn-gap-column: var(--tn-spacing-sm);
+    gap: var(--tn-gap-row, 0) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-x-md {
-    column-gap: var(--tn-spacing-md);
+    --tn-gap-column: var(--tn-spacing-md);
+    gap: var(--tn-gap-row, 0) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-x-lg {
-    column-gap: var(--tn-spacing-lg);
+    --tn-gap-column: var(--tn-spacing-lg);
+    gap: var(--tn-gap-row, 0) var(--tn-gap-column);
 }
 
 .tasknotes-plugin .tn-gap-x-xl {
-    column-gap: var(--tn-spacing-xl);
+    --tn-gap-column: var(--tn-spacing-xl);
+    gap: var(--tn-gap-row, 0) var(--tn-gap-column);
 }
 
 /* Row Gap */
 .tasknotes-plugin .tn-gap-y-0 {
-    row-gap: 0;
+    --tn-gap-row: 0;
+    gap: var(--tn-gap-row) var(--tn-gap-column, 0);
 }
 
 .tasknotes-plugin .tn-gap-y-xs {
-    row-gap: var(--tn-spacing-xs);
+    --tn-gap-row: var(--tn-spacing-xs);
+    gap: var(--tn-gap-row) var(--tn-gap-column, 0);
 }
 
 .tasknotes-plugin .tn-gap-y-sm {
-    row-gap: var(--tn-spacing-sm);
+    --tn-gap-row: var(--tn-spacing-sm);
+    gap: var(--tn-gap-row) var(--tn-gap-column, 0);
 }
 
 .tasknotes-plugin .tn-gap-y-md {
-    row-gap: var(--tn-spacing-md);
+    --tn-gap-row: var(--tn-spacing-md);
+    gap: var(--tn-gap-row) var(--tn-gap-column, 0);
 }
 
 .tasknotes-plugin .tn-gap-y-lg {
-    row-gap: var(--tn-spacing-lg);
+    --tn-gap-row: var(--tn-spacing-lg);
+    gap: var(--tn-gap-row) var(--tn-gap-column, 0);
 }
 
 .tasknotes-plugin .tn-gap-y-xl {
-    row-gap: var(--tn-spacing-xl);
+    --tn-gap-row: var(--tn-spacing-xl);
+    gap: var(--tn-gap-row) var(--tn-gap-column, 0);
 }
 
 /* ================================================
@@ -861,7 +885,7 @@
 }
 
 .tasknotes-plugin .tn-hidden {
-    display: none !important;
+    display: none;
 }
 
 .tasknotes-plugin .tn-table {
@@ -2032,7 +2056,7 @@
     .tasknotes-plugin .tn-transition-colors,
     .tasknotes-plugin .tn-transition-opacity,
     .tasknotes-plugin .tn-transition-transform {
-        transition: none !important;
+        transition: none;
     }
     
     .tasknotes-plugin .tn-animate-spin,
@@ -2040,11 +2064,11 @@
     .tasknotes-plugin .tn-animate-bounce,
     .tasknotes-plugin .tn-animate-fade-in,
     .tasknotes-plugin .tn-animate-slide-up {
-        animation: none !important;
+        animation: none;
     }
     
     .tasknotes-plugin .tn-hover-scale:hover {
-        transform: none !important;
+        transform: none;
     }
 }
 
@@ -2303,6 +2327,6 @@
 }
 
 /* Hide CodeMirror widgetBuffer image artifacts only */
-.cm-content > .cm-line:has(.cm-widget-cursor-fix) img.cm-widgetBuffer {
-    display: none !important;
+.cm-content .cm-widgetBuffer {
+    display: none;
 }

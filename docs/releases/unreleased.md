@@ -23,3 +23,8 @@ Example:
 ```
 
 -->
+
+## Changed
+
+- Improved local lint checks so package and CSS issues reported by Obsidian's online review can be caught before submission.
+- Cleaned up stylesheet compatibility issues reported by Obsidian's online review without changing the intended TaskNotes appearance.

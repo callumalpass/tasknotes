@@ -82,29 +82,6 @@
     margin-top: var(--tn-spacing-sm);
 }
 
-/* Overview Card */
-.tasknotes-plugin .stats-view__overview-card {
-    background: var(--tn-background-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-md);
-    padding: var(--tn-spacing-md);
-    text-align: center;
-    transition: border-color 0.15s ease-in-out;
-}
-
-.tasknotes-plugin .stats-view__overview-card:hover {
-    border-color: var(--tn-accent-color);
-}
-
-/* Overview Values */
-.tasknotes-plugin .stats-view__overview-value {
-    font-size: var(--tn-font-size-xxl);
-    font-weight: var(--tn-font-weight-bold);
-    color: var(--tn-accent-color);
-    margin-bottom: var(--tn-spacing-xs);
-    line-height: 1.2;
-}
-
 .tasknotes-plugin .stats-view__overview-label {
     font-size: var(--tn-font-size-sm);
     font-weight: var(--tn-font-weight-medium);
@@ -165,19 +142,6 @@
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--tn-spacing-md);
     margin-top: var(--tn-spacing-sm);
-}
-
-/* Project Item */
-.tasknotes-plugin .stats-view__project-item {
-    background: var(--tn-background-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-md);
-    padding: var(--tn-spacing-md);
-    transition: all 0.15s ease-in-out;
-}
-
-.tasknotes-plugin .stats-view__project-item:hover {
-    border-color: var(--tn-accent-color);
 }
 
 /* Project Header */

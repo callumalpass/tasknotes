@@ -7,8 +7,8 @@
  */
 
 .tasknotes-relationships-widget {
-    display: block !important;
-    width: 100% !important;
+    display: block;
+    width: 100%;
     margin: 1.5em 0 2em 0;
     padding: 1em;
     border: 1px dashed var(--background-modifier-border-hover);
@@ -17,7 +17,7 @@
     z-index: 10; /* Higher z-index to allow dropdowns to appear above other content */
 
     /* Allow filter dropdowns to extend beyond widget boundaries */
-    overflow: visible !important;
+    overflow: visible;
 }
 
 .tasknotes-plugin .relationships__bases-container {

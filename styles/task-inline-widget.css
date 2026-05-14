@@ -10,7 +10,7 @@
 
 /* Wrapper for inline task link widgets - ensures proper inline display with bullets */
 .tasknotes-plugin.tasknotes-inline-widget {
-    display: inline !important;
+    display: inline;
     vertical-align: baseline;
     line-height: inherit;
     /* Prevent wrapper from causing line breaks */
@@ -46,6 +46,7 @@
     /* Ensure proper vertical alignment with text */
     vertical-align: baseline;
     line-height: 1.4;
+    animation: tn-fadeInTaskPreview 0.2s ease-out;
 }
 
 /* Hide when cursor is on the same line */
@@ -249,7 +250,7 @@
     /* Visual styling */
     background: transparent;
     color: var(--text-muted);
-    border: none !important;
+    border: none;
     box-shadow: none;
     border-radius: 3px;
     
@@ -321,7 +322,6 @@
     white-space: nowrap;
     color: var(--text-normal);
     font-weight: 500;
-    margin: 0;
     min-width: 0; /* Allow flex shrinking */
     max-width: min(600px, 80vw); /* Responsive max-width for longer titles */
     flex-shrink: 1; /* Allow shrinking if needed */
@@ -406,11 +406,6 @@
 /* =================================================================
    ANIMATIONS
    ================================================================= */
-
-/* Animation for appearance */
-.tasknotes-plugin .task-inline-preview {
-    animation: tn-fadeInTaskPreview 0.2s ease-out;
-}
 
 @keyframes tn-fadeInTaskPreview {
     from {

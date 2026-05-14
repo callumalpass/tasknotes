@@ -80,12 +80,12 @@
 .tn-bases-tasknotes-list .task-group .task-group-toggle svg {
     color: var(--tn-text-normal);
     transition: transform 0.2s ease;
-    transform: rotate(90deg) !important;
+    transform: rotate(90deg);
 }
 
 /* Collapsed state - chevron pointing right */
 .tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle svg {
-    transform: rotate(0deg) !important;
+    transform: rotate(0deg);
 }
 
 /* Hide task cards when collapsed */

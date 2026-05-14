@@ -19,5 +19,5 @@
 
 .task-card-note-widget__card {
     /* Reset margins for the inner task card */
-    margin: 0 !important;
+    margin: 0;
 }

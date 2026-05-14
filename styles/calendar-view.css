@@ -235,7 +235,7 @@
 /* Calendar Day - Today State */
 .tasknotes-plugin .calendar-view__day--today,
 .tasknotes-plugin .mini-calendar-view__day--today {
-    background: var(--tn-interactive-hover) !important;
+    background: var(--tn-interactive-hover);
     color: var(--tn-interactive-accent);
     font-weight: 600;
     box-shadow: none;
@@ -357,6 +357,10 @@
     bottom: 4px;
     left: 70%;
     transform: translateX(-50%);
+    background-color: var(--tn-color-daily-note);
+    width: 7px;
+    height: 7px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 /* Hover effects for content indicators */
@@ -416,15 +420,6 @@
     width: 8px;
     height: 8px;
     opacity: 0.8;
-}
-
-/* Daily Note Indicator */
-.tasknotes-plugin .calendar-view__content-indicator--daily-note,
-.tasknotes-plugin .mini-calendar-view__content-indicator--daily-note {
-    background-color: var(--tn-color-daily-note);
-    width: 7px;
-    height: 7px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 /* Hover tooltip for indicators */
@@ -682,6 +677,7 @@
 
 .tasknotes-plugin .mini-calendar-view__grid-header {
     background: transparent;
+    grid-template-columns: 40px repeat(7, 1fr);
 }
 
 .tasknotes-plugin .mini-calendar-view__day-header {
@@ -693,6 +689,7 @@
 
 .tasknotes-plugin .mini-calendar-view__week {
     gap: 1px;
+    grid-template-columns: 40px repeat(7, 1fr);
 }
 
 .tasknotes-plugin .mini-calendar-view__day {
@@ -708,7 +705,7 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today {
-    background: none !important;
+    background: none;
     color: var(--tn-text-on-accent);
 }
 
@@ -921,9 +918,9 @@
 
 /* Drag over state for mini calendar days */
 .tasknotes-plugin .mini-calendar-view__day--dragover {
-    background-color: var(--tn-interactive-accent-hover) !important;
-    border-color: var(--tn-interactive-accent) !important;
-    color: var(--tn-text-on-accent) !important;
+    background-color: var(--tn-interactive-accent-hover);
+    border-color: var(--tn-interactive-accent);
+    color: var(--tn-text-on-accent);
     transform: scale(1.1);
     box-shadow: var(--tn-shadow-light);
     z-index: 10;
@@ -934,15 +931,6 @@
 /* ================================================
    MINI CALENDAR WEEK NUMBERS & SELECTION
    ================================================ */
-
-/* Update grid layout to include week number column */
-.tasknotes-plugin .mini-calendar-view__grid-header {
-    grid-template-columns: 40px repeat(7, 1fr);
-}
-
-.tasknotes-plugin .mini-calendar-view__week {
-    grid-template-columns: 40px repeat(7, 1fr);
-}
 
 /* Week number header cell */
 .tasknotes-plugin .mini-calendar-view__week-header {
@@ -1044,19 +1032,19 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--intensity-low {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 25%, var(--tn-bg-primary)) !important;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 25%, var(--tn-bg-primary));
 }
 
 .tasknotes-plugin .mini-calendar-view__day--intensity-medium {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 40%, var(--tn-bg-primary)) !important;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 40%, var(--tn-bg-primary));
 }
 
 .tasknotes-plugin .mini-calendar-view__day--intensity-high {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 55%, var(--tn-bg-primary)) !important;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 55%, var(--tn-bg-primary));
 }
 
 .tasknotes-plugin .mini-calendar-view__day--intensity-very-high {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 70%, var(--tn-bg-primary)) !important;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 70%, var(--tn-bg-primary));
     color: var(--tn-text-on-accent);
     font-weight: 600;
 }
@@ -1066,5 +1054,5 @@
 .tasknotes-plugin .mini-calendar-view__day--intensity-medium:hover,
 .tasknotes-plugin .mini-calendar-view__day--intensity-high:hover,
 .tasknotes-plugin .mini-calendar-view__day--intensity-very-high:hover {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 35%, var(--tn-interactive-hover)) !important;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 35%, var(--tn-interactive-hover));
 }

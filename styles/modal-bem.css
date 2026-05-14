@@ -403,7 +403,7 @@
 }
 
 .tasknotes-plugin .modal-form__input--interval {
-    width: 80px !important;
+    width: 80px;
     min-width: 60px;
     flex-shrink: 0;
     text-align: center;

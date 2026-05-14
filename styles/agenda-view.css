@@ -278,7 +278,7 @@
 
 /* Chevron/toggle styles for agenda day headers (consistent with TaskList view) */
 .tasknotes-plugin .agenda-view__day-header .task-group-toggle {
-    display: contents;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 20px;

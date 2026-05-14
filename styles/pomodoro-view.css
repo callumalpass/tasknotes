@@ -79,7 +79,7 @@
 }
 
 .tasknotes-plugin .pomodoro-view__progress-circle--warning {
-    stroke: var(--tn-color-error) !important;
+    stroke: var(--tn-color-error);
     animation: tn-progress-pulse 1s infinite;
 }
 
@@ -580,8 +580,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--tiny .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 2rem !important;
-    font-weight: 700 !important;
+    font-size: 2rem;
+    font-weight: 700;
 }
 
 .tasknotes-plugin .pomodoro-view--extra-narrow {
@@ -590,8 +590,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--extra-narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 2.2rem !important;
-    font-weight: 650 !important;
+    font-size: 2.2rem;
+    font-weight: 650;
 }
 
 /* Very narrow view (≤ 300px) - Minimal layout */
@@ -610,8 +610,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--very-narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 2.5rem !important;
-    font-weight: 600 !important;
+    font-size: 2.5rem;
+    font-weight: 600;
 }
 
 .tasknotes-plugin .pomodoro-view--very-narrow .pomodoro-view__time-controls {
@@ -669,8 +669,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 3rem !important;
-    font-weight: 600 !important;
+    font-size: 3rem;
+    font-weight: 600;
 }
 
 .tasknotes-plugin .pomodoro-view--narrow .pomodoro-view__time-controls {
@@ -705,8 +705,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--small .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 3.2rem !important;
-    font-weight: 550 !important;
+    font-size: 3.2rem;
+    font-weight: 550;
 }
 
 .tasknotes-plugin .pomodoro-view--small .pomodoro-view__primary-controls {
@@ -720,8 +720,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--medium-small .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 3.6rem !important;
-    font-weight: 500 !important;
+    font-size: 3.6rem;
+    font-weight: 500;
 }
 
 /* Medium view (≤ 600px) - Standard responsive adjustments */
@@ -731,8 +731,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--medium .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 4rem !important;
-    font-weight: 500 !important;
+    font-size: 4rem;
+    font-weight: 500;
 }
 
 .tasknotes-plugin .pomodoro-view--medium .pomodoro-view__task-buttons {
@@ -746,8 +746,8 @@
 }
 
 .tasknotes-plugin .pomodoro-view.pomodoro-view--wide .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 4.5rem !important;
-    font-weight: 400 !important;
+    font-size: 4.5rem;
+    font-weight: 400;
 }
 
 /* Task card responsiveness */

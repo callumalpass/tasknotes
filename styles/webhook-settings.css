@@ -41,12 +41,13 @@
   border-radius: 8px;
   padding: 0;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease, transform 0.2s ease;
 }
 
 .tasknotes-webhook-card:hover {
   border-color: var(--interactive-accent);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Webhook Header */
@@ -98,16 +99,15 @@
   border-radius: 16px;
   font-size: 0.8rem;
   font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .tasknotes-webhook-status-indicator.active {
-  background: var(--color-green-rgb);
   background: rgba(var(--color-green-rgb), 0.15);
   color: var(--color-green);
 }
 
 .tasknotes-webhook-status-indicator.inactive {
-  background: var(--color-red-rgb);
   background: rgba(var(--color-red-rgb), 0.15);
   color: var(--color-red);
 }
@@ -563,17 +563,4 @@
 .tasknotes-webhook-modal-btn:focus {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
-}
-
-/* Animation for status changes */
-.tasknotes-webhook-status-indicator {
-  transition: all 0.3s ease;
-}
-
-.tasknotes-webhook-card {
-  transition: all 0.2s ease, transform 0.2s ease;
-}
-
-.tasknotes-webhook-card:hover {
-  transform: translateY(-1px);
 }

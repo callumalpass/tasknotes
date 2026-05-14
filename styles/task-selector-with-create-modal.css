@@ -14,14 +14,14 @@
 
 /* Remove task card hover/background styling - let suggestion item handle it */
 .task-selector-with-create-modal .task-card {
-    background: transparent !important;
-    box-shadow: none !important;
+    background: transparent;
+    box-shadow: none;
     padding: var(--tn-spacing-sm) 0;
     margin: 0;
 }
 
 .task-selector-with-create-modal .task-card:hover {
-    background: transparent !important;
+    background: transparent;
 }
 
 /* Hide context menu icon in modal suggestions */

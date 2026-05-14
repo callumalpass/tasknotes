@@ -24,11 +24,6 @@
 }
 
 
-/* Filter toggle base (positioning for badge) */
-.tasknotes-plugin .filter-bar__filter-toggle {
-  position: relative; /* context for badge */
-}
-
 /* Active filter badge dot */
 .tasknotes-plugin .filter-bar__filter-toggle.has-active-filters::after {
   content: '';
@@ -43,13 +38,13 @@
 
 /* Icon + Text Button Styling */
 .tasknotes-plugin .filter-bar__top-controls .has-text-icon {
-  display: flex !important;
+  display: flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 6px !important;
+  padding: 2px 6px;
   min-height: var(--input-height);
   border-radius: var(--radius-s);
-  width: auto !important; /* Override any fixed width */
+  width: auto; /* Override any fixed width */
 }
 
 .tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-icon {
@@ -74,8 +69,8 @@
 
 /* Override button-specific hover states for consistent text+icon button behavior */
 .tasknotes-plugin .filter-bar__top-controls .has-text-icon:hover {
-  background: var(--interactive-hover) !important;
-  color: var(--text-normal) !important;
+  background: var(--interactive-hover);
+  color: var(--text-normal);
 }
 
 /* Clear all button in Filter section header */
@@ -133,8 +128,8 @@
   justify-content: center;
   vertical-align: top;
   /* Transparent background */
-  background: transparent !important;
-  border: none !important;
+  background: transparent;
+  border: none;
 }
 
 /* Ensure the close icon is properly centered */
@@ -232,6 +227,7 @@
 }
 
 .tasknotes-plugin .filter-bar__filter-toggle {
+    position: relative; /* context for badge */
     padding: var(--tn-spacing-xs);
     background: transparent;
     border: none;
@@ -248,7 +244,7 @@
 }
 
 .tasknotes-plugin .filter-bar__filter-toggle:hover {
-    background: var(--interactive-hover) !important;
+    background: var(--interactive-hover);
     color: var(--text-normal);
 }
 
@@ -273,7 +269,7 @@
 }
 
 .tasknotes-plugin .filter-bar__templates-button:hover {
-    background: var(--interactive-hover) !important;
+    background: var(--interactive-hover);
     color: var(--text-normal);
     transform: none;
     box-shadow: none;
@@ -303,7 +299,7 @@
     font-size: var(--font-ui-small);
     transition: all 0.2s ease;
     height: var(--tn-button-height-md); /* Consistent height */
-    min-width: 0 !important; /* Override any default min-width */
+    min-width: 0; /* Override any default min-width */
     width: auto; /* Allow natural width */
 }
 
@@ -496,7 +492,7 @@
     flex: 1;
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     background: none;
-    border: none !important;
+    border: none;
     box-shadow: none;
     outline: none;
     color: var(--text-normal);
@@ -649,7 +645,7 @@
     border: none;
     border-radius: var(--radius-s);
     color: var(--text-muted);
-    cursor: pointer !important;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -829,7 +825,7 @@
     border-radius: var(--radius-s);
     color: var(--text-normal);
     font-size: var(--font-ui-small);
-	width: auto;
+    width: 100%;
     height: 28px;
     transition: background-color 0.2s ease;
 }
@@ -870,16 +866,6 @@
     border-radius: var(--radius-s);
     padding: 0 var(--tn-spacing-xs);
     transition: all 0.2s ease;
-}
-
-.tasknotes-plugin .filter-bar__value-input {
-    border: none;
-    background: transparent;
-    padding: var(--tn-spacing-xs);
-    color: var(--text-normal);
-    font-size: var(--font-ui-small);
-    width: 100%;
-    height: 28px;
 }
 
 .tasknotes-plugin .filter-bar__value-input:focus {
@@ -1046,32 +1032,32 @@
 /* Hide button text on narrow panes (container width-based responsiveness) */
 @container (max-width: 500px) {
     .tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-text {
-        display: none !important;
+        display: none;
     }
     
     .tasknotes-plugin .filter-bar__top-controls .has-text-icon {
-        padding: 2px 4px !important;
+        padding: 2px 4px;
         min-width: var(--input-height);
         justify-content: center;
     }
     
     /* Hide Views button text and show only chevron icon */
     .tasknotes-plugin .filter-bar__templates-button {
-        padding: 2px 4px !important;
+        padding: 2px 4px;
         min-width: var(--input-height);
         justify-content: center;
         width: var(--input-height);
-        font-size: 0 !important; /* Hide text */
+        font-size: 0; /* Hide text */
     }
     
     .tasknotes-plugin .filter-bar__templates-button .filter-bar__chevron-container {
-        display: flex !important;
+        display: flex;
     }
     
     /* Adjust search input to take more space when buttons are icon-only */
     .tasknotes-plugin .filter-bar__search-input {
         flex-grow: 2;
-        min-width: 0 !important; /* Force override any inherited min-width */
+        min-width: 0; /* Force override any inherited min-width */
         flex-basis: 0; /* Start from zero width and grow */
     }
 }
@@ -1079,32 +1065,32 @@
 /* Fallback for browsers without container query support */
 @media (max-width: 700px) {
     .tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-text {
-        display: none !important;
+        display: none;
     }
     
     .tasknotes-plugin .filter-bar__top-controls .has-text-icon {
-        padding: 2px 4px !important;
+        padding: 2px 4px;
         min-width: var(--input-height);
         justify-content: center;
     }
     
     /* Hide Views button text and show only chevron icon */
     .tasknotes-plugin .filter-bar__templates-button {
-        padding: 2px 4px !important;
+        padding: 2px 4px;
         min-width: var(--input-height);
         justify-content: center;
         width: var(--input-height);
-        font-size: 0 !important; /* Hide text */
+        font-size: 0; /* Hide text */
     }
     
     .tasknotes-plugin .filter-bar__templates-button .filter-bar__chevron-container {
-        display: flex !important;
+        display: flex;
     }
     
     /* Adjust search input to take more space when buttons are icon-only */
     .tasknotes-plugin .filter-bar__search-input {
         flex-grow: 2;
-        min-width: 0 !important; /* Force override any inherited min-width */
+        min-width: 0; /* Force override any inherited min-width */
         flex-basis: 0; /* Start from zero width and grow */
     }
 }
@@ -1243,4 +1229,3 @@
     font-weight: bold;
     color: var(--color-accent);
 }
-
