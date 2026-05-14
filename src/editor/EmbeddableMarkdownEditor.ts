@@ -340,14 +340,6 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	buildLocalExtensions(): Extension[] {
 		const extensions = super.buildLocalExtensions();
 
-		// Explicitly hide line numbers with CSS
-		extensions.push(
-			EditorView.theme({
-				".cm-lineNumbers": { display: "none !important" },
-				".cm-gutters": { display: "none !important" },
-			})
-		);
-
 		extensions.push(
 			tooltips({
 				parent: activeDocument.body,

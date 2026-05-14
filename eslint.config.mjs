@@ -176,6 +176,40 @@ const pluginReviewRules = {
 				};
 			},
 		},
+		"no-codemirror-theme-styles": {
+			meta: {
+				type: "problem",
+				docs: {
+					description:
+						"Disallow static CodeMirror theme styles in TypeScript; use stylesheet selectors instead.",
+				},
+				messages: {
+					noCodeMirrorThemeStyles:
+						"Move CodeMirror styling out of TypeScript and into the plugin stylesheet.",
+				},
+				schema: [],
+			},
+			create(context) {
+				return {
+					CallExpression(node) {
+						const { callee } = node;
+						if (
+							callee.type === "MemberExpression" &&
+							!callee.computed &&
+							callee.object.type === "Identifier" &&
+							callee.object.name === "EditorView" &&
+							callee.property.type === "Identifier" &&
+							callee.property.name === "theme"
+						) {
+							context.report({
+								node: callee,
+								messageId: "noCodeMirrorThemeStyles",
+							});
+						}
+					},
+				};
+			},
+		},
 	},
 };
 
@@ -277,6 +311,7 @@ export default [
 			"@microsoft/sdl/no-inner-html": "warn",
 			"plugin-review/require-eslint-directive-description": "warn",
 			"plugin-review/no-network-interval": "warn",
+			"plugin-review/no-codemirror-theme-styles": "warn",
 			"obsidianmd/no-static-styles-assignment": "warn",
 			"obsidianmd/rule-custom-message": "warn",
 			"obsidianmd/ui/sentence-case": "warn",

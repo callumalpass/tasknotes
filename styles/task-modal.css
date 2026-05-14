@@ -61,6 +61,11 @@
     border-left-color: var(--text-normal);
 }
 
+.details-markdown-editor .cm-lineNumbers,
+.details-markdown-editor .cm-gutters {
+    display: none;
+}
+
 /* Placeholder styling */
 .details-markdown-editor .cm-placeholder {
     color: var(--text-faint);
@@ -128,6 +133,11 @@
 .nl-markdown-editor .cm-cursor,
 .nl-markdown-editor .cm-dropCursor {
     border-left-color: var(--text-normal);
+}
+
+.nl-markdown-editor .cm-lineNumbers,
+.nl-markdown-editor .cm-gutters {
+    display: none;
 }
 
 
