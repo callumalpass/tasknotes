@@ -28,3 +28,7 @@ Example:
 
 - Made the markdown editor areas in task modals easier to click and focus.
 - Reduced false-positive plugin review warnings by making background auto-export and auto-archive schedulers non-overlapping and tightening type/string conversion paths.
+- (#1823) Fixed zero-duration timed external calendar events rendering on multiple days in list-style calendar views
+  - Adds a minimal display duration before passing point-in-time external events to FullCalendar
+  - Preserves the original provider event data for context menus and debugging
+- Google Calendar task descriptions now use mobile-friendly plain text for Obsidian links and display labels for wiki-style project/context links.
