@@ -1733,6 +1733,11 @@ export const en: TranslationTree = {
 					description:
 						"When enabled, uses the task's time estimate (duration) instead of due date for the calendar event end time. This is useful for GTD workflows where scheduled + duration represents work planning, while due date represents deadlines.",
 				},
+				excludeCompleted: {
+					name: "Exclude completed tasks",
+					description:
+						"When enabled, completed tasks are omitted from ICS exports. Completed statuses are taken from your task statuses settings.",
+				},
 				exportNow: {
 					name: "Export now",
 					description: "Manually trigger an immediate export",

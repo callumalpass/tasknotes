@@ -112,6 +112,9 @@ export class AutoExportService {
 			// Generate ICS content with export options from settings
 			const exportOptions = {
 				useDurationForExport: this.plugin.settings.icsIntegration.useDurationForExport,
+				excludeCompleted:
+					this.plugin.settings.icsIntegration.excludeCompletedFromExport ?? false,
+				completedStatuses: this.plugin.statusManager.getCompletedStatuses(),
 			};
 			const icsContent = CalendarExportService.generateMultipleTasksICSContent(
 				allTasks,

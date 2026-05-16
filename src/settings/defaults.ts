@@ -195,6 +195,7 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	autoExportPath: "tasknotes-calendar.ics",
 	autoExportInterval: 60, // 60 minutes by default
 	useDurationForExport: false, // Preserve existing behavior: use due date as DTEND
+	excludeCompletedFromExport: false, // Preserve existing behavior: include completed tasks
 	// Task creation defaults
 	useICSEndAsDue: false, // Preserve existing behavior: don't set due date from ICS events
 };

@@ -188,7 +188,12 @@ export function createTaskNotesCommandDefinitions(
 					);
 					CalendarExportService.downloadAllTasksICSFile(
 						allTasks,
-						ctx.i18n.translate.bind(ctx.i18n)
+						ctx.i18n.translate.bind(ctx.i18n),
+						{
+							excludeCompleted:
+								ctx.settings.icsIntegration.excludeCompletedFromExport ?? false,
+							completedStatuses: ctx.statusManager.getCompletedStatuses(),
+						}
 					);
 				} catch (error) {
 					console.error("Error exporting all tasks as ICS:", error);

@@ -11,6 +11,8 @@ export interface CalendarURLOptions {
 
 export interface ICSExportOptions {
 	useDurationForExport?: boolean; // Use timeEstimate (duration) instead of due date for DTEND
+	excludeCompleted?: boolean; // Exclude completed tasks from multi-task exports
+	completedStatuses?: string[]; // Status values considered completed when excludeCompleted is enabled
 }
 
 type TranslateFn = (key: TranslationKey, variables?: Record<string, unknown>) => string;
@@ -554,6 +556,7 @@ export class CalendarExportService {
 			.toISOString()
 			.replace(/[-:]/g, "")
 			.replace(/\.\d{3}/, "");
+		const exportTasks = this.filterTasksForExport(tasks, options);
 
 		const lines = [
 			"BEGIN:VCALENDAR",
@@ -563,7 +566,7 @@ export class CalendarExportService {
 		];
 
 		// Add each task as a VEVENT
-		tasks.forEach((task, index) => {
+		exportTasks.forEach((task, index) => {
 			const uid = `${task.path.replace(/[^a-zA-Z0-9]/g, "-")}-${index}-${Date.now()}@tasknotes`;
 
 			lines.push("BEGIN:VEVENT");
@@ -661,6 +664,15 @@ export class CalendarExportService {
 
 		// Join lines and ensure proper ICS line folding (max 75 chars per line)
 		return this.foldICSLines(lines.join("\r\n"));
+	}
+
+	private static filterTasksForExport(tasks: TaskInfo[], options?: ICSExportOptions): TaskInfo[] {
+		if (!options?.excludeCompleted) {
+			return tasks;
+		}
+
+		const completedStatuses = new Set(options.completedStatuses?.length ? options.completedStatuses : ["done"]);
+		return tasks.filter((task) => !completedStatuses.has(task.status));
 	}
 
 	/**

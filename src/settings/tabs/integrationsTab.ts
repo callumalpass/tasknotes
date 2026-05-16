@@ -1376,6 +1376,21 @@ export function renderIntegrationsTab(
 					})
 				);
 
+				group.addSetting((setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.integrations.autoExport.excludeCompleted.name"),
+						desc: translate(
+							"settings.integrations.autoExport.excludeCompleted.description"
+						),
+						getValue: () =>
+							plugin.settings.icsIntegration.excludeCompletedFromExport ?? false,
+						setValue: async (value: boolean) => {
+							plugin.settings.icsIntegration.excludeCompletedFromExport = value;
+							save();
+						},
+					})
+				);
+
 				// Manual export trigger button
 				group.addSetting((setting) =>
 					void configureButtonSetting(setting, {
