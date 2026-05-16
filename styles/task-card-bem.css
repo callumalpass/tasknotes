@@ -1377,6 +1377,17 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     transform: translateY(0.1em);
 }
 
+.tasknotes-plugin .task-card--layout-inline .task-card__status-dot--icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tasknotes-plugin .task-card--layout-inline .task-card__status-dot--icon svg {
+    width: 100%;
+    height: 100%;
+}
+
 /* Smaller priority dot in inline mode */
 .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot {
     display: inline-block;
