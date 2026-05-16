@@ -21,6 +21,7 @@ import {
 } from "./sortOrderUtils";
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
+import { setElementDragImage } from "../utils/dragImage";
 import {
 	appendCachedFormulaOutputs,
 	evaluateBasesFormula,
@@ -2404,6 +2405,7 @@ export class KanbanView extends BasesViewBase {
 				task: task.path.split("/").pop(),
 				inCurrentTaskElements: this.currentTaskElements.has(task.path),
 			});
+			setElementDragImage(e, cardWrapper, "kanban-view__drag-image");
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
 			if (

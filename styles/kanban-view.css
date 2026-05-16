@@ -454,6 +454,14 @@
     border: 2px solid var(--tn-interactive-accent);
 }
 
+.tasknotes-plugin.kanban-view__drag-image {
+    position: absolute;
+    left: -10000px;
+    top: -10000px;
+    margin: 0;
+    pointer-events: none;
+}
+
 .tasknotes-plugin .kanban-view__card--dragging {
     opacity: 0.4;
     transform: scale(0.95);
