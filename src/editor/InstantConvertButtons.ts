@@ -1,5 +1,13 @@
-import { Extension, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
-import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/view";
+import { Extension, RangeSetBuilder } from "@codemirror/state";
+import {
+	Decoration,
+	DecorationSet,
+	EditorView,
+	PluginValue,
+	ViewPlugin,
+	ViewUpdate,
+	WidgetType,
+} from "@codemirror/view";
 import { setIcon, MarkdownView, Editor, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TasksPluginParser } from "../utils/TasksPluginParser";
@@ -148,52 +156,57 @@ class ConvertButtonWidget extends WidgetType {
 }
 
 export function createInstantConvertField(plugin: TaskNotesPlugin) {
-	return StateField.define<DecorationSet>({
-		create(): DecorationSet {
-			return Decoration.none;
-		},
+	return ViewPlugin.fromClass(
+		class implements PluginValue {
+			decorations: DecorationSet;
+			private enabled: boolean;
 
-		update(oldState: DecorationSet, transaction: Transaction): DecorationSet {
-			// Validate inputs
-			if (!plugin || !transaction) {
-				return Decoration.none;
+			constructor(view: EditorView) {
+				this.enabled = Boolean(plugin?.settings?.enableInstantTaskConvert);
+				this.decorations = this.enabled
+					? buildConvertButtonDecorations(view, plugin)
+					: Decoration.none;
 			}
 
-			if (!plugin.settings || !plugin.settings.enableInstantTaskConvert) {
-				return Decoration.none;
-			}
+			update(update: ViewUpdate): void {
+				const enabled = Boolean(plugin?.settings?.enableInstantTaskConvert);
 
-			// Safety check for transaction state
-			if (!transaction.state) {
-				console.warn("Invalid transaction state in instant convert field update");
-				return Decoration.none;
-			}
-
-			try {
-				// Only rebuild on document changes or when needed
-				if (!transaction.docChanged && oldState !== Decoration.none) {
-					return oldState.map(transaction.changes);
+				if (!enabled) {
+					this.enabled = false;
+					this.decorations = Decoration.none;
+					return;
 				}
 
-				return buildConvertButtonDecorations(transaction.state, plugin);
-			} catch (error) {
-				console.error("Error updating instant convert decorations:", error);
-				return Decoration.none;
+				if (!this.enabled || update.docChanged || update.viewportChanged) {
+					this.enabled = true;
+					this.decorations = buildConvertButtonDecorations(update.view, plugin);
+				}
 			}
 		},
-
-		provide(field: StateField<DecorationSet>): Extension {
-			return EditorView.decorations.from(field);
-		},
-	});
+		{
+			decorations: (value) => value.decorations,
+		}
+	);
 }
 
-function buildConvertButtonDecorations(
-	state: { doc: { lines: number; line(n: number): { text: string; to: number } } },
+type ConvertButtonDocument = {
+	lines: number;
+	length: number;
+	line(n: number): { number: number; from: number; text: string; to: number };
+	lineAt(pos: number): { number: number; from: number; text: string; to: number };
+};
+
+type ConvertButtonView = {
+	state: { doc: ConvertButtonDocument };
+	visibleRanges: readonly { from: number; to: number }[];
+};
+
+export function buildConvertButtonDecorations(
+	view: ConvertButtonView,
 	plugin: TaskNotesPlugin
 ): DecorationSet {
 	const builder = new RangeSetBuilder<Decoration>();
-	const doc = state.doc;
+	const doc = view.state?.doc;
 
 	// Validate inputs
 	if (!doc || !plugin) {
@@ -207,55 +220,82 @@ function buildConvertButtonDecorations(
 		return builder.finish();
 	}
 
-	// Process each line looking for checkbox tasks
-	for (let lineIndex = 0; lineIndex < doc.lines; lineIndex++) {
+	const seenLineNumbers = new Set<number>();
+	const ranges =
+		view.visibleRanges.length > 0
+			? view.visibleRanges
+			: [{ from: 0, to: doc.length }];
+
+	for (const range of ranges) {
 		try {
-			const line = doc.line(lineIndex + 1);
-			if (!line || typeof line.text !== "string") {
-				continue; // Skip invalid lines
-			}
+			let line = doc.lineAt(Math.max(0, Math.min(range.from, doc.length)));
 
-			const lineText = line.text;
-
-			// Validate line content length to prevent processing extremely long lines
-			if (lineText.length > 1000) {
-				continue; // Skip extremely long lines for performance
-			}
-
-			// Parse the line to see if it's any checkbox task
-			const taskLineInfo = TasksPluginParser.parseTaskLine(lineText);
-
-			if (taskLineInfo.isTaskLine && taskLineInfo.parsedData) {
-				// Additional validation for task data
-				if (
-					!taskLineInfo.parsedData.title ||
-					taskLineInfo.parsedData.title.trim().length === 0
-				) {
-					continue; // Skip tasks without valid titles
+			while (line && line.from <= range.to) {
+				if (!seenLineNumbers.has(line.number)) {
+					seenLineNumbers.add(line.number);
+					addConvertButtonDecorationForLine(builder, plugin, line);
 				}
 
-				// Validate line positions
-				if (typeof line.to !== "number" || line.to < 0) {
-					continue; // Skip lines with invalid positions
+				if (line.number >= doc.lines || line.to >= doc.length) {
+					break;
 				}
 
-				// Create a button widget at the end of the line
-				const widget = new ConvertButtonWidget(plugin, lineIndex);
-				const decoration = Decoration.widget({
-					widget: widget,
-					side: 1, // Position after the line content
-				});
-
-				builder.add(line.to, line.to, decoration);
+				line = doc.line(line.number + 1);
 			}
 		} catch (error) {
-			// Log error but continue processing other lines
-			console.debug("Error processing line", lineIndex, ":", error);
-			continue;
+			console.debug("Error processing visible range", range, ":", error);
 		}
 	}
 
 	return builder.finish();
+}
+
+function addConvertButtonDecorationForLine(
+	builder: RangeSetBuilder<Decoration>,
+	plugin: TaskNotesPlugin,
+	line: { number: number; text: string; to: number }
+): void {
+	try {
+		if (!line || typeof line.text !== "string") {
+			return;
+		}
+
+		const lineText = line.text;
+
+		// Validate line content length to prevent processing extremely long lines
+		if (lineText.length > 1000) {
+			return;
+		}
+
+		// Parse the line to see if it's any checkbox task
+		const taskLineInfo = TasksPluginParser.parseTaskLine(lineText);
+
+		if (taskLineInfo.isTaskLine && taskLineInfo.parsedData) {
+			// Additional validation for task data
+			if (
+				!taskLineInfo.parsedData.title ||
+				taskLineInfo.parsedData.title.trim().length === 0
+			) {
+				return;
+			}
+
+			// Validate line positions
+			if (typeof line.to !== "number" || line.to < 0) {
+				return;
+			}
+
+			// Create a button widget at the end of the line
+			const widget = new ConvertButtonWidget(plugin, line.number - 1);
+			const decoration = Decoration.widget({
+				widget: widget,
+				side: 1, // Position after the line content
+			});
+
+			builder.add(line.to, line.to, decoration);
+		}
+	} catch (error) {
+		console.debug("Error processing line", line.number, ":", error);
+	}
 }
 
 export function createInstantConvertButtons(plugin: TaskNotesPlugin): Extension {

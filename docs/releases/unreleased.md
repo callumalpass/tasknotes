@@ -51,6 +51,7 @@ Example:
 
 ## Fixed
 
+- ([#1681](https://github.com/callumalpass/tasknotes/issues/1681)) Reduced the cost of inline checkbox convert buttons by only scanning the visible editor range instead of the full document. Thanks to @en-ot for reporting this.
 - ([#1689](https://github.com/callumalpass/tasknotes/issues/1689)) Fixed task reminders added or rescheduled through direct frontmatter edits so the notification queue refreshes immediately and relative reminders recalculate from the latest task dates. Thanks to @garzonjav for reporting this.
 - ([#1693](https://github.com/callumalpass/tasknotes/issues/1693)) Fixed generated default Bases formulas so empty due and scheduled dates are checked with `.isEmpty()` instead of date-field truthiness. Thanks to @benoitjadinon for reporting this.
 - ([#1702](https://github.com/callumalpass/tasknotes/issues/1702)) Removed the forced bottom gap under TaskNotes custom Bases views, so calendar and other TaskNotes views can fill the available pane height. Thanks to @AudreyLooby for reporting this.

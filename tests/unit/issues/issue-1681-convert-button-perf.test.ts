@@ -1,45 +1,86 @@
 /**
- * Reproduction tests for issue #1681.
+ * Regression coverage for issue #1681.
  *
- * Reported behavior:
- * - "Show convert button next to checkboxes" causes significant CPU usage
- *   and cursor freezing when navigating files with many checkboxes in large
- *   vaults.
- * - Disabling the setting restores smooth navigation.
+ * The instant convert button should not scan every line in a large document
+ * when CodeMirror only needs decorations for the visible viewport.
  */
 
-describe('Issue #1681: Convert button decoration performance on large documents', () => {
-	it.skip('reproduces issue #1681 - buildConvertButtonDecorations scans all lines', () => {
-		// Simulate the performance issue: buildConvertButtonDecorations iterates
-		// over every line in the document (line 210), calling parseTaskLine per line.
+import { buildConvertButtonDecorations } from "../../../src/editor/InstantConvertButtons";
+import { TasksPluginParser } from "../../../src/utils/TasksPluginParser";
 
-		const checkboxLine = '- [ ] Task item';
-		const normalLine = 'Some regular text';
-		const lineCount = 5000; // Simulate a large document
+type MockLine = {
+	number: number;
+	from: number;
+	to: number;
+	text: string;
+};
 
-		// Build a mock document with many checkbox lines
-		const lines: string[] = [];
-		for (let i = 0; i < lineCount; i++) {
-			lines.push(i % 3 === 0 ? checkboxLine : normalLine);
-		}
+function createMockView(lines: string[], visibleStartLine: number, visibleEndLine: number) {
+	const mockLines: MockLine[] = [];
+	let offset = 0;
 
-		// Simulate the regex check that parseTaskLine does
-		const taskLineRegex = /^\s*[-*+]\s+\[.\]\s+/;
-		let parseCallCount = 0;
+	for (let index = 0; index < lines.length; index++) {
+		const text = lines[index];
+		mockLines.push({
+			number: index + 1,
+			from: offset,
+			to: offset + text.length,
+			text,
+		});
+		offset += text.length + 1;
+	}
 
-		const startTime = Date.now();
-		for (let i = 0; i < lines.length; i++) {
-			// This simulates what buildConvertButtonDecorations does for every line
-			parseCallCount++;
-			taskLineRegex.test(lines[i]);
-		}
-		const elapsed = Date.now() - startTime;
+	const doc = {
+		lines: mockLines.length,
+		length: Math.max(0, offset - 1),
+		line: (lineNumber: number) => {
+			const line = mockLines[lineNumber - 1];
+			if (!line) {
+				throw new Error(`No line ${lineNumber}`);
+			}
+			return line;
+		},
+		lineAt: (position: number) => {
+			const line = mockLines.find((candidate) => (
+				candidate.from <= position && candidate.to >= position
+			));
 
-		// Documents the issue: ALL lines are scanned, not just visible ones
-		expect(parseCallCount).toBe(lineCount);
+			if (line) {
+				return line;
+			}
 
-		// A viewport-aware approach would only scan ~50-100 visible lines
-		const viewportLineCount = 50;
-		expect(parseCallCount).toBeGreaterThan(viewportLineCount * 10);
+			return mockLines[mockLines.length - 1];
+		},
+	};
+
+	return {
+		state: { doc },
+		visibleRanges: [
+			{
+				from: doc.line(visibleStartLine).from,
+				to: doc.line(visibleEndLine).to,
+			},
+		],
+	};
+}
+
+describe("Issue #1681: convert button decorations stay viewport-scoped", () => {
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
+	it("parses only visible lines instead of every line in a large document", () => {
+		const lineCount = 5000;
+		const lines = Array.from({ length: lineCount }, (_, index) =>
+			index % 3 === 0 ? "- [ ] Task item" : "Some regular text"
+		);
+		const visibleLineCount = 50;
+		const view = createMockView(lines, 100, 149);
+		const parseSpy = jest.spyOn(TasksPluginParser, "parseTaskLine");
+
+		buildConvertButtonDecorations(view, {} as any);
+
+		expect(parseSpy).toHaveBeenCalledTimes(visibleLineCount);
+		expect(parseSpy).not.toHaveBeenCalledTimes(lineCount);
 	});
 });
