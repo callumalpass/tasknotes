@@ -1,11 +1,22 @@
  
+import { normalizePath } from "obsidian";
+import YAML from "yaml";
+
 import TaskNotesPlugin from "../main";
 import { FieldMapping } from "../types";
 import { UserMappedField } from "../types/settings";
 
+const DEFAULT_TYPES_FOLDER = "_types";
+
+type MdbaseYamlConfig = {
+	settings?: {
+		types_folder?: unknown;
+	};
+};
+
 /**
  * Service that generates mdbase-spec v0.2.0 type definition files
- * (mdbase.yaml and _types/task.md) at the vault root.
+ * (mdbase.yaml at the vault root and task.md in the configured types folder).
  *
  * Files are regenerated when settings change while the feature is enabled.
  * Files are NOT deleted when the feature is disabled.
@@ -28,32 +39,85 @@ export class MdbaseSpecService {
 	}
 
 	/**
-	 * Generate both mdbase.yaml and _types/task.md at the vault root.
+	 * Generate both mdbase.yaml and the task type definition.
 	 */
 	async generate(): Promise<void> {
 		try {
 			const vault = this.plugin.app.vault;
+			const typesFolder = await this.getTypesFolder();
+			const taskTypePath = `${typesFolder}/task.md`;
 
-			// Ensure _types folder exists
-			const typesFolderExists = await vault.adapter.exists("_types");
-			if (!typesFolderExists) {
-				await vault.createFolder("_types");
-			}
+			await this.ensureFolderPath(typesFolder);
 
 			const taskTypeDef = this.buildTaskTypeDef();
-			await this.writeFile("_types/task.md", taskTypeDef);
+			await this.writeFile(taskTypePath, taskTypeDef);
 
 			// Only create mdbase.yaml if it doesn't already exist so that
 			// user customisations (extra excludes, description, etc.) are preserved.
 			const mdbaseExists = await vault.adapter.exists("mdbase.yaml");
 			if (!mdbaseExists) {
-				const mdbaseYaml = this.buildMdbaseYaml();
+				const mdbaseYaml = this.buildMdbaseYaml(typesFolder);
 				await this.writeFile("mdbase.yaml", mdbaseYaml);
 			}
 
-			console.debug("[TaskNotes][mdbase-spec] Generated mdbase.yaml and _types/task.md");
+			console.debug(`[TaskNotes][mdbase-spec] Generated mdbase.yaml and ${taskTypePath}`);
 		} catch (error) {
 			console.error("[TaskNotes][mdbase-spec] Failed to generate files:", error);
+		}
+	}
+
+	private async getTypesFolder(): Promise<string> {
+		const vault = this.plugin.app.vault;
+		const mdbaseExists = await vault.adapter.exists("mdbase.yaml");
+		if (!mdbaseExists) {
+			return DEFAULT_TYPES_FOLDER;
+		}
+
+		try {
+			const content = await vault.adapter.read("mdbase.yaml");
+			const parsed = YAML.parse(content) as MdbaseYamlConfig | null;
+			return this.normalizeTypesFolder(parsed?.settings?.types_folder) ?? DEFAULT_TYPES_FOLDER;
+		} catch (error) {
+			console.warn("[TaskNotes][mdbase-spec] Failed to read mdbase.yaml:", error);
+			return DEFAULT_TYPES_FOLDER;
+		}
+	}
+
+	private normalizeTypesFolder(value: unknown): string | null {
+		if (typeof value !== "string") {
+			return null;
+		}
+
+		const trimmed = value.trim();
+		if (!trimmed || trimmed.startsWith("/") || trimmed === "." || trimmed === "..") {
+			return null;
+		}
+
+		const normalized = normalizePath(trimmed);
+		if (
+			!normalized ||
+			normalized === "." ||
+			normalized === ".." ||
+			normalized.startsWith("../") ||
+			normalized.includes("/../")
+		) {
+			return null;
+		}
+
+		return normalized;
+	}
+
+	private async ensureFolderPath(folderPath: string): Promise<void> {
+		const vault = this.plugin.app.vault;
+		const parts = folderPath.split("/").filter(Boolean);
+		let currentPath = "";
+
+		for (const part of parts) {
+			currentPath = currentPath ? `${currentPath}/${part}` : part;
+			const folderExists = await vault.adapter.exists(currentPath);
+			if (!folderExists) {
+				await vault.createFolder(currentPath);
+			}
 		}
 	}
 
@@ -74,16 +138,19 @@ export class MdbaseSpecService {
 	/**
 	 * Build the mdbase.yaml content.
 	 */
-	buildMdbaseYaml(): string {
+	buildMdbaseYaml(typesFolder = DEFAULT_TYPES_FOLDER): string {
+		const normalizedTypesFolder =
+			this.normalizeTypesFolder(typesFolder) ?? DEFAULT_TYPES_FOLDER;
+
 		return [
 			'spec_version: "0.2.0"',
 			'name: "TaskNotes"',
 			'description: "Task collection managed by TaskNotes for Obsidian"',
 			"settings:",
-			'  types_folder: "_types"',
+			`  types_folder: ${yamlQuote(normalizedTypesFolder)}`,
 			"  default_strict: false",
 			"  exclude:",
-			'    - "_types"',
+			`    - ${yamlQuote(normalizedTypesFolder)}`,
 			"",
 		].join("\n");
 	}

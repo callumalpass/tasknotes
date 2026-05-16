@@ -83,6 +83,7 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 			vault: {
 				adapter: {
 					exists: jest.fn().mockResolvedValue(false),
+					read: jest.fn().mockResolvedValue("{}"),
 					write: jest.fn().mockResolvedValue(undefined),
 				},
 				create: jest.fn().mockResolvedValue({}),
@@ -128,6 +129,14 @@ describe("MdbaseSpecService", () => {
 			const yaml = service.buildMdbaseYaml();
 
 			expect(yaml).toContain('- "_types"');
+		});
+
+		it("should include a custom types folder when provided", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const yaml = service.buildMdbaseYaml("System/_types");
+
+			expect(yaml).toContain('types_folder: "System/_types"');
+			expect(yaml).toContain('- "System/_types"');
 		});
 	});
 
@@ -679,6 +688,49 @@ describe("MdbaseSpecService", () => {
 			await service.generate();
 
 			expect(plugin.app.vault.createFolder).not.toHaveBeenCalled();
+		});
+
+		it("should use the types_folder from an existing mdbase.yaml", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(path === "mdbase.yaml")
+			);
+			plugin.app.vault.adapter.read.mockResolvedValue(
+				JSON.stringify({ settings: { types_folder: "System/_types" } })
+			);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("System");
+			expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("System/_types");
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"System/_types/task.md",
+				expect.any(String)
+			);
+			expect(plugin.app.vault.create).not.toHaveBeenCalledWith(
+				"mdbase.yaml",
+				expect.any(String)
+			);
+		});
+
+		it("should fall back to _types when mdbase.yaml has an unsafe types_folder", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(path === "mdbase.yaml")
+			);
+			plugin.app.vault.adapter.read.mockResolvedValue(
+				JSON.stringify({ settings: { types_folder: "../outside" } })
+			);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("_types");
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"_types/task.md",
+				expect.any(String)
+			);
 		});
 
 		it("should create new files when they do not exist", async () => {

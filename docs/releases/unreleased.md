@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- ([#1853](https://github.com/callumalpass/tasknotes/issues/1853), [#1775](https://github.com/callumalpass/tasknotes/pull/1775)) Respected an existing `mdbase.yaml` `types_folder` when regenerating mdbase task type definitions, so the generated `task.md` can live outside the vault-root `_types` folder. Thanks to @hangryscribe3 for requesting this and @aldrichtr for the implementation exploration.
 - ([#1858](https://github.com/callumalpass/tasknotes/issues/1858)) Included task body details in single-task HTTP API and MCP reads. Thanks to @vanillaflava for reporting and outlining the expected behavior.
 - ([#1859](https://github.com/callumalpass/tasknotes/issues/1859)) Clarified the Google Calendar setup guide for OAuth testing-mode `access_denied` errors. Thanks to @PE-Boy for reporting and @tiagoarroz for the workaround.
 - ([#1860](https://github.com/callumalpass/tasknotes/issues/1860)) Preserved accented characters in tags when converting checkbox tasks to TaskNotes. Thanks to @e-zz for reporting.
