@@ -87,6 +87,10 @@ export type CalendarScrollPosition = {
 	scrollLeft: number;
 };
 
+export type CalendarViewConfigReader = {
+	get(key: string): unknown;
+};
+
 const Calendar = FullCalendar;
 
 type Calendar = {
@@ -117,6 +121,36 @@ function isCalendarScrollPosition(value: unknown): value is CalendarScrollPositi
 		typeof value.scrollTop === "number" &&
 		typeof value.scrollLeft === "number"
 	);
+}
+
+export function readCalendarConfigValue(
+	config: CalendarViewConfigReader | undefined,
+	key: string
+): unknown {
+	if (!config || typeof config.get !== "function") {
+		return undefined;
+	}
+
+	const directValue = config.get(key);
+	if (directValue !== null && directValue !== undefined) {
+		return directValue;
+	}
+
+	const options = config.get("options");
+	if (!isRecord(options)) {
+		return undefined;
+	}
+
+	return options[key];
+}
+
+export function getCalendarConfigValue<T>(
+	config: CalendarViewConfigReader | undefined,
+	key: string,
+	fallback: T
+): T {
+	const value = readCalendarConfigValue(config, key);
+	return value === null || value === undefined ? fallback : (value as T);
 }
 
 /**
@@ -572,66 +606,67 @@ export class CalendarView extends BasesViewBase {
 			return "";
 		}
 		// Include all config values that affect the calendar
+		const read = (key: string) => readCalendarConfigValue(this.config, key);
 		const values: unknown[] = [
 			// Event toggles
-			this.config.get("showScheduled"),
-			this.config.get("showDue"),
-			this.config.get("showScheduledToDueSpan"),
-			this.config.get("showRecurring"),
-			this.config.get("showTimeEntries"),
-			this.config.get("showTimeblocks"),
-			this.config.get("showPropertyBasedEvents"),
+			read("showScheduled"),
+			read("showDue"),
+			read("showScheduledToDueSpan"),
+			read("showRecurring"),
+			read("showTimeEntries"),
+			read("showTimeblocks"),
+			read("showPropertyBasedEvents"),
 			// Layout options
-			this.config.get("calendarView"),
-			this.config.get("heightMode"),
-			this.config.get("customDayCount"),
-			this.config.get("listDayCount"),
-			this.config.get("slotMinTime"),
-			this.config.get("slotMaxTime"),
-			this.config.get("slotDuration"),
-			this.config.get("firstDay"),
-			this.config.get("weekNumbers"),
-			this.config.get("nowIndicator"),
-			this.config.get("showWeekends"),
-			this.config.get("showAllDaySlot"),
-			this.config.get("showTodayHighlight"),
-			this.config.get("todayColumnWidthMultiplier"),
-			this.config.get("selectMirror"),
-			this.config.get("timeFormat"),
-			this.config.get("scrollTime"),
-			this.config.get("eventMinHeight"),
-			this.config.get("slotEventOverlap"),
-			this.config.get("eventMaxStack"),
-			this.config.get("dayMaxEvents"),
-			this.config.get("dayMaxEventRows"),
+			read("calendarView"),
+			read("heightMode"),
+			read("customDayCount"),
+			read("listDayCount"),
+			read("slotMinTime"),
+			read("slotMaxTime"),
+			read("slotDuration"),
+			read("firstDay"),
+			read("weekNumbers"),
+			read("nowIndicator"),
+			read("showWeekends"),
+			read("showAllDaySlot"),
+			read("showTodayHighlight"),
+			read("todayColumnWidthMultiplier"),
+			read("selectMirror"),
+			read("timeFormat"),
+			read("scrollTime"),
+			read("eventMinHeight"),
+			read("slotEventOverlap"),
+			read("eventMaxStack"),
+			read("dayMaxEvents"),
+			read("dayMaxEventRows"),
 			// Property-based events
-			this.config.get("startDateProperty"),
-			this.config.get("endDateProperty"),
-			this.config.get("titleProperty"),
+			read("startDateProperty"),
+			read("endDateProperty"),
+			read("titleProperty"),
 			// Date navigation
-			this.config.get("initialDate"),
-			this.config.get("initialDateProperty"),
-			this.config.get("initialDateStrategy"),
+			read("initialDate"),
+			read("initialDateProperty"),
+			read("initialDateStrategy"),
 		];
 
 		// Include ICS calendar toggles
 		if (this.plugin.icsSubscriptionService) {
 			for (const sub of this.plugin.icsSubscriptionService.getSubscriptions()) {
-				values.push(this.config.get(`showICS_${sub.id}`));
+				values.push(read(`showICS_${sub.id}`));
 			}
 		}
 
 		// Include Google calendar toggles
 		if (this.plugin.googleCalendarService) {
 			for (const cal of this.plugin.googleCalendarService.getAvailableCalendars()) {
-				values.push(this.config.get(`showGoogleCalendar_${cal.id}`));
+				values.push(read(`showGoogleCalendar_${cal.id}`));
 			}
 		}
 
 		// Include Microsoft calendar toggles
 		if (this.plugin.microsoftCalendarService) {
 			for (const cal of this.plugin.microsoftCalendarService.getAvailableCalendars()) {
-				values.push(this.config.get(`showMicrosoftCalendar_${cal.id}`));
+				values.push(read(`showMicrosoftCalendar_${cal.id}`));
 			}
 		}
 
@@ -679,8 +714,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private getConfigOption<T>(key: string, fallback: T): T {
-		const value = this.config.get(key);
-		return value === null || value === undefined ? fallback : (value as T);
+		return getCalendarConfigValue(this.config, key, fallback);
 	}
 
 	/**
@@ -908,8 +942,7 @@ export class CalendarView extends BasesViewBase {
 			);
 
 			// Read enableSearch toggle (default: false for backward compatibility)
-			const enableSearchValue = this.config.get("enableSearch");
-			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			this.enableSearch = this.getConfigOption("enableSearch", false);
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;

@@ -1,64 +1,56 @@
 /**
- * Reproduction tests for issue #1680.
+ * Regression coverage for issue #1680.
  *
- * Reported behavior:
- * - Agenda view (tasknotesCalendar type) shows both TaskNotes events and
- *   property-based events even when showPropertyBasedEvents: false is set
- *   in the view's options configuration.
+ * Bases stores custom view options under an `options` object in `.base` files.
+ * CalendarView must read those values so `showPropertyBasedEvents: false`
+ * actually suppresses property-based rows in Agenda/List views.
  */
 
-describe('Issue #1680: showPropertyBasedEvents: false not respected in agenda view', () => {
-	it.skip('reproduces issue #1680 - config.get returns undefined for options-nested settings', () => {
-		// Simulate how CalendarView.readEventToggles reads the config
-		// The default is true (line 186), and config.get returns undefined
-		// when the value is nested under options in the YAML.
+import {
+	getCalendarConfigValue,
+	readCalendarConfigValue,
+	type CalendarViewConfigReader,
+} from "../../../src/bases/CalendarView";
 
-		const defaultShowPropertyBasedEvents = true;
+function createConfig(values: Record<string, unknown>): CalendarViewConfigReader {
+	return {
+		get: (key: string) => values[key],
+	};
+}
 
-		// Simulate config.get('showPropertyBasedEvents') when the value
-		// is set inside options: { showPropertyBasedEvents: false } in YAML.
-		// The Bases config API may not flatten the options sub-object.
-		const configValue = undefined; // config.get returns undefined
+describe("Issue #1680: agenda property-based event toggle", () => {
+	it("reads false values from nested Bases options instead of falling back to defaults", () => {
+		const config = createConfig({
+			options: {
+				showPropertyBasedEvents: false,
+				calendarView: "listWeek",
+			},
+			startDateProperty: "file.ctime",
+		});
 
-		// Line 463: nullish coalescing keeps the default
-		const result = configValue ?? defaultShowPropertyBasedEvents;
-
-		// BUG: result is true even though user set showPropertyBasedEvents: false
-		expect(result).toBe(true);
-
-		// The user expects this to be false
-		expect(result).not.toBe(false);
+		expect(readCalendarConfigValue(config, "showPropertyBasedEvents")).toBe(false);
+		expect(getCalendarConfigValue(config, "showPropertyBasedEvents", true)).toBe(false);
+		expect(getCalendarConfigValue(config, "calendarView", "timeGridWeek")).toBe("listWeek");
+		expect(getCalendarConfigValue(config, "startDateProperty", null)).toBe("file.ctime");
 	});
 
-	it.skip('reproduces issue #1680 - property-based events generated for task items', () => {
-		// Even if showPropertyBasedEvents worked correctly, the buildPropertyBasedEvents
-		// method iterates over ALL entries in data.data (including tasks) and creates
-		// property-based events for them if startDateProperty is set.
-		// This means tasks appear both as TaskNotes events AND as property-based events.
-
-		const dataEntries = [
-			{
-				file: { path: 'Tasks/my-task.md', basename: 'my-task' },
-				isTask: true,
-				scheduled: '2026-03-22',
-				'file.ctime': '2026-03-20T10:00:00',
+	it("keeps direct config values ahead of nested options values", () => {
+		const config = createConfig({
+			showPropertyBasedEvents: true,
+			options: {
+				showPropertyBasedEvents: false,
 			},
-		];
+		});
 
-		// Task appears as TaskNotes event from generateCalendarEvents
-		const taskEvents = dataEntries
-			.filter((e) => e.isTask && e.scheduled)
-			.map((e) => ({ id: `task-${e.file.path}`, type: 'task' }));
+		expect(getCalendarConfigValue(config, "showPropertyBasedEvents", false)).toBe(true);
+	});
 
-		// Same task also appears as property-based event (using file.ctime)
-		const startDateProperty = 'file.ctime';
-		const propertyEvents = dataEntries
-			.filter((e) => e.file && (e as any)[startDateProperty])
-			.map((e) => ({ id: `property-${e.file.path}`, type: 'property-based' }));
+	it("falls back when neither direct config nor nested options provide a value", () => {
+		const config = createConfig({
+			options: {},
+		});
 
-		// BUG: Both event lists contain the same task, causing duplicates
-		expect(taskEvents.length).toBe(1);
-		expect(propertyEvents.length).toBe(1);
-		expect(taskEvents[0].id).not.toBe(propertyEvents[0].id); // Different IDs, same task
+		expect(getCalendarConfigValue(config, "showPropertyBasedEvents", true)).toBe(true);
+		expect(getCalendarConfigValue(config, "enableSearch", false)).toBe(false);
 	});
 });

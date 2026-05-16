@@ -51,6 +51,7 @@ Example:
 
 ## Fixed
 
+- ([#1680](https://github.com/callumalpass/tasknotes/issues/1680)) Fixed TaskNotes Calendar Bases options stored under `options`, so Agenda views respect `showPropertyBasedEvents: false` and no longer show duplicate property-based rows for the same task. Thanks to @xiaoyaozhu1991 for reporting this and @KondrotM for confirming it.
 - ([#1681](https://github.com/callumalpass/tasknotes/issues/1681)) Reduced the cost of inline checkbox convert buttons by only scanning the visible editor range instead of the full document. Thanks to @en-ot for reporting this.
 - ([#1689](https://github.com/callumalpass/tasknotes/issues/1689)) Fixed task reminders added or rescheduled through direct frontmatter edits so the notification queue refreshes immediately and relative reminders recalculate from the latest task dates. Thanks to @garzonjav for reporting this.
 - ([#1693](https://github.com/callumalpass/tasknotes/issues/1693)) Fixed generated default Bases formulas so empty due and scheduled dates are checked with `.isEmpty()` instead of date-field truthiness. Thanks to @benoitjadinon for reporting this.
