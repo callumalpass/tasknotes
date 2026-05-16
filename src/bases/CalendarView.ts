@@ -1141,7 +1141,7 @@ export class CalendarView extends BasesViewBase {
 			headerToolbar: {
 				left: "prev,next today refreshCalendars",
 				center: "title",
-				right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeekButton",
+				right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek",
 			},
 			buttonText: {
 				today: this.plugin.i18n.translate("views.basesCalendar.today"),
@@ -1164,19 +1164,6 @@ export class CalendarView extends BasesViewBase {
 				list: this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
 			},
 			customButtons: {
-				listWeekButton: {
-					text: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
-					hint:
-						this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
-					click: () => {
-						if (this.calendar) {
-							const currentView = this.calendar.view?.type;
-							if (currentView !== "listWeek") {
-								this.calendar.changeView("listWeek");
-							}
-						}
-					},
-				},
 				refreshCalendars: {
 					text:
 						this.plugin.i18n.translate("views.basesCalendar.buttonText.refresh") ||
@@ -1204,10 +1191,7 @@ export class CalendarView extends BasesViewBase {
 				listWeek: {
 					type: "list",
 					duration: { days: this.viewOptions.listDayCount },
-					buttonText:
-						this.plugin.i18n.translate("views.basesCalendar.buttonText.listDays", {
-							count: this.viewOptions.listDayCount.toString(),
-						}) || `${this.viewOptions.listDayCount}d List`,
+					buttonText: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
 				},
 			},
 			...getCalendarSizingOptions(this.viewOptions.heightMode),

@@ -20,7 +20,7 @@ function readRepoFile(relativePath: string): string {
 }
 
 describe("Issue #1636: list button CSS selector mismatch", () => {
-	it.skip("reproduces issue #1636", () => {
+	it("uses the built-in listWeek toolbar button so CSS and active state match", () => {
 		const calendarViewSource = readRepoFile("src/bases/CalendarView.ts");
 		const calendarCssSource = readRepoFile("styles/advanced-calendar-view.css");
 
@@ -34,18 +34,10 @@ describe("Issue #1636: list button CSS selector mismatch", () => {
 		const toolbarUsesBuiltInListButton = toolbarButtons.includes("listWeek");
 
 		const cssTargetsBuiltInListButtonClass = calendarCssSource.includes(".fc-listWeek-button");
-		const cssTargetsCustomListButtonClass = calendarCssSource.includes(".fc-listWeekButton-button");
-		const customButtonSynchronizesActiveClass = /fc-button-active/.test(calendarViewSource);
 
-		expect(toolbarUsesCustomListButton).toBe(true);
+		expect(toolbarUsesCustomListButton).toBe(false);
+		expect(calendarViewSource).not.toContain("listWeekButton");
+		expect(toolbarUsesBuiltInListButton).toBe(true);
 		expect(cssTargetsBuiltInListButtonClass).toBe(true);
-
-		// Expected after fix:
-		// - either switch toolbar to built-in listWeek button (automatic active-state handling),
-		// - or keep custom button and style/sync it explicitly.
-		expect(
-			toolbarUsesBuiltInListButton ||
-				(cssTargetsCustomListButtonClass && customButtonSynchronizesActiveClass)
-		).toBe(true);
 	});
 });
