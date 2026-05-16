@@ -51,6 +51,7 @@ Example:
 
 ## Fixed
 
+- ([#1693](https://github.com/callumalpass/tasknotes/issues/1693)) Fixed generated default Bases formulas so empty due and scheduled dates are checked with `.isEmpty()` instead of date-field truthiness. Thanks to @benoitjadinon for reporting this.
 - ([#1702](https://github.com/callumalpass/tasknotes/issues/1702)) Removed the forced bottom gap under TaskNotes custom Bases views, so calendar and other TaskNotes views can fill the available pane height. Thanks to @AudreyLooby for reporting this.
 - ([#1719](https://github.com/callumalpass/tasknotes/issues/1719)) Fixed task cards in reading mode so Obsidian 1.12.x header changes no longer place the card above the title and properties or drop it after returning to a tab. Thanks to @tholbrook9 for reporting this and tracing the DOM change.
 - ([#1722](https://github.com/callumalpass/tasknotes/issues/1722)) Saved the source note immediately after converting an inline checkbox task to a TaskNote, so Kanban views do not keep showing the stale inline task alongside the new task file. Thanks to @literallydope for reporting this and sharing screenshots.

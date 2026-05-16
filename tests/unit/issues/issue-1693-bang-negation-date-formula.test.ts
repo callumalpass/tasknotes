@@ -1,36 +1,65 @@
-/**
- * Reproduction tests for issue #1693.
- *
- * Reported behavior:
- * - Bang (!) negation on date properties in Bases formula expressions does
- *   not work as expected. `!due` does not evaluate as truthy when due is
- *   empty/null. Users must use `.isEmpty()` instead.
- */
+import { generateBasesFileTemplate } from "../../../src/templates/defaultBasesFiles";
 
-describe('Issue #1693: Bang negation on date properties in base formulas', () => {
-	it.skip('reproduces issue #1693 - bang negation on empty date property', () => {
-		// Simulate how date property values might be represented in the Bases
-		// formula context. If empty dates are passed as empty strings or
-		// wrapper objects rather than null/undefined, ! won't work as expected.
+const createMockPlugin = () => {
+	const fieldMapping = {
+		status: "status",
+		priority: "priority",
+		due: "due",
+		scheduled: "scheduled",
+		projects: "projects",
+		contexts: "contexts",
+		recurrence: "recurrence",
+		completeInstances: "complete_instances",
+		blockedBy: "blockedBy",
+		sortOrder: "sort_order",
+		timeEstimate: "timeEstimate",
+		timeEntries: "timeEntries",
+	};
 
-		// Possible representations of an empty date property:
-		const emptyDateAsNull = null;
-		const emptyDateAsUndefined = undefined;
-		const emptyDateAsEmptyString = '';
-		const emptyDateAsObject = {}; // Possible Bases Value wrapper
+	return {
+		settings: {
+			taskTag: "task",
+			taskIdentificationMethod: "tag",
+			customPriorities: [
+				{ value: "high", label: "High", weight: 0 },
+				{ value: "normal", label: "Normal", weight: 1 },
+			],
+			customStatuses: [
+				{ value: "open", label: "Open", isCompleted: false },
+				{ value: "done", label: "Done", isCompleted: true },
+			],
+			defaultVisibleProperties: ["status", "priority", "due", "scheduled"],
+			userFields: [],
+			fieldMapping,
+		},
+		fieldMapper: {
+			toUserField: jest.fn((key: keyof typeof fieldMapping) => fieldMapping[key] ?? key),
+			getMapping: jest.fn(() => fieldMapping),
+		},
+	};
+};
 
-		// JavaScript truthiness with bang:
-		expect(!emptyDateAsNull).toBe(true);       // Works correctly
-		expect(!emptyDateAsUndefined).toBe(true);   // Works correctly
-		expect(!emptyDateAsEmptyString).toBe(true);  // Works correctly
-		expect(!emptyDateAsObject).toBe(false);      // BUG: empty object is truthy
+describe("Issue #1693: bang negation on date properties in base formulas", () => {
+	it("generates default formulas using date isEmpty checks instead of date truthiness", () => {
+		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
-		// If Bases provides date values as objects (even when empty),
-		// the bang operator will always evaluate to false.
-		// This means `if (!due && !scheduled, ...)` would never match
-		// the "both empty" case if dates are represented as objects.
+		expect(template).toContain(
+			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight`
+		);
+		expect(template).toContain(`dueDateCategory: 'if(due.isEmpty(), "No due date"`);
+		expect(template).toContain(`dueDateDisplay: 'if(due.isEmpty(), ""`);
+		expect(template).toContain(
+			`nextDate: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false)`
+		);
+		expect(template).toContain(
+			`hasDate: '(due.isEmpty() == false) || (scheduled.isEmpty() == false)'`
+		);
 
-		// The .isEmpty() method would check the internal value correctly,
-		// which is why the workaround works.
+		expect(template).not.toContain("if(!due");
+		expect(template).not.toContain("!due && !scheduled");
+		expect(template).not.toContain("if(due,");
+		expect(template).not.toContain("if(scheduled,");
+		expect(template).not.toContain("due && date(due)");
+		expect(template).not.toContain("scheduled && date(scheduled)");
 	});
 });

@@ -133,10 +133,10 @@ describe("defaultBasesFiles", () => {
 		// Pin full bodies of the affected formulas so a regression in any single
 		// clause (lower bound, upper bound, due half, scheduled half) breaks the test.
 		expect(template).toContain(
-			`isDueThisWeek: 'due && date(due).date() >= today() && date(due).date() <= today() + "7d"'`
+			`isDueThisWeek: '(due.isEmpty() == false) && date(due).date() >= today() && date(due).date() <= today() + "7d"'`
 		);
 		expect(template).toContain(
-			`isThisWeek: '(due && date(due).date() >= today() && date(due).date() <= today() + "7d") || (scheduled && date(scheduled).date() >= today() && date(scheduled).date() <= today() + "7d")'`
+			`isThisWeek: '((due.isEmpty() == false) && date(due).date() >= today() && date(due).date() <= today() + "7d") || ((scheduled.isEmpty() == false) && date(scheduled).date() >= today() && date(scheduled).date() <= today() + "7d")'`
 		);
 
 		// Negative guards against any reappearance of the time-naive shape on a
@@ -159,13 +159,30 @@ describe("defaultBasesFiles", () => {
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
 		expect(template).toContain(
-			`urgencyScore: 'if(!due && !scheduled, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))'`
+			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))'`
 		);
 
 		// Guard against the time-naive form returning
 		expect(template).not.toMatch(
 			/urgencyScore: 'if\(!due && !scheduled, formula\.priorityWeight, formula\.priorityWeight \+ max\(0, 10 - formula\.daysUntilNext\)\)'/
 		);
+	});
+
+	it("uses isEmpty guards instead of date property truthiness in generated formulas", () => {
+		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
+
+		expect(template).toContain("due.isEmpty()");
+		expect(template).toContain("scheduled.isEmpty()");
+		expect(template).toContain(
+			`nextDateCategory: 'if(due.isEmpty() && scheduled.isEmpty(), "No date"`
+		);
+		expect(template).toContain(
+			`hasDate: '(due.isEmpty() == false) || (scheduled.isEmpty() == false)'`
+		);
+		expect(template).not.toContain("!due");
+		expect(template).not.toContain("!scheduled");
+		expect(template).not.toContain("if(due,");
+		expect(template).not.toContain("if(scheduled,");
 	});
 
 	it("time-of-day boost is monotonic and bounded in [0, 1]", () => {
