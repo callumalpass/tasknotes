@@ -374,6 +374,49 @@ function getCommonSchemas(): Record<string, unknown> {
 					description: "Estimated time in minutes",
 					nullable: true,
 				},
+				recurrence: {
+					type: "string",
+					description: "RFC 5545 recurrence rule string",
+					nullable: true,
+				},
+				recurrence_anchor: {
+					type: "string",
+					enum: ["scheduled", "completion"],
+					description: "Whether recurrence advances from the scheduled date or completion date",
+					nullable: true,
+				},
+				reminders: {
+					type: "array",
+					items: {
+						$ref: "#/components/schemas/Reminder",
+					},
+					description: "Task reminders",
+				},
+				blockedBy: {
+					type: "array",
+					items: {
+						$ref: "#/components/schemas/TaskDependency",
+					},
+					description: "Dependencies that must be satisfied before this task can start",
+				},
+				blocking: {
+					type: "array",
+					items: {
+						type: "string",
+					},
+					description: "Task paths this task blocks. This is derived from other tasks' blockedBy fields.",
+					readOnly: true,
+				},
+				isBlocked: {
+					type: "boolean",
+					description: "Whether this task has incomplete blocking dependencies",
+					readOnly: true,
+				},
+				isBlocking: {
+					type: "boolean",
+					description: "Whether this task blocks at least one other task",
+					readOnly: true,
+				},
 				details: {
 					type: "string",
 					description: "Additional task details/description",
@@ -450,8 +493,79 @@ function getCommonSchemas(): Record<string, unknown> {
 					minimum: 0,
 					description: "Estimated time in minutes",
 				},
+				recurrence: {
+					type: "string",
+					description: "RFC 5545 recurrence rule string",
+				},
+				recurrence_anchor: {
+					type: "string",
+					enum: ["scheduled", "completion"],
+					description: "Whether recurrence advances from the scheduled date or completion date",
+				},
+				reminders: {
+					type: "array",
+					items: {
+						$ref: "#/components/schemas/Reminder",
+					},
+					description: "Task reminders",
+				},
+				blockedBy: {
+					type: "array",
+					items: {
+						$ref: "#/components/schemas/TaskDependency",
+					},
+					description: "Dependencies that must be satisfied before this task can start",
+				},
 			},
 			required: ["title"],
+		},
+		TaskDependency: {
+			type: "object",
+			properties: {
+				uid: {
+					type: "string",
+					description: "Link or identifier for the blocking task",
+				},
+				reltype: {
+					type: "string",
+					enum: ["FINISHTOSTART", "FINISHTOFINISH", "STARTTOSTART", "STARTTOFINISH"],
+					description: "Dependency relationship type",
+				},
+				gap: {
+					type: "string",
+					description: "Optional ISO 8601 duration offset between tasks",
+				},
+			},
+			required: ["uid", "reltype"],
+		},
+		Reminder: {
+			type: "object",
+			properties: {
+				id: {
+					type: "string",
+					description: "Reminder identifier",
+				},
+				type: {
+					type: "string",
+					enum: ["absolute", "relative"],
+					description: "Reminder type",
+				},
+				absoluteTime: {
+					type: "string",
+					format: "date-time",
+					description: "Absolute reminder timestamp",
+				},
+				relatedTo: {
+					type: "string",
+					enum: ["due", "scheduled"],
+					description: "Date field used as the relative reminder anchor",
+				},
+				offset: {
+					type: "string",
+					description: "ISO 8601 duration relative to the anchor date",
+				},
+			},
+			required: ["id", "type"],
 		},
 		TaskStats: {
 			type: "object",

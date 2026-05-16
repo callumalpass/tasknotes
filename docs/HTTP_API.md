@@ -163,12 +163,21 @@ Common optional fields:
 
 - `details`, `status`, `priority`, `due`, `scheduled`
 - `tags`, `contexts`, `projects`
-- `recurrence`, `timeEstimate`
+- `recurrence`, `recurrence_anchor`, `timeEstimate`, `reminders`
+- `blockedBy`
+
+`blockedBy` accepts an array of dependency objects:
+
+- `uid`: link or identifier for the blocking task, such as `[[Project setup]]`
+- `reltype`: one of `FINISHTOSTART`, `FINISHTOFINISH`, `STARTTOSTART`, or `STARTTOFINISH`
+- `gap`: optional ISO 8601 duration, such as `P1D`
+
+`blocking` is a read-only reverse relationship in API responses. To make a task block existing tasks, update those existing tasks' `blockedBy` fields.
 
 ```bash
 curl -X POST http://localhost:8080/api/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title":"Review docs","priority":"high"}'
+  -d '{"title":"Review docs","priority":"high","blockedBy":[{"uid":"[[Draft docs]]","reltype":"FINISHTOSTART"}]}'
 ```
 
 Returns HTTP `201` with created task data.
