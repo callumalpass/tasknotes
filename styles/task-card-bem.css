@@ -139,6 +139,18 @@
     align-items: center;
     flex: 0 0 auto;
     white-space: nowrap;
+    background-color: var(--tag-background, var(--background-secondary));
+    color: var(--tag-color, var(--text-accent));
+    padding: var(--tag-padding-y, 1px) var(--tag-padding-x, 6px);
+    border: var(--tag-border-width, 1px) solid var(--tag-border-color, var(--background-modifier-border));
+    border-radius: var(--tag-radius, var(--radius-s));
+    text-decoration: none;
+}
+
+.tasknotes-plugin .task-card__metadata-property .tag:hover {
+    background-color: var(--tag-background-hover, var(--background-modifier-hover));
+    border-color: var(--tag-border-color-hover, var(--background-modifier-border-hover));
+    color: var(--tag-color-hover, var(--text-accent-hover));
 }
 
 .tasknotes-plugin .task-card__metadata-pill {
