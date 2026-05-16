@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- (#1892) Fixed nested Markdown list indentation in the Task Edit Modal details editor. Thanks to @Glint-Eye for reporting.
 - Fixed TaskNotes modal markdown editors collapsing to one-character-wide lines when Pretty Properties is installed. Thanks to @bkennedy-improving for reporting.
 - Made the markdown editor areas in task modals easier to click and focus.
 - Strengthened local CSS linting to catch unscoped selectors, unknown CSS, and fixed-position overlays before review.

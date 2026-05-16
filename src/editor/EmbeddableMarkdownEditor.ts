@@ -266,9 +266,6 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 			this.editorEl.classList.add(options.cls);
 		}
 
-		// Avoid full-file source-view layout rules inside compact modal editors.
-		this.editorEl.classList.remove("markdown-source-view", "mod-cm6");
-
 		// Set initial cursor position
 		if (options.cursorLocation) {
 			this.editor.cm.dispatch({
