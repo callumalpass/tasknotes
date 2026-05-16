@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1784](https://github.com/callumalpass/tasknotes/issues/1784), [#1833](https://github.com/callumalpass/tasknotes/pull/1833)) Added a per-view `pinnedColumns` option for TaskNotes Kanban views, so selected empty columns can stay visible as drop targets while other empty columns remain hidden. Thanks to @loukandr for suggesting and prototyping this.
 - ([#1794](https://github.com/callumalpass/tasknotes/issues/1794)) Added context updates to the task card context menu, so contexts can be added, toggled, or cleared without opening the task edit modal. Thanks to @m13ntrpn for suggesting this.
 - ([#1809](https://github.com/callumalpass/tasknotes/issues/1809)) Added a subtle task-card indicator for tasks with note body details. Thanks to @aliceinwaterdeep for suggesting this.
 - ([#1808](https://github.com/callumalpass/tasknotes/issues/1808)) Added advanced Kanban swimlane ordering through `swimLaneOrder`, so swimlane rows can stay in a stable configured order. Thanks to @rookledookle for suggesting this, and to @benmartinek and @chrabia for the follow-up feedback.

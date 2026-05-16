@@ -95,6 +95,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: false,
 					},
 					{
+						type: "text",
+						key: "pinnedColumns",
+						displayName: "Pinned Columns",
+						placeholder: "Comma-separated column values to keep visible",
+						default: "",
+					},
+					{
 						type: "toggle",
 						key: "hideEmptySwimLanes",
 						displayName: "Hide Empty Swimlanes",

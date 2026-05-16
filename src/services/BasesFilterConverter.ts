@@ -736,7 +736,7 @@ export class BasesFilterConverter {
 		}
 
 		// Check for kanban specific options
-		const kanbanOptions = ["columnWidth", "hideEmptyColumns"];
+		const kanbanOptions = ["columnWidth", "hideEmptyColumns", "pinnedColumns"];
 		const hasKanbanOptions = kanbanOptions.some(option => option in viewOptions);
 		if (hasKanbanOptions) {
 			return "tasknotesKanban";

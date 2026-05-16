@@ -25,6 +25,7 @@ Access these options through the Bases view settings panel:
 - **Swim Lane**: Optional property for horizontal grouping. Creates a two-dimensional layout where tasks are organized by both column (groupBy) and row (swimLane)
 - **Column Width**: Controls the width of columns in pixels. Range: 200-500px. Default: 280px
 - **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
+- **Pinned Columns**: Optional comma-separated list of column values that should stay visible even when empty. This is useful with **Hide Empty Columns** when each board needs a small stable subset of shared statuses or categories
 - **Hide Empty Swimlanes**: When enabled, ordered swimlanes with no tasks are hidden from the view
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
@@ -133,6 +134,7 @@ views:
       swimLaneOrder: '{"task.priority":["high","normal","low"]}'
       columnWidth: 300
       hideEmptyColumns: true
+      pinnedColumns: to-do, in-progress, done
 ---
 ```
 
@@ -141,7 +143,7 @@ This configuration creates a Kanban board with:
 - Swimlanes based on task priority
 - Priority swimlanes pinned in high, normal, low order
 - 300px column width
-- Empty columns hidden
+- Empty unpinned columns hidden, while the to-do, in-progress, and done columns stay visible as drop targets
 
 ## Filtering and Sorting
 

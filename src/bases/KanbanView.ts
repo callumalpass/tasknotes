@@ -158,6 +158,69 @@ function normalizeOrderConfig(value: unknown): Record<string, string[]> {
 	return result;
 }
 
+export function normalizePinnedColumnConfig(value: unknown): string[] {
+	if (value === null || value === undefined) {
+		return [];
+	}
+
+	if (Array.isArray(value)) {
+		return normalizeOrderValues(value);
+	}
+
+	if (typeof value !== "string") {
+		return [];
+	}
+
+	const trimmed = value.trim();
+	if (!trimmed) {
+		return [];
+	}
+
+	if (trimmed.startsWith("[")) {
+		try {
+			const parsed = JSON.parse(trimmed) as unknown;
+			if (Array.isArray(parsed)) {
+				return normalizeOrderValues(parsed);
+			}
+		} catch {
+			// Fall back to comma-separated parsing below.
+		}
+	}
+
+	return normalizeOrderValues(trimmed.split(","));
+}
+
+export function addPinnedColumnGroups(
+	groups: Map<string, TaskInfo[]>,
+	pinnedColumns: readonly string[]
+): void {
+	for (const column of pinnedColumns) {
+		if (!groups.has(column)) {
+			groups.set(column, []);
+		}
+	}
+}
+
+export function orderColumnsWithPinnedColumns(
+	actualKeys: string[],
+	pinnedColumns: readonly string[]
+): string[] {
+	const pinnedSet = new Set(pinnedColumns);
+	const actualKeySet = new Set(actualKeys);
+	const pinned = pinnedColumns.filter((key) => actualKeySet.has(key));
+	const unpinned = actualKeys.filter((key) => !pinnedSet.has(key)).sort();
+	return [...pinned, ...unpinned];
+}
+
+export function shouldRenderKanbanColumn(
+	hideEmptyColumns: boolean,
+	groupKey: string,
+	tasks: readonly TaskInfo[],
+	pinnedColumns: readonly string[]
+): boolean {
+	return !hideEmptyColumns || tasks.length > 0 || pinnedColumns.includes(groupKey);
+}
+
 export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
 
@@ -219,6 +282,7 @@ export class KanbanView extends BasesViewBase {
 	private explodeListColumns = true; // Show items with list properties in multiple columns
 	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
+	private pinnedColumns: string[] = [];
 	private swimLaneOrders: Record<string, string[]> = {};
 	private hideEmptySwimLanes = false;
 	private configLoaded = false; // Track if we've successfully loaded config
@@ -322,6 +386,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Read column orders
 			this.columnOrders = normalizeOrderConfig(this.config.get("columnOrder"));
+			this.pinnedColumns = normalizePinnedColumnConfig(this.config.get("pinnedColumns"));
 
 			// Read swimlane orders. Support both the public singular key and the
 			// originally proposed plural key for manually-authored Bases YAML.
@@ -741,6 +806,8 @@ export class KanbanView extends BasesViewBase {
 		// Augment with empty priority columns if grouping by priority
 		this.augmentWithEmptyPriorityColumns(groups, groupByPropertyId);
 
+		addPinnedColumnGroups(groups, this.pinnedColumns);
+
 		return groups;
 	}
 
@@ -1007,7 +1074,14 @@ export class KanbanView extends BasesViewBase {
 			const tasks = groups.get(groupKey) || [];
 
 			// Filter empty columns if option enabled
-			if (this.hideEmptyColumns && tasks.length === 0) {
+			if (
+				!shouldRenderKanbanColumn(
+					this.hideEmptyColumns,
+					groupKey,
+					tasks,
+					this.pinnedColumns
+				)
+			) {
 				continue;
 			}
 
@@ -3561,8 +3635,7 @@ export class KanbanView extends BasesViewBase {
 		const savedOrder = this.getConfiguredOrder(this.columnOrders, groupBy);
 
 		if (!savedOrder || savedOrder.length === 0) {
-			// No saved order - use natural order (alphabetical)
-			return actualKeys.sort();
+			return orderColumnsWithPinnedColumns(actualKeys, this.pinnedColumns);
 		}
 
 		const ordered: string[] = [];
