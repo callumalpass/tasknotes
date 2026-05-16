@@ -39,6 +39,7 @@ Example:
 - ([#1805](https://github.com/callumalpass/tasknotes/issues/1805)) Added an ICS export option to omit completed tasks from generated calendar files. Thanks to @bepolymathe for suggesting this.
 - ([#1818](https://github.com/callumalpass/tasknotes/issues/1818)) Added an auto-height mode for TaskNotes Calendar Bases views so embedded agenda/list sections can size to their content instead of forcing an inner scroller. Thanks to @martin-forge for suggesting this.
 - ([#1732](https://github.com/callumalpass/tasknotes/issues/1732), [#1835](https://github.com/callumalpass/tasknotes/issues/1835)) Added hotkeyable commands to edit the current task, add a project to the current task, and add an existing task as a subtask of the current note. Thanks to @prepare4robots for requesting this and @ubidev for the follow-up suggestion.
+- ([#1655](https://github.com/callumalpass/tasknotes/issues/1655)) Added live elapsed time to the optional active time tracking status bar item. Thanks to @connradolisboa for suggesting this.
 
 ## Changed
 

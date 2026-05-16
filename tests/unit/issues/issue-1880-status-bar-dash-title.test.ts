@@ -37,5 +37,7 @@ describe("Issue #1880: status bar with dash titles", () => {
 
 		expect(statusBarElement.textContent).toContain("Tracking: Planning - review");
 		expect(statusBarElement.classList.contains("tn-static-display-none-6b99de8b")).toBe(false);
+
+		service.destroy();
 	});
 });

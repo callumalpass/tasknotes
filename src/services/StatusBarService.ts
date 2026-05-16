@@ -1,6 +1,6 @@
 import { TaskInfo } from "../types";
 import { RequestDeduplicator } from "../utils/RequestDeduplicator";
-import { setTooltip, TFile } from "obsidian";
+import { setIcon, setTooltip, TFile } from "obsidian";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 
 export class StatusBarService {
@@ -8,6 +8,8 @@ export class StatusBarService {
 	private statusBarElement: HTMLElement | null = null;
 	private requestDeduplicator: RequestDeduplicator;
 	private updateTimeout: number | null = null;
+	private elapsedUpdateInterval: number | null = null;
+	private currentTrackedTasks: TaskInfo[] = [];
 
 	constructor(plugin: import("../main").default) {
 		this.plugin = plugin;
@@ -44,7 +46,13 @@ export class StatusBarService {
 	 * Update the status bar display
 	 */
 	private async updateStatusBar(): Promise<void> {
-		if (!this.statusBarElement || !this.plugin.settings.showTrackedTasksInStatusBar) {
+		if (!this.statusBarElement) {
+			this.stopElapsedTicker();
+			return;
+		}
+
+		if (!this.plugin.settings.showTrackedTasksInStatusBar) {
+			this.hide();
 			return;
 		}
 
@@ -83,9 +91,11 @@ export class StatusBarService {
 	private renderStatusBar(trackedTasks: TaskInfo[]): void {
 		if (!this.statusBarElement) return;
 
+		this.currentTrackedTasks = [...trackedTasks];
 		const count = trackedTasks.length;
 
 		if (count === 0) {
+			this.stopElapsedTicker();
 			// Hide status bar when no tasks are being tracked
 			this.statusBarElement.classList.remove(
 				"tn-static-display-block-2a1b75c9",
@@ -102,6 +112,7 @@ export class StatusBarService {
 		}
 
 		// Show status bar
+		this.startElapsedTicker();
 		this.statusBarElement.classList.remove(
 			"tn-static-display-block-2a1b75c9",
 			"tn-static-display-flex-4d51fc62",
@@ -119,10 +130,10 @@ export class StatusBarService {
 		this.statusBarElement.empty();
 
 		// Create icon
-		this.statusBarElement.createEl("span", {
+		const iconEl = this.statusBarElement.createEl("span", {
 			cls: "tasknotes-status-icon",
-			text: "⏱️",
 		});
+		setIcon(iconEl, "timer");
 
 		// Create text content
 		const textEl = this.statusBarElement.createEl("span", {
@@ -133,25 +144,89 @@ export class StatusBarService {
 			const task = trackedTasks[0];
 			const truncatedTitle =
 				task.title.length > 30 ? task.title.substring(0, 30) + "..." : task.title;
-			textEl.setText(`Tracking: ${truncatedTitle}`);
+			const elapsed = this.formatElapsedDuration(this.getActiveElapsedMs(task));
+			textEl.setText(`Tracking: ${truncatedTitle} (${elapsed})`);
 
 			// Add tooltip with full title
-			setTooltip(this.statusBarElement, `Currently tracking: ${task.title}`, {
-				placement: "top",
-			});
+			setTooltip(
+				this.statusBarElement,
+				`Currently tracking: ${task.title}\nElapsed: ${elapsed}`,
+				{
+					placement: "top",
+				}
+			);
 		} else {
-			textEl.setText(`Tracking ${count} tasks`);
+			const totalElapsed = this.formatElapsedDuration(
+				trackedTasks.reduce((sum, task) => sum + this.getActiveElapsedMs(task), 0)
+			);
+			textEl.setText(`Tracking ${count} tasks (${totalElapsed} total)`);
 
 			// Add tooltip with task titles
 			const taskTitles = trackedTasks
 				.slice(0, 5) // Show max 5 in tooltip
-				.map((task) => task.title)
+				.map(
+					(task) =>
+						`${task.title} - ${this.formatElapsedDuration(this.getActiveElapsedMs(task))}`
+				)
 				.join("\n");
 			const tooltipText = count > 5 ? `${taskTitles}\n... and ${count - 5} more` : taskTitles;
 			setTooltip(this.statusBarElement, `Currently tracking:\n${tooltipText}`, {
 				placement: "top",
 			});
 		}
+	}
+
+	private getActiveElapsedMs(task: TaskInfo): number {
+		const activeSession = this.plugin.getActiveTimeSession(task);
+		if (!activeSession?.startTime) {
+			return 0;
+		}
+
+		const startMs = Date.parse(activeSession.startTime);
+		if (!Number.isFinite(startMs)) {
+			return 0;
+		}
+
+		return Math.max(0, Date.now() - startMs);
+	}
+
+	private formatElapsedDuration(durationMs: number): string {
+		const totalSeconds = Math.floor(durationMs / 1000);
+		const seconds = totalSeconds % 60;
+		const totalMinutes = Math.floor(totalSeconds / 60);
+		const minutes = totalMinutes % 60;
+		const hours = Math.floor(totalMinutes / 60);
+
+		if (hours > 0) {
+			return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+				.toString()
+				.padStart(2, "0")}`;
+		}
+
+		return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+	}
+
+	private startElapsedTicker(): void {
+		if (this.elapsedUpdateInterval !== null) {
+			return;
+		}
+
+		this.elapsedUpdateInterval = window.setInterval(() => {
+			if (this.currentTrackedTasks.length === 0) {
+				this.stopElapsedTicker();
+				return;
+			}
+
+			this.renderStatusBar(this.currentTrackedTasks);
+		}, 1000);
+	}
+
+	private stopElapsedTicker(): void {
+		if (this.elapsedUpdateInterval !== null) {
+			window.clearInterval(this.elapsedUpdateInterval);
+			this.elapsedUpdateInterval = null;
+		}
+		this.currentTrackedTasks = [];
 	}
 
 	/**
@@ -227,6 +302,7 @@ export class StatusBarService {
 	 * Hide the status bar
 	 */
 	private hide(): void {
+		this.stopElapsedTicker();
 		if (this.statusBarElement) {
 			this.statusBarElement.classList.remove(
 				"tn-static-display-block-2a1b75c9",
@@ -250,6 +326,7 @@ export class StatusBarService {
 			window.clearTimeout(this.updateTimeout);
 			this.updateTimeout = null;
 		}
+		this.stopElapsedTicker();
 
 		if (this.requestDeduplicator) {
 			this.requestDeduplicator.cancelAll();
