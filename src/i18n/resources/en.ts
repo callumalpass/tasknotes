@@ -1866,7 +1866,7 @@ export const en: TranslationTree = {
 				defaultReminder: {
 					name: "Default reminder",
 					description:
-						"Add a popup reminder to Google Calendar events. Set minutes before event (0 = no reminder). Common values: 15, 30, 60, 1440 (1 day).",
+						"Add popup reminders to timed Google Calendar events. Enter minutes before the event, separated by commas. Leave empty to use calendar defaults. Common values: 15, 30, 60, 1440.",
 				},
 				automaticSyncBehavior: {
 					header: "Automatic sync behavior",

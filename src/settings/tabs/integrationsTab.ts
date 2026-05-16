@@ -4,6 +4,7 @@ import type { WebhookConfig, WebhookEvent } from "../../types";
 import type { ICSIntegrationSettings } from "../../types/settings";
 import { TranslationKey } from "../../i18n";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
+import { GOOGLE_CALENDAR_CONSTANTS } from "../../services/constants";
 import {
 	createSettingGroup,
 	configureTextSetting,
@@ -88,6 +89,30 @@ const ICS_NOTE_FILENAME_FORMATS: readonly ICSNoteFilenameFormat[] = [
 
 function isICSNoteFilenameFormat(value: string): value is ICSNoteFilenameFormat {
 	return ICS_NOTE_FILENAME_FORMATS.some((format) => format === value);
+}
+
+function formatDefaultReminderMinutes(value: number | number[] | null | undefined): string {
+	if (Array.isArray(value)) {
+		return value.filter((minutes) => minutes > 0).join(", ");
+	}
+	return typeof value === "number" && value > 0 ? value.toString() : "";
+}
+
+function parseDefaultReminderMinutes(value: string): number | number[] | null {
+	const minutes = value
+		.split(/[,\s]+/)
+		.map((part) => Math.trunc(Number(part.trim())))
+		.filter((part) => Number.isFinite(part) && part > 0)
+		.map((part) => Math.min(part, GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES));
+
+	const uniqueMinutes = Array.from(new Set(minutes));
+	if (uniqueMinutes.length === 0) {
+		return null;
+	}
+	if (uniqueMinutes.length === 1) {
+		return uniqueMinutes[0];
+	}
+	return uniqueMinutes;
 }
 
 const WEBHOOK_EVENT_OPTIONS: ReadonlyArray<{
@@ -894,7 +919,7 @@ export function renderIntegrationsTab(
 
 			// Default reminder minutes
 			group.addSetting((setting) =>
-				void configureNumberSetting(setting, {
+				void configureTextSetting(setting, {
 					name: translate(
 						"settings.integrations.googleCalendarExport.defaultReminder.name"
 					),
@@ -902,14 +927,15 @@ export function renderIntegrationsTab(
 						"settings.integrations.googleCalendarExport.defaultReminder.description"
 					),
 					getValue: () =>
-						plugin.settings.googleCalendarExport.defaultReminderMinutes ?? 0,
-					setValue: async (value: number) => {
+						formatDefaultReminderMinutes(
+							plugin.settings.googleCalendarExport.defaultReminderMinutes
+						),
+					setValue: async (value: string) => {
 						plugin.settings.googleCalendarExport.defaultReminderMinutes =
-							value === 0 ? null : value;
+							parseDefaultReminderMinutes(value);
 						save();
 					},
-					min: 0,
-					max: 40320, // 4 weeks in minutes (Google Calendar API limit)
+					placeholder: "60, 1440",
 				})
 			);
 

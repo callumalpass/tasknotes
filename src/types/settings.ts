@@ -312,7 +312,7 @@ export interface GoogleCalendarExportSettings {
 	createAsAllDay: boolean; // Create as all-day events vs timed
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description
-	defaultReminderMinutes: number | null; // Popup reminder X minutes before event (null = no reminder)
+	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)
 }
 
 export type TimeblockAttachmentSearchOrder =

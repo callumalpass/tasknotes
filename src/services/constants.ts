@@ -35,6 +35,9 @@ export const GOOGLE_CALENDAR_CONSTANTS = {
 	/** Default duration for newly created timed events (1 hour in milliseconds) */
 	DEFAULT_EVENT_DURATION_MS: 60 * 60 * 1000,
 
+	/** Maximum reminder offset accepted by Google Calendar (4 weeks in minutes) */
+	MAX_REMINDER_MINUTES: 40320,
+
 	/** API rate limiting and retry configuration */
 	RATE_LIMIT: {
 		/** Maximum number of retry attempts for rate-limited requests */

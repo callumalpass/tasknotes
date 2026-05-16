@@ -89,7 +89,7 @@ interface MockGoogleCalendarExportSettings {
 	createAsAllDay: boolean;
 	defaultEventDuration: number;
 	includeObsidianLink: boolean;
-	defaultReminderMinutes: number | null;
+	defaultReminderMinutes: number | number[] | null;
 }
 
 interface MockMicrosoftCalendarExportSettings {

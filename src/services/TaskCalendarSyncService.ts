@@ -5,6 +5,7 @@ import { GoogleCalendarService } from "./GoogleCalendarService";
 import { TaskInfo } from "../types";
 import { convertToGoogleRecurrence } from "../utils/rruleConverter";
 import { TokenRefreshError } from "./errors";
+import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
 
 /** Debounce delay for rapid task updates (ms) */
 const SYNC_DEBOUNCE_MS = 500;
@@ -455,7 +456,6 @@ export class TaskCalendarSyncService {
 		}
 
 		const googleReminders: Array<{ method: string; minutes: number }> = [];
-		const GOOGLE_MAX_REMINDER_MINUTES = 40320; // 4 weeks in minutes (Google Calendar API limit)
 
 		// Parse event start time to get a timestamp
 		let eventStartMs: number;
@@ -507,7 +507,10 @@ export class TaskCalendarSyncService {
 				}
 
 				// Cap at Google Calendar's limit
-				const cappedMinutes = Math.min(minutesBefore, GOOGLE_MAX_REMINDER_MINUTES);
+				const cappedMinutes = Math.min(
+					minutesBefore,
+					GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES
+				);
 
 				// Include 0-minute reminders (at event time)
 				if (cappedMinutes >= 0) {
@@ -541,7 +544,10 @@ export class TaskCalendarSyncService {
 					}
 
 					// Cap at Google Calendar's limit
-					const cappedMinutes = Math.min(minutesBefore, GOOGLE_MAX_REMINDER_MINUTES);
+					const cappedMinutes = Math.min(
+						minutesBefore,
+						GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES
+					);
 					// Include 0-minute reminders (at event time)
 					googleReminders.push({ method: "popup", minutes: cappedMinutes });
 				} catch (error) {
@@ -552,6 +558,37 @@ export class TaskCalendarSyncService {
 		}
 
 		return googleReminders.length > 0 ? googleReminders : null;
+	}
+
+	private getDefaultReminderOverrides(): Array<{ method: "popup"; minutes: number }> {
+		const configuredMinutes = this.plugin.settings.googleCalendarExport.defaultReminderMinutes;
+		const rawValues = Array.isArray(configuredMinutes)
+			? configuredMinutes
+			: configuredMinutes === null
+				? []
+				: [configuredMinutes];
+		const seen = new Set<number>();
+		const reminders: Array<{ method: "popup"; minutes: number }> = [];
+
+		for (const rawValue of rawValues) {
+			const minutes = Math.trunc(Number(rawValue));
+			if (!Number.isFinite(minutes) || minutes <= 0) {
+				continue;
+			}
+
+			const cappedMinutes = Math.min(
+				minutes,
+				GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES
+			);
+			if (seen.has(cappedMinutes)) {
+				continue;
+			}
+
+			seen.add(cappedMinutes);
+			reminders.push({ method: "popup", minutes: cappedMinutes });
+		}
+
+		return reminders;
 	}
 
 	/**
@@ -643,6 +680,7 @@ export class TaskCalendarSyncService {
 			eventDate,
 			eventDateSource
 		);
+		const defaultReminderOverrides = this.getDefaultReminderOverrides();
 
 		if (taskReminders && taskReminders.length > 0) {
 			// Use task-specific reminders
@@ -650,10 +688,7 @@ export class TaskCalendarSyncService {
 				useDefault: false,
 				overrides: taskReminders,
 			};
-		} else if (
-			settings.defaultReminderMinutes !== null &&
-			settings.defaultReminderMinutes > 0
-		) {
+		} else if (defaultReminderOverrides.length > 0) {
 			// For all-day events, use Google Calendar's default all-day notifications
 			// (configured by the user in their Google Calendar settings) rather than
 			// overriding with minutes-based reminders which would fire at the wrong time
@@ -664,7 +699,7 @@ export class TaskCalendarSyncService {
 			} else {
 				event.reminders = {
 					useDefault: false,
-					overrides: [{ method: "popup", minutes: settings.defaultReminderMinutes }],
+					overrides: defaultReminderOverrides,
 				};
 			}
 		}
