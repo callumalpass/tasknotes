@@ -1576,7 +1576,9 @@ export function renderIntegrationsTab(
 			});
 
 			// Fetch live API documentation
-			void loadAPIEndpoints(apiEndpointsContent, plugin.settings.apiPort);
+			void loadAPIEndpoints(apiEndpointsContent, plugin.settings.apiPort, {
+				apiAuthToken: plugin.settings.apiAuthToken,
+			});
 		}
 
 		// Webhooks Section

@@ -1,4 +1,4 @@
-import { requestUrl } from "obsidian";
+import { requestUrl, type RequestUrlParam } from "obsidian";
 
 type OpenAPIOperationSummary = {
 	tags?: string[];
@@ -16,11 +16,38 @@ type EndpointSummary = {
 	summary: string;
 };
 
+type LoadAPIEndpointsOptions = {
+	apiAuthToken?: string;
+};
+
 function getErrorMessage(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
 
-async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise<void> {
+function buildAPIEndpointsDocsRequest(
+	apiPort = 8080,
+	options: LoadAPIEndpointsOptions = {}
+): RequestUrlParam {
+	const request: RequestUrlParam = {
+		url: `http://localhost:${apiPort}/api/docs`,
+		throw: false,
+	};
+	const token = options.apiAuthToken?.trim();
+
+	if (token) {
+		request.headers = {
+			Authorization: `Bearer ${token}`,
+		};
+	}
+
+	return request;
+}
+
+async function loadAPIEndpoints(
+	container: HTMLElement,
+	apiPort = 8080,
+	options: LoadAPIEndpointsOptions = {}
+): Promise<void> {
 	// Show loading message first
 	const loadingEl = container.createEl("p", {
 		text: "Loading API endpoints...",
@@ -28,10 +55,7 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
 	});
 
 	try {
-		const response = await requestUrl({
-			url: `http://localhost:${apiPort}/api/docs`,
-			throw: false,
-		});
+		const response = await requestUrl(buildAPIEndpointsDocsRequest(apiPort, options));
 
 		if (response.status < 200 || response.status >= 300) {
 			throw new Error(`API unavailable (${response.status})`);
@@ -100,4 +124,4 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
 	}
 }
 
-export { loadAPIEndpoints };
+export { buildAPIEndpointsDocsRequest, loadAPIEndpoints };

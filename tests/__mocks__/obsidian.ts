@@ -965,6 +965,8 @@ export const Notice = jest.fn().mockImplementation((message: string, timeout?: n
   return {};
 });
 
+export const requestUrl = jest.fn();
+
 // Menu mock class
 export const Menu = jest.fn().mockImplementation(() => {
   const onHideCallbacks: Array<() => void> = [];

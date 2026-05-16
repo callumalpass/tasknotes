@@ -51,6 +51,7 @@ Example:
 
 ## Fixed
 
+- ([#1648](https://github.com/callumalpass/tasknotes/issues/1648), [#1665](https://github.com/callumalpass/tasknotes/issues/1665)) Fixed the API endpoint list in Integrations settings so it uses the configured bearer token when API authentication is enabled, instead of reporting the running local server as inaccessible. Thanks to @npondel and @warm-july for reporting this.
 - ([#1668](https://github.com/callumalpass/tasknotes/issues/1668)) Fixed the Create Task magic wand so NLP-triggered custom field values are copied into the custom property inputs before saving. Thanks to @hokfujow for reporting this.
 - ([#1669](https://github.com/callumalpass/tasknotes/issues/1669)) Stopped the startup settings migration check from rewriting `data.json` just because saved calendar defaults are `false`, `0`, empty, or `null`, reducing unnecessary sync churn. Thanks to @thehyperadvisor for reporting this.
 - ([#1674](https://github.com/callumalpass/tasknotes/issues/1674)) Improved the timeblock creation error when Daily Notes cannot read its configured folder, so the modal notice points to the Daily Notes core plugin settings instead of only logging the folder lookup failure. Thanks to @Ender367 for reporting this.
