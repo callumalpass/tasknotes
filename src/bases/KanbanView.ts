@@ -734,6 +734,47 @@ export class KanbanView extends BasesViewBase {
 		return props[propertyName];
 	}
 
+	private getSwimLaneKeys(
+		task: TaskInfo,
+		pathToProps: Map<string, Record<string, unknown>>
+	): string[] {
+		if (!this.swimLanePropertyId) {
+			return ["None"];
+		}
+
+		const cleanSwimlane = stripPropertyPrefix(this.swimLanePropertyId);
+		if (this.explodeListColumns && this.isListTypeProperty(cleanSwimlane)) {
+			const value = this.getListPropertyValue(task, cleanSwimlane, pathToProps);
+			return this.valueToListGroupKeys(value);
+		}
+
+		const props = pathToProps.get(task.path) || {};
+		return [this.valueToString(this.getPropertyValue(props, this.swimLanePropertyId))];
+	}
+
+	private valueToListGroupKeys(value: unknown): string[] {
+		let values: unknown[];
+
+		if (Array.isArray(value)) {
+			values = value;
+		} else if (value === null || value === undefined) {
+			values = [];
+		} else if (
+			typeof value === "object" &&
+			value !== null &&
+			Array.isArray((value as BasesDisplayValue).value)
+		) {
+			values = (value as BasesDisplayValue).value || [];
+		} else {
+			values = [value];
+		}
+
+		const keys = values
+			.map((item) => this.valueToString(item))
+			.filter((key) => key !== "None");
+		return keys.length > 0 ? Array.from(new Set(keys)) : ["None"];
+	}
+
 	/**
 	 * Augment groups with empty columns for user-defined statuses.
 	 * Only applies when grouping by status property.
@@ -880,10 +921,9 @@ export class KanbanView extends BasesViewBase {
 		const swimLaneValues = new Set<string>();
 
 		for (const task of allTasks) {
-			const props = pathToProps.get(task.path) || {};
-			const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
-			const swimLaneKey = this.valueToString(swimLaneValue);
-			swimLaneValues.add(swimLaneKey);
+			for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
+				swimLaneValues.add(swimLaneKey);
+			}
 		}
 
 		// Initialize swimlane -> column -> tasks structure
@@ -909,15 +949,13 @@ export class KanbanView extends BasesViewBase {
 		// consistent with flat mode and with Bases' computed grouping.
 		for (const [columnKey, columnTasks] of groups) {
 			for (const task of columnTasks) {
-				const props = pathToProps.get(task.path) || {};
-				const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
-				const swimLaneKey = this.valueToString(swimLaneValue);
+				for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
+					const swimLane = swimLanes.get(swimLaneKey);
+					if (!swimLane) continue;
 
-				const swimLane = swimLanes.get(swimLaneKey);
-				if (!swimLane) continue;
-
-				if (swimLane.has(columnKey)) {
-					swimLane.get(columnKey)!.push(task);
+					if (swimLane.has(columnKey)) {
+						swimLane.get(columnKey)!.push(task);
+					}
 				}
 			}
 		}
@@ -926,10 +964,9 @@ export class KanbanView extends BasesViewBase {
 		const candidateSwimLaneValues = new Set<string>();
 
 		for (const task of allTasksForCandidateScopes) {
-			const props = pathToProps.get(task.path) || {};
-			const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
-			const swimLaneKey = this.valueToString(swimLaneValue);
-			candidateSwimLaneValues.add(swimLaneKey);
+			for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
+				candidateSwimLaneValues.add(swimLaneKey);
+			}
 		}
 
 		for (const swimLaneKey of candidateSwimLaneValues) {
@@ -943,13 +980,12 @@ export class KanbanView extends BasesViewBase {
 
 		for (const [columnKey, columnTasks] of allGroups) {
 			for (const task of columnTasks) {
-				const props = pathToProps.get(task.path) || {};
-				const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
-				const swimLaneKey = this.valueToString(swimLaneValue);
-				const swimLane = candidateSwimLanes.get(swimLaneKey);
-				if (!swimLane) continue;
-				if (swimLane.has(columnKey)) {
-					swimLane.get(columnKey)!.push(task);
+				for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
+					const swimLane = candidateSwimLanes.get(swimLaneKey);
+					if (!swimLane) continue;
+					if (swimLane.has(columnKey)) {
+						swimLane.get(columnKey)!.push(task);
+					}
 				}
 			}
 		}

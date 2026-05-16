@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- ([#1889](https://github.com/callumalpass/tasknotes/issues/1889)) Fixed Kanban swimlanes for list-valued properties so tags and contexts use individual list items instead of comma-joined values. Thanks to @pkropotin for reporting.
 - ([#1890](https://github.com/callumalpass/tasknotes/issues/1890)) Fixed scheduled-date Kanban columns dropping tasks when date-only and timed tasks on the same day are sorted by a scheduled-time formula. Thanks to @chrabia for reporting and investigating.
 - ([#1892](https://github.com/callumalpass/tasknotes/issues/1892)) Fixed nested Markdown list indentation in the Task Edit Modal details editor. Thanks to @Glint-Eye for reporting.
 - ([#1891](https://github.com/callumalpass/tasknotes/issues/1891)) Fixed TaskNotes modal markdown editors collapsing to one-character-wide lines when Pretty Properties is installed. Thanks to @bkennedy-improving for reporting.
