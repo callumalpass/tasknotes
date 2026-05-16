@@ -25,10 +25,12 @@ describe("TaskListView drag controls", () => {
 
 	beforeEach(() => {
 		MockObsidian.reset();
+		document.body.className = "";
 		document.body.innerHTML = "";
 	});
 
 	afterEach(() => {
+		document.body.className = "";
 		document.body.innerHTML = "";
 	});
 
@@ -60,6 +62,65 @@ describe("TaskListView drag controls", () => {
 		expect((view as any).draggedTaskPath).toBeNull();
 		expect(card.classList.contains("task-card--dragging")).toBe(false);
 		expect(card.getAttribute("draggable")).toBe("true");
+	});
+
+	it("starts mobile list reordering only from the dedicated drag handle", () => {
+		document.body.classList.add("is-mobile");
+		const view = createView();
+		const task = TaskFactory.createTask({ path: "tasks/mobile-drag.md" });
+		const card = document.createElement("div");
+		const mainRow = document.createElement("div");
+
+		card.className = "task-card";
+		card.setAttribute("draggable", "true");
+		mainRow.className = "task-card__main-row";
+		card.appendChild(mainRow);
+
+		(view as any).setupCardDragHandlers(card, task, null);
+
+		const handle = card.querySelector("[data-tn-drag-handle='true']") as HTMLElement;
+		expect(handle).toBeTruthy();
+		expect(handle.classList.contains("task-card__drag-handle")).toBe(true);
+		expect(handle.getAttribute("draggable")).toBe("true");
+		expect(handle.getAttribute("aria-label")).toBe("Drag to reorder");
+		expect(card.getAttribute("draggable")).toBe("false");
+		expect(card.classList.contains("task-card--drag-handle-only")).toBe(true);
+
+		let cardClickCount = 0;
+		card.addEventListener("click", () => {
+			cardClickCount++;
+		});
+		handle.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+		expect(cardClickCount).toBe(0);
+
+		const blockedDragStart = new Event("dragstart", {
+			bubbles: true,
+			cancelable: true,
+		}) as DragEvent;
+		card.dispatchEvent(blockedDragStart);
+
+		expect(blockedDragStart.defaultPrevented).toBe(true);
+		expect((view as any).draggedTaskPath).toBeNull();
+
+		const originalRequestAnimationFrame = window.requestAnimationFrame;
+		window.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+			callback(0);
+			return 1;
+		}) as typeof window.requestAnimationFrame;
+
+		try {
+			const handleDragStart = new Event("dragstart", {
+				bubbles: true,
+				cancelable: true,
+			}) as DragEvent;
+			handle.dispatchEvent(handleDragStart);
+
+			expect(handleDragStart.defaultPrevented).toBe(false);
+			expect((view as any).draggedTaskPath).toBe("tasks/mobile-drag.md");
+			expect(card.classList.contains("task-card--dragging")).toBe(true);
+		} finally {
+			window.requestAnimationFrame = originalRequestAnimationFrame;
+		}
 	});
 
 	it("opens the preview slot after the hovered card when dropping below the last item in a group", () => {

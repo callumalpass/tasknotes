@@ -208,6 +208,7 @@ export class TaskListView extends BasesViewBase {
 	private readonly UNGROUPED_SORT_SCOPE_KEY = "__ungrouped__";
 	private readonly CARD_NO_DRAG_SELECTOR =
 		'[data-tn-no-drag="true"], a, button, input, select, textarea, [contenteditable="true"]';
+	private readonly CARD_DRAG_HANDLE_SELECTOR = '[data-tn-drag-handle="true"]';
 
 	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
@@ -496,7 +497,45 @@ export class TaskListView extends BasesViewBase {
 			return false;
 		}
 
-		return !!targetEl.closest(this.CARD_NO_DRAG_SELECTOR);
+		if (targetEl.closest(this.CARD_NO_DRAG_SELECTOR)) {
+			return true;
+		}
+
+		return (
+			this.isMobileDragHandleOnlyMode(cardEl) &&
+			!targetEl.closest(this.CARD_DRAG_HANDLE_SELECTOR)
+		);
+	}
+
+	private isMobileDragHandleOnlyMode(cardEl: HTMLElement): boolean {
+		return cardEl.ownerDocument.body.classList.contains("is-mobile");
+	}
+
+	private setupCardDragHandle(cardEl: HTMLElement): void {
+		cardEl.classList.add("task-card--reorderable");
+		cardEl.classList.toggle(
+			"task-card--drag-handle-only",
+			this.isMobileDragHandleOnlyMode(cardEl)
+		);
+
+		const existingHandle = cardEl.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR);
+		if (existingHandle) {
+			existingHandle.setAttribute("draggable", "true");
+			return;
+		}
+
+		const handle = cardEl.ownerDocument.createElement("div");
+		handle.className = "task-card__drag-handle";
+		handle.dataset.tnDragHandle = "true";
+		handle.setAttribute("draggable", "true");
+		handle.setAttribute("aria-label", "Drag to reorder");
+		handle.setAttribute("title", "Drag to reorder");
+		setIcon(handle, "grip-vertical");
+		handle.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+		});
+		cardEl.insertBefore(handle, cardEl.firstChild);
 	}
 
 	/**
@@ -511,9 +550,15 @@ export class TaskListView extends BasesViewBase {
 	): void {
 		let dragOriginTarget: EventTarget | null = null;
 		const restoreCardDraggable = () => {
-			cardEl.setAttribute("draggable", "true");
+			cardEl.setAttribute(
+				"draggable",
+				this.isMobileDragHandleOnlyMode(cardEl) ? "false" : "true"
+			);
 			dragOriginTarget = null;
 		};
+
+		this.setupCardDragHandle(cardEl);
+		restoreCardDraggable();
 
 		cardEl.addEventListener(
 			"mousedown",

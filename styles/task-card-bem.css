@@ -269,29 +269,35 @@
 /* Drag handle indicator */
 .tasknotes-plugin .task-card__drag-handle {
     position: absolute;
-    left: 0;
+    left: 2px;
     top: 50%;
     transform: translateY(-50%);
-    width: 4px;
-    height: 20px;
-    background: repeating-linear-gradient(
-        to bottom,
-        var(--tn-text-faint) 0px,
-        var(--tn-text-faint) 2px,
-        transparent 2px,
-        transparent 4px
-    );
+    width: 20px;
+    height: 28px;
+    color: var(--tn-text-faint);
     opacity: 0;
-    transition: opacity var(--tn-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity var(--tn-transition-fast), color var(--tn-transition-fast), background var(--tn-transition-fast);
     border-radius: var(--tn-radius-xs);
+    cursor: grab;
+    touch-action: none;
+}
+
+.tasknotes-plugin .task-card__drag-handle svg {
+    width: 14px;
+    height: 14px;
 }
 
 .tasknotes-plugin .task-card[draggable="true"]:hover .task-card__drag-handle {
     opacity: 0.5;
 }
 
-.tasknotes-plugin .task-card[draggable="true"]:active .task-card__drag-handle {
+.tasknotes-plugin .task-card[draggable="true"]:active .task-card__drag-handle,
+.tasknotes-plugin .task-card__drag-handle:active {
     opacity: 0.8;
+    cursor: grabbing;
 }
 
 .tasknotes-plugin .task-card[draggable="true"] {
@@ -306,6 +312,30 @@
 
 .tasknotes-plugin .task-card [data-tn-no-drag="true"] {
     cursor: var(--cursor, pointer);
+}
+
+body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-card__main-row {
+    padding-left: 28px;
+}
+
+body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-card__drag-handle {
+    width: 32px;
+    height: 32px;
+    opacity: 0.85;
+    color: var(--tn-text-muted);
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
+body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-card__drag-handle svg {
+    width: 18px;
+    height: 18px;
+}
+
+body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-card__drag-handle:active {
+    opacity: 1;
+    color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
 }
 
 /* Container queries for adaptive layouts */
