@@ -41,6 +41,21 @@ describe('Issue #1422: Tags with dashes', () => {
       expect(result.parsedData?.tags).toContain('project/sub-project');
     });
 
+    it('should extract hierarchical tags with accented characters', () => {
+      const result = TasksPluginParser.parseTaskLine('- [ ] Diagnose #task/problème');
+
+      expect(result.isTaskLine).toBe(true);
+      expect(result.parsedData?.tags).toContain('task/problème');
+    });
+
+    it('should extract tags with decomposed accented characters', () => {
+      const decomposedTag = 'proble\u0300me';
+      const result = TasksPluginParser.parseTaskLine(`- [ ] Diagnose #task/${decomposedTag}`);
+
+      expect(result.isTaskLine).toBe(true);
+      expect(result.parsedData?.tags).toContain(`task/${decomposedTag}`);
+    });
+
     it('should preserve dashes in tag names when cleaning title', () => {
       const result = TasksPluginParser.parseTaskLine('- [ ] Fix bug #my-tag');
 
@@ -83,6 +98,14 @@ describe('Issue #1422: Tags with dashes', () => {
       expect(result.parsedData?.title).toBe('Task');
       expect(result.parsedData?.title).not.toContain('-one');
       expect(result.parsedData?.title).not.toContain('-two');
+    });
+
+    it('should remove the full accented tag from the title', () => {
+      const result = TasksPluginParser.parseTaskLine('- [ ] Diagnose #task/problème');
+
+      expect(result.isTaskLine).toBe(true);
+      expect(result.parsedData?.title).toBe('Diagnose');
+      expect(result.parsedData?.title).not.toContain('ème');
     });
   });
 });
