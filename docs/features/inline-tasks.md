@@ -37,11 +37,13 @@ Task link overlays work in both Live Preview and Reading modes:
 
 The overlays support drag-and-drop to calendar views and provide keyboard shortcuts for quick navigation (Ctrl/Cmd+Click to open the source file).
 
-## Create Inline Task Command
+## Create New Inline Task Command
 
-The `Create inline task` command allows you to create a new task from the current line in the editor. This command is available in the command palette.
+The `Create new inline task` command opens the task creation modal from the editor and inserts a link to the new task when it is saved. This command is available in the command palette.
 
-When you run the command, the current line is used as the title of the new task. The line is then replaced with a link to the new task file.
+When the cursor is on an empty line, the link is inserted at the cursor. When the cursor is on a line with content, TaskNotes inserts a new line below it and places the task link there. The command does not use the current line as the task title.
+
+To turn the current line into a TaskNote, use `Convert to TaskNote` or the instant conversion button next to a supported line. That flow uses the current line as the task title and replaces the original line with a link to the new task file.
 
 ## Instant Task Conversion
 
