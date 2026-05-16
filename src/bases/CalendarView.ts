@@ -1375,22 +1375,7 @@ export class CalendarView extends BasesViewBase {
 		// Check for property-based navigation
 		if (this.viewOptions.initialDateProperty) {
 			const propertyId = this.viewOptions.initialDateProperty;
-			const internalFieldName = this.propertyMapper.basesToTaskCardProperty(propertyId);
-
-			// Collect dates from tasks
-			const dates: { compare: Date; value: string | Date }[] = [];
-			for (const task of taskNotes) {
-				const value = (task as unknown as Record<string, unknown>)[internalFieldName];
-				const normalized = normalizeDateValueForCalendar(value);
-				if (!normalized) continue;
-
-				const compareDate = normalized.isAllDay
-					? parseDateToUTC(normalized.value as string)
-					: new Date(normalized.value);
-				if (isNaN(compareDate.getTime())) continue;
-
-				dates.push({ compare: compareDate, value: normalized.value });
-			}
+			const dates = this.collectInitialDateCandidates(propertyId, taskNotes);
 
 			if (dates.length > 0) {
 				// Apply strategy
@@ -1413,6 +1398,57 @@ export class CalendarView extends BasesViewBase {
 
 		// Default to today
 		return undefined;
+	}
+
+	private collectInitialDateCandidates(
+		propertyId: string,
+		taskNotes: TaskInfo[]
+	): { compare: Date; value: string | Date }[] {
+		const dates: { compare: Date; value: string | Date }[] = [];
+
+		if (this.data?.data) {
+			for (const entry of this.data.data) {
+				const value = this.dataAdapter.getPropertyValue(entry, propertyId);
+				const candidate = this.toInitialDateCandidate(value);
+				if (candidate) {
+					dates.push(candidate);
+				}
+			}
+		}
+
+		if (dates.length > 0) {
+			return dates;
+		}
+
+		const internalFieldName = this.propertyMapper.basesToTaskCardProperty(propertyId);
+		for (const task of taskNotes) {
+			const taskRecord = task as unknown as Record<string, unknown>;
+			const customProperties = task.customProperties;
+			const value =
+				taskRecord[internalFieldName] ??
+				customProperties?.[internalFieldName] ??
+				customProperties?.[propertyId];
+			const candidate = this.toInitialDateCandidate(value);
+			if (candidate) {
+				dates.push(candidate);
+			}
+		}
+
+		return dates;
+	}
+
+	private toInitialDateCandidate(
+		value: unknown
+	): { compare: Date; value: string | Date } | null {
+		const normalized = normalizeDateValueForCalendar(value);
+		if (!normalized) return null;
+
+		const compareDate = normalized.isAllDay
+			? parseDateToUTC(normalized.value as string)
+			: new Date(normalized.value);
+		if (isNaN(compareDate.getTime())) return null;
+
+		return { compare: compareDate, value: normalized.value };
 	}
 
 	private getNavigationConfigState(): CalendarRecreateNavigationState {

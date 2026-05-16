@@ -46,6 +46,7 @@ Example:
 
 ## Fixed
 
+- ([#1766](https://github.com/callumalpass/tasknotes/issues/1766)) Fixed Calendar Bases date navigation from custom note properties, so embedded calendar views can open on the date stored in the selected property instead of falling back to today. Thanks to @chrabia for reporting this.
 - ([#1767](https://github.com/callumalpass/tasknotes/issues/1767)) Aligned the start and end time rows in the timeblock creation modal. Thanks to @loiveli for reporting this.
 - ([#1783](https://github.com/callumalpass/tasknotes/issues/1783)) Replaced the default browser drag ghost for Kanban cards so dragging a card no longer makes the next card look semi-transparent. Thanks to @loukandr for reporting this and tracing the drag image behavior.
 - ([#1796](https://github.com/callumalpass/tasknotes/issues/1796)) Restored expanded subtasks immediately after renaming a parent task file and updating links. Thanks to @bung69 for reporting this.
