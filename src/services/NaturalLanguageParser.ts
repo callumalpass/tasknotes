@@ -49,8 +49,94 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 	}
 
 	parseInput(input: string): ParsedTaskData {
-		const parsed = super.parseInput(input);
-		return this.normalizeUserFieldValues(this.extractLinkedUserFields(input, parsed));
+		const protectedInput = this.protectQuotedLiterals(input);
+		const parsed = super.parseInput(protectedInput.text);
+		const withLinkedFields = this.extractLinkedUserFields(protectedInput.text, parsed);
+		this.restoreQuotedLiterals(withLinkedFields, protectedInput.literals);
+		return this.normalizeUserFieldValues(withLinkedFields);
+	}
+
+	private protectQuotedLiterals(input: string): { text: string; literals: string[] } {
+		const literals: string[] = [];
+		let text = "";
+		let index = 0;
+
+		while (index < input.length) {
+			const char = input[index];
+			if (!this.isQuoteDelimiter(char) || !this.isEligibleQuoteStart(input, index)) {
+				text += char;
+				index += 1;
+				continue;
+			}
+
+			const endIndex = this.findClosingQuote(input, index + 1, char);
+			if (endIndex === -1 || !this.isEligibleQuoteEnd(input, endIndex)) {
+				text += char;
+				index += 1;
+				continue;
+			}
+
+			const literal = input.slice(index + 1, endIndex);
+			if (literal.trim().length === 0) {
+				text += char;
+				index += 1;
+				continue;
+			}
+
+			const placeholder = `__TASKNOTES_LITERAL_${literals.length}__`;
+			literals.push(literal);
+			text += placeholder;
+			index = endIndex + 1;
+		}
+
+		return { text, literals };
+	}
+
+	private restoreQuotedLiterals(parsed: ParsedTaskData, literals: string[]): void {
+		if (literals.length === 0) return;
+
+		let title = parsed.title;
+		literals.forEach((literal, index) => {
+			title = title.replace(`__TASKNOTES_LITERAL_${index}__`, literal);
+		});
+		parsed.title = title.replace(/\s+/g, " ").trim();
+	}
+
+	private isQuoteDelimiter(char: string): boolean {
+		return char === "\"" || char === "'" || char === "`";
+	}
+
+	private isEligibleQuoteStart(input: string, index: number): boolean {
+		const char = input[index];
+		if (char !== "'") return true;
+
+		const previous = index > 0 ? input[index - 1] : "";
+		return !this.isLiteralBoundaryWordCharacter(previous);
+	}
+
+	private isEligibleQuoteEnd(input: string, index: number): boolean {
+		const char = input[index];
+		if (char !== "'") return true;
+
+		const next = index + 1 < input.length ? input[index + 1] : "";
+		return !this.isLiteralBoundaryWordCharacter(next);
+	}
+
+	private findClosingQuote(input: string, startIndex: number, delimiter: string): number {
+		for (let index = startIndex; index < input.length; index += 1) {
+			if (input[index] !== delimiter) continue;
+
+			const previous = index > 0 ? input[index - 1] : "";
+			if (previous === "\\") continue;
+
+			return index;
+		}
+
+		return -1;
+	}
+
+	private isLiteralBoundaryWordCharacter(char: string): boolean {
+		return /[\p{L}\p{N}_]/u.test(char);
 	}
 
 	private normalizeUserFieldValues(parsed: ParsedTaskData): ParsedTaskData {

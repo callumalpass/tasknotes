@@ -17,6 +17,8 @@ Body template settings let you scaffold newly created tasks with consistent note
 
 NLP settings define how text input is interpreted during task capture. **Enable natural language task input** activates date and metadata parsing, **Default to scheduled** changes ambiguous date handling, **NLP language** selects parsing patterns, and **Status suggestion trigger** controls optional status autocomplete activation.
 
+Wrap text in double quotes, single quotes, or backticks to keep it as literal title text during NLP parsing. For example, `BIO "123H" - HW1` keeps `123H` in the title instead of treating it as a 123-hour estimate, while `Review "Today" notes` keeps `Today` as text instead of parsing it as a date.
+
 ## Pomodoro Timer
 
 Pomodoro settings control interval lengths, long-break cadence, optional auto-start behavior, and end-of-session notifications/sound. **Pomodoro data storage** chooses whether history is kept in plugin data or daily notes.
