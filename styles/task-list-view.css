@@ -322,6 +322,11 @@
         gap: var(--tn-spacing-xs);
     }
 
+    body.is-mobile .tasknotes-plugin .task-list-view {
+        padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+        scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+    }
+
     .tasknotes-plugin .task-list-view__header {
         flex-direction: column;
         align-items: stretch;

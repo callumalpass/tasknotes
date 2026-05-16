@@ -123,6 +123,12 @@
     padding-left: var(--tn-spacing-md);
 }
 
+body.is-mobile .tn-tasknotesTaskList .tn-bases-items-container,
+body.is-mobile .tn-bases-tasknotes-list {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+}
+
 /* Reset indentation for task cards after a primary group header */
 .tn-tasknotesTaskList .task-group[data-level="primary"] ~ .task-card {
     margin-left: 0;
