@@ -15,6 +15,7 @@ import { ReminderContextMenu } from "../components/ReminderContextMenu";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
 import { BlockingUpdates, buildTaskEditChanges } from "./taskEditChanges";
+import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 
 export interface TaskEditOptions {
 	task: TaskInfo;
@@ -83,7 +84,7 @@ export class TaskEditModal extends TaskModal {
 		const shouldFilterTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
 		const rawTags = this.task.tags || [];
 		const visibleTags = shouldFilterTaskTag
-			? rawTags.filter((tag) => tag !== this.plugin.settings.taskTag)
+			? filterTaskIdentificationTags(rawTags, this.plugin.settings.taskTag)
 			: rawTags;
 		this.tags = rawTags.length > 0 ? sanitizeTags(visibleTags.join(", ")) : "";
 		this.initialTags = this.tags;

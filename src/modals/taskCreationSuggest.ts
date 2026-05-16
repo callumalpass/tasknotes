@@ -3,6 +3,7 @@ import TaskNotesPlugin from "../main";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { ProjectEntry, ProjectMetadataResolver } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
+import { filterTagsForTaskModalSuggestions } from "../utils/taskTagFiltering";
 
 /**
  * Auto-suggestion provider for NLP textarea with @, #, and + triggers
@@ -173,7 +174,10 @@ export class NLPSuggest extends AbstractInputSuggest<
 	 * Get tag suggestions
 	 */
 	private getTagSuggestions(query: string): TagSuggestion[] {
-		const tags = this.plugin.cacheManager.getAllTags();
+		const tags = filterTagsForTaskModalSuggestions(
+			this.plugin.cacheManager.getAllTags(),
+			this.plugin.settings
+		);
 		return tags
 			.filter((tag) => tag && typeof tag === "string")
 			.filter((tag) => tag.toLowerCase().includes(query.toLowerCase()))

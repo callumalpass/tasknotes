@@ -4,6 +4,7 @@ import { getCurrentTimestamp } from "../utils/dateUtils";
 import { updateToNextScheduledOccurrence, sanitizeTags, updateDTSTARTInRecurrenceRule } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
+import { appendMissingTaskIdentificationTags } from "../utils/taskTagFiltering";
 
 interface DependencyItem {
 	dependency: TaskDependency;
@@ -124,17 +125,13 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 	}
 
 	const tagsUnchanged = sanitizeTags(input.tags) === sanitizeTags(input.initialTags);
-	const newTags = input.tags
+	let newTags = input.tags
 		.split(",")
 		.map((tag) => tag.trim())
 		.filter((tag) => tag.length > 0);
 
-	if (
-		input.taskIdentificationMethod === "tag" &&
-		input.taskTag &&
-		!newTags.includes(input.taskTag)
-	) {
-		newTags.push(input.taskTag);
+	if (input.taskIdentificationMethod === "tag" && input.taskTag) {
+		newTags = appendMissingTaskIdentificationTags(newTags, input.task.tags || [], input.taskTag);
 	}
 
 	const oldTags = input.task.tags || [];

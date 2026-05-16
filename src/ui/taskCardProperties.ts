@@ -3,8 +3,8 @@ import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
-import { FilterUtils } from "../utils/FilterUtils";
 import { calculateTotalTimeSpent } from "../utils/helpers";
+import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 import {
 	formatDateTimeForDisplay,
 	getDatePart,
@@ -210,9 +210,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 				plugin.settings.taskIdentificationMethod === "tag" &&
 				plugin.settings.hideIdentifyingTagsInCards
 			) {
-				tagsToRender = value.filter(
-					(tag) => !FilterUtils.matchesHierarchicalTagExact(tag, plugin.settings.taskTag)
-				);
+				tagsToRender = filterTaskIdentificationTags(value, plugin.settings.taskTag);
 			}
 
 			if (tagsToRender.length > 0) {

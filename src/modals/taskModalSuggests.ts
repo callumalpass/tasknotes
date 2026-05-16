@@ -1,6 +1,7 @@
 import { AbstractInputSuggest, App } from "obsidian";
 import TaskNotesPlugin from "../main";
 import type { UserMappedField } from "../types/settings";
+import { filterTagsForTaskModalSuggestions } from "../utils/taskTagFiltering";
 
 interface ContextSuggestion {
 	value: string;
@@ -77,7 +78,10 @@ export class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
 		const currentValues = this.input.value.split(",").map((value: string) => value.trim());
 		const currentQuery = currentValues[currentValues.length - 1];
 
-		const tags = this.plugin.cacheManager.getAllTags();
+		const tags = filterTagsForTaskModalSuggestions(
+			this.plugin.cacheManager.getAllTags(),
+			this.plugin.settings
+		);
 		const alreadySelected = currentValues.slice(0, -1);
 		return tags
 			.filter((tag) => tag && typeof tag === "string")
