@@ -390,6 +390,10 @@ export abstract class TaskModal extends Modal {
 	abstract handleSave(): Promise<void>;
 	abstract getModalTitle(): string;
 
+	protected async handleSubmitShortcut(_shift: boolean): Promise<void> {
+		await this.handleSave();
+	}
+
 	onOpen() {
 		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal");
 		if (this.plugin.settings.enableModalSplitLayout) {
@@ -409,7 +413,7 @@ export abstract class TaskModal extends Modal {
 					return;
 				}
 				e.preventDefault();
-				void this.handleSave();
+				void this.handleSubmitShortcut(e.shiftKey);
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
@@ -699,9 +703,9 @@ export abstract class TaskModal extends Modal {
 					onChange: (value) => {
 						this.details = value;
 					},
-					onSubmit: () => {
+					onSubmit: (shift) => {
 						// Ctrl/Cmd+Enter - save the task
-						void this.handleSave();
+						void this.handleSubmitShortcut(shift);
 					},
 					onEscape: () => {
 						// ESC - close the modal

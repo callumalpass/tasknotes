@@ -428,6 +428,31 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         { applyDefaults: false }
       );
     });
+
+    it('should reopen a fresh creation modal when saving and creating another task', async () => {
+      jest.useFakeTimers();
+      const openSpy = jest.spyOn(TaskCreationModal.prototype, 'open').mockImplementation(() => undefined);
+
+      try {
+        (modal as any).title = 'First Task';
+        (modal as any).frequencyMode = 'NONE';
+
+        await (modal as any).handleSave({ createAnother: true });
+
+        expect(mockPlugin.taskService.createTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'First Task'
+          }),
+          { applyDefaults: false }
+        );
+
+        expect(openSpy).not.toHaveBeenCalled();
+        jest.runOnlyPendingTimers();
+        expect(openSpy).toHaveBeenCalledTimes(1);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
   });
 
   describe('Task Conversion', () => {

@@ -155,7 +155,7 @@ export interface MarkdownEditorProps {
 	/** Handler for Tab key (return false to use default behavior) */
 	onTab?: (editor: EmbeddableMarkdownEditor, shift: boolean) => boolean;
 	/** Handler for Ctrl/Cmd+Enter */
-	onSubmit?: (editor: EmbeddableMarkdownEditor) => void;
+	onSubmit?: (editor: EmbeddableMarkdownEditor, shift: boolean) => void;
 	/** Handler for blur event */
 	onBlur?: (editor: EmbeddableMarkdownEditor) => void;
 	/** Handler for paste event */
@@ -223,6 +223,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 
 		// Override Mod+Enter to prevent default workspace behavior
 		this.scope.register(["Mod"], "Enter", (e, ctx) => true);
+		this.scope.register(["Mod", "Shift"], "Enter", (e, ctx) => true);
 
 		this.owner.editMode = this;
 		this.owner.editor = this.editor;
@@ -367,9 +368,16 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 						shift: (cm) => this.options.onEnter(this, false, true),
 					},
 					{
+						key: "Shift-Mod-Enter",
+						run: (cm) => {
+							this.options.onSubmit(this, true);
+							return true;
+						},
+					},
+					{
 						key: "Mod-Enter",
 						run: (cm) => {
-							this.options.onSubmit(this);
+							this.options.onSubmit(this, false);
 							return true;
 						},
 					},

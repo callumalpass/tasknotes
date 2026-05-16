@@ -17,7 +17,7 @@ export interface TaskModalEditorOptions {
 	placeholder: string;
 	cls: string;
 	onChange: (value: string) => void;
-	onSubmit: () => void;
+	onSubmit: (shift: boolean) => void;
 	onEscape: () => void;
 	onTab: (shift: boolean) => boolean;
 	extensions?: Extension[];
@@ -32,6 +32,7 @@ export function createTaskModalMarkdownEditor(
 		const EmbeddableMarkdownEditor = loadEmbeddableMarkdownEditor();
 		return new EmbeddableMarkdownEditor(app, container, {
 			...options,
+			onSubmit: (_editor, shift) => options.onSubmit(shift),
 			onTab: (_editor, shift) => options.onTab(shift),
 		});
 	} catch (error) {
@@ -48,7 +49,7 @@ export function createTaskModalMarkdownEditor(
 		fallbackTextarea.addEventListener("keydown", (e) => {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				options.onSubmit();
+				options.onSubmit(e.shiftKey);
 			} else if (e.key === "Escape") {
 				e.preventDefault();
 				options.onEscape();

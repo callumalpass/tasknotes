@@ -153,9 +153,9 @@ export class TaskCreationModal extends TaskModal {
 						this.clearNaturalLanguagePreview();
 					}
 				},
-				onSubmit: () => {
+				onSubmit: (_editor, shift) => {
 					// Ctrl+Enter - save the task
-					void this.handleSave();
+					void this.handleSubmitShortcut(shift);
 				},
 				onEscape: () => {
 					// ESC - close the modal (only when not in vim insert mode)
@@ -182,13 +182,13 @@ export class TaskCreationModal extends TaskModal {
 					return true; // Prevent default tab behavior
 				},
 				onEnter: (editor, mod, shift) => {
-					if (shift) {
-						// Shift+Enter - allow newline
-						return false;
-					}
 					if (mod) {
 						// Ctrl/Cmd+Enter - save (already handled by onSubmit)
 						return true;
+					}
+					if (shift) {
+						// Shift+Enter - allow newline
+						return false;
 					}
 					// Normal Enter - allow new line
 					return false;
@@ -235,7 +235,7 @@ export class TaskCreationModal extends TaskModal {
 				const keyEvent = e as KeyboardEvent;
 				if (keyEvent.key === "Enter" && (keyEvent.ctrlKey || keyEvent.metaKey)) {
 					keyEvent.preventDefault();
-					void this.handleSave();
+					void this.handleSubmitShortcut(keyEvent.shiftKey);
 				} else if (keyEvent.key === "Tab" && keyEvent.shiftKey) {
 					keyEvent.preventDefault();
 					this.parseAndFillForm(input);
@@ -659,7 +659,11 @@ export class TaskCreationModal extends TaskModal {
 		}
 	}
 
-	async handleSave(): Promise<void> {
+	protected async handleSubmitShortcut(shift: boolean): Promise<void> {
+		await this.handleSave({ createAnother: shift });
+	}
+
+	async handleSave(options: { createAnother?: boolean } = {}): Promise<void> {
 		// If NLP is enabled and there's content in the NL field, parse it first
 		if (this.plugin.settings.enableNaturalLanguageInput) {
 			const nlContent = this.getNLPInputValue().trim();
@@ -736,6 +740,12 @@ export class TaskCreationModal extends TaskModal {
 			}
 
 			this.close();
+
+			if (options.createAnother) {
+				window.setTimeout(() => {
+					new TaskCreationModal(this.app, this.plugin, this.options).open();
+				}, 0);
+			}
 		} catch (error) {
 			console.error("Failed to create task:", error);
 			const message = error instanceof Error && error.message ? error.message : String(error);
