@@ -837,7 +837,7 @@ views:
     filters:
       and:
         - ${taskFilterCondition}
-        - note.${projectsProperty}.contains(this.file.asLink())
+        - list(note.${projectsProperty}).contains(this.file.asLink())
     order:
 ${orderYaml}
     sort:
