@@ -304,14 +304,25 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		labelSpan.textContent = this.plugin.i18n.translate("common.new");
 		innerBtn.appendChild(labelSpan);
 
+		// Find the original "New" button position and insert our button there
+		const originalNewBtn = toolbarEl.querySelector<HTMLElement>(".bases-toolbar-new-item-menu");
+
 		newTaskBtn.appendChild(innerBtn);
 
-		newTaskBtn.addEventListener("click", () => {
+		newTaskBtn.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+
+			const currentOriginalNewBtn =
+				toolbarEl.querySelector<HTMLElement>(".bases-toolbar-new-item-menu");
+			if (currentOriginalNewBtn?.isConnected) {
+				currentOriginalNewBtn.click();
+				return;
+			}
+
 			void this.createFileForView("New Task");
 		});
 
-		// Find the original "New" button position and insert our button there
-		const originalNewBtn = toolbarEl.querySelector(".bases-toolbar-new-item-menu");
 		if (originalNewBtn) {
 			// Insert before the original (which will be hidden by CSS)
 			originalNewBtn.before(newTaskBtn);
