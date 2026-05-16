@@ -25,6 +25,13 @@ describe('projectFilterUtils', () => {
       expect(matchesProjectProperty({ type: ['note', 'project'] }, baseFilter)).toBe(true);
     });
 
+    it('matches any comma-separated expected value', () => {
+      const multiValueFilter = { key: 'tags', value: 'project, area', enabled: true };
+      expect(matchesProjectProperty({ tags: ['area'] }, multiValueFilter)).toBe(true);
+      expect(matchesProjectProperty({ tags: ['project'] }, multiValueFilter)).toBe(true);
+      expect(matchesProjectProperty({ tags: ['archive'] }, multiValueFilter)).toBe(false);
+    });
+
     it('matches boolean and numeric values using string comparison', () => {
       const booleanFilter = { key: 'pinned', value: 'true', enabled: true };
       expect(matchesProjectProperty({ pinned: true }, booleanFilter)).toBe(true);
