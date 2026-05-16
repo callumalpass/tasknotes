@@ -25,6 +25,43 @@ import {
 import { TranslationKey } from "../i18n";
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+type DailyNotesLookup = ReturnType<typeof getAllDailyNotes>;
+
+const TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE =
+	"Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists.";
+
+function getUnknownErrorMessage(error: unknown): string {
+	if (error instanceof Error) {
+		return error.message;
+	}
+	if (typeof error === "string") {
+		return error;
+	}
+	return "";
+}
+
+export function readDailyNotesForTimeblockCreation(
+	readDailyNotes: () => DailyNotesLookup = getAllDailyNotes
+): DailyNotesLookup {
+	try {
+		return readDailyNotes();
+	} catch (error) {
+		const errorMessage = getUnknownErrorMessage(error);
+		const detail = errorMessage ? `: ${errorMessage}` : "";
+		throw new Error(
+			`Failed to read daily notes${detail}. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`
+		);
+	}
+}
+
+export function getTimeblockCreationErrorMessage(error: unknown): string {
+	const errorMessage = getUnknownErrorMessage(error);
+	if (!errorMessage) {
+		return "Failed to create timeblock. Check console for details.";
+	}
+
+	return `Failed to create timeblock: ${errorMessage}`;
+}
 
 function getDailyNoteMoment(input: string): DailyNoteMoment {
 	return (obsidianMoment as unknown as (input: string) => DailyNoteMoment)(input);
@@ -316,18 +353,20 @@ export class TimeblockCreationModal extends Modal {
 			this.close();
 		} catch (error) {
 			console.error("Error creating timeblock:", error);
-			new Notice("Failed to create timeblock. Check console for details.");
+			new Notice(getTimeblockCreationErrorMessage(error));
 		}
 	}
 
 	private async saveTimeblockToDailyNote(timeblock: TimeBlock): Promise<void> {
 		if (!appHasDailyNotesPluginLoaded()) {
-			throw new Error("Daily Notes plugin is not enabled");
+			throw new Error(
+				`Daily Notes core plugin is not enabled. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`
+			);
 		}
 
 		// Get or create daily note for the date
 		const dailyNoteMoment = getDailyNoteMoment(this.options.date);
-		const allDailyNotes = getAllDailyNotes();
+		const allDailyNotes = readDailyNotesForTimeblockCreation();
 		let dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
 
 		if (!dailyNote) {
@@ -335,16 +374,17 @@ export class TimeblockCreationModal extends Modal {
 			try {
 				dailyNote = await createDailyNote(dailyNoteMoment);
 			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error);
+				const errorMessage = getUnknownErrorMessage(error);
+				const detail = errorMessage ? `: ${errorMessage}` : "";
 				throw new Error(
-					`Failed to create daily note: ${errorMessage}. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.`
+					`Failed to create daily note${detail}. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`
 				);
 			}
 
 			// Validate that daily note was created successfully
 			if (!dailyNote) {
 				throw new Error(
-					"Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists."
+					`Failed to create daily note. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`
 				);
 			}
 		}
