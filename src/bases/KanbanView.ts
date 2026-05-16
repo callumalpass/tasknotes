@@ -2,7 +2,7 @@
 import { Notice, Platform, setIcon, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
-import { TaskInfo } from "../types";
+import type { StatusConfig, TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData, BasesDataItem } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
@@ -10,6 +10,7 @@ import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import { getCurrentTimestamp } from "../utils/dateUtils";
+import { getProjectDisplayName } from "../utils/linkUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import {
 	stripPropertyPrefix,
@@ -622,7 +623,8 @@ export class KanbanView extends BasesViewBase {
 			const tasksByPath = new Map(taskNotes.map((t) => [t.path, t]));
 
 			for (const group of basesGroups) {
-				const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
+				const rawGroupKey = this.dataAdapter.convertGroupKeyToString(group.key);
+				const groupKey = this.canonicalizeStatusGroupKey(rawGroupKey, groupByPropertyId);
 				const groupTasks = groups.get(groupKey) || [];
 
 				for (const entry of group.entries) {
@@ -775,6 +777,68 @@ export class KanbanView extends BasesViewBase {
 		return keys.length > 0 ? Array.from(new Set(keys)) : ["None"];
 	}
 
+	private isStatusGroupingProperty(propertyId: string): boolean {
+		const statusPropertyName = this.plugin.fieldMapper.toUserField("status");
+		const cleanGroupBy = stripPropertyPrefix(propertyId);
+		return cleanGroupBy === statusPropertyName;
+	}
+
+	private canonicalizeStatusGroupKey(groupKey: string, groupByPropertyId: string): string {
+		if (!this.isStatusGroupingProperty(groupByPropertyId)) {
+			return groupKey;
+		}
+
+		return this.findStatusConfigForGroupKey(groupKey)?.value ?? groupKey;
+	}
+
+	private findStatusConfigForGroupKey(groupKey: string): StatusConfig | undefined {
+		const normalizedGroupKey = groupKey.trim();
+		if (!normalizedGroupKey || normalizedGroupKey === "None") {
+			return undefined;
+		}
+
+		const statuses = this.plugin.statusManager.getAllStatuses();
+		const exactValue = statuses.find((status) => status.value === normalizedGroupKey);
+		if (exactValue) return exactValue;
+
+		const exactLabelMatches = statuses.filter((status) => status.label === normalizedGroupKey);
+		if (exactLabelMatches.length === 1) return exactLabelMatches[0];
+
+		const aliasMatches = statuses.filter((status) =>
+			this.getStatusGroupKeyAliases(status).has(normalizedGroupKey)
+		);
+		return aliasMatches.length === 1 ? aliasMatches[0] : undefined;
+	}
+
+	private getStatusGroupKeyAliases(statusConfig: StatusConfig): Set<string> {
+		const aliases = new Set<string>();
+
+		for (const rawValue of [statusConfig.value, statusConfig.label]) {
+			const value = rawValue.trim();
+			if (!value) continue;
+
+			aliases.add(value);
+
+			const displayName = getProjectDisplayName(value, this.plugin.app);
+			if (displayName) {
+				aliases.add(displayName);
+			}
+		}
+
+		return aliases;
+	}
+
+	private hasStatusGroup(groups: Map<string, TaskInfo[]>, statusConfig: StatusConfig): boolean {
+		const aliases = this.getStatusGroupKeyAliases(statusConfig);
+		for (const groupKey of groups.keys()) {
+			if (aliases.has(groupKey.trim())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * Augment groups with empty columns for user-defined statuses.
 	 * Only applies when grouping by status property.
@@ -785,13 +849,7 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Check if we're grouping by status
 		// Compare the groupBy property against the user's configured status field name
-		const statusPropertyName = this.plugin.fieldMapper.toUserField("status");
-
-		// The groupByPropertyId from Bases might have a prefix (e.g., "note.status")
-		// Strip the prefix to compare against the field name
-		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "");
-
-		if (cleanGroupBy !== statusPropertyName) {
+		if (!this.isStatusGroupingProperty(groupByPropertyId)) {
 			return; // Not grouping by status, don't augment
 		}
 
@@ -806,7 +864,7 @@ export class KanbanView extends BasesViewBase {
 			// Use the status value (what gets written to YAML) as the group key
 			const statusValue = statusConfig.value;
 
-			if (!groups.has(statusValue)) {
+			if (!this.hasStatusGroup(groups, statusConfig)) {
 				// This status has no tasks - add an empty group
 				groups.set(statusValue, []);
 			}
@@ -3358,7 +3416,7 @@ export class KanbanView extends BasesViewBase {
 					iconEl.style.color = statusConfig.color;
 					setIcon(iconEl, statusConfig.icon);
 				}
-				container.createSpan({ text: statusConfig.label });
+				this.renderLinkAwareGroupTitle(container, statusConfig.label);
 				return;
 			}
 		}
@@ -3366,12 +3424,16 @@ export class KanbanView extends BasesViewBase {
 		// Default: use link-aware title rendering
 		const propertyId = isSwimLane ? this.swimLanePropertyId : this.getGroupByPropertyId();
 		const displayTitle = this.getGroupDisplayTitle(title, propertyId);
+		this.renderLinkAwareGroupTitle(container, displayTitle);
+	}
+
+	private renderLinkAwareGroupTitle(container: HTMLElement, title: string): void {
 		const app = this.app || this.plugin.app;
 		const linkServices: LinkServices = {
 			metadataCache: app.metadataCache,
 			workspace: app.workspace,
 		};
-		renderGroupTitle(container, displayTitle, linkServices);
+		renderGroupTitle(container, title, linkServices);
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {

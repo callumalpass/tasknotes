@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- ([#1841](https://github.com/callumalpass/tasknotes/issues/1841)) Prevented Kanban boards from duplicating columns when wikilinked status values are grouped through Bases. Thanks to @lendamico for reporting and sharing the screen recording.
 - ([#1846](https://github.com/callumalpass/tasknotes/issues/1846)) Saved NLP-triggered boolean custom fields as real booleans instead of quoted strings, so they match checkbox-created values and Bases filters. Thanks to @DevOps-Toast for reporting and sharing screenshots.
 - ([#1849](https://github.com/callumalpass/tasknotes/issues/1849)) Prevented repeated clicks on task-card scheduled and due date labels from stacking duplicate date menus when Obsidian native menus are disabled. Thanks to @3zra47 for reporting.
 - ([#1850](https://github.com/callumalpass/tasknotes/issues/1850)) Added mobile bottom spacing to TaskNotes list views so the final task can scroll above Obsidian's floating mobile controls. Thanks to @AlejandroRigau for reporting and sharing the iPhone screenshot.
