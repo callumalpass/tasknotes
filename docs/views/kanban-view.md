@@ -60,7 +60,7 @@ config:
   swimLaneOrder: '{"note.contexts":["transitcal","bill","cycles-research","astrolabe"]}'
 ```
 
-Listed swimlane values render first in the configured order. Values not listed in `swimLaneOrder` render below them alphabetically. If `hideEmptySwimLanes` is disabled, listed values can remain visible even when no matching tasks are currently present.
+Listed swimlane values render first in the configured order. Values not listed in `swimLaneOrder` render below them using the default order for status and priority swimlanes, or alphabetically for other properties. If `hideEmptySwimLanes` is disabled, listed values can remain visible even when no matching tasks are currently present.
 
 ## Task Cards
 

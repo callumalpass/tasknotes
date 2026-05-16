@@ -3832,16 +3832,54 @@ export class KanbanView extends BasesViewBase {
 		const savedOrder = this.getConfiguredOrder(this.swimLaneOrders, swimLanePropertyId);
 
 		if (!savedOrder || savedOrder.length === 0) {
-			return actualKeys.sort();
+			return this.applyDefaultSwimLaneOrder(swimLanePropertyId, actualKeys);
 		}
 
 		const actualKeySet = new Set(actualKeys);
 		const ordered = savedOrder.filter(
 			(key) => actualKeySet.has(key) || !this.hideEmptySwimLanes
 		);
-		const unordered = actualKeys.filter((key) => !savedOrder.includes(key)).sort();
+		const unordered = this.applyDefaultSwimLaneOrder(
+			swimLanePropertyId,
+			actualKeys.filter((key) => !savedOrder.includes(key))
+		);
 
 		return [...ordered, ...unordered];
+	}
+
+	private applyDefaultSwimLaneOrder(
+		swimLanePropertyId: string | null,
+		actualKeys: string[]
+	): string[] {
+		const orderedKeys = [...actualKeys];
+
+		if (this.isPropertyField(swimLanePropertyId, "priority")) {
+			return orderedKeys.sort((a, b) => {
+				const weightComparison =
+					this.plugin.priorityManager.getPriorityWeight(b) -
+					this.plugin.priorityManager.getPriorityWeight(a);
+				return weightComparison || a.localeCompare(b);
+			});
+		}
+
+		if (this.isPropertyField(swimLanePropertyId, "status")) {
+			return orderedKeys.sort((a, b) => {
+				const orderComparison =
+					this.plugin.statusManager.getStatusOrder(a) -
+					this.plugin.statusManager.getStatusOrder(b);
+				return orderComparison || a.localeCompare(b);
+			});
+		}
+
+		return orderedKeys.sort();
+	}
+
+	private isPropertyField(propertyId: string | null, field: "priority" | "status"): boolean {
+		if (!propertyId) {
+			return false;
+		}
+
+		return stripPropertyPrefix(propertyId) === this.plugin.fieldMapper.toUserField(field);
 	}
 
 	private applySwimLaneOrderToMap(
