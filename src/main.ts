@@ -29,6 +29,7 @@ import {
 import { TaskCreationModal } from "./modals/TaskCreationModal";
 import { TaskEditModal } from "./modals/TaskEditModal";
 import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
+import { ProjectSelectModal } from "./modals/ProjectSelectModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
 import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
@@ -63,6 +64,7 @@ import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import { addTaskToProject, assignTaskAsSubtask } from "./services/taskRelationshipActions";
 import {
 	initializeAfterLayoutReady,
 	initializeCalendarProviders,
@@ -1487,6 +1489,96 @@ export default class TaskNotesPlugin extends Plugin {
 		} catch (error) {
 			console.error("Error opening quick actions:", error);
 			new Notice("Failed to open quick actions");
+		}
+	}
+
+	async addProjectToCurrentTask(): Promise<void> {
+		try {
+			const activeFile = this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				new Notice("No file is currently open");
+				return;
+			}
+
+			const taskInfo = await this.cacheManager.getTaskInfo(activeFile.path);
+			if (!taskInfo) {
+				new Notice("Current file is not a task");
+				return;
+			}
+
+			const selector = new ProjectSelectModal(this.app, this, (projectFile) => {
+				if (!(projectFile instanceof TFile)) {
+					new Notice(
+						this.i18n.translate(
+							"contextMenus.task.organization.notices.projectSelectFailed"
+						)
+					);
+					return;
+				}
+				void this.addSelectedProjectToTask(taskInfo, projectFile);
+			});
+			selector.open();
+		} catch (error) {
+			console.error("Failed to add project to current task:", error);
+			new Notice(
+				this.i18n.translate("contextMenus.task.organization.notices.addToProjectFailed")
+			);
+		}
+	}
+
+	async addSubtaskToCurrentNote(): Promise<void> {
+		try {
+			const activeFile = this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				new Notice("No file is currently open");
+				return;
+			}
+
+			const allTasks = await this.cacheManager.getAllTasks();
+			const candidates = allTasks.filter((candidate) => candidate.path !== activeFile.path);
+			if (candidates.length === 0) {
+				new Notice(
+					this.i18n.translate(
+						"contextMenus.task.organization.notices.noEligibleSubtasks"
+					)
+				);
+				return;
+			}
+
+			openTaskSelector(this, candidates, (subtask) => {
+				if (!subtask) return;
+				void this.assignSelectedSubtaskToCurrentNote(activeFile, subtask);
+			});
+		} catch (error) {
+			console.error("Failed to add subtask to current note:", error);
+			new Notice(
+				this.i18n.translate("contextMenus.task.organization.notices.subtaskSelectFailed")
+			);
+		}
+	}
+
+	private async addSelectedProjectToTask(task: TaskInfo, projectFile: TFile): Promise<void> {
+		try {
+			await addTaskToProject(this, task, projectFile);
+		} catch (error) {
+			console.error("Failed to add selected project to task:", error);
+			new Notice(
+				this.i18n.translate("contextMenus.task.organization.notices.addToProjectFailed")
+			);
+		}
+	}
+
+	private async assignSelectedSubtaskToCurrentNote(
+		parentFile: TFile,
+		subtask: TaskInfo
+	): Promise<void> {
+		try {
+			await assignTaskAsSubtask(this, parentFile, subtask);
+		} catch (error) {
+			console.error("Failed to assign selected subtask to current note:", error);
+			new Notice(
+				this.i18n.translate("contextMenus.task.organization.notices.addAsSubtaskFailed")
+			);
 		}
 	}
 

@@ -24,6 +24,10 @@ Example:
 
 -->
 
+## Added
+
+- ([#1835](https://github.com/callumalpass/tasknotes/issues/1835)) Added hotkeyable commands to add a project to the current task and add an existing task as a subtask of the current note. Thanks to @prepare4robots for requesting this and @ubidev for the follow-up suggestion.
+
 ## Fixed
 
 - ([#1841](https://github.com/callumalpass/tasknotes/issues/1841)) Prevented Kanban boards from duplicating columns when wikilinked status values are grouped through Bases. Thanks to @lendamico for reporting and sharing the screen recording.

@@ -4,6 +4,7 @@ import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
 import { ReminderModal } from "../modals/ReminderModal";
 import { CalendarExportService } from "../services/CalendarExportService";
+import { addTaskToProject, assignTaskAsSubtask } from "../services/taskRelationshipActions";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
 import { RecurrenceContextMenu } from "./RecurrenceContextMenu";
@@ -1073,36 +1074,11 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const projectReference = generateLink(
-				plugin.app,
-				projectFile,
-				task.path,
-				"",
-				"",
-				plugin.settings.useFrontmatterMarkdownLinks
-			);
-			const legacyReference = `[[${projectFile.basename}]]`;
-			const currentProjects = Array.isArray(task.projects) ? task.projects : [];
-
-			if (
-				currentProjects.includes(projectReference) ||
-				currentProjects.includes(legacyReference)
-			) {
-				new Notice(this.t("contextMenus.task.organization.notices.alreadyInProject"));
-				return;
+			const updatedTask = await addTaskToProject(plugin, task, projectFile);
+			if (updatedTask) {
+				Object.assign(task, updatedTask);
+				this.options.onUpdate?.();
 			}
-
-			const sanitizedProjects = currentProjects.filter((entry) => entry !== legacyReference);
-			const updatedProjects = [...sanitizedProjects, projectReference];
-			const updatedTask = await plugin.updateTaskProperty(task, "projects", updatedProjects);
-			Object.assign(task, updatedTask);
-
-			new Notice(
-				this.t("contextMenus.task.organization.notices.addedToProject", {
-					project: projectFile.basename,
-				})
-			);
-			this.options.onUpdate?.();
 		} catch (error) {
 			console.error("Failed to add task to project:", error);
 			new Notice(this.t("contextMenus.task.organization.notices.addToProjectFailed"));
@@ -1121,41 +1097,11 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const projectReference = generateLink(
-				plugin.app,
-				currentTaskFile,
-				subtask.path,
-				"",
-				"",
-				plugin.settings.useFrontmatterMarkdownLinks
-			);
-			const legacyReference = `[[${currentTaskFile.basename}]]`;
-			const subtaskProjects = Array.isArray(subtask.projects) ? subtask.projects : [];
-
-			if (
-				subtaskProjects.includes(projectReference) ||
-				subtaskProjects.includes(legacyReference)
-			) {
-				new Notice(this.t("contextMenus.task.organization.notices.alreadySubtask"));
-				return;
+			const updatedSubtask = await assignTaskAsSubtask(plugin, currentTaskFile, subtask);
+			if (updatedSubtask) {
+				Object.assign(subtask, updatedSubtask);
+				this.options.onUpdate?.();
 			}
-
-			const sanitizedProjects = subtaskProjects.filter((entry) => entry !== legacyReference);
-			const updatedProjects = [...sanitizedProjects, projectReference];
-			const updatedSubtask = await plugin.updateTaskProperty(
-				subtask,
-				"projects",
-				updatedProjects
-			);
-			Object.assign(subtask, updatedSubtask);
-
-			new Notice(
-				this.t("contextMenus.task.organization.notices.addedAsSubtask", {
-					subtask: subtask.title,
-					parent: currentTaskFile.basename,
-				})
-			);
-			this.options.onUpdate?.();
 		} catch (error) {
 			console.error("Failed to assign task as subtask:", error);
 			new Notice(this.t("contextMenus.task.organization.notices.addAsSubtaskFailed"));

@@ -112,6 +112,20 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "add-project-to-current-task",
+			nameKey: "commands.addProjectToCurrentTask",
+			callback: async (ctx) => {
+				await ctx.addProjectToCurrentTask();
+			},
+		},
+		{
+			id: "add-subtask-to-current-note",
+			nameKey: "commands.addSubtaskToCurrentNote",
+			callback: async (ctx) => {
+				await ctx.addSubtaskToCurrentNote();
+			},
+		},
+		{
 			id: "go-to-today",
 			nameKey: "commands.goToTodayNote",
 			callback: async (ctx) => {
