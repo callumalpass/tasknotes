@@ -136,6 +136,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	private widgetContainer: HTMLElement | null = null;
 	private debounceTimer: number | null = null;
 	private eventListeners: EventRef[] = [];
+	private injectionRunId = 0;
 
 	constructor(
 		view: EditorView,
@@ -147,8 +148,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		// Set up event listeners for coordination
 		this.setupEventListeners();
 
-		// Inject widget asynchronously to avoid blocking constructor
-		void this.injectWidget(view);
+		// Inject widget asynchronously after construction to avoid overlapping startup updates.
+		this.debouncedInjectWidget(view);
 	}
 
 	update(update: ViewUpdate) {
@@ -164,6 +165,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	}
 
 	destroy() {
+		this.injectionRunId++;
+
 		// Clean up debounce timer
 		if (this.debounceTimer) {
 			window.clearTimeout(this.debounceTimer);
@@ -198,6 +201,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	private debouncedInjectWidget(view: EditorView): void {
 		if (this.debounceTimer) window.clearTimeout(this.debounceTimer);
 		this.debounceTimer = window.setTimeout(() => {
+			this.debounceTimer = null;
 			void this.injectWidget(view);
 		}, 100);
 	}
@@ -285,7 +289,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 
 	private cleanupOrphanedWidgets(view: EditorView): void {
 		try {
-			// Remove any orphaned widgets that might exist from previous instances
+			// Remove any widget DOM that might exist from previous or overlapping instances.
 			const container = view.dom.closest(".workspace-leaf-content");
 			if (!container) {
 				console.debug(
@@ -295,18 +299,20 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			}
 
 			container.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach((el) => {
-				if (el !== this.currentWidget) {
-					const holder = el as HTMLElementWithComponent;
-					holder.component?.unload();
-					el.remove();
-				}
+				const holder = el as HTMLElementWithComponent;
+				holder.component?.unload();
+				el.remove();
 			});
+			this.currentWidget = null;
+			this.widgetContainer = null;
 		} catch (error) {
 			console.error("[TaskNotes] Error cleaning up orphaned relationships widgets:", error);
 		}
 	}
 
 	private async injectWidget(view: EditorView): Promise<void> {
+		const runId = ++this.injectionRunId;
+
 		// Remove any existing widget first
 		this.removeWidget();
 
@@ -372,6 +378,14 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 
 			// Create the widget
 			const widget = await createRelationshipsWidget(this.plugin, notePath);
+			if (runId !== this.injectionRunId) {
+				widget.component?.unload();
+				widget.remove();
+				return;
+			}
+
+			// A previous async run may have inserted after this run started.
+			this.cleanupOrphanedWidgets(view);
 
 			// Store references
 			this.currentWidget = widget;

@@ -64,6 +64,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1601](https://github.com/callumalpass/tasknotes/issues/1601)) Prevented overlapping Live Preview relationship-widget injections from leaving duplicate subtask/relationship sections in a note. Thanks to @wealthychef1 for reporting this and @benmartinek for confirming it.
 - ([#1610](https://github.com/callumalpass/tasknotes/issues/1610)) Made expanded subtasks in TaskNotes Bases views follow the current view's sorted task order instead of a fixed fallback order. Thanks to @MrZzard for reporting this and @slipstyle for confirming it.
 - ([#1609](https://github.com/callumalpass/tasknotes/issues/1609)) Restored scrolling in wide split-layout task edit modals when the form content is taller than the modal. Thanks to @3zra47 for reporting this.
 - ([#1614](https://github.com/callumalpass/tasknotes/issues/1614)) Wrote unchecked boolean custom user-field defaults to new task frontmatter, including tasks created through instant conversion. Thanks to @kobalteule for reporting this.
