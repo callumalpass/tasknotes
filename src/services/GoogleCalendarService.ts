@@ -455,7 +455,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	/**
 	 * Refreshes all enabled Google calendars using incremental sync when possible
 	 */
-	async refreshAllCalendars(): Promise<void> {
+	async refreshAllCalendars(options: { propagateErrors?: boolean } = {}): Promise<void> {
 		try {
 			const isConnected = await this.oauthService.isConnected("google");
 			if (!isConnected) {
@@ -535,6 +535,10 @@ export class GoogleCalendarService extends CalendarProvider {
 					"[GoogleCalendar] Authentication expired - caller should handle re-authentication"
 				);
 			}
+
+			if (options.propagateErrors) {
+				throw error;
+			}
 		}
 	}
 
@@ -588,7 +592,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		}
 
 		this.lastManualRefresh = now;
-		await this.refreshAllCalendars();
+		await this.refreshAllCalendars({ propagateErrors: true });
 	}
 
 	/**
