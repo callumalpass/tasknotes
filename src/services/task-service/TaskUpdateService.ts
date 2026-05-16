@@ -130,7 +130,7 @@ export class TaskUpdateService {
 
 				this.removeUnsetMappedFields(frontmatter, updates);
 
-				if (isRenameNeeded) {
+				if (plugin.settings.storeTitleInFilename) {
 					delete frontmatter[plugin.fieldMapper.toUserField("title")];
 				}
 

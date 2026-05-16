@@ -206,7 +206,7 @@ export function mapTaskToFrontmatter(
 ): Record<string, unknown> {
 	const frontmatter: Record<string, unknown> = {};
 
-	if (taskData.title !== undefined) {
+	if (taskData.title !== undefined && !storeTitleInFilename) {
 		frontmatter[mapping.title] = taskData.title;
 	}
 
@@ -328,8 +328,6 @@ export function mapTaskToFrontmatter(
 			}
 		}
 	}
-
-	void storeTitleInFilename;
 
 	return frontmatter;
 }

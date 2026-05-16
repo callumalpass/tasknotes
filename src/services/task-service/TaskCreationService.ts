@@ -201,6 +201,9 @@ export class TaskCreationService {
 			if (taskData.customFrontmatter) {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
+			if (plugin.settings.storeTitleInFilename) {
+				delete finalFrontmatter[plugin.fieldMapper.toUserField("title")];
+			}
 
 			const yamlHeader = stringifyYaml(finalFrontmatter);
 			let content = `---\n${yamlHeader}---\n\n`;
