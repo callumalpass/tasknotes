@@ -38,29 +38,29 @@
        ================================================ */
     
     /* Display - More expressive and compact for desktop use */
-    --cs-text-display-large: 2.75rem;   /* 44px - reduced from 56px */
-    --cs-text-display-medium: 2.25rem;  /* 36px - reduced from 45px */
-    --cs-text-display-small: 1.875rem;  /* 30px - reduced from 36px */
+    --cs-text-display-large: 44px;   /* reduced from 56px */
+    --cs-text-display-medium: 36px;  /* reduced from 45px */
+    --cs-text-display-small: 30px;   /* reduced from 36px */
     
     /* Headlines - Optimized for desktop density */
-    --cs-text-headline-large: 1.75rem;    /* 28px - reduced from 32px */
-    --cs-text-headline-medium: 1.5rem;    /* 24px - reduced from 28px */
-    --cs-text-headline-small: 1.25rem;    /* 20px - reduced from 24px */
+    --cs-text-headline-large: 28px;    /* reduced from 32px */
+    --cs-text-headline-medium: 24px;    /* reduced from 28px */
+    --cs-text-headline-small: 20px;     /* reduced from 24px */
     
     /* Titles - Compact yet readable */
-    --cs-text-title-large: 1.125rem;   /* 18px - reduced from 22px */
-    --cs-text-title-medium: 0.875rem;  /* 14px - reduced from 16px */
-    --cs-text-title-small: 0.75rem;    /* 12px - reduced from 14px */
+    --cs-text-title-large: 18px;   /* reduced from 22px */
+    --cs-text-title-medium: 14px;  /* reduced from 16px */
+    --cs-text-title-small: 12px;   /* reduced from 14px */
     
     /* Body - Optimized for readability and compactness */
-    --cs-text-body-large: 0.875rem;    /* 14px - reduced from 16px */
-    --cs-text-body-medium: 0.75rem;    /* 12px - reduced from 14px */
-    --cs-text-body-small: 0.6875rem;   /* 11px - slightly reduced */
+    --cs-text-body-large: 14px;    /* reduced from 16px */
+    --cs-text-body-medium: 12px;   /* reduced from 14px */
+    --cs-text-body-small: 11px;    /* slightly reduced */
     
     /* Labels - Compact component text */
-    --cs-text-label-large: 0.75rem;    /* 12px - reduced from 14px */
-    --cs-text-label-medium: 0.6875rem; /* 11px - slightly reduced */
-    --cs-text-label-small: 0.625rem;   /* 10px - more compact */
+    --cs-text-label-large: 12px;   /* reduced from 14px */
+    --cs-text-label-medium: 11px;  /* slightly reduced */
+    --cs-text-label-small: 10px;   /* more compact */
     
     /* Legacy typography for compatibility */
     --cs-text-xs: var(--cs-text-label-small);
