@@ -4,7 +4,11 @@ import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
 import { ReminderModal } from "../modals/ReminderModal";
 import { CalendarExportService } from "../services/CalendarExportService";
-import { addTaskToProject, assignTaskAsSubtask } from "../services/taskRelationshipActions";
+import {
+	addTaskToProject,
+	assignTaskAsSubtask,
+	buildSubtaskCreationPrePopulatedValues,
+} from "../services/taskRelationshipActions";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
 import { RecurrenceContextMenu } from "./RecurrenceContextMenu";
@@ -765,16 +769,8 @@ export class TaskContextMenu {
 			item.onClick(() => {
 				const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
 				if (taskFile instanceof TFile) {
-					const projectReference = generateLink(
-						plugin.app,
-						taskFile,
-						task.path,
-						"",
-						"",
-						plugin.settings.useFrontmatterMarkdownLinks
-					);
 					plugin.openTaskCreationModal({
-						projects: [projectReference],
+						...buildSubtaskCreationPrePopulatedValues(plugin, task, taskFile),
 					});
 				}
 			});

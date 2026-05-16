@@ -2,6 +2,7 @@ import { Notice, TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { generateLink } from "../utils/linkUtils";
+import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 
 function translate(
 	plugin: TaskNotesPlugin,
@@ -76,4 +77,39 @@ export async function assignTaskAsSubtask(
 		})
 	);
 	return updatedSubtask;
+}
+
+export function buildSubtaskCreationPrePopulatedValues(
+	plugin: TaskNotesPlugin,
+	parentTask: TaskInfo,
+	parentFile: TFile
+): Partial<TaskInfo> {
+	const projectReference = generateLink(
+		plugin.app,
+		parentFile,
+		parentTask.path,
+		"",
+		"",
+		plugin.settings.useFrontmatterMarkdownLinks
+	);
+	const parentTags = Array.isArray(parentTask.tags) ? parentTask.tags : [];
+	const inheritedTags =
+		plugin.settings.taskIdentificationMethod === "tag"
+			? filterTaskIdentificationTags(parentTags, plugin.settings.taskTag)
+			: [...parentTags];
+	const values: Partial<TaskInfo> = {
+		projects: [projectReference],
+	};
+
+	if (inheritedTags.length > 0) {
+		values.tags = inheritedTags;
+	}
+	if (Array.isArray(parentTask.contexts) && parentTask.contexts.length > 0) {
+		values.contexts = [...parentTask.contexts];
+	}
+	if (parentTask.priority) {
+		values.priority = parentTask.priority;
+	}
+
+	return values;
 }
