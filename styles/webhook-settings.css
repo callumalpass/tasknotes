@@ -41,7 +41,7 @@
   border-radius: 8px;
   padding: 0;
   overflow: hidden;
-  transition: all 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .tasknotes-webhook-card:hover {
@@ -99,7 +99,7 @@
   border-radius: 16px;
   font-size: 0.8rem;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
 }
 
 .tasknotes-webhook-status-indicator.active {
@@ -219,7 +219,7 @@
   color: var(--text-normal);
   font-size: 0.85rem;
   cursor: var(--cursor, pointer);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
 
 .tasknotes-webhook-action-btn:hover {
@@ -229,7 +229,7 @@
 
 .tasknotes-webhook-action-btn.enable {
   background: var(--color-green);
-  color: white;
+  color: var(--text-on-accent);
   border-color: var(--color-green);
 }
 
@@ -240,7 +240,7 @@
 
 .tasknotes-webhook-action-btn.disable {
   background: var(--color-orange);
-  color: white;
+  color: var(--text-on-accent);
   border-color: var(--color-orange);
 }
 
@@ -251,7 +251,7 @@
 
 .tasknotes-webhook-action-btn.delete {
   background: var(--color-red);
-  color: white;
+  color: var(--text-on-accent);
   border-color: var(--color-red);
 }
 
@@ -448,7 +448,7 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: var(--cursor, pointer);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
   min-width: 0;
   flex-shrink: 0;

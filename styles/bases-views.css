@@ -17,6 +17,30 @@
 	display: flex;
 }
 
+.tn-bases-new-task-btn > button.text-icon-button {
+	align-items: center;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	color: var(--text-muted);
+	cursor: var(--cursor, pointer);
+	display: flex;
+	font: inherit;
+	gap: var(--size-4-1);
+	margin: 0;
+	padding: var(--size-2-1) var(--size-4-2);
+}
+
+.tn-bases-new-task-btn > button.text-icon-button:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.tn-bases-new-task-btn > button.text-icon-button:focus-visible {
+	outline: 2px solid var(--background-modifier-border-focus);
+	outline-offset: 2px;
+}
+
 .tasknotes-view-active .bases-toolbar-new-item-menu {
 	display: none;
 }
@@ -282,10 +306,10 @@ body.is-mobile .tn-bases-tasknotes-list {
         gap: var(--tn-spacing-sm);
     }
 
-    .tn-bases-kanban-column {
-        flex: 0 0 240px;
-        min-width: 240px;
-    }
+	.tn-bases-kanban-column {
+	    flex: 0 0 min(76vw, 260px);
+	    min-width: min(76vw, 260px);
+	}
 }
 
 @media (max-width: 480px) {
@@ -294,10 +318,21 @@ body.is-mobile .tn-bases-tasknotes-list {
         padding: var(--tn-spacing-sm) 0 var(--tn-spacing-xs);
     }
 
-    .tn-bases-kanban-column {
-        flex: 0 0 200px;
-        min-width: 200px;
-    }
+	.tn-bases-kanban-column {
+	    flex: 0 0 min(82vw, 240px);
+	    min-width: min(82vw, 240px);
+	}
+}
+
+body.is-mobile .tn-bases-kanban-board {
+    align-items: flex-start;
+    min-height: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+}
+
+body.is-mobile .tn-bases-kanban-column {
+    scroll-snap-align: start;
 }
 
 /* ================================================
@@ -386,7 +421,7 @@ body.is-mobile .tn-bases-tasknotes-list {
     text-align: center;
     cursor: grab;
     user-select: none;
-    transition: all var(--tn-transition-fast);
+    transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), opacity var(--tn-transition-fast), transform var(--tn-transition-fast);
     gap: var(--tn-spacing-xs);
 }
 

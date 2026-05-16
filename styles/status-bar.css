@@ -35,6 +35,14 @@
     color: var(--text-normal);
 }
 
+.tasknotes-pomodoro-status .tasknotes-status-icon {
+    color: var(--interactive-accent);
+}
+
+.tasknotes-pomodoro-status .tasknotes-status-text {
+    max-width: 160px;
+}
+
 /* Responsive behavior for smaller screens */
 @media (max-width: 768px) {
     .tasknotes-status-text {

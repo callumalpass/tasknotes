@@ -195,6 +195,20 @@
     /* Red and green gradient colors for due dates and completed tasks */
     --cs-red-100: rgba(239, 68, 68, 0.1);    /* Light red background for due tasks */
     --cs-green-100: rgba(34, 197, 94, 0.1);  /* Light green background for completed tasks */
+
+    /* Provider and calendar semantic colors */
+    --tn-color-google-calendar: var(--color-blue, #4285f4);
+    --tn-color-microsoft-calendar: var(--color-blue, #0078d4);
+    --tn-color-time-entry: var(--color-green, #10b981);
+    --tn-color-time-entry-text: var(--color-green, #059669);
+    --tn-color-time-entry-bg-soft: rgba(16, 185, 129, 0.08);
+    --tn-color-time-entry-bg-medium: rgba(16, 185, 129, 0.15);
+
+    /* Dark-mode fallbacks when Obsidian theme variables are unavailable */
+    --tn-color-time-entry-dark: var(--color-green, #34d399);
+    --tn-color-time-entry-text-dark: var(--color-green, #6ee7b7);
+    --tn-color-time-entry-bg-soft-dark: rgba(52, 211, 153, 0.1);
+    --tn-color-time-entry-bg-medium-dark: rgba(52, 211, 153, 0.18);
     
     /* Fixed semantic usage for UI elements (not user-customizable) */
     /* Notes heatmap - blue intensities for calendar */

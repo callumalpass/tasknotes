@@ -130,7 +130,7 @@
     min-width: 120px;
     min-height: var(--tn-input-height-md);
     cursor: var(--cursor, pointer);
-    transition: all var(--tn-transition-fast);
+    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), color var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .agenda-view__period-select:hover {
@@ -165,7 +165,7 @@
     user-select: none;
     text-decoration: none;
     white-space: nowrap;
-    transition: all var(--tn-transition-fast);
+    transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast), box-shadow var(--tn-transition-fast);
     overflow: hidden;
     box-shadow: none;
 }

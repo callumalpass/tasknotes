@@ -14,6 +14,7 @@ const createMockPlugin = (settingsOverride: Record<string, unknown> = {}) => {
 		sortOrder: "tasknotes_manual_order",
 		timeEstimate: "timeEstimate",
 		timeEntries: "timeEntries",
+		pomodoros: "pomodoros",
 	};
 
 	return {
@@ -203,5 +204,19 @@ describe("defaultBasesFiles", () => {
 
 		// Monotonic: earlier in day → larger boost.
 		expect(boost("2026-04-28T09:00:00Z")).toBeGreaterThan(boost("2026-04-28T17:00:00Z"));
+	});
+
+	it("generates a Pomodoro statistics Base from daily-note Pomodoro frontmatter", () => {
+		const template = generateBasesFileTemplate("pomodoro-stats-base", createMockPlugin() as any);
+
+		expect(template).toContain("# Pomodoro statistics");
+		expect(template).toContain('file.hasProperty("pomodoros")');
+		expect(template).toContain('note["pomodoros"]');
+		expect(template).toContain('name: "Daily"');
+		expect(template).toContain('name: "Monthly"');
+		expect(template).toContain("groupBy:\n      property: formula.pomodoroMonth");
+		expect(template).toContain("formula.completedPomos: Sum");
+		expect(template).toContain("formula.focusMinutes: Sum");
+		expect(template).not.toContain('file.hasTag("task")');
 	});
 });

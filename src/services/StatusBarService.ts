@@ -1,15 +1,27 @@
-import { TaskInfo } from "../types";
+import {
+	EVENT_POMODORO_COMPLETE,
+	EVENT_POMODORO_INTERRUPT,
+	EVENT_POMODORO_START,
+	EVENT_POMODORO_TICK,
+	PomodoroSession,
+	PomodoroState,
+	TaskInfo,
+} from "../types";
 import { RequestDeduplicator } from "../utils/RequestDeduplicator";
-import { setIcon, setTooltip, TFile } from "obsidian";
+import { EventRef, setIcon, setTooltip, TFile } from "obsidian";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
+import { formatPomodoroTime } from "../utils/pomodoroTime";
 
 export class StatusBarService {
 	private plugin: import("../main").default;
 	private statusBarElement: HTMLElement | null = null;
+	private pomodoroStatusBarElement: HTMLElement | null = null;
 	private requestDeduplicator: RequestDeduplicator;
 	private updateTimeout: number | null = null;
+	private pomodoroUpdateTimeout: number | null = null;
 	private elapsedUpdateInterval: number | null = null;
 	private currentTrackedTasks: TaskInfo[] = [];
+	private pomodoroEventRefs: EventRef[] = [];
 
 	constructor(plugin: import("../main").default) {
 		this.plugin = plugin;
@@ -20,11 +32,20 @@ export class StatusBarService {
 	 * Initialize the status bar service
 	 */
 	initialize(): void {
-		if (!this.plugin.settings.showTrackedTasksInStatusBar) {
+		this.ensureTrackedStatusBarElement();
+		this.ensurePomodoroStatusBarElement();
+		this.registerPomodoroEvents();
+
+		// Initial update
+		void this.updateStatusBar();
+		this.updatePomodoroStatusBar();
+	}
+
+	private ensureTrackedStatusBarElement(): void {
+		if (this.statusBarElement || !this.plugin.settings.showTrackedTasksInStatusBar) {
 			return;
 		}
 
-		// Create status bar element
 		this.statusBarElement = this.plugin.addStatusBarItem();
 		this.statusBarElement.addClass("tasknotes-status-bar");
 		this.statusBarElement.classList.remove(
@@ -37,9 +58,42 @@ export class StatusBarService {
 		this.statusBarElement.addEventListener("click", () => {
 			void this.handleStatusBarClick();
 		});
+	}
 
-		// Initial update
-		void this.updateStatusBar();
+	private ensurePomodoroStatusBarElement(): void {
+		if (this.pomodoroStatusBarElement || !this.plugin.settings.showPomodoroInStatusBar) {
+			return;
+		}
+
+		this.pomodoroStatusBarElement = this.plugin.addStatusBarItem();
+		this.pomodoroStatusBarElement.addClass("tasknotes-status-bar");
+		this.pomodoroStatusBarElement.addClass("tasknotes-pomodoro-status");
+		this.pomodoroStatusBarElement.classList.remove(
+			"tn-static-cursor-grab-dad79857",
+			"tn-static-cursor-pointer-2723efcc"
+		);
+		this.pomodoroStatusBarElement.classList.add("tn-static-cursor-pointer-3b6a3a65");
+		this.pomodoroStatusBarElement.addEventListener("click", () => {
+			void this.plugin.activatePomodoroView();
+		});
+	}
+
+	private registerPomodoroEvents(): void {
+		if (this.pomodoroEventRefs.length > 0) {
+			return;
+		}
+
+		if (!this.plugin.emitter?.on) {
+			return;
+		}
+
+		const requestUpdate = () => this.requestPomodoroUpdate();
+		this.pomodoroEventRefs = [
+			this.plugin.emitter.on(EVENT_POMODORO_START, requestUpdate),
+			this.plugin.emitter.on(EVENT_POMODORO_TICK, requestUpdate),
+			this.plugin.emitter.on(EVENT_POMODORO_COMPLETE, requestUpdate),
+			this.plugin.emitter.on(EVENT_POMODORO_INTERRUPT, requestUpdate),
+		];
 	}
 
 	/**
@@ -66,6 +120,27 @@ export class StatusBarService {
 		} catch (error) {
 			console.error("Error updating status bar:", error);
 		}
+	}
+
+	private updatePomodoroStatusBar(): void {
+		if (!this.plugin.settings.showPomodoroInStatusBar) {
+			this.hidePomodoroStatusBar();
+			return;
+		}
+
+		this.ensurePomodoroStatusBarElement();
+		if (!this.pomodoroStatusBarElement || !this.plugin.pomodoroService) {
+			return;
+		}
+
+		const state = this.plugin.pomodoroService.getState();
+		if (!state.currentSession) {
+			this.hidePomodoroStatusBar();
+			return;
+		}
+
+		this.showElement(this.pomodoroStatusBarElement);
+		this.renderPomodoroStatusBar(state);
 	}
 
 	/**
@@ -176,6 +251,62 @@ export class StatusBarService {
 		}
 	}
 
+	private renderPomodoroStatusBar(state: PomodoroState): void {
+		if (!this.pomodoroStatusBarElement || !state.currentSession) {
+			return;
+		}
+
+		this.pomodoroStatusBarElement.empty();
+
+		const iconEl = this.pomodoroStatusBarElement.createEl("span", {
+			cls: "tasknotes-status-icon",
+		});
+		setIcon(iconEl, state.currentSession.type === "work" ? "timer" : "coffee");
+
+		const textEl = this.pomodoroStatusBarElement.createEl("span", {
+			cls: "tasknotes-status-text",
+		});
+		const timeRemaining = formatPomodoroTime(state.timeRemaining);
+		const sessionLabel = this.getPomodoroSessionLabel(state.currentSession.type);
+		const stateLabel = state.isRunning ? sessionLabel : `${sessionLabel} paused`;
+		textEl.setText(`${stateLabel}: ${timeRemaining}`);
+
+		setTooltip(
+			this.pomodoroStatusBarElement,
+			`${stateLabel}\nRemaining: ${timeRemaining}\nClick to open Pomodoro`,
+			{
+				placement: "top",
+			}
+		);
+	}
+
+	private getPomodoroSessionLabel(type: PomodoroSession["type"]): string {
+		if (type === "work") {
+			return "Focus";
+		}
+
+		if (type === "short-break") {
+			return "Short break";
+		}
+
+		return "Long break";
+	}
+
+	private showElement(element: HTMLElement): void {
+		element.classList.remove(
+			"tn-static-display-block-2a1b75c9",
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		element.style.removeProperty("display");
+	}
+
 	private getActiveElapsedMs(task: TaskInfo): number {
 		const activeSession = this.plugin.getActiveTimeSession(task);
 		if (!activeSession?.startTime) {
@@ -283,18 +414,35 @@ export class StatusBarService {
 		}, 100);
 	}
 
+	requestPomodoroUpdate(): void {
+		if (this.pomodoroUpdateTimeout) {
+			window.clearTimeout(this.pomodoroUpdateTimeout);
+		}
+
+		this.pomodoroUpdateTimeout = window.setTimeout(() => {
+			this.updatePomodoroStatusBar();
+		}, 100);
+	}
+
 	/**
 	 * Show or hide the status bar based on settings
 	 */
 	updateVisibility(): void {
 		if (this.plugin.settings.showTrackedTasksInStatusBar) {
 			if (!this.statusBarElement) {
-				this.initialize();
+				this.ensureTrackedStatusBarElement();
 			} else {
 				void this.updateStatusBar();
 			}
 		} else {
 			this.hide();
+		}
+
+		if (this.plugin.settings.showPomodoroInStatusBar) {
+			this.ensurePomodoroStatusBarElement();
+			this.updatePomodoroStatusBar();
+		} else {
+			this.hidePomodoroStatusBar();
 		}
 	}
 
@@ -318,6 +466,22 @@ export class StatusBarService {
 		}
 	}
 
+	private hidePomodoroStatusBar(): void {
+		if (this.pomodoroStatusBarElement) {
+			this.pomodoroStatusBarElement.classList.remove(
+				"tn-static-display-block-2a1b75c9",
+				"tn-static-display-flex-4d51fc62",
+				"tn-static-display-flex-75816cae",
+				"tn-static-display-flex-8bb39979",
+				"tn-static-display-inline-block-60e32dcb",
+				"tn-static-display-inline-cccfa456",
+				"tn-static-display-inline-flex-f984c520",
+				"tn-static-min-height-800px-997b4c8c"
+			);
+			this.pomodoroStatusBarElement.classList.add("tn-static-display-none-6b99de8b");
+		}
+	}
+
 	/**
 	 * Cleanup when service is destroyed
 	 */
@@ -326,7 +490,15 @@ export class StatusBarService {
 			window.clearTimeout(this.updateTimeout);
 			this.updateTimeout = null;
 		}
+		if (this.pomodoroUpdateTimeout) {
+			window.clearTimeout(this.pomodoroUpdateTimeout);
+			this.pomodoroUpdateTimeout = null;
+		}
 		this.stopElapsedTicker();
+		if (this.plugin.emitter?.offref) {
+			this.pomodoroEventRefs.forEach((ref) => this.plugin.emitter.offref(ref));
+		}
+		this.pomodoroEventRefs = [];
 
 		if (this.requestDeduplicator) {
 			this.requestDeduplicator.cancelAll();
@@ -334,5 +506,6 @@ export class StatusBarService {
 
 		// Status bar element is automatically cleaned up by Obsidian when plugin unloads
 		this.statusBarElement = null;
+		this.pomodoroStatusBarElement = null;
 	}
 }

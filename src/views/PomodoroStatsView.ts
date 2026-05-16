@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Setting } from "obsidian";
+import { ItemView, WorkspaceLeaf, Setting, setIcon, setTooltip } from "obsidian";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
@@ -67,8 +67,13 @@ export class PomodoroStatsView extends ItemView {
 		});
 		new Setting(header).setName(this.t("views.pomodoroStats.heading")).setHeading();
 
+		const headerActions = header.createDiv({
+			cls: "pomodoro-stats-view__header-actions",
+		});
+		this.renderBasesMigrationHelp(headerActions);
+
 		// Refresh button
-		const refreshButton = header.createEl("button", {
+		const refreshButton = headerActions.createEl("button", {
 			cls: "pomodoro-stats-refresh-button pomodoro-stats-view__refresh-button",
 			text: this.t("views.pomodoroStats.refresh"),
 		});
@@ -131,6 +136,23 @@ export class PomodoroStatsView extends ItemView {
 
 		// Initial load
 		await this.refreshStats();
+	}
+
+	private renderBasesMigrationHelp(container: HTMLElement): void {
+		if (this.plugin.settings.pomodoroStorageLocation === "daily-notes") {
+			return;
+		}
+
+		const helpButton = container.createEl("button", {
+			cls: "pomodoro-stats-view__bases-help",
+		});
+		const title = this.t("views.pomodoroStats.basesMigration.title");
+		const description = this.t("views.pomodoroStats.basesMigration.description");
+		setIcon(helpButton, "help-circle");
+		helpButton.setAttr("aria-label", `${title}: ${description}`);
+		setTooltip(helpButton, description, {
+			placement: "bottom",
+		});
 	}
 
 	private async waitForPomodoroService(): Promise<void> {

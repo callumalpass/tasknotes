@@ -244,7 +244,7 @@
     background: var(--tn-bg-primary);
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-sm);
-    transition: all var(--tn-transition-fast);
+    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), transform var(--tn-transition-fast);
     overflow: hidden;
 }
 
@@ -267,12 +267,12 @@
 }
 
 .tasknotes-plugin .task-list-view__task-item--overdue {
-    border-left: 4px solid var(--tn-color-error);
+    border-inline-start: 1px solid var(--tn-color-error);
     background: color-mix(in srgb, var(--tn-color-error) 0.05, var(--tn-bg-primary));
 }
 
 .tasknotes-plugin .task-list-view__task-item--due-today {
-    border-left: 4px solid var(--tn-interactive-accent);
+    border-inline-start: 1px solid var(--tn-interactive-accent);
     background: color-mix(in srgb, var(--tn-interactive-accent) 0.05, var(--tn-bg-primary));
 }
 
@@ -283,15 +283,15 @@
 
 /* Task Item Priority Indicators */
 .tasknotes-plugin .task-list-view__task-item--priority-high {
-    border-left: 3px solid var(--tn-color-error);
+    border-inline-start: 1px solid var(--tn-color-error);
 }
 
 .tasknotes-plugin .task-list-view__task-item--priority-normal {
-    border-left: 3px solid var(--tn-interactive-accent);
+    border-inline-start: 1px solid var(--tn-interactive-accent);
 }
 
 .tasknotes-plugin .task-list-view__task-item--priority-low {
-    border-left: 3px solid var(--tn-text-muted);
+    border-inline-start: 1px solid var(--tn-text-muted);
 }
 
 /* Task Update Animation */

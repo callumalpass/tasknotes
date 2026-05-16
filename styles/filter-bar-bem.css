@@ -33,7 +33,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #a78bfa; /* subtle purple */
+  background-color: var(--tn-color-recurring, var(--interactive-accent));
 }
 
 /* Icon + Text Button Styling */
@@ -153,19 +153,19 @@
 
 /* Date input validation states - subtle styling */
 .tasknotes-plugin .filter-date-text-input.is-valid {
-    border-left: 2px solid var(--color-green);
+    border-inline-start: 2px solid var(--color-green);
     background-color: transparent;
     box-shadow: inset 0 0 0 1px rgba(var(--color-green-rgb), 0.15);
 }
 
 .tasknotes-plugin .filter-date-text-input.is-invalid {
-    border-left: 2px solid var(--color-red);
+    border-inline-start: 2px solid var(--color-red);
     background-color: transparent;
     box-shadow: inset 0 0 0 1px rgba(var(--color-red-rgb), 0.15);
 }
 
 .tasknotes-plugin .filter-date-text-input.is-empty {
-    border-left: none;
+    border-inline-start: none;
     background-color: transparent;
     box-shadow: none;
 }
@@ -182,7 +182,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .tasknotes-plugin .filter-date-help-button:hover {
@@ -239,7 +239,7 @@
     justify-content: center;
     width: var(--tn-button-height-md);
     height: var(--tn-button-height-md);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     box-shadow: none;
 }
 
@@ -263,7 +263,7 @@
     cursor: var(--cursor, pointer);
     font-size: var(--font-ui-small);
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     height: var(--tn-button-height-md); /* Consistent height */
     box-shadow: none;
 }
@@ -297,7 +297,7 @@
     background: var(--background-primary);
     color: var(--text-normal);
     font-size: var(--font-ui-small);
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
     height: var(--tn-button-height-md); /* Consistent height */
     min-width: 0; /* Override any default min-width */
     width: auto; /* Allow natural width */
@@ -319,9 +319,9 @@
     top: calc(100% + 4px); /* Position below the top controls with a small gap */
     left: auto; /* Let it position dynamically */
     right: auto; /* Let it position dynamically */
-    width: 500px; /* Default preferred width */
-    max-width: 600px; /* Maximum preferred width */
-    min-width: 400px; /* Minimum usable width */
+    width: min(500px, calc(100vw - 32px)); /* Default preferred width */
+    max-width: min(600px, calc(100vw - 32px)); /* Maximum preferred width */
+    min-width: min(400px, calc(100vw - 32px)); /* Minimum usable width */
     z-index: 1000; /* High z-index */
     display: flex;
     flex-direction: column;
@@ -330,8 +330,8 @@
     background: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-m);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-l);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 1;
     transform: translateY(0) scale(1);
     max-height: 80vh;
@@ -359,13 +359,13 @@
     background: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-m);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-l);
     margin-top: 4px;
     max-height: 400px;
     overflow-y: auto;
     opacity: 1;
     transform: translateY(0) scale(1);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Left-aligned variant for Views-left configuration */
@@ -402,7 +402,7 @@
     display: flex;
     align-items: center;
     border-radius: var(--radius-s);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 2px 0;
     position: relative;
     overflow: hidden;
@@ -426,7 +426,7 @@
     font-size: 14px;
     user-select: none;
     opacity: 0;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
     border-radius: var(--radius-s);
     position: relative;
 }
@@ -475,17 +475,7 @@
     border-radius: var(--radius-s);
     pointer-events: none;
     min-height: 30px;
-    transition: all 0.2s ease;
-    animation: placeholderPulse 1s ease-in-out infinite;
-}
-
-@keyframes placeholderPulse {
-    0%, 100% {
-        opacity: 0.5;
-    }
-    50% {
-        opacity: 0.7;
-    }
+    transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .filter-bar__view-item {
@@ -530,7 +520,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     margin-right: var(--tn-spacing-xs);
 }
 
@@ -551,7 +541,7 @@
     border-radius: var(--radius-s);
     font-size: var(--font-ui-small);
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     margin: 2px 0;
 }
 
@@ -591,7 +581,7 @@
     background: transparent;
     border: none;
     border-radius: var(--radius-s);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     margin-bottom: 2px;
 }
 
@@ -651,7 +641,7 @@
     justify-content: center;
     width: var(--tn-button-height-md);
     height: var(--tn-button-height-md);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     box-shadow: none;
 }
 
@@ -691,7 +681,7 @@
     opacity: 1;
     max-height: 1000px; /* Large enough for content */
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tasknotes-plugin .filter-bar__section-content--collapsed {
@@ -865,7 +855,7 @@
 	width: 100%;
     border-radius: var(--radius-s);
     padding: 0 var(--tn-spacing-xs);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
 .tasknotes-plugin .filter-bar__value-input:focus {
@@ -884,7 +874,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     margin-left: auto;
 }
 
@@ -910,7 +900,7 @@
     cursor: var(--cursor, pointer);
     font-size: var(--font-ui-small);
     border-radius: var(--radius-s);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     display: flex;
     align-items: center;
     gap: var(--tn-spacing-xs);
@@ -981,7 +971,7 @@
     cursor: var(--cursor, pointer);
     font-size: 16px;
     font-weight: 700;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1059,6 +1049,32 @@
         flex-grow: 2;
         min-width: 0; /* Force override any inherited min-width */
         flex-basis: 0; /* Start from zero width and grow */
+    }
+}
+
+@media (max-width: 600px) {
+    .tasknotes-plugin .filter-bar__main-box {
+        left: 0;
+        right: 0;
+        width: min(100%, calc(100vw - 32px));
+        min-width: 0;
+        max-width: none;
+        max-height: min(70vh, 560px);
+        padding: var(--tn-spacing-md);
+    }
+
+    .tasknotes-plugin .filter-bar__view-selector-dropdown {
+        left: 0;
+        right: 0;
+        width: min(100%, calc(100vw - 32px));
+        min-width: 0;
+        max-width: none;
+        max-height: min(70vh, 420px);
+    }
+
+    .tasknotes-plugin .filter-date-help-button {
+        min-width: 36px;
+        min-height: 36px;
     }
 }
 

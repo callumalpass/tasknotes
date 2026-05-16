@@ -41,7 +41,7 @@
 
 .unscheduled-tasks-selector__priority.priority-high {
     background: var(--color-red);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 .unscheduled-tasks-selector__priority.priority-normal {
@@ -51,7 +51,7 @@
 
 .unscheduled-tasks-selector__priority.priority-low {
     background: var(--color-green);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 .unscheduled-tasks-selector__due {
@@ -100,7 +100,7 @@
 .unscheduled-tasks-selector__project-link {
     color: var(--link-color);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     border-radius: 4px;
     padding: 1px 2px;
     margin: -1px -2px;

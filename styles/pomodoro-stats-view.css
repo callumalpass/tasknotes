@@ -33,6 +33,20 @@
     margin: 0;
 }
 
+.tasknotes-plugin .pomodoro-stats-view__header .setting-item {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    padding: 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    flex: 0 0 auto;
+}
+
 .tasknotes-plugin .pomodoro-stats-view__refresh-button {
     background: transparent;
     color: var(--tn-text-normal);
@@ -44,6 +58,31 @@
 
 .tasknotes-plugin .pomodoro-stats-view__refresh-button:hover {
     background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__bases-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--tn-text-muted);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__bases-help:hover,
+.tasknotes-plugin .pomodoro-stats-view__bases-help:focus-visible {
+    background: var(--tn-interactive-hover);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__bases-help svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* ================================================
@@ -86,7 +125,7 @@
     background: var(--tn-bg-secondary);
     border-radius: var(--tn-radius-lg);
     border: 1px solid var(--tn-border-color);
-    transition: all var(--tn-transition-fast);
+    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), transform var(--tn-transition-fast);
     min-height: 120px;
     justify-content: center;
 }
@@ -148,7 +187,7 @@
     border-radius: var(--tn-radius-lg);
     border: 1px solid var(--tn-border-color);
     text-align: center;
-    transition: all var(--tn-transition-fast);
+    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), transform var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__stat-card:hover {

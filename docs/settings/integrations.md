@@ -22,11 +22,14 @@ Default mappings:
 - **Open Tasks View** → `TaskNotes/Views/tasks-default.base`
 - **Open Calendar View** → `TaskNotes/Views/calendar-default.base`
 - **Open Agenda View** → `TaskNotes/Views/agenda-default.base`
+- **Pomodoro Statistics Base** → `TaskNotes/Views/pomodoro-stats.base`
 - **Relationships Widget** → `TaskNotes/Views/relationships.base`
 
 Each command allows you to specify a custom `.base` file path and includes a reset button to restore the default path.
 
 **Create Default Files**: Button to generate all default `.base` files in the `TaskNotes/Views/` directory. Existing files are not overwritten.
+
+The generated Pomodoro statistics Base reads Pomodoro sessions from daily notes frontmatter. If your Pomodoro history is still stored in plugin data, migrate it from **Settings → TaskNotes → Features** before using that Base file.
 
 ## OAuth Calendar Integration
 

@@ -41,9 +41,13 @@ Example:
 - ([#1818](https://github.com/callumalpass/tasknotes/issues/1818)) Added an auto-height mode for TaskNotes Calendar Bases views so embedded agenda/list sections can size to their content instead of forcing an inner scroller. Thanks to @martin-forge for suggesting this.
 - ([#1732](https://github.com/callumalpass/tasknotes/issues/1732), [#1835](https://github.com/callumalpass/tasknotes/issues/1835)) Added hotkeyable commands to edit the current task, add a project to the current task, and add an existing task as a subtask of the current note. Thanks to @prepare4robots for requesting this and @ubidev for the follow-up suggestion.
 - ([#1655](https://github.com/callumalpass/tasknotes/issues/1655)) Added live elapsed time to the optional active time tracking status bar item. Thanks to @connradolisboa for suggesting this.
+- ([#706](https://github.com/callumalpass/tasknotes/issues/706), [#820](https://github.com/callumalpass/tasknotes/issues/820), [#1040](https://github.com/callumalpass/tasknotes/issues/1040)) Added direct Pomodoro duration editing, hour-aware timer formatting, clearer one-minute controls, and an optional active Pomodoro status bar countdown. Thanks to @SublunarSage, @lj1446615403-cloud, @0-BSCode, and @thestrike72 for the suggestions and feedback.
+- Added a generated Pomodoro statistics Base with daily and monthly summary views for Pomodoro history stored in daily notes.
 
 ## Changed
 
+- Added guidance in Pomodoro statistics and Base file settings explaining that Pomodoro Base views require daily notes storage.
+- Improved keyboard access, mobile layout, and theme color consistency across task cards, TaskNotes Kanban, Bases Kanban, calendar controls, stats, settings, and filter popovers.
 - ([#1642](https://github.com/callumalpass/tasknotes/issues/1642)) Made completion-based custom recurrence use flexible weekly, monthly, and yearly intervals without forcing a fixed weekday, month day, or month. Thanks to @Volker-brdb for suggesting this.
 - ([#1724](https://github.com/callumalpass/tasknotes/issues/1724)) Moved recurring task complete/skip instance actions into the date area of the task context menu. Thanks to @prepare4robots for suggesting this.
 - ([#1762](https://github.com/callumalpass/tasknotes/issues/1762)) Used the configured Google Calendar task export target as the default calendar when creating manual external calendar events. Thanks to @chrabia for suggesting this.
@@ -55,10 +59,12 @@ Example:
 
 ## Fixed
 
+- Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
 - ([#1634](https://github.com/callumalpass/tasknotes/issues/1634)) Aligned custom status icons in inline tasks with the default inline status circle. Thanks to @ttlaylor for reporting this and @basbarten for confirming it.
 - ([#1636](https://github.com/callumalpass/tasknotes/issues/1636)) Restored the active styling for the Calendar list-view toolbar button. Thanks to @vroablec for reporting this.
 - ([#1638](https://github.com/callumalpass/tasknotes/issues/1638)) Kept task time tracking consistent when switching or clearing tasks during an active Pomodoro. Thanks to @katonapng for reporting this and @anomatomato for confirming it.
 - ([#1639](https://github.com/callumalpass/tasknotes/issues/1639)) Respected the aliased-link overlay exclusion in Reading mode even when the alias text matches the task title. Thanks to @MiracleXYZ for reporting this.
+- Fixed actively tracked task cards so the blue time-tracking outline stays visible along the card edges.
 - ([#1657](https://github.com/callumalpass/tasknotes/issues/1657)) Preserved Bases view defaults when creating tasks from the TaskNotes Kanban/List view New button, so project-scoped views can pass their project assignment into the create task modal. Thanks to @casualQuads122 for reporting this.
 - ([#1662](https://github.com/callumalpass/tasknotes/issues/1662)) Preserved frontmatter from ICS event note templates when quoted event variables or Templater expressions are used. Thanks to @victorhg for reporting this.
 - ([#1663](https://github.com/callumalpass/tasknotes/issues/1663)) Fixed Japanese and other Unicode tags on task cards so Kanban tag pills keep the same rounded styling as ASCII tags. Thanks to @kutty-1119 for reporting this.
@@ -110,6 +116,7 @@ Example:
 - (#1890) Fixed scheduled-date Kanban columns dropping tasks when date-only and timed tasks on the same day are sorted by a scheduled-time formula. Thanks to @chrabia for reporting and investigating.
 - (#1892) Fixed nested Markdown list indentation in the Task Edit Modal details editor. Thanks to @Glint-Eye for reporting.
 - (#1891) Fixed TaskNotes modal markdown editors collapsing to one-character-wide lines when Pretty Properties is installed. Thanks to @bkennedy-improving for reporting.
+- ([#136](https://github.com/callumalpass/tasknotes/issues/136)) Made the Pomodoro countdown derive remaining time from the session clock instead of from counted interval ticks, so delayed or backgrounded ticks catch up cleanly without over-recording a completed session. Thanks to @Poly-0000 for reporting and documenting the original background timer issue, and @Totobal5 for the earlier worker-based fix.
 - Restored padding in task modal Markdown editors.
 - Made the markdown editor areas in task modals easier to click and focus.
 - Strengthened local CSS linting to catch unscoped selectors, unknown CSS, and fixed-position overlays before review.

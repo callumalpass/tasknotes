@@ -41,7 +41,7 @@
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .tasknotes-plugin .nl-quick-create-button:hover {
@@ -59,7 +59,7 @@
     background: var(--background-primary);
     color: var(--tn-text-muted);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .tasknotes-plugin .nl-parse-button:hover {
@@ -77,7 +77,7 @@
     background: var(--background-secondary);
     color: var(--tn-text-muted);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .tasknotes-plugin .nl-show-detail-button:hover {
@@ -662,8 +662,8 @@
 .tasknotes-plugin .task-selector-modal__suggestion {
     padding: var(--tn-spacing-md);
     border-radius: var(--tn-radius-sm);
-    border-left: 3px solid transparent;
-    transition: all var(--tn-transition-fast);
+    border-inline-start: 1px solid transparent;
+    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .task-selector-modal__suggestion:hover {
@@ -862,7 +862,7 @@
     background: var(--background-primary);
     color: var(--tn-text-normal);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .tasknotes-plugin .content-type-buttons button:hover {
@@ -1133,4 +1133,3 @@
     color: var(--tn-text-muted);
     font-style: italic;
 }
-

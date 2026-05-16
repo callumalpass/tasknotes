@@ -90,7 +90,7 @@
 }
 
 .tn-static-color-white-0a43e56a {
-	color: white;
+	color: var(--text-on-accent);
 }
 
 .tn-static-cursor-grab-dad79857 {

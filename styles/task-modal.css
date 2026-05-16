@@ -107,7 +107,7 @@
     min-height: 80px;
     max-height: 200px;
     background: transparent;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tn-task-modal__markdown-editor--nlp .nlp-editor {
@@ -303,7 +303,7 @@
     box-shadow: var(--shadow-l);
     min-width: 480px;
     max-width: 600px;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .tasknotes-plugin .minimalist-modal-container {
@@ -342,7 +342,7 @@
     color: var(--text-normal);
     resize: none;
     min-height: 44px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .tasknotes-plugin .title-input::placeholder {
@@ -379,7 +379,7 @@
     height: 32px;
     border-radius: var(--radius-s);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     position: relative;
 }
 
@@ -421,7 +421,7 @@
    ===================================================================== */
 
 .tasknotes-plugin .details-container {
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     transform-origin: top;
 }
 
@@ -450,7 +450,7 @@
     background: transparent;
     color: var(--text-normal);
     margin-bottom: var(--size-4-3);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .title-input-detailed:focus,
@@ -477,7 +477,7 @@
     background: transparent;
     color: var(--text-normal);
     resize: vertical;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .details-input:focus {
@@ -514,7 +514,7 @@
     border-radius: var(--radius-s);
     padding: var(--size-4-1) var(--size-4-2);
     font-size: var(--font-ui-medium);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .details-container .setting-item-control input:focus {
@@ -535,7 +535,7 @@
     background: transparent;
     color: var(--interactive-accent);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     min-width: 80px;
 }
 
@@ -992,7 +992,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     color: var(--text-normal);
     resize: vertical;
     min-height: 80px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tasknotes-plugin .nl-input:focus {
@@ -1089,7 +1089,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
 .tasknotes-plugin .recurring-calendar__day--clickable {
     cursor: var(--cursor, pointer);
-    transition: all 0.1s ease;
+    transition: background-color 0.1s ease, color 0.1s ease;
 }
 
 .tasknotes-plugin .recurring-calendar__day--clickable:hover {

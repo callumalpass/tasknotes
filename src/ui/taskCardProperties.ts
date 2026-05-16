@@ -46,6 +46,9 @@ function tTaskCard(
 }
 
 function prepareInteractiveControl(element: HTMLElement): void {
+	element.setAttribute("role", "button");
+	element.tabIndex = 0;
+
 	if (element.dataset.tnNoDrag === "true") {
 		element.setAttribute("draggable", "false");
 		return;
@@ -56,6 +59,12 @@ function prepareInteractiveControl(element: HTMLElement): void {
 	element.addEventListener("mousedown", (event) => {
 		event.preventDefault();
 		event.stopPropagation();
+	});
+	element.addEventListener("keydown", (event) => {
+		if (event.key !== "Enter" && event.key !== " ") return;
+		event.preventDefault();
+		event.stopPropagation();
+		element.click();
 	});
 }
 

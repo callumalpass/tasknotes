@@ -68,7 +68,8 @@
     padding: 0.5rem;
     background: var(--background-secondary);
     border-radius: 4px;
-    border-left: 3px solid var(--color-accent);
+    border: 1px solid var(--background-modifier-border);
+    border-inline-start-color: var(--color-accent);
 }
 
 /* Event Type Specific Styles */
@@ -98,23 +99,23 @@
     border-style: dashed; /* Dashed border to differentiate from solid timeblocks */
     background: repeating-linear-gradient(
         45deg,
-        rgba(16, 185, 129, 0.08),
-        rgba(16, 185, 129, 0.08) 10px,
-        rgba(16, 185, 129, 0.15) 10px,
-        rgba(16, 185, 129, 0.15) 20px
+        var(--tn-color-time-entry-bg-soft),
+        var(--tn-color-time-entry-bg-soft) 10px,
+        var(--tn-color-time-entry-bg-medium) 10px,
+        var(--tn-color-time-entry-bg-medium) 20px
     ); /* Subtle diagonal stripes in green */
-    border-color: #10b981; /* Green to indicate "completed/recorded" time */
+    border-color: var(--tn-color-time-entry); /* Green to indicate "completed/recorded" time */
 }
 
 .fc-event[data-event-type="timeEntry"] .fc-event-time,
 .fc-event[data-event-type="timeEntry"] .fc-event-title {
-    color: #059669; /* Darker green for better readability */
+    color: var(--tn-color-time-entry-text); /* Darker green for better readability */
     font-weight: 500;
 }
 
 .fc-event[data-event-type="timeEntry"]:hover {
     opacity: 1;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--tn-color-time-entry) 30%, transparent);
     border-style: solid; /* Solid border on hover for clarity */
 }
 
@@ -122,17 +123,17 @@
 .theme-dark .fc-event[data-event-type="timeEntry"] {
     background: repeating-linear-gradient(
         45deg,
-        rgba(52, 211, 153, 0.1),
-        rgba(52, 211, 153, 0.1) 10px,
-        rgba(52, 211, 153, 0.18) 10px,
-        rgba(52, 211, 153, 0.18) 20px
+        var(--tn-color-time-entry-bg-soft-dark),
+        var(--tn-color-time-entry-bg-soft-dark) 10px,
+        var(--tn-color-time-entry-bg-medium-dark) 10px,
+        var(--tn-color-time-entry-bg-medium-dark) 20px
     );
-    border-color: #34d399; /* Lighter green for dark mode */
+    border-color: var(--tn-color-time-entry-dark); /* Lighter green for dark mode */
 }
 
 .theme-dark .fc-event[data-event-type="timeEntry"] .fc-event-time,
 .theme-dark .fc-event[data-event-type="timeEntry"] .fc-event-title {
-    color: #6ee7b7; /* Even lighter green for text in dark mode */
+    color: var(--tn-color-time-entry-text-dark); /* Even lighter green for text in dark mode */
 }
 
 /* Task Events */
@@ -408,7 +409,7 @@
 
 .ics-subscription-delete:hover {
     background: var(--text-error);
-    color: white;
+    color: var(--text-on-accent, var(--background-primary));
 }
 
 /* ICS Subscription Forms */
@@ -702,7 +703,7 @@
     font-weight: 400;
     padding: 0.3rem 0.6rem;
     border-radius: 4px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 /* Hover states for all FC buttons */
@@ -861,7 +862,7 @@
     font-weight: 500;
     padding: 0.2rem 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
     cursor: var(--cursor, pointer);
 }
 
@@ -900,12 +901,12 @@
 
 /* Current time indicator (red line) */
 .advanced-calendar-view .fc-timegrid-now-indicator-line {
-    border-color: #ff0000;
+    border-color: var(--tn-color-error);
     border-width: 1px;
 }
 
 .advanced-calendar-view .fc-timegrid-now-indicator-arrow {
-    border-color: #ff0000;
+    border-color: var(--tn-color-error);
 }
 
 /* Mobile collapse toggle - hidden by default */
@@ -922,7 +923,7 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .advanced-calendar-view__collapse-btn:hover {
@@ -1056,7 +1057,7 @@
     font-weight: 400;
     padding: 0.3rem 0.6rem;
     border-radius: 4px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .advanced-calendar-view .fc-refreshICS-button .fc-icon,

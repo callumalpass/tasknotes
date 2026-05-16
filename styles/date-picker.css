@@ -108,7 +108,7 @@
     cursor: var(--cursor, pointer);
     font-size: var(--font-ui-medium);
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     border: none;
 }
 

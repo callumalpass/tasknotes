@@ -291,6 +291,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroSoundVolume: 50,
 	pomodoroStorageLocation: "plugin",
 	pomodoroMobileSidebar: "tab",
+	showPomodoroInStatusBar: true,
 	// Editor defaults
 	enableTaskLinkOverlay: true,
 	disableOverlayOnAlias: false,
@@ -384,12 +385,13 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
-		'open-calendar-view': 'TaskNotes/Views/mini-calendar-default.base',
-		'open-kanban-view': 'TaskNotes/Views/kanban-default.base',
-		'open-tasks-view': 'TaskNotes/Views/tasks-default.base',
-		'open-advanced-calendar-view': 'TaskNotes/Views/calendar-default.base',
-		'open-agenda-view': 'TaskNotes/Views/agenda-default.base',
-		'relationships': 'TaskNotes/Views/relationships.base',
+		"open-calendar-view": "TaskNotes/Views/mini-calendar-default.base",
+		"open-kanban-view": "TaskNotes/Views/kanban-default.base",
+		"open-tasks-view": "TaskNotes/Views/tasks-default.base",
+		"open-advanced-calendar-view": "TaskNotes/Views/calendar-default.base",
+		"open-agenda-view": "TaskNotes/Views/agenda-default.base",
+		"pomodoro-stats-base": "TaskNotes/Views/pomodoro-stats.base",
+		relationships: "TaskNotes/Views/relationships.base",
 	},
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,

@@ -279,7 +279,7 @@ select.tasknotes-settings__card-input {
 
 .tasknotes-settings__card-action-btn--delete {
     background: var(--color-red);
-    color: white;
+    color: var(--text-on-accent);
     border-color: var(--color-red);
 }
 
@@ -319,7 +319,7 @@ select.tasknotes-settings__card-input {
 
 .tasknotes-settings__card-header-btn--delete:hover {
     background: var(--color-red);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 /* Status Badges */
@@ -334,12 +334,12 @@ select.tasknotes-settings__card-input {
 
 .tasknotes-settings__card-status-badge--active {
     background: var(--color-green);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 .tasknotes-settings__card-status-badge--inactive {
     background: var(--color-red);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 .tasknotes-settings__card-info-badge {
@@ -370,7 +370,7 @@ select.tasknotes-settings__card-input {
     border-radius: 16px;
     font-size: 12px;
     color: var(--text-normal);
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .tasknotes-settings__project-item:hover {
@@ -397,7 +397,7 @@ select.tasknotes-settings__card-input {
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
     flex-shrink: 0;
 }
 
@@ -425,7 +425,7 @@ select.tasknotes-settings__card-input {
     align-items: center;
     justify-content: center;
     border-radius: 3px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
     opacity: 0.6;
 }
 
@@ -487,12 +487,12 @@ select.tasknotes-settings__card-input {
 
 /* Collapsible card support */
 .tasknotes-settings__card--collapsible {
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .tasknotes-settings__card--collapsible .tasknotes-settings__card-content,
 .tasknotes-settings__card--collapsible .tasknotes-settings__card-actions {
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, max-height 0.2s ease, padding 0.2s ease;
     overflow: hidden;
 }
 
@@ -516,7 +516,7 @@ select.tasknotes-settings__card-input {
 /* Collapse button styling */
 .tasknotes-settings__card-collapse-btn {
     opacity: 0.7;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .tasknotes-settings__card-collapse-btn:hover {
@@ -601,7 +601,8 @@ select.tasknotes-settings__card-input {
     padding: var(--tn-spacing-md);
     background: var(--background-secondary);
     border-radius: var(--tn-radius-sm);
-    border-left: 3px solid var(--interactive-accent);
+    border: 1px solid var(--background-modifier-border);
+    border-inline-start-color: var(--interactive-accent);
 }
 
 .tasknotes-webhook-help-header {
@@ -651,7 +652,7 @@ select.tasknotes-settings__card-input {
     font-size: var(--tn-font-size-sm);
     font-weight: 500;
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .tasknotes-webhook-modal-btn:hover {
@@ -966,7 +967,7 @@ select.tasknotes-settings__card-input {
 }
 
 .tasknotes-settings__collapsible-content {
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, max-height 0.2s ease;
 }
 
 /* Nested collapsible sections (e.g., filter settings within custom fields) */
@@ -1142,7 +1143,8 @@ select.tasknotes-settings__card-input {
     padding: 12px;
     background: var(--background-secondary);
     border-radius: 6px;
-    border-left: 3px solid var(--interactive-accent);
+    border: 1px solid var(--background-modifier-border);
+    border-inline-start-color: var(--interactive-accent);
     margin-bottom: 16px;
 }
 

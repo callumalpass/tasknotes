@@ -65,7 +65,7 @@
     border-radius: 50%;
     border: 2px solid var(--tn-border-color);
     background-color: transparent;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     cursor: var(--cursor, pointer);
     position: relative;
     flex-shrink: 0;
@@ -108,7 +108,7 @@
     cursor: var(--cursor, pointer);
     border-radius: 3px;
     padding: 1px 3px;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 
 .tasknotes-plugin .task-inline-preview__date--clickable:hover {
@@ -149,7 +149,7 @@
     height: 12px;
     border-radius: 3px;
     padding: 1px 3px;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease, filter 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
     flex-shrink: 0;
     vertical-align: baseline;
     margin-right: 2px;
@@ -182,7 +182,7 @@
     height: 12px;
     border-radius: 3px;
     padding: 1px 3px;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
     flex-shrink: 0;
     vertical-align: baseline;
 }
@@ -257,7 +257,7 @@
     /* Interactivity */
     cursor: var(--cursor, pointer);
     opacity: 0.6;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
     
     /* Reset button styles */
     font-family: inherit;
@@ -350,17 +350,15 @@
 
 /* Priority border colors */
 .tasknotes-plugin .task-inline-preview.task-inline-preview--priority-high {
-    border-left-color: var(--color-red);
-    border-left-width: 4px;
+    border-inline-start: 1px solid var(--color-red);
 }
 
 .tasknotes-plugin .task-inline-preview.task-inline-preview--priority-medium {
-    border-left-color: var(--color-orange);
-    border-left-width: 3px;
+    border-inline-start: 1px solid var(--color-orange);
 }
 
 .tasknotes-plugin .task-inline-preview.task-inline-preview--priority-low {
-    border-left-color: var(--color-blue);
+    border-inline-start: 1px solid var(--color-blue);
 }
 
 /* Pencil menu icon */
@@ -458,7 +456,7 @@
     border: 1px solid var(--background-modifier-border);
     
     /* Smooth transitions */
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .tasknotes-plugin .task-inline-preview--reading-mode:hover {

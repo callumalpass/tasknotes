@@ -129,7 +129,7 @@
     background: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .reminder-modal__reminder-card:hover {
@@ -174,7 +174,7 @@
     border: none;
     cursor: pointer;
     color: var(--text-muted);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     width: 24px;
     height: 24px;
     display: flex;
@@ -215,7 +215,7 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     font-size: var(--font-ui-small);
     color: var(--text-muted);
     flex: 1;
@@ -274,7 +274,7 @@
     cursor: pointer;
     font-weight: 500;
     color: var(--text-muted);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     text-align: center;
     font-size: var(--font-ui-small);
     display: flex;
@@ -329,7 +329,7 @@
     border-radius: var(--radius-s);
     padding: var(--size-4-1) var(--size-4-2);
     font-size: var(--font-ui-medium);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .reminder-modal__form .setting-item-control input:focus,
@@ -348,7 +348,7 @@
     cursor: pointer;
     font-weight: 500;
     font-size: var(--font-ui-medium);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -397,7 +397,7 @@
     font-weight: 500;
     font-size: var(--font-ui-medium);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
     border: none;
     display: flex;
     align-items: center;
@@ -548,7 +548,7 @@
     cursor: pointer;
     color: var(--text-muted);
     border-radius: var(--radius-s);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .reminder-item__remove-btn:hover {
@@ -619,7 +619,7 @@
     background: var(--background-primary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .reminder-defaults-card:hover {
@@ -664,7 +664,7 @@
     border: none;
     cursor: pointer;
     color: var(--text-muted);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     width: 24px;
     height: 24px;
     display: flex;
@@ -718,7 +718,7 @@
     cursor: pointer;
     font-weight: 500;
     color: var(--text-muted);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     text-align: center;
     font-size: var(--font-ui-small);
     display: flex;
@@ -774,7 +774,7 @@
     border-radius: var(--radius-s);
     padding: var(--size-4-1) var(--size-4-2);
     font-size: var(--font-ui-medium);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .reminder-defaults-form .setting-item-control input:focus,
@@ -794,7 +794,7 @@
     cursor: pointer;
     font-weight: 500;
     font-size: var(--font-ui-medium);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;

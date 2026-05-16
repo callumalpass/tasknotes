@@ -222,6 +222,11 @@ export function renderGeneralTab(
 			defaultPath: "TaskNotes/Views/agenda-default.base",
 		},
 		{
+			id: "pomodoro-stats-base",
+			nameKey: "pomodoroStats" as const,
+			defaultPath: "TaskNotes/Views/pomodoro-stats.base",
+		},
+		{
 			id: "relationships",
 			nameKey: "relationships" as const,
 			defaultPath: "TaskNotes/Views/relationships.base",
@@ -242,6 +247,15 @@ export function renderGeneralTab(
 				setting.setDesc(
 					translate(
 						"settings.integrations.basesIntegration.viewCommands.descriptionRegen"
+					)
+				);
+				setting.settingEl.addClass("settings-view__group-description");
+			});
+
+			group.addSetting((setting) => {
+				setting.setDesc(
+					translate(
+						"settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint"
 					)
 				);
 				setting.settingEl.addClass("settings-view__group-description");

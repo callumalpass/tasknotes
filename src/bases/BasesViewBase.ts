@@ -288,9 +288,10 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		const newTaskBtn = doc.createElement("div");
 		newTaskBtn.className = "bases-toolbar-item tn-bases-new-task-btn";
 
-		const innerBtn = doc.createElement("div");
+		const innerBtn = doc.createElement("button");
 		innerBtn.className = "text-icon-button";
-		innerBtn.tabIndex = 0;
+		innerBtn.type = "button";
+		innerBtn.setAttribute("aria-label", this.plugin.i18n.translate("common.new"));
 
 		// Add icon
 		const iconSpan = doc.createElement("span");
@@ -916,13 +917,24 @@ export abstract class BasesViewBase extends Component implements BasesView {
 				const doc = this.rootElement.ownerDocument;
 				this.selectionIndicatorEl = doc.createElement("div");
 				this.selectionIndicatorEl.className = "tn-selection-indicator";
+				this.selectionIndicatorEl.setAttribute("role", "button");
+				this.selectionIndicatorEl.tabIndex = 0;
 				this.selectionIndicatorEl.addEventListener("click", () => {
 					this.plugin.taskSelectionService?.clearSelection();
 					this.plugin.taskSelectionService?.exitSelectionMode();
 				});
+				this.selectionIndicatorEl.addEventListener("keydown", (event) => {
+					if (event.key !== "Enter" && event.key !== " ") return;
+					event.preventDefault();
+					this.selectionIndicatorEl?.click();
+				});
 				this.rootElement.appendChild(this.selectionIndicatorEl);
 			}
 			this.selectionIndicatorEl.textContent = `${count} selected`;
+			this.selectionIndicatorEl.setAttribute(
+				"aria-label",
+				`${count} selected. Activate to clear selection.`
+			);
 			this.selectionIndicatorEl.classList.remove(
 				"tn-static-display-flex-4d51fc62",
 				"tn-static-display-flex-75816cae",

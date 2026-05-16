@@ -109,7 +109,7 @@
     border-radius: var(--tn-border-radius-md);
     padding: var(--tn-spacing-md);
     text-align: center;
-    transition: all 0.15s ease-in-out;
+    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
 }
 
 .tasknotes-plugin .stats-view__stat-card:hover {
@@ -192,7 +192,7 @@
     stroke: var(--interactive-accent);
     stroke-width: 4;
     stroke-linecap: round;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: stroke-width 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
     filter: brightness(1.1);
     opacity: 1;
 }
@@ -324,26 +324,10 @@
 
 .tasknotes-plugin .stats-view__progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--tn-accent-color), var(--color-accent-2, var(--tn-accent-color)));
+    background: var(--tn-accent-color);
     border-radius: 4px;
     transition: width 0.6s ease-out;
     position: relative;
-}
-
-.tasknotes-plugin .stats-view__progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
 }
 
 /* ================================================
@@ -352,12 +336,12 @@
 
 /* Enhanced cards with gradients */
 .tasknotes-plugin .stats-view__overview-card {
-    background: linear-gradient(135deg, var(--tn-background-secondary), var(--tn-background-primary));
+    background: var(--tn-background-secondary);
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-border-radius-lg);
     padding: var(--tn-spacing-lg);
     text-align: center;
-    transition: all 0.3s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     position: relative;
     overflow: hidden;
 }
@@ -368,8 +352,8 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--tn-accent-color), var(--color-accent-2, var(--tn-accent-color)));
+    height: 1px;
+    background: var(--tn-accent-color);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -383,47 +367,34 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Enhanced overview values with animation */
 .tasknotes-plugin .stats-view__overview-value {
     font-size: var(--tn-font-size-xxl);
     font-weight: var(--tn-font-weight-bold);
     color: var(--tn-accent-color);
     margin-bottom: var(--tn-spacing-xs);
     line-height: 1.2;
-    animation: countUp 0.8s ease-out;
-}
-
-@keyframes countUp {
-    0% { 
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    100% { 
-        opacity: 1;
-        transform: scale(1);
-    }
 }
 
 /* Enhanced project items */
 .tasknotes-plugin .stats-view__project-item {
-    background: linear-gradient(135deg, var(--tn-background-secondary), var(--tn-background-primary));
+    background: var(--tn-background-secondary);
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-border-radius-lg);
     padding: var(--tn-spacing-lg);
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     position: relative;
     overflow: hidden;
 }
 
 /* Special styling for "No Project" items */
 .tasknotes-plugin .stats-view__project-item--no-project {
-    background: linear-gradient(135deg, var(--tn-background-modifier-border), var(--tn-background-secondary));
+    background: var(--tn-background-secondary);
     border: 1px dashed var(--tn-text-muted);
     opacity: 0.8;
 }
 
 .tasknotes-plugin .stats-view__project-item--no-project::before {
-    background: linear-gradient(90deg, var(--tn-text-muted), var(--color-base-60));
+    background: var(--tn-text-muted);
     opacity: 0.3;
 }
 
@@ -440,7 +411,7 @@
 
 
 .tasknotes-plugin .stats-view__project-item--no-project .stats-view__time-bar-fill {
-    background: linear-gradient(90deg, var(--color-base-60), var(--color-base-70));
+    background: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .stats-view__project-item--no-project .stats-view__progress-circle-fg {
@@ -448,7 +419,7 @@
 }
 
 .tasknotes-plugin .stats-view__project-item::before {
-    content: '';
+    content: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -487,7 +458,7 @@
 
 .tasknotes-plugin .stats-view__time-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--color-green), var(--color-blue));
+    background: var(--tn-accent-color);
     border-radius: 3px;
     transition: width 0.8s ease-out;
 }
@@ -502,7 +473,7 @@
 
 /* Insight cards */
 .tasknotes-plugin .stats-view__insight-card {
-    background: linear-gradient(135deg, var(--color-accent-2, var(--tn-accent-color)), var(--tn-accent-color));
+    background: var(--tn-accent-color);
     color: var(--text-on-accent);
     border-radius: var(--tn-border-radius-lg);
     padding: var(--tn-spacing-lg);
@@ -512,19 +483,7 @@
 }
 
 .tasknotes-plugin .stats-view__insight-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.tasknotes-plugin .stats-view__insight-card:hover::before {
-    opacity: 1;
+    content: none;
 }
 
 .tasknotes-plugin .stats-view__insight-title {
@@ -562,7 +521,7 @@
 
 @keyframes spin {
     to {
-        transform: rotate(360px);
+        transform: rotate(360deg);
     }
 }
 
@@ -653,7 +612,7 @@
     color: var(--tn-text-normal);
     font-size: var(--tn-font-size-sm);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .tasknotes-plugin .stats-view__filter-button:hover {
@@ -677,7 +636,7 @@
 /* Clickable project items */
 .tasknotes-plugin .stats-view__project-item--clickable {
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tasknotes-plugin .stats-view__project-item--clickable:hover {
@@ -776,7 +735,7 @@
     cursor: var(--cursor, pointer);
     padding: var(--tn-spacing-xs, 4px);
     border-radius: var(--tn-border-radius-sm, 4px);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .stats-view__modal-close:hover {
@@ -888,7 +847,7 @@
     border-radius: var(--tn-border-radius-sm);
     padding: var(--tn-spacing-sm);
     cursor: var(--cursor, pointer);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tasknotes-plugin .stats-view__recent-task:hover {

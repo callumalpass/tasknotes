@@ -44,30 +44,34 @@ export function renderFeaturesTab(
 			description: translate("settings.features.inlineTasks.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.overlays.taskLinkToggle.name"),
-					desc: translate("settings.features.overlays.taskLinkToggle.description"),
-					getValue: () => plugin.settings.enableTaskLinkOverlay,
-					setValue: async (value: boolean) => {
-						plugin.settings.enableTaskLinkOverlay = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.overlays.taskLinkToggle.name"),
+						desc: translate("settings.features.overlays.taskLinkToggle.description"),
+						getValue: () => plugin.settings.enableTaskLinkOverlay,
+						setValue: async (value: boolean) => {
+							plugin.settings.enableTaskLinkOverlay = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
 			);
 
 			if (plugin.settings.enableTaskLinkOverlay) {
-				group.addSetting((setting) =>
-					void configureToggleSetting(setting, {
-						name: translate("settings.features.overlays.aliasExclusion.name"),
-						desc: translate("settings.features.overlays.aliasExclusion.description"),
-						getValue: () => plugin.settings.disableOverlayOnAlias,
-						setValue: async (value: boolean) => {
-							plugin.settings.disableOverlayOnAlias = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate("settings.features.overlays.aliasExclusion.name"),
+							desc: translate(
+								"settings.features.overlays.aliasExclusion.description"
+							),
+							getValue: () => plugin.settings.disableOverlayOnAlias,
+							setValue: async (value: boolean) => {
+								plugin.settings.disableOverlayOnAlias = value;
+								save();
+							},
+						})
 				);
 
 				group.addSetting((setting) => {
@@ -100,17 +104,18 @@ export function renderFeaturesTab(
 				});
 			}
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.instantConvert.toggle.name"),
-					desc: translate("settings.features.instantConvert.toggle.description"),
-					getValue: () => plugin.settings.enableInstantTaskConvert,
-					setValue: async (value: boolean) => {
-						plugin.settings.enableInstantTaskConvert = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.instantConvert.toggle.name"),
+						desc: translate("settings.features.instantConvert.toggle.description"),
+						getValue: () => plugin.settings.enableInstantTaskConvert,
+						setValue: async (value: boolean) => {
+							plugin.settings.enableInstantTaskConvert = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
 			);
 		}
 	);
@@ -123,43 +128,46 @@ export function renderFeaturesTab(
 			description: translate("settings.features.nlp.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.nlp.enable.name"),
-					desc: translate("settings.features.nlp.enable.description"),
-					getValue: () => plugin.settings.enableNaturalLanguageInput,
-					setValue: async (value: boolean) => {
-						plugin.settings.enableNaturalLanguageInput = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.nlp.enable.name"),
+						desc: translate("settings.features.nlp.enable.description"),
+						getValue: () => plugin.settings.enableNaturalLanguageInput,
+						setValue: async (value: boolean) => {
+							plugin.settings.enableNaturalLanguageInput = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
 			);
 
 			if (plugin.settings.enableNaturalLanguageInput) {
-				group.addSetting((setting) =>
-					void configureToggleSetting(setting, {
-						name: translate("settings.features.nlp.defaultToScheduled.name"),
-						desc: translate("settings.features.nlp.defaultToScheduled.description"),
-						getValue: () => plugin.settings.nlpDefaultToScheduled,
-						setValue: async (value: boolean) => {
-							plugin.settings.nlpDefaultToScheduled = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate("settings.features.nlp.defaultToScheduled.name"),
+							desc: translate("settings.features.nlp.defaultToScheduled.description"),
+							getValue: () => plugin.settings.nlpDefaultToScheduled,
+							setValue: async (value: boolean) => {
+								plugin.settings.nlpDefaultToScheduled = value;
+								save();
+							},
+						})
 				);
 
-				group.addSetting((setting) =>
-					void configureDropdownSetting(setting, {
-						name: translate("settings.features.nlp.language.name"),
-						desc: translate("settings.features.nlp.language.description"),
-						options: getAvailableLanguages(),
-						getValue: () => plugin.settings.nlpLanguage,
-						setValue: async (value: string) => {
-							plugin.settings.nlpLanguage = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureDropdownSetting(setting, {
+							name: translate("settings.features.nlp.language.name"),
+							desc: translate("settings.features.nlp.language.description"),
+							options: getAvailableLanguages(),
+							getValue: () => plugin.settings.nlpLanguage,
+							setValue: async (value: string) => {
+								plugin.settings.nlpLanguage = value;
+								save();
+							},
+						})
 				);
 			}
 		}
@@ -173,35 +181,39 @@ export function renderFeaturesTab(
 			description: translate("settings.defaults.description.bodyTemplate"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.defaults.bodyTemplate.useBodyTemplate.name"),
-					desc: translate("settings.defaults.bodyTemplate.useBodyTemplate.description"),
-					getValue: () => plugin.settings.taskCreationDefaults.useBodyTemplate,
-					setValue: async (value: boolean) => {
-						plugin.settings.taskCreationDefaults.useBodyTemplate = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.defaults.bodyTemplate.useBodyTemplate.name"),
+						desc: translate(
+							"settings.defaults.bodyTemplate.useBodyTemplate.description"
+						),
+						getValue: () => plugin.settings.taskCreationDefaults.useBodyTemplate,
+						setValue: async (value: boolean) => {
+							plugin.settings.taskCreationDefaults.useBodyTemplate = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
 			);
 
 			if (plugin.settings.taskCreationDefaults.useBodyTemplate) {
-				group.addSetting((setting) =>
-					void configureTextSetting(setting, {
-						name: translate("settings.defaults.bodyTemplate.bodyTemplateFile.name"),
-						desc: translate(
-							"settings.defaults.bodyTemplate.bodyTemplateFile.description"
-						),
-						placeholder: translate(
-							"settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
-						),
-						getValue: () => plugin.settings.taskCreationDefaults.bodyTemplate,
-						setValue: async (value: string) => {
-							plugin.settings.taskCreationDefaults.bodyTemplate = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureTextSetting(setting, {
+							name: translate("settings.defaults.bodyTemplate.bodyTemplateFile.name"),
+							desc: translate(
+								"settings.defaults.bodyTemplate.bodyTemplateFile.description"
+							),
+							placeholder: translate(
+								"settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
+							),
+							getValue: () => plugin.settings.taskCreationDefaults.bodyTemplate,
+							setValue: async (value: string) => {
+								plugin.settings.taskCreationDefaults.bodyTemplate = value;
+								save();
+							},
+						})
 				);
 
 				// Template Variables Help (rendered as description text)
@@ -222,20 +234,21 @@ export function renderFeaturesTab(
 				});
 			}
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
-					),
-					desc: translate(
-						"settings.defaults.instantConversion.useDefaultsOnInstantConvert.description"
-					),
-					getValue: () => plugin.settings.useDefaultsOnInstantConvert,
-					setValue: async (value: boolean) => {
-						plugin.settings.useDefaultsOnInstantConvert = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
+						),
+						desc: translate(
+							"settings.defaults.instantConversion.useDefaultsOnInstantConvert.description"
+						),
+						getValue: () => plugin.settings.useDefaultsOnInstantConvert,
+						setValue: async (value: boolean) => {
+							plugin.settings.useDefaultsOnInstantConvert = value;
+							save();
+						},
+					})
 			);
 		}
 	);
@@ -248,211 +261,239 @@ export function renderFeaturesTab(
 			description: translate("settings.features.pomodoro.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureNumberSetting(setting, {
-					name: translate("settings.features.pomodoro.workDuration.name"),
-					desc: translate("settings.features.pomodoro.workDuration.description"),
-					placeholder: "25",
-					min: 1,
-					max: 120,
-					getValue: () => plugin.settings.pomodoroWorkDuration,
-					setValue: async (value: number) => {
-						plugin.settings.pomodoroWorkDuration = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureNumberSetting(setting, {
-					name: translate("settings.features.pomodoro.shortBreak.name"),
-					desc: translate("settings.features.pomodoro.shortBreak.description"),
-					placeholder: "5",
-					min: 1,
-					max: 60,
-					getValue: () => plugin.settings.pomodoroShortBreakDuration,
-					setValue: async (value: number) => {
-						plugin.settings.pomodoroShortBreakDuration = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureNumberSetting(setting, {
-					name: translate("settings.features.pomodoro.longBreak.name"),
-					desc: translate("settings.features.pomodoro.longBreak.description"),
-					placeholder: "15",
-					min: 1,
-					max: 120,
-					getValue: () => plugin.settings.pomodoroLongBreakDuration,
-					setValue: async (value: number) => {
-						plugin.settings.pomodoroLongBreakDuration = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureNumberSetting(setting, {
-					name: translate("settings.features.pomodoro.longBreakInterval.name"),
-					desc: translate("settings.features.pomodoro.longBreakInterval.description"),
-					placeholder: "4",
-					min: 1,
-					max: 10,
-					getValue: () => plugin.settings.pomodoroLongBreakInterval,
-					setValue: async (value: number) => {
-						plugin.settings.pomodoroLongBreakInterval = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.pomodoro.autoStartBreaks.name"),
-					desc: translate("settings.features.pomodoro.autoStartBreaks.description"),
-					getValue: () => plugin.settings.pomodoroAutoStartBreaks,
-					setValue: async (value: boolean) => {
-						plugin.settings.pomodoroAutoStartBreaks = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.pomodoro.autoStartWork.name"),
-					desc: translate("settings.features.pomodoro.autoStartWork.description"),
-					getValue: () => plugin.settings.pomodoroAutoStartWork,
-					setValue: async (value: boolean) => {
-						plugin.settings.pomodoroAutoStartWork = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.pomodoro.notifications.name"),
-					desc: translate("settings.features.pomodoro.notifications.description"),
-					getValue: () => plugin.settings.pomodoroNotifications,
-					setValue: async (value: boolean) => {
-						plugin.settings.pomodoroNotifications = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.pomodoroSound.enabledName"),
-					desc: translate("settings.features.pomodoroSound.enabledDesc"),
-					getValue: () => plugin.settings.pomodoroSoundEnabled,
-					setValue: async (value: boolean) => {
-						plugin.settings.pomodoroSoundEnabled = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
-			);
-
-			if (plugin.settings.pomodoroSoundEnabled) {
-				group.addSetting((setting) =>
+			group.addSetting(
+				(setting) =>
 					void configureNumberSetting(setting, {
-						name: translate("settings.features.pomodoroSound.volumeName"),
-						desc: translate("settings.features.pomodoroSound.volumeDesc"),
-						placeholder: "50",
-						min: 0,
-						max: 100,
-						getValue: () => plugin.settings.pomodoroSoundVolume,
+						name: translate("settings.features.pomodoro.workDuration.name"),
+						desc: translate("settings.features.pomodoro.workDuration.description"),
+						placeholder: "25",
+						min: 1,
+						max: 120,
+						getValue: () => plugin.settings.pomodoroWorkDuration,
 						setValue: async (value: number) => {
-							plugin.settings.pomodoroSoundVolume = value;
+							plugin.settings.pomodoroWorkDuration = value;
 							save();
 						},
 					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureNumberSetting(setting, {
+						name: translate("settings.features.pomodoro.shortBreak.name"),
+						desc: translate("settings.features.pomodoro.shortBreak.description"),
+						placeholder: "5",
+						min: 1,
+						max: 60,
+						getValue: () => plugin.settings.pomodoroShortBreakDuration,
+						setValue: async (value: number) => {
+							plugin.settings.pomodoroShortBreakDuration = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureNumberSetting(setting, {
+						name: translate("settings.features.pomodoro.longBreak.name"),
+						desc: translate("settings.features.pomodoro.longBreak.description"),
+						placeholder: "15",
+						min: 1,
+						max: 120,
+						getValue: () => plugin.settings.pomodoroLongBreakDuration,
+						setValue: async (value: number) => {
+							plugin.settings.pomodoroLongBreakDuration = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureNumberSetting(setting, {
+						name: translate("settings.features.pomodoro.longBreakInterval.name"),
+						desc: translate("settings.features.pomodoro.longBreakInterval.description"),
+						placeholder: "4",
+						min: 1,
+						max: 10,
+						getValue: () => plugin.settings.pomodoroLongBreakInterval,
+						setValue: async (value: number) => {
+							plugin.settings.pomodoroLongBreakInterval = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.pomodoro.autoStartBreaks.name"),
+						desc: translate("settings.features.pomodoro.autoStartBreaks.description"),
+						getValue: () => plugin.settings.pomodoroAutoStartBreaks,
+						setValue: async (value: boolean) => {
+							plugin.settings.pomodoroAutoStartBreaks = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.pomodoro.autoStartWork.name"),
+						desc: translate("settings.features.pomodoro.autoStartWork.description"),
+						getValue: () => plugin.settings.pomodoroAutoStartWork,
+						setValue: async (value: boolean) => {
+							plugin.settings.pomodoroAutoStartWork = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.pomodoro.notifications.name"),
+						desc: translate("settings.features.pomodoro.notifications.description"),
+						getValue: () => plugin.settings.pomodoroNotifications,
+						setValue: async (value: boolean) => {
+							plugin.settings.pomodoroNotifications = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.pomodoro.statusBar.name"),
+						desc: translate("settings.features.pomodoro.statusBar.description"),
+						getValue: () => plugin.settings.showPomodoroInStatusBar,
+						setValue: async (value: boolean) => {
+							plugin.settings.showPomodoroInStatusBar = value;
+							save();
+							plugin.statusBarService?.updateVisibility();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.pomodoroSound.enabledName"),
+						desc: translate("settings.features.pomodoroSound.enabledDesc"),
+						getValue: () => plugin.settings.pomodoroSoundEnabled,
+						setValue: async (value: boolean) => {
+							plugin.settings.pomodoroSoundEnabled = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
+			);
+
+			if (plugin.settings.pomodoroSoundEnabled) {
+				group.addSetting(
+					(setting) =>
+						void configureNumberSetting(setting, {
+							name: translate("settings.features.pomodoroSound.volumeName"),
+							desc: translate("settings.features.pomodoroSound.volumeDesc"),
+							placeholder: "50",
+							min: 0,
+							max: 100,
+							getValue: () => plugin.settings.pomodoroSoundVolume,
+							setValue: async (value: number) => {
+								plugin.settings.pomodoroSoundVolume = value;
+								save();
+							},
+						})
 				);
 			}
 
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.features.dataStorage.name"),
-					desc: translate("settings.features.dataStorage.description"),
-					options: [
-						{
-							value: "plugin",
-							label: translate("settings.features.dataStorage.pluginData"),
-						},
-						{
-							value: "daily-notes",
-							label: translate("settings.features.dataStorage.dailyNotes"),
-						},
-					],
-					getValue: () => plugin.settings.pomodoroStorageLocation,
-					setValue: async (value: string) => {
-						const newLocation = value as "plugin" | "daily-notes";
-						if (newLocation !== plugin.settings.pomodoroStorageLocation) {
-							const data = await plugin.loadData();
-							const hasExistingData =
-								data?.pomodoroHistory &&
-								Array.isArray(data.pomodoroHistory) &&
-								data.pomodoroHistory.length > 0;
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.features.dataStorage.name"),
+						desc: translate("settings.features.dataStorage.description"),
+						options: [
+							{
+								value: "plugin",
+								label: translate("settings.features.dataStorage.pluginData"),
+							},
+							{
+								value: "daily-notes",
+								label: translate("settings.features.dataStorage.dailyNotes"),
+							},
+						],
+						getValue: () => plugin.settings.pomodoroStorageLocation,
+						setValue: async (value: string) => {
+							const newLocation = value as "plugin" | "daily-notes";
+							if (newLocation !== plugin.settings.pomodoroStorageLocation) {
+								const data = await plugin.loadData();
+								const hasExistingData =
+									data?.pomodoroHistory &&
+									Array.isArray(data.pomodoroHistory) &&
+									data.pomodoroHistory.length > 0;
 
-							const confirmed = await showStorageLocationConfirmationModal(
-								plugin,
-								hasExistingData
-							);
-
-							if (confirmed) {
-								plugin.settings.pomodoroStorageLocation = newLocation;
-								save();
-								new Notice(
-									translate(
-										"settings.features.dataStorage.notices.locationChanged",
-										{
-											location:
-												newLocation === "plugin"
-													? translate(
-															"settings.features.dataStorage.pluginData"
-														)
-													: translate(
-															"settings.features.dataStorage.dailyNotes"
-														),
-										}
-									)
+								const confirmed = await showStorageLocationConfirmationModal(
+									plugin,
+									hasExistingData
 								);
-							} else {
-								renderFeaturesTab(container, plugin, save);
+
+								if (confirmed) {
+									plugin.settings.pomodoroStorageLocation = newLocation;
+									save();
+									new Notice(
+										translate(
+											"settings.features.dataStorage.notices.locationChanged",
+											{
+												location:
+													newLocation === "plugin"
+														? translate(
+																"settings.features.dataStorage.pluginData"
+															)
+														: translate(
+																"settings.features.dataStorage.dailyNotes"
+															),
+											}
+										)
+									);
+								} else {
+									renderFeaturesTab(container, plugin, save);
+								}
 							}
-						}
-					},
-				})
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.features.pomodoro.mobileSidebar.name"),
-					desc: translate("settings.features.pomodoro.mobileSidebar.description"),
-					options: [
-						{
-							value: "tab",
-							label: translate("settings.features.pomodoro.mobileSidebar.tab"),
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.features.pomodoro.mobileSidebar.name"),
+						desc: translate("settings.features.pomodoro.mobileSidebar.description"),
+						options: [
+							{
+								value: "tab",
+								label: translate("settings.features.pomodoro.mobileSidebar.tab"),
+							},
+							{
+								value: "left",
+								label: translate("settings.features.pomodoro.mobileSidebar.left"),
+							},
+							{
+								value: "right",
+								label: translate("settings.features.pomodoro.mobileSidebar.right"),
+							},
+						],
+						getValue: () => plugin.settings.pomodoroMobileSidebar,
+						setValue: async (value: string) => {
+							plugin.settings.pomodoroMobileSidebar = value as
+								| "tab"
+								| "left"
+								| "right";
+							save();
 						},
-						{
-							value: "left",
-							label: translate("settings.features.pomodoro.mobileSidebar.left"),
-						},
-						{
-							value: "right",
-							label: translate("settings.features.pomodoro.mobileSidebar.right"),
-						},
-					],
-					getValue: () => plugin.settings.pomodoroMobileSidebar,
-					setValue: async (value: string) => {
-						plugin.settings.pomodoroMobileSidebar = value as "tab" | "left" | "right";
-						save();
-					},
-				})
+					})
 			);
 		}
 	);
@@ -465,40 +506,42 @@ export function renderFeaturesTab(
 			description: translate("settings.features.notifications.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.notifications.enableName"),
-					desc: translate("settings.features.notifications.enableDesc"),
-					getValue: () => plugin.settings.enableNotifications,
-					setValue: async (value: boolean) => {
-						plugin.settings.enableNotifications = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.notifications.enableName"),
+						desc: translate("settings.features.notifications.enableDesc"),
+						getValue: () => plugin.settings.enableNotifications,
+						setValue: async (value: boolean) => {
+							plugin.settings.enableNotifications = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
 			);
 
 			if (plugin.settings.enableNotifications) {
-				group.addSetting((setting) =>
-					void configureDropdownSetting(setting, {
-						name: translate("settings.features.notifications.typeName"),
-						desc: translate("settings.features.notifications.typeDesc"),
-						options: [
-							{
-								value: "in-app",
-								label: translate("settings.features.notifications.inAppLabel"),
+				group.addSetting(
+					(setting) =>
+						void configureDropdownSetting(setting, {
+							name: translate("settings.features.notifications.typeName"),
+							desc: translate("settings.features.notifications.typeDesc"),
+							options: [
+								{
+									value: "in-app",
+									label: translate("settings.features.notifications.inAppLabel"),
+								},
+								{
+									value: "system",
+									label: translate("settings.features.notifications.systemLabel"),
+								},
+							],
+							getValue: () => plugin.settings.notificationType,
+							setValue: async (value: string) => {
+								plugin.settings.notificationType = value as "in-app" | "system";
+								save();
 							},
-							{
-								value: "system",
-								label: translate("settings.features.notifications.systemLabel"),
-							},
-						],
-						getValue: () => plugin.settings.notificationType,
-						setValue: async (value: string) => {
-							plugin.settings.notificationType = value as "in-app" | "system";
-							save();
-						},
-					})
+						})
 				);
 			}
 		}
@@ -512,44 +555,48 @@ export function renderFeaturesTab(
 			description: translate("settings.features.performance.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.overdue.hideCompletedName"),
-					desc: translate("settings.features.overdue.hideCompletedDesc"),
-					getValue: () => plugin.settings.hideCompletedFromOverdue,
-					setValue: async (value: boolean) => {
-						plugin.settings.hideCompletedFromOverdue = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.indexing.disableName"),
-					desc: translate("settings.features.indexing.disableDesc"),
-					getValue: () => plugin.settings.disableNoteIndexing,
-					setValue: async (value: boolean) => {
-						plugin.settings.disableNoteIndexing = value;
-						save();
-					},
-				})
-			);
-
-			if (plugin.settings.suggestionDebounceMs !== undefined) {
-				group.addSetting((setting) =>
-					void configureNumberSetting(setting, {
-						name: translate("settings.features.suggestions.debounceName"),
-						desc: translate("settings.features.suggestions.debounceDesc"),
-						placeholder: "300",
-						min: 0,
-						max: 2000,
-						getValue: () => plugin.settings.suggestionDebounceMs || 0,
-						setValue: async (value: number) => {
-							plugin.settings.suggestionDebounceMs = value > 0 ? value : undefined;
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.overdue.hideCompletedName"),
+						desc: translate("settings.features.overdue.hideCompletedDesc"),
+						getValue: () => plugin.settings.hideCompletedFromOverdue,
+						setValue: async (value: boolean) => {
+							plugin.settings.hideCompletedFromOverdue = value;
 							save();
 						},
 					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.indexing.disableName"),
+						desc: translate("settings.features.indexing.disableDesc"),
+						getValue: () => plugin.settings.disableNoteIndexing,
+						setValue: async (value: boolean) => {
+							plugin.settings.disableNoteIndexing = value;
+							save();
+						},
+					})
+			);
+
+			if (plugin.settings.suggestionDebounceMs !== undefined) {
+				group.addSetting(
+					(setting) =>
+						void configureNumberSetting(setting, {
+							name: translate("settings.features.suggestions.debounceName"),
+							desc: translate("settings.features.suggestions.debounceDesc"),
+							placeholder: "300",
+							min: 0,
+							max: 2000,
+							getValue: () => plugin.settings.suggestionDebounceMs || 0,
+							setValue: async (value: number) => {
+								plugin.settings.suggestionDebounceMs =
+									value > 0 ? value : undefined;
+								save();
+							},
+						})
 				);
 			}
 		}
@@ -563,28 +610,30 @@ export function renderFeaturesTab(
 			description: translate("settings.features.timeTrackingSection.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.timeTracking.autoStopName"),
-					desc: translate("settings.features.timeTracking.autoStopDesc"),
-					getValue: () => plugin.settings.autoStopTimeTrackingOnComplete,
-					setValue: async (value: boolean) => {
-						plugin.settings.autoStopTimeTrackingOnComplete = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.timeTracking.autoStopName"),
+						desc: translate("settings.features.timeTracking.autoStopDesc"),
+						getValue: () => plugin.settings.autoStopTimeTrackingOnComplete,
+						setValue: async (value: boolean) => {
+							plugin.settings.autoStopTimeTrackingOnComplete = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.timeTracking.stopNotificationName"),
-					desc: translate("settings.features.timeTracking.stopNotificationDesc"),
-					getValue: () => plugin.settings.autoStopTimeTrackingNotification,
-					setValue: async (value: boolean) => {
-						plugin.settings.autoStopTimeTrackingNotification = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.timeTracking.stopNotificationName"),
+						desc: translate("settings.features.timeTracking.stopNotificationDesc"),
+						getValue: () => plugin.settings.autoStopTimeTrackingNotification,
+						setValue: async (value: boolean) => {
+							plugin.settings.autoStopTimeTrackingNotification = value;
+							save();
+						},
+					})
 			);
 		}
 	);
@@ -597,27 +646,29 @@ export function renderFeaturesTab(
 			description: translate("settings.features.recurringSection.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.recurring.maintainOffsetName"),
-					desc: translate("settings.features.recurring.maintainOffsetDesc"),
-					getValue: () => plugin.settings.maintainDueDateOffsetInRecurring,
-					setValue: async (value: boolean) => {
-						plugin.settings.maintainDueDateOffsetInRecurring = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.recurring.maintainOffsetName"),
+						desc: translate("settings.features.recurring.maintainOffsetDesc"),
+						getValue: () => plugin.settings.maintainDueDateOffsetInRecurring,
+						setValue: async (value: boolean) => {
+							plugin.settings.maintainDueDateOffsetInRecurring = value;
+							save();
+						},
+					})
 			);
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.recurring.resetCheckboxesName"),
-					desc: translate("settings.features.recurring.resetCheckboxesDesc"),
-					getValue: () => plugin.settings.resetCheckboxesOnRecurrence,
-					setValue: async (value: boolean) => {
-						plugin.settings.resetCheckboxesOnRecurrence = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.recurring.resetCheckboxesName"),
+						desc: translate("settings.features.recurring.resetCheckboxesDesc"),
+						getValue: () => plugin.settings.resetCheckboxesOnRecurrence,
+						setValue: async (value: boolean) => {
+							plugin.settings.resetCheckboxesOnRecurrence = value;
+							save();
+						},
+					})
 			);
 		}
 	);
@@ -630,62 +681,66 @@ export function renderFeaturesTab(
 			description: translate("settings.features.timeblocking.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.timeblocking.enableName"),
-					desc: translate("settings.features.timeblocking.enableDesc"),
-					getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.enableTimeblocking = value;
-						save();
-						renderFeaturesTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.timeblocking.enableName"),
+						desc: translate("settings.features.timeblocking.enableDesc"),
+						getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.enableTimeblocking = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
 			);
 
 			if (plugin.settings.calendarViewSettings.enableTimeblocking) {
-				group.addSetting((setting) =>
-					void configureDropdownSetting(setting, {
-						name: "Attachment Search Order",
-						desc: "Controls how files are ordered in the Add Attachment search window for timeblocks.",
-						options: [
-							{ value: "name-asc", label: "Name (A to Z)" },
-							{ value: "name-desc", label: "Name (Z to A)" },
-							{ value: "path-asc", label: "Path (A to Z)" },
-							{ value: "path-desc", label: "Path (Z to A)" },
-							{ value: "created-recent", label: "Created (Newest first)" },
-							{ value: "created-oldest", label: "Created (Oldest first)" },
-							{ value: "modified-recent", label: "Modified (Newest first)" },
-							{ value: "modified-oldest", label: "Modified (Oldest first)" },
-						],
-						getValue: () =>
-							plugin.settings.calendarViewSettings.timeblockAttachmentSearchOrder,
-						setValue: async (value: string) => {
-							plugin.settings.calendarViewSettings.timeblockAttachmentSearchOrder =
-								value as
-									| "name-asc"
-									| "name-desc"
-									| "path-asc"
-									| "path-desc"
-									| "created-recent"
-									| "created-oldest"
-									| "modified-recent"
-									| "modified-oldest";
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureDropdownSetting(setting, {
+							name: "Attachment Search Order",
+							desc: "Controls how files are ordered in the Add Attachment search window for timeblocks.",
+							options: [
+								{ value: "name-asc", label: "Name (A to Z)" },
+								{ value: "name-desc", label: "Name (Z to A)" },
+								{ value: "path-asc", label: "Path (A to Z)" },
+								{ value: "path-desc", label: "Path (Z to A)" },
+								{ value: "created-recent", label: "Created (Newest first)" },
+								{ value: "created-oldest", label: "Created (Oldest first)" },
+								{ value: "modified-recent", label: "Modified (Newest first)" },
+								{ value: "modified-oldest", label: "Modified (Oldest first)" },
+							],
+							getValue: () =>
+								plugin.settings.calendarViewSettings.timeblockAttachmentSearchOrder,
+							setValue: async (value: string) => {
+								plugin.settings.calendarViewSettings.timeblockAttachmentSearchOrder =
+									value as
+										| "name-asc"
+										| "name-desc"
+										| "path-asc"
+										| "path-desc"
+										| "created-recent"
+										| "created-oldest"
+										| "modified-recent"
+										| "modified-oldest";
+								save();
+							},
+						})
 				);
 
-				group.addSetting((setting) =>
-					void configureToggleSetting(setting, {
-						name: translate("settings.features.timeblocking.showBlocksName"),
-						desc: translate("settings.features.timeblocking.showBlocksDesc"),
-						getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeblocks,
-						setValue: async (value: boolean) => {
-							plugin.settings.calendarViewSettings.defaultShowTimeblocks = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate("settings.features.timeblocking.showBlocksName"),
+							desc: translate("settings.features.timeblocking.showBlocksDesc"),
+							getValue: () =>
+								plugin.settings.calendarViewSettings.defaultShowTimeblocks,
+							setValue: async (value: boolean) => {
+								plugin.settings.calendarViewSettings.defaultShowTimeblocks = value;
+								save();
+							},
+						})
 				);
 
 				group.addSetting((setting) => {
@@ -720,16 +775,17 @@ export function renderFeaturesTab(
 			description: translate("settings.features.debugLogging.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.features.debugLogging.enableName"),
-					desc: translate("settings.features.debugLogging.enableDesc"),
-					getValue: () => plugin.settings.enableDebugLogging,
-					setValue: async (value: boolean) => {
-						plugin.settings.enableDebugLogging = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.features.debugLogging.enableName"),
+						desc: translate("settings.features.debugLogging.enableDesc"),
+						getValue: () => plugin.settings.enableDebugLogging,
+						setValue: async (value: boolean) => {
+							plugin.settings.enableDebugLogging = value;
+							save();
+						},
+					})
 			);
 		}
 	);

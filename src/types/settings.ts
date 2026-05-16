@@ -122,6 +122,7 @@ export interface TaskNotesSettings {
 	pomodoroSoundVolume: number; // 0-100
 	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data
 	pomodoroMobileSidebar: "tab" | "left" | "right"; // where to open pomodoro view on mobile
+	showPomodoroInStatusBar: boolean;
 	// Editor settings
 	enableTaskLinkOverlay: boolean;
 	disableOverlayOnAlias: boolean;
@@ -209,12 +210,13 @@ export interface TaskNotesSettings {
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
-		'open-calendar-view': string;
-		'open-kanban-view': string;
-		'open-tasks-view': string;
-		'open-advanced-calendar-view': string;
-		'open-agenda-view': string;
-		'relationships': string; // Bases file for unified relationships widget
+		"open-calendar-view": string;
+		"open-kanban-view": string;
+		"open-tasks-view": string;
+		"open-advanced-calendar-view": string;
+		"open-agenda-view": string;
+		"pomodoro-stats-base": string;
+		relationships: string; // Bases file for unified relationships widget
 		[key: string]: string; // Allow string indexing
 	};
 	// Recurring task behavior

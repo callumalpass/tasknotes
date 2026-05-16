@@ -19,7 +19,7 @@
     background-color: transparent;
     border: none;
     border-radius: 0;
-    border-left: 3px solid transparent; /* Transparent by default */
+    border-inline-start: 1px solid transparent; /* Transparent by default */
     
     /* Interactions & Accessibility - Simplified */
     cursor: var(--cursor, pointer);
@@ -47,7 +47,7 @@
 
 /* Daily note specific styling */
 .tasknotes-plugin .note-card--daily {
-    border-left: 3px solid var(--tn-interactive-accent); /* Purple left border for daily notes only */
+    border-inline-start-color: var(--tn-interactive-accent); /* Purple side accent for daily notes only */
 }
 
 /* Ensure all note card titles match task card titles exactly */
@@ -142,7 +142,7 @@
     font-size: var(--tn-font-size-xs);
     color: var(--tn-text-muted);
     border: 1px solid var(--tn-border-color);
-    transition: all var(--tn-transition-fast);
+    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), color var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .note-card__tag:hover {

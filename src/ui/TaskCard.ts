@@ -217,6 +217,9 @@ function updateBadgeIndicator(
  * Mark interactive task-card controls so draggable parent cards do not swallow clicks.
  */
 function prepareInteractiveControl(element: HTMLElement): void {
+	element.setAttribute("role", "button");
+	element.tabIndex = 0;
+
 	if (element.dataset.tnNoDrag === "true") {
 		element.setAttribute("draggable", "false");
 		return;
@@ -227,6 +230,12 @@ function prepareInteractiveControl(element: HTMLElement): void {
 	element.addEventListener("mousedown", (e) => {
 		e.preventDefault();
 		e.stopPropagation();
+	});
+	element.addEventListener("keydown", (e) => {
+		if (e.key !== "Enter" && e.key !== " ") return;
+		e.preventDefault();
+		e.stopPropagation();
+		element.click();
 	});
 }
 

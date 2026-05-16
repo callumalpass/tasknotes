@@ -325,20 +325,20 @@ export function addFieldManagerStyles(): void {
 			color: var(--text-on-accent);
 		}
 
-		.field-card__type--user {
-			background: var(--color-purple);
-			color: white;
-		}
+			.field-card__type--user {
+				background: var(--color-purple);
+				color: var(--text-on-accent);
+			}
 
-		.field-card__type--dependency {
-			background: var(--color-orange);
-			color: white;
-		}
+			.field-card__type--dependency {
+				background: var(--color-orange);
+				color: var(--text-on-accent);
+			}
 
-		.field-card__type--organization {
-			background: var(--color-green);
-			color: white;
-		}
+			.field-card__type--organization {
+				background: var(--color-green);
+				color: var(--text-on-accent);
+			}
 	`;
 
 	activeDocument.head.appendChild(style);

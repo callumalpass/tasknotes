@@ -423,6 +423,101 @@ function generateFormulasSection(plugin: TaskNotesPlugin): string {
 	return `formulas:\n${formulaLines}`;
 }
 
+function generatePomodoroStatsTemplate(plugin: TaskNotesPlugin): string {
+	const pomodoroProperty = mapPropertyToBasesProperty("pomodoros", plugin);
+	const pomodoroRef = formatNotePropertyReference(pomodoroProperty);
+	const workSessions = `list(${pomodoroRef}).filter(value.type == "work")`;
+	const completedWorkSessions = `list(${pomodoroRef}).filter(value.type == "work" && value.completed == true)`;
+	const completedWorkDurations = `${completedWorkSessions}.map(if(value.plannedDuration && value.plannedDuration > 0, value.plannedDuration, if(value.startTime && value.endTime, ((number(date(value.endTime)) - number(date(value.startTime))) / 60000).round(), 0)))`;
+
+	return `# Pomodoro statistics
+# Generated with your TaskNotes settings
+# Requires Pomodoro data storage to be set to Daily notes.
+
+filters:
+  and:
+    - file.hasProperty("${escapeBasesStringLiteral(pomodoroProperty)}")
+    - list(${pomodoroRef}).filter(value.startTime).isEmpty() == false
+
+formulas:
+  pomodoroDate: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.startTime).map(date(value.startTime).format("YYYY-MM-DD")).unique().join(", "), file.basename)'
+  pomodoroMonth: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.startTime).map(date(value.startTime).format("YYYY-MM")).unique().join(", "), "")'
+  completedPomos: 'if(${pomodoroRef}, ${completedWorkSessions}.length, 0)'
+  attemptedPomos: 'if(${pomodoroRef}, ${workSessions}.length, 0)'
+  interruptedPomos: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.type == "work" && value.completed == false).length, 0)'
+  focusMinutes: 'if(${pomodoroRef}, ${completedWorkDurations}.reduce(acc + value, 0).round(), 0)'
+  focusTime: 'if(formula.focusMinutes >= 60, (formula.focusMinutes / 60).floor() + "h " + (formula.focusMinutes % 60).round() + "m", formula.focusMinutes + "m")'
+  completionRate: 'if(formula.attemptedPomos > 0, (formula.completedPomos / formula.attemptedPomos * 100).round() + "%", "0%")'
+  shortBreaks: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.type == "short-break").length, 0)'
+  longBreaks: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.type == "long-break").length, 0)'
+
+properties:
+  formula.pomodoroDate:
+    displayName: Date
+  formula.pomodoroMonth:
+    displayName: Month
+  formula.completedPomos:
+    displayName: Completed
+  formula.attemptedPomos:
+    displayName: Attempted
+  formula.interruptedPomos:
+    displayName: Interrupted
+  formula.focusMinutes:
+    displayName: Focus minutes
+  formula.focusTime:
+    displayName: Focus time
+  formula.completionRate:
+    displayName: Completion
+  formula.shortBreaks:
+    displayName: Short breaks
+  formula.longBreaks:
+    displayName: Long breaks
+
+views:
+  - type: table
+    name: "Daily"
+    order:
+      - formula.pomodoroDate
+      - formula.completedPomos
+      - formula.focusTime
+      - formula.attemptedPomos
+      - formula.completionRate
+      - formula.interruptedPomos
+      - formula.shortBreaks
+      - formula.longBreaks
+      - file.name
+    sort:
+      - column: formula.pomodoroDate
+        direction: DESC
+  - type: table
+    name: "Monthly"
+    groupBy:
+      property: formula.pomodoroMonth
+      direction: DESC
+    order:
+      - formula.pomodoroDate
+      - formula.completedPomos
+      - formula.focusMinutes
+      - formula.focusTime
+      - formula.attemptedPomos
+      - formula.completionRate
+      - formula.interruptedPomos
+      - formula.shortBreaks
+      - formula.longBreaks
+      - file.name
+    summaries:
+      formula.completedPomos: Sum
+      formula.focusMinutes: Sum
+      formula.attemptedPomos: Sum
+      formula.interruptedPomos: Sum
+      formula.shortBreaks: Sum
+      formula.longBreaks: Sum
+    sort:
+      - column: formula.pomodoroDate
+        direction: DESC
+`;
+}
+
 /**
  * Generate a Bases file template for a specific command with user settings
  */
@@ -713,6 +808,9 @@ ${orderYaml}
     listDayCount: 7
     titleProperty: file.basename
 `;
+
+		case 'pomodoro-stats-base':
+			return generatePomodoroStatsTemplate(plugin);
 
 			case 'relationships': {
 				// Unified relationships widget that shows all relationship types
