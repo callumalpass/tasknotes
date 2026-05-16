@@ -50,7 +50,31 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 
 	parseInput(input: string): ParsedTaskData {
 		const parsed = super.parseInput(input);
-		return this.extractLinkedUserFields(input, parsed);
+		return this.normalizeUserFieldValues(this.extractLinkedUserFields(input, parsed));
+	}
+
+	private normalizeUserFieldValues(parsed: ParsedTaskData): ParsedTaskData {
+		if (!parsed.userFields) {
+			return parsed;
+		}
+
+		const userFields = parsed.userFields as Record<string, unknown>;
+
+		for (const userField of this.taskNotesUserFields) {
+			if (userField.type !== "boolean") continue;
+
+			const value = userFields[userField.id];
+			if (typeof value !== "string") continue;
+
+			const normalized = value.trim().toLowerCase();
+			if (normalized === "true") {
+				userFields[userField.id] = true;
+			} else if (normalized === "false") {
+				userFields[userField.id] = false;
+			}
+		}
+
+		return parsed;
 	}
 
 	private extractLinkedUserFields(input: string, parsed: ParsedTaskData): ParsedTaskData {
