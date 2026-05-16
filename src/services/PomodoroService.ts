@@ -944,12 +944,32 @@ export class PomodoroService {
 			return;
 		}
 
-		// Update the current session's task
-		this.state.currentSession.taskPath = task?.path;
+		const session = this.state.currentSession;
+		const previousTaskPath = session.taskPath;
+		const nextTaskPath = task?.path;
+		const shouldSwitchActiveTracking =
+			this.state.isRunning &&
+			session.type === "work" &&
+			previousTaskPath !== nextTaskPath;
 
-		if (task?.path) {
-			this.lastWorkSessionTaskPath = task.path;
-			this.lastSelectedTaskPath = task.path;
+		if (shouldSwitchActiveTracking && previousTaskPath) {
+			try {
+				const previousTask =
+					await this.plugin.cacheManager.getTaskInfo(previousTaskPath);
+				if (previousTask) {
+					await this.plugin.taskService.stopTimeTracking(previousTask);
+				}
+			} catch (error) {
+				console.error("Failed to stop time tracking for previous Pomodoro task:", error);
+			}
+		}
+
+		// Update the current session's task
+		session.taskPath = nextTaskPath;
+
+		if (nextTaskPath) {
+			this.lastWorkSessionTaskPath = nextTaskPath;
+			this.lastSelectedTaskPath = nextTaskPath;
 			this.lastSelectedTaskPathLoaded = true;
 		} else {
 			this.lastWorkSessionTaskPath = undefined;
@@ -959,10 +979,20 @@ export class PomodoroService {
 
 		await this.saveState();
 
+		if (shouldSwitchActiveTracking && task) {
+			try {
+				await this.plugin.taskService.startTimeTracking(task);
+			} catch (error) {
+				if (!error.message?.includes("Time tracking is already active")) {
+					console.error("Failed to start time tracking for new Pomodoro task:", error);
+				}
+			}
+		}
+
 		// Emit tick event to update UI
 		this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
 			timeRemaining: this.state.timeRemaining,
-			session: this.state.currentSession,
+			session,
 		});
 	}
 

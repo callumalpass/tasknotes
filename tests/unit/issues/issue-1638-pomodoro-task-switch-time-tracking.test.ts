@@ -1,108 +1,121 @@
 /**
- * Reproduction tests for Issue #1638: Incorrect time logging when switching
- * tasks during an active Pomodoro session.
- *
- * Bug: When clicking "Change Task" during a running Pomodoro:
- * - The old task's time tracking is not stopped (no endTime logged)
- * - The new task's time tracking is not started (no startTime logged)
- * - On Pomodoro completion, endTime is only logged for the final task
- *
- * Root cause:
- * - `PomodoroService.assignTaskToCurrentSession()` (line 899) only updates
- *   `session.taskPath` and saves state. It does NOT call
- *   `taskService.stopTimeTracking()` on the old task or
- *   `taskService.startTimeTracking()` on the new task.
- * - Compare with `startPomodoro()` (line ~248) which correctly calls
- *   `taskService.startTimeTracking(task)`.
- *
- * Related files:
- * - src/services/PomodoroService.ts (assignTaskToCurrentSession, line 899)
- * - src/views/PomodoroView.ts (selectTask, line 726)
- * - src/services/TaskService.ts (startTimeTracking, stopTimeTracking)
+ * Regression tests for Issue #1638: switching tasks during a running Pomodoro
+ * must close the previous task's active time entry and start one for the new
+ * task.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, expect, it, jest } from "@jest/globals";
+import { PomodoroService } from "../../../src/services/PomodoroService";
+import { TaskInfo } from "../../../src/types";
 
-describe('Issue #1638: Time tracking not updated when switching Pomodoro tasks', () => {
-	it.skip('reproduces issue #1638 - assignTaskToCurrentSession does not stop old task tracking', () => {
-		// Simulates PomodoroService.assignTaskToCurrentSession behavior
-		const timeTrackingLog: Array<{ action: string; taskPath: string; timestamp: string }> = [];
+type PomodoroPlugin = ConstructorParameters<typeof PomodoroService>[0];
 
-		// Mock task service
-		const taskService = {
-			startTimeTracking: (task: { path: string }) => {
-				timeTrackingLog.push({
-					action: 'start',
-					taskPath: task.path,
-					timestamp: new Date().toISOString(),
-				});
-			},
-			stopTimeTracking: (task: { path: string }) => {
-				timeTrackingLog.push({
-					action: 'stop',
-					taskPath: task.path,
-					timestamp: new Date().toISOString(),
-				});
-			},
-		};
+function createTask(path: string, title: string): TaskInfo {
+	return {
+		title,
+		status: "open",
+		priority: "normal",
+		path,
+		archived: false,
+	};
+}
 
-		// Simulate session state
-		const session = {
-			taskPath: 'Tasks/task-1.md',
-			isRunning: true,
-		};
+function createMockPlugin(tasks: TaskInfo[]) {
+	let data: Record<string, unknown> = {};
+	const tasksByPath = new Map(tasks.map((task) => [task.path, task]));
 
-		// Start tracking task 1 (done by startPomodoro)
-		taskService.startTimeTracking({ path: 'Tasks/task-1.md' });
-		expect(timeTrackingLog).toHaveLength(1);
-		expect(timeTrackingLog[0]).toMatchObject({ action: 'start', taskPath: 'Tasks/task-1.md' });
+	const plugin = {
+		settings: {
+			pomodoroWorkDuration: 25,
+			pomodoroShortBreakDuration: 5,
+			pomodoroLongBreakDuration: 15,
+			pomodoroLongBreakInterval: 4,
+			pomodoroAutoStartBreaks: false,
+			pomodoroAutoStartWork: false,
+			pomodoroNotifications: false,
+			pomodoroSoundEnabled: false,
+			pomodoroStorageLocation: "plugin",
+		},
+		i18n: {
+			translate: jest.fn((key: string) => key),
+		},
+		loadData: jest.fn(async () => data),
+		saveData: jest.fn(async (nextData: Record<string, unknown>) => {
+			data = { ...nextData };
+		}),
+		emitter: {
+			trigger: jest.fn(),
+		},
+		taskService: {
+			startTimeTracking: jest.fn(async () => undefined),
+			stopTimeTracking: jest.fn(async () => undefined),
+		},
+		cacheManager: {
+			getTaskInfo: jest.fn(async (path: string) => tasksByPath.get(path) ?? null),
+		},
+	};
 
-		// User switches to task 2 via "Change Task" button
-		// Current behavior of assignTaskToCurrentSession: only updates taskPath
-		const oldTaskPath = session.taskPath;
-		session.taskPath = 'Tasks/task-2.md';
-		// BUG: No stopTimeTracking(oldTask) called
-		// BUG: No startTimeTracking(newTask) called
+	return plugin;
+}
 
-		// After switch, only 1 log entry (the original start)
-		expect(timeTrackingLog).toHaveLength(1);
+describe("Issue #1638: Pomodoro task switching updates time tracking", () => {
+	it("stops the previous task and starts the new task while a work session is running", async () => {
+		const task1 = createTask("Tasks/task-1.md", "Task 1");
+		const task2 = createTask("Tasks/task-2.md", "Task 2");
+		const plugin = createMockPlugin([task1, task2]);
+		const service = new PomodoroService(plugin as unknown as PomodoroPlugin);
 
-		// Expected behavior: should have 3 entries
-		// 1. start task-1 (from startPomodoro)
-		// 2. stop task-1 (from assignTaskToCurrentSession)
-		// 3. start task-2 (from assignTaskToCurrentSession)
+		await service.startPomodoro(task1);
+		await service.assignTaskToCurrentSession(task2);
+		await (service as { completePomodoro: () => Promise<void> }).completePomodoro();
 
-		// With the fix applied:
-		// taskService.stopTimeTracking({ path: oldTaskPath });
-		// taskService.startTimeTracking({ path: 'Tasks/task-2.md' });
-		// expect(timeTrackingLog).toHaveLength(3);
+		expect(plugin.taskService.startTimeTracking).toHaveBeenNthCalledWith(1, task1);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenNthCalledWith(1, task1);
+		expect(plugin.taskService.startTimeTracking).toHaveBeenNthCalledWith(2, task2);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenNthCalledWith(2, task2);
+		expect(service.getState().currentSession).toBeUndefined();
 	});
 
-	it.skip('reproduces issue #1638 - completing Pomodoro after task switch leaves orphaned time entry', () => {
-		// After switching from task-1 to task-2 and completing the Pomodoro:
-		// - task-1 has startTime but no endTime (orphaned entry)
-		// - task-2 has endTime but no startTime (if it had a prior unfinished entry, endTime is logged)
+	it("does not restart time tracking when the selected task has not changed", async () => {
+		const task = createTask("Tasks/task-1.md", "Task 1");
+		const plugin = createMockPlugin([task]);
+		const service = new PomodoroService(plugin as unknown as PomodoroPlugin);
 
-		interface TimeEntry {
-			startTime?: string;
-			endTime?: string;
-		}
+		await service.startPomodoro(task);
+		await service.assignTaskToCurrentSession(task);
 
-		const task1TimeEntries: TimeEntry[] = [
-			{ startTime: '2026-03-22T10:00:00' }, // Started by startPomodoro, never stopped
-		];
+		expect(plugin.taskService.startTimeTracking).toHaveBeenCalledTimes(1);
+		expect(plugin.taskService.startTimeTracking).toHaveBeenCalledWith(task);
+		expect(plugin.taskService.stopTimeTracking).not.toHaveBeenCalled();
+	});
 
-		const task2TimeEntries: TimeEntry[] = [];
-		// No startTime was logged for task-2 when it was assigned
+	it("stops active task time tracking when a running Pomodoro is cleared", async () => {
+		const task = createTask("Tasks/task-1.md", "Task 1");
+		const plugin = createMockPlugin([task]);
+		const service = new PomodoroService(plugin as unknown as PomodoroPlugin);
 
-		// On Pomodoro completion, completePomodoro() calls stopTimeTracking for current task
-		// Since current task is task-2, it tries to stop task-2's tracking
-		// But task-2 was never started, so this either fails or creates an inconsistent entry
+		await service.startPomodoro(task);
+		await service.assignTaskToCurrentSession(undefined);
 
-		// Task-1's time entry is orphaned with no endTime
-		expect(task1TimeEntries[0].endTime).toBeUndefined(); // BUG: orphaned entry
+		expect(plugin.taskService.startTimeTracking).toHaveBeenCalledTimes(1);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledTimes(1);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(task);
+		expect(service.getState().currentSession?.taskPath).toBeUndefined();
+	});
 
-		// Task-2 has no entries at all (or an endTime-only entry depending on implementation)
-		expect(task2TimeEntries).toHaveLength(0); // No tracking was started
+	it("does not start new time tracking while assigning a task to a paused Pomodoro", async () => {
+		const task1 = createTask("Tasks/task-1.md", "Task 1");
+		const task2 = createTask("Tasks/task-2.md", "Task 2");
+		const plugin = createMockPlugin([task1, task2]);
+		const service = new PomodoroService(plugin as unknown as PomodoroPlugin);
+
+		await service.startPomodoro(task1);
+		await service.pausePomodoro();
+		await service.assignTaskToCurrentSession(task2);
+
+		expect(plugin.taskService.startTimeTracking).toHaveBeenCalledTimes(1);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledTimes(1);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(task1);
+		expect(service.getState().currentSession?.taskPath).toBe(task2.path);
 	});
 });
