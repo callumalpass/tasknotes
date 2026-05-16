@@ -1519,12 +1519,25 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
-	private async openTaskEditModalForFile(file: TFile): Promise<void> {
+	async openTaskEditModalForCurrentTask(): Promise<void> {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new Notice("No file is currently open");
+			return;
+		}
+
+		await this.openTaskEditModalForFile(activeFile, "Current file is not a tasknote");
+	}
+
+	private async openTaskEditModalForFile(file: TFile, notTaskNotice?: string): Promise<void> {
 		try {
 			const taskInfo = await this.cacheManager.getTaskInfo(file.path);
 			if (!taskInfo) {
 				new Notice(
-					this.i18n.translate("modals.taskEdit.notices.fileMissing", { path: file.path })
+					notTaskNotice ??
+						this.i18n.translate("modals.taskEdit.notices.fileMissing", {
+							path: file.path,
+						})
 				);
 				return;
 			}

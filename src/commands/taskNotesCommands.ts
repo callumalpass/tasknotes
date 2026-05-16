@@ -112,6 +112,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "edit-current-task",
+			nameKey: "commands.editCurrentTask",
+			callback: async (ctx) => {
+				await ctx.openTaskEditModalForCurrentTask();
+			},
+		},
+		{
 			id: "add-project-to-current-task",
 			nameKey: "commands.addProjectToCurrentTask",
 			callback: async (ctx) => {
