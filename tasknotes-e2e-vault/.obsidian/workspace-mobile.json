@@ -94,18 +94,18 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "tasknotes:Open mini calendar view": false,
+      "tasknotes:Open calendar view": false,
+      "tasknotes:Open tasks view": false,
+      "tasknotes:Open agenda view": false,
+      "tasknotes:Open Kanban board": false,
+      "tasknotes:Open Pomodoro timer": false,
+      "tasknotes:Open Pomodoro statistics": false,
       "switcher:Open quick switcher": false,
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "command-palette:Open command palette": false,
       "bases:Create new base": false,
-      "tasknotes:Open mini calendar": false,
-      "tasknotes:Open advanced calendar": false,
-      "tasknotes:Open task list": false,
-      "tasknotes:Open agenda": false,
-      "tasknotes:Open kanban board": false,
-      "tasknotes:Open pomodoro": false,
-      "tasknotes:Open pomodoro stats": false,
       "tasknotes:Create new task": false
     }
   },

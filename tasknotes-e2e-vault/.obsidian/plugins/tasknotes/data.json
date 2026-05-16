@@ -191,6 +191,61 @@
       "order": 3,
       "autoArchive": false,
       "autoArchiveDelay": 5
+    },
+    {
+      "id": "status_1778676172764",
+      "value": "test-status-1778676170544",
+      "label": "Test Status Label",
+      "color": "#6366f1",
+      "completed": false,
+      "isCompleted": false,
+      "order": 4,
+      "autoArchive": false,
+      "autoArchiveDelay": 5
+    },
+    {
+      "id": "status_1778676765190",
+      "value": "test-status-1778676762902",
+      "label": "Test Status Label",
+      "color": "#6366f1",
+      "completed": false,
+      "isCompleted": false,
+      "order": 5,
+      "autoArchive": false,
+      "autoArchiveDelay": 5
+    },
+    {
+      "id": "status_1778676807002",
+      "value": "test-status-1778676804825",
+      "label": "Test Status Label 1778676804825",
+      "color": "#6366f1",
+      "completed": false,
+      "isCompleted": false,
+      "order": 6,
+      "autoArchive": false,
+      "autoArchiveDelay": 5
+    },
+    {
+      "id": "status_1778677410647",
+      "value": "test-status-1778677408450",
+      "label": "Test Status Label 1778677408450",
+      "color": "#6366f1",
+      "completed": false,
+      "isCompleted": false,
+      "order": 7,
+      "autoArchive": false,
+      "autoArchiveDelay": 5
+    },
+    {
+      "id": "status_1778678117158",
+      "value": "test-status-1778678114925",
+      "label": "Test Status Label 1778678114925",
+      "color": "#6366f1",
+      "completed": false,
+      "isCompleted": false,
+      "order": 8,
+      "autoArchive": false,
+      "autoArchiveDelay": 5
     }
   ],
   "customPriorities": [
@@ -221,10 +276,45 @@
       "label": "High",
       "color": "#ff0000",
       "weight": 3
+    },
+    {
+      "id": "priority_1778676180048",
+      "value": "test-priority-1778676177922",
+      "label": "Test Priority Label",
+      "color": "#6366f1",
+      "weight": 4
+    },
+    {
+      "id": "priority_1778676772787",
+      "value": "test-priority-1778676770568",
+      "label": "Test Priority Label",
+      "color": "#6366f1",
+      "weight": 5
+    },
+    {
+      "id": "priority_1778676814383",
+      "value": "test-priority-1778676812216",
+      "label": "Test Priority Label 1778676812216",
+      "color": "#6366f1",
+      "weight": 6
+    },
+    {
+      "id": "priority_1778677418396",
+      "value": "test-priority-1778677416137",
+      "label": "Test Priority Label 1778677416137",
+      "color": "#6366f1",
+      "weight": 7
+    },
+    {
+      "id": "priority_1778678124921",
+      "value": "test-priority-1778678122649",
+      "label": "Test Priority Label 1778678122649",
+      "color": "#6366f1",
+      "weight": 8
     }
   ],
   "recurrenceMigrated": false,
-  "lastSeenVersion": "4.4.0",
+  "lastSeenVersion": "4.6.0",
   "showReleaseNotesOnUpdate": true,
   "showTrackedTasksInStatusBar": false,
   "autoStopTimeTrackingOnComplete": true,
@@ -433,22 +523,9 @@
   },
   "pomodoroState": {
     "isRunning": false,
-    "timeRemaining": 1498,
-    "currentSession": {
-      "id": "1771112492792",
-      "startTime": "2026-02-15T10:41:32.792+11:00",
-      "plannedDuration": 25,
-      "type": "work",
-      "completed": false,
-      "activePeriods": [
-        {
-          "startTime": "2026-02-15T10:41:32.792+11:00",
-          "endTime": "2026-02-15T10:41:35.074+11:00"
-        }
-      ]
-    }
+    "timeRemaining": 1500
   },
-  "lastPomodoroDate": "2026-02-14",
+  "lastPomodoroDate": "2026-05-12",
   "pomodoroMobileSidebar": "tab",
   "disableOverlayOnAlias": false,
   "enableMdbaseSpec": false,
@@ -470,5 +547,92 @@
   },
   "enableMCP": false,
   "resetCheckboxesOnRecurrence": false,
-  "enableDebugLogging": false
+  "enableDebugLogging": false,
+  "taskModalTabMovesFocus": true,
+  "pomodoroHistory": [
+    {
+      "id": "1778673367536",
+      "startTime": "2026-05-13T21:56:07.536+10:00",
+      "endTime": "2026-05-13T21:56:12.353+10:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2026-05-13T21:56:07.536+10:00",
+          "endTime": "2026-05-13T21:56:09.752+10:00"
+        }
+      ]
+    },
+    {
+      "id": "1778673916565",
+      "startTime": "2026-05-13T22:05:16.565+10:00",
+      "endTime": "2026-05-13T22:05:21.295+10:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2026-05-13T22:05:16.565+10:00",
+          "endTime": "2026-05-13T22:05:18.715+10:00"
+        }
+      ]
+    },
+    {
+      "id": "1778674302601",
+      "startTime": "2026-05-13T22:11:42.601+10:00",
+      "endTime": "2026-05-13T22:11:47.299+10:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2026-05-13T22:11:42.601+10:00",
+          "endTime": "2026-05-13T22:11:44.748+10:00"
+        }
+      ]
+    },
+    {
+      "id": "1778676342870",
+      "startTime": "2026-05-13T22:45:42.870+10:00",
+      "endTime": "2026-05-13T22:45:47.465+10:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2026-05-13T22:45:42.870+10:00",
+          "endTime": "2026-05-13T22:45:45.018+10:00"
+        }
+      ]
+    },
+    {
+      "id": "1778676967411",
+      "startTime": "2026-05-13T22:56:07.411+10:00",
+      "endTime": "2026-05-13T22:56:12.006+10:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2026-05-13T22:56:07.411+10:00",
+          "endTime": "2026-05-13T22:56:09.560+10:00"
+        }
+      ]
+    },
+    {
+      "id": "1778677693048",
+      "startTime": "2026-05-13T23:08:13.048+10:00",
+      "endTime": "2026-05-13T23:08:17.680+10:00",
+      "plannedDuration": 25,
+      "type": "work",
+      "completed": false,
+      "activePeriods": [
+        {
+          "startTime": "2026-05-13T23:08:13.048+10:00",
+          "endTime": "2026-05-13T23:08:15.194+10:00"
+        }
+      ]
+    }
+  ]
 }

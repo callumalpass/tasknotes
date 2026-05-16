@@ -3,5 +3,6 @@
   "interfaceFontFamily": "",
   "textFontFamily": "",
   "monospaceFontFamily": "",
-  "theme": "moonstone"
+  "theme": "moonstone",
+  "cssTheme": "Minimal"
 }

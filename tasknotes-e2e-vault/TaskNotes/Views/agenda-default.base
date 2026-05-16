@@ -56,7 +56,7 @@ views:
       - file.name
       - recurrence
       - complete_instances
-    calendarView: listWeek
+    calendarView: dayGridMonth
     startDateProperty: file.ctime
     listDayCount: 7
     titleProperty: file.basename
