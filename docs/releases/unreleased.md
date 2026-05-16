@@ -97,7 +97,7 @@ Example:
 - ([#1629](https://github.com/callumalpass/tasknotes/issues/1629)) Saved `blockedBy` dependencies selected in the Create Task modal. Thanks to @obsilover for reporting this.
 - ([#1634](https://github.com/callumalpass/tasknotes/issues/1634)) Aligned custom status icons in inline tasks with the default inline status circle. Thanks to @ttlaylor for reporting this and @basbarten for confirming it.
 - ([#1636](https://github.com/callumalpass/tasknotes/issues/1636)) Restored the active styling for the Calendar list-view toolbar button. Thanks to @vroablec for reporting this.
-- ([#1638](https://github.com/callumalpass/tasknotes/issues/1638)) Kept task time tracking consistent when switching or clearing tasks during an active Pomodoro. Thanks to @katonapng for reporting this and @anomatomato for confirming it.
+- ([#1493](https://github.com/callumalpass/tasknotes/issues/1493), [#1638](https://github.com/callumalpass/tasknotes/issues/1638)) Kept task time tracking consistent when switching or clearing tasks during an active Pomodoro. Thanks to @ROS-SDN and @katonapng for reporting this, and to @anomatomato for confirming it.
 - ([#1639](https://github.com/callumalpass/tasknotes/issues/1639)) Respected the aliased-link overlay exclusion in Reading mode even when the alias text matches the task title. Thanks to @MiracleXYZ for reporting this.
 - Fixed actively tracked task cards so the blue time-tracking outline stays visible along the card edges.
 - ([#1657](https://github.com/callumalpass/tasknotes/issues/1657)) Preserved Bases view defaults when creating tasks from the TaskNotes Kanban/List view New button, so project-scoped views can pass their project assignment into the create task modal. Thanks to @casualQuads122 for reporting this.
