@@ -6,10 +6,10 @@
  * 2. User switches to another Bases view (subGroup = "project")
  * 3. Task list keeps grouping by "priority" instead of updating to "project"
  *
- * Root cause in current implementation:
- * TaskListView.render() only calls readViewOptions() while configLoaded === false.
- * After the first successful read, view-specific options (like subGroup) are not
- * re-read when Bases swaps to a different view config.
+ * Root cause:
+ * TaskListView.render() previously only called readViewOptions() while
+ * configLoaded === false. After the first successful read, view-specific options
+ * like subGroup were not re-read when Bases swapped to a different view config.
  */
 
 describe('Issue #1508 - subgroup should refresh when switching views', () => {
@@ -21,7 +21,7 @@ describe('Issue #1508 - subgroup should refresh when switching views', () => {
 	/**
 	 * Mirrors the relevant TaskListView logic from src/bases/TaskListView.ts:
 	 * - readViewOptions() updates subGroupPropertyId and configLoaded
-	 * - render() only re-reads config while configLoaded is false (buggy gate)
+	 * - render() re-reads config every time an active config is available
 	 */
 	class MockTaskListViewConfigLifecycle {
 		public subGroupPropertyId: string | null = null;
@@ -42,8 +42,8 @@ describe('Issue #1508 - subgroup should refresh when switching views', () => {
 			this.configLoaded = true;
 		}
 
-		renderWithCurrentBug(): void {
-			if (!this.configLoaded && this.config) {
+		render(): void {
+			if (this.config) {
 				this.readViewOptions();
 			}
 		}
@@ -56,23 +56,19 @@ describe('Issue #1508 - subgroup should refresh when switching views', () => {
 		};
 	}
 
-	it.skip('reproduces issue #1508', () => {
+	it('refreshes subgroup options after Bases switches views', () => {
 		const defaultViewConfig = createConfig('priority');
 		const alternateViewConfig = createConfig('project');
 		const view = new MockTaskListViewConfigLifecycle(defaultViewConfig);
 
 		// Initial render uses the default view config
-		view.renderWithCurrentBug();
+		view.render();
 		expect(view.subGroupPropertyId).toBe('priority');
 
 		// Bases switches to another view with a different sub-group property
 		view.config = alternateViewConfig;
-		view.renderWithCurrentBug();
+		view.render();
 
-		// Observed buggy behavior: subgroup stays stale from the original view
-		expect(view.subGroupPropertyId).toBe('priority');
-
-		// Expected behavior: subgroup should reflect the active view config
 		expect(view.subGroupPropertyId).toBe('project');
 	});
 });
