@@ -1,7 +1,7 @@
 ---
 title: Default Base Templates
 description: Default base file templates for TaskNotes views
-dateModified: 2026-05-16T17:33:00+1000
+dateModified: 2026-05-17T04:52:00+1000
 ---
 
 # Default Base Templates
@@ -10,6 +10,8 @@ TaskNotes automatically generates [Bases](https://help.obsidian.md/Bases/Introdu
 
 This page shows the default templates as they would appear with TaskNotes' default settings. The actual templates generated in your vault may differ if you've customized your settings.
 This page documents generated defaults. It is reference material for understanding and editing `.base` files already created in your vault.
+
+Generated `.base` files are regular vault files. When you change task identification, field mapping, status, or priority settings, existing files keep their current content until you edit them. To replace the configured default files with templates generated from your current settings, use **Settings → TaskNotes → Views & base files → Update files**. This overwrites those `.base` files, including any manual edits.
 
 ## Default settings assumptions
 

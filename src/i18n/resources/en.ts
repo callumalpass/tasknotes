@@ -1616,7 +1616,7 @@ export const en: TranslationTree = {
 					description:
 						"TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don't exist, configured with your current settings (task identification, field mappings, statuses, etc.).",
 					descriptionRegen:
-						'Base files are not automatically updated when you change settings. To apply new settings, delete the existing .base files and restart Obsidian, or use "Create files" below, or edit them manually.',
+						'Base files are not automatically updated when you change settings. To apply new settings, use "Update files" below, delete the existing .base files and restart Obsidian, or edit them manually.',
 					pomodoroDailyNotesHint:
 						"The generated Pomodoro statistics base reads Pomodoro history from daily notes; if your history is still stored in plugin data, migrate it in settings before using that base file.",
 					docsLink: "View documentation for available formulas and customization options",
@@ -1644,6 +1644,16 @@ export const en: TranslationTree = {
 					description:
 						"Create the default .base files in TaskNotes/Views/ directory. Existing files will not be overwritten.",
 					buttonText: "Create files",
+				},
+				updateDefaultFiles: {
+					name: "Update default files",
+					description:
+						"Overwrite the configured default .base files with templates generated from your current TaskNotes settings.",
+					buttonText: "Update files",
+					confirmTitle: "Update default base files",
+					confirmMessage:
+						"This will overwrite the configured default .base files with freshly generated templates. Any manual edits in those files will be replaced.",
+					confirmText: "Update files",
 				},
 				exportV3Views: {
 					name: "Export v3 saved views to Bases",

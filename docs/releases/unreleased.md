@@ -70,6 +70,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1495](https://github.com/callumalpass/tasknotes/issues/1495)) Added an Update default files action for generated Bases views, so task-tag or task-identification setting changes can refresh existing `.base` filters without deleting files manually. Thanks to @Liya430 for reporting this.
 - ([#1512](https://github.com/callumalpass/tasknotes/issues/1512)) Prevented the split Create/Edit Task modal details pane from collapsing to a one-character-wide column under the Minimal theme. Thanks to @willfanguy for reporting this and sharing detailed CSS notes.
 - ([#1524](https://github.com/callumalpass/tasknotes/issues/1524)) Fixed task-card font sizes shrinking when a Bases view is opened in an Obsidian pop-out window. Thanks to @Glint-Eye for reporting this.
 - ([#1535](https://github.com/callumalpass/tasknotes/issues/1535)) Fixed the generated Relationships Base Subtasks filter so single project links do not trigger a Bases `contains` error. Thanks to @DanaKyle for reporting this.

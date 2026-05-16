@@ -392,6 +392,47 @@ export function renderGeneralTab(
 					});
 			});
 
+			// Update Default Files button
+			group.addSetting((setting) => {
+				setting
+					.setName(
+						translate("settings.integrations.basesIntegration.updateDefaultFiles.name")
+					)
+					.setDesc(
+						translate(
+							"settings.integrations.basesIntegration.updateDefaultFiles.description"
+						)
+					)
+					.addButton((button) => {
+						button
+							.setButtonText(
+								translate(
+									"settings.integrations.basesIntegration.updateDefaultFiles.buttonText"
+								)
+							)
+							.onClick(async () => {
+								const confirmed = await showConfirmationModal(plugin.app, {
+									title: translate(
+										"settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle"
+									),
+									message: translate(
+										"settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage"
+									),
+									confirmText: translate(
+										"settings.integrations.basesIntegration.updateDefaultFiles.confirmText"
+									),
+									isDestructive: false,
+								});
+								if (!confirmed) {
+									return;
+								}
+
+								await plugin.createDefaultBasesFiles({ overwriteExisting: true });
+							});
+						return button;
+					});
+			});
+
 			// Export All Saved Views button
 			group.addSetting((setting) => {
 				setting

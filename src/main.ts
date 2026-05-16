@@ -852,8 +852,8 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Create default .base files in TaskNotes/Views/ directory
 	 * Called from settings UI
 	 */
-	async createDefaultBasesFiles(): Promise<void> {
-		const { created, skipped } = await this.ensureBasesViewFiles();
+	async createDefaultBasesFiles(options: { overwriteExisting?: boolean } = {}): Promise<void> {
+		const { created, updated, skipped } = await this.ensureBasesViewFiles(options);
 
 		if (created.length > 0) {
 			new Notice(
@@ -862,7 +862,14 @@ export default class TaskNotesPlugin extends Plugin {
 			);
 		}
 
-		if (skipped.length > 0 && created.length === 0) {
+		if (updated.length > 0) {
+			new Notice(
+				`Updated ${updated.length} default Bases file(s):\n${updated.join("\n")}`,
+				8000
+			);
+		}
+
+		if (skipped.length > 0 && created.length === 0 && updated.length === 0) {
 			new Notice(`Default Bases files already exist:\n${skipped.join("\n")}`, 8000);
 		}
 	}
@@ -898,9 +905,13 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
-	async ensureBasesViewFiles(): Promise<{ created: string[]; skipped: string[] }> {
+	async ensureBasesViewFiles(
+		options: { overwriteExisting?: boolean } = {}
+	): Promise<{ created: string[]; updated: string[]; skipped: string[] }> {
 		const created: string[] = [];
+		const updated: string[] = [];
 		const skipped: string[] = [];
+		const overwriteExisting = options.overwriteExisting === true;
 
 		try {
 			const adapter = this.app.vault.adapter;
@@ -918,15 +929,30 @@ export default class TaskNotesPlugin extends Plugin {
 
 				const normalizedPath = normalizePath(rawPath);
 
-				if (await adapter.exists(normalizedPath)) {
-					skipped.push(rawPath);
-					continue;
-				}
-
 				// Generate template with user settings
 				const template = generateBasesFileTemplate(commandId, this);
 				if (!template) {
 					skipped.push(rawPath);
+					continue;
+				}
+
+				if (await adapter.exists(normalizedPath)) {
+					if (!overwriteExisting) {
+						skipped.push(rawPath);
+						continue;
+					}
+
+					const existing = this.app.vault.getAbstractFileByPath(normalizedPath);
+					if (!(existing instanceof TFile)) {
+						console.warn(
+							`[TaskNotes][Bases] Cannot update default Bases file because path is not a file: ${normalizedPath}`
+						);
+						skipped.push(rawPath);
+						continue;
+					}
+
+					await this.app.vault.modify(existing, template);
+					updated.push(rawPath);
 					continue;
 				}
 
@@ -946,7 +972,7 @@ export default class TaskNotesPlugin extends Plugin {
 			console.warn("[TaskNotes][Bases] Failed to ensure Bases command files:", error);
 		}
 
-		return { created, skipped };
+		return { created, updated, skipped };
 	}
 
 	/**
