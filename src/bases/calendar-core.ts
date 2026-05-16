@@ -61,6 +61,8 @@ export interface CalendarEvent {
 		filePath?: string; // For property-based events
 		file?: unknown; // For property-based events
 		basesEntry?: unknown; // For property-based events - full Bases entry with getValue()
+		propertyEventIndex?: number; // For list-backed property-based events
+		propertyEventFromList?: boolean; // Prevents scalar writes to list-backed events
 		isCompleted?: boolean;
 		isSkipped?: boolean;
 		isRecurringInstance?: boolean;

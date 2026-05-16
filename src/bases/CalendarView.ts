@@ -202,6 +202,77 @@ export function normalizeDateValueForCalendar(
 	return null;
 }
 
+export interface CalendarDateValue {
+	value: string | Date;
+	isAllDay: boolean;
+	sourceIndex?: number;
+	fromList: boolean;
+}
+
+export interface PropertyEventDateSpan {
+	start: CalendarDateValue;
+	end?: CalendarDateValue;
+	index: number;
+	fromList: boolean;
+}
+
+function normalizeSingleCalendarDateValue(
+	value: unknown,
+	sourceIndex: number | undefined,
+	fromList: boolean
+): CalendarDateValue | null {
+	const normalized = normalizeDateValueForCalendar(value);
+	if (!normalized) return null;
+	return {
+		...normalized,
+		sourceIndex,
+		fromList,
+	};
+}
+
+export function normalizeDateValuesForCalendar(value: unknown): CalendarDateValue[] {
+	if (Array.isArray(value)) {
+		return value
+			.map((item, index) => normalizeSingleCalendarDateValue(item, index, true))
+			.filter((item): item is CalendarDateValue => item !== null);
+	}
+
+	const normalized = normalizeSingleCalendarDateValue(value, undefined, false);
+	return normalized ? [normalized] : [];
+}
+
+export function buildPropertyEventDateSpans(
+	startValue: unknown,
+	endValue?: unknown
+): PropertyEventDateSpan[] {
+	const starts = normalizeDateValuesForCalendar(startValue);
+	if (starts.length === 0) return [];
+
+	const ends = normalizeDateValuesForCalendar(endValue);
+	const endValueIsList = Array.isArray(endValue);
+
+	return starts.map((start, ordinal) => {
+		const end = endValueIsList
+			? ends.find((candidate) => candidate.sourceIndex === start.sourceIndex)
+			: starts.length === 1
+				? ends[0]
+				: undefined;
+
+		return {
+			start,
+			end,
+			index: start.sourceIndex ?? ordinal,
+			fromList: start.fromList || (end?.fromList ?? false),
+		};
+	});
+}
+
+function formatCalendarDateValue(dateValue: CalendarDateValue): string {
+	return typeof dateValue.value === "string"
+		? dateValue.value
+		: format(dateValue.value, "yyyy-MM-dd'T'HH:mm");
+}
+
 export function shouldWidenTodayColumn(
 	viewType: string,
 	todayColumnWidthMultiplier: number
@@ -1617,31 +1688,17 @@ export class CalendarView extends BasesViewBase {
 					entry,
 					this.viewOptions.startDateProperty
 				);
-				const startNormalized = normalizeDateValueForCalendar(startValue);
-				if (!startNormalized) continue;
 
-				const startDateStr =
-					typeof startNormalized.value === "string"
-						? startNormalized.value
-						: format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
-
-				// Try to get end date if property is configured
-				let endDateStr: string | undefined;
-				let isEndAllDay = startNormalized.isAllDay;
+				let endValue: unknown;
 				if (this.viewOptions.endDateProperty) {
-					const endValue = this.dataAdapter.getPropertyValue(
+					endValue = this.dataAdapter.getPropertyValue(
 						entry,
 						this.viewOptions.endDateProperty
 					);
-					const endNormalized = normalizeDateValueForCalendar(endValue);
-					if (endNormalized) {
-						endDateStr =
-							typeof endNormalized.value === "string"
-								? endNormalized.value
-								: format(endNormalized.value, "yyyy-MM-dd'T'HH:mm");
-						isEndAllDay = endNormalized.isAllDay;
-					}
 				}
+
+				const dateSpans = buildPropertyEventDateSpans(startValue, endValue);
+				if (dateSpans.length === 0) continue;
 
 				// Try to get title from configured property
 				let eventTitle: string | undefined;
@@ -1655,24 +1712,35 @@ export class CalendarView extends BasesViewBase {
 					}
 				}
 
-				// Create event - let FullCalendar handle date filtering
-				const isAllDay = startNormalized.isAllDay && (endDateStr ? isEndAllDay : true);
-				events.push({
-					id: `property-${file.path}`,
-					title: eventTitle || file.basename || file.name,
-					start: startDateStr,
-					end: endDateStr,
-					allDay: isAllDay,
-					backgroundColor: "var(--color-accent)",
-					borderColor: "var(--color-accent)",
-					textColor: "var(--text-on-accent)",
-					editable: true,
-					extendedProps: {
-						eventType: "property-based",
-						filePath: file.path,
-						file: file,
-						basesEntry: entry,
-					},
+				dateSpans.forEach((dateSpan) => {
+					const startDateStr = formatCalendarDateValue(dateSpan.start);
+					const endDateStr = dateSpan.end
+						? formatCalendarDateValue(dateSpan.end)
+						: undefined;
+					const isAllDay =
+						dateSpan.start.isAllDay && (dateSpan.end ? dateSpan.end.isAllDay : true);
+					const eventIdSuffix = dateSpan.fromList ? `-${dateSpan.index}` : "";
+
+					// Create event - let FullCalendar handle date filtering
+					events.push({
+						id: `property-${file.path}${eventIdSuffix}`,
+						title: eventTitle || file.basename || file.name,
+						start: startDateStr,
+						end: endDateStr,
+						allDay: isAllDay,
+						backgroundColor: "var(--color-accent)",
+						borderColor: "var(--color-accent)",
+						textColor: "var(--text-on-accent)",
+						editable: !dateSpan.fromList,
+						extendedProps: {
+							eventType: "property-based",
+							filePath: file.path,
+							file: file,
+							basesEntry: entry,
+							propertyEventIndex: dateSpan.fromList ? dateSpan.index : undefined,
+							propertyEventFromList: dateSpan.fromList,
+						},
+					});
 				});
 			} catch (error) {
 				console.warn(
