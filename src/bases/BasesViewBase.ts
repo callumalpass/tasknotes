@@ -23,6 +23,8 @@ type BasesEphemeralState = {
 };
 
 type TaskUpdateEventData = {
+	path?: string;
+	originalTask?: TaskInfo;
 	updatedTask?: TaskInfo;
 	task?: TaskInfo;
 	taskInfo?: TaskInfo;
@@ -124,6 +126,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			try {
+				this.updateRelevantPathsCache();
 				void this.render();
 			} catch (error) {
 				console.error(`[TaskNotes][${this.type}] Render error:`, error);
@@ -335,14 +338,26 @@ export abstract class BasesViewBase extends Component implements BasesView {
 					const updatedTask =
 						taskEvent.updatedTask ?? taskEvent.task ?? taskEvent.taskInfo;
 					if (!updatedTask?.path) return;
+					const originalPath =
+						taskEvent.originalTask?.path ??
+						(typeof taskEvent.path === "string" ? taskEvent.path : undefined);
 
 					// Skip if view is not visible (no point updating hidden views)
 					if (!this.rootElement?.isConnected) return;
 
 					// Use cached Set for O(1) lookup instead of O(n) iteration
-					const isRelevant = this.relevantPathsCache.has(updatedTask.path);
+					const updatedPath = updatedTask.path;
+					const isRelevant =
+						this.relevantPathsCache.has(updatedPath) ||
+						(originalPath ? this.relevantPathsCache.has(originalPath) : false);
 
 					if (isRelevant) {
+						if (originalPath && originalPath !== updatedPath) {
+							this.relevantPathsCache.delete(originalPath);
+							this.relevantPathsCache.add(updatedPath);
+							this.debouncedRefresh();
+							return;
+						}
 						await this.handleTaskUpdate(updatedTask);
 					}
 				} catch (error) {

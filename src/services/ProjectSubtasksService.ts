@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Project graph construction validates parent links before dereferencing. */
-import { TFile } from "obsidian";
+import { EventRef, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { parseLinkToPath } from "../utils/linkUtils";
 
 export class ProjectSubtasksService {
 	private plugin: TaskNotesPlugin;
+	private cacheEventRefs: EventRef[] = [];
 
 	// Pre-computed reverse index: taskPath -> isUsedAsProject
 	private projectIndex = new Map<string, boolean>();
@@ -21,6 +22,20 @@ export class ProjectSubtasksService {
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
+		this.registerCacheInvalidation();
+	}
+
+	private registerCacheInvalidation(): void {
+		if (!this.plugin.cacheManager?.on) {
+			return;
+		}
+
+		const invalidate = () => this.invalidateIndex();
+		this.cacheEventRefs = [
+			this.plugin.cacheManager.on("file-updated", invalidate),
+			this.plugin.cacheManager.on("file-renamed", invalidate),
+			this.plugin.cacheManager.on("file-deleted", invalidate),
+		];
 	}
 
 	/**
@@ -233,12 +248,20 @@ export class ProjectSubtasksService {
 		}
 	}
 
+	invalidateIndex(): void {
+		this.projectIndex.clear();
+		this.indexLastBuilt = 0;
+	}
+
 	/**
 	 * Cleanup when service is destroyed
 	 */
 	destroy(): void {
-		// Clear index and reset stats
-		this.projectIndex.clear();
+		for (const ref of this.cacheEventRefs) {
+			this.plugin.cacheManager.offref(ref);
+		}
+		this.cacheEventRefs = [];
+		this.invalidateIndex();
 		this.stats = {
 			indexBuilds: 0,
 			indexHits: 0,

@@ -40,6 +40,16 @@ export class ExpandedProjectsService {
 	}
 
 	/**
+	 * Preserve expansion when a task file is renamed.
+	 */
+	renamePath(oldPath: string, newPath: string): void {
+		if (oldPath === newPath) return;
+		if (this.expandedProjects.delete(oldPath)) {
+			this.expandedProjects.add(newPath);
+		}
+	}
+
+	/**
 	 * Get all currently expanded project paths
 	 */
 	getExpandedProjects(): string[] {

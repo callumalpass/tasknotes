@@ -39,6 +39,7 @@ Example:
 
 ## Fixed
 
+- ([#1796](https://github.com/callumalpass/tasknotes/issues/1796)) Restored expanded subtasks immediately after renaming a parent task file and updating links. Thanks to @bung69 for reporting this.
 - ([#1797](https://github.com/callumalpass/tasknotes/issues/1797)) Improved Kanban manual ordering so long columns remain scrollable while dragging, and mobile drops can place a card relative to another card in the column. Thanks to @SKIERZZ for reporting this and sharing videos.
 - ([#1811](https://github.com/callumalpass/tasknotes/issues/1811)) Restored dragging inline task widgets onto Calendar views to schedule them, matching the earlier external-drop workflow. Thanks to @ghake for reporting the regression.
 - ([#1812](https://github.com/callumalpass/tasknotes/issues/1812)) Separated Microsoft OAuth token status from calendar sync status, and surfaced Microsoft calendar fetch errors in the integrations settings card instead of leaving them console-only. Thanks to @henninger80 for the detailed report.

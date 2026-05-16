@@ -74,6 +74,7 @@ export async function cleanupPluginRuntime(plugin: TaskNotesPlugin): Promise<voi
 	plugin.viewStateManager?.cleanup();
 	plugin.statusBarService?.destroy();
 	plugin.notificationService?.destroy();
+	plugin.projectSubtasksService?.destroy();
 	plugin.cacheManager?.destroy();
 	plugin.dependencyCache?.destroy();
 	plugin.requestDeduplicator?.cancelAll();

@@ -186,6 +186,8 @@ export class TaskUpdateService {
 
 			if (isRenameNeeded) {
 				plugin.cacheManager.clearCacheEntry(originalTask.path);
+				plugin.expandedProjectsService.renamePath(originalTask.path, newPath);
+				plugin.projectSubtasksService.invalidateIndex();
 			}
 			try {
 				const finalFile = plugin.app.vault.getAbstractFileByPath(newPath);
