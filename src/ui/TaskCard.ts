@@ -1,5 +1,5 @@
 import { TFile, setIcon, Notice, setTooltip, parseLinktext, Menu } from "obsidian";
-import { TaskInfo } from "../types";
+import { PriorityConfig, TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { getEffectiveTaskStatus, filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
@@ -405,6 +405,29 @@ function createPriorityClickHandler(
 	};
 }
 
+function configurePriorityIndicator(
+	priorityDot: HTMLElement,
+	priorityConfig: PriorityConfig,
+	plugin: TaskNotesPlugin
+): void {
+	priorityDot.style.borderColor = priorityConfig.color;
+	priorityDot.setAttribute(
+		"aria-label",
+		tTaskCard(plugin, "priorityAriaLabel", {
+			label: priorityConfig.label,
+		})
+	);
+	priorityDot.replaceChildren();
+	priorityDot.classList.toggle("task-card__priority-dot--icon", !!priorityConfig.icon);
+
+	if (priorityConfig.icon) {
+		setIcon(priorityDot, priorityConfig.icon);
+	} else {
+		priorityDot.removeAttribute("data-icon");
+		priorityDot.classList.remove("has-icon");
+	}
+}
+
 /**
  * Creates a click handler for recurrence indicator
  */
@@ -704,7 +727,7 @@ export function createTaskCard(
 				}),
 			},
 		});
-		priorityDot.style.borderColor = priorityConfig.color;
+		configurePriorityIndicator(priorityDot, priorityConfig, plugin);
 		prepareInteractiveControl(priorityDot);
 		priorityDot.addEventListener("click", createPriorityClickHandler(task, plugin));
 	}
@@ -1177,30 +1200,10 @@ export function updateTaskCard(
 			// Add priority dot if task has priority but no dot exists
 			const priorityDot = mainRow.createEl("span", {
 				cls: "task-card__priority-dot",
-				attr: { "aria-label": `Priority: ${priorityConfig.label}` },
 			});
-			priorityDot.style.borderColor = priorityConfig.color;
+			configurePriorityIndicator(priorityDot, priorityConfig, plugin);
 			prepareInteractiveControl(priorityDot);
-
-			// Add click context menu for priority
-			priorityDot.addEventListener("click", (e) => {
-				e.stopPropagation(); // Don't trigger card click
-				const menu = new PriorityContextMenu({
-					currentValue: task.priority,
-					onSelect: (newPriority) => {
-						void (async () => {
-							try {
-								await plugin.updateTaskProperty(task, "priority", newPriority);
-							} catch (error) {
-								console.error("Error updating priority:", error);
-								new Notice("Failed to update priority");
-							}
-						})();
-					},
-					plugin: plugin,
-				});
-				menu.show(e);
-			});
+			priorityDot.addEventListener("click", createPriorityClickHandler(task, plugin));
 
 			// Insert after status dot if it exists, otherwise after checkbox
 			const statusDotForInsert = element.querySelector(".task-card__status-dot");
@@ -1214,30 +1217,12 @@ export function updateTaskCard(
 			}
 		} else if (existingPriorityDot) {
 			// Update existing priority dot
-			existingPriorityDot.style.borderColor = priorityConfig.color;
-			existingPriorityDot.setAttribute("aria-label", `Priority: ${priorityConfig.label}`);
+			configurePriorityIndicator(existingPriorityDot, priorityConfig, plugin);
 
 			// Remove old event listener and add new one with updated task data
 			const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
 			prepareInteractiveControl(newPriorityDot);
-			newPriorityDot.addEventListener("click", (e) => {
-				e.stopPropagation(); // Don't trigger card click
-				const menu = new PriorityContextMenu({
-					currentValue: task.priority,
-					onSelect: (newPriority) => {
-						void (async () => {
-							try {
-								await plugin.updateTaskProperty(task, "priority", newPriority);
-							} catch (error) {
-								console.error("Error updating priority:", error);
-								new Notice("Failed to update priority");
-							}
-						})();
-					},
-					plugin: plugin,
-				});
-				menu.show(e);
-			});
+			newPriorityDot.addEventListener("click", createPriorityClickHandler(task, plugin));
 			existingPriorityDot.replaceWith(newPriorityDot);
 		}
 	} else if (existingPriorityDot) {

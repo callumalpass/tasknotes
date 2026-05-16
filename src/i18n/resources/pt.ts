@@ -1095,6 +1095,7 @@ export const pt: TranslationTree = {
 						'Valor: O identificador interno armazenado em seus arquivos de tarefa. Use prefixos como "1-urgente", "2-alta" para controlar a ordem de classificação nas visualizações de Bases.',
 					label: 'Rótulo de Exibição: O nome de exibição mostrado na interface (ex: "Prioridade Alta")',
 					color: "Cor: Cor do indicador visual para o ponto de prioridade e emblemas",
+					icon: "Ícone: Ícone Lucide opcional para mostrar nos cartões de tarefa no lugar do ponto de prioridade",
 					weight: "Peso: Valor numérico para classificação (pesos maiores aparecem primeiro nas listas)",
 					weightNote: "As tarefas são automaticamente classificadas pelo peso da prioridade em ordem decrescente (maior peso primeiro). Os pesos podem ser qualquer número positivo."
 				},
@@ -1111,11 +1112,13 @@ export const pt: TranslationTree = {
 					value: "Valor:",
 					label: "Rótulo:",
 					color: "Cor:",
+					icon: "Ícone:",
 					weight: "Peso:"
 				},
 				placeholders: {
 					value: "alta",
-					label: "Prioridade Alta"
+					label: "Prioridade Alta",
+					icon: "alert-circle"
 				},
 				weightLabel: "Peso: {weight}",
 				deleteConfirm: "Você deve ter pelo menos uma prioridade",

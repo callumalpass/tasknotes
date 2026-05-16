@@ -1122,6 +1122,7 @@ export const en: TranslationTree = {
 						'Value: The internal identifier stored in your task files. Use prefixes like "1-urgent", "2-high" to control sort order in Bases views.',
 					label: 'Display Label: The display name shown in the interface (e.g., "High Priority")',
 					color: "Color: Visual indicator color for the priority dot and badges",
+					icon: "Icon: optional icon to show on task cards instead of the priority dot",
 				},
 				addNew: {
 					name: "Add new priority",
@@ -1136,10 +1137,12 @@ export const en: TranslationTree = {
 					value: "Value:",
 					label: "Label:",
 					color: "Color:",
+					icon: "Icon:",
 				},
 				placeholders: {
 					value: "high",
 					label: "High priority",
+					icon: "alert-circle",
 				},
 				deleteConfirm: "You must have at least one priority",
 				deleteTooltip: "Delete priority",

@@ -707,6 +707,7 @@ export interface PriorityConfig {
 	value: string; // What gets written to YAML
 	label: string; // What displays in UI
 	color: string; // Hex color for indicators
+	icon?: string; // Optional Lucide icon name for task card indicators
 	weight: number; // For sorting (higher = more important)
 }
 

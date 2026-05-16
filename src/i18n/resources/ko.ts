@@ -1063,6 +1063,7 @@ export const ko: TranslationTree = {
 					value: "값: 작업 파일에 저장되는 내부 식별자. 베이스 뷰에서 정렬 순서를 제어하려면 \"1-urgent\", \"2-high\" 같은 접두사를 사용하세요.",
 					label: "표시 레이블: 인터페이스에 표시되는 표시 이름 (예: \"높은 우선순위\")",
 					color: "색상: 우선순위 점과 배지의 시각적 표시기 색상",
+					icon: "아이콘: 작업 카드에서 우선순위 점 대신 표시할 선택적 Lucide 아이콘",
 				},
 				addNew: {
 					name: "새 우선순위 추가",
@@ -1076,10 +1077,12 @@ export const ko: TranslationTree = {
 					value: "값:",
 					label: "레이블:",
 					color: "색상:",
+					icon: "아이콘:",
 				},
 				placeholders: {
 					value: "높음",
 					label: "높은 우선순위",
+					icon: "alert-circle",
 				},
 				deleteConfirm: "최소 하나의 우선순위가 있어야 합니다",
 				deleteTooltip: "우선순위 삭제",

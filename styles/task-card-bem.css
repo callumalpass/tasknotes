@@ -994,6 +994,33 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     background-color: var(--priority-low-color, var(--tn-text-muted));
 }
 
+/* Priority dot with icon mode - uses Lucide icons from theme */
+.tasknotes-plugin .task-card__priority-dot--icon {
+    border-radius: 0;
+    background-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tasknotes-plugin .task-card--priority-high > .task-card__main-row .task-card__priority-dot--icon,
+.tasknotes-plugin .task-card--priority-medium > .task-card__main-row .task-card__priority-dot--icon,
+.tasknotes-plugin .task-card--priority-normal > .task-card__main-row .task-card__priority-dot--icon,
+.tasknotes-plugin .task-card--priority-low > .task-card__main-row .task-card__priority-dot--icon {
+    background-color: transparent;
+}
+
+.tasknotes-plugin .task-card__priority-dot--icon svg {
+    width: 14px;
+    height: 14px;
+    color: var(--priority-color, var(--tn-text-muted));
+    stroke-width: 2;
+}
+
+.tasknotes-plugin .task-card__priority-dot--icon:hover svg {
+    color: color-mix(in srgb, var(--priority-color, var(--tn-interactive-accent)) 80%, var(--tn-text-normal));
+}
+
 /* Status colors - Use dynamic status colors from user settings */
 /* Use child combinator (>) to prevent subtasks from inheriting parent status styling */
 .tasknotes-plugin .task-card[data-status] > .task-card__main-row .task-card__status-dot {
@@ -1349,6 +1376,13 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     transform: translateY(0.05em);
 }
 
+.tasknotes-plugin .task-card--layout-inline .task-card__priority-dot--icon {
+    display: inline-flex;
+    width: 0.85em;
+    height: 0.85em;
+    transform: translateY(0.12em);
+}
+
 /* Compact indicators in inline mode */
 .tasknotes-plugin .task-card--layout-inline .task-card__recurring-indicator,
 .tasknotes-plugin .task-card--layout-inline .task-card__reminder-indicator {
@@ -1468,6 +1502,11 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     width: 8px;
     height: 8px;
     margin: 0 var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .task-card--layout-compact .task-card__priority-dot--icon {
+    width: 14px;
+    height: 14px;
 }
 
 .tasknotes-plugin .task-card--layout-compact .task-card__badges {

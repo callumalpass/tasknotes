@@ -389,6 +389,23 @@ describe('TaskCard Component', () => {
       expect(priorityDot.getAttribute('aria-label')).toBe('Priority: high');
     });
 
+    it('should render configured priority icons instead of a plain dot', () => {
+      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
+        value: priority,
+        label: priority,
+        color: '#ff0000',
+        icon: priority === 'high' ? 'alert-circle' : undefined
+      }));
+      const task = TaskFactory.createTask({ priority: 'high' });
+      const card = createTaskCard(task, mockPlugin);
+
+      const priorityDot = card.querySelector('.task-card__priority-dot') as HTMLElement;
+      expect(priorityDot).toBeTruthy();
+      expect(priorityDot.classList.contains('task-card__priority-dot--icon')).toBe(true);
+      expect(priorityDot.getAttribute('data-icon')).toBe('alert-circle');
+      expect(priorityDot.getAttribute('aria-label')).toBe('Priority: high');
+    });
+
     it.skip('should create metadata line with various task properties', () => {
       const task = TaskFactory.createTask({
         due: '2025-01-15T14:30:00',
@@ -768,6 +785,55 @@ describe('TaskCard Component', () => {
 
       const priorityDot = cardWithoutPriority.querySelector('.task-card__priority-dot');
       expect(priorityDot).toBeTruthy();
+    });
+
+    it('should update a priority indicator when the configured icon changes', () => {
+      const taskWithPriority = TaskFactory.createTask({
+        ...task,
+        priority: 'high'
+      });
+      const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+      expect(cardWithPriority.querySelector('.task-card__priority-dot--icon')).toBeNull();
+
+      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
+        value: priority,
+        label: priority,
+        color: '#ff0000',
+        icon: 'alert-circle'
+      }));
+
+      updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
+
+      const priorityDot = cardWithPriority.querySelector('.task-card__priority-dot') as HTMLElement;
+      expect(priorityDot.classList.contains('task-card__priority-dot--icon')).toBe(true);
+      expect(priorityDot.getAttribute('data-icon')).toBe('alert-circle');
+    });
+
+    it('should return a priority icon indicator to a plain dot when the icon is cleared', () => {
+      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
+        value: priority,
+        label: priority,
+        color: '#ff0000',
+        icon: 'alert-circle'
+      }));
+      const taskWithPriority = TaskFactory.createTask({
+        ...task,
+        priority: 'high'
+      });
+      const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
+        value: priority,
+        label: priority,
+        color: '#ff0000'
+      }));
+
+      updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
+
+      const priorityDot = cardWithPriority.querySelector('.task-card__priority-dot') as HTMLElement;
+      expect(priorityDot.classList.contains('task-card__priority-dot--icon')).toBe(false);
+      expect(priorityDot.getAttribute('data-icon')).toBeNull();
     });
 
     it('should remove priority indicator when task loses priority', () => {

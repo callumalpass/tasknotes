@@ -10,6 +10,7 @@ import {
 	createCardSelect,
 	CardRow,
 } from "../../components/CardComponent";
+import { createIconInput } from "../../components/IconSuggest";
 import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
 
 /**
@@ -100,6 +101,9 @@ export function renderPriorityPropertyCard(
 	});
 	priorityHelpList.createEl("li", {
 		text: translate("settings.taskProperties.taskPriorities.howTheyWork.color"),
+	});
+	priorityHelpList.createEl("li", {
+		text: translate("settings.taskProperties.taskPriorities.howTheyWork.icon"),
 	});
 
 	// Render priority value cards
@@ -255,6 +259,11 @@ function renderPriorityList(
 			priority.label
 		);
 		const colorInput = createCardInput("color", "", priority.color);
+		const { container: iconInputContainer, input: iconInput } = createIconInput(
+			plugin.app,
+			translate("settings.taskProperties.taskPriorities.placeholders.icon"),
+			priority.icon || ""
+		);
 
 		const card = createCard(container, {
 			id: priority.id,
@@ -330,6 +339,12 @@ function renderPriorityList(
 								),
 								input: colorInput,
 							},
+							{
+								label: translate(
+									"settings.taskProperties.taskPriorities.fields.icon"
+								),
+								input: iconInputContainer,
+							},
 						],
 					},
 				],
@@ -358,6 +373,11 @@ function renderPriorityList(
 			if (colorIndicator) {
 				colorIndicator.style.backgroundColor = priority.color;
 			}
+			save();
+		});
+
+		iconInput.addEventListener("change", () => {
+			priority.icon = iconInput.value.trim() || undefined;
 			save();
 		});
 

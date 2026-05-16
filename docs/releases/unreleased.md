@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1754](https://github.com/callumalpass/tasknotes/issues/1754)) Added optional icons for priority values, so task cards can show a configured priority icon instead of only a colored dot. Thanks to @BrucePlumb for suggesting this and @prepare4robots for the follow-up feedback.
 - ([#1761](https://github.com/callumalpass/tasknotes/issues/1761)) Added TaskNotes edit and quick-action entries to Obsidian's native file context menu for recognized task notes. Thanks to @delzero for suggesting this.
 - ([#1771](https://github.com/callumalpass/tasknotes/issues/1771)) Added mobile drag handles to manually sorted Task List Bases views, so dragging can start from the handle without disabling normal text interaction on the rest of the card. Thanks to @PatrickGolz for suggesting this.
 - ([#1776](https://github.com/callumalpass/tasknotes/issues/1776)) Allowed calendar timeline end times after midnight, such as `26:00` for a 2 AM next-day end. Thanks to @chrabia for suggesting this.
