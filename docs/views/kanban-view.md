@@ -25,8 +25,10 @@ Access these options through the Bases view settings panel:
 - **Swim Lane**: Optional property for horizontal grouping. Creates a two-dimensional layout where tasks are organized by both column (groupBy) and row (swimLane)
 - **Column Width**: Controls the width of columns in pixels. Range: 200-500px. Default: 280px
 - **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
+- **Hide Empty Swimlanes**: When enabled, ordered swimlanes with no tasks are hidden from the view
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
+- **Swim Lane Order**: Advanced JSON configuration for pinning swimlane rows in a stable order
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
 ## Interface Layout
@@ -48,6 +50,16 @@ Each swimlane row includes:
 - A label cell showing the swimlane property value and total task count
 - Multiple cells, each representing a column within that swimlane
 - Scrollable cells containing task cards
+
+To pin swimlanes in a stable order, set the advanced `swimLaneOrder` option to a JSON object keyed by the swimlane property:
+
+```yaml
+config:
+  swimLane: note.contexts
+  swimLaneOrder: '{"note.contexts":["transitcal","bill","cycles-research","astrolabe"]}'
+```
+
+Listed swimlane values render first in the configured order. Values not listed in `swimLaneOrder` render below them alphabetically. If `hideEmptySwimLanes` is disabled, listed values can remain visible even when no matching tasks are currently present.
 
 ## Task Cards
 
@@ -118,6 +130,7 @@ views:
       property: task.status
     config:
       swimLane: task.priority
+      swimLaneOrder: '{"task.priority":["high","normal","low"]}'
       columnWidth: 300
       hideEmptyColumns: true
 ---
@@ -126,6 +139,7 @@ views:
 This configuration creates a Kanban board with:
 - Columns based on task status
 - Swimlanes based on task priority
+- Priority swimlanes pinned in high, normal, low order
 - 300px column width
 - Empty columns hidden
 

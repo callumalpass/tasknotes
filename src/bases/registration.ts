@@ -96,6 +96,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					},
 					{
 						type: "toggle",
+						key: "hideEmptySwimLanes",
+						displayName: "Hide Empty Swimlanes",
+						default: false,
+					},
+					{
+						type: "toggle",
 						key: "enableSearch",
 						displayName: "Enable search box",
 						default: false,
@@ -117,6 +123,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						key: "columnOrder",
 						displayName: "Column Order (Advanced)",
 						placeholder: "Auto-managed when dragging columns",
+						default: "{}",
+					},
+					{
+						type: "text",
+						key: "swimLaneOrder",
+						displayName: "Swim Lane Order (Advanced)",
+						placeholder: "JSON object keyed by swim lane property",
 						default: "{}",
 					},
 					{

@@ -103,6 +103,61 @@ function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "s
 	return "inherit";
 }
 
+function normalizeOrderValues(values: unknown[]): string[] {
+	const seen = new Set<string>();
+	const normalized: string[] = [];
+
+	for (const value of values) {
+		const key = stringifyUnknown(value).trim();
+		if (!key || seen.has(key)) {
+			continue;
+		}
+
+		seen.add(key);
+		normalized.push(key);
+	}
+
+	return normalized;
+}
+
+function normalizeOrderConfig(value: unknown): Record<string, string[]> {
+	if (value === null || value === undefined) {
+		return {};
+	}
+
+	let parsed = value;
+	if (typeof value === "string") {
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return {};
+		}
+
+		try {
+			parsed = JSON.parse(trimmed);
+		} catch {
+			return {};
+		}
+	}
+
+	if (!isRecord(parsed)) {
+		return {};
+	}
+
+	const result: Record<string, string[]> = {};
+	for (const [propertyId, values] of Object.entries(parsed)) {
+		if (!Array.isArray(values)) {
+			continue;
+		}
+
+		const order = normalizeOrderValues(values);
+		if (order.length > 0) {
+			result[propertyId] = order;
+		}
+	}
+
+	return result;
+}
+
 export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
 
@@ -164,6 +219,8 @@ export class KanbanView extends BasesViewBase {
 	private explodeListColumns = true; // Show items with list properties in multiple columns
 	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
+	private swimLaneOrders: Record<string, string[]> = {};
+	private hideEmptySwimLanes = false;
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
@@ -264,8 +321,14 @@ export class KanbanView extends BasesViewBase {
 			this.consolidateStatusIcon = consolidateValue === true; // Default to false if not set
 
 			// Read column orders
-			const columnOrderStr = (this.config.get("columnOrder") as string) || "{}";
-			this.columnOrders = JSON.parse(columnOrderStr);
+			this.columnOrders = normalizeOrderConfig(this.config.get("columnOrder"));
+
+			// Read swimlane orders. Support both the public singular key and the
+			// originally proposed plural key for manually-authored Bases YAML.
+			this.swimLaneOrders = normalizeOrderConfig(
+				this.config.get("swimLaneOrder") ?? this.config.get("swimLaneOrders")
+			);
+			this.hideEmptySwimLanes = this.config.get("hideEmptySwimLanes") === true;
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
@@ -1063,9 +1126,14 @@ export class KanbanView extends BasesViewBase {
 		// Apply column ordering
 		const columnKeys = Array.from(groups.keys());
 		const orderedKeys = this.applyColumnOrder(groupByPropertyId, columnKeys);
+		const orderedSwimLanes = this.applySwimLaneOrderToMap(
+			this.swimLanePropertyId,
+			swimLanes,
+			columnKeys
+		);
 
 		// Render swimlane table
-		await this.renderSwimLaneTable(swimLanes, orderedKeys, pathToProps);
+		await this.renderSwimLaneTable(orderedSwimLanes, orderedKeys, pathToProps);
 	}
 
 	private async renderSwimLaneTable(
@@ -3438,7 +3506,7 @@ export class KanbanView extends BasesViewBase {
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
 		// Get saved order for this grouping property
-		const savedOrder = this.columnOrders[groupBy];
+		const savedOrder = this.getConfiguredOrder(this.columnOrders, groupBy);
 
 		if (!savedOrder || savedOrder.length === 0) {
 			// No saved order - use natural order (alphabetical)
@@ -3464,6 +3532,61 @@ export class KanbanView extends BasesViewBase {
 
 		// Return saved order + new keys (alphabetically sorted)
 		return [...ordered, ...unsorted.sort()];
+	}
+
+	private getConfiguredOrder(
+		orders: Record<string, string[]>,
+		propertyId: string | null
+	): string[] | undefined {
+		if (!propertyId) {
+			return undefined;
+		}
+
+		return orders[propertyId] ?? orders[stripPropertyPrefix(propertyId)];
+	}
+
+	private applySwimLaneOrder(swimLanePropertyId: string | null, actualKeys: string[]): string[] {
+		const savedOrder = this.getConfiguredOrder(this.swimLaneOrders, swimLanePropertyId);
+
+		if (!savedOrder || savedOrder.length === 0) {
+			return actualKeys.sort();
+		}
+
+		const actualKeySet = new Set(actualKeys);
+		const ordered = savedOrder.filter(
+			(key) => actualKeySet.has(key) || !this.hideEmptySwimLanes
+		);
+		const unordered = actualKeys.filter((key) => !savedOrder.includes(key)).sort();
+
+		return [...ordered, ...unordered];
+	}
+
+	private applySwimLaneOrderToMap(
+		swimLanePropertyId: string | null,
+		swimLanes: Map<string, Map<string, TaskInfo[]>>,
+		columnKeys: string[]
+	): Map<string, Map<string, TaskInfo[]>> {
+		const orderedKeys = this.applySwimLaneOrder(swimLanePropertyId, Array.from(swimLanes.keys()));
+		const orderedSwimLanes = new Map<string, Map<string, TaskInfo[]>>();
+
+		for (const swimLaneKey of orderedKeys) {
+			const columns = swimLanes.get(swimLaneKey) ?? this.createEmptySwimLaneColumns(columnKeys);
+			if (this.hideEmptySwimLanes && this.getSwimLaneTaskCount(columns) === 0) {
+				continue;
+			}
+
+			orderedSwimLanes.set(swimLaneKey, columns);
+		}
+
+		return orderedSwimLanes;
+	}
+
+	private createEmptySwimLaneColumns(columnKeys: string[]): Map<string, TaskInfo[]> {
+		return new Map(columnKeys.map((columnKey) => [columnKey, []]));
+	}
+
+	private getSwimLaneTaskCount(columns: Map<string, TaskInfo[]>): number {
+		return Array.from(columns.values()).reduce((sum, tasks) => sum + tasks.length, 0);
 	}
 
 	private async saveColumnOrder(groupBy: string, order: string[]): Promise<void> {

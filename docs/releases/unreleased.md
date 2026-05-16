@@ -27,6 +27,7 @@ Example:
 ## Added
 
 - ([#1809](https://github.com/callumalpass/tasknotes/issues/1809)) Added a subtle task-card indicator for tasks with note body details. Thanks to @aliceinwaterdeep for suggesting this.
+- ([#1808](https://github.com/callumalpass/tasknotes/issues/1808)) Added advanced Kanban swimlane ordering through `swimLaneOrder`, so swimlane rows can stay in a stable configured order. Thanks to @rookledookle for suggesting this, and to @benmartinek and @chrabia for the follow-up feedback.
 - ([#1818](https://github.com/callumalpass/tasknotes/issues/1818)) Added an auto-height mode for TaskNotes Calendar Bases views so embedded agenda/list sections can size to their content instead of forcing an inner scroller. Thanks to @martin-forge for suggesting this.
 - ([#1835](https://github.com/callumalpass/tasknotes/issues/1835)) Added hotkeyable commands to add a project to the current task and add an existing task as a subtask of the current note. Thanks to @prepare4robots for requesting this and @ubidev for the follow-up suggestion.
 
