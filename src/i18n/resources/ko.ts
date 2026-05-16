@@ -2602,6 +2602,7 @@ export const ko: TranslationTree = {
 			unarchive: "보관 해제",
 			openNote: "노트 열기",
 			copyTitle: "작업 제목 복사",
+			quickActions: "빠른 작업",
 			noteActions: "노트 작업",
 			rename: "이름 변경",
 			renameTitle: "파일 이름 변경",

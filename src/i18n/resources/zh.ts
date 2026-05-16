@@ -2647,6 +2647,7 @@ export const zh: TranslationTree = {
 			unarchive: "取消归档",
 			openNote: "打开笔记",
 			copyTitle: "复制任务标题",
+			quickActions: "快速操作",
 			noteActions: "笔记操作",
 			rename: "重命名",
 			renameTitle: "重命名文件",

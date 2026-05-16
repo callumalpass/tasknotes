@@ -2649,6 +2649,7 @@ export const fr: TranslationTree = {
 			unarchive: "Désarchiver",
 			openNote: "Ouvrir la note",
 			copyTitle: "Copier le titre de la tâche",
+			quickActions: "Actions rapides",
 			noteActions: "Actions sur la note",
 			rename: "Renommer",
 			renameTitle: "Renommer le fichier",

@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1761](https://github.com/callumalpass/tasknotes/issues/1761)) Added TaskNotes edit and quick-action entries to Obsidian's native file context menu for recognized task notes. Thanks to @delzero for suggesting this.
 - ([#1771](https://github.com/callumalpass/tasknotes/issues/1771)) Added mobile drag handles to manually sorted Task List Bases views, so dragging can start from the handle without disabling normal text interaction on the rest of the card. Thanks to @PatrickGolz for suggesting this.
 - ([#1776](https://github.com/callumalpass/tasknotes/issues/1776)) Allowed calendar timeline end times after midnight, such as `26:00` for a 2 AM next-day end. Thanks to @chrabia for suggesting this.
 - ([#1784](https://github.com/callumalpass/tasknotes/issues/1784), [#1833](https://github.com/callumalpass/tasknotes/pull/1833)) Added a per-view `pinnedColumns` option for TaskNotes Kanban views, so selected empty columns can stay visible as drop targets while other empty columns remain hidden. Thanks to @loukandr for suggesting and prototyping this.

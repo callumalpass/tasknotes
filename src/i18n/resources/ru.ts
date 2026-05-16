@@ -2649,6 +2649,7 @@ export const ru: TranslationTree = {
 			unarchive: "Разархивировать",
 			openNote: "Открыть заметку",
 			copyTitle: "Копировать название задачи",
+			quickActions: "Быстрые действия",
 			noteActions: "Действия с заметкой",
 			rename: "Переименовать",
 			renameTitle: "Переименовать файл",

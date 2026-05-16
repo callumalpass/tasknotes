@@ -2648,6 +2648,7 @@ export const ja: TranslationTree = {
 			unarchive: "アーカイブ解除",
 			openNote: "ノートを開く",
 			copyTitle: "タスクタイトルをコピー",
+			quickActions: "クイックアクション",
 			noteActions: "ノートアクション",
 			rename: "名前変更",
 			renameTitle: "ファイル名変更",

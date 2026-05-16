@@ -3,6 +3,8 @@ import {
 	Plugin,
 	WorkspaceLeaf,
 	Editor,
+	Menu,
+	TAbstractFile,
 	TFile,
 	getLanguage,
 	normalizePath,
@@ -272,6 +274,7 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		await initializePluginRuntime(this);
+		this.registerTaskNotesFileMenuActions();
 
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
@@ -286,6 +289,43 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// At the very end of onload, resolve the promise to signal readiness
 		this.resolveReady();
+	}
+
+	private registerTaskNotesFileMenuActions(): void {
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, file) => {
+				this.addTaskNotesFileMenuActions(menu, file);
+			})
+		);
+	}
+
+	addTaskNotesFileMenuActions(menu: Menu, file: TAbstractFile): void {
+		if (!(file instanceof TFile)) {
+			return;
+		}
+
+		const metadata = this.app.metadataCache.getFileCache(file);
+		if (!metadata?.frontmatter || !this.cacheManager.isTaskFile(metadata.frontmatter)) {
+			return;
+		}
+
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setTitle(this.i18n.translate("modals.taskEdit.title"));
+			item.setIcon("pencil");
+			item.setSection("tasknotes");
+			item.onClick(() => {
+				void this.openTaskEditModalForFile(file);
+			});
+		});
+		menu.addItem((item) => {
+			item.setTitle(this.i18n.translate("contextMenus.task.quickActions"));
+			item.setIcon("list-checks");
+			item.setSection("tasknotes");
+			item.onClick(() => {
+				void this.openQuickActionsForTaskFile(file);
+			});
+		});
 	}
 
 	/**
@@ -1472,24 +1512,46 @@ export default class TaskNotesPlugin extends Plugin {
 				return;
 			}
 
-			// Check if it's a TaskNote
-			const taskInfo = await this.cacheManager.getTaskInfo(activeFile.path);
-			if (!taskInfo) {
-				new Notice("Current file is not a tasknote");
-				return;
-			}
-
-			// Open TaskActionPaletteModal with detected task
-			const { TaskActionPaletteModal } = await import("./modals/TaskActionPaletteModal");
-			// Use fresh UTC-anchored "today" for recurring task handling
-			const now = new Date();
-			const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-			const modal = new TaskActionPaletteModal(this.app, taskInfo, this, today);
-			modal.open();
+			await this.openQuickActionsForTaskFile(activeFile, "Current file is not a tasknote");
 		} catch (error) {
 			console.error("Error opening quick actions:", error);
 			new Notice("Failed to open quick actions");
 		}
+	}
+
+	private async openTaskEditModalForFile(file: TFile): Promise<void> {
+		try {
+			const taskInfo = await this.cacheManager.getTaskInfo(file.path);
+			if (!taskInfo) {
+				new Notice(
+					this.i18n.translate("modals.taskEdit.notices.fileMissing", { path: file.path })
+				);
+				return;
+			}
+
+			await this.openTaskEditModal(taskInfo);
+		} catch (error) {
+			console.error("Error opening task edit modal from file menu:", error);
+			new Notice(this.i18n.translate("modals.taskEdit.notices.openNoteFailure"));
+		}
+	}
+
+	private async openQuickActionsForTaskFile(
+		file: TFile,
+		notTaskNotice = "Selected file is not a tasknote"
+	): Promise<void> {
+		const taskInfo = await this.cacheManager.getTaskInfo(file.path);
+		if (!taskInfo) {
+			new Notice(notTaskNotice);
+			return;
+		}
+
+		const { TaskActionPaletteModal } = await import("./modals/TaskActionPaletteModal");
+		// Use fresh UTC-anchored "today" for recurring task handling
+		const now = new Date();
+		const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+		const modal = new TaskActionPaletteModal(this.app, taskInfo, this, today);
+		modal.open();
 	}
 
 	async addProjectToCurrentTask(): Promise<void> {
