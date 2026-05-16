@@ -21,6 +21,12 @@
 	display: none;
 }
 
+/* Obsidian Bases adds bottom padding to its scroll container. Full-height TaskNotes
+   custom views need to occupy that space so they can align with the pane edge. */
+.tasknotes-view-active .bases-view {
+	padding-bottom: 0;
+}
+
 /* Bases TaskNotes List View Container */
 .tn-bases-tasknotes-list {
     display: flex;
