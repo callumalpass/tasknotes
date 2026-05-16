@@ -1935,10 +1935,13 @@ export class KanbanView extends BasesViewBase {
 		x: number,
 		y: number
 	): {
-		type: "column" | "swimlane" | "columnHeader" | null;
+		type: "task" | "column" | "swimlane" | "columnHeader" | null;
 		groupKey: string | null;
 		swimLaneKey: string | null;
 		element: HTMLElement | null;
+		taskPath?: string;
+		above?: boolean;
+		cardsContainer?: HTMLElement | null;
 	} {
 		if (this.touchDragGhost) {
 			this.touchDragGhost.classList.remove(
@@ -1972,6 +1975,26 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		if (!el) return { type: null, groupKey: null, swimLaneKey: null, element: null };
+
+		const card = el.closest<HTMLElement>(".kanban-view__card-wrapper");
+		const taskPath = card?.dataset.taskPath;
+		if (card && taskPath && !this.draggedTaskPaths.includes(taskPath)) {
+			const column = card.closest<HTMLElement>("[data-group]");
+			const swimCol = card.closest<HTMLElement>("[data-column]");
+			const swimlaneRow = card.closest<HTMLElement>("[data-swimlane]");
+			const groupKey = column?.dataset.group || swimCol?.dataset.column || null;
+			const rect = card.getBoundingClientRect();
+
+			return {
+				type: "task",
+				groupKey,
+				swimLaneKey: swimlaneRow?.dataset.swimlane || null,
+				element: card,
+				taskPath,
+				above: y < rect.top + rect.height / 2,
+				cardsContainer: card.parentElement,
+			};
+		}
 
 		const swimCell = el.closest("[data-column][data-swimlane]") as HTMLElement;
 		if (swimCell) {
@@ -2031,6 +2054,15 @@ export class KanbanView extends BasesViewBase {
 				target.element.classList.add("kanban-view__column--dragover");
 			} else if (target.type === "swimlane") {
 				target.element.classList.add("kanban-view__swimlane-column--dragover");
+			} else if (target.type === "task") {
+				const swimlaneColumn = target.element.closest(".kanban-view__swimlane-column");
+				if (swimlaneColumn) {
+					swimlaneColumn.classList.add("kanban-view__swimlane-column--dragover");
+				} else {
+					target.element
+						.closest(".kanban-view__column")
+						?.classList.add("kanban-view__column--dragover");
+				}
 			} else if (target.type === "columnHeader" && this.touchDragType === "column") {
 				if (target.element.classList.contains("kanban-view__column-header-cell")) {
 					target.element.classList.add("kanban-view__column-header-cell--dragover");
@@ -2178,10 +2210,8 @@ export class KanbanView extends BasesViewBase {
 						const totalGap = draggedHeight + gap;
 						container.style.setProperty("--tn-drag-gap", `${totalGap}px`);
 						container.classList.remove(
-							"tn-static-margin-top-12px-91e0f558",
-							"tn-static-overflow-y-auto-03df744e"
+							"tn-static-margin-top-12px-91e0f558"
 						);
-						container.classList.add("tn-static-overflow-y-clip-c5043043");
 						// Padding grows the container's content box so
 						// translateY-shifted cards have real layout space.
 						// Also bump the column's max-height so it can grow
@@ -2432,12 +2462,8 @@ export class KanbanView extends BasesViewBase {
 					const gapStr = getComputedStyle(container).gap;
 					const gap = parseFloat(gapStr) || 4;
 					container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
-					// Clip overflow so translateY shifts don't cause scrollbars
-					container.classList.remove(
-						"tn-static-margin-top-12px-91e0f558",
-						"tn-static-overflow-y-auto-03df744e"
-					);
-					container.classList.add("tn-static-overflow-y-clip-c5043043");
+					// Keep the column scrollable while dragging long manual-order lists.
+					container.classList.remove("tn-static-margin-top-12px-91e0f558");
 
 					const siblings = container.querySelectorAll<HTMLElement>(
 						".kanban-view__card-wrapper"
@@ -2795,9 +2821,35 @@ export class KanbanView extends BasesViewBase {
 
 				const target = this.findDropTargetAt(touch.clientX, touch.clientY);
 				if (target.groupKey && this.draggedTaskPath) {
-					for (const path of this.draggedTaskPaths) {
-						await this.handleTaskDrop(path, target.groupKey, target.swimLaneKey);
-					}
+					const dropTarget =
+						target.type === "task" && target.taskPath
+							? {
+									taskPath: target.taskPath,
+									above: target.above ?? true,
+								}
+							: undefined;
+					const targetContainer =
+						target.cardsContainer ??
+						target.element?.querySelector<HTMLElement>(
+							".kanban-view__cards, .kanban-view__tasks-container"
+						) ??
+						null;
+
+					this.performOptimisticReorder(
+						this.draggedTaskPaths.length > 0
+							? this.draggedTaskPaths
+							: [this.draggedTaskPath],
+						dropTarget,
+						targetContainer
+					);
+					this.cleanupDragShift();
+
+					await this.handleTaskDrop(
+						this.draggedTaskPath,
+						target.groupKey,
+						target.swimLaneKey,
+						dropTarget
+					);
 				}
 
 				this.clearTouchDragState();
