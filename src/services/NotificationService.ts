@@ -16,6 +16,7 @@ export class NotificationService {
 	private quickCheckInterval?: number;
 	private processedReminders: Set<string> = new Set(); // Track processed reminders to avoid duplicates
 	private taskUpdateListener?: EventRef;
+	private fileUpdateListener?: EventRef;
 	private lastBroadScanTime: number = Date.now();
 	private lastQuickCheckTime: number = Date.now();
 
@@ -42,6 +43,7 @@ export class NotificationService {
 
 		// Set up task update listener to handle stale notifications
 		this.setupTaskUpdateListener();
+		this.setupFileUpdateListener();
 
 		// Start the two-tier interval system
 		this.startBroadScan();
@@ -60,6 +62,9 @@ export class NotificationService {
 		}
 		if (this.taskUpdateListener) {
 			this.plugin.emitter.offref(this.taskUpdateListener);
+		}
+		if (this.fileUpdateListener) {
+			this.plugin.emitter.offref(this.fileUpdateListener);
 		}
 		this.notificationQueue = [];
 		this.processedReminders.clear();
@@ -351,6 +356,56 @@ export class NotificationService {
 		await this.scanTasksAndBuildQueue();
 	}
 
+	private queueRemindersForTask(taskPath: string, task: TaskInfo): void {
+		const now = Date.now();
+		const windowEnd = now + this.QUEUE_WINDOW;
+
+		if (!task.reminders || task.reminders.length === 0) {
+			return;
+		}
+
+		for (const reminder of task.reminders) {
+			const reminderId = `${taskPath}-${reminder.id}`;
+			if (this.processedReminders.has(reminderId)) {
+				continue;
+			}
+
+			const notifyAt = this.calculateNotificationTime(task, reminder);
+			if (notifyAt === null) {
+				continue;
+			}
+
+			if (notifyAt > now && notifyAt <= windowEnd) {
+				this.notificationQueue.push({
+					taskPath,
+					reminder,
+					notifyAt,
+				});
+			}
+		}
+
+		this.notificationQueue.sort((a, b) => a.notifyAt - b.notifyAt);
+	}
+
+	private async refreshTaskReminders(
+		taskPath: string,
+		updatedTask?: TaskInfo | null
+	): Promise<void> {
+		this.removeNotificationsForTask(taskPath);
+		this.clearProcessedRemindersForTask(taskPath);
+
+		const task =
+			updatedTask === undefined
+				? await this.plugin.cacheManager.getTaskInfo(taskPath)
+				: updatedTask;
+
+		if (!task) {
+			return;
+		}
+
+		this.queueRemindersForTask(taskPath, task);
+	}
+
 	// Public method to clear processed reminders (useful when task is edited)
 	clearProcessedRemindersForTask(taskPath: string): void {
 		const keysToRemove: string[] = [];
@@ -365,46 +420,25 @@ export class NotificationService {
 	private setupTaskUpdateListener(): void {
 		this.taskUpdateListener = this.plugin.emitter.on(
 			EVENT_TASK_UPDATED,
-			async ({ path, originalTask, updatedTask }) => {
+			async ({ path, updatedTask }) => {
 				if (!path || !updatedTask) {
 					return;
 				}
 
-				// Clear any existing notifications for this task path
-				this.removeNotificationsForTask(path);
+				await this.refreshTaskReminders(path, updatedTask);
+			}
+		);
+	}
 
-				// Clear processed reminders for this task so they can trigger again if needed
-				this.clearProcessedRemindersForTask(path);
-
-				// Re-calculate notification times for the updated task within the current window
-				const now = Date.now();
-				const windowEnd = now + this.QUEUE_WINDOW;
-
-				if (updatedTask.reminders && updatedTask.reminders.length > 0) {
-					for (const reminder of updatedTask.reminders) {
-						const reminderId = `${path}-${reminder.id}`;
-						if (this.processedReminders.has(reminderId)) {
-							continue;
-						}
-
-						const notifyAt = this.calculateNotificationTime(updatedTask, reminder);
-						if (notifyAt === null) {
-							continue;
-						}
-
-						// Add to queue if within the next scan window
-						if (notifyAt > now && notifyAt <= windowEnd) {
-							this.notificationQueue.push({
-								taskPath: path,
-								reminder,
-								notifyAt,
-							});
-						}
-					}
-
-					// Re-sort queue by notification time
-					this.notificationQueue.sort((a, b) => a.notifyAt - b.notifyAt);
+	private setupFileUpdateListener(): void {
+		this.fileUpdateListener = this.plugin.emitter.on(
+			"file-updated",
+			async ({ path }: { path?: string }) => {
+				if (!path) {
+					return;
 				}
+
+				await this.refreshTaskReminders(path);
 			}
 		);
 	}

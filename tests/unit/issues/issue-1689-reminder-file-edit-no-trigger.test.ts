@@ -1,62 +1,146 @@
 /**
- * Reproduction tests for issue #1689.
+ * Regression tests for issue #1689.
  *
- * Reported behavior:
- * - Reminders added via direct YAML frontmatter edit are never registered
- *   with the in-memory notification scheduler.
- * - Relative reminders don't recalculate when the scheduled date changes.
+ * Reminders are plain frontmatter data, so direct file edits need to refresh the
+ * notification queue just like TaskNotes UI edits do.
  */
 
-describe('Issue #1689: Reminders not triggered when created via file edit', () => {
-	it.skip('reproduces issue #1689 - processedReminders prevents re-evaluation after date change', () => {
-		// Simulate NotificationService.scanTasksAndBuildQueue behavior
-		// where processedReminders set prevents re-processing.
+import { NotificationService } from "../../../src/services/NotificationService";
+import { Reminder, TaskInfo } from "../../../src/types";
 
-		const processedReminders = new Set<string>();
+class TestEmitter {
+	private listeners = new Map<string, Set<(...args: any[]) => void>>();
 
-		const taskPath = 'Tasks/my-task.md';
-		const reminderId = 'rem_1773167100000';
-		const reminderKey = `${taskPath}-${reminderId}`;
+	on(event: string, callback: (...args: any[]) => void): { event: string; callback: (...args: any[]) => void } {
+		const listeners = this.listeners.get(event) ?? new Set<(...args: any[]) => void>();
+		listeners.add(callback);
+		this.listeners.set(event, listeners);
+		return { event, callback };
+	}
 
-		// First scan: task scheduled at 14:28, reminder at 14:23 (5 min before)
-		const originalScheduled = new Date('2026-03-22T14:28:00').getTime();
-		const reminderOffset = -5 * 60 * 1000; // -5 minutes
-		const originalNotifyAt = originalScheduled + reminderOffset;
+	offref(ref: { event: string; callback: (...args: any[]) => void }): void {
+		this.listeners.get(ref.event)?.delete(ref.callback);
+	}
 
-		// Reminder fires at original time
-		processedReminders.add(reminderKey);
+	trigger(event: string, ...args: any[]): void {
+		for (const listener of this.listeners.get(event) ?? []) {
+			listener(...args);
+		}
+	}
+}
 
-		// User changes scheduled to 14:40
-		const newScheduled = new Date('2026-03-22T14:40:00').getTime();
-		const expectedNewNotifyAt = newScheduled + reminderOffset; // Should be 14:35
+const flushPromises = async (): Promise<void> => {
+	await Promise.resolve();
+	await Promise.resolve();
+};
 
-		// Second scan: processedReminders prevents re-evaluation
-		const isAlreadyProcessed = processedReminders.has(reminderKey);
+const createService = () => {
+	const emitter = new TestEmitter();
+	const cacheManager = {
+		getAllTasks: jest.fn<Promise<TaskInfo[]>, []>().mockResolvedValue([]),
+		getTaskInfo: jest.fn<Promise<TaskInfo | null>, [string]>(),
+	};
+	const plugin = {
+		settings: {
+			enableNotifications: true,
+			notificationType: "in-app",
+		},
+		cacheManager,
+		emitter,
+	};
 
-		// BUG: The reminder is marked as processed, so the new scheduled time
-		// is never used to recalculate the notification time.
-		expect(isAlreadyProcessed).toBe(true);
-		expect(expectedNewNotifyAt).not.toBe(originalNotifyAt);
+	return {
+		cacheManager,
+		emitter,
+		service: new NotificationService(plugin as any),
+	};
+};
+
+describe("Issue #1689: reminders edited in frontmatter refresh notification timers", () => {
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
-	it.skip('reproduces issue #1689 - file-edit reminders missed between scan intervals', () => {
-		// Simulate the timing gap: broad scan runs every 5 minutes,
-		// and the queue window is also 5 minutes ahead.
+	it("queues a reminder added by direct file edit without waiting for the next broad scan", async () => {
+		jest.useFakeTimers();
+		jest.setSystemTime(new Date("2026-03-22T14:00:00"));
 
-		const BROAD_SCAN_INTERVAL = 5 * 60 * 1000;
-		const QUEUE_WINDOW = 5 * 60 * 1000;
+		const taskPath = "Tasks/direct-edit.md";
+		const reminder: Reminder = {
+			id: "rem_1773167100000",
+			type: "relative",
+			relatedTo: "scheduled",
+			offset: "-PT1M",
+			description: "1 minute before",
+		};
+		const updatedTask: TaskInfo = {
+			path: taskPath,
+			title: "Direct edit reminder",
+			status: "open",
+			priority: "normal",
+			scheduled: "2026-03-22T14:02:00",
+			reminders: [reminder],
+		};
+		const { cacheManager, emitter, service } = createService();
+		cacheManager.getTaskInfo.mockResolvedValue(updatedTask);
 
-		const lastScanTime = Date.now();
-		const reminderAddedAt = lastScanTime + 1000; // Added 1 second after scan
-		const reminderFireAt = reminderAddedAt + 60 * 1000; // Fires 1 minute later
+		await service.initialize();
+		expect((service as any).notificationQueue).toEqual([]);
 
-		const nextScanTime = lastScanTime + BROAD_SCAN_INTERVAL;
+		emitter.trigger("file-updated", { path: taskPath });
+		await flushPromises();
 
-		// BUG: Reminder fires before the next scan, so it's never queued
-		expect(reminderFireAt).toBeLessThan(nextScanTime);
+		expect(cacheManager.getTaskInfo).toHaveBeenCalledWith(taskPath);
+		expect((service as any).notificationQueue).toEqual([
+			expect.objectContaining({
+				taskPath,
+				reminder,
+				notifyAt: new Date("2026-03-22T14:01:00").getTime(),
+			}),
+		]);
 
-		// The reminder was added after the last scan but fires before the next one
-		expect(reminderAddedAt).toBeGreaterThan(lastScanTime);
-		expect(reminderFireAt).toBeLessThan(nextScanTime);
+		service.destroy();
+	});
+
+	it("clears processed state and recalculates a relative reminder when the task date changes", async () => {
+		jest.useFakeTimers();
+		jest.setSystemTime(new Date("2026-03-22T14:30:00"));
+
+		const taskPath = "Tasks/my-task.md";
+		const reminder: Reminder = {
+			id: "rem_1773167100000",
+			type: "relative",
+			relatedTo: "scheduled",
+			offset: "-PT5M",
+			description: "5 minutes before",
+		};
+		const reminderKey = `${taskPath}-${reminder.id}`;
+		const updatedTask: TaskInfo = {
+			path: taskPath,
+			title: "Rescheduled task",
+			status: "open",
+			priority: "normal",
+			scheduled: "2026-03-22T14:40:00",
+			reminders: [reminder],
+		};
+		const { cacheManager, emitter, service } = createService();
+		cacheManager.getTaskInfo.mockResolvedValue(updatedTask);
+
+		await service.initialize();
+		(service as any).processedReminders.add(reminderKey);
+
+		emitter.trigger("file-updated", { path: taskPath });
+		await flushPromises();
+
+		expect((service as any).processedReminders.has(reminderKey)).toBe(false);
+		expect((service as any).notificationQueue).toEqual([
+			expect.objectContaining({
+				taskPath,
+				reminder,
+				notifyAt: new Date("2026-03-22T14:35:00").getTime(),
+			}),
+		]);
+
+		service.destroy();
 	});
 });
