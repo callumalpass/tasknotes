@@ -120,6 +120,10 @@ export class TaskCreationService {
 						? taskData.reminders
 						: undefined,
 				icsEventId: taskData.icsEventId || undefined,
+				blockedBy:
+					taskData.blockedBy && taskData.blockedBy.length > 0
+						? taskData.blockedBy
+						: undefined,
 			};
 
 			// Thread user-defined field values from taskData through to frontmatter.

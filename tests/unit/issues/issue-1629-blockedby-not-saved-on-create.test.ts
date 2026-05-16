@@ -1,109 +1,81 @@
 /**
- * Regression coverage for Issue #1629: blockedBy field not saved on create task
- *
- * The blockedBy field selected in the Create Task modal is silently dropped
- * because TaskService.createTask() does not include taskData.blockedBy in the
- * completeTaskData object that gets passed to mapToFrontmatter().
- *
- * The Edit Task modal works correctly because it uses a different code path
- * (updateTask) that handles blockedBy properly.
+ * Regression coverage for Issue #1629: dependencies selected in the Create Task
+ * modal must be persisted by the task creation service.
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1629
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, expect, it, jest } from "@jest/globals";
+import { PluginFactory } from "../../helpers/mock-factories";
+import { TaskCreationService } from "../../../src/services/task-service/TaskCreationService";
+import type { TaskDependency } from "../../../src/types";
 
-interface TaskDependency {
-	uid: string;
-	display?: string;
-}
+jest.mock("../../../src/utils/dateUtils", () => ({
+	getCurrentTimestamp: jest.fn(() => "2026-05-17T00:00:00+10:00"),
+}));
 
-interface TaskCreationData {
-	title: string;
-	status?: string;
-	priority?: string;
-	due?: string;
-	scheduled?: string;
-	contexts?: string[];
-	projects?: string[];
-	timeEstimate?: number;
-	recurrence?: string;
-	recurrence_anchor?: string;
-	reminders?: any[];
-	icsEventId?: string;
-	blockedBy?: TaskDependency[];
-}
+jest.mock("../../../src/utils/filenameGenerator", () => ({
+	generateTaskFilename: jest.fn(() => "blocked-task"),
+	generateUniqueFilename: jest.fn(() => "blocked-task"),
+}));
 
-/**
- * Simulates the completeTaskData construction in TaskService.createTask()
- * (src/services/TaskService.ts lines ~325-346).
- *
- * BUG: blockedBy is never copied from taskData to completeTaskData.
- */
-function buildCompleteTaskDataBuggy(taskData: TaskCreationData): Partial<TaskCreationData> {
-	return {
-		title: taskData.title,
-		status: taskData.status || 'open',
-		priority: taskData.priority || 'medium',
-		due: taskData.due || undefined,
-		scheduled: taskData.scheduled || undefined,
-		contexts: taskData.contexts && taskData.contexts.length > 0 ? taskData.contexts : undefined,
-		projects: taskData.projects && taskData.projects.length > 0 ? taskData.projects : undefined,
-		timeEstimate: taskData.timeEstimate && taskData.timeEstimate > 0 ? taskData.timeEstimate : undefined,
-		recurrence: taskData.recurrence || undefined,
-		recurrence_anchor: taskData.recurrence_anchor || undefined,
-		reminders: taskData.reminders && taskData.reminders.length > 0 ? taskData.reminders : undefined,
-		icsEventId: taskData.icsEventId || undefined,
-		// BUG: blockedBy is missing here
-	};
-}
+jest.mock("../../../src/utils/helpers", () => ({
+	ensureFolderExists: jest.fn().mockResolvedValue(undefined),
+}));
 
-/**
- * Fixed version that includes blockedBy in completeTaskData.
- */
-function buildCompleteTaskDataFixed(taskData: TaskCreationData): Partial<TaskCreationData> {
-	return {
-		title: taskData.title,
-		status: taskData.status || 'open',
-		priority: taskData.priority || 'medium',
-		due: taskData.due || undefined,
-		scheduled: taskData.scheduled || undefined,
-		contexts: taskData.contexts && taskData.contexts.length > 0 ? taskData.contexts : undefined,
-		projects: taskData.projects && taskData.projects.length > 0 ? taskData.projects : undefined,
-		timeEstimate: taskData.timeEstimate && taskData.timeEstimate > 0 ? taskData.timeEstimate : undefined,
-		recurrence: taskData.recurrence || undefined,
-		recurrence_anchor: taskData.recurrence_anchor || undefined,
-		reminders: taskData.reminders && taskData.reminders.length > 0 ? taskData.reminders : undefined,
-		icsEventId: taskData.icsEventId || undefined,
-		blockedBy: taskData.blockedBy && taskData.blockedBy.length > 0 ? taskData.blockedBy : undefined,
-	};
-}
+jest.mock("../../../src/utils/templateProcessor", () => ({
+	mergeTemplateFrontmatter: jest.fn((base, template) => ({ ...base, ...template })),
+}));
 
-describe('Issue #1629: blockedBy field not saved on create task', () => {
-	const taskDataWithBlockedBy: TaskCreationData = {
-		title: 'My new task',
-		blockedBy: [
-			{ uid: '[[Some Other Task]]', display: 'Some Other Task' },
-		],
-	};
+describe("Issue #1629: blockedBy field not saved on create task", () => {
+	it("passes blockedBy dependencies through to frontmatter when creating a task", async () => {
+		const mockPlugin = PluginFactory.createMockPlugin();
+		const dependency: TaskDependency = {
+			uid: "Some Other Task",
+			reltype: "FINISHTOSTART",
+		};
+		const mapToFrontmatterSpy = jest.spyOn(mockPlugin.fieldMapper, "mapToFrontmatter");
 
-	it.skip('reproduces issue #1629 - blockedBy is dropped in createTask completeTaskData', () => {
-		const buggyResult = buildCompleteTaskDataBuggy(taskDataWithBlockedBy);
+		const service = new TaskCreationService({
+			plugin: mockPlugin,
+			applyTaskCreationDefaults: jest.fn(async (taskData) => taskData),
+			applyTemplate: jest.fn(async () => ({ frontmatter: {}, body: "" })),
+			processFolderTemplate: jest.fn((folderTemplate) => folderTemplate),
+			sanitizeTitleForFilename: jest.fn((input) => input),
+			sanitizeTitleForStorage: jest.fn((input) => input),
+		});
 
-		// BUG: blockedBy is missing from the result
-		expect(buggyResult.blockedBy).toBeUndefined();
+		await service.createTask(
+			{
+				title: "Blocked task",
+				blockedBy: [dependency],
+			},
+			{ applyDefaults: false }
+		);
 
-		// This is the problem - the field provided by the modal is silently lost
-		expect(taskDataWithBlockedBy.blockedBy).toBeDefined();
-		expect(taskDataWithBlockedBy.blockedBy!.length).toBe(1);
-	});
+		const mappedFrontmatter = mapToFrontmatterSpy.mock.results[0].value as Record<
+			string,
+			unknown
+		>;
 
-	it.skip('verifies fix - blockedBy is preserved in createTask completeTaskData', () => {
-		const fixedResult = buildCompleteTaskDataFixed(taskDataWithBlockedBy);
-
-		// After fix, blockedBy should be preserved
-		expect(fixedResult.blockedBy).toBeDefined();
-		expect(fixedResult.blockedBy!.length).toBe(1);
-		expect(fixedResult.blockedBy![0].uid).toBe('[[Some Other Task]]');
+		expect(mapToFrontmatterSpy).toHaveBeenCalledWith(
+			expect.objectContaining({ blockedBy: [dependency] }),
+			"task",
+			undefined
+		);
+		expect(mappedFrontmatter.blockedBy).toEqual([
+			{
+				uid: "[[Some Other Task]]",
+				reltype: "FINISHTOSTART",
+			},
+		]);
+		expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+			"Tasks/blocked-task.md",
+			expect.stringContaining("blockedBy:")
+		);
+		expect(mockPlugin.cacheManager.updateTaskInfoInCache).toHaveBeenCalledWith(
+			"Tasks/blocked-task.md",
+			expect.objectContaining({ blockedBy: expect.any(Array) })
+		);
 	});
 });

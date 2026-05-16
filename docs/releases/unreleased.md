@@ -60,6 +60,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1629](https://github.com/callumalpass/tasknotes/issues/1629)) Saved `blockedBy` dependencies selected in the Create Task modal. Thanks to @obsilover for reporting this.
 - ([#1634](https://github.com/callumalpass/tasknotes/issues/1634)) Aligned custom status icons in inline tasks with the default inline status circle. Thanks to @ttlaylor for reporting this and @basbarten for confirming it.
 - ([#1636](https://github.com/callumalpass/tasknotes/issues/1636)) Restored the active styling for the Calendar list-view toolbar button. Thanks to @vroablec for reporting this.
 - ([#1638](https://github.com/callumalpass/tasknotes/issues/1638)) Kept task time tracking consistent when switching or clearing tasks during an active Pomodoro. Thanks to @katonapng for reporting this and @anomatomato for confirming it.
