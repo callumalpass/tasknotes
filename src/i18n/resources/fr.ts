@@ -2140,6 +2140,8 @@ export const fr: TranslationTree = {
 		startTimeTrackingWithSelector: "Démarrer le suivi du temps (sélectionner une tâche)",
 		editTimeEntries: "Modifier les entrées de temps (sélectionner une tâche)",
 		createOrOpenTask: "Créer ou ouvrir une tâche",
+		rolloverOverdueScheduledTasks:
+			"Reporter à aujourd'hui les tâches planifiées en retard",
 		syncAllTasksGoogleCalendar: "Synchroniser toutes les tâches vers Google Agenda",
 		syncCurrentTaskGoogleCalendar: "Synchroniser la tâche actuelle vers Google Agenda",
 	},

@@ -3,8 +3,11 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { EVENT_DATA_CHANGED } from "../types";
 import { TimeEntryEditorModal } from "../modals/TimeEntryEditorModal";
+import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
+import { getCurrentDateString } from "../core/date";
 import { getActiveTimeEntry } from "../utils/helpers";
+import { getOverdueScheduledRolloverCandidates } from "../utils/scheduledRollover";
 
 export class TaskActionCoordinator {
 	constructor(private plugin: TaskNotesPlugin) {}
@@ -136,6 +139,67 @@ export class TaskActionCoordinator {
 		} catch (error) {
 			console.error("Error opening task selector for time entry editor:", error);
 			new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.openFailed"));
+		}
+	}
+
+	async rolloverOverdueScheduledTasks(): Promise<void> {
+		try {
+			const today = getCurrentDateString();
+			const allTasks = await this.plugin.cacheManager.getAllTasks();
+			const candidates = getOverdueScheduledRolloverCandidates(
+				allTasks,
+				(status) => this.plugin.statusManager.isCompletedStatus(status),
+				today
+			);
+
+			if (candidates.length === 0) {
+				new Notice("No overdue scheduled tasks to postpone");
+				return;
+			}
+
+			const taskLabel = candidates.length === 1 ? "task" : "tasks";
+			const confirmed = await showConfirmationModal(this.plugin.app, {
+				title: "Postpone overdue scheduled tasks",
+				message: `Move ${candidates.length} active overdue scheduled ${taskLabel} to today (${today})?`,
+				confirmText: "Postpone",
+				cancelText: this.plugin.i18n.translate("common.cancel"),
+			});
+
+			if (!confirmed) {
+				return;
+			}
+
+			new Notice(`Postponing ${candidates.length} ${taskLabel}...`);
+
+			let successCount = 0;
+			let failCount = 0;
+			for (const candidate of candidates) {
+				try {
+					await this.plugin.taskService.updateProperty(
+						candidate.task,
+						"scheduled",
+						candidate.nextScheduled
+					);
+					successCount++;
+				} catch (error) {
+					console.error(
+						`[TaskActionCoordinator] Failed to postpone scheduled task ${candidate.task.path}:`,
+						error
+					);
+					failCount++;
+				}
+			}
+
+			if (failCount === 0) {
+				new Notice(`Postponed ${successCount} ${successCount === 1 ? "task" : "tasks"}`);
+			} else {
+				new Notice(`Postponed ${successCount} tasks, ${failCount} failed`);
+			}
+
+			this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
+		} catch (error) {
+			console.error("Failed to postpone overdue scheduled tasks:", error);
+			new Notice("Failed to postpone overdue scheduled tasks");
 		}
 	}
 

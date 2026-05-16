@@ -2139,6 +2139,7 @@ export const zh: TranslationTree = {
 		startTimeTrackingWithSelector: "开始时间跟踪（选择任务）",
 		editTimeEntries: "编辑时间条目（选择任务）",
 		createOrOpenTask: "创建或打开任务",
+		rolloverOverdueScheduledTasks: "将逾期的计划任务推迟到今天",
 		syncAllTasksGoogleCalendar: "同步所有任务到Google日历",
 		syncCurrentTaskGoogleCalendar: "同步当前任务到Google日历",
 	},

@@ -2140,6 +2140,7 @@ export const ja: TranslationTree = {
 		startTimeTrackingWithSelector: "時間追跡を開始（タスクを選択）",
 		editTimeEntries: "時間エントリを編集（タスクを選択）",
 		createOrOpenTask: "タスクを作成または開く",
+		rolloverOverdueScheduledTasks: "期限超過の予定タスクを今日に延期",
 		syncAllTasksGoogleCalendar: "すべてのタスクをGoogleカレンダーに同期",
 		syncCurrentTaskGoogleCalendar: "現在のタスクをGoogleカレンダーに同期",
 	},

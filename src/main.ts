@@ -1168,6 +1168,10 @@ export default class TaskNotesPlugin extends Plugin {
 		await this.taskActionCoordinator.openTaskSelectorWithCreate();
 	}
 
+	async rolloverOverdueScheduledTasks(): Promise<void> {
+		await this.taskActionCoordinator.rolloverOverdueScheduledTasks();
+	}
+
 	/**
 	 * Apply a filter to show subtasks of a project
 	 */

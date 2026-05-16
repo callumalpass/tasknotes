@@ -276,5 +276,12 @@ export function createTaskNotesCommandDefinitions(
 				await ctx.openTaskSelectorWithCreate();
 			},
 		},
+		{
+			id: "rollover-overdue-scheduled-tasks",
+			nameKey: "commands.rolloverOverdueScheduledTasks",
+			callback: async (ctx) => {
+				await ctx.rolloverOverdueScheduledTasks();
+			},
+		},
 	];
 }

@@ -2140,6 +2140,7 @@ export const es: TranslationTree = {
 		startTimeTrackingWithSelector: "Iniciar seguimiento de tiempo (seleccionar tarea)",
 		editTimeEntries: "Editar entradas de tiempo (seleccionar tarea)",
 		createOrOpenTask: "Crear o abrir tarea",
+		rolloverOverdueScheduledTasks: "Posponer tareas programadas vencidas a hoy",
 		syncAllTasksGoogleCalendar: "Sincronizar todas las tareas al Calendario de Google",
 		syncCurrentTaskGoogleCalendar: "Sincronizar tarea actual al Calendario de Google",
 	},

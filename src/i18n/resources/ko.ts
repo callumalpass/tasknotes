@@ -2094,6 +2094,7 @@ export const ko: TranslationTree = {
 		startTimeTrackingWithSelector: "시간 추적 시작 (작업 선택)",
 		editTimeEntries: "시간 기록 편집 (작업 선택)",
 		createOrOpenTask: "작업 만들기 또는 열기",
+		rolloverOverdueScheduledTasks: "기한이 지난 예약 작업을 오늘로 연기",
 		syncAllTasksGoogleCalendar: "모든 작업을 Google 캘린더에 동기화",
 		syncCurrentTaskGoogleCalendar: "현재 작업을 Google 캘린더에 동기화",
 	},

@@ -2200,6 +2200,7 @@ export const en: TranslationTree = {
 		startTimeTrackingWithSelector: "Start time tracking (select task)",
 		editTimeEntries: "Edit time entries (select task)",
 		createOrOpenTask: "Create or open task",
+		rolloverOverdueScheduledTasks: "Postpone overdue scheduled tasks to today",
 	},
 	modals: {
 		deviceCode: {

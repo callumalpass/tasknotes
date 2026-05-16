@@ -27,6 +27,7 @@ Example:
 ## Fixed
 
 - (#1888) Allowed project autosuggest required property filters to match any comma-separated value, such as `project, area`. Thanks to @BrianHicks for suggesting.
+- ([#1886](https://github.com/callumalpass/tasknotes/issues/1886)) Added a command to postpone active overdue scheduled tasks to today. Thanks to @chrabia for the suggestion.
 - (#1889) Fixed Kanban swimlanes for list-valued properties so tags and contexts use individual list items instead of comma-joined values. Thanks to @pkropotin for reporting.
 - (#1890) Fixed scheduled-date Kanban columns dropping tasks when date-only and timed tasks on the same day are sorted by a scheduled-time formula. Thanks to @chrabia for reporting and investigating.
 - (#1892) Fixed nested Markdown list indentation in the Task Edit Modal details editor. Thanks to @Glint-Eye for reporting.
