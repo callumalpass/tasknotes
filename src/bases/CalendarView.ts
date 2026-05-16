@@ -38,6 +38,7 @@ import {
 	addTaskHoverPreview,
 	createICSEvent,
 	showTimeblockInfoModal,
+	attachDailyNoteHeaderLink,
 } from "./calendar-core";
 import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
@@ -536,6 +537,7 @@ export class CalendarView extends BasesViewBase {
 
 		this.calendar.updateSize();
 		this.scheduleTodayColumnWidthUpdate();
+		this.scheduleDailyNoteHeaderLinkUpdate();
 	}
 
 	/**
@@ -951,6 +953,7 @@ export class CalendarView extends BasesViewBase {
 			if (this.calendar) {
 				this.applyTodayHighlightStyling();
 				this.scheduleTodayColumnWidthUpdate();
+				this.scheduleDailyNoteHeaderLinkUpdate();
 			}
 		} catch (e) {
 			console.error("[TaskNotes][CalendarView] Error reading view options:", e);
@@ -1159,6 +1162,9 @@ export class CalendarView extends BasesViewBase {
 			navLinkDayClick: (date: Date) => {
 				void handleDateTitleClick(date, this.plugin);
 			},
+			dayHeaderDidMount: (arg) => {
+				attachDailyNoteHeaderLink(arg.el, arg.date, arg.view.type, this.plugin);
+			},
 			editable: true,
 			droppable: true,
 			selectable: true,
@@ -1217,8 +1223,12 @@ export class CalendarView extends BasesViewBase {
 					this.debouncedSaveViewType(newViewType);
 				}
 				this.scheduleTodayColumnWidthUpdate();
+				this.scheduleDailyNoteHeaderLinkUpdate();
 			},
-			datesSet: () => this.scheduleTodayColumnWidthUpdate(),
+			datesSet: () => {
+				this.scheduleTodayColumnWidthUpdate();
+				this.scheduleDailyNoteHeaderLinkUpdate();
+			},
 		};
 
 		// Create calendar
@@ -1229,6 +1239,37 @@ export class CalendarView extends BasesViewBase {
 		// Apply showTodayHighlight option via CSS
 		this.applyTodayHighlightStyling();
 		this.scheduleTodayColumnWidthUpdate();
+		this.scheduleDailyNoteHeaderLinkUpdate();
+	}
+
+	private scheduleDailyNoteHeaderLinkUpdate(): void {
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		win.setTimeout(() => this.attachDailyNoteHeaderLinks(), 0);
+		win.setTimeout(() => this.attachDailyNoteHeaderLinks(), 50);
+	}
+
+	private attachDailyNoteHeaderLinks(): void {
+		if (!this.calendar || !this.calendarEl) {
+			return;
+		}
+
+		const viewType = this.calendar.view?.type;
+		const isDayView =
+			viewType === "timeGridDay" ||
+			Boolean(this.calendarEl.querySelector(".fc-timeGridDay-view"));
+		if (!isDayView) {
+			return;
+		}
+
+		const fallbackDate = this.calendar.getDate();
+		const headerCells =
+			this.calendarEl.querySelectorAll<HTMLElement>(".fc-col-header-cell");
+		headerCells.forEach((headerCell) => {
+			const date = headerCell.dataset.date
+				? parseDateToLocal(headerCell.dataset.date)
+				: fallbackDate;
+			attachDailyNoteHeaderLink(headerCell, date, "timeGridDay", this.plugin);
+		});
 	}
 
 	private async refreshExternalCalendars(): Promise<void> {
