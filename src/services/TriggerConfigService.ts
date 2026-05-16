@@ -145,10 +145,9 @@ export class TriggerConfigService {
 		if (userField) {
 			switch (userField.type) {
 				case "text":
+				case "list":
 					// If it has autosuggest config, use file suggester
 					return userField.autosuggestFilter ? "file" : "list";
-				case "list":
-					return "list";
 				case "boolean":
 					return "boolean";
 				default:
