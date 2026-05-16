@@ -323,6 +323,25 @@
     background-color: var(--tn-color-warning);
 }
 
+.tasknotes-plugin .mini-calendar-view__external-event-indicators {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+    max-width: 100%;
+    margin-top: 2px;
+    line-height: 0;
+}
+
+.tasknotes-plugin .mini-calendar-view__external-event-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--tn-interactive-accent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tn-bg-primary) 35%, transparent);
+    flex: 0 0 auto;
+}
+
 /* Content Indicators (Notes, Tasks, Daily Notes) */
 .tasknotes-plugin .calendar-view__content-indicator,
 .tasknotes-plugin .mini-calendar-view__content-indicator {

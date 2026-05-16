@@ -548,30 +548,84 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 				name: "TaskNotes Mini Calendar",
 				icon: "tasknotes-simple",
 				factory: buildMiniCalendarViewFactory(plugin),
-				options: () => [
-					{
-						type: "property",
-						key: "dateProperty",
-						displayName: "Date Property",
-						placeholder: "Select property to show on calendar",
-						default: "file.ctime",
-						filter: (prop: string) => {
-							// Show date-type properties from all sources
-							return prop.startsWith("note.") || prop.startsWith("file.") || prop.startsWith("task.");
+				options: () => {
+					const t = (key: string) =>
+						plugin.i18n.translate(`views.basesCalendar.settings.${key}`);
+					const options: BasesAllOptions[] = [
+						{
+							type: "property",
+							key: "dateProperty",
+							displayName: "Date Property",
+							placeholder: "Select property to show on calendar",
+							default: "file.ctime",
+							filter: (prop: string) => {
+								// Show date-type properties from all sources
+								return prop.startsWith("note.") || prop.startsWith("file.") || prop.startsWith("task.");
+							},
 						},
-					},
-					{
-						type: "property",
-						key: "titleProperty",
-						displayName: "Title Property",
-						placeholder: "Select property to use as title",
-						default: "file.name",
-						filter: (prop: string) => {
-							// Show text properties (note, formula, file)
-							return prop.startsWith("note.") || prop.startsWith("formula.") || prop.startsWith("file.");
+						{
+							type: "property",
+							key: "titleProperty",
+							displayName: "Title Property",
+							placeholder: "Select property to use as title",
+							default: "file.name",
+							filter: (prop: string) => {
+								// Show text properties (note, formula, file)
+								return prop.startsWith("note.") || prop.startsWith("formula.") || prop.startsWith("file.");
+							},
 						},
-					},
-				],
+					];
+
+					if (plugin.icsSubscriptionService) {
+						const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
+						if (subscriptions.length > 0) {
+							options.push({
+								type: "group",
+								displayName: t("groups.calendarSubscriptions"),
+								items: subscriptions.map((sub) => ({
+									type: "toggle",
+									key: `showICS_${sub.id}`,
+									displayName: sub.name,
+									default: true,
+								})),
+							});
+						}
+					}
+
+					if (plugin.googleCalendarService) {
+						const availableCalendars = plugin.googleCalendarService.getAvailableCalendars();
+						if (availableCalendars.length > 0) {
+							options.push({
+								type: "group",
+								displayName: t("groups.googleCalendars") || "Google Calendars",
+								items: availableCalendars.map((cal) => ({
+									type: "toggle",
+									key: `showGoogleCalendar_${cal.id}`,
+									displayName: cal.summary || cal.id,
+									default: true,
+								})),
+							});
+						}
+					}
+
+					if (plugin.microsoftCalendarService) {
+						const availableCalendars = plugin.microsoftCalendarService.getAvailableCalendars();
+						if (availableCalendars.length > 0) {
+							options.push({
+								type: "group",
+								displayName: t("groups.microsoftCalendars") || "Microsoft Calendars",
+								items: availableCalendars.map((cal) => ({
+									type: "toggle",
+									key: `showMicrosoftCalendar_${cal.id}`,
+									displayName: cal.summary || cal.id,
+									default: true,
+								})),
+							});
+						}
+					}
+
+					return options;
+				},
 			});
 
 			// Consider it successful if any view registered successfully
