@@ -61,6 +61,7 @@ import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
 } from "./calendarRecreateUtils";
+import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import type { CalendarEventData } from "../services/CalendarProvider";
 
 type CalendarDataAdapterWithView = {
@@ -447,10 +448,15 @@ export class CalendarView extends BasesViewBase {
 			heightMode: "fill",
 			customDayCount: calendarSettings.customDayCount,
 			listDayCount: 7,
-			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00", false),
-			slotMaxTime: this.validateTimeValue(calendarSettings.slotMaxTime, "24:00:00", true),
-			slotDuration: this.validateTimeValue(calendarSettings.slotDuration, "00:30:00", false),
-			scrollTime: this.validateTimeValue(calendarSettings.scrollTime, "08:00:00", false),
+			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
+			slotMaxTime: this.validateTimeValue(
+				calendarSettings.slotMaxTime,
+				"24:00:00",
+				CALENDAR_END_TIME_MAX_HOUR,
+				true
+			),
+			slotDuration: this.validateTimeValue(calendarSettings.slotDuration, "00:30:00"),
+			scrollTime: this.validateTimeValue(calendarSettings.scrollTime, "08:00:00"),
 			firstDay: calendarSettings.firstDay,
 			weekNumbers: calendarSettings.weekNumbers,
 			nowIndicator: calendarSettings.nowIndicator,
@@ -657,61 +663,19 @@ export class CalendarView extends BasesViewBase {
 	private validateTimeValue(
 		value: string | undefined,
 		defaultValue: string,
-		allowMax24 = false
+		maxHour = 23,
+		allowMaxHourOnlyAtZero = false
 	): string {
-		if (!value) return defaultValue;
-
-		// If already in HH:MM:SS format, validate it
-		if (/^\d{2}:\d{2}:\d{2}$/.test(value)) {
-			const [hours, minutes] = value.split(":").map(Number);
-			const maxHours = allowMax24 ? 24 : 23;
-
-			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(
-					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
-				);
-				return defaultValue;
-			}
-
-			// Special case: 24:XX is only valid as 24:00
-			if (hours === 24 && minutes !== 0) {
-				console.warn(
-					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
-				);
-				return defaultValue;
-			}
-
-			return value;
+		const result = normalizeCalendarTimeValue(value, defaultValue, {
+			maxHour,
+			allowMaxHourOnlyAtZero,
+		});
+		if (!result.isValid) {
+			console.warn(
+				`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
+			);
 		}
-
-		// If in HH:MM format, validate and convert to HH:MM:SS
-		if (/^\d{2}:\d{2}$/.test(value)) {
-			const [hours, minutes] = value.split(":").map(Number);
-			const maxHours = allowMax24 ? 24 : 23;
-
-			if (hours < 0 || hours > maxHours || minutes < 0 || minutes > 59) {
-				console.warn(
-					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
-				);
-				return defaultValue;
-			}
-
-			// Special case: 24:XX is only valid as 24:00
-			if (hours === 24 && minutes !== 0) {
-				console.warn(
-					`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
-				);
-				return defaultValue;
-			}
-
-			return `${value}:00`;
-		}
-
-		// Invalid format
-		console.warn(
-			`[TaskNotes][CalendarView] Invalid time format: ${value}, using default: ${defaultValue}`
-		);
-		return defaultValue;
+		return result.value;
 	}
 
 	private getConfigOption<T>(key: string, fallback: T): T {
@@ -836,23 +800,21 @@ export class CalendarView extends BasesViewBase {
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
 				this.getConfigOption<string | undefined>("slotMinTime", undefined),
-				this.viewOptions.slotMinTime,
-				false
+				this.viewOptions.slotMinTime
 			);
 			this.viewOptions.slotMaxTime = this.validateTimeValue(
 				this.getConfigOption<string | undefined>("slotMaxTime", undefined),
 				this.viewOptions.slotMaxTime,
-				true // Allow 24:00 for end time
+				CALENDAR_END_TIME_MAX_HOUR,
+				true
 			);
 			this.viewOptions.slotDuration = this.validateTimeValue(
 				this.getConfigOption<string | undefined>("slotDuration", undefined),
-				this.viewOptions.slotDuration,
-				false
+				this.viewOptions.slotDuration
 			);
 			this.viewOptions.scrollTime = this.validateTimeValue(
 				this.getConfigOption<string | undefined>("scrollTime", undefined),
-				this.viewOptions.scrollTime,
-				false
+				this.viewOptions.scrollTime
 			);
 
 			this.viewOptions.firstDay = Number(

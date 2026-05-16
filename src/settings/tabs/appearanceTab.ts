@@ -11,6 +11,7 @@ import {
 import { PropertySelectorModal } from "../../modals/PropertySelectorModal";
 import { getAvailableProperties, getPropertyLabels } from "../../utils/propertyHelpers";
 import type { CalendarViewSettings } from "../../types/settings";
+import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../../utils/calendarTime";
 
 type CalendarDefaultView = CalendarViewSettings["defaultView"];
 type CalendarFirstDay = CalendarViewSettings["firstDay"];
@@ -567,22 +568,21 @@ export function renderAppearanceTab(
 					setValue: async (value: string) => {
 						if (!/^\d{2}:\d{2}$/.test(value)) {
 							new Notice(
-								"Invalid time format. Please use hh:mm format (e.g., 23:00)"
+								"Invalid time format. Please use hh:mm format (e.g., 26:00)"
 							);
 							return;
 						}
-						const [hours, minutes] = value.split(":").map(Number);
-						if (hours < 0 || hours > 24 || minutes < 0 || minutes > 59) {
+						const result = normalizeCalendarTimeValue(value, "24:00:00", {
+							maxHour: CALENDAR_END_TIME_MAX_HOUR,
+							allowMaxHourOnlyAtZero: true,
+						});
+						if (!result.isValid) {
 							new Notice(
-								"Invalid time. Hours must be 00-24 and minutes must be 00-59"
+								"Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day"
 							);
 							return;
 						}
-						if (hours === 24 && minutes !== 0) {
-							new Notice("When hour is 24, minutes must be 00");
-							return;
-						}
-						plugin.settings.calendarViewSettings.slotMaxTime = value + ":00";
+						plugin.settings.calendarViewSettings.slotMaxTime = result.value;
 						save();
 					},
 				})

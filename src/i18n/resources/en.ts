@@ -1403,8 +1403,9 @@ export const en: TranslationTree = {
 				},
 				endTime: {
 					name: "End time",
-					description: "Latest time shown in timeline views (HH:MM format)",
-					placeholder: "22:00",
+					description:
+						"Latest time shown in timeline views (HH:MM format). Use values above 24:00 to show early next-day hours, such as 26:00 for 2 AM.",
+					placeholder: "26:00",
 				},
 				initialScrollTime: {
 					name: "Initial scroll time",

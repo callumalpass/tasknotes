@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1776](https://github.com/callumalpass/tasknotes/issues/1776)) Allowed calendar timeline end times after midnight, such as `26:00` for a 2 AM next-day end. Thanks to @chrabia for suggesting this.
 - ([#1784](https://github.com/callumalpass/tasknotes/issues/1784), [#1833](https://github.com/callumalpass/tasknotes/pull/1833)) Added a per-view `pinnedColumns` option for TaskNotes Kanban views, so selected empty columns can stay visible as drop targets while other empty columns remain hidden. Thanks to @loukandr for suggesting and prototyping this.
 - ([#1794](https://github.com/callumalpass/tasknotes/issues/1794)) Added context updates to the task card context menu, so contexts can be added, toggled, or cleared without opening the task edit modal. Thanks to @m13ntrpn for suggesting this.
 - ([#1809](https://github.com/callumalpass/tasknotes/issues/1809)) Added a subtle task-card indicator for tasks with note body details. Thanks to @aliceinwaterdeep for suggesting this.

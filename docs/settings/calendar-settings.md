@@ -15,7 +15,7 @@ Controls include:
 - Default calendar view mode (month/week/day/year/custom days)
 - First day of week and weekend visibility
 - Locale and date formatting
-- Time slot window (`slotMinTime`, `slotMaxTime`, `slotDuration`)
+- Time slot window (`slotMinTime`, `slotMaxTime`, `slotDuration`). Use `slotMaxTime` values above `24:00:00`, such as `26:00:00`, to show early next-day hours in timeline views.
 - Default event visibility toggles (due, scheduled, recurring, time entries, ICS)
 - Event stacking and overlap display options
 
