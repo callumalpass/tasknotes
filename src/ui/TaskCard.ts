@@ -17,6 +17,7 @@ import {
 	renderPropertyMetadata,
 	updateMetadataVisibility,
 } from "./taskCardProperties";
+import { renderTextWithLinks, type LinkServices } from "./renderers/linkRenderer";
 export { showDeleteConfirmationModal } from "./taskCardDeletion";
 
 // Property labels are resolved in taskCardProperties via getTaskCardPropertyLabel.
@@ -117,6 +118,18 @@ function tTaskCard(
 
 function taskHasDetails(task: TaskInfo): boolean {
 	return typeof task.details === "string" && task.details.trim().length > 0;
+}
+
+function renderTaskTitle(container: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin): void {
+	container.empty();
+	const title = stringifyUnknown(task.title);
+	const linkServices: LinkServices = {
+		metadataCache: plugin.app.metadataCache,
+		workspace: plugin.app.workspace,
+		sourcePath: task.path,
+	};
+
+	renderTextWithLinks(container, title, linkServices);
 }
 
 /* =================================================================
@@ -862,7 +875,8 @@ export function createTaskCard(
 	const titleEl = contentContainer.createEl(layout === "inline" ? "span" : "div", {
 		cls: "task-card__title",
 	});
-	const titleTextEl = titleEl.createSpan({ cls: "task-card__title-text", text: task.title });
+	const titleTextEl = titleEl.createSpan({ cls: "task-card__title-text" });
+	renderTaskTitle(titleTextEl, task, plugin);
 
 	if (isCompleted) {
 		titleEl.classList.add("completed");
@@ -1357,7 +1371,7 @@ export function updateTaskCard(
 	const titleContainer = element.querySelector(".task-card__title") as HTMLElement;
 	const titleIsCompleted = isCompleted;
 	if (titleText) {
-		titleText.textContent = task.title;
+		renderTaskTitle(titleText, task, plugin);
 		titleText.classList.toggle("completed", titleIsCompleted);
 	}
 	if (titleContainer) {

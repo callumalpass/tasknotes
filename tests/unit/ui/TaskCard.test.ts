@@ -272,6 +272,24 @@ describe('TaskCard Component', () => {
       expect(titleEl?.textContent).toBe(task.title);
     });
 
+    it('should render wikilinks in task titles as clickable internal links (#1733)', () => {
+      const linkedFile = new TFile('Lidl.md');
+      mockPlugin.app.metadataCache.getFirstLinkpathDest.mockReturnValue(linkedFile);
+      const task = TaskFactory.createTask({
+        title: 'Buy milk from [[Lidl]]',
+        path: 'Tasks/buy-milk-from-lidl.md'
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+
+      const titleText = card.querySelector('.task-card__title-text');
+      const link = titleText?.querySelector('a.internal-link') as HTMLAnchorElement | null;
+      expect(titleText?.textContent).toBe('Buy milk from Lidl');
+      expect(link).toBeTruthy();
+      expect(link?.textContent).toBe('Lidl');
+      expect(link?.getAttribute('data-href')).toBe('Lidl');
+    });
+
     it.skip('should create task card with checkbox when enabled', () => {
       const task = TaskFactory.createTask({ status: 'done' });
       const options: Partial<TaskCardOptions> = { showCheckbox: true };

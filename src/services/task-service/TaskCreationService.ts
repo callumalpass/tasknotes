@@ -50,9 +50,11 @@ export class TaskCreationService {
 				throw new Error("Title is required");
 			}
 
-			const title = plugin.settings.storeTitleInFilename
-				? this.deps.sanitizeTitleForFilename(taskData.title.trim())
-				: this.deps.sanitizeTitleForStorage(taskData.title.trim());
+			const rawTitle = taskData.title.trim();
+			const title = this.deps.sanitizeTitleForStorage(rawTitle);
+			const filenameTitle = plugin.settings.storeTitleInFilename
+				? this.deps.sanitizeTitleForFilename(rawTitle)
+				: title;
 			const priority = taskData.priority || plugin.settings.defaultTaskPriority;
 			const status = taskData.status || plugin.settings.defaultTaskStatus;
 			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
@@ -69,7 +71,7 @@ export class TaskCreationService {
 			}
 
 			const filenameContext: FilenameContext = {
-				title,
+				title: filenameTitle,
 				priority,
 				status,
 				date: new Date(),

@@ -104,6 +104,21 @@ describe('TaskService', () => {
       expect(taskInfo.dateModified).toBe('2025-01-01T12:00:00Z');
     });
 
+    it('should preserve wikilinks in the stored title while keeping the filename safe (#1733)', async () => {
+      mockPlugin.settings.storeTitleInFilename = true;
+
+      const { file, taskInfo } = await taskService.createTask({
+        title: 'Buy milk from [[Lidl]]'
+      });
+
+      expect(file.path).toBe('Tasks/buy-milk-from-lidl.md');
+      expect(taskInfo.title).toBe('Buy milk from [[Lidl]]');
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Tasks/buy-milk-from-lidl.md',
+        expect.stringContaining('title: Buy milk from [[Lidl]]')
+      );
+    });
+
     it('should create a task with all properties', async () => {
       const taskData: TaskCreationData = {
         title: 'Complex Task',
