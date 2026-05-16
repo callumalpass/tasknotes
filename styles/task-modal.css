@@ -763,7 +763,8 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
         flex: 1;
         min-height: 0;
         gap: 0;
-        overflow: visible;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     /* Left column - use grid so the details editor can sit beside the form without display: contents. */
