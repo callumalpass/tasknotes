@@ -2576,6 +2576,10 @@
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "a138e2592f8e86664bee5d2261abd967cb1e1024"
     },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "977a68aff1290a7f18c23491f18fd496635c4704"
+    },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
       "translation": "39c3902203d15e02ba8746ffe00a6804af252ce4"
@@ -10845,6 +10849,10 @@
     "settings.taskProperties.taskStatuses.fields.completed": {
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "49bcf96e290b8b04ab476892243e71fa2f3c486a"
+    },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "9b8011e3aa98c24cba7a3abd3cfd47fa59d3f447"
     },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
@@ -19116,6 +19124,10 @@
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "6edcf9c3483f8a2577d3a8175dac1e55219a8241"
     },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "042f017c2648c2cd227ff2b0cf95a821e19cea54"
+    },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
       "translation": "10446b335832d20cce37b94bd9e3773897a8439c"
@@ -27385,6 +27397,10 @@
     "settings.taskProperties.taskStatuses.fields.completed": {
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "886556b844ad628bf72491209c1e20304e58c722"
+    },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "8d3d57a8b4f55f55dcc1d748c73d05ff110619cf"
     },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
@@ -35656,6 +35672,10 @@
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "18bafeed301d12d6ecf88b2ad49467af8a9f3498"
     },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "3b2c81ef0aabc2b45ca597bfc52ff601abaa9540"
+    },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
       "translation": "1142c9de631a6dd9676e51bdfbf3b169b5ec9fb4"
@@ -43925,6 +43945,10 @@
     "settings.taskProperties.taskStatuses.fields.completed": {
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "8fbc8d895e59321d9d909fd12d9322147afddc98"
+    },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "f9a26783183369f7753926a8c50f866faffaddfc"
     },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
@@ -52196,6 +52220,10 @@
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "bb155f6460bf0b86f81e40d4cb310624c008ea76"
     },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "7ca1e438ff083d0121ab00f1abc9c81aed81e5cf"
+    },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
       "translation": "09af46785973b298bfe678bb1942f858869220e1"
@@ -60465,6 +60493,10 @@
     "settings.taskProperties.taskStatuses.fields.completed": {
       "source": "208409ffed559a03204711e8976b06e3710deca5",
       "translation": "4fc47c7b6e532be9bca0e26fb998757773d99999"
+    },
+    "settings.taskProperties.taskStatuses.fields.excludeFromCycle": {
+      "source": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
+      "translation": "050a8fffceabd90128bd8a5b501c6dc71c67d346"
     },
     "settings.taskProperties.taskStatuses.fields.autoArchive": {
       "source": "ebba9937a4826ac159c5c5fd87a98562f3aff675",

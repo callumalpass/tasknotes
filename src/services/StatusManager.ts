@@ -10,38 +10,75 @@ export class StatusManager {
 		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
 	}
 
+	private findStatusIndex(statuses: StatusConfig[], statusValue: string): number {
+		const normalizedValue = this.normalizeStatusValue(statusValue);
+		return statuses.findIndex(
+			(status) => this.normalizeStatusValue(status.value) === normalizedValue
+		);
+	}
+
+	private getCycleStatuses(): StatusConfig[] {
+		return this.getStatusesByOrder().filter((status) => !status.excludeFromCycle);
+	}
+
 	/**
 	 * Get next status in cycle from current status
 	 */
 	getNextStatus(currentStatus: string): string {
-		const sortedStatuses = this.getStatusesByOrder();
-		const currentIndex = sortedStatuses.findIndex((s) => s.value === currentStatus);
+		const cycleStatuses = this.getCycleStatuses();
+		const currentIndex = this.findStatusIndex(cycleStatuses, currentStatus);
 
-		if (currentIndex === -1) {
-			// Current status not found, return first status
-			return sortedStatuses[0]?.value || this.defaultStatus;
+		if (cycleStatuses.length === 0) {
+			return this.getStatusConfig(currentStatus)?.value || this.defaultStatus;
 		}
 
-		// Get next status, cycling to first if at end
-		const nextIndex = (currentIndex + 1) % sortedStatuses.length;
-		return sortedStatuses[nextIndex].value;
+		if (currentIndex !== -1) {
+			// Get next status, cycling to first if at end
+			const nextIndex = (currentIndex + 1) % cycleStatuses.length;
+			return cycleStatuses[nextIndex].value;
+		}
+
+		const currentStatusConfig = this.getStatusConfig(currentStatus);
+		if (!currentStatusConfig) {
+			// Current status not found, return first cycleable status
+			return cycleStatuses[0]?.value || this.defaultStatus;
+		}
+
+		return (
+			cycleStatuses.find((status) => status.order > currentStatusConfig.order)?.value ||
+			cycleStatuses[0].value
+		);
 	}
 
 	/**
 	 * Get previous status in cycle from current status (reverse cycling)
 	 */
 	getPreviousStatus(currentStatus: string): string {
-		const sortedStatuses = this.getStatusesByOrder();
-		const currentIndex = sortedStatuses.findIndex((s) => s.value === currentStatus);
+		const cycleStatuses = this.getCycleStatuses();
+		const currentIndex = this.findStatusIndex(cycleStatuses, currentStatus);
 
-		if (currentIndex === -1) {
-			// Current status not found, return last status
-			return sortedStatuses[sortedStatuses.length - 1]?.value || this.defaultStatus;
+		if (cycleStatuses.length === 0) {
+			return this.getStatusConfig(currentStatus)?.value || this.defaultStatus;
 		}
 
-		// Get previous status, cycling to last if at beginning
-		const prevIndex = (currentIndex - 1 + sortedStatuses.length) % sortedStatuses.length;
-		return sortedStatuses[prevIndex].value;
+		if (currentIndex !== -1) {
+			// Get previous status, cycling to last if at beginning
+			const prevIndex = (currentIndex - 1 + cycleStatuses.length) % cycleStatuses.length;
+			return cycleStatuses[prevIndex].value;
+		}
+
+		const currentStatusConfig = this.getStatusConfig(currentStatus);
+		if (!currentStatusConfig) {
+			// Current status not found, return last cycleable status
+			return cycleStatuses[cycleStatuses.length - 1]?.value || this.defaultStatus;
+		}
+
+		return (
+			[...cycleStatuses]
+				.reverse()
+				.find((status) => status.order < currentStatusConfig.order)?.value ||
+			cycleStatuses[cycleStatuses.length - 1].value
+		);
 	}
 
 	/**
@@ -208,6 +245,7 @@ export class StatusManager {
 			label: "New status",
 			color: "#808080",
 			isCompleted: false,
+			excludeFromCycle: false,
 			order,
 			autoArchive: false,
 			autoArchiveDelay: 5,

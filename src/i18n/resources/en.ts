@@ -1140,6 +1140,7 @@ export const en: TranslationTree = {
 					color: "Color:",
 					icon: "Icon:",
 					completed: "Completed:",
+					excludeFromCycle: "Skip when cycling:",
 					autoArchive: "Auto-archive:",
 					delayMinutes: "Delay (minutes):",
 				},

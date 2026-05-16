@@ -1069,6 +1069,7 @@ export const ru: TranslationTree = {
 					color: "Цвет:",
 					icon: "Иконка:",
 					completed: "Завершено:",
+					excludeFromCycle: "Пропускать при цикле:",
 					autoArchive: "Автоархивирование:",
 					delayMinutes: "Задержка (минуты):",
 				},

@@ -1042,6 +1042,7 @@ export const ko: TranslationTree = {
 					color: "색상:",
 					icon: "아이콘:",
 					completed: "완료됨:",
+					excludeFromCycle: "순환 시 건너뛰기:",
 					autoArchive: "자동 보관:",
 					delayMinutes: "지연 (분):",
 				},

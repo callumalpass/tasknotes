@@ -49,6 +49,7 @@ Each status value has:
 - **Color**: Visual indicator color
 - **Icon**: Optional icon identifier
 - **Completed**: Whether this status represents a finished task
+- **Skip when cycling**: Exclude this status from the click-to-cycle order on task cards while keeping it available in menus, suggestions, and direct edits
 - **Auto-archive**: Automatically archive tasks after a delay (1-1440 minutes)
 
 Status cards support drag-and-drop reordering.

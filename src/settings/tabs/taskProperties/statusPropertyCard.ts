@@ -153,6 +153,7 @@ export function renderStatusPropertyCard(
 			color: "#6366f1",
 			completed: false,
 			isCompleted: false,
+			excludeFromCycle: false,
 			order: plugin.settings.customStatuses.length,
 			autoArchive: false,
 			autoArchiveDelay: 5,
@@ -267,6 +268,14 @@ function renderStatusList(
 			save();
 		});
 
+		const excludeFromCycleToggle = createCardToggle(
+			status.excludeFromCycle || false,
+			(value) => {
+				status.excludeFromCycle = value;
+				save();
+			}
+		);
+
 		const autoArchiveToggle = createCardToggle(status.autoArchive || false, (value) => {
 			status.autoArchive = value;
 			save();
@@ -377,6 +386,12 @@ function renderStatusList(
 									"settings.taskProperties.taskStatuses.fields.completed"
 								),
 								input: completedToggle,
+							},
+							{
+								label: translate(
+									"settings.taskProperties.taskStatuses.fields.excludeFromCycle"
+								),
+								input: excludeFromCycleToggle,
 							},
 							{
 								label: translate(

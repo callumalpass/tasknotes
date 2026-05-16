@@ -643,6 +643,7 @@
   "settings.taskProperties.taskStatuses.fields.color": "511a000614ad52294121be47cb86170db16ba777",
   "settings.taskProperties.taskStatuses.fields.icon": "b6d7019b1817040a55577652ed26649af8ca0183",
   "settings.taskProperties.taskStatuses.fields.completed": "208409ffed559a03204711e8976b06e3710deca5",
+  "settings.taskProperties.taskStatuses.fields.excludeFromCycle": "6e3d4319d8e9bc72452a8ea748a148aace623f36",
   "settings.taskProperties.taskStatuses.fields.autoArchive": "ebba9937a4826ac159c5c5fd87a98562f3aff675",
   "settings.taskProperties.taskStatuses.fields.delayMinutes": "94df948e06196590ea5f583699ab5b28d181981e",
   "settings.taskProperties.taskStatuses.placeholders.value": "23766ca6dac0b9ef9b1f220c3305262d21be9c21",

@@ -1068,6 +1068,7 @@ export const zh: TranslationTree = {
 					color: "颜色：",
 					icon: "图标：",
 					completed: "已完成：",
+					excludeFromCycle: "循环时跳过：",
 					autoArchive: "自动归档：",
 					delayMinutes: "延迟（分钟）：",
 				},

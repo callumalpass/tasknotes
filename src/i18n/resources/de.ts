@@ -1069,6 +1069,7 @@ export const de: TranslationTree = {
 					color: "Farbe:",
 					icon: "Symbol:",
 					completed: "Abgeschlossen:",
+					excludeFromCycle: "Beim Durchlaufen überspringen:",
 					autoArchive: "Auto-Archivierung:",
 					delayMinutes: "Verzögerung (Minuten):",
 				},

@@ -1069,6 +1069,7 @@ export const ja: TranslationTree = {
 					color: "色：",
 					icon: "アイコン：",
 					completed: "完了：",
+					excludeFromCycle: "循環時にスキップ：",
 					autoArchive: "自動アーカイブ：",
 					delayMinutes: "遅延（分）：",
 				},
