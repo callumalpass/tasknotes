@@ -656,7 +656,7 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 			id: icsEvent.id,
 			title: icsEvent.title,
 			start: icsEvent.start,
-			end: icsEvent.end,
+			end: getRenderableICSEventEnd(icsEvent),
 			allDay: icsEvent.allDay,
 			backgroundColor: backgroundColor,
 			borderColor: borderColor,
@@ -674,6 +674,21 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 		console.error("Error creating ICS event:", error);
 		return null;
 	}
+}
+
+function getRenderableICSEventEnd(icsEvent: ICSEvent): string | undefined {
+	if (icsEvent.allDay || !icsEvent.end) {
+		return icsEvent.end;
+	}
+
+	const startTime = Date.parse(icsEvent.start);
+	const endTime = Date.parse(icsEvent.end);
+	const sameInstant =
+		Number.isFinite(startTime) && Number.isFinite(endTime)
+			? startTime === endTime
+			: icsEvent.start === icsEvent.end;
+
+	return sameInstant ? undefined : icsEvent.end;
 }
 
 /**

@@ -30,6 +30,7 @@ Example:
 
 ## Fixed
 
+- ([#1823](https://github.com/callumalpass/tasknotes/issues/1823)) Prevented zero-duration timed external calendar events from rendering under more than one day in list-style calendar views. Thanks to @martin-forge for reporting and tracing the Google Calendar case.
 - ([#1841](https://github.com/callumalpass/tasknotes/issues/1841)) Prevented Kanban boards from duplicating columns when wikilinked status values are grouped through Bases. Thanks to @lendamico for reporting and sharing the screen recording.
 - ([#1846](https://github.com/callumalpass/tasknotes/issues/1846)) Saved NLP-triggered boolean custom fields as real booleans instead of quoted strings, so they match checkbox-created values and Bases filters. Thanks to @DevOps-Toast for reporting and sharing screenshots.
 - ([#1849](https://github.com/callumalpass/tasknotes/issues/1849)) Prevented repeated clicks on task-card scheduled and due date labels from stacking duplicate date menus when Obsidian native menus are disabled. Thanks to @3zra47 for reporting.
