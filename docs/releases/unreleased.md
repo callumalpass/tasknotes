@@ -64,6 +64,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1587](https://github.com/callumalpass/tasknotes/issues/1587)) Stored dependencies added from the task context menu as wikilinks, matching the Edit Task modal. Thanks to @mgrecar for reporting this.
 - ([#1590](https://github.com/callumalpass/tasknotes/issues/1590)) Clarified HTTP API task creation docs and OpenAPI schema for writable `blockedBy` dependencies, and marked `blocking` as a read-only derived relationship. Thanks to @hGriff0n for reporting this.
 - ([#1591](https://github.com/callumalpass/tasknotes/issues/1591)) Added a startup guard that avoids saving default settings over an existing settings file if Obsidian temporarily returns no plugin data during an update. Thanks to @GGlider for reporting this.
 - ([#1593](https://github.com/callumalpass/tasknotes/issues/1593)) Made the New button in TaskNotes Bases views open the TaskNotes create task modal again, so new tasks respect the configured default tasks folder. Thanks to @katlandreth for reporting this.

@@ -49,9 +49,78 @@ import {
 	normalizeDependencyEntry,
 	serializeDependencies,
 } from '../../../src/utils/dependencyUtils';
+import { TaskService } from '../../../src/services/TaskService';
+import { PluginFactory, TaskFactory } from '../../helpers/mock-factories';
 import type { TaskDependency } from '../../../src/types';
 
 describe('Issue #1587: Context menu dependencies not stored as wikilinks', () => {
+	it('serializes blockedBy wikilinks when single-property updates write dependencies', async () => {
+		const plugin = PluginFactory.createMockPlugin();
+		const service = new TaskService(plugin);
+		const task = TaskFactory.createTask({
+			path: 'Tasks/dependent.md',
+			blockedBy: [{ uid: 'Existing Task', reltype: 'FINISHTOSTART' }],
+		});
+		const frontmatter: Record<string, unknown> = {
+			blockedBy: [{ uid: '[[Existing Task]]', reltype: 'FINISHTOSTART' }],
+		};
+
+		plugin.cacheManager.getTaskInfo.mockResolvedValue(task);
+		plugin.app.fileManager.processFrontMatter.mockImplementation(
+			async (_file: unknown, callback: (frontmatter: Record<string, unknown>) => void) => {
+				callback(frontmatter);
+			}
+		);
+
+		await service.updateProperty(task, 'blockedBy', [
+			{ uid: 'Existing Task', reltype: 'FINISHTOSTART' },
+			{ uid: 'New Task', reltype: 'FINISHTOSTART', gap: 'P2D' },
+		]);
+
+		expect(frontmatter.blockedBy).toEqual([
+			{ uid: '[[Existing Task]]', reltype: 'FINISHTOSTART' },
+			{ uid: '[[New Task]]', reltype: 'FINISHTOSTART', gap: 'P2D' },
+		]);
+		expect(plugin.cacheManager.updateTaskInfoInCache).toHaveBeenCalledWith(
+			task.path,
+			expect.objectContaining({
+				blockedBy: [
+					{ uid: 'Existing Task', reltype: 'FINISHTOSTART' },
+					{ uid: 'New Task', reltype: 'FINISHTOSTART', gap: 'P2D' },
+				],
+			})
+		);
+	});
+
+	it('removes blockedBy frontmatter when single-property updates clear dependencies', async () => {
+		const plugin = PluginFactory.createMockPlugin();
+		const service = new TaskService(plugin);
+		const task = TaskFactory.createTask({
+			path: 'Tasks/dependent.md',
+			blockedBy: [{ uid: 'Existing Task', reltype: 'FINISHTOSTART' }],
+		});
+		const frontmatter: Record<string, unknown> = {
+			blockedBy: [{ uid: '[[Existing Task]]', reltype: 'FINISHTOSTART' }],
+		};
+
+		plugin.cacheManager.getTaskInfo.mockResolvedValue(task);
+		plugin.app.fileManager.processFrontMatter.mockImplementation(
+			async (_file: unknown, callback: (frontmatter: Record<string, unknown>) => void) => {
+				callback(frontmatter);
+			}
+		);
+
+		await service.updateProperty(task, 'blockedBy', undefined);
+
+		expect(frontmatter).not.toHaveProperty('blockedBy');
+		expect(plugin.cacheManager.updateTaskInfoInCache).toHaveBeenCalledWith(
+			task.path,
+			expect.objectContaining({
+				blockedBy: undefined,
+			})
+		);
+	});
+
 	/**
 	 * Simulates the context menu flow:
 	 * 1. formatDependencyLink() returns "[[Task1]]"
@@ -64,7 +133,7 @@ describe('Issue #1587: Context menu dependencies not stored as wikilinks', () =>
 	 * context menu's deduplication), the serialization correctly adds
 	 * wikilink brackets.
 	 */
-	it.skip('reproduces issue #1587: context menu flow should produce wikilinks', () => {
+	it('reproduces issue #1587: context menu flow should produce wikilinks', () => {
 		// Step 1: formatDependencyLink returns a wikilink
 		const formattedLink = '[[Task1]]';
 		const dependency: TaskDependency = {
@@ -94,7 +163,7 @@ describe('Issue #1587: Context menu dependencies not stored as wikilinks', () =>
 	 * user adds another via context menu, and ALL entries end up as
 	 * quoted strings (not wikilinks).
 	 */
-	it.skip('reproduces issue #1587: adding via context menu should not change existing entry format', () => {
+	it('reproduces issue #1587: adding via context menu should not change existing entry format', () => {
 		// Existing dependency with wikilink format (as stored in task.blockedBy)
 		const existingDependency: TaskDependency = {
 			uid: '[[ExistingTask]]',
@@ -127,7 +196,7 @@ describe('Issue #1587: Context menu dependencies not stored as wikilinks', () =>
 	 * Tests that dependencies with paths containing folders are handled correctly.
 	 * The wikilink format should be preserved for nested paths.
 	 */
-	it.skip('reproduces issue #1587: nested path dependencies should retain wikilinks', () => {
+	it('reproduces issue #1587: nested path dependencies should retain wikilinks', () => {
 		const dependency: TaskDependency = {
 			uid: '[[Projects/SubProject/Task1]]',
 			reltype: 'FINISHTOSTART',
@@ -148,7 +217,7 @@ describe('Issue #1587: Context menu dependencies not stored as wikilinks', () =>
 	 * Note: The issue reporter mentioned that adding via "blocking"
 	 * context menu worked correctly, but we should verify this path too.
 	 */
-	it.skip('reproduces issue #1587: blocking entries should also use wikilinks', () => {
+	it('reproduces issue #1587: blocking entries should also use wikilinks', () => {
 		const blockingDependency: TaskDependency = {
 			uid: '[[BlockedTask]]',
 			reltype: 'FINISHTOSTART',
@@ -165,7 +234,7 @@ describe('Issue #1587: Context menu dependencies not stored as wikilinks', () =>
 	 * Tests the complete round-trip: wikilink -> normalize -> serialize -> wikilink
 	 * This is the core flow that must work for the fix to be effective.
 	 */
-	it.skip('reproduces issue #1587: full round-trip preserves wikilinks', () => {
+	it('reproduces issue #1587: full round-trip preserves wikilinks', () => {
 		// Original wikilink format from formatDependencyLink
 		const original = '[[My Task]]';
 
@@ -191,7 +260,7 @@ describe('Issue #1587: Context menu dependencies not stored as wikilinks', () =>
 	 * Tests that gap values are preserved through the normalization
 	 * and serialization process.
 	 */
-	it.skip('reproduces issue #1587: gap values preserved with wikilinks', () => {
+	it('reproduces issue #1587: gap values preserved with wikilinks', () => {
 		const dependency: TaskDependency = {
 			uid: '[[Task1]]',
 			reltype: 'FINISHTOSTART',

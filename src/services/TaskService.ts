@@ -26,6 +26,7 @@ import {
 	formatDependencyLink,
 	normalizeDependencyEntry,
 	resolveDependencyEntry,
+	serializeDependencies,
 } from "../utils/dependencyUtils";
 import { getProjectDisplayName } from "../utils/linkUtils";
 import {
@@ -517,7 +518,11 @@ export class TaskService {
 			// Step 1: Construct new state in memory using fresh data
 			const updatedTask = { ...freshTask } as Record<string, unknown>;
 			const normalizedValue: unknown =
-				property === "status" ? this.normalizeStatusValue(value) : value;
+				property === "status"
+					? this.normalizeStatusValue(value)
+					: property === "blockedBy"
+						? this.normalizeBlockedByValue(value)
+						: value;
 			updatedTask[property] = normalizedValue;
 			updatedTask.dateModified = getCurrentTimestamp();
 
@@ -556,6 +561,15 @@ export class TaskService {
 				} else if ((property === "due" || property === "scheduled") && !value) {
 					// Remove empty due/scheduled dates
 					delete frontmatter[fieldName];
+				} else if (property === "blockedBy") {
+					const dependencies = Array.isArray(normalizedValue)
+						? (normalizedValue as TaskDependency[])
+						: [];
+					if (dependencies.length > 0) {
+						frontmatter[fieldName] = serializeDependencies(dependencies);
+					} else {
+						delete frontmatter[fieldName];
+					}
 				} else {
 					frontmatter[fieldName] = normalizedValue;
 				}
@@ -590,6 +604,19 @@ export class TaskService {
 
 			throw new Error(`Failed to update task property: ${errorMessage}`);
 		}
+	}
+
+	private normalizeBlockedByValue(value: unknown): TaskDependency[] | undefined {
+		if (value === null || value === undefined) {
+			return undefined;
+		}
+
+		const rawEntries = Array.isArray(value) ? value : [value];
+		const normalized = rawEntries
+			.map((entry) => normalizeDependencyEntry(entry))
+			.filter((entry): entry is TaskDependency => !!entry);
+
+		return normalized.length > 0 ? normalized : undefined;
 	}
 
 	/**
