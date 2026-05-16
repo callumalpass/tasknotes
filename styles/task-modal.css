@@ -75,6 +75,10 @@
     caret-color: var(--text-normal);
 }
 
+.tn-task-modal__markdown-editor--details .markdown-source-view.mod-cm6 .cm-content {
+    padding: var(--size-4-2);
+}
+
 .tn-task-modal__markdown-editor--details .cm-cursor,
 .tn-task-modal__markdown-editor--details .cm-dropCursor {
     border-left-color: var(--text-normal);
@@ -162,6 +166,10 @@
     font-size: var(--font-ui-medium);
     line-height: 1.5;
     caret-color: var(--text-normal);
+}
+
+.tn-task-modal__markdown-editor--nlp .markdown-source-view.mod-cm6 .cm-content {
+    padding: var(--size-4-3) var(--size-4-2);
 }
 
 .tn-task-modal__markdown-editor--nlp .cm-cursor,
