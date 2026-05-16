@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1794](https://github.com/callumalpass/tasknotes/issues/1794)) Added context updates to the task card context menu, so contexts can be added, toggled, or cleared without opening the task edit modal. Thanks to @m13ntrpn for suggesting this.
 - ([#1809](https://github.com/callumalpass/tasknotes/issues/1809)) Added a subtle task-card indicator for tasks with note body details. Thanks to @aliceinwaterdeep for suggesting this.
 - ([#1808](https://github.com/callumalpass/tasknotes/issues/1808)) Added advanced Kanban swimlane ordering through `swimLaneOrder`, so swimlane rows can stay in a stable configured order. Thanks to @rookledookle for suggesting this, and to @benmartinek and @chrabia for the follow-up feedback.
 - ([#1805](https://github.com/callumalpass/tasknotes/issues/1805)) Added an ICS export option to omit completed tasks from generated calendar files. Thanks to @bepolymathe for suggesting this.

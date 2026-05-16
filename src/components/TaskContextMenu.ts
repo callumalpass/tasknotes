@@ -39,6 +39,57 @@ type TaskStatusOption = {
 	icon?: string;
 };
 
+function normalizeContextValue(value: string): string {
+	return value.trim();
+}
+
+function normalizeContextList(contexts: string[] | undefined): string[] {
+	const seen = new Set<string>();
+	const normalized: string[] = [];
+
+	for (const context of contexts ?? []) {
+		if (typeof context !== "string") continue;
+		const value = normalizeContextValue(context);
+		if (!value || seen.has(value)) continue;
+		seen.add(value);
+		normalized.push(value);
+	}
+
+	return normalized;
+}
+
+export function addContextToList(
+	contexts: string[] | undefined,
+	context: string
+): string[] | undefined {
+	const value = normalizeContextValue(context);
+	const current = normalizeContextList(contexts);
+	if (!value) return current.length > 0 ? current : undefined;
+	if (current.includes(value)) return current;
+	return [...current, value];
+}
+
+export function removeContextFromList(
+	contexts: string[] | undefined,
+	context: string
+): string[] | undefined {
+	const value = normalizeContextValue(context);
+	const remaining = normalizeContextList(contexts).filter((entry) => entry !== value);
+	return remaining.length > 0 ? remaining : undefined;
+}
+
+export function toggleContextInList(
+	contexts: string[] | undefined,
+	context: string
+): string[] | undefined {
+	const value = normalizeContextValue(context);
+	const current = normalizeContextList(contexts);
+	if (!value) return current.length > 0 ? current : undefined;
+	return current.includes(value)
+		? removeContextFromList(current, value)
+		: addContextToList(current, value);
+}
+
 function getSubmenu(item: MenuItem): Menu {
 	return (item as unknown as SubmenuMenuItem).setSubmenu();
 }
@@ -1004,6 +1055,16 @@ export class TaskContextMenu {
 	}
 
 	private addOrganizationMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+		// Contexts
+		menu.addItem((subItem) => {
+			subItem.setTitle(this.t("contextMenus.task.organization.contexts"));
+			subItem.setIcon("at-sign");
+			const contextMenu = getSubmenu(subItem);
+			this.addContextMenuItems(contextMenu, task, plugin);
+		});
+
+		menu.addSeparator();
+
 		// Add to project
 		menu.addItem((subItem) => {
 			subItem.setTitle(this.t("contextMenus.task.organization.addToProject"));
@@ -1023,6 +1084,88 @@ export class TaskContextMenu {
 				void this.openSubtaskAssignmentSelector(task, plugin);
 			});
 		});
+	}
+
+	private addContextMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const currentContexts = normalizeContextList(task.contexts);
+		const contextOptions = this.getContextOptions(task, plugin);
+
+		menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.organization.addContext"));
+			item.setIcon("plus");
+			item.onClick(() => {
+				this.menu.hide();
+				void this.openContextInput(task, plugin);
+			});
+		});
+
+		if (contextOptions.length > 0) {
+			menu.addSeparator();
+			for (const context of contextOptions) {
+				menu.addItem((item) => {
+					const selected = currentContexts.includes(context);
+					item.setTitle(
+						selected
+							? this.t("contextMenus.task.organization.contextSelected", {
+									context,
+								})
+							: context
+					);
+					item.setIcon(selected ? "check" : "at-sign");
+					item.onClick(async () => {
+						await this.updateTaskContexts(
+							task,
+							plugin,
+							toggleContextInList(task.contexts, context)
+						);
+					});
+				});
+			}
+		}
+
+		if (currentContexts.length > 0) {
+			menu.addSeparator();
+			menu.addItem((item) => {
+				item.setTitle(this.t("contextMenus.task.organization.clearContexts"));
+				item.setIcon("x");
+				item.onClick(async () => {
+					await this.updateTaskContexts(task, plugin, undefined);
+				});
+			});
+		}
+	}
+
+	private getContextOptions(task: TaskInfo, plugin: TaskNotesPlugin): string[] {
+		const knownContexts = plugin.cacheManager.getAllContexts?.() ?? [];
+		const options = normalizeContextList([...knownContexts, ...(task.contexts ?? [])]);
+		return options.sort((a, b) => a.localeCompare(b));
+	}
+
+	private async openContextInput(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
+		const context = await showTextInputModal(plugin.app, {
+			title: this.t("contextMenus.task.organization.addContext"),
+			placeholder: this.t("contextMenus.task.organization.contextPlaceholder"),
+			confirmText: this.t("common.confirm"),
+			cancelText: this.t("common.cancel"),
+		});
+
+		if (!context) return;
+		await this.updateTaskContexts(task, plugin, addContextToList(task.contexts, context));
+	}
+
+	private async updateTaskContexts(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		contexts: string[] | undefined
+	): Promise<void> {
+		try {
+			const updatedTask = await plugin.updateTaskProperty(task, "contexts", contexts);
+			Object.assign(task, updatedTask);
+			this.options.onUpdate?.();
+		} catch (error) {
+			console.error("Failed to update task contexts:", error);
+			new Notice(this.t("contextMenus.task.organization.notices.updateContextsFailed"));
+		}
 	}
 
 	private async openProjectSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
