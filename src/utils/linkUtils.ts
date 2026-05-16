@@ -85,12 +85,14 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 	if (markdownMatch) {
 		const displayText = markdownMatch[1].trim();
 		const rawPath = markdownMatch[2].trim();
+		const linkPath = parseLinkToPath(rawPath);
+		const resolvedDisplayName = getResolvedProjectDisplayName(linkPath, app, displayText);
+		if (resolvedDisplayName) {
+			return resolvedDisplayName;
+		}
 		if (displayText) {
 			return displayText;
 		}
-		const linkPath = parseLinkToPath(rawPath);
-		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, "");
-		if (resolved) return resolved.basename;
 		const cleanPath = linkPath.replace(/\.md$/i, "");
 		const parts = cleanPath.split("/");
 		return parts[parts.length - 1] || cleanPath;
@@ -106,8 +108,8 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 		}
 		const parsed = parseLinktext(linkContent.split("|")[0] || linkContent);
 		const linkPath = parsed.path || parseLinkToPath(trimmed);
-		const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, "");
-		if (resolved) return resolved.basename;
+		const resolvedDisplayName = getResolvedProjectDisplayName(linkPath, app);
+		if (resolvedDisplayName) return resolvedDisplayName;
 		const cleanPath = linkPath.replace(/\.md$/i, "");
 		const parts = cleanPath.split("/");
 		return parts[parts.length - 1] || cleanPath;
@@ -115,6 +117,52 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 
 	// Plain text
 	return trimmed;
+}
+
+function getResolvedProjectDisplayName(
+	linkPath: string,
+	app?: App,
+	displayText?: string
+): string | null {
+	const resolved = app?.metadataCache.getFirstLinkpathDest(linkPath, "");
+	if (!resolved) return null;
+
+	const frontmatterTitle = getResolvedFileTitle(resolved, app);
+	if (frontmatterTitle && shouldUseResolvedTitle(displayText, resolved, linkPath)) {
+		return frontmatterTitle;
+	}
+
+	return displayText?.trim() || resolved.basename;
+}
+
+function getResolvedFileTitle(file: TFile, app?: App): string | null {
+	const cache =
+		app?.metadataCache.getFileCache(file) ??
+		(app?.metadataCache as App["metadataCache"] & {
+			getCache?: (path: string) => { frontmatter?: Record<string, unknown> } | null;
+		})?.getCache?.(file.path);
+	const title = cache?.frontmatter?.title;
+	return typeof title === "string" && title.trim().length > 0 ? title.trim() : null;
+}
+
+function shouldUseResolvedTitle(
+	displayText: string | undefined,
+	file: TFile,
+	linkPath: string
+): boolean {
+	const normalizedDisplay = displayText?.trim() || "";
+	if (!normalizedDisplay) return true;
+
+	const pathWithoutExtension = file.path.replace(/\.md$/i, "");
+	const linkPathWithoutExtension = linkPath.replace(/\.md$/i, "");
+	return new Set([
+		file.name,
+		file.basename,
+		file.path,
+		pathWithoutExtension,
+		linkPath,
+		linkPathWithoutExtension,
+	]).has(normalizedDisplay);
 }
 
 /**

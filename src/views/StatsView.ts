@@ -414,6 +414,11 @@ export class StatsView extends ItemView {
 			return projectValue;
 		}
 
+		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
+		if (displayName && displayName !== projectValue) {
+			return displayName;
+		}
+
 		// For wikilink format, try to resolve to actual file
 		if (projectValue.startsWith("[[") && projectValue.endsWith("]]")) {
 			const linkPath = this.extractWikilinkPath(projectValue);
