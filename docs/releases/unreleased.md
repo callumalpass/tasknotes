@@ -43,6 +43,7 @@ Example:
 
 ## Changed
 
+- ([#1642](https://github.com/callumalpass/tasknotes/issues/1642)) Made completion-based custom recurrence use flexible weekly, monthly, and yearly intervals without forcing a fixed weekday, month day, or month. Thanks to @Volker-brdb for suggesting this.
 - ([#1724](https://github.com/callumalpass/tasknotes/issues/1724)) Moved recurring task complete/skip instance actions into the date area of the task context menu. Thanks to @prepare4robots for suggesting this.
 - ([#1762](https://github.com/callumalpass/tasknotes/issues/1762)) Used the configured Google Calendar task export target as the default calendar when creating manual external calendar events. Thanks to @chrabia for suggesting this.
 - ([#1774](https://github.com/callumalpass/tasknotes/issues/1774)) Made expandable project chevrons visible and easier to tap on mobile. Thanks to @sh0nuff for suggesting this.

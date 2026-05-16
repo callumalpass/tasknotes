@@ -19,6 +19,105 @@ export interface RecurrenceContextMenuOptions {
 	plugin: TaskNotesPlugin;
 }
 
+export interface CustomRecurrenceRuleInput {
+	frequency: string;
+	interval: number;
+	dtstart: string;
+	dtstartTime: string;
+	recurrenceAnchor: "scheduled" | "completion";
+	byDay: string[];
+	byMonthDay: number[];
+	byMonth: number[];
+	bySetPos: number | undefined;
+	endType: "never" | "count" | "until";
+	count: number | undefined;
+	until: string;
+	monthlyType?: string;
+	yearlyType?: string;
+}
+
+export function buildCustomRecurrenceRule(input: CustomRecurrenceRuleInput): string {
+	const parts: string[] = [];
+	const isFlexibleCompletionAnchor = input.recurrenceAnchor === "completion";
+
+	if (input.dtstart) {
+		let dtstartFormatted = input.dtstart.replace(/-/g, "");
+
+		if (input.dtstartTime) {
+			const timeFormatted = input.dtstartTime.replace(":", "") + "00";
+			dtstartFormatted = `${dtstartFormatted}T${timeFormatted}`;
+		}
+
+		parts.push(`DTSTART:${dtstartFormatted}`);
+	}
+
+	parts.push(`FREQ=${input.frequency}`);
+
+	if (input.interval > 1) {
+		parts.push(`INTERVAL=${input.interval}`);
+	}
+
+	switch (input.frequency) {
+		case "WEEKLY":
+			if (!isFlexibleCompletionAnchor && input.byDay.length > 0) {
+				parts.push(`BYDAY=${input.byDay.join(",")}`);
+			}
+			break;
+
+		case "MONTHLY":
+			if (isFlexibleCompletionAnchor) {
+				break;
+			}
+
+			if (input.monthlyType === "bydate") {
+				const dayOfMonth =
+					input.byMonthDay.length > 0 ? input.byMonthDay[0] : new Date().getDate();
+				parts.push(`BYMONTHDAY=${dayOfMonth}`);
+			} else if (input.monthlyType === "byday" && input.byDay.length > 0) {
+				const setPos = input.bySetPos || 1;
+				parts.push(`BYDAY=${setPos}${input.byDay[0]}`);
+			}
+			break;
+
+		case "YEARLY":
+			if (isFlexibleCompletionAnchor) {
+				break;
+			}
+
+			if (input.yearlyType === "bydate") {
+				const month = input.byMonth.length > 0 ? input.byMonth[0] : new Date().getMonth() + 1;
+				const dayOfMonth =
+					input.byMonthDay.length > 0 ? input.byMonthDay[0] : new Date().getDate();
+				parts.push(`BYMONTH=${month}`);
+				parts.push(`BYMONTHDAY=${dayOfMonth}`);
+			} else if (input.yearlyType === "byday") {
+				const month = input.byMonth.length > 0 ? input.byMonth[0] : new Date().getMonth() + 1;
+				parts.push(`BYMONTH=${month}`);
+
+				if (input.byDay.length > 0) {
+					const setPos = input.bySetPos || 1;
+					parts.push(`BYDAY=${setPos}${input.byDay[0]}`);
+				}
+			}
+			break;
+	}
+
+	switch (input.endType) {
+		case "count":
+			if (input.count && input.count > 0) {
+				parts.push(`COUNT=${input.count}`);
+			}
+			break;
+		case "until":
+			if (input.until) {
+				parts.push(`UNTIL=${input.until.replace(/-/g, "")}`);
+			}
+			break;
+	}
+
+	return parts.join(";");
+}
+
 export class RecurrenceContextMenu {
 	private menu: ContextMenu;
 	private options: RecurrenceContextMenuOptions;
@@ -446,6 +545,7 @@ class CustomRecurrenceModal extends Modal {
 					.setValue(this.recurrenceAnchor)
 					.onChange((value) => {
 						this.recurrenceAnchor = value as "scheduled" | "completion";
+						this.updateFrequencySpecificVisibility();
 					});
 			});
 
@@ -940,11 +1040,13 @@ class CustomRecurrenceModal extends Modal {
 		});
 
 		this.updateFrequencySpecificVisibility = () => {
-			byDaySetting.settingEl.style.display = this.frequency === "WEEKLY" ? "flex" : "none";
+			const useFlexibleInterval = this.recurrenceAnchor === "completion";
+			byDaySetting.settingEl.style.display =
+				this.frequency === "WEEKLY" && !useFlexibleInterval ? "flex" : "none";
 			monthlyTypeSetting.settingEl.style.display =
-				this.frequency === "MONTHLY" ? "flex" : "none";
+				this.frequency === "MONTHLY" && !useFlexibleInterval ? "flex" : "none";
 			yearlyTypeSetting.settingEl.style.display =
-				this.frequency === "YEARLY" ? "flex" : "none";
+				this.frequency === "YEARLY" && !useFlexibleInterval ? "flex" : "none";
 		};
 		this.updateFrequencySpecificVisibility();
 
@@ -1035,87 +1137,22 @@ class CustomRecurrenceModal extends Modal {
 	}
 
 	private buildRRule(monthlyType?: string, yearlyType?: string): string {
-		let parts = [];
-
-		// Add DTSTART first (convert YYYY-MM-DD to YYYYMMDD or YYYYMMDDTHHMMSSZ format)
-		if (this.dtstart) {
-			let dtstartFormatted = this.dtstart.replace(/-/g, "");
-
-			// Add time if specified (local time, no Z suffix — the time comes from the task's scheduled date which is local)
-			if (this.dtstartTime) {
-				const timeFormatted = this.dtstartTime.replace(":", "") + "00";
-				dtstartFormatted = `${dtstartFormatted}T${timeFormatted}`;
-			}
-
-			parts.push(`DTSTART:${dtstartFormatted}`);
-		}
-
-		parts.push(`FREQ=${this.frequency}`);
-
-		if (this.interval > 1) {
-			parts.push(`INTERVAL=${this.interval}`);
-		}
-
-		// Handle frequency-specific rules
-		switch (this.frequency) {
-			case "WEEKLY":
-				if (this.byDay.length > 0) {
-					parts.push(`BYDAY=${this.byDay.join(",")}`);
-				}
-				break;
-
-			case "MONTHLY":
-				if (monthlyType === "bydate") {
-					const dayOfMonth =
-						this.byMonthDay.length > 0 ? this.byMonthDay[0] : new Date().getDate();
-					parts.push(`BYMONTHDAY=${dayOfMonth}`);
-				} else if (monthlyType === "byday") {
-					if (this.byDay.length > 0) {
-						const setPos = this.bySetPos || 1;
-						parts.push(`BYDAY=${setPos}${this.byDay[0]}`);
-					}
-				}
-				break;
-
-			case "YEARLY":
-				if (yearlyType === "bydate") {
-					const month =
-						this.byMonth.length > 0 ? this.byMonth[0] : new Date().getMonth() + 1;
-					const dayOfMonth =
-						this.byMonthDay.length > 0 ? this.byMonthDay[0] : new Date().getDate();
-					parts.push(`BYMONTH=${month}`);
-					parts.push(`BYMONTHDAY=${dayOfMonth}`);
-				} else if (yearlyType === "byday") {
-					const month =
-						this.byMonth.length > 0 ? this.byMonth[0] : new Date().getMonth() + 1;
-					parts.push(`BYMONTH=${month}`);
-
-					if (this.byDay.length > 0) {
-						const setPos = this.bySetPos || 1;
-						parts.push(`BYDAY=${setPos}${this.byDay[0]}`);
-					}
-				}
-				break;
-		}
-
-		// Handle end conditions
-		switch (this.endType) {
-			case "count":
-				if (this.count && this.count > 0) {
-					parts.push(`COUNT=${this.count}`);
-				}
-				break;
-			case "until":
-				if (this.until) {
-					// Convert YYYY-MM-DD to YYYYMMDD format
-					const untilFormatted = this.until.replace(/-/g, "");
-					parts.push(`UNTIL=${untilFormatted}`);
-				}
-				break;
-			// 'never' case - no additional parts needed
-		}
-
-		return parts.join(";");
+		return buildCustomRecurrenceRule({
+			frequency: this.frequency,
+			interval: this.interval,
+			dtstart: this.dtstart,
+			dtstartTime: this.dtstartTime,
+			recurrenceAnchor: this.recurrenceAnchor,
+			byDay: this.byDay,
+			byMonthDay: this.byMonthDay,
+			byMonth: this.byMonth,
+			bySetPos: this.bySetPos,
+			endType: this.endType,
+			count: this.count,
+			until: this.until,
+			monthlyType,
+			yearlyType,
+		});
 	}
 
 	onClose() {
