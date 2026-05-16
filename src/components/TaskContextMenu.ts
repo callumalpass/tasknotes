@@ -137,71 +137,6 @@ export class TaskContextMenu {
 			this.addStatusOptions(submenu, task, plugin);
 		});
 
-		// Add completion toggle for recurring tasks
-		if (task.recurrence) {
-			this.menu.addSeparator();
-
-			const dateStr = formatDateForStorage(this.options.targetDate);
-			const isCompletedForDate = task.complete_instances?.includes(dateStr) || false;
-
-			this.menu.addItem((item) => {
-				item.setTitle(
-					isCompletedForDate
-						? this.t("contextMenus.task.markIncomplete")
-						: this.t("contextMenus.task.markComplete")
-				);
-				item.setIcon(isCompletedForDate ? "x" : "check");
-				item.onClick(async () => {
-					try {
-						await plugin.toggleRecurringTaskComplete(task, this.options.targetDate);
-						this.options.onUpdate?.();
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error("Error toggling recurring task completion:", {
-							error: errorMessage,
-							taskPath: task.path,
-						});
-						new Notice(
-							this.t("contextMenus.task.notices.toggleCompletionFailure", {
-								message: errorMessage,
-							})
-						);
-					}
-				});
-			});
-
-			const isSkippedForDate = task.skipped_instances?.includes(dateStr) || false;
-
-			this.menu.addItem((item) => {
-				item.setTitle(
-					isSkippedForDate
-						? this.t("contextMenus.task.unskipInstance")
-						: this.t("contextMenus.task.skipInstance")
-				);
-				item.setIcon(isSkippedForDate ? "undo" : "x-circle");
-				item.onClick(async () => {
-					try {
-						await plugin.taskService.toggleRecurringTaskSkipped(
-							task,
-							this.options.targetDate
-						);
-						this.options.onUpdate?.();
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error("Error toggling recurring task skip:", {
-							error: errorMessage,
-							taskPath: task.path,
-						});
-						new Notice(
-							this.t("contextMenus.task.notices.toggleSkipFailure", {
-								message: errorMessage,
-							})
-						);
-					}
-				});
-			});
-		}
-
 		this.menu.addSeparator();
 
 		// Priority submenu
@@ -278,6 +213,10 @@ export class TaskContextMenu {
 				}
 			);
 		});
+
+		if (task.recurrence) {
+			this.addRecurringInstanceMenuItems(task, plugin);
+		}
 
 		// Reminders submenu
 		this.menu.addItem((item) => {
@@ -780,6 +719,68 @@ export class TaskContextMenu {
 		window.setTimeout(() => {
 			this.updateMainMenuIconColors(task, plugin);
 		}, 10);
+	}
+
+	private addRecurringInstanceMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const dateStr = formatDateForStorage(this.options.targetDate);
+		const isCompletedForDate = task.complete_instances?.includes(dateStr) || false;
+
+		this.menu.addItem((item) => {
+			item.setTitle(
+				isCompletedForDate
+					? this.t("contextMenus.task.markIncomplete")
+					: this.t("contextMenus.task.markComplete")
+			);
+			item.setIcon(isCompletedForDate ? "x" : "check");
+			item.onClick(async () => {
+				try {
+					await plugin.toggleRecurringTaskComplete(task, this.options.targetDate);
+					this.options.onUpdate?.();
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					console.error("Error toggling recurring task completion:", {
+						error: errorMessage,
+						taskPath: task.path,
+					});
+					new Notice(
+						this.t("contextMenus.task.notices.toggleCompletionFailure", {
+							message: errorMessage,
+						})
+					);
+				}
+			});
+		});
+
+		const isSkippedForDate = task.skipped_instances?.includes(dateStr) || false;
+
+		this.menu.addItem((item) => {
+			item.setTitle(
+				isSkippedForDate
+					? this.t("contextMenus.task.unskipInstance")
+					: this.t("contextMenus.task.skipInstance")
+			);
+			item.setIcon(isSkippedForDate ? "undo" : "x-circle");
+			item.onClick(async () => {
+				try {
+					await plugin.taskService.toggleRecurringTaskSkipped(
+						task,
+						this.options.targetDate
+					);
+					this.options.onUpdate?.();
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					console.error("Error toggling recurring task skip:", {
+						error: errorMessage,
+						taskPath: task.path,
+					});
+					new Notice(
+						this.t("contextMenus.task.notices.toggleSkipFailure", {
+							message: errorMessage,
+						})
+					);
+				}
+			});
+		});
 	}
 
 	private addDependencyMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {

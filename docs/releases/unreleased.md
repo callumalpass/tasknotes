@@ -40,6 +40,7 @@ Example:
 
 ## Changed
 
+- ([#1724](https://github.com/callumalpass/tasknotes/issues/1724)) Moved recurring task complete/skip instance actions into the date area of the task context menu. Thanks to @prepare4robots for suggesting this.
 - ([#1762](https://github.com/callumalpass/tasknotes/issues/1762)) Used the configured Google Calendar task export target as the default calendar when creating manual external calendar events. Thanks to @chrabia for suggesting this.
 - ([#1774](https://github.com/callumalpass/tasknotes/issues/1774)) Made expandable project chevrons visible and easier to tap on mobile. Thanks to @sh0nuff for suggesting this.
 - ([#1785](https://github.com/callumalpass/tasknotes/issues/1785)) Made the Create subtask action prefill the parent task's contexts, priority, and non-identifying tags while keeping the existing parent-task project link. Thanks to @poulpoulsen for suggesting this.

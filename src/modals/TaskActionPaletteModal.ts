@@ -206,7 +206,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				title: "Complete this occurrence",
 				description: "Mark this specific instance of the recurring task as complete",
 				icon: "check-circle",
-				category: "status",
+				category: "dates",
 				keywords: ["complete", "done", "finish", "recurring", "instance", "occurrence"],
 				isApplicable: (task, plugin, targetDate) => {
 					return !plugin.statusManager.isCompletedStatus(task.status);
