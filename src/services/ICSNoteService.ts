@@ -334,13 +334,16 @@ export class ICSNoteService {
 	async findRelatedNotes(icsEvent: ICSEvent): Promise<(TaskInfo | NoteInfo)[]> {
 		try {
 			const relatedNotes: (TaskInfo | NoteInfo)[] = [];
+			const relatedPaths = new Set<string>();
 			const icsEventIdField = this.plugin.fieldMapper.toUserField("icsEventId");
 
 			// Search through cached tasks
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 			for (const task of allTasks) {
 				if (task.icsEventId && task.icsEventId.includes(icsEvent.id)) {
+					if (relatedPaths.has(task.path)) continue;
 					relatedNotes.push(task);
+					relatedPaths.add(task.path);
 				}
 			}
 
@@ -357,6 +360,7 @@ export class ICSNoteService {
 						: icsEventIds === icsEvent.id; // backwards compatibility
 
 					if (frontmatter && hasEventId) {
+						if (relatedPaths.has(file.path)) continue;
 						const noteInfo: NoteInfo = {
 							title: frontmatter.title || file.basename,
 							path: file.path,
@@ -365,6 +369,7 @@ export class ICSNoteService {
 							lastModified: file.stat.mtime,
 						};
 						relatedNotes.push(noteInfo);
+						relatedPaths.add(file.path);
 					}
 				} catch {
 					// Skip files that can't be read
