@@ -1090,11 +1090,20 @@ export class CalendarView extends BasesViewBase {
 			editable: true,
 			selectable: true,
 			selectMirror: this.viewOptions.selectMirror,
-			eventTimeFormat: {
-				hour: "2-digit",
-				minute: "2-digit",
-				hour12: this.viewOptions.timeFormat === "12",
-			},
+			eventTimeFormat:
+				this.viewOptions.timeFormat === "12"
+					? {
+							hour: "numeric",
+							minute: "2-digit",
+							omitZeroMinute: true,
+							meridiem: "short",
+							hour12: true,
+						}
+					: {
+							hour: "2-digit",
+							minute: "2-digit",
+							hour12: false,
+						},
 			slotLabelFormat: {
 				hour: "2-digit",
 				minute: "2-digit",

@@ -962,6 +962,46 @@
     .advanced-calendar-view__header {
         padding: 0.25rem 0.5rem;
     }
+
+    .advanced-calendar-view .fc-timegrid-event {
+        border-radius: 3px;
+        font-size: 0.68rem;
+        line-height: 1.1;
+        padding: 1px 3px;
+    }
+
+    .advanced-calendar-view .fc-timegrid-event .fc-event-main {
+        min-width: 0;
+        padding: 0 2px;
+    }
+
+    .advanced-calendar-view .fc-timegrid-event .fc-event-main-frame {
+        gap: 1px;
+        min-width: 0;
+    }
+
+    .advanced-calendar-view .fc-timegrid-event .fc-event-time,
+    .advanced-calendar-view .fc-timegrid-event .fc-event-title {
+        overflow: hidden;
+        text-overflow: clip;
+        white-space: nowrap;
+    }
+
+    .advanced-calendar-view .fc-timegrid-event.fc-timegrid-event-short .fc-event-time {
+        display: none;
+    }
+
+    .advanced-calendar-view .fc-timegrid-event.fc-task-event,
+    .advanced-calendar-view .fc-timegrid-event.fc-ics-event,
+    .advanced-calendar-view .fc-timegrid-event[data-event-type="property-based"] {
+        background-color: var(--fc-event-border-color);
+    }
+
+    .advanced-calendar-view .fc-timegrid-event.fc-task-event .fc-event-main,
+    .advanced-calendar-view .fc-timegrid-event.fc-ics-event .fc-event-main,
+    .advanced-calendar-view .fc-timegrid-event[data-event-type="property-based"] .fc-event-main {
+        color: var(--text-on-accent);
+    }
 }
 
 /* Today highlighting disabled */
