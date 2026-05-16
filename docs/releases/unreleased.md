@@ -64,6 +64,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1593](https://github.com/callumalpass/tasknotes/issues/1593)) Made the New button in TaskNotes Bases views open the TaskNotes create task modal again, so new tasks respect the configured default tasks folder. Thanks to @katlandreth for reporting this.
 - ([#1594](https://github.com/callumalpass/tasknotes/issues/1594)) Made task cards inside recurring task notes complete the task's current scheduled occurrence instead of today's date when no calendar or view date is supplied. Thanks to @ngraham20 for reporting this.
 - ([#1601](https://github.com/callumalpass/tasknotes/issues/1601)) Prevented overlapping Live Preview relationship-widget injections from leaving duplicate subtask/relationship sections in a note. Thanks to @wealthychef1 for reporting this and @benmartinek for confirming it.
 - ([#1610](https://github.com/callumalpass/tasknotes/issues/1610)) Made expanded subtasks in TaskNotes Bases views follow the current view's sorted task order instead of a fixed fallback order. Thanks to @MrZzard for reporting this and @slipstyle for confirming it.

@@ -36,12 +36,28 @@ type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
 	customFrontmatter?: Record<string, unknown>;
 };
 
+type BasesFilterLike = {
+	conjunction?: unknown;
+	filters?: unknown;
+	rule?: {
+		text?: unknown;
+	};
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function toStringArray(value: unknown): string[] {
 	return Array.isArray(value) ? value.map(String) : [String(value)];
+}
+
+function decodeQuotedValue(value: string): string {
+	try {
+		return JSON.parse(`"${value}"`) as string;
+	} catch {
+		return value;
+	}
 }
 
 /**
@@ -240,13 +256,13 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	}
 
 	/**
-	 * Clean up: just remove the "active" class, keep the button for reuse.
+	 * Clean up injected toolbar state.
 	 */
 	private cleanupNewTaskButton(): void {
 		const basesViewEl = this.containerEl.closest(".bases-view");
 		const parentEl = basesViewEl?.parentElement;
 
-		// Only remove the "active" class - button stays for potential reuse
+		parentEl?.querySelector(".tn-bases-new-task-btn")?.remove();
 		parentEl?.classList.remove("tasknotes-view-active");
 	}
 
@@ -278,8 +294,8 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			return;
 		}
 
-		// Check if we already added the button (reuse existing)
-		if (toolbarEl.querySelector(".tn-bases-new-task-btn")) return;
+		// Replace stale buttons left behind by prior plugin reloads.
+		toolbarEl.querySelector(".tn-bases-new-task-btn")?.remove();
 
 		// Use correct document for pop-out window support
 		const doc = this.containerEl.ownerDocument;
@@ -313,13 +329,6 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		newTaskBtn.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-
-			const currentOriginalNewBtn =
-				toolbarEl.querySelector<HTMLElement>(".bases-toolbar-new-item-menu");
-			if (currentOriginalNewBtn?.isConnected) {
-				currentOriginalNewBtn.click();
-				return;
-			}
 
 			void this.createFileForView("New Task");
 		});
@@ -429,12 +438,13 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		// Extract any default values from the frontmatter processor if provided
 		const prePopulatedValues: Partial<TaskInfo> = {};
 		const customFrontmatter: Record<string, unknown> = {};
+		const mockFrontmatter = this.extractDefaultFrontmatterFromCurrentView();
 
 		if (frontmatterProcessor) {
-			// Create a mock frontmatter object to extract defaults
-			const mockFrontmatter: BasesCreateFileFrontmatter = {};
 			frontmatterProcessor(mockFrontmatter);
+		}
 
+		if (Object.keys(mockFrontmatter).length > 0) {
 			// Get field mapper for property name mapping
 			const fm = this.plugin.fieldMapper;
 
@@ -554,6 +564,149 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		});
 
 		modal.open();
+	}
+
+	private extractDefaultFrontmatterFromCurrentView(): BasesCreateFileFrontmatter {
+		const defaults: BasesCreateFileFrontmatter = {};
+		const configRecord = isRecord(this.config)
+			? (this.config as unknown as Record<string, unknown>)
+			: {};
+		const query = isRecord(configRecord.query) ? configRecord.query : undefined;
+
+		this.collectFilterDefaults(query?.filters, defaults);
+		this.collectFilterDefaults(configRecord.filters, defaults);
+
+		return defaults;
+	}
+
+	private collectFilterDefaults(
+		filter: unknown,
+		defaults: BasesCreateFileFrontmatter
+	): void {
+		if (!isRecord(filter)) return;
+
+		const filterGroup = filter as BasesFilterLike;
+		const children = Array.isArray(filterGroup.filters) ? filterGroup.filters : [];
+		if (children.length > 0) {
+			// OR filters are ambiguous as defaults; only apply deterministic AND chains.
+			if (filterGroup.conjunction !== undefined && filterGroup.conjunction !== "and") {
+				return;
+			}
+
+			for (const child of children) {
+				this.collectFilterDefaults(child, defaults);
+			}
+			return;
+		}
+
+		const ruleText = isRecord(filterGroup.rule) ? filterGroup.rule.text : undefined;
+		if (typeof ruleText === "string") {
+			this.applyFilterRuleDefault(ruleText, defaults);
+		}
+	}
+
+	private applyFilterRuleDefault(ruleText: string, defaults: BasesCreateFileFrontmatter): void {
+		const trimmedRule = ruleText.trim();
+
+		const tagMatch = trimmedRule.match(/^file\.hasTag\("((?:\\.|[^"\\])*)"\)$/);
+		if (tagMatch) {
+			const tag = decodeQuotedValue(tagMatch[1]);
+			if (tag !== this.plugin.settings.taskTag) {
+				this.addFrontmatterDefault(defaults, "tags", tag);
+			}
+			return;
+		}
+
+		const equalityMatch = trimmedRule.match(/^(.+?)\s*==\s*"((?:\\.|[^"\\])*)"$/);
+		if (equalityMatch) {
+			const property = this.normalizeFilterProperty(equalityMatch[1]);
+			if (property) {
+				this.addFrontmatterDefault(defaults, property, decodeQuotedValue(equalityMatch[2]));
+			}
+			return;
+		}
+
+		const containsMatch = trimmedRule.match(/^(.+?)\.contains\("((?:\\.|[^"\\])*)"\)$/);
+		if (containsMatch) {
+			const property = this.normalizeFilterProperty(containsMatch[1]);
+			if (property) {
+				this.addFrontmatterDefault(defaults, property, decodeQuotedValue(containsMatch[2]));
+			}
+		}
+	}
+
+	private normalizeFilterProperty(propertyExpression: string): string | null {
+		let property = propertyExpression.trim();
+		const listMatch = property.match(/^list\((.+)\)$/);
+		if (listMatch) {
+			property = listMatch[1].trim();
+		}
+		property = property.replace(/^(note|task)\./, "");
+
+		const fm = this.plugin.fieldMapper;
+		const coreFields = [
+			"title",
+			"status",
+			"priority",
+			"due",
+			"scheduled",
+			"contexts",
+			"projects",
+			"timeEstimate",
+			"completedDate",
+			"dateCreated",
+			"recurrence",
+			"blockedBy",
+		] as const;
+
+		if (property === "tags" || property === "file.tags") {
+			return "tags";
+		}
+
+		for (const field of coreFields) {
+			const userField = fm.toUserField(field);
+			if (property === field || property === userField) {
+				return userField;
+			}
+		}
+
+		const userFields = this.plugin.settings.userFields || [];
+		if (userFields.some((field) => field.key === property)) {
+			return property;
+		}
+
+		return null;
+	}
+
+	private addFrontmatterDefault(
+		defaults: BasesCreateFileFrontmatter,
+		property: string,
+		value: string
+	): void {
+		const fm = this.plugin.fieldMapper;
+		const listFields = new Set([
+			"tags",
+			fm.toUserField("contexts"),
+			fm.toUserField("projects"),
+			fm.toUserField("blockedBy"),
+		]);
+
+		if (!listFields.has(property)) {
+			if (defaults[property] === undefined) {
+				defaults[property] = value;
+			}
+			return;
+		}
+
+		const existing = defaults[property];
+		const values = Array.isArray(existing)
+			? existing.filter((item): item is string => typeof item === "string")
+			: typeof existing === "string"
+				? [existing]
+				: [];
+		if (!values.includes(value)) {
+			defaults[property] = [...values, value];
+		}
 	}
 
 	/**

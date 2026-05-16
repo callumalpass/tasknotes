@@ -1,14 +1,9 @@
 /**
- * Regression test for issue #1657.
+ * Regression test for issue #1593.
  *
- * Reported behavior:
- * - Clicking the "+ New" button on a Kanban view filtered to a specific project
- *   opened TaskNotes' creation modal, but the new task did not inherit the
- *   project defaults supplied by Bases.
- *
- * The TaskNotes toolbar button should open TaskNotes' creation modal and carry
- * simple Bases filter defaults into that modal. Delegating to the native Bases
- * button can create a plain note outside TaskNotes' folder handling.
+ * TaskNotes Bases views inject their own New button so task creation can use the
+ * TaskNotes creation modal and TaskCreationService. The native Bases New menu
+ * creates a plain note first, which bypasses the configured default tasks folder.
  */
 
 jest.mock("../../../src/modals/TaskCreationModal", () => ({
@@ -56,16 +51,21 @@ function createMockPlugin() {
 	} as any;
 }
 
-describe("Issue #1657: Kanban + New button should assign project", () => {
+describe("Issue #1593: Bases New button should use TaskNotes task creation", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		jest.clearAllMocks();
 	});
 
-	it("passes simple Bases filter defaults to the TaskNotes creation modal", async () => {
+	it("opens the TaskNotes creation modal instead of the native Bases new-item menu", async () => {
 		const wrapper = document.createElement("div");
 		const toolbar = document.createElement("div");
 		toolbar.className = "bases-toolbar";
+		const staleTaskNotesButton = document.createElement("div");
+		staleTaskNotesButton.className = "bases-toolbar-item tn-bases-new-task-btn";
+		const staleButtonClick = jest.fn();
+		staleTaskNotesButton.addEventListener("click", staleButtonClick);
+		toolbar.appendChild(staleTaskNotesButton);
 		const nativeNewButton = document.createElement("button");
 		nativeNewButton.className = "bases-toolbar-new-item-menu";
 		toolbar.appendChild(nativeNewButton);
@@ -80,16 +80,6 @@ describe("Issue #1657: Kanban + New button should assign project", () => {
 		document.body.appendChild(wrapper);
 
 		const view = new TestBasesView({}, container, createMockPlugin());
-		(view as any).config = {
-			filters: {
-				conjunction: "and",
-				filters: [
-					{ rule: { text: 'file.hasTag("task")' } },
-					{ rule: { text: 'status == "To Do"' } },
-					{ rule: { text: 'projects.contains("[[Project Alpha]]")' } },
-				],
-			},
-		};
 		const nativeNewClick = jest.fn();
 		nativeNewButton.addEventListener("click", nativeNewClick);
 
@@ -97,20 +87,19 @@ describe("Issue #1657: Kanban + New button should assign project", () => {
 		const taskNotesButton = toolbar.querySelector<HTMLElement>(".tn-bases-new-task-btn");
 
 		expect(taskNotesButton).not.toBeNull();
+		expect(toolbar.querySelectorAll(".tn-bases-new-task-btn")).toHaveLength(1);
 		taskNotesButton?.click();
 
 		await Promise.resolve();
 		await Promise.resolve();
 
+		expect(staleButtonClick).not.toHaveBeenCalled();
 		expect(nativeNewClick).not.toHaveBeenCalled();
 		expect(TaskCreationModal).toHaveBeenCalledWith(
 			expect.anything(),
 			expect.anything(),
 			expect.objectContaining({
-				prePopulatedValues: expect.objectContaining({
-					status: "To Do",
-					projects: ["[[Project Alpha]]"],
-				}),
+				prePopulatedValues: {},
 			})
 		);
 	});
