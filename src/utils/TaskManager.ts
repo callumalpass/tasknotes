@@ -12,6 +12,7 @@ import {
 import { calculateTotalTimeSpent } from "./helpers";
 import { TaskNotesSettings } from "../types/settings";
 import type { DependencyCache } from "./DependencyCache";
+import { isPathInExcludedFolder, parseExcludedFolders } from "./pathExclusions";
 
 /**
  * Just-in-time task manager that reads task information on-demand from Obsidian's
@@ -50,12 +51,7 @@ export class TaskManager extends Events {
 		this.app = app;
 		this.settings = settings;
 		this.taskTag = settings.taskTag;
-		this.excludedFolders = settings.excludedFolders
-			? settings.excludedFolders
-					.split(",")
-					.map((folder) => folder.trim())
-					.filter((folder) => folder.length > 0)
-			: [];
+		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
 		this.fieldMapper = fieldMapper;
 		this.disableNoteIndexing = settings.disableNoteIndexing;
 		this.storeTitleInFilename = settings.storeTitleInFilename;
@@ -242,17 +238,15 @@ export class TaskManager extends Events {
 	 * Check if a file path is valid for inclusion
 	 */
 	isValidFile(path: string): boolean {
-		// Filter out excluded folders
-		if (this.excludedFolders.some((folder) => path.startsWith(folder))) {
-			return false;
-		}
-		return true;
+		return !isPathInExcludedFolder(path, this.excludedFolders);
 	}
 
 	/**
 	 * Get task info for a specific file path (just-in-time)
 	 */
 	async getTaskInfo(path: string): Promise<TaskInfo | null> {
+		if (!this.isValidFile(path)) return null;
+
 		const file = this.app.vault.getAbstractFileByPath(path);
 		if (!(file instanceof TFile)) return null;
 
@@ -693,6 +687,8 @@ export class TaskManager extends Events {
 	 * Synchronous task info getter (reads from metadataCache)
 	 */
 	getCachedTaskInfoSync(path: string): TaskInfo | null {
+		if (!this.isValidFile(path)) return null;
+
 		const file = this.app.vault.getAbstractFileByPath(path);
 		if (!(file instanceof TFile)) return null;
 
@@ -815,17 +811,21 @@ export class TaskManager extends Events {
 		// Update settings
 		this.settings = settings;
 		this.taskTag = settings.taskTag;
-		this.excludedFolders = settings.excludedFolders
-			? settings.excludedFolders
-					.split(",")
-					.map((folder: string) => folder.trim())
-					.filter((folder: string) => folder.length > 0)
-			: [];
+		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
 		this.disableNoteIndexing = settings.disableNoteIndexing;
 		this.storeTitleInFilename = settings.storeTitleInFilename;
+		this.pruneExcludedPendingTaskInfo();
 
 		// Emit config changed event
 		this.trigger("data-changed");
+	}
+
+	private pruneExcludedPendingTaskInfo(): void {
+		for (const path of this.pendingTaskInfoByPath.keys()) {
+			if (!this.isValidFile(path)) {
+				this.pendingTaskInfoByPath.delete(path);
+			}
+		}
 	}
 
 	subscribe(event: string, callback: (...args: unknown[]) => void): () => void {
@@ -919,6 +919,12 @@ export class TaskManager extends Events {
 	}
 
 	updateTaskInfoInCache(path: string, taskInfo: TaskInfo): void {
+		if (!this.isValidFile(path)) {
+			this.pendingTaskInfoByPath.delete(path);
+			this.trigger("data-changed");
+			return;
+		}
+
 		this.pendingTaskInfoByPath.set(path, {
 			...taskInfo,
 			id: taskInfo.id ?? path,

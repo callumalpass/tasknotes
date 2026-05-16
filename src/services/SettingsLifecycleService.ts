@@ -67,6 +67,7 @@ export class SettingsLifecycleService {
 		if (cacheSettingsChanged) {
 			console.debug("Cache-related settings changed, updating cache configuration");
 			this.plugin.cacheManager.updateConfig(this.plugin.settings);
+			this.plugin.dependencyCache?.updateConfig(this.plugin.settings);
 			this.updatePreviousCacheSettings();
 		}
 
@@ -93,6 +94,7 @@ export class SettingsLifecycleService {
 		this.plugin.priorityManager?.updatePriorities(this.plugin.settings.customPriorities);
 
 		this.plugin.cacheManager.updateConfig(this.plugin.settings);
+		this.plugin.dependencyCache?.updateConfig(this.plugin.settings);
 		this.updatePreviousCacheSettings();
 		this.setupTimeTrackingEventListeners();
 

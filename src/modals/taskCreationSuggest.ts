@@ -218,12 +218,6 @@ export class NLPSuggest extends AbstractInputSuggest<
 		// Use FileSuggestHelper for multi-word support with enhanced project autosuggest cards and |s flag support
 		const { FileSuggestHelper } = await import("../suggest/FileSuggestHelper");
 
-		// Apply excluded folders filter to FileSuggestHelper
-		const excluded = (this.plugin.settings.excludedFolders || "")
-			.split(",")
-			.map((s) => s.trim())
-			.filter(Boolean);
-
 		// Get suggestions using FileSuggestHelper with explicit project filter configuration
 		const list = await FileSuggestHelper.suggest(
 			this.plugin,
@@ -232,15 +226,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 			this.plugin.settings.projectAutosuggest
 		);
 
-		// Filter out excluded folders
-			const appRef = this.obsidianApp ?? this.plugin.app;
-		const filteredList = list.filter((item) => {
-			const file = appRef?.vault
-				.getMarkdownFiles()
-				.find((f) => f.basename === item.insertText);
-			if (!file) return true;
-			return !excluded.some((folder) => file.path.startsWith(folder));
-		});
+		const appRef = this.obsidianApp ?? this.plugin.app;
 
 		try {
 			// Use cached resolver instead of creating a new one
@@ -248,7 +234,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 
 			const rowConfigs = (this.plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
 
-			return filteredList.map((item): ProjectSuggestion => {
+			return list.map((item): ProjectSuggestion => {
 				const file = appRef?.vault
 					.getMarkdownFiles()
 					.find((f) => f.basename === item.insertText);
@@ -317,7 +303,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 				"Enhanced project autosuggest failed, falling back to basic suggestions",
 				err
 			);
-			return filteredList.map((item) => ({
+			return list.map((item) => ({
 				basename: item.insertText,
 				displayName: item.displayText,
 				type: "project" as const,

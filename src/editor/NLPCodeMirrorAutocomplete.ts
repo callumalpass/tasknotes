@@ -307,21 +307,7 @@ async function getFileSuggestions(
 			autosuggestConfig = userField?.autosuggestFilter;
 		}
 
-		const excluded = (plugin.settings.excludedFolders || "")
-			.split(",")
-			.map((s) => s.trim())
-			.filter(Boolean);
-
 		const list = await FileSuggestHelper.suggest(plugin, query, 20, autosuggestConfig);
-
-		// Filter out excluded folders
-		const filteredList = list.filter((item) => {
-			const file = plugin.app.vault
-				.getMarkdownFiles()
-				.find((f) => f.basename === item.insertText);
-			if (!file) return true;
-			return !excluded.some((ex) => file.path.startsWith(ex));
-		});
 
 		// For projects, add rich metadata rendering
 		if (propertyId === "projects") {
@@ -330,7 +316,7 @@ async function getFileSuggestions(
 			});
 			const rowConfigs = (plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
 
-			return filteredList.map((item) => {
+			return list.map((item) => {
 				const displayText = item.displayText || item.insertText;
 				const insertText = item.insertText;
 
@@ -387,7 +373,7 @@ async function getFileSuggestions(
 		}
 
 		// For non-project file suggestions, use simple rendering
-		return filteredList.map((item) => {
+		return list.map((item) => {
 			const displayText = item.displayText || item.insertText;
 			const insertText = item.insertText;
 

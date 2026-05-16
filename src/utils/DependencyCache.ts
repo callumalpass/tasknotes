@@ -4,6 +4,7 @@ import { FieldMapper } from "../services/FieldMapper";
 import { normalizeDependencyList, resolveDependencyEntry } from "./dependencyUtils";
 import { TaskNotesSettings } from "../types/settings";
 import { StatusManager } from "../services/StatusManager";
+import { isPathInExcludedFolder, parseExcludedFolders } from "./pathExclusions";
 
 /**
  * Minimal cache for task dependencies and project references.
@@ -17,6 +18,7 @@ import { StatusManager } from "../services/StatusManager";
 export class DependencyCache extends Events {
 	private app: App;
 	private settings: TaskNotesSettings;
+	private excludedFolders: string[];
 	private fieldMapper?: FieldMapper;
 	private statusManager: StatusManager;
 
@@ -47,6 +49,7 @@ export class DependencyCache extends Events {
 		super();
 		this.app = app;
 		this.settings = settings;
+		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
 		this.fieldMapper = fieldMapper;
 		this.statusManager = statusManager;
 		this.isTaskFileCallback = isTaskFileCallback;
@@ -73,6 +76,10 @@ export class DependencyCache extends Events {
 		const files = this.app.vault.getMarkdownFiles();
 
 		for (const file of files) {
+			if (!this.isValidFile(file.path)) {
+				continue;
+			}
+
 			const metadata = this.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter || !this.isTaskFileCallback(metadata.frontmatter)) {
 				continue;
@@ -117,6 +124,11 @@ export class DependencyCache extends Events {
 	 * Handle file changes
 	 */
 	private handleFileChanged(file: TFile, cache: unknown): void {
+		if (!this.isValidFile(file.path)) {
+			this.clearFileFromIndexes(file.path);
+			return;
+		}
+
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) {
 			this.clearFileFromIndexes(file.path);
@@ -153,7 +165,11 @@ export class DependencyCache extends Events {
 		this.clearFileFromIndexes(oldPath);
 
 		// Index new path if it's a task
-		if (metadata?.frontmatter && this.isTaskFileCallback(metadata.frontmatter)) {
+		if (
+			this.isValidFile(file.path) &&
+			metadata?.frontmatter &&
+			this.isTaskFileCallback(metadata.frontmatter)
+		) {
 			this.indexTaskFile(file.path, metadata.frontmatter);
 		}
 	}
@@ -180,6 +196,10 @@ export class DependencyCache extends Events {
 	 * Index a task file's dependencies and project references
 	 */
 	private indexTaskFile(path: string, frontmatter: Record<string, unknown>): void {
+		if (!this.isValidFile(path)) {
+			return;
+		}
+
 		const dependenciesField = this.fieldMapper?.toUserField("blockedBy") || "blockedBy";
 		const projectField = this.fieldMapper?.toUserField("projects") || "project";
 
@@ -192,7 +212,7 @@ export class DependencyCache extends Events {
 
 				for (const dep of normalized) {
 					const resolved = resolveDependencyEntry(this.app, path, dep);
-					if (resolved?.path) {
+					if (resolved?.path && this.isValidFile(resolved.path)) {
 						blockingTasks.add(resolved.path);
 
 						// Add to targets (reverse mapping)
@@ -218,7 +238,7 @@ export class DependencyCache extends Events {
 				if (typeof proj === 'string') {
 					// Resolve the project reference to a full file path
 					const resolvedPath = this.resolveProjectReference(path, proj);
-					if (resolvedPath) {
+					if (resolvedPath && this.isValidFile(resolvedPath)) {
 						if (!this.projectReferences.has(resolvedPath)) {
 							this.projectReferences.set(resolvedPath, new Set());
 						}
@@ -422,6 +442,10 @@ export class DependencyCache extends Events {
 		const files = this.app.vault.getMarkdownFiles();
 
 		for (const file of files) {
+			if (!this.isValidFile(file.path)) {
+				continue;
+			}
+
 			const metadata = this.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter || !this.isTaskFileCallback(metadata.frontmatter)) {
 				continue;
@@ -431,6 +455,23 @@ export class DependencyCache extends Events {
 		}
 
 		this.indexesBuilt = true;
+	}
+
+	updateConfig(settings: TaskNotesSettings): void {
+		this.settings = settings;
+		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
+		this.clearIndexes();
+		this.indexesBuilt = false;
+	}
+
+	private isValidFile(path: string): boolean {
+		return !isPathInExcludedFolder(path, this.excludedFolders);
+	}
+
+	private clearIndexes(): void {
+		this.dependencySources.clear();
+		this.dependencyTargets.clear();
+		this.projectReferences.clear();
 	}
 
 	/**
@@ -444,9 +485,7 @@ export class DependencyCache extends Events {
 		this.eventListeners = [];
 
 		// Clear indexes
-		this.dependencySources.clear();
-		this.dependencyTargets.clear();
-		this.projectReferences.clear();
+		this.clearIndexes();
 
 		this.initialized = false;
 		this.indexesBuilt = false;

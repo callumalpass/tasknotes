@@ -4,6 +4,7 @@ import { scoreMultiword } from "../utils/fuzzyMatch";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
 import { FilterUtils } from "../utils/FilterUtils";
+import { isPathInExcludedFolder, parseExcludedFolders } from "../utils/pathExclusions";
 
 export interface FileSuggestionItem {
 	insertText: string; // usually basename
@@ -35,6 +36,7 @@ export const FileSuggestHelper = {
 				? plugin.app.vault.getMarkdownFiles()
 				: [];
 			const items: FileSuggestionItem[] = [];
+			const excludedFolders = parseExcludedFolders(plugin.settings?.excludedFolders);
 
 			// Collect additional searchable properties from settings rows (|s flag)
 			const rows: string[] = (plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
@@ -59,6 +61,10 @@ export const FileSuggestHelper = {
 			const propertyFilter = getProjectPropertyFilter(filterConfig);
 
 			for (const file of files) {
+				if (isPathInExcludedFolder(file.path, excludedFolders)) {
+					continue;
+				}
+
 				const cache = plugin.app.metadataCache.getFileCache(file);
 
 				// Apply tag filtering if configured
