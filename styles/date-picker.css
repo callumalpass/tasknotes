@@ -2,6 +2,127 @@
    DATE PICKER MODAL - Enhanced Input Styling
    ===================================================================== */
 
+/* Calendar-first date/time picker used by task date actions */
+.tasknotes-plugin.date-time-picker-modal {
+    min-width: min(360px, calc(100vw - 32px));
+}
+
+.tasknotes-plugin .date-time-picker-modal__title {
+    margin: 0 0 var(--size-4-3);
+    font-size: var(--font-ui-large);
+    font-weight: 600;
+}
+
+.tasknotes-plugin .date-time-picker-modal__quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .date-time-picker-modal__quick-button,
+.tasknotes-plugin .date-time-picker-modal__action-button {
+    border-radius: var(--radius-s);
+}
+
+.tasknotes-plugin .date-time-picker-modal__calendar {
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .date-time-picker-modal__calendar-header {
+    display: grid;
+    grid-template-columns: 32px 1fr 32px;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-2);
+}
+
+.tasknotes-plugin .date-time-picker-modal__nav-button {
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+}
+
+.tasknotes-plugin .date-time-picker-modal__month-label {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .date-time-picker-modal__weekdays,
+.tasknotes-plugin .date-time-picker-modal__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+}
+
+.tasknotes-plugin .date-time-picker-modal__weekdays {
+    margin-bottom: var(--size-2-1);
+}
+
+.tasknotes-plugin .date-time-picker-modal__weekday {
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    font-weight: 500;
+}
+
+.tasknotes-plugin .date-time-picker-modal__day {
+    aspect-ratio: 1;
+    min-width: 0;
+    border: 0;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    cursor: var(--cursor, pointer);
+}
+
+.tasknotes-plugin .date-time-picker-modal__day:hover,
+.tasknotes-plugin .date-time-picker-modal__day:focus-visible {
+    background: var(--background-modifier-hover);
+    outline: none;
+}
+
+.tasknotes-plugin .date-time-picker-modal__day.is-outside-month {
+    color: var(--text-faint);
+}
+
+.tasknotes-plugin .date-time-picker-modal__day.is-today {
+    box-shadow: inset 0 0 0 1px var(--interactive-accent);
+}
+
+.tasknotes-plugin .date-time-picker-modal__day.is-selected {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.tasknotes-plugin .date-time-picker-modal__time-field {
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .date-time-picker-modal__time-label {
+    display: block;
+    margin-bottom: var(--size-2-1);
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+    font-weight: 500;
+}
+
+.tasknotes-plugin .date-time-picker-modal__time-input {
+    width: 100%;
+}
+
+.tasknotes-plugin .date-time-picker-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+}
+
 /* Date picker modal container */
 .date-picker-modal {
     font-family: var(--font-interface);

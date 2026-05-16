@@ -4,6 +4,7 @@ import { getOrderedModalGroups, shouldShowFieldForModal } from "./taskModalField
 import type { ModalFieldConfigLike, ModalFieldsConfigLike } from "./taskModalFieldConfig";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 import { DateContextMenu } from "../components/DateContextMenu";
+import { DateTimePickerModal } from "./DateTimePickerModal";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { StatusContextMenu } from "../components/StatusContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
@@ -1217,19 +1218,17 @@ export abstract class TaskModal extends Modal {
 		}, 50);
 	}
 
-	protected showDateContextMenu(event: UIEvent, type: "due" | "scheduled"): void {
+	protected showDateContextMenu(_event: UIEvent, type: "due" | "scheduled"): void {
 		const currentValue = type === "due" ? this.dueDate : this.scheduledDate;
 		const title =
 			type === "due"
 				? this.t("modals.task.dateMenu.dueTitle")
 				: this.t("modals.task.dateMenu.scheduledTitle");
 
-		const menu = new DateContextMenu({
-			currentValue: currentValue ? getDatePart(currentValue) : undefined,
+		const modal = new DateTimePickerModal(this.app, {
+			currentDate: currentValue ? getDatePart(currentValue) : undefined,
 			currentTime: currentValue ? getTimePart(currentValue) : undefined,
 			title: title,
-			plugin: this.plugin,
-			app: this.app,
 			onSelect: (value: string | null, time: string | null) => {
 				if (value) {
 					// Combine date and time if both are provided
@@ -1252,7 +1251,7 @@ export abstract class TaskModal extends Modal {
 			},
 		});
 
-		menu.show(event);
+		modal.open();
 	}
 
 	protected showStatusContextMenu(event: UIEvent): void {
