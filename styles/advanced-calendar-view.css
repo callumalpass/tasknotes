@@ -902,10 +902,18 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.advanced-calendar-view .fc-daygrid-event,
+.advanced-calendar-view .fc-timegrid-event {
+    white-space: normal;
+}
+
 .advanced-calendar-view .fc-event-title {
     font-weight: 500;
     line-height: 1.3;
-	text-decoration: inherit;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-decoration: inherit;
+    white-space: normal;
 }
 
 .advanced-calendar-view .fc-timegrid-slot-label {

@@ -535,7 +535,7 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 
 	return {
 		id: `due-${task.path}`,
-		title: `DUE: ${task.title}`,
+		title: task.title,
 		start: startDate,
 		end: endDate,
 		allDay: !hasTime,
