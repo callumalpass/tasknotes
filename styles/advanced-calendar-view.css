@@ -39,6 +39,37 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+.fc-event[data-ics-event="true"].has-related-note {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-muted) 32%, transparent);
+}
+
+.ics-related-note-indicator,
+.tasknotes-plugin .ics-card__related-note-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    color: currentColor;
+    opacity: 0.78;
+    vertical-align: text-bottom;
+}
+
+.ics-related-note-indicator svg,
+.tasknotes-plugin .ics-card__related-note-indicator svg {
+    width: 12px;
+    height: 12px;
+}
+
+.fc-event .ics-related-note-indicator {
+    margin-left: 4px;
+}
+
+.tasknotes-plugin .ics-card__related-note-indicator {
+    color: var(--tn-text-muted);
+}
+
 /* ICS Event Info Modal */
 .ics-event-description {
     max-height: 100px;

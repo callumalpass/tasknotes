@@ -75,7 +75,12 @@ export interface CalendarEvent {
 		isMicrosoftCalendar?: boolean; // For Microsoft Calendar events
 		timeEntryIndex?: number;
 		originalDate?: string; // For timeblock events - tracks original date for move operations
+		relatedNoteCount?: number; // For calendar events linked to notes/tasks
 	};
+}
+
+export interface ICSEventRenderOptions {
+	relatedNoteCount?: number;
 }
 
 type CalendarEventLike = {
@@ -622,7 +627,11 @@ export function createTimeEntryEvents(task: TaskInfo, plugin: TaskNotesPlugin): 
 /**
  * Create ICS calendar event (supports ICS subscriptions, Google Calendar, and Microsoft Calendar)
  */
-export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): CalendarEvent | null {
+export function createICSEvent(
+	icsEvent: ICSEvent,
+	plugin: TaskNotesPlugin,
+	options: ICSEventRenderOptions = {}
+): CalendarEvent | null {
 	try {
 		// Check if this is a Google Calendar or Microsoft Calendar event
 		const isGoogleCalendar = icsEvent.subscriptionId.startsWith("google-");
@@ -677,6 +686,10 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 				subscriptionName: subscriptionName,
 				isGoogleCalendar: isGoogleCalendar,
 				isMicrosoftCalendar: isMicrosoftCalendar,
+				relatedNoteCount:
+					options.relatedNoteCount && options.relatedNoteCount > 0
+						? options.relatedNoteCount
+						: undefined,
 			},
 		};
 	} catch (error) {

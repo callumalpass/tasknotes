@@ -1,4 +1,4 @@
-import { setIcon } from "obsidian";
+import { setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent } from "../types";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
@@ -7,11 +7,44 @@ import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 
 export interface ICSCardOptions {
 	showDate: boolean;
+	relatedNoteCount?: number;
 }
 
 export const DEFAULT_ICS_CARD_OPTIONS: ICSCardOptions = {
 	showDate: true,
 };
+
+function getRelatedNoteTooltip(plugin: TaskNotesPlugin, relatedNoteCount: number): string {
+	const label = plugin.i18n.translate("modals.icsEventInfo.relatedNotesHeading");
+	return `${label}: ${relatedNoteCount}`;
+}
+
+function renderRelatedNoteIndicator(
+	container: HTMLElement,
+	plugin: TaskNotesPlugin,
+	relatedNoteCount?: number
+): void {
+	const normalizedCount =
+		typeof relatedNoteCount === "number" && relatedNoteCount > 0 ? relatedNoteCount : 0;
+	const existing = container.querySelector<HTMLElement>(".ics-card__related-note-indicator");
+
+	if (!normalizedCount) {
+		existing?.remove();
+		return;
+	}
+
+	const indicator =
+		existing ||
+		container.createSpan({
+			cls: "ics-card__related-note-indicator",
+		});
+	indicator.dataset.relatedNoteCount = String(normalizedCount);
+	indicator.setAttribute("aria-label", getRelatedNoteTooltip(plugin, normalizedCount));
+	setIcon(indicator, "file-text");
+	setTooltip(indicator, getRelatedNoteTooltip(plugin, normalizedCount), {
+		placement: "top",
+	});
+}
 
 function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
 	try {
@@ -41,12 +74,16 @@ export function createICSEventCard(
 	plugin: TaskNotesPlugin,
 	options: Partial<ICSCardOptions> = {}
 ): HTMLElement {
-	// const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options }; // Currently unused
+	const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options };
 
 	const card = activeDocument.createElement("div");
 	// Reuse task-card base styling for visual consistency
 	card.className = "task-card task-card--ics";
 	card.dataset.key = icsEvent.id;
+	if (opts.relatedNoteCount && opts.relatedNoteCount > 0) {
+		card.classList.add("has-related-note", "task-card--ics-has-related-note");
+		card.dataset.relatedNoteCount = String(opts.relatedNoteCount);
+	}
 
 	// Determine subscription color and name
 	const subscription = plugin.icsSubscriptionService
@@ -131,10 +168,11 @@ export function createICSEventCard(
 
 	// Content
 	const content = mainRow.createEl("div", { cls: "task-card__content" });
-	content.createEl("div", {
+	const titleEl = content.createEl("div", {
 		cls: "task-card__title",
 		text: icsEvent.title || plugin.i18n.translate("ui.icsCard.untitledEvent"),
 	});
+	renderRelatedNoteIndicator(titleEl, plugin, opts.relatedNoteCount);
 
 	// Metadata line: time range • location • source
 	const metadata = content.createEl("div", { cls: "task-card__metadata" });
@@ -184,7 +222,7 @@ export function updateICSEventCard(
 	plugin: TaskNotesPlugin,
 	options: Partial<ICSCardOptions> = {}
 ): void {
-	// const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options }; // Currently unused
+	const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options };
 
 	const subscription = plugin.icsSubscriptionService
 		?.getSubscriptions()
@@ -194,12 +232,27 @@ export function updateICSEventCard(
 
 	// Update icon color on wrapper to propagate to svg (icons use currentColor)
 	element.style.setProperty("--current-status-color", color);
+	element.classList.toggle(
+		"has-related-note",
+		Boolean(opts.relatedNoteCount && opts.relatedNoteCount > 0)
+	);
+	element.classList.toggle(
+		"task-card--ics-has-related-note",
+		Boolean(opts.relatedNoteCount && opts.relatedNoteCount > 0)
+	);
+	if (opts.relatedNoteCount && opts.relatedNoteCount > 0) {
+		element.dataset.relatedNoteCount = String(opts.relatedNoteCount);
+	} else {
+		delete element.dataset.relatedNoteCount;
+	}
 	const iconWrap = element.querySelector<HTMLElement>(".ics-card__icon");
 	if (iconWrap) iconWrap.style.color = color;
 
 	const titleEl = element.querySelector(".task-card__title");
-	if (titleEl)
+	if (titleEl) {
 		titleEl.textContent = icsEvent.title || plugin.i18n.translate("ui.icsCard.untitledEvent");
+		renderRelatedNoteIndicator(titleEl as HTMLElement, plugin, opts.relatedNoteCount);
+	}
 
 	const metadata = element.querySelector(".task-card__metadata");
 	if (metadata) {

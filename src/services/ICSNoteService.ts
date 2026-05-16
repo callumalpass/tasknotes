@@ -13,6 +13,11 @@ import { ensureFolderExists } from "../utils/helpers";
 import { processTemplate, ICSTemplateData } from "../utils/templateProcessor";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 
+export interface ICSEventReference {
+	event: ICSEvent;
+	subscriptionName?: string;
+}
+
 /**
  * Service for creating notes and tasks from ICS calendar events
  */
@@ -21,6 +26,103 @@ export class ICSNoteService {
 
 	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
+	}
+
+	/**
+	 * Find a loaded calendar event by its stored ICS event id.
+	 */
+	findEventById(eventId: string): ICSEventReference | null {
+		const trimmedEventId = eventId.trim();
+		if (!trimmedEventId) return null;
+
+		const icsEvent = this.plugin.icsSubscriptionService
+			?.getAllEvents()
+			.find((event) => event.id === trimmedEventId);
+		if (icsEvent) {
+			const subscriptionName = this.plugin.icsSubscriptionService
+				?.getSubscriptions()
+				.find((subscription) => subscription.id === icsEvent.subscriptionId)?.name;
+			return { event: icsEvent, subscriptionName };
+		}
+
+		const googleEvent = this.plugin.googleCalendarService
+			?.getAllEvents()
+			.find((event) => event.id === trimmedEventId);
+		if (googleEvent) {
+			const calendarId = googleEvent.subscriptionId.replace("google-", "");
+			const subscriptionName =
+				this.plugin.googleCalendarService
+					?.getAvailableCalendars()
+					.find((calendar) => calendar.id === calendarId)?.summary || "Google Calendar";
+			return { event: googleEvent, subscriptionName };
+		}
+
+		const microsoftEvent = this.plugin.microsoftCalendarService
+			?.getAllEvents()
+			.find((event) => event.id === trimmedEventId);
+		if (microsoftEvent) {
+			const calendarId = microsoftEvent.subscriptionId.replace("microsoft-", "");
+			const subscriptionName =
+				this.plugin.microsoftCalendarService
+					?.getAvailableCalendars()
+					.find((calendar) => calendar.id === calendarId)?.summary ||
+				"Microsoft Calendar";
+			return { event: microsoftEvent, subscriptionName };
+		}
+
+		return null;
+	}
+
+	/**
+	 * Count linked notes/tasks per calendar event id in one pass.
+	 */
+	async getRelatedNoteCountsByEventId(): Promise<Map<string, number>> {
+		const pathsByEventId = new Map<string, Set<string>>();
+		const icsEventIdField = this.plugin.fieldMapper.toUserField("icsEventId");
+
+		const addReference = (eventIds: unknown, path: string): void => {
+			for (const eventId of this.normalizeEventIds(eventIds)) {
+				let paths = pathsByEventId.get(eventId);
+				if (!paths) {
+					paths = new Set<string>();
+					pathsByEventId.set(eventId, paths);
+				}
+				paths.add(path);
+			}
+		};
+
+		try {
+			const allTasks = await this.plugin.cacheManager.getAllTasks();
+			for (const task of allTasks) {
+				addReference(task.icsEventId, task.path);
+			}
+
+			const noteFiles = this.plugin.app.vault.getMarkdownFiles();
+			for (const file of noteFiles) {
+				const cache = this.plugin.app.metadataCache.getFileCache(file);
+				const frontmatter = cache?.frontmatter;
+				if (!frontmatter) continue;
+				addReference(frontmatter[icsEventIdField], file.path);
+			}
+		} catch (error) {
+			console.error("Error counting related notes for ICS events:", error);
+			return new Map();
+		}
+
+		return new Map(
+			Array.from(pathsByEventId.entries()).map(([eventId, paths]) => [
+				eventId,
+				paths.size,
+			])
+		);
+	}
+
+	private normalizeEventIds(value: unknown): string[] {
+		const values = Array.isArray(value) ? value : value ? [value] : [];
+		return values
+			.filter((eventId): eventId is string => typeof eventId === "string")
+			.map((eventId) => eventId.trim())
+			.filter(Boolean);
 	}
 
 	/**

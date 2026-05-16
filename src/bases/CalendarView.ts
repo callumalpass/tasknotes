@@ -69,6 +69,32 @@ type CalendarDataAdapterWithView = {
 	basesView: CalendarView;
 };
 
+function getRelatedNoteTooltip(plugin: TaskNotesPlugin, relatedNoteCount: number): string {
+	const label = plugin.i18n.translate("modals.icsEventInfo.relatedNotesHeading");
+	return `${label}: ${relatedNoteCount}`;
+}
+
+function appendRelatedNoteIndicator(
+	container: Element,
+	plugin: TaskNotesPlugin,
+	relatedNoteCount: number
+): void {
+	if (relatedNoteCount <= 0 || container.querySelector(".ics-related-note-indicator")) {
+		return;
+	}
+
+	const doc = container.ownerDocument;
+	const iconContainer = doc.createElement("span");
+	iconContainer.classList.add("ics-related-note-indicator");
+	iconContainer.setAttribute("aria-label", getRelatedNoteTooltip(plugin, relatedNoteCount));
+	iconContainer.dataset.relatedNoteCount = String(relatedNoteCount);
+	setIcon(iconContainer, "file-text");
+	setTooltip(iconContainer, getRelatedNoteTooltip(plugin, relatedNoteCount), {
+		placement: "top",
+	});
+	container.appendChild(iconContainer);
+}
+
 type BasesEntryValue = {
 	data?: unknown;
 };
@@ -1763,21 +1789,31 @@ export class CalendarView extends BasesViewBase {
 			allEvents.push(...propertyEvents);
 		}
 
+		const hasExternalCalendarEvents = Boolean(
+			this.plugin.icsSubscriptionService?.getAllEvents().length ||
+				this.plugin.googleCalendarService?.getAllEvents().length ||
+				this.plugin.microsoftCalendarService?.getAllEvents().length
+		);
+		const relatedNoteCountsByEventId = hasExternalCalendarEvents
+			? await this.plugin.icsNoteService.getRelatedNoteCountsByEventId()
+			: new Map<string, number>();
+
 		// Add ICS calendar events
 		if (this.plugin.icsSubscriptionService) {
-			const icsEvents = await this.buildICSEvents();
+			const icsEvents = await this.buildICSEvents(relatedNoteCountsByEventId);
 			allEvents.push(...icsEvents);
 		}
 
 		// Add Google Calendar events
 		if (this.plugin.googleCalendarService) {
-			const googleEvents = await this.buildGoogleCalendarEvents();
+			const googleEvents = await this.buildGoogleCalendarEvents(relatedNoteCountsByEventId);
 			allEvents.push(...googleEvents);
 		}
 
 		// Add Microsoft Calendar events
 		if (this.plugin.microsoftCalendarService) {
-			const microsoftEvents = await this.buildMicrosoftCalendarEvents();
+			const microsoftEvents =
+				await this.buildMicrosoftCalendarEvents(relatedNoteCountsByEventId);
 			allEvents.push(...microsoftEvents);
 		}
 
@@ -1867,7 +1903,9 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildICSEvents(): Promise<EventInput[]> {
+	private async buildICSEvents(
+		relatedNoteCountsByEventId: Map<string, number>
+	): Promise<EventInput[]> {
 		if (!this.plugin.icsSubscriptionService) return [];
 
 		const events: EventInput[] = [];
@@ -1878,7 +1916,9 @@ export class CalendarView extends BasesViewBase {
 			if (this.icsCalendarToggles.get(icsEvent.subscriptionId) === false) continue;
 
 			// Let FullCalendar handle date filtering
-			const calendarEvent = createICSEvent(icsEvent, this.plugin);
+			const calendarEvent = createICSEvent(icsEvent, this.plugin, {
+				relatedNoteCount: relatedNoteCountsByEventId.get(icsEvent.id),
+			});
 			if (calendarEvent) {
 				events.push(calendarEvent);
 			}
@@ -1887,7 +1927,9 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildGoogleCalendarEvents(): Promise<EventInput[]> {
+	private async buildGoogleCalendarEvents(
+		relatedNoteCountsByEventId: Map<string, number>
+	): Promise<EventInput[]> {
 		if (!this.plugin.googleCalendarService) return [];
 
 		const events: EventInput[] = [];
@@ -1899,7 +1941,9 @@ export class CalendarView extends BasesViewBase {
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
 
 			// Let FullCalendar handle date filtering
-			const calendarEvent = createICSEvent(icsEvent, this.plugin);
+			const calendarEvent = createICSEvent(icsEvent, this.plugin, {
+				relatedNoteCount: relatedNoteCountsByEventId.get(icsEvent.id),
+			});
 			if (calendarEvent) {
 				events.push(calendarEvent);
 			}
@@ -1908,7 +1952,9 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildMicrosoftCalendarEvents(): Promise<EventInput[]> {
+	private async buildMicrosoftCalendarEvents(
+		relatedNoteCountsByEventId: Map<string, number>
+	): Promise<EventInput[]> {
 		if (!this.plugin.microsoftCalendarService) return [];
 
 		const events: EventInput[] = [];
@@ -1920,7 +1966,9 @@ export class CalendarView extends BasesViewBase {
 			if (this.microsoftCalendarToggles.get(calendarId) === false) continue;
 
 			// Let FullCalendar handle date filtering
-			const calendarEvent = createICSEvent(icsEvent, this.plugin);
+			const calendarEvent = createICSEvent(icsEvent, this.plugin, {
+				relatedNoteCount: relatedNoteCountsByEventId.get(icsEvent.id),
+			});
 			if (calendarEvent) {
 				events.push(calendarEvent);
 			}
@@ -2656,8 +2704,21 @@ export class CalendarView extends BasesViewBase {
 	private handleEventDidMount(arg: EventMountArg): void {
 		if (!arg?.event?.extendedProps) return;
 
-		const { taskInfo, timeblock, icsEvent, eventType, basesEntry } = arg.event.extendedProps;
+		const { taskInfo, timeblock, icsEvent, eventType, basesEntry, relatedNoteCount } =
+			arg.event.extendedProps;
 		suppressCalendarContextMenuOnMobile(arg.el);
+
+		const relatedNoteTotal =
+			typeof relatedNoteCount === "number" && relatedNoteCount > 0 ? relatedNoteCount : 0;
+
+		if (icsEvent) {
+			arg.el.setAttribute("data-ics-event", "true");
+			arg.el.classList.add("fc-ics-event");
+			if (relatedNoteTotal > 0) {
+				arg.el.classList.add("has-related-note", "fc-event--has-related-note");
+				arg.el.dataset.relatedNoteCount = String(relatedNoteTotal);
+			}
+		}
 
 		// Add calendar icon to provider-managed calendar events in grid views
 		if (icsEvent && arg.view.type !== "listWeek") {
@@ -2723,6 +2784,11 @@ export class CalendarView extends BasesViewBase {
 					iconContainer.appendChild(iconEl);
 					titleEl.insertBefore(iconContainer, titleEl.firstChild);
 				}
+			}
+
+			const titleEl = arg.el.querySelector(".fc-event-title");
+			if (titleEl && relatedNoteTotal > 0) {
+				appendRelatedNoteIndicator(titleEl, this.plugin, relatedNoteTotal);
 			}
 		}
 
@@ -2804,7 +2870,9 @@ export class CalendarView extends BasesViewBase {
 			}
 			// Render ICS events with ICSCard
 			else if (icsEvent && eventType === "ics") {
-				cardElement = createICSEventCard(icsEvent, this.plugin);
+				cardElement = createICSEventCard(icsEvent, this.plugin, {
+					relatedNoteCount: relatedNoteTotal,
+				});
 			}
 			// Render property-based events with PropertyEventCard
 			else if (eventType === "property-based" && basesEntry) {
@@ -2893,9 +2961,13 @@ export class CalendarView extends BasesViewBase {
 			const tooltipText = generateTaskTooltip(taskInfo, this.plugin);
 			setTooltip(arg.el, tooltipText);
 		} else if (icsEvent) {
+			const relatedNotesText =
+				relatedNoteTotal > 0
+					? `\n\n${getRelatedNoteTooltip(this.plugin, relatedNoteTotal)}`
+					: "";
 			const tooltipText = icsEvent.description
-				? `${icsEvent.title}\n\n${icsEvent.description}`
-				: icsEvent.title;
+				? `${icsEvent.title}\n\n${icsEvent.description}${relatedNotesText}`
+				: `${icsEvent.title}${relatedNotesText}`;
 			setTooltip(arg.el, tooltipText);
 		}
 

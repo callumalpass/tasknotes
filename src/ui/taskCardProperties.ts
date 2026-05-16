@@ -1,6 +1,6 @@
 import { Notice, setTooltip, TFile, type CachedMetadata } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { TaskInfo } from "../types";
+import { ICSEvent, TaskInfo } from "../types";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { calculateTotalTimeSpent } from "../utils/helpers";
@@ -66,6 +66,23 @@ function prepareInteractiveControl(element: HTMLElement): void {
 		event.stopPropagation();
 		element.click();
 	});
+}
+
+function normalizeICSEventIds(value: unknown): string[] {
+	const values = Array.isArray(value) ? value : value ? [value] : [];
+	return values
+		.filter((eventId): eventId is string => typeof eventId === "string")
+		.map((eventId) => eventId.trim())
+		.filter(Boolean);
+}
+
+function formatICSEventSummary(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
+	const dateText = icsEvent.start
+		? formatDateTimeForDisplay(icsEvent.start, {
+				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
+			})
+		: "";
+	return dateText ? `${icsEvent.title} (${dateText})` : icsEvent.title;
 }
 
 function attachDateClickHandler(
@@ -378,9 +395,19 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.textContent = `${value.length} ${value.length === 1 ? "reminder" : "reminders"}`;
 		}
 	},
-	icsEventId: (element, value) => {
-		if (Array.isArray(value) && value.length > 0) {
-			element.textContent = `Linked to ${value.length} calendar ${value.length === 1 ? "event" : "events"}`;
+	icsEventId: (element, value, _task, plugin) => {
+		const eventIds = normalizeICSEventIds(value);
+		if (eventIds.length === 0) return;
+
+		const eventSummaries = eventIds
+			.map((eventId) => plugin.icsNoteService.findEventById(eventId)?.event)
+			.filter((event): event is ICSEvent => Boolean(event))
+			.map((event) => formatICSEventSummary(event, plugin));
+
+		if (eventSummaries.length > 0) {
+			element.textContent = `Calendar: ${eventSummaries.join(", ")}`;
+		} else {
+			element.textContent = `Linked to ${eventIds.length} calendar ${eventIds.length === 1 ? "event" : "events"}`;
 		}
 	},
 	checklistProgress: (element, _value, task, plugin) => {
