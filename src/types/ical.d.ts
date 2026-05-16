@@ -8,6 +8,9 @@ declare module 'ical.js' {
         getAllSubcomponents(name: string): Component[];
         getFirstPropertyValue(name: string): unknown;
         getAllProperties(name: string): Property[];
+        addSubcomponent(component: Component): Component;
+        updatePropertyWithValue(name: string, value: unknown): Property;
+        toJSON(): unknown;
     }
 
     export interface Property {
@@ -49,8 +52,12 @@ declare module 'ical.js' {
         next(): Time | null;
     }
 
+    export class Timezone {
+        constructor(data: { component: Component; tzid: string });
+    }
+
     export const TimezoneService: {
-        register(component: Component): void;
+        register(timezone: Component | Timezone): void;
     };
 
     export function parse(input: string): ParsedComponent;

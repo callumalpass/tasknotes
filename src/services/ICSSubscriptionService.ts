@@ -7,6 +7,61 @@ import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { stringifyUnknown } from "../utils/stringUtils";
 
+function getVTimezoneTzid(vtimezone: ICAL.Component): string | null {
+	const value = vtimezone.getFirstPropertyValue("tzid");
+	return typeof value === "string" ? value.trim() : null;
+}
+
+function getVTimezoneAliases(tzid: string): string[] {
+	const alias = tzid.replace(/\s+\([^)]+\)$/u, "").trim();
+	return alias && alias !== tzid ? [alias] : [];
+}
+
+function findVTimezone(calendar: ICAL.Component, tzid: string): ICAL.Component | null {
+	return (
+		calendar
+			.getAllSubcomponents("vtimezone")
+			.find((vtimezone) => getVTimezoneTzid(vtimezone) === tzid) ?? null
+	);
+}
+
+function cloneVTimezoneWithTzid(vtimezone: ICAL.Component, tzid: string): ICAL.Component {
+	const aliasVTimezone = new ICAL.Component(
+		JSON.parse(JSON.stringify(vtimezone.toJSON())) as unknown[]
+	);
+	aliasVTimezone.updatePropertyWithValue("tzid", tzid);
+	return aliasVTimezone;
+}
+
+function registerCalendarVTimezones(calendar: ICAL.Component): void {
+	const vtimezones = calendar.getAllSubcomponents("vtimezone");
+
+	vtimezones.forEach((vtimezone) => {
+		const tzid = getVTimezoneTzid(vtimezone);
+		ICAL.TimezoneService.register(vtimezone);
+
+		if (!tzid) {
+			return;
+		}
+
+		getVTimezoneAliases(tzid).forEach((alias) => {
+			const existingAliasVTimezone = findVTimezone(calendar, alias);
+			const aliasVTimezone =
+				existingAliasVTimezone ?? cloneVTimezoneWithTzid(vtimezone, alias);
+			const timezone = new ICAL.Timezone({
+				component: aliasVTimezone,
+				tzid: alias,
+			});
+
+			if (!existingAliasVTimezone) {
+				calendar.addSubcomponent(aliasVTimezone);
+			}
+
+			ICAL.TimezoneService.register(timezone);
+		});
+	});
+}
+
 export class ICSSubscriptionService extends EventEmitter {
 	private plugin: TaskNotesPlugin;
 	private subscriptions: ICSSubscription[] = [];
@@ -304,11 +359,8 @@ export class ICSSubscriptionService extends EventEmitter {
 			const jcalData = ICAL.parse(icsData);
 			const comp = new ICAL.Component(jcalData);
 
-			// Register VTIMEZONE components before processing events
-			const vtimezones = comp.getAllSubcomponents("vtimezone");
-			vtimezones.forEach((vtimezone: ICAL.Component) => {
-				ICAL.TimezoneService.register(vtimezone);
-			});
+			// Register VTIMEZONE components before processing events.
+			registerCalendarVTimezones(comp);
 
 			const vevents = comp.getAllSubcomponents("vevent");
 			const events: ICSEvent[] = [];
