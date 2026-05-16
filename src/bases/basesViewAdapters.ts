@@ -3,7 +3,7 @@ import type { BasesDataItem } from "./helpers";
 
 type MetadataTypeManagerSource = {
 	metadataTypeManager?: {
-		properties?: Record<string, { type?: string }>;
+		properties?: Record<string, { type?: string; widget?: string }>;
 	};
 };
 
@@ -33,8 +33,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export function isObsidianListProperty(app: App, propertyName: string): boolean {
 	const metadataTypeManager = (app as unknown as MetadataTypeManagerSource)
 		.metadataTypeManager;
-	const propertyType = metadataTypeManager?.properties?.[propertyName.toLowerCase()]?.type;
-	return propertyType !== undefined && OBSIDIAN_LIST_PROPERTY_TYPES.has(propertyType);
+	const propertyInfo = metadataTypeManager?.properties?.[propertyName.toLowerCase()];
+	const propertyType = propertyInfo?.type ?? propertyInfo?.widget;
+	return typeof propertyType === "string" && OBSIDIAN_LIST_PROPERTY_TYPES.has(propertyType);
 }
 
 export function getBasesFormulaContext(data: unknown): BasesFormulaContext | undefined {
