@@ -22,6 +22,40 @@ export interface TaskSelectorWithCreateOptions {
 	title?: string;
 }
 
+function searchableValueIncludes(value: unknown, lowerQuery: string): boolean {
+	if (value === null || value === undefined) {
+		return false;
+	}
+
+	if (
+		typeof value !== "string" &&
+		typeof value !== "number" &&
+		typeof value !== "boolean"
+	) {
+		return false;
+	}
+
+	return String(value).toLowerCase().includes(lowerQuery);
+}
+
+export function taskMatchesSelectorQuery(task: TaskInfo, lowerQuery: string): boolean {
+	if (searchableValueIncludes(task.title, lowerQuery)) return true;
+	if (searchableValueIncludes(task.due, lowerQuery)) return true;
+	if (task.priority !== "normal" && searchableValueIncludes(task.priority, lowerQuery)) {
+		return true;
+	}
+	if (task.contexts?.some((context) => searchableValueIncludes(context, lowerQuery))) {
+		return true;
+	}
+
+	const filteredProjects = filterEmptyProjects(task.projects || []);
+	if (filteredProjects.some((project) => searchableValueIncludes(project, lowerQuery))) {
+		return true;
+	}
+
+	return false;
+}
+
 /**
  * A fuzzy selector modal that allows users to either:
  * 1. Select an existing task from the list
@@ -387,31 +421,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			.filter((task) => !task.archived)
 			.filter((task) => {
 				if (!query) return true;
-
-				// Search in title
-				if (task.title && task.title.toLowerCase().includes(lowerQuery)) return true;
-
-				// Search in due date
-				if (task.due && task.due.toLowerCase().includes(lowerQuery)) return true;
-
-				// Search in priority
-				if (
-					task.priority &&
-					task.priority !== "normal" &&
-					task.priority.toLowerCase().includes(lowerQuery)
-				)
-					return true;
-
-				// Search in contexts (filter out null/undefined values)
-				if (task.contexts?.some((c) => c && c.toLowerCase().includes(lowerQuery)))
-					return true;
-
-				// Search in projects (filter out null/undefined values)
-				const filteredProjects = filterEmptyProjects(task.projects || []);
-				if (filteredProjects.some((p) => p && p.toLowerCase().includes(lowerQuery)))
-					return true;
-
-				return false;
+				return taskMatchesSelectorQuery(task, lowerQuery);
 			})
 			.sort((a, b) => {
 				// Sort by completion status first (incomplete tasks come first)
