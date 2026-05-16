@@ -64,6 +64,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1550](https://github.com/callumalpass/tasknotes/issues/1550)) Prevented mobile Calendar event drags from opening the task context menu before the drag can begin. Thanks to @stil-sudo for suggesting this.
 - ([#1563](https://github.com/callumalpass/tasknotes/issues/1563)) Removed duplicate entries from Calendar event related notes when the same linked file is also a TaskNote. Thanks to @VarunNikam22 for reporting this.
 - ([#1566](https://github.com/callumalpass/tasknotes/issues/1566)) Rendered grouped multi-project values as individual links when a Bases group title contains multiple project links. Thanks to @ptsouchlos for suggesting this.
 - ([#1569](https://github.com/callumalpass/tasknotes/issues/1569)) Allowed local ICS calendar paths inside the vault to be pasted as absolute filesystem paths, and showed a clearer error when the file is outside the vault. Thanks to @Photon89 for reporting this and following up.

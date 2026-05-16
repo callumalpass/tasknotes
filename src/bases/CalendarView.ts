@@ -44,7 +44,7 @@ import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
 import { CalendarEventCreationModal } from "../modals/CalendarEventCreationModal";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
-import { Menu, Notice, TFile, setIcon, setTooltip } from "obsidian";
+import { Menu, Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
 import { format } from "date-fns";
 import { createTaskCard } from "../ui/TaskCard";
 import { createICSEventCard } from "../ui/ICSCard";
@@ -82,6 +82,20 @@ type CalendarEphemeralState = {
 	calendarView?: unknown;
 	calendarScroll?: unknown;
 };
+
+export function suppressCalendarContextMenuOnMobile(element: HTMLElement): void {
+	if (!Platform.isMobile) return;
+
+	element.classList.add("tn-calendar-event-touch-target");
+	element.addEventListener(
+		"contextmenu",
+		(event) => {
+			event.preventDefault();
+			event.stopImmediatePropagation();
+		},
+		{ capture: true }
+	);
+}
 
 export type CalendarScrollPosition = {
 	scrollTop: number;
@@ -1330,6 +1344,13 @@ export class CalendarView extends BasesViewBase {
 			editable: true,
 			droppable: true,
 			selectable: true,
+			...(Platform.isMobile
+				? {
+						longPressDelay: 350,
+						eventLongPressDelay: 350,
+						selectLongPressDelay: 350,
+					}
+				: {}),
 			selectMirror: this.viewOptions.selectMirror,
 			eventTimeFormat:
 				this.viewOptions.timeFormat === "12"
@@ -2636,6 +2657,7 @@ export class CalendarView extends BasesViewBase {
 		if (!arg?.event?.extendedProps) return;
 
 		const { taskInfo, timeblock, icsEvent, eventType, basesEntry } = arg.event.extendedProps;
+		suppressCalendarContextMenuOnMobile(arg.el);
 
 		// Add calendar icon to provider-managed calendar events in grid views
 		if (icsEvent && arg.view.type !== "listWeek") {

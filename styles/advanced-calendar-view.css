@@ -982,6 +982,17 @@
         padding: 0.25rem 0.5rem;
     }
 
+    body.is-mobile .advanced-calendar-view .tn-calendar-event-touch-target {
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+
+    body.is-mobile .advanced-calendar-view .tn-calendar-event-touch-target .task-card {
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+
     .advanced-calendar-view .fc-timegrid-event {
         border-radius: 3px;
         font-size: 0.68rem;
