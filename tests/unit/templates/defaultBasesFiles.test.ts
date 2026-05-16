@@ -160,7 +160,7 @@ describe("defaultBasesFiles", () => {
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
 		expect(template).toContain(
-			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))'`
+			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))'`
 		);
 
 		// Guard against the time-naive form returning

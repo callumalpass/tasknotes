@@ -273,6 +273,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 	const scheduledIsEmpty = `${scheduledProperty}.isEmpty()`;
 	const dueHasValue = `(${dueIsEmpty} == false)`;
 	const scheduledHasValue = `(${scheduledIsEmpty} == false)`;
+	const safeDaysUntilNext = "if(formula.daysUntilNext, formula.daysUntilNext, 0)";
 
 	return {
 		// Priority weight for sorting (lower = higher priority)
@@ -398,7 +399,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		// Urgency score: combines priority weight, days until next date (due or scheduled), and time-of-day.
 		// Higher = more urgent. The 0..1 time-of-day term ranks earlier-in-day tasks above later same-day
 		// tasks at the same priority. Date-only values fall back to midnight.
-		urgencyScore: `if(${dueIsEmpty} && ${scheduledIsEmpty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))`,
+		urgencyScore: `if(${dueIsEmpty} && ${scheduledIsEmpty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - ${safeDaysUntilNext}) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))`,
 
 		// === DISPLAY FORMULAS ===
 

@@ -63,6 +63,7 @@ Example:
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
 - ([#1614](https://github.com/callumalpass/tasknotes/issues/1614)) Wrote unchecked boolean custom user-field defaults to new task frontmatter, including tasks created through instant conversion. Thanks to @kobalteule for reporting this.
+- ([#1611](https://github.com/callumalpass/tasknotes/issues/1611)) Made generated default Bases urgency scores fall back safely when the next-date distance is missing. Thanks to @benoitjadinon for reporting this and suggesting the formula fix.
 - ([#1623](https://github.com/callumalpass/tasknotes/issues/1623)) Honored "Store title in filename" across task creation and edits, so the mapped title property is omitted from frontmatter and stale title fields are removed on save. Thanks to @VenturaNotes for reporting this, and to @Ender367, @slipstyle, and @loukandr for confirming and tracing affected paths.
 - ([#1621](https://github.com/callumalpass/tasknotes/issues/1621)) Made Kanban swimlane labels stop freezing on mobile and kept their label column compact, leaving more room for task cards while horizontally scrolling. Thanks to @karenchoe428 for reporting this.
 - ([#1615](https://github.com/callumalpass/tasknotes/issues/1615)) Detected Obsidian custom multi-text properties exposed through `widget: "multitext"` as list properties, so Kanban can split those values into multiple columns. Thanks to @konton71 for reporting this.
