@@ -92,6 +92,10 @@ export type CalendarViewConfigReader = {
 	get(key: string): unknown;
 };
 
+const CALENDAR_DATA_UPDATE_DEBOUNCE_MS = 5000;
+const CALENDAR_DATA_SIGNATURE_CHECK_INTERVAL_MS = 250;
+const CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS = 2000;
+
 const Calendar = FullCalendar;
 
 type Calendar = {
@@ -472,6 +476,10 @@ export class CalendarView extends BasesViewBase {
 	private _configChangedNeedsRecreate = false;
 	// Preserve visible date when calendar is re-created.
 	private _recreateTargetDate: Date | null = null;
+	// Track Bases view/filter transitions so user-initiated view switches render immediately.
+	private _previousDataSignature: string | null = null;
+	private _previousControllerViewName: string | null = null;
+	private readonly basesController: unknown;
 
 	private viewOptions: {
 		// Events
@@ -528,6 +536,7 @@ export class CalendarView extends BasesViewBase {
 
 	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
+		this.basesController = controller;
 		// BasesView now provides this.data, this.config, and this.app directly
 		(this.dataAdapter as unknown as CalendarDataAdapterWithView).basesView = this;
 		// Note: Don't read config here - this.config is not set until after construction
@@ -595,6 +604,8 @@ export class CalendarView extends BasesViewBase {
 		this.readViewOptions();
 		// Initialize config snapshot for change detection
 		this._previousConfigSnapshot = this.getConfigSnapshot();
+		this._previousDataSignature = this.getDataSignature();
+		this._previousControllerViewName = this.getControllerViewName();
 		// Call parent onload which sets up container and listeners
 		super.onload();
 	}
@@ -642,20 +653,23 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
+		const configChanged = this.hasConfigChanged();
+		const controllerViewChanged = this.hasControllerViewChanged();
+		const dataSignatureChanged = this.hasDataSignatureChanged();
+
 		// If config changed, mark for recreation and render immediately
-		if (this.hasConfigChanged()) {
+		if (configChanged) {
 			this._configChangedNeedsRecreate = true;
 			void this.render();
 			return;
 		}
 
-		// Otherwise use longer debounce for external changes (typing in notes)
-		// Use correct window for pop-out window support
-		const win = this.containerEl.ownerDocument.defaultView || window;
-		this.dataUpdateDebounceTimer = win.setTimeout(() => {
-			this.dataUpdateDebounceTimer = null;
+		if (dataSignatureChanged) {
 			this.renderPreservingEphemeralState();
-		}, 5000); // 5 second debounce - outlasts Obsidian's save interval
+			return;
+		}
+
+		this.scheduleDeferredDataUpdate(Date.now(), controllerViewChanged);
 	}
 
 	/**
@@ -762,6 +776,85 @@ export class CalendarView extends BasesViewBase {
 			return true;
 		}
 		return false;
+	}
+
+	private getDataSignature(): string {
+		if (!this.data?.data) {
+			return "";
+		}
+
+		return this.data.data.map((entry) => entry.file?.path ?? "").join("\u0000");
+	}
+
+	private hasDataSignatureChanged(): boolean {
+		const currentSignature = this.getDataSignature();
+		if (this._previousDataSignature === null) {
+			this._previousDataSignature = currentSignature;
+			return false;
+		}
+		if (currentSignature !== this._previousDataSignature) {
+			this._previousDataSignature = currentSignature;
+			return true;
+		}
+		return false;
+	}
+
+	private getControllerViewName(): string | null {
+		if (!isRecord(this.basesController)) {
+			return null;
+		}
+
+		const viewName = this.basesController.viewName;
+		return typeof viewName === "string" ? viewName : null;
+	}
+
+	private hasControllerViewChanged(): boolean {
+		const currentViewName = this.getControllerViewName();
+		if (this._previousControllerViewName === null) {
+			this._previousControllerViewName = currentViewName;
+			return currentViewName !== null;
+		}
+		if (currentViewName !== this._previousControllerViewName) {
+			this._previousControllerViewName = currentViewName;
+			return true;
+		}
+		return false;
+	}
+
+	private scheduleDeferredDataUpdate(startedAt = Date.now(), renderAtMaxCheck = false): void {
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		const elapsed = Date.now() - startedAt;
+		let delay: number;
+
+		if (elapsed < CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS) {
+			delay = CALENDAR_DATA_SIGNATURE_CHECK_INTERVAL_MS;
+		} else if (renderAtMaxCheck) {
+			delay = 0;
+		} else {
+			delay = Math.max(0, CALENDAR_DATA_UPDATE_DEBOUNCE_MS - elapsed);
+		}
+
+		this.dataUpdateDebounceTimer = win.setTimeout(() => {
+			this.dataUpdateDebounceTimer = null;
+			const nextElapsed = Date.now() - startedAt;
+
+			if (this.hasDataSignatureChanged()) {
+				this.renderPreservingEphemeralState();
+				return;
+			}
+
+			if (nextElapsed < CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS) {
+				this.scheduleDeferredDataUpdate(startedAt, renderAtMaxCheck);
+				return;
+			}
+
+			if (!renderAtMaxCheck && nextElapsed < CALENDAR_DATA_UPDATE_DEBOUNCE_MS) {
+				this.scheduleDeferredDataUpdate(startedAt, false);
+				return;
+			}
+
+			this.renderPreservingEphemeralState();
+		}, delay);
 	}
 
 	/**
