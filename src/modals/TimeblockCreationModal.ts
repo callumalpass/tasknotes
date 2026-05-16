@@ -103,9 +103,7 @@ export class TimeblockCreationModal extends Modal {
 			});
 
 		// Time range
-		const timeContainer = contentEl.createDiv({ cls: "timeblock-time-container" });
-
-		new Setting(timeContainer)
+		new Setting(contentEl)
 			.setName(this.translate("modals.timeblockCreation.startTimeLabel"))
 			.setDesc(this.translate("modals.timeblockCreation.startTimeDesc"))
 			.addText((text) => {
@@ -116,7 +114,7 @@ export class TimeblockCreationModal extends Modal {
 				this.startTimeInput.type = "time";
 			});
 
-		new Setting(timeContainer)
+		new Setting(contentEl)
 			.setName(this.translate("modals.timeblockCreation.endTimeLabel"))
 			.setDesc(this.translate("modals.timeblockCreation.endTimeDesc"))
 			.addText((text) => {

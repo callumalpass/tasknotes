@@ -46,6 +46,7 @@ Example:
 
 ## Fixed
 
+- ([#1767](https://github.com/callumalpass/tasknotes/issues/1767)) Aligned the start and end time rows in the timeblock creation modal. Thanks to @loiveli for reporting this.
 - ([#1783](https://github.com/callumalpass/tasknotes/issues/1783)) Replaced the default browser drag ghost for Kanban cards so dragging a card no longer makes the next card look semi-transparent. Thanks to @loukandr for reporting this and tracing the drag image behavior.
 - ([#1796](https://github.com/callumalpass/tasknotes/issues/1796)) Restored expanded subtasks immediately after renaming a parent task file and updating links. Thanks to @bung69 for reporting this.
 - ([#1797](https://github.com/callumalpass/tasknotes/issues/1797)) Improved Kanban manual ordering so long columns remain scrollable while dragging, and mobile drops can place a card relative to another card in the column. Thanks to @SKIERZZ for reporting this and sharing videos.

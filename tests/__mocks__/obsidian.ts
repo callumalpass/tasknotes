@@ -614,7 +614,7 @@ export class Modal extends Component {
           if (Array.isArray(attrs.cls)) {
             el.classList.add(...attrs.cls);
           } else {
-            el.classList.add(attrs.cls);
+            el.classList.add(...String(attrs.cls).split(/\s+/).filter(Boolean));
           }
         }
         if (attrs.text) {
@@ -824,6 +824,18 @@ export class Setting {
       setDisabled: (disabled: boolean) => mockText,
     };
     callback(mockText);
+    return this;
+  }
+
+  addTextArea(callback: (text: any) => void): Setting {
+    const mockTextArea = {
+      inputEl: document.createElement('textarea'),
+      setPlaceholder: (placeholder: string) => mockTextArea,
+      setValue: (value: string) => mockTextArea,
+      onChange: (callback: (value: string) => void) => mockTextArea,
+      setDisabled: (disabled: boolean) => mockTextArea,
+    };
+    callback(mockTextArea);
     return this;
   }
 

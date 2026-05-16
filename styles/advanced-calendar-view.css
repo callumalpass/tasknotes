@@ -181,12 +181,6 @@
     text-align: center;
 }
 
-.timeblock-time-container {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: var(--size-4-3);
-}
-
 .timeblock-modal-buttons {
     display: flex;
     gap: 0.5rem;
