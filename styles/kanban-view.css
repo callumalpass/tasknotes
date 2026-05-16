@@ -358,6 +358,35 @@
     min-height: 0; /* Allow container to shrink and enable scrolling */
 }
 
+.tasknotes-plugin .kanban-view__add-task-footer {
+    display: flex;
+    justify-content: center;
+    padding: var(--tn-spacing-xs);
+    border-top: 1px solid color-mix(in srgb, var(--tn-border-color) 72%, transparent);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .kanban-view__add-task-button {
+    width: 100%;
+    min-height: 28px;
+    color: var(--tn-text-muted);
+    border-radius: var(--tn-radius-sm);
+    opacity: 0.72;
+    transition: opacity var(--tn-transition-fast), color var(--tn-transition-fast), background-color var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .kanban-view__add-task-button:hover,
+.tasknotes-plugin .kanban-view__add-task-button:focus-visible {
+    color: var(--tn-text-normal);
+    background: var(--tn-interactive-hover);
+    opacity: 1;
+}
+
+.tasknotes-plugin .kanban-view__add-task-button svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* Virtualized columns need bounded height and relative positioning. */
 .tasknotes-plugin .kanban-view__cards--virtual {
     max-height: 100vh;

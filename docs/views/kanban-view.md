@@ -41,6 +41,7 @@ In standard mode, the Kanban board displays a horizontal row of columns. Each co
 Each column includes:
 - A header showing the property value and task count
 - A scrollable area containing task cards
+- An add button that opens the TaskNotes creation modal with the column value filled in
 - Drag-and-drop functionality for reordering columns or moving tasks between columns
 
 ### Swimlane Layout
@@ -51,6 +52,7 @@ Each swimlane row includes:
 - A label cell showing the swimlane property value and total task count
 - Multiple cells, each representing a column within that swimlane
 - Scrollable cells containing task cards
+- Add buttons inside cells that fill in both the column value and swimlane value
 
 To pin swimlanes in a stable order, set the advanced `swimLaneOrder` option to a JSON object keyed by the swimlane property:
 
@@ -83,6 +85,8 @@ Drag task cards between columns to update the `groupBy` property value. In swiml
 
 When grouping by a list property (contexts, tags, projects) with "Show items in multiple columns" enabled, dragging a task between columns modifies the list rather than replacing it. The source column's value is removed and the target column's value is added. For example, dragging a task from the "work" column to the "home" column changes `contexts: [work, call]` to `contexts: [call, home]`.
 Drag operations write directly to task metadata, so consistent grouping values reduce ambiguity.
+
+The add button at the bottom of a column or swimlane cell keeps deterministic view filter defaults and fills in the grouped values for that location.
 
 ### Manual Reordering Within Columns
 

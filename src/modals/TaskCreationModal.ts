@@ -19,8 +19,12 @@ import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreat
 import { NLPSuggest } from "./taskCreationSuggest";
 export type { StatusSuggestion } from "./taskCreationSuggest";
 
+export type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
+	customFrontmatter?: Record<string, unknown>;
+};
+
 export interface TaskCreationOptions {
-	prePopulatedValues?: Partial<TaskInfo>;
+	prePopulatedValues?: TaskCreationPrepopulatedValues;
 	onTaskCreated?: (task: TaskInfo) => void;
 	creationContext?: "manual-creation" | "modal-inline-creation"; // Folder behavior context
 }
@@ -626,7 +630,7 @@ export class TaskCreationModal extends TaskModal {
 		this.originalDetails = this.details;
 	}
 
-	private applyPrePopulatedValues(values: Partial<TaskInfo>): void {
+	private applyPrePopulatedValues(values: TaskCreationPrepopulatedValues): void {
 		if (values.title !== undefined) this.title = values.title;
 		if (values.due !== undefined) this.dueDate = values.due;
 		if (values.scheduled !== undefined) this.scheduledDate = values.scheduled;
@@ -656,6 +660,11 @@ export class TaskCreationModal extends TaskModal {
 		}
 		if (values.recurrence_anchor !== undefined) {
 			this.recurrenceAnchor = values.recurrence_anchor;
+		}
+		if (values.customFrontmatter) {
+			for (const [fieldKey, fieldValue] of Object.entries(values.customFrontmatter)) {
+				this.userFields[fieldKey] = fieldValue;
+			}
 		}
 	}
 
@@ -754,7 +763,7 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	private buildTaskData(): Partial<TaskInfo> {
-		return buildTaskCreationData({
+		const taskData = buildTaskCreationData({
 			title: this.title,
 			dueDate: this.dueDate,
 			scheduledDate: this.scheduledDate,
@@ -775,6 +784,15 @@ export class TaskCreationModal extends TaskModal {
 			taskTag: this.plugin.settings.taskTag,
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
+		const prePopulatedCustomFrontmatter = this.options.prePopulatedValues?.customFrontmatter;
+		if (prePopulatedCustomFrontmatter) {
+			taskData.customFrontmatter = {
+				...prePopulatedCustomFrontmatter,
+				...taskData.customFrontmatter,
+			};
+		}
+
+		return taskData;
 	}
 
 	// Override to prevent creating duplicate title input when NLP is enabled

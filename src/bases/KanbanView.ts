@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Notice, Platform, setIcon, TFile } from "obsidian";
+import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import type { StatusConfig, TaskInfo } from "../types";
@@ -1123,7 +1123,12 @@ export class KanbanView extends BasesViewBase {
 			);
 
 			// Create column
-			const column = await this.createColumn(groupKey, tasks, visibleProperties);
+			const column = await this.createColumn(
+				groupKey,
+				tasks,
+				visibleProperties,
+				groupByPropertyId
+			);
 			if (this.boardEl) {
 				this.boardEl.appendChild(column);
 			}
@@ -1239,13 +1244,19 @@ export class KanbanView extends BasesViewBase {
 		);
 
 		// Render swimlane table
-		await this.renderSwimLaneTable(orderedSwimLanes, orderedKeys, pathToProps);
+		await this.renderSwimLaneTable(
+			orderedSwimLanes,
+			orderedKeys,
+			pathToProps,
+			groupByPropertyId
+		);
 	}
 
 	private async renderSwimLaneTable(
 		swimLanes: Map<string, Map<string, TaskInfo[]>>,
 		columnKeys: string[],
-		pathToProps: Map<string, Record<string, unknown>>
+		pathToProps: Map<string, Record<string, unknown>>,
+		groupByPropertyId: string
 	): Promise<void> {
 		if (!this.boardEl) return;
 
@@ -1379,6 +1390,8 @@ export class KanbanView extends BasesViewBase {
 						this.setupCardDragHandlers(cardWrapper, task);
 					}
 				}
+
+				this.createAddTaskButton(cell, groupByPropertyId, columnKey, swimLaneKey);
 			}
 		}
 	}
@@ -1386,7 +1399,8 @@ export class KanbanView extends BasesViewBase {
 	private async createColumn(
 		groupKey: string,
 		tasks: TaskInfo[],
-		visibleProperties: string[]
+		visibleProperties: string[],
+		groupByPropertyId: string | null
 	): Promise<HTMLElement> {
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
@@ -1446,7 +1460,124 @@ export class KanbanView extends BasesViewBase {
 			this.createNormalColumn(cardsContainer, tasks, visibleProperties, cardOptions);
 		}
 
+		this.createAddTaskButton(column, groupByPropertyId, groupKey);
+
 		return column;
+	}
+
+	private createAddTaskButton(
+		container: HTMLElement,
+		groupByPropertyId: string | null,
+		groupKey: string,
+		swimLaneKey: string | null = null
+	): void {
+		const footer = container.createDiv({ cls: "kanban-view__add-task-footer" });
+		const button = footer.createEl("button", {
+			cls: "kanban-view__add-task-button clickable-icon",
+			attr: {
+				type: "button",
+				"aria-label": this.getAddTaskLabel(groupKey, swimLaneKey),
+			},
+		});
+		setIcon(button, "plus");
+		setTooltip(button, this.getAddTaskLabel(groupKey, swimLaneKey));
+		button.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			void this.openTaskCreationForKanbanCell(groupByPropertyId, groupKey, swimLaneKey);
+		});
+	}
+
+	private getAddTaskLabel(groupKey: string, swimLaneKey: string | null): string {
+		if (swimLaneKey) {
+			return `Add task to ${groupKey} / ${swimLaneKey}`;
+		}
+
+		return `Add task to ${groupKey}`;
+	}
+
+	private async openTaskCreationForKanbanCell(
+		groupByPropertyId: string | null,
+		groupKey: string,
+		swimLaneKey: string | null = null
+	): Promise<void> {
+		await this.createFileForView(undefined, (frontmatter) => {
+			this.applyKanbanCreationDefault(frontmatter, groupByPropertyId, groupKey);
+			this.applyKanbanCreationDefault(frontmatter, this.swimLanePropertyId, swimLaneKey);
+		});
+	}
+
+	private applyKanbanCreationDefault(
+		frontmatter: Record<string, unknown>,
+		propertyId: string | null,
+		groupKey: string | null
+	): void {
+		if (!propertyId || !groupKey || groupKey === "None") {
+			return;
+		}
+
+		const property = this.getCreatableFrontmatterProperty(propertyId);
+		if (!property) {
+			return;
+		}
+
+		if (this.isCreationListProperty(property)) {
+			const existing = frontmatter[property];
+			const values = Array.isArray(existing)
+				? existing.filter((item): item is string => typeof item === "string")
+				: typeof existing === "string"
+					? [existing]
+					: [];
+			if (!values.includes(groupKey)) {
+				frontmatter[property] = [...values, groupKey];
+			}
+			return;
+		}
+
+		frontmatter[property] = groupKey;
+	}
+
+	private getCreatableFrontmatterProperty(propertyId: string): string | null {
+		if (propertyId.startsWith("file.") || propertyId.startsWith("formula.")) {
+			return null;
+		}
+
+		const property = this.propertyMapper.basesToUserProperty(propertyId);
+		const fieldMapper = this.plugin.fieldMapper;
+		const allowedProperties = new Set([
+			fieldMapper.toUserField("status"),
+			fieldMapper.toUserField("priority"),
+			fieldMapper.toUserField("due"),
+			fieldMapper.toUserField("scheduled"),
+			fieldMapper.toUserField("contexts"),
+			fieldMapper.toUserField("projects"),
+			fieldMapper.toUserField("timeEstimate"),
+			fieldMapper.toUserField("recurrence"),
+			fieldMapper.toUserField("blockedBy"),
+			"tags",
+		]);
+
+		if (allowedProperties.has(property)) {
+			return property;
+		}
+
+		const userFields = this.plugin.settings.userFields || [];
+		return userFields.some((field) => field.key === property) ? property : null;
+	}
+
+	private isCreationListProperty(property: string): boolean {
+		const fieldMapper = this.plugin.fieldMapper;
+		if (
+			property === "tags" ||
+			property === fieldMapper.toUserField("contexts") ||
+			property === fieldMapper.toUserField("projects") ||
+			property === fieldMapper.toUserField("blockedBy")
+		) {
+			return true;
+		}
+
+		const userField = this.plugin.settings.userFields?.find((field) => field.key === property);
+		return userField?.type === "list" || this.isListTypeProperty(property);
 	}
 
 	private createVirtualColumn(
