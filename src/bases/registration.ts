@@ -186,6 +186,18 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 									},
 									{
 										type: "toggle",
+										key: "showCompletedRecurringInstances",
+										displayName: t("events.showCompletedRecurringInstances"),
+										default: true,
+									},
+									{
+										type: "toggle",
+										key: "showSkippedRecurringInstances",
+										displayName: t("events.showSkippedRecurringInstances"),
+										default: true,
+									},
+									{
+										type: "toggle",
 										key: "showTimeEntries",
 										displayName: t("events.showTimeEntries"),
 										default: calendarSettings.defaultShowTimeEntries,

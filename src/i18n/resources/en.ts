@@ -234,6 +234,8 @@ export const en: TranslationTree = {
 					showScheduledTasks: "Show scheduled tasks",
 					showDueTasks: "Show due tasks",
 					showRecurringTasks: "Show recurring tasks",
+					showCompletedRecurringInstances: "Show completed recurring instances",
+					showSkippedRecurringInstances: "Show skipped recurring instances",
 					showTimeEntries: "Show time entries",
 					showTimeblocks: "Show timeblocks",
 					showPropertyBasedEvents: "Show property-based events",

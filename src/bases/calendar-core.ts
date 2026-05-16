@@ -120,10 +120,17 @@ export interface CalendarEventGenerationOptions {
 	showScheduledToDueSpan?: boolean;
 	showTimeEntries?: boolean;
 	showRecurring?: boolean;
+	showCompletedRecurringInstances?: boolean;
+	showSkippedRecurringInstances?: boolean;
 	showICSEvents?: boolean;
 	showTimeblocks?: boolean;
 	visibleStart?: Date;
 	visibleEnd?: Date;
+}
+
+interface RecurringInstanceVisibilityOptions {
+	showCompletedRecurringInstances?: boolean;
+	showSkippedRecurringInstances?: boolean;
 }
 
 /**
@@ -842,12 +849,17 @@ export function generateRecurringTaskInstances(
 	task: TaskInfo,
 	startDate: Date,
 	endDate: Date,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	options: RecurringInstanceVisibilityOptions = {}
 ): CalendarEvent[] {
 	if (!task.recurrence || !task.scheduled) {
 		return [];
 	}
 
+	const {
+		showCompletedRecurringInstances = true,
+		showSkippedRecurringInstances = true,
+	} = options;
 	const instances: CalendarEvent[] = [];
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
@@ -865,7 +877,15 @@ export function generateRecurringTaskInstances(
 		scheduledTime || "09:00",
 		plugin
 	);
-	if (nextScheduledEvent) {
+	if (
+		nextScheduledEvent &&
+		shouldShowRecurringInstance(
+			task,
+			nextScheduledDate,
+			showCompletedRecurringInstances,
+			showSkippedRecurringInstances
+		)
+	) {
 		instances.push(nextScheduledEvent);
 	}
 
@@ -898,12 +918,40 @@ export function generateRecurringTaskInstances(
 			continue;
 		}
 
+		if (
+			!shouldShowRecurringInstance(
+				task,
+				instanceDate,
+				showCompletedRecurringInstances,
+				showSkippedRecurringInstances
+			)
+		) {
+			continue;
+		}
+
 		const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
 		const event = createRecurringEvent(task, eventStart, instanceDate, templateTime, plugin);
 		if (event) instances.push(event);
 	}
 
 	return instances;
+}
+
+function shouldShowRecurringInstance(
+	task: TaskInfo,
+	instanceDate: string,
+	showCompletedRecurringInstances: boolean,
+	showSkippedRecurringInstances: boolean
+): boolean {
+	if (!showCompletedRecurringInstances && task.complete_instances?.includes(instanceDate)) {
+		return false;
+	}
+
+	if (!showSkippedRecurringInstances && task.skipped_instances?.includes(instanceDate)) {
+		return false;
+	}
+
+	return true;
 }
 
 /**
@@ -1075,6 +1123,8 @@ export async function generateCalendarEvents(
 		showScheduledToDueSpan = false,
 		showTimeEntries = true,
 		showRecurring = true,
+		showCompletedRecurringInstances = true,
+		showSkippedRecurringInstances = true,
 		showICSEvents = true,
 		showTimeblocks = false,
 		visibleStart,
@@ -1094,7 +1144,11 @@ export async function generateCalendarEvents(
 						task,
 						visibleStart,
 						visibleEnd,
-						plugin
+						plugin,
+						{
+							showCompletedRecurringInstances,
+							showSkippedRecurringInstances,
+						}
 					);
 					events.push(...recurringEvents);
 				}

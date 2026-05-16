@@ -487,6 +487,8 @@ export class CalendarView extends BasesViewBase {
 		showDue: boolean;
 		showScheduledToDueSpan: boolean;
 		showRecurring: boolean;
+		showCompletedRecurringInstances: boolean;
+		showSkippedRecurringInstances: boolean;
 		showTimeEntries: boolean;
 		showTimeblocks: boolean;
 		showPropertyBasedEvents: boolean;
@@ -549,6 +551,8 @@ export class CalendarView extends BasesViewBase {
 			showDue: calendarSettings.defaultShowDue,
 			showScheduledToDueSpan: calendarSettings.defaultShowScheduledToDueSpan,
 			showRecurring: calendarSettings.defaultShowRecurring,
+			showCompletedRecurringInstances: true,
+			showSkippedRecurringInstances: true,
 			showTimeEntries: calendarSettings.defaultShowTimeEntries,
 			showTimeblocks: calendarSettings.defaultShowTimeblocks,
 			showPropertyBasedEvents: true,
@@ -700,6 +704,8 @@ export class CalendarView extends BasesViewBase {
 			read("showDue"),
 			read("showScheduledToDueSpan"),
 			read("showRecurring"),
+			read("showCompletedRecurringInstances"),
+			read("showSkippedRecurringInstances"),
 			read("showTimeEntries"),
 			read("showTimeblocks"),
 			read("showPropertyBasedEvents"),
@@ -906,6 +912,14 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.showRecurring = this.getConfigOption(
 				"showRecurring",
 				this.viewOptions.showRecurring
+			);
+			this.viewOptions.showCompletedRecurringInstances = this.getConfigOption(
+				"showCompletedRecurringInstances",
+				this.viewOptions.showCompletedRecurringInstances
+			);
+			this.viewOptions.showSkippedRecurringInstances = this.getConfigOption(
+				"showSkippedRecurringInstances",
+				this.viewOptions.showSkippedRecurringInstances
 			);
 			this.viewOptions.showTimeEntries = this.getConfigOption(
 				"showTimeEntries",
@@ -1705,6 +1719,8 @@ export class CalendarView extends BasesViewBase {
 			showDue: this.viewOptions.showDue,
 			showScheduledToDueSpan: this.viewOptions.showScheduledToDueSpan,
 			showRecurring: this.viewOptions.showRecurring,
+			showCompletedRecurringInstances: this.viewOptions.showCompletedRecurringInstances,
+			showSkippedRecurringInstances: this.viewOptions.showSkippedRecurringInstances,
 			showTimeEntries: this.viewOptions.showTimeEntries,
 			showTimeblocks: this.viewOptions.showTimeblocks,
 			showICSEvents: false, // ICS handled separately
