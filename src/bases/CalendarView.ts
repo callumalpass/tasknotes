@@ -183,6 +183,21 @@ export function findColForCell(cell: HTMLTableCellElement): HTMLTableColElement 
 	return col?.tagName === "COL" ? (col as HTMLTableColElement) : null;
 }
 
+export function isCalendarElementReadyForSizing(
+	calendarEl: HTMLElement | null,
+	containerEl: HTMLElement
+): boolean {
+	if (!calendarEl || !calendarEl.isConnected || !containerEl.isConnected) {
+		return false;
+	}
+
+	if (calendarEl.ownerDocument !== containerEl.ownerDocument) {
+		return false;
+	}
+
+	return calendarEl.clientWidth > 0 && calendarEl.clientHeight > 0;
+}
+
 export function getTodayColumnWidths(
 	dateKeys: string[],
 	todayDate: string,
@@ -356,10 +371,10 @@ export class CalendarView extends BasesViewBase {
 	 * Override to update FullCalendar size when container resizes.
 	 */
 	onResize(): void {
-		if (this.calendar) {
-			this.calendar.updateSize();
-			this.scheduleTodayColumnWidthUpdate();
-		}
+		if (!this.calendar || !this.canUpdateCalendarSize()) return;
+
+		this.calendar.updateSize();
+		this.scheduleTodayColumnWidthUpdate();
 	}
 
 	/**
@@ -1117,13 +1132,19 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private scheduleTodayColumnWidthUpdate(): void {
+		if (!this.canUpdateCalendarSize()) return;
+
 		const win = this.containerEl.ownerDocument.defaultView || window;
-		win.setTimeout(() => this.applyTodayColumnWidth(), 0);
+		win.setTimeout(() => {
+			if (this.canUpdateCalendarSize()) {
+				this.applyTodayColumnWidth();
+			}
+		}, 0);
 	}
 
 	private applyTodayColumnWidth(): void {
 		const calendar = this.calendar;
-		if (!this.calendarEl || !calendar) return;
+		if (!this.calendarEl || !calendar || !this.canUpdateCalendarSize()) return;
 		const viewType = calendar.view?.type;
 		if (!viewType) return;
 
@@ -1177,6 +1198,10 @@ export class CalendarView extends BasesViewBase {
 				);
 			}
 		});
+	}
+
+	private canUpdateCalendarSize(): boolean {
+		return isCalendarElementReadyForSizing(this.calendarEl, this.containerEl);
 	}
 
 	private resetTodayColumnWidths(): void {

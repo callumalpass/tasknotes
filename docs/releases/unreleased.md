@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- ([#1873](https://github.com/callumalpass/tasknotes/issues/1873)) Fixed calendar resizing during pop-out and embedded view transitions so Obsidian no longer freezes while the calendar is being moved. Thanks to @misolex for reporting.
 - ([#1870](https://github.com/callumalpass/tasknotes/issues/1870)) Fixed NLP file suggestions for list-type custom fields so selected wikilinks are captured as custom field values. Thanks to @Sineapple for reporting and @Xananax for the follow-up details.
 - (#1888) Allowed project autosuggest required property filters to match any comma-separated value, such as `project, area`. Thanks to @BrianHicks for suggesting.
 - ([#1886](https://github.com/callumalpass/tasknotes/issues/1886)) Added a command to postpone active overdue scheduled tasks to today. Thanks to @chrabia for the suggestion.
