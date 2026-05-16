@@ -63,6 +63,7 @@ Example:
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
 - ([#1623](https://github.com/callumalpass/tasknotes/issues/1623)) Honored "Store title in filename" across task creation and edits, so the mapped title property is omitted from frontmatter and stale title fields are removed on save. Thanks to @VenturaNotes for reporting this, and to @Ender367, @slipstyle, and @loukandr for confirming and tracing affected paths.
+- ([#1621](https://github.com/callumalpass/tasknotes/issues/1621)) Made Kanban swimlane labels stop freezing on mobile and kept their label column compact, leaving more room for task cards while horizontally scrolling. Thanks to @karenchoe428 for reporting this.
 - ([#1626](https://github.com/callumalpass/tasknotes/issues/1626)) Expanded recurring ICS subscription events through the one-year subscription window for high-frequency recurring calendars. Thanks to @pib for reporting this.
 - ([#1628](https://github.com/callumalpass/tasknotes/issues/1628)) Refreshed Calendar Bases views promptly when switching between filtered Agenda views, so the previous view's task set does not stay visible until the delayed refresh. Thanks to @Lanalangz for reporting this.
 - ([#1629](https://github.com/callumalpass/tasknotes/issues/1629)) Saved `blockedBy` dependencies selected in the Create Task modal. Thanks to @obsilover for reporting this.

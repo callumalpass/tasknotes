@@ -461,6 +461,25 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-row {
     align-items: start;
 }
 
+body.is-mobile .tasknotes-plugin .kanban-view__swimlane-row > .kanban-view__swimlane-label {
+    width: var(--kanban-swimlane-label-width);
+    min-width: var(--kanban-swimlane-label-width);
+    max-width: var(--kanban-swimlane-label-width);
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__swimlane-label {
+    position: static;
+    z-index: auto;
+    overflow: hidden;
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__swimlane-title {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 body.is-mobile .tasknotes-plugin .kanban-view__swimlane-label,
 body.is-mobile .tasknotes-plugin .kanban-view__column-header-cell,
 body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
