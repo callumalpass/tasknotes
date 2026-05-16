@@ -37,6 +37,7 @@ Example:
 
 ## Changed
 
+- ([#1774](https://github.com/callumalpass/tasknotes/issues/1774)) Made expandable project chevrons visible and easier to tap on mobile. Thanks to @sh0nuff for suggesting this.
 - ([#1785](https://github.com/callumalpass/tasknotes/issues/1785)) Made the Create subtask action prefill the parent task's contexts, priority, and non-identifying tags while keeping the existing parent-task project link. Thanks to @poulpoulsen for suggesting this.
 - ([#1790](https://github.com/callumalpass/tasknotes/issues/1790)) Extended the identifying-tag hiding setting to task modal tag suggestions, and kept hidden identifying tag children in place when editing other tags. Thanks to @loukandr for suggesting this.
 - ([#1804](https://github.com/callumalpass/tasknotes/issues/1804)) Made the inline-created task folder setting visible even when instant conversion is disabled, and clarified that leaving it empty uses the default tasks folder. Thanks to @CaFeZn for suggesting this.

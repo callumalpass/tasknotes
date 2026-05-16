@@ -574,6 +574,23 @@
     transform: rotate(90deg);
 }
 
+body.is-mobile .tasknotes-plugin .task-card__chevron {
+    width: 32px;
+    height: 32px;
+    opacity: 1;
+}
+
+body.is-mobile .tasknotes-plugin .task-card__chevron svg {
+    width: 16px;
+    height: 16px;
+}
+
+body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__chevron {
+    left: calc(-1 * var(--tn-spacing-lg) - 16px);
+    width: 32px;
+    height: 32px;
+}
+
 /* Blocking toggle */
 .tasknotes-plugin .task-card__blocking-toggle {
     width: 14px;
