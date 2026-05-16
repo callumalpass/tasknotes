@@ -1,30 +1,77 @@
-/**
- * Reproduction test for issue #1669.
- *
- * Reported behavior:
- * - data.json is modified multiple times per minute even when idle,
- *   causing iCloud sync conflicts between two Obsidian instances.
- *
- * Root cause:
- * - PomodoroService saves state on every timer tick via saveData(),
- *   and other services may also trigger frequent writes. There is no
- *   debouncing mechanism for disk writes.
- */
+import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
+import { hasMissingMigratedSettings } from "../../../src/settings/settingsMigration";
+import {
+	shouldPersistLastSelectedTask,
+	shouldPersistPomodoroState,
+} from "../../../src/services/pomodoroPersistence";
 
-describe('Issue #1669: data.json constantly being modified', () => {
-	it.skip('reproduces issue #1669 - pomodoro state saves should be debounced', () => {
-		// Given: A pomodoro timer is running
-		// When: Multiple state saves are triggered in quick succession
-		// Then: Only a single saveData() call should be made within the debounce window
+describe("Issue #1669: data.json migration write detection", () => {
+	it("does not treat stored falsey default values as missing settings", () => {
+		const loadedData = {
+			fieldMapping: { ...DEFAULT_SETTINGS.fieldMapping },
+			calendarViewSettings: {
+				...DEFAULT_SETTINGS.calendarViewSettings,
+				defaultShowScheduledToDueSpan: false,
+				defaultShowTimeEntries: false,
+				enableTimeblocking: false,
+				weekNumbers: false,
+				eventMaxStack: null,
+				locale: "",
+			},
+			commandFileMapping: { ...DEFAULT_SETTINGS.commandFileMapping },
+		};
 
-		// Simulate rapid saveState calls and verify saveData is called at most once
-		// within a 5-second window
+		expect(hasMissingMigratedSettings(loadedData)).toBe(false);
 	});
 
-	it.skip('reproduces issue #1669 - idle plugin should not write data.json', () => {
-		// Given: No active pomodoro session
-		// And: No user interaction
-		// When: 60 seconds pass
-		// Then: saveData() should not be called
+	it("still detects genuinely missing migrated settings", () => {
+		const loadedData = {
+			fieldMapping: { ...DEFAULT_SETTINGS.fieldMapping },
+			calendarViewSettings: { ...DEFAULT_SETTINGS.calendarViewSettings },
+			commandFileMapping: { ...DEFAULT_SETTINGS.commandFileMapping },
+		};
+		delete loadedData.calendarViewSettings.timeblockAttachmentSearchOrder;
+
+		expect(hasMissingMigratedSettings(loadedData)).toBe(true);
+	});
+
+	it("does not persist identical idle Pomodoro state during cleanup", () => {
+		const state = {
+			isRunning: false,
+			timeRemaining: 1500,
+		};
+		const data = {
+			pomodoroState: { ...state },
+			lastPomodoroDate: "2026-05-16",
+		};
+
+		expect(shouldPersistPomodoroState(data, state, "2026-05-16")).toBe(false);
+	});
+
+	it("persists Pomodoro state when the timer state or date changes", () => {
+		const state = {
+			isRunning: true,
+			timeRemaining: 1499,
+		};
+		const data = {
+			pomodoroState: {
+				isRunning: true,
+				timeRemaining: 1500,
+			},
+			lastPomodoroDate: "2026-05-15",
+		};
+
+		expect(shouldPersistPomodoroState(data, state, "2026-05-16")).toBe(true);
+	});
+
+	it("does not persist the last selected task when it has not changed", () => {
+		expect(
+			shouldPersistLastSelectedTask(
+				{
+					lastSelectedTaskPath: "Tasks/Focus.md",
+				},
+				"Tasks/Focus.md"
+			)
+		).toBe(false);
 	});
 });

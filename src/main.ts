@@ -18,6 +18,7 @@ import {
 } from "obsidian-daily-notes-interface";
 import { TaskNotesSettings } from "./types/settings";
 import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./settings/defaults";
+import { hasMissingMigratedSettings } from "./settings/settingsMigration";
 import { initializeFieldConfig } from "./utils/fieldConfigDefaults";
 import { generateBasesFileTemplate } from "./templates/defaultBasesFiles";
 import {
@@ -696,21 +697,7 @@ export default class TaskNotesPlugin extends Plugin {
 			savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
 		};
 
-		// Check if we added any new field mappings or calendar settings and save if needed
-		const hasNewFields = Object.keys(DEFAULT_SETTINGS.fieldMapping).some(
-			(key) => !loadedData?.fieldMapping?.[key as keyof typeof DEFAULT_SETTINGS.fieldMapping]
-		);
-		const hasNewCalendarSettings = Object.keys(DEFAULT_SETTINGS.calendarViewSettings).some(
-			(key) =>
-				!loadedData?.calendarViewSettings?.[
-					key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings
-				]
-		);
-		const hasNewCommandMappings = Object.keys(DEFAULT_SETTINGS.commandFileMapping).some(
-			(key) => !loadedData?.commandFileMapping?.[key]
-		);
-
-		if (hasNewFields || hasNewCalendarSettings || hasNewCommandMappings) {
+		if (hasMissingMigratedSettings(loadedData)) {
 			// Save the migrated settings to include new field mappings (non-blocking)
 			window.setTimeout(() => {
 				void (async () => {

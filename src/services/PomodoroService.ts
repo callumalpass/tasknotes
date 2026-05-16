@@ -36,6 +36,10 @@ import {
 	getPomodoroSessionDateKey,
 	sortPomodoroSessions,
 } from "../utils/pomodoroStats";
+import {
+	shouldPersistLastSelectedTask,
+	shouldPersistPomodoroState,
+} from "./pomodoroPersistence";
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 
@@ -167,8 +171,12 @@ export class PomodoroService {
 	async saveState() {
 		try {
 			const data = (await this.plugin.loadData()) || {};
+			const today = formatDateForStorage(getTodayLocal());
+			if (!shouldPersistPomodoroState(data, this.state, today)) {
+				return;
+			}
 			data.pomodoroState = this.state;
-			data.lastPomodoroDate = formatDateForStorage(getTodayLocal());
+			data.lastPomodoroDate = today;
 			await this.plugin.saveData(data);
 		} catch (error) {
 			console.error("Failed to save pomodoro state:", error);
@@ -180,7 +188,14 @@ export class PomodoroService {
 		this.lastSelectedTaskPathLoaded = true;
 		try {
 			const data = (await this.plugin.loadData()) || {};
-			data.lastSelectedTaskPath = taskPath;
+			if (!shouldPersistLastSelectedTask(data, taskPath)) {
+				return;
+			}
+			if (taskPath === undefined) {
+				delete data.lastSelectedTaskPath;
+			} else {
+				data.lastSelectedTaskPath = taskPath;
+			}
 			await this.plugin.saveData(data);
 		} catch (error) {
 			console.error("Failed to save last selected task:", error);
