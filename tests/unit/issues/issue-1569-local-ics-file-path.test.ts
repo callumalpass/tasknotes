@@ -14,17 +14,9 @@ jest.mock('obsidian', () => ({
 	}
 }));
 
-// Mock ical.js
+// Use the real parser so the service can complete a local-file fetch.
 jest.mock('ical.js', () => ({
-	default: {
-		parse: jest.fn(),
-		Component: jest.fn(),
-		Event: jest.fn(),
-		Time: jest.fn(),
-		TimezoneService: {
-			register: jest.fn()
-		}
-	}
+	...jest.requireActual('ical.js')
 }));
 
 /**
@@ -38,7 +30,7 @@ jest.mock('ical.js', () => ({
  *    vault-relative path (e.g., "Calendar.ics"), not an absolute OS path.
  * 2. The UI placeholder ("Calendar.ics") hints at vault-relative, but the label
  *    just says "File Path" which leads users to enter absolute paths.
- * 3. There is no path normalization or validation to convert absolute paths
+ * 3. There was no path normalization or validation to convert absolute paths
  *    to vault-relative paths, nor any user-facing guidance.
  *
  * The user's .ics file was inside the vault at:
@@ -81,7 +73,7 @@ describe('Issue #1569 - Local ICS file path fails with absolute paths', () => {
 		service.destroy();
 	});
 
-	it.skip('reproduces issue #1569 - absolute filesystem path should resolve to vault-relative path', async () => {
+	it('resolves an absolute filesystem path inside the vault to a vault-relative path', async () => {
 		// The user's vault is at: /home/photon/Syncthing/Obsidian/Notizen/TaskNotes
 		// The .ics file is at: /home/photon/Syncthing/Obsidian/Notizen/TaskNotes/Sommersemester 2026/Kalender.ics
 		// The vault-relative path would be: Sommersemester 2026/Kalender.ics
@@ -115,16 +107,15 @@ describe('Issue #1569 - Local ICS file path fails with absolute paths', () => {
 			refreshInterval: 60
 		});
 
-		// Attempt to fetch - currently fails with "File not found"
-		// FIX: Should strip the vault base path prefix and resolve to vault-relative path
-		await service.fetchSubscription(subscription.id);
+		expect(subscription.filePath).toBe(vaultRelativePath);
+		expect(mockPlugin.app.vault.getAbstractFileByPath).toHaveBeenCalledWith(vaultRelativePath);
 
-		// After fix, there should be no error
 		const error = service.getLastError(subscription.id);
 		expect(error).toBeUndefined();
+		expect(service.getAllEvents()).toHaveLength(1);
 	});
 
-	it.skip('reproduces issue #1569 - should provide helpful error when file is outside the vault', async () => {
+	it('provides a helpful error when an absolute local ICS path is outside the vault', async () => {
 		// If the user enters a path to a file outside the vault, the error should explain
 		// that local ICS files must be inside the vault
 		const outsidePath = '/home/photon/Downloads/calendar.ics';
@@ -145,22 +136,7 @@ describe('Issue #1569 - Local ICS file path fails with absolute paths', () => {
 		await service.fetchSubscription(subscription.id);
 
 		const error = service.getLastError(subscription.id);
-		// FIX: Error message should mention that the file must be inside the vault,
-		// not just "File not found"
 		expect(error).toBeDefined();
-		expect(error).toContain('vault');
-	});
-
-	it.skip('reproduces issue #1569 - UI should use file suggester for local ICS path input', () => {
-		// The current UI uses a plain text input with placeholder "Calendar.ics"
-		// This doesn't help the user understand that:
-		// 1. The path must be vault-relative
-		// 2. The file must be inside the vault
-		//
-		// FIX: Should use Obsidian's file suggest modal (like FileSelectorModal)
-		// to let the user pick from files in the vault, filtered to .ics extension
-		//
-		// This is a UI/integration test that would need Playwright or manual verification
-		expect(true).toBe(true); // placeholder - see description above
+		expect(error).toContain('Local ICS files must be inside the current Obsidian vault');
 	});
 });

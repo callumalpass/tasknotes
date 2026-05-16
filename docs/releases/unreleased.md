@@ -64,6 +64,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1569](https://github.com/callumalpass/tasknotes/issues/1569)) Allowed local ICS calendar paths inside the vault to be pasted as absolute filesystem paths, and showed a clearer error when the file is outside the vault. Thanks to @Photon89 for reporting this and following up.
 - ([#1584](https://github.com/callumalpass/tasknotes/issues/1584)) Sanitized task-card status and priority class names, so custom values with spaces no longer create invalid CSS classes. Thanks to @omber for reporting this.
 - ([#1587](https://github.com/callumalpass/tasknotes/issues/1587)) Stored dependencies added from the task context menu as wikilinks, matching the Edit Task modal. Thanks to @mgrecar for reporting this.
 - ([#1590](https://github.com/callumalpass/tasknotes/issues/1590)) Clarified HTTP API task creation docs and OpenAPI schema for writable `blockedBy` dependencies, and marked `blocking` as a read-only derived relationship. Thanks to @hGriff0n for reporting this.

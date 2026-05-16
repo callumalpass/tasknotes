@@ -11,6 +11,10 @@ const ICS_RECURRENCE_EXPANSION_WINDOW_MS = 365 * 24 * 60 * 60 * 1000;
 const MAX_RECURRING_ICS_VISIBLE_INSTANCES = 3000;
 const MAX_RECURRING_ICS_ITERATIONS = 10000;
 
+type VaultAdapterWithBasePath = {
+	getBasePath?: () => string;
+};
+
 function getVTimezoneTzid(vtimezone: ICAL.Component): string | null {
 	const value = vtimezone.getFirstPropertyValue("tzid");
 	return typeof value === "string" ? value.trim() : null;
@@ -187,6 +191,10 @@ export class ICSSubscriptionService extends EventEmitter {
 	async addSubscription(subscription: Omit<ICSSubscription, "id">): Promise<ICSSubscription> {
 		const newSubscription: ICSSubscription = {
 			...subscription,
+			filePath:
+				subscription.type === "local" && subscription.filePath
+					? this.normalizeLocalICSFilePathIfPossible(subscription.filePath)
+					: subscription.filePath,
 			id: this.generateId(),
 		};
 
@@ -216,7 +224,12 @@ export class ICSSubscriptionService extends EventEmitter {
 		}
 
 		const oldSubscription = this.subscriptions[index];
-		const updatedSubscription = { ...oldSubscription, ...updates };
+		const normalizedUpdates: Partial<ICSSubscription> = { ...updates };
+		if (typeof updates.filePath === "string") {
+			normalizedUpdates.filePath = this.normalizeLocalICSFilePathIfPossible(updates.filePath);
+		}
+
+		const updatedSubscription = { ...oldSubscription, ...normalizedUpdates };
 		this.subscriptions[index] = updatedSubscription;
 
 		await this.saveSubscriptions();
@@ -293,7 +306,12 @@ export class ICSSubscriptionService extends EventEmitter {
 					throw new Error("Local subscription missing file path");
 				}
 
-				icsData = await this.readLocalICSFile(subscription.filePath);
+				const normalizedFilePath = this.normalizeLocalICSFilePath(subscription.filePath);
+				icsData = await this.readLocalICSFile(normalizedFilePath);
+				if (subscription.filePath !== normalizedFilePath) {
+					subscription.filePath = normalizedFilePath;
+					await this.saveSubscriptions();
+				}
 			} else {
 				throw new Error("Unknown subscription type");
 			}
@@ -665,15 +683,66 @@ export class ICSSubscriptionService extends EventEmitter {
 		}
 	}
 
+	private getVaultBasePath(): string | undefined {
+		const adapter = this.plugin.app.vault.adapter as unknown as VaultAdapterWithBasePath;
+		if (typeof adapter?.getBasePath !== "function") {
+			return undefined;
+		}
+
+		try {
+			const basePath = adapter.getBasePath();
+			return typeof basePath === "string" && basePath.trim() ? basePath : undefined;
+		} catch (error) {
+			console.warn("Failed to resolve vault base path for local ICS file:", error);
+			return undefined;
+		}
+	}
+
+	private normalizePathSeparators(filePath: string): string {
+		return filePath.trim().replace(/\\/g, "/").replace(/^\.\/+/u, "");
+	}
+
+	private isAbsoluteFilePath(filePath: string): boolean {
+		return filePath.startsWith("/") || /^[A-Za-z]:\//u.test(filePath);
+	}
+
+	private normalizeLocalICSFilePath(filePath: string): string {
+		const normalizedPath = this.normalizePathSeparators(filePath);
+		if (!this.isAbsoluteFilePath(normalizedPath)) {
+			return normalizedPath;
+		}
+
+		const basePath = this.getVaultBasePath();
+		if (basePath) {
+			const normalizedBasePath = this.normalizePathSeparators(basePath).replace(/\/+$/u, "");
+			if (normalizedPath.startsWith(`${normalizedBasePath}/`)) {
+				return normalizedPath.slice(normalizedBasePath.length + 1);
+			}
+		}
+
+		throw new Error(
+			"Local ICS files must be inside the current Obsidian vault. Move the file into the vault or use a vault-relative path such as \"Calendar.ics\"."
+		);
+	}
+
+	private normalizeLocalICSFilePathIfPossible(filePath: string): string {
+		try {
+			return this.normalizeLocalICSFilePath(filePath);
+		} catch {
+			return this.normalizePathSeparators(filePath);
+		}
+	}
+
 	private async readLocalICSFile(filePath: string): Promise<string> {
 		try {
-			const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
+			const normalizedFilePath = this.normalizeLocalICSFilePath(filePath);
+			const file = this.plugin.app.vault.getAbstractFileByPath(normalizedFilePath);
 			if (!file || !(file instanceof TFile)) {
-				throw new Error(`File not found: ${filePath}`);
+				throw new Error(`File not found: ${normalizedFilePath}`);
 			}
 
 			if (file.extension !== "ics") {
-				throw new Error(`File is not an ICS file: ${filePath}`);
+				throw new Error(`File is not an ICS file: ${normalizedFilePath}`);
 			}
 
 			return await this.plugin.app.vault.cachedRead(file);
@@ -690,10 +759,11 @@ export class ICSSubscriptionService extends EventEmitter {
 		}
 
 		this.stopFileWatcher(subscription.id);
+		const watchedPath = this.normalizeLocalICSFilePathIfPossible(subscription.filePath);
 
 		// Register file watcher with Obsidian's vault
 		const watcherCallback = (file: TFile, oldPath?: string) => {
-			if (file.path === subscription.filePath || oldPath === subscription.filePath) {
+			if (file.path === watchedPath || oldPath === watchedPath) {
 				// Debounce file changes to avoid excessive updates
 				window.setTimeout(() => {
 					void this.fetchSubscription(subscription.id);
@@ -705,7 +775,7 @@ export class ICSSubscriptionService extends EventEmitter {
 		const modifyRef = this.plugin.app.vault.on("modify", watcherCallback);
 		const renameRef = this.plugin.app.vault.on("rename", watcherCallback);
 		const deleteRef = this.plugin.app.vault.on("delete", (file) => {
-			if (file.path === subscription.filePath) {
+			if (file.path === watchedPath) {
 				this.lastError.set(subscription.id, "Local ICS file was deleted");
 			}
 		});
