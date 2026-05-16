@@ -42,6 +42,8 @@ npm run typecheck     # TypeScript type checking only
 npm run build         # Production build (without copying to vault)
 ```
 
+Ensure all code changes pass linting checks. Do not weaken linting rules in order to get changes to pass. 
+
 ---
 
 When you make changes, update docs/releases/unreleased.md. If your changes are related to a GitHub issue or PR, include acknowledgement of the individual who opened the issue or submitted the PR. Do not update unreleased.md for the addition of tests; unreleased.md is user-facing. 
