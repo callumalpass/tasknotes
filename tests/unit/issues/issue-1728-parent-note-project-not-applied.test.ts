@@ -20,80 +20,28 @@
  * - src/modals/TaskCreationModal.ts:applyPrePopulatedValues() (line 1161) - handles projects
  */
 
-jest.mock('obsidian');
+import { applyParentNoteProjectDefault } from "../../../src/utils/taskCreationPrepopulation";
 
 describe('Issue #1728: Parent note not applied as project in modal creation', () => {
-	it.skip('reproduces issue #1728: openTaskCreationModal should apply useParentNoteAsProject', () => {
-		// Simulate the settings
-		const settings = {
-			taskCreationDefaults: {
-				useParentNoteAsProject: true,
-			},
-		};
+	it('applies the active parent note as the default project when none is pre-populated', () => {
+		const result = applyParentNoteProjectDefault(undefined, '[[My Project]]');
 
-		// Simulate the current active file (a Project note)
-		const currentFile = {
-			path: 'Projects/My Project.md',
-			basename: 'My Project',
-		};
+		expect(result?.projects).toEqual(['[[My Project]]']);
+	});
 
-		// Helper that mimics generateMarkdownLink
-		function generateMarkdownLink(file: typeof currentFile): string {
-			return `[[${file.basename}]]`;
-		}
+	it('preserves explicit project pre-population from callers', () => {
+		const result = applyParentNoteProjectDefault(
+			{ projects: ['[[Existing Project]]'], priority: 'high' },
+			'[[My Project]]'
+		);
 
-		// --- Path 1: createInlineTask (CORRECT - applies parent note) ---
-		function createInlineTaskPrePopulated(): { projects?: string[] } {
-			const prePopulatedValues: { projects?: string[] } = {};
-			if (settings.taskCreationDefaults.useParentNoteAsProject) {
-				if (currentFile) {
-					const parentNote = generateMarkdownLink(currentFile);
-					prePopulatedValues.projects = [parentNote];
-				}
-			}
-			return prePopulatedValues;
-		}
+		expect(result).toEqual({
+			projects: ['[[Existing Project]]'],
+			priority: 'high',
+		});
+	});
 
-		const inlineResult = createInlineTaskPrePopulated();
-		expect(inlineResult.projects).toBeDefined();
-		expect(inlineResult.projects).toContain('[[My Project]]');
-
-		// --- Path 2: openTaskCreationModal (BUGGY - does NOT apply parent note) ---
-		// This simulates the current behavior of openTaskCreationModal which
-		// just passes through whatever prePopulatedValues it receives (usually undefined)
-		function openTaskCreationModalPrePopulated(
-			prePopulatedValues?: { projects?: string[] }
-		): { projects?: string[] } | undefined {
-			// BUG: No useParentNoteAsProject check here!
-			// The method just passes prePopulatedValues through as-is
-			return prePopulatedValues;
-		}
-
-		// When called from command palette with no args, parent note is NOT applied
-		const modalResult = openTaskCreationModalPrePopulated();
-		// This assertion demonstrates the bug: modalResult is undefined,
-		// meaning no project is pre-populated
-		expect(modalResult).toBeUndefined();
-
-		// --- Expected fix: openTaskCreationModal should also check the setting ---
-		function openTaskCreationModalFixed(
-			prePopulatedValues?: { projects?: string[] }
-		): { projects?: string[] } {
-			const values = prePopulatedValues || {};
-			if (settings.taskCreationDefaults.useParentNoteAsProject) {
-				if (currentFile) {
-					const parentNote = generateMarkdownLink(currentFile);
-					if (!values.projects) {
-						values.projects = [];
-					}
-					values.projects.push(parentNote);
-				}
-			}
-			return values;
-		}
-
-		const fixedResult = openTaskCreationModalFixed();
-		expect(fixedResult.projects).toBeDefined();
-		expect(fixedResult.projects).toContain('[[My Project]]');
+	it('returns undefined when there is no parent note and no existing defaults', () => {
+		expect(applyParentNoteProjectDefault(undefined, undefined)).toBeUndefined();
 	});
 });

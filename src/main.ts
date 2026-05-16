@@ -73,6 +73,7 @@ import {
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
+import { applyParentNoteProjectDefault } from "./utils/taskCreationPrepopulation";
 import { applySearchQueryToView } from "./utils/obsidianSearchView";
 
 type LoadedSettingsData = Partial<TaskNotesSettings> &
@@ -1132,7 +1133,24 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
-		new TaskCreationModal(this.app, this, { prePopulatedValues }).open();
+		new TaskCreationModal(this.app, this, {
+			prePopulatedValues: this.applyParentNoteProjectDefault(prePopulatedValues),
+		}).open();
+	}
+
+	private applyParentNoteProjectDefault(
+		prePopulatedValues?: Partial<TaskInfo>
+	): Partial<TaskInfo> | undefined {
+		if (!this.settings.taskCreationDefaults.useParentNoteAsProject) {
+			return prePopulatedValues;
+		}
+
+		const currentFile = this.app.workspace.getActiveFile();
+		const parentNote = currentFile
+			? this.app.fileManager.generateMarkdownLink(currentFile, currentFile.path)
+			: undefined;
+
+		return applyParentNoteProjectDefault(prePopulatedValues, parentNote);
 	}
 
 	/**
@@ -1691,26 +1709,12 @@ export default class TaskNotesPlugin extends Plugin {
 				insertionPoint,
 			};
 
-			// Prepare pre-populated values
-			const prePopulatedValues: Partial<TaskInfo> = {};
-
-			// Include current note as project if enabled
-			if (this.settings.taskCreationDefaults.useParentNoteAsProject) {
-				const currentFile = this.app.workspace.getActiveFile();
-				if (currentFile) {
-					const parentNote = this.app.fileManager.generateMarkdownLink(
-						currentFile,
-						currentFile.path
-					);
-					prePopulatedValues.projects = [parentNote];
-				}
-			}
+			const prePopulatedValues = this.applyParentNoteProjectDefault();
 
 			// Open task creation modal with callback to insert link
 			// Use modal-inline-creation context for inline folder behavior (Issue #1424)
 			const modal = new TaskCreationModal(this.app, this, {
-				prePopulatedValues:
-					Object.keys(prePopulatedValues).length > 0 ? prePopulatedValues : undefined,
+				prePopulatedValues,
 				onTaskCreated: (task: TaskInfo) => {
 					this.handleInlineTaskCreated(task, insertionContext);
 				},
