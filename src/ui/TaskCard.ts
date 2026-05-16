@@ -3,7 +3,7 @@ import { PriorityConfig, TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { getEffectiveTaskStatus, filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
-import { formatDateForStorage } from "../utils/dateUtils";
+import { formatDateForStorage, getDatePart } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
@@ -69,6 +69,32 @@ function bindNestedCardHoverState(container: HTMLElement, card: HTMLElement): vo
 
 function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
 	return (card as TaskCardElement)._taskCardOptions ?? {};
+}
+
+function createUTCDateFromStorageDate(datePart: string): Date | null {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+	if (!match) {
+		return null;
+	}
+
+	const [, year, month, day] = match;
+	return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+}
+
+function getTodayTaskCardTargetDate(): Date {
+	const todayLocal = new Date();
+	return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
+}
+
+function getDefaultTaskCardTargetDate(task: TaskInfo): Date {
+	if (task.recurrence && task.recurrence_anchor !== "completion" && task.scheduled) {
+		const scheduledDate = createUTCDateFromStorageDate(getDatePart(task.scheduled));
+		if (scheduledDate) {
+			return scheduledDate;
+		}
+	}
+
+	return getTodayTaskCardTargetDate();
 }
 
 function parseExpandedRelationshipFilterMode(value: unknown): "inherit" | "show-all" {
@@ -637,16 +663,10 @@ export function createTaskCard(
 	options: Partial<TaskCardOptions> = {}
 ): HTMLElement {
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
-	// Use fresh UTC-anchored "today" if no targetDate provided
-	// This ensures recurring tasks show correct completion status for the current day
-	const targetDate =
-		opts.targetDate ||
-		(() => {
-			const todayLocal = new Date();
-			return new Date(
-				Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate())
-			);
-		})();
+	// View renderers pass an explicit target date. Standalone cards, such as the
+	// task-note card, default scheduled-anchor recurring tasks to their current
+	// scheduled occurrence instead of assuming today.
+	const targetDate = opts.targetDate || getDefaultTaskCardTargetDate(task);
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
@@ -1124,16 +1144,10 @@ export function updateTaskCard(
 	options: Partial<TaskCardOptions> = {}
 ): void {
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
-	// Use fresh UTC-anchored "today" if no targetDate provided
-	// This ensures recurring tasks show correct completion status for the current day
-	const targetDate =
-		opts.targetDate ||
-		(() => {
-			const todayLocal = new Date();
-			return new Date(
-				Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate())
-			);
-		})();
+	// View renderers pass an explicit target date. Standalone cards, such as the
+	// task-note card, default scheduled-anchor recurring tasks to their current
+	// scheduled occurrence instead of assuming today.
+	const targetDate = opts.targetDate || getDefaultTaskCardTargetDate(task);
 
 	// Update effective status
 	const effectiveStatus = task.recurrence
