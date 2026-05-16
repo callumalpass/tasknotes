@@ -9,7 +9,7 @@ This is an Obsidian plugin. The plugin ID is `tasknotes`.
 npm run build:test
 
 # After building, reload the plugin in the running Obsidian instance
-obsidian plugin:reload id=tasknotes vault=test
+obsidian vault=test plugin:reload id=tasknotes
 ```
 
 Always run both commands after making changes. Obsidian must be running for the CLI to work.
@@ -18,19 +18,19 @@ Always run both commands after making changes. Obsidian must be running for the 
 
 ```bash
 # Check for JavaScript errors after reload
-obsidian dev:errors vault=test
+obsidian vault=test dev:errors
 
 # View console output
-obsidian dev:console vault=test
+obsidian vault=test dev:console
 
 # Run JavaScript in the Obsidian context
-obsidian dev:eval code="app.vault.getFiles().length" vault=test
+obsidian vault=test eval code="app.vault.getFiles().length"
 
 # Take a screenshot to verify UI changes
-obsidian dev:screenshot path=screenshot.png vault=test
+obsidian vault=test dev:screenshot path=screenshot.png
 
 # Open developer tools
-obsidian dev:open vault=test
+obsidian vault=test devtools
 ```
 
 ## Other Build Commands
@@ -60,5 +60,4 @@ When asked to prepare for a release:
 6. Update @manifest.json and @package.json. 
 7. Commit changes as \"release <VERSION NUMBER>\" (you can choose the version number unless it is specified). 
 8. Tag the commit. (Just version number, no 'v' prefix. 
-
 
