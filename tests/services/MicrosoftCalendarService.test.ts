@@ -634,6 +634,83 @@ describe('MicrosoftCalendarService', () => {
 		});
 	});
 
+	describe('Sync Status', () => {
+		test('should record successful calendar refresh status separately from OAuth status', async () => {
+			mockPlugin.settings!.enabledMicrosoftCalendars = ['AAMkADA1'];
+			mockRequestUrl
+				.mockResolvedValueOnce({
+					status: 200,
+					json: mockCalendarList,
+					text: '',
+					arrayBuffer: new ArrayBuffer(0),
+					headers: {}
+				})
+				.mockResolvedValueOnce({
+					status: 200,
+					json: mockEventsList,
+					text: '',
+					arrayBuffer: new ArrayBuffer(0),
+					headers: {}
+				});
+
+			await service.refreshAllCalendars();
+
+			const status = service.getSyncStatus();
+			expect(status.lastAttempt).toBeTruthy();
+			expect(status.lastSuccess).toBeTruthy();
+			expect(status.lastError).toBeNull();
+			expect(status.calendarErrors).toEqual([]);
+			expect(status.calendarsChecked).toBe(1);
+			expect(status.eventsLoaded).toBe(2);
+		});
+
+		test('should record per-calendar fetch errors without throwing away the diagnostic state', async () => {
+			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+			mockPlugin.settings!.enabledMicrosoftCalendars = ['AAMkADA1'];
+			mockRequestUrl
+				.mockResolvedValueOnce({
+					status: 200,
+					json: mockCalendarList,
+					text: '',
+					arrayBuffer: new ArrayBuffer(0),
+					headers: {}
+				})
+				.mockRejectedValueOnce(Object.assign(new Error('Forbidden'), { status: 403 }));
+
+			await service.refreshAllCalendars();
+
+			const status = service.getSyncStatus();
+			expect(status.lastAttempt).toBeTruthy();
+			expect(status.lastSuccess).toBeNull();
+			expect(status.lastError).toContain('Calendar');
+			expect(status.lastError).toContain('Forbidden');
+			expect(status.calendarErrors).toHaveLength(1);
+			expect(status.calendarErrors[0]).toMatchObject({
+				calendarId: 'AAMkADA1',
+				calendarName: 'Calendar',
+				status: 403
+			});
+			expect(status.eventsLoaded).toBe(0);
+			consoleErrorSpy.mockRestore();
+		});
+
+		test('should record calendar list failures as sync failures', async () => {
+			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+			mockRequestUrl.mockRejectedValueOnce(Object.assign(new Error('Unauthorized'), { status: 401 }));
+
+			await service.refreshAllCalendars();
+
+			const status = service.getSyncStatus();
+			expect(status.lastAttempt).toBeTruthy();
+			expect(status.lastSuccess).toBeNull();
+			expect(status.lastError).toContain('Failed to fetch calendar list');
+			expect(status.calendarErrors).toHaveLength(1);
+			expect(status.calendarErrors[0].status).toBe(401);
+			expect(status.calendarsChecked).toBe(0);
+			consoleErrorSpy.mockRestore();
+		});
+	});
+
 	describe('Caching', () => {
 		test('should cache events after fetching', async () => {
 			// Note: getEvents() doesn't add to cache - only refreshAllCalendars() does

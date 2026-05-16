@@ -79,6 +79,23 @@ type MicrosoftEventPayload = {
 	isAllDay?: boolean;
 };
 
+export interface MicrosoftCalendarSyncError {
+	calendarId?: string;
+	calendarName?: string;
+	message: string;
+	status?: number;
+	occurredAt: string;
+}
+
+export interface MicrosoftCalendarSyncStatus {
+	lastAttempt: string | null;
+	lastSuccess: string | null;
+	lastError: string | null;
+	calendarErrors: MicrosoftCalendarSyncError[];
+	calendarsChecked: number;
+	eventsLoaded: number;
+}
+
 /**
  * MicrosoftCalendarService handles Microsoft Graph Calendar API interactions.
  * Uses OAuth for authentication and provides calendar event access.
@@ -94,6 +111,14 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	private refreshTimer: number | null = null;
 	private availableCalendars: ProviderCalendar[] = [];
 	private lastManualRefresh = 0; // Timestamp of last manual refresh for rate limiting
+	private syncStatus: MicrosoftCalendarSyncStatus = {
+		lastAttempt: null,
+		lastSuccess: null,
+		lastError: null,
+		calendarErrors: [],
+		calendarsChecked: 0,
+		eventsLoaded: 0
+	};
 
 	constructor(plugin: TaskNotesPlugin, oauthService: OAuthService) {
 		super();
@@ -171,6 +196,13 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		return this.availableCalendars;
 	}
 
+	getSyncStatus(): MicrosoftCalendarSyncStatus {
+		return {
+			...this.syncStatus,
+			calendarErrors: this.syncStatus.calendarErrors.map(error => ({ ...error }))
+		};
+	}
+
 	/**
 	 * Gets the list of enabled calendar IDs from settings
 	 */
@@ -222,6 +254,57 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		if (typeof saveSettingsDataOnly === "function") {
 			await saveSettingsDataOnly.call(this.plugin);
 		}
+	}
+
+	private getErrorMessage(error: unknown): string {
+		if (error instanceof Error) {
+			return error.message;
+		}
+		if (typeof error === "object" && error !== null && "message" in error) {
+			const message = (error as { message?: unknown }).message;
+			if (typeof message === "string") {
+				return message;
+			}
+		}
+		return String(error);
+	}
+
+	private getErrorStatus(error: unknown): number | undefined {
+		if (typeof error !== "object" || error === null) {
+			return undefined;
+		}
+
+		const status = (error as { status?: unknown }).status;
+		if (typeof status === "number") {
+			return status;
+		}
+
+		const statusCode = (error as { statusCode?: unknown }).statusCode;
+		return typeof statusCode === "number" ? statusCode : undefined;
+	}
+
+	private createSyncError(error: unknown, calendar?: ProviderCalendar): MicrosoftCalendarSyncError {
+		return {
+			calendarId: calendar?.id,
+			calendarName: calendar?.summary,
+			message: this.getErrorMessage(error),
+			status: this.getErrorStatus(error),
+			occurredAt: new Date().toISOString()
+		};
+	}
+
+	private formatSyncErrorSummary(errors: MicrosoftCalendarSyncError[]): string | null {
+		if (errors.length === 0) {
+			return null;
+		}
+
+		const firstError = errors[0];
+		const label = firstError.calendarName || firstError.calendarId || "Microsoft calendar";
+		if (errors.length === 1) {
+			return `${label}: ${firstError.message}`;
+		}
+
+		return `${errors.length} Microsoft calendars failed to refresh. First error: ${label}: ${firstError.message}`;
 	}
 
 	async initialize(): Promise<void> {
@@ -425,7 +508,13 @@ export class MicrosoftCalendarService extends CalendarProvider {
 
 		} catch (error) {
 			console.error(`Failed to fetch events from calendar ${calendarId}:`, error);
-			throw new Error(`Failed to fetch calendar events: ${error.message}`);
+			const wrappedError = new Error(
+				`Failed to fetch calendar events: ${this.getErrorMessage(error)}`
+			) as Error & { status?: number; statusCode?: number };
+			const status = this.getErrorStatus(error);
+			wrappedError.status = status;
+			wrappedError.statusCode = status;
+			throw wrappedError;
 		}
 	}
 
@@ -483,6 +572,16 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 * Refreshes all enabled Microsoft calendars using delta sync when possible
 	 */
 	async refreshAllCalendars(): Promise<void> {
+		const attemptStartedAt = new Date().toISOString();
+		this.syncStatus = {
+			...this.syncStatus,
+			lastAttempt: attemptStartedAt,
+			lastError: null,
+			calendarErrors: [],
+			calendarsChecked: 0,
+			eventsLoaded: this.cache.get("all")?.length || 0
+		};
+
 		try {
 			const isConnected = await this.oauthService.isConnected("microsoft");
 			if (!isConnected) {
@@ -494,6 +593,10 @@ export class MicrosoftCalendarService extends CalendarProvider {
 
 			// Get enabled calendar IDs from settings
 			const enabledCalendarIds = this.getEnabledCalendarIds();
+			const calendarsById = new Map(
+				this.availableCalendars.map(calendar => [calendar.id, calendar])
+			);
+			const calendarErrors: MicrosoftCalendarSyncError[] = [];
 
 			// Get current cached events
 			let cachedEvents = this.cache.get("all") || [];
@@ -556,21 +659,40 @@ export class MicrosoftCalendarService extends CalendarProvider {
 					}
 				} catch (error) {
 					console.error(`Failed to fetch events from calendar ${calendarId}:`, error);
+					calendarErrors.push(this.createSyncError(error, calendarsById.get(calendarId)));
 					// Continue with other calendars
 				}
 			}
 
 			// Update cache
 			this.cache.set("all", cachedEvents);
+			this.syncStatus = {
+				lastAttempt: attemptStartedAt,
+				lastSuccess: calendarErrors.length === 0 ? new Date().toISOString() : this.syncStatus.lastSuccess,
+				lastError: this.formatSyncErrorSummary(calendarErrors),
+				calendarErrors,
+				calendarsChecked: enabledCalendarIds.length,
+				eventsLoaded: cachedEvents.length
+			};
 
 			// Emit data-changed event
 			this.emit("data-changed");
 
 		} catch (error) {
 			console.error("Failed to refresh Microsoft calendars:", error);
+			const syncError = this.createSyncError(error);
+			this.syncStatus = {
+				...this.syncStatus,
+				lastAttempt: attemptStartedAt,
+				lastError: syncError.message,
+				calendarErrors: [syncError],
+				calendarsChecked: 0,
+				eventsLoaded: this.cache.get("all")?.length || 0
+			};
 
 			// If it's an auth error, show notice to reconnect
-			if (error.message && error.message.includes("401")) {
+			const errorMessage = this.getErrorMessage(error);
+			if (errorMessage.includes("401")) {
 				console.warn("[MicrosoftCalendar] Authentication expired - caller should handle re-authentication");
 			}
 		}

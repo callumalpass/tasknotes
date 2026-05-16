@@ -420,13 +420,53 @@ export function renderIntegrationsTab(
 			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
-			const lastRefreshInfo = activeDocument.createElement("div");
-			lastRefreshInfo.className = "tasknotes-calendar-info";
+			const tokenRefreshInfo = activeDocument.createElement("div");
+			tokenRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
-				lastRefreshInfo.textContent = `Last refreshed ${getRelativeTime(lastRefreshDate, translate)}`;
+				tokenRefreshInfo.textContent = `OAuth token refreshed ${getRelativeTime(lastRefreshDate, translate)}`;
 			} else {
-				lastRefreshInfo.textContent = "Never refreshed";
+				tokenRefreshInfo.textContent = "Token not refreshed yet";
+			}
+
+			const syncStatus = plugin.microsoftCalendarService?.getSyncStatus();
+			const syncInfo = activeDocument.createElement("div");
+			syncInfo.className = "tasknotes-calendar-info";
+			if (!plugin.microsoftCalendarService) {
+				syncInfo.addClass("tasknotes-calendar-info--warning");
+				syncInfo.textContent = "Calendar sync service not available";
+			} else if (syncStatus?.lastError) {
+				syncInfo.addClass("tasknotes-calendar-info--warning");
+				const attemptedAt = syncStatus.lastAttempt ? new Date(syncStatus.lastAttempt) : null;
+				const attemptedText = attemptedAt
+					? ` ${getRelativeTime(attemptedAt, translate)}`
+					: "";
+				syncInfo.textContent = `Calendar sync failed${attemptedText}: ${syncStatus.lastError}`;
+			} else if (syncStatus?.lastSuccess) {
+				const lastSyncDate = new Date(syncStatus.lastSuccess);
+				syncInfo.textContent = `Calendar sync succeeded ${getRelativeTime(lastSyncDate, translate)} (${syncStatus.eventsLoaded} events)`;
+			} else if (syncStatus?.lastAttempt) {
+				const lastAttemptDate = new Date(syncStatus.lastAttempt);
+				syncInfo.textContent = `Calendar sync checked ${getRelativeTime(lastAttemptDate, translate)}`;
+			} else {
+				syncInfo.textContent = "Calendar events not refreshed yet";
+			}
+
+			const microsoftRows: CardSection["rows"] = [
+				{ label: "Status:", input: connectedInfo },
+				{ label: "Token:", input: tokenRefreshInfo },
+				{ label: "Sync:", input: syncInfo },
+			];
+
+			if (syncStatus?.calendarErrors.length) {
+				const errorInfo = activeDocument.createElement("div");
+				errorInfo.className = "tasknotes-calendar-info tasknotes-calendar-info--warning";
+				const firstError = syncStatus.calendarErrors[0];
+				const calendarLabel = firstError.calendarName || firstError.calendarId || "Microsoft calendar";
+				errorInfo.textContent = syncStatus.calendarErrors.length === 1
+					? `${calendarLabel}: ${firstError.message}`
+					: `${syncStatus.calendarErrors.length} calendars failed. First error: ${calendarLabel}: ${firstError.message}`;
+				microsoftRows.push({ label: "Issue:", input: errorInfo, fullWidth: true });
 			}
 
 			createCard(microsoftCalendarContainer, {
@@ -443,15 +483,34 @@ export function renderIntegrationsTab(
 				content: {
 					sections: [
 						{
-							rows: [
-								{ label: "Status:", input: connectedInfo },
-								{ label: "Sync:", input: lastRefreshInfo },
-							],
+							rows: microsoftRows,
 						},
 					],
 				},
 				actions: {
 					buttons: [
+						{
+							text: "Refresh Now",
+							icon: "refresh-cw",
+							variant: "primary",
+							onClick: async () => {
+								try {
+									if (plugin.microsoftCalendarService) {
+										await plugin.microsoftCalendarService.refresh();
+										const latestStatus = plugin.microsoftCalendarService.getSyncStatus();
+										if (latestStatus.lastError) {
+											new Notice(`Microsoft calendar refresh had errors: ${latestStatus.lastError}`);
+										} else {
+											new Notice("Microsoft calendar refreshed successfully");
+										}
+										void renderMicrosoftCalendarCard();
+									}
+								} catch (error) {
+									console.error("Failed to refresh:", error);
+									new Notice(`Failed to refresh Microsoft calendar: ${getErrorMessage(error)}`);
+								}
+							},
+						},
 						{
 							text: "Disconnect",
 							icon: "log-out",

@@ -35,6 +35,7 @@ Example:
 
 ## Fixed
 
+- ([#1812](https://github.com/callumalpass/tasknotes/issues/1812)) Separated Microsoft OAuth token status from calendar sync status, and surfaced Microsoft calendar fetch errors in the integrations settings card instead of leaving them console-only. Thanks to @henninger80 for the detailed report.
 - ([#1814](https://github.com/callumalpass/tasknotes/issues/1814)) Restored NLP project autosuggest in the Create or Open Task command, so `+` project suggestions use the same filtered project lookup as the Create Task modal. Thanks to @adammahad for reporting this.
 - ([#1820](https://github.com/callumalpass/tasknotes/issues/1820)) Kept API-created tasks readable immediately after creation even if Obsidian has not finished indexing the new file metadata yet. Thanks to @vadminas for reporting and tracing the cache desync.
 - ([#1823](https://github.com/callumalpass/tasknotes/issues/1823)) Prevented zero-duration timed external calendar events from rendering under more than one day in list-style calendar views. Thanks to @martin-forge for reporting and tracing the Google Calendar case.

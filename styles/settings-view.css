@@ -1159,6 +1159,10 @@ select.tasknotes-settings__card-input {
     color: var(--text-muted);
 }
 
+.tasknotes-calendar-info--warning {
+    color: var(--text-error);
+}
+
 .tasknotes-calendar-help {
     font-size: 0.9em;
     color: var(--text-muted);
