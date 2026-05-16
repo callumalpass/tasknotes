@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1664](https://github.com/callumalpass/tasknotes/pull/1664)) Added project-based custom filename template variables, including the first project, all projects, and a short `projectId`. Thanks to @bendavis987 for the contribution.
 - ([#1697](https://github.com/callumalpass/tasknotes/issues/1697)) Added cached Google Calendar, Microsoft Calendar, and ICS events to Mini Calendar days, with compact colored dots and event details from the existing calendar connection. Thanks to @RPGArchivist for suggesting this.
 - ([#1754](https://github.com/callumalpass/tasknotes/issues/1754)) Added optional icons for priority values, so task cards can show a configured priority icon instead of only a colored dot. Thanks to @BrucePlumb for suggesting this and @prepare4robots for the follow-up feedback.
 - ([#1761](https://github.com/callumalpass/tasknotes/issues/1761)) Added TaskNotes edit and quick-action entries to Obsidian's native file context menu for recognized task notes. Thanks to @delzero for suggesting this.

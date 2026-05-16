@@ -92,7 +92,7 @@ Advanced variables increase uniqueness and entropy, but may reduce path readabil
 
 - **Variable Processing**: Variables are processed when the task is created, using the actual task properties
 - **Missing Values**: If a task doesn't have a value for a variable (e.g., no context assigned), the variable is replaced with an empty string
-- **Multiple Values**: For arrays like contexts and projects, only the first value is used
+- **Multiple Values**: Singular variables like `{{context}}` and `{{project}}` use the first value. Plural variables like `{{contexts}}` and `{{projects}}` join all values with `/`
 - **Title Sanitization**: The `{{title}}` variable automatically removes invalid folder characters (`<>:"/\|?*`) and replaces them with underscores
 - **Folder Creation**: Folders are automatically created if they don't exist
 - **Inline Tasks**: Template variables also work for the inline-created task folder setting. Leave that setting empty to use the default tasks folder.
@@ -145,6 +145,9 @@ Short deterministic filename patterns improve link stability, scripting, and man
 - `{{scheduledDate}}` - Task scheduled date (YYYY-MM-DD format)
 - `{{context}}` - First context from the task's contexts array
 - `{{contexts}}` - All contexts joined by `/`
+- `{{project}}` - First project from the task's projects array
+- `{{projects}}` - All projects joined by `/`
+- `{{projectId}}` - First project abbreviated to four alphanumeric uppercase characters (e.g., "TASK")
 - `{{tags}}` - Task tags (comma-separated)
 - `{{hashtags}}` - Task tags as space-separated hashtags (e.g., "#work #urgent")
 - `{{timeEstimate}}` - Time estimate in minutes
@@ -241,6 +244,7 @@ For ICS event notes, additional variables are available:
 - **Unified Syntax**: Both filename and body templates now use double braces `{{variable}}`. Single braces `{variable}` are supported for backwards compatibility but deprecated.
 - **Sanitization**: All variables are automatically sanitized to be safe for filenames (invalid characters removed)
 - **Empty Values**: If a property doesn't have a value, the variable is replaced with an empty string
+- **Multiple Values**: Singular variables like `{{context}}` and `{{project}}` use the first value. Plural variables like `{{contexts}}` and `{{projects}}` join all values with `/`, then the final filename is sanitized
 - **Character Limits**: Filenames are limited to 255 characters on most systems
 
 ### Store Title in Filename

@@ -77,6 +77,12 @@ export class TaskCreationService {
 				date: new Date(),
 				dueDate: taskData.due,
 				scheduledDate: taskData.scheduled,
+				contexts: contextsArray,
+				projects: projectsArray,
+				tags: tagsArray,
+				timeEstimate: taskData.timeEstimate,
+				details: taskData.details,
+				parentNote: taskData.parentNote,
 			};
 
 			const baseFilename = generateTaskFilename(filenameContext, plugin.settings);

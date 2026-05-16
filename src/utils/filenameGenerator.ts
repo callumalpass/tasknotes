@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { normalizePath, type Vault } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
+import { getProjectDisplayName } from "./linkUtils";
 
 export interface FilenameContext {
 	title: string;
@@ -11,6 +12,7 @@ export interface FilenameContext {
 	scheduledDate?: string; // YYYY-MM-DD format
 	// Additional body template variables (optional for backwards compatibility)
 	contexts?: string[];
+	projects?: string[];
 	tags?: string[];
 	timeEstimate?: number;
 	details?: string;
@@ -186,6 +188,25 @@ function generateTimestampFilename(date: Date): string {
 	return format(date, "yyyy-MM-dd-HHmmss");
 }
 
+function getProjectFilenameValues(projects: string[] | undefined): string[] {
+	if (!Array.isArray(projects)) {
+		return [];
+	}
+
+	return projects
+		.map((project) => getProjectDisplayName(project).trim())
+		.filter((project) => project.length > 0)
+		.map((project) => sanitizeForFilename(project));
+}
+
+function getProjectId(projectName: string | undefined): string {
+	if (!projectName) {
+		return "";
+	}
+
+	return projectName.replace(/[^a-zA-Z0-9]/g, "").substring(0, 4).toUpperCase();
+}
+
 /**
  * Generates a filename based on a custom template
  */
@@ -221,6 +242,7 @@ function generateCustomFilename(
 
 		// Process array values for contexts and tags
 		const contexts = Array.isArray(context.contexts) ? context.contexts : [];
+		const projects = getProjectFilenameValues(context.projects);
 		const tags = Array.isArray(context.tags) ? context.tags : [];
 
 		const variables: Record<string, string> = {
@@ -242,6 +264,9 @@ function generateCustomFilename(
 			// Body template variables (contexts, tags, etc.)
 			context: contexts[0] ? sanitizeForFilename(contexts[0]) : "",
 			contexts: contexts.map((c) => sanitizeForFilename(c)).join("/"),
+			project: projects[0] || "",
+			projects: projects.join("/"),
+			projectId: getProjectId(projects[0]),
 			tags: tags.map((t) => sanitizeForFilename(t)).join(", "),
 			hashtags: tags.map((t) => `#${sanitizeForFilename(t)}`).join(" "),
 			timeEstimate: context.timeEstimate?.toString() || "",
