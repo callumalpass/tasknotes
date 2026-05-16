@@ -6,6 +6,7 @@ import { FilterService } from "../services/FilterService";
 import { TaskManager } from "../utils/TaskManager";
 import { TaskStatsService } from "../services/TaskStatsService";
 import TaskNotesPlugin from "../main";
+import { hydrateTaskDetailsFromFile } from "../utils/taskDetails";
 
 import { Get, Post, Put, Delete } from "../utils/OpenAPIDecorators";
 
@@ -179,7 +180,9 @@ export class TasksController extends BaseController {
 				return;
 			}
 
-			this.sendResponse(res, 200, this.successResponse(task));
+			const taskWithDetails = await hydrateTaskDetailsFromFile(this.plugin.app, task);
+
+			this.sendResponse(res, 200, this.successResponse(taskWithDetails));
 		} catch (error: unknown) {
 			this.sendResponse(res, 500, this.errorResponse(this.getErrorMessage(error)));
 		}

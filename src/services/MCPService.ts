@@ -26,6 +26,7 @@ import {
 } from "../utils/timeTrackingUtils";
 import { collectCalendarEvents } from "../utils/calendarUtils";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
+import { hydrateTaskDetailsFromFile } from "../utils/taskDetails";
 import {
 	JsonRpcBody,
 	normalizeMcpInitializeProtocol,
@@ -207,7 +208,8 @@ export class MCPService {
 					if (!task) {
 						return this.errorResult("Task not found");
 					}
-					return this.jsonResult(task);
+					const taskWithDetails = await hydrateTaskDetailsFromFile(this.plugin.app, task);
+					return this.jsonResult(taskWithDetails);
 				} catch (error: unknown) {
 					return this.errorResult(this.getErrorMessage(error));
 				}

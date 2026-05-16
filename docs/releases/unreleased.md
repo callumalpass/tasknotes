@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- ([#1858](https://github.com/callumalpass/tasknotes/issues/1858)) Included task body details in single-task HTTP API and MCP reads. Thanks to @vanillaflava for reporting and outlining the expected behavior.
 - ([#1859](https://github.com/callumalpass/tasknotes/issues/1859)) Clarified the Google Calendar setup guide for OAuth testing-mode `access_denied` errors. Thanks to @PE-Boy for reporting and @tiagoarroz for the workaround.
 - ([#1860](https://github.com/callumalpass/tasknotes/issues/1860)) Preserved accented characters in tags when converting checkbox tasks to TaskNotes. Thanks to @e-zz for reporting.
 - ([#1869](https://github.com/callumalpass/tasknotes/issues/1869)) Preserved Calendar Month View scroll position after task updates. Thanks to @sisyowo for reporting and linking the earlier Kanban fix.
