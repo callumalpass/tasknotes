@@ -34,6 +34,7 @@ Example:
 
 ## Fixed
 
+- ([#1820](https://github.com/callumalpass/tasknotes/issues/1820)) Kept API-created tasks readable immediately after creation even if Obsidian has not finished indexing the new file metadata yet. Thanks to @vadminas for reporting and tracing the cache desync.
 - ([#1823](https://github.com/callumalpass/tasknotes/issues/1823)) Prevented zero-duration timed external calendar events from rendering under more than one day in list-style calendar views. Thanks to @martin-forge for reporting and tracing the Google Calendar case.
 - ([#1841](https://github.com/callumalpass/tasknotes/issues/1841)) Prevented Kanban boards from duplicating columns when wikilinked status values are grouped through Bases. Thanks to @lendamico for reporting and sharing the screen recording.
 - ([#1846](https://github.com/callumalpass/tasknotes/issues/1846)) Saved NLP-triggered boolean custom fields as real booleans instead of quoted strings, so they match checkbox-created values and Bases filters. Thanks to @DevOps-Toast for reporting and sharing screenshots.

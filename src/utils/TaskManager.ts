@@ -42,6 +42,9 @@ export class TaskManager extends Events {
 	private debouncedHandlers: Map<string, number> = new Map();
 	private readonly DEBOUNCE_DELAY = 300; // 300ms delay after user stops typing
 
+	// Write-through fallback for files TaskNotes just wrote before Obsidian metadata is ready.
+	private pendingTaskInfoByPath = new Map<string, TaskInfo>();
+
 	constructor(app: App, settings: TaskNotesSettings, fieldMapper?: FieldMapper) {
 		super();
 		this.app = app;
@@ -184,6 +187,10 @@ export class TaskManager extends Events {
 	 * Handle file change - emit events for listeners
 	 */
 	private async handleFileChanged(file: TFile, cache: unknown): Promise<void> {
+		if (cache && typeof cache === "object" && "frontmatter" in cache) {
+			this.pendingTaskInfoByPath.delete(file.path);
+		}
+
 		// Just emit the event - no cache to update
 		this.trigger("file-updated", { path: file.path, file });
 		this.trigger("data-changed");
@@ -193,6 +200,8 @@ export class TaskManager extends Events {
 	 * Handle file deletion
 	 */
 	private handleFileDeleted(path: string, prevCache: unknown): void {
+		this.pendingTaskInfoByPath.delete(path);
+
 		// Cancel any pending debounced handlers
 		const timeoutId = this.debouncedHandlers.get(path);
 		if (timeoutId) {
@@ -208,6 +217,16 @@ export class TaskManager extends Events {
 	 * Handle file rename
 	 */
 	private handleFileRenamed(file: TFile, oldPath: string): void {
+		const pendingTaskInfo = this.pendingTaskInfoByPath.get(oldPath);
+		if (pendingTaskInfo) {
+			this.pendingTaskInfoByPath.delete(oldPath);
+			this.pendingTaskInfoByPath.set(file.path, {
+				...pendingTaskInfo,
+				id: file.path,
+				path: file.path,
+			});
+		}
+
 		// Cancel any pending debounced handlers for old path
 		const timeoutId = this.debouncedHandlers.get(oldPath);
 		if (timeoutId) {
@@ -238,11 +257,26 @@ export class TaskManager extends Events {
 		if (!(file instanceof TFile)) return null;
 
 		const metadata = this.app.metadataCache.getFileCache(file);
-		if (!metadata?.frontmatter) return null;
+		if (!metadata?.frontmatter) {
+			return this.getPendingTaskInfo(path);
+		}
+
+		this.pendingTaskInfoByPath.delete(path);
 
 		if (!this.isTaskFile(metadata.frontmatter)) return null;
 
 		return this.extractTaskInfoFromNative(path, metadata.frontmatter);
+	}
+
+	private getPendingTaskInfo(path: string): TaskInfo | null {
+		const taskInfo = this.pendingTaskInfoByPath.get(path);
+		if (!taskInfo) return null;
+
+		return {
+			...taskInfo,
+			id: taskInfo.id ?? path,
+			path,
+		};
 	}
 
 	/**
@@ -876,17 +910,20 @@ export class TaskManager extends Events {
 	}
 
 	async clearAllCaches(): Promise<void> {
-		// Not needed - we don't cache
+		this.pendingTaskInfoByPath.clear();
 		this.trigger("data-changed");
 	}
 
 	clearCacheEntry(path: string): void {
-		// Not needed - we don't cache
+		this.pendingTaskInfoByPath.delete(path);
 	}
 
 	updateTaskInfoInCache(path: string, taskInfo: TaskInfo): void {
-		// Not needed - we don't cache
-		// Just emit an event
-		this.trigger("file-updated", { path });
+		this.pendingTaskInfoByPath.set(path, {
+			...taskInfo,
+			id: taskInfo.id ?? path,
+			path,
+		});
+		this.trigger("file-updated", { path, updatedTask: taskInfo });
 	}
 }
