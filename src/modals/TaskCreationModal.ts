@@ -9,7 +9,6 @@ import {
 } from "../services/NaturalLanguageParser";
 import { combineDateAndTime } from "../utils/dateUtils";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
-import { stringifyUnknown } from "../utils/stringUtils";
 
 import type {
 	EmbeddableMarkdownEditor,
@@ -523,42 +522,13 @@ export class TaskCreationModal extends TaskModal {
 
 		// Handle user-defined fields
 		if (parsed.userFields) {
-			console.debug(
-				"[TaskCreationModal] applyParsedData - parsed.userFields:",
-				parsed.userFields
-			);
-			console.debug(
-				"[TaskCreationModal] applyParsedData - available user field definitions:",
-				this.plugin.settings.userFields
-			);
-
 			for (const [fieldId, value] of Object.entries(parsed.userFields)) {
-				// Find the user field definition
 				const userField = this.plugin.settings.userFields?.find((f) => f.id === fieldId);
-				console.debug(
-					`[TaskCreationModal] Looking for field ${fieldId}, found:`,
-					userField
-				);
-
 				if (userField) {
-					// Store in userFields using the frontmatter key
-					if (Array.isArray(value)) {
-						this.userFields[userField.key] = value.join(", ");
-					} else {
-						this.userFields[userField.key] = value;
-					}
-					console.debug(
-						`[TaskCreationModal] Applied user field ${userField.displayName} (key: ${userField.key}): ${stringifyUnknown(value)}`
-					);
-					console.debug(`[TaskCreationModal] Current this.userFields:`, this.userFields);
-				} else {
-					console.warn(
-						`[TaskCreationModal] No user field definition found for field ID: ${fieldId}`
-					);
+					this.userFields[userField.key] = value;
 				}
 			}
-		} else {
-			console.debug("[TaskCreationModal] applyParsedData - NO parsed.userFields");
+			this.updateUserFieldControls();
 		}
 
 		// Update icon states

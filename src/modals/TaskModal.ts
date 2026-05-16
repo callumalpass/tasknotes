@@ -46,6 +46,16 @@ function userFieldValueToString(value: unknown): string {
 	return "";
 }
 
+function userFieldValueToInputString(value: unknown): string {
+	return Array.isArray(value)
+		? value.map(userFieldValueToString).join(", ")
+		: userFieldValueToString(value);
+}
+
+interface UserFieldToggleControl {
+	setValue(value: boolean): unknown;
+}
+
 export abstract class TaskModal extends Modal {
 	plugin: TaskNotesPlugin;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
@@ -287,6 +297,8 @@ export abstract class TaskModal extends Modal {
 
 	// User-defined fields (dynamic based on settings)
 	protected userFields: Record<string, unknown> = {};
+	protected userFieldInputs = new Map<string, HTMLInputElement>();
+	protected userFieldToggles = new Map<string, UserFieldToggleControl>();
 
 	// Dependency fields
 	protected blockedByItems: DependencyItem[] = [];
@@ -589,6 +601,9 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createDetailsSection(container: HTMLElement): void {
+		this.userFieldInputs.clear();
+		this.userFieldToggles.clear();
+
 		// The details container wraps the expandable fields (for hide/show animation)
 		// It goes inside the left column for proper expand/collapse
 		this.detailsContainer = this.splitLeftColumn
@@ -907,6 +922,7 @@ export abstract class TaskModal extends Modal {
 							this.userFields[userField.key] = value;
 						}
 					});
+					this.userFieldInputs.set(userField.key, text.inputEl);
 
 					// Add autocomplete functionality
 					new UserFieldSuggest(this.app, text.inputEl, this.plugin, userField);
@@ -921,6 +937,7 @@ export abstract class TaskModal extends Modal {
 						this.userFields[userField.key] = isNaN(numValue) ? null : numValue;
 					});
 					text.inputEl.type = "number";
+					this.userFieldInputs.set(userField.key, text.inputEl);
 				});
 				break;
 			}
@@ -931,6 +948,7 @@ export abstract class TaskModal extends Modal {
 						this.userFields[userField.key] = value;
 					});
 					text.inputEl.type = "date";
+					this.userFieldInputs.set(userField.key, text.inputEl);
 				});
 				break;
 			}
@@ -940,8 +958,26 @@ export abstract class TaskModal extends Modal {
 					toggle.setValue(currentValue === true).onChange((value) => {
 						this.userFields[userField.key] = value;
 					});
+					this.userFieldToggles.set(userField.key, toggle);
 				});
 				break;
+			}
+		}
+	}
+
+	protected updateUserFieldControls(): void {
+		const userFieldConfigs = this.plugin.settings?.userFields || [];
+
+		for (const field of userFieldConfigs) {
+			const currentValue = this.userFields[field.key];
+			const input = this.userFieldInputs.get(field.key);
+			if (input) {
+				input.value = userFieldValueToInputString(currentValue);
+			}
+
+			const toggle = this.userFieldToggles.get(field.key);
+			if (toggle) {
+				toggle.setValue(currentValue === true || currentValue === "true");
 			}
 		}
 	}
@@ -971,6 +1007,7 @@ export abstract class TaskModal extends Modal {
 							.onChange((value) => {
 								this.userFields[field.key] = value;
 							});
+						this.userFieldToggles.set(field.key, toggle);
 					});
 					break;
 
@@ -982,6 +1019,7 @@ export abstract class TaskModal extends Modal {
 								const numValue = parseFloat(value);
 								this.userFields[field.key] = isNaN(numValue) ? null : numValue;
 							});
+						this.userFieldInputs.set(field.key, text.inputEl);
 					});
 					break;
 
@@ -992,6 +1030,7 @@ export abstract class TaskModal extends Modal {
 							.onChange((value) => {
 								this.userFields[field.key] = value || null;
 							});
+						this.userFieldInputs.set(field.key, text.inputEl);
 						// Add date picker button/icon next to the input
 						// Ensure the input and button layout as a single row with proper sizing
 						const parent = text.inputEl.parentElement;
@@ -1044,6 +1083,7 @@ export abstract class TaskModal extends Modal {
 										.filter((v) => v);
 								}
 							});
+						this.userFieldInputs.set(field.key, text.inputEl);
 
 						// Add autocomplete functionality
 						new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
@@ -1065,6 +1105,7 @@ export abstract class TaskModal extends Modal {
 							.onChange((value) => {
 								this.userFields[field.key] = value || null;
 							});
+						this.userFieldInputs.set(field.key, text.inputEl);
 
 						// Add autocomplete functionality
 						new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
