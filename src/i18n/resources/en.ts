@@ -3022,6 +3022,7 @@ export const en: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 reminder set (click to manage)",
 			reminderTooltipMany: "{count} reminders set (click to manage)",
+			detailsTooltip: "Task has details",
 			projectTooltip: "This task is used as a project (click to filter subtasks)",
 			expandSubtasks: "Expand subtasks",
 			collapseSubtasks: "Collapse subtasks",

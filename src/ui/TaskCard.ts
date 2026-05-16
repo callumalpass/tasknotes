@@ -115,6 +115,10 @@ function tTaskCard(
 	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
 }
 
+function taskHasDetails(task: TaskInfo): boolean {
+	return typeof task.details === "string" && task.details.trim().length > 0;
+}
+
 /* =================================================================
    BADGE INDICATOR HELPERS
    ================================================================= */
@@ -343,6 +347,9 @@ function updateCardCompletionState(
 		"task-card--chevron-left",
 		plugin.settings?.subtaskChevronPosition === "left"
 	);
+	const hasDetails = taskHasDetails(task);
+	card.classList.toggle("task-card--has-details", hasDetails);
+	card.dataset.hasDetails = hasDetails ? "true" : "false";
 
 	for (const className of Array.from(card.classList)) {
 		if (className.startsWith("task-card--priority-")) {
@@ -588,6 +595,7 @@ export function createTaskCard(
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of skipped_instances
 		: false; // Only recurring tasks can have skipped instances
 	const isRecurring = !!task.recurrence;
+	const hasDetails = taskHasDetails(task);
 
 	// Build BEM class names
 	const cardClasses = ["task-card"];
@@ -603,6 +611,7 @@ export function createTaskCard(
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (isActivelyTracked) cardClasses.push("task-card--actively-tracked");
 	if (isRecurring) cardClasses.push("task-card--recurring");
+	if (hasDetails) cardClasses.push("task-card--has-details");
 
 	// Add priority modifier
 	if (task.priority) {
@@ -629,6 +638,7 @@ export function createTaskCard(
 	card.dataset.taskPath = task.path;
 	card.dataset.key = task.path; // For DOMReconciler compatibility
 	card.dataset.status = effectiveStatus;
+	card.dataset.hasDetails = hasDetails ? "true" : "false";
 
 	// Create main row container for horizontal layout
 	// Use span for inline layout to maintain inline flow
@@ -735,6 +745,16 @@ export function createTaskCard(
 				icon: "bell",
 				tooltip: reminderTooltip,
 				onClick: createReminderClickHandler(task, plugin),
+			});
+		}
+
+		// Details indicator
+		if (hasDetails) {
+			createBadgeIndicator({
+				container: badgesContainer,
+				className: "task-card__details-indicator",
+				icon: "file-text",
+				tooltip: tTaskCard(plugin, "detailsTooltip"),
 			});
 		}
 
@@ -1050,6 +1070,7 @@ export function updateTaskCard(
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of skipped_instances
 		: false; // Only recurring tasks can have skipped instances
 	const isRecurring = !!task.recurrence;
+	const hasDetails = taskHasDetails(task);
 
 	// Build BEM class names for update
 	const cardClasses = ["task-card"];
@@ -1060,6 +1081,7 @@ export function updateTaskCard(
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (isActivelyTracked) cardClasses.push("task-card--actively-tracked");
 	if (isRecurring) cardClasses.push("task-card--recurring");
+	if (hasDetails) cardClasses.push("task-card--has-details");
 
 	// Add priority modifier
 	if (task.priority) {
@@ -1078,6 +1100,7 @@ export function updateTaskCard(
 
 	element.className = cardClasses.join(" ");
 	element.dataset.status = effectiveStatus;
+	element.dataset.hasDetails = hasDetails ? "true" : "false";
 
 	// Get the main row container
 	const mainRow = element.querySelector(".task-card__main-row") as HTMLElement;
@@ -1247,6 +1270,14 @@ export function updateTaskCard(
 		icon: "bell",
 		tooltip: reminderTooltip,
 		onClick: createReminderClickHandler(task, plugin),
+	});
+
+	// Update details indicator
+	updateBadgeIndicator(element, ".task-card__details-indicator", {
+		shouldExist: hasDetails,
+		className: "task-card__details-indicator",
+		icon: "file-text",
+		tooltip: tTaskCard(plugin, "detailsTooltip"),
 	});
 
 	// Update project indicator and chevron (async)

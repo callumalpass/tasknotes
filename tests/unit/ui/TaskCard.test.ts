@@ -292,6 +292,30 @@ describe('TaskCard Component', () => {
       expect(card.querySelector('.task-card__recurring-indicator')).toBeTruthy();
     });
 
+    it('should indicate when a task has note body details', () => {
+      const task = TaskFactory.createTask({
+        details: 'Bring the reusable bags.'
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+
+      expect(card.classList.contains('task-card--has-details')).toBe(true);
+      expect(card.dataset.hasDetails).toBe('true');
+      expect(card.querySelector('.task-card__details-indicator')).toBeTruthy();
+    });
+
+    it('should not indicate whitespace-only task details', () => {
+      const task = TaskFactory.createTask({
+        details: '   \n\t'
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+
+      expect(card.classList.contains('task-card--has-details')).toBe(false);
+      expect(card.dataset.hasDetails).toBe('false');
+      expect(card.querySelector('.task-card__details-indicator')).toBeNull();
+    });
+
     it('should create completed task card', () => {
       const task = TaskFactory.createTask({ status: 'done' });
       const card = createTaskCard(task, mockPlugin);
@@ -764,6 +788,43 @@ describe('TaskCard Component', () => {
       updateTaskCard(cardWithPriority, updatedTask, mockPlugin);
 
       expect(cardWithPriority.querySelector('.task-card__priority-dot')).toBeNull();
+    });
+
+    it('should add details indicator when task gains note body details', () => {
+      expect(card.classList.contains('task-card--has-details')).toBe(false);
+      expect(card.querySelector('.task-card__details-indicator')).toBeNull();
+
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        details: 'Follow up with Alice.'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      expect(card.classList.contains('task-card--has-details')).toBe(true);
+      expect(card.dataset.hasDetails).toBe('true');
+      expect(card.querySelector('.task-card__details-indicator')).toBeTruthy();
+    });
+
+    it('should remove details indicator when task loses note body details', () => {
+      const taskWithDetails = TaskFactory.createTask({
+        ...task,
+        details: 'Follow up with Alice.'
+      });
+      const cardWithDetails = createTaskCard(taskWithDetails, mockPlugin);
+
+      expect(cardWithDetails.querySelector('.task-card__details-indicator')).toBeTruthy();
+
+      const updatedTask = TaskFactory.createTask({
+        ...taskWithDetails,
+        details: ''
+      });
+
+      updateTaskCard(cardWithDetails, updatedTask, mockPlugin);
+
+      expect(cardWithDetails.classList.contains('task-card--has-details')).toBe(false);
+      expect(cardWithDetails.dataset.hasDetails).toBe('false');
+      expect(cardWithDetails.querySelector('.task-card__details-indicator')).toBeNull();
     });
 
     it('should update status dot color', () => {
