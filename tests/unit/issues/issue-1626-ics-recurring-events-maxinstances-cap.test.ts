@@ -1,146 +1,84 @@
-/**
- * Regression coverage for Issue #1626: ICS subscription recurring events
- * truncated by maxInstances=100 cap
- *
- * High-frequency recurring events (3+/week) are silently truncated because
- * parseICS() in ICSSubscriptionService.ts caps expansion at 100 instances.
- * For a 3x/week event, 100 instances covers only ~8 months, not the full
- * 1-year expansion window. Additionally, EXDATE-excluded dates count toward
- * the cap, wasting slots.
- *
- * @see https://github.com/callumalpass/tasknotes/issues/1626
- */
+import { ICSSubscriptionService } from "../../../src/services/ICSSubscriptionService";
+import { ICSEvent } from "../../../src/types";
 
-import { describe, it, expect } from '@jest/globals';
+jest.mock("obsidian", () => ({
+	Notice: jest.fn(),
+	requestUrl: jest.fn(),
+	TFile: jest.fn(),
+}));
 
-interface RecurrenceConfig {
-	daysPerWeek: number;
-	weeksInYear: number;
-	exdateCount: number;
-}
+jest.mock("ical.js", () =>
+	jest.requireActual("../../../node_modules/ical.js/dist/ical.es5.cjs")
+);
 
-/**
- * Simulates the buggy instance expansion loop from ICSSubscriptionService.ts
- * (lines ~430-445). The maxInstances=100 cap truncates high-frequency events.
- */
-function expandRecurringEventBuggy(config: RecurrenceConfig): number {
-	const maxInstances = 100; // Bug: too low for high-frequency events
-	const totalPossibleInstances = config.daysPerWeek * config.weeksInYear;
+const REPORTED_ICS = [
+	"BEGIN:VCALENDAR",
+	"VERSION:2.0",
+	"PRODID:-//Test//Test//EN",
+	"BEGIN:VTIMEZONE",
+	"TZID:Central Standard Time",
+	"BEGIN:STANDARD",
+	"DTSTART:16010101T020000",
+	"TZOFFSETFROM:-0500",
+	"TZOFFSETTO:-0600",
+	"RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=1SU;BYMONTH=11",
+	"END:STANDARD",
+	"BEGIN:DAYLIGHT",
+	"DTSTART:16010101T020000",
+	"TZOFFSETFROM:-0600",
+	"TZOFFSETTO:-0500",
+	"RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=2SU;BYMONTH=3",
+	"END:DAYLIGHT",
+	"END:VTIMEZONE",
+	"BEGIN:VEVENT",
+	"DTSTART;TZID=Central Standard Time:20250218T093000",
+	"DTEND;TZID=Central Standard Time:20250218T100000",
+	"RRULE:FREQ=WEEKLY;UNTIL=20270218T153000Z;INTERVAL=1;BYDAY=TU,WE,TH;WKST=SU",
+	"SUMMARY:Test - Multi-day BYDAY",
+	"UID:test-multi-day-byday@test",
+	"END:VEVENT",
+	"END:VCALENDAR",
+].join("\r\n");
 
-	let instanceCount = 0;
-	let visibleCount = 0;
+describe("Issue #1626: ICS recurring events truncated by maxInstances=100", () => {
+	let service: ICSSubscriptionService;
 
-	for (let i = 0; i < totalPossibleInstances; i++) {
-		if (instanceCount >= maxInstances) break;
+	beforeEach(() => {
+		jest
+			.spyOn(Date, "now")
+			.mockReturnValue(new Date("2025-02-18T12:00:00.000Z").getTime());
 
-		// Bug: EXDATE-excluded dates still increment instanceCount
-		if (i < config.exdateCount) {
-			instanceCount++; // Bug: counts toward cap even though excluded
-			continue;
-		}
-
-		instanceCount++;
-		visibleCount++;
-	}
-
-	return visibleCount;
-}
-
-/**
- * Fixed version: higher maxInstances and EXDATE-excluded dates don't count
- * toward the cap.
- */
-function expandRecurringEventFixed(config: RecurrenceConfig): number {
-	const maxInstances = 3000; // Fix: covers daily events for a full year
-	const totalPossibleInstances = config.daysPerWeek * config.weeksInYear;
-
-	let instanceCount = 0;
-	let visibleCount = 0;
-
-	for (let i = 0; i < totalPossibleInstances; i++) {
-		if (instanceCount >= maxInstances) break;
-
-		// Fix: EXDATE-excluded dates don't count toward cap
-		if (i < config.exdateCount) {
-			continue;
-		}
-
-		instanceCount++;
-		visibleCount++;
-	}
-
-	return visibleCount;
-}
-
-describe('Issue #1626: ICS recurring events truncated by maxInstances=100', () => {
-	it.skip('reproduces issue #1626 - 3x/week event truncated before 1 year', () => {
-		const config: RecurrenceConfig = {
-			daysPerWeek: 3,
-			weeksInYear: 52,
-			exdateCount: 0,
-		};
-
-		const expectedTotal = 3 * 52; // 156 instances in a year
-		const actualVisible = expandRecurringEventBuggy(config);
-
-		// BUG: only 100 instances visible, not 156
-		expect(actualVisible).toBe(100);
-		expect(actualVisible).toBeLessThan(expectedTotal);
+		service = new ICSSubscriptionService({
+			loadData: jest.fn().mockResolvedValue({ icsSubscriptions: [] }),
+			saveData: jest.fn().mockResolvedValue(undefined),
+			i18n: {
+				translate: jest.fn((key: string) => key),
+			},
+			app: {
+				vault: {
+					getAbstractFileByPath: jest.fn(),
+					cachedRead: jest.fn(),
+					getFiles: jest.fn().mockReturnValue([]),
+					on: jest.fn(),
+					offref: jest.fn(),
+				},
+			},
+		} as any);
 	});
 
-	it.skip('reproduces issue #1626 - daily event severely truncated', () => {
-		const config: RecurrenceConfig = {
-			daysPerWeek: 7, // daily
-			weeksInYear: 52,
-			exdateCount: 0,
-		};
-
-		const expectedTotal = 7 * 52; // 364 instances
-		const actualVisible = expandRecurringEventBuggy(config);
-
-		// BUG: only 100 out of 364
-		expect(actualVisible).toBe(100);
-		expect(actualVisible).toBeLessThan(expectedTotal);
+	afterEach(() => {
+		jest.restoreAllMocks();
 	});
 
-	it.skip('reproduces issue #1626 - EXDATE wastes instance slots', () => {
-		const config: RecurrenceConfig = {
-			daysPerWeek: 2,
-			weeksInYear: 52,
-			exdateCount: 10, // 10 excluded dates
-		};
+	it("expands a multi-day weekly subscription beyond the former 100-instance cap", () => {
+		const events = (service as any).parseICS(REPORTED_ICS, "test-sub") as ICSEvent[];
+		const eventDates = new Set(
+			events.map((event) => new Date(event.start).toISOString().slice(0, 10))
+		);
 
-		const actualVisible = expandRecurringEventBuggy(config);
-
-		// BUG: 10 exdates counted toward cap, so only 90 visible instead of 94
-		expect(actualVisible).toBe(90);
-	});
-
-	it.skip('verifies fix - all instances visible with higher cap', () => {
-		const config3x: RecurrenceConfig = {
-			daysPerWeek: 3,
-			weeksInYear: 52,
-			exdateCount: 0,
-		};
-
-		const configDaily: RecurrenceConfig = {
-			daysPerWeek: 7,
-			weeksInYear: 52,
-			exdateCount: 0,
-		};
-
-		expect(expandRecurringEventFixed(config3x)).toBe(156);
-		expect(expandRecurringEventFixed(configDaily)).toBe(364);
-	});
-
-	it.skip('verifies fix - EXDATE does not reduce visible count', () => {
-		const config: RecurrenceConfig = {
-			daysPerWeek: 2,
-			weeksInYear: 52,
-			exdateCount: 10,
-		};
-
-		// Fixed: 104 total - 10 exdates = 94 visible, none wasted on cap
-		expect(expandRecurringEventFixed(config)).toBe(94);
+		expect(events.length).toBeGreaterThan(150);
+		expect(eventDates).toContain("2025-10-07");
+		expect(eventDates).toContain("2025-10-08");
+		expect(eventDates).toContain("2026-02-17");
 	});
 });

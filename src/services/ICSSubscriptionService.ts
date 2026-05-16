@@ -7,6 +7,10 @@ import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { stringifyUnknown } from "../utils/stringUtils";
 
+const ICS_RECURRENCE_EXPANSION_WINDOW_MS = 365 * 24 * 60 * 60 * 1000;
+const MAX_RECURRING_ICS_VISIBLE_INSTANCES = 3000;
+const MAX_RECURRING_ICS_ITERATIONS = 10000;
+
 function getVTimezoneTzid(vtimezone: ICAL.Component): string | null {
 	const value = vtimezone.getFirstPropertyValue("tzid");
 	return typeof value === "string" ? value.trim() : null;
@@ -480,13 +484,19 @@ export class ICSSubscriptionService extends EventEmitter {
 						// Generate instances for the next year
 						const iterator = event.iterator(startDate);
 						const maxDate = new ICAL.Time();
-						maxDate.fromJSDate(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)); // One year from now
+						maxDate.fromJSDate(new Date(Date.now() + ICS_RECURRENCE_EXPANSION_WINDOW_MS)); // One year from now
 
 						let occurrence;
-						let instanceCount = 0;
-						const maxInstances = 100; // Prevent infinite loops
+						let occurrenceCount = 0;
+						let visibleInstanceCount = 0;
 
-						while ((occurrence = iterator.next()) && instanceCount < maxInstances) {
+						while (
+							(occurrence = iterator.next()) &&
+							occurrenceCount < MAX_RECURRING_ICS_ITERATIONS &&
+							visibleInstanceCount < MAX_RECURRING_ICS_VISIBLE_INSTANCES
+						) {
+							occurrenceCount++;
+
 							if (occurrence.compare(maxDate) > 0) {
 								break;
 							}
@@ -495,9 +505,10 @@ export class ICSSubscriptionService extends EventEmitter {
 
 							// Skip if this date is in EXDATE
 							if (exdates.has(occurrenceStr)) {
-								instanceCount++;
 								continue;
 							}
+
+							const instanceId = `${eventId}-${visibleInstanceCount}`;
 
 							// Check if this instance has been modified
 							const modifiedEvent = modifiedForThisEvent.get(occurrenceStr);
@@ -508,7 +519,7 @@ export class ICSSubscriptionService extends EventEmitter {
 
 								if (modifiedStart) {
 									events.push({
-										id: `${eventId}-${instanceCount}`,
+										id: instanceId,
 										subscriptionId: subscriptionId,
 										title: modifiedEvent.summary || summary,
 										description: modifiedEvent.description || description,
@@ -520,6 +531,7 @@ export class ICSSubscriptionService extends EventEmitter {
 										location: modifiedEvent.location || location,
 										url: modifiedEvent.url || icsEvent.url,
 									});
+									visibleInstanceCount++;
 								}
 							} else {
 								// Use the original recurring event instance
@@ -535,13 +547,12 @@ export class ICSSubscriptionService extends EventEmitter {
 
 								events.push({
 									...icsEvent,
-									id: `${eventId}-${instanceCount}`,
+									id: instanceId,
 									start: instanceStart,
 									end: instanceEnd,
 								});
+								visibleInstanceCount++;
 							}
-
-							instanceCount++;
 						}
 					} else {
 						events.push(icsEvent);

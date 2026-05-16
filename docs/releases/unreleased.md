@@ -60,6 +60,7 @@ Example:
 ## Fixed
 
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
+- ([#1626](https://github.com/callumalpass/tasknotes/issues/1626)) Expanded recurring ICS subscription events through the one-year subscription window for high-frequency recurring calendars. Thanks to @pib for reporting this.
 - ([#1628](https://github.com/callumalpass/tasknotes/issues/1628)) Refreshed Calendar Bases views promptly when switching between filtered Agenda views, so the previous view's task set does not stay visible until the delayed refresh. Thanks to @Lanalangz for reporting this.
 - ([#1629](https://github.com/callumalpass/tasknotes/issues/1629)) Saved `blockedBy` dependencies selected in the Create Task modal. Thanks to @obsilover for reporting this.
 - ([#1634](https://github.com/callumalpass/tasknotes/issues/1634)) Aligned custom status icons in inline tasks with the default inline status circle. Thanks to @ttlaylor for reporting this and @basbarten for confirming it.
