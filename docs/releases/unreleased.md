@@ -50,6 +50,7 @@ Example:
 
 ## Fixed
 
+- ([#1722](https://github.com/callumalpass/tasknotes/issues/1722)) Saved the source note immediately after converting an inline checkbox task to a TaskNote, so Kanban views do not keep showing the stale inline task alongside the new task file. Thanks to @literallydope for reporting this and sharing screenshots.
 - ([#1750](https://github.com/callumalpass/tasknotes/issues/1750)) Fixed generated default Bases filters for property-based task identification when the identifying property name contains spaces. Thanks to @Igorgro for reporting this.
 - ([#1745](https://github.com/callumalpass/tasknotes/issues/1745)) Clarified the inline task documentation so `Create new inline task` is distinguished from current-line conversion. Thanks to @yvos for reporting the mismatch.
 - ([#1739](https://github.com/callumalpass/tasknotes/issues/1739)) Enabled Kanban touch dragging on touch-capable desktop and convertible devices, not only mobile Obsidian. Thanks to @mgsima for reporting the tablet-mode failure.

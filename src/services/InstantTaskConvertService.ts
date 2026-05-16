@@ -281,6 +281,8 @@ export class InstantTaskConvertService {
 				return;
 			}
 
+			await this.persistSourceNoteAfterReplacement(editor);
+
 			// Check if filename was changed due to length constraints
 			const expectedFilename = this.sanitizeTitle(parsedData.title);
 			const actualFilename = file.basename;
@@ -912,6 +914,33 @@ export class InstantTaskConvertService {
 		} catch (error) {
 			console.debug("Error refreshing task link overlays:", error);
 		}
+	}
+
+	private async persistSourceNoteAfterReplacement(editor: Editor): Promise<TFile | null> {
+		type WorkspaceWithActiveEditor = {
+			activeEditor?: { editor?: Editor; file?: TFile | null } | null;
+			getActiveFile?: () => TFile | null;
+		};
+
+		const workspace = this.plugin.app.workspace as WorkspaceWithActiveEditor;
+		const activeEditor = workspace.activeEditor;
+		const sourceFile =
+			activeEditor?.editor === editor
+				? activeEditor.file
+				: workspace.getActiveFile?.() ?? null;
+
+		if (!sourceFile) {
+			return null;
+		}
+
+		try {
+			await this.plugin.app.vault.modify(sourceFile, editor.getValue());
+			this.plugin.notifyDataChanged(sourceFile.path, false, false);
+		} catch (error) {
+			console.debug("Error saving source note after instant task conversion:", error);
+		}
+
+		return sourceFile;
 	}
 
 	/**

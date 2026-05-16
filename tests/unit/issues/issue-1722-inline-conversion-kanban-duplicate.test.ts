@@ -17,39 +17,76 @@
  * @see https://github.com/callumalpass/tasknotes/issues/1722
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest } from "@jest/globals";
+import type { Editor } from "obsidian";
+import { TFile } from "obsidian";
+import { InstantTaskConvertService } from "../../../src/services/InstantTaskConvertService";
+
+jest.mock("obsidian");
 
 describe('Issue #1722: Inline task conversion Kanban duplicate', () => {
-	it.skip('reproduces issue #1722: both inline and converted tasknote appear in task list', () => {
-		// Simulate the scenario: a task exists as an inline checkbox in a note
-		const inlineTask = {
-			path: 'notes/daily-note.md',
-			line: 5,
-			title: 'Buy groceries',
-			status: 'todo',
-			isInlineTask: true,
+	function createService(editor: Editor, sourceFile: TFile) {
+		const plugin = {
+			app: {
+				workspace: {
+					activeEditor: {
+						editor,
+						file: sourceFile,
+					},
+					getActiveFile: jest.fn(() => sourceFile),
+				},
+				vault: {
+					modify: jest.fn(async () => undefined),
+				},
+			},
+			settings: {
+				customStatuses: [],
+				customPriorities: [],
+				nlpDefaultToScheduled: false,
+				nlpLanguage: "en",
+				nlpTriggers: { triggers: [] },
+				userFields: [],
+			},
+			notifyDataChanged: jest.fn(),
 		};
 
-		// After conversion, the task now exists as a separate file
-		const convertedTask = {
-			path: 'tasks/Buy groceries.md',
-			title: 'Buy groceries',
-			status: 'todo',
-			isInlineTask: false,
+		return {
+			plugin,
+			service: new InstantTaskConvertService(plugin as never, {} as never, {} as never),
 		};
+	}
 
-		// Simulate Bases data containing both entries during the transition window
-		const basesData = [inlineTask, convertedTask];
+	it("persists the source note after replacing the inline checkbox with a task link", async () => {
+		const sourceFile = new TFile("Notes/daily.md");
+		const editor = {
+			getValue: jest.fn(() => "- [[Tasks/Buy groceries]]"),
+		} as unknown as Editor;
+		const { plugin, service } = createService(editor, sourceFile);
 
-		// BUG: No deduplication - both appear as separate tasks
-		const taskCards = basesData.map(t => ({ path: t.path, title: t.title }));
-		expect(taskCards).toHaveLength(2); // This is the bug - should be 1
+		const result = await (service as any).persistSourceNoteAfterReplacement(editor);
 
-		// Expected: deduplication logic should detect that the inline task was converted
-		// and only show the new tasknote file
-		const uniqueTasks = basesData.filter(t => !t.isInlineTask ||
-			!basesData.some(other => !other.isInlineTask && other.title === t.title));
-		expect(uniqueTasks).toHaveLength(1);
-		expect(uniqueTasks[0].path).toBe('tasks/Buy groceries.md');
+		expect(result).toBe(sourceFile);
+		expect(plugin.app.vault.modify).toHaveBeenCalledWith(
+			sourceFile,
+			"- [[Tasks/Buy groceries]]"
+		);
+		expect(plugin.notifyDataChanged).toHaveBeenCalledWith("Notes/daily.md", false, false);
+	});
+
+	it("falls back to the active file when the active editor wrapper is unavailable", async () => {
+		const sourceFile = new TFile("Notes/project.md");
+		const editor = {
+			getValue: jest.fn(() => "- [[Tasks/Call supplier]]"),
+		} as unknown as Editor;
+		const { plugin, service } = createService(editor, sourceFile);
+		plugin.app.workspace.activeEditor = null;
+
+		await (service as any).persistSourceNoteAfterReplacement(editor);
+
+		expect(plugin.app.workspace.getActiveFile).toHaveBeenCalled();
+		expect(plugin.app.vault.modify).toHaveBeenCalledWith(
+			sourceFile,
+			"- [[Tasks/Call supplier]]"
+		);
 	});
 });
