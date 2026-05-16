@@ -15,6 +15,14 @@ import type { TaskNotesSettings } from "../types/settings";
 import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
 
+function escapeBasesStringLiteral(value: string): string {
+	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function formatNotePropertyReference(propertyName: string): string {
+	return `note["${escapeBasesStringLiteral(propertyName)}"]`;
+}
+
 /**
  * Generate a task filter expression based on the task identification method
  * Returns the filter condition string (not the full YAML structure)
@@ -39,15 +47,17 @@ function generateTaskFilterCondition(settings: TaskNotesSettings): string {
 			// Check property has specific value
 			// Boolean values must not be quoted — Obsidian stores checkbox/boolean
 			// frontmatter as actual booleans, so the Bases filter needs e.g.
-			// note.prop == true rather than note.prop == "true" (#1491)
+			// note["prop"] == true rather than note["prop"] == "true" (#1491)
+			const propertyRef = formatNotePropertyReference(propertyName);
 			const lower = propertyValue.toLowerCase();
 			if (lower === "true" || lower === "false") {
-				return `note.${propertyName} == ${lower}`;
+				return `${propertyRef} == ${lower}`;
 			}
-			return `note.${propertyName} == "${propertyValue}"`;
+			return `${propertyRef} == "${escapeBasesStringLiteral(propertyValue)}"`;
 		} else {
 			// Just check property exists (is not empty)
-			return `note.${propertyName} && note.${propertyName} != "" && note.${propertyName} != null`;
+			const propertyRef = formatNotePropertyReference(propertyName);
+			return `${propertyRef} && ${propertyRef} != "" && ${propertyRef} != null`;
 		}
 	}
 }

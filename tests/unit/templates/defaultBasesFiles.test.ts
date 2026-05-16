@@ -1,6 +1,6 @@
 import { generateBasesFileTemplate } from "../../../src/templates/defaultBasesFiles";
 
-const createMockPlugin = () => {
+const createMockPlugin = (settingsOverride: Record<string, unknown> = {}) => {
 	const fieldMapping = {
 		status: "status",
 		priority: "priority",
@@ -32,6 +32,7 @@ const createMockPlugin = () => {
 			defaultVisibleProperties: ["status", "priority", "due"],
 			userFields: [],
 			fieldMapping,
+			...settingsOverride,
 		},
 		fieldMapper: {
 			toUserField: jest.fn((key: keyof typeof fieldMapping) => fieldMapping[key] ?? key),
@@ -67,6 +68,50 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('name: "Blocking"');
 		expect((template.match(/column: tasknotes_manual_order/g) ?? []).length).toBe(3);
 		expect(template).toContain('name: "Projects"');
+	});
+
+	it("quotes property-based task identifiers so names with spaces work in Bases filters", () => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				taskIdentificationMethod: "property",
+				taskPropertyName: "Task Type",
+				taskPropertyValue: "task",
+			}) as any
+		);
+
+		expect(template).toContain('note["Task Type"] == "task"');
+		expect(template).not.toContain("note.Task Type");
+	});
+
+	it("keeps boolean task identifier values unquoted when using a quoted property reference", () => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				taskIdentificationMethod: "property",
+				taskPropertyName: "Task Type",
+				taskPropertyValue: "true",
+			}) as any
+		);
+
+		expect(template).toContain('note["Task Type"] == true');
+		expect(template).not.toContain('note["Task Type"] == "true"');
+	});
+
+	it("uses the same quoted property reference for property existence filters", () => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				taskIdentificationMethod: "property",
+				taskPropertyName: "Task Type",
+				taskPropertyValue: "",
+			}) as any
+		);
+
+		expect(template).toContain(
+			'note["Task Type"] && note["Task Type"] != "" && note["Task Type"] != null'
+		);
+		expect(template).not.toContain("note.Task Type");
 	});
 
 	it("strips time component in view filters and formulas that compare against today()", () => {

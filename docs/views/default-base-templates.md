@@ -1,7 +1,7 @@
 ---
 title: Default Base Templates
 description: Default base file templates for TaskNotes views
-dateModified: 2026-03-23T18:00:00+1100
+dateModified: 2026-05-16T17:33:00+1000
 ---
 
 # Default Base Templates
@@ -20,6 +20,8 @@ The examples below assume:
 - **Statuses**: `none`, `open`, `in-progress`, `done` (only `done` is completed)
 - **Priorities**: `none`, `low`, `normal`, `high` (sorted by weight)
 - **Visible properties**: `status`, `priority`, `due`, `scheduled`, `projects`, `contexts`, `tags`, `blocked`, `blocking`
+
+When task identification uses a property instead of a tag, generated filters reference the identifying note property with bracket notation, such as `note["Task Type"] == true`. This keeps filters valid when custom property names contain spaces or other characters that cannot be used with dot notation.
 
 ## Included formulas
 
