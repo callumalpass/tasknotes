@@ -27,6 +27,7 @@ Example:
 ## Added
 
 - ([#1522](https://github.com/callumalpass/tasknotes/issues/1522)) Added a per-status option to skip rarely used statuses when cycling task-card status indicators. Thanks to @Glint-Eye for suggesting this.
+- ([#1520](https://github.com/callumalpass/tasknotes/issues/1520)) Made tag and context fields show available suggestions as soon as the field is focused. Thanks to @Glint-Eye for suggesting this, and to @craziedde for the follow-up.
 - ([#1544](https://github.com/callumalpass/tasknotes/issues/1544)) Added Ctrl/Cmd+F support for focusing the local search box in searchable TaskNotes Bases views. Thanks to @Code179 for suggesting this.
 - ([#1541](https://github.com/callumalpass/tasknotes/issues/1541)) Added `{{currentNotePath}}` and `{{currentNoteTitle}}` support to the default tasks folder, so normal task creation can place new tasks beside the active note without creating an inline link. Thanks to @ChristianAnyanwu for suggesting this, and to @abbasou and @ttlaylor for the follow-up feedback.
 - ([#648](https://github.com/callumalpass/tasknotes/issues/648), [#1605](https://github.com/callumalpass/tasknotes/issues/1605)) Added clickable links in task-card contexts for note links, markdown links, and web URLs while keeping plain contexts as tag-search buttons. Thanks to @trdischat and @Glint-Eye for suggesting this, and to @renatomen for the follow-up feedback.

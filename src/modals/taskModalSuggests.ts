@@ -10,6 +10,14 @@ interface ContextSuggestion {
 	toString(): string;
 }
 
+function openSuggestionsOnFieldSelection(
+	input: HTMLInputElement,
+	openSuggestions: () => void
+): void {
+	input.addEventListener("focus", openSuggestions);
+	input.addEventListener("click", openSuggestions);
+}
+
 export class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
 	private plugin: TaskNotesPlugin;
 	private input: HTMLInputElement;
@@ -18,6 +26,7 @@ export class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
 		super(app, inputEl);
 		this.plugin = plugin;
 		this.input = inputEl;
+		openSuggestionsOnFieldSelection(this.input, () => this.open());
 	}
 
 	protected async getSuggestions(_: string): Promise<ContextSuggestion[]> {
@@ -72,6 +81,7 @@ export class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
 		super(app, inputEl);
 		this.plugin = plugin;
 		this.input = inputEl;
+		openSuggestionsOnFieldSelection(this.input, () => this.open());
 	}
 
 	protected async getSuggestions(_: string): Promise<TagSuggestion[]> {
