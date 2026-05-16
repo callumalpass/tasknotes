@@ -15,7 +15,11 @@ import {
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
-import interactionPlugin, { type EventResizeDoneArg } from "@fullcalendar/interaction";
+import interactionPlugin, {
+	type DropArg,
+	type EventReceiveArg,
+	type EventResizeDoneArg,
+} from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import {
 	generateCalendarEvents,
@@ -39,7 +43,7 @@ import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
 import { CalendarEventCreationModal } from "../modals/CalendarEventCreationModal";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
-import { Menu, TFile, setIcon, setTooltip } from "obsidian";
+import { Menu, Notice, TFile, setIcon, setTooltip } from "obsidian";
 import { format } from "date-fns";
 import { createTaskCard } from "../ui/TaskCard";
 import { createICSEventCard } from "../ui/ICSCard";
@@ -241,6 +245,42 @@ export function isCalendarElementReadyForSizing(
 	}
 
 	return calendarEl.clientWidth > 0 && calendarEl.clientHeight > 0;
+}
+
+type ExternalDropTaskPathSource = {
+	dataTransfer?: DataTransfer | null;
+	draggedEl?: HTMLElement | null;
+	jsEvent?: MouseEvent | DragEvent | null;
+};
+
+function normalizeDroppedTaskPath(value: string | undefined): string | undefined {
+	const normalized = value?.trim();
+	return normalized ? normalized : undefined;
+}
+
+export function extractTaskPathFromExternalDrop(
+	info: ExternalDropTaskPathSource
+): string | undefined {
+	const eventDataTransfer =
+		info.jsEvent && "dataTransfer" in info.jsEvent
+			? info.jsEvent.dataTransfer
+			: null;
+	const dataTransfer = info.dataTransfer || eventDataTransfer;
+	const transferredTaskPath =
+		normalizeDroppedTaskPath(dataTransfer?.getData("application/x-task-path")) ||
+		normalizeDroppedTaskPath(dataTransfer?.getData("text/plain"));
+
+	if (transferredTaskPath) {
+		return transferredTaskPath;
+	}
+
+	const draggedEl = info.draggedEl;
+	return (
+		normalizeDroppedTaskPath(draggedEl?.dataset.taskPath) ||
+		normalizeDroppedTaskPath(
+			draggedEl?.closest<HTMLElement>("[data-task-path]")?.dataset.taskPath
+		)
+	);
 }
 
 function getCalendarScrollElements(calendarEl: HTMLElement | null): HTMLElement[] {
@@ -1125,6 +1165,7 @@ export class CalendarView extends BasesViewBase {
 				void handleDateTitleClick(date, this.plugin);
 			},
 			editable: true,
+			droppable: true,
 			selectable: true,
 			selectMirror: this.viewOptions.selectMirror,
 			eventTimeFormat:
@@ -1159,6 +1200,12 @@ export class CalendarView extends BasesViewBase {
 			},
 			eventDrop: (info) => {
 				void this.handleEventDrop(info);
+			},
+			drop: (info) => {
+				void this.handleExternalDrop(info);
+			},
+			eventReceive: (info) => {
+				this.handleEventReceive(info);
 			},
 			eventResize: (info) => {
 				void this.handleEventResize(info);
@@ -1712,6 +1759,46 @@ export class CalendarView extends BasesViewBase {
 				this.expectImmediateUpdate()
 			);
 		}
+	}
+
+	private async handleExternalDrop(info: DropArg): Promise<void> {
+		this.expectImmediateUpdate();
+
+		const taskPath = extractTaskPathFromExternalDrop(info);
+		if (!taskPath) {
+			console.warn("[TaskNotes][CalendarView] External drop did not include a task path");
+			return;
+		}
+
+		try {
+			const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
+			if (!task) {
+				console.warn("[TaskNotes][CalendarView] Dropped task not found:", taskPath);
+				return;
+			}
+
+			const scheduledDate = info.allDay
+				? format(info.date, "yyyy-MM-dd")
+				: format(info.date, "yyyy-MM-dd'T'HH:mm");
+
+			await this.plugin.taskService.updateProperty(task, "scheduled", scheduledDate);
+
+			new Notice(
+				`Task "${task.title}" scheduled for ${format(
+					info.date,
+					info.allDay ? "MMM d, yyyy" : "MMM d, yyyy h:mm a"
+				)}`
+			);
+
+			this.calendar?.refetchEvents();
+		} catch (error) {
+			console.error("[TaskNotes][CalendarView] Error handling external task drop:", error);
+			new Notice("Failed to schedule task");
+		}
+	}
+
+	private handleEventReceive(info: EventReceiveArg): void {
+		info.event.remove();
 	}
 
 	private async handleEventDrop(info: EventDropArg): Promise<void> {

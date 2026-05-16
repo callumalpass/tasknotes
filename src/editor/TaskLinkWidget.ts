@@ -71,6 +71,8 @@ export class TaskLinkWidget extends WidgetType {
 		// Store original text for reference
 		card.dataset.originalText = this.originalText;
 
+		this.plugin.dragDropManager?.makeTaskCardDraggable(wrapper, this.taskInfo.path);
+
 		// Trigger update after status changes (for editor sync)
 		// Listen for task updates within the card
 		card.addEventListener("tasknotes:task-updated", () => {
@@ -116,7 +118,12 @@ export class TaskLinkWidget extends WidgetType {
 	ignoreEvent(event: Event): boolean {
 		// Ignore mouse events to prevent cursor from moving into widget
 		// This keeps the widget rendered while interacting with it
-		if (event.type === "mousedown" || event.type === "click") {
+		if (
+			event.type === "mousedown" ||
+			event.type === "click" ||
+			event.type === "dragstart" ||
+			event.type === "dragend"
+		) {
 			return true;
 		}
 		return false;
