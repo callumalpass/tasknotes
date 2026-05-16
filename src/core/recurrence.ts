@@ -391,18 +391,21 @@ export function updateToNextScheduledOccurrence(
 	let nextDueDate: Date | null = null;
 
 	if (nextOccurrence) {
-		if (maintainDueOffset) {
-			try {
-				const originalScheduled = task.scheduled ? parseDateToUTC(task.scheduled) : null;
-				const originalDue = task.due ? parseDateToUTC(task.due) : null;
+		try {
+			const originalScheduled = task.scheduled ? parseDateToUTC(task.scheduled) : null;
+			const originalDue = task.due ? parseDateToUTC(task.due) : null;
 
-				if (originalScheduled && originalDue) {
+			if (originalScheduled && originalDue) {
+				const dueWouldBeBeforeNextSchedule =
+					!maintainDueOffset && originalDue.getTime() < nextOccurrence.getTime();
+				// Avoid leaving a due date behind the newly advanced scheduled date.
+				if (maintainDueOffset || dueWouldBeBeforeNextSchedule) {
 					const offsetMs = originalDue.getTime() - originalScheduled.getTime();
 					nextDueDate = new Date(nextOccurrence.getTime() + offsetMs);
 				}
-			} catch (error) {
-				console.error("Error calculating next due date with offset:", error);
 			}
+		} catch (error) {
+			console.error("Error calculating next due date with offset:", error);
 		}
 
 		if (task.scheduled && task.scheduled.includes("T")) {

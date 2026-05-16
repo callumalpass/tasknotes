@@ -120,6 +120,20 @@ export class RRule {
         dates.push(new Date(current));
         current.setUTCDate(current.getUTCDate() + weeklyInterval * 7);
       }
+    } else if (freq === Frequency.MONTHLY) {
+      // Monthly recurrence on the DTSTART day of month
+      const monthlyInterval = this.options.interval || 1;
+      const current = new Date(dtstart);
+      current.setUTCHours(0, 0, 0, 0);
+
+      while (current < start) {
+        current.setUTCMonth(current.getUTCMonth() + monthlyInterval);
+      }
+
+      while (current <= end) {
+        dates.push(new Date(current));
+        current.setUTCMonth(current.getUTCMonth() + monthlyInterval);
+      }
     }
     
     return dates;
