@@ -20,6 +20,25 @@ interface WritableCalendarEntry {
 	calendar: ProviderCalendar;
 }
 
+export function getDefaultWritableCalendarIndex(
+	writableCalendars: WritableCalendarEntry[],
+	googleTargetCalendarId: string | undefined
+): number {
+	if (googleTargetCalendarId) {
+		const targetCalendarIndex = writableCalendars.findIndex(
+			(entry) =>
+				entry.provider.providerId === "google" &&
+				entry.calendar.id === googleTargetCalendarId
+		);
+		if (targetCalendarIndex >= 0) {
+			return targetCalendarIndex;
+		}
+	}
+
+	const primaryIndex = writableCalendars.findIndex((entry) => entry.calendar.primary);
+	return primaryIndex >= 0 ? primaryIndex : 0;
+}
+
 export class CalendarEventCreationModal extends Modal {
 	plugin: TaskNotesPlugin;
 	options: CalendarEventCreationOptions;
@@ -106,11 +125,11 @@ export class CalendarEventCreationModal extends Modal {
 						const label = `${entry.calendar.summary} (${entry.provider.providerName})`;
 						dropdown.addOption(String(i), label);
 					}
-					// Default to primary calendar if available
-					const primaryIdx = this.writableCalendars.findIndex((e) => e.calendar.primary);
-					if (primaryIdx >= 0) {
-						dropdown.setValue(String(primaryIdx));
-					}
+					const defaultIndex = getDefaultWritableCalendarIndex(
+						this.writableCalendars,
+						this.plugin.settings.googleCalendarExport.targetCalendarId
+					);
+					dropdown.setValue(String(defaultIndex));
 				});
 		}
 

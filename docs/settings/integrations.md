@@ -42,6 +42,8 @@ OAuth integration requires creating your own OAuth application with Google and/o
 
 Provide **Client ID** and **Client Secret** from Google Cloud Console, then use **Connect Google Calendar** to complete OAuth loopback authentication. **Disconnect** revokes local credentials.
 
+The **Target calendar** setting used for exporting tasks to Google Calendar is also used as the default selection when creating a manual external calendar event from the calendar view. If the target calendar is unavailable, TaskNotes falls back to the provider's primary calendar.
+
 When connected, displays:
 - Connected account email
 - Connection time
