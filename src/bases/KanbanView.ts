@@ -582,6 +582,7 @@ export class KanbanView extends BasesViewBase {
 		pathToProps: Map<string, Record<string, unknown>>
 	): Map<string, TaskInfo[]> {
 		const groups = new Map<string, TaskInfo[]>();
+		const taskOrder = new Map(taskNotes.map((task, index) => [task.path, index]));
 
 		// Check if we should explode list properties into multiple columns
 		const cleanGroupBy = stripPropertyPrefix(groupByPropertyId);
@@ -622,15 +623,25 @@ export class KanbanView extends BasesViewBase {
 
 			for (const group of basesGroups) {
 				const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
-				const groupTasks: TaskInfo[] = [];
+				const groupTasks = groups.get(groupKey) || [];
 
 				for (const entry of group.entries) {
 					const task = tasksByPath.get(entry.file.path);
 					if (task) groupTasks.push(task);
 				}
 
-				groups.set(groupKey, groupTasks);
+				if (!groups.has(groupKey)) {
+					groups.set(groupKey, groupTasks);
+				}
 			}
+		}
+
+		for (const tasks of groups.values()) {
+			tasks.sort(
+				(a, b) =>
+					(taskOrder.get(a.path) ?? Number.MAX_SAFE_INTEGER) -
+					(taskOrder.get(b.path) ?? Number.MAX_SAFE_INTEGER)
+			);
 		}
 
 		// Re-sort each group by sort_order from live metadata cache
