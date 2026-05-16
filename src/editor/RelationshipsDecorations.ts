@@ -60,6 +60,7 @@ import {
 	shouldSkipMarkdownWidgetEditor,
 	shouldSkipMarkdownWidgetLeaf,
 } from "./MarkdownWidgetContext";
+import { insertAfterElement, insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
 
 // CSS class for identifying plugin-generated elements
 const CSS_RELATIONSHIPS_WIDGET = "tasknotes-relationships-widget";
@@ -201,7 +202,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		}, 100);
 	}
 
-		private getFileFromView(view: EditorView): unknown {
+	private getFileFromView(view: EditorView): unknown {
 		try {
 			// Get the file associated with this specific editor view
 			const editorInfo = view.state.field(editorInfoField, false);
@@ -384,23 +385,11 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				const taskCardWidget = targetContainer.querySelector(
 					".tasknotes-task-card-note-widget"
 				);
-				if (taskCardWidget && taskCardWidget.nextSibling) {
+				if (taskCardWidget) {
 					// Insert after task card widget to maintain order
-					taskCardWidget.parentElement?.insertBefore(widget, taskCardWidget.nextSibling);
+					insertAfterElement(taskCardWidget, widget);
 				} else {
-					// No task card, insert after metadata/properties container
-					// RISK: Relies on .metadata-container class from Obsidian
-					const metadataContainer = targetContainer.querySelector(".metadata-container");
-					if (metadataContainer && metadataContainer.nextSibling) {
-						// Insert after properties
-						metadataContainer.parentElement?.insertBefore(
-							widget,
-							metadataContainer.nextSibling
-						);
-					} else {
-						// No properties, insert at beginning
-						targetContainer.insertBefore(widget, targetContainer.firstChild);
-					}
+					insertAfterMetadataOrHeader(targetContainer, widget);
 				}
 			} else {
 				// Try to insert before backlinks if they exist
@@ -536,17 +525,11 @@ async function injectReadingModeWidget(
 		if (position === "top") {
 			// Try to find task card widget first (should come before relationships)
 			const taskCardWidget = sizer.querySelector(".tasknotes-task-card-note-widget");
-			if (taskCardWidget?.nextSibling) {
+			if (taskCardWidget) {
 				// Insert after task card widget to maintain order
-				sizer.insertBefore(widget, taskCardWidget.nextSibling);
+				insertAfterElement(taskCardWidget, widget);
 			} else {
-				// No task card, insert after properties if present, otherwise at the beginning
-				const metadataContainer = sizer.querySelector(".metadata-container");
-				if (metadataContainer?.nextSibling) {
-					sizer.insertBefore(widget, metadataContainer.nextSibling);
-				} else {
-					sizer.insertBefore(widget, sizer.firstChild);
-				}
+				insertAfterMetadataOrHeader(sizer, widget);
 			}
 		} else {
 			// Insert before backlinks if present, otherwise at the end

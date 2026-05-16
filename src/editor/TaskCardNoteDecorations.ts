@@ -59,6 +59,7 @@ import {
 	shouldSkipMarkdownWidgetEditor,
 	shouldSkipMarkdownWidgetLeaf,
 } from "./MarkdownWidgetContext";
+import { insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
 
 // CSS class for identifying plugin-generated elements
 const CSS_TASK_CARD_WIDGET = "tasknotes-task-card-note-widget";
@@ -376,17 +377,7 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 			this.currentWidget = widget;
 			this.widgetContainer = targetContainer;
 
-			// Insert after properties/frontmatter if present, otherwise at the beginning
-			// RISK: Relies on .metadata-container class from Obsidian
-			const metadataContainer = targetContainer.querySelector(".metadata-container");
-			if (metadataContainer?.nextSibling) {
-				metadataContainer.parentElement?.insertBefore(
-					widget,
-					metadataContainer.nextSibling
-				);
-			} else {
-				targetContainer.insertBefore(widget, targetContainer.firstChild);
-			}
+			insertAfterMetadataOrHeader(targetContainer, widget);
 
 			// Emit event for coordination with other widgets (e.g., relationships)
 			this.plugin.emitter.trigger(EVENT_TASK_CARD_INJECTED, { container: targetContainer });
@@ -488,13 +479,7 @@ async function injectReadingModeWidget(
 			return;
 		}
 
-		// Insert after properties/frontmatter if present, otherwise at the beginning
-		const metadataContainer = sizer.querySelector(".metadata-container");
-		if (metadataContainer?.nextSibling) {
-			sizer.insertBefore(widget, metadataContainer.nextSibling);
-		} else {
-			sizer.insertBefore(widget, sizer.firstChild);
-		}
+		insertAfterMetadataOrHeader(sizer, widget);
 	} catch (error) {
 		console.error("[TaskNotes] Error injecting task card widget in reading mode:", error);
 	}
