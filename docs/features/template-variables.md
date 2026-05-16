@@ -132,9 +132,9 @@ Variables for content created from ICS calendar events. Available when creating 
 | `{{icsEventSubscription}}` | Calendar subscription name | Yes | No |
 | `{{icsEventId}}` | Unique event identifier (UUID) | Yes | No |
 
-## Inline Task Conversion Variables
+## Current Note Folder Variables
 
-Variables available when converting inline tasks to task files.
+Variables available for inline-created tasks and the default tasks folder.
 
 | Variable | Description | Example |
 |----------|-------------|---------|

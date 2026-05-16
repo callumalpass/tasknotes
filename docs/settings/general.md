@@ -7,7 +7,7 @@ These settings control the foundational aspects of the plugin, such as task iden
 
 ## Task Storage
 
-Task storage settings define where new and inline-created task files are created and how archived tasks are relocated. **Default tasks folder** sets the base location. **Folder for inline-created tasks** controls the Create Inline Task command and instant conversion output. Leave it empty to use the default tasks folder, set a fixed folder path to centralize inline tasks, or use `{{currentNotePath}}` and `{{currentNoteTitle}}` placeholders for contextual routing. If archive moves are enabled, completed archived tasks are moved automatically to your configured archive folder.
+Task storage settings define where new and inline-created task files are created and how archived tasks are relocated. **Default tasks folder** sets the base location and supports folder template variables, including `{{currentNotePath}}` and `{{currentNoteTitle}}` for creating command-palette or ribbon tasks beside the active note. **Folder for inline-created tasks** controls the Create Inline Task command and instant conversion output. Leave it empty to use the default tasks folder, set a fixed folder path to centralize inline tasks, or use `{{currentNotePath}}` and `{{currentNoteTitle}}` placeholders for contextual routing. If archive moves are enabled, completed archived tasks are moved automatically to your configured archive folder.
 
 ## Task Identification
 

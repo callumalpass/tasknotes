@@ -272,6 +272,20 @@ export class TaskCreationService {
 		}
 	}
 
+	private resolveCurrentNoteFolderVariables(folderTemplate: string): string {
+		if (
+			!folderTemplate.includes("{{currentNotePath}}") &&
+			!folderTemplate.includes("{{currentNoteTitle}}")
+		) {
+			return folderTemplate;
+		}
+
+		const currentFile = this.deps.plugin.app.workspace.getActiveFile();
+		return folderTemplate
+			.replace(/\{\{currentNotePath\}\}/g, currentFile?.parent?.path || "")
+			.replace(/\{\{currentNoteTitle\}\}/g, currentFile?.basename || "");
+	}
+
 	private async resolveTargetFolder(taskData: TaskCreationData): Promise<string> {
 		const { plugin } = this.deps;
 		let folder = "";
@@ -282,29 +296,17 @@ export class TaskCreationService {
 		) {
 			const inlineFolder = plugin.settings.inlineTaskConvertFolder || "";
 			if (inlineFolder.trim()) {
-				folder = inlineFolder;
-				if (
-					inlineFolder.includes("{{currentNotePath}}") ||
-					inlineFolder.includes("{{currentNoteTitle}}")
-				) {
-					const currentFile = plugin.app.workspace.getActiveFile();
-					if (inlineFolder.includes("{{currentNotePath}}")) {
-						const currentFolderPath = currentFile?.parent?.path || "";
-						folder = folder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);
-					}
-					if (inlineFolder.includes("{{currentNoteTitle}}")) {
-						const currentNoteTitle = currentFile?.basename || "";
-						folder = folder.replace(/\{\{currentNoteTitle\}\}/g, currentNoteTitle);
-					}
-				}
+				folder = this.resolveCurrentNoteFolderVariables(inlineFolder);
 				return this.deps.processFolderTemplate(folder, taskData);
 			}
 
-			const tasksFolder = plugin.settings.tasksFolder || "";
+			const tasksFolder = this.resolveCurrentNoteFolderVariables(
+				plugin.settings.tasksFolder || ""
+			);
 			return this.deps.processFolderTemplate(tasksFolder, taskData);
 		}
 
-		const tasksFolder = plugin.settings.tasksFolder || "";
+		const tasksFolder = this.resolveCurrentNoteFolderVariables(plugin.settings.tasksFolder || "");
 		return this.deps.processFolderTemplate(tasksFolder, taskData);
 	}
 }

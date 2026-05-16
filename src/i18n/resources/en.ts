@@ -834,7 +834,8 @@ export const en: TranslationTree = {
 				description: "Configure where tasks are stored and how they are identified.",
 				defaultFolder: {
 					name: "Default tasks folder",
-					description: "Default location for new tasks",
+					description:
+						"Default location for new tasks. Supports folder template variables like {{currentNotePath}} and {{currentNoteTitle}}.",
 				},
 				moveArchived: {
 					name: "Move archived tasks to folder",

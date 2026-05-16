@@ -371,6 +371,26 @@ describe('TaskService', () => {
       );
     });
 
+    it('should resolve current note variables in the default task folder for manual creation (#1541)', async () => {
+      mockPlugin.settings.tasksFolder = '{{currentNotePath}}';
+
+      const mockCurrentFile = new TFile('Projects/MyProject/meeting-notes.md');
+      mockCurrentFile.parent = { path: 'Projects/MyProject' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Current folder task',
+        creationContext: 'manual-creation'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Projects/MyProject/current-folder-task.md',
+        expect.stringContaining('title: Current folder task')
+      );
+    });
+
     // Additional test to clarify the expected behavior difference between command types
     it('should still use inlineTaskConvertFolder for inline-conversion context (#1424)', async () => {
       // Configure both folders
