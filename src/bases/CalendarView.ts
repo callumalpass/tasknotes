@@ -74,6 +74,12 @@ type BasesEntryWithGetValue = {
 type CalendarEphemeralState = {
 	calendarDate?: unknown;
 	calendarView?: unknown;
+	calendarScroll?: unknown;
+};
+
+export type CalendarScrollPosition = {
+	scrollTop: number;
+	scrollLeft: number;
 };
 
 const Calendar = FullCalendar;
@@ -98,6 +104,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isCalendarEphemeralState(value: unknown): value is CalendarEphemeralState {
 	return isRecord(value);
+}
+
+function isCalendarScrollPosition(value: unknown): value is CalendarScrollPosition {
+	return (
+		isRecord(value) &&
+		typeof value.scrollTop === "number" &&
+		typeof value.scrollLeft === "number"
+	);
 }
 
 /**
@@ -196,6 +210,40 @@ export function isCalendarElementReadyForSizing(
 	}
 
 	return calendarEl.clientWidth > 0 && calendarEl.clientHeight > 0;
+}
+
+function getCalendarScrollElements(calendarEl: HTMLElement | null): HTMLElement[] {
+	if (!calendarEl) return [];
+
+	return [
+		calendarEl,
+		...Array.from(calendarEl.querySelectorAll<HTMLElement>(".fc-scroller")),
+	];
+}
+
+export function captureCalendarScrollState(
+	calendarEl: HTMLElement | null
+): CalendarScrollPosition[] {
+	return getCalendarScrollElements(calendarEl).map((element) => ({
+		scrollTop: element.scrollTop,
+		scrollLeft: element.scrollLeft,
+	}));
+}
+
+export function restoreCalendarScrollState(
+	calendarEl: HTMLElement | null,
+	scrollState: unknown
+): void {
+	if (!Array.isArray(scrollState)) return;
+
+	const scrollElements = getCalendarScrollElements(calendarEl);
+	scrollState.forEach((position, index) => {
+		if (!isCalendarScrollPosition(position)) return;
+		const element = scrollElements[index];
+		if (!element) return;
+		element.scrollTop = position.scrollTop;
+		element.scrollLeft = position.scrollLeft;
+	});
 }
 
 export function getTodayColumnWidths(
@@ -404,7 +452,7 @@ export class CalendarView extends BasesViewBase {
 		// If expecting an immediate update from user action, render now
 		if (this._expectingImmediateUpdate) {
 			this._expectingImmediateUpdate = false;
-			void this.render();
+			this.renderPreservingEphemeralState();
 			return;
 		}
 
@@ -420,7 +468,7 @@ export class CalendarView extends BasesViewBase {
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.dataUpdateDebounceTimer = win.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
-			void this.render();
+			this.renderPreservingEphemeralState();
 		}, 5000); // 5 second debounce - outlasts Obsidian's save interval
 	}
 
@@ -2596,6 +2644,28 @@ export class CalendarView extends BasesViewBase {
 		this.debouncedRefresh();
 	}
 
+	protected debouncedRefresh(): void {
+		if (this.updateDebounceTimer) {
+			window.clearTimeout(this.updateDebounceTimer);
+		}
+
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		this.updateDebounceTimer = win.setTimeout(() => {
+			this.updateDebounceTimer = null;
+			this.renderPreservingEphemeralState();
+		}, 300);
+	}
+
+	private renderPreservingEphemeralState(): void {
+		const savedState = this.getEphemeralState();
+		void this.render()
+			.catch((error: unknown) => {
+				console.error("[TaskNotes][CalendarView] Render error:", error);
+				this.renderError(error instanceof Error ? error : new Error(String(error)));
+			})
+			.finally(() => this.setEphemeralState(savedState));
+	}
+
 	renderError(error: Error): void {
 		if (!this.calendarEl) return;
 
@@ -2676,6 +2746,7 @@ export class CalendarView extends BasesViewBase {
 				...baseStateObject,
 				calendarDate: currentDate ? currentDate.toISOString() : null,
 				calendarView: currentView || null,
+				calendarScroll: captureCalendarScrollState(this.calendarEl),
 			};
 		}
 
@@ -2711,6 +2782,17 @@ export class CalendarView extends BasesViewBase {
 					console.debug("[CalendarView] Failed to restore calendar view:", e);
 				}
 			}
+		}
+
+		if (Array.isArray(state.calendarScroll)) {
+			const win = this.containerEl.ownerDocument.defaultView || window;
+			const restoreScroll = () => {
+				restoreCalendarScrollState(this.calendarEl, state.calendarScroll);
+			};
+			win.requestAnimationFrame(() => {
+				restoreScroll();
+				win.requestAnimationFrame(restoreScroll);
+			});
 		}
 	}
 }
