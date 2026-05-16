@@ -48,7 +48,11 @@ jest.mock('../../../src/utils/helpers', () => ({
   shouldUseRecurringTaskUI: jest.fn((task) => !!task.recurrence),
   getRecurringTaskCompletionText: jest.fn(() => 'Not completed for this date'),
   getRecurrenceDisplayText: jest.fn((recurrence) => 'Daily'),
-  filterEmptyProjects: jest.fn((projects) => projects?.filter(p => p && p.trim()) || [])
+  filterEmptyProjects: jest.fn((projects) => projects?.filter(p => p && p.trim()) || []),
+  sanitizeForCssClass: jest.fn((value) => {
+    if (!value || typeof value !== 'string') return '';
+    return value.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+  })
 }));
 
 jest.mock('../../../src/utils/dateUtils', () => ({
@@ -255,6 +259,21 @@ describe('TaskCard Component', () => {
       expect(card.classList.contains('task-card--status-open')).toBe(true);
       expect(card.dataset.taskPath).toBe(task.path);
       expect(card.dataset.status).toBe('open');
+    });
+
+    it('should sanitize status and priority class modifiers with spaces', () => {
+      const task = TaskFactory.createTask({
+        title: 'Test Task',
+        status: '60-In Progress',
+        priority: 'High Priority'
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+
+      expect(card.classList.contains('task-card--status-60-in-progress')).toBe(true);
+      expect(card.classList.contains('task-card--priority-high-priority')).toBe(true);
+      expect(card.classList.contains('Progress')).toBe(false);
+      expect(card.classList.contains('Priority')).toBe(false);
     });
 
     it('should create task card with all default options', () => {
@@ -768,6 +787,22 @@ describe('TaskCard Component', () => {
       const titleEl = card.querySelector('.task-card__title');
       expect(titleEl?.textContent).toBe('Updated Task');
       expect(titleEl?.classList.contains('completed')).toBe(true);
+    });
+
+    it('should sanitize status and priority class modifiers when updating a card', () => {
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        title: 'Updated Task',
+        status: 'In Progress',
+        priority: 'High Priority'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      expect(card.classList.contains('task-card--status-in-progress')).toBe(true);
+      expect(card.classList.contains('task-card--priority-high-priority')).toBe(true);
+      expect(card.classList.contains('Progress')).toBe(false);
+      expect(card.classList.contains('Priority')).toBe(false);
     });
 
     it.skip('should update checkbox state', () => {

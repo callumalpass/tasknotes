@@ -713,12 +713,12 @@ export function createTaskCard(
 
 	// Add priority modifier
 	if (task.priority) {
-		cardClasses.push(`task-card--priority-${task.priority}`);
+		cardClasses.push(`task-card--priority-${sanitizeForCssClass(task.priority)}`);
 	}
 
 	// Add status modifier
 	if (effectiveStatus) {
-		cardClasses.push(`task-card--status-${effectiveStatus}`);
+		cardClasses.push(`task-card--status-${sanitizeForCssClass(effectiveStatus)}`);
 	}
 
 	// Chevron position preference
@@ -1178,12 +1178,12 @@ export function updateTaskCard(
 
 	// Add priority modifier
 	if (task.priority) {
-		cardClasses.push(`task-card--priority-${task.priority}`);
+		cardClasses.push(`task-card--priority-${sanitizeForCssClass(task.priority)}`);
 	}
 
 	// Add status modifier
 	if (effectiveStatus) {
-		cardClasses.push(`task-card--status-${effectiveStatus}`);
+		cardClasses.push(`task-card--status-${sanitizeForCssClass(effectiveStatus)}`);
 	}
 
 	// Chevron position preference
