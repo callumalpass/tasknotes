@@ -43,18 +43,26 @@ export class NLPSuggest extends AbstractInputSuggest<
 	TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion
 > {
 	private plugin: TaskNotesPlugin;
-	private textarea: HTMLTextAreaElement;
+	private textarea: HTMLInputElement | HTMLTextAreaElement;
 	private currentTrigger: "@" | "#" | "+" | "status" | null = null;
 	// Store app reference explicitly to avoid relying on plugin.app in tests and runtime
 	private obsidianApp: App;
 	// Cache ProjectMetadataResolver to avoid recreating it for each suggestion
 	private projectMetadataResolver: ProjectMetadataResolver | null = null;
 
-	constructor(app: App, textareaEl: HTMLTextAreaElement, plugin: TaskNotesPlugin) {
+	constructor(
+		app: App,
+		textareaEl: HTMLInputElement | HTMLTextAreaElement,
+		plugin: TaskNotesPlugin
+	) {
 		super(app, textareaEl as unknown as HTMLInputElement);
 		this.plugin = plugin;
 		this.textarea = textareaEl;
 		this.obsidianApp = app;
+	}
+
+	private getCursorPosition(): number {
+		return this.textarea.selectionStart ?? this.textarea.value.length;
 	}
 
 	/**
@@ -357,7 +365,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 		query: string
 	): Promise<(TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion)[]> {
 		// Get cursor position and text around it
-		const cursorPos = this.textarea.selectionStart;
+		const cursorPos = this.getCursorPosition();
 		const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
 
 		// Find the active trigger
@@ -467,7 +475,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 		// Determine active +query to highlight
 		let activeQuery = "";
 		if (this.currentTrigger === "+") {
-			const cursorPos = this.textarea.selectionStart;
+			const cursorPos = this.getCursorPosition();
 			const before = this.textarea.value.slice(0, cursorPos);
 			const lastPlus = before.lastIndexOf("+");
 			if (lastPlus !== -1) {
@@ -485,7 +493,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 			if (activeQuery) highlightOccurrences(filenameRow, activeQuery);
 
 			const cfg = (this.plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
-				if (Array.isArray(cfg) && cfg.length > 0 && suggestion.entry) {
+			if (Array.isArray(cfg) && cfg.length > 0 && suggestion.entry) {
 				// Use cached resolver for rendering too
 				const resolver = this.getProjectMetadataResolver();
 				for (let i = 0; i < Math.min(cfg.length, 3); i++) {
@@ -523,7 +531,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 							valueSpan.textContent = value;
 							metaRow.appendChild(valueSpan);
 							appended = true;
-								const searchable = t.searchable === true || ALWAYS.has(t.property);
+							const searchable = t.searchable === true || ALWAYS.has(t.property);
 							if (activeQuery && searchable)
 								highlightOccurrences(valueSpan, activeQuery);
 						}
@@ -545,7 +553,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 	): void {
 		if (!this.currentTrigger) return;
 
-		const cursorPos = this.textarea.selectionStart;
+		const cursorPos = this.getCursorPosition();
 		const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
 		const textAfterCursor = this.textarea.value.slice(cursorPos);
 

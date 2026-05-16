@@ -6,6 +6,7 @@ import { TranslationKey } from "../i18n";
 import { NaturalLanguageParser, ParsedTaskData } from "../services/NaturalLanguageParser";
 import { createTaskCard } from "../ui/TaskCard";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
+import { NLPSuggest } from "./taskCreationSuggest";
 
 export type TaskSelectorWithCreateResult =
 	| { type: "selected"; task: TaskInfo }
@@ -37,6 +38,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private plugin: TaskNotesPlugin;
 	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
 	private nlParser: NaturalLanguageParser;
+	private nlpSuggest: NLPSuggest | null = null;
 	private createFooterEl: HTMLElement | null = null;
 	private currentQuery = "";
 	private resultHandled = false;
@@ -98,6 +100,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Add input listener for real-time preview updates
 		this.inputEl.addEventListener("input", this.handleInputChange);
+		this.nlpSuggest = new NLPSuggest(this.app, this.inputEl, this.plugin);
 
 		// Create footer after DOM is ready.
 		// SuggestModal builds its DOM asynchronously, so we defer to the next tick.
@@ -460,6 +463,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	onClose(): void {
 		// Remove event listeners
 		this.inputEl.removeEventListener("input", this.handleInputChange);
+		this.nlpSuggest?.close();
+		this.nlpSuggest = null;
 
 		// Clean up footer element
 		if (this.createFooterEl) {
