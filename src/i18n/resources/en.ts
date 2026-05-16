@@ -237,6 +237,9 @@ export const en: TranslationTree = {
 				},
 				layout: {
 					calendarView: "Calendar view",
+					heightMode: "Height mode",
+					heightModeFill: "Fill container",
+					heightModeAuto: "Auto height",
 					customDayCount: "Custom day count",
 					listDayCount: "List day count",
 					dayStartTime: "Day start time",

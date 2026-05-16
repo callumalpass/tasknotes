@@ -237,6 +237,16 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										},
 									},
 									{
+										type: "dropdown",
+										key: "heightMode",
+										displayName: t("layout.heightMode"),
+										default: "fill",
+										options: {
+											fill: t("layout.heightModeFill"),
+											auto: t("layout.heightModeAuto"),
+										},
+									},
+									{
 										type: "slider",
 										key: "customDayCount",
 										displayName: t("layout.customDayCount"),

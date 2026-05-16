@@ -170,6 +170,37 @@ export function shouldWidenTodayColumn(
 	return viewType === "timeGridWeek" || viewType === "timeGridCustom";
 }
 
+export type CalendarHeightMode = "fill" | "auto";
+
+export type CalendarSizingOptions = {
+	height: CalendarOptions["height"];
+	contentHeight?: CalendarOptions["contentHeight"];
+	expandRows: boolean;
+};
+
+export function normalizeCalendarHeightMode(value: unknown): CalendarHeightMode {
+	return typeof value === "string" && value.trim().toLowerCase() === "auto"
+		? "auto"
+		: "fill";
+}
+
+export function getCalendarSizingOptions(
+	heightMode: CalendarHeightMode
+): CalendarSizingOptions {
+	if (heightMode === "auto") {
+		return {
+			height: "auto",
+			contentHeight: "auto",
+			expandRows: false,
+		};
+	}
+
+	return {
+		height: "100%",
+		expandRows: true,
+	};
+}
+
 /**
  * Find the colgroup col element corresponding to a dated FullCalendar table cell.
  *
@@ -312,6 +343,7 @@ export class CalendarView extends BasesViewBase {
 
 		// Layout
 		calendarView: string;
+		heightMode: CalendarHeightMode;
 		customDayCount: number;
 		listDayCount: number;
 		slotMinTime: string;
@@ -372,6 +404,7 @@ export class CalendarView extends BasesViewBase {
 
 			// Layout
 			calendarView: calendarSettings.defaultView,
+			heightMode: "fill",
 			customDayCount: calendarSettings.customDayCount,
 			listDayCount: 7,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00", false),
@@ -504,6 +537,7 @@ export class CalendarView extends BasesViewBase {
 			this.config.get("showPropertyBasedEvents"),
 			// Layout options
 			this.config.get("calendarView"),
+			this.config.get("heightMode"),
 			this.config.get("customDayCount"),
 			this.config.get("listDayCount"),
 			this.config.get("slotMinTime"),
@@ -746,6 +780,10 @@ export class CalendarView extends BasesViewBase {
 				"calendarView",
 				this.viewOptions.calendarView
 			);
+			this.viewOptions.heightMode = normalizeCalendarHeightMode(
+				this.getConfigOption("heightMode", this.viewOptions.heightMode)
+			);
+			this.applyHeightModeClass();
 			this.viewOptions.customDayCount = this.getConfigOption(
 				"customDayCount",
 				this.viewOptions.customDayCount
@@ -1063,8 +1101,7 @@ export class CalendarView extends BasesViewBase {
 						}) || `${this.viewOptions.listDayCount}d List`,
 				},
 			},
-			height: "100%",
-			expandRows: true,
+			...getCalendarSizingOptions(this.viewOptions.heightMode),
 			handleWindowResize: true,
 			stickyHeaderDates: false,
 			locale:
@@ -1186,6 +1223,20 @@ export class CalendarView extends BasesViewBase {
 			// Add the existing CSS class to hide today highlighting
 			this.calendarEl.classList.add("hide-today-highlight");
 		}
+	}
+
+	private applyHeightModeClass(): void {
+		const isAutoHeight = this.viewOptions.heightMode === "auto";
+
+		if (this.rootElement) {
+			this.rootElement.classList.toggle("advanced-calendar-view--auto-height", isAutoHeight);
+			this.rootElement.classList.toggle("tn-static-min-height-800px-997b4c8c", !isAutoHeight);
+		}
+
+		this.calendarEl?.classList.toggle(
+			"advanced-calendar-view__calendar--auto-height",
+			isAutoHeight
+		);
 	}
 
 	private scheduleTodayColumnWidthUpdate(): void {
@@ -2644,6 +2695,7 @@ export class CalendarView extends BasesViewBase {
 			calendarEl.classList.add("tn-static-flex-1-14e3b769");
 			this.rootElement.appendChild(calendarEl);
 			this.calendarEl = calendarEl;
+			this.applyHeightModeClass();
 		}
 	}
 

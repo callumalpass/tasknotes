@@ -6,6 +6,17 @@
     overflow: hidden;
 }
 
+.advanced-calendar-view.advanced-calendar-view--auto-height {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+}
+
+.advanced-calendar-view.advanced-calendar-view--auto-height .advanced-calendar-view__calendar--auto-height {
+    flex: 0 0 auto;
+    min-height: 0;
+}
+
 /* ICS Event Styles */
 .fc-event[data-ics-event="true"] {
     opacity: 0.9;
@@ -591,9 +602,22 @@
     --fc-today-bg-color: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
 }
 
+.advanced-calendar-view.advanced-calendar-view--auto-height .fc {
+    height: auto;
+}
+
 /* Ensure calendar table expands to fill container width */
 .advanced-calendar-view .fc-view-harness {
     width: 100%;
+}
+
+.advanced-calendar-view.advanced-calendar-view--auto-height .fc-view-harness,
+.advanced-calendar-view.advanced-calendar-view--auto-height .fc-scroller {
+    height: auto;
+}
+
+.advanced-calendar-view.advanced-calendar-view--auto-height .fc-scroller {
+    overflow: visible;
 }
 
 .advanced-calendar-view .fc-scrollgrid {
