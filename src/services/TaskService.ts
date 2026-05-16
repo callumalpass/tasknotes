@@ -41,6 +41,7 @@ import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplate
 
 import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { UserMappedField } from "../types/settings";
 import { TaskCreationService } from "./task-service/TaskCreationService";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
 
@@ -202,6 +203,18 @@ export class TaskService {
 		if (typeof value === "string") return value;
 		if (typeof value === "number") return String(value);
 		return "";
+	}
+
+	private getUserFieldCreationDefault(
+		field: UserMappedField
+	): string | number | boolean | string[] | undefined {
+		if (field.defaultValue !== undefined) {
+			return field.defaultValue;
+		}
+		if (field.type === "boolean") {
+			return false;
+		}
+		return undefined;
 	}
 
 	/**
@@ -434,21 +447,22 @@ export class TaskService {
 				result.customFrontmatter = {};
 			}
 			for (const field of userFields) {
+				const defaultValue = this.getUserFieldCreationDefault(field);
 				// Only apply default if the field isn't already set
 				if (
-					field.defaultValue !== undefined &&
+					defaultValue !== undefined &&
 					result.customFrontmatter[field.key] === undefined
 				) {
 					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
-					if (field.type === "date" && typeof field.defaultValue === "string") {
+					if (field.type === "date" && typeof defaultValue === "string") {
 						const calculatedDate = calculateDefaultDate(
-							field.defaultValue as "none" | "today" | "tomorrow" | "next-week"
+							defaultValue as "none" | "today" | "tomorrow" | "next-week"
 						);
 						if (calculatedDate) {
 							result.customFrontmatter[field.key] = calculatedDate;
 						}
 					} else {
-						result.customFrontmatter[field.key] = field.defaultValue;
+						result.customFrontmatter[field.key] = defaultValue;
 					}
 				}
 			}

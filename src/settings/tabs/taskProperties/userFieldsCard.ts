@@ -337,7 +337,7 @@ function renderUserFieldsList(
 		typeSelect.addEventListener("change", () => {
 			field.type = typeSelect.value as "text" | "number" | "boolean" | "date" | "list";
 			// Clear default value when type changes to avoid type mismatches
-			field.defaultValue = undefined;
+			field.defaultValue = field.type === "boolean" ? false : undefined;
 			save();
 			// Need to re-render to update the default value input type
 			renderUserFieldsList(container, plugin, save, translate, field.id);
