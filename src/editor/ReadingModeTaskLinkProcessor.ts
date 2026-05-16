@@ -4,11 +4,156 @@ import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { TaskLinkWidget } from "./TaskLinkWidget";
 
+export interface ReadingModeSourceLink {
+	target: string;
+	hasAlias: boolean;
+}
+
+export interface ReadingModeSourceLinkCursor {
+	index: number;
+}
+
+function safeDecodeURIComponent(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+}
+
+export function normalizeReadingModeLinkTarget(value: string): string {
+	let target = safeDecodeURIComponent(value).trim();
+	if (!target) return "";
+
+	if (target.startsWith("app://")) {
+		try {
+			target = new URL(target).pathname;
+		} catch {
+			// Keep the original target if URL parsing fails.
+		}
+	}
+
+	target = target.replace(/^\/+/, "");
+	target = target.split("#")[0].trim();
+	if (target.endsWith(".md")) {
+		target = target.slice(0, -3);
+	}
+	return target;
+}
+
+function getReadingModeTargetBasename(target: string): string {
+	const normalizedTarget = normalizeReadingModeLinkTarget(target);
+	const parts = normalizedTarget.split("/");
+	return parts[parts.length - 1] ?? normalizedTarget;
+}
+
+function readingModeLinkTargetsMatch(sourceTarget: string, linkTarget: string): boolean {
+	const normalizedSourceTarget = normalizeReadingModeLinkTarget(sourceTarget);
+	const normalizedLinkTarget = normalizeReadingModeLinkTarget(linkTarget);
+	if (!normalizedSourceTarget || !normalizedLinkTarget) return false;
+	if (normalizedSourceTarget === normalizedLinkTarget) return true;
+
+	return (
+		getReadingModeTargetBasename(normalizedSourceTarget) ===
+		getReadingModeTargetBasename(normalizedLinkTarget)
+	);
+}
+
+export function parseReadingModeSourceLinks(sourceText: string): ReadingModeSourceLink[] {
+	const links: ReadingModeSourceLink[] = [];
+	const wikilinkPattern = /!?\[\[([^\]]+)\]\]/g;
+	let match: RegExpExecArray | null;
+
+	while ((match = wikilinkPattern.exec(sourceText)) !== null) {
+		if (match[0].startsWith("!")) continue;
+
+		const content = match[1].trim();
+		if (!content) continue;
+
+		const pipeIndex = content.indexOf("|");
+		const rawTarget = pipeIndex === -1 ? content : content.slice(0, pipeIndex);
+		const target = normalizeReadingModeLinkTarget(rawTarget);
+		if (!target) continue;
+
+		links.push({
+			target,
+			hasAlias: pipeIndex !== -1,
+		});
+	}
+
+	return links;
+}
+
+export function consumeReadingModeSourceLink(
+	sourceLinks: ReadingModeSourceLink[],
+	cursor: ReadingModeSourceLinkCursor,
+	linkTarget: string
+): ReadingModeSourceLink | null {
+	const normalizedTarget = normalizeReadingModeLinkTarget(linkTarget);
+	if (!normalizedTarget) return null;
+
+	const findFromCursor = (): ReadingModeSourceLink | null => {
+		for (let i = cursor.index; i < sourceLinks.length; i++) {
+			const sourceLink = sourceLinks[i];
+			if (readingModeLinkTargetsMatch(sourceLink.target, normalizedTarget)) {
+				cursor.index = i + 1;
+				return sourceLink;
+			}
+		}
+
+		return null;
+	};
+
+	const match = findFromCursor();
+	if (match) return match;
+
+	if (cursor.index > 0) {
+		cursor.index = 0;
+		return findFromCursor();
+	}
+
+	return null;
+}
+
+function sourceLinkCursorKey(sourcePath: string, sectionText: string): string {
+	return `${sourcePath}\0${sectionText}`;
+}
+
+function createSourceLinkCursor(): ReadingModeSourceLinkCursor {
+	return { index: 0 };
+}
+
+export function shouldSkipReadingModeTaskLinkOverlay(options: {
+	disableOverlayOnAlias: boolean;
+	hasExplicitAlias: boolean;
+	linkText: string;
+	originalLinkPath: string;
+	taskTitle: string;
+}): boolean {
+	if (!options.disableOverlayOnAlias) return false;
+	if (options.hasExplicitAlias) return true;
+
+	const currentText = options.linkText.trim();
+	return currentText !== options.originalLinkPath && currentText !== options.taskTitle;
+}
+
+function getMarkdownSectionText(
+	ctx: Parameters<MarkdownPostProcessor>[1],
+	el: HTMLElement
+): string {
+	try {
+		return ctx.getSectionInfo?.(el)?.text ?? "";
+	} catch {
+		return "";
+	}
+}
+
 /**
  * Markdown post processor that adds task previews to wikilinks in reading mode
  */
 export class ReadingModeTaskLinkProcessor {
 	private plugin: TaskNotesPlugin;
+	private sourceLinkCursors = new Map<string, ReadingModeSourceLinkCursor>();
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
@@ -26,14 +171,30 @@ export class ReadingModeTaskLinkProcessor {
 
 			// Find all links in the rendered content
 			const allLinks = el.querySelectorAll("a");
+			const sectionText = getMarkdownSectionText(ctx, el);
+			const sourceLinks = parseReadingModeSourceLinks(sectionText);
+			const cursorKey = sourceLinkCursorKey(ctx.sourcePath, sectionText);
+			const sourceLinkCursor =
+				this.sourceLinkCursors.get(cursorKey) ?? createSourceLinkCursor();
+			this.sourceLinkCursors.set(cursorKey, sourceLinkCursor);
 
 			for (const link of Array.from(allLinks)) {
 				const linkEl = link;
 				const href = linkEl.getAttribute("href");
+				const linkTarget = linkEl.getAttribute("data-href") || href || "";
+				const sourceLink =
+					sourceLinks.length > 0
+						? consumeReadingModeSourceLink(sourceLinks, sourceLinkCursor, linkTarget)
+						: null;
 
 				// Process internal links (wikilinks) - these have .internal-link class
 				if (linkEl.classList.contains("internal-link")) {
-					void this.processLink(linkEl, ctx.sourcePath, "internal");
+					void this.processLink(
+						linkEl,
+						ctx.sourcePath,
+						"internal",
+						sourceLink?.hasAlias ?? false
+					);
 				}
 				// Process other links that might be markdown links to internal files
 				else if (
@@ -42,7 +203,12 @@ export class ReadingModeTaskLinkProcessor {
 					!href.startsWith("https://") &&
 					!href.includes("://")
 				) {
-					void this.processLink(linkEl, ctx.sourcePath, "external");
+					void this.processLink(
+						linkEl,
+						ctx.sourcePath,
+						"external",
+						sourceLink?.hasAlias ?? false
+					);
 				}
 			}
 		};
@@ -54,7 +220,8 @@ export class ReadingModeTaskLinkProcessor {
 	private async processLink(
 		linkEl: HTMLAnchorElement,
 		sourcePath: string,
-		linkType: "internal" | "external"
+		linkType: "internal" | "external",
+		hasExplicitAlias: boolean
 	): Promise<void> {
 		try {
 			// Get the link path from the href attribute
@@ -98,7 +265,7 @@ export class ReadingModeTaskLinkProcessor {
 			if (!taskInfo) return;
 
 			// Create a task widget and replace the link
-			await this.replaceWithTaskWidget(linkEl, taskInfo, linkPath);
+			await this.replaceWithTaskWidget(linkEl, taskInfo, linkPath, hasExplicitAlias);
 		} catch (error) {
 			console.debug("Error processing link in reading mode:", error);
 		}
@@ -157,22 +324,24 @@ export class ReadingModeTaskLinkProcessor {
 	private async replaceWithTaskWidget(
 		linkEl: HTMLAnchorElement,
 		taskInfo: TaskInfo,
-		originalLinkPath: string
+		originalLinkPath: string,
+		hasExplicitAlias: boolean
 	): Promise<void> {
 		try {
 			// Get the original link text for display
 			const originalText = linkEl.textContent || `[[${originalLinkPath}]]`;
 
 			// Check for alias exclusion
-			if (this.plugin.settings.disableOverlayOnAlias) {
-				// In reading mode, we check if the displayed text differs from the path or title
-				// If it does, it's likely an alias/custom text
-				const currentText = linkEl.textContent || "";
-				
-				// If text doesn't match path AND doesn't match task title, it's an alias
-				if (currentText !== originalLinkPath && currentText !== taskInfo.title) {
-					return;
-				}
+			if (
+				shouldSkipReadingModeTaskLinkOverlay({
+					disableOverlayOnAlias: this.plugin.settings.disableOverlayOnAlias,
+					hasExplicitAlias,
+					linkText: linkEl.textContent || "",
+					originalLinkPath,
+					taskTitle: taskInfo.title,
+				})
+			) {
+				return;
 			}
 
 			// Parse display text if it's a piped link

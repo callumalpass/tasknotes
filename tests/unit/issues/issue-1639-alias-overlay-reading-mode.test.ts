@@ -22,78 +22,92 @@
  * - src/editor/TaskLinkOverlay.ts (live preview mode, works correctly)
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, expect, it } from "@jest/globals";
+import {
+	consumeReadingModeSourceLink,
+	parseReadingModeSourceLinks,
+	shouldSkipReadingModeTaskLinkOverlay,
+	type ReadingModeSourceLinkCursor,
+} from "../../../src/editor/ReadingModeTaskLinkProcessor";
 
-describe('Issue #1639: Task link overlay ignores alias setting in reading mode', () => {
-	it.skip('reproduces issue #1639 - aliased link still shows overlay in reading mode', () => {
-		// Simulate the alias detection logic from ReadingModeTaskLinkProcessor
-		const disableOverlayOnAlias = true;
+describe("Issue #1639: Task link overlay ignores alias setting in reading mode", () => {
+	it("uses reading-mode source text to detect explicit wikilink aliases", () => {
+		const links = parseReadingModeSourceLinks(
+			[
+				"[[Tasks/My Task|My Task]]",
+				"[[Tasks/My Task]]",
+				"![[Tasks/Embedded Task|Embedded Alias]]",
+			].join("\n")
+		);
+		const cursor: ReadingModeSourceLinkCursor = { index: 0 };
 
-		// Simulated rendered link: [[My Task|Custom Name]]
-		const linkEl = {
-			textContent: 'Custom Name',  // The alias
-			getAttribute: (attr: string) => {
-				if (attr === 'href') return 'My Task';
-				return null;
-			},
-		};
+		const aliased = consumeReadingModeSourceLink(links, cursor, "Tasks/My Task.md");
+		const plain = consumeReadingModeSourceLink(links, cursor, "Tasks/My Task");
 
-		const originalLinkPath = 'My Task'; // From href
-		const taskInfo = { title: 'My Task', path: 'Tasks/My Task.md' };
-
-		// Current alias detection logic (lines 167-175):
-		const currentText = linkEl.textContent || '';
-
-		// Check: if text doesn't match path AND doesn't match task title, it's an alias
-		const isAlias = currentText !== originalLinkPath && currentText !== taskInfo.title;
-
-		// "Custom Name" !== "My Task" (true) AND "Custom Name" !== "My Task" (true)
-		// So isAlias = true => should skip overlay
-		expect(isAlias).toBe(true); // This case works
-
-		// BUT: What if the task title IS the alias text?
-		const taskInfo2 = { title: 'Custom Name', path: 'Tasks/My Task.md' };
-		const isAlias2 = currentText !== originalLinkPath && currentText !== taskInfo2.title;
-
-		// "Custom Name" !== "My Task" (true) AND "Custom Name" !== "Custom Name" (false)
-		// So isAlias2 = false => overlay shows even though it IS an alias
-		expect(isAlias2).toBe(false); // BUG: alias not detected when title matches alias text
+		expect(aliased).toEqual({
+			target: "Tasks/My Task",
+			hasAlias: true,
+		});
+		expect(plain).toEqual({
+			target: "Tasks/My Task",
+			hasAlias: false,
+		});
 	});
 
-	it.skip('reproduces issue #1639 - path with .md extension breaks alias detection', () => {
-		const disableOverlayOnAlias = true;
+	it("consumes repeated links to the same task in source order", () => {
+		const links = parseReadingModeSourceLinks(
+			[
+				"[[Tasks/My Task|Custom Alias]]",
+				"[[Tasks/My Task|My Task]]",
+				"[[Tasks/My Task]]",
+			].join("\n")
+		);
+		const cursor: ReadingModeSourceLinkCursor = { index: 0 };
 
-		// In reading mode, href might include .md extension or be a full path
-		const linkEl = {
-			textContent: 'My Task',  // Same as the file basename (not an alias)
-			getAttribute: (attr: string) => {
-				if (attr === 'href') return 'Tasks/My Task.md';
-				return null;
-			},
-		};
+		expect(consumeReadingModeSourceLink(links, cursor, "My Task")?.hasAlias).toBe(
+			true
+		);
+		expect(consumeReadingModeSourceLink(links, cursor, "My Task")?.hasAlias).toBe(
+			true
+		);
+		expect(consumeReadingModeSourceLink(links, cursor, "My Task")?.hasAlias).toBe(
+			false
+		);
+	});
 
-		const originalLinkPath = 'Tasks/My Task.md'; // Full path from href
-		const taskInfo = { title: 'My Task', path: 'Tasks/My Task.md' };
+	it("skips an explicitly aliased reading-mode link even when the alias matches the task title", () => {
+		const shouldSkip = shouldSkipReadingModeTaskLinkOverlay({
+			disableOverlayOnAlias: true,
+			hasExplicitAlias: true,
+			linkText: "My Task",
+			originalLinkPath: "Tasks/My Task",
+			taskTitle: "My Task",
+		});
 
-		const currentText = linkEl.textContent || '';
+		expect(shouldSkip).toBe(true);
+	});
 
-		// Check alias: "My Task" !== "Tasks/My Task.md" (true) AND "My Task" !== "My Task" (false)
-		// isAlias = false (correct, not an alias)
-		const isAlias = currentText !== originalLinkPath && currentText !== taskInfo.title;
-		expect(isAlias).toBe(false);
+	it("keeps non-aliased reading-mode links eligible for overlay", () => {
+		const shouldSkip = shouldSkipReadingModeTaskLinkOverlay({
+			disableOverlayOnAlias: true,
+			hasExplicitAlias: false,
+			linkText: "My Task",
+			originalLinkPath: "Tasks/My Task",
+			taskTitle: "My Task",
+		});
 
-		// Now with a real alias:
-		const aliasLinkEl = {
-			textContent: 'See this task',
-			getAttribute: (attr: string) => {
-				if (attr === 'href') return 'Tasks/My Task.md';
-				return null;
-			},
-		};
+		expect(shouldSkip).toBe(false);
+	});
 
-		const aliasText = aliasLinkEl.textContent || '';
-		const isAliasReal = aliasText !== originalLinkPath && aliasText !== taskInfo.title;
-		// "See this task" !== "Tasks/My Task.md" (true) AND "See this task" !== "My Task" (true)
-		expect(isAliasReal).toBe(true); // This case works
+	it("keeps the legacy fallback for custom rendered link text when source metadata is unavailable", () => {
+		const shouldSkip = shouldSkipReadingModeTaskLinkOverlay({
+			disableOverlayOnAlias: true,
+			hasExplicitAlias: false,
+			linkText: "Custom Name",
+			originalLinkPath: "Tasks/My Task",
+			taskTitle: "My Task",
+		});
+
+		expect(shouldSkip).toBe(true);
 	});
 });
