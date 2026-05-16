@@ -106,6 +106,7 @@ function frontmatterNumber(value: unknown): number | undefined {
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
 	i18n: I18nService;
+	private settingsLoadCompromised = false;
 
 	// Date change detection for refreshing task states at midnight
 	private lastKnownDate: string = new Date().toDateString();
@@ -599,8 +600,57 @@ export default class TaskNotesPlugin extends Plugin {
 		void cleanupPluginRuntime(this);
 	}
 
-	async loadSettings() {
+	private async pluginDataFileExists(): Promise<boolean> {
+		const manifest = this.manifest as { dir?: string; id?: string };
+		const vault = this.app.vault as typeof this.app.vault & { configDir?: string };
+		const pluginDir =
+			manifest.dir ??
+			(vault.configDir && manifest.id
+				? `${vault.configDir}/plugins/${manifest.id}`
+				: undefined);
+		if (!pluginDir) {
+			return false;
+		}
+		const dataPath = normalizePath(`${pluginDir}/data.json`);
+
+		try {
+			return await this.app.vault.adapter.exists(dataPath);
+		} catch (error) {
+			console.warn("[TaskNotes] Could not check settings data file existence:", error);
+			return false;
+		}
+	}
+
+	private async loadSettingsData(): Promise<LoadedSettingsData | null> {
+		this.settingsLoadCompromised = false;
+
 		const loadedData = (await this.loadData()) as LoadedSettingsData | null;
+		if (loadedData !== null) {
+			return loadedData;
+		}
+
+		if (!(await this.pluginDataFileExists())) {
+			return null;
+		}
+
+		for (let attempt = 0; attempt < 3; attempt++) {
+			await new Promise((resolve) => window.setTimeout(resolve, 50));
+			const retryData = (await this.loadData()) as LoadedSettingsData | null;
+			if (retryData !== null) {
+				return retryData;
+			}
+		}
+
+		this.settingsLoadCompromised = true;
+		console.error(
+			"[TaskNotes] Settings data file exists, but Obsidian returned no settings data. " +
+				"Using defaults in memory for this session and blocking settings saves to avoid overwriting existing custom settings."
+		);
+		return null;
+	}
+
+	async loadSettings() {
+		const loadedData = await this.loadSettingsData();
 
 		// Migration: Remove old useNativeMetadataCache setting if it exists
 		if (loadedData && "useNativeMetadataCache" in loadedData) {
@@ -730,8 +780,24 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Intended for background/internal updates (e.g., sync token writes).
 	 */
 	async saveSettingsDataOnly(): Promise<void> {
+		if (this.settingsLoadCompromised) {
+			console.warn(
+				"[TaskNotes] Skipping settings save because settings data could not be read safely during startup."
+			);
+			return;
+		}
+
 		// Load existing plugin data to preserve non-settings data like pomodoroHistory
-		const data = (await this.loadData()) || {};
+		const loadedData = await this.loadData();
+		if (loadedData === null && (await this.pluginDataFileExists())) {
+			this.settingsLoadCompromised = true;
+			console.warn(
+				"[TaskNotes] Skipping settings save because data.json exists but could not be read."
+			);
+			return;
+		}
+
+		const data = loadedData || {};
 		// Merge only settings properties, preserving non-settings data
 		const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
 		for (const key of settingsKeys) {

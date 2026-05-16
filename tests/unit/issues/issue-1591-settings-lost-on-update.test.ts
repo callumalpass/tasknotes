@@ -1,94 +1,67 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest, afterEach } from "@jest/globals";
+import TaskNotesPlugin from "../../../src/main";
 
-type SimplifiedSettings = {
-	customStatuses: string[];
-	customPriorities: string[];
-	pomodoroWorkDuration: number;
-	lastSeenVersion?: string;
-};
+function createPlugin(options: { dataFileExists: boolean; version?: string }) {
+	const app = {
+		vault: {
+			configDir: ".obsidian",
+			adapter: {
+				exists: jest.fn().mockResolvedValue(options.dataFileExists),
+			},
+		},
+	} as any;
 
-const DEFAULT_SETTINGS: SimplifiedSettings = {
-	customStatuses: ["open", "in-progress", "done"],
-	customPriorities: ["high", "normal", "low"],
-	pomodoroWorkDuration: 25,
-	lastSeenVersion: undefined,
-};
+	const plugin = new TaskNotesPlugin(app);
+	(plugin as any).manifest = {
+		id: "tasknotes",
+		dir: ".obsidian/plugins/tasknotes",
+		version: options.version ?? "4.3.2",
+	};
+	(plugin as any).settingsLifecycleService = {
+		saveSettings: jest.fn(() => plugin.saveSettingsDataOnly()),
+	};
+	plugin.saveData = jest.fn().mockResolvedValue(undefined);
 
-/**
- * Reproduction model for issue #1591.
- *
- * Key flow in current plugin code:
- * 1) loadSettings() merges DEFAULT_SETTINGS with loadData()
- * 2) checkForVersionUpdate() mutates lastSeenVersion and calls saveSettings()
- * 3) saveSettings() writes current in-memory settings back to data.json
- *
- * If loadData() transiently returns null during update/startup, step (1) loads defaults,
- * and step (3) can persist those defaults permanently.
- */
-class SettingsFlowModel {
-	private diskData: Partial<SimplifiedSettings> | null;
-
-	constructor(initialDiskData: Partial<SimplifiedSettings> | null) {
-		this.diskData = initialDiskData;
-	}
-
-	setDiskData(data: Partial<SimplifiedSettings> | null): void {
-		this.diskData = data;
-	}
-
-	loadSettings(): SimplifiedSettings {
-		const loadedData = this.diskData;
-		return {
-			...DEFAULT_SETTINGS,
-			...(loadedData ?? {}),
-		};
-	}
-
-	saveSettings(inMemory: SimplifiedSettings): void {
-		// Mirrors saveSettings() behavior: write current settings snapshot
-		this.diskData = { ...inMemory };
-	}
-
-	checkForVersionUpdateAndPersist(
-		inMemory: SimplifiedSettings,
-		currentVersion: string
-	): SimplifiedSettings {
-		const lastSeenVersion = inMemory.lastSeenVersion;
-		if (lastSeenVersion && lastSeenVersion !== currentVersion) {
-			inMemory.lastSeenVersion = currentVersion;
-			this.saveSettings(inMemory);
-		}
-		return inMemory;
-	}
-
-	readDisk(): Partial<SimplifiedSettings> | null {
-		return this.diskData;
-	}
+	return plugin;
 }
 
 describe("issue #1591 settings reset on update", () => {
-	it.skip("reproduces issue #1591", () => {
-		const model = new SettingsFlowModel({
-			customStatuses: ["backlog", "blocked", "done"],
-			customPriorities: ["urgent", "normal"],
-			pomodoroWorkDuration: 50,
-			lastSeenVersion: "4.3.0",
-		});
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
 
-		// Transient read failure during plugin update/startup
-		model.setDiskData(null);
-		const loaded = model.loadSettings();
+	it("does not persist defaults when an existing settings file temporarily reads as null", async () => {
+		jest.spyOn(console, "error").mockImplementation(() => undefined);
+		jest.spyOn(console, "warn").mockImplementation(() => undefined);
 
-		// Version update path persists current in-memory settings snapshot
-		model.checkForVersionUpdateAndPersist(loaded, "4.3.2");
+		const plugin = createPlugin({ dataFileExists: true });
+		plugin.loadData = jest.fn().mockResolvedValue(null);
 
-		// Re-read after save: custom settings are gone, defaults are now persisted
-		const persisted = model.readDisk() as SimplifiedSettings;
+		await plugin.loadSettings();
+		await plugin.checkForVersionUpdate();
 
-		// Documented expected behavior for a FIXED implementation:
-		// a transient null read should not permanently overwrite prior custom settings.
-		expect(persisted.customStatuses).toEqual(["backlog", "blocked", "done"]);
-		expect(persisted.customPriorities).toEqual(["urgent", "normal"]);
-		expect(persisted.pomodoroWorkDuration).toBe(50);
+		expect(plugin.loadData).toHaveBeenCalledTimes(4);
+		expect(plugin.saveData).not.toHaveBeenCalled();
+		expect(console.error).toHaveBeenCalledWith(
+			expect.stringContaining("Settings data file exists")
+		);
+		expect(console.warn).toHaveBeenCalledWith(
+			expect.stringContaining("Skipping settings save")
+		);
+	});
+
+	it("still writes lastSeenVersion for a new install with no settings file", async () => {
+		const plugin = createPlugin({ dataFileExists: false, version: "4.3.2" });
+		plugin.loadData = jest.fn().mockResolvedValue(null);
+
+		await plugin.loadSettings();
+		await plugin.checkForVersionUpdate();
+
+		expect(plugin.saveData).toHaveBeenCalledTimes(1);
+		expect(plugin.saveData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				lastSeenVersion: "4.3.2",
+			})
+		);
 	});
 });
