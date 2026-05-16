@@ -12,6 +12,23 @@ function translate(
 	return plugin.i18n.translate(key, params);
 }
 
+function uniqueNonEmptyStrings(values: string[]): string[] {
+	const seen = new Set<string>();
+	const uniqueValues: string[] = [];
+
+	for (const value of values) {
+		const trimmedValue = value.trim();
+		if (!trimmedValue || seen.has(trimmedValue)) {
+			continue;
+		}
+
+		seen.add(trimmedValue);
+		uniqueValues.push(trimmedValue);
+	}
+
+	return uniqueValues;
+}
+
 export async function addTaskToProject(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo,
@@ -93,12 +110,13 @@ export function buildSubtaskCreationPrePopulatedValues(
 		plugin.settings.useFrontmatterMarkdownLinks
 	);
 	const parentTags = Array.isArray(parentTask.tags) ? parentTask.tags : [];
+	const parentProjects = Array.isArray(parentTask.projects) ? parentTask.projects : [];
 	const inheritedTags =
 		plugin.settings.taskIdentificationMethod === "tag"
 			? filterTaskIdentificationTags(parentTags, plugin.settings.taskTag)
 			: [...parentTags];
 	const values: Partial<TaskInfo> = {
-		projects: [projectReference],
+		projects: uniqueNonEmptyStrings([...parentProjects, projectReference]),
 	};
 
 	if (inheritedTags.length > 0) {

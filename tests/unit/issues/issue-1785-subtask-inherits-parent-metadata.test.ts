@@ -46,7 +46,7 @@ describe("issue #1785 subtask metadata prefill", () => {
 			parentFile
 		);
 
-		expect(values.projects).toEqual(["[[Parent task]]"]);
+		expect(values.projects).toEqual(["[[Client A]]", "[[Parent task]]"]);
 		expect(values.contexts).toEqual(["office", "calls"]);
 		expect(values.priority).toBe("high");
 		expect(values.tags).toEqual(["client-a", "urgent"]);

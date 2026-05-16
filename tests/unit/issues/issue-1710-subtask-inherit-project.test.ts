@@ -1,102 +1,74 @@
-/**
- * Issue #1710: Subtask doesn't automatically inherit project
- *
- * When creating a new subtask from a Kanban board project view, the subtask's
- * project property is not pre-populated with the parent's project. The context
- * menu "Create subtask" action only sets the parent task as the project reference,
- * not the parent task's own project.
- *
- * ROOT CAUSE:
- * In TaskContextMenu.ts (line ~650), openTaskCreationModal is called with
- * `projects: [projectReference]` where projectReference is a link to the parent
- * task file. The parent task's own project property is not read or propagated.
- *
- * @see https://github.com/callumalpass/tasknotes/issues/1710
- */
+import { App, TFile } from "obsidian";
+import { buildSubtaskCreationPrePopulatedValues } from "../../../src/services/taskRelationshipActions";
+import type { TaskInfo } from "../../../src/types";
+import { MockObsidian } from "../../__mocks__/obsidian";
 
-import { describe, it, expect } from '@jest/globals';
+jest.mock("obsidian");
 
-interface MockTaskInfo {
-	path: string;
-	title: string;
-	projects?: string[];
-}
+const createMockApp = (mockApp: unknown): App => mockApp as App;
 
-interface PrePopulatedValues {
-	projects?: string[];
-}
-
-/**
- * Simulates the current "Create subtask" behavior from TaskContextMenu
- */
-function createSubtaskPrePopulation_current(
-	parentTask: MockTaskInfo,
-	parentFileLink: string
-): PrePopulatedValues {
-	// Current behavior: only sets parent task as project
+function createParentTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
-		projects: [parentFileLink],
+		title: "Build login page",
+		status: "open",
+		priority: "normal",
+		path: "Tasks/Build login page.md",
+		archived: false,
+		projects: ["[[Projects/YGPT Dashboard]]"],
+		tags: [],
+		...overrides,
 	};
 }
 
-/**
- * Proposed fix: inherit parent's project AND set parent as project
- */
-function createSubtaskPrePopulation_fixed(
-	parentTask: MockTaskInfo,
-	parentFileLink: string
-): PrePopulatedValues {
-	const projects: string[] = [];
-
-	// Inherit parent's project(s)
-	if (parentTask.projects && parentTask.projects.length > 0) {
-		projects.push(...parentTask.projects);
-	}
-
-	// Also set parent task as project (for subtask relationship)
-	if (!projects.includes(parentFileLink)) {
-		projects.push(parentFileLink);
-	}
-
-	return { projects };
+function createPlugin(settings: Record<string, unknown> = {}) {
+	return {
+		app: createMockApp(MockObsidian.createMockApp()),
+		settings: {
+			taskTag: "task",
+			taskIdentificationMethod: "property",
+			useFrontmatterMarkdownLinks: false,
+			...settings,
+		},
+	};
 }
 
-describe('Issue #1710: Subtask project inheritance', () => {
-	const parentTask: MockTaskInfo = {
-		path: 'Tasks/Build login page.md',
-		title: 'Build login page',
-		projects: ['[[Projects/YGPT Dashboard]]'],
-	};
-	const parentFileLink = '[[Tasks/Build login page]]';
-
-	it.skip('reproduces issue #1710 - subtask does not inherit parent project', () => {
-		const prePopulated = createSubtaskPrePopulation_current(parentTask, parentFileLink);
-
-		// Current: only has parent task link, NOT the parent's project
-		expect(prePopulated.projects).toEqual([parentFileLink]);
-		// BUG: parent's project "YGPT Dashboard" is missing
-		expect(prePopulated.projects).not.toContain('[[Projects/YGPT Dashboard]]');
+describe("issue #1710 subtask project inheritance", () => {
+	beforeEach(() => {
+		MockObsidian.reset();
 	});
 
-	it.skip('verifies fix for issue #1710 - subtask inherits parent project', () => {
-		const prePopulated = createSubtaskPrePopulation_fixed(parentTask, parentFileLink);
+	it("prefills a new subtask with the parent task's projects and parent link", () => {
+		const parentFile = new TFile("Tasks/Build login page.md");
+		const values = buildSubtaskCreationPrePopulatedValues(
+			createPlugin() as never,
+			createParentTask(),
+			parentFile
+		);
 
-		// Fixed: should have both the parent's project AND the parent task link
-		expect(prePopulated.projects).toContain('[[Projects/YGPT Dashboard]]');
-		expect(prePopulated.projects).toContain(parentFileLink);
+		expect(values.projects).toEqual(["[[Projects/YGPT Dashboard]]", "[[Build login page]]"]);
 	});
 
-	it.skip('verifies fix handles parent with no project', () => {
-		const orphanTask: MockTaskInfo = {
-			path: 'Tasks/Orphan task.md',
-			title: 'Orphan task',
-			projects: [],
-		};
-		const orphanLink = '[[Tasks/Orphan task]]';
+	it("keeps the parent link when the parent task has no projects", () => {
+		const parentFile = new TFile("Tasks/Build login page.md");
+		const values = buildSubtaskCreationPrePopulatedValues(
+			createPlugin() as never,
+			createParentTask({ projects: [] }),
+			parentFile
+		);
 
-		const prePopulated = createSubtaskPrePopulation_fixed(orphanTask, orphanLink);
+		expect(values.projects).toEqual(["[[Build login page]]"]);
+	});
 
-		// Should still set parent task as project even if parent has no project
-		expect(prePopulated.projects).toEqual([orphanLink]);
+	it("does not duplicate the parent link if it is already one of the parent projects", () => {
+		const parentFile = new TFile("Tasks/Build login page.md");
+		const values = buildSubtaskCreationPrePopulatedValues(
+			createPlugin() as never,
+			createParentTask({
+				projects: ["[[Projects/YGPT Dashboard]]", "[[Build login page]]"],
+			}),
+			parentFile
+		);
+
+		expect(values.projects).toEqual(["[[Projects/YGPT Dashboard]]", "[[Build login page]]"]);
 	});
 });
