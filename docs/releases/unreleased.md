@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#648](https://github.com/callumalpass/tasknotes/issues/648), [#1605](https://github.com/callumalpass/tasknotes/issues/1605)) Added clickable links in task-card contexts for note links, markdown links, and web URLs while keeping plain contexts as tag-search buttons. Thanks to @trdischat and @Glint-Eye for suggesting this, and to @renatomen for the follow-up feedback.
 - ([#1625](https://github.com/callumalpass/tasknotes/issues/1625)) Added `Shift` + `Cmd`/`Ctrl` + `Enter` in the Create Task modal to save the current task and reopen the modal for the next one. Thanks to @tcb678 for suggesting this.
 - ([#1641](https://github.com/callumalpass/tasknotes/issues/1641)) Added support for list-valued property-based Calendar start and end dates, so one note can render multiple property events without extra view settings. Thanks to @jhoogeboom for suggesting this.
 - ([#1664](https://github.com/callumalpass/tasknotes/pull/1664)) Added project-based custom filename template variables, including the first project, all projects, and a short `projectId`. Thanks to @bendavis987 for the contribution.

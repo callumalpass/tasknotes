@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Renderer utilities check created elements before attaching interactions. */
 // Tag rendering utilities following TaskNotes coding standards
 import { stringifyUnknown } from "../../utils/stringUtils";
+import { renderTextWithLinks, type LinkServices } from "./linkRenderer";
 
 export interface TagServices {
 	onTagClick?: (tag: string, event: MouseEvent | KeyboardEvent) => void | Promise<void>;
+	linkServices?: LinkServices;
 }
 
 /** Render a single tag string as an Obsidian-like tag element */
@@ -75,35 +77,7 @@ export function renderContextsValue(
 	services?: TagServices
 ): void {
 	if (typeof value === "string") {
-		const normalized = normalizeContext(value);
-		if (normalized) {
-			const colorClass = getContextColorClass(normalized);
-			const el = container.createEl("span", {
-				cls: `context-tag ${colorClass}`,
-				text: normalized,
-				attr: {
-					role: "button",
-					tabindex: "0",
-					"data-tn-click-exclude": "true",
-				},
-			});
-
-			if (services?.onTagClick) {
-				el.addEventListener("click", (e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					void services.onTagClick!(normalized, e);
-				});
-
-				el.addEventListener("keydown", (e) => {
-					if (e.key === "Enter" || e.key === " ") {
-						e.preventDefault();
-						e.stopPropagation();
-						void services.onTagClick!(normalized, e);
-					}
-				});
-			}
-		}
+		renderContextItem(container, value, services);
 		return;
 	}
 	if (Array.isArray(value)) {
@@ -113,39 +87,7 @@ export function renderContextsValue(
 
 		validContexts.forEach((context, idx) => {
 			if (idx > 0) container.appendChild(activeDocument.createTextNode(", "));
-
-			// Render each context directly instead of recursively calling renderContextsValue
-			const normalized = normalizeContext(context);
-
-			if (normalized) {
-				const colorClass = getContextColorClass(normalized);
-				const el = container.createEl("span", {
-					cls: `context-tag ${colorClass}`,
-					text: normalized,
-					attr: {
-						role: "button",
-						tabindex: "0",
-						"data-tn-click-exclude": "true",
-					},
-				});
-
-				if (services?.onTagClick) {
-					el.addEventListener("click", (e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						void services.onTagClick!(normalized, e);
-					});
-
-					el.addEventListener("keydown", (e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault();
-							e.stopPropagation();
-							void services.onTagClick!(normalized, e);
-						}
-					});
-				}
-			} else {
-				// If normalization fails, render as plain text
+			if (!renderContextItem(container, context, services)) {
 				container.appendChild(activeDocument.createTextNode(String(context)));
 			}
 		});
@@ -153,6 +95,73 @@ export function renderContextsValue(
 	}
 	// Fallback
 	if (value != null) container.appendChild(activeDocument.createTextNode(stringifyUnknown(value)));
+}
+
+function renderContextItem(
+	container: HTMLElement,
+	value: string,
+	services?: TagServices
+): boolean {
+	const linkText = stripContextPrefix(value);
+	if (services?.linkServices && isLinkLikeContext(linkText)) {
+		const colorClass = getContextColorClass(linkText);
+		const el = container.createEl("span", {
+			cls: `context-tag context-tag--link ${colorClass}`,
+			attr: {
+				"data-tn-click-exclude": "true",
+			},
+		});
+		el.appendChild(activeDocument.createTextNode("@"));
+		renderTextWithLinks(el, linkText, services.linkServices);
+		return true;
+	}
+
+	const normalized = normalizeContext(value);
+	if (!normalized) return false;
+
+	const colorClass = getContextColorClass(normalized);
+	const el = container.createEl("span", {
+		cls: `context-tag ${colorClass}`,
+		text: normalized,
+		attr: {
+			role: "button",
+			tabindex: "0",
+			"data-tn-click-exclude": "true",
+		},
+	});
+
+	if (services?.onTagClick) {
+		el.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			void services.onTagClick?.(normalized, e);
+		});
+
+		el.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				e.stopPropagation();
+				void services.onTagClick?.(normalized, e);
+			}
+		});
+	}
+
+	return true;
+}
+
+function stripContextPrefix(value: string): string {
+	const trimmed = value.trim();
+	if (!trimmed.startsWith("@")) return trimmed;
+	return trimmed.slice(1).trim();
+}
+
+function isLinkLikeContext(value: string): boolean {
+	return (
+		/\[\[[^[\]]+\]\]/.test(value) ||
+		/\[[^\]]+\]\([^)]+\)/.test(value) ||
+		/<https?:\/\/[^\s>]+>/i.test(value) ||
+		/https?:\/\/[^\s<>()]+[^\s<>().,;:!?]/i.test(value)
+	);
 }
 
 /**

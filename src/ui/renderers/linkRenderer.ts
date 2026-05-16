@@ -30,9 +30,17 @@ interface HoverLinkEvent {
 	sourcePath: string;
 }
 
-// Enhanced regex to handle more link types including autolinks and reference-style links
+// Enhanced regex to handle more link types including autolinks, bare URLs, and reference-style links
 const LINK_REGEX =
-	/\[\[([^[\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)|<(https?:\/\/[^\s>]+)>|\[([^\]]+)\]\s*\[([^\]]*)\]/g;
+	/\[\[([^[\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)|<(https?:\/\/[^\s>]+)>|(https?:\/\/[^\s<>()]+[^\s<>().,;:!?])|\[([^\]]+)\]\s*\[([^\]]*)\]/g;
+
+function appendExternalLink(container: HTMLElement, href: string, displayText: string): void {
+	const a = container.createEl("a", {
+		text: displayText,
+		attr: { href, target: "_blank", rel: "noopener" },
+	});
+	a.classList.add("external-link");
+}
 
 /** Enhanced internal link creation with better error handling and accessibility */
 export function appendInternalLink(
@@ -164,7 +172,7 @@ export function renderTextWithLinks(
 
 	// First, handle wikilinks and markdown links
 	while ((match = LINK_REGEX.exec(text)) !== null) {
-		const [full, wikiInner, mdText, mdHref] = match;
+		const [full, wikiInner, mdText, mdHref, autolinkHref, bareHref] = match;
 		const start = match.index;
 
 		if (start > lastIndex) {
@@ -185,14 +193,15 @@ export function renderTextWithLinks(
 			const href = String(mdHref).trim();
 			const disp = String(mdText).trim();
 			if (/^[a-z]+:\/\//i.test(href)) {
-				const a = container.createEl("a", {
-					text: disp,
-					attr: { href, target: "_blank", rel: "noopener" },
-				});
-				a.classList.add("external-link");
+				appendExternalLink(container, href, disp);
 			} else {
 				appendInternalLink(container, href, disp, deps);
 			}
+		} else if (autolinkHref || bareHref) {
+			const href = String(autolinkHref || bareHref);
+			appendExternalLink(container, href, href);
+		} else {
+			container.appendChild(activeDocument.createTextNode(full));
 		}
 
 		lastIndex = start + full.length;

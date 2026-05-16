@@ -1,160 +1,114 @@
 /**
- * Issue #648: [FR] Make context entries clickable links
+ * Issues #648 and #1605: render links in task-card context values.
  *
- * Feature Request Description:
- * When a wikilink like `[[Joe Smith]]` is entered in the context field of a task,
- * it is stored correctly as a clickable link in the task note properties. However,
- * in Task View, Kanban View, and other views, it displays as `@JoeSmith` — a colored
- * tag span that opens the tag search pane on click, rather than a clickable internal
- * link that navigates to the referenced note.
- *
- * Current Behavior:
- * - Context entries are always rendered as `<span>` elements with class `context-tag`
- *   and role="button" via `renderContextsValue()` in tagRenderer.ts
- * - Clicking a context opens the tag search pane (`plugin.openTagsPane('#contextname')`)
- * - The `normalizeContext()` function strips spaces and non-alphanumeric characters,
- *   converting `[[Joe Smith]]` → `@JoeSmith` (losing the link semantics)
- * - No file navigation or hover preview is available for contexts
- *
- * Expected Behavior:
- * - If a context value contains a wikilink (e.g. `[[Joe Smith]]`), it should be
- *   rendered as an internal link (similar to how projects render via `appendInternalLink()`)
- * - The rendered link should be clickable, navigating to the referenced note
- * - Hover preview should work (like project links)
- * - Plain text contexts (without wikilinks) can continue to work as tag buttons
- *
- * Related Components:
- * - `renderContextsValue()` in src/ui/renderers/tagRenderer.ts (lines 69-149)
- * - `renderProjectLinks()` in src/ui/renderers/linkRenderer.ts (lines 355-423) — reference impl
- * - `PROPERTY_RENDERERS['contexts']` in src/ui/TaskCard.ts (lines 729-742)
- * - `normalizeContext()` in src/ui/renderers/tagRenderer.ts (lines 207-223)
+ * Context values are stored as plain strings, and users sometimes store wikilinks,
+ * markdown links, or URLs there for people/place/external-reference workflows.
+ * Plain contexts should remain tag-search buttons, while link-like contexts should
+ * preserve Obsidian/external-link behavior in task cards.
  *
  * @see https://github.com/callumalpass/tasknotes/issues/648
+ * @see https://github.com/callumalpass/tasknotes/issues/1605
  */
 
-import { renderContextsValue, normalizeContext, TagServices } from "../../../src/ui/renderers/tagRenderer";
+import {
+	normalizeContext,
+	renderContextsValue,
+	type TagServices,
+} from "../../../src/ui/renderers/tagRenderer";
+import type { LinkServices } from "../../../src/ui/renderers/linkRenderer";
+import { makeContainer } from "../../helpers/dom-helpers";
 
-describe("Issue #648: Make context entries clickable links", () => {
+describe("Issues #648 and #1605: context entries clickable links", () => {
 	let container: HTMLElement;
+	const linkServices: LinkServices = {
+		metadataCache: {
+			getFirstLinkpathDest: jest.fn().mockReturnValue(null),
+		} as unknown as LinkServices["metadataCache"],
+		workspace: {
+			trigger: jest.fn(),
+			getLeaf: jest.fn().mockReturnValue({ openFile: jest.fn() }),
+			openLinkText: jest.fn(),
+		} as unknown as LinkServices["workspace"],
+		sourcePath: "TaskNotes/Tasks/source.md",
+	};
 
 	beforeEach(() => {
-		container = document.createElement("div");
+		container = makeContainer();
 	});
 
-	it.skip("reproduces issue #648: wikilink context is rendered as plain tag instead of internal link", () => {
-		/**
-		 * When a context value is a wikilink like `[[Joe Smith]]`, the current
-		 * `renderContextsValue()` normalizes it to `@JoeSmith` and renders it
-		 * as a plain span tag. It should instead detect the wikilink format and
-		 * render it as a clickable internal link (like projects do).
-		 */
-		const contexts = ["[[Joe Smith]]"];
-		renderContextsValue(container, contexts);
+	it("renders a wikilink context as an internal link", () => {
+		renderContextsValue(container, ["[[Joe Smith]]"], { linkServices });
 
-		// Current behavior: renders as a span.context-tag with text "@JoeSmith"
 		const contextTag = container.querySelector(".context-tag");
 		expect(contextTag).not.toBeNull();
 		expect(contextTag?.tagName).toBe("SPAN");
-		expect(contextTag?.textContent).toBe("@JoeSmith");
+		expect(contextTag?.textContent).toBe("@Joe Smith");
 
-		// Expected behavior (currently fails): should render as an internal link
-		// that navigates to the "Joe Smith" note
 		const internalLink = container.querySelector(".internal-link");
-		expect(internalLink).not.toBeNull(); // FAILS: no internal link is rendered
+		expect(internalLink).not.toBeNull();
+		expect(internalLink?.textContent).toBe("Joe Smith");
+		expect(internalLink?.getAttribute("data-href")).toBe("Joe Smith");
 	});
 
-	it.skip("reproduces issue #648: wikilink context loses spaces in display text", () => {
-		/**
-		 * The normalizeContext() function strips spaces from context values,
-		 * converting "Joe Smith" to "JoeSmith". While this is fine for plain
-		 * text contexts used as tags, wikilink contexts should preserve the
-		 * original display text (with spaces) since they represent note names.
-		 */
-		const result = normalizeContext("[[Joe Smith]]");
-
-		// Current behavior: normalizeContext strips brackets and spaces
-		// producing "@JoeSmith" (CamelCase, no spaces)
-		expect(result).toBe("@JoeSmith");
-
-		// Expected behavior: for wikilink contexts, the display text should
-		// preserve spaces, e.g. "@Joe Smith" or the wikilink should be
-		// handled separately before normalization
-		// expect(result).toContain("Joe Smith");
+	it("leaves plain context normalization unchanged", () => {
+		expect(normalizeContext("[[Joe Smith]]")).toBe("@JoeSmith");
 	});
 
-	it.skip("reproduces issue #648: context click opens tag pane instead of navigating to note", () => {
-		/**
-		 * When a context contains a wikilink, clicking it should navigate to
-		 * the linked note (like project links do), not open the tag search pane.
-		 *
-		 * Currently, the onTagClick handler in TaskCard.ts always does:
-		 *   plugin.openTagsPane(`#${searchTag}`)
-		 * regardless of whether the original context value was a wikilink.
-		 */
+	it("does not call the plain-context tag handler for link contexts", () => {
 		const clickedContexts: string[] = [];
 		const tagServices: TagServices = {
 			onTagClick: (context) => {
 				clickedContexts.push(context);
 			},
+			linkServices,
 		};
 
-		const contexts = ["[[Joe Smith]]"];
-		renderContextsValue(container, contexts, tagServices);
+		renderContextsValue(container, ["[[Joe Smith]]"], tagServices);
+		const internalLink = container.querySelector(".internal-link");
+		expect(internalLink).not.toBeNull();
 
-		// Click the rendered context
-		const contextTag = container.querySelector(".context-tag");
-		expect(contextTag).not.toBeNull();
+		internalLink?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-		contextTag?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-
-		// Current behavior: onTagClick is called with "@JoeSmith"
-		// which then gets used to search tags via openTagsPane("#JoeSmith")
-		expect(clickedContexts).toContain("@JoeSmith");
-
-		// Expected behavior: for wikilink contexts, clicking should navigate
-		// to the "Joe Smith" note file, not trigger a tag search
+		expect(clickedContexts).toEqual([]);
 	});
 
-	it.skip("reproduces issue #648: plain text contexts should continue working as tag buttons", () => {
-		/**
-		 * While wikilink contexts should become internal links, plain text
-		 * contexts like "work" or "home" should continue to work as they
-		 * currently do (colored tag spans with tag search on click).
-		 * This test documents the expected backward-compatible behavior.
-		 */
-		const contexts = ["work", "home"];
-		renderContextsValue(container, contexts);
+	it("keeps plain text contexts as tag buttons", () => {
+		renderContextsValue(container, ["work", "home"], { linkServices });
 
 		const contextTags = container.querySelectorAll(".context-tag");
 		expect(contextTags.length).toBe(2);
-
-		// Plain text contexts should remain as span tags
 		expect(contextTags[0].tagName).toBe("SPAN");
 		expect(contextTags[0].textContent).toBe("@work");
 		expect(contextTags[1].textContent).toBe("@home");
-
-		// They should NOT be internal links
-		const internalLinks = container.querySelectorAll(".internal-link");
-		expect(internalLinks.length).toBe(0);
+		expect(container.querySelectorAll(".internal-link").length).toBe(0);
 	});
 
-	it.skip("reproduces issue #648: mixed plain and wikilink contexts should render correctly", () => {
-		/**
-		 * When a task has both plain text contexts and wikilink contexts,
-		 * each should render in its appropriate format:
-		 * - Plain text → colored tag span (current behavior)
-		 * - Wikilink → clickable internal link (requested feature)
-		 */
-		const contexts = ["work", "[[Joe Smith]]", "urgent"];
-		renderContextsValue(container, contexts);
+	it("renders mixed plain and wikilink contexts correctly", () => {
+		renderContextsValue(container, ["work", "[[Joe Smith]]", "urgent"], { linkServices });
 
-		const allElements = container.children;
-		// Should have 3 context elements plus 2 separator text nodes
-		// Currently all render as span.context-tag
+		const contextTags = container.querySelectorAll(".context-tag");
+		expect(contextTags.length).toBe(3);
 
-		// Expected: "work" and "urgent" as context-tag spans
-		// Expected: "[[Joe Smith]]" as an internal-link anchor
 		const internalLinks = container.querySelectorAll(".internal-link");
-		expect(internalLinks.length).toBe(1); // FAILS: currently 0
+		expect(internalLinks.length).toBe(1);
+		expect(internalLinks[0].textContent).toBe("Joe Smith");
+		expect(container.textContent).toBe("@work, @Joe Smith, @urgent");
+	});
+
+	it("renders markdown and bare external URL contexts as external links", () => {
+		renderContextsValue(
+			container,
+			["[Wikipedia](https://en.wikipedia.org/wiki/Main_Page)", "https://example.com/page"],
+			{ linkServices }
+		);
+
+		const externalLinks = Array.from(container.querySelectorAll("a.external-link"));
+		expect(externalLinks).toHaveLength(2);
+		expect(externalLinks[0].textContent).toBe("Wikipedia");
+		expect(externalLinks[0].getAttribute("href")).toBe(
+			"https://en.wikipedia.org/wiki/Main_Page"
+		);
+		expect(externalLinks[1].textContent).toBe("https://example.com/page");
+		expect(externalLinks[1].getAttribute("href")).toBe("https://example.com/page");
 	});
 });

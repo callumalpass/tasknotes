@@ -201,12 +201,17 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			renderProjectLinks(element, value as string[], linkServices);
 		}
 	},
-	contexts: (element, value, _, plugin) => {
+	contexts: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
 			const tagServices: TagServices = {
 				onTagClick: async (context) => {
 					const searchTag = context.startsWith("@") ? context.slice(1) : context;
 					await plugin.openTagsPane(`#${searchTag}`);
+				},
+				linkServices: {
+					metadataCache: plugin.app.metadataCache,
+					workspace: plugin.app.workspace,
+					sourcePath: task.path,
 				},
 			};
 			renderContextsValue(element, value, tagServices);
