@@ -484,9 +484,9 @@ export const en: TranslationTree = {
 						"Display an inline button next to Markdown checkboxes that converts them to TaskNotes",
 				},
 				folder: {
-					name: "Folder for converted tasks",
+					name: "Folder for inline-created tasks",
 					description:
-						"Folder where tasks converted from checkboxes will be created. Leave empty to use the default tasks folder. Use {{currentNotePath}} for the current note's folder, or {{currentNoteTitle}} for a subfolder named after the current note.",
+						"Folder where tasks created from inline commands or checkbox conversion will be created. Leave empty to use the default tasks folder. Use {{currentNotePath}} for the current note's folder, or {{currentNoteTitle}} for a subfolder named after the current note.",
 				},
 			},
 			nlp: {

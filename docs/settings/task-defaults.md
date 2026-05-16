@@ -95,7 +95,7 @@ Advanced variables increase uniqueness and entropy, but may reduce path readabil
 - **Multiple Values**: For arrays like contexts and projects, only the first value is used
 - **Title Sanitization**: The `{{title}}` variable automatically removes invalid folder characters (`<>:"/\|?*`) and replaces them with underscores
 - **Folder Creation**: Folders are automatically created if they don't exist
-- **Inline Tasks**: Template variables also work for the inline task conversion folder setting
+- **Inline Tasks**: Template variables also work for the inline-created task folder setting. Leave that setting empty to use the default tasks folder.
 When templates contain nested variables, create a small test set first to validate the resulting paths.
 
 #### Advanced Usage

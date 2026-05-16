@@ -44,22 +44,19 @@ export function renderGeneralTab(
 				})
 			);
 
-			// Folder for converted inline tasks (only shown when instant convert is enabled)
-			if (plugin.settings.enableInstantTaskConvert) {
-				group.addSetting((setting) =>
-					void configureTextSetting(setting, {
-						name: translate("settings.features.instantConvert.folder.name"),
-						desc: translate("settings.features.instantConvert.folder.description"),
-						placeholder: "{{currentNotePath}}",
-						getValue: () => plugin.settings.inlineTaskConvertFolder,
-						setValue: async (value: string) => {
-							plugin.settings.inlineTaskConvertFolder = value;
-							save();
-						},
-						ariaLabel: "Folder for converted inline tasks",
-					})
-				);
-			}
+			group.addSetting((setting) =>
+				void configureTextSetting(setting, {
+					name: translate("settings.features.instantConvert.folder.name"),
+					desc: translate("settings.features.instantConvert.folder.description"),
+					placeholder: "{{currentNotePath}}",
+					getValue: () => plugin.settings.inlineTaskConvertFolder,
+					setValue: async (value: string) => {
+						plugin.settings.inlineTaskConvertFolder = value;
+						save();
+					},
+					ariaLabel: "Folder for inline-created tasks",
+				})
+			);
 
 			group.addSetting((setting) =>
 				void configureToggleSetting(setting, {
