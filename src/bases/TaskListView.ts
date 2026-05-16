@@ -176,6 +176,7 @@ export class TaskListView extends BasesViewBase {
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
+	private currentVisibleTaskOrder = new Map<string, number>();
 	private configLoaded = false; // Track if we've successfully loaded config
 
 	// Drag-to-reorder state
@@ -2136,14 +2137,17 @@ export class TaskListView extends BasesViewBase {
 					this.config?.get("expandedRelationshipFilterMode")
 				),
 			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
+			expandedRelationshipTaskOrder: this.currentVisibleTaskOrder,
 		});
 	}
 
 	private setCurrentVisibleTaskPaths(tasks: TaskInfo[]): void {
 		this.currentVisibleTaskPaths.clear();
-		for (const task of tasks) {
+		this.currentVisibleTaskOrder.clear();
+		tasks.forEach((task, index) => {
 			this.currentVisibleTaskPaths.add(task.path);
-		}
+			this.currentVisibleTaskOrder.set(task.path, index);
+		});
 	}
 
 	private clearClickTimeouts(): void {

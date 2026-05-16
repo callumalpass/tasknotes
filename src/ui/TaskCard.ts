@@ -39,6 +39,8 @@ export interface TaskCardOptions {
 	resolveExpandedRelationshipFilterMode?: () => "inherit" | "show-all";
 	/** Paths visible in the current view after Bases/search filtering. */
 	expandedRelationshipTaskPaths?: ReadonlySet<string>;
+	/** Sort order of paths in the current view after Bases/search sorting. */
+	expandedRelationshipTaskOrder?: ReadonlyMap<string, number>;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -106,6 +108,37 @@ function filterExpandedRelationshipTasks(card: HTMLElement, tasks: TaskInfo[]): 
 	}
 
 	return tasks.filter((relatedTask) => allowedTaskPaths.has(relatedTask.path));
+}
+
+function sortExpandedRelationshipTasks(
+	card: HTMLElement,
+	tasks: TaskInfo[],
+	plugin: TaskNotesPlugin
+): TaskInfo[] {
+	const taskOrder = getStoredTaskCardOptions(card).expandedRelationshipTaskOrder;
+	if (!taskOrder || taskOrder.size === 0) {
+		return plugin.projectSubtasksService.sortTasks([...tasks]);
+	}
+
+	const ranked: TaskInfo[] = [];
+	const unranked: TaskInfo[] = [];
+	for (const task of tasks) {
+		if (taskOrder.has(task.path)) {
+			ranked.push(task);
+		} else {
+			unranked.push(task);
+		}
+	}
+
+	ranked.sort((a, b) => {
+		const aOrder = taskOrder.get(a.path);
+		const bOrder = taskOrder.get(b.path);
+		if (aOrder === undefined || bOrder === undefined) {
+			return 0;
+		}
+		return aOrder - bOrder;
+	});
+	return [...ranked, ...plugin.projectSubtasksService.sortTasks([...unranked])];
 }
 
 function tTaskCard(
@@ -1561,8 +1594,7 @@ export async function toggleSubtasks(
 					return;
 				}
 
-				// Sort subtasks
-				const sortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
+				const sortedSubtasks = sortExpandedRelationshipTasks(card, subtasks, plugin);
 
 				// Build parent chain by traversing up the DOM hierarchy
 				const buildParentChain = (element: HTMLElement): string[] => {
