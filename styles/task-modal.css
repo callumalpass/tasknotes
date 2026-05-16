@@ -771,7 +771,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
         min-width: 0;
         display: grid;
-        grid-template-columns: 380px minmax(0, 1fr);
+        grid-template-columns: 380px minmax(280px, 1fr);
         gap: 0;
         padding-right: 0;
         overflow: visible;
@@ -791,7 +791,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
     /* Right column - details editor takes full height, edge to edge */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
-        min-width: 0;
+        min-width: 280px;
         min-height: 360px;
         display: flex;
         flex-direction: column;
@@ -890,7 +890,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
     /* Left column gets more space on wider screens */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
-        grid-template-columns: 480px minmax(0, 1fr);
+        grid-template-columns: 480px minmax(280px, 1fr);
     }
 }
 
