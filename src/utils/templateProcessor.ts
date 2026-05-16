@@ -109,7 +109,9 @@ function processTemplateFrontmatter(
 ): Record<string, unknown> {
 	try {
 		// First, process template variables in the raw YAML text with YAML-safe replacements
-		const processedYamlText = processTemplateVariablesForYaml(frontmatterContent, taskData);
+		const processedYamlText = quoteTemplaterYamlScalars(
+			processTemplateVariablesForYaml(frontmatterContent, taskData)
+		);
 
 		// Then parse the processed YAML
 		const parsedFrontmatter = YAML.parse(processedYamlText);
@@ -150,8 +152,7 @@ function processTemplateVariablesForYaml(
 
 	// {{title}} - Task title (quote if contains special characters)
 	const title = taskData.title || "";
-	const quotedTitle = needsYamlQuoting(title) ? `"${escapeYamlString(title)}"` : title;
-	result = result.replace(/\{\{title\}\}/g, quotedTitle);
+	result = replaceYamlTemplateVariable(result, "title", title);
 
 	// {{priority}} - Task priority
 	result = result.replace(/\{\{priority\}\}/g, taskData.priority || "");
@@ -187,8 +188,7 @@ function processTemplateVariablesForYaml(
 
 	// {{parentNote}} - Parent note name/path - ALWAYS quote for YAML safety
 	const parentNote = taskData.parentNote || "";
-	const quotedParentNote = parentNote ? `"${escapeYamlString(parentNote)}"` : "";
-	result = result.replace(/\{\{parentNote\}\}/g, quotedParentNote);
+	result = replaceYamlTemplateVariable(result, "parentNote", parentNote, { alwaysQuote: true });
 
 	// {{date}} - Current date (basic format only)
 	result = result.replace(/\{\{date\}\}/g, format(now, "yyyy-MM-dd"));
@@ -270,10 +270,7 @@ function processTemplateVariablesForYaml(
 
 		// {{icsEventTitle}} - ICS event title (quote if contains special characters)
 		const icsTitle = icsData.icsEventTitle || "";
-		const quotedIcsTitle = needsYamlQuoting(icsTitle)
-			? `"${escapeYamlString(icsTitle)}"`
-			: icsTitle;
-		result = result.replace(/\{\{icsEventTitle\}\}/g, quotedIcsTitle);
+		result = replaceYamlTemplateVariable(result, "icsEventTitle", icsTitle);
 
 		// {{icsEventStart}} - ICS event start time
 		result = result.replace(/\{\{icsEventStart\}\}/g, icsData.icsEventStart || "");
@@ -283,38 +280,65 @@ function processTemplateVariablesForYaml(
 
 		// {{icsEventLocation}} - ICS event location (quote if contains special characters)
 		const icsLocation = icsData.icsEventLocation || "";
-		const quotedIcsLocation =
-			icsLocation && needsYamlQuoting(icsLocation)
-				? `"${escapeYamlString(icsLocation)}"`
-				: icsLocation;
-		result = result.replace(/\{\{icsEventLocation\}\}/g, quotedIcsLocation);
+		result = replaceYamlTemplateVariable(result, "icsEventLocation", icsLocation);
 
 		// {{icsEventDescription}} - ICS event description (quote if contains special characters)
 		const icsDescription = icsData.icsEventDescription || "";
-		const quotedIcsDescription =
-			icsDescription && needsYamlQuoting(icsDescription)
-				? `"${escapeYamlString(icsDescription)}"`
-				: icsDescription;
-		result = result.replace(/\{\{icsEventDescription\}\}/g, quotedIcsDescription);
+		result = replaceYamlTemplateVariable(result, "icsEventDescription", icsDescription);
 
 		// {{icsEventUrl}} - ICS event URL
 		result = result.replace(/\{\{icsEventUrl\}\}/g, icsData.icsEventUrl || "");
 
 		// {{icsEventSubscription}} - ICS subscription name (quote if contains special characters)
 		const icsSubscription = icsData.icsEventSubscription || "";
-		const quotedIcsSubscription =
-			icsSubscription && needsYamlQuoting(icsSubscription)
-				? `"${escapeYamlString(icsSubscription)}"`
-				: icsSubscription;
-		result = result.replace(/\{\{icsEventSubscription\}\}/g, quotedIcsSubscription);
+		result = replaceYamlTemplateVariable(
+			result,
+			"icsEventSubscription",
+			icsSubscription
+		);
 
 		// {{icsEventId}} - ICS event ID (ALWAYS quote for YAML safety since it's a UUID)
 		const icsEventId = icsData.icsEventId || "";
-		const quotedIcsEventId = icsEventId ? `"${escapeYamlString(icsEventId)}"` : "";
-		result = result.replace(/\{\{icsEventId\}\}/g, quotedIcsEventId);
+		result = replaceYamlTemplateVariable(result, "icsEventId", icsEventId, {
+			alwaysQuote: true,
+		});
 	}
 
 	return result;
+}
+
+function replaceYamlTemplateVariable(
+	template: string,
+	variableName: string,
+	value: string,
+	options: { alwaysQuote?: boolean } = {}
+): string {
+	const escapedVariableName = variableName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const quotedPlaceholder = new RegExp(`(["'])\\{\\{${escapedVariableName}\\}\\}\\1`, "g");
+	const valueString = value || "";
+
+	let result = template.replace(quotedPlaceholder, (_match, quote: string) => {
+		const escapedValue =
+			quote === "'" ? valueString.replace(/'/g, "''") : escapeYamlString(valueString);
+		return `${quote}${escapedValue}${quote}`;
+	});
+
+	const replacement =
+		valueString && (options.alwaysQuote || needsYamlQuoting(valueString))
+			? `"${escapeYamlString(valueString)}"`
+			: valueString;
+	const unquotedPlaceholder = new RegExp(`\\{\\{${escapedVariableName}\\}\\}`, "g");
+	result = result.replace(unquotedPlaceholder, replacement);
+
+	return result;
+}
+
+function quoteTemplaterYamlScalars(yamlText: string): string {
+	return yamlText.replace(
+		/^(\s*[^#\n][^:\n]*:\s*)(<%.*?%>)(\s*)$/gm,
+		(_match, prefix: string, value: string, suffix: string) =>
+			`${prefix}"${escapeYamlString(value)}"${suffix}`
+	);
 }
 
 /**

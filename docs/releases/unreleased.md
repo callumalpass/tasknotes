@@ -52,6 +52,7 @@ Example:
 
 ## Fixed
 
+- ([#1662](https://github.com/callumalpass/tasknotes/issues/1662)) Preserved frontmatter from ICS event note templates when quoted event variables or Templater expressions are used. Thanks to @victorhg for reporting this.
 - ([#1663](https://github.com/callumalpass/tasknotes/issues/1663)) Fixed Japanese and other Unicode tags on task cards so Kanban tag pills keep the same rounded styling as ASCII tags. Thanks to @kutty-1119 for reporting this.
 - ([#1648](https://github.com/callumalpass/tasknotes/issues/1648), [#1665](https://github.com/callumalpass/tasknotes/issues/1665)) Fixed the API endpoint list in Integrations settings so it uses the configured bearer token when API authentication is enabled, instead of reporting the running local server as inaccessible. Thanks to @npondel and @warm-july for reporting this.
 - ([#1668](https://github.com/callumalpass/tasknotes/issues/1668)) Fixed the Create Task magic wand so NLP-triggered custom field values are copied into the custom property inputs before saving. Thanks to @hokfujow for reporting this.
