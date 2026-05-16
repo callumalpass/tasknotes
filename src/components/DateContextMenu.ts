@@ -8,6 +8,19 @@ type SubmenuMenuItem = {
 	setSubmenu(): Menu;
 };
 
+function asElement(target: EventTarget | null): Element | null {
+	if (!target || typeof target !== "object") {
+		return null;
+	}
+
+	const element = target as Element;
+	if (element.nodeType !== 1 || typeof element.closest !== "function") {
+		return null;
+	}
+
+	return element;
+}
+
 type MomentLike = {
 	format(format: string): string;
 	clone(): MomentLike;
@@ -50,6 +63,9 @@ export interface DateContextMenuOptions {
 }
 
 export class DateContextMenu {
+	private static activeMenu: ContextMenu | null = null;
+	private static activeTrigger: Element | null = null;
+
 	private menu: ContextMenu;
 	private options: DateContextMenuOptions;
 
@@ -149,6 +165,36 @@ export class DateContextMenu {
 				});
 			});
 		}
+	}
+
+	private static closeActiveMenu(): void {
+		const activeMenu = DateContextMenu.activeMenu;
+		DateContextMenu.activeMenu = null;
+		DateContextMenu.activeTrigger = null;
+		activeMenu?.hide();
+	}
+
+	private static getTriggerFromEvent(event: UIEvent): Element | null {
+		const target = asElement(event.target);
+		return target?.closest('[data-tn-action="edit-date"], .task-card__metadata-date') ?? null;
+	}
+
+	private showWithTrigger(trigger: Element | null, show: () => void): void {
+		if (trigger && DateContextMenu.activeMenu && DateContextMenu.activeTrigger === trigger) {
+			DateContextMenu.closeActiveMenu();
+			return;
+		}
+
+		DateContextMenu.closeActiveMenu();
+		DateContextMenu.activeMenu = this.menu;
+		DateContextMenu.activeTrigger = trigger;
+		this.menu.onHide(() => {
+			if (DateContextMenu.activeMenu === this.menu) {
+				DateContextMenu.activeMenu = null;
+				DateContextMenu.activeTrigger = null;
+			}
+		});
+		show();
 	}
 
 	public getDateOptions(): DateOption[] {
@@ -251,13 +297,17 @@ export class DateContextMenu {
 	}
 
 	public show(event: UIEvent): void {
-		this.menu.show(event);
+		this.showWithTrigger(DateContextMenu.getTriggerFromEvent(event), () => {
+			this.menu.show(event);
+		});
 	}
 
 	public showAtElement(element: HTMLElement): void {
-		this.menu.showAtPosition({
-			x: element.getBoundingClientRect().left,
-			y: element.getBoundingClientRect().bottom + 4,
+		this.showWithTrigger(element, () => {
+			this.menu.showAtPosition({
+				x: element.getBoundingClientRect().left,
+				y: element.getBoundingClientRect().bottom + 4,
+			});
 		});
 	}
 

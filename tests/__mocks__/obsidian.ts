@@ -954,24 +954,55 @@ export const Notice = jest.fn().mockImplementation((message: string, timeout?: n
 });
 
 // Menu mock class
-export const Menu = jest.fn().mockImplementation(() => ({
-  items: [],
-  addItem: jest.fn().mockImplementation(function(this: any, callback: (item: any) => void) {
-    const mockItem = {
-      setTitle: jest.fn().mockReturnThis(),
-      setIcon: jest.fn().mockReturnThis(),
-      onClick: jest.fn().mockReturnThis(),
-      setSection: jest.fn().mockReturnThis(),
-    };
-    callback(mockItem);
-    this.items.push(mockItem);
-  }),
-  addSeparator: jest.fn().mockImplementation(function(this: any) {
-    this.items.push({ type: 'separator' });
-  }),
-  showAtMouseEvent: jest.fn(),
-  showAtPosition: jest.fn(),
-}));
+export const Menu = jest.fn().mockImplementation(() => {
+  const onHideCallbacks: Array<() => void> = [];
+  const menu = {
+    items: [],
+    addItem: jest.fn().mockImplementation(function(this: any, callback: (item: any) => void) {
+      const mockItem = {
+        setTitle: jest.fn().mockReturnThis(),
+        setIcon: jest.fn().mockReturnThis(),
+        onClick: jest.fn().mockReturnThis(),
+        setSection: jest.fn().mockReturnThis(),
+        setDisabled: jest.fn().mockReturnThis(),
+        setChecked: jest.fn().mockReturnThis(),
+        setSubmenu: jest.fn().mockImplementation(() => Menu()),
+      };
+      callback(mockItem);
+      this.items.push(mockItem);
+    }),
+    addSeparator: jest.fn().mockImplementation(function(this: any) {
+      this.items.push({ type: 'separator' });
+    }),
+    showAtMouseEvent: jest.fn().mockReturnThis(),
+    showAtPosition: jest.fn().mockReturnThis(),
+    show: jest.fn().mockImplementation(function(this: any, event: UIEvent) {
+      if (event instanceof MouseEvent) {
+        this.showAtMouseEvent(event);
+      } else if (event instanceof KeyboardEvent) {
+        const element = event.currentTarget as HTMLElement | null;
+        if (element) {
+          this.showAtPosition({
+            x: element.getBoundingClientRect().left,
+            y: element.getBoundingClientRect().bottom + 4,
+          });
+        }
+      }
+      return this;
+    }),
+    hide: jest.fn().mockImplementation(function(this: any) {
+      onHideCallbacks.forEach((callback) => callback());
+      return this;
+    }),
+    close: jest.fn().mockImplementation(() => {
+      onHideCallbacks.forEach((callback) => callback());
+    }),
+    onHide: jest.fn().mockImplementation((callback: () => void) => {
+      onHideCallbacks.push(callback);
+    }),
+  };
+  return menu;
+});
 
 // Mock parseFrontMatterAliases function
 export function parseFrontMatterAliases(frontmatter: any): string[] | null {
