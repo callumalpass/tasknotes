@@ -644,6 +644,8 @@ function containsRichTextLink(value: string): boolean {
 	return (
 		value.includes("[[") ||
 		value.includes("](") ||
+		/<https?:\/\/[^\s>]+>/i.test(value) ||
+		/(^|\s)https?:\/\/[^\s<>()]+/i.test(value) ||
 		(value.includes("[") && value.includes("](")) ||
 		(value.includes("#") && /\s#\w+|#\w+/.test(value))
 	);

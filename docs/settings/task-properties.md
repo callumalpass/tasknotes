@@ -227,6 +227,12 @@ Define custom frontmatter properties to appear as filter options across views. C
 - **Autosuggest Filters**: Filter which files appear when using `[[` wikilink autocomplete
 Custom fields are most maintainable when they map to repeated workflow decisions (for example `effort`, `owner`, or `client`).
 
+### Link Values
+
+Use a **Text** custom field for a single link and a **List** custom field for multiple links. Task cards render `[[wikilinks]]`, `[label](https://example.com)`, `<https://example.com>`, and bare `https://example.com` values as clickable links.
+
+Autosuggest filters work with text and list fields when entering `[[` wikilinks, so a field such as `Related Note` can suggest only files from a chosen folder or tag.
+
 ### Default Values
 
 Each field type has a different input format for default values:
