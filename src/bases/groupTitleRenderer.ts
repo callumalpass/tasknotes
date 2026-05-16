@@ -2,6 +2,13 @@ import { parseLinktext, TFile } from "obsidian";
 import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
 import { parseLinkToPath } from "../utils/linkUtils";
 
+interface LinkTitleSegment {
+	filePath: string;
+	displayText: string;
+}
+
+type GroupTitlePart = LinkTitleSegment | string;
+
 function resolveDisplayText(
 	filePath: string,
 	displayText: string,
@@ -33,10 +40,114 @@ function resolveDisplayText(
 	return displayText;
 }
 
+function parseWikiLinkSegment(segment: string): LinkTitleSegment | null {
+	const wikiLinkMatch = segment.match(/^\[\[([^\]]+)\]\]$/);
+	if (!wikiLinkMatch) return null;
+
+	const linkContent = wikiLinkMatch[1];
+	if (linkContent.includes("|")) {
+		const parts = linkContent.split("|");
+		return {
+			filePath: parts[0].trim(),
+			displayText: parts[1].trim(),
+		};
+	}
+
+	const parsedLink = parseLinktext(linkContent);
+	return {
+		filePath: parsedLink.path,
+		displayText: parsedLink.path,
+	};
+}
+
+function parseMarkdownLinkSegment(segment: string): LinkTitleSegment | null {
+	const markdownLinkMatch = segment.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+	if (!markdownLinkMatch) return null;
+
+	return {
+		displayText: markdownLinkMatch[1].trim(),
+		filePath: parseLinkToPath(segment),
+	};
+}
+
+function parseLinkSegment(segment: string): LinkTitleSegment | null {
+	return parseWikiLinkSegment(segment) || parseMarkdownLinkSegment(segment);
+}
+
+function parseLinkAt(title: string, startIndex: number): { segment: LinkTitleSegment; endIndex: number } | null {
+	const remaining = title.slice(startIndex);
+	const wikiMatch = remaining.match(/^\[\[([^\]]+)\]\]/);
+	if (wikiMatch) {
+		const segment = parseWikiLinkSegment(wikiMatch[0]);
+		if (!segment) return null;
+		return {
+			segment,
+			endIndex: startIndex + wikiMatch[0].length,
+		};
+	}
+
+	const markdownMatch = remaining.match(/^\[([^\]]*)\]\(([^)]+)\)/);
+	if (markdownMatch) {
+		const segment = parseMarkdownLinkSegment(markdownMatch[0]);
+		if (!segment) return null;
+		return {
+			segment,
+			endIndex: startIndex + markdownMatch[0].length,
+		};
+	}
+
+	return null;
+}
+
+function parseDelimitedLinkTitle(title: string): GroupTitlePart[] | null {
+	const parts: GroupTitlePart[] = [];
+	let index = 0;
+	let linkCount = 0;
+
+	while (index < title.length) {
+		const leadingWhitespace = title.slice(index).match(/^\s*/)?.[0] ?? "";
+		index += leadingWhitespace.length;
+
+		const parsed = parseLinkAt(title, index);
+		if (!parsed) return null;
+
+		parts.push(parsed.segment);
+		linkCount += 1;
+		index = parsed.endIndex;
+
+		const trailingWhitespace = title.slice(index).match(/^\s*/)?.[0] ?? "";
+		index += trailingWhitespace.length;
+
+		if (index >= title.length) break;
+
+		const delimiter = title.slice(index).match(/^,\s*/)?.[0];
+		if (!delimiter) return null;
+
+		parts.push(delimiter);
+		index += delimiter.length;
+	}
+
+	return linkCount > 1 ? parts : null;
+}
+
+function renderLinkSegment(
+	container: HTMLElement,
+	segment: LinkTitleSegment,
+	linkServices: LinkServices
+): void {
+	const resolvedText = resolveDisplayText(segment.filePath, segment.displayText, linkServices);
+	appendInternalLink(container, segment.filePath, resolvedText, linkServices, {
+		cssClass: "internal-link task-group-link",
+		hoverSource: "tasknotes-bases-group",
+		showErrorNotices: false,
+	});
+}
+
 /**
  * Render a group title, converting wiki-links and file paths to clickable links with hover preview.
  * Handles:
  * - [[link]] and [[link|alias]] wiki-link formats
+ * - Comma-delimited lists of wiki-links and Markdown links
  * - File paths (with or without .md extension)
  * - Regular text
  */
@@ -46,42 +157,21 @@ export function renderGroupTitle(
 	linkServices: LinkServices
 ): void {
 	// Check if the title looks like a wiki-link
-	const wikiLinkMatch = title.match(/^\[\[([^\]]+)\]\]$/);
-	const markdownLinkMatch = title.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
-
-	if (wikiLinkMatch) {
-		// Parse wiki-link format: [[path|alias]] or [[path]]
-		const linkContent = wikiLinkMatch[1];
-		let filePath = linkContent;
-		let displayText = linkContent;
-		if (linkContent.includes("|")) {
-			const parts = linkContent.split("|");
-			filePath = parts[0].trim();
-			displayText = parts[1].trim();
-		} else {
-			const parsedLink = parseLinktext(linkContent);
-			filePath = parsedLink.path;
-			displayText = parsedLink.path;
-		}
-		const resolvedText = resolveDisplayText(filePath, displayText, linkServices);
-
-		appendInternalLink(container, filePath, resolvedText, linkServices, {
-			cssClass: "internal-link task-group-link",
-			hoverSource: "tasknotes-bases-group",
-			showErrorNotices: false,
-		});
+	const singleLinkSegment = parseLinkSegment(title);
+	if (singleLinkSegment) {
+		renderLinkSegment(container, singleLinkSegment, linkServices);
 		return;
 	}
 
-	if (markdownLinkMatch) {
-		const displayText = markdownLinkMatch[1].trim();
-		const filePath = markdownLinkMatch[2].trim();
-		const resolvedText = resolveDisplayText(filePath, displayText, linkServices);
-		appendInternalLink(container, filePath, resolvedText, linkServices, {
-			cssClass: "internal-link task-group-link",
-			hoverSource: "tasknotes-bases-group",
-			showErrorNotices: false,
-		});
+	const delimitedLinkTitle = parseDelimitedLinkTitle(title);
+	if (delimitedLinkTitle) {
+		for (const part of delimitedLinkTitle) {
+			if (typeof part === "string") {
+				container.appendChild(activeDocument.createTextNode(part));
+			} else {
+				renderLinkSegment(container, part, linkServices);
+			}
+		}
 		return;
 	}
 
