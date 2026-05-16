@@ -104,6 +104,28 @@ function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "s
 	return "inherit";
 }
 
+type TouchDetectionNavigator = Pick<Navigator, "maxTouchPoints">;
+type TouchDetectionWindow = Pick<Window, "matchMedia">;
+
+export function shouldEnableKanbanTouchDrag(
+	isMobile: boolean,
+	navigatorLike: TouchDetectionNavigator | null | undefined = navigator,
+	windowLike: TouchDetectionWindow | null | undefined = window
+): boolean {
+	if (isMobile) {
+		return true;
+	}
+
+	if (typeof navigatorLike?.maxTouchPoints === "number" && navigatorLike.maxTouchPoints > 0) {
+		return true;
+	}
+
+	return Boolean(
+		windowLike?.matchMedia?.("(any-pointer: coarse)")?.matches ||
+			windowLike?.matchMedia?.("(pointer: coarse)")?.matches
+	);
+}
+
 function normalizeOrderValues(values: unknown[]): string[] {
 	const seen = new Set<string>();
 	const normalized: string[] = [];
@@ -1610,7 +1632,7 @@ export class KanbanView extends BasesViewBase {
 		isSwimlaneHeader: boolean,
 		draggingClass: string
 	): void {
-		if (!Platform.isMobile) return;
+		if (!shouldEnableKanbanTouchDrag(Platform.isMobile)) return;
 
 		header.addEventListener("contextmenu", (e: MouseEvent) => {
 			if (this.longPressTimer || this.touchDragActive) {
@@ -2838,7 +2860,7 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private setupCardTouchHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
-		if (!Platform.isMobile) return;
+		if (!shouldEnableKanbanTouchDrag(Platform.isMobile)) return;
 
 		cardWrapper.addEventListener(
 			"touchstart",

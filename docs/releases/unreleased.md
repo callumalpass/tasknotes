@@ -51,6 +51,7 @@ Example:
 
 - ([#1750](https://github.com/callumalpass/tasknotes/issues/1750)) Fixed generated default Bases filters for property-based task identification when the identifying property name contains spaces. Thanks to @Igorgro for reporting this.
 - ([#1745](https://github.com/callumalpass/tasknotes/issues/1745)) Clarified the inline task documentation so `Create new inline task` is distinguished from current-line conversion. Thanks to @yvos for reporting the mismatch.
+- ([#1739](https://github.com/callumalpass/tasknotes/issues/1739)) Enabled Kanban touch dragging on touch-capable desktop and convertible devices, not only mobile Obsidian. Thanks to @mgsima for reporting the tablet-mode failure.
 - ([#1759](https://github.com/callumalpass/tasknotes/issues/1759)) Advanced stale due dates when recurring tasks move to their next scheduled occurrence, so work-window tasks do not remain overdue after completion. Thanks to @MattPryze for reporting this.
 - ([#1766](https://github.com/callumalpass/tasknotes/issues/1766)) Fixed Calendar Bases date navigation from custom note properties, so embedded calendar views can open on the date stored in the selected property instead of falling back to today. Thanks to @chrabia for reporting this.
 - ([#1767](https://github.com/callumalpass/tasknotes/issues/1767)) Aligned the start and end time rows in the timeblock creation modal. Thanks to @loiveli for reporting this.
