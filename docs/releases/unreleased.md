@@ -69,6 +69,7 @@ Example:
 ## Changed
 
 - Added guidance in Pomodoro statistics and Base file settings explaining that Pomodoro Base views require daily notes storage.
+- ([#1189](https://github.com/callumalpass/tasknotes/issues/1189)) Made the Create/Edit Task modal priority picker follow the priority order configured in Settings. Thanks to @n1njaznutz for suggesting this.
 - ([#1244](https://github.com/callumalpass/tasknotes/issues/1244)) Clarified the Task Properties documentation for custom property keys and status values in Bases filters and sorting. Thanks to @Arachnidai for suggesting this.
 - ([#1234](https://github.com/callumalpass/tasknotes/issues/1234)) Kept right-aligned subtask chevrons visible on task cards instead of only showing them on hover. Thanks to @n1njaznutz for suggesting this.
 - ([#1237](https://github.com/callumalpass/tasknotes/issues/1237)) Made today's date more visible in the Mini Calendar view when another day is selected. Thanks to @riekusr for suggesting this.

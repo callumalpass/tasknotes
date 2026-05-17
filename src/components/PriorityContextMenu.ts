@@ -21,10 +21,8 @@ export class PriorityContextMenu {
 	}
 
 	private buildMenu(): void {
-		const priorities = this.options.plugin.settings.customPriorities;
-
-		// Sort by weight (higher weight = more important)
-		this.sortedPriorities = [...priorities].sort((a, b) => b.weight - a.weight);
+		// Match the order shown in Priority settings.
+		this.sortedPriorities = this.options.plugin.priorityManager.getPrioritiesByWeightAsc();
 
 		this.sortedPriorities.forEach((priority) => {
 			this.menu.addItem((item) => {
