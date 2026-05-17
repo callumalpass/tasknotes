@@ -218,9 +218,17 @@ export function createTaskNotesCommandDefinitions(
 						allTasks,
 						ctx.i18n.translate.bind(ctx.i18n),
 						{
+							useDurationForExport:
+								ctx.settings.icsIntegration.useDurationForExport ?? false,
+							excludeArchived:
+								ctx.settings.icsIntegration.excludeArchivedFromExport ?? false,
 							excludeCompleted:
 								ctx.settings.icsIntegration.excludeCompletedFromExport ?? false,
 							completedStatuses: ctx.statusManager.getCompletedStatuses(),
+							requireDueDate:
+								ctx.settings.icsIntegration.requireDueDateForExport ?? false,
+							requireScheduledDate:
+								ctx.settings.icsIntegration.requireScheduledDateForExport ?? false,
 						}
 					);
 				} catch (error) {

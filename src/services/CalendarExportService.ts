@@ -11,8 +11,11 @@ export interface CalendarURLOptions {
 
 export interface ICSExportOptions {
 	useDurationForExport?: boolean; // Use timeEstimate (duration) instead of due date for DTEND
+	excludeArchived?: boolean; // Exclude archived tasks from multi-task exports
 	excludeCompleted?: boolean; // Exclude completed tasks from multi-task exports
 	completedStatuses?: string[]; // Status values considered completed when excludeCompleted is enabled
+	requireDueDate?: boolean; // Only include tasks with a due date in multi-task exports
+	requireScheduledDate?: boolean; // Only include tasks with a scheduled date in multi-task exports
 }
 
 type TranslateFn = (key: TranslationKey, variables?: Record<string, unknown>) => string;
@@ -655,12 +658,31 @@ export class CalendarExportService {
 	}
 
 	private static filterTasksForExport(tasks: TaskInfo[], options?: ICSExportOptions): TaskInfo[] {
-		if (!options?.excludeCompleted) {
+		if (
+			!options?.excludeArchived &&
+			!options?.excludeCompleted &&
+			!options?.requireDueDate &&
+			!options?.requireScheduledDate
+		) {
 			return tasks;
 		}
 
 		const completedStatuses = new Set(options.completedStatuses?.length ? options.completedStatuses : ["done"]);
-		return tasks.filter((task) => !completedStatuses.has(task.status));
+		return tasks.filter((task) => {
+			if (options.excludeArchived && task.archived) {
+				return false;
+			}
+			if (options.excludeCompleted && completedStatuses.has(task.status)) {
+				return false;
+			}
+			if (options.requireDueDate && !task.due) {
+				return false;
+			}
+			if (options.requireScheduledDate && !task.scheduled) {
+				return false;
+			}
+			return true;
+		});
 	}
 
 	private static getVEventStatus(status: string): VEventStatus {
@@ -692,7 +714,17 @@ export class CalendarExportService {
 				return;
 			}
 
-			const icsContent = this.generateMultipleTasksICSContent(tasks, options);
+			const exportTasks = this.filterTasksForExport(tasks, options);
+			if (exportTasks.length === 0) {
+				new Notice(
+					translate
+						? translate("services.calendarExport.notices.noTasksToExport")
+						: "No tasks found to export"
+				);
+				return;
+			}
+
+			const icsContent = this.generateMultipleTasksICSContent(exportTasks, options);
 			const blob = new Blob([icsContent], { type: "text/calendar" });
 			const url = URL.createObjectURL(blob);
 
@@ -706,15 +738,15 @@ export class CalendarExportService {
 
 			URL.revokeObjectURL(url);
 
-			const pluralSuffix = tasks.length === 1 ? "" : "s";
+			const pluralSuffix = exportTasks.length === 1 ? "" : "s";
 			new Notice(
 				translate
 					? translate("services.calendarExport.notices.downloadSuccess", {
 							filename,
-							count: tasks.length,
+							count: exportTasks.length,
 							plural: pluralSuffix,
 						})
-					: `Downloaded ${filename} with ${tasks.length} task${pluralSuffix}`
+					: `Downloaded ${filename} with ${exportTasks.length} task${pluralSuffix}`
 			);
 		} catch (error) {
 			console.error("Failed to download all tasks ICS file:", error);

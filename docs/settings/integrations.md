@@ -81,6 +81,8 @@ ICS settings define how subscribed calendar events are represented in your vault
 
 Automatic export keeps an ICS feed of your tasks updated on a schedule. Configure whether it is enabled, where the file is written (vault-relative path), the refresh interval, and use **Export now** for immediate output.
 
+Export filters can omit archived tasks, completed tasks, tasks without due dates, or tasks without scheduled dates. When both due-date and scheduled-date requirements are enabled, exported tasks must have both dates.
+
 ## HTTP API
 
 HTTP API settings control the local server lifecycle, listening port, and request authentication token.

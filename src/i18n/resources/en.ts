@@ -1864,6 +1864,19 @@ export const en: TranslationTree = {
 					description:
 						"When enabled, completed tasks are omitted from ICS exports. Completed statuses are taken from your task statuses settings.",
 				},
+				excludeArchived: {
+					name: "Exclude archived tasks",
+					description: "When enabled, archived tasks are omitted from ICS exports.",
+				},
+				requireDueDate: {
+					name: "Require due date",
+					description: "When enabled, only tasks with a due date are included in ICS exports.",
+				},
+				requireScheduledDate: {
+					name: "Require scheduled date",
+					description:
+						"When enabled, only tasks with a scheduled date are included in ICS exports.",
+				},
 				exportNow: {
 					name: "Export now",
 					description: "Manually trigger an immediate export",

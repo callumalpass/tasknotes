@@ -1,298 +1,207 @@
-import { CalendarExportService, ICSExportOptions } from '../../../src/services/CalendarExportService';
-import { TaskInfo } from '../../../src/types';
+import { CalendarExportService } from "../../../src/services/CalendarExportService";
+import type { TaskInfo } from "../../../src/types";
 
-// Mock Obsidian's dependencies
-jest.mock('obsidian', () => ({
-    Notice: jest.fn()
+jest.mock("obsidian", () => ({
+	Notice: jest.fn(),
 }));
 
-describe('Issue #773 - Add options to filter tasks for ICS export', () => {
-    /**
-     * This test documents the feature request from Issue #773.
-     *
-     * Current behavior:
-     *   - All tasks are exported to ICS, including:
-     *     - Archived tasks
-     *     - Completed tasks
-     *     - Tasks without due dates
-     *
-     * Requested behavior:
-     *   - Add filter options to ICSExportOptions:
-     *     - excludeArchived: Exclude archived tasks from export
-     *     - excludeCompleted: Exclude completed tasks from export
-     *     - requireDueDate: Only include tasks that have due dates
-     *
-     * The user notes that tasks without due dates create noise on calendars,
-     * and suggests that displaying tasks without due dates should be opt-in.
-     */
+function makeTask(overrides: Partial<TaskInfo>): TaskInfo {
+	return {
+		title: "Task",
+		path: "Tasks/task.md",
+		status: "todo",
+		priority: "normal",
+		archived: false,
+		tags: [],
+		projects: [],
+		contexts: [],
+		...overrides,
+	};
+}
 
-    // Sample tasks for testing
-    const createTestTasks = (): TaskInfo[] => [
-        {
-            title: 'Active task with due date',
-            path: 'tasks/active-due.md',
-            scheduled: '2025-01-14T10:00:00',
-            due: '2025-01-20T17:00:00',
-            status: 'todo',
-            archived: false,
-            tags: [],
-            projects: [],
-            contexts: []
-        },
-        {
-            title: 'Completed task',
-            path: 'tasks/completed.md',
-            scheduled: '2025-01-10T10:00:00',
-            due: '2025-01-12T17:00:00',
-            status: 'done',
-            archived: false,
-            tags: [],
-            projects: [],
-            contexts: []
-        },
-        {
-            title: 'Archived task',
-            path: 'tasks/archived.md',
-            scheduled: '2024-12-01T10:00:00',
-            due: '2024-12-15T17:00:00',
-            status: 'done',
-            archived: true,
-            tags: [],
-            projects: [],
-            contexts: []
-        },
-        {
-            title: 'Task without due date',
-            path: 'tasks/no-due.md',
-            scheduled: '2025-01-14T14:00:00',
-            // No due date
-            status: 'todo',
-            archived: false,
-            tags: [],
-            projects: [],
-            contexts: []
-        },
-        {
-            title: 'Task with no dates at all',
-            path: 'tasks/no-dates.md',
-            // No scheduled, no due
-            status: 'todo',
-            archived: false,
-            tags: [],
-            projects: [],
-            contexts: []
-        }
-    ];
+function makeTasks(): TaskInfo[] {
+	return [
+		makeTask({
+			title: "Active task with due date",
+			path: "Tasks/active-due.md",
+			scheduled: "2026-05-18T10:00:00",
+			due: "2026-05-18T11:00:00",
+		}),
+		makeTask({
+			title: "Completed task",
+			path: "Tasks/completed.md",
+			status: "done",
+			scheduled: "2026-05-18T12:00:00",
+			due: "2026-05-18T13:00:00",
+		}),
+		makeTask({
+			title: "Archived task",
+			path: "Tasks/archived.md",
+			archived: true,
+			scheduled: "2026-05-18T14:00:00",
+			due: "2026-05-18T15:00:00",
+		}),
+		makeTask({
+			title: "Scheduled only task",
+			path: "Tasks/scheduled-only.md",
+			scheduled: "2026-05-18T16:00:00",
+		}),
+		makeTask({
+			title: "Due only task",
+			path: "Tasks/due-only.md",
+			due: "2026-05-18T17:00:00",
+		}),
+		makeTask({
+			title: "Task with no dates",
+			path: "Tasks/no-dates.md",
+		}),
+	];
+}
 
-    describe('Feature: Exclude archived tasks', () => {
-        it.skip('reproduces issue #773 - should support excludeArchived option to filter out archived tasks', () => {
-            const tasks = createTestTasks();
+function expectTaskTitles(icsContent: string, included: string[], excluded: string[] = []): void {
+	for (const title of included) {
+		expect(icsContent).toContain(`SUMMARY:${title}`);
+	}
+	for (const title of excluded) {
+		expect(icsContent).not.toContain(`SUMMARY:${title}`);
+	}
+}
 
-            // When excludeArchived is true, archived tasks should not appear in the ICS output
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks, {
-                excludeArchived: true
-            } as ICSExportOptions);
+describe("Issue #773: ICS export filter options", () => {
+	it("exports archived, completed, and undated tasks by default", () => {
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent(makeTasks());
 
-            // Should NOT contain the archived task
-            expect(icsContent).not.toContain('Archived task');
+		expect(icsContent.split("BEGIN:VEVENT").length - 1).toBe(6);
+		expectTaskTitles(icsContent, [
+			"Active task with due date",
+			"Completed task",
+			"Archived task",
+			"Scheduled only task",
+			"Due only task",
+			"Task with no dates",
+		]);
+	});
 
-            // Should contain other tasks
-            expect(icsContent).toContain('Active task with due date');
-            expect(icsContent).toContain('Completed task');
-            expect(icsContent).toContain('Task without due date');
-        });
+	it("omits archived tasks when excludeArchived is enabled", () => {
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent(makeTasks(), {
+			excludeArchived: true,
+		});
 
-        it.skip('reproduces issue #773 - should include archived tasks by default (backwards compatible)', () => {
-            const tasks = createTestTasks();
+		expectTaskTitles(
+			icsContent,
+			["Active task with due date", "Completed task", "Scheduled only task"],
+			["Archived task"]
+		);
+		expect(icsContent.split("BEGIN:VEVENT").length - 1).toBe(5);
+	});
 
-            // Without the option, all tasks including archived should be exported
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks);
+	it("omits completed tasks when excludeCompleted is enabled", () => {
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent(makeTasks(), {
+			excludeCompleted: true,
+			completedStatuses: ["done"],
+		});
 
-            // Should contain ALL tasks including archived
-            expect(icsContent).toContain('Archived task');
-            expect(icsContent).toContain('Active task with due date');
-        });
-    });
+		expectTaskTitles(
+			icsContent,
+			["Active task with due date", "Archived task", "Scheduled only task"],
+			["Completed task"]
+		);
+		expect(icsContent.split("BEGIN:VEVENT").length - 1).toBe(5);
+	});
 
-    describe('Feature: Exclude completed tasks', () => {
-        it.skip('reproduces issue #773 - should support excludeCompleted option to filter out completed tasks', () => {
-            const tasks = createTestTasks();
+	it("only includes tasks with due dates when requireDueDate is enabled", () => {
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent(makeTasks(), {
+			requireDueDate: true,
+		});
 
-            // When excludeCompleted is true, completed tasks should not appear
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks, {
-                excludeCompleted: true
-            } as ICSExportOptions);
+		expectTaskTitles(
+			icsContent,
+			["Active task with due date", "Completed task", "Archived task", "Due only task"],
+			["Scheduled only task", "Task with no dates"]
+		);
+		expect(icsContent.split("BEGIN:VEVENT").length - 1).toBe(4);
+	});
 
-            // Should NOT contain completed tasks
-            expect(icsContent).not.toContain('Completed task');
-            expect(icsContent).not.toContain('Archived task'); // Also completed
+	it("only includes tasks with scheduled dates when requireScheduledDate is enabled", () => {
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent(makeTasks(), {
+			requireScheduledDate: true,
+		});
 
-            // Should contain non-completed tasks
-            expect(icsContent).toContain('Active task with due date');
-            expect(icsContent).toContain('Task without due date');
-        });
+		expectTaskTitles(
+			icsContent,
+			["Active task with due date", "Completed task", "Archived task", "Scheduled only task"],
+			["Due only task", "Task with no dates"]
+		);
+		expect(icsContent.split("BEGIN:VEVENT").length - 1).toBe(4);
+	});
 
-        it.skip('reproduces issue #773 - should include completed tasks by default (backwards compatible)', () => {
-            const tasks = createTestTasks();
+	it("supports scheduled-only exports without requiring due dates", () => {
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent(makeTasks(), {
+			requireDueDate: false,
+			requireScheduledDate: true,
+		});
 
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks);
+		expectTaskTitles(icsContent, ["Scheduled only task"], ["Due only task", "Task with no dates"]);
+	});
 
-            // Should contain completed tasks
-            expect(icsContent).toContain('Completed task');
-        });
-    });
+	it("combines filters so all enabled requirements must pass", () => {
+		const icsContent = CalendarExportService.generateMultipleTasksICSContent(makeTasks(), {
+			excludeArchived: true,
+			excludeCompleted: true,
+			completedStatuses: ["done"],
+			requireDueDate: true,
+			requireScheduledDate: true,
+		});
 
-    describe('Feature: Require due date', () => {
-        it.skip('reproduces issue #773 - should support requireDueDate option to filter out tasks without due dates', () => {
-            const tasks = createTestTasks();
+		expectTaskTitles(
+			icsContent,
+			["Active task with due date"],
+			[
+				"Completed task",
+				"Archived task",
+				"Scheduled only task",
+				"Due only task",
+				"Task with no dates",
+			]
+		);
+		expect(icsContent.split("BEGIN:VEVENT").length - 1).toBe(1);
+	});
 
-            // When requireDueDate is true, only tasks with due dates should appear
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks, {
-                requireDueDate: true
-            } as ICSExportOptions);
+	it("uses filter results for download notices", () => {
+		const createElement = jest.fn(() => ({
+			href: "",
+			download: "",
+			click: jest.fn(),
+		}));
+		const originalCreateObjectURL = URL.createObjectURL;
+		const originalRevokeObjectURL = URL.revokeObjectURL;
+		URL.createObjectURL = jest.fn(() => "blob:tasknotes");
+		URL.revokeObjectURL = jest.fn();
+		const translate = jest.fn((key: string, vars?: Record<string, unknown>) => {
+			if (key === "services.calendarExport.notices.downloadSuccess") {
+				return `Downloaded ${vars?.filename} with ${vars?.count} task${vars?.plural}`;
+			}
+			return key;
+		});
+		const { Notice } = jest.requireMock("obsidian") as { Notice: jest.Mock };
+		Notice.mockClear();
+		Object.defineProperty(global, "activeDocument", {
+			value: { createElement },
+			configurable: true,
+		});
 
-            // Should NOT contain tasks without due dates
-            expect(icsContent).not.toContain('Task without due date');
-            expect(icsContent).not.toContain('Task with no dates at all');
+		CalendarExportService.downloadAllTasksICSFile(makeTasks(), translate, {
+			excludeArchived: true,
+			excludeCompleted: true,
+			completedStatuses: ["done"],
+			requireDueDate: true,
+			requireScheduledDate: true,
+		});
 
-            // Should contain tasks WITH due dates
-            expect(icsContent).toContain('Active task with due date');
-            expect(icsContent).toContain('Completed task');
-            expect(icsContent).toContain('Archived task');
-        });
+		expect(Notice).toHaveBeenCalledWith(expect.stringContaining("with 1 task"));
+		expect(createElement).toHaveBeenCalledWith("a");
 
-        it.skip('reproduces issue #773 - should include tasks without due dates by default (backwards compatible)', () => {
-            const tasks = createTestTasks();
-
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks);
-
-            // Should contain tasks without due dates
-            expect(icsContent).toContain('Task without due date');
-            expect(icsContent).toContain('Task with no dates at all');
-        });
-    });
-
-    describe('Feature: Combined filters', () => {
-        it.skip('reproduces issue #773 - should support combining multiple filter options', () => {
-            const tasks = createTestTasks();
-
-            // Apply all filters: exclude archived, exclude completed, require due date
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks, {
-                excludeArchived: true,
-                excludeCompleted: true,
-                requireDueDate: true
-            } as ICSExportOptions);
-
-            // Only active, non-archived tasks with due dates should appear
-            expect(icsContent).toContain('Active task with due date');
-
-            // Everything else should be filtered out
-            expect(icsContent).not.toContain('Completed task');
-            expect(icsContent).not.toContain('Archived task');
-            expect(icsContent).not.toContain('Task without due date');
-            expect(icsContent).not.toContain('Task with no dates at all');
-        });
-
-        it.skip('reproduces issue #773 - should work with existing useDurationForExport option', () => {
-            const tasks = createTestTasks();
-
-            // Combine new filter options with existing duration option
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks, {
-                useDurationForExport: true,
-                excludeCompleted: true,
-                requireDueDate: true
-            } as ICSExportOptions);
-
-            // Should apply both filters and use duration for remaining tasks
-            expect(icsContent).toContain('Active task with due date');
-            expect(icsContent).not.toContain('Completed task');
-            expect(icsContent).not.toContain('Task without due date');
-        });
-    });
-
-    describe('Current behavior (before fix)', () => {
-        it('currently exports ALL tasks including archived, completed, and those without due dates', () => {
-            const tasks = createTestTasks();
-
-            // Current behavior: no filtering options available
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(tasks);
-
-            // Count VEVENTs
-            const vevents = icsContent.split('BEGIN:VEVENT').length - 1;
-
-            // All 5 tasks should be exported (current behavior)
-            expect(vevents).toBe(5);
-
-            // All tasks appear in output
-            expect(icsContent).toContain('Active task with due date');
-            expect(icsContent).toContain('Completed task');
-            expect(icsContent).toContain('Archived task');
-            expect(icsContent).toContain('Task without due date');
-            expect(icsContent).toContain('Task with no dates at all');
-        });
-
-        it('ICSExportOptions interface currently only has useDurationForExport option', () => {
-            // This test documents that the interface needs to be extended
-            const options: ICSExportOptions = {
-                useDurationForExport: true
-            };
-
-            // The following would need to be added to ICSExportOptions:
-            // - excludeArchived?: boolean;
-            // - excludeCompleted?: boolean;
-            // - requireDueDate?: boolean;
-
-            expect(options.useDurationForExport).toBe(true);
-        });
-
-        it('tasks without due dates create calendar events using fallback dates', () => {
-            // This demonstrates the "noise" mentioned in the issue
-            const taskNoDue: TaskInfo = {
-                title: 'Task without due date causes noise',
-                path: 'tasks/noise.md',
-                // No scheduled, no due
-                status: 'todo',
-                tags: [],
-                projects: [],
-                contexts: []
-            };
-
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent([taskNoDue]);
-
-            // Task still appears with fallback date (current date)
-            expect(icsContent).toContain('BEGIN:VEVENT');
-            expect(icsContent).toContain('Task without due date causes noise');
-            expect(icsContent).toContain('DTSTART:'); // Uses fallback date
-        });
-    });
-
-    describe('Implementation guidance', () => {
-        it.skip('reproduces issue #773 - ICSExportOptions should be extended with filter properties', () => {
-            /**
-             * The ICSExportOptions interface should be extended to include:
-             *
-             * export interface ICSExportOptions {
-             *     useDurationForExport?: boolean;
-             *     excludeArchived?: boolean;     // New: exclude archived tasks
-             *     excludeCompleted?: boolean;    // New: exclude completed tasks
-             *     requireDueDate?: boolean;      // New: only include tasks with due dates
-             * }
-             *
-             * The generateMultipleTasksICSContent method should filter tasks
-             * based on these options before generating VEVENT entries.
-             */
-
-            // Test that extended options are accepted
-            const options: ICSExportOptions = {
-                useDurationForExport: false,
-                excludeArchived: true,
-                excludeCompleted: true,
-                requireDueDate: true
-            } as ICSExportOptions;
-
-            expect(options.excludeArchived).toBe(true);
-            expect(options.excludeCompleted).toBe(true);
-            expect(options.requireDueDate).toBe(true);
-        });
-    });
+		URL.createObjectURL = originalCreateObjectURL;
+		URL.revokeObjectURL = originalRevokeObjectURL;
+	});
 });

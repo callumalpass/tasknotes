@@ -306,7 +306,10 @@ export interface ICSIntegrationSettings {
 	autoExportPath: string; // Path where the ICS file should be saved
 	autoExportInterval: number; // Export interval in minutes (default: 60)
 	useDurationForExport: boolean; // Whether to use timeEstimate (duration) instead of due date for DTEND
+	excludeArchivedFromExport: boolean; // Whether to exclude archived tasks from ICS exports
 	excludeCompletedFromExport: boolean; // Whether to exclude completed tasks from ICS exports
+	requireDueDateForExport: boolean; // Whether to export only tasks with due dates
+	requireScheduledDateForExport: boolean; // Whether to export only tasks with scheduled dates
 	// Task creation from ICS events
 	useICSEndAsDue: boolean; // Whether to use ICS event end time as task due date
 }

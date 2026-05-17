@@ -1447,6 +1447,51 @@ export function renderIntegrationsTab(
 					})
 				);
 
+				group.addSetting((setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.integrations.autoExport.excludeArchived.name"),
+						desc: translate(
+							"settings.integrations.autoExport.excludeArchived.description"
+						),
+						getValue: () =>
+							plugin.settings.icsIntegration.excludeArchivedFromExport ?? false,
+						setValue: async (value: boolean) => {
+							plugin.settings.icsIntegration.excludeArchivedFromExport = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.integrations.autoExport.requireDueDate.name"),
+						desc: translate(
+							"settings.integrations.autoExport.requireDueDate.description"
+						),
+						getValue: () =>
+							plugin.settings.icsIntegration.requireDueDateForExport ?? false,
+						setValue: async (value: boolean) => {
+							plugin.settings.icsIntegration.requireDueDateForExport = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.integrations.autoExport.requireScheduledDate.name"),
+						desc: translate(
+							"settings.integrations.autoExport.requireScheduledDate.description"
+						),
+						getValue: () =>
+							plugin.settings.icsIntegration.requireScheduledDateForExport ?? false,
+						setValue: async (value: boolean) => {
+							plugin.settings.icsIntegration.requireScheduledDateForExport = value;
+							save();
+						},
+					})
+				);
+
 				// Manual export trigger button
 				group.addSetting((setting) =>
 					void configureButtonSetting(setting, {

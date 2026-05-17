@@ -283,6 +283,7 @@ Example:
 - ([#1886](https://github.com/callumalpass/tasknotes/issues/1886)) Added a command to postpone active overdue scheduled tasks to today. Thanks to @chrabia for the suggestion.
 - (#1889) Fixed Kanban swimlanes for list-valued properties so tags and contexts use individual list items instead of comma-joined values. Thanks to @pkropotin for reporting.
 - (#1890) Fixed scheduled-date Kanban columns dropping tasks when date-only and timed tasks on the same day are sorted by a scheduled-time formula. Thanks to @chrabia for reporting and investigating.
+- ([#773](https://github.com/callumalpass/tasknotes/issues/773)) Added ICS export filters for archived tasks, completed tasks, due dates, and scheduled dates. Thanks to @ras0q for suggesting this and @slipstyle for the scheduled-date follow-up.
 - (#1892) Fixed nested Markdown list indentation in the Task Edit Modal details editor. Thanks to @Glint-Eye for reporting.
 - (#1891) Fixed TaskNotes modal markdown editors collapsing to one-character-wide lines when Pretty Properties is installed. Thanks to @bkennedy-improving for reporting.
 - ([#1499](https://github.com/callumalpass/tasknotes/issues/1499)) Respected excluded folders when opening tasks directly from view results and when building dependency/project indexes, so template-folder tasks no longer appear through TaskNotes views. Thanks to @Liya430 for reporting.
