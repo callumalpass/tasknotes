@@ -1,7 +1,7 @@
 /**
  * Issue #856: [Bug]: Filters don't read custom properties with numbers format
  *
- * @see https://github.com/TaskNotesPlugin/tasknotes/issues/856
+ * @see https://github.com/callumalpass/tasknotes/issues/856
  *
  * Bug Description:
  * In Kanban view, filtering for a custom property doesn't work if the property
@@ -29,7 +29,7 @@
 import { FilterUtils } from '../../../src/utils/FilterUtils';
 import type { FilterOperator, FilterProperty } from '../../../src/types';
 
-describe.skip('Issue #856: Custom property number filter bug', () => {
+describe('Issue #856: Custom property number filter bug', () => {
 	describe('FilterUtils.applyOperator - number type handling', () => {
 		it('should match when task value is number 1 and condition value is string "1"', () => {
 			// This is the core bug: task has numeric value, filter has string value
@@ -235,8 +235,7 @@ describe.skip('Issue #856: Custom property number filter bug', () => {
 			expect(result).toBe(true);
 		});
 
-		it('should not match number with different string representation', () => {
-			// 1 should not match "01" or "1.0" without normalization
+		it('should normalize equivalent numeric string representations', () => {
 			const taskValue = 1;
 			const conditionValue = '01'; // Leading zero
 
@@ -248,11 +247,7 @@ describe.skip('Issue #856: Custom property number filter bug', () => {
 				'user:custom-number-field' as FilterProperty
 			);
 
-			// This could be true or false depending on implementation
-			// If we parse both as numbers: 1 === 1, so true
-			// If we compare string representations: "1" !== "01", so false
-			// The fix should handle this consistently
-			expect(result).toBe(true); // Assuming numeric parsing is used
+			expect(result).toBe(true);
 		});
 
 		it('should handle NaN gracefully', () => {

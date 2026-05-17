@@ -456,23 +456,62 @@ export class FilterUtils {
 			return this.isEqualDate(taskValue, conditionValue);
 		}
 
+		const valuesEqual = (left: TaskPropertyValue, right: TaskPropertyValue): boolean => {
+			if (this.hasNumericComparison(left, right)) {
+				return this.toFiniteNumber(left) === this.toFiniteNumber(right);
+			}
+			return left === right;
+		};
+
 		if (Array.isArray(taskValue)) {
 			if (Array.isArray(conditionValue)) {
 				// Both arrays: check if any task value matches any condition value
-				return taskValue.some((tv) => conditionValue.includes(tv));
+				return taskValue.some((tv) => conditionValue.some((cv) => valuesEqual(tv, cv)));
 			} else {
 				// Task has array, condition is single value
-				return taskValue.includes(conditionValue as string);
+				return taskValue.some((tv) => valuesEqual(tv, conditionValue));
 			}
 		} else {
 			if (Array.isArray(conditionValue)) {
 				// Task has single value, condition is array
-				return conditionValue.includes(taskValue as string);
+				return conditionValue.some((cv) => valuesEqual(taskValue, cv));
 			} else {
 				// Both single values
-				return taskValue === conditionValue;
+				return valuesEqual(taskValue, conditionValue);
 			}
 		}
+	}
+
+	private static hasNumericComparison(
+		left: TaskPropertyValue,
+		right: TaskPropertyValue
+	): boolean {
+		const leftIsNumber = typeof left === "number";
+		const rightIsNumber = typeof right === "number";
+
+		if (!leftIsNumber && !rightIsNumber) {
+			return false;
+		}
+
+		return this.toFiniteNumber(left) !== undefined && this.toFiniteNumber(right) !== undefined;
+	}
+
+	private static toFiniteNumber(value: TaskPropertyValue): number | undefined {
+		if (typeof value === "number") {
+			return Number.isFinite(value) ? value : undefined;
+		}
+
+		if (typeof value !== "string") {
+			return undefined;
+		}
+
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return undefined;
+		}
+
+		const parsed = Number(trimmed);
+		return Number.isFinite(parsed) ? parsed : undefined;
 	}
 
 	/**
