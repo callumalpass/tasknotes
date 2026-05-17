@@ -106,6 +106,7 @@ Example:
 
 ## Fixed
 
+- ([#1039](https://github.com/callumalpass/tasknotes/issues/1039)) Restored clearer TaskNotes Bases grouping for nested project paths, and made the Calendar refresh control an icon button again. Thanks to @dblinnikov for reporting this.
 - ([#1047](https://github.com/callumalpass/tasknotes/issues/1047)) Wrapped long file paths in the Edit Task modal metadata section, so narrow mobile screens no longer get a sideways scrollbar from the File row. Thanks to @3zra47 for reporting this.
 - ([#1051](https://github.com/callumalpass/tasknotes/issues/1051)) Preserved extra values on a property-based task identification field when saving a task, so list properties such as `class: [task, habit]` no longer get collapsed to only the identifying value. Thanks to @WhoIsSeanGalt for reporting this.
 - ([#1059](https://github.com/callumalpass/tasknotes/issues/1059)) Included recurring tasks with uncompleted past instances in the Agenda overdue section, even when their current scheduled date is in the future. Thanks to @jalooc for reporting this and @dictionarymouse for the follow-up.

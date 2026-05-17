@@ -131,6 +131,18 @@ export function suppressCalendarContextMenuOnMobile(element: HTMLElement): void 
 	);
 }
 
+export function decorateRefreshCalendarsButton(container: HTMLElement, label: string): void {
+	const button = container.querySelector<HTMLButtonElement>(".fc-refreshCalendars-button");
+	if (!button) return;
+
+	const normalizedLabel = label.trim() || "Refresh calendar subscriptions";
+	button.replaceChildren();
+	setIcon(button, "refresh-cw");
+	button.classList.add("tasknotes-calendar-refresh-button--icon");
+	button.setAttribute("aria-label", normalizedLabel);
+	button.setAttribute("title", normalizedLabel);
+}
+
 export type CalendarScrollPosition = {
 	scrollTop: number;
 	scrollLeft: number;
@@ -1684,11 +1696,13 @@ export class CalendarView extends BasesViewBase {
 				this.applyLayoutClasses();
 				this.scheduleTodayColumnWidthUpdate();
 				this.scheduleDailyNoteHeaderLinkUpdate();
+				this.scheduleRefreshButtonIconUpdate();
 			},
 			datesSet: () => {
 				this.applyLayoutClasses();
 				this.scheduleTodayColumnWidthUpdate();
 				this.scheduleDailyNoteHeaderLinkUpdate();
+				this.scheduleRefreshButtonIconUpdate();
 			},
 		};
 
@@ -1702,6 +1716,7 @@ export class CalendarView extends BasesViewBase {
 		this.applyTodayHighlightStyling();
 		this.scheduleTodayColumnWidthUpdate();
 		this.scheduleDailyNoteHeaderLinkUpdate();
+		this.scheduleRefreshButtonIconUpdate();
 	}
 
 	private updateBasesSortIndexes(taskNotes: TaskInfo[]): void {
@@ -1726,6 +1741,23 @@ export class CalendarView extends BasesViewBase {
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		win.setTimeout(() => this.attachDailyNoteHeaderLinks(), 0);
 		win.setTimeout(() => this.attachDailyNoteHeaderLinks(), 50);
+	}
+
+	private scheduleRefreshButtonIconUpdate(): void {
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		win.setTimeout(() => this.applyRefreshButtonIcon(), 0);
+		win.setTimeout(() => this.applyRefreshButtonIcon(), 50);
+	}
+
+	private applyRefreshButtonIcon(): void {
+		if (!this.calendarEl) return;
+
+		decorateRefreshCalendarsButton(
+			this.calendarEl,
+			this.plugin.i18n.translate("views.basesCalendar.hints.refresh") ||
+				this.plugin.i18n.translate("views.basesCalendar.buttonText.refresh") ||
+				"Refresh calendar subscriptions"
+		);
 	}
 
 	private attachDailyNoteHeaderLinks(): void {

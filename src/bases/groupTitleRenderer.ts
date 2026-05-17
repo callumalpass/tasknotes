@@ -181,9 +181,9 @@ export function renderGroupTitle(
 	const file = linkServices.metadataCache.getFirstLinkpathDest(filePathToTry, "");
 
 	if (file instanceof TFile) {
-		// Render as clickable link with the file's basename as display text
-		const displayText = resolveDisplayText(filePathToTry, file.basename, linkServices);
-		appendInternalLink(container, filePathToTry, displayText, linkServices, {
+		const displayText = filePathToTry.includes("/") ? filePathToTry : file.basename;
+		const resolvedText = resolveDisplayText(filePathToTry, displayText, linkServices);
+		appendInternalLink(container, filePathToTry, resolvedText, linkServices, {
 			cssClass: "internal-link task-group-link",
 			hoverSource: "tasknotes-bases-group",
 			showErrorNotices: false,

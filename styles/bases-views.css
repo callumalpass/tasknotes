@@ -278,6 +278,18 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     border-radius: var(--tn-radius-sm);
 }
 
+#bases-calendar .fc-refreshCalendars-button.tasknotes-calendar-refresh-button--icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+}
+
+#bases-calendar .fc-refreshCalendars-button.tasknotes-calendar-refresh-button--icon .svg-icon {
+    width: 16px;
+    height: 16px;
+}
+
 /* Style FullCalendar list view structure */
 #bases-calendar .fc-list {
     background: transparent;
