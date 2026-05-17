@@ -186,6 +186,74 @@ function normalizeOrderConfig(value: unknown): Record<string, string[]> {
 	return result;
 }
 
+function normalizeWipLimitValue(value: unknown): number | null {
+	const numericValue =
+		typeof value === "number"
+			? value
+			: typeof value === "string" && value.trim()
+				? Number(value)
+				: Number.NaN;
+
+	if (!Number.isFinite(numericValue) || numericValue <= 0) {
+		return null;
+	}
+
+	return Math.floor(numericValue);
+}
+
+export function normalizeKanbanWipLimitsConfig(value: unknown): Record<string, number> {
+	if (value === null || value === undefined) {
+		return {};
+	}
+
+	let parsed = value;
+	if (typeof value === "string") {
+		const trimmed = value.trim();
+		if (!trimmed) {
+			return {};
+		}
+
+		try {
+			parsed = JSON.parse(trimmed);
+		} catch {
+			return {};
+		}
+	}
+
+	if (!isRecord(parsed)) {
+		return {};
+	}
+
+	const result: Record<string, number> = {};
+	for (const [columnKey, rawLimit] of Object.entries(parsed)) {
+		const normalizedKey = stringifyUnknown(columnKey).trim();
+		const limit = normalizeWipLimitValue(rawLimit);
+		if (normalizedKey && limit !== null) {
+			result[normalizedKey] = limit;
+		}
+	}
+
+	return result;
+}
+
+export function formatKanbanColumnCount(
+	taskCount: number,
+	wipLimit: number | null | undefined
+): { text: string; isExceeded: boolean } {
+	const normalizedLimit = normalizeWipLimitValue(wipLimit);
+	if (normalizedLimit === null) {
+		return {
+			text: ` (${taskCount})`,
+			isExceeded: false,
+		};
+	}
+
+	return {
+		text: ` (${taskCount}/${normalizedLimit})`,
+		isExceeded: taskCount > normalizedLimit,
+	};
+}
+
 export function normalizePinnedColumnConfig(value: unknown): string[] {
 	if (value === null || value === undefined) {
 		return [];
@@ -321,6 +389,7 @@ export class KanbanView extends BasesViewBase {
 	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
 	private pinnedColumns: string[] = [];
+	private wipLimits: Record<string, number> = {};
 	private swimLaneOrders: Record<string, string[]> = {};
 	private hideEmptySwimLanes = false;
 	private configLoaded = false; // Track if we've successfully loaded config
@@ -425,6 +494,7 @@ export class KanbanView extends BasesViewBase {
 			// Read column orders
 			this.columnOrders = normalizeOrderConfig(this.config.get("columnOrder"));
 			this.pinnedColumns = normalizePinnedColumnConfig(this.config.get("pinnedColumns"));
+			this.wipLimits = normalizeKanbanWipLimitsConfig(this.config.get("wipLimits"));
 
 			// Read swimlane orders. Support both the public singular key and the
 			// originally proposed plural key for manually-authored Bases YAML.
@@ -1304,6 +1374,7 @@ export class KanbanView extends BasesViewBase {
 		headerRow.createEl("div", { cls: "kanban-view__swimlane-label" });
 
 		// Column headers
+		const columnTaskCounts = this.getColumnTaskCounts(swimLanes, columnKeys);
 		for (const columnKey of columnKeys) {
 			const headerCell = headerRow.createEl("div", {
 				cls: "kanban-view__column-header-cell",
@@ -1327,6 +1398,7 @@ export class KanbanView extends BasesViewBase {
 
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
 			this.renderGroupTitleWrapper(titleContainer, columnKey, false, true);
+			this.renderColumnCount(headerCell, columnKey, columnTaskCounts.get(columnKey) ?? 0);
 
 			// Setup column header drag handlers for swimlane mode
 			this.setupColumnHeaderDragHandlers(headerCell);
@@ -1456,10 +1528,7 @@ export class KanbanView extends BasesViewBase {
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
 		this.renderGroupTitleWrapper(titleContainer, groupKey, false, true);
 
-		header.createSpan({
-			cls: "kanban-view__column-count",
-			text: ` (${tasks.length})`,
-		});
+		this.renderColumnCount(header, groupKey, tasks.length);
 
 		// Setup column header drag handlers
 		this.setupColumnHeaderDragHandlers(header);
@@ -1488,6 +1557,36 @@ export class KanbanView extends BasesViewBase {
 		this.createAddTaskButton(column, groupByPropertyId, groupKey);
 
 		return column;
+	}
+
+	private getColumnTaskCounts(
+		swimLanes: Map<string, Map<string, TaskInfo[]>>,
+		columnKeys: string[]
+	): Map<string, number> {
+		const counts = new Map(columnKeys.map((columnKey) => [columnKey, 0]));
+
+		for (const columns of swimLanes.values()) {
+			for (const columnKey of columnKeys) {
+				counts.set(
+					columnKey,
+					(counts.get(columnKey) ?? 0) + (columns.get(columnKey)?.length ?? 0)
+				);
+			}
+		}
+
+		return counts;
+	}
+
+	private renderColumnCount(container: HTMLElement, groupKey: string, taskCount: number): void {
+		const count = formatKanbanColumnCount(taskCount, this.wipLimits[groupKey]);
+		const countEl = container.createSpan({
+			cls: "kanban-view__column-count",
+			text: count.text,
+		});
+
+		if (count.isExceeded) {
+			countEl.addClass("kanban-view__column-count--exceeded");
+		}
 	}
 
 	private createAddTaskButton(

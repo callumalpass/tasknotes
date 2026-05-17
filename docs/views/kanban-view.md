@@ -26,6 +26,7 @@ Access these options through the Bases view settings panel:
 - **Column Width**: Controls the width of columns in pixels. Range: 200-500px. Default: 280px
 - **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
 - **Pinned Columns**: Optional comma-separated list of column values that should stay visible even when empty. This is useful with **Hide Empty Columns** when each board needs a small stable subset of shared statuses or categories
+- **WIP Limits**: Advanced JSON configuration for showing per-column work-in-progress limits in column headers
 - **Hide Empty Swimlanes**: When enabled, ordered swimlanes with no tasks are hidden from the view
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
@@ -63,6 +64,15 @@ config:
 ```
 
 Listed swimlane values render first in the configured order. Values not listed in `swimLaneOrder` render below them using the default order for status and priority swimlanes, or alphabetically for other properties. If `hideEmptySwimLanes` is disabled, listed values can remain visible even when no matching tasks are currently present.
+
+To show WIP limits in column headers, set the advanced `wipLimits` option to a JSON object keyed by column value:
+
+```yaml
+config:
+  wipLimits: '{"in-progress":5,"review":2}'
+```
+
+Columns with limits display counts as `(current/limit)`. When the current count is above the configured limit, the count uses the error color. In swimlane boards, the column header count is the total for that column across all swimlanes.
 
 ## Task Cards
 
@@ -139,6 +149,7 @@ views:
       columnWidth: 300
       hideEmptyColumns: true
       pinnedColumns: to-do, in-progress, done
+      wipLimits: '{"in-progress":5}'
 ---
 ```
 
@@ -148,6 +159,7 @@ This configuration creates a Kanban board with:
 - Priority swimlanes pinned in high, normal, low order
 - 300px column width
 - Empty unpinned columns hidden, while the to-do, in-progress, and done columns stay visible as drop targets
+- A WIP limit of 5 tasks on the in-progress column
 
 ## Filtering and Sorting
 

@@ -344,6 +344,11 @@
     flex-shrink: 0;
 }
 
+.tasknotes-plugin .kanban-view__column-count--exceeded {
+    color: var(--tn-color-error);
+    font-weight: var(--tn-font-weight-semibold);
+}
+
 /* ================================================
    KANBAN TASK CARDS
    ================================================ */
