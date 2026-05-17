@@ -17,7 +17,12 @@ import { RELEASE_NOTES_VIEW_TYPE } from "../views/ReleaseNotesView";
 type WorkspaceLeafLike = {
 	isDeferred?: boolean;
 	loadIfDeferred(): Promise<void>;
+	openFile?(file: TFile): Promise<void>;
 	setViewState(state: { type: string; active?: boolean }): Promise<void>;
+	view?: {
+		file?: TFile;
+		getState?(): { file?: string };
+	};
 };
 
 export class WorkspaceNavigationService {
@@ -102,6 +107,26 @@ export class WorkspaceNavigationService {
 		return this.activateView(RELEASE_NOTES_VIEW_TYPE);
 	}
 
+	private getLeafFilePath(leaf: WorkspaceLeafLike): string | null {
+		const filePath = leaf.view?.file?.path || leaf.view?.getState?.().file;
+		return filePath ? normalizePath(filePath) : null;
+	}
+
+	private findLeafForFile(normalizedPath: string): WorkspaceLeafLike | null {
+		const workspace = this.plugin.app.workspace as typeof this.plugin.app.workspace & {
+			iterateAllLeaves?(callback: (leaf: WorkspaceLeafLike) => void): void;
+		};
+		let match: WorkspaceLeafLike | null = null;
+
+		workspace.iterateAllLeaves?.((leaf) => {
+			if (!match && this.getLeafFilePath(leaf) === normalizedPath) {
+				match = leaf;
+			}
+		});
+
+		return match;
+	}
+
 	async openBasesFileForCommand(commandId: string): Promise<void> {
 		const filePath = this.plugin.settings.commandFileMapping[commandId];
 		if (!filePath) {
@@ -128,6 +153,12 @@ export class WorkspaceNavigationService {
 		}
 		if (!(file instanceof TFile)) {
 			new Notice(`Path is not a file: ${normalizedPath}`);
+			return;
+		}
+
+		const existingLeaf = this.findLeafForFile(normalizedPath);
+		if (existingLeaf) {
+			await this.revealLeafReady(existingLeaf);
 			return;
 		}
 
