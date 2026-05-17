@@ -104,6 +104,7 @@ Example:
 
 ## Fixed
 
+- ([#1059](https://github.com/callumalpass/tasknotes/issues/1059)) Included recurring tasks with uncompleted past instances in the Agenda overdue section, even when their current scheduled date is in the future. Thanks to @jalooc for reporting this and @dictionarymouse for the follow-up.
 - ([#1060](https://github.com/callumalpass/tasknotes/issues/1060)) Reused and revealed an already-open Calendar/Base view when running view commands, so a view kept in the sidebar no longer reopens in a new main tab. Thanks to @kmaustral for reporting this.
 - ([#1065](https://github.com/callumalpass/tasknotes/issues/1065)) Scoped time tracking indicators and tracked-time totals to the rendered recurring task instance, so tracking one occurrence no longer marks every past and future occurrence as actively tracked. Thanks to @vkbytes for reporting this and @slipstyle for the context.
 - ([#1075](https://github.com/callumalpass/tasknotes/issues/1075)) Hid the native WebKit date-input label that could appear as `Label` when editing scheduled dates on macOS. Thanks to @3zra47 for reporting this.

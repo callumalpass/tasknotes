@@ -22,7 +22,12 @@ import {
 	FilterEvaluationError,
 	TaskPropertyValue,
 } from "../utils/FilterUtils";
-import { isDueByRRule, filterEmptyProjects, getEffectiveTaskStatus } from "../utils/helpers";
+import {
+	filterEmptyProjects,
+	generateRecurringInstances,
+	getEffectiveTaskStatus,
+	isDueByRRule,
+} from "../utils/helpers";
 import { format, parseISO } from "date-fns";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import {
@@ -2202,6 +2207,13 @@ export class FilterService extends EventEmitter {
 
 			// For recurring tasks, check if the current scheduled date is overdue
 			if (task.recurrence) {
+				if (
+					!(isCompleted && hideCompletedFromOverdue) &&
+					this.hasIncompletePastRecurringInstance(task)
+				) {
+					return true;
+				}
+
 				// For recurring tasks, check scheduled date (current instance)
 				// Also check due date if it exists (user may set both)
 				if (task.due) {
@@ -2240,6 +2252,50 @@ export class FilterService extends EventEmitter {
 			overdueTasks,
 			baseQuery.sortKey || "due",
 			baseQuery.sortDirection || "asc"
+		);
+	}
+
+	private hasIncompletePastRecurringInstance(task: TaskInfo): boolean {
+		if (!task.recurrence) {
+			return false;
+		}
+
+		const todayString = getTodayString();
+		const today = parseDateToUTC(todayString);
+		const endDate = new Date(today);
+		endDate.setUTCDate(endDate.getUTCDate() - 1);
+
+		const startDate = this.getRecurringOverdueSearchStart(task, today);
+		if (startDate > endDate) {
+			return false;
+		}
+
+		const completedInstances = new Set(task.complete_instances || []);
+		const skippedInstances = new Set(task.skipped_instances || []);
+		const instances = generateRecurringInstances(task, startDate, endDate);
+
+		return instances.some((instance) => {
+			const instanceDate = formatDateForStorage(instance);
+			return (
+				instanceDate < todayString &&
+				!completedInstances.has(instanceDate) &&
+				!skippedInstances.has(instanceDate)
+			);
+		});
+	}
+
+	private getRecurringOverdueSearchStart(task: TaskInfo, today: Date): Date {
+		const fallback = new Date(today);
+		fallback.setUTCFullYear(fallback.getUTCFullYear() - 2);
+
+		const candidates = [task.dateCreated, task.scheduled, task.due]
+			.map((value) => (value ? getDatePart(value) : ""))
+			.filter((value) => value.length > 0)
+			.map((value) => parseDateToUTC(value));
+
+		return candidates.reduce(
+			(earliest, candidate) => (candidate < earliest ? candidate : earliest),
+			fallback
 		);
 	}
 

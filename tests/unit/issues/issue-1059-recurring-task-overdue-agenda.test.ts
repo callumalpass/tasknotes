@@ -101,7 +101,7 @@ describe("Issue #1059 - Recurring task with past RRULE not appearing in Overdue 
 	 *
 	 * Current behavior (BUG): The task doesn't appear in the Overdue section.
 	 */
-	it.skip("reproduces issue #1059 - recurring task with past DTSTART should appear in Overdue", async () => {
+	it("shows a recurring task with a past DTSTART in Overdue", async () => {
 		// Create the exact task from the issue
 		// Today is Nov 3, 2025
 		// RRULE DTSTART is Nov 1, 2025 (which has passed)
@@ -144,7 +144,7 @@ describe("Issue #1059 - Recurring task with past RRULE not appearing in Overdue 
 	 * Additional test case: Even though the scheduled date is in the future (tomorrow),
 	 * the task should still show in agenda because the recurring instance from Nov 1 is overdue.
 	 */
-	it.skip("reproduces issue #1059 - task with future scheduled but past DTSTART should appear in agenda Overdue section", async () => {
+	it("shows a future-scheduled task with a past recurrence instance in agenda Overdue", async () => {
 		// Today is Nov 3, 2025
 		const today = new Date(Date.UTC(2025, 10, 3)); // Nov 3, 2025
 
@@ -187,7 +187,7 @@ describe("Issue #1059 - Recurring task with past RRULE not appearing in Overdue 
 	/**
 	 * Test that weekly recurring task with past DTSTART also shows in overdue
 	 */
-	it.skip("reproduces issue #1059 - weekly recurring task from previous week should appear in Overdue", async () => {
+	it("shows a weekly recurring task with an incomplete previous instance in Overdue", async () => {
 		// Today is Nov 3, 2025 (Monday)
 		// Task has RRULE with DTSTART last week (Oct 27, 2025)
 		const recurringTask: TaskInfo = TaskFactory.createTask({
@@ -224,7 +224,7 @@ describe("Issue #1059 - Recurring task with past RRULE not appearing in Overdue 
 	/**
 	 * Edge case: Task with completed past instances should NOT appear in overdue
 	 */
-	it.skip("reproduces issue #1059 - recurring task with completed past instance should NOT appear in Overdue", async () => {
+	it("does not show a recurring task when its past instance is completed", async () => {
 		// Today is Nov 3, 2025
 		// Task has RRULE with DTSTART Nov 1, but that instance is marked complete
 		const recurringTask: TaskInfo = TaskFactory.createTask({
