@@ -188,6 +188,22 @@
     background: var(--background-modifier-hover);
 }
 
+body.is-mobile .tasknotes-plugin .reminder-modal__reminder-actions {
+    align-self: stretch;
+    align-items: center;
+}
+
+body.is-mobile .tasknotes-plugin .reminder-modal__action-btn {
+    width: 44px;
+    height: 44px;
+    color: var(--text-error);
+}
+
+body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
 /* =====================================================================
    QUICK ACTIONS - Icon-Based Controls Like Task Modal
    ===================================================================== */
