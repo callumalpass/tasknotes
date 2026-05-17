@@ -199,3 +199,4 @@ Example:
 - Made the markdown editor areas in task modals easier to click and focus.
 - Strengthened local CSS linting to catch unscoped selectors, unknown CSS, and fixed-position overlays before review.
 - Reduced false-positive plugin review warnings by making background auto-export and auto-archive schedulers non-overlapping and tightening type/string conversion paths.
+- ([#1882](https://github.com/callumalpass/tasknotes/pull/1882)) Made Google Calendar task descriptions use mobile-friendly plain text for Obsidian links and display labels for wiki-style project/context links. Thanks to @martin-forge for the contribution.
