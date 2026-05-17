@@ -9,7 +9,7 @@ import type {
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
-import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
+import { TaskInfo, EVENT_TASK_DELETED, EVENT_TASK_UPDATED } from "../types";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
@@ -34,6 +34,14 @@ type TaskUpdateEventData = {
 	updatedTask?: TaskInfo;
 	task?: TaskInfo;
 	taskInfo?: TaskInfo;
+};
+
+type TaskDeletedEventData = {
+	path?: string;
+	deletedTask?: TaskInfo;
+	prevCache?: {
+		frontmatter?: Record<string, unknown>;
+	};
 };
 
 type BasesCreateFileFrontmatter = Record<string, unknown>;
@@ -393,7 +401,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	protected setupTaskUpdateListener(): void {
 		if (this.taskUpdateListener) return;
 
-		this.taskUpdateListener = this.plugin.emitter.on(
+		const taskUpdatedListener = this.plugin.emitter.on(
 			EVENT_TASK_UPDATED,
 			async (eventData: unknown) => {
 				try {
@@ -429,14 +437,86 @@ export abstract class BasesViewBase extends Component implements BasesView {
 				}
 			}
 		);
+		const taskDeletedListener = this.plugin.emitter.on(
+			EVENT_TASK_DELETED,
+			(eventData: unknown) => {
+				this.handleTaskDeletedEvent(eventData);
+			}
+		);
+		const fileDeletedListener = this.plugin.emitter.on(
+			"file-deleted",
+			(eventData: unknown) => {
+				this.handleTaskDeletedEvent(eventData);
+			}
+		);
+
+		this.taskUpdateListener = [
+			taskUpdatedListener,
+			taskDeletedListener,
+			fileDeletedListener,
+		];
 
 		// Register cleanup using Component lifecycle
 		this.register(() => {
 			if (this.taskUpdateListener) {
-				this.plugin.emitter.offref(this.taskUpdateListener as EventRef);
+				const listeners = Array.isArray(this.taskUpdateListener)
+					? this.taskUpdateListener
+					: [this.taskUpdateListener];
+				for (const listener of listeners) {
+					this.plugin.emitter.offref(listener as EventRef);
+				}
 				this.taskUpdateListener = null;
 			}
 		});
+	}
+
+	private handleTaskDeletedEvent(eventData: unknown): void {
+		const taskEvent: TaskDeletedEventData = isRecord(eventData) ? eventData : {};
+		const deletedPath =
+			typeof taskEvent.path === "string" ? taskEvent.path : taskEvent.deletedTask?.path;
+
+		if (deletedPath) {
+			this.relevantPathsCache.delete(deletedPath);
+		}
+
+		this.plugin.projectSubtasksService?.invalidateIndex();
+
+		if (!this.rootElement?.isConnected) {
+			return;
+		}
+
+		const deletedTaskHadProjects =
+			(taskEvent.deletedTask?.projects?.length ?? 0) > 0 ||
+			this.deletedCacheHasProjects(taskEvent.prevCache);
+		const deletedTaskWasRendered =
+			typeof deletedPath === "string" && this.isTaskPathRendered(deletedPath);
+
+		if (deletedTaskWasRendered || deletedTaskHadProjects) {
+			this.debouncedRefresh();
+		}
+	}
+
+	private deletedCacheHasProjects(prevCache: TaskDeletedEventData["prevCache"]): boolean {
+		const frontmatter = prevCache?.frontmatter;
+		if (!frontmatter) {
+			return false;
+		}
+
+		const projectsField = this.plugin.fieldMapper.toUserField("projects");
+		const projects = frontmatter[projectsField];
+		if (Array.isArray(projects)) {
+			return projects.length > 0;
+		}
+		return typeof projects === "string" && projects.trim().length > 0;
+	}
+
+	private isTaskPathRendered(path: string): boolean {
+		if (!this.rootElement) {
+			return false;
+		}
+
+		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card[data-task-path]");
+		return Array.from(cards).some((card) => card.dataset.taskPath === path);
 	}
 
 	/**
