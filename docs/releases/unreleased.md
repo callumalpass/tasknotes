@@ -82,6 +82,7 @@ Example:
 - ([#1822](https://github.com/callumalpass/tasknotes/issues/1822)) Matched the Task Edit Modal subtask list order to the existing relationship sort, so active and higher-priority subtasks appear ahead of completed ones. Thanks to @Glint-Eye for suggesting this.
 - ([#1339](https://github.com/callumalpass/tasknotes/issues/1339)) Added an Appearance setting to expand project subtasks by default in task cards, while still letting individual cards be collapsed. Thanks to @hasanyilmaz for suggesting this and @kazerniel and @benmartinek for the follow-up.
 - ([#1335](https://github.com/callumalpass/tasknotes/issues/1335)) Added optional default times for new task scheduled and due dates, so default-dated tasks can appear as timed calendar events instead of all-day events. Thanks to @echo-saurav for suggesting this.
+- ([#1327](https://github.com/callumalpass/tasknotes/issues/1327)) Made TaskNotes Bases search match any word in a multi-word search instead of requiring the whole phrase. Thanks to @craziedde for suggesting this.
 
 ## Fixed
 
