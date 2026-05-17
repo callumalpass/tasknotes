@@ -62,7 +62,11 @@
  */
 
 import { TFile } from 'obsidian';
-import { TaskInfo, TimeEntry, PomodoroSession } from '../../../src/types';
+import { PomodoroService } from '../../../src/services/PomodoroService';
+import { EVENT_POMODORO_TICK, TaskInfo, TimeEntry, PomodoroSession } from '../../../src/types';
+import { formatDateForStorage, getTodayLocal } from '../../../src/utils/dateUtils';
+
+jest.mock('obsidian');
 
 /**
  * Mock task factory for tests
@@ -106,6 +110,126 @@ function createMockPomodoroSession(taskPath: string): PomodoroSession {
 		],
 	};
 }
+
+function createMockPlugin(initialData: Record<string, unknown>) {
+	let data = JSON.parse(JSON.stringify(initialData));
+	const unsubscribe = jest.fn();
+	const plugin = {
+		settings: {
+			pomodoroWorkDuration: 25,
+			pomodoroShortBreakDuration: 5,
+			pomodoroLongBreakDuration: 15,
+			pomodoroLongBreakInterval: 4,
+			pomodoroAutoStartBreaks: false,
+			pomodoroAutoStartWork: false,
+			pomodoroNotifications: false,
+			pomodoroSoundEnabled: false,
+			pomodoroStorageLocation: 'plugin',
+		},
+		i18n: {
+			translate: (key: string) => key,
+		},
+		loadData: jest.fn(async () => data),
+		saveData: jest.fn(async (nextData: Record<string, unknown>) => {
+			data = JSON.parse(JSON.stringify(nextData));
+		}),
+		cacheManager: {
+			subscribe: jest.fn(() => unsubscribe),
+			getTaskInfo: jest.fn(),
+		},
+		taskService: {
+			startTimeTracking: jest.fn(),
+			stopTimeTracking: jest.fn(),
+		},
+		statusManager: {
+			isCompletedStatus: jest.fn(() => false),
+		},
+		emitter: {
+			trigger: jest.fn(),
+		},
+	};
+
+	return {
+		plugin,
+		unsubscribe,
+		getData: () => data,
+	};
+}
+
+function getRenameHandler(service: PomodoroService) {
+	return (
+		service as unknown as {
+			handleTaskFileRenamed(oldPath: string, newPath: string): Promise<void>;
+		}
+	).handleTaskFileRenamed.bind(service);
+}
+
+describe('Issue #1019 - Pomodoro task path rename handling', () => {
+	it('updates the active Pomodoro session path and persisted last-selected task path', async () => {
+		const originalPath = 'tasks/original-task.md';
+		const newPath = 'tasks/renamed-task.md';
+		const { plugin, getData } = createMockPlugin({
+			pomodoroState: {
+				isRunning: false,
+				timeRemaining: 1200,
+				currentSession: createMockPomodoroSession(originalPath),
+			},
+			lastPomodoroDate: formatDateForStorage(getTodayLocal()),
+			lastSelectedTaskPath: originalPath,
+		});
+		const service = new PomodoroService(plugin as any);
+
+		await service.initialize();
+		await getRenameHandler(service)(originalPath, newPath);
+
+		expect(plugin.cacheManager.subscribe).toHaveBeenCalledWith(
+			'file-renamed',
+			expect.any(Function)
+		);
+		expect(service.getState().currentSession?.taskPath).toBe(newPath);
+		expect(getData()).toMatchObject({
+			pomodoroState: {
+				currentSession: {
+					taskPath: newPath,
+				},
+			},
+			lastSelectedTaskPath: newPath,
+		});
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith(EVENT_POMODORO_TICK, {
+			timeRemaining: 1200,
+			session: expect.objectContaining({ taskPath: newPath }),
+		});
+	});
+
+	it('updates a persisted last-selected task path even before it has been loaded', async () => {
+		const originalPath = 'tasks/original-task.md';
+		const newPath = 'tasks/renamed-task.md';
+		const { plugin, getData } = createMockPlugin({
+			pomodoroState: {
+				isRunning: false,
+				timeRemaining: 1500,
+			},
+			lastSelectedTaskPath: originalPath,
+		});
+		const service = new PomodoroService(plugin as any);
+
+		await service.initialize();
+		await getRenameHandler(service)(originalPath, newPath);
+
+		expect(getData()).toMatchObject({ lastSelectedTaskPath: newPath });
+		await expect(service.getLastSelectedTaskPath()).resolves.toBe(newPath);
+	});
+
+	it('unsubscribes from rename events during cleanup', async () => {
+		const { plugin, unsubscribe } = createMockPlugin({});
+		const service = new PomodoroService(plugin as any);
+
+		await service.initialize();
+		service.cleanup();
+
+		expect(unsubscribe).toHaveBeenCalledTimes(1);
+	});
+});
 
 describe('Issue #1019 - Time Tracking Fails After File Rename', () => {
 	describe('Bug Reproduction - Path Reference Becomes Stale', () => {

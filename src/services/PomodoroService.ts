@@ -70,6 +70,7 @@ export class PomodoroService {
 	private lastSelectedTaskPathLoaded = false;
 	private lastWorkSessionTaskPath?: string;
 	private completionInProgress = false;
+	private taskFileRenameUnsubscribe?: () => void;
 
 	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
@@ -86,9 +87,80 @@ export class PomodoroService {
 	async initialize() {
 		await this.loadState();
 		this.setupTicker();
+		this.subscribeToTaskFileRenames();
 
 		if (this.state.isRunning && this.state.currentSession) {
 			this.resumeTimer();
+		}
+	}
+
+	private subscribeToTaskFileRenames(): void {
+		if (this.taskFileRenameUnsubscribe) return;
+
+		this.taskFileRenameUnsubscribe = this.plugin.cacheManager.subscribe(
+			"file-renamed",
+			(event: unknown) => {
+				if (!event || typeof event !== "object") return;
+				const { oldPath, newPath } = event as {
+					oldPath?: unknown;
+					newPath?: unknown;
+				};
+				if (typeof oldPath !== "string" || typeof newPath !== "string") return;
+				void this.handleTaskFileRenamed(oldPath, newPath);
+			}
+		);
+	}
+
+	private async handleTaskFileRenamed(oldPath: string, newPath: string): Promise<void> {
+		if (!oldPath || !newPath || oldPath === newPath) return;
+
+		let stateChanged = false;
+		let lastSelectedChanged = false;
+
+		if (this.state.currentSession?.taskPath === oldPath) {
+			this.state.currentSession.taskPath = newPath;
+			stateChanged = true;
+		}
+
+		if (this.lastWorkSessionTaskPath === oldPath) {
+			this.lastWorkSessionTaskPath = newPath;
+		}
+
+		if (this.lastSelectedTaskPath === oldPath) {
+			this.lastSelectedTaskPath = newPath;
+			this.lastSelectedTaskPathLoaded = true;
+			lastSelectedChanged = true;
+		}
+
+		try {
+			const data = (await this.plugin.loadData()) || {};
+			let shouldSaveData = false;
+
+			if (stateChanged) {
+				data.pomodoroState = this.state;
+				data.lastPomodoroDate = formatDateForStorage(getTodayLocal());
+				shouldSaveData = true;
+			}
+
+			if (lastSelectedChanged || data.lastSelectedTaskPath === oldPath) {
+				this.lastSelectedTaskPath = newPath;
+				this.lastSelectedTaskPathLoaded = true;
+				data.lastSelectedTaskPath = newPath;
+				shouldSaveData = true;
+			}
+
+			if (shouldSaveData) {
+				await this.plugin.saveData(data);
+			}
+		} catch (error) {
+			console.error("Failed to persist Pomodoro task path after file rename:", error);
+		}
+
+		if (stateChanged) {
+			this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
+				timeRemaining: this.state.timeRemaining,
+				session: this.state.currentSession,
+			});
 		}
 	}
 
@@ -1189,6 +1261,8 @@ export class PomodoroService {
 		this.stopTimer();
 		this.ticker?.destroy();
 		this.ticker = null;
+		this.taskFileRenameUnsubscribe?.();
+		this.taskFileRenameUnsubscribe = undefined;
 		for (const timeout of this.cleanupTimeouts) {
 			window.clearTimeout(timeout);
 		}
