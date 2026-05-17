@@ -36,6 +36,7 @@ import {
 	applyRecurringTaskStyling,
 	applyTimeblockStyling,
 	generateTimeblockTooltip,
+	isTimeblockCopyModifierPressed,
 	addTaskHoverPreview,
 	createICSEvent,
 	showTimeblockInfoModal,
@@ -2452,7 +2453,13 @@ export class CalendarView extends BasesViewBase {
 				return;
 			}
 			const originalDate = format(info.oldEvent.start, "yyyy-MM-dd");
-			await handleTimeblockDrop(info, timeblock, originalDate, this.plugin);
+			await handleTimeblockDrop(
+				info,
+				timeblock,
+				originalDate,
+				this.plugin,
+				isTimeblockCopyModifierPressed(info.jsEvent)
+			);
 			return;
 		}
 

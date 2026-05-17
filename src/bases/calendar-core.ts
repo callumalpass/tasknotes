@@ -22,6 +22,7 @@ import {
 import {
 	generateRecurringInstances,
 	updateTimeblockInDailyNote,
+	copyTimeblockToDailyNote,
 	addDTSTARTToRecurrenceRuleWithDraggedTime,
 } from "../utils/helpers";
 import { Notice, TFile } from "obsidian";
@@ -108,6 +109,8 @@ type CalendarMutationInfo = {
 	revert: () => void;
 };
 
+type TimeblockCopyModifierEvent = Pick<MouseEvent, "altKey" | "ctrlKey" | "metaKey">;
+
 type FrontmatterWithTimeblocks = {
 	timeblocks?: unknown[];
 };
@@ -120,6 +123,12 @@ type WindowWithMoment = Window & {
 
 function getErrorMessage(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
+}
+
+export function isTimeblockCopyModifierPressed(
+	event: TimeblockCopyModifierEvent | undefined
+): boolean {
+	return Boolean(event?.ctrlKey || event?.metaKey || event?.altKey);
 }
 
 function getWindowMoment(input?: string | Date): ObsidianMoment {
@@ -1537,7 +1546,8 @@ export async function handleTimeblockDrop(
 	dropInfo: CalendarMutationInfo,
 	timeblock: TimeBlock,
 	originalDate: string,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	copyRequested = false
 ): Promise<void> {
 	try {
 		const newStart = dropInfo.event.start;
@@ -1551,6 +1561,20 @@ export async function handleTimeblockDrop(
 		const newDate = format(newStart, "yyyy-MM-dd");
 		const newStartTime = format(newStart, "HH:mm");
 		const newEndTime = format(newEnd, "HH:mm");
+
+		if (copyRequested) {
+			await copyTimeblockToDailyNote(
+				plugin.app,
+				newDate,
+				timeblock,
+				newStartTime,
+				newEndTime
+			);
+			dropInfo.revert();
+			plugin.emitter.trigger(EVENT_DATA_CHANGED);
+			new Notice("Timeblock duplicated successfully");
+			return;
+		}
 
 		// Update timeblock in daily notes
 		await updateTimeblockInDailyNote(

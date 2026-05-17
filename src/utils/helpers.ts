@@ -759,6 +759,23 @@ export function generateTimeblockId(): string {
 }
 
 /**
+ * Creates a copied timeblock with a fresh ID and updated time range.
+ */
+export function createCopiedTimeblock(
+	timeblock: TimeBlock,
+	newStartTime: string,
+	newEndTime: string
+): TimeBlock {
+	return {
+		...timeblock,
+		id: generateTimeblockId(),
+		startTime: newStartTime,
+		endTime: newEndTime,
+		attachments: timeblock.attachments ? [...timeblock.attachments] : undefined,
+	};
+}
+
+/**
  * Updates a timeblock in a daily note's frontmatter
  */
 export async function updateTimeblockInDailyNote(
@@ -815,6 +832,21 @@ export async function updateTimeblockInDailyNote(
 	};
 
 	await addTimeblockToDailyNote(app, newDate, updatedTimeblock);
+}
+
+/**
+ * Copies a timeblock into a daily note with a new ID and time range.
+ */
+export async function copyTimeblockToDailyNote(
+	app: App,
+	date: string,
+	timeblock: TimeBlock,
+	newStartTime: string,
+	newEndTime: string
+): Promise<TimeBlock> {
+	const copiedTimeblock = createCopiedTimeblock(timeblock, newStartTime, newEndTime);
+	await addTimeblockToDailyNote(app, date, copiedTimeblock);
+	return copiedTimeblock;
 }
 
 /**

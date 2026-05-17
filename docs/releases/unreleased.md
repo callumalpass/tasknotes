@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1041](https://github.com/callumalpass/tasknotes/issues/1041), [#1800](https://github.com/callumalpass/tasknotes/issues/1800)) Added copy-drag support for timeblocks: hold Ctrl, Cmd, or Alt/Option while dragging an existing timeblock to duplicate it at the new date and time. Thanks to @0-BSCode and @cweekly for suggesting this.
 - ([#1052](https://github.com/callumalpass/tasknotes/issues/1052)) Added a public JavaScript API for in-vault scripts at `app.plugins.plugins.tasknotes.api.parseNaturalLanguage(text)`, so Templater, QuickAdd, and MetaBind workflows can use TaskNotes' natural-language parser without running the HTTP API. Thanks to @edakimling for suggesting this.
 - ([#1235](https://github.com/callumalpass/tasknotes/issues/1235)) Added a task-card toggle for blocked tasks, so you can expand a blocked task to see the tasks it is waiting on. Thanks to @craziedde for suggesting this.
 - ([#1254](https://github.com/callumalpass/tasknotes/issues/1254)) Added `../` and `./` normalization for folder templates after variables are expanded, so instant task conversion can target sibling folders such as `{{currentNotePath}}/../Tasks`. Thanks to @rdick for suggesting this.
