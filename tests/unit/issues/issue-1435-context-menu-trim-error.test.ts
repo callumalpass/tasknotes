@@ -1,243 +1,154 @@
-/**
- * Issue #1435: [Bug]: TypeError: n.trim is not a function
- *
- * @see https://github.com/TaskNotesPlugin/tasknotes/issues/1435
- *
- * Bug: When right-clicking on a task to open the context menu, a TypeError
- * occurs: "n.trim is not a function". This happens because non-string values
- * are being passed to Obsidian's Menu.setTitle() method, which internally
- * calls .trim() on the title.
- *
- * Root Cause: The TaskContextMenu code passes values directly to setTitle()
- * without ensuring they are strings. This includes:
- * - Status labels from plugin.settings.customStatuses
- * - Priority labels from plugin.priorityManager
- * - Dependency UIDs from task.blockedBy entries
- *
- * If any of these values are undefined, null, or non-string, the error occurs.
- *
- * Expected behavior: The context menu should handle invalid/missing labels
- * gracefully, either by providing fallback strings or by filtering out
- * invalid entries.
- */
+import { App, Menu } from "obsidian";
+import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
+import { createI18nService } from "../../../src/i18n";
+import { extractDependencyUid } from "../../../src/utils/dependencyUtils";
+import type TaskNotesPlugin from "../../../src/main";
+import type { TaskDependency, TaskInfo } from "../../../src/types";
 
-describe('Issue #1435: Context menu TypeError n.trim is not a function', () => {
-	describe('Status options with undefined/null labels', () => {
-		it('should handle status config with undefined label gracefully', () => {
-			// Simulate a corrupted status config where label is undefined
-			const corruptedStatusConfig = {
-				id: 'status-1',
-				value: 'open',
-				label: undefined, // BUG: label is undefined
-				color: '#3788d8',
-				isCompleted: false,
-				order: 1,
-			};
+jest.mock("obsidian");
 
-			// The label should be coerced to a string or replaced with a fallback
-			const safeLabel = String(corruptedStatusConfig.label ?? corruptedStatusConfig.value ?? 'Unknown');
-			expect(typeof safeLabel).toBe('string');
-			expect(safeLabel).not.toBe('undefined');
-		});
+type MockMenuItem = {
+	setTitle?: jest.Mock;
+	type?: string;
+};
 
-		it('should handle status config with null label gracefully', () => {
-			const corruptedStatusConfig = {
-				id: 'status-1',
-				value: 'in-progress',
-				label: null as unknown as string, // BUG: label is null
-				color: '#ffa500',
-				isCompleted: false,
-				order: 2,
-			};
+type MockMenu = {
+	items: MockMenuItem[];
+};
 
-			// The label should be coerced to a string or replaced with a fallback
-			const safeLabel = String(corruptedStatusConfig.label ?? corruptedStatusConfig.value ?? 'Unknown');
-			expect(typeof safeLabel).toBe('string');
-			expect(safeLabel).toBe('in-progress');
-		});
+const menuMock = Menu as unknown as jest.Mock;
 
-		it('should handle status config with numeric label', () => {
-			const corruptedStatusConfig = {
-				id: 'status-1',
-				value: 'priority-1',
-				label: 1 as unknown as string, // BUG: label is a number
-				color: '#ff0000',
-				isCompleted: false,
-				order: 3,
-			};
+function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
+	return {
+		id: "Tasks/2026-01-05-145552 Another test.md",
+		path: "Tasks/2026-01-05-145552 Another test.md",
+		title: "Another test",
+		status: "unknown-status",
+		priority: "unknown-priority",
+		archived: false,
+		tags: [],
+		contexts: [],
+		projects: [],
+		...overrides,
+	} as TaskInfo;
+}
 
-			// Numeric labels should be converted to strings
-			const safeLabel = typeof corruptedStatusConfig.label === 'string'
-				? corruptedStatusConfig.label
-				: String(corruptedStatusConfig.label ?? corruptedStatusConfig.value ?? 'Unknown');
-			expect(typeof safeLabel).toBe('string');
-			expect(safeLabel).toBe('1');
-		});
+function createPlugin(): TaskNotesPlugin {
+	const app = new App();
+	return {
+		app,
+		i18n: createI18nService(),
+		settings: {
+			customStatuses: [
+				{
+					value: "open",
+					label: undefined as unknown as string,
+					order: 0,
+				},
+				{
+					value: "done",
+					label: null as unknown as string,
+					order: 1,
+				},
+			],
+			customPriorities: [],
+			calendarViewSettings: {
+				enableTimeblocking: false,
+			},
+			useFrontmatterMarkdownLinks: true,
+		},
+		statusManager: {
+			getAllStatuses: jest.fn(() => []),
+			getNonCompletionStatuses: jest.fn(() => []),
+			isCompletedStatus: jest.fn(() => false),
+		},
+		priorityManager: {
+			getAllPriorities: jest.fn(() => []),
+			getPrioritiesByWeight: jest.fn(() => [
+				{
+					value: "normal",
+					label: 123 as unknown as string,
+					weight: 0,
+				},
+				{
+					value: undefined as unknown as string,
+					label: "Missing value",
+					weight: 1,
+				},
+			]),
+		},
+		taskService: {
+			toggleRecurringTaskSkipped: jest.fn(),
+			updateBlockingRelationships: jest.fn(),
+		},
+		cacheManager: {
+			getAllContexts: jest.fn(() => []),
+			getAllTasks: jest.fn(() => []),
+			getTaskInfo: jest.fn(),
+		},
+		updateTaskProperty: jest.fn(),
+		toggleRecurringTaskComplete: jest.fn(),
+		getActiveTimeSession: jest.fn(() => null),
+		stopTimeTracking: jest.fn(),
+		startTimeTracking: jest.fn(),
+		openDueDateModal: jest.fn(),
+		openScheduledDateModal: jest.fn(),
+		openTimeEntryEditor: jest.fn(),
+		toggleTaskArchive: jest.fn(),
+		openTaskEditModal: jest.fn(),
+		openTaskCreationModal: jest.fn(),
+	} as unknown as TaskNotesPlugin;
+}
+
+function getAllTitleValues(): unknown[] {
+	return menuMock.mock.results.flatMap((result) => {
+		const menu = result.value as MockMenu | undefined;
+		return (
+			menu?.items.flatMap((item) =>
+				item.setTitle ? item.setTitle.mock.calls.map(([title]) => title) : []
+			) ?? []
+		);
+	});
+}
+
+describe("Issue #1435: context menu titles handle malformed task/settings data", () => {
+	beforeEach(() => {
+		menuMock.mockClear();
 	});
 
-	describe('Priority options with undefined/null labels', () => {
-		it('should handle priority config with undefined label gracefully', () => {
-			const corruptedPriorityConfig = {
-				id: 'priority-1',
-				value: 'high',
-				label: undefined, // BUG: label is undefined
-				color: '#ff6b6b',
-				weight: 10,
-			};
-
-			const safeLabel = String(corruptedPriorityConfig.label ?? corruptedPriorityConfig.value ?? 'Unknown');
-			expect(typeof safeLabel).toBe('string');
-			expect(safeLabel).toBe('high');
-		});
-
-		it('should handle priority config with empty string label', () => {
-			const corruptedPriorityConfig = {
-				id: 'priority-1',
-				value: 'medium',
-				label: '', // BUG: label is empty string
-				color: '#ffa500',
-				weight: 5,
-			};
-
-			// Empty string should fallback to value
-			const safeLabel = corruptedPriorityConfig.label || corruptedPriorityConfig.value || 'Unknown';
-			expect(typeof safeLabel).toBe('string');
-			expect(safeLabel).toBe('medium');
-		});
+	afterEach(() => {
+		menuMock.mockClear();
 	});
 
-	describe('Dependency entries with invalid UIDs', () => {
-		it('should handle blockedBy entry where entry is a string instead of TaskDependency object', () => {
-			// Legacy data might have string entries instead of TaskDependency objects
-			const legacyBlockedByEntry = '[[Some Task]]' as unknown as { uid: string };
-
-			// Accessing .uid on a string returns undefined
-			const rawUid = legacyBlockedByEntry.uid;
-			expect(rawUid).toBeUndefined();
-
-			// The code should use extractDependencyUid or similar to handle both cases
-			const safeUid = typeof legacyBlockedByEntry === 'string'
-				? legacyBlockedByEntry
-				: (legacyBlockedByEntry.uid ?? 'Unknown');
-			expect(typeof safeUid).toBe('string');
-			expect(safeUid).toBe('[[Some Task]]');
-		});
-
-		it('should handle blockedBy entry with undefined uid', () => {
-			const corruptedDependency = {
-				uid: undefined as unknown as string,
-				reltype: 'FINISHTOSTART',
-			};
-
-			// The uid should be coerced to a string or filtered out
-			const safeUid = String(corruptedDependency.uid ?? 'Unknown');
-			expect(typeof safeUid).toBe('string');
-			// When uid is undefined, we might want to filter it out entirely
-			expect(corruptedDependency.uid).toBeUndefined();
-		});
-
-		it('should handle blockedBy entry with numeric uid', () => {
-			const corruptedDependency = {
-				uid: 123 as unknown as string, // BUG: uid is a number
-				reltype: 'FINISHTOSTART',
-			};
-
-			const safeUid = typeof corruptedDependency.uid === 'string'
-				? corruptedDependency.uid
-				: String(corruptedDependency.uid);
-			expect(typeof safeUid).toBe('string');
-			expect(safeUid).toBe('123');
-		});
+	it("extracts only string dependency UIDs from legacy or malformed dependency entries", () => {
+		expect(extractDependencyUid("[[Some Task]]")).toBe("[[Some Task]]");
+		expect(extractDependencyUid({ uid: "[[Other Task]]", reltype: "FINISHTOSTART" })).toBe(
+			"[[Other Task]]"
+		);
+		expect(extractDependencyUid({ uid: 123, reltype: "FINISHTOSTART" })).toBe("");
+		expect(extractDependencyUid(null)).toBe("");
+		expect(extractDependencyUid(undefined)).toBe("");
 	});
 
-	describe('Translation function fallbacks', () => {
-		it('should return key as fallback when translation is missing', () => {
-			// Simulate translation function behavior
-			const translate = (key: string, params?: Record<string, unknown>): string => {
-				const translations: Record<string, string> = {
-					'contextMenus.task.status': 'Status',
-					// Missing: 'contextMenus.task.priority'
-				};
-				let result = translations[key] ?? key;
-				if (params) {
-					Object.entries(params).forEach(([param, value]) => {
-						result = result.replace(`{${param}}`, String(value));
-					});
-				}
-				return result;
-			};
+	it("does not pass non-string titles to Obsidian Menu.setTitle", () => {
+		const malformedBlockedBy = [
+			"[[Legacy blocker]]",
+			{ uid: undefined, reltype: "FINISHTOSTART" },
+			{ uid: 123, reltype: "FINISHTOSTART" },
+			{ uid: "[[Valid blocker]]", reltype: "FINISHTOSTART" },
+		] as unknown as TaskDependency[];
 
-			// Known key returns translation
-			expect(translate('contextMenus.task.status')).toBe('Status');
-
-			// Unknown key returns the key itself as fallback
-			expect(translate('contextMenus.task.priority')).toBe('contextMenus.task.priority');
-			expect(typeof translate('contextMenus.task.priority')).toBe('string');
+		new TaskContextMenu({
+			task: createTask({ blockedBy: malformedBlockedBy }),
+			plugin: createPlugin(),
+			targetDate: new Date("2026-01-05T12:00:00"),
 		});
 
-		it('should handle undefined/null parameters in translation interpolation', () => {
-			const translate = (key: string, params?: Record<string, unknown>): string => {
-				const translations: Record<string, string> = {
-					'contextMenus.task.statusSelected': '✓ {label}',
-				};
-				let result = translations[key] ?? key;
-				if (params) {
-					Object.entries(params).forEach(([param, value]) => {
-						result = result.replace(`{${param}}`, String(value ?? ''));
-					});
-				}
-				return result;
-			};
+		const nonStringTitles = getAllTitleValues().filter((title) => typeof title !== "string");
 
-			// With undefined label parameter
-			const result = translate('contextMenus.task.statusSelected', { label: undefined });
-			expect(typeof result).toBe('string');
-			// String(undefined) = "undefined", but we want empty string or the placeholder
-			expect(result).toContain('✓');
-		});
-	});
-
-	describe('setTitle input validation', () => {
-		it('should demonstrate the bug: passing undefined to setTitle', () => {
-			// This represents what Obsidian's setTitle does internally
-			const simulateSetTitle = (title: unknown): void => {
-				// This is the bug: if title is not a string, .trim() fails
-				if (typeof title !== 'string') {
-					throw new TypeError('n.trim is not a function');
-				}
-				title.trim(); // This would throw if title is not a string
-			};
-
-			// These should throw (demonstrating the bug)
-			expect(() => simulateSetTitle(undefined)).toThrow('n.trim is not a function');
-			expect(() => simulateSetTitle(null)).toThrow('n.trim is not a function');
-			expect(() => simulateSetTitle(123)).toThrow('n.trim is not a function');
-			expect(() => simulateSetTitle({})).toThrow('n.trim is not a function');
-
-			// These should work
-			expect(() => simulateSetTitle('')).not.toThrow();
-			expect(() => simulateSetTitle('Status')).not.toThrow();
-		});
-
-		it('should demonstrate the fix: safe title coercion', () => {
-			const safeSetTitle = (title: unknown): string => {
-				// The fix: ensure title is always a string
-				if (typeof title === 'string') {
-					return title.trim();
-				}
-				if (title === null || title === undefined) {
-					return '';
-				}
-				return String(title).trim();
-			};
-
-			// These should all work after the fix
-			expect(safeSetTitle(undefined)).toBe('');
-			expect(safeSetTitle(null)).toBe('');
-			expect(safeSetTitle(123)).toBe('123');
-			expect(safeSetTitle('')).toBe('');
-			expect(safeSetTitle('  Status  ')).toBe('Status');
-			expect(safeSetTitle({ toString: () => 'Custom' })).toBe('Custom');
-		});
+		expect(nonStringTitles).toEqual([]);
+		expect(getAllTitleValues()).toEqual(
+			expect.arrayContaining(["open", "done", "123", "Unknown", "[[Valid blocker]]"])
+		);
 	});
 });

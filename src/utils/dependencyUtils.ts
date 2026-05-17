@@ -16,8 +16,17 @@ export function isValidDependencyRelType(value: string): value is TaskDependency
 	return VALID_RELATIONSHIP_TYPES.includes(value as TaskDependencyRelType);
 }
 
-export function extractDependencyUid(entry: TaskDependency | string): string {
-	return typeof entry === "string" ? entry : entry.uid;
+export function extractDependencyUid(entry: unknown): string {
+	if (typeof entry === "string") {
+		return entry;
+	}
+
+	if (typeof entry === "object" && entry !== null) {
+		const uid = (entry as Record<string, unknown>).uid;
+		return typeof uid === "string" ? uid : "";
+	}
+
+	return "";
 }
 
 export function normalizeDependencyEntry(value: unknown): TaskDependency | null {

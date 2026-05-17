@@ -103,6 +103,18 @@ function getMenuItemElement(item: MenuItem): HTMLElement | null {
 	return menuItem.dom ?? menuItem.domEl ?? null;
 }
 
+function toMenuTitle(value: unknown, fallback = ""): string {
+	const text =
+		typeof value === "string" ||
+		typeof value === "number" ||
+		typeof value === "boolean" ||
+		typeof value === "bigint"
+			? String(value)
+			: "";
+	const trimmed = text.trim();
+	return trimmed.length > 0 ? trimmed : fallback;
+}
+
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
@@ -801,9 +813,10 @@ export class TaskContextMenu {
 				const innerMenu = getSubmenu(subItem);
 				blockedByEntries.forEach((entry, index) => {
 					innerMenu.addItem((item) => {
-						const uid =
-							extractDependencyUid(entry) ||
-							this.t("contextMenus.task.dependencies.unknownDependency");
+						const uid = toMenuTitle(
+							extractDependencyUid(entry),
+							this.t("contextMenus.task.dependencies.unknownDependency")
+						);
 						item.setTitle(uid);
 						item.onClick(async () => {
 							try {
@@ -1307,14 +1320,15 @@ export class TaskContextMenu {
 
 		statusOptions.forEach((option, index) => {
 			submenu.addItem((item) => {
-				let title = option.label;
+				const label = toMenuTitle(option.label, option.value);
+				let title = label;
 
 				// Use custom icon if configured, otherwise default to circle
 				item.setIcon(option.icon || "circle");
 
 				// Highlight current selection with visual indicator
 				if (option.value === task.status) {
-					title = this.t("contextMenus.task.statusSelected", { label: option.label });
+					title = this.t("contextMenus.task.statusSelected", { label });
 				}
 
 				item.setTitle(title);
@@ -1354,22 +1368,26 @@ export class TaskContextMenu {
 		const priorityOptions = plugin.priorityManager.getPrioritiesByWeight();
 
 		priorityOptions.forEach((priority) => {
+			const value = toMenuTitle(priority.value);
+			if (!value) return;
+			const label = toMenuTitle(priority.label, value);
+
 			submenu.addItem((item) => {
-				let title = priority.label;
+				let title = label;
 
 				// Use consistent icon for all items
 				item.setIcon("star");
 
 				// Highlight current selection with visual indicator
-				if (priority.value === task.priority) {
-					title = this.t("contextMenus.task.prioritySelected", { label: priority.label });
+				if (value === task.priority) {
+					title = this.t("contextMenus.task.prioritySelected", { label });
 				}
 
 				item.setTitle(title);
 
 				item.onClick(async () => {
 					try {
-						await plugin.updateTaskProperty(task, "priority", priority.value);
+						await plugin.updateTaskProperty(task, "priority", value);
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
@@ -1629,11 +1647,13 @@ export class TaskContextMenu {
 
 			// Show all statuses for all tasks (including recurring tasks)
 			sortedStatuses.forEach((status) => {
+				const value = toMenuTitle(status.value);
+				if (!value) return;
 				statusOptions.push({
-					label: status.label,
-					value: status.value,
-					color: status.color,
-					icon: status.icon,
+					label: toMenuTitle(status.label, value),
+					value,
+					color: typeof status.color === "string" ? status.color : undefined,
+					icon: typeof status.icon === "string" ? status.icon : undefined,
 				});
 			});
 		}
