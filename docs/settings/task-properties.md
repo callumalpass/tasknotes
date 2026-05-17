@@ -18,6 +18,8 @@ Each property card contains:
 - **Property-specific settings**: Additional configuration options specific to that property
 This tab defines the task schema used by creation flows, NLP parsing, views, and API payloads.
 
+Property keys are YAML/frontmatter keys. TaskNotes can read and write keys that contain spaces or punctuation, but hand-written Bases filters and formulas must reference those keys with bracket syntax, for example `note["TN-status"]`, rather than dot syntax such as `note.TN-status`.
+
 ## Core Properties
 
 ### Title
@@ -53,6 +55,8 @@ Each status value has:
 - **Auto-archive**: Automatically archive tasks after a delay (1-1440 minutes)
 
 Status cards support drag-and-drop reordering.
+
+Use the **Value** field as the stable stored identifier and the **Label** field for display text with spaces or title casing. TaskNotes status menus and cycling use the configured order, and TaskNotes Kanban views can preserve dragged column order. Native Bases grouping/sorting may still order status values alphabetically by their stored **Value**, so use prefixes such as `1-open`, `2-doing`, `3-done` if you need predictable native Bases order.
 
 #### Boolean Status Values
 
