@@ -6,6 +6,8 @@ import { TaskNotesSettings } from "../types/settings";
 import { StatusManager } from "../services/StatusManager";
 import { isPathInExcludedFolder, parseExcludedFolders } from "./pathExclusions";
 
+export const EVENT_DEPENDENCY_CACHE_CHANGED = "dependency-cache-changed";
+
 /**
  * Minimal cache for task dependencies and project references.
  * These require relationship tracking that can't be efficiently computed on-demand.
@@ -89,6 +91,7 @@ export class DependencyCache extends Events {
 		}
 
 		this.indexesBuilt = true;
+		this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 	}
 
 	/**
@@ -126,17 +129,20 @@ export class DependencyCache extends Events {
 	private handleFileChanged(file: TFile, cache: unknown): void {
 		if (!this.isValidFile(file.path)) {
 			this.clearFileFromIndexes(file.path);
+			this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 			return;
 		}
 
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) {
 			this.clearFileFromIndexes(file.path);
+			this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 			return;
 		}
 
 		if (!this.isTaskFileCallback(metadata.frontmatter)) {
 			this.clearFileFromIndexes(file.path);
+			this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 			return;
 		}
 
@@ -145,6 +151,7 @@ export class DependencyCache extends Events {
 		// Keep reverse dependencies intact - they'll be updated when other tasks change
 		this.clearForwardDependencies(file.path);
 		this.indexTaskFile(file.path, metadata.frontmatter);
+		this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 	}
 
 	/**
@@ -152,6 +159,7 @@ export class DependencyCache extends Events {
 	 */
 	private handleFileDeleted(path: string): void {
 		this.clearFileFromIndexes(path);
+		this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 	}
 
 	/**
@@ -172,6 +180,7 @@ export class DependencyCache extends Events {
 		) {
 			this.indexTaskFile(file.path, metadata.frontmatter);
 		}
+		this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 	}
 
 	/**
@@ -455,6 +464,7 @@ export class DependencyCache extends Events {
 		}
 
 		this.indexesBuilt = true;
+		this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
 	}
 
 	updateConfig(settings: TaskNotesSettings): void {

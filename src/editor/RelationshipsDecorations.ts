@@ -52,6 +52,7 @@ import {
 import { Extension } from "@codemirror/state";
 
 import TaskNotesPlugin from "../main";
+import { EVENT_DEPENDENCY_CACHE_CHANGED } from "../utils/DependencyCache";
 import {
 	ReadingModeInjectionContext,
 	ReadingModeInjectionScheduler,
@@ -203,6 +204,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	private widgetContainer: HTMLElement | null = null;
 	private debounceTimer: number | null = null;
 	private eventListeners: EventRef[] = [];
+	private dependencyCacheEventListeners: EventRef[] = [];
 	private injectionRunId = 0;
 
 	constructor(
@@ -248,6 +250,11 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			this.plugin.emitter.offref(listener);
 		});
 		this.eventListeners = [];
+
+		this.dependencyCacheEventListeners.forEach((listener) => {
+			this.plugin.dependencyCache?.offref(listener);
+		});
+		this.dependencyCacheEventListeners = [];
 	}
 
 	private setupEventListeners() {
@@ -263,6 +270,16 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			this.debouncedInjectWidget(this.view);
 		});
 		this.eventListeners.push(settingsListener);
+
+		const dependencyCacheListener = this.plugin.dependencyCache?.on(
+			EVENT_DEPENDENCY_CACHE_CHANGED,
+			() => {
+				this.debouncedInjectWidget(this.view);
+			}
+		);
+		if (dependencyCacheListener) {
+			this.dependencyCacheEventListeners.push(dependencyCacheListener);
+		}
 	}
 
 	private debouncedInjectWidget(view: EditorView): void {
@@ -619,6 +636,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	// Track event refs by source for proper cleanup
 	const workspaceRefs: EventRef[] = [];
 	const metadataCacheRefs: EventRef[] = [];
+	const dependencyCacheRefs: EventRef[] = [];
 	const scheduler = new ReadingModeInjectionScheduler();
 	const scheduleInjection = (leaf: WorkspaceLeaf) => {
 		scheduler.schedule(leaf, (context) => injectReadingModeWidget(leaf, plugin, context));
@@ -670,6 +688,14 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	});
 	metadataCacheRefs.push(metadataChangeRef);
 
+	const dependencyCacheChangeRef = plugin.dependencyCache?.on(
+		EVENT_DEPENDENCY_CACHE_CHANGED,
+		debouncedRefresh
+	);
+	if (dependencyCacheChangeRef) {
+		dependencyCacheRefs.push(dependencyCacheChangeRef);
+	}
+
 	// Initial injection for any already-open reading views
 	const leaves = plugin.app.workspace.getLeavesOfType("markdown");
 	leaves.forEach((leaf) => {
@@ -683,5 +709,6 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		// Clean up each type of event ref with the correct method
 		workspaceRefs.forEach((ref) => plugin.app.workspace.offref(ref));
 		metadataCacheRefs.forEach((ref) => plugin.app.metadataCache.offref(ref));
+		dependencyCacheRefs.forEach((ref) => plugin.dependencyCache?.offref(ref));
 	};
 }
