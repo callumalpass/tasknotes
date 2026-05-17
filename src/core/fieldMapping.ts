@@ -35,6 +35,9 @@ function normalizeStringValue(value: unknown): string | undefined {
 	if (value === null || value === undefined) return undefined;
 	if (typeof value === "string") return isBlankString(value) ? undefined : value;
 	if (typeof value === "number" || typeof value === "boolean") return String(value);
+	if (Array.isArray(value)) {
+		return value.length === 1 ? normalizeStringValue(value[0]) : undefined;
+	}
 	return undefined;
 }
 

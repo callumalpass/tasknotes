@@ -43,11 +43,96 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import { BasesDataAdapter } from '../../../src/bases/BasesDataAdapter';
+import { KanbanView } from '../../../src/bases/KanbanView';
+import { mapTaskFromFrontmatter } from '../../../src/core/fieldMapping';
+import { StatusManager } from '../../../src/services/StatusManager';
+import type { FieldMapping, StatusConfig, TaskInfo } from '../../../src/types';
 
 interface MockTaskInfo {
 	path: string;
 	title: string;
 	status?: string | string[];
+}
+
+class MockPrimitiveValue {
+	constructor(public data: unknown) {}
+}
+
+class MockListValue {
+	constructor(private items: unknown[]) {}
+
+	length(): number {
+		return this.items.length;
+	}
+
+	get(index: number): unknown {
+		return this.items[index];
+	}
+}
+
+const DONE_STATUS: StatusConfig = {
+	id: 'done',
+	value: 'done',
+	label: 'Done',
+	color: '#2ea043',
+	isCompleted: true,
+	order: 2,
+	autoArchive: false,
+	autoArchiveDelay: 5,
+};
+
+function makeBasesDataAdapter(): BasesDataAdapter {
+	return new BasesDataAdapter({
+		config: {},
+		data: {
+			data: [],
+			groupedData: [],
+		},
+	} as any);
+}
+
+function makeKanbanPlugin() {
+	return {
+		app: {
+			metadataCache: {
+				getFirstLinkpathDest: () => null,
+				getFileCache: () => undefined,
+			},
+			vault: {
+				getAbstractFileByPath: () => null,
+			},
+			workspace: {
+				getLeaf: () => ({
+					openFile: jest.fn(),
+				}),
+				openLinkText: jest.fn(),
+			},
+		},
+		fieldMapper: {
+			toUserField: (field: string) => field,
+			isRecognizedProperty: () => true,
+		},
+		statusManager: new StatusManager([DONE_STATUS], 'open'),
+		priorityManager: {
+			getAllPriorities: () => [],
+			normalizePriorityValue: (value: string) => value,
+		},
+		settings: {
+			customStatuses: [DONE_STATUS],
+			fieldMapping: {
+				sortOrder: 'sort_order',
+			},
+		},
+	};
+}
+
+function makeTask(path: string, status: string): TaskInfo {
+	return {
+		path,
+		title: path,
+		status,
+	} as TaskInfo;
 }
 
 /**
@@ -373,6 +458,69 @@ describe('Issue #990: YAML list status creates duplicate Kanban columns', () => 
 			}
 
 			// After fix: All three should produce equivalent grouping
+		});
+	});
+
+	describe('Current implementation', () => {
+		it('normalizes single-item status lists from frontmatter to the configured status value', () => {
+			const fieldMapping = { status: 'status' } as FieldMapping;
+
+			const mapped = mapTaskFromFrontmatter(
+				fieldMapping,
+				{ status: ['Done'] },
+				'tasks/property-editor-status.md',
+				false,
+				[],
+				[DONE_STATUS]
+			);
+
+			expect(mapped.status).toBe('done');
+		});
+
+		it('converts Bases list group keys to the same display key as scalar group keys', () => {
+			const adapter = makeBasesDataAdapter();
+
+			expect(adapter.convertGroupKeyToString(new MockPrimitiveValue('Done'))).toBe('Done');
+			expect(
+				adapter.convertGroupKeyToString(
+					new MockListValue([new MockPrimitiveValue('Done')])
+				)
+			).toBe('Done');
+		});
+
+		it('merges scalar and single-item list status groups into one Kanban column', () => {
+			const scalarTask = makeTask('tasks/scalar.md', 'done');
+			const listTask = makeTask('tasks/list.md', 'done');
+			const adapter = makeBasesDataAdapter();
+			const view = new KanbanView(
+				{},
+				document.createElement('div'),
+				makeKanbanPlugin() as any
+			);
+
+			(view as any).dataAdapter = {
+				getGroupedData: () => [
+					{
+						key: new MockPrimitiveValue('Done'),
+						entries: [{ file: { path: scalarTask.path } }],
+					},
+					{
+						key: new MockListValue([new MockPrimitiveValue('Done')]),
+						entries: [{ file: { path: listTask.path } }],
+					},
+				],
+				convertGroupKeyToString: adapter.convertGroupKeyToString.bind(adapter),
+				getSortConfig: () => [],
+			};
+
+			const groups = (view as any).groupTasks(
+				[scalarTask, listTask],
+				'status',
+				new Map()
+			);
+
+			expect(Array.from(groups.keys())).toEqual(['done']);
+			expect(groups.get('done')).toEqual([scalarTask, listTask]);
 		});
 	});
 });

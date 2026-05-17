@@ -132,12 +132,12 @@ export class BasesDataAdapter {
 	 * Handles: PrimitiveValue, ListValue, DateValue, FileValue, NullValue, etc.
 	 */
 	private convertValueToNative(value: unknown): unknown {
-			if (value === null || value === undefined) {
-				return null;
-			}
+		if (value === null || value === undefined) {
+			return null;
+		}
 
-			const basesValue = value as BasesValueInternals;
-			if (basesValue.constructor?.name === "NullValue") {
+		const basesValue = value as BasesValueInternals;
+		if (basesValue.constructor?.name === "NullValue") {
 			return null;
 		}
 
@@ -146,21 +146,9 @@ export class BasesDataAdapter {
 			return basesValue.data;
 		}
 
-		// ListValue
-		const getListItem =
-			typeof basesValue.get === "function"
-				? basesValue.get.bind(basesValue)
-				: typeof basesValue.at === "function"
-					? basesValue.at.bind(basesValue)
-					: null;
-		if (typeof basesValue.length === "function" && getListItem) {
-			const len = basesValue.length();
-			const result = [];
-			for (let i = 0; i < len; i++) {
-				const item = getListItem(i);
-				result.push(this.convertValueToNative(item));
-			}
-			return result;
+		const listValue = this.convertListValueToNative(basesValue);
+		if (listValue) {
+			return listValue;
 		}
 
 		// DateValue - check for date property (more reliable than constructor check)
@@ -177,18 +165,43 @@ export class BasesDataAdapter {
 		// FileValue
 		if (basesValue.file) {
 			return basesValue.file.path;
-			}
+		}
 
-			// Fallback: try to extract raw data
-			const toString = Reflect.get(basesValue, "toString");
-			if (typeof toString === "function" && toString !== Object.prototype.toString) {
-				const stringValue = Reflect.apply(toString, basesValue, []);
-				if (stringValue !== "[object Object]") {
-					return stringValue;
-				}
+		// Fallback: try to extract raw data
+		const toString = Reflect.get(basesValue, "toString");
+		if (typeof toString === "function" && toString !== Object.prototype.toString) {
+			const stringValue = Reflect.apply(toString, basesValue, []);
+			if (stringValue !== "[object Object]") {
+				return stringValue;
+			}
 		}
 
 		return value;
+	}
+
+	private convertListValueToNative(basesValue: BasesValueInternals): unknown[] | null {
+		const getListItem =
+			typeof basesValue.get === "function"
+				? basesValue.get.bind(basesValue)
+				: typeof basesValue.at === "function"
+					? basesValue.at.bind(basesValue)
+					: null;
+
+		if (typeof basesValue.length === "function" && getListItem) {
+			const len = basesValue.length();
+			const result = [];
+			for (let i = 0; i < len; i++) {
+				const item = getListItem(i);
+				result.push(this.convertValueToNative(item));
+			}
+			return result;
+		}
+
+		if (Array.isArray(basesValue.value)) {
+			return basesValue.value.map((item) => this.convertValueToNative(item));
+		}
+
+		return null;
 	}
 
 	/**
@@ -197,15 +210,15 @@ export class BasesDataAdapter {
 	 * For FileValue (links), returns the file path which can be rendered as a clickable link.
 	 */
 	convertGroupKeyToString(key: unknown): string {
-			// Check if key exists and is valid
-			if (key === null || key === undefined) {
-				return "Unknown";
-			}
+		// Check if key exists and is valid
+		if (key === null || key === undefined) {
+			return "Unknown";
+		}
 
-			const basesKey = key as BasesValueInternals;
-			if (basesKey.constructor?.name === "NullValue") {
-				return "Unknown";
-			}
+		const basesKey = key as BasesValueInternals;
+		if (basesKey.constructor?.name === "NullValue") {
+			return "Unknown";
+		}
 
 		// Extract the actual value from Bases Value object
 		let actualValue: unknown;
@@ -219,12 +232,19 @@ export class BasesDataAdapter {
 		else if (basesKey.date instanceof Date) {
 			actualValue = basesKey.date;
 		}
+		// ListValue stores each item as another Bases Value object
+		else {
+			const listValue = this.convertListValueToNative(basesKey);
+			if (listValue) {
+				actualValue = listValue;
+			}
+		}
 		// Other Value types have a .data property
-		else if (typeof basesKey.data !== "undefined") {
+		if (actualValue === undefined && typeof basesKey.data !== "undefined") {
 			actualValue = basesKey.data;
 		}
 		// Fallback: try to use the key directly
-		else {
+		else if (actualValue === undefined) {
 			actualValue = basesKey;
 		}
 
