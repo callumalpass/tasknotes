@@ -122,49 +122,37 @@
     transform: translateY(-0.5px);
 }
 
-/* Time Entry Events - Recorded time with distinctive dashed border */
+/* Time Entry Events - recorded time, intentionally quieter than actionable tasks */
 .fc-event[data-event-type="timeEntry"] {
-    opacity: 0.9;
+    opacity: 0.72;
     border-radius: 4px;
-    border-width: 2px;
-    border-style: dashed; /* Dashed border to differentiate from solid timeblocks */
-    background: repeating-linear-gradient(
-        45deg,
-        var(--tn-color-time-entry-bg-soft),
-        var(--tn-color-time-entry-bg-soft) 10px,
-        var(--tn-color-time-entry-bg-medium) 10px,
-        var(--tn-color-time-entry-bg-medium) 20px
-    ); /* Subtle diagonal stripes in green */
-    border-color: var(--tn-color-time-entry); /* Green to indicate "completed/recorded" time */
+    border-width: 1px;
+    border-style: dashed;
+    background: color-mix(in srgb, var(--tn-color-time-entry) 8%, transparent);
+    border-color: color-mix(in srgb, var(--tn-color-time-entry) 60%, transparent);
 }
 
 .fc-event[data-event-type="timeEntry"] .fc-event-time,
 .fc-event[data-event-type="timeEntry"] .fc-event-title {
-    color: var(--tn-color-time-entry-text); /* Darker green for better readability */
-    font-weight: 500;
+    color: var(--tn-color-time-entry-text);
+    font-weight: 400;
 }
 
 .fc-event[data-event-type="timeEntry"]:hover {
-    opacity: 1;
-    box-shadow: 0 2px 6px color-mix(in srgb, var(--tn-color-time-entry) 30%, transparent);
-    border-style: solid; /* Solid border on hover for clarity */
+    opacity: 0.9;
+    background: color-mix(in srgb, var(--tn-color-time-entry) 12%, transparent);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--tn-color-time-entry) 18%, transparent);
 }
 
 /* Dark mode adjustments for time entries */
 .theme-dark .fc-event[data-event-type="timeEntry"] {
-    background: repeating-linear-gradient(
-        45deg,
-        var(--tn-color-time-entry-bg-soft-dark),
-        var(--tn-color-time-entry-bg-soft-dark) 10px,
-        var(--tn-color-time-entry-bg-medium-dark) 10px,
-        var(--tn-color-time-entry-bg-medium-dark) 20px
-    );
-    border-color: var(--tn-color-time-entry-dark); /* Lighter green for dark mode */
+    background: color-mix(in srgb, var(--tn-color-time-entry-dark) 12%, transparent);
+    border-color: color-mix(in srgb, var(--tn-color-time-entry-dark) 65%, transparent);
 }
 
 .theme-dark .fc-event[data-event-type="timeEntry"] .fc-event-time,
 .theme-dark .fc-event[data-event-type="timeEntry"] .fc-event-title {
-    color: var(--tn-color-time-entry-text-dark); /* Even lighter green for text in dark mode */
+    color: var(--tn-color-time-entry-text-dark);
 }
 
 /* Task Events */

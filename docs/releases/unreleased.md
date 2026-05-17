@@ -103,6 +103,7 @@ Example:
 
 ## Fixed
 
+- ([#1159](https://github.com/callumalpass/tasknotes/issues/1159)) Softened Calendar time-entry styling so recorded time blocks no longer visually outweigh task events. Thanks to @hatespinach for reporting this.
 - ([#1191](https://github.com/callumalpass/tasknotes/issues/1191)) Aligned the task-card and relationships widgets inside notes with Obsidian's editor margins, including readable-line-width layouts. Thanks to @minchinweb for reporting this.
 - ([#1183](https://github.com/callumalpass/tasknotes/issues/1183)) Kept the Calendar create menu open after drag-selecting a time range, so the selected duration can be used when creating a task. Thanks to @randomness42 for reporting this.
 - ([#1179](https://github.com/callumalpass/tasknotes/issues/1179)) Stopped Calendar Bases views from repainting after unrelated note updates when the visible calendar data has not changed. Thanks to @same774 for reporting this.
