@@ -35,6 +35,9 @@ import {
 	hasFormulaGetter,
 	isObsidianListProperty,
 } from "./basesViewAdapters";
+import {
+	coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter,
+} from "./propertyValueCoercion";
 
 type KanbanDataAdapterWithView = {
 	basesView: KanbanView;
@@ -1658,7 +1661,7 @@ export class KanbanView extends BasesViewBase {
 			return;
 		}
 
-		frontmatter[property] = groupKey;
+		frontmatter[property] = this.coerceGroupKeyForFrontmatter(property, groupKey);
 	}
 
 	private getCreatableFrontmatterProperty(propertyId: string): string | null {
@@ -1702,6 +1705,18 @@ export class KanbanView extends BasesViewBase {
 
 		const userField = this.plugin.settings.userFields?.find((field) => field.key === property);
 		return userField?.type === "list" || this.isListTypeProperty(property);
+	}
+
+	private coerceGroupKeyForFrontmatter(
+		property: string,
+		groupKey: string
+	): string | number | boolean {
+		return coercePropertyGroupKeyForFrontmatter(
+			this.plugin.app,
+			property,
+			groupKey,
+			this.plugin.settings.userFields
+		);
 	}
 
 	private createVirtualColumn(
@@ -3675,7 +3690,10 @@ export class KanbanView extends BasesViewBase {
 								}
 								fm[frontmatterKey] = newValue.length > 0 ? newValue : [];
 							} else {
-								fm[frontmatterKey] = newGroupValue;
+								fm[frontmatterKey] = this.coerceGroupKeyForFrontmatter(
+									frontmatterKey,
+									newGroupValue
+								);
 							}
 						}
 
@@ -3701,7 +3719,10 @@ export class KanbanView extends BasesViewBase {
 								}
 								fm[swimKey] = newValue.length > 0 ? newValue : [];
 							} else {
-								fm[swimKey] = newSwimLaneValue;
+								fm[swimKey] = this.coerceGroupKeyForFrontmatter(
+									swimKey,
+									newSwimLaneValue
+								);
 							}
 						}
 

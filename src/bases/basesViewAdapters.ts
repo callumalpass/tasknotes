@@ -31,11 +31,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function isObsidianListProperty(app: App, propertyName: string): boolean {
-	const metadataTypeManager = (app as unknown as MetadataTypeManagerSource)
-		.metadataTypeManager;
+	const propertyType = getObsidianPropertyType(app, propertyName);
+	return typeof propertyType === "string" && OBSIDIAN_LIST_PROPERTY_TYPES.has(propertyType);
+}
+
+export function getObsidianPropertyType(app: App, propertyName: string): string | null {
+	const metadataTypeManager = (app as unknown as MetadataTypeManagerSource).metadataTypeManager;
 	const propertyInfo = metadataTypeManager?.properties?.[propertyName.toLowerCase()];
 	const propertyType = propertyInfo?.type ?? propertyInfo?.widget;
-	return typeof propertyType === "string" && OBSIDIAN_LIST_PROPERTY_TYPES.has(propertyType);
+	return typeof propertyType === "string" ? propertyType : null;
 }
 
 export function getBasesFormulaContext(data: unknown): BasesFormulaContext | undefined {

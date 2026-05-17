@@ -38,6 +38,9 @@ import {
 	hasFormulaGetter,
 	isObsidianListProperty,
 } from "./basesViewAdapters";
+import {
+	coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter,
+} from "./propertyValueCoercion";
 
 type TaskListDropBaselineCard = {
 	path: string;
@@ -458,6 +461,18 @@ export class TaskListView extends BasesViewBase {
 			"tags",
 			"aliases",
 		]).has(propertyName);
+	}
+
+	private coerceGroupKeyForFrontmatter(
+		property: string,
+		groupKey: string
+	): string | number | boolean {
+		return coercePropertyGroupKeyForFrontmatter(
+			this.plugin.app,
+			property,
+			groupKey,
+			this.plugin.settings.userFields
+		);
 	}
 
 	private async confirmLargeReorder(
@@ -1204,7 +1219,10 @@ export class TaskListView extends BasesViewBase {
 					} else if (normalizedTargetGroupKey === null) {
 						delete fm[frontmatterKey];
 					} else {
-						fm[frontmatterKey] = normalizedTargetGroupKey;
+						fm[frontmatterKey] = this.coerceGroupKeyForFrontmatter(
+							frontmatterKey,
+							normalizedTargetGroupKey
+						);
 					}
 
 					// Derivative writes for status changes (completedDate + dateModified)
