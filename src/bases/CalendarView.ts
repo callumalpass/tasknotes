@@ -1,4 +1,5 @@
 import TaskNotesPlugin from "../main";
+import type { BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
@@ -3387,17 +3388,16 @@ export class CalendarView extends BasesViewBase {
 // Factory function
 /**
  * Factory function for Bases registration.
- * Returns an actual CalendarView instance (extends BasesView).
+ * Returns an actual CalendarView instance adapted to the BasesView factory type.
  */
-export function buildCalendarViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: unknown, containerEl: HTMLElement): CalendarView {
+export function buildCalendarViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
+	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
 			console.error("[TaskNotes][CalendarView] No containerEl provided");
 			throw new Error("CalendarView requires a containerEl");
 		}
 
-		// Create and return the view instance directly
-		// CalendarView now properly extends BasesView, so Bases can call its methods directly
-		return new CalendarView(controller, containerEl, plugin);
+		// Create and return the view instance directly; Bases assigns runtime view fields.
+		return new CalendarView(controller, containerEl, plugin) as unknown as BasesView;
 	};
 }

@@ -8,7 +8,7 @@ import {
 	moment as obsidianMoment,
 	Menu,
 } from "obsidian";
-import type { BasesEntry, BasesPropertyId } from "obsidian";
+import type { BasesEntry, BasesPropertyId, BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { ICSEvent, TaskInfo } from "../types";
@@ -1579,17 +1579,16 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 // Factory function
 /**
  * Factory function for Bases registration.
- * Returns an actual MiniCalendarView instance (extends BasesView).
+ * Returns an actual MiniCalendarView instance adapted to the BasesView factory type.
  */
-export function buildMiniCalendarViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: unknown, containerEl: HTMLElement): MiniCalendarView {
+export function buildMiniCalendarViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
+	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
 			console.error("[TaskNotes][MiniCalendarView] No containerEl provided");
 			throw new Error("MiniCalendarView requires a containerEl");
 		}
 
-		// Create and return the view instance directly
-		// MiniCalendarView now properly extends BasesView, so Bases can call its methods directly
-		return new MiniCalendarView(controller, containerEl, plugin);
+		// Create and return the view instance directly; Bases assigns runtime view fields.
+		return new MiniCalendarView(controller, containerEl, plugin) as unknown as BasesView;
 	};
 }

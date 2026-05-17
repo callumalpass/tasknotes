@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Notice, TFile, setIcon } from "obsidian";
+import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
@@ -2767,17 +2768,16 @@ export class TaskListView extends BasesViewBase {
 
 /**
  * Factory function for Bases registration.
- * Returns an actual TaskListView instance (extends BasesView).
+ * Returns an actual TaskListView instance adapted to the BasesView factory type.
  */
-export function buildTaskListViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: unknown, containerEl: HTMLElement): TaskListView {
+export function buildTaskListViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
+	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
 			console.error("[TaskNotes][TaskListView] No containerEl provided");
 			throw new Error("TaskListView requires a containerEl");
 		}
 
-		// Create and return the view instance directly
-		// TaskListView now properly extends BasesView, so Bases can call its methods directly
-		return new TaskListView(controller, containerEl, plugin);
+		// Create and return the view instance directly; Bases assigns runtime view fields.
+		return new TaskListView(controller, containerEl, plugin) as unknown as BasesView;
 	};
 }

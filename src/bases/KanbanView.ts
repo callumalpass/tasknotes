@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian";
+import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import type { StatusConfig, TaskInfo } from "../types";
@@ -4251,17 +4252,16 @@ export class KanbanView extends BasesViewBase {
 
 /**
  * Factory function for Bases registration.
- * Returns an actual KanbanView instance (extends BasesView).
+ * Returns an actual KanbanView instance adapted to the BasesView factory type.
  */
-export function buildKanbanViewFactory(plugin: TaskNotesPlugin) {
-	return function (controller: unknown, containerEl: HTMLElement): KanbanView {
+export function buildKanbanViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
+	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
 			console.error("[TaskNotes][KanbanView] No containerEl provided");
 			throw new Error("KanbanView requires a containerEl");
 		}
 
-		// Create and return the view instance directly
-		// KanbanView now properly extends BasesView, so Bases can call its methods directly
-		return new KanbanView(controller, containerEl, plugin);
+		// Create and return the view instance directly; Bases assigns runtime view fields.
+		return new KanbanView(controller, containerEl, plugin) as unknown as BasesView;
 	};
 }
