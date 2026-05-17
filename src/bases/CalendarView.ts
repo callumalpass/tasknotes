@@ -386,6 +386,18 @@ export function shouldWidenTodayColumn(
 	return viewType === "timeGridWeek" || viewType === "timeGridCustom";
 }
 
+export function isTimeGridCalendarView(viewType: string): boolean {
+	return (
+		viewType === "timeGridWeek" ||
+		viewType === "timeGridCustom" ||
+		viewType === "timeGridDay"
+	);
+}
+
+export function shouldHideCalendarTimeGrid(showTimeGrid: boolean, viewType: string): boolean {
+	return !showTimeGrid && isTimeGridCalendarView(viewType);
+}
+
 export type CalendarHeightMode = "fill" | "auto";
 
 export type CalendarSizingOptions = {
@@ -627,6 +639,7 @@ export class CalendarView extends BasesViewBase {
 		nowIndicator: boolean;
 		showWeekends: boolean;
 		showAllDaySlot: boolean;
+		showTimeGrid: boolean;
 		showTodayHighlight: boolean;
 		todayColumnWidthMultiplier: number;
 		selectMirror: boolean;
@@ -698,6 +711,7 @@ export class CalendarView extends BasesViewBase {
 			nowIndicator: calendarSettings.nowIndicator,
 			showWeekends: calendarSettings.showWeekends,
 			showAllDaySlot: true,
+			showTimeGrid: true,
 			showTodayHighlight: calendarSettings.showTodayHighlight,
 			todayColumnWidthMultiplier: 1,
 			selectMirror: calendarSettings.selectMirror,
@@ -839,6 +853,7 @@ export class CalendarView extends BasesViewBase {
 			read("nowIndicator"),
 			read("showWeekends"),
 			read("showAllDaySlot"),
+			read("showTimeGrid"),
 			read("showTodayHighlight"),
 			read("todayColumnWidthMultiplier"),
 			read("selectMirror"),
@@ -1172,6 +1187,10 @@ export class CalendarView extends BasesViewBase {
 				"showAllDaySlot",
 				this.viewOptions.showAllDaySlot
 			);
+			this.viewOptions.showTimeGrid = this.getConfigOption(
+				"showTimeGrid",
+				this.viewOptions.showTimeGrid
+			);
 			this.viewOptions.showTodayHighlight = this.getConfigOption(
 				"showTodayHighlight",
 				this.viewOptions.showTodayHighlight
@@ -1248,6 +1267,7 @@ export class CalendarView extends BasesViewBase {
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;
+			this.applyLayoutClasses();
 
 			// Apply today highlight styling if calendar is already initialized
 			if (this.calendar) {
@@ -1517,10 +1537,12 @@ export class CalendarView extends BasesViewBase {
 					this.viewOptions.calendarView = newViewType;
 					this.debouncedSaveViewType(newViewType);
 				}
+				this.applyLayoutClasses();
 				this.scheduleTodayColumnWidthUpdate();
 				this.scheduleDailyNoteHeaderLinkUpdate();
 			},
 			datesSet: () => {
+				this.applyLayoutClasses();
 				this.scheduleTodayColumnWidthUpdate();
 				this.scheduleDailyNoteHeaderLinkUpdate();
 			},
@@ -1530,6 +1552,7 @@ export class CalendarView extends BasesViewBase {
 		this.calendar = new Calendar(this.calendarEl, calendarOptions);
 		this.calendar.render();
 		this._recreateTargetDate = null;
+		this.applyLayoutClasses();
 
 		// Apply showTodayHighlight option via CSS
 		this.applyTodayHighlightStyling();
@@ -1643,7 +1666,31 @@ export class CalendarView extends BasesViewBase {
 		);
 	}
 
+	private applyTimeGridVisibilityClass(): void {
+		const hideTimeGrid = shouldHideCalendarTimeGrid(
+			this.viewOptions.showTimeGrid,
+			this.viewOptions.calendarView
+		);
+
+		this.rootElement?.classList.toggle("advanced-calendar-view--hide-time-grid", hideTimeGrid);
+		this.calendarEl?.classList.toggle(
+			"advanced-calendar-view__calendar--hide-time-grid",
+			hideTimeGrid
+		);
+	}
+
+	private applyLayoutClasses(): void {
+		this.applyHeightModeClass();
+		this.applyTimeGridVisibilityClass();
+	}
+
 	private getEffectiveHeightMode(): CalendarHeightMode {
+		if (
+			shouldHideCalendarTimeGrid(this.viewOptions.showTimeGrid, this.viewOptions.calendarView)
+		) {
+			return "auto";
+		}
+
 		return resolveEffectiveCalendarHeightMode(
 			this.viewOptions.heightMode,
 			this.viewOptions.calendarView,
@@ -3240,7 +3287,7 @@ export class CalendarView extends BasesViewBase {
 			calendarEl.classList.add("tn-static-flex-1-14e3b769");
 			this.rootElement.appendChild(calendarEl);
 			this.calendarEl = calendarEl;
-			this.applyHeightModeClass();
+			this.applyLayoutClasses();
 		}
 	}
 

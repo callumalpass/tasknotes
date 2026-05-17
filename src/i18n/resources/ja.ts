@@ -249,6 +249,7 @@ export const ja: TranslationTree = {
 					showNowIndicator: "現在の時刻インジケータを表示",
 					showWeekends: "週末を表示",
 					showAllDaySlot: "終日スロットを表示",
+					showTimeGrid: "時間グリッドを表示",
 					showTodayHighlight: "今日をハイライト",
 					todayColumnWidthMultiplier: "今日列の幅倍率",
 					showSelectionPreview: "選択プレビューを表示",

@@ -646,6 +646,14 @@
     overflow: visible;
 }
 
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid .fc-timegrid .fc-timegrid-divider {
+    display: none;
+}
+
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid .fc-timegrid .fc-timegrid-body {
+    display: none;
+}
+
 .advanced-calendar-view .fc-scrollgrid {
     width: 100%;
 }

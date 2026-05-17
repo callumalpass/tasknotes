@@ -249,6 +249,7 @@ export const zh: TranslationTree = {
 					showNowIndicator: "显示当前时间指示器",
 					showWeekends: "显示周末",
 					showAllDaySlot: "显示全天时段",
+					showTimeGrid: "显示小时网格",
 					showTodayHighlight: "突出显示今天",
 					todayColumnWidthMultiplier: "今天列宽倍率",
 					showSelectionPreview: "显示选择预览",

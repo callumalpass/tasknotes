@@ -249,6 +249,7 @@ export const ko: TranslationTree = {
 					showNowIndicator: "현재 시간 표시",
 					showWeekends: "주말 표시",
 					showAllDaySlot: "종일 슬롯 표시",
+					showTimeGrid: "시간대 그리드 표시",
 					showTodayHighlight: "오늘 강조 표시",
 					todayColumnWidthMultiplier: "오늘 열 너비 배수",
 					showSelectionPreview: "선택 미리보기 표시",

@@ -249,6 +249,7 @@ export const ru: TranslationTree = {
 					showNowIndicator: "Показать индикатор текущего времени",
 					showWeekends: "Показать выходные",
 					showAllDaySlot: "Показать слот на весь день",
+					showTimeGrid: "Показать часовую сетку",
 					showTodayHighlight: "Выделить сегодня",
 					todayColumnWidthMultiplier: "Множитель ширины колонки сегодняшнего дня",
 					showSelectionPreview: "Показать предпросмотр выбора",

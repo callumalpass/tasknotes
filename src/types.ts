@@ -757,6 +757,7 @@ export interface CalendarViewPreferences {
 	showTimeblocks?: boolean;
 	headerCollapsed?: boolean;
 	showAllDaySlot?: boolean;
+	showTimeGrid?: boolean;
 }
 
 // All view-specific preferences

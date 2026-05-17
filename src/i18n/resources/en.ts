@@ -263,6 +263,7 @@ export const en: TranslationTree = {
 					showNowIndicator: "Show now indicator",
 					showWeekends: "Show weekends",
 					showAllDaySlot: "Show all-day slot",
+					showTimeGrid: "Show hourly breakdown",
 					showTodayHighlight: "Show today highlight",
 					todayColumnWidthMultiplier: "Today column width multiplier",
 					showSelectionPreview: "Show selection preview",

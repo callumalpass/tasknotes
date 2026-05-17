@@ -364,6 +364,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 									},
 									{
 										type: "toggle",
+										key: "showTimeGrid",
+										displayName: t("layout.showTimeGrid"),
+										default: true,
+									},
+									{
+										type: "toggle",
 										key: "showTodayHighlight",
 										displayName: t("layout.showTodayHighlight"),
 										default: calendarSettings.showTodayHighlight,
