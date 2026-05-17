@@ -80,6 +80,16 @@ export class DateContextMenu {
 		return this.options.plugin?.i18n.translate(key, params) || fallback || key;
 	}
 
+	private getFirstDayOfWeek(): number {
+		const firstDay = this.options.plugin?.settings?.calendarViewSettings?.firstDay;
+		return typeof firstDay === "number" &&
+			Number.isInteger(firstDay) &&
+			firstDay >= 0 &&
+			firstDay <= 6
+			? firstDay
+			: 0;
+	}
+
 	private buildMenu(): void {
 		if (this.options.title) {
 			this.menu.addItem((item) => {
@@ -253,8 +263,14 @@ export class DateContextMenu {
 			"Friday",
 			"Saturday",
 		];
-		weekdayCodes.forEach((dayName, index) => {
-			let targetDate = today.clone().day(index);
+		const firstDay = this.getFirstDayOfWeek();
+		const orderedWeekdayCodes = [
+			...weekdayCodes.slice(firstDay),
+			...weekdayCodes.slice(0, firstDay),
+		];
+		orderedWeekdayCodes.forEach((dayName) => {
+			const dayIndex = weekdayCodes.indexOf(dayName);
+			let targetDate = today.clone().day(dayIndex);
 			if (targetDate.isSameOrBefore(today, "day")) {
 				targetDate = targetDate.add(1, "week");
 			}
