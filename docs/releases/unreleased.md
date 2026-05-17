@@ -65,6 +65,7 @@ Example:
 ## Changed
 
 - Added guidance in Pomodoro statistics and Base file settings explaining that Pomodoro Base views require daily notes storage.
+- ([#1348](https://github.com/callumalpass/tasknotes/issues/1348)) Let long task titles wrap inside the Create/Edit Task modal title field while keeping saved titles single-line, and widened the contexts and tags fields in the modal details area. Thanks to @hasanyilmaz for suggesting this.
 - ([#1392](https://github.com/callumalpass/tasknotes/issues/1392)) Made TaskNotes date fields accept compact `YYYYMMDD` typing and pasted dates. Thanks to @kazerniel for suggesting this.
 - ([#1431](https://github.com/callumalpass/tasknotes/issues/1431)) Showed the year on task-card due and scheduled dates when the date is outside the current year. Thanks to @kazerniel for suggesting this.
 - ([#1429](https://github.com/callumalpass/tasknotes/issues/1429)) Opened TaskNotes view commands in a new tab when they load configured Base files, so they do not replace the active note. Thanks to @Ruboks-Cube for suggesting this.

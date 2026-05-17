@@ -333,6 +333,7 @@
 .tasknotes-plugin .title-input {
     width: 100%;
     padding: var(--size-4-2) var(--size-4-1);
+    font-family: inherit;
     font-size: var(--font-ui-large);
     font-weight: 500;
     line-height: 1.4;
@@ -342,6 +343,9 @@
     color: var(--text-normal);
     resize: none;
     min-height: 44px;
+    max-height: calc((var(--font-ui-large) * 1.4 * 3) + (var(--size-4-2) * 2));
+    height: var(--tn-task-modal-title-height, auto);
+    overflow-y: var(--tn-task-modal-title-overflow-y, hidden);
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -442,6 +446,7 @@
 .tasknotes-plugin .title-input-detailed {
     width: 100%;
     padding: var(--size-4-2);
+    font-family: inherit;
     font-size: var(--font-ui-medium);
     font-weight: 500;
     line-height: 1.4;
@@ -449,6 +454,11 @@
     border-radius: var(--radius-s);
     background: transparent;
     color: var(--text-normal);
+    resize: none;
+    min-height: calc((var(--font-ui-medium) * 1.4) + (var(--size-4-2) * 2) + 2px);
+    max-height: calc((var(--font-ui-medium) * 1.4 * 3) + (var(--size-4-2) * 2) + 2px);
+    height: var(--tn-task-modal-title-height, auto);
+    overflow-y: var(--tn-task-modal-title-overflow-y, hidden);
     margin-bottom: var(--size-4-3);
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
@@ -509,6 +519,7 @@
 }
 
 .tasknotes-plugin .details-container .setting-item-control input {
+    min-width: 0;
     background: transparent;
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
@@ -521,6 +532,24 @@
     border-color: var(--interactive-accent);
     background: transparent;
     outline: none;
+}
+
+.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting {
+    gap: var(--size-4-3);
+}
+
+.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting .setting-item-info {
+    flex: 1 1 35%;
+    min-width: 7rem;
+}
+
+.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting .setting-item-control {
+    flex: 1 1 65%;
+    min-width: min(100%, 14rem);
+}
+
+.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting .setting-item-control input {
+    width: 100%;
 }
 
 /* =====================================================================

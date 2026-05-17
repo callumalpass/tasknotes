@@ -58,10 +58,12 @@ interface UserFieldToggleControl {
 	setValue(value: boolean): unknown;
 }
 
+type TaskTitleInputElement = HTMLInputElement | HTMLTextAreaElement;
+
 export abstract class TaskModal extends Modal {
 	plugin: TaskNotesPlugin;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
-	private guardedTitleInputs = new WeakSet<HTMLInputElement>();
+	private guardedTitleInputs = new WeakSet<TaskTitleInputElement>();
 	private pendingTitleFocusScrollPositions: Array<{
 		element: HTMLElement;
 		scrollTop: number;
@@ -326,7 +328,7 @@ export abstract class TaskModal extends Modal {
 	protected initialSubtaskFiles: TAbstractFile[] = [];
 
 	// UI elements
-	protected titleInput: HTMLInputElement;
+	protected titleInput: TaskTitleInputElement;
 	protected detailsInput: HTMLTextAreaElement; // Legacy - kept for compatibility
 	protected detailsMarkdownEditor: EmbeddableMarkdownEditor | null = null;
 	protected contextsInput: HTMLInputElement;
@@ -489,17 +491,88 @@ export abstract class TaskModal extends Modal {
 	protected createTitleInput(container: HTMLElement): void {
 		const titleContainer = container.createDiv("title-input-container");
 
-		this.titleInput = titleContainer.createEl("input", {
-			type: "text",
-			cls: "title-input",
-			placeholder: this.t("modals.task.titlePlaceholder"),
+		this.titleInput = this.createTitleTextarea(
+			titleContainer,
+			"title-input",
+			this.t("modals.task.titlePlaceholder")
+		);
+		this.bindTitleInput(this.titleInput);
+	}
+
+	private createTitleTextarea(
+		container: HTMLElement,
+		cls: string,
+		placeholder: string
+	): HTMLTextAreaElement {
+		const input = container.createEl("textarea", { cls });
+		input.placeholder = placeholder;
+		input.rows = 1;
+		input.spellcheck = true;
+		input.setAttribute("aria-label", placeholder);
+
+		input.addEventListener("keydown", (event) => {
+			if (event.key === "Enter" && !event.ctrlKey && !event.metaKey) {
+				event.preventDefault();
+			}
 		});
 
-		this.titleInput.value = this.title;
-		this.titleInput.addEventListener("input", (e) => {
-			this.title = (e.target as HTMLInputElement).value;
+		return input;
+	}
+
+	private bindTitleInput(input: TaskTitleInputElement): void {
+		input.value = this.title;
+		input.addEventListener("input", (event) => {
+			const target = event.target as TaskTitleInputElement;
+			const normalizedTitle = target.value.replace(/\s*\n+\s*/g, " ");
+			if (target.value !== normalizedTitle) {
+				target.value = normalizedTitle;
+			}
+			this.title = normalizedTitle;
+			this.resizeTitleTextarea(target);
 		});
-		this.attachTitleFocusScrollGuard(this.titleInput);
+		this.attachTitleFocusScrollGuard(input);
+		this.resizeTitleTextarea(input);
+	}
+
+	private resizeTitleTextarea(input: TaskTitleInputElement): void {
+		const inputWindow = input.ownerDocument.defaultView;
+		const TextAreaConstructor = inputWindow?.HTMLTextAreaElement ?? HTMLTextAreaElement;
+		if (!(input instanceof TextAreaConstructor)) return;
+
+		const computed = inputWindow?.getComputedStyle(input);
+		const lineHeight = computed ? Number.parseFloat(computed.lineHeight) : 0;
+		const paddingTop = computed ? Number.parseFloat(computed.paddingTop) || 0 : 0;
+		const paddingBottom = computed ? Number.parseFloat(computed.paddingBottom) || 0 : 0;
+		const borderTop = computed ? Number.parseFloat(computed.borderTopWidth) || 0 : 0;
+		const borderBottom = computed ? Number.parseFloat(computed.borderBottomWidth) || 0 : 0;
+		const maxHeight =
+			(lineHeight > 0 ? lineHeight * 3 : 72) +
+			paddingTop +
+			paddingBottom +
+			borderTop +
+			borderBottom;
+
+		this.setTitleTextareaCssProps(input, { "--tn-task-modal-title-height": "auto" });
+		const nextHeight = Math.min(input.scrollHeight, maxHeight);
+		this.setTitleTextareaCssProps(input, {
+			"--tn-task-modal-title-height": `${nextHeight}px`,
+			"--tn-task-modal-title-overflow-y":
+				input.scrollHeight > maxHeight ? "auto" : "hidden",
+		});
+	}
+
+	private setTitleTextareaCssProps(
+		input: HTMLTextAreaElement,
+		props: Record<string, string>
+	): void {
+		if (typeof input.setCssProps === "function") {
+			input.setCssProps(props);
+			return;
+		}
+
+		for (const [property, value] of Object.entries(props)) {
+			input.style.setProperty(property, value);
+		}
 	}
 
 	protected createActionBar(container: HTMLElement): void {
@@ -674,17 +747,12 @@ export abstract class TaskModal extends Modal {
 			const titleLabel = this.detailsContainer.createDiv("detail-label");
 			titleLabel.textContent = this.t("modals.task.titleLabel");
 
-			const titleInputDetailed = this.detailsContainer.createEl("input", {
-				type: "text",
-				cls: "title-input-detailed",
-				placeholder: this.t("modals.task.titleDetailedPlaceholder"),
-			});
-
-			titleInputDetailed.value = this.title;
-			titleInputDetailed.addEventListener("input", (e) => {
-				this.title = (e.target as HTMLInputElement).value;
-			});
-			this.attachTitleFocusScrollGuard(titleInputDetailed);
+			const titleInputDetailed = this.createTitleTextarea(
+				this.detailsContainer,
+				"title-input-detailed",
+				this.t("modals.task.titleDetailedPlaceholder")
+			);
+			this.bindTitleInput(titleInputDetailed);
 
 			// Store reference for modals that use this as their title input
 			if ((isEditModal || isCreationWithNLP) && !this.titleInput) {
@@ -807,7 +875,9 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createContextsField(container: HTMLElement): void {
-		new Setting(container).setName(this.t("modals.task.contextsLabel")).addText((text) => {
+		const setting = new Setting(container);
+		setting.settingEl.addClass("tn-task-modal__wide-text-setting");
+		setting.setName(this.t("modals.task.contextsLabel")).addText((text) => {
 			text.setPlaceholder(this.t("modals.task.contextsPlaceholder"))
 				.setValue(this.contexts)
 				.onChange((value) => {
@@ -823,7 +893,9 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createTagsField(container: HTMLElement): void {
-		new Setting(container).setName(this.t("modals.task.tagsLabel")).addText((text) => {
+		const setting = new Setting(container);
+		setting.settingEl.addClass("tn-task-modal__wide-text-setting");
+		setting.setName(this.t("modals.task.tagsLabel")).addText((text) => {
 			text.setPlaceholder(this.t("modals.task.tagsPlaceholder"))
 				.setValue(this.tags)
 				.onChange((value) => {
@@ -1698,7 +1770,7 @@ export abstract class TaskModal extends Modal {
 		return this.isMobileLikeEnvironment();
 	}
 
-	private attachTitleFocusScrollGuard(input: HTMLInputElement): void {
+	private attachTitleFocusScrollGuard(input: TaskTitleInputElement): void {
 		if (this.guardedTitleInputs.has(input)) return;
 		this.guardedTitleInputs.add(input);
 
@@ -1714,7 +1786,7 @@ export abstract class TaskModal extends Modal {
 		});
 	}
 
-	private captureTitleFocusScrollPositions(input: HTMLInputElement): Array<{
+	private captureTitleFocusScrollPositions(input: TaskTitleInputElement): Array<{
 		element: HTMLElement;
 		scrollTop: number;
 		scrollLeft: number;

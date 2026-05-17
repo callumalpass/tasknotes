@@ -11,7 +11,7 @@ class TestTaskModal extends TaskModal {
 		return 'Test task modal';
 	}
 
-	renderTitleInput(container: HTMLElement): HTMLInputElement {
+	renderTitleInput(container: HTMLElement): HTMLInputElement | HTMLTextAreaElement {
 		this.createTitleInput(container);
 		return (this as any).titleInput;
 	}
