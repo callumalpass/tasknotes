@@ -32,11 +32,13 @@ import {
 	getTaskCardPropertyValue,
 } from "./taskCardHelpers";
 import {
+	appendInternalLink,
 	renderProjectLinks,
 	renderTextWithLinks,
 	type LinkServices,
 } from "./renderers/linkRenderer";
 import { renderContextsValue, renderTagsValue, type TagServices } from "./renderers/tagRenderer";
+import { normalizeDependencyEntry, resolveDependencyEntry } from "../utils/dependencyUtils";
 
 export interface TaskCardPropertyOptions {
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
@@ -89,6 +91,46 @@ function formatICSEventSummary(icsEvent: ICSEvent, plugin: TaskNotesPlugin): str
 			})
 		: "";
 	return dateText ? `${icsEvent.title} (${dateText})` : icsEvent.title;
+}
+
+interface DependencyDisplayLink {
+	path: string;
+	displayText: string;
+}
+
+function getPathDisplayName(path: string): string {
+	return path.split("/").pop()?.replace(/\.md$/i, "") || path;
+}
+
+function getDependencyDisplayLink(
+	value: unknown,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): DependencyDisplayLink | null {
+	const normalized = normalizeDependencyEntry(value);
+	if (normalized) {
+		const resolved = resolveDependencyEntry(plugin.app, task.path, normalized);
+		const path = resolved?.path || normalized.uid;
+		if (!path) {
+			return null;
+		}
+		return {
+			path,
+			displayText: resolved?.file.basename || getPathDisplayName(path),
+		};
+	}
+
+	if (typeof value === "object" && value !== null) {
+		const path = (value as Record<string, unknown>).path;
+		if (typeof path === "string" && path.trim() !== "") {
+			return {
+				path: path.trim(),
+				displayText: getPathDisplayName(path),
+			};
+		}
+	}
+
+	return null;
 }
 
 function attachDateClickHandler(
@@ -371,24 +413,25 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.classList.add("task-card__metadata-pill--blocking");
 		}
 	},
-	blockedBy: (element, value, _task, plugin) => {
+	blockedBy: (element, value, task, plugin) => {
 		if (Array.isArray(value) && value.length > 0) {
 			element.createEl("span", { text: "Blocked by: " });
 			const linksContainer = element.createEl("span");
+			const linkServices: LinkServices = {
+				metadataCache: plugin.app.metadataCache,
+				workspace: plugin.app.workspace,
+				sourcePath: task.path,
+			};
 			value.forEach((dep, index) => {
 				if (index > 0) linksContainer.appendChild(activeDocument.createTextNode(", "));
-				const depPath = typeof dep === "string" ? dep : dep.path;
-				if (depPath) {
-					const linkEl = linksContainer.createEl("a", {
-						cls: "internal-link",
-						attr: { href: depPath },
-					});
-					linkEl.textContent = depPath.split("/").pop()?.replace(".md", "") || depPath;
-					linkEl.addEventListener("click", (event) => {
-						event.preventDefault();
-						event.stopPropagation();
-						void plugin.app.workspace.openLinkText(depPath, "", false);
-					});
+				const dependencyLink = getDependencyDisplayLink(dep, task, plugin);
+				if (dependencyLink) {
+					appendInternalLink(
+						linksContainer,
+						dependencyLink.path,
+						dependencyLink.displayText,
+						linkServices
+					);
 				}
 			});
 		}
