@@ -1,183 +1,108 @@
-/**
- * Test for issue #1430: Incorrect Property ID After Customization
- *
- * Bug Description:
- * When a user customizes a user field's Property Key (e.g., sets it to "propID"),
- * the Modal Fields tab still displays the default internal ID (e.g., "field_1735011234")
- * instead of the customized property key.
- *
- * Expected Behavior:
- * - For user fields in Modal Fields tab, the secondary text should show the
- *   property key from UserMappedField.key, not the internal field.id
- * - If no property key is set, it should show a placeholder like "No key set"
- *
- * Root Cause:
- * In FieldManagerComponent.ts:187, the code displays `ID: ${field.id}` for all fields.
- * For user fields (fieldType === "user"), it should look up the corresponding
- * UserMappedField from plugin.settings.userFields and display its .key property.
- */
+import { App } from "obsidian";
+import { createFieldManager } from "../../../src/settings/components/FieldManagerComponent";
+import type TaskNotesPlugin from "../../../src/main";
+import type { TaskModalFieldsConfig, UserMappedField } from "../../../src/types/settings";
 
-import type { ModalFieldConfig, TaskModalFieldsConfig, UserMappedField } from '../../../src/types/settings';
+jest.mock("obsidian");
 
-describe('Issue #1430: Modal Fields displays incorrect property ID after customization', () => {
-    // Mock data representing the bug scenario
-    const userField: UserMappedField = {
-        id: 'field_1735011234',
-        displayName: 'My Custom Field',
-        key: 'propID', // User has set a custom property key
-        type: 'text'
-    };
+describe("Issue #1430: Modal Fields displays property keys for custom fields", () => {
+	let container: HTMLElement;
 
-    const modalFieldConfig: ModalFieldConfig = {
-        id: 'field_1735011234', // Same ID as the userField
-        fieldType: 'user',
-        group: 'custom',
-        displayName: 'My Custom Field',
-        visibleInCreation: true,
-        visibleInEdit: true,
-        order: 0,
-        enabled: true
-    };
+	beforeEach(() => {
+		document.body.innerHTML = "";
+		container = document.createElement("div");
+		document.body.appendChild(container);
+	});
 
-    const mockConfig: TaskModalFieldsConfig = {
-        version: 1,
-        fields: [modalFieldConfig],
-        groups: [
-            {
-                id: 'custom',
-                displayName: 'Custom Fields',
-                order: 0,
-                collapsible: true,
-                defaultCollapsed: false
-            }
-        ]
-    };
+	it("shows the customized property key for user fields instead of the internal ID", () => {
+		const userFields: UserMappedField[] = [
+			{
+				id: "field_1735011234",
+				displayName: "My Custom Field",
+				key: "propID",
+				type: "text",
+			},
+		];
 
-    /**
-     * Helper function that simulates the logic that SHOULD be used
-     * to get the display text for a field's secondary text in Modal Fields.
-     *
-     * This is what the fix should implement.
-     */
-    function getFieldSecondaryText(
-        field: ModalFieldConfig,
-        userFields: UserMappedField[]
-    ): string {
-        // For user fields, look up the property key from UserMappedField
-        if (field.fieldType === 'user') {
-            const userField = userFields.find(uf => uf.id === field.id);
-            if (userField && userField.key) {
-                return `Key: ${userField.key}`;
-            }
-            return 'No key set';
-        }
-        // For core/other fields, show the ID
-        return `ID: ${field.id}`;
-    }
+		renderFieldManager(userFields);
 
-    /**
-     * Helper function that simulates the CURRENT buggy behavior
-     */
-    function getCurrentBuggySecondaryText(field: ModalFieldConfig): string {
-        // Current buggy behavior: always shows field.id
-        return `ID: ${field.id}`;
-    }
+		expect(getSecondaryText("field_1735011234")).toBe("Key: propID");
+		expect(getSecondaryText("field_1735011234")).not.toContain("field_1735011234");
+	});
 
-    describe('Secondary text display in Modal Fields', () => {
-        it('should display property key for user fields (FAILING - Bug #1430)', () => {
-            // This test represents the expected behavior that is currently broken
-            const secondaryText = getFieldSecondaryText(modalFieldConfig, [userField]);
+	it("keeps core fields labelled by their stable modal field ID", () => {
+		renderFieldManager([]);
 
-            // The secondary text should show the property key "propID", not the internal ID
-            expect(secondaryText).toBe('Key: propID');
-            expect(secondaryText).not.toContain('field_1735011234');
-        });
+		expect(getSecondaryText("title")).toBe("ID: title");
+	});
 
-        it('demonstrates the current buggy behavior', () => {
-            // This shows what currently happens (bug)
-            const buggyText = getCurrentBuggySecondaryText(modalFieldConfig);
+	it("shows a clear fallback for user fields without a configured property key", () => {
+		renderFieldManager([
+			{
+				id: "field_1735011234",
+				displayName: "My Custom Field",
+				key: "",
+				type: "text",
+			},
+		]);
 
-            // Currently shows the internal ID instead of the property key
-            expect(buggyText).toBe('ID: field_1735011234');
+		expect(getSecondaryText("field_1735011234")).toBe("No key set");
+	});
 
-            // This is the bug - it should show 'Key: propID' but shows internal ID
-            expect(buggyText).not.toBe('Key: propID');
-        });
+	function renderFieldManager(userFields: UserMappedField[]) {
+		const plugin = {
+			settings: { userFields },
+		} as TaskNotesPlugin;
 
-        it('should display "No key set" for user fields without property key', () => {
-            const userFieldNoKey: UserMappedField = {
-                id: 'field_1735011235',
-                displayName: 'Field Without Key',
-                key: '', // No property key set
-                type: 'text'
-            };
+		createFieldManager(
+			container,
+			plugin,
+			createModalFieldsConfig(),
+			jest.fn(),
+			new App()
+		);
+	}
 
-            const modalField: ModalFieldConfig = {
-                id: 'field_1735011235',
-                fieldType: 'user',
-                group: 'custom',
-                displayName: 'Field Without Key',
-                visibleInCreation: true,
-                visibleInEdit: true,
-                order: 0,
-                enabled: true
-            };
+	function getSecondaryText(fieldId: string): string | null | undefined {
+		return container.querySelector(
+			`[data-card-id="${fieldId}"] .tasknotes-settings__card-secondary-text`
+		)?.textContent;
+	}
 
-            const secondaryText = getFieldSecondaryText(modalField, [userFieldNoKey]);
-            expect(secondaryText).toBe('No key set');
-        });
-
-        it('should display ID for core fields', () => {
-            const coreField: ModalFieldConfig = {
-                id: 'title',
-                fieldType: 'core',
-                group: 'basic',
-                displayName: 'Title',
-                visibleInCreation: true,
-                visibleInEdit: true,
-                order: 0,
-                enabled: true
-            };
-
-            const secondaryText = getFieldSecondaryText(coreField, []);
-            expect(secondaryText).toBe('ID: title');
-        });
-
-        it('should handle missing userField gracefully', () => {
-            // User field exists in modalFieldsConfig but not in userFields array
-            // This could happen if data gets out of sync
-            const orphanedModalField: ModalFieldConfig = {
-                id: 'field_orphaned',
-                fieldType: 'user',
-                group: 'custom',
-                displayName: 'Orphaned Field',
-                visibleInCreation: true,
-                visibleInEdit: true,
-                order: 0,
-                enabled: true
-            };
-
-            const secondaryText = getFieldSecondaryText(orphanedModalField, [userField]);
-            expect(secondaryText).toBe('No key set');
-        });
-    });
-
-    describe('User field and modal field synchronization', () => {
-        it('should find matching user field by ID', () => {
-            const matchingUserField = [userField].find(uf => uf.id === modalFieldConfig.id);
-
-            expect(matchingUserField).toBeDefined();
-            expect(matchingUserField?.key).toBe('propID');
-            expect(matchingUserField?.displayName).toBe('My Custom Field');
-        });
-
-        it('should have consistent IDs between UserMappedField and ModalFieldConfig', () => {
-            // The bug happens because both data structures use the same ID
-            // but only UserMappedField has the property key
-            expect(userField.id).toBe(modalFieldConfig.id);
-            expect(userField.key).toBe('propID');
-            // ModalFieldConfig doesn't have a 'key' property - this is by design
-            // The fix needs to look up the key from userFields
-        });
-    });
+	function createModalFieldsConfig(): TaskModalFieldsConfig {
+		return {
+			version: 1,
+			fields: [
+				{
+					id: "title",
+					fieldType: "core",
+					group: "custom",
+					displayName: "Title",
+					visibleInCreation: true,
+					visibleInEdit: true,
+					order: 0,
+					enabled: true,
+				},
+				{
+					id: "field_1735011234",
+					fieldType: "user",
+					group: "custom",
+					displayName: "My Custom Field",
+					visibleInCreation: true,
+					visibleInEdit: true,
+					order: 1,
+					enabled: true,
+				},
+			],
+			groups: [
+				{
+					id: "custom",
+					displayName: "Custom Fields",
+					order: 0,
+					collapsible: true,
+					defaultCollapsed: false,
+				},
+			],
+		};
+	}
 });

@@ -1,6 +1,11 @@
 import { App } from "obsidian";
 import type TaskNotesPlugin from "../../main";
-import type { ModalFieldConfig, FieldGroup, TaskModalFieldsConfig } from "../../types/settings";
+import type {
+	ModalFieldConfig,
+	FieldGroup,
+	TaskModalFieldsConfig,
+	UserMappedField,
+} from "../../types/settings";
 import {
 	createCard,
 	setupCardDragAndDrop,
@@ -192,7 +197,7 @@ function createFieldCard(
 		draggable: canReorder,
 		header: {
 			primaryText: field.displayName,
-			secondaryText: `ID: ${field.id}`,
+			secondaryText: getFieldSecondaryText(field, plugin.settings.userFields),
 			meta: [typeBadge],
 		},
 		content: {
@@ -256,6 +261,18 @@ function createFieldCard(
 			}
 		);
 	}
+}
+
+function getFieldSecondaryText(
+	field: ModalFieldConfig,
+	userFields: UserMappedField[] | undefined
+): string {
+	if (field.fieldType !== "user") {
+		return `ID: ${field.id}`;
+	}
+
+	const userField = userFields?.find((candidate) => candidate.id === field.id);
+	return userField?.key ? `Key: ${userField.key}` : "No key set";
 }
 
 /**
