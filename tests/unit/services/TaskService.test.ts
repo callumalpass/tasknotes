@@ -564,6 +564,47 @@ describe('TaskService', () => {
       expect(taskInfo.tags).toEqual([]);
     });
 
+    it('should keep tags as an array when the task identifier property is tags (#1156)', async () => {
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'tags';
+      mockPlugin.settings.taskPropertyValue = 'task';
+
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      const { taskInfo } = await taskService.createTask({
+        title: 'Tags Property Identifier Task',
+        tags: ['work']
+      });
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      expect(fmArg.tags).toEqual(['work', 'task']);
+      expect(taskInfo.tags).toEqual(['work', 'task']);
+
+      yamlSpy.mockRestore();
+    });
+
+    it('should write the identifier tag when tags property identification has no custom tags (#1156)', async () => {
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'tags';
+      mockPlugin.settings.taskPropertyValue = 'task';
+
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      const { taskInfo } = await taskService.createTask({
+        title: 'Tags Property Identifier Only Task'
+      });
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      expect(fmArg.tags).toEqual(['task']);
+      expect(taskInfo.tags).toEqual(['task']);
+
+      yamlSpy.mockRestore();
+    });
+
     it('should handle template processing errors gracefully', async () => {
       mockPlugin.settings.taskCreationDefaults.useBodyTemplate = true;
       mockPlugin.settings.taskCreationDefaults.bodyTemplate = 'nonexistent-template.md';
@@ -1181,6 +1222,42 @@ describe('TaskService', () => {
       const result = await taskService.updateTask(taskWithTags, updates);
 
       expect(result.tags).toEqual(['task', 'important']);
+    });
+
+    it('should preserve tags as an array when updating a task identified by tags property (#1156)', async () => {
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'tags';
+      mockPlugin.settings.taskPropertyValue = 'task';
+
+      const taskWithTags = TaskFactory.createTask({ tags: ['task', 'important'] });
+      let capturedFrontmatter: any = {};
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file, fn) => {
+        capturedFrontmatter = { tags: ['task', 'important'] };
+        fn(capturedFrontmatter);
+      });
+
+      const result = await taskService.updateTask(taskWithTags, { priority: 'high' });
+
+      expect(capturedFrontmatter.tags).toEqual(['task', 'important']);
+      expect(result.tags).toEqual(['task', 'important']);
+    });
+
+    it('should keep the identifier tag when editable tags are cleared in tags property mode (#1156)', async () => {
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'tags';
+      mockPlugin.settings.taskPropertyValue = 'task';
+
+      const taskWithTags = TaskFactory.createTask({ tags: ['task', 'important'] });
+      let capturedFrontmatter: any = {};
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file, fn) => {
+        capturedFrontmatter = { tags: ['task', 'important'] };
+        fn(capturedFrontmatter);
+      });
+
+      const result = await taskService.updateTask(taskWithTags, { tags: [] });
+
+      expect(capturedFrontmatter.tags).toEqual(['task']);
+      expect(result.tags).toEqual(['task']);
     });
 
     it('should handle cache and event errors gracefully', async () => {

@@ -14,6 +14,7 @@
 import type { TaskNotesSettings } from "../types/settings";
 import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
+import { isTagsTaskIdentifierProperty } from "../utils/taskIdentificationFrontmatter";
 
 function escapeBasesStringLiteral(value: string): string {
 	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
@@ -52,6 +53,9 @@ function generateTaskFilterCondition(settings: TaskNotesSettings): string {
 		}
 
 		if (propertyValue) {
+			if (isTagsTaskIdentifierProperty(propertyName)) {
+				return `file.hasTag("${escapeBasesStringLiteral(propertyValue)}")`;
+			}
 			// Check property has specific value
 			// Boolean values must not be quoted — Obsidian stores checkbox/boolean
 			// frontmatter as actual booleans, so the Bases filter needs e.g.

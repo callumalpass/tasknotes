@@ -109,6 +109,20 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toContain("note.Task Type");
 	});
 
+	it("uses tag membership when property-based task identification targets tags (#1156)", () => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				taskIdentificationMethod: "property",
+				taskPropertyName: "tags",
+				taskPropertyValue: "task",
+			}) as any
+		);
+
+		expect(template).toContain('file.hasTag("task")');
+		expect(template).not.toContain('note["tags"] == "task"');
+	});
+
 	it("keeps boolean task identifier values unquoted when using a quoted property reference", () => {
 		const template = generateBasesFileTemplate(
 			"open-tasks-view",

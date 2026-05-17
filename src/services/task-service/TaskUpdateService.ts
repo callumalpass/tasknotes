@@ -6,6 +6,10 @@ import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../
 import { splitFrontmatterAndBody } from "../../utils/helpers";
 import { generateUniqueFilename } from "../../utils/filenameGenerator";
 import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
+import {
+	applyPropertyTaskIdentifier,
+	getFrontmatterTags,
+} from "../../utils/taskIdentificationFrontmatter";
 
 export interface TaskUpdateServiceDependencies {
 	plugin: TaskNotesPlugin;
@@ -73,6 +77,7 @@ export class TaskUpdateService {
 						? updates.details.replace(/\r\n/g, "\n")
 						: "";
 			}
+			let finalTags: string[] | undefined;
 
 			await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				const completeTaskData: Partial<TaskInfo> = {
@@ -108,10 +113,7 @@ export class TaskUpdateService {
 					const propName = plugin.settings.taskPropertyName;
 					const propValue = plugin.settings.taskPropertyValue;
 					if (propName && propValue) {
-						const lower = propValue.toLowerCase();
-						const coercedValue =
-							lower === "true" || lower === "false" ? lower === "true" : propValue;
-						frontmatter[propName] = coercedValue;
+						applyPropertyTaskIdentifier(frontmatter, propName, propValue);
 					}
 				}
 
@@ -142,6 +144,15 @@ export class TaskUpdateService {
 						delete frontmatter.tags;
 					}
 				}
+
+				if (plugin.settings.taskIdentificationMethod === "property") {
+					applyPropertyTaskIdentifier(
+						frontmatter,
+						plugin.settings.taskPropertyName,
+						plugin.settings.taskPropertyValue
+					);
+				}
+				finalTags = getFrontmatterTags(frontmatter.tags);
 			});
 
 			if (isRenameNeeded) {
@@ -169,6 +180,9 @@ export class TaskUpdateService {
 				path: newPath,
 				dateModified: getCurrentTimestamp(),
 			};
+			if (finalTags) {
+				updatedTask.tags = finalTags;
+			}
 
 			if (normalizedDetails !== null) {
 				updatedTask.details = normalizedDetails;

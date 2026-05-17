@@ -15,6 +15,10 @@ import { ensureFolderExists } from "../../utils/helpers";
 import { getCurrentTimestamp } from "../../utils/dateUtils";
 import { stringifyUnknown } from "../../utils/stringUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
+import {
+	applyPropertyTaskIdentifier,
+	getFrontmatterTags,
+} from "../../utils/taskIdentificationFrontmatter";
 import type TaskNotesPlugin from "../../main";
 
 interface TemplateApplicationResult {
@@ -180,10 +184,7 @@ export class TaskCreationService {
 				const propName = plugin.settings.taskPropertyName;
 				const propValue = plugin.settings.taskPropertyValue;
 				if (propName && propValue) {
-					const lower = propValue.toLowerCase();
-					const coercedValue =
-						lower === "true" || lower === "false" ? lower === "true" : propValue;
-					frontmatter[propName] = coercedValue;
+					applyPropertyTaskIdentifier(frontmatter, propName, propValue);
 				}
 				if (tagsArray.length > 0) {
 					frontmatter.tags = tagsArray;
@@ -209,6 +210,14 @@ export class TaskCreationService {
 			if (plugin.settings.storeTitleInFilename) {
 				delete finalFrontmatter[plugin.fieldMapper.toUserField("title")];
 			}
+			if (plugin.settings.taskIdentificationMethod === "property") {
+				applyPropertyTaskIdentifier(
+					finalFrontmatter,
+					plugin.settings.taskPropertyName,
+					plugin.settings.taskPropertyValue
+				);
+			}
+			tagsArray = getFrontmatterTags(finalFrontmatter.tags);
 
 			const yamlHeader = stringifyYaml(finalFrontmatter);
 			let content = `---\n${yamlHeader}---\n\n`;
