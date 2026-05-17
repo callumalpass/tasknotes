@@ -123,6 +123,10 @@ export const en: TranslationTree = {
 		},
 		miniCalendar: {
 			title: "Mini calendar",
+			contextMenu: {
+				openDailyNote: "Open daily note",
+				openWeeklyNote: "Open weekly note",
+			},
 		},
 		advancedCalendar: {
 			title: "Calendar",

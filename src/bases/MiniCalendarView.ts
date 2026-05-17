@@ -6,6 +6,7 @@ import {
 	Notice,
 	App,
 	moment as obsidianMoment,
+	Menu,
 } from "obsidian";
 import type { BasesEntry, BasesPropertyId } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -27,6 +28,10 @@ import {
 	getDailyNote,
 	appHasDailyNotesPluginLoaded,
 	createDailyNote,
+	getAllWeeklyNotes,
+	getWeeklyNote,
+	appHasWeeklyNotesPluginLoaded,
+	createWeeklyNote,
 } from "obsidian-daily-notes-interface";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 
@@ -46,10 +51,10 @@ type DataAdapterWithView = {
 	basesView?: MiniCalendarView;
 };
 
-type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+type PeriodicNoteMoment = Parameters<typeof getDailyNote>[0];
 
-function getDailyNoteMoment(date: Date): DailyNoteMoment {
-	return (obsidianMoment as unknown as (input: Date) => DailyNoteMoment)(date);
+function getPeriodicNoteMoment(date: Date): PeriodicNoteMoment {
+	return (obsidianMoment as unknown as (input: Date) => PeriodicNoteMoment)(date);
 }
 
 export class MiniCalendarView extends BasesViewBase {
@@ -791,6 +796,11 @@ export class MiniCalendarView extends BasesViewBase {
 				grid.focus();
 			}
 		});
+		weekCell.addEventListener("contextmenu", (e: MouseEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.showWeekContextMenu(e, weekDays[0]);
+		});
 
 		// Render day cells
 		weekDays.forEach((dayDate, index) => {
@@ -860,6 +870,11 @@ export class MiniCalendarView extends BasesViewBase {
 			if (grid) {
 				grid.focus();
 			}
+		});
+		dayEl.addEventListener("contextmenu", (e: MouseEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.showDayContextMenu(e, dayDate);
 		});
 	}
 
@@ -936,6 +951,30 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 	}
 
+	private showDayContextMenu(event: MouseEvent, date: Date): void {
+		const menu = new Menu();
+		menu.addItem((item) => {
+			item.setTitle(this.plugin.i18n.translate("views.miniCalendar.contextMenu.openDailyNote"));
+			item.setIcon("calendar-days");
+			item.onClick(() => {
+				void this.openDailyNoteForDate(date);
+			});
+		});
+		menu.showAtMouseEvent(event);
+	}
+
+	private showWeekContextMenu(event: MouseEvent, dateInWeek: Date): void {
+		const menu = new Menu();
+		menu.addItem((item) => {
+			item.setTitle(this.plugin.i18n.translate("views.miniCalendar.contextMenu.openWeeklyNote"));
+			item.setIcon("calendar-range");
+			item.onClick(() => {
+				void this.openWeeklyNoteForDate(dateInWeek);
+			});
+		});
+		menu.showAtMouseEvent(event);
+	}
+
 	private async openDailyNoteForDate(date: Date): Promise<void> {
 		// Check if daily notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
@@ -956,7 +995,7 @@ export class MiniCalendarView extends BasesViewBase {
 			0,
 			0
 		);
-		const dailyNoteMoment = getDailyNoteMoment(jsDate);
+		const dailyNoteMoment = getPeriodicNoteMoment(jsDate);
 
 		// Get all daily notes to check if one exists for this date
 		const allDailyNotes = getAllDailyNotes();
@@ -977,6 +1016,45 @@ export class MiniCalendarView extends BasesViewBase {
 		// Open the daily note
 		if (dailyNote) {
 			await this.plugin.app.workspace.getLeaf(false).openFile(dailyNote);
+		}
+	}
+
+	private async openWeeklyNoteForDate(date: Date): Promise<void> {
+		if (!appHasWeeklyNotesPluginLoaded()) {
+			new Notice(
+				"Weekly notes core plugin is not enabled. Please enable it in settings > core plugins."
+			);
+			return;
+		}
+
+		const localAnchor = convertUTCToLocalCalendarDate(date);
+		const jsDate = new Date(
+			localAnchor.getFullYear(),
+			localAnchor.getMonth(),
+			localAnchor.getDate(),
+			12,
+			0,
+			0,
+			0
+		);
+		const weeklyNoteMoment = getPeriodicNoteMoment(jsDate);
+
+		const allWeeklyNotes = getAllWeeklyNotes();
+		let weeklyNote = getWeeklyNote(weeklyNoteMoment, allWeeklyNotes);
+
+		if (!weeklyNote) {
+			try {
+				weeklyNote = await createWeeklyNote(weeklyNoteMoment);
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error);
+				console.error("Failed to create weekly note:", error);
+				new Notice(`Failed to create weekly note: ${errorMessage}`);
+				return;
+			}
+		}
+
+		if (weeklyNote) {
+			await this.plugin.app.workspace.getLeaf(false).openFile(weeklyNote);
 		}
 	}
 
