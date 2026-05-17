@@ -784,7 +784,7 @@ export const ko: TranslationTree = {
 				description: "작업이 저장되는 위치와 식별 방법을 설정합니다.",
 				defaultFolder: {
 					name: "기본 작업 폴더",
-					description: "새 작업의 기본 위치",
+					description: "새 작업의 기본 위치입니다. {{currentNotePath}}, {{currentNoteTitle}} 같은 폴더 템플릿 변수와 YYYY/MM/DD 같은 Daily Notes 스타일 날짜 토큰을 지원합니다.",
 				},
 				moveArchived: {
 					name: "보관된 작업을 폴더로 이동",

@@ -784,7 +784,7 @@ export const es: TranslationTree = {
 				description: "Configurar dónde se almacenan las tareas y cómo se identifican.",
 				defaultFolder: {
 					name: "Carpeta predeterminada de tareas",
-					description: "Ubicación predeterminada para nuevas tareas",
+					description: "Ubicación predeterminada para nuevas tareas. Admite variables de plantilla de carpeta como {{currentNotePath}} y {{currentNoteTitle}}, además de tokens de fecha al estilo Daily Notes como YYYY/MM/DD.",
 				},
 				moveArchived: {
 					name: "Mover tareas archivadas a carpeta",

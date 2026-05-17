@@ -30,7 +30,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		 * Test that YYYY token is replaced with four-digit year
 		 * Daily Notes uses moment.js format tokens
 		 */
-		it.skip('reproduces issue #1267 - should support YYYY token for four-digit year', () => {
+		it('reproduces issue #1267 - should support YYYY token for four-digit year', () => {
 			const result = processFolderTemplate('Tasks/YYYY', { date: testDate });
 			expect(result).toBe('Tasks/2025');
 		});
@@ -38,7 +38,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test that MM token is replaced with two-digit month
 		 */
-		it.skip('reproduces issue #1267 - should support MM token for two-digit month', () => {
+		it('reproduces issue #1267 - should support MM token for two-digit month', () => {
 			const result = processFolderTemplate('Tasks/MM', { date: testDate });
 			expect(result).toBe('Tasks/11');
 		});
@@ -46,7 +46,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test that DD token is replaced with two-digit day
 		 */
-		it.skip('reproduces issue #1267 - should support DD token for two-digit day', () => {
+		it('reproduces issue #1267 - should support DD token for two-digit day', () => {
 			const result = processFolderTemplate('Tasks/DD', { date: testDate });
 			expect(result).toBe('Tasks/28');
 		});
@@ -54,7 +54,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test that MMMM token is replaced with full month name
 		 */
-		it.skip('reproduces issue #1267 - should support MMMM token for full month name', () => {
+		it('reproduces issue #1267 - should support MMMM token for full month name', () => {
 			const result = processFolderTemplate('Tasks/MMMM', { date: testDate });
 			expect(result).toBe('Tasks/November');
 		});
@@ -62,7 +62,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test that dddd token is replaced with full day name
 		 */
-		it.skip('reproduces issue #1267 - should support dddd token for full day name', () => {
+		it('reproduces issue #1267 - should support dddd token for full day name', () => {
 			const result = processFolderTemplate('Tasks/dddd', { date: testDate });
 			expect(result).toBe('Tasks/Friday');
 		});
@@ -72,7 +72,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		 * Path: `Meetings/YYYY/MM-MMMM/DD dddd/YYYY-MM-DD`
 		 * Result: `Meetings/2025/11-November/28 Friday/2025-11-28`
 		 */
-		it.skip('reproduces issue #1267 - should process full Daily Notes style path', () => {
+		it('reproduces issue #1267 - should process full Daily Notes style path', () => {
 			const result = processFolderTemplate(
 				'Meetings/YYYY/MM-MMMM/DD dddd/YYYY-MM-DD',
 				{ date: testDate }
@@ -83,7 +83,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test combined Daily Notes tokens in a single folder segment
 		 */
-		it.skip('reproduces issue #1267 - should handle multiple tokens in same segment', () => {
+		it('reproduces issue #1267 - should handle multiple tokens in same segment', () => {
 			const result = processFolderTemplate('Tasks/YYYY-MM-DD', { date: testDate });
 			expect(result).toBe('Tasks/2025-11-28');
 		});
@@ -91,7 +91,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test MMM token for abbreviated month name
 		 */
-		it.skip('reproduces issue #1267 - should support MMM token for abbreviated month name', () => {
+		it('reproduces issue #1267 - should support MMM token for abbreviated month name', () => {
 			const result = processFolderTemplate('Tasks/MMM', { date: testDate });
 			expect(result).toBe('Tasks/Nov');
 		});
@@ -99,7 +99,7 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test ddd token for abbreviated day name
 		 */
-		it.skip('reproduces issue #1267 - should support ddd token for abbreviated day name', () => {
+		it('reproduces issue #1267 - should support ddd token for abbreviated day name', () => {
 			const result = processFolderTemplate('Tasks/ddd', { date: testDate });
 			expect(result).toBe('Tasks/Fri');
 		});
@@ -107,9 +107,18 @@ describe('Issue #1267: Path Variables like Daily Notes', () => {
 		/**
 		 * Test YY token for two-digit year
 		 */
-		it.skip('reproduces issue #1267 - should support YY token for two-digit year', () => {
+		it('reproduces issue #1267 - should support YY token for two-digit year', () => {
 			const result = processFolderTemplate('Tasks/YY', { date: testDate });
 			expect(result).toBe('Tasks/25');
+		});
+
+		it('does not apply Daily Notes tokens to expanded task titles', () => {
+			const result = processFolderTemplate('Tasks/YYYY/{{title}}', {
+				date: testDate,
+				taskData: { title: 'YYYY Planning' },
+			});
+
+			expect(result).toBe('Tasks/2025/YYYY Planning');
 		});
 	});
 

@@ -784,7 +784,7 @@ export const ja: TranslationTree = {
 				description: "タスクの保存場所と識別方法を設定します。",
 				defaultFolder: {
 					name: "デフォルトタスクフォルダー",
-					description: "新しいタスクのデフォルト場所",
+					description: "新しいタスクのデフォルト場所。{{currentNotePath}} や {{currentNoteTitle}} などのフォルダーテンプレート変数に加えて、YYYY/MM/DD などの Daily Notes 形式の日付トークンをサポートします。",
 				},
 				moveArchived: {
 					name: "アーカイブしたタスクをフォルダーに移動",

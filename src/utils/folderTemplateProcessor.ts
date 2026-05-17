@@ -49,10 +49,32 @@ export interface FolderTemplateOptions {
 	extractProjectBasename?: (project: string) => string;
 }
 
+const DAILY_NOTES_DATE_TOKEN_FORMATS: Record<string, string> = {
+	YYYY: "yyyy",
+	YY: "yy",
+	MMMM: "MMMM",
+	MMM: "MMM",
+	MM: "MM",
+	DD: "dd",
+	dddd: "EEEE",
+	ddd: "EEE",
+};
+
+const DAILY_NOTES_DATE_TOKEN_PATTERN = /YYYY|MMMM|dddd|MMM|ddd|YY|MM|DD/g;
+
+function replaceDailyNotesDateTokens(template: string, date: Date): string {
+	return template.replace(DAILY_NOTES_DATE_TOKEN_PATTERN, (token) =>
+		format(date, DAILY_NOTES_DATE_TOKEN_FORMATS[token])
+	);
+}
+
 /**
  * Process a folder path template by replacing template variables with actual values
  *
  * Supported template variables:
+ *
+ * Daily Notes-style date tokens:
+ * - YYYY, YY, MMMM, MMM, MM, DD, dddd, ddd
  *
  * Date variables:
  * - {{year}}, {{month}}, {{day}}, {{date}}
@@ -114,6 +136,8 @@ export function processFolderTemplate(
 	const { date = new Date(), taskData, icsData, extractProjectBasename } = options;
 
 	let processedPath = folderTemplate;
+
+	processedPath = replaceDailyNotesDateTokens(processedPath, date);
 
 	// Replace task variables if taskData is provided
 	if (taskData) {

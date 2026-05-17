@@ -784,7 +784,7 @@ export const de: TranslationTree = {
 				description: "Konfiguriere, wo Aufgaben gespeichert und wie sie identifiziert werden.",
 				defaultFolder: {
 					name: "Standard-Aufgabenordner",
-					description: "Standardort für neue Aufgaben",
+					description: "Standardort für neue Aufgaben. Unterstützt Ordnervorlagen-Variablen wie {{currentNotePath}} und {{currentNoteTitle}} sowie Datums-Tokens im Daily-Notes-Stil wie YYYY/MM/DD.",
 				},
 				moveArchived: {
 					name: "Archivierte Aufgaben in Ordner verschieben",

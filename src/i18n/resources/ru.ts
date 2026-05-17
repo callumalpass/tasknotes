@@ -784,7 +784,7 @@ export const ru: TranslationTree = {
 				description: "Настройте, где хранятся задачи и как они идентифицируются.",
 				defaultFolder: {
 					name: "Папка задач по умолчанию",
-					description: "Местоположение по умолчанию для новых задач",
+					description: "Местоположение по умолчанию для новых задач. Поддерживает переменные шаблона папки, такие как {{currentNotePath}} и {{currentNoteTitle}}, а также токены дат в стиле Daily Notes, например YYYY/MM/DD.",
 				},
 				moveArchived: {
 					name: "Перемещать архивированные задачи в папку",

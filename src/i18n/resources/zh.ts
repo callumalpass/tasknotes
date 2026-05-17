@@ -783,7 +783,7 @@ export const zh: TranslationTree = {
 				description: "配置任务存储位置和识别方式。",
 				defaultFolder: {
 					name: "默认任务文件夹",
-					description: "新任务的默认位置",
+					description: "新任务的默认位置。支持 {{currentNotePath}} 和 {{currentNoteTitle}} 等文件夹模板变量，以及 YYYY/MM/DD 等 Daily Notes 风格日期标记。",
 				},
 				moveArchived: {
 					name: "将归档任务移动到文件夹",

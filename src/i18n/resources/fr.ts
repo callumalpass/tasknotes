@@ -784,7 +784,7 @@ export const fr: TranslationTree = {
 				description: "Configurez où les tâches sont stockées et comment elles sont identifiées.",
 				defaultFolder: {
 					name: "Dossier par défaut des tâches",
-					description: "Emplacement par défaut pour les nouvelles tâches",
+					description: "Emplacement par défaut pour les nouvelles tâches. Prend en charge les variables de modèle de dossier comme {{currentNotePath}} et {{currentNoteTitle}}, ainsi que les jetons de date de style Daily Notes comme YYYY/MM/DD.",
 				},
 				moveArchived: {
 					name: "Déplacer les tâches archivées vers un dossier",

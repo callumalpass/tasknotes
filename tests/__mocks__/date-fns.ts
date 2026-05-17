@@ -45,6 +45,7 @@ export const format = jest.fn((date: Date, formatStr: string) => {
   if (formatStr === 'yyyy-MM-dd-HHmm') return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}-${String(hours).padStart(2, '0')}${String(minutes).padStart(2, '0')}`;
 
   // Short date formats
+  if (formatStr === 'yy') return String(year).slice(-2);
   if (formatStr === 'yyMMdd') return `${String(year).slice(-2)}${String(month + 1).padStart(2, '0')}${String(day).padStart(2, '0')}`;
 
   // Month/day names

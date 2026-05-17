@@ -787,7 +787,7 @@ export const pt: TranslationTree = {
 				description: "Configure onde as tarefas são armazenadas e como são identificadas.",
 				defaultFolder: {
 					name: "Pasta padrão de tarefas",
-					description: "Local padrão para novas tarefas"
+					description: "Local padrão para novas tarefas. Suporta variáveis de modelo de pasta como {{currentNotePath}} e {{currentNoteTitle}}, além de tokens de data no estilo Daily Notes como YYYY/MM/DD."
 				},
 				moveArchived: {
 					name: "Mover tarefas arquivadas para pasta",
