@@ -22,6 +22,8 @@ interface ICSDateProperties {
 	endLine: string | null;
 }
 
+type VEventStatus = "TENTATIVE" | "CONFIRMED" | "CANCELLED";
+
 export class CalendarExportService {
 	/**
 	 * Generate a calendar URL for adding a task as an event
@@ -234,14 +236,7 @@ export class CalendarExportService {
 
 		// Map status
 		if (task.status) {
-			const statusMap: Record<string, string> = {
-				done: "COMPLETED",
-				"in-progress": "IN-PROCESS",
-				todo: "NEEDS-ACTION",
-				cancelled: "CANCELLED",
-			};
-			const icsStatus = statusMap[task.status] || "NEEDS-ACTION";
-			lines.push(`STATUS:${icsStatus}`);
+			lines.push(`STATUS:${this.getVEventStatus(task.status)}`);
 		}
 
 		lines.push("END:VEVENT");
@@ -647,14 +642,7 @@ export class CalendarExportService {
 
 			// Map status
 			if (task.status) {
-				const statusMap: Record<string, string> = {
-					done: "COMPLETED",
-					"in-progress": "IN-PROCESS",
-					todo: "NEEDS-ACTION",
-					cancelled: "CANCELLED",
-				};
-				const icsStatus = statusMap[task.status] || "NEEDS-ACTION";
-				lines.push(`STATUS:${icsStatus}`);
+				lines.push(`STATUS:${this.getVEventStatus(task.status)}`);
 			}
 
 			lines.push("END:VEVENT");
@@ -673,6 +661,17 @@ export class CalendarExportService {
 
 		const completedStatuses = new Set(options.completedStatuses?.length ? options.completedStatuses : ["done"]);
 		return tasks.filter((task) => !completedStatuses.has(task.status));
+	}
+
+	private static getVEventStatus(status: string): VEventStatus {
+		const normalizedStatus = status.trim().toLowerCase();
+		if (normalizedStatus === "cancelled" || normalizedStatus === "canceled") {
+			return "CANCELLED";
+		}
+		if (normalizedStatus === "tentative") {
+			return "TENTATIVE";
+		}
+		return "CONFIRMED";
 	}
 
 	/**

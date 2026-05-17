@@ -30,7 +30,6 @@ jest.mock('obsidian', () => ({
 describe('Issue #919 - ICS VEVENT STATUS values are invalid', () => {
     // Valid status values per RFC 5545
     const VALID_VEVENT_STATUSES = ['TENTATIVE', 'CONFIRMED', 'CANCELLED'];
-    const VALID_VTODO_STATUSES = ['NEEDS-ACTION', 'COMPLETED', 'IN-PROCESS', 'CANCELLED'];
 
     // Helper to extract STATUS value from ICS content
     const extractStatus = (icsContent: string): string | undefined => {
@@ -55,8 +54,7 @@ describe('Issue #919 - ICS VEVENT STATUS values are invalid', () => {
     });
 
     describe('VEVENT status validation', () => {
-        it.skip('reproduces issue #919: todo status produces invalid NEEDS-ACTION for VEVENT', () => {
-            // This test documents the bug: NEEDS-ACTION is invalid for VEVENT
+        it('exports todo status as a valid CONFIRMED VEVENT status', () => {
             const task = createTask('todo');
             const icsContent = CalendarExportService.generateICSContent(task);
 
@@ -64,42 +62,33 @@ describe('Issue #919 - ICS VEVENT STATUS values are invalid', () => {
             expect(isVEvent(icsContent)).toBe(true);
 
             const status = extractStatus(icsContent);
-            expect(status).toBeDefined();
-
-            // BUG: Currently outputs NEEDS-ACTION which is only valid for VTODO
-            // For VEVENT, should use TENTATIVE or CONFIRMED instead
+            expect(status).toBe('CONFIRMED');
             expect(VALID_VEVENT_STATUSES).toContain(status);
         });
 
-        it.skip('reproduces issue #919: in-progress status produces invalid IN-PROCESS for VEVENT', () => {
-            // This test documents the bug: IN-PROCESS is invalid for VEVENT
+        it('exports in-progress status as a valid CONFIRMED VEVENT status', () => {
             const task = createTask('in-progress');
             const icsContent = CalendarExportService.generateICSContent(task);
 
             expect(isVEvent(icsContent)).toBe(true);
 
             const status = extractStatus(icsContent);
-            expect(status).toBeDefined();
-
-            // BUG: Currently outputs IN-PROCESS which is only valid for VTODO
+            expect(status).toBe('CONFIRMED');
             expect(VALID_VEVENT_STATUSES).toContain(status);
         });
 
-        it.skip('reproduces issue #919: done status produces invalid COMPLETED for VEVENT', () => {
-            // This test documents the bug: COMPLETED is invalid for VEVENT
+        it('exports done status as a valid CONFIRMED VEVENT status', () => {
             const task = createTask('done');
             const icsContent = CalendarExportService.generateICSContent(task);
 
             expect(isVEvent(icsContent)).toBe(true);
 
             const status = extractStatus(icsContent);
-            expect(status).toBeDefined();
-
-            // BUG: Currently outputs COMPLETED which is only valid for VTODO
+            expect(status).toBe('CONFIRMED');
             expect(VALID_VEVENT_STATUSES).toContain(status);
         });
 
-        it.skip('reproduces issue #919: cancelled status should remain valid (CANCELLED is valid for both)', () => {
+        it('exports cancelled status as CANCELLED', () => {
             // CANCELLED is valid for both VEVENT and VTODO, so this should pass
             const task = createTask('cancelled');
             const icsContent = CalendarExportService.generateICSContent(task);
@@ -112,23 +101,29 @@ describe('Issue #919 - ICS VEVENT STATUS values are invalid', () => {
             expect(VALID_VEVENT_STATUSES).toContain(status);
         });
 
-        it.skip('reproduces issue #919: custom/unknown status defaults to invalid NEEDS-ACTION', () => {
-            // Tasks with custom statuses fall back to NEEDS-ACTION
+        it('exports custom/unknown statuses as valid CONFIRMED VEVENT status', () => {
             const task = createTask('custom-status');
             const icsContent = CalendarExportService.generateICSContent(task);
 
             expect(isVEvent(icsContent)).toBe(true);
 
             const status = extractStatus(icsContent);
-            expect(status).toBeDefined();
+            expect(status).toBe('CONFIRMED');
+            expect(VALID_VEVENT_STATUSES).toContain(status);
+        });
 
-            // BUG: Falls back to NEEDS-ACTION which is only valid for VTODO
+        it('preserves an explicit tentative status as TENTATIVE', () => {
+            const task = createTask('tentative');
+            const icsContent = CalendarExportService.generateICSContent(task);
+
+            const status = extractStatus(icsContent);
+            expect(status).toBe('TENTATIVE');
             expect(VALID_VEVENT_STATUSES).toContain(status);
         });
     });
 
     describe('generateMultipleTasksICSContent has same issue', () => {
-        it.skip('reproduces issue #919: multiple tasks export uses invalid status values', () => {
+        it('exports valid VEVENT status values for multiple tasks', () => {
             const tasks: TaskInfo[] = [
                 createTask('todo'),
                 createTask('in-progress'),
@@ -145,30 +140,22 @@ describe('Issue #919 - ICS VEVENT STATUS values are invalid', () => {
 
             statusLines.forEach(statusLine => {
                 const status = statusLine.replace('STATUS:', '');
-                // BUG: Currently uses VTODO values instead of VEVENT values
                 expect(VALID_VEVENT_STATUSES).toContain(status);
             });
         });
     });
 
-    describe('Reference: Current (buggy) behavior', () => {
-        it('documents current status mapping that produces invalid ICS', () => {
-            // This test documents the current behavior (will pass)
-            // to show what the bug actually produces
-
+    describe('Reference: fixed behavior', () => {
+        it('does not emit VTODO-only status values inside VEVENT components', () => {
             const todoTask = createTask('todo');
             const inProgressTask = createTask('in-progress');
             const doneTask = createTask('done');
             const cancelledTask = createTask('cancelled');
 
-            // Current (invalid) mappings for VEVENT:
-            expect(extractStatus(CalendarExportService.generateICSContent(todoTask))).toBe('NEEDS-ACTION');
-            expect(extractStatus(CalendarExportService.generateICSContent(inProgressTask))).toBe('IN-PROCESS');
-            expect(extractStatus(CalendarExportService.generateICSContent(doneTask))).toBe('COMPLETED');
+            expect(extractStatus(CalendarExportService.generateICSContent(todoTask))).toBe('CONFIRMED');
+            expect(extractStatus(CalendarExportService.generateICSContent(inProgressTask))).toBe('CONFIRMED');
+            expect(extractStatus(CalendarExportService.generateICSContent(doneTask))).toBe('CONFIRMED');
             expect(extractStatus(CalendarExportService.generateICSContent(cancelledTask))).toBe('CANCELLED');
-
-            // Of these, only CANCELLED is valid for VEVENT
-            // NEEDS-ACTION, IN-PROCESS, and COMPLETED are only valid for VTODO
         });
     });
 });
