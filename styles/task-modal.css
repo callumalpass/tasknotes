@@ -79,6 +79,41 @@
     padding: var(--size-4-2);
 }
 
+.tn-task-modal__markdown-editor--details .cm-header,
+.tn-task-modal__markdown-editor--details .cm-formatting-header {
+    color: var(--text-normal);
+}
+
+.tn-task-modal__markdown-editor--details .HyperMD-header-1,
+.tn-task-modal__markdown-editor--details .cm-header-1 {
+    color: var(--h1-color, var(--text-normal));
+}
+
+.tn-task-modal__markdown-editor--details .HyperMD-header-2,
+.tn-task-modal__markdown-editor--details .cm-header-2 {
+    color: var(--h2-color, var(--text-normal));
+}
+
+.tn-task-modal__markdown-editor--details .HyperMD-header-3,
+.tn-task-modal__markdown-editor--details .cm-header-3 {
+    color: var(--h3-color, var(--text-normal));
+}
+
+.tn-task-modal__markdown-editor--details .HyperMD-header-4,
+.tn-task-modal__markdown-editor--details .cm-header-4 {
+    color: var(--h4-color, var(--text-normal));
+}
+
+.tn-task-modal__markdown-editor--details .HyperMD-header-5,
+.tn-task-modal__markdown-editor--details .cm-header-5 {
+    color: var(--h5-color, var(--text-normal));
+}
+
+.tn-task-modal__markdown-editor--details .HyperMD-header-6,
+.tn-task-modal__markdown-editor--details .cm-header-6 {
+    color: var(--h6-color, var(--text-normal));
+}
+
 .tn-task-modal__markdown-editor--details .cm-cursor,
 .tn-task-modal__markdown-editor--details .cm-dropCursor {
     border-left-color: var(--text-normal);
