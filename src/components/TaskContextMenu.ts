@@ -1,4 +1,4 @@
-import { Menu, Notice, TFile, type MenuItem, type TAbstractFile } from "obsidian";
+import { Menu, Notice, Platform, TFile, type MenuItem, type TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
@@ -737,10 +737,27 @@ export class TaskContextMenu {
 			});
 		});
 
+		this.addMobileDismissOption();
+
 		// Apply main menu icon colors after menu is built
 		window.setTimeout(() => {
 			this.updateMainMenuIconColors(task, plugin);
 		}, 10);
+	}
+
+	private addMobileDismissOption(): void {
+		if (!Platform.isMobile) {
+			return;
+		}
+
+		this.menu.addSeparator();
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("common.close"));
+			item.setIcon("x");
+			item.onClick(() => {
+				this.menu.hide();
+			});
+		});
 	}
 
 	private addRecurringInstanceMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
