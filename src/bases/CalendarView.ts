@@ -111,6 +111,7 @@ type BasesEntryWithGetValue = {
 
 type CalendarEphemeralState = {
 	calendarDate?: unknown;
+	/** Legacy workspace state may contain this; view type is now config-owned. */
 	calendarView?: unknown;
 	calendarScroll?: unknown;
 };
@@ -3320,7 +3321,10 @@ export class CalendarView extends BasesViewBase {
 
 	/**
 	 * Get ephemeral state to preserve across view reloads.
-	 * Saves current calendar date and view type.
+	 * Saves current calendar date and scroll position.
+	 * The view type is intentionally omitted because it is owned by the Bases
+	 * view config. Restoring it from workspace state can override configured
+	 * defaults after Workspace switches.
 	 */
 	getEphemeralState(): unknown {
 		const baseState = super.getEphemeralState();
@@ -3328,12 +3332,10 @@ export class CalendarView extends BasesViewBase {
 
 		if (this.calendar) {
 			const currentDate = this.calendar.getDate();
-			const currentView = this.calendar.view?.type;
 
 			return {
 				...baseStateObject,
 				calendarDate: currentDate ? currentDate.toISOString() : null,
-				calendarView: currentView || null,
 				calendarScroll: captureCalendarScrollState(this.calendarEl),
 			};
 		}
@@ -3343,7 +3345,7 @@ export class CalendarView extends BasesViewBase {
 
 	/**
 	 * Restore ephemeral state after view reload.
-	 * Restores calendar date and view type.
+	 * Restores calendar date and scroll position.
 	 */
 	setEphemeralState(state: unknown): void {
 		super.setEphemeralState(state);
@@ -3360,16 +3362,9 @@ export class CalendarView extends BasesViewBase {
 				}
 			}
 
-			if (
-				typeof state.calendarView === "string" &&
-				state.calendarView !== this.calendar.view?.type
-			) {
-				try {
-					this.calendar.changeView(state.calendarView);
-				} catch (e) {
-					console.debug("[CalendarView] Failed to restore calendar view:", e);
-				}
-			}
+			// Intentionally ignore legacy `calendarView` ephemeral state. The view
+			// type is controlled by the Bases view config and is persisted there
+			// when the user changes Calendar view modes.
 		}
 
 		if (Array.isArray(state.calendarScroll)) {
