@@ -10,7 +10,7 @@ import {
 	parseDateToUTC,
 	formatDateForStorage,
 } from "../utils/dateUtils";
-import { calculateDefaultDate } from "../utils/helpers";
+import { calculateDefaultDateTime } from "../utils/helpers";
 import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
@@ -504,7 +504,7 @@ export class InstantTaskConvertService {
 					? combineDateAndTime(parsedDueDate, parsedDueTime)
 					: parsedDueDate;
 			} else if (defaults.defaultDueDate !== "none") {
-				dueDate = calculateDefaultDate(defaults.defaultDueDate);
+				dueDate = calculateDefaultDateTime(defaults.defaultDueDate, defaults.defaultDueTime);
 			}
 
 			// Apply scheduled date: parsed date takes priority, then defaults
@@ -513,7 +513,10 @@ export class InstantTaskConvertService {
 					? combineDateAndTime(parsedScheduledDate, parsedScheduledTime)
 					: parsedScheduledDate;
 			} else if (defaults.defaultScheduledDate !== "none") {
-				scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
+				scheduledDate = calculateDefaultDateTime(
+					defaults.defaultScheduledDate,
+					defaults.defaultScheduledTime
+				);
 			}
 
 			// Apply contexts: start with parsed contexts, then add default contexts

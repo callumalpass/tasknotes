@@ -41,6 +41,15 @@ jest.mock('../../../src/utils/helpers', () => ({
       default: return undefined;
     }
   }),
+  calculateDefaultDateTime: jest.fn().mockImplementation((option: string, time?: string) => {
+    const dates: Record<string, string> = {
+      today: '2025-01-15',
+      tomorrow: '2025-01-16',
+      'next-week': '2025-01-22'
+    };
+    const date = dates[option];
+    return date && time && time !== 'none' ? `${date}T${time}` : date;
+  }),
   addDTSTARTToRecurrenceRule: jest.fn((task: { recurrence?: string }) => task.recurrence ? `DTSTART:20250110T120000Z;${task.recurrence}` : null),
   updateDTSTARTInRecurrenceRule: jest.fn((rule: string) => rule),
   updateToNextScheduledOccurrence: jest.fn(),

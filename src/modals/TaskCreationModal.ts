@@ -2,7 +2,7 @@ import { App, Notice, setIcon, setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskInfo } from "../types";
-import { calculateDefaultDate, sanitizeTags } from "../utils/helpers";
+import { calculateDefaultDate, calculateDefaultDateTime, sanitizeTags } from "../utils/helpers";
 import {
 	NaturalLanguageParser,
 	ParsedTaskData as NLParsedTaskData,
@@ -586,10 +586,13 @@ export class TaskCreationModal extends TaskModal {
 		const defaults = this.plugin.settings.taskCreationDefaults;
 
 		// Apply default due date
-		this.dueDate = calculateDefaultDate(defaults.defaultDueDate);
+		this.dueDate = calculateDefaultDateTime(defaults.defaultDueDate, defaults.defaultDueTime);
 
 		// Apply default scheduled date based on user settings
-		this.scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
+		this.scheduledDate = calculateDefaultDateTime(
+			defaults.defaultScheduledDate,
+			defaults.defaultScheduledTime
+		);
 
 		// Apply default contexts, tags, and projects
 		this.contexts = defaults.defaultContexts || "";

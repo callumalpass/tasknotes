@@ -17,6 +17,7 @@ import {
 } from "../core/recurrence";
 import {
 	calculateDefaultDate,
+	calculateDefaultDateTime,
 	ensureFolderExists,
 	splitFrontmatterAndBody,
 	resetMarkdownCheckboxes,
@@ -378,13 +379,16 @@ export class TaskService {
 		// Use === undefined (not !result.due) so that an explicit null from the API
 		// is treated as "clear this field" rather than "apply the default".
 		if (result.due === undefined && defaults.defaultDueDate !== "none") {
-			result.due = calculateDefaultDate(defaults.defaultDueDate);
+			result.due = calculateDefaultDateTime(defaults.defaultDueDate, defaults.defaultDueTime);
 		}
 
 		// Apply default scheduled date if not provided.
 		// Same null-vs-undefined distinction as due above.
 		if (result.scheduled === undefined && defaults.defaultScheduledDate !== "none") {
-			result.scheduled = calculateDefaultDate(defaults.defaultScheduledDate);
+			result.scheduled = calculateDefaultDateTime(
+				defaults.defaultScheduledDate,
+				defaults.defaultScheduledTime
+			);
 		}
 
 		// Apply default contexts if not provided

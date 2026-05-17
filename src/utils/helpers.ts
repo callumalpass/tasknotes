@@ -18,9 +18,7 @@ import {
 	updateDTSTARTInRecurrenceRule as updateDTSTARTInRecurrenceRuleCore,
 	updateToNextScheduledOccurrence as updateToNextScheduledOccurrenceCore,
 } from "../core/recurrence";
-import {
-	parseDateToLocal,
-} from "./dateUtils";
+import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
 
 type ObsidianMoment = import("moment").Moment;
 
@@ -237,6 +235,22 @@ export function calculateDefaultDate(
 	}
 
 	return format(targetDate, "yyyy-MM-dd");
+}
+
+function isDefaultTime(value: string | undefined): value is string {
+	return typeof value === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+export function calculateDefaultDateTime(
+	defaultOption: "none" | "today" | "tomorrow" | "next-week",
+	defaultTime?: string
+): string {
+	const date = calculateDefaultDate(defaultOption);
+	if (!date || !isDefaultTime(defaultTime)) {
+		return date;
+	}
+
+	return combineDateAndTime(date, defaultTime);
 }
 
 /**

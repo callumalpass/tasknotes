@@ -1,9 +1,11 @@
 import TaskNotesPlugin from "../../main";
 import type { TranslationKey } from "../../i18n";
+import type { DefaultTaskTime } from "../../types/settings";
 import {
 	createSectionHeader,
 	createHelpText,
 } from "../components/settingHelpers";
+import { createCardInput } from "../components/CardComponent";
 
 // Import property card modules
 import {
@@ -30,6 +32,18 @@ export function renderTaskPropertiesTab(
 
 	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
+
+	const createDefaultTimeInput = (
+		value: DefaultTaskTime | undefined,
+		onChange: (value: DefaultTaskTime) => void
+	): HTMLInputElement => {
+		const input = createCardInput("time", "", value && value !== "none" ? value : "");
+		input.addEventListener("change", () => {
+			onChange((input.value || "none") as DefaultTaskTime);
+			save();
+		});
+		return input;
+	};
 
 	// ===== CORE PROPERTIES SECTION =====
 	createSectionHeader(container, translate("settings.taskProperties.sections.coreProperties"));
@@ -66,6 +80,17 @@ export function renderTaskPropertiesTab(
 			plugin.settings.taskCreationDefaults.defaultDueDate = value as "none" | "today" | "tomorrow" | "next-week";
 			save();
 		},
+		extraRows: [
+			{
+				label: translate("settings.defaults.reminders.fields.time"),
+				input: createDefaultTimeInput(
+					plugin.settings.taskCreationDefaults.defaultDueTime,
+					(value) => {
+						plugin.settings.taskCreationDefaults.defaultDueTime = value;
+					}
+				),
+			},
+		],
 	});
 
 	// Scheduled Date Property Card
@@ -86,6 +111,17 @@ export function renderTaskPropertiesTab(
 			plugin.settings.taskCreationDefaults.defaultScheduledDate = value as "none" | "today" | "tomorrow" | "next-week";
 			save();
 		},
+		extraRows: [
+			{
+				label: translate("settings.defaults.reminders.fields.time"),
+				input: createDefaultTimeInput(
+					plugin.settings.taskCreationDefaults.defaultScheduledTime,
+					(value) => {
+						plugin.settings.taskCreationDefaults.defaultScheduledTime = value;
+					}
+				),
+			},
+		],
 	});
 
 	// ===== ORGANIZATION PROPERTIES SECTION =====

@@ -81,6 +81,7 @@ Example:
 - ([#1804](https://github.com/callumalpass/tasknotes/issues/1804)) Made the inline-created task folder setting visible even when instant conversion is disabled, and clarified that leaving it empty uses the default tasks folder. Thanks to @CaFeZn for suggesting this.
 - ([#1822](https://github.com/callumalpass/tasknotes/issues/1822)) Matched the Task Edit Modal subtask list order to the existing relationship sort, so active and higher-priority subtasks appear ahead of completed ones. Thanks to @Glint-Eye for suggesting this.
 - ([#1339](https://github.com/callumalpass/tasknotes/issues/1339)) Added an Appearance setting to expand project subtasks by default in task cards, while still letting individual cards be collapsed. Thanks to @hasanyilmaz for suggesting this and @kazerniel and @benmartinek for the follow-up.
+- ([#1335](https://github.com/callumalpass/tasknotes/issues/1335)) Added optional default times for new task scheduled and due dates, so default-dated tasks can appear as timed calendar events instead of all-day events. Thanks to @echo-saurav for suggesting this.
 
 ## Fixed
 

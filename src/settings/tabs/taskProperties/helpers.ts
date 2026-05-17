@@ -31,6 +31,7 @@ export interface SimplePropertyCardConfig {
 	defaultOptions?: Array<{ value: string; label: string }>;
 	getDefaultValue?: () => string;
 	setDefaultValue?: (value: string) => void;
+	extraRows?: CardRow[];
 	hasNLPTrigger?: boolean;
 	nlpDefaultTrigger?: string;
 }
@@ -240,6 +241,10 @@ export function renderSimplePropertyCard(
 			label: translate("settings.taskProperties.propertyCard.default"),
 			input: defaultInput,
 		});
+	}
+
+	if (config.extraRows) {
+		rows.push(...config.extraRows);
 	}
 
 	// Add NLP trigger if configured

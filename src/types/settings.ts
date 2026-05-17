@@ -261,6 +261,8 @@ export interface DefaultReminder {
 	description?: string;
 }
 
+export type DefaultTaskTime = "none" | `${number}${number}:${number}${number}`;
+
 export interface TaskCreationDefaults {
 	// Pre-fill options
 	defaultContexts: string; // Comma-separated list
@@ -271,7 +273,9 @@ export interface TaskCreationDefaults {
 	defaultRecurrence: "none" | "daily" | "weekly" | "monthly" | "yearly";
 	// Date defaults
 	defaultDueDate: "none" | "today" | "tomorrow" | "next-week";
+	defaultDueTime: DefaultTaskTime;
 	defaultScheduledDate: "none" | "today" | "tomorrow" | "next-week";
+	defaultScheduledTime: DefaultTaskTime;
 	// Body template settings
 	bodyTemplate: string; // Path to template file for task body, empty = no template
 	useBodyTemplate: boolean; // Whether to use body template by default
