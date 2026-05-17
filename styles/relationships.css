@@ -9,7 +9,7 @@
 .tasknotes-relationships-widget {
     display: block;
     width: 100%;
-    margin: 1.5em 0 2em 0;
+    margin: var(--tn-relationships-widget-margin-top, 1.5em) 0 2em 0;
     padding: 1em;
     border: 1px dashed var(--background-modifier-border-hover);
     border-radius: var(--radius-s);

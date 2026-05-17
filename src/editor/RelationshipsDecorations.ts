@@ -73,6 +73,73 @@ interface HTMLElementWithComponent extends HTMLElement {
 	component?: Component;
 }
 
+function getHTMLElementChildren(element: HTMLElement): HTMLElement[] {
+	return Array.from(element.children).filter(
+		(child): child is HTMLElement => child.instanceOf(HTMLElement)
+	);
+}
+
+export function findRelationshipsBottomAnchor(container: HTMLElement): HTMLElement | null {
+	const cmContent = container.querySelector<HTMLElement>(".cm-content");
+	if (cmContent) {
+		return cmContent.closest<HTMLElement>(".cm-contentContainer") ?? cmContent;
+	}
+
+	const children = getHTMLElementChildren(container).filter(
+		(child) =>
+			!child.classList.contains(CSS_RELATIONSHIPS_WIDGET) &&
+			!child.classList.contains("embedded-backlinks") &&
+			!child.classList.contains("markdown-preview-pusher") &&
+			!child.classList.contains("mod-footer")
+	);
+
+	return children.length > 0 ? children[children.length - 1] : null;
+}
+
+export function applyRelationshipsBottomOffset(container: HTMLElement, widget: HTMLElement): void {
+	const cmContent = container.querySelector<HTMLElement>(".cm-content");
+	if (!cmContent) {
+		widget.style.removeProperty("--tn-relationships-widget-margin-top");
+		return;
+	}
+
+	const lines = getHTMLElementChildren(cmContent).filter((child) =>
+		child.classList.contains("cm-line")
+	);
+	const lastLine = lines.length > 0 ? lines[lines.length - 1] : null;
+	const contentContainer = cmContent.closest<HTMLElement>(".cm-contentContainer");
+	if (!lastLine || !contentContainer) {
+		widget.style.removeProperty("--tn-relationships-widget-margin-top");
+		return;
+	}
+
+	const spacerGap = Math.max(
+		0,
+		Math.round(
+			contentContainer.getBoundingClientRect().bottom -
+				lastLine.getBoundingClientRect().bottom
+		)
+	);
+	if (spacerGap > 0) {
+		widget.style.setProperty("--tn-relationships-widget-margin-top", `-${spacerGap}px`);
+	} else {
+		widget.style.removeProperty("--tn-relationships-widget-margin-top");
+	}
+}
+
+export function insertRelationshipsWidgetAtBottom(
+	container: HTMLElement,
+	widget: HTMLElement
+): void {
+	const anchor = findRelationshipsBottomAnchor(container);
+	applyRelationshipsBottomOffset(container, widget);
+	if (anchor) {
+		insertAfterElement(anchor, widget);
+	} else {
+		container.appendChild(widget);
+	}
+}
+
 /**
  * Helper function to create and render the relationships widget content
  */
@@ -392,7 +459,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			this.widgetContainer = targetContainer;
 
 			// For "top" position, insert after properties/frontmatter (and after task card if present)
-			// For "bottom" position, insert before backlinks or at end
+			// For "bottom" position, insert after the last actual content element.
 			if (position === "top") {
 				// Try to find task card widget first (should come before relationships)
 				// RISK: Relies on task card widget class name
@@ -406,16 +473,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 					insertAfterMetadataOrHeader(targetContainer, widget);
 				}
 			} else {
-				// Try to insert before backlinks if they exist
-				// RISK: Relies on .embedded-backlinks class from Obsidian
-				const backlinks =
-					targetContainer.parentElement?.querySelector(".embedded-backlinks");
-				if (backlinks) {
-					backlinks.parentElement?.insertBefore(widget, backlinks);
-				} else {
-					// No backlinks, just append to sizer
-					targetContainer.appendChild(widget);
-				}
+				insertRelationshipsWidgetAtBottom(targetContainer, widget);
 			}
 		} catch (error) {
 			console.error("[TaskNotes] Error injecting relationships widget:", error);
@@ -546,13 +604,7 @@ async function injectReadingModeWidget(
 				insertAfterMetadataOrHeader(sizer, widget);
 			}
 		} else {
-			// Insert before backlinks if present, otherwise at the end
-			const backlinks = containerEl.querySelector(".embedded-backlinks");
-			if (backlinks?.parentElement) {
-				backlinks.parentElement.insertBefore(widget, backlinks);
-			} else {
-				sizer.appendChild(widget);
-			}
+			insertRelationshipsWidgetAtBottom(sizer, widget);
 		}
 	} catch (error) {
 		console.error("[TaskNotes] Error injecting relationships widget in reading mode:", error);
