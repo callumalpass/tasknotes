@@ -61,6 +61,7 @@ Example:
 
 - Added guidance in Pomodoro statistics and Base file settings explaining that Pomodoro Base views require daily notes storage.
 - ([#1431](https://github.com/callumalpass/tasknotes/issues/1431)) Showed the year on task-card due and scheduled dates when the date is outside the current year. Thanks to @kazerniel for suggesting this.
+- ([#1429](https://github.com/callumalpass/tasknotes/issues/1429)) Opened TaskNotes view commands in a new tab when they load configured Base files, so they do not replace the active note. Thanks to @Ruboks-Cube for suggesting this.
 - Improved keyboard access, mobile layout, and theme color consistency across task cards, TaskNotes Kanban, Bases Kanban, calendar controls, stats, settings, and filter popovers.
 - ([#1526](https://github.com/callumalpass/tasknotes/issues/1526)) Made the Create/Edit Task modal due and scheduled date buttons open a calendar-first picker where clicking a date saves immediately, with time entry still available in the picker. Thanks to @jmartinmcfly for suggesting this and @23426356587 for the follow-up feedback.
 - ([#1642](https://github.com/callumalpass/tasknotes/issues/1642)) Made completion-based custom recurrence use flexible weekly, monthly, and yearly intervals without forcing a fixed weekday, month day, or month. Thanks to @Volker-brdb for suggesting this.

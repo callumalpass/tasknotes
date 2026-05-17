@@ -131,7 +131,7 @@ export class WorkspaceNavigationService {
 			return;
 		}
 
-		const leaf = this.plugin.app.workspace.getLeaf();
+		const leaf = this.plugin.app.workspace.getLeaf("tab");
 		await leaf.openFile(file);
 	}
 }
