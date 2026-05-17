@@ -182,6 +182,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// HTTP API service
 	apiService?: HTTPAPIService;
 
+	// Public JavaScript API for in-vault scripts
+	api: import("./api/TaskNotesAPI").TaskNotesPublicAPI;
+
 	// OAuth service
 	oauthService: OAuthService;
 

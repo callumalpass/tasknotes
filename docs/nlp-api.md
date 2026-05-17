@@ -2,6 +2,13 @@
 
 The NLP API parses natural-language task text and optionally creates a task.
 
+In-vault scripts can also call the parser directly from the loaded plugin:
+
+```javascript
+const tasknotes = app.plugins.plugins.tasknotes;
+const parsed = tasknotes.api.parseNaturalLanguage("Review PR tomorrow #code @work");
+```
+
 ## Endpoints
 
 - `POST /api/nlp/parse`
@@ -102,6 +109,30 @@ The parser can extract:
 - Recurrence (`daily`, `weekly`, `every monday`)
 
 Exact parsing behavior depends on your TaskNotes NLP settings and trigger configuration.
+
+## In-Vault JavaScript API
+
+Templater, QuickAdd, MetaBind, and other in-vault scripts can use the loaded plugin instance directly:
+
+```javascript
+const tasknotes = app.plugins.plugins.tasknotes;
+const parsed = tasknotes.api.parseNaturalLanguage("Write draft friday 2pm #writing @desk");
+```
+
+`parseNaturalLanguage(text)` returns the same parser output shape as `data.parsed` from `POST /api/nlp/parse`. It uses your current TaskNotes settings, including custom status values, priority values, NLP language, NLP trigger configuration, user fields, and calendar locale.
+
+This method only parses text. It does not create or modify task files.
+
+Example Templater use:
+
+```javascript
+<%*
+const tasknotes = app.plugins.plugins.tasknotes;
+const text = await tp.system.prompt("Task");
+const parsed = tasknotes.api.parseNaturalLanguage(text);
+tR += `title: ${parsed.title}`;
+%>
+```
 
 ## Error Responses
 

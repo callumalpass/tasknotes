@@ -49,6 +49,7 @@ import { MicrosoftCalendarService } from "../services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "../services/CalendarProvider";
 import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
+import { TaskNotesAPI } from "../api/TaskNotesAPI";
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
 
@@ -81,6 +82,8 @@ export function registerTaskNotesIcon(): void {
 }
 
 export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<void> {
+	plugin.api = new TaskNotesAPI(plugin);
+
 	plugin.fieldMapper = new FieldMapper(
 		plugin.settings.fieldMapping,
 		plugin.settings.userFields ?? [],
