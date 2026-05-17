@@ -31,6 +31,8 @@ type DailyNoteFrontmatterWithTimeblocks = DailyNoteFrontmatter & {
 	timeblocks?: TimeBlock[];
 };
 
+const MINUTES_PER_DAY = 24 * 60;
+
 function getWindowMoment(input?: string | Date): ObsidianMoment {
 	return (window as unknown as WindowWithMoment).moment(input);
 }
@@ -567,6 +569,25 @@ export function extractNoteInfo(
 /**
  * Validates a timeblock object against the expected schema
  */
+function parseTimeBlockMinutes(time: string, allowEndOfDay = false): number | null {
+	if (allowEndOfDay && time === "24:00") {
+		return MINUTES_PER_DAY;
+	}
+
+	const match = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/.exec(time);
+	if (!match) {
+		return null;
+	}
+
+	return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function getNextDateString(date: string): string {
+	const nextDate = parseDateToLocal(date);
+	nextDate.setDate(nextDate.getDate() + 1);
+	return format(nextDate, "yyyy-MM-dd");
+}
+
 export function validateTimeBlock(timeblock: unknown): timeblock is TimeBlock {
 	if (!timeblock || typeof timeblock !== "object") {
 		return false;
@@ -590,17 +611,14 @@ export function validateTimeBlock(timeblock: unknown): timeblock is TimeBlock {
 		return false;
 	}
 
-	// Validate time format (HH:MM)
-	const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-	if (!timeRegex.test(block.startTime) || !timeRegex.test(block.endTime)) {
+	const startMinutes = parseTimeBlockMinutes(block.startTime);
+	const parsedEndMinutes = parseTimeBlockMinutes(block.endTime, true);
+	if (startMinutes === null || parsedEndMinutes === null) {
 		return false;
 	}
 
-	// Ensure end time is after start time
-	const [startHour, startMin] = block.startTime.split(":").map(Number);
-	const [endHour, endMin] = block.endTime.split(":").map(Number);
-	const startMinutes = startHour * 60 + startMin;
-	const endMinutes = endHour * 60 + endMin;
+	const endMinutes =
+		block.endTime === "00:00" && startMinutes > 0 ? MINUTES_PER_DAY : parsedEndMinutes;
 
 	if (endMinutes <= startMinutes) {
 		return false;
@@ -675,7 +693,13 @@ export function timeblockToCalendarEvent(
 	// Create datetime strings that FullCalendar interprets consistently
 	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
-	const endDateTime = `${date}T${timeblock.endTime}:00`;
+	const startMinutes = parseTimeBlockMinutes(timeblock.startTime);
+	const endsAtNextMidnight =
+		timeblock.endTime === "24:00" ||
+		(timeblock.endTime === "00:00" && startMinutes !== null && startMinutes > 0);
+	const endDateTime = endsAtNextMidnight
+		? `${getNextDateString(date)}T00:00:00`
+		: `${date}T${timeblock.endTime}:00`;
 	const eventColor = normalizeThemeColor(timeblock.color || defaultColor, "#6366f1");
 
 	return {

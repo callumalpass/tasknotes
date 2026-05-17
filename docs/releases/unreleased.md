@@ -104,6 +104,7 @@ Example:
 
 ## Fixed
 
+- ([#1076](https://github.com/callumalpass/tasknotes/issues/1076)) Allowed timeblocks to end at midnight using `00:00`, and accepted `24:00` as an explicit end-of-day value in timeblock validation. Thanks to @skoove for reporting this and @gregor202 for the follow-up.
 - ([#1086](https://github.com/callumalpass/tasknotes/issues/1086)) Fixed the Calendar `+ more` control in dark mode so expanded all-day task groups stay readable. Thanks to @same774 for reporting this.
 - ([#1100](https://github.com/callumalpass/tasknotes/issues/1100)) Applied Advanced Calendar View search and title filters to the tasks used for calendar rendering, so filtering controls affect which tasks appear on the calendar. Thanks to @quiet-coder-io for reporting this.
 - ([#1147](https://github.com/callumalpass/tasknotes/issues/1147)) Added a delete action for recent Pomodoro statistics sessions, so erroneous Pomodoro history can be removed without editing plugin storage or daily-note frontmatter manually. Thanks to @RumiaKitinari for reporting this and @BrucePlumb for the follow-up.
