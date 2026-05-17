@@ -1304,65 +1304,78 @@ export async function generateCalendarEvents(
 
 	const events: CalendarEvent[] = [];
 
+	const addStandaloneDateEvents = (
+		task: TaskInfo,
+		includeScheduled: boolean,
+		allowScheduledToDueSpan: boolean
+	): void => {
+		let showedSpan = false;
+		if (
+			allowScheduledToDueSpan &&
+			showScheduledToDueSpan &&
+			task.scheduled &&
+			task.due
+		) {
+			const spanEvents = createScheduledToDueSpanEvents(
+				task,
+				plugin,
+				visibleStart,
+				visibleEnd
+			);
+			if (spanEvents.length > 0) {
+				events.push(...spanEvents);
+				showedSpan = true;
+			}
+		}
+
+		if (showedSpan) {
+			return;
+		}
+
+		if (includeScheduled && task.scheduled) {
+			if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
+				const scheduledEvent = createScheduledEvent(task, plugin);
+				if (scheduledEvent) events.push(scheduledEvent);
+			}
+		}
+
+		if (showDue && task.due) {
+			if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
+				const dueEvent = createDueEvent(task, plugin);
+				if (dueEvent) events.push(dueEvent);
+			}
+		}
+	};
+
 	for (const task of tasks) {
 		try {
 			// Handle recurring tasks
 			if (task.recurrence) {
-				if (!task.scheduled) continue;
+				let includeStandaloneScheduled = showScheduled;
+				let allowScheduledToDueSpan = true;
 
 				if (showRecurring && visibleStart && visibleEnd) {
-					const recurringEvents = generateRecurringTaskInstances(
-						task,
-						visibleStart,
-						visibleEnd,
-						plugin,
-						{
-							showCompletedRecurringInstances,
-							showSkippedRecurringInstances,
-						}
-					);
-					events.push(...recurringEvents);
+					if (task.scheduled) {
+						const recurringEvents = generateRecurringTaskInstances(
+							task,
+							visibleStart,
+							visibleEnd,
+							plugin,
+							{
+								showCompletedRecurringInstances,
+								showSkippedRecurringInstances,
+							}
+						);
+						events.push(...recurringEvents);
+						includeStandaloneScheduled = false;
+						allowScheduledToDueSpan = false;
+					}
 				}
+
+				addStandaloneDateEvents(task, includeStandaloneScheduled, allowScheduledToDueSpan);
 			} else {
 				// Handle non-recurring tasks with date range filtering
-				// Check if we should show a span event (replaces individual scheduled/due for this task)
-				let showedSpan = false;
-				if (showScheduledToDueSpan && task.scheduled && task.due) {
-					const spanEvents = createScheduledToDueSpanEvents(
-						task,
-						plugin,
-						visibleStart,
-						visibleEnd
-					);
-					if (spanEvents.length > 0) {
-						events.push(...spanEvents);
-						showedSpan = true;
-					}
-				}
-
-				// Only show individual scheduled/due events if we didn't show a span
-				if (!showedSpan) {
-					if (showScheduled && task.scheduled) {
-						if (
-							isDateInVisibleRange(
-								task.scheduled,
-								visibleStart,
-								visibleEnd,
-								task.timeEstimate
-							)
-						) {
-							const scheduledEvent = createScheduledEvent(task, plugin);
-							if (scheduledEvent) events.push(scheduledEvent);
-						}
-					}
-
-					if (showDue && task.due) {
-						if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
-							const dueEvent = createDueEvent(task, plugin);
-							if (dueEvent) events.push(dueEvent);
-						}
-					}
-				}
+				addStandaloneDateEvents(task, showScheduled, true);
 			}
 
 			// Add time entry events with date range filtering
