@@ -187,10 +187,19 @@ export function mapTaskFromFrontmatter(
 
 	if (userFields.length > 0) {
 		const mappedAny = mapped as Record<string, unknown>;
+		const customProperties: Record<string, unknown> = {};
 		for (const field of userFields) {
 			if (frontmatter[field.key] !== undefined) {
-				mappedAny[field.key] = frontmatter[field.key];
+				const value = frontmatter[field.key];
+				mappedAny[field.key] = value;
+				customProperties[field.key] = value;
 			}
+		}
+		if (Object.keys(customProperties).length > 0) {
+			mapped.customProperties = {
+				...mapped.customProperties,
+				...customProperties,
+			};
 		}
 	}
 
@@ -322,9 +331,20 @@ export function mapTaskToFrontmatter(
 
 	if (userFields.length > 0) {
 		const taskAny = taskData as Record<string, unknown>;
+		const customProperties = taskData.customProperties;
 		for (const field of userFields) {
-			if (Object.prototype.hasOwnProperty.call(taskAny, field.key) && taskAny[field.key] !== undefined) {
+			const hasTopLevelUserField =
+				Object.prototype.hasOwnProperty.call(taskAny, field.key) &&
+				taskAny[field.key] !== undefined;
+			const hasCustomProperty =
+				customProperties &&
+				Object.prototype.hasOwnProperty.call(customProperties, field.key) &&
+				customProperties[field.key] !== undefined;
+
+			if (hasTopLevelUserField) {
 				frontmatter[field.key] = taskAny[field.key];
+			} else if (hasCustomProperty) {
+				frontmatter[field.key] = customProperties[field.key];
 			}
 		}
 	}

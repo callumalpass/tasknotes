@@ -150,6 +150,7 @@ Response fields:
 - `data.pagination` with `total`, `offset`, `limit`, `hasMore`
 - `data.vault`
 - `data.note`
+- Task objects include configured TaskNotes user fields in `customProperties`, keyed by their frontmatter property key.
 
 ### `POST /api/tasks`
 
@@ -187,6 +188,8 @@ Returns HTTP `201` with created task data.
 Get one task by path id.
 
 - `:id` must be URL-encoded task path.
+- Single-task reads include the task body in `details`.
+- Configured TaskNotes user fields are returned in `customProperties`, keyed by their frontmatter property key.
 
 ```bash
 curl "http://localhost:8080/api/tasks/TaskNotes%2FTasks%2FReview%20docs.md"
@@ -195,6 +198,8 @@ curl "http://localhost:8080/api/tasks/TaskNotes%2FTasks%2FReview%20docs.md"
 ### `PUT /api/tasks/:id`
 
 Update task with partial payload.
+
+Configured TaskNotes user fields can be updated either by their frontmatter property key or via `customProperties`.
 
 ```bash
 curl -X PUT "http://localhost:8080/api/tasks/TaskNotes%2FTasks%2FReview%20docs.md" \
