@@ -1567,7 +1567,7 @@
 }
 
 .tasknotes-plugin .tn-cursor-pointer {
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .tn-cursor-wait {
@@ -2106,7 +2106,7 @@
     font-size: var(--tn-font-size-md);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     user-select: none;
     text-decoration: none;
     outline: none;

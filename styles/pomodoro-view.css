@@ -17,7 +17,7 @@
     min-height: 100vh;
 
 	button {
-		cursor: var(--cursor, pointer);
+		cursor: var(--cursor-link, pointer);
 	}
 
 }
@@ -519,7 +519,7 @@
 }
 
 .tasknotes-plugin .pomodoro-view__stat--clickable {
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     padding: var(--tn-spacing-xs);
     border-radius: var(--tn-radius-sm);
     transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast);

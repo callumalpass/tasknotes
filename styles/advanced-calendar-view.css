@@ -291,7 +291,7 @@
     border: none;
     color: var(--text-muted);
     font-size: 1.2em;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     padding: 0.2rem 0.5rem;
     border-radius: 3px;
     margin-left: 0.5rem;
@@ -338,7 +338,7 @@
 .timeblock-attachment-item .internal-link {
     color: var(--link-color);
     text-decoration: none;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 .timeblock-attachment-item .internal-link:hover {
@@ -500,7 +500,7 @@
     height: 30px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 3px;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 .ics-form-number,
@@ -518,7 +518,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 .ics-form-checkbox,
@@ -602,7 +602,7 @@
     color: var(--text-on-accent);
     border: none;
     border-radius: 6px;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     font-size: 0.85rem;
     font-weight: 500;
     transition: background-color 0.2s ease;
@@ -894,7 +894,7 @@
     padding: 0.2rem 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 .advanced-calendar-view .fc-event:hover {
@@ -961,7 +961,7 @@
     border-radius: 6px;
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
@@ -1265,7 +1265,7 @@
 }
 
 .fc-list-task-priority-dot {
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     background-color: var(--priority-color, currentColor);
 }
 
@@ -1275,7 +1275,7 @@
     height: 12px;
     flex-shrink: 0;
     opacity: 0.8;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     font-size: 12px;
 }
 

@@ -37,7 +37,7 @@
     padding: 2px 4px;
 
     /* Interactivity */
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 
     /* Prevent text selection issues */
     user-select: none;
@@ -66,7 +66,7 @@
     border: 2px solid var(--tn-border-color);
     background-color: transparent;
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     position: relative;
     flex-shrink: 0;
     margin-right: 6px; /* More gap between status and priority */
@@ -91,7 +91,7 @@
     border: none;
     flex-shrink: 0;
     margin-right: 6px; /* Gap between priority and title */
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 /* Date info styling */
@@ -105,7 +105,7 @@
 
 /* Clickable date styling */
 .tasknotes-plugin .task-inline-preview__date--clickable {
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     border-radius: 3px;
     padding: 1px 3px;
     transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
@@ -143,7 +143,7 @@
 /* Recurring indicator styling */
 .tasknotes-plugin .task-inline-preview__recurring-indicator {
     opacity: 0.6;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     display: inline-block;
     width: 12px;
     height: 12px;
@@ -176,7 +176,7 @@
 /* Pencil icon styling */
 .tasknotes-plugin .task-inline-preview__pencil {
     opacity: 0;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     display: inline-block;
     width: 12px;
     height: 12px;
@@ -255,7 +255,7 @@
     border-radius: 3px;
     
     /* Interactivity */
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     opacity: 0.6;
     transition: background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
     
@@ -326,7 +326,7 @@
     max-width: min(600px, 80vw); /* Responsive max-width for longer titles */
     flex-shrink: 1; /* Allow shrinking if needed */
     vertical-align: baseline;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     transition: color 0.15s ease;
     border-radius: 2px;
     padding: 1px 2px;
@@ -368,7 +368,7 @@
     flex-shrink: 0;
     opacity: 0.4;
     transition: opacity 0.15s ease;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -329,7 +329,7 @@
 }
 
 .tasknotes-plugin .task-card [data-tn-no-drag="true"] {
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-card__main-row {
@@ -1600,7 +1600,7 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     animation: tn-selection-indicator-appear 0.2s ease-out;
     transition: background-color var(--tn-transition-fast);
     border: none;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .tn-selection-indicator:hover {

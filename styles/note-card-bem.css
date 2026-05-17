@@ -22,7 +22,7 @@
     border-inline-start: 1px solid transparent; /* Transparent by default */
     
     /* Interactions & Accessibility - Simplified */
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     transition: background-color var(--tn-transition-fast);
     outline: none;
 }
@@ -280,7 +280,7 @@
     border: none;
     border-bottom: 1px solid var(--tn-border-color);
     border-radius: 0;
-    cursor: var(--cursor, pointer);
+    cursor: var(--cursor-link, pointer);
     transition: background-color var(--tn-transition-fast);
 }
 
