@@ -64,11 +64,14 @@ export abstract class TaskModal extends Modal {
 	plugin: TaskNotesPlugin;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 	private guardedTitleInputs = new WeakSet<TaskTitleInputElement>();
+	private guardedMobileKeyboardInputs = new WeakSet<HTMLElement>();
 	private pendingTitleFocusScrollPositions: Array<{
 		element: HTMLElement;
 		scrollTop: number;
 		scrollLeft: number;
 	}> | null = null;
+	private mobileKeyboardFocusCleanups: Array<() => void> = [];
+	private mobileKeyboardScrollTimers: number[] = [];
 
 	// Dependency item definition
 	protected createDependencyItemFromFile(
@@ -886,6 +889,7 @@ export abstract class TaskModal extends Modal {
 
 			// Store reference to input element
 			this.contextsInput = text.inputEl;
+			this.attachMobileKeyboardScrollGuard(text.inputEl);
 
 			// Add autocomplete functionality
 			new ContextSuggest(this.app, text.inputEl, this.plugin);
@@ -904,6 +908,7 @@ export abstract class TaskModal extends Modal {
 
 			// Store reference to input element
 			this.tagsInput = text.inputEl;
+			this.attachMobileKeyboardScrollGuard(text.inputEl);
 
 			// Add autocomplete functionality
 			new TagSuggest(this.app, text.inputEl, this.plugin);
@@ -919,6 +924,7 @@ export abstract class TaskModal extends Modal {
 				});
 
 			this.timeEstimateInput = text.inputEl;
+			this.attachMobileKeyboardScrollGuard(text.inputEl);
 		});
 	}
 
@@ -1012,6 +1018,7 @@ export abstract class TaskModal extends Modal {
 						}
 					});
 					this.userFieldInputs.set(userField.key, text.inputEl);
+					this.attachMobileKeyboardScrollGuard(text.inputEl);
 
 					// Add autocomplete functionality
 					new UserFieldSuggest(this.app, text.inputEl, this.plugin, userField);
@@ -1027,6 +1034,7 @@ export abstract class TaskModal extends Modal {
 					});
 					text.inputEl.type = "number";
 					this.userFieldInputs.set(userField.key, text.inputEl);
+					this.attachMobileKeyboardScrollGuard(text.inputEl);
 				});
 				break;
 			}
@@ -1043,6 +1051,7 @@ export abstract class TaskModal extends Modal {
 						},
 					});
 					this.userFieldInputs.set(userField.key, text.inputEl);
+					this.attachMobileKeyboardScrollGuard(text.inputEl);
 				});
 				break;
 			}
@@ -1114,6 +1123,7 @@ export abstract class TaskModal extends Modal {
 								this.userFields[field.key] = isNaN(numValue) ? null : numValue;
 							});
 						this.userFieldInputs.set(field.key, text.inputEl);
+						this.attachMobileKeyboardScrollGuard(text.inputEl);
 					});
 					break;
 
@@ -1125,6 +1135,7 @@ export abstract class TaskModal extends Modal {
 								this.userFields[field.key] = value || null;
 							});
 						this.userFieldInputs.set(field.key, text.inputEl);
+						this.attachMobileKeyboardScrollGuard(text.inputEl);
 						// Add date picker button/icon next to the input
 						// Ensure the input and button layout as a single row with proper sizing
 						const parent = text.inputEl.parentElement;
@@ -1183,6 +1194,7 @@ export abstract class TaskModal extends Modal {
 								}
 							});
 						this.userFieldInputs.set(field.key, text.inputEl);
+						this.attachMobileKeyboardScrollGuard(text.inputEl);
 
 						// Add autocomplete functionality
 						new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
@@ -1205,6 +1217,7 @@ export abstract class TaskModal extends Modal {
 								this.userFields[field.key] = value || null;
 							});
 						this.userFieldInputs.set(field.key, text.inputEl);
+						this.attachMobileKeyboardScrollGuard(text.inputEl);
 
 						// Add autocomplete functionality
 						new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
@@ -1855,6 +1868,115 @@ export abstract class TaskModal extends Modal {
 		}, 250);
 	}
 
+	protected attachMobileKeyboardScrollGuard(input: HTMLElement): void {
+		if (this.guardedMobileKeyboardInputs.has(input)) return;
+		this.guardedMobileKeyboardInputs.add(input);
+
+		const handleFocus = () => {
+			if (!this.isMobileLikeEnvironment()) return;
+			this.containerEl.addClass("is-mobile-keyboard-focused");
+			this.scheduleMobileKeyboardScrollIntoView(input);
+		};
+		const handleBlur = () => {
+			const win = input.ownerDocument.defaultView || window;
+			win.setTimeout(() => {
+				const activeElement = input.ownerDocument.activeElement;
+				if (
+					!activeElement ||
+					!this.modalEl.contains(activeElement) ||
+					!this.isKeyboardTextEntryElement(activeElement)
+				) {
+					this.containerEl.removeClass("is-mobile-keyboard-focused");
+				}
+			}, 100);
+		};
+
+		input.addEventListener("focus", handleFocus);
+		input.addEventListener("blur", handleBlur);
+		this.mobileKeyboardFocusCleanups.push(() => {
+			input.removeEventListener("focus", handleFocus);
+			input.removeEventListener("blur", handleBlur);
+		});
+	}
+
+	private isKeyboardTextEntryElement(element: Element): boolean {
+		const win = element.ownerDocument.defaultView || window;
+		const InputConstructor = win.HTMLInputElement ?? HTMLInputElement;
+		const TextAreaConstructor = win.HTMLTextAreaElement ?? HTMLTextAreaElement;
+
+		if (element.instanceOf(TextAreaConstructor)) {
+			return true;
+		}
+		if (!element.instanceOf(InputConstructor)) {
+			return false;
+		}
+
+		const nonTextTypes = new Set([
+			"button",
+			"checkbox",
+			"color",
+			"file",
+			"hidden",
+			"radio",
+			"range",
+			"reset",
+			"submit",
+		]);
+		return !nonTextTypes.has(element.type);
+	}
+
+	private scheduleMobileKeyboardScrollIntoView(input: HTMLElement): void {
+		const win = input.ownerDocument.defaultView || window;
+		for (const delay of [0, 150, 350]) {
+			const timer = win.setTimeout(() => {
+				this.mobileKeyboardScrollTimers = this.mobileKeyboardScrollTimers.filter(
+					(id) => id !== timer
+				);
+				this.scrollMobileKeyboardTargetIntoView(input);
+			}, delay);
+			this.mobileKeyboardScrollTimers.push(timer);
+		}
+	}
+
+	private scrollMobileKeyboardTargetIntoView(input: HTMLElement): void {
+		if (!this.isMobileLikeEnvironment()) return;
+
+		const target = input.closest<HTMLElement>(".setting-item") ?? input;
+		target.scrollIntoView({
+			block: "center",
+			inline: "nearest",
+			behavior: "smooth",
+		});
+
+		this.nudgeFocusedFieldInsideVisualViewport(target);
+	}
+
+	private nudgeFocusedFieldInsideVisualViewport(target: HTMLElement): void {
+		const win = target.ownerDocument.defaultView || window;
+		const visualViewport = win.visualViewport;
+		const viewportBottom =
+			visualViewport && Number.isFinite(visualViewport.height)
+				? visualViewport.offsetTop + visualViewport.height
+				: win.innerHeight;
+
+		if (!Number.isFinite(viewportBottom) || viewportBottom <= 0) return;
+
+		const scrollContainer =
+			target.closest<HTMLElement>(".modal-split-content") ??
+			target.closest<HTMLElement>(".modal-content") ??
+			this.contentEl;
+		const targetRect = target.getBoundingClientRect();
+		const containerRect = scrollContainer.getBoundingClientRect();
+		const safeTop = Math.max(visualViewport?.offsetTop ?? 0, containerRect.top) + 24;
+		const safeBottom = Math.min(viewportBottom, containerRect.bottom) - 24;
+
+		if (targetRect.bottom > safeBottom) {
+			scrollContainer.scrollTop += targetRect.bottom - safeBottom;
+		} else if (targetRect.top < safeTop) {
+			scrollContainer.scrollTop -= safeTop - targetRect.top;
+		}
+	}
+
 	protected addProject(file: TAbstractFile): void {
 		if (file instanceof TFile) {
 			const projectItem = {
@@ -2253,6 +2375,16 @@ export abstract class TaskModal extends Modal {
 			this.containerEl.removeEventListener("keydown", this.keyboardHandler);
 			this.keyboardHandler = null;
 		}
+		for (const cleanup of this.mobileKeyboardFocusCleanups) {
+			cleanup();
+		}
+		this.mobileKeyboardFocusCleanups = [];
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		for (const timer of this.mobileKeyboardScrollTimers) {
+			win.clearTimeout(timer);
+		}
+		this.mobileKeyboardScrollTimers = [];
+		this.containerEl.removeClass("is-mobile-keyboard-focused");
 
 		// Clean up markdown editor if it exists
 		if (this.detailsMarkdownEditor) {

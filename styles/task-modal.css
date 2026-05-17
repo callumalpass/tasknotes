@@ -736,6 +736,11 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-split-con
     padding-bottom: var(--size-4-2);
 }
 
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.is-mobile-keyboard-focused.expanded .modal-split-content {
+    padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
+}
+
 body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
     flex-shrink: 0;
     position: relative;
