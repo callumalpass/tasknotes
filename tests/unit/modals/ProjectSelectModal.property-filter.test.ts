@@ -79,4 +79,25 @@ describe('ProjectSelectModal property filtering', () => {
     expect(paths).toContain('Projects/Alpha.md');
     expect(paths).not.toContain('Notes/Idea.md');
   });
+
+  it('resolves include folders relative to the active note folder', async () => {
+    mockPlugin.settings.projectAutosuggest.propertyKey = '';
+    mockPlugin.settings.projectAutosuggest.propertyValue = '';
+    mockPlugin.settings.projectAutosuggest.includeFolders = ['./Projects'];
+
+    await mockApp.vault.create('Work/Current.md', '');
+    await mockApp.vault.create('Work/Projects/Beta.md', '');
+    mockApp.metadataCache.setCache('Work/Current.md', { frontmatter: {}, tags: [] });
+    mockApp.metadataCache.setCache('Work/Projects/Beta.md', { frontmatter: {}, tags: [] });
+    (mockApp.workspace as any).getActiveFile = jest.fn(() =>
+      mockApp.vault.getAbstractFileByPath('Work/Current.md')
+    );
+
+    const modal = new ProjectSelectModal(mockApp, mockPlugin, jest.fn());
+    const paths = modal.getItems().map(item => (item as any).path ?? '');
+
+    expect(paths).toContain('Work/Projects/Beta.md');
+    expect(paths).not.toContain('Projects/Alpha.md');
+    expect(paths).not.toContain('Notes/Idea.md');
+  });
 });

@@ -25,12 +25,74 @@ export interface FileFilterConfig {
 	propertyValue?: string;
 }
 
+function normalizeFolderPath(folder: string): string {
+	return folder.trim().replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "");
+}
+
+function resolveRelativeFolderPath(folder: string, activeFolder = ""): string {
+	const segments = normalizeFolderPath(activeFolder).split("/").filter(Boolean);
+	for (const part of folder.replace(/\\/g, "/").split("/")) {
+		if (!part || part === ".") continue;
+		if (part === "..") {
+			segments.pop();
+		} else {
+			segments.push(part);
+		}
+	}
+	return segments.join("/");
+}
+
+function resolveIncludeFolder(folder: string, activeFolder?: string): string {
+	const normalized = normalizeFolderPath(folder);
+	if (
+		normalized === "." ||
+		normalized === ".." ||
+		normalized.startsWith("./") ||
+		normalized.startsWith("../")
+	) {
+		return resolveRelativeFolderPath(normalized, activeFolder);
+	}
+	return normalized;
+}
+
+export function getActiveFolderPath(plugin: TaskNotesPlugin): string | undefined {
+	const activeFile = plugin?.app?.workspace?.getActiveFile?.();
+	if (activeFile?.parent?.path !== undefined) {
+		return activeFile.parent.path;
+	}
+	if (typeof activeFile?.path === "string") {
+		return activeFile.path.split("/").slice(0, -1).join("/");
+	}
+	return undefined;
+}
+
+export function resolveIncludeFolders(
+	includeFolders: readonly string[],
+	activeFolder?: string
+): string[] {
+	return includeFolders
+		.filter((folder) => folder.trim().length > 0)
+		.map((folder) => resolveIncludeFolder(folder, activeFolder));
+}
+
+export function isPathInIncludedFolders(
+	path: string,
+	includeFolders: readonly string[],
+	activeFolder?: string
+): boolean {
+	const resolvedFolders = resolveIncludeFolders(includeFolders, activeFolder);
+	return resolvedFolders.some(
+		(folder) => folder === "" || path === folder || path.startsWith(`${folder}/`)
+	);
+}
+
 export const FileSuggestHelper = {
 	async suggest(
 		plugin: TaskNotesPlugin,
 		query: string,
 		limit = 20,
-		filterConfig?: FileFilterConfig
+		filterConfig?: FileFilterConfig,
+		activeFolder = getActiveFolderPath(plugin)
 	): Promise<FileSuggestionItem[]> {
 		const run = async () => {
 			const files = plugin?.app?.vault?.getMarkdownFiles
@@ -82,11 +144,7 @@ export const FileSuggestHelper = {
 
 				// Apply folder filtering if configured
 				if (includeFolders.length > 0) {
-					const isInIncludedFolder = includeFolders.some(
-						(folder) =>
-							file.path.startsWith(folder) || file.path.startsWith(folder + "/")
-					);
-					if (!isInIncludedFolder) {
+					if (!isPathInIncludedFolders(file.path, includeFolders, activeFolder)) {
 						continue; // Skip this file
 					}
 				}
