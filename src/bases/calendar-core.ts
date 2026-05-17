@@ -562,6 +562,42 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 	};
 }
 
+function shouldConsolidateSameDayScheduledDue(task: TaskInfo): boolean {
+	if (!task.scheduled || !task.due) return false;
+	if (hasTimeComponent(task.scheduled) || hasTimeComponent(task.due)) return false;
+	return getDatePart(task.scheduled) === getDatePart(task.due);
+}
+
+export function createSameDayScheduledDueEvent(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): CalendarEvent | null {
+	if (!shouldConsolidateSameDayScheduledDue(task)) return null;
+	const scheduledDate = getDatePart(task.scheduled || "");
+
+	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
+	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const fadedBackground = hexToRgba(borderColor, 0.15);
+	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
+
+	return {
+		id: `scheduled-due-${task.path}`,
+		title: `Start/Due: ${task.title}`,
+		start: scheduledDate,
+		allDay: true,
+		backgroundColor: fadedBackground,
+		borderColor,
+		textColor,
+		editable: true,
+		extendedProps: {
+			taskInfo: task,
+			eventType: "scheduledToDueSpan",
+			isCompleted,
+		},
+	};
+}
+
 /**
  * Create a date-only spanning event from scheduled date to due date.
  * Shows the task as a multi-day bar from when work starts to when it's due.
@@ -1334,6 +1370,7 @@ export async function generateCalendarEvents(
 				// Handle non-recurring tasks with date range filtering
 				// Check if we should show a span event (replaces individual scheduled/due for this task)
 				let showedSpan = false;
+				let showedConsolidatedScheduledDue = false;
 				if (showScheduledToDueSpan && task.scheduled && task.due) {
 					const spanEvents = createScheduledToDueSpanEvents(
 						task,
@@ -1347,8 +1384,24 @@ export async function generateCalendarEvents(
 					}
 				}
 
+				if (!showedSpan && showScheduled && showDue && task.scheduled && task.due) {
+					const consolidatedEvent = createSameDayScheduledDueEvent(task, plugin);
+					if (
+						consolidatedEvent &&
+						isDateInVisibleRange(
+							consolidatedEvent.start,
+							visibleStart,
+							visibleEnd,
+							task.timeEstimate
+						)
+					) {
+						events.push(consolidatedEvent);
+						showedConsolidatedScheduledDue = true;
+					}
+				}
+
 				// Only show individual scheduled/due events if we didn't show a span
-				if (!showedSpan) {
+				if (!showedSpan && !showedConsolidatedScheduledDue) {
 					if (showScheduled && task.scheduled) {
 						if (
 							isDateInVisibleRange(
