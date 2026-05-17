@@ -13,7 +13,7 @@
  *      {{currentNotePath}}/../Tasks/{{currentNoteTitle}} to navigate to sibling folders
  *    - Currently, ../ is not normalized in folder paths, causing tasks to be created in wrong locations
  *
- * @see https://github.com/obsidian-tasknotes/tasknotes/issues/1254
+ * @see https://github.com/callumalpass/tasknotes/issues/1254
  */
 
 import { processFolderTemplate, TaskTemplateData } from '../../../src/utils/folderTemplateProcessor';
@@ -32,7 +32,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 		 * a clear way to configure this for instant task conversion specifically.
 		 */
 
-		it.skip('reproduces issue #1254: should support date variables in custom filename template', () => {
+		it('reproduces issue #1254: should support date variables in custom filename template', () => {
 			// User's desired template: {{date}} {{title}}
 			// Expected filename: "2025-01-15 My Task"
 			const context: FilenameContext = {
@@ -55,7 +55,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(filename).toBe('2025-01-15 My Task');
 		});
 
-		it.skip('reproduces issue #1254: should support year/month/day variables in filename', () => {
+		it('reproduces issue #1254: should support year/month/day variables in filename', () => {
 			// User's alternative template: {{year}}-{{month}}-{{day}} {{title}}
 			const context: FilenameContext = {
 				title: 'Meeting Notes',
@@ -76,7 +76,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(filename).toBe('2025-01-15 Meeting Notes');
 		});
 
-		it.skip('reproduces issue #1254: should support timestamp in filename for unique sorting', () => {
+		it('reproduces issue #1254: should support timestamp in filename for unique sorting', () => {
 			// For users who want time-based uniqueness: {{date}}-{{time}} {{title}}
 			const context: FilenameContext = {
 				title: 'Quick Task',
@@ -117,7 +117,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 		 * Currently, ../ is not normalized, causing incorrect folder paths.
 		 */
 
-		it.skip('reproduces issue #1254: should normalize ../ in folder path templates', () => {
+		it('reproduces issue #1254: should normalize ../ in folder path templates', () => {
 			// Simulate the scenario where {{currentNotePath}} = "Project/Meetings"
 			// and the template is "{{currentNotePath}}/../Tasks/{{currentNoteTitle}}"
 			// After variable substitution: "Project/Meetings/../Tasks/MeetingA"
@@ -133,7 +133,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(result).toBe('Project/Tasks/MeetingA');
 		});
 
-		it.skip('reproduces issue #1254: should handle multiple ../ segments', () => {
+		it('reproduces issue #1254: should handle multiple ../ segments', () => {
 			// User navigating up multiple levels
 			// Project/SubA/SubB/../../../Tasks
 			// Should normalize to: Tasks
@@ -144,7 +144,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(result).toBe('Tasks');
 		});
 
-		it.skip('reproduces issue #1254: should handle ../ at the beginning of path', () => {
+		it('reproduces issue #1254: should handle ../ at the beginning of path', () => {
 			// Edge case: ../Tasks (relative to vault root)
 			// Should normalize appropriately (or error gracefully)
 
@@ -156,7 +156,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(result).toBe('Tasks');
 		});
 
-		it.skip('reproduces issue #1254: should handle mixed template variables and ../ ', () => {
+		it('reproduces issue #1254: should handle mixed template variables and ../ ', () => {
 			// Real-world scenario from the issue
 			const folderPath = '{{currentNotePath}}/../Tasks/{{currentNoteTitle}}';
 
@@ -175,7 +175,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(result).toBe('Project/Tasks/MeetingA');
 		});
 
-		it.skip('reproduces issue #1254: should normalize ../ with task variables', () => {
+		it('reproduces issue #1254: should normalize ../ with task variables', () => {
 			// Combining ../ with task-specific variables
 			const taskData: TaskTemplateData = {
 				title: 'Review PR',
@@ -195,7 +195,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(result).toBe('Projects/web-app/Tasks/high');
 		});
 
-		it.skip('reproduces issue #1254: should preserve trailing slash after normalization', () => {
+		it('reproduces issue #1254: should preserve trailing slash after normalization', () => {
 			// Some users might want a trailing slash
 			const folderPath = 'Project/Meetings/../Tasks/';
 			const result = processFolderTemplate(folderPath, { date: testDate });
@@ -203,7 +203,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(result).toBe('Project/Tasks/');
 		});
 
-		it.skip('reproduces issue #1254: should handle consecutive ../ segments', () => {
+		it('reproduces issue #1254: should handle consecutive ../ segments', () => {
 			// Edge case: Project/A/B/C/../../Tasks -> Project/A/Tasks
 			const folderPath = 'Project/A/B/C/../../Tasks';
 			const result = processFolderTemplate(folderPath, { date: testDate });
@@ -211,7 +211,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 			expect(result).toBe('Project/A/Tasks');
 		});
 
-		it.skip('reproduces issue #1254: should handle ../ with ./ (current directory)', () => {
+		it('reproduces issue #1254: should handle ../ with ./ (current directory)', () => {
 			// Mixed relative paths: Project/./Meetings/../Tasks
 			const folderPath = 'Project/./Meetings/../Tasks';
 			const result = processFolderTemplate(folderPath, { date: testDate });
@@ -221,7 +221,7 @@ describe('Issue #1254: Instant Note Creation - Change File Name + Support ../ Pa
 	});
 
 	describe('Combined Scenarios', () => {
-		it.skip('reproduces issue #1254: should support both date in filename and ../ in folder', () => {
+		it('reproduces issue #1254: should support both date in filename and ../ in folder', () => {
 			// Full scenario from the issue:
 			// - Folder template: {{currentNotePath}}/../Tasks/{{currentNoteTitle}}
 			// - Filename template: {{date}} {{title}}

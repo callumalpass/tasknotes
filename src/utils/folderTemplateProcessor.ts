@@ -68,6 +68,35 @@ function replaceDailyNotesDateTokens(template: string, date: Date): string {
 	);
 }
 
+function hasRelativePathSegments(folderPath: string): boolean {
+	return folderPath
+		.replace(/\\/g, "/")
+		.split("/")
+		.some((segment) => segment === "." || segment === "..");
+}
+
+function normalizeRelativeFolderPath(folderPath: string): string {
+	const slashNormalizedPath = folderPath.replace(/\\/g, "/");
+	const preserveTrailingSlash = slashNormalizedPath.endsWith("/");
+	const normalizedSegments: string[] = [];
+
+	for (const segment of slashNormalizedPath.split("/")) {
+		if (!segment || segment === ".") {
+			continue;
+		}
+
+		if (segment === "..") {
+			normalizedSegments.pop();
+			continue;
+		}
+
+		normalizedSegments.push(segment);
+	}
+
+	const normalizedPath = normalizedSegments.join("/");
+	return preserveTrailingSlash && normalizedPath ? `${normalizedPath}/` : normalizedPath;
+}
+
 /**
  * Process a folder path template by replacing template variables with actual values
  *
@@ -136,6 +165,7 @@ export function processFolderTemplate(
 	const { date = new Date(), taskData, icsData, extractProjectBasename } = options;
 
 	let processedPath = folderTemplate;
+	const shouldNormalizeRelativeSegments = hasRelativePathSegments(folderTemplate);
 
 	processedPath = replaceDailyNotesDateTokens(processedPath, date);
 
@@ -342,5 +372,7 @@ export function processFolderTemplate(
 	const nanoId = Date.now().toString() + Math.random().toString(36).substring(2, 7);
 	processedPath = processedPath.replace(/\{\{nano\}\}/g, nanoId);
 
-	return processedPath;
+	return shouldNormalizeRelativeSegments
+		? normalizeRelativeFolderPath(processedPath)
+		: processedPath;
 }

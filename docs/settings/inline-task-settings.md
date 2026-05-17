@@ -10,7 +10,9 @@ You can enable or disable the **Task Link Overlay** feature, which replaces wiki
 
 You can enable or disable the **Instant Task Conversion** feature, which allows you to convert any line type (checkboxes, bullet points, numbered lists, blockquotes, headers, or plain text) to TaskNotes with a single click. You can also choose whether to apply your default task settings to converted tasks.
 
-The folder where inline-created and converted tasks are created is configured in **Settings → General → Folder for inline-created tasks**. See [General Settings](general.md#task-storage) for details on folder configuration options.
+The folder where inline-created and converted tasks are created is configured in **Settings → General → Folder for inline-created tasks**. See [General Settings](general.md#task-storage) for details on folder configuration options, including `{{currentNotePath}}` and `../` sibling-folder paths.
+
+Instant conversion uses the same filename settings as other new tasks. Configure these in **Settings → Task Properties → Title → Filename format**, including custom templates such as `{{date}} {{title}}`.
 
 ## Natural Language Processing
 

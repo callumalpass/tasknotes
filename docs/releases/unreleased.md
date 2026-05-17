@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#1254](https://github.com/callumalpass/tasknotes/issues/1254)) Added `../` and `./` normalization for folder templates after variables are expanded, so instant task conversion can target sibling folders such as `{{currentNotePath}}/../Tasks`. Thanks to @rdick for suggesting this.
 - ([#1267](https://github.com/callumalpass/tasknotes/issues/1267)) Added Daily Notes-style date tokens such as `YYYY`, `MM`, `DD`, `MMMM`, and `dddd` to TaskNotes folder templates. Thanks to @paulsen-it for suggesting this.
 - ([#1380](https://github.com/callumalpass/tasknotes/issues/1380)) Added tag actions to task context menus, including add/remove actions for individual tasks and batch-selected tasks. Thanks to @Chuhtra for suggesting this.
 - ([#1377](https://github.com/callumalpass/tasknotes/issues/1377)) Added right-click Mini Calendar actions for opening daily notes from day cells and weekly notes from week numbers. Thanks to @hasanyilmaz for suggesting this.

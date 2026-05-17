@@ -9,7 +9,7 @@ This page documents folder management, filename templates, archive settings, and
 
 You can specify a **Default Tasks Folder** where new tasks will be created. You can also configure the **Task Tag** that identifies notes as TaskNotes, and you can specify a list of **Excluded Folders** that will be ignored by the plugin.
 
-Filename generation settings are configured in the **Task Properties** tab within the Title property card. You can choose from title-based, timestamp-based, Zettelkasten-style patterns, or create a custom filename template.
+Filename generation settings are configured in the **Task Properties** tab within the Title property card. You can choose from title-based, timestamp-based, Zettelkasten-style patterns, or create a custom filename template. These filename settings also apply to inline task conversion and instant-created task notes.
 These settings define folder paths and filename behavior for new tasks, which affects long-term vault structure.
 
 ### Folder Template Variables
@@ -96,6 +96,7 @@ Advanced variables increase uniqueness and entropy, but may reduce path readabil
 - **Title Sanitization**: The `{{title}}` variable automatically removes invalid folder characters (`<>:"/\|?*`) and replaces them with underscores
 - **Folder Creation**: Folders are automatically created if they don't exist
 - **Inline Tasks**: Template variables also work for the inline-created task folder setting. Leave that setting empty to use the default tasks folder.
+- **Relative Paths**: `.` and `..` path segments are normalized after variables are expanded, so `{{currentNotePath}}/../Tasks` can target a sibling folder.
 When templates contain nested variables, create a small test set first to validate the resulting paths.
 
 #### Advanced Usage
