@@ -35,14 +35,7 @@ export class InstantTaskConvertService {
 		this.plugin = plugin;
 		this.statusManager = statusManager;
 		this.priorityManager = priorityManager;
-		this.nlParser = new NaturalLanguageParser(
-			plugin.settings.customStatuses,
-			plugin.settings.customPriorities,
-			plugin.settings.nlpDefaultToScheduled,
-			plugin.settings.nlpLanguage,
-			plugin.settings.nlpTriggers,
-			plugin.settings.userFields
-		);
+		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
 	}
 
 	/**

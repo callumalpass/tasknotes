@@ -47,14 +47,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 		this.plugin = plugin;
 
 		// Initialize dependencies
-		const nlParser = new NaturalLanguageParser(
-			plugin.settings.customStatuses,
-			plugin.settings.customPriorities,
-			plugin.settings.nlpDefaultToScheduled,
-			plugin.settings.nlpLanguage,
-			plugin.settings.nlpTriggers,
-			plugin.settings.userFields
-		);
+		const nlParser = NaturalLanguageParser.fromPlugin(plugin);
 		const statusManager = new StatusManager(
 			plugin.settings.customStatuses,
 			plugin.settings.defaultTaskStatus

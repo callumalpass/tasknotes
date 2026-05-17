@@ -2,11 +2,40 @@ import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
 import {
-	NaturalLanguageParserCore,
+	NaturalLanguageParserCore as ImportedNaturalLanguageParserCore,
 	ParsedTaskData,
 } from "tasknotes-nlp-core";
 
 export type { ParsedTaskData };
+
+type ParserCoreInstance = InstanceType<typeof ImportedNaturalLanguageParserCore>;
+type ParserCoreOptions = {
+	dateLocale?: string;
+	dateOrder?: "day-first" | "month-first";
+};
+
+const NaturalLanguageParserCore = ImportedNaturalLanguageParserCore as unknown as new (
+	statusConfigs?: StatusConfig[],
+	priorityConfigs?: PriorityConfig[],
+	defaultToScheduled?: boolean,
+	languageCode?: string,
+	nlpTriggers?: NLPTriggersConfig,
+	userFields?: UserMappedField[],
+	options?: ParserCoreOptions
+) => ParserCoreInstance;
+
+function getBrowserLocale(): string | undefined {
+	return typeof navigator !== "undefined" && navigator.language ? navigator.language : undefined;
+}
+
+function getDateLocaleFromPlugin(plugin: TaskNotesPlugin): string {
+	const calendarLocale = plugin.settings.calendarViewSettings?.locale?.trim();
+	if (calendarLocale) {
+		return calendarLocale;
+	}
+
+	return getBrowserLocale() || plugin.settings.nlpLanguage || "en";
+}
 
 /**
  * TaskNotes adapter around shared NLP core.
@@ -24,7 +53,8 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			s.nlpDefaultToScheduled,
 			s.nlpLanguage,
 			s.nlpTriggers,
-			s.userFields
+			s.userFields,
+			{ dateLocale: getDateLocaleFromPlugin(plugin) }
 		);
 	}
 
@@ -34,7 +64,8 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		defaultToScheduled = true,
 		languageCode = "en",
 		nlpTriggers?: NLPTriggersConfig,
-		userFields?: UserMappedField[]
+		userFields?: UserMappedField[],
+		options?: ParserCoreOptions
 	) {
 		super(
 			statusConfigs,
@@ -42,188 +73,17 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			defaultToScheduled,
 			languageCode,
 			nlpTriggers,
-			userFields
+			userFields,
+			options
 		);
 		this.taskNotesNlpTriggers = nlpTriggers;
 		this.taskNotesUserFields = userFields || [];
 	}
 
 	parseInput(input: string): ParsedTaskData {
-		const protectedInput = this.protectNlpLiterals(input);
-		const parsed = super.parseInput(protectedInput.text);
-		const withLinkedFields = this.extractLinkedUserFields(protectedInput.text, parsed);
-		this.restoreProtectedLiterals(withLinkedFields, protectedInput.literals);
+		const parsed = super.parseInput(input);
+		const withLinkedFields = this.extractLinkedUserFields(input, parsed);
 		return this.normalizeUserFieldValues(withLinkedFields);
-	}
-
-	private protectNlpLiterals(input: string): { text: string; literals: string[] } {
-		const quoted = this.protectQuotedLiterals(input);
-		return this.protectEscapedLiterals(quoted.text, quoted.literals);
-	}
-
-	private protectQuotedLiterals(input: string): { text: string; literals: string[] } {
-		const literals: string[] = [];
-		let text = "";
-		let index = 0;
-
-		while (index < input.length) {
-			const char = input[index];
-			if (!this.isQuoteDelimiter(char) || !this.isEligibleQuoteStart(input, index)) {
-				text += char;
-				index += 1;
-				continue;
-			}
-
-			const endIndex = this.findClosingQuote(input, index + 1, char);
-			if (endIndex === -1 || !this.isEligibleQuoteEnd(input, endIndex)) {
-				text += char;
-				index += 1;
-				continue;
-			}
-
-			const literal = input.slice(index + 1, endIndex);
-			if (literal.trim().length === 0) {
-				text += char;
-				index += 1;
-				continue;
-			}
-
-			const placeholder = `__TASKNOTES_LITERAL_${literals.length}__`;
-			literals.push(literal);
-			text += placeholder;
-			index = endIndex + 1;
-		}
-
-		return { text, literals };
-	}
-
-	private protectEscapedLiterals(
-		input: string,
-		literals: string[]
-	): { text: string; literals: string[] } {
-		let text = "";
-		let index = 0;
-
-		while (index < input.length) {
-			if (input[index] !== "\\") {
-				text += input[index];
-				index += 1;
-				continue;
-			}
-
-			const literalStart = index + 1;
-			if (
-				literalStart >= input.length ||
-				!this.shouldProtectEscapedLiteral(input, index, literalStart)
-			) {
-				text += input[index];
-				index += 1;
-				continue;
-			}
-
-			let literalEnd = literalStart;
-			while (literalEnd < input.length && !/\s/u.test(input[literalEnd])) {
-				literalEnd += 1;
-			}
-
-			const literal = input.slice(literalStart, literalEnd);
-			const placeholder = `__TASKNOTES_LITERAL_${literals.length}__`;
-			literals.push(literal);
-			text += placeholder;
-			index = literalEnd;
-		}
-
-		return { text, literals };
-	}
-
-	private restoreProtectedLiterals(parsed: ParsedTaskData, literals: string[]): void {
-		if (literals.length === 0) return;
-
-		parsed.title = this.restoreProtectedLiteralsInText(parsed.title, literals)
-			.replace(/\s+/g, " ")
-			.trim();
-		if (parsed.details) {
-			parsed.details = this.restoreProtectedLiteralsInText(parsed.details, literals);
-		}
-	}
-
-	private restoreProtectedLiteralsInText(text: string, literals: string[]): string {
-		let restored = text;
-		literals.forEach((literal, index) => {
-			restored = restored.replace(`__TASKNOTES_LITERAL_${index}__`, literal);
-		});
-		return restored;
-	}
-
-	private isQuoteDelimiter(char: string): boolean {
-		return char === "\"" || char === "'" || char === "`";
-	}
-
-	private isEligibleQuoteStart(input: string, index: number): boolean {
-		const char = input[index];
-		if (char !== "'") return true;
-
-		const previous = index > 0 ? input[index - 1] : "";
-		return !this.isLiteralBoundaryWordCharacter(previous);
-	}
-
-	private isEligibleQuoteEnd(input: string, index: number): boolean {
-		const char = input[index];
-		if (char !== "'") return true;
-
-		const next = index + 1 < input.length ? input[index + 1] : "";
-		return !this.isLiteralBoundaryWordCharacter(next);
-	}
-
-	private findClosingQuote(input: string, startIndex: number, delimiter: string): number {
-		for (let index = startIndex; index < input.length; index += 1) {
-			if (input[index] !== delimiter) continue;
-
-			const previous = index > 0 ? input[index - 1] : "";
-			if (previous === "\\") continue;
-
-			return index;
-		}
-
-		return -1;
-	}
-
-	private isLiteralBoundaryWordCharacter(char: string): boolean {
-		return /[\p{L}\p{N}_]/u.test(char);
-	}
-
-	private shouldProtectEscapedLiteral(
-		input: string,
-		escapeIndex: number,
-		literalStart: number
-	): boolean {
-		if (this.startsWithEscapableTrigger(input, literalStart)) {
-			return true;
-		}
-
-		const previous = escapeIndex > 0 ? input[escapeIndex - 1] : "";
-		if (previous && !/\s/u.test(previous)) {
-			return false;
-		}
-
-		return /[\p{L}\p{N}]/u.test(input[literalStart]);
-	}
-
-	private startsWithEscapableTrigger(input: string, index: number): boolean {
-		const triggers = this.getEscapableTriggers();
-		return triggers.some((trigger) => input.startsWith(trigger, index));
-	}
-
-	private getEscapableTriggers(): string[] {
-		const configured = this.taskNotesNlpTriggers?.triggers
-			.filter((trigger) => trigger.enabled && trigger.trigger.length > 0)
-			.map((trigger) => trigger.trigger);
-
-		if (configured && configured.length > 0) {
-			return configured;
-		}
-
-		return ["#", "@", "+", "*", "!"];
 	}
 
 	private normalizeUserFieldValues(parsed: ParsedTaskData): ParsedTaskData {
