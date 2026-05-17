@@ -135,7 +135,7 @@ Query params:
 
 Important:
 
-- Filtering params such as `status`, `priority`, `tag`, `project`, `due_before`, `due_after`, `overdue`, `completed`, `archived`, and `sort` are rejected on this endpoint with HTTP `400`.
+- Filtering params such as `status`, `priority`, `tag`, `project`, `context`, `due_before`, `due_after`, `overdue`, `completed`, `archived`, and `sort` are rejected on this endpoint with HTTP `400`.
 - Use `POST /api/tasks/query` for filtering.
 
 Example:

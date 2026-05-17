@@ -20,6 +20,7 @@ interface TaskQueryParams {
 	status?: string;
 	priority?: string;
 	project?: string;
+	context?: string;
 	tag?: string;
 	due_before?: string;
 	due_after?: string;
@@ -54,6 +55,7 @@ export class TasksController extends BaseController {
 				"status",
 				"priority",
 				"project",
+				"context",
 				"tag",
 				"overdue",
 				"completed",
