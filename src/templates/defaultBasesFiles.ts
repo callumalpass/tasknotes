@@ -89,6 +89,18 @@ function getPropertyName(fullPath: string): string {
 	return fullPath.replace(/^(note\.|file\.|task\.|formula\.)/, '');
 }
 
+function formatBasesDateDayExpression(dateExpression: string): string {
+	return `date(${dateExpression}).format("YYYY-MM-DD")`;
+}
+
+function getBasesTodayDayExpression(): string {
+	return 'today().format("YYYY-MM-DD")';
+}
+
+function getBasesWeekEndDayExpression(): string {
+	return '(today() + "7 days").format("YYYY-MM-DD")';
+}
+
 /**
  * Map internal TaskNotes property names to Bases property names.
  * Uses FieldMapper for type-safe field mapping.
@@ -282,6 +294,14 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 	const dueHasValue = `(${dueIsEmpty} == false)`;
 	const scheduledHasValue = `(${scheduledIsEmpty} == false)`;
 	const safeDaysUntilNext = "if(formula.daysUntilNext, formula.daysUntilNext, 0)";
+	const todayDay = getBasesTodayDayExpression();
+	const weekEndDay = getBasesWeekEndDayExpression();
+	const tomorrowDay = '(today() + "1 day").format("YYYY-MM-DD")';
+	const yesterdayDay = '(today() - "1 day").format("YYYY-MM-DD")';
+	const dueDay = formatBasesDateDayExpression(dueProperty);
+	const scheduledDay = formatBasesDateDayExpression(scheduledProperty);
+	const timeEntryStartDay = formatBasesDateDayExpression("value.startTime");
+	const nextDateStartOfDay = 'date(date(formula.nextDate).format("YYYY-MM-DD"))';
 
 	return {
 		// Priority weight for sorting (lower = higher priority)
@@ -306,13 +326,13 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		isOverdue: `${dueHasValue} && date(${dueProperty}) < today() && ${completedStatusCheck}`,
 
 		// Boolean: is this task due today?
-		isDueToday: `${dueHasValue} && date(${dueProperty}).date() == today()`,
+		isDueToday: `${dueHasValue} && ${dueDay} == ${todayDay}`,
 
 		// Boolean: is this task due within the next 7 days?
-		isDueThisWeek: `${dueHasValue} && date(${dueProperty}).date() >= today() && date(${dueProperty}).date() <= today() + "7d"`,
+		isDueThisWeek: `${dueHasValue} && ${dueDay} >= ${todayDay} && ${dueDay} <= ${weekEndDay}`,
 
 		// Boolean: is this task scheduled for today?
-		isScheduledToday: `${scheduledHasValue} && date(${scheduledProperty}).date() == today()`,
+		isScheduledToday: `${scheduledHasValue} && ${scheduledDay} == ${todayDay}`,
 
 		// Boolean: is this a recurring task?
 		isRecurring: `${recurrenceProperty} && !${recurrenceProperty}.isEmpty()`,
@@ -333,7 +353,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		timeTrackedThisWeek: `if(${timeEntriesProperty}, list(${timeEntriesProperty}).filter(value.endTime && date(value.startTime) >= today() - "7d").map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)`,
 
 		// Total time tracked today (in minutes)
-		timeTrackedToday: `if(${timeEntriesProperty}, list(${timeEntriesProperty}).filter(value.endTime && date(value.startTime).date() == today()).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)`,
+		timeTrackedToday: `if(${timeEntriesProperty}, list(${timeEntriesProperty}).filter(value.endTime && ${timeEntryStartDay} == ${todayDay}).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)`,
 
 		// === GROUPING FORMULAS ===
 
@@ -350,7 +370,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		scheduledWeek: `if(${scheduledHasValue}, date(${scheduledProperty}).format("YYYY-[W]WW"), "Not scheduled")`,
 
 		// Due date category for grouping: Overdue, Today, Tomorrow, This Week, Later, No Due Date
-		dueDateCategory: `if(${dueIsEmpty}, "No due date", if(date(${dueProperty}) < today(), "Overdue", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}).date() <= today() + "7d", "This week", "Later")))))`,
+		dueDateCategory: `if(${dueIsEmpty}, "No due date", if(date(${dueProperty}) < today(), "Overdue", if(${dueDay} == ${todayDay}, "Today", if(${dueDay} == ${tomorrowDay}, "Tomorrow", if(${dueDay} <= ${weekEndDay}, "This week", "Later")))))`,
 
 		// Time estimate category for grouping
 		timeEstimateCategory: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0 || ${timeEstimateProperty} == null, "No estimate", if(${timeEstimateProperty} < 30, "Quick (<30m)", if(${timeEstimateProperty} <= 120, "Medium (30m-2h)", "Long (>2h)")))`,
@@ -388,13 +408,13 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		hasDate: `${dueHasValue} || ${scheduledHasValue}`,
 
 		// Boolean: is due or scheduled today
-		isToday: `(${dueHasValue} && date(${dueProperty}).date() == today()) || (${scheduledHasValue} && date(${scheduledProperty}).date() == today())`,
+		isToday: `(${dueHasValue} && ${dueDay} == ${todayDay}) || (${scheduledHasValue} && ${scheduledDay} == ${todayDay})`,
 
 		// Boolean: is due or scheduled this week
-		isThisWeek: `(${dueHasValue} && date(${dueProperty}).date() >= today() && date(${dueProperty}).date() <= today() + "7d") || (${scheduledHasValue} && date(${scheduledProperty}).date() >= today() && date(${scheduledProperty}).date() <= today() + "7d")`,
+		isThisWeek: `(${dueHasValue} && ${dueDay} >= ${todayDay} && ${dueDay} <= ${weekEndDay}) || (${scheduledHasValue} && ${scheduledDay} >= ${todayDay} && ${scheduledDay} <= ${weekEndDay})`,
 
 		// Next date category for grouping (combines due and scheduled)
-		nextDateCategory: `if(${dueIsEmpty} && ${scheduledIsEmpty}, "No date", if((${dueHasValue} && date(${dueProperty}) < today()) || (${scheduledHasValue} && date(${scheduledProperty}) < today()), "Overdue/Past", if((${dueHasValue} && date(${dueProperty}).date() == today()) || (${scheduledHasValue} && date(${scheduledProperty}).date() == today()), "Today", if((${dueHasValue} && date(${dueProperty}).date() == today() + "1d") || (${scheduledHasValue} && date(${scheduledProperty}).date() == today() + "1d"), "Tomorrow", if((${dueHasValue} && date(${dueProperty}).date() <= today() + "7d") || (${scheduledHasValue} && date(${scheduledProperty}).date() <= today() + "7d"), "This week", "Later")))))`,
+		nextDateCategory: `if(${dueIsEmpty} && ${scheduledIsEmpty}, "No date", if((${dueHasValue} && date(${dueProperty}) < today()) || (${scheduledHasValue} && date(${scheduledProperty}) < today()), "Overdue/Past", if((${dueHasValue} && ${dueDay} == ${todayDay}) || (${scheduledHasValue} && ${scheduledDay} == ${todayDay}), "Today", if((${dueHasValue} && ${dueDay} == ${tomorrowDay}) || (${scheduledHasValue} && ${scheduledDay} == ${tomorrowDay}), "Tomorrow", if((${dueHasValue} && ${dueDay} <= ${weekEndDay}) || (${scheduledHasValue} && ${scheduledDay} <= ${weekEndDay}), "This week", "Later")))))`,
 
 		// Next date as month for grouping
 		nextDateMonth: `if(${dueHasValue} && ${scheduledHasValue}, if(date(${dueProperty}) < date(${scheduledProperty}), date(${dueProperty}).format("YYYY-MM"), date(${scheduledProperty}).format("YYYY-MM")), if(${dueHasValue}, date(${dueProperty}).format("YYYY-MM"), if(${scheduledHasValue}, date(${scheduledProperty}).format("YYYY-MM"), "No date")))`,
@@ -407,7 +427,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		// Urgency score: combines priority weight, days until next date (due or scheduled), and time-of-day.
 		// Higher = more urgent. The 0..1 time-of-day term ranks earlier-in-day tasks above later same-day
 		// tasks at the same priority. Date-only values fall back to midnight.
-		urgencyScore: `if(${dueIsEmpty} && ${scheduledIsEmpty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - ${safeDaysUntilNext}) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))`,
+		urgencyScore: `if(${dueIsEmpty} && ${scheduledIsEmpty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - ${safeDaysUntilNext}) + (1 - ((number(date(formula.nextDate)) - number(${nextDateStartOfDay})) / 86400000)))`,
 
 		// === DISPLAY FORMULAS ===
 
@@ -415,7 +435,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		timeTrackedFormatted: `if(${timeEntriesProperty}, if(list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")`,
 
 		// Due date as human-readable relative text
-		dueDateDisplay: `if(${dueIsEmpty}, "", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}).date() == today() - "1d", "Yesterday", if(date(${dueProperty}) < today(), formula.daysUntilDue * -1 + "d ago", if(date(${dueProperty}).date() <= today() + "7d", date(${dueProperty}).format("ddd"), date(${dueProperty}).format("MMM D")))))))`,
+		dueDateDisplay: `if(${dueIsEmpty}, "", if(${dueDay} == ${todayDay}, "Today", if(${dueDay} == ${tomorrowDay}, "Tomorrow", if(${dueDay} == ${yesterdayDay}, "Yesterday", if(date(${dueProperty}) < today(), formula.daysUntilDue * -1 + "d ago", if(${dueDay} <= ${weekEndDay}, date(${dueProperty}).format("ddd"), date(${dueProperty}).format("MMM D")))))))`,
 	};
 }
 
@@ -603,6 +623,12 @@ ${orderYaml}
 			const completeInstancesProperty = mapPropertyToBasesProperty('completeInstances', plugin);
 			const blockedByProperty = mapPropertyToBasesProperty('blockedBy', plugin);
 			const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
+			const dueHasValue = `${dueProperty}.isEmpty() == false`;
+			const scheduledHasValue = `${scheduledProperty}.isEmpty() == false`;
+			const todayDay = getBasesTodayDayExpression();
+			const weekEndDay = getBasesWeekEndDayExpression();
+			const dueDay = formatBasesDateDayExpression(dueProperty);
+			const scheduledDay = formatBasesDateDayExpression(scheduledProperty);
 
 			// Get all completed status values
 			const completedStatuses = settings.customStatuses
@@ -615,10 +641,9 @@ ${orderYaml}
 				.map(status => `${statusProperty} != "${status}"`)
 				.join('\n            - ');
 
-			// Treat missing complete_instances as "not completed today" for recurring tasks.
-			const recurringIncompleteFilter = `or:
-              - ${completeInstancesProperty}.isEmpty()
-              - "!${completeInstancesProperty}.contains(today().format(\\"yyyy-MM-dd\\"))"`;
+			// Normalize completion dates before comparing so YAML date values and strings both work.
+			// `!= true` also avoids unary `!` at the start of a YAML scalar.
+			const recurringIncompleteFilter = `${completeInstancesProperty}.map(date(value).format("YYYY-MM-DD")).contains(${todayDay}) != true`;
 
 			// Generate filter condition for checking if a blocking task is incomplete
 			// This is used in the "Not Blocked" view to filter out completed blocking tasks
@@ -662,7 +687,7 @@ ${orderYaml}
             - ${nonRecurringIncompleteFilter}
           # Recurring task where today is not in complete_instances
           - and:
-            - ${recurrenceProperty}
+            - ${recurrenceProperty}.isEmpty() == false
             - ${recurringIncompleteFilter}
         # Not blocked by any incomplete tasks
         - or:
@@ -687,12 +712,16 @@ ${orderYaml}
             - ${nonRecurringIncompleteFilter}
           # Recurring task where today is not in complete_instances
           - and:
-            - ${recurrenceProperty}
+            - ${recurrenceProperty}.isEmpty() == false
             - ${recurringIncompleteFilter}
         # Due or scheduled today
         - or:
-          - date(${dueProperty}).date() == today()
-          - date(${scheduledProperty}).date() == today()
+          - and:
+            - ${dueHasValue}
+            - ${dueDay} == ${todayDay}
+          - and:
+            - ${scheduledHasValue}
+            - ${scheduledDay} == ${todayDay}
     order:
 ${orderYaml}
     sort:
@@ -710,7 +739,7 @@ ${orderYaml}
             - ${nonRecurringIncompleteFilter}
           # Recurring task where today is not in complete_instances
           - and:
-            - ${recurrenceProperty}
+            - ${recurrenceProperty}.isEmpty() == false
             - ${recurringIncompleteFilter}
         # Due in the past
         - date(${dueProperty}) < today()
@@ -731,16 +760,18 @@ ${orderYaml}
             - ${nonRecurringIncompleteFilter}
           # Recurring task where today is not in complete_instances
           - and:
-            - ${recurrenceProperty}
+            - ${recurrenceProperty}.isEmpty() == false
             - ${recurringIncompleteFilter}
         # Due or scheduled this week
         - or:
           - and:
-            - date(${dueProperty}).date() >= today()
-            - date(${dueProperty}).date() <= today() + "7 days"
+            - ${dueHasValue}
+            - ${dueDay} >= ${todayDay}
+            - ${dueDay} <= ${weekEndDay}
           - and:
-            - date(${scheduledProperty}).date() >= today()
-            - date(${scheduledProperty}).date() <= today() + "7 days"
+            - ${scheduledHasValue}
+            - ${scheduledDay} >= ${todayDay}
+            - ${scheduledDay} <= ${weekEndDay}
     order:
 ${orderYaml}
     sort:
@@ -758,7 +789,7 @@ ${orderYaml}
             - ${nonRecurringIncompleteFilter}
           # Recurring task where today is not in complete_instances
           - and:
-            - ${recurrenceProperty}
+            - ${recurrenceProperty}.isEmpty() == false
             - ${recurringIncompleteFilter}
         # No due date and no scheduled date
         - date(${dueProperty}).isEmpty()

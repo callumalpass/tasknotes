@@ -99,6 +99,7 @@ Example:
 
 ## Fixed
 
+- ([#1232](https://github.com/callumalpass/tasknotes/issues/1232)) Fixed generated Task List Base date filters so recurring tasks scheduled for today appear in the Today view, and today's completed recurring instances stay hidden. Thanks to @mvichosfm for reporting this and @ArthurGideon and @VarunNikam22 for the follow-up.
 - ([#1243](https://github.com/callumalpass/tasknotes/issues/1243)) Removed quoted multi-word custom field NLP expressions from created task titles after saving the custom field value. Thanks to @Arachnidai for reporting this.
 - ([#1252](https://github.com/callumalpass/tasknotes/issues/1252)) Hardened the calendar-first task date picker for iPad taps so date buttons use direct touch manipulation. Thanks to @alxandrharris for reporting this.
 - ([#1261](https://github.com/callumalpass/tasknotes/issues/1261)) Removed the extra Task List Base scrollbar when an embedded task list note is placed in a sidebar, while keeping normal embedded task lists scrollable in the main note area. Thanks to @cathywu for reporting this.

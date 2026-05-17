@@ -139,29 +139,35 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toContain("note.Task Type");
 	});
 
-	it("strips time component in view filters and formulas that compare against today()", () => {
-		// today() returns midnight in the Bases formula language. Without .date(),
-		// equality comparisons (date(x) == today()) never match a value that carries
-		// a time, and upper-bound window checks (date(x) <= today() + "7d") drop the
-		// last day of the window for any value past midnight. Calling .date() on the
-		// left side strips the time so every comparison runs at day-level granularity.
+	it("uses formatted day strings in view filters and formulas that compare against today()", () => {
+		// Bases date values may carry time, while today() is a day boundary.
+		// Comparing both sides as YYYY-MM-DD strings keeps filters day-granular
+		// without relying on date().date(), which returns a day number in Bases.
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
 		// Today and This Week view filters
-		expect(template).toContain("date(due).date() == today()");
-		expect(template).toContain("date(scheduled).date() == today()");
-		expect(template).toContain("date(due).date() >= today()");
-		expect(template).toContain('date(due).date() <= today() + "7 days"');
-		expect(template).toContain("date(scheduled).date() >= today()");
-		expect(template).toContain('date(scheduled).date() <= today() + "7 days"');
+		expect(template).toContain('date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")');
+		expect(template).toContain(
+			'date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")'
+		);
+		expect(template).toContain('date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD")');
+		expect(template).toContain(
+			'date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")'
+		);
+		expect(template).toContain(
+			'date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD")'
+		);
+		expect(template).toContain(
+			'date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")'
+		);
 
 		// Pin full bodies of the affected formulas so a regression in any single
 		// clause (lower bound, upper bound, due half, scheduled half) breaks the test.
 		expect(template).toContain(
-			`isDueThisWeek: '(due.isEmpty() == false) && date(due).date() >= today() && date(due).date() <= today() + "7d"'`
+			`isDueThisWeek: '(due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")'`
 		);
 		expect(template).toContain(
-			`isThisWeek: '((due.isEmpty() == false) && date(due).date() >= today() && date(due).date() <= today() + "7d") || ((scheduled.isEmpty() == false) && date(scheduled).date() >= today() && date(scheduled).date() <= today() + "7d")'`
+			`isThisWeek: '((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"))'`
 		);
 
 		// Negative guards against any reappearance of the time-naive shape on a
@@ -173,6 +179,8 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toMatch(/date\(scheduled\) >= today\(\)/);
 		expect(template).not.toMatch(/date\(due\) <= today\(\) \+ "7d"/);
 		expect(template).not.toMatch(/date\(scheduled\) <= today\(\) \+ "7d"/);
+		expect(template).not.toContain("date(due).date() == today()");
+		expect(template).not.toContain("date(scheduled).date() == today()");
 	});
 
 	it("includes a time-of-day component in urgencyScore so earlier values rank higher", () => {
@@ -184,7 +192,7 @@ describe("defaultBasesFiles", () => {
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
 		expect(template).toContain(
-			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000)))'`
+			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))'`
 		);
 
 		// Guard against the time-naive form returning
