@@ -49,11 +49,16 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 	}
 
 	parseInput(input: string): ParsedTaskData {
-		const protectedInput = this.protectQuotedLiterals(input);
+		const protectedInput = this.protectNlpLiterals(input);
 		const parsed = super.parseInput(protectedInput.text);
 		const withLinkedFields = this.extractLinkedUserFields(protectedInput.text, parsed);
-		this.restoreQuotedLiterals(withLinkedFields, protectedInput.literals);
+		this.restoreProtectedLiterals(withLinkedFields, protectedInput.literals);
 		return this.normalizeUserFieldValues(withLinkedFields);
+	}
+
+	private protectNlpLiterals(input: string): { text: string; literals: string[] } {
+		const quoted = this.protectQuotedLiterals(input);
+		return this.protectEscapedLiterals(quoted.text, quoted.literals);
 	}
 
 	private protectQuotedLiterals(input: string): { text: string; literals: string[] } {
@@ -92,14 +97,62 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		return { text, literals };
 	}
 
-	private restoreQuotedLiterals(parsed: ParsedTaskData, literals: string[]): void {
+	private protectEscapedLiterals(
+		input: string,
+		literals: string[]
+	): { text: string; literals: string[] } {
+		let text = "";
+		let index = 0;
+
+		while (index < input.length) {
+			if (input[index] !== "\\") {
+				text += input[index];
+				index += 1;
+				continue;
+			}
+
+			const literalStart = index + 1;
+			if (
+				literalStart >= input.length ||
+				!this.shouldProtectEscapedLiteral(input, index, literalStart)
+			) {
+				text += input[index];
+				index += 1;
+				continue;
+			}
+
+			let literalEnd = literalStart;
+			while (literalEnd < input.length && !/\s/u.test(input[literalEnd])) {
+				literalEnd += 1;
+			}
+
+			const literal = input.slice(literalStart, literalEnd);
+			const placeholder = `__TASKNOTES_LITERAL_${literals.length}__`;
+			literals.push(literal);
+			text += placeholder;
+			index = literalEnd;
+		}
+
+		return { text, literals };
+	}
+
+	private restoreProtectedLiterals(parsed: ParsedTaskData, literals: string[]): void {
 		if (literals.length === 0) return;
 
-		let title = parsed.title;
+		parsed.title = this.restoreProtectedLiteralsInText(parsed.title, literals)
+			.replace(/\s+/g, " ")
+			.trim();
+		if (parsed.details) {
+			parsed.details = this.restoreProtectedLiteralsInText(parsed.details, literals);
+		}
+	}
+
+	private restoreProtectedLiteralsInText(text: string, literals: string[]): string {
+		let restored = text;
 		literals.forEach((literal, index) => {
-			title = title.replace(`__TASKNOTES_LITERAL_${index}__`, literal);
+			restored = restored.replace(`__TASKNOTES_LITERAL_${index}__`, literal);
 		});
-		parsed.title = title.replace(/\s+/g, " ").trim();
+		return restored;
 	}
 
 	private isQuoteDelimiter(char: string): boolean {
@@ -137,6 +190,40 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 
 	private isLiteralBoundaryWordCharacter(char: string): boolean {
 		return /[\p{L}\p{N}_]/u.test(char);
+	}
+
+	private shouldProtectEscapedLiteral(
+		input: string,
+		escapeIndex: number,
+		literalStart: number
+	): boolean {
+		if (this.startsWithEscapableTrigger(input, literalStart)) {
+			return true;
+		}
+
+		const previous = escapeIndex > 0 ? input[escapeIndex - 1] : "";
+		if (previous && !/\s/u.test(previous)) {
+			return false;
+		}
+
+		return /[\p{L}\p{N}]/u.test(input[literalStart]);
+	}
+
+	private startsWithEscapableTrigger(input: string, index: number): boolean {
+		const triggers = this.getEscapableTriggers();
+		return triggers.some((trigger) => input.startsWith(trigger, index));
+	}
+
+	private getEscapableTriggers(): string[] {
+		const configured = this.taskNotesNlpTriggers?.triggers
+			.filter((trigger) => trigger.enabled && trigger.trigger.length > 0)
+			.map((trigger) => trigger.trigger);
+
+		if (configured && configured.length > 0) {
+			return configured;
+		}
+
+		return ["#", "@", "+", "*", "!"];
 	}
 
 	private normalizeUserFieldValues(parsed: ParsedTaskData): ParsedTaskData {
