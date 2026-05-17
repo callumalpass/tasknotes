@@ -76,6 +76,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private createFooterEl: HTMLElement | null = null;
 	private currentQuery = "";
 	private resultHandled = false;
+	private isCreatingTask = false;
 
 	constructor(
 		app: App,
@@ -146,7 +147,12 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		// We want to append our footer inside the modalEl, after .prompt
 		const modalContentEl = this.modalEl.querySelector(".prompt")?.parentElement || this.modalEl;
 
-		this.createFooterEl = createDiv({ cls: "task-selector-create-footer" });
+		this.createFooterEl = modalContentEl.createDiv({ cls: "task-selector-create-footer" });
+		this.createFooterEl.setAttribute("role", "button");
+		this.createFooterEl.setAttribute("aria-hidden", "true");
+		this.createFooterEl.tabIndex = -1;
+		this.createFooterEl.addEventListener("click", this.handleCreateFooterActivation);
+		this.createFooterEl.addEventListener("keydown", this.handleCreateFooterKeydown);
 		this.createFooterEl.classList.remove(
 			"tn-static-display-block-2a1b75c9",
 			"tn-static-display-flex-4d51fc62",
@@ -158,8 +164,32 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			"tn-static-min-height-800px-997b4c8c"
 		);
 		this.createFooterEl.classList.add("tn-static-display-none-6b99de8b");
-		modalContentEl.appendChild(this.createFooterEl);
+
+		if (this.currentQuery) {
+			this.updateCreateFooter(this.currentQuery);
+		}
 	}
+
+	private handleCreateFooterActivation = (event: MouseEvent | KeyboardEvent): void => {
+		if (
+			!this.createFooterEl ||
+			this.createFooterEl.classList.contains("tn-static-display-none-6b99de8b")
+		) {
+			return;
+		}
+
+		event.preventDefault();
+		event.stopPropagation();
+		void this.createNewTask();
+	};
+
+	private handleCreateFooterKeydown = (event: KeyboardEvent): void => {
+		if (event.key !== "Enter" && event.key !== " ") {
+			return;
+		}
+
+		this.handleCreateFooterActivation(event);
+	};
 
 	private handleInputChange = (): void => {
 		const query = this.inputEl.value.trim();
@@ -182,6 +212,9 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				"tn-static-min-height-800px-997b4c8c"
 			);
 			this.createFooterEl.classList.add("tn-static-display-none-6b99de8b");
+			this.createFooterEl.setAttribute("aria-hidden", "true");
+			this.createFooterEl.removeAttribute("aria-label");
+			this.createFooterEl.tabIndex = -1;
 			this.createFooterEl.empty();
 			return;
 		}
@@ -201,6 +234,12 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				"tn-static-min-height-800px-997b4c8c"
 			);
 			this.createFooterEl.classList.add("tn-static-display-flex-75816cae");
+			this.createFooterEl.setAttribute("aria-hidden", "false");
+			this.createFooterEl.setAttribute(
+				"aria-label",
+				`${this.translate("modals.taskSelectorWithCreate.footer.createLabel").trim()} ${parsed.title}`.trim()
+			);
+			this.createFooterEl.tabIndex = 0;
 
 			// Icon
 			const iconDiv = this.createFooterEl.createDiv({
@@ -263,6 +302,9 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				"tn-static-min-height-800px-997b4c8c"
 			);
 			this.createFooterEl.classList.add("tn-static-display-none-6b99de8b");
+			this.createFooterEl.setAttribute("aria-hidden", "true");
+			this.createFooterEl.removeAttribute("aria-label");
+			this.createFooterEl.tabIndex = -1;
 			this.createFooterEl.empty();
 		}
 	}
@@ -367,11 +409,17 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	}
 
 	private async createNewTask(): Promise<void> {
+		if (this.isCreatingTask) {
+			return;
+		}
+
 		const query = this.inputEl.value.trim();
 		if (!query) {
 			new Notice(this.translate("modals.taskSelectorWithCreate.notices.emptyQuery"));
 			return;
 		}
+
+		this.isCreatingTask = true;
 
 		try {
 			// Parse the query using NLP
@@ -402,6 +450,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			console.error("Failed to create task:", error);
 			const message = error instanceof Error ? error.message : String(error);
 			new Notice(this.translate("modals.taskCreation.notices.failure", { message }));
+		} finally {
+			this.isCreatingTask = false;
 		}
 	}
 
@@ -478,6 +528,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Clean up footer element
 		if (this.createFooterEl) {
+			this.createFooterEl.removeEventListener("click", this.handleCreateFooterActivation);
+			this.createFooterEl.removeEventListener("keydown", this.handleCreateFooterKeydown);
 			this.createFooterEl.remove();
 			this.createFooterEl = null;
 		}

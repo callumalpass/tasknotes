@@ -47,6 +47,22 @@
     border-top: 1px solid var(--background-modifier-border);
     margin-top: auto;
     min-height: 60px;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+
+.task-selector-create-footer:hover,
+.task-selector-create-footer:focus-visible {
+    background: var(--background-modifier-hover);
+}
+
+.task-selector-create-footer:focus-visible {
+    outline: 2px solid var(--background-modifier-border-focus);
+    outline-offset: -2px;
+}
+
+.task-selector-create-footer:active {
+    background: var(--background-modifier-active-hover);
 }
 
 .task-selector-create-footer__icon {
