@@ -719,12 +719,16 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today {
-    background: none;
-    color: var(--tn-text-on-accent);
+    background: color-mix(in srgb, var(--tn-interactive-accent) 10%, transparent);
+    color: var(--tn-interactive-accent);
+    font-weight: 700;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 85%, transparent);
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today::after {
-    bottom: 6px;
+    bottom: 5px;
+    width: 5px;
+    height: 5px;
     background: color-mix(in srgb, var(--tn-interactive-accent) 85%, transparent);
 }
 
@@ -735,6 +739,7 @@
 
 .tasknotes-plugin .mini-calendar-view__day--today.mini-calendar-view__day--selected {
     background: color-mix(in srgb, var(--tn-interactive-accent) 25%, transparent);
+    box-shadow: inset 0 0 0 2px var(--tn-interactive-accent);
 }
 
 .tasknotes-plugin .mini-calendar-view__day--outside-month {
