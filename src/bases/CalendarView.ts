@@ -2867,15 +2867,14 @@ export class CalendarView extends BasesViewBase {
 			}
 		}
 
+		menu.onHide(() => {
+			this.calendar?.unselect();
+		});
+
 		if (info.jsEvent) {
 			menu.showAtMouseEvent(info.jsEvent);
 		} else {
 			menu.showAtPosition({ x: 0, y: 0 });
-		}
-
-		// Unselect after handling
-		if (this.calendar) {
-			this.calendar.unselect();
 		}
 	}
 

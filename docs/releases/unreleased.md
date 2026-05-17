@@ -103,6 +103,7 @@ Example:
 ## Fixed
 
 - ([#1191](https://github.com/callumalpass/tasknotes/issues/1191)) Aligned the task-card and relationships widgets inside notes with Obsidian's editor margins, including readable-line-width layouts. Thanks to @minchinweb for reporting this.
+- ([#1183](https://github.com/callumalpass/tasknotes/issues/1183)) Kept the Calendar create menu open after drag-selecting a time range, so the selected duration can be used when creating a task. Thanks to @randomness42 for reporting this.
 - ([#1232](https://github.com/callumalpass/tasknotes/issues/1232)) Fixed generated Task List Base date filters so recurring tasks scheduled for today appear in the Today view, and today's completed recurring instances stay hidden. Thanks to @mvichosfm for reporting this and @ArthurGideon and @VarunNikam22 for the follow-up.
 - ([#1231](https://github.com/callumalpass/tasknotes/issues/1231)) Fixed the generated Task List Base Overdue view so tasks with scheduled dates in the past appear alongside tasks with due dates in the past. Thanks to @Lorite for reporting this and @dictionarymouse for the follow-up.
 - ([#1228](https://github.com/callumalpass/tasknotes/issues/1228)) Matched the task details editor's Markdown heading colors to the active Obsidian theme, including themes that customize heading colors. Thanks to @BrucePlumb for requesting this.
