@@ -30,7 +30,7 @@ process.env.TZ = "America/Los_Angeles"; // UTC-8 (or UTC-7 during DST)
 
 describe('Issue #1003: Notes view one day behind minicalendar', () => {
 	describe('Date key consistency between calendar and notes lookup', () => {
-		it.skip('reproduces issue #1003: clicking a date should show notes for that exact date', () => {
+		it('reproduces issue #1003: clicking a date should show notes for that exact date', () => {
 			// User clicks on January 15, 2025 in the mini calendar
 			// The calendar creates a UTC-anchored date
 			const clickedDateUTC = new Date(Date.UTC(2025, 0, 15, 0, 0, 0)); // Jan 15, 2025 00:00 UTC
@@ -58,7 +58,7 @@ describe('Issue #1003: Notes view one day behind minicalendar', () => {
 			// This test documents the expected behavior
 		});
 
-		it.skip('reproduces issue #1003: date display vs notes lookup mismatch in negative UTC offset timezones', () => {
+		it('reproduces issue #1003: date display vs notes lookup mismatch in negative UTC offset timezones', () => {
 			// This tests the scenario where the displayed date differs from the lookup date
 			// In Pacific timezone (UTC-8), UTC midnight Jan 15 is displayed as Jan 14 at 4pm
 
@@ -90,7 +90,7 @@ describe('Issue #1003: Notes view one day behind minicalendar', () => {
 			expect(storageKey).toBe("2025-01-15");
 		});
 
-		it.skip('reproduces issue #1003: notes indexed with datetime values may cause lookup mismatch', () => {
+		it('reproduces issue #1003: notes indexed with datetime values may cause lookup mismatch', () => {
 			// When notes have datetime values (not just dates), there could be conversion issues
 
 			// Note has a datetime value in local timezone
@@ -112,7 +112,7 @@ describe('Issue #1003: Notes view one day behind minicalendar', () => {
 	});
 
 	describe('Edge case: Date boundary at midnight UTC', () => {
-		it.skip('reproduces issue #1003: late evening local time should not show previous day notes', () => {
+		it('reproduces issue #1003: late evening local time should not show previous day notes', () => {
 			// In Pacific timezone at 11pm on Jan 14, the UTC date is Jan 15
 			// If user clicks Jan 14 in calendar, they should see Jan 14 notes
 
@@ -136,7 +136,7 @@ describe('Issue #1003: Notes view one day behind minicalendar', () => {
 			expect(jan14Key).toBe("2025-01-14");
 		});
 
-		it.skip('reproduces issue #1003: clicking should never show adjacent day notes', () => {
+		it('reproduces issue #1003: clicking should never show adjacent day notes', () => {
 			// Test that clicking any date X always shows notes for date X, not X-1 or X+1
 
 			const testDates = [
@@ -162,7 +162,7 @@ describe('Issue #1003: Notes view one day behind minicalendar', () => {
 	});
 
 	describe('Potential bug location: conversion function behavior', () => {
-		it.skip('reproduces issue #1003: convertUTCToLocalCalendarDate may shift days in certain timezones', () => {
+		it('reproduces issue #1003: convertUTCToLocalCalendarDate may shift days in certain timezones', () => {
 			// convertUTCToLocalCalendarDate extracts UTC components and creates a local Date
 			// This should preserve the calendar date, but there could be edge cases
 
@@ -192,7 +192,7 @@ describe('Issue #1003: Notes view one day behind minicalendar', () => {
 			expect(outputDay).toBe(inputDay);
 		});
 
-		it.skip('reproduces issue #1003: moment.js interpretation of UTC dates', () => {
+		it('reproduces issue #1003: moment.js interpretation of UTC dates', () => {
 			// When openDailyNoteForDate passes a date to moment(), it may interpret
 			// the date differently than expected
 
