@@ -1678,16 +1678,24 @@ export abstract class TaskModal extends Modal {
 			this.titleInput.focus({ preventScroll: true });
 			this.titleInput.select();
 			this.restoreTitleFocusScrollPositions(this.pendingTitleFocusScrollPositions);
-		}, 100);
+		}, this.getInitialFocusDelay());
 	}
 
-	private shouldPreserveTitleFocusScroll(): boolean {
+	protected getInitialFocusDelay(): number {
+		return this.isMobileLikeEnvironment() ? 350 : 100;
+	}
+
+	protected isMobileLikeEnvironment(): boolean {
 		const doc = this.containerEl.ownerDocument;
 		const win = doc.defaultView || window;
 		return (
 			doc.body.classList.contains("is-mobile") ||
 			win.matchMedia?.("(pointer: coarse)")?.matches === true
 		);
+	}
+
+	private shouldPreserveTitleFocusScroll(): boolean {
+		return this.isMobileLikeEnvironment();
 	}
 
 	private attachTitleFocusScrollGuard(input: HTMLInputElement): void {

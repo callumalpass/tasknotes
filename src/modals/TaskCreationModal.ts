@@ -208,17 +208,6 @@ export class TaskCreationModal extends TaskModal {
 				},
 			});
 
-			// Focus the editor after a short delay and reset scroll position
-			window.setTimeout(() => {
-				if (this.nlMarkdownEditor) {
-					const cm = this.nlMarkdownEditor.editor?.cm;
-					if (cm) {
-						cm.focus();
-						// Reset scroll to top to prevent auto-scroll down
-						cm.scrollDOM.scrollTop = 0;
-					}
-				}
-			}, 100);
 		} catch (error) {
 			console.error("Failed to create NLP markdown editor:", error);
 			// Fallback to textarea if editor creation fails
@@ -259,10 +248,28 @@ export class TaskCreationModal extends TaskModal {
 			// Initialize auto-suggestion for fallback
 			this.nlpSuggest = new NLPSuggest(this.app, this.nlInput, this.plugin);
 
-			window.setTimeout(() => {
-				this.nlInput.focus();
-			}, 100);
 		}
+	}
+
+	protected focusTitleInput(): void {
+		if (!this.plugin.settings.enableNaturalLanguageInput) {
+			super.focusTitleInput();
+			return;
+		}
+
+		window.setTimeout(() => {
+			const cm = this.nlMarkdownEditor?.editor?.cm;
+			if (cm) {
+				cm.focus();
+				cm.scrollDOM.scrollTop = 0;
+				return;
+			}
+
+			if (this.nlInput) {
+				this.nlInput.focus({ preventScroll: true });
+				this.nlInput.select();
+			}
+		}, this.getInitialFocusDelay());
 	}
 
 	private updateNaturalLanguagePreview(input: string): void {
