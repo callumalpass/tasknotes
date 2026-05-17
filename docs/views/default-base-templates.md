@@ -35,6 +35,7 @@ The formula set is broad so views can reuse shared computed properties without c
 | Formula | Description | Expression |
 |---------|-------------|------------|
 | `daysUntilDue` | Days until due date (negative = overdue, positive = days remaining, null if no due date) | `if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)` |
+| `dueIn` | Compact due date countdown for agenda/list displays | `if(due.isEmpty(), "", if(formula.daysUntilDue == 0, "Today", if(formula.daysUntilDue == 1, "1 day", if(formula.daysUntilDue > 1, formula.daysUntilDue + " days", if(formula.daysUntilDue == -1, "1 day overdue", formula.daysUntilDue * -1 + " days overdue")))))` |
 | `daysUntilScheduled` | Days until scheduled date (negative = past, positive = days remaining, null if no scheduled date) | `if((scheduled.isEmpty() == false), ((number(date(scheduled)) - number(today())) / 86400000).floor(), null)` |
 | `daysSinceCreated` | Number of days since the task file was created | `((number(now()) - number(file.ctime)) / 86400000).floor()` |
 | `daysSinceModified` | Number of days since the task file was last modified | `((number(now()) - number(file.mtime)) / 86400000).floor()` |
@@ -127,6 +128,7 @@ formulas:
   urgencyScore: 'if(due.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilDue))'
   # Date calculations
   daysUntilDue: 'if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)'
+  dueIn: 'if(due.isEmpty(), "", if(formula.daysUntilDue == 0, "Today", if(formula.daysUntilDue == 1, "1 day", if(formula.daysUntilDue > 1, formula.daysUntilDue + " days", if(formula.daysUntilDue == -1, "1 day overdue", formula.daysUntilDue * -1 + " days overdue")))))'
   daysUntilScheduled: 'if((scheduled.isEmpty() == false), ((number(date(scheduled)) - number(today())) / 86400000).floor(), null)'
   daysSinceCreated: '((number(now()) - number(file.ctime)) / 86400000).floor()'
   daysSinceModified: '((number(now()) - number(file.mtime)) / 86400000).floor()'
@@ -547,6 +549,10 @@ filters:
 formulas:
   # ... same formulas as Mini Calendar above ...
 
+properties:
+  formula.dueIn:
+    displayName: Due in
+
 views:
   - type: tasknotesCalendar
     name: "Agenda"
@@ -554,6 +560,7 @@ views:
       - status
       - priority
       - due
+      - formula.dueIn
       - scheduled
       - projects
       - contexts

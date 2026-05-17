@@ -18,6 +18,12 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
+import fs from "fs";
+import path from "path";
+
+function readRepoFile(relativePath: string): string {
+	return fs.readFileSync(path.resolve(__dirname, "../../../", relativePath), "utf8");
+}
 
 // Mock interface matching TaskInfo due date structure
 interface MockTaskWithDue {
@@ -371,7 +377,21 @@ describe("Issue #914: Agenda enhancement feature request", () => {
 describe("CalendarView listDayCount configuration", () => {
 	// These tests document the expected configuration changes needed
 
-	it.skip("should support 'unlimited' or large listDayCount values - reproduces issue #914", () => {
+	it("exposes a longer agenda range through the Bases listDayCount option", () => {
+		const registrationSource = readRepoFile("src/bases/registration.ts");
+		const listDayCountStart = registrationSource.indexOf('key: "listDayCount"');
+		const listDayCountBlock = registrationSource.slice(
+			listDayCountStart,
+			listDayCountStart + 220
+		);
+
+		expect(listDayCountStart).toBeGreaterThanOrEqual(0);
+		expect(listDayCountBlock).toContain("default: 7");
+		expect(listDayCountBlock).toContain("min: 1");
+		expect(listDayCountBlock).toContain("max: 365");
+	});
+
+	it.skip("should support 'unlimited' listDayCount values - reproduces issue #914", () => {
 		// The CalendarView currently configures listWeek as:
 		// listWeek: {
 		//   type: "list",

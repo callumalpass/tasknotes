@@ -315,6 +315,9 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		// Convert dates to ms (via number()) before subtracting to get numeric difference
 		daysUntilDue: `if(${dueHasValue}, ((number(date(${dueProperty})) - number(today())) / 86400000).floor(), null)`,
 
+		// Compact due date countdown for list/agenda displays
+		dueIn: `if(${dueIsEmpty}, "", if(formula.daysUntilDue == 0, "Today", if(formula.daysUntilDue == 1, "1 day", if(formula.daysUntilDue > 1, formula.daysUntilDue + " days", if(formula.daysUntilDue == -1, "1 day overdue", formula.daysUntilDue * -1 + " days overdue")))))`,
+
 		// Days until scheduled (negative = past, positive = days remaining)
 		daysUntilScheduled: `if(${scheduledHasValue}, ((number(date(${scheduledProperty})) - number(today())) / 86400000).floor(), null)`,
 
@@ -454,6 +457,32 @@ function generateFormulasSection(plugin: TaskNotesPlugin): string {
 		.join('\n');
 
 	return `formulas:\n${formulaLines}`;
+}
+
+function insertOrderPropertyAfter(
+	properties: string[],
+	afterProperty: string | null,
+	propertyToInsert: string
+): string[] {
+	if (properties.includes(propertyToInsert)) {
+		return properties;
+	}
+	if (!afterProperty || !properties.includes(afterProperty)) {
+		return properties;
+	}
+
+	const nextProperties: string[] = [];
+	let inserted = false;
+
+	for (const property of properties) {
+		nextProperties.push(property);
+		if (!inserted && afterProperty && property === afterProperty) {
+			nextProperties.push(propertyToInsert);
+			inserted = true;
+		}
+	}
+
+	return nextProperties;
 }
 
 function generatePomodoroStatsTemplate(plugin: TaskNotesPlugin): string {
@@ -840,18 +869,30 @@ ${orderYaml}
       slotDuration: "00:30:00"
 `;
 
-		case 'open-agenda-view':
+		case 'open-agenda-view': {
+			const dueProperty = mapPropertyToBasesProperty('due', plugin);
+			const agendaOrderArray = insertOrderPropertyAfter(orderArray, dueProperty, "formula.dueIn");
+			const agendaOrderYaml = formatOrderArray(agendaOrderArray);
+			const agendaPropertiesYaml = agendaOrderArray.includes("formula.dueIn")
+				? `
+properties:
+  formula.dueIn:
+    displayName: Due in
+`
+				: "";
+
 			return `# Agenda
 
 ${formatFilterAsYAML([taskFilterCondition])}
 
 ${formulasSection}
+${agendaPropertiesYaml}
 
 views:
   - type: tasknotesCalendar
     name: "Agenda"
     order:
-${orderYaml}
+${agendaOrderYaml}
     options:
       showPropertyBasedEvents: false
       createDailyNotesFromDateLinks: true
@@ -860,6 +901,7 @@ ${orderYaml}
     listDayCount: 7
     titleProperty: file.basename
 `;
+		}
 
 		case 'pomodoro-stats-base':
 			return generatePomodoroStatsTemplate(plugin);

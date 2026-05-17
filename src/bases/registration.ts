@@ -302,7 +302,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										displayName: t("layout.listDayCount"),
 										default: 7,
 										min: 1,
-										max: 30,
+										max: 365,
 										step: 1,
 									},
 									{

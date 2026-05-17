@@ -95,6 +95,26 @@ describe("defaultBasesFiles", () => {
 		expect(relationshipsTemplate).not.toContain(".map(value.uid)");
 	});
 
+	it("adds a due-in countdown to the default agenda template", () => {
+		const template = generateBasesFileTemplate("open-agenda-view", createMockPlugin() as any);
+
+		expect(template).toContain('dueIn: \'if(due.isEmpty(), "", if(formula.daysUntilDue == 0');
+		expect(template).toContain("formula.dueIn:\n    displayName: Due in");
+		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
+		expect(template).toContain('calendarView: "listWeek"');
+		expect(template).toContain("listDayCount: 7");
+	});
+
+	it("does not force the due-in agenda property when due dates are hidden by default", () => {
+		const template = generateBasesFileTemplate(
+			"open-agenda-view",
+			createMockPlugin({ defaultVisibleProperties: ["status", "priority"] }) as any
+		);
+
+		expect(template).not.toContain("      - formula.dueIn");
+		expect(template).not.toContain("formula.dueIn:\n    displayName: Due in");
+	});
+
 	it("quotes property-based task identifiers so names with spaces work in Bases filters", () => {
 		const template = generateBasesFileTemplate(
 			"open-tasks-view",

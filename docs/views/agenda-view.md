@@ -29,17 +29,18 @@ views:
       - note.status
       - note.priority
       - note.due
+      - formula.dueIn
       - note.scheduled
 ```
 
-This configuration displays seven days at a time, derives entries from `file.ctime`/`file.basename`, and inherits the same display options (show scheduled/due/recurring/timeblocks/time entries/ICS events) as the primary calendar view.
+This configuration displays seven days at a time, derives entries from `file.ctime`/`file.basename`, shows the generated `Due in` countdown next to due dates, and inherits the same display options (show scheduled/due/recurring/timeblocks/time entries/ICS events) as the primary calendar view.
 
 ## Customization
 
 Edit the `.base` file to tailor the agenda:
 
 - Change `calendarView` to `listDay` or `listMonth` for different spans
-- Adjust `listDayCount` for shorter or longer agendas
+- Adjust `listDayCount` for shorter or longer agendas; the Bases option supports up to 365 days
 - Add `filters` to focus on specific projects, tags, or statuses
 - Modify `order` to control which task properties appear in the row layout
 

@@ -7,13 +7,13 @@
  * from one date to another date."
  *
  * Key Requirements:
- * 1. Current behavior: listDayCount defaults to 7, max 30 days
+ * 1. Current behavior: listDayCount defaults to 7 and supports a large but finite range
  * 2. User requests: Show all tasks OR filter by custom date range (from date X to date Y)
  * 3. This differs from issue #914 by focusing on from-to date range filtering
  *
  * Relevant code:
  * - src/bases/CalendarView.ts - Calendar view with listDayCount option (lines 128, 189, 480, 712-718)
- * - src/bases/registration.ts - listDayCount slider (min 1, max 30, default 7) at lines 227-235
+ * - src/bases/registration.ts - listDayCount slider at lines 227-235
  * - src/templates/defaultBasesFiles.ts - Default agenda template with listDayCount: 7
  *
  * Related: Issue #914 (similar request for unlimited view with days remaining counter)
@@ -77,8 +77,8 @@ describe("Issue #838: Agenda view date range filter", () => {
 		{ id: "8", title: "Task due Dec 25 (past)", due: "2024-12-25", status: "open" },
 	];
 
-	describe("Current behavior - 7 day limit", () => {
-		it("demonstrates current limitation: listDayCount slider max is 30 days", () => {
+	describe("Current behavior - relative day count", () => {
+		it("demonstrates current limitation: listDayCount is still finite", () => {
 			// Current implementation in src/bases/registration.ts lines 227-235:
 			// {
 			//   type: "slider",
@@ -86,14 +86,14 @@ describe("Issue #838: Agenda view date range filter", () => {
 			//   displayName: t("layout.listDayCount"),
 			//   default: 7,
 			//   min: 1,
-			//   max: 30,  <-- Maximum is 30 days
+			//   max: 365,  <-- Large, but still finite
 			//   step: 1,
 			// }
 
-			const currentMaxDays = 30;
+			const currentMaxDays = 365;
 			const userWantsUnlimited = Infinity;
 
-			// User cannot set listDayCount beyond 30 days
+			// User cannot set listDayCount to a true unlimited range
 			expect(currentMaxDays).toBeLessThan(userWantsUnlimited);
 		});
 
@@ -126,7 +126,7 @@ describe("Issue #838: Agenda view date range filter", () => {
 			// User wants to specify "show tasks from Jan 15 to Jan 31"
 			//
 			// Current behavior:
-			// - Can only specify listDayCount (1-30 days from today)
+			// - Can only specify listDayCount from today
 			// - No way to specify arbitrary date ranges
 			//
 			// Requested behavior:
@@ -189,7 +189,7 @@ describe("Issue #838: Agenda view date range filter", () => {
 			// User wants an option to "display all" tasks, not limited by day count
 			//
 			// Current behavior:
-			// - listDayCount max is 30 days
+			// - listDayCount is finite
 			// - No "show all" or "unlimited" option
 			//
 			// Requested behavior:
@@ -270,7 +270,7 @@ describe("Comparison with listDayCount approach", () => {
 		// listDayCount approach (current):
 		// - Counts X days from today
 		// - Always relative to current date
-		// - Maximum 30 days
+		// - Finite maximum
 		// - Simple but limited
 
 		// Date range approach (requested):
