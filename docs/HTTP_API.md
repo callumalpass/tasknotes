@@ -226,7 +226,9 @@ Request body:
 
 Advanced filtering.
 
-Request body is a `FilterQuery` object. Root object is a group with:
+Request body is a `FilterQuery` object. `FilterQuery` is still the supported advanced query shape for the HTTP API.
+
+The root object is a group with:
 
 - `type: "group"`
 - `id`
@@ -258,6 +260,64 @@ Example:
   "sortDirection": "asc"
 }
 ```
+
+Filter tasks by context:
+
+```json
+{
+  "type": "group",
+  "id": "root",
+  "conjunction": "and",
+  "children": [
+    {
+      "type": "condition",
+      "id": "context",
+      "property": "contexts",
+      "operator": "contains",
+      "value": "@office"
+    }
+  ],
+  "sortKey": "due",
+  "sortDirection": "asc"
+}
+```
+
+Filter active, unarchived tasks, similar to the default available-task view:
+
+```json
+{
+  "type": "group",
+  "id": "root",
+  "conjunction": "and",
+  "children": [
+    {
+      "type": "condition",
+      "id": "not-archived",
+      "property": "archived",
+      "operator": "is-not-checked"
+    },
+    {
+      "type": "condition",
+      "id": "not-completed",
+      "property": "status.isCompleted",
+      "operator": "is-not-checked"
+    }
+  ],
+  "sortKey": "due",
+  "sortDirection": "asc",
+  "groupKey": "none"
+}
+```
+
+Condition fields:
+
+- `type`: `"condition"`
+- `id`: any stable string for your client
+- `property`: a task property, such as `title`, `status`, `priority`, `tags`, `contexts`, `projects`, `blockedBy`, `blocking`, `due`, `scheduled`, `completedDate`, `dateCreated`, `dateModified`, `archived`, `dependencies.isBlocked`, `dependencies.isBlocking`, `timeEstimate`, `recurrence`, or `status.isCompleted`
+- `operator`: one of `is`, `is-not`, `contains`, `does-not-contain`, `is-before`, `is-after`, `is-on-or-before`, `is-on-or-after`, `is-empty`, `is-not-empty`, `is-checked`, `is-not-checked`, `is-greater-than`, `is-less-than`, `is-greater-than-or-equal`, or `is-less-than-or-equal`
+- `value`: required for comparison operators, omitted for empty/checked operators
+
+For user-defined fields, use `property: "user:<fieldId>"`.
 
 Response:
 

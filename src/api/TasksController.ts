@@ -8,7 +8,7 @@ import { TaskStatsService } from "../services/TaskStatsService";
 import TaskNotesPlugin from "../main";
 import { hydrateTaskDetailsFromFile } from "../utils/taskDetails";
 
-import { Get, Post, Put, Delete } from "../utils/OpenAPIDecorators";
+import { Get, Post, Put, Delete, OpenAPI } from "../utils/OpenAPIDecorators";
 
 type VaultAdapterWithPath = {
 	basePath?: string;
@@ -341,6 +341,60 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@OpenAPI({
+		summary: "Query tasks",
+		description: "Filter, sort, and group tasks with a TaskNotes FilterQuery payload.",
+		operationId: "queryTasks",
+		tags: ["Tasks"],
+		requestBody: {
+			required: true,
+			content: {
+				"application/json": {
+					schema: {
+						$ref: "#/components/schemas/FilterQuery",
+					},
+					example: {
+						type: "group",
+						id: "root",
+						conjunction: "and",
+						children: [
+							{
+								type: "condition",
+								id: "context",
+								property: "contexts",
+								operator: "contains",
+								value: "@office",
+							},
+						],
+						sortKey: "due",
+						sortDirection: "asc",
+					},
+				},
+			},
+		},
+		responses: {
+			"200": {
+				description: "Tasks matching the query",
+				content: {
+					"application/json": {
+						schema: {
+							$ref: "#/components/schemas/APIResponse",
+						},
+					},
+				},
+			},
+			"400": {
+				description: "Invalid query payload",
+				content: {
+					"application/json": {
+						schema: {
+							$ref: "#/components/schemas/Error",
+						},
+					},
+				},
+			},
+		},
+	})
 	@Post("/api/tasks/query")
 	async queryTasks(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {

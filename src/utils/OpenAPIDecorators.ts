@@ -519,6 +519,152 @@ function getCommonSchemas(): Record<string, unknown> {
 			},
 			required: ["title"],
 		},
+		FilterQuery: {
+			allOf: [
+				{
+					$ref: "#/components/schemas/FilterGroup",
+				},
+				{
+					type: "object",
+					properties: {
+						sortKey: {
+							type: "string",
+							description:
+								"Optional task sort key, such as due, scheduled, priority, status, title, or a user field key.",
+						},
+						sortDirection: {
+							type: "string",
+							enum: ["asc", "desc"],
+							description: "Sort direction.",
+						},
+						groupKey: {
+							type: "string",
+							description:
+								"Optional grouping key, such as none, priority, context, project, due, scheduled, status, tags, completedDate, or a user field key.",
+						},
+						subgroupKey: {
+							type: "string",
+							description: "Optional secondary grouping key.",
+						},
+					},
+				},
+			],
+		},
+		FilterGroup: {
+			type: "object",
+			properties: {
+				type: {
+					type: "string",
+					enum: ["group"],
+				},
+				id: {
+					type: "string",
+					description: "Client-provided identifier for this group.",
+				},
+				conjunction: {
+					type: "string",
+					enum: ["and", "or"],
+					description: "How child conditions and groups are combined.",
+				},
+				children: {
+					type: "array",
+					items: {
+						oneOf: [
+							{
+								$ref: "#/components/schemas/FilterCondition",
+							},
+							{
+								$ref: "#/components/schemas/FilterGroup",
+							},
+						],
+					},
+				},
+			},
+			required: ["type", "id", "conjunction", "children"],
+		},
+		FilterCondition: {
+			type: "object",
+			properties: {
+				type: {
+					type: "string",
+					enum: ["condition"],
+				},
+				id: {
+					type: "string",
+					description: "Client-provided identifier for this condition.",
+				},
+				property: {
+					type: "string",
+					enum: [
+						"title",
+						"path",
+						"status",
+						"priority",
+						"tags",
+						"contexts",
+						"projects",
+						"blockedBy",
+						"blocking",
+						"due",
+						"scheduled",
+						"completedDate",
+						"dateCreated",
+						"dateModified",
+						"archived",
+						"dependencies.isBlocked",
+						"dependencies.isBlocking",
+						"timeEstimate",
+						"recurrence",
+						"status.isCompleted",
+					],
+					description: "Task property to filter on. User fields use user:<fieldId>.",
+				},
+				operator: {
+					type: "string",
+					enum: [
+						"is",
+						"is-not",
+						"contains",
+						"does-not-contain",
+						"is-before",
+						"is-after",
+						"is-on-or-before",
+						"is-on-or-after",
+						"is-empty",
+						"is-not-empty",
+						"is-checked",
+						"is-not-checked",
+						"is-greater-than",
+						"is-less-than",
+						"is-greater-than-or-equal",
+						"is-less-than-or-equal",
+					],
+					description: "Comparison operator. Use an operator supported by the selected property.",
+				},
+				value: {
+					description: "Comparison value. Empty and checked operators do not require a value.",
+					nullable: true,
+					oneOf: [
+						{
+							type: "string",
+						},
+						{
+							type: "array",
+							items: {
+								type: "string",
+							},
+						},
+						{
+							type: "number",
+						},
+						{
+							type: "boolean",
+						},
+					],
+				},
+			},
+			required: ["type", "id", "property", "operator"],
+		},
 		TaskDependency: {
 			type: "object",
 			properties: {
