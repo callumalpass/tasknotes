@@ -45,7 +45,14 @@ import {
 	EVENT_DATE_CHANGED,
 	TaskInfo,
 } from "../types";
-import { Component, EventRef, TFile, editorInfoField, MarkdownView, WorkspaceLeaf } from "obsidian";
+import {
+	Component,
+	EventRef,
+	TFile,
+	editorInfoField,
+	MarkdownView,
+	WorkspaceLeaf,
+} from "obsidian";
 import { Extension } from "@codemirror/state";
 
 import TaskNotesPlugin from "../main";
@@ -72,6 +79,23 @@ interface HTMLElementWithComponent extends HTMLElement {
 	component?: Component;
 }
 
+interface CanvasNodeLike {
+	file?: string | TFile;
+	filePath?: string;
+	contentEl?: HTMLElement;
+	isEditing?: boolean;
+}
+
+interface CanvasLike {
+	nodes?: {
+		values?: () => Iterable<CanvasNodeLike>;
+	};
+}
+
+interface CanvasViewLike {
+	canvas?: CanvasLike;
+}
+
 /**
  * Helper function to create the task card widget
  * Now includes Component lifecycle management for proper cleanup
@@ -83,6 +107,7 @@ function createTaskCardWidget(plugin: TaskNotesPlugin, task: TaskInfo): HTMLElem
 	container.setAttribute("contenteditable", "false");
 	container.setAttribute("spellcheck", "false");
 	container.setAttribute("data-widget-type", "task-card");
+	container.setAttribute("data-task-path", task.path);
 
 	// Create component for lifecycle management
 	const component = new Component();
@@ -103,6 +128,60 @@ function createTaskCardWidget(plugin: TaskNotesPlugin, task: TaskInfo): HTMLElem
 	container.appendChild(taskCard);
 
 	return container;
+}
+
+function removeTaskCardWidgets(container: ParentNode): void {
+	container.querySelectorAll(`.${CSS_TASK_CARD_WIDGET}`).forEach((el) => {
+		const holder = el as HTMLElementWithComponent;
+		holder.component?.unload();
+		el.remove();
+	});
+}
+
+function findCanvasEmbedTaskCardContainer(el: HTMLElement): HTMLElement | null {
+	return el.querySelector<HTMLElement>(".markdown-preview-sizer");
+}
+
+function canvasNodeNeedsWidgetRefresh(node: CanvasNodeLike, contentEl: HTMLElement): boolean {
+	const widgets = Array.from(contentEl.querySelectorAll(`.${CSS_TASK_CARD_WIDGET}`));
+	if (widgets.length === 0) {
+		return true;
+	}
+
+	const hasDirectWidget = widgets.some((widget) => widget.parentElement === contentEl);
+	const hasPreviewWidget = widgets.some((widget) =>
+		Boolean(widget.closest(".markdown-preview-sizer"))
+	);
+
+	return node.isEditing ? !hasDirectWidget : hasDirectWidget || !hasPreviewWidget;
+}
+
+function getCanvasNodes(leaf: WorkspaceLeaf): CanvasNodeLike[] {
+	const canvas = (leaf.view as CanvasViewLike | undefined)?.canvas;
+	const nodes = canvas?.nodes;
+	const values = nodes?.values;
+
+	if (typeof values !== "function") {
+		return [];
+	}
+
+	return Array.from(values.call(nodes));
+}
+
+function getCanvasNodeFilePath(node: CanvasNodeLike): string | null {
+	if (typeof node.filePath === "string" && node.filePath.trim()) {
+		return node.filePath;
+	}
+
+	if (typeof node.file === "string" && node.file.trim()) {
+		return node.file;
+	}
+
+	if (node.file instanceof TFile) {
+		return node.file.path;
+	}
+
+	return null;
 }
 
 export class TaskCardNoteDecorationsPlugin implements PluginValue {
@@ -440,11 +519,7 @@ async function injectReadingModeWidget(
 		try {
 			const previewView = view.previewMode;
 			const containerEl = previewView.containerEl;
-			containerEl.querySelectorAll(`.${CSS_TASK_CARD_WIDGET}`).forEach((el) => {
-				const holder = el as HTMLElementWithComponent;
-				holder.component?.unload();
-				el.remove();
-			});
+			removeTaskCardWidgets(containerEl);
 		} catch (error) {
 			console.debug("[TaskNotes] Error cleaning up task card in reading mode:", error);
 		}
@@ -455,11 +530,7 @@ async function injectReadingModeWidget(
 		// Remove any existing widgets first
 		const previewView = view.previewMode;
 		const containerEl = previewView.containerEl;
-		containerEl.querySelectorAll(`.${CSS_TASK_CARD_WIDGET}`).forEach((el) => {
-			const holder = el as HTMLElementWithComponent;
-			holder.component?.unload();
-			el.remove();
-		});
+		removeTaskCardWidgets(containerEl);
 
 		// Create the widget
 		const widget = createTaskCardWidget(plugin, task);
@@ -485,6 +556,48 @@ async function injectReadingModeWidget(
 	}
 }
 
+export function injectCanvasTaskCardWidgets(
+	plugin: TaskNotesPlugin,
+	options: { force?: boolean } = {}
+): void {
+	if (!plugin.settings.showTaskCardInNote) {
+		return;
+	}
+
+	for (const leaf of plugin.app.workspace.getLeavesOfType("canvas")) {
+		for (const node of getCanvasNodes(leaf)) {
+			const filePath = getCanvasNodeFilePath(node);
+			const contentEl = node.contentEl;
+			if (!filePath || !contentEl) {
+				continue;
+			}
+
+			const targetContainer = findCanvasEmbedTaskCardContainer(contentEl);
+			if (!node.isEditing && !targetContainer) {
+				continue;
+			}
+
+			if (!options.force && !canvasNodeNeedsWidgetRefresh(node, contentEl)) {
+				continue;
+			}
+
+			const task = plugin.cacheManager.getCachedTaskInfoSync(filePath);
+			removeTaskCardWidgets(contentEl);
+
+			if (!task) {
+				continue;
+			}
+
+			const widget = createTaskCardWidget(plugin, task);
+			if (node.isEditing) {
+				contentEl.insertBefore(widget, contentEl.firstChild);
+			} else if (targetContainer) {
+				insertAfterMetadataOrHeader(targetContainer, widget);
+			}
+		}
+	}
+}
+
 /**
  * Setup reading mode handlers for task card widget
  * Returns cleanup function to remove handlers
@@ -494,6 +607,8 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const workspaceRefs: EventRef[] = [];
 	const metadataCacheRefs: EventRef[] = [];
 	const emitterRefs: EventRef[] = [];
+	const canvasObservers: MutationObserver[] = [];
+	const observedCanvasContainers = new WeakSet<HTMLElement>();
 	const scheduler = new ReadingModeInjectionScheduler();
 	const scheduleInjection = (leaf: WorkspaceLeaf) => {
 		scheduler.schedule(leaf, (context) => injectReadingModeWidget(leaf, plugin, context));
@@ -501,6 +616,34 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 
 	// Debounce to prevent excessive re-renders
 	let debounceTimer: number | null = null;
+	let canvasDebounceTimer: number | null = null;
+	const debouncedCanvasRefresh = (options: { force?: boolean } = {}) => {
+		if (canvasDebounceTimer) window.clearTimeout(canvasDebounceTimer);
+		canvasDebounceTimer = window.setTimeout(() => {
+			injectCanvasTaskCardWidgets(plugin, options);
+			canvasDebounceTimer = null;
+		}, 100);
+	};
+	const observeCanvasLeaves = () => {
+		for (const leaf of plugin.app.workspace.getLeavesOfType("canvas")) {
+			const containerEl = (leaf.view as { containerEl?: HTMLElement }).containerEl;
+			if (!containerEl || observedCanvasContainers.has(containerEl)) {
+				continue;
+			}
+
+			const observer = new MutationObserver(() => {
+				debouncedCanvasRefresh();
+			});
+			observer.observe(containerEl, {
+				attributes: true,
+				attributeFilter: ["class", "style"],
+				childList: true,
+				subtree: true,
+			});
+			observedCanvasContainers.add(containerEl);
+			canvasObservers.push(observer);
+		}
+	};
 	const debouncedRefresh = () => {
 		if (debounceTimer) window.clearTimeout(debounceTimer);
 		debounceTimer = window.setTimeout(() => {
@@ -508,6 +651,8 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 			leaves.forEach((leaf) => {
 				scheduleInjection(leaf);
 			});
+			observeCanvasLeaves();
+			debouncedCanvasRefresh({ force: true });
 		}, 100);
 	};
 
@@ -519,6 +664,8 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const activeLeafChangeRef = plugin.app.workspace.on("active-leaf-change", (leaf) => {
 		if (leaf) {
 			scheduleInjection(leaf);
+			observeCanvasLeaves();
+			debouncedCanvasRefresh();
 		}
 	});
 	workspaceRefs.push(activeLeafChangeRef);
@@ -540,6 +687,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 					scheduleInjection(leaf);
 				}
 			});
+			debouncedCanvasRefresh({ force: true });
 		}, 500);
 		metadataDebounceTimers.set(file.path, timer);
 	});
@@ -557,10 +705,14 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	leaves.forEach((leaf) => {
 		scheduleInjection(leaf);
 	});
+	observeCanvasLeaves();
+	debouncedCanvasRefresh({ force: true });
 
 	// Return cleanup function
 	return () => {
 		if (debounceTimer) window.clearTimeout(debounceTimer);
+		if (canvasDebounceTimer) window.clearTimeout(canvasDebounceTimer);
+		canvasObservers.forEach((observer) => observer.disconnect());
 
 		// Clean up each type of event ref with the correct method
 		workspaceRefs.forEach((ref) => plugin.app.workspace.offref(ref));

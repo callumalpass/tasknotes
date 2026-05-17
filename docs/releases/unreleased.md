@@ -115,6 +115,7 @@ Example:
 
 ## Fixed
 
+- ([#872](https://github.com/callumalpass/tasknotes/issues/872)) Made note-level task cards appear immediately, and stay visible while editing, when a task note is embedded as a Canvas file node. Thanks to @bangbangbanggit for reporting this and @benmartinek for the follow-up.
 - ([#1039](https://github.com/callumalpass/tasknotes/issues/1039)) Restored clearer TaskNotes Bases grouping for nested project paths, and made the Calendar refresh control an icon button again. Thanks to @dblinnikov for reporting this.
 - ([#1034](https://github.com/callumalpass/tasknotes/issues/1034)) Let embedded TaskNotes Calendar views size to their content by default, so month, week, and day embeds no longer reserve full-pane proportions inside notes. Thanks to @same774 for reporting this.
 - ([#1023](https://github.com/callumalpass/tasknotes/issues/1023)) Kept task modal custom fields scrollable above the iPhone keyboard while creating or editing tasks. Thanks to @3zra47 for reporting this.
