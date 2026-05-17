@@ -2295,6 +2295,8 @@ export const en: TranslationTree = {
 		createInlineTask: "Create new inline task",
 		quickActionsCurrentTask: "Quick actions for current task",
 		editCurrentTask: "Edit current task",
+		cycleCurrentTaskStatus: "Cycle current task status",
+		cycleCurrentTaskPriority: "Cycle current task priority",
 		addProjectToCurrentTask: "Add project to current task",
 		addSubtaskToCurrentNote: "Add subtask to current note",
 		goToTodayNote: "Go to today's note",

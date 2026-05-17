@@ -119,6 +119,20 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "cycle-current-task-status",
+			nameKey: "commands.cycleCurrentTaskStatus",
+			callback: async (ctx) => {
+				await ctx.cycleCurrentTaskStatus();
+			},
+		},
+		{
+			id: "cycle-current-task-priority",
+			nameKey: "commands.cycleCurrentTaskPriority",
+			callback: async (ctx) => {
+				await ctx.cycleCurrentTaskPriority();
+			},
+		},
+		{
 			id: "add-project-to-current-task",
 			nameKey: "commands.addProjectToCurrentTask",
 			callback: async (ctx) => {

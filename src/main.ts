@@ -1646,6 +1646,55 @@ export default class TaskNotesPlugin extends Plugin {
 		await this.openTaskEditModalForFile(activeFile, "Current file is not a tasknote");
 	}
 
+	async cycleCurrentTaskStatus(): Promise<void> {
+		try {
+			const taskInfo = await this.getCurrentTaskForCommand();
+			if (!taskInfo) {
+				return;
+			}
+
+			const nextStatus = this.statusManager.getNextStatus(taskInfo.status);
+			await this.updateTaskProperty(taskInfo, "status", nextStatus);
+		} catch (error) {
+			console.error("Failed to cycle current task status:", error);
+			new Notice("Failed to cycle task status");
+		}
+	}
+
+	async cycleCurrentTaskPriority(): Promise<void> {
+		try {
+			const taskInfo = await this.getCurrentTaskForCommand();
+			if (!taskInfo) {
+				return;
+			}
+
+			const currentPriority = taskInfo.priority || this.settings.defaultTaskPriority;
+			const nextPriority = this.priorityManager.getNextPriority(currentPriority);
+			await this.updateTaskProperty(taskInfo, "priority", nextPriority);
+		} catch (error) {
+			console.error("Failed to cycle current task priority:", error);
+			new Notice("Failed to cycle task priority");
+		}
+	}
+
+	private async getCurrentTaskForCommand(
+		notTaskNotice = "Current file is not a task"
+	): Promise<TaskInfo | null> {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new Notice("No file is currently open");
+			return null;
+		}
+
+		const taskInfo = await this.cacheManager.getTaskInfo(activeFile.path);
+		if (!taskInfo) {
+			new Notice(notTaskNotice);
+			return null;
+		}
+
+		return taskInfo;
+	}
+
 	private async openTaskEditModalForFile(file: TFile, notTaskNotice?: string): Promise<void> {
 		try {
 			const taskInfo = await this.cacheManager.getTaskInfo(file.path);
