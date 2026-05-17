@@ -43,12 +43,15 @@ function createDefaultValueInput(
 			translate("settings.taskProperties.customUserFields.placeholders.defaultValue"),
 			field.defaultValue !== undefined ? String(field.defaultValue) : ""
 		);
-		input.addEventListener("change", () => {
+		input.addEventListener("input", () => {
 			const value = input.value.trim();
 			if (value === "") {
 				onChange(undefined);
 			} else {
-				onChange(parseFloat(value));
+				const numericValue = parseFloat(value);
+				if (!Number.isNaN(numericValue)) {
+					onChange(numericValue);
+				}
 			}
 		});
 		inputElement = input;
@@ -85,7 +88,7 @@ function createDefaultValueInput(
 			translate("settings.taskProperties.customUserFields.placeholders.defaultValueList"),
 			currentValue
 		);
-		input.addEventListener("change", () => {
+		input.addEventListener("input", () => {
 			const value = input.value.trim();
 			if (value === "") {
 				onChange(undefined);
@@ -110,7 +113,7 @@ function createDefaultValueInput(
 			translate("settings.taskProperties.customUserFields.placeholders.defaultValue"),
 			typeof field.defaultValue === "string" ? field.defaultValue : ""
 		);
-		input.addEventListener("change", () => {
+		input.addEventListener("input", () => {
 			const value = input.value.trim();
 			onChange(value === "" ? undefined : value);
 		});
@@ -286,7 +289,7 @@ function renderUserFieldsList(
 			field.type
 		);
 
-		nameInput.addEventListener("change", () => {
+		nameInput.addEventListener("input", () => {
 			field.displayName = nameInput.value;
 
 			// Also update display name in modal fields config
@@ -315,7 +318,7 @@ function renderUserFieldsList(
 			save();
 		});
 
-		keyInput.addEventListener("change", () => {
+		keyInput.addEventListener("input", () => {
 			field.key = keyInput.value;
 
 			// Update the card header secondary text directly without re-rendering
