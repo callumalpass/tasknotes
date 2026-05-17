@@ -23,6 +23,14 @@ function formatNotePropertyReference(propertyName: string): string {
 	return `note["${escapeBasesStringLiteral(propertyName)}"]`;
 }
 
+function formatDependencyEntryFileExpression(entryExpression: string): string {
+	return `file(if(${entryExpression}.isType("object"), ${entryExpression}.uid, ${entryExpression}))`;
+}
+
+function formatDependencyEntryLinkExpression(entryExpression: string): string {
+	return `${formatDependencyEntryFileExpression(entryExpression)}.asLink()`;
+}
+
 /**
  * Generate a task filter expression based on the task identification method
  * Returns the filter condition string (not the full YAML structure)
@@ -615,7 +623,7 @@ ${orderYaml}
 			// Generate filter condition for checking if a blocking task is incomplete
 			// This is used in the "Not Blocked" view to filter out completed blocking tasks
 			const blockingTaskIncompleteCondition = completedStatuses
-				.map(status => `file(value.uid).properties.${getPropertyName(statusProperty)} != "${status}"`)
+				.map(status => `${formatDependencyEntryFileExpression("value")}.properties.${getPropertyName(statusProperty)} != "${status}"`)
 				.join(' && ');
 
 			return `# All Tasks
@@ -858,7 +866,7 @@ ${orderYaml}
     filters:
       and:
         - ${taskFilterCondition}
-        - list(this.note.${blockedByProperty}).map(value.uid).contains(file.asLink())
+        - list(this.note.${blockedByProperty}).map(${formatDependencyEntryLinkExpression("value")}).contains(file.asLink())
     order:
 ${orderYaml}
     sort:
@@ -869,7 +877,7 @@ ${orderYaml}
     filters:
       and:
         - ${taskFilterCondition}
-        - list(note.${blockedByProperty}).map(value.uid).contains(this.file.asLink())
+        - list(note.${blockedByProperty}).map(${formatDependencyEntryLinkExpression("value")}).contains(this.file.asLink())
     order:
 ${orderYaml}
     sort:

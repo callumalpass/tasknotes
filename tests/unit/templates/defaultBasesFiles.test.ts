@@ -71,6 +71,30 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('name: "Projects"');
 	});
 
+	it("normalizes dependency entries in generated Bases filters before comparing links", () => {
+		const tasksTemplate = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
+		const relationshipsTemplate = generateBasesFileTemplate(
+			"relationships",
+			createMockPlugin() as any
+		);
+
+		const dependencyFileExpression = 'file(if(value.isType("object"), value.uid, value))';
+		const dependencyLinkExpression = `${dependencyFileExpression}.asLink()`;
+
+		expect(tasksTemplate).toContain(
+			`list(blockedBy).filter(${dependencyFileExpression}.properties.status != "done").isEmpty()`
+		);
+		expect(relationshipsTemplate).toContain(
+			`list(this.note.blockedBy).map(${dependencyLinkExpression}).contains(file.asLink())`
+		);
+		expect(relationshipsTemplate).toContain(
+			`list(note.blockedBy).map(${dependencyLinkExpression}).contains(this.file.asLink())`
+		);
+
+		expect(tasksTemplate).not.toContain("file(value.uid)");
+		expect(relationshipsTemplate).not.toContain(".map(value.uid)");
+	});
+
 	it("quotes property-based task identifiers so names with spaces work in Bases filters", () => {
 		const template = generateBasesFileTemplate(
 			"open-tasks-view",

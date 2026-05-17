@@ -1,7 +1,7 @@
 ---
 title: Default Base Templates
 description: Default base file templates for TaskNotes views
-dateModified: 2026-05-17T04:52:00+1000
+dateModified: 2026-05-17T15:55:06+1000
 ---
 
 # Default Base Templates
@@ -319,7 +319,7 @@ views:
           # No blocking dependencies at all
           - blockedBy.isEmpty()
           # All blocking tasks are completed (filter returns only incomplete, then check if empty)
-          - 'list(blockedBy).filter(file(value.uid).properties.status != "done").isEmpty()'
+          - 'list(blockedBy).filter(file(if(value.isType("object"), value.uid, value)).properties.status != "done").isEmpty()'
     order:
       - status
       - priority
@@ -731,7 +731,7 @@ views:
     filters:
       and:
         - file.hasTag("task")
-        - list(this.note.blockedBy).map(value.uid).contains(file.asLink())
+        - list(this.note.blockedBy).map(file(if(value.isType("object"), value.uid, value)).asLink()).contains(file.asLink())
     order:
       - status
       - priority
@@ -753,7 +753,7 @@ views:
     filters:
       and:
         - file.hasTag("task")
-        - list(note.blockedBy).map(value.uid).contains(this.file.asLink())
+        - list(note.blockedBy).map(file(if(value.isType("object"), value.uid, value)).asLink()).contains(this.file.asLink())
     order:
       - status
       - priority
