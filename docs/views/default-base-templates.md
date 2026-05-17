@@ -386,8 +386,14 @@ views:
           - and:
             - recurrence.isEmpty() == false
             - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
-        # Due in the past
-        - date(due) < today()
+        # Due or scheduled in the past
+        - or:
+          - and:
+            - due.isEmpty() == false
+            - date(due) < today()
+          - and:
+            - scheduled.isEmpty() == false
+            - date(scheduled) < today()
     order:
       - status
       - priority

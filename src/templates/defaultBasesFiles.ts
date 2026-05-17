@@ -741,8 +741,14 @@ ${orderYaml}
           - and:
             - ${recurrenceProperty}.isEmpty() == false
             - ${recurringIncompleteFilter}
-        # Due in the past
-        - date(${dueProperty}) < today()
+        # Due or scheduled in the past
+        - or:
+          - and:
+            - ${dueHasValue}
+            - date(${dueProperty}) < today()
+          - and:
+            - ${scheduledHasValue}
+            - date(${scheduledProperty}) < today()
     order:
 ${orderYaml}
     sort:
