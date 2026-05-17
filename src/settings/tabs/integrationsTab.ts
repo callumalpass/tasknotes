@@ -16,6 +16,7 @@ import {
 	runAsyncSettingCallback,
 } from "../components/settingHelpers";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
+import { isCalendarIntegrationDisabledOnMobile } from "../../utils/calendarIntegration";
 import {
 	createCard,
 	createStatusBadge,
@@ -157,6 +158,9 @@ export function renderIntegrationsTab(
 
 	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
+	const calendarIntegrationDisabledOnMobile = isCalendarIntegrationDisabledOnMobile(
+		plugin.settings
+	);
 
 	// mdbase-spec Section
 	createSettingGroup(
@@ -209,6 +213,30 @@ export function renderIntegrationsTab(
 				});
 				link.setAttr("target", "_blank");
 			});
+
+			group.addSetting((setting) =>
+				void configureToggleSetting(setting, {
+					name: translate("settings.integrations.mobileCalendar.disable.name"),
+					desc: translate("settings.integrations.mobileCalendar.disable.description"),
+					getValue: () => plugin.settings.disableCalendarOnMobile,
+					setValue: async (value: boolean) => {
+						plugin.settings.disableCalendarOnMobile = value;
+						save();
+						if (Platform.isMobile) {
+							renderIntegrationsTab(container, plugin, save);
+						}
+					},
+				})
+			);
+
+			if (calendarIntegrationDisabledOnMobile) {
+				group.addSetting((setting) => {
+					setting.setName(translate("settings.integrations.mobileCalendar.status.name"));
+					setting.setDesc(
+						translate("settings.integrations.mobileCalendar.status.description")
+					);
+				});
+			}
 		}
 	);
 

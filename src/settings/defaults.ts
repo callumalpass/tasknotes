@@ -415,6 +415,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftOAuthClientSecret: "",
 	enableGoogleCalendar: false,
 	enableMicrosoftCalendar: false,
+	disableCalendarOnMobile: false,
 	// Google Calendar selection (empty = show all calendars)
 	enabledGoogleCalendars: [],
 	// Google Calendar sync tokens (for incremental sync)

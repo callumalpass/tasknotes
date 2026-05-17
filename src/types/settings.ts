@@ -240,6 +240,7 @@ export interface TaskNotesSettings {
 	microsoftOAuthClientSecret: string;
 	enableGoogleCalendar: boolean;
 	enableMicrosoftCalendar: boolean;
+	disableCalendarOnMobile: boolean;
 	// Google Calendar selection
 	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
 	// Google Calendar sync tokens (for incremental sync)

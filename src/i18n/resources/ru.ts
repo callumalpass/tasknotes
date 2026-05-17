@@ -1542,6 +1542,18 @@ export const ru: TranslationTree = {
 			},
 		},
 		integrations: {
+			mobileCalendar: {
+				disable: {
+					name: "Отключить интеграции календаря на мобильных устройствах",
+					description:
+						"Не загружать календари Google, Microsoft и ICS в Obsidian Mobile. Интеграции календаря на компьютере не меняются.",
+				},
+				status: {
+					name: "Интеграции календаря отключены на этом мобильном устройстве",
+					description:
+						"Выключите эту настройку и перезагрузите Obsidian Mobile, чтобы снова загружать календари.",
+				},
+			},
 			basesIntegration: {
 				header: "Интеграция с Bases",
 				description: "Настройте интеграцию с плагином Obsidian Bases. Это экспериментальная функция, которая в настоящее время опирается на недокументированные API Obsidian. Поведение может измениться или сломаться.",

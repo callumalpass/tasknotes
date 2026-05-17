@@ -35,6 +35,8 @@ The generated Pomodoro statistics Base reads Pomodoro sessions from daily notes 
 
 Connect Google Calendar or Microsoft Outlook to sync events bidirectionally with TaskNotes. Events automatically refresh every 15 minutes and sync when local changes are made (such as dragging events to reschedule).
 
+Enable **Disable calendar integrations on mobile** when you sync TaskNotes settings between desktop and mobile but do not want Obsidian Mobile to load external calendars on startup. The setting only affects mobile devices; desktop calendar integrations continue to run normally.
+
 ### Setup Requirements
 
 OAuth integration requires creating your own OAuth application with Google and/or Microsoft. Initial setup takes approximately 15 minutes per provider.

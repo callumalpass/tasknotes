@@ -1542,6 +1542,18 @@ export const de: TranslationTree = {
 			},
 		},
 		integrations: {
+			mobileCalendar: {
+				disable: {
+					name: "Kalenderintegrationen auf Mobilgeräten deaktivieren",
+					description:
+						"Google-, Microsoft- und ICS-Kalender auf Obsidian Mobile nicht laden. Desktop-Kalenderintegrationen bleiben unverändert.",
+				},
+				status: {
+					name: "Kalenderintegrationen sind auf diesem Mobilgerät deaktiviert",
+					description:
+						"Deaktiviere diese Einstellung und lade Obsidian Mobile neu, um Kalender wieder zu laden.",
+				},
+			},
 			basesIntegration: {
 				header: "Bases-Integration",
 				description: "Konfiguriere Integration mit dem Obsidian Bases Plugin. Dies ist eine experimentelle Funktion und basiert derzeit auf undokumentierten Obsidian APIs. Das Verhalten kann sich ändern oder brechen.",

@@ -1642,6 +1642,18 @@ export const en: TranslationTree = {
 			},
 		},
 		integrations: {
+			mobileCalendar: {
+				disable: {
+					name: "Disable calendar integrations on mobile",
+					description:
+						"Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged.",
+				},
+				status: {
+					name: "Calendar integrations are disabled on this mobile device",
+					description:
+						"Turn this setting off and reload Obsidian mobile to resume calendar loading.",
+				},
+			},
 			basesIntegration: {
 				header: "Bases integration",
 				description:

@@ -9,6 +9,7 @@
 
 import { Platform } from '../../__mocks__/obsidian';
 import { DEFAULT_SETTINGS } from '../../../src/settings/defaults';
+import { isCalendarIntegrationDisabledOnMobile } from '../../../src/utils/calendarIntegration';
 
 // Store original Platform values to restore after tests
 const originalIsMobile = Platform.isMobile;
@@ -22,12 +23,11 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
   });
 
   describe('Settings schema', () => {
-    it.skip('should have a disableCalendarOnMobile setting defined (reproduces issue #898)', () => {
-      // This test will fail until the setting is added to the defaults
+    it('has a disableCalendarOnMobile setting defined', () => {
       expect(DEFAULT_SETTINGS).toHaveProperty('disableCalendarOnMobile');
     });
 
-    it.skip('should default disableCalendarOnMobile to false (reproduces issue #898)', () => {
+    it('defaults disableCalendarOnMobile to false', () => {
       // Default should be false so existing users are not affected
       expect(DEFAULT_SETTINGS.disableCalendarOnMobile).toBe(false);
     });
@@ -46,15 +46,7 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
         enableMicrosoftCalendar: true,
       };
 
-      // Helper function that mirrors the logic that should be in main.ts
-      const shouldInitializeCalendars = (isMobile: boolean, disableOnMobile: boolean): boolean => {
-        if (isMobile && disableOnMobile) {
-          return false;
-        }
-        return true;
-      };
-
-      const result = shouldInitializeCalendars(Platform.isMobile, settings.disableCalendarOnMobile);
+      const result = !isCalendarIntegrationDisabledOnMobile(settings, Platform.isMobile);
 
       expect(result).toBe(false);
     });
@@ -71,14 +63,7 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
         enableMicrosoftCalendar: true,
       };
 
-      const shouldInitializeCalendars = (isMobile: boolean, disableOnMobile: boolean): boolean => {
-        if (isMobile && disableOnMobile) {
-          return false;
-        }
-        return true;
-      };
-
-      const result = shouldInitializeCalendars(Platform.isMobile, settings.disableCalendarOnMobile);
+      const result = !isCalendarIntegrationDisabledOnMobile(settings, Platform.isMobile);
 
       expect(result).toBe(true);
     });
@@ -95,14 +80,7 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
         enableMicrosoftCalendar: true,
       };
 
-      const shouldInitializeCalendars = (isMobile: boolean, disableOnMobile: boolean): boolean => {
-        if (isMobile && disableOnMobile) {
-          return false;
-        }
-        return true;
-      };
-
-      const result = shouldInitializeCalendars(Platform.isMobile, settings.disableCalendarOnMobile);
+      const result = !isCalendarIntegrationDisabledOnMobile(settings, Platform.isMobile);
 
       expect(result).toBe(true);
     });
@@ -119,14 +97,7 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
       };
 
       // ICS subscriptions are part of calendar integration and should also be skipped
-      const shouldInitializeIcsService = (isMobile: boolean, disableOnMobile: boolean): boolean => {
-        if (isMobile && disableOnMobile) {
-          return false;
-        }
-        return true;
-      };
-
-      const result = shouldInitializeIcsService(Platform.isMobile, settings.disableCalendarOnMobile);
+      const result = !isCalendarIntegrationDisabledOnMobile(settings, Platform.isMobile);
 
       expect(result).toBe(false);
     });
@@ -153,25 +124,9 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
         disableCalendarOnMobile: true, // User specifically set this to prevent mobile loading issues
       };
 
-      const shouldInitializeCalendars = (
-        isMobile: boolean,
-        disableOnMobile: boolean,
-        googleEnabled: boolean,
-        microsoftEnabled: boolean
-      ): boolean => {
-        // Mobile-specific disable takes precedence over individual calendar enable settings
-        if (isMobile && disableOnMobile) {
-          return false;
-        }
-        return googleEnabled || microsoftEnabled;
-      };
-
-      const result = shouldInitializeCalendars(
-        Platform.isMobile,
-        syncedSettings.disableCalendarOnMobile,
-        syncedSettings.enableGoogleCalendar,
-        syncedSettings.enableMicrosoftCalendar
-      );
+      const result =
+        !isCalendarIntegrationDisabledOnMobile(syncedSettings, Platform.isMobile) &&
+        (syncedSettings.enableGoogleCalendar || syncedSettings.enableMicrosoftCalendar);
 
       expect(result).toBe(false);
     });

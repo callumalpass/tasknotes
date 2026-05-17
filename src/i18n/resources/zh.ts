@@ -1541,6 +1541,18 @@ export const zh: TranslationTree = {
 			},
 		},
 		integrations: {
+			mobileCalendar: {
+				disable: {
+					name: "在移动端禁用日历集成",
+					description:
+						"在 Obsidian Mobile 上跳过 Google、Microsoft 和 ICS 日历加载。桌面端日历集成不受影响。",
+				},
+				status: {
+					name: "此移动设备已禁用日历集成",
+					description:
+						"关闭此设置并重新加载 Obsidian Mobile，以恢复日历加载。",
+				},
+			},
 			basesIntegration: {
 				header: "Bases集成",
 				description: "配置与Obsidian Bases插件的集成。这是一个实验性功能，目前依赖于未记录的Obsidian API。行为可能会改变或中断。",

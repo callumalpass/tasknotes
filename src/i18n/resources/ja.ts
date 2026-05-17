@@ -1542,6 +1542,18 @@ export const ja: TranslationTree = {
 			},
 		},
 		integrations: {
+			mobileCalendar: {
+				disable: {
+					name: "モバイルでカレンダー連携を無効化",
+					description:
+						"Obsidian Mobile で Google、Microsoft、ICS カレンダーの読み込みをスキップします。デスクトップのカレンダー連携は変更されません。",
+				},
+				status: {
+					name: "このモバイル端末ではカレンダー連携が無効です",
+					description:
+						"カレンダーの読み込みを再開するには、この設定をオフにして Obsidian Mobile を再読み込みしてください。",
+				},
+			},
 			basesIntegration: {
 				header: "Bases統合",
 				description: "Obsidian Basesプラグインとの統合を設定します。これは実験的機能で、現在非公開のObsidian APIに依存しています。動作が変更または破損する可能性があります。",

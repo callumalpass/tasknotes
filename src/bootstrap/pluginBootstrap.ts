@@ -50,6 +50,7 @@ import { CalendarProviderRegistry } from "../services/CalendarProvider";
 import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
 import { TaskNotesAPI } from "../api/TaskNotesAPI";
+import { isCalendarIntegrationDisabledOnMobile } from "../utils/calendarIntegration";
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
 
@@ -305,50 +306,54 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 			try {
 				plugin.pomodoroService = new PomodoroService(plugin);
 				await plugin.pomodoroService.initialize();
-				await plugin.icsSubscriptionService.initialize();
 
 				plugin.autoExportService = new AutoExportService(plugin);
 				plugin.autoExportService.start();
 
-				plugin.googleCalendarService.on("data-changed", () => {
-					plugin.notifyDataChanged(undefined, false, true);
-				});
-				await plugin.googleCalendarService.initialize();
+				if (!isCalendarIntegrationDisabledOnMobile(plugin.settings)) {
+					await plugin.icsSubscriptionService.initialize();
 
-				plugin.taskCalendarSyncService = new (
-					await import("../services/TaskCalendarSyncService")
-				).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
-				plugin.taskCalendarSyncService.startRecoveryQueueProcessor();
+					plugin.googleCalendarService.on("data-changed", () => {
+						plugin.notifyDataChanged(undefined, false, true);
+					});
+					await plugin.googleCalendarService.initialize();
 
-				plugin.registerEvent(
-					plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
-						if (!plugin.taskCalendarSyncService) {
-							return;
-						}
+					plugin.taskCalendarSyncService = new (
+						await import("../services/TaskCalendarSyncService")
+					).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
+					plugin.taskCalendarSyncService.startRecoveryQueueProcessor();
 
-						const eventIdKey = plugin.fieldMapper.toUserField("googleCalendarEventId");
-						const prevCache = data.prevCache as
-							| { frontmatter?: Record<string, unknown> }
-							| undefined;
-						const eventId = prevCache?.frontmatter?.[eventIdKey];
+					plugin.registerEvent(
+						plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
+							if (!plugin.taskCalendarSyncService) {
+								return;
+							}
 
-						if (typeof eventId === "string" && eventId.length > 0) {
-							plugin.taskCalendarSyncService
-								.deleteTaskFromCalendarByPath(data.path, eventId)
-								.catch((error) => {
-									console.warn(
-										"Failed to delete task from Google Calendar on file deletion:",
-										error
-									);
-								});
-						}
-					})
-				);
+							const eventIdKey =
+								plugin.fieldMapper.toUserField("googleCalendarEventId");
+							const prevCache = data.prevCache as
+								| { frontmatter?: Record<string, unknown> }
+								| undefined;
+							const eventId = prevCache?.frontmatter?.[eventIdKey];
 
-				plugin.microsoftCalendarService.on("data-changed", () => {
-					plugin.notifyDataChanged(undefined, false, true);
-				});
-				await plugin.microsoftCalendarService.initialize();
+							if (typeof eventId === "string" && eventId.length > 0) {
+								plugin.taskCalendarSyncService
+									.deleteTaskFromCalendarByPath(data.path, eventId)
+									.catch((error) => {
+										console.warn(
+											"Failed to delete task from Google Calendar on file deletion:",
+											error
+										);
+									});
+							}
+						})
+					);
+
+					plugin.microsoftCalendarService.on("data-changed", () => {
+						plugin.notifyDataChanged(undefined, false, true);
+					});
+					await plugin.microsoftCalendarService.initialize();
+				}
 
 				await initializeHTTPAPI(plugin);
 

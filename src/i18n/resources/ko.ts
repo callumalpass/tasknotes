@@ -1496,6 +1496,18 @@ export const ko: TranslationTree = {
 			},
 		},
 		integrations: {
+			mobileCalendar: {
+				disable: {
+					name: "모바일에서 캘린더 연동 비활성화",
+					description:
+						"Obsidian Mobile에서 Google, Microsoft 및 ICS 캘린더 로드를 건너뜁니다. 데스크톱 캘린더 연동은 변경되지 않습니다.",
+				},
+				status: {
+					name: "이 모바일 기기에서 캘린더 연동이 비활성화되었습니다",
+					description:
+						"캘린더 로드를 다시 시작하려면 이 설정을 끄고 Obsidian Mobile을 다시 로드하세요.",
+				},
+			},
 			basesIntegration: {
 				header: "베이스 통합",
 				description: "Obsidian 베이스 플러그인과의 통합을 설정합니다. 이것은 실험적 기능이며 현재 문서화되지 않은 Obsidian API에 의존합니다. 동작이 변경되거나 중단될 수 있습니다.",
