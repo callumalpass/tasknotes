@@ -361,6 +361,19 @@ export function getCalendarSizingOptions(
 	};
 }
 
+export function resolveEffectiveCalendarHeightMode(
+	heightMode: CalendarHeightMode,
+	calendarView: string,
+	containerEl?: HTMLElement | null
+): CalendarHeightMode {
+	if (heightMode === "auto") {
+		return "auto";
+	}
+
+	const isEmbedded = !!containerEl?.closest(".internal-embed, .markdown-embed");
+	return isEmbedded && calendarView === "listWeek" ? "auto" : "fill";
+}
+
 /**
  * Find the colgroup col element corresponding to a dated FullCalendar table cell.
  *
@@ -1346,7 +1359,7 @@ export class CalendarView extends BasesViewBase {
 					buttonText: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
 				},
 			},
-			...getCalendarSizingOptions(this.viewOptions.heightMode),
+			...getCalendarSizingOptions(this.getEffectiveHeightMode()),
 			handleWindowResize: true,
 			stickyHeaderDates: false,
 			locale:
@@ -1523,7 +1536,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyHeightModeClass(): void {
-		const isAutoHeight = this.viewOptions.heightMode === "auto";
+		const isAutoHeight = this.getEffectiveHeightMode() === "auto";
 
 		if (this.rootElement) {
 			this.rootElement.classList.toggle("advanced-calendar-view--auto-height", isAutoHeight);
@@ -1533,6 +1546,14 @@ export class CalendarView extends BasesViewBase {
 		this.calendarEl?.classList.toggle(
 			"advanced-calendar-view__calendar--auto-height",
 			isAutoHeight
+		);
+	}
+
+	private getEffectiveHeightMode(): CalendarHeightMode {
+		return resolveEffectiveCalendarHeightMode(
+			this.viewOptions.heightMode,
+			this.viewOptions.calendarView,
+			this.containerEl
 		);
 	}
 
