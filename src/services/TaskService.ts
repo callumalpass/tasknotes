@@ -30,7 +30,7 @@ import {
 	resolveDependencyEntry,
 	serializeDependencies,
 } from "../utils/dependencyUtils";
-import { getProjectDisplayName } from "../utils/linkUtils";
+import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
 import {
 	formatDateForStorage,
 	getDatePart,
@@ -277,6 +277,7 @@ export class TaskService {
 			date,
 			taskData: templateData,
 			extractProjectBasename: (project) => this.extractProjectBasename(project),
+			extractProjectFilePath: (project) => this.extractProjectFilePath(project),
 		});
 	}
 
@@ -1860,5 +1861,11 @@ export class TaskService {
 	 */
 	private extractProjectBasename(project: string): string {
 		return getProjectDisplayName(project, this.plugin.app);
+	}
+
+	private extractProjectFilePath(project: string): string {
+		const linkPath = parseLinkToPath(project);
+		const resolved = this.plugin.app.metadataCache.getFirstLinkpathDest?.(linkPath, "");
+		return (resolved?.path ?? linkPath).replace(/\.md$/i, "");
 	}
 }

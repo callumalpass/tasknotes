@@ -25,7 +25,7 @@ import { processFolderTemplate, TaskTemplateData } from '../../../src/utils/fold
 
 describe('Issue #923: Project file path template variable', () => {
 	describe('{{projectFilePath}} variable', () => {
-		it.skip('reproduces issue #923: should support {{projectFilePath}} for full project path', () => {
+		it('supports {{projectFilePath}} for full project path', () => {
 			// User wants to organize tasks into project-specific folders
 			// matching the project's location in the vault
 			const taskData: TaskTemplateData = {
@@ -48,7 +48,7 @@ describe('Issue #923: Project file path template variable', () => {
 			expect(result).toBe('Tasks/Work/Projects/ProjectA');
 		});
 
-		it.skip('reproduces issue #923: should handle plain project paths without wikilinks', () => {
+		it('handles plain project paths without wikilinks', () => {
 			const taskData: TaskTemplateData = {
 				title: 'Fix bug',
 				projects: ['Personal/ProjectB'],
@@ -61,7 +61,7 @@ describe('Issue #923: Project file path template variable', () => {
 			expect(result).toBe('Personal/ProjectB/Tasks');
 		});
 
-		it.skip('reproduces issue #923: should handle display name wikilinks', () => {
+		it('handles display name wikilinks by using the file path', () => {
 			// Wikilinks can have display names: [[path|Display Name]]
 			const taskData: TaskTemplateData = {
 				title: 'Update README',
@@ -76,7 +76,7 @@ describe('Issue #923: Project file path template variable', () => {
 			expect(result).toBe('Projects/Work/ClientProject');
 		});
 
-		it.skip('reproduces issue #923: should use first project path when multiple projects exist', () => {
+		it('uses first project path when multiple projects exist', () => {
 			const taskData: TaskTemplateData = {
 				title: 'Multi-project task',
 				projects: ['[[Work/Alpha]]', '[[Personal/Beta]]'],
@@ -92,7 +92,7 @@ describe('Issue #923: Project file path template variable', () => {
 	});
 
 	describe('{{projectFilePaths}} variable (plural)', () => {
-		it.skip('reproduces issue #923: should support {{projectFilePaths}} for all project paths', () => {
+		it('supports {{projectFilePaths}} for all project paths', () => {
 			const taskData: TaskTemplateData = {
 				title: 'Shared task',
 				projects: ['[[Work/Alpha]]', '[[Personal/Beta]]'],
@@ -132,7 +132,7 @@ describe('Issue #923: Project file path template variable', () => {
 			expect(result).toBe('MyProject');
 		});
 
-		it.skip('reproduces issue #923: {{projectFilePath}} should return full path unlike {{project}}', () => {
+		it('{{projectFilePath}} returns full path unlike {{project}}', () => {
 			const taskData: TaskTemplateData = {
 				projects: ['[[Work/Projects/MyProject]]'],
 			};
@@ -151,7 +151,6 @@ describe('Issue #923: Project file path template variable', () => {
 
 			const filePathResult = processFolderTemplate('{{projectFilePath}}', {
 				taskData,
-				// New option would be needed: extractProjectFilePath
 			});
 
 			expect(projectResult).toBe('MyProject');
@@ -160,7 +159,7 @@ describe('Issue #923: Project file path template variable', () => {
 	});
 
 	describe('edge cases', () => {
-		it.skip('reproduces issue #923: should return empty string when no projects', () => {
+		it('returns empty string when no projects', () => {
 			const taskData: TaskTemplateData = {
 				title: 'No project task',
 				projects: [],
@@ -173,9 +172,9 @@ describe('Issue #923: Project file path template variable', () => {
 			expect(result).toBe('Tasks/');
 		});
 
-		it.skip('reproduces issue #923: should sanitize paths for folder safety', () => {
+		it('sanitizes path segments for folder safety while preserving folder separators', () => {
 			const taskData: TaskTemplateData = {
-				projects: ['[[Work/Project<>:"/\\|?*Special]]'],
+				projects: ['[[Work/Project<>:"/Unsafe?*Special]]'],
 			};
 
 			const result = processFolderTemplate('{{projectFilePath}}', {
@@ -183,10 +182,10 @@ describe('Issue #923: Project file path template variable', () => {
 			});
 
 			// Special characters should be sanitized
-			expect(result).toBe('Work/Project_________Special');
+			expect(result).toBe('Work/Project____/Unsafe__Special');
 		});
 
-		it.skip('reproduces issue #923: should handle root-level projects', () => {
+		it('handles root-level projects', () => {
 			// Project file is at vault root (no folder path)
 			const taskData: TaskTemplateData = {
 				projects: ['[[RootProject]]'],
@@ -197,6 +196,20 @@ describe('Issue #923: Project file path template variable', () => {
 			});
 
 			expect(result).toBe('RootProject/Tasks');
+		});
+
+		it('allows callers to resolve short project links to full vault paths', () => {
+			const taskData: TaskTemplateData = {
+				projects: ['[[ProjectA]]'],
+			};
+
+			const result = processFolderTemplate('Tasks/{{projectFilePath}}', {
+				taskData,
+				extractProjectFilePath: (project) =>
+					project === '[[ProjectA]]' ? 'Work/Projects/ProjectA.md' : project,
+			});
+
+			expect(result).toBe('Tasks/Work/Projects/ProjectA');
 		});
 	});
 });

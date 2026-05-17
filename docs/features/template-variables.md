@@ -33,6 +33,8 @@ Variables for task-specific data.
 | `{{contexts}}` | All contexts (comma-separated in body, `/` in folder) | Yes | Yes | `work, home` or `work/home` |
 | `{{project}}` | First project from projects array | No | Yes | `ProjectA` |
 | `{{projects}}` | All projects joined by `/` | No | Yes | `ProjectA/ProjectB` |
+| `{{projectFilePath}}` | Full path of the first project, without `.md` | No | Yes | `Work/Projects/ProjectA` |
+| `{{projectFilePaths}}` | Full paths of all projects, joined by `/` | No | Yes | `Work/Alpha/Personal/Beta` |
 | `{{dueDate}}` | Task due date | Yes | Yes | `2025-01-15` |
 | `{{scheduledDate}}` | Task scheduled date | Yes | Yes | `2025-01-10` |
 
@@ -202,7 +204,7 @@ When used in YAML frontmatter, values containing special characters (colons, bra
 
 ### Folder Path Sanitization
 
-In folder templates, title values have filesystem-unsafe characters (`<>:"/\|?*`) replaced with underscores to ensure valid paths.
+In folder templates, title values have filesystem-unsafe characters (`<>:"/\|?*`) replaced with underscores to ensure valid paths. Project file path variables preserve folder separators and sanitize unsafe characters within each path segment.
 
 ### Empty Values
 

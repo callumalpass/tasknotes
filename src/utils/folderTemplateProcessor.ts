@@ -47,6 +47,12 @@ export interface FolderTemplateOptions {
 	 * Used to handle wikilink formatting and path resolution
 	 */
 	extractProjectBasename?: (project: string) => string;
+
+	/**
+	 * Optional function to extract the full file path from a project string
+	 * Used to handle wikilink formatting and path resolution
+	 */
+	extractProjectFilePath?: (project: string) => string;
 }
 
 const DAILY_NOTES_DATE_TOKEN_FORMATS: Record<string, string> = {
@@ -97,6 +103,59 @@ function normalizeRelativeFolderPath(folderPath: string): string {
 	return preserveTrailingSlash && normalizedPath ? `${normalizedPath}/` : normalizedPath;
 }
 
+function stripMarkdownExtension(path: string): string {
+	return path.replace(/\.md$/i, "");
+}
+
+function parseProjectFilePath(project: string): string {
+	const trimmed = project.trim();
+	if (!trimmed) {
+		return "";
+	}
+
+	if (trimmed.startsWith("[[") && trimmed.endsWith("]]")) {
+		const linkContent = trimmed.slice(2, -2).trim();
+		const pipeIndex = linkContent.indexOf("|");
+		const path = pipeIndex !== -1 ? linkContent.slice(0, pipeIndex) : linkContent;
+		return stripMarkdownExtension(path.trim());
+	}
+
+	const markdownMatch = trimmed.match(/^\[[^\]]*\]\(([^)]+)\)$/);
+	if (markdownMatch) {
+		let linkPath = markdownMatch[1].trim();
+		if (linkPath.startsWith("<") && linkPath.endsWith(">")) {
+			linkPath = linkPath.slice(1, -1).trim();
+		}
+		try {
+			linkPath = decodeURIComponent(linkPath);
+		} catch (error) {
+			console.debug("Failed to decode project path:", linkPath, error);
+		}
+		return stripMarkdownExtension(linkPath);
+	}
+
+	return stripMarkdownExtension(trimmed);
+}
+
+function sanitizeProjectFilePath(path: string): string {
+	const normalizedPath = stripMarkdownExtension(path.trim()).replace(/\\/g, "/");
+	return normalizedPath
+		.split("/")
+		.filter((segment) => segment.length > 0)
+		.map((segment) => segment.replace(/[<>:"|?*]/g, "_"))
+		.join("/");
+}
+
+function getProjectFilePath(
+	project: string,
+	extractProjectFilePath?: (project: string) => string
+): string {
+	const rawPath = extractProjectFilePath
+		? extractProjectFilePath(project)
+		: parseProjectFilePath(project);
+	return sanitizeProjectFilePath(rawPath);
+}
+
 /**
  * Process a folder path template by replacing template variables with actual values
  *
@@ -120,6 +179,7 @@ function normalizeRelativeFolderPath(folderPath: string): string {
  * Task variables (when taskData is provided):
  * - {{context}}, {{contexts}} - First context or all contexts joined with /
  * - {{project}}, {{projects}} - First project or all projects joined with /
+ * - {{projectFilePath}}, {{projectFilePaths}} - First project path or all project paths joined with /
  * - {{priority}}, {{priorityShort}}
  * - {{status}}, {{statusShort}}
  * - {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}
@@ -162,7 +222,13 @@ export function processFolderTemplate(
 		return folderTemplate;
 	}
 
-	const { date = new Date(), taskData, icsData, extractProjectBasename } = options;
+	const {
+		date = new Date(),
+		taskData,
+		icsData,
+		extractProjectBasename,
+		extractProjectFilePath,
+	} = options;
 
 	let processedPath = folderTemplate;
 	const shouldNormalizeRelativeSegments = hasRelativePathSegments(folderTemplate);
@@ -195,6 +261,22 @@ export function processFolderTemplate(
 						.join("/")
 				: "";
 		processedPath = processedPath.replace(/\{\{projects\}\}/g, projects);
+
+		// Handle full project file paths while preserving path separators
+		const projectFilePath =
+			Array.isArray(taskData.projects) && taskData.projects.length > 0
+				? getProjectFilePath(taskData.projects[0], extractProjectFilePath)
+				: "";
+		processedPath = processedPath.replace(/\{\{projectFilePath\}\}/g, projectFilePath);
+
+		const projectFilePaths =
+			Array.isArray(taskData.projects) && taskData.projects.length > 0
+				? taskData.projects
+						.map((proj) => getProjectFilePath(proj, extractProjectFilePath))
+						.filter((path) => path.length > 0)
+						.join("/")
+				: "";
+		processedPath = processedPath.replace(/\{\{projectFilePaths\}\}/g, projectFilePaths);
 
 		// Handle multiple contexts
 		const contexts =

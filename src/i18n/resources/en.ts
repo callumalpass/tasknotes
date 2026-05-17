@@ -852,7 +852,7 @@ export const en: TranslationTree = {
 				defaultFolder: {
 					name: "Default tasks folder",
 					description:
-						"Default location for new tasks. Supports folder template variables like {{currentNotePath}} and {{currentNoteTitle}}, plus Daily Notes-style date tokens like YYYY/MM/DD.",
+						"Default location for new tasks. Supports folder template variables like {{currentNotePath}}, {{currentNoteTitle}}, and {{projectFilePath}}, plus Daily Notes-style date tokens like YYYY/MM/DD.",
 				},
 				moveArchived: {
 					name: "Move archived tasks to folder",
