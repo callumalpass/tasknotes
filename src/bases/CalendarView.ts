@@ -1495,9 +1495,9 @@ export class CalendarView extends BasesViewBase {
 
 			// Initialize or update calendar
 			if (!this.calendar) {
-				await this.initializeCalendar(taskNotes);
+				await this.initializeCalendar(filteredTasks);
 			} else {
-				await this.updateCalendarEvents(taskNotes);
+				await this.updateCalendarEvents(filteredTasks);
 			}
 		} catch (error: unknown) {
 			console.error("[TaskNotes][CalendarView] Error rendering:", error);
