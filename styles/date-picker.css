@@ -303,6 +303,10 @@
 }
 
 /* Webkit browsers (Chrome, Safari, Edge) */
+.tasknotes-plugin input[type="date"]::-webkit-datetime-edit-label {
+    display: none;
+}
+
 .date-picker-modal input[type="date"]::-webkit-datetime-edit,
 .date-picker-modal input[type="date"]::-webkit-datetime-edit-fields-wrapper,
 .date-picker-modal input[type="date"]::-webkit-datetime-edit-text,
