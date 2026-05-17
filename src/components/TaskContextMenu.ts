@@ -13,6 +13,7 @@ import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
 import { RecurrenceContextMenu } from "./RecurrenceContextMenu";
 import { showTextInputModal } from "../modals/TextInputModal";
+import { TagSuggest } from "../modals/taskModalSuggests";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "../modals/ProjectSelectModal";
 import {
@@ -25,6 +26,13 @@ import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
 import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
+import {
+	addTagsToList,
+	clearEditableTagsFromList,
+	getEditableTaskTags,
+	parseTaskTagInput,
+	removeTagsFromList,
+} from "../utils/taskTagList";
 
 type SubmenuMenuItem = {
 	setSubmenu(): Menu;
@@ -158,6 +166,15 @@ export class TaskContextMenu {
 
 			const submenu = getSubmenu(item);
 			this.addPriorityOptions(submenu, task, plugin);
+		});
+
+		// Tags submenu
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.tags"));
+			item.setIcon("tags");
+
+			const submenu = getSubmenu(item);
+			this.addTagOptions(submenu, task, plugin);
 		});
 
 		this.menu.addSeparator();
@@ -1168,6 +1185,86 @@ export class TaskContextMenu {
 		} catch (error) {
 			console.error("Failed to update task contexts:", error);
 			new Notice(this.t("contextMenus.task.organization.notices.updateContextsFailed"));
+		}
+	}
+
+	private addTagOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const editableTags = getEditableTaskTags(task, plugin.settings);
+
+		submenu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.addTag"));
+			item.setIcon("plus");
+			item.onClick(() => {
+				this.menu.hide();
+				void this.openTagInput(task, plugin, "add");
+			});
+		});
+
+		if (editableTags.length > 0) {
+			submenu.addSeparator();
+			for (const tag of editableTags) {
+				submenu.addItem((item) => {
+					item.setTitle(this.t("contextMenus.task.removeTag", { tag: `#${tag}` }));
+					item.setIcon("x");
+					item.onClick(async () => {
+						await this.updateTaskTags(task, plugin, removeTagsFromList(task.tags, [tag]));
+					});
+				});
+			}
+
+			submenu.addSeparator();
+			submenu.addItem((item) => {
+				item.setTitle(this.t("contextMenus.task.clearTags"));
+				item.setIcon("eraser");
+				item.onClick(async () => {
+					await this.updateTaskTags(
+						task,
+						plugin,
+						clearEditableTagsFromList(task.tags, plugin.settings)
+					);
+				});
+			});
+		}
+	}
+
+	private async openTagInput(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		mode: "add" | "remove"
+	): Promise<void> {
+		const input = await showTextInputModal(plugin.app, {
+			title:
+				mode === "add"
+					? this.t("contextMenus.task.addTag")
+					: this.t("contextMenus.task.removeTagInput"),
+			placeholder: this.t("contextMenus.task.tagPlaceholder"),
+			confirmText: this.t("common.confirm"),
+			cancelText: this.t("common.cancel"),
+			onInputReady: (inputEl) => {
+				new TagSuggest(plugin.app, inputEl, plugin);
+			},
+		});
+
+		const tags = parseTaskTagInput(input);
+		if (tags.length === 0) return;
+
+		const nextTags =
+			mode === "add" ? addTagsToList(task.tags, tags) : removeTagsFromList(task.tags, tags);
+		await this.updateTaskTags(task, plugin, nextTags);
+	}
+
+	private async updateTaskTags(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		tags: string[] | undefined
+	): Promise<void> {
+		try {
+			const updatedTask = await plugin.updateTaskProperty(task, "tags", tags);
+			Object.assign(task, updatedTask);
+			this.options.onUpdate?.();
+		} catch (error) {
+			console.error("Failed to update task tags:", error);
+			new Notice(this.t("contextMenus.task.notices.updateTagsFailed"));
 		}
 	}
 

@@ -4,11 +4,19 @@ import { TaskInfo } from "../types";
 import { DateContextMenu, type DateOption } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { showTextInputModal } from "../modals/TextInputModal";
+import { TagSuggest } from "../modals/taskModalSuggests";
 import {
 	formatTasksForClipboard,
 	type ClipboardTask,
 	type TaskCopyFormat,
 } from "../utils/taskClipboard";
+import {
+	addTagsToList,
+	clearEditableTagsFromList,
+	parseTaskTagInput,
+	removeTagsFromList,
+} from "../utils/taskTagList";
 
 type SubmenuMenuItem = {
 	setSubmenu(): Menu;
@@ -77,6 +85,14 @@ export class BatchContextMenu {
 
 			const submenu = getSubmenu(item);
 			this.addPriorityOptions(submenu);
+		});
+
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.tags"));
+			item.setIcon("tags");
+
+			const submenu = getSubmenu(item);
+			this.addTagOptions(submenu);
 		});
 
 		this.menu.addSeparator();
@@ -149,6 +165,35 @@ export class BatchContextMenu {
 			item.setIcon("trash");
 			item.onClick(async () => {
 				await this.batchDelete();
+			});
+		});
+	}
+
+	private addTagOptions(submenu: Menu): void {
+		submenu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.addTag"));
+			item.setIcon("plus");
+			item.onClick(() => {
+				void this.openBatchTagInput("add");
+			});
+		});
+
+		submenu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.removeTagInput"));
+			item.setIcon("x");
+			item.onClick(() => {
+				void this.openBatchTagInput("remove");
+			});
+		});
+
+		submenu.addSeparator();
+		submenu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.clearTags"));
+			item.setIcon("eraser");
+			item.onClick(async () => {
+				await this.batchUpdateTags((task) =>
+					clearEditableTagsFromList(task.tags, this.options.plugin.settings)
+				);
 			});
 		});
 	}
@@ -273,6 +318,29 @@ export class BatchContextMenu {
 		});
 	}
 
+	private async openBatchTagInput(mode: "add" | "remove"): Promise<void> {
+		const { plugin } = this.options;
+		const input = await showTextInputModal(plugin.app, {
+			title:
+				mode === "add"
+					? this.t("contextMenus.task.addTag")
+					: this.t("contextMenus.task.removeTagInput"),
+			placeholder: this.t("contextMenus.task.tagPlaceholder"),
+			confirmText: this.t("common.confirm"),
+			cancelText: this.t("common.cancel"),
+			onInputReady: (inputEl) => {
+				new TagSuggest(plugin.app, inputEl, plugin);
+			},
+		});
+
+		const tags = parseTaskTagInput(input);
+		if (tags.length === 0) return;
+
+		await this.batchUpdateTags((task) =>
+			mode === "add" ? addTagsToList(task.tags, tags) : removeTagsFromList(task.tags, tags)
+		);
+	}
+
 	private async copySelectedTasks(format: TaskCopyFormat): Promise<void> {
 		const { plugin, selectedPaths } = this.options;
 		const tasks: ClipboardTask[] = [];
@@ -298,6 +366,49 @@ export class BatchContextMenu {
 			return this.options.plugin.app.metadataCache.fileToLinktext(file, "");
 		}
 		return path;
+	}
+
+	private async batchUpdateTags(
+		getNextTags: (task: TaskInfo) => string[] | undefined
+	): Promise<void> {
+		const { plugin, selectedPaths, onUpdate } = this.options;
+		const count = selectedPaths.length;
+
+		try {
+			new Notice(`Updating tags on ${count} tasks...`);
+
+			let successCount = 0;
+			let failCount = 0;
+
+			for (const path of selectedPaths) {
+				try {
+					const task = await plugin.cacheManager.getTaskInfo(path);
+					if (task) {
+						await plugin.taskService.updateProperty(task, "tags", getNextTags(task));
+						successCount++;
+					} else {
+						failCount++;
+					}
+				} catch (e) {
+					console.error(`[BatchContextMenu] Failed to update tags for ${path}:`, e);
+					failCount++;
+				}
+			}
+
+			if (failCount === 0) {
+				new Notice(`Updated tags on ${successCount} tasks`);
+			} else {
+				new Notice(`Updated tags on ${successCount} tasks, ${failCount} failed`);
+			}
+
+			plugin.taskSelectionService?.clearSelection();
+			plugin.taskSelectionService?.exitSelectionMode();
+
+			onUpdate?.();
+		} catch (error) {
+			console.error("[BatchContextMenu] Batch tag update failed:", error);
+			new Notice(this.t("contextMenus.task.notices.updateTagsFailed"));
+		}
 	}
 
 	private async batchUpdateProperty(property: keyof TaskInfo, value: unknown): Promise<void> {

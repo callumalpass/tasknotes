@@ -6,6 +6,7 @@ export interface TextInputModalOptions {
 	initialValue?: string;
 	confirmText?: string;
 	cancelText?: string;
+	onInputReady?: (inputEl: HTMLInputElement) => void;
 }
 
 /**
@@ -51,6 +52,8 @@ export class TextInputModal extends Modal {
 				this.inputEl.focus();
 				this.inputEl.select();
 			}, 100);
+
+			this.options.onInputReady?.(this.inputEl);
 		});
 
 		const buttonContainer = contentEl.createEl("div", { cls: "modal-button-container" });
