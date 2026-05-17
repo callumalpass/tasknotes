@@ -481,6 +481,11 @@ export const ja: TranslationTree = {
 					name: "チェックボックスの横に変換ボタンを表示",
 					description: "MarkdownチェックボックスをTaskNotesに変換するインラインボタンを表示する",
 				},
+				preserveCheckbox: {
+					name: "変換時にチェックボックスを残す",
+					description:
+						"チェックボックスをTaskNoteリンクに変換するとき、元のMarkdownチェックボックス記号を残します",
+				},
 				folder: {
 					name: "変換されたタスクのフォルダー",
 					description: "チェックボックスから変換されたタスクが作成されるフォルダー。空白のままにするとデフォルトのタスクフォルダーが使用されます。{{currentNotePath}}で現在のノートのフォルダー、{{currentNoteTitle}}でノートのタイトルを持つサブフォルダーを指定できます。",

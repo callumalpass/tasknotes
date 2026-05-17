@@ -527,6 +527,11 @@ export const en: TranslationTree = {
 					description:
 						"Display an inline button next to Markdown checkboxes that converts them to TaskNotes",
 				},
+				preserveCheckbox: {
+					name: "Keep checkbox when converting",
+					description:
+						"Leave the original Markdown checkbox marker in place when converting a checkbox to a TaskNote link",
+				},
 				folder: {
 					name: "Folder for inline-created tasks",
 					description:

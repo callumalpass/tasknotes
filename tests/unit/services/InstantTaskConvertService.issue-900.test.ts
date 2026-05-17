@@ -140,7 +140,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
   });
 
   describe('Requested Behavior (checkbox is preserved)', () => {
-    it.skip('reproduces issue #900: should preserve checkbox when preserveCheckboxOnConvert is enabled', async () => {
+    it('preserves checkbox when preserveCheckboxOnConvert is enabled', async () => {
       // Enable the new setting
       mockPlugin.settings.preserveCheckboxOnConvert = true;
 
@@ -178,7 +178,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
       );
     });
 
-    it.skip('reproduces issue #900: should work with asterisk checkbox format', async () => {
+    it('works with asterisk checkbox format', async () => {
       mockPlugin.settings.preserveCheckboxOnConvert = true;
 
       const originalLine = '* [ ] My Task';
@@ -213,7 +213,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
       );
     });
 
-    it.skip('reproduces issue #900: should work with numbered list checkbox format', async () => {
+    it('works with numbered list checkbox format', async () => {
       mockPlugin.settings.preserveCheckboxOnConvert = true;
 
       const originalLine = '1. [ ] Numbered Task';
@@ -248,7 +248,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
       );
     });
 
-    it.skip('reproduces issue #900: should preserve indentation with checkbox', async () => {
+    it('preserves indentation with checkbox', async () => {
       mockPlugin.settings.preserveCheckboxOnConvert = true;
 
       const originalLine = '    - [ ] Indented Task';
@@ -283,7 +283,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
       );
     });
 
-    it.skip('reproduces issue #900: should not add checkbox when preserveCheckboxOnConvert is disabled (default)', async () => {
+    it('does not add checkbox when preserveCheckboxOnConvert is disabled (default)', async () => {
       // Ensure setting is disabled (default)
       mockPlugin.settings.preserveCheckboxOnConvert = false;
 
@@ -322,7 +322,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
   });
 
   describe('Edge Cases for Checkbox Preservation', () => {
-    it.skip('reproduces issue #900: should work with completed checkbox [ x ]', async () => {
+    it('works with completed checkbox [x]', async () => {
       mockPlugin.settings.preserveCheckboxOnConvert = true;
 
       // Some users might convert already-completed tasks
@@ -359,7 +359,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
       );
     });
 
-    it.skip('reproduces issue #900: should work with alternative checkbox markers [/], [-]', async () => {
+    it.skip('documents possible alternative checkbox markers [/], [-]', async () => {
       mockPlugin.settings.preserveCheckboxOnConvert = true;
 
       // Some users use alternative markers like [/] for in-progress or [-] for cancelled
@@ -396,7 +396,7 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
       );
     });
 
-    it.skip('reproduces issue #900: should not affect non-checkbox lines', async () => {
+    it('does not affect non-checkbox lines', async () => {
       mockPlugin.settings.preserveCheckboxOnConvert = true;
 
       // Plain bullet point without checkbox
@@ -430,6 +430,16 @@ describe('InstantTaskConvertService - Issue #900: Preserve Checkbox on Conversio
         '- [[Plain bullet item]]',
         { line: 0, ch: 0 },
         { line: 0, ch: originalLine.length }
+      );
+    });
+
+    it('preserves checkbox in generated link text used by batch conversion', () => {
+      mockPlugin.settings.preserveCheckboxOnConvert = true;
+
+      const mockFile = { path: 'tasks/batch-task.md', basename: 'Batch Task' } as TFile;
+
+      expect(service['generateLinkText']('* [ ] Batch Task', mockFile)).toBe(
+        '* [ ] [[Batch Task]]'
       );
     });
   });

@@ -122,6 +122,25 @@ export function renderFeaturesTab(
 						},
 					})
 			);
+
+			if (plugin.settings.enableInstantTaskConvert) {
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate(
+								"settings.features.instantConvert.preserveCheckbox.name"
+							),
+							desc: translate(
+								"settings.features.instantConvert.preserveCheckbox.description"
+							),
+							getValue: () => plugin.settings.preserveCheckboxOnConvert,
+							setValue: async (value: boolean) => {
+								plugin.settings.preserveCheckboxOnConvert = value;
+								save();
+							},
+						})
+				);
+			}
 		}
 	);
 

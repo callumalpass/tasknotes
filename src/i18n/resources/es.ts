@@ -481,6 +481,11 @@ export const es: TranslationTree = {
 					name: "Mostrar botón de conversión junto a casillas de verificación",
 					description: "Mostrar un botón en línea junto a las casillas de verificación Markdown que las convierte en TaskNotes",
 				},
+				preserveCheckbox: {
+					name: "Mantener la casilla al convertir",
+					description:
+						"Conservar el marcador original de casilla Markdown al convertir una casilla en un enlace de TaskNote",
+				},
 				folder: {
 					name: "Carpeta para tareas convertidas",
 					description: "Carpeta donde se crearán las tareas convertidas desde casillas de verificación. Dejar vacío para usar la carpeta de tareas predeterminada. Usa {{currentNotePath}} para la carpeta de la nota actual, o {{currentNoteTitle}} para una subcarpeta con el título de la nota.",

@@ -481,6 +481,11 @@ export const fr: TranslationTree = {
 					name: "Afficher le bouton de conversion à côté des cases à cocher",
 					description: "Afficher un bouton en ligne à côté des cases à cocher Markdown qui les convertit en TaskNotes",
 				},
+				preserveCheckbox: {
+					name: "Conserver la case à cocher lors de la conversion",
+					description:
+						"Laisser le marqueur de case à cocher Markdown d'origine en place lors de la conversion d'une case à cocher en lien TaskNote",
+				},
 				folder: {
 					name: "Dossier pour les tâches converties",
 					description: "Dossier où les tâches converties depuis les cases à cocher seront créées. Laisser vide pour utiliser le dossier de tâches par défaut. Utilisez {{currentNotePath}} pour le dossier de la note actuelle, ou {{currentNoteTitle}} pour un sous-dossier nommé d'après la note.",

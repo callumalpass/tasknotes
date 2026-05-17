@@ -481,6 +481,11 @@ export const de: TranslationTree = {
 					name: "Konvertierungs-Button neben Checkboxen anzeigen",
 					description: "Zeige einen Inline-Button neben Markdown-Checkboxen an, der diese in TaskNotes konvertiert",
 				},
+				preserveCheckbox: {
+					name: "Checkbox beim Konvertieren beibehalten",
+					description:
+						"Den ursprünglichen Markdown-Checkbox-Marker beibehalten, wenn eine Checkbox in einen TaskNote-Link konvertiert wird",
+				},
 				folder: {
 					name: "Ordner für konvertierte Aufgaben",
 					description: "Ordner, in dem aus Checkboxen konvertierte Aufgaben erstellt werden. Leer lassen, um den Standard-Aufgabenordner zu verwenden. Verwende {{currentNotePath}} für den Ordner der aktuellen Notiz oder {{currentNoteTitle}} für einen Unterordner mit dem Notiztitel.",

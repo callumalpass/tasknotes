@@ -481,6 +481,11 @@ export const pt: TranslationTree = {
 					name: "Mostrar botão de conversão ao lado de caixas de seleção",
 					description: "Exibir um botão embutido ao lado de caixas de seleção Markdown que as converte para TaskNotes"
 				},
+				preserveCheckbox: {
+					name: "Manter a caixa de seleção ao converter",
+					description:
+						"Manter o marcador original da caixa de seleção Markdown ao converter uma caixa em link TaskNote"
+				},
 				folder: {
 					name: "Pasta para tarefas convertidas",
 					description: "Pasta onde tarefas convertidas de caixas de seleção serão criadas. Deixe vazio para usar a pasta de tarefas padrão. Use {{currentNotePath}} para a pasta da nota atual, ou {{currentNoteTitle}} para uma subpasta com o título da nota."

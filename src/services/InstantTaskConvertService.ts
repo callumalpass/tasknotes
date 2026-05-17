@@ -866,9 +866,7 @@ export class InstantTaskConvertService {
 
 			let listPrefix = "";
 			if (isCheckboxTask) {
-				// For checkbox tasks, preserve the list prefix without the checkbox
-				const listPrefixMatch = originalContent[0].match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
-				listPrefix = listPrefixMatch?.[1] || "- ";
+				listPrefix = this.getCheckboxReplacementPrefix(originalContent[0]);
 			} else {
 				// For non-checkbox lines, try to preserve existing list markers
 				const bulletMatch = originalContent[0].match(/^\s*([-*+]\s+)/);
@@ -913,6 +911,16 @@ export class InstantTaskConvertService {
 			console.error("Error replacing task lines:", error);
 			return { success: false, error: `Failed to replace lines: ${error.message}` };
 		}
+	}
+
+	private getCheckboxReplacementPrefix(originalLine: string): string {
+		if (this.plugin.settings.preserveCheckboxOnConvert) {
+			const checkboxPrefixMatch = originalLine.match(/^\s*((?:[-*+]|\d+\.)\s+\[[^\]]\]\s*)/);
+			return checkboxPrefixMatch?.[1] || "- [ ] ";
+		}
+
+		const listPrefixMatch = originalLine.match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
+		return listPrefixMatch?.[1] || "- ";
 	}
 
 	/**
@@ -1341,8 +1349,7 @@ export class InstantTaskConvertService {
 
 		let listPrefix = "";
 		if (isCheckboxTask) {
-			const listPrefixMatch = originalLine.match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
-			listPrefix = listPrefixMatch?.[1] || "- ";
+			listPrefix = this.getCheckboxReplacementPrefix(originalLine);
 		} else {
 			// For non-checkbox lines, preserve existing markers
 			const bulletMatch = originalLine.match(/^\s*([-*+]\s+)/);

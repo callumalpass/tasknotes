@@ -304,6 +304,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	disableOverlayOnAlias: false,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
+	preserveCheckboxOnConvert: false,
 	taskModalTabMovesFocus: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,

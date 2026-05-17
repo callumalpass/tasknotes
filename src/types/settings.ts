@@ -133,6 +133,7 @@ export interface TaskNotesSettings {
 	disableOverlayOnAlias: boolean;
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
+	preserveCheckboxOnConvert: boolean;
 	taskModalTabMovesFocus: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
