@@ -649,6 +649,9 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// Build update payload
 			const payload: GoogleCalendarEventPayload = { ...currentEvent };
+			if (payload.status === "cancelled") {
+				payload.status = "confirmed";
+			}
 
 			// Support both 'title' and 'summary'
 			if (updates.title !== undefined || updates.summary !== undefined) {
