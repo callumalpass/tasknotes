@@ -98,6 +98,8 @@
     color: var(--text-normal);
     font-size: var(--font-ui-small);
     cursor: var(--cursor-link, pointer);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .tasknotes-plugin .date-time-picker-modal__day:hover,
