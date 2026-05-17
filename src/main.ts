@@ -1312,6 +1312,10 @@ export default class TaskNotesPlugin extends Plugin {
 		await this.taskActionCoordinator.openTaskSelectorWithCreate();
 	}
 
+	async openTaskSelectorWithCreateAndStartTracking(): Promise<void> {
+		await this.taskActionCoordinator.openTaskSelectorWithCreateAndStartTracking();
+	}
+
 	async rolloverOverdueScheduledTasks(): Promise<void> {
 		await this.taskActionCoordinator.rolloverOverdueScheduledTasks();
 	}

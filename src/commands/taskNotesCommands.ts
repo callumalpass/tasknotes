@@ -303,6 +303,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "create-or-open-task-with-time-tracking",
+			nameKey: "commands.createOrOpenTaskWithTracking",
+			callback: async (ctx) => {
+				await ctx.openTaskSelectorWithCreateAndStartTracking();
+			},
+		},
+		{
 			id: "rollover-overdue-scheduled-tasks",
 			nameKey: "commands.rolloverOverdueScheduledTasks",
 			callback: async (ctx) => {

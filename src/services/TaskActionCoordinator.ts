@@ -12,6 +12,13 @@ import { getOverdueScheduledRolloverCandidates } from "../utils/scheduledRollove
 export class TaskActionCoordinator {
 	constructor(private plugin: TaskNotesPlugin) {}
 
+	private async openTaskFile(task: TaskInfo): Promise<void> {
+		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+		if (file instanceof TFile) {
+			await this.plugin.app.workspace.getLeaf(false).openFile(file);
+		}
+	}
+
 	async openTaskSelectorWithCreate(): Promise<void> {
 		const { openTaskSelectorWithCreate } = await import(
 			"../modals/TaskSelectorWithCreateModal"
@@ -19,9 +26,24 @@ export class TaskActionCoordinator {
 		const result = await openTaskSelectorWithCreate(this.plugin);
 
 		if (result.type === "selected" || result.type === "created") {
-			const file = this.plugin.app.vault.getAbstractFileByPath(result.task.path);
-			if (file instanceof TFile) {
-				await this.plugin.app.workspace.getLeaf(false).openFile(file);
+			await this.openTaskFile(result.task);
+		}
+	}
+
+	async openTaskSelectorWithCreateAndStartTracking(): Promise<void> {
+		const { openTaskSelectorWithCreate } = await import(
+			"../modals/TaskSelectorWithCreateModal"
+		);
+		const result = await openTaskSelectorWithCreate(this.plugin);
+
+		if (result.type === "selected" || result.type === "created") {
+			let taskToOpen = result.task;
+			try {
+				taskToOpen = await this.startTimeTracking(result.task);
+			} catch {
+				// startTimeTracking shows the user-facing notice; keep create/open behavior intact.
+			} finally {
+				await this.openTaskFile(taskToOpen);
 			}
 		}
 	}

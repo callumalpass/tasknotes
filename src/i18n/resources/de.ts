@@ -2152,6 +2152,7 @@ export const de: TranslationTree = {
 		startTimeTrackingWithSelector: "Zeiterfassung starten (Aufgabe auswählen)",
 		editTimeEntries: "Zeiteinträge bearbeiten (Aufgabe auswählen)",
 		createOrOpenTask: "Aufgabe erstellen oder öffnen",
+		createOrOpenTaskWithTracking: "Aufgabe erstellen oder öffnen und Zeiterfassung starten",
 		rolloverOverdueScheduledTasks: "Überfällige geplante Aufgaben auf heute verschieben",
 		syncAllTasksGoogleCalendar: "Alle Aufgaben mit Google Kalender synchronisieren",
 		syncCurrentTaskGoogleCalendar: "Aktuelle Aufgabe mit Google Kalender synchronisieren",

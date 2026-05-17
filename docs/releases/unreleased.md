@@ -88,6 +88,7 @@ Example:
 - ([#1313](https://github.com/callumalpass/tasknotes/issues/1313)) Added generated `llms.txt` and `llms-full.txt` files to the documentation site, so the primary docs can be shared with LLM tools more easily. Thanks to @JacksonMcDonaldDev for suggesting this.
 - ([#1308](https://github.com/callumalpass/tasknotes/issues/1308)) Added a Calendar view option to stop date links from creating missing daily notes, while still opening existing daily notes. Thanks to @Arachnidai for suggesting this.
 - ([#1300](https://github.com/callumalpass/tasknotes/issues/1300)) Allowed priority, status, calendar subscription, and timeblock color settings to use Obsidian theme color names such as `red`, `blue`, and `cyan`. Thanks to @thestrike72 for suggesting this.
+- ([#1299](https://github.com/callumalpass/tasknotes/issues/1299)) Added a command that creates or opens a task and immediately starts time tracking for it. Thanks to @slipstyle for suggesting this.
 
 ## Fixed
 

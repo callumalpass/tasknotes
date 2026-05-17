@@ -2152,6 +2152,7 @@ export const ru: TranslationTree = {
 		startTimeTrackingWithSelector: "Начать отслеживание времени (выбрать задачу)",
 		editTimeEntries: "Редактировать временные записи (выбрать задачу)",
 		createOrOpenTask: "Создать или открыть задачу",
+		createOrOpenTaskWithTracking: "Создать или открыть задачу и начать отслеживание времени",
 		rolloverOverdueScheduledTasks:
 			"Перенести просроченные запланированные задачи на сегодня",
 		syncAllTasksGoogleCalendar: "Синхронизировать все задачи с Google Календарём",
