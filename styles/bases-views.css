@@ -26,9 +26,11 @@
 	cursor: var(--cursor-link, pointer);
 	display: flex;
 	font: inherit;
+	font-size: var(--font-ui-small, 13px);
 	gap: var(--size-4-1);
-	margin: 0;
-	padding: var(--size-2-1) var(--size-4-2);
+	height: auto;
+	margin: var(--size-2-1);
+	padding: var(--size-4-1);
 }
 
 .tn-bases-new-task-btn > button.text-icon-button:hover {
