@@ -26,7 +26,7 @@ import { TaskInfo } from '../../../src/types/TaskInfo';
 jest.mock('../../../src/editor/TaskLinkWidget');
 const MockTaskLinkWidget = TaskLinkWidget as jest.MockedClass<typeof TaskLinkWidget>;
 
-describe.skip('Issue #1318: Wikilink alias support for inline tasks', () => {
+describe('Issue #1318: Wikilink alias support for inline tasks', () => {
     let mockPlugin: TaskNotesPlugin;
     let mockTask: TaskInfo;
     let activeWidgets: Map<string, TaskLinkWidget>;
@@ -315,10 +315,7 @@ describe.skip('Issue #1318: Wikilink alias support for inline tasks', () => {
  * Tests for the RENDERING layer - verifying that createTaskCard actually uses
  * the displayText option when provided.
  *
- * THESE TESTS ARE CURRENTLY FAILING because createTaskCard doesn't have
- * a displayText option yet. The fix requires:
- * 1. Add displayText to TaskCardOptions interface
- * 2. Use it to override task.title in the rendered output
+ * Regression coverage for TaskCard's displayText option.
  */
 
 // Mock external dependencies for createTaskCard tests
@@ -329,7 +326,8 @@ jest.mock('../../../src/utils/helpers', () => ({
     shouldUseRecurringTaskUI: jest.fn((task) => !!task.recurrence),
     getRecurringTaskCompletionText: jest.fn(() => 'Not completed'),
     getRecurrenceDisplayText: jest.fn(() => 'Daily'),
-    filterEmptyProjects: jest.fn((projects) => projects?.filter((p: string) => p && p.trim()) || [])
+    filterEmptyProjects: jest.fn((projects) => projects?.filter((p: string) => p && p.trim()) || []),
+    sanitizeForCssClass: jest.fn((value: string) => value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))
 }));
 
 jest.mock('../../../src/utils/dateUtils', () => ({
@@ -350,7 +348,7 @@ jest.mock('../../../src/components/TaskContextMenu', () => ({
     }))
 }));
 
-describe.skip('Issue #1318: createTaskCard displayText support', () => {
+describe('Issue #1318: createTaskCard displayText support', () => {
     let mockPlugin: any;
     let mockTask: TaskInfo;
 
@@ -439,6 +437,9 @@ describe.skip('Issue #1318: createTaskCard displayText support', () => {
             projectSubtasksService: {
                 isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
                 isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false)
+            },
+            i18n: {
+                translate: jest.fn((key: string) => key)
             },
             settings: {
                 enableTaskLinkOverlay: true,

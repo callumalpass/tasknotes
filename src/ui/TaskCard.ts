@@ -33,6 +33,8 @@ export interface TaskCardOptions {
 	enableHoverPreview?: boolean;
 	/** Optional display labels for properties, typically sourced from Bases config. */
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
+	/** Optional title override for inline/embedded cards, such as wikilink aliases. */
+	displayText?: string;
 	/** How expanded subtasks/dependencies should interact with the current view filter. */
 	expandedRelationshipFilterMode?: "inherit" | "show-all";
 	/** Optional live resolver for the current expanded relationship filter mode. */
@@ -179,9 +181,14 @@ function taskHasDetails(task: TaskInfo): boolean {
 	return typeof task.details === "string" && task.details.trim().length > 0;
 }
 
-function renderTaskTitle(container: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin): void {
+function renderTaskTitle(
+	container: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	displayText?: string
+): void {
 	container.empty();
-	const title = stringifyUnknown(task.title);
+	const title = stringifyUnknown(displayText).trim() || stringifyUnknown(task.title);
 	const linkServices: LinkServices = {
 		metadataCache: plugin.app.metadataCache,
 		workspace: plugin.app.workspace,
@@ -954,7 +961,7 @@ export function createTaskCard(
 		cls: "task-card__title",
 	});
 	const titleTextEl = titleEl.createSpan({ cls: "task-card__title-text" });
-	renderTaskTitle(titleTextEl, task, plugin);
+	renderTaskTitle(titleTextEl, task, plugin, opts.displayText);
 
 	if (isCompleted) {
 		titleEl.classList.add("completed");
@@ -1467,7 +1474,7 @@ export function updateTaskCard(
 	const titleContainer = element.querySelector(".task-card__title") as HTMLElement;
 	const titleIsCompleted = isCompleted;
 	if (titleText) {
-		renderTaskTitle(titleText, task, plugin);
+		renderTaskTitle(titleText, task, plugin, opts.displayText);
 		titleText.classList.toggle("completed", titleIsCompleted);
 	}
 	if (titleContainer) {

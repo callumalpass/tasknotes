@@ -63,6 +63,7 @@ export class TaskLinkWidget extends WidgetType {
 		const card = createTaskCard(this.taskInfo, this.plugin, visibleProperties, {
 			layout: "inline",
 			targetDate: this.targetDate,
+			displayText: this.displayText,
 		});
 
 		// Add card to wrapper
@@ -102,6 +103,7 @@ export class TaskLinkWidget extends WidgetType {
 			this.taskInfo.due === other.taskInfo.due &&
 			this.taskInfo.scheduled === other.taskInfo.scheduled &&
 			this.taskInfo.recurrence === other.taskInfo.recurrence &&
+			this.displayText === other.displayText &&
 			this.targetDateKey === other.targetDateKey &&
 			JSON.stringify(this.taskInfo.complete_instances) ===
 				JSON.stringify(other.taskInfo.complete_instances) &&
