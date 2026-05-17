@@ -67,6 +67,8 @@ type RRule = {
 	after(date: Date, inclusive?: boolean): Date | null;
 };
 
+const MAX_FINITE_INSTANCE_COUNT = 10000;
+
 function parseDtstartFromRecurrence(recurrence: string): Date | null {
 	const dtstartMatch = recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
 	if (!dtstartMatch) {
@@ -87,6 +89,29 @@ function parseDtstartFromRecurrence(recurrence: string): Date | null {
 	const hour = parseInt(dtstartStr.slice(9, 11)) || 0;
 	const minute = parseInt(dtstartStr.slice(11, 13)) || 0;
 	const second = parseInt(dtstartStr.slice(13, 15)) || 0;
+	return new Date(Date.UTC(year, month, day, hour, minute, second, 0));
+}
+
+function parseUntilFromRecurrence(recurrence: string): Date | null {
+	const untilMatch = recurrence.match(/(?:^|;)UNTIL=(\d{8}(?:T\d{6}Z?)?)(?:;|$)/);
+	if (!untilMatch) {
+		return null;
+	}
+
+	const untilStr = untilMatch[1];
+	if (untilStr.length === 8) {
+		const year = parseInt(untilStr.slice(0, 4));
+		const month = parseInt(untilStr.slice(4, 6)) - 1;
+		const day = parseInt(untilStr.slice(6, 8));
+		return new Date(Date.UTC(year, month, day, 23, 59, 59, 999));
+	}
+
+	const year = parseInt(untilStr.slice(0, 4));
+	const month = parseInt(untilStr.slice(4, 6)) - 1;
+	const day = parseInt(untilStr.slice(6, 8));
+	const hour = parseInt(untilStr.slice(9, 11)) || 0;
+	const minute = parseInt(untilStr.slice(11, 13)) || 0;
+	const second = parseInt(untilStr.slice(13, 15)) || 0;
 	return new Date(Date.UTC(year, month, day, hour, minute, second, 0));
 }
 
@@ -292,6 +317,45 @@ export function generateRecurringInstances(
 	}
 
 	return instances;
+}
+
+export function getFiniteRecurringInstanceCount(
+	task: Pick<RecurringTaskLike, "title" | "recurrence" | "scheduled" | "dateCreated">
+): number | null {
+	if (!task.recurrence || typeof task.recurrence !== "string") {
+		return null;
+	}
+
+	const countMatch = task.recurrence.match(/(?:^|;)COUNT=(\d+)(?:;|$)/);
+	if (countMatch) {
+		const count = Number.parseInt(countMatch[1], 10);
+		return Number.isFinite(count) && count > 0 ? count : null;
+	}
+
+	if (!/(?:^|;)UNTIL=/.test(task.recurrence)) {
+		return null;
+	}
+
+	try {
+		const dtstart = getRRuleDtstart(task);
+		const until = parseUntilFromRecurrence(task.recurrence);
+		if (!dtstart || !until || until < dtstart) {
+			return null;
+		}
+
+		const instances = generateRecurringInstances(task, dtstart, until);
+		if (instances.length >= MAX_FINITE_INSTANCE_COUNT) {
+			return null;
+		}
+
+		return instances.length > 0 ? instances.length : null;
+	} catch (error) {
+		console.error("Error counting finite recurring instances:", error, {
+			task: task.title,
+			recurrence: task.recurrence,
+		});
+		return null;
+	}
 }
 
 function getNextScheduledBasedOccurrence(task: RecurringTaskLike): Date | null {

@@ -3,7 +3,7 @@ import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo } from "../types";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
-import { calculateTotalTimeSpent } from "../utils/helpers";
+import { calculateTotalTimeSpent, getFiniteRecurringInstanceCount } from "../utils/helpers";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 import {
 	formatDateTimeForDisplay,
@@ -275,11 +275,12 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (Array.isArray(value) && value.length > 0) {
 			const count = value.length;
 			const skippedCount = task.skipped_instances?.length || 0;
-			const total = count + skippedCount;
+			const finiteTotal = getFiniteRecurringInstanceCount(task);
 
-			if (total > 0) {
+			if (finiteTotal) {
+				const total = Math.max(finiteTotal, count + skippedCount);
 				const completionRate = Math.round((count / total) * 100);
-				element.textContent = `✓ ${count} completed (${completionRate}%)`;
+				element.textContent = `✓ ${count}/${total} completed (${completionRate}%)`;
 			} else {
 				element.textContent = `✓ ${count} completed`;
 			}

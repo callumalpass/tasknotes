@@ -8,6 +8,7 @@ import {
 	addDTSTARTToRecurrenceRuleWithDraggedTime as addDTSTARTToRecurrenceRuleWithDraggedTimeCore,
 	generateRecurringInstances as generateRecurringInstancesCore,
 	getEffectiveTaskStatus as getEffectiveTaskStatusCore,
+	getFiniteRecurringInstanceCount as getFiniteRecurringInstanceCountCore,
 	getNextUncompletedOccurrence as getNextUncompletedOccurrenceCore,
 	getRecurrenceDisplayText as getRecurrenceDisplayTextCore,
 	getRecurringTaskCompletionText as getRecurringTaskCompletionTextCore,
@@ -426,6 +427,10 @@ export function shouldUseRecurringTaskUI(task: TaskInfo): boolean {
  */
 export function generateRecurringInstances(task: TaskInfo, startDate: Date, endDate: Date): Date[] {
 	return generateRecurringInstancesCore(task, startDate, endDate);
+}
+
+export function getFiniteRecurringInstanceCount(task: TaskInfo): number | null {
+	return getFiniteRecurringInstanceCountCore(task);
 }
 
 /**
