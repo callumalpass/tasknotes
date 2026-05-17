@@ -1,5 +1,5 @@
 import type TaskNotesPlugin from "../main";
-import { parseFrontMatterAliases } from "obsidian";
+import { parseFrontMatterAliases, type TFile } from "obsidian";
 import { scoreMultiword } from "../utils/fuzzyMatch";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
@@ -23,6 +23,24 @@ export interface FileFilterConfig {
 	includeFolders?: string[];
 	propertyKey?: string;
 	propertyValue?: string;
+}
+
+function getSuggestableFiles(plugin: TaskNotesPlugin): TFile[] {
+	const vault = plugin?.app?.vault;
+	if (typeof vault?.getFiles === "function") {
+		return vault.getFiles();
+	}
+	if (typeof vault?.getMarkdownFiles === "function") {
+		return vault.getMarkdownFiles();
+	}
+	return [];
+}
+
+function getFileInsertText(file: TFile): string {
+	if (file.extension === "md") {
+		return file.basename;
+	}
+	return file.name || file.path.split("/").pop() || file.basename;
 }
 
 function normalizeFolderPath(folder: string): string {
@@ -95,9 +113,7 @@ export const FileSuggestHelper = {
 		activeFolder = getActiveFolderPath(plugin)
 	): Promise<FileSuggestionItem[]> {
 		const run = async () => {
-			const files = plugin?.app?.vault?.getMarkdownFiles
-				? plugin.app.vault.getMarkdownFiles()
-				: [];
+			const files = getSuggestableFiles(plugin);
 			const items: FileSuggestionItem[] = [];
 			const excludedFolders = parseExcludedFolders(plugin.settings?.excludedFolders);
 
@@ -248,7 +264,11 @@ export const FileSuggestHelper = {
 						? `${basename} [${extras.join(" | ")}]`
 						: basename;
 
-					items.push({ insertText: basename, displayText: display, score: bestScore });
+					items.push({
+						insertText: getFileInsertText(file),
+						displayText: display,
+						score: bestScore,
+					});
 				}
 			}
 

@@ -1,164 +1,112 @@
 /**
- * Issue #933: [FR] Add anything other than .md files as a project
+ * Issue #933: allow non-Markdown files to be suggested as task projects.
  *
- * Problem:
- * When creating a new task, only notes that have a .md extension are suggested.
- * Any other extensions, such as .canvas, are ignored.
- *
- * Root cause:
- * FileSuggestHelper.ts uses plugin.app.vault.getMarkdownFiles() (line 34-35)
- * which only returns .md files. This is an intentional call to the Obsidian API
- * that filters to markdown files only.
- *
- * Proposed fix:
- * Use plugin.app.vault.getFiles() instead, then optionally filter by extension
- * if the user wants to restrict to certain file types. This would allow canvas
- * files and other Obsidian file types to be suggested as projects.
- *
- * Workaround:
- * Manually edit the `projects` property in the task note.
+ * @see https://github.com/callumalpass/tasknotes/issues/933
  */
 
-import { FileSuggestHelper, FileFilterConfig } from '../../../src/suggest/FileSuggestHelper';
-import { TFile } from 'obsidian';
-import type TaskNotesPlugin from '../../../src/main';
+import { parseFrontMatterAliases, type TFile } from "obsidian";
+import type TaskNotesPlugin from "../../../src/main";
+import { FileSuggestHelper } from "../../../src/suggest/FileSuggestHelper";
 
-// Mock parseFrontMatterAliases
-jest.mock('obsidian', () => ({
-  ...jest.requireActual('obsidian'),
-  parseFrontMatterAliases: jest.fn((frontmatter: any) => {
-    if (!frontmatter || !frontmatter.aliases) return [];
-    if (Array.isArray(frontmatter.aliases)) return frontmatter.aliases;
-    return [frontmatter.aliases];
-  }),
+jest.mock("obsidian", () => ({
+	...jest.requireActual("obsidian"),
+	parseFrontMatterAliases: jest.fn((frontmatter: Record<string, unknown>) => {
+		const aliases = frontmatter?.aliases;
+		if (!aliases) return [];
+		return Array.isArray(aliases) ? aliases : [aliases];
+	}),
 }));
 
-describe('Issue #933: Non-.md files as projects', () => {
-  let mockPlugin: any;
+function createFile(path: string, extension: string): TFile {
+	const name = path.split("/").pop() || path;
+	const basename = name.endsWith(`.${extension}`)
+		? name.slice(0, -extension.length - 1)
+		: name;
 
-  beforeEach(() => {
-    // Create mock files including both .md and non-.md files
-    const allFiles: TFile[] = [
-      {
-        basename: 'Project Alpha',
-        path: 'projects/Project Alpha.md',
-        extension: 'md',
-        parent: { path: 'projects' }
-      } as TFile,
-      {
-        basename: 'Canvas Project',
-        path: 'projects/Canvas Project.canvas',
-        extension: 'canvas',
-        parent: { path: 'projects' }
-      } as TFile,
-      {
-        basename: 'Design Board',
-        path: 'projects/Design Board.canvas',
-        extension: 'canvas',
-        parent: { path: 'projects' }
-      } as TFile,
-      {
-        basename: 'Notes Doc',
-        path: 'projects/Notes Doc.md',
-        extension: 'md',
-        parent: { path: 'projects' }
-      } as TFile,
-    ];
+	return {
+		basename,
+		name,
+		path,
+		extension,
+		parent: { path: path.split("/").slice(0, -1).join("/") },
+	} as TFile;
+}
 
-    // The current implementation only returns markdown files
-    const markdownFiles = allFiles.filter(f => f.extension === 'md');
+function createPlugin(files: TFile[]): TaskNotesPlugin {
+	const markdownFiles = files.filter((file) => file.extension === "md");
 
-    mockPlugin = {
-      app: {
-        vault: {
-          // This is what FileSuggestHelper currently uses - only returns .md files
-          getMarkdownFiles: jest.fn(() => markdownFiles),
-          // This is what should be used to get ALL files including .canvas
-          getFiles: jest.fn(() => allFiles),
-        },
-        metadataCache: {
-          getFileCache: jest.fn(() => ({
-            frontmatter: {},
-            tags: []
-          })),
-        },
-      },
-      settings: {
-        suggestionDebounceMs: 0
-      },
-      fieldMapper: {
-        mapFromFrontmatter: jest.fn((fm: any) => ({
-          title: fm.title || ''
-        }))
-      }
-    } as unknown as TaskNotesPlugin;
-  });
+	return {
+		app: {
+			vault: {
+				getFiles: jest.fn(() => files),
+				getMarkdownFiles: jest.fn(() => markdownFiles),
+			},
+			metadataCache: {
+				getFileCache: jest.fn((file: TFile) => ({
+					frontmatter:
+						file.extension === "md"
+							? { aliases: [`${file.basename} Alias`] }
+							: undefined,
+					tags: [],
+				})),
+			},
+		},
+		settings: {
+			excludedFolders: "",
+			projectAutosuggest: { rows: [] },
+			suggestionDebounceMs: 0,
+			storeTitleInFilename: false,
+		},
+		fieldMapper: {
+			mapFromFrontmatter: jest.fn(() => ({ title: "" })),
+		},
+	} as unknown as TaskNotesPlugin;
+}
 
-  describe('Current behavior (bug reproduction)', () => {
-    it('only suggests .md files, ignoring .canvas files', async () => {
-      // This test documents the current (undesired) behavior
-      const results = await FileSuggestHelper.suggest(mockPlugin, '');
+describe("Issue #933: non-Markdown files as projects", () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
 
-      // Currently only returns 2 files (the .md files)
-      expect(results.length).toBe(2);
-      expect(results.map(r => r.insertText)).toEqual(
-        expect.arrayContaining(['Project Alpha', 'Notes Doc'])
-      );
+	it("suggests canvas files alongside Markdown files", async () => {
+		const files = [
+			createFile("projects/Project Alpha.md", "md"),
+			createFile("projects/Canvas Project.canvas", "canvas"),
+			createFile("projects/Design Board.canvas", "canvas"),
+		];
+		const plugin = createPlugin(files);
 
-      // Canvas files are NOT included - this is the bug
-      expect(results.map(r => r.insertText)).not.toContain('Canvas Project');
-      expect(results.map(r => r.insertText)).not.toContain('Design Board');
-    });
-  });
+		const results = await FileSuggestHelper.suggest(plugin, "project");
 
-  describe('Expected behavior (feature request)', () => {
-    // These tests are skipped until the feature is implemented
-    it.skip('reproduces issue #933: should suggest .canvas files when searching for projects', async () => {
-      // When the fix is implemented, this test should pass
-      const results = await FileSuggestHelper.suggest(mockPlugin, 'Canvas');
+		expect(plugin.app.vault.getFiles).toHaveBeenCalled();
+		expect(results.map((result) => result.insertText)).toEqual(
+			expect.arrayContaining(["Project Alpha", "Canvas Project.canvas"])
+		);
+	});
 
-      // Should find the canvas file
-      expect(results.some(r => r.insertText === 'Canvas Project')).toBe(true);
-    });
+	it("matches non-Markdown project suggestions by basename", async () => {
+		const files = [
+			createFile("projects/Project Alpha.md", "md"),
+			createFile("projects/Design Board.canvas", "canvas"),
+		];
+		const plugin = createPlugin(files);
 
-    it.skip('reproduces issue #933: should suggest all file types, not just .md', async () => {
-      // When the fix is implemented, all files should be suggested
-      const results = await FileSuggestHelper.suggest(mockPlugin, '');
+		const results = await FileSuggestHelper.suggest(plugin, "Design");
 
-      // Should return all 4 files including .canvas
-      expect(results.length).toBe(4);
-      expect(results.map(r => r.insertText)).toEqual(
-        expect.arrayContaining(['Project Alpha', 'Canvas Project', 'Design Board', 'Notes Doc'])
-      );
-    });
+		expect(results.map((result) => result.insertText)).toEqual(["Design Board.canvas"]);
+		expect(results[0].displayText).toBe("Design Board");
+	});
 
-    it.skip('reproduces issue #933: should match .canvas files by basename', async () => {
-      // Searching for "Design" should find "Design Board.canvas"
-      const results = await FileSuggestHelper.suggest(mockPlugin, 'Design');
+	it("keeps Markdown suggestions as basename-only link targets", async () => {
+		const files = [
+			createFile("projects/Project Alpha.md", "md"),
+			createFile("projects/Canvas Project.canvas", "canvas"),
+		];
+		const plugin = createPlugin(files);
 
-      expect(results.some(r => r.insertText === 'Design Board')).toBe(true);
-    });
+		const results = await FileSuggestHelper.suggest(plugin, "Alpha");
 
-    it.skip('reproduces issue #933: should allow configuring which file extensions to include', async () => {
-      // Future enhancement: allow users to configure which extensions are valid for projects
-      // For now, this documents the expected behavior
-
-      // Example: user only wants .md and .canvas files as projects (not .pdf, .png, etc.)
-      // This could be a setting like: allowedProjectExtensions: ['md', 'canvas']
-      expect(true).toBe(true); // Placeholder
-    });
-  });
-
-  describe('Implementation notes', () => {
-    it('documents that getMarkdownFiles() is the source of the limitation', async () => {
-      // Verify that the current implementation calls getMarkdownFiles
-      await FileSuggestHelper.suggest(mockPlugin, '');
-
-      // The implementation uses getMarkdownFiles() which only returns .md files
-      expect(mockPlugin.app.vault.getMarkdownFiles).toHaveBeenCalled();
-
-      // It does NOT use getFiles() which would return all files
-      expect(mockPlugin.app.vault.getFiles).not.toHaveBeenCalled();
-    });
-  });
+		expect(results.map((result) => result.insertText)).toEqual(["Project Alpha"]);
+		expect(parseFrontMatterAliases).toHaveBeenCalled();
+	});
 });
