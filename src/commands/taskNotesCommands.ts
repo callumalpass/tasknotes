@@ -112,6 +112,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "quick-actions-task-under-cursor",
+			nameKey: "commands.quickActionsTaskUnderCursor",
+			editorCallback: async (ctx, editor: Editor, view) => {
+				await ctx.openQuickActionsForTaskUnderCursor(editor, view.file);
+			},
+		},
+		{
 			id: "edit-current-task",
 			nameKey: "commands.editCurrentTask",
 			callback: async (ctx) => {

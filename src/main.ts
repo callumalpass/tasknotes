@@ -83,6 +83,9 @@ type LoadedSettingsData = Partial<TaskNotesSettings> &
 	};
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+type TaskLinkDetectionServiceInstance =
+	import("./services/TaskLinkDetectionService").TaskLinkDetectionService;
+type TaskLinkMatch = ReturnType<TaskLinkDetectionServiceInstance["findWikilinks"]>[number];
 
 function frontmatterString(value: unknown): string | undefined {
 	if (value === null || value === undefined) return undefined;
@@ -1636,6 +1639,41 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
+	async openQuickActionsForTaskUnderCursor(
+		editor: Editor,
+		sourceFile?: TFile | null
+	): Promise<void> {
+		try {
+			const activeFile = sourceFile ?? this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				new Notice("No file is currently open");
+				return;
+			}
+
+			const detectionService = await this.getTaskLinkDetectionService();
+			const link = this.getTaskLinkAtCursor(editor, detectionService);
+			if (!link) {
+				new Notice("No task link found");
+				return;
+			}
+
+			const detected = await detectionService.detectTaskLink(
+				link.match,
+				activeFile.path,
+				link.type
+			);
+			if (!detected.isValidTaskLink || !detected.taskInfo) {
+				new Notice("No task link found");
+				return;
+			}
+
+			await this.openQuickActionsForTaskInfo(detected.taskInfo);
+		} catch (error) {
+			console.error("Error opening quick actions for task under cursor:", error);
+			new Notice("Failed to open quick actions");
+		}
+	}
+
 	async openTaskEditModalForCurrentTask(): Promise<void> {
 		const activeFile = this.app.workspace.getActiveFile();
 		if (!activeFile) {
@@ -1695,6 +1733,35 @@ export default class TaskNotesPlugin extends Plugin {
 		return taskInfo;
 	}
 
+	private async getTaskLinkDetectionService(): Promise<TaskLinkDetectionServiceInstance> {
+		if (!this.taskLinkDetectionService) {
+			const { TaskLinkDetectionService } = await import(
+				"./services/TaskLinkDetectionService"
+			);
+			this.taskLinkDetectionService = new TaskLinkDetectionService(this);
+		}
+
+		return this.taskLinkDetectionService;
+	}
+
+	private getTaskLinkAtCursor(
+		editor: Editor,
+		detectionService: TaskLinkDetectionServiceInstance
+	): TaskLinkMatch | null {
+		const cursor = editor.getCursor();
+		const line = editor.getLine(cursor.line);
+		const links = detectionService.findWikilinks(line);
+
+		return (
+			links.find(
+				(link) =>
+					cursor.ch >= link.start &&
+					cursor.ch <= link.end &&
+					(link.type === "wikilink" || link.type === "markdown")
+			) ?? null
+		);
+	}
+
 	private async openTaskEditModalForFile(file: TFile, notTaskNotice?: string): Promise<void> {
 		try {
 			const taskInfo = await this.cacheManager.getTaskInfo(file.path);
@@ -1725,6 +1792,10 @@ export default class TaskNotesPlugin extends Plugin {
 			return;
 		}
 
+		await this.openQuickActionsForTaskInfo(taskInfo);
+	}
+
+	private async openQuickActionsForTaskInfo(taskInfo: TaskInfo): Promise<void> {
 		const { TaskActionPaletteModal } = await import("./modals/TaskActionPaletteModal");
 		// Use fresh UTC-anchored "today" for recurring task handling
 		const now = new Date();
