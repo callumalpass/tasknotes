@@ -1,7 +1,13 @@
 import { MarkdownPostProcessor } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
-import { TaskInfo } from "../types";
+import {
+	EVENT_DATA_CHANGED,
+	EVENT_DATE_CHANGED,
+	EVENT_TASK_DELETED,
+	EVENT_TASK_UPDATED,
+	TaskInfo,
+} from "../types";
 import { TaskLinkWidget } from "./TaskLinkWidget";
 
 export interface ReadingModeSourceLink {
@@ -123,6 +129,15 @@ function createSourceLinkCursor(): ReadingModeSourceLinkCursor {
 	return { index: 0 };
 }
 
+const READING_MODE_TASK_LINK_SELECTOR =
+	".task-inline-preview--reading-mode[data-task-path]";
+
+interface ReadingModeTaskUpdatePayload {
+	path?: string;
+	task?: TaskInfo;
+	updatedTask?: TaskInfo;
+}
+
 export function shouldSkipReadingModeTaskLinkOverlay(options: {
 	disableOverlayOnAlias: boolean;
 	hasExplicitAlias: boolean;
@@ -154,9 +169,13 @@ function getMarkdownSectionText(
 export class ReadingModeTaskLinkProcessor {
 	private plugin: TaskNotesPlugin;
 	private sourceLinkCursors = new Map<string, ReadingModeSourceLinkCursor>();
+	private refreshTimer: number | null = null;
+	private pendingRefreshAll = false;
+	private pendingRefreshTaskPaths = new Set<string>();
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
+		this.setupEventListeners();
 	}
 
 	/**
@@ -271,6 +290,163 @@ export class ReadingModeTaskLinkProcessor {
 		}
 	}
 
+	private setupEventListeners(): void {
+		this.plugin.registerEvent(
+			this.plugin.emitter.on(
+				EVENT_TASK_UPDATED,
+				(data?: ReadingModeTaskUpdatePayload) => {
+					this.scheduleReadingModeWidgetRefresh(
+						data?.path ?? data?.updatedTask?.path ?? data?.task?.path
+					);
+				}
+			)
+		);
+
+		this.plugin.registerEvent(
+			this.plugin.emitter.on(
+				EVENT_TASK_DELETED,
+				(data?: ReadingModeTaskUpdatePayload) => {
+					this.scheduleReadingModeWidgetRefresh(data?.path);
+				}
+			)
+		);
+
+		this.plugin.registerEvent(
+			this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
+				this.scheduleReadingModeWidgetRefresh();
+			})
+		);
+
+		this.plugin.registerEvent(
+			this.plugin.emitter.on(EVENT_DATE_CHANGED, () => {
+				this.scheduleReadingModeWidgetRefresh();
+			})
+		);
+
+		this.plugin.registerEvent(
+			this.plugin.emitter.on("settings-changed", () => {
+				this.scheduleReadingModeWidgetRefresh();
+			})
+		);
+
+		this.plugin.register(() => {
+			if (this.refreshTimer !== null) {
+				window.clearTimeout(this.refreshTimer);
+				this.refreshTimer = null;
+			}
+		});
+	}
+
+	private scheduleReadingModeWidgetRefresh(taskPath?: string): void {
+		if (taskPath) {
+			if (!this.pendingRefreshAll) {
+				this.pendingRefreshTaskPaths.add(taskPath);
+			}
+		} else {
+			this.pendingRefreshAll = true;
+			this.pendingRefreshTaskPaths.clear();
+		}
+
+		if (this.refreshTimer !== null) {
+			window.clearTimeout(this.refreshTimer);
+		}
+
+		this.refreshTimer = window.setTimeout(() => {
+			this.refreshTimer = null;
+			const taskPaths = this.pendingRefreshAll
+				? undefined
+				: new Set(this.pendingRefreshTaskPaths);
+			this.pendingRefreshAll = false;
+			this.pendingRefreshTaskPaths.clear();
+			this.refreshReadingModeWidgets(taskPaths);
+		}, 100);
+	}
+
+	refreshReadingModeWidgets(taskPaths?: Set<string>): void {
+		const containers = this.getReadingModeContainers();
+		if (containers.length === 0) return;
+
+		for (const container of containers) {
+			const widgets = Array.from(
+				container.querySelectorAll<HTMLElement>(READING_MODE_TASK_LINK_SELECTOR)
+			);
+
+			for (const widgetEl of widgets) {
+				const taskPath = widgetEl.dataset.taskPath;
+				if (!taskPath) continue;
+				if (taskPaths && !taskPaths.has(taskPath)) continue;
+
+				if (!this.plugin.settings.enableTaskLinkOverlay) {
+					this.replaceWidgetWithOriginalLink(widgetEl);
+					continue;
+				}
+
+				const taskInfo = this.getTaskInfo(taskPath);
+				if (!taskInfo) {
+					this.replaceWidgetWithOriginalLink(widgetEl);
+					continue;
+				}
+
+				const originalLinkPath = widgetEl.dataset.originalLinkPath || taskInfo.path;
+				const originalText = widgetEl.dataset.originalText || taskInfo.title;
+				const displayText = widgetEl.dataset.displayText || undefined;
+				const widget = new TaskLinkWidget(
+					taskInfo,
+					this.plugin,
+					originalText,
+					displayText
+				);
+				const refreshedElement = this.createReadingModeWidget(
+					widget,
+					taskInfo,
+					originalLinkPath,
+					originalText,
+					displayText
+				);
+				widgetEl.replaceWith(refreshedElement);
+			}
+		}
+	}
+
+	private getReadingModeContainers(): HTMLElement[] {
+		const leaves = this.plugin.app.workspace.getLeavesOfType?.("markdown") ?? [];
+		const containers: HTMLElement[] = [];
+
+		for (const leaf of leaves) {
+			const view = leaf.view as {
+				getMode?: () => string;
+				previewMode?: { containerEl?: HTMLElement };
+				containerEl?: HTMLElement;
+			};
+
+			if (typeof view.getMode === "function" && view.getMode() !== "preview") {
+				continue;
+			}
+
+			const containerEl = view.previewMode?.containerEl ?? view.containerEl;
+			if (containerEl) {
+				containers.push(containerEl);
+			}
+		}
+
+		return containers;
+	}
+
+	private replaceWidgetWithOriginalLink(widgetEl: HTMLElement): void {
+		const originalLinkPath = widgetEl.dataset.originalLinkPath;
+		if (!originalLinkPath) {
+			widgetEl.remove();
+			return;
+		}
+
+		const linkEl = activeDocument.createElement("a");
+		linkEl.className = "internal-link";
+		linkEl.setAttribute("href", originalLinkPath);
+		linkEl.setAttribute("data-href", originalLinkPath);
+		linkEl.textContent = widgetEl.dataset.originalText || originalLinkPath;
+		widgetEl.replaceWith(linkEl);
+	}
+
 	/**
 	 * Resolve a link path to an actual file path
 	 */
@@ -358,6 +534,7 @@ export class ReadingModeTaskLinkProcessor {
 			const widgetElement = this.createReadingModeWidget(
 				widget,
 				taskInfo,
+				originalLinkPath,
 				originalText,
 				displayText
 			);
@@ -376,6 +553,7 @@ export class ReadingModeTaskLinkProcessor {
 	private createReadingModeWidget(
 		widget: TaskLinkWidget,
 		taskInfo: TaskInfo,
+		originalLinkPath: string,
 		originalText: string,
 		displayText?: string
 	): HTMLElement {
@@ -391,6 +569,12 @@ export class ReadingModeTaskLinkProcessor {
 
 		// Add reading mode specific class
 		element.classList.add("task-inline-preview--reading-mode");
+		element.dataset.taskPath = taskInfo.path;
+		element.dataset.originalLinkPath = originalLinkPath;
+		element.dataset.originalText = originalText;
+		if (displayText) {
+			element.dataset.displayText = displayText;
+		}
 
 		return element;
 	}
