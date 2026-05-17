@@ -637,6 +637,13 @@ export const en: TranslationTree = {
 				typeDesc: "Type of notifications to show",
 				systemLabel: "System notifications",
 				inAppLabel: "In-app notifications",
+				soundEnabledName: "Notification sound",
+				soundEnabledDesc: "Play a sound when task reminders trigger",
+				soundVolumeName: "Sound volume",
+				soundVolumeDesc: "Volume for task reminder sounds (0-100)",
+				soundPreviewName: "Preview notification sound",
+				soundPreviewDesc: "Play the configured task reminder sound",
+				soundPreviewButton: "Preview",
 			},
 			overdue: {
 				hideCompletedName: "Hide completed tasks from overdue",

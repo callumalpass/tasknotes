@@ -17,6 +17,8 @@ export class NotificationService {
 	private processedReminders: Set<string> = new Set(); // Track processed reminders to avoid duplicates
 	private taskUpdateListener?: EventRef;
 	private fileUpdateListener?: EventRef;
+	private activeAudioContexts: Set<AudioContext> = new Set();
+	private audioCleanupTimeouts: Set<number> = new Set();
 	private lastBroadScanTime: number = Date.now();
 	private lastQuickCheckTime: number = Date.now();
 
@@ -66,6 +68,16 @@ export class NotificationService {
 		if (this.fileUpdateListener) {
 			this.plugin.emitter.offref(this.fileUpdateListener);
 		}
+		for (const timeout of this.audioCleanupTimeouts) {
+			window.clearTimeout(timeout);
+		}
+		this.audioCleanupTimeouts.clear();
+		for (const audioContext of this.activeAudioContexts) {
+			if (audioContext.state !== "closed") {
+				audioContext.close().catch(() => {});
+			}
+		}
+		this.activeAudioContexts.clear();
 		this.notificationQueue = [];
 		this.processedReminders.clear();
 	}
@@ -259,6 +271,8 @@ export class NotificationService {
 		const message =
 			item.reminder.description || this.generateDefaultMessage(task, item.reminder);
 
+		this.playNotificationSound();
+
 		if (this.plugin.settings.notificationType === "system") {
 			// System notification
 			if ("Notification" in window && Notification.permission === "granted") {
@@ -290,6 +304,64 @@ export class NotificationService {
 				message,
 				notificationType: this.plugin.settings.notificationType,
 			});
+		}
+	}
+
+	playNotificationSound(): void {
+		if (!this.plugin.settings.notificationSoundEnabled) {
+			return;
+		}
+
+		const AudioContextConstructor =
+			window.AudioContext ||
+			(window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+
+		if (!AudioContextConstructor) {
+			return;
+		}
+
+		try {
+			const audioContext = new AudioContextConstructor();
+			const gainNode = audioContext.createGain();
+			const volume = Math.max(
+				0,
+				Math.min(1, this.plugin.settings.notificationSoundVolume / 100)
+			);
+
+			gainNode.gain.value = volume * 0.3;
+			gainNode.connect(audioContext.destination);
+
+			const playTone = (frequency: number, durationSeconds: number) => {
+				const oscillator = audioContext.createOscillator();
+				oscillator.connect(gainNode);
+				oscillator.frequency.value = frequency;
+				oscillator.type = "sine";
+				oscillator.start();
+				oscillator.stop(audioContext.currentTime + durationSeconds);
+			};
+
+			playTone(880, 0.12);
+
+			this.activeAudioContexts.add(audioContext);
+
+			const secondToneTimeout = window.setTimeout(() => {
+				try {
+					playTone(1175, 0.12);
+				} catch (error) {
+					console.error("Failed to play notification sound tone:", error);
+				}
+			}, 140);
+			this.audioCleanupTimeouts.add(secondToneTimeout);
+
+			const cleanupTimeout = window.setTimeout(() => {
+				this.activeAudioContexts.delete(audioContext);
+				this.audioCleanupTimeouts.delete(secondToneTimeout);
+				this.audioCleanupTimeouts.delete(cleanupTimeout);
+				audioContext.close().catch(() => {});
+			}, 320);
+			this.audioCleanupTimeouts.add(cleanupTimeout);
+		} catch (error) {
+			console.error("Failed to play notification sound:", error);
 		}
 	}
 

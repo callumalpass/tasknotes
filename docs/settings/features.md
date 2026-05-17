@@ -25,7 +25,7 @@ Pomodoro settings control interval lengths, long-break cadence, optional auto-st
 
 ## Notifications
 
-Use this section to enable reminders globally and choose whether notices are shown in-app or through system notifications.
+Use this section to enable reminders globally, choose whether notices are shown in-app or through system notifications, and optionally play a built-in reminder sound with its own volume control.
 
 ## Performance & Behavior
 

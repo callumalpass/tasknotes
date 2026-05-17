@@ -362,6 +362,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Notification defaults
 	enableNotifications: true,
 	notificationType: "system",
+	notificationSoundEnabled: false,
+	notificationSoundVolume: 50,
 	// HTTP API defaults
 	enableAPI: false,
 	apiPort: 8080,

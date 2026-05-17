@@ -6,6 +6,7 @@ import {
 	configureToggleSetting,
 	configureDropdownSetting,
 	configureNumberSetting,
+	configureButtonSetting,
 } from "../components/settingHelpers";
 import { showStorageLocationConfirmationModal } from "../../modals/StorageLocationConfirmationModal";
 import { getAvailableLanguages } from "../../locales";
@@ -567,6 +568,64 @@ export function renderFeaturesTab(
 							},
 						})
 				);
+
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate(
+								"settings.features.notifications.soundEnabledName"
+							),
+							desc: translate(
+								"settings.features.notifications.soundEnabledDesc"
+							),
+							getValue: () => plugin.settings.notificationSoundEnabled,
+							setValue: async (value: boolean) => {
+								plugin.settings.notificationSoundEnabled = value;
+								save();
+								renderFeaturesTab(container, plugin, save);
+							},
+						})
+				);
+
+				if (plugin.settings.notificationSoundEnabled) {
+					group.addSetting(
+						(setting) =>
+							void configureNumberSetting(setting, {
+								name: translate(
+									"settings.features.notifications.soundVolumeName"
+								),
+								desc: translate(
+									"settings.features.notifications.soundVolumeDesc"
+								),
+								placeholder: "50",
+								min: 0,
+								max: 100,
+								getValue: () => plugin.settings.notificationSoundVolume,
+								setValue: async (value: number) => {
+									plugin.settings.notificationSoundVolume = value;
+									save();
+								},
+							})
+					);
+
+					group.addSetting(
+						(setting) =>
+							void configureButtonSetting(setting, {
+								name: translate(
+									"settings.features.notifications.soundPreviewName"
+								),
+								desc: translate(
+									"settings.features.notifications.soundPreviewDesc"
+								),
+								buttonText: translate(
+									"settings.features.notifications.soundPreviewButton"
+								),
+								onClick: () => {
+									plugin.notificationService?.playNotificationSound();
+								},
+							})
+					);
+				}
 			}
 		}
 	);

@@ -194,6 +194,8 @@ export interface TaskNotesSettings {
 	// Notification settings
 	enableNotifications: boolean;
 	notificationType: "in-app" | "system";
+	notificationSoundEnabled: boolean;
+	notificationSoundVolume: number; // 0-100
 	// HTTP API settings
 	enableAPI: boolean;
 	apiPort: number;

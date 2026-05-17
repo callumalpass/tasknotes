@@ -75,6 +75,7 @@ Example:
 - ([#1655](https://github.com/callumalpass/tasknotes/issues/1655)) Added live elapsed time to the optional active time tracking status bar item. Thanks to @connradolisboa for suggesting this.
 - ([#1622](https://github.com/callumalpass/tasknotes/issues/1622)) Allowed multiple comma-separated default reminder offsets for timed Google Calendar task exports. Thanks to @solidabstract for suggesting this.
 - ([#706](https://github.com/callumalpass/tasknotes/issues/706), [#820](https://github.com/callumalpass/tasknotes/issues/820), [#1040](https://github.com/callumalpass/tasknotes/issues/1040)) Added direct Pomodoro duration editing, hour-aware timer formatting, clearer one-minute controls, and an optional active Pomodoro status bar countdown. Thanks to @SublunarSage, @lj1446615403-cloud, @0-BSCode, and @thestrike72 for the suggestions and feedback.
+- ([#873](https://github.com/callumalpass/tasknotes/issues/873)) Added an optional built-in sound for task reminder notifications, with volume and preview controls in Settings. Thanks to @berzernberg for suggesting this.
 - Added a generated Pomodoro statistics Base with daily and monthly summary views for Pomodoro history stored in daily notes.
 
 ## Changed
