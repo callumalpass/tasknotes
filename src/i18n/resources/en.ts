@@ -1496,6 +1496,10 @@ export const en: TranslationTree = {
 					name: "Show expandable subtasks",
 					description: "Allow expanding/collapsing subtask sections in task cards",
 				},
+				expandSubtasksByDefault: {
+					name: "Expand subtasks by default",
+					description: "Show project subtasks expanded when task cards are rendered",
+				},
 				subtaskChevronPosition: {
 					name: "Subtask chevron position",
 					description: "Position of expand/collapse chevrons in task cards",

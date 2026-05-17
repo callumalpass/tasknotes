@@ -1422,6 +1422,10 @@ export const ja: TranslationTree = {
 					name: "展開可能サブタスクを表示",
 					description: "タスクカードでサブタスクセクションの展開/折りたたみを許可",
 				},
+				expandSubtasksByDefault: {
+					name: "サブタスクを既定で展開",
+					description: "タスクカードを表示するときにプロジェクトのサブタスクを展開して表示します",
+				},
 				subtaskChevronPosition: {
 					name: "サブタスクシェブロン位置",
 					description: "タスクカードの展開/折りたたみシェブロンの位置",

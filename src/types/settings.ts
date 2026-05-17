@@ -172,6 +172,8 @@ export interface TaskNotesSettings {
 	showTaskCardInNote: boolean;
 	// Task card expandable subtasks settings
 	showExpandableSubtasks: boolean;
+	// Expand project subtasks by default when task cards render
+	expandSubtasksByDefault: boolean;
 	// Subtask chevron position in task cards
 	subtaskChevronPosition: "left" | "right";
 	// Filter toolbar layout

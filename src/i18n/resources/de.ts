@@ -1422,6 +1422,10 @@ export const de: TranslationTree = {
 					name: "Ausklappbare Unteraufgaben anzeigen",
 					description: "Aus-/Einklappen von Unteraufgaben-Abschnitten in Aufgabenkarten erlauben",
 				},
+				expandSubtasksByDefault: {
+					name: "Unteraufgaben standardmäßig ausklappen",
+					description: "Projekt-Unteraufgaben beim Anzeigen von Aufgabenkarten automatisch ausgeklappt anzeigen",
+				},
 				subtaskChevronPosition: {
 					name: "Unteraufgaben-Chevron-Position",
 					description: "Position der Aus-/Einklappen-Chevrons in Aufgabenkarten",

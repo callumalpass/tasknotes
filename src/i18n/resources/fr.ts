@@ -1422,6 +1422,10 @@ export const fr: TranslationTree = {
 					name: "Afficher les sous-tâches extensibles",
 					description: "Permettre d'étendre/réduire les sections de sous-tâches dans les cartes de tâches",
 				},
+				expandSubtasksByDefault: {
+					name: "Développer les sous-tâches par défaut",
+					description: "Afficher les sous-tâches de projet développées lorsque les cartes de tâches sont rendues",
+				},
 				subtaskChevronPosition: {
 					name: "Position du chevron des sous-tâches",
 					description: "Position des chevrons d'extension/réduction dans les cartes de tâches",

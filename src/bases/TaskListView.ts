@@ -2583,7 +2583,10 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
-			const newExpanded = this.plugin.expandedProjectsService.toggle(task.path);
+			const newExpanded = this.plugin.expandedProjectsService.toggle(
+				task.path,
+				this.plugin.settings?.expandSubtasksByDefault === true
+			);
 			target.classList.toggle("task-card__chevron--expanded", newExpanded);
 			target.setAttribute(
 				"aria-label",

@@ -1376,6 +1376,10 @@ export const ko: TranslationTree = {
 					name: "확장 가능한 하위 작업 표시",
 					description: "작업 카드에서 하위 작업 섹션을 펼치고 접을 수 있도록 허용",
 				},
+				expandSubtasksByDefault: {
+					name: "하위 작업 기본 펼치기",
+					description: "작업 카드가 렌더링될 때 프로젝트 하위 작업을 펼쳐서 표시",
+				},
 				subtaskChevronPosition: {
 					name: "하위 작업 화살표 위치",
 					description: "작업 카드에서 펼치기/접기 화살표의 위치",

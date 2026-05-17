@@ -1425,6 +1425,10 @@ export const pt: TranslationTree = {
 					name: "Mostrar subtarefas expansíveis",
 					description: "Permitir expandir/recolher seções de subtarefas nos cartões de tarefa"
 				},
+				expandSubtasksByDefault: {
+					name: "Expandir subtarefas por padrão",
+					description: "Mostrar subtarefas de projeto expandidas quando os cartões de tarefa forem renderizados"
+				},
 				subtaskChevronPosition: {
 					name: "Posição do chevron de subtarefa",
 					description: "Posição dos chevrons de expandir/recolher nos cartões de tarefa",

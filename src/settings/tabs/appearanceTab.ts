@@ -751,6 +751,22 @@ export function renderAppearanceTab(
 
 			if (plugin.settings.showExpandableSubtasks) {
 				group.addSetting((setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.uiElements.expandSubtasksByDefault.name"
+						),
+						desc: translate(
+							"settings.appearance.uiElements.expandSubtasksByDefault.description"
+						),
+						getValue: () => plugin.settings.expandSubtasksByDefault,
+						setValue: async (value: boolean) => {
+							plugin.settings.expandSubtasksByDefault = value;
+							save();
+						},
+					})
+				);
+
+				group.addSetting((setting) =>
 					void configureDropdownSetting(setting, {
 						name: translate(
 							"settings.appearance.uiElements.subtaskChevronPosition.name"

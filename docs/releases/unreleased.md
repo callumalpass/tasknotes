@@ -80,6 +80,7 @@ Example:
 - ([#1790](https://github.com/callumalpass/tasknotes/issues/1790)) Extended the identifying-tag hiding setting to task modal tag suggestions, and kept hidden identifying tag children in place when editing other tags. Thanks to @loukandr for suggesting this.
 - ([#1804](https://github.com/callumalpass/tasknotes/issues/1804)) Made the inline-created task folder setting visible even when instant conversion is disabled, and clarified that leaving it empty uses the default tasks folder. Thanks to @CaFeZn for suggesting this.
 - ([#1822](https://github.com/callumalpass/tasknotes/issues/1822)) Matched the Task Edit Modal subtask list order to the existing relationship sort, so active and higher-priority subtasks appear ahead of completed ones. Thanks to @Glint-Eye for suggesting this.
+- ([#1339](https://github.com/callumalpass/tasknotes/issues/1339)) Added an Appearance setting to expand project subtasks by default in task cards, while still letting individual cards be collapsed. Thanks to @hasanyilmaz for suggesting this and @kazerniel and @benmartinek for the follow-up.
 
 ## Fixed
 

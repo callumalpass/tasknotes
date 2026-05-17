@@ -585,6 +585,19 @@ function createProjectClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): () 
 	};
 }
 
+function shouldExpandSubtasksByDefault(plugin: TaskNotesPlugin): boolean {
+	return plugin.settings?.expandSubtasksByDefault === true;
+}
+
+function isSubtasksExpanded(task: TaskInfo, plugin: TaskNotesPlugin): boolean {
+	return (
+		plugin.expandedProjectsService?.isExpanded(
+			task.path,
+			shouldExpandSubtasksByDefault(plugin)
+		) || false
+	);
+}
+
 /**
  * Creates a click handler for chevron (expand/collapse subtasks)
  */
@@ -601,7 +614,10 @@ function createChevronClickHandler(
 					new Notice("Service not available. Please try reloading the plugin.");
 					return;
 				}
-				const newExpanded = plugin.expandedProjectsService.toggle(task.path);
+				const newExpanded = plugin.expandedProjectsService.toggle(
+					task.path,
+					shouldExpandSubtasksByDefault(plugin)
+				);
 				chevron.classList.toggle("task-card__chevron--expanded", newExpanded);
 				const newTooltip = getChevronTooltip(plugin, newExpanded);
 				chevron.setAttribute("aria-label", newTooltip);
@@ -869,7 +885,7 @@ export function createTaskCard(
 
 			// Chevron for expandable subtasks
 			if (plugin.settings?.showExpandableSubtasks) {
-				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+				const isExpanded = isSubtasksExpanded(task, plugin);
 				createBadgeIndicator({
 					container: badgesContainer,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
@@ -1357,7 +1373,7 @@ export function updateTaskCard(
 			const existingChevron = element.querySelector(".task-card__chevron") as HTMLElement;
 
 			if (showChevron && !existingChevron) {
-				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+				const isExpanded = isSubtasksExpanded(task, plugin);
 				createBadgeIndicator({
 					container: badgesContainer || mainRow,
 					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
@@ -1375,6 +1391,30 @@ export function updateTaskCard(
 					toggleSubtasks(element, task, plugin, true).catch((error) => {
 						console.error("Error showing initial subtasks in update:", error);
 					});
+				}
+			} else if (showChevron && existingChevron) {
+				const isExpanded = isSubtasksExpanded(task, plugin);
+				existingChevron.classList.toggle("task-card__chevron--expanded", isExpanded);
+				const tooltip = getChevronTooltip(plugin, isExpanded);
+				existingChevron.setAttribute("aria-label", tooltip);
+				setTooltip(existingChevron, tooltip, { placement: "top" });
+
+				if (isExpanded) {
+					toggleSubtasks(element, task, plugin, true).catch((error) => {
+						console.error("Error refreshing default-expanded subtasks:", error);
+					});
+				} else {
+					const subtasksContainer =
+						element.querySelector<HTMLElement>(".task-card__subtasks");
+					if (subtasksContainer) {
+						const taskCardSubtasks = subtasksContainer as TaskCardElement;
+						const clickHandler = taskCardSubtasks._clickHandler;
+						if (clickHandler) {
+							subtasksContainer.removeEventListener("click", clickHandler);
+							delete taskCardSubtasks._clickHandler;
+						}
+						subtasksContainer.remove();
+					}
 				}
 			} else if (!showChevron && existingChevron) {
 				existingChevron.remove();

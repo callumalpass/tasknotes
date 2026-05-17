@@ -1421,6 +1421,10 @@ export const zh: TranslationTree = {
 					name: "显示可展开子任务",
 					description: "允许在任务卡片中展开/折叠子任务部分",
 				},
+				expandSubtasksByDefault: {
+					name: "默认展开子任务",
+					description: "渲染任务卡片时展开显示项目子任务",
+				},
 				subtaskChevronPosition: {
 					name: "子任务chevron位置",
 					description: "任务卡片中展开/折叠chevron的位置",
