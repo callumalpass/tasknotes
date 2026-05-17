@@ -1,5 +1,5 @@
 import { TFile, setIcon, Notice, setTooltip, parseLinktext, Menu } from "obsidian";
-import { PriorityConfig, TaskInfo } from "../types";
+import { PriorityConfig, TaskDependency, TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { getEffectiveTaskStatus, filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
@@ -18,6 +18,7 @@ import {
 	updateMetadataVisibility,
 } from "./taskCardProperties";
 import { renderTextWithLinks, type LinkServices } from "./renderers/linkRenderer";
+import { normalizeDependencyEntry, resolveDependencyEntry } from "../utils/dependencyUtils";
 export { showDeleteConfirmationModal } from "./taskCardDeletion";
 
 // Property labels are resolved in taskCardProperties via getTaskCardPropertyLabel.
@@ -167,6 +168,26 @@ function sortExpandedRelationshipTasks(
 		return aOrder - bOrder;
 	});
 	return [...ranked, ...plugin.projectSubtasksService.sortTasks([...unranked])];
+}
+
+function getBlockedByTaskPaths(task: TaskInfo, plugin: TaskNotesPlugin): string[] {
+	const entries = Array.isArray(task.blockedBy)
+		? (task.blockedBy as Array<TaskDependency | string>)
+		: [];
+	const paths = new Set<string>();
+
+	for (const entry of entries) {
+		const normalized = normalizeDependencyEntry(entry);
+		if (!normalized) continue;
+
+		const resolved = resolveDependencyEntry(plugin.app, task.path, normalized);
+		const path = resolved?.path || normalized.uid;
+		if (path) {
+			paths.add(path);
+		}
+	}
+
+	return Array.from(paths);
 }
 
 function tTaskCard(
@@ -656,6 +677,23 @@ function createBlockingToggleClickHandler(
 }
 
 /**
+ * Creates a click handler for blocked-by toggle
+ */
+function createBlockedByToggleClickHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	card: HTMLElement,
+	toggle: HTMLElement
+): () => void {
+	return () => {
+		void (async () => {
+			const expanded = toggle.classList.toggle("task-card__blocked-toggle--expanded");
+			await toggleBlockedByTasks(card, task, plugin, expanded);
+		})();
+	};
+}
+
+/**
  * Create a minimalist, unified task card element
  *
  * @param task - The task to render
@@ -931,6 +969,23 @@ export function createTaskCard(
 					const toggle = card.querySelector<HTMLElement>(".task-card__blocking-toggle");
 					if (toggle) {
 						void createBlockingToggleClickHandler(task, plugin, card, toggle)();
+					}
+				},
+			});
+		}
+
+		const blockedByPaths = getBlockedByTaskPaths(task, plugin);
+		if (blockedByPaths.length > 0) {
+			const toggleLabel = `${tTaskCard(plugin, "blockedBadge")} (${blockedByPaths.length})`;
+			createBadgeIndicator({
+				container: badgesContainer,
+				className: "task-card__blocked-toggle is-visible",
+				icon: "git-merge",
+				tooltip: toggleLabel,
+				onClick: () => {
+					const toggle = card.querySelector<HTMLElement>(".task-card__blocked-toggle");
+					if (toggle) {
+						void createBlockedByToggleClickHandler(task, plugin, card, toggle)();
 					}
 				},
 			});
@@ -1469,6 +1524,31 @@ export function updateTaskCard(
 		}
 	}
 
+	const blockedToggleEl = element.querySelector(".task-card__blocked-toggle") as HTMLElement;
+	const blockedByPaths = getBlockedByTaskPaths(task, plugin);
+	if (blockedToggleEl) {
+		if (blockedByPaths.length > 0) {
+			blockedToggleEl.classList.add("is-visible");
+			blockedToggleEl.classList.remove("is-hidden");
+			const toggleLabel = `${tTaskCard(plugin, "blockedBadge")} (${blockedByPaths.length})`;
+			blockedToggleEl.setAttribute("aria-label", toggleLabel);
+			setTooltip(blockedToggleEl, toggleLabel, { placement: "top" });
+			blockedToggleEl.dataset.count = String(blockedByPaths.length);
+			if (blockedToggleEl.classList.contains("task-card__blocked-toggle--expanded")) {
+				toggleBlockedByTasks(element, task, plugin, true).catch((error) => {
+					console.error("Error refreshing blocked-by tasks:", error);
+				});
+			}
+		} else {
+			blockedToggleEl.classList.remove("is-visible", "task-card__blocked-toggle--expanded");
+			blockedToggleEl.classList.add("is-hidden");
+			const existingBlockedByContainer = element.querySelector(".task-card__blocked-by");
+			if (existingBlockedByContainer) {
+				existingBlockedByContainer.remove();
+			}
+		}
+	}
+
 	// Update title
 	const titleText = element.querySelector(".task-card__title-text") as HTMLElement;
 	const titleContainer = element.querySelector(".task-card__title") as HTMLElement;
@@ -1791,6 +1871,74 @@ export async function toggleBlockingTasks(
 		});
 	} catch (error) {
 		console.error("Error loading blocking tasks:", error);
+		loadingEl.textContent = plugin.i18n.translate("ui.taskCard.blockingLoadError");
+	}
+}
+
+export async function toggleBlockedByTasks(
+	card: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	shouldExpand: boolean
+): Promise<void> {
+	let container = card.querySelector<HTMLElement>(".task-card__blocked-by");
+
+	if (!shouldExpand) {
+		if (container) {
+			card.classList.remove("task-card--nested-interactive-hover");
+			container.remove();
+		}
+		return;
+	}
+
+	if (!container) {
+		container = card.createDiv({ cls: "task-card__blocked-by" });
+		bindNestedCardHoverState(container, card);
+		container.addEventListener("click", (event) => event.stopPropagation());
+		container.addEventListener("dblclick", (event) => event.stopPropagation());
+		container.addEventListener("contextmenu", (event) => event.stopPropagation());
+	}
+
+	container.empty();
+	const loadingEl = container.createDiv({
+		cls: "task-card__blocked-by-loading",
+		text: plugin.i18n.translate("ui.taskCard.loadingDependencies"),
+	});
+
+	try {
+		const blockerPaths = getBlockedByTaskPaths(task, plugin);
+		const blockerInfos = await Promise.all(
+			blockerPaths.map((path) => plugin.cacheManager.getTaskInfo(path))
+		);
+		const blockers = filterExpandedRelationshipTasks(
+			card,
+			blockerInfos.filter((info): info is TaskInfo => Boolean(info))
+		);
+
+		loadingEl.remove();
+
+		if (blockers.length === 0) {
+			container.createDiv({
+				cls: "task-card__blocked-by-empty",
+				text: tTaskCard(plugin, "blockedBadge"),
+			});
+			return;
+		}
+
+		blockers.forEach((blockerTask) => {
+			const blockerCard = createTaskCard(
+				blockerTask,
+				plugin,
+				undefined,
+				getStoredTaskCardOptions(card)
+			);
+			blockerCard.classList.add("task-card--dependency");
+			if (container) {
+				container.appendChild(blockerCard);
+			}
+		});
+	} catch (error) {
+		console.error("Error loading blocked-by tasks:", error);
 		loadingEl.textContent = plugin.i18n.translate("ui.taskCard.blockingLoadError");
 	}
 }

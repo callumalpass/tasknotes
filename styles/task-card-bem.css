@@ -639,8 +639,9 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     height: 32px;
 }
 
-/* Blocking toggle */
-.tasknotes-plugin .task-card__blocking-toggle {
+/* Dependency toggles */
+.tasknotes-plugin .task-card__blocking-toggle,
+.tasknotes-plugin .task-card__blocked-toggle {
     width: 14px;
     height: 14px;
     color: var(--tn-text-muted);
@@ -653,23 +654,27 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     flex-shrink: 0;
 }
 
-.tasknotes-plugin .task-card__blocking-toggle:hover {
+.tasknotes-plugin .task-card__blocking-toggle:hover,
+.tasknotes-plugin .task-card__blocked-toggle:hover {
     opacity: 1;
     color: var(--interactive-accent);
     background: var(--background-modifier-hover);
 }
 
-.tasknotes-plugin .task-card__blocking-toggle svg {
+.tasknotes-plugin .task-card__blocking-toggle svg,
+.tasknotes-plugin .task-card__blocked-toggle svg {
     width: 14px;
     height: 14px;
 }
 
-.tasknotes-plugin .task-card__blocking-toggle--expanded {
+.tasknotes-plugin .task-card__blocking-toggle--expanded,
+.tasknotes-plugin .task-card__blocked-toggle--expanded {
     color: var(--interactive-accent);
     opacity: 1;
 }
 
-.tasknotes-plugin .task-card__blocking-toggle.is-hidden {
+.tasknotes-plugin .task-card__blocking-toggle.is-hidden,
+.tasknotes-plugin .task-card__blocked-toggle.is-hidden {
     display: none;
 }
 
@@ -727,7 +732,8 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     border-radius: var(--tn-radius-sm);
 }
 
-.tasknotes-plugin .task-card__blocking {
+.tasknotes-plugin .task-card__blocking,
+.tasknotes-plugin .task-card__blocked-by {
     margin-inline-start: var(--tn-nested-task-indent);
     margin-top: 6px;
     border-inline-start: 1px dashed color-mix(in srgb, var(--tn-color-error) 35%, transparent);
@@ -739,7 +745,8 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     z-index: 1;
 }
 
-.tasknotes-plugin .task-card__blocking::before {
+.tasknotes-plugin .task-card__blocking::before,
+.tasknotes-plugin .task-card__blocked-by::before {
     content: '';
     position: absolute;
     inset-inline-start: -1px;
@@ -755,7 +762,8 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     transition: opacity var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .task-card:hover .task-card__blocking::before {
+.tasknotes-plugin .task-card:hover .task-card__blocking::before,
+.tasknotes-plugin .task-card:hover .task-card__blocked-by::before {
     opacity: 1;
 }
 
@@ -767,7 +775,9 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
 }
 
 .tasknotes-plugin .task-card__blocking-loading,
-.tasknotes-plugin .task-card__blocking-empty {
+.tasknotes-plugin .task-card__blocking-empty,
+.tasknotes-plugin .task-card__blocked-by-loading,
+.tasknotes-plugin .task-card__blocked-by-empty {
     font-size: var(--tn-font-size-sm);
     color: var(--tn-text-muted);
     font-style: italic;
@@ -1083,7 +1093,8 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     .tasknotes-plugin .task-card__details-indicator,
     .tasknotes-plugin .task-card__project-indicator,
     .tasknotes-plugin .task-card__chevron,
-    .tasknotes-plugin .task-card__blocking-toggle {
+    .tasknotes-plugin .task-card__blocking-toggle,
+    .tasknotes-plugin .task-card__blocked-toggle {
         min-width: 36px;
         min-height: 36px;
         display: inline-flex;
@@ -1496,7 +1507,8 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
 
 /* Hide subtask-related elements in inline mode */
 .tasknotes-plugin .task-card--layout-inline .task-card__subtasks,
-.tasknotes-plugin .task-card--layout-inline .task-card__blocking {
+.tasknotes-plugin .task-card--layout-inline .task-card__blocking,
+.tasknotes-plugin .task-card--layout-inline .task-card__blocked-by {
     display: none;
 }
 
@@ -1552,7 +1564,8 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
 .tasknotes-plugin .task-card--layout-compact .task-card__details-indicator,
 .tasknotes-plugin .task-card--layout-compact .task-card__project-indicator,
 .tasknotes-plugin .task-card--layout-compact .task-card__chevron,
-.tasknotes-plugin .task-card--layout-compact .task-card__blocking-toggle {
+.tasknotes-plugin .task-card--layout-compact .task-card__blocking-toggle,
+.tasknotes-plugin .task-card--layout-compact .task-card__blocked-toggle {
     width: 12px;
     height: 12px;
 }
