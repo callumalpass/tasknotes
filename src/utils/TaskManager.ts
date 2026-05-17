@@ -1,6 +1,6 @@
  
 import { TFile, App, Events, EventRef, parseYaml } from "obsidian";
-import { TaskInfo, NoteInfo } from "../types";
+import { TaskInfo, NoteInfo, EVENT_TASK_UPDATED } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
 import {
 	normalizePriorityConfigValue,
@@ -187,12 +187,27 @@ export class TaskManager extends Events {
 	 * Handle file change - emit events for listeners
 	 */
 	private async handleFileChanged(file: TFile, cache: unknown): Promise<void> {
+		let updatedTask: TaskInfo | null = null;
+
 		if (cache && typeof cache === "object" && "frontmatter" in cache) {
 			this.pendingTaskInfoByPath.delete(file.path);
+			const frontmatter = (cache as { frontmatter?: unknown }).frontmatter;
+			if (frontmatter && this.isTaskFile(frontmatter)) {
+				updatedTask = this.extractTaskInfoFromNative(file.path, frontmatter);
+			}
 		}
 
-		// Just emit the event - no cache to update
-		this.trigger("file-updated", { path: file.path, file });
+		// Emit both the generic file event and the task-specific event so rendered task cards
+		// refresh when users edit task frontmatter directly in Obsidian.
+		this.trigger("file-updated", { path: file.path, file, updatedTask });
+		if (updatedTask) {
+			this.trigger(EVENT_TASK_UPDATED, {
+				path: file.path,
+				task: updatedTask,
+				taskInfo: updatedTask,
+				updatedTask,
+			});
+		}
 		this.trigger("data-changed");
 	}
 
