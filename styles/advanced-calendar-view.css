@@ -699,6 +699,10 @@
     color: var(--text-muted);
     margin: 0;
     padding: 0.3rem 0.6rem;
+    line-height: 1.2;
+    overflow-wrap: normal;
+    white-space: nowrap;
+    word-break: keep-all;
 }
 
 .advanced-calendar-view .fc-toolbar-chunk {
@@ -815,6 +819,17 @@
 }
 
 /* Multi-month (year view) styling - minimalist */
+.internal-embed .advanced-calendar-view .fc-multimonth,
+.markdown-embed .advanced-calendar-view .fc-multimonth {
+    width: 100%;
+    max-width: 100%;
+}
+
+.internal-embed .advanced-calendar-view .fc-multimonth-month,
+.markdown-embed .advanced-calendar-view .fc-multimonth-month {
+    min-width: 0;
+}
+
 .advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day {
     background: var(--background-primary);
     color: var(--text-normal);
