@@ -1229,6 +1229,8 @@ export abstract class TaskModal extends Modal {
 			currentDate: currentValue ? getDatePart(currentValue) : undefined,
 			currentTime: currentValue ? getTimePart(currentValue) : undefined,
 			title: title,
+			dateRole: type,
+			plugin: this.plugin,
 			onSelect: (value: string | null, time: string | null) => {
 				if (value) {
 					// Combine date and time if both are provided

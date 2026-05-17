@@ -1400,6 +1400,8 @@ export default class TaskNotesPlugin extends Plugin {
 			const modal = new DateTimePickerModal(this.app, {
 				currentDate: getDatePart(currentValue) || null,
 				currentTime: getTimePart(currentValue) || null,
+				dateRole: field,
+				plugin: this,
 				onSelect: (date, time) => {
 					void (async () => {
 						const value =

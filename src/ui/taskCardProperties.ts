@@ -121,6 +121,7 @@ function attachDateClickHandler(
 					}
 				})();
 			},
+			dateRole: dateType,
 			plugin,
 			app: plugin.app,
 		});

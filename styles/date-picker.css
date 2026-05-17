@@ -25,6 +25,25 @@
     border-radius: var(--radius-s);
 }
 
+.tasknotes-plugin .date-time-picker-modal__nlp-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 32px;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .date-time-picker-modal__nlp-input {
+    width: 100%;
+    min-width: 0;
+}
+
+.tasknotes-plugin .date-time-picker-modal__nlp-button {
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+}
+
 .tasknotes-plugin .date-time-picker-modal__calendar {
     margin-bottom: var(--size-4-3);
 }

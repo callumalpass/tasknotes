@@ -209,6 +209,7 @@ async function openDateContextMenu(
 				}
 			})();
 		},
+		dateRole: dateType,
 		plugin,
 		app,
 	});

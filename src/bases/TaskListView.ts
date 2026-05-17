@@ -2482,6 +2482,7 @@ export class TaskListView extends BasesViewBase {
 					}
 				})();
 			},
+			dateRole: dateType,
 			plugin: this.plugin,
 			app: this.app || this.plugin.app,
 		});

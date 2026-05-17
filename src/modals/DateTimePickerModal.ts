@@ -1,10 +1,27 @@
-import { App, Modal, setIcon } from "obsidian";
+import { App, Modal, Notice, setIcon } from "obsidian";
+import type TaskNotesPlugin from "../main";
+import {
+	NaturalLanguageParser,
+	type ParsedTaskData,
+} from "../services/NaturalLanguageParser";
 
 export interface DateTimePickerOptions {
 	currentDate?: string | null;
 	currentTime?: string | null;
 	title?: string;
+	dateRole?: "due" | "scheduled";
+	plugin?: TaskNotesPlugin;
+	naturalLanguageParser?: NaturalLanguageDateParser;
 	onSelect: (date: string | null, time: string | null) => void;
+}
+
+export interface NaturalLanguageDateParser {
+	parseInput(input: string): ParsedTaskData;
+}
+
+export interface ParsedDateTimeSelection {
+	date: string;
+	time: string | null;
 }
 
 export interface CalendarGridDay {
@@ -49,6 +66,41 @@ export function parseCalendarDate(value: string | null | undefined): Date | null
 export function getInitialDisplayMonth(currentDate: string | null | undefined): Date {
 	const parsed = parseCalendarDate(currentDate) ?? new Date();
 	return new Date(parsed.getFullYear(), parsed.getMonth(), 1);
+}
+
+export function getParsedDateTimeSelection(
+	parsed: Pick<ParsedTaskData, "dueDate" | "dueTime" | "scheduledDate" | "scheduledTime">,
+	dateRole?: "due" | "scheduled"
+): ParsedDateTimeSelection | null {
+	let primaryDate = parsed.scheduledDate || parsed.dueDate;
+	let primaryTime = parsed.scheduledDate ? parsed.scheduledTime : parsed.dueTime;
+
+	if (dateRole === "due") {
+		primaryDate = parsed.dueDate;
+		primaryTime = parsed.dueTime;
+	} else if (dateRole === "scheduled") {
+		primaryDate = parsed.scheduledDate;
+		primaryTime = parsed.scheduledTime;
+	}
+
+	if (primaryDate) {
+		return { date: primaryDate, time: primaryTime || null };
+	}
+
+	const fallbackDate = dateRole === "due" ? parsed.scheduledDate : parsed.dueDate;
+	const fallbackTime = dateRole === "due" ? parsed.scheduledTime : parsed.dueTime;
+
+	return fallbackDate ? { date: fallbackDate, time: fallbackTime || null } : null;
+}
+
+export function parseNaturalLanguageDateTime(
+	input: string,
+	parser: NaturalLanguageDateParser,
+	dateRole?: "due" | "scheduled"
+): ParsedDateTimeSelection | null {
+	const trimmed = input.trim();
+	if (!trimmed) return null;
+	return getParsedDateTimeSelection(parser.parseInput(trimmed), dateRole);
 }
 
 export function buildCalendarGrid(
@@ -104,6 +156,7 @@ export class DateTimePickerModal extends Modal {
 	private readonly options: DateTimePickerOptions;
 	private selectedDate: string | null;
 	private displayMonth: Date;
+	private naturalLanguageInput: HTMLInputElement | null = null;
 	private timeInput: HTMLInputElement | null = null;
 	private monthLabelEl: HTMLElement | null = null;
 	private calendarGridEl: HTMLElement | null = null;
@@ -129,6 +182,7 @@ export class DateTimePickerModal extends Modal {
 		}
 
 		this.renderQuickActions(contentEl);
+		this.renderNaturalLanguageInput(contentEl);
 		this.renderCalendar(contentEl);
 		this.renderTimeInput(contentEl);
 		this.renderActions(contentEl);
@@ -168,6 +222,36 @@ export class DateTimePickerModal extends Modal {
 				);
 			});
 		}
+	}
+
+	private renderNaturalLanguageInput(container: HTMLElement): void {
+		if (!this.canUseNaturalLanguageInput()) return;
+
+		const row = container.createDiv({ cls: "date-time-picker-modal__nlp-row" });
+		this.naturalLanguageInput = row.createEl("input", {
+			cls: "date-time-picker-modal__nlp-input",
+			attr: {
+				type: "text",
+				placeholder: "Tomorrow at 3pm",
+				"aria-label": "Natural language date",
+			},
+		});
+		this.naturalLanguageInput.addEventListener("keydown", (event) => {
+			if (event.key !== "Enter") return;
+			event.preventDefault();
+			this.applyNaturalLanguageInput();
+		});
+
+		const applyButton = row.createEl("button", {
+			cls: "clickable-icon date-time-picker-modal__nlp-button",
+			attr: {
+				type: "button",
+				"aria-label": "Apply natural language date",
+				title: "Apply natural language date",
+			},
+		});
+		setIcon(applyButton, "wand");
+		applyButton.addEventListener("click", () => this.applyNaturalLanguageInput());
 	}
 
 	private renderCalendar(container: HTMLElement): void {
@@ -307,5 +391,32 @@ export class DateTimePickerModal extends Modal {
 	private updateSelectButtonState(): void {
 		if (!this.selectButtonEl) return;
 		this.selectButtonEl.disabled = !this.selectedDate;
+	}
+
+	private canUseNaturalLanguageInput(): boolean {
+		if (this.options.naturalLanguageParser) return true;
+		return Boolean(this.options.plugin?.settings.enableNaturalLanguageInput);
+	}
+
+	private getNaturalLanguageParser(): NaturalLanguageDateParser | null {
+		if (this.options.naturalLanguageParser) return this.options.naturalLanguageParser;
+		if (!this.options.plugin?.settings.enableNaturalLanguageInput) return null;
+		return NaturalLanguageParser.fromPlugin(this.options.plugin);
+	}
+
+	private applyNaturalLanguageInput(): void {
+		const parser = this.getNaturalLanguageParser();
+		const input = this.naturalLanguageInput?.value ?? "";
+		const selection = parser
+			? parseNaturalLanguageDateTime(input, parser, this.options.dateRole)
+			: null;
+
+		if (!selection) {
+			new Notice("Could not find a date in that text.");
+			return;
+		}
+
+		this.options.onSelect(selection.date, selection.time);
+		this.close();
 	}
 }

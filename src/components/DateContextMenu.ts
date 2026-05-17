@@ -58,6 +58,7 @@ export interface DateContextMenuOptions {
 	includeDue?: boolean;
 	showRelativeDates?: boolean;
 	title?: string;
+	dateRole?: "due" | "scheduled";
 	plugin?: TaskNotesPlugin;
 	app?: App;
 }
@@ -323,6 +324,8 @@ export class DateContextMenu {
 			currentDate: this.options.currentValue || null,
 			currentTime: this.options.currentTime || null,
 			title: this.t("contextMenus.date.modal.title", "Set date & time"),
+			dateRole: this.options.dateRole,
+			plugin: this.options.plugin,
 			onSelect: (date, time) => {
 				this.options.onSelect(date, time);
 			},
