@@ -24,6 +24,10 @@ import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardAct
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 import { setElementDragImage } from "../utils/dragImage";
 import {
+	resolveNestedTaskCardDragSource,
+	type KanbanTaskDragSource,
+} from "./kanbanDragUtils";
+import {
 	appendCachedFormulaOutputs,
 	evaluateBasesFormula,
 	getBasesFormulaContext,
@@ -263,6 +267,7 @@ export class KanbanView extends BasesViewBase {
 	private currentInsertionIndex = -1; // Current gap/slot position
 	private dragSourceColumnEl: HTMLElement | null = null; // Source column element (height-locked during drag)
 	private dragTargetColumnEl: HTMLElement | null = null; // Target column element (max-height expanded during drag)
+	private activeDragSourceElement: HTMLElement | null = null;
 	private floatingDragPreviewEl: HTMLElement | null = null;
 	private floatingDragPreviewDocument: Document | null = null;
 	private floatingDragPreviewMoveHandler: ((event: DragEvent) => void) | null = null;
@@ -2351,6 +2356,8 @@ export class KanbanView extends BasesViewBase {
 		for (const path of this.draggedTaskPaths) {
 			this.currentTaskElements.get(path)?.classList.remove("kanban-view__card--dragging");
 		}
+		this.activeDragSourceElement?.classList.remove("kanban-view__card--dragging");
+		this.activeDragSourceElement = null;
 
 		this.draggedTaskPath = null;
 		this.draggedTaskPaths = [];
@@ -2396,6 +2403,21 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private setupCardDragHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
+		let dragSourceOverride: KanbanTaskDragSource | null = null;
+		const resetDragSourceOverride = () => {
+			dragSourceOverride = null;
+		};
+
+		cardWrapper.addEventListener(
+			"mousedown",
+			(e: MouseEvent) => {
+				dragSourceOverride = resolveNestedTaskCardDragSource(e.target, cardWrapper);
+			},
+			{ capture: true }
+		);
+		cardWrapper.addEventListener("mouseup", resetDragSourceOverride);
+		cardWrapper.addEventListener("click", resetDragSourceOverride, { capture: true });
+
 		// Handle click for selection mode
 		cardWrapper.addEventListener("click", (e: MouseEvent) => {
 			// Check if this is a selection click
@@ -2583,21 +2605,31 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
+			e.stopPropagation();
+			const dragSource = dragSourceOverride ?? {
+				taskPath: task.path,
+				sourceElement: cardWrapper,
+			};
+			const draggedTaskPath = dragSource.taskPath;
+			const dragImageSource = dragSource.sourceElement;
+
 			this.debugLog("DRAGSTART", {
-				task: task.path.split("/").pop(),
-				inCurrentTaskElements: this.currentTaskElements.has(task.path),
+				task: draggedTaskPath.split("/").pop(),
+				parentTask: task.path.split("/").pop(),
+				inCurrentTaskElements: this.currentTaskElements.has(draggedTaskPath),
+				isNestedSource: draggedTaskPath !== task.path,
 			});
-			setElementDragImage(e, cardWrapper, "kanban-view__drag-image");
+			setElementDragImage(e, dragImageSource, "kanban-view__drag-image");
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
 			if (
 				selectionService &&
-				selectionService.isSelected(task.path) &&
+				selectionService.isSelected(draggedTaskPath) &&
 				selectionService.getSelectionCount() > 1
 			) {
 				// Batch drag - drag all selected tasks
 				this.draggedTaskPaths = selectionService.getSelectedPaths();
-				this.draggedTaskPath = task.path;
+				this.draggedTaskPath = draggedTaskPath;
 
 				// Build source column and swimlane maps for all selected tasks
 				this.draggedSourceColumns.clear();
@@ -2626,19 +2658,21 @@ export class KanbanView extends BasesViewBase {
 					e.dataTransfer.setData("text/plain", this.draggedTaskPaths.join(","));
 					e.dataTransfer.setData("text/x-batch-drag", "true");
 				}
+				dragImageSource.classList.add("kanban-view__card--dragging");
 			} else {
 				// Single card drag
-				this.draggedTaskPath = task.path;
-				this.draggedTaskPaths = [task.path];
-				cardWrapper.classList.add("kanban-view__card--dragging");
+				this.draggedTaskPath = draggedTaskPath;
+				this.draggedTaskPaths = [draggedTaskPath];
+				dragImageSource.classList.add("kanban-view__card--dragging");
 
 				if (e.dataTransfer) {
 					e.dataTransfer.effectAllowed = "move";
-					e.dataTransfer.setData("text/plain", task.path);
+					e.dataTransfer.setData("text/plain", draggedTaskPath);
 				}
 			}
 
-			this.showFloatingDragPreview(cardWrapper, e);
+			this.activeDragSourceElement = dragImageSource;
+			this.showFloatingDragPreview(dragImageSource, e);
 
 			// Capture the source column and swimlane for list property handling (single drag fallback)
 			const column = cardWrapper.closest("[data-group]") as HTMLElement;
@@ -2652,7 +2686,7 @@ export class KanbanView extends BasesViewBase {
 			this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
 
 			// Measure card height before collapse (for gap/slot sizing)
-			const draggedHeight = cardWrapper.getBoundingClientRect().height;
+			const draggedHeight = dragImageSource.getBoundingClientRect().height;
 			const container = cardWrapper.parentElement;
 
 			// Lock the source column's height so it doesn't shrink when the
@@ -2739,7 +2773,8 @@ export class KanbanView extends BasesViewBase {
 			});
 		});
 
-		cardWrapper.addEventListener("dragend", () => {
+		cardWrapper.addEventListener("dragend", (e: DragEvent) => {
+			e.stopPropagation();
 			this.debugLog("DRAGEND-FIRED", {
 				draggedTask: task.path.split("/").pop(),
 				draggedTaskPath: this.draggedTaskPath?.split("/").pop() || "(already null)",
@@ -2767,6 +2802,9 @@ export class KanbanView extends BasesViewBase {
 			}
 			clearStaticStyleClasses(cardWrapper);
 			cardWrapper.classList.remove("kanban-view__card--dragging");
+			this.activeDragSourceElement?.classList.remove("kanban-view__card--dragging");
+			this.activeDragSourceElement = null;
+			resetDragSourceOverride();
 
 			// Clean up gap/slot state and unlock source column height
 			this.cleanupDragShift();
@@ -3147,15 +3185,27 @@ export class KanbanView extends BasesViewBase {
 	private setupCardTouchHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
 		if (!shouldEnableKanbanTouchDrag(Platform.isMobile)) return;
 
+		let touchDragSourceOverride: KanbanTaskDragSource | null = null;
+		const resetTouchDragSourceOverride = () => {
+			touchDragSourceOverride = null;
+		};
+
 		cardWrapper.addEventListener(
 			"touchstart",
 			(e: TouchEvent) => {
 				if (e.touches.length !== 1) return;
+				touchDragSourceOverride = resolveNestedTaskCardDragSource(e.target, cardWrapper);
 				const touch = e.touches[0];
 				this.touchStartX = touch.clientX;
 				this.touchStartY = touch.clientY;
 				this.longPressTimer = window.setTimeout(() => {
-					this.initiateTouchDrag(cardWrapper, task, touch.clientX, touch.clientY);
+					this.initiateTouchDrag(
+						cardWrapper,
+						task,
+						touch.clientX,
+						touch.clientY,
+						touchDragSourceOverride
+					);
 				}, this.LONG_PRESS_DELAY);
 			},
 			{ passive: true }
@@ -3236,10 +3286,12 @@ export class KanbanView extends BasesViewBase {
 				}
 
 				this.clearTouchDragState();
+				resetTouchDragSourceOverride();
 			})();
 		});
 
 		cardWrapper.addEventListener("touchcancel", () => {
+			resetTouchDragSourceOverride();
 			this.clearTouchDragState();
 		});
 	}
@@ -3248,7 +3300,8 @@ export class KanbanView extends BasesViewBase {
 		cardWrapper: HTMLElement,
 		task: TaskInfo,
 		x: number,
-		y: number
+		y: number,
+		dragSourceOverride: KanbanTaskDragSource | null = null
 	): void {
 		this.touchDragActive = true;
 		this.touchDragType = "task";
@@ -3259,10 +3312,19 @@ export class KanbanView extends BasesViewBase {
 			true
 		);
 
+		const dragSource = dragSourceOverride ?? {
+			taskPath: task.path,
+			sourceElement: cardWrapper,
+		};
+		const draggedTaskPath = dragSource.taskPath;
+		const dragImageSource = dragSource.sourceElement;
 		const selectionService = this.plugin.taskSelectionService;
-		if (selectionService?.isSelected(task.path) && selectionService.getSelectionCount() > 1) {
+		if (
+			selectionService?.isSelected(draggedTaskPath) &&
+			selectionService.getSelectionCount() > 1
+		) {
 			this.draggedTaskPaths = selectionService.getSelectedPaths();
-			this.draggedTaskPath = task.path;
+			this.draggedTaskPath = draggedTaskPath;
 			this.draggedSourceColumns.clear();
 			this.draggedSourceSwimlanes.clear();
 			for (const path of this.draggedTaskPaths) {
@@ -3278,11 +3340,13 @@ export class KanbanView extends BasesViewBase {
 					if (sourceSwimlane) this.draggedSourceSwimlanes.set(path, sourceSwimlane);
 				}
 			}
+			dragImageSource.classList.add("kanban-view__card--dragging");
 		} else {
-			this.draggedTaskPath = task.path;
-			this.draggedTaskPaths = [task.path];
-			cardWrapper.classList.add("kanban-view__card--dragging");
+			this.draggedTaskPath = draggedTaskPath;
+			this.draggedTaskPaths = [draggedTaskPath];
+			dragImageSource.classList.add("kanban-view__card--dragging");
 		}
+		this.activeDragSourceElement = dragImageSource;
 
 		const column = cardWrapper.closest("[data-group]") as HTMLElement;
 		const swimlaneColumn = cardWrapper.closest("[data-column]") as HTMLElement;
@@ -3290,7 +3354,7 @@ export class KanbanView extends BasesViewBase {
 		this.draggedFromColumn = column?.dataset.group || swimlaneColumn?.dataset.column || null;
 		this.draggedFromSwimlane = swimlaneRow?.dataset.swimlane || null;
 
-		this.touchDragGhost = this.createTouchDragGhost(cardWrapper, x, y);
+		this.touchDragGhost = this.createTouchDragGhost(dragImageSource, x, y);
 		navigator.vibrate?.(50);
 	}
 
