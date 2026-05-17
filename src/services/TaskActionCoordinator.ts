@@ -34,12 +34,14 @@ export class TaskActionCoordinator {
 		const { openTaskSelectorWithCreate } = await import(
 			"../modals/TaskSelectorWithCreateModal"
 		);
-		const result = await openTaskSelectorWithCreate(this.plugin);
+		const targetDate = new Date();
+		const result = await openTaskSelectorWithCreate(this.plugin, { targetDate });
 
 		if (result.type === "selected" || result.type === "created") {
 			let taskToOpen = result.task;
 			try {
-				taskToOpen = await this.startTimeTracking(result.task);
+				const trackingDate = result.task.recurrence ? targetDate : undefined;
+				taskToOpen = await this.startTimeTracking(result.task, undefined, trackingDate);
 			} catch {
 				// startTimeTracking shows the user-facing notice; keep create/open behavior intact.
 			} finally {
@@ -114,35 +116,49 @@ export class TaskActionCoordinator {
 
 	async openTaskSelectorForTimeTracking(): Promise<void> {
 		try {
+			const targetDate = new Date();
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 			const availableTasks = allTasks
 				.filter((task) => !task.archived)
-				.filter((task) => !getActiveTimeEntry(task.timeEntries || []));
+				.filter((task) => {
+					const instanceDate = task.recurrence
+						? formatDateForStorage(targetDate)
+						: undefined;
+					return !getActiveTimeEntry(task.timeEntries || [], instanceDate);
+				});
 
 			if (availableTasks.length === 0) {
 				new Notice(this.plugin.i18n.translate("modals.timeTracking.noTasksAvailable"));
 				return;
 			}
 
-			openTaskSelector(this.plugin, availableTasks, (selectedTask) => {
-				void (async () => {
-					if (!selectedTask) {
-						return;
-					}
+			openTaskSelector(
+				this.plugin,
+				availableTasks,
+				(selectedTask) => {
+					void (async () => {
+						if (!selectedTask) {
+							return;
+						}
 
-					try {
-						await this.startTimeTracking(selectedTask);
-						new Notice(
-							this.plugin.i18n.translate("modals.timeTracking.started", {
-								taskTitle: selectedTask.title,
-							})
-						);
-					} catch (error) {
-						console.error("Error starting time tracking:", error);
-						new Notice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));
-					}
-				})();
-			});
+						try {
+							const trackingDate = selectedTask.recurrence ? targetDate : undefined;
+							await this.startTimeTracking(selectedTask, undefined, trackingDate);
+							new Notice(
+								this.plugin.i18n.translate("modals.timeTracking.started", {
+									taskTitle: selectedTask.title,
+								})
+							);
+						} catch (error) {
+							console.error("Error starting time tracking:", error);
+							new Notice(
+								this.plugin.i18n.translate("modals.timeTracking.startFailed")
+							);
+						}
+					})();
+				},
+				{ targetDate }
+			);
 		} catch (error) {
 			console.error("Error opening task selector for time tracking:", error);
 			new Notice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));

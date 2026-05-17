@@ -44,6 +44,7 @@ import {
 	getSessionCompletionTimeMs,
 	getSessionRemainingSeconds,
 } from "../utils/pomodoroTime";
+import { isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 
@@ -717,7 +718,13 @@ export class PomodoroService {
 					this.clearCachedTaskPath(path);
 					continue;
 				}
-				if (task.archived || this.plugin.statusManager.isCompletedStatus(task.status)) {
+				const completedForToday = isTaskInstanceCompleted(
+					task,
+					new Date(),
+					this.plugin.statusManager,
+					this.plugin.settings.defaultTaskStatus
+				);
+				if (task.archived || completedForToday) {
 					this.clearCachedTaskPath(path);
 					continue;
 				}

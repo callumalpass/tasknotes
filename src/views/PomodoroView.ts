@@ -14,6 +14,7 @@ import {
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { createTaskCard } from "../ui/TaskCard";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
+import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 import {
 	formatPomodoroTime,
 	getActiveElapsedSeconds,
@@ -779,6 +780,7 @@ export class PomodoroView extends ItemView {
 		try {
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 			const unarchivedTasks = allTasks.filter((task) => !task.archived);
+			const targetDate = new Date();
 
 			if (unarchivedTasks.length === 0) {
 				new Notice(this.t("views.pomodoro.notices.noTasks"));
@@ -786,9 +788,14 @@ export class PomodoroView extends ItemView {
 			}
 
 			// Open task selector modal
-			openTaskSelector(this.plugin, unarchivedTasks, (selectedTask) => {
-				void this.selectTask(selectedTask);
-			});
+			openTaskSelector(
+				this.plugin,
+				unarchivedTasks,
+				(selectedTask) => {
+					void this.selectTask(selectedTask);
+				},
+				{ targetDate }
+			);
 		} catch (error) {
 			console.error("Error opening task selector:", error);
 			new Notice(this.t("views.pomodoro.notices.loadFailed"));
@@ -853,7 +860,16 @@ export class PomodoroView extends ItemView {
 						this.plugin
 					)
 				: undefined;
-			const taskCard = createTaskCard(task, this.plugin, visibleProperties);
+			const targetDate = new Date();
+			const displayTask = getTaskWithInstanceStatus(
+				task,
+				targetDate,
+				this.plugin.statusManager,
+				this.plugin.settings.defaultTaskStatus
+			);
+			const taskCard = createTaskCard(displayTask, this.plugin, visibleProperties, {
+				targetDate,
+			});
 
 			// Add the task card to the container
 			this.taskCardContainer.appendChild(taskCard);
@@ -877,7 +893,12 @@ export class PomodoroView extends ItemView {
 
 				if (
 					task &&
-					!this.plugin.statusManager.isCompletedStatus(task.status) &&
+					!isTaskInstanceCompleted(
+						task,
+						new Date(),
+						this.plugin.statusManager,
+						this.plugin.settings.defaultTaskStatus
+					) &&
 					!task.archived
 				) {
 					await this.selectTask(task);

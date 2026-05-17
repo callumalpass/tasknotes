@@ -6,6 +6,7 @@ import { TranslationKey } from "../i18n";
 import { NaturalLanguageParser, ParsedTaskData } from "../services/NaturalLanguageParser";
 import { createTaskCard } from "../ui/TaskCard";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
+import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 import { NLPSuggest } from "./taskCreationSuggest";
 
 export type TaskSelectorWithCreateResult =
@@ -20,6 +21,8 @@ export interface TaskSelectorWithCreateOptions {
 	placeholder?: string;
 	/** Optional title override */
 	title?: string;
+	/** Date used for recurring task instance status in the selector */
+	targetDate?: Date;
 }
 
 function searchableValueIncludes(value: unknown, lowerQuery: string): boolean {
@@ -77,6 +80,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private currentQuery = "";
 	private resultHandled = false;
 	private isCreatingTask = false;
+	private targetDate: Date;
 
 	constructor(
 		app: App,
@@ -88,6 +92,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		this.plugin = plugin;
 		this.tasks = tasks;
 		this.options = options;
+		this.targetDate = options.targetDate || new Date();
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
 		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
 
@@ -475,8 +480,18 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			})
 			.sort((a, b) => {
 				// Sort by completion status first (incomplete tasks come first)
-				const aCompleted = this.plugin.statusManager.isCompletedStatus(a.status);
-				const bCompleted = this.plugin.statusManager.isCompletedStatus(b.status);
+				const aCompleted = isTaskInstanceCompleted(
+					a,
+					this.targetDate,
+					this.plugin.statusManager,
+					this.plugin.settings.defaultTaskStatus
+				);
+				const bCompleted = isTaskInstanceCompleted(
+					b,
+					this.targetDate,
+					this.plugin.statusManager,
+					this.plugin.settings.defaultTaskStatus
+				);
 				if (aCompleted !== bCompleted) {
 					return aCompleted ? 1 : -1;
 				}
@@ -502,7 +517,16 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 	renderSuggestion(task: TaskInfo, el: HTMLElement): void {
 		// Use TaskCard component with default layout for full styling
-		const taskCard = createTaskCard(task, this.plugin, undefined, { layout: "default" });
+		const displayTask = getTaskWithInstanceStatus(
+			task,
+			this.targetDate,
+			this.plugin.statusManager,
+			this.plugin.settings.defaultTaskStatus
+		);
+		const taskCard = createTaskCard(displayTask, this.plugin, undefined, {
+			layout: "default",
+			targetDate: this.targetDate,
+		});
 
 		// Add modal-specific class for any additional styling
 		taskCard.classList.add("task-selector-modal__suggestion");
@@ -578,7 +602,7 @@ export function openTaskSelector(
 	plugin: TaskNotesPlugin,
 	tasks: TaskInfo[],
 	onChooseTask: (task: TaskInfo | null) => void,
-	options?: { placeholder?: string; title?: string }
+	options?: { placeholder?: string; title?: string; targetDate?: Date }
 ): void {
 	const modal = new TaskSelectorWithCreateModal(plugin.app, plugin, tasks, {
 		placeholder: options?.placeholder,
