@@ -83,6 +83,7 @@ Example:
 
 ## Fixed
 
+- ([#1347](https://github.com/callumalpass/tasknotes/issues/1347)) Lowered TaskNotes task-card tag CSS specificity so hierarchical tag colors from Obsidian themes and tag-color plugins can apply correctly. Thanks to @3Fish for reporting this.
 - ([#1374](https://github.com/callumalpass/tasknotes/issues/1374)) Recognized status and priority labels entered through Obsidian Properties or Bases as their configured TaskNotes values. Thanks to @phortx for reporting this.
 - ([#1373](https://github.com/callumalpass/tasknotes/issues/1373)) Parsed numeric natural-language dates with the configured calendar locale, so `en-GB` treats `11/06/2026` as 11 June instead of November 6, and `YYYY/MM/DD` works consistently. Thanks to @AleMunin for reporting this and @imsuck for the follow-up.
 - ([#1370](https://github.com/callumalpass/tasknotes/issues/1370)) Prevented recurring task series from being queued for auto-archive when their parent status uses auto-archive, so ongoing recurring tasks are not moved away after completing an occurrence. Thanks to @Jomo94 for reporting this and @martin-forge for the follow-up discussion.
