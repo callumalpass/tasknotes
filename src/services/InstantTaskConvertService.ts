@@ -437,15 +437,20 @@ export class InstantTaskConvertService {
 		// Sanitize and validate input data
 		// Check if title will be truncated and preserve overflow text (issue #1310)
 		const originalTitle = parsedData.title?.trim() || "";
-		const title = this.sanitizeTitle(originalTitle) || "Untitled Task";
+		const titleLinkPreservation = this.extractTitleLinks(originalTitle);
+		const titleSource = titleLinkPreservation.cleanTitle || originalTitle;
+		const title = this.sanitizeTitle(titleSource) || "Untitled Task";
 
 		// If title was truncated, preserve the overflow in details
-		let enhancedDetails = details;
-		if (originalTitle.length > 200) {
-			const overflowText = this.extractOverflowText(originalTitle, 200);
+		let enhancedDetails = this.appendPreservedTitleLinks(
+			details,
+			titleLinkPreservation.links
+		);
+		if (titleSource.length > 200) {
+			const overflowText = this.extractOverflowText(titleSource, 200);
 			if (overflowText) {
 				// Prepend overflow text to existing details
-				enhancedDetails = overflowText + (details ? "\n\n" + details : "");
+				enhancedDetails = overflowText + (enhancedDetails ? "\n\n" + enhancedDetails : "");
 			}
 		}
 
@@ -694,6 +699,43 @@ export class InstantTaskConvertService {
 		const { file } = await this.plugin.taskService.createTask(taskData);
 
 		return file;
+	}
+
+	private extractTitleLinks(title: string): { cleanTitle: string; links: string[] } {
+		if (!title) {
+			return { cleanTitle: "", links: [] };
+		}
+
+		const links: string[] = [];
+		let cleanTitle = title.replace(/\[([^\]]+)\]\((<[^>]+>|[^)]+)\)/g, (match, label) => {
+			links.push(match);
+			return String(label).trim();
+		});
+
+		cleanTitle = cleanTitle.replace(/\[\[([^[\]]+)\]\]/g, (match, inner) => {
+			links.push(match);
+			const linkText = String(inner);
+			const display = linkText.includes("|") ? linkText.split("|").pop() || linkText : linkText;
+			return display.split("/").pop()?.replace(/\.md$/i, "") || display;
+		});
+
+		const uniqueLinks = [...new Set(links)];
+		return {
+			cleanTitle: cleanTitle.replace(/\s+/g, " ").trim(),
+			links: uniqueLinks,
+		};
+	}
+
+	private appendPreservedTitleLinks(details: string, links: string[]): string {
+		const linksToAppend = links.filter((link) => !details.includes(link));
+		if (linksToAppend.length === 0) {
+			return details;
+		}
+
+		const linkBlock = ["Source links:", ...linksToAppend.map((link) => `- ${link}`)].join(
+			"\n"
+		);
+		return details.trimEnd() ? `${details.trimEnd()}\n\n${linkBlock}` : linkBlock;
 	}
 
 	/**

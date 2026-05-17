@@ -33,6 +33,7 @@ interface HoverLinkEvent {
 // Enhanced regex to handle more link types including autolinks, bare URLs, and reference-style links
 const LINK_REGEX =
 	/\[\[([^[\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)|<(https?:\/\/[^\s>]+)>|(https?:\/\/[^\s<>()]+[^\s<>().,;:!?])|\[([^\]]+)\]\s*\[([^\]]*)\]/g;
+const EXTERNAL_URI_SCHEME_REGEX = /^[a-z][a-z0-9+.-]*:/i;
 
 function appendExternalLink(container: HTMLElement, href: string, displayText: string): void {
 	const a = container.createEl("a", {
@@ -40,6 +41,10 @@ function appendExternalLink(container: HTMLElement, href: string, displayText: s
 		attr: { href, target: "_blank", rel: "noopener" },
 	});
 	a.classList.add("external-link");
+}
+
+function isExternalHref(href: string): boolean {
+	return EXTERNAL_URI_SCHEME_REGEX.test(href);
 }
 
 /** Enhanced internal link creation with better error handling and accessibility */
@@ -192,7 +197,7 @@ export function renderTextWithLinks(
 		} else if (mdText && mdHref) {
 			const href = String(mdHref).trim();
 			const disp = String(mdText).trim();
-			if (/^[a-z]+:\/\//i.test(href)) {
+			if (isExternalHref(href)) {
 				appendExternalLink(container, href, disp);
 			} else {
 				appendInternalLink(container, href, disp, deps);
