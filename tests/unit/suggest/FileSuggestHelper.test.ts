@@ -331,9 +331,7 @@ describe('FileSuggestHelper', () => {
                 if (file.path.startsWith('projects/')) {
                   return {
                     frontmatter: {
-                      // Obsidian might store tags in a different format internally
-                      // The raw 'tags' key might not be directly accessible
-                      // but parseFrontMatterTags would still return them
+                      tag: 'project',
                     },
                     // Native tags array is also empty
                     tags: [],
@@ -352,9 +350,6 @@ describe('FileSuggestHelper', () => {
           requiredTags: ['project']
         };
 
-        // Note: This test documents the current behavior
-        // If frontmatter.tags is undefined and cache.tags is empty,
-        // no files will match - this might be the bug!
         const results = await FileSuggestHelper.suggest(
           obsidianStyleMockPlugin,
           '',
@@ -362,9 +357,7 @@ describe('FileSuggestHelper', () => {
           filterConfig
         );
 
-        // Currently this returns 0 because no tags are found
-        // This might be the root cause of issue #1427
-        expect(results.length).toBe(0);
+        expect(results.length).toBe(2);
       });
 
       it('should handle Obsidian tag format with # prefix in frontmatter', async () => {
@@ -445,9 +438,7 @@ describe('FileSuggestHelper', () => {
           filterConfig
         );
 
-        // This will fail because the code only checks "tags" key
-        // This might be a potential issue if users use "tag" key
-        expect(results.length).toBe(0); // Documents current behavior
+        expect(results.length).toBe(2);
       });
 
       it('should handle empty string tags array', async () => {
@@ -821,4 +812,3 @@ describe('FileSuggestHelper', () => {
     });
   });
 });
-

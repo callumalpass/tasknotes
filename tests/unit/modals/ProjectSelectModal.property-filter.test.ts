@@ -58,4 +58,25 @@ describe('ProjectSelectModal property filtering', () => {
     expect(paths).toContain('Projects/Alpha.md');
     expect(paths).not.toContain('Notes/Idea.md');
   });
+
+  it('filters project suggestions by required frontmatter tags', () => {
+    mockPlugin.settings.projectAutosuggest.propertyKey = '';
+    mockPlugin.settings.projectAutosuggest.propertyValue = '';
+    mockPlugin.settings.projectAutosuggest.requiredTags = ['project'];
+
+    mockApp.metadataCache.setCache('Projects/Alpha.md', {
+      frontmatter: { tag: 'project' },
+      tags: [],
+    });
+    mockApp.metadataCache.setCache('Notes/Idea.md', {
+      frontmatter: { tags: ['note'] },
+      tags: [],
+    });
+
+    const modal = new ProjectSelectModal(mockApp, mockPlugin, jest.fn());
+    const paths = modal.getItems().map(item => (item as any).path ?? '');
+
+    expect(paths).toContain('Projects/Alpha.md');
+    expect(paths).not.toContain('Notes/Idea.md');
+  });
 });

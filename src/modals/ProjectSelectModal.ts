@@ -11,6 +11,7 @@ import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataR
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
 import { FilterUtils } from "../utils/FilterUtils";
+import { collectCacheTags } from "../utils/tagExtraction";
 
 /**
  * Modal for selecting project notes using fuzzy search
@@ -59,18 +60,8 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 
 			// Apply tag filtering - use FilterUtils for consistent hierarchical tag matching
 			if (requiredTags.length > 0) {
-				// Get tags from both native tag detection and frontmatter
-				const nativeTags = cache?.tags?.map((t) => t.tag.replace("#", "")) || [];
-				const frontmatterTags = cache?.frontmatter?.tags || [];
-				const allTags = [
-					...nativeTags,
-					...(Array.isArray(frontmatterTags)
-						? frontmatterTags
-						: [frontmatterTags].filter(Boolean)),
-				];
-
 				// Use FilterUtils.matchesTagConditions for hierarchical matching and exclusion support
-				if (!FilterUtils.matchesTagConditions(allTags, requiredTags)) {
+				if (!FilterUtils.matchesTagConditions(collectCacheTags(cache), requiredTags)) {
 					return false; // Skip this file
 				}
 			}

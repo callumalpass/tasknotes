@@ -1028,6 +1028,21 @@ export function parseFrontMatterAliases(frontmatter: any): string[] | null {
   return null;
 }
 
+// Mock parseFrontMatterTags function
+export function parseFrontMatterTags(frontmatter: any): string[] | null {
+  if (!frontmatter) return null;
+  const tags = frontmatter.tags || frontmatter.tag;
+  if (!tags) return null;
+  if (Array.isArray(tags)) return tags.flatMap((tag) => parseFrontMatterTags({ tags: tag }) ?? []);
+  if (typeof tags === 'string') {
+    return tags
+      .split(/[,\s]+/)
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
+  return null;
+}
+
 // Mock parseLinktext function based on official Obsidian API
 export function parseLinktext(linktext: string): { path: string; subpath: string } {
   // Handle subpath syntax: [[path#subpath]]
@@ -1212,6 +1227,7 @@ export default {
   setIcon,
   setTooltip,
   parseFrontMatterAliases,
+  parseFrontMatterTags,
   parseLinktext,
   MockObsidian,
   debounce,

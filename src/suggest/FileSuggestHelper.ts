@@ -5,6 +5,7 @@ import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsP
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
 import { FilterUtils } from "../utils/FilterUtils";
 import { isPathInExcludedFolder, parseExcludedFolders } from "../utils/pathExclusions";
+import { collectCacheTags } from "../utils/tagExtraction";
 
 export interface FileSuggestionItem {
 	insertText: string; // usually basename
@@ -69,18 +70,11 @@ export const FileSuggestHelper = {
 
 				// Apply tag filtering if configured
 				if (requiredTags.length > 0) {
-					// Get tags from both native tag detection and frontmatter
-					const nativeTags = cache?.tags?.map((t) => t.tag.replace("#", "")) || [];
-					const frontmatterTags = cache?.frontmatter?.tags || [];
-					const allTags = [
-						...nativeTags,
-						...(Array.isArray(frontmatterTags)
-							? frontmatterTags
-							: [frontmatterTags].filter(Boolean)),
-					];
-
 					// Check if file has ANY of the required tags using hierarchical matching with proper exclusion handling
-					const hasRequiredTag = FilterUtils.matchesTagConditions(allTags, requiredTags);
+					const hasRequiredTag = FilterUtils.matchesTagConditions(
+						collectCacheTags(cache),
+						requiredTags
+					);
 					if (!hasRequiredTag) {
 						continue; // Skip this file
 					}
