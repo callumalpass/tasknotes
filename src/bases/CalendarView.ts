@@ -63,6 +63,10 @@ import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
 } from "./calendarRecreateUtils";
+import {
+	getDisplayedTaskLinkedGoogleEventIds,
+	isDisplayedTaskLinkedGoogleEvent,
+} from "./calendarEventDeduplication";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import type { CalendarEventData } from "../services/CalendarProvider";
 
@@ -1782,6 +1786,7 @@ export class CalendarView extends BasesViewBase {
 			this.plugin,
 			eventConfig
 		);
+		const displayedTaskGoogleEventIds = getDisplayedTaskLinkedGoogleEventIds(taskEvents);
 		allEvents.push(...taskEvents);
 
 		// Add property-based events from non-TaskNotes items
@@ -1807,7 +1812,10 @@ export class CalendarView extends BasesViewBase {
 
 		// Add Google Calendar events
 		if (this.plugin.googleCalendarService) {
-			const googleEvents = await this.buildGoogleCalendarEvents(relatedNoteCountsByEventId);
+			const googleEvents = await this.buildGoogleCalendarEvents(
+				relatedNoteCountsByEventId,
+				displayedTaskGoogleEventIds
+			);
 			allEvents.push(...googleEvents);
 		}
 
@@ -1929,7 +1937,8 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async buildGoogleCalendarEvents(
-		relatedNoteCountsByEventId: Map<string, number>
+		relatedNoteCountsByEventId: Map<string, number>,
+		displayedTaskGoogleEventIds: Set<string>
 	): Promise<EventInput[]> {
 		if (!this.plugin.googleCalendarService) return [];
 
@@ -1940,6 +1949,7 @@ export class CalendarView extends BasesViewBase {
 			// Check if this calendar is enabled
 			const calendarId = icsEvent.subscriptionId.replace("google-", "");
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
+			if (isDisplayedTaskLinkedGoogleEvent(icsEvent, displayedTaskGoogleEventIds)) continue;
 
 			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin, {
