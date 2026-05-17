@@ -180,6 +180,199 @@ function flattenNav(items) {
   return pages;
 }
 
+// ── LLM-friendly documentation exports ─────────────────────────────
+
+function normalizeSiteUrl(siteUrl) {
+  const fallback = 'https://tasknotes.dev/';
+  const url = String(siteUrl || fallback).trim() || fallback;
+  return url.endsWith('/') ? url : `${url}/`;
+}
+
+function absoluteSiteUrl(url, siteUrl) {
+  return new URL(url, normalizeSiteUrl(siteUrl)).toString();
+}
+
+function markdownContent(raw) {
+  return matter(raw).content.trim();
+}
+
+function decodeHtmlEntities(text) {
+  return String(text)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function markdownInlineToText(markdown) {
+  return decodeHtmlEntities(markdown
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/<kbd>([\s\S]*?)<\/kbd>/gi, '$1')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim());
+}
+
+function truncateSummary(summary) {
+  const maxLength = 220;
+  if (summary.length <= maxLength) return summary;
+  return `${summary.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+function extractLlmsSummary(raw) {
+  const content = markdownContent(raw)
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/~~~[\s\S]*?~~~/g, '');
+  const paragraph = [];
+
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (paragraph.length) break;
+      continue;
+    }
+    if (/^!!!\s+/.test(trimmed) || /^:::\s+/.test(trimmed)) continue;
+    if (/^#\s+/.test(trimmed)) continue;
+    if (/^#{2,}\s+/.test(trimmed)) {
+      if (paragraph.length) break;
+      continue;
+    }
+    if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
+      if (paragraph.length) break;
+      continue;
+    }
+    if (/^<\/?(div|a|span)\b/i.test(trimmed)) {
+      if (paragraph.length) break;
+      continue;
+    }
+
+    paragraph.push(trimmed);
+  }
+
+  const summary = markdownInlineToText(paragraph.join(' '));
+  return summary ? truncateSummary(summary) : 'TaskNotes documentation page.';
+}
+
+function escapeMarkdownLinkText(text) {
+  return String(text).replace(/[[\]]/g, '\\$&');
+}
+
+function resolveDocsUrl(href, mdPath, siteUrl) {
+  if (!href) return href;
+  if (href.startsWith('//')) return href;
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/.test(href)) return href;
+
+  const { pathPart, suffix } = splitHref(href);
+  if (!pathPart) {
+    return absoluteSiteUrl(`${mdPathToUrl(mdPath)}${suffix}`, siteUrl);
+  }
+
+  if (/\.md$/i.test(pathPart)) {
+    return absoluteSiteUrl(`${mdLinkPathToUrl(pathPart, mdPath)}${suffix}`, siteUrl);
+  }
+
+  if (pathPart.startsWith('/')) {
+    return absoluteSiteUrl(`${pathPart}${suffix}`, siteUrl);
+  }
+
+  const pageDir = '/' + path.posix.dirname(mdPath).replace(/^\.(?:\/|$)/, '');
+  const resolved = path.posix.resolve(pageDir || '/', pathPart);
+  return absoluteSiteUrl(`${resolved}${suffix}`, siteUrl);
+}
+
+function rewriteMarkdownLinksForLlms(markdown, mdPath, siteUrl) {
+  return markdown
+    .replace(/(!?\[[^\]]*\]\()([^)]+)(\))/g, (_, pre, href, post) => {
+      return pre + resolveDocsUrl(href.trim(), mdPath, siteUrl) + post;
+    })
+    .replace(/(<a\b[^>]*\shref=")([^"]+)(")/g, (_, pre, href, post) => {
+      return pre + resolveDocsUrl(href, mdPath, siteUrl) + post;
+    })
+    .replace(/(<(?:img|source|video)\b[^>]*\ssrc=")([^"]+)(")/g, (_, pre, src, post) => {
+      return pre + resolveDocsUrl(src, mdPath, siteUrl) + post;
+    });
+}
+
+function stripLeadingH1(markdown) {
+  return markdown.replace(/^#\s+.+(?:\r?\n)+/, '').trim();
+}
+
+function normalizeLlmsWhitespace(text) {
+  return text
+    .split('\n')
+    .map(line => line.trimEnd())
+    .join('\n')
+    .replace(/\n{4,}/g, '\n\n\n')
+    .trim();
+}
+
+function buildLlmsTxt(pages, siteUrl, siteDescription) {
+  const lines = [
+    '# TaskNotes',
+    `> ${siteDescription || 'Task and note management for Obsidian.'}`,
+    '',
+    'TaskNotes is an Obsidian plugin for note-based task management. This file lists the primary documentation pages in a form suitable for LLM context windows.',
+    '',
+    '## Documentation',
+    '',
+  ];
+
+  for (const page of pages) {
+    const title = escapeMarkdownLinkText(decodeHtmlEntities(page.title));
+    const url = absoluteSiteUrl(page.url, siteUrl);
+    const summary = extractLlmsSummary(page.raw);
+    lines.push(`- [${title}](${url}): ${summary}`);
+  }
+
+  lines.push(
+    '',
+    '## Full Context',
+    '',
+    `- [Complete documentation bundle](${absoluteSiteUrl('/llms-full.txt', siteUrl)}): Primary documentation pages concatenated as Markdown for larger context windows.`,
+    ''
+  );
+
+  return normalizeLlmsWhitespace(lines.join('\n')) + '\n';
+}
+
+function buildLlmsFullTxt(pages, siteUrl, siteDescription) {
+  const lines = [
+    '# TaskNotes Documentation',
+    '',
+    `> ${siteDescription || 'Task and note management for Obsidian.'}`,
+    '',
+    `Source: ${absoluteSiteUrl('/', siteUrl)}`,
+    '',
+    'This file is generated from the primary documentation navigation and excludes release-note archives.',
+    '',
+  ];
+
+  for (const page of pages) {
+    const content = stripLeadingH1(
+      rewriteMarkdownLinksForLlms(markdownContent(page.raw), page.mdPath, siteUrl)
+    );
+
+    lines.push(
+      '---',
+      '',
+      `# ${decodeHtmlEntities(page.title)}`,
+      '',
+      `Source: ${absoluteSiteUrl(page.url, siteUrl)}`,
+      '',
+      content,
+      ''
+    );
+  }
+
+  return normalizeLlmsWhitespace(lines.join('\n')) + '\n';
+}
+
 // ── Utilities ───────────────────────────────────────────────────────
 
 function escHtml(s) {
@@ -235,6 +428,8 @@ async function main() {
   const mkdocsRaw = await fs.readFile(path.resolve(__dir, '../mkdocs.yml'), 'utf-8');
   const mkdocs = yaml.load(mkdocsRaw.replace(/!!python\/name:\S+/g, 'null'));
   const nav = mkdocs.nav;
+  const siteUrl = normalizeSiteUrl(mkdocs.site_url);
+  const siteDescription = mkdocs.site_description;
 
   const template = await fs.readFile(path.join(SRC, 'template.html'), 'utf-8');
 
@@ -262,8 +457,10 @@ async function main() {
 
   // Build every markdown doc so cross-links outside the nav still resolve
   const navPages = flattenNav(nav);
+  const navPageSet = new Set(navPages);
   const allDocPages = await listMarkdownFiles(DOCS);
   const pages = [...new Set([...navPages, ...allDocPages])];
+  const llmsPages = [];
   let built = 0, skipped = 0;
 
   for (const mdPath of pages) {
@@ -277,6 +474,10 @@ async function main() {
     const body     = stripH1(html);
     const toc      = buildToc(body);
     const navHtml  = buildNavHtml(nav, url);
+
+    if (navPageSet.has(mdPath)) {
+      llmsPages.push({ mdPath, raw, title, url });
+    }
 
     const page = template
       .replaceAll('{{title}}',      escHtml(title))
@@ -292,6 +493,9 @@ async function main() {
     await fs.writeFile(path.join(outDir, 'index.html'), page);
     built++;
   }
+
+  await fs.writeFile(path.join(DIST, 'llms.txt'), buildLlmsTxt(llmsPages, siteUrl, siteDescription));
+  await fs.writeFile(path.join(DIST, 'llms-full.txt'), buildLlmsFullTxt(llmsPages, siteUrl, siteDescription));
 
   console.log(`Built ${built} pages, skipped ${skipped} (${Date.now() - start}ms)`);
 }
