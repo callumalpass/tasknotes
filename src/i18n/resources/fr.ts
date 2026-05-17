@@ -219,6 +219,7 @@ export const fr: TranslationTree = {
 					navigateToDateFromProperty: "Naviguer vers la date depuis la propriété",
 					navigateToDateFromPropertyPlaceholder: "Sélectionner une propriété de date (facultatif)",
 					propertyNavigationStrategy: "Stratégie de navigation par propriété",
+					createDailyNotesFromDateLinks: "Créer des notes quotidiennes depuis les liens de date",
 					strategies: {
 						first: "Premier résultat",
 						earliest: "Date la plus ancienne",
@@ -272,6 +273,9 @@ export const fr: TranslationTree = {
 					titleProperty: "Propriété de titre (facultatif)",
 					titlePropertyPlaceholder: "Sélectionner une propriété pour le titre de l'événement",
 				},
+			},
+			notices: {
+				noDailyNoteForDate: "Aucune note quotidienne n'existe pour cette date.",
 			},
 			errors: {
 				failedToInitialize: "Échec de l'initialisation du calendrier",

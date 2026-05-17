@@ -86,6 +86,7 @@ Example:
 - ([#1318](https://github.com/callumalpass/tasknotes/issues/1318)) Made aliased inline task links use the alias text inside the task widget, so `[[Task title|short label]]` can display as `short label`. Thanks to @3zra47 for suggesting this and @kazerniel for the follow-up.
 - ([#1325](https://github.com/callumalpass/tasknotes/issues/1325)) Added `./` and `../` support to Include folders filters for project and file autosuggest, resolved from the active note's folder. Thanks to @EpolPers for suggesting this.
 - ([#1313](https://github.com/callumalpass/tasknotes/issues/1313)) Added generated `llms.txt` and `llms-full.txt` files to the documentation site, so the primary docs can be shared with LLM tools more easily. Thanks to @JacksonMcDonaldDev for suggesting this.
+- ([#1308](https://github.com/callumalpass/tasknotes/issues/1308)) Added a Calendar view option to stop date links from creating missing daily notes, while still opening existing daily notes. Thanks to @Arachnidai for suggesting this.
 
 ## Fixed
 

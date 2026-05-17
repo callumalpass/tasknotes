@@ -1,7 +1,7 @@
 ---
 title: Default Base Templates
 description: Default base file templates for TaskNotes views
-dateModified: 2026-05-17T15:55:06+1000
+dateModified: 2026-05-17T21:57:48+1000
 ---
 
 # Default Base Templates
@@ -520,6 +520,7 @@ views:
       showTimeEntries: true
       showTimeblocks: true
       showPropertyBasedEvents: true
+      createDailyNotesFromDateLinks: true
       calendarView: "timeGridWeek"
       customDayCount: 3
       firstDay: 0
@@ -562,6 +563,7 @@ views:
       - file.tasks
     options:
       showPropertyBasedEvents: false
+      createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7

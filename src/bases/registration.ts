@@ -248,6 +248,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 											"latest": t("dateNavigation.strategies.latest"),
 										},
 									},
+									{
+										type: "toggle",
+										key: "createDailyNotesFromDateLinks",
+										displayName: t("dateNavigation.createDailyNotesFromDateLinks"),
+										default: true,
+									},
 								],
 							},
 							{

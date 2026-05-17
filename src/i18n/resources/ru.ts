@@ -219,6 +219,7 @@ export const ru: TranslationTree = {
 					navigateToDateFromProperty: "Перейти к дате из свойства",
 					navigateToDateFromPropertyPlaceholder: "Выберите свойство даты (необязательно)",
 					propertyNavigationStrategy: "Стратегия навигации по свойству",
+					createDailyNotesFromDateLinks: "Создавать ежедневные заметки из ссылок дат",
 					strategies: {
 						first: "Первый результат",
 						earliest: "Самая ранняя дата",
@@ -272,6 +273,9 @@ export const ru: TranslationTree = {
 					titleProperty: "Свойство заголовка (необязательно)",
 					titlePropertyPlaceholder: "Выберите свойство для заголовка события",
 				},
+			},
+			notices: {
+				noDailyNoteForDate: "Для этой даты нет ежедневной заметки.",
 			},
 			errors: {
 				failedToInitialize: "Не удалось инициализировать календарь",

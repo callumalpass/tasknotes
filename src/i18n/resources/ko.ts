@@ -219,6 +219,7 @@ export const ko: TranslationTree = {
 					navigateToDateFromProperty: "속성에서 날짜로 이동",
 					navigateToDateFromPropertyPlaceholder: "날짜 속성 선택 (선택사항)",
 					propertyNavigationStrategy: "속성 탐색 전략",
+					createDailyNotesFromDateLinks: "날짜 링크에서 데일리 노트 만들기",
 					strategies: {
 						first: "첫 번째 결과",
 						earliest: "가장 이른 날짜",
@@ -272,6 +273,9 @@ export const ko: TranslationTree = {
 					titleProperty: "제목 속성 (선택사항)",
 					titlePropertyPlaceholder: "이벤트 제목 속성 선택",
 				},
+			},
+			notices: {
+				noDailyNoteForDate: "이 날짜의 데일리 노트가 없습니다.",
 			},
 			errors: {
 				failedToInitialize: "캘린더 초기화 실패",

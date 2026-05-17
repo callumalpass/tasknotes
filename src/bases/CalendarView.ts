@@ -612,6 +612,7 @@ export class CalendarView extends BasesViewBase {
 		initialDate: string;
 		initialDateProperty: string | null;
 		initialDateStrategy: "first" | "earliest" | "latest";
+		createDailyNotesFromDateLinks: boolean;
 
 		// Layout
 		calendarView: string;
@@ -676,6 +677,7 @@ export class CalendarView extends BasesViewBase {
 			initialDate: "",
 			initialDateProperty: null as string | null,
 			initialDateStrategy: "first",
+			createDailyNotesFromDateLinks: true,
 
 			// Layout
 			calendarView: calendarSettings.defaultView,
@@ -855,6 +857,7 @@ export class CalendarView extends BasesViewBase {
 			read("initialDate"),
 			read("initialDateProperty"),
 			read("initialDateStrategy"),
+			read("createDailyNotesFromDateLinks"),
 		];
 
 		// Include ICS calendar toggles
@@ -1106,6 +1109,10 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.initialDateStrategy = this.getConfigOption(
 				"initialDateStrategy",
 				this.viewOptions.initialDateStrategy
+			);
+			this.viewOptions.createDailyNotesFromDateLinks = this.getConfigOption(
+				"createDailyNotesFromDateLinks",
+				this.viewOptions.createDailyNotesFromDateLinks
 			);
 
 			// Layout
@@ -1438,10 +1445,12 @@ export class CalendarView extends BasesViewBase {
 			eventMaxStack: this.viewOptions.eventMaxStack ?? undefined,
 			navLinks: true,
 			navLinkDayClick: (date: Date) => {
-				void handleDateTitleClick(date, this.plugin);
+				this.openDailyNoteFromDateLink(date);
 			},
 			dayHeaderDidMount: (arg) => {
-				attachDailyNoteHeaderLink(arg.el, arg.date, arg.view.type, this.plugin);
+				attachDailyNoteHeaderLink(arg.el, arg.date, arg.view.type, this.plugin, (date) =>
+					this.openDailyNoteFromDateLink(date)
+				);
 			},
 			editable: true,
 			droppable: true,
@@ -1572,7 +1581,15 @@ export class CalendarView extends BasesViewBase {
 			const date = headerCell.dataset.date
 				? parseDateToLocal(headerCell.dataset.date)
 				: fallbackDate;
-			attachDailyNoteHeaderLink(headerCell, date, "timeGridDay", this.plugin);
+			attachDailyNoteHeaderLink(headerCell, date, "timeGridDay", this.plugin, (date) =>
+				this.openDailyNoteFromDateLink(date)
+			);
+		});
+	}
+
+	private openDailyNoteFromDateLink(date: Date): void {
+		void handleDateTitleClick(date, this.plugin, {
+			createIfMissing: this.viewOptions.createDailyNotesFromDateLinks,
 		});
 	}
 

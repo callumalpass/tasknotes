@@ -219,6 +219,7 @@ export const zh: TranslationTree = {
 					navigateToDateFromProperty: "从属性导航到日期",
 					navigateToDateFromPropertyPlaceholder: "选择日期属性（可选）",
 					propertyNavigationStrategy: "属性导航策略",
+					createDailyNotesFromDateLinks: "通过日期链接创建每日笔记",
 					strategies: {
 						first: "第一个结果",
 						earliest: "最早日期",
@@ -272,6 +273,9 @@ export const zh: TranslationTree = {
 					titleProperty: "标题属性（可选）",
 					titlePropertyPlaceholder: "选择事件标题的属性",
 				},
+			},
+			notices: {
+				noDailyNoteForDate: "此日期没有每日笔记。",
 			},
 			errors: {
 				failedToInitialize: "初始化日历失败",

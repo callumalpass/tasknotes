@@ -790,6 +790,7 @@ ${orderYaml}
       showTimeEntries: true
       showTimeblocks: true
       showPropertyBasedEvents: true
+      createDailyNotesFromDateLinks: true
       calendarView: "timeGridWeek"
       customDayCount: 3
       firstDay: 0
@@ -812,6 +813,7 @@ views:
 ${orderYaml}
     options:
       showPropertyBasedEvents: false
+      createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7

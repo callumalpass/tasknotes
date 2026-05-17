@@ -219,6 +219,7 @@ export const ja: TranslationTree = {
 					navigateToDateFromProperty: "プロパティから日付に移動",
 					navigateToDateFromPropertyPlaceholder: "日付プロパティを選択（オプション）",
 					propertyNavigationStrategy: "プロパティナビゲーション戦略",
+					createDailyNotesFromDateLinks: "日付リンクからデイリーノートを作成",
 					strategies: {
 						first: "最初の結果",
 						earliest: "最も古い日付",
@@ -272,6 +273,9 @@ export const ja: TranslationTree = {
 					titleProperty: "タイトルプロパティ（オプション）",
 					titlePropertyPlaceholder: "イベントタイトルのプロパティを選択",
 				},
+			},
+			notices: {
+				noDailyNoteForDate: "この日付のデイリーノートはありません。",
 			},
 			errors: {
 				failedToInitialize: "カレンダーの初期化に失敗しました",

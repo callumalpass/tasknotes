@@ -1671,11 +1671,21 @@ export function addTaskHoverPreview(
 	});
 }
 
+export interface DateTitleClickOptions {
+	createIfMissing?: boolean;
+}
+
 /**
  * Handle clicking on a date title to open/create daily note
  */
-export async function handleDateTitleClick(date: Date, plugin: TaskNotesPlugin): Promise<void> {
+export async function handleDateTitleClick(
+	date: Date,
+	plugin: TaskNotesPlugin,
+	options: DateTitleClickOptions = {}
+): Promise<void> {
 	try {
+		const { createIfMissing = true } = options;
+
 		// Check if Daily Notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
 			new Notice(
@@ -1692,6 +1702,13 @@ export async function handleDateTitleClick(date: Date, plugin: TaskNotesPlugin):
 		let dailyNote = getDailyNote(moment, allDailyNotes);
 
 		if (!dailyNote) {
+			if (!createIfMissing) {
+				new Notice(
+					plugin.i18n.translate("views.basesCalendar.notices.noDailyNoteForDate")
+				);
+				return;
+			}
+
 			// Daily note doesn't exist, create it
 			try {
 				dailyNote = await createDailyNote(moment);

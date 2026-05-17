@@ -130,6 +130,7 @@ The Calendar View provides several display options that control what types of ev
 - **Show ICS events**: Display events from imported ICS calendars
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
+- **Create daily notes from date links**: Let date header links create a missing daily note before opening it. Turn this off if date links should only open existing daily notes.
 - **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)
 Multiple saved calendar views can store different option sets (for example planning vs focus), avoiding repeated manual toggles.
 
