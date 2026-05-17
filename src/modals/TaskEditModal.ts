@@ -12,7 +12,7 @@ import {
 } from "../utils/helpers";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
-import { ConfirmationModal } from "./ConfirmationModal";
+import { ConfirmationModal, showConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
 import { BlockingUpdates, buildTaskEditChanges } from "./taskEditChanges";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
@@ -650,6 +650,32 @@ export class TaskEditModal extends TaskModal {
 		}
 	}
 
+	private async deleteTask(): Promise<void> {
+		const confirmed = await showConfirmationModal(this.app, {
+			title: this.t("modals.taskEdit.deleteConfirmation.title"),
+			message: this.t("modals.taskEdit.deleteConfirmation.message", {
+				title: this.task.title,
+			}),
+			confirmText: this.t("modals.taskEdit.deleteConfirmation.confirm"),
+			cancelText: this.t("common.cancel"),
+			isDestructive: true,
+		});
+
+		if (!confirmed) {
+			return;
+		}
+
+		try {
+			await this.plugin.taskService.deleteTask(this.task);
+			new Notice(this.t("modals.taskEdit.notices.deleteSuccess", { title: this.task.title }));
+			this.forceClose();
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			console.error("Failed to delete task:", error);
+			new Notice(this.t("modals.taskEdit.notices.deleteFailure", { message }));
+		}
+	}
+
 	protected createActionButtons(container: HTMLElement): void {
 		const buttonContainer = container.createDiv(
 			"modal-button-container tn-task-modal__button-bar"
@@ -675,6 +701,15 @@ export class TaskEditModal extends TaskModal {
 
 		archiveButton.addEventListener("click", () => {
 			void this.archiveTask();
+		});
+
+		const deleteButton = buttonContainer.createEl("button", {
+			cls: "mod-warning tn-task-modal__delete-button",
+			text: this.t("contextMenus.task.delete"),
+		});
+
+		deleteButton.addEventListener("click", () => {
+			void this.deleteTask();
 		});
 
 		// Save button (primary action)

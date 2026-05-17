@@ -2658,6 +2658,14 @@ export const en: TranslationTree = {
 				openNoteFailure: "Failed to open task note",
 				archiveSuccess: "Task {action} successfully",
 				archiveFailure: "Failed to archive task",
+				deleteSuccess: 'Task "{title}" deleted successfully',
+				deleteFailure: "Failed to delete task: {message}",
+			},
+			deleteConfirmation: {
+				title: "Delete task",
+				message:
+					'Are you sure you want to delete "{title}"? This moves the task note to Obsidian trash.',
+				confirm: "Delete task",
 			},
 			archiveAction: {
 				archived: "archived",
