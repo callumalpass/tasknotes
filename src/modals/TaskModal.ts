@@ -21,6 +21,7 @@ import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { createTaskModalListField } from "./taskModalOrganizationFields";
 import { createTaskCard } from "../ui/TaskCard";
+import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 import {
 	candidateDependencyUid,
 	createDependencyItemFromDependency as createDependencyItemFromDependencyHelper,
@@ -953,6 +954,11 @@ export abstract class TaskModal extends Modal {
 						this.userFields[userField.key] = value;
 					});
 					text.inputEl.type = "date";
+					attachDateInputBehavior(text.inputEl, {
+						onCommit: (value) => {
+							this.userFields[userField.key] = value;
+						},
+					});
 					this.userFieldInputs.set(userField.key, text.inputEl);
 				});
 				break;
@@ -1040,6 +1046,11 @@ export abstract class TaskModal extends Modal {
 						// Ensure the input and button layout as a single row with proper sizing
 						const parent = text.inputEl.parentElement;
 						if (parent) parent.addClass("tn-date-control");
+						attachDateInputBehavior(text.inputEl, {
+							onCommit: (value) => {
+								this.userFields[field.key] = value;
+							},
+						});
 						const btn = parent?.createEl("button", {
 							cls: "user-field-date-picker-btn",
 						});

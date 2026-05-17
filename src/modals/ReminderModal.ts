@@ -2,6 +2,7 @@ import { App, Modal, Setting, setIcon, Notice, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder } from "../types";
 import { formatDateForDisplay } from "../utils/dateUtils";
+import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
 export class ReminderModal extends Modal {
 	private plugin: TaskNotesPlugin;
@@ -441,6 +442,11 @@ export class ReminderModal extends Modal {
 					this.absoluteDate = value;
 				});
 			text.inputEl.type = "date";
+			attachDateInputBehavior(text.inputEl, {
+				onCommit: (value) => {
+					this.absoluteDate = value;
+				},
+			});
 		});
 
 		new Setting(absoluteContainer).setName("Time").addText((text) => {

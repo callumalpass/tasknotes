@@ -2,6 +2,7 @@ import { App, Modal, Setting } from "obsidian";
 import { TranslationKey } from "../i18n";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
+import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
 export interface RecurrenceOption {
 	label: string;
@@ -521,6 +522,11 @@ class CustomRecurrenceModal extends Modal {
 				text.setValue(this.dtstart).onChange((value) => {
 					this.dtstart = value;
 				});
+				attachDateInputBehavior(text.inputEl, {
+					onCommit: (value) => {
+						this.dtstart = value;
+					},
+				});
 			});
 
 		// Start time selection
@@ -1011,6 +1017,13 @@ class CustomRecurrenceModal extends Modal {
 		const untilDate = untilRadio.createEl("input", { type: "date" });
 		untilDate.classList.add("tn-static-margin-left-4px-46cec891");
 		untilDate.value = this.until ? this.until.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3") : "";
+		attachDateInputBehavior(untilDate, {
+			onCommit: (value) => {
+				this.until = value.replace(/-/g, "");
+				untilInput.checked = true;
+				this.endType = "until";
+			},
+		});
 
 		// Event listeners for end condition
 		neverInput.addEventListener("change", () => {
