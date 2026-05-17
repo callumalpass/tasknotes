@@ -1,6 +1,15 @@
-import { App, FuzzySuggestModal, FuzzyMatch, setIcon, Notice, TFile } from "obsidian";
+import {
+	App,
+	FuzzySuggestModal,
+	FuzzyMatch,
+	setIcon,
+	Notice,
+	TFile,
+	moment as obsidianMoment,
+} from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
+import { getDatePart } from "../utils/dateUtils";
 
 export interface TaskAction {
 	id: string;
@@ -11,6 +20,30 @@ export interface TaskAction {
 	keywords: string[];
 	isApplicable: (task: TaskInfo, plugin: TaskNotesPlugin, targetDate: Date) => boolean;
 	execute: (task: TaskInfo, plugin: TaskNotesPlugin, targetDate: Date) => Promise<void>;
+}
+
+type DateActionProperty = "due" | "scheduled";
+
+interface QuickDatePreset {
+	id: string;
+	label: string;
+	value: string;
+	icon: string;
+	keywords: string[];
+}
+
+type MomentLike = {
+	format(format: string): string;
+	clone(): MomentLike;
+	add(amount: number, unit: string): MomentLike;
+	day(day: number): MomentLike;
+	isBefore(other: MomentLike): boolean;
+	isSame(other: MomentLike, unit: string): boolean;
+	startOf(unit: string): MomentLike;
+};
+
+function getMoment(): MomentLike {
+	return (obsidianMoment as unknown as () => MomentLike)();
 }
 
 export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
@@ -140,6 +173,8 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				},
 			}
 		);
+		this.addQuickDatePresetActions(actions, "scheduled");
+		this.addQuickDatePresetActions(actions, "due");
 
 		// Time tracking actions
 		const activeSession = this.plugin.getActiveTimeSession(this.task);
@@ -305,6 +340,77 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 		);
 
 		return actions;
+	}
+
+	private getQuickDatePresets(): QuickDatePreset[] {
+		const today = getMoment();
+		const nextSaturday = today.clone().day(6);
+		if (nextSaturday.isBefore(today) || nextSaturday.isSame(today, "day")) {
+			nextSaturday.add(1, "week");
+		}
+
+		return [
+			{
+				id: "today",
+				label: "today",
+				value: today.format("YYYY-MM-DD"),
+				icon: "calendar-check",
+				keywords: ["today"],
+			},
+			{
+				id: "tomorrow",
+				label: "tomorrow",
+				value: today.clone().add(1, "day").format("YYYY-MM-DD"),
+				icon: "calendar-plus",
+				keywords: ["tomorrow"],
+			},
+			{
+				id: "this-weekend",
+				label: "this weekend",
+				value: nextSaturday.format("YYYY-MM-DD"),
+				icon: "calendar-days",
+				keywords: ["weekend", "saturday"],
+			},
+			{
+				id: "next-week",
+				label: "next week",
+				value: today.clone().day(1).add(1, "week").format("YYYY-MM-DD"),
+				icon: "calendar-plus",
+				keywords: ["next", "week", "monday"],
+			},
+			{
+				id: "next-month",
+				label: "next month",
+				value: today.clone().add(1, "month").startOf("month").format("YYYY-MM-DD"),
+				icon: "calendar-range",
+				keywords: ["next", "month"],
+			},
+		];
+	}
+
+	private addQuickDatePresetActions(actions: TaskAction[], property: DateActionProperty): void {
+		const propertyLabel = property === "scheduled" ? "scheduled date" : "due date";
+		const noticeLabel = property === "scheduled" ? "Scheduled date" : "Due date";
+		const verb = property === "scheduled" ? "Schedule" : "Set due";
+
+		this.getQuickDatePresets().forEach((preset) => {
+			actions.push({
+				id: `set-${property}-${preset.id}`,
+				title: `${verb} for ${preset.label}`,
+				description: `Set the task ${propertyLabel} to ${preset.label}`,
+				icon: preset.icon,
+				category: "dates",
+				keywords: [property, "date", "set", "change", ...preset.keywords],
+				isApplicable: (task) => {
+					const currentDate = task[property] ? getDatePart(task[property]) : undefined;
+					return currentDate !== preset.value;
+				},
+				execute: async (task) => {
+					await this.plugin.updateTaskProperty(task, property, preset.value);
+					new Notice(`${noticeLabel} set`);
+				},
+			});
+		});
 	}
 
 	getItems(): TaskAction[] {
