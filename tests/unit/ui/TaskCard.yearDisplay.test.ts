@@ -28,7 +28,8 @@ jest.mock('../../../src/utils/helpers', () => ({
 	shouldUseRecurringTaskUI: jest.fn((task) => !!task.recurrence),
 	getRecurringTaskCompletionText: jest.fn(() => 'Not completed for this date'),
 	getRecurrenceDisplayText: jest.fn((recurrence) => 'Daily'),
-	filterEmptyProjects: jest.fn((projects) => projects?.filter((p: string) => p && p.trim()) || [])
+	filterEmptyProjects: jest.fn((projects) => projects?.filter((p: string) => p && p.trim()) || []),
+	sanitizeForCssClass: jest.fn((value: string) => value.replace(/[^a-zA-Z0-9_-]/g, "-"))
 }));
 
 jest.mock('../../../src/components/TaskContextMenu', () => ({
@@ -43,7 +44,7 @@ jest.mock('../../../src/utils/propertyMapping', () => ({
 	isPropertyForField: jest.fn((propertyId, field) => propertyId === field)
 }));
 
-describe.skip('TaskCard Year Display (#1431)', () => {
+describe('TaskCard Year Display (#1431)', () => {
 	let mockPlugin: any;
 	let mockApp: any;
 	let container: HTMLElement;
@@ -133,6 +134,28 @@ describe.skip('TaskCard Year Display (#1431)', () => {
 			projectSubtasksService: {
 				isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
 				isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false)
+			},
+			i18n: {
+				translate: jest.fn((key: string, vars?: Record<string, string | number>) => {
+					const translations: Record<string, string> = {
+						"ui.taskCard.dueLabel": "{label}: {display}",
+						"ui.taskCard.dueToday": "{label}: Today",
+						"ui.taskCard.dueTodayAt": "{label}: Today at {time}",
+						"ui.taskCard.dueOverdue": "{label}: {display}",
+						"ui.taskCard.scheduledLabel": "{label}: {display}",
+						"ui.taskCard.scheduledToday": "{label}: Today",
+						"ui.taskCard.scheduledTodayAt": "{label}: Today at {time}",
+						"ui.taskCard.scheduledPast": "{label}: {display}",
+						"ui.taskCard.labels.due": "Due",
+						"ui.taskCard.labels.scheduled": "Scheduled",
+						"ui.taskCard.taskOptions": "Task options"
+					};
+					let translated = translations[key] ?? key;
+					for (const [name, value] of Object.entries(vars ?? {})) {
+						translated = translated.replace(`{${name}}`, String(value));
+					}
+					return translated;
+				})
 			},
 			settings: {
 				singleClickAction: 'edit',

@@ -682,6 +682,11 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 	}
 }
 
+function getTaskCardDateFormat(dateString: string): string {
+	const year = Number(getDatePart(dateString).slice(0, 4));
+	return Number.isInteger(year) && year !== new Date().getFullYear() ? "MMM d, yyyy" : "MMM d";
+}
+
 function renderDueDateProperty(
 	element: HTMLElement,
 	due: string,
@@ -709,14 +714,14 @@ function renderDueDateProperty(
 				: tTaskCard(plugin, "dueTodayAt", { label: dueLabel, time: timeDisplay });
 	} else if (isDueOverdue) {
 		const display = formatDateTimeForDisplay(due, {
-			dateFormat: "MMM d",
+			dateFormat: getTaskCardDateFormat(due),
 			showTime: true,
 			userTimeFormat,
 		});
 		dueDateText = tTaskCard(plugin, "dueOverdue", { label: dueLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(due, {
-			dateFormat: "MMM d",
+			dateFormat: getTaskCardDateFormat(due),
 			showTime: true,
 			userTimeFormat,
 		});
@@ -764,14 +769,14 @@ function renderScheduledDateProperty(
 					});
 	} else if (isScheduledPast) {
 		const display = formatDateTimeForDisplay(scheduled, {
-			dateFormat: "MMM d",
+			dateFormat: getTaskCardDateFormat(scheduled),
 			showTime: true,
 			userTimeFormat,
 		});
 		scheduledDateText = tTaskCard(plugin, "scheduledPast", { label: scheduledLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(scheduled, {
-			dateFormat: "MMM d",
+			dateFormat: getTaskCardDateFormat(scheduled),
 			showTime: true,
 			userTimeFormat,
 		});
