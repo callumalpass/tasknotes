@@ -117,6 +117,7 @@ Example:
 
 ## Fixed
 
+- ([#782](https://github.com/callumalpass/tasknotes/issues/782)) Made recurrence weekday choices follow the configured first day of week, and made the quick "Weekdays only" recurrence use locale weekend data instead of assuming Monday through Friday everywhere. Thanks to @BKSalman for reporting this.
 - ([#872](https://github.com/callumalpass/tasknotes/issues/872)) Made note-level task cards appear immediately, and stay visible while editing, when a task note is embedded as a Canvas file node. Thanks to @bangbangbanggit for reporting this and @benmartinek for the follow-up.
 - ([#856](https://github.com/callumalpass/tasknotes/issues/856)) Fixed filters for number custom fields so numeric task values match equivalent filter values entered as text. Thanks to @thoughtcipher for reporting this.
 - ([#1039](https://github.com/callumalpass/tasknotes/issues/1039)) Restored clearer TaskNotes Bases grouping for nested project paths, and made the Calendar refresh control an icon button again. Thanks to @dblinnikov for reporting this.

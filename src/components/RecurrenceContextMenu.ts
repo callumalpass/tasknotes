@@ -37,6 +37,134 @@ export interface CustomRecurrenceRuleInput {
 	yearlyType?: string;
 }
 
+type RecurrenceWeekdayCode = "SU" | "MO" | "TU" | "WE" | "TH" | "FR" | "SA";
+type WeekdayNameKey =
+	| "sunday"
+	| "monday"
+	| "tuesday"
+	| "wednesday"
+	| "thursday"
+	| "friday"
+	| "saturday";
+type WeekdayShortKey = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+
+interface RecurrenceWeekdayDefinition {
+	dateIndex: number;
+	code: RecurrenceWeekdayCode;
+	nameKey: WeekdayNameKey;
+	shortKey: WeekdayShortKey;
+}
+
+const RECURRENCE_WEEKDAYS: RecurrenceWeekdayDefinition[] = [
+	{ dateIndex: 0, code: "SU", nameKey: "sunday", shortKey: "sun" },
+	{ dateIndex: 1, code: "MO", nameKey: "monday", shortKey: "mon" },
+	{ dateIndex: 2, code: "TU", nameKey: "tuesday", shortKey: "tue" },
+	{ dateIndex: 3, code: "WE", nameKey: "wednesday", shortKey: "wed" },
+	{ dateIndex: 4, code: "TH", nameKey: "thursday", shortKey: "thu" },
+	{ dateIndex: 5, code: "FR", nameKey: "friday", shortKey: "fri" },
+	{ dateIndex: 6, code: "SA", nameKey: "saturday", shortKey: "sat" },
+];
+
+function getIntlLocaleWeekInfo(locale: string | undefined):
+	| {
+			firstDay?: number;
+			weekend?: number[];
+	  }
+	| undefined {
+	if (!locale) {
+		return undefined;
+	}
+
+	try {
+		const LocaleCtor = (
+			Intl as unknown as {
+				Locale?: new (locale: string) => {
+					weekInfo?: {
+						firstDay?: number;
+						weekend?: number[];
+					};
+				};
+			}
+		).Locale;
+
+		if (!LocaleCtor) {
+			return undefined;
+		}
+
+		return new LocaleCtor(locale).weekInfo;
+	} catch {
+		return undefined;
+	}
+}
+
+function normalizeFirstDay(firstDay: number | undefined, locale?: string): number {
+	if (typeof firstDay === "number" && Number.isInteger(firstDay) && firstDay >= 0 && firstDay <= 6) {
+		return firstDay;
+	}
+
+	const localeFirstDay = getIntlLocaleWeekInfo(locale)?.firstDay;
+	if (typeof localeFirstDay === "number") {
+		return localeFirstDay % 7;
+	}
+
+	return 1;
+}
+
+export function getPluginCalendarLocale(plugin: TaskNotesPlugin): string | undefined {
+	const configuredLocale = plugin.settings?.calendarViewSettings?.locale?.trim();
+	if (configuredLocale) {
+		return configuredLocale;
+	}
+
+	const navigatorLocale = typeof navigator !== "undefined" ? navigator.language : "";
+	if (navigatorLocale) {
+		return navigatorLocale;
+	}
+
+	try {
+		return Intl.DateTimeFormat().resolvedOptions().locale;
+	} catch {
+		return undefined;
+	}
+}
+
+export function getOrderedRecurrenceWeekdays(
+	firstDay?: number,
+	locale?: string
+): RecurrenceWeekdayDefinition[] {
+	const normalizedFirstDay = normalizeFirstDay(firstDay, locale);
+	const startIndex = RECURRENCE_WEEKDAYS.findIndex(
+		(day) => day.dateIndex === normalizedFirstDay
+	);
+	const safeStartIndex = startIndex >= 0 ? startIndex : 1;
+
+	return [
+		...RECURRENCE_WEEKDAYS.slice(safeStartIndex),
+		...RECURRENCE_WEEKDAYS.slice(0, safeStartIndex),
+	];
+}
+
+export function getWeekdayOnlyRRuleCodes(locale?: string): RecurrenceWeekdayCode[] {
+	const weekendDayIndexes = getIntlLocaleWeekInfo(locale)?.weekend
+		?.map((day) => day % 7)
+		.filter((day) => day >= 0 && day <= 6);
+
+	if (!weekendDayIndexes || weekendDayIndexes.length === 0) {
+		return ["MO", "TU", "WE", "TH", "FR"];
+	}
+
+	const weekendSet = new Set(weekendDayIndexes);
+	const weekdays = RECURRENCE_WEEKDAYS.filter((day) => !weekendSet.has(day.dateIndex)).map(
+		(day) => day.code
+	);
+
+	return weekdays.length > 0 && weekdays.length < 7 ? weekdays : ["MO", "TU", "WE", "TH", "FR"];
+}
+
+export function buildWeekdaysOnlyRecurrenceRule(dtstart: string, locale?: string): string {
+	return `DTSTART:${dtstart};FREQ=WEEKLY;BYDAY=${getWeekdayOnlyRRuleCodes(locale).join(",")}`;
+}
+
 export function buildCustomRecurrenceRule(input: CustomRecurrenceRuleInput): string {
 	const parts: string[] = [];
 	const isFlexibleCompletionAnchor = input.recurrenceAnchor === "completion";
@@ -211,7 +339,8 @@ export class RecurrenceContextMenu {
 		const currentDate = today.getDate();
 		const currentMonth = today.getMonth() + 1; // 1-based
 		const currentMonthName = monthNames[today.getMonth()];
-		const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
+		const calendarLocale = getPluginCalendarLocale(this.options.plugin);
+		const dayName = today.toLocaleDateString(calendarLocale || undefined, { weekday: "long" });
 
 		// Format today as DTSTART, preserving existing time if available
 		let todayDTSTART = this.formatDateForDTSTART(today);
@@ -292,7 +421,7 @@ export class RecurrenceContextMenu {
 		// Weekdays only
 		options.push({
 			label: this.translate("components.recurrenceContextMenu.weekdaysOnly"),
-			value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`,
+			value: buildWeekdaysOnlyRecurrenceRule(todayDTSTART, calendarLocale),
 			icon: "briefcase",
 		});
 
@@ -354,6 +483,7 @@ export class RecurrenceContextMenu {
 			this.options.currentValue || "",
 			this.options.currentAnchor || "scheduled",
 			this.options.scheduledDate,
+			this.options.plugin,
 			(result, anchor) => {
 				if (result) {
 					this.options.onSelect(result, anchor);
@@ -370,7 +500,9 @@ export class RecurrenceContextMenu {
 class CustomRecurrenceModal extends Modal {
 	private currentValue: string;
 	private scheduledDate?: string;
+	private plugin: TaskNotesPlugin;
 	private onSubmit: (result: string | null, anchor?: "scheduled" | "completion") => void;
+	private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
 	private frequency = "DAILY";
 	private interval = 1;
 	private byDay: string[] = [];
@@ -389,12 +521,15 @@ class CustomRecurrenceModal extends Modal {
 		currentValue: string,
 		currentAnchor: "scheduled" | "completion",
 		scheduledDate: string | undefined,
+		plugin: TaskNotesPlugin,
 		onSubmit: (result: string | null, anchor?: "scheduled" | "completion") => void
 	) {
 		super(app);
 		this.currentValue = currentValue;
 		this.recurrenceAnchor = currentAnchor;
 		this.scheduledDate = scheduledDate;
+		this.plugin = plugin;
+		this.translate = plugin.i18n.translate.bind(plugin.i18n);
 		this.onSubmit = onSubmit;
 		this.parseCurrentValue();
 	}
@@ -510,8 +645,13 @@ class CustomRecurrenceModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
+		const calendarLocale = getPluginCalendarLocale(this.plugin);
+		const firstDay = this.plugin.settings?.calendarViewSettings?.firstDay;
+		const orderedWeekdays = getOrderedRecurrenceWeekdays(firstDay, calendarLocale);
 
-		contentEl.createEl("h2", { text: "Custom recurrence" });
+		contentEl.createEl("h2", {
+			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.title"),
+		});
 
 		// Start date selection
 		new Setting(contentEl)
@@ -585,15 +725,12 @@ class CustomRecurrenceModal extends Modal {
 			.setDesc("Select specific days (for weekly recurrence)");
 
 		const daysContainer = byDaySetting.controlEl.createDiv("days-container");
-		const days = [
-			{ key: "MO", label: "Mon" },
-			{ key: "TU", label: "Tue" },
-			{ key: "WE", label: "Wed" },
-			{ key: "TH", label: "Thu" },
-			{ key: "FR", label: "Fri" },
-			{ key: "SA", label: "Sat" },
-			{ key: "SU", label: "Sun" },
-		];
+		const days = orderedWeekdays.map((day) => ({
+			key: day.code,
+			label: this.translate(
+				`components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.${day.shortKey}`
+			),
+		}));
 
 		days.forEach((day) => {
 			const dayEl = daysContainer.createEl("label", { cls: "day-checkbox" });
@@ -734,15 +871,12 @@ class CustomRecurrenceModal extends Modal {
 		monthlyDaySelect.classList.add("tn-static-margin-left-4px-46cec891");
 		monthlyDaySelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
 		monthlyDaySelect.classList.add("tn-static-margin-right-4px-c6b76b85");
-		const dayOptions = [
-			{ value: "MO", text: "Monday" },
-			{ value: "TU", text: "Tuesday" },
-			{ value: "WE", text: "Wednesday" },
-			{ value: "TH", text: "Thursday" },
-			{ value: "FR", text: "Friday" },
-			{ value: "SA", text: "Saturday" },
-			{ value: "SU", text: "Sunday" },
-		];
+		const dayOptions = orderedWeekdays.map((day) => ({
+			value: day.code,
+			text: this.translate(
+				`components.recurrenceContextMenu.customRecurrenceModal.weekdays.${day.nameKey}`
+			),
+		}));
 		const today = new Date();
 		const currentDayCode = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"][today.getDay()];
 		dayOptions.forEach((opt) => {

@@ -11,7 +11,11 @@ import {
 } from "../services/taskRelationshipActions";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
-import { RecurrenceContextMenu } from "./RecurrenceContextMenu";
+import {
+	buildWeekdaysOnlyRecurrenceRule,
+	getPluginCalendarLocale,
+	RecurrenceContextMenu,
+} from "./RecurrenceContextMenu";
 import { showTextInputModal } from "../modals/TextInputModal";
 import { TagSuggest } from "../modals/taskModalSuggests";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
@@ -1639,7 +1643,8 @@ export class TaskContextMenu {
 		const currentDate = today.getDate();
 		const currentMonth = today.getMonth() + 1;
 		const currentMonthName = monthNames[today.getMonth()];
-		const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
+		const calendarLocale = getPluginCalendarLocale(plugin);
+		const dayName = today.toLocaleDateString(calendarLocale || undefined, { weekday: "long" });
 
 		const formatDateForDTSTART = (date: Date): string => {
 			const year = date.getFullYear();
@@ -1694,7 +1699,7 @@ export class TaskContextMenu {
 			},
 			{
 				label: this.t("modals.task.recurrence.weekdays"),
-				value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`,
+				value: buildWeekdaysOnlyRecurrenceRule(todayDTSTART, calendarLocale),
 				icon: "briefcase",
 			},
 		];
