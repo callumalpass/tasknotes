@@ -341,6 +341,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	autoStopTimeTrackingNotification: false,
 	// Relationships widget defaults (unified subtasks, projects, and dependencies)
 	showRelationships: true,
+	relationshipsDisplayMode: "always",
 	relationshipsPosition: "bottom",
 	// Task card in note defaults
 	showTaskCardInNote: true,

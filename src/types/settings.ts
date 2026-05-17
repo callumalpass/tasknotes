@@ -79,6 +79,8 @@ export interface NLPTriggersConfig {
 	triggers: PropertyTriggerConfig[];
 }
 
+export type RelationshipsDisplayMode = "always" | "whenPopulated" | "never";
+
 export type HideIdentifyingTagsMode = "all" | "exact-only";
 
 export interface ProjectAutosuggestSettings {
@@ -170,6 +172,7 @@ export interface TaskNotesSettings {
 	autoStopTimeTrackingNotification: boolean;
 	// Relationships widget settings (unified subtasks, projects, and dependencies)
 	showRelationships: boolean;
+	relationshipsDisplayMode: RelationshipsDisplayMode;
 	relationshipsPosition: "top" | "bottom";
 	// Task card in note settings
 	showTaskCardInNote: boolean;

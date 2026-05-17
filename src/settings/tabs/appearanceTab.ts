@@ -12,6 +12,7 @@ import { PropertySelectorModal } from "../../modals/PropertySelectorModal";
 import { getAvailableProperties, getPropertyLabels } from "../../utils/propertyHelpers";
 import type { CalendarViewSettings } from "../../types/settings";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../../utils/calendarTime";
+import { getRelationshipsDisplayMode } from "../relationshipSettings";
 
 type CalendarDefaultView = CalendarViewSettings["defaultView"];
 type CalendarFirstDay = CalendarViewSettings["firstDay"];
@@ -674,21 +675,43 @@ export function renderAppearanceTab(
 			);
 
 			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				void configureDropdownSetting(setting, {
 					name: translate("settings.appearance.uiElements.showRelationshipsWidget.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showRelationshipsWidget.description"
 					),
-					getValue: () => plugin.settings.showRelationships,
-					setValue: async (value: boolean) => {
-						plugin.settings.showRelationships = value;
+					options: [
+						{
+							value: "always",
+							label: translate(
+								"settings.appearance.uiElements.showRelationshipsWidget.options.always"
+							),
+						},
+						{
+							value: "whenPopulated",
+							label: translate(
+								"settings.appearance.uiElements.showRelationshipsWidget.options.whenPopulated"
+							),
+						},
+						{
+							value: "never",
+							label: translate(
+								"settings.appearance.uiElements.showRelationshipsWidget.options.never"
+							),
+						},
+					],
+					getValue: () => getRelationshipsDisplayMode(plugin.settings),
+					setValue: async (value: string) => {
+						plugin.settings.relationshipsDisplayMode =
+							value === "whenPopulated" || value === "never" ? value : "always";
+						plugin.settings.showRelationships = value !== "never";
 						save();
 						renderAppearanceTab(container, plugin, save);
 					},
 				})
 			);
 
-			if (plugin.settings.showRelationships) {
+			if (getRelationshipsDisplayMode(plugin.settings) !== "never") {
 				group.addSetting((setting) =>
 					void configureDropdownSetting(setting, {
 						name: translate(

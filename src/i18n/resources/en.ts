@@ -1490,7 +1490,12 @@ export const en: TranslationTree = {
 				showRelationshipsWidget: {
 					name: "Show relationships widget",
 					description:
-						"Display a widget showing all relationships for the current note (subtasks, projects, dependencies)",
+						"Choose when to display the relationships widget for the current note",
+					options: {
+						always: "Always",
+						whenPopulated: "When populated",
+						never: "Never",
+					},
 				},
 				relationshipsPosition: {
 					name: "Relationships position",

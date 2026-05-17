@@ -62,6 +62,8 @@ import {
 	shouldSkipMarkdownWidgetLeaf,
 } from "./MarkdownWidgetContext";
 import { insertAfterElement, insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
+import type { RelationshipsDisplayMode } from "../types/settings";
+import { getRelationshipsDisplayMode } from "../settings/relationshipSettings";
 
 // CSS class for identifying plugin-generated elements
 const CSS_RELATIONSHIPS_WIDGET = "tasknotes-relationships-widget";
@@ -74,10 +76,85 @@ interface HTMLElementWithComponent extends HTMLElement {
 	component?: Component;
 }
 
+export type RelationshipsWidgetState = {
+	isTaskNote: boolean;
+	isProjectNote: boolean;
+	hasSubtasks: boolean;
+	hasProjectLinks: boolean;
+	hasBlockingDependencies: boolean;
+	hasBlockedTasks: boolean;
+};
+
+export function hasRelationshipFieldValue(value: unknown): boolean {
+	if (Array.isArray(value)) {
+		return value.some(hasRelationshipFieldValue);
+	}
+
+	if (typeof value === "string") {
+		return value.trim().length > 0;
+	}
+
+	if (value && typeof value === "object") {
+		return Object.keys(value).length > 0;
+	}
+
+	return value !== null && value !== undefined && value !== false;
+}
+
+export function shouldRenderRelationshipsWidget(
+	mode: RelationshipsDisplayMode,
+	state: RelationshipsWidgetState
+): boolean {
+	if (mode === "never" || (!state.isTaskNote && !state.isProjectNote)) {
+		return false;
+	}
+
+	if (mode === "always") {
+		return true;
+	}
+
+	return (
+		state.hasSubtasks ||
+		state.hasProjectLinks ||
+		state.hasBlockingDependencies ||
+		state.hasBlockedTasks
+	);
+}
+
 function getHTMLElementChildren(element: HTMLElement): HTMLElement[] {
 	return Array.from(element.children).filter(
 		(child): child is HTMLElement => child.instanceOf(HTMLElement)
 	);
+}
+
+function getFrontmatterRecord(frontmatter: unknown): Record<string, unknown> {
+	return frontmatter && typeof frontmatter === "object"
+		? (frontmatter as Record<string, unknown>)
+		: {};
+}
+
+function getRelationshipsWidgetState(
+	plugin: TaskNotesPlugin,
+	file: TFile,
+	isTaskNote: boolean,
+	isProjectNote: boolean,
+	frontmatter: unknown
+): RelationshipsWidgetState {
+	const frontmatterRecord = getFrontmatterRecord(frontmatter);
+	const projectsField = plugin.fieldMapper.toUserField("projects");
+	const blockedByField = plugin.fieldMapper.toUserField("blockedBy");
+
+	return {
+		isTaskNote,
+		isProjectNote,
+		hasSubtasks:
+			(plugin.dependencyCache?.getTasksReferencingProject(file.path).length ?? 0) > 0,
+		hasProjectLinks: hasRelationshipFieldValue(frontmatterRecord[projectsField]),
+		hasBlockingDependencies:
+			hasRelationshipFieldValue(frontmatterRecord[blockedByField]) ||
+			(plugin.dependencyCache?.getBlockingTaskPaths(file.path).length ?? 0) > 0,
+		hasBlockedTasks: (plugin.dependencyCache?.getTasksBlockedByTask(file.path).length ?? 0) > 0,
+	};
 }
 
 export function findRelationshipsBottomAnchor(container: HTMLElement): HTMLElement | null {
@@ -409,8 +486,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		this.cleanupOrphanedWidgets(view);
 
 		try {
-			// Check if relationships widget is enabled
-			if (!this.plugin.settings.showRelationships) {
+			const displayMode = getRelationshipsDisplayMode(this.plugin.settings);
+			if (displayMode === "never") {
 				return;
 			}
 
@@ -438,9 +515,14 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 					this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
 			}
 
-			// Only show widget if it's either a task note or a project note
-			if (!isTaskNote && !isProjectNote) {
-				// Not a task or project note - don't show relationships widget
+			const widgetState = getRelationshipsWidgetState(
+				this.plugin,
+				file,
+				isTaskNote,
+				isProjectNote,
+				metadata?.frontmatter
+			);
+			if (!shouldRenderRelationshipsWidget(displayMode, widgetState)) {
 				return;
 			}
 
@@ -539,8 +621,8 @@ async function injectReadingModeWidget(
 		return;
 	}
 
-	// Check if relationships widget is enabled
-	if (!plugin.settings.showRelationships) {
+	const displayMode = getRelationshipsDisplayMode(plugin.settings);
+	if (displayMode === "never") {
 		return;
 	}
 
@@ -560,7 +642,14 @@ async function injectReadingModeWidget(
 		isProjectNote = plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
 	}
 
-	if (!isTaskNote && !isProjectNote) {
+	const widgetState = getRelationshipsWidgetState(
+		plugin,
+		file,
+		isTaskNote,
+		isProjectNote,
+		metadata?.frontmatter
+	);
+	if (!shouldRenderRelationshipsWidget(displayMode, widgetState)) {
 		// Remove any existing widgets if conditions no longer met
 		try {
 			const previewView = view.previewMode;

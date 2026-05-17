@@ -352,13 +352,20 @@ export class DependencyCache extends Events {
 	 * Get blocked task paths (tasks that depend on this task)
 	 */
 	getBlockedTaskPaths(taskPath: string): string[] {
-		if (!this.indexesBuilt) {
-			console.warn("DependencyCache: getBlockedTaskPaths called before indexes built, building now...");
-			this.buildIndexesSync();
-		}
-
 		if (this.isCompletedTask(taskPath)) {
 			return [];
+		}
+
+		return this.getTasksBlockedByTask(taskPath);
+	}
+
+	/**
+	 * Get task paths that declare this task as a dependency, regardless of status.
+	 */
+	getTasksBlockedByTask(taskPath: string): string[] {
+		if (!this.indexesBuilt) {
+			console.warn("DependencyCache: getTasksBlockedByTask called before indexes built, building now...");
+			this.buildIndexesSync();
 		}
 
 		const blocked = this.dependencyTargets.get(taskPath);
