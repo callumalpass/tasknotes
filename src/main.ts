@@ -740,7 +740,10 @@ export default class TaskNotesPlugin extends Plugin {
 					loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
 			},
 			// Modal fields configuration (already migrated above if needed)
-			modalFieldsConfig: loadedData?.modalFieldsConfig,
+			modalFieldsConfig: initializeFieldConfig(
+				loadedData?.modalFieldsConfig,
+				loadedData?.userFields
+			),
 			// Array handling - maintain existing arrays or use defaults
 			customStatuses: loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses,
 			customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities,

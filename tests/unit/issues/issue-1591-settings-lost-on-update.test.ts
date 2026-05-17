@@ -64,4 +64,16 @@ describe("issue #1591 settings reset on update", () => {
 			})
 		);
 	});
+
+	it("initializes modal fields immediately for a new install", async () => {
+		const plugin = createPlugin({ dataFileExists: false });
+		plugin.loadData = jest.fn().mockResolvedValue(null);
+
+		await plugin.loadSettings();
+
+		expect(plugin.settings.modalFieldsConfig).toBeDefined();
+		expect(plugin.settings.modalFieldsConfig?.fields.map((field) => field.id)).toEqual(
+			expect.arrayContaining(["title", "details", "contexts", "tags", "projects"])
+		);
+	});
 });
