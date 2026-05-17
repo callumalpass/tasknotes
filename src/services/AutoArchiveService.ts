@@ -89,6 +89,11 @@ export class AutoArchiveService {
 			return;
 		}
 
+		if (task.recurrence) {
+			await this.cancelAutoArchive(task.path);
+			return;
+		}
+
 		const now = Date.now();
 		const archiveAfter = now + statusConfig.autoArchiveDelay * 60 * 1000; // Convert minutes to ms
 
