@@ -1,7 +1,7 @@
 import TaskNotesPlugin from "../main";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
-import { TaskInfo } from "../types";
+import type { FieldMappingKey, TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import {
 	Calendar as FullCalendar,
@@ -144,6 +144,32 @@ const CALENDAR_DATA_SIGNATURE_CHECK_INTERVAL_MS = 250;
 const CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS = 2000;
 const DEFAULT_CALENDAR_EVENT_ORDER = "start,-duration,allDay,title";
 export const TASKNOTES_CALENDAR_SORT_INDEX = "tasknotesSortIndex";
+const CALENDAR_DATA_SIGNATURE_FIELDS: FieldMappingKey[] = [
+	"title",
+	"status",
+	"priority",
+	"due",
+	"scheduled",
+	"contexts",
+	"projects",
+	"timeEstimate",
+	"completedDate",
+	"recurrence",
+	"recurrenceAnchor",
+	"timeEntries",
+	"completeInstances",
+	"skippedInstances",
+	"blockedBy",
+	"icsEventId",
+	"googleCalendarEventId",
+	"reminders",
+	"sortOrder",
+];
+const CALENDAR_DATA_SIGNATURE_DEFAULT_FIELDS: Partial<Record<FieldMappingKey, string>> = {
+	completeInstances: "complete_instances",
+	recurrenceAnchor: "recurrence_anchor",
+	skippedInstances: "skipped_instances",
+};
 
 const Calendar = FullCalendar;
 
@@ -164,6 +190,67 @@ type Calendar = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
+}
+
+function stripBasesPropertyPrefix(propertyId: string): string {
+	const parts = propertyId.split(".");
+	if (parts.length > 1 && ["note", "file", "formula"].includes(parts[0])) {
+		return parts.slice(1).join(".");
+	}
+	return propertyId;
+}
+
+function getSignaturePropertyValue(
+	properties: Record<string, unknown>,
+	propertyId: string
+): unknown {
+	if (Object.prototype.hasOwnProperty.call(properties, propertyId)) {
+		return properties[propertyId];
+	}
+
+	const strippedPropertyId = stripBasesPropertyPrefix(propertyId);
+	if (
+		strippedPropertyId !== propertyId &&
+		Object.prototype.hasOwnProperty.call(properties, strippedPropertyId)
+	) {
+		return properties[strippedPropertyId];
+	}
+
+	return null;
+}
+
+function normalizeSignatureValue(value: unknown, seen = new WeakSet<object>()): unknown {
+	if (value === undefined || typeof value === "function" || typeof value === "symbol") {
+		return null;
+	}
+
+	if (typeof value === "bigint") {
+		return value.toString();
+	}
+
+	if (value instanceof Date) {
+		return value.toISOString();
+	}
+
+	if (Array.isArray(value)) {
+		return value.map((item) => normalizeSignatureValue(item, seen));
+	}
+
+	if (isRecord(value)) {
+		if (seen.has(value)) {
+			return "[Circular]";
+		}
+		seen.add(value);
+
+		return Object.keys(value)
+			.sort()
+			.reduce<Record<string, unknown>>((normalized, key) => {
+				normalized[key] = normalizeSignatureValue(value[key], seen);
+				return normalized;
+			}, {});
+	}
+
+	return value;
 }
 
 export function hasBasesCalendarSortConfig(sortConfig: unknown): boolean {
@@ -922,7 +1009,61 @@ export class CalendarView extends BasesViewBase {
 			return "";
 		}
 
-		return this.data.data.map((entry) => entry.file?.path ?? "").join("\u0000");
+		const propertyIds = this.getDataSignaturePropertyIds();
+
+		try {
+			const rows = this.dataAdapter.extractDataItems().map((item) => {
+				const properties = item.properties || item.frontmatter || {};
+				const values = propertyIds.map((propertyId) => [
+					propertyId,
+					normalizeSignatureValue(getSignaturePropertyValue(properties, propertyId)),
+				]);
+
+				return {
+					path: item.path || "",
+					values,
+				};
+			});
+
+			return JSON.stringify({ propertyIds, rows });
+		} catch {
+			return this.data.data.map((entry) => entry.file?.path ?? "").join("\u0000");
+		}
+	}
+
+	private getDataSignaturePropertyIds(): string[] {
+		const propertyIds = new Set<string>();
+		const addPropertyId = (propertyId: unknown) => {
+			if (typeof propertyId !== "string") return;
+			const trimmed = propertyId.trim();
+			if (trimmed) propertyIds.add(trimmed);
+		};
+
+		for (const field of CALENDAR_DATA_SIGNATURE_FIELDS) {
+			const mappedField =
+				this.plugin?.fieldMapper?.toUserField(field) ??
+				CALENDAR_DATA_SIGNATURE_DEFAULT_FIELDS[field] ??
+				field;
+			addPropertyId(mappedField);
+		}
+		addPropertyId("tags");
+		addPropertyId("archived");
+
+		try {
+			for (const propertyId of this.dataAdapter.getVisiblePropertyIds()) {
+				addPropertyId(propertyId);
+			}
+		} catch {
+			// Visible-property config is not always available during early view setup.
+		}
+
+		if (this.viewOptions?.showPropertyBasedEvents) {
+			addPropertyId(this.viewOptions.startDateProperty);
+			addPropertyId(this.viewOptions.endDateProperty);
+			addPropertyId(this.viewOptions.titleProperty);
+		}
+
+		return Array.from(propertyIds);
 	}
 
 	private hasDataSignatureChanged(): boolean {
@@ -992,7 +1133,9 @@ export class CalendarView extends BasesViewBase {
 				return;
 			}
 
-			this.renderPreservingEphemeralState();
+			if (renderAtMaxCheck) {
+				this.renderPreservingEphemeralState();
+			}
 		}, delay);
 	}
 
