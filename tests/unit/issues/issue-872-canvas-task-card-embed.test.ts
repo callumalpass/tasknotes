@@ -33,6 +33,24 @@ function createCanvasEmbed(): HTMLElement {
 	return root;
 }
 
+function mountCanvasEditor(root: HTMLElement): void {
+	const contentEl = root.querySelector(".canvas-node-content") as HTMLElement;
+	contentEl.insertAdjacentHTML(
+		"beforeend",
+		`
+			<div class="markdown-embed-content node-insert-event">
+				<div class="markdown-source-view mod-cm6">
+					<div class="cm-editor">
+						<div class="cm-scroller">
+							<div class="cm-content" contenteditable="true">Body</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		`
+	);
+}
+
 function createPluginMock(options: { isEditing?: boolean } = {}) {
 	const root = createCanvasEmbed();
 	const contentEl = root.querySelector(".canvas-node-content") as HTMLElement;
@@ -138,6 +156,20 @@ describe("Issue #872: task cards in canvas markdown embeds", () => {
 		const widgets = plugin.root.querySelectorAll(".tasknotes-task-card-note-widget");
 		expect(widgets).toHaveLength(1);
 		expect(widgets[0].parentElement).toBe(plugin.root.querySelector(".canvas-node-content"));
+		expect(createTaskCard).toHaveBeenCalledTimes(2);
+	});
+
+	it("keeps the card visible when the canvas editor mounts before isEditing updates", () => {
+		const plugin = createPluginMock({ isEditing: false });
+
+		injectCanvasTaskCardWidgets(plugin);
+		mountCanvasEditor(plugin.root);
+		injectCanvasTaskCardWidgets(plugin, { force: true });
+
+		const widgets = plugin.root.querySelectorAll(".tasknotes-task-card-note-widget");
+		expect(widgets).toHaveLength(1);
+		expect(widgets[0].parentElement).toBe(plugin.root.querySelector(".canvas-node-content"));
+		expect(widgets[0].closest(".markdown-preview-sizer")).toBeNull();
 		expect(createTaskCard).toHaveBeenCalledTimes(2);
 	});
 

@@ -142,6 +142,14 @@ function findCanvasEmbedTaskCardContainer(el: HTMLElement): HTMLElement | null {
 	return el.querySelector<HTMLElement>(".markdown-preview-sizer");
 }
 
+function isCanvasNodeEditing(node: CanvasNodeLike, contentEl: HTMLElement): boolean {
+	if (node.isEditing) {
+		return true;
+	}
+
+	return Boolean(contentEl.querySelector(".markdown-source-view, .cm-editor"));
+}
+
 function canvasNodeNeedsWidgetRefresh(node: CanvasNodeLike, contentEl: HTMLElement): boolean {
 	const widgets = Array.from(contentEl.querySelectorAll(`.${CSS_TASK_CARD_WIDGET}`));
 	if (widgets.length === 0) {
@@ -153,7 +161,9 @@ function canvasNodeNeedsWidgetRefresh(node: CanvasNodeLike, contentEl: HTMLEleme
 		Boolean(widget.closest(".markdown-preview-sizer"))
 	);
 
-	return node.isEditing ? !hasDirectWidget : hasDirectWidget || !hasPreviewWidget;
+	return isCanvasNodeEditing(node, contentEl)
+		? !hasDirectWidget
+		: hasDirectWidget || !hasPreviewWidget;
 }
 
 function getCanvasNodes(leaf: WorkspaceLeaf): CanvasNodeLike[] {
@@ -422,6 +432,11 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 
 		// Don't show note-level widgets in embedded or detached markdown editors
 		if (this.isTableCellEditor(view)) {
+			if (view.dom.closest(".canvas-node-content")) {
+				window.setTimeout(() => {
+					injectCanvasTaskCardWidgets(this.plugin, { force: true });
+				}, 0);
+			}
 			return;
 		}
 
@@ -572,8 +587,9 @@ export function injectCanvasTaskCardWidgets(
 				continue;
 			}
 
+			const isEditing = isCanvasNodeEditing(node, contentEl);
 			const targetContainer = findCanvasEmbedTaskCardContainer(contentEl);
-			if (!node.isEditing && !targetContainer) {
+			if (!isEditing && !targetContainer) {
 				continue;
 			}
 
@@ -589,7 +605,7 @@ export function injectCanvasTaskCardWidgets(
 			}
 
 			const widget = createTaskCardWidget(plugin, task);
-			if (node.isEditing) {
+			if (isEditing) {
 				contentEl.insertBefore(widget, contentEl.firstChild);
 			} else if (targetContainer) {
 				insertAfterMetadataOrHeader(targetContainer, widget);
