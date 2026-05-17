@@ -1,9 +1,14 @@
-import { Menu, Notice, type MenuItem } from "obsidian";
+import { Menu, Notice, TFile, type MenuItem } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { DateContextMenu, type DateOption } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
+import {
+	formatTasksForClipboard,
+	type ClipboardTask,
+	type TaskCopyFormat,
+} from "../utils/taskClipboard";
 
 type SubmenuMenuItem = {
 	setSubmenu(): Menu;
@@ -115,6 +120,17 @@ export class BatchContextMenu {
 
 		this.menu.addSeparator();
 
+		// Copy selected tasks
+		this.menu.addItem((item) => {
+			item.setTitle("Copy selected tasks");
+			item.setIcon("copy");
+
+			const submenu = getSubmenu(item);
+			this.addCopyOptions(submenu);
+		});
+
+		this.menu.addSeparator();
+
 		// Clear selection
 		this.menu.addItem((item) => {
 			item.setTitle("Clear selection");
@@ -135,6 +151,25 @@ export class BatchContextMenu {
 				await this.batchDelete();
 			});
 		});
+	}
+
+	private addCopyOptions(submenu: Menu): void {
+		const options: Array<{ title: string; icon: string; format: TaskCopyFormat }> = [
+			{ title: "Copy filenames", icon: "file-text", format: "filenames" },
+			{ title: "Copy Markdown links", icon: "link", format: "markdown-links" },
+			{ title: "Copy titles", icon: "text", format: "titles" },
+			{ title: "Copy paths", icon: "copy", format: "paths" },
+		];
+
+		for (const option of options) {
+			submenu.addItem((item) => {
+				item.setTitle(option.title);
+				item.setIcon(option.icon);
+				item.onClick(async () => {
+					await this.copySelectedTasks(option.format);
+				});
+			});
+		}
 	}
 
 	private addStatusOptions(submenu: Menu): void {
@@ -236,6 +271,33 @@ export class BatchContextMenu {
 				await this.batchUpdateProperty(dateType, undefined);
 			});
 		});
+	}
+
+	private async copySelectedTasks(format: TaskCopyFormat): Promise<void> {
+		const { plugin, selectedPaths } = this.options;
+		const tasks: ClipboardTask[] = [];
+
+		for (const path of selectedPaths) {
+			const task = await plugin.cacheManager.getTaskInfo(path);
+			tasks.push({
+				path,
+				title: task?.title,
+			});
+		}
+
+		const text = formatTasksForClipboard(tasks, format, (task) =>
+			this.getMarkdownLinkText(task.path)
+		);
+		await navigator.clipboard.writeText(text);
+		new Notice(`Copied ${tasks.length} tasks`);
+	}
+
+	private getMarkdownLinkText(path: string): string {
+		const file = this.options.plugin.app.vault.getAbstractFileByPath(path);
+		if (file instanceof TFile) {
+			return this.options.plugin.app.metadataCache.fileToLinktext(file, "");
+		}
+		return path;
 	}
 
 	private async batchUpdateProperty(property: keyof TaskInfo, value: unknown): Promise<void> {

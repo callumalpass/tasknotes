@@ -1,4 +1,4 @@
-import { Component, App, setIcon } from "obsidian";
+import { Component, App, Notice, setIcon, TFile } from "obsidian";
 import type {
 	BasesPropertyId,
 	BasesQueryResult,
@@ -17,6 +17,12 @@ import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import type { TaskCardOptions } from "../ui/TaskCard";
 import { normalizeDependencyList } from "../utils/dependencyUtils";
+import { identifyTaskNotesFromBasesData } from "./helpers";
+import {
+	formatTasksForClipboard,
+	type ClipboardTask,
+	type TaskCopyFormat,
+} from "../utils/taskClipboard";
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
@@ -34,6 +40,12 @@ type BasesCreateFileFrontmatter = Record<string, unknown>;
 
 type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
 	customFrontmatter?: Record<string, unknown>;
+};
+
+type BasesViewAction = {
+	name: string;
+	icon?: string;
+	callback: () => void;
 };
 
 type BasesFilterLike = {
@@ -213,6 +225,36 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 */
 	refresh(): void {
 		void this.render();
+	}
+
+	/**
+	 * Undocumented Bases hook used by the native result-count menu.
+	 * Obsidian calls this after its built-in Copy and Export CSV actions.
+	 */
+	getViewActions(): BasesViewAction[] {
+		return [
+			{
+				name: "Copy task filenames",
+				icon: "lucide-file-text",
+				callback: () => {
+					void this.copyCurrentViewTasks("filenames");
+				},
+			},
+			{
+				name: "Copy task links",
+				icon: "lucide-link",
+				callback: () => {
+					void this.copyCurrentViewTasks("markdown-links");
+				},
+			},
+			{
+				name: "Copy task titles",
+				icon: "lucide-text",
+				callback: () => {
+					void this.copyCurrentViewTasks("titles");
+				},
+			},
+		];
 	}
 
 	/**
@@ -920,6 +962,45 @@ export abstract class BasesViewBase extends Component implements BasesView {
 		}
 
 		return filtered;
+	}
+
+	private async copyCurrentViewTasks(format: TaskCopyFormat): Promise<void> {
+		try {
+			const tasks = await this.getCurrentViewClipboardTasks();
+			if (tasks.length === 0) {
+				new Notice("No tasks to copy");
+				return;
+			}
+
+			const text = formatTasksForClipboard(tasks, format, (task) =>
+				this.getMarkdownLinkText(task.path)
+			);
+			await navigator.clipboard.writeText(text);
+			new Notice(`Copied ${tasks.length} tasks`);
+		} catch (error) {
+			console.error("[TaskNotes][Bases] Failed to copy current view tasks:", error);
+			new Notice("Failed to copy tasks");
+		}
+	}
+
+	private async getCurrentViewClipboardTasks(): Promise<ClipboardTask[]> {
+		const dataItems = this.dataAdapter.extractDataItems();
+		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+		const filteredTasks = this.applySearchFilter(taskNotes);
+
+		return filteredTasks.map((task) => ({
+			path: task.path,
+			title: task.title,
+		}));
+	}
+
+	private getMarkdownLinkText(path: string): string {
+		const app = this.app || this.plugin.app;
+		const file = app.vault.getAbstractFileByPath(path);
+		if (file instanceof TFile) {
+			return app.metadataCache.fileToLinktext(file, "");
+		}
+		return path;
 	}
 
 	/**
