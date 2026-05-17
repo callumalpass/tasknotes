@@ -80,6 +80,7 @@ Example:
 
 ## Fixed
 
+- ([#1374](https://github.com/callumalpass/tasknotes/issues/1374)) Recognized status and priority labels entered through Obsidian Properties or Bases as their configured TaskNotes values. Thanks to @phortx for reporting this.
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
 - ([#1423](https://github.com/callumalpass/tasknotes/issues/1423)) Refreshed TaskNotes Bases views when subtasks are deleted, so expanded project cards drop removed subtasks and stop showing project controls when the last subtask is gone. Thanks to @normenmueller for reporting this.
 - ([#1419](https://github.com/callumalpass/tasknotes/issues/1419)) Kept custom user field name, key, and default-value edits in Task Properties settings when closing settings without first blurring the field. Thanks to @s33a for reporting this and @kacoroski for the follow-up.

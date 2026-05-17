@@ -1,4 +1,5 @@
 import { PriorityConfig } from "../types";
+import { normalizePriorityConfigValue } from "../core/fieldMapping";
 
 /**
  * Service for managing custom task priorities
@@ -6,11 +7,16 @@ import { PriorityConfig } from "../types";
 export class PriorityManager {
 	constructor(private priorities: PriorityConfig[]) {}
 
+	normalizePriorityValue(value: unknown): string {
+		return normalizePriorityConfigValue(value, this.priorities) ?? String(value);
+	}
+
 	/**
 	 * Get priority configuration by value
 	 */
 	getPriorityConfig(value: string): PriorityConfig | undefined {
-		return this.priorities.find((p) => p.value === value);
+		const normalizedValue = this.normalizePriorityValue(value);
+		return this.priorities.find((p) => p.value === normalizedValue);
 	}
 
 	/**
@@ -32,7 +38,8 @@ export class PriorityManager {
 	 */
 	getNextPriority(currentPriority: string): string {
 		const sortedPriorities = this.getPrioritiesByWeightAsc();
-		const currentIndex = sortedPriorities.findIndex((p) => p.value === currentPriority);
+		const normalizedPriority = this.normalizePriorityValue(currentPriority);
+		const currentIndex = sortedPriorities.findIndex((p) => p.value === normalizedPriority);
 
 		if (currentIndex === -1) {
 			// Current priority not found, return first priority

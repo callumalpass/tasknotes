@@ -61,6 +61,10 @@ export class SettingsLifecycleService {
 
 		this.plugin.fieldMapper?.updateMapping(this.plugin.settings.fieldMapping);
 		this.plugin.fieldMapper?.updateUserFields(this.plugin.settings.userFields ?? []);
+		this.plugin.fieldMapper?.updateConfiguredValues(
+			this.plugin.settings.customStatuses,
+			this.plugin.settings.customPriorities
+		);
 		this.plugin.statusManager?.updateStatuses(this.plugin.settings.customStatuses);
 		this.plugin.priorityManager?.updatePriorities(this.plugin.settings.customPriorities);
 
@@ -90,6 +94,10 @@ export class SettingsLifecycleService {
 
 		this.plugin.fieldMapper?.updateMapping(this.plugin.settings.fieldMapping);
 		this.plugin.fieldMapper?.updateUserFields(this.plugin.settings.userFields ?? []);
+		this.plugin.fieldMapper?.updateConfiguredValues(
+			this.plugin.settings.customStatuses,
+			this.plugin.settings.customPriorities
+		);
 		this.plugin.statusManager?.updateStatuses(this.plugin.settings.customStatuses);
 		this.plugin.priorityManager?.updatePriorities(this.plugin.settings.customPriorities);
 

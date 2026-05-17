@@ -1,5 +1,5 @@
  
-import { FieldMapping, TaskInfo } from "../types";
+import { FieldMapping, PriorityConfig, StatusConfig, TaskInfo } from "../types";
 import type { UserMappedField } from "../types/settings";
 import {
 	isPropertyForField,
@@ -18,7 +18,9 @@ import {
 export class FieldMapper {
 	constructor(
 		private mapping: FieldMapping,
-		private userFields: UserMappedField[] = []
+		private userFields: UserMappedField[] = [],
+		private statuses: readonly StatusConfig[] = [],
+		private priorities: readonly PriorityConfig[] = []
 	) {}
 
 	/**
@@ -26,6 +28,18 @@ export class FieldMapper {
 	 */
 	updateUserFields(fields: UserMappedField[]): void {
 		this.userFields = fields;
+	}
+
+	/**
+	 * Update status and priority definitions used to normalize values read
+	 * directly from Obsidian properties or Bases.
+	 */
+	updateConfiguredValues(
+		statuses: readonly StatusConfig[],
+		priorities: readonly PriorityConfig[]
+	): void {
+		this.statuses = statuses;
+		this.priorities = priorities;
 	}
 
 	/**
@@ -61,7 +75,9 @@ export class FieldMapper {
 			frontmatterRecord,
 			filePath,
 			storeTitleInFilename,
-			this.userFields
+			this.userFields,
+			this.statuses,
+			this.priorities
 		);
 	}
 

@@ -784,7 +784,7 @@ export class KanbanView extends BasesViewBase {
 
 			for (const group of basesGroups) {
 				const rawGroupKey = this.dataAdapter.convertGroupKeyToString(group.key);
-				const groupKey = this.canonicalizeStatusGroupKey(rawGroupKey, groupByPropertyId);
+				const groupKey = this.canonicalizeConfiguredGroupKey(rawGroupKey, groupByPropertyId);
 				const groupTasks = groups.get(groupKey) || [];
 
 				for (const entry of group.entries) {
@@ -913,7 +913,8 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		const props = pathToProps.get(task.path) || {};
-		return [this.valueToString(this.getPropertyValue(props, this.swimLanePropertyId))];
+		const swimLaneKey = this.valueToString(this.getPropertyValue(props, this.swimLanePropertyId));
+		return [this.canonicalizeConfiguredGroupKey(swimLaneKey, this.swimLanePropertyId)];
 	}
 
 	private valueToListGroupKeys(value: unknown): string[] {
@@ -945,12 +946,26 @@ export class KanbanView extends BasesViewBase {
 		return cleanGroupBy === statusPropertyName;
 	}
 
-	private canonicalizeStatusGroupKey(groupKey: string, groupByPropertyId: string): string {
-		if (!this.isStatusGroupingProperty(groupByPropertyId)) {
+	private isPriorityGroupingProperty(propertyId: string): boolean {
+		const priorityPropertyName = this.plugin.fieldMapper.toUserField("priority");
+		const cleanGroupBy = stripPropertyPrefix(propertyId);
+		return cleanGroupBy === priorityPropertyName;
+	}
+
+	private canonicalizeConfiguredGroupKey(groupKey: string, propertyId: string): string {
+		if (groupKey.trim() === "None") {
 			return groupKey;
 		}
 
-		return this.findStatusConfigForGroupKey(groupKey)?.value ?? groupKey;
+		if (this.isStatusGroupingProperty(propertyId)) {
+			return this.findStatusConfigForGroupKey(groupKey)?.value ?? groupKey;
+		}
+
+		if (this.isPriorityGroupingProperty(propertyId)) {
+			return this.plugin.priorityManager.normalizePriorityValue(groupKey);
+		}
+
+		return groupKey;
 	}
 
 	private findStatusConfigForGroupKey(groupKey: string): StatusConfig | undefined {
@@ -962,6 +977,10 @@ export class KanbanView extends BasesViewBase {
 		const statuses = this.plugin.statusManager.getAllStatuses();
 		const exactValue = statuses.find((status) => status.value === normalizedGroupKey);
 		if (exactValue) return exactValue;
+
+		const normalizedValue = this.plugin.statusManager.normalizeStatusValue(normalizedGroupKey);
+		const normalizedStatus = statuses.find((status) => status.value === normalizedValue);
+		if (normalizedStatus) return normalizedStatus;
 
 		const exactLabelMatches = statuses.filter((status) => status.label === normalizedGroupKey);
 		if (exactLabelMatches.length === 1) return exactLabelMatches[0];

@@ -1,4 +1,5 @@
 import { StatusConfig } from "../types";
+import { normalizeStatusConfigValue } from "../core/fieldMapping";
 
 /**
  * Service for managing custom task statuses
@@ -6,8 +7,8 @@ import { StatusConfig } from "../types";
 export class StatusManager {
 	constructor(private statuses: StatusConfig[], private defaultStatus = "open") {}
 
-	private normalizeStatusValue(value: unknown): string {
-		return typeof value === "boolean" ? (value ? "true" : "false") : String(value);
+	normalizeStatusValue(value: unknown): string {
+		return normalizeStatusConfigValue(value, this.statuses) ?? String(value);
 	}
 
 	private findStatusIndex(statuses: StatusConfig[], statusValue: string): number {

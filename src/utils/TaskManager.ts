@@ -2,6 +2,10 @@
 import { TFile, App, Events, EventRef } from "obsidian";
 import { TaskInfo, NoteInfo } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
+import {
+	normalizePriorityConfigValue,
+	normalizeStatusConfigValue,
+} from "../core/fieldMapping";
 import { FilterUtils } from "./FilterUtils";
 import {
 	getTodayString,
@@ -416,6 +420,8 @@ export class TaskManager extends Events {
 		const files = this.app.vault.getMarkdownFiles();
 
 		const statusField = this.fieldMapper?.toUserField("status") || "status";
+		const expectedStatus =
+			normalizeStatusConfigValue(status, this.settings.customStatuses) ?? status;
 
 		for (const file of files) {
 			if (!this.isValidFile(file.path)) continue;
@@ -423,7 +429,11 @@ export class TaskManager extends Events {
 			const metadata = this.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
-			if (metadata.frontmatter[statusField] === status) {
+			const actualStatus = normalizeStatusConfigValue(
+				metadata.frontmatter[statusField],
+				this.settings.customStatuses
+			);
+			if (actualStatus === expectedStatus) {
 				taskPaths.push(file.path);
 			}
 		}
@@ -439,6 +449,8 @@ export class TaskManager extends Events {
 		const files = this.app.vault.getMarkdownFiles();
 
 		const priorityField = this.fieldMapper?.toUserField("priority") || "priority";
+		const expectedPriority =
+			normalizePriorityConfigValue(priority, this.settings.customPriorities) ?? priority;
 
 		for (const file of files) {
 			if (!this.isValidFile(file.path)) continue;
@@ -446,7 +458,11 @@ export class TaskManager extends Events {
 			const metadata = this.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
-			if (metadata.frontmatter[priorityField] === priority) {
+			const actualPriority = normalizePriorityConfigValue(
+				metadata.frontmatter[priorityField],
+				this.settings.customPriorities
+			);
+			if (actualPriority === expectedPriority) {
 				taskPaths.push(file.path);
 			}
 		}
@@ -472,7 +488,10 @@ export class TaskManager extends Events {
 			if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
 			const due = metadata.frontmatter[dueField];
-			const status = metadata.frontmatter[statusField];
+			const status = normalizeStatusConfigValue(
+				metadata.frontmatter[statusField],
+				this.settings.customStatuses
+			);
 
 			// Only count as overdue if the status is not marked as completed
 			// Check against user-defined completed statuses from settings
@@ -504,7 +523,8 @@ export class TaskManager extends Events {
 			if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
 			const status = metadata.frontmatter[statusField];
-			if (status) statuses.add(status);
+			const normalizedStatus = normalizeStatusConfigValue(status, this.settings.customStatuses);
+			if (normalizedStatus) statuses.add(normalizedStatus);
 		}
 
 		return Array.from(statuses).sort();
@@ -526,7 +546,11 @@ export class TaskManager extends Events {
 			if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
 			const priority = metadata.frontmatter[priorityField];
-			if (priority) priorities.add(priority);
+			const normalizedPriority = normalizePriorityConfigValue(
+				priority,
+				this.settings.customPriorities
+			);
+			if (normalizedPriority) priorities.add(normalizedPriority);
 		}
 
 		return Array.from(priorities).sort();

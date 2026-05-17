@@ -1,5 +1,5 @@
  
-import { FieldMapping, Reminder, TaskInfo, TimeEntry } from "../types";
+import { FieldMapping, PriorityConfig, Reminder, StatusConfig, TaskInfo, TimeEntry } from "../types";
 import type { UserMappedField } from "../types/settings";
 import {
 	normalizeDependencyEntry,
@@ -34,6 +34,75 @@ function normalizeStringValue(value: unknown): string | undefined {
 	return undefined;
 }
 
+type ConfiguredValue = {
+	value: string;
+	label: string;
+};
+
+function findUniqueConfiguredValue<T extends ConfiguredValue>(
+	configs: readonly T[],
+	matches: (config: T) => boolean
+): T | undefined {
+	const matched = configs.filter(matches);
+	return matched.length === 1 ? matched[0] : undefined;
+}
+
+function normalizeConfiguredValue(
+	rawValue: string | undefined,
+	configs: readonly ConfiguredValue[] = []
+): string | undefined {
+	if (rawValue === undefined || configs.length === 0) {
+		return rawValue;
+	}
+
+	const exactValue = configs.find((config) => config.value === rawValue);
+	if (exactValue) {
+		return exactValue.value;
+	}
+
+	const exactLabel = findUniqueConfiguredValue(configs, (config) => config.label === rawValue);
+	if (exactLabel) {
+		return exactLabel.value;
+	}
+
+	const normalized = rawValue.trim().toLocaleLowerCase();
+	if (normalized.length === 0) {
+		return rawValue;
+	}
+
+	const caseInsensitiveValue = findUniqueConfiguredValue(
+		configs,
+		(config) => config.value.trim().toLocaleLowerCase() === normalized
+	);
+	if (caseInsensitiveValue) {
+		return caseInsensitiveValue.value;
+	}
+
+	const caseInsensitiveLabel = findUniqueConfiguredValue(
+		configs,
+		(config) => config.label.trim().toLocaleLowerCase() === normalized
+	);
+	if (caseInsensitiveLabel) {
+		return caseInsensitiveLabel.value;
+	}
+
+	return rawValue;
+}
+
+export function normalizeStatusConfigValue(
+	value: unknown,
+	statuses: readonly StatusConfig[] = []
+): string | undefined {
+	return normalizeConfiguredValue(normalizeStringValue(value), statuses);
+}
+
+export function normalizePriorityConfigValue(
+	value: unknown,
+	priorities: readonly PriorityConfig[] = []
+): string | undefined {
+	return normalizeConfiguredValue(normalizeStringValue(value), priorities);
+}
+
 function normalizeStringArrayValue(value: unknown): string[] {
 	if (Array.isArray(value)) return value.map(String);
 	return [String(value)];
@@ -65,7 +134,9 @@ export function mapTaskFromFrontmatter(
 	frontmatter: Record<string, unknown> | undefined | null,
 	filePath: string,
 	storeTitleInFilename?: boolean,
-	userFields: UserMappedField[] = []
+	userFields: UserMappedField[] = [],
+	statuses: readonly StatusConfig[] = [],
+	priorities: readonly PriorityConfig[] = []
 ): Partial<TaskInfo> {
 	if (!frontmatter) return {};
 
@@ -91,13 +162,11 @@ export function mapTaskFromFrontmatter(
 	}
 
 	if (frontmatter[mapping.status] !== undefined) {
-		const statusValue = frontmatter[mapping.status];
-		mapped.status =
-			typeof statusValue === "boolean" ? (statusValue ? "true" : "false") : String(statusValue);
+		mapped.status = normalizeStatusConfigValue(frontmatter[mapping.status], statuses);
 	}
 
 	if (frontmatter[mapping.priority] !== undefined) {
-		mapped.priority = normalizeStringValue(frontmatter[mapping.priority]);
+		mapped.priority = normalizePriorityConfigValue(frontmatter[mapping.priority], priorities);
 	}
 
 	if (frontmatter[mapping.due] !== undefined) {
