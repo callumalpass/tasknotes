@@ -54,7 +54,7 @@ You may update `.ops/` files locally as you work on items, but do not commit `.o
 
 When asked to prepare for a release: 
 
-1. Run through the @I18N_GUIDE.md and make sure translations are up-to-date. 
+1. Run through the @I18N_GUIDE.md and make sure translations are up-to-date (and in their target language--not English placeholders). 
 2. Make sure ALL `npm run test` tests are passing. 
 3. Make sure there are no linting errors.
 4. Make sure all items in @docs/releases/unreleased.md thank the correct issue/pr opener (double check), as well as those who have commented on the issue/pr. Make sure the copy is appropriate--it is user facing so it should not be overly technical. Make sure it is free from anything that resembles marketing copy. do not thank callumalpass 
