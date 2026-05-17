@@ -273,6 +273,7 @@ export class TaskCreationModal extends TaskModal {
 
 		if (previewData.length > 0 && parsed.title) {
 			this.nlPreviewContainer.empty();
+			this.nlPreviewContainer.classList.add("nl-preview-container--visible");
 			this.nlPreviewContainer.classList.remove(
 				"tn-static-display-flex-4d51fc62",
 				"tn-static-display-flex-75816cae",
@@ -283,7 +284,6 @@ export class TaskCreationModal extends TaskModal {
 				"tn-static-display-none-6b99de8b",
 				"tn-static-min-height-800px-997b4c8c"
 			);
-			this.nlPreviewContainer.classList.add("tn-static-display-block-2a1b75c9");
 
 			previewData.forEach((item) => {
 				const previewItem = this.nlPreviewContainer.createDiv("nl-preview-item");
@@ -297,6 +297,7 @@ export class TaskCreationModal extends TaskModal {
 	private clearNaturalLanguagePreview(): void {
 		if (this.nlPreviewContainer) {
 			this.nlPreviewContainer.empty();
+			this.nlPreviewContainer.classList.remove("nl-preview-container--visible");
 			this.nlPreviewContainer.classList.remove(
 				"tn-static-display-block-2a1b75c9",
 				"tn-static-display-flex-4d51fc62",
@@ -307,7 +308,6 @@ export class TaskCreationModal extends TaskModal {
 				"tn-static-display-inline-flex-f984c520",
 				"tn-static-min-height-800px-997b4c8c"
 			);
-			this.nlPreviewContainer.classList.add("tn-static-display-none-6b99de8b");
 		}
 	}
 

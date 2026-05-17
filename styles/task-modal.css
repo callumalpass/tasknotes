@@ -1140,6 +1140,10 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     display: none;
 }
 
+.tasknotes-plugin .nl-preview-container.nl-preview-container--visible {
+    display: block;
+}
+
 .tasknotes-plugin .nl-preview-item {
     display: flex;
     align-items: center;
