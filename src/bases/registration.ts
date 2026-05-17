@@ -1,5 +1,4 @@
- 
-import TaskNotesPlugin from "../main";
+import type TaskNotesPlugin from "../main";
 import { requireApiVersion } from "obsidian";
 import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildTaskListViewFactory } from "./TaskListView";
@@ -7,6 +6,7 @@ import { buildKanbanViewFactory } from "./KanbanView";
 import { buildCalendarViewFactory } from "./CalendarView";
 import { buildMiniCalendarViewFactory } from "./MiniCalendarView";
 import { registerBasesView, unregisterBasesView } from "./api";
+import { isNoteFileOrFormulaProperty } from "./propertyFilters";
 
 /**
  * Register TaskNotes views with Bases plugin
@@ -466,8 +466,8 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										displayName: t("propertyBasedEvents.startDateProperty"),
 										placeholder: t("propertyBasedEvents.startDatePropertyPlaceholder"),
 										filter: (prop: string) => {
-											// Only show date-type properties
-											return prop.startsWith("note.") || prop.startsWith("file.");
+											// Include formula outputs; Bases does not expose formula result types here.
+											return isNoteFileOrFormulaProperty(prop);
 										},
 									},
 									{
@@ -476,8 +476,8 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										displayName: t("propertyBasedEvents.endDateProperty"),
 										placeholder: t("propertyBasedEvents.endDatePropertyPlaceholder"),
 										filter: (prop: string) => {
-											// Only show date-type properties
-											return prop.startsWith("note.") || prop.startsWith("file.");
+											// Include formula outputs; Bases does not expose formula result types here.
+											return isNoteFileOrFormulaProperty(prop);
 										},
 									},
 									{
@@ -487,7 +487,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										placeholder: t("propertyBasedEvents.titlePropertyPlaceholder"),
 										filter: (prop: string) => {
 											// Show text properties (note, formula, file)
-											return prop.startsWith("note.") || prop.startsWith("formula.") || prop.startsWith("file.");
+											return isNoteFileOrFormulaProperty(prop);
 										},
 									},
 								],
@@ -589,7 +589,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							default: "file.name",
 							filter: (prop: string) => {
 								// Show text properties (note, formula, file)
-								return prop.startsWith("note.") || prop.startsWith("formula.") || prop.startsWith("file.");
+								return isNoteFileOrFormulaProperty(prop);
 							},
 						},
 					];
