@@ -39,6 +39,7 @@ import {
 	createICSEvent,
 	showTimeblockInfoModal,
 	attachDailyNoteHeaderLink,
+	shiftTaskDatePreservingTime,
 } from "./calendar-core";
 import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
@@ -2369,15 +2370,14 @@ export class CalendarView extends BasesViewBase {
 					let dueString: string | undefined;
 
 					if (taskInfo.scheduled) {
-						const oldScheduled = new Date(taskInfo.scheduled);
-						const newScheduled = new Date(oldScheduled.getTime() + timeDiffMs);
-						scheduledString = format(newScheduled, "yyyy-MM-dd");
+						scheduledString = shiftTaskDatePreservingTime(
+							taskInfo.scheduled,
+							timeDiffMs
+						);
 					}
 
 					if (taskInfo.due) {
-						const oldDue = new Date(taskInfo.due);
-						const newDue = new Date(oldDue.getTime() + timeDiffMs);
-						dueString = format(newDue, "yyyy-MM-dd");
+						dueString = shiftTaskDatePreservingTime(taskInfo.due, timeDiffMs);
 					}
 
 					// Update both dates atomically in a single frontmatter write

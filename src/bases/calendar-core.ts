@@ -465,6 +465,15 @@ export function calculateAllDayEndDate(
 	return formatDateForStorage(end);
 }
 
+export function shiftTaskDatePreservingTime(dateValue: string, timeDiffMs: number): string {
+	const oldDate = parseDateToLocal(dateValue);
+	const shiftedDate = new Date(oldDate.getTime() + timeDiffMs);
+
+	return hasTimeComponent(dateValue)
+		? format(shiftedDate, "yyyy-MM-dd'T'HH:mm")
+		: format(shiftedDate, "yyyy-MM-dd");
+}
+
 /**
  * Create scheduled event from task
  */
@@ -552,10 +561,10 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 }
 
 /**
- * Create a spanning event from scheduled date to due date.
+ * Create a date-only spanning event from scheduled date to due date.
  * Shows the task as a multi-day bar from when work starts to when it's due.
  */
-export function createScheduledToDueSpanEvent(
+function createAllDayScheduledToDueSpanEvent(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin
 ): CalendarEvent | null {
@@ -595,6 +604,115 @@ export function createScheduledToDueSpanEvent(
 			isCompleted: isCompleted,
 		},
 	};
+}
+
+function isCalendarEventInVisibleRange(
+	event: CalendarEvent,
+	visibleStart?: Date,
+	visibleEnd?: Date
+): boolean {
+	if (!visibleStart || !visibleEnd) return true;
+
+	const eventStart = parseDateToLocal(event.start);
+	const eventEnd = event.end ? parseDateToLocal(event.end) : eventStart;
+
+	return (
+		eventStart.getTime() < visibleEnd.getTime() &&
+		eventEnd.getTime() >= visibleStart.getTime()
+	);
+}
+
+function createTimedScheduledToDueSpanEvents(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	visibleStart?: Date,
+	visibleEnd?: Date
+): CalendarEvent[] {
+	if (!task.scheduled || !task.due) return [];
+
+	const scheduledDate = parseDateToLocal(task.scheduled);
+	const dueDate = parseDateToLocal(task.due);
+	if (dueDate <= scheduledDate) return [];
+
+	const scheduledTime = getTimePart(task.scheduled);
+	if (!scheduledTime) return [];
+
+	const [hours, minutes] = scheduledTime.split(":").map(Number);
+	const firstDate = parseDateToLocal(getDatePart(task.scheduled));
+	const lastDate = parseDateToLocal(getDatePart(task.due));
+
+	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
+	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const fadedBackground = hexToRgba(borderColor, 0.2);
+	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
+
+	const events: CalendarEvent[] = [];
+	for (
+		const day = new Date(firstDate);
+		day.getTime() <= lastDate.getTime();
+		day.setDate(day.getDate() + 1)
+	) {
+		const start = new Date(day);
+		start.setHours(hours, minutes, 0, 0);
+
+		let end: string | undefined;
+		if (task.timeEstimate) {
+			const endDate = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
+			end = format(endDate, "yyyy-MM-dd'T'HH:mm");
+		}
+
+		const instanceDate = format(day, "yyyy-MM-dd");
+		const event: CalendarEvent = {
+			id: `span-${task.path}-${instanceDate}`,
+			title: task.title,
+			start: format(start, "yyyy-MM-dd'T'HH:mm"),
+			end,
+			allDay: false,
+			backgroundColor: fadedBackground,
+			borderColor: borderColor,
+			textColor: textColor,
+			editable: true,
+			extendedProps: {
+				taskInfo: task,
+				eventType: "scheduledToDueSpan",
+				isCompleted: isCompleted,
+			},
+		};
+
+		if (isCalendarEventInVisibleRange(event, visibleStart, visibleEnd)) {
+			events.push(event);
+		}
+	}
+
+	return events;
+}
+
+export function createScheduledToDueSpanEvents(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	visibleStart?: Date,
+	visibleEnd?: Date
+): CalendarEvent[] {
+	if (!task.scheduled || !task.due) return [];
+
+	if (hasTimeComponent(task.scheduled)) {
+		return createTimedScheduledToDueSpanEvents(task, plugin, visibleStart, visibleEnd);
+	}
+
+	const spanEvent = createAllDayScheduledToDueSpanEvent(task, plugin);
+	if (!spanEvent || !isCalendarEventInVisibleRange(spanEvent, visibleStart, visibleEnd)) {
+		return [];
+	}
+
+	return [spanEvent];
+}
+
+export function createScheduledToDueSpanEvent(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): CalendarEvent | null {
+	return createScheduledToDueSpanEvents(task, plugin)[0] ?? null;
 }
 
 /**
@@ -1170,16 +1288,15 @@ export async function generateCalendarEvents(
 				// Check if we should show a span event (replaces individual scheduled/due for this task)
 				let showedSpan = false;
 				if (showScheduledToDueSpan && task.scheduled && task.due) {
-					const spanEvent = createScheduledToDueSpanEvent(task, plugin);
-					if (spanEvent) {
-						// Check if span is in visible range (use scheduled date for range check)
-						if (
-							isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd) ||
-							isDateInVisibleRange(task.due, visibleStart, visibleEnd)
-						) {
-							events.push(spanEvent);
-							showedSpan = true;
-						}
+					const spanEvents = createScheduledToDueSpanEvents(
+						task,
+						plugin,
+						visibleStart,
+						visibleEnd
+					);
+					if (spanEvents.length > 0) {
+						events.push(...spanEvents);
+						showedSpan = true;
 					}
 				}
 
