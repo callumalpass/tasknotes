@@ -1,5 +1,15 @@
-import { App, Constructor, Scope, TFile } from "obsidian";
-import { EditorSelection, Extension, Prec } from "@codemirror/state";
+import {
+	App,
+	Constructor,
+	Scope,
+	TFile,
+	type Editor,
+	type EditorPosition,
+	type EditorSelection,
+	type EditorSelectionOrCaret,
+	type EditorTransaction,
+} from "obsidian";
+import { EditorSelection as CMEditorSelection, Extension, Prec } from "@codemirror/state";
 import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
 import { around } from "monkey-around";
 
@@ -49,8 +59,14 @@ type MarkdownEditorOwner = {
 	editor: MarkdownEditorInternal | null;
 };
 
+type ActiveMarkdownEditorOwner = {
+	editMode: unknown;
+	editor: Editor;
+	file: TFile | null;
+};
+
 type WorkspaceWithActiveEditor = {
-	activeEditor: MarkdownEditorOwner;
+	activeEditor: ActiveMarkdownEditorOwner | null;
 };
 
 type ActiveLeafContext = {
@@ -123,7 +139,16 @@ function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 			activeCM: unknown;
 			owner: MarkdownEditorOwner = { editMode: null, editor: null };
 			_loaded = false;
-			set(value: string): void {}
+			set(value: string): void {
+				const view = this.editor.cm as unknown as EditorView;
+				view.dispatch({
+					changes: {
+						from: 0,
+						to: view.state.doc.length,
+						insert: value,
+					},
+				});
+			}
 			onUpdate(update: ViewUpdate, changed: boolean): void {}
 			buildLocalExtensions(): Extension[] {
 				return [];
@@ -166,10 +191,12 @@ export interface MarkdownEditorProps {
 	extensions?: Extension[];
 	/** Automatically enter vim insert mode on first focus when vim keybindings are enabled */
 	enterVimInsertMode?: boolean;
+	/** File associated with this modal editor for plugins that read workspace.activeEditor */
+	file?: TFile | null;
 }
 
-type ResolvedMarkdownEditorProps = Required<Omit<MarkdownEditorProps, "cursorLocation">> &
-	Pick<MarkdownEditorProps, "cursorLocation">;
+type ResolvedMarkdownEditorProps = Required<Omit<MarkdownEditorProps, "cursorLocation" | "file">> &
+	Pick<MarkdownEditorProps, "cursorLocation" | "file">;
 
 const defaultProperties: ResolvedMarkdownEditorProps = {
 	cursorLocation: undefined, // Don't set cursor by default
@@ -185,7 +212,191 @@ const defaultProperties: ResolvedMarkdownEditorProps = {
 	onChange: () => {},
 	extensions: [],
 	enterVimInsertMode: false,
+	file: undefined,
 };
+
+class CodeMirrorEditorAdapter {
+	constructor(private readonly view: EditorView) {}
+
+	getDoc(): CodeMirrorEditorAdapter {
+		return this;
+	}
+
+	getValue(): string {
+		return this.view.state.doc.toString();
+	}
+
+	setValue(content: string): void {
+		this.view.dispatch({
+			changes: {
+				from: 0,
+				to: this.view.state.doc.length,
+				insert: content,
+			},
+		});
+	}
+
+	getLine(line: number): string {
+		return this.view.state.doc.line(line + 1).text;
+	}
+
+	lineCount(): number {
+		return this.view.state.doc.lines;
+	}
+
+	lastLine(): number {
+		return this.lineCount() - 1;
+	}
+
+	getSelection(): string {
+		const range = this.view.state.selection.main;
+		return this.view.state.doc.sliceString(range.from, range.to);
+	}
+
+	somethingSelected(): boolean {
+		return !this.view.state.selection.main.empty;
+	}
+
+	getRange(from: EditorPosition, to: EditorPosition): string {
+		return this.view.state.doc.sliceString(this.posToOffset(from), this.posToOffset(to));
+	}
+
+	replaceSelection(replacement: string): void {
+		const transaction = this.view.state.changeByRange((range) => ({
+			changes: {
+				from: range.from,
+				to: range.to,
+				insert: replacement,
+			},
+			range: CMEditorSelection.cursor(range.from + replacement.length),
+		}));
+
+		this.view.dispatch(transaction);
+	}
+
+	replaceRange(replacement: string, from: EditorPosition, to?: EditorPosition): void {
+		this.view.dispatch({
+			changes: {
+				from: this.posToOffset(from),
+				to: this.posToOffset(to ?? from),
+				insert: replacement,
+			},
+		});
+	}
+
+	getCursor(side: "from" | "to" | "head" | "anchor" = "head"): EditorPosition {
+		const range = this.view.state.selection.main;
+		switch (side) {
+			case "from":
+				return this.offsetToPos(range.from);
+			case "to":
+				return this.offsetToPos(range.to);
+			case "anchor":
+				return this.offsetToPos(range.anchor);
+			case "head":
+			default:
+				return this.offsetToPos(range.head);
+		}
+	}
+
+	listSelections(): EditorSelection[] {
+		return this.view.state.selection.ranges.map((range) => ({
+			anchor: this.offsetToPos(range.anchor),
+			head: this.offsetToPos(range.head),
+		}));
+	}
+
+	setCursor(pos: EditorPosition | number, ch?: number): void {
+		if (typeof pos === "number") {
+			this.setSelection({ line: pos, ch: ch ?? 0 });
+			return;
+		}
+
+		this.setSelection(pos);
+	}
+
+	setSelection(anchor: EditorPosition, head?: EditorPosition): void {
+		this.view.dispatch({
+			selection: CMEditorSelection.range(
+				this.posToOffset(anchor),
+				this.posToOffset(head ?? anchor)
+			),
+		});
+	}
+
+	setSelections(ranges: EditorSelectionOrCaret[], main = 0): void {
+		if (ranges.length === 0) return;
+
+		this.view.dispatch({
+			selection: CMEditorSelection.create(
+				ranges.map((range) =>
+					CMEditorSelection.range(
+						this.posToOffset(range.anchor),
+						this.posToOffset(range.head ?? range.anchor)
+					)
+				),
+				main
+			),
+		});
+	}
+
+	focus(): void {
+		this.view.focus();
+	}
+
+	blur(): void {
+		this.view.contentDOM.blur();
+	}
+
+	hasFocus(): boolean {
+		return this.view.hasFocus;
+	}
+
+	transaction(tx: EditorTransaction): void {
+		if (tx.replaceSelection !== undefined) {
+			this.replaceSelection(tx.replaceSelection);
+			return;
+		}
+
+		const changes = tx.changes?.map((change) => ({
+			from: this.posToOffset(change.from),
+			to: this.posToOffset(change.to ?? change.from),
+			insert: change.text,
+		}));
+
+		const selections = tx.selections ?? (tx.selection ? [tx.selection] : undefined);
+		this.view.dispatch({
+			...(changes ? { changes } : {}),
+			...(selections && selections.length > 0
+				? {
+						selection: CMEditorSelection.create(
+							selections.map((selection) =>
+								CMEditorSelection.range(
+									this.posToOffset(selection.from),
+									this.posToOffset(selection.to ?? selection.from)
+								)
+							)
+						),
+					}
+				: {}),
+		});
+	}
+
+	posToOffset(pos: EditorPosition): number {
+		const lineNumber = Math.max(1, Math.min(pos.line + 1, this.view.state.doc.lines));
+		const line = this.view.state.doc.line(lineNumber);
+		return Math.max(line.from, Math.min(line.from + pos.ch, line.to));
+	}
+
+	offsetToPos(offset: number): EditorPosition {
+		const clampedOffset = Math.max(0, Math.min(offset, this.view.state.doc.length));
+		const line = this.view.state.doc.lineAt(clampedOffset);
+		return {
+			line: line.number - 1,
+			ch: clampedOffset - line.from,
+		};
+	}
+}
 
 /**
  * An embeddable markdown editor that provides full CodeMirror editing capabilities
@@ -209,6 +420,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	scope: Scope;
 	private uninstaller?: () => void;
 	private hasEnteredVimInsertMode = false;
+	private activeEditorOwner: ActiveMarkdownEditorOwner;
 
 	constructor(app: App, container: HTMLElement, options: Partial<MarkdownEditorProps> = {}) {
 		super(app, container, {
@@ -227,6 +439,11 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 
 		this.owner.editMode = this;
 		this.owner.editor = this.editor;
+		this.activeEditorOwner = {
+			editMode: this,
+			editor: new CodeMirrorEditorAdapter(this.editor.cm as unknown as EditorView) as unknown as Editor,
+			file: this.getActiveEditorFile(),
+		};
 
 		// IMPORTANT: From Obsidian 1.5.8+, must explicitly set value
 		this.set(options.value || "");
@@ -253,7 +470,9 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		// Set up focus handler
 		this.editor.cm.contentDOM.addEventListener("focusin", () => {
 			this.app.keymap.pushScope(this.scope);
-			(this.app.workspace as unknown as WorkspaceWithActiveEditor).activeEditor = this.owner;
+			this.activeEditorOwner.file = this.getActiveEditorFile();
+			(this.app.workspace as unknown as WorkspaceWithActiveEditor).activeEditor =
+				this.activeEditorOwner;
 
 			// Enter vim insert mode on first focus if requested and vim mode is enabled
 			if (this.options.enterVimInsertMode && !this.hasEnteredVimInsertMode) {
@@ -270,12 +489,20 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		// Set initial cursor position
 		if (options.cursorLocation) {
 			this.editor.cm.dispatch({
-				selection: EditorSelection.range(
+				selection: CMEditorSelection.range(
 					options.cursorLocation.anchor,
 					options.cursorLocation.head
 				),
 			});
 		}
+	}
+
+	private getActiveEditorFile(): TFile | null {
+		if (this.options.file !== undefined) {
+			return this.options.file ?? null;
+		}
+
+		return this.app.workspace.getActiveFile();
 	}
 
 	/**
@@ -421,7 +648,10 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		}
 
 		this.app.keymap.popScope(this.scope);
-		this.app.workspace.activeEditor = null;
+		const workspace = this.app.workspace as unknown as WorkspaceWithActiveEditor;
+		if (workspace.activeEditor === this.activeEditorOwner) {
+			workspace.activeEditor = null;
+		}
 
 		// Call uninstaller to remove monkey-patching
 		if (this.uninstaller) {

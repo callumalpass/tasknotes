@@ -1,4 +1,4 @@
-import { App } from "obsidian";
+import { App, TFile } from "obsidian";
 import type { Extension } from "@codemirror/state";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 
@@ -21,6 +21,7 @@ export interface TaskModalEditorOptions {
 	onEscape: () => void;
 	onTab: (shift: boolean) => boolean;
 	extensions?: Extension[];
+	file?: TFile | null;
 }
 
 export function createTaskModalMarkdownEditor(

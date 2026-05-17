@@ -108,6 +108,16 @@ export abstract class TaskModal extends Modal {
 		return undefined;
 	}
 
+	protected getModalEditorFile(): TFile | null {
+		const currentTaskPath = this.getCurrentTaskPath();
+		if (!currentTaskPath) {
+			return this.app.workspace.getActiveFile();
+		}
+
+		const file = this.app.vault.getAbstractFileByPath(currentTaskPath);
+		return file instanceof TFile ? file : this.app.workspace.getActiveFile();
+	}
+
 	protected async openTaskNote(): Promise<void> {
 		// Creation modals do not have an existing task note to open.
 	}
@@ -720,6 +730,7 @@ export abstract class TaskModal extends Modal {
 
 						return shift ? this.focusPreviousField() : this.focusNextField();
 					},
+					file: this.getModalEditorFile(),
 				}
 			);
 		}
