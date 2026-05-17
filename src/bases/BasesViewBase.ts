@@ -603,46 +603,66 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	): Promise<void> {
 		const { TaskCreationModal } = await import("../modals/TaskCreationModal");
 
-		// Extract any default values from the frontmatter processor if provided
-		const prePopulatedValues: Partial<TaskInfo> = {};
-		const customFrontmatter: Record<string, unknown> = {};
 		const mockFrontmatter = this.extractDefaultFrontmatterFromCurrentView();
 
 		if (frontmatterProcessor) {
 			frontmatterProcessor(mockFrontmatter);
 		}
 
+		const taskCreationData = this.buildTaskCreationDataFromFrontmatter(mockFrontmatter);
+
+		// Open TaskNotes creation modal
+		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
+		const app = this.app || this.plugin.app;
+		const modal = new TaskCreationModal(app, this.plugin, {
+			prePopulatedValues: taskCreationData,
+			onTaskCreated: (task: TaskInfo) => {
+				// Refresh the view after task creation so it appears immediately
+				this.refresh();
+			},
+		});
+
+		modal.open();
+	}
+
+	private buildTaskCreationDataFromFrontmatter(
+		mockFrontmatter: BasesCreateFileFrontmatter
+	): TaskCreationPrepopulatedValues {
+		// Extract any default values from the frontmatter processor if provided
+		const prePopulatedValues: Partial<TaskInfo> = {};
+		const customFrontmatter: Record<string, unknown> = {};
+
 		if (Object.keys(mockFrontmatter).length > 0) {
 			// Get field mapper for property name mapping
 			const fm = this.plugin.fieldMapper;
 
 			// Map core TaskNotes properties from frontmatter
-			if (mockFrontmatter[fm.toUserField("title")]) {
+			if (mockFrontmatter[fm.toUserField("title")] !== undefined) {
 				prePopulatedValues.title = String(mockFrontmatter[fm.toUserField("title")]);
 			}
-			if (mockFrontmatter[fm.toUserField("status")]) {
+			if (mockFrontmatter[fm.toUserField("status")] !== undefined) {
 				prePopulatedValues.status = String(mockFrontmatter[fm.toUserField("status")]);
 			}
-			if (mockFrontmatter[fm.toUserField("priority")]) {
+			if (mockFrontmatter[fm.toUserField("priority")] !== undefined) {
 				prePopulatedValues.priority = String(mockFrontmatter[fm.toUserField("priority")]);
 			}
-			if (mockFrontmatter[fm.toUserField("due")]) {
+			if (mockFrontmatter[fm.toUserField("due")] !== undefined) {
 				prePopulatedValues.due = String(mockFrontmatter[fm.toUserField("due")]);
 			}
-			if (mockFrontmatter[fm.toUserField("scheduled")]) {
+			if (mockFrontmatter[fm.toUserField("scheduled")] !== undefined) {
 				prePopulatedValues.scheduled = String(mockFrontmatter[fm.toUserField("scheduled")]);
 			}
-			if (mockFrontmatter[fm.toUserField("contexts")]) {
+			if (mockFrontmatter[fm.toUserField("contexts")] !== undefined) {
 				const contexts = mockFrontmatter[fm.toUserField("contexts")];
 				prePopulatedValues.contexts = toStringArray(contexts);
 			}
-			if (mockFrontmatter[fm.toUserField("projects")]) {
+			if (mockFrontmatter[fm.toUserField("projects")] !== undefined) {
 				const projects = mockFrontmatter[fm.toUserField("projects")];
 				prePopulatedValues.projects = toStringArray(projects);
 			}
 
 			// Tags - check both the standard 'tags' property and archiveTag
-			if (mockFrontmatter.tags) {
+			if (mockFrontmatter.tags !== undefined) {
 				const tags = mockFrontmatter.tags;
 				prePopulatedValues.tags = toStringArray(tags);
 			}
@@ -653,27 +673,27 @@ export abstract class BasesViewBase extends Component implements BasesView {
 				prePopulatedValues.archived = mockFrontmatter.tags.includes(archiveTag);
 			}
 
-			if (mockFrontmatter[fm.toUserField("timeEstimate")]) {
+			if (mockFrontmatter[fm.toUserField("timeEstimate")] !== undefined) {
 				prePopulatedValues.timeEstimate = Number(
 					mockFrontmatter[fm.toUserField("timeEstimate")]
 				);
 			}
-			if (mockFrontmatter[fm.toUserField("recurrence")]) {
+			if (mockFrontmatter[fm.toUserField("recurrence")] !== undefined) {
 				prePopulatedValues.recurrence = String(
 					mockFrontmatter[fm.toUserField("recurrence")]
 				);
 			}
-			if (mockFrontmatter[fm.toUserField("completedDate")]) {
+			if (mockFrontmatter[fm.toUserField("completedDate")] !== undefined) {
 				prePopulatedValues.completedDate = String(
 					mockFrontmatter[fm.toUserField("completedDate")]
 				);
 			}
-			if (mockFrontmatter[fm.toUserField("dateCreated")]) {
+			if (mockFrontmatter[fm.toUserField("dateCreated")] !== undefined) {
 				prePopulatedValues.dateCreated = String(
 					mockFrontmatter[fm.toUserField("dateCreated")]
 				);
 			}
-			if (mockFrontmatter[fm.toUserField("blockedBy")]) {
+			if (mockFrontmatter[fm.toUserField("blockedBy")] !== undefined) {
 				const blockedBy = mockFrontmatter[fm.toUserField("blockedBy")];
 				prePopulatedValues.blockedBy = normalizeDependencyList(blockedBy);
 			}
@@ -720,18 +740,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			taskCreationData.customFrontmatter = customFrontmatter;
 		}
 
-		// Open TaskNotes creation modal
-		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
-		const app = this.app || this.plugin.app;
-		const modal = new TaskCreationModal(app, this.plugin, {
-			prePopulatedValues: taskCreationData,
-			onTaskCreated: (task: TaskInfo) => {
-				// Refresh the view after task creation so it appears immediately
-				this.refresh();
-			},
-		});
-
-		modal.open();
+		return taskCreationData;
 	}
 
 	private extractDefaultFrontmatterFromCurrentView(): BasesCreateFileFrontmatter {

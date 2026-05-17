@@ -114,4 +114,41 @@ describe("Issue #1657: Kanban + New button should assign project", () => {
 			})
 		);
 	});
+
+	it("passes native Bases frontmatter processor values to the TaskNotes creation modal", async () => {
+		const container = document.createElement("div");
+		document.body.appendChild(container);
+
+		const view = new TestBasesView({}, container, createMockPlugin());
+		(view as any).config = {
+			filters: {
+				conjunction: "and",
+				filters: [
+					{ rule: { text: 'file.hasTag("task")' } },
+					{ rule: { text: 'contexts.contains("work")' } },
+				],
+			},
+		};
+
+		await view.createFileForView("New Task", (frontmatter) => {
+			frontmatter.status = "In Progress";
+			frontmatter.reviewed = false;
+			frontmatter.customCount = 0;
+		});
+
+		expect(TaskCreationModal).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.anything(),
+			expect.objectContaining({
+				prePopulatedValues: expect.objectContaining({
+					status: "In Progress",
+					contexts: ["work"],
+					customFrontmatter: {
+						reviewed: false,
+						customCount: 0,
+					},
+				}),
+			})
+		);
+	});
 });
