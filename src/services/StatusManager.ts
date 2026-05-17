@@ -1,5 +1,6 @@
 import { StatusConfig } from "../types";
 import { normalizeStatusConfigValue } from "../core/fieldMapping";
+import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors";
 
 /**
  * Service for managing custom task statuses
@@ -137,7 +138,7 @@ export class StatusManager {
 
 		for (const status of this.statuses) {
 			const cssClass = `--status-${status.value.replace(/[^a-zA-Z0-9-]/g, "-")}-color`;
-			cssRules.push(`${cssClass}: ${status.color};`);
+			cssRules.push(`${cssClass}: ${normalizeThemeColor(status.color)};`);
 		}
 
 		return `:root { ${cssRules.join(" ")} }`;
@@ -205,8 +206,8 @@ export class StatusManager {
 				errors.push("Status labels cannot be empty");
 				break;
 			}
-			if (!status.color || !status.color.match(/^#[0-9a-fA-F]{6}$/)) {
-				errors.push("Status colors must be valid hex colors (#rrggbb)");
+			if (!isSupportedColorValue(status.color)) {
+				errors.push("Status colors must be valid CSS colors or Obsidian theme colors");
 				break;
 			}
 		}

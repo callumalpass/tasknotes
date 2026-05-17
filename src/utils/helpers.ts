@@ -19,6 +19,7 @@ import {
 	updateToNextScheduledOccurrence as updateToNextScheduledOccurrenceCore,
 } from "../core/recurrence";
 import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
+import { normalizeThemeColor } from "./themeColors";
 
 type ObsidianMoment = import("moment").Moment;
 
@@ -675,6 +676,7 @@ export function timeblockToCalendarEvent(
 	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
 	const endDateTime = `${date}T${timeblock.endTime}:00`;
+	const eventColor = normalizeThemeColor(timeblock.color || defaultColor, "#6366f1");
 
 	return {
 		id: `timeblock-${timeblock.id}`,
@@ -682,8 +684,8 @@ export function timeblockToCalendarEvent(
 		start: startDateTime,
 		end: endDateTime,
 		allDay: false,
-		backgroundColor: timeblock.color || defaultColor,
-		borderColor: timeblock.color || defaultColor,
+		backgroundColor: eventColor,
+		borderColor: eventColor,
 		editable: true, // Enable drag and drop for timeblocks
 		eventType: "timeblock", // Mark as timeblock for FullCalendar
 		extendedProps: {

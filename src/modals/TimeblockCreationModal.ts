@@ -16,6 +16,8 @@ import { generateTimeblockId } from "../utils/helpers";
 import { openFileSelector } from "./FileSelectorModal";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { parseDateAsLocal } from "../utils/dateUtils";
+import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
+import { configureThemeColorInput } from "../settings/components/CardComponent";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -188,8 +190,12 @@ export class TimeblockCreationModal extends Modal {
 				this.colorInput = text.inputEl;
 				text.setPlaceholder(
 					this.translate("modals.timeblockCreation.colorPlaceholder")
-				).setValue(this.plugin.settings.calendarViewSettings.defaultTimeblockColor);
-				this.colorInput.type = "color";
+				).setValue(
+					colorValueToInputValue(
+						this.plugin.settings.calendarViewSettings.defaultTimeblockColor
+					)
+				);
+				configureThemeColorInput(this.colorInput);
 			});
 
 		// Attachments (optional)
@@ -308,7 +314,10 @@ export class TimeblockCreationModal extends Modal {
 			const startTime = this.startTimeInput.value;
 			let endTime = this.endTimeInput.value;
 			const description = this.descriptionInput.value.trim();
-			const color = this.colorInput.value;
+			const color = normalizeThemeColor(
+				this.colorInput.value,
+				this.plugin.settings.calendarViewSettings.defaultTimeblockColor
+			);
 			if (!title || !startTime || !endTime) {
 				new Notice(this.translate("notices.timeblockRequiredFieldsMissing"));
 				return;

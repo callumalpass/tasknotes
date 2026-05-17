@@ -34,6 +34,11 @@ import {
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
+import {
+	colorWithAlpha,
+	isCssVariableColor,
+	normalizeThemeColor,
+} from "../utils/themeColors";
 
 const MIN_EXTERNAL_TIMED_EVENT_DURATION_MS = 1;
 
@@ -141,23 +146,11 @@ interface RecurringInstanceVisibilityOptions {
 }
 
 /**
- * Convert hex color to rgba with alpha.
- * Returns the original value if it's not a valid hex color (e.g., CSS variables).
+ * Convert a configured color to a translucent calendar color.
+ * Theme colors are returned as color-mix() values so Obsidian themes can control them.
  */
 export function hexToRgba(hex: string, alpha: number): string {
-	// Handle CSS variables - return them unchanged since they can't be converted
-	if (hex.startsWith("var(")) {
-		return hex;
-	}
-	hex = hex.replace("#", "");
-	// Validate hex format
-	if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
-		return `rgba(128, 128, 128, ${alpha})`; // Fallback to gray if invalid
-	}
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
-	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+	return colorWithAlpha(hex, alpha);
 }
 
 /**
@@ -184,7 +177,7 @@ export function getEventTextColor(useThemeColor = false): string {
  * Check if a color string is a CSS variable
  */
 export function isCssVariable(color: string): boolean {
-	return color.startsWith("var(");
+	return isCssVariableColor(color);
 }
 
 /**
@@ -498,7 +491,7 @@ export function createScheduledEvent(
 	}
 
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
 	// Use theme-appropriate text color when border is a CSS variable
 	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
@@ -538,7 +531,7 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 	}
 
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = priorityConfig?.color || "var(--color-orange)";
+	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-orange)");
 	const fadedBackground = hexToRgba(borderColor, 0.15);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
 	// Use theme-appropriate text color when border is a CSS variable
@@ -585,7 +578,7 @@ function createAllDayScheduledToDueSpanEvent(
 	endDateExclusive.setDate(endDateExclusive.getDate() + 1);
 
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
 	const fadedBackground = hexToRgba(borderColor, 0.2);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
 	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
@@ -644,7 +637,7 @@ function createTimedScheduledToDueSpanEvents(
 	const lastDate = parseDateToLocal(getDatePart(task.due));
 
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
 	const fadedBackground = hexToRgba(borderColor, 0.2);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
 	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
@@ -784,9 +777,9 @@ export function createICSEvent(
 				return null;
 			}
 
-			backgroundColor = hexToRgba(subscription.color, 0.2);
-			borderColor = subscription.color;
-			textColor = borderColor; // Use border color for ICS subscriptions (existing behavior)
+			borderColor = normalizeThemeColor(subscription.color, "#3788d8");
+			backgroundColor = hexToRgba(borderColor, 0.2);
+			textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
 			subscriptionName = subscription.name;
 		}
 
@@ -924,7 +917,7 @@ export function createNextScheduledEvent(
 	}
 
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
 	const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
 	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
 	// Use theme-appropriate text color when border is a CSS variable
@@ -982,7 +975,7 @@ export function createRecurringEvent(
 	}
 
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = priorityConfig?.color || "var(--color-accent)";
+	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
 	const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
 	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
 
@@ -1143,8 +1136,8 @@ export function createTimeblockEvent(
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
 	const endDateTime = `${date}T${timeblock.endTime}:00`;
 
-	const backgroundColor = timeblock.color || defaultColor;
-	const borderColor = timeblock.color || defaultColor;
+	const backgroundColor = normalizeThemeColor(timeblock.color || defaultColor, "#6366f1");
+	const borderColor = backgroundColor;
 
 	return {
 		id: `timeblock-${timeblock.id}`,

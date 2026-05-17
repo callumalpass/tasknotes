@@ -1,5 +1,6 @@
 import { PriorityConfig } from "../types";
 import { normalizePriorityConfigValue } from "../core/fieldMapping";
+import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors";
 
 /**
  * Service for managing custom task priorities
@@ -74,7 +75,7 @@ export class PriorityManager {
 
 		for (const priority of this.priorities) {
 			const cssClass = `--priority-${priority.value.replace(/[^a-zA-Z0-9-]/g, "-")}-color`;
-			cssRules.push(`${cssClass}: ${priority.color};`);
+			cssRules.push(`${cssClass}: ${normalizeThemeColor(priority.color)};`);
 		}
 
 		return `:root { ${cssRules.join(" ")} }`;
@@ -167,8 +168,8 @@ export class PriorityManager {
 				errors.push("Priority labels cannot be empty");
 				break;
 			}
-			if (!priority.color || !priority.color.match(/^#[0-9a-fA-F]{6}$/)) {
-				errors.push("Priority colors must be valid hex colors (#rrggbb)");
+			if (!isSupportedColorValue(priority.color)) {
+				errors.push("Priority colors must be valid CSS colors or Obsidian theme colors");
 				break;
 			}
 			if (typeof priority.weight !== "number" || priority.weight < 0) {

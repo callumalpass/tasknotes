@@ -8,6 +8,8 @@ import {
 	createDeleteHeaderButton,
 	showCardEmptyState,
 	createCardSelect,
+	createThemeColorInput,
+	readThemeColorInput,
 	CardRow,
 } from "../../components/CardComponent";
 import { createIconInput } from "../../components/IconSuggest";
@@ -258,7 +260,7 @@ function renderPriorityList(
 			translate("settings.taskProperties.taskPriorities.placeholders.label"),
 			priority.label
 		);
-		const colorInput = createCardInput("color", "", priority.color);
+		const colorInput = createThemeColorInput(priority.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(
 			plugin.app,
 			translate("settings.taskProperties.taskPriorities.placeholders.icon"),
@@ -366,7 +368,7 @@ function renderPriorityList(
 		});
 
 		colorInput.addEventListener("change", () => {
-			priority.color = colorInput.value;
+			priority.color = readThemeColorInput(colorInput, priority.color || "#6366f1");
 			const colorIndicator = card.querySelector(
 				".tasknotes-settings__card-color-indicator"
 			) as HTMLElement;

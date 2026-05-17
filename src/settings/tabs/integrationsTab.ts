@@ -27,6 +27,8 @@ import {
 	createInfoBadge,
 	showCardEmptyState,
 	normalizeCalendarUrl,
+	createThemeColorInput,
+	readThemeColorInput,
 	type CardSection,
 } from "../components/CardComponent";
 
@@ -1747,7 +1749,7 @@ function renderICSSubscriptionsList(
 			sourceInput = fileInput;
 		}
 
-		const colorInput = createCardInput("color", "", subscription.color);
+		const colorInput = createThemeColorInput(subscription.color);
 		const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60);
 
 		// Update handlers
@@ -1773,7 +1775,9 @@ function renderICSSubscriptionsList(
 				void updateSubscription({ name: nameInput.value.trim() });
 			});
 			colorInput.addEventListener("change", () => {
-				void updateSubscription({ color: colorInput.value });
+				void updateSubscription({
+					color: readThemeColorInput(colorInput, subscription.color || "#3788d8"),
+				});
 			});
 			refreshInput.addEventListener("blur", () => {
 				const minutes = parseInt(refreshInput.value) || 60;

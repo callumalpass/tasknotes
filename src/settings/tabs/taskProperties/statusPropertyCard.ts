@@ -12,6 +12,8 @@ import {
 	createCardNumberInput,
 	createCardSelect,
 	createCardToggle,
+	createThemeColorInput,
+	readThemeColorInput,
 	CardRow,
 } from "../../components/CardComponent";
 import { createIconInput } from "../../components/IconSuggest";
@@ -244,7 +246,7 @@ function renderStatusList(
 			translate("settings.taskProperties.taskStatuses.placeholders.label"),
 			status.label
 		);
-		const colorInput = createCardInput("color", "", status.color);
+		const colorInput = createThemeColorInput(status.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(
 			plugin.app,
 			translate("settings.taskProperties.taskStatuses.placeholders.icon"),
@@ -431,7 +433,7 @@ function renderStatusList(
 		});
 
 		colorInput.addEventListener("change", () => {
-			status.color = colorInput.value;
+			status.color = readThemeColorInput(colorInput, status.color || "#6366f1");
 			const colorIndicator = statusCard.querySelector(
 				".tasknotes-settings__card-color-indicator"
 			) as HTMLElement;

@@ -12,6 +12,11 @@ import { getAvailableLanguages } from "../../locales";
 import type { TranslationKey } from "../../i18n";
 import { PropertySelectorModal } from "../../modals/PropertySelectorModal";
 import { getAvailableProperties, getPropertyLabels } from "../../utils/propertyHelpers";
+import {
+	colorValueToInputValue,
+	normalizeThemeColor,
+} from "../../utils/themeColors";
+import { configureThemeColorInput } from "../components/CardComponent";
 
 /**
  * Renders the Features tab - optional plugin modules and their configuration
@@ -748,12 +753,18 @@ export function renderFeaturesTab(
 						.setName(translate("settings.features.timeblocking.defaultColorName"))
 						.setDesc(translate("settings.features.timeblocking.defaultColorDesc"))
 						.addText((text) => {
-							text.inputEl.type = "color";
+							configureThemeColorInput(text.inputEl);
 							text.setValue(
-								plugin.settings.calendarViewSettings.defaultTimeblockColor
+								colorValueToInputValue(
+									plugin.settings.calendarViewSettings.defaultTimeblockColor
+								)
 							);
 							text.onChange((value) => {
-								plugin.settings.calendarViewSettings.defaultTimeblockColor = value;
+								plugin.settings.calendarViewSettings.defaultTimeblockColor =
+									normalizeThemeColor(
+										value,
+										plugin.settings.calendarViewSettings.defaultTimeblockColor
+									);
 								save();
 							});
 						});

@@ -176,6 +176,12 @@
  */
 
 import { Setting, ToggleComponent, setIcon } from "obsidian";
+import {
+	colorValueToInputValue,
+	normalizeThemeColor,
+	THEME_COLOR_INPUT_PLACEHOLDER,
+	THEME_COLOR_SUGGESTIONS,
+} from "../../utils/themeColors";
 import { runAsyncSettingCallback } from "./settingHelpers";
 
 /**
@@ -315,9 +321,12 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 	// Color indicator
 	if (config.colorIndicator) {
 		const colorIndicator = headerLeft.createDiv("tasknotes-settings__card-color-indicator");
-		colorIndicator.style.backgroundColor = config.colorIndicator.color;
+		colorIndicator.style.backgroundColor = normalizeThemeColor(config.colorIndicator.color);
 		if (config.colorIndicator.cssVar) {
-			colorIndicator.style.setProperty("--card-color", config.colorIndicator.color);
+			colorIndicator.style.setProperty(
+				"--card-color",
+				normalizeThemeColor(config.colorIndicator.color)
+			);
 		}
 	}
 
@@ -552,6 +561,39 @@ export function createCardInput(
 	}
 
 	return input;
+}
+
+const THEME_COLOR_DATALIST_ID = "tasknotes-theme-color-options";
+
+function ensureThemeColorDatalist(): void {
+	if (activeDocument.getElementById(THEME_COLOR_DATALIST_ID)) return;
+
+	const datalist = activeDocument.createElement("datalist");
+	datalist.id = THEME_COLOR_DATALIST_ID;
+	for (const value of THEME_COLOR_SUGGESTIONS) {
+		datalist.createEl("option", { value });
+	}
+	activeDocument.body.appendChild(datalist);
+}
+
+export function configureThemeColorInput(input: HTMLInputElement): void {
+	input.type = "text";
+	input.placeholder = THEME_COLOR_INPUT_PLACEHOLDER;
+	input.setAttribute("list", THEME_COLOR_DATALIST_ID);
+	input.title = THEME_COLOR_INPUT_PLACEHOLDER;
+	ensureThemeColorDatalist();
+}
+
+export function createThemeColorInput(value?: string): HTMLInputElement {
+	const input = createCardInput("text", THEME_COLOR_INPUT_PLACEHOLDER, colorValueToInputValue(value));
+	configureThemeColorInput(input);
+	return input;
+}
+
+export function readThemeColorInput(input: HTMLInputElement, fallback: string): string {
+	const color = normalizeThemeColor(input.value, fallback);
+	input.value = colorValueToInputValue(color);
+	return color;
 }
 
 /**

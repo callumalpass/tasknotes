@@ -19,6 +19,8 @@ import {
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
 import { formatDateForStorage } from "../utils/dateUtils";
+import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
+import { configureThemeColorInput } from "../settings/components/CardComponent";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { TaskInfo } from "../types";
 
@@ -148,10 +150,12 @@ export class TimeblockInfoModal extends Modal {
 				text.setPlaceholder(
 					this.translate("modals.timeblockInfo.colorPlaceholder")
 				).setValue(
-					this.timeblock.color ||
-						this.plugin.settings.calendarViewSettings.defaultTimeblockColor
+					colorValueToInputValue(
+						this.timeblock.color ||
+							this.plugin.settings.calendarViewSettings.defaultTimeblockColor
+					)
 				);
-				this.colorInput.type = "color";
+				configureThemeColorInput(this.colorInput);
 			});
 
 		// Attachments (editable)
@@ -445,7 +449,8 @@ export class TimeblockInfoModal extends Modal {
 			// Update timeblock with new values
 			this.timeblock.title = title;
 			this.timeblock.description = this.descriptionInput.value.trim() || undefined;
-			this.timeblock.color = this.colorInput.value || undefined;
+			this.timeblock.color =
+				normalizeThemeColor(this.colorInput.value || undefined) || undefined;
 
 			// Convert selected attachments to wikilinks
 			const attachments: string[] = this.selectedAttachments.map(
