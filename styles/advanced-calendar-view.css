@@ -934,6 +934,20 @@
     color: var(--interactive-accent-hover);
 }
 
+.theme-dark .advanced-calendar-view .fc-more-link {
+    color: var(--text-normal);
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    text-decoration: none;
+}
+
+.theme-dark .advanced-calendar-view .fc-more-link:hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+}
+
 /* Current time indicator (red line) */
 .advanced-calendar-view .fc-timegrid-now-indicator-line {
     border-color: var(--tn-color-error);

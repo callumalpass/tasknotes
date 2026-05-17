@@ -32,7 +32,7 @@ describe('Issue #1086: White colouration when expanding more tasks in dark mode'
 	const cssFilePath = path.resolve(__dirname, '../../../styles/advanced-calendar-view.css');
 
 	describe('CSS dark mode rules for .fc-more-link', () => {
-		it.skip('should have dark mode styling for .fc-more-link - reproduces issue #1086', () => {
+		it('should have dark mode styling for .fc-more-link', () => {
 			// This test verifies that dark mode CSS rules exist for the "more" link
 			// in the all-day event area of the calendar.
 			//
@@ -119,7 +119,7 @@ describe('FullCalendar more link styling consistency', () => {
 	 * Both should have consistent dark mode styling.
 	 */
 
-	it.skip('should have consistent dark mode styling for both more link types - reproduces issue #1086', () => {
+	it('should have consistent dark mode styling for both more link types', () => {
 		// Both link types should have dark mode styling for consistency
 		// Currently only .fc-timegrid-more-link has dark mode rules
 
