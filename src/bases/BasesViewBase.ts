@@ -632,7 +632,29 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			if (property) {
 				this.addFrontmatterDefault(defaults, property, decodeQuotedValue(containsMatch[2]));
 			}
+			return;
 		}
+
+		const currentFileContainsMatch = trimmedRule.match(
+			/^(.+?)\.contains\(this\.file\.asLink\(\)\)$/
+		);
+		if (currentFileContainsMatch) {
+			const property = this.normalizeFilterProperty(currentFileContainsMatch[1]);
+			const currentFileLink = this.getCurrentFileLinkDefault();
+			if (property && currentFileLink) {
+				this.addFrontmatterDefault(defaults, property, currentFileLink);
+			}
+		}
+	}
+
+	private getCurrentFileLinkDefault(): string | null {
+		const app = this.app || this.plugin.app;
+		const activeFile = app.workspace.getActiveFile();
+		if (!activeFile || activeFile.extension === "base") {
+			return null;
+		}
+
+		return app.fileManager.generateMarkdownLink(activeFile, activeFile.path);
 	}
 
 	private normalizeFilterProperty(propertyExpression: string): string | null {
