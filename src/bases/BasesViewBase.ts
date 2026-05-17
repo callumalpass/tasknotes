@@ -23,6 +23,7 @@ import {
 	type ClipboardTask,
 	type TaskCopyFormat,
 } from "../utils/taskClipboard";
+import { stringifyUnknown } from "../utils/stringUtils";
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
@@ -56,6 +57,11 @@ type BasesViewAction = {
 	callback: () => void;
 };
 
+type BasesExportColumn = {
+	id: string;
+	label: string;
+};
+
 type BasesFilterLike = {
 	conjunction?: unknown;
 	filters?: unknown;
@@ -70,6 +76,30 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function toStringArray(value: unknown): string[] {
 	return Array.isArray(value) ? value.map(String) : [String(value)];
+}
+
+function formatBasesExportValue(value: unknown): string {
+	return stringifyUnknown(value).replace(/\r?\n/g, " ");
+}
+
+function escapeTsvCell(value: string): string {
+	return value.replace(/\t/g, " ");
+}
+
+function escapeCsvCell(value: string): string {
+	if (!/[",\r\n]/.test(value)) {
+		return value;
+	}
+	return `"${value.replace(/"/g, '""')}"`;
+}
+
+function sanitizeExportFileName(name: string): string {
+	const sanitized = name
+		.trim()
+		.replace(/[\\/:*?"<>|]+/g, "-")
+		.replace(/\s+/g, "-")
+		.replace(/^-+|-+$/g, "");
+	return sanitized || "tasknotes-bases-export";
 }
 
 function decodeQuotedValue(value: string): string {
@@ -233,6 +263,22 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	 */
 	refresh(): void {
 		void this.render();
+	}
+
+	/**
+	 * Native Bases result-count menu hook.
+	 * Obsidian invokes this for the built-in Copy action before custom view actions.
+	 */
+	copyToClipboard(): void {
+		void this.copyBasesTableToClipboard();
+	}
+
+	/**
+	 * Native Bases result-count menu hook.
+	 * Obsidian invokes this for the built-in Export CSV action before custom view actions.
+	 */
+	exportTable(): void {
+		void this.exportBasesTableAsCsv();
 	}
 
 	/**
@@ -1072,6 +1118,79 @@ export abstract class BasesViewBase extends Component implements BasesView {
 			path: task.path,
 			title: task.title,
 		}));
+	}
+
+	private getBasesExportColumns(): BasesExportColumn[] {
+		const propertyIds = this.dataAdapter.getVisiblePropertyIds();
+		return [
+			{ id: "file", label: "File" },
+			...propertyIds.map((propertyId) => ({
+				id: propertyId,
+				label: this.dataAdapter.getPropertyDisplayName(propertyId) || propertyId,
+			})),
+		];
+	}
+
+	private getBasesExportRows(): string[][] {
+		const columns = this.getBasesExportColumns();
+		const entries = this.data?.data ?? [];
+
+		return entries.map((entry) =>
+			columns.map((column) => {
+				if (column.id === "file") {
+					return entry.file?.path ?? "";
+				}
+
+				return formatBasesExportValue(
+					this.dataAdapter.getPropertyValue(entry, column.id)
+				);
+			})
+		);
+	}
+
+	private getBasesExportFileName(): string {
+		const configName =
+			typeof this.config?.get === "function" ? stringifyUnknown(this.config.get("name")) : "";
+		return `${sanitizeExportFileName(configName || this.type || "tasknotes-bases-export")}.csv`;
+	}
+
+	private async copyBasesTableToClipboard(): Promise<void> {
+		try {
+			const columns = this.getBasesExportColumns();
+			const rows = this.getBasesExportRows();
+			const text = [columns.map((column) => escapeTsvCell(column.label)), ...rows]
+				.map((row) => row.map(escapeTsvCell).join("\t"))
+				.join("\n");
+
+			await navigator.clipboard.writeText(text);
+			new Notice(`Copied ${rows.length} rows`);
+		} catch (error) {
+			console.error("[TaskNotes][Bases] Failed to copy Bases table:", error);
+			new Notice("Failed to copy table");
+		}
+	}
+
+	private async exportBasesTableAsCsv(): Promise<void> {
+		try {
+			const columns = this.getBasesExportColumns();
+			const rows = this.getBasesExportRows();
+			const csv = [columns.map((column) => column.label), ...rows]
+				.map((row) => row.map(escapeCsvCell).join(","))
+				.join("\n");
+
+			const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+			const win = this.containerEl.ownerDocument.defaultView ?? window;
+			const url = win.URL.createObjectURL(blob);
+			const link = this.containerEl.ownerDocument.createElement("a");
+			link.href = url;
+			link.download = this.getBasesExportFileName();
+			link.click();
+			win.URL.revokeObjectURL(url);
+			new Notice(`Exported ${rows.length} rows`);
+		} catch (error) {
+			console.error("[TaskNotes][Bases] Failed to export Bases table:", error);
+			new Notice("Failed to export table");
+		}
 	}
 
 	private getMarkdownLinkText(path: string): string {
