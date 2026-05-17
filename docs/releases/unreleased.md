@@ -104,6 +104,7 @@ Example:
 
 ## Fixed
 
+- ([#1147](https://github.com/callumalpass/tasknotes/issues/1147)) Added a delete action for recent Pomodoro statistics sessions, so erroneous Pomodoro history can be removed without editing plugin storage or daily-note frontmatter manually. Thanks to @RumiaKitinari for reporting this and @BrucePlumb for the follow-up.
 - ([#1150](https://github.com/callumalpass/tasknotes/issues/1150)) Kept recurring tasks' due dates visible in Calendar Bases views, and showed their scheduled date when recurrence instances are hidden. Thanks to @thomatino for reporting this and @BrucePlumb for the follow-up.
 - ([#1159](https://github.com/callumalpass/tasknotes/issues/1159)) Softened Calendar time-entry styling so recorded time blocks no longer visually outweigh task events. Thanks to @hatespinach for reporting this.
 - ([#1191](https://github.com/callumalpass/tasknotes/issues/1191)) Aligned the task-card and relationships widgets inside notes with Obsidian's editor margins, including readable-line-width layouts. Thanks to @minchinweb for reporting this.

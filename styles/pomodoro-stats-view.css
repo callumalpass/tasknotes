@@ -244,7 +244,7 @@
 /* Session Item Container */
 .tasknotes-plugin .pomodoro-stats-view__session-item {
     display: grid;
-    grid-template-columns: auto auto auto 1fr;
+    grid-template-columns: auto auto auto 1fr auto;
     gap: var(--tn-spacing-md);
     align-items: center;
     padding: var(--tn-spacing-md);
@@ -308,6 +308,27 @@
     white-space: nowrap;
 }
 
+.tasknotes-plugin .pomodoro-stats-view__session-delete-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--tn-text-muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--tn-radius-sm);
+    cursor: pointer;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-delete-button:hover,
+.tasknotes-plugin .pomodoro-stats-view__session-delete-button:focus-visible {
+    color: var(--tn-color-error);
+    background: var(--tn-interactive-hover);
+    border-color: var(--tn-border-color);
+}
+
 /* ================================================
    RESPONSIVE DESIGN
    ================================================ */
@@ -350,6 +371,10 @@
     }
     
     .tasknotes-plugin .pomodoro-stats-view__session-status {
+        justify-self: center;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-delete-button {
         justify-self: center;
     }
 }

@@ -1,8 +1,9 @@
-import { ItemView, WorkspaceLeaf, Setting, setIcon, setTooltip } from "obsidian";
+import { ItemView, Menu, Notice, WorkspaceLeaf, Setting, setIcon, setTooltip } from "obsidian";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { POMODORO_STATS_VIEW_TYPE, PomodoroHistoryStats, PomodoroSessionHistory } from "../types";
+import { showConfirmationModal } from "../modals/ConfirmationModal";
 import {
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
@@ -238,6 +239,10 @@ export class PomodoroStatsView extends ItemView {
 			const sessionEl = container.createDiv({
 				cls: "pomodoro-session-item pomodoro-stats-view__session-item",
 			});
+			this.registerDomEvent(sessionEl, "contextmenu", (event: MouseEvent) => {
+				event.preventDefault();
+				this.showSessionContextMenu(event, session);
+			});
 
 			const dateEl = sessionEl.createSpan({
 				cls: "session-date pomodoro-stats-view__session-date",
@@ -278,6 +283,62 @@ export class PomodoroStatsView extends ItemView {
 				const taskName = session.taskPath.split("/").pop()?.replace(".md", "") || "";
 				taskEl.textContent = taskName;
 			}
+
+			const deleteButton = sessionEl.createEl("button", {
+				cls: "pomodoro-stats-view__session-delete-button",
+				attr: {
+					type: "button",
+					"aria-label": this.t("views.pomodoroStats.recents.deleteAria"),
+				},
+			});
+			setIcon(deleteButton, "trash-2");
+			setTooltip(deleteButton, this.t("views.pomodoroStats.recents.delete"), {
+				placement: "top",
+			});
+			this.registerDomEvent(deleteButton, "click", (event: MouseEvent) => {
+				event.preventDefault();
+				event.stopPropagation();
+				void this.confirmDeleteSession(session);
+			});
+		}
+	}
+
+	private showSessionContextMenu(event: MouseEvent, session: PomodoroSessionHistory): void {
+		const menu = new Menu();
+		menu.addItem((item) => {
+			item.setTitle(this.t("views.pomodoroStats.recents.delete"));
+			item.setIcon("trash");
+			item.onClick(() => {
+				void this.confirmDeleteSession(session);
+			});
+		});
+		menu.showAtMouseEvent(event);
+	}
+
+	private async confirmDeleteSession(session: PomodoroSessionHistory): Promise<void> {
+		const confirmed = await showConfirmationModal(this.plugin.app, {
+			title: this.t("views.pomodoroStats.recents.deleteConfirmTitle"),
+			message: this.t("views.pomodoroStats.recents.deleteConfirmMessage"),
+			confirmText: this.t("views.pomodoroStats.recents.deleteConfirmButton"),
+			cancelText: this.t("common.cancel"),
+			isDestructive: true,
+		});
+
+		if (!confirmed || !this.plugin.pomodoroService) {
+			return;
+		}
+
+		const deleted = await this.plugin.pomodoroService.deleteSessionFromHistory(session);
+		new Notice(
+			this.t(
+				deleted
+					? "views.pomodoroStats.recents.deleteSuccess"
+					: "views.pomodoroStats.recents.deleteNotFound"
+			)
+		);
+
+		if (deleted) {
+			await this.refreshStats();
 		}
 	}
 

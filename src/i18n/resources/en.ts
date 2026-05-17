@@ -421,6 +421,14 @@ export const en: TranslationTree = {
 			recents: {
 				empty: "No sessions recorded yet",
 				duration: "{minutes} min",
+				delete: "Delete session",
+				deleteAria: "Delete Pomodoro session",
+				deleteConfirmTitle: "Delete Pomodoro session?",
+				deleteConfirmMessage:
+					"This removes the session from Pomodoro history. Existing task time entries are not changed.",
+				deleteConfirmButton: "Delete",
+				deleteSuccess: "Pomodoro session deleted",
+				deleteNotFound: "Pomodoro session was not found",
 				status: {
 					completed: "Completed",
 					interrupted: "Interrupted",

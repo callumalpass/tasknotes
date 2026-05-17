@@ -1102,13 +1102,33 @@ export class PomodoroService {
 				await this.saveHistoryToDailyNotes(history);
 			} else {
 				// Default plugin storage
-				const data = (await this.plugin.loadData()) || {};
-				data.pomodoroHistory = history;
-				await this.plugin.saveData(data);
+				await this.savePluginHistory(history);
 			}
 		} catch (error) {
 			console.error("Failed to save session history:", error);
 		}
+	}
+
+	async deleteSessionFromHistory(session: PomodoroSessionHistory): Promise<boolean> {
+		let deleted = false;
+
+		try {
+			const pluginHistory = await this.loadPluginHistory();
+			const filteredPluginHistory = pluginHistory.filter((entry) => entry.id !== session.id);
+
+			if (filteredPluginHistory.length !== pluginHistory.length) {
+				await this.savePluginHistory(filteredPluginHistory);
+				deleted = true;
+			}
+
+			if (this.plugin.settings.pomodoroStorageLocation === "daily-notes") {
+				deleted = (await this.deleteSessionFromDailyNote(session)) || deleted;
+			}
+		} catch (error) {
+			console.error("Failed to delete pomodoro session:", error);
+		}
+
+		return deleted;
 	}
 
 	async addSessionToHistory(session: PomodoroSession): Promise<void> {
@@ -1186,6 +1206,12 @@ export class PomodoroService {
 		const data = await this.plugin.loadData();
 		const pluginHistory = data?.pomodoroHistory;
 		return Array.isArray(pluginHistory) ? pluginHistory : [];
+	}
+
+	private async savePluginHistory(history: PomodoroSessionHistory[]): Promise<void> {
+		const data = (await this.plugin.loadData()) || {};
+		data.pomodoroHistory = history;
+		await this.plugin.saveData(data);
 	}
 
 	private async loadPluginHistoryForDateKey(dateKey: string): Promise<PomodoroSessionHistory[]> {
@@ -1388,6 +1414,47 @@ export class PomodoroService {
 			});
 		} catch (error) {
 			console.error(`Failed to add session to daily note:`, error);
+		}
+	}
+
+	private async deleteSessionFromDailyNote(session: PomodoroSessionHistory): Promise<boolean> {
+		try {
+			if (!appHasDailyNotesPluginLoaded()) {
+				return false;
+			}
+
+			const sessionDateKey = getPomodoroSessionDateKey(session);
+			if (!sessionDateKey) {
+				return false;
+			}
+
+			const sessionDate = parseDateToLocal(sessionDateKey);
+			const dailyNoteMoment = getDailyNoteMoment(sessionDate);
+			const dailyNote = getDailyNote(dailyNoteMoment, getAllDailyNotes());
+
+			if (!dailyNote) {
+				return false;
+			}
+
+			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
+			let deleted = false;
+
+			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
+				const existingSessions = Array.isArray(frontmatter[pomodoroField])
+					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
+					: [];
+				const filteredSessions = existingSessions.filter((entry) => entry.id !== session.id);
+
+				if (filteredSessions.length !== existingSessions.length) {
+					frontmatter[pomodoroField] = filteredSessions;
+					deleted = true;
+				}
+			});
+
+			return deleted;
+		} catch (error) {
+			console.error(`Failed to delete pomodoro session from daily note:`, error);
+			return false;
 		}
 	}
 
