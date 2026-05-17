@@ -1,4 +1,5 @@
 import type { TaskInfo } from "../types";
+import type { HideIdentifyingTagsMode } from "../types/settings";
 import {
 	filterTaskIdentificationTags,
 	isTaskIdentificationTag,
@@ -8,6 +9,7 @@ import {
 export interface TaskTagListSettings {
 	taskIdentificationMethod: string;
 	taskTag: string;
+	hideIdentifyingTagsMode?: HideIdentifyingTagsMode;
 }
 
 export function normalizeTaskTagList(tags: readonly string[] | undefined): string[] {
@@ -42,7 +44,7 @@ export function getEditableTaskTags(
 		return tags;
 	}
 
-	return filterTaskIdentificationTags(tags, settings.taskTag);
+	return filterTaskIdentificationTags(tags, settings.taskTag, settings.hideIdentifyingTagsMode);
 }
 
 export function addTagsToList(
@@ -85,6 +87,8 @@ export function clearEditableTagsFromList(
 		return undefined;
 	}
 
-	const remaining = current.filter((tag) => isTaskIdentificationTag(tag, settings.taskTag));
+	const remaining = current.filter((tag) =>
+		isTaskIdentificationTag(tag, settings.taskTag, settings.hideIdentifyingTagsMode)
+	);
 	return remaining.length > 0 ? remaining : undefined;
 }

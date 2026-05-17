@@ -242,7 +242,11 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 				plugin.settings.taskIdentificationMethod === "tag" &&
 				plugin.settings.hideIdentifyingTagsInCards
 			) {
-				tagsToRender = filterTaskIdentificationTags(value, plugin.settings.taskTag);
+				tagsToRender = filterTaskIdentificationTags(
+					value,
+					plugin.settings.taskTag,
+					plugin.settings.hideIdentifyingTagsMode
+				);
 			}
 
 			if (tagsToRender.length > 0) {

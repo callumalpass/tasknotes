@@ -876,6 +876,15 @@ export const en: TranslationTree = {
 					description:
 						"When enabled, tags matching the task identification tag (including hierarchical matches like 'task/project') will be hidden from task card displays",
 				},
+				hideIdentifyingTagsMode: {
+					name: "Hidden tag scope",
+					description:
+						"Choose whether hiding identification tags also hides nested tags.",
+					options: {
+						all: "Task tag and nested tags",
+						exactOnly: "Exact task tag only",
+					},
+				},
 				taskProperty: {
 					name: "Task property name",
 					description: 'The frontmatter property name (e.g., "category")',

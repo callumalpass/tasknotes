@@ -814,6 +814,14 @@ export const es: TranslationTree = {
 					name: "Ocultar etiquetas de identificación en tarjetas de tarea",
 					description: "Cuando está habilitado, las etiquetas que coinciden con la etiqueta de identificación de tarea (incluidas las coincidencias jerárquicas como 'task/project') se ocultarán de las pantallas de tarjetas de tarea",
 				},
+				hideIdentifyingTagsMode: {
+					name: "Alcance de etiquetas ocultas",
+					description: "Elige si ocultar etiquetas de identificación también oculta etiquetas anidadas.",
+					options: {
+						all: "Etiqueta de tarea y anidadas",
+						exactOnly: "Solo etiqueta exacta",
+					},
+				},
 				taskProperty: {
 					name: "Nombre de propiedad de tarea",
 					description: "El nombre de propiedad de frontmatter (ej. \"categoría\")",

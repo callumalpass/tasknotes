@@ -814,6 +814,14 @@ export const de: TranslationTree = {
 					name: "Identifikations-Tags in Aufgabenkarten ausblenden",
 					description: "Wenn aktiviert, werden Tags, die mit dem Aufgabenidentifikations-Tag übereinstimmen (einschließlich hierarchischer Übereinstimmungen wie 'task/project'), in Aufgabenkartenanzeigen ausgeblendet",
 				},
+				hideIdentifyingTagsMode: {
+					name: "Umfang der ausgeblendeten Tags",
+					description: "Wähle, ob beim Ausblenden von Identifikations-Tags auch verschachtelte Tags ausgeblendet werden.",
+					options: {
+						all: "Aufgaben-Tag und verschachtelte Tags",
+						exactOnly: "Nur exakter Aufgaben-Tag",
+					},
+				},
 				taskProperty: {
 					name: "Aufgabeneigenschaftsname",
 					description: "Der Frontmatter-Eigenschaftsname (z.B. \"category\")",

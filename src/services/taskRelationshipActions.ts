@@ -113,7 +113,11 @@ export function buildSubtaskCreationPrePopulatedValues(
 	const parentProjects = Array.isArray(parentTask.projects) ? parentTask.projects : [];
 	const inheritedTags =
 		plugin.settings.taskIdentificationMethod === "tag"
-			? filterTaskIdentificationTags(parentTags, plugin.settings.taskTag)
+			? filterTaskIdentificationTags(
+					parentTags,
+					plugin.settings.taskTag,
+					plugin.settings.hideIdentifyingTagsMode
+				)
 			: [...parentTags];
 	const values: Partial<TaskInfo> = {
 		projects: uniqueNonEmptyStrings([...parentProjects, projectReference]),

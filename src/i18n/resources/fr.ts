@@ -814,6 +814,14 @@ export const fr: TranslationTree = {
 					name: "Masquer les tags d'identification dans les cartes de tâches",
 					description: "Lorsque activé, les tags correspondant au tag d'identification de tâche (y compris les correspondances hiérarchiques comme 'task/project') seront masqués dans l'affichage des cartes de tâches",
 				},
+				hideIdentifyingTagsMode: {
+					name: "Portée des tags masqués",
+					description: "Choisissez si le masquage des tags d'identification masque aussi les tags imbriqués.",
+					options: {
+						all: "Tag de tâche et tags imbriqués",
+						exactOnly: "Tag de tâche exact seulement",
+					},
+				},
 				taskProperty: {
 					name: "Nom de la propriété de tâche",
 					description: "Le nom de la propriété frontmatter (ex. \"category\")",

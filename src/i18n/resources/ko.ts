@@ -814,6 +814,14 @@ export const ko: TranslationTree = {
 					name: "작업 카드에서 식별 태그 숨기기",
 					description: "활성화하면 작업 식별 태그와 일치하는 태그 (예: 'task/project' 같은 계층적 태그 포함)가 작업 카드에서 숨겨집니다",
 				},
+				hideIdentifyingTagsMode: {
+					name: "숨길 태그 범위",
+					description: "식별 태그를 숨길 때 중첩 태그도 숨길지 선택합니다.",
+					options: {
+						all: "작업 태그와 중첩 태그",
+						exactOnly: "정확한 작업 태그만",
+					},
+				},
 				taskProperty: {
 					name: "작업 속성 이름",
 					description: "프론트매터 속성 이름 (예: \"category\")",

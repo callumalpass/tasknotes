@@ -85,7 +85,11 @@ export class TaskEditModal extends TaskModal {
 		const shouldFilterTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
 		const rawTags = this.task.tags || [];
 		const visibleTags = shouldFilterTaskTag
-			? filterTaskIdentificationTags(rawTags, this.plugin.settings.taskTag)
+			? filterTaskIdentificationTags(
+					rawTags,
+					this.plugin.settings.taskTag,
+					this.plugin.settings.hideIdentifyingTagsMode
+				)
 			: rawTags;
 		this.tags = rawTags.length > 0 ? sanitizeTags(visibleTags.join(", ")) : "";
 		this.initialTags = this.tags;
@@ -578,6 +582,7 @@ export class TaskEditModal extends TaskModal {
 			userFieldConfigs: this.plugin.settings?.userFields || [],
 			taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
 			taskTag: this.plugin.settings.taskTag,
+			hideIdentifyingTagsMode: this.plugin.settings.hideIdentifyingTagsMode,
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});

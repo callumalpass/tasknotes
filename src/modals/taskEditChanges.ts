@@ -1,5 +1,5 @@
 import { Reminder, TaskDependency, TaskInfo } from "../types";
-import { UserMappedField } from "../types/settings";
+import { HideIdentifyingTagsMode, UserMappedField } from "../types/settings";
 import { getCurrentTimestamp } from "../utils/dateUtils";
 import { updateToNextScheduledOccurrence, sanitizeTags, updateDTSTARTInRecurrenceRule } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
@@ -44,6 +44,7 @@ export interface TaskEditChangeInput {
 	userFieldConfigs: UserMappedField[];
 	taskIdentificationMethod: string;
 	taskTag: string;
+	hideIdentifyingTagsMode?: HideIdentifyingTagsMode;
 	maintainDueDateOffsetInRecurring: boolean;
 	normalizeDetails: (value: string) => string;
 }
@@ -131,7 +132,12 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 		.filter((tag) => tag.length > 0);
 
 	if (input.taskIdentificationMethod === "tag" && input.taskTag) {
-		newTags = appendMissingTaskIdentificationTags(newTags, input.task.tags || [], input.taskTag);
+		newTags = appendMissingTaskIdentificationTags(
+			newTags,
+			input.task.tags || [],
+			input.taskTag,
+			input.hideIdentifyingTagsMode
+		);
 	}
 
 	const oldTags = input.task.tags || [];

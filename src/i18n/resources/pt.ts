@@ -817,6 +817,14 @@ export const pt: TranslationTree = {
 					name: "Ocultar tags de identificação nos cartões de tarefa",
 					description: "Quando ativado, tags correspondentes à tag de identificação da tarefa (incluindo correspondências hierárquicas como 'tarefa/projeto') serão ocultadas das exibições do cartão de tarefa"
 				},
+				hideIdentifyingTagsMode: {
+					name: "Escopo das tags ocultas",
+					description: "Escolha se ocultar tags de identificação também oculta tags aninhadas.",
+					options: {
+						all: "Tag da tarefa e tags aninhadas",
+						exactOnly: "Somente tag exata",
+					}
+				},
 				taskProperty: {
 					name: "Nome da propriedade da tarefa",
 					description: 'O nome da propriedade do frontmatter (ex: "categoria")'

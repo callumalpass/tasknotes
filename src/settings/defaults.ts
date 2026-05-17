@@ -271,6 +271,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	taskTag: "task",
 	taskIdentificationMethod: "tag", // Default to tag-based identification
 	hideIdentifyingTagsInCards: false, // Default to showing all tags (backward compatibility)
+	hideIdentifyingTagsMode: "all", // Default to existing exact + hierarchical hiding behavior
 	taskPropertyName: "",
 	taskPropertyValue: "",
 	excludedFolders: "", // Default to no excluded folders

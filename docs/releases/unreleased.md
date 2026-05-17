@@ -89,6 +89,7 @@ Example:
 - ([#1308](https://github.com/callumalpass/tasknotes/issues/1308)) Added a Calendar view option to stop date links from creating missing daily notes, while still opening existing daily notes. Thanks to @Arachnidai for suggesting this.
 - ([#1300](https://github.com/callumalpass/tasknotes/issues/1300)) Allowed priority, status, calendar subscription, and timeblock color settings to use Obsidian theme color names such as `red`, `blue`, and `cyan`. Thanks to @thestrike72 for suggesting this.
 - ([#1299](https://github.com/callumalpass/tasknotes/issues/1299)) Added a command that creates or opens a task and immediately starts time tracking for it. Thanks to @slipstyle for suggesting this.
+- ([#1284](https://github.com/callumalpass/tasknotes/issues/1284)) Added an exact-match option for hiding task identification tags, so `#task` can be hidden while nested tags such as `#task/project` remain visible. Thanks to @3zra47 for suggesting this.
 
 ## Fixed
 

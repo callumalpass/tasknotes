@@ -814,6 +814,14 @@ export const ja: TranslationTree = {
 					name: "タスクカードで識別タグを非表示",
 					description: "有効にすると、タスク識別タグに一致するタグ（'task/project'のような階層的一致を含む）がタスクカード表示から非表示になります",
 				},
+				hideIdentifyingTagsMode: {
+					name: "非表示にするタグの範囲",
+					description: "識別タグを非表示にするとき、ネストしたタグも非表示にするかを選択します。",
+					options: {
+						all: "タスクタグとネストしたタグ",
+						exactOnly: "完全一致のタスクタグのみ",
+					},
+				},
 				taskProperty: {
 					name: "タスクプロパティ名",
 					description: "フロントマタープロパティ名（例：\"category\"）",

@@ -813,6 +813,14 @@ export const zh: TranslationTree = {
 					name: "在任务卡片中隐藏识别标签",
 					description: "启用后，与任务识别标签匹配的标签（包括层次匹配，如 'task/project'）将在任务卡片显示中隐藏",
 				},
+				hideIdentifyingTagsMode: {
+					name: "隐藏标签范围",
+					description: "选择隐藏识别标签时是否同时隐藏嵌套标签。",
+					options: {
+						all: "任务标签和嵌套标签",
+						exactOnly: "仅精确任务标签",
+					},
+				},
 				taskProperty: {
 					name: "任务属性名称",
 					description: "前置属性名称（例如，\"category\"）",

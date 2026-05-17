@@ -79,6 +79,8 @@ export interface NLPTriggersConfig {
 	triggers: PropertyTriggerConfig[];
 }
 
+export type HideIdentifyingTagsMode = "all" | "exact-only";
+
 export interface ProjectAutosuggestSettings {
 	enableFuzzy: boolean;
 	rows: string[]; // up to 3 rows; each uses {property|flags} format
@@ -96,6 +98,7 @@ export interface TaskNotesSettings {
 	taskTag: string; // The tag that identifies tasks
 	taskIdentificationMethod: "tag" | "property"; // Method to identify tasks
 	hideIdentifyingTagsInCards: boolean; // Hide identifying tags in task card displays
+	hideIdentifyingTagsMode: HideIdentifyingTagsMode; // Whether hidden identifying tags include nested tags
 	taskPropertyName: string; // Property name for property-based identification
 	taskPropertyValue: string; // Property value for property-based identification
 	excludedFolders: string; // Comma-separated list of folders to exclude from Notes tab

@@ -8,6 +8,7 @@ import {
 } from "../components/settingHelpers";
 import { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
+import type { HideIdentifyingTagsMode } from "../../types/settings";
 
 /**
  * Renders the General tab - foundational settings for task identification and storage
@@ -154,9 +155,44 @@ export function renderGeneralTab(
 						setValue: async (value: boolean) => {
 							plugin.settings.hideIdentifyingTagsInCards = value;
 							save();
+							renderGeneralTab(container, plugin, save);
 						},
 					})
 				);
+
+				if (plugin.settings.hideIdentifyingTagsInCards) {
+					group.addSetting((setting) =>
+						void configureDropdownSetting(setting, {
+							name: translate(
+								"settings.general.taskIdentification.hideIdentifyingTagsMode.name"
+							),
+							desc: translate(
+								"settings.general.taskIdentification.hideIdentifyingTagsMode.description"
+							),
+							options: [
+								{
+									value: "all",
+									label: translate(
+										"settings.general.taskIdentification.hideIdentifyingTagsMode.options.all"
+									),
+								},
+								{
+									value: "exact-only",
+									label: translate(
+										"settings.general.taskIdentification.hideIdentifyingTagsMode.options.exactOnly"
+									),
+								},
+							],
+							getValue: () => plugin.settings.hideIdentifyingTagsMode,
+							setValue: async (value: string) => {
+								plugin.settings.hideIdentifyingTagsMode =
+									value as HideIdentifyingTagsMode;
+								save();
+							},
+							ariaLabel: "Hidden identification tag scope",
+						})
+					);
+				}
 			} else {
 				group.addSetting((setting) =>
 					void configureTextSetting(setting, {
