@@ -491,6 +491,8 @@ export class MdbaseSpecService {
 		switch (settings.taskFilenameFormat) {
 			case "timestamp":
 				return "{{timestamp}}";
+			case "uuid":
+				return "{{uuid}}";
 			case "custom":
 				return settings.customFilenameTemplate?.trim() || "{{title}}";
 			case "zettel":

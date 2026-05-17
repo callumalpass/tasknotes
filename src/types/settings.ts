@@ -108,7 +108,7 @@ export interface TaskNotesSettings {
 	defaultTaskStatus: string; // Changed to string to support custom statuses
 	taskOrgFiltersCollapsed: boolean; // Save collapse state of task organization filters
 	// Task filename settings
-	taskFilenameFormat: "title" | "zettel" | "timestamp" | "custom";
+	taskFilenameFormat: "title" | "zettel" | "timestamp" | "uuid" | "custom";
 	storeTitleInFilename: boolean;
 	customFilenameTemplate: string; // Template for custom format
 	// Task creation defaults

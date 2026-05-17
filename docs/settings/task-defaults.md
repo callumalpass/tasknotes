@@ -87,6 +87,7 @@ Time variables are commonly used for filename/path uniqueness in high-volume cap
 - `{{utcOffsetShort}}` - Short UTC offset (e.g., "+1000")
 - `{{utcZ}}` - UTC Z indicator (always "Z")
 - `{{zettel}}` - Zettelkasten ID (e.g., "250815abc")
+- `{{uuid}}` - UUID v4 (e.g., "550e8400-e29b-41d4-a716-446655440000")
 - `{{nano}}` - Nano ID with timestamp and random string
 Advanced variables increase uniqueness and entropy, but may reduce path readability.
 
@@ -205,6 +206,7 @@ Date/time components provide uniqueness without relying only on title text.
 - `{{utcOffsetShort}}` - Short UTC offset (e.g., "+1000")
 - `{{utcZ}}` - UTC Z indicator (always "Z")
 - `{{zettel}}` - Zettelkasten ID (e.g., "250815abc")
+- `{{uuid}}` - UUID v4 (e.g., "550e8400-e29b-41d4-a716-446655440000")
 - `{{nano}}` - Nano ID with timestamp and random string
 
 ### Filename Template Examples
@@ -300,7 +302,7 @@ Body templates now support the same variables as filename templates. All variabl
 - All date/time variables (`{{year}}`, `{{month}}`, `{{timestamp}}`, etc.)
 - All title variations (`{{titleKebab}}`, `{{titleSnake}}`, etc.)
 - Task property variations (`{{priorityShort}}`, `{{statusShort}}`)
-- Unique identifiers (`{{zettel}}`, `{{nano}}`)
+- Unique identifiers (`{{zettel}}`, `{{uuid}}`, `{{nano}}`)
 - Advanced variables (`{{unix}}`, `{{unixMs}}`, etc.)
 
 ### Body-Specific Variables

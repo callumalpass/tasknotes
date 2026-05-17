@@ -1,132 +1,112 @@
-import { generateTaskFilename } from '../../../src/utils/filenameGenerator';
-import { TaskNotesSettings } from '../../../src/types/settings';
+import { generateTaskFilename } from "../../../src/utils/filenameGenerator";
+import { TaskNotesSettings } from "../../../src/types/settings";
 
-/**
- * Tests for issue #791: UUID v4 as filename format option
- *
- * Feature request: Add UUID v4 as a filename format option in the dropdown
- * alongside existing options (title, zettel, timestamp, custom).
- *
- * Expected behavior:
- * - A new "uuid" option should appear in the Filename format dropdown
- * - When selected, filenames should be generated using crypto.randomUUID()
- * - UUIDs should be valid v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
- */
-describe('filenameGenerator - UUID v4 format (issue #791)', () => {
-    const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_V4_REGEX =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-    // Base settings for testing - using type assertion since 'uuid' is not yet a valid option
-    const createSettingsWithUuid = (): TaskNotesSettings => ({
-        taskFilenameFormat: 'uuid' as TaskNotesSettings['taskFilenameFormat'],
-        storeTitleInFilename: false,
-        customFilenameTemplate: '',
-    } as unknown as TaskNotesSettings);
+const baseContext = {
+	title: "Test Task",
+	priority: "normal",
+	status: "open",
+};
 
-    const baseContext = {
-        title: 'Test Task',
-        priority: 'normal',
-        status: 'open',
-    };
+function createSettings(
+	overrides: Partial<TaskNotesSettings> = {}
+): TaskNotesSettings {
+	return {
+		taskFilenameFormat: "uuid",
+		storeTitleInFilename: false,
+		customFilenameTemplate: "",
+		...overrides,
+	} as TaskNotesSettings;
+}
 
-    it.skip('should generate a valid UUID v4 when format is "uuid"', () => {
-        // Issue #791: UUID v4 format not yet implemented
-        const settings = createSettingsWithUuid();
+describe("filenameGenerator - UUID v4 format (issue #791)", () => {
+	it("generates a valid UUID v4 when format is uuid", () => {
+		const filename = generateTaskFilename(baseContext, createSettings());
 
-        const filename = generateTaskFilename(baseContext, settings);
+		expect(filename).toMatch(UUID_V4_REGEX);
+	});
 
-        expect(filename).toMatch(UUID_V4_REGEX);
-    });
+	it("generates unique UUIDs for each call", () => {
+		const settings = createSettings();
 
-    it.skip('should generate unique UUIDs for each call', () => {
-        // Issue #791: UUID v4 format not yet implemented
-        const settings = createSettingsWithUuid();
+		const filenames = new Set([
+			generateTaskFilename(baseContext, settings),
+			generateTaskFilename(baseContext, settings),
+			generateTaskFilename(baseContext, settings),
+		]);
 
-        const filename1 = generateTaskFilename(baseContext, settings);
-        const filename2 = generateTaskFilename(baseContext, settings);
-        const filename3 = generateTaskFilename(baseContext, settings);
+		expect(filenames.size).toBe(3);
+	});
 
-        expect(filename1).not.toBe(filename2);
-        expect(filename2).not.toBe(filename3);
-        expect(filename1).not.toBe(filename3);
-    });
+	it("ignores the task title when UUID format is selected", () => {
+		const filename = generateTaskFilename(
+			{
+				...baseContext,
+				title: "My Important Task",
+			},
+			createSettings()
+		);
 
-    it.skip('should ignore task title when UUID format is selected', () => {
-        // Issue #791: UUID v4 format not yet implemented
-        const settings = createSettingsWithUuid();
+		expect(filename).not.toContain("My");
+		expect(filename).not.toContain("Important");
+		expect(filename).not.toContain("Task");
+		expect(filename).toMatch(UUID_V4_REGEX);
+	});
 
-        const filename = generateTaskFilename({
-            ...baseContext,
-            title: 'My Important Task',
-        }, settings);
+	it("uses the title instead of UUID when storeTitleInFilename is true", () => {
+		const filename = generateTaskFilename(
+			{
+				...baseContext,
+				title: "My Task Title",
+			},
+			createSettings({ storeTitleInFilename: true })
+		);
 
-        // UUID should not contain any part of the title
-        expect(filename).not.toContain('My');
-        expect(filename).not.toContain('Important');
-        expect(filename).not.toContain('Task');
-        expect(filename).toMatch(UUID_V4_REGEX);
-    });
-
-    it.skip('should not use UUID when storeTitleInFilename is true', () => {
-        // Issue #791: UUID v4 format not yet implemented
-        // When storeTitleInFilename is true, title should be used regardless of format setting
-        const settings = {
-            ...createSettingsWithUuid(),
-            storeTitleInFilename: true,
-        } as TaskNotesSettings;
-
-        const filename = generateTaskFilename({
-            ...baseContext,
-            title: 'My Task Title',
-        }, settings);
-
-        // Should use title, not UUID
-        expect(filename).toBe('My Task Title');
-    });
+		expect(filename).toBe("My Task Title");
+	});
 });
 
-describe('filenameGenerator - UUID as custom template variable (alternative approach)', () => {
-    const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+describe("filenameGenerator - UUID custom template variable", () => {
+	it("supports the uuid variable in custom templates", () => {
+		const filename = generateTaskFilename(
+			baseContext,
+			createSettings({
+				taskFilenameFormat: "custom",
+				customFilenameTemplate: "{{uuid}}",
+			})
+		);
 
-    const createSettings = (template: string): TaskNotesSettings => ({
-        taskFilenameFormat: 'custom',
-        storeTitleInFilename: false,
-        customFilenameTemplate: template,
-    } as unknown as TaskNotesSettings);
+		expect(filename).toMatch(UUID_V4_REGEX);
+	});
 
-    const baseContext = {
-        title: 'Test Task',
-        priority: 'normal',
-        status: 'open',
-    };
+	it("combines UUID with other variables", () => {
+		const filename = generateTaskFilename(
+			{
+				...baseContext,
+				title: "My Task",
+			},
+			createSettings({
+				taskFilenameFormat: "custom",
+				customFilenameTemplate: "{{titleKebab}}-{{uuid}}",
+			})
+		);
 
-    it.skip('should support {uuid} variable in custom templates', () => {
-        // Issue #791: UUID variable not yet implemented
-        const settings = createSettings('{{uuid}}');
+		expect(filename).toMatch(
+			/^my-task-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+		);
+	});
 
-        const filename = generateTaskFilename(baseContext, settings);
+	it("generates unique UUIDs when using the template variable", () => {
+		const settings = createSettings({
+			taskFilenameFormat: "custom",
+			customFilenameTemplate: "{{uuid}}",
+		});
 
-        expect(filename).toMatch(UUID_V4_REGEX);
-    });
+		const filename1 = generateTaskFilename(baseContext, settings);
+		const filename2 = generateTaskFilename(baseContext, settings);
 
-    it.skip('should support combining UUID with other variables', () => {
-        // Issue #791: UUID variable not yet implemented
-        const settings = createSettings('{{titleKebab}}-{{uuid}}');
-
-        const filename = generateTaskFilename({
-            ...baseContext,
-            title: 'My Task',
-        }, settings);
-
-        expect(filename).toMatch(/^my-task-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
-    });
-
-    it.skip('should generate unique UUIDs when using template variable', () => {
-        // Issue #791: UUID variable not yet implemented
-        const settings = createSettings('{{uuid}}');
-
-        const filename1 = generateTaskFilename(baseContext, settings);
-        const filename2 = generateTaskFilename(baseContext, settings);
-
-        expect(filename1).not.toBe(filename2);
-    });
+		expect(filename1).not.toBe(filename2);
+	});
 });

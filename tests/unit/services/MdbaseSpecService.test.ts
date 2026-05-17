@@ -233,6 +233,18 @@ describe("MdbaseSpecService", () => {
 			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{timestamp}.md"');
 		});
 
+		it("should use uuid filename when configured", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					tasksFolder: "Tasks",
+					storeTitleInFilename: false,
+					taskFilenameFormat: "uuid",
+				})
+			);
+			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{uuid}.md"');
+		});
+
 		it("should map known custom template variables to mapped fields", () => {
 			const service = new MdbaseSpecService(
 				createMockPlugin({

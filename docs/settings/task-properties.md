@@ -32,6 +32,7 @@ The task title property. Configuration options:
     - Title-based
     - Zettelkasten-style
     - Timestamp-based
+    - UUID v4
     - Custom template
 - **Custom template**: Define a custom filename pattern using variables (shown when "custom" format is selected)
 

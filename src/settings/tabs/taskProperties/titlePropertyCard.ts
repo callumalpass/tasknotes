@@ -139,6 +139,10 @@ function renderFilenameSettingsContent(
 				),
 			},
 			{
+				value: "uuid",
+				label: translate("settings.appearance.taskFilenames.filenameFormat.options.uuid"),
+			},
+			{
 				value: "custom",
 				label: translate("settings.appearance.taskFilenames.filenameFormat.options.custom"),
 			},
@@ -150,6 +154,7 @@ function renderFilenameSettingsContent(
 			| "title"
 			| "zettel"
 			| "timestamp"
+			| "uuid"
 			| "custom";
 		save();
 		renderFilenameSettingsContent(container, plugin, save, translate);

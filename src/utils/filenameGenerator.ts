@@ -150,6 +150,9 @@ export function generateTaskFilename(
 			case "timestamp":
 				return generateTimestampFilename(now);
 
+			case "uuid":
+				return generateUUIDFilename();
+
 			case "custom":
 				return generateCustomFilename(context, settings.customFilenameTemplate, now);
 
@@ -186,6 +189,31 @@ function generateZettelId(date: Date): string {
  */
 function generateTimestampFilename(date: Date): string {
 	return format(date, "yyyy-MM-dd-HHmmss");
+}
+
+function generateUUIDFilename(): string {
+	const cryptoProvider = typeof window !== "undefined" ? window.crypto : undefined;
+
+	if (typeof cryptoProvider?.randomUUID === "function") {
+		return cryptoProvider.randomUUID();
+	}
+
+	const bytes = new Uint8Array(16);
+	if (typeof cryptoProvider?.getRandomValues === "function") {
+		cryptoProvider.getRandomValues(bytes);
+	} else {
+		for (let i = 0; i < bytes.length; i++) {
+			bytes[i] = Math.floor(Math.random() * 256);
+		}
+	}
+
+	bytes[6] = (bytes[6] & 0x0f) | 0x40;
+	bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+	const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0"));
+	return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex
+		.slice(6, 8)
+		.join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10, 16).join("")}`;
 }
 
 function getProjectFilenameValues(projects: string[] | undefined): string[] {
@@ -316,6 +344,7 @@ function generateCustomFilename(
 				.replace(/\s+/g, ""),
 			// Date-based identifiers
 			zettel: generateZettelId(date),
+			uuid: generateUUIDFilename(),
 			nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
 
 			// Merge any additional variables
