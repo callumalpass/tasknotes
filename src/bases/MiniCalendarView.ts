@@ -53,6 +53,48 @@ type DataAdapterWithView = {
 
 type PeriodicNoteMoment = Parameters<typeof getDailyNote>[0];
 
+export const DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT = 6;
+
+type MiniCalendarHeatMapIntensity = "none" | "low" | "medium" | "high" | "very-high";
+
+export function normalizeMiniCalendarHeatMapMaxCount(value: unknown): number {
+	if (
+		value === undefined ||
+		value === null ||
+		(typeof value === "string" && value.trim() === "")
+	) {
+		return DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT;
+	}
+
+	const numericValue =
+		typeof value === "number" ? value : typeof value === "string" ? Number(value.trim()) : NaN;
+
+	if (!Number.isFinite(numericValue)) {
+		return DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT;
+	}
+
+	return Math.max(1, Math.round(numericValue));
+}
+
+export function getMiniCalendarHeatMapIntensity(
+	noteCount: number,
+	maxCount: number = DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT
+): MiniCalendarHeatMapIntensity {
+	const count = Math.max(0, Math.floor(noteCount));
+
+	if (count === 0) return "none";
+
+	const normalizedMaxCount = normalizeMiniCalendarHeatMapMaxCount(maxCount);
+
+	if (count >= normalizedMaxCount) return "very-high";
+
+	const ratio = count / normalizedMaxCount;
+
+	if (ratio <= 1 / DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT) return "low";
+	if (ratio <= 0.5) return "medium";
+	return "high";
+}
+
 function getPeriodicNoteMoment(date: Date): PeriodicNoteMoment {
 	return (obsidianMoment as unknown as (input: Date) => PeriodicNoteMoment)(date);
 }
@@ -64,6 +106,7 @@ export class MiniCalendarView extends BasesViewBase {
 	// View options
 	private dateProperty: string | null = null; // e.g., "note.dueDate", "file.ctime", "note.scheduled"
 	private titleProperty: string | null = null; // e.g., "file.name", "note.title"
+	private heatMapMaxCount = DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT;
 	private icsCalendarToggles: Map<string, boolean> = new Map();
 	private googleCalendarToggles: Map<string, boolean> = new Map();
 	private microsoftCalendarToggles: Map<string, boolean> = new Map();
@@ -126,6 +169,9 @@ export class MiniCalendarView extends BasesViewBase {
 		try {
 			this.dateProperty = (this.config.get("dateProperty") as string) || "file.ctime";
 			this.titleProperty = (this.config.get("titleProperty") as string) || "file.name";
+			this.heatMapMaxCount = normalizeMiniCalendarHeatMapMaxCount(
+				this.config.get("heatMapMaxCount")
+			);
 			this.readCalendarToggles();
 			this.configLoaded = true;
 		} catch (e) {
@@ -1442,11 +1488,7 @@ export class MiniCalendarView extends BasesViewBase {
 	}
 
 	private getHeatMapIntensity(noteCount: number): string {
-		if (noteCount === 0) return "none";
-		if (noteCount === 1) return "low";
-		if (noteCount <= 3) return "medium";
-		if (noteCount <= 5) return "high";
-		return "very-high";
+		return getMiniCalendarHeatMapIntensity(noteCount, this.heatMapMaxCount);
 	}
 
 	protected setupContainer(): void {

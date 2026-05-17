@@ -4,7 +4,10 @@ import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildTaskListViewFactory } from "./TaskListView";
 import { buildKanbanViewFactory } from "./KanbanView";
 import { buildCalendarViewFactory } from "./CalendarView";
-import { buildMiniCalendarViewFactory } from "./MiniCalendarView";
+import {
+	DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT,
+	buildMiniCalendarViewFactory,
+} from "./MiniCalendarView";
 import { registerBasesView, unregisterBasesView } from "./api";
 import { isNoteFileOrFormulaProperty } from "./propertyFilters";
 
@@ -597,6 +600,15 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 								// Show text properties (note, formula, file)
 								return isNoteFileOrFormulaProperty(prop);
 							},
+						},
+						{
+							type: "slider",
+							key: "heatMapMaxCount",
+							displayName: "Max color note count",
+							default: DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT,
+							min: 1,
+							max: 20,
+							step: 1,
 						},
 					];
 
