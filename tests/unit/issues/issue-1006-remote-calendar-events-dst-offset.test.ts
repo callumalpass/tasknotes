@@ -39,7 +39,13 @@ jest.mock('obsidian', () => ({
 	TFile: jest.fn(),
 }));
 
-describe.skip('Issue #1006 - Remote calendar events 1h ahead during DST transition period', () => {
+// This regression depends on real VTIMEZONE expansion; the default unit-test
+// ical.js mock intentionally parses only simple local date/time values.
+jest.mock('ical.js', () =>
+	jest.requireActual(`${process.cwd()}/node_modules/ical.js/dist/ical.es5.cjs`)
+);
+
+describe('Issue #1006 - Remote calendar events 1h ahead during DST transition period', () => {
 	let service: ICSSubscriptionService;
 	let mockPlugin: any;
 
