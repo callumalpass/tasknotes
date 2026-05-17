@@ -539,8 +539,7 @@ export function resolveEffectiveCalendarHeightMode(
 	}
 
 	const isEmbedded = !!containerEl?.closest(".internal-embed, .markdown-embed");
-	const embeddedAutoHeightViews = new Set(["listWeek", "multiMonthYear"]);
-	return isEmbedded && embeddedAutoHeightViews.has(calendarView) ? "auto" : "fill";
+	return isEmbedded ? "auto" : "fill";
 }
 
 /**

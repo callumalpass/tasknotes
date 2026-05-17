@@ -28,12 +28,10 @@ describe("Issue #1449: embedded Agenda height", () => {
 		});
 	});
 
-	it("keeps fill height for standalone list views and embedded non-list calendars", () => {
+	it("keeps fill height for standalone list views", () => {
 		const standalone = document.createElement("div");
-		const embedded = createEmbeddedContainer();
 
 		expect(resolveEffectiveCalendarHeightMode("fill", "listWeek", standalone)).toBe("fill");
-		expect(resolveEffectiveCalendarHeightMode("fill", "dayGridMonth", embedded)).toBe("fill");
 	});
 
 	it("honors an explicit auto-height setting outside embeds", () => {
