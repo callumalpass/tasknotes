@@ -11,6 +11,35 @@ Use **Default visible properties** to decide what metadata appears on task cards
 
 Checklist progress is available as a visible property in task cards. In Bases view `order` arrays, the corresponding source property is `file.tasks` (shown as `tasks` in Bases property pickers once present in the view `order` list).
 
+Nested task cards use CSS variables for their indentation. Add a CSS snippet if
+you want a denser hierarchy than the default:
+
+```css
+.tasknotes-plugin {
+  --tn-nested-task-indent: 12px;
+  --tn-nested-task-padding: 8px;
+}
+
+body.is-mobile .tasknotes-plugin {
+  --tn-nested-task-indent: 8px;
+  --tn-nested-task-padding: 6px;
+}
+```
+
+If task links inside normal markdown lists feel visually doubled with both a
+list marker and the task status indicator, a CSS snippet can hide those markers
+for task-link lines:
+
+```css
+.markdown-reading-view li:has(.task-inline-preview--reading-mode)::marker {
+  content: "";
+}
+
+.markdown-source-view.mod-cm6 .cm-line:has(.tasknotes-inline-widget) .cm-formatting-list {
+  display: none;
+}
+```
+
 ## Display Formatting
 
 Use **Time format** to switch between 12-hour and 24-hour display across all TaskNotes surfaces.

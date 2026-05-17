@@ -292,6 +292,8 @@
     --tn-spacing-lg: var(--cs-spacing-lg);
     --tn-spacing-xl: var(--cs-spacing-xl);
     --tn-spacing-xxl: var(--cs-spacing-xxl);
+    --tn-nested-task-indent: 24px;
+    --tn-nested-task-padding: 15px;
 
     /* ================================================
        SCOPED TYPOGRAPHY SYSTEM (inherit from design system)
@@ -379,4 +381,9 @@
     --tn-color-notes-light: var(--cs-color-notes-light);
     --tn-color-notes-medium: var(--cs-color-notes-medium);
     --tn-color-notes-heavy: var(--cs-color-notes-heavy);
+}
+
+body.is-mobile .tasknotes-plugin {
+    --tn-nested-task-indent: 12px;
+    --tn-nested-task-padding: 10px;
 }

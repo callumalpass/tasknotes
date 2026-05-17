@@ -685,10 +685,10 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
 }
 
 .tasknotes-plugin .task-card__subtasks {
-    margin-left: 24px;
+    margin-inline-start: var(--tn-nested-task-indent);
     margin-top: 6px;
     border-inline-start: 1px solid color-mix(in srgb, var(--tn-border-color) 45%, transparent);
-    padding-inline-start: 15px;
+    padding-inline-start: var(--tn-nested-task-padding);
     position: relative;
     z-index: 1;
 }
@@ -728,10 +728,10 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
 }
 
 .tasknotes-plugin .task-card__blocking {
-    margin-left: 24px;
+    margin-inline-start: var(--tn-nested-task-indent);
     margin-top: 6px;
     border-inline-start: 1px dashed color-mix(in srgb, var(--tn-color-error) 35%, transparent);
-    padding-inline-start: 15px;
+    padding-inline-start: var(--tn-nested-task-padding);
     display: flex;
     flex-direction: column;
     gap: 4px;
