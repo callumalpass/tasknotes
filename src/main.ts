@@ -1343,22 +1343,28 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Starts a time tracking session for a task
 	 */
-	async startTimeTracking(task: TaskInfo, description?: string): Promise<TaskInfo> {
-		return this.taskActionCoordinator.startTimeTracking(task, description);
+	async startTimeTracking(
+		task: TaskInfo,
+		description?: string,
+		targetDate?: Date
+	): Promise<TaskInfo> {
+		return this.taskActionCoordinator.startTimeTracking(task, description, targetDate);
 	}
 
 	/**
 	 * Stops the active time tracking session for a task
 	 */
-	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
-		return this.taskActionCoordinator.stopTimeTracking(task);
+	async stopTimeTracking(task: TaskInfo, targetDate?: Date): Promise<TaskInfo> {
+		return this.taskActionCoordinator.stopTimeTracking(task, targetDate);
 	}
 
 	/**
 	 * Gets the active time tracking session for a task
 	 */
-	getActiveTimeSession(task: TaskInfo) {
-		return getActiveTimeEntry(task.timeEntries || []);
+	getActiveTimeSession(task: TaskInfo, targetDate?: Date) {
+		const instanceDate =
+			task.recurrence && targetDate ? formatDateForStorage(targetDate) : undefined;
+		return getActiveTimeEntry(task.timeEntries || [], instanceDate);
 	}
 
 	/**

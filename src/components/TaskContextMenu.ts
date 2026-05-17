@@ -341,7 +341,7 @@ export class TaskContextMenu {
 
 		// Time Tracking
 		this.menu.addItem((item) => {
-			const activeSession = plugin.getActiveTimeSession(task);
+			const activeSession = plugin.getActiveTimeSession(task, this.options.targetDate);
 			item.setTitle(
 				activeSession
 					? this.t("contextMenus.task.stopTimeTracking")
@@ -349,11 +349,11 @@ export class TaskContextMenu {
 			);
 			item.setIcon(activeSession ? "pause" : "play");
 			item.onClick(async () => {
-				const activeSession = plugin.getActiveTimeSession(task);
+				const activeSession = plugin.getActiveTimeSession(task, this.options.targetDate);
 				if (activeSession) {
-					await plugin.stopTimeTracking(task);
+					await plugin.stopTimeTracking(task, this.options.targetDate);
 				} else {
-					await plugin.startTimeTracking(task);
+					await plugin.startTimeTracking(task, undefined, this.options.targetDate);
 				}
 				this.options.onUpdate?.();
 			});

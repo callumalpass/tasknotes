@@ -3,10 +3,15 @@ import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo } from "../types";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
-import { calculateTotalTimeSpent, getFiniteRecurringInstanceCount } from "../utils/helpers";
+import {
+	calculateTotalTimeSpent,
+	filterTimeEntriesForInstance,
+	getFiniteRecurringInstanceCount,
+} from "../utils/helpers";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 import {
 	formatDateTimeForDisplay,
+	formatDateForStorage,
 	getDatePart,
 	getTimePart,
 	isOverdueTimeAware,
@@ -35,6 +40,7 @@ import { renderContextsValue, renderTagsValue, type TagServices } from "./render
 
 export interface TaskCardPropertyOptions {
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
+	targetDate?: Date;
 }
 
 function tTaskCard(
@@ -198,6 +204,16 @@ type PropertyRenderer = (
 	options?: TaskCardPropertyOptions
 ) => void;
 
+function getTimeTrackingInstanceDate(
+	task: TaskInfo,
+	options?: TaskCardPropertyOptions
+): string | undefined {
+	if (!task.recurrence || !options?.targetDate) {
+		return undefined;
+	}
+	return formatDateForStorage(options.targetDate);
+}
+
 const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	due: (element, value, task, plugin, options) => {
 		if (typeof value === "string") {
@@ -265,9 +281,17 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.textContent = `${plugin.formatTime(value)} estimated`;
 		}
 	},
-	totalTrackedTime: (element, value, _, plugin) => {
-		if (typeof value === "number" && value > 0) {
-			element.textContent = `${plugin.formatTime(value)} tracked`;
+	totalTrackedTime: (element, value, task, plugin, options) => {
+		const instanceDate = getTimeTrackingInstanceDate(task, options);
+		let totalTime = 0;
+		if (instanceDate) {
+			totalTime = calculateTotalTimeSpent(task.timeEntries || [], instanceDate);
+		} else if (typeof value === "number") {
+			totalTime = value;
+		}
+
+		if (totalTime > 0) {
+			element.textContent = `${plugin.formatTime(totalTime)} tracked`;
 		}
 	},
 	recurrence: (element, value, _task, plugin, options) => {
@@ -388,11 +412,13 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			});
 		}
 	},
-	timeEntries: (element, value, _, plugin) => {
+	timeEntries: (element, value, task, plugin, options) => {
 		if (Array.isArray(value) && value.length > 0) {
-			const totalTime = calculateTotalTimeSpent(value);
+			const instanceDate = getTimeTrackingInstanceDate(task, options);
+			const entries = filterTimeEntriesForInstance(value, instanceDate);
+			const totalTime = calculateTotalTimeSpent(entries);
 			if (totalTime > 0) {
-				element.textContent = `${plugin.formatTime(totalTime)} tracked (${value.length} ${value.length === 1 ? "entry" : "entries"})`;
+				element.textContent = `${plugin.formatTime(totalTime)} tracked (${entries.length} ${entries.length === 1 ? "entry" : "entries"})`;
 			}
 		}
 	},

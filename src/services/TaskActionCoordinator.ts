@@ -5,7 +5,7 @@ import { EVENT_DATA_CHANGED } from "../types";
 import { TimeEntryEditorModal } from "../modals/TimeEntryEditorModal";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
-import { getCurrentDateString } from "../core/date";
+import { formatDateForStorage, getCurrentDateString } from "../core/date";
 import { getActiveTimeEntry } from "../utils/helpers";
 import { getOverdueScheduledRolloverCandidates } from "../utils/scheduledRollover";
 
@@ -48,9 +48,15 @@ export class TaskActionCoordinator {
 		}
 	}
 
-	async startTimeTracking(task: TaskInfo, description?: string): Promise<TaskInfo> {
+	async startTimeTracking(
+		task: TaskInfo,
+		description?: string,
+		targetDate?: Date
+	): Promise<TaskInfo> {
 		try {
-			let updatedTask = await this.plugin.taskService.startTimeTracking(task);
+			const instanceDate =
+				task.recurrence && targetDate ? formatDateForStorage(targetDate) : undefined;
+			let updatedTask = await this.plugin.taskService.startTimeTracking(task, instanceDate);
 
 			const trimmedDescription = description?.trim();
 			if (
@@ -84,9 +90,11 @@ export class TaskActionCoordinator {
 		}
 	}
 
-	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
+	async stopTimeTracking(task: TaskInfo, targetDate?: Date): Promise<TaskInfo> {
 		try {
-			const updatedTask = await this.plugin.taskService.stopTimeTracking(task);
+			const instanceDate =
+				task.recurrence && targetDate ? formatDateForStorage(targetDate) : undefined;
+			const updatedTask = await this.plugin.taskService.stopTimeTracking(task, instanceDate);
 			new Notice("Time tracking stopped");
 			this.requestStatusBarUpdate();
 			return updatedTask;

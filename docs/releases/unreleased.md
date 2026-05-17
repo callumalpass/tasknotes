@@ -104,6 +104,7 @@ Example:
 
 ## Fixed
 
+- ([#1065](https://github.com/callumalpass/tasknotes/issues/1065)) Scoped time tracking indicators and tracked-time totals to the rendered recurring task instance, so tracking one occurrence no longer marks every past and future occurrence as actively tracked. Thanks to @vkbytes for reporting this and @slipstyle for the context.
 - ([#1075](https://github.com/callumalpass/tasknotes/issues/1075)) Hid the native WebKit date-input label that could appear as `Label` when editing scheduled dates on macOS. Thanks to @3zra47 for reporting this.
 - ([#1076](https://github.com/callumalpass/tasknotes/issues/1076)) Allowed timeblocks to end at midnight using `00:00`, and accepted `24:00` as an explicit end-of-day value in timeblock validation. Thanks to @skoove for reporting this and @gregor202 for the follow-up.
 - ([#1086](https://github.com/callumalpass/tasknotes/issues/1086)) Fixed the Calendar `+ more` control in dark mode so expanded all-day task groups stay readable. Thanks to @same774 for reporting this.

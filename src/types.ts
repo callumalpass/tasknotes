@@ -489,6 +489,7 @@ export interface TimeEntry {
 	endTime?: string; // ISO timestamp, undefined if currently running
 	description?: string; // Optional description of what was worked on
 	duration?: number; // Legacy field; duration should be derived from start/end timestamps
+	instanceDate?: string; // Optional YYYY-MM-DD recurring task instance date
 }
 
 // Reminder types

@@ -389,7 +389,8 @@ function createStatusCycleHandler(
 						updatedTask,
 						plugin,
 						isCompleted,
-						effectiveStatus
+						effectiveStatus,
+						targetDate
 					);
 				};
 
@@ -443,13 +444,14 @@ function updateCardCompletionState(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
 	isCompleted: boolean,
-	effectiveStatus: string
+	effectiveStatus: string,
+	targetDate: Date
 ): void {
 	card.classList.toggle("task-card--completed", isCompleted);
 	card.classList.toggle("task-card--archived", !!task.archived);
 	card.classList.toggle(
 		"task-card--actively-tracked",
-		plugin.getActiveTimeSession(task) !== null
+		plugin.getActiveTimeSession(task, targetDate) !== null
 	);
 	card.classList.toggle("task-card--recurring", !!task.recurrence);
 	card.classList.toggle(
@@ -746,7 +748,7 @@ export function createTaskCard(
 	taskCardElement._taskPath = task.path;
 	taskCardElement._taskCardOptions = opts;
 
-	const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
+	const isActivelyTracked = plugin.getActiveTimeSession(task, targetDate) !== null;
 	const isCompleted = task.recurrence
 		? task.complete_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of complete_instances
 		: plugin.statusManager.isCompletedStatus(effectiveStatus); // Regular tasks use status config
@@ -1233,7 +1235,7 @@ export function updateTaskCard(
 		: task.status;
 
 	// Update main element classes using BEM structure
-	const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
+	const isActivelyTracked = plugin.getActiveTimeSession(task, targetDate) !== null;
 	const isCompleted = task.recurrence
 		? task.complete_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of complete_instances
 		: plugin.statusManager.isCompletedStatus(effectiveStatus); // Regular tasks use status config

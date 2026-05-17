@@ -19,6 +19,7 @@ import {
 	calculateDefaultDate,
 	calculateDefaultDateTime,
 	ensureFolderExists,
+	getActiveTimeEntry,
 	splitFrontmatterAndBody,
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";
@@ -1011,7 +1012,7 @@ export class TaskService {
 	/**
 	 * Start time tracking for a task
 	 */
-	async startTimeTracking(task: TaskInfo): Promise<TaskInfo> {
+	async startTimeTracking(task: TaskInfo, instanceDate?: string): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
@@ -1039,6 +1040,7 @@ export class TaskService {
 		const newEntry: TimeEntry = {
 			startTime: new Date().toISOString(),
 			description: "Work session",
+			...(instanceDate ? { instanceDate } : {}),
 		};
 		updatedTask.timeEntries = [...updatedTask.timeEntries, newEntry];
 
@@ -1102,13 +1104,13 @@ export class TaskService {
 	/**
 	 * Stop time tracking for a task
 	 */
-	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
+	async stopTimeTracking(task: TaskInfo, instanceDate?: string): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
 		}
 
-		const activeSession = this.plugin.getActiveTimeSession(task);
+		const activeSession = getActiveTimeEntry(task.timeEntries || [], instanceDate);
 		if (!activeSession) {
 			throw new Error("No active time tracking session for this task");
 		}
