@@ -161,19 +161,24 @@ body.is-mobile .tn-bases-tasknotes-list {
     scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Sidebar note embeds already have a constrained note scroller. Let that parent
-   own vertical scrolling so Task List embeds do not create nested scrollbars. */
+/* Sidebar and popout note embeds already have a constrained note scroller. Let
+   that parent own vertical scrolling so Task List embeds do not reserve empty
+   viewport-height space inside the note. */
 .mod-left-split .internal-embed .tn-tasknotesTaskList,
 .mod-left-split .markdown-embed .tn-tasknotesTaskList,
 .mod-right-split .internal-embed .tn-tasknotesTaskList,
-.mod-right-split .markdown-embed .tn-tasknotesTaskList {
+.mod-right-split .markdown-embed .tn-tasknotesTaskList,
+body.is-popout-window .internal-embed .tn-tasknotesTaskList,
+body.is-popout-window .markdown-embed .tn-tasknotesTaskList {
     height: auto;
 }
 
 .mod-left-split .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
 .mod-left-split .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container,
 .mod-right-split .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
-.mod-right-split .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container {
+.mod-right-split .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container,
+body.is-popout-window .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
+body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container {
     flex: 0 1 auto;
     max-height: none;
     overflow-y: visible;
