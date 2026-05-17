@@ -296,15 +296,16 @@
     --tn-nested-task-padding: 15px;
 
     /* ================================================
-       SCOPED TYPOGRAPHY SYSTEM (inherit from design system)
+       SCOPED TYPOGRAPHY SYSTEM
        ================================================ */
     
-    --tn-font-size-xs: var(--cs-text-label-small);
-    --tn-font-size-sm: var(--cs-text-label-medium);
-    --tn-font-size-md: var(--cs-text-body-medium);
-    --tn-font-size-lg: var(--cs-text-body-large);
-    --tn-font-size-xl: var(--cs-text-title-medium);
-    --tn-font-size-2xl: var(--cs-text-title-large);
+    --tn-font-size-base: var(--font-text-size, 16px);
+    --tn-font-size-xs: calc(var(--tn-font-size-base) * 0.625);
+    --tn-font-size-sm: calc(var(--tn-font-size-base) * 0.6875);
+    --tn-font-size-md: calc(var(--tn-font-size-base) * 0.75);
+    --tn-font-size-lg: calc(var(--tn-font-size-base) * 0.875);
+    --tn-font-size-xl: calc(var(--tn-font-size-base) * 0.875);
+    --tn-font-size-2xl: calc(var(--tn-font-size-base) * 1.125);
 
     /* Typography weights and styles */
     --tn-font-weight-normal: 400;
