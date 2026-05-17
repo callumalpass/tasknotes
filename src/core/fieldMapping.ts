@@ -27,9 +27,13 @@ function titleFromFilePath(filePath: string): string | undefined {
 	return filename || undefined;
 }
 
+function isBlankString(value: unknown): value is string {
+	return typeof value === "string" && value.trim().length === 0;
+}
+
 function normalizeStringValue(value: unknown): string | undefined {
 	if (value === null || value === undefined) return undefined;
-	if (typeof value === "string") return value;
+	if (typeof value === "string") return isBlankString(value) ? undefined : value;
 	if (typeof value === "number" || typeof value === "boolean") return String(value);
 	return undefined;
 }
@@ -201,7 +205,7 @@ export function mapTaskFromFrontmatter(
 		const anchorValue = frontmatter[mapping.recurrenceAnchor];
 		if (anchorValue === "scheduled" || anchorValue === "completion") {
 			mapped.recurrence_anchor = anchorValue;
-		} else {
+		} else if (anchorValue !== null && anchorValue !== undefined && !isBlankString(anchorValue)) {
 			console.warn(
 				`Invalid recurrence_anchor value: ${stringifyUnknown(anchorValue)}, defaulting to 'scheduled'`
 			);
@@ -255,8 +259,7 @@ export function mapTaskFromFrontmatter(
 	}
 
 	if (frontmatter[mapping.sortOrder] !== undefined) {
-		const val = frontmatter[mapping.sortOrder];
-		mapped.sortOrder = typeof val === "string" ? val : String(val);
+		mapped.sortOrder = normalizeStringValue(frontmatter[mapping.sortOrder]);
 	}
 
 	if (frontmatter.tags && Array.isArray(frontmatter.tags)) {

@@ -10,7 +10,7 @@
 import { FieldMapper } from '../../../src/services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 
-describe.skip('Issue #1326 - Empty front-matter properties graceful handling', () => {
+describe('Issue #1326 - Empty front-matter properties graceful handling', () => {
     let fieldMapper: FieldMapper;
 
     beforeEach(() => {
@@ -66,7 +66,7 @@ describe.skip('Issue #1326 - Empty front-matter properties graceful handling', (
             expect(taskInfo.title).toBe('Null Title Task');
         });
 
-        it('should use empty title when storeTitleInFilename is false and title is empty', () => {
+        it('should fall back to filename when storeTitleInFilename is false and title is empty', () => {
             const frontmatter = {
                 title: '',
                 status: 'open'
@@ -78,9 +78,9 @@ describe.skip('Issue #1326 - Empty front-matter properties graceful handling', (
                 false // storeTitleInFilename = false
             );
 
-            // When storeTitleInFilename is false, empty title should still result in no title
-            // (the caller should handle the fallback to "Untitled task")
-            expect(taskInfo.title).toBeUndefined();
+            // Empty title should still fall back to the filename so old tasks remain readable
+            // if the title-storage setting changes.
+            expect(taskInfo.title).toBe('Some Task');
         });
 
         it('should preserve non-empty title values', () => {
