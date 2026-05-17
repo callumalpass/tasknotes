@@ -23,6 +23,15 @@ export type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
 	customFrontmatter?: Record<string, unknown>;
 };
 
+const TASK_CREATION_FAILURE_PREFIX = "Failed to create task: ";
+
+export function getTaskCreationFailureNoticeMessage(error: unknown): string {
+	const rawMessage = error instanceof Error && error.message ? error.message : String(error);
+	return rawMessage.startsWith(TASK_CREATION_FAILURE_PREFIX)
+		? rawMessage.slice(TASK_CREATION_FAILURE_PREFIX.length)
+		: rawMessage;
+}
+
 export interface TaskCreationOptions {
 	prePopulatedValues?: TaskCreationPrepopulatedValues;
 	onTaskCreated?: (task: TaskInfo) => void;
@@ -757,7 +766,7 @@ export class TaskCreationModal extends TaskModal {
 			}
 		} catch (error) {
 			console.error("Failed to create task:", error);
-			const message = error instanceof Error && error.message ? error.message : String(error);
+			const message = getTaskCreationFailureNoticeMessage(error);
 			new Notice(this.t("modals.taskCreation.notices.failure", { message }));
 		}
 	}
