@@ -2,27 +2,12 @@ import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
 import {
-	NaturalLanguageParserCore as ImportedNaturalLanguageParserCore,
-	ParsedTaskData,
+	NaturalLanguageParserCore,
+	type NaturalLanguageParserOptions,
+	type ParsedTaskData,
 } from "tasknotes-nlp-core";
 
 export type { ParsedTaskData };
-
-type ParserCoreInstance = InstanceType<typeof ImportedNaturalLanguageParserCore>;
-type ParserCoreOptions = {
-	dateLocale?: string;
-	dateOrder?: "day-first" | "month-first";
-};
-
-const NaturalLanguageParserCore = ImportedNaturalLanguageParserCore as unknown as new (
-	statusConfigs?: StatusConfig[],
-	priorityConfigs?: PriorityConfig[],
-	defaultToScheduled?: boolean,
-	languageCode?: string,
-	nlpTriggers?: NLPTriggersConfig,
-	userFields?: UserMappedField[],
-	options?: ParserCoreOptions
-) => ParserCoreInstance;
 
 function getBrowserLocale(): string | undefined {
 	return typeof navigator !== "undefined" && navigator.language ? navigator.language : undefined;
@@ -65,7 +50,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		languageCode = "en",
 		nlpTriggers?: NLPTriggersConfig,
 		userFields?: UserMappedField[],
-		options?: ParserCoreOptions
+		options?: NaturalLanguageParserOptions
 	) {
 		super(
 			statusConfigs,

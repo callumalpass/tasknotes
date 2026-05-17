@@ -82,6 +82,8 @@ type LoadedSettingsData = Partial<TaskNotesSettings> &
 		statusSuggestionTrigger?: string;
 	};
 
+type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
+
 function frontmatterString(value: unknown): string | undefined {
 	if (value === null || value === undefined) return undefined;
 	if (typeof value === "string") return value;
@@ -1062,7 +1064,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// before passing to moment() to ensure correct day is used
 			// Fix for issue #1223: Skip conversion if the date is already local (e.g., from getTodayLocal())
 			const localDate = options?.isAlreadyLocal ? date : convertUTCToLocalCalendarDate(date);
-			const moment = (window as Window & { moment: (date: Date) => unknown }).moment(
+			const moment = (window as Window & { moment: (date: Date) => DailyNoteMoment }).moment(
 				localDate
 			);
 

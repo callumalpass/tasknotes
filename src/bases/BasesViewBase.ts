@@ -1,10 +1,10 @@
-import { Component, App, Notice, setIcon, TFile } from "obsidian";
+import { BasesView as ObsidianBasesView, App, Notice, setIcon, TFile } from "obsidian";
 import type {
 	BasesPropertyId,
 	BasesQueryResult,
-	BasesView,
 	BasesViewConfig,
 	EventRef,
+	QueryController,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
@@ -112,10 +112,10 @@ function decodeQuotedValue(value: string): string {
 
 /**
  * Abstract base class for all TaskNotes Bases views.
- * Properly extends Component to leverage lifecycle, and implements BasesView interface.
+ * Properly extends the public Obsidian BasesView base class.
  * Note: Bases types (BasesView, BasesViewConfig) are available from obsidian-api declarations.
  */
-export abstract class BasesViewBase extends Component implements BasesView {
+export abstract class BasesViewBase extends ObsidianBasesView {
 	// BasesView properties (provided by Bases when factory returns this instance)
 	// These match the BasesView interface from Obsidian's internal Bases API
 	app!: App;
@@ -143,8 +143,7 @@ export abstract class BasesViewBase extends Component implements BasesView {
 	protected selectionIndicatorEl: HTMLElement | null = null;
 
 	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
-		// Call Component constructor
-		super();
+		super(controller as QueryController);
 		this.plugin = plugin;
 		this.containerEl = containerEl;
 
