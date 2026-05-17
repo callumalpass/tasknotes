@@ -582,7 +582,7 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-ca
     width: 14px;
     height: 14px;
     color: var(--tn-text-muted);
-    opacity: 0;
+    opacity: 1;
     display: flex;
     align-items: center;
     justify-content: center;
