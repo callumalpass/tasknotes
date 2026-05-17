@@ -3,7 +3,7 @@ import { App, Notice, TFile, TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
-import { formatTimestampForDisplay } from "../utils/dateUtils";
+import { formatTimestampForDisplay, getCurrentTimestamp } from "../utils/dateUtils";
 import {
 	extractTaskInfo,
 	calculateTotalTimeSpent,
@@ -36,6 +36,7 @@ export class TaskEditModal extends TaskModal {
 	private initialTags = "";
 	private isShowingConfirmation = false;
 	private pendingClose = false;
+	private isConvertingNoteToTask = false;
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
 		super(app, plugin);
@@ -240,9 +241,12 @@ export class TaskEditModal extends TaskModal {
 			if (!isRecognizedTask) {
 				// File is not yet a task - keep the original task data passed to constructor
 				// This preserves user's default settings for status/priority during conversion
+				this.isConvertingNoteToTask = true;
 				this.task.details = this.details;
 				return;
 			}
+
+			this.isConvertingNoteToTask = false;
 
 			const cachedTaskInfo = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 
@@ -452,7 +456,7 @@ export class TaskEditModal extends TaskModal {
 		}
 
 		try {
-			const changes = this.getChanges();
+			const changes = this.getChanges({ includeConversionWrite: true });
 			const hasBlockingChanges =
 				this.pendingBlockingUpdates.added.length > 0 ||
 				this.pendingBlockingUpdates.removed.length > 0;
@@ -536,7 +540,7 @@ export class TaskEditModal extends TaskModal {
 		}
 	}
 
-	private getChanges(): Partial<TaskInfo> {
+	private getChanges(options: { includeConversionWrite?: boolean } = {}): Partial<TaskInfo> {
 		let frontmatter: Record<string, unknown> = {};
 		try {
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
@@ -580,6 +584,14 @@ export class TaskEditModal extends TaskModal {
 
 		this.pendingBlockingUpdates = result.blockingUpdates;
 		this.unresolvedBlockingEntries = result.unresolvedBlockingEntries;
+
+		if (
+			options.includeConversionWrite &&
+			this.isConvertingNoteToTask &&
+			Object.keys(result.changes).length === 0
+		) {
+			result.changes.dateModified = getCurrentTimestamp();
+		}
 
 		return result.changes;
 	}
