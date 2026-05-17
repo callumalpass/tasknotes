@@ -3929,10 +3929,11 @@ export class KanbanView extends BasesViewBase {
 
 		const ordered: string[] = [];
 		const unsorted: string[] = [];
+		const actualKeySet = new Set(actualKeys);
 
 		// First, add keys in saved order
 		for (const key of savedOrder) {
-			if (actualKeys.includes(key)) {
+			if (!this.hideEmptyColumns || actualKeySet.has(key)) {
 				ordered.push(key);
 			}
 		}
