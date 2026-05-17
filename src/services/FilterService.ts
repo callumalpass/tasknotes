@@ -916,7 +916,7 @@ export class FilterService extends EventEmitter {
 						comparison = this.compareDates(a.scheduled, b.scheduled);
 						break;
 					case "priority":
-						comparison = this.comparePriorities(a.priority, b.priority);
+						comparison = this.comparePriorityWeights(a.priority, b.priority);
 						break;
 					case "status":
 						comparison = this.compareStatuses(a.status, b.status);
@@ -936,12 +936,12 @@ export class FilterService extends EventEmitter {
 				}
 			}
 
-			// If primary criteria are equal, apply fallback sorting
-			if (comparison === 0) {
-				comparison = this.applyFallbackSorting(a, b, sortKey);
+			if (comparison !== 0) {
+				return direction === "desc" ? -comparison : comparison;
 			}
 
-			return direction === "desc" ? -comparison : comparison;
+			// If primary criteria are equal, apply natural task fallback sorting.
+			return this.applyFallbackSorting(a, b, sortKey);
 		});
 	}
 
@@ -977,8 +977,15 @@ export class FilterService extends EventEmitter {
 		const weightA = this.priorityManager.getPriorityWeight(priorityA);
 		const weightB = this.priorityManager.getPriorityWeight(priorityB);
 
-		// Higher weight = higher priority, so reverse for ascending order
+		// Higher weight = higher priority, so higher priorities come first as a fallback.
 		return weightB - weightA;
+	}
+
+	private comparePriorityWeights(priorityA: string, priorityB: string): number {
+		const weightA = this.priorityManager.getPriorityWeight(priorityA);
+		const weightB = this.priorityManager.getPriorityWeight(priorityB);
+
+		return weightA - weightB;
 	}
 
 	/**
@@ -1018,11 +1025,10 @@ export class FilterService extends EventEmitter {
 
 	/**
 	 * Apply fallback sorting criteria when primary sort yields equal values
-	 * Order: scheduled date → due date → priority → title
+	 * Order: due date → scheduled date → priority → title
 	 */
 	private applyFallbackSorting(a: TaskInfo, b: TaskInfo, primarySortKey: TaskSortKey): number {
-		// Define fallback order: scheduled → due → priority → title
-		const fallbackOrder: TaskSortKey[] = ["scheduled", "due", "priority", "title"];
+		const fallbackOrder: TaskSortKey[] = ["due", "scheduled", "priority", "title"];
 
 		// Remove the primary sort key from fallbacks to avoid redundant comparison
 		const fallbacks = fallbackOrder.filter((key) => key !== primarySortKey);
