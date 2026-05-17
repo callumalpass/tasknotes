@@ -26,10 +26,10 @@ describe('FieldMapper title normalization', () => {
     expect(boolF.title).toBe('false');
   });
 
-  it('returns empty string for object titles', () => {
+  it('falls back to filename for object titles', () => {
     const fm = { title: { name: 'Charlie' } } as any;
     const mapped = mapper.mapFromFrontmatter(fm, path);
-    expect(mapped.title).toBe('');
+    expect(mapped.title).toBe('Note');
   });
 
   it('falls back to filename when storeTitleInFilename is true and no title present', () => {
@@ -37,9 +37,8 @@ describe('FieldMapper title normalization', () => {
     expect(mapped.title).toBe('My Task');
   });
 
-  it('does not set title when missing and storeTitleInFilename is false', () => {
+  it('falls back to filename when missing and storeTitleInFilename is false', () => {
     const mapped = mapper.mapFromFrontmatter({}, 'Tasks/My Task.md', false);
-    expect(mapped.title).toBeUndefined();
+    expect(mapped.title).toBe('My Task');
   });
 });
-

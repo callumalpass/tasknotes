@@ -11,6 +11,7 @@ jest.mock("../../../src/utils/helpers", () => ({
 	getRecurringTaskCompletionText: jest.fn(() => "Not completed for this date"),
 	getRecurrenceDisplayText: jest.fn(() => "Daily"),
 	filterEmptyProjects: jest.fn((projects) => projects?.filter((p: string) => p && p.trim()) || []),
+	sanitizeForCssClass: jest.fn((value: string) => value.toLowerCase().replace(/\s+/g, "-")),
 }));
 
 jest.mock("../../../src/utils/dateUtils", () => ({

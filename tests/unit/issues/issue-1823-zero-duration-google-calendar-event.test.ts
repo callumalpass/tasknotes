@@ -14,14 +14,15 @@ function makeEvent(overrides: Partial<ICSEvent> = {}): ICSEvent {
 }
 
 describe("Issue #1823: zero-duration Google Calendar events", () => {
-	it("omits the render end for timed external events whose start and end are identical", () => {
+	it("adds a minimal render end for timed external events whose start and end are identical", () => {
 		const icsEvent = makeEvent();
 
 		const calendarEvent = createICSEvent(icsEvent, {} as any);
 
 		expect(calendarEvent).not.toBeNull();
 		expect(calendarEvent?.start).toBe("2026-04-22T23:12:00");
-		expect(calendarEvent?.end).toBeUndefined();
+		expect(calendarEvent?.end).toBeDefined();
+		expect(new Date(calendarEvent!.end!).getTime() - new Date(calendarEvent!.start).getTime()).toBe(1);
 		expect(calendarEvent?.allDay).toBe(false);
 		expect(calendarEvent?.extendedProps?.icsEvent).toBe(icsEvent);
 	});

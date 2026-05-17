@@ -18,6 +18,7 @@ describe("Issue #1622: Google Calendar export default reminder intervals", () =>
 			},
 			statusManager: {
 				getStatusConfig: jest.fn(),
+				isCompletedStatus: jest.fn(() => false),
 			},
 			priorityManager: {
 				getPriorityConfig: jest.fn(),

@@ -146,7 +146,7 @@ describe("Issue #1756: Custom fields flow through the HTTP API", () => {
 			expect(result.start_date).toBeUndefined();
 		});
 
-		it("does not nest values under customProperties", () => {
+		it("also mirrors user fields under customProperties for custom-field consumers", () => {
 			const result = mapTaskFromFrontmatter(
 				DEFAULT_FIELD_MAPPING,
 				{ title: "Task", status: "open", start_date: "2025-01-15" },
@@ -155,7 +155,7 @@ describe("Issue #1756: Custom fields flow through the HTTP API", () => {
 				USER_FIELDS
 			);
 
-			expect(result.customProperties).toBeUndefined();
+			expect(result.customProperties).toEqual({ start_date: "2025-01-15" });
 		});
 	});
 
@@ -241,7 +241,10 @@ describe("Issue #1756: Custom fields flow through the HTTP API", () => {
 
 			expect(result.start_date).toBe("2025-03-10");
 			expect(result.effort_level).toBe(2);
-			expect(result.customProperties).toBeUndefined();
+			expect(result.customProperties).toEqual({
+				start_date: "2025-03-10",
+				effort_level: 2,
+			});
 		});
 
 		it("writes top-level user field properties back via mapToFrontmatter", () => {
