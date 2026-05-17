@@ -22,6 +22,11 @@ export function normalizeTitleValue(val: unknown): string | undefined {
 	return undefined;
 }
 
+function titleFromFilePath(filePath: string): string | undefined {
+	const filename = filePath.split("/").pop()?.replace(/\.md$/i, "").trim();
+	return filename || undefined;
+}
+
 function normalizeStringValue(value: unknown): string | undefined {
 	if (value === null || value === undefined) return undefined;
 	if (typeof value === "string") return value;
@@ -70,13 +75,18 @@ export function mapTaskFromFrontmatter(
 
 	if (frontmatter[mapping.title] !== undefined) {
 		const normalized = normalizeTitleValue(frontmatter[mapping.title]);
-		if (normalized !== undefined) {
+		if (normalized !== undefined && normalized.trim().length > 0) {
 			mapped.title = normalized;
+		} else {
+			const fallbackTitle = titleFromFilePath(filePath);
+			if (fallbackTitle) {
+				mapped.title = fallbackTitle;
+			}
 		}
-	} else if (storeTitleInFilename) {
-		const filename = filePath.split("/").pop()?.replace(".md", "");
-		if (filename) {
-			mapped.title = filename;
+	} else {
+		const fallbackTitle = titleFromFilePath(filePath);
+		if (fallbackTitle) {
+			mapped.title = fallbackTitle;
 		}
 	}
 
