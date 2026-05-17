@@ -1,5 +1,5 @@
  
-import { TFile, App, Events, EventRef } from "obsidian";
+import { TFile, App, Events, EventRef, parseYaml } from "obsidian";
 import { TaskInfo, NoteInfo } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
 import {
@@ -256,7 +256,15 @@ export class TaskManager extends Events {
 
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) {
-			return this.getPendingTaskInfo(path);
+			const pendingTaskInfo = this.getPendingTaskInfo(path);
+			if (pendingTaskInfo) {
+				return pendingTaskInfo;
+			}
+
+			const frontmatter = await this.readFrontmatterFromFile(file);
+			if (!frontmatter || !this.isTaskFile(frontmatter)) return null;
+
+			return this.extractTaskInfoFromNative(path, frontmatter);
 		}
 
 		this.pendingTaskInfoByPath.delete(path);
@@ -717,9 +725,38 @@ export class TaskManager extends Events {
 		if (!(file instanceof TFile)) return null;
 
 		const metadata = this.app.metadataCache.getFileCache(file);
-		if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) return null;
+		if (!metadata?.frontmatter) {
+			return this.getPendingTaskInfo(path);
+		}
+		if (!this.isTaskFile(metadata.frontmatter)) return null;
 
 		return this.extractTaskInfoFromNative(path, metadata.frontmatter);
+	}
+
+	private async readFrontmatterFromFile(file: TFile): Promise<Record<string, unknown> | null> {
+		try {
+			const content = await this.app.vault.read(file);
+			return this.parseFrontmatterFromContent(content);
+		} catch (error) {
+			console.warn(`TaskManager: Failed to read frontmatter fallback for ${file.path}`, error);
+			return null;
+		}
+	}
+
+	private parseFrontmatterFromContent(content: string): Record<string, unknown> | null {
+		const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+		if (!match) return null;
+
+		try {
+			const parsed = parseYaml(match[1] || "");
+			if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+				return null;
+			}
+			return parsed as Record<string, unknown>;
+		} catch (error) {
+			console.warn("TaskManager: Failed to parse frontmatter fallback", error);
+			return null;
+		}
 	}
 
 	/**
