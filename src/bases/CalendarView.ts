@@ -140,6 +140,8 @@ export type CalendarViewConfigReader = {
 const CALENDAR_DATA_UPDATE_DEBOUNCE_MS = 5000;
 const CALENDAR_DATA_SIGNATURE_CHECK_INTERVAL_MS = 250;
 const CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS = 2000;
+const DEFAULT_CALENDAR_EVENT_ORDER = "start,-duration,allDay,title";
+export const TASKNOTES_CALENDAR_SORT_INDEX = "tasknotesSortIndex";
 
 const Calendar = FullCalendar;
 
@@ -152,6 +154,7 @@ type Calendar = {
 	unselect(): void;
 	changeView(viewType: string): void;
 	gotoDate(date: Date): void;
+	setOption(name: string, value: unknown): void;
 	view?: {
 		type?: string;
 	};
@@ -159,6 +162,57 @@ type Calendar = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
+}
+
+export function hasBasesCalendarSortConfig(sortConfig: unknown): boolean {
+	return Array.isArray(sortConfig) ? sortConfig.length > 0 : Boolean(sortConfig);
+}
+
+export function getTaskNotesCalendarEventOrder(sortConfig: unknown): string {
+	if (!hasBasesCalendarSortConfig(sortConfig)) {
+		return DEFAULT_CALENDAR_EVENT_ORDER;
+	}
+	return `${TASKNOTES_CALENDAR_SORT_INDEX},${DEFAULT_CALENDAR_EVENT_ORDER}`;
+}
+
+function getCalendarEventSortPath(event: EventInput): string | null {
+	const extendedProps = event.extendedProps;
+	if (!isRecord(extendedProps)) {
+		return null;
+	}
+
+	const taskInfo = extendedProps.taskInfo;
+	if (isRecord(taskInfo) && typeof taskInfo.path === "string") {
+		return taskInfo.path;
+	}
+
+	return typeof extendedProps.filePath === "string" ? extendedProps.filePath : null;
+}
+
+export function applyBasesSortIndexesToCalendarEvents(
+	events: EventInput[],
+	sortIndexByPath: Map<string, number>
+): void {
+	if (sortIndexByPath.size === 0) {
+		return;
+	}
+
+	for (const event of events) {
+		const path = getCalendarEventSortPath(event);
+		if (!path) {
+			continue;
+		}
+
+		const sortIndex = sortIndexByPath.get(path);
+		if (sortIndex === undefined) {
+			continue;
+		}
+
+		event.extendedProps = {
+			...(isRecord(event.extendedProps) ? event.extendedProps : {}),
+			[TASKNOTES_CALENDAR_SORT_INDEX]: sortIndex,
+		};
+	}
 }
 
 function isCalendarEphemeralState(value: unknown): value is CalendarEphemeralState {
@@ -513,6 +567,7 @@ export class CalendarView extends BasesViewBase {
 	private calendarEl: HTMLElement | null = null;
 	private currentTasks: TaskInfo[] = [];
 	private basesEntryByPath: Map<string, BasesEntryWithGetValue> = new Map(); // Map task path to Bases entry for enrichment
+	private basesSortIndexByPath = new Map<string, number>();
 
 	// Render lock to prevent duplicate renders
 	private _isRendering = false;
@@ -1254,6 +1309,7 @@ export class CalendarView extends BasesViewBase {
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);
 			this.currentTasks = filteredTasks;
+			this.updateBasesSortIndexes(filteredTasks);
 
 			// Build Bases entry mapping for task enrichment
 			this.basesEntryByPath.clear();
@@ -1419,6 +1475,7 @@ export class CalendarView extends BasesViewBase {
 			eventMinHeight: this.viewOptions.eventMinHeight,
 			slotEventOverlap: this.viewOptions.slotEventOverlap,
 			eventAllow: () => true, // Allow all drops to proceed visually
+			eventOrder: getTaskNotesCalendarEventOrder(this.dataAdapter.getSortConfig()),
 			events: (fetchInfo, successCallback, failureCallback) => {
 				void this.fetchEvents(fetchInfo, successCallback, failureCallback);
 			},
@@ -1467,6 +1524,24 @@ export class CalendarView extends BasesViewBase {
 		this.applyTodayHighlightStyling();
 		this.scheduleTodayColumnWidthUpdate();
 		this.scheduleDailyNoteHeaderLinkUpdate();
+	}
+
+	private updateBasesSortIndexes(taskNotes: TaskInfo[]): void {
+		this.basesSortIndexByPath.clear();
+		if (!hasBasesCalendarSortConfig(this.dataAdapter.getSortConfig())) {
+			return;
+		}
+
+		taskNotes.forEach((task, index) => {
+			this.basesSortIndexByPath.set(task.path, index);
+		});
+
+		this.data?.data?.forEach((entry, index) => {
+			const path = entry.file?.path;
+			if (path && !this.basesSortIndexByPath.has(path)) {
+				this.basesSortIndexByPath.set(path, index);
+			}
+		});
 	}
 
 	private scheduleDailyNoteHeaderLinkUpdate(): void {
@@ -1807,12 +1882,14 @@ export class CalendarView extends BasesViewBase {
 			this.plugin,
 			eventConfig
 		);
+		applyBasesSortIndexesToCalendarEvents(taskEvents, this.basesSortIndexByPath);
 		const displayedTaskGoogleEventIds = getDisplayedTaskLinkedGoogleEventIds(taskEvents);
 		allEvents.push(...taskEvents);
 
 		// Add property-based events from non-TaskNotes items
 		if (this.viewOptions.showPropertyBasedEvents && this.viewOptions.startDateProperty) {
 			const propertyEvents = await this.buildPropertyBasedEvents();
+			applyBasesSortIndexesToCalendarEvents(propertyEvents, this.basesSortIndexByPath);
 			allEvents.push(...propertyEvents);
 		}
 
@@ -2013,6 +2090,10 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendar) return;
 
 		// Refetch events from all sources
+		this.calendar.setOption(
+			"eventOrder",
+			getTaskNotesCalendarEventOrder(this.dataAdapter.getSortConfig())
+		);
 		this.calendar.refetchEvents();
 	}
 
