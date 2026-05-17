@@ -1855,9 +1855,19 @@ export class CalendarView extends BasesViewBase {
 		);
 	}
 
+	private applyCalendarModeClass(): void {
+		const isListView = this.viewOptions.calendarView.startsWith("list");
+		this.rootElement?.classList.toggle("advanced-calendar-view--list", isListView);
+		this.calendarEl?.classList.toggle(
+			"advanced-calendar-view__calendar--list",
+			isListView
+		);
+	}
+
 	private applyLayoutClasses(): void {
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
+		this.applyCalendarModeClass();
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {

@@ -4,6 +4,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    max-width: 100%;
+    container-type: inline-size;
 }
 
 .advanced-calendar-view.advanced-calendar-view--auto-height {
@@ -686,10 +688,12 @@
 
 /* Header toolbar styling */
 .advanced-calendar-view .fc-header-toolbar {
-	flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
     padding: 0;
     border-bottom: 1px solid var(--background-modifier-border);
     background: transparent;
+    max-width: 100%;
 }
 
 /* Calendar title styling - smaller and minimalist */
@@ -709,6 +713,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    min-width: 0;
 }
 
 .advanced-calendar-view .fc-toolbar.fc-header-toolbar {
@@ -775,6 +780,85 @@
 .advanced-calendar-view .fc-today-button:hover:not(:disabled) {
     background: var(--interactive-accent-hover);
     box-shadow: none;
+}
+
+/* Agenda/list mode can live in narrow sidebars; respond to container width, not viewport width. */
+.advanced-calendar-view.advanced-calendar-view--list {
+    overflow-x: hidden;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .fc,
+.advanced-calendar-view.advanced-calendar-view--list .fc-view-harness,
+.advanced-calendar-view.advanced-calendar-view--list .fc-list,
+.advanced-calendar-view.advanced-calendar-view--list .fc-list-table {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .fc-scroller {
+    overflow-x: hidden;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .fc-list-table {
+    table-layout: fixed;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .task-card,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__main-row,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__content,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__title {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .task-card__title-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .task-card__badges,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__recurring-indicator,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__reminder-indicator,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__details-indicator,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__project-indicator,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__chevron,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__blocking-toggle,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__blocked-toggle {
+    flex: 0 0 auto;
+}
+
+@container (max-width: 480px) {
+    .advanced-calendar-view.advanced-calendar-view--list .fc-header-toolbar {
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+        padding-bottom: 0.25rem;
+    }
+
+    .advanced-calendar-view.advanced-calendar-view--list .fc-toolbar-chunk {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .advanced-calendar-view.advanced-calendar-view--list .fc-toolbar-chunk:nth-child(2) {
+        order: -1;
+        flex: 0 0 100%;
+    }
+
+    .advanced-calendar-view.advanced-calendar-view--list .fc-toolbar-chunk:first-child,
+    .advanced-calendar-view.advanced-calendar-view--list .fc-toolbar-chunk:nth-child(3) {
+        flex: 1 1 100%;
+    }
+
+    .advanced-calendar-view.advanced-calendar-view--list .fc-toolbar-title {
+        padding-inline: 0;
+        text-align: center;
+        white-space: normal;
+    }
+
+    .advanced-calendar-view.advanced-calendar-view--list .fc-button {
+        min-width: 0;
+    }
 }
 
 /* Clean today styling */
