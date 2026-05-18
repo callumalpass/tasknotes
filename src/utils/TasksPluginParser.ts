@@ -51,6 +51,9 @@ export class TasksPluginParser {
 	// Tag pattern for hashtags, including Unicode letters/marks and hyphens.
 	private static readonly TAG_PATTERN = /#[\p{L}\p{N}\p{M}_/-]+/gu;
 
+	// Context pattern for @context markers used in inline task text.
+	private static readonly CONTEXT_PATTERN = /@[\p{L}\p{N}\p{M}_/-]+/gu;
+
 	// Checkbox pattern for markdown tasks (supports both bullet points and numbered lists)
 	private static readonly CHECKBOX_PATTERN = /^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+)(.*)/;
 
@@ -171,6 +174,9 @@ export class TasksPluginParser {
 			// Extract tags
 			const tags = this.extractTags(workingContent);
 
+			// Extract contexts
+			const contexts = this.extractContexts(workingContent);
+
 			// Remove all emoji patterns and tags to get clean title
 			const title = this.extractCleanTitle(workingContent);
 
@@ -210,6 +216,7 @@ export class TasksPluginParser {
 				recurrence,
 				recurrenceData,
 				tags: tags.length > 0 ? tags : undefined,
+				contexts: contexts.length > 0 ? contexts : undefined,
 				projects: undefined, // TasksPlugin format doesn't have projects, only NLP fallback does
 				isCompleted,
 			};
@@ -390,7 +397,37 @@ export class TasksPluginParser {
 	}
 
 	/**
-	 * Extract clean title by removing all emoji patterns and tags
+	 * Extract contexts from content
+	 */
+	private static extractContexts(content: string): string[] {
+		// Validate input
+		if (typeof content !== "string") {
+			return [];
+		}
+
+		try {
+			const freshPattern = new RegExp(this.CONTEXT_PATTERN.source, this.CONTEXT_PATTERN.flags);
+			const contexts: string[] = [];
+			let match;
+
+			while ((match = freshPattern.exec(content)) !== null) {
+				if (match[0]) {
+					const context = match[0].substring(1);
+					if (context && !contexts.includes(context)) {
+						contexts.push(context);
+					}
+				}
+			}
+
+			return contexts;
+		} catch (error) {
+			console.debug("Error extracting contexts:", error);
+			return [];
+		}
+	}
+
+	/**
+	 * Extract clean title by removing all emoji patterns, tags, and contexts
 	 */
 	private static extractCleanTitle(content: string): string {
 		// Validate input
@@ -418,6 +455,17 @@ export class TasksPluginParser {
 				cleanContent = cleanContent.replace(tagPattern, "");
 			} catch (error) {
 				console.debug("Error removing tags from title:", error);
+			}
+
+			// Remove contexts using fresh regex instance
+			try {
+				const contextPattern = new RegExp(
+					this.CONTEXT_PATTERN.source,
+					this.CONTEXT_PATTERN.flags
+				);
+				cleanContent = cleanContent.replace(contextPattern, "");
+			} catch (error) {
+				console.debug("Error removing contexts from title:", error);
 			}
 
 			// Clean up extra whitespace and validate result

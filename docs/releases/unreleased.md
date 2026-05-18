@@ -134,6 +134,7 @@ Example:
 ## Fixed
 
 - ([#263](https://github.com/callumalpass/tasknotes/issues/263)) Made the instant inline task conversion button respond to touch/pointer activation, so mobile multi-line selections can be converted into TaskNotes. Thanks to @cathywu for reporting this.
+- ([#216](https://github.com/callumalpass/tasknotes/issues/216)) Preserved `@context` markers when converting Tasks-plugin-style checkbox tasks into TaskNotes, while keeping those contexts out of the created task title. Thanks to @ksdavidc for suggesting this, and to @hangryscribe3, @nayatiuh, and @natleahh for the follow-up feedback.
 - ([#508](https://github.com/callumalpass/tasknotes/issues/508)) Showed project note names instead of full project paths in grouped Kanban and Task List headings, while keeping the headings linked to the project note. Thanks to @elvarb for reporting this and @dmodify for confirming it in Task List.
 - ([#466](https://github.com/callumalpass/tasknotes/issues/466)) Stored task created/modified metadata as `YYYY-MM-DDTHH:mm:ss` datetimes so Obsidian Bases can recognize those properties as dates more reliably across regions. Thanks to @Moyf for reporting this.
 - ([#408](https://github.com/callumalpass/tasknotes/issues/408)) Used the task title as the native system notification title for task reminders instead of always showing `TaskNotes Reminder`. Thanks to @DudeThatsErin for reporting this and @phillipadsmith for the follow-up.
