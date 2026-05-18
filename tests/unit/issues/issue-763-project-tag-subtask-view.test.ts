@@ -24,6 +24,13 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import {
+	isProjectNoteByAutosuggestMarkers,
+	shouldRenderRelationshipsWidget,
+	type RelationshipsWidgetState,
+} from '../../../src/editor/RelationshipsDecorations';
+import type TaskNotesPlugin from '../../../src/main';
+import type { ProjectAutosuggestSettings } from '../../../src/types/settings';
 
 interface MockTaskInfo {
 	path: string;
@@ -40,6 +47,92 @@ interface MockFrontmatter {
 	isProject?: boolean;
 	[key: string]: unknown;
 }
+
+function createPluginWithProjectAutosuggest(
+	projectAutosuggest: Partial<ProjectAutosuggestSettings>
+): TaskNotesPlugin {
+	return {
+		settings: {
+			projectAutosuggest,
+		},
+	} as unknown as TaskNotesPlugin;
+}
+
+describe('Issue #763: Relationships widget for empty tagged/property projects', () => {
+	const emptyProjectState: RelationshipsWidgetState = {
+		isTaskNote: false,
+		isProjectNote: true,
+		hasSubtasks: false,
+		hasProjectLinks: false,
+		hasBlockingDependencies: false,
+		hasBlockedTasks: false,
+	};
+
+	it('treats notes matching project autosuggest required tags as project notes', () => {
+		const plugin = createPluginWithProjectAutosuggest({
+			requiredTags: ['project'],
+			propertyKey: '',
+			propertyValue: '',
+		});
+		const metadata = {
+			frontmatter: {
+				tags: ['project'],
+			},
+			tags: [],
+		};
+
+		expect(isProjectNoteByAutosuggestMarkers(plugin, metadata)).toBe(true);
+		expect(shouldRenderRelationshipsWidget('always', emptyProjectState)).toBe(true);
+	});
+
+	it('treats notes matching the configured project property as project notes', () => {
+		const plugin = createPluginWithProjectAutosuggest({
+			requiredTags: [],
+			propertyKey: 'type',
+			propertyValue: 'project',
+		});
+		const metadata = {
+			frontmatter: {
+				type: 'project',
+			},
+			tags: [],
+		};
+
+		expect(isProjectNoteByAutosuggestMarkers(plugin, metadata)).toBe(true);
+		expect(shouldRenderRelationshipsWidget('always', emptyProjectState)).toBe(true);
+	});
+
+	it('does not turn folder-only autosuggest filters into empty project widgets', () => {
+		const plugin = createPluginWithProjectAutosuggest({
+			requiredTags: [],
+			includeFolders: ['projects'],
+			propertyKey: '',
+			propertyValue: '',
+		});
+		const metadata = {
+			frontmatter: {},
+			tags: [],
+		};
+
+		expect(isProjectNoteByAutosuggestMarkers(plugin, metadata)).toBe(false);
+	});
+
+	it('does not treat exclusion-only tag filters as project markers', () => {
+		const plugin = createPluginWithProjectAutosuggest({
+			requiredTags: ['-archive'],
+			propertyKey: '',
+			propertyValue: '',
+		});
+		const metadata = {
+			frontmatter: {
+				tags: ['work'],
+			},
+			tags: [],
+		};
+
+		expect(isProjectNoteByAutosuggestMarkers(plugin, metadata)).toBe(false);
+	});
+});
 
 describe('Issue #763: Project tag shows subtask view without existing tasks', () => {
 	describe('Project identification via tags', () => {

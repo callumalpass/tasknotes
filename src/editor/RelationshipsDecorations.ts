@@ -64,6 +64,9 @@ import {
 import { insertAfterElement, insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
 import type { RelationshipsDisplayMode } from "../types/settings";
 import { getRelationshipsDisplayMode } from "../settings/relationshipSettings";
+import { FilterUtils } from "../utils/FilterUtils";
+import { collectCacheTags } from "../utils/tagExtraction";
+import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
 
 // CSS class for identifying plugin-generated elements
 const CSS_RELATIONSHIPS_WIDGET = "tasknotes-relationships-widget";
@@ -131,6 +134,44 @@ function getFrontmatterRecord(frontmatter: unknown): Record<string, unknown> {
 	return frontmatter && typeof frontmatter === "object"
 		? (frontmatter as Record<string, unknown>)
 		: {};
+}
+
+type ProjectMarkerMetadata = {
+	frontmatter?: Record<string, unknown> | null;
+	tags?: Array<{ tag?: string }>;
+};
+
+export function isProjectNoteByAutosuggestMarkers(
+	plugin: TaskNotesPlugin,
+	metadata: ProjectMarkerMetadata | null | undefined
+): boolean {
+	const projectAutosuggest = plugin.settings.projectAutosuggest;
+	if (!projectAutosuggest) {
+		return false;
+	}
+
+	const requiredTags = projectAutosuggest.requiredTags ?? [];
+	const hasPositiveTagRequirement = requiredTags.some((tag) => !tag.trim().startsWith("-"));
+	if (
+		hasPositiveTagRequirement &&
+		FilterUtils.matchesTagConditions(collectCacheTags(metadata), requiredTags)
+	) {
+		return true;
+	}
+
+	const propertyFilter = getProjectPropertyFilter(projectAutosuggest);
+	return propertyFilter.enabled && matchesProjectProperty(metadata?.frontmatter, propertyFilter);
+}
+
+function isProjectNoteForRelationships(
+	plugin: TaskNotesPlugin,
+	file: TFile,
+	metadata: ProjectMarkerMetadata | null | undefined
+): boolean {
+	return Boolean(
+		plugin.dependencyCache?.isFileUsedAsProject(file.path) ||
+			isProjectNoteByAutosuggestMarkers(plugin, metadata)
+	);
 }
 
 function getRelationshipsWidgetState(
@@ -497,22 +538,17 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				return;
 			}
 
-			// Show widget in task notes OR project notes (notes referenced by tasks)
+			// Show widget in task notes OR project notes.
 			// Get the file's frontmatter to check if it's a task or project
 			let isTaskNote = false;
 			let isProjectNote = false;
 			const metadata = this.plugin.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter) {
-				// Check if this is a project note (referenced by tasks via the project property)
-				// Some project notes will not have frontmatter
-				isProjectNote =
-					this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+				isProjectNote = isProjectNoteForRelationships(this.plugin, file, metadata);
 			} else {
 				// Check if this is a task note
 				isTaskNote = this.plugin.cacheManager.isTaskFile(metadata.frontmatter);
-				// Check if this is a project note (referenced by tasks via the project property)
-				isProjectNote =
-					this.plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+				isProjectNote = isProjectNoteForRelationships(this.plugin, file, metadata);
 			}
 
 			const widgetState = getRelationshipsWidgetState(
@@ -626,20 +662,17 @@ async function injectReadingModeWidget(
 		return;
 	}
 
-	// Show widget in task notes OR project notes (notes referenced by tasks)
+	// Show widget in task notes OR project notes.
 	// Get the file's frontmatter to check if it's a task or project
 	let isTaskNote = false;
 	let isProjectNote = false;
 	const metadata = plugin.app.metadataCache.getFileCache(file);
 	if (!metadata?.frontmatter) {
-		// Check if this is a project note (referenced by tasks via the project property)
-		// Some project notes will not have frontmatter
-		isProjectNote = plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+		isProjectNote = isProjectNoteForRelationships(plugin, file, metadata);
 	} else {
 		// Check if this is a task note
 		isTaskNote = plugin.cacheManager.isTaskFile(metadata.frontmatter);
-		// Check if this is a project note (referenced by tasks via the project property)
-		isProjectNote = plugin.dependencyCache?.isFileUsedAsProject(file.path) || false;
+		isProjectNote = isProjectNoteForRelationships(plugin, file, metadata);
 	}
 
 	const widgetState = getRelationshipsWidgetState(
