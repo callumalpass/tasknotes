@@ -236,6 +236,7 @@ function renderStatusList(
 	const sortedStatuses = [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
 
 	sortedStatuses.forEach((status) => {
+		let previousStatusValue = status.value;
 		const valueInput = createCardInput(
 			"text",
 			translate("settings.taskProperties.taskStatuses.placeholders.value"),
@@ -286,12 +287,14 @@ function renderStatusList(
 						"settings.taskProperties.taskStatuses.placeholders.nextStatusDefault"
 					),
 				},
-				...sortedStatuses.map((statusOption) => ({
-					value: statusOption.value,
-					label: statusOption.label || statusOption.value,
-				})),
+				...sortedStatuses
+					.filter((statusOption) => statusOption.id !== status.id)
+					.map((statusOption) => ({
+						value: statusOption.value,
+						label: statusOption.label || statusOption.value,
+					})),
 			],
-			status.nextStatus || ""
+			status.nextStatus === status.value ? "" : status.nextStatus || ""
 		);
 
 		const autoArchiveToggle = createCardToggle(status.autoArchive || false, (value) => {
@@ -450,6 +453,22 @@ function renderStatusList(
 			if (onStatusesChanged) onStatusesChanged();
 		});
 
+		valueInput.addEventListener("change", () => {
+			if (previousStatusValue === status.value) {
+				return;
+			}
+
+			plugin.settings.customStatuses.forEach((statusOption) => {
+				if (statusOption.nextStatus === previousStatusValue) {
+					statusOption.nextStatus =
+						statusOption.id === status.id || !status.value ? undefined : status.value;
+				}
+			});
+			previousStatusValue = status.value;
+			save();
+			renderStatusList(container, plugin, save, translate, onStatusesChanged);
+		});
+
 		labelInput.addEventListener("input", () => {
 			status.label = labelInput.value;
 			statusCard.querySelector(".tasknotes-settings__card-secondary-text")!.textContent =
@@ -475,7 +494,10 @@ function renderStatusList(
 		});
 
 		nextStatusSelect.addEventListener("change", () => {
-			status.nextStatus = nextStatusSelect.value || undefined;
+			status.nextStatus =
+				nextStatusSelect.value && nextStatusSelect.value !== status.value
+					? nextStatusSelect.value
+					: undefined;
 			save();
 		});
 

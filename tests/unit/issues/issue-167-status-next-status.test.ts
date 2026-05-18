@@ -44,6 +44,16 @@ describe("Issue #167: explicit next status overrides", () => {
 		expect(manager.getNextStatus("blocked")).toBe("in-progress");
 	});
 
+	it("falls back to status order when next status points to itself", () => {
+		const manager = new StatusManager([
+			createStatus("backlog", 0),
+			createStatus("in-progress", 1, { nextStatus: "in-progress" }),
+			createStatus("done", 2),
+		]);
+
+		expect(manager.getNextStatus("in-progress")).toBe("done");
+	});
+
 	it("allows manually selected statuses to jump back into the workflow", () => {
 		const manager = new StatusManager([
 			createStatus("open", 0),

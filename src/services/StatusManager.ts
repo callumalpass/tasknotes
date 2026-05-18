@@ -28,9 +28,17 @@ export class StatusManager {
 	 */
 	getNextStatus(currentStatus: string): string {
 		const currentStatusConfig = this.getStatusConfig(currentStatus);
-		const configuredNextStatus = currentStatusConfig?.nextStatus
-			? this.getStatusConfig(currentStatusConfig.nextStatus)
+		const normalizedCurrentStatus = currentStatusConfig
+			? this.normalizeStatusValue(currentStatusConfig.value)
 			: undefined;
+		const normalizedConfiguredNextStatus = currentStatusConfig?.nextStatus
+			? this.normalizeStatusValue(currentStatusConfig.nextStatus)
+			: undefined;
+		const configuredNextStatus =
+			normalizedConfiguredNextStatus &&
+			normalizedConfiguredNextStatus !== normalizedCurrentStatus
+				? this.getStatusConfig(normalizedConfiguredNextStatus)
+				: undefined;
 		if (configuredNextStatus) {
 			return configuredNextStatus.value;
 		}
