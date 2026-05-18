@@ -416,6 +416,7 @@ body.is-mobile .tn-bases-kanban-column {
 /* Each swimlane row */
 .kanban-view__swimlane-row {
     display: grid;
+    flex: 0 0 auto;
     /* First column is the swimlane label with fixed width, rest are kanban columns */
     grid-template-columns: var(--kanban-swimlane-label-width, 120px);
     grid-auto-columns: var(--kanban-column-width, 280px);
@@ -426,6 +427,10 @@ body.is-mobile .tn-bases-kanban-column {
     border-radius: var(--tn-radius-sm);
     min-width: max-content;
     overflow: hidden;
+}
+
+.kanban-view__swimlane-row:not(.kanban-view__swimlane-row--header) {
+    max-height: var(--kanban-swimlane-max-height, 600px);
 }
 
 /* Last row gets bottom border */
@@ -456,6 +461,7 @@ body.is-mobile .tn-bases-kanban-column {
     left: 0;
     z-index: 5;
     min-height: 72px;
+    overflow: hidden;
 }
 
 /* Swimlane title */
@@ -536,6 +542,7 @@ body.is-mobile .tn-bases-kanban-column {
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--tn-border-color);
+    overflow: hidden;
 }
 
 .kanban-view__swimlane-column.kanban-view__column--unknown-status {
@@ -550,7 +557,7 @@ body.is-mobile .tn-bases-kanban-column {
     gap: var(--tn-spacing-xs);
     flex: 1;
     overflow-y: auto;
-    min-height: 64px;
+    min-height: 0;
 }
 
 /* Drag over state for swimlane cells */

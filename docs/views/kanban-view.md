@@ -24,6 +24,7 @@ Access these options through the Bases view settings panel:
 
 - **Swim Lane**: Optional property for horizontal grouping. Creates a two-dimensional layout where tasks are organized by both column (groupBy) and row (swimLane)
 - **Column Width**: Controls the width of columns in pixels. Range: 200-500px. Default: 280px
+- **Max Swimlane Height**: Caps each swimlane row before the task area scrolls. Range: 300-1200px. Default: 600px
 - **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
 - **Pinned Columns**: Optional comma-separated list of column values that should stay visible even when empty. This is useful with **Hide Empty Columns** when each board needs a small stable subset of shared statuses or categories
 - **WIP Limits**: Advanced JSON configuration for showing per-column work-in-progress limits in column headers
