@@ -25,15 +25,26 @@
     border-radius: 4px;
 }
 
-/* Only apply calendar emoji to ICS events in non-list views */
-.fc-daygrid-event[data-ics-event="true"]:before,
-.fc-timegrid-event[data-ics-event="true"]:before {
-    content: "📅";
+.fc-daygrid-event .fc-event-provider-icon,
+.fc-timegrid-event .fc-event-provider-icon {
     position: absolute;
     top: 2px;
     right: 2px;
-    font-size: 10px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    color: currentColor;
     opacity: 0.7;
+    pointer-events: none;
+}
+
+.fc-daygrid-event .fc-event-provider-icon svg,
+.fc-timegrid-event .fc-event-provider-icon svg {
+    width: 10px;
+    height: 10px;
 }
 
 .fc-event[data-ics-event="true"]:hover {

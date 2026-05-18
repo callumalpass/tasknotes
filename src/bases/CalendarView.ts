@@ -3108,67 +3108,12 @@ export class CalendarView extends BasesViewBase {
 		// Add calendar icon to provider-managed calendar events in grid views
 		if (icsEvent && arg.view.type !== "listWeek") {
 			const provider = this.plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
-			if (provider) {
-				const titleEl = arg.el.querySelector(".fc-event-title");
-				if (titleEl) {
-					// Use correct document for pop-out window support
-					const doc = arg.el.ownerDocument;
-					const iconContainer = doc.createElement("span");
-					iconContainer.classList.remove("tn-static-margin-right-8px-539fa9a0");
-					iconContainer.classList.add("tn-static-margin-right-4px-c6b76b85");
-					iconContainer.classList.remove(
-						"tn-static-display-block-2a1b75c9",
-						"tn-static-display-flex-4d51fc62",
-						"tn-static-display-flex-75816cae",
-						"tn-static-display-flex-8bb39979",
-						"tn-static-display-inline-block-60e32dcb",
-						"tn-static-display-inline-cccfa456",
-						"tn-static-display-none-6b99de8b",
-						"tn-static-min-height-800px-997b4c8c"
-					);
-					iconContainer.classList.add("tn-static-display-inline-flex-f984c520");
-					iconContainer.classList.remove(
-						"tn-static-align-items-baseline-4b95b5c7",
-						"tn-static-align-items-flex-start-0486f781"
-					);
-					iconContainer.classList.add("tn-static-align-items-center-7c619740");
-
-					const iconEl = doc.createElement("span");
-					iconEl.classList.remove(
-						"tn-static-width-100-0466783d",
-						"tn-static-width-16px-7375d50b",
-						"tn-static-width-1px-aa77e27e",
-						"tn-static-width-200px-2acaf3b5",
-						"tn-static-width-60px-bd09c419",
-						"tn-static-width-80px-8573bae3"
-					);
-					iconEl.classList.add("tn-static-width-12px-fbf353fb");
-					iconEl.classList.remove(
-						"tn-static-display-flex-4d51fc62",
-						"tn-static-height-0-7a31cef0",
-						"tn-static-height-100-62264068",
-						"tn-static-height-16px-30de4aee",
-						"tn-static-height-24px-29a11d37",
-						"tn-static-min-height-800px-997b4c8c"
-					);
-					iconEl.classList.add("tn-static-height-12px-06c0747e");
-					iconEl.classList.remove(
-						"tn-static-display-block-2a1b75c9",
-						"tn-static-display-flex-4d51fc62",
-						"tn-static-display-flex-75816cae",
-						"tn-static-display-flex-8bb39979",
-						"tn-static-display-inline-block-60e32dcb",
-						"tn-static-display-inline-cccfa456",
-						"tn-static-display-none-6b99de8b",
-						"tn-static-min-height-800px-997b4c8c"
-					);
-					iconEl.classList.add("tn-static-display-inline-flex-f984c520");
-					iconEl.classList.add("tn-static-flex-shrink-0-6ee0661e");
-					setIcon(iconEl, "calendar");
-
-					iconContainer.appendChild(iconEl);
-					titleEl.insertBefore(iconContainer, titleEl.firstChild);
-				}
+			if (provider && !arg.el.querySelector(".fc-event-provider-icon")) {
+				const iconEl = arg.el.ownerDocument.createElement("span");
+				iconEl.classList.add("fc-event-provider-icon");
+				iconEl.setAttribute("aria-hidden", "true");
+				setIcon(iconEl, "calendar");
+				arg.el.appendChild(iconEl);
 			}
 
 			const titleEl = arg.el.querySelector(".fc-event-title");
