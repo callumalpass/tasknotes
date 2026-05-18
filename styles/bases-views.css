@@ -317,6 +317,12 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     background: var(--tn-interactive-hover);
 }
 
+#bases-calendar .fc-list-event.fc-list-task-card:hover,
+#bases-calendar .fc-list-event.fc-list-task-card:hover > td {
+    background: transparent;
+    background-color: transparent;
+}
+
 #bases-calendar .fc-list-day-cushion {
     background: transparent;
     padding: var(--tn-spacing-sm) var(--tn-spacing-xs);

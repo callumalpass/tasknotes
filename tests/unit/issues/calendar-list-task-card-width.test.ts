@@ -20,10 +20,12 @@ describe("Calendar List task card width", () => {
 
 	it("keeps the list card cell full-width within the fixed FullCalendar table", () => {
 		const css = readRepoFile("styles/advanced-calendar-view.css");
+		const basesCss = readRepoFile("styles/bases-views.css");
 
 		expect(css).toContain(".advanced-calendar-view.advanced-calendar-view--list .fc-list-card-content");
 		expect(css).toContain(".advanced-calendar-view.advanced-calendar-view--list .fc-list-task-card > td:not(.fc-list-card-content)");
 		expect(css).toContain(".advanced-calendar-view.advanced-calendar-view--list .fc-list-event.fc-list-task-card:hover");
+		expect(basesCss).toContain("#bases-calendar .fc-list-event.fc-list-task-card:hover > td");
 		expect(css).toContain("box-sizing: border-box");
 		expect(css).toContain("padding: 4px 10px");
 		expect(css).toContain("width: 100%");
