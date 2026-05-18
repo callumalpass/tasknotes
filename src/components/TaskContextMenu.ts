@@ -432,6 +432,17 @@ export class TaskContextMenu {
 			});
 		});
 
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.openNoteInNewTab"));
+			item.setIcon("external-link");
+			item.onClick(() => {
+				const file = plugin.app.vault.getAbstractFileByPath(task.path);
+				if (file instanceof TFile) {
+					void plugin.app.workspace.openLinkText(task.path, "", true);
+				}
+			});
+		});
+
 		// Copy Task Title
 		this.menu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.task.copyTitle"));

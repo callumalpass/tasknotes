@@ -2666,6 +2666,7 @@ export const ko: TranslationTree = {
 			archive: "보관",
 			unarchive: "보관 해제",
 			openNote: "노트 열기",
+			openNoteInNewTab: "새 탭에서 노트 열기",
 			copyTitle: "작업 제목 복사",
 			quickActions: "빠른 작업",
 			noteActions: "노트 작업",

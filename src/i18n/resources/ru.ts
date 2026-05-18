@@ -2713,6 +2713,7 @@ export const ru: TranslationTree = {
 			archive: "Архивировать",
 			unarchive: "Разархивировать",
 			openNote: "Открыть заметку",
+			openNoteInNewTab: "Открыть заметку в новой вкладке",
 			copyTitle: "Копировать название задачи",
 			quickActions: "Быстрые действия",
 			noteActions: "Действия с заметкой",

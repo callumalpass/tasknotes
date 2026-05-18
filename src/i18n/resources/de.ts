@@ -2712,6 +2712,7 @@ export const de: TranslationTree = {
 			archive: "Archivieren",
 			unarchive: "Entarchivieren",
 			openNote: "Notiz öffnen",
+			openNoteInNewTab: "Notiz in neuem Tab öffnen",
 			copyTitle: "Aufgabentitel kopieren",
 			quickActions: "Schnellaktionen",
 			noteActions: "Notizaktionen",

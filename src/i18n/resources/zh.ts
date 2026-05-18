@@ -2711,6 +2711,7 @@ export const zh: TranslationTree = {
 			archive: "归档",
 			unarchive: "取消归档",
 			openNote: "打开笔记",
+			openNoteInNewTab: "在新标签页打开笔记",
 			copyTitle: "复制任务标题",
 			quickActions: "快速操作",
 			noteActions: "笔记操作",

@@ -2909,6 +2909,7 @@ export const en: TranslationTree = {
 			archive: "Archive",
 			unarchive: "Unarchive",
 			openNote: "Open note",
+			openNoteInNewTab: "Open note in new tab",
 			copyTitle: "Copy task title",
 			quickActions: "Quick actions",
 			noteActions: "Note actions",
