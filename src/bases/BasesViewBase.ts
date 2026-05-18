@@ -1,10 +1,5 @@
 import { Component, App, Notice, setIcon, TFile } from "obsidian";
-import type {
-	BasesPropertyId,
-	BasesQueryResult,
-	BasesViewConfig,
-	EventRef,
-} from "obsidian";
+import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -15,7 +10,6 @@ import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import type { TaskCardOptions } from "../ui/TaskCard";
-import { normalizeDependencyList } from "../utils/dependencyUtils";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import {
 	formatTasksForClipboard,
@@ -23,6 +17,11 @@ import {
 	type TaskCopyFormat,
 } from "../utils/taskClipboard";
 import { stringifyUnknown } from "../utils/stringUtils";
+import {
+	buildTaskCreationDataFromFrontmatter,
+	type BasesCreateFileFrontmatter,
+} from "./basesTaskCreation";
+import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
@@ -42,12 +41,6 @@ type TaskDeletedEventData = {
 	prevCache?: {
 		frontmatter?: Record<string, unknown>;
 	};
-};
-
-type BasesCreateFileFrontmatter = Record<string, unknown>;
-
-type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
-	customFrontmatter?: Record<string, unknown>;
 };
 
 type BasesViewAction = {
@@ -71,10 +64,6 @@ type BasesFilterLike = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function toStringArray(value: unknown): string[] {
-	return Array.isArray(value) ? value.map(String) : [String(value)];
 }
 
 function formatBasesExportValue(value: unknown): string {
@@ -124,6 +113,7 @@ export abstract class BasesViewBase extends Component {
 	protected plugin: TaskNotesPlugin;
 	protected dataAdapter: BasesDataAdapter;
 	protected propertyMapper: PropertyMappingService;
+	protected logger: TaskNotesLogger;
 	protected containerEl: HTMLElement;
 	protected rootElement: HTMLElement | null = null;
 	protected taskUpdateListener: unknown = null;
@@ -149,7 +139,11 @@ export abstract class BasesViewBase extends Component {
 		// Note: app, config, and data will be set by Bases when it creates the view
 		// We just need to ensure our types match the BasesView interface
 
-		this.dataAdapter = new BasesDataAdapter(this);
+		this.logger = createTaskNotesLogger({
+			tag: () => `Bases/${this.type}`,
+			isDebugEnabled: () => this.plugin.settings.enableDebugLogging,
+		});
+		this.dataAdapter = new BasesDataAdapter(this, this.logger.child("DataAdapter"));
 		this.propertyMapper = new PropertyMappingService(plugin, plugin.fieldMapper);
 
 		// Bind createFileForView to ensure Bases can find it
@@ -193,7 +187,11 @@ export abstract class BasesViewBase extends Component {
 				this.updateRelevantPathsCache();
 				void this.render();
 			} catch (error) {
-				console.error(`[TaskNotes][${this.type}] Render error:`, error);
+				this.logger.error("Render error during data update", {
+					category: "internal",
+					operation: "data-update-render",
+					error,
+				});
 				this.renderError(error as Error);
 			}
 		}, 500); // 500ms debounce for data updates
@@ -239,7 +237,11 @@ export abstract class BasesViewBase extends Component {
 				this.rootElement.scrollTop = ephemeralState.scrollTop;
 			}
 		} catch (e) {
-			console.debug("[TaskNotes][Bases] Failed to restore ephemeral state:", e);
+			this.logger.debug("Failed to restore ephemeral state", {
+				category: "stale-data",
+				operation: "restore-ephemeral-state",
+				error: e,
+			});
 		}
 	}
 
@@ -252,7 +254,11 @@ export abstract class BasesViewBase extends Component {
 				this.rootElement.focus();
 			}
 		} catch (e) {
-			console.debug("[TaskNotes][Bases] Failed to focus view:", e);
+			this.logger.debug("Failed to focus view", {
+				category: "internal",
+				operation: "focus-view",
+				error: e,
+			});
 		}
 	}
 
@@ -367,7 +373,10 @@ export abstract class BasesViewBase extends Component {
 		// Find the Bases view container
 		const basesViewEl = this.containerEl.closest(".bases-view");
 		if (!basesViewEl) {
-			console.debug("[TaskNotes][Bases] No .bases-view found");
+			this.logger.debug("No .bases-view element found", {
+				category: "provider",
+				operation: "inject-new-task-button",
+			});
 			return;
 		}
 
@@ -375,7 +384,10 @@ export abstract class BasesViewBase extends Component {
 		// Look in the parent container for the toolbar
 		const parentEl = basesViewEl.parentElement;
 		if (!parentEl) {
-			console.debug("[TaskNotes][Bases] No parent element found");
+			this.logger.debug("No parent element found for Bases view", {
+				category: "provider",
+				operation: "inject-new-task-button",
+			});
 			return;
 		}
 
@@ -384,7 +396,10 @@ export abstract class BasesViewBase extends Component {
 
 		const toolbarEl = parentEl.querySelector(".bases-toolbar");
 		if (!toolbarEl) {
-			console.debug("[TaskNotes][Bases] No .bases-toolbar found in parent");
+			this.logger.debug("No .bases-toolbar element found", {
+				category: "provider",
+				operation: "inject-new-task-button",
+			});
 			return;
 		}
 
@@ -435,7 +450,10 @@ export abstract class BasesViewBase extends Component {
 			toolbarEl.appendChild(newTaskBtn);
 		}
 
-		console.debug("[TaskNotes][Bases] Injected New Task button into toolbar");
+		this.logger.debug("Injected New Task button into toolbar", {
+			category: "provider",
+			operation: "inject-new-task-button",
+		});
 	}
 
 	/**
@@ -476,7 +494,11 @@ export abstract class BasesViewBase extends Component {
 						await this.handleTaskUpdate(updatedTask);
 					}
 				} catch (error) {
-					console.error("[TaskNotes][Bases] Error in task update handler:", error);
+					this.logger.error("Error in task update handler", {
+						category: "internal",
+						operation: "task-update-handler",
+						error,
+					});
 					this.debouncedRefresh();
 				}
 			}
@@ -487,18 +509,11 @@ export abstract class BasesViewBase extends Component {
 				this.handleTaskDeletedEvent(eventData);
 			}
 		);
-		const fileDeletedListener = this.plugin.emitter.on(
-			"file-deleted",
-			(eventData: unknown) => {
-				this.handleTaskDeletedEvent(eventData);
-			}
-		);
+		const fileDeletedListener = this.plugin.emitter.on("file-deleted", (eventData: unknown) => {
+			this.handleTaskDeletedEvent(eventData);
+		});
 
-		this.taskUpdateListener = [
-			taskUpdatedListener,
-			taskDeletedListener,
-			fileDeletedListener,
-		];
+		this.taskUpdateListener = [taskUpdatedListener, taskDeletedListener, fileDeletedListener];
 
 		// Register cleanup using Component lifecycle
 		this.register(() => {
@@ -607,7 +622,11 @@ export abstract class BasesViewBase extends Component {
 			frontmatterProcessor(mockFrontmatter);
 		}
 
-		const taskCreationData = this.buildTaskCreationDataFromFrontmatter(mockFrontmatter);
+		const taskCreationData = buildTaskCreationDataFromFrontmatter(
+			mockFrontmatter,
+			this.plugin.fieldMapper,
+			this.plugin.settings.userFields || []
+		);
 
 		// Open TaskNotes creation modal
 		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
@@ -623,124 +642,6 @@ export abstract class BasesViewBase extends Component {
 		modal.open();
 	}
 
-	private buildTaskCreationDataFromFrontmatter(
-		mockFrontmatter: BasesCreateFileFrontmatter
-	): TaskCreationPrepopulatedValues {
-		// Extract any default values from the frontmatter processor if provided
-		const prePopulatedValues: Partial<TaskInfo> = {};
-		const customFrontmatter: Record<string, unknown> = {};
-
-		if (Object.keys(mockFrontmatter).length > 0) {
-			// Get field mapper for property name mapping
-			const fm = this.plugin.fieldMapper;
-
-			// Map core TaskNotes properties from frontmatter
-			if (mockFrontmatter[fm.toUserField("title")] !== undefined) {
-				prePopulatedValues.title = String(mockFrontmatter[fm.toUserField("title")]);
-			}
-			if (mockFrontmatter[fm.toUserField("status")] !== undefined) {
-				prePopulatedValues.status = String(mockFrontmatter[fm.toUserField("status")]);
-			}
-			if (mockFrontmatter[fm.toUserField("priority")] !== undefined) {
-				prePopulatedValues.priority = String(mockFrontmatter[fm.toUserField("priority")]);
-			}
-			if (mockFrontmatter[fm.toUserField("due")] !== undefined) {
-				prePopulatedValues.due = String(mockFrontmatter[fm.toUserField("due")]);
-			}
-			if (mockFrontmatter[fm.toUserField("scheduled")] !== undefined) {
-				prePopulatedValues.scheduled = String(mockFrontmatter[fm.toUserField("scheduled")]);
-			}
-			if (mockFrontmatter[fm.toUserField("contexts")] !== undefined) {
-				const contexts = mockFrontmatter[fm.toUserField("contexts")];
-				prePopulatedValues.contexts = toStringArray(contexts);
-			}
-			if (mockFrontmatter[fm.toUserField("projects")] !== undefined) {
-				const projects = mockFrontmatter[fm.toUserField("projects")];
-				prePopulatedValues.projects = toStringArray(projects);
-			}
-
-			// Tags - check both the standard 'tags' property and archiveTag
-			if (mockFrontmatter.tags !== undefined) {
-				const tags = mockFrontmatter.tags;
-				prePopulatedValues.tags = toStringArray(tags);
-			}
-
-			// Archived - check for archive tag
-			if (mockFrontmatter.tags && Array.isArray(mockFrontmatter.tags)) {
-				const archiveTag = fm.toUserField("archiveTag");
-				prePopulatedValues.archived = mockFrontmatter.tags.includes(archiveTag);
-			}
-
-			if (mockFrontmatter[fm.toUserField("timeEstimate")] !== undefined) {
-				prePopulatedValues.timeEstimate = Number(
-					mockFrontmatter[fm.toUserField("timeEstimate")]
-				);
-			}
-			if (mockFrontmatter[fm.toUserField("recurrence")] !== undefined) {
-				prePopulatedValues.recurrence = String(
-					mockFrontmatter[fm.toUserField("recurrence")]
-				);
-			}
-			if (mockFrontmatter[fm.toUserField("completedDate")] !== undefined) {
-				prePopulatedValues.completedDate = String(
-					mockFrontmatter[fm.toUserField("completedDate")]
-				);
-			}
-			if (mockFrontmatter[fm.toUserField("dateCreated")] !== undefined) {
-				prePopulatedValues.dateCreated = String(
-					mockFrontmatter[fm.toUserField("dateCreated")]
-				);
-			}
-			if (mockFrontmatter[fm.toUserField("blockedBy")] !== undefined) {
-				const blockedBy = mockFrontmatter[fm.toUserField("blockedBy")];
-				prePopulatedValues.blockedBy = normalizeDependencyList(blockedBy);
-			}
-
-			// Handle user-defined custom fields
-			const userFields = this.plugin.settings.userFields || [];
-			for (const userField of userFields) {
-				if (mockFrontmatter[userField.key] !== undefined) {
-					// Store in customFrontmatter for TaskCreationData
-					customFrontmatter[userField.key] = mockFrontmatter[userField.key];
-				}
-			}
-
-			// Capture any other frontmatter properties that weren't mapped above
-			// This ensures we don't lose any Bases-specific values
-			const mappedKeys = new Set([
-				fm.toUserField("title"),
-				fm.toUserField("status"),
-				fm.toUserField("priority"),
-				fm.toUserField("due"),
-				fm.toUserField("scheduled"),
-				fm.toUserField("contexts"),
-				fm.toUserField("projects"),
-				"tags", // Not in FieldMapping
-				fm.toUserField("archiveTag"), // For archived status
-				fm.toUserField("timeEstimate"),
-				fm.toUserField("recurrence"),
-				fm.toUserField("completedDate"),
-				fm.toUserField("dateCreated"),
-				fm.toUserField("blockedBy"),
-				...userFields.map((uf) => uf.key),
-			]);
-
-			for (const [key, value] of Object.entries(mockFrontmatter)) {
-				if (!mappedKeys.has(key)) {
-					customFrontmatter[key] = value;
-				}
-			}
-		}
-
-		// Build the complete pre-populated values (TaskCreationData structure)
-		const taskCreationData: TaskCreationPrepopulatedValues = { ...prePopulatedValues };
-		if (Object.keys(customFrontmatter).length > 0) {
-			taskCreationData.customFrontmatter = customFrontmatter;
-		}
-
-		return taskCreationData;
-	}
-
 	private extractDefaultFrontmatterFromCurrentView(): BasesCreateFileFrontmatter {
 		const defaults: BasesCreateFileFrontmatter = {};
 		const configRecord = isRecord(this.config)
@@ -754,10 +655,7 @@ export abstract class BasesViewBase extends Component {
 		return defaults;
 	}
 
-	private collectFilterDefaults(
-		filter: unknown,
-		defaults: BasesCreateFileFrontmatter
-	): void {
+	private collectFilterDefaults(filter: unknown, defaults: BasesCreateFileFrontmatter): void {
 		if (!isRecord(filter)) return;
 
 		const filterGroup = filter as BasesFilterLike;
@@ -1001,10 +899,11 @@ export abstract class BasesViewBase extends Component {
 				visibleProperties = this.getVisibleProperties();
 			}
 		} catch (e) {
-			console.debug(
-				`[${this.type}] Could not get visible properties during search setup:`,
-				e
-			);
+			this.logger.debug("Could not get visible properties during search setup", {
+				category: "provider",
+				operation: "setup-search",
+				error: e,
+			});
 		}
 		this.searchFilter = new TaskSearchFilter(visibleProperties);
 
@@ -1048,9 +947,11 @@ export abstract class BasesViewBase extends Component {
 
 		// Log slow searches for performance monitoring
 		if (filterTime > 200) {
-			console.warn(
-				`[${this.type}] Slow search: ${filterTime.toFixed(2)}ms for search term "${term}"`
-			);
+			this.logger.warn("Slow search", {
+				category: "internal",
+				operation: "search",
+				details: { elapsedMs: filterTime, term },
+			});
 		}
 	}
 
@@ -1069,9 +970,11 @@ export abstract class BasesViewBase extends Component {
 
 		// Log filter performance for monitoring
 		if (filterTime > 100) {
-			console.warn(
-				`[${this.type}] Filter operation took ${filterTime.toFixed(2)}ms for ${tasks.length} tasks`
-			);
+			this.logger.warn("Slow filter operation", {
+				category: "internal",
+				operation: "filter",
+				details: { elapsedMs: filterTime, taskCount: tasks.length },
+			});
 		}
 
 		return filtered;
@@ -1091,7 +994,11 @@ export abstract class BasesViewBase extends Component {
 			await navigator.clipboard.writeText(text);
 			new Notice(`Copied ${tasks.length} tasks`);
 		} catch (error) {
-			console.error("[TaskNotes][Bases] Failed to copy current view tasks:", error);
+			this.logger.error("Failed to copy current view tasks", {
+				category: "provider",
+				operation: "copy-current-view-tasks",
+				error,
+			});
 			new Notice("Failed to copy tasks");
 		}
 	}
@@ -1128,9 +1035,7 @@ export abstract class BasesViewBase extends Component {
 					return entry.file?.path ?? "";
 				}
 
-				return formatBasesExportValue(
-					this.dataAdapter.getPropertyValue(entry, column.id)
-				);
+				return formatBasesExportValue(this.dataAdapter.getPropertyValue(entry, column.id));
 			})
 		);
 	}
@@ -1152,7 +1057,11 @@ export abstract class BasesViewBase extends Component {
 			await navigator.clipboard.writeText(text);
 			new Notice(`Copied ${rows.length} rows`);
 		} catch (error) {
-			console.error("[TaskNotes][Bases] Failed to copy Bases table:", error);
+			this.logger.error("Failed to copy Bases table", {
+				category: "provider",
+				operation: "copy-bases-table",
+				error,
+			});
 			new Notice("Failed to copy table");
 		}
 	}
@@ -1175,7 +1084,11 @@ export abstract class BasesViewBase extends Component {
 			win.URL.revokeObjectURL(url);
 			new Notice(`Exported ${rows.length} rows`);
 		} catch (error) {
-			console.error("[TaskNotes][Bases] Failed to export Bases table:", error);
+			this.logger.error("Failed to export Bases table", {
+				category: "provider",
+				operation: "export-bases-table",
+				error,
+			});
 			new Notice("Failed to export table");
 		}
 	}

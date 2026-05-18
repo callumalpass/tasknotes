@@ -96,3 +96,53 @@ export function appendCachedFormulaOutputs(
 		props[`formula.${formulaName}`] = value;
 	}
 }
+
+export function buildBasesPathProperties(
+	dataItems: readonly BasesDataItem[]
+): Map<string, Record<string, unknown>> {
+	const map = new Map<string, Record<string, unknown>>();
+
+	for (const item of dataItems) {
+		if (!item.path) continue;
+
+		const props = { ...(item.properties || {}) };
+		appendCachedFormulaOutputs(props, item);
+		map.set(item.path, props);
+	}
+
+	return map;
+}
+
+export function computeBasesFormulas(
+	data: unknown,
+	dataItems: readonly BasesDataItem[]
+): void {
+	const ctxFormulas = getBasesFormulaContext(data);
+	if (!ctxFormulas || dataItems.length === 0) {
+		return;
+	}
+
+	for (const item of dataItems) {
+		const baseData = getBasesFormulaData(item);
+		const itemFormulaResults = baseData?.formulaResults;
+		if (!baseData || !itemFormulaResults?.cachedFormulaOutputs) continue;
+
+		for (const formulaName of Object.keys(ctxFormulas)) {
+			const formula = ctxFormulas[formulaName];
+			if (!hasFormulaGetter(formula)) {
+				continue;
+			}
+
+			try {
+				const taskProperties = item.properties || {};
+				const result = evaluateBasesFormula(formula, baseData, taskProperties);
+
+				if (result !== undefined) {
+					itemFormulaResults.cachedFormulaOutputs[formulaName] = result;
+				}
+			} catch {
+				// Bases formulas can fail independently; one bad formula should not block view rendering.
+			}
+		}
+	}
+}

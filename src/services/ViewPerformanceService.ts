@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Performance observers are checked for support before callbacks run. */
 import { EventRef } from "obsidian";
-import TaskNotesPlugin from "../main";
+import type { ViewPerformanceServiceContext } from "../bootstrap/pluginServices";
 import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
 
 export interface ViewPerformanceConfig {
@@ -21,7 +21,7 @@ export interface ViewUpdateHandler {
  * Provides change detection, debouncing, batching, and memory management
  */
 export class ViewPerformanceService {
-	private plugin: TaskNotesPlugin;
+	private plugin: ViewPerformanceServiceContext;
 
 	// Global task version cache shared across all views
 	private globalTaskVersionCache = new Map<string, string>();
@@ -38,7 +38,7 @@ export class ViewPerformanceService {
 	private updateInProgress = new Set<string>();
 	private eventListener: unknown = null;
 
-	constructor(plugin: TaskNotesPlugin) {
+	constructor(plugin: ViewPerformanceServiceContext) {
 		this.plugin = plugin;
 		this.setupGlobalEventListener();
 	}

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Modal lifecycle initializes required controls before event handlers run. */
-import { App, Notice, TFile, TAbstractFile } from "obsidian";
+import { App, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
@@ -8,14 +8,19 @@ import {
 	extractTaskInfo,
 	calculateTotalTimeSpent,
 	formatTime,
-	sanitizeTags,
 } from "../utils/helpers";
 import { stringifyUnknown } from "../utils/stringUtils";
-import { ReminderContextMenu } from "../components/ReminderContextMenu";
 import { ConfirmationModal, showConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
-import { BlockingUpdates, buildTaskEditChanges } from "./taskEditChanges";
-import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
+import { BlockingUpdates } from "./taskEditChanges";
+import { createTaskModalActionButtons } from "./taskModalActionButtons";
+import { showTaskModalReminderContextMenu } from "./taskModalActionMenus";
+import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
+import { buildTaskEditFormStateFromTask } from "./taskEditFormState";
+import {
+	applyTaskEditSubtaskChanges,
+	hasTaskEditSubtaskChanges,
+} from "./taskEditSubtasks";
 
 export interface TaskEditOptions {
 	task: TaskInfo;
@@ -57,55 +62,43 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	async initializeFormData(): Promise<void> {
-		// Initialize form fields with current task data
-		this.title = this.task.title;
-		this.dueDate = this.task.due || "";
-		this.scheduledDate = this.task.scheduled || "";
-		this.priority = this.task.priority;
-		this.status = this.task.status;
-		this.contexts = this.task.contexts ? this.task.contexts.join(", ") : "";
+		const formState = buildTaskEditFormStateFromTask({
+			app: this.app,
+			task: this.task,
+			details: this.details,
+			settings: {
+				taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
+				taskTag: this.plugin.settings.taskTag,
+				hideIdentifyingTagsMode: this.plugin.settings.hideIdentifyingTagsMode,
+				userFields: this.plugin.settings?.userFields,
+			},
+			normalizeDetails: (value) => this.normalizeDetails(value),
+		});
+
+		this.title = formState.title;
+		this.dueDate = formState.dueDate;
+		this.scheduledDate = formState.scheduledDate;
+		this.priority = formState.priority;
+		this.status = formState.status;
+		this.contexts = formState.contexts;
 
 		// Initialize projects using the new method that handles both old and new formats
-		if (this.task.projects && this.task.projects.length > 0) {
-			// Filter out null, undefined, or empty strings before checking if we have valid projects
-			const validProjects = this.task.projects.filter(
-				(p) => p && typeof p === "string" && p.trim() !== ""
-			);
-			if (validProjects.length > 0) {
-				this.initializeProjectsFromStrings(this.task.projects);
-			} else {
-				this.projects = "";
-				this.selectedProjectItems = [];
-			}
+		if (formState.hasValidProjects) {
+			this.initializeProjectsFromStrings(formState.projectValues);
 		} else {
 			this.projects = "";
 			this.selectedProjectItems = [];
 		}
 
-		const shouldFilterTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
-		const rawTags = this.task.tags || [];
-		const visibleTags = shouldFilterTaskTag
-			? filterTaskIdentificationTags(
-					rawTags,
-					this.plugin.settings.taskTag,
-					this.plugin.settings.hideIdentifyingTagsMode
-				)
-			: rawTags;
-		this.tags = rawTags.length > 0 ? sanitizeTags(visibleTags.join(", ")) : "";
-		this.initialTags = this.tags;
-		this.timeEstimate = this.task.timeEstimate || 0;
-
-		// Handle recurrence
-		this.recurrenceRule = this.task.recurrence || "";
-
-		// Initialize recurrence anchor
-		this.recurrenceAnchor = this.task.recurrence_anchor || "scheduled";
-
-		// Initialize reminders
-		this.reminders = this.task.reminders ? [...this.task.reminders] : [];
-
-		this.details = this.normalizeDetails(this.details);
-		this.originalDetails = this.details;
+		this.tags = formState.tags;
+		this.initialTags = formState.initialTags;
+		this.timeEstimate = formState.timeEstimate;
+		this.recurrenceRule = formState.recurrenceRule;
+		this.recurrenceAnchor = formState.recurrenceAnchor;
+		this.reminders = formState.reminders;
+		this.details = formState.details;
+		this.originalDetails = formState.originalDetails;
+		this.userFields = formState.userFields;
 
 		// Initialize subtasks (tasks that have this task as a project)
 		await this.initializeSubtasks();
@@ -123,63 +116,12 @@ export class TaskEditModal extends TaskModal {
 			.map((item) => item.path!);
 		this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
 		this.unresolvedBlockingEntries = [];
-
-		// Initialize user fields from frontmatter
-		await this.initializeUserFields();
-	}
-
-	private async initializeUserFields(): Promise<void> {
-		try {
-			// Get the file and read its frontmatter
-			const file = this.app.vault.getAbstractFileByPath(this.task.path);
-			if (!file || !(file instanceof TFile)) {
-				return;
-			}
-
-			const metadata = this.app.metadataCache.getFileCache(file);
-			const frontmatter = metadata?.frontmatter;
-
-			if (!frontmatter) {
-				return;
-			}
-
-			// Load user field values from frontmatter
-			const userFieldConfigs = this.plugin.settings?.userFields || [];
-			for (const field of userFieldConfigs) {
-				if (!field || !field.key) continue;
-
-				const value = frontmatter[field.key];
-				if (value !== undefined) {
-					this.userFields[field.key] = value;
-				}
-			}
-		} catch (error) {
-			console.error("Error initializing user fields:", error);
-		}
 	}
 
 	protected showReminderContextMenu(event: MouseEvent): void {
 		// Override parent method to use the actual task with its path
 		// Update the task object with current form values before showing menu
-		const currentTask: TaskInfo = {
-			...this.task,
-			title: this.title,
-			due: this.dueDate,
-			scheduled: this.scheduledDate,
-			reminders: this.reminders,
-		};
-
-		const menu = new ReminderContextMenu(
-			this.plugin,
-			currentTask, // Use task with current form values and correct path
-			event.target as HTMLElement,
-			(updatedTask: TaskInfo) => {
-				this.reminders = updatedTask.reminders || [];
-				this.updateReminderIconState();
-			}
-		);
-
-		menu.show(event);
+		showTaskModalReminderContextMenu(this.getActionMenuContext(), event, this.task);
 	}
 
 	onOpen(): void {
@@ -545,17 +487,8 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private getChanges(options: { includeConversionWrite?: boolean } = {}): Partial<TaskInfo> {
-		let frontmatter: Record<string, unknown> = {};
-		try {
-			const file = this.app.vault.getAbstractFileByPath(this.task.path);
-			if (file instanceof TFile) {
-				frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter || {};
-			}
-		} catch (error) {
-			console.error("Error reading user field frontmatter:", error);
-		}
-
-		const result = buildTaskEditChanges({
+		const result = buildTaskEditChangesFromModalState({
+			app: this.app,
 			task: this.task,
 			title: this.title,
 			dueDate: this.dueDate,
@@ -578,12 +511,14 @@ export class TaskEditModal extends TaskModal {
 			originalDetails: this.originalDetails,
 			completedInstancesChanges: this.completedInstancesChanges,
 			userFields: this.userFields,
-			frontmatter,
-			userFieldConfigs: this.plugin.settings?.userFields || [],
-			taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
-			taskTag: this.plugin.settings.taskTag,
-			hideIdentifyingTagsMode: this.plugin.settings.hideIdentifyingTagsMode,
-			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
+			settings: {
+				userFields: this.plugin.settings?.userFields,
+				taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
+				taskTag: this.plugin.settings.taskTag,
+				hideIdentifyingTagsMode: this.plugin.settings.hideIdentifyingTagsMode,
+				maintainDueDateOffsetInRecurring:
+					this.plugin.settings.maintainDueDateOffsetInRecurring,
+			},
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
 
@@ -677,66 +612,40 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	protected createActionButtons(container: HTMLElement): void {
-		const buttonContainer = container.createDiv(
-			"modal-button-container tn-task-modal__button-bar"
-		);
-
-		// Add "Open note" button
-		const openNoteButton = buttonContainer.createEl("button", {
-			cls: "tn-task-modal__open-note-button",
-			text: this.t("modals.task.buttons.openNote"),
-		});
-
-		openNoteButton.addEventListener("click", () => {
-			void this.openTaskNote();
-		});
-
-		// Add "Archive" button
-		const archiveButton = buttonContainer.createEl("button", {
-			cls: "mod-warning tn-task-modal__archive-button",
-			text: this.task.archived
-				? this.t("modals.taskEdit.buttons.unarchive")
-				: this.t("modals.taskEdit.buttons.archive"),
-		});
-
-		archiveButton.addEventListener("click", () => {
-			void this.archiveTask();
-		});
-
-		const deleteButton = buttonContainer.createEl("button", {
-			cls: "mod-warning tn-task-modal__delete-button",
-			text: this.t("contextMenus.task.delete"),
-		});
-
-		deleteButton.addEventListener("click", () => {
-			void this.deleteTask();
-		});
-
-		// Save button (primary action)
-		const saveButton = buttonContainer.createEl("button", {
-			cls: "mod-cta",
-			text: this.t("modals.task.buttons.save"),
-		});
-
-		saveButton.addEventListener("click", () => {
-			void (async () => {
-				saveButton.disabled = true;
-				try {
-					await this.handleSave();
-					this.forceClose();
-				} finally {
-					saveButton.disabled = false;
-				}
-			})();
-		});
-
-		// Cancel button
-		const cancelButton = buttonContainer.createEl("button", {
-			text: this.t("common.cancel"),
-		});
-
-		cancelButton.addEventListener("click", () => {
-			this.close();
+		createTaskModalActionButtons(this.getActionButtonContext(), {
+			container,
+			leadingButtons: [
+				{
+					className: "tn-task-modal__open-note-button",
+					text: this.t("modals.task.buttons.openNote"),
+					onClick: () => {
+						void this.openTaskNote();
+					},
+				},
+				{
+					className: "mod-warning tn-task-modal__archive-button",
+					text: this.task.archived
+						? this.t("modals.taskEdit.buttons.unarchive")
+						: this.t("modals.taskEdit.buttons.archive"),
+					onClick: () => {
+						void this.archiveTask();
+					},
+				},
+				{
+					className: "mod-warning tn-task-modal__delete-button",
+					text: this.t("contextMenus.task.delete"),
+					onClick: () => {
+						void this.deleteTask();
+					},
+				},
+			],
+			onSave: () => this.handleSave(),
+			onSaved: () => {
+				this.forceClose();
+			},
+			onCancel: () => {
+				this.close();
+			},
 		});
 	}
 
@@ -764,85 +673,31 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	protected hasSubtaskChanges(): boolean {
-		// Check if subtasks have changed
-		const current = this.selectedSubtaskFiles.map((f) => f.path).sort();
-		const initial = this.initialSubtaskFiles.map((f) => f.path).sort();
-
-		return (
-			current.length !== initial.length ||
-			current.some((path, index) => path !== initial[index])
-		);
+		return hasTaskEditSubtaskChanges(this.initialSubtaskFiles, this.selectedSubtaskFiles);
 	}
 
 	protected async applySubtaskChanges(task: TaskInfo): Promise<void> {
 		const currentTaskFile = this.app.vault.getAbstractFileByPath(task.path);
 		if (!(currentTaskFile instanceof TFile)) return;
 
-		const currentPaths = new Set(this.selectedSubtaskFiles.map((f) => f.path));
-		const initialPaths = new Set(this.initialSubtaskFiles.map((f) => f.path));
+		const result = await applyTaskEditSubtaskChanges({
+			parentTaskFile: currentTaskFile,
+			selectedSubtaskFiles: this.selectedSubtaskFiles,
+			initialSubtaskFiles: this.initialSubtaskFiles,
+			getTaskInfo: (path) => this.plugin.cacheManager.getTaskInfo(path),
+			buildProjectReference: (parentTaskFile, subtaskPath) =>
+				this.buildProjectReference(parentTaskFile, subtaskPath),
+			updateTaskProjects: (subtaskInfo, updatedProjects) =>
+				this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects),
+			onAddError: (error) => {
+				console.error("Failed to add subtask relation:", error);
+			},
+			onRemoveError: (error) => {
+				console.error("Failed to remove subtask relation:", error);
+			},
+		});
 
-		// Remove current task from tasks that should no longer be subtasks
-		const toRemove = this.initialSubtaskFiles.filter((f) => !currentPaths.has(f.path));
-		for (const file of toRemove) {
-			await this.removeSubtaskRelation(file, currentTaskFile);
-		}
-
-		// Add current task to tasks that should become subtasks
-		const toAdd = this.selectedSubtaskFiles.filter((f) => !initialPaths.has(f.path));
-		for (const file of toAdd) {
-			await this.addSubtaskRelation(file, currentTaskFile);
-		}
-
-		// Update the initial state to reflect changes
-		this.initialSubtaskFiles = [...this.selectedSubtaskFiles];
-	}
-
-	protected async addSubtaskRelation(
-		subtaskFile: TAbstractFile,
-		parentTaskFile: TFile
-	): Promise<void> {
-		try {
-			const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
-			if (!subtaskInfo) return;
-
-			const projectReference = this.buildProjectReference(parentTaskFile, subtaskFile.path);
-			const legacyReference = `[[${parentTaskFile.basename}]]`;
-			const currentProjects = Array.isArray(subtaskInfo.projects) ? subtaskInfo.projects : [];
-
-			if (
-				currentProjects.includes(projectReference) ||
-				currentProjects.includes(legacyReference)
-			) {
-				return;
-			}
-
-			const sanitizedProjects = currentProjects.filter((entry) => entry !== legacyReference);
-			const updatedProjects = [...sanitizedProjects, projectReference];
-			await this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects);
-		} catch (error) {
-			console.error("Failed to add subtask relation:", error);
-		}
-	}
-
-	protected async removeSubtaskRelation(
-		subtaskFile: TAbstractFile,
-		parentTaskFile: TFile
-	): Promise<void> {
-		try {
-			const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
-			if (!subtaskInfo) return;
-
-			const projectReference = this.buildProjectReference(parentTaskFile, subtaskFile.path);
-			const legacyReference = `[[${parentTaskFile.basename}]]`;
-			const currentProjects = Array.isArray(subtaskInfo.projects) ? subtaskInfo.projects : [];
-
-			const updatedProjects = currentProjects.filter(
-				(project) => project !== projectReference && project !== legacyReference
-			);
-			await this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects);
-		} catch (error) {
-			console.error("Failed to remove subtask relation:", error);
-		}
+		this.initialSubtaskFiles = result.nextInitialSubtaskFiles;
 	}
 
 	// Start expanded for edit modal - override parent property

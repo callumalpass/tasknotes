@@ -1,5 +1,6 @@
 import { EditorView } from "@codemirror/view";
 import { WorkspaceLeaf, editorInfoField } from "obsidian";
+import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 const EMBEDDED_MARKDOWN_CONTEXT_SELECTOR = [
 	".blp-inline-edit-root",
@@ -7,6 +8,10 @@ const EMBEDDED_MARKDOWN_CONTEXT_SELECTOR = [
 	".markdown-embed",
 	".popover.hover-popover",
 ].join(", ");
+
+const markdownWidgetContextLogger = createTaskNotesLogger({
+	tag: "MarkdownWidgetContext",
+});
 
 function isCanvasMarkdownElement(element: HTMLElement | null | undefined): boolean {
 	return Boolean(element?.closest(".canvas-node-content"));
@@ -25,7 +30,10 @@ function isEmbeddedMarkdownElement(element: HTMLElement | null | undefined): boo
 	return Boolean(element?.closest(EMBEDDED_MARKDOWN_CONTEXT_SELECTOR));
 }
 
-export function shouldSkipMarkdownWidgetEditor(view: EditorView): boolean {
+export function shouldSkipMarkdownWidgetEditor(
+	view: EditorView,
+	logger: TaskNotesLogger = markdownWidgetContextLogger
+): boolean {
 	if (isCanvasMarkdownElement(view.dom)) {
 		return false;
 	}
@@ -52,7 +60,11 @@ export function shouldSkipMarkdownWidgetEditor(view: EditorView): boolean {
 
 		return isEmbeddedMarkdownElement(editorInfo?.containerEl);
 	} catch (error) {
-		console.debug("[TaskNotes] Error checking markdown widget editor context:", error);
+		logger.debug("Error checking markdown widget editor context", {
+			category: "provider",
+			operation: "check-editor-context",
+			error,
+		});
 		return false;
 	}
 }

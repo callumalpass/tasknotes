@@ -4,7 +4,7 @@ import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import type { StatusConfig, TaskInfo } from "../types";
-import { identifyTaskNotesFromBasesData, BasesDataItem } from "./helpers";
+import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -24,20 +24,52 @@ import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardAct
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 import { setElementDragImage } from "../utils/dragImage";
 import {
+	applyKanbanTaskDropFrontmatterPlan,
+	createKanbanDropTarget,
+	getKanbanDraggedPaths,
+	kanbanDropPlanNeedsWrite,
+	planKanbanTaskDropUpdate,
+	resolveKanbanContainerDropTarget,
 	resolveNestedTaskCardDragSource,
+	type KanbanDropTarget,
 	type KanbanTaskDragSource,
 } from "./kanbanDragUtils";
 import {
-	appendCachedFormulaOutputs,
-	evaluateBasesFormula,
-	getBasesFormulaContext,
-	getBasesFormulaData,
-	hasFormulaGetter,
+	buildBasesPathProperties,
+	computeBasesFormulas,
 	isObsidianListProperty,
 } from "./basesViewAdapters";
+import { coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter } from "./propertyValueCoercion";
 import {
-	coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter,
-} from "./propertyValueCoercion";
+	buildKanbanTaskGroups,
+	applyKanbanColumnOrder,
+	applyKanbanSwimLaneOrder,
+	applyKanbanSwimLaneOrderToMap,
+	buildKanbanSwimlaneColumns,
+	canonicalizeKanbanConfiguredGroupKey,
+	findKanbanStatusConfigForGroupKey,
+	formatKanbanColumnCount,
+	getKanbanColumnTaskCounts,
+	getKanbanListPropertyValue,
+	getKanbanStatusGroupKeyAliases,
+	getKanbanSwimLaneKeys,
+	isKanbanListTypeProperty,
+	isKanbanPriorityGroupingProperty,
+	isKanbanStatusGroupingProperty,
+	normalizeKanbanOrderConfig,
+	normalizeKanbanWipLimitsConfig,
+	normalizePinnedColumnConfig,
+	shouldRenderKanbanColumn,
+} from "./kanbanGrouping";
+
+export {
+	addPinnedColumnGroups,
+	formatKanbanColumnCount,
+	normalizeKanbanWipLimitsConfig,
+	normalizePinnedColumnConfig,
+	orderColumnsWithPinnedColumns,
+	shouldRenderKanbanColumn,
+} from "./kanbanGrouping";
 
 type KanbanDataAdapterWithView = {
 	basesView: KanbanView;
@@ -60,13 +92,6 @@ type VirtualScrollerWithContainer = {
 type KanbanEphemeralState = {
 	scrollTop?: unknown;
 	columnScroll?: unknown;
-};
-
-type BasesDisplayValue = {
-	constructor?: { name?: string };
-	isTruthy?: () => boolean;
-	value?: unknown[];
-	toString(): string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -132,192 +157,6 @@ export function shouldEnableKanbanTouchDrag(
 		windowLike?.matchMedia?.("(any-pointer: coarse)")?.matches ||
 			windowLike?.matchMedia?.("(pointer: coarse)")?.matches
 	);
-}
-
-function normalizeOrderValues(values: unknown[]): string[] {
-	const seen = new Set<string>();
-	const normalized: string[] = [];
-
-	for (const value of values) {
-		const key = stringifyUnknown(value).trim();
-		if (!key || seen.has(key)) {
-			continue;
-		}
-
-		seen.add(key);
-		normalized.push(key);
-	}
-
-	return normalized;
-}
-
-function normalizeOrderConfig(value: unknown): Record<string, string[]> {
-	if (value === null || value === undefined) {
-		return {};
-	}
-
-	let parsed = value;
-	if (typeof value === "string") {
-		const trimmed = value.trim();
-		if (!trimmed) {
-			return {};
-		}
-
-		try {
-			parsed = JSON.parse(trimmed);
-		} catch {
-			return {};
-		}
-	}
-
-	if (!isRecord(parsed)) {
-		return {};
-	}
-
-	const result: Record<string, string[]> = {};
-	for (const [propertyId, values] of Object.entries(parsed)) {
-		if (!Array.isArray(values)) {
-			continue;
-		}
-
-		const order = normalizeOrderValues(values);
-		if (order.length > 0) {
-			result[propertyId] = order;
-		}
-	}
-
-	return result;
-}
-
-function normalizeWipLimitValue(value: unknown): number | null {
-	const numericValue =
-		typeof value === "number"
-			? value
-			: typeof value === "string" && value.trim()
-				? Number(value)
-				: Number.NaN;
-
-	if (!Number.isFinite(numericValue) || numericValue <= 0) {
-		return null;
-	}
-
-	return Math.floor(numericValue);
-}
-
-export function normalizeKanbanWipLimitsConfig(value: unknown): Record<string, number> {
-	if (value === null || value === undefined) {
-		return {};
-	}
-
-	let parsed = value;
-	if (typeof value === "string") {
-		const trimmed = value.trim();
-		if (!trimmed) {
-			return {};
-		}
-
-		try {
-			parsed = JSON.parse(trimmed);
-		} catch {
-			return {};
-		}
-	}
-
-	if (!isRecord(parsed)) {
-		return {};
-	}
-
-	const result: Record<string, number> = {};
-	for (const [columnKey, rawLimit] of Object.entries(parsed)) {
-		const normalizedKey = stringifyUnknown(columnKey).trim();
-		const limit = normalizeWipLimitValue(rawLimit);
-		if (normalizedKey && limit !== null) {
-			result[normalizedKey] = limit;
-		}
-	}
-
-	return result;
-}
-
-export function formatKanbanColumnCount(
-	taskCount: number,
-	wipLimit: number | null | undefined
-): { text: string; isExceeded: boolean } {
-	const normalizedLimit = normalizeWipLimitValue(wipLimit);
-	if (normalizedLimit === null) {
-		return {
-			text: ` (${taskCount})`,
-			isExceeded: false,
-		};
-	}
-
-	return {
-		text: ` (${taskCount}/${normalizedLimit})`,
-		isExceeded: taskCount > normalizedLimit,
-	};
-}
-
-export function normalizePinnedColumnConfig(value: unknown): string[] {
-	if (value === null || value === undefined) {
-		return [];
-	}
-
-	if (Array.isArray(value)) {
-		return normalizeOrderValues(value);
-	}
-
-	if (typeof value !== "string") {
-		return [];
-	}
-
-	const trimmed = value.trim();
-	if (!trimmed) {
-		return [];
-	}
-
-	if (trimmed.startsWith("[")) {
-		try {
-			const parsed = JSON.parse(trimmed) as unknown;
-			if (Array.isArray(parsed)) {
-				return normalizeOrderValues(parsed);
-			}
-		} catch {
-			// Fall back to comma-separated parsing below.
-		}
-	}
-
-	return normalizeOrderValues(trimmed.split(","));
-}
-
-export function addPinnedColumnGroups(
-	groups: Map<string, TaskInfo[]>,
-	pinnedColumns: readonly string[]
-): void {
-	for (const column of pinnedColumns) {
-		if (!groups.has(column)) {
-			groups.set(column, []);
-		}
-	}
-}
-
-export function orderColumnsWithPinnedColumns(
-	actualKeys: string[],
-	pinnedColumns: readonly string[]
-): string[] {
-	const pinnedSet = new Set(pinnedColumns);
-	const actualKeySet = new Set(actualKeys);
-	const pinned = pinnedColumns.filter((key) => actualKeySet.has(key));
-	const unpinned = actualKeys.filter((key) => !pinnedSet.has(key)).sort();
-	return [...pinned, ...unpinned];
-}
-
-export function shouldRenderKanbanColumn(
-	hideEmptyColumns: boolean,
-	groupKey: string,
-	tasks: readonly TaskInfo[],
-	pinnedColumns: readonly string[]
-): boolean {
-	return !hideEmptyColumns || tasks.length > 0 || pinnedColumns.includes(groupKey);
 }
 
 function normalizeKanbanCardLayout(value: unknown): TaskCardOptions["layout"] {
@@ -500,13 +339,13 @@ export class KanbanView extends BasesViewBase {
 			this.consolidateStatusIcon = consolidateValue === true; // Default to false if not set
 
 			// Read column orders
-			this.columnOrders = normalizeOrderConfig(this.config.get("columnOrder"));
+			this.columnOrders = normalizeKanbanOrderConfig(this.config.get("columnOrder"));
 			this.pinnedColumns = normalizePinnedColumnConfig(this.config.get("pinnedColumns"));
 			this.wipLimits = normalizeKanbanWipLimitsConfig(this.config.get("wipLimits"));
 
 			// Read swimlane orders. Support both the public singular key and the
 			// originally proposed plural key for manually-authored Bases YAML.
-			this.swimLaneOrders = normalizeOrderConfig(
+			this.swimLaneOrders = normalizeKanbanOrderConfig(
 				this.config.get("swimLaneOrder") ?? this.config.get("swimLaneOrders")
 			);
 			this.hideEmptySwimLanes = this.config.get("hideEmptySwimLanes") === true;
@@ -678,7 +517,7 @@ export class KanbanView extends BasesViewBase {
 			const dataItems = this.dataAdapter.extractDataItems();
 
 			// Compute formulas before reading formula-based properties (swimlanes, etc.)
-			await this.computeFormulas(dataItems);
+			computeBasesFormulas(this.data, dataItems);
 
 			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
 
@@ -703,7 +542,7 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Build path -> props map for dynamic property access
-			const pathToProps = this.buildPathToPropsMap();
+			const pathToProps = buildBasesPathProperties(this.dataAdapter.extractDataItems());
 
 			// Determine groupBy property ID
 			const groupByPropertyId = this.getGroupByPropertyId();
@@ -827,105 +666,54 @@ export class KanbanView extends BasesViewBase {
 		groupByPropertyId: string,
 		pathToProps: Map<string, Record<string, unknown>>
 	): Map<string, TaskInfo[]> {
-		const groups = new Map<string, TaskInfo[]>();
-		const taskOrder = new Map(taskNotes.map((task, index) => [task.path, index]));
-
-		// Check if we should explode list properties into multiple columns
-		const cleanGroupBy = stripPropertyPrefix(groupByPropertyId);
-		const shouldExplode = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
-
-		if (shouldExplode) {
-			// For list properties (contexts, tags, projects, etc.), "explode" so tasks appear
-			// in each individual column rather than a single combined column.
-			// This matches user expectations: a task with contexts ["work", "call"]
-			// should appear in both the "work" column AND the "call" column.
-			for (const task of taskNotes) {
-				// Get value from TaskInfo directly (already properly mapped) or fall back to pathToProps
-				const value = this.getListPropertyValue(task, cleanGroupBy, pathToProps);
-
-				if (Array.isArray(value) && value.length > 0) {
-					// Add task to each individual value's column
-					for (const item of value) {
-						const columnKey = String(item) || "None";
-						if (!groups.has(columnKey)) {
-							groups.set(columnKey, []);
-						}
-						groups.get(columnKey)!.push(task);
-					}
-				} else {
-					// No values or not an array - put in "None" column
-					const columnKey = "None";
-					if (!groups.has(columnKey)) {
-						groups.set(columnKey, []);
-					}
-					groups.get(columnKey)!.push(task);
-				}
-			}
-		} else {
-			// For non-list properties (or when explode is disabled), use Bases grouped data directly
-			// Note: We can't rely on isGrouped() because it returns false when all items have null values
-			const basesGroups = this.dataAdapter.getGroupedData();
-			const tasksByPath = new Map(taskNotes.map((t) => [t.path, t]));
-
-			for (const group of basesGroups) {
-				const rawGroupKey = this.dataAdapter.convertGroupKeyToString(group.key);
-				const groupKey = this.canonicalizeConfiguredGroupKey(rawGroupKey, groupByPropertyId);
-				const groupTasks = groups.get(groupKey) || [];
-
-				for (const entry of group.entries) {
-					const task = tasksByPath.get(entry.file.path);
-					if (task) groupTasks.push(task);
-				}
-
-				if (!groups.has(groupKey)) {
-					groups.set(groupKey, groupTasks);
-				}
-			}
-		}
-
-		for (const tasks of groups.values()) {
-			tasks.sort(
-				(a, b) =>
-					(taskOrder.get(a.path) ?? Number.MAX_SAFE_INTEGER) -
-					(taskOrder.get(b.path) ?? Number.MAX_SAFE_INTEGER)
-			);
-		}
-
-		// Re-sort each group by sort_order from live metadata cache
-		// (Bases' internal data may be stale after a drag-to-reorder write)
 		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
-		if (isSortOrderInSortConfig(this.dataAdapter, sortOrderField)) {
-			for (const [, tasks] of groups) {
-				tasks.sort((a, b) => {
-					const fileA = this.plugin.app.vault.getAbstractFileByPath(a.path);
-					const fileB = this.plugin.app.vault.getAbstractFileByPath(b.path);
-					const fmA =
-						fileA instanceof TFile
-							? this.plugin.app.metadataCache.getFileCache(fileA)?.frontmatter
-							: undefined;
-					const fmB =
-						fileB instanceof TFile
-							? this.plugin.app.metadataCache.getFileCache(fileB)?.frontmatter
-							: undefined;
-					const soA = fmA?.[sortOrderField];
-					const soB = fmB?.[sortOrderField];
-					if (soA != null && soB != null) return String(soA).localeCompare(String(soB));
-					if (soA != null) return -1;
-					if (soB != null) return 1;
-					return 0;
-				});
+		return buildKanbanTaskGroups({
+			taskNotes,
+			groupByPropertyId,
+			pathToProps,
+			explodeListColumns: this.explodeListColumns,
+			groupedData: this.dataAdapter.getGroupedData(),
+			convertGroupKeyToString: (key) => this.dataAdapter.convertGroupKeyToString(key),
+			isListTypeProperty: (propertyName) => this.isListTypeProperty(propertyName),
+			getListPropertyValue: (task, propertyName) =>
+				this.getListPropertyValue(task, propertyName, pathToProps),
+			canonicalizeGroupKey: (groupKey, propertyId) =>
+				this.canonicalizeConfiguredGroupKey(groupKey, propertyId),
+			sortOrderValues: isSortOrderInSortConfig(this.dataAdapter, sortOrderField)
+				? this.getSortOrderValues(taskNotes, sortOrderField)
+				: undefined,
+			statusConfigs: this.plugin.settings.customStatuses || [],
+			priorityConfigs:
+				this.plugin.priorityManager?.getAllPriorities?.() ||
+				this.plugin.settings.customPriorities ||
+				[],
+			isStatusGroupingProperty: (propertyId) => this.isStatusGroupingProperty(propertyId),
+			isPriorityGroupingProperty: (propertyId) => this.isPriorityGroupingProperty(propertyId),
+			getStatusGroupKeyAliases: (statusConfig) =>
+				this.getStatusGroupKeyAliases(statusConfig),
+			pinnedColumns: this.pinnedColumns,
+		});
+	}
+
+	private getSortOrderValues(
+		taskNotes: readonly TaskInfo[],
+		sortOrderField: string
+	): Map<string, unknown> {
+		const sortOrderValues = new Map<string, unknown>();
+
+		for (const task of taskNotes) {
+			const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+			const frontmatter =
+				file instanceof TFile
+					? this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
+					: undefined;
+			const sortOrder = frontmatter?.[sortOrderField];
+			if (sortOrder != null) {
+				sortOrderValues.set(task.path, sortOrder);
 			}
 		}
 
-		// Augment with empty status columns if grouping by status
-		this.augmentWithEmptyStatusColumns(groups, groupByPropertyId);
-
-		// Augment with empty priority columns if grouping by priority
-		this.augmentWithEmptyPriorityColumns(groups, groupByPropertyId);
-
-		addPinnedColumnGroups(groups, this.pinnedColumns);
-
-		return groups;
+		return sortOrderValues;
 	}
 
 	/**
@@ -933,25 +721,14 @@ export class KanbanView extends BasesViewBase {
 	 * Uses Obsidian's metadataTypeManager to dynamically detect property types.
 	 */
 	private isListTypeProperty(propertyName: string): boolean {
-		if (isObsidianListProperty(this.plugin.app, propertyName)) {
-			return true;
-		}
-
-		// Fallback: check against known TaskNotes list properties
-		// (in case metadataTypeManager doesn't have the property registered)
-		const contextsField = this.plugin.fieldMapper.toUserField("contexts");
-		const projectsField = this.plugin.fieldMapper.toUserField("projects");
-
-		const knownListProperties = new Set([
-			"contexts",
-			contextsField,
-			"projects",
-			projectsField,
-			"tags",
-			"aliases",
-		]);
-
-		return knownListProperties.has(propertyName);
+		return isKanbanListTypeProperty(
+			propertyName,
+			{
+				contextsField: this.plugin.fieldMapper.toUserField("contexts"),
+				projectsField: this.plugin.fieldMapper.toUserField("projects"),
+			},
+			(name) => isObsidianListProperty(this.plugin.app, name)
+		);
 	}
 
 	/**
@@ -963,146 +740,78 @@ export class KanbanView extends BasesViewBase {
 		propertyName: string,
 		pathToProps: Map<string, Record<string, unknown>>
 	): unknown {
-		// Map user field names to TaskInfo property names
-		const contextsField = this.plugin.fieldMapper.toUserField("contexts");
-		const projectsField = this.plugin.fieldMapper.toUserField("projects");
-
-		// Check if property matches known TaskInfo list properties
-		if (propertyName === "contexts" || propertyName === contextsField) {
-			return task.contexts;
-		}
-		if (propertyName === "projects" || propertyName === projectsField) {
-			return task.projects;
-		}
-		if (propertyName === "tags") {
-			return task.tags;
-		}
-
-		// Fall back to pathToProps for custom list properties
-		const props = pathToProps.get(task.path) || {};
-		return props[propertyName];
+		return getKanbanListPropertyValue(task, propertyName, pathToProps, {
+			contextsField: this.plugin.fieldMapper.toUserField("contexts"),
+			projectsField: this.plugin.fieldMapper.toUserField("projects"),
+		});
 	}
 
 	private getSwimLaneKeys(
 		task: TaskInfo,
 		pathToProps: Map<string, Record<string, unknown>>
 	): string[] {
-		if (!this.swimLanePropertyId) {
-			return ["None"];
-		}
-
-		const cleanSwimlane = stripPropertyPrefix(this.swimLanePropertyId);
-		if (this.explodeListColumns && this.isListTypeProperty(cleanSwimlane)) {
-			const value = this.getListPropertyValue(task, cleanSwimlane, pathToProps);
-			return this.valueToListGroupKeys(value);
-		}
-
-		const props = pathToProps.get(task.path) || {};
-		const swimLaneKey = this.valueToString(this.getPropertyValue(props, this.swimLanePropertyId));
-		return [this.canonicalizeConfiguredGroupKey(swimLaneKey, this.swimLanePropertyId)];
-	}
-
-	private valueToListGroupKeys(value: unknown): string[] {
-		let values: unknown[];
-
-		if (Array.isArray(value)) {
-			values = value;
-		} else if (value === null || value === undefined) {
-			values = [];
-		} else if (
-			typeof value === "object" &&
-			value !== null &&
-			Array.isArray((value as BasesDisplayValue).value)
-		) {
-			values = (value as BasesDisplayValue).value || [];
-		} else {
-			values = [value];
-		}
-
-		const keys = values
-			.map((item) => this.valueToString(item))
-			.filter((key) => key !== "None");
-		return keys.length > 0 ? Array.from(new Set(keys)) : ["None"];
+		return getKanbanSwimLaneKeys({
+			task,
+			pathToProps,
+			swimLanePropertyId: this.swimLanePropertyId,
+			explodeListColumns: this.explodeListColumns,
+			isListTypeProperty: (propertyName) => this.isListTypeProperty(propertyName),
+			getListPropertyValue: (sourceTask, propertyName) =>
+				this.getListPropertyValue(sourceTask, propertyName, pathToProps),
+			canonicalizeGroupKey: (groupKey, propertyId) =>
+				this.canonicalizeConfiguredGroupKey(groupKey, propertyId),
+		});
 	}
 
 	private isStatusGroupingProperty(propertyId: string): boolean {
-		const statusPropertyName = this.plugin.fieldMapper.toUserField("status");
-		const cleanGroupBy = stripPropertyPrefix(propertyId);
-		return cleanGroupBy === statusPropertyName;
+		return isKanbanStatusGroupingProperty(
+			propertyId,
+			this.plugin.fieldMapper.toUserField("status")
+		);
 	}
 
 	private isPriorityGroupingProperty(propertyId: string): boolean {
-		const priorityPropertyName = this.plugin.fieldMapper.toUserField("priority");
-		const cleanGroupBy = stripPropertyPrefix(propertyId);
-		return cleanGroupBy === priorityPropertyName;
+		return isKanbanPriorityGroupingProperty(
+			propertyId,
+			this.plugin.fieldMapper.toUserField("priority")
+		);
 	}
 
 	private canonicalizeConfiguredGroupKey(groupKey: string, propertyId: string): string {
-		if (groupKey.trim() === "None") {
-			return groupKey;
-		}
-
-		if (this.isStatusGroupingProperty(propertyId)) {
-			return this.findStatusConfigForGroupKey(groupKey)?.value ?? groupKey;
-		}
-
-		if (this.isPriorityGroupingProperty(propertyId)) {
-			return this.plugin.priorityManager.normalizePriorityValue(groupKey);
-		}
-
-		return groupKey;
+		const statusField = this.plugin.fieldMapper.toUserField("status");
+		const priorityField = this.plugin.fieldMapper.toUserField("priority");
+		return canonicalizeKanbanConfiguredGroupKey({
+			groupKey,
+			propertyId,
+			fields: {
+				statusField,
+				priorityField,
+			},
+			statuses: isKanbanStatusGroupingProperty(propertyId, statusField)
+				? this.plugin.statusManager?.getAllStatuses?.() || []
+				: [],
+			normalizeStatusValue: (value) =>
+				this.plugin.statusManager?.normalizeStatusValue?.(value) ?? value,
+			normalizePriorityValue: (value) =>
+				this.plugin.priorityManager?.normalizePriorityValue?.(value) ?? value,
+			getStatusGroupKeyAliases: (statusConfig) =>
+				this.getStatusGroupKeyAliases(statusConfig),
+		});
 	}
 
 	private findStatusConfigForGroupKey(groupKey: string): StatusConfig | undefined {
-		const normalizedGroupKey = groupKey.trim();
-		if (!normalizedGroupKey || normalizedGroupKey === "None") {
-			return undefined;
-		}
-
-		const statuses = this.plugin.statusManager.getAllStatuses();
-		const exactValue = statuses.find((status) => status.value === normalizedGroupKey);
-		if (exactValue) return exactValue;
-
-		const normalizedValue = this.plugin.statusManager.normalizeStatusValue(normalizedGroupKey);
-		const normalizedStatus = statuses.find((status) => status.value === normalizedValue);
-		if (normalizedStatus) return normalizedStatus;
-
-		const exactLabelMatches = statuses.filter((status) => status.label === normalizedGroupKey);
-		if (exactLabelMatches.length === 1) return exactLabelMatches[0];
-
-		const aliasMatches = statuses.filter((status) =>
-			this.getStatusGroupKeyAliases(status).has(normalizedGroupKey)
+		return findKanbanStatusConfigForGroupKey(
+			groupKey,
+			this.plugin.statusManager?.getAllStatuses?.() || [],
+			(value) => this.plugin.statusManager?.normalizeStatusValue?.(value) ?? value,
+			(statusConfig) => this.getStatusGroupKeyAliases(statusConfig)
 		);
-		return aliasMatches.length === 1 ? aliasMatches[0] : undefined;
 	}
 
 	private getStatusGroupKeyAliases(statusConfig: StatusConfig): Set<string> {
-		const aliases = new Set<string>();
-
-		for (const rawValue of [statusConfig.value, statusConfig.label]) {
-			const value = rawValue.trim();
-			if (!value) continue;
-
-			aliases.add(value);
-
-			const displayName = getProjectDisplayName(value, this.plugin.app);
-			if (displayName) {
-				aliases.add(displayName);
-			}
-		}
-
-		return aliases;
-	}
-
-	private hasStatusGroup(groups: Map<string, TaskInfo[]>, statusConfig: StatusConfig): boolean {
-		const aliases = this.getStatusGroupKeyAliases(statusConfig);
-		for (const groupKey of groups.keys()) {
-			if (aliases.has(groupKey.trim())) {
-				return true;
-			}
-		}
-
-		return false;
+		return getKanbanStatusGroupKeyAliases(statusConfig, (value) =>
+			getProjectDisplayName(value, this.plugin.app)
+		);
 	}
 
 	private isUnknownStatusGroup(groupKey: string, groupByPropertyId: string | null): boolean {
@@ -1128,76 +837,6 @@ export class KanbanView extends BasesViewBase {
 		element.addClass("kanban-view__column-header--unknown-status");
 		element.setAttribute("data-unknown-status", groupKey);
 		setTooltip(element, "Status is not defined in TaskNotes settings");
-	}
-
-	/**
-	 * Augment groups with empty columns for user-defined statuses.
-	 * Only applies when grouping by status property.
-	 */
-	private augmentWithEmptyStatusColumns(
-		groups: Map<string, TaskInfo[]>,
-		groupByPropertyId: string
-	): void {
-		// Check if we're grouping by status
-		// Compare the groupBy property against the user's configured status field name
-		if (!this.isStatusGroupingProperty(groupByPropertyId)) {
-			return; // Not grouping by status, don't augment
-		}
-
-		// Get all user-defined statuses from settings
-		const customStatuses = this.plugin.settings.customStatuses;
-		if (!customStatuses || customStatuses.length === 0) {
-			return; // No custom statuses defined
-		}
-
-		// Add empty groups for any status values not already present
-		for (const statusConfig of customStatuses) {
-			// Use the status value (what gets written to YAML) as the group key
-			const statusValue = statusConfig.value;
-
-			if (!this.hasStatusGroup(groups, statusConfig)) {
-				// This status has no tasks - add an empty group
-				groups.set(statusValue, []);
-			}
-		}
-	}
-
-	/**
-	 * Augment groups with empty columns for user-defined priorities.
-	 * Only applies when grouping by priority property.
-	 */
-	private augmentWithEmptyPriorityColumns(
-		groups: Map<string, TaskInfo[]>,
-		groupByPropertyId: string
-	): void {
-		// Check if we're grouping by priority
-		// Compare the groupBy property against the user's configured priority field name
-		const priorityPropertyName = this.plugin.fieldMapper.toUserField("priority");
-
-		// The groupByPropertyId from Bases might have a prefix (e.g., "note.priority" or "task.priority")
-		// Strip the prefix to compare against the field name
-		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "");
-
-		if (cleanGroupBy !== priorityPropertyName) {
-			return; // Not grouping by priority, don't augment
-		}
-
-		// Get all user-defined priorities from the priority manager
-		const customPriorities = this.plugin.priorityManager.getAllPriorities();
-		if (!customPriorities || customPriorities.length === 0) {
-			return; // No custom priorities defined
-		}
-
-		// Add empty groups for any priority values not already present
-		for (const priorityConfig of customPriorities) {
-			// Use the priority value (what gets written to YAML) as the group key
-			const priorityValue = priorityConfig.value;
-
-			if (!groups.has(priorityValue)) {
-				// This priority has no tasks - add an empty group
-				groups.set(priorityValue, []);
-			}
-		}
 	}
 
 	private async renderFlat(
@@ -1275,81 +914,16 @@ export class KanbanView extends BasesViewBase {
 		if (!this.swimLanePropertyId) return;
 		this.sortScopeTaskPaths.clear();
 
-		// Group by swimlane first, then by column within each swimlane
-		const swimLanes = new Map<string, Map<string, TaskInfo[]>>();
-
-		// Get all unique swimlane values
-		const swimLaneValues = new Set<string>();
-
-		for (const task of allTasks) {
-			for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
-				swimLaneValues.add(swimLaneKey);
-			}
-		}
-
-		// Initialize swimlane -> column -> tasks structure
-		// Note: groups already includes empty status columns from augmentWithEmptyStatusColumns()
-		for (const swimLaneKey of swimLaneValues) {
-			const swimLaneMap = new Map<string, TaskInfo[]>();
-			swimLanes.set(swimLaneKey, swimLaneMap);
-
-			// Initialize each column in this swimlane (including empty status columns)
-			for (const [columnKey] of groups) {
-				swimLaneMap.set(columnKey, []);
-			}
-		}
-
-		// Distribute tasks into swimlane + column cells.
-		//
-		// IMPORTANT: Always use the already-built `groups` map for the column assignment.
-		// In swimlane mode we previously re-computed the column key from `pathToProps`
-		// (including `formula.*` cached outputs). After a frontmatter edit, Bases may
-		// update `groupedData` promptly, but cached formula outputs can lag behind, which
-		// caused tasks to temporarily fall into the "None" column until the query re-runs
-		// (e.g., changing sort or reloading Obsidian). Using `groups` keeps swimlane mode
-		// consistent with flat mode and with Bases' computed grouping.
-		for (const [columnKey, columnTasks] of groups) {
-			for (const task of columnTasks) {
-				for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
-					const swimLane = swimLanes.get(swimLaneKey);
-					if (!swimLane) continue;
-
-					if (swimLane.has(columnKey)) {
-						swimLane.get(columnKey)!.push(task);
-					}
-				}
-			}
-		}
-
-		const candidateSwimLanes = new Map<string, Map<string, TaskInfo[]>>();
-		const candidateSwimLaneValues = new Set<string>();
-
-		for (const task of allTasksForCandidateScopes) {
-			for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
-				candidateSwimLaneValues.add(swimLaneKey);
-			}
-		}
-
-		for (const swimLaneKey of candidateSwimLaneValues) {
-			const swimLaneMap = new Map<string, TaskInfo[]>();
-			candidateSwimLanes.set(swimLaneKey, swimLaneMap);
-
-			for (const [columnKey] of allGroups) {
-				swimLaneMap.set(columnKey, []);
-			}
-		}
-
-		for (const [columnKey, columnTasks] of allGroups) {
-			for (const task of columnTasks) {
-				for (const swimLaneKey of this.getSwimLaneKeys(task, pathToProps)) {
-					const swimLane = candidateSwimLanes.get(swimLaneKey);
-					if (!swimLane) continue;
-					if (swimLane.has(columnKey)) {
-						swimLane.get(columnKey)!.push(task);
-					}
-				}
-			}
-		}
+		// Distribute tasks into swimlane + column cells from the already-built column
+		// groups. This keeps swimlane mode aligned with flat mode and Bases grouping.
+		const swimLanes = buildKanbanSwimlaneColumns(allTasks, groups, (task) =>
+			this.getSwimLaneKeys(task, pathToProps)
+		);
+		const candidateSwimLanes = buildKanbanSwimlaneColumns(
+			allTasksForCandidateScopes,
+			allGroups,
+			(task) => this.getSwimLaneKeys(task, pathToProps)
+		);
 
 		this.setSortScopeCandidatePaths(
 			Array.from(candidateSwimLanes.entries()).flatMap(([swimLaneKey, columns]) =>
@@ -1408,7 +982,7 @@ export class KanbanView extends BasesViewBase {
 		headerRow.createEl("div", { cls: "kanban-view__swimlane-label" });
 
 		// Column headers
-		const columnTaskCounts = this.getColumnTaskCounts(swimLanes, columnKeys);
+		const columnTaskCounts = getKanbanColumnTaskCounts(swimLanes, columnKeys);
 		for (const columnKey of columnKeys) {
 			const headerCell = headerRow.createEl("div", {
 				cls: "kanban-view__column-header-cell",
@@ -1473,7 +1047,10 @@ export class KanbanView extends BasesViewBase {
 			// Render columns in this swimlane
 			for (const columnKey of columnKeys) {
 				const tasks = columns.get(columnKey) || [];
-				const isUnknownStatusColumn = this.isUnknownStatusGroup(columnKey, groupByPropertyId);
+				const isUnknownStatusColumn = this.isUnknownStatusGroup(
+					columnKey,
+					groupByPropertyId
+				);
 				this.sortScopeTaskPaths.set(
 					this.getSortScopeKey(columnKey, swimLaneKey),
 					tasks.map((task) => task.path)
@@ -1614,24 +1191,6 @@ export class KanbanView extends BasesViewBase {
 		this.createAddTaskButton(column, groupByPropertyId, groupKey);
 
 		return column;
-	}
-
-	private getColumnTaskCounts(
-		swimLanes: Map<string, Map<string, TaskInfo[]>>,
-		columnKeys: string[]
-	): Map<string, number> {
-		const counts = new Map(columnKeys.map((columnKey) => [columnKey, 0]));
-
-		for (const columns of swimLanes.values()) {
-			for (const columnKey of columnKeys) {
-				counts.set(
-					columnKey,
-					(counts.get(columnKey) ?? 0) + (columns.get(columnKey)?.length ?? 0)
-				);
-			}
-		}
-
-		return counts;
 	}
 
 	private renderColumnCount(container: HTMLElement, groupKey: string, taskCount: number): void {
@@ -2168,35 +1727,29 @@ export class KanbanView extends BasesViewBase {
 					return;
 				}
 
-				// Capture drop position
-				let dropTarget = this.dropTargetPath
-					? { taskPath: this.dropTargetPath, above: this.dropAbove }
-					: undefined;
-
 				// For cross-column drops, the dropTarget may reference a card from
 				// the source column (stale from last dragover). Validate that the
 				// target card actually exists in the target column via DOM query.
+				const initialDropTarget = createKanbanDropTarget(
+					this.dropTargetPath,
+					this.dropAbove
+				);
 				const cardsContainer = column.querySelector<HTMLElement>(".kanban-view__cards");
 				const isCrossColumn = this.draggedFromColumn !== groupKey;
-				if (isCrossColumn && dropTarget) {
-					const targetInColumn =
-						cardsContainer?.querySelector(
-							`[data-task-path="${CSS.escape(dropTarget.taskPath)}"]`
-						) != null;
-					if (!targetInColumn) {
-						// Drop target is stale (from source column). Clear it —
-						// handleTaskDrop will append to end of target column.
-						dropTarget = undefined;
-					}
-				}
-
-				// Same-column fallback: when dropTarget is null (e.g. user dropped
-				// in empty space below the last card where the card-level dragover
-				// never fired), reconstruct the drop target from the column's
-				// visible non-dragged cards.
-				if (!dropTarget && !isCrossColumn && cardsContainer) {
-					dropTarget = this.reconstructDropTarget(cardsContainer);
-				}
+				const targetInColumn =
+					!!initialDropTarget &&
+					cardsContainer?.querySelector(
+						`[data-task-path="${CSS.escape(initialDropTarget.taskPath)}"]`
+					) != null;
+				const dropTarget = resolveKanbanContainerDropTarget({
+					dropTarget: initialDropTarget,
+					isCrossScope: isCrossColumn,
+					targetInDropScope: targetInColumn,
+					fallbackDropTarget:
+						!isCrossColumn && cardsContainer
+							? this.reconstructDropTarget(cardsContainer)
+							: undefined,
+				});
 
 				this.debugLog("COLUMN-DROP", {
 					draggedTask: this.draggedTaskPath?.split("/").pop(),
@@ -2212,10 +1765,7 @@ export class KanbanView extends BasesViewBase {
 				});
 
 				// Optimistic DOM reorder: move card to correct position immediately
-				const paths =
-					this.draggedTaskPaths.length > 0
-						? this.draggedTaskPaths
-						: [this.draggedTaskPath];
+				const paths = getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath);
 				const optimisticResult = this.performOptimisticReorder(
 					paths,
 					dropTarget,
@@ -2289,39 +1839,34 @@ export class KanbanView extends BasesViewBase {
 					return;
 				}
 
-				// Capture drop position
-				let dropTarget = this.dropTargetPath
-					? { taskPath: this.dropTargetPath, above: this.dropAbove }
-					: undefined;
-
 				// For cross-column/swimlane drops, validate dropTarget is in this cell via DOM query
+				const initialDropTarget = createKanbanDropTarget(
+					this.dropTargetPath,
+					this.dropAbove
+				);
 				const cardsContainer = cell.querySelector<HTMLElement>(
 					".kanban-view__tasks-container"
 				);
 				const isCrossColumn = this.draggedFromColumn !== columnKey;
 				const isCrossSwimlane = this.draggedFromSwimlane !== swimLaneKey;
-				if ((isCrossColumn || isCrossSwimlane) && dropTarget) {
-					const targetInCell =
-						cardsContainer?.querySelector(
-							`[data-task-path="${CSS.escape(dropTarget.taskPath)}"]`
-						) != null;
-					if (!targetInCell) {
-						dropTarget = undefined;
-					}
-				}
-
-				// Same-cell fallback: when dropTarget is null (e.g. user dropped
-				// in empty space below the last card), reconstruct the drop target
-				// from the cell's visible non-dragged cards.
-				if (!dropTarget && !isCrossColumn && !isCrossSwimlane && cardsContainer) {
-					dropTarget = this.reconstructDropTarget(cardsContainer);
-				}
+				const isCrossScope = isCrossColumn || isCrossSwimlane;
+				const targetInCell =
+					!!initialDropTarget &&
+					cardsContainer?.querySelector(
+						`[data-task-path="${CSS.escape(initialDropTarget.taskPath)}"]`
+					) != null;
+				const dropTarget = resolveKanbanContainerDropTarget({
+					dropTarget: initialDropTarget,
+					isCrossScope,
+					targetInDropScope: targetInCell,
+					fallbackDropTarget:
+						!isCrossScope && cardsContainer
+							? this.reconstructDropTarget(cardsContainer)
+							: undefined,
+				});
 
 				// Optimistic DOM reorder: move card to correct position immediately
-				const paths =
-					this.draggedTaskPaths.length > 0
-						? this.draggedTaskPaths
-						: [this.draggedTaskPath];
+				const paths = getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath);
 				this.debugLog("SWIMLANE-CELL-DROP", {
 					draggedTask: this.draggedTaskPath?.split("/").pop(),
 					isCrossColumn,
@@ -2688,9 +2233,7 @@ export class KanbanView extends BasesViewBase {
 						const gap = parseFloat(gapStr) || 4;
 						const totalGap = draggedHeight + gap;
 						container.style.setProperty("--tn-drag-gap", `${totalGap}px`);
-						container.classList.remove(
-							"tn-static-margin-top-12px-91e0f558"
-						);
+						container.classList.remove("tn-static-margin-top-12px-91e0f558");
 						// Padding grows the container's content box so
 						// translateY-shifted cards have real layout space.
 						// Also bump the column's max-height so it can grow
@@ -2771,10 +2314,7 @@ export class KanbanView extends BasesViewBase {
 				if (!groupKey) return;
 
 				// Build drop target from the current card position
-				const dropTarget = {
-					taskPath: task.path,
-					above: this.dropAbove,
-				};
+				const dropTarget = createKanbanDropTarget(task.path, this.dropAbove);
 
 				this.debugLog("CARD-DROP (drop-on-card handler)", {
 					draggedTask: this.draggedTaskPath?.split("/").pop(),
@@ -2787,10 +2327,7 @@ export class KanbanView extends BasesViewBase {
 				});
 
 				// Optimistic DOM reorder: move card to correct position immediately
-				const paths =
-					this.draggedTaskPaths.length > 0
-						? this.draggedTaskPaths
-						: [this.draggedTaskPath];
+				const paths = getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath);
 				this.performOptimisticReorder(paths, dropTarget);
 
 				// Now clean up shift CSS — no visual change since DOM is already correct
@@ -3457,11 +2994,8 @@ export class KanbanView extends BasesViewBase {
 				const target = this.findDropTargetAt(touch.clientX, touch.clientY);
 				if (target.groupKey && this.draggedTaskPath) {
 					const dropTarget =
-						target.type === "task" && target.taskPath
-							? {
-									taskPath: target.taskPath,
-									above: target.above ?? true,
-								}
+						target.type === "task"
+							? createKanbanDropTarget(target.taskPath, target.above ?? true)
 							: undefined;
 					const targetContainer =
 						target.cardsContainer ??
@@ -3471,9 +3005,7 @@ export class KanbanView extends BasesViewBase {
 						null;
 
 					this.performOptimisticReorder(
-						this.draggedTaskPaths.length > 0
-							? this.draggedTaskPaths
-							: [this.draggedTaskPath],
+						getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath),
 						dropTarget,
 						targetContainer
 					);
@@ -3564,7 +3096,7 @@ export class KanbanView extends BasesViewBase {
 		taskPath: string,
 		newGroupValue: string,
 		newSwimLaneValue: string | null,
-		dropTarget?: { taskPath: string; above: boolean }
+		dropTarget?: KanbanDropTarget
 	): Promise<void> {
 		this.activeDropCount++;
 		try {
@@ -3663,25 +3195,29 @@ export class KanbanView extends BasesViewBase {
 					const sourceSwimlane = isBatchOperation
 						? snapshotSourceSwimlanes.get(path)
 						: snapshotFromSwimlane;
-
-					// Detect same-column drop — skip group property update to avoid
-					// unnecessary writes or value corruption
-					const isSameColumn = sourceColumn === newGroupValue;
-					const isSameSwimlane = sourceSwimlane === newSwimLaneValue;
+					const dropPlan = planKanbanTaskDropUpdate({
+						path,
+						sourceColumn,
+						sourceSwimlane,
+						newGroupValue,
+						newSwimLaneValue,
+						groupByPropertyId,
+						swimLanePropertyId: this.swimLanePropertyId,
+						groupByTaskProp,
+						swimlaneTaskProp,
+						isGroupByListProperty,
+						isSwimlaneListProperty: !!isSwimlaneListProperty,
+					});
 
 					this.debugLog("HANDLE-DROP-TASK", {
 						taskFile: path.split("/").pop(),
 						sourceColumn,
 						newGroupValue,
-						isSameColumn,
+						isSameColumn: !dropPlan.needsGroupUpdate,
 						isGroupByListProperty,
 						sourceSwimlane,
 						newSwimLaneValue,
 					});
-
-					const needsGroupUpdate = !isSameColumn;
-					const needsSwimlaneUpdate =
-						newSwimLaneValue !== null && !!this.swimLanePropertyId && !isSameSwimlane;
 
 					// Compute sort_order first (read-only — no file writes yet)
 					let sortOrderPlan = null;
@@ -3743,8 +3279,7 @@ export class KanbanView extends BasesViewBase {
 					}
 
 					// Skip file write if nothing to change
-					const needsWrite =
-						needsGroupUpdate || needsSwimlaneUpdate || sortOrderPlan !== null;
+					const needsWrite = kanbanDropPlanNeedsWrite(dropPlan, sortOrderPlan !== null);
 					if (!needsWrite) continue;
 
 					const file = this.plugin.app.vault.getAbstractFileByPath(path);
@@ -3758,61 +3293,10 @@ export class KanbanView extends BasesViewBase {
 
 					// Single atomic write: groupBy + swimlane + sort_order
 					await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
-						// Update groupBy property if changing columns
-						if (needsGroupUpdate) {
-							const frontmatterKey = groupByPropertyId.replace(
-								/^(note\.|file\.|task\.)/,
-								""
-							);
-							if (isGroupByListProperty && sourceColumn) {
-								// List property: remove source value, add target value
-								let currentValue = fm[frontmatterKey];
-								if (!Array.isArray(currentValue)) {
-									currentValue = currentValue ? [currentValue] : [];
-								}
-								const newValue = currentValue.filter(
-									(v: string) => v !== sourceColumn
-								);
-								if (!newValue.includes(newGroupValue) && newGroupValue !== "None") {
-									newValue.push(newGroupValue);
-								}
-								fm[frontmatterKey] = newValue.length > 0 ? newValue : [];
-							} else {
-								fm[frontmatterKey] = this.coerceGroupKeyForFrontmatter(
-									frontmatterKey,
-									newGroupValue
-								);
-							}
-						}
-
-						// Update swimlane property if changing swimlanes
-						if (needsSwimlaneUpdate) {
-							const swimKey = this.swimLanePropertyId!.replace(
-								/^(note\.|file\.|task\.)/,
-								""
-							);
-							if (isSwimlaneListProperty && sourceSwimlane) {
-								let currentValue = fm[swimKey];
-								if (!Array.isArray(currentValue)) {
-									currentValue = currentValue ? [currentValue] : [];
-								}
-								const newValue = currentValue.filter(
-									(v: string) => v !== sourceSwimlane
-								);
-								if (
-									!newValue.includes(newSwimLaneValue) &&
-									newSwimLaneValue !== "None"
-								) {
-									newValue.push(newSwimLaneValue);
-								}
-								fm[swimKey] = newValue.length > 0 ? newValue : [];
-							} else {
-								fm[swimKey] = this.coerceGroupKeyForFrontmatter(
-									swimKey,
-									newSwimLaneValue
-								);
-							}
-						}
+						applyKanbanTaskDropFrontmatterPlan(fm, dropPlan, {
+							coerceGroupValue: (frontmatterKey, groupKey) =>
+								this.coerceGroupKeyForFrontmatter(frontmatterKey, groupKey),
+						});
 
 						// Write sort_order
 						if (sortOrderPlan?.sortOrder !== null && sortOrderPlan) {
@@ -3820,7 +3304,7 @@ export class KanbanView extends BasesViewBase {
 						}
 
 						// Derivative writes for status changes (completedDate + dateModified)
-						if (needsGroupUpdate && groupByTaskProp === "status") {
+						if (dropPlan.needsGroupUpdate && groupByTaskProp === "status") {
 							const task = this.taskInfoCache.get(path);
 							const isRecurring = !!task?.recurrence;
 							this.plugin.taskService.updateCompletedDateInFrontmatter(
@@ -3831,12 +3315,16 @@ export class KanbanView extends BasesViewBase {
 							const dateModifiedField =
 								this.plugin.fieldMapper.toUserField("dateModified");
 							fm[dateModifiedField] = getCurrentTimestamp();
-						} else if (needsSwimlaneUpdate && swimlaneTaskProp === "status") {
+						} else if (
+							dropPlan.needsSwimlaneUpdate &&
+							swimlaneTaskProp === "status" &&
+							dropPlan.newSwimLaneValue !== null
+						) {
 							const task = this.taskInfoCache.get(path);
 							const isRecurring = !!task?.recurrence;
 							this.plugin.taskService.updateCompletedDateInFrontmatter(
 								fm,
-								newSwimLaneValue,
+								dropPlan.newSwimLaneValue,
 								isRecurring
 							);
 							const dateModifiedField =
@@ -3847,20 +3335,16 @@ export class KanbanView extends BasesViewBase {
 
 					this.debugLog("ATOMIC-WRITE-DONE", {
 						taskFile: path.split("/").pop(),
-						needsGroupUpdate,
-						needsSwimlaneUpdate,
+						needsGroupUpdate: dropPlan.needsGroupUpdate,
+						needsSwimlaneUpdate: dropPlan.needsSwimlaneUpdate,
 						hasSortOrder: sortOrderPlan !== null,
 					});
 
 					// Fire post-write side effects for known TaskInfo property changes
-					const changedTaskProp = needsGroupUpdate
-						? groupByTaskProp
-						: needsSwimlaneUpdate
-							? swimlaneTaskProp
-							: null;
+					const changedTaskProp = dropPlan.changedTaskProp;
 					if (changedTaskProp) {
-						const oldPropValue = needsGroupUpdate ? sourceColumn : sourceSwimlane;
-						const newPropValue = needsGroupUpdate ? newGroupValue : newSwimLaneValue;
+						const oldPropValue = dropPlan.oldPropValue;
+						const newPropValue = dropPlan.newPropValue;
 						try {
 							const originalTask =
 								this.taskInfoCache.get(path) ??
@@ -3987,13 +3471,11 @@ export class KanbanView extends BasesViewBase {
 	private static readonly POST_DROP_RENDER_DELAY = 500; // ms
 
 	private debugLog(msg: string, data?: Record<string, unknown>): void {
-		if (!this.plugin.settings.enableDebugLogging) return;
-		const ts = new Date().toISOString().slice(11, 23);
-		if (data) {
-			console.debug(`[TN-DBG ${ts}] ${msg}`, JSON.stringify(data));
-		} else {
-			console.debug(`[TN-DBG ${ts}] ${msg}`);
-		}
+		this.logger.debug(msg, {
+			category: "internal",
+			operation: "kanban-debug",
+			details: data,
+		});
 	}
 
 	private schedulePostDropRender(): void {
@@ -4040,112 +3522,6 @@ export class KanbanView extends BasesViewBase {
 		errorEl.className = "tn-bases-error";
 		errorEl.textContent = `Error loading kanban: ${error.message || "Unknown error"}`;
 		this.boardEl.appendChild(errorEl);
-	}
-
-	/**
-	 * Compute Bases formulas for TaskNotes items.
-	 * Ensures formula-based properties (e.g. dueDateCategory) are populated
-	 * before swimlane/grouping reads them from cachedFormulaOutputs.
-	 */
-	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		const ctxFormulas = getBasesFormulaContext(this.data);
-		if (!ctxFormulas || dataItems.length === 0) {
-			return;
-		}
-
-		for (let i = 0; i < dataItems.length; i++) {
-			const item = dataItems[i];
-			const baseData = getBasesFormulaData(item);
-			const itemFormulaResults = baseData?.formulaResults;
-			if (!baseData || !itemFormulaResults?.cachedFormulaOutputs) continue;
-
-			for (const formulaName of Object.keys(ctxFormulas)) {
-				const formula = ctxFormulas[formulaName];
-				if (hasFormulaGetter(formula)) {
-					try {
-						const taskProperties = item.properties || {};
-						const result = evaluateBasesFormula(formula, baseData, taskProperties);
-
-						if (result !== undefined) {
-							itemFormulaResults.cachedFormulaOutputs[formulaName] = result;
-						}
-					} catch {
-						// Formulas may fail for various reasons - this is expected
-					}
-				}
-			}
-		}
-	}
-
-	private buildPathToPropsMap(): Map<string, Record<string, unknown>> {
-		const dataItems = this.dataAdapter.extractDataItems();
-		const map = new Map<string, Record<string, unknown>>();
-
-		for (const item of dataItems) {
-			if (!item.path) continue;
-
-			// Merge regular properties with formula results
-			const props = { ...(item.properties || {}) };
-
-			appendCachedFormulaOutputs(props, item);
-
-			map.set(item.path, props);
-		}
-
-		return map;
-	}
-
-	private getPropertyValue(props: Record<string, unknown>, propertyId: string): unknown {
-		// Formula properties are stored with their full prefix (formula.NAME)
-		if (propertyId.startsWith("formula.")) {
-			return props[propertyId] ?? null;
-		}
-
-		// Strip prefix from property ID if present
-		const cleanId = stripPropertyPrefix(propertyId);
-
-		// Try exact match first
-		if (props[propertyId] !== undefined) return props[propertyId];
-		if (props[cleanId] !== undefined) return props[cleanId];
-
-		return null;
-	}
-
-	private valueToString(value: unknown): string {
-		if (value === null || value === undefined) return "None";
-
-		// Handle Bases Value objects (they have a toString() method and often a type property)
-		// Check for Bases Value object by duck-typing (has toString and is an object with constructor)
-		if (typeof value === "object" && value !== null && typeof value.toString === "function") {
-			const basesValue = value as BasesDisplayValue;
-			// Check if it's a Bases NullValue
-			if (
-				basesValue.constructor?.name === "NullValue" ||
-				(basesValue.isTruthy && !basesValue.isTruthy())
-			) {
-				return "None";
-			}
-
-			// Check if it's a Bases ListValue (array-like)
-			if (basesValue.constructor?.name === "ListValue" || Array.isArray(basesValue.value)) {
-				const arr = basesValue.value || [];
-				if (arr.length === 0) return "None";
-				// Recursively convert each item
-				return arr.map((v) => this.valueToString(v)).join(", ");
-			}
-
-			// For other Bases Value types (StringValue, NumberValue, BooleanValue, DateValue, etc.)
-			// Use their toString() method
-			const str = basesValue.toString();
-			return str || "None";
-		}
-
-		if (typeof value === "string") return value || "None";
-		if (typeof value === "number") return String(value);
-		if (typeof value === "boolean") return value ? "True" : "False";
-		if (Array.isArray(value))
-			return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
-		return stringifyUnknown(value) || "None";
 	}
 
 	private getGroupDisplayTitle(title: string, propertyId?: string | null): string {
@@ -4212,138 +3588,30 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
-		// Get saved order for this grouping property
-		const savedOrder = this.getConfiguredOrder(this.columnOrders, groupBy);
-
-		if (!savedOrder || savedOrder.length === 0) {
-			return this.applyDefaultColumnOrder(groupBy, actualKeys);
-		}
-
-		const ordered: string[] = [];
-		const unsorted: string[] = [];
-		const actualKeySet = new Set(actualKeys);
-
-		// First, add keys in saved order
-		for (const key of savedOrder) {
-			if (!this.hideEmptyColumns || actualKeySet.has(key)) {
-				ordered.push(key);
-			}
-		}
-
-		// Then, add any new keys not in saved order
-		for (const key of actualKeys) {
-			if (!savedOrder.includes(key)) {
-				unsorted.push(key);
-			}
-		}
-
-		return [...ordered, ...this.applyDefaultColumnOrder(groupBy, unsorted)];
-	}
-
-	private applyDefaultColumnOrder(groupBy: string | null, actualKeys: string[]): string[] {
-		const orderedKeys = [...actualKeys];
-
-		if (this.isPropertyField(groupBy, "priority")) {
-			return this.orderColumnsWithPinnedFirst(
-				orderedKeys.sort((a, b) => {
-					const weightComparison =
-						this.plugin.priorityManager.getPriorityWeight(b) -
-						this.plugin.priorityManager.getPriorityWeight(a);
-					return weightComparison || this.compareSpecialColumnKeys(a, b);
-				})
-			);
-		}
-
-		if (this.isPropertyField(groupBy, "status")) {
-			return this.orderColumnsWithPinnedFirst(
-				orderedKeys.sort((a, b) => {
-					const statusA = this.findStatusConfigForGroupKey(a);
-					const statusB = this.findStatusConfigForGroupKey(b);
-
-					if (statusA && statusB) {
-						const orderComparison = statusA.order - statusB.order;
-						return orderComparison || a.localeCompare(b);
-					}
-					if (statusA) return -1;
-					if (statusB) return 1;
-
-					return this.compareSpecialColumnKeys(a, b);
-				})
-			);
-		}
-
-		return orderColumnsWithPinnedColumns(actualKeys, this.pinnedColumns);
-	}
-
-	private orderColumnsWithPinnedFirst(actualKeys: string[]): string[] {
-		const actualKeySet = new Set(actualKeys);
-		const pinnedSet = new Set(this.pinnedColumns);
-		const pinned = this.pinnedColumns.filter((key) => actualKeySet.has(key));
-		const unpinned = actualKeys.filter((key) => !pinnedSet.has(key));
-		return [...pinned, ...unpinned];
-	}
-
-	private compareSpecialColumnKeys(a: string, b: string): number {
-		if (a === "None" && b !== "None") return 1;
-		if (b === "None" && a !== "None") return -1;
-		return a.localeCompare(b);
-	}
-
-	private getConfiguredOrder(
-		orders: Record<string, string[]>,
-		propertyId: string | null
-	): string[] | undefined {
-		if (!propertyId) {
-			return undefined;
-		}
-
-		return orders[propertyId] ?? orders[stripPropertyPrefix(propertyId)];
+		return applyKanbanColumnOrder({
+			groupBy,
+			actualKeys,
+			columnOrders: this.columnOrders,
+			hideEmptyColumns: this.hideEmptyColumns,
+			pinnedColumns: this.pinnedColumns,
+			isPriorityField: (propertyId) => this.isPropertyField(propertyId, "priority"),
+			isStatusField: (propertyId) => this.isPropertyField(propertyId, "status"),
+			getPriorityWeight: (key) => this.plugin.priorityManager.getPriorityWeight(key),
+			findStatusConfig: (key) => this.findStatusConfigForGroupKey(key),
+		});
 	}
 
 	private applySwimLaneOrder(swimLanePropertyId: string | null, actualKeys: string[]): string[] {
-		const savedOrder = this.getConfiguredOrder(this.swimLaneOrders, swimLanePropertyId);
-
-		if (!savedOrder || savedOrder.length === 0) {
-			return this.applyDefaultSwimLaneOrder(swimLanePropertyId, actualKeys);
-		}
-
-		const actualKeySet = new Set(actualKeys);
-		const ordered = savedOrder.filter(
-			(key) => actualKeySet.has(key) || !this.hideEmptySwimLanes
-		);
-		const unordered = this.applyDefaultSwimLaneOrder(
+		return applyKanbanSwimLaneOrder({
 			swimLanePropertyId,
-			actualKeys.filter((key) => !savedOrder.includes(key))
-		);
-
-		return [...ordered, ...unordered];
-	}
-
-	private applyDefaultSwimLaneOrder(
-		swimLanePropertyId: string | null,
-		actualKeys: string[]
-	): string[] {
-		const orderedKeys = [...actualKeys];
-
-		if (this.isPropertyField(swimLanePropertyId, "priority")) {
-			return orderedKeys.sort((a, b) => {
-				const weightComparison =
-					this.plugin.priorityManager.getPriorityWeight(b) -
-					this.plugin.priorityManager.getPriorityWeight(a);
-				return weightComparison || a.localeCompare(b);
-			});
-		}
-
-		if (this.isPropertyField(swimLanePropertyId, "status")) {
-			return orderedKeys.sort((a, b) => {
-				const orderComparison =
-					this.plugin.statusManager.getStatusOrder(a) -
-					this.plugin.statusManager.getStatusOrder(b);
-				return orderComparison || a.localeCompare(b);
-			});
-		}
-
-		return orderedKeys.sort();
+			actualKeys,
+			swimLaneOrders: this.swimLaneOrders,
+			hideEmptySwimLanes: this.hideEmptySwimLanes,
+			isPriorityField: (propertyId) => this.isPropertyField(propertyId, "priority"),
+			isStatusField: (propertyId) => this.isPropertyField(propertyId, "status"),
+			getPriorityWeight: (key) => this.plugin.priorityManager.getPriorityWeight(key),
+			getStatusOrder: (key) => this.plugin.statusManager.getStatusOrder(key),
+		});
 	}
 
 	private isPropertyField(propertyId: string | null, field: "priority" | "status"): boolean {
@@ -4359,27 +3627,17 @@ export class KanbanView extends BasesViewBase {
 		swimLanes: Map<string, Map<string, TaskInfo[]>>,
 		columnKeys: string[]
 	): Map<string, Map<string, TaskInfo[]>> {
-		const orderedKeys = this.applySwimLaneOrder(swimLanePropertyId, Array.from(swimLanes.keys()));
-		const orderedSwimLanes = new Map<string, Map<string, TaskInfo[]>>();
-
-		for (const swimLaneKey of orderedKeys) {
-			const columns = swimLanes.get(swimLaneKey) ?? this.createEmptySwimLaneColumns(columnKeys);
-			if (this.hideEmptySwimLanes && this.getSwimLaneTaskCount(columns) === 0) {
-				continue;
-			}
-
-			orderedSwimLanes.set(swimLaneKey, columns);
-		}
-
-		return orderedSwimLanes;
-	}
-
-	private createEmptySwimLaneColumns(columnKeys: string[]): Map<string, TaskInfo[]> {
-		return new Map(columnKeys.map((columnKey) => [columnKey, []]));
-	}
-
-	private getSwimLaneTaskCount(columns: Map<string, TaskInfo[]>): number {
-		return Array.from(columns.values()).reduce((sum, tasks) => sum + tasks.length, 0);
+		return applyKanbanSwimLaneOrderToMap({
+			swimLanePropertyId,
+			swimLanes,
+			columnKeys,
+			swimLaneOrders: this.swimLaneOrders,
+			hideEmptySwimLanes: this.hideEmptySwimLanes,
+			isPriorityField: (propertyId) => this.isPropertyField(propertyId, "priority"),
+			isStatusField: (propertyId) => this.isPropertyField(propertyId, "status"),
+			getPriorityWeight: (key) => this.plugin.priorityManager.getPriorityWeight(key),
+			getStatusOrder: (key) => this.plugin.statusManager.getStatusOrder(key),
+		});
 	}
 
 	private async saveColumnOrder(groupBy: string, order: string[]): Promise<void> {

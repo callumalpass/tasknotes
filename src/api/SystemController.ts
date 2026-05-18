@@ -1,9 +1,9 @@
 import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
-import { TaskCreationData } from "../types";
 import { TaskService } from "../services/TaskService";
 import TaskNotesPlugin from "../main";
+import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
 
 import { generateOpenAPISpec, Get, Post } from "../utils/OpenAPIDecorators";
 
@@ -75,32 +75,7 @@ export class SystemController extends BaseController {
 			// Parse the natural language input
 			const parsedData = this.nlParser.parseInput(body.text);
 
-			// Convert ParsedTaskData to TaskCreationData format
-			const taskData: TaskCreationData = {
-				title: parsedData.title,
-				details: parsedData.details,
-				priority: parsedData.priority,
-				status: parsedData.status || this.getDefaultStatus(),
-				tags: parsedData.tags,
-				contexts: parsedData.contexts,
-				projects: parsedData.projects,
-				recurrence: parsedData.recurrence,
-				timeEstimate: parsedData.estimate,
-			};
-
-			// Handle dates
-			if (parsedData.dueDate) {
-				taskData.due = parsedData.dueDate;
-				if (parsedData.dueTime) {
-					taskData.due = `${parsedData.dueDate} ${parsedData.dueTime}`;
-				}
-			}
-			if (parsedData.scheduledDate) {
-				taskData.scheduled = parsedData.scheduledDate;
-				if (parsedData.scheduledTime) {
-					taskData.scheduled = `${parsedData.scheduledDate} ${parsedData.scheduledTime}`;
-				}
-			}
+			const taskData = buildTaskCreationDataFromParsed(this.plugin, parsedData);
 
 			this.sendResponse(
 				res,
@@ -132,33 +107,9 @@ export class SystemController extends BaseController {
 			// Parse the natural language input
 			const parsedData = this.nlParser.parseInput(body.text);
 
-			// Convert ParsedTaskData to TaskCreationData format
-			const taskData: TaskCreationData = {
-				title: parsedData.title,
-				details: parsedData.details,
-				priority: parsedData.priority,
-				status: parsedData.status || this.getDefaultStatus(),
-				tags: parsedData.tags,
-				contexts: parsedData.contexts,
-				projects: parsedData.projects,
-				recurrence: parsedData.recurrence,
-				timeEstimate: parsedData.estimate,
+			const taskData = buildTaskCreationDataFromParsed(this.plugin, parsedData, {
 				creationContext: "api",
-			};
-
-			// Handle dates
-			if (parsedData.dueDate) {
-				taskData.due = parsedData.dueDate;
-				if (parsedData.dueTime) {
-					taskData.due = `${parsedData.dueDate} ${parsedData.dueTime}`;
-				}
-			}
-			if (parsedData.scheduledDate) {
-				taskData.scheduled = parsedData.scheduledDate;
-				if (parsedData.scheduledTime) {
-					taskData.scheduled = `${parsedData.scheduledDate} ${parsedData.scheduledTime}`;
-				}
-			}
+			});
 
 			// Create the task - TaskService.createTask() applies defaults automatically
 			const result = await this.taskService.createTask(taskData);
@@ -208,16 +159,6 @@ export class SystemController extends BaseController {
 			console.error("Swagger UI generation error:", error);
 			this.sendResponse(res, 500, this.errorResponse("Failed to generate API documentation"));
 		}
-	}
-
-	private getDefaultStatus(): string {
-		// Get the first status (lowest order) as default, same logic as TaskModal
-		const statusConfigs = this.plugin.settings.customStatuses;
-		if (statusConfigs && statusConfigs.length > 0) {
-			const sortedStatuses = [...statusConfigs].sort((a, b) => a.order - b.order);
-			return sortedStatuses[0].value;
-		}
-		return "open"; // fallback
 	}
 
 	private generateSwaggerUIHTML(): string {

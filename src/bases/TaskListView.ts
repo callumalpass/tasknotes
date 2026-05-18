@@ -4,7 +4,7 @@ import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
-import { identifyTaskNotesFromBasesData, BasesDataItem } from "./helpers";
+import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -31,38 +31,32 @@ import {
 } from "./sortOrderUtils";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 import {
-	appendCachedFormulaOutputs,
-	evaluateBasesFormula,
-	getBasesFormulaContext,
-	getBasesFormulaData,
-	hasFormulaGetter,
+	computeBasesFormulas,
 	isObsidianListProperty,
 } from "./basesViewAdapters";
 import {
 	coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter,
 } from "./propertyValueCoercion";
-
-type TaskListDropBaselineCard = {
-	path: string;
-	groupKey: string | null;
-	card: HTMLElement;
-	top: number;
-	bottom: number;
-	midpoint: number;
-};
-
-type TaskListDropSegment = {
-	groupKey: string | null;
-	cards: TaskListDropBaselineCard[];
-};
-
-type TaskListInsertionSlot = {
-	groupKey: string | null;
-	segmentIndex: number;
-	insertionIndex: number;
-	element: HTMLElement;
-	position: "before" | "after";
-};
+import {
+	getTaskListDropSegments,
+	reconstructTaskListDropTarget,
+	resolveTaskListInsertionSlot,
+	type TaskListDropBaselineCard,
+	type TaskListDropSegment,
+	type TaskListInsertionSlot,
+} from "./taskListDragGeometry";
+import {
+	buildTaskListGroupedRenderItems,
+	buildTaskListGroupedScopePaths,
+	buildTaskListPathProperties,
+	buildTaskListSubPropertyRenderItems,
+	buildTaskListSubPropertyScopePaths,
+	groupTasksByTaskListSubProperty,
+	type TaskListGroup,
+	type TaskListHeaderItem,
+	type TaskListRenderItem,
+	type TaskListVirtualItem,
+} from "./taskListGrouping";
 
 type TaskListDataAdapterWithView = {
 	basesView: TaskListView;
@@ -78,56 +72,10 @@ type TaskListController = {
 	viewName?: string;
 };
 
-type TaskListGroupEntry = {
-	file?: { path?: string };
-};
-
-type TaskListGroup = {
-	key: unknown;
-	entries: TaskListGroupEntry[];
-};
-
-type TaskListPrimaryHeaderItem = {
-	type: "primary-header";
-	groupKey: string;
-	groupTitle: string;
-	taskCount: number;
-	groupEntries: TaskListGroupEntry[];
-	isCollapsed: boolean;
-};
-
-type TaskListSubHeaderItem = {
-	type: "sub-header";
-	groupKey: string;
-	subGroupKey: string;
-	subGroupTitle: string;
-	taskCount: number;
-	isCollapsed: boolean;
-	parentKey: string;
-};
-
-type TaskListTaskItem = {
-	type: "task";
-	task: TaskInfo;
-	groupKey: string;
-	subGroupKey?: string;
-};
-
-type TaskListHeaderItem = TaskListPrimaryHeaderItem | TaskListSubHeaderItem;
-type TaskListRenderItem = TaskListHeaderItem | TaskListTaskItem;
-type TaskListVirtualItem = TaskInfo | TaskListRenderItem;
-
 type TaskListEphemeralState = {
 	collapsedGroups?: unknown;
 	collapsedSubGroups?: unknown;
 	scrollTop?: unknown;
-};
-
-type BasesDisplayValue = {
-	constructor?: { name?: string };
-	isTruthy?: () => boolean;
-	value?: unknown[];
-	toString(): string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -353,7 +301,7 @@ export class TaskListView extends BasesViewBase {
 			const dataItems = this.dataAdapter.extractDataItems();
 
 			// Compute Bases formulas for TaskNotes items
-			await this.computeFormulas(dataItems);
+			computeBasesFormulas(this.data, dataItems);
 
 			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
 
@@ -760,44 +708,18 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private getDropSegments(): TaskListDropSegment[] {
-		const cards = this.getDropBaselineCards();
-		if (cards.length === 0) return [];
-
-		const segments: TaskListDropSegment[] = [];
-		for (const card of cards) {
-			const previousSegment = segments[segments.length - 1];
-			if (!previousSegment || previousSegment.groupKey !== card.groupKey) {
-				segments.push({
-					groupKey: card.groupKey,
-					cards: [card],
-				});
-				continue;
-			}
-			previousSegment.cards.push(card);
-		}
-
-		return segments;
+		return getTaskListDropSegments(this.getDropBaselineCards());
 	}
 
 	private reconstructDropTargetFromInsertionSlot(
 		segmentIndex: number,
 		insertionIndex: number
 	): { taskPath: string; above: boolean } | null {
-		const segment = this.getDropSegments()[segmentIndex];
-		if (!segment || segment.cards.length === 0) return null;
-
-		const clampedIndex = Math.max(0, Math.min(insertionIndex, segment.cards.length));
-		if (clampedIndex === 0) {
-			return {
-				taskPath: segment.cards[0].path,
-				above: true,
-			};
-		}
-
-		return {
-			taskPath: segment.cards[clampedIndex - 1].path,
-			above: false,
-		};
+		return reconstructTaskListDropTarget(
+			this.getDropSegments(),
+			segmentIndex,
+			insertionIndex
+		);
 	}
 
 	private getCurrentInsertionTarget(): { taskPath: string; above: boolean } | null {
@@ -834,39 +756,6 @@ export class TaskListView extends BasesViewBase {
 			groupedPaths.set(item.groupKey, paths);
 		}
 		this.setSortScopePaths(groupedPaths);
-	}
-
-	private buildGroupedScopePaths(
-		groups: TaskListGroup[],
-		taskNotes: TaskInfo[]
-	): Map<string | null, string[]> {
-		const taskPaths = new Set(taskNotes.map((task) => task.path));
-		const groupedPaths = new Map<string | null, string[]>();
-
-		for (const group of groups) {
-			const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
-			const paths = group.entries
-				.map((entry) => entry.file?.path)
-				.filter(
-					(path: string | undefined): path is string => !!path && taskPaths.has(path)
-				);
-			groupedPaths.set(groupKey, paths);
-		}
-
-		return groupedPaths;
-	}
-
-	private buildSubPropertyScopePaths(
-		groupedTasks: Map<string, TaskInfo[]>
-	): Map<string | null, string[]> {
-		const groupedPaths = new Map<string | null, string[]>();
-		for (const [groupKey, tasks] of groupedTasks) {
-			groupedPaths.set(
-				groupKey,
-				tasks.map((task) => task.path)
-			);
-		}
-		return groupedPaths;
 	}
 
 	private updateDropSlotPreview(slot: TaskListInsertionSlot): void {
@@ -973,54 +862,8 @@ export class TaskListView extends BasesViewBase {
 
 	private resolveClosestInsertionSlot(clientY: number): TaskListInsertionSlot | null {
 		const segments = this.getDropSegments();
-		if (segments.length === 0) return null;
-
 		const localY = this.getContainerLocalY(clientY);
-		let selectedSegmentIndex = segments.length - 1;
-
-		for (let index = 0; index < segments.length; index++) {
-			const currentSegment = segments[index];
-			const previousSegment = index > 0 ? segments[index - 1] : null;
-			const nextSegment = index < segments.length - 1 ? segments[index + 1] : null;
-			const firstCard = currentSegment.cards[0];
-			const lastCard = currentSegment.cards[currentSegment.cards.length - 1];
-			const lowerBoundary = previousSegment
-				? (previousSegment.cards[previousSegment.cards.length - 1].bottom + firstCard.top) /
-					2
-				: Number.NEGATIVE_INFINITY;
-			const upperBoundary = nextSegment
-				? (lastCard.bottom + nextSegment.cards[0].top) / 2
-				: Number.POSITIVE_INFINITY;
-
-			if (localY < upperBoundary || index === segments.length - 1) {
-				if (localY >= lowerBoundary || index === 0) {
-					selectedSegmentIndex = index;
-					break;
-				}
-			}
-		}
-
-		const selectedSegment = segments[selectedSegmentIndex];
-		const cardsInSegment = selectedSegment.cards;
-		const targetIndex = cardsInSegment.findIndex((card) => localY < card.midpoint);
-		if (targetIndex === -1) {
-			const lastCard = cardsInSegment[cardsInSegment.length - 1];
-			return {
-				groupKey: selectedSegment.groupKey,
-				segmentIndex: selectedSegmentIndex,
-				insertionIndex: cardsInSegment.length,
-				element: lastCard.card,
-				position: "after",
-			};
-		}
-
-		return {
-			groupKey: selectedSegment.groupKey,
-			segmentIndex: selectedSegmentIndex,
-			insertionIndex: targetIndex,
-			element: cardsInSegment[targetIndex].card,
-			position: "before",
-		};
+		return resolveTaskListInsertionSlot(segments, localY);
 	}
 
 	/**
@@ -1308,42 +1151,6 @@ export class TaskListView extends BasesViewBase {
 		});
 	}
 
-	/**
-	 * Compute Bases formulas for TaskNotes items.
-	 * This ensures formulas have access to TaskNote-specific properties.
-	 */
-	private async computeFormulas(dataItems: BasesDataItem[]): Promise<void> {
-		// Access formulas through the data context
-		const ctxFormulas = getBasesFormulaContext(this.data);
-		if (!ctxFormulas || dataItems.length === 0) {
-			return;
-		}
-
-		for (let i = 0; i < dataItems.length; i++) {
-			const item = dataItems[i];
-			const baseData = getBasesFormulaData(item);
-			const itemFormulaResults = baseData?.formulaResults;
-			if (!baseData || !itemFormulaResults?.cachedFormulaOutputs) continue;
-
-			for (const formulaName of Object.keys(ctxFormulas)) {
-				const formula = ctxFormulas[formulaName];
-				if (hasFormulaGetter(formula)) {
-					try {
-						const taskProperties = item.properties || {};
-						const result = evaluateBasesFormula(formula, baseData, taskProperties);
-
-						// Store computed result for TaskCard rendering
-						if (result !== undefined) {
-							itemFormulaResults.cachedFormulaOutputs[formulaName] = result;
-						}
-					} catch {
-						// Formulas may fail for various reasons - this is expected
-					}
-				}
-			}
-		}
-	}
-
 	private async renderFlat(taskNotes: TaskInfo[]): Promise<void> {
 		const visibleProperties = this.getVisibleProperties();
 		this.setSortScopeCandidatePaths([[null, taskNotes.map((task) => task.path)]]);
@@ -1535,87 +1342,6 @@ export class TaskListView extends BasesViewBase {
 	 * Build flattened list of render items (headers + tasks) for grouped view
 	 * Shared between renderGrouped() and refreshGroupedView()
 	 */
-	private buildGroupedRenderItems(
-		groups: TaskListGroup[],
-		taskNotes: TaskInfo[]
-	): TaskListRenderItem[] {
-		const items: TaskListRenderItem[] = [];
-
-		// Build property map for sub-grouping if needed
-		const pathToProps = this.subGroupPropertyId ? this.buildPathToPropsMap() : new Map();
-
-		for (const group of groups) {
-			const primaryKey = this.dataAdapter.convertGroupKeyToString(group.key);
-			const groupPaths = new Set(group.entries.map((entry) => entry.file?.path));
-			const groupTasks = taskNotes.filter((t) => groupPaths.has(t.path));
-
-			// Skip groups with no matching tasks (e.g., after search filtering)
-			if (groupTasks.length === 0) continue;
-
-			const isPrimaryCollapsed = this.collapsedGroups.has(primaryKey);
-
-			// Add primary header
-			items.push({
-				type: "primary-header",
-				groupKey: primaryKey,
-				groupTitle: primaryKey,
-				taskCount: groupTasks.length,
-				groupEntries: group.entries,
-				isCollapsed: isPrimaryCollapsed,
-			});
-
-			// If primary group is not collapsed, add sub-groups or tasks
-			if (!isPrimaryCollapsed) {
-				if (this.subGroupPropertyId) {
-					// Sub-grouping enabled: create nested structure
-					const subGroups = this.groupTasksBySubProperty(
-						groupTasks,
-						this.subGroupPropertyId,
-						pathToProps
-					);
-
-					for (const [subKey, subTasks] of subGroups) {
-						// Filter out empty sub-groups
-						if (subTasks.length === 0) continue;
-
-						const compoundKey = `${primaryKey}:${subKey}`;
-						const isSubCollapsed = this.collapsedSubGroups.has(compoundKey);
-
-						// Add sub-header
-						items.push({
-							type: "sub-header",
-							groupKey: primaryKey,
-							subGroupKey: subKey,
-							subGroupTitle: subKey,
-							taskCount: subTasks.length,
-							isCollapsed: isSubCollapsed,
-							parentKey: primaryKey,
-						});
-
-						// Add tasks if sub-group is not collapsed
-						if (!isSubCollapsed) {
-							for (const task of subTasks) {
-								items.push({
-									type: "task",
-									task,
-									groupKey: primaryKey,
-									subGroupKey: subKey,
-								});
-							}
-						}
-					}
-				} else {
-					// No sub-grouping: add tasks directly
-					for (const task of groupTasks) {
-						items.push({ type: "task", task, groupKey: primaryKey });
-					}
-				}
-			}
-		}
-
-		return items;
-	}
-
 	/**
 	 * Render tasks grouped by sub-property (when no primary grouping is configured).
 	 * This treats the sub-group property as primary grouping.
@@ -1643,42 +1369,21 @@ export class TaskListView extends BasesViewBase {
 		const cardOptions = this.getCardOptions(targetDate);
 
 		// Group tasks by sub-property
-		const pathToProps = this.buildPathToPropsMap();
-		const groupedTasks = this.groupTasksBySubProperty(
+		const pathToProps = buildTaskListPathProperties(this.dataAdapter.extractDataItems());
+		const groupedTasks = groupTasksByTaskListSubProperty(
 			filteredTasks,
 			this.subGroupPropertyId!,
 			pathToProps
 		);
-		const allGroupedTasks = this.groupTasksBySubProperty(
+		const allGroupedTasks = groupTasksByTaskListSubProperty(
 			taskNotes,
 			this.subGroupPropertyId!,
 			pathToProps
 		);
-		this.setSortScopeCandidatePaths(this.buildSubPropertyScopePaths(allGroupedTasks));
+		this.setSortScopeCandidatePaths(buildTaskListSubPropertyScopePaths(allGroupedTasks));
 
 		// Build flat items array (treat sub-groups as primary groups)
-		const items: TaskListRenderItem[] = [];
-		for (const [groupKey, tasks] of groupedTasks) {
-			// Skip empty groups
-			if (tasks.length === 0) continue;
-
-			const isCollapsed = this.collapsedGroups.has(groupKey);
-
-			items.push({
-				type: "primary-header",
-				groupKey,
-				groupTitle: groupKey,
-				taskCount: tasks.length,
-				groupEntries: [], // No group entries from Bases
-				isCollapsed,
-			});
-
-			if (!isCollapsed) {
-				for (const task of tasks) {
-					items.push({ type: "task", task, groupKey });
-				}
-			}
-		}
+		const items = buildTaskListSubPropertyRenderItems(groupedTasks, this.collapsedGroups);
 
 		// Decide whether to use virtual scrolling
 		const shouldUseVirtualScrolling = items.length >= this.VIRTUAL_SCROLL_THRESHOLD;
@@ -1739,8 +1444,23 @@ export class TaskListView extends BasesViewBase {
 		const cardOptions = this.getCardOptions(targetDate);
 
 		// Build flattened list of items using shared method
-		const items = this.buildGroupedRenderItems(groups, filteredTasks);
-		this.setSortScopeCandidatePaths(this.buildGroupedScopePaths(groups, taskNotes));
+		const pathToProps = this.subGroupPropertyId
+			? buildTaskListPathProperties(this.dataAdapter.extractDataItems())
+			: new Map<string, Record<string, unknown>>();
+		const items = buildTaskListGroupedRenderItems({
+			groups,
+			taskNotes: filteredTasks,
+			subGroupPropertyId: this.subGroupPropertyId,
+			pathToProps,
+			collapsedGroups: this.collapsedGroups,
+			collapsedSubGroups: this.collapsedSubGroups,
+			convertGroupKeyToString: (key) => this.dataAdapter.convertGroupKeyToString(key),
+		});
+		this.setSortScopeCandidatePaths(
+			buildTaskListGroupedScopePaths(groups, taskNotes, (key) =>
+				this.dataAdapter.convertGroupKeyToString(key)
+			)
+		);
 
 		// Use virtual scrolling if we have many items
 		const shouldUseVirtualScrolling = items.length >= this.VIRTUAL_SCROLL_THRESHOLD;
@@ -2261,12 +1981,32 @@ export class TaskListView extends BasesViewBase {
 		if (!this.data?.data) return;
 
 		const dataItems = this.dataAdapter.extractDataItems();
-		await this.computeFormulas(dataItems);
+		computeBasesFormulas(this.data, dataItems);
 		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
-		const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
 
-		// Build flattened list of items using shared method
-		const items = this.buildGroupedRenderItems(groups, taskNotes);
+		const pathToProps = this.subGroupPropertyId
+			? buildTaskListPathProperties(dataItems)
+			: new Map<string, Record<string, unknown>>();
+		const items =
+			!this.dataAdapter.isGrouped() && this.subGroupPropertyId
+				? buildTaskListSubPropertyRenderItems(
+						groupTasksByTaskListSubProperty(
+							taskNotes,
+							this.subGroupPropertyId,
+							pathToProps
+						),
+						this.collapsedGroups
+					)
+				: buildTaskListGroupedRenderItems({
+						groups: this.dataAdapter.getGroupedData() as TaskListGroup[],
+						taskNotes,
+						subGroupPropertyId: this.subGroupPropertyId,
+						pathToProps,
+						collapsedGroups: this.collapsedGroups,
+						collapsedSubGroups: this.collapsedSubGroups,
+						convertGroupKeyToString: (key) =>
+							this.dataAdapter.convertGroupKeyToString(key),
+					});
 
 		// Update virtual scroller with new items
 		if (this.useVirtualScrolling && this.virtualScroller) {
@@ -2659,127 +2399,6 @@ export class TaskListView extends BasesViewBase {
 			this.virtualScroller.destroy();
 			this.virtualScroller = null;
 		}
-	}
-
-	/**
-	 * Build a map of task path -> properties for fast lookup during grouping.
-	 * Similar to KanbanView's pattern for swimlane grouping.
-	 * Includes both regular properties and formula results.
-	 */
-	private buildPathToPropsMap(): Map<string, Record<string, unknown>> {
-		const map = new Map<string, Record<string, unknown>>();
-		if (!this.data?.data) return map;
-
-		const dataItems = this.dataAdapter.extractDataItems();
-		for (const item of dataItems) {
-			if (item.path) {
-				// Merge regular properties with formula results
-				const props = { ...(item.properties || {}) };
-
-				appendCachedFormulaOutputs(props, item);
-
-				map.set(item.path, props);
-			}
-		}
-		return map;
-	}
-
-	/**
-	 * Get property value from properties object using property ID.
-	 * Handles TaskInfo properties, Bases property IDs (note.*, task.*, file.*), and formulas (formula.*).
-	 */
-	private getPropertyValue(props: Record<string, unknown>, propertyId: string): unknown {
-		if (!propertyId) return null;
-
-		// Formula properties are stored with their full prefix (formula.NAME)
-		if (propertyId.startsWith("formula.")) {
-			return props[propertyId] ?? null;
-		}
-
-		// Strip prefix (note., task., file.) from property ID
-		const cleanPropertyId = propertyId.replace(/^(note\.|task\.|file\.)/, "");
-
-		// Get value from properties
-		return props[cleanPropertyId] ?? null;
-	}
-
-	/**
-	 * Convert a property value to a display string for grouping.
-	 * Handles null, undefined, arrays, objects, primitives, and Bases Value objects.
-	 */
-	private valueToString(value: unknown): string {
-		if (value === null || value === undefined) {
-			return "None";
-		}
-
-		// Handle Bases Value objects (they have a toString() method and often a type property)
-		// Check for Bases Value object by duck-typing (has toString and is an object with constructor)
-		if (typeof value === "object" && value !== null && typeof value.toString === "function") {
-			const basesValue = value as BasesDisplayValue;
-			// Check if it's a Bases NullValue
-			if (
-				basesValue.constructor?.name === "NullValue" ||
-				(basesValue.isTruthy && !basesValue.isTruthy())
-			) {
-				return "None";
-			}
-
-			// Check if it's a Bases ListValue (array-like)
-			if (basesValue.constructor?.name === "ListValue" || Array.isArray(basesValue.value)) {
-				const arr = basesValue.value || [];
-				if (arr.length === 0) return "None";
-				// Recursively convert each item
-				return arr.map((v) => this.valueToString(v)).join(", ");
-			}
-
-			// For other Bases Value types (StringValue, NumberValue, BooleanValue, DateValue, etc.)
-			// Use their toString() method
-			const str = basesValue.toString();
-			return str || "None";
-		}
-
-		if (typeof value === "string") {
-			return value || "None";
-		}
-
-		if (typeof value === "number") {
-			return String(value);
-		}
-
-		if (typeof value === "boolean") {
-			return value ? "True" : "False";
-		}
-
-		if (Array.isArray(value)) {
-			return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
-		}
-
-		return stringifyUnknown(value) || "None";
-	}
-
-	/**
-	 * Group tasks by a sub-property for nested grouping.
-	 * Returns a Map of sub-group key -> tasks.
-	 */
-	private groupTasksBySubProperty(
-		tasks: TaskInfo[],
-		propertyId: string,
-		pathToProps: Map<string, Record<string, unknown>>
-	): Map<string, TaskInfo[]> {
-		const subGroups = new Map<string, TaskInfo[]>();
-
-		for (const task of tasks) {
-			const props = pathToProps.get(task.path) || {};
-			const subValue = this.getPropertyValue(props, propertyId);
-			const subKey = this.valueToString(subValue);
-
-			if (!subGroups.has(subKey)) {
-				subGroups.set(subKey, []);
-			}
-			subGroups.get(subKey)!.push(task);
-		}
-
-		return subGroups;
 	}
 
 	private buildTaskSignature(task: TaskInfo): string {

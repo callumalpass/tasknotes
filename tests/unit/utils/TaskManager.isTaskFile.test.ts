@@ -18,10 +18,8 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { FilterUtils } from '../../../src/utils/FilterUtils';
+import { isTaskFrontmatter } from '../../../src/utils/taskIdentification';
 
-// Replicate the exact isTaskFile logic from TaskManager to test in isolation
-// without needing to construct the full TaskManager with App/Settings dependencies.
 interface IsTaskFileSettings {
 	taskIdentificationMethod: 'tag' | 'property';
 	taskTag: string;
@@ -30,35 +28,14 @@ interface IsTaskFileSettings {
 }
 
 function isTaskFile(
-	frontmatter: Record<string, unknown> | null | undefined,
+	frontmatter: unknown,
 	settings: IsTaskFileSettings
 ): boolean {
-	if (!frontmatter) return false;
-
-	if (settings.taskIdentificationMethod === 'property') {
-		const propName = settings.taskPropertyName;
-		const propValue = settings.taskPropertyValue;
-		if (!propName || !propValue) return false;
-
-		const frontmatterValue = frontmatter[propName];
-		if (frontmatterValue === undefined) return false;
-
-		if (Array.isArray(frontmatterValue)) {
-			return frontmatterValue.some(
-				(val: unknown) => val === propValue
-			);
-		}
-		return frontmatterValue === propValue;
-	} else {
-		// Tag-based method (the fixed version)
-		if (!Array.isArray(frontmatter.tags)) return false;
-		return frontmatter.tags.some((tag: string) => {
-			if (typeof tag !== 'string') return false;
-			// Obsidian metadata cache prepends '#' to frontmatter tags
-			const cleanTag = tag.startsWith('#') ? tag.slice(1) : tag;
-			return FilterUtils.matchesHierarchicalTagExact(cleanTag, settings.taskTag);
-		});
-	}
+	return isTaskFrontmatter(frontmatter, {
+		taskPropertyName: '',
+		taskPropertyValue: '',
+		...settings,
+	});
 }
 
 describe('TaskManager.isTaskFile - tag hash prefix handling', () => {
@@ -167,6 +144,10 @@ describe('TaskManager.isTaskFile - tag hash prefix handling', () => {
 			expect(isTaskFile(frontmatter, tagSettings)).toBe(false);
 		});
 
+		it('should return false for array frontmatter', () => {
+			expect(isTaskFile([{ tags: ['task'] }], tagSettings)).toBe(false);
+		});
+
 		it('should not strip # from tags that are just "#"', () => {
 			const frontmatter = { tags: ['#'] };
 			expect(isTaskFile(frontmatter, tagSettings)).toBe(false);
@@ -201,6 +182,29 @@ describe('TaskManager.isTaskFile - tag hash prefix handling', () => {
 		it('should handle array property values', () => {
 			const frontmatter = { type: ['note', 'task'] };
 			expect(isTaskFile(frontmatter, propSettings)).toBe(true);
+		});
+
+		it('should match boolean frontmatter against boolean-like settings', () => {
+			const settings: IsTaskFileSettings = {
+				taskIdentificationMethod: 'property',
+				taskPropertyName: 'isTask',
+				taskPropertyValue: 'true',
+				taskTag: 'task',
+			};
+
+			expect(isTaskFile({ isTask: true }, settings)).toBe(true);
+			expect(isTaskFile({ isTask: false }, settings)).toBe(false);
+		});
+
+		it('should match boolean list values against boolean-like settings', () => {
+			const settings: IsTaskFileSettings = {
+				taskIdentificationMethod: 'property',
+				taskPropertyName: 'flags',
+				taskPropertyValue: 'true',
+				taskTag: 'task',
+			};
+
+			expect(isTaskFile({ flags: ['note', true] }, settings)).toBe(true);
 		});
 	});
 });

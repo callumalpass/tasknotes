@@ -2,6 +2,7 @@ import { Reminder, TaskCreationData, TaskDependency } from "../types";
 import { getCurrentTimestamp } from "../utils/dateUtils";
 import { sanitizeTags } from "../utils/helpers";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
+import { buildCustomFrontmatter } from "./taskModalUserFields";
 
 interface DependencyItem {
 	dependency: TaskDependency;
@@ -109,16 +110,4 @@ export function buildCreationBlockingUpdates(
 	});
 
 	return { added, raw, unresolved };
-}
-
-function buildCustomFrontmatter(userFields: Record<string, unknown>): Record<string, unknown> {
-	const customFrontmatter: Record<string, unknown> = {};
-
-	for (const [fieldKey, fieldValue] of Object.entries(userFields)) {
-		if (fieldValue !== null && fieldValue !== undefined && fieldValue !== "") {
-			customFrontmatter[fieldKey] = fieldValue;
-		}
-	}
-
-	return customFrontmatter;
 }

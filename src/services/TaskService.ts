@@ -4,48 +4,67 @@ import {
 	TaskCreationData,
 	TaskDependency,
 	TaskInfo,
-	TimeEntry,
 	IWebhookNotifier,
 } from "../types";
 import { AutoArchiveService } from "./AutoArchiveService";
 import { Notice, TFile, normalizePath } from "obsidian";
 import { TemplateData, processTemplate } from "../utils/templateProcessor";
 import {
-	addDTSTARTToRecurrenceRule,
-	updateDTSTARTInRecurrenceRule,
-	updateToNextScheduledOccurrence,
-} from "../core/recurrence";
-import {
-	calculateDefaultDate,
-	calculateDefaultDateTime,
 	ensureFolderExists,
 	splitFrontmatterAndBody,
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";
 import {
-	DEFAULT_DEPENDENCY_RELTYPE,
 	formatDependencyLink,
-	normalizeDependencyEntry,
 	resolveDependencyEntry,
-	serializeDependencies,
 } from "../utils/dependencyUtils";
 import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
 import {
-	formatDateForStorage,
-	getDatePart,
 	getCurrentDateString,
 	getCurrentTimestamp,
-	getTodayLocal,
-	createUTCDateFromLocalCalendarDate,
-	parseDateToUTC,
 } from "../utils/dateUtils";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
-import type { UserMappedField } from "../types/settings";
 import { TaskCreationService } from "./task-service/TaskCreationService";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
+import { applyTaskCreationDefaults as applyTaskCreationDefaultsToData } from "./task-service/taskCreationDefaults";
+import {
+	sanitizeTaskTitleForFilename,
+	sanitizeTaskTitleForStorage,
+} from "./task-service/taskTitleSanitizer";
+import { runTaskPropertyChangeSideEffects } from "./task-service/taskPropertyChangeSideEffects";
+import {
+	applyTaskPropertyFrontmatterChange,
+	buildTaskPropertyUpdatePlan,
+	updateCompletedDateFrontmatter,
+} from "./task-service/taskPropertyUpdate";
+import {
+	applyTaskArchiveFrontmatterChange,
+	buildTaskArchiveMovePlan,
+	buildTaskArchiveState,
+} from "./task-service/taskArchivePlanning";
+import {
+	applyDeleteTimeEntryFrontmatterChange,
+	applyStartTimeTrackingFrontmatterChange,
+	applyStopTimeTrackingFrontmatterChange,
+	buildDeleteTimeEntryPlan,
+	buildStartTimeTrackingPlan,
+	buildStopTimeTrackingPlan,
+} from "./task-service/taskTimeTrackingPlanning";
+import {
+	applyRecurringTaskCompleteFrontmatterChange,
+	applyRecurringTaskSkippedFrontmatterChange,
+	buildRecurringTaskCompletePlan,
+	buildRecurringTaskSkippedPlan,
+	getRecurringTaskActionDate,
+} from "./task-service/taskRecurringPlanning";
+import {
+	buildBlockedByTaskUpdate,
+	buildBlockingRelationshipPathChanges,
+	computeBlockedByUpdate,
+} from "./task-service/taskBlockingRelationships";
 
 export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
@@ -57,12 +76,13 @@ export class TaskService {
 		this.taskCreationService = new TaskCreationService({
 			plugin: this.plugin,
 			webhookNotifier: this.webhookNotifier,
-			applyTaskCreationDefaults: (taskData) => this.applyTaskCreationDefaults(taskData),
+			applyTaskCreationDefaults: (taskData) =>
+				Promise.resolve(applyTaskCreationDefaultsToData(taskData, this.plugin.settings)),
 			applyTemplate: (taskData) => this.applyTemplate(taskData),
 			processFolderTemplate: (folderTemplate, taskData, date) =>
 				this.processFolderTemplate(folderTemplate, taskData, date),
-			sanitizeTitleForFilename: (input) => this.sanitizeTitleForFilename(input),
-			sanitizeTitleForStorage: (input) => this.sanitizeTitleForStorage(input),
+			sanitizeTitleForFilename: sanitizeTaskTitleForFilename,
+			sanitizeTitleForStorage: sanitizeTaskTitleForStorage,
 		});
 		this.taskUpdateService = new TaskUpdateService({
 			plugin: this.plugin,
@@ -110,79 +130,6 @@ export class TaskService {
 	}
 
 	/**
-	 * Sanitize title by removing problematic characters that could cause issues in filenames
-	 * This is used when storeTitleInFilename is true, to ensure the title is safe for filenames
-	 */
-	private sanitizeTitleForFilename(input: string): string {
-		if (!input || typeof input !== "string") {
-			return "untitled";
-		}
-
-		try {
-			// Remove or replace problematic characters
-			let sanitized = input
-				.trim()
-				// Replace multiple spaces with single space
-				.replace(/\s+/g, " ")
-				// Remove characters that are problematic in filenames and content
-				.replace(/[<>:"/\\|?*#[\]]/g, "")
-				// Remove control characters separately
-				.replace(/./g, (char) => {
-					const code = char.charCodeAt(0);
-					return code <= 31 || (code >= 127 && code <= 159) ? "" : char;
-				})
-				// Remove leading/trailing dots
-				.replace(/^\.+|\.+$/g, "")
-				// Final trim in case we removed characters at the edges
-				.trim();
-
-			// Additional validation
-			if (!sanitized || sanitized.length === 0) {
-				sanitized = "untitled";
-			}
-
-			return sanitized;
-		} catch (error) {
-			console.error("Error sanitizing title:", error);
-			return "untitled";
-		}
-	}
-
-	/**
-	 * Minimal sanitization for titles stored in frontmatter (not used in filename)
-	 * Only removes control characters and normalizes whitespace, preserving special characters like ?
-	 */
-	private sanitizeTitleForStorage(input: string): string {
-		if (!input || typeof input !== "string") {
-			return "untitled";
-		}
-
-		try {
-			let sanitized = input
-				.trim()
-				// Replace multiple spaces with single space
-				.replace(/\s+/g, " ")
-				// Remove control characters only
-				.replace(/./g, (char) => {
-					const code = char.charCodeAt(0);
-					return code <= 31 || (code >= 127 && code <= 159) ? "" : char;
-				})
-				// Final trim in case we removed characters at the edges
-				.trim();
-
-			// Additional validation
-			if (!sanitized || sanitized.length === 0) {
-				sanitized = "untitled";
-			}
-
-			return sanitized;
-		} catch (error) {
-			console.error("Error sanitizing title:", error);
-			return "untitled";
-		}
-	}
-
-	/**
 	 * Set webhook notifier for triggering webhook events
 	 * Called after HTTPAPIService is initialized to avoid circular dependencies
 	 */
@@ -205,18 +152,6 @@ export class TaskService {
 		if (typeof value === "string") return value;
 		if (typeof value === "number") return String(value);
 		return "";
-	}
-
-	private getUserFieldCreationDefault(
-		field: UserMappedField
-	): string | number | boolean | string[] | undefined {
-		if (field.defaultValue !== undefined) {
-			return field.defaultValue;
-		}
-		if (field.type === "boolean") {
-			return false;
-		}
-		return undefined;
 	}
 
 	/**
@@ -368,116 +303,6 @@ export class TaskService {
 	}
 
 	/**
-	 * Apply task creation defaults from settings to task data
-	 * This includes due date, scheduled date, contexts, projects, tags,
-	 * time estimate, recurrence, reminders, and user field defaults.
-	 */
-	private async applyTaskCreationDefaults(taskData: TaskCreationData): Promise<TaskCreationData> {
-		const defaults = this.plugin.settings.taskCreationDefaults;
-		const result = { ...taskData };
-
-		// Apply default due date if not provided.
-		// Use === undefined (not !result.due) so that an explicit null from the API
-		// is treated as "clear this field" rather than "apply the default".
-		if (result.due === undefined && defaults.defaultDueDate !== "none") {
-			result.due = calculateDefaultDateTime(defaults.defaultDueDate, defaults.defaultDueTime);
-		}
-
-		// Apply default scheduled date if not provided.
-		// Same null-vs-undefined distinction as due above.
-		if (result.scheduled === undefined && defaults.defaultScheduledDate !== "none") {
-			result.scheduled = calculateDefaultDateTime(
-				defaults.defaultScheduledDate,
-				defaults.defaultScheduledTime
-			);
-		}
-
-		// Apply default contexts if not provided
-		if (!result.contexts && defaults.defaultContexts) {
-			result.contexts = defaults.defaultContexts
-				.split(",")
-				.map((c) => c.trim())
-				.filter((c) => c);
-		}
-
-		// Apply default projects if not provided
-		if (!result.projects && defaults.defaultProjects) {
-			result.projects = defaults.defaultProjects
-				.split(",")
-				.map((p) => p.trim())
-				.filter((p) => p);
-		}
-
-		// Apply default tags if not provided
-		if (!result.tags && defaults.defaultTags) {
-			result.tags = defaults.defaultTags
-				.split(",")
-				.map((t) => t.trim())
-				.filter((t) => t);
-		}
-
-		// Apply default time estimate if not provided
-		if (!result.timeEstimate && defaults.defaultTimeEstimate > 0) {
-			result.timeEstimate = defaults.defaultTimeEstimate;
-		}
-
-		// Apply default recurrence if not provided
-		if (
-			!result.recurrence &&
-			defaults.defaultRecurrence &&
-			defaults.defaultRecurrence !== "none"
-		) {
-			const freqMap: Record<string, string> = {
-				daily: "FREQ=DAILY",
-				weekly: "FREQ=WEEKLY",
-				monthly: "FREQ=MONTHLY",
-				yearly: "FREQ=YEARLY",
-			};
-			result.recurrence = freqMap[defaults.defaultRecurrence] || undefined;
-		}
-
-		// Apply default reminders if not provided
-		if (
-			!result.reminders &&
-			defaults.defaultReminders &&
-			defaults.defaultReminders.length > 0
-		) {
-			const { convertDefaultRemindersToReminders } = await import("../utils/settingsUtils");
-			result.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
-		}
-
-		// Apply default values for user-defined fields
-		const userFields = this.plugin.settings.userFields;
-		if (userFields && userFields.length > 0) {
-			if (!result.customFrontmatter) {
-				result.customFrontmatter = {};
-			}
-			for (const field of userFields) {
-				const defaultValue = this.getUserFieldCreationDefault(field);
-				// Only apply default if the field isn't already set
-				if (
-					defaultValue !== undefined &&
-					result.customFrontmatter[field.key] === undefined
-				) {
-					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
-					if (field.type === "date" && typeof defaultValue === "string") {
-						const calculatedDate = calculateDefaultDate(
-							defaultValue as "none" | "today" | "tomorrow" | "next-week"
-						);
-						if (calculatedDate) {
-							result.customFrontmatter[field.key] = calculatedDate;
-						}
-					} else {
-						result.customFrontmatter[field.key] = defaultValue;
-					}
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
 	 * Toggle the status of a task between completed and open
 	 */
 	async toggleStatus(task: TaskInfo): Promise<TaskInfo> {
@@ -521,25 +346,15 @@ export class TaskService {
 			const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 
 			// Step 1: Construct new state in memory using fresh data
-			const updatedTask = { ...freshTask } as Record<string, unknown>;
-			const normalizedValue: unknown =
-				property === "status"
-					? this.normalizeStatusValue(value)
-					: property === "blockedBy"
-						? this.normalizeBlockedByValue(value)
-						: value;
-			updatedTask[property] = normalizedValue;
-			updatedTask.dateModified = getCurrentTimestamp();
-
-			// Handle derivative changes for status updates
-			if (property === "status" && !freshTask.recurrence) {
-				const normalizedStatus = this.normalizeStatusValue(normalizedValue);
-				if (this.plugin.statusManager.isCompletedStatus(normalizedStatus)) {
-					updatedTask.completedDate = getCurrentDateString();
-				} else {
-					updatedTask.completedDate = undefined;
-				}
-			}
+			const updatePlan = buildTaskPropertyUpdatePlan({
+				freshTask,
+				property,
+				value,
+				currentTimestamp: getCurrentTimestamp(),
+				currentDateString: getCurrentDateString(),
+				normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
+				isCompletedStatus: (status) => this.plugin.statusManager.isCompletedStatus(status),
+			});
 
 			// Step 2: Persist to file
 			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -547,55 +362,36 @@ export class TaskService {
 				const fieldName = this.plugin.fieldMapper.toUserField(
 					property as keyof import("../types").FieldMapping
 				);
-
-				if (property === "status") {
-					// Coerce boolean-like status strings to actual booleans for compatibility with Obsidian checkbox properties
-					const normalizedStatus = this.normalizeStatusValue(normalizedValue);
-					const lower = normalizedStatus.toLowerCase();
-					const coercedValue =
-						lower === "true" || lower === "false" ? lower === "true" : normalizedStatus;
-					frontmatter[fieldName] = coercedValue;
-
-					// Update completed date when marking as complete (non-recurring tasks only)
-					// FIX: Use freshTask instead of stale task to check recurrence
-					this.updateCompletedDateInFrontmatter(
-						frontmatter,
-						normalizedStatus,
-						!!freshTask.recurrence
-					);
-				} else if ((property === "due" || property === "scheduled") && !value) {
-					// Remove empty due/scheduled dates
-					delete frontmatter[fieldName];
-				} else if (property === "blockedBy") {
-					const dependencies = Array.isArray(normalizedValue)
-						? (normalizedValue as TaskDependency[])
-						: [];
-					if (dependencies.length > 0) {
-						frontmatter[fieldName] = serializeDependencies(dependencies);
-					} else {
-						delete frontmatter[fieldName];
-					}
-				} else {
-					frontmatter[fieldName] = normalizedValue;
-				}
-
-				// Always update the modification timestamp using field mapper
 				const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
-				frontmatter[dateModifiedField] = updatedTask.dateModified;
+				const completedDateField = this.plugin.fieldMapper.toUserField("completedDate");
+				applyTaskPropertyFrontmatterChange({
+					frontmatter,
+					property,
+					fieldName,
+					rawValue: value,
+					normalizedValue: updatePlan.normalizedValue,
+					dateModified: updatePlan.dateModified,
+					dateModifiedField,
+					completedDateField,
+					isRecurring: !!freshTask.recurrence,
+					normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
+					isCompletedStatus: (status) => this.plugin.statusManager.isCompletedStatus(status),
+					currentDateString: getCurrentDateString(),
+				});
 			});
 
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
 			await this.applyPropertyChangeSideEffects(
 				file,
 				task,
-				updatedTask as unknown as TaskInfo,
+				updatePlan.updatedTask,
 				property,
 				task[property],
-				normalizedValue
+				updatePlan.normalizedValue
 			);
 
 			// Step 4: Return authoritative data
-			return updatedTask as unknown as TaskInfo;
+			return updatePlan.updatedTask;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -609,19 +405,6 @@ export class TaskService {
 
 			throw new Error(`Failed to update task property: ${errorMessage}`);
 		}
-	}
-
-	private normalizeBlockedByValue(value: unknown): TaskDependency[] | undefined {
-		if (value === null || value === undefined) {
-			return undefined;
-		}
-
-		const rawEntries = Array.isArray(value) ? value : [value];
-		const normalized = rawEntries
-			.map((entry) => normalizeDependencyEntry(entry))
-			.filter((entry): entry is TaskDependency => !!entry);
-
-		return normalized.length > 0 ? normalized : undefined;
 	}
 
 	/**
@@ -639,141 +422,25 @@ export class TaskService {
 		oldValue: unknown,
 		newValue: unknown
 	): Promise<void> {
-		// Update cache
-		try {
-			if (this.plugin.cacheManager.waitForFreshTaskData) {
-				await this.plugin.cacheManager.waitForFreshTaskData(file);
-			}
-			this.plugin.cacheManager.updateTaskInfoInCache(originalTask.path, updatedTask);
-		} catch (cacheError) {
-			console.error("Error updating task cache:", {
-				error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-				taskPath: originalTask.path,
-			});
-		}
-
-		// Notify system of change
-		try {
-			this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-				path: originalTask.path,
+		await runTaskPropertyChangeSideEffects(
+			{
+				cacheManager: this.plugin.cacheManager,
+				emitter: this.plugin.emitter,
+				statusManager: this.plugin.statusManager,
+				taskCalendarSyncService: this.plugin.taskCalendarSyncService,
+				webhookNotifier: this.webhookNotifier,
+				autoArchiveService: this.autoArchiveService,
+				normalizeStatusValue: (value) => this.normalizeStatusValue(value),
+			},
+			{
+				file,
 				originalTask,
 				updatedTask,
-			});
-
-			// If status changed, trigger UI updates for dependent tasks
-			if (property === "status") {
-				const wasCompleted = this.plugin.statusManager.isCompletedStatus(
-					this.normalizeStatusValue(oldValue)
-				);
-				const isNowCompleted = this.plugin.statusManager.isCompletedStatus(
-					this.normalizeStatusValue(newValue)
-				);
-
-				if (wasCompleted !== isNowCompleted) {
-					const dependentTaskPaths = this.plugin.cacheManager.getBlockedTaskPaths(
-						originalTask.path
-					);
-
-					for (const dependentPath of dependentTaskPaths) {
-						try {
-							const dependentTask =
-								await this.plugin.cacheManager.getTaskInfo(dependentPath);
-							if (dependentTask) {
-								this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-									path: dependentPath,
-									originalTask: dependentTask,
-									updatedTask: dependentTask,
-								});
-							}
-						} catch (dependentError) {
-							console.error(
-								`Error triggering update for dependent task ${dependentPath}:`,
-								dependentError
-							);
-						}
-					}
-				}
+				property,
+				oldValue,
+				newValue,
 			}
-		} catch (eventError) {
-			console.error("Error emitting task update event:", {
-				error: eventError instanceof Error ? eventError.message : String(eventError),
-				taskPath: originalTask.path,
-			});
-		}
-
-			// Trigger webhooks
-			if (this.webhookNotifier) {
-				try {
-					const wasCompleted =
-						property === "status" &&
-						this.plugin.statusManager.isCompletedStatus(
-							this.normalizeStatusValue(oldValue)
-						);
-					const isCompleted =
-						property === "status" &&
-						this.plugin.statusManager.isCompletedStatus(
-							this.normalizeStatusValue(newValue)
-						);
-
-				if (property === "status" && !wasCompleted && isCompleted) {
-					await this.webhookNotifier.triggerWebhook("task.completed", {
-						task: updatedTask,
-					});
-				} else {
-					await this.webhookNotifier.triggerWebhook("task.updated", {
-						task: updatedTask,
-						previous: originalTask,
-					});
-				}
-			} catch (error) {
-				console.warn("Failed to trigger webhook for property update:", error);
-			}
-		}
-
-			// Sync to Google Calendar if enabled
-			if (this.plugin.taskCalendarSyncService?.isEnabled()) {
-				const wasCompleted =
-					property === "status" &&
-					this.plugin.statusManager.isCompletedStatus(
-						this.normalizeStatusValue(oldValue)
-					);
-				const isCompleted =
-					property === "status" &&
-					this.plugin.statusManager.isCompletedStatus(
-						this.normalizeStatusValue(newValue)
-					);
-
-			const syncPromise =
-				property === "status" && !wasCompleted && isCompleted
-					? this.plugin.taskCalendarSyncService.completeTaskInCalendar(updatedTask)
-					: this.plugin.taskCalendarSyncService.updateTaskInCalendar(
-							updatedTask,
-							originalTask
-						);
-
-			syncPromise.catch((error) => {
-				console.warn("Failed to sync task update to Google Calendar:", error);
-			});
-		}
-
-		// Handle auto-archive if status property changed
-		if (this.autoArchiveService && property === "status" && newValue !== oldValue) {
-			try {
-				const statusConfig = this.plugin.statusManager.getStatusConfig(newValue as string);
-				if (statusConfig) {
-					if (statusConfig.autoArchive) {
-						await this.autoArchiveService.scheduleAutoArchive(
-							updatedTask,
-							statusConfig
-						);
-					} else {
-						await this.autoArchiveService.cancelAutoArchive(updatedTask.path);
-					}
-				}
-			} catch (error) {
-				console.warn("Failed to handle auto-archive for status property change:", error);
-			}
-		}
+		);
 	}
 
 	/**
@@ -786,145 +453,67 @@ export class TaskService {
 		}
 
 		const archiveTag = this.plugin.fieldMapper.getMapping().archiveTag;
-		const isCurrentlyArchived = task.archived;
-
-		// Step 1: Construct new state in memory
-		const updatedTask = { ...task };
-		updatedTask.archived = !isCurrentlyArchived;
-		updatedTask.dateModified = getCurrentTimestamp();
-
-		// Update tags array to include/exclude archive tag
-		if (!updatedTask.tags) {
-			updatedTask.tags = [];
-		}
-
-		if (isCurrentlyArchived) {
-			// Remove archive tag
-			updatedTask.tags = updatedTask.tags.filter((tag) => tag !== archiveTag);
-		} else {
-			// Add archive tag if not present
-			if (!updatedTask.tags.includes(archiveTag)) {
-				updatedTask.tags = [...updatedTask.tags, archiveTag];
-			}
-		}
+		const archivePlan = buildTaskArchiveState(task, archiveTag, getCurrentTimestamp());
+		const { updatedTask, isCurrentlyArchived, dateModified } = archivePlan;
 
 		// Step 2: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
-
-			// Toggle archived property (note: archived is handled via tags, not as a separate field)
-			if (isCurrentlyArchived) {
-				// Remove archive tag from tags array if present
-				if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
-					frontmatter.tags = frontmatter.tags.filter((tag: string) => tag !== archiveTag);
-					if (frontmatter.tags.length === 0) {
-						delete frontmatter.tags;
-					}
-				}
-			} else {
-				// Add archive tag to tags array
-				if (!frontmatter.tags) {
-					frontmatter.tags = [];
-				} else if (!Array.isArray(frontmatter.tags)) {
-					frontmatter.tags = [frontmatter.tags];
-				}
-
-				if (!frontmatter.tags.includes(archiveTag)) {
-					frontmatter.tags.push(archiveTag);
-				}
-			}
-
-			// Always update the modification timestamp using field mapper
-			frontmatter[dateModifiedField] = updatedTask.dateModified;
+			applyTaskArchiveFrontmatterChange({
+				frontmatter,
+				archiveTag,
+				isCurrentlyArchived,
+				dateModified,
+				dateModifiedField,
+			});
 		});
 
 		// Step 2.5: Move file based on archive operation and settings
 		let movedFile = file;
-		if (this.plugin.settings.moveArchivedTasks) {
+		const movePlan = buildTaskArchiveMovePlan({
+			isCurrentlyArchived,
+			moveArchivedTasks: this.plugin.settings.moveArchivedTasks,
+			archiveFolderTemplate: this.plugin.settings.archiveFolder,
+			tasksFolderTemplate: this.plugin.settings.tasksFolder,
+			fileName: file.name,
+			taskData: {
+				title: updatedTask.title || "",
+				priority: updatedTask.priority,
+				status: updatedTask.status,
+				contexts: updatedTask.contexts,
+				projects: updatedTask.projects,
+			},
+			processFolderTemplate: (folderTemplate, taskData) =>
+				this.processFolderTemplate(folderTemplate, taskData),
+		});
+		if (movePlan) {
 			try {
-				if (!isCurrentlyArchived && this.plugin.settings.archiveFolder?.trim()) {
-					// Archiving: Move to archive folder
-					const archiveFolderTemplate = this.plugin.settings.archiveFolder.trim();
-					// Process template variables in archive folder path
-					const archiveFolder = this.processFolderTemplate(archiveFolderTemplate, {
-						title: updatedTask.title || "",
-						priority: updatedTask.priority,
-						status: updatedTask.status,
-						contexts: updatedTask.contexts,
-						projects: updatedTask.projects,
-					});
+				await ensureFolderExists(this.plugin.app.vault, movePlan.destinationFolder);
 
-					// Ensure archive folder exists
-					await ensureFolderExists(this.plugin.app.vault, archiveFolder);
-
-					// Construct new path in archive folder
-					const newPath = `${archiveFolder}/${file.name}`;
-
-					// Check if file already exists at destination
-					const existingFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
-					if (existingFile) {
-						throw new Error(
-							`A file named "${file.name}" already exists in the archive folder "${archiveFolder}". Cannot move task to avoid overwriting existing file.`
-						);
-					}
-
-					// Move the file
-					await this.plugin.app.fileManager.renameFile(file, newPath);
-
-					// Update the file reference and task path
-					const archivedFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
-					if (!(archivedFile instanceof TFile)) {
-						throw new Error(`Failed to resolve moved task file: ${newPath}`);
-					}
-					movedFile = archivedFile;
-					updatedTask.path = newPath;
-
-					// Clear old cache entry and update path in task object
-					this.plugin.cacheManager.clearCacheEntry(task.path);
-				} else if (isCurrentlyArchived && this.plugin.settings.tasksFolder?.trim()) {
-					// Unarchiving: Move to default tasks folder
-					const tasksFolderTemplate = this.plugin.settings.tasksFolder.trim();
-					const tasksFolder = this.processFolderTemplate(tasksFolderTemplate, {
-						title: updatedTask.title || "",
-						priority: updatedTask.priority,
-						status: updatedTask.status,
-						contexts: updatedTask.contexts,
-						projects: updatedTask.projects,
-					});
-
-					// Ensure tasks folder exists
-					await ensureFolderExists(this.plugin.app.vault, tasksFolder);
-
-					// Construct new path in tasks folder
-					const newPath = `${tasksFolder}/${file.name}`;
-
-					// Check if file already exists at destination
-					const existingFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
-					if (existingFile) {
-						throw new Error(
-							`A file named "${file.name}" already exists in the tasks folder "${tasksFolder}". Cannot move task to avoid overwriting existing file.`
-						);
-					}
-
-					// Move the file
-					await this.plugin.app.fileManager.renameFile(file, newPath);
-
-					// Update the file reference and task path
-					const unarchivedFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
-					if (!(unarchivedFile instanceof TFile)) {
-						throw new Error(`Failed to resolve moved task file: ${newPath}`);
-					}
-					movedFile = unarchivedFile;
-					updatedTask.path = newPath;
-
-					// Clear old cache entry and update path in task object
-					this.plugin.cacheManager.clearCacheEntry(task.path);
+				const existingFile = this.plugin.app.vault.getAbstractFileByPath(movePlan.newPath);
+				if (existingFile) {
+					throw new Error(
+						`A file named "${file.name}" already exists in the ${movePlan.destinationKind} folder "${movePlan.destinationFolder}". Cannot move task to avoid overwriting existing file.`
+					);
 				}
+
+				await this.plugin.app.fileManager.renameFile(file, movePlan.newPath);
+
+				const resolvedMovedFile = this.plugin.app.vault.getAbstractFileByPath(
+					movePlan.newPath
+				);
+				if (!(resolvedMovedFile instanceof TFile)) {
+					throw new Error(`Failed to resolve moved task file: ${movePlan.newPath}`);
+				}
+				movedFile = resolvedMovedFile;
+				updatedTask.path = movePlan.newPath;
+
+				this.plugin.cacheManager.clearCacheEntry(task.path);
 			} catch (moveError) {
 				// If moving fails, show error but don't break the archive operation
 				const errorMessage =
 					moveError instanceof Error ? moveError.message : String(moveError);
-				const operation = isCurrentlyArchived ? "unarchiving" : "archiving";
+				const operation = movePlan.operation;
 				console.error(`Error moving ${operation} task:`, errorMessage);
 				new Notice(
 					this.translate("services.task.notices.moveTaskFailed", {
@@ -1025,45 +614,24 @@ export class TaskService {
 		}
 
 		// Step 1: Construct new state in memory
-		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestamp();
-
-		if (!updatedTask.timeEntries) {
-			updatedTask.timeEntries = [];
-		}
-		updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
-			const sanitizedEntry = { ...entry };
-			delete sanitizedEntry.duration;
-			return sanitizedEntry;
-		});
-
-		const newEntry: TimeEntry = {
-			startTime: new Date().toISOString(),
-			description: "Work session",
-		};
-		updatedTask.timeEntries = [...updatedTask.timeEntries, newEntry];
+		const timeTrackingPlan = buildStartTimeTrackingPlan(
+			task,
+			getCurrentTimestamp(),
+			new Date().toISOString()
+		);
+		const { updatedTask, newEntry } = timeTrackingPlan;
 
 		// Step 2: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
-
-			if (!frontmatter[timeEntriesField]) {
-				frontmatter[timeEntriesField] = [];
-			}
-			if (Array.isArray(frontmatter[timeEntriesField])) {
-				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map(
-					(entry: TimeEntry) => {
-						const sanitizedEntry = { ...entry };
-						delete sanitizedEntry.duration;
-						return sanitizedEntry;
-					}
-				);
-			}
-
-			// Add new time entry with start time
-			frontmatter[timeEntriesField].push(newEntry);
-			frontmatter[dateModifiedField] = updatedTask.dateModified;
+			applyStartTimeTrackingFrontmatterChange({
+				frontmatter,
+				timeEntriesField,
+				dateModifiedField,
+				newEntry,
+				dateModified: timeTrackingPlan.dateModified,
+			});
 		});
 
 		// Step 3: Wait for fresh data and update cache
@@ -1113,54 +681,28 @@ export class TaskService {
 		if (!activeSession) {
 			throw new Error("No active time tracking session for this task");
 		}
-		const stopTimestamp = new Date().toISOString();
 
 		// Step 1: Construct new state in memory
-		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestamp();
-
-		if (updatedTask.timeEntries && Array.isArray(updatedTask.timeEntries)) {
-			updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
-				const sanitizedEntry = { ...entry };
-				delete sanitizedEntry.duration;
-				return sanitizedEntry;
-			});
-			const entryIndex = updatedTask.timeEntries.findIndex(
-				(entry: TimeEntry) => entry.startTime === activeSession.startTime && !entry.endTime
-			);
-			if (entryIndex !== -1) {
-				updatedTask.timeEntries = [...updatedTask.timeEntries];
-				updatedTask.timeEntries[entryIndex] = {
-					...updatedTask.timeEntries[entryIndex],
-					endTime: stopTimestamp,
-				};
-			}
-		}
+		const timeTrackingPlan = buildStopTimeTrackingPlan(
+			task,
+			activeSession,
+			getCurrentTimestamp(),
+			new Date().toISOString()
+		);
+		const { updatedTask } = timeTrackingPlan;
 
 		// Step 2: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
-
-			if (frontmatter[timeEntriesField] && Array.isArray(frontmatter[timeEntriesField])) {
-				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].map(
-					(entry: TimeEntry) => {
-						const sanitizedEntry = { ...entry };
-						delete sanitizedEntry.duration;
-						return sanitizedEntry;
-					}
-				);
-				// Find and update the active session
-				const entryIndex = frontmatter[timeEntriesField].findIndex(
-					(entry: TimeEntry) =>
-						entry.startTime === activeSession.startTime && !entry.endTime
-				);
-
-				if (entryIndex !== -1) {
-					frontmatter[timeEntriesField][entryIndex].endTime = stopTimestamp;
-				}
-			}
-			frontmatter[dateModifiedField] = updatedTask.dateModified;
+			applyStopTimeTrackingFrontmatterChange({
+				frontmatter,
+				timeEntriesField,
+				dateModifiedField,
+				activeSession,
+				stopTimestamp: timeTrackingPlan.stopTimestamp,
+				dateModified: timeTrackingPlan.dateModified,
+			});
 		});
 
 		// Step 3: Wait for fresh data and update cache
@@ -1218,8 +760,10 @@ export class TaskService {
 		// The current task is the one blocking other tasks.
 		// We need to update the blockedBy field of the tasks that this task is blocking.
 
-		const uniqueRemovals = Array.from(new Set(removedBlockedTaskPaths));
-		const uniqueAdditions = Array.from(new Set(addedBlockedTaskPaths));
+		const { uniqueAdditions, uniqueRemovals } = buildBlockingRelationshipPathChanges(
+			addedBlockedTaskPaths,
+			removedBlockedTaskPaths
+		);
 
 		// Remove current task from the blockedBy field of tasks it's no longer blocking
 		for (const blockedTaskPath of uniqueRemovals) {
@@ -1228,18 +772,13 @@ export class TaskService {
 				continue;
 			}
 
-			const updatedBlockedBy = this.computeBlockedByUpdate(
-				blockedTask,
-				currentTask.path,
-				"remove"
+			const updates = buildBlockedByTaskUpdate(
+				this.computeBlockedByUpdate(blockedTask, currentTask.path, "remove")
 			);
-			if (updatedBlockedBy === null) {
+			if (!updates) {
 				continue;
 			}
 
-			const updates: Partial<TaskInfo> = {
-				blockedBy: updatedBlockedBy.length > 0 ? updatedBlockedBy : undefined,
-			};
 			await this.updateTask(blockedTask, updates);
 		}
 
@@ -1252,17 +791,19 @@ export class TaskService {
 
 			// Don't use the raw entry from the UI since it was created relative to the current task's path
 			// Instead, always generate a new link from the blocked task's perspective
-			const updatedBlockedBy = this.computeBlockedByUpdate(
-				blockedTask,
-				currentTask.path,
-				"add",
-				rawEntries[blockedTaskPath]
+			const updates = buildBlockedByTaskUpdate(
+				this.computeBlockedByUpdate(
+					blockedTask,
+					currentTask.path,
+					"add",
+					rawEntries[blockedTaskPath]
+				)
 			);
-			if (updatedBlockedBy === null) {
+			if (!updates) {
 				continue;
 			}
 
-			await this.updateTask(blockedTask, { blockedBy: updatedBlockedBy });
+			await this.updateTask(blockedTask, updates);
 		}
 	}
 
@@ -1272,56 +813,22 @@ export class TaskService {
 		action: "add" | "remove",
 		rawEntry?: TaskDependency | string
 	): TaskDependency[] | null {
-		const existing = Array.isArray(blockedTask.blockedBy)
-			? blockedTask.blockedBy
-					.map((entry) => normalizeDependencyEntry(entry))
-					.filter((entry): entry is TaskDependency => !!entry)
-			: [];
-
-		if (existing.length === 0 && action === "remove") {
-			return null;
-		}
-
-		let modified = false;
-		let hasExistingEntry = false;
-		const result: TaskDependency[] = [];
-
-		for (const entry of existing) {
-			const resolved = resolveDependencyEntry(this.plugin.app, blockedTask.path, entry);
-			if (resolved && resolved.path === blockingTaskPath) {
-				hasExistingEntry = true;
-				if (action === "remove") {
-					modified = true;
-					continue; // skip to remove
-				}
-			}
-			result.push(entry);
-		}
-
-		if (action === "add" && !hasExistingEntry) {
-			const normalizedIncoming = rawEntry ? normalizeDependencyEntry(rawEntry) : null;
-			const uid = formatDependencyLink(
-				this.plugin.app,
-				blockedTask.path,
-				blockingTaskPath,
-				this.plugin.settings.useFrontmatterMarkdownLinks
-			);
-			const dependency: TaskDependency = {
-				uid,
-				reltype: normalizedIncoming?.reltype ?? DEFAULT_DEPENDENCY_RELTYPE,
-			};
-			if (normalizedIncoming?.gap) {
-				dependency.gap = normalizedIncoming.gap;
-			}
-			result.push(dependency);
-			modified = true;
-		}
-
-		if (!modified) {
-			return null;
-		}
-
-		return result;
+		return computeBlockedByUpdate({
+			blockedTask,
+			blockingTaskPath,
+			action,
+			rawEntry,
+			useFrontmatterMarkdownLinks: this.plugin.settings.useFrontmatterMarkdownLinks,
+			resolveDependencyPath: (sourcePath, entry) =>
+				resolveDependencyEntry(this.plugin.app, sourcePath, entry)?.path ?? null,
+			formatDependencyLink: (sourcePath, targetPath, useMarkdownLinks) =>
+				formatDependencyLink(
+					this.plugin.app,
+					sourcePath,
+					targetPath,
+					useMarkdownLinks
+				),
+		});
 	}
 
 	/**
@@ -1393,16 +900,7 @@ export class TaskService {
 	}
 
 	private getRecurringTaskActionDate(task: TaskInfo, date?: Date): Date {
-		if (date) {
-			return date;
-		}
-
-		if (task.recurrence_anchor !== "completion" && task.scheduled) {
-			return parseDateToUTC(getDatePart(task.scheduled));
-		}
-
-		const todayLocal = getTodayLocal();
-		return createUTCDateFromLocalCalendarDate(todayLocal);
+		return getRecurringTaskActionDate(task, date);
 	}
 
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
@@ -1418,74 +916,14 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
-		const targetDate = this.getRecurringTaskActionDate(freshTask, date);
-		const dateStr = formatDateForStorage(targetDate);
-
-		// Check current completion status for this date using fresh data
-		const completeInstances = Array.isArray(freshTask.complete_instances)
-			? freshTask.complete_instances
-			: [];
-		const currentComplete = completeInstances.includes(dateStr);
-		const newComplete = !currentComplete;
-
-		// Step 1: Construct new state in memory using fresh data
-		const updatedTask = { ...freshTask };
-		updatedTask.dateModified = getCurrentTimestamp();
-
-		if (newComplete) {
-			// Add date to completed instances if not already present
-			if (!completeInstances.includes(dateStr)) {
-				updatedTask.complete_instances = [...completeInstances, dateStr];
-			}
-			// Remove from skipped_instances if present (can't be both completed and skipped)
-			const skippedInstances = Array.isArray(freshTask.skipped_instances)
-				? freshTask.skipped_instances
-				: [];
-			updatedTask.skipped_instances = skippedInstances.filter((d) => d !== dateStr);
-		} else {
-			// Remove date from completed instances
-			updatedTask.complete_instances = completeInstances.filter((d) => d !== dateStr);
-			// Also remove from skipped_instances (marking as incomplete)
-			const skippedInstances = Array.isArray(freshTask.skipped_instances)
-				? freshTask.skipped_instances
-				: [];
-			updatedTask.skipped_instances = skippedInstances.filter((d) => d !== dateStr);
-		}
-
-		// Handle DTSTART in recurrence rule when completing
-		if (newComplete && typeof updatedTask.recurrence === "string") {
-			const recurrenceAnchor = updatedTask.recurrence_anchor || "scheduled";
-
-			if (recurrenceAnchor === "completion") {
-				// For completion-based recurrence, update DTSTART to the completion date
-				// This shifts the anchor point so future occurrences calculate from this completion
-				const updatedRecurrence = updateDTSTARTInRecurrenceRule(
-					updatedTask.recurrence,
-					dateStr
-				);
-				if (updatedRecurrence) {
-					updatedTask.recurrence = updatedRecurrence;
-				}
-			} else if (!updatedTask.recurrence.includes("DTSTART:")) {
-				// For scheduled-based recurrence, just add DTSTART if missing (preserves original anchor)
-				const updatedRecurrence = addDTSTARTToRecurrenceRule(updatedTask);
-				if (updatedRecurrence) {
-					updatedTask.recurrence = updatedRecurrence;
-				}
-			}
-		}
-
-		// Update scheduled date to next uncompleted occurrence
-		const nextDates = updateToNextScheduledOccurrence(
-			updatedTask,
-			this.plugin.settings.maintainDueDateOffsetInRecurring
-		);
-		if (nextDates.scheduled) {
-			updatedTask.scheduled = nextDates.scheduled;
-		}
-		if (nextDates.due) {
-			updatedTask.due = nextDates.due;
-		}
+		const recurringPlan = buildRecurringTaskCompletePlan({
+			freshTask,
+			targetDate: this.getRecurringTaskActionDate(freshTask, date),
+			currentTimestamp: getCurrentTimestamp(),
+			maintainDueDateOffsetInRecurring:
+				this.plugin.settings.maintainDueDateOffsetInRecurring,
+		});
+		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
 
 		// Step 2: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -1496,47 +934,16 @@ export class TaskService {
 			const dueField = this.plugin.fieldMapper.toUserField("due");
 			const recurrenceField = this.plugin.fieldMapper.toUserField("recurrence");
 
-			// Ensure complete_instances array exists
-			if (!frontmatter[completeInstancesField]) {
-				frontmatter[completeInstancesField] = [];
-			}
-
-			// Ensure skipped_instances array exists
-			if (!frontmatter[skippedInstancesField]) {
-				frontmatter[skippedInstancesField] = [];
-			}
-
-			const completeDates: string[] = frontmatter[completeInstancesField];
-
-			if (newComplete) {
-				// Add date to completed instances if not already present
-				if (!completeDates.includes(dateStr)) {
-					frontmatter[completeInstancesField] = [...completeDates, dateStr];
-				}
-			} else {
-				// Remove date from completed instances
-				frontmatter[completeInstancesField] = completeDates.filter((d) => d !== dateStr);
-			}
-
-			// Update skipped_instances (remove when completing or marking incomplete)
-			frontmatter[skippedInstancesField] = updatedTask.skipped_instances || [];
-
-			// Update recurrence field if it was updated with DTSTART
-			if (updatedTask.recurrence !== freshTask.recurrence) {
-				frontmatter[recurrenceField] = updatedTask.recurrence;
-			}
-
-			// Update scheduled date if it changed
-			if (updatedTask.scheduled) {
-				frontmatter[scheduledField] = updatedTask.scheduled;
-			}
-
-			// Update due date if it changed
-			if (updatedTask.due) {
-				frontmatter[dueField] = updatedTask.due;
-			}
-
-			frontmatter[dateModifiedField] = updatedTask.dateModified;
+			applyRecurringTaskCompleteFrontmatterChange({
+				frontmatter,
+				completeInstancesField,
+				skippedInstancesField,
+				dateModifiedField,
+				scheduledField,
+				dueField,
+				recurrenceField,
+				plan: recurringPlan,
+			});
 		});
 
 		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
@@ -1638,48 +1045,14 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
-		const targetDate = this.getRecurringTaskActionDate(freshTask, date);
-		const dateStr = formatDateForStorage(targetDate);
-
-		// Check current skip status for this date
-		const skippedInstances = Array.isArray(freshTask.skipped_instances)
-			? freshTask.skipped_instances
-			: [];
-		const currentlySkipped = skippedInstances.includes(dateStr);
-		const newSkipped = !currentlySkipped;
-
-		// Step 1: Construct new state in memory
-		const updatedTask = { ...freshTask };
-		updatedTask.dateModified = getCurrentTimestamp();
-
-		if (newSkipped) {
-			// Mark as skipped
-			if (!skippedInstances.includes(dateStr)) {
-				updatedTask.skipped_instances = [...skippedInstances, dateStr];
-			}
-
-			// Remove from complete_instances if present (can't be both)
-			const completeInstances = Array.isArray(freshTask.complete_instances)
-				? freshTask.complete_instances
-				: [];
-			updatedTask.complete_instances = completeInstances.filter((d) => d !== dateStr);
-		} else {
-			// Unskip
-			updatedTask.skipped_instances = skippedInstances.filter((d) => d !== dateStr);
-		}
-
-		// Step 2: Update scheduled date to next uncompleted occurrence
-		// (This will skip over both completed AND skipped instances)
-		const nextDates = updateToNextScheduledOccurrence(
-			updatedTask,
-			this.plugin.settings.maintainDueDateOffsetInRecurring
-		);
-		if (nextDates.scheduled) {
-			updatedTask.scheduled = nextDates.scheduled;
-		}
-		if (nextDates.due) {
-			updatedTask.due = nextDates.due;
-		}
+		const recurringPlan = buildRecurringTaskSkippedPlan({
+			freshTask,
+			targetDate: this.getRecurringTaskActionDate(freshTask, date),
+			currentTimestamp: getCurrentTimestamp(),
+			maintainDueDateOffsetInRecurring:
+				this.plugin.settings.maintainDueDateOffsetInRecurring,
+		});
+		const { updatedTask, dateStr, newSkipped, targetDate } = recurringPlan;
 
 		// Step 3: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -1689,29 +1062,15 @@ export class TaskService {
 			const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 			const dueField = this.plugin.fieldMapper.toUserField("due");
 
-			// Ensure skipped_instances array exists
-			if (!frontmatter[skippedField]) {
-				frontmatter[skippedField] = [];
-			}
-
-			// Update skipped instances
-			frontmatter[skippedField] = updatedTask.skipped_instances || [];
-
-			// Update complete instances (in case we removed from it)
-			if (!frontmatter[completeField]) {
-				frontmatter[completeField] = [];
-			}
-			frontmatter[completeField] = updatedTask.complete_instances || [];
-
-			// Update scheduled/due dates
-			if (updatedTask.scheduled) {
-				frontmatter[scheduledField] = updatedTask.scheduled;
-			}
-			if (updatedTask.due) {
-				frontmatter[dueField] = updatedTask.due;
-			}
-
-			frontmatter[dateModifiedField] = updatedTask.dateModified;
+			applyRecurringTaskSkippedFrontmatterChange({
+				frontmatter,
+				skippedField,
+				completeField,
+				dateModifiedField,
+				scheduledField,
+				dueField,
+				plan: recurringPlan,
+			});
 		});
 
 		// Step 4: Wait for fresh data and update cache
@@ -1767,34 +1126,25 @@ export class TaskService {
 			throw new Error(`Cannot find task file: ${task.path}`);
 		}
 
-		if (!task.timeEntries || !Array.isArray(task.timeEntries)) {
-			throw new Error("Task has no time entries");
-		}
-
-		if (timeEntryIndex < 0 || timeEntryIndex >= task.timeEntries.length) {
-			throw new Error("Invalid time entry index");
-		}
-
 		// Step 1: Construct new state in memory
-		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestamp();
-
-		// Remove the time entry at the specified index
-		updatedTask.timeEntries = task.timeEntries.filter((_, index) => index !== timeEntryIndex);
+		const deletePlan = buildDeleteTimeEntryPlan(
+			task,
+			timeEntryIndex,
+			getCurrentTimestamp()
+		);
+		const { updatedTask } = deletePlan;
 
 		// Step 2: Persist to file
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
-
-			if (frontmatter[timeEntriesField] && Array.isArray(frontmatter[timeEntriesField])) {
-				// Remove the time entry at the specified index
-				frontmatter[timeEntriesField] = frontmatter[timeEntriesField].filter(
-					(_: unknown, index: number) => index !== timeEntryIndex
-				);
-			}
-
-			frontmatter[dateModifiedField] = updatedTask.dateModified;
+			applyDeleteTimeEntryFrontmatterChange({
+				frontmatter,
+				timeEntriesField,
+				dateModifiedField,
+				timeEntryIndex: deletePlan.timeEntryIndex,
+				dateModified: deletePlan.dateModified,
+			});
 		});
 
 		// Step 3: Wait for fresh data and update cache
@@ -1840,14 +1190,14 @@ export class TaskService {
 		}
 
 		const completedDateField = this.plugin.fieldMapper.toUserField("completedDate");
-
-		if (this.plugin.statusManager.isCompletedStatus(newStatus)) {
-			frontmatter[completedDateField] = getCurrentDateString();
-		} else {
-			if (frontmatter[completedDateField]) {
-				delete frontmatter[completedDateField];
-			}
-		}
+		updateCompletedDateFrontmatter(
+			frontmatter,
+			newStatus,
+			isRecurring,
+			completedDateField,
+			(status) => this.plugin.statusManager.isCompletedStatus(status),
+			getCurrentDateString()
+		);
 	}
 
 	/**

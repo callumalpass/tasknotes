@@ -2,13 +2,12 @@ import { App, Notice, setIcon, setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskInfo } from "../types";
-import { calculateDefaultDate, calculateDefaultDateTime, sanitizeTags } from "../utils/helpers";
+import { sanitizeTags } from "../utils/helpers";
 import {
 	NaturalLanguageParser,
 	ParsedTaskData as NLParsedTaskData,
 } from "../services/NaturalLanguageParser";
 import { combineDateAndTime } from "../utils/dateUtils";
-import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 
 import type {
 	EmbeddableMarkdownEditor,
@@ -16,13 +15,16 @@ import type {
 } from "../editor/EmbeddableMarkdownEditor";
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
 import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreationData";
+import {
+	buildTaskCreationFormState,
+	type TaskCreationPrepopulatedValues,
+} from "./taskCreationFormState";
+import { applyTaskCreationSubtaskAssignments } from "./taskCreationSubtasks";
 import { NLPSuggest } from "./taskCreationSuggest";
 import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
+import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
+import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
 export type { StatusSuggestion } from "./taskCreationSuggest";
-
-export type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
-	customFrontmatter?: Record<string, unknown>;
-};
 
 const TASK_CREATION_FAILURE_PREFIX = "Failed to create task: ";
 
@@ -439,73 +441,7 @@ export class TaskCreationModal extends TaskModal {
 			separator.classList.add("tn-static-margin-0-var-size-4-2-77f7dc08");
 		}
 
-		// Status icon
-		this.createActionIcon(
-			this.actionBar,
-			"dot-square",
-			this.t("modals.task.actions.status"),
-			(icon, event) => {
-				this.showStatusContextMenu(event);
-			},
-			"status"
-		);
-
-		// Priority icon
-		this.createActionIcon(
-			this.actionBar,
-			"star",
-			this.t("modals.task.actions.priority"),
-			(icon, event) => {
-				this.showPriorityContextMenu(event);
-			},
-			"priority"
-		);
-
-		// Due date icon
-		this.createActionIcon(
-			this.actionBar,
-			"calendar",
-			this.t("modals.task.actions.due"),
-			(icon, event) => {
-				this.showDateContextMenu(event, "due");
-			},
-			"due-date"
-		);
-
-		// Scheduled date icon
-		this.createActionIcon(
-			this.actionBar,
-			"calendar-clock",
-			this.t("modals.task.actions.scheduled"),
-			(icon, event) => {
-				this.showDateContextMenu(event, "scheduled");
-			},
-			"scheduled-date"
-		);
-
-		// Recurrence icon
-		this.createActionIcon(
-			this.actionBar,
-			"refresh-ccw",
-			this.t("modals.task.actions.recurrence"),
-			(icon, event) => {
-				this.showRecurrenceContextMenu(event);
-			},
-			"recurrence"
-		);
-
-		// Reminder icon
-		this.createActionIcon(
-			this.actionBar,
-			"bell",
-			this.t("modals.task.actions.reminders"),
-			(icon, event) => {
-				this.showReminderContextMenu(event);
-			},
-			"reminders"
-		);
-
-		// Update icon states based on current values
+		this.createCoreActionIcons(this.actionBar);
 		this.updateIconStates();
 	}
 
@@ -555,7 +491,7 @@ export class TaskCreationModal extends TaskModal {
 		// Update form inputs if they exist
 		if (this.titleInput) this.titleInput.value = this.title;
 		if (this.detailsInput) this.detailsInput.value = this.details;
-		if (this.detailsMarkdownEditor) this.detailsMarkdownEditor.setValue(this.details);
+		setTaskModalDetailsEditorValue(this.detailsMarkdownEditor, this.details);
 		if (this.contextsInput) this.contextsInput.value = this.contexts;
 		if (this.tagsInput) this.tagsInput.value = this.tags;
 
@@ -584,17 +520,10 @@ export class TaskCreationModal extends TaskModal {
 		if (this.isExpanded) {
 			// Collapse
 			this.isExpanded = false;
-			this.detailsContainer.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			this.detailsContainer.classList.add("tn-static-display-none-6b99de8b");
+			collapseTaskModalDetailsLayout({
+				detailsContainer: this.detailsContainer,
+				splitRightColumn: this.splitRightColumn,
+			});
 			this.containerEl.removeClass("expanded");
 		} else {
 			// Expand
@@ -603,113 +532,34 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	async initializeFormData(): Promise<void> {
-		// Initialize with default values from settings
-		this.priority = this.plugin.settings.defaultTaskPriority;
-		this.status = this.plugin.settings.defaultTaskStatus;
+		const formState = buildTaskCreationFormState({
+			defaultPriority: this.plugin.settings.defaultTaskPriority,
+			defaultStatus: this.plugin.settings.defaultTaskStatus,
+			taskCreationDefaults: this.plugin.settings.taskCreationDefaults,
+			taskTag: this.plugin.settings.taskTag,
+			userFields: this.plugin.settings.userFields,
+			prePopulatedValues: this.options.prePopulatedValues,
+		});
 
-		// Apply task creation defaults
-		const defaults = this.plugin.settings.taskCreationDefaults;
+		this.title = formState.title;
+		this.dueDate = formState.dueDate;
+		this.scheduledDate = formState.scheduledDate;
+		this.priority = formState.priority;
+		this.status = formState.status;
+		this.contexts = formState.contexts;
+		this.tags = formState.tags;
+		this.timeEstimate = formState.timeEstimate;
+		this.recurrenceRule = formState.recurrenceRule;
+		this.recurrenceAnchor = formState.recurrenceAnchor;
+		this.reminders = formState.reminders;
+		this.userFields = formState.userFields;
 
-		// Apply default due date
-		this.dueDate = calculateDefaultDateTime(defaults.defaultDueDate, defaults.defaultDueTime);
-
-		// Apply default scheduled date based on user settings
-		this.scheduledDate = calculateDefaultDateTime(
-			defaults.defaultScheduledDate,
-			defaults.defaultScheduledTime
-		);
-
-		// Apply default contexts, tags, and projects
-		this.contexts = defaults.defaultContexts || "";
-		this.tags = defaults.defaultTags || "";
-
-		// Apply default projects
-		if (defaults.defaultProjects) {
-			const projectStrings = splitListPreservingLinksAndQuotes(defaults.defaultProjects);
-			if (projectStrings.length > 0) {
-				this.initializeProjectsFromStrings(projectStrings);
-			}
-		}
-
-		// Apply default time estimate
-		if (defaults.defaultTimeEstimate && defaults.defaultTimeEstimate > 0) {
-			this.timeEstimate = defaults.defaultTimeEstimate;
-		}
-
-		// Apply default reminders
-		if (defaults.defaultReminders && defaults.defaultReminders.length > 0) {
-			// Import the conversion function
-			const { convertDefaultRemindersToReminders } = await import("../utils/settingsUtils");
-			this.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
-		}
-
-		// Apply default values for user-defined fields
-		if (this.plugin.settings.userFields) {
-			for (const field of this.plugin.settings.userFields) {
-				if (field.defaultValue !== undefined) {
-					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
-					if (field.type === "date" && typeof field.defaultValue === "string") {
-						const datePreset = field.defaultValue as
-							| "none"
-							| "today"
-							| "tomorrow"
-							| "next-week";
-						const calculatedDate = calculateDefaultDate(datePreset);
-						if (calculatedDate) {
-							this.userFields[field.key] = calculatedDate;
-						}
-					} else {
-						this.userFields[field.key] = field.defaultValue;
-					}
-				}
-			}
-		}
-
-		// Apply pre-populated values if provided (overrides defaults)
-		if (this.options.prePopulatedValues) {
-			this.applyPrePopulatedValues(this.options.prePopulatedValues);
+		if (formState.projectStrings.length > 0) {
+			this.initializeProjectsFromStrings(formState.projectStrings);
 		}
 
 		this.details = this.normalizeDetails(this.details);
 		this.originalDetails = this.details;
-	}
-
-	private applyPrePopulatedValues(values: TaskCreationPrepopulatedValues): void {
-		if (values.title !== undefined) this.title = values.title;
-		if (values.due !== undefined) this.dueDate = values.due;
-		if (values.scheduled !== undefined) this.scheduledDate = values.scheduled;
-		if (values.priority !== undefined) this.priority = values.priority;
-		if (values.status !== undefined) this.status = values.status;
-		if (values.contexts !== undefined) {
-			this.contexts = values.contexts.join(", ");
-		}
-		if (values.projects !== undefined) {
-			// Filter out null, undefined, or empty strings before checking if we have valid projects
-			const validProjects = values.projects.filter(
-				(p) => p && typeof p === "string" && p.trim() !== ""
-			);
-			if (validProjects.length > 0) {
-				this.initializeProjectsFromStrings(values.projects);
-			}
-			this.renderProjectsList();
-		}
-		if (values.tags !== undefined) {
-			this.tags = sanitizeTags(
-				values.tags.filter((tag) => tag !== this.plugin.settings.taskTag).join(", ")
-			);
-		}
-		if (values.timeEstimate !== undefined) this.timeEstimate = values.timeEstimate;
-		if (values.recurrence !== undefined && typeof values.recurrence === "string") {
-			this.recurrenceRule = values.recurrence;
-		}
-		if (values.recurrence_anchor !== undefined) {
-			this.recurrenceAnchor = values.recurrence_anchor;
-		}
-		if (values.customFrontmatter) {
-			for (const [fieldKey, fieldValue] of Object.entries(values.customFrontmatter)) {
-				this.userFields[fieldKey] = fieldValue;
-			}
-		}
 	}
 
 	protected async handleSubmitShortcut(shift: boolean): Promise<void> {
@@ -872,36 +722,18 @@ export class TaskCreationModal extends TaskModal {
 		const currentTaskFile = this.app.vault.getAbstractFileByPath(createdTask.path);
 		if (!(currentTaskFile instanceof TFile)) return;
 
-		for (const subtaskFile of this.selectedSubtaskFiles) {
-			try {
-				const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
-				if (!subtaskInfo) continue;
-
-				const projectReference = this.buildProjectReference(
-					currentTaskFile,
-					subtaskFile.path
-				);
-				const legacyReference = `[[${currentTaskFile.basename}]]`;
-				const currentProjects = Array.isArray(subtaskInfo.projects)
-					? subtaskInfo.projects
-					: [];
-
-				if (
-					currentProjects.includes(projectReference) ||
-					currentProjects.includes(legacyReference)
-				) {
-					continue;
-				}
-
-				const sanitizedProjects = currentProjects.filter(
-					(entry) => entry !== legacyReference
-				);
-				const updatedProjects = [...sanitizedProjects, projectReference];
-				await this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects);
-			} catch (error) {
+		await applyTaskCreationSubtaskAssignments({
+			currentTaskFile,
+			subtaskFiles: this.selectedSubtaskFiles,
+			getTaskInfo: (path) => this.plugin.cacheManager.getTaskInfo(path),
+			buildProjectReference: (targetFile, sourcePath) =>
+				this.buildProjectReference(targetFile, sourcePath),
+			updateTaskProjects: (subtaskInfo, projects) =>
+				this.plugin.updateTaskProperty(subtaskInfo, "projects", projects),
+			onError: (error) => {
 				console.error("Failed to assign subtask:", error);
-			}
-		}
+			},
+		});
 	}
 
 	onClose(): void {

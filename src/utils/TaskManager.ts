@@ -1,22 +1,13 @@
- 
 import { TFile, App, Events, EventRef, parseYaml } from "obsidian";
 import { TaskInfo, NoteInfo, EVENT_TASK_UPDATED } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
-import {
-	normalizePriorityConfigValue,
-	normalizeStatusConfigValue,
-} from "../core/fieldMapping";
-import { FilterUtils } from "./FilterUtils";
-import {
-	getTodayString,
-	formatDateForStorage,
-	isBeforeDateSafe,
-	getDatePart,
-} from "./dateUtils";
-import { calculateTotalTimeSpent } from "./helpers";
+import { normalizePriorityConfigValue, normalizeStatusConfigValue } from "../core/fieldMapping";
+import { getTodayString, formatDateForStorage, isBeforeDateSafe, getDatePart } from "./dateUtils";
 import { TaskNotesSettings } from "../types/settings";
 import type { DependencyCache } from "./DependencyCache";
 import { isPathInExcludedFolder, parseExcludedFolders } from "./pathExclusions";
+import { buildTaskInfoFromMappedTask } from "./taskInfoAssembly";
+import { isTaskFrontmatter } from "./taskIdentification";
 
 /**
  * Just-in-time task manager that reads task information on-demand from Obsidian's
@@ -85,52 +76,7 @@ export class TaskManager extends Events {
 	 * Check if a file is a task based on current settings
 	 */
 	isTaskFile(frontmatter: unknown): boolean {
-		if (!frontmatter || typeof frontmatter !== "object" || Array.isArray(frontmatter)) {
-			return false;
-		}
-		const frontmatterRecord = frontmatter as Record<string, unknown>;
-
-		if (this.settings.taskIdentificationMethod === "property") {
-			const propName = this.settings.taskPropertyName;
-			const propValue = this.settings.taskPropertyValue;
-			if (!propName || !propValue) return false; // Not configured
-
-			const frontmatterValue = frontmatterRecord[propName];
-			if (frontmatterValue === undefined) return false;
-
-			// Handle both single and multi-value properties
-			if (Array.isArray(frontmatterValue)) {
-				return frontmatterValue.some((val: unknown) =>
-					this.comparePropertyValues(val, propValue)
-				);
-			}
-			return this.comparePropertyValues(frontmatterValue, propValue);
-			} else {
-				// Fallback to legacy tag-based method with hierarchical support
-				if (!Array.isArray(frontmatterRecord.tags)) return false;
-				return frontmatterRecord.tags.some((tag) => {
-				if (typeof tag !== 'string') return false;
-				// Obsidian metadata cache prepends '#' to frontmatter tags
-				const cleanTag = tag.startsWith('#') ? tag.slice(1) : tag;
-				return FilterUtils.matchesHierarchicalTagExact(cleanTag, this.taskTag);
-			});
-		}
-	}
-
-	/**
-	 * Compare frontmatter property values with settings value, with boolean coercion support.
-	 */
-	private comparePropertyValues(frontmatterValue: unknown, settingValue: string): boolean {
-		// Handle boolean frontmatter values compared to string settings (e.g., true vs "true")
-		if (typeof frontmatterValue === "boolean" && typeof settingValue === "string") {
-			const lower = settingValue.toLowerCase();
-			if (lower === "true" || lower === "false") {
-				return frontmatterValue === (lower === "true");
-			}
-		}
-
-		// Fallback to strict equality for other types (strings, numbers, etc.)
-		return frontmatterValue === settingValue;
+		return isTaskFrontmatter(frontmatter, this.settings);
 	}
 
 	/**
@@ -269,9 +215,9 @@ export class TaskManager extends Events {
 		const file = this.app.vault.getAbstractFileByPath(path);
 		if (!(file instanceof TFile)) return null;
 
+		const pendingTaskInfo = this.getPendingTaskInfo(path);
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) {
-			const pendingTaskInfo = this.getPendingTaskInfo(path);
 			if (pendingTaskInfo) {
 				return pendingTaskInfo;
 			}
@@ -282,11 +228,17 @@ export class TaskManager extends Events {
 			return this.extractTaskInfoFromNative(path, frontmatter);
 		}
 
+		const metadataTaskInfo = this.isTaskFile(metadata.frontmatter)
+			? this.extractTaskInfoFromNative(path, metadata.frontmatter)
+			: null;
+
+		if (pendingTaskInfo && this.shouldUsePendingTaskInfo(pendingTaskInfo, metadataTaskInfo)) {
+			return pendingTaskInfo;
+		}
+
 		this.pendingTaskInfoByPath.delete(path);
 
-		if (!this.isTaskFile(metadata.frontmatter)) return null;
-
-		return this.extractTaskInfoFromNative(path, metadata.frontmatter);
+		return metadataTaskInfo;
 	}
 
 	private getPendingTaskInfo(path: string): TaskInfo | null {
@@ -298,6 +250,21 @@ export class TaskManager extends Events {
 			id: taskInfo.id ?? path,
 			path,
 		};
+	}
+
+	private shouldUsePendingTaskInfo(
+		pendingTaskInfo: TaskInfo,
+		metadataTaskInfo: TaskInfo | null
+	): boolean {
+		if (!metadataTaskInfo) {
+			return true;
+		}
+
+		if (pendingTaskInfo.dateModified) {
+			return metadataTaskInfo.dateModified !== pendingTaskInfo.dateModified;
+		}
+
+		return false;
 	}
 
 	/**
@@ -317,11 +284,6 @@ export class TaskManager extends Events {
 				this.storeTitleInFilename
 			);
 
-			// Calculate computed fields that aren't stored in frontmatter
-			const totalTrackedTime = mappedTask.timeEntries
-				? calculateTotalTimeSpent(mappedTask.timeEntries)
-				: 0;
-
 			// Get dependency information from DependencyCache
 			let isBlocked = false;
 			let blockingTasks: string[] = [];
@@ -333,28 +295,14 @@ export class TaskManager extends Events {
 				// Fallback when dependency cache not available: use simple existence check
 				isBlocked = Array.isArray(mappedTask.blockedBy) && mappedTask.blockedBy.length > 0;
 			}
-			const isBlocking = blockingTasks.length > 0;
 
-			// Return all FieldMapper fields plus computed fields
-			// This ensures new fields from FieldMapper automatically flow through
-			return {
-				...mappedTask,
-				// Override/add fields with defaults or computed values
-				id: path, // Add id field for API consistency
-				path, // Ensure path is set (FieldMapper should set this, but be explicit)
-				title: mappedTask.title || "Untitled task",
-				status: mappedTask.status || this.settings.defaultTaskStatus,
-				priority: mappedTask.priority || "normal",
-				archived: mappedTask.archived || false,
-				tags: Array.isArray(mappedTask.tags) ? mappedTask.tags : [],
-				contexts: Array.isArray(mappedTask.contexts) ? mappedTask.contexts : [],
-				projects: Array.isArray(mappedTask.projects) ? mappedTask.projects : [],
-				// Computed fields
-				totalTrackedTime,
+			return buildTaskInfoFromMappedTask({
+				path,
+				mappedTask,
+				defaultTaskStatus: this.settings.defaultTaskStatus,
 				isBlocked,
-				isBlocking,
-				blocking: blockingTasks.length > 0 ? blockingTasks : undefined,
-			};
+				blockingTasks,
+			});
 		} catch (error) {
 			console.error(`Error extracting task info from native metadata for ${path}:`, error);
 			return null;
@@ -518,9 +466,9 @@ export class TaskManager extends Events {
 
 			// Only count as overdue if the status is not marked as completed
 			// Check against user-defined completed statuses from settings
-			const isCompletedStatus = this.settings.customStatuses?.some(
-				s => s.value === status && s.isCompleted
-			) || false;
+			const isCompletedStatus =
+				this.settings.customStatuses?.some((s) => s.value === status && s.isCompleted) ||
+				false;
 
 			if (due && !isCompletedStatus && isBeforeDateSafe(due, today)) {
 				overdue.add(file.path);
@@ -546,7 +494,10 @@ export class TaskManager extends Events {
 			if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
 			const status = metadata.frontmatter[statusField];
-			const normalizedStatus = normalizeStatusConfigValue(status, this.settings.customStatuses);
+			const normalizedStatus = normalizeStatusConfigValue(
+				status,
+				this.settings.customStatuses
+			);
 			if (normalizedStatus) statuses.add(normalizedStatus);
 		}
 
@@ -594,8 +545,8 @@ export class TaskManager extends Events {
 
 			const taskTags = metadata.frontmatter.tags;
 			if (Array.isArray(taskTags)) {
-				taskTags.forEach(tag => {
-					if (typeof tag === 'string') tags.add(tag);
+				taskTags.forEach((tag) => {
+					if (typeof tag === "string") tags.add(tag);
 				});
 			}
 		}
@@ -620,8 +571,8 @@ export class TaskManager extends Events {
 
 			const context = metadata.frontmatter[contextField];
 			if (Array.isArray(context)) {
-				context.forEach(ctx => {
-					if (typeof ctx === 'string') contexts.add(ctx);
+				context.forEach((ctx) => {
+					if (typeof ctx === "string") contexts.add(ctx);
 				});
 			} else if (context) {
 				contexts.add(context);
@@ -648,8 +599,8 @@ export class TaskManager extends Events {
 
 			const project = metadata.frontmatter[projectField];
 			if (Array.isArray(project)) {
-				project.forEach(proj => {
-					if (typeof proj === 'string') projects.add(proj);
+				project.forEach((proj) => {
+					if (typeof proj === "string") projects.add(proj);
 				});
 			} else if (project) {
 				projects.add(project);
@@ -675,7 +626,7 @@ export class TaskManager extends Events {
 			if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
 			const timeEstimate = metadata.frontmatter[timeEstimateField];
-			if (typeof timeEstimate === 'number' && timeEstimate > 0) {
+			if (typeof timeEstimate === "number" && timeEstimate > 0) {
 				estimates.set(file.path, timeEstimate);
 			}
 		}
@@ -707,7 +658,9 @@ export class TaskManager extends Events {
 			if (noteDate === dateStr) {
 				notes.push({
 					path: file.path,
-					title: this.storeTitleInFilename ? file.basename : (metadata.frontmatter.title || file.basename),
+					title: this.storeTitleInFilename
+						? file.basename
+						: metadata.frontmatter.title || file.basename,
 					tags: metadata.frontmatter.tags || [],
 				});
 			}
@@ -753,7 +706,10 @@ export class TaskManager extends Events {
 			const content = await this.app.vault.read(file);
 			return this.parseFrontmatterFromContent(content);
 		} catch (error) {
-			console.warn(`TaskManager: Failed to read frontmatter fallback for ${file.path}`, error);
+			console.warn(
+				`TaskManager: Failed to read frontmatter fallback for ${file.path}`,
+				error
+			);
 			return null;
 		}
 	}
@@ -864,7 +820,7 @@ export class TaskManager extends Events {
 
 		if (!(file instanceof TFile)) {
 			// File doesn't exist yet, just wait a bit
-			await new Promise(resolve => window.setTimeout(resolve, 100));
+			await new Promise((resolve) => window.setTimeout(resolve, 100));
 			return;
 		}
 
@@ -876,11 +832,13 @@ export class TaskManager extends Events {
 				return;
 			}
 			// Wait before retrying (50ms, 100ms, 150ms, etc.)
-			await new Promise(resolve => window.setTimeout(resolve, 50 * (i + 1)));
+			await new Promise((resolve) => window.setTimeout(resolve, 50 * (i + 1)));
 		}
 
 		// If we still don't have metadata after retries, log a warning but continue
-		console.warn(`TaskManager: Metadata cache not ready for ${path} after ${maxRetries} retries`);
+		console.warn(
+			`TaskManager: Metadata cache not ready for ${path} after ${maxRetries} retries`
+		);
 	}
 
 	updateConfig(settings: TaskNotesSettings): void {

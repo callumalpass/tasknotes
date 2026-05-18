@@ -43,6 +43,17 @@ import {
 	isCssVariableColor,
 	normalizeThemeColor,
 } from "../utils/themeColors";
+import {
+	calculateAllDayEndDate,
+	createDueTaskEvent,
+	createScheduledTaskEvent,
+	createScheduledToDueSpanTaskEvent,
+	createScheduledToDueSpanTaskEvents,
+	createTimeEntryTaskEvents,
+	type CalendarTaskEventContext,
+} from "./calendarTaskEvents";
+
+export { calculateAllDayEndDate } from "./calendarTaskEvents";
 
 const MIN_EXTERNAL_TIMED_EVENT_DURATION_MS = 1;
 
@@ -452,24 +463,6 @@ export function getTargetDateForEvent(eventArg: unknown): Date {
 	return getTodayLocal();
 }
 
-/**
- * Calculate all-day end date based on time estimate
- */
-export function calculateAllDayEndDate(
-	startDate: string,
-	timeEstimate?: number
-): string | undefined {
-	if (!timeEstimate) return undefined;
-
-	// For all-day events, add days based on time estimate (24 hours = 1 day)
-	const days = Math.ceil(timeEstimate / (24 * 60));
-	const start = parseDateToUTC(startDate);
-	const end = new Date(
-		Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + days)
-	);
-	return formatDateForStorage(end);
-}
-
 export function shiftTaskDatePreservingTime(dateValue: string, timeDiffMs: number): string {
 	const oldDate = parseDateToLocal(dateValue);
 	const shiftedDate = new Date(oldDate.getTime() + timeDiffMs);
@@ -479,6 +472,14 @@ export function shiftTaskDatePreservingTime(dateValue: string, timeDiffMs: numbe
 		: format(shiftedDate, "yyyy-MM-dd");
 }
 
+function createTaskEventContext(plugin: TaskNotesPlugin): CalendarTaskEventContext {
+	return {
+		getPriorityColor: (priority) => plugin.priorityManager.getPriorityConfig(priority)?.color,
+		isCompletedStatus: (status) => plugin.statusManager.isCompletedStatus(status),
+		getThemeTextColor: (useThemeColor = false) => getEventTextColor(useThemeColor),
+	};
+}
+
 /**
  * Create scheduled event from task
  */
@@ -486,211 +487,14 @@ export function createScheduledEvent(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin
 ): CalendarEvent | null {
-	if (!task.scheduled) return null;
-
-	const hasTime = hasTimeComponent(task.scheduled);
-	const startDate = task.scheduled;
-
-	let endDate: string | undefined;
-	if (hasTime && task.timeEstimate) {
-		const start = parseDateToLocal(startDate);
-		const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-		endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-	} else if (!hasTime) {
-		endDate = calculateAllDayEndDate(startDate, task.timeEstimate);
-	}
-
-	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
-	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
-	// Use theme-appropriate text color when border is a CSS variable
-	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
-
-	return {
-		id: `scheduled-${task.path}`,
-		title: task.title,
-		start: startDate,
-		end: endDate,
-		allDay: !hasTime,
-		backgroundColor: "transparent",
-		borderColor: borderColor,
-		textColor: textColor,
-		editable: true,
-		extendedProps: {
-			taskInfo: task,
-			eventType: "scheduled",
-			isCompleted: isCompleted,
-		},
-	};
+	return createScheduledTaskEvent(task, createTaskEventContext(plugin));
 }
 
 /**
  * Create due event from task
  */
 export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): CalendarEvent | null {
-	if (!task.due) return null;
-
-	const hasTime = hasTimeComponent(task.due);
-	const startDate = task.due;
-
-	let endDate: string | undefined;
-	if (hasTime) {
-		const start = parseDateToLocal(startDate);
-		const end = new Date(start.getTime() + 30 * 60 * 1000);
-		endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-	}
-
-	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-orange)");
-	const fadedBackground = hexToRgba(borderColor, 0.15);
-	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
-	// Use theme-appropriate text color when border is a CSS variable
-	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
-
-	return {
-		id: `due-${task.path}`,
-		title: task.title,
-		start: startDate,
-		end: endDate,
-		allDay: !hasTime,
-		backgroundColor: fadedBackground,
-		borderColor: borderColor,
-		textColor: textColor,
-		editable: true,
-		extendedProps: {
-			taskInfo: task,
-			eventType: "due",
-			isCompleted: isCompleted,
-		},
-	};
-}
-
-/**
- * Create a date-only spanning event from scheduled date to due date.
- * Shows the task as a multi-day bar from when work starts to when it's due.
- */
-function createAllDayScheduledToDueSpanEvent(
-	task: TaskInfo,
-	plugin: TaskNotesPlugin
-): CalendarEvent | null {
-	if (!task.scheduled || !task.due) return null;
-
-	// Parse dates to compare them
-	const scheduledDate = parseDateToLocal(task.scheduled);
-	const dueDate = parseDateToLocal(task.due);
-
-	// Skip if due is before or same as scheduled (no span to show)
-	if (dueDate <= scheduledDate) return null;
-
-	// For FullCalendar, the end date for all-day events is exclusive,
-	// so we need to add one day to include the due date
-	const endDateExclusive = new Date(dueDate);
-	endDateExclusive.setDate(endDateExclusive.getDate() + 1);
-
-	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
-	const fadedBackground = hexToRgba(borderColor, 0.2);
-	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
-	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
-
-	return {
-		id: `span-${task.path}`,
-		title: task.title,
-		start: format(scheduledDate, "yyyy-MM-dd"),
-		end: format(endDateExclusive, "yyyy-MM-dd"),
-		allDay: true,
-		backgroundColor: fadedBackground,
-		borderColor: borderColor,
-		textColor: textColor,
-		editable: true, // Span events can be dragged to shift both scheduled and due dates
-		extendedProps: {
-			taskInfo: task,
-			eventType: "scheduledToDueSpan",
-			isCompleted: isCompleted,
-		},
-	};
-}
-
-function isCalendarEventInVisibleRange(
-	event: CalendarEvent,
-	visibleStart?: Date,
-	visibleEnd?: Date
-): boolean {
-	if (!visibleStart || !visibleEnd) return true;
-
-	const eventStart = parseDateToLocal(event.start);
-	const eventEnd = event.end ? parseDateToLocal(event.end) : eventStart;
-
-	return (
-		eventStart.getTime() < visibleEnd.getTime() &&
-		eventEnd.getTime() >= visibleStart.getTime()
-	);
-}
-
-function createTimedScheduledToDueSpanEvents(
-	task: TaskInfo,
-	plugin: TaskNotesPlugin,
-	visibleStart?: Date,
-	visibleEnd?: Date
-): CalendarEvent[] {
-	if (!task.scheduled || !task.due) return [];
-
-	const scheduledDate = parseDateToLocal(task.scheduled);
-	const dueDate = parseDateToLocal(task.due);
-	if (dueDate <= scheduledDate) return [];
-
-	const scheduledTime = getTimePart(task.scheduled);
-	if (!scheduledTime) return [];
-
-	const [hours, minutes] = scheduledTime.split(":").map(Number);
-	const firstDate = parseDateToLocal(getDatePart(task.scheduled));
-	const lastDate = parseDateToLocal(getDatePart(task.due));
-
-	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
-	const fadedBackground = hexToRgba(borderColor, 0.2);
-	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
-	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
-
-	const events: CalendarEvent[] = [];
-	for (
-		const day = new Date(firstDate);
-		day.getTime() <= lastDate.getTime();
-		day.setDate(day.getDate() + 1)
-	) {
-		const start = new Date(day);
-		start.setHours(hours, minutes, 0, 0);
-
-		let end: string | undefined;
-		if (task.timeEstimate) {
-			const endDate = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-			end = format(endDate, "yyyy-MM-dd'T'HH:mm");
-		}
-
-		const instanceDate = format(day, "yyyy-MM-dd");
-		const event: CalendarEvent = {
-			id: `span-${task.path}-${instanceDate}`,
-			title: task.title,
-			start: format(start, "yyyy-MM-dd'T'HH:mm"),
-			end,
-			allDay: false,
-			backgroundColor: fadedBackground,
-			borderColor: borderColor,
-			textColor: textColor,
-			editable: true,
-			extendedProps: {
-				taskInfo: task,
-				eventType: "scheduledToDueSpan",
-				isCompleted: isCompleted,
-			},
-		};
-
-		if (isCalendarEventInVisibleRange(event, visibleStart, visibleEnd)) {
-			events.push(event);
-		}
-	}
-
-	return events;
+	return createDueTaskEvent(task, createTaskEventContext(plugin));
 }
 
 export function createScheduledToDueSpanEvents(
@@ -699,52 +503,26 @@ export function createScheduledToDueSpanEvents(
 	visibleStart?: Date,
 	visibleEnd?: Date
 ): CalendarEvent[] {
-	if (!task.scheduled || !task.due) return [];
-
-	if (hasTimeComponent(task.scheduled)) {
-		return createTimedScheduledToDueSpanEvents(task, plugin, visibleStart, visibleEnd);
-	}
-
-	const spanEvent = createAllDayScheduledToDueSpanEvent(task, plugin);
-	if (!spanEvent || !isCalendarEventInVisibleRange(spanEvent, visibleStart, visibleEnd)) {
-		return [];
-	}
-
-	return [spanEvent];
+	return createScheduledToDueSpanTaskEvents(
+		task,
+		createTaskEventContext(plugin),
+		visibleStart,
+		visibleEnd
+	);
 }
 
 export function createScheduledToDueSpanEvent(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin
 ): CalendarEvent | null {
-	return createScheduledToDueSpanEvents(task, plugin)[0] ?? null;
+	return createScheduledToDueSpanTaskEvent(task, createTaskEventContext(plugin));
 }
 
 /**
  * Create time entry events from task
  */
 export function createTimeEntryEvents(task: TaskInfo, plugin: TaskNotesPlugin): CalendarEvent[] {
-	if (!task.timeEntries) return [];
-
-	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
-
-	return task.timeEntries
-		.filter((entry) => entry.endTime)
-		.map((entry, index) => ({
-			id: `timeentry-${task.path}-${index}`,
-			title: task.title,
-			start: entry.startTime,
-			end: entry.endTime!,
-			allDay: false,
-			// Colors are handled by CSS via data-event-type="timeEntry"
-			editable: true, // Allow drag and resize
-			extendedProps: {
-				taskInfo: task,
-				eventType: "timeEntry" as const,
-				isCompleted: isCompleted,
-				timeEntryIndex: index,
-			},
-		}));
+	return createTimeEntryTaskEvents(task, createTaskEventContext(plugin));
 }
 
 /**

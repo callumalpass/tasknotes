@@ -64,17 +64,15 @@ Example response (shape):
       "status": "open",
       "tags": ["123"],
       "contexts": ["work"],
-      "projects": [],
       "due": "2026-02-22",
-      "scheduled": null,
-      "recurrence": null,
-      "timeEstimate": null
+      "dateCreated": "2026-02-22T09:00:00.000Z",
+      "dateModified": "2026-02-22T09:00:00.000Z"
     }
   }
 }
 ```
 
-If parser does not detect status, `taskData.status` falls back to your default status workflow.
+If parser does not detect status, `taskData.status` falls back to your configured default task status. Parsed due and scheduled date-times in `taskData` use the same `YYYY-MM-DDTHH:mm` format as created tasks, and NLP trigger values for user-defined fields are returned under `customFrontmatter`.
 
 ## `POST /api/nlp/create`
 

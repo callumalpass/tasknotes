@@ -99,6 +99,7 @@ Example:
 - Added guidance in Pomodoro statistics and Base file settings explaining that Pomodoro Base views require daily notes storage.
 - (#323) Reordered task modal action buttons to match the right-click task menu order. Thanks to @23426356587 for suggesting this.
 - (#1189) Made the Create/Edit Task modal priority picker follow the priority order configured in Settings. Thanks to @n1njaznutz for suggesting this.
+- Made task-card priority dots and configured priority icons slightly larger for better visibility.
 - (#1244) Clarified the Task Properties documentation for custom property keys and status values in Bases filters and sorting. Thanks to @Arachnidai for suggesting this.
 - (#1234) Kept right-aligned subtask chevrons visible on task cards instead of only showing them on hover. Thanks to @n1njaznutz for suggesting this.
 - (#1237) Made today's date more visible in the Mini Calendar view when another day is selected. Thanks to @riekusr for suggesting this.
@@ -131,6 +132,7 @@ Example:
 - (#1299) Added a command that creates or opens a task and immediately starts time tracking for it. Thanks to @slipstyle for suggesting this.
 - (#1284) Added an exact-match option for hiding task identification tags, so `#task` can be hidden while nested tags such as `#task/project` remain visible. Thanks to @3zra47 for suggesting this.
 - (#1009) Added a confirmed Delete button to the Edit Task modal, so unwanted task notes can be removed without first opening the note file. Thanks to @jalooc for suggesting this.
+- Refactored Calendar, Kanban, Bases task creation, NLP API creation payloads, task title sanitization, task property-update planning, task archive planning, task time-tracking and time-entry deletion planning, task recurring-instance planning, task blocking-relationship planning, task property-change side effects, task-manager identification and task-info assembly, task-card property lookup, metadata assembly/toggle wiring, render-state/class assembly, completion-state refresh, status/priority indicator rendering, secondary badge/dependency controls, title/link rendering, context-menu integration, relationship filtering/expansion rendering, quick actions, badge controls, task-modal title input, details layout transitions, mobile focus/keyboard guards, project parsing/rendering, subtask selection/rendering state, dependency list state and candidate filtering, dependency/subtask task-selector opening, action buttons, action icons, action-icon states, action-menu callbacks, action state/menu-context assembly, action-value derivation, organization/dependency and metadata field rendering, user-field state and controls, details-editor handling, task-creation form/default handling, creation subtask assignment, task-edit form/default handling, task-edit change assembly, and task-edit subtask updates, Bases diagnostics, and editor/link diagnostics around smaller tested helpers, including Calendar config-snapshot and data-signature helpers, shared Bases formula/property adapters, Kanban task grouping, Kanban drag-and-drop updates, Kanban column/swimlane ordering, Task List drag-and-drop insertion geometry, Task List grouped render planning, and structured debug gating, reducing the risk of regressions in future view and task changes.
 
 ## Fixed
 
@@ -200,6 +202,7 @@ Example:
 - (#1326) Treated empty task frontmatter values as missing, so empty titles fall back to the filename and blank date, priority, and recurrence fields are ignored. Thanks to @craziedde for suggesting this.
 - (#1316) Stopped stale Workspace state from overriding the configured Calendar view mode, so switching Workspaces no longer forces an old Day/Week/List choice over the view default. Thanks to @kmaustral for reporting this and following up.
 - (#1302) Read task frontmatter directly from the task file when Obsidian has not indexed its metadata yet, so visible tasks can still be opened, updated, and selected instead of reporting "Task not found". Thanks to @WorldTeacher for reporting this and @Steven-AA for confirming it.
+- Kept just-written task data available while Obsidian's metadata cache catches up, so immediate reads after task edits no longer briefly return stale values.
 - (#1297) Made the Create or open task footer tappable, so mobile users can create the typed task without needing the Shift+Enter shortcut. Thanks to @slipstyle for reporting this.
 - (#1288) Allowed formula properties to appear in Calendar property-based event start and end date selectors. Thanks to @hasanyilmaz for reporting this.
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.

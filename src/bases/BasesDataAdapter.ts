@@ -7,6 +7,7 @@ import type {
 	TFile,
 } from "obsidian";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 type BasesViewDataSource = Pick<BasesView, "config" | "data">;
 
@@ -34,7 +35,14 @@ type BasesEntryInternals = {
  * Eliminates all internal API dependencies.
  */
 export class BasesDataAdapter {
-	constructor(private basesView: BasesViewDataSource) {}
+	private readonly logger: TaskNotesLogger;
+
+	constructor(
+		private basesView: BasesViewDataSource,
+		logger: TaskNotesLogger = createTaskNotesLogger({ tag: "Bases/DataAdapter" })
+	) {
+		this.logger = logger;
+	}
 
 	/**
 	 * Extract all data items from Bases query result.
@@ -122,7 +130,12 @@ export class BasesDataAdapter {
 			const value = entry.getValue(propertyId as BasesPropertyId);
 			return this.convertValueToNative(value);
 		} catch (e) {
-			console.warn(`[BasesDataAdapter] Failed to get property ${propertyId}:`, e);
+			this.logger.warn("Failed to get property value", {
+				category: "provider",
+				operation: "get-property-value",
+				details: { propertyId },
+				error: e,
+			});
 			return null;
 		}
 	}

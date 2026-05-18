@@ -18,15 +18,58 @@ TaskNotes should avoid introducing a competing internal database for core task s
 1. Vault files change.
 2. Obsidian metadata cache updates.
 3. `TaskManager` and related adapters read task state from metadata cache.
-4. Domain services and views consume normalized `TaskInfo` representations.
+4. Task frontmatter is identified through `taskIdentification`, then mapped
+   task data is completed through `taskInfoAssembly`.
+5. Domain services and views consume normalized `TaskInfo` representations.
 
 ## Write Path
 
 1. A view, modal, command, or API endpoint requests a task mutation.
 2. The request flows through `TaskService` or a dedicated mutation collaborator.
-3. Frontmatter/body changes are written to the markdown file.
-4. Obsidian metadata cache emits update events.
-5. Event listeners invalidate caches and refresh views.
+3. Single-property updates are normalized and planned through
+   `taskPropertyUpdate` before frontmatter is written.
+4. Frontmatter/body changes are written to the markdown file.
+5. `taskPropertyChangeSideEffects` refreshes the task cache, emits task update
+   events, and runs webhook, calendar-sync, and auto-archive side effects.
+6. Obsidian metadata cache emits update events.
+7. Event listeners invalidate caches and refresh views.
+
+Task creation payload assembly should happen before the write boundary:
+
+- Bases `New` frontmatter is normalized through `basesTaskCreation`.
+- Modal user fields are normalized through `taskModalUserFields`.
+- Modal creation defaults and pre-populated values are normalized through
+  `taskCreationFormState` before `TaskCreationModal` renders or saves.
+- Modal post-save subtask project writes are planned through
+  `taskCreationSubtasks`.
+- Modal edit defaults and cached user-field values are normalized through
+  `taskEditFormState` before `TaskEditModal` renders.
+- Modal edit writes read existing frontmatter and assemble change input through
+  `taskEditChangeState` before `TaskEditModal` calls `TaskService`.
+- Modal edit subtask additions/removals are planned through `taskEditSubtasks`
+  before child task project links are updated.
+- NLP/API creation payloads use the shared parsed-data assembly path.
+- Task creation defaults are applied through `taskCreationDefaults`.
+- Task title sanitization for filenames and stored frontmatter values is applied
+  through `taskTitleSanitizer`.
+- Single-property task updates use `taskPropertyUpdate` to normalize incoming
+  values and apply frontmatter mutation rules.
+- Archive toggles use `taskArchivePlanning` to plan archive state, frontmatter
+  tag changes, and optional archive/tasks folder moves.
+- Time-tracking start/stop/delete writes use `taskTimeTrackingPlanning` to
+  sanitize legacy entries, choose the active entry to close, validate deleted
+  entry indexes, and apply `timeEntries` frontmatter mutations.
+- Recurring completion/skip writes use `taskRecurringPlanning` to select the
+  action date, update complete/skipped instance arrays, adjust recurrence
+  anchors, and advance scheduled/due dates before side effects run.
+- Blocking relationship updates use `taskBlockingRelationships` to deduplicate
+  changed blocked-task paths and plan reverse `blockedBy` add/remove patches
+  before child tasks are written.
+- Property-change side effects are coordinated through
+  `taskPropertyChangeSideEffects` after the frontmatter write has happened.
+
+Callers should pass typed task creation data into `TaskService`; they should not
+reimplement frontmatter filtering, default application, or user-field coercion.
 
 ## Cache Principles
 
@@ -35,6 +78,9 @@ Current intent:
 - metadata cache remains the primary read accelerator
 - plugin-local caches should be derived and invalidatable
 - derived caches must never become a second source of truth
+- task-file identification and final `TaskInfo` assembly stay in focused
+  helpers so cache reads, frontmatter matching, and display defaults are tested
+  independently
 
 Refactor rule:
 
@@ -62,6 +108,49 @@ Refactor rule:
 
 - use local adapter types for the subset of Bases APIs the plugin actually uses
 - prefer `unknown` plus narrowing over `any`
+- keep Bases-specific value extraction out of general rendering code unless the
+  renderer is explicitly responsible for displaying a native Bases value
+
+Current adapter seams include:
+
+- calendar task, property, and external-event builders
+- calendar mutation planning
+- calendar config snapshot construction for refresh/recreate decisions
+- calendar data-signature property selection and value normalization
+- Kanban task grouping, column/swimlane ordering, and drag planning
+- Task List drag/drop insertion geometry
+- Task List grouped render planning and sub-property grouping
+- shared Bases formula evaluation and path-property map assembly
+- Bases-backed task creation assembly
+- TaskCard property access
+- TaskCard relationship expansion rendering
+- TaskCard metadata assembly
+- TaskCard metadata-line toggle wiring
+- TaskCard render-state and class assembly
+- TaskCard completion-state visual refresh
+- TaskCard status/priority indicator rendering
+- TaskCard secondary badge and dependency-toggle rendering
+- TaskCard title and link rendering
+- TaskCard context-menu integration
+- TaskCard quick-action service calls
+- TaskCard badge and interactive-control helpers
+- TaskModal details-editor adapter wiring
+- TaskModal title-input behavior
+- TaskModal details/right-column layout transitions
+- TaskModal mobile focus and keyboard scroll guards
+- TaskModal field rendering and visibility dispatch
+- TaskModal metadata field construction
+- TaskModal organization field construction
+- TaskModal project list rendering
+- TaskModal subtask list rendering
+- TaskModal dependency list state and candidate filtering
+- TaskModal task-selector opening for dependency and subtask pickers
+- TaskModal action menu-state snapshots and icon-state assembly
+- TaskCreationModal initial form-state defaults and pre-populated values
+- TaskCreationModal post-save subtask assignment planning
+- TaskEditModal initial form-state defaults and cached user-field values
+- TaskEditModal frontmatter-cache reads and edit-change input assembly
+- TaskEditModal subtask add/remove planning and child project-link updates
 
 ## Date and Recurrence Flow
 
@@ -73,10 +162,132 @@ Refactor rule:
 - internal logic should use explicit date semantics
 - recurrence expansion should remain centralized rather than duplicated in views
 
+Calendar views should build events through normalized event builders before
+touching FullCalendar APIs. Drag/drop and resize handlers should ask planning
+helpers for explicit mutation plans before performing side effects.
+
+## UI State Flow
+
+TaskCard and TaskModal rendering should consume already-normalized state.
+
+Refactor rule:
+
+- property lookup belongs in access helpers
+- input parsing belongs in modal state helpers
+- relationship filtering/sorting belongs in relationship helpers
+- relationship expansion DOM containers should use injected card renderers
+- visible-property metadata assembly belongs in metadata helpers
+- metadata-line blocked-by toggle wiring belongs in metadata-line helpers
+- target-date, completion, and class-name state belongs in state helpers
+- status-click completion refresh, checkbox sync, title completion sync, and
+  stale status/priority/project class cleanup belong in completion-state helpers
+- status/priority dot visibility, colors, icons, and insertion belong in
+  primary-indicator helpers
+- recurrence, reminder, project, chevron, and dependency badge rendering belongs
+  in secondary-badge helpers
+- title text resolution, link rendering, and completion class sync belong in
+  title helpers
+- context-menu button wiring and native file-menu fallback belong in
+  context-menu helpers
+- quick-action service calls belong in action helpers
+- reusable badge/control DOM behavior belongs in indicator helpers
+- Task List drag/drop segmenting, insertion-slot resolution, and drop-target
+  reconstruction belong in `taskListDragGeometry`; `TaskListView` keeps DOM
+  measurement, drag event handling, and persistence
+- Task List grouped render items, sub-property groups, grouped sort-scope paths,
+  formula-backed property maps, and group-value stringification belong in
+  `taskListGrouping`; `TaskListView` keeps render mode switching, virtualization,
+  and DOM updates
+- custom user-field input/toggle DOM behavior belongs in user-field control
+  helpers
+- creation-modal defaults, pre-populated values, default reminders, project
+  strings, and user-field defaults belong in creation form-state helpers
+- creation-modal subtask project assignment belongs in creation subtask helpers
+- edit-modal defaults, identifying tag filtering, recurrence/reminder copies,
+  and cached user-field values belong in edit form-state helpers
+- edit-modal frontmatter-cache reads and task-change input assembly belong in
+  edit change-state helpers
+- edit-modal subtask add/remove planning and child project-link mutation belong
+  in edit subtask helpers
+- modal action-button bar construction and save disabled-state handling belongs
+  in action-button helpers
+- modal compact action-icon construction and the shared core action-icon set
+  belongs in action-bar helpers
+- modal compact action-icon active-state, tooltip, and color updates belong in
+  action-icon state helpers
+- modal date, status, priority, recurrence, and reminder action-menu callbacks
+  belong in action-menu helpers
+- modal action menu-state snapshots, due/scheduled setter routing, recurrence
+  anchor preservation, and icon-state assembly belong in action-state helpers
+- modal default status/priority and recurrence action-label derivation belong
+  in action-value helpers
+- title textarea construction, newline normalization, Enter-key policy, and
+  dynamic title height belong in title-input helpers
+- details/right-column collapse, expansion, and animation classes belong in
+  layout helpers
+- title-focus scroll restoration, mobile-like environment checks, and mobile
+  keyboard scroll nudges belong in focus-guard helpers
+- details-editor markdown lifecycle, tab focus policy, and value sync belong in
+  details-editor helpers
+- modal field grouping, core-field dispatch, and user-field fallback belong in
+  field-rendering helpers
+- contexts, tags, and time-estimate field construction belongs in metadata field
+  helpers
+- project, subtask, and dependency list-field shells belong in organization
+  field helpers
+- project-string parsing, project item deduplication, project list rendering, and
+  project value serialization belong in project state helpers
+- subtask candidate filtering, selected-subtask deduplication, removal, and
+  cached/fallback list rendering belong in subtask state helpers
+- dependency duplicate checks, add/remove behavior, and blocked-by/blocking
+  candidate filtering belong in dependency state helpers
+- task-selector task loading, empty-state notices, cancellation handling, and
+  selector failure logging belong in the task-selector helper; modals keep the
+  selected-item state mutation
+- filename-safe and storage-safe task title normalization belongs in
+  `taskTitleSanitizer`; callers should not strip filename-unsafe characters or
+  control characters inline
+- single-property normalization and frontmatter mutation rules belong in
+  `taskPropertyUpdate`; callers should not duplicate status coercion,
+  completed-date derivation, date removal, dependency serialization, or
+  date-modified writes inline
+- archive tag mutation and archive/tasks move path construction belong in
+  `taskArchivePlanning`; `TaskService` keeps the vault write, rename, cache,
+  calendar, and webhook side effects
+- time-entry sanitization and start/stop/delete frontmatter mutation rules
+  belong in `taskTimeTrackingPlanning`; `TaskService` keeps active-session
+  checks, vault writes, cache updates, events, and webhooks
+- recurring instance action-date selection, complete/skipped array mutation,
+  DTSTART updates, and next-occurrence advancement belong in
+  `taskRecurringPlanning`; `TaskService` keeps vault writes, body checkbox
+  resets, cache updates, events, webhooks, and calendar sync
+- blocking relationship path deduplication, reverse `blockedBy` mutation, and
+  dependency metadata preservation belong in `taskBlockingRelationships`;
+  `TaskService` keeps task cache reads and child task writes
+- post-write cache refresh, dependent-task refresh events, webhooks, calendar
+  sync, and auto-archive routing belong in `taskPropertyChangeSideEffects`
+- task-frontmatter identification belongs in `taskIdentification`; callers
+  should not duplicate tag/property matching, metadata-cache `#` stripping, or
+  boolean-like identifier comparison
+- mapped task-info defaults, computed tracked time, and blocking flags belong in
+  `taskInfoAssembly`; `TaskManager` keeps metadata-cache access, FieldMapper
+  calls, and dependency-cache lookups
+- DOM functions should wire controls, render values, and call services
+
+This keeps DOM tests focused on interaction while pure unit tests cover state
+rules such as custom field filtering, list parsing, dependency normalization,
+and inherited view ordering.
+
 ## Operational Principle
 
 When debugging a behavior problem, the first question should be:
 
 "Is this a source-data issue, an adapter issue, a domain-logic issue, or a view-refresh issue?"
 
-The architecture should make that answer obvious.
+The architecture should make that answer obvious. New diagnostics should use
+`TaskNotesLogCategory` values so logs preserve the same distinction:
+
+- source-data problems usually map to `validation` or `stale-data`
+- adapter/API problems usually map to `provider` or `configuration`
+- write-path failures usually map to `persistence`
+- unexpected view/service failures usually map to `internal`

@@ -77,4 +77,37 @@ describe("Issue #1820: API-created task cache fallback", () => {
 			title: "Metadata title",
 		});
 	});
+
+	it("keeps just-written task data while native metadata is still stale", async () => {
+		const path = "TaskNotes/Tasks/api-created.md";
+		MockObsidian.createTestFile(
+			path,
+			"---\ntitle: API-created task\ntags:\n  - task\nscheduled: 2026-05-18\ndateModified: 2026-05-18T09:00:00.000Z\n---\n"
+		);
+		app.metadataCache.setCache(path, {
+			frontmatter: {
+				title: "API-created task",
+				status: "open",
+				priority: "normal",
+				tags: ["task"],
+				scheduled: "2026-05-18",
+				dateModified: "2026-05-18T09:00:00.000Z",
+			},
+		});
+
+		manager.updateTaskInfoInCache(
+			path,
+			createTask({
+				path,
+				scheduled: "2026-05-20",
+				dateModified: "2026-05-18T09:05:00.000Z",
+			})
+		);
+
+		await expect(manager.getTaskInfo(path)).resolves.toMatchObject({
+			path,
+			scheduled: "2026-05-20",
+			dateModified: "2026-05-18T09:05:00.000Z",
+		});
+	});
 });

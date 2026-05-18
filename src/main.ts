@@ -46,7 +46,7 @@ import { PriorityManager } from "./services/PriorityManager";
 import { TaskService } from "./services/TaskService";
 import { FilterService } from "./services/FilterService";
 import { TaskStatsService } from "./services/TaskStatsService";
-import { ViewPerformanceService } from "./services/ViewPerformanceService";
+import type { ViewPerformanceService } from "./services/ViewPerformanceService";
 import { AutoArchiveService } from "./services/AutoArchiveService";
 import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";

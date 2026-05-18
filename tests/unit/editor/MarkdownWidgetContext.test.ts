@@ -4,6 +4,7 @@ import {
 	shouldSkipMarkdownWidgetEditor,
 	shouldSkipMarkdownWidgetLeaf,
 } from "../../../src/editor/MarkdownWidgetContext";
+import { createTaskNotesLogger } from "../../../src/utils/tasknotesLogger";
 
 function createMockView(options: {
 	dom?: HTMLElement;
@@ -20,6 +21,15 @@ function createMockView(options: {
 			})),
 		},
 	} as unknown as EditorView;
+}
+
+function createSink() {
+	return {
+		debug: jest.fn(),
+		info: jest.fn(),
+		warn: jest.fn(),
+		error: jest.fn(),
+	};
 }
 
 describe("MarkdownWidgetContext", () => {
@@ -88,5 +98,34 @@ describe("MarkdownWidgetContext", () => {
 		};
 
 		expect(shouldSkipMarkdownWidgetLeaf(leaf as any)).toBe(true);
+	});
+
+	it("routes editor context failures through debug-gated diagnostics", () => {
+		const sink = createSink();
+		const error = new Error("editor field unavailable");
+		const view = {
+			dom: document.createElement("div"),
+			state: {
+				field: jest.fn(() => {
+					throw error;
+				}),
+			},
+		} as unknown as EditorView;
+		let debugEnabled = false;
+		const logger = createTaskNotesLogger({
+			tag: "MarkdownWidgetContext",
+			isDebugEnabled: () => debugEnabled,
+			sink,
+		});
+
+		expect(shouldSkipMarkdownWidgetEditor(view, logger)).toBe(false);
+		expect(sink.debug).not.toHaveBeenCalled();
+
+		debugEnabled = true;
+		expect(shouldSkipMarkdownWidgetEditor(view, logger)).toBe(false);
+		expect(sink.debug).toHaveBeenCalledWith(
+			"[TaskNotes][MarkdownWidgetContext][provider][check-editor-context] Error checking markdown widget editor context",
+			error
+		);
 	});
 });

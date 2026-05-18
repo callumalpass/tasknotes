@@ -13,12 +13,15 @@ function readRepoFile(relativePath: string): string {
 
 describe("Issue #280: project-specific view CSS hooks", () => {
 	it("adds project-derived classes to task cards", () => {
-		const source = readRepoFile("src/ui/TaskCard.ts");
+		const cardSource = readRepoFile("src/ui/TaskCard.ts");
+		const stateSource = readRepoFile("src/ui/taskCardState.ts");
+		const completionStateSource = readRepoFile("src/ui/taskCardCompletionState.ts");
 
-		expect(source).toContain("function getProjectClassNames");
-		expect(source).toContain("task-card--project-${sanitizedProject}");
-		expect(source).toContain("task-card--has-projects");
-		expect(source).toContain('className.startsWith("task-card--project-")');
+		expect(stateSource).toContain("function buildTaskCardClassNames");
+		expect(stateSource).toContain("task-card--project-${sanitizedProject}");
+		expect(stateSource).toContain("task-card--has-projects");
+		expect(cardSource).toContain("buildTaskCardRenderState");
+		expect(completionStateSource).toContain('removeClassesWithPrefix(card, "task-card--project-")');
 	});
 
 	it("adds project-derived classes to calendar task events", () => {

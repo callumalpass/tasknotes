@@ -109,12 +109,41 @@ export function createDependencyItemFromPath(
 	};
 }
 
-export function dependencyItemExists(items: DependencyItem[], item: DependencyItem): boolean {
+export interface DependencyCandidateOptions {
+	plugin: TaskNotesPlugin;
+	sourcePath: string;
+	allTasks: readonly TaskInfo[];
+	existingItems: readonly DependencyItem[];
+	currentPath?: string;
+}
+
+export function dependencyItemExists(
+	items: readonly DependencyItem[],
+	item: DependencyItem
+): boolean {
 	return items.some(
 		(existing) =>
 			existing.dependency.uid === item.dependency.uid ||
 			(Boolean(item.path) && existing.path === item.path)
 	);
+}
+
+export function addDependencyItem(
+	items: readonly DependencyItem[],
+	item: DependencyItem
+): DependencyItem[] {
+	if (dependencyItemExists(items, item)) {
+		return [...items];
+	}
+
+	return [...items, item];
+}
+
+export function removeDependencyItemAtIndex(
+	items: readonly DependencyItem[],
+	indexToRemove: number
+): DependencyItem[] {
+	return items.filter((_, index) => index !== indexToRemove);
 }
 
 export async function renderDependencyList({
@@ -227,4 +256,47 @@ export function candidateDependencyUid(
 		task.path,
 		plugin.settings.useFrontmatterMarkdownLinks
 	);
+}
+
+export function getBlockedByDependencyCandidates({
+	plugin,
+	sourcePath,
+	allTasks,
+	existingItems,
+	currentPath,
+}: DependencyCandidateOptions): TaskInfo[] {
+	const existingUids = new Set(existingItems.map((item) => item.dependency.uid));
+	return allTasks.filter((candidate) => {
+		if (currentPath && candidate.path === currentPath) {
+			return false;
+		}
+		const candidateUid = candidateDependencyUid(plugin, sourcePath, candidate);
+		return !existingUids.has(candidateUid);
+	});
+}
+
+export function getBlockingDependencyCandidates({
+	plugin,
+	sourcePath,
+	allTasks,
+	existingItems,
+	currentPath,
+}: DependencyCandidateOptions): TaskInfo[] {
+	const existingPaths = new Set(
+		existingItems
+			.map((item) => item.path)
+			.filter((path): path is string => typeof path === "string")
+	);
+	const existingUids = new Set(existingItems.map((item) => item.dependency.uid));
+
+	return allTasks.filter((candidate) => {
+		if (currentPath && candidate.path === currentPath) {
+			return false;
+		}
+		if (existingPaths.has(candidate.path)) {
+			return false;
+		}
+		const candidateUid = candidateDependencyUid(plugin, sourcePath, candidate);
+		return !existingUids.has(candidateUid);
+	});
 }

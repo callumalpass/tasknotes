@@ -10,6 +10,7 @@ import {
 } from "./MiniCalendarView";
 import { registerBasesView, unregisterBasesView } from "./api";
 import { isNoteFileOrFormulaProperty } from "./propertyFilters";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const KANBAN_CARD_LAYOUT_OPTIONS: Record<string, string> = {
 	default: "Default",
@@ -24,50 +25,62 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 	if (!plugin.settings.enableBases) return;
 	// All views now require Obsidian 1.10.1+ (public Bases API with groupBy support)
 	if (!requireApiVersion("1.10.1")) return;
+	const logger = createTaskNotesLogger({
+		tag: "Bases/Registration",
+		isDebugEnabled: () => plugin.settings.enableDebugLogging,
+	});
 
 	const attemptRegistration = async (): Promise<boolean> => {
 		try {
 			// Register Task List view using public API
-			const taskListSuccess = registerBasesView(plugin, "tasknotesTaskList", {
-				name: "TaskNotes Task List",
-				icon: "tasknotes-simple",
-				factory: buildTaskListViewFactory(plugin),
-				options: () => [
-					{
-						type: "property",
-						key: "subGroup",
-						displayName: "Sub-group by",
-						placeholder: "Select property for sub-grouping (optional)",
-						filter: (prop: string) => {
-							// Show all note, task, and formula properties that could be used for sub-grouping
-							return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
+			const taskListSuccess = registerBasesView(
+				plugin,
+				"tasknotesTaskList",
+				{
+					name: "TaskNotes Task List",
+					icon: "tasknotes-simple",
+					factory: buildTaskListViewFactory(plugin),
+					options: () => [
+						{
+							type: "property",
+							key: "subGroup",
+							displayName: "Sub-group by",
+							placeholder: "Select property for sub-grouping (optional)",
+							filter: (prop: string) => {
+								// Show all note, task, and formula properties that could be used for sub-grouping
+								return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
+							},
 						},
-					},
-					{
-						type: "toggle",
-						key: "enableSearch",
-						displayName: "Enable search box",
-						default: false,
-					},
-					{
-						type: "dropdown",
-						key: "expandedRelationshipFilterMode",
-						displayName: "Expanded relationships",
-						default: "inherit",
-						options: {
-							inherit: "Inherit",
-							"show-all": "Show all",
+						{
+							type: "toggle",
+							key: "enableSearch",
+							displayName: "Enable search box",
+							default: false,
 						},
-					},
-				],
-			});
+						{
+							type: "dropdown",
+							key: "expandedRelationshipFilterMode",
+							displayName: "Expanded relationships",
+							default: "inherit",
+							options: {
+								inherit: "Inherit",
+								"show-all": "Show all",
+							},
+						},
+					],
+				},
+				logger
+			);
 
 			// Register Kanban view using public API
-			const kanbanSuccess = registerBasesView(plugin, "tasknotesKanban", {
-				name: "TaskNotes Kanban",
-				icon: "tasknotes-simple",
-				factory: buildKanbanViewFactory(plugin),
-				options: () => [
+			const kanbanSuccess = registerBasesView(
+				plugin,
+				"tasknotesKanban",
+				{
+					name: "TaskNotes Kanban",
+					icon: "tasknotes-simple",
+					factory: buildKanbanViewFactory(plugin),
+					options: () => [
 					{
 						type: "property",
 						key: "swimLane",
@@ -164,15 +177,20 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							"show-all": "Show all",
 						},
 					},
-				],
-			});
+					],
+				},
+				logger
+			);
 
 			// Register Calendar view using public API
-			const calendarSuccess = registerBasesView(plugin, "tasknotesCalendar", {
-				name: "TaskNotes Calendar",
-				icon: "tasknotes-simple",
-				factory: buildCalendarViewFactory(plugin),
-				options: () => {
+			const calendarSuccess = registerBasesView(
+				plugin,
+				"tasknotesCalendar",
+				{
+					name: "TaskNotes Calendar",
+					icon: "tasknotes-simple",
+					factory: buildCalendarViewFactory(plugin),
+					options: () => {
 						const calendarSettings = plugin.settings.calendarViewSettings;
 						const t = (key: string) => plugin.i18n.translate(`views.basesCalendar.settings.${key}`);
 
@@ -580,14 +598,19 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 						return options;
 					},
-				});
+				},
+				logger
+			);
 
 			// Register Mini Calendar view using public API
-			const miniCalendarSuccess = registerBasesView(plugin, "tasknotesMiniCalendar", {
-				name: "TaskNotes Mini Calendar",
-				icon: "tasknotes-simple",
-				factory: buildMiniCalendarViewFactory(plugin),
-				options: () => {
+			const miniCalendarSuccess = registerBasesView(
+				plugin,
+				"tasknotesMiniCalendar",
+				{
+					name: "TaskNotes Mini Calendar",
+					icon: "tasknotes-simple",
+					factory: buildMiniCalendarViewFactory(plugin),
+					options: () => {
 					const t = (key: string) =>
 						plugin.i18n.translate(`views.basesCalendar.settings.${key}`);
 					const options: BasesAllOptions[] = [
@@ -674,26 +697,32 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 					return options;
 				},
-			});
+				},
+				logger
+			);
 
 			// Consider it successful if any view registered successfully
 			if (!taskListSuccess && !kanbanSuccess && !calendarSuccess && !miniCalendarSuccess) {
-				console.debug("[TaskNotes][Bases] Bases plugin not available for registration");
+				logger.debug("Bases plugin not available for registration", {
+					category: "configuration",
+					operation: "register-views",
+				});
 				return false;
 			}
 
 			// Refresh existing Bases views
-				plugin.app.workspace.iterateAllLeaves((leaf) => {
-					if (leaf.view?.getViewType?.() === "bases") {
-						const view = leaf.view as { refresh?: () => void };
-						if (typeof view.refresh === "function") {
+			plugin.app.workspace.iterateAllLeaves((leaf) => {
+				if (leaf.view?.getViewType?.() === "bases") {
+					const view = leaf.view as { refresh?: () => void };
+					if (typeof view.refresh === "function") {
 						try {
 							view.refresh();
 						} catch (refreshError) {
-							console.debug(
-								"[TaskNotes][Bases] Error refreshing view:",
-								refreshError
-							);
+							logger.debug("Error refreshing Bases view after registration", {
+								category: "provider",
+								operation: "refresh-existing-view",
+								error: refreshError,
+							});
 						}
 					}
 				}
@@ -701,7 +730,11 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 			return true;
 		} catch (error) {
-			console.warn("[TaskNotes][Bases] Registration attempt failed:", error);
+			logger.warn("Registration attempt failed", {
+				category: "provider",
+				operation: "register-views",
+				error,
+			});
 			return false;
 		}
 	};
@@ -719,20 +752,31 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 		}
 	}
 
-	console.warn("[TaskNotes][Bases] Failed to register views after multiple attempts");
+	logger.warn("Failed to register views after multiple attempts", {
+		category: "configuration",
+		operation: "register-views",
+	});
 }
 
 /**
  * Unregister TaskNotes views from Bases plugin
  */
 export function unregisterBasesViews(plugin: TaskNotesPlugin): void {
+	const logger = createTaskNotesLogger({
+		tag: "Bases/Registration",
+		isDebugEnabled: () => plugin.settings.enableDebugLogging,
+	});
 	try {
 		// Unregister views using wrapper (uses internal API as public API doesn't provide unregister)
-		unregisterBasesView(plugin, "tasknotesTaskList");
-		unregisterBasesView(plugin, "tasknotesKanban");
-		unregisterBasesView(plugin, "tasknotesCalendar");
-		unregisterBasesView(plugin, "tasknotesMiniCalendar");
+		unregisterBasesView(plugin, "tasknotesTaskList", logger);
+		unregisterBasesView(plugin, "tasknotesKanban", logger);
+		unregisterBasesView(plugin, "tasknotesCalendar", logger);
+		unregisterBasesView(plugin, "tasknotesMiniCalendar", logger);
 	} catch (error) {
-		console.error("[TaskNotes][Bases] Error during view unregistration:", error);
+		logger.error("Error during view unregistration", {
+			category: "provider",
+			operation: "unregister-views",
+			error,
+		});
 	}
 }

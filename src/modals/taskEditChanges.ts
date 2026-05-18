@@ -5,6 +5,7 @@ import { updateToNextScheduledOccurrence, sanitizeTags, updateDTSTARTInRecurrenc
 import { parseLinkToPath } from "../utils/linkUtils";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { appendMissingTaskIdentificationTags } from "../utils/taskTagFiltering";
+import { getUserFieldChanges } from "./taskModalUserFields";
 
 interface DependencyItem {
 	dependency: TaskDependency;
@@ -305,46 +306,4 @@ function applyCompletedInstanceChanges(
 	if (nextDates.due) {
 		changes.due = nextDates.due;
 	}
-}
-
-function getUserFieldChanges(
-	userFields: Record<string, unknown>,
-	frontmatter: Record<string, unknown>,
-	userFieldConfigs: UserMappedField[]
-): Record<string, unknown> {
-	const userFieldsChanges: Record<string, unknown> = {};
-
-	for (const field of userFieldConfigs) {
-		if (!field || !field.key) continue;
-
-		const newValue = userFields[field.key];
-		const oldValue = frontmatter[field.key];
-
-		if (isDifferent(newValue, oldValue)) {
-			userFieldsChanges[field.key] =
-				newValue === null || newValue === undefined || newValue === ""
-					? null
-					: newValue;
-		}
-	}
-
-	return userFieldsChanges;
-}
-
-function isDifferent(newValue: unknown, oldValue: unknown): boolean {
-	const normalizeEmpty = (value: unknown) => {
-		if (value === null || value === undefined || value === "") {
-			return null;
-		}
-		return value;
-	};
-
-	const normalizedNew = normalizeEmpty(newValue);
-	const normalizedOld = normalizeEmpty(oldValue);
-
-	if (Array.isArray(normalizedNew) || Array.isArray(normalizedOld)) {
-		return JSON.stringify(normalizedNew) !== JSON.stringify(normalizedOld);
-	}
-
-	return normalizedNew !== normalizedOld;
 }
