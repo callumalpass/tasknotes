@@ -19,7 +19,6 @@ import {
 	calculateDefaultDate,
 	calculateDefaultDateTime,
 	ensureFolderExists,
-	getActiveTimeEntry,
 	splitFrontmatterAndBody,
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";
