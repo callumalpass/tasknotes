@@ -18,6 +18,11 @@ export interface ICSEventReference {
 	subscriptionName?: string;
 }
 
+interface EventSeriesIndex {
+	seriesIdByEventId: Map<string, string>;
+	eventIdsBySeriesId: Map<string, Set<string>>;
+}
+
 /**
  * Service for creating notes and tasks from ICS calendar events
  */
@@ -73,21 +78,99 @@ export class ICSNoteService {
 		return null;
 	}
 
+	private getLoadedCalendarEvents(): ICSEvent[] {
+		return [
+			...(this.plugin.icsSubscriptionService?.getAllEvents() ?? []),
+			...(this.plugin.googleCalendarService?.getAllEvents() ?? []),
+			...(this.plugin.microsoftCalendarService?.getAllEvents() ?? []),
+		];
+	}
+
+	private getPotentialSeriesId(eventId: string): string | null {
+		const match = eventId.match(/^(.*)-\d+$/);
+		const seriesId = match?.[1]?.trim();
+		return seriesId || null;
+	}
+
+	private buildEventSeriesIndex(): EventSeriesIndex {
+		const candidates = new Map<string, Set<string>>();
+
+		for (const event of this.getLoadedCalendarEvents()) {
+			const seriesId = this.getPotentialSeriesId(event.id);
+			if (!seriesId) continue;
+
+			let eventIds = candidates.get(seriesId);
+			if (!eventIds) {
+				eventIds = new Set<string>();
+				candidates.set(seriesId, eventIds);
+			}
+			eventIds.add(event.id);
+		}
+
+		const seriesIdByEventId = new Map<string, string>();
+		const eventIdsBySeriesId = new Map<string, Set<string>>();
+
+		for (const [seriesId, eventIds] of candidates) {
+			if (eventIds.size < 2) {
+				continue;
+			}
+
+			eventIdsBySeriesId.set(seriesId, eventIds);
+			for (const eventId of eventIds) {
+				seriesIdByEventId.set(eventId, seriesId);
+			}
+		}
+
+		return { seriesIdByEventId, eventIdsBySeriesId };
+	}
+
+	private getRelatedEventIds(eventId: string, seriesIndex: EventSeriesIndex): Set<string> {
+		const relatedIds = new Set<string>([eventId]);
+		const seriesId = seriesIndex.seriesIdByEventId.get(eventId);
+		const storedSeriesId = seriesIndex.eventIdsBySeriesId.has(eventId) ? eventId : seriesId;
+
+		if (storedSeriesId) {
+			relatedIds.add(storedSeriesId);
+			for (const relatedEventId of seriesIndex.eventIdsBySeriesId.get(storedSeriesId) ?? []) {
+				relatedIds.add(relatedEventId);
+			}
+		}
+
+		return relatedIds;
+	}
+
+	private eventIdsMatchSeries(
+		storedEventId: string,
+		targetEventIds: Set<string>,
+		seriesIndex: EventSeriesIndex
+	): boolean {
+		for (const relatedId of this.getRelatedEventIds(storedEventId, seriesIndex)) {
+			if (targetEventIds.has(relatedId)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * Count linked notes/tasks per calendar event id in one pass.
 	 */
 	async getRelatedNoteCountsByEventId(): Promise<Map<string, number>> {
 		const pathsByEventId = new Map<string, Set<string>>();
 		const icsEventIdField = this.plugin.fieldMapper.toUserField("icsEventId");
+		const seriesIndex = this.buildEventSeriesIndex();
 
 		const addReference = (eventIds: unknown, path: string): void => {
 			for (const eventId of this.normalizeEventIds(eventIds)) {
-				let paths = pathsByEventId.get(eventId);
-				if (!paths) {
-					paths = new Set<string>();
-					pathsByEventId.set(eventId, paths);
+				for (const relatedEventId of this.getRelatedEventIds(eventId, seriesIndex)) {
+					let paths = pathsByEventId.get(relatedEventId);
+					if (!paths) {
+						paths = new Set<string>();
+						pathsByEventId.set(relatedEventId, paths);
+					}
+					paths.add(path);
 				}
-				paths.add(path);
 			}
 		};
 
@@ -438,11 +521,17 @@ export class ICSNoteService {
 			const relatedNotes: (TaskInfo | NoteInfo)[] = [];
 			const relatedPaths = new Set<string>();
 			const icsEventIdField = this.plugin.fieldMapper.toUserField("icsEventId");
+			const seriesIndex = this.buildEventSeriesIndex();
+			const targetEventIds = this.getRelatedEventIds(icsEvent.id, seriesIndex);
+			const hasLinkedEventId = (eventIds: unknown): boolean =>
+				this.normalizeEventIds(eventIds).some((eventId) =>
+					this.eventIdsMatchSeries(eventId, targetEventIds, seriesIndex)
+				);
 
 			// Search through cached tasks
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 			for (const task of allTasks) {
-				if (task.icsEventId && task.icsEventId.includes(icsEvent.id)) {
+				if (hasLinkedEventId(task.icsEventId)) {
 					if (relatedPaths.has(task.path)) continue;
 					relatedNotes.push(task);
 					relatedPaths.add(task.path);
@@ -456,12 +545,7 @@ export class ICSNoteService {
 					const cache = this.plugin.app.metadataCache.getFileCache(file);
 					const frontmatter = cache?.frontmatter;
 
-					const icsEventIds = frontmatter?.[icsEventIdField];
-					const hasEventId = Array.isArray(icsEventIds)
-						? icsEventIds.includes(icsEvent.id)
-						: icsEventIds === icsEvent.id; // backwards compatibility
-
-					if (frontmatter && hasEventId) {
+					if (frontmatter && hasLinkedEventId(frontmatter[icsEventIdField])) {
 						if (relatedPaths.has(file.path)) continue;
 						const noteInfo: NoteInfo = {
 							title: frontmatter.title || file.basename,

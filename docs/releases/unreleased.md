@@ -124,6 +124,7 @@ Example:
 
 ## Fixed
 
+- ([#559](https://github.com/callumalpass/tasknotes/issues/559)) Treated notes linked to one loaded recurring calendar event instance as related to the other instances in that series. Thanks to @cathywu for reporting this and @mdbraber for the implementation notes.
 - ([#685](https://github.com/callumalpass/tasknotes/issues/685)) Made Calendar list views respect the All-day slot option by hiding all-day events from the list when that option is turned off. Thanks to @RumiaKitinari for reporting this.
 - ([#643](https://github.com/callumalpass/tasknotes/issues/643)) Stopped custom filename templates such as `task-{year}{month}{day}{hour}{minute}` from incorrectly showing the "filename shortened" notice when creating tasks. Thanks to @minchinweb for reporting this.
 - ([#722](https://github.com/callumalpass/tasknotes/issues/722)) Made Skip Break reset a queued Pomodoro break back to the next focus timer without starting a session. Thanks to @Goossiii for reporting this and @YIRU69 for the follow-up.
