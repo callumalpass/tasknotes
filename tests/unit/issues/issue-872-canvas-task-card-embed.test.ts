@@ -8,7 +8,10 @@ jest.mock("../../../src/ui/TaskCard", () => ({
 
 import { Component } from "obsidian";
 import { createTaskCard } from "../../../src/ui/TaskCard";
-import { injectCanvasTaskCardWidgets } from "../../../src/editor/TaskCardNoteDecorations";
+import {
+	injectCanvasTaskCardWidgets,
+	setupReadingModeHandlers,
+} from "../../../src/editor/TaskCardNoteDecorations";
 
 function createCanvasEmbed(): HTMLElement {
 	const root = document.createElement("div");
@@ -67,6 +70,7 @@ function createPluginMock(options: { isEditing?: boolean } = {}) {
 	const canvasLeaves = [
 		{
 			view: {
+				containerEl: root,
 				canvas: {
 					nodes: new Map([["task-node", canvasNode]]),
 				},
@@ -85,6 +89,12 @@ function createPluginMock(options: { isEditing?: boolean } = {}) {
 				getLeavesOfType: jest.fn((type: string) =>
 					type === "canvas" ? canvasLeaves : []
 				),
+				on: jest.fn(() => ({})),
+				offref: jest.fn(),
+			},
+			metadataCache: {
+				on: jest.fn(() => ({})),
+				offref: jest.fn(),
 			},
 		},
 		cacheManager: {
@@ -98,6 +108,10 @@ function createPluginMock(options: { isEditing?: boolean } = {}) {
 		fieldMapper: {
 			getMapping: jest.fn(() => ({})),
 			toUserField: jest.fn((field: string) => field),
+		},
+		emitter: {
+			on: jest.fn(() => ({})),
+			offref: jest.fn(),
 		},
 	} as any;
 }
@@ -190,6 +204,37 @@ describe("Issue #872: task cards in canvas markdown embeds", () => {
 		expect(widgets[0].parentElement).toBe(plugin.root.querySelector(".canvas-node-content"));
 		expect(widgets[0].closest(".markdown-preview-sizer")).toBeNull();
 		expect(createTaskCard).toHaveBeenCalledTimes(2);
+	});
+
+	it("refreshes the card after a Canvas node click enters editing mode", () => {
+		jest.useFakeTimers();
+		let cleanup: (() => void) | undefined;
+
+		try {
+			const plugin = createPluginMock({ isEditing: false });
+			const node = Array.from(
+				plugin.app.workspace.getLeavesOfType("canvas")[0].view.canvas.nodes.values()
+			)[0] as { isEditing: boolean };
+
+			cleanup = setupReadingModeHandlers(plugin);
+			jest.runOnlyPendingTimers();
+
+			const initialWidget = plugin.root.querySelector(".tasknotes-task-card-note-widget");
+			expect(initialWidget?.closest(".markdown-preview-sizer")).not.toBeNull();
+
+			node.isEditing = true;
+			plugin.root.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+			jest.runOnlyPendingTimers();
+
+			const widgets = plugin.root.querySelectorAll(".tasknotes-task-card-note-widget");
+			expect(widgets).toHaveLength(1);
+			expect(widgets[0].parentElement).toBe(plugin.root.querySelector(".canvas-node-content"));
+			expect(widgets[0].closest(".markdown-preview-sizer")).toBeNull();
+			expect(createTaskCard).toHaveBeenCalledTimes(2);
+		} finally {
+			cleanup?.();
+			jest.useRealTimers();
+		}
 	});
 
 	it("leaves non-canvas reading-mode renders to the existing leaf injector", () => {

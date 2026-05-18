@@ -649,6 +649,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const metadataCacheRefs: EventRef[] = [];
 	const emitterRefs: EventRef[] = [];
 	const canvasObservers: MutationObserver[] = [];
+	const canvasInteractionCleanups: Array<() => void> = [];
 	const observedCanvasContainers = new WeakSet<HTMLElement>();
 	const scheduler = new ReadingModeInjectionScheduler();
 	const scheduleInjection = (leaf: WorkspaceLeaf) => {
@@ -681,6 +682,17 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 				childList: true,
 				subtree: true,
 			});
+
+			const handleCanvasInteraction = () => {
+				debouncedCanvasRefresh({ force: true });
+			};
+			containerEl.addEventListener("pointerdown", handleCanvasInteraction, true);
+			containerEl.addEventListener("focusin", handleCanvasInteraction, true);
+			canvasInteractionCleanups.push(() => {
+				containerEl.removeEventListener("pointerdown", handleCanvasInteraction, true);
+				containerEl.removeEventListener("focusin", handleCanvasInteraction, true);
+			});
+
 			observedCanvasContainers.add(containerEl);
 			canvasObservers.push(observer);
 		}
@@ -754,6 +766,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		if (debounceTimer) window.clearTimeout(debounceTimer);
 		if (canvasDebounceTimer) window.clearTimeout(canvasDebounceTimer);
 		canvasObservers.forEach((observer) => observer.disconnect());
+		canvasInteractionCleanups.forEach((cleanup) => cleanup());
 
 		// Clean up each type of event ref with the correct method
 		workspaceRefs.forEach((ref) => plugin.app.workspace.offref(ref));
