@@ -529,6 +529,7 @@
 .tasknotes-plugin .mini-calendar-view {
     padding: var(--tn-spacing-xs);
     gap: var(--tn-spacing-xs);
+    container-type: inline-size;
 }
 
 .tasknotes-plugin .mini-calendar-view__controls {
@@ -537,16 +538,21 @@
     background: transparent;
     border: none;
     box-shadow: none;
+    min-width: 0;
 }
 
 .tasknotes-plugin .mini-calendar-view__header {
     padding: 0;
     margin-bottom: var(--tn-spacing-xs);
     gap: var(--tn-spacing-sm);
+    min-width: 0;
+    flex-wrap: wrap;
 }
 
 .tasknotes-plugin .mini-calendar-view__navigation {
     gap: var(--tn-spacing-xs);
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .tasknotes-plugin .mini-calendar-view__legend {
@@ -637,6 +643,9 @@
 .tasknotes-plugin .mini-calendar-view__nav-button {
     width: var(--tn-button-height-sm);
     height: var(--tn-button-height-sm);
+    min-width: 0;
+    padding: 0;
+    flex: 0 0 var(--tn-button-height-sm);
     font-size: var(--tn-font-size-lg);
     color: var(--tn-text-muted);
 }
@@ -671,6 +680,49 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--tn-text-muted);
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .mini-calendar-view__today-button {
+    min-width: 0;
+    flex: 0 1 auto;
+    white-space: nowrap;
+    padding: 0 var(--tn-spacing-xs);
+}
+
+@container (max-width: 220px) {
+    .tasknotes-plugin .mini-calendar-view__header {
+        justify-content: center;
+        gap: var(--tn-spacing-xs);
+    }
+
+    .tasknotes-plugin .mini-calendar-view__navigation {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .tasknotes-plugin .mini-calendar-view__nav-button {
+        width: 24px;
+        height: 24px;
+        flex-basis: 24px;
+        font-size: var(--tn-font-size-md);
+    }
+
+    .tasknotes-plugin .mini-calendar-view__month-display {
+        font-size: var(--tn-font-size-xs);
+        letter-spacing: 0;
+    }
+
+    .tasknotes-plugin .mini-calendar-view__today-button {
+        margin-left: 0;
+        width: 100%;
+        min-height: 24px;
+        font-size: var(--tn-font-size-xs);
+    }
 }
 
 .tasknotes-plugin .mini-calendar-view__grid-container {
