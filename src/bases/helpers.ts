@@ -724,6 +724,7 @@ export async function renderGroupedTasksInBasesView(
 		// Add toggle button (chevron)
 		const toggleBtn = doc.createElement("button");
 		toggleBtn.className = "task-group-toggle";
+		toggleBtn.type = "button";
 		toggleBtn.setAttribute("aria-label", "Toggle group");
 		toggleBtn.setAttribute("aria-expanded", "true");
 		headerElement.appendChild(toggleBtn);

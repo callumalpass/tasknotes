@@ -1,3 +1,4 @@
+import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import {
@@ -67,16 +68,24 @@ function renderCalendarMonth(
 	const header = container.createDiv("recurring-calendar__header");
 	const prevButton = header.createEl("button", {
 		cls: "recurring-calendar__nav",
-		text: "<",
+		attr: {
+			type: "button",
+			"aria-label": "Previous month",
+		},
 	});
+	setIcon(prevButton, "chevron-left");
 	const monthLabel = header.createSpan("recurring-calendar__month");
 	const locale = options.plugin.i18n.getCurrentLocale() || "en";
 	const monthFormatter = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
 	monthLabel.textContent = monthFormatter.format(displayDate);
 	const nextButton = header.createEl("button", {
 		cls: "recurring-calendar__nav",
-		text: ">",
+		attr: {
+			type: "button",
+			"aria-label": "Next month",
+		},
 	});
+	setIcon(nextButton, "chevron-right");
 
 	const grid = container.createDiv("recurring-calendar__grid");
 	const monthStart = getUTCStartOfMonth(displayDate);

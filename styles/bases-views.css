@@ -102,19 +102,31 @@
 
 /* Toggle button for groups */
 .tn-bases-tasknotes-list .task-group-toggle {
+    appearance: none;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 20px;
     height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    margin: 0;
+    padding: 0;
     flex-shrink: 0;
-    border: none;
+    border: 0;
+    border-radius: var(--tn-radius-sm);
+    box-shadow: none;
     background: transparent;
-    color: var(--tn-text-normal);
+    color: var(--tn-text-muted);
     font-size: 14px;
     line-height: 1;
     cursor: var(--cursor-link, pointer);
-    padding: 0;
+}
+
+.tn-bases-tasknotes-list .task-group-toggle:hover,
+.tn-bases-tasknotes-list .task-group-toggle:focus-visible {
+    background: var(--background-modifier-hover);
+    color: var(--tn-text-normal);
 }
 
 /* Default expanded state - chevron pointing down */

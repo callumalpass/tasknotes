@@ -1911,6 +1911,7 @@ export class TaskListView extends BasesViewBase {
 		// Add toggle button
 		const toggleBtn = doc.createElement("button");
 		toggleBtn.className = "task-group-toggle";
+		toggleBtn.type = "button";
 		toggleBtn.setAttribute("aria-label", "Toggle group");
 		toggleBtn.setAttribute("aria-expanded", String(!headerItem.isCollapsed));
 		toggleBtn.dataset.groupKey = groupHeader.dataset.groupKey!;

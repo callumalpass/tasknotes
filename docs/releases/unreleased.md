@@ -136,6 +136,7 @@ Example:
 ## Fixed
 
 - Fixed Calendar timeblocks created from a selected time range so they appear as soon as Obsidian indexes the daily note update, instead of waiting for a later refresh.
+- Replaced the external calendar event emoji marker with the calendar icon and kept it in the same top-right event corner.
 - (#263) Made the instant inline task conversion button respond to touch/pointer activation, so mobile multi-line selections can be converted into TaskNotes. Thanks to @cathywu for reporting this.
 - (#216) Preserved `@context` markers when converting Tasks-plugin-style checkbox tasks into TaskNotes, while keeping those contexts out of the created task title. Thanks to @ksdavidc for suggesting this, and to @hangryscribe3, @nayatiuh, and @natleahh for the follow-up feedback.
 - (#508) Showed project note names instead of full project paths in grouped Kanban and Task List headings, while keeping the headings linked to the project note. Thanks to @elvarb for reporting this and @dmodify for confirming it in Task List.

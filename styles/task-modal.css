@@ -1122,17 +1122,36 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 }
 
 .tasknotes-plugin .recurring-calendar__nav {
-    border: none;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-s);
+    box-shadow: none;
     background: transparent;
     color: var(--text-muted);
     cursor: var(--cursor-link, pointer);
-    font-size: 14px;
-    padding: 2px 4px;
-    transition: color 0.1s ease;
+    line-height: 1;
+    transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-.tasknotes-plugin .recurring-calendar__nav:hover {
+.tasknotes-plugin .recurring-calendar__nav:hover,
+.tasknotes-plugin .recurring-calendar__nav:focus-visible {
+    background: var(--background-modifier-hover);
     color: var(--text-normal);
+}
+
+.tasknotes-plugin .recurring-calendar__nav svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
 }
 
 .tasknotes-plugin .recurring-calendar__month {
