@@ -23,14 +23,14 @@ function makeLinkServices(): LinkServices {
 }
 
 describe("Issue #1039: Bases beta regressions", () => {
-	it("keeps nested project paths visible in grouped Task List headings", () => {
+	it("renders nested project path headings with the project basename", () => {
 		const container = document.createElement("div");
 
 		renderGroupTitle(container, "Projects/Client Alpha/Roadmap", makeLinkServices());
 
 		const link = container.querySelector<HTMLAnchorElement>("a.task-group-link");
 		expect(link).not.toBeNull();
-		expect(link?.textContent).toBe("Projects/Client Alpha/Roadmap");
+		expect(link?.textContent).toBe("Roadmap");
 		expect(link?.getAttribute("data-href")).toBe("Projects/Client Alpha/Roadmap");
 	});
 

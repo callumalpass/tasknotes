@@ -22,22 +22,45 @@ function resolveDisplayText(
 	if (!(file instanceof TFile)) return displayText;
 	const cache = linkServices.metadataCache.getCache(file.path);
 	const frontmatterTitle = cache?.frontmatter?.title;
-	if (typeof frontmatterTitle !== "string" || frontmatterTitle.trim().length === 0) {
+	const usesImplicitPathLabel = shouldUseResolvedFileLabel(displayText, file, normalizedPath);
+	if (typeof frontmatterTitle === "string" && frontmatterTitle.trim().length > 0) {
+		if (usesImplicitPathLabel) {
+			return frontmatterTitle;
+		}
+
 		return displayText;
 	}
 
-	const normalizedDisplay = displayText?.trim() || "";
-	if (
-		normalizedDisplay === "" ||
-		normalizedDisplay === file.name ||
-		normalizedDisplay === file.basename ||
-		normalizedDisplay === file.path ||
-		normalizedDisplay === normalizedPath
-	) {
-		return frontmatterTitle;
+	if (usesImplicitPathLabel) {
+		const normalizedDisplay = displayText?.trim() || "";
+		if (normalizedDisplay && !normalizedDisplay.includes("/")) {
+			return normalizedDisplay;
+		}
+
+		return file.basename;
 	}
 
 	return displayText;
+}
+
+function shouldUseResolvedFileLabel(
+	displayText: string | undefined,
+	file: TFile,
+	normalizedPath: string
+): boolean {
+	const normalizedDisplay = displayText?.trim() || "";
+	const pathWithoutExtension = file.path.replace(/\.md$/i, "");
+	const normalizedPathWithoutExtension = normalizedPath.replace(/\.md$/i, "");
+
+	return new Set([
+		"",
+		file.name,
+		file.basename,
+		file.path,
+		pathWithoutExtension,
+		normalizedPath,
+		normalizedPathWithoutExtension,
+	]).has(normalizedDisplay);
 }
 
 function parseWikiLinkSegment(segment: string): LinkTitleSegment | null {
@@ -181,7 +204,7 @@ export function renderGroupTitle(
 	const file = linkServices.metadataCache.getFirstLinkpathDest(filePathToTry, "");
 
 	if (file instanceof TFile) {
-		const displayText = filePathToTry.includes("/") ? filePathToTry : file.basename;
+		const displayText = file.basename;
 		const resolvedText = resolveDisplayText(filePathToTry, displayText, linkServices);
 		appendInternalLink(container, filePathToTry, resolvedText, linkServices, {
 			cssClass: "internal-link task-group-link",
