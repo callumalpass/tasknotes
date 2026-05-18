@@ -1,26 +1,9 @@
-import { DateTimePickerModal, buildCalendarGrid } from "../../../src/modals/DateTimePickerModal";
+import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
 
 jest.mock("obsidian");
 
-describe("Issue #1526: calendar-first task date picker", () => {
-	it("builds a stable 6-week month grid with selected and today states", () => {
-		const days = buildCalendarGrid(
-			new Date(2026, 0, 1),
-			"2026-01-15",
-			new Date(2026, 0, 15)
-		);
-
-		expect(days).toHaveLength(42);
-		expect(days[0].date).toBe("2025-12-28");
-		expect(days[41].date).toBe("2026-02-07");
-		expect(days.find((day) => day.date === "2026-01-15")).toMatchObject({
-			isCurrentMonth: true,
-			isSelected: true,
-			isToday: true,
-		});
-	});
-
-	it("saves immediately when a calendar day is clicked", () => {
+describe("Issue #1526: native task date picker", () => {
+	it("uses a native date input initialized with the current date", () => {
 		const onSelect = jest.fn();
 		const modal = new DateTimePickerModal({} as any, {
 			currentDate: "2026-01-15",
@@ -30,19 +13,40 @@ describe("Issue #1526: calendar-first task date picker", () => {
 
 		modal.open();
 
-		const targetDay = Array.from(
-			modal.contentEl.querySelectorAll<HTMLButtonElement>(
-				".date-time-picker-modal__day"
-			)
-		).find((button) => button.getAttribute("aria-label") === "2026-01-20");
+		const dateInput = modal.contentEl.querySelector<HTMLInputElement>(
+			'input[type="date"].date-time-picker-modal__date-input'
+		);
+		const timeInput = modal.contentEl.querySelector<HTMLInputElement>(
+			'input[type="time"].date-time-picker-modal__time-input'
+		);
 
-		expect(targetDay).toBeTruthy();
-		targetDay?.click();
+		expect(dateInput).toBeTruthy();
+		expect(dateInput?.value).toBe("2026-01-15");
+		expect(timeInput?.value).toBe("09:30");
+	});
+
+	it("saves immediately when the native date input changes", () => {
+		const onSelect = jest.fn();
+		const modal = new DateTimePickerModal({} as any, {
+			currentDate: "2026-01-15",
+			currentTime: "09:30",
+			onSelect,
+		});
+
+		modal.open();
+
+		const dateInput = modal.contentEl.querySelector<HTMLInputElement>(
+			'input[type="date"].date-time-picker-modal__date-input'
+		);
+		expect(dateInput).toBeTruthy();
+
+		dateInput!.value = "2026-01-20";
+		dateInput!.dispatchEvent(new Event("change", { bubbles: true }));
 
 		expect(onSelect).toHaveBeenCalledWith("2026-01-20", "09:30");
 	});
 
-	it("updates the month grid without changing the selected date", () => {
+	it("keeps the selected date available for explicit selection after editing time", () => {
 		const onSelect = jest.fn();
 		const modal = new DateTimePickerModal({} as any, {
 			currentDate: "2026-01-15",
@@ -51,21 +55,19 @@ describe("Issue #1526: calendar-first task date picker", () => {
 
 		modal.open();
 
-		const nextMonthButton = modal.contentEl.querySelector<HTMLButtonElement>(
-			'[aria-label="Next month"]'
+		const timeInput = modal.contentEl.querySelector<HTMLInputElement>(
+			'input[type="time"].date-time-picker-modal__time-input'
 		);
-		nextMonthButton?.click();
+		const selectButton = modal.contentEl.querySelector<HTMLButtonElement>(
+			".date-time-picker-modal__action-button.mod-cta"
+		);
 
-		const februaryDay = Array.from(
-			modal.contentEl.querySelectorAll<HTMLButtonElement>(
-				".date-time-picker-modal__day"
-			)
-		).find((button) => button.getAttribute("aria-label") === "2026-02-10");
+		expect(timeInput).toBeTruthy();
+		expect(selectButton).toBeTruthy();
 
-		expect(februaryDay).toBeTruthy();
-		expect(
-			modal.contentEl.querySelector(".date-time-picker-modal__day.is-selected")?.textContent
-		).not.toBe("10");
-		expect(onSelect).not.toHaveBeenCalled();
+		timeInput!.value = "14:15";
+		selectButton!.click();
+
+		expect(onSelect).toHaveBeenCalledWith("2026-01-15", "14:15");
 	});
 });

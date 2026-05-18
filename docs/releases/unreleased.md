@@ -52,6 +52,7 @@ Example:
 - (#933) Added non-Markdown vault files such as canvases to project suggestions, using extension-qualified link targets so those files can be selected as task projects. Thanks to @Alvin21Bon for suggesting this.
 - (#1475, #725) Added quote/backtick escapes for NLP input, so literal course codes or date words can stay in task titles without being parsed as estimates or dates. Thanks to @RumiaKitinari and @gavingwebb for suggesting this.
 - (#1462) Added natural-language date entry to the task date picker, so existing due and scheduled dates can be changed with phrases such as "tomorrow at 3pm" when NLP is enabled. Thanks to @Ruboks-Cube for suggesting this.
+- (#1526) Added a native date field to the task date picker, so scheduled and due dates can be changed with the device date picker while keeping optional times visible. Thanks to @jmartinmcfly for suggesting this and @23426356587 for the follow-up feedback.
 - (#1603) Added Calendar view toggles for hiding completed or skipped recurring task instances while keeping future outstanding instances visible. Thanks to @wandererovertheseaofpiss for suggesting this.
 - (#287, #273, #274) Added linked hover highlighting for Calendar and Agenda events that come from the same task note, so scheduled, due, and recurring entries are easier to connect. Thanks to @girisumit for suggesting this.
 - (#280) Added project-specific CSS hooks to task cards and Calendar events, so project-based visual styling can be handled with user snippets. Thanks to @girisumit for suggesting this.
