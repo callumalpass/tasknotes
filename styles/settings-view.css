@@ -39,9 +39,10 @@
 .tasknotes-plugin .settings-view__tab-nav {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-lg);
+    gap: 1px;
+    width: fit-content;
     max-width: 100%;
-    margin-bottom: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-spacing-md);
     padding: 0;
     border: 0;
     background: transparent;
@@ -54,11 +55,10 @@
     appearance: none;
     white-space: nowrap;
     flex-shrink: 0;
-    min-height: 26px;
-    padding: 2px 0 5px;
+    min-height: 28px;
+    padding: 4px 10px;
     border: 0;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
+    border-radius: var(--radius-s);
     box-shadow: none;
     background: transparent;
     color: var(--text-muted);
@@ -66,10 +66,11 @@
     font-weight: 500;
     line-height: 1.4;
     cursor: var(--cursor-link, pointer);
-    transition: border-color 0.12s ease, color 0.12s ease;
+    transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .tasknotes-plugin .settings-view__tab-button:hover {
+    background: var(--background-modifier-hover);
     color: var(--text-normal);
 }
 
@@ -80,8 +81,9 @@
 
 .tasknotes-plugin .settings-view__tab-button--active,
 .tasknotes-plugin .settings-view__tab-button.is-active {
+    background: var(--background-primary);
     color: var(--text-normal);
-    border-bottom-color: var(--interactive-accent);
+    box-shadow: 0 0 0 1px var(--background-modifier-border);
 }
 
 /* ================================================
