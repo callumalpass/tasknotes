@@ -44,7 +44,6 @@ Example:
 - (#144) Added an "Open note in new tab" action to the task context menu. Thanks to @cathywu for suggesting this and @macbikegeek for the follow-up feedback.
 - (#167) Added an optional next-status override for each status, so forward cycling can jump to a configured status instead of always following the status order. Thanks to @DanBrazelton for suggesting this, and to @michelebugio, @Moyf, @anareaty, and @vorrermid for the follow-up feedback.
 - (#1520) Made tag and context fields show available suggestions as soon as the field is focused. Thanks to @Glint-Eye for suggesting this, and to @craziedde for the follow-up.
-- (#1544) Added Ctrl/Cmd+F support for focusing the local search box in searchable TaskNotes Bases views. Thanks to @Code179 for suggesting this.
 - (#1541) Added `{{currentNotePath}}` and `{{currentNoteTitle}}` support to the default tasks folder, so normal task creation can place new tasks beside the active note without creating an inline link. Thanks to @ChristianAnyanwu for suggesting this, and to @abbasou and @ttlaylor for the follow-up feedback.
 - (#648, #1605) Added clickable links in task-card contexts for note links, markdown links, and web URLs while keeping plain contexts as tag-search buttons. Thanks to @trdischat and @Glint-Eye for suggesting this, and to @renatomen for the follow-up feedback.
 - (#1482) Added clickable custom-field links on task cards for wikilinks, markdown links, autolinks, and bare web URLs. Thanks to @ptbosch-figueiredorj for suggesting this, and to @Soleone for the follow-up use case.
@@ -114,12 +113,11 @@ Example:
 - (#1762) Used the configured Google Calendar task export target as the default calendar when creating manual external calendar events. Thanks to @chrabia for suggesting this.
 - (#1774) Made expandable project chevrons visible and easier to tap on mobile. Thanks to @sh0nuff for suggesting this.
 - (#190) Made task-card and inline task-link action controls easier to tap on mobile, including always-visible task options on touch layouts. Thanks to @Poly-0000 for suggesting this.
-- (#518, #1710, #1785) Made the Create subtask action prefill the parent task's projects, contexts, priority, and non-identifying tags while keeping the parent-task project link. Thanks to @bepolymathe, @Jalpara, and @poulpoulsen for reporting this, and to @tomsymonds, @AndyEveritt, @wedgen, @lindsaylearns, and @hokfujow for the follow-up feedback.
+- (#518, #1710, #1785) Added an opt-in setting for Create subtask to inherit the parent task's projects, contexts, priority, and non-identifying tags while always keeping the parent-task project link. Thanks to @bepolymathe, @Jalpara, and @poulpoulsen for reporting this, and to @tomsymonds, @AndyEveritt, @wedgen, @lindsaylearns, and @hokfujow for the follow-up feedback.
 - (#1790) Extended the identifying-tag hiding setting to task modal tag suggestions, and kept hidden identifying tag children in place when editing other tags. Thanks to @loukandr for suggesting this.
 - (#1804) Made the inline-created task folder setting visible even when instant conversion is disabled, and clarified that leaving it empty uses the default tasks folder. Thanks to @CaFeZn for suggesting this.
 - (#1822) Matched the Task Edit Modal subtask list order to the existing relationship sort, so active and higher-priority subtasks appear ahead of completed ones. Thanks to @Glint-Eye for suggesting this.
 - (#1233, #1339) Added an Appearance setting to expand project subtasks by default in task cards, while still letting individual cards be collapsed. Thanks to @n1njaznutz and @hasanyilmaz for suggesting this and @kazerniel and @benmartinek for the follow-up.
-- (#1216) Added a relationships widget display setting with Always, When populated, and Never options, so empty relationship widgets can stay hidden. Thanks to @diegomarzaa for suggesting this.
 - (#763) Made the Relationships widget appear on project notes that match Project Autosuggest tag or property filters, even before any tasks link to the project. Thanks to @ChadHattabaugh for suggesting this.
 - (#732) Remembered the Task & Project Statistics filters between openings, including the selected date range, custom dates, and minimum time filter. Thanks to @RumiaKitinari for suggesting this.
 - (#1335) Added optional default times for new task scheduled and due dates, so default-dated tasks can appear as timed calendar events instead of all-day events. Thanks to @echo-saurav for suggesting this.
@@ -142,7 +140,6 @@ Example:
 - (#263) Made the instant inline task conversion button respond to touch/pointer activation, so mobile multi-line selections can be converted into TaskNotes. Thanks to @cathywu for reporting this.
 - (#216) Preserved `@context` markers when converting Tasks-plugin-style checkbox tasks into TaskNotes, while keeping those contexts out of the created task title. Thanks to @ksdavidc for suggesting this, and to @hangryscribe3, @nayatiuh, and @natleahh for the follow-up feedback.
 - (#508) Showed project note names instead of full project paths in grouped Kanban and Task List headings, while keeping the headings linked to the project note. Thanks to @elvarb for reporting this and @dmodify for confirming it in Task List.
-- (#466) Stored task created/modified metadata as `YYYY-MM-DDTHH:mm:ss` datetimes so Obsidian Bases can recognize those properties as dates more reliably across regions. Thanks to @Moyf for reporting this.
 - (#408) Used the task title as the native system notification title for task reminders instead of always showing `TaskNotes Reminder`. Thanks to @DudeThatsErin for reporting this and @phillipadsmith for the follow-up.
 - (#385) Let Mini Calendar month controls shrink and wrap cleanly in narrow sidebars. Thanks to @iholston for reporting this.
 - Fixed Calendar List view task cards so they use the available row width without duplicate list cells, row-hover backgrounds, or linked-hover styling.
@@ -161,9 +158,7 @@ Example:
 - (#1037) Let embedded TaskNotes Calendar year views size to their content and kept the year title from wrapping vertically. Thanks to @same774 for reporting this.
 - (#1047) Wrapped long file paths in the Edit Task modal metadata section, so narrow mobile screens no longer get a sideways scrollbar from the File row. Thanks to @3zra47 for reporting this.
 - (#1051) Preserved extra values on a property-based task identification field when saving a task, so list properties such as `class: [task, habit]` no longer get collapsed to only the identifying value. Thanks to @WhoIsSeanGalt for reporting this.
-- (#1059) Included recurring tasks with uncompleted past instances in the Agenda overdue section, even when their current scheduled date is in the future. Thanks to @jalooc for reporting this and @dictionarymouse for the follow-up.
 - (#1060) Reused and revealed an already-open Calendar/Base view when running view commands, so a view kept in the sidebar no longer reopens in a new main tab. Thanks to @kmaustral for reporting this.
-- (#1065) Scoped time tracking indicators and tracked-time totals to the rendered recurring task instance, so tracking one occurrence no longer marks every past and future occurrence as actively tracked. Thanks to @vkbytes for reporting this and @slipstyle for the context.
 - (#1075) Hid the native WebKit date-input label that could appear as `Label` when editing scheduled dates on macOS. Thanks to @3zra47 for reporting this.
 - (#1076) Allowed timeblocks to end at midnight using `00:00`, and accepted `24:00` as an explicit end-of-day value in timeblock validation. Thanks to @skoove for reporting this and @gregor202 for the follow-up.
 - (#1086) Fixed the Calendar `+ more` control in dark mode so expanded all-day task groups stay readable. Thanks to @same774 for reporting this.
@@ -187,7 +182,7 @@ Example:
 - (#964) Made Pomodoro and time-tracking task selection use the current recurring instance status, so a recurring task can still be selected after an earlier instance was completed. Thanks to @lomarcanys for reporting this.
 - (#944) Preserved number and boolean custom field values when moving tasks between grouped Kanban or Task List columns, and when creating a task from a grouped Kanban column. Thanks to @thoughtcipher for reporting this.
 - (#935) Fixed Task List priority sorting so descending order puts higher-weighted priorities first, and due dates are used before scheduled dates when priority values tie. Thanks to @Glint-Eye for reporting this and @kacoroski for the follow-up.
-- (#922) Rendered `blockedBy` task dependencies as clickable task-card links when that property is shown on cards. Thanks to @prayidae for reporting this and following up.
+- (#922) Made the `Blocked` task-card pill expand the blocker tasks, and rendered `blockedBy` dependencies as clickable links when that property is shown on cards. Thanks to @prayidae for reporting this and following up.
 - (#919) Fixed exported ICS task events so they use valid calendar event statuses and can be imported by stricter calendar apps. Thanks to @benoitjadinon for reporting this.
 - (#1213) Fixed embedded Task List Bases in Obsidian pop-out windows so typing below the embed no longer leaves a large blank gap. Thanks to @same774 for reporting this.
 - (#1243) Removed quoted multi-word custom field NLP expressions from created task titles after saving the custom field value. Thanks to @Arachnidai for reporting this.
@@ -200,16 +195,16 @@ Example:
 - (#1367) Made recurring task completion counts use the total expected instances for finite `COUNT` or `UNTIL` recurrences, and stopped showing a made-up percentage for unbounded recurrences. Thanks to @saurinni for reporting this.
 - (#1365) Preserved email and other URI links from converted inline task titles by moving the original links into the new task body, and rendered `message:`/`mailto:` markdown links as external links in TaskNotes surfaces. Thanks to @phillipadsmith for reporting this and @hasanyilmaz for the follow-up.
 - (#1350) Refreshed inline task widgets in Reading mode after task property edits, so changed dates and other visible properties no longer stay stale until the note is reopened. Thanks to @tmsbn for reporting this.
-- (#1329) Pulled the relationships widget up to the end of the note content instead of leaving it after editor spacer space. Thanks to @Volker-brdb for reporting this.
+- (#1329) Pulled the relationships widget up to the end of the note content instead of leaving it after editor spacer space, and kept that placement updated while editing so it no longer overlaps new text. Thanks to @Volker-brdb for reporting this.
 - (#1326) Treated empty task frontmatter values as missing, so empty titles fall back to the filename and blank date, priority, and recurrence fields are ignored. Thanks to @craziedde for suggesting this.
 - (#1316) Stopped stale Workspace state from overriding the configured Calendar view mode, so switching Workspaces no longer forces an old Day/Week/List choice over the view default. Thanks to @kmaustral for reporting this and following up.
 - (#1302) Read task frontmatter directly from the task file when Obsidian has not indexed its metadata yet, so visible tasks can still be opened, updated, and selected instead of reporting "Task not found". Thanks to @WorldTeacher for reporting this and @Steven-AA for confirming it.
 - (#1297) Made the Create or open task footer tappable, so mobile users can create the typed task without needing the Shift+Enter shortcut. Thanks to @slipstyle for reporting this.
 - (#1288) Allowed formula properties to appear in Calendar property-based event start and end date selectors. Thanks to @hasanyilmaz for reporting this.
-- (#1270) Filtered TaskNotes Bases layouts to task files before creating task cards, so broad Bases queries no longer render regular notes or attachments as tasks. Thanks to @desrod for reporting this and @guyjames for the follow-up.
 - Made TaskNotes Kanban drags show a lightweight held-card preview, so the dragged card remains easy to track while the source column opens the drop slot.
 - (#1423) Refreshed TaskNotes Bases views when subtasks are deleted, so expanded project cards drop removed subtasks and stop showing project controls when the last subtask is gone. Thanks to @normenmueller for reporting this.
 - (#1419) Kept custom user field name, key, and default-value edits in Task Properties settings when closing settings without first blurring the field. Thanks to @s33a for reporting this and @kacoroski for the follow-up.
+- Reduced redundant settings writes by coalescing overlapping saves, so settings changes made in quick succession finish with the latest values without repeating every intermediate save cycle.
 - (#1331, #1411) Made Agenda Calendar Bases respect the Base sort order within each day instead of falling back to alphabetical title order. Thanks to @bane73 and @ky1ejs for reporting this.
 - (#1383) Made task modal markdown editors expose the active editor API expected by plugins such as Templater. Thanks to @tomsymonds for reporting this.
 - Fixed the first-run Create/Edit Task modal so the default fields appear immediately after installing TaskNotes, without needing to open Modal Fields settings or restart Obsidian.
@@ -280,7 +275,6 @@ Example:
 - (#1450) Returned configured user fields in HTTP API task responses under `customProperties`, while keeping the configured frontmatter keys available on each task. Thanks to @Admorei for reporting this and @nschenone for the follow-up.
 - (#1449) Let embedded Agenda views use auto-height sizing by default, so one-day list embeds no longer reserve a large empty calendar block. Thanks to @GlebYavorski for reporting this.
 - (#1446) Kept custom Kanban columns from `columnOrder` available when they are empty, so `hideEmptyColumns: false` can show drop targets for custom grouped values. Thanks to @akhtsang for reporting this.
-- (#1451, #1538) Hid Google Calendar events created by TaskNotes when the matching TaskNotes task is already visible, avoiding duplicate calendar entries without hiding other events from the same calendar. Thanks to @phoggy and @Naesue for reporting this, and to @Lorite, @BJSchmidt, and @chrabia for the workaround discussion.
 - (#1459) Avoided double "Failed to create task" prefixes in task creation error notices. Thanks to @Sineapple for reporting this, and to @slipstyle and @Stockemer for the follow-up investigation.
 - (#1469) Fixed Convert current note to task so saving the untouched edit modal writes the task frontmatter instead of reporting no changes. Thanks to @slipstyle for reporting this, and to @jhoogeboom and @ngraham20 for confirming it.
 - (#1466) Prefilled the current note as the project when creating a task from an embedded Subtasks/Relationships Base filtered with `this.file.asLink()`. Thanks to @jhoogeboom for reporting this, and to @cybersader, @fsmontenegro, and @benmartinek for the follow-up discussion.
@@ -297,7 +291,6 @@ Example:
 - (#1783) Replaced the default browser drag ghost for Kanban cards so dragging a card no longer makes the next card look semi-transparent. Thanks to @loukandr for reporting this and tracing the drag image behavior.
 - (#1796) Restored expanded subtasks immediately after renaming a parent task file and updating links. Thanks to @bung69 for reporting this.
 - (#1797) Improved Kanban manual ordering so long columns remain scrollable while dragging, and mobile drops can place a card relative to another card in the column. Thanks to @SKIERZZ for reporting this and sharing videos.
-- (#1811) Restored dragging inline task widgets onto Calendar views to schedule them, matching the earlier external-drop workflow. Thanks to @ghake for reporting the regression.
 - (#1812) Separated Microsoft OAuth token status from calendar sync status, and surfaced Microsoft calendar fetch errors in the integrations settings card instead of leaving them console-only. Thanks to @henninger80 for the detailed report.
 - (#1814) Restored NLP project autosuggest in the Create or Open Task command, so `+` project suggestions use the same filtered project lookup as the Create Task modal. Thanks to @adammahad for reporting this.
 - (#1820) Kept API-created tasks readable immediately after creation even if Obsidian has not finished indexing the new file metadata yet. Thanks to @vadminas for reporting and tracing the cache desync.
@@ -312,7 +305,7 @@ Example:
 - (#1859) Clarified the Google Calendar setup guide for OAuth testing-mode `access_denied` errors. Thanks to @PE-Boy for reporting and @tiagoarroz for the workaround.
 - (#1860) Preserved accented characters in tags when converting checkbox tasks to TaskNotes. Thanks to @e-zz for reporting.
 - (#1869) Preserved Calendar Month View scroll position after task updates. Thanks to @sisyowo for reporting and linking the earlier Kanban fix.
-- (#1873) Fixed calendar resizing during pop-out and embedded view transitions so Obsidian no longer freezes while the calendar is being moved. Thanks to @misolex for reporting.
+- (#1873) Prevented Calendar Bases from rendering in Obsidian pop-out windows because restoring FullCalendar there can freeze Obsidian. Thanks to @misolex for reporting.
 - (#1497, #1870) Fixed NLP file suggestions for custom fields so selected wikilinks are captured as custom field values, including list-type fields. Thanks to @Naesue and @Sineapple for reporting this, and to @bradleyed and @Xananax for the follow-up details.
 - (#1888) Allowed project autosuggest required property filters to match any comma-separated value, such as `project, area`. Thanks to @BrianHicks for suggesting.
 - (#1886) Added a command to postpone active overdue scheduled tasks to today. Thanks to @chrabia for the suggestion.
