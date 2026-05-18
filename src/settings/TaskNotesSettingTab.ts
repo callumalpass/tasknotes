@@ -51,8 +51,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		const translate = (key: TranslationKey) => this.plugin.i18n.translate(key);
 
-		// Create tab navigation
-		const tabNav = containerEl.createDiv("settings-tab-nav settings-view__tab-nav");
+		const settingsToolbar = containerEl.createDiv("settings-view__toolbar");
+		const tabNav = settingsToolbar.createDiv("settings-tab-nav settings-view__tab-nav");
 
 		// Define the 6-tab structure (defaults merged into task-properties)
 		const allTabs: TabConfig[] = [
@@ -138,8 +138,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 		});
 
-		// Add documentation link after tabs
-		const docsHeader = containerEl.createDiv("settings-header");
+		// Add documentation link alongside tabs
+		const docsHeader = settingsToolbar.createDiv("settings-header");
 		const docsLink = docsHeader.createEl("a", {
 			text: translate("settings.header.documentation"),
 			href: translate("settings.header.documentationUrl"),
