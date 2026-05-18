@@ -4168,7 +4168,7 @@ export class KanbanView extends BasesViewBase {
 		const savedOrder = this.getConfiguredOrder(this.columnOrders, groupBy);
 
 		if (!savedOrder || savedOrder.length === 0) {
-			return orderColumnsWithPinnedColumns(actualKeys, this.pinnedColumns);
+			return this.applyDefaultColumnOrder(groupBy, actualKeys);
 		}
 
 		const ordered: string[] = [];
@@ -4189,8 +4189,56 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 
-		// Return saved order + new keys (alphabetically sorted)
-		return [...ordered, ...unsorted.sort()];
+		return [...ordered, ...this.applyDefaultColumnOrder(groupBy, unsorted)];
+	}
+
+	private applyDefaultColumnOrder(groupBy: string | null, actualKeys: string[]): string[] {
+		const orderedKeys = [...actualKeys];
+
+		if (this.isPropertyField(groupBy, "priority")) {
+			return this.orderColumnsWithPinnedFirst(
+				orderedKeys.sort((a, b) => {
+					const weightComparison =
+						this.plugin.priorityManager.getPriorityWeight(b) -
+						this.plugin.priorityManager.getPriorityWeight(a);
+					return weightComparison || this.compareSpecialColumnKeys(a, b);
+				})
+			);
+		}
+
+		if (this.isPropertyField(groupBy, "status")) {
+			return this.orderColumnsWithPinnedFirst(
+				orderedKeys.sort((a, b) => {
+					const statusA = this.findStatusConfigForGroupKey(a);
+					const statusB = this.findStatusConfigForGroupKey(b);
+
+					if (statusA && statusB) {
+						const orderComparison = statusA.order - statusB.order;
+						return orderComparison || a.localeCompare(b);
+					}
+					if (statusA) return -1;
+					if (statusB) return 1;
+
+					return this.compareSpecialColumnKeys(a, b);
+				})
+			);
+		}
+
+		return orderColumnsWithPinnedColumns(actualKeys, this.pinnedColumns);
+	}
+
+	private orderColumnsWithPinnedFirst(actualKeys: string[]): string[] {
+		const actualKeySet = new Set(actualKeys);
+		const pinnedSet = new Set(this.pinnedColumns);
+		const pinned = this.pinnedColumns.filter((key) => actualKeySet.has(key));
+		const unpinned = actualKeys.filter((key) => !pinnedSet.has(key));
+		return [...pinned, ...unpinned];
+	}
+
+	private compareSpecialColumnKeys(a: string, b: string): number {
+		if (a === "None" && b !== "None") return 1;
+		if (b === "None" && a !== "None") return -1;
+		return a.localeCompare(b);
 	}
 
 	private getConfiguredOrder(

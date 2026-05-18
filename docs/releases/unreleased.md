@@ -92,6 +92,7 @@ Example:
 
 ## Changed
 
+- ([#239](https://github.com/callumalpass/tasknotes/issues/239)) Ordered Kanban status and priority columns by the configured status order and priority weights when no manual column order is saved. Thanks to @ScumbagScalawag for asking about this, and to @nightroman, @lavir, and @elvarb for the follow-up discussion.
 - ([#269](https://github.com/callumalpass/tasknotes/issues/269)) Marked Kanban status columns that come from values outside the configured TaskNotes statuses, so manually edited or external status values are visible as non-standard instead of blending into the board. Thanks to @cstelmach for suggesting this and @digitaldoctors for the follow-up.
 - Added guidance in Pomodoro statistics and Base file settings explaining that Pomodoro Base views require daily notes storage.
 - ([#323](https://github.com/callumalpass/tasknotes/issues/323)) Reordered task modal action buttons to match the right-click task menu order. Thanks to @23426356587 for suggesting this.
