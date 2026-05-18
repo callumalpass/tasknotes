@@ -71,6 +71,7 @@ import {
 } from "./calendarEventDeduplication";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import type { CalendarEventData } from "../services/CalendarProvider";
+import { filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
 
 type CalendarDataAdapterWithView = {
 	basesView: CalendarView;
@@ -3333,6 +3334,13 @@ export class CalendarView extends BasesViewBase {
 					}
 				});
 			}
+
+			filterEmptyProjects(taskInfo.projects || []).forEach((project) => {
+				const sanitizedProject = sanitizeForCssClass(project);
+				if (sanitizedProject) {
+					arg.el.classList.add(`fc-project-${sanitizedProject}`);
+				}
+			});
 
 			// Set editable based on event type
 			if (arg.event.setProp) {

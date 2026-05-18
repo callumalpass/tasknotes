@@ -74,6 +74,17 @@ function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
 	return (card as TaskCardElement)._taskCardOptions ?? {};
 }
 
+function getProjectClassNames(task: TaskInfo): string[] {
+	const classNames = new Set<string>();
+	for (const project of filterEmptyProjects(task.projects || [])) {
+		const sanitizedProject = sanitizeForCssClass(project);
+		if (sanitizedProject) {
+			classNames.add(`task-card--project-${sanitizedProject}`);
+		}
+	}
+	return Array.from(classNames);
+}
+
 function createUTCDateFromStorageDate(datePart: string): Date | null {
 	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
 	if (!match) {
@@ -488,6 +499,15 @@ function updateCardCompletionState(
 		card.classList.add(`task-card--status-${sanitizeForCssClass(effectiveStatus)}`);
 	}
 
+	for (const className of Array.from(card.classList)) {
+		if (className.startsWith("task-card--project-")) {
+			card.classList.remove(className);
+		}
+	}
+	const projectClassNames = getProjectClassNames(task);
+	card.classList.toggle("task-card--has-projects", projectClassNames.length > 0);
+	projectClassNames.forEach((className) => card.classList.add(className));
+
 	card.dataset.status = effectiveStatus;
 
 	// Update title styling
@@ -804,6 +824,7 @@ export function createTaskCard(
 	const hasProjects = filterEmptyProjects(task.projects || []).length > 0;
 	if (hasProjects) {
 		cardClasses.push("task-card--has-projects");
+		cardClasses.push(...getProjectClassNames(task));
 	}
 
 	card.className = cardClasses.join(" ");
@@ -1283,6 +1304,12 @@ export function updateTaskCard(
 	// Chevron position preference
 	if (plugin.settings?.subtaskChevronPosition === "left") {
 		cardClasses.push("task-card--chevron-left");
+	}
+
+	const hasProjects = filterEmptyProjects(task.projects || []).length > 0;
+	if (hasProjects) {
+		cardClasses.push("task-card--has-projects");
+		cardClasses.push(...getProjectClassNames(task));
 	}
 
 	element.className = cardClasses.join(" ");
