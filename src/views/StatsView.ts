@@ -51,12 +51,74 @@ interface TimeRangeStats {
 	projects: ProjectStats[];
 }
 
-interface StatsFilters {
+export interface StatsFilters {
 	dateRange: "all" | "7days" | "30days" | "90days" | "custom";
 	customStartDate?: string;
 	customEndDate?: string;
 	selectedProjects: string[];
 	minTimeSpent: number; // in minutes
+}
+
+const STATS_FILTERS_STORAGE_KEY = "tasknotes-stats-view-filters";
+const STATS_DATE_RANGES = new Set<StatsFilters["dateRange"]>([
+	"all",
+	"7days",
+	"30days",
+	"90days",
+	"custom",
+]);
+
+function createDefaultStatsFilters(): StatsFilters {
+	return {
+		dateRange: "all",
+		selectedProjects: [],
+		minTimeSpent: 0,
+	};
+}
+
+function isStatsDateRange(value: unknown): value is StatsFilters["dateRange"] {
+	return typeof value === "string" && STATS_DATE_RANGES.has(value as StatsFilters["dateRange"]);
+}
+
+function isDateInputValue(value: unknown): value is string {
+	return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+export function normalizeStatsFilters(value: unknown): StatsFilters {
+	if (!value || typeof value !== "object") {
+		return createDefaultStatsFilters();
+	}
+
+	const record = value as Record<string, unknown>;
+	const filters = createDefaultStatsFilters();
+
+	if (isStatsDateRange(record.dateRange)) {
+		filters.dateRange = record.dateRange;
+	}
+
+	if (isDateInputValue(record.customStartDate)) {
+		filters.customStartDate = record.customStartDate;
+	}
+
+	if (isDateInputValue(record.customEndDate)) {
+		filters.customEndDate = record.customEndDate;
+	}
+
+	if (Array.isArray(record.selectedProjects)) {
+		filters.selectedProjects = record.selectedProjects.filter(
+			(project): project is string => typeof project === "string"
+		);
+	}
+
+	const minTimeSpent =
+		typeof record.minTimeSpent === "number"
+			? record.minTimeSpent
+			: Number(record.minTimeSpent);
+	if (Number.isFinite(minTimeSpent) && minTimeSpent > 0) {
+		filters.minTimeSpent = Math.floor(minTimeSpent);
+	}
+
+	return filters;
 }
 
 interface ProjectDrilldownData {
@@ -93,11 +155,7 @@ export class StatsView extends ItemView {
 	private filtersEl: HTMLElement | null = null;
 
 	// State
-	private currentFilters: StatsFilters = {
-		dateRange: "all",
-		selectedProjects: [],
-		minTimeSpent: 0,
-	};
+	private currentFilters: StatsFilters = createDefaultStatsFilters();
 	private drilldownModal: HTMLElement | null = null;
 	private currentDrilldownData: ProjectDrilldownData | null = null;
 	private listeners: EventRef[] = [];
@@ -127,6 +185,7 @@ export class StatsView extends ItemView {
 
 	async onOpen() {
 		await this.plugin.onReady();
+		this.currentFilters = this.loadPersistedFilters();
 
 		// Listen for task updates to refresh the drill-down modal if it's open
 		const taskUpdateListener = this.plugin.emitter.on(
@@ -158,6 +217,30 @@ export class StatsView extends ItemView {
 		// Clean up listeners
 		this.listeners.forEach((listener) => this.plugin.emitter.offref(listener));
 		this.listeners = [];
+	}
+
+	private loadPersistedFilters(): StatsFilters {
+		try {
+			const stored = this.plugin.app.loadLocalStorage(STATS_FILTERS_STORAGE_KEY);
+			if (typeof stored !== "string" || stored.length === 0) {
+				return createDefaultStatsFilters();
+			}
+			return normalizeStatsFilters(JSON.parse(stored));
+		} catch (error) {
+			console.warn("[TaskNotes] Failed to load Stats view filters:", error);
+			return createDefaultStatsFilters();
+		}
+	}
+
+	private savePersistedFilters(): void {
+		try {
+			this.plugin.app.saveLocalStorage(
+				STATS_FILTERS_STORAGE_KEY,
+				JSON.stringify(this.currentFilters)
+			);
+		} catch (error) {
+			console.warn("[TaskNotes] Failed to save Stats view filters:", error);
+		}
 	}
 
 	async render() {
@@ -728,11 +811,7 @@ export class StatsView extends ItemView {
 		});
 
 		this.registerDomEvent(resetButton, "click", () => {
-			this.currentFilters = {
-				dateRange: "all",
-				selectedProjects: [],
-				minTimeSpent: 0,
-			};
+			this.currentFilters = createDefaultStatsFilters();
 			this.renderFilters();
 			void this.applyFilters();
 		});
@@ -792,6 +871,8 @@ export class StatsView extends ItemView {
 	 * Apply current filters and refresh statistics with debouncing
 	 */
 	private async applyFilters() {
+		this.savePersistedFilters();
+
 		if (this.debounceTimeout) {
 			window.clearTimeout(this.debounceTimeout);
 		}
