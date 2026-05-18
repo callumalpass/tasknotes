@@ -53,6 +53,15 @@
 	padding-bottom: 0;
 }
 
+/* Notes in side panes inherit Obsidian's readable-line padding. Let TaskNotes Base
+   embeds reclaim that padding so the cards line up with directly opened Bases views. */
+.mod-left-split .markdown-preview-view .internal-embed.bases-embed.tasknotes-view-active,
+.mod-right-split .markdown-preview-view .internal-embed.bases-embed.tasknotes-view-active {
+	margin-inline: calc(-1 * var(--file-margins, var(--size-4-5)));
+	max-width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+	width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+}
+
 /* Bases TaskNotes List View Container */
 .tn-bases-tasknotes-list {
     display: flex;
