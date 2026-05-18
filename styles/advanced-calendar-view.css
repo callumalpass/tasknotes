@@ -167,6 +167,22 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
+.advanced-calendar-view .fc-task-event--hover-source,
+.advanced-calendar-view .fc-task-event--related-hover {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 22%, transparent), 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.advanced-calendar-view .fc-task-event--related-hover {
+    filter: saturate(1.08);
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .fc-task-event--related-hover .task-card,
+.advanced-calendar-view.advanced-calendar-view--list .fc-task-event--hover-source .task-card {
+    outline: 2px solid color-mix(in srgb, var(--interactive-accent) 38%, transparent);
+    outline-offset: 2px;
+}
+
 /* ICS Events - only in non-list views */
 .fc-daygrid-event.fc-ics-event,
 .fc-timegrid-event.fc-ics-event {

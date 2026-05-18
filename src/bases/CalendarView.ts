@@ -3284,6 +3284,11 @@ export class CalendarView extends BasesViewBase {
 			// Replace the event element content with the card
 			if (cardElement) {
 				arg.el.appendChild(cardElement);
+				if (taskInfo?.path) {
+					arg.el.setAttribute("data-task-path", taskInfo.path);
+					arg.el.classList.add("fc-task-event");
+					this.attachTaskEventHoverLink(arg.el, taskInfo.path);
+				}
 				// Remove default FullCalendar classes that interfere with card styling
 				arg.el.classList.remove("fc-event", "fc-event-start", "fc-event-end");
 				return; // Skip default handling
@@ -3317,6 +3322,7 @@ export class CalendarView extends BasesViewBase {
 		if (taskInfo && taskInfo.path) {
 			arg.el.setAttribute("data-task-path", taskInfo.path);
 			arg.el.classList.add("fc-task-event");
+			this.attachTaskEventHoverLink(arg.el, taskInfo.path);
 
 			// Add tag classes to tasks
 			if (taskInfo.tags && taskInfo.tags.length > 0) {
@@ -3457,6 +3463,25 @@ export class CalendarView extends BasesViewBase {
 				}
 			});
 		}
+	}
+
+	private attachTaskEventHoverLink(element: HTMLElement, taskPath: string): void {
+		const setRelatedState = (active: boolean) => {
+			const selector = `[data-task-path="${CSS.escape(taskPath)}"]`;
+			const relatedEvents =
+				this.rootElement?.querySelectorAll<HTMLElement>(selector) ?? [];
+
+			relatedEvents.forEach((relatedEvent) => {
+				if (relatedEvent === element) {
+					relatedEvent.classList.toggle("fc-task-event--hover-source", active);
+				} else {
+					relatedEvent.classList.toggle("fc-task-event--related-hover", active);
+				}
+			});
+		};
+
+		element.addEventListener("mouseenter", () => setRelatedState(true));
+		element.addEventListener("mouseleave", () => setRelatedState(false));
 	}
 
 	protected setupContainer(): void {
