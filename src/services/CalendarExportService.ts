@@ -16,6 +16,8 @@ export interface ICSExportOptions {
 	completedStatuses?: string[]; // Status values considered completed when excludeCompleted is enabled
 	requireDueDate?: boolean; // Only include tasks with a due date in multi-task exports
 	requireScheduledDate?: boolean; // Only include tasks with a scheduled date in multi-task exports
+	includeObsidianLink?: boolean; // Include an obsidian:// link back to the source task note
+	vaultName?: string; // Vault name used when includeObsidianLink is enabled
 }
 
 type TranslateFn = (key: TranslationKey, variables?: Record<string, unknown>) => string;
@@ -209,7 +211,7 @@ export class CalendarExportService {
 		}
 
 		// Add description
-		const description = this.buildDescription(task);
+		const description = this.buildDescription(task, options);
 		if (description) {
 			lines.push(`DESCRIPTION:${this.escapeICSText(description)}`);
 		}
@@ -251,7 +253,7 @@ export class CalendarExportService {
 	/**
 	 * Build description text from task
 	 */
-	private static buildDescription(task: TaskInfo): string {
+	private static buildDescription(task: TaskInfo, options?: ICSExportOptions): string {
 		const parts: string[] = [];
 
 		// Add metadata
@@ -289,7 +291,25 @@ export class CalendarExportService {
 		if (parts.length > 0) parts.push("");
 		parts.push(`Exported from TaskNotes: ${task.path}`);
 
+		const obsidianUri = this.buildObsidianOpenUri(task, options);
+		if (obsidianUri) {
+			parts.push(`Open in Obsidian: ${obsidianUri}`);
+		}
+
 		return parts.join("\n");
+	}
+
+	private static buildObsidianOpenUri(
+		task: TaskInfo,
+		options?: ICSExportOptions
+	): string | null {
+		if (!options?.includeObsidianLink || !options.vaultName) {
+			return null;
+		}
+
+		return `obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(
+			task.path
+		)}`;
 	}
 
 	/**
@@ -615,7 +635,7 @@ export class CalendarExportService {
 			lines.push(endLine);
 
 			// Add description
-			const description = this.buildDescription(task);
+			const description = this.buildDescription(task, options);
 			if (description) {
 				lines.push(`DESCRIPTION:${this.escapeICSText(description)}`);
 			}

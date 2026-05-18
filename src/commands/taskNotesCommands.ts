@@ -229,6 +229,8 @@ export function createTaskNotesCommandDefinitions(
 								ctx.settings.icsIntegration.requireDueDateForExport ?? false,
 							requireScheduledDate:
 								ctx.settings.icsIntegration.requireScheduledDateForExport ?? false,
+							includeObsidianLink: true,
+							vaultName: ctx.app.vault.getName(),
 						}
 					);
 				} catch (error) {

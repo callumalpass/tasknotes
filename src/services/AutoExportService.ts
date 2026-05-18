@@ -120,6 +120,8 @@ export class AutoExportService {
 				requireDueDate: this.plugin.settings.icsIntegration.requireDueDateForExport ?? false,
 				requireScheduledDate:
 					this.plugin.settings.icsIntegration.requireScheduledDateForExport ?? false,
+				includeObsidianLink: true,
+				vaultName: this.plugin.app.vault.getName(),
 			};
 			const icsContent = CalendarExportService.generateMultipleTasksICSContent(
 				allTasks,

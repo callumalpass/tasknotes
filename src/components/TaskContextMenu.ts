@@ -664,7 +664,10 @@ export class TaskContextMenu {
 				subItem.setTitle(this.t("contextMenus.task.calendar.downloadIcs"));
 				subItem.setIcon("download");
 				subItem.onClick(() => {
-					CalendarExportService.downloadICSFile(task, this.t.bind(this));
+					CalendarExportService.downloadICSFile(task, this.t.bind(this), {
+						includeObsidianLink: true,
+						vaultName: plugin.app.vault.getName(),
+					});
 				});
 			});
 
