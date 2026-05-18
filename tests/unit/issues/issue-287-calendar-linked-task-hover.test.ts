@@ -28,7 +28,7 @@ describe("Issue #287: linked calendar task hover states", () => {
 
 		expect(css).toContain(".advanced-calendar-view .fc-event.fc-task-event--hover-source");
 		expect(css).toContain(".advanced-calendar-view .fc-event.fc-task-event--related-hover");
-		expect(css).toContain("box-shadow: inset 0 0 0 2px var(--interactive-accent)");
+		expect(css).toContain("box-shadow: inset 0 0 0 1px var(--interactive-accent)");
 		expect(css).not.toMatch(
 			/\.advanced-calendar-view \.fc-event\.fc-task-event--(?:hover-source|related-hover)[^{]*\{[^}]*position:\s*relative/
 		);

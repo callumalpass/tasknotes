@@ -1016,11 +1016,11 @@
 
 .advanced-calendar-view .fc-event.fc-task-event--hover-source,
 .advanced-calendar-view .fc-event.fc-task-event--related-hover {
-    box-shadow: inset 0 0 0 2px var(--interactive-accent), 0 2px 8px rgba(0, 0, 0, 0.14);
+    box-shadow: inset 0 0 0 1px var(--interactive-accent), 0 2px 8px rgba(0, 0, 0, 0.14);
 }
 
 .advanced-calendar-view .fc-event.fc-task-event--hover-source {
-    box-shadow: inset 0 0 0 2px var(--interactive-accent), 0 2px 8px rgba(0, 0, 0, 0.16);
+    box-shadow: inset 0 0 0 1px var(--interactive-accent), 0 2px 8px rgba(0, 0, 0, 0.16);
 }
 
 .advanced-calendar-view .fc-event.fc-task-event--related-hover {
