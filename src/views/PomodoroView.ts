@@ -452,9 +452,7 @@ export class PomodoroView extends ItemView {
 				state.nextSessionType === "long-break"
 			) {
 				// Break is prepared but user wants to skip, clear the break and prepare work
-				void this.plugin.pomodoroService.startPomodoro(
-					this.currentSelectedTask || undefined
-				);
+				void this.plugin.pomodoroService.skipBreak();
 			}
 		});
 

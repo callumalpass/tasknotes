@@ -610,6 +610,29 @@ export class PomodoroService {
 		}
 	}
 
+	async skipBreak(): Promise<void> {
+		if (
+			this.state.currentSession ||
+			(this.state.nextSessionType !== "short-break" &&
+				this.state.nextSessionType !== "long-break")
+		) {
+			return;
+		}
+
+		this.stopTimer();
+		this.state.isRunning = false;
+		this.state.currentSession = undefined;
+		this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60;
+		this.state.nextSessionType = undefined;
+
+		await this.saveState();
+
+		this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
+			timeRemaining: this.state.timeRemaining,
+			session: this.state.currentSession,
+		});
+	}
+
 	private startTimer() {
 		if (!this.ticker) {
 			this.setupTicker();
