@@ -30,6 +30,7 @@ export class DependencyCache extends Events {
 
 	// Project references index
 	private projectReferences: Map<string, Set<string>> = new Map(); // project path -> Set<task paths that reference it>
+	private projectReferenceSources: Map<string, Set<string>> = new Map(); // task path -> Set<project paths it references>
 
 	// Initialization state
 	private initialized = false;
@@ -127,22 +128,24 @@ export class DependencyCache extends Events {
 	 * Handle file changes
 	 */
 	private handleFileChanged(file: TFile, cache: unknown): void {
+		const before = this.getFileRelationshipSignature(file.path);
+
 		if (!this.isValidFile(file.path)) {
 			this.clearFileFromIndexes(file.path);
-			this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
+			this.triggerIfFileRelationshipsChanged(file.path, before);
 			return;
 		}
 
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) {
-			this.clearFileFromIndexes(file.path);
-			this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
+			this.clearForwardDependencies(file.path);
+			this.triggerIfFileRelationshipsChanged(file.path, before);
 			return;
 		}
 
 		if (!this.isTaskFileCallback(metadata.frontmatter)) {
-			this.clearFileFromIndexes(file.path);
-			this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
+			this.clearForwardDependencies(file.path);
+			this.triggerIfFileRelationshipsChanged(file.path, before);
 			return;
 		}
 
@@ -151,7 +154,31 @@ export class DependencyCache extends Events {
 		// Keep reverse dependencies intact - they'll be updated when other tasks change
 		this.clearForwardDependencies(file.path);
 		this.indexTaskFile(file.path, metadata.frontmatter);
-		this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
+		this.triggerIfFileRelationshipsChanged(file.path, before);
+	}
+
+	private triggerIfFileRelationshipsChanged(path: string, before: string): void {
+		if (this.getFileRelationshipSignature(path) !== before) {
+			this.trigger(EVENT_DEPENDENCY_CACHE_CHANGED);
+		}
+	}
+
+	private getFileRelationshipSignature(path: string): string {
+		const blockingTasks = this.sortedSetValues(this.dependencySources.get(path));
+		const blockedTasks = this.sortedSetValues(this.dependencyTargets.get(path));
+		const referencedProjects = this.sortedSetValues(this.projectReferenceSources.get(path));
+		const projectTasks = this.sortedSetValues(this.projectReferences.get(path));
+
+		return JSON.stringify({
+			blockedTasks,
+			blockingTasks,
+			projectTasks,
+			referencedProjects,
+		});
+	}
+
+	private sortedSetValues(values: Set<string> | undefined): string[] {
+		return values ? Array.from(values).sort() : [];
 	}
 
 	/**
@@ -252,6 +279,11 @@ export class DependencyCache extends Events {
 							this.projectReferences.set(resolvedPath, new Set());
 						}
 						this.projectReferences.get(resolvedPath)!.add(path);
+
+						if (!this.projectReferenceSources.has(path)) {
+							this.projectReferenceSources.set(path, new Set());
+						}
+						this.projectReferenceSources.get(path)!.add(resolvedPath);
 					}
 				}
 			}
@@ -281,11 +313,18 @@ export class DependencyCache extends Events {
 		}
 
 		// Also clear project references since those are stored in this task's frontmatter
-		for (const [project, taskSet] of this.projectReferences.entries()) {
-			taskSet.delete(path);
-			if (taskSet.size === 0) {
-				this.projectReferences.delete(project);
+		const referencedProjects = this.projectReferenceSources.get(path);
+		if (referencedProjects) {
+			for (const project of referencedProjects) {
+				const taskSet = this.projectReferences.get(project);
+				if (taskSet) {
+					taskSet.delete(path);
+					if (taskSet.size === 0) {
+						this.projectReferences.delete(project);
+					}
+				}
 			}
+			this.projectReferenceSources.delete(path);
 		}
 	}
 
@@ -326,12 +365,34 @@ export class DependencyCache extends Events {
 			this.dependencyTargets.delete(path);
 		}
 
-		// Clear from project references
-		for (const [project, taskSet] of this.projectReferences.entries()) {
-			taskSet.delete(path);
-			if (taskSet.size === 0) {
-				this.projectReferences.delete(project);
+		// Clear project references declared by this file
+		const referencedProjects = this.projectReferenceSources.get(path);
+		if (referencedProjects) {
+			for (const project of referencedProjects) {
+				const taskSet = this.projectReferences.get(project);
+				if (taskSet) {
+					taskSet.delete(path);
+					if (taskSet.size === 0) {
+						this.projectReferences.delete(project);
+					}
+				}
 			}
+			this.projectReferenceSources.delete(path);
+		}
+
+		// Clear this file as a project target
+		const referencingTasks = this.projectReferences.get(path);
+		if (referencingTasks) {
+			for (const taskPath of referencingTasks) {
+				const taskProjects = this.projectReferenceSources.get(taskPath);
+				if (taskProjects) {
+					taskProjects.delete(path);
+					if (taskProjects.size === 0) {
+						this.projectReferenceSources.delete(taskPath);
+					}
+				}
+			}
+			this.projectReferences.delete(path);
 		}
 	}
 
@@ -352,20 +413,13 @@ export class DependencyCache extends Events {
 	 * Get blocked task paths (tasks that depend on this task)
 	 */
 	getBlockedTaskPaths(taskPath: string): string[] {
-		if (this.isCompletedTask(taskPath)) {
-			return [];
+		if (!this.indexesBuilt) {
+			console.warn("DependencyCache: getBlockedTaskPaths called before indexes built, building now...");
+			this.buildIndexesSync();
 		}
 
-		return this.getTasksBlockedByTask(taskPath);
-	}
-
-	/**
-	 * Get task paths that declare this task as a dependency, regardless of status.
-	 */
-	getTasksBlockedByTask(taskPath: string): string[] {
-		if (!this.indexesBuilt) {
-			console.warn("DependencyCache: getTasksBlockedByTask called before indexes built, building now...");
-			this.buildIndexesSync();
+		if (this.isCompletedTask(taskPath)) {
+			return [];
 		}
 
 		const blocked = this.dependencyTargets.get(taskPath);
@@ -489,6 +543,7 @@ export class DependencyCache extends Events {
 		this.dependencySources.clear();
 		this.dependencyTargets.clear();
 		this.projectReferences.clear();
+		this.projectReferenceSources.clear();
 	}
 
 	/**

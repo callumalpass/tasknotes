@@ -1158,7 +1158,7 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
     }
 }
 
-/* Compact mode for smaller screens - Todoist style */
+/* Compact spacing for smaller screens */
 @media (max-width: 768px) {
     .tasknotes-plugin .task-card {
         padding: 10px 14px;
@@ -1166,14 +1166,6 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
 
     .tasknotes-plugin .task-card__content {
         gap: 1px;
-    }
-
-    .tasknotes-plugin .task-card__title {
-        font-size: 13px;
-    }
-
-    .tasknotes-plugin .task-card__metadata {
-        font-size: 11px;
     }
 }
 

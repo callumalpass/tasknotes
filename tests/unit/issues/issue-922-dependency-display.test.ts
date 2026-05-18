@@ -1,8 +1,9 @@
 /**
  * Issue #922: dependency display behavior on task cards.
  *
- * Blocked tasks should show their visible blocked status, and TaskDependency
- * entries in the blockedBy property should render as clickable task links.
+ * Blocked tasks should show their visible blocked status, let that blocked
+ * indicator expand the blocker cards, and render TaskDependency entries in the
+ * blockedBy property as clickable task links.
  *
  * @see https://github.com/callumalpass/tasknotes/issues/922
  */
@@ -12,7 +13,13 @@ import type TaskNotesPlugin from "../../../src/main";
 import { createTaskCard } from "../../../src/ui/TaskCard";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
-function createPlugin(): TaskNotesPlugin {
+function waitForAsyncRender(): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, 20));
+}
+
+function createPlugin(
+	blocker = TaskFactory.createTask({ path: "Tasks/blocker.md" })
+): TaskNotesPlugin {
 	const plugin = PluginFactory.createMockPlugin({
 		priorityManager: {
 			getPriorityConfig: jest.fn().mockReturnValue({ color: "#666666", label: "Normal" }),
@@ -36,6 +43,9 @@ function createPlugin(): TaskNotesPlugin {
 		.mockImplementation((path: string) =>
 			path === "Tasks/blocker.md" ? new TFile("Tasks/blocker.md") : null
 		);
+	plugin.cacheManager.getTaskInfo = jest.fn(async (path: string) =>
+		path === blocker.path ? blocker : null
+	);
 	plugin.i18n.translate = jest.fn((key: string, vars?: Record<string, string | number>) => {
 		const translations: Record<string, string> = {
 			"ui.taskCard.blockedBadge": "Blocked",
@@ -72,6 +82,35 @@ describe("Issue #922: dependency display behavior", () => {
 
 		expect(blockedPill).not.toBeNull();
 		expect(blockedPill?.textContent).toBe("Blocked (1)");
+	});
+
+	it("lets the blocked visible property expand blocker task cards", async () => {
+		const blocker = TaskFactory.createTask({
+			path: "Tasks/blocker.md",
+			title: "Blocking prerequisite",
+		});
+		const plugin = createPlugin(blocker);
+		const task = TaskFactory.createTask({
+			path: "Tasks/blocked.md",
+			blockedBy: [{ uid: "[[Tasks/blocker.md]]", reltype: "FINISHTOSTART" }],
+			isBlocked: true,
+		});
+
+		const card = createTaskCard(task, plugin, ["blocked"], { showSecondaryBadges: false });
+		document.body.appendChild(card);
+
+		expect(card.querySelector(".task-card__blocked-toggle")).toBeNull();
+
+		card.querySelector<HTMLElement>(".task-card__metadata-pill--blocked")?.click();
+		await waitForAsyncRender();
+
+		const renderedBlockers = Array.from(
+			card.querySelectorAll<HTMLElement>(".task-card__blocked-by > .task-card")
+		);
+
+		expect(renderedBlockers.map((blockerCard) => blockerCard.dataset.taskPath)).toEqual([
+			blocker.path,
+		]);
 	});
 
 	it("renders blockedBy TaskDependency entries as clickable task links", () => {

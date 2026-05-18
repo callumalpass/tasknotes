@@ -97,4 +97,64 @@ describe("Issue #1227: relationships widget project detection refresh", () => {
 		expect(dependencyCache.isFileUsedAsProject("Projects/Alpha.md")).toBe(true);
 		expect(changeHandler).toHaveBeenCalledTimes(1);
 	});
+
+	it("does not emit a dependency-cache change for task body-only metadata changes", async () => {
+		const app = createMockApp();
+		const projectFile = createFile(app, "Projects/Alpha.md");
+		const taskFile = createFile(app, "Tasks/Task.md", {
+			title: "Task",
+			tags: ["task"],
+			projects: ["[[Alpha]]"],
+		});
+
+		app.metadataCache.getFirstLinkpathDest = jest.fn((linkpath: string) =>
+			linkpath === "Alpha" ? projectFile : null
+		);
+
+		const dependencyCache = createDependencyCache(app);
+		const changeHandler = jest.fn();
+		dependencyCache.on(EVENT_DEPENDENCY_CACHE_CHANGED, changeHandler);
+
+		await dependencyCache.buildIndexes();
+		changeHandler.mockClear();
+		dependencyCache.initialize();
+
+		app.__metadataChangedHandlers[0](taskFile, null, {
+			frontmatter: {
+				title: "Task",
+				tags: ["task"],
+				projects: ["[[Alpha]]"],
+			},
+		});
+
+		expect(dependencyCache.isFileUsedAsProject("Projects/Alpha.md")).toBe(true);
+		expect(changeHandler).not.toHaveBeenCalled();
+	});
+
+	it("preserves non-task project targets when the project note metadata changes", async () => {
+		const app = createMockApp();
+		const projectFile = createFile(app, "Projects/Alpha.md");
+		createFile(app, "Tasks/Task.md", {
+			title: "Task",
+			tags: ["task"],
+			projects: ["[[Alpha]]"],
+		});
+
+		app.metadataCache.getFirstLinkpathDest = jest.fn((linkpath: string) =>
+			linkpath === "Alpha" ? projectFile : null
+		);
+
+		const dependencyCache = createDependencyCache(app);
+		const changeHandler = jest.fn();
+		dependencyCache.on(EVENT_DEPENDENCY_CACHE_CHANGED, changeHandler);
+
+		await dependencyCache.buildIndexes();
+		changeHandler.mockClear();
+		dependencyCache.initialize();
+
+		app.__metadataChangedHandlers[0](projectFile, null, {});
+
+		expect(dependencyCache.isFileUsedAsProject("Projects/Alpha.md")).toBe(true);
+		expect(changeHandler).not.toHaveBeenCalled();
+	});
 });

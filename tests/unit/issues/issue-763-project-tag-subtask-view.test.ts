@@ -24,11 +24,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import {
-	isProjectNoteByAutosuggestMarkers,
-	shouldRenderRelationshipsWidget,
-	type RelationshipsWidgetState,
-} from '../../../src/editor/RelationshipsDecorations';
+import { isProjectNoteByAutosuggestMarkers } from '../../../src/editor/RelationshipsDecorations';
 import type TaskNotesPlugin from '../../../src/main';
 import type { ProjectAutosuggestSettings } from '../../../src/types/settings';
 
@@ -59,15 +55,6 @@ function createPluginWithProjectAutosuggest(
 }
 
 describe('Issue #763: Relationships widget for empty tagged/property projects', () => {
-	const emptyProjectState: RelationshipsWidgetState = {
-		isTaskNote: false,
-		isProjectNote: true,
-		hasSubtasks: false,
-		hasProjectLinks: false,
-		hasBlockingDependencies: false,
-		hasBlockedTasks: false,
-	};
-
 	it('treats notes matching project autosuggest required tags as project notes', () => {
 		const plugin = createPluginWithProjectAutosuggest({
 			requiredTags: ['project'],
@@ -82,7 +69,6 @@ describe('Issue #763: Relationships widget for empty tagged/property projects', 
 		};
 
 		expect(isProjectNoteByAutosuggestMarkers(plugin, metadata)).toBe(true);
-		expect(shouldRenderRelationshipsWidget('always', emptyProjectState)).toBe(true);
 	});
 
 	it('treats notes matching the configured project property as project notes', () => {
@@ -99,7 +85,6 @@ describe('Issue #763: Relationships widget for empty tagged/property projects', 
 		};
 
 		expect(isProjectNoteByAutosuggestMarkers(plugin, metadata)).toBe(true);
-		expect(shouldRenderRelationshipsWidget('always', emptyProjectState)).toBe(true);
 	});
 
 	it('does not turn folder-only autosuggest filters into empty project widgets', () => {

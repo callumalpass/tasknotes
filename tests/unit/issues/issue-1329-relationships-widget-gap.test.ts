@@ -6,6 +6,7 @@
  */
 
 import {
+	applyRelationshipsBottomOffset,
 	findRelationshipsBottomAnchor,
 	insertRelationshipsWidgetAtBottom,
 } from "../../../src/editor/RelationshipsDecorations";
@@ -60,6 +61,41 @@ describe("Issue #1329: relationships widget bottom placement", () => {
 		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe(
 			"-124px"
 		);
+	});
+
+	it("recomputes the live preview offset when editor content grows", () => {
+		const sizer = el("cm-sizer");
+		const contentContainer = el("cm-contentContainer");
+		const cmContent = el("cm-content cm-lineWrapping");
+		const lastLine = el("cm-line");
+		const widget = el("tasknotes-relationships-widget");
+		let lastLineBottom = 100;
+
+		cmContent.append(lastLine);
+		contentContainer.append(cmContent);
+		sizer.append(contentContainer, widget);
+
+		Object.defineProperty(contentContainer, "getBoundingClientRect", {
+			value: () => ({ bottom: 224 }),
+		});
+		Object.defineProperty(lastLine, "getBoundingClientRect", {
+			value: () => ({ bottom: lastLineBottom }),
+		});
+
+		applyRelationshipsBottomOffset(sizer, widget);
+		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe(
+			"-124px"
+		);
+
+		lastLineBottom = 210;
+		applyRelationshipsBottomOffset(sizer, widget);
+		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe(
+			"-14px"
+		);
+
+		lastLineBottom = 224;
+		applyRelationshipsBottomOffset(sizer, widget);
+		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe("");
 	});
 
 	it("anchors reading mode widgets after the last content section", () => {

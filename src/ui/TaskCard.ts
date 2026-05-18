@@ -417,8 +417,7 @@ function createStatusCycleHandler(
 						updatedTask,
 						plugin,
 						isCompleted,
-						effectiveStatus,
-						targetDate
+						effectiveStatus
 					);
 				};
 
@@ -472,8 +471,7 @@ function updateCardCompletionState(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
 	isCompleted: boolean,
-	effectiveStatus: string,
-	targetDate: Date
+	effectiveStatus: string
 ): void {
 	card.classList.toggle("task-card--completed", isCompleted);
 	card.classList.toggle(
@@ -483,7 +481,7 @@ function updateCardCompletionState(
 	card.classList.toggle("task-card--archived", !!task.archived);
 	card.classList.toggle(
 		"task-card--actively-tracked",
-		plugin.getActiveTimeSession(task, targetDate) !== null
+		plugin.getActiveTimeSession(task) !== null
 	);
 	card.classList.toggle("task-card--recurring", !!task.recurrence);
 	card.classList.toggle(
@@ -726,14 +724,76 @@ function createBlockedByToggleClickHandler(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
 	card: HTMLElement,
-	toggle: HTMLElement
+	_control: HTMLElement
 ): () => void {
 	return () => {
-		void (async () => {
-			const expanded = toggle.classList.toggle("task-card__blocked-toggle--expanded");
-			await toggleBlockedByTasks(card, task, plugin, expanded);
-		})();
+		void toggleBlockedByExpansion(card, task, plugin);
 	};
+}
+
+function syncBlockedByExpansionControls(card: HTMLElement, expanded: boolean): void {
+	const toggle = card.querySelector<HTMLElement>(".task-card__blocked-toggle");
+	if (toggle) {
+		toggle.classList.toggle("task-card__blocked-toggle--expanded", expanded);
+		toggle.setAttribute("aria-expanded", String(expanded));
+	}
+
+	for (const pill of card.querySelectorAll<HTMLElement>(".task-card__metadata-pill--blocked")) {
+		if (pill.getAttribute("role") === "button") {
+			pill.setAttribute("aria-expanded", String(expanded));
+		}
+	}
+}
+
+async function toggleBlockedByExpansion(
+	card: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): Promise<void> {
+	const expanded = !card.querySelector(".task-card__blocked-by");
+	syncBlockedByExpansionControls(card, expanded);
+	await toggleBlockedByTasks(card, task, plugin, expanded);
+}
+
+function createBlockedMetadataPill(
+	metadataLine: HTMLElement,
+	card: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): HTMLElement | null {
+	if (!task.isBlocked) {
+		return null;
+	}
+
+	const blockedLabel = plugin.i18n.translate("ui.taskCard.blockedBadge");
+	const blockedByPaths = getBlockedByTaskPaths(task, plugin);
+	const blockedCount = task.blockedBy?.length ?? 0;
+	const pillText = blockedCount > 0 ? `${blockedLabel} (${blockedCount})` : blockedLabel;
+	const blockedPill = metadataLine.createSpan({
+		cls: "task-card__metadata-pill task-card__metadata-pill--blocked",
+		text: pillText,
+	});
+
+	if (blockedByPaths.length > 0) {
+		const toggleLabel = `${blockedLabel} (${blockedByPaths.length})`;
+		prepareInteractiveControl(blockedPill);
+		blockedPill.setAttribute("aria-label", toggleLabel);
+		blockedPill.setAttribute(
+			"aria-expanded",
+			String(Boolean(card.querySelector(".task-card__blocked-by")))
+		);
+		setTooltip(blockedPill, toggleLabel, { placement: "top" });
+		blockedPill.addEventListener("click", (event) => {
+			event.stopPropagation();
+			void toggleBlockedByExpansion(card, task, plugin);
+		});
+	} else {
+		setTooltip(blockedPill, plugin.i18n.translate("ui.taskCard.blockedBadgeTooltip"), {
+			placement: "top",
+		});
+	}
+
+	return blockedPill;
 }
 
 /**
@@ -789,7 +849,7 @@ export function createTaskCard(
 	taskCardElement._taskPath = task.path;
 	taskCardElement._taskCardOptions = opts;
 
-	const isActivelyTracked = plugin.getActiveTimeSession(task, targetDate) !== null;
+	const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
 	const isCompleted = task.recurrence
 		? task.complete_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of complete_instances
 		: plugin.statusManager.isCompletedStatus(effectiveStatus); // Regular tasks use status config
@@ -1094,18 +1154,8 @@ export function createTaskCard(
 		}
 
 		if (propertyId === "blocked") {
-			if (task.isBlocked) {
-				const blockedLabel = plugin.i18n.translate("ui.taskCard.blockedBadge");
-				const blockedCount = task.blockedBy?.length ?? 0;
-				const pillText =
-					blockedCount > 0 ? `${blockedLabel} (${blockedCount})` : blockedLabel;
-				const blockedPill = metadataLine.createSpan({
-					cls: "task-card__metadata-pill task-card__metadata-pill--blocked",
-					text: pillText,
-				});
-				setTooltip(blockedPill, plugin.i18n.translate("ui.taskCard.blockedBadgeTooltip"), {
-					placement: "top",
-				});
+			const blockedPill = createBlockedMetadataPill(metadataLine, card, task, plugin);
+			if (blockedPill) {
 				metadataElements.push(blockedPill);
 			}
 			continue;
@@ -1280,7 +1330,7 @@ export function updateTaskCard(
 		: task.status;
 
 	// Update main element classes using BEM structure
-	const isActivelyTracked = plugin.getActiveTimeSession(task, targetDate) !== null;
+	const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
 	const isCompleted = task.recurrence
 		? task.complete_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of complete_instances
 		: plugin.statusManager.isCompletedStatus(effectiveStatus); // Regular tasks use status config
@@ -1650,20 +1700,8 @@ export function updateTaskCard(
 			}
 
 			if (propertyId === "blocked") {
-				if (task.isBlocked) {
-					const blockedLabel = plugin.i18n.translate("ui.taskCard.blockedBadge");
-					const blockedCount = task.blockedBy?.length ?? 0;
-					const pillText =
-						blockedCount > 0 ? `${blockedLabel} (${blockedCount})` : blockedLabel;
-					const blockedPill = metadataLine.createSpan({
-						cls: "task-card__metadata-pill task-card__metadata-pill--blocked",
-						text: pillText,
-					});
-					setTooltip(
-						blockedPill,
-						plugin.i18n.translate("ui.taskCard.blockedBadgeTooltip"),
-						{ placement: "top" }
-					);
+				const blockedPill = createBlockedMetadataPill(metadataLine, element, task, plugin);
+				if (blockedPill) {
 					metadataElements.push(blockedPill);
 				}
 				continue;
@@ -1689,9 +1727,15 @@ export function updateTaskCard(
 				continue;
 			}
 
-			const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin, opts);
-			if (element) {
-				metadataElements.push(element);
+			const propertyElement = renderPropertyMetadata(
+				metadataLine,
+				propertyId,
+				task,
+				plugin,
+				opts
+			);
+			if (propertyElement) {
+				metadataElements.push(propertyElement);
 			}
 		}
 

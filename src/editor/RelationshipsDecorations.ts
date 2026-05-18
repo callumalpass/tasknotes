@@ -62,8 +62,6 @@ import {
 	shouldSkipMarkdownWidgetLeaf,
 } from "./MarkdownWidgetContext";
 import { insertAfterElement, insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
-import type { RelationshipsDisplayMode } from "../types/settings";
-import { getRelationshipsDisplayMode } from "../settings/relationshipSettings";
 import { FilterUtils } from "../utils/FilterUtils";
 import { collectCacheTags } from "../utils/tagExtraction";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
@@ -79,61 +77,10 @@ interface HTMLElementWithComponent extends HTMLElement {
 	component?: Component;
 }
 
-export type RelationshipsWidgetState = {
-	isTaskNote: boolean;
-	isProjectNote: boolean;
-	hasSubtasks: boolean;
-	hasProjectLinks: boolean;
-	hasBlockingDependencies: boolean;
-	hasBlockedTasks: boolean;
-};
-
-export function hasRelationshipFieldValue(value: unknown): boolean {
-	if (Array.isArray(value)) {
-		return value.some(hasRelationshipFieldValue);
-	}
-
-	if (typeof value === "string") {
-		return value.trim().length > 0;
-	}
-
-	if (value && typeof value === "object") {
-		return Object.keys(value).length > 0;
-	}
-
-	return value !== null && value !== undefined && value !== false;
-}
-
-export function shouldRenderRelationshipsWidget(
-	mode: RelationshipsDisplayMode,
-	state: RelationshipsWidgetState
-): boolean {
-	if (mode === "never" || (!state.isTaskNote && !state.isProjectNote)) {
-		return false;
-	}
-
-	if (mode === "always") {
-		return true;
-	}
-
-	return (
-		state.hasSubtasks ||
-		state.hasProjectLinks ||
-		state.hasBlockingDependencies ||
-		state.hasBlockedTasks
-	);
-}
-
 function getHTMLElementChildren(element: HTMLElement): HTMLElement[] {
 	return Array.from(element.children).filter(
 		(child): child is HTMLElement => child.instanceOf(HTMLElement)
 	);
-}
-
-function getFrontmatterRecord(frontmatter: unknown): Record<string, unknown> {
-	return frontmatter && typeof frontmatter === "object"
-		? (frontmatter as Record<string, unknown>)
-		: {};
 }
 
 type ProjectMarkerMetadata = {
@@ -172,30 +119,6 @@ function isProjectNoteForRelationships(
 		plugin.dependencyCache?.isFileUsedAsProject(file.path) ||
 			isProjectNoteByAutosuggestMarkers(plugin, metadata)
 	);
-}
-
-function getRelationshipsWidgetState(
-	plugin: TaskNotesPlugin,
-	file: TFile,
-	isTaskNote: boolean,
-	isProjectNote: boolean,
-	frontmatter: unknown
-): RelationshipsWidgetState {
-	const frontmatterRecord = getFrontmatterRecord(frontmatter);
-	const projectsField = plugin.fieldMapper.toUserField("projects");
-	const blockedByField = plugin.fieldMapper.toUserField("blockedBy");
-
-	return {
-		isTaskNote,
-		isProjectNote,
-		hasSubtasks:
-			(plugin.dependencyCache?.getTasksReferencingProject(file.path).length ?? 0) > 0,
-		hasProjectLinks: hasRelationshipFieldValue(frontmatterRecord[projectsField]),
-		hasBlockingDependencies:
-			hasRelationshipFieldValue(frontmatterRecord[blockedByField]) ||
-			(plugin.dependencyCache?.getBlockingTaskPaths(file.path).length ?? 0) > 0,
-		hasBlockedTasks: (plugin.dependencyCache?.getTasksBlockedByTask(file.path).length ?? 0) > 0,
-	};
 }
 
 export function findRelationshipsBottomAnchor(container: HTMLElement): HTMLElement | null {
@@ -324,6 +247,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	private eventListeners: EventRef[] = [];
 	private dependencyCacheEventListeners: EventRef[] = [];
 	private injectionRunId = 0;
+	private bottomOffsetFrame: number | null = null;
 
 	constructor(
 		view: EditorView,
@@ -348,6 +272,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		if (newFile !== this.currentFile) {
 			this.currentFile = newFile;
 			this.debouncedInjectWidget(update.view);
+		} else if (update.docChanged || update.geometryChanged || update.viewportChanged) {
+			this.scheduleBottomOffsetRefresh();
 		}
 	}
 
@@ -358,6 +284,10 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		if (this.debounceTimer) {
 			window.clearTimeout(this.debounceTimer);
 			this.debounceTimer = null;
+		}
+		if (this.bottomOffsetFrame !== null) {
+			window.cancelAnimationFrame(this.bottomOffsetFrame);
+			this.bottomOffsetFrame = null;
 		}
 
 		// Clean up the widget and its component
@@ -406,6 +336,27 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			this.debounceTimer = null;
 			void this.injectWidget(view);
 		}, 100);
+	}
+
+	private scheduleBottomOffsetRefresh(): void {
+		if (
+			!this.currentWidget ||
+			!this.widgetContainer ||
+			(this.plugin.settings.relationshipsPosition || "bottom") !== "bottom"
+		) {
+			return;
+		}
+
+		if (this.bottomOffsetFrame !== null) {
+			window.cancelAnimationFrame(this.bottomOffsetFrame);
+		}
+
+		this.bottomOffsetFrame = window.requestAnimationFrame(() => {
+			this.bottomOffsetFrame = null;
+			if (this.currentWidget?.isConnected && this.widgetContainer?.isConnected) {
+				applyRelationshipsBottomOffset(this.widgetContainer, this.currentWidget);
+			}
+		});
 	}
 
 	private getFileFromView(view: EditorView): unknown {
@@ -479,6 +430,10 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 	}
 
 	private removeWidget(): void {
+		if (this.bottomOffsetFrame !== null) {
+			window.cancelAnimationFrame(this.bottomOffsetFrame);
+			this.bottomOffsetFrame = null;
+		}
 		if (this.currentWidget) {
 			// Unload the component
 			this.currentWidget.component?.unload();
@@ -527,8 +482,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 		this.cleanupOrphanedWidgets(view);
 
 		try {
-			const displayMode = getRelationshipsDisplayMode(this.plugin.settings);
-			if (displayMode === "never") {
+			// Check if relationships widget is enabled
+			if (!this.plugin.settings.showRelationships) {
 				return;
 			}
 
@@ -551,14 +506,9 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				isProjectNote = isProjectNoteForRelationships(this.plugin, file, metadata);
 			}
 
-			const widgetState = getRelationshipsWidgetState(
-				this.plugin,
-				file,
-				isTaskNote,
-				isProjectNote,
-				metadata?.frontmatter
-			);
-			if (!shouldRenderRelationshipsWidget(displayMode, widgetState)) {
+			// Only show widget if it's either a task note or a project note
+			if (!isTaskNote && !isProjectNote) {
+				// Not a task or project note - don't show relationships widget
 				return;
 			}
 
@@ -657,8 +607,8 @@ async function injectReadingModeWidget(
 		return;
 	}
 
-	const displayMode = getRelationshipsDisplayMode(plugin.settings);
-	if (displayMode === "never") {
+	// Check if relationships widget is enabled
+	if (!plugin.settings.showRelationships) {
 		return;
 	}
 
@@ -675,14 +625,7 @@ async function injectReadingModeWidget(
 		isProjectNote = isProjectNoteForRelationships(plugin, file, metadata);
 	}
 
-	const widgetState = getRelationshipsWidgetState(
-		plugin,
-		file,
-		isTaskNote,
-		isProjectNote,
-		metadata?.frontmatter
-	);
-	if (!shouldRenderRelationshipsWidget(displayMode, widgetState)) {
+	if (!isTaskNote && !isProjectNote) {
 		// Remove any existing widgets if conditions no longer met
 		try {
 			const previewView = view.previewMode;
