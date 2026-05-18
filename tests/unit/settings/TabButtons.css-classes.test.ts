@@ -120,4 +120,33 @@ describe('Settings UI - Tab Button CSS Classes', () => {
       expect(button.classList.contains('vertical-tab-nav-item')).toBe(true);
     });
   });
+
+  test('settings search filters tab buttons and keeps the first match active', () => {
+    tab.display();
+
+    const searchInput = tab.containerEl.querySelector('.settings-view__search-input') as HTMLInputElement;
+    const generalButton = tab.containerEl.querySelector('#tab-button-general') as HTMLElement;
+    const appearanceButton = tab.containerEl.querySelector('#tab-button-appearance') as HTMLElement;
+
+    expect(searchInput).toBeTruthy();
+
+    searchInput.value = 'appearance';
+    searchInput.dispatchEvent(new Event('input'));
+
+    expect(generalButton.hidden).toBe(true);
+    expect(appearanceButton.hidden).toBe(false);
+    expect(appearanceButton.classList.contains('settings-view__tab-button--active')).toBe(true);
+  });
+
+  test('settings search shows an empty state when no tab matches', () => {
+    tab.display();
+
+    const searchInput = tab.containerEl.querySelector('.settings-view__search-input') as HTMLInputElement;
+    const emptyState = tab.containerEl.querySelector('.settings-view__search-empty') as HTMLElement;
+
+    searchInput.value = 'no matching setting';
+    searchInput.dispatchEvent(new Event('input'));
+
+    expect(emptyState.hidden).toBe(false);
+  });
 });

@@ -19,6 +19,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	plugin: TaskNotesPlugin;
 	private activeTab = "general";
 	private tabContents: Record<string, HTMLElement> = {};
+	private settingsSearchTerm = "";
 	private debouncedSave: DebouncedFunction<() => Promise<void>> = debounce(
 		() => this.plugin.saveSettings(),
 		500
@@ -52,6 +53,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const translate = (key: TranslationKey) => this.plugin.i18n.translate(key);
 
 		// Create tab navigation
+		const searchContainer = containerEl.createDiv("settings-search settings-view__search");
+		const searchInput = searchContainer.createEl("input", {
+			type: "search",
+			cls: "settings-search-input settings-view__search-input",
+			attr: {
+				placeholder: "Search settings",
+				"aria-label": "Search settings",
+				value: this.settingsSearchTerm,
+			},
+		});
+		const noResults = searchContainer.createDiv({
+			text: "No matching settings sections",
+			cls: "settings-search-empty settings-view__search-empty",
+		});
+		noResults.hidden = true;
+
 		const tabNav = containerEl.createDiv("settings-tab-nav settings-view__tab-nav");
 
 		// Define the 6-tab structure (defaults merged into task-properties)
@@ -138,6 +155,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 		});
 
+		searchInput.addEventListener("input", () => {
+			this.settingsSearchTerm = searchInput.value;
+			this.applySettingsSearch(tabs, noResults);
+		});
+
 		// Add documentation link after tabs
 		const docsHeader = containerEl.createDiv("settings-header");
 		const docsLink = docsHeader.createEl("a", {
@@ -170,9 +192,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 			this.tabContents[tab.id] = tabContent;
 		});
+
+		this.applySettingsSearch(tabs, noResults);
 	}
 
-	private switchTab(tabId: string): void {
+	private switchTab(tabId: string, focusTab = true): void {
 		// Update active tab state
 		// const previousTab = this.activeTab;
 		this.activeTab = tabId;
@@ -205,14 +229,45 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		}
 
 		// Focus the newly active tab button
-		window.setTimeout(() => {
-			const activeTabButton = this.containerEl.querySelector(
-				`#tab-button-${tabId}`
-			) as HTMLElement;
-			if (activeTabButton) {
-				activeTabButton.focus();
+		if (focusTab) {
+			window.setTimeout(() => {
+				const activeTabButton = this.containerEl.querySelector(
+					`#tab-button-${tabId}`
+				) as HTMLElement;
+				if (activeTabButton) {
+					activeTabButton.focus();
+				}
+			}, 50);
+		}
+	}
+
+	private applySettingsSearch(tabs: TabConfig[], noResultsEl: HTMLElement): void {
+		const query = this.settingsSearchTerm.trim().toLowerCase();
+		const matches = new Map<string, boolean>();
+
+		tabs.forEach((tab) => {
+			const tabLabel = this.plugin.i18n.translate(tab.nameKey);
+			const tabContent = this.tabContents[tab.id];
+			const searchableText = `${tabLabel} ${tab.id} ${tabContent?.textContent ?? ""}`
+				.toLowerCase()
+				.replace(/\s+/g, " ");
+			matches.set(tab.id, query.length === 0 || searchableText.includes(query));
+		});
+
+		this.containerEl.querySelectorAll<HTMLElement>(".settings-tab-button").forEach((button) => {
+			const tabId = button.id.replace(/^tab-button-/, "");
+			button.hidden = matches.get(tabId) === false;
+		});
+
+		const hasMatch = Array.from(matches.values()).some(Boolean);
+		noResultsEl.hidden = query.length === 0 || hasMatch;
+
+		if (query.length > 0 && hasMatch && matches.get(this.activeTab) === false) {
+			const firstMatch = tabs.find((tab) => matches.get(tab.id));
+			if (firstMatch) {
+				this.switchTab(firstMatch.id, false);
 			}
-		}, 50);
+		}
 	}
 
 	private getTabConfigurations(): TabConfig[] {
