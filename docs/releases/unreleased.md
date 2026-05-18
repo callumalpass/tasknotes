@@ -137,13 +137,14 @@ Example:
 - Fixed Calendar timeblocks created from a selected time range so they appear as soon as Obsidian indexes the daily note update, instead of waiting for a later refresh.
 - Replaced the external calendar event emoji marker with the calendar icon and kept it in the same top-right event corner.
 - Restored Task List group toggles and recurring calendar month controls to compact icon buttons instead of inherited boxed theme buttons.
+- Refined the settings tab navigation styling so tabs read as a compact segmented control instead of default buttons.
 - (#263) Made the instant inline task conversion button respond to touch/pointer activation, so mobile multi-line selections can be converted into TaskNotes. Thanks to @cathywu for reporting this.
 - (#216) Preserved `@context` markers when converting Tasks-plugin-style checkbox tasks into TaskNotes, while keeping those contexts out of the created task title. Thanks to @ksdavidc for suggesting this, and to @hangryscribe3, @nayatiuh, and @natleahh for the follow-up feedback.
 - (#508) Showed project note names instead of full project paths in grouped Kanban and Task List headings, while keeping the headings linked to the project note. Thanks to @elvarb for reporting this and @dmodify for confirming it in Task List.
 - (#466) Stored task created/modified metadata as `YYYY-MM-DDTHH:mm:ss` datetimes so Obsidian Bases can recognize those properties as dates more reliably across regions. Thanks to @Moyf for reporting this.
 - (#408) Used the task title as the native system notification title for task reminders instead of always showing `TaskNotes Reminder`. Thanks to @DudeThatsErin for reporting this and @phillipadsmith for the follow-up.
 - (#385) Let Mini Calendar month controls shrink and wrap cleanly in narrow sidebars. Thanks to @iholston for reporting this.
-- Fixed Calendar List view task cards so they use the available row width without inheriting oversized Calendar hover styling.
+- Fixed Calendar List view task cards so they use the available row width without duplicate list cells, row-hover backgrounds, or linked-hover styling.
 - (#552) Made instant task convert buttons appear for checkbox tasks inside callouts, and kept converted links inside the callout list. Thanks to @Oblique82 for reporting this and @ksdavidc for the follow-up.
 - (#559) Treated notes linked to one loaded recurring calendar event instance as related to the other instances in that series. Thanks to @cathywu for reporting this and @mdbraber for the implementation notes.
 - (#685) Made Calendar list views respect the All-day slot option by hiding all-day events from the list when that option is turned off. Thanks to @RumiaKitinari for reporting this.
