@@ -56,7 +56,6 @@ Example:
 - (#1603) Added Calendar view toggles for hiding completed or skipped recurring task instances while keeping future outstanding instances visible. Thanks to @wandererovertheseaofpiss for suggesting this.
 - (#287, #273, #274) Added linked hover highlighting for Calendar and Agenda events that come from the same task note, so scheduled, due, and recurring entries are easier to connect. Thanks to @girisumit for suggesting this.
 - (#280) Added project-specific CSS hooks to task cards and Calendar events, so project-based visual styling can be handled with user snippets. Thanks to @girisumit for suggesting this.
-- (#275) Added a search field to TaskNotes settings for quickly narrowing the settings tabs. Thanks to @girisumit for suggesting this and @prayidae for the related plugin note.
 - (#1625) Added `Shift` + `Cmd`/`Ctrl` + `Enter` in the Create Task modal to save the current task and reopen the modal for the next one. Thanks to @tcb678 for suggesting this.
 - (#1353) Focused the Create Task modal's natural-language input when the modal opens, with a longer mobile delay so the keyboard can open after layout. Thanks to @GiovanH for suggesting this.
 - (#1664) Added project-based custom filename template variables, including the first project, all projects, and a short `projectId`. Thanks to @bendavis987 for the contribution.

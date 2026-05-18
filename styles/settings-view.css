@@ -35,21 +35,6 @@
    TAB NAVIGATION
    ================================================ */
 
-.tasknotes-plugin .settings-view__search {
-    margin-bottom: var(--tn-spacing-sm);
-}
-
-.tasknotes-plugin .settings-view__search-input {
-    width: 100%;
-    max-width: 28rem;
-}
-
-.tasknotes-plugin .settings-view__search-empty {
-    margin-top: var(--tn-spacing-xs);
-    color: var(--text-muted);
-    font-size: var(--font-ui-smaller);
-}
-
 /* Tab Navigation Container */
 .tasknotes-plugin .settings-view__tab-nav {
     display: flex;
