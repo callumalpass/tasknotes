@@ -3480,7 +3480,7 @@ export class CalendarView extends BasesViewBase {
 
 	private attachTaskEventHoverLink(element: HTMLElement, taskPath: string): void {
 		const setRelatedState = (active: boolean) => {
-			const selector = `[data-task-path="${CSS.escape(taskPath)}"]`;
+			const selector = `.fc-task-event[data-task-path="${CSS.escape(taskPath)}"]`;
 			const relatedEvents =
 				this.rootElement?.querySelectorAll<HTMLElement>(selector) ?? [];
 

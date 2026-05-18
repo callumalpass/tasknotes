@@ -17,6 +17,7 @@ describe("Issue #287: linked calendar task hover states", () => {
 
 		expect(source).toContain('arg.el.setAttribute("data-task-path", taskInfo.path)');
 		expect(source).toContain("this.attachTaskEventHoverLink(arg.el, taskInfo.path)");
+		expect(source).toContain('.fc-task-event[data-task-path="${CSS.escape(taskPath)}"]');
 		expect(source).toContain("fc-task-event--hover-source");
 		expect(source).toContain("fc-task-event--related-hover");
 		expect(source).toContain("CSS.escape(taskPath)");
@@ -28,7 +29,7 @@ describe("Issue #287: linked calendar task hover states", () => {
 		expect(css).toContain(".advanced-calendar-view .fc-task-event--hover-source");
 		expect(css).toContain(".advanced-calendar-view .fc-task-event--related-hover");
 		expect(css).toContain(
-			".advanced-calendar-view.advanced-calendar-view--list .fc-task-event--related-hover .task-card"
+			".advanced-calendar-view.advanced-calendar-view--list .fc-task-event--related-hover .fc-list-card-content"
 		);
 	});
 });
