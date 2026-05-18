@@ -124,6 +124,7 @@ Example:
 
 ## Fixed
 
+- ([#552](https://github.com/callumalpass/tasknotes/issues/552)) Made instant task convert buttons appear for checkbox tasks inside callouts, and kept converted links inside the callout list. Thanks to @Oblique82 for reporting this and @ksdavidc for the follow-up.
 - ([#559](https://github.com/callumalpass/tasknotes/issues/559)) Treated notes linked to one loaded recurring calendar event instance as related to the other instances in that series. Thanks to @cathywu for reporting this and @mdbraber for the implementation notes.
 - ([#685](https://github.com/callumalpass/tasknotes/issues/685)) Made Calendar list views respect the All-day slot option by hiding all-day events from the list when that option is turned off. Thanks to @RumiaKitinari for reporting this.
 - ([#643](https://github.com/callumalpass/tasknotes/issues/643)) Stopped custom filename templates such as `task-{year}{month}{day}{hour}{minute}` from incorrectly showing the "filename shortened" notice when creating tasks. Thanks to @minchinweb for reporting this.

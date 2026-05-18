@@ -54,6 +54,14 @@ export class TasksPluginParser {
 	// Checkbox pattern for markdown tasks (supports both bullet points and numbered lists)
 	private static readonly CHECKBOX_PATTERN = /^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+)(.*)/;
 
+	private static stripBlockquoteMarkers(line: string): string {
+		let content = line.trim();
+		while (/^>\s*/.test(content)) {
+			content = content.replace(/^>\s*/, "");
+		}
+		return content;
+	}
+
 	/**
 	 * Parse a line of text to extract Tasks plugin format data
 	 */
@@ -76,7 +84,7 @@ export class TasksPluginParser {
 			};
 		}
 
-		const trimmedLine = line.trim();
+		const trimmedLine = this.stripBlockquoteMarkers(line);
 
 		// Check if this is a checkbox task line
 		const checkboxMatch = trimmedLine.match(this.CHECKBOX_PATTERN);

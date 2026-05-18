@@ -63,6 +63,25 @@ export function extractProjectFromHeadingText(headingText: string): string | nul
 	return heading;
 }
 
+function splitBlockquotePrefix(line: string): {
+	leadingWhitespace: string;
+	blockquotePrefix: string;
+	content: string;
+} {
+	const leadingWhitespace = line.match(/^(\s*)/)?.[1] || "";
+	let content = line.slice(leadingWhitespace.length);
+	let blockquotePrefix = "";
+
+	while (/^>\s*/.test(content)) {
+		const match = content.match(/^(>\s*)/);
+		if (!match) break;
+		blockquotePrefix += match[1];
+		content = content.slice(match[1].length);
+	}
+
+	return { leadingWhitespace, blockquotePrefix, content };
+}
+
 export class InstantTaskConvertService {
 	private plugin: TaskNotesPlugin;
 	private statusManager: StatusManager;
@@ -942,29 +961,6 @@ export class InstantTaskConvertService {
 				return { success: false, error: "First line no longer contains valid content." };
 			}
 
-			// Create link text preserving original format and indentation from the first line
-			const originalIndentation = originalContent[0].match(/^(\s*)/)?.[1] || "";
-
-			let listPrefix = "";
-			if (isCheckboxTask) {
-				listPrefix = this.getCheckboxReplacementPrefix(originalContent[0]);
-			} else {
-				// For non-checkbox lines, try to preserve existing list markers
-				const bulletMatch = originalContent[0].match(/^\s*([-*+]\s+)/);
-				const numberedMatch = originalContent[0].match(/^\s*(\d+\.\s+)/);
-				const blockquoteMatch = originalContent[0].match(/^\s*(>\s*)/);
-
-				if (bulletMatch) {
-					listPrefix = bulletMatch[1];
-				} else if (numberedMatch) {
-					listPrefix = numberedMatch[1];
-				} else if (blockquoteMatch) {
-					listPrefix = blockquoteMatch[1];
-				} else {
-					listPrefix = "- "; // Default to bullet point
-				}
-			}
-
 			// Get the current file context for relative link generation
 			const currentFile = this.plugin.app.workspace.getActiveFile();
 			const sourcePath = currentFile?.path || "";
@@ -973,7 +969,8 @@ export class InstantTaskConvertService {
 			const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
 
 			// Create the final line with proper indentation and original list format
-			const linkText = `${originalIndentation}${listPrefix}${properLink}`;
+			const replacementPrefix = this.getReplacementPrefix(originalContent[0], isCheckboxTask);
+			const linkText = `${replacementPrefix}${properLink}`;
 
 			// Validate the generated link text
 			if (linkText.length > 500) {
@@ -996,12 +993,33 @@ export class InstantTaskConvertService {
 
 	private getCheckboxReplacementPrefix(originalLine: string): string {
 		if (this.plugin.settings.preserveCheckboxOnConvert) {
-			const checkboxPrefixMatch = originalLine.match(/^\s*((?:[-*+]|\d+\.)\s+\[[^\]]\]\s*)/);
+			const checkboxPrefixMatch = originalLine.match(/^(\s*(?:[-*+]|\d+\.)\s+\[[^\]]\]\s*)/);
 			return checkboxPrefixMatch?.[1] || "- [ ] ";
 		}
 
-		const listPrefixMatch = originalLine.match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
+		const listPrefixMatch = originalLine.match(/^(\s*(?:[-*+]|\d+\.)\s+)\[/);
 		return listPrefixMatch?.[1] || "- ";
+	}
+
+	private getNonCheckboxReplacementPrefix(originalLine: string): string {
+		const bulletMatch = originalLine.match(/^(\s*[-*+]\s+)/);
+		const numberedMatch = originalLine.match(/^(\s*\d+\.\s+)/);
+
+		if (bulletMatch) {
+			return bulletMatch[1];
+		}
+		if (numberedMatch) {
+			return numberedMatch[1];
+		}
+		return "- ";
+	}
+
+	private getReplacementPrefix(originalLine: string, isCheckboxTask: boolean): string {
+		const { leadingWhitespace, blockquotePrefix, content } = splitBlockquotePrefix(originalLine);
+		const contentPrefix = isCheckboxTask
+			? this.getCheckboxReplacementPrefix(content)
+			: this.getNonCheckboxReplacementPrefix(content);
+		return `${leadingWhitespace}${blockquotePrefix}${contentPrefix}`;
 	}
 
 	/**
@@ -1296,15 +1314,16 @@ export class InstantTaskConvertService {
 	private extractLineContentAsTitle(line: string): string {
 		let cleanLine = line.trim();
 
-		// Remove common list markers and bullet points
-		cleanLine = cleanLine.replace(/^\s*[-*+]\s+/, ""); // Remove bullet points
-		cleanLine = cleanLine.replace(/^\s*\d+\.\s+/, ""); // Remove numbered lists
-
 		// Remove blockquote markers (for issue #262 - callouts support)
 		// Handle multiple levels of blockquotes like "> > > text"
 		while (cleanLine.match(/^\s*>\s*/)) {
 			cleanLine = cleanLine.replace(/^\s*>\s*/, "");
 		}
+
+		// Remove common list markers and bullet points
+		cleanLine = cleanLine.replace(/^\s*[-*+]\s+/, ""); // Remove bullet points
+		cleanLine = cleanLine.replace(/^\s*\d+\.\s+/, ""); // Remove numbered lists
+		cleanLine = cleanLine.replace(/^\s*\[[ xX]\]\s+/, ""); // Remove checkbox after callout/list stripping
 
 		// Remove markdown headers
 		cleanLine = cleanLine.replace(/^\s*#+\s+/, "");
@@ -1422,37 +1441,15 @@ export class InstantTaskConvertService {
 	 * Generate link text for a task line replacement
 	 */
 	private generateLinkText(originalLine: string, file: TFile): string {
-		const originalIndentation = originalLine.match(/^(\s*)/)?.[1] || "";
-
 		// Determine if this was a checkbox task
 		const taskLineInfo = TasksPluginParser.parseTaskLine(originalLine);
 		const isCheckboxTask = taskLineInfo.isTaskLine;
-
-		let listPrefix = "";
-		if (isCheckboxTask) {
-			listPrefix = this.getCheckboxReplacementPrefix(originalLine);
-		} else {
-			// For non-checkbox lines, preserve existing markers
-			const bulletMatch = originalLine.match(/^\s*([-*+]\s+)/);
-			const numberedMatch = originalLine.match(/^\s*(\d+\.\s+)/);
-			const blockquoteMatch = originalLine.match(/^\s*(>\s*)/);
-
-			if (bulletMatch) {
-				listPrefix = bulletMatch[1];
-			} else if (numberedMatch) {
-				listPrefix = numberedMatch[1];
-			} else if (blockquoteMatch) {
-				listPrefix = blockquoteMatch[1];
-			} else {
-				listPrefix = "- ";
-			}
-		}
 
 		const currentFile = this.plugin.app.workspace.getActiveFile();
 		const sourcePath = currentFile?.path || "";
 		const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
 
-		return `${originalIndentation}${listPrefix}${properLink}`;
+		return `${this.getReplacementPrefix(originalLine, isCheckboxTask)}${properLink}`;
 	}
 
 	/**
