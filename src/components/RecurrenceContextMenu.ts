@@ -55,6 +55,11 @@ interface RecurrenceWeekdayDefinition {
 	shortKey: WeekdayShortKey;
 }
 
+interface MonthDayOption {
+	value: string;
+	text: string;
+}
+
 const RECURRENCE_WEEKDAYS: RecurrenceWeekdayDefinition[] = [
 	{ dateIndex: 0, code: "SU", nameKey: "sunday", shortKey: "sun" },
 	{ dateIndex: 1, code: "MO", nameKey: "monday", shortKey: "mon" },
@@ -245,6 +250,22 @@ export function buildCustomRecurrenceRule(input: CustomRecurrenceRuleInput): str
 	}
 
 	return parts.join(";");
+}
+
+export function getMonthDayOptions(): MonthDayOption[] {
+	return [
+		...Array.from({ length: 31 }, (_, index) => {
+			const day = index + 1;
+			return {
+				value: day.toString(),
+				text: day.toString(),
+			};
+		}),
+		{
+			value: "-1",
+			text: "Last day",
+		},
+	];
 }
 
 export class RecurrenceContextMenu {
@@ -797,20 +818,21 @@ class CustomRecurrenceModal extends Modal {
 		monthlyByDateInput.name = "monthly-type";
 		monthlyByDateInput.checked =
 			this.byMonthDay.length > 0 || (this.byDay.length === 0 && this.bySetPos === undefined);
-		monthlyByDateRadio.createSpan({ text: " On day " });
+		monthlyByDateRadio.createSpan({ text: " On " });
 
 		const monthlyDateSelect = monthlyByDateRadio.createEl("select");
 		monthlyDateSelect.classList.add("tn-static-margin-left-4px-46cec891");
 		monthlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
 		monthlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
-		for (let i = 1; i <= 31; i++) {
+		for (const dayOption of getMonthDayOptions()) {
 			const option = monthlyDateSelect.createEl("option", {
-				value: i.toString(),
-				text: i.toString(),
+				value: dayOption.value,
+				text: dayOption.text,
 			});
-			if (this.byMonthDay.length > 0 && this.byMonthDay[0] === i) {
+			const dayValue = parseInt(dayOption.value, 10);
+			if (this.byMonthDay.length > 0 && this.byMonthDay[0] === dayValue) {
 				option.selected = true;
-			} else if (this.byMonthDay.length === 0 && i === new Date().getDate()) {
+			} else if (this.byMonthDay.length === 0 && dayValue === new Date().getDate()) {
 				option.selected = true;
 			}
 		}
@@ -962,14 +984,15 @@ class CustomRecurrenceModal extends Modal {
 		yearlyDateSelect.classList.add("tn-static-margin-left-4px-46cec891");
 		yearlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
 		yearlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
-		for (let i = 1; i <= 31; i++) {
+		for (const dayOption of getMonthDayOptions()) {
 			const option = yearlyDateSelect.createEl("option", {
-				value: i.toString(),
-				text: i.toString(),
+				value: dayOption.value,
+				text: dayOption.text,
 			});
-			if (this.byMonthDay.length > 0 && this.byMonthDay[0] === i) {
+			const dayValue = parseInt(dayOption.value, 10);
+			if (this.byMonthDay.length > 0 && this.byMonthDay[0] === dayValue) {
 				option.selected = true;
-			} else if (this.byMonthDay.length === 0 && i === new Date().getDate()) {
+			} else if (this.byMonthDay.length === 0 && dayValue === new Date().getDate()) {
 				option.selected = true;
 			}
 		}

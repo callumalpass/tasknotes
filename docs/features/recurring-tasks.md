@@ -68,6 +68,9 @@ DTSTART:20250804T140000Z;FREQ=WEEKLY;BYDAY=MO,WE,FR
 DTSTART:20250815;FREQ=MONTHLY;BYMONTHDAY=15
 → 15th of each month (all-day), starting August 15, 2025
 
+DTSTART:20250831;FREQ=MONTHLY;BYMONTHDAY=-1
+→ Last day of each month (all-day), starting August 31, 2025
+
 DTSTART:20250801T100000Z;FREQ=MONTHLY;BYDAY=-1FR
 → Last Friday of each month at 10:00 AM, starting August 1, 2025
 ```

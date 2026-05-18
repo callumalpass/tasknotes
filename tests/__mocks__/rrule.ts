@@ -120,6 +120,31 @@ export class RRule {
         dates.push(new Date(current));
         current.setUTCDate(current.getUTCDate() + weeklyInterval * 7);
       }
+    } else if (freq === Frequency.MONTHLY && this.options.bymonthday?.length > 0) {
+      const monthlyInterval = this.options.interval || 1;
+      const byMonthDays = this.options.bymonthday as number[];
+      const cursor = new Date(Date.UTC(dtstart.getUTCFullYear(), dtstart.getUTCMonth(), 1));
+
+      while (cursor <= end) {
+        for (const byMonthDay of byMonthDays) {
+          const daysInMonth = new Date(
+            Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 0)
+          ).getUTCDate();
+          const targetDay = byMonthDay < 0 ? daysInMonth + byMonthDay + 1 : byMonthDay;
+          if (targetDay < 1 || targetDay > daysInMonth) {
+            continue;
+          }
+
+          const occurrence = new Date(
+            Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth(), targetDay)
+          );
+          if (occurrence >= start && occurrence <= end && occurrence >= dtstart) {
+            dates.push(occurrence);
+          }
+        }
+
+        cursor.setUTCMonth(cursor.getUTCMonth() + monthlyInterval);
+      }
     } else if (freq === Frequency.MONTHLY) {
       // Monthly recurrence on the DTSTART day of month
       const monthlyInterval = this.options.interval || 1;
