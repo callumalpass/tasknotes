@@ -123,7 +123,7 @@ describe("Issue #1628: CalendarView Bases filter view switching", () => {
 		expect(view.renderPreservingEphemeralState).toHaveBeenCalledTimes(1);
 	});
 
-	it("keeps the longer debounce for same-view updates with the same result set", () => {
+	it("does not repaint same-view updates when the result set stays unchanged", () => {
 		jest.useFakeTimers();
 		const view = createCalendarViewProbe({
 			previousDataSignature: "_codex/issue-1628/shared-task.md",
@@ -139,6 +139,7 @@ describe("Issue #1628: CalendarView Bases filter view switching", () => {
 		expect(view.renderPreservingEphemeralState).not.toHaveBeenCalled();
 
 		jest.advanceTimersByTime(1);
-		expect(view.renderPreservingEphemeralState).toHaveBeenCalledTimes(1);
+		expect(view.renderPreservingEphemeralState).not.toHaveBeenCalled();
+		expect(view.dataUpdateDebounceTimer).toBeNull();
 	});
 });

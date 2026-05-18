@@ -46,7 +46,7 @@ describe("Issue #1663: Japanese tag display on Kanban board", () => {
 
 	it("provides a TaskNotes card fallback style for tag pills", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
-		const block = extractCssBlock(css, ".tasknotes-plugin .task-card__metadata-property .tag");
+		const block = extractCssBlock(css, ".tasknotes-plugin .task-card__metadata-property :where(.tag)");
 
 		expect(block).toContain("background-color: var(--tag-background");
 		expect(block).toContain("color: var(--tag-color");

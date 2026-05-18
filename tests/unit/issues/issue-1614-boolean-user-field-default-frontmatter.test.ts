@@ -23,6 +23,7 @@ jest.mock("../../../src/utils/filenameGenerator", () => ({
 jest.mock("../../../src/utils/helpers", () => ({
 	ensureFolderExists: jest.fn().mockResolvedValue(undefined),
 	calculateDefaultDate: jest.fn(),
+	calculateDefaultDateTime: jest.fn(),
 }));
 
 jest.mock("../../../src/utils/templateProcessor", () => ({

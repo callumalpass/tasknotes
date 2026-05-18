@@ -80,6 +80,7 @@ function createCalendarViewProbe(calendar: unknown = null): CalendarViewProbe {
 	view.calendar = calendar;
 	view.calendarEl = calendarEl;
 	view.rootElement = rootElement;
+	(view as any).containerEl = calendarEl;
 	view.data = {
 		data: allItems.map((item) => ({ file: { path: item.path } })),
 	};

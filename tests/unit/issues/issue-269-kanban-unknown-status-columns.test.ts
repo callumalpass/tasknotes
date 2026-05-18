@@ -51,6 +51,9 @@ function makePlugin() {
 			getAllPriorities: () => [],
 			normalizePriorityValue: (value: string) => value,
 		},
+		i18n: {
+			translate: (key: string) => (key === "views.kanban.noTasks" ? "No tasks" : key),
+		},
 		settings: {
 			customStatuses,
 			fieldMapping: {

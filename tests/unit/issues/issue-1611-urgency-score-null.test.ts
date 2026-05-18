@@ -59,7 +59,7 @@ describe("Issue #1611: formula.urgencyScore null propagation", () => {
 			"max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0))"
 		);
 		expect(template).toContain(
-			"(1 - ((number(date(formula.nextDate)) - number(date(formula.nextDate).date())) / 86400000))"
+			"(1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format(\"YYYY-MM-DD\")))) / 86400000))"
 		);
 
 		expect(template).not.toContain("max(0, 10 - formula.daysUntilNext)");

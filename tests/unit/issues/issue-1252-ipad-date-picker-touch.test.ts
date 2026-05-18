@@ -14,15 +14,13 @@ import * as path from "path";
 const cssFilePath = path.resolve(__dirname, "../../../styles/date-picker.css");
 
 describe("Issue #1252: iPad date picker day taps", () => {
-	it("uses direct touch manipulation on calendar day buttons", () => {
+	it("uses the native date input instead of the old custom calendar day buttons", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
-		const dayButtonBlock = extractCssBlock(
-			cssContent,
-			".tasknotes-plugin .date-time-picker-modal__day"
-		);
+		const dateInputBlock = extractCssBlock(cssContent, ".date-picker-modal input[type=\"date\"]");
 
-		expect(dayButtonBlock).toContain("touch-action: manipulation");
-		expect(dayButtonBlock).toContain("-webkit-tap-highlight-color: transparent");
+		expect(dateInputBlock).toContain("position: relative");
+		expect(dateInputBlock).toContain("text-align: left");
+		expect(cssContent).not.toContain("date-time-picker-modal__day");
 	});
 });
 

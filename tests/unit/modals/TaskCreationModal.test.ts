@@ -38,6 +38,18 @@ jest.mock('../../../src/utils/helpers', () => ({
     }
     return '';
   }),
+  calculateDefaultDateTime: jest.fn((option, time = 'none') => {
+    const today = new Date('2025-01-15');
+    let date = '';
+    if (option === 'today') date = format(today, 'yyyy-MM-dd');
+    if (option === 'tomorrow') {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      date = format(tomorrow, 'yyyy-MM-dd');
+    }
+    if (!date || time === 'none' || !time) return date;
+    return `${date}T${time}`;
+  }),
   sanitizeTags: jest.fn((tags) => {
     if (!tags || typeof tags !== 'string') return '';
     return tags
@@ -73,7 +85,8 @@ jest.mock('../../../src/utils/filenameGenerator', () => ({
   generateTaskFilename: jest.fn((context) => {
     const dateStr = format(context.date || new Date('2025-01-15'), 'yyyy-MM-dd');
     return `${context.title.toLowerCase().replace(/\s+/g, '-')}-${dateStr}`;
-  })
+  }),
+  shouldShowFilenameShortenedNotice: jest.fn(() => false)
 }));
 
 jest.mock('../../../src/services/NaturalLanguageParser', () => {

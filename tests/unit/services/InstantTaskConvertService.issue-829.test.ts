@@ -28,13 +28,15 @@ jest.mock('../../../src/utils/dateUtils', () => ({
 
 jest.mock('../../../src/utils/filenameGenerator', () => ({
   generateTaskFilename: jest.fn((context) => `${context.title.toLowerCase().replace(/\s+/g, '-')}.md`),
-  generateUniqueFilename: jest.fn((base) => base)
+  generateUniqueFilename: jest.fn((base) => base),
+  shouldShowFilenameShortenedNotice: jest.fn(() => false)
 }));
 
 jest.mock('../../../src/utils/helpers', () => ({
   ensureFolderExists: jest.fn().mockResolvedValue(undefined),
   sanitizeFileName: jest.fn((name) => name.replace(/[<>:"|?*]/g, '')),
-  calculateDefaultDate: jest.fn(() => undefined)
+  calculateDefaultDate: jest.fn(() => undefined),
+  calculateDefaultDateTime: jest.fn(() => undefined)
 }));
 
 jest.mock('../../../src/utils/templateProcessor', () => ({
