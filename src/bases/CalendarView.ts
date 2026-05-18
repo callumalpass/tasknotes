@@ -528,9 +528,11 @@ export function isCalendarElementReadyForSizing(
 }
 
 export function isCalendarInPopoutWindow(
-	containerEl: HTMLElement,
+	containerEl: HTMLElement | null | undefined,
 	mainWindow: Window = window
 ): boolean {
+	if (!containerEl) return false;
+
 	const ownerWindow = containerEl.ownerDocument.defaultView;
 	return Boolean(ownerWindow && ownerWindow !== mainWindow);
 }
