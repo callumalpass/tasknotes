@@ -11,8 +11,7 @@ export const pt: TranslationTree = {
 		reorder: {
 			confirmLargeTitle: "Confirmar grande reordenação",
 			confirmButton: "Reordenar notas",
-			confirmLargeMessage:
-				'Reordenar aqui atualizará "{field}" em {count} notas para criar uma ordem manual persistente para {scope}. Notas ocultas ou filtradas no mesmo escopo também podem ser atualizadas. Continuar?',
+			confirmLargeMessage: "Reordenar aqui atualizará \"{field}\" em {count} notas para criar uma ordem manual persistente para {scope}. Notas ocultas ou filtradas no mesmo escopo também podem ser atualizadas. Continuar?"
 		},
 		language: "Idioma",
 		systemDefault: "Padrão do sistema",
@@ -25,8 +24,8 @@ export const pt: TranslationTree = {
 			de: "Alemão",
 			es: "Espanhol",
 			ja: "Japonês",
-            pt: "Português (Brasil)",
-			ko: "Coreano",
+			pt: "Português (Brasil)",
+			ko: "Coreano"
 		},
 		weekdays: {
 			sunday: "Domingo",
@@ -97,13 +96,12 @@ export const pt: TranslationTree = {
 			reorder: {
 				scope: {
 					ungrouped: "esta lista sem grupos",
-					group: 'grupo "{group}"',
-				},
+					group: "grupo \"{group}\""
+				}
 			},
 			errors: {
-				formulaGroupingReadOnly:
-					"Não é possível reordenar tarefas em grupos baseados em fórmulas. Valores de fórmula são calculados e não podem ser alterados diretamente.",
-			},
+				formulaGroupingReadOnly: "Não é possível reordenar tarefas em grupos baseados em fórmulas. Valores de fórmula são calculados e não podem ser alterados diretamente."
+			}
 		},
 		notes: {
 			title: "Notas",
@@ -120,7 +118,11 @@ export const pt: TranslationTree = {
 			refreshButtonAriaLabel: "Atualizar lista de notas"
 		},
 		miniCalendar: {
-			title: "Mini Calendário"
+			title: "Mini Calendário",
+			contextMenu: {
+				openDailyNote: "Abrir nota diária",
+				openWeeklyNote: "Abrir nota semanal"
+			}
 		},
 		advancedCalendar: {
 			title: "Calendário",
@@ -147,12 +149,12 @@ export const pt: TranslationTree = {
 				calendarRefreshedAll: "Todas as inscrições de calendário atualizadas com sucesso",
 				refreshFailed: "Falha ao atualizar algumas inscrições de calendário",
 				timeblockSpecificTime: "Blocos de tempo devem ter horários específicos. Por favor, selecione um intervalo de tempo na visualização de semana ou dia.",
-				timeblockMoved: 'Bloco de tempo "{title}" movido para {date}',
-				timeblockUpdated: 'Tempo do bloco de tempo "{title}" atualizado',
+				timeblockMoved: "Bloco de tempo \"{title}\" movido para {date}",
+				timeblockUpdated: "Tempo do bloco de tempo \"{title}\" atualizado",
 				timeblockMoveFailed: "Falha ao mover bloco de tempo: {message}",
-				timeblockResized: 'Duração do bloco de tempo "{title}" atualizada',
+				timeblockResized: "Duração do bloco de tempo \"{title}\" atualizada",
 				timeblockResizeFailed: "Falha ao redimensionar bloco de tempo: {message}",
-				taskScheduled: 'Tarefa "{title}" agendada para {date}',
+				taskScheduled: "Tarefa \"{title}\" agendada para {date}",
 				scheduleTaskFailed: "Falha ao agendar tarefa",
 				endTimeAfterStart: "A hora de término deve ser posterior à hora de início",
 				timeEntryNotFound: "Registro de tempo não encontrado",
@@ -232,7 +234,9 @@ export const pt: TranslationTree = {
 					showRecurringTasks: "Mostrar tarefas recorrentes",
 					showTimeEntries: "Mostrar registros de tempo",
 					showTimeblocks: "Mostrar blocos de tempo",
-					showPropertyBasedEvents: "Mostrar eventos baseados em propriedade"
+					showPropertyBasedEvents: "Mostrar eventos baseados em propriedade",
+					showCompletedRecurringInstances: "Mostrar instâncias recorrentes concluídas",
+					showSkippedRecurringInstances: "Mostrar instâncias recorrentes ignoradas"
 				},
 				layout: {
 					calendarView: "Visualização do calendário",
@@ -264,7 +268,10 @@ export const pt: TranslationTree = {
 					eventMaxStack: "Máx. eventos empilhados (vista semana/dia, 0 = ilimitado)",
 					dayMaxEvents: "Máx. eventos por dia (vista mês, 0 = automático)",
 					dayMaxEventRows: "Máx. linhas de eventos por dia (vista mês, 0 = ilimitado)",
-					spanScheduledToDue: "Estender tarefas entre data agendada e data de vencimento"
+					spanScheduledToDue: "Estender tarefas entre data agendada e data de vencimento",
+					heightMode: "Modo de altura",
+					heightModeFill: "Preencher contêiner",
+					heightModeAuto: "Altura automática"
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propriedade da data de início",
@@ -276,7 +283,7 @@ export const pt: TranslationTree = {
 				}
 			},
 			notices: {
-				noDailyNoteForDate: "Não existe nota diária para esta data.",
+				noDailyNoteForDate: "Não existe nota diária para esta data."
 			},
 			errors: {
 				failedToInitialize: "Falha ao inicializar o calendário"
@@ -291,13 +298,13 @@ export const pt: TranslationTree = {
 			noProject: "Sem Projeto",
 			reorder: {
 				scope: {
-					column: 'coluna "{group}"',
-					columnInSwimlane: 'coluna "{group}" na swimlane "{swimlane}"',
-				},
+					column: "coluna \"{group}\"",
+					columnInSwimlane: "coluna \"{group}\" na swimlane \"{swimlane}\""
+				}
 			},
 			notices: {
 				loadFailed: "Falha ao carregar o quadro Kanban",
-				movedTask: 'Tarefa movida para "{0}"'
+				movedTask: "Tarefa movida para \"{0}\""
 			},
 			errors: {
 				loadingBoard: "Erro ao carregar o quadro.",
@@ -334,13 +341,27 @@ export const pt: TranslationTree = {
 				chooseTask: "Escolher tarefa...",
 				changeTask: "Alterar tarefa...",
 				clearTask: "Limpar tarefa",
-				selectDifferentTask: "Selecionar uma tarefa diferente"
+				selectDifferentTask: "Selecionar uma tarefa diferente",
+				startFocus: "Iniciar foco",
+				addMinute: "Adicionar um minuto",
+				subtractMinute: "Subtrair um minuto"
 			},
 			notices: {
 				noTasks: "Nenhuma tarefa não arquivada encontrada. Crie algumas tarefas primeiro.",
-				loadFailed: "Falha ao carregar tarefas"
+				loadFailed: "Falha ao carregar tarefas",
+				invalidDuration: "Digite uma duração como 10, 10:30 ou 1:30:00."
 			},
-			statsLabel: "concluídos hoje"
+			statsLabel: "concluídos hoje",
+			meta: {
+				ready: "{time} planejado · {count} concluídos hoje",
+				running: "{time} restante",
+				paused: "{type} pausado · {time} restante",
+				breakReady: "{type} pronto · {time} planejado"
+			},
+			timer: {
+				editLabel: "Editar duração do timer",
+				inputLabel: "Duração do timer"
+			}
 		},
 		pomodoroStats: {
 			title: "Estatísticas Pomodoro",
@@ -388,7 +409,18 @@ export const pt: TranslationTree = {
 				status: {
 					completed: "Concluído",
 					interrupted: "Interrompido"
-				}
+				},
+				delete: "Excluir sessão",
+				deleteAria: "Excluir sessão Pomodoro",
+				deleteConfirmTitle: "Excluir sessão Pomodoro?",
+				deleteConfirmMessage: "Isso remove a sessão do histórico Pomodoro. Entradas de tempo de tarefas existentes não são alteradas.",
+				deleteConfirmButton: "Excluir",
+				deleteSuccess: "Sessão Pomodoro excluída",
+				deleteNotFound: "Sessão Pomodoro não encontrada"
+			},
+			basesMigration: {
+				title: "Quer uma visualização Base?",
+				description: "As visualizações Base de Pomodoro usam o frontmatter das notas diárias. Para ver esse histórico na Base de estatísticas Pomodoro gerada, migre os dados do Pomodoro nas configurações e defina o armazenamento como notas diárias."
 			}
 		},
 		stats: {
@@ -449,7 +481,7 @@ export const pt: TranslationTree = {
 	settings: {
 		header: {
 			documentation: "Documentação",
-			documentationUrl: "https://tasknotes.dev",
+			documentationUrl: "https://tasknotes.dev"
 		},
 		tabs: {
 			general: "Geral",
@@ -470,8 +502,7 @@ export const pt: TranslationTree = {
 				description: "Configure o que acontece depois que tarefas são criadas.",
 				openAfterCreate: {
 					name: "Abrir tarefa após criação",
-					description:
-						"Escolha se o modal normal Criar nova tarefa abre a nova nota de tarefa após salvar.",
+					description: "Escolha se o modal normal Criar nova tarefa abre a nova nota de tarefa após salvar.",
 					options: {
 						none: "Não abrir",
 						sameTab: "Abrir na mesma aba",
@@ -486,8 +517,7 @@ export const pt: TranslationTree = {
 				},
 				aliasExclusion: {
 					name: "Desativar sobreposição para links com alias",
-					description:
-						"Não mostrar o widget de tarefa se o link contiver um alias (ex. [[Tarefa|Alias]])."
+					description: "Não mostrar o widget de tarefa se o link contiver um alias (ex. [[Tarefa|Alias]])."
 				}
 			},
 			instantConvert: {
@@ -497,12 +527,11 @@ export const pt: TranslationTree = {
 				},
 				preserveCheckbox: {
 					name: "Manter a caixa de seleção ao converter",
-					description:
-						"Manter o marcador original da caixa de seleção Markdown ao converter uma caixa em link TaskNote"
+					description: "Manter o marcador original da caixa de seleção Markdown ao converter uma caixa em link TaskNote"
 				},
 				folder: {
-					name: "Pasta para tarefas convertidas",
-					description: "Pasta onde tarefas convertidas de caixas de seleção serão criadas. Deixe vazio para usar a pasta de tarefas padrão. Use {{currentNotePath}} para a pasta da nota atual, ou {{currentNoteTitle}} para uma subpasta com o título da nota."
+					name: "Pasta para tarefas criadas inline",
+					description: "Pasta onde tarefas criadas por comandos inline ou conversão de caixas de seleção serão criadas. Deixe em branco para usar a pasta padrão de tarefas. Use {{currentNotePath}} para a pasta da nota atual, ou {{currentNoteTitle}} para uma subpasta com o nome da nota atual."
 				}
 			},
 			nlp: {
@@ -562,6 +591,10 @@ export const pt: TranslationTree = {
 					tab: "Painel de notas",
 					left: "Barra lateral esquerda",
 					right: "Barra lateral direita"
+				},
+				statusBar: {
+					name: "Mostrar Pomodoro na barra de status",
+					description: "Mostrar a contagem regressiva ativa do Pomodoro na barra de status do Obsidian"
 				}
 			},
 			uiLanguage: {
@@ -595,7 +628,17 @@ export const pt: TranslationTree = {
 				typeName: "Tipo de notificação",
 				typeDesc: "Tipo de notificações a serem mostradas",
 				systemLabel: "Notificações do sistema",
-				inAppLabel: "Notificações no aplicativo"
+				inAppLabel: "Notificações no aplicativo",
+				soundEnabledName: "Som de notificação",
+				soundEnabledDesc: "Tocar um som quando lembretes de tarefa forem acionados",
+				soundVolumeName: "Volume do som",
+				soundVolumeDesc: "Volume dos sons de lembrete de tarefa (0-100)",
+				soundPreviewName: "Pré-visualizar som de notificação",
+				soundPreviewDesc: "Tocar o som configurado de lembrete de tarefa",
+				soundPreviewButton: "Pré-visualizar",
+				testReminderName: "Enviar lembrete de teste",
+				testReminderDesc: "Enviar um lembrete de teste usando o tipo de notificação e as configurações de som atuais.",
+				testReminderButton: "Enviar teste"
 			},
 			overdue: {
 				hideCompletedName: "Ocultar tarefas concluídas das atrasadas",
@@ -613,8 +656,7 @@ export const pt: TranslationTree = {
 				autoStopName: "Parar registro de tempo automaticamente",
 				autoStopDesc: "Parar automaticamente o registro de tempo quando uma tarefa é marcada como concluída",
 				stopNotificationName: "Notificação de parada de registro de tempo",
-				stopNotificationDesc:
-					"Mostrar notificação quando o registro de tempo é parado automaticamente",
+				stopNotificationDesc: "Mostrar notificação quando o registro de tempo é parado automaticamente"
 			},
 			stopNotificationName: "Notificação de parada de registro de tempo",
 			stopNotificationDesc: "Mostrar notificação quando o registro de tempo é parado automaticamente",
@@ -622,7 +664,7 @@ export const pt: TranslationTree = {
 				maintainOffsetName: "Manter deslocamento da data de vencimento em tarefas recorrentes",
 				maintainOffsetDesc: "Manter o deslocamento entre a data de vencimento e a data agendada quando tarefas recorrentes são concluídas",
 				resetCheckboxesName: "Redefinir caixas de seleção na recorrência",
-				resetCheckboxesDesc: "Redefinir todas as caixas de seleção markdown no corpo da tarefa quando uma tarefa recorrente é concluída e reagendada",
+				resetCheckboxesDesc: "Redefinir todas as caixas de seleção markdown no corpo da tarefa quando uma tarefa recorrente é concluída e reagendada"
 			},
 			timeblocking: {
 				header: "Bloco de Tempo",
@@ -651,9 +693,8 @@ export const pt: TranslationTree = {
 				header: "Registro de depuração",
 				description: "Configurar a saída do log de depuração para solução de problemas.",
 				enableName: "Habilitar log de depuração",
-				enableDesc:
-					"Registrar diagnósticos detalhados de arrastar e soltar e de visualização no console do desenvolvedor. Útil para solução de problemas.",
-			},
+				enableDesc: "Registrar diagnósticos detalhados de arrastar e soltar e de visualização no console do desenvolvedor. Útil para solução de problemas."
+			}
 		},
 		defaults: {
 			header: {
@@ -702,7 +743,7 @@ export const pt: TranslationTree = {
 				},
 				useParentHeaderAsProject: {
 					name: "Usar cabeçalho pai como projeto durante a conversão instantânea",
-					description: "Vincular automaticamente o cabeçalho mais próximo acima da linha convertida como projeto ao usar a conversão instantânea de tarefa",
+					description: "Vincular automaticamente o cabeçalho mais próximo acima da linha convertida como projeto ao usar a conversão instantânea de tarefa"
 				},
 				defaultTimeEstimate: {
 					name: "Estimativa de tempo padrão",
@@ -811,7 +852,7 @@ export const pt: TranslationTree = {
 				description: "Configure onde as tarefas são armazenadas e como são identificadas.",
 				defaultFolder: {
 					name: "Pasta padrão de tarefas",
-					description: "Local padrão para novas tarefas. Suporta variáveis de modelo de pasta como {{currentNotePath}} e {{currentNoteTitle}}, além de tokens de data no estilo Daily Notes como YYYY/MM/DD."
+					description: "Local padrão para novas tarefas. Suporta variáveis de modelo de pasta como {{currentNotePath}}, {{currentNoteTitle}} e {{projectFilePath}}, além de tokens de data no estilo Daily Notes como YYYY/MM/DD."
 				},
 				moveArchived: {
 					name: "Mover tarefas arquivadas para pasta",
@@ -846,16 +887,16 @@ export const pt: TranslationTree = {
 					description: "Escolha se ocultar tags de identificação também oculta tags aninhadas.",
 					options: {
 						all: "Tag da tarefa e tags aninhadas",
-						exactOnly: "Somente tag exata",
+						exactOnly: "Somente tag exata"
 					}
 				},
 				taskProperty: {
 					name: "Nome da propriedade da tarefa",
-					description: 'O nome da propriedade do frontmatter (ex: "categoria")'
+					description: "O nome da propriedade do frontmatter (ex: \"categoria\")"
 				},
 				taskPropertyValue: {
 					name: "Valor da propriedade da tarefa",
-					description: 'O valor que identifica uma nota como uma tarefa (ex: "tarefa")'
+					description: "O valor que identifica uma nota como uma tarefa (ex: \"tarefa\")"
 				}
 			},
 			folderManagement: {
@@ -905,7 +946,6 @@ export const pt: TranslationTree = {
 			}
 		},
 		taskProperties: {
-			// Section headers for property card layout
 			sections: {
 				coreProperties: "Propriedades Principais",
 				corePropertiesDesc: "Status e prioridade são as propriedades principais que definem o estado e importância de uma tarefa.",
@@ -918,157 +958,129 @@ export const pt: TranslationTree = {
 				metadataProperties: "Propriedades de Metadados",
 				metadataPropertiesDesc: "Propriedades gerenciadas pelo sistema para rastrear o histórico de tarefas.",
 				featureProperties: "Propriedades de Recursos",
-				featurePropertiesDesc: "Propriedades usadas por recursos específicos do TaskNotes como temporizador Pomodoro e sincronização de calendário.",
+				featurePropertiesDesc: "Propriedades usadas por recursos específicos do TaskNotes como temporizador Pomodoro e sincronização de calendário."
 			},
-			// Property card common fields
 			propertyCard: {
 				propertyKey: "Chave da propriedade:",
 				default: "Padrão:",
 				nlpTrigger: "Gatilho NLP:",
 				triggerChar: "Caractere gatilho:",
 				triggerEmpty: "O gatilho não pode estar vazio",
-				triggerTooLong: "O gatilho é muito longo (máx. 10 caracteres)",
+				triggerTooLong: "O gatilho é muito longo (máx. 10 caracteres)"
 			},
-			// Individual property names and descriptions
 			properties: {
 				status: {
 					name: "Status",
-					description:
-						"Rastreia o estado atual de uma tarefa (ex.: a fazer, em progresso, concluído). O status determina se uma tarefa aparece como concluída e pode acionar o arquivamento automático.",
+					description: "Rastreia o estado atual de uma tarefa (ex.: a fazer, em progresso, concluído). O status determina se uma tarefa aparece como concluída e pode acionar o arquivamento automático."
 				},
 				priority: {
 					name: "Prioridade",
-					description:
-						"Indica a importância da tarefa. Usado para ordenação e filtragem. Os valores são ordenados alfabeticamente nas visualizações Bases, então use prefixos como 1-, 2- para controlar a ordem.",
+					description: "Indica a importância da tarefa. Usado para ordenação e filtragem. Os valores são ordenados alfabeticamente nas visualizações Bases, então use prefixos como 1-, 2- para controlar a ordem."
 				},
 				due: {
 					name: "Data de Vencimento",
-					description:
-						"O prazo até o qual uma tarefa deve ser concluída. Tarefas após a data de vencimento aparecem como atrasadas. Armazenado como data no frontmatter.",
+					description: "O prazo até o qual uma tarefa deve ser concluída. Tarefas após a data de vencimento aparecem como atrasadas. Armazenado como data no frontmatter."
 				},
 				scheduled: {
 					name: "Data Agendada",
-					description:
-						"Quando você planeja trabalhar em uma tarefa. Diferente da data de vencimento, isso representa seu horário de início pretendido. As tarefas aparecem no calendário na data/hora agendada.",
+					description: "Quando você planeja trabalhar em uma tarefa. Diferente da data de vencimento, isso representa seu horário de início pretendido. As tarefas aparecem no calendário na data/hora agendada."
 				},
 				contexts: {
 					name: "Contextos",
-					description:
-						"Locais ou condições onde uma tarefa pode ser feita (ex.: @casa, @escritório, @telefone). Útil para filtrar tarefas pela sua situação atual. Armazenado como lista.",
+					description: "Locais ou condições onde uma tarefa pode ser feita (ex.: @casa, @escritório, @telefone). Útil para filtrar tarefas pela sua situação atual. Armazenado como lista."
 				},
 				projects: {
 					name: "Projetos",
-					description:
-						"Links para notas de projeto às quais esta tarefa pertence. Armazenado como wikilinks (ex.: [[Nome do Projeto]]). As tarefas podem pertencer a múltiplos projetos.",
+					description: "Links para notas de projeto às quais esta tarefa pertence. Armazenado como wikilinks (ex.: [[Nome do Projeto]]). As tarefas podem pertencer a múltiplos projetos."
 				},
 				tags: {
 					name: "Tags",
-					description:
-						"Tags nativas do Obsidian para categorizar tarefas. São armazenadas na propriedade tags do frontmatter e funcionam com os recursos de tags do Obsidian.",
+					description: "Tags nativas do Obsidian para categorizar tarefas. São armazenadas na propriedade tags do frontmatter e funcionam com os recursos de tags do Obsidian."
 				},
 				timeEstimate: {
 					name: "Estimativa de Tempo",
-					description:
-						"Minutos estimados para concluir a tarefa. Usado para planejamento de tempo e carga de trabalho. Exibido em cartões de tarefas e eventos do calendário.",
+					description: "Minutos estimados para concluir a tarefa. Usado para planejamento de tempo e carga de trabalho. Exibido em cartões de tarefas e eventos do calendário."
 				},
 				recurrence: {
 					name: "Recorrência",
-					description:
-						"Padrão para tarefas repetitivas (diário, semanal, mensal, anual ou RRULE personalizado). Quando uma tarefa recorrente é concluída, sua data agendada é automaticamente atualizada para a próxima ocorrência.",
+					description: "Padrão para tarefas repetitivas (diário, semanal, mensal, anual ou RRULE personalizado). Quando uma tarefa recorrente é concluída, sua data agendada é automaticamente atualizada para a próxima ocorrência."
 				},
 				recurrenceAnchor: {
 					name: "Âncora de recorrência",
-					description:
-						"Controla como a próxima ocorrência é calculada: 'scheduled' usa a data agendada, 'completion' usa a data de conclusão real.",
+					description: "Controla como a próxima ocorrência é calculada: 'scheduled' usa a data agendada, 'completion' usa a data de conclusão real."
 				},
 				reminders: {
 					name: "Lembretes",
-					description:
-						"Notificações acionadas antes das datas de vencimento ou agendadas. Armazenado como lista de objetos de lembrete com horário e descrição opcional.",
+					description: "Notificações acionadas antes das datas de vencimento ou agendadas. Armazenado como lista de objetos de lembrete com horário e descrição opcional."
 				},
 				title: {
 					name: "Título",
-					description:
-						"O nome da tarefa. Pode ser armazenado no frontmatter ou no nome do arquivo (quando 'Armazenar título no nome do arquivo' está habilitado).",
+					description: "O nome da tarefa. Pode ser armazenado no frontmatter ou no nome do arquivo (quando 'Armazenar título no nome do arquivo' está habilitado)."
 				},
 				dateCreated: {
 					name: "Data de Criação",
-					description:
-						"Carimbo de data/hora de quando a tarefa foi criada. Definido automaticamente e usado para ordenação por ordem de criação.",
+					description: "Carimbo de data/hora de quando a tarefa foi criada. Definido automaticamente e usado para ordenação por ordem de criação."
 				},
 				dateModified: {
 					name: "Data de Modificação",
-					description:
-						"Carimbo de data/hora da última alteração na tarefa. Atualizado automaticamente quando qualquer propriedade da tarefa muda.",
+					description: "Carimbo de data/hora da última alteração na tarefa. Atualizado automaticamente quando qualquer propriedade da tarefa muda."
 				},
 				completedDate: {
 					name: "Data de Conclusão",
-					description:
-						"Carimbo de data/hora de quando a tarefa foi marcada como concluída. Definido automaticamente quando o status muda para um estado concluído.",
+					description: "Carimbo de data/hora de quando a tarefa foi marcada como concluída. Definido automaticamente quando o status muda para um estado concluído."
 				},
 				archiveTag: {
 					name: "Tag de Arquivo",
-					description:
-						"Tag adicionada às tarefas quando arquivadas. Usada para identificar tarefas arquivadas e pode acionar a movimentação de arquivos para a pasta de arquivo.",
+					description: "Tag adicionada às tarefas quando arquivadas. Usada para identificar tarefas arquivadas e pode acionar a movimentação de arquivos para a pasta de arquivo."
 				},
 				timeEntries: {
 					name: "Entradas de Tempo",
-					description:
-						"Registros de sessões de rastreamento de tempo para esta tarefa. Cada entrada armazena carimbos de data/hora de início e fim. Usado para calcular o tempo total gasto.",
+					description: "Registros de sessões de rastreamento de tempo para esta tarefa. Cada entrada armazena carimbos de data/hora de início e fim. Usado para calcular o tempo total gasto."
 				},
 				completeInstances: {
 					name: "Instâncias Concluídas",
-					description:
-						"Histórico de conclusão para tarefas recorrentes. Armazena as datas em que cada instância foi concluída para evitar conclusões duplicadas.",
+					description: "Histórico de conclusão para tarefas recorrentes. Armazena as datas em que cada instância foi concluída para evitar conclusões duplicadas."
 				},
 				skippedInstances: {
 					name: "Instâncias Puladas",
-					description:
-						"Ocorrências puladas para tarefas recorrentes. Armazena as datas de instâncias que foram puladas em vez de concluídas.",
+					description: "Ocorrências puladas para tarefas recorrentes. Armazena as datas de instâncias que foram puladas em vez de concluídas."
 				},
 				blockedBy: {
 					name: "Bloqueada Por",
-					description:
-						"Links para tarefas que devem ser concluídas antes desta. Armazenado como wikilinks. Tarefas bloqueadas exibem um indicador visual.",
+					description: "Links para tarefas que devem ser concluídas antes desta. Armazenado como wikilinks. Tarefas bloqueadas exibem um indicador visual."
 				},
 				sortOrder: {
 					name: "Ordem manual",
-					description:
-						"Propriedade de frontmatter usada para a ordem manual com arrastar e soltar. A visualização deve estar ordenada por esta propriedade para que a reordenação por arrastar e soltar funcione.",
+					description: "Propriedade de frontmatter usada para a ordem manual com arrastar e soltar. A visualização deve estar ordenada por esta propriedade para que a reordenação por arrastar e soltar funcione."
 				},
 				pomodoros: {
 					name: "Pomodoros",
-					description:
-						"Contagem de sessões Pomodoro concluídas. Quando o armazenamento de dados está configurado para 'Notas diárias', isso é escrito nas notas diárias em vez dos arquivos de tarefa.",
+					description: "Contagem de sessões Pomodoro concluídas. Quando o armazenamento de dados está configurado para 'Notas diárias', isso é escrito nas notas diárias em vez dos arquivos de tarefa."
 				},
 				icsEventId: {
 					name: "ID do Evento ICS",
-					description:
-						"Identificador único vinculando uma nota a um evento de calendário ICS. Adicionado automaticamente ao criar notas a partir de eventos de calendário.",
+					description: "Identificador único vinculando uma nota a um evento de calendário ICS. Adicionado automaticamente ao criar notas a partir de eventos de calendário."
 				},
 				icsEventTag: {
 					name: "Tag de Evento ICS",
-					description:
-						"Tag identificando notas criadas a partir de eventos de calendário ICS. Usada para distinguir notas geradas pelo calendário de tarefas regulares.",
-				},
+					description: "Tag identificando notas criadas a partir de eventos de calendário ICS. Usada para distinguir notas geradas pelo calendário de tarefas regulares."
+				}
 			},
-			// Card-specific labels
 			statusCard: {
-				valuesHeader: "Valores de Status",
+				valuesHeader: "Valores de Status"
 			},
 			priorityCard: {
-				valuesHeader: "Valores de Prioridade",
+				valuesHeader: "Valores de Prioridade"
 			},
 			projectsCard: {
 				defaultProjects: "Projetos padrão:",
 				useParentNote: "Usar nota pai como projeto:",
 				useParentHeader: "Usar cabeçalho pai como projeto:",
-				inheritParentTaskProperties:
-					"Herdar propriedades da tarefa pai para subtarefas:",
+				inheritParentTaskProperties: "Herdar propriedades da tarefa pai para subtarefas:",
 				noDefaultProjects: "Nenhum projeto padrão selecionado",
 				autosuggestFilters: "Filtros de Autosugestão",
 				customizeDisplay: "Personalizar Exibição",
-				filtersOn: "Filtros Ativos",
+				filtersOn: "Filtros Ativos"
 			},
 			titleCard: {
 				storeTitleInFilename: "Armazenar título no nome do arquivo:",
@@ -1076,23 +1088,23 @@ export const pt: TranslationTree = {
 				filenameUpdatesWithTitle: "O nome do arquivo será atualizado automaticamente quando o título da tarefa mudar.",
 				filenameFormat: "Formato do nome do arquivo:",
 				customTemplate: "Modelo personalizado:",
-				legacySyntaxWarning: "A sintaxe de chaves simples como {title} está obsoleta. Por favor, use a sintaxe de chaves duplas {{title}} para consistência com os modelos de corpo.",
+				legacySyntaxWarning: "A sintaxe de chaves simples como {title} está obsoleta. Por favor, use a sintaxe de chaves duplas {{title}} para consistência com os modelos de corpo."
 			},
 			tagsCard: {
-				nativeObsidianTags: "Usa tags nativas do Obsidian",
+				nativeObsidianTags: "Usa tags nativas do Obsidian"
 			},
 			remindersCard: {
-				defaultReminders: "Lembretes Padrão",
+				defaultReminders: "Lembretes Padrão"
 			},
 			taskStatuses: {
 				header: "Status da Tarefa",
 				description: "Personalize as opções de status disponíveis para suas tarefas. Esses status controlam o ciclo de vida da tarefa e determinam quando as tarefas são consideradas concluídas.",
 				howTheyWork: {
 					title: "Como os status funcionam:",
-					value: 'Valor: O identificador interno armazenado em seus arquivos de tarefa (ex: "em-progresso")',
-					label: 'Rótulo: O nome de exibição mostrado na interface (ex: "Em Progresso")',
+					value: "Valor: O identificador interno armazenado em seus arquivos de tarefa (ex: \"em-progresso\")",
+					label: "Rótulo: O nome de exibição mostrado na interface (ex: \"Em Progresso\")",
 					color: "Cor: Cor do indicador visual para o ponto de status e emblemas",
-					icon: 'Ícone: Nome de ícone Lucide opcional para exibir em vez do ponto colorido (ex: "check", "circle", "clock"). Navegue pelos ícones em lucide.dev',
+					icon: "Ícone: Nome de ícone Lucide opcional para exibir em vez do ponto colorido (ex: \"check\", \"circle\", \"clock\"). Navegue pelos ícones em lucide.dev",
 					completed: "Concluído: Quando marcado, tarefas com este status são consideradas finalizadas e podem ser filtradas de forma diferente",
 					autoArchive: "Arquivar automaticamente: Quando ativado, as tarefas serão automaticamente arquivadas após o atraso especificado (1-1440 minutos)",
 					orderNote: "A ordem abaixo determina a sequência ao alternar entre os status clicando nos emblemas de status da tarefa."
@@ -1102,7 +1114,7 @@ export const pt: TranslationTree = {
 					description: "Criar uma nova opção de status para suas tarefas",
 					buttonText: "Adicionar status"
 				},
-				validationNote: 'Nota: Você deve ter pelo menos 2 status, e pelo menos um status deve ser marcado como "Concluído".',
+				validationNote: "Nota: Você deve ter pelo menos 2 status, e pelo menos um status deve ser marcado como \"Concluído\".",
 				emptyState: "Nenhum status personalizado configurado. Adicione um status para começar.",
 				emptyStateButton: "Adicionar Status",
 				fields: {
@@ -1125,17 +1137,15 @@ export const pt: TranslationTree = {
 				badges: {
 					completed: "Concluído"
 				},
-				deleteConfirm: 'Tem certeza de que deseja excluir o status "{label}"?'
+				deleteConfirm: "Tem certeza de que deseja excluir o status \"{label}\"?"
 			},
 			taskPriorities: {
 				header: "Prioridades da Tarefa",
-				description:
-					"Personalize os níveis de prioridade disponíveis para suas tarefas. Na v4.0+, as prioridades são ordenadas alfabeticamente pelo seu valor nas visualizações de Bases.",
+				description: "Personalize os níveis de prioridade disponíveis para suas tarefas. Na v4.0+, as prioridades são ordenadas alfabeticamente pelo seu valor nas visualizações de Bases.",
 				howTheyWork: {
 					title: "Como as prioridades funcionam:",
-					value:
-						'Valor: O identificador interno armazenado em seus arquivos de tarefa. Use prefixos como "1-urgente", "2-alta" para controlar a ordem de classificação nas visualizações de Bases.',
-					label: 'Rótulo de Exibição: O nome de exibição mostrado na interface (ex: "Prioridade Alta")',
+					value: "Valor: O identificador interno armazenado em seus arquivos de tarefa. Use prefixos como \"1-urgente\", \"2-alta\" para controlar a ordem de classificação nas visualizações de Bases.",
+					label: "Rótulo de Exibição: O nome de exibição mostrado na interface (ex: \"Prioridade Alta\")",
 					color: "Cor: Cor do indicador visual para o ponto de prioridade e emblemas",
 					icon: "Ícone: Ícone Lucide opcional para mostrar nos cartões de tarefa no lugar do ponto de prioridade",
 					weight: "Peso: Valor numérico para classificação (pesos maiores aparecem primeiro nas listas)",
@@ -1146,8 +1156,7 @@ export const pt: TranslationTree = {
 					description: "Criar um novo nível de prioridade para suas tarefas",
 					buttonText: "Adicionar prioridade"
 				},
-				validationNote:
-					"Nota: Você deve ter pelo menos 1 prioridade. As prioridades são ordenadas alfabeticamente por valor nas visualizações de Bases.",
+				validationNote: "Nota: Você deve ter pelo menos 1 prioridade. As prioridades são ordenadas alfabeticamente por valor nas visualizações de Bases.",
 				emptyState: "Nenhuma prioridade personalizada configurada. Adicione uma prioridade para começar.",
 				emptyStateButton: "Adicionar Prioridade",
 				fields: {
@@ -1294,12 +1303,13 @@ export const pt: TranslationTree = {
 						title: "Título da tarefa (Não atualiza)",
 						zettel: "Formato Zettelkasten (AAMMDD + segundos base36 desde a meia-noite)",
 						timestamp: "Carimbo de data/hora completo (AAAA-MM-DD-HHMMSS)",
-						custom: "Modelo personalizado"
+						custom: "Modelo personalizado",
+						uuid: "UUID v4"
 					}
 				},
 				customTemplate: {
 					name: "Modelo de nome de arquivo personalizado",
-					description: "Modelo para nomes de arquivo personalizados. Variáveis disponíveis: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
+					description: "Modelo para nomes de arquivo personalizados. Variáveis disponíveis: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
 					placeholder: "{date}-{title}-{dueDate}",
 					helpText: "Nota: {dueDate} e {scheduledDate} estão no formato AAAA-MM-DD e estarão vazios se não forem definidos."
 				}
@@ -1361,7 +1371,7 @@ export const pt: TranslationTree = {
 				},
 				calendarLocale: {
 					name: "Localidade do calendário",
-					description: 'Localidade do calendário para formatação de data e sistema de calendário (ex: "pt-br", "en", "fa" para Farsi/Persa, "de" para Alemão). Deixe em branco para detectar automaticamente do navegador.',
+					description: "Localidade do calendário para formatação de data e sistema de calendário (ex: \"pt-br\", \"en\", \"fa\" para Farsi/Persa, \"de\" para Alemão). Deixe em branco para detectar automaticamente do navegador.",
 					placeholder: "Autodetectar",
 					invalidLocale: "Localidade inválida. Por favor, insira um código de idioma válido (ex: 'pt-BR', 'en', 'fr-FR')."
 				}
@@ -1413,8 +1423,8 @@ export const pt: TranslationTree = {
 				},
 				endTime: {
 					name: "Hora de término",
-					description: "Hora mais tarde mostrada nas visualizações de linha do tempo (formato HH:MM)",
-					placeholder: "22:00"
+					description: "Hora mais tarde exibida em visualizações de linha do tempo (formato HH:MM). Use valores acima de 24:00 para mostrar horas iniciais do dia seguinte, como 26:00 para 2h.",
+					placeholder: "26:00"
 				},
 				initialScrollTime: {
 					name: "Hora inicial de rolagem",
@@ -1448,15 +1458,15 @@ export const pt: TranslationTree = {
 				},
 				showRelationshipsWidget: {
 					name: "Mostrar widget de relacionamentos",
-					description: "Exibir um widget mostrando todos os relacionamentos da nota atual (subtarefas, projetos, dependências)",
+					description: "Exibir um widget mostrando todos os relacionamentos da nota atual (subtarefas, projetos, dependências)"
 				},
 				relationshipsPosition: {
 					name: "Posição dos relacionamentos",
 					description: "Onde posicionar o widget de relacionamentos",
 					options: {
 						top: "Topo da nota",
-						bottom: "Final da nota",
-					},
+						bottom: "Final da nota"
+					}
 				},
 				showTaskCardInNote: {
 					name: "Mostrar cartão de tarefa na nota",
@@ -1575,14 +1585,12 @@ export const pt: TranslationTree = {
 			mobileCalendar: {
 				disable: {
 					name: "Desativar integrações de calendário no mobile",
-					description:
-						"Ignora o carregamento de calendários Google, Microsoft e ICS no Obsidian Mobile. As integrações de calendário no desktop não mudam.",
+					description: "Ignora o carregamento de calendários Google, Microsoft e ICS no Obsidian Mobile. As integrações de calendário no desktop não mudam."
 				},
 				status: {
 					name: "As integrações de calendário estão desativadas neste dispositivo móvel",
-					description:
-						"Desative esta configuração e recarregue o Obsidian Mobile para voltar a carregar calendários.",
-				},
+					description: "Desative esta configuração e recarregue o Obsidian Mobile para voltar a carregar calendários."
+				}
 			},
 			basesIntegration: {
 				header: "Integração com Bases",
@@ -1594,7 +1602,7 @@ export const pt: TranslationTree = {
 				viewCommands: {
 					header: "Visualizações e arquivos base",
 					description: "O TaskNotes usa arquivos do Obsidian Bases (.base) para suas visualizações. Esses arquivos são gerados automaticamente na inicialização se não existirem, configurados com suas definições atuais (identificação de tarefas, mapeamento de campos, status, etc.).",
-					descriptionRegen: "Os arquivos base não são atualizados automaticamente quando você altera as configurações. Para aplicar novas configurações, exclua os arquivos .base existentes e reinicie o Obsidian, use \"Criar arquivos\" abaixo ou edite-os manualmente.",
+					descriptionRegen: "Os arquivos Base não são atualizados automaticamente quando você altera as configurações. Para aplicar novas configurações, use \"Atualizar arquivos\" abaixo, exclua os arquivos .base existentes e reinicie o Obsidian, ou edite-os manualmente.",
 					docsLink: "Ver documentação para fórmulas disponíveis e opções de personalização",
 					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
@@ -1603,15 +1611,17 @@ export const pt: TranslationTree = {
 						tasks: "Abrir visualização de tarefas",
 						advancedCalendar: "Abrir visualização de calendário avançado",
 						agenda: "Abrir visualização de agenda",
-						relationships: "Widget de relacionamentos"
+						relationships: "Widget de relacionamentos",
+						pomodoroStats: "Base de estatísticas Pomodoro"
 					},
 					fileLabel: "Arquivo: {path}",
 					resetButton: "Redefinir",
-					resetTooltip: "Redefinir para caminho padrão"
+					resetTooltip: "Redefinir para caminho padrão",
+					pomodoroDailyNotesHint: "A Base de estatísticas Pomodoro gerada lê o histórico do Pomodoro nas notas diárias. Se o histórico ainda estiver nos dados do plugin, migre-o nas configurações antes de usar esse arquivo Base."
 				},
 				autoCreateDefaultFiles: {
 					name: "Criar arquivos padrão automaticamente",
-					description: "Criar automaticamente arquivos Base padrão ausentes na inicialização. Desative para evitar que arquivos de exemplo excluídos sejam recriados.",
+					description: "Criar automaticamente arquivos Base padrão ausentes na inicialização. Desative para evitar que arquivos de exemplo excluídos sejam recriados."
 				},
 				createDefaultFiles: {
 					name: "Criar arquivos padrão",
@@ -1624,13 +1634,21 @@ export const pt: TranslationTree = {
 					buttonText: "Exportar visualizações V3",
 					noViews: "Nenhuma visualização salva para exportar",
 					fileExists: "O arquivo já existe",
-					confirmOverwrite: 'Um arquivo chamado "{fileName}" já existe. Sobrescrever?',
+					confirmOverwrite: "Um arquivo chamado \"{fileName}\" já existe. Sobrescrever?",
 					success: "Exportadas {count} visualizações salvas para {filePath}",
 					error: "Falha ao exportar visualizações: {message}"
 				},
 				notices: {
 					enabled: "Integração com Bases ativada. Por favor, reinicie o Obsidian para completar a configuração.",
 					disabled: "Integração com Bases desativada. Por favor, reinicie o Obsidian para completar a remoção."
+				},
+				updateDefaultFiles: {
+					name: "Atualizar arquivos padrão",
+					description: "Sobrescreve os arquivos .base padrão configurados com modelos gerados a partir das configurações atuais do TaskNotes.",
+					buttonText: "Atualizar arquivos",
+					confirmTitle: "Atualizar arquivos Base padrão",
+					confirmMessage: "Isso sobrescreverá os arquivos .base padrão configurados com modelos recém-gerados. Qualquer edição manual nesses arquivos será substituída.",
+					confirmText: "Atualizar arquivos"
 				}
 			},
 			calendarSubscriptions: {
@@ -1687,10 +1705,10 @@ export const pt: TranslationTree = {
 					refreshSuccess: "Todas as inscrições de calendário atualizadas com sucesso",
 					refreshFailure: "Falha ao atualizar algumas inscrições de calendário",
 					updateFailure: "Falha ao atualizar inscrição",
-					deleteSuccess: 'Inscrição "{name}" excluída',
+					deleteSuccess: "Inscrição \"{name}\" excluída",
 					deleteFailure: "Falha ao excluir inscrição",
 					enableFirst: "Ative a inscrição primeiro",
-					refreshSubscriptionSuccess: '"{name}" atualizado',
+					refreshSubscriptionSuccess: "\"{name}\" atualizado",
 					refreshSubscriptionFailure: "Falha ao atualizar inscrição"
 				},
 				labels: {
@@ -1729,7 +1747,7 @@ export const pt: TranslationTree = {
 				refreshNow: "Atualizar Agora",
 				confirmDelete: {
 					title: "Excluir Inscrição",
-					message: 'Tem certeza de que deseja excluir a inscrição "{name}"? Esta ação não pode ser desfeita.',
+					message: "Tem certeza de que deseja excluir a inscrição \"{name}\"? Esta ação não pode ser desfeita.",
 					confirmText: "Excluir"
 				}
 			},
@@ -1752,8 +1770,7 @@ export const pt: TranslationTree = {
 				},
 				useDuration: {
 					name: "Usar duração da tarefa para o comprimento do evento",
-					description:
-						"Quando ativado, usa a estimativa de tempo (duração) da tarefa em vez da data de vencimento para o horário de término do evento do calendário. Isso é útil para fluxos de trabalho GTD onde agendado + duração representa o planejamento do trabalho, enquanto a data de vencimento representa prazos."
+					description: "Quando ativado, usa a estimativa de tempo (duração) da tarefa em vez da data de vencimento para o horário de término do evento do calendário. Isso é útil para fluxos de trabalho GTD onde agendado + duração representa o planejamento do trabalho, enquanto a data de vencimento representa prazos."
 				},
 				exportNow: {
 					name: "Exportar agora",
@@ -1774,16 +1791,30 @@ export const pt: TranslationTree = {
 					exportSuccess: "Tarefas exportadas com sucesso",
 					exportFailure: "Exportação falhou - verifique o console para detalhes",
 					serviceUnavailable: "Serviço de exportação automática não disponível"
+				},
+				excludeCompleted: {
+					name: "Excluir tarefas concluídas",
+					description: "Quando ativado, tarefas concluídas são omitidas das exportações ICS. Os status concluídos vêm das configurações de status de tarefas."
+				},
+				excludeArchived: {
+					name: "Excluir tarefas arquivadas",
+					description: "Quando ativado, tarefas arquivadas são omitidas das exportações ICS."
+				},
+				requireDueDate: {
+					name: "Exigir data de vencimento",
+					description: "Quando ativado, apenas tarefas com data de vencimento são incluídas nas exportações ICS."
+				},
+				requireScheduledDate: {
+					name: "Exigir data agendada",
+					description: "Quando ativado, apenas tarefas com data agendada são incluídas nas exportações ICS."
 				}
 			},
 			googleCalendarExport: {
 				header: "Exportar tarefas para o Google Agenda",
-				description:
-					"Sincronize automaticamente suas tarefas para o Google Agenda como eventos. Requer que o Google Agenda esteja conectado acima.",
+				description: "Sincronize automaticamente suas tarefas para o Google Agenda como eventos. Requer que o Google Agenda esteja conectado acima.",
 				enable: {
 					name: "Ativar exportação de tarefas",
-					description:
-						"Quando ativado, tarefas com datas serão automaticamente sincronizadas para o Google Agenda como eventos."
+					description: "Quando ativado, tarefas com datas serão automaticamente sincronizadas para o Google Agenda como eventos."
 				},
 				targetCalendar: {
 					name: "Calendário de destino",
@@ -1803,82 +1834,67 @@ export const pt: TranslationTree = {
 				},
 				allDayEvents: {
 					name: "Criar como eventos de dia inteiro",
-					description:
-						"Quando ativado, tarefas são criadas como eventos de dia inteiro. Quando desativado, usa a estimativa de tempo para a duração."
+					description: "Quando ativado, tarefas são criadas como eventos de dia inteiro. Quando desativado, usa a estimativa de tempo para a duração."
 				},
 				defaultDuration: {
 					name: "Duração padrão do evento",
-					description:
-						"Duração em minutos para eventos com horário (usada quando a tarefa não tem estimativa de tempo)."
+					description: "Duração em minutos para eventos com horário (usada quando a tarefa não tem estimativa de tempo)."
 				},
 				eventTitleTemplate: {
 					name: "Modelo de título do evento",
-					description:
-						"Modelo para títulos de eventos. Variáveis disponíveis: {{title}}, {{status}}, {{priority}}",
+					description: "Modelo para títulos de eventos. Variáveis disponíveis: {{title}}, {{status}}, {{priority}}",
 					placeholder: "{{title}}"
 				},
 				includeDescription: {
 					name: "Incluir detalhes da tarefa na descrição",
-					description:
-						"Adicionar metadados da tarefa (prioridade, status, tags, etc.) à descrição do evento."
+					description: "Adicionar metadados da tarefa (prioridade, status, tags, etc.) à descrição do evento."
 				},
 				includeObsidianLink: {
 					name: "Incluir link do Obsidian",
-					description:
-						"Adicionar um link de volta para a tarefa no Obsidian na descrição do evento."
+					description: "Adicionar um link de volta para a tarefa no Obsidian na descrição do evento."
 				},
 				defaultReminder: {
 					name: "Lembrete padrão",
-					description:
-						"Adicionar um lembrete popup aos eventos do Google Agenda. Defina minutos antes do evento (0 = sem lembrete). Valores comuns: 15, 30, 60, 1440 (1 dia)."
+					description: "Adicione lembretes pop-up a eventos com horário do Google Calendar. Digite os minutos antes do evento, separados por vírgulas. Deixe em branco para usar os padrões do calendário. Valores comuns: 15, 30, 60, 1440."
 				},
 				automaticSyncBehavior: {
 					header: "Comportamento de sincronização automática"
 				},
 				syncOnCreate: {
 					name: "Sincronizar ao criar tarefa",
-					description:
-						"Criar automaticamente um evento no calendário quando uma nova tarefa é criada."
+					description: "Criar automaticamente um evento no calendário quando uma nova tarefa é criada."
 				},
 				syncOnUpdate: {
 					name: "Sincronizar ao atualizar tarefa",
-					description:
-						"Atualizar automaticamente o evento no calendário quando uma tarefa é modificada."
+					description: "Atualizar automaticamente o evento no calendário quando uma tarefa é modificada."
 				},
 				syncOnComplete: {
 					name: "Sincronizar ao completar tarefa",
-					description:
-						"Atualizar evento no calendário quando uma tarefa é completada (adiciona marca de verificação ao título)."
+					description: "Atualizar evento no calendário quando uma tarefa é completada (adiciona marca de verificação ao título)."
 				},
 				syncOnDelete: {
 					name: "Excluir evento ao excluir tarefa",
-					description:
-						"Remover evento do calendário quando a tarefa correspondente é excluída."
+					description: "Remover evento do calendário quando a tarefa correspondente é excluída."
 				},
 				manualSyncActions: {
 					header: "Ações de sincronização manual"
 				},
 				syncAllTasks: {
 					name: "Sincronizar todas as tarefas",
-					description:
-						"Sincronizar todas as tarefas existentes para o Google Agenda. Isso criará eventos para tarefas que ainda não foram sincronizadas.",
+					description: "Sincronizar todas as tarefas existentes para o Google Agenda. Isso criará eventos para tarefas que ainda não foram sincronizadas.",
 					buttonText: "Sincronizar tudo"
 				},
 				unlinkAllTasks: {
 					name: "Desvincular todas as tarefas",
-					description:
-						"Remover todos os vínculos tarefa-evento sem excluir eventos do calendário.",
+					description: "Remover todos os vínculos tarefa-evento sem excluir eventos do calendário.",
 					buttonText: "Desvincular tudo",
 					confirmTitle: "Desvincular todas as tarefas",
-					confirmMessage:
-						"Isso removerá todos os vínculos entre tarefas e eventos do calendário. Os eventos do calendário permanecerão mas não serão mais atualizados quando as tarefas mudarem. Tem certeza?",
+					confirmMessage: "Isso removerá todos os vínculos entre tarefas e eventos do calendário. Os eventos do calendário permanecerão mas não serão mais atualizados quando as tarefas mudarem. Tem certeza?",
 					confirmButtonText: "Desvincular tudo"
 				},
 				notices: {
-					notEnabled:
-						"Exportação para o Google Agenda não está ativada. Configure em Configurações > Integrações.",
-					notEnabledOrConfigured:
-						"Exportação para o Google Agenda não está ativada ou configurada",
+					notEnabled: "Exportação para o Google Agenda não está ativada. Configure em Configurações > Integrações.",
+					notEnabledOrConfigured: "Exportação para o Google Agenda não está ativada ou configurada",
 					serviceNotAvailable: "Serviço de sincronização de calendário não disponível",
 					syncResults: "Sincronizados: {synced}, Falharam: {failed}, Ignorados: {skipped}",
 					taskSynced: "Tarefa sincronizada para o Google Agenda",
@@ -1886,11 +1902,9 @@ export const pt: TranslationTree = {
 					notATask: "O arquivo atual não é uma tarefa",
 					noDateToSync: "Tarefa não tem data agendada ou de vencimento para sincronizar",
 					syncFailed: "Falha ao sincronizar tarefa para o Google Agenda: {message}",
-					connectionExpired:
-						"A conexão com o Google Agenda expirou. Reconecte em Configurações > Integrações.",
+					connectionExpired: "A conexão com o Google Agenda expirou. Reconecte em Configurações > Integrações.",
 					syncingTasks: "Sincronizando {total} tarefas para o Google Agenda...",
-					syncComplete:
-						"Sincronização completa: {synced} sincronizadas, {failed} falharam, {skipped} ignoradas",
+					syncComplete: "Sincronização completa: {synced} sincronizadas, {failed} falharam, {skipped} ignoradas",
 					eventsDeletedAndUnlinked: "Todos os eventos excluídos e desvinculados",
 					tasksUnlinked: "Todos os vínculos de tarefas removidos"
 				},
@@ -1927,8 +1941,8 @@ export const pt: TranslationTree = {
 				mcp: {
 					enable: {
 						name: "Ativar servidor MCP",
-						description: "Exponha as ferramentas do TaskNotes via Model Context Protocol no endpoint /mcp. Requer que a API HTTP esteja ativada.",
-					},
+						description: "Exponha as ferramentas do TaskNotes via Model Context Protocol no endpoint /mcp. Requer que a API HTTP esteja ativada."
+					}
 				},
 				endpoints: {
 					header: "Endpoints da API Disponíveis",
@@ -2081,7 +2095,7 @@ export const pt: TranslationTree = {
 						},
 						customHeaders: {
 							name: "Incluir cabeçalhos personalizados",
-							description: "Incluir cabeçalhos do TaskNotes (tipo de evento, assinatura, ID de entrega). Desative para Discord, Slack e outros serviços com políticas CORS rígidas.",
+							description: "Incluir cabeçalhos do TaskNotes (tipo de evento, assinatura, ID de entrega). Desative para Discord, Slack e outros serviços com políticas CORS rígidas."
 						},
 						buttons: {
 							cancel: "Cancelar",
@@ -2108,7 +2122,7 @@ export const pt: TranslationTree = {
 						},
 						customHeaders: {
 							name: "Incluir cabeçalhos personalizados",
-							description: "Incluir cabeçalhos do TaskNotes (tipo de evento, assinatura, ID de entrega). Desative para Discord, Slack e outros serviços com políticas CORS rígidas.",
+							description: "Incluir cabeçalhos do TaskNotes (tipo de evento, assinatura, ID de entrega). Desative para Discord, Slack e outros serviços com políticas CORS rígidas."
 						},
 						transformHelp: {
 							title: "Modelos de transformação JSON permitem personalizar payloads de webhook:",
@@ -2142,8 +2156,8 @@ export const pt: TranslationTree = {
 				learnMore: "Saiba mais sobre mdbase-spec",
 				enable: {
 					name: "Gerar definições de tipos mdbase",
-					description: "Gere e mantenha arquivos de tipos mdbase (mdbase.yaml e _types/task.md) na raiz do cofre conforme suas configurações mudam.",
-				},
+					description: "Gere e mantenha arquivos de tipos mdbase (mdbase.yaml e _types/task.md) na raiz do cofre conforme suas configurações mudam."
+				}
 			},
 			timeFormats: {
 				justNow: "Agora mesmo",
@@ -2156,30 +2170,25 @@ export const pt: TranslationTree = {
 	notices: {
 		languageChanged: "Idioma alterado para {language}.",
 		exportTasksFailed: "Falha ao exportar tarefas como arquivo ICS",
-        // ICS Event Info Modal notices
 		icsNoteCreatedSuccess: "Nota criada com sucesso",
 		icsCreationModalOpenFailed: "Falha ao abrir modal de criação",
-		icsNoteLinkSuccess: 'Nota "{fileName}" vinculada ao evento ICS',
+		icsNoteLinkSuccess: "Nota \"{fileName}\" vinculada ao evento ICS",
 		icsTaskCreatedSuccess: "Tarefa criada: {title}",
 		icsRelatedItemsRefreshed: "Notas relacionadas atualizadas",
 		icsFileNotFound: "Arquivo não encontrado ou inválido",
 		icsFileOpenFailed: "Falha ao abrir arquivo",
-        // Timeblock Info Modal notices
-		timeblockAttachmentExists: '"{fileName}" já está anexado',
-		timeblockAttachmentAdded: '"{fileName}" adicionado como anexo',
-		timeblockAttachmentRemoved: '"{fileName}" removido dos anexos',
-		timeblockFileTypeNotSupported: 'Não é possível abrir "{fileName}" - tipo de arquivo não suportado',
+		timeblockAttachmentExists: "\"{fileName}\" já está anexado",
+		timeblockAttachmentAdded: "\"{fileName}\" adicionado como anexo",
+		timeblockAttachmentRemoved: "\"{fileName}\" removido dos anexos",
+		timeblockFileTypeNotSupported: "Não é possível abrir \"{fileName}\" - tipo de arquivo não suportado",
 		timeblockTitleRequired: "Por favor, insira um título para o bloco de tempo",
-		timeblockUpdatedSuccess: 'Bloco de tempo "{title}" atualizado com sucesso',
+		timeblockUpdatedSuccess: "Bloco de tempo \"{title}\" atualizado com sucesso",
 		timeblockUpdateFailed: "Falha ao atualizar bloco de tempo. Verifique o console para detalhes.",
-		timeblockDeletedSuccess: 'Bloco de tempo "{title}" excluído com sucesso',
+		timeblockDeletedSuccess: "Bloco de tempo \"{title}\" excluído com sucesso",
 		timeblockDeleteFailed: "Falha ao excluir bloco de tempo. Verifique o console para detalhes.",
-		// Timeblock Creation Modal notices
-        timeblockRequiredFieldsMissing: "Por favor, preencha todos os campos obrigatórios",
-		// Agenda View notices
-        agendaLoadingFailed: "Erro ao carregar agenda. Por favor, tente atualizar.",
-		// Stats View notices
-        statsLoadingFailed: "Erro ao carregar detalhes do projeto."
+		timeblockRequiredFieldsMissing: "Por favor, preencha todos os campos obrigatórios",
+		agendaLoadingFailed: "Erro ao carregar agenda. Por favor, tente atualizar.",
+		statsLoadingFailed: "Erro ao carregar detalhes do projeto."
 	},
 	commands: {
 		openCalendarView: "Abrir visualização de mini calendário",
@@ -2196,7 +2205,7 @@ export const pt: TranslationTree = {
 			name: "Converter nota atual em tarefa",
 			noActiveFile: "Nenhum arquivo ativo para converter",
 			alreadyTask: "Esta nota já é uma tarefa",
-			success: "'{title}' convertido em tarefa",
+			success: "'{title}' convertido em tarefa"
 		},
 		convertToTaskNote: "Converter tarefa de caixa de seleção para TaskNote",
 		convertAllTasksInNote: "Converter todas as tarefas na nota",
@@ -2216,7 +2225,13 @@ export const pt: TranslationTree = {
 		createOrOpenTaskWithTracking: "Criar ou abrir tarefa e iniciar registro de tempo",
 		rolloverOverdueScheduledTasks: "Adiar tarefas agendadas vencidas para hoje",
 		syncAllTasksGoogleCalendar: "Sincronizar todas as tarefas para o Google Agenda",
-		syncCurrentTaskGoogleCalendar: "Sincronizar tarefa atual para o Google Agenda"
+		syncCurrentTaskGoogleCalendar: "Sincronizar tarefa atual para o Google Agenda",
+		quickActionsTaskUnderCursor: "Ações rápidas para a tarefa sob o cursor",
+		editCurrentTask: "Editar tarefa atual",
+		cycleCurrentTaskStatus: "Alternar status da tarefa atual",
+		cycleCurrentTaskPriority: "Alternar prioridade da tarefa atual",
+		addProjectToCurrentTask: "Adicionar projeto à tarefa atual",
+		addSubtaskToCurrentNote: "Adicionar subtarefa à nota atual"
 	},
 	modals: {
 		deviceCode: {
@@ -2319,7 +2334,7 @@ export const pt: TranslationTree = {
 			titleRequired: "O título do evento é obrigatório",
 			noCalendarSelected: "Nenhum calendário selecionado",
 			success: "Evento \"{title}\" criado no calendário",
-			error: "Falha ao criar evento no calendário: {message}",
+			error: "Falha ao criar evento no calendário: {message}"
 		},
 		icsNoteCreation: {
 			heading: "Criar a partir de Evento ICS",
@@ -2496,7 +2511,7 @@ export const pt: TranslationTree = {
 				dismiss: "para cancelar"
 			},
 			notices: {
-				noteNotFound: 'Não foi possível encontrar a nota "{name}"'
+				noteNotFound: "Não foi possível encontrar a nota \"{name}\""
 			},
 			dueDate: {
 				overdue: "Vencimento: {date} (atrasada)",
@@ -2527,8 +2542,8 @@ export const pt: TranslationTree = {
 			nlPlaceholder: "Comprar mantimentos amanhã às 15h @casa #tarefas",
 			notices: {
 				titleRequired: "Por favor, insira um título para a tarefa",
-				success: 'Tarefa "{title}" criada com sucesso',
-				successShortened: 'Tarefa "{title}" criada com sucesso (nome do arquivo encurtado devido ao comprimento)',
+				success: "Tarefa \"{title}\" criada com sucesso",
+				successShortened: "Tarefa \"{title}\" criada com sucesso (nome do arquivo encurtado devido ao comprimento)",
 				failure: "Falha ao criar tarefa: {message}",
 				blockingUnresolved: "Não foi possível resolver: {entries}",
 				openCreatedTaskFailure: "Tarefa criada, mas não foi possível abrir a nota da tarefa."
@@ -2553,18 +2568,25 @@ export const pt: TranslationTree = {
 			notices: {
 				titleRequired: "Por favor, insira um título para a tarefa",
 				noChanges: "Nenhuma alteração para salvar",
-				updateSuccess: 'Tarefa "{title}" atualizada com sucesso',
+				updateSuccess: "Tarefa \"{title}\" atualizada com sucesso",
 				updateFailure: "Falha ao atualizar tarefa: {message}",
 				dependenciesUpdateSuccess: "Dependências atualizadas",
 				blockingUnresolved: "Não foi possível resolver: {entries}",
 				fileMissing: "Não foi possível encontrar o arquivo da tarefa: {path}",
 				openNoteFailure: "Falha ao abrir nota da tarefa",
 				archiveSuccess: "Tarefa {action} com sucesso",
-				archiveFailure: "Falha ao arquivar tarefa"
+				archiveFailure: "Falha ao arquivar tarefa",
+				deleteSuccess: "Tarefa \"{title}\" excluída com sucesso",
+				deleteFailure: "Falha ao excluir tarefa: {message}"
 			},
 			archiveAction: {
 				archived: "arquivada",
 				unarchived: "desarquivada"
+			},
+			deleteConfirmation: {
+				title: "Excluir tarefa",
+				message: "Tem certeza de que deseja excluir \"{title}\"? Isso move a nota da tarefa para a lixeira do Obsidian.",
+				confirm: "Excluir tarefa"
 			}
 		},
 		storageLocation: {
@@ -2731,7 +2753,7 @@ export const pt: TranslationTree = {
 			renamePlaceholder: "Digite o novo nome",
 			delete: "Excluir",
 			deleteTitle: "Excluir Arquivo",
-			deleteMessage: 'Tem certeza de que deseja excluir "{name}"?',
+			deleteMessage: "Tem certeza de que deseja excluir \"{name}\"?",
 			deleteConfirm: "Excluir",
 			copyPath: "Copiar caminho",
 			copyUrl: "Copiar URL do Obsidian",
@@ -2788,8 +2810,14 @@ export const pt: TranslationTree = {
 					projectSelectFailed: "Falha ao abrir seletor de projeto",
 					subtaskSelectFailed: "Falha ao abrir seletor de subtarefa",
 					noEligibleSubtasks: "Nenhuma tarefa elegível disponível para atribuir como subtarefa",
-					currentTaskNotFound: "Arquivo da tarefa atual não encontrado"
-				}
+					currentTaskNotFound: "Arquivo da tarefa atual não encontrado",
+					updateContextsFailed: "Falha ao atualizar contextos"
+				},
+				contexts: "Contextos",
+				addContext: "Adicionar contexto…",
+				contextPlaceholder: "contexto",
+				contextSelected: "✓ {context}",
+				clearContexts: "Limpar contextos"
 			},
 			subtasks: {
 				loading: "Carregando subtarefas...",
@@ -2822,8 +2850,15 @@ export const pt: TranslationTree = {
 				renameFailure: "Falha ao renomear arquivo",
 				copyPathSuccess: "Caminho do arquivo copiado para a área de transferência",
 				copyUrlSuccess: "URL do Obsidian copiado para a área de transferência",
-				updateRecurrenceFailure: "Falha ao atualizar recorrência da tarefa: {message}"
-			}
+				updateRecurrenceFailure: "Falha ao atualizar recorrência da tarefa: {message}",
+				updateTagsFailed: "Falha ao atualizar tags"
+			},
+			tags: "Tags",
+			addTag: "Adicionar tag…",
+			removeTag: "Remover {tag}",
+			removeTagInput: "Remover tag…",
+			tagPlaceholder: "Tag ou #tag",
+			clearTags: "Limpar tags"
 		},
 		priority: {
 			clearPriority: "Limpar prioridade"
@@ -2848,7 +2883,7 @@ export const pt: TranslationTree = {
 				taskCreateFailure: "Falha ao criar tarefa a partir do evento",
 				noteCreated: "Nota criada com sucesso",
 				creationFailure: "Falha ao abrir modal de criação",
-				linkSuccess: 'Nota "{name}" vinculada ao evento',
+				linkSuccess: "Nota \"{name}\" vinculada ao evento",
 				linkFailure: "Falha ao vincular nota",
 				linkSelectionFailure: "Falha ao abrir seleção de nota"
 			},
@@ -2906,10 +2941,10 @@ export const pt: TranslationTree = {
 		},
 		icsSubscription: {
 			notices: {
-				calendarNotFound: 'Calendário "{name}" não encontrado (404). Por favor, verifique se a URL ICS está correta e se o calendário é acessível publicamente.',
-				calendarAccessDenied: 'Acesso ao calendário "{name}" negado (500). Isso pode ser devido a restrições do servidor Microsoft Outlook. Tente regenerar a URL ICS das configurações do seu calendário.',
-				fetchRemoteFailed: 'Falha ao buscar calendário remoto "{name}": {error}',
-				readLocalFailed: 'Falha ao ler calendário local "{name}": {error}'
+				calendarNotFound: "Calendário \"{name}\" não encontrado (404). Por favor, verifique se a URL ICS está correta e se o calendário é acessível publicamente.",
+				calendarAccessDenied: "Acesso ao calendário \"{name}\" negado (500). Isso pode ser devido a restrições do servidor Microsoft Outlook. Tente regenerar a URL ICS das configurações do seu calendário.",
+				fetchRemoteFailed: "Falha ao buscar calendário remoto \"{name}\": {error}",
+				readLocalFailed: "Falha ao ler calendário local \"{name}\": {error}"
 			}
 		},
 		calendarExport: {
@@ -2963,7 +2998,7 @@ export const pt: TranslationTree = {
 				invalidTaskData: "Dados da tarefa inválidos.",
 				replaceLineFailed: "Falha ao substituir linha da tarefa.",
 				conversionComplete: "Tarefa convertida: {title}",
-				conversionCompleteShortened: 'Tarefa convertida: "{title}" (nome do arquivo encurtado devido ao comprimento)',
+				conversionCompleteShortened: "Tarefa convertida: \"{title}\" (nome do arquivo encurtado devido ao comprimento)",
 				fileExists: "Um arquivo com este nome já existe. Por favor, tente novamente ou renomeie a tarefa.",
 				conversionFailed: "Falha ao converter tarefa. Por favor, tente novamente."
 			}
@@ -2988,10 +3023,7 @@ export const pt: TranslationTree = {
 			}
 		},
 		notification: {
-			notices: {
-				// NotificationService uses Notice for in-app notifications
-				// but the message comes from the reminder content, so no hardcoded strings to translate
-			}
+			notices: {}
 		}
 	},
 	ui: {
@@ -3015,7 +3047,7 @@ export const pt: TranslationTree = {
 				created: "Criado",
 				modified: "Modificado",
 				blocked: "Bloqueado",
-				blocking: "Bloqueando",
+				blocking: "Bloqueando"
 			},
 			blockedBadge: "Bloqueada",
 			blockedBadgeTooltip: "Esta tarefa está aguardando outra tarefa",
@@ -3041,7 +3073,8 @@ export const pt: TranslationTree = {
 			loadingDependencies: "Carregando dependências...",
 			blockingEmpty: "Nenhuma tarefa dependente",
 			blockingLoadError: "Falha ao carregar dependências",
-			googleCalendarSyncTooltip: "Sincronizado com o Google Agenda"
+			googleCalendarSyncTooltip: "Sincronizado com o Google Agenda",
+			detailsTooltip: "A tarefa tem detalhes"
 		},
 		propertyEventCard: {
 			unknownFile: "Arquivo desconhecido"
@@ -3114,7 +3147,7 @@ export const pt: TranslationTree = {
 			loadSavedView: "Carregar visualização salva: {name}",
 			deleteView: "Excluir visualização",
 			deleteViewTitle: "Excluir Visualização",
-			deleteViewMessage: 'Tem certeza de que deseja excluir a visualização "{name}"?',
+			deleteViewMessage: "Tem certeza de que deseja excluir a visualização \"{name}\"?",
 			manageAllReminders: "Gerenciar Todos os Lembretes...",
 			clearAllReminders: "Limpar Todos os Lembretes",
 			customRecurrence: "Recorrência personalizada...",
@@ -3130,7 +3163,7 @@ export const pt: TranslationTree = {
 				ascending: "Ascendente",
 				descending: "Descendente"
 			},
-			"group": {
+			group: {
 				none: "Nenhum",
 				status: "Status",
 				priority: "Prioridade",
@@ -3288,5 +3321,3 @@ export const pt: TranslationTree = {
 		}
 	}
 };
-
-export type PtTranslationSchema = typeof pt;

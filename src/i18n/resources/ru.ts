@@ -11,8 +11,7 @@ export const ru: TranslationTree = {
 		reorder: {
 			confirmLargeTitle: "Подтвердить большое переупорядочивание",
 			confirmButton: "Переупорядочить заметки",
-			confirmLargeMessage:
-				'При переупорядочивании здесь поле "{field}" будет обновлено в {count} заметках, чтобы создать постоянный ручной порядок для {scope}. Скрытые или отфильтрованные заметки в той же области тоже могут быть обновлены. Продолжить?',
+			confirmLargeMessage: "При переупорядочивании здесь поле \"{field}\" будет обновлено в {count} заметках, чтобы создать постоянный ручной порядок для {scope}. Скрытые или отфильтрованные заметки в той же области тоже могут быть обновлены. Продолжить?"
 		},
 		language: "Язык",
 		systemDefault: "Системный по умолчанию",
@@ -26,7 +25,7 @@ export const ru: TranslationTree = {
 			es: "Испанский",
 			ja: "Японский",
 			pt: "Португальский (Бразилия)",
-			ko: "Корейский",
+			ko: "Корейский"
 		},
 		weekdays: {
 			sunday: "Воскресенье",
@@ -35,7 +34,7 @@ export const ru: TranslationTree = {
 			wednesday: "Среда",
 			thursday: "Четверг",
 			friday: "Пятница",
-			saturday: "Суббота",
+			saturday: "Суббота"
 		},
 		months: {
 			january: "Январь",
@@ -49,8 +48,8 @@ export const ru: TranslationTree = {
 			september: "Сентябрь",
 			october: "Октябрь",
 			november: "Ноябрь",
-			december: "Декабрь",
-		},
+			december: "Декабрь"
+		}
 	},
 	views: {
 		agenda: {
@@ -62,7 +61,7 @@ export const ru: TranslationTree = {
 				previousPeriod: "Предыдущий период",
 				nextPeriod: "Следующий период",
 				goToToday: "Перейти к сегодня",
-				refreshCalendars: "Обновить подписки на календари",
+				refreshCalendars: "Обновить подписки на календари"
 			},
 			loading: "Загрузка планов...",
 			dayToggle: "Переключить день",
@@ -72,22 +71,22 @@ export const ru: TranslationTree = {
 			notices: {
 				calendarNotReady: "Сервис календаря еще не готов",
 				calendarRefreshed: "Подписки на календари обновлены",
-				refreshFailed: "Не удалось обновить",
+				refreshFailed: "Не удалось обновить"
 			},
 			empty: {
 				noItemsScheduled: "Нет запланированных элементов",
 				noItemsFound: "Элементы не найдены",
-				helpText: "Создайте задачи с датами выполнения или запланированные задачи, или добавьте заметки, чтобы увидеть их здесь.",
+				helpText: "Создайте задачи с датами выполнения или запланированные задачи, или добавьте заметки, чтобы увидеть их здесь."
 			},
 			contextMenu: {
 				showOverdueSection: "Показать раздел просроченных",
 				showNotes: "Показать заметки",
-				calendarSubscriptions: "Подписки на календари",
+				calendarSubscriptions: "Подписки на календари"
 			},
 			periods: {
-				thisWeek: "На этой неделе",
+				thisWeek: "На этой неделе"
 			},
-			tipPrefix: "Совет: ",
+			tipPrefix: "Совет: "
 		},
 		taskList: {
 			title: "Задачи",
@@ -97,36 +96,39 @@ export const ru: TranslationTree = {
 			reorder: {
 				scope: {
 					ungrouped: "этот негруппированный список",
-					group: 'группа "{group}"',
-				},
+					group: "группа \"{group}\""
+				}
 			},
 			errors: {
-				formulaGroupingReadOnly:
-					"Нельзя переупорядочивать задачи в группах на основе формул. Значения формул вычисляются и не могут быть изменены напрямую.",
-			},
+				formulaGroupingReadOnly: "Нельзя переупорядочивать задачи в группах на основе формул. Значения формул вычисляются и не могут быть изменены напрямую."
+			}
 		},
 		notes: {
 			title: "Заметки",
 			refreshButton: "Обновление...",
 			refreshingButton: "Обновляется...",
 			notices: {
-				indexingDisabled: "Индексация заметок отключена",
+				indexingDisabled: "Индексация заметок отключена"
 			},
 			empty: {
 				noNotesFound: "Заметки не найдены",
-				helpText: "Заметки для выбранной даты не найдены. Попробуйте выбрать другую дату в мини-календаре или создайте заметки.",
+				helpText: "Заметки для выбранной даты не найдены. Попробуйте выбрать другую дату в мини-календаре или создайте заметки."
 			},
 			loading: "Загрузка заметок...",
-			refreshButtonAriaLabel: "Обновить список заметок",
+			refreshButtonAriaLabel: "Обновить список заметок"
 		},
 		miniCalendar: {
 			title: "Мини-календарь",
+			contextMenu: {
+				openDailyNote: "Открыть ежедневную заметку",
+				openWeeklyNote: "Открыть еженедельную заметку"
+			}
 		},
 		advancedCalendar: {
 			title: "Календарь",
 			filters: {
 				showFilters: "Показать фильтры",
-				hideFilters: "Скрыть фильтры",
+				hideFilters: "Скрыть фильтры"
 			},
 			viewOptions: {
 				calendarSubscriptions: "Подписки на календари",
@@ -136,11 +138,11 @@ export const ru: TranslationTree = {
 				dueDates: "Сроки выполнения",
 				allDaySlot: "Слот на весь день",
 				scheduledTasks: "Запланированные задачи",
-				recurringTasks: "Повторяющиеся задачи",
+				recurringTasks: "Повторяющиеся задачи"
 			},
 			buttons: {
 				refresh: "Обновить",
-				refreshHint: "Обновить подписки на календари",
+				refreshHint: "Обновить подписки на календари"
 			},
 			notices: {
 				icsServiceNotAvailable: "Сервис подписки ICS недоступен",
@@ -157,7 +159,7 @@ export const ru: TranslationTree = {
 				endTimeAfterStart: "Время окончания должно быть после времени начала",
 				timeEntryNotFound: "Временная запись не найдена",
 				timeEntryDeleted: "Временная запись удалена",
-				deleteTimeEntryFailed: "Не удалось удалить временную запись",
+				deleteTimeEntryFailed: "Не удалось удалить временную запись"
 			},
 			timeEntry: {
 				estimatedSuffix: "оценка",
@@ -167,7 +169,7 @@ export const ru: TranslationTree = {
 				createdPrefix: "Создано: ",
 				modifiedPrefix: "Изменено: ",
 				duePrefix: "Срок: ",
-				scheduledPrefix: "Запланировано: ",
+				scheduledPrefix: "Запланировано: "
 			},
 			contextMenus: {
 				openTask: "Открыть задачу",
@@ -175,8 +177,8 @@ export const ru: TranslationTree = {
 				deleteTimeEntryTitle: "Удалить временную запись",
 				deleteTimeEntryConfirm: "Вы уверены, что хотите удалить эту временную запись{duration}? Это действие нельзя отменить.",
 				deleteButton: "Удалить",
-				cancelButton: "Отмена",
-			},
+				cancelButton: "Отмена"
+			}
 		},
 		basesCalendar: {
 			title: "Календарь Bases",
@@ -189,7 +191,7 @@ export const ru: TranslationTree = {
 				list: "С",
 				customDays: "{count}Д",
 				listDays: "{count}д Список",
-				refresh: "Обновить",
+				refresh: "Обновить"
 			},
 			hints: {
 				refresh: "Обновить подписки календаря",
@@ -201,7 +203,7 @@ export const ru: TranslationTree = {
 				day: "Вид по дням",
 				year: "Вид по годам",
 				list: "Вид списком",
-				customDays: "Вид на {count} дней",
+				customDays: "Вид на {count} дней"
 			},
 			settings: {
 				groups: {
@@ -211,7 +213,7 @@ export const ru: TranslationTree = {
 					propertyBasedEvents: "События на основе свойств",
 					calendarSubscriptions: "Подписки календаря",
 					googleCalendars: "Календари Google",
-					microsoftCalendars: "Календари Microsoft",
+					microsoftCalendars: "Календари Microsoft"
 				},
 				dateNavigation: {
 					navigateToDate: "Перейти к дате",
@@ -223,8 +225,8 @@ export const ru: TranslationTree = {
 					strategies: {
 						first: "Первый результат",
 						earliest: "Самая ранняя дата",
-						latest: "Самая поздняя дата",
-					},
+						latest: "Самая поздняя дата"
+					}
 				},
 				events: {
 					showScheduledTasks: "Показать запланированные задачи",
@@ -233,6 +235,8 @@ export const ru: TranslationTree = {
 					showTimeEntries: "Показать записи времени",
 					showTimeblocks: "Показать временные блоки",
 					showPropertyBasedEvents: "Показать события на основе свойств",
+					showCompletedRecurringInstances: "Показывать завершённые повторяющиеся экземпляры",
+					showSkippedRecurringInstances: "Показывать пропущенные повторяющиеся экземпляры"
 				},
 				layout: {
 					calendarView: "Вид календаря",
@@ -265,6 +269,9 @@ export const ru: TranslationTree = {
 					dayMaxEvents: "Макс. событий в день (месяц, 0 = авто)",
 					dayMaxEventRows: "Макс. строк событий в день (месяц, 0 = без ограничений)",
 					spanScheduledToDue: "Растягивать задачи между запланированной и срочной датами",
+					heightMode: "Режим высоты",
+					heightModeFill: "Заполнить контейнер",
+					heightModeAuto: "Автоматическая высота"
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Свойство даты начала",
@@ -272,15 +279,15 @@ export const ru: TranslationTree = {
 					endDateProperty: "Свойство даты окончания (необязательно)",
 					endDatePropertyPlaceholder: "Выберите свойство для даты/времени окончания",
 					titleProperty: "Свойство заголовка (необязательно)",
-					titlePropertyPlaceholder: "Выберите свойство для заголовка события",
-				},
+					titlePropertyPlaceholder: "Выберите свойство для заголовка события"
+				}
 			},
 			notices: {
-				noDailyNoteForDate: "Для этой даты нет ежедневной заметки.",
+				noDailyNoteForDate: "Для этой даты нет ежедневной заметки."
 			},
 			errors: {
-				failedToInitialize: "Не удалось инициализировать календарь",
-			},
+				failedToInitialize: "Не удалось инициализировать календарь"
+			}
 		},
 		kanban: {
 			title: "Канбан",
@@ -291,21 +298,21 @@ export const ru: TranslationTree = {
 			noProject: "Без проекта",
 			reorder: {
 				scope: {
-					column: 'колонка "{group}"',
-					columnInSwimlane: 'колонка "{group}" в swimlane "{swimlane}"',
-				},
+					column: "колонка \"{group}\"",
+					columnInSwimlane: "колонка \"{group}\" в swimlane \"{swimlane}\""
+				}
 			},
 			notices: {
 				loadFailed: "Не удалось загрузить доску Канбан",
-				movedTask: "Задача перемещена в \"{0}\"",
+				movedTask: "Задача перемещена в \"{0}\""
 			},
 			errors: {
 				loadingBoard: "Ошибка загрузки доски.",
 				noGroupBy: "Для представления Канбан требуется настроенное свойство 'Группировать по'. Нажмите кнопку 'Сортировка' и выберите свойство в разделе 'Группировать по'.",
 				formulaGroupingReadOnly: "Нельзя перемещать задачи между колонками на основе формул. Значения формул вычисляются и не могут быть изменены напрямую.",
-				formulaSwimlaneReadOnly: "Нельзя перемещать задачи между дорожками на основе формул. Значения формул вычисляются и не могут быть изменены напрямую.",
+				formulaSwimlaneReadOnly: "Нельзя перемещать задачи между дорожками на основе формул. Значения формул вычисляются и не могут быть изменены напрямую."
 			},
-			columnTitle: "Без названия",
+			columnTitle: "Без названия"
 		},
 		pomodoro: {
 			title: "Помодоро",
@@ -319,9 +326,9 @@ export const ru: TranslationTree = {
 				breakPrompt: "Отличная работа! Время для {length} перерыва",
 				breakLength: {
 					short: "короткого",
-					long: "длинного",
+					long: "длинного"
 				},
-				breakComplete: "Перерыв завершен! Готовы к следующему помодоро?",
+				breakComplete: "Перерыв завершен! Готовы к следующему помодоро?"
 			},
 			buttons: {
 				start: "Старт",
@@ -335,12 +342,26 @@ export const ru: TranslationTree = {
 				changeTask: "Изменить задачу...",
 				clearTask: "Очистить задачу",
 				selectDifferentTask: "Выбрать другую задачу",
+				startFocus: "Начать фокус",
+				addMinute: "Добавить одну минуту",
+				subtractMinute: "Вычесть одну минуту"
 			},
 			notices: {
 				noTasks: "Не найдено неархивированных задач. Сначала создайте несколько задач.",
 				loadFailed: "Не удалось загрузить задачи",
+				invalidDuration: "Введите длительность, например 10, 10:30 или 1:30:00."
 			},
 			statsLabel: "завершено сегодня",
+			meta: {
+				ready: "{time} запланировано · {count} завершено сегодня",
+				running: "Осталось {time}",
+				paused: "{type} на паузе · осталось {time}",
+				breakReady: "{type} готово · {time} запланировано"
+			},
+			timer: {
+				editLabel: "Изменить длительность таймера",
+				inputLabel: "Длительность таймера"
+			}
 		},
 		pomodoroStats: {
 			title: "Статистика помодоро",
@@ -351,45 +372,56 @@ export const ru: TranslationTree = {
 				today: "Сегодня",
 				week: "Эта неделя",
 				allTime: "За все время",
-				recent: "Последние сессии",
+				recent: "Последние сессии"
 			},
 			overviewCards: {
 				todayPomos: {
 					label: "Помодоро сегодня",
 					change: {
 						more: "на {count} больше чем вчера",
-						less: "на {count} меньше чем вчера",
-					},
+						less: "на {count} меньше чем вчера"
+					}
 				},
 				totalPomos: {
-					label: "Всего помодоро",
+					label: "Всего помодоро"
 				},
 				todayFocus: {
 					label: "Фокус сегодня",
 					change: {
 						more: "на {duration} больше чем вчера",
-						less: "на {duration} меньше чем вчера",
-					},
+						less: "на {duration} меньше чем вчера"
+					}
 				},
 				totalFocus: {
-					label: "Общее время фокуса",
-				},
+					label: "Общее время фокуса"
+				}
 			},
 			stats: {
 				pomodoros: "Помодоро",
 				streak: "Серия",
 				minutes: "Минуты",
 				average: "Средняя длина",
-				completion: "Завершение",
+				completion: "Завершение"
 			},
 			recents: {
 				empty: "Сессии еще не записаны",
 				duration: "{minutes} мин",
 				status: {
 					completed: "Завершено",
-					interrupted: "Прервано",
+					interrupted: "Прервано"
 				},
+				delete: "Удалить сессию",
+				deleteAria: "Удалить сессию Pomodoro",
+				deleteConfirmTitle: "Удалить сессию Pomodoro?",
+				deleteConfirmMessage: "Это удалит сессию из истории Pomodoro. Существующие записи времени задач не изменятся.",
+				deleteConfirmButton: "Удалить",
+				deleteSuccess: "Сессия Pomodoro удалена",
+				deleteNotFound: "Сессия Pomodoro не найдена"
 			},
+			basesMigration: {
+				title: "Нужно представление Base?",
+				description: "Представления Base Pomodoro используют frontmatter ежедневных заметок. Чтобы увидеть эту историю в сгенерированной Base статистики Pomodoro, перенесите данные Pomodoro в настройках, затем выберите хранение в ежедневных заметках."
+			}
 		},
 		stats: {
 			title: "Статистика",
@@ -401,13 +433,13 @@ export const ru: TranslationTree = {
 				thisWeek: "Эта неделя",
 				thisMonth: "Этот месяц",
 				projectBreakdown: "Разбивка по проектам",
-				dateRange: "Диапазон дат",
+				dateRange: "Диапазон дат"
 			},
 			filters: {
 				minTime: "Мин. время (минуты)",
 				allTasks: "Все задачи",
 				activeOnly: "Только активные",
-				completedOnly: "Только завершенные",
+				completedOnly: "Только завершенные"
 			},
 			refreshButton: "Обновить",
 			timeRanges: {
@@ -415,7 +447,7 @@ export const ru: TranslationTree = {
 				last7Days: "Последние 7 дней",
 				last30Days: "Последние 30 дней",
 				last90Days: "Последние 90 дней",
-				customRange: "Пользовательский диапазон",
+				customRange: "Пользовательский диапазон"
 			},
 			resetFiltersButton: "Сбросить фильтры",
 			dateRangeFrom: "С",
@@ -426,30 +458,30 @@ export const ru: TranslationTree = {
 				totalTasks: "Доtal Tasks",
 				completionRate: "Процент завершения",
 				activeProjects: "Активные проекты",
-				avgTimePerTask: "Среднее время на задачу",
+				avgTimePerTask: "Среднее время на задачу"
 			},
 			labels: {
 				tasks: "Задачи",
 				completed: "Завершено",
-				projects: "Проекты",
+				projects: "Проекты"
 			},
 			noProjectData: "Нет данных о проектах",
 			notAvailable: "Н/Д",
 			noTasks: "Задачи не найдены",
-			loading: "Загрузка...",
+			loading: "Загрузка..."
 		},
 		releaseNotes: {
 			title: "Что нового в TaskNotes {version}",
 			header: "Что нового в TaskNotes {version}",
 			viewAllLink: "Посмотреть все примечания к выпуску на GitHub →",
 			starMessage: "Если TaskNotes полезен для вас, поставьте звезду на GitHub",
-			baseFilesNotice: "> [!info] О файлах `.base` по умолчанию\n> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Общие → Создать файлы**.",
-		},
+			baseFilesNotice: "> [!info] О файлах `.base` по умолчанию\n> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Общие → Создать файлы**."
+		}
 	},
 	settings: {
 		header: {
 			documentation: "Документация",
-			documentationUrl: "https://tasknotes.dev",
+			documentationUrl: "https://tasknotes.dev"
 		},
 		tabs: {
 			general: "Общие",
@@ -458,125 +490,126 @@ export const ru: TranslationTree = {
 			defaults: "По умолчанию и шаблоны",
 			appearance: "Внешний вид и интерфейс",
 			features: "Функции",
-			integrations: "Интеграции",
+			integrations: "Интеграции"
 		},
 		features: {
 			inlineTasks: {
 				header: "Встроенные задачи",
-				description: "Настройки ссылок на задачи и преобразования флажков в задачи в заметках.",
+				description: "Настройки ссылок на задачи и преобразования флажков в задачи в заметках."
 			},
 			taskCreation: {
 				header: "Создание задач",
 				description: "Настройте, что происходит после создания задач.",
 				openAfterCreate: {
 					name: "Открывать задачу после создания",
-					description:
-						"Выберите, будет ли обычное окно создания новой задачи открывать новую заметку задачи после сохранения.",
+					description: "Выберите, будет ли обычное окно создания новой задачи открывать новую заметку задачи после сохранения.",
 					options: {
 						none: "Не открывать",
 						sameTab: "Открывать в той же вкладке",
-						newTab: "Открывать в новой вкладке",
-					},
-				},
+						newTab: "Открывать в новой вкладке"
+					}
+				}
 			},
 			overlays: {
 				taskLinkToggle: {
 					name: "Наложение ссылок задач",
-					description: "Показывать интерактивные наложения при наведении на ссылки задач",
+					description: "Показывать интерактивные наложения при наведении на ссылки задач"
 				},
 				aliasExclusion: {
 					name: "Отключить наложение для ссылок с псевдонимами",
-					description:
-						"Не показывать виджет задачи, если ссылка содержит псевдоним (например, [[Задача|Псевдоним]]).",
-				},
+					description: "Не показывать виджет задачи, если ссылка содержит псевдоним (например, [[Задача|Псевдоним]])."
+				}
 			},
 			instantConvert: {
 				toggle: {
 					name: "Показывать кнопку преобразования рядом с флажками",
-					description: "Отображать встроенную кнопку рядом с флажками Markdown, которая преобразует их в TaskNotes",
+					description: "Отображать встроенную кнопку рядом с флажками Markdown, которая преобразует их в TaskNotes"
 				},
 				preserveCheckbox: {
 					name: "Сохранять флажок при преобразовании",
-					description:
-						"Оставлять исходный маркер флажка Markdown при преобразовании флажка в ссылку TaskNote",
+					description: "Оставлять исходный маркер флажка Markdown при преобразовании флажка в ссылку TaskNote"
 				},
 				folder: {
-					name: "Папка для преобразованных задач",
-					description: "Папка, в которой будут создаваться задачи, преобразованные из флажков. Оставьте пустым для использования папки задач по умолчанию. Используйте {{currentNotePath}} для папки текущей заметки или {{currentNoteTitle}} для подпапки с названием заметки.",
-				},
+					name: "Папка для задач, созданных inline",
+					description: "Папка, где будут создаваться задачи из inline-команд или преобразования чекбоксов. Оставьте пустым, чтобы использовать папку задач по умолчанию. Используйте {{currentNotePath}} для папки текущей заметки или {{currentNoteTitle}} для подпапки с именем текущей заметки."
+				}
 			},
 			nlp: {
 				header: "Обработка естественного языка",
 				description: "Анализ дат, приоритетов и других свойств из текстового ввода.",
 				enable: {
 					name: "Включить ввод задач на естественном языке",
-					description: "Анализировать сроки выполнения, приоритеты и контексты из естественного языка при создании задач",
+					description: "Анализировать сроки выполнения, приоритеты и контексты из естественного языка при создании задач"
 				},
 				defaultToScheduled: {
 					name: "По умолчанию запланированное",
-					description: "Когда NLP обнаруживает дату без контекста, трактовать ее как запланированную, а не срок выполнения",
+					description: "Когда NLP обнаруживает дату без контекста, трактовать ее как запланированную, а не срок выполнения"
 				},
 				language: {
 					name: "Язык NLP",
-					description: "Язык для шаблонов обработки естественного языка и анализа дат",
+					description: "Язык для шаблонов обработки естественного языка и анализа дат"
 				},
 				statusTrigger: {
 					name: "Триггер предложения статуса",
-					description: "Текст для запуска предложений статуса (оставьте пустым для отключения)",
-				},
+					description: "Текст для запуска предложений статуса (оставьте пустым для отключения)"
+				}
 			},
 			pomodoro: {
 				header: "Таймер помодоро",
 				description: "Настройка интервалов работы/отдыха для таймера помодоро.",
 				workDuration: {
 					name: "Длительность работы",
-					description: "Длительность рабочих интервалов в минутах",
+					description: "Длительность рабочих интервалов в минутах"
 				},
 				shortBreak: {
 					name: "Длительность короткого перерыва",
-					description: "Длительность коротких перерывов в минутах",
+					description: "Длительность коротких перерывов в минутах"
 				},
 				longBreak: {
 					name: "Длительность длинного перерыва",
-					description: "Длительность длинных перерывов в минутах",
+					description: "Длительность длинных перерывов в минутах"
 				},
 				longBreakInterval: {
 					name: "Интервал длинного перерыва",
-					description: "Количество рабочих сессий перед длинным перерывом",
+					description: "Количество рабочих сессий перед длинным перерывом"
 				},
 				autoStartBreaks: {
 					name: "Автозапуск перерывов",
-					description: "Автоматически запускать таймеры перерывов после рабочих сессий",
+					description: "Автоматически запускать таймеры перерывов после рабочих сессий"
 				},
 				autoStartWork: {
 					name: "Автозапуск работы",
-					description: "Автоматически запускать рабочие сессии после перерывов",
+					description: "Автоматически запускать рабочие сессии после перерывов"
 				},
 				notifications: {
 					name: "Уведомления помодоро",
-					description: "Показывать уведомления при завершении сессий помодоро",
+					description: "Показывать уведомления при завершении сессий помодоро"
 				},
 				mobileSidebar: {
 					name: "Мобильная боковая панель",
 					description: "Где открывать таймер помодоро на мобильных устройствах",
 					tab: "Панель заметок",
 					left: "Левая боковая панель",
-					right: "Правая боковая панель",
+					right: "Правая боковая панель"
 				},
+				statusBar: {
+					name: "Показывать Pomodoro в строке состояния",
+					description: "Показывать активный обратный отсчёт Pomodoro в строке состояния Obsidian"
+				}
 			},
 			uiLanguage: {
 				header: "Язык интерфейса",
 				description: "Изменить язык меню, уведомлений и представлений TaskNotes.",
 				dropdown: {
 					name: "Язык интерфейса",
-					description: "Выберите язык, используемый для текста интерфейса TaskNotes",
-				},
+					description: "Выберите язык, используемый для текста интерфейса TaskNotes"
+				}
 			},
 			pomodoroSound: {
 				enabledName: "Звук включен",
 				enabledDesc: "Воспроизводить звук при завершении сессий помодоро",
 				volumeName: "Громкость звука",
-				volumeDesc: "Громкость звуков помодоро (0-100)",
+				volumeDesc: "Громкость звуков помодоро (0-100)"
 			},
 			dataStorage: {
 				name: "Хранилище данных помодоро",
@@ -584,8 +617,8 @@ export const ru: TranslationTree = {
 				dailyNotes: "Ежедневные заметки",
 				pluginData: "Данные плагина",
 				notices: {
-					locationChanged: "Местоположение хранилища Pomodoro изменено на {location}",
-				},
+					locationChanged: "Местоположение хранилища Pomodoro изменено на {location}"
+				}
 			},
 			notifications: {
 				header: "Уведомления",
@@ -596,30 +629,40 @@ export const ru: TranslationTree = {
 				typeDesc: "Тип отображаемых уведомлений",
 				systemLabel: "Системные уведомления",
 				inAppLabel: "Уведомления в приложении",
+				soundEnabledName: "Звук уведомления",
+				soundEnabledDesc: "Воспроизводить звук при срабатывании напоминаний задач",
+				soundVolumeName: "Громкость звука",
+				soundVolumeDesc: "Громкость звуков напоминаний задач (0-100)",
+				soundPreviewName: "Прослушать звук уведомления",
+				soundPreviewDesc: "Воспроизвести настроенный звук напоминания задачи",
+				soundPreviewButton: "Прослушать",
+				testReminderName: "Отправить тестовое напоминание",
+				testReminderDesc: "Отправить тестовое напоминание с текущим типом уведомления и настройками звука.",
+				testReminderButton: "Отправить тест"
 			},
 			overdue: {
 				hideCompletedName: "Скрыть завершенные задачи из просроченных",
-				hideCompletedDesc: "Исключить завершенные задачи из расчетов просроченных задач",
+				hideCompletedDesc: "Исключить завершенные задачи из расчетов просроченных задач"
 			},
 			indexing: {
 				disableName: "Отключить индексацию заметок",
-				disableDesc: "Отключить автоматическую индексацию содержимого заметок для лучшей производительности",
+				disableDesc: "Отключить автоматическую индексацию содержимого заметок для лучшей производительности"
 			},
 			suggestions: {
 				debounceName: "Задержка предложений",
-				debounceDesc: "Задержка в миллисекундах перед показом предложений",
+				debounceDesc: "Задержка в миллисекундах перед показом предложений"
 			},
 			timeTracking: {
 				autoStopName: "Автоостановка отслеживания времени",
 				autoStopDesc: "Автоматически останавливать отслеживание времени при отметке задачи как выполненной",
 				stopNotificationName: "Уведомление об остановке отслеживания времени",
-				stopNotificationDesc: "Показывать уведомление при автоматической остановке отслеживания времени",
+				stopNotificationDesc: "Показывать уведомление при автоматической остановке отслеживания времени"
 			},
 			recurring: {
 				maintainOffsetName: "Сохранять смещение срока выполнения в повторяющихся задачах",
 				maintainOffsetDesc: "Сохранять смещение между сроком выполнения и запланированной датой при завершении повторяющихся задач",
 				resetCheckboxesName: "Сбрасывать флажки при повторении",
-				resetCheckboxesDesc: "Сбрасывать все флажки markdown в теле задачи, когда повторяющаяся задача завершена и перенесена",
+				resetCheckboxesDesc: "Сбрасывать все флажки markdown в теле задачи, когда повторяющаяся задача завершена и перенесена"
 			},
 			timeblocking: {
 				header: "Блокировка времени",
@@ -630,27 +673,26 @@ export const ru: TranslationTree = {
 				showBlocksDesc: "Отображать временные блоки из ежедневных заметок по умолчанию",
 				defaultColorName: "Цвет временных блоков по умолчанию",
 				defaultColorDesc: "Цвет по умолчанию, используемый при создании новых временных блоков",
-				usage: "Использование: Перетащите в календаре для создания событий. Выберите 'Timeblock' из контекстного меню (видно только когда блокировка времени включена). Перетащите для перемещения существующих временных блоков. Измените размер краев для настройки длительности.",
+				usage: "Использование: Перетащите в календаре для создания событий. Выберите 'Timeblock' из контекстного меню (видно только когда блокировка времени включена). Перетащите для перемещения существующих временных блоков. Измените размер краев для настройки длительности."
 			},
 			performance: {
 				header: "Производительность и поведение",
-				description: "Настройка производительности плагина и параметров поведения.",
+				description: "Настройка производительности плагина и параметров поведения."
 			},
 			timeTrackingSection: {
 				header: "Отслеживание времени",
-				description: "Настройка автоматического отслеживания времени.",
+				description: "Настройка автоматического отслеживания времени."
 			},
 			recurringSection: {
 				header: "Повторяющиеся задачи",
-				description: "Настройка поведения для управления повторяющимися задачами.",
+				description: "Настройка поведения для управления повторяющимися задачами."
 			},
 			debugLogging: {
 				header: "Отладочное журналирование",
 				description: "Настройте вывод отладочного лога для устранения неполадок.",
 				enableName: "Включить отладочное ведение журнала",
-				enableDesc:
-					"Записывать подробную диагностику перетаскивания и представления в консоль разработчика. Полезно для устранения неполадок.",
-			},
+				enableDesc: "Записывать подробную диагностику перетаскивания и представления в консоль разработчика. Полезно для устранения неполадок."
+			}
 		},
 		defaults: {
 			header: {
@@ -658,74 +700,74 @@ export const ru: TranslationTree = {
 				dateDefaults: "Даты по умолчанию",
 				defaultReminders: "Напоминания по умолчанию",
 				bodyTemplate: "Шаблон тела",
-				instantTaskConversion: "Мгновенное преобразование задач",
+				instantTaskConversion: "Мгновенное преобразование задач"
 			},
 			description: {
 				basicDefaults: "Установите значения по умолчанию для новых задач, чтобы ускорить создание задач.",
 				dateDefaults: "Установите сроки выполнения и запланированные даты по умолчанию для новых задач.",
 				defaultReminders: "Настройте напоминания по умолчанию, которые будут добавляться к новым задачам.",
 				bodyTemplate: "Настройте файл шаблона для использования в содержимом новых задач.",
-				instantTaskConversion: "Настройте поведение при мгновенном преобразовании текста в задачи.",
+				instantTaskConversion: "Настройте поведение при мгновенном преобразовании текста в задачи."
 			},
 			basicDefaults: {
 				defaultStatus: {
 					name: "Статус по умолчанию",
-					description: "Статус по умолчанию для новых задач",
+					description: "Статус по умолчанию для новых задач"
 				},
 				defaultPriority: {
 					name: "Приоритет по умолчанию",
-					description: "Приоритет по умолчанию для новых задач",
+					description: "Приоритет по умолчанию для новых задач"
 				},
 				defaultContexts: {
 					name: "Контексты по умолчанию",
 					description: "Список контекстов по умолчанию через запятую (например, @дом, @работа)",
-					placeholder: "@дом, @работа",
+					placeholder: "@дом, @работа"
 				},
 				defaultTags: {
 					name: "Теги по умолчанию",
 					description: "Список тегов по умолчанию через запятую (без #)",
-					placeholder: "важный, срочный",
+					placeholder: "важный, срочный"
 				},
 				defaultProjects: {
 					name: "Проекты по умолчанию",
 					description: "Ссылки на проекты по умолчанию для новых задач",
 					selectButton: "Выбрать проекты",
 					selectTooltip: "Выберите заметки проектов для связывания по умолчанию",
-					removeTooltip: "Удалить {name} из проектов по умолчанию",
+					removeTooltip: "Удалить {name} из проектов по умолчанию"
 				},
 				useParentNoteAsProject: {
 					name: "Использовать родительскую заметку как проект при мгновенном преобразовании",
-					description: "Автоматически связывать родительскую заметку как проект при использовании мгновенного преобразования задач",
+					description: "Автоматически связывать родительскую заметку как проект при использовании мгновенного преобразования задач"
 				},
 				useParentHeaderAsProject: {
 					name: "Использовать родительский заголовок как проект при мгновенном преобразовании",
-					description: "Автоматически связывать ближайший заголовок над преобразуемой строкой как проект при мгновенном преобразовании задачи",
+					description: "Автоматически связывать ближайший заголовок над преобразуемой строкой как проект при мгновенном преобразовании задачи"
 				},
 				defaultTimeEstimate: {
 					name: "Оценка времени по умолчанию",
 					description: "Оценка времени по умолчанию в минутах (0 = без умолчания)",
-					placeholder: "60",
+					placeholder: "60"
 				},
 				defaultRecurrence: {
 					name: "Повторение по умолчанию",
-					description: "Шаблон повторения по умолчанию для новых задач",
-				},
+					description: "Шаблон повторения по умолчанию для новых задач"
+				}
 			},
 			dateDefaults: {
 				defaultDueDate: {
 					name: "Срок выполнения по умолчанию",
-					description: "Срок выполнения по умолчанию для новых задач",
+					description: "Срок выполнения по умолчанию для новых задач"
 				},
 				defaultScheduledDate: {
 					name: "Запланированная дата по умолчанию",
-					description: "Запланированная дата по умолчанию для новых задач",
-				},
+					description: "Запланированная дата по умолчанию для новых задач"
+				}
 			},
 			reminders: {
 				addReminder: {
 					name: "Добавить напоминание по умолчанию",
 					description: "Создать новое напоминание по умолчанию, которое будет добавляться ко всем новым задачам",
-					buttonText: "Добавить напоминание",
+					buttonText: "Добавить напоминание"
 				},
 				emptyState: "Напоминания по умолчанию не настроены. Добавьте напоминание для автоматического уведомления о новых задачах.",
 				emptyStateButton: "Добавить напоминание",
@@ -740,36 +782,36 @@ export const ru: TranslationTree = {
 					direction: "Направление:",
 					relatedTo: "Относительно:",
 					date: "Дата:",
-					time: "Время:",
+					time: "Время:"
 				},
 				types: {
 					relative: "Относительное (до/после дат задач)",
-					absolute: "Абсолютное (конкретная дата/время)",
+					absolute: "Абсолютное (конкретная дата/время)"
 				},
 				units: {
 					minutes: "минуты",
 					hours: "часы",
-					days: "дни",
+					days: "дни"
 				},
 				directions: {
 					before: "до",
-					after: "после",
+					after: "после"
 				},
 				relatedTo: {
 					due: "срок выполнения",
-					scheduled: "запланированная дата",
-				},
+					scheduled: "запланированная дата"
+				}
 			},
 			bodyTemplate: {
 				useBodyTemplate: {
 					name: "Использовать шаблон тела",
-					description: "Использовать файл шаблона для содержимого тела задачи",
+					description: "Использовать файл шаблона для содержимого тела задачи"
 				},
 				bodyTemplateFile: {
 					name: "Файл шаблона тела",
 					description: "Путь к файлу шаблона для содержимого тела задачи. Поддерживает переменные шаблона, такие как {{title}}, {{date}}, {{time}}, {{priority}}, {{status}} и т.д.",
 					placeholder: "Шаблоны/Шаблон задачи.md",
-					ariaLabel: "Путь к файлу шаблона тела",
+					ariaLabel: "Путь к файлу шаблона тела"
 				},
 				variablesHeader: "Переменные шаблона:",
 				variables: {
@@ -781,14 +823,14 @@ export const ru: TranslationTree = {
 					status: "{{status}} - Статус задачи",
 					contexts: "{{contexts}} - Контексты задачи",
 					tags: "{{tags}} - Теги задачи",
-					projects: "{{projects}} - Проекты задачи",
-				},
+					projects: "{{projects}} - Проекты задачи"
+				}
 			},
 			instantConversion: {
 				useDefaultsOnInstantConvert: {
 					name: "Использовать значения по умолчанию при мгновенном преобразовании",
-					description: "Применять настройки задач по умолчанию при мгновенном преобразовании текста в задачи",
-				},
+					description: "Применять настройки задач по умолчанию при мгновенном преобразовании текста в задачи"
+				}
 			},
 			options: {
 				noDefault: "Без умолчания",
@@ -799,8 +841,8 @@ export const ru: TranslationTree = {
 				daily: "Ежедневно",
 				weekly: "Еженедельно",
 				monthly: "Ежемесячно",
-				yearly: "Ежегодно",
-			},
+				yearly: "Ежегодно"
+			}
 		},
 		general: {
 			taskStorage: {
@@ -808,16 +850,16 @@ export const ru: TranslationTree = {
 				description: "Настройте, где хранятся задачи и как они идентифицируются.",
 				defaultFolder: {
 					name: "Папка задач по умолчанию",
-					description: "Местоположение по умолчанию для новых задач. Поддерживает переменные шаблона папки, такие как {{currentNotePath}} и {{currentNoteTitle}}, а также токены дат в стиле Daily Notes, например YYYY/MM/DD.",
+					description: "Расположение по умолчанию для новых задач. Поддерживает переменные шаблонов папок, такие как {{currentNotePath}}, {{currentNoteTitle}} и {{projectFilePath}}, а также токены дат в стиле Daily Notes, например YYYY/MM/DD."
 				},
 				moveArchived: {
 					name: "Перемещать архивированные задачи в папку",
-					description: "Автоматически перемещать архивированные задачи в папку архива",
+					description: "Автоматически перемещать архивированные задачи в папку архива"
 				},
 				archiveFolder: {
 					name: "Папка архива",
-					description: "Папка для перемещения задач при архивировании",
-				},
+					description: "Папка для перемещения задач при архивировании"
+				}
 			},
 			taskIdentification: {
 				header: "Идентификация задач",
@@ -827,82 +869,81 @@ export const ru: TranslationTree = {
 					description: "Выберите, идентифицировать ли задачи по тегу или по свойству frontmatter",
 					options: {
 						tag: "Тег",
-						property: "Свойство",
-					},
+						property: "Свойство"
+					}
 				},
 				taskTag: {
 					name: "Тег задачи",
-					description: "Тег, который идентифицирует заметки как задачи (без #)",
+					description: "Тег, который идентифицирует заметки как задачи (без #)"
 				},
 				hideIdentifyingTags: {
 					name: "Скрыть идентификационные теги в карточках задач",
-					description: "При включении теги, соответствующие тегу идентификации задачи (включая иерархические совпадения, такие как 'task/project'), будут скрыты в карточках задач",
+					description: "При включении теги, соответствующие тегу идентификации задачи (включая иерархические совпадения, такие как 'task/project'), будут скрыты в карточках задач"
 				},
 				hideIdentifyingTagsMode: {
 					name: "Область скрытия тегов",
 					description: "Выберите, скрывать ли вместе с идентификационными тегами вложенные теги.",
 					options: {
 						all: "Тег задачи и вложенные теги",
-						exactOnly: "Только точный тег задачи",
-					},
+						exactOnly: "Только точный тег задачи"
+					}
 				},
 				taskProperty: {
 					name: "Имя свойства задачи",
-					description: "Имя свойства frontmatter (например, \"категория\")",
+					description: "Имя свойства frontmatter (например, \"категория\")"
 				},
 				taskPropertyValue: {
 					name: "Значение свойства задачи",
-					description: "Значение, которое идентифицирует заметку как задачу (например, \"задача\")",
-				},
+					description: "Значение, которое идентифицирует заметку как задачу (например, \"задача\")"
+				}
 			},
 			folderManagement: {
 				header: "Управление папками",
 				excludedFolders: {
 					name: "Исключенные папки",
-					description: "Список папок через запятую для исключения из индексации задач и предложений проектов",
-				},
+					description: "Список папок через запятую для исключения из индексации задач и предложений проектов"
+				}
 			},
 			frontmatter: {
 				header: "Frontmatter",
 				description: "Настройка форматирования ссылок в свойствах frontmatter.",
 				useMarkdownLinks: {
 					name: "Использовать ссылки markdown во frontmatter",
-					description: "Генерировать ссылки markdown ([текст](путь)) вместо викиссылок ([[ссылка]]) в свойствах frontmatter.\\n\\n⚠️ Требуется плагин 'obsidian-frontmatter-markdown-links' для корректной работы.",
-				},
+					description: "Генерировать ссылки markdown ([текст](путь)) вместо викиссылок ([[ссылка]]) в свойствах frontmatter.\\n\\n⚠️ Требуется плагин 'obsidian-frontmatter-markdown-links' для корректной работы."
+				}
 			},
 			taskInteraction: {
 				header: "Взаимодействие с задачами",
 				description: "Настройте поведение при нажатии на задачи.",
 				singleClick: {
 					name: "Действие одиночного нажатия",
-					description: "Действие, выполняемое при одиночном нажатии на карточку задачи",
+					description: "Действие, выполняемое при одиночном нажатии на карточку задачи"
 				},
 				doubleClick: {
 					name: "Действие двойного нажатия",
-					description: "Действие, выполняемое при двойном нажатии на карточку задачи",
+					description: "Действие, выполняемое при двойном нажатии на карточку задачи"
 				},
 				actions: {
 					edit: "Редактировать задачу",
 					openNote: "Открыть заметку",
-					none: "Нет действия",
-				},
+					none: "Нет действия"
+				}
 			},
 			releaseNotes: {
 				header: "Примечания к выпуску",
 				description: "Текущая версия: {version}",
 				showOnUpdate: {
 					name: "Показывать примечания к выпуску после обновления",
-					description: "Автоматически открывать примечания к выпуску при обновлении TaskNotes до новой версии",
+					description: "Автоматически открывать примечания к выпуску при обновлении TaskNotes до новой версии"
 				},
 				viewButton: {
 					name: "Просмотреть примечания к выпуску",
 					description: "Узнайте, что нового в последней версии TaskNotes",
-					buttonText: "Просмотреть примечания к выпуску",
-				},
-			},
+					buttonText: "Просмотреть примечания к выпуску"
+				}
+			}
 		},
 		taskProperties: {
-			// Section headers for property card layout
 			sections: {
 				coreProperties: "Основные свойства",
 				corePropertiesDesc: "Статус и приоритет — это основные свойства, определяющие состояние и важность задачи.",
@@ -915,157 +956,129 @@ export const ru: TranslationTree = {
 				metadataProperties: "Свойства метаданных",
 				metadataPropertiesDesc: "Управляемые системой свойства для отслеживания истории задач.",
 				featureProperties: "Свойства функций",
-				featurePropertiesDesc: "Свойства, используемые специальными функциями TaskNotes, такими как таймер Помодоро и синхронизация календаря.",
+				featurePropertiesDesc: "Свойства, используемые специальными функциями TaskNotes, такими как таймер Помодоро и синхронизация календаря."
 			},
-			// Property card common fields
 			propertyCard: {
 				propertyKey: "Ключ свойства:",
 				default: "По умолчанию:",
 				nlpTrigger: "NLP-триггер:",
 				triggerChar: "Символ-триггер:",
 				triggerEmpty: "Триггер не может быть пустым",
-				triggerTooLong: "Триггер слишком длинный (макс. 10 символов)",
+				triggerTooLong: "Триггер слишком длинный (макс. 10 символов)"
 			},
-			// Individual property names and descriptions
 			properties: {
 				status: {
 					name: "Статус",
-					description:
-						"Отслеживает текущее состояние задачи (например, todo, в работе, выполнено). Статус определяет, отображается ли задача как завершённая, и может запускать автоархивацию.",
+					description: "Отслеживает текущее состояние задачи (например, todo, в работе, выполнено). Статус определяет, отображается ли задача как завершённая, и может запускать автоархивацию."
 				},
 				priority: {
 					name: "Приоритет",
-					description:
-						"Указывает важность задачи. Используется для сортировки и фильтрации. Значения сортируются по алфавиту в представлениях Bases, поэтому используйте префиксы 1-, 2- для управления порядком.",
+					description: "Указывает важность задачи. Используется для сортировки и фильтрации. Значения сортируются по алфавиту в представлениях Bases, поэтому используйте префиксы 1-, 2- для управления порядком."
 				},
 				due: {
 					name: "Срок выполнения",
-					description:
-						"Крайний срок, к которому задача должна быть выполнена. Задачи после срока выполнения отображаются как просроченные. Хранится как дата в frontmatter.",
+					description: "Крайний срок, к которому задача должна быть выполнена. Задачи после срока выполнения отображаются как просроченные. Хранится как дата в frontmatter."
 				},
 				scheduled: {
 					name: "Запланированная дата",
-					description:
-						"Когда вы планируете работать над задачей. В отличие от срока выполнения, это время начала работы. Задачи отображаются в календаре в запланированную дату/время.",
+					description: "Когда вы планируете работать над задачей. В отличие от срока выполнения, это время начала работы. Задачи отображаются в календаре в запланированную дату/время."
 				},
 				contexts: {
 					name: "Контексты",
-					description:
-						"Места или условия, где задача может быть выполнена (например, @дом, @офис, @телефон). Полезно для фильтрации задач по текущей ситуации. Хранится как список.",
+					description: "Места или условия, где задача может быть выполнена (например, @дом, @офис, @телефон). Полезно для фильтрации задач по текущей ситуации. Хранится как список."
 				},
 				projects: {
 					name: "Проекты",
-					description:
-						"Ссылки на заметки проектов, к которым принадлежит задача. Хранится как викиссылки (например, [[Название проекта]]). Задачи могут принадлежать нескольким проектам.",
+					description: "Ссылки на заметки проектов, к которым принадлежит задача. Хранится как викиссылки (например, [[Название проекта]]). Задачи могут принадлежать нескольким проектам."
 				},
 				tags: {
 					name: "Теги",
-					description:
-						"Нативные теги Obsidian для категоризации задач. Хранятся в свойстве tags frontmatter и работают с функциями тегов Obsidian.",
+					description: "Нативные теги Obsidian для категоризации задач. Хранятся в свойстве tags frontmatter и работают с функциями тегов Obsidian."
 				},
 				timeEstimate: {
 					name: "Оценка времени",
-					description:
-						"Предполагаемое количество минут для выполнения задачи. Используется для планирования времени и нагрузки. Отображается на карточках задач и событиях календаря.",
+					description: "Предполагаемое количество минут для выполнения задачи. Используется для планирования времени и нагрузки. Отображается на карточках задач и событиях календаря."
 				},
 				recurrence: {
 					name: "Повторение",
-					description:
-						"Шаблон для повторяющихся задач (ежедневно, еженедельно, ежемесячно, ежегодно или пользовательское RRULE). При завершении повторяющейся задачи запланированная дата автоматически обновляется на следующее вхождение.",
+					description: "Шаблон для повторяющихся задач (ежедневно, еженедельно, ежемесячно, ежегодно или пользовательское RRULE). При завершении повторяющейся задачи запланированная дата автоматически обновляется на следующее вхождение."
 				},
 				recurrenceAnchor: {
 					name: "Якорь повторения",
-					description:
-						"Определяет способ вычисления следующего вхождения: 'scheduled' использует запланированную дату, 'completion' использует фактическую дату завершения.",
+					description: "Определяет способ вычисления следующего вхождения: 'scheduled' использует запланированную дату, 'completion' использует фактическую дату завершения."
 				},
 				reminders: {
 					name: "Напоминания",
-					description:
-						"Уведомления, срабатывающие перед сроками выполнения или запланированными датами. Хранится как список объектов напоминаний с временем и опциональным описанием.",
+					description: "Уведомления, срабатывающие перед сроками выполнения или запланированными датами. Хранится как список объектов напоминаний с временем и опциональным описанием."
 				},
 				title: {
 					name: "Заголовок",
-					description:
-						"Название задачи. Может храниться в frontmatter или в имени файла (когда включено «Хранить заголовок в имени файла»).",
+					description: "Название задачи. Может храниться в frontmatter или в имени файла (когда включено «Хранить заголовок в имени файла»)."
 				},
 				dateCreated: {
 					name: "Дата создания",
-					description:
-						"Метка времени создания задачи. Устанавливается автоматически и используется для сортировки по порядку создания.",
+					description: "Метка времени создания задачи. Устанавливается автоматически и используется для сортировки по порядку создания."
 				},
 				dateModified: {
 					name: "Дата изменения",
-					description:
-						"Метка времени последнего изменения задачи. Автоматически обновляется при изменении любого свойства задачи.",
+					description: "Метка времени последнего изменения задачи. Автоматически обновляется при изменении любого свойства задачи."
 				},
 				completedDate: {
 					name: "Дата завершения",
-					description:
-						"Метка времени, когда задача была отмечена как выполненная. Устанавливается автоматически при изменении статуса на завершённое состояние.",
+					description: "Метка времени, когда задача была отмечена как выполненная. Устанавливается автоматически при изменении статуса на завершённое состояние."
 				},
 				archiveTag: {
 					name: "Тег архива",
-					description:
-						"Тег, добавляемый к задачам при архивации. Используется для идентификации архивированных задач и может запускать перемещение файлов в папку архива.",
+					description: "Тег, добавляемый к задачам при архивации. Используется для идентификации архивированных задач и может запускать перемещение файлов в папку архива."
 				},
 				timeEntries: {
 					name: "Записи времени",
-					description:
-						"Записи сеансов учёта времени для этой задачи. Каждая запись хранит метки времени начала и окончания. Используется для расчёта общего затраченного времени.",
+					description: "Записи сеансов учёта времени для этой задачи. Каждая запись хранит метки времени начала и окончания. Используется для расчёта общего затраченного времени."
 				},
 				completeInstances: {
 					name: "Завершённые экземпляры",
-					description:
-						"История завершения для повторяющихся задач. Хранит даты завершения каждого экземпляра для предотвращения дублирования.",
+					description: "История завершения для повторяющихся задач. Хранит даты завершения каждого экземпляра для предотвращения дублирования."
 				},
 				skippedInstances: {
 					name: "Пропущенные экземпляры",
-					description:
-						"Пропущенные вхождения для повторяющихся задач. Хранит даты экземпляров, которые были пропущены, а не завершены.",
+					description: "Пропущенные вхождения для повторяющихся задач. Хранит даты экземпляров, которые были пропущены, а не завершены."
 				},
 				blockedBy: {
 					name: "Заблокирована",
-					description:
-						"Ссылки на задачи, которые должны быть выполнены до этой. Хранится как викиссылки. Заблокированные задачи отображают визуальный индикатор.",
+					description: "Ссылки на задачи, которые должны быть выполнены до этой. Хранится как викиссылки. Заблокированные задачи отображают визуальный индикатор."
 				},
 				sortOrder: {
 					name: "Ручной порядок",
-					description:
-						"Свойство frontmatter, используемое для ручной сортировки перетаскиванием. Для работы перетаскивания представление должно быть отсортировано по этому свойству.",
+					description: "Свойство frontmatter, используемое для ручной сортировки перетаскиванием. Для работы перетаскивания представление должно быть отсортировано по этому свойству."
 				},
 				pomodoros: {
 					name: "Помодоро",
-					description:
-						"Количество завершённых сеансов Помодоро. Когда хранение данных установлено на «Ежедневные заметки», это записывается в ежедневные заметки вместо файлов задач.",
+					description: "Количество завершённых сеансов Помодоро. Когда хранение данных установлено на «Ежедневные заметки», это записывается в ежедневные заметки вместо файлов задач."
 				},
 				icsEventId: {
 					name: "ID события ICS",
-					description:
-						"Уникальный идентификатор, связывающий заметку с событием календаря ICS. Добавляется автоматически при создании заметок из событий календаря.",
+					description: "Уникальный идентификатор, связывающий заметку с событием календаря ICS. Добавляется автоматически при создании заметок из событий календаря."
 				},
 				icsEventTag: {
 					name: "Тег события ICS",
-					description:
-						"Тег, идентифицирующий заметки, созданные из событий календаря ICS. Используется для отличия заметок, сгенерированных календарём, от обычных задач.",
-				},
+					description: "Тег, идентифицирующий заметки, созданные из событий календаря ICS. Используется для отличия заметок, сгенерированных календарём, от обычных задач."
+				}
 			},
-			// Card-specific labels
 			statusCard: {
-				valuesHeader: "Значения статуса",
+				valuesHeader: "Значения статуса"
 			},
 			priorityCard: {
-				valuesHeader: "Значения приоритета",
+				valuesHeader: "Значения приоритета"
 			},
 			projectsCard: {
 				defaultProjects: "Проекты по умолчанию:",
 				useParentNote: "Использовать родительскую заметку как проект:",
 				useParentHeader: "Использовать родительский заголовок как проект:",
-				inheritParentTaskProperties:
-					"Наследовать свойства родительской задачи для подзадач:",
+				inheritParentTaskProperties: "Наследовать свойства родительской задачи для подзадач:",
 				noDefaultProjects: "Проекты по умолчанию не выбраны",
 				autosuggestFilters: "Фильтры автоподсказок",
 				customizeDisplay: "Настроить отображение",
-				filtersOn: "Фильтры включены",
+				filtersOn: "Фильтры включены"
 			},
 			titleCard: {
 				storeTitleInFilename: "Хранить заголовок в имени файла:",
@@ -1073,13 +1086,13 @@ export const ru: TranslationTree = {
 				filenameUpdatesWithTitle: "Имя файла будет автоматически обновляться при изменении заголовка задачи.",
 				filenameFormat: "Формат имени файла:",
 				customTemplate: "Пользовательский шаблон:",
-				legacySyntaxWarning: "Синтаксис с одинарными фигурными скобками, такой как {title}, устарел. Пожалуйста, используйте синтаксис с двойными фигурными скобками {{title}} для согласованности с шаблонами тела.",
+				legacySyntaxWarning: "Синтаксис с одинарными фигурными скобками, такой как {title}, устарел. Пожалуйста, используйте синтаксис с двойными фигурными скобками {{title}} для согласованности с шаблонами тела."
 			},
 			tagsCard: {
-				nativeObsidianTags: "Использует нативные теги Obsidian",
+				nativeObsidianTags: "Использует нативные теги Obsidian"
 			},
 			remindersCard: {
-				defaultReminders: "Напоминания по умолчанию",
+				defaultReminders: "Напоминания по умолчанию"
 			},
 			taskStatuses: {
 				header: "Статусы задач",
@@ -1092,12 +1105,12 @@ export const ru: TranslationTree = {
 					icon: "Иконка: Опциональное имя Lucide-иконки для отображения вместо цветной точки (например, \"check\", \"circle\", \"clock\"). Просмотрите иконки на lucide.dev",
 					completed: "Завершено: При отметке задачи с этим статусом считаются завершенными и могут фильтроваться по-разному",
 					autoArchive: "Автоархивирование: При включении задачи будут автоматически архивироваться после указанной задержки (1-1440 минут)",
-					orderNote: "Порядок ниже определяет последовательность при переключении между статусами нажатием на значки статуса задач.",
+					orderNote: "Порядок ниже определяет последовательность при переключении между статусами нажатием на значки статуса задач."
 				},
 				addNew: {
 					name: "Добавить новый статус",
 					description: "Создать новый вариант статуса для ваших задач",
-					buttonText: "Добавить статус",
+					buttonText: "Добавить статус"
 				},
 				validationNote: "Примечание: У вас должно быть минимум 2 статуса, и минимум один статус должен быть отмечен как \"Завершенный\".",
 				emptyState: "Пользовательские статусы не настроены. Добавьте статус для начала.",
@@ -1111,40 +1124,37 @@ export const ru: TranslationTree = {
 					excludeFromCycle: "Пропускать при цикле:",
 					nextStatus: "Следующий статус:",
 					autoArchive: "Автоархивирование:",
-					delayMinutes: "Задержка (минуты):",
+					delayMinutes: "Задержка (минуты):"
 				},
 				placeholders: {
 					value: "в-процессе",
 					label: "В процессе",
 					icon: "check, circle, clock",
-					nextStatusDefault: "Использовать порядок статусов",
+					nextStatusDefault: "Использовать порядок статусов"
 				},
 				badges: {
-					completed: "Завершено",
+					completed: "Завершено"
 				},
-				deleteConfirm: "Вы уверены, что хотите удалить статус \"{label}\"?",
+				deleteConfirm: "Вы уверены, что хотите удалить статус \"{label}\"?"
 			},
 			taskPriorities: {
 				header: "Приоритеты задач",
-				description:
-					"Настройте уровни приоритета, доступные для ваших задач. В v4.0+ приоритеты сортируются в алфавитном порядке по их значению в представлениях Bases.",
+				description: "Настройте уровни приоритета, доступные для ваших задач. В v4.0+ приоритеты сортируются в алфавитном порядке по их значению в представлениях Bases.",
 				howTheyWork: {
 					title: "Как работают приоритеты:",
-					value:
-						'Значение: Внутренний идентификатор, хранящийся в файлах задач. Используйте префиксы вроде "1-срочный", "2-высокий" для управления порядком сортировки в представлениях Bases.',
+					value: "Значение: Внутренний идентификатор, хранящийся в файлах задач. Используйте префиксы вроде \"1-срочный\", \"2-высокий\" для управления порядком сортировки в представлениях Bases.",
 					label: "Отображаемая метка: Отображаемое имя в интерфейсе (например, \"Высокий приоритет\")",
 					color: "Цвет: Цвет визуального индикатора для точки приоритета и значков",
 					icon: "Иконка: Необязательная иконка Lucide для карточек задач вместо точки приоритета",
 					weight: "Вес: Числовое значение для сортировки (более высокие веса появляются первыми в списках)",
-					weightNote: "Задачи автоматически сортируются по весу приоритета в убывающем порядке (наивысший вес первым). Веса могут быть любыми положительными числами.",
+					weightNote: "Задачи автоматически сортируются по весу приоритета в убывающем порядке (наивысший вес первым). Веса могут быть любыми положительными числами."
 				},
 				addNew: {
 					name: "Добавить новый приоритет",
 					description: "Создать новый уровень приоритета для ваших задач",
-					buttonText: "Добавить приоритет",
+					buttonText: "Добавить приоритет"
 				},
-				validationNote:
-					"Примечание: У вас должен быть минимум 1 приоритет. Приоритеты сортируются в алфавитном порядке по значению в представлениях Bases.",
+				validationNote: "Примечание: У вас должен быть минимум 1 приоритет. Приоритеты сортируются в алфавитном порядке по значению в представлениях Bases.",
 				emptyState: "Пользовательские приоритеты не настроены. Добавьте приоритет для начала.",
 				emptyStateButton: "Добавить приоритет",
 				fields: {
@@ -1152,16 +1162,16 @@ export const ru: TranslationTree = {
 					label: "Метка:",
 					color: "Цвет:",
 					icon: "Иконка:",
-					weight: "Вес:",
+					weight: "Вес:"
 				},
 				placeholders: {
 					value: "высокий",
 					label: "Высокий приоритет",
-					icon: "alert-circle",
+					icon: "alert-circle"
 				},
 				weightLabel: "Вес: {weight}",
 				deleteConfirm: "У вас должен быть минимум один приоритет",
-				deleteTooltip: "Удалить приоритет",
+				deleteTooltip: "Удалить приоритет"
 			},
 			fieldMapping: {
 				header: "Сопоставление полей",
@@ -1170,16 +1180,16 @@ export const ru: TranslationTree = {
 				resetButton: {
 					name: "Сбросить сопоставления полей",
 					description: "Сбросить все сопоставления полей к значениям по умолчанию",
-					buttonText: "Сбросить к умолчаниям",
+					buttonText: "Сбросить к умолчаниям"
 				},
 				notices: {
 					resetSuccess: "Сопоставления полей сброшены к умолчаниям",
 					resetFailure: "Не удалось сбросить сопоставления полей",
-					updateFailure: "Не удалось обновить сопоставление поля для {label}. Пожалуйста, попробуйте снова.",
+					updateFailure: "Не удалось обновить сопоставление поля для {label}. Пожалуйста, попробуйте снова."
 				},
 				table: {
 					fieldHeader: "Поле TaskNotes",
-					propertyHeader: "Ваше имя свойства",
+					propertyHeader: "Ваше имя свойства"
 				},
 				fields: {
 					title: "Название",
@@ -1202,8 +1212,8 @@ export const ru: TranslationTree = {
 					pomodoros: "Помодоро",
 					icsEventId: "ID события ICS",
 					icsEventTag: "Тег события ICS",
-					reminders: "Напоминания",
-				},
+					reminders: "Напоминания"
+				}
 			},
 			customUserFields: {
 				header: "Пользовательские поля",
@@ -1211,7 +1221,7 @@ export const ru: TranslationTree = {
 				addNew: {
 					name: "Добавить новое пользовательское поле",
 					description: "Создать новое пользовательское поле, которое будет появляться в фильтрах и представлениях",
-					buttonText: "Добавить пользовательское поле",
+					buttonText: "Добавить пользовательское поле"
 				},
 				emptyState: "Пользовательские поля не настроены. Добавьте поле для создания пользовательских свойств для ваших задач.",
 				emptyStateButton: "Добавить пользовательское поле",
@@ -1219,31 +1229,31 @@ export const ru: TranslationTree = {
 					displayName: "Отображаемое имя:",
 					propertyKey: "Ключ свойства:",
 					type: "Тип:",
-					defaultValue: "Значение по умолчанию:",
+					defaultValue: "Значение по умолчанию:"
 				},
 				placeholders: {
 					displayName: "Отображаемое имя",
 					propertyKey: "имя-свойства",
 					defaultValue: "Значение по умолчанию",
-					defaultValueList: "Значения по умолчанию (через запятую)",
+					defaultValueList: "Значения по умолчанию (через запятую)"
 				},
 				types: {
 					text: "Текст",
 					number: "Число",
 					boolean: "Логический",
 					date: "Дата",
-					list: "Список",
+					list: "Список"
 				},
 				defaultNames: {
 					unnamedField: "Безымянное поле",
-					noKey: "без-ключа",
+					noKey: "без-ключа"
 				},
 				deleteTooltip: "Удалить поле",
 				autosuggestFilters: {
 					header: "Фильтры автоподсказок (расширенные)",
-					description: "Фильтрация файлов, отображаемых в автоподсказках для этого поля",
-				},
-			},
+					description: "Фильтрация файлов, отображаемых в автоподсказках для этого поля"
+				}
+			}
 		},
 		appearance: {
 			taskCards: {
@@ -1251,12 +1261,12 @@ export const ru: TranslationTree = {
 				description: "Настройте отображение карточек задач во всех представлениях.",
 				defaultVisibleProperties: {
 					name: "Видимые свойства по умолчанию",
-					description: "Выберите, какие свойства появляются на карточках задач по умолчанию.",
+					description: "Выберите, какие свойства появляются на карточках задач по умолчанию."
 				},
 				propertyGroups: {
 					coreProperties: "ОСНОВНЫЕ СВОЙСТВА",
 					organization: "ОРГАНИЗАЦИЯ",
-					customProperties: "ПОЛЬЗОВАТЕЛЬСКИЕ СВОЙСТВА",
+					customProperties: "ПОЛЬЗОВАТЕЛЬСКИЕ СВОЙСТВА"
 				},
 				properties: {
 					status: "Точка статуса",
@@ -1274,15 +1284,15 @@ export const ru: TranslationTree = {
 					contexts: "Контексты",
 					tags: "Теги",
 					blocked: "Заблокирована",
-					blocking: "Блокирует",
-				},
+					blocking: "Блокирует"
+				}
 			},
 			taskFilenames: {
 				header: "Имена файлов задач",
 				description: "Настройте именование файлов задач при создании.",
 				storeTitleInFilename: {
 					name: "Хранить название в имени файла",
-					description: "Использовать название задачи как имя файла. Имя файла будет обновляться при изменении названия задачи (Рекомендуется).",
+					description: "Использовать название задачи как имя файла. Имя файла будет обновляться при изменении названия задачи (Рекомендуется)."
 				},
 				filenameFormat: {
 					name: "Формат имени файла",
@@ -1292,14 +1302,15 @@ export const ru: TranslationTree = {
 						zettel: "Формат Zettelkasten (ГГММДД + base36 секунды с полуночи)",
 						timestamp: "Полная временная метка (ГГГГ-ММ-ДД-ЧЧММСС)",
 						custom: "Пользовательский шаблон",
-					},
+						uuid: "UUID v4"
+					}
 				},
 				customTemplate: {
 					name: "Пользовательский шаблон имени файла",
-					description: "Шаблон для пользовательских имен файлов. Доступные переменные: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
+					description: "Шаблон для пользовательских имён файлов. Доступные переменные: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
 					placeholder: "{date}-{title}-{dueDate}",
-					helpText: "Примечание: {dueDate} и {scheduledDate} в формате ГГГГ-ММ-ДД и будут пустыми, если не установлены.",
-				},
+					helpText: "Примечание: {dueDate} и {scheduledDate} в формате ГГГГ-ММ-ДД и будут пустыми, если не установлены."
+				}
 			},
 			displayFormatting: {
 				header: "Форматирование отображения",
@@ -1309,9 +1320,9 @@ export const ru: TranslationTree = {
 					description: "Отображать время в 12-часовом или 24-часовом формате в плагине",
 					options: {
 						twelveHour: "12-часовой (AM/PM)",
-						twentyFourHour: "24-часовой",
-					},
-				},
+						twentyFourHour: "24-часовой"
+					}
+				}
 			},
 			calendarView: {
 				header: "Представление календаря",
@@ -1324,72 +1335,72 @@ export const ru: TranslationTree = {
 						weekTimeline: "Временная линия недели",
 						dayTimeline: "Временная линия дня",
 						yearView: "Представление года",
-						customMultiDay: "Пользовательский многодневный",
-					},
+						customMultiDay: "Пользовательский многодневный"
+					}
 				},
 				customDayCount: {
 					name: "Количество дней пользовательского представления",
 					description: "Количество дней для отображения в пользовательском многодневном представлении",
-					placeholder: "3",
+					placeholder: "3"
 				},
 				firstDayOfWeek: {
 					name: "Первый день недели",
-					description: "Какой день должен быть первой колонкой в недельных представлениях",
+					description: "Какой день должен быть первой колонкой в недельных представлениях"
 				},
 				showWeekends: {
 					name: "Показать выходные",
-					description: "Отображать выходные в представлениях календаря",
+					description: "Отображать выходные в представлениях календаря"
 				},
 				showWeekNumbers: {
 					name: "Показать номера недель",
-					description: "Отображать номера недель в представлениях календаря",
+					description: "Отображать номера недель в представлениях календаря"
 				},
 				showTodayHighlight: {
 					name: "Показать выделение сегодня",
-					description: "Выделять текущий день в представлениях календаря",
+					description: "Выделять текущий день в представлениях календаря"
 				},
 				showCurrentTimeIndicator: {
 					name: "Показать индикатор текущего времени",
-					description: "Отображать линию, показывающую текущее время в представлениях временной линии",
+					description: "Отображать линию, показывающую текущее время в представлениях временной линии"
 				},
 				selectionMirror: {
 					name: "Зеркало выбора",
-					description: "Показывать визуальный предварительный просмотр при перетаскивании для выбора временных диапазонов",
+					description: "Показывать визуальный предварительный просмотр при перетаскивании для выбора временных диапазонов"
 				},
 				calendarLocale: {
 					name: "Локаль календаря",
 					description: "Локаль календаря для форматирования дат и календарной системы (например, \"en\", \"fa\" для фарси/персидского, \"de\" для немецкого). Оставьте пустым для автоопределения из браузера.",
 					placeholder: "Автоопределение",
-					invalidLocale: "Недопустимая локаль. Пожалуйста, введите корректный языковой тег (например, 'ru', 'en', 'fr-FR').",
-				},
+					invalidLocale: "Недопустимая локаль. Пожалуйста, введите корректный языковой тег (например, 'ru', 'en', 'fr-FR')."
+				}
 			},
 			defaultEventVisibility: {
 				header: "Видимость событий по умолчанию",
 				description: "Настройте, какие типы событий видимы по умолчанию при открытии календаря. Пользователи все еще могут переключать их в представлении календаря.",
 				showScheduledTasks: {
 					name: "Показать запланированные задачи",
-					description: "Отображать задачи с запланированными датами по умолчанию",
+					description: "Отображать задачи с запланированными датами по умолчанию"
 				},
 				showDueDates: {
 					name: "Показать сроки выполнения",
-					description: "Отображать сроки выполнения задач по умолчанию",
+					description: "Отображать сроки выполнения задач по умолчанию"
 				},
 				showDueWhenScheduled: {
 					name: "Показать сроки выполнения для запланированных",
-					description: "Отображать сроки выполнения даже для задач, которые уже имеют запланированные даты",
+					description: "Отображать сроки выполнения даже для задач, которые уже имеют запланированные даты"
 				},
 				showTimeEntries: {
 					name: "Показать записи времени",
-					description: "Отображать завершенные записи отслеживания времени по умолчанию",
+					description: "Отображать завершенные записи отслеживания времени по умолчанию"
 				},
 				showRecurringTasks: {
 					name: "Показать повторяющиеся задачи",
-					description: "Отображать экземпляры повторяющихся задач по умолчанию",
+					description: "Отображать экземпляры повторяющихся задач по умолчанию"
 				},
 				showICSEvents: {
 					name: "Показать события ICS",
-					description: "Отображать события из подписок ICS по умолчанию",
-				},
+					description: "Отображать события из подписок ICS по умолчанию"
+				}
 			},
 			timeSettings: {
 				header: "Настройки времени",
@@ -1400,93 +1411,93 @@ export const ru: TranslationTree = {
 					options: {
 						fifteenMinutes: "15 минут",
 						thirtyMinutes: "30 минут",
-						sixtyMinutes: "60 минут",
-					},
+						sixtyMinutes: "60 минут"
+					}
 				},
 				startTime: {
 					name: "Время начала",
 					description: "Самое раннее время, показываемое в представлениях временной линии (формат ЧЧ:ММ)",
-					placeholder: "06:00",
+					placeholder: "06:00"
 				},
 				endTime: {
 					name: "Время окончания",
-					description: "Самое позднее время, показываемое в представлениях временной линии (формат ЧЧ:ММ)",
-					placeholder: "22:00",
+					description: "Самое позднее время, отображаемое в представлениях временной шкалы (формат HH:MM). Используйте значения выше 24:00, чтобы показать ранние часы следующего дня, например 26:00 для 2:00.",
+					placeholder: "26:00"
 				},
 				initialScrollTime: {
 					name: "Начальное время прокрутки",
 					description: "Время для прокрутки при открытии представлений временной линии (формат ЧЧ:ММ)",
-					placeholder: "09:00",
+					placeholder: "09:00"
 				},
 				eventMinHeight: {
 					name: "Минимальная высота события",
 					description: "Минимальная высота событий в представлениях временной шкалы (в пикселях)",
-					placeholder: "15",
-				},
+					placeholder: "15"
+				}
 			},
 			uiElements: {
 				header: "Элементы интерфейса",
 				description: "Настройте отображение различных элементов интерфейса.",
 				showTrackedTasksInStatusBar: {
 					name: "Показать отслеживаемые задачи в строке состояния",
-					description: "Отображать текущие отслеживаемые задачи в строке состояния Obsidian",
+					description: "Отображать текущие отслеживаемые задачи в строке состояния Obsidian"
 				},
 				showProjectSubtasksWidget: {
 					name: "Показать виджет подзадач проекта",
-					description: "Отображать виджет, показывающий подзадачи для текущей заметки проекта",
+					description: "Отображать виджет, показывающий подзадачи для текущей заметки проекта"
 				},
 				projectSubtasksPosition: {
 					name: "Позиция подзадач проекта",
 					description: "Где разместить виджет подзадач проекта",
 					options: {
 						top: "Верх заметки",
-						bottom: "Низ заметки",
-					},
+						bottom: "Низ заметки"
+					}
 				},
 				showRelationshipsWidget: {
 					name: "Показать виджет связей",
-					description: "Отображать виджет, показывающий все связи текущей заметки (подзадачи, проекты, зависимости)",
+					description: "Отображать виджет, показывающий все связи текущей заметки (подзадачи, проекты, зависимости)"
 				},
 				relationshipsPosition: {
 					name: "Позиция связей",
 					description: "Где расположить виджет связей",
 					options: {
 						top: "Вверху заметки",
-						bottom: "Внизу заметки",
-					},
+						bottom: "Внизу заметки"
+					}
 				},
 				showTaskCardInNote: {
 					name: "Показывать карточку задачи в заметке",
-					description: "Отображать виджет карточки задачи в верхней части заметок задач с деталями и действиями задачи",
+					description: "Отображать виджет карточки задачи в верхней части заметок задач с деталями и действиями задачи"
 				},
 				showCompletedTaskStrikethrough: {
 					name: "Зачеркивать заголовки выполненных задач",
-					description: "Зачеркивает заголовки карточек выполненных задач. Отключите, чтобы выполненные задачи было легче читать",
+					description: "Зачеркивает заголовки карточек выполненных задач. Отключите, чтобы выполненные задачи было легче читать"
 				},
 				showExpandableSubtasks: {
 					name: "Показать раскрываемые подзадачи",
-					description: "Разрешить раскрытие/свертывание разделов подзадач в карточках задач",
+					description: "Разрешить раскрытие/свертывание разделов подзадач в карточках задач"
 				},
 				expandSubtasksByDefault: {
 					name: "Раскрывать подзадачи по умолчанию",
-					description: "Показывать подзадачи проекта раскрытыми при отображении карточек задач",
+					description: "Показывать подзадачи проекта раскрытыми при отображении карточек задач"
 				},
 				subtaskChevronPosition: {
 					name: "Позиция шеврона подзадач",
 					description: "Позиция шевронов раскрытия/свертывания в карточках задач",
 					options: {
 						left: "Левая сторона",
-						right: "Правая сторона",
-					},
+						right: "Правая сторона"
+					}
 				},
 				viewsButtonAlignment: {
 					name: "Выравнивание кнопки представлений",
 					description: "Выравнивание кнопки представлений/фильтров в интерфейсе задач",
 					options: {
 						left: "Левая сторона",
-						right: "Правая сторона",
-					},
-				},
+						right: "Правая сторона"
+					}
+				}
 			},
 			projectAutosuggest: {
 				header: "Автопредложения проектов",
@@ -1494,48 +1505,48 @@ export const ru: TranslationTree = {
 				requiredTags: {
 					name: "Обязательные теги",
 					description: "Показывать только заметки с любым из этих тегов (через запятую). Оставьте пустым для показа всех заметок.",
-					placeholder: "проект, активный, важный",
+					placeholder: "проект, активный, важный"
 				},
 				includeFolders: {
 					name: "Включить папки",
 					description: "Показывать только заметки в этих папках (пути через запятую). Оставьте пустым для показа всех папок.",
-					placeholder: "Проекты/, Работа/Активные, Личное",
+					placeholder: "Проекты/, Работа/Активные, Личное"
 				},
 				requiredPropertyKey: {
 					name: "Обязательный ключ свойства",
 					description: "Показывать только заметки, где это свойство frontmatter соответствует значению ниже. Оставьте пустым для игнорирования.",
-					placeholder: "тип",
+					placeholder: "тип"
 				},
 				requiredPropertyValue: {
 					name: "Обязательное значение свойства",
 					description: "Только заметки, где свойство равно этому значению, предлагаются. Оставьте пустым для требования существования свойства.",
-					placeholder: "проект",
+					placeholder: "проект"
 				},
 				customizeDisplay: {
 					name: "Настроить отображение предложений",
-					description: "Показать дополнительные опции для настройки отображения предложений проектов и информации, которую они отображают.",
+					description: "Показать дополнительные опции для настройки отображения предложений проектов и информации, которую они отображают."
 				},
 				enableFuzzyMatching: {
 					name: "Включить нечеткое сопоставление",
-					description: "Разрешить опечатки и частичные совпадения в поиске проектов. Может быть медленнее в больших хранилищах.",
+					description: "Разрешить опечатки и частичные совпадения в поиске проектов. Может быть медленнее в больших хранилищах."
 				},
 				displayRowsHelp: "Настройте до 3 строк информации для отображения для каждого предложения проекта.",
 				displayRows: {
 					row1: {
 						name: "Строка 1",
 						description: "Формат: {свойство|флаги}. Свойства: title, aliases, file.path, file.parent. Флаги: n(Метка) показывает метку, s делает поисковым. Пример: {title|n(Название)|s}",
-						placeholder: "{title|n(Название)}",
+						placeholder: "{title|n(Название)}"
 					},
 					row2: {
 						name: "Строка 2 (опционально)",
 						description: "Общие шаблоны: {aliases|n(Псевдонимы)}, {file.parent|n(Папка)}, literal:Пользовательский текст",
-						placeholder: "{aliases|n(Псевдонимы)}",
+						placeholder: "{aliases|n(Псевдонимы)}"
 					},
 					row3: {
 						name: "Строка 3 (опционально)",
 						description: "Дополнительная информация, такая как {file.path|n(Путь)} или пользовательские поля frontmatter",
-						placeholder: "{file.path|n(Путь)}",
-					},
+						placeholder: "{file.path|n(Путь)}"
+					}
 				},
 				quickReference: {
 					header: "Быстрая справка",
@@ -1543,8 +1554,8 @@ export const ru: TranslationTree = {
 					labels: "Добавить метки: {title|n(Название)} → \"Название: Мой проект\"",
 					searchable: "Сделать поисковым: {description|s} включает описание в + поиск",
 					staticText: "Статический текст: literal:Моя пользовательская метка",
-					alwaysSearchable: "Имя файла, название и псевдонимы всегда поисковы по умолчанию.",
-				},
+					alwaysSearchable: "Имя файла, название и псевдонимы всегда поисковы по умолчанию."
+				}
 			},
 			dataStorage: {
 				name: "Место хранения",
@@ -1552,46 +1563,44 @@ export const ru: TranslationTree = {
 				pluginData: "Данные плагина (рекомендуется)",
 				dailyNotes: "Ежедневные заметки",
 				notices: {
-					locationChanged: "Место хранения помодоро изменено на {location}",
-				},
+					locationChanged: "Место хранения помодоро изменено на {location}"
+				}
 			},
 			notifications: {
-				description: "Настройте уведомления о напоминаниях задач и оповещения.",
+				description: "Настройте уведомления о напоминаниях задач и оповещения."
 			},
 			performance: {
-				description: "Настройте производительность плагина и поведенческие опции.",
+				description: "Настройте производительность плагина и поведенческие опции."
 			},
 			timeTrackingSection: {
-				description: "Настройте автоматическое поведение отслеживания времени.",
+				description: "Настройте автоматическое поведение отслеживания времени."
 			},
 			recurringSection: {
-				description: "Настройте поведение для управления повторяющимися задачами.",
-			},
+				description: "Настройте поведение для управления повторяющимися задачами."
+			}
 		},
 		integrations: {
 			mobileCalendar: {
 				disable: {
 					name: "Отключить интеграции календаря на мобильных устройствах",
-					description:
-						"Не загружать календари Google, Microsoft и ICS в Obsidian Mobile. Интеграции календаря на компьютере не меняются.",
+					description: "Не загружать календари Google, Microsoft и ICS в Obsidian Mobile. Интеграции календаря на компьютере не меняются."
 				},
 				status: {
 					name: "Интеграции календаря отключены на этом мобильном устройстве",
-					description:
-						"Выключите эту настройку и перезагрузите Obsidian Mobile, чтобы снова загружать календари.",
-				},
+					description: "Выключите эту настройку и перезагрузите Obsidian Mobile, чтобы снова загружать календари."
+				}
 			},
 			basesIntegration: {
 				header: "Интеграция с Bases",
 				description: "Настройте интеграцию с плагином Obsidian Bases. Это экспериментальная функция, которая в настоящее время опирается на недокументированные API Obsidian. Поведение может измениться или сломаться.",
 				enable: {
 					name: "Включить интеграцию с Bases",
-					description: "Включить использование представлений TaskNotes в плагине Obsidian Bases. Плагин Bases должен быть включен для работы.",
+					description: "Включить использование представлений TaskNotes в плагине Obsidian Bases. Плагин Bases должен быть включен для работы."
 				},
 				viewCommands: {
 					header: "Представления и файлы Base",
 					description: "TaskNotes использует файлы Obsidian Bases (.base) для своих представлений. Эти файлы автоматически создаются при запуске, если они не существуют, и настраиваются с учётом ваших текущих параметров (идентификация задач, сопоставление полей, статусы и т.д.).",
-					descriptionRegen: "Файлы Base не обновляются автоматически при изменении настроек. Чтобы применить новые настройки, удалите существующие файлы .base и перезапустите Obsidian, используйте «Создать файлы» ниже или отредактируйте их вручную.",
+					descriptionRegen: "Base-файлы не обновляются автоматически при изменении настроек. Чтобы применить новые настройки, используйте «Обновить файлы» ниже, удалите существующие .base-файлы и перезапустите Obsidian или отредактируйте их вручную.",
 					docsLink: "Просмотреть документацию по доступным формулам и параметрам настройки",
 					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
@@ -1601,19 +1610,21 @@ export const ru: TranslationTree = {
 						advancedCalendar: "Открыть расширенный календарь",
 						agenda: "Открыть повестку дня",
 						relationships: "Виджет связей",
+						pomodoroStats: "Base статистики Pomodoro"
 					},
 					fileLabel: "Файл: {path}",
 					resetButton: "Сбросить",
 					resetTooltip: "Сбросить к пути по умолчанию",
+					pomodoroDailyNotesHint: "Сгенерированная Base статистики Pomodoro читает историю Pomodoro из ежедневных заметок. Если история всё ещё хранится в данных плагина, перенесите её в настройках перед использованием этого Base-файла."
 				},
 				autoCreateDefaultFiles: {
 					name: "Автоматически создавать файлы по умолчанию",
-					description: "Автоматически создавать отсутствующие стандартные Base файлы при запуске. Отключите, чтобы предотвратить повторное создание удалённых примеров файлов.",
+					description: "Автоматически создавать отсутствующие стандартные Base файлы при запуске. Отключите, чтобы предотвратить повторное создание удалённых примеров файлов."
 				},
 				createDefaultFiles: {
 					name: "Создать файлы по умолчанию",
 					description: "Создайте стандартные .base файлы в директории TaskNotes/Views/. Существующие файлы не будут перезаписаны.",
-					buttonText: "Создать файлы",
+					buttonText: "Создать файлы"
 				},
 				exportV3Views: {
 					name: "Экспортировать сохранённые представления V3 в Bases",
@@ -1621,14 +1632,22 @@ export const ru: TranslationTree = {
 					buttonText: "Экспортировать представления V3",
 					noViews: "Нет сохранённых представлений для экспорта",
 					fileExists: "Файл уже существует",
-					confirmOverwrite: 'Файл с именем "{fileName}" уже существует. Перезаписать?',
+					confirmOverwrite: "Файл с именем \"{fileName}\" уже существует. Перезаписать?",
 					success: "Экспортировано {count} сохранённых представлений в {filePath}",
-					error: "Не удалось экспортировать представления: {message}",
+					error: "Не удалось экспортировать представления: {message}"
 				},
 				notices: {
 					enabled: "Интеграция с Bases включена. Пожалуйста, перезапустите Obsidian для завершения настройки.",
-					disabled: "Интеграция с Bases отключена. Пожалуйста, перезапустите Obsidian для завершения удаления.",
+					disabled: "Интеграция с Bases отключена. Пожалуйста, перезапустите Obsidian для завершения удаления."
 				},
+				updateDefaultFiles: {
+					name: "Обновить файлы по умолчанию",
+					description: "Перезаписать настроенные файлы .base по умолчанию шаблонами, созданными из текущих настроек TaskNotes.",
+					buttonText: "Обновить файлы",
+					confirmTitle: "Обновить Base-файлы по умолчанию",
+					confirmMessage: "Это перезапишет настроенные файлы .base по умолчанию заново созданными шаблонами. Любые ручные изменения в этих файлах будут заменены.",
+					confirmText: "Обновить файлы"
+				}
 			},
 			calendarSubscriptions: {
 				header: "Подписки на календари",
@@ -1636,12 +1655,12 @@ export const ru: TranslationTree = {
 				defaultNoteTemplate: {
 					name: "Шаблон заметки по умолчанию",
 					description: "Путь к файлу шаблона для заметок, созданных из событий ICS",
-					placeholder: "Шаблоны/Шаблон события.md",
+					placeholder: "Шаблоны/Шаблон события.md"
 				},
 				defaultNoteFolder: {
 					name: "Папка заметок по умолчанию",
 					description: "Папка для заметок, созданных из событий ICS",
-					placeholder: "Календарь/События",
+					placeholder: "Календарь/События"
 				},
 				filenameFormat: {
 					name: "Формат имени файла заметки ICS",
@@ -1650,30 +1669,30 @@ export const ru: TranslationTree = {
 						title: "Название события",
 						zettel: "Формат Zettelkasten",
 						timestamp: "Временная метка",
-						custom: "Пользовательский шаблон",
-					},
+						custom: "Пользовательский шаблон"
+					}
 				},
 				customTemplate: {
 					name: "Пользовательский шаблон имени файла ICS",
 					description: "Шаблон для пользовательских имен файлов событий ICS",
-					placeholder: "{date}-{title}",
+					placeholder: "{date}-{title}"
 				},
 				useICSEndAsDue: {
 					name: "Использовать время окончания события ICS как срок выполнения",
-					description: "При включении задачи, созданные из событий календаря, будут иметь срок выполнения, установленный на время окончания события. Для событий на весь день срок выполнения будет установлен на дату события. Для событий с указанным временем срок выполнения будет включать время окончания.",
-				},
+					description: "При включении задачи, созданные из событий календаря, будут иметь срок выполнения, установленный на время окончания события. Для событий на весь день срок выполнения будет установлен на дату события. Для событий с указанным временем срок выполнения будет включать время окончания."
+				}
 			},
 			subscriptionsList: {
 				header: "Список подписок на календари",
 				addSubscription: {
 					name: "Добавить подписку на календарь",
 					description: "Добавить новую подписку на календарь из URL ICS/iCal или локального файла",
-					buttonText: "Добавить подписку",
+					buttonText: "Добавить подписку"
 				},
 				refreshAll: {
 					name: "Обновить все подписки",
 					description: "Вручную обновить все включенные подписки на календари",
-					buttonText: "Обновить все",
+					buttonText: "Обновить все"
 				},
 				newCalendarName: "Новый календарь",
 				emptyState: "Подписки на календари не настроены. Добавьте подписку для синхронизации внешних календарей.",
@@ -1688,7 +1707,7 @@ export const ru: TranslationTree = {
 					deleteFailure: "Не удалось удалить подписку",
 					enableFirst: "Сначала включите подписку",
 					refreshSubscriptionSuccess: "Обновлено \"{name}\"",
-					refreshSubscriptionFailure: "Не удалось обновить подписку",
+					refreshSubscriptionFailure: "Не удалось обновить подписку"
 				},
 				labels: {
 					enabled: "Включено:",
@@ -1697,17 +1716,17 @@ export const ru: TranslationTree = {
 					url: "URL:",
 					filePath: "Путь к файлу:",
 					color: "Цвет:",
-					refreshMinutes: "Обновление (мин):",
+					refreshMinutes: "Обновление (мин):"
 				},
 				typeOptions: {
 					remote: "Удаленный URL",
-					local: "Локальный файл",
+					local: "Локальный файл"
 				},
 				placeholders: {
 					calendarName: "Имя календаря",
 					url: "URL ICS/iCal",
 					filePath: "Путь к локальному файлу (например, Календарь.ics)",
-					localFile: "Календарь.ics",
+					localFile: "Календарь.ics"
 				},
 				statusLabels: {
 					enabled: "Включено",
@@ -1717,45 +1736,44 @@ export const ru: TranslationTree = {
 					remoteCalendar: "Удаленный календарь",
 					localFileCalendar: "Локальный файл",
 					synced: "Синхронизировано {timeAgo}",
-					error: "Ошибка",
+					error: "Ошибка"
 				},
 				actions: {
 					refreshNow: "Обновить сейчас",
-					deleteSubscription: "Удалить подписку",
+					deleteSubscription: "Удалить подписку"
 				},
 				refreshNow: "Обновить Now",
 				confirmDelete: {
 					title: "Удалить подписку",
 					message: "Вы уверены, что хотите удалить подписку \"{name}\"? Это действие нельзя отменить.",
-					confirmText: "Удалить",
-				},
+					confirmText: "Удалить"
+				}
 			},
 			autoExport: {
 				header: "Автоматический экспорт ICS",
 				description: "Автоматически экспортировать все ваши задачи в файл ICS.",
 				enable: {
 					name: "Включить автоматический экспорт",
-					description: "Автоматически поддерживать файл ICS обновленным со всеми вашими задачами",
+					description: "Автоматически поддерживать файл ICS обновленным со всеми вашими задачами"
 				},
 				filePath: {
 					name: "Путь к файлу экспорта",
 					description: "Путь, где будет сохранен файл ICS (относительно корня хранилища)",
-					placeholder: "tasknotes-kalendar.ics",
+					placeholder: "tasknotes-kalendar.ics"
 				},
 				interval: {
 					name: "Интервал обновления (между 5 и 1440 минут)",
 					description: "Как часто обновлять файл экспорта",
-					placeholder: "60",
+					placeholder: "60"
 				},
 				useDuration: {
 					name: "Использовать длительность задачи для продолжительности события",
-					description:
-						"Когда включено, использует оценку времени (длительность) задачи вместо срока выполнения для времени окончания события календаря. Это полезно для рабочих процессов GTD, где запланировано + длительность представляет планирование работы, а срок выполнения представляет дедлайны.",
+					description: "Когда включено, использует оценку времени (длительность) задачи вместо срока выполнения для времени окончания события календаря. Это полезно для рабочих процессов GTD, где запланировано + длительность представляет планирование работы, а срок выполнения представляет дедлайны."
 				},
 				exportNow: {
 					name: "Экспортировать сейчас",
 					description: "Вручную запустить немедленный экспорт",
-					buttonText: "Экспортировать сейчас",
+					buttonText: "Экспортировать сейчас"
 				},
 				status: {
 					title: "Статус экспорта:",
@@ -1764,30 +1782,44 @@ export const ru: TranslationTree = {
 					noExports: "Экспортов еще нет",
 					notScheduled: "Не запланировано",
 					notInitialized: "Сервис автоэкспорта не инициализирован - пожалуйста, перезапустите Obsidian",
-					serviceNotInitialized: "Служба не инициализирована - пожалуйста, перезапустите Obsidian",
+					serviceNotInitialized: "Служба не инициализирована - пожалуйста, перезапустите Obsidian"
 				},
 				notices: {
 					reloadRequired: "Пожалуйста, перезагрузите Obsidian для применения изменений автоматического экспорта.",
 					exportSuccess: "Задачи успешно экспортированы",
 					exportFailure: "Экспорт не удался - проверьте консоль для деталей",
-					serviceUnavailable: "Сервис автоэкспорта недоступен",
+					serviceUnavailable: "Сервис автоэкспорта недоступен"
 				},
+				excludeCompleted: {
+					name: "Исключить завершённые задачи",
+					description: "Если включено, завершённые задачи исключаются из ICS-экспорта. Завершённые статусы берутся из настроек статусов задач."
+				},
+				excludeArchived: {
+					name: "Исключить архивированные задачи",
+					description: "Если включено, архивированные задачи исключаются из ICS-экспорта."
+				},
+				requireDueDate: {
+					name: "Требовать дату срока",
+					description: "Если включено, в ICS-экспорт включаются только задачи с датой срока."
+				},
+				requireScheduledDate: {
+					name: "Требовать запланированную дату",
+					description: "Если включено, в ICS-экспорт включаются только задачи с запланированной датой."
+				}
 			},
 			googleCalendarExport: {
 				header: "Экспорт задач в Google Календарь",
-				description:
-					"Автоматически синхронизируйте ваши задачи с Google Календарём как события. Требуется подключение Google Календаря выше.",
+				description: "Автоматически синхронизируйте ваши задачи с Google Календарём как события. Требуется подключение Google Календаря выше.",
 				enable: {
 					name: "Включить экспорт задач",
-					description:
-						"При включении задачи с датами будут автоматически синхронизироваться с Google Календарём как события.",
+					description: "При включении задачи с датами будут автоматически синхронизироваться с Google Календарём как события."
 				},
 				targetCalendar: {
 					name: "Целевой календарь",
 					description: "Выберите, в каком календаре создавать события задач.",
 					placeholder: "Выберите календарь...",
 					connectFirst: "Сначала подключите Google Календарь",
-					primarySuffix: " (Основной)",
+					primarySuffix: " (Основной)"
 				},
 				syncTrigger: {
 					name: "Триггер синхронизации",
@@ -1795,87 +1827,72 @@ export const ru: TranslationTree = {
 					options: {
 						scheduled: "Запланированная дата",
 						due: "Срок выполнения",
-						both: "Оба (предпочтение запланированной)",
-					},
+						both: "Оба (предпочтение запланированной)"
+					}
 				},
 				allDayEvents: {
 					name: "Создавать как события на весь день",
-					description:
-						"При включении задачи создаются как события на весь день. При выключении используется оценка времени для длительности.",
+					description: "При включении задачи создаются как события на весь день. При выключении используется оценка времени для длительности."
 				},
 				defaultDuration: {
 					name: "Длительность события по умолчанию",
-					description:
-						"Длительность в минутах для событий с указанным временем (используется, когда у задачи нет оценки времени).",
+					description: "Длительность в минутах для событий с указанным временем (используется, когда у задачи нет оценки времени)."
 				},
 				eventTitleTemplate: {
 					name: "Шаблон заголовка события",
-					description:
-						"Шаблон для заголовков событий. Доступные переменные: {{title}}, {{status}}, {{priority}}",
-					placeholder: "{{title}}",
+					description: "Шаблон для заголовков событий. Доступные переменные: {{title}}, {{status}}, {{priority}}",
+					placeholder: "{{title}}"
 				},
 				includeDescription: {
 					name: "Включить детали задачи в описание",
-					description:
-						"Добавить метаданные задачи (приоритет, статус, теги и т.д.) в описание события.",
+					description: "Добавить метаданные задачи (приоритет, статус, теги и т.д.) в описание события."
 				},
 				includeObsidianLink: {
 					name: "Включить ссылку на Obsidian",
-					description:
-						"Добавить ссылку на задачу в Obsidian в описание события.",
+					description: "Добавить ссылку на задачу в Obsidian в описание события."
 				},
 				defaultReminder: {
 					name: "Напоминание по умолчанию",
-					description:
-						"Добавить всплывающее напоминание к событиям Google Календаря. Укажите минуты до события (0 = без напоминания). Обычные значения: 15, 30, 60, 1440 (1 день).",
+					description: "Добавьте всплывающие напоминания к событиям Google Calendar с заданным временем. Введите минуты до события через запятую. Оставьте пустым, чтобы использовать настройки календаря по умолчанию. Частые значения: 15, 30, 60, 1440."
 				},
 				automaticSyncBehavior: {
-					header: "Поведение автоматической синхронизации",
+					header: "Поведение автоматической синхронизации"
 				},
 				syncOnCreate: {
 					name: "Синхронизировать при создании задачи",
-					description:
-						"Автоматически создавать событие календаря при создании новой задачи.",
+					description: "Автоматически создавать событие календаря при создании новой задачи."
 				},
 				syncOnUpdate: {
 					name: "Синхронизировать при обновлении задачи",
-					description:
-						"Автоматически обновлять событие календаря при изменении задачи.",
+					description: "Автоматически обновлять событие календаря при изменении задачи."
 				},
 				syncOnComplete: {
 					name: "Синхронизировать при завершении задачи",
-					description:
-						"Обновлять событие календаря при завершении задачи (добавляет галочку к заголовку).",
+					description: "Обновлять событие календаря при завершении задачи (добавляет галочку к заголовку)."
 				},
 				syncOnDelete: {
 					name: "Удалять событие при удалении задачи",
-					description:
-						"Удалять событие календаря при удалении соответствующей задачи.",
+					description: "Удалять событие календаря при удалении соответствующей задачи."
 				},
 				manualSyncActions: {
-					header: "Действия ручной синхронизации",
+					header: "Действия ручной синхронизации"
 				},
 				syncAllTasks: {
 					name: "Синхронизировать все задачи",
-					description:
-						"Синхронизировать все существующие задачи с Google Календарём. Будут созданы события для задач, которые ещё не синхронизированы.",
-					buttonText: "Синхронизировать все",
+					description: "Синхронизировать все существующие задачи с Google Календарём. Будут созданы события для задач, которые ещё не синхронизированы.",
+					buttonText: "Синхронизировать все"
 				},
 				unlinkAllTasks: {
 					name: "Отвязать все задачи",
-					description:
-						"Удалить все связи задача-событие без удаления событий календаря.",
+					description: "Удалить все связи задача-событие без удаления событий календаря.",
 					buttonText: "Отвязать все",
 					confirmTitle: "Отвязать все задачи",
-					confirmMessage:
-						"Это удалит все связи между задачами и событиями календаря. События календаря останутся, но больше не будут обновляться при изменении задач. Вы уверены?",
-					confirmButtonText: "Отвязать все",
+					confirmMessage: "Это удалит все связи между задачами и событиями календаря. События календаря останутся, но больше не будут обновляться при изменении задач. Вы уверены?",
+					confirmButtonText: "Отвязать все"
 				},
 				notices: {
-					notEnabled:
-						"Экспорт в Google Календарь не включен. Настройте его в Настройки > Интеграции.",
-					notEnabledOrConfigured:
-						"Экспорт в Google Календарь не включен или не настроен",
+					notEnabled: "Экспорт в Google Календарь не включен. Настройте его в Настройки > Интеграции.",
+					notEnabledOrConfigured: "Экспорт в Google Календарь не включен или не настроен",
 					serviceNotAvailable: "Сервис синхронизации с календарём недоступен",
 					syncResults: "Синхронизировано: {synced}, Ошибок: {failed}, Пропущено: {skipped}",
 					taskSynced: "Задача синхронизирована с Google Календарём",
@@ -1883,13 +1900,11 @@ export const ru: TranslationTree = {
 					notATask: "Текущий файл не является задачей",
 					noDateToSync: "У задачи нет запланированной даты или срока для синхронизации",
 					syncFailed: "Не удалось синхронизировать задачу с Google Календарём: {message}",
-					connectionExpired:
-						"Срок действия подключения к Google Календарю истёк. Подключитесь заново в разделе Настройки > Интеграции.",
+					connectionExpired: "Срок действия подключения к Google Календарю истёк. Подключитесь заново в разделе Настройки > Интеграции.",
 					syncingTasks: "Синхронизация {total} задач с Google Календарём...",
-					syncComplete:
-						"Синхронизация завершена: {synced} синхронизировано, {failed} ошибок, {skipped} пропущено",
+					syncComplete: "Синхронизация завершена: {synced} синхронизировано, {failed} ошибок, {skipped} пропущено",
 					eventsDeletedAndUnlinked: "Все события удалены и отвязаны",
-					tasksUnlinked: "Все связи задач удалены",
+					tasksUnlinked: "Все связи задач удалены"
 				},
 				eventDescription: {
 					untitledTask: "Безымянная задача",
@@ -1901,72 +1916,72 @@ export const ru: TranslationTree = {
 					tags: "Теги: {value}",
 					contexts: "Контексты: {value}",
 					projects: "Проекты: {value}",
-					openInObsidian: "Открыть в Obsidian",
-				},
+					openInObsidian: "Открыть в Obsidian"
+				}
 			},
 			httpApi: {
 				header: "HTTP API",
 				description: "Включить HTTP API для внешних интеграций и автоматизации.",
 				enable: {
 					name: "Включить HTTP API",
-					description: "Запустить локальный HTTP сервер для доступа к API",
+					description: "Запустить локальный HTTP сервер для доступа к API"
 				},
 				port: {
 					name: "Порт API",
 					description: "Номер порта для сервера HTTP API",
-					placeholder: "3000",
+					placeholder: "3000"
 				},
 				authToken: {
 					name: "Токен аутентификации API",
 					description: "Токен, необходимый для аутентификации API (оставьте пустым для отсутствия аутентификации)",
-					placeholder: "ваш-секретный-токен",
+					placeholder: "ваш-секретный-токен"
 				},
 				mcp: {
 					enable: {
 						name: "Включить сервер MCP",
-						description: "Предоставляет инструменты TaskNotes через Model Context Protocol на конечной точке /mcp. Требуется включённый HTTP API.",
-					},
+						description: "Предоставляет инструменты TaskNotes через Model Context Protocol на конечной точке /mcp. Требуется включённый HTTP API."
+					}
 				},
 				endpoints: {
 					header: "Доступные конечные точки API",
 					expandIcon: "▶",
-					collapseIcon: "▼",
-				},
+					collapseIcon: "▼"
+				}
 			},
 			webhooks: {
 				header: "Веб-хуки",
 				description: {
 					overview: "Веб-хуки отправляют уведомления в реальном времени внешним сервисам при возникновении событий TaskNotes.",
-					usage: "Настройте веб-хуки для интеграции с инструментами автоматизации, сервисами синхронизации или пользовательскими приложениями.",
+					usage: "Настройте веб-хуки для интеграции с инструментами автоматизации, сервисами синхронизации или пользовательскими приложениями."
 				},
 				addWebhook: {
 					name: "Добавить веб-хук",
 					description: "Зарегистрировать новую конечную точку веб-хука",
-					buttonText: "Добавить веб-хук",
+					buttonText: "Добавить веб-хук"
 				},
 				emptyState: {
 					message: "Веб-хуки не настроены. Добавьте веб-хук для получения уведомлений в реальном времени.",
-					buttonText: "Добавить веб-хук",
+					buttonText: "Добавить веб-хук"
 				},
 				labels: {
 					active: "Активный:",
 					url: "URL:",
 					events: "События:",
-					transform: "Преобразование:",
+					transform: "Преобразование:"
 				},
 				placeholders: {
 					url: "URL веб-хука",
 					noEventsSelected: "События не выбраны",
-					rawPayload: "Сырые данные (без преобразования)",
+					rawPayload: "Сырые данные (без преобразования)"
 				},
 				statusLabels: {
 					active: "Активный",
 					inactive: "Неактивный",
-					created: "Создан {timeAgo}",
+					created: "Создан {timeAgo}"
 				},
 				actions: {
 					editEvents: "Редактировать события",
-					delete: "Удалить",
+					delete: "Удалить"
 				},
 				editEvents: "Редактировать события",
 				notices: {
@@ -1975,96 +1990,96 @@ export const ru: TranslationTree = {
 					disabled: "Веб-хук отключен",
 					created: "Веб-хук успешно создан",
 					deleted: "Веб-хук удален",
-					updated: "Веб-хук обновлен",
+					updated: "Веб-хук обновлен"
 				},
 				confirmDelete: {
 					title: "Удалить веб-хук",
 					message: "Вы уверены, что хотите удалить этот веб-хук?\n\nURL: {url}\n\nЭто действие нельзя отменить.",
-					confirmText: "Удалить",
+					confirmText: "Удалить"
 				},
 				cardHeader: "Веб-хук",
 				cardFields: {
 					active: "Активный:",
 					url: "URL:",
 					events: "События:",
-					transform: "Преобразование:",
+					transform: "Преобразование:"
 				},
 				eventsDisplay: {
-					noEvents: "События не выбраны",
+					noEvents: "События не выбраны"
 				},
 				transformDisplay: {
-					noTransform: "Сырые данные (без преобразования)",
+					noTransform: "Сырые данные (без преобразования)"
 				},
 				secretModal: {
 					title: "Секрет веб-хука сгенерирован",
 					description: "Ваш секрет веб-хука был сгенерирован. Сохраните этот секрет, так как вы больше не сможете его увидеть:",
 					usage: "Используйте этот секрет для проверки данных веб-хука в вашем принимающем приложении.",
-					gotIt: "Понятно",
+					gotIt: "Понятно"
 				},
 				editModal: {
 					title: "Редактировать веб-хук",
-					eventsHeader: "События для подписки",
+					eventsHeader: "События для подписки"
 				},
 				events: {
 					taskCreated: {
 						label: "Задача создана",
-						description: "При создании новых задач",
+						description: "При создании новых задач"
 					},
 					taskUpdated: {
 						label: "Задача обновлена",
-						description: "При изменении задач",
+						description: "При изменении задач"
 					},
 					taskCompleted: {
 						label: "Задача завершена",
-						description: "При отметке задач как завершенных",
+						description: "При отметке задач как завершенных"
 					},
 					taskDeleted: {
 						label: "Задача удалена",
-						description: "При удалении задач",
+						description: "При удалении задач"
 					},
 					taskArchived: {
 						label: "Задача архивирована",
-						description: "При архивировании задач",
+						description: "При архивировании задач"
 					},
 					taskUnarchived: {
 						label: "Задача разархивирована",
-						description: "При разархивировании задач",
+						description: "При разархивировании задач"
 					},
 					timeStarted: {
 						label: "Время начато",
-						description: "При начале отслеживания времени",
+						description: "При начале отслеживания времени"
 					},
 					timeStopped: {
 						label: "Время остановлено",
-						description: "При остановке отслеживания времени",
+						description: "При остановке отслеживания времени"
 					},
 					pomodoroStarted: {
 						label: "Помодоро начато",
-						description: "При начале сессий помодоро",
+						description: "При начале сессий помодоро"
 					},
 					pomodoroCompleted: {
 						label: "Помодоро завершено",
-						description: "При завершении сессий помодоро",
+						description: "При завершении сессий помодоро"
 					},
 					pomodoroInterrupted: {
 						label: "Помодоро прервано",
-						description: "При остановке сессий помодоро",
+						description: "При остановке сессий помодоро"
 					},
 					recurringCompleted: {
 						label: "Экземпляр повторения завершен",
-						description: "При завершении экземпляров повторяющихся задач",
+						description: "При завершении экземпляров повторяющихся задач"
 					},
 					reminderTriggered: {
 						label: "Напоминание сработало",
-						description: "При активации напоминаний задач",
-					},
+						description: "При активации напоминаний задач"
+					}
 				},
 				modals: {
 					secretGenerated: {
 						title: "Секрет веб-хука сгенерирован",
 						description: "Ваш секрет веб-хука был сгенерирован. Сохраните этот секрет, так как вы больше не сможете его увидеть:",
 						usage: "Используйте этот секрет для проверки данных веб-хука в вашем принимающем приложении.",
-						buttonText: "Понятно",
+						buttonText: "Понятно"
 					},
 					edit: {
 						title: "Редактировать веб-хук",
@@ -2074,19 +2089,19 @@ export const ru: TranslationTree = {
 						transformFile: {
 							name: "Файл преобразования",
 							description: "Путь к файлу шаблона .json в вашем хранилище, который преобразует данные веб-хука",
-							placeholder: "simple-template.json",
+							placeholder: "simple-template.json"
 						},
 						customHeaders: {
 							name: "Включить пользовательские заголовки",
-							description: "Включить заголовки TaskNotes (тип события, подпись, ID доставки). Отключите для Discord, Slack и других сервисов со строгими политиками CORS.",
+							description: "Включить заголовки TaskNotes (тип события, подпись, ID доставки). Отключите для Discord, Slack и других сервисов со строгими политиками CORS."
 						},
 						buttons: {
 							cancel: "Отмена",
-							save: "Сохранить изменения",
+							save: "Сохранить изменения"
 						},
 						notices: {
-							selectAtLeastOneEvent: "Пожалуйста, выберите хотя бы одно событие",
-						},
+							selectAtLeastOneEvent: "Пожалуйста, выберите хотя бы одно событие"
+						}
 					},
 					add: {
 						title: "Добавить веб-хук",
@@ -2096,16 +2111,16 @@ export const ru: TranslationTree = {
 						url: {
 							name: "URL веб-хука",
 							description: "Конечная точка, куда будут отправляться данные веб-хука",
-							placeholder: "https://your-service.com/webhook",
+							placeholder: "https://your-service.com/webhook"
 						},
 						transformFile: {
 							name: "Файл преобразования",
 							description: "Путь к файлу шаблона .json в вашем хранилище, который преобразует данные веб-хука",
-							placeholder: "simple-template.json",
+							placeholder: "simple-template.json"
 						},
 						customHeaders: {
 							name: "Включить пользовательские заголовки",
-							description: "Включить заголовки TaskNotes (тип события, подпись, ID доставки). Отключите для Discord, Slack и других сервисов со строгими политиками CORS.",
+							description: "Включить заголовки TaskNotes (тип события, подпись, ID доставки). Отключите для Discord, Slack и других сервисов со строгими политиками CORS."
 						},
 						transformHelp: {
 							title: "Шаблоны преобразования JSON позволяют настроить данные веб-хука:",
@@ -2117,38 +2132,38 @@ export const ru: TranslationTree = {
 							leaveEmpty: "Оставьте пустым:",
 							leaveEmptyDescription: " Отправить сырые данные",
 							example: "Пример:",
-							exampleFile: "simple-template.json",
+							exampleFile: "simple-template.json"
 						},
 						buttons: {
 							cancel: "Отмена",
-							add: "Добавить веб-хук",
+							add: "Добавить веб-хук"
 						},
 						notices: {
 							urlRequired: "URL веб-хука обязателен",
-							selectAtLeastOneEvent: "Пожалуйста, выберите хотя бы одно событие",
-						},
-					},
-				},
+							selectAtLeastOneEvent: "Пожалуйста, выберите хотя бы одно событие"
+						}
+					}
+				}
 			},
 			otherIntegrations: {
 				header: "Интеграции с другими плагинами",
-				description: "Настройте интеграции с другими плагинами Obsidian.",
+				description: "Настройте интеграции с другими плагинами Obsidian."
 			},
 			mdbaseSpec: {
 				header: "Определения типов mdbase",
 				learnMore: "Подробнее о mdbase-spec",
 				enable: {
 					name: "Создавать определения типов mdbase",
-					description: "Создаёт и поддерживает файлы типов mdbase (mdbase.yaml и _types/task.md) в корне хранилища при изменении настроек.",
-				},
+					description: "Создаёт и поддерживает файлы типов mdbase (mdbase.yaml и _types/task.md) в корне хранилища при изменении настроек."
+				}
 			},
 			timeFormats: {
 				justNow: "Только что",
 				minutesAgo: "{minutes} минут{plural} назад",
 				hoursAgo: "{hours} час{plural} назад",
-				daysAgo: "{days} дн{plural} назад",
-			},
-		},
+				daysAgo: "{days} дн{plural} назад"
+			}
+		}
 	},
 	notices: {
 		languageChanged: "Язык изменен на {language}.",
@@ -2171,7 +2186,7 @@ export const ru: TranslationTree = {
 		timeblockDeleteFailed: "Не удалось удалить временной блок. Проверьте консоль для получения подробностей.",
 		timeblockRequiredFieldsMissing: "Пожалуйста, заполните все обязательные поля",
 		agendaLoadingFailed: "Ошибка загрузки повестки дня. Попробуйте обновить.",
-		statsLoadingFailed: "Ошибка загрузки данных проекта.",
+		statsLoadingFailed: "Ошибка загрузки данных проекта."
 	},
 	commands: {
 		openCalendarView: "Открыть представление мини-календаря",
@@ -2188,7 +2203,7 @@ export const ru: TranslationTree = {
 			name: "Преобразовать текущую заметку в задачу",
 			noActiveFile: "Нет активного файла для преобразования",
 			alreadyTask: "Эта заметка уже является задачей",
-			success: "'{title}' преобразовано в задачу",
+			success: "'{title}' преобразовано в задачу"
 		},
 		convertToTaskNote: "Преобразовать чекбокс-задачу в TaskNote",
 		convertAllTasksInNote: "Преобразовать все задачи в заметке",
@@ -2206,23 +2221,28 @@ export const ru: TranslationTree = {
 		editTimeEntries: "Редактировать временные записи (выбрать задачу)",
 		createOrOpenTask: "Создать или открыть задачу",
 		createOrOpenTaskWithTracking: "Создать или открыть задачу и начать отслеживание времени",
-		rolloverOverdueScheduledTasks:
-			"Перенести просроченные запланированные задачи на сегодня",
+		rolloverOverdueScheduledTasks: "Перенести просроченные запланированные задачи на сегодня",
 		syncAllTasksGoogleCalendar: "Синхронизировать все задачи с Google Календарём",
 		syncCurrentTaskGoogleCalendar: "Синхронизировать текущую задачу с Google Календарём",
+		quickActionsTaskUnderCursor: "Быстрые действия для задачи под курсором",
+		editCurrentTask: "Редактировать текущую задачу",
+		cycleCurrentTaskStatus: "Переключить статус текущей задачи",
+		cycleCurrentTaskPriority: "Переключить приоритет текущей задачи",
+		addProjectToCurrentTask: "Добавить проект к текущей задаче",
+		addSubtaskToCurrentNote: "Добавить подзадачу к текущей заметке"
 	},
 	modals: {
 		deviceCode: {
 			title: "Авторизация Google Календаря",
 			instructions: {
-				intro: "Чтобы подключить Google Календарь, выполните следующие шаги:",
+				intro: "Чтобы подключить Google Календарь, выполните следующие шаги:"
 			},
 			steps: {
 				open: "Открыть",
 				inBrowser: "в вашем браузере",
 				enterCode: "Введите этот код при запросе:",
 				signIn: "Войдите в свой аккаунт Google и предоставьте доступ",
-				returnToObsidian: "Вернитесь в Obsidian (это окно закроется автоматически)",
+				returnToObsidian: "Вернитесь в Obsidian (это окно закроется автоматически)"
 			},
 			codeLabel: "Ваш код:",
 			copyCodeAriaLabel: "Скопировать код",
@@ -2230,7 +2250,7 @@ export const ru: TranslationTree = {
 			openBrowserButton: "Открыть Browser",
 			cancelButton: "Отмена",
 			expiresMinutesSeconds: "Код истекает через {minutes}м {seconds}с",
-			expiresSeconds: "Код истекает через {seconds}с",
+			expiresSeconds: "Код истекает через {seconds}с"
 		},
 		icsEventInfo: {
 			calendarEventHeading: "Календарь Event",
@@ -2248,7 +2268,7 @@ export const ru: TranslationTree = {
 			createFromEventLabel: "Создать from Event",
 			createFromEventDesc: "Создать a new note or task from this calendar event",
 			linkExistingLabel: "Связать существующую",
-			linkExistingDesc: "Связать существующую заметку с этим событием календаря",
+			linkExistingDesc: "Связать существующую заметку с этим событием календаря"
 		},
 		timeblockInfo: {
 			editHeading: "Редактировать временной блок",
@@ -2268,7 +2288,7 @@ export const ru: TranslationTree = {
 			addAttachmentTooltip: "Выберите файл или заметку с помощью нечеткого поиска",
 			deleteButton: "Удалить временной блок",
 			saveButton: "Сохранить изменения",
-			deleteConfirmationTitle: "Удалить временной блок",
+			deleteConfirmationTitle: "Удалить временной блок"
 		},
 		timeblockCreation: {
 			heading: "Создать timeblock",
@@ -2292,7 +2312,7 @@ export const ru: TranslationTree = {
 			attachmentsDesc: "Файлы или заметки для связи с этим временным блоком",
 			addAttachmentButton: "Добавить вложение",
 			addAttachmentTooltip: "Выберите файл или заметку с помощью нечеткого поиска",
-			createButton: "Создать timeblock",
+			createButton: "Создать timeblock"
 		},
 		calendarEventCreation: {
 			heading: "Создать событие в календаре",
@@ -2312,7 +2332,7 @@ export const ru: TranslationTree = {
 			titleRequired: "Необходимо указать название события",
 			noCalendarSelected: "Календарь не выбран",
 			success: "Событие \"{title}\" создано в календаре",
-			error: "Не удалось создать событие в календаре: {message}",
+			error: "Не удалось создать событие в календаре: {message}"
 		},
 		icsNoteCreation: {
 			heading: "Создать from ICS Event",
@@ -2330,7 +2350,7 @@ export const ru: TranslationTree = {
 			useTemplateDesc: "Применить шаблон при создании содержимого",
 			templatePathLabel: "Путь к шаблону",
 			templatePathDesc: "Путь к файлу шаблона",
-			templatePathPlaceholder: "шаблоны/шаблон-заметки-ics.md",
+			templatePathPlaceholder: "шаблоны/шаблон-заметки-ics.md"
 		},
 		unscheduledTasksSelector: {
 			title: "Незапланированные задачи",
@@ -2338,8 +2358,8 @@ export const ru: TranslationTree = {
 			instructions: {
 				navigate: "для навигации",
 				schedule: "для планирования",
-				dismiss: "для отмены",
-			},
+				dismiss: "для отмены"
+			}
 		},
 		migration: {
 			title: "Перейти на новую систему повторений",
@@ -2351,38 +2371,38 @@ export const ru: TranslationTree = {
 				backup: "Создайте резервную копию хранилища перед миграцией",
 				conversion: "Старые шаблоны повторений будут преобразованы в новый формат",
 				normalUsage: "Вы можете продолжать использовать TaskNotes обычным образом во время миграции",
-				permanent: "Это изменение является постоянным и не может быть автоматически отменено",
+				permanent: "Это изменение является постоянным и не может быть автоматически отменено"
 			},
 			benefits: {
 				title: "Преимущества новой системы:",
 				powerfulPatterns: "Сложные шаблоны повторений (например, 'каждый 2-й вторник')",
 				performance: "Лучшая производительность с повторяющимися задачами",
 				compatibility: "Стандартный формат повторений, совместимый с другими приложениями",
-				nlp: "Расширенная поддержка обработки естественного языка",
+				nlp: "Расширенная поддержка обработки естественного языка"
 			},
 			progress: {
 				title: "Прогресс миграции",
 				preparing: "Подготовка миграции...",
 				completed: "Миграция успешно завершена",
-				failed: "Миграция не удалась",
+				failed: "Миграция не удалась"
 			},
 			buttons: {
 				migrate: "Начать миграцию",
-				completed: "Закрыть",
+				completed: "Закрыть"
 			},
 			errors: {
-				title: "Ошибки во время миграции:",
+				title: "Ошибки во время миграции:"
 			},
 			notices: {
 				completedWithErrors: "Миграция завершена с некоторыми ошибками. Проверьте список ошибок выше.",
 				success: "Все задачи успешно мигрированы!",
-				failed: "Миграция не удалась. Please check the console for details.",
+				failed: "Миграция не удалась. Please check the console for details."
 			},
 			prompt: {
 				message: "ЗадачаNotes detected tasks using the old recurrence format. Would you like to migrate them to the new system now?",
 				migrateNow: "Мигрировать сейчас",
-				remindLater: "Напомнить позже",
-			},
+				remindLater: "Напомнить позже"
+			}
 		},
 		task: {
 			titlePlaceholder: "Что нужно сделать?",
@@ -2405,7 +2425,7 @@ export const ru: TranslationTree = {
 				message: "У вас есть несохранённые изменения. Хотите сохранить их?",
 				save: "Сохранить изменения",
 				discard: "Отменить изменения",
-				cancel: "Продолжить редактирование",
+				cancel: "Продолжить редактирование"
 			},
 			dependencies: {
 				blockedBy: "Заблокирована",
@@ -2413,7 +2433,7 @@ export const ru: TranslationTree = {
 				placeholder: "[[Задача]]",
 				addTaskButton: "Добавить задачу",
 				selectTaskTooltip: "Выберите заметку задачи с помощью нечеткого поиска",
-				removeTaskTooltip: "Удалить задачу",
+				removeTaskTooltip: "Удалить задачу"
 			},
 			organization: {
 				projects: "Проекты",
@@ -2426,8 +2446,8 @@ export const ru: TranslationTree = {
 				removeSubtaskTooltip: "Удалить подзадачу",
 				notices: {
 					noEligibleSubtasks: "Нет доступных задач для назначения в качестве подзадач",
-					subtaskSelectFailed: "Не удалось открыть селектор подзадач",
-				},
+					subtaskSelectFailed: "Не удалось открыть селектор подзадач"
+				}
 			},
 			customFieldsLabel: "Пользовательские поля",
 			actions: {
@@ -2436,11 +2456,11 @@ export const ru: TranslationTree = {
 				status: "Установить статус",
 				priority: "Установить приоритет",
 				recurrence: "Установить повторение",
-				reminders: "Установить напоминания",
+				reminders: "Установить напоминания"
 			},
 			buttons: {
 				openNote: "Открыть заметку",
-				save: "Сохранить",
+				save: "Сохранить"
 			},
 			tooltips: {
 				dueValue: "Срок: {value}",
@@ -2449,18 +2469,18 @@ export const ru: TranslationTree = {
 				priorityValue: "Приоритет: {value}",
 				recurrenceValue: "Повторение: {value}",
 				remindersSingle: "1 напоминание установлено",
-				remindersPlural: "{count} напоминаний установлено",
+				remindersPlural: "{count} напоминаний установлено"
 			},
 			dateMenu: {
 				dueTitle: "Установить срок выполнения",
-				scheduledTitle: "Установить запланированную дату",
+				scheduledTitle: "Установить запланированную дату"
 			},
 			userFields: {
 				textPlaceholder: "Введите {field}...",
 				numberPlaceholder: "0",
 				datePlaceholder: "ГГГГ-ММ-ДД",
 				listPlaceholder: "элемент1, элемент2, элемент3",
-				pickDate: "Выбрать дату {field}",
+				pickDate: "Выбрать дату {field}"
 			},
 			recurrence: {
 				daily: "Ежедневно",
@@ -2477,8 +2497,8 @@ export const ru: TranslationTree = {
 				custom: "Пользовательское",
 				countSuffix: "{count} раз",
 				untilSuffix: "до {date}",
-				ordinal: "{number}{suffix}",
-			},
+				ordinal: "{number}{suffix}"
+			}
 		},
 		taskSelector: {
 			title: "Выбрать задачу",
@@ -2486,36 +2506,36 @@ export const ru: TranslationTree = {
 			instructions: {
 				navigate: "для навигации",
 				select: "для выбора",
-				dismiss: "для отмены",
+				dismiss: "для отмены"
 			},
 			notices: {
-				noteNotFound: "Не удалось найти заметку \"{name}\"",
+				noteNotFound: "Не удалось найти заметку \"{name}\""
 			},
 			dueDate: {
 				overdue: "Срок: {date} (просрочено)",
-				today: "Срок: Сегодня",
-			},
+				today: "Срок: Сегодня"
+			}
 		},
 		taskSelectorWithCreate: {
 			title: "Создать или открыть задачу",
 			placeholder: "Поиск задач или введите для создания новой...",
 			instructions: {
-				create: "чтобы создать новую задачу",
+				create: "чтобы создать новую задачу"
 			},
 			footer: {
-				createLabel: " для создания: ",
+				createLabel: " для создания: "
 			},
 			notices: {
 				emptyQuery: "Пожалуйста, введите описание задачи",
-				invalidTitle: "Не удалось распознать допустимое название задачи",
-			},
+				invalidTitle: "Не удалось распознать допустимое название задачи"
+			}
 		},
 		taskCreation: {
 			title: "Создать задачу",
 			actions: {
 				fillFromNaturalLanguage: "Заполнить форму из естественного языка",
 				hideDetailedOptions: "Скрыть подробные опции",
-				showDetailedOptions: "Показать подробные опции",
+				showDetailedOptions: "Показать подробные опции"
 			},
 			nlPlaceholder: "Купить продукты завтра в 15:00 @дом #поручения",
 			notices: {
@@ -2524,24 +2544,24 @@ export const ru: TranslationTree = {
 				successShortened: "Задача \"{title}\" успешно создана (имя файла сокращено из-за длины)",
 				failure: "Не удалось создать задачу: {message}",
 				blockingUnresolved: "Не удалось определить: {entries}",
-				openCreatedTaskFailure: "Задача создана, но заметку задачи не удалось открыть.",
-			},
+				openCreatedTaskFailure: "Задача создана, но заметку задачи не удалось открыть."
+			}
 		},
 		taskEdit: {
 			title: "Редактировать задачу",
 			sections: {
 				completions: "Завершения",
-				taskInfo: "Информация о задаче",
+				taskInfo: "Информация о задаче"
 			},
 			metadata: {
 				totalTrackedTime: "Общее отслеженное время:",
 				created: "Создано:",
 				modified: "Изменено:",
-				file: "Файл:",
+				file: "Файл:"
 			},
 			buttons: {
 				archive: "Архивировать",
-				unarchive: "Разархивировать",
+				unarchive: "Разархивировать"
 			},
 			notices: {
 				titleRequired: "Пожалуйста, введите название задачи",
@@ -2554,20 +2574,27 @@ export const ru: TranslationTree = {
 				openNoteFailure: "Не удалось открыть заметку задачи",
 				archiveSuccess: "Задача {action} успешно",
 				archiveFailure: "Не удалось архивировать задачу",
+				deleteSuccess: "Задача \"{title}\" успешно удалена",
+				deleteFailure: "Не удалось удалить задачу: {message}"
 			},
 			archiveAction: {
 				archived: "архивирована",
-				unarchived: "разархивирована",
+				unarchived: "разархивирована"
 			},
+			deleteConfirmation: {
+				title: "Удалить задачу",
+				message: "Вы уверены, что хотите удалить \"{title}\"? Заметка задачи будет перемещена в корзину Obsidian.",
+				confirm: "Удалить задачу"
+			}
 		},
 		storageLocation: {
 			title: {
 				migrate: "Мигрировать данные помодоро?",
-				switch: "Переключиться на хранение в ежедневных заметках?",
+				switch: "Переключиться на хранение в ежедневных заметках?"
 			},
 			message: {
 				migrate: "Это перенесет ваши существующие данные сессий помодоро в frontmatter ежедневных заметок. Данные будут сгруппированы по дате и сохранены в каждой ежедневной заметке.",
-				switch: "Данные сессий помодоро будут храниться в frontmatter ежедневных заметок вместо файла данных плагина.",
+				switch: "Данные сессий помодоро будут храниться в frontmatter ежедневных заметок вместо файла данных плагина."
 			},
 			whatThisMeans: "Что это означает:",
 			bullets: {
@@ -2575,36 +2602,36 @@ export const ru: TranslationTree = {
 				storedInNotes: "Данные будут храниться в frontmatter ваших ежедневных заметок",
 				migrateData: "Существующие данные плагина будут перенесены и затем очищены",
 				futureSessions: "Будущие сессии будут сохраняться в ежедневные заметки",
-				dataLongevity: "Это обеспечивает лучшую долговечность данных с вашими заметками",
+				dataLongevity: "Это обеспечивает лучшую долговечность данных с вашими заметками"
 			},
 			finalNote: {
 				migrate: "⚠️ Убедитесь, что у вас есть резервные копии при необходимости. Это изменение нельзя автоматически отменить.",
-				switch: "Вы можете переключиться обратно на хранение в плагине в любое время в будущем.",
+				switch: "Вы можете переключиться обратно на хранение в плагине в любое время в будущем."
 			},
 			buttons: {
 				migrate: "Мигрировать данные",
-				switch: "Переключить хранилище",
-			},
+				switch: "Переключить хранилище"
+			}
 		},
 		dueDate: {
 			title: "Установить срок выполнения",
 			taskLabel: "Задача: {title}",
 			sections: {
 				dateTime: "Дата и время выполнения",
-				quickOptions: "Быстрые опции",
+				quickOptions: "Быстрые опции"
 			},
 			descriptions: {
-				dateTime: "Установить когда эта задача должна быть выполнена",
+				dateTime: "Установить когда эта задача должна быть выполнена"
 			},
 			inputs: {
 				date: {
 					ariaLabel: "Дата выполнения задачи",
-					placeholder: "ГГГГ-ММ-ДД",
+					placeholder: "ГГГГ-ММ-ДД"
 				},
 				time: {
 					ariaLabel: "Время выполнения задачи (необязательно)",
-					placeholder: "ЧЧ:ММ",
-				},
+					placeholder: "ЧЧ:ММ"
+				}
 			},
 			quickOptions: {
 				today: "Сегодня",
@@ -2616,32 +2643,32 @@ export const ru: TranslationTree = {
 				now: "Сейчас",
 				nowAriaLabel: "Установить дату и время выполнения на сейчас",
 				clear: "Очистить",
-				clearAriaLabel: "Очистить срок выполнения",
+				clearAriaLabel: "Очистить срок выполнения"
 			},
 			errors: {
 				invalidDateTime: "Пожалуйста, введите корректный формат даты и времени",
-				updateFailed: "Не удалось обновить срок выполнения. Попробуйте снова.",
-			},
+				updateFailed: "Не удалось обновить срок выполнения. Попробуйте снова."
+			}
 		},
 		scheduledDate: {
 			title: "Установить запланированную дату",
 			taskLabel: "Задача: {title}",
 			sections: {
 				dateTime: "Запланированная дата и время",
-				quickOptions: "Быстрые опции",
+				quickOptions: "Быстрые опции"
 			},
 			descriptions: {
-				dateTime: "Установить когда вы планируете работать над этой задачей",
+				dateTime: "Установить когда вы планируете работать над этой задачей"
 			},
 			inputs: {
 				date: {
 					ariaLabel: "Запланированная дата задачи",
-					placeholder: "ГГГГ-ММ-ДД",
+					placeholder: "ГГГГ-ММ-ДД"
 				},
 				time: {
 					ariaLabel: "Запланированное время задачи (необязательно)",
-					placeholder: "ЧЧ:ММ",
-				},
+					placeholder: "ЧЧ:ММ"
+				}
 			},
 			quickOptions: {
 				today: "Сегодня",
@@ -2653,12 +2680,12 @@ export const ru: TranslationTree = {
 				now: "Сейчас",
 				nowAriaLabel: "Установить запланированную дату и время на сейчас",
 				clear: "Очистить",
-				clearAriaLabel: "Очистить запланированную дату",
+				clearAriaLabel: "Очистить запланированную дату"
 			},
 			errors: {
 				invalidDateTime: "Пожалуйста, введите корректный формат даты и времени",
-				updateFailed: "Не удалось обновить запланированную дату. Попробуйте снова.",
-			},
+				updateFailed: "Не удалось обновить запланированную дату. Попробуйте снова."
+			}
 		},
 		timeEntryEditor: {
 			title: "Временные записи - {taskTitle}",
@@ -2681,20 +2708,20 @@ export const ru: TranslationTree = {
 			noTasksWithEntries: "Нет задач с временными записями для редактирования",
 			validation: {
 				missingStartTime: "Требуется время начала",
-				endBeforeStart: "Время окончания должно быть после времени начала",
-			},
+				endBeforeStart: "Время окончания должно быть после времени начала"
+			}
 		},
 		timeTracking: {
 			noTasksAvailable: "Нет доступных задач для отслеживания времени",
 			started: "Начато отслеживание времени для: {taskTitle}",
-			startFailed: "Не удалось начать отслеживание времени",
+			startFailed: "Не удалось начать отслеживание времени"
 		},
 		timeEntry: {
 			mustHaveSpecificTime: "Временные записи должны иметь конкретное время. Пожалуйста, выберите временной диапазон в недельном или дневном представлении.",
 			noTasksAvailable: "Нет доступных задач для создания временных записей",
 			created: "Временная запись создана для {taskTitle} ({duration} минут)",
-			createFailed: "Не удалось создать временную запись",
-		},
+			createFailed: "Не удалось создать временную запись"
+		}
 	},
 	contextMenus: {
 		task: {
@@ -2738,7 +2765,7 @@ export const ru: TranslationTree = {
 				syncToGoogle: "Синхронизировать с Google Календарём",
 				syncToGoogleNotConfigured: "Синхронизация с Google Календарём не настроена",
 				syncToGoogleSuccess: "Задача синхронизирована с Google Календарём",
-				syncToGoogleFailed: "Не удалось синхронизировать с Google Календарём",
+				syncToGoogleFailed: "Не удалось синхронизировать с Google Календарём"
 			},
 			recurrence: "Повторение",
 			clearRecurrence: "Очистить повторение",
@@ -2762,8 +2789,8 @@ export const ru: TranslationTree = {
 					blockingRemoved: "Зависимая задача удалена",
 					unresolved: "Не удалось определить: {entries}",
 					noEligibleTasks: "Нет доступных подходящих задач",
-					updateFailed: "Не удалось обновить зависимости",
-				},
+					updateFailed: "Не удалось обновить зависимости"
+				}
 			},
 			organization: {
 				title: "Организация",
@@ -2782,12 +2809,18 @@ export const ru: TranslationTree = {
 					subtaskSelectFailed: "Не удалось открыть селектор подзадач",
 					noEligibleSubtasks: "Нет доступных задач для назначения в качестве подзадач",
 					currentTaskNotFound: "Файл текущей задачи не найден",
+					updateContextsFailed: "Не удалось обновить контексты"
 				},
+				contexts: "Контексты",
+				addContext: "Добавить контекст…",
+				contextPlaceholder: "контекст",
+				contextSelected: "✓ {context}",
+				clearContexts: "Очистить контексты"
 			},
 			subtasks: {
 				loading: "Загрузка подзадач...",
 				noSubtasks: "Подзадачи не найдены",
-				loadFailed: "Не удалось загрузить подзадачи",
+				loadFailed: "Не удалось загрузить подзадачи"
 			},
 			markComplete: "Отметить как выполненную для этой даты",
 			markIncomplete: "Отметить как невыполненную для этой даты",
@@ -2798,7 +2831,7 @@ export const ru: TranslationTree = {
 				fiveMinutes: "За 5 минут",
 				fifteenMinutes: "За 15 минут",
 				oneHour: "За 1 час",
-				oneDay: "За 1 день",
+				oneDay: "За 1 день"
 			},
 			notices: {
 				toggleCompletionFailure: "Не удалось переключить завершение повторяющейся задачи: {message}",
@@ -2816,10 +2849,17 @@ export const ru: TranslationTree = {
 				copyPathSuccess: "Путь к файлу скопирован в буфер обмена",
 				copyUrlSuccess: "URL Obsidian скопирован в буфер обмена",
 				updateRecurrenceFailure: "Не удалось обновить повторение задачи: {message}",
+				updateTagsFailed: "Не удалось обновить теги"
 			},
+			tags: "Теги",
+			addTag: "Добавить тег…",
+			removeTag: "Удалить {tag}",
+			removeTagInput: "Удалить тег…",
+			tagPlaceholder: "Тег или #тег",
+			clearTags: "Очистить теги"
 		},
 		priority: {
-			clearPriority: "Очистить приоритет",
+			clearPriority: "Очистить приоритет"
 		},
 		ics: {
 			showDetails: "Показать детали",
@@ -2843,7 +2883,7 @@ export const ru: TranslationTree = {
 				creationFailure: "Не удалось открыть модальное окно создания",
 				linkSuccess: "Связана заметка \"{name}\" с событием",
 				linkFailure: "Не удалось связать заметку",
-				linkSelectionFailure: "Не удалось открыть выбор заметки",
+				linkSelectionFailure: "Не удалось открыть выбор заметки"
 			},
 			markdown: {
 				titleFallback: "Событие без названия",
@@ -2852,22 +2892,22 @@ export const ru: TranslationTree = {
 				location: "**Местоположение:** {value}",
 				descriptionHeading: "### Описание",
 				url: "**URL:** {value}",
-				at: " в {time}",
-			},
+				at: " в {time}"
+			}
 		},
 		date: {
 			increment: {
 				plusOneDay: "+1 день",
 				minusOneDay: "-1 день",
 				plusOneWeek: "+1 неделя",
-				minusOneWeek: "-1 неделя",
+				minusOneWeek: "-1 неделя"
 			},
 			basic: {
 				today: "Сегодня",
 				tomorrow: "Завтра",
 				thisWeekend: "Эти выходные",
 				nextWeek: "Следующая неделя",
-				nextMonth: "Следующий месяц",
+				nextMonth: "Следующий месяц"
 			},
 			weekdaysLabel: "Рабочие дни",
 			selected: "✓ {label}",
@@ -2877,9 +2917,9 @@ export const ru: TranslationTree = {
 				title: "Установить дату и время",
 				dateLabel: "Дата",
 				timeLabel: "Время (опционально)",
-				select: "Выбрать",
-			},
-		},
+				select: "Выбрать"
+			}
+		}
 	},
 	services: {
 		pomodoro: {
@@ -2894,16 +2934,16 @@ export const ru: TranslationTree = {
 				resumed: "Помодоро возобновлено",
 				stoppedAndReset: "Помодоро остановлено и сброшено",
 				migrationSuccess: "Успешно перенесено {count} сессий помодоро в ежедневные заметки.",
-				migrationFailure: "Не удалось перенести данные помодоро. Пожалуйста, попробуйте снова или проверьте консоль для деталей.",
-			},
+				migrationFailure: "Не удалось перенести данные помодоро. Пожалуйста, попробуйте снова или проверьте консоль для деталей."
+			}
 		},
 		icsSubscription: {
 			notices: {
 				calendarNotFound: "Календарь \"{name}\" не найден (404). Пожалуйста, проверьте, что URL ICS правильный и календарь общедоступен.",
 				calendarAccessDenied: "Доступ к календарю \"{name}\" запрещен (500). Это может быть из-за ограничений сервера Microsoft Outlook. Попробуйте перегенерировать URL ICS из настроек календаря.",
 				fetchRemoteFailed: "Не удалось получить удаленный календарь \"{name}\": {error}",
-				readLocalFailed: "Не удалось прочитать локальный календарь \"{name}\": {error}",
-			},
+				readLocalFailed: "Не удалось прочитать локальный календарь \"{name}\": {error}"
+			}
 		},
 		calendarExport: {
 			notices: {
@@ -2911,8 +2951,8 @@ export const ru: TranslationTree = {
 				noTasksToExport: "Не найдено задач для экспорта",
 				downloadSuccess: "Скачан {filename} с {count} задач{plural}",
 				downloadFailed: "Не удалось скачать файл календаря",
-				singleDownloadSuccess: "Скачан {filename}",
-			},
+				singleDownloadSuccess: "Скачан {filename}"
+			}
 		},
 		filter: {
 			groupLabels: {
@@ -2925,7 +2965,7 @@ export const ru: TranslationTree = {
 					tomorrow: "Завтра",
 					nextSevenDays: "Следующие семь дней",
 					later: "Позже",
-					none: "Без срока выполнения",
+					none: "Без срока выполнения"
 				},
 				scheduled: {
 					past: "Прошлые запланированные",
@@ -2933,15 +2973,15 @@ export const ru: TranslationTree = {
 					tomorrow: "Завтра",
 					nextSevenDays: "Следующие семь дней",
 					later: "Позже",
-					none: "Без запланированной даты",
-				},
+					none: "Без запланированной даты"
+				}
 			},
 			errors: {
-				noDatesProvided: "Даты не предоставлены",
+				noDatesProvided: "Даты не предоставлены"
 			},
 			folders: {
-				root: "(Корень)",
-			},
+				root: "(Корень)"
+			}
 		},
 		instantTaskConvert: {
 			notices: {
@@ -2958,40 +2998,40 @@ export const ru: TranslationTree = {
 				conversionComplete: "Задача преобразована: {title}",
 				conversionCompleteShortened: "Задача преобразована: \"{title}\" (имя файла сокращено из-за длины)",
 				fileExists: "Файл с таким именем уже существует. Пожалуйста, попробуйте снова или переименуйте задачу.",
-				conversionFailed: "Не удалось преобразовать задачу. Пожалуйста, попробуйте снова.",
-			},
+				conversionFailed: "Не удалось преобразовать задачу. Пожалуйста, попробуйте снова."
+			}
 		},
 		icsNote: {
 			notices: {
 				templateNotFound: "Шаблон не найден: {path}",
 				templateProcessError: "Ошибка обработки шаблона: {template}",
-				linkedToEvent: "Заметка связана с событием ICS: {title}",
-			},
+				linkedToEvent: "Заметка связана с событием ICS: {title}"
+			}
 		},
 		task: {
 			notices: {
 				templateNotFound: "Шаблон тела задачи не найден: {path}",
 				templateReadError: "Ошибка чтения шаблона тела задачи: {template}",
-				moveTaskFailed: "Не удалось переместить {operation} задачу: {error}",
-			},
+				moveTaskFailed: "Не удалось переместить {operation} задачу: {error}"
+			}
 		},
 		autoExport: {
 			notices: {
-				exportFailed: "Автоэкспорт TaskNotes не удался: {error}",
-			},
-		},
+				exportFailed: "Автоэкспорт TaskNotes не удался: {error}"
+			}
+		}
 	},
 	ui: {
 		icsCard: {
 			untitledEvent: "Событие без названия",
 			allDay: "Весь день",
 			calendarEvent: "Событие календаря",
-			calendarFallback: "Календарь",
+			calendarFallback: "Календарь"
 		},
 		noteCard: {
 			createdLabel: "Создано:",
 			dailyBadge: "Ежедневно",
-			dailyTooltip: "Ежедневная заметка",
+			dailyTooltip: "Ежедневная заметка"
 		},
 		taskCard: {
 			labels: {
@@ -3002,7 +3042,7 @@ export const ru: TranslationTree = {
 				created: "Создано",
 				modified: "Изменено",
 				blocked: "Заблокировано",
-				blocking: "Блокирует",
+				blocking: "Блокирует"
 			},
 			blockedBadge: "Заблокирована",
 			blockedBadgeTooltip: "Эта задача ожидает другую задачу",
@@ -3029,12 +3069,13 @@ export const ru: TranslationTree = {
 			blockingEmpty: "Нет зависимых задач",
 			blockingLoadError: "Не удалось загрузить зависимости",
 			googleCalendarSyncTooltip: "Синхронизировано с Google Календарём",
+			detailsTooltip: "У задачи есть подробности"
 		},
 		propertyEventCard: {
-			unknownFile: "Неизвестный файл",
+			unknownFile: "Неизвестный файл"
 		},
 		filterHeading: {
-			allViewName: "Все",
+			allViewName: "Все"
 		},
 		filterBar: {
 			saveView: "Сохранить представление",
@@ -3115,7 +3156,7 @@ export const ru: TranslationTree = {
 				createdDate: "Дата создания",
 				tags: "Теги",
 				ascending: "По возрастанию",
-				descending: "По убыванию",
+				descending: "По убыванию"
 			},
 			group: {
 				none: "Нет",
@@ -3126,13 +3167,13 @@ export const ru: TranslationTree = {
 				dueDate: "Срок выполнения",
 				scheduledDate: "Запланированная дата",
 				tags: "Теги",
-				completedDate: "Дата завершения",
+				completedDate: "Дата завершения"
 			},
 			subgroupLabel: "ПОДГРУППА",
 			notices: {
-				propertiesMenuFailed: "Не удалось показать меню свойств",
-			},
-		},
+				propertiesMenuFailed: "Не удалось показать меню свойств"
+			}
+		}
 	},
 	components: {
 		dateContextMenu: {
@@ -3145,7 +3186,7 @@ export const ru: TranslationTree = {
 			nextMonth: "В следующем месяце",
 			setDateTime: "Установить дату и время",
 			dateLabel: "Дата",
-			timeLabel: "Время (необязательно)",
+			timeLabel: "Время (необязательно)"
 		},
 		subgroupMenuBuilder: {
 			none: "Нет",
@@ -3157,7 +3198,7 @@ export const ru: TranslationTree = {
 			scheduledDate: "Запланированная дата",
 			tags: "Теги",
 			completedDate: "Завершено Date",
-			subgroup: "ПОДГРУППА",
+			subgroup: "ПОДГРУППА"
 		},
 		propertyVisibilityDropdown: {
 			coreProperties: "ОСНОВНЫЕ СВОЙСТВА",
@@ -3180,8 +3221,8 @@ export const ru: TranslationTree = {
 				contexts: "Контексты",
 				tags: "Теги",
 				blocked: "Заблокирована",
-				blocking: "Блокирует",
-			},
+				blocking: "Блокирует"
+			}
 		},
 		reminderContextMenu: {
 			remindBeforeDue: "Напомнить до срока выполнения...",
@@ -3193,8 +3234,8 @@ export const ru: TranslationTree = {
 				fiveMinutesBefore: "За 5 минут",
 				fifteenMinutesBefore: "За 15 минут",
 				oneHourBefore: "За 1 час",
-				oneDayBefore: "За 1 день",
-			},
+				oneDayBefore: "За 1 день"
+			}
 		},
 		recurrenceContextMenu: {
 			daily: "Ежедневно",
@@ -3242,14 +3283,14 @@ export const ru: TranslationTree = {
 					daily: "Ежедневно",
 					weekly: "Еженедельно",
 					monthly: "Ежемесячно",
-					yearly: "Ежегодно",
+					yearly: "Ежегодно"
 				},
 				weekPositions: {
 					first: "первый",
 					second: "второй",
 					third: "третий",
 					fourth: "четвертый",
-					last: "последний",
+					last: "последний"
 				},
 				weekdays: {
 					monday: "Понедельник",
@@ -3258,7 +3299,7 @@ export const ru: TranslationTree = {
 					thursday: "Четверг",
 					friday: "Пятница",
 					saturday: "Суббота",
-					sunday: "Воскресенье",
+					sunday: "Воскресенье"
 				},
 				weekdaysShort: {
 					mon: "Пн",
@@ -3267,11 +3308,11 @@ export const ru: TranslationTree = {
 					thu: "Чт",
 					fri: "Пт",
 					sat: "Сб",
-					sun: "Вс",
+					sun: "Вс"
 				},
 				cancel: "Отмена",
-				save: "Сохранить",
-			},
-		},
-	},
+				save: "Сохранить"
+			}
+		}
+	}
 };
