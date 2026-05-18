@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { processFolderTemplate } from "../utils/folderTemplateProcessor";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo, NoteInfo, TaskCreationData } from "../types";
-import { getCurrentTimestampForStorage, formatDateForStorage } from "../utils/dateUtils";
+import { getCurrentTimestamp, formatDateForStorage } from "../utils/dateUtils";
 import {
 	generateICSNoteFilename,
 	generateUniqueFilename,
@@ -251,8 +251,8 @@ export class ICSNoteService {
 					overrides?.details || this.buildICSEventDetails(icsEvent, subscriptionName),
 				icsEventId: [icsEvent.id],
 				creationContext: "ics-event",
-				dateCreated: getCurrentTimestampForStorage(),
-				dateModified: getCurrentTimestampForStorage(),
+				dateCreated: getCurrentTimestamp(),
+				dateModified: getCurrentTimestamp(),
 				// Spread overrides but exclude 'due' since we handle it specially above
 				...Object.fromEntries(
 					Object.entries(overrides || {}).filter(([key]) => key !== "due")
@@ -433,8 +433,8 @@ export class ICSNoteService {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			let frontmatter: Record<string, unknown> = {
 				title: noteTitle,
-				[dateCreatedField]: getCurrentTimestampForStorage(),
-				[dateModifiedField]: getCurrentTimestampForStorage(),
+				[dateCreatedField]: getCurrentTimestamp(),
+				[dateModifiedField]: getCurrentTimestamp(),
 				tags: [this.plugin.fieldMapper.toUserField("icsEventTag")],
 				[this.plugin.fieldMapper.toUserField("icsEventId")]: [icsEvent.id],
 			};
@@ -600,7 +600,7 @@ export class ICSNoteService {
 
 				frontmatter[icsEventIdField] = existingIds;
 				const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
-				frontmatter[dateModifiedField] = getCurrentTimestampForStorage();
+				frontmatter[dateModifiedField] = getCurrentTimestamp();
 			});
 
 			new Notice(

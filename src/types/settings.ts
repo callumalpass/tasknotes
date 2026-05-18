@@ -79,8 +79,6 @@ export interface NLPTriggersConfig {
 	triggers: PropertyTriggerConfig[];
 }
 
-export type RelationshipsDisplayMode = "always" | "whenPopulated" | "never";
-
 export type HideIdentifyingTagsMode = "all" | "exact-only";
 
 export interface ProjectAutosuggestSettings {
@@ -174,7 +172,6 @@ export interface TaskNotesSettings {
 	autoStopTimeTrackingNotification: boolean;
 	// Relationships widget settings (unified subtasks, projects, and dependencies)
 	showRelationships: boolean;
-	relationshipsDisplayMode: RelationshipsDisplayMode;
 	relationshipsPosition: "top" | "bottom";
 	// Task card in note settings
 	showTaskCardInNote: boolean;
@@ -282,6 +279,7 @@ export interface TaskCreationDefaults {
 	defaultProjects: string; // Comma-separated list of project links
 	useParentNoteAsProject: boolean; // Use the parent note as a project during instant conversion
 	useParentHeaderAsProject: boolean; // Use the closest markdown heading as a project during instant conversion
+	inheritParentTaskProperties: boolean; // Copy parent task projects, contexts, priority, and tags when creating subtasks
 	defaultTimeEstimate: number; // minutes, 0 = no default
 	defaultRecurrence: "none" | "daily" | "weekly" | "monthly" | "yearly";
 	// Date defaults

@@ -1063,6 +1063,8 @@ export const pt: TranslationTree = {
 				defaultProjects: "Projetos padrão:",
 				useParentNote: "Usar nota pai como projeto:",
 				useParentHeader: "Usar cabeçalho pai como projeto:",
+				inheritParentTaskProperties:
+					"Herdar propriedades da tarefa pai para subtarefas:",
 				noDefaultProjects: "Nenhum projeto padrão selecionado",
 				autosuggestFilters: "Filtros de Autosugestão",
 				customizeDisplay: "Personalizar Exibição",

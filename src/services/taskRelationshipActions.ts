@@ -1,7 +1,7 @@
 import { Notice, TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
-import { generateLink } from "../utils/linkUtils";
+import { generateLink, parseLinkToPath } from "../utils/linkUtils";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 
 function translate(
@@ -27,6 +27,37 @@ function uniqueNonEmptyStrings(values: string[]): string[] {
 	}
 
 	return uniqueValues;
+}
+
+function encodeMarkdownLinkPath(path: string): string {
+	return encodeURI(path).replace(/\(/g, "%28").replace(/\)/g, "%29");
+}
+
+function buildStableFileLink(plugin: TaskNotesPlugin, file: TFile): string {
+	if (plugin.settings.useFrontmatterMarkdownLinks) {
+		return `[${file.basename}](${encodeMarkdownLinkPath(file.path)})`;
+	}
+
+	return `[[${file.path.replace(/\.md$/i, "")}]]`;
+}
+
+function resolveProjectReference(
+	plugin: TaskNotesPlugin,
+	projectReference: string,
+	sourcePath: string
+): string {
+	const trimmedReference = projectReference.trim();
+	if (!trimmedReference) {
+		return "";
+	}
+
+	const linkPath = parseLinkToPath(trimmedReference);
+	const resolvedFile = plugin.app.metadataCache.getFirstLinkpathDest?.(linkPath, sourcePath);
+	if (resolvedFile instanceof TFile) {
+		return buildStableFileLink(plugin, resolvedFile);
+	}
+
+	return trimmedReference;
 }
 
 export async function addTaskToProject(
@@ -101,24 +132,28 @@ export function buildSubtaskCreationPrePopulatedValues(
 	parentTask: TaskInfo,
 	parentFile: TFile
 ): Partial<TaskInfo> {
-	const projectReference = generateLink(
-		plugin.app,
-		parentFile,
-		parentTask.path,
-		"",
-		"",
-		plugin.settings.useFrontmatterMarkdownLinks
+	const shouldInheritParentProperties = Boolean(
+		plugin.settings.taskCreationDefaults?.inheritParentTaskProperties
 	);
+	const projectReference = buildStableFileLink(plugin, parentFile);
 	const parentTags = Array.isArray(parentTask.tags) ? parentTask.tags : [];
-	const parentProjects = Array.isArray(parentTask.projects) ? parentTask.projects : [];
-	const inheritedTags =
-		plugin.settings.taskIdentificationMethod === "tag"
-			? filterTaskIdentificationTags(
-					parentTags,
-					plugin.settings.taskTag,
-					plugin.settings.hideIdentifyingTagsMode
+	const parentProjects = shouldInheritParentProperties
+		? Array.isArray(parentTask.projects)
+			? parentTask.projects.map((project) =>
+					resolveProjectReference(plugin, project, parentTask.path)
 				)
-			: [...parentTags];
+			: []
+		: [];
+	const inheritedTags =
+		shouldInheritParentProperties
+			? plugin.settings.taskIdentificationMethod === "tag"
+				? filterTaskIdentificationTags(
+						parentTags,
+						plugin.settings.taskTag,
+						plugin.settings.hideIdentifyingTagsMode
+					)
+				: [...parentTags]
+			: [];
 	const values: Partial<TaskInfo> = {
 		projects: uniqueNonEmptyStrings([...parentProjects, projectReference]),
 	};
@@ -126,10 +161,14 @@ export function buildSubtaskCreationPrePopulatedValues(
 	if (inheritedTags.length > 0) {
 		values.tags = inheritedTags;
 	}
-	if (Array.isArray(parentTask.contexts) && parentTask.contexts.length > 0) {
+	if (
+		shouldInheritParentProperties &&
+		Array.isArray(parentTask.contexts) &&
+		parentTask.contexts.length > 0
+	) {
 		values.contexts = [...parentTask.contexts];
 	}
-	if (parentTask.priority) {
+	if (shouldInheritParentProperties && parentTask.priority) {
 		values.priority = parentTask.priority;
 	}
 

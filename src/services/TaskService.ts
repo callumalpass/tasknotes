@@ -35,7 +35,7 @@ import {
 	formatDateForStorage,
 	getDatePart,
 	getCurrentDateString,
-	getCurrentTimestampForStorage,
+	getCurrentTimestamp,
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
 	parseDateToUTC,
@@ -530,7 +530,7 @@ export class TaskService {
 						? this.normalizeBlockedByValue(value)
 						: value;
 			updatedTask[property] = normalizedValue;
-			updatedTask.dateModified = getCurrentTimestampForStorage();
+			updatedTask.dateModified = getCurrentTimestamp();
 
 			// Handle derivative changes for status updates
 			if (property === "status" && !freshTask.recurrence) {
@@ -792,7 +792,7 @@ export class TaskService {
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
 		updatedTask.archived = !isCurrentlyArchived;
-		updatedTask.dateModified = getCurrentTimestampForStorage();
+		updatedTask.dateModified = getCurrentTimestamp();
 
 		// Update tags array to include/exclude archive tag
 		if (!updatedTask.tags) {
@@ -1013,7 +1013,7 @@ export class TaskService {
 	/**
 	 * Start time tracking for a task
 	 */
-	async startTimeTracking(task: TaskInfo, instanceDate?: string): Promise<TaskInfo> {
+	async startTimeTracking(task: TaskInfo): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
@@ -1027,7 +1027,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestampForStorage();
+		updatedTask.dateModified = getCurrentTimestamp();
 
 		if (!updatedTask.timeEntries) {
 			updatedTask.timeEntries = [];
@@ -1041,7 +1041,6 @@ export class TaskService {
 		const newEntry: TimeEntry = {
 			startTime: new Date().toISOString(),
 			description: "Work session",
-			...(instanceDate ? { instanceDate } : {}),
 		};
 		updatedTask.timeEntries = [...updatedTask.timeEntries, newEntry];
 
@@ -1105,13 +1104,13 @@ export class TaskService {
 	/**
 	 * Stop time tracking for a task
 	 */
-	async stopTimeTracking(task: TaskInfo, instanceDate?: string): Promise<TaskInfo> {
+	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
 		}
 
-		const activeSession = getActiveTimeEntry(task.timeEntries || [], instanceDate);
+		const activeSession = this.plugin.getActiveTimeSession(task);
 		if (!activeSession) {
 			throw new Error("No active time tracking session for this task");
 		}
@@ -1119,7 +1118,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestampForStorage();
+		updatedTask.dateModified = getCurrentTimestamp();
 
 		if (updatedTask.timeEntries && Array.isArray(updatedTask.timeEntries)) {
 			updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
@@ -1432,7 +1431,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory using fresh data
 		const updatedTask = { ...freshTask };
-		updatedTask.dateModified = getCurrentTimestampForStorage();
+		updatedTask.dateModified = getCurrentTimestamp();
 
 		if (newComplete) {
 			// Add date to completed instances if not already present
@@ -1652,7 +1651,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...freshTask };
-		updatedTask.dateModified = getCurrentTimestampForStorage();
+		updatedTask.dateModified = getCurrentTimestamp();
 
 		if (newSkipped) {
 			// Mark as skipped
@@ -1779,7 +1778,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestampForStorage();
+		updatedTask.dateModified = getCurrentTimestamp();
 
 		// Remove the time entry at the specified index
 		updatedTask.timeEntries = task.timeEntries.filter((_, index) => index !== timeEntryIndex);

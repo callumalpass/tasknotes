@@ -1,7 +1,7 @@
 import type TaskNotesPlugin from "../main";
 import type { ParsedTaskData } from "../services/NaturalLanguageParser";
 import type { TaskCreationData } from "../types";
-import { combineDateAndTime, getCurrentTimestampForStorage } from "./dateUtils";
+import { combineDateAndTime, getCurrentTimestamp } from "./dateUtils";
 import { sanitizeTags } from "./helpers";
 
 interface BuildTaskCreationDataOptions {
@@ -13,7 +13,7 @@ export function buildTaskCreationDataFromParsed(
 	parsed: ParsedTaskData,
 	options: BuildTaskCreationDataOptions = {}
 ): TaskCreationData {
-	const now = getCurrentTimestampForStorage();
+	const now = getCurrentTimestamp();
 	const taskData: TaskCreationData = {
 		title: parsed.title.trim(),
 		status: parsed.status || plugin.settings.defaultTaskStatus,

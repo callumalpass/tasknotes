@@ -26,6 +26,8 @@ export class SettingsLifecycleService {
 	private previousCacheSettings: CacheSettingsSnapshot | null = null;
 	private previousTimeTrackingSettings: TimeTrackingSettingsSnapshot | null = null;
 	private autoStopTimeTrackingListener: unknown = null;
+	private saveSettingsPromise: Promise<void> | null = null;
+	private saveSettingsRequested = false;
 
 	constructor(private plugin: TaskNotesPlugin) {}
 
@@ -53,7 +55,35 @@ export class SettingsLifecycleService {
 	}
 
 	async saveSettings(): Promise<void> {
-		await this.plugin.saveSettingsDataOnly();
+		this.saveSettingsRequested = true;
+		if (!this.saveSettingsPromise) {
+			this.saveSettingsPromise = this.drainSettingsSaves();
+		}
+
+		await this.saveSettingsPromise;
+	}
+
+	private async drainSettingsSaves(): Promise<void> {
+		try {
+			while (this.saveSettingsRequested) {
+				this.saveSettingsRequested = false;
+				await this.plugin.saveSettingsDataOnly();
+
+				if (this.saveSettingsRequested) {
+					continue;
+				}
+
+				this.applySettingsSideEffects();
+			}
+		} finally {
+			this.saveSettingsPromise = null;
+			if (this.saveSettingsRequested) {
+				await this.saveSettings();
+			}
+		}
+	}
+
+	private applySettingsSideEffects(): void {
 		this.plugin.apiService?.syncWebhookSettings?.();
 
 		const cacheSettingsChanged = this.haveCacheSettingsChanged();

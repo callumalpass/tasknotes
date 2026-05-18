@@ -1149,6 +1149,7 @@ export const en: TranslationTree = {
 				defaultProjects: "Default projects:",
 				useParentNote: "Use parent note as project:",
 				useParentHeader: "Use parent heading as project:",
+				inheritParentTaskProperties: "Inherit parent task properties for subtasks:",
 				noDefaultProjects: "No default projects selected",
 				autosuggestFilters: "Autosuggest filters",
 				customizeDisplay: "Customize display",
@@ -1538,12 +1539,7 @@ export const en: TranslationTree = {
 				showRelationshipsWidget: {
 					name: "Show relationships widget",
 					description:
-						"Choose when to display the relationships widget for the current note",
-					options: {
-						always: "Always",
-						whenPopulated: "When populated",
-						never: "Never",
-					},
+						"Display a widget showing all relationships for the current note (subtasks, projects, dependencies)",
 				},
 				relationshipsPosition: {
 					name: "Relationships position",

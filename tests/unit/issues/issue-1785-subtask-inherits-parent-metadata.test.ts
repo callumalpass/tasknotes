@@ -28,6 +28,9 @@ function createPlugin(settings: Record<string, unknown> = {}) {
 			taskTag: "task",
 			taskIdentificationMethod: "tag",
 			useFrontmatterMarkdownLinks: false,
+			taskCreationDefaults: {
+				inheritParentTaskProperties: true,
+			},
 			...settings,
 		},
 	};
@@ -46,7 +49,7 @@ describe("issue #1785 subtask metadata prefill", () => {
 			parentFile
 		);
 
-		expect(values.projects).toEqual(["[[Client A]]", "[[Parent task]]"]);
+		expect(values.projects).toEqual(["[[Client A]]", "[[Tasks/Parent task]]"]);
 		expect(values.contexts).toEqual(["office", "calls"]);
 		expect(values.priority).toBe("high");
 		expect(values.tags).toEqual(["client-a", "urgent"]);
@@ -72,5 +75,22 @@ describe("issue #1785 subtask metadata prefill", () => {
 		);
 
 		expect(values.status).toBeUndefined();
+	});
+
+	it("does not inherit parent metadata when the setting is disabled", () => {
+		const parentFile = new TFile("Tasks/Parent task.md");
+		const values = buildSubtaskCreationPrePopulatedValues(
+			createPlugin({
+				taskCreationDefaults: {
+					inheritParentTaskProperties: false,
+				},
+			}) as never,
+			createParentTask(),
+			parentFile
+		);
+
+		expect(values).toEqual({
+			projects: ["[[Tasks/Parent task]]"],
+		});
 	});
 });

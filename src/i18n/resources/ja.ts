@@ -1060,6 +1060,7 @@ export const ja: TranslationTree = {
 				defaultProjects: "デフォルトプロジェクト:",
 				useParentNote: "親ノートをプロジェクトとして使用:",
 				useParentHeader: "親見出しをプロジェクトとして使用:",
+				inheritParentTaskProperties: "サブタスクに親タスクのプロパティを継承:",
 				noDefaultProjects: "デフォルトプロジェクトが選択されていません",
 				autosuggestFilters: "オートサジェストフィルター",
 				customizeDisplay: "表示をカスタマイズ",

@@ -35,7 +35,7 @@ import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "./modals/ProjectSelectModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { convertUTCToLocalCalendarDate, getCurrentTimestampForStorage } from "./utils/dateUtils";
+import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -120,6 +120,8 @@ export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
 	i18n: I18nService;
 	private settingsLoadCompromised = false;
+	private settingsDataSavePromise: Promise<void> | null = null;
+	private settingsDataSaveRequested = false;
 
 	// Date change detection for refreshing task states at midnight
 	private lastKnownDate: string = new Date().toDateString();
@@ -787,15 +789,7 @@ export default class TaskNotesPlugin extends Plugin {
 			window.setTimeout(() => {
 				void (async () => {
 					try {
-						const data = (await this.loadData()) || {};
-						// Merge only settings properties, preserving non-settings data
-						const settingsKeys = Object.keys(
-							DEFAULT_SETTINGS
-						) as (keyof TaskNotesSettings)[];
-						for (const key of settingsKeys) {
-							data[key] = this.settings[key];
-						}
-						await this.saveData(data);
+						await this.saveSettingsDataOnly();
 					} catch (error) {
 						console.error("Failed to save migrated settings:", error);
 					}
@@ -815,6 +809,29 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Intended for background/internal updates (e.g., sync token writes).
 	 */
 	async saveSettingsDataOnly(): Promise<void> {
+		this.settingsDataSaveRequested = true;
+		if (!this.settingsDataSavePromise) {
+			this.settingsDataSavePromise = this.drainSettingsDataSaves();
+		}
+
+		await this.settingsDataSavePromise;
+	}
+
+	private async drainSettingsDataSaves(): Promise<void> {
+		try {
+			while (this.settingsDataSaveRequested) {
+				this.settingsDataSaveRequested = false;
+				await this.writeSettingsDataOnlyOnce();
+			}
+		} finally {
+			this.settingsDataSavePromise = null;
+			if (this.settingsDataSaveRequested) {
+				await this.saveSettingsDataOnly();
+			}
+		}
+	}
+
+	private async writeSettingsDataOnlyOnce(): Promise<void> {
 		if (this.settingsLoadCompromised) {
 			console.warn(
 				"[TaskNotes] Skipping settings save because settings data could not be read safely during startup."
@@ -1302,7 +1319,7 @@ export default class TaskNotesPlugin extends Plugin {
 		// Build a TaskInfo object from the note's existing data
 		// Use defaults for required fields that don't exist
 		// Use ?? (nullish coalescing) to properly handle empty string defaults
-		const now = getCurrentTimestampForStorage();
+		const now = getCurrentTimestamp();
 		const taskInfo: TaskInfo = {
 			path: activeFile.path,
 			title: frontmatterString(frontmatter.title) || activeFile.basename,
@@ -1373,28 +1390,22 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Starts a time tracking session for a task
 	 */
-	async startTimeTracking(
-		task: TaskInfo,
-		description?: string,
-		targetDate?: Date
-	): Promise<TaskInfo> {
-		return this.taskActionCoordinator.startTimeTracking(task, description, targetDate);
+	async startTimeTracking(task: TaskInfo, description?: string): Promise<TaskInfo> {
+		return this.taskActionCoordinator.startTimeTracking(task, description);
 	}
 
 	/**
 	 * Stops the active time tracking session for a task
 	 */
-	async stopTimeTracking(task: TaskInfo, targetDate?: Date): Promise<TaskInfo> {
-		return this.taskActionCoordinator.stopTimeTracking(task, targetDate);
+	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
+		return this.taskActionCoordinator.stopTimeTracking(task);
 	}
 
 	/**
 	 * Gets the active time tracking session for a task
 	 */
-	getActiveTimeSession(task: TaskInfo, targetDate?: Date) {
-		const instanceDate =
-			task.recurrence && targetDate ? formatDateForStorage(targetDate) : undefined;
-		return getActiveTimeEntry(task.timeEntries || [], instanceDate);
+	getActiveTimeSession(task: TaskInfo) {
+		return getActiveTimeEntry(task.timeEntries || []);
 	}
 
 	/**

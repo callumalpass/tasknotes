@@ -5,7 +5,7 @@ import { EVENT_TASK_UPDATED, IWebhookNotifier, TaskInfo } from "../../types";
 import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../../core/recurrence";
 import { splitFrontmatterAndBody } from "../../utils/helpers";
 import { generateUniqueFilename } from "../../utils/filenameGenerator";
-import { getCurrentDateString, getCurrentTimestampForStorage } from "../../utils/dateUtils";
+import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
 import {
 	applyPropertyTaskIdentifier,
 	getFrontmatterTags,
@@ -84,7 +84,7 @@ export class TaskUpdateService {
 					...originalTask,
 					...updates,
 					...recurrenceUpdates,
-					dateModified: getCurrentTimestampForStorage(),
+					dateModified: getCurrentTimestamp(),
 				};
 
 				const mappedFrontmatter = plugin.fieldMapper.mapToFrontmatter(
@@ -178,7 +178,7 @@ export class TaskUpdateService {
 				...updates,
 				...recurrenceUpdates,
 				path: newPath,
-				dateModified: getCurrentTimestampForStorage(),
+				dateModified: getCurrentTimestamp(),
 			};
 			if (finalTags) {
 				updatedTask.tags = finalTags;

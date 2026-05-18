@@ -2,7 +2,7 @@ import type { CliData } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { Reminder, TaskCreationData } from "../types";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
-import { getCurrentTimestampForStorage } from "./dateUtils";
+import { getCurrentTimestamp } from "./dateUtils";
 import { sanitizeTags } from "./helpers";
 import { buildTaskCreationDataFromParsed } from "./buildTaskCreationDataFromParsed";
 
@@ -150,7 +150,7 @@ export function buildTaskCreationDataFromCli(
 		});
 		usedNlp = true;
 	} else {
-		const now = getCurrentTimestampForStorage();
+		const now = getCurrentTimestamp();
 		const title = titleOverride || text;
 		if (!title) {
 			throw new Error("Either --text or --title is required");

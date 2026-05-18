@@ -43,14 +43,8 @@
  * Option C: Store instance date in a separate field on TimeEntry
  */
 
-import { TFile } from 'obsidian';
 import { TimeEntry, TaskInfo } from '../../../src/types';
-import { TaskService } from '../../../src/services/TaskService';
-import {
-	calculateTotalTimeSpent,
-	filterTimeEntriesForInstance,
-	getActiveTimeEntry,
-} from '../../../src/utils/helpers';
+import { getActiveTimeEntry } from '../../../src/utils/helpers';
 
 /**
  * Helper to create a time entry
@@ -170,59 +164,6 @@ describe('Issue #1065 - Recurring Task Time Tracking Bug', () => {
 	});
 
 	describe('EXPECTED BEHAVIOR - Instance-Specific Time Tracking', () => {
-		it('filters active time tracking by recurring instance date', () => {
-			const timeEntries: TimeEntry[] = [
-				createTimeEntry({
-					startTime: '2026-01-05T09:00:00Z',
-					instanceDate: '2026-01-05',
-				}),
-				createTimeEntry({
-					startTime: '2026-01-12T09:00:00Z',
-					endTime: '2026-01-12T10:00:00Z',
-					instanceDate: '2026-01-12',
-				}),
-			];
-
-			expect(getActiveTimeEntry(timeEntries, '2026-01-05')).not.toBeNull();
-			expect(getActiveTimeEntry(timeEntries, '2026-01-12')).toBeNull();
-		});
-
-		it('calculates tracked time for only the rendered recurring instance', () => {
-			const timeEntries: TimeEntry[] = [
-				createTimeEntry({
-					startTime: '2025-12-29T14:00:00Z',
-					endTime: '2025-12-29T16:00:00Z',
-					instanceDate: '2025-12-29',
-				}),
-				createTimeEntry({
-					startTime: '2026-01-05T09:00:00Z',
-					endTime: '2026-01-05T11:30:00Z',
-					instanceDate: '2026-01-05',
-				}),
-				createTimeEntry({
-					startTime: '2026-01-05T14:00:00Z',
-					endTime: '2026-01-05T15:00:00Z',
-					instanceDate: '2026-01-05',
-				}),
-			];
-
-			expect(calculateTotalTimeSpent(timeEntries, '2025-12-29')).toBe(120);
-			expect(calculateTotalTimeSpent(timeEntries, '2026-01-05')).toBe(210);
-			expect(calculateTotalTimeSpent(timeEntries, '2026-01-12')).toBe(0);
-		});
-
-		it('uses the time entry start date as a legacy instance fallback', () => {
-			const timeEntries: TimeEntry[] = [
-				createTimeEntry({
-					startTime: '2026-01-05T09:00:00Z',
-					endTime: '2026-01-05T10:00:00Z',
-				}),
-			];
-
-			expect(filterTimeEntriesForInstance(timeEntries, '2026-01-05')).toHaveLength(1);
-			expect(filterTimeEntriesForInstance(timeEntries, '2026-01-12')).toHaveLength(0);
-		});
-
 		it.skip('reproduces issue #1065 - time tracking should only apply to the specific instance', () => {
 			/**
 			 * Expected behavior: When starting time tracking on a recurring task instance,
@@ -584,96 +525,5 @@ describe('Issue #1065 - API Considerations', () => {
 		};
 
 		expect(options.instanceDate).toBeDefined();
-	});
-});
-
-describe('Issue #1065 - TaskService instance-date persistence', () => {
-	function createTaskServiceHarness(task: TaskInfo) {
-		const file = new TFile(task.path);
-		const frontmatter: Record<string, unknown> = {
-			timeEntries: task.timeEntries ? [...task.timeEntries] : [],
-		};
-		const plugin = {
-			app: {
-				vault: {
-					getAbstractFileByPath: jest.fn(() => file),
-				},
-				fileManager: {
-					processFrontMatter: jest.fn(async (_file: TFile, updater: (fm: Record<string, unknown>) => void) => {
-						updater(frontmatter);
-					}),
-				},
-			},
-			fieldMapper: {
-				toUserField: jest.fn((field: string) => field),
-			},
-			getActiveTimeSession: jest.fn((currentTask: TaskInfo) =>
-				getActiveTimeEntry(currentTask.timeEntries || [])
-			),
-			cacheManager: {
-				waitForFreshTaskData: jest.fn(async () => undefined),
-				updateTaskInfoInCache: jest.fn(),
-			},
-			emitter: {
-				trigger: jest.fn(),
-			},
-		};
-
-		return {
-			taskService: new TaskService(plugin as any),
-			frontmatter,
-			plugin,
-		};
-	}
-
-	it('stores instanceDate when starting tracking from a recurring instance', async () => {
-		const task = createRecurringTask({ timeEntries: [] });
-		const { taskService, frontmatter } = createTaskServiceHarness(task);
-
-		const updatedTask = await taskService.startTimeTracking(task, '2026-01-05');
-
-		expect(updatedTask.timeEntries?.[0]).toMatchObject({
-			instanceDate: '2026-01-05',
-			description: 'Work session',
-		});
-		expect((frontmatter.timeEntries as TimeEntry[])[0]).toMatchObject({
-			instanceDate: '2026-01-05',
-			description: 'Work session',
-		});
-	});
-
-	it('stops only the active entry for the requested recurring instance', async () => {
-		const task = createRecurringTask({
-			timeEntries: [
-				createTimeEntry({
-					startTime: '2026-01-05T09:00:00Z',
-					instanceDate: '2026-01-05',
-				}),
-				createTimeEntry({
-					startTime: '2026-01-12T09:00:00Z',
-					instanceDate: '2026-01-12',
-				}),
-			],
-		});
-		const { taskService, frontmatter } = createTaskServiceHarness(task);
-
-		const updatedTask = await taskService.stopTimeTracking(task, '2026-01-05');
-		const jan5Entry = updatedTask.timeEntries?.find(
-			(entry) => entry.instanceDate === '2026-01-05'
-		);
-		const jan12Entry = updatedTask.timeEntries?.find(
-			(entry) => entry.instanceDate === '2026-01-12'
-		);
-		const persistedJan5Entry = (frontmatter.timeEntries as TimeEntry[]).find(
-			(entry) => entry.instanceDate === '2026-01-05'
-		);
-		const persistedJan12Entry = (frontmatter.timeEntries as TimeEntry[]).find(
-			(entry) => entry.instanceDate === '2026-01-12'
-		);
-
-		expect(jan5Entry?.endTime).toEqual(expect.any(String));
-		expect(jan12Entry?.endTime).toBeUndefined();
-		expect(persistedJan5Entry?.endTime).toEqual(expect.any(String));
-		expect(persistedJan12Entry?.endTime).toBeUndefined();
 	});
 });

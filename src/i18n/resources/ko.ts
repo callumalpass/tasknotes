@@ -1033,6 +1033,7 @@ export const ko: TranslationTree = {
 				defaultProjects: "기본 프로젝트:",
 				useParentNote: "상위 노트를 프로젝트로 사용:",
 				useParentHeader: "상위 제목을 프로젝트로 사용:",
+				inheritParentTaskProperties: "하위 작업에 상위 작업 속성 상속:",
 				noDefaultProjects: "선택된 기본 프로젝트 없음",
 				autosuggestFilters: "자동 제안 필터",
 				customizeDisplay: "표시 사용자 지정",

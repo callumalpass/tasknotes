@@ -136,6 +136,7 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultProjects: "",
 	useParentNoteAsProject: false,
 	useParentHeaderAsProject: false,
+	inheritParentTaskProperties: false,
 	defaultTimeEstimate: 0,
 	defaultRecurrence: "none",
 	defaultDueDate: "none",
@@ -347,7 +348,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	autoStopTimeTrackingNotification: false,
 	// Relationships widget defaults (unified subtasks, projects, and dependencies)
 	showRelationships: true,
-	relationshipsDisplayMode: "always",
 	relationshipsPosition: "bottom",
 	// Task card in note defaults
 	showTaskCardInNote: true,

@@ -18,7 +18,7 @@ import {
 	updateDTSTARTInRecurrenceRule as updateDTSTARTInRecurrenceRuleCore,
 	updateToNextScheduledOccurrence as updateToNextScheduledOccurrenceCore,
 } from "../core/recurrence";
-import { combineDateAndTime, getDatePart, parseDateToLocal } from "./dateUtils";
+import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
 import { normalizeThemeColor } from "./themeColors";
 
 type ObsidianMoment = import("moment").Moment;
@@ -142,15 +142,12 @@ export function calculateDuration(startTime: string, endTime: string): number {
 /**
  * Calculate total time spent for a task from its time entries
  */
-export function calculateTotalTimeSpent(
-	timeEntries: TimeEntry[],
-	instanceDate?: string
-): number {
+export function calculateTotalTimeSpent(timeEntries: TimeEntry[]): number {
 	if (!timeEntries || !Array.isArray(timeEntries)) {
 		return 0;
 	}
 
-	return filterTimeEntriesForInstance(timeEntries, instanceDate).reduce((total, entry) => {
+	return timeEntries.reduce((total, entry) => {
 		// Skip entries without both start and end times
 		if (!entry.startTime || !entry.endTime) {
 			return total;
@@ -161,40 +158,15 @@ export function calculateTotalTimeSpent(
 	}, 0);
 }
 
-export function getTimeEntryInstanceDate(entry: TimeEntry): string {
-	return entry.instanceDate || getDatePart(entry.startTime);
-}
-
-export function filterTimeEntriesForInstance(
-	timeEntries: TimeEntry[],
-	instanceDate?: string
-): TimeEntry[] {
-	if (!timeEntries || !Array.isArray(timeEntries)) {
-		return [];
-	}
-	if (!instanceDate) {
-		return timeEntries;
-	}
-
-	return timeEntries.filter((entry) => getTimeEntryInstanceDate(entry) === instanceDate);
-}
-
 /**
  * Get the active (running) time entry for a task
  */
-export function getActiveTimeEntry(
-	timeEntries: TimeEntry[],
-	instanceDate?: string
-): TimeEntry | null {
+export function getActiveTimeEntry(timeEntries: TimeEntry[]): TimeEntry | null {
 	if (!timeEntries || !Array.isArray(timeEntries)) {
 		return null;
 	}
 
-	return (
-		filterTimeEntriesForInstance(timeEntries, instanceDate).find(
-			(entry) => entry.startTime && !entry.endTime
-		) || null
-	);
+	return timeEntries.find((entry) => entry.startTime && !entry.endTime) || null;
 }
 
 /**

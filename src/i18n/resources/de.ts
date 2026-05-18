@@ -1060,6 +1060,8 @@ export const de: TranslationTree = {
 				defaultProjects: "Standardprojekte:",
 				useParentNote: "Übergeordnete Notiz als Projekt verwenden:",
 				useParentHeader: "Übergeordnete Überschrift als Projekt verwenden:",
+				inheritParentTaskProperties:
+					"Eigenschaften der übergeordneten Aufgabe für Unteraufgaben übernehmen:",
 				noDefaultProjects: "Keine Standardprojekte ausgewählt",
 				autosuggestFilters: "Autovorschlag-Filter",
 				customizeDisplay: "Anzeige anpassen",

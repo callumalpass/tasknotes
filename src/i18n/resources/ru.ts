@@ -1060,6 +1060,8 @@ export const ru: TranslationTree = {
 				defaultProjects: "Проекты по умолчанию:",
 				useParentNote: "Использовать родительскую заметку как проект:",
 				useParentHeader: "Использовать родительский заголовок как проект:",
+				inheritParentTaskProperties:
+					"Наследовать свойства родительской задачи для подзадач:",
 				noDefaultProjects: "Проекты по умолчанию не выбраны",
 				autosuggestFilters: "Фильтры автоподсказок",
 				customizeDisplay: "Настроить отображение",

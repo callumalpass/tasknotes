@@ -1059,6 +1059,7 @@ export const zh: TranslationTree = {
 				defaultProjects: "默认项目：",
 				useParentNote: "使用父笔记作为项目：",
 				useParentHeader: "使用父级标题作为项目：",
+				inheritParentTaskProperties: "子任务继承父任务属性：",
 				noDefaultProjects: "未选择默认项目",
 				autosuggestFilters: "自动建议过滤器",
 				customizeDisplay: "自定义显示",

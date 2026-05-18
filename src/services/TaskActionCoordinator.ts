@@ -5,7 +5,7 @@ import { EVENT_DATA_CHANGED } from "../types";
 import { TimeEntryEditorModal } from "../modals/TimeEntryEditorModal";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
-import { formatDateForStorage, getCurrentDateString } from "../core/date";
+import { getCurrentDateString } from "../core/date";
 import { getActiveTimeEntry } from "../utils/helpers";
 import { getOverdueScheduledRolloverCandidates } from "../utils/scheduledRollover";
 
@@ -40,8 +40,7 @@ export class TaskActionCoordinator {
 		if (result.type === "selected" || result.type === "created") {
 			let taskToOpen = result.task;
 			try {
-				const trackingDate = result.task.recurrence ? targetDate : undefined;
-				taskToOpen = await this.startTimeTracking(result.task, undefined, trackingDate);
+				taskToOpen = await this.startTimeTracking(result.task);
 			} catch {
 				// startTimeTracking shows the user-facing notice; keep create/open behavior intact.
 			} finally {
@@ -50,15 +49,9 @@ export class TaskActionCoordinator {
 		}
 	}
 
-	async startTimeTracking(
-		task: TaskInfo,
-		description?: string,
-		targetDate?: Date
-	): Promise<TaskInfo> {
+	async startTimeTracking(task: TaskInfo, description?: string): Promise<TaskInfo> {
 		try {
-			const instanceDate =
-				task.recurrence && targetDate ? formatDateForStorage(targetDate) : undefined;
-			let updatedTask = await this.plugin.taskService.startTimeTracking(task, instanceDate);
+			let updatedTask = await this.plugin.taskService.startTimeTracking(task);
 
 			const trimmedDescription = description?.trim();
 			if (
@@ -92,11 +85,9 @@ export class TaskActionCoordinator {
 		}
 	}
 
-	async stopTimeTracking(task: TaskInfo, targetDate?: Date): Promise<TaskInfo> {
+	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
 		try {
-			const instanceDate =
-				task.recurrence && targetDate ? formatDateForStorage(targetDate) : undefined;
-			const updatedTask = await this.plugin.taskService.stopTimeTracking(task, instanceDate);
+			const updatedTask = await this.plugin.taskService.stopTimeTracking(task);
 			new Notice("Time tracking stopped");
 			this.requestStatusBarUpdate();
 			return updatedTask;
@@ -120,12 +111,7 @@ export class TaskActionCoordinator {
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 			const availableTasks = allTasks
 				.filter((task) => !task.archived)
-				.filter((task) => {
-					const instanceDate = task.recurrence
-						? formatDateForStorage(targetDate)
-						: undefined;
-					return !getActiveTimeEntry(task.timeEntries || [], instanceDate);
-				});
+				.filter((task) => !getActiveTimeEntry(task.timeEntries || []));
 
 			if (availableTasks.length === 0) {
 				new Notice(this.plugin.i18n.translate("modals.timeTracking.noTasksAvailable"));
@@ -142,8 +128,7 @@ export class TaskActionCoordinator {
 						}
 
 						try {
-							const trackingDate = selectedTask.recurrence ? targetDate : undefined;
-							await this.startTimeTracking(selectedTask, undefined, trackingDate);
+							await this.startTimeTracking(selectedTask);
 							new Notice(
 								this.plugin.i18n.translate("modals.timeTracking.started", {
 									taskTitle: selectedTask.title,

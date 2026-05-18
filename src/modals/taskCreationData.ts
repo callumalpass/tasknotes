@@ -1,5 +1,5 @@
 import { Reminder, TaskCreationData, TaskDependency } from "../types";
-import { getCurrentTimestampForStorage } from "../utils/dateUtils";
+import { getCurrentTimestamp } from "../utils/dateUtils";
 import { sanitizeTags } from "../utils/helpers";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 
@@ -37,7 +37,7 @@ export interface CreationBlockingUpdates {
 }
 
 export function buildTaskCreationData(input: TaskCreationDataInput): TaskCreationData {
-	const now = getCurrentTimestampForStorage();
+	const now = getCurrentTimestamp();
 	const contextList = input.contexts
 		.split(",")
 		.map((context) => context.trim())
