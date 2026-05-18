@@ -417,6 +417,11 @@ function getCommonSchemas(): Record<string, unknown> {
 					description: "Whether this task blocks at least one other task",
 					readOnly: true,
 				},
+				hasSubtasks: {
+					type: "boolean",
+					description: "Whether another task references this task as a project",
+					readOnly: true,
+				},
 				details: {
 					type: "string",
 					description: "Additional task details/description",
@@ -611,6 +616,7 @@ function getCommonSchemas(): Record<string, unknown> {
 						"dateCreated",
 						"dateModified",
 						"archived",
+						"hasSubtasks",
 						"dependencies.isBlocked",
 						"dependencies.isBlocking",
 						"timeEstimate",

@@ -128,6 +128,7 @@ export type FilterProperty =
 	| "dateModified"
 	// Boolean properties
 	| "archived"
+	| "hasSubtasks"
 	| "dependencies.isBlocked"
 	| "dependencies.isBlocking"
 	// Numeric properties
@@ -337,6 +338,13 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 		supportedOperators: ["is-checked", "is-not-checked"],
 		valueInputType: "none",
 	},
+	{
+		id: "hasSubtasks",
+		label: "Has Subtasks",
+		category: "boolean",
+		supportedOperators: ["is-checked", "is-not-checked"],
+		valueInputType: "none",
+	},
 
 	// Numeric properties
 	{
@@ -473,6 +481,7 @@ export interface TaskInfo {
 	blocking?: string[]; // Task paths that this task is blocking
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
 	isBlocking?: boolean; // True if this task blocks at least one other task
+	hasSubtasks?: boolean; // True if another task references this task as a project
 	details?: string; // Optional task body content
 	sortOrder?: string; // LexoRank string for ordering within column
 }

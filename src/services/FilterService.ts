@@ -582,6 +582,10 @@ export class FilterService extends EventEmitter {
 			property
 		);
 
+		if (property === "hasSubtasks" && this.plugin?.projectSubtasksService) {
+			taskValue = this.plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
+		}
+
 		// Handle special case for status.isCompleted
 		if (property === "status.isCompleted") {
 			const effectiveStatus = getEffectiveTaskStatus(task, targetDate || new Date(), this.statusManager.getCompletedStatuses()[0]);

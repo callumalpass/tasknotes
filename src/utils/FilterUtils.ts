@@ -282,6 +282,7 @@ export class FilterUtils {
 
 			// Boolean properties
 			archived: ["is-checked", "is-not-checked"],
+			hasSubtasks: ["is-checked", "is-not-checked"],
 			"dependencies.isBlocked": ["is-checked", "is-not-checked"],
 			"dependencies.isBlocking": ["is-checked", "is-not-checked"],
 
@@ -363,6 +364,8 @@ export class FilterUtils {
 				return task.dateModified;
 			case "archived":
 				return task.archived;
+			case "hasSubtasks":
+				return task.hasSubtasks === true;
 			case "timeEstimate":
 				return task.timeEstimate;
 			case "recurrence":

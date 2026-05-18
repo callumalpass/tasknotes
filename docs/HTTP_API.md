@@ -318,7 +318,7 @@ Condition fields:
 
 - `type`: `"condition"`
 - `id`: any stable string for your client
-- `property`: a task property, such as `title`, `status`, `priority`, `tags`, `contexts`, `projects`, `blockedBy`, `blocking`, `due`, `scheduled`, `completedDate`, `dateCreated`, `dateModified`, `archived`, `dependencies.isBlocked`, `dependencies.isBlocking`, `timeEstimate`, `recurrence`, or `status.isCompleted`
+- `property`: a task property, such as `title`, `status`, `priority`, `tags`, `contexts`, `projects`, `blockedBy`, `blocking`, `due`, `scheduled`, `completedDate`, `dateCreated`, `dateModified`, `archived`, `hasSubtasks`, `dependencies.isBlocked`, `dependencies.isBlocking`, `timeEstimate`, `recurrence`, or `status.isCompleted`
 - `operator`: one of `is`, `is-not`, `contains`, `does-not-contain`, `is-before`, `is-after`, `is-on-or-before`, `is-on-or-after`, `is-empty`, `is-not-empty`, `is-checked`, `is-not-checked`, `is-greater-than`, `is-less-than`, `is-greater-than-or-equal`, or `is-less-than-or-equal`
 - `value`: required for comparison operators, omitted for empty/checked operators
 

@@ -26,6 +26,7 @@ Example:
 
 ## Added
 
+- ([#353](https://github.com/callumalpass/tasknotes/issues/353)) Added a `Has Subtasks` filter for task queries, so views and API clients can show only project-style tasks or direct tasks. Thanks to @mdbraber for suggesting this.
 - ([#380](https://github.com/callumalpass/tasknotes/issues/380)) Added a test-reminder button in notification settings, so reminder setup can be checked without creating a real task reminder. Thanks to @mdbraber for suggesting this.
 - ([#711](https://github.com/callumalpass/tasknotes/issues/711)) Added an optional task-creation setting to open the new task note after saving, either in the current tab or a new tab. Thanks to @phortx for suggesting this.
 - ([#1041](https://github.com/callumalpass/tasknotes/issues/1041), [#1800](https://github.com/callumalpass/tasknotes/issues/1800)) Added copy-drag support for timeblocks: hold Ctrl, Cmd, or Alt/Option while dragging an existing timeblock to duplicate it at the new date and time. Thanks to @0-BSCode and @cweekly for suggesting this.
