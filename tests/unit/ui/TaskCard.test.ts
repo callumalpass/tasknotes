@@ -231,6 +231,7 @@ describe('TaskCard Component', () => {
     mockApp.workspace.trigger = jest.fn();
     mockApp.metadataCache = mockApp.metadataCache || {};
     mockApp.metadataCache.getFirstLinkpathDest = jest.fn();
+    mockApp.metadataCache.getCache = jest.fn();
 
     // Mock console methods
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -336,6 +337,26 @@ describe('TaskCard Component', () => {
 
       const card = createTaskCard(task, mockPlugin);
 
+      expect(card.classList.contains('task-card--has-details')).toBe(true);
+      expect(card.dataset.hasDetails).toBe('true');
+      expect(card.querySelector('.task-card__details-indicator')).toBeTruthy();
+    });
+
+    it('should indicate when Obsidian metadata shows note body content', () => {
+      const task = TaskFactory.createTask({
+        path: 'Tasks/body-from-cache.md',
+        details: undefined
+      });
+      mockPlugin.app.metadataCache.getCache.mockReturnValue({
+        sections: [
+          { type: 'yaml' },
+          { type: 'paragraph' }
+        ]
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+
+      expect(mockPlugin.app.metadataCache.getCache).toHaveBeenCalledWith(task.path);
       expect(card.classList.contains('task-card--has-details')).toBe(true);
       expect(card.dataset.hasDetails).toBe('true');
       expect(card.querySelector('.task-card__details-indicator')).toBeTruthy();

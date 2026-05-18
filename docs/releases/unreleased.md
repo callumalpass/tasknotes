@@ -67,7 +67,7 @@ Example:
 - (#1776) Allowed calendar timeline end times after midnight, such as `26:00` for a 2 AM next-day end. Thanks to @chrabia for suggesting this.
 - (#1784, #1833) Added a per-view `pinnedColumns` option for TaskNotes Kanban views, so selected empty columns can stay visible as drop targets while other empty columns remain hidden. Thanks to @loukandr for suggesting and prototyping this.
 - (#1794) Added context updates to the task card context menu, so contexts can be added, toggled, or cleared without opening the task edit modal. Thanks to @m13ntrpn for suggesting this.
-- (#315, #1356, #1748, #1809) Added a subtle task-card indicator and CSS hooks for tasks with note body details. Thanks to @volodxyz, @Karut, @yeHHH1g, and @aliceinwaterdeep for suggesting this, and to @minchinweb for the follow-up.
+- (#315, #1356, #1748, #1809) Added a subtle task-card indicator and CSS hooks for tasks with note body details, including existing task bodies read through Obsidian's metadata cache. Thanks to @volodxyz, @Karut, @yeHHH1g, and @aliceinwaterdeep for suggesting this, and to @minchinweb for the follow-up.
 - (#1808) Added advanced Kanban swimlane ordering through `swimLaneOrder`, so swimlane rows can stay in a stable configured order. Thanks to @rookledookle for suggesting this, and to @benmartinek and @chrabia for the follow-up feedback.
 - (#1805) Added an ICS export option to omit completed tasks from generated calendar files. Thanks to @bepolymathe for suggesting this.
 - (#659) Added Obsidian links to ICS export descriptions, so exported calendar events can open their source task notes. Thanks to @bepolymathe for suggesting this.

@@ -209,8 +209,21 @@ function tTaskCard(
 	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
 }
 
-function taskHasDetails(task: TaskInfo): boolean {
-	return typeof task.details === "string" && task.details.trim().length > 0;
+function taskHasDetails(task: TaskInfo, plugin?: TaskNotesPlugin): boolean {
+	if (typeof task.details === "string") {
+		return task.details.trim().length > 0;
+	}
+
+	if (!plugin || !task.path) {
+		return false;
+	}
+
+	const sections = plugin.app.metadataCache.getCache?.(task.path)?.sections;
+	if (!sections) {
+		return false;
+	}
+
+	return sections.some((section) => section.type !== "yaml");
 }
 
 function shouldStrikeThroughCompletedTasks(plugin: TaskNotesPlugin): boolean {
@@ -477,7 +490,7 @@ function updateCardCompletionState(
 		"task-card--chevron-left",
 		plugin.settings?.subtaskChevronPosition === "left"
 	);
-	const hasDetails = taskHasDetails(task);
+	const hasDetails = taskHasDetails(task, plugin);
 	card.classList.toggle("task-card--has-details", hasDetails);
 	card.dataset.hasDetails = hasDetails ? "true" : "false";
 
@@ -784,7 +797,7 @@ export function createTaskCard(
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of skipped_instances
 		: false; // Only recurring tasks can have skipped instances
 	const isRecurring = !!task.recurrence;
-	const hasDetails = taskHasDetails(task);
+	const hasDetails = taskHasDetails(task, plugin);
 
 	// Build BEM class names
 	const cardClasses = ["task-card"];
@@ -1275,7 +1288,7 @@ export function updateTaskCard(
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of skipped_instances
 		: false; // Only recurring tasks can have skipped instances
 	const isRecurring = !!task.recurrence;
-	const hasDetails = taskHasDetails(task);
+	const hasDetails = taskHasDetails(task, plugin);
 
 	// Build BEM class names for update
 	const cardClasses = ["task-card"];
