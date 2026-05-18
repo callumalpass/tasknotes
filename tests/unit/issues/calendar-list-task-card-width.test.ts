@@ -13,7 +13,7 @@ describe("Calendar List task card width", () => {
 
 		expect(source).toContain('ownerDocument.createElement("td")');
 		expect(source).toContain('cardCell.className = "fc-list-event-title fc-list-card-content"');
-		expect(source).toContain("cardCell.colSpan = 99");
+		expect(source).toContain("cardCell.colSpan = 3");
 		expect(source).toContain("cardCell.appendChild(cardElement)");
 		expect(source).toContain("arg.el.appendChild(cardCell)");
 	});
@@ -22,7 +22,10 @@ describe("Calendar List task card width", () => {
 		const css = readRepoFile("styles/advanced-calendar-view.css");
 
 		expect(css).toContain(".advanced-calendar-view.advanced-calendar-view--list .fc-list-card-content");
+		expect(css).toContain(".advanced-calendar-view.advanced-calendar-view--list .fc-list-task-card > td:not(.fc-list-card-content)");
+		expect(css).toContain(".advanced-calendar-view.advanced-calendar-view--list .fc-list-event.fc-list-task-card:hover");
 		expect(css).toContain("box-sizing: border-box");
+		expect(css).toContain("padding: 4px 10px");
 		expect(css).toContain("width: 100%");
 	});
 });

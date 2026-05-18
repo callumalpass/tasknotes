@@ -23,13 +23,12 @@ describe("Issue #287: linked calendar task hover states", () => {
 		expect(source).toContain("CSS.escape(taskPath)");
 	});
 
-	it("styles the linked hover state for calendar and agenda list events", () => {
+	it("keeps linked hover styling out of List view", () => {
 		const css = readRepoFile("styles/advanced-calendar-view.css");
 
 		expect(css).toContain(".advanced-calendar-view .fc-task-event--hover-source");
 		expect(css).toContain(".advanced-calendar-view .fc-task-event--related-hover");
-		expect(css).toContain(
-			".advanced-calendar-view.advanced-calendar-view--list .fc-task-event--related-hover .fc-list-card-content"
-		);
+		expect(css).not.toContain("advanced-calendar-view--list .fc-task-event--related-hover");
+		expect(css).not.toContain("advanced-calendar-view--list .fc-task-event--hover-source");
 	});
 });

@@ -141,7 +141,7 @@ Example:
 - (#466) Stored task created/modified metadata as `YYYY-MM-DDTHH:mm:ss` datetimes so Obsidian Bases can recognize those properties as dates more reliably across regions. Thanks to @Moyf for reporting this.
 - (#408) Used the task title as the native system notification title for task reminders instead of always showing `TaskNotes Reminder`. Thanks to @DudeThatsErin for reporting this and @phillipadsmith for the follow-up.
 - (#385) Let Mini Calendar month controls shrink and wrap cleanly in narrow sidebars. Thanks to @iholston for reporting this.
-- Fixed Calendar List view task cards so they use the available row width without inheriting oversized Calendar hover styling.
+- Fixed Calendar List view task cards so they use the available row width without duplicate list cells, row-hover backgrounds, or linked-hover styling.
 - (#552) Made instant task convert buttons appear for checkbox tasks inside callouts, and kept converted links inside the callout list. Thanks to @Oblique82 for reporting this and @ksdavidc for the follow-up.
 - (#559) Treated notes linked to one loaded recurring calendar event instance as related to the other instances in that series. Thanks to @cathywu for reporting this and @mdbraber for the implementation notes.
 - (#685) Made Calendar list views respect the All-day slot option by hiding all-day events from the list when that option is turned off. Thanks to @RumiaKitinari for reporting this.

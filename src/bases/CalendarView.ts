@@ -3286,17 +3286,17 @@ export class CalendarView extends BasesViewBase {
 			if (cardElement) {
 				const cardCell = arg.el.ownerDocument.createElement("td");
 				cardCell.className = "fc-list-event-title fc-list-card-content";
-				// Span the whole FullCalendar list row even if its internal columns change.
-				cardCell.colSpan = 99;
+				cardCell.colSpan = 3;
 				cardCell.appendChild(cardElement);
 				arg.el.appendChild(cardCell);
 				if (taskInfo?.path) {
 					arg.el.setAttribute("data-task-path", taskInfo.path);
 					arg.el.classList.add("fc-task-event");
-					this.attachTaskEventHoverLink(arg.el, taskInfo.path);
 				}
+				arg.el.classList.add("fc-list-task-card");
 				// Remove default FullCalendar classes that interfere with card styling
 				arg.el.classList.remove("fc-event", "fc-event-start", "fc-event-end");
+
 				return; // Skip default handling
 			} else {
 				// Fallback: Add consistent styling to events without custom cards

@@ -177,20 +177,6 @@
     filter: saturate(1.08);
 }
 
-.advanced-calendar-view.advanced-calendar-view--list .fc-task-event--hover-source,
-.advanced-calendar-view.advanced-calendar-view--list .fc-task-event--related-hover {
-    box-shadow: none;
-    filter: none;
-}
-
-.advanced-calendar-view.advanced-calendar-view--list .fc-task-event--related-hover .fc-list-card-content {
-    background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
-}
-
-.advanced-calendar-view.advanced-calendar-view--list .fc-task-event--hover-source .fc-list-card-content {
-    background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-}
-
 /* ICS Events - only in non-list views */
 .fc-daygrid-event.fc-ics-event,
 .fc-timegrid-event.fc-ics-event {
@@ -829,7 +815,19 @@
 
 .advanced-calendar-view.advanced-calendar-view--list .fc-list-card-content {
     box-sizing: border-box;
+    padding: 4px 10px;
+    vertical-align: top;
     width: 100%;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .fc-list-task-card > td:not(.fc-list-card-content) {
+    display: none;
+}
+
+.advanced-calendar-view.advanced-calendar-view--list .fc-list-event.fc-list-task-card:hover,
+.advanced-calendar-view.advanced-calendar-view--list .fc-list-event.fc-list-task-card:hover > .fc-list-card-content {
+    background: transparent;
+    background-color: transparent;
 }
 
 .advanced-calendar-view.advanced-calendar-view--list .task-card,
