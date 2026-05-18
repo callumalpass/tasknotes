@@ -142,12 +142,37 @@ function findCanvasEmbedTaskCardContainer(el: HTMLElement): HTMLElement | null {
 	return el.querySelector<HTMLElement>(".markdown-preview-sizer");
 }
 
+function isElementHidden(element: HTMLElement): boolean {
+	let current: HTMLElement | null = element;
+	const view = element.ownerDocument.defaultView;
+
+	while (current) {
+		const style = view?.getComputedStyle(current);
+		if (
+			current.style.display === "none" ||
+			style?.display === "none" ||
+			style?.visibility === "hidden"
+		) {
+			return true;
+		}
+
+		current = current.parentElement;
+	}
+
+	return false;
+}
+
 function isCanvasNodeEditing(node: CanvasNodeLike, contentEl: HTMLElement): boolean {
 	if (node.isEditing) {
 		return true;
 	}
 
-	return Boolean(contentEl.querySelector(".markdown-source-view, .cm-editor"));
+	if (contentEl.querySelector(".markdown-source-view, .cm-editor")) {
+		return true;
+	}
+
+	const previewSizer = findCanvasEmbedTaskCardContainer(contentEl);
+	return Boolean(previewSizer && isElementHidden(previewSizer));
 }
 
 function canvasNodeNeedsWidgetRefresh(node: CanvasNodeLike, contentEl: HTMLElement): boolean {
