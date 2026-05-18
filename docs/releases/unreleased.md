@@ -62,7 +62,7 @@ Example:
 - (#923) Added `{{projectFilePath}}` and `{{projectFilePaths}}` folder template variables, so task folders can mirror project note locations in the vault. Thanks to @PacoTaco2 for suggesting this.
 - (#1697) Added cached Google Calendar, Microsoft Calendar, and ICS events to Mini Calendar days, with compact colored dots and event details from the existing calendar connection. Thanks to @RPGArchivist for suggesting this.
 - (#1754) Added optional icons for priority values, so task cards can show a configured priority icon instead of only a colored dot. Thanks to @BrucePlumb for suggesting this and @prepare4robots for the follow-up feedback.
-- (#1761) Added TaskNotes edit and quick-action entries to Obsidian's native file context menu for recognized task notes. Thanks to @delzero for suggesting this.
+- (#1761) Added TaskNotes edit and task-action submenu entries to Obsidian's native file context menu for recognized task notes. Thanks to @delzero for suggesting this.
 - (#1771) Added mobile drag handles to manually sorted Task List Bases views, so dragging can start from the handle without disabling normal text interaction on the rest of the card. Thanks to @PatrickGolz for suggesting this.
 - (#1776) Allowed calendar timeline end times after midnight, such as `26:00` for a 2 AM next-day end. Thanks to @chrabia for suggesting this.
 - (#1784, #1833) Added a per-view `pinnedColumns` option for TaskNotes Kanban views, so selected empty columns can stay visible as drop targets while other empty columns remain hidden. Thanks to @loukandr for suggesting and prototyping this.

@@ -76,6 +76,7 @@ import {
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
 import { applyParentNoteProjectDefault } from "./utils/taskCreationPrepopulation";
 import { applySearchQueryToView } from "./utils/obsidianSearchView";
+import { TaskContextMenu } from "./components/TaskContextMenu";
 
 type LoadedSettingsData = Partial<TaskNotesSettings> &
 	Record<string, unknown> & {
@@ -86,6 +87,13 @@ type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 type TaskLinkDetectionServiceInstance =
 	import("./services/TaskLinkDetectionService").TaskLinkDetectionService;
 type TaskLinkMatch = ReturnType<TaskLinkDetectionServiceInstance["findWikilinks"]>[number];
+type SubmenuMenuItem = {
+	setSubmenu(): Menu;
+};
+
+function getSubmenu(item: unknown): Menu {
+	return (item as SubmenuMenuItem).setSubmenu();
+}
 
 function frontmatterString(value: unknown): string | undefined {
 	if (value === null || value === undefined) return undefined;
@@ -304,13 +312,17 @@ export default class TaskNotesPlugin extends Plugin {
 
 	private registerTaskNotesFileMenuActions(): void {
 		this.registerEvent(
-			this.app.workspace.on("file-menu", (menu, file) => {
-				this.addTaskNotesFileMenuActions(menu, file);
+			this.app.workspace.on("file-menu", (menu, file, source) => {
+				this.addTaskNotesFileMenuActions(menu, file, source);
 			})
 		);
 	}
 
-	addTaskNotesFileMenuActions(menu: Menu, file: TAbstractFile): void {
+	addTaskNotesFileMenuActions(menu: Menu, file: TAbstractFile, source?: string): void {
+		if (source === "tasknotes-context-menu") {
+			return;
+		}
+
 		if (!(file instanceof TFile)) {
 			return;
 		}
@@ -329,12 +341,24 @@ export default class TaskNotesPlugin extends Plugin {
 				void this.openTaskEditModalForFile(file);
 			});
 		});
+
+		const task = this.cacheManager.getCachedTaskInfoSync(file.path);
+		if (!task) {
+			return;
+		}
+
 		menu.addItem((item) => {
-			item.setTitle(this.i18n.translate("contextMenus.task.quickActions"));
+			item.setTitle(this.i18n.translate("common.appName"));
 			item.setIcon("list-checks");
 			item.setSection("tasknotes");
-			item.onClick(() => {
-				void this.openQuickActionsForTaskFile(file);
+			const submenu = getSubmenu(item);
+			TaskContextMenu.addToMenu(submenu, {
+				task,
+				plugin: this,
+				targetDate: getTodayLocal(),
+				onUpdate: () => {
+					this.app.workspace.trigger("tasknotes:refresh-views");
+				},
 			});
 		});
 	}

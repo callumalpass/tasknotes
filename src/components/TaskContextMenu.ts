@@ -135,14 +135,18 @@ export interface TaskContextMenuOptions {
 }
 
 export class TaskContextMenu {
-	private menu: ContextMenu;
+	private menu: Menu;
 	private options: TaskContextMenuOptions;
 	private targetDoc: Document = activeDocument;
 
-	constructor(options: TaskContextMenuOptions) {
-		this.menu = new ContextMenu();
+	constructor(options: TaskContextMenuOptions, menu: Menu = new ContextMenu()) {
+		this.menu = menu;
 		this.options = options;
 		this.buildMenu();
+	}
+
+	static addToMenu(menu: Menu, options: TaskContextMenuOptions): void {
+		new TaskContextMenu(options, menu);
 	}
 
 	private t(key: string, params?: Record<string, string | number>): string {
@@ -470,7 +474,7 @@ export class TaskContextMenu {
 				// Try to populate with Obsidian's native file menu
 				try {
 					// Trigger the file-menu event to populate with default actions
-					plugin.app.workspace.trigger("file-menu", submenu, file, "file-explorer");
+					plugin.app.workspace.trigger("file-menu", submenu, file, "tasknotes-context-menu");
 				} catch {
 					console.debug("Native file menu not available, using fallback");
 				}
