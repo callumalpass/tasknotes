@@ -16,7 +16,7 @@ import { ReminderModal } from "../modals/ReminderModal";
 import {
 	getDatePart,
 	getTimePart,
-	getCurrentTimestampForStorage,
+	getCurrentTimestamp,
 	parseDateToUTC,
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
@@ -1236,7 +1236,7 @@ export class TaskListView extends BasesViewBase {
 						);
 						const dateModifiedField =
 							this.plugin.fieldMapper.toUserField("dateModified");
-						fm[dateModifiedField] = getCurrentTimestampForStorage();
+						fm[dateModifiedField] = getCurrentTimestamp();
 					}
 				}
 				if (sortOrderPlan.sortOrder !== null) {
@@ -1274,7 +1274,7 @@ export class TaskListView extends BasesViewBase {
 						} else {
 							updatedRecord[groupByTaskProp] = normalizedTargetGroupKey;
 						}
-						updatedTask.dateModified = getCurrentTimestampForStorage();
+						updatedTask.dateModified = getCurrentTimestamp();
 						if (groupByTaskProp === "status" && !originalTask.recurrence) {
 							if (
 								normalizedTargetGroupKey !== null &&

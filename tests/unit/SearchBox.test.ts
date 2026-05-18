@@ -309,21 +309,6 @@ describe('SearchBox', () => {
 		});
 	});
 
-	describe('focus', () => {
-		it('should focus the input and select the current value', () => {
-			searchBox = new SearchBox(container, onSearchMock);
-			searchBox.render();
-			searchBox.setValue('existing search');
-
-			const input = container.querySelector('.tn-search-box__input') as HTMLInputElement;
-			searchBox.focus();
-
-			expect(document.activeElement).toBe(input);
-			expect(input.selectionStart).toBe(0);
-			expect(input.selectionEnd).toBe(input.value.length);
-		});
-	});
-
 	describe('clear', () => {
 		it('should clear input value', () => {
 			searchBox = new SearchBox(container, onSearchMock);

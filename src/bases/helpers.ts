@@ -275,34 +275,6 @@ export function createTaskInfoFromBasesData(
 	}
 }
 
-function isPotentialMarkdownTaskItem(item: BasesDataItem): boolean {
-	return typeof item.path === "string" && item.path.toLowerCase().endsWith(".md");
-}
-
-function isTaskDataItem(item: BasesDataItem, plugin?: TaskNotesPlugin): boolean {
-	if (!plugin) {
-		return true;
-	}
-
-	const path = item.path;
-	if (!isPotentialMarkdownTaskItem(item) || !path) {
-		return false;
-	}
-
-	const props = item.properties || item.frontmatter || {};
-	if (plugin.cacheManager.isTaskFile(props)) {
-		return true;
-	}
-
-	const cachedTask = plugin.cacheManager.getCachedTaskInfoSync?.(path);
-	if (cachedTask) {
-		return true;
-	}
-
-	const cachedFrontmatter = plugin.app.metadataCache.getCache(path)?.frontmatter;
-	return cachedFrontmatter ? plugin.cacheManager.isTaskFile(cachedFrontmatter) : false;
-}
-
 /**
  * Identify TaskNotes from Bases data by converting all items to TaskInfo
  */
@@ -315,7 +287,6 @@ export async function identifyTaskNotesFromBasesData(
 	const taskNotes: TaskInfo[] = [];
 	for (const item of dataItems) {
 		if (!item?.path) continue;
-		if (!isTaskDataItem(item, plugin)) continue;
 		try {
 			const taskInfo = taskInfoConverter(item, plugin);
 			if (taskInfo) taskNotes.push(taskInfo);

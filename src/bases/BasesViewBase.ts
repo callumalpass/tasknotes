@@ -1021,28 +1021,8 @@ export abstract class BasesViewBase extends Component {
 			this.searchBox.setValue(this.currentSearchTerm);
 		}
 
-		const shortcutTarget = this.rootElement ?? container;
-		const handleSearchShortcut = (event: KeyboardEvent): void => {
-			if (!this.searchBox || event.altKey || event.shiftKey) {
-				return;
-			}
-
-			const isFindShortcut =
-				(event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f";
-
-			if (!isFindShortcut) {
-				return;
-			}
-
-			event.preventDefault();
-			event.stopPropagation();
-			this.searchBox.focus();
-		};
-		shortcutTarget.addEventListener("keydown", handleSearchShortcut);
-
 		// Register cleanup using Component lifecycle
 		this.register(() => {
-			shortcutTarget.removeEventListener("keydown", handleSearchShortcut);
 			if (this.searchBox) {
 				this.searchBox.destroy();
 				this.searchBox = null;

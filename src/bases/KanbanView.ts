@@ -10,7 +10,7 @@ import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
-import { getCurrentTimestampForStorage } from "../utils/dateUtils";
+import { getCurrentTimestamp } from "../utils/dateUtils";
 import { getProjectDisplayName } from "../utils/linkUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import {
@@ -3824,7 +3824,7 @@ export class KanbanView extends BasesViewBase {
 							);
 							const dateModifiedField =
 								this.plugin.fieldMapper.toUserField("dateModified");
-							fm[dateModifiedField] = getCurrentTimestampForStorage();
+							fm[dateModifiedField] = getCurrentTimestamp();
 						} else if (needsSwimlaneUpdate && swimlaneTaskProp === "status") {
 							const task = this.taskInfoCache.get(path);
 							const isRecurring = !!task?.recurrence;
@@ -3835,7 +3835,7 @@ export class KanbanView extends BasesViewBase {
 							);
 							const dateModifiedField =
 								this.plugin.fieldMapper.toUserField("dateModified");
-							fm[dateModifiedField] = getCurrentTimestampForStorage();
+							fm[dateModifiedField] = getCurrentTimestamp();
 						}
 					});
 
@@ -3864,7 +3864,7 @@ export class KanbanView extends BasesViewBase {
 									...originalTask,
 									[changedTaskProp]: newPropValue,
 								};
-								updatedTask.dateModified = getCurrentTimestampForStorage();
+								updatedTask.dateModified = getCurrentTimestamp();
 								if (changedTaskProp === "status" && !originalTask.recurrence) {
 									if (
 										this.plugin.statusManager.isCompletedStatus(

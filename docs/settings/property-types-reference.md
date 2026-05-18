@@ -13,8 +13,8 @@ This reference documents the expected data types for each frontmatter property t
 | due | text (date) | `"2025-01-15"` |
 | scheduled | text (date) | `"2025-01-10"` |
 | completedDate | text (date) | `"2025-01-20"` |
-| dateCreated | text (datetime) | `"2025-01-01T08:00:00"` |
-| dateModified | text (datetime) | `"2025-01-15T10:30:00"` |
+| dateCreated | text (datetime) | `"2025-01-01T08:00:00Z"` |
+| dateModified | text (datetime) | `"2025-01-15T10:30:00Z"` |
 | tags | list | `["work", "urgent"]` |
 | contexts | list | `["@office", "@home"]` |
 | projects | list | `["[[Project A]]"]` |
@@ -99,14 +99,14 @@ When in doubt, prefer ISO-style values. They sort correctly as text, travel well
 - **Type:** text (datetime string)
 - **Format:** ISO 8601 timestamp
 - **Description:** When the task was created
-- **Example:** `dateCreated: "2025-01-01T08:00:00"`
+- **Example:** `dateCreated: "2025-01-01T08:00:00Z"`
 
 #### dateModified
 
 - **Type:** text (datetime string)
 - **Format:** ISO 8601 timestamp
 - **Description:** When the task was last modified
-- **Example:** `dateModified: "2025-01-15T10:30:00"`
+- **Example:** `dateModified: "2025-01-15T10:30:00Z"`
 
 ---
 
@@ -308,8 +308,8 @@ contexts:
 projects:
   - "[[Q1 Planning]]"
 timeEstimate: 240
-dateCreated: "2025-01-01T08:00:00"
-dateModified: "2025-01-20T14:30:00"
+dateCreated: "2025-01-01T08:00:00Z"
+dateModified: "2025-01-20T14:30:00Z"
 timeEntries:
   - startTime: "2025-01-20T10:00:00Z"
     endTime: "2025-01-20T11:30:00Z"
