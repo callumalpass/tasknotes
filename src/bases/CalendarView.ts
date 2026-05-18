@@ -317,6 +317,25 @@ export function applyBasesSortIndexesToCalendarEvents(
 	}
 }
 
+export function shouldFilterAllDayEventsForCalendarView(
+	viewType: string | undefined,
+	showAllDaySlot: boolean
+): boolean {
+	return !showAllDaySlot && Boolean(viewType?.startsWith("list"));
+}
+
+export function filterAllDayEventsForCalendarView(
+	events: EventInput[],
+	viewType: string | undefined,
+	showAllDaySlot: boolean
+): EventInput[] {
+	if (!shouldFilterAllDayEventsForCalendarView(viewType, showAllDaySlot)) {
+		return events;
+	}
+
+	return events.filter((event) => event.allDay !== true);
+}
+
 function isCalendarEphemeralState(value: unknown): value is CalendarEphemeralState {
 	return isRecord(value);
 }
@@ -2176,7 +2195,11 @@ export class CalendarView extends BasesViewBase {
 			allEvents.push(...microsoftEvents);
 		}
 
-		return allEvents;
+		return filterAllDayEventsForCalendarView(
+			allEvents,
+			this.calendar?.view?.type || this.viewOptions.calendarView,
+			this.viewOptions.showAllDaySlot
+		);
 	}
 
 	private async buildPropertyBasedEvents(): Promise<EventInput[]> {
