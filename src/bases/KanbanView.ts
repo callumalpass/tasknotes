@@ -1705,6 +1705,10 @@ export class KanbanView extends BasesViewBase {
 		});
 	}
 
+	private removeEmptyCellHint(container: HTMLElement | null | undefined): void {
+		container?.querySelector<HTMLElement>(".kanban-view__empty-cell")?.remove();
+	}
+
 	private async openTaskCreationForKanbanCell(
 		groupByPropertyId: string | null,
 		groupKey: string,
@@ -3112,6 +3116,7 @@ export class KanbanView extends BasesViewBase {
 				this.debugLog("OPTIMISTIC-REORDER: bail — no dropTarget AND no targetContainer");
 				return false;
 			}
+			this.removeEmptyCellHint(targetContainer);
 			this.debugLog("OPTIMISTIC-REORDER: cross-column append path", {
 				paths: draggedPaths.map((p) => p.split("/").pop()),
 				containerChildCount: targetContainer.childElementCount,
@@ -3174,6 +3179,7 @@ export class KanbanView extends BasesViewBase {
 			});
 			return false;
 		}
+		this.removeEmptyCellHint(container);
 
 		for (const path of draggedPaths) {
 			const draggedEl = this.currentTaskElements.get(path);
