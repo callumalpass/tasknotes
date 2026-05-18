@@ -58,7 +58,6 @@ Example:
 - (#275) Added a search field to TaskNotes settings for quickly narrowing the settings tabs. Thanks to @girisumit for suggesting this and @prayidae for the related plugin note.
 - (#1625) Added `Shift` + `Cmd`/`Ctrl` + `Enter` in the Create Task modal to save the current task and reopen the modal for the next one. Thanks to @tcb678 for suggesting this.
 - (#1353) Focused the Create Task modal's natural-language input when the modal opens, with a longer mobile delay so the keyboard can open after layout. Thanks to @GiovanH for suggesting this.
-- (#1641) Added support for list-valued property-based Calendar start and end dates, so one note can render multiple property events without extra view settings. Thanks to @jhoogeboom for suggesting this.
 - (#1664) Added project-based custom filename template variables, including the first project, all projects, and a short `projectId`. Thanks to @bendavis987 for the contribution.
 - (#923) Added `{{projectFilePath}}` and `{{projectFilePaths}}` folder template variables, so task folders can mirror project note locations in the vault. Thanks to @PacoTaco2 for suggesting this.
 - (#1697) Added cached Google Calendar, Microsoft Calendar, and ICS events to Mini Calendar days, with compact colored dots and event details from the existing calendar connection. Thanks to @RPGArchivist for suggesting this.
@@ -141,7 +140,7 @@ Example:
 - (#466) Stored task created/modified metadata as `YYYY-MM-DDTHH:mm:ss` datetimes so Obsidian Bases can recognize those properties as dates more reliably across regions. Thanks to @Moyf for reporting this.
 - (#408) Used the task title as the native system notification title for task reminders instead of always showing `TaskNotes Reminder`. Thanks to @DudeThatsErin for reporting this and @phillipadsmith for the follow-up.
 - (#385) Let Mini Calendar month controls shrink and wrap cleanly in narrow sidebars. Thanks to @iholston for reporting this.
-- Fixed Calendar List view task cards so they use the available row width without duplicate list cells, row-hover backgrounds, or linked-hover styling.
+- Fixed Calendar List view task cards so they use the available row width without inheriting oversized Calendar hover styling.
 - (#552) Made instant task convert buttons appear for checkbox tasks inside callouts, and kept converted links inside the callout list. Thanks to @Oblique82 for reporting this and @ksdavidc for the follow-up.
 - (#559) Treated notes linked to one loaded recurring calendar event instance as related to the other instances in that series. Thanks to @cathywu for reporting this and @mdbraber for the implementation notes.
 - (#685) Made Calendar list views respect the All-day slot option by hiding all-day events from the list when that option is turned off. Thanks to @RumiaKitinari for reporting this.
