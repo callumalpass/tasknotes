@@ -16,6 +16,7 @@ import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
+import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 
 export function findClosestHeadingAboveLine(
@@ -321,11 +322,13 @@ export class InstantTaskConvertService {
 
 			await this.persistSourceNoteAfterReplacement(editor);
 
-			// Check if filename was changed due to length constraints
-			const expectedFilename = this.sanitizeTitle(parsedData.title);
-			const actualFilename = file.basename;
-
-			if (actualFilename.startsWith("task-") && actualFilename !== expectedFilename) {
+			if (
+				shouldShowFilenameShortenedNotice(
+					this.plugin.settings,
+					parsedData.title,
+					file.basename
+				)
+			) {
 				new Notice(
 					this.translate(
 						"services.instantTaskConvert.notices.conversionCompleteShortened",

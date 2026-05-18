@@ -17,6 +17,7 @@ import type {
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
 import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreationData";
 import { NLPSuggest } from "./taskCreationSuggest";
+import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
 export type { StatusSuggestion } from "./taskCreationSuggest";
 
 export type TaskCreationPrepopulatedValues = Partial<TaskInfo> & {
@@ -739,11 +740,13 @@ export class TaskCreationModal extends TaskModal {
 			});
 			let createdTask = result.taskInfo;
 
-			// Check if filename was changed due to length constraints
-			const expectedFilename = result.taskInfo.title.replace(/[<>:"/\\|?*]/g, "").trim();
-			const actualFilename = result.file.basename;
-
-			if (actualFilename.startsWith("task-") && actualFilename !== expectedFilename) {
+			if (
+				shouldShowFilenameShortenedNotice(
+					this.plugin.settings,
+					result.taskInfo.title,
+					result.file.basename
+				)
+			) {
 				new Notice(
 					this.t("modals.taskCreation.notices.successShortened", {
 						title: createdTask.title,

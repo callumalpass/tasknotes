@@ -167,6 +167,24 @@ export function generateTaskFilename(
 	}
 }
 
+type TaskFilenameNoticeSettings = Pick<
+	TaskNotesSettings,
+	"storeTitleInFilename" | "taskFilenameFormat"
+>;
+
+export function shouldShowFilenameShortenedNotice(
+	settings: TaskFilenameNoticeSettings,
+	title: string,
+	actualFilename: string
+): boolean {
+	if (!settings.storeTitleInFilename && settings.taskFilenameFormat !== "title") {
+		return false;
+	}
+
+	const expectedFilename = sanitizeForFilename(title);
+	return actualFilename.startsWith("task-") && actualFilename !== expectedFilename;
+}
+
 /**
  * Generates the traditional zettelkasten ID (YYMMDD + base36 seconds since midnight)
  */
