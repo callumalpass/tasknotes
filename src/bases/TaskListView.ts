@@ -160,6 +160,13 @@ function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "s
 	return "inherit";
 }
 
+export function filterTaskListArchivedTasks(
+	taskNotes: TaskInfo[],
+	showArchived: boolean
+): TaskInfo[] {
+	return showArchived ? taskNotes : taskNotes.filter((task) => !task.archived);
+}
+
 export class TaskListView extends BasesViewBase {
 	type = "tasknotesTaskList";
 
@@ -179,6 +186,7 @@ export class TaskListView extends BasesViewBase {
 	private subGroupPropertyId: string | null = null; // Property ID for sub-grouping
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
+	private showArchivedTasks = true;
 	private currentVisibleTaskPaths = new Set<string>();
 	private currentVisibleTaskOrder = new Map<string, number>();
 	private configLoaded = false; // Track if we've successfully loaded config
@@ -249,6 +257,8 @@ export class TaskListView extends BasesViewBase {
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			const showArchivedValue = this.config.get("showArchived");
+			this.showArchivedTasks = (showArchivedValue as boolean) ?? true;
 			const expandedRelationshipFilterModeValue = this.config.get(
 				"expandedRelationshipFilterMode"
 			);
@@ -355,7 +365,10 @@ export class TaskListView extends BasesViewBase {
 			// Compute Bases formulas for TaskNotes items
 			await this.computeFormulas(dataItems);
 
-			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			const taskNotes = filterTaskListArchivedTasks(
+				await identifyTaskNotesFromBasesData(dataItems, this.plugin),
+				this.showArchivedTasks
+			);
 
 			if (taskNotes.length === 0) {
 				this.clearAllTaskElements();

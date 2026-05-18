@@ -45,6 +45,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: false,
 					},
 					{
+						type: "toggle",
+						key: "showArchived",
+						displayName: "Show archived tasks",
+						default: true,
+					},
+					{
 						type: "dropdown",
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",

@@ -75,6 +75,15 @@ filters:
 ```
 Start with one or two simple filters, verify results, then layer complexity. Incremental edits are much easier to debug than large one-shot query rewrites.
 
+**`showArchived`**: Optional TaskNotes Task List view toggle. Set to `false` to hide archived tasks from that Task List view without adding an archived-task filter to the Bases query.
+
+```yaml
+views:
+  - type: tasknotesTaskList
+    name: "Active Tasks"
+    showArchived: false
+```
+
 ### Property Mapping
 
 TaskNotes properties are accessed in Bases YAML using these paths:
