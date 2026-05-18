@@ -35,7 +35,7 @@ import {
 	formatDateForStorage,
 	getDatePart,
 	getCurrentDateString,
-	getCurrentTimestamp,
+	getCurrentTimestampForStorage,
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
 	parseDateToUTC,
@@ -530,7 +530,7 @@ export class TaskService {
 						? this.normalizeBlockedByValue(value)
 						: value;
 			updatedTask[property] = normalizedValue;
-			updatedTask.dateModified = getCurrentTimestamp();
+			updatedTask.dateModified = getCurrentTimestampForStorage();
 
 			// Handle derivative changes for status updates
 			if (property === "status" && !freshTask.recurrence) {
@@ -792,7 +792,7 @@ export class TaskService {
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
 		updatedTask.archived = !isCurrentlyArchived;
-		updatedTask.dateModified = getCurrentTimestamp();
+		updatedTask.dateModified = getCurrentTimestampForStorage();
 
 		// Update tags array to include/exclude archive tag
 		if (!updatedTask.tags) {
@@ -1027,7 +1027,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestamp();
+		updatedTask.dateModified = getCurrentTimestampForStorage();
 
 		if (!updatedTask.timeEntries) {
 			updatedTask.timeEntries = [];
@@ -1119,7 +1119,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestamp();
+		updatedTask.dateModified = getCurrentTimestampForStorage();
 
 		if (updatedTask.timeEntries && Array.isArray(updatedTask.timeEntries)) {
 			updatedTask.timeEntries = updatedTask.timeEntries.map((entry) => {
@@ -1432,7 +1432,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory using fresh data
 		const updatedTask = { ...freshTask };
-		updatedTask.dateModified = getCurrentTimestamp();
+		updatedTask.dateModified = getCurrentTimestampForStorage();
 
 		if (newComplete) {
 			// Add date to completed instances if not already present
@@ -1652,7 +1652,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...freshTask };
-		updatedTask.dateModified = getCurrentTimestamp();
+		updatedTask.dateModified = getCurrentTimestampForStorage();
 
 		if (newSkipped) {
 			// Mark as skipped
@@ -1779,7 +1779,7 @@ export class TaskService {
 
 		// Step 1: Construct new state in memory
 		const updatedTask = { ...task };
-		updatedTask.dateModified = getCurrentTimestamp();
+		updatedTask.dateModified = getCurrentTimestampForStorage();
 
 		// Remove the time entry at the specified index
 		updatedTask.timeEntries = task.timeEntries.filter((_, index) => index !== timeEntryIndex);

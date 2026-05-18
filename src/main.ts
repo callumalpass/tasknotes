@@ -35,7 +35,7 @@ import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "./modals/ProjectSelectModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
+import { convertUTCToLocalCalendarDate, getCurrentTimestampForStorage } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -1278,7 +1278,7 @@ export default class TaskNotesPlugin extends Plugin {
 		// Build a TaskInfo object from the note's existing data
 		// Use defaults for required fields that don't exist
 		// Use ?? (nullish coalescing) to properly handle empty string defaults
-		const now = getCurrentTimestamp();
+		const now = getCurrentTimestampForStorage();
 		const taskInfo: TaskInfo = {
 			path: activeFile.path,
 			title: frontmatterString(frontmatter.title) || activeFile.basename,

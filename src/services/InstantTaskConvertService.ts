@@ -6,7 +6,7 @@ import { TasksPluginParser, ParsedTaskData } from "../utils/TasksPluginParser";
 import { NaturalLanguageParser } from "./NaturalLanguageParser";
 import { Reminder, TaskCreationData } from "../types";
 import {
-	getCurrentTimestamp,
+	getCurrentTimestampForStorage,
 	combineDateAndTime,
 	parseDateToUTC,
 	formatDateForStorage,
@@ -773,8 +773,8 @@ export class InstantTaskConvertService {
 			details: enhancedDetails, // Use enhanced details with any overflow from title truncation
 			parentNote: parentNote, // Include parent note for template variable
 			creationContext: "inline-conversion", // Mark as inline conversion for folder logic
-			dateCreated: getCurrentTimestamp(),
-			dateModified: getCurrentTimestamp(),
+			dateCreated: getCurrentTimestampForStorage(),
+			dateModified: getCurrentTimestampForStorage(),
 			customFrontmatter:
 				Object.keys(customFrontmatter).length > 0 ? customFrontmatter : undefined,
 		};

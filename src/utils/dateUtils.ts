@@ -681,6 +681,50 @@ export function getCurrentTimestamp(): string {
 }
 
 /**
+ * Get current timestamp in Obsidian/Bases-friendly local datetime format.
+ * Bases date-time fields reliably parse `YYYY-MM-DDTHH:mm:ss`; including
+ * milliseconds and timezone offsets can be interpreted as text in some locales.
+ */
+export function getCurrentTimestampForStorage(): string {
+	return formatDateTimeForStorage(new Date());
+}
+
+/**
+ * Normalize a task metadata timestamp to the storage format expected by Bases.
+ * Invalid or blank values are returned unchanged so imports do not silently
+ * discard user data.
+ */
+export function normalizeTimestampForStorage(value: string): string {
+	const trimmed = value.trim();
+	if (!trimmed) return value;
+
+	const isoDateTimeMatch = trimmed.match(
+		/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/
+	);
+	if (isoDateTimeMatch) {
+		return `${isoDateTimeMatch[1]}T${isoDateTimeMatch[2]}`;
+	}
+
+	try {
+		const parsed = parseDateToLocalInternal(trimmed);
+		if (!isValid(parsed)) {
+			return value;
+		}
+
+		return formatDateTimeForStorage(parsed);
+	} catch {
+		return value;
+	}
+}
+
+function formatDateTimeForStorage(date: Date): string {
+	const pad = (num: number) => String(num).padStart(2, "0");
+	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+		date.getHours()
+	)}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+/**
  * Get current date in YYYY-MM-DD format for completion dates
  */
 export function getCurrentDateString(): string {

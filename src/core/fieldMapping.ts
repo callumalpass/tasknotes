@@ -6,7 +6,7 @@ import {
 	normalizeDependencyList,
 	serializeDependencies,
 } from "../utils/dependencyUtils";
-import { validateCompleteInstances } from "../utils/dateUtils";
+import { normalizeTimestampForStorage, validateCompleteInstances } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 export function toUserField(mapping: FieldMapping, internalName: keyof FieldMapping): string {
@@ -354,11 +354,11 @@ export function mapTaskToFrontmatter(
 	}
 
 	if (taskData.dateCreated !== undefined) {
-		frontmatter[mapping.dateCreated] = taskData.dateCreated;
+		frontmatter[mapping.dateCreated] = normalizeTimestampForStorage(taskData.dateCreated);
 	}
 
 	if (taskData.dateModified !== undefined) {
-		frontmatter[mapping.dateModified] = taskData.dateModified;
+		frontmatter[mapping.dateModified] = normalizeTimestampForStorage(taskData.dateModified);
 	}
 
 	if (taskData.sortOrder !== undefined) {

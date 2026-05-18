@@ -24,6 +24,8 @@ import {
   isPastDate,
   formatDateForDisplay,
   getCurrentTimestamp,
+  getCurrentTimestampForStorage,
+  normalizeTimestampForStorage,
   getCurrentDateString,
   parseTimestamp,
   formatTimestampForDisplay,
@@ -271,6 +273,28 @@ describe('DateUtils', () => {
       it('should return timestamp with timezone info', () => {
         const result = getCurrentTimestamp();
         expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}$/);
+      });
+    });
+
+    describe('getCurrentTimestampForStorage', () => {
+      it('should return a Bases-compatible local datetime without milliseconds or offset', () => {
+        const result = getCurrentTimestampForStorage();
+        expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+      });
+    });
+
+    describe('normalizeTimestampForStorage', () => {
+      it('should remove milliseconds and timezone offsets from task metadata timestamps', () => {
+        expect(normalizeTimestampForStorage('2025-08-15T14:53:20.653+08:00')).toBe(
+          '2025-08-15T14:53:20'
+        );
+        expect(normalizeTimestampForStorage('2025-08-15T14:53:20')).toBe(
+          '2025-08-15T14:53:20'
+        );
+      });
+
+      it('should preserve invalid timestamp values instead of dropping user data', () => {
+        expect(normalizeTimestampForStorage('not-a-date')).toBe('not-a-date');
       });
     });
 

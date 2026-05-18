@@ -3,7 +3,7 @@ import { App, Notice, TFile, TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
-import { formatTimestampForDisplay, getCurrentTimestamp } from "../utils/dateUtils";
+import { formatTimestampForDisplay, getCurrentTimestampForStorage } from "../utils/dateUtils";
 import {
 	extractTaskInfo,
 	calculateTotalTimeSpent,
@@ -595,7 +595,7 @@ export class TaskEditModal extends TaskModal {
 			this.isConvertingNoteToTask &&
 			Object.keys(result.changes).length === 0
 		) {
-			result.changes.dateModified = getCurrentTimestamp();
+			result.changes.dateModified = getCurrentTimestampForStorage();
 		}
 
 		return result.changes;

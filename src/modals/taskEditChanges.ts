@@ -1,6 +1,6 @@
 import { Reminder, TaskDependency, TaskInfo } from "../types";
 import { HideIdentifyingTagsMode, UserMappedField } from "../types/settings";
-import { getCurrentTimestamp } from "../utils/dateUtils";
+import { getCurrentTimestampForStorage } from "../utils/dateUtils";
 import { updateToNextScheduledOccurrence, sanitizeTags, updateDTSTARTInRecurrenceRule } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
@@ -195,7 +195,7 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 	}
 
 	if (Object.keys(changes).length > 0) {
-		changes.dateModified = getCurrentTimestamp();
+		changes.dateModified = getCurrentTimestampForStorage();
 	}
 
 	return {

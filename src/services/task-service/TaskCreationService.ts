@@ -12,7 +12,10 @@ import {
 	generateUniqueFilename,
 } from "../../utils/filenameGenerator";
 import { ensureFolderExists } from "../../utils/helpers";
-import { getCurrentTimestamp } from "../../utils/dateUtils";
+import {
+	getCurrentTimestampForStorage,
+	normalizeTimestampForStorage,
+} from "../../utils/dateUtils";
 import { stringifyUnknown } from "../../utils/stringUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
 import {
@@ -66,8 +69,12 @@ export class TaskCreationService {
 				: title;
 			const priority = taskData.priority || plugin.settings.defaultTaskPriority;
 			const status = taskData.status || plugin.settings.defaultTaskStatus;
-			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
-			const dateModified = taskData.dateModified || getCurrentTimestamp();
+			const dateCreated = taskData.dateCreated
+				? normalizeTimestampForStorage(taskData.dateCreated)
+				: getCurrentTimestampForStorage();
+			const dateModified = taskData.dateModified
+				? normalizeTimestampForStorage(taskData.dateModified)
+				: getCurrentTimestampForStorage();
 
 			const contextsArray = taskData.contexts || [];
 			const projectsArray = taskData.projects || [];
