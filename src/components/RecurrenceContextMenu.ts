@@ -192,6 +192,12 @@ export function buildCustomRecurrenceRule(input: CustomRecurrenceRuleInput): str
 	}
 
 	switch (input.frequency) {
+		case "DAILY":
+			if (!isFlexibleCompletionAnchor && input.byDay.length > 0) {
+				parts.push(`BYDAY=${input.byDay.join(",")}`);
+			}
+			break;
+
 		case "WEEKLY":
 			if (!isFlexibleCompletionAnchor && input.byDay.length > 0) {
 				parts.push(`BYDAY=${input.byDay.join(",")}`);
@@ -743,7 +749,7 @@ class CustomRecurrenceModal extends Modal {
 		// Days of week (for weekly frequency)
 		const byDaySetting = new Setting(contentEl)
 			.setName("Days of week")
-			.setDesc("Select specific days (for weekly recurrence)");
+			.setDesc("Select specific days (for daily or weekly recurrence)");
 
 		const daysContainer = byDaySetting.controlEl.createDiv("days-container");
 		const days = orderedWeekdays.map((day) => ({
@@ -1212,7 +1218,10 @@ class CustomRecurrenceModal extends Modal {
 		this.updateFrequencySpecificVisibility = () => {
 			const useFlexibleInterval = this.recurrenceAnchor === "completion";
 			byDaySetting.settingEl.style.display =
-				this.frequency === "WEEKLY" && !useFlexibleInterval ? "flex" : "none";
+				(this.frequency === "DAILY" || this.frequency === "WEEKLY") &&
+				!useFlexibleInterval
+					? "flex"
+					: "none";
 			monthlyTypeSetting.settingEl.style.display =
 				this.frequency === "MONTHLY" && !useFlexibleInterval ? "flex" : "none";
 			yearlyTypeSetting.settingEl.style.display =
