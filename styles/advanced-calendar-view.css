@@ -819,6 +819,11 @@
     table-layout: fixed;
 }
 
+.advanced-calendar-view.advanced-calendar-view--list .fc-list-card-content {
+    box-sizing: border-box;
+    width: 100%;
+}
+
 .advanced-calendar-view.advanced-calendar-view--list .task-card,
 .advanced-calendar-view.advanced-calendar-view--list .task-card__main-row,
 .advanced-calendar-view.advanced-calendar-view--list .task-card__content,

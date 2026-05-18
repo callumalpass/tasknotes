@@ -3284,7 +3284,12 @@ export class CalendarView extends BasesViewBase {
 
 			// Replace the event element content with the card
 			if (cardElement) {
-				arg.el.appendChild(cardElement);
+				const cardCell = arg.el.ownerDocument.createElement("td");
+				cardCell.className = "fc-list-event-title fc-list-card-content";
+				// Span the whole FullCalendar list row even if its internal columns change.
+				cardCell.colSpan = 99;
+				cardCell.appendChild(cardElement);
+				arg.el.appendChild(cardCell);
 				if (taskInfo?.path) {
 					arg.el.setAttribute("data-task-path", taskInfo.path);
 					arg.el.classList.add("fc-task-event");
