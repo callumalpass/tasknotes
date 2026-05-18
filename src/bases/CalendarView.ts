@@ -17,11 +17,7 @@ import {
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
-import interactionPlugin, {
-	type DropArg,
-	type EventReceiveArg,
-	type EventResizeDoneArg,
-} from "@fullcalendar/interaction";
+import interactionPlugin, { type EventResizeDoneArg } from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import {
 	generateCalendarEvents,
@@ -48,7 +44,7 @@ import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
 import { CalendarEventCreationModal } from "../modals/CalendarEventCreationModal";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
-import { Menu, Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
+import { Menu, Platform, TFile, setIcon, setTooltip } from "obsidian";
 import type { EventRef } from "obsidian";
 import { format } from "date-fns";
 import { createTaskCard } from "../ui/TaskCard";
@@ -67,10 +63,6 @@ import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
 } from "./calendarRecreateUtils";
-import {
-	getDisplayedTaskLinkedGoogleEventIds,
-	isDisplayedTaskLinkedGoogleEvent,
-} from "./calendarEventDeduplication";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import type { CalendarEventData } from "../services/CalendarProvider";
 import { filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
@@ -535,40 +527,12 @@ export function isCalendarElementReadyForSizing(
 	return calendarEl.clientWidth > 0 && calendarEl.clientHeight > 0;
 }
 
-type ExternalDropTaskPathSource = {
-	dataTransfer?: DataTransfer | null;
-	draggedEl?: HTMLElement | null;
-	jsEvent?: MouseEvent | DragEvent | null;
-};
-
-function normalizeDroppedTaskPath(value: string | undefined): string | undefined {
-	const normalized = value?.trim();
-	return normalized ? normalized : undefined;
-}
-
-export function extractTaskPathFromExternalDrop(
-	info: ExternalDropTaskPathSource
-): string | undefined {
-	const eventDataTransfer =
-		info.jsEvent && "dataTransfer" in info.jsEvent
-			? info.jsEvent.dataTransfer
-			: null;
-	const dataTransfer = info.dataTransfer || eventDataTransfer;
-	const transferredTaskPath =
-		normalizeDroppedTaskPath(dataTransfer?.getData("application/x-task-path")) ||
-		normalizeDroppedTaskPath(dataTransfer?.getData("text/plain"));
-
-	if (transferredTaskPath) {
-		return transferredTaskPath;
-	}
-
-	const draggedEl = info.draggedEl;
-	return (
-		normalizeDroppedTaskPath(draggedEl?.dataset.taskPath) ||
-		normalizeDroppedTaskPath(
-			draggedEl?.closest<HTMLElement>("[data-task-path]")?.dataset.taskPath
-		)
-	);
+export function isCalendarInPopoutWindow(
+	containerEl: HTMLElement,
+	mainWindow: Window = window
+): boolean {
+	const ownerWindow = containerEl.ownerDocument.defaultView;
+	return Boolean(ownerWindow && ownerWindow !== mainWindow);
 }
 
 function getCalendarScrollElements(calendarEl: HTMLElement | null): HTMLElement[] {
@@ -801,6 +765,11 @@ export class CalendarView extends BasesViewBase {
 	 * Override to update FullCalendar size when container resizes.
 	 */
 	onResize(): void {
+		if (this.isPopoutWindow()) {
+			this.renderPopoutUnsupported();
+			return;
+		}
+
 		if (!this.calendar || !this.canUpdateCalendarSize()) return;
 
 		this.calendar.updateSize();
@@ -1401,6 +1370,11 @@ export class CalendarView extends BasesViewBase {
 			this._isRendering = false;
 			return;
 		}
+		if (this.isPopoutWindow()) {
+			this.renderPopoutUnsupported();
+			this._isRendering = false;
+			return;
+		}
 		if (!this.data?.data) {
 			this._isRendering = false;
 			return;
@@ -1552,7 +1526,7 @@ export class CalendarView extends BasesViewBase {
 				},
 			},
 			...getCalendarSizingOptions(this.getEffectiveHeightMode()),
-			handleWindowResize: true,
+			handleWindowResize: false,
 			stickyHeaderDates: false,
 			locale:
 				this.viewOptions.locale ||
@@ -1580,7 +1554,6 @@ export class CalendarView extends BasesViewBase {
 				);
 			},
 			editable: true,
-			droppable: true,
 			selectable: true,
 			...(Platform.isMobile
 				? {
@@ -1623,12 +1596,6 @@ export class CalendarView extends BasesViewBase {
 			},
 			eventDrop: (info) => {
 				void this.handleEventDrop(info);
-			},
-			drop: (info) => {
-				void this.handleExternalDrop(info);
-			},
-			eventReceive: (info) => {
-				this.handleEventReceive(info);
 			},
 			eventResize: (info) => {
 				void this.handleEventResize(info);
@@ -1908,6 +1875,37 @@ export class CalendarView extends BasesViewBase {
 		return isCalendarElementReadyForSizing(this.calendarEl, this.containerEl);
 	}
 
+	private isPopoutWindow(): boolean {
+		return isCalendarInPopoutWindow(this.containerEl);
+	}
+
+	private renderPopoutUnsupported(): void {
+		if (!this.calendarEl) return;
+
+		if (this.calendar) {
+			this.calendar.destroy();
+			this.calendar = null;
+		}
+
+		this.calendarEl.replaceChildren();
+		this.calendarEl.classList.add("advanced-calendar-view__calendar--popout-blocked");
+
+		const doc = this.calendarEl.ownerDocument;
+		const noticeEl = doc.createElement("div");
+		noticeEl.className = "advanced-calendar-view__popout-blocked";
+
+		const titleEl = doc.createElement("h3");
+		titleEl.textContent = "Calendar view is unavailable in a separate window";
+		noticeEl.appendChild(titleEl);
+
+		const messageEl = doc.createElement("p");
+		messageEl.textContent =
+			"Open this calendar view in the main Obsidian window. The calendar can freeze Obsidian when restored inside a separate window.";
+		noticeEl.appendChild(messageEl);
+
+		this.calendarEl.appendChild(noticeEl);
+	}
+
 	private resetTodayColumnWidths(): void {
 		if (!this.calendarEl) return;
 
@@ -2086,7 +2084,6 @@ export class CalendarView extends BasesViewBase {
 			eventConfig
 		);
 		applyBasesSortIndexesToCalendarEvents(taskEvents, this.basesSortIndexByPath);
-		const displayedTaskGoogleEventIds = getDisplayedTaskLinkedGoogleEventIds(taskEvents);
 		allEvents.push(...taskEvents);
 
 		// Add property-based events from non-TaskNotes items
@@ -2113,10 +2110,7 @@ export class CalendarView extends BasesViewBase {
 
 		// Add Google Calendar events
 		if (this.plugin.googleCalendarService) {
-			const googleEvents = await this.buildGoogleCalendarEvents(
-				relatedNoteCountsByEventId,
-				displayedTaskGoogleEventIds
-			);
+			const googleEvents = await this.buildGoogleCalendarEvents(relatedNoteCountsByEventId);
 			allEvents.push(...googleEvents);
 		}
 
@@ -2245,8 +2239,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async buildGoogleCalendarEvents(
-		relatedNoteCountsByEventId: Map<string, number>,
-		displayedTaskGoogleEventIds: Set<string>
+		relatedNoteCountsByEventId: Map<string, number>
 	): Promise<EventInput[]> {
 		if (!this.plugin.googleCalendarService) return [];
 
@@ -2257,7 +2250,6 @@ export class CalendarView extends BasesViewBase {
 			// Check if this calendar is enabled
 			const calendarId = icsEvent.subscriptionId.replace("google-", "");
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
-			if (isDisplayedTaskLinkedGoogleEvent(icsEvent, displayedTaskGoogleEventIds)) continue;
 
 			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin, {
@@ -2384,46 +2376,6 @@ export class CalendarView extends BasesViewBase {
 				this.expectImmediateUpdate()
 			);
 		}
-	}
-
-	private async handleExternalDrop(info: DropArg): Promise<void> {
-		this.expectImmediateUpdate();
-
-		const taskPath = extractTaskPathFromExternalDrop(info);
-		if (!taskPath) {
-			console.warn("[TaskNotes][CalendarView] External drop did not include a task path");
-			return;
-		}
-
-		try {
-			const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
-			if (!task) {
-				console.warn("[TaskNotes][CalendarView] Dropped task not found:", taskPath);
-				return;
-			}
-
-			const scheduledDate = info.allDay
-				? format(info.date, "yyyy-MM-dd")
-				: format(info.date, "yyyy-MM-dd'T'HH:mm");
-
-			await this.plugin.taskService.updateProperty(task, "scheduled", scheduledDate);
-
-			new Notice(
-				`Task "${task.title}" scheduled for ${format(
-					info.date,
-					info.allDay ? "MMM d, yyyy" : "MMM d, yyyy h:mm a"
-				)}`
-			);
-
-			this.calendar?.refetchEvents();
-		} catch (error) {
-			console.error("[TaskNotes][CalendarView] Error handling external task drop:", error);
-			new Notice("Failed to schedule task");
-		}
-	}
-
-	private handleEventReceive(info: EventReceiveArg): void {
-		info.event.remove();
 	}
 
 	private refetchWhenCreatedTimeblockIsIndexed(result: TimeblockCreationResult): void {

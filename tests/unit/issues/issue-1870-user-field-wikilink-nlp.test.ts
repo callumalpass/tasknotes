@@ -1,4 +1,6 @@
 import { NaturalLanguageParser } from "../../../src/services/NaturalLanguageParser";
+import { getMarkdownEditorTooltipParent } from "../../../src/editor/EmbeddableMarkdownEditor";
+import { renderProjectCompletionMetadata } from "../../../src/editor/NLPCodeMirrorAutocomplete";
 import { MockObsidian } from "../../__mocks__/obsidian";
 import {
 	createCompletionPlugin,
@@ -126,5 +128,26 @@ describe("Issue #1870: user field file autosuggest NLP values", () => {
 				}),
 			],
 		});
+	});
+
+	it("mounts NLP autocomplete UI in the editor document for pop-out windows", () => {
+		const popoutDocument = document.implementation.createHTMLDocument("TaskNotes popout");
+		const container = popoutDocument.createElement("div");
+		popoutDocument.body.appendChild(container);
+
+		expect(getMarkdownEditorTooltipParent(container)).toBe(popoutDocument.body);
+		expect(getMarkdownEditorTooltipParent(container)).not.toBe(document.body);
+
+		const metadata = renderProjectCompletionMetadata(
+			{
+				label: "Reference Note",
+				projectMetadata: [[{ text: "Reference Note", searchable: true, kind: "value" }]],
+				projectQuery: "Reference",
+			} as never,
+			popoutDocument
+		);
+
+		expect(metadata?.ownerDocument).toBe(popoutDocument);
+		expect(metadata?.querySelector("mark")?.ownerDocument).toBe(popoutDocument);
 	});
 });

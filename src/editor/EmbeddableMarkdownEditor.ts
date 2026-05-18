@@ -215,6 +215,10 @@ const defaultProperties: ResolvedMarkdownEditorProps = {
 	file: undefined,
 };
 
+export function getMarkdownEditorTooltipParent(container: HTMLElement): HTMLElement {
+	return container.ownerDocument?.body ?? activeDocument.body;
+}
+
 class CodeMirrorEditorAdapter {
 	constructor(private readonly view: EditorView) {}
 
@@ -567,7 +571,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 
 		extensions.push(
 			tooltips({
-				parent: activeDocument.body,
+				parent: getMarkdownEditorTooltipParent(this.containerEl),
 			})
 		);
 

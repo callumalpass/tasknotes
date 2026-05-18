@@ -7,7 +7,11 @@
  * container and has measurable dimensions.
  */
 
-import { isCalendarElementReadyForSizing } from "../../../src/bases/CalendarView";
+import {
+	CalendarView,
+	isCalendarElementReadyForSizing,
+	isCalendarInPopoutWindow,
+} from "../../../src/bases/CalendarView";
 
 function setElementSize(element: HTMLElement, width: number, height: number): void {
 	Object.defineProperty(element, "clientWidth", {
@@ -84,5 +88,61 @@ describe("Issue #1873 - calendar pop-out resize guard", () => {
 		document.body.appendChild(container);
 
 		expect(isCalendarElementReadyForSizing(null, container)).toBe(false);
+	});
+
+	test("detects calendar containers mounted in a separate window document", () => {
+		const container = document.createElement("div");
+		document.body.appendChild(container);
+		expect(isCalendarInPopoutWindow(container)).toBe(false);
+
+		const iframe = document.createElement("iframe");
+		document.body.appendChild(iframe);
+		const popoutContainer = iframe.contentDocument?.createElement("div");
+		if (!popoutContainer) {
+			throw new Error("Expected iframe document");
+		}
+		iframe.contentDocument?.body.appendChild(popoutContainer);
+
+		expect(isCalendarInPopoutWindow(popoutContainer)).toBe(true);
+	});
+
+	test("tears down an active calendar when Obsidian moves it to a separate window", () => {
+		const iframe = document.createElement("iframe");
+		document.body.appendChild(iframe);
+		const popoutDocument = iframe.contentDocument;
+		if (!popoutDocument) {
+			throw new Error("Expected iframe document");
+		}
+
+		const container = popoutDocument.createElement("div");
+		const rootElement = popoutDocument.createElement("div");
+		const calendarEl = popoutDocument.createElement("div");
+		rootElement.appendChild(calendarEl);
+		container.appendChild(rootElement);
+		popoutDocument.body.appendChild(container);
+
+		const calendar = {
+			destroy: jest.fn(),
+			updateSize: jest.fn(),
+		};
+		const view = Object.create(CalendarView.prototype) as CalendarView & {
+			containerEl: HTMLElement;
+			rootElement: HTMLElement;
+			calendarEl: HTMLElement;
+			calendar: typeof calendar | null;
+		};
+		view.containerEl = container;
+		view.rootElement = rootElement;
+		view.calendarEl = calendarEl;
+		view.calendar = calendar;
+
+		view.onResize();
+
+		expect(calendar.destroy).toHaveBeenCalledTimes(1);
+		expect(calendar.updateSize).not.toHaveBeenCalled();
+		expect(view.calendar).toBeNull();
+		expect(calendarEl.textContent).toContain(
+			"Calendar view is unavailable in a separate window"
+		);
 	});
 });

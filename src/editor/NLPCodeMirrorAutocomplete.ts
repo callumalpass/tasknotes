@@ -7,7 +7,7 @@ import {
 	closeCompletion,
 } from "@codemirror/autocomplete";
 import { Extension, Prec } from "@codemirror/state";
-import { keymap } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { TriggerConfigService } from "../services/TriggerConfigService";
@@ -65,8 +65,8 @@ export function createNLPAutocomplete(plugin: TaskNotesPlugin): Extension[] {
 		// Custom rendering for project suggestions with metadata
 		addToOptions: [
 			{
-				render: (completion: Completion, _state: unknown, _view: unknown) =>
-					renderProjectCompletionMetadata(completion),
+				render: (completion: Completion, _state: unknown, view: EditorView) =>
+					renderProjectCompletionMetadata(completion, view.dom.ownerDocument),
 				position: 100, // After label (50) and detail (80)
 			},
 		],
@@ -167,23 +167,26 @@ export function createNLPCompletionSource(
 	};
 }
 
-export function renderProjectCompletionMetadata(completion: Completion): HTMLElement | null {
+export function renderProjectCompletionMetadata(
+	completion: Completion,
+	doc: Document = activeDocument
+): HTMLElement | null {
 	const projectCompletion = completion as unknown as ProjectCompletion;
 	if (!projectCompletion.projectMetadata) return null;
 
-	const container = activeDocument.createElement("div");
+	const container = doc.createElement("div");
 	container.className = "cm-project-suggestion__metadata";
 
 	for (const row of projectCompletion.projectMetadata) {
-		const metaRow = activeDocument.createElement("div");
+		const metaRow = doc.createElement("div");
 		metaRow.className = "cm-project-suggestion__meta";
 
 		row.forEach((part, index) => {
 			if (index > 0) {
-				metaRow.appendChild(activeDocument.createTextNode(" "));
+				metaRow.appendChild(doc.createTextNode(" "));
 			}
 
-			const span = activeDocument.createElement("span");
+			const span = doc.createElement("span");
 			span.className =
 				part.kind === "value"
 					? "cm-project-suggestion__meta-value"
@@ -447,6 +450,7 @@ function buildProjectMetadataRows(
 }
 
 function appendHighlightedText(container: HTMLElement, text: string, query: string): void {
+	const doc = container.ownerDocument;
 	const words = query.toLowerCase().split(/\s+/).filter(Boolean);
 	if (words.length === 0) {
 		container.textContent = text;
@@ -480,17 +484,17 @@ function appendHighlightedText(container: HTMLElement, text: string, query: stri
 	let lastIndex = 0;
 	for (const match of nonOverlappingMatches) {
 		if (match.start > lastIndex) {
-			container.appendChild(activeDocument.createTextNode(text.slice(lastIndex, match.start)));
+			container.appendChild(doc.createTextNode(text.slice(lastIndex, match.start)));
 		}
 
-		const mark = activeDocument.createElement("mark");
+		const mark = doc.createElement("mark");
 		mark.textContent = text.slice(match.start, match.end);
 		container.appendChild(mark);
 		lastIndex = match.end;
 	}
 
 	if (lastIndex < text.length) {
-		container.appendChild(activeDocument.createTextNode(text.slice(lastIndex)));
+		container.appendChild(doc.createTextNode(text.slice(lastIndex)));
 	}
 }
 

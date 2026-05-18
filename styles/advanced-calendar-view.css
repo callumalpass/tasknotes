@@ -19,6 +19,32 @@
     min-height: 0;
 }
 
+.advanced-calendar-view__calendar--popout-blocked {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    padding: 24px;
+}
+
+.advanced-calendar-view__popout-blocked {
+    max-width: 420px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.advanced-calendar-view__popout-blocked h3 {
+    margin: 0 0 8px;
+    color: var(--text-normal);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.advanced-calendar-view__popout-blocked p {
+    margin: 0;
+    line-height: 1.5;
+}
+
 /* ICS Event Styles */
 .fc-event[data-ics-event="true"] {
     opacity: 0.9;
