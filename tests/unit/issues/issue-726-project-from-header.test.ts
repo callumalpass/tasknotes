@@ -36,7 +36,14 @@
  * - Obsidian's metadataCache.getFileCache(file)?.headings for header detection
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect, jest } from "@jest/globals";
+import {
+	extractProjectFromHeadingText,
+	findClosestHeadingAboveLine,
+	InstantTaskConvertService,
+} from "../../../src/services/InstantTaskConvertService";
+import { PluginFactory } from "../../helpers/mock-factories";
+import { TFile } from "../../__mocks__/obsidian";
 
 // Mock interface matching the heading cache structure from Obsidian
 interface MockHeading {
@@ -91,6 +98,116 @@ function extractProjectFromHeading(heading: string): string {
 }
 
 describe("Issue #726: Assign task project from parent header when converting task", () => {
+	describe("active regression coverage", () => {
+		it("finds the closest heading above the converted line", () => {
+			const headings = [
+				{
+					heading: "2025-09-24",
+					level: 1,
+					position: {
+						start: { line: 0, col: 0, offset: 0 },
+						end: { line: 0, col: 12, offset: 12 },
+					},
+				},
+				{
+					heading: "[[Project A]]",
+					level: 2,
+					position: {
+						start: { line: 2, col: 0, offset: 14 },
+						end: { line: 2, col: 16, offset: 30 },
+					},
+				},
+			];
+
+			const parentHeading = findClosestHeadingAboveLine(headings, 4);
+
+			expect(parentHeading?.heading).toBe("[[Project A]]");
+		});
+
+		it("extracts wiki and markdown links while ignoring date-only headings", () => {
+			expect(extractProjectFromHeadingText("[[Project A]]")).toBe("[[Project A]]");
+			expect(extractProjectFromHeadingText("Tasks for [[Project A]]")).toBe(
+				"[[Project A]]"
+			);
+			expect(extractProjectFromHeadingText("[Project A](Projects/Project A.md)")).toBe(
+				"[Project A](Projects/Project A.md)"
+			);
+			expect(extractProjectFromHeadingText("2025-09-24")).toBeNull();
+		});
+
+		it("adds the parent heading project during instant conversion when enabled", async () => {
+			let createdTaskData: any = null;
+			const currentFile = new TFile("Daily/2025-09-24.md");
+			const plugin = PluginFactory.createMockPlugin({
+				settings: {
+					...PluginFactory.createMockPlugin().settings,
+					useDefaultsOnInstantConvert: true,
+					taskCreationDefaults: {
+						defaultProjects: "",
+						useParentNoteAsProject: false,
+						useParentHeaderAsProject: true,
+						defaultContexts: "",
+						defaultTags: "",
+						defaultDueDate: "none",
+						defaultDueTime: "none",
+						defaultScheduledDate: "none",
+						defaultScheduledTime: "none",
+						defaultTimeEstimate: 0,
+						defaultRecurrence: "none",
+						useBodyTemplate: false,
+						bodyTemplate: "",
+						defaultReminders: [],
+					},
+				},
+			});
+
+			plugin.app.workspace.getActiveFile = jest.fn().mockReturnValue(currentFile);
+			plugin.app.fileManager.generateMarkdownLink = jest.fn().mockReturnValue("[[Daily/2025-09-24]]");
+			plugin.app.metadataCache.getFileCache = jest.fn().mockReturnValue({
+				headings: [
+					{
+						heading: "2025-09-24",
+						level: 1,
+						position: {
+							start: { line: 0, col: 0, offset: 0 },
+							end: { line: 0, col: 12, offset: 12 },
+						},
+					},
+					{
+						heading: "[[Project A]]",
+						level: 2,
+						position: {
+							start: { line: 2, col: 0, offset: 14 },
+							end: { line: 2, col: 16, offset: 30 },
+						},
+					},
+				],
+			});
+			plugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(null);
+			plugin.taskService.createTask = jest.fn().mockImplementation(async (taskData) => {
+				createdTaskData = taskData;
+				return {
+					file: new TFile("Tasks/Follow up.md"),
+					taskInfo: { title: taskData.title },
+				};
+			});
+
+			const service = new InstantTaskConvertService(
+				plugin,
+				plugin.statusManager,
+				plugin.priorityManager
+			);
+
+			await (service as any).createTaskFile(
+				{ title: "Follow up", isCompleted: false },
+				"",
+				4
+			);
+
+			expect(createdTaskData.projects).toEqual(["[[Project A]]"]);
+		});
+	});
+
 	describe("Finding parent heading", () => {
 		it.skip("should find the closest heading above the task line - reproduces issue #726", () => {
 			// Document structure:

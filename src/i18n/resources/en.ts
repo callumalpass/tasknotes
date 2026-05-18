@@ -752,6 +752,11 @@ export const en: TranslationTree = {
 					description:
 						"Automatically link the parent note as a project when using instant task conversion",
 				},
+				useParentHeaderAsProject: {
+					name: "Use parent heading as project during instant conversion",
+					description:
+						"Automatically link the closest heading above the converted line as a project when using instant task conversion",
+				},
 				defaultTimeEstimate: {
 					name: "Default time estimate",
 					description: "Default time estimate in minutes (0 = no default)",
@@ -1125,6 +1130,7 @@ export const en: TranslationTree = {
 			projectsCard: {
 				defaultProjects: "Default projects:",
 				useParentNote: "Use parent note as project:",
+				useParentHeader: "Use parent heading as project:",
 				noDefaultProjects: "No default projects selected",
 				autosuggestFilters: "Autosuggest filters",
 				customizeDisplay: "Customize display",

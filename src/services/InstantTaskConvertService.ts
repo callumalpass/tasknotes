@@ -1,4 +1,5 @@
 import { Editor, TFile, Notice, EditorPosition } from "obsidian";
+import type { HeadingCache } from "obsidian";
 import type { EditorView } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
 import { TasksPluginParser, ParsedTaskData } from "../utils/TasksPluginParser";
@@ -16,6 +17,50 @@ import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import type { InterpolationValues, TranslationKey } from "../i18n";
+
+export function findClosestHeadingAboveLine(
+	headings: HeadingCache[] | undefined,
+	lineNumber: number
+): HeadingCache | null {
+	if (!headings || !Number.isInteger(lineNumber) || lineNumber < 0) {
+		return null;
+	}
+
+	let closest: HeadingCache | null = null;
+	for (const heading of headings) {
+		if (heading.position.start.line >= lineNumber) {
+			continue;
+		}
+		if (!closest || heading.position.start.line > closest.position.start.line) {
+			closest = heading;
+		}
+	}
+
+	return closest;
+}
+
+export function extractProjectFromHeadingText(headingText: string): string | null {
+	const heading = headingText.trim();
+	if (!heading) {
+		return null;
+	}
+
+	const wikilinkMatch = heading.match(/\[\[([^[\]]+)\]\]/);
+	if (wikilinkMatch) {
+		return `[[${wikilinkMatch[1].trim()}]]`;
+	}
+
+	const markdownLinkMatch = heading.match(/\[[^\]]+\]\(([^)]+)\)/);
+	if (markdownLinkMatch) {
+		return markdownLinkMatch[0].trim();
+	}
+
+	if (/^\d{4}(?:-\d{2}){0,2}$/.test(heading)) {
+		return null;
+	}
+
+	return heading;
+}
 
 export class InstantTaskConvertService {
 	private plugin: TaskNotesPlugin;
@@ -113,7 +158,7 @@ export class InstantTaskConvertService {
 					throw new Error("Failed to parse task");
 				}
 
-				const file = await this.createTaskFile(parsedData);
+				const file = await this.createTaskFile(parsedData, "", task.lineNumber);
 				const linkText = this.generateLinkText(task.line, file);
 
 				return { lineNumber: task.lineNumber, line: task.line, file, linkText };
@@ -250,7 +295,7 @@ export class InstantTaskConvertService {
 			}
 
 			// Create the task file with default settings and details
-			const file = await this.createTaskFile(parsedData, details);
+			const file = await this.createTaskFile(parsedData, details, selectionInfo.startLine);
 
 			// Replace the original line(s) with a link (includes race condition protection)
 			const replaceResult = await this.replaceOriginalTaskLines(
@@ -433,7 +478,11 @@ export class InstantTaskConvertService {
 	/**
 	 * Create a task file using default settings and parsed data
 	 */
-	private async createTaskFile(parsedData: ParsedTaskData, details = ""): Promise<TFile> {
+	private async createTaskFile(
+		parsedData: ParsedTaskData,
+		details = "",
+		sourceLineNumber?: number
+	): Promise<TFile> {
 		// Sanitize and validate input data
 		// Check if title will be truncated and preserve overflow text (issue #1310)
 		const originalTitle = parsedData.title?.trim() || "";
@@ -631,6 +680,16 @@ export class InstantTaskConvertService {
 				// The parentNote is already a markdown link, so we can add it directly
 				projectsArray.push(parentNote);
 			}
+
+			if (defaults.useParentHeaderAsProject && currentFile) {
+				const parentHeaderProject = this.getParentHeaderProject(
+					currentFile,
+					sourceLineNumber
+				);
+				if (parentHeaderProject) {
+					projectsArray.push(parentHeaderProject);
+				}
+			}
 		}
 
 		// Add parsed projects
@@ -702,6 +761,25 @@ export class InstantTaskConvertService {
 		const { file } = await this.plugin.taskService.createTask(taskData);
 
 		return file;
+	}
+
+	private getParentHeaderProject(currentFile: TFile, sourceLineNumber?: number): string | null {
+		if (sourceLineNumber === undefined) {
+			return null;
+		}
+
+		const headings = this.plugin.app.metadataCache.getFileCache(currentFile)?.headings;
+		const parentHeading = findClosestHeadingAboveLine(headings, sourceLineNumber);
+		if (!parentHeading) {
+			return null;
+		}
+
+		const project = extractProjectFromHeadingText(parentHeading.heading);
+		if (!project) {
+			return null;
+		}
+
+		return this.resolveProjectLinks([project])[0] ?? project;
 	}
 
 	private extractTitleLinks(title: string): { cleanTitle: string; links: string[] } {

@@ -683,6 +683,10 @@ export const ja: TranslationTree = {
 					name: "インスタント変換時に親ノートをプロジェクトとして使用",
 					description: "インスタントタスク変換使用時に親ノートを自動的にプロジェクトとしてリンク",
 				},
+				useParentHeaderAsProject: {
+					name: "インスタント変換時に親見出しをプロジェクトとして使用",
+					description: "インスタントタスク変換時に変換行の上にある最も近い見出しをプロジェクトとして自動的にリンク",
+				},
 				defaultTimeEstimate: {
 					name: "デフォルト時間見積もり",
 					description: "デフォルト時間見積もり（分）（0 = デフォルトなし）",
@@ -1041,6 +1045,7 @@ export const ja: TranslationTree = {
 			projectsCard: {
 				defaultProjects: "デフォルトプロジェクト:",
 				useParentNote: "親ノートをプロジェクトとして使用:",
+				useParentHeader: "親見出しをプロジェクトとして使用:",
 				noDefaultProjects: "デフォルトプロジェクトが選択されていません",
 				autosuggestFilters: "オートサジェストフィルター",
 				customizeDisplay: "表示をカスタマイズ",

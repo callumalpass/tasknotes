@@ -683,6 +683,10 @@ export const ko: TranslationTree = {
 					name: "즉시 변환 시 상위 노트를 프로젝트로 사용",
 					description: "즉시 작업 변환 사용 시 상위 노트를 프로젝트로 자동 연결",
 				},
+				useParentHeaderAsProject: {
+					name: "즉시 변환 시 상위 제목을 프로젝트로 사용",
+					description: "즉시 작업 변환 사용 시 변환된 줄 위의 가장 가까운 제목을 프로젝트로 자동 연결",
+				},
 				defaultTimeEstimate: {
 					name: "기본 시간 예상",
 					description: "기본 시간 예상 (분 단위, 0 = 기본값 없음)",
@@ -1014,6 +1018,7 @@ export const ko: TranslationTree = {
 			projectsCard: {
 				defaultProjects: "기본 프로젝트:",
 				useParentNote: "상위 노트를 프로젝트로 사용:",
+				useParentHeader: "상위 제목을 프로젝트로 사용:",
 				noDefaultProjects: "선택된 기본 프로젝트 없음",
 				autosuggestFilters: "자동 제안 필터",
 				customizeDisplay: "표시 사용자 지정",

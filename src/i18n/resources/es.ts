@@ -683,6 +683,10 @@ export const es: TranslationTree = {
 					name: "Usar nota padre como proyecto durante conversión instantánea",
 					description: "Vincular automáticamente la nota padre como proyecto al usar conversión instantánea de tareas",
 				},
+				useParentHeaderAsProject: {
+					name: "Usar encabezado padre como proyecto durante conversión instantánea",
+					description: "Vincular automáticamente el encabezado más cercano sobre la línea convertida como proyecto al usar conversión instantánea de tareas",
+				},
 				defaultTimeEstimate: {
 					name: "Estimación de tiempo predeterminada",
 					description: "Estimación de tiempo predeterminada en minutos (0 = sin predeterminado)",
@@ -1041,6 +1045,7 @@ export const es: TranslationTree = {
 			projectsCard: {
 				defaultProjects: "Proyectos predeterminados:",
 				useParentNote: "Usar nota padre como proyecto:",
+				useParentHeader: "Usar encabezado padre como proyecto:",
 				noDefaultProjects: "No hay proyectos predeterminados seleccionados",
 				autosuggestFilters: "Filtros de autosugerencia",
 				customizeDisplay: "Personalizar visualización",

@@ -683,6 +683,10 @@ export const de: TranslationTree = {
 					name: "Übergeordnete Notiz als Projekt bei sofortiger Konvertierung verwenden",
 					description: "Übergeordnete Notiz automatisch als Projekt verlinken bei sofortiger Aufgabenkonvertierung",
 				},
+				useParentHeaderAsProject: {
+					name: "Übergeordnete Überschrift als Projekt bei sofortiger Konvertierung verwenden",
+					description: "Die nächstgelegene Überschrift über der konvertierten Zeile bei sofortiger Aufgabenkonvertierung automatisch als Projekt verlinken",
+				},
 				defaultTimeEstimate: {
 					name: "Standard-Zeitschätzung",
 					description: "Standard-Zeitschätzung in Minuten (0 = kein Standard)",
@@ -1041,6 +1045,7 @@ export const de: TranslationTree = {
 			projectsCard: {
 				defaultProjects: "Standardprojekte:",
 				useParentNote: "Übergeordnete Notiz als Projekt verwenden:",
+				useParentHeader: "Übergeordnete Überschrift als Projekt verwenden:",
 				noDefaultProjects: "Keine Standardprojekte ausgewählt",
 				autosuggestFilters: "Autovorschlag-Filter",
 				customizeDisplay: "Anzeige anpassen",

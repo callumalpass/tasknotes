@@ -682,6 +682,10 @@ export const zh: TranslationTree = {
 					name: "即时转换时使用父笔记作为项目",
 					description: "使用即时任务转换时自动将父笔记链接为项目",
 				},
+				useParentHeaderAsProject: {
+					name: "即时转换时使用父级标题作为项目",
+					description: "使用即时任务转换时自动将被转换行上方最近的标题链接为项目",
+				},
 				defaultTimeEstimate: {
 					name: "默认时间估计",
 					description: "默认时间估计（分钟）（0 = 无默认值）",
@@ -1040,6 +1044,7 @@ export const zh: TranslationTree = {
 			projectsCard: {
 				defaultProjects: "默认项目：",
 				useParentNote: "使用父笔记作为项目：",
+				useParentHeader: "使用父级标题作为项目：",
 				noDefaultProjects: "未选择默认项目",
 				autosuggestFilters: "自动建议过滤器",
 				customizeDisplay: "自定义显示",

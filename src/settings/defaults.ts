@@ -135,6 +135,7 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultTags: "",
 	defaultProjects: "",
 	useParentNoteAsProject: false,
+	useParentHeaderAsProject: false,
 	defaultTimeEstimate: 0,
 	defaultRecurrence: "none",
 	defaultDueDate: "none",

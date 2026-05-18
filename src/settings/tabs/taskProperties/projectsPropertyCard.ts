@@ -112,6 +112,14 @@ export function renderProjectsPropertyCard(
 			}
 		);
 
+		const useParentHeaderToggle = createCardToggle(
+			plugin.settings.taskCreationDefaults.useParentHeaderAsProject,
+			(value) => {
+				plugin.settings.taskCreationDefaults.useParentHeaderAsProject = value;
+				save();
+			}
+		);
+
 		const nlpRows = createNLPTriggerRows(plugin, "projects", "+", save, translate);
 
 		// Create description element
@@ -138,6 +146,10 @@ export function renderProjectsPropertyCard(
 			{
 				label: translate("settings.taskProperties.projectsCard.useParentNote"),
 				input: useParentNoteToggle,
+			},
+			{
+				label: translate("settings.taskProperties.projectsCard.useParentHeader"),
+				input: useParentHeaderToggle,
 			},
 			...nlpRows,
 			{ label: "", input: autosuggestSection, fullWidth: true },

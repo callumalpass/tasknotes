@@ -279,6 +279,7 @@ export interface TaskCreationDefaults {
 	defaultTags: string; // Comma-separated list
 	defaultProjects: string; // Comma-separated list of project links
 	useParentNoteAsProject: boolean; // Use the parent note as a project during instant conversion
+	useParentHeaderAsProject: boolean; // Use the closest markdown heading as a project during instant conversion
 	defaultTimeEstimate: number; // minutes, 0 = no default
 	defaultRecurrence: "none" | "daily" | "weekly" | "monthly" | "yearly";
 	// Date defaults
