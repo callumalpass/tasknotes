@@ -465,6 +465,20 @@ export const ru: TranslationTree = {
 				header: "Встроенные задачи",
 				description: "Настройки ссылок на задачи и преобразования флажков в задачи в заметках.",
 			},
+			taskCreation: {
+				header: "Создание задач",
+				description: "Настройте, что происходит после создания задач.",
+				openAfterCreate: {
+					name: "Открывать задачу после создания",
+					description:
+						"Выберите, будет ли обычное окно создания новой задачи открывать новую заметку задачи после сохранения.",
+					options: {
+						none: "Не открывать",
+						sameTab: "Открывать в той же вкладке",
+						newTab: "Открывать в новой вкладке",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "Наложение ссылок задач",
@@ -2502,6 +2516,7 @@ export const ru: TranslationTree = {
 				successShortened: "Задача \"{title}\" успешно создана (имя файла сокращено из-за длины)",
 				failure: "Не удалось создать задачу: {message}",
 				blockingUnresolved: "Не удалось определить: {entries}",
+				openCreatedTaskFailure: "Задача создана, но заметку задачи не удалось открыть.",
 			},
 		},
 		taskEdit: {

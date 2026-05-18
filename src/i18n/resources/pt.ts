@@ -465,6 +465,20 @@ export const pt: TranslationTree = {
 				header: "Tarefas Embutidas",
 				description: "Configurações para links de tarefas e conversão de caixas de seleção em tarefas nas notas."
 			},
+			taskCreation: {
+				header: "Criação de tarefas",
+				description: "Configure o que acontece depois que tarefas são criadas.",
+				openAfterCreate: {
+					name: "Abrir tarefa após criação",
+					description:
+						"Escolha se o modal normal Criar nova tarefa abre a nova nota de tarefa após salvar.",
+					options: {
+						none: "Não abrir",
+						sameTab: "Abrir na mesma aba",
+						newTab: "Abrir em uma nova aba"
+					}
+				}
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "Sobreposição de link de tarefa",
@@ -2508,7 +2522,8 @@ export const pt: TranslationTree = {
 				success: 'Tarefa "{title}" criada com sucesso',
 				successShortened: 'Tarefa "{title}" criada com sucesso (nome do arquivo encurtado devido ao comprimento)',
 				failure: "Falha ao criar tarefa: {message}",
-				blockingUnresolved: "Não foi possível resolver: {entries}"
+				blockingUnresolved: "Não foi possível resolver: {entries}",
+				openCreatedTaskFailure: "Tarefa criada, mas não foi possível abrir a nota da tarefa."
 			}
 		},
 		taskEdit: {

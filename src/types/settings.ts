@@ -113,6 +113,7 @@ export interface TaskNotesSettings {
 	customFilenameTemplate: string; // Template for custom format
 	// Task creation defaults
 	taskCreationDefaults: TaskCreationDefaults;
+	openTaskAfterCreation: "none" | "same-tab" | "new-tab";
 	// Calendar view settings
 	calendarViewSettings: CalendarViewSettings;
 	// Pomodoro settings

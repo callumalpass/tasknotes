@@ -465,6 +465,20 @@ export const ko: TranslationTree = {
 				header: "인라인 작업",
 				description: "노트 내 작업 링크 및 체크박스-작업 변환 설정.",
 			},
+			taskCreation: {
+				header: "작업 생성",
+				description: "작업 생성 후 수행할 동작을 설정합니다.",
+				openAfterCreate: {
+					name: "생성 후 작업 열기",
+					description:
+						"일반 새 작업 만들기 모달에서 저장 후 새 작업 노트를 열지 선택합니다.",
+					options: {
+						none: "열지 않음",
+						sameTab: "같은 탭에서 열기",
+						newTab: "새 탭에서 열기",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "작업 링크 오버레이",
@@ -2455,6 +2469,7 @@ export const ko: TranslationTree = {
 				successShortened: "작업 \"{title}\"이(가) 성공적으로 생성되었습니다 (길이로 인해 파일명이 단축됨)",
 				failure: "작업 생성 실패: {message}",
 				blockingUnresolved: "해결할 수 없음: {entries}",
+				openCreatedTaskFailure: "작업은 생성되었지만 작업 노트를 열 수 없습니다.",
 			},
 		},
 		taskEdit: {

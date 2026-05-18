@@ -288,6 +288,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	customFilenameTemplate: "{title}", // Simple title template
 	// Task creation defaults
 	taskCreationDefaults: DEFAULT_TASK_CREATION_DEFAULTS,
+	openTaskAfterCreation: "none",
 	// Calendar view defaults
 	calendarViewSettings: DEFAULT_CALENDAR_VIEW_SETTINGS,
 	// Pomodoro defaults

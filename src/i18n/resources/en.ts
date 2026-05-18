@@ -510,6 +510,20 @@ export const en: TranslationTree = {
 				header: "Inline tasks",
 				description: "Settings for task links and checkbox-to-task conversion in notes.",
 			},
+			taskCreation: {
+				header: "Task creation",
+				description: "Configure what happens after tasks are created.",
+				openAfterCreate: {
+					name: "Open task after creation",
+					description:
+						"Choose whether the task creation modal opens the new task note after saving.",
+					options: {
+						none: "Do not open",
+						sameTab: "Open in the same tab",
+						newTab: "Open in a new tab",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "Task link overlay",
@@ -2676,6 +2690,7 @@ export const en: TranslationTree = {
 					'Task "{title}" created successfully (filename shortened due to length)',
 				failure: "Failed to create task: {message}",
 				blockingUnresolved: "Could not resolve: {entries}",
+				openCreatedTaskFailure: "Task created, but the task note could not be opened.",
 			},
 		},
 		taskEdit: {

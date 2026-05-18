@@ -38,6 +38,30 @@ export interface TaskCreationOptions {
 	creationContext?: "manual-creation" | "modal-inline-creation"; // Folder behavior context
 }
 
+type OpenTaskAfterCreationMode = TaskNotesPlugin["settings"]["openTaskAfterCreation"];
+type CreatedTaskOpenMode = Exclude<OpenTaskAfterCreationMode, "none">;
+
+export function shouldOpenCreatedTaskAfterSave(
+	mode: OpenTaskAfterCreationMode | undefined,
+	options: { createAnother?: boolean },
+	hasCreationCallback: boolean
+): mode is CreatedTaskOpenMode {
+	return (
+		(mode === "same-tab" || mode === "new-tab") &&
+		!options.createAnother &&
+		!hasCreationCallback
+	);
+}
+
+export async function openCreatedTaskFileAfterSave(
+	app: App,
+	file: TFile,
+	mode: CreatedTaskOpenMode
+): Promise<void> {
+	const leaf = mode === "new-tab" ? app.workspace.getLeaf("tab") : app.workspace.getLeaf(false);
+	await leaf.openFile(file);
+}
+
 function createEmbeddableMarkdownEditor(
 	app: App,
 	container: HTMLElement,
@@ -767,6 +791,8 @@ export class TaskCreationModal extends TaskModal {
 				this.options.onTaskCreated(createdTask);
 			}
 
+			await this.openCreatedTaskIfConfigured(result.file, options);
+
 			this.close();
 
 			if (options.createAnother) {
@@ -778,6 +804,23 @@ export class TaskCreationModal extends TaskModal {
 			console.error("Failed to create task:", error);
 			const message = getTaskCreationFailureNoticeMessage(error);
 			new Notice(this.t("modals.taskCreation.notices.failure", { message }));
+		}
+	}
+
+	private async openCreatedTaskIfConfigured(
+		file: TFile,
+		options: { createAnother?: boolean }
+	): Promise<void> {
+		const mode = this.plugin.settings.openTaskAfterCreation ?? "none";
+		if (!shouldOpenCreatedTaskAfterSave(mode, options, Boolean(this.options.onTaskCreated))) {
+			return;
+		}
+
+		try {
+			await openCreatedTaskFileAfterSave(this.app, file, mode);
+		} catch (error) {
+			console.error("Failed to open created task note:", error);
+			new Notice(this.t("modals.taskCreation.notices.openCreatedTaskFailure"));
 		}
 	}
 

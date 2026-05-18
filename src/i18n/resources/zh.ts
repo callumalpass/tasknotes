@@ -465,6 +465,20 @@ export const zh: TranslationTree = {
 				header: "内联任务",
 				description: "任务链接和复选框转任务功能的设置。",
 			},
+			taskCreation: {
+				header: "任务创建",
+				description: "配置任务创建后的行为。",
+				openAfterCreate: {
+					name: "创建后打开任务",
+					description:
+						"选择常规新建任务弹窗在保存后是否打开新的任务笔记。",
+					options: {
+						none: "不打开",
+						sameTab: "在当前标签页打开",
+						newTab: "在新标签页打开",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "任务链接覆盖",
@@ -2500,6 +2514,7 @@ export const zh: TranslationTree = {
 				successShortened: "任务\"{title}\"创建成功（因长度而缩短文件名）",
 				failure: "创建任务失败：{message}",
 				blockingUnresolved: "无法解析：{entries}",
+				openCreatedTaskFailure: "任务已创建，但无法打开任务笔记。",
 			},
 		},
 		taskEdit: {

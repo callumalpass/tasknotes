@@ -465,6 +465,20 @@ export const de: TranslationTree = {
 				header: "Inline-Aufgaben",
 				description: "Einstellungen für Aufgabenlinks und Checkbox-zu-Aufgabe-Konvertierung in Notizen.",
 			},
+			taskCreation: {
+				header: "Aufgabenerstellung",
+				description: "Konfiguriere, was nach dem Erstellen von Aufgaben passiert.",
+				openAfterCreate: {
+					name: "Aufgabe nach Erstellung öffnen",
+					description:
+						"Wähle, ob der normale Dialog 'Neue Aufgabe erstellen' die neue Aufgabennotiz nach dem Speichern öffnet.",
+					options: {
+						none: "Nicht öffnen",
+						sameTab: "Im selben Tab öffnen",
+						newTab: "In einem neuen Tab öffnen",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "Aufgabenlink-Overlay",
@@ -2501,6 +2515,7 @@ export const de: TranslationTree = {
 				successShortened: "Aufgabe \"{title}\" erfolgreich erstellt (Dateiname wegen Länge gekürzt)",
 				failure: "Aufgabe konnte nicht erstellt werden: {message}",
 				blockingUnresolved: "Konnte nicht auflösen: {entries}",
+				openCreatedTaskFailure: "Aufgabe erstellt, aber die Aufgabennotiz konnte nicht geöffnet werden.",
 			},
 		},
 		taskEdit: {

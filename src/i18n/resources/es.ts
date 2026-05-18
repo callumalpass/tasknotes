@@ -465,6 +465,20 @@ export const es: TranslationTree = {
 				header: "Tareas en línea",
 				description: "Configuración para enlaces de tareas y conversión de casillas a tareas en notas.",
 			},
+			taskCreation: {
+				header: "Creación de tareas",
+				description: "Configura qué ocurre después de crear tareas.",
+				openAfterCreate: {
+					name: "Abrir tarea después de crearla",
+					description:
+						"Elige si el modal normal Crear nueva tarea abre la nueva nota de tarea después de guardar.",
+					options: {
+						none: "No abrir",
+						sameTab: "Abrir en la misma pestaña",
+						newTab: "Abrir en una nueva pestaña",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "Superposición de enlace de tarea",
@@ -2501,6 +2515,7 @@ export const es: TranslationTree = {
 				successShortened: "Tarea \"{title}\" creada exitosamente (nombre de archivo acortado por longitud)",
 				failure: "Error al crear tarea: {message}",
 				blockingUnresolved: "No se pudo resolver: {entries}",
+				openCreatedTaskFailure: "Tarea creada, pero no se pudo abrir la nota de la tarea.",
 			},
 		},
 		taskEdit: {

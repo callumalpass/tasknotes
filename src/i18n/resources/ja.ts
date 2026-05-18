@@ -465,6 +465,20 @@ export const ja: TranslationTree = {
 				header: "インラインタスク",
 				description: "ノート内のタスクリンクとチェックボックスからタスクへの変換の設定。",
 			},
+			taskCreation: {
+				header: "タスク作成",
+				description: "タスク作成後の動作を設定します。",
+				openAfterCreate: {
+					name: "作成後にタスクを開く",
+					description:
+						"通常の新規タスク作成モーダルで保存後に新しいタスクノートを開くかどうかを選択します。",
+					options: {
+						none: "開かない",
+						sameTab: "同じタブで開く",
+						newTab: "新しいタブで開く",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "タスクリンクオーバーレイ",
@@ -2501,6 +2515,7 @@ export const ja: TranslationTree = {
 				successShortened: "タスク\"{title}\"が正常に作成されました（長さのためファイル名が短縮されました）",
 				failure: "タスクの作成に失敗しました：{message}",
 				blockingUnresolved: "解決できませんでした：{entries}",
+				openCreatedTaskFailure: "タスクは作成されましたが、タスクノートを開けませんでした。",
 			},
 		},
 		taskEdit: {

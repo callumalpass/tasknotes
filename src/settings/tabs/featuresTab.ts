@@ -198,6 +198,54 @@ export function renderFeaturesTab(
 		}
 	);
 
+	// Task Creation Section
+	createSettingGroup(
+		container,
+		{
+			heading: translate("settings.features.taskCreation.header"),
+			description: translate("settings.features.taskCreation.description"),
+		},
+		(group) => {
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.features.taskCreation.openAfterCreate.name"),
+						desc: translate(
+							"settings.features.taskCreation.openAfterCreate.description"
+						),
+						options: [
+							{
+								value: "none",
+								label: translate(
+									"settings.features.taskCreation.openAfterCreate.options.none"
+								),
+							},
+							{
+								value: "same-tab",
+								label: translate(
+									"settings.features.taskCreation.openAfterCreate.options.sameTab"
+								),
+							},
+							{
+								value: "new-tab",
+								label: translate(
+									"settings.features.taskCreation.openAfterCreate.options.newTab"
+								),
+							},
+						],
+						getValue: () => plugin.settings.openTaskAfterCreation,
+						setValue: async (value: string) => {
+							plugin.settings.openTaskAfterCreation = value as
+								| "none"
+								| "same-tab"
+								| "new-tab";
+							save();
+						},
+					})
+			);
+		}
+	);
+
 	// Task Creation Section (Body Templates)
 	createSettingGroup(
 		container,

@@ -465,6 +465,20 @@ export const fr: TranslationTree = {
 				header: "Tâches dans les notes",
 				description: "Paramètres des liens de tâches et conversion des cases à cocher en tâches dans les notes.",
 			},
+			taskCreation: {
+				header: "Création de tâches",
+				description: "Configurer ce qui se passe après la création des tâches.",
+				openAfterCreate: {
+					name: "Ouvrir la tâche après création",
+					description:
+						"Choisir si la fenêtre normale Créer une tâche ouvre la nouvelle note de tâche après l'enregistrement.",
+					options: {
+						none: "Ne pas ouvrir",
+						sameTab: "Ouvrir dans le même onglet",
+						newTab: "Ouvrir dans un nouvel onglet",
+					},
+				},
+			},
 			overlays: {
 				taskLinkToggle: {
 					name: "Survol des liens de tâches",
@@ -2502,6 +2516,7 @@ export const fr: TranslationTree = {
 				successShortened: "Tâche \"{title}\" créée avec succès (nom de fichier raccourci)",
 				failure: "Échec de la création de la tâche : {message}",
 				blockingUnresolved: "Impossible de résoudre : {entries}",
+				openCreatedTaskFailure: "Tâche créée, mais la note de tâche n'a pas pu être ouverte.",
 			},
 		},
 		taskEdit: {
