@@ -581,28 +581,6 @@ export abstract class TaskModal extends Modal {
 	protected createActionBar(container: HTMLElement): void {
 		this.actionBar = container.createDiv("tn-task-modal__action-bar");
 
-		// Due date icon
-		this.createActionIcon(
-			this.actionBar,
-			"calendar",
-			this.t("modals.task.actions.due"),
-			(_, event) => {
-				this.showDateContextMenu(event, "due");
-			},
-			"due-date"
-		);
-
-		// Scheduled date icon
-		this.createActionIcon(
-			this.actionBar,
-			"calendar-clock",
-			this.t("modals.task.actions.scheduled"),
-			(_, event) => {
-				this.showDateContextMenu(event, "scheduled");
-			},
-			"scheduled-date"
-		);
-
 		// Status icon
 		this.createActionIcon(
 			this.actionBar,
@@ -623,6 +601,28 @@ export abstract class TaskModal extends Modal {
 				this.showPriorityContextMenu(event);
 			},
 			"priority"
+		);
+
+		// Due date icon
+		this.createActionIcon(
+			this.actionBar,
+			"calendar",
+			this.t("modals.task.actions.due"),
+			(_, event) => {
+				this.showDateContextMenu(event, "due");
+			},
+			"due-date"
+		);
+
+		// Scheduled date icon
+		this.createActionIcon(
+			this.actionBar,
+			"calendar-clock",
+			this.t("modals.task.actions.scheduled"),
+			(_, event) => {
+				this.showDateContextMenu(event, "scheduled");
+			},
+			"scheduled-date"
 		);
 
 		// Recurrence icon

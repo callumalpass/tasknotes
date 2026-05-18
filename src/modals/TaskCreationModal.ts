@@ -439,28 +439,6 @@ export class TaskCreationModal extends TaskModal {
 			separator.classList.add("tn-static-margin-0-var-size-4-2-77f7dc08");
 		}
 
-		// Due date icon
-		this.createActionIcon(
-			this.actionBar,
-			"calendar",
-			this.t("modals.task.actions.due"),
-			(icon, event) => {
-				this.showDateContextMenu(event, "due");
-			},
-			"due-date"
-		);
-
-		// Scheduled date icon
-		this.createActionIcon(
-			this.actionBar,
-			"calendar-clock",
-			this.t("modals.task.actions.scheduled"),
-			(icon, event) => {
-				this.showDateContextMenu(event, "scheduled");
-			},
-			"scheduled-date"
-		);
-
 		// Status icon
 		this.createActionIcon(
 			this.actionBar,
@@ -481,6 +459,28 @@ export class TaskCreationModal extends TaskModal {
 				this.showPriorityContextMenu(event);
 			},
 			"priority"
+		);
+
+		// Due date icon
+		this.createActionIcon(
+			this.actionBar,
+			"calendar",
+			this.t("modals.task.actions.due"),
+			(icon, event) => {
+				this.showDateContextMenu(event, "due");
+			},
+			"due-date"
+		);
+
+		// Scheduled date icon
+		this.createActionIcon(
+			this.actionBar,
+			"calendar-clock",
+			this.t("modals.task.actions.scheduled"),
+			(icon, event) => {
+				this.showDateContextMenu(event, "scheduled");
+			},
+			"scheduled-date"
 		);
 
 		// Recurrence icon

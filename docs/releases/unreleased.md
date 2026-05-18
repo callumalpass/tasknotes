@@ -90,6 +90,7 @@ Example:
 ## Changed
 
 - Added guidance in Pomodoro statistics and Base file settings explaining that Pomodoro Base views require daily notes storage.
+- ([#323](https://github.com/callumalpass/tasknotes/issues/323)) Reordered task modal action buttons to match the right-click task menu order. Thanks to @23426356587 for suggesting this.
 - ([#1189](https://github.com/callumalpass/tasknotes/issues/1189)) Made the Create/Edit Task modal priority picker follow the priority order configured in Settings. Thanks to @n1njaznutz for suggesting this.
 - ([#1244](https://github.com/callumalpass/tasknotes/issues/1244)) Clarified the Task Properties documentation for custom property keys and status values in Bases filters and sorting. Thanks to @Arachnidai for suggesting this.
 - ([#1234](https://github.com/callumalpass/tasknotes/issues/1234)) Kept right-aligned subtask chevrons visible on task cards instead of only showing them on hover. Thanks to @n1njaznutz for suggesting this.
