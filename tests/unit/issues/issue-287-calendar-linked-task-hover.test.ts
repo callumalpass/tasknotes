@@ -26,8 +26,9 @@ describe("Issue #287: linked calendar task hover states", () => {
 	it("keeps linked hover styling out of List view", () => {
 		const css = readRepoFile("styles/advanced-calendar-view.css");
 
-		expect(css).toContain(".advanced-calendar-view .fc-task-event--hover-source");
-		expect(css).toContain(".advanced-calendar-view .fc-task-event--related-hover");
+		expect(css).toContain(".advanced-calendar-view .fc-event.fc-task-event--hover-source");
+		expect(css).toContain(".advanced-calendar-view .fc-event.fc-task-event--related-hover");
+		expect(css).toContain("box-shadow: inset 0 0 0 2px var(--interactive-accent)");
 		expect(css).not.toContain("advanced-calendar-view--list .fc-task-event--related-hover");
 		expect(css).not.toContain("advanced-calendar-view--list .fc-task-event--hover-source");
 	});
