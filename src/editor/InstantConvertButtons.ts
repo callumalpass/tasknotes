@@ -37,8 +37,7 @@ class ConvertButtonWidget extends WidgetType {
 		const iconSpan = button.createEl("span", { cls: "instant-convert-button__icon" });
 		setIcon(iconSpan, "file-plus");
 
-		// Handle mousedown to capture selection before it gets cleared by click
-		button.addEventListener("mousedown", (e) => {
+		const handleActivation = (e: Event) => {
 			e.preventDefault();
 			e.stopPropagation();
 			void (async () => {
@@ -73,7 +72,13 @@ class ConvertButtonWidget extends WidgetType {
 					console.error("Error in convert button click handler:", error);
 				}
 			})();
-		});
+		};
+
+		// Capture the selection before a later click/focus event can clear it. Pointer events
+		// cover touch and pen input on mobile while preserving the desktop mouse path.
+		const activationEvent =
+			typeof window !== "undefined" && "PointerEvent" in window ? "pointerdown" : "mousedown";
+		button.addEventListener(activationEvent, handleActivation);
 
 		return container;
 	}
