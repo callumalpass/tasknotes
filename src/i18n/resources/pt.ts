@@ -1458,6 +1458,10 @@ export const pt: TranslationTree = {
 					name: "Mostrar cartão de tarefa na nota",
 					description: "Exibir um widget de cartão de tarefa no topo das notas de tarefa mostrando os detalhes da tarefa e ações"
 				},
+				showCompletedTaskStrikethrough: {
+					name: "Riscar títulos de tarefas concluídas",
+					description: "Desenha uma linha sobre os títulos de cartões de tarefas concluídas. Desative para manter tarefas concluídas mais fáceis de ler"
+				},
 				showExpandableSubtasks: {
 					name: "Mostrar subtarefas expansíveis",
 					description: "Permitir expandir/recolher seções de subtarefas nos cartões de tarefa"

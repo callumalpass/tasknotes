@@ -351,6 +351,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	relationshipsPosition: "bottom",
 	// Task card in note defaults
 	showTaskCardInNote: true,
+	showCompletedTaskStrikethrough: true,
 	// Task card expandable subtasks defaults
 	showExpandableSubtasks: true,
 	expandSubtasksByDefault: false,

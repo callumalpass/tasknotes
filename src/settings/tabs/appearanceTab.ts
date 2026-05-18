@@ -759,6 +759,23 @@ export function renderAppearanceTab(
 
 			group.addSetting((setting) =>
 				void configureToggleSetting(setting, {
+					name: translate(
+						"settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
+					),
+					desc: translate(
+						"settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
+					),
+					getValue: () => plugin.settings.showCompletedTaskStrikethrough,
+					setValue: async (value: boolean) => {
+						plugin.settings.showCompletedTaskStrikethrough = value;
+						save();
+						plugin.app.workspace.trigger("tasknotes:refresh-views");
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				void configureToggleSetting(setting, {
 					name: translate("settings.appearance.uiElements.showExpandableSubtasks.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showExpandableSubtasks.description"

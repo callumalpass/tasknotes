@@ -1455,6 +1455,10 @@ export const fr: TranslationTree = {
 					name: "Afficher la carte de tâche dans la note",
 					description: "Afficher un widget de carte de tâche en haut des notes de tâche montrant les détails et actions de la tâche",
 				},
+				showCompletedTaskStrikethrough: {
+					name: "Barrer les titres des tâches terminées",
+					description: "Trace une ligne sur les titres des cartes de tâches terminées. Désactivez cette option pour rendre les tâches terminées plus lisibles",
+				},
 				showExpandableSubtasks: {
 					name: "Afficher les sous-tâches extensibles",
 					description: "Permettre d'étendre/réduire les sections de sous-tâches dans les cartes de tâches",

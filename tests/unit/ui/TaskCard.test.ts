@@ -358,9 +358,19 @@ describe('TaskCard Component', () => {
       const card = createTaskCard(task, mockPlugin);
 
       expect(card.classList.contains('task-card--completed')).toBe(true);
+      expect(card.classList.contains('task-card--completed-strikethrough')).toBe(true);
 
       const titleEl = card.querySelector('.task-card__title');
       expect(titleEl?.classList.contains('completed')).toBe(true);
+    });
+
+    it('should keep completed task card titles readable when strikethrough is disabled', () => {
+      mockPlugin.settings.showCompletedTaskStrikethrough = false;
+      const task = TaskFactory.createTask({ status: 'done' });
+      const card = createTaskCard(task, mockPlugin);
+
+      expect(card.classList.contains('task-card--completed')).toBe(true);
+      expect(card.classList.contains('task-card--completed-strikethrough')).toBe(false);
     });
 
     it('should create archived task card', () => {
@@ -781,6 +791,7 @@ describe('TaskCard Component', () => {
       updateTaskCard(card, updatedTask, mockPlugin);
 
       expect(card.classList.contains('task-card--completed')).toBe(true);
+      expect(card.classList.contains('task-card--completed-strikethrough')).toBe(true);
       expect(card.classList.contains('task-card--priority-high')).toBe(true);
       expect(card.classList.contains('task-card--status-done')).toBe(true);
 

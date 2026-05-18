@@ -1552,6 +1552,11 @@ export const en: TranslationTree = {
 					description:
 						"Display a task card widget at the top of task notes showing the task details and actions",
 				},
+				showCompletedTaskStrikethrough: {
+					name: "Strike through completed task titles",
+					description:
+						"Draw a line through completed task card titles. Turn off to keep completed tasks easier to read",
+				},
 				showExpandableSubtasks: {
 					name: "Show expandable subtasks",
 					description: "Allow expanding/collapsing subtask sections in task cards",

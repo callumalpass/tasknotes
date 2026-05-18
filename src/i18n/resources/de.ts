@@ -1455,6 +1455,10 @@ export const de: TranslationTree = {
 					name: "Aufgabenkarte in Notiz anzeigen",
 					description: "Eine Aufgabenkarten-Widget oben in Aufgabennotizen anzeigen, das die Aufgabendetails und Aktionen zeigt",
 				},
+				showCompletedTaskStrikethrough: {
+					name: "Titel erledigter Aufgaben durchstreichen",
+					description: "Zeichnet eine Linie durch Titel erledigter Aufgabenkarten. Deaktivieren, damit erledigte Aufgaben leichter lesbar bleiben",
+				},
 				showExpandableSubtasks: {
 					name: "Ausklappbare Unteraufgaben anzeigen",
 					description: "Aus-/Einklappen von Unteraufgaben-Abschnitten in Aufgabenkarten erlauben",

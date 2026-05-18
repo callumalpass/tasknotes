@@ -1455,6 +1455,10 @@ export const ja: TranslationTree = {
 					name: "ノート内にタスクカードを表示",
 					description: "タスクノートを開いたときにタスクプロパティを表示するインタラクティブカードを表示",
 				},
+				showCompletedTaskStrikethrough: {
+					name: "完了したタスクのタイトルに取り消し線を表示",
+					description: "完了したタスクカードのタイトルに線を引きます。完了タスクを読みやすくするにはオフにします",
+				},
 				showExpandableSubtasks: {
 					name: "展開可能サブタスクを表示",
 					description: "タスクカードでサブタスクセクションの展開/折りたたみを許可",

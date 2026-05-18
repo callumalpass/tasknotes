@@ -202,6 +202,10 @@ function taskHasDetails(task: TaskInfo): boolean {
 	return typeof task.details === "string" && task.details.trim().length > 0;
 }
 
+function shouldStrikeThroughCompletedTasks(plugin: TaskNotesPlugin): boolean {
+	return plugin.settings?.showCompletedTaskStrikethrough !== false;
+}
+
 function renderTaskTitle(
 	container: HTMLElement,
 	task: TaskInfo,
@@ -448,6 +452,10 @@ function updateCardCompletionState(
 	targetDate: Date
 ): void {
 	card.classList.toggle("task-card--completed", isCompleted);
+	card.classList.toggle(
+		"task-card--completed-strikethrough",
+		isCompleted && shouldStrikeThroughCompletedTasks(plugin)
+	);
 	card.classList.toggle("task-card--archived", !!task.archived);
 	card.classList.toggle(
 		"task-card--actively-tracked",
@@ -768,6 +776,9 @@ export function createTaskCard(
 
 	// Add modifiers
 	if (isCompleted) cardClasses.push("task-card--completed");
+	if (isCompleted && shouldStrikeThroughCompletedTasks(plugin)) {
+		cardClasses.push("task-card--completed-strikethrough");
+	}
 	if (isSkipped) cardClasses.push("task-card--skipped");
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (isActivelyTracked) cardClasses.push("task-card--actively-tracked");
@@ -1250,6 +1261,9 @@ export function updateTaskCard(
 
 	// Add modifiers
 	if (isCompleted) cardClasses.push("task-card--completed");
+	if (isCompleted && shouldStrikeThroughCompletedTasks(plugin)) {
+		cardClasses.push("task-card--completed-strikethrough");
+	}
 	if (isSkipped) cardClasses.push("task-card--skipped");
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (isActivelyTracked) cardClasses.push("task-card--actively-tracked");

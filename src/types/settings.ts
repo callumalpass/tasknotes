@@ -178,6 +178,7 @@ export interface TaskNotesSettings {
 	relationshipsPosition: "top" | "bottom";
 	// Task card in note settings
 	showTaskCardInNote: boolean;
+	showCompletedTaskStrikethrough: boolean;
 	// Task card expandable subtasks settings
 	showExpandableSubtasks: boolean;
 	// Expand project subtasks by default when task cards render

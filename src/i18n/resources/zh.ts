@@ -1454,6 +1454,10 @@ export const zh: TranslationTree = {
 					name: "在笔记中显示任务卡片",
 					description: "在任务笔记顶部显示任务卡片小部件，显示任务详情和操作",
 				},
+				showCompletedTaskStrikethrough: {
+					name: "为已完成任务标题添加删除线",
+					description: "在已完成任务卡片标题上画一条线。关闭后已完成任务会更易阅读",
+				},
 				showExpandableSubtasks: {
 					name: "显示可展开子任务",
 					description: "允许在任务卡片中展开/折叠子任务部分",

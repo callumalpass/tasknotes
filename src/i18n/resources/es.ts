@@ -1455,6 +1455,10 @@ export const es: TranslationTree = {
 					name: "Mostrar tarjeta de tarea en nota",
 					description: "Mostrar un widget de tarjeta de tarea en la parte superior de las notas de tareas que muestre los detalles y acciones de la tarea",
 				},
+				showCompletedTaskStrikethrough: {
+					name: "Tachar títulos de tareas completadas",
+					description: "Dibuja una línea sobre los títulos de tarjetas de tareas completadas. Desactívalo para que las tareas completadas sean más fáciles de leer",
+				},
 				showExpandableSubtasks: {
 					name: "Mostrar subtareas expandibles",
 					description: "Permitir expandir/contraer secciones de subtareas en tarjetas de tareas",

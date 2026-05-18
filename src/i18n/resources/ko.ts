@@ -1409,6 +1409,10 @@ export const ko: TranslationTree = {
 					name: "노트에 작업 카드 표시",
 					description: "작업 노트 상단에 작업 세부정보와 동작을 보여주는 작업 카드 위젯 표시",
 				},
+				showCompletedTaskStrikethrough: {
+					name: "완료된 작업 제목에 취소선 표시",
+					description: "완료된 작업 카드 제목에 선을 그립니다. 완료된 작업을 더 읽기 쉽게 보려면 끄세요",
+				},
 				showExpandableSubtasks: {
 					name: "확장 가능한 하위 작업 표시",
 					description: "작업 카드에서 하위 작업 섹션을 펼치고 접을 수 있도록 허용",
