@@ -820,9 +820,20 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     opacity: 0.6;
 }
 
+body.is-mobile .tasknotes-plugin .task-card__context-menu {
+    min-width: 36px;
+    min-height: 36px;
+    opacity: 1;
+}
+
 .tasknotes-plugin .task-card__context-menu svg {
     width: 14px;
     height: 14px;
+}
+
+body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* Quick actions removed for Todoist-style simplicity */
@@ -1446,6 +1457,170 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     height: 0.9em;
     padding: 0;
     vertical-align: baseline;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    max-width: 100%;
+    white-space: normal;
+    vertical-align: middle;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__main-row,
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__content {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    vertical-align: middle;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title,
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title-text {
+    max-width: min(42vw, 18em);
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__status-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-right: 0;
+    transform: none;
+    flex: 0 0 28px;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    margin: 0;
+    padding: 9px;
+    box-sizing: border-box;
+    background-clip: content-box;
+    transform: none;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot--icon {
+    padding: 4px;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot--icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__context-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    margin-left: 0.1em;
+    opacity: 1;
+    vertical-align: middle;
+}
+
+body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__context-menu svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (pointer: coarse) {
+    .tasknotes-plugin .task-card--layout-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35em;
+        max-width: 100%;
+        white-space: normal;
+        vertical-align: middle;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__main-row,
+    .tasknotes-plugin .task-card--layout-inline .task-card__content {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+        vertical-align: middle;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__title,
+    .tasknotes-plugin .task-card--layout-inline .task-card__title-text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__title-text {
+        max-width: min(42vw, 18em);
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__status-dot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        margin-right: 0;
+        transform: none;
+        flex: 0 0 28px;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        min-height: 28px;
+        margin: 0;
+        padding: 9px;
+        box-sizing: border-box;
+        background-clip: content-box;
+        transform: none;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot--icon {
+        padding: 4px;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot--icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__context-menu {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+        margin-left: 0.1em;
+        opacity: 1;
+        vertical-align: middle;
+    }
+
+    .tasknotes-plugin .task-card--layout-inline .task-card__context-menu svg {
+        width: 18px;
+        height: 18px;
+    }
 }
 
 /* Compact date displays in inline mode */
