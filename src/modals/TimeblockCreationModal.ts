@@ -75,6 +75,13 @@ export interface TimeblockCreationOptions {
 	endTime?: string; // HH:MM format
 	prefilledTitle?: string;
 	prefilledAttachmentPaths?: string[];
+	onCreated?: (result: TimeblockCreationResult) => void | Promise<void>;
+}
+
+export interface TimeblockCreationResult {
+	timeblock: TimeBlock;
+	date: string;
+	dailyNote: TFile;
 }
 
 export class TimeblockCreationModal extends Modal {
@@ -344,10 +351,15 @@ export class TimeblockCreationModal extends Modal {
 			}
 
 			// Save to daily note
-			await this.saveTimeblockToDailyNote(timeblock);
+			const dailyNote = await this.saveTimeblockToDailyNote(timeblock);
 
 			// Refresh calendar views
 			this.plugin.emitter.trigger("data-changed");
+			void this.options.onCreated?.({
+				timeblock,
+				date: this.options.date,
+				dailyNote,
+			});
 
 			new Notice(`Timeblock "${title}" created successfully`);
 			this.close();
@@ -357,7 +369,7 @@ export class TimeblockCreationModal extends Modal {
 		}
 	}
 
-	private async saveTimeblockToDailyNote(timeblock: TimeBlock): Promise<void> {
+	private async saveTimeblockToDailyNote(timeblock: TimeBlock): Promise<TFile> {
 		if (!appHasDailyNotesPluginLoaded()) {
 			throw new Error(
 				`Daily Notes core plugin is not enabled. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`
@@ -427,6 +439,7 @@ export class TimeblockCreationModal extends Modal {
 		await this.app.vault.modify(dailyNote, newContent);
 
 		// The native metadata cache will automatically update
+		return dailyNote;
 	}
 
 	private addAttachment(file: TAbstractFile): void {

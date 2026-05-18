@@ -3,6 +3,7 @@ import type { BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
 import type { FieldMappingKey, TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
+import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
 import {
 	Calendar as FullCalendar,
 	CalendarOptions,
@@ -48,6 +49,7 @@ import { TaskCreationModal } from "../modals/TaskCreationModal";
 import { CalendarEventCreationModal } from "../modals/CalendarEventCreationModal";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { Menu, Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
+import type { EventRef } from "obsidian";
 import { format } from "date-fns";
 import { createTaskCard } from "../ui/TaskCard";
 import { createICSEventCard } from "../ui/ICSCard";
@@ -2424,6 +2426,63 @@ export class CalendarView extends BasesViewBase {
 		info.event.remove();
 	}
 
+	private refetchWhenCreatedTimeblockIsIndexed(result: TimeblockCreationResult): void {
+		const hasCreatedTimeblock = (): boolean => {
+			const timeblocks =
+				this.plugin.app.metadataCache.getFileCache(result.dailyNote)?.frontmatter
+					?.timeblocks;
+			return (
+				Array.isArray(timeblocks) &&
+				timeblocks.some((timeblock) => {
+					if (!timeblock || typeof timeblock !== "object") {
+						return false;
+					}
+					return (timeblock as { id?: unknown }).id === result.timeblock.id;
+				})
+			);
+		};
+
+		if (hasCreatedTimeblock()) {
+			this.calendar?.refetchEvents();
+			return;
+		}
+
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		let timeoutId: number | null = null;
+		let changedRef: EventRef | null = null;
+		let cleanedUp = false;
+
+		const cleanup = () => {
+			if (cleanedUp) {
+				return;
+			}
+			cleanedUp = true;
+			if (timeoutId !== null) {
+				win.clearTimeout(timeoutId);
+				timeoutId = null;
+			}
+			if (changedRef) {
+				this.plugin.app.metadataCache.offref(changedRef);
+				changedRef = null;
+			}
+		};
+
+		changedRef = this.plugin.app.metadataCache.on("changed", (file) => {
+			if (file.path !== result.dailyNote.path || !hasCreatedTimeblock()) {
+				return;
+			}
+			cleanup();
+			this.calendar?.refetchEvents();
+		});
+
+		timeoutId = win.setTimeout(() => {
+			cleanup();
+			this.calendar?.refetchEvents();
+		}, CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS);
+
+		this.register(cleanup);
+	}
+
 	private async handleEventDrop(info: EventDropArg): Promise<void> {
 		// Expect immediate update since user is interacting with calendar
 		this.expectImmediateUpdate();
@@ -2968,7 +3027,8 @@ export class CalendarView extends BasesViewBase {
 							info.start,
 							info.end,
 							info.allDay,
-							this.plugin
+							this.plugin,
+							(result) => this.refetchWhenCreatedTimeblockIsIndexed(result)
 						);
 					});
 			});

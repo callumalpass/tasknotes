@@ -1,6 +1,7 @@
 import { App } from "obsidian";
 import { TimeblockCreationModal } from "../../../src/modals/TimeblockCreationModal";
 import { MockObsidian } from "../../__mocks__/obsidian";
+import { getDailyNote } from "obsidian-daily-notes-interface";
 
 jest.mock("obsidian");
 jest.mock("obsidian-daily-notes-interface", () => ({
@@ -56,6 +57,9 @@ function createMockPlugin() {
 		cacheManager: {
 			getAllTasks: jest.fn(async () => []),
 		},
+		emitter: {
+			trigger: jest.fn(),
+		},
 	} as any;
 }
 
@@ -100,5 +104,36 @@ describe("Issue #1767: timeblock creation time row alignment", () => {
 		expect(startRow?.parentElement).toBe(modal.contentEl);
 		expect(endRow?.parentElement).toBe(modal.contentEl);
 		expect(startRow?.nextElementSibling).toBe(endRow);
+	});
+
+	it("notifies callers after saving a created timeblock", async () => {
+		const dailyNote = await app.vault.create("Daily/2026-05-16.md", "---\n---\n");
+		(getDailyNote as jest.Mock).mockReturnValue(dailyNote);
+		const onCreated = jest.fn();
+		const plugin = createMockPlugin();
+		const modal = new TimeblockCreationModal(app, plugin, {
+			date: "2026-05-16",
+			startTime: "10:00",
+			endTime: "10:30",
+			onCreated,
+		});
+
+		modal.onOpen();
+		(modal as any).titleInput.value = "Focus block";
+		(modal as any).startTimeInput.value = "10:00";
+		(modal as any).endTimeInput.value = "10:30";
+		await (modal as any).handleSubmit();
+
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith("data-changed");
+		expect(onCreated).toHaveBeenCalledWith({
+			timeblock: expect.objectContaining({
+				id: expect.any(String),
+				title: "Focus block",
+				startTime: "10:00",
+				endTime: "10:30",
+			}),
+			date: "2026-05-16",
+			dailyNote,
+		});
 	});
 });

@@ -32,7 +32,10 @@ import {
 	appHasDailyNotesPluginLoaded,
 	createDailyNote,
 } from "obsidian-daily-notes-interface";
-import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
+import {
+	TimeblockCreationModal,
+	type TimeblockCreationResult,
+} from "../modals/TimeblockCreationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 import {
@@ -1434,7 +1437,8 @@ export async function handleTimeblockCreation(
 	start: Date,
 	end: Date,
 	allDay: boolean,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	onCreated?: (result: TimeblockCreationResult) => void | Promise<void>
 ): Promise<void> {
 	// Don't create timeblocks for all-day selections
 	if (allDay) {
@@ -1452,6 +1456,7 @@ export async function handleTimeblockCreation(
 		date,
 		startTime,
 		endTime,
+		onCreated,
 	});
 
 	modal.open();
