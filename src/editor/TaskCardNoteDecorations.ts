@@ -309,7 +309,9 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 	private cleanupOrphanedWidgets(view: EditorView): void {
 		try {
 			// Remove any orphaned widgets that might exist from previous instances
-			const container = view.dom.closest(".workspace-leaf-content");
+			const container =
+				view.dom.closest(".canvas-node-content") ??
+				view.dom.closest(".workspace-leaf-content");
 			if (!container) {
 				console.debug(
 					"[TaskNotes] Could not find workspace-leaf-content for orphan cleanup"
@@ -613,6 +615,13 @@ export function injectCanvasTaskCardWidgets(
 			}
 
 			const isEditing = isCanvasNodeEditing(node, contentEl);
+			const sourceEditor = contentEl.querySelector<HTMLElement>(
+				".markdown-source-view, .cm-editor"
+			);
+			if (sourceEditor?.querySelector(`.${CSS_TASK_CARD_WIDGET}`)) {
+				continue;
+			}
+
 			const targetContainer = findCanvasEmbedTaskCardContainer(contentEl);
 			if (!isEditing && !targetContainer) {
 				continue;

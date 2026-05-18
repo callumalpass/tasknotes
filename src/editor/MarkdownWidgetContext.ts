@@ -8,6 +8,10 @@ const EMBEDDED_MARKDOWN_CONTEXT_SELECTOR = [
 	".popover.hover-popover",
 ].join(", ");
 
+function isCanvasMarkdownElement(element: HTMLElement | null | undefined): boolean {
+	return Boolean(element?.closest(".canvas-node-content"));
+}
+
 function isDetachedLeaf(leaf: unknown): boolean {
 	if (!leaf || typeof leaf !== "object") {
 		return false;
@@ -22,6 +26,10 @@ function isEmbeddedMarkdownElement(element: HTMLElement | null | undefined): boo
 }
 
 export function shouldSkipMarkdownWidgetEditor(view: EditorView): boolean {
+	if (isCanvasMarkdownElement(view.dom)) {
+		return false;
+	}
+
 	if (isEmbeddedMarkdownElement(view.dom)) {
 		return true;
 	}
@@ -36,6 +44,10 @@ export function shouldSkipMarkdownWidgetEditor(view: EditorView): boolean {
 
 		if (isDetachedLeaf(editorInfo?.leaf)) {
 			return true;
+		}
+
+		if (isCanvasMarkdownElement(editorInfo?.containerEl)) {
+			return false;
 		}
 
 		return isEmbeddedMarkdownElement(editorInfo?.containerEl);

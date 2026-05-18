@@ -54,6 +54,15 @@ function mountCanvasEditor(root: HTMLElement): void {
 	);
 }
 
+function mountCanvasEditorWithTaskCard(root: HTMLElement): HTMLElement {
+	mountCanvasEditor(root);
+	const sourceView = root.querySelector(".markdown-source-view") as HTMLElement;
+	const widget = document.createElement("div");
+	widget.className = "tasknotes-task-card-note-widget";
+	sourceView.appendChild(widget);
+	return widget;
+}
+
 function hideCanvasPreview(root: HTMLElement): void {
 	const previewContent = root.querySelector(".markdown-embed-content") as HTMLElement;
 	previewContent.style.display = "none";
@@ -190,6 +199,19 @@ describe("Issue #872: task cards in canvas markdown embeds", () => {
 		expect(widgets[0].parentElement).toBe(plugin.root.querySelector(".canvas-node-content"));
 		expect(widgets[0].closest(".markdown-preview-sizer")).toBeNull();
 		expect(createTaskCard).toHaveBeenCalledTimes(2);
+	});
+
+	it("does not replace a task card owned by the active canvas source editor", () => {
+		const plugin = createPluginMock({ isEditing: false });
+		const editorWidget = mountCanvasEditorWithTaskCard(plugin.root);
+
+		injectCanvasTaskCardWidgets(plugin, { force: true });
+
+		const widgets = plugin.root.querySelectorAll(".tasknotes-task-card-note-widget");
+		expect(widgets).toHaveLength(1);
+		expect(widgets[0]).toBe(editorWidget);
+		expect(widgets[0].closest(".markdown-source-view")).not.toBeNull();
+		expect(createTaskCard).not.toHaveBeenCalled();
 	});
 
 	it("keeps the card visible when Canvas hides the preview before isEditing updates", () => {

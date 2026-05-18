@@ -53,6 +53,20 @@ describe("MarkdownWidgetContext", () => {
 		expect(shouldSkipMarkdownWidgetEditor(view)).toBe(true);
 	});
 
+	it("does not skip editors mounted inside canvas file nodes", () => {
+		const nodeContent = document.createElement("div");
+		nodeContent.className = "canvas-node-content markdown-embed";
+		const editor = document.createElement("div");
+		nodeContent.appendChild(editor);
+
+		const view = createMockView({
+			dom: editor,
+			leaf: { parent: {} },
+		});
+
+		expect(shouldSkipMarkdownWidgetEditor(view)).toBe(false);
+	});
+
 	it("skips Block Link Plus inline edit roots", () => {
 		const root = document.createElement("div");
 		root.className = "blp-inline-edit-root";
