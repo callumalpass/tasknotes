@@ -493,6 +493,11 @@ body.is-mobile .tn-bases-kanban-column {
     color: var(--tn-text-normal);
 }
 
+.kanban-view__column-header-cell--unknown-status {
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-muted);
+}
+
 /* Individual swimlane column cells (data cells) */
 .kanban-view__swimlane-column {
     background: var(--tn-bg-primary);
@@ -501,6 +506,11 @@ body.is-mobile .tn-bases-kanban-column {
     max-height: var(--kanban-swimlane-max-height, 600px);
     display: flex;
     flex-direction: column;
+}
+
+.kanban-view__swimlane-column.kanban-view__column--unknown-status {
+    border-left: 1px dashed var(--tn-text-faint);
+    background: var(--tn-bg-secondary);
 }
 
 /* Tasks container within each cell */

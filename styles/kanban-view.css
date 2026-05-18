@@ -204,6 +204,27 @@
     box-shadow: var(--tn-shadow-medium);
 }
 
+.tasknotes-plugin .kanban-view__column--unknown-status {
+    border-style: dashed;
+    border-color: var(--tn-text-faint);
+    background: var(--tn-bg-secondary);
+}
+
+.tasknotes-plugin .kanban-view__column-header--unknown-status {
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .kanban-view__column-header--unknown-status .kanban-view__column-title::after,
+.tasknotes-plugin .kanban-view__column-header-cell--unknown-status .kanban-view__column-title::after {
+    content: "not in settings";
+    display: inline-flex;
+    margin-left: var(--tn-spacing-xs);
+    color: var(--tn-text-muted);
+    font-size: var(--tn-font-size-xs);
+    font-weight: var(--tn-font-weight-normal);
+}
+
 /* Column header dragover state (for column reordering) */
 .tasknotes-plugin .kanban-view__column-header--dragover,
 .tasknotes-plugin .kanban-view__column-header-cell--dragover {

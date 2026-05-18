@@ -1099,6 +1099,31 @@ export class KanbanView extends BasesViewBase {
 		return false;
 	}
 
+	private isUnknownStatusGroup(groupKey: string, groupByPropertyId: string | null): boolean {
+		if (!groupByPropertyId || !this.isStatusGroupingProperty(groupByPropertyId)) {
+			return false;
+		}
+
+		const normalizedGroupKey = groupKey.trim();
+		if (!normalizedGroupKey || normalizedGroupKey === "None") {
+			return false;
+		}
+
+		return !this.findStatusConfigForGroupKey(normalizedGroupKey);
+	}
+
+	private markUnknownStatusColumn(element: HTMLElement, groupKey: string): void {
+		element.addClass("kanban-view__column--unknown-status");
+		element.setAttribute("data-unknown-status", groupKey);
+		setTooltip(element, "Status is not defined in TaskNotes settings");
+	}
+
+	private markUnknownStatusColumnHeader(element: HTMLElement, groupKey: string): void {
+		element.addClass("kanban-view__column-header--unknown-status");
+		element.setAttribute("data-unknown-status", groupKey);
+		setTooltip(element, "Status is not defined in TaskNotes settings");
+	}
+
 	/**
 	 * Augment groups with empty columns for user-defined statuses.
 	 * Only applies when grouping by status property.
@@ -1384,6 +1409,10 @@ export class KanbanView extends BasesViewBase {
 			});
 			headerCell.setAttribute("draggable", "true");
 			headerCell.setAttribute("data-column-key", columnKey);
+			const isUnknownStatusColumn = this.isUnknownStatusGroup(columnKey, groupByPropertyId);
+			if (isUnknownStatusColumn) {
+				this.markUnknownStatusColumnHeader(headerCell, columnKey);
+			}
 
 			// Drag handle
 			const dragHandle = headerCell.createSpan({ cls: "kanban-view__drag-handle" });
@@ -1437,6 +1466,7 @@ export class KanbanView extends BasesViewBase {
 			// Render columns in this swimlane
 			for (const columnKey of columnKeys) {
 				const tasks = columns.get(columnKey) || [];
+				const isUnknownStatusColumn = this.isUnknownStatusGroup(columnKey, groupByPropertyId);
 				this.sortScopeTaskPaths.set(
 					this.getSortScopeKey(columnKey, swimLaneKey),
 					tasks.map((task) => task.path)
@@ -1450,6 +1480,9 @@ export class KanbanView extends BasesViewBase {
 						"data-swimlane": swimLaneKey,
 					},
 				});
+				if (isUnknownStatusColumn) {
+					this.markUnknownStatusColumn(cell, columnKey);
+				}
 
 				// Setup drop handlers for this cell
 				this.setupSwimLaneCellDragDrop(cell, columnKey, swimLaneKey);
@@ -1508,11 +1541,18 @@ export class KanbanView extends BasesViewBase {
 		column.className = "kanban-view__column";
 		column.style.width = `${this.columnWidth}px`;
 		column.setAttribute("data-group", groupKey);
+		const isUnknownStatusColumn = this.isUnknownStatusGroup(groupKey, groupByPropertyId);
+		if (isUnknownStatusColumn) {
+			this.markUnknownStatusColumn(column, groupKey);
+		}
 
 		// Column header
 		const header = column.createDiv({ cls: "kanban-view__column-header" });
 		header.setAttribute("draggable", "true");
 		header.setAttribute("data-column-key", groupKey);
+		if (isUnknownStatusColumn) {
+			this.markUnknownStatusColumnHeader(header, groupKey);
+		}
 
 		// Drag handle
 		const dragHandle = header.createSpan({ cls: "kanban-view__drag-handle" });
