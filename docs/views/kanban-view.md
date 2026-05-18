@@ -28,6 +28,7 @@ Access these options through the Bases view settings panel:
 - **Pinned Columns**: Optional comma-separated list of column values that should stay visible even when empty. This is useful with **Hide Empty Columns** when each board needs a small stable subset of shared statuses or categories
 - **WIP Limits**: Advanced JSON configuration for showing per-column work-in-progress limits in column headers
 - **Hide Empty Swimlanes**: When enabled, ordered swimlanes with no tasks are hidden from the view
+- **Card Layout**: Chooses the task card density for this board. **Default** uses the standard TaskNotes card layout. **Compact** uses a tighter card layout for denser boards
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
 - **Swim Lane Order**: Advanced JSON configuration for pinning swimlane rows in a stable order
@@ -77,6 +78,8 @@ Columns with limits display counts as `(current/limit)`. When the current count 
 ## Task Cards
 
 Each task card displays information based on the visible properties configured in the Bases view. Standard task information includes title, priority, due date, and scheduled date.
+
+Use the **Card Layout** setting when a board needs a different density from other task views. Existing boards use **Default** unless `cardLayout: compact` is set in the view options.
 
 To show checklist progress on cards, include `file.tasks` in the view `order` array.
 For existing `.base` files, add this in YAML manually first; after it is in `order`, it appears in the Bases picker as `tasks`.

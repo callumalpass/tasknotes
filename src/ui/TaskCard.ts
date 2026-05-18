@@ -1279,6 +1279,10 @@ export function updateTaskCard(
 
 	// Build BEM class names for update
 	const cardClasses = ["task-card"];
+	const layout = opts.layout || "default";
+	if (layout !== "default") {
+		cardClasses.push(`task-card--layout-${layout}`);
+	}
 
 	// Add modifiers
 	if (isCompleted) cardClasses.push("task-card--completed");

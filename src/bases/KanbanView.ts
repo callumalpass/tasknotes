@@ -320,6 +320,10 @@ export function shouldRenderKanbanColumn(
 	return !hideEmptyColumns || tasks.length > 0 || pinnedColumns.includes(groupKey);
 }
 
+function normalizeKanbanCardLayout(value: unknown): TaskCardOptions["layout"] {
+	return value === "compact" ? "compact" : "default";
+}
+
 export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
 
@@ -395,6 +399,7 @@ export class KanbanView extends BasesViewBase {
 	private wipLimits: Record<string, number> = {};
 	private swimLaneOrders: Record<string, string[]> = {};
 	private hideEmptySwimLanes = false;
+	private cardLayout: TaskCardOptions["layout"] = "default";
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
@@ -505,6 +510,7 @@ export class KanbanView extends BasesViewBase {
 				this.config.get("swimLaneOrder") ?? this.config.get("swimLaneOrders")
 			);
 			this.hideEmptySwimLanes = this.config.get("hideEmptySwimLanes") === true;
+			this.cardLayout = normalizeKanbanCardLayout(this.config.get("cardLayout"));
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
@@ -1416,7 +1422,8 @@ export class KanbanView extends BasesViewBase {
 
 			// Drag handle
 			const dragHandle = headerCell.createSpan({ cls: "kanban-view__drag-handle" });
-			dragHandle.textContent = "⋮⋮";
+			dragHandle.setAttribute("aria-hidden", "true");
+			setIcon(dragHandle, "grip-vertical");
 
 			// Status icon (when consolidation enabled and grouped by status)
 			if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
@@ -1523,6 +1530,9 @@ export class KanbanView extends BasesViewBase {
 						this.setupCardDragHandlers(cardWrapper, task);
 					}
 				}
+				if (tasks.length === 0) {
+					this.renderEmptyCellHint(tasksContainer, columnKey, swimLaneKey);
+				}
 
 				this.createAddTaskButton(cell, groupByPropertyId, columnKey, swimLaneKey);
 			}
@@ -1556,7 +1566,8 @@ export class KanbanView extends BasesViewBase {
 
 		// Drag handle
 		const dragHandle = header.createSpan({ cls: "kanban-view__drag-handle" });
-		dragHandle.textContent = "⋮⋮";
+		dragHandle.setAttribute("aria-hidden", "true");
+		setIcon(dragHandle, "grip-vertical");
 
 		// Status icon (when consolidation enabled and grouped by status)
 		if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
@@ -1595,6 +1606,9 @@ export class KanbanView extends BasesViewBase {
 			);
 		} else {
 			this.createNormalColumn(cardsContainer, tasks, visibleProperties, cardOptions);
+		}
+		if (tasks.length === 0) {
+			this.renderEmptyCellHint(cardsContainer, groupKey);
 		}
 
 		this.createAddTaskButton(column, groupByPropertyId, groupKey);
@@ -1661,6 +1675,34 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		return `Add task to ${groupKey}`;
+	}
+
+	private renderEmptyCellHint(
+		container: HTMLElement,
+		groupKey: string,
+		swimLaneKey: string | null = null
+	): void {
+		const noTasksLabel = this.plugin.i18n.translate("views.kanban.noTasks");
+		const label = swimLaneKey
+			? `${noTasksLabel}: ${groupKey} / ${swimLaneKey}`
+			: `${noTasksLabel}: ${groupKey}`;
+		const empty = container.createDiv({
+			cls: "kanban-view__empty-cell",
+			attr: {
+				"aria-label": label,
+			},
+		});
+		const icon = empty.createSpan({
+			cls: "kanban-view__empty-cell-icon",
+			attr: {
+				"aria-hidden": "true",
+			},
+		});
+		setIcon(icon, "plus-circle");
+		empty.createSpan({
+			cls: "kanban-view__empty-cell-text",
+			text: noTasksLabel,
+		});
 	}
 
 	private async openTaskCreationForKanbanCell(
@@ -4361,6 +4403,7 @@ export class KanbanView extends BasesViewBase {
 		const hideStatusIndicator = this.consolidateStatusIcon && this.isGroupedByStatus();
 
 		return this.buildTaskCardOptions({
+			layout: this.cardLayout,
 			targetDate,
 			hideStatusIndicator,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,

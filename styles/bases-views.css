@@ -407,7 +407,7 @@ body.is-mobile .tn-bases-kanban-column {
 .kanban-view__board--swimlanes {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: var(--tn-spacing-sm);
     overflow: auto;
     padding: var(--tn-spacing-sm);
     min-height: 400px;
@@ -420,11 +420,12 @@ body.is-mobile .tn-bases-kanban-column {
     grid-template-columns: var(--kanban-swimlane-label-width, 120px);
     grid-auto-columns: var(--kanban-column-width, 280px);
     grid-auto-flow: column;
-    gap: 1px;
-    background: var(--tn-border-color);
+    gap: 0;
+    background: transparent;
     border: 1px solid var(--tn-border-color);
-    border-bottom: none;
+    border-radius: var(--tn-radius-sm);
     min-width: max-content;
+    overflow: hidden;
 }
 
 /* Last row gets bottom border */
@@ -437,23 +438,24 @@ body.is-mobile .tn-bases-kanban-column {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--tn-bg-primary);
+    background: var(--tn-bg-secondary);
     font-weight: var(--tn-font-weight-semibold);
 }
 
 /* Swimlane label cell (leftmost column) */
 .kanban-view__swimlane-label {
-    background: var(--tn-bg-secondary);
+    background: color-mix(in srgb, var(--tn-bg-secondary) 86%, var(--tn-bg-primary));
     padding: var(--tn-spacing-md);
     display: flex;
     flex-direction: column;
     gap: var(--tn-spacing-xs);
     align-items: flex-start;
-    justify-content: center;
+    justify-content: flex-start;
     border-right: 1px solid var(--tn-border-color);
     position: sticky;
     left: 0;
     z-index: 5;
+    min-height: 72px;
 }
 
 /* Swimlane title */
@@ -464,6 +466,9 @@ body.is-mobile .tn-bases-kanban-column {
     display: flex;
     align-items: center;
     gap: 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Swimlane task count */
@@ -471,6 +476,7 @@ body.is-mobile .tn-bases-kanban-column {
     font-size: var(--tn-font-size-sm);
     color: var(--tn-text-muted);
     background: var(--tn-bg-primary);
+    border: 1px solid color-mix(in srgb, var(--tn-border-color) 72%, transparent);
     padding: 2px 6px;
     border-radius: var(--tn-radius-sm);
 }
@@ -478,15 +484,17 @@ body.is-mobile .tn-bases-kanban-column {
 /* Column header cell in header row */
 .kanban-view__column-header-cell {
     background: var(--tn-bg-secondary);
-    padding: var(--tn-spacing-md);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
+    justify-content: flex-start;
+    text-align: left;
     cursor: grab;
     user-select: none;
     transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), opacity var(--tn-transition-fast), transform var(--tn-transition-fast);
     gap: var(--tn-spacing-xs);
+    min-height: 40px;
+    border-right: 1px solid var(--tn-border-color);
 }
 
 .kanban-view__column-header-cell:active {
@@ -495,7 +503,6 @@ body.is-mobile .tn-bases-kanban-column {
 
 .kanban-view__column-header-cell--dragging {
     opacity: 0.5;
-    transform: rotate(2deg);
     box-shadow: var(--tn-shadow-medium);
 }
 
@@ -509,6 +516,10 @@ body.is-mobile .tn-bases-kanban-column {
     font-size: var(--tn-font-size-md);
     font-weight: var(--tn-font-weight-semibold);
     color: var(--tn-text-normal);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .kanban-view__column-header-cell--unknown-status {
@@ -518,12 +529,13 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Individual swimlane column cells (data cells) */
 .kanban-view__swimlane-column {
-    background: var(--tn-bg-primary);
+    background: color-mix(in srgb, var(--tn-bg-primary) 92%, var(--tn-bg-secondary));
     padding: var(--tn-spacing-sm);
-    min-height: 100px;
+    min-height: 112px;
     max-height: var(--kanban-swimlane-max-height, 600px);
     display: flex;
     flex-direction: column;
+    border-right: 1px solid var(--tn-border-color);
 }
 
 .kanban-view__swimlane-column.kanban-view__column--unknown-status {
@@ -538,7 +550,7 @@ body.is-mobile .tn-bases-kanban-column {
     gap: var(--tn-spacing-xs);
     flex: 1;
     overflow-y: auto;
-    min-height: 0;
+    min-height: 64px;
 }
 
 /* Drag over state for swimlane cells */

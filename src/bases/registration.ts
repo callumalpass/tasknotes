@@ -11,6 +11,11 @@ import {
 import { registerBasesView, unregisterBasesView } from "./api";
 import { isNoteFileOrFormulaProperty } from "./propertyFilters";
 
+const KANBAN_CARD_LAYOUT_OPTIONS: Record<string, string> = {
+	default: "Default",
+	compact: "Compact",
+};
+
 /**
  * Register TaskNotes views with Bases plugin
  * Requires Obsidian 1.10.1+ (public Bases API with groupBy support)
@@ -127,6 +132,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						key: "consolidateStatusIcon",
 						displayName: "Show status icon in column header only",
 						default: false,
+					},
+					{
+						type: "dropdown",
+						key: "cardLayout",
+						displayName: "Card layout",
+						default: "default",
+						options: KANBAN_CARD_LAYOUT_OPTIONS,
 					},
 					{
 						type: "text",
