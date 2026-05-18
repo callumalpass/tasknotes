@@ -619,6 +619,20 @@ export function renderFeaturesTab(
 
 				group.addSetting(
 					(setting) =>
+						void configureButtonSetting(setting, {
+							name: translate("settings.features.notifications.testReminderName"),
+							desc: translate("settings.features.notifications.testReminderDesc"),
+							buttonText: translate(
+								"settings.features.notifications.testReminderButton"
+							),
+							onClick: async () => {
+								await plugin.notificationService?.sendTestReminderNotification();
+							},
+						})
+				);
+
+				group.addSetting(
+					(setting) =>
 						void configureToggleSetting(setting, {
 							name: translate(
 								"settings.features.notifications.soundEnabledName"

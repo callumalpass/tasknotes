@@ -658,6 +658,10 @@ export const en: TranslationTree = {
 				soundPreviewName: "Preview notification sound",
 				soundPreviewDesc: "Play the configured task reminder sound",
 				soundPreviewButton: "Preview",
+				testReminderName: "Send test reminder",
+				testReminderDesc:
+					"Send a test reminder using the current notification type and sound settings.",
+				testReminderButton: "Send test",
 			},
 			overdue: {
 				hideCompletedName: "Hide completed tasks from overdue",

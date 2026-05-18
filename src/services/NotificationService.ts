@@ -37,7 +37,10 @@ export class NotificationService {
 		}
 
 		// Request notification permission if using system notifications
-		if (this.plugin.settings.notificationType === "system" && "Notification" in window) {
+		if (
+			this.plugin.settings.notificationType === "system" &&
+			typeof Notification !== "undefined"
+		) {
 			if (Notification.permission === "default") {
 				await Notification.requestPermission();
 			}
@@ -363,6 +366,32 @@ export class NotificationService {
 		} catch (error) {
 			console.error("Failed to play notification sound:", error);
 		}
+	}
+
+	async sendTestReminderNotification(): Promise<void> {
+		const title = "TaskNotes Reminder";
+		const message = "This is a test reminder from TaskNotes.";
+
+		this.playNotificationSound();
+
+		if (
+			this.plugin.settings.notificationType === "system" &&
+			typeof Notification !== "undefined"
+		) {
+			if (Notification.permission === "default") {
+				await Notification.requestPermission();
+			}
+
+			if (Notification.permission === "granted") {
+				new Notification(title, {
+					body: message,
+					tag: "tasknotes-test-reminder",
+				});
+				return;
+			}
+		}
+
+		new Notice(message, 5000);
 	}
 
 	private showInAppNotice(message: string, taskPath: string): void {
