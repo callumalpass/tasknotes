@@ -276,7 +276,7 @@ export class NotificationService {
 		if (this.plugin.settings.notificationType === "system") {
 			// System notification
 			if ("Notification" in window && Notification.permission === "granted") {
-				const notification = new Notification("TaskNotes Reminder", {
+				const notification = new Notification(task.title || "TaskNotes Reminder", {
 					body: message,
 					tag: `tasknotes-${item.taskPath}-${item.reminder.id}`,
 				});
