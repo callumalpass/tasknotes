@@ -708,6 +708,7 @@ export interface StatusConfig {
 	icon?: string; // Optional Lucide icon name (e.g., "circle", "check", "clock")
 	isCompleted: boolean; // Whether this counts as "done"
 	excludeFromCycle?: boolean; // Whether status-dot cycling should skip this status
+	nextStatus?: string; // Optional status value to use when cycling forward from this status
 	order: number; // Sort order (for cycling)
 	autoArchive: boolean; // Whether to auto-archive tasks with this status
 	autoArchiveDelay: number; // Minutes to wait before auto-archiving

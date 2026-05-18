@@ -1106,6 +1106,7 @@ export const zh: TranslationTree = {
 					icon: "图标：",
 					completed: "已完成：",
 					excludeFromCycle: "循环时跳过：",
+					nextStatus: "下一个状态：",
 					autoArchive: "自动归档：",
 					delayMinutes: "延迟（分钟）：",
 				},
@@ -1113,6 +1114,7 @@ export const zh: TranslationTree = {
 					value: "进行中",
 					label: "进行中",
 					icon: "check, circle, clock",
+					nextStatusDefault: "使用状态顺序",
 				},
 				badges: {
 					completed: "已完成",

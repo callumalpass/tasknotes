@@ -278,6 +278,22 @@ function renderStatusList(
 			}
 		);
 
+		const nextStatusSelect = createCardSelect(
+			[
+				{
+					value: "",
+					label: translate(
+						"settings.taskProperties.taskStatuses.placeholders.nextStatusDefault"
+					),
+				},
+				...sortedStatuses.map((statusOption) => ({
+					value: statusOption.value,
+					label: statusOption.label || statusOption.value,
+				})),
+			],
+			status.nextStatus || ""
+		);
+
 		const autoArchiveToggle = createCardToggle(status.autoArchive || false, (value) => {
 			status.autoArchive = value;
 			save();
@@ -325,10 +341,14 @@ function renderStatusList(
 				if (statusIndex !== -1) {
 					// Check if we're deleting the default status
 					const wasDefault = plugin.settings.defaultTaskStatus === status.value;
+					const deletedValue = plugin.settings.customStatuses[statusIndex].value;
 
 					plugin.settings.customStatuses.splice(statusIndex, 1);
 					plugin.settings.customStatuses.forEach((s, i) => {
 						s.order = i;
+						if (s.nextStatus === deletedValue) {
+							delete s.nextStatus;
+						}
 					});
 
 					// If deleted status was the default, update to first available status
@@ -397,6 +417,12 @@ function renderStatusList(
 							},
 							{
 								label: translate(
+									"settings.taskProperties.taskStatuses.fields.nextStatus"
+								),
+								input: nextStatusSelect,
+							},
+							{
+								label: translate(
 									"settings.taskProperties.taskStatuses.fields.autoArchive"
 								),
 								input: autoArchiveToggle,
@@ -445,6 +471,11 @@ function renderStatusList(
 
 		iconInput.addEventListener("change", () => {
 			status.icon = iconInput.value.trim() || undefined;
+			save();
+		});
+
+		nextStatusSelect.addEventListener("change", () => {
+			status.nextStatus = nextStatusSelect.value || undefined;
 			save();
 		});
 

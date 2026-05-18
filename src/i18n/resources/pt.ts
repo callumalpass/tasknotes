@@ -1110,13 +1110,15 @@ export const pt: TranslationTree = {
 					icon: "Ícone:",
 					completed: "Concluído:",
 					excludeFromCycle: "Ignorar no ciclo:",
+					nextStatus: "Próximo status:",
 					autoArchive: "Arquivar auto.:",
 					delayMinutes: "Atraso (minutos):"
 				},
 				placeholders: {
 					value: "em-progresso",
 					label: "Em Progresso",
-					icon: "check, circle, clock"
+					icon: "check, circle, clock",
+					nextStatusDefault: "Usar ordem dos status"
 				},
 				badges: {
 					completed: "Concluído"

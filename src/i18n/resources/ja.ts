@@ -1107,6 +1107,7 @@ export const ja: TranslationTree = {
 					icon: "アイコン：",
 					completed: "完了：",
 					excludeFromCycle: "循環時にスキップ：",
+					nextStatus: "次のステータス：",
 					autoArchive: "自動アーカイブ：",
 					delayMinutes: "遅延（分）：",
 				},
@@ -1114,6 +1115,7 @@ export const ja: TranslationTree = {
 					value: "進行中",
 					label: "進行中",
 					icon: "check, circle, clock",
+					nextStatusDefault: "ステータス順を使用",
 				},
 				badges: {
 					completed: "完了",

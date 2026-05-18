@@ -1080,6 +1080,7 @@ export const ko: TranslationTree = {
 					icon: "아이콘:",
 					completed: "완료됨:",
 					excludeFromCycle: "순환 시 건너뛰기:",
+					nextStatus: "다음 상태:",
 					autoArchive: "자동 보관:",
 					delayMinutes: "지연 (분):",
 				},
@@ -1087,6 +1088,7 @@ export const ko: TranslationTree = {
 					value: "진행중",
 					label: "진행 중",
 					icon: "check, circle, clock",
+					nextStatusDefault: "상태 순서 사용",
 				},
 				badges: {
 					completed: "완료됨",

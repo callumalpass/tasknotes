@@ -53,6 +53,7 @@ Each status value has:
 - **Icon**: Optional icon identifier
 - **Completed**: Whether this status represents a finished task
 - **Skip when cycling**: Exclude this status from the click-to-cycle order on task cards while keeping it available in menus, suggestions, and direct edits
+- **Next status**: Optional override for the status used when cycling forward from this status; leave it set to the status order to use the normal sequence
 - **Auto-archive**: Automatically archive tasks after a delay (1-1440 minutes)
 
 Status cards support drag-and-drop reordering.

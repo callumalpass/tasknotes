@@ -1107,6 +1107,7 @@ export const ru: TranslationTree = {
 					icon: "Иконка:",
 					completed: "Завершено:",
 					excludeFromCycle: "Пропускать при цикле:",
+					nextStatus: "Следующий статус:",
 					autoArchive: "Автоархивирование:",
 					delayMinutes: "Задержка (минуты):",
 				},
@@ -1114,6 +1115,7 @@ export const ru: TranslationTree = {
 					value: "в-процессе",
 					label: "В процессе",
 					icon: "check, circle, clock",
+					nextStatusDefault: "Использовать порядок статусов",
 				},
 				badges: {
 					completed: "Завершено",

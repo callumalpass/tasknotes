@@ -1107,6 +1107,7 @@ export const es: TranslationTree = {
 					icon: "Icono:",
 					completed: "Completado:",
 					excludeFromCycle: "Omitir en el ciclo:",
+					nextStatus: "Siguiente estado:",
 					autoArchive: "Auto-archivar:",
 					delayMinutes: "Retraso (minutos):",
 				},
@@ -1114,6 +1115,7 @@ export const es: TranslationTree = {
 					value: "en-progreso",
 					label: "En progreso",
 					icon: "check, circle, clock",
+					nextStatusDefault: "Usar orden de estados",
 				},
 				badges: {
 					completed: "Completado",

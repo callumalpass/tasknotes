@@ -27,11 +27,19 @@ export class StatusManager {
 	 * Get next status in cycle from current status
 	 */
 	getNextStatus(currentStatus: string): string {
+		const currentStatusConfig = this.getStatusConfig(currentStatus);
+		const configuredNextStatus = currentStatusConfig?.nextStatus
+			? this.getStatusConfig(currentStatusConfig.nextStatus)
+			: undefined;
+		if (configuredNextStatus) {
+			return configuredNextStatus.value;
+		}
+
 		const cycleStatuses = this.getCycleStatuses();
 		const currentIndex = this.findStatusIndex(cycleStatuses, currentStatus);
 
 		if (cycleStatuses.length === 0) {
-			return this.getStatusConfig(currentStatus)?.value || this.defaultStatus;
+			return currentStatusConfig?.value || this.defaultStatus;
 		}
 
 		if (currentIndex !== -1) {
@@ -40,7 +48,6 @@ export class StatusManager {
 			return cycleStatuses[nextIndex].value;
 		}
 
-		const currentStatusConfig = this.getStatusConfig(currentStatus);
 		if (!currentStatusConfig) {
 			// Current status not found, return first cycleable status
 			return cycleStatuses[0]?.value || this.defaultStatus;

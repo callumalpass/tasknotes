@@ -1107,6 +1107,7 @@ export const de: TranslationTree = {
 					icon: "Symbol:",
 					completed: "Abgeschlossen:",
 					excludeFromCycle: "Beim Durchlaufen überspringen:",
+					nextStatus: "Nächster Status:",
 					autoArchive: "Auto-Archivierung:",
 					delayMinutes: "Verzögerung (Minuten):",
 				},
@@ -1114,6 +1115,7 @@ export const de: TranslationTree = {
 					value: "in-bearbeitung",
 					label: "In Bearbeitung",
 					icon: "check, circle, clock",
+					nextStatusDefault: "Statusreihenfolge verwenden",
 				},
 				badges: {
 					completed: "Abgeschlossen",
