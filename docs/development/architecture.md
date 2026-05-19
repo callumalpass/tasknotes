@@ -206,6 +206,9 @@ Current examples:
 - `src/bases/basesUpdateEvents.ts` owns shared Bases task update/delete event
   relevance decisions, path-rename refresh planning, and rendered-card path
   extraction.
+- `src/bases/basesTaskUpdateListeners.ts` owns shared Bases task-update,
+  task-delete, file-delete listener registration, relevant-path cache mutation,
+  update dispatch, error refresh fallback, and listener cleanup.
 - `src/bases/basesRefreshLifecycle.ts` owns shared Bases config-change refresh
   hooks, data-update render debouncing, and explicit refresh debouncing.
 - `src/bases/basesToolbar.ts` owns shared Bases toolbar integration for the

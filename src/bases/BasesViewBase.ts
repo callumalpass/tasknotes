@@ -3,7 +3,7 @@ import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } fro
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
-import { TaskInfo, EVENT_TASK_DELETED, EVENT_TASK_UPDATED } from "../types";
+import { TaskInfo } from "../types";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
@@ -26,7 +26,6 @@ import {
 import {
 	getRenderedTaskPaths,
 	planBasesTaskDeletedEvent,
-	planBasesTaskUpdatedEvent,
 } from "./basesUpdateEvents";
 import {
 	cleanupBasesNewTaskButton,
@@ -62,6 +61,10 @@ import {
 	resolveBasesTaskLinkText,
 	type BasesViewAction,
 } from "./basesTaskCopyActions";
+import {
+	cleanupBasesTaskUpdateListeners,
+	registerBasesTaskUpdateListeners,
+} from "./basesTaskUpdateListeners";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 type BasesEphemeralState = {
@@ -90,7 +93,7 @@ export abstract class BasesViewBase extends Component {
 	protected logger: TaskNotesLogger;
 	protected containerEl: HTMLElement;
 	protected rootElement: HTMLElement | null = null;
-	protected taskUpdateListener: unknown = null;
+	protected taskUpdateListener: EventRef[] | null = null;
 	protected updateDebounceTimer: number | null = null;
 	protected dataUpdateDebounceTimer: number | null = null;
 	private restoreConfigChangeHook: (() => void) | null = null;
@@ -396,54 +399,26 @@ export abstract class BasesViewBase extends Component {
 	protected setupTaskUpdateListener(): void {
 		if (this.taskUpdateListener) return;
 
-		const taskUpdatedListener = this.plugin.emitter.on(
-			EVENT_TASK_UPDATED,
-			async (eventData: unknown) => {
-				try {
-					// Skip if view is not visible (no point updating hidden views)
-					if (!this.rootElement?.isConnected) return;
-
-					const updatePlan = planBasesTaskUpdatedEvent(eventData, this.relevantPathsCache);
-					if (updatePlan.action === "refresh-renamed-task") {
-						this.relevantPathsCache.delete(updatePlan.removePath);
-						this.relevantPathsCache.add(updatePlan.addPath);
-						this.debouncedRefresh();
-						return;
-					}
-					if (updatePlan.action === "handle-task") {
-						await this.handleTaskUpdate(updatePlan.task);
-					}
-				} catch (error) {
-					this.logger.error("Error in task update handler", {
-						category: "internal",
-						operation: "task-update-handler",
-						error,
-					});
-					this.debouncedRefresh();
-				}
-			}
-		);
-		const taskDeletedListener = this.plugin.emitter.on(
-			EVENT_TASK_DELETED,
-			(eventData: unknown) => {
-				this.handleTaskDeletedEvent(eventData);
-			}
-		);
-		const fileDeletedListener = this.plugin.emitter.on("file-deleted", (eventData: unknown) => {
-			this.handleTaskDeletedEvent(eventData);
+		this.taskUpdateListener = registerBasesTaskUpdateListeners({
+			emitter: this.plugin.emitter,
+			isConnected: () => Boolean(this.rootElement?.isConnected),
+			relevantPathsCache: this.relevantPathsCache,
+			handleTaskUpdate: (task) => this.handleTaskUpdate(task),
+			handleTaskDeleted: (eventData) => this.handleTaskDeletedEvent(eventData),
+			debouncedRefresh: () => this.debouncedRefresh(),
+			onError: (error) => {
+				this.logger.error("Error in task update handler", {
+					category: "internal",
+					operation: "task-update-handler",
+					error,
+				});
+			},
 		});
-
-		this.taskUpdateListener = [taskUpdatedListener, taskDeletedListener, fileDeletedListener];
 
 		// Register cleanup using Component lifecycle
 		this.register(() => {
 			if (this.taskUpdateListener) {
-				const listeners = Array.isArray(this.taskUpdateListener)
-					? this.taskUpdateListener
-					: [this.taskUpdateListener];
-				for (const listener of listeners) {
-					this.plugin.emitter.offref(listener as EventRef);
-				}
+				cleanupBasesTaskUpdateListeners(this.plugin.emitter, this.taskUpdateListener);
 				this.taskUpdateListener = null;
 			}
 		});

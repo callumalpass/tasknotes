@@ -164,6 +164,8 @@ Refactor rule:
   escaping, and export file-name sanitization behind `basesExport`
 - keep shared Bases task update/delete relevance decisions, path-rename refresh
   planning, and rendered-card path extraction behind `basesUpdateEvents`
+- keep shared Bases task-update/delete listener registration, relevant-path
+  cache mutation, and listener cleanup behind `basesTaskUpdateListeners`
 - keep shared Bases config-change refresh hooks, data-update render debouncing,
   and explicit refresh debouncing behind `basesRefreshLifecycle`
 - keep shared Bases toolbar DOM integration for the TaskNotes New button behind
@@ -192,6 +194,7 @@ Current adapter seams include:
 - shared Bases selection UI state and click/keyboard selection decisions
 - shared Bases copy/export table assembly
 - shared Bases update/delete event relevance planning
+- shared Bases task-update listener lifecycle handling
 - shared Bases refresh lifecycle scheduling
 - shared Bases toolbar New button integration
 - shared Bases result-menu task copy actions
