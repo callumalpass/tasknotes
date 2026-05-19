@@ -332,7 +332,7 @@ export function findColForCell(cell: HTMLTableCellElement): HTMLTableColElement 
 }
 
 const CALENDAR_INLINE_WIDTH_CELL_SELECTOR =
-	".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date], .fc-timegrid-axis";
+	".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date], .fc-timegrid-axis, .fc-timegrid-slot-label";
 
 export function resetCalendarInlineWidths(calendarEl: HTMLElement): void {
 	const cells = calendarEl.querySelectorAll<HTMLTableCellElement>(

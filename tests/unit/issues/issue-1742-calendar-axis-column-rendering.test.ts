@@ -78,6 +78,28 @@ function buildTimeGridTable(dateKeys: string[]): {
 	return { table, axisCol, dayCols, axisHeaderCell, dayHeaderCells };
 }
 
+function buildTimeGridSlotLabelTable(): {
+	table: HTMLTableElement;
+	slotCol: HTMLTableColElement;
+	slotLabelCell: HTMLTableCellElement;
+} {
+	const table = document.createElement("table");
+	const colgroup = document.createElement("colgroup");
+	const slotCol = document.createElement("col");
+	colgroup.appendChild(slotCol);
+	table.appendChild(colgroup);
+
+	const tbody = document.createElement("tbody");
+	const row = document.createElement("tr");
+	const slotLabelCell = document.createElement("td");
+	slotLabelCell.classList.add("fc-timegrid-slot-label");
+	row.appendChild(slotLabelCell);
+	tbody.appendChild(row);
+	table.appendChild(tbody);
+
+	return { table, slotCol, slotLabelCell };
+}
+
 /**
  * Build a FullCalendar-shaped dayGrid (month) table: no axis col.
  */
@@ -282,6 +304,22 @@ describe("Issue #1742 - Calendar view timeline shifted to center", () => {
 
 			expect(axisCol.style.width).toBe("");
 			expect(dayCols[0].style.width).toBe("");
+		});
+
+		test("reset clears stale time-slot label widths", () => {
+			const { table, slotCol, slotLabelCell } = buildTimeGridSlotLabelTable();
+
+			slotCol.style.width = "160px";
+			slotLabelCell.style.width = "160px";
+			slotLabelCell.style.minWidth = "160px";
+			slotLabelCell.style.maxWidth = "160px";
+
+			resetCalendarInlineWidths(table);
+
+			expect(slotCol.style.width).toBe("");
+			expect(slotLabelCell.style.width).toBe("");
+			expect(slotLabelCell.style.minWidth).toBe("");
+			expect(slotLabelCell.style.maxWidth).toBe("");
 		});
 
 		test("extra colgroup cols (transitional state) do not leak widths to axis", () => {

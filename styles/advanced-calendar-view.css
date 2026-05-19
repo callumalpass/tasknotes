@@ -1079,7 +1079,19 @@
 .advanced-calendar-view .fc-timegrid-slot-label {
     font-size: 0.8rem;
     color: var(--text-muted);
-    padding: 0.5rem;
+    padding: 0;
+    text-align: right;
+}
+
+.advanced-calendar-view .fc-timegrid-slot-label-frame {
+    box-sizing: border-box;
+    inline-size: 100%;
+    padding: 0.5rem 0.375rem 0.5rem 0.25rem;
+    text-align: right;
+}
+
+.advanced-calendar-view .fc-timegrid-slot-label-cushion {
+    padding: 0;
 }
 
 .advanced-calendar-view .fc-timegrid-axis {
