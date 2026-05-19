@@ -1,5 +1,6 @@
 import type { TaskNotesSettings } from "../types/settings";
 import { FilterUtils } from "./FilterUtils";
+import { getFrontmatterTags } from "./taskIdentificationFrontmatter";
 
 export type TaskIdentificationSettings = Pick<
 	TaskNotesSettings,
@@ -50,9 +51,8 @@ export function isTaskFrontmatter(
 		return compareTaskPropertyIdentifierValue(frontmatterValue, propValue);
 	}
 
-	if (!Array.isArray(frontmatter.tags)) return false;
-	return frontmatter.tags.some((tag: unknown) => {
-		if (typeof tag !== "string") return false;
+	const tags = getFrontmatterTags(frontmatter.tags);
+	return tags.some((tag) => {
 		// Obsidian metadata cache prepends "#" to frontmatter tags.
 		const cleanTag = tag.startsWith("#") ? tag.slice(1) : tag;
 		return FilterUtils.matchesHierarchicalTagExact(cleanTag, settings.taskTag);

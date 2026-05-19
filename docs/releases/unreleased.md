@@ -138,6 +138,8 @@ Example:
 
 ## Fixed
 
+- (#697, #1374) Recognized manually authored task notes that use a single scalar tag such as `tags: task`, so they appear in TaskNotes views and menus like notes using YAML list tags. Thanks to @aubreyz and @phortx for reporting this, and to @jleewastaken for the follow-up.
+- Removed the upward hover shift from calendar events while keeping the hover shadow feedback.
 - Made same-column manual-order drops in TaskNotes Kanban settle immediately when the local order patch is safe, including virtual columns through a stable reorder path that avoids layout jumps.
 - Made single-card cross-column drops in TaskNotes Kanban settle through a local state patch when the move is safe, reducing the wait for the full Bases refresh.
 - Fixed Calendar timeblocks created from a selected time range so they appear as soon as Obsidian indexes the daily note update, instead of waiting for a later refresh.

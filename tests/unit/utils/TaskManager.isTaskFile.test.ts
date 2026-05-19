@@ -124,8 +124,28 @@ describe('TaskManager.isTaskFile - tag hash prefix handling', () => {
 			expect(isTaskFile(undefined, tagSettings)).toBe(false);
 		});
 
-		it('should return false when tags is not an array', () => {
+		it('should identify task from a scalar tag string', () => {
 			const frontmatter = { tags: 'task' };
+			expect(isTaskFile(frontmatter, tagSettings)).toBe(true);
+		});
+
+		it('should identify task from a scalar metadata-cache tag string with # prefix', () => {
+			const frontmatter = { tags: '#task' };
+			expect(isTaskFile(frontmatter, tagSettings)).toBe(true);
+		});
+
+		it('should identify task from a scalar hierarchical tag string', () => {
+			const frontmatter = { tags: 'task/project' };
+			expect(isTaskFile(frontmatter, tagSettings)).toBe(true);
+		});
+
+		it('should return false when scalar tag string does not match', () => {
+			const frontmatter = { tags: 'planning' };
+			expect(isTaskFile(frontmatter, tagSettings)).toBe(false);
+		});
+
+		it('should return false when tags is a non-string scalar', () => {
+			const frontmatter = { tags: 42 };
 			expect(isTaskFile(frontmatter, tagSettings)).toBe(false);
 		});
 

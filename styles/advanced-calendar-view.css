@@ -151,14 +151,13 @@
     border-radius: 4px;
     border-width: 1px;
     border-style: solid;
-    transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .fc-timeblock-event:hover,
 .fc-event[data-event-type="timeblock"]:hover {
     opacity: 0.90;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-    transform: translateY(-0.5px);
 }
 
 /* Time Entry Events - recorded time, intentionally quieter than actionable tasks */
@@ -1042,12 +1041,11 @@
     font-weight: 500;
     padding: 0.2rem 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
     cursor: var(--cursor-link, pointer);
 }
 
 .advanced-calendar-view .fc-event:hover {
-    transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
