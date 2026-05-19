@@ -340,6 +340,10 @@ Current extracted examples:
   token normalization, filter-value coercion, sort comparison, group bucket
   selection, and hierarchical group labels without depending on the plugin or
   Obsidian metadata cache.
+- `src/services/filter-service/filterTaskGrouping.ts` owns task grouping,
+  project/tag fan-out, date bucket labels, completed-date labels, and group
+  header ordering behind injected translation, locale, status, priority,
+  project-resolution, and frontmatter-value callbacks.
 
 ### Bases Integration
 

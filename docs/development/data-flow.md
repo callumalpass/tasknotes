@@ -363,6 +363,10 @@ Refactor rule:
 - filter predicate evaluation belongs in `filterPredicateEvaluation`; callers
   should not duplicate recursive group rules, user-field filter coercion,
   project wikilink matching, `hasSubtasks`, or `status.isCompleted` semantics
+- task grouping, project/tag fan-out, date bucket labels, completed-date labels,
+  and group header ordering belong in `filterTaskGrouping`; `FilterService`
+  injects translation, locale, status, priority, project-resolution, and
+  frontmatter-value access
 - DOM functions should wire controls, render values, and call services
 
 This keeps DOM tests focused on interaction while pure unit tests cover state
