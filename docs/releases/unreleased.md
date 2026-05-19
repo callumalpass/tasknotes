@@ -92,6 +92,8 @@ Example:
 
 ## Changed
 
+- Release notes now show the default `.base` file regeneration reminder only on the current version section, keeping older bundled sections focused on their own changes.
+- Updated the release notes GitHub prompt to invite feedback while still asking satisfied users to star the project.
 - (#239) Ordered Kanban status and priority columns by the configured status order and priority weights when no manual column order is saved. Thanks to @ScumbagScalawag for asking about this, and to @nightroman, @lavir, and @elvarb for the follow-up discussion.
 - (#269) Marked Kanban status columns that come from values outside the configured TaskNotes statuses, so manually edited or external status values are visible as non-standard instead of blending into the board. Thanks to @cstelmach for suggesting this and @digitaldoctors for the follow-up.
 - Refined Kanban empty columns, swimlane rows, and column drag handles, and added a per-view compact card layout option for denser boards.

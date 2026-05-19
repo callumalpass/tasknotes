@@ -474,7 +474,8 @@ export const ja: TranslationTree = {
 			title: "TaskNotes {version} の新機能",
 			header: "TaskNotes {version} の新機能",
 			viewAllLink: "GitHubですべてのリリースノートを表示 →",
-			starMessage: "TaskNotesが役に立ったら、GitHubでスターをお願いします",
+			starMessage:
+				"どんなフィードバックも本当にありがたいです。何か違和感があれば、GitHubでお知らせください。TaskNotesが役に立ったら、スターもご検討ください。",
 			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ファイルを作成** からベースファイルを再生成してください。"
 		}
 	},
