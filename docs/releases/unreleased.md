@@ -28,6 +28,8 @@ Example:
 
 - (#1901) Fixed the task context menu creating an `undefined` property when adding or removing tags.
   - Thanks to @mgrecar for reporting the issue.
+- (#1902) Fixed Markdown-style project links in task frontmatter not appearing as subtasks on project pages.
+  - Thanks to @minchinweb for reporting the issue.
 
 ## Changed
 
