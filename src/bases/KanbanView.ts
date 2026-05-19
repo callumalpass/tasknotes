@@ -19,7 +19,13 @@ import {
 	prepareSortOrderUpdate,
 	applySortOrderPlan,
 	DropOperationQueue,
+	type SortOrderPlan,
 } from "./sortOrderUtils";
+import {
+	applySortOrderUpdatesToTaskCache,
+	buildSortOrderUpdateMap,
+	movePathsRelativeToTarget,
+} from "./manualOrderState";
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 import { setElementDragImage } from "../utils/dragImage";
@@ -98,6 +104,11 @@ type VirtualScrollerWithContainer = {
 type KanbanEphemeralState = {
 	scrollTop?: unknown;
 	columnScroll?: unknown;
+};
+
+type KanbanDropExecutionOptions = {
+	optimisticReorderApplied?: boolean;
+	draggedPaths?: readonly string[];
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -211,6 +222,7 @@ export class KanbanView extends BasesViewBase {
 	private postDropTimer: number | null = null;
 	private dropQueue = new DropOperationQueue();
 	private activeDropCount = 0;
+	private postDropRefreshRequested = false;
 
 	// Touch drag state for mobile
 	private touchDragActive = false;
@@ -632,11 +644,75 @@ export class KanbanView extends BasesViewBase {
 		return this.sortScopeCandidateTaskPaths.get(this.getSortScopeKey(groupKey, swimLaneKey));
 	}
 
+	private setSortScopePathsForScope(
+		groupKey: string,
+		swimLaneKey: string | null,
+		paths: readonly string[]
+	): void {
+		this.sortScopeTaskPaths.set(this.getSortScopeKey(groupKey, swimLaneKey), [...paths]);
+	}
+
 	private setSortScopeCandidatePaths(entries: Iterable<[string, string[]]>): void {
 		this.sortScopeCandidateTaskPaths.clear();
 		for (const [scopeKey, paths] of entries) {
 			this.sortScopeCandidateTaskPaths.set(scopeKey, [...paths]);
 		}
+	}
+
+	private getCurrentVisibleTaskPathOrder(): string[] {
+		return Array.from(this.currentVisibleTaskOrder.entries())
+			.sort(([, leftIndex], [, rightIndex]) => leftIndex - rightIndex)
+			.map(([path]) => path);
+	}
+
+	private setCurrentVisibleTaskPathOrder(paths: readonly string[]): void {
+		this.currentVisibleTaskPaths.clear();
+		this.currentVisibleTaskOrder.clear();
+		paths.forEach((path, index) => {
+			this.currentVisibleTaskPaths.add(path);
+			this.currentVisibleTaskOrder.set(path, index);
+		});
+	}
+
+	private applyOptimisticSortOrderResult(
+		draggedPath: string,
+		targetPath: string,
+		above: boolean,
+		groupKey: string,
+		swimLaneKey: string | null,
+		sortOrderPlan: SortOrderPlan
+	): boolean {
+		const scopePaths = this.getVisibleSortScopePaths(groupKey, swimLaneKey);
+		if (!scopePaths) {
+			return false;
+		}
+
+		const nextScopePaths = movePathsRelativeToTarget(
+			scopePaths,
+			[draggedPath],
+			targetPath,
+			above
+		);
+		if (!nextScopePaths) {
+			return false;
+		}
+
+		const visiblePaths = this.getCurrentVisibleTaskPathOrder();
+		const nextVisiblePaths = movePathsRelativeToTarget(
+			visiblePaths,
+			[draggedPath],
+			targetPath,
+			above
+		);
+		if (!nextVisiblePaths) {
+			return false;
+		}
+
+		const sortOrdersByPath = buildSortOrderUpdateMap(draggedPath, sortOrderPlan);
+		applySortOrderUpdatesToTaskCache(this.taskInfoCache, sortOrdersByPath);
+		this.setSortScopePathsForScope(groupKey, swimLaneKey, nextScopePaths);
+		this.setCurrentVisibleTaskPathOrder(nextVisiblePaths);
+		return true;
 	}
 
 	private async confirmLargeReorder(
@@ -1729,7 +1805,10 @@ export class KanbanView extends BasesViewBase {
 				this.cleanupDragShift();
 
 				// Update the task's groupBy property in Bases
-				await this.handleTaskDrop(this.draggedTaskPath, groupKey, null, dropTarget);
+				await this.handleTaskDrop(this.draggedTaskPath, groupKey, null, dropTarget, {
+					optimisticReorderApplied: optimisticResult,
+					draggedPaths: paths,
+				});
 
 				this.draggedTaskPath = null;
 				this.draggedFromColumn = null;
@@ -1847,7 +1926,10 @@ export class KanbanView extends BasesViewBase {
 				this.cleanupDragShift();
 
 				// Update both the groupBy property and swimlane property
-				await this.handleTaskDrop(this.draggedTaskPath, columnKey, swimLaneKey, dropTarget);
+				await this.handleTaskDrop(this.draggedTaskPath, columnKey, swimLaneKey, dropTarget, {
+					optimisticReorderApplied: optimisticResult,
+					draggedPaths: paths,
+				});
 
 				this.draggedTaskPath = null;
 				this.draggedFromColumn = null;
@@ -2289,13 +2371,16 @@ export class KanbanView extends BasesViewBase {
 
 				// Optimistic DOM reorder: move card to correct position immediately
 				const paths = getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath);
-				this.performOptimisticReorder(paths, dropTarget);
+				const optimisticResult = this.performOptimisticReorder(paths, dropTarget);
 
 				// Now clean up shift CSS — no visual change since DOM is already correct
 				this.cleanupDragShift();
 				col?.classList.remove("kanban-view__column--dragover");
 
-				await this.handleTaskDrop(this.draggedTaskPath, groupKey, swimLaneKey, dropTarget);
+				await this.handleTaskDrop(this.draggedTaskPath, groupKey, swimLaneKey, dropTarget, {
+					optimisticReorderApplied: optimisticResult,
+					draggedPaths: paths,
+				});
 
 				this.draggedTaskPath = null;
 				this.draggedFromColumn = null;
@@ -2847,8 +2932,12 @@ export class KanbanView extends BasesViewBase {
 						) ??
 						null;
 
-					this.performOptimisticReorder(
-						getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath),
+					const paths = getKanbanDraggedPaths(
+						this.draggedTaskPaths,
+						this.draggedTaskPath
+					);
+					const optimisticResult = this.performOptimisticReorder(
+						paths,
 						dropTarget,
 						targetContainer
 					);
@@ -2858,7 +2947,11 @@ export class KanbanView extends BasesViewBase {
 						this.draggedTaskPath,
 						target.groupKey,
 						target.swimLaneKey,
-						dropTarget
+						dropTarget,
+						{
+							optimisticReorderApplied: optimisticResult,
+							draggedPaths: paths,
+						}
 					);
 				}
 
@@ -2939,9 +3032,11 @@ export class KanbanView extends BasesViewBase {
 		taskPath: string,
 		newGroupValue: string,
 		newSwimLaneValue: string | null,
-		dropTarget?: KanbanDropTarget
+		dropTarget?: KanbanDropTarget,
+		options: KanbanDropExecutionOptions = {}
 	): Promise<void> {
 		this.activeDropCount++;
+		let dropRequiresPostDropRefresh = true;
 		try {
 			await this.dropQueue.enqueue(taskPath, async () => {
 				// Suppress renders immediately — dragend clears draggedTaskPath
@@ -2988,9 +3083,19 @@ export class KanbanView extends BasesViewBase {
 				const snapshotSourceSwimlanes = new Map(this.draggedSourceSwimlanes);
 
 				// Handle batch drag - update all dragged tasks
+				const requestedDraggedPaths =
+					options.draggedPaths && options.draggedPaths.length > 0
+						? [...options.draggedPaths]
+						: [...this.draggedTaskPaths];
 				const pathsToUpdate =
-					this.draggedTaskPaths.length > 1 ? [...this.draggedTaskPaths] : [taskPath];
+					requestedDraggedPaths.length > 1 ? requestedDraggedPaths : [taskPath];
 				const isBatchOperation = pathsToUpdate.length > 1;
+				const canFastPatchManualOrder =
+					options.optimisticReorderApplied === true &&
+					!!dropTarget &&
+					!isBatchOperation &&
+					(options.draggedPaths?.length ?? 1) === 1;
+				let fastPatchedManualOrder = false;
 
 				// Pre-compute sort_order related state
 				const hasSortOrder = isSortOrderInSortConfig(
@@ -3170,6 +3275,22 @@ export class KanbanView extends BasesViewBase {
 						hasSortOrder: sortOrderPlan !== null,
 					});
 
+					if (
+						canFastPatchManualOrder &&
+						sortOrderPlan &&
+						!dropPlan.needsGroupUpdate &&
+						!dropPlan.needsSwimlaneUpdate
+					) {
+						fastPatchedManualOrder = this.applyOptimisticSortOrderResult(
+							path,
+							dropTarget.taskPath,
+							dropTarget.above,
+							newGroupValue,
+							newSwimLaneValue,
+							sortOrderPlan
+						);
+					}
+
 					// Fire post-write side effects for known TaskInfo property changes
 					if (dropPlan.changedTaskProp) {
 						try {
@@ -3210,14 +3331,28 @@ export class KanbanView extends BasesViewBase {
 
 				this.debugLog("HANDLE-DROP-COMPLETE", {
 					pathsUpdated: pathsToUpdate.map((p) => p.split("/").pop()),
+					fastPatchedManualOrder,
 				});
+				if (fastPatchedManualOrder) {
+					this.pendingRender = false;
+					dropRequiresPostDropRefresh = false;
+				}
 			}); // end dropQueue.enqueue
 		} catch (error) {
 			console.error("[TaskNotes][KanbanView] Error updating task:", error);
 		} finally {
 			this.activeDropCount--;
+			if (dropRequiresPostDropRefresh) {
+				this.postDropRefreshRequested = true;
+			}
 			if (this.activeDropCount === 0) {
-				this.schedulePostDropRender();
+				const shouldRefresh = this.postDropRefreshRequested;
+				this.postDropRefreshRequested = false;
+				if (shouldRefresh) {
+					this.schedulePostDropRender();
+				} else {
+					this.finishFastPostDrop();
+				}
 			}
 		}
 	}
@@ -3308,6 +3443,16 @@ export class KanbanView extends BasesViewBase {
 			this.suppressRenderUntil = 0;
 			this.debouncedRefresh();
 		}, KanbanView.POST_DROP_RENDER_DELAY);
+	}
+
+	private finishFastPostDrop(): void {
+		this.debugLog("FAST-POST-DROP-COMPLETE");
+		if (this.postDropTimer) {
+			window.clearTimeout(this.postDropTimer);
+			this.postDropTimer = null;
+		}
+		this.suppressRenderUntil = 0;
+		this.pendingRender = false;
 	}
 
 	private renderEmptyState(): void {

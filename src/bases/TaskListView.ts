@@ -62,6 +62,12 @@ import {
 	buildTaskListDropSideEffectTask,
 	buildTaskListGroupDropPlan,
 } from "./taskListDropPlanning";
+import {
+	applySortOrderUpdatesToItems,
+	applySortOrderUpdatesToTaskCache,
+	buildSortOrderUpdateMap,
+	moveItemsRelativeToTarget,
+} from "./manualOrderState";
 
 type TaskListDataAdapterWithView = {
 	basesView: TaskListView;
@@ -452,53 +458,32 @@ export class TaskListView extends BasesViewBase {
 			return false;
 		}
 
-		const sortOrdersByPath = new Map<string, string>();
-		if (sortOrderPlan.sortOrder) {
-			sortOrdersByPath.set(draggedPath, sortOrderPlan.sortOrder);
-		}
-		for (const write of sortOrderPlan.additionalWrites) {
-			sortOrdersByPath.set(write.path, write.sortOrder);
-		}
-
-		for (const [path, sortOrder] of sortOrdersByPath) {
-			const cachedTask = this.taskInfoCache.get(path);
-			if (cachedTask) {
-				cachedTask.sortOrder = sortOrder;
-				this.lastTaskSignatures.set(path, this.buildTaskSignature(cachedTask));
-			}
-		}
+		const sortOrdersByPath = buildSortOrderUpdateMap(draggedPath, sortOrderPlan);
+		applySortOrderUpdatesToTaskCache(this.taskInfoCache, sortOrdersByPath, (task) => {
+			this.lastTaskSignatures.set(task.path, this.buildTaskSignature(task));
+		});
 
 		if (this.virtualScroller && this.lastVirtualItems.length > 0) {
-			const items = [...this.lastVirtualItems];
-			const draggedIndex = items.findIndex(
-				(item) => this.getVirtualItemPath(item) === draggedPath
+			const items = moveItemsRelativeToTarget(
+				this.lastVirtualItems,
+				(item) => this.getVirtualItemPath(item),
+				[draggedPath],
+				targetPath,
+				above
 			);
-			if (draggedIndex === -1) {
+			if (!items) {
 				return false;
 			}
 
-			const [draggedItem] = items.splice(draggedIndex, 1);
-			const targetIndex = items.findIndex(
-				(item) => this.getVirtualItemPath(item) === targetPath
-			);
-			if (targetIndex === -1) {
-				return false;
-			}
-
-			const insertAt = above ? targetIndex : targetIndex + 1;
-			items.splice(insertAt, 0, draggedItem);
-
-			for (const item of items) {
-				const task = this.getVirtualItemTask(item);
-				if (!task) continue;
-
-				const sortOrder = sortOrdersByPath.get(task.path);
-				if (sortOrder !== undefined) {
-					task.sortOrder = sortOrder;
+			applySortOrderUpdatesToItems(
+				items,
+				(item) => this.getVirtualItemTask(item),
+				sortOrdersByPath,
+				(task) => {
 					this.taskInfoCache.set(task.path, task);
 					this.lastTaskSignatures.set(task.path, this.buildTaskSignature(task));
 				}
-			}
+			);
 
 			this.lastVirtualItems = items;
 			this.virtualScroller.updateItems(items);
