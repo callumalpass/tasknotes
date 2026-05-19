@@ -21,6 +21,9 @@ export type BasesTaskUpdatePlan =
 			action: "ignore";
 	  }
 	| {
+			action: "refresh-view";
+	  }
+	| {
 			action: "handle-task";
 			task: TaskInfo;
 	  }
@@ -58,6 +61,9 @@ export function planBasesTaskUpdatedEvent(
 		(originalPath ? relevantPaths.has(originalPath) : false);
 
 	if (!isRelevant) {
+		if (shouldRefreshForUntrackedTaskChange(taskEvent)) {
+			return { action: "refresh-view" };
+		}
 		return { action: "ignore" };
 	}
 
@@ -73,6 +79,15 @@ export function planBasesTaskUpdatedEvent(
 		action: "handle-task",
 		task: updatedTask,
 	};
+}
+
+function shouldRefreshForUntrackedTaskChange(taskEvent: TaskUpdateEventData): boolean {
+	if (taskEvent.originalTask) {
+		return true;
+	}
+
+	const hasMetadataCacheAliases = taskEvent.task !== undefined || taskEvent.taskInfo !== undefined;
+	return !hasMetadataCacheAliases;
 }
 
 export function planBasesTaskDeletedEvent(

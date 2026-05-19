@@ -80,6 +80,42 @@ describe("Bases task update listeners", () => {
 		expect(debouncedRefresh).toHaveBeenCalledTimes(1);
 	});
 
+	it("refreshes for untracked TaskNotes service changes that can alter query membership", async () => {
+		const createdTask = TaskFactory.createTask({ path: "TaskNotes/New.md" });
+		const handleTaskUpdate = jest.fn();
+		const debouncedRefresh = jest.fn();
+
+		await handleBasesTaskUpdatedEvent({
+			eventData: { path: createdTask.path, updatedTask: createdTask },
+			isConnected: () => true,
+			relevantPathsCache: new Set(["TaskNotes/Visible.md"]),
+			handleTaskUpdate,
+			debouncedRefresh,
+			onError: jest.fn(),
+		});
+
+		expect(handleTaskUpdate).not.toHaveBeenCalled();
+		expect(debouncedRefresh).toHaveBeenCalledTimes(1);
+	});
+
+	it("ignores untracked metadata-cache task updates", async () => {
+		const task = TaskFactory.createTask({ path: "TaskNotes/Hidden.md" });
+		const handleTaskUpdate = jest.fn();
+		const debouncedRefresh = jest.fn();
+
+		await handleBasesTaskUpdatedEvent({
+			eventData: { path: task.path, task, taskInfo: task, updatedTask: task },
+			isConnected: () => true,
+			relevantPathsCache: new Set(["TaskNotes/Visible.md"]),
+			handleTaskUpdate,
+			debouncedRefresh,
+			onError: jest.fn(),
+		});
+
+		expect(handleTaskUpdate).not.toHaveBeenCalled();
+		expect(debouncedRefresh).not.toHaveBeenCalled();
+	});
+
 	it("logs and refreshes when task update handling fails", async () => {
 		const error = new Error("update failed");
 		const onError = jest.fn();

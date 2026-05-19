@@ -56,8 +56,59 @@ describe("Bases update event helpers", () => {
 		});
 		expect(
 			planBasesTaskUpdatedEvent(
-				{ updatedTask: task },
+				{ path: task.path, task, taskInfo: task, updatedTask: task },
 				new Set(["TaskNotes/Visible.md"])
+			)
+		).toEqual({
+			action: "ignore",
+		});
+	});
+
+	it("refreshes for untracked TaskNotes service updates that may enter the view", () => {
+		const createdTask = TaskFactory.createTask({
+			path: "TaskNotes/New.md",
+		});
+		const originalTask = TaskFactory.createTask({
+			path: "TaskNotes/Archived.md",
+			archived: true,
+		});
+		const unarchivedTask = TaskFactory.createTask({
+			...originalTask,
+			archived: false,
+		});
+
+		expect(
+			planBasesTaskUpdatedEvent(
+				{ path: createdTask.path, updatedTask: createdTask },
+				new Set()
+			)
+		).toEqual({
+			action: "refresh-view",
+		});
+		expect(
+			planBasesTaskUpdatedEvent(
+				{ path: unarchivedTask.path, originalTask, updatedTask: unarchivedTask },
+				new Set()
+			)
+		).toEqual({
+			action: "refresh-view",
+		});
+	});
+
+	it("ignores untracked metadata-cache task updates to avoid repainting while typing", () => {
+		const task = TaskFactory.createTask({
+			path: "TaskNotes/Hidden.md",
+		});
+
+		expect(
+			planBasesTaskUpdatedEvent(
+				{
+					path: task.path,
+					task,
+					taskInfo: task,
+					updatedTask: task,
+				},
+				new Set()
 			)
 		).toEqual({
 			action: "ignore",

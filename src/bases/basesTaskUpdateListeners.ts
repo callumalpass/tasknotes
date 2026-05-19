@@ -39,6 +39,10 @@ export async function handleBasesTaskUpdatedEvent({
 		if (!isConnected()) return;
 
 		const updatePlan = planBasesTaskUpdatedEvent(eventData, relevantPathsCache);
+		if (updatePlan.action === "refresh-view") {
+			debouncedRefresh();
+			return;
+		}
 		if (updatePlan.action === "refresh-renamed-task") {
 			relevantPathsCache.delete(updatePlan.removePath);
 			relevantPathsCache.add(updatePlan.addPath);
