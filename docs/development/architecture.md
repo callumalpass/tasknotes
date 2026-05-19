@@ -195,6 +195,9 @@ Current examples:
 - `src/bases/basesValueConversion.ts` owns native conversion and display
   stringification for unstable Bases primitive, list, date, file, and null
   value wrappers.
+- `src/bases/basesCreateFileForView.ts` owns Bases `createFileForView`
+  task-creation data assembly from filtered Base defaults, Bases
+  frontmatter processors, user fields, and active-file link defaults.
 - `src/bases/kanbanDragUtils.ts` owns Kanban drop target reconstruction,
   optimistic DOM card movement, drop frontmatter planning, status-derived
   fields, and post-write side-effect task snapshots.

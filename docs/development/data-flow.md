@@ -153,6 +153,9 @@ Refactor rule:
 - keep filter-expression defaults for Bases-created tasks behind
   `basesFilterDefaults`, including task-tag exclusion, mapped core fields,
   custom user-field keys, list properties, and current-file link defaults
+- keep Bases `createFileForView` task-creation data assembly behind
+  `basesCreateFileForView`; the view should only open the modal and refresh
+  after creation
 - keep default Base file creation and overwrite policy behind a startup/settings
   helper rather than inside the plugin shell
 - unregister custom Bases views synchronously during plugin unload so reloads
@@ -190,6 +193,7 @@ Current adapter seams include:
 - Task List grouped render planning and sub-property grouping
 - Bases value conversion and group-key display strings
 - Bases entry property assembly from frontmatter and file metadata
+- Bases `createFileForView` task-creation data assembly
 - shared Bases formula evaluation and path-property map assembly
 - shared Bases selection UI state and click/keyboard selection decisions
 - shared Bases copy/export table assembly

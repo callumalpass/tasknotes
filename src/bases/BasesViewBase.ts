@@ -13,9 +13,9 @@ import type { TaskCardOptions } from "../ui/TaskCard";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TaskCopyFormat } from "../utils/taskClipboard";
 import {
-	buildTaskCreationDataFromFrontmatter,
-} from "./basesTaskCreation";
-import { extractBasesFilterDefaults } from "./basesFilterDefaults";
+	buildBasesTaskCreationDataForView,
+	getBasesCurrentFileLinkDefault,
+} from "./basesCreateFileForView";
 import {
 	buildBasesExportFileName,
 	buildBasesExportTable,
@@ -481,28 +481,18 @@ export abstract class BasesViewBase extends Component {
 		frontmatterProcessor?: (frontmatter: Record<string, unknown>) => void
 	): Promise<void> {
 		const { TaskCreationModal } = await import("../modals/TaskCreationModal");
-
-		const mockFrontmatter = extractBasesFilterDefaults({
+		const app = this.app || this.plugin.app;
+		const taskCreationData = buildBasesTaskCreationDataForView({
 			config: this.config,
 			fieldMapper: this.plugin.fieldMapper,
 			taskTag: this.plugin.settings.taskTag,
 			userFields: this.plugin.settings.userFields || [],
-			currentFileLink: () => this.getCurrentFileLinkDefault(),
+			currentFileLink: () => getBasesCurrentFileLinkDefault(app),
+			frontmatterProcessor,
 		});
-
-		if (frontmatterProcessor) {
-			frontmatterProcessor(mockFrontmatter);
-		}
-
-		const taskCreationData = buildTaskCreationDataFromFrontmatter(
-			mockFrontmatter,
-			this.plugin.fieldMapper,
-			this.plugin.settings.userFields || []
-		);
 
 		// Open TaskNotes creation modal
 		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
-		const app = this.app || this.plugin.app;
 		const modal = new TaskCreationModal(app, this.plugin, {
 			prePopulatedValues: taskCreationData,
 			onTaskCreated: (task: TaskInfo) => {
@@ -512,16 +502,6 @@ export abstract class BasesViewBase extends Component {
 		});
 
 		modal.open();
-	}
-
-	private getCurrentFileLinkDefault(): string | null {
-		const app = this.app || this.plugin.app;
-		const activeFile = app.workspace.getActiveFile();
-		if (!activeFile || activeFile.extension === "base") {
-			return null;
-		}
-
-		return app.fileManager.generateMarkdownLink(activeFile, activeFile.path);
 	}
 
 	/**
