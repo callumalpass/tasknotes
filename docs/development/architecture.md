@@ -190,6 +190,8 @@ Current examples:
 - `src/bases/taskListDropPlanning.ts` owns Task List drop mutation planning for
   grouped frontmatter writes, status-derived fields, and post-write side-effect
   task snapshots.
+- `src/bases/basesEntryProperties.ts` owns cheap Bases entry property assembly
+  from entry frontmatter/properties and file metadata.
 - `src/bases/basesValueConversion.ts` owns native conversion and display
   stringification for unstable Bases primitive, list, date, file, and null
   value wrappers.

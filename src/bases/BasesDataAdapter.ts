@@ -10,13 +10,9 @@ import {
 	convertBasesGroupKeyToString,
 	convertBasesValueToNative,
 } from "./basesValueConversion";
+import { extractBasesEntryProperties } from "./basesEntryProperties";
 
 type BasesViewDataSource = Pick<BasesView, "config" | "data">;
-
-type BasesEntryInternals = {
-	frontmatter?: Record<string, unknown>;
-	properties?: Record<string, unknown>;
-};
 
 /**
  * Adapter for accessing Bases data using public API (1.10.0+).
@@ -42,7 +38,7 @@ export class BasesDataAdapter {
 	 */
 	extractDataItems(): BasesDataItem[] {
 		const entries = this.basesView.data.data;
-			return entries.map((entry) => ({
+		return entries.map((entry) => ({
 			key: entry.file.path,
 			data: entry,
 			file: entry.file,
@@ -143,38 +139,11 @@ export class BasesDataAdapter {
 	 * Computed file properties (backlinks, links, etc.) are fetched lazily via getComputedProperty().
 	 */
 	private extractEntryProperties(entry: BasesEntry): Record<string, unknown> {
-		// Extract all properties from the entry's frontmatter
-		// We don't filter by visible properties here - that happens during rendering
-		// This ensures all properties are available for TaskInfo creation
-		const entryInternals = entry as BasesEntryInternals;
-		const frontmatter = entryInternals.frontmatter || entryInternals.properties || {};
-
-		// Start with frontmatter properties
-		const result = { ...frontmatter };
-
-		// Also extract file properties directly from the TFile object (these are cheap - no getValue calls)
-		const file = entry.file;
-		if (file) {
-			// Add common TFile properties with file. prefix
-			if (file.name !== undefined) result["file.name"] = file.name;
-			if (file.basename !== undefined) result["file.basename"] = file.basename;
-			if (file.extension !== undefined) result["file.extension"] = file.extension;
-			if (file.path !== undefined) result["file.path"] = file.path;
-
-			// Add file stats if available
-			if (file.stat) {
-				if (file.stat.size !== undefined) result["file.size"] = file.stat.size;
-				if (file.stat.ctime !== undefined) result["file.ctime"] = file.stat.ctime;
-				if (file.stat.mtime !== undefined) result["file.mtime"] = file.stat.mtime;
-			}
-		}
-
 		// NOTE: Computed file properties (links, embeds, tags, backlinks, etc.) are NOT extracted here.
 		// They are fetched lazily via getComputedProperty() during rendering to avoid expensive
 		// getValue() calls for all 6756+ entries. With virtualization, only ~20-50 visible items
 		// need these properties computed.
-
-		return result;
+		return extractBasesEntryProperties(entry);
 	}
 
 	/**
@@ -196,14 +165,4 @@ export class BasesDataAdapter {
 		}
 	}
 
-	/**
-	 * Remove property type prefix (note., file., formula.)
-	 */
-	private stripPropertyPrefix(propertyId: string): string {
-		const parts = propertyId.split(".");
-		if (parts.length > 1 && ["note", "file", "formula"].includes(parts[0])) {
-			return parts.slice(1).join(".");
-		}
-		return propertyId;
-	}
 }

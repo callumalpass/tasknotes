@@ -148,6 +148,8 @@ Refactor rule:
   renderer is explicitly responsible for displaying a native Bases value
 - keep native conversion and display stringification for Bases value wrappers
   behind `basesValueConversion`
+- keep cheap Bases entry property assembly from frontmatter/properties and file
+  metadata behind `basesEntryProperties`
 - keep filter-expression defaults for Bases-created tasks behind
   `basesFilterDefaults`, including task-tag exclusion, mapped core fields,
   custom user-field keys, list properties, and current-file link defaults
@@ -183,6 +185,7 @@ Current adapter seams include:
 - Task List drag/drop insertion geometry
 - Task List grouped render planning and sub-property grouping
 - Bases value conversion and group-key display strings
+- Bases entry property assembly from frontmatter and file metadata
 - shared Bases formula evaluation and path-property map assembly
 - shared Bases selection UI state and click/keyboard selection decisions
 - shared Bases copy/export table assembly
