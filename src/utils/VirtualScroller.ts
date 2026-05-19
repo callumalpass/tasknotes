@@ -618,7 +618,14 @@ export class VirtualScroller<T> {
 			return false;
 		}
 
-		const movingEntries = movedKeys.map((key) => entriesByKey.get(key)!);
+		const movingEntries: VirtualScrollerItemEntry<T>[] = [];
+		for (const key of movedKeys) {
+			const entry = entriesByKey.get(key);
+			if (!entry) {
+				return false;
+			}
+			movingEntries.push(entry);
+		}
 		const insertAt = options.position === "before" ? targetIndex : targetIndex + 1;
 		const nextEntries = [
 			...remainingEntries.slice(0, insertAt),
