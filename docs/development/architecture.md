@@ -194,6 +194,8 @@ Current examples:
 - `src/bases/kanbanCreationDefaults.ts` owns Kanban column/swimlane task
   creation default planning, including writable Bases property resolution, list
   default appending, and scalar group-key coercion.
+- `src/bases/basesExport.ts` owns shared Bases table export assembly, value
+  stringification, TSV/CSV escaping, and export file-name sanitization.
 - `src/bases/basesSelectionUi.ts` owns shared Bases selection-mode DOM state,
   selected-card classes, keyboard and click selection decisions, selection
   indicator behavior, and default visible-task path extraction behind a narrow

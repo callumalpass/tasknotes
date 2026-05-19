@@ -16,11 +16,17 @@ import {
 	type ClipboardTask,
 	type TaskCopyFormat,
 } from "../utils/taskClipboard";
-import { stringifyUnknown } from "../utils/stringUtils";
 import {
 	buildTaskCreationDataFromFrontmatter,
 } from "./basesTaskCreation";
 import { extractBasesFilterDefaults } from "./basesFilterDefaults";
+import {
+	buildBasesExportFileName,
+	buildBasesExportTable,
+	formatBasesExportAsCsv,
+	formatBasesExportAsTsv,
+	type BasesExportTable,
+} from "./basesExport";
 import {
 	getVisibleTaskPathsFromBasesRoot,
 	handleBasesSelectionClick,
@@ -63,37 +69,8 @@ type BasesConfigChangeController = {
 	view?: unknown;
 };
 
-type BasesExportColumn = {
-	id: string;
-	label: string;
-};
-
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function formatBasesExportValue(value: unknown): string {
-	return stringifyUnknown(value).replace(/\r?\n/g, " ");
-}
-
-function escapeTsvCell(value: string): string {
-	return value.replace(/\t/g, " ");
-}
-
-function escapeCsvCell(value: string): string {
-	if (!/[",\r\n]/.test(value)) {
-		return value;
-	}
-	return `"${value.replace(/"/g, '""')}"`;
-}
-
-function sanitizeExportFileName(name: string): string {
-	const sanitized = name
-		.trim()
-		.replace(/[\\/:*?"<>|]+/g, "-")
-		.replace(/\s+/g, "-")
-		.replace(/^-+|-+$/g, "");
-	return sanitized || "tasknotes-bases-export";
 }
 
 /**
@@ -923,48 +900,23 @@ export abstract class BasesViewBase extends Component {
 		}));
 	}
 
-	private getBasesExportColumns(): BasesExportColumn[] {
-		const propertyIds = this.dataAdapter.getVisiblePropertyIds();
-		return [
-			{ id: "file", label: "File" },
-			...propertyIds.map((propertyId) => ({
-				id: propertyId,
-				label: this.dataAdapter.getPropertyDisplayName(propertyId) || propertyId,
-			})),
-		];
-	}
-
-	private getBasesExportRows(): string[][] {
-		const columns = this.getBasesExportColumns();
-		const entries = this.data?.data ?? [];
-
-		return entries.map((entry) =>
-			columns.map((column) => {
-				if (column.id === "file") {
-					return entry.file?.path ?? "";
-				}
-
-				return formatBasesExportValue(this.dataAdapter.getPropertyValue(entry, column.id));
-			})
-		);
+	private getBasesExportTable(): BasesExportTable {
+		return buildBasesExportTable(this.data?.data ?? [], this.dataAdapter);
 	}
 
 	private getBasesExportFileName(): string {
 		const configName =
-			typeof this.config?.get === "function" ? stringifyUnknown(this.config.get("name")) : "";
-		return `${sanitizeExportFileName(configName || this.type || "tasknotes-bases-export")}.csv`;
+			typeof this.config?.get === "function" ? this.config.get("name") : "";
+		return buildBasesExportFileName(configName, this.type);
 	}
 
 	private async copyBasesTableToClipboard(): Promise<void> {
 		try {
-			const columns = this.getBasesExportColumns();
-			const rows = this.getBasesExportRows();
-			const text = [columns.map((column) => escapeTsvCell(column.label)), ...rows]
-				.map((row) => row.map(escapeTsvCell).join("\t"))
-				.join("\n");
+			const table = this.getBasesExportTable();
+			const text = formatBasesExportAsTsv(table);
 
 			await navigator.clipboard.writeText(text);
-			new Notice(`Copied ${rows.length} rows`);
+			new Notice(`Copied ${table.rows.length} rows`);
 		} catch (error) {
 			this.logger.error("Failed to copy Bases table", {
 				category: "provider",
@@ -977,11 +929,8 @@ export abstract class BasesViewBase extends Component {
 
 	private async exportBasesTableAsCsv(): Promise<void> {
 		try {
-			const columns = this.getBasesExportColumns();
-			const rows = this.getBasesExportRows();
-			const csv = [columns.map((column) => column.label), ...rows]
-				.map((row) => row.map(escapeCsvCell).join(","))
-				.join("\n");
+			const table = this.getBasesExportTable();
+			const csv = formatBasesExportAsCsv(table);
 
 			const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
 			const win = this.containerEl.ownerDocument.defaultView ?? window;
@@ -991,7 +940,7 @@ export abstract class BasesViewBase extends Component {
 			link.download = this.getBasesExportFileName();
 			link.click();
 			win.URL.revokeObjectURL(url);
-			new Notice(`Exported ${rows.length} rows`);
+			new Notice(`Exported ${table.rows.length} rows`);
 		} catch (error) {
 			this.logger.error("Failed to export Bases table", {
 				category: "provider",

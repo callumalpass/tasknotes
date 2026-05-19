@@ -154,6 +154,8 @@ Refactor rule:
 - keep shared Bases selection-mode classes, selected-card visuals, keyboard
   shortcuts, click-selection decisions, indicator behavior, and default
   visible-task path extraction behind `basesSelectionUi`
+- keep shared Bases copy/export table assembly, value stringification, TSV/CSV
+  escaping, and export file-name sanitization behind `basesExport`
 
 Current adapter seams include:
 
@@ -168,6 +170,7 @@ Current adapter seams include:
 - Task List grouped render planning and sub-property grouping
 - shared Bases formula evaluation and path-property map assembly
 - shared Bases selection UI state and click/keyboard selection decisions
+- shared Bases copy/export table assembly
 - Bases-backed task creation assembly
 - TaskCard property access
 - TaskCard relationship expansion rendering
