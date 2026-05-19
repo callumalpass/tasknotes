@@ -1,6 +1,11 @@
 import type { TFile } from "obsidian";
 import { EVENT_TASK_UPDATED } from "../../types";
 import type { IWebhookNotifier, StatusConfig, TaskInfo } from "../../types";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({
+	tag: "Services/TaskService/TaskPropertyChangeSideEffects",
+});
 
 export interface TaskPropertyChangeSideEffectsContext {
 	cacheManager: {
@@ -73,9 +78,11 @@ async function refreshCache(
 		}
 		context.cacheManager.updateTaskInfoInCache(input.originalTask.path, input.updatedTask);
 	} catch (cacheError) {
-		console.error("Error updating task cache:", {
+		tasknotesLogger.error("Error updating task cache:", {
+			category: "stale-data",
+			operation: "updating-task-cache",
+			details: { taskPath: input.originalTask.path },
 			error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-			taskPath: input.originalTask.path,
 		});
 	}
 }
@@ -116,16 +123,22 @@ async function emitTaskUpdateEvents(
 					});
 				}
 			} catch (dependentError) {
-				console.error(
+				tasknotesLogger.error(
 					`Error triggering update for dependent task ${dependentPath}:`,
-					dependentError
+					{
+						category: "validation",
+						operation: "triggering-update-dependent-task",
+						error: dependentError,
+					}
 				);
 			}
 		}
 	} catch (eventError) {
-		console.error("Error emitting task update event:", {
+		tasknotesLogger.error("Error emitting task update event:", {
+			category: "validation",
+			operation: "emitting-task-update-event",
+			details: { taskPath: input.originalTask.path },
 			error: eventError instanceof Error ? eventError.message : String(eventError),
-			taskPath: input.originalTask.path,
 		});
 	}
 }
@@ -158,7 +171,11 @@ async function triggerWebhookSideEffect(
 			previous: input.originalTask,
 		});
 	} catch (error) {
-		console.warn("Failed to trigger webhook for property update:", error);
+		tasknotesLogger.warn("Failed to trigger webhook for property update:", {
+			category: "provider",
+			operation: "trigger-webhook-property-update",
+			error: error,
+		});
 	}
 }
 
@@ -186,7 +203,11 @@ function triggerCalendarSideEffect(
 				);
 
 	syncPromise.catch((error) => {
-		console.warn("Failed to sync task update to Google Calendar:", error);
+		tasknotesLogger.warn("Failed to sync task update to Google Calendar:", {
+			category: "provider",
+			operation: "sync-task-update-google-calendar",
+			error: error,
+		});
 	});
 }
 
@@ -209,15 +230,16 @@ async function updateAutoArchiveSideEffect(
 		}
 
 		if (statusConfig.autoArchive) {
-			await context.autoArchiveService.scheduleAutoArchive(
-				input.updatedTask,
-				statusConfig
-			);
+			await context.autoArchiveService.scheduleAutoArchive(input.updatedTask, statusConfig);
 		} else {
 			await context.autoArchiveService.cancelAutoArchive(input.updatedTask.path);
 		}
 	} catch (error) {
-		console.warn("Failed to handle auto-archive for status property change:", error);
+		tasknotesLogger.warn("Failed to handle auto-archive for status property change:", {
+			category: "persistence",
+			operation: "handle-auto-archive-status-property-change",
+			error: error,
+		});
 	}
 }
 

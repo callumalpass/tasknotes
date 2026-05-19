@@ -82,6 +82,9 @@ import {
 	pluginDataFileExists,
 } from "./settings/settingsPersistence";
 import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
+import { createTaskNotesLogger } from "./utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Main" });
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 type TaskLinkDetectionServiceInstance =
@@ -365,7 +368,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// Trigger index building with a single call - this will process all files internally
 			this.cacheManager.getTasksForDate(new Date().toISOString().split("T")[0]);
 		} catch (error) {
-			console.error("[TaskNotes] Error during project index warmup:", error);
+			tasknotesLogger.error("[TaskNotes] Error during project index warmup:", {
+				category: "internal",
+				operation: "project-index-warmup",
+				error: error,
+			});
 		}
 	}
 
@@ -456,7 +463,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// Migration check complete
 			this.migrationComplete = true;
 		} catch (error) {
-			console.error("Error during early migration check:", error);
+			tasknotesLogger.error("Error during early migration check:", {
+				category: "configuration",
+				operation: "early-migration-check",
+				error: error,
+			});
 			// Don't fail the entire plugin load due to migration check issues
 			this.migrationComplete = true;
 		}
@@ -497,7 +508,11 @@ export default class TaskNotesPlugin extends Plugin {
 				await this.saveSettings();
 			}
 		} catch (error) {
-			console.error("Error checking for version update:", error);
+			tasknotesLogger.error("Error checking for version update:", {
+				category: "configuration",
+				operation: "checking-version-update",
+				error: error,
+			});
 		}
 	}
 
@@ -575,18 +590,21 @@ export default class TaskNotesPlugin extends Plugin {
 		const result = await loadPluginSettingsDataWithRetry(this);
 		this.settingsLoadCompromised = result.compromised;
 		if (result.compromised) {
-			console.error(
-				"[TaskNotes] Settings data file exists, but Obsidian returned no settings data. " +
-					"Using defaults in memory for this session and blocking settings saves to avoid overwriting existing custom settings."
-			);
+			tasknotesLogger.error("Settings data could not be read safely", {
+				category: "internal",
+				operation: "load-settings-data",
+				details: {
+					reason: "Settings data file exists, but Obsidian returned no settings data.",
+					settingsSavesBlocked: true,
+				},
+			});
 		}
 		return result.data;
 	}
 
 	async loadSettings() {
 		const loadedData = await this.loadSettingsData();
-		const { settings, shouldPersistMigratedSettings } =
-			buildSettingsFromLoadedData(loadedData);
+		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(loadedData);
 		this.settings = settings;
 
 		if (shouldPersistMigratedSettings) {
@@ -596,7 +614,11 @@ export default class TaskNotesPlugin extends Plugin {
 					try {
 						await this.saveSettingsDataOnly();
 					} catch (error) {
-						console.error("Failed to save migrated settings:", error);
+						tasknotesLogger.error("Failed to save migrated settings:", {
+							category: "configuration",
+							operation: "save-migrated-settings",
+							error: error,
+						});
 					}
 				})();
 			}, 100);
@@ -638,8 +660,12 @@ export default class TaskNotesPlugin extends Plugin {
 
 	private async writeSettingsDataOnlyOnce(): Promise<void> {
 		if (this.settingsLoadCompromised) {
-			console.warn(
-				"[TaskNotes] Skipping settings save because settings data could not be read safely during startup."
+			tasknotesLogger.warn(
+				"[TaskNotes] Skipping settings save because settings data could not be read safely during startup.",
+				{
+					category: "configuration",
+					operation: "skipping-settings-save-because-settings-data-read-safely-startup",
+				}
 			);
 			return;
 		}
@@ -648,8 +674,12 @@ export default class TaskNotesPlugin extends Plugin {
 		const loadedData = await this.loadData();
 		if (loadedData === null && (await this.pluginDataFileExists())) {
 			this.settingsLoadCompromised = true;
-			console.warn(
-				"[TaskNotes] Skipping settings save because data.json exists but could not be read."
+			tasknotesLogger.warn(
+				"[TaskNotes] Skipping settings save because data.json exists but could not be read.",
+				{
+					category: "configuration",
+					operation: "skipping-settings-save-because-data-json-exists-but-read",
+				}
 			);
 			return;
 		}
@@ -736,9 +766,16 @@ export default class TaskNotesPlugin extends Plugin {
 				generateTemplate: (commandId) => generateBasesFileTemplate(commandId, this),
 				warn: (message, error) => {
 					if (error === undefined) {
-						console.warn(message);
+						tasknotesLogger.warn(message, {
+							category: "configuration",
+							operation: "ensure-bases-view-files",
+						});
 					} else {
-						console.warn(message, error);
+						tasknotesLogger.warn(message, {
+							category: "configuration",
+							operation: "ensure-bases-view-files",
+							error: error,
+						});
 					}
 				},
 			},
@@ -762,7 +799,10 @@ export default class TaskNotesPlugin extends Plugin {
 				const leftLeaf = workspace.getLeftLeaf(false);
 
 				if (!leftLeaf) {
-					console.warn("Could not get left leaf for search pane");
+					tasknotesLogger.warn("Could not get left leaf for search pane", {
+						category: "configuration",
+						operation: "get-left-leaf-search-pane",
+					});
 					return false;
 				}
 
@@ -773,13 +813,20 @@ export default class TaskNotesPlugin extends Plugin {
 					});
 					searchLeaf = leftLeaf;
 				} catch (error) {
-					console.warn("Failed to create search view:", error);
+					tasknotesLogger.warn("Failed to create search view:", {
+						category: "persistence",
+						operation: "create-search-view",
+						error: error,
+					});
 					return false;
 				}
 			}
 
 			if (!searchLeaf) {
-				console.warn("No search leaf available");
+				tasknotesLogger.warn("No search leaf available", {
+					category: "configuration",
+					operation: "no-search-leaf",
+				});
 				return false;
 			}
 
@@ -787,14 +834,21 @@ export default class TaskNotesPlugin extends Plugin {
 
 			const searchQuery = `tag:${tag}`;
 			if (!applySearchQueryToView(searchLeaf.view, searchQuery)) {
-				console.warn("[TaskNotes] Could not find method to set search query");
+				tasknotesLogger.warn("[TaskNotes] Could not find method to set search query", {
+					category: "stale-data",
+					operation: "find-method-set-search-query",
+				});
 				new Notice("Search pane opened but could not set tag query");
 				return false;
 			}
 
 			return true;
 		} catch (error) {
-			console.error("[TaskNotes] Error opening search pane with tag:", error);
+			tasknotesLogger.error("[TaskNotes] Error opening search pane with tag:", {
+				category: "internal",
+				operation: "opening-search-pane-tag",
+				error: error,
+			});
 			new Notice(`Failed to open search pane for tag: ${tag}`);
 			return false;
 		}
@@ -846,7 +900,11 @@ export default class TaskNotesPlugin extends Plugin {
 					noteWasCreated = true;
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error("Failed to create daily note:", error);
+					tasknotesLogger.error("Failed to create daily note:", {
+						category: "persistence",
+						operation: "create-daily-note",
+						error: error,
+					});
 					new Notice(`Failed to create daily note: ${errorMessage}`);
 					return;
 				}
@@ -866,7 +924,11 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Failed to navigate to daily note:", error);
+			tasknotesLogger.error("Failed to navigate to daily note:", {
+				category: "persistence",
+				operation: "navigate-daily-note",
+				error: error,
+			});
 			new Notice(`Failed to navigate to daily note: ${errorMessage}`);
 		}
 	}
@@ -924,7 +986,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 			return updatedTask;
 		} catch (error) {
-			console.error(`Failed to update task ${property}:`, error);
+			tasknotesLogger.error(`Failed to update task ${property}:`, {
+				category: "validation",
+				operation: "update-task",
+				error: error,
+			});
 			new Notice(`Failed to update task ${property}`);
 			throw error;
 		}
@@ -950,7 +1016,11 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice(`Recurring task ${action} for ${format(displayDate, "MMM d")}`);
 			return updatedTask;
 		} catch (error) {
-			console.error("Failed to toggle recurring task completion:", error);
+			tasknotesLogger.error("Failed to toggle recurring task completion:", {
+				category: "persistence",
+				operation: "toggle-recurring-task-completion",
+				error: error,
+			});
 			new Notice("Failed to update recurring task");
 			throw error;
 		}
@@ -963,7 +1033,11 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice(`Task ${action}`);
 			return updatedTask;
 		} catch (error) {
-			console.error("Failed to toggle task archive:", error);
+			tasknotesLogger.error("Failed to toggle task archive:", {
+				category: "persistence",
+				operation: "toggle-task-archive",
+				error: error,
+			});
 			new Notice("Failed to update task archive status");
 			throw error;
 		}
@@ -976,7 +1050,11 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice(`Task marked as '${statusConfig?.label || updatedTask.status}'`);
 			return updatedTask;
 		} catch (error) {
-			console.error("Failed to toggle task status:", error);
+			tasknotesLogger.error("Failed to toggle task status:", {
+				category: "persistence",
+				operation: "toggle-task-status",
+				error: error,
+			});
 			new Notice("Failed to update task status");
 			throw error;
 		}
@@ -1078,7 +1156,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// TODO: Re-implement for Bases views if needed
 			new Notice("Project subtask filtering not available");
 		} catch (error) {
-			console.error("Error applying project subtask filter:", error);
+			tasknotesLogger.error("Error applying project subtask filter:", {
+				category: "persistence",
+				operation: "applying-project-subtask-filter",
+				error: error,
+			});
 			new Notice("Failed to apply project filter");
 		}
 	}
@@ -1164,7 +1246,11 @@ export default class TaskNotesPlugin extends Plugin {
 			});
 			modal.open();
 		} catch (error) {
-			console.error("Error loading DateTimePickerModal:", error);
+			tasknotesLogger.error("Error loading DateTimePickerModal:", {
+				category: "validation",
+				operation: "loading-datetimepickermodal",
+				error: error,
+			});
 		}
 	}
 
@@ -1186,7 +1272,11 @@ export default class TaskNotesPlugin extends Plugin {
 			loadingNotice.hide();
 			new Notice("Tasknotes cache refreshed successfully");
 		} catch (error) {
-			console.error("Error refreshing cache:", error);
+			tasknotesLogger.error("Error refreshing cache:", {
+				category: "stale-data",
+				operation: "refreshing-cache",
+				error: error,
+			});
 			new Notice("Failed to refresh cache. Please try again.");
 		}
 	}
@@ -1208,7 +1298,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// Use the instant convert service for immediate conversion without modal
 			await this.instantTaskConvertService.instantConvertTask(editor, cursor.line);
 		} catch (error) {
-			console.error("Error converting task:", error);
+			tasknotesLogger.error("Error converting task:", {
+				category: "validation",
+				operation: "converting-task",
+				error: error,
+			});
 			new Notice("Failed to convert task. Please try again.");
 		}
 	}
@@ -1227,7 +1321,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// Use the instant convert service for batch conversion
 			await this.instantTaskConvertService.batchConvertAllTasks(editor);
 		} catch (error) {
-			console.error("Error batch converting tasks:", error);
+			tasknotesLogger.error("Error batch converting tasks:", {
+				category: "validation",
+				operation: "batch-converting-tasks",
+				error: error,
+			});
 			new Notice("Failed to batch convert tasks. Please try again.");
 		}
 	}
@@ -1272,7 +1370,11 @@ export default class TaskNotesPlugin extends Plugin {
 				}
 			});
 		} catch (error) {
-			console.error("Error inserting tasknote link:", error);
+			tasknotesLogger.error("Error inserting tasknote link:", {
+				category: "persistence",
+				operation: "inserting-tasknote-link",
+				error: error,
+			});
 			new Notice("Failed to insert tasknote link");
 		}
 	}
@@ -1365,7 +1467,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 			await this.openQuickActionsForTaskFile(activeFile, "Current file is not a tasknote");
 		} catch (error) {
-			console.error("Error opening quick actions:", error);
+			tasknotesLogger.error("Error opening quick actions:", {
+				category: "internal",
+				operation: "opening-quick-actions",
+				error: error,
+			});
 			new Notice("Failed to open quick actions");
 		}
 	}
@@ -1400,7 +1506,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 			await this.openQuickActionsForTaskInfo(detected.taskInfo);
 		} catch (error) {
-			console.error("Error opening quick actions for task under cursor:", error);
+			tasknotesLogger.error("Error opening quick actions for task under cursor:", {
+				category: "persistence",
+				operation: "opening-quick-actions-task-under-cursor",
+				error: error,
+			});
 			new Notice("Failed to open quick actions");
 		}
 	}
@@ -1425,7 +1535,11 @@ export default class TaskNotesPlugin extends Plugin {
 			const nextStatus = this.statusManager.getNextStatus(taskInfo.status);
 			await this.updateTaskProperty(taskInfo, "status", nextStatus);
 		} catch (error) {
-			console.error("Failed to cycle current task status:", error);
+			tasknotesLogger.error("Failed to cycle current task status:", {
+				category: "persistence",
+				operation: "cycle-current-task-status",
+				error: error,
+			});
 			new Notice("Failed to cycle task status");
 		}
 	}
@@ -1441,7 +1555,11 @@ export default class TaskNotesPlugin extends Plugin {
 			const nextPriority = this.priorityManager.getNextPriority(currentPriority);
 			await this.updateTaskProperty(taskInfo, "priority", nextPriority);
 		} catch (error) {
-			console.error("Failed to cycle current task priority:", error);
+			tasknotesLogger.error("Failed to cycle current task priority:", {
+				category: "persistence",
+				operation: "cycle-current-task-priority",
+				error: error,
+			});
 			new Notice("Failed to cycle task priority");
 		}
 	}
@@ -1508,7 +1626,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 			await this.openTaskEditModal(taskInfo);
 		} catch (error) {
-			console.error("Error opening task edit modal from file menu:", error);
+			tasknotesLogger.error("Error opening task edit modal from file menu:", {
+				category: "persistence",
+				operation: "opening-task-edit-modal-file-menu",
+				error: error,
+			});
 			new Notice(this.i18n.translate("modals.taskEdit.notices.openNoteFailure"));
 		}
 	}
@@ -1562,7 +1684,11 @@ export default class TaskNotesPlugin extends Plugin {
 			});
 			selector.open();
 		} catch (error) {
-			console.error("Failed to add project to current task:", error);
+			tasknotesLogger.error("Failed to add project to current task:", {
+				category: "persistence",
+				operation: "add-project-current-task",
+				error: error,
+			});
 			new Notice(
 				this.i18n.translate("contextMenus.task.organization.notices.addToProjectFailed")
 			);
@@ -1581,9 +1707,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const candidates = allTasks.filter((candidate) => candidate.path !== activeFile.path);
 			if (candidates.length === 0) {
 				new Notice(
-					this.i18n.translate(
-						"contextMenus.task.organization.notices.noEligibleSubtasks"
-					)
+					this.i18n.translate("contextMenus.task.organization.notices.noEligibleSubtasks")
 				);
 				return;
 			}
@@ -1593,7 +1717,11 @@ export default class TaskNotesPlugin extends Plugin {
 				void this.assignSelectedSubtaskToCurrentNote(activeFile, subtask);
 			});
 		} catch (error) {
-			console.error("Failed to add subtask to current note:", error);
+			tasknotesLogger.error("Failed to add subtask to current note:", {
+				category: "persistence",
+				operation: "add-subtask-current-note",
+				error: error,
+			});
 			new Notice(
 				this.i18n.translate("contextMenus.task.organization.notices.subtaskSelectFailed")
 			);
@@ -1604,7 +1732,11 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			await addTaskToProject(this, task, projectFile);
 		} catch (error) {
-			console.error("Failed to add selected project to task:", error);
+			tasknotesLogger.error("Failed to add selected project to task:", {
+				category: "persistence",
+				operation: "add-selected-project-task",
+				error: error,
+			});
 			new Notice(
 				this.i18n.translate("contextMenus.task.organization.notices.addToProjectFailed")
 			);
@@ -1618,7 +1750,11 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			await assignTaskAsSubtask(this, parentFile, subtask);
 		} catch (error) {
-			console.error("Failed to assign selected subtask to current note:", error);
+			tasknotesLogger.error("Failed to assign selected subtask to current note:", {
+				category: "persistence",
+				operation: "assign-selected-subtask-current-note",
+				error: error,
+			});
 			new Notice(
 				this.i18n.translate("contextMenus.task.organization.notices.addAsSubtaskFailed")
 			);
@@ -1673,7 +1809,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 			modal.open();
 		} catch (error) {
-			console.error("Error creating inline task:", error);
+			tasknotesLogger.error("Error creating inline task:", {
+				category: "persistence",
+				operation: "creating-inline-task",
+				error: error,
+			});
 			new Notice("Failed to create inline task");
 		}
 	}
@@ -1719,7 +1859,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 			new Notice(`Inline task "${task.title}" created and linked successfully`);
 		} catch (error) {
-			console.error("Error handling inline task creation:", error);
+			tasknotesLogger.error("Error handling inline task creation:", {
+				category: "persistence",
+				operation: "handling-inline-task-creation",
+				error: error,
+			});
 			new Notice("Failed to insert task link");
 		}
 	}

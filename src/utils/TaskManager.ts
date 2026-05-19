@@ -8,6 +8,9 @@ import type { DependencyCache } from "./DependencyCache";
 import { isPathInExcludedFolder, parseExcludedFolders } from "./pathExclusions";
 import { buildTaskInfoFromMappedTask } from "./taskInfoAssembly";
 import { isTaskFrontmatter } from "./taskIdentification";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/TaskManager" });
 
 /**
  * Just-in-time task manager that reads task information on-demand from Obsidian's
@@ -304,7 +307,11 @@ export class TaskManager extends Events {
 				blockingTasks,
 			});
 		} catch (error) {
-			console.error(`Error extracting task info from native metadata for ${path}:`, error);
+			tasknotesLogger.error(`Error extracting task info from native metadata for ${path}:`, {
+				category: "persistence",
+				operation: "extracting-task-info-native-metadata",
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -706,9 +713,13 @@ export class TaskManager extends Events {
 			const content = await this.app.vault.read(file);
 			return this.parseFrontmatterFromContent(content);
 		} catch (error) {
-			console.warn(
+			tasknotesLogger.warn(
 				`TaskManager: Failed to read frontmatter fallback for ${file.path}`,
-				error
+				{
+					category: "validation",
+					operation: "taskmanager-read-frontmatter-fallback",
+					error: error,
+				}
 			);
 			return null;
 		}
@@ -725,7 +736,11 @@ export class TaskManager extends Events {
 			}
 			return parsed as Record<string, unknown>;
 		} catch (error) {
-			console.warn("TaskManager: Failed to parse frontmatter fallback", error);
+			tasknotesLogger.warn("TaskManager: Failed to parse frontmatter fallback", {
+				category: "validation",
+				operation: "taskmanager-parse-frontmatter-fallback",
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -767,7 +782,10 @@ export class TaskManager extends Events {
 
 	getBlockingTaskPaths(taskPath: string): string[] {
 		if (!this._dependencyCache) {
-			console.warn("DependencyCache not set in TaskManager");
+			tasknotesLogger.warn("DependencyCache not set in TaskManager", {
+				category: "stale-data",
+				operation: "dependencycache-not-set-taskmanager",
+			});
 			return [];
 		}
 		return this._dependencyCache.getBlockingTaskPaths(taskPath);
@@ -775,7 +793,10 @@ export class TaskManager extends Events {
 
 	getBlockedTaskPaths(taskPath: string): string[] {
 		if (!this._dependencyCache) {
-			console.warn("DependencyCache not set in TaskManager");
+			tasknotesLogger.warn("DependencyCache not set in TaskManager", {
+				category: "stale-data",
+				operation: "dependencycache-not-set-taskmanager",
+			});
 			return [];
 		}
 		return this._dependencyCache.getBlockedTaskPaths(taskPath);
@@ -790,7 +811,10 @@ export class TaskManager extends Events {
 
 	getTasksReferencingProject(projectPath: string): string[] {
 		if (!this._dependencyCache) {
-			console.warn("DependencyCache not set in TaskManager");
+			tasknotesLogger.warn("DependencyCache not set in TaskManager", {
+				category: "stale-data",
+				operation: "dependencycache-not-set-taskmanager",
+			});
 			return [];
 		}
 		return this._dependencyCache.getTasksReferencingProject(projectPath);
@@ -836,8 +860,9 @@ export class TaskManager extends Events {
 		}
 
 		// If we still don't have metadata after retries, log a warning but continue
-		console.warn(
-			`TaskManager: Metadata cache not ready for ${path} after ${maxRetries} retries`
+		tasknotesLogger.warn(
+			`TaskManager: Metadata cache not ready for ${path} after ${maxRetries} retries`,
+			{ category: "stale-data", operation: "taskmanager-metadata-cache-not-ready" }
 		);
 	}
 

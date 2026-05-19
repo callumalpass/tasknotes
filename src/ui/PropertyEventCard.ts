@@ -2,6 +2,9 @@ import { setIcon } from "obsidian";
 import type { BasesEntry, BasesViewConfig } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { isEmptyCardDisplayValue, renderBasesValue } from "./taskCardPresentation";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/PropertyEventCard" });
 
 export interface PropertyEventCardOptions {
 	showProperties: boolean;
@@ -160,8 +163,7 @@ export function createPropertyEventCard(
 					}
 
 					// Get user-friendly property name
-					const displayName =
-						viewConfig.getDisplayName(propertyId) || propertyId;
+					const displayName = viewConfig.getDisplayName(propertyId) || propertyId;
 
 					const propertyEl = metadata.createSpan({
 						cls: "property-event-card__metadata-property",
@@ -176,7 +178,11 @@ export function createPropertyEventCard(
 				}
 			}
 		} catch (error) {
-			console.debug("[TaskNotes][PropertyEventCard] Error reading properties:", error);
+			tasknotesLogger.debug("[TaskNotes][PropertyEventCard] Error reading properties:", {
+				category: "persistence",
+				operation: "reading-properties",
+				error: error,
+			});
 		}
 
 		if (renderedProperties === 0) {

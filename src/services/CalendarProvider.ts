@@ -7,6 +7,9 @@
 
 import { ICSEvent } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/CalendarProvider" });
 
 /**
  * Represents a calendar from any provider
@@ -103,10 +106,7 @@ export abstract class CalendarProvider extends EventEmitter {
 	 * @param event The event data
 	 * @returns The created event in ICSEvent format
 	 */
-	abstract createEvent(
-		calendarId: string,
-		event: CalendarEventData
-	): Promise<ICSEvent>;
+	abstract createEvent(calendarId: string, event: CalendarEventData): Promise<ICSEvent>;
 
 	/**
 	 * Deletes a calendar event
@@ -225,9 +225,13 @@ export class CalendarProviderRegistry {
 	 * Refreshes all registered providers
 	 */
 	async refreshAll(): Promise<void> {
-		const refreshPromises = Array.from(this.providers.values()).map(provider =>
-			provider.refresh().catch(error => {
-				console.error(`Failed to refresh ${provider.providerName}:`, error);
+		const refreshPromises = Array.from(this.providers.values()).map((provider) =>
+			provider.refresh().catch((error) => {
+				tasknotesLogger.error(`Failed to refresh ${provider.providerName}:`, {
+					category: "provider",
+					operation: "refresh",
+					error: error,
+				});
 			})
 		);
 		await Promise.all(refreshPromises);

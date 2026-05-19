@@ -1,6 +1,8 @@
- 
 import { PendingAutoArchive, TaskInfo, StatusConfig } from "../types";
 import TaskNotesPlugin from "../main";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/AutoArchiveService" });
 
 /**
  * Service for automatically archiving tasks based on status configuration.
@@ -71,7 +73,11 @@ export class AutoArchiveService {
 			this.processorTimer = null;
 			this.processQueue()
 				.catch((error) => {
-					console.error("Error processing auto-archive queue:", error);
+					tasknotesLogger.error("Error processing auto-archive queue:", {
+						category: "persistence",
+						operation: "processing-auto-archive-queue",
+						error: error,
+					});
 				})
 				.finally(() => {
 					if (this.isRunning) {
@@ -162,7 +168,11 @@ export class AutoArchiveService {
 					remainingItems.push(item);
 				}
 			} catch (error) {
-				console.error(`Error processing auto-archive for ${item.taskPath}:`, error);
+				tasknotesLogger.error(`Error processing auto-archive for ${item.taskPath}:`, {
+					category: "persistence",
+					operation: "processing-auto-archive",
+					error: error,
+				});
 				// Keep item for retry on next cycle
 				remainingItems.push(item);
 			}
@@ -202,8 +212,13 @@ export class AutoArchiveService {
 				}
 
 				if (calendarCleanupState === "retry") {
-					console.warn(
-						`Auto-archive Google cleanup deferred until calendar sync is ready for ${item.taskPath}`
+					tasknotesLogger.warn(
+						`Auto-archive Google cleanup deferred until calendar sync is ready for ${item.taskPath}`,
+						{
+							category: "provider",
+							operation:
+								"auto-archive-google-cleanup-deferred-until-calendar-sync-ready",
+						}
 					);
 					return false;
 				}
@@ -211,8 +226,12 @@ export class AutoArchiveService {
 				const deleted =
 					await this.plugin.taskCalendarSyncService.deleteTaskFromCalendar(currentTask);
 				if (!deleted) {
-					console.warn(
-						`Auto-archive Google cleanup still pending for ${item.taskPath}`
+					tasknotesLogger.warn(
+						`Auto-archive Google cleanup still pending for ${item.taskPath}`,
+						{
+							category: "provider",
+							operation: "auto-archive-google-cleanup-still-pending",
+						}
 					);
 				}
 				return deleted;
@@ -233,15 +252,24 @@ export class AutoArchiveService {
 				}
 
 				if (calendarCleanupState === "retry") {
-					console.warn(
-						`Auto-archive Google cleanup deferred until calendar sync is ready for ${item.taskPath}`
+					tasknotesLogger.warn(
+						`Auto-archive Google cleanup deferred until calendar sync is ready for ${item.taskPath}`,
+						{
+							category: "provider",
+							operation:
+								"auto-archive-google-cleanup-deferred-until-calendar-sync-ready",
+						}
 					);
 				}
 				return false;
 			}
 			return true;
 		} catch (error) {
-			console.error(`Failed to archive task ${item.taskPath}:`, error);
+			tasknotesLogger.error(`Failed to archive task ${item.taskPath}:`, {
+				category: "persistence",
+				operation: "archive-task",
+				error: error,
+			});
 			return false; // Retry later
 		}
 	}

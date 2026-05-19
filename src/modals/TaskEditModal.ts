@@ -4,11 +4,7 @@ import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
 import { formatTimestampForDisplay, getCurrentTimestamp } from "../utils/dateUtils";
-import {
-	extractTaskInfo,
-	calculateTotalTimeSpent,
-	formatTime,
-} from "../utils/helpers";
+import { extractTaskInfo, calculateTotalTimeSpent, formatTime } from "../utils/helpers";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { ConfirmationModal, showConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
@@ -17,10 +13,10 @@ import { createTaskModalActionButtons } from "./taskModalActionButtons";
 import { showTaskModalReminderContextMenu } from "./taskModalActionMenus";
 import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
 import { buildTaskEditFormStateFromTask } from "./taskEditFormState";
-import {
-	applyTaskEditSubtaskChanges,
-	hasTaskEditSubtaskChanges,
-} from "./taskEditSubtasks";
+import { applyTaskEditSubtaskChanges, hasTaskEditSubtaskChanges } from "./taskEditSubtasks";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskEditModal" });
 
 export interface TaskEditOptions {
 	task: TaskInfo;
@@ -170,7 +166,11 @@ export class TaskEditModal extends TaskModal {
 		try {
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
 			if (!file || !(file instanceof TFile)) {
-				console.warn("Could not find file for task:", this.task.path);
+				tasknotesLogger.warn("Could not find file for task:", {
+					category: "stale-data",
+					operation: "find-file-task",
+					details: { value: this.task.path },
+				});
 				return;
 			}
 
@@ -218,7 +218,11 @@ export class TaskEditModal extends TaskModal {
 				}
 			}
 		} catch (error) {
-			console.warn("Could not refresh task data:", error);
+			tasknotesLogger.warn("Could not refresh task data:", {
+				category: "stale-data",
+				operation: "refresh-task-data",
+				error: error,
+			});
 		}
 	}
 
@@ -300,7 +304,11 @@ export class TaskEditModal extends TaskModal {
 				} catch (error) {
 					// Save failed - stay open so user can fix issues
 					// handleSave() already shows a notice with the error
-					console.error("Save failed during close confirmation:", error);
+					tasknotesLogger.error("Save failed during close confirmation:", {
+						category: "persistence",
+						operation: "save-close-confirmation",
+						error: error,
+					});
 				}
 			} else if (result === "discard") {
 				// User wants to discard changes
@@ -480,7 +488,11 @@ export class TaskEditModal extends TaskModal {
 			this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
 			this.unresolvedBlockingEntries = [];
 		} catch (error) {
-			console.error("Failed to update task:", error);
+			tasknotesLogger.error("Failed to update task:", {
+				category: "validation",
+				operation: "update-task",
+				error: error,
+			});
 			const message = error instanceof Error && error.message ? error.message : String(error);
 			new Notice(this.t("modals.taskEdit.notices.updateFailure", { message }));
 		}
@@ -553,7 +565,11 @@ export class TaskEditModal extends TaskModal {
 			// Close the modal
 			this.close();
 		} catch (error) {
-			console.error("Failed to open task note:", error);
+			tasknotesLogger.error("Failed to open task note:", {
+				category: "persistence",
+				operation: "open-task-note",
+				error: error,
+			});
 			new Notice(this.t("modals.taskEdit.notices.openNoteFailure"));
 		}
 	}
@@ -580,7 +596,11 @@ export class TaskEditModal extends TaskModal {
 			// Close the modal
 			this.close();
 		} catch (error) {
-			console.error("Failed to archive task:", error);
+			tasknotesLogger.error("Failed to archive task:", {
+				category: "persistence",
+				operation: "archive-task",
+				error: error,
+			});
 			new Notice(this.t("modals.taskEdit.notices.archiveFailure"));
 		}
 	}
@@ -606,7 +626,11 @@ export class TaskEditModal extends TaskModal {
 			this.forceClose();
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			console.error("Failed to delete task:", error);
+			tasknotesLogger.error("Failed to delete task:", {
+				category: "persistence",
+				operation: "delete-task",
+				error: error,
+			});
 			new Notice(this.t("modals.taskEdit.notices.deleteFailure", { message }));
 		}
 	}
@@ -668,7 +692,11 @@ export class TaskEditModal extends TaskModal {
 				}
 			}
 		} catch (error) {
-			console.error("Error initializing subtasks:", error);
+			tasknotesLogger.error("Error initializing subtasks:", {
+				category: "persistence",
+				operation: "initializing-subtasks",
+				error: error,
+			});
 		}
 	}
 
@@ -690,10 +718,18 @@ export class TaskEditModal extends TaskModal {
 			updateTaskProjects: (subtaskInfo, updatedProjects) =>
 				this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects),
 			onAddError: (error) => {
-				console.error("Failed to add subtask relation:", error);
+				tasknotesLogger.error("Failed to add subtask relation:", {
+					category: "persistence",
+					operation: "add-subtask-relation",
+					error: error,
+				});
 			},
 			onRemoveError: (error) => {
-				console.error("Failed to remove subtask relation:", error);
+				tasknotesLogger.error("Failed to remove subtask relation:", {
+					category: "persistence",
+					operation: "remove-subtask-relation",
+					error: error,
+				});
 			},
 		});
 

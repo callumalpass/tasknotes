@@ -3,6 +3,9 @@ import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./defaults";
 import { hasMissingMigratedSettings } from "./settingsMigration";
 import type { TaskNotesSettings } from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/SettingsPersistence" });
 
 export type LoadedSettingsData = Partial<TaskNotesSettings> &
 	Record<string, unknown> & {
@@ -59,7 +62,11 @@ export async function pluginDataFileExists(host: SettingsDataHost): Promise<bool
 	try {
 		return await host.app.vault.adapter.exists(dataPath);
 	} catch (error) {
-		console.warn("[TaskNotes] Could not check settings data file existence:", error);
+		tasknotesLogger.warn("[TaskNotes] Could not check settings data file existence:", {
+			category: "configuration",
+			operation: "check-settings-data-file-existence",
+			error: error,
+		});
 		return false;
 	}
 }
@@ -143,9 +150,7 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 	return migratedData;
 }
 
-export function buildSettingsFromLoadedData(
-	data: LoadedSettingsData | null
-): SettingsBuildResult {
+export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
 	const loadedData = migrateLoadedSettingsData(data);
 
 	const settings: TaskNotesSettings = {

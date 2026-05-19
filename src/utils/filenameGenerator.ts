@@ -2,6 +2,9 @@ import { format } from "date-fns";
 import { normalizePath, type Vault } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
 import { getProjectDisplayName } from "./linkUtils";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/FilenameGenerator" });
 
 export interface FilenameContext {
 	title: string;
@@ -106,7 +109,11 @@ export function generateICSNoteFilename(
 		// Fallback to title format if no ICS settings
 		return sanitizeForFilename(context.title);
 	} catch (error) {
-		console.error("Error generating ICS note filename:", error);
+		tasknotesLogger.error("Error generating ICS note filename:", {
+			category: "provider",
+			operation: "generating-ics-note-filename",
+			error: error,
+		});
 		// Fallback to safe title format
 		return sanitizeForFilename(context.title);
 	}
@@ -166,7 +173,11 @@ export function generateTaskFilename(
 				return generateZettelId(now);
 		}
 	} catch (error) {
-		console.error("Error generating filename:", error);
+		tasknotesLogger.error("Error generating filename:", {
+			category: "persistence",
+			operation: "generating-filename",
+			error: error,
+		});
 		// Fallback to safe zettel format
 		return generateZettelId(now);
 	}
@@ -255,7 +266,10 @@ function getProjectId(projectName: string | undefined): string {
 		return "";
 	}
 
-	return projectName.replace(/[^a-zA-Z0-9]/g, "").substring(0, 4).toUpperCase();
+	return projectName
+		.replace(/[^a-zA-Z0-9]/g, "")
+		.substring(0, 4)
+		.toUpperCase();
 }
 
 /**
@@ -287,9 +301,7 @@ function generateCustomFilename(
 			context.priority && ["low", "normal", "medium", "high"].includes(context.priority)
 				? context.priority
 				: "normal";
-		const sanitizedStatus = context.status
-			? sanitizeForFilename(context.status)
-			: "open";
+		const sanitizedStatus = context.status ? sanitizeForFilename(context.status) : "open";
 
 		// Process array values for contexts and tags
 		const contexts = Array.isArray(context.contexts) ? context.contexts : [];
@@ -393,7 +405,11 @@ function generateCustomFilename(
 				const singleRegex = new RegExp(`\\{${key}\\}`, "g");
 				result = result.replace(singleRegex, value);
 			} catch (regexError) {
-				console.warn(`Error replacing template variable ${key}:`, regexError);
+				tasknotesLogger.warn(`Error replacing template variable ${key}:`, {
+					category: "persistence",
+					operation: "replacing-template-variable",
+					error: regexError,
+				});
 			}
 		});
 
@@ -408,7 +424,11 @@ function generateCustomFilename(
 
 		return sanitizeForFilename(result);
 	} catch (error) {
-		console.error("Error generating custom filename:", error);
+		tasknotesLogger.error("Error generating custom filename:", {
+			category: "persistence",
+			operation: "generating-custom-filename",
+			error: error,
+		});
 		// Fallback to safe title-based filename
 		return sanitizeForFilename(context.title) || generateZettelId(date);
 	}
@@ -476,7 +496,11 @@ export function sanitizeForFilename(input: string): string {
 
 		return sanitized;
 	} catch (error) {
-		console.error("Error sanitizing filename:", error);
+		tasknotesLogger.error("Error sanitizing filename:", {
+			category: "persistence",
+			operation: "sanitizing-filename",
+			error: error,
+		});
 		return "untitled";
 	}
 }
@@ -583,7 +607,11 @@ export async function generateUniqueFilename(
 
 		return sanitizeForFilename(fallbackFilename);
 	} catch (error) {
-		console.error("Error generating unique filename:", error);
+		tasknotesLogger.error("Error generating unique filename:", {
+			category: "persistence",
+			operation: "generating-unique-filename",
+			error: error,
+		});
 		// Final fallback with timestamp
 		const timestamp = Date.now().toString(36);
 		return `task-${timestamp}`;

@@ -24,6 +24,9 @@ import { NLPSuggest } from "./taskCreationSuggest";
 import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
 import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
 import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationModal" });
 export type { StatusSuggestion } from "./taskCreationSuggest";
 
 const TASK_CREATION_FAILURE_PREFIX = "Failed to create task: ";
@@ -71,8 +74,10 @@ function createEmbeddableMarkdownEditor(
 	options: Partial<MarkdownEditorProps>
 ): EmbeddableMarkdownEditor {
 	// Lazy-load because the editor module resolves Obsidian internals during evaluation.
-	// eslint-disable-next-line @typescript-eslint/no-require-imports -- Modal editor is lazy-loaded to avoid evaluating Obsidian internals during import.
-	const editorModule = require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
+	/* eslint-disable @typescript-eslint/no-require-imports -- Modal editor is lazy-loaded to avoid evaluating Obsidian internals during import. */
+	const editorModule =
+		require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
+	/* eslint-enable @typescript-eslint/no-require-imports -- Re-enable after the isolated lazy import. */
 	return new editorModule.EmbeddableMarkdownEditor(app, container, options);
 }
 
@@ -234,9 +239,12 @@ export class TaskCreationModal extends TaskModal {
 					return false;
 				},
 			});
-
 		} catch (error) {
-			console.error("Failed to create NLP markdown editor:", error);
+			tasknotesLogger.error("Failed to create NLP markdown editor:", {
+				category: "persistence",
+				operation: "create-nlp-markdown-editor",
+				error: error,
+			});
 			// Fallback to textarea if editor creation fails
 			this.nlInput = editorContainer.createEl("textarea", {
 				cls: "nl-input",
@@ -274,7 +282,6 @@ export class TaskCreationModal extends TaskModal {
 
 			// Initialize auto-suggestion for fallback
 			this.nlpSuggest = new NLPSuggest(this.app, this.nlInput, this.plugin);
-
 		}
 	}
 
@@ -654,7 +661,11 @@ export class TaskCreationModal extends TaskModal {
 				}, 0);
 			}
 		} catch (error) {
-			console.error("Failed to create task:", error);
+			tasknotesLogger.error("Failed to create task:", {
+				category: "persistence",
+				operation: "create-task",
+				error: error,
+			});
 			const message = getTaskCreationFailureNoticeMessage(error);
 			new Notice(this.t("modals.taskCreation.notices.failure", { message }));
 		}
@@ -672,7 +683,11 @@ export class TaskCreationModal extends TaskModal {
 		try {
 			await openCreatedTaskFileAfterSave(this.app, file, mode);
 		} catch (error) {
-			console.error("Failed to open created task note:", error);
+			tasknotesLogger.error("Failed to open created task note:", {
+				category: "persistence",
+				operation: "open-created-task-note",
+				error: error,
+			});
 			new Notice(this.t("modals.taskCreation.notices.openCreatedTaskFailure"));
 		}
 	}
@@ -731,7 +746,11 @@ export class TaskCreationModal extends TaskModal {
 			updateTaskProjects: (subtaskInfo, projects) =>
 				this.plugin.updateTaskProperty(subtaskInfo, "projects", projects),
 			onError: (error) => {
-				console.error("Failed to assign subtask:", error);
+				tasknotesLogger.error("Failed to assign subtask:", {
+					category: "persistence",
+					operation: "assign-subtask",
+					error: error,
+				});
 			},
 		});
 	}

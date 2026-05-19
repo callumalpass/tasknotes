@@ -1,5 +1,8 @@
 import { App, SuggestModal, TAbstractFile, TFile, parseFrontMatterAliases, Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/FileSelectorModal" });
 
 export type FileSelectorResult =
 	| { type: "selected"; file: TAbstractFile }
@@ -217,7 +220,11 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 			this.close();
 			this.options.onResult({ type: "created", file: newFile });
 		} catch (error) {
-			console.error("Error creating file:", error);
+			tasknotesLogger.error("Error creating file:", {
+				category: "persistence",
+				operation: "creating-file",
+				error: error,
+			});
 			new Notice("Failed to create file");
 		}
 	}

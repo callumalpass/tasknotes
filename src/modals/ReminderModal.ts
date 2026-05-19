@@ -3,6 +3,9 @@ import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder } from "../types";
 import { formatDateForDisplay } from "../utils/dateUtils";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ReminderModal" });
 
 export class ReminderModal extends Modal {
 	private plugin: TaskNotesPlugin;
@@ -48,7 +51,11 @@ export class ReminderModal extends Modal {
 
 		// Fetch fresh data and render the modal
 		this.initializeWithFreshData().catch((error) => {
-			console.error("Failed to initialize reminder modal:", error);
+			tasknotesLogger.error("Failed to initialize reminder modal:", {
+				category: "internal",
+				operation: "initialize-reminder-modal",
+				error: error,
+			});
 			contentEl.empty();
 			contentEl.addClass("tasknotes-plugin");
 			contentEl.addClass("tasknotes-reminder-modal");
@@ -513,7 +520,11 @@ export class ReminderModal extends Modal {
 					this.resetFormInputs(form);
 				}
 			} catch (error) {
-				console.error("Error adding reminder:", error);
+				tasknotesLogger.error("Error adding reminder:", {
+					category: "internal",
+					operation: "adding-reminder",
+					error: error,
+				});
 				new Notice("Failed to add reminder. Please check your inputs.");
 			} finally {
 				// Remove loading state
@@ -816,7 +827,11 @@ export class ReminderModal extends Modal {
 
 			this.close();
 		} catch (error) {
-			console.error("Failed to save reminders:", error);
+			tasknotesLogger.error("Failed to save reminders:", {
+				category: "persistence",
+				operation: "save-reminders",
+				error: error,
+			});
 			new Notice("Failed to save reminders. Please try again.");
 			this.saveBtn.disabled = false;
 			this.saveBtn.textContent = "Save changes";

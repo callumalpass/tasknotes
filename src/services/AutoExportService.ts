@@ -2,6 +2,9 @@ import { Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
 import type { InterpolationValues, TranslationKey } from "../i18n";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/AutoExportService" });
 
 export class AutoExportService {
 	private plugin: TaskNotesPlugin;
@@ -117,7 +120,8 @@ export class AutoExportService {
 				excludeCompleted:
 					this.plugin.settings.icsIntegration.excludeCompletedFromExport ?? false,
 				completedStatuses: this.plugin.statusManager.getCompletedStatuses(),
-				requireDueDate: this.plugin.settings.icsIntegration.requireDueDateForExport ?? false,
+				requireDueDate:
+					this.plugin.settings.icsIntegration.requireDueDateForExport ?? false,
 				requireScheduledDate:
 					this.plugin.settings.icsIntegration.requireScheduledDateForExport ?? false,
 				includeObsidianLink: true,
@@ -144,7 +148,11 @@ export class AutoExportService {
 
 			this.lastExportTime = new Date();
 		} catch (error) {
-			console.error("TaskNotes: Auto export failed:", error);
+			tasknotesLogger.error("TaskNotes: Auto export failed:", {
+				category: "provider",
+				operation: "auto-export",
+				error: error,
+			});
 
 			// Only show notice for manual exports or first few failures
 			if (

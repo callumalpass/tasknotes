@@ -15,6 +15,9 @@ import {
 	getUserFieldGroupValue as getUserFieldGroupBucket,
 	sortUserFieldGroupKeys,
 } from "./userFieldValues";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/FilterService/FilterTaskGrouping" });
 
 type DueGroupCode =
 	| "overdue"
@@ -129,12 +132,7 @@ export function getDueDateGroupForFilterTask(
 	}
 
 	if (!task.due) return getDueGroupLabel("none", context);
-	return getDueDateGroupFromDateString(
-		task.due,
-		context,
-		isCompleted,
-		hideCompletedFromOverdue
-	);
+	return getDueDateGroupFromDateString(task.due, context, isCompleted, hideCompletedFromOverdue);
 }
 
 export function getScheduledDateGroupForFilterTask(
@@ -330,7 +328,11 @@ function getDueDateGroupFromDateString(
 
 		return getDueGroupLabel("later", context);
 	} catch (error) {
-		console.error(`Error categorizing date ${dateString}:`, error);
+		tasknotesLogger.error(`Error categorizing date ${dateString}:`, {
+			category: "validation",
+			operation: "categorizing-date",
+			error: error,
+		});
 		return getInvalidDateLabel(context);
 	}
 }
@@ -367,7 +369,11 @@ function getScheduledDateGroupFromDateString(
 
 		return getScheduledGroupLabel("later", context);
 	} catch (error) {
-		console.error(`Error categorizing scheduled date ${scheduledDate}:`, error);
+		tasknotesLogger.error(`Error categorizing scheduled date ${scheduledDate}:`, {
+			category: "validation",
+			operation: "categorizing-scheduled-date",
+			error: error,
+		});
 		return getInvalidDateLabel(context);
 	}
 }
@@ -378,7 +384,11 @@ function getCompletedDateGroup(task: TaskInfo, context: FilterTaskGroupingContex
 	try {
 		return format(parseISO(task.completedDate), "yyyy-MM-dd");
 	} catch (error) {
-		console.error(`Error formatting completed date ${task.completedDate}:`, error);
+		tasknotesLogger.error(`Error formatting completed date ${task.completedDate}:`, {
+			category: "validation",
+			operation: "formatting-completed-date",
+			error: error,
+		});
 		return getInvalidDateLabel(context);
 	}
 }
@@ -435,14 +445,14 @@ function getScheduledGroupLabel(
 ): string {
 	switch (code) {
 		case "past":
-			return context.translate("services.filter.groupLabels.scheduled.past", "Past scheduled");
+			return context.translate(
+				"services.filter.groupLabels.scheduled.past",
+				"Past scheduled"
+			);
 		case "today":
 			return context.translate("services.filter.groupLabels.scheduled.today", "Today");
 		case "tomorrow":
-			return context.translate(
-				"services.filter.groupLabels.scheduled.tomorrow",
-				"Tomorrow"
-			);
+			return context.translate("services.filter.groupLabels.scheduled.tomorrow", "Tomorrow");
 		case "nextSevenDays":
 			return context.translate(
 				"services.filter.groupLabels.scheduled.nextSevenDays",

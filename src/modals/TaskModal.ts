@@ -96,11 +96,11 @@ import {
 	createTaskModalTitleTextarea,
 	type TaskModalTitleInputElement,
 } from "./taskModalTitleInput";
-import {
-	collapseTaskModalDetailsLayout,
-	expandTaskModalDetailsLayout,
-} from "./taskModalLayout";
+import { collapseTaskModalDetailsLayout, expandTaskModalDetailsLayout } from "./taskModalLayout";
 import { TaskModalFocusGuards } from "./taskModalFocusGuards";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskModal" });
 
 export abstract class TaskModal extends Modal {
 	plugin: TaskNotesPlugin;
@@ -271,7 +271,7 @@ export abstract class TaskModal extends Modal {
 					allTasks,
 					existingItems: this.blockedByItems,
 					currentPath: this.getCurrentTaskPath(),
-			}),
+				}),
 			onSelect: (selected) => {
 				const dependency: TaskDependency = {
 					uid: formatDependencyLink(this.plugin.app, sourcePath, selected.path),
@@ -706,8 +706,13 @@ export abstract class TaskModal extends Modal {
 		// Use field configuration (always initialized via migration in main.ts)
 		const config = this.plugin.settings.modalFieldsConfig;
 		if (!config) {
-			console.error(
-				"TaskModal: modalFieldsConfig is not initialized. This should never happen."
+			tasknotesLogger.error(
+				"TaskModal: modalFieldsConfig is not initialized. This should never happen.",
+				{
+					category: "configuration",
+					operation:
+						"taskmodal-modalfieldsconfig-not-initialized-this-should-never-happen",
+				}
 			);
 			return;
 		}
@@ -1165,10 +1170,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected removeSubtask(file: TAbstractFile): void {
-		this.selectedSubtaskFiles = removeTaskModalSubtaskFile(
-			this.selectedSubtaskFiles,
-			file
-		);
+		this.selectedSubtaskFiles = removeTaskModalSubtaskFile(this.selectedSubtaskFiles, file);
 		void this.renderSubtasksList();
 	}
 

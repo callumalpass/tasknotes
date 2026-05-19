@@ -14,6 +14,9 @@ import { TriggerConfigService } from "../services/TriggerConfigService";
 import { FileSuggestHelper } from "../suggest/FileSuggestHelper";
 import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/NLPCodeMirrorAutocomplete" });
 
 type ProjectCompletion = {
 	projectMetadata?: ProjectCompletionMetadata;
@@ -341,9 +344,7 @@ async function getFileSuggestions(
 
 					const title = typeof mapped.title === "string" ? mapped.title : "";
 					const aliases = Array.isArray(frontmatter["aliases"])
-						? (frontmatter["aliases"]).filter(
-								(a: unknown) => typeof a === "string"
-							)
+						? frontmatter["aliases"].filter((a: unknown) => typeof a === "string")
 						: [];
 
 					const fileData: ProjectEntry = {
@@ -356,11 +357,7 @@ async function getFileSuggestions(
 						frontmatter,
 					};
 
-					metadataRows = buildProjectMetadataRows(
-						rowConfigs,
-						fileData,
-						resolver
-					);
+					metadataRows = buildProjectMetadataRows(rowConfigs, fileData, resolver);
 				}
 
 				return {
@@ -388,7 +385,11 @@ async function getFileSuggestions(
 			};
 		});
 	} catch (error) {
-		console.error(`Error getting file suggestions for ${propertyId}:`, error);
+		tasknotesLogger.error(`Error getting file suggestions for ${propertyId}:`, {
+			category: "persistence",
+			operation: "getting-file-suggestions",
+			error: error,
+		});
 		return [];
 	}
 }

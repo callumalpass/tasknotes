@@ -6,6 +6,9 @@ import { EventEmitter } from "../utils/EventEmitter";
 import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSSubscriptionService" });
 
 const ICS_RECURRENCE_EXPANSION_WINDOW_MS = 365 * 24 * 60 * 60 * 1000;
 const MAX_RECURRING_ICS_VISIBLE_INSTANCES = 3000;
@@ -104,9 +107,9 @@ export class ICSSubscriptionService extends EventEmitter {
 		// This preserves the calendar date semantics without timezone ambiguity
 		// per iCalendar RFC 5545 specification for VALUE=DATE events
 		if (icalTime.isDate) {
-			const year = icalTime.year.toString().padStart(4, '0');
-			const month = icalTime.month.toString().padStart(2, '0');
-			const day = icalTime.day.toString().padStart(2, '0');
+			const year = icalTime.year.toString().padStart(4, "0");
+			const month = icalTime.month.toString().padStart(2, "0");
+			const day = icalTime.day.toString().padStart(2, "0");
 			return `${year}-${month}-${day}`;
 		}
 
@@ -160,7 +163,11 @@ export class ICSSubscriptionService extends EventEmitter {
 			const data = await this.plugin.loadData();
 			this.subscriptions = data?.icsSubscriptions || [];
 		} catch (error) {
-			console.error("Failed to load ICS subscriptions:", error);
+			tasknotesLogger.error("Failed to load ICS subscriptions:", {
+				category: "provider",
+				operation: "load-ics-subscriptions",
+				error: error,
+			});
 			this.subscriptions = [];
 		}
 	}
@@ -171,7 +178,11 @@ export class ICSSubscriptionService extends EventEmitter {
 			data.icsSubscriptions = this.subscriptions;
 			await this.plugin.saveData(data);
 		} catch (error) {
-			console.error("Failed to save ICS subscriptions:", error);
+			tasknotesLogger.error("Failed to save ICS subscriptions:", {
+				category: "provider",
+				operation: "save-ics-subscriptions",
+				error: error,
+			});
 			throw error;
 		}
 	}
@@ -410,17 +421,17 @@ export class ICSSubscriptionService extends EventEmitter {
 
 			// Second pass: process events
 			vevents.forEach((vevent: ICAL.Component) => {
-					try {
-						const event = new ICAL.Event(vevent);
+				try {
+					const event = new ICAL.Event(vevent);
 
-						// Skip if this is a modified instance (will be handled as part of the recurring series)
-						const recurrenceId = vevent.getFirstPropertyValue("recurrence-id");
+					// Skip if this is a modified instance (will be handled as part of the recurring series)
+					const recurrenceId = vevent.getFirstPropertyValue("recurrence-id");
 					if (recurrenceId) {
 						return;
 					}
 
-						// Skip cancelled events (STATUS:CANCELLED)
-						const status = vevent.getFirstPropertyValue("status");
+					// Skip cancelled events (STATUS:CANCELLED)
+					const status = vevent.getFirstPropertyValue("status");
 					if (typeof status === "string" && status.toUpperCase() === "CANCELLED") {
 						return;
 					}
@@ -430,14 +441,15 @@ export class ICSSubscriptionService extends EventEmitter {
 					// entry carries their own PARTSTAT, so if any attendee is
 					// marked DECLINED the event was almost certainly declined
 					// by the calendar owner.
-						const attendees = vevent.getAllProperties("attendee");
-						if (attendees && attendees.length > 0) {
-							const hasDeclined = attendees.some(
-								(a) => {
-									const partstat = a.getParameter("partstat");
-								return typeof partstat === "string" && partstat.toUpperCase() === "DECLINED";
-							}
-						);
+					const attendees = vevent.getAllProperties("attendee");
+					if (attendees && attendees.length > 0) {
+						const hasDeclined = attendees.some((a) => {
+							const partstat = a.getParameter("partstat");
+							return (
+								typeof partstat === "string" &&
+								partstat.toUpperCase() === "DECLINED"
+							);
+						});
 						if (hasDeclined) {
 							return;
 						}
@@ -480,8 +492,8 @@ export class ICSSubscriptionService extends EventEmitter {
 					if (event.isRecurring()) {
 						// Parse EXDATE (exception dates) - dates to exclude from the recurrence
 						const exdates = new Set<string>();
-							const exdateProp = vevent.getAllProperties("exdate");
-							exdateProp.forEach((prop) => {
+						const exdateProp = vevent.getAllProperties("exdate");
+						exdateProp.forEach((prop) => {
 							const exdateValue = prop.getFirstValue();
 							if (exdateValue) {
 								// Handle both single dates and arrays of dates
@@ -502,7 +514,9 @@ export class ICSSubscriptionService extends EventEmitter {
 						// Generate instances for the next year
 						const iterator = event.iterator(startDate);
 						const maxDate = new ICAL.Time();
-						maxDate.fromJSDate(new Date(Date.now() + ICS_RECURRENCE_EXPANSION_WINDOW_MS)); // One year from now
+						maxDate.fromJSDate(
+							new Date(Date.now() + ICS_RECURRENCE_EXPANSION_WINDOW_MS)
+						); // One year from now
 
 						let occurrence;
 						let occurrenceCount = 0;
@@ -576,13 +590,21 @@ export class ICSSubscriptionService extends EventEmitter {
 						events.push(icsEvent);
 					}
 				} catch (eventError) {
-					console.warn("Failed to parse individual event:", eventError);
+					tasknotesLogger.warn("Failed to parse individual event:", {
+						category: "provider",
+						operation: "parse-individual-event",
+						error: eventError,
+					});
 				}
 			});
 
 			return events;
 		} catch (error) {
-			console.error("Failed to parse ICS data:", error);
+			tasknotesLogger.error("Failed to parse ICS data:", {
+				category: "provider",
+				operation: "parse-ics-data",
+				error: error,
+			});
 			throw new Error("Invalid ICS format");
 		}
 	}
@@ -603,8 +625,9 @@ export class ICSSubscriptionService extends EventEmitter {
 				// No cache exists - trigger immediate fetch
 				if (!this.pendingRefreshes.has(subscription.id)) {
 					this.pendingRefreshes.add(subscription.id);
-					void this.fetchSubscription(subscription.id)
-						.finally(() => this.pendingRefreshes.delete(subscription.id));
+					void this.fetchSubscription(subscription.id).finally(() =>
+						this.pendingRefreshes.delete(subscription.id)
+					);
 				}
 				return;
 			}
@@ -620,15 +643,17 @@ export class ICSSubscriptionService extends EventEmitter {
 				const isStale = now > expiryDate;
 				if (isStale && !this.pendingRefreshes.has(subscription.id)) {
 					this.pendingRefreshes.add(subscription.id);
-					void this.fetchSubscription(subscription.id)
-						.finally(() => this.pendingRefreshes.delete(subscription.id));
+					void this.fetchSubscription(subscription.id).finally(() =>
+						this.pendingRefreshes.delete(subscription.id)
+					);
 				}
 			} else {
 				// Cache is expired beyond grace period - trigger fetch
 				if (!this.pendingRefreshes.has(subscription.id)) {
 					this.pendingRefreshes.add(subscription.id);
-					void this.fetchSubscription(subscription.id)
-						.finally(() => this.pendingRefreshes.delete(subscription.id));
+					void this.fetchSubscription(subscription.id).finally(() =>
+						this.pendingRefreshes.delete(subscription.id)
+					);
 				}
 			}
 		});
@@ -640,11 +665,16 @@ export class ICSSubscriptionService extends EventEmitter {
 		const cache = this.cache.get(subscriptionId);
 		if (!cache) {
 			// No cache exists - trigger immediate fetch for enabled subscriptions
-			const subscription = this.subscriptions.find(sub => sub.id === subscriptionId);
-			if (subscription && subscription.enabled && !this.pendingRefreshes.has(subscriptionId)) {
+			const subscription = this.subscriptions.find((sub) => sub.id === subscriptionId);
+			if (
+				subscription &&
+				subscription.enabled &&
+				!this.pendingRefreshes.has(subscriptionId)
+			) {
 				this.pendingRefreshes.add(subscriptionId);
-				void this.fetchSubscription(subscriptionId)
-					.finally(() => this.pendingRefreshes.delete(subscriptionId));
+				void this.fetchSubscription(subscriptionId).finally(() =>
+					this.pendingRefreshes.delete(subscriptionId)
+				);
 			}
 			return [];
 		}
@@ -658,8 +688,9 @@ export class ICSSubscriptionService extends EventEmitter {
 			// Cache expired beyond grace period - trigger fetch
 			if (!this.pendingRefreshes.has(subscriptionId)) {
 				this.pendingRefreshes.add(subscriptionId);
-				void this.fetchSubscription(subscriptionId)
-					.finally(() => this.pendingRefreshes.delete(subscriptionId));
+				void this.fetchSubscription(subscriptionId).finally(() =>
+					this.pendingRefreshes.delete(subscriptionId)
+				);
 			}
 			return [];
 		}
@@ -668,8 +699,9 @@ export class ICSSubscriptionService extends EventEmitter {
 		const isStale = now > expiryDate;
 		if (isStale && !this.pendingRefreshes.has(subscriptionId)) {
 			this.pendingRefreshes.add(subscriptionId);
-			void this.fetchSubscription(subscriptionId)
-				.finally(() => this.pendingRefreshes.delete(subscriptionId));
+			void this.fetchSubscription(subscriptionId).finally(() =>
+				this.pendingRefreshes.delete(subscriptionId)
+			);
 		}
 
 		return [...cache.events];
@@ -693,13 +725,20 @@ export class ICSSubscriptionService extends EventEmitter {
 			const basePath = adapter.getBasePath();
 			return typeof basePath === "string" && basePath.trim() ? basePath : undefined;
 		} catch (error) {
-			console.warn("Failed to resolve vault base path for local ICS file:", error);
+			tasknotesLogger.warn("Failed to resolve vault base path for local ICS file:", {
+				category: "provider",
+				operation: "resolve-vault-base-path-local-ics-file",
+				error: error,
+			});
 			return undefined;
 		}
 	}
 
 	private normalizePathSeparators(filePath: string): string {
-		return filePath.trim().replace(/\\/g, "/").replace(/^\.\/+/u, "");
+		return filePath
+			.trim()
+			.replace(/\\/g, "/")
+			.replace(/^\.\/+/u, "");
 	}
 
 	private isAbsoluteFilePath(filePath: string): boolean {
@@ -721,7 +760,7 @@ export class ICSSubscriptionService extends EventEmitter {
 		}
 
 		throw new Error(
-			"Local ICS files must be inside the current Obsidian vault. Move the file into the vault or use a vault-relative path such as \"Calendar.ics\"."
+			'Local ICS files must be inside the current Obsidian vault. Move the file into the vault or use a vault-relative path such as "Calendar.ics".'
 		);
 	}
 

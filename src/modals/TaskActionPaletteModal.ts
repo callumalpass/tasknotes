@@ -10,6 +10,9 @@ import {
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { getDatePart } from "../utils/dateUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskActionPaletteModal" });
 
 export interface TaskAction {
 	id: string;
@@ -495,10 +498,11 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 			await action.execute(freshTask, this.plugin, this.targetDate);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error executing action:", {
+			tasknotesLogger.error("Error executing action:", {
+				category: "persistence",
+				operation: "executing-action",
+				details: { actionId: action.id, taskPath: this.task.path },
 				error: errorMessage,
-				actionId: action.id,
-				taskPath: this.task.path,
 			});
 			new Notice(`Failed to execute action: ${errorMessage}`);
 		}

@@ -13,6 +13,9 @@ import TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
 import { appendInternalLink, LinkServices } from "../ui/renderers/linkRenderer";
 import { parseLinkToPath } from "../utils/linkUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/UnscheduledTasksSelectorModal" });
 
 export interface ScheduleTaskOptions {
 	date?: Date;
@@ -90,7 +93,11 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 					!task.scheduled
 			);
 		} catch (error) {
-			console.error("Error loading unscheduled tasks:", error);
+			tasknotesLogger.error("Error loading unscheduled tasks:", {
+				category: "persistence",
+				operation: "loading-unscheduled-tasks",
+				error: error,
+			});
 			this.tasks = [];
 		}
 	}

@@ -9,6 +9,9 @@ import {
 	parseDateToLocal,
 	parseDateToUTC,
 } from "../utils/dateUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Core/Recurrence" });
 
 export type RecurrenceAnchor = "scheduled" | "completion";
 
@@ -115,7 +118,9 @@ function parseUntilFromRecurrence(recurrence: string): Date | null {
 	return new Date(Date.UTC(year, month, day, hour, minute, second, 0));
 }
 
-function getRRuleDtstart(task: Pick<RecurringTaskLike, "recurrence" | "scheduled" | "dateCreated">): Date | null {
+function getRRuleDtstart(
+	task: Pick<RecurringTaskLike, "recurrence" | "scheduled" | "dateCreated">
+): Date | null {
 	if (!task.recurrence) {
 		return null;
 	}
@@ -136,7 +141,9 @@ function getRRuleDtstart(task: Pick<RecurringTaskLike, "recurrence" | "scheduled
 	return null;
 }
 
-function createRRule(task: Pick<RecurringTaskLike, "recurrence" | "scheduled" | "dateCreated">): RRule | null {
+function createRRule(
+	task: Pick<RecurringTaskLike, "recurrence" | "scheduled" | "dateCreated">
+): RRule | null {
 	if (!task.recurrence || typeof task.recurrence !== "string") {
 		return null;
 	}
@@ -214,9 +221,11 @@ export function isDueByRRule(task: RecurringTaskLike, date: Date): boolean {
 
 			return occurrences.length > 0;
 		} catch (error) {
-			console.error("Error evaluating rrule:", error, {
-				task: task.title,
-				recurrence: task.recurrence,
+			tasknotesLogger.error("Error evaluating rrule:", {
+				category: "validation",
+				operation: "evaluating-rrule",
+				details: { task: task.title, recurrence: task.recurrence },
+				error: error,
 			});
 			return true;
 		}
@@ -236,7 +245,7 @@ export function getEffectiveTaskStatus(
 
 	const dateStr = formatDateForStorage(date);
 	const completedDates = Array.isArray(task.complete_instances) ? task.complete_instances : [];
-	return completedDates.includes(dateStr) ? (completedStatus || "done") : (task.status || "open");
+	return completedDates.includes(dateStr) ? completedStatus || "done" : task.status || "open";
 }
 
 export function shouldShowRecurringTaskOnDate(task: RecurringTaskLike, targetDate: Date): boolean {
@@ -300,9 +309,11 @@ export function generateRecurringInstances(
 
 			return rrule.between(utcStartDate, utcEndDate, true);
 		} catch (error) {
-			console.error("Error generating recurring instances:", error, {
-				task: task.title,
-				recurrence: task.recurrence,
+			tasknotesLogger.error("Error generating recurring instances:", {
+				category: "internal",
+				operation: "generating-recurring-instances",
+				details: { task: task.title, recurrence: task.recurrence },
+				error: error,
 			});
 		}
 	}
@@ -350,9 +361,11 @@ export function getFiniteRecurringInstanceCount(
 
 		return instances.length > 0 ? instances.length : null;
 	} catch (error) {
-		console.error("Error counting finite recurring instances:", error, {
-			task: task.title,
-			recurrence: task.recurrence,
+		tasknotesLogger.error("Error counting finite recurring instances:", {
+			category: "internal",
+			operation: "counting-finite-recurring-instances",
+			details: { task: task.title, recurrence: task.recurrence },
+			error: error,
 		});
 		return null;
 	}
@@ -389,8 +402,11 @@ function getNextScheduledBasedOccurrence(task: RecurringTaskLike): Date | null {
 
 		return null;
 	} catch (error) {
-		console.error("Error calculating next scheduled-based occurrence:", error, {
-			task: task.title,
+		tasknotesLogger.error("Error calculating next scheduled-based occurrence:", {
+			category: "internal",
+			operation: "calculating-next-scheduled-based-occurrence",
+			details: { task: task.title },
+			error: error,
 		});
 		return null;
 	}
@@ -424,8 +440,11 @@ function getNextCompletionBasedOccurrence(task: RecurringTaskLike): Date | null 
 
 		return null;
 	} catch (error) {
-		console.error("Error calculating completion-based recurrence:", error, {
-			task: task.title,
+		tasknotesLogger.error("Error calculating completion-based recurrence:", {
+			category: "internal",
+			operation: "calculating-completion-based-recurrence",
+			details: { task: task.title },
+			error: error,
 		});
 		return null;
 	}
@@ -445,7 +464,14 @@ export function getNextUncompletedOccurrence(task: RecurringTaskLike): Date | nu
 export function updateToNextScheduledOccurrence(
 	task: Pick<
 		RecurringTaskLike,
-		"title" | "recurrence" | "scheduled" | "due" | "dateCreated" | "recurrence_anchor" | "complete_instances" | "skipped_instances"
+		| "title"
+		| "recurrence"
+		| "scheduled"
+		| "due"
+		| "dateCreated"
+		| "recurrence_anchor"
+		| "complete_instances"
+		| "skipped_instances"
 	>,
 	maintainDueOffset = true
 ): { scheduled: string | null; due: string | null } {
@@ -469,7 +495,11 @@ export function updateToNextScheduledOccurrence(
 				}
 			}
 		} catch (error) {
-			console.error("Error calculating next due date with offset:", error);
+			tasknotesLogger.error("Error calculating next due date with offset:", {
+				category: "validation",
+				operation: "calculating-next-due-date-offset",
+				error: error,
+			});
 		}
 
 		if (task.scheduled && task.scheduled.includes("T")) {
@@ -507,7 +537,12 @@ export function getRecurrenceDisplayText(recurrence: string): string {
 
 		return "rrule";
 	} catch (error) {
-		console.error("Error converting recurrence to display text:", error, { recurrence });
+		tasknotesLogger.error("Error converting recurrence to display text:", {
+			category: "validation",
+			operation: "converting-recurrence-display-text",
+			details: { recurrence },
+			error: error,
+		});
 		return "rrule";
 	}
 }
@@ -531,7 +566,12 @@ export function addDTSTARTToRecurrenceRule(
 	try {
 		return `DTSTART:${formatDtstartValue(sourceDateString)};${task.recurrence}`;
 	} catch (error) {
-		console.error("Error parsing date for DTSTART:", error, { sourceDateString });
+		tasknotesLogger.error("Error parsing date for DTSTART:", {
+			category: "validation",
+			operation: "parsing-date-dtstart",
+			details: { sourceDateString },
+			error: error,
+		});
 		return null;
 	}
 }
@@ -548,7 +588,12 @@ export function updateDTSTARTInRecurrenceRule(recurrence: string, dateStr: strin
 		}
 		return `DTSTART:${dtstartValue};${recurrence}`;
 	} catch (error) {
-		console.error("Error updating DTSTART in recurrence rule:", error, { dateStr });
+		tasknotesLogger.error("Error updating DTSTART in recurrence rule:", {
+			category: "internal",
+			operation: "updating-dtstart-recurrence-rule",
+			details: { dateStr },
+			error: error,
+		});
 		return null;
 	}
 }
@@ -592,10 +637,11 @@ export function addDTSTARTToRecurrenceRuleWithDraggedTime(
 
 		return `DTSTART:${dtstartValue};${task.recurrence}`;
 	} catch (error) {
-		console.error("Error parsing date for DTSTART with dragged time:", error, {
-			sourceDateString,
-			draggedStart,
-			allDay,
+		tasknotesLogger.error("Error parsing date for DTSTART with dragged time:", {
+			category: "validation",
+			operation: "parsing-date-dtstart-dragged-time",
+			details: { sourceDateString, draggedStart, allDay },
+			error: error,
 		});
 		return null;
 	}
@@ -643,12 +689,12 @@ function computeNextDue(
 	return formatLikeExisting(input.due, nextDueDate);
 }
 
-function buildRRuleFromRecurrence(
-	recurrence: string,
-	sourceDate: string
-): RRule | null {
+function buildRRuleFromRecurrence(recurrence: string, sourceDate: string): RRule | null {
 	try {
-		const rruleString = recurrence.replace(/DTSTART:[^;]+;?/, "").replace(/^;/, "").trim();
+		const rruleString = recurrence
+			.replace(/DTSTART:[^;]+;?/, "")
+			.replace(/^;/, "")
+			.trim();
 		if (!rruleString.includes("FREQ=")) {
 			return null;
 		}
@@ -691,12 +737,10 @@ function recalculateRecurringScheduleInternal(
 		}
 	} else {
 		updatedRecurrence =
-			addDTSTARTToRecurrenceRule(
-				{
-					recurrence: updatedRecurrence,
-					scheduled: sourceDate,
-				}
-			) || updatedRecurrence;
+			addDTSTARTToRecurrenceRule({
+				recurrence: updatedRecurrence,
+				scheduled: sourceDate,
+			}) || updatedRecurrence;
 	}
 
 	const referenceDate =
@@ -716,8 +760,17 @@ function recalculateRecurringScheduleInternal(
 
 	if (completionDay) {
 		let guard = 0;
-		while (nextOccurrence && nextOccurrence.getTime() < completionDay.getTime() && guard < 1000) {
-			nextOccurrence = getNextOccurrenceDate(updatedRecurrence, sourceDate, nextOccurrence, false);
+		while (
+			nextOccurrence &&
+			nextOccurrence.getTime() < completionDay.getTime() &&
+			guard < 1000
+		) {
+			nextOccurrence = getNextOccurrenceDate(
+				updatedRecurrence,
+				sourceDate,
+				nextOccurrence,
+				false
+			);
 			guard++;
 		}
 	}
@@ -726,7 +779,12 @@ function recalculateRecurringScheduleInternal(
 	while (nextOccurrence && processedGuard < 1000) {
 		const dateStr = formatDateForStorage(nextOccurrence);
 		if (!processedDates.has(dateStr)) break;
-		nextOccurrence = getNextOccurrenceDate(updatedRecurrence, sourceDate, nextOccurrence, false);
+		nextOccurrence = getNextOccurrenceDate(
+			updatedRecurrence,
+			sourceDate,
+			nextOccurrence,
+			false
+		);
 		processedGuard++;
 	}
 
@@ -744,8 +802,12 @@ export function completeRecurringTask(
 	input: RecurrenceCompletionInput
 ): RecurrenceCompletionResult {
 	const completionDate = input.completionDate;
-	const completeInstances = Array.isArray(input.completeInstances) ? [...input.completeInstances] : [];
-	const skippedInstances = Array.isArray(input.skippedInstances) ? [...input.skippedInstances] : [];
+	const completeInstances = Array.isArray(input.completeInstances)
+		? [...input.completeInstances]
+		: [];
+	const skippedInstances = Array.isArray(input.skippedInstances)
+		? [...input.skippedInstances]
+		: [];
 
 	if (!completeInstances.includes(completionDate)) {
 		completeInstances.push(completionDate);

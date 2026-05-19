@@ -7,6 +7,9 @@ import {
 } from "../services/CalendarProvider";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { format } from "date-fns";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/CalendarEventCreationModal" });
 
 export interface CalendarEventCreationOptions {
 	start: Date;
@@ -227,7 +230,11 @@ export class CalendarEventCreationModal extends Modal {
 			this.options.onEventCreated?.();
 			this.close();
 		} catch (error) {
-			console.error("[TaskNotes] Error creating calendar event:", error);
+			tasknotesLogger.error("[TaskNotes] Error creating calendar event:", {
+				category: "provider",
+				operation: "creating-calendar-event",
+				error: error,
+			});
 			new Notice(
 				this.translate("modals.calendarEventCreation.error", {
 					message: error instanceof Error ? error.message : String(error),

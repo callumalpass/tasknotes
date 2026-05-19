@@ -14,15 +14,9 @@ import {
 	splitFrontmatterAndBody,
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";
-import {
-	formatDependencyLink,
-	resolveDependencyEntry,
-} from "../utils/dependencyUtils";
+import { formatDependencyLink, resolveDependencyEntry } from "../utils/dependencyUtils";
 import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
-import {
-	getCurrentDateString,
-	getCurrentTimestamp,
-} from "../utils/dateUtils";
+import { getCurrentDateString, getCurrentTimestamp } from "../utils/dateUtils";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
@@ -65,6 +59,9 @@ import {
 	buildBlockingRelationshipPathChanges,
 	computeBlockedByUpdate,
 } from "./task-service/taskBlockingRelationships";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService" });
 
 export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
@@ -118,10 +115,14 @@ export class TaskService {
 			return true;
 		}
 
-		console.warn("Failed to delete archived task from Google Calendar during archive:", {
-			taskPath: task.path,
-			eventId: task.googleCalendarEventId,
-		});
+		tasknotesLogger.warn(
+			"Failed to delete archived task from Google Calendar during archive:",
+			{
+				category: "provider",
+				operation: "delete-archived-task-google-calendar-archive",
+				details: { taskPath: task.path, eventId: task.googleCalendarEventId },
+			}
+		);
 		return false;
 	}
 
@@ -278,7 +279,10 @@ export class TaskService {
 			} else {
 				// Template file not found, log error and return details as-is
 
-				console.warn(`Task body template not found: ${templatePath}`);
+				tasknotesLogger.warn(`Task body template not found: ${templatePath}`, {
+					category: "persistence",
+					operation: "task-body-template-not-found",
+				});
 				new Notice(
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
 				);
@@ -289,7 +293,11 @@ export class TaskService {
 			}
 		} catch (error) {
 			// Error reading template, log error and return details as-is
-			console.error("Error reading task body template:", error);
+			tasknotesLogger.error("Error reading task body template:", {
+				category: "persistence",
+				operation: "reading-task-body-template",
+				error: error,
+			});
 			new Notice(
 				this.translate("services.task.notices.templateReadError", {
 					template: defaults.bodyTemplate,
@@ -316,11 +324,15 @@ export class TaskService {
 			return await this.updateProperty(task, "status", newStatus);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error toggling task status:", {
+			tasknotesLogger.error("Error toggling task status:", {
+				category: "persistence",
+				operation: "toggling-task-status",
+				details: {
+					stack: error instanceof Error ? error.stack : undefined,
+					taskPath: task.path,
+					currentStatus: task.status,
+				},
 				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				taskPath: task.path,
-				currentStatus: task.status,
 			});
 
 			throw new Error(`Failed to toggle task status: ${errorMessage}`);
@@ -375,7 +387,8 @@ export class TaskService {
 					completedDateField,
 					isRecurring: !!freshTask.recurrence,
 					normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
-					isCompletedStatus: (status) => this.plugin.statusManager.isCompletedStatus(status),
+					isCompletedStatus: (status) =>
+						this.plugin.statusManager.isCompletedStatus(status),
 					currentDateString: getCurrentDateString(),
 				});
 			});
@@ -395,12 +408,16 @@ export class TaskService {
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 
-			console.error("Error updating task property:", {
+			tasknotesLogger.error("Error updating task property:", {
+				category: "persistence",
+				operation: "updating-task-property",
+				details: {
+					stack: error instanceof Error ? error.stack : undefined,
+					taskPath: task.path,
+					property,
+					value,
+				},
 				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				taskPath: task.path,
-				property,
-				value,
 			});
 
 			throw new Error(`Failed to update task property: ${errorMessage}`);
@@ -514,7 +531,11 @@ export class TaskService {
 				const errorMessage =
 					moveError instanceof Error ? moveError.message : String(moveError);
 				const operation = movePlan.operation;
-				console.error(`Error moving ${operation} task:`, errorMessage);
+				tasknotesLogger.error(`Error moving ${operation} task:`, {
+					category: "persistence",
+					operation: "moving",
+					details: { value: errorMessage },
+				});
 				new Notice(
 					this.translate("services.task.notices.moveTaskFailed", {
 						operation,
@@ -548,7 +569,11 @@ export class TaskService {
 			}
 			this.plugin.cacheManager.updateTaskInfoInCache(updatedTask.path, updatedTask);
 		} catch (cacheError) {
-			console.error("Error updating cache for archived task:", cacheError);
+			tasknotesLogger.error("Error updating cache for archived task:", {
+				category: "stale-data",
+				operation: "updating-cache-archived-task",
+				error: cacheError,
+			});
 		}
 
 		// Step 4: Notify system of change
@@ -571,7 +596,11 @@ export class TaskService {
 					});
 				}
 			} catch (error) {
-				console.warn("Failed to trigger webhook for task archive/unarchive:", error);
+				tasknotesLogger.warn("Failed to trigger webhook for task archive/unarchive:", {
+					category: "provider",
+					operation: "trigger-webhook-task-archive-unarchive",
+					error: error,
+				});
 			}
 		}
 
@@ -584,12 +613,21 @@ export class TaskService {
 				this.plugin.taskCalendarSyncService
 					.updateTaskInCalendar(updatedTask, task)
 					.catch((error) => {
-						console.warn("Failed to sync unarchived task to Google Calendar:", error);
+						tasknotesLogger.warn("Failed to sync unarchived task to Google Calendar:", {
+							category: "provider",
+							operation: "sync-unarchived-task-google-calendar",
+							error: error,
+						});
 					});
 			} else if (!archiveCalendarCleanupComplete && this.hasGoogleCalendarLink(updatedTask)) {
-				console.warn(
+				tasknotesLogger.warn(
 					"Archived task still has Google Calendar links and will need retry cleanup:",
-					updatedTask.path
+					{
+						category: "provider",
+						operation:
+							"archived-task-still-has-google-calendar-links-and-will-need-retry-cleanup",
+						details: { value: updatedTask.path },
+					}
 				);
 			}
 		}
@@ -642,7 +680,11 @@ export class TaskService {
 			}
 			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
-			console.error("Error updating cache for time tracking start:", cacheError);
+			tasknotesLogger.error("Error updating cache for time tracking start:", {
+				category: "stale-data",
+				operation: "updating-cache-time-tracking-start",
+				error: cacheError,
+			});
 		}
 
 		// Step 4: Notify system of change
@@ -660,7 +702,11 @@ export class TaskService {
 					session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for time tracking start:", error);
+				tasknotesLogger.warn("Failed to trigger webhook for time tracking start:", {
+					category: "provider",
+					operation: "trigger-webhook-time-tracking-start",
+					error: error,
+				});
 			}
 		}
 
@@ -713,7 +759,11 @@ export class TaskService {
 			}
 			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
-			console.error("Error updating cache for time tracking stop:", cacheError);
+			tasknotesLogger.error("Error updating cache for time tracking stop:", {
+				category: "stale-data",
+				operation: "updating-cache-time-tracking-stop",
+				error: cacheError,
+			});
 		}
 
 		// Step 4: Notify system of change
@@ -731,7 +781,11 @@ export class TaskService {
 					session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1],
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for time tracking stop:", error);
+				tasknotesLogger.warn("Failed to trigger webhook for time tracking stop:", {
+					category: "provider",
+					operation: "trigger-webhook-time-tracking-stop",
+					error: error,
+				});
 			}
 		}
 
@@ -822,12 +876,7 @@ export class TaskService {
 			resolveDependencyPath: (sourcePath, entry) =>
 				resolveDependencyEntry(this.plugin.app, sourcePath, entry)?.path ?? null,
 			formatDependencyLink: (sourcePath, targetPath, useMarkdownLinks) =>
-				formatDependencyLink(
-					this.plugin.app,
-					sourcePath,
-					targetPath,
-					useMarkdownLinks
-				),
+				formatDependencyLink(this.plugin.app, sourcePath, targetPath, useMarkdownLinks),
 		});
 	}
 
@@ -849,7 +898,11 @@ export class TaskService {
 						task.googleCalendarEventId
 					);
 				} catch (error) {
-					console.warn("Failed to delete task from Google Calendar:", error);
+					tasknotesLogger.warn("Failed to delete task from Google Calendar:", {
+						category: "provider",
+						operation: "delete-task-google-calendar",
+						error: error,
+					});
 				}
 			}
 
@@ -871,16 +924,24 @@ export class TaskService {
 				try {
 					await this.webhookNotifier.triggerWebhook("task.deleted", { task });
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task deletion:", error);
+					tasknotesLogger.warn("Failed to trigger webhook for task deletion:", {
+						category: "provider",
+						operation: "trigger-webhook-task-deletion",
+						error: error,
+					});
 				}
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 
-			console.error("Error deleting task:", {
+			tasknotesLogger.error("Error deleting task:", {
+				category: "persistence",
+				operation: "deleting-task",
+				details: {
+					stack: error instanceof Error ? error.stack : undefined,
+					taskPath: task.path,
+				},
 				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				taskPath: task.path,
 			});
 
 			throw new Error(`Failed to delete task: ${errorMessage}`);
@@ -920,8 +981,7 @@ export class TaskService {
 			freshTask,
 			targetDate: this.getRecurringTaskActionDate(freshTask, date),
 			currentTimestamp: getCurrentTimestamp(),
-			maintainDueDateOffsetInRecurring:
-				this.plugin.settings.maintainDueDateOffsetInRecurring,
+			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
 
@@ -982,7 +1042,11 @@ export class TaskService {
 			}
 			this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
 		} catch (cacheError) {
-			console.error("Error updating cache for recurring task:", cacheError);
+			tasknotesLogger.error("Error updating cache for recurring task:", {
+				category: "stale-data",
+				operation: "updating-cache-recurring-task",
+				error: cacheError,
+			});
 		}
 
 		// Step 4: Notify system of change
@@ -1001,7 +1065,11 @@ export class TaskService {
 					targetDate: targetDate,
 				});
 			} catch (webhookError) {
-				console.error("Error triggering recurring task completion webhook:", webhookError);
+				tasknotesLogger.error("Error triggering recurring task completion webhook:", {
+					category: "provider",
+					operation: "triggering-recurring-task-completion-webhook",
+					error: webhookError,
+				});
 			}
 		}
 
@@ -1011,7 +1079,14 @@ export class TaskService {
 			this.plugin.taskCalendarSyncService
 				.updateTaskInCalendar(updatedTask, freshTask)
 				.catch((error) => {
-					console.warn("Failed to sync recurring task update to Google Calendar:", error);
+					tasknotesLogger.warn(
+						"Failed to sync recurring task update to Google Calendar:",
+						{
+							category: "provider",
+							operation: "sync-recurring-task-update-google-calendar",
+							error: error,
+						}
+					);
 				});
 		}
 
@@ -1049,8 +1124,7 @@ export class TaskService {
 			freshTask,
 			targetDate: this.getRecurringTaskActionDate(freshTask, date),
 			currentTimestamp: getCurrentTimestamp(),
-			maintainDueDateOffsetInRecurring:
-				this.plugin.settings.maintainDueDateOffsetInRecurring,
+			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 		});
 		const { updatedTask, dateStr, newSkipped, targetDate } = recurringPlan;
 
@@ -1080,7 +1154,11 @@ export class TaskService {
 			}
 			this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
 		} catch (cacheError) {
-			console.error("Error updating cache for skipped recurring task:", cacheError);
+			tasknotesLogger.error("Error updating cache for skipped recurring task:", {
+				category: "stale-data",
+				operation: "updating-cache-skipped-recurring-task",
+				error: cacheError,
+			});
 		}
 
 		// Step 5: Notify system of change
@@ -1099,7 +1177,11 @@ export class TaskService {
 					targetDate: targetDate,
 				});
 			} catch (webhookError) {
-				console.error("Error triggering recurring task skip webhook:", webhookError);
+				tasknotesLogger.error("Error triggering recurring task skip webhook:", {
+					category: "provider",
+					operation: "triggering-recurring-task-skip-webhook",
+					error: webhookError,
+				});
 			}
 		}
 
@@ -1109,7 +1191,11 @@ export class TaskService {
 			this.plugin.taskCalendarSyncService
 				.updateTaskInCalendar(updatedTask, freshTask)
 				.catch((error) => {
-					console.warn("Failed to sync recurring task skip to Google Calendar:", error);
+					tasknotesLogger.warn("Failed to sync recurring task skip to Google Calendar:", {
+						category: "provider",
+						operation: "sync-recurring-task-skip-google-calendar",
+						error: error,
+					});
 				});
 		}
 
@@ -1127,11 +1213,7 @@ export class TaskService {
 		}
 
 		// Step 1: Construct new state in memory
-		const deletePlan = buildDeleteTimeEntryPlan(
-			task,
-			timeEntryIndex,
-			getCurrentTimestamp()
-		);
+		const deletePlan = buildDeleteTimeEntryPlan(task, timeEntryIndex, getCurrentTimestamp());
 		const { updatedTask } = deletePlan;
 
 		// Step 2: Persist to file
@@ -1155,7 +1237,11 @@ export class TaskService {
 			}
 			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
-			console.error("Error updating cache for time entry deletion:", cacheError);
+			tasknotesLogger.error("Error updating cache for time entry deletion:", {
+				category: "stale-data",
+				operation: "updating-cache-time-entry-deletion",
+				error: cacheError,
+			});
 		}
 
 		// Step 4: Notify system of change

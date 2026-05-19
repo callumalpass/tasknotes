@@ -3,6 +3,9 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { EVENT_TASK_UPDATED } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/SettingsLifecycleService" });
 
 interface TaskUpdateEventData {
 	path?: string;
@@ -99,7 +102,10 @@ export class SettingsLifecycleService {
 		this.plugin.priorityManager?.updatePriorities(this.plugin.settings.customPriorities);
 
 		if (cacheSettingsChanged) {
-			console.debug("Cache-related settings changed, updating cache configuration");
+			tasknotesLogger.debug("Cache-related settings changed, updating cache configuration", {
+				category: "configuration",
+				operation: "cache-related-settings-changed-updating-cache-configuration",
+			});
 			this.plugin.cacheManager.updateConfig(this.plugin.settings);
 			this.plugin.dependencyCache?.updateConfig(this.plugin.settings);
 			this.updatePreviousCacheSettings();
@@ -187,7 +193,11 @@ export class SettingsLifecycleService {
 				new Notice(`Auto-stopped time tracking for: ${updatedTask.title}`);
 			}
 		} catch (error) {
-			console.error("Error auto-stopping time tracking:", error);
+			tasknotesLogger.error("Error auto-stopping time tracking:", {
+				category: "configuration",
+				operation: "auto-stopping-time-tracking",
+				error: error,
+			});
 		}
 	}
 

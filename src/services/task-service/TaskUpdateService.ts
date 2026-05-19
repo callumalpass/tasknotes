@@ -1,11 +1,6 @@
 import { TFile, type Vault } from "obsidian";
 import { AutoArchiveService } from "../AutoArchiveService";
-import {
-	EVENT_TASK_UPDATED,
-	IWebhookNotifier,
-	StatusConfig,
-	TaskInfo,
-} from "../../types";
+import { EVENT_TASK_UPDATED, IWebhookNotifier, StatusConfig, TaskInfo } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
 import { splitFrontmatterAndBody } from "../../utils/helpers";
 import { generateUniqueFilename } from "../../utils/filenameGenerator";
@@ -18,9 +13,15 @@ import {
 	normalizeTaskUpdateInput,
 	type TaskUpdateFieldMapper,
 } from "./taskUpdatePlanning";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService/TaskUpdateService" });
 
 interface TaskUpdateFileManager {
-	processFrontMatter(file: TFile, fn: (frontmatter: Record<string, unknown>) => void): Promise<void>;
+	processFrontMatter(
+		file: TFile,
+		fn: (frontmatter: Record<string, unknown>) => void
+	): Promise<void>;
 	renameFile(file: TFile, newPath: string): Promise<void>;
 }
 
@@ -131,8 +132,7 @@ export class TaskUpdateService {
 			const recurrenceUpdates = buildTaskUpdateRecurrenceUpdates({
 				originalTask,
 				updates: taskUpdates,
-				maintainDueDateOffsetInRecurring:
-					runtime.settings.maintainDueDateOffsetInRecurring,
+				maintainDueDateOffsetInRecurring: runtime.settings.maintainDueDateOffsetInRecurring,
 			});
 			const normalizedDetails = normalizeTaskUpdateDetails(taskUpdates);
 			let finalTags: string[] | undefined;
@@ -208,16 +208,19 @@ export class TaskUpdateService {
 					const keyChanges: Partial<TaskInfo> = {};
 					if (taskUpdates.title !== undefined) keyChanges.title = taskUpdates.title;
 					if (taskUpdates.status !== undefined) keyChanges.status = taskUpdates.status;
-					if (taskUpdates.priority !== undefined) keyChanges.priority = taskUpdates.priority;
+					if (taskUpdates.priority !== undefined)
+						keyChanges.priority = taskUpdates.priority;
 					if (Object.keys(keyChanges).length > 0) {
 						await runtime.cacheManager.waitForFreshTaskData(finalFile);
 					}
 				}
 				runtime.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
 			} catch (cacheError) {
-				console.error("Error updating task cache:", {
+				tasknotesLogger.error("Error updating task cache:", {
+					category: "stale-data",
+					operation: "updating-task-cache",
+					details: { taskPath: newPath },
 					error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-					taskPath: newPath,
 				});
 			}
 
@@ -228,9 +231,11 @@ export class TaskUpdateService {
 					updatedTask,
 				});
 			} catch (eventError) {
-				console.error("Error emitting task update event:", {
+				tasknotesLogger.error("Error emitting task update event:", {
+					category: "validation",
+					operation: "emitting-task-update-event",
+					details: { taskPath: newPath },
 					error: eventError instanceof Error ? eventError.message : String(eventError),
-					taskPath: newPath,
 				});
 			}
 
@@ -252,7 +257,11 @@ export class TaskUpdateService {
 						});
 					}
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task update:", error);
+					tasknotesLogger.warn("Failed to trigger webhook for task update:", {
+						category: "provider",
+						operation: "trigger-webhook-task-update",
+						error: error,
+					});
 				}
 			}
 
@@ -269,7 +278,11 @@ export class TaskUpdateService {
 							);
 
 				syncPromise.catch((error) => {
-					console.warn("Failed to sync task update to Google Calendar:", error);
+					tasknotesLogger.warn("Failed to sync task update to Google Calendar:", {
+						category: "provider",
+						operation: "sync-task-update-google-calendar",
+						error: error,
+					});
 				});
 			}
 
@@ -277,11 +290,15 @@ export class TaskUpdateService {
 			return updatedTask;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error updating task:", {
+			tasknotesLogger.error("Error updating task:", {
+				category: "validation",
+				operation: "updating-task",
+				details: {
+					stack: error instanceof Error ? error.stack : undefined,
+					taskPath: originalTask.path,
+					updates,
+				},
 				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				taskPath: originalTask.path,
-				updates,
 			});
 			throw new Error(`Failed to update task: ${errorMessage}`);
 		}
@@ -301,7 +318,9 @@ export class TaskUpdateService {
 		}
 
 		try {
-			const statusConfig = this.deps.runtime.statusManager.getStatusConfig(updatedTask.status);
+			const statusConfig = this.deps.runtime.statusManager.getStatusConfig(
+				updatedTask.status
+			);
 			if (!statusConfig) {
 				return;
 			}
@@ -312,7 +331,11 @@ export class TaskUpdateService {
 				await this.deps.autoArchiveService.cancelAutoArchive(updatedTask.path);
 			}
 		} catch (error) {
-			console.warn("Failed to handle auto-archive for status change:", error);
+			tasknotesLogger.warn("Failed to handle auto-archive for status change:", {
+				category: "validation",
+				operation: "handle-auto-archive-status-change",
+				error: error,
+			});
 		}
 	}
 }

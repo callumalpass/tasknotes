@@ -9,6 +9,9 @@ import {
 	TaskInfo,
 } from "../types";
 import { TaskLinkWidget } from "./TaskLinkWidget";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/ReadingModeTaskLinkProcessor" });
 
 export interface ReadingModeSourceLink {
 	target: string;
@@ -129,8 +132,7 @@ function createSourceLinkCursor(): ReadingModeSourceLinkCursor {
 	return { index: 0 };
 }
 
-const READING_MODE_TASK_LINK_SELECTOR =
-	".task-inline-preview--reading-mode[data-task-path]";
+const READING_MODE_TASK_LINK_SELECTOR = ".task-inline-preview--reading-mode[data-task-path]";
 
 interface ReadingModeTaskUpdatePayload {
 	path?: string;
@@ -286,29 +288,27 @@ export class ReadingModeTaskLinkProcessor {
 			// Create a task widget and replace the link
 			await this.replaceWithTaskWidget(linkEl, taskInfo, linkPath, hasExplicitAlias);
 		} catch (error) {
-			console.debug("Error processing link in reading mode:", error);
+			tasknotesLogger.debug("Error processing link in reading mode:", {
+				category: "persistence",
+				operation: "processing-link-reading-mode",
+				error: error,
+			});
 		}
 	}
 
 	private setupEventListeners(): void {
 		this.plugin.registerEvent(
-			this.plugin.emitter.on(
-				EVENT_TASK_UPDATED,
-				(data?: ReadingModeTaskUpdatePayload) => {
-					this.scheduleReadingModeWidgetRefresh(
-						data?.path ?? data?.updatedTask?.path ?? data?.task?.path
-					);
-				}
-			)
+			this.plugin.emitter.on(EVENT_TASK_UPDATED, (data?: ReadingModeTaskUpdatePayload) => {
+				this.scheduleReadingModeWidgetRefresh(
+					data?.path ?? data?.updatedTask?.path ?? data?.task?.path
+				);
+			})
 		);
 
 		this.plugin.registerEvent(
-			this.plugin.emitter.on(
-				EVENT_TASK_DELETED,
-				(data?: ReadingModeTaskUpdatePayload) => {
-					this.scheduleReadingModeWidgetRefresh(data?.path);
-				}
-			)
+			this.plugin.emitter.on(EVENT_TASK_DELETED, (data?: ReadingModeTaskUpdatePayload) => {
+				this.scheduleReadingModeWidgetRefresh(data?.path);
+			})
 		);
 
 		this.plugin.registerEvent(
@@ -390,12 +390,7 @@ export class ReadingModeTaskLinkProcessor {
 				const originalLinkPath = widgetEl.dataset.originalLinkPath || taskInfo.path;
 				const originalText = widgetEl.dataset.originalText || taskInfo.title;
 				const displayText = widgetEl.dataset.displayText || undefined;
-				const widget = new TaskLinkWidget(
-					taskInfo,
-					this.plugin,
-					originalText,
-					displayText
-				);
+				const widget = new TaskLinkWidget(taskInfo, this.plugin, originalText, displayText);
 				const refreshedElement = this.createReadingModeWidget(
 					widget,
 					taskInfo,
@@ -453,13 +448,15 @@ export class ReadingModeTaskLinkProcessor {
 	private resolveLinkPath(linkPath: string, sourcePath: string): string | null {
 		try {
 			// Use Obsidian's metadata cache to resolve the link - it handles relative paths safely
-			const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
-				linkPath,
-				sourcePath
-			);
+			const file = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath);
 			return file?.path || null;
 		} catch (error) {
-			console.debug("Error resolving link path:", linkPath, error);
+			tasknotesLogger.debug("Error resolving link path:", {
+				category: "persistence",
+				operation: "resolving-link-path",
+				details: { value: linkPath },
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -489,7 +486,12 @@ export class ReadingModeTaskLinkProcessor {
 
 			return null;
 		} catch (error) {
-			console.debug("Error getting task info for:", filePath, error);
+			tasknotesLogger.debug("Error getting task info for:", {
+				category: "persistence",
+				operation: "getting-task-info",
+				details: { value: filePath },
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -542,7 +544,11 @@ export class ReadingModeTaskLinkProcessor {
 			// Replace the original link with the widget
 			linkEl.parentNode?.replaceChild(widgetElement, linkEl);
 		} catch (error) {
-			console.error("Error replacing wikilink with task widget:", error);
+			tasknotesLogger.error("Error replacing wikilink with task widget:", {
+				category: "persistence",
+				operation: "replacing-wikilink-task-widget",
+				error: error,
+			});
 		}
 	}
 

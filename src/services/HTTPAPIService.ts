@@ -20,6 +20,9 @@ import { MCPService } from "./MCPService";
 import { parseJSONBody, sendJSONResponse, setCORSHeaders } from "../api/httpUtils";
 import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
 import { parseRequestUrl } from "../api/httpTypes";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/HTTPAPIService" });
 
 type HttpModuleLike = {
 	createServer(handler: (req: HTTPRequestLike, res: HTTPResponseLike) => void): HTTPServerLike;
@@ -222,7 +225,11 @@ export class HTTPAPIService implements IWebhookNotifier {
 				this.sendResponse(res, 404, this.errorResponse("Not found"));
 			}
 		} catch (error: unknown) {
-			console.error("API Error:", error);
+			tasknotesLogger.error("API Error:", {
+				category: "provider",
+				operation: "api",
+				error: error,
+			});
 			this.sendResponse(res, 500, this.errorResponse("Internal server error"));
 		}
 	}
@@ -251,7 +258,11 @@ export class HTTPAPIService implements IWebhookNotifier {
 				const http = require("http") as HttpModuleLike;
 				this.server = http.createServer((req, res) => {
 					this.handleRequest(req, res).catch((error) => {
-						console.error("Request handling error:", error);
+						tasknotesLogger.error("Request handling error:", {
+							category: "provider",
+							operation: "request-handling",
+							error: error,
+						});
 						this.sendResponse(res, 500, this.errorResponse("Internal server error"));
 					});
 				});
@@ -261,7 +272,11 @@ export class HTTPAPIService implements IWebhookNotifier {
 				});
 
 				this.server.on("error", (err) => {
-					console.error("API server error:", err);
+					tasknotesLogger.error("API server error:", {
+						category: "provider",
+						operation: "api-server",
+						error: err,
+					});
 					reject(err);
 				});
 			} catch (error) {

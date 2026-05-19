@@ -6,6 +6,9 @@ import { ICSNoteCreationModal } from "../modals/ICSNoteCreationModal";
 import { openFileSelector } from "../modals/FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
 import { ContextMenu } from "./ContextMenu";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Components/ICSEventContextMenu" });
 
 export interface ICSEventContextMenuOptions {
 	icsEvent: ICSEvent;
@@ -199,7 +202,11 @@ export class ICSEventContextMenu {
 
 			modal.open();
 		} catch (error) {
-			console.error("Error opening creation modal:", error);
+			tasknotesLogger.error("Error opening creation modal:", {
+				category: "provider",
+				operation: "opening-creation-modal",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.ics.notices.creationFailure"));
 		}
 	}
@@ -209,8 +216,8 @@ export class ICSEventContextMenu {
 			async () => {
 				openFileSelector(
 					this.options.plugin,
-						(file) => {
-							if (!(file instanceof TAbstractFile)) return;
+					(file) => {
+						if (!(file instanceof TAbstractFile)) return;
 
 						void SafeAsync.execute(
 							async () => {

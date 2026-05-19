@@ -3,6 +3,9 @@ import { EventRef, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { parseLinkToPath } from "../utils/linkUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ProjectSubtasksService" });
 
 export class ProjectSubtasksService {
 	private plugin: TaskNotesPlugin;
@@ -95,7 +98,11 @@ export class ProjectSubtasksService {
 
 			return linkedTasks;
 		} catch (error) {
-			console.error("Error getting tasks linked to project:", error);
+			tasknotesLogger.error("Error getting tasks linked to project:", {
+				category: "persistence",
+				operation: "getting-tasks-linked-project",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -153,7 +160,11 @@ export class ProjectSubtasksService {
 
 			return false;
 		} catch (error) {
-			console.error("Error checking if link is from projects field:", error);
+			tasknotesLogger.error("Error checking if link is from projects field:", {
+				category: "persistence",
+				operation: "checking-if-link-projects-field",
+				error: error,
+			});
 			return false;
 		}
 	}
@@ -234,7 +245,11 @@ export class ProjectSubtasksService {
 
 			this.indexLastBuilt = Date.now();
 		} catch (error) {
-			console.error("Error building project index:", error);
+			tasknotesLogger.error("Error building project index:", {
+				category: "persistence",
+				operation: "building-project-index",
+				error: error,
+			});
 		}
 	}
 

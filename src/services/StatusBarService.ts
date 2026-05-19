@@ -11,6 +11,9 @@ import { RequestDeduplicator } from "../utils/RequestDeduplicator";
 import { EventRef, setIcon, setTooltip, TFile } from "obsidian";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { formatPomodoroTime } from "../utils/pomodoroTime";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/StatusBarService" });
 
 export class StatusBarService {
 	private plugin: import("../main").default;
@@ -118,7 +121,11 @@ export class StatusBarService {
 
 			this.renderStatusBar(trackedTasks);
 		} catch (error) {
-			console.error("Error updating status bar:", error);
+			tasknotesLogger.error("Error updating status bar:", {
+				category: "internal",
+				operation: "updating-status-bar",
+				error: error,
+			});
 		}
 	}
 
@@ -395,7 +402,11 @@ export class StatusBarService {
 				});
 			}
 		} catch (error) {
-			console.error("Error handling status bar click:", error);
+			tasknotesLogger.error("Error handling status bar click:", {
+				category: "internal",
+				operation: "handling-status-bar-click",
+				error: error,
+			});
 		}
 	}
 

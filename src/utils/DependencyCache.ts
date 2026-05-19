@@ -5,6 +5,9 @@ import { normalizeDependencyList, resolveDependencyEntry } from "./dependencyUti
 import { TaskNotesSettings } from "../types/settings";
 import { StatusManager } from "../services/StatusManager";
 import { isPathInExcludedFolder, parseExcludedFolders } from "./pathExclusions";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/DependencyCache" });
 
 export const EVENT_DEPENDENCY_CACHE_CHANGED = "dependency-cache-changed";
 
@@ -214,7 +217,7 @@ export class DependencyCache extends Events {
 	 * Resolve a project reference string to a file path
 	 */
 	private resolveProjectReference(sourcePath: string, projectRef: string): string | null {
-		if (!projectRef || typeof projectRef !== 'string') {
+		if (!projectRef || typeof projectRef !== "string") {
 			return null;
 		}
 
@@ -271,7 +274,7 @@ export class DependencyCache extends Events {
 			const projects = Array.isArray(project) ? project : [project];
 
 			for (const proj of projects) {
-				if (typeof proj === 'string') {
+				if (typeof proj === "string") {
 					// Resolve the project reference to a full file path
 					const resolvedPath = this.resolveProjectReference(path, proj);
 					if (resolvedPath && this.isValidFile(resolvedPath)) {
@@ -401,7 +404,14 @@ export class DependencyCache extends Events {
 	 */
 	getBlockingTaskPaths(taskPath: string): string[] {
 		if (!this.indexesBuilt) {
-			console.warn("DependencyCache: getBlockingTaskPaths called before indexes built, building now...");
+			tasknotesLogger.warn(
+				"DependencyCache: getBlockingTaskPaths called before indexes built, building now...",
+				{
+					category: "stale-data",
+					operation:
+						"dependencycache-getblockingtaskpaths-called-indexes-built-building-now",
+				}
+			);
 			// Build synchronously by reading current state
 			this.buildIndexesSync();
 		}
@@ -414,7 +424,14 @@ export class DependencyCache extends Events {
 	 */
 	getBlockedTaskPaths(taskPath: string): string[] {
 		if (!this.indexesBuilt) {
-			console.warn("DependencyCache: getBlockedTaskPaths called before indexes built, building now...");
+			tasknotesLogger.warn(
+				"DependencyCache: getBlockedTaskPaths called before indexes built, building now...",
+				{
+					category: "stale-data",
+					operation:
+						"dependencycache-getblockedtaskpaths-called-indexes-built-building-now",
+				}
+			);
 			this.buildIndexesSync();
 		}
 
@@ -485,7 +502,14 @@ export class DependencyCache extends Events {
 	 */
 	getTasksReferencingProject(projectPath: string): string[] {
 		if (!this.indexesBuilt) {
-			console.warn("DependencyCache: getTasksReferencingProject called before indexes built, building now...");
+			tasknotesLogger.warn(
+				"DependencyCache: getTasksReferencingProject called before indexes built, building now...",
+				{
+					category: "stale-data",
+					operation:
+						"dependencycache-gettasksreferencingproject-called-indexes-built-building-now",
+				}
+			);
 			this.buildIndexesSync();
 		}
 		const tasks = this.projectReferences.get(projectPath);
@@ -497,7 +521,14 @@ export class DependencyCache extends Events {
 	 */
 	isFileUsedAsProject(filePath: string): boolean {
 		if (!this.indexesBuilt) {
-			console.warn("DependencyCache: isFileUsedAsProject called before indexes built, building now...");
+			tasknotesLogger.warn(
+				"DependencyCache: isFileUsedAsProject called before indexes built, building now...",
+				{
+					category: "stale-data",
+					operation:
+						"dependencycache-isfileusedasproject-called-indexes-built-building-now",
+				}
+			);
 			this.buildIndexesSync();
 		}
 		return this.projectReferences.has(filePath);

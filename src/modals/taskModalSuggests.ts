@@ -2,6 +2,9 @@ import { AbstractInputSuggest, App } from "obsidian";
 import TaskNotesPlugin from "../main";
 import type { UserMappedField } from "../types/settings";
 import { filterTagsForTaskModalSuggestions } from "../utils/taskTagFiltering";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskModalSuggests" });
 
 interface ContextSuggestion {
 	value: string;
@@ -240,7 +243,11 @@ export class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> 
 
 				return Array.from(values).sort();
 			} catch (error) {
-				console.error("Error getting user field values:", error);
+				tasknotesLogger.error("Error getting user field values:", {
+					category: "persistence",
+					operation: "getting-user-field-values",
+					error: error,
+				});
 				return [];
 			}
 		};

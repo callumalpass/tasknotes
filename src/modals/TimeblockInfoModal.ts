@@ -23,6 +23,9 @@ import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColor
 import { configureThemeColorInput } from "../settings/components/CardComponent";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { TaskInfo } from "../types";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TimeblockInfoModal" });
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 
@@ -168,10 +171,10 @@ export class TimeblockInfoModal extends Modal {
 					.setTooltip(this.translate("modals.timeblockInfo.addAttachmentTooltip"))
 					.onClick(() => {
 						openFileSelector(
-								this.plugin,
-								(file) => {
-									if (file instanceof TAbstractFile) this.addAttachment(file);
-								},
+							this.plugin,
+							(file) => {
+								if (file instanceof TAbstractFile) this.addAttachment(file);
+							},
 							{
 								placeholder: "Search files or type to create new...",
 								filter: "all",
@@ -365,7 +368,11 @@ export class TimeblockInfoModal extends Modal {
 				}
 			);
 		} catch (error) {
-			console.error("Failed to open task selector for timeblock edit:", error);
+			tasknotesLogger.error("Failed to open task selector for timeblock edit:", {
+				category: "persistence",
+				operation: "open-task-selector-timeblock-edit",
+				error: error,
+			});
 			new Notice("Failed to open task selector");
 		}
 	}
@@ -470,7 +477,11 @@ export class TimeblockInfoModal extends Modal {
 			new Notice(this.translate("notices.timeblockUpdatedSuccess", { title }));
 			this.close();
 		} catch (error) {
-			console.error("Error updating timeblock:", error);
+			tasknotesLogger.error("Error updating timeblock:", {
+				category: "internal",
+				operation: "updating-timeblock",
+				error: error,
+			});
 			new Notice(this.translate("notices.timeblockUpdateFailed"));
 		}
 	}
@@ -506,7 +517,11 @@ export class TimeblockInfoModal extends Modal {
 				try {
 					frontmatter = parseFrontmatterRecord(frontmatterText);
 				} catch (error) {
-					console.error("Error parsing existing frontmatter:", error);
+					tasknotesLogger.error("Error parsing existing frontmatter:", {
+						category: "validation",
+						operation: "parsing-existing-frontmatter",
+						error: error,
+					});
 					frontmatter = {};
 				}
 			}
@@ -560,7 +575,11 @@ export class TimeblockInfoModal extends Modal {
 			);
 			this.close();
 		} catch (error) {
-			console.error("Error deleting timeblock:", error);
+			tasknotesLogger.error("Error deleting timeblock:", {
+				category: "internal",
+				operation: "deleting-timeblock",
+				error: error,
+			});
 			new Notice(this.translate("notices.timeblockDeleteFailed"));
 		}
 	}
@@ -673,7 +692,11 @@ export class TimeblockInfoModal extends Modal {
 				try {
 					frontmatter = parseFrontmatterRecord(frontmatterText);
 				} catch (error) {
-					console.error("Error parsing existing frontmatter:", error);
+					tasknotesLogger.error("Error parsing existing frontmatter:", {
+						category: "validation",
+						operation: "parsing-existing-frontmatter",
+						error: error,
+					});
 					frontmatter = {};
 				}
 			}

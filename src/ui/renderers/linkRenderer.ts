@@ -3,6 +3,9 @@
 
 import { App, TFile, Notice } from "obsidian";
 import { parseLinkToPath } from "../../utils/linkUtils";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/Renderers/LinkRenderer" });
 
 export type LinkNavigateHandler = (
 	normalizedPath: string,
@@ -107,7 +110,12 @@ export function appendInternalLink(
 					new Notice(`Note "${displayText}" not found`);
 				}
 			} catch (error) {
-				console.error("[TaskNotes] Error opening internal link:", { filePath, error });
+				tasknotesLogger.error("[TaskNotes] Error opening internal link:", {
+					category: "internal",
+					operation: "opening-internal-link",
+					details: { filePath },
+					error: error,
+				});
 				if (showErrorNotices) {
 					new Notice(`Failed to open note "${displayText}"`);
 				}
@@ -129,7 +137,12 @@ export function appendInternalLink(
 						void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
 					}
 				} catch (error) {
-					console.error("[TaskNotes] Error opening internal link:", { filePath, error });
+					tasknotesLogger.error("[TaskNotes] Error opening internal link:", {
+						category: "internal",
+						operation: "opening-internal-link",
+						details: { filePath },
+						error: error,
+					});
 				}
 			})();
 		}

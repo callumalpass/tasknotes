@@ -9,6 +9,9 @@ import {
 import { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/GeneralTab" });
 
 /**
  * Renders the General tab - foundational settings for task identification and storage
@@ -31,61 +34,67 @@ export function renderGeneralTab(
 			description: translate("settings.general.taskStorage.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
-					name: translate("settings.general.taskStorage.defaultFolder.name"),
-					desc: translate("settings.general.taskStorage.defaultFolder.description"),
-					placeholder: "TaskNotes",
-					getValue: () => plugin.settings.tasksFolder,
-					setValue: async (value: string) => {
-						plugin.settings.tasksFolder = value;
-						save();
-					},
-					ariaLabel: "Default folder path for new tasks",
-				})
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate("settings.general.taskStorage.defaultFolder.name"),
+						desc: translate("settings.general.taskStorage.defaultFolder.description"),
+						placeholder: "TaskNotes",
+						getValue: () => plugin.settings.tasksFolder,
+						setValue: async (value: string) => {
+							plugin.settings.tasksFolder = value;
+							save();
+						},
+						ariaLabel: "Default folder path for new tasks",
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
-					name: translate("settings.features.instantConvert.folder.name"),
-					desc: translate("settings.features.instantConvert.folder.description"),
-					placeholder: "{{currentNotePath}}",
-					getValue: () => plugin.settings.inlineTaskConvertFolder,
-					setValue: async (value: string) => {
-						plugin.settings.inlineTaskConvertFolder = value;
-						save();
-					},
-					ariaLabel: "Folder for inline-created tasks",
-				})
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate("settings.features.instantConvert.folder.name"),
+						desc: translate("settings.features.instantConvert.folder.description"),
+						placeholder: "{{currentNotePath}}",
+						getValue: () => plugin.settings.inlineTaskConvertFolder,
+						setValue: async (value: string) => {
+							plugin.settings.inlineTaskConvertFolder = value;
+							save();
+						},
+						ariaLabel: "Folder for inline-created tasks",
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.general.taskStorage.moveArchived.name"),
-					desc: translate("settings.general.taskStorage.moveArchived.description"),
-					getValue: () => plugin.settings.moveArchivedTasks,
-					setValue: async (value: boolean) => {
-						plugin.settings.moveArchivedTasks = value;
-						save();
-						// Re-render to show/hide archive folder setting
-						renderGeneralTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.general.taskStorage.moveArchived.name"),
+						desc: translate("settings.general.taskStorage.moveArchived.description"),
+						getValue: () => plugin.settings.moveArchivedTasks,
+						setValue: async (value: boolean) => {
+							plugin.settings.moveArchivedTasks = value;
+							save();
+							// Re-render to show/hide archive folder setting
+							renderGeneralTab(container, plugin, save);
+						},
+					})
 			);
 
 			if (plugin.settings.moveArchivedTasks) {
-				group.addSetting((setting) =>
-					void configureTextSetting(setting, {
-						name: translate("settings.general.taskStorage.archiveFolder.name"),
-						desc: translate("settings.general.taskStorage.archiveFolder.description"),
-						placeholder: "TaskNotes/Archive",
-						getValue: () => plugin.settings.archiveFolder,
-						setValue: async (value: string) => {
-							plugin.settings.archiveFolder = value;
-							save();
-						},
-						ariaLabel: "Archive folder path",
-					})
+				group.addSetting(
+					(setting) =>
+						void configureTextSetting(setting, {
+							name: translate("settings.general.taskStorage.archiveFolder.name"),
+							desc: translate(
+								"settings.general.taskStorage.archiveFolder.description"
+							),
+							placeholder: "TaskNotes/Archive",
+							getValue: () => plugin.settings.archiveFolder,
+							setValue: async (value: string) => {
+								plugin.settings.archiveFolder = value;
+								save();
+							},
+							ariaLabel: "Archive folder path",
+						})
 				);
 			}
 		}
@@ -99,131 +108,143 @@ export function renderGeneralTab(
 			description: translate("settings.general.taskIdentification.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.general.taskIdentification.identifyBy.name"),
-					desc: translate("settings.general.taskIdentification.identifyBy.description"),
-					options: [
-						{
-							value: "tag",
-							label: translate(
-								"settings.general.taskIdentification.identifyBy.options.tag"
-							),
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.general.taskIdentification.identifyBy.name"),
+						desc: translate(
+							"settings.general.taskIdentification.identifyBy.description"
+						),
+						options: [
+							{
+								value: "tag",
+								label: translate(
+									"settings.general.taskIdentification.identifyBy.options.tag"
+								),
+							},
+							{
+								value: "property",
+								label: translate(
+									"settings.general.taskIdentification.identifyBy.options.property"
+								),
+							},
+						],
+						getValue: () => plugin.settings.taskIdentificationMethod,
+						setValue: async (value: string) => {
+							plugin.settings.taskIdentificationMethod = value as "tag" | "property";
+							save();
+							// Re-render to show/hide conditional fields
+							renderGeneralTab(container, plugin, save);
 						},
-						{
-							value: "property",
-							label: translate(
-								"settings.general.taskIdentification.identifyBy.options.property"
-							),
-						},
-					],
-					getValue: () => plugin.settings.taskIdentificationMethod,
-					setValue: async (value: string) => {
-						plugin.settings.taskIdentificationMethod = value as "tag" | "property";
-						save();
-						// Re-render to show/hide conditional fields
-						renderGeneralTab(container, plugin, save);
-					},
-					ariaLabel: "Task identification method",
-				})
+						ariaLabel: "Task identification method",
+					})
 			);
 
 			if (plugin.settings.taskIdentificationMethod === "tag") {
-				group.addSetting((setting) =>
-					void configureTextSetting(setting, {
-						name: translate("settings.general.taskIdentification.taskTag.name"),
-						desc: translate("settings.general.taskIdentification.taskTag.description"),
-						placeholder: "task",
-						getValue: () => plugin.settings.taskTag,
-						setValue: async (value: string) => {
-							plugin.settings.taskTag = value;
-							save();
-						},
-						ariaLabel: "Task identification tag",
-					})
+				group.addSetting(
+					(setting) =>
+						void configureTextSetting(setting, {
+							name: translate("settings.general.taskIdentification.taskTag.name"),
+							desc: translate(
+								"settings.general.taskIdentification.taskTag.description"
+							),
+							placeholder: "task",
+							getValue: () => plugin.settings.taskTag,
+							setValue: async (value: string) => {
+								plugin.settings.taskTag = value;
+								save();
+							},
+							ariaLabel: "Task identification tag",
+						})
 				);
 
-				group.addSetting((setting) =>
-					void configureToggleSetting(setting, {
-						name: translate(
-							"settings.general.taskIdentification.hideIdentifyingTags.name"
-						),
-						desc: translate(
-							"settings.general.taskIdentification.hideIdentifyingTags.description"
-						),
-						getValue: () => plugin.settings.hideIdentifyingTagsInCards,
-						setValue: async (value: boolean) => {
-							plugin.settings.hideIdentifyingTagsInCards = value;
-							save();
-							renderGeneralTab(container, plugin, save);
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate(
+								"settings.general.taskIdentification.hideIdentifyingTags.name"
+							),
+							desc: translate(
+								"settings.general.taskIdentification.hideIdentifyingTags.description"
+							),
+							getValue: () => plugin.settings.hideIdentifyingTagsInCards,
+							setValue: async (value: boolean) => {
+								plugin.settings.hideIdentifyingTagsInCards = value;
+								save();
+								renderGeneralTab(container, plugin, save);
+							},
+						})
 				);
 
 				if (plugin.settings.hideIdentifyingTagsInCards) {
-					group.addSetting((setting) =>
-						void configureDropdownSetting(setting, {
-							name: translate(
-								"settings.general.taskIdentification.hideIdentifyingTagsMode.name"
-							),
-							desc: translate(
-								"settings.general.taskIdentification.hideIdentifyingTagsMode.description"
-							),
-							options: [
-								{
-									value: "all",
-									label: translate(
-										"settings.general.taskIdentification.hideIdentifyingTagsMode.options.all"
-									),
+					group.addSetting(
+						(setting) =>
+							void configureDropdownSetting(setting, {
+								name: translate(
+									"settings.general.taskIdentification.hideIdentifyingTagsMode.name"
+								),
+								desc: translate(
+									"settings.general.taskIdentification.hideIdentifyingTagsMode.description"
+								),
+								options: [
+									{
+										value: "all",
+										label: translate(
+											"settings.general.taskIdentification.hideIdentifyingTagsMode.options.all"
+										),
+									},
+									{
+										value: "exact-only",
+										label: translate(
+											"settings.general.taskIdentification.hideIdentifyingTagsMode.options.exactOnly"
+										),
+									},
+								],
+								getValue: () => plugin.settings.hideIdentifyingTagsMode,
+								setValue: async (value: string) => {
+									plugin.settings.hideIdentifyingTagsMode =
+										value as HideIdentifyingTagsMode;
+									save();
 								},
-								{
-									value: "exact-only",
-									label: translate(
-										"settings.general.taskIdentification.hideIdentifyingTagsMode.options.exactOnly"
-									),
-								},
-							],
-							getValue: () => plugin.settings.hideIdentifyingTagsMode,
-							setValue: async (value: string) => {
-								plugin.settings.hideIdentifyingTagsMode =
-									value as HideIdentifyingTagsMode;
-								save();
-							},
-							ariaLabel: "Hidden identification tag scope",
-						})
+								ariaLabel: "Hidden identification tag scope",
+							})
 					);
 				}
 			} else {
-				group.addSetting((setting) =>
-					void configureTextSetting(setting, {
-						name: translate("settings.general.taskIdentification.taskProperty.name"),
-						desc: translate(
-							"settings.general.taskIdentification.taskProperty.description"
-						),
-						placeholder: "category",
-						getValue: () => plugin.settings.taskPropertyName,
-						setValue: async (value: string) => {
-							plugin.settings.taskPropertyName = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureTextSetting(setting, {
+							name: translate(
+								"settings.general.taskIdentification.taskProperty.name"
+							),
+							desc: translate(
+								"settings.general.taskIdentification.taskProperty.description"
+							),
+							placeholder: "category",
+							getValue: () => plugin.settings.taskPropertyName,
+							setValue: async (value: string) => {
+								plugin.settings.taskPropertyName = value;
+								save();
+							},
+						})
 				);
 
-				group.addSetting((setting) =>
-					void configureTextSetting(setting, {
-						name: translate(
-							"settings.general.taskIdentification.taskPropertyValue.name"
-						),
-						desc: translate(
-							"settings.general.taskIdentification.taskPropertyValue.description"
-						),
-						placeholder: "task",
-						getValue: () => plugin.settings.taskPropertyValue,
-						setValue: async (value: string) => {
-							plugin.settings.taskPropertyValue = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureTextSetting(setting, {
+							name: translate(
+								"settings.general.taskIdentification.taskPropertyValue.name"
+							),
+							desc: translate(
+								"settings.general.taskIdentification.taskPropertyValue.description"
+							),
+							placeholder: "task",
+							getValue: () => plugin.settings.taskPropertyValue,
+							setValue: async (value: string) => {
+								plugin.settings.taskPropertyValue = value;
+								save();
+							},
+						})
 				);
 			}
 		}
@@ -546,7 +567,11 @@ export function renderGeneralTab(
 									);
 									await plugin.app.workspace.openLinkText(filePath, "", true);
 								} catch (error) {
-									console.error("Error exporting all views to Bases:", error);
+									tasknotesLogger.error("Error exporting all views to Bases:", {
+										category: "provider",
+										operation: "exporting-all-views-bases",
+										error: error,
+									});
 									new Notice(
 										translate(
 											"settings.integrations.basesIntegration.exportV3Views.error",
@@ -568,20 +593,21 @@ export function renderGeneralTab(
 		container,
 		{ heading: translate("settings.general.folderManagement.header") },
 		(group) => {
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
-					name: translate("settings.general.folderManagement.excludedFolders.name"),
-					desc: translate(
-						"settings.general.folderManagement.excludedFolders.description"
-					),
-					placeholder: "Templates, Archive",
-					getValue: () => plugin.settings.excludedFolders,
-					setValue: async (value: string) => {
-						plugin.settings.excludedFolders = value;
-						save();
-					},
-					ariaLabel: "Excluded folder paths",
-				})
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate("settings.general.folderManagement.excludedFolders.name"),
+						desc: translate(
+							"settings.general.folderManagement.excludedFolders.description"
+						),
+						placeholder: "Templates, Archive",
+						getValue: () => plugin.settings.excludedFolders,
+						setValue: async (value: string) => {
+							plugin.settings.excludedFolders = value;
+							save();
+						},
+						ariaLabel: "Excluded folder paths",
+					})
 			);
 		}
 	);
@@ -606,19 +632,20 @@ export function renderGeneralTab(
 			description: translate("settings.features.uiLanguage.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.features.uiLanguage.dropdown.name"),
-					desc: translate("settings.features.uiLanguage.dropdown.description"),
-					options: uiLanguageOptions,
-					getValue: () => plugin.settings.uiLanguage ?? "system",
-					setValue: async (value: string) => {
-						plugin.settings.uiLanguage = value;
-						plugin.i18n.setLocale(value);
-						save();
-						renderGeneralTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.features.uiLanguage.dropdown.name"),
+						desc: translate("settings.features.uiLanguage.dropdown.description"),
+						options: uiLanguageOptions,
+						getValue: () => plugin.settings.uiLanguage ?? "system",
+						setValue: async (value: string) => {
+							plugin.settings.uiLanguage = value;
+							plugin.i18n.setLocale(value);
+							save();
+							renderGeneralTab(container, plugin, save);
+						},
+					})
 			);
 		}
 	);
@@ -633,18 +660,19 @@ export function renderGeneralTab(
 				description: translate("settings.general.frontmatter.description"),
 			},
 			(group) => {
-				group.addSetting((setting) =>
-					void configureToggleSetting(setting, {
-						name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
-						desc: translate(
-							"settings.general.frontmatter.useMarkdownLinks.description"
-						),
-						getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
-						setValue: async (value: boolean) => {
-							plugin.settings.useFrontmatterMarkdownLinks = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
+							desc: translate(
+								"settings.general.frontmatter.useMarkdownLinks.description"
+							),
+							getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
+							setValue: async (value: boolean) => {
+								plugin.settings.useFrontmatterMarkdownLinks = value;
+								save();
+							},
+						})
 				);
 			}
 		);
@@ -660,16 +688,17 @@ export function renderGeneralTab(
 			}),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.general.releaseNotes.showOnUpdate.name"),
-					desc: translate("settings.general.releaseNotes.showOnUpdate.description"),
-					getValue: () => plugin.settings.showReleaseNotesOnUpdate ?? true,
-					setValue: async (value: boolean) => {
-						plugin.settings.showReleaseNotesOnUpdate = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.general.releaseNotes.showOnUpdate.name"),
+						desc: translate("settings.general.releaseNotes.showOnUpdate.description"),
+						getValue: () => plugin.settings.showReleaseNotesOnUpdate ?? true,
+						setValue: async (value: boolean) => {
+							plugin.settings.showReleaseNotesOnUpdate = value;
+							save();
+						},
+					})
 			);
 
 			group.addSetting((setting) => {

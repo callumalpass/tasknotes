@@ -2,6 +2,9 @@ import { TaskInfo, TaskSortKey, SortDirection } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
 import { isBeforeDateTimeAware } from "../../utils/dateUtils";
 import { compareUserFieldValues, findUserFieldById } from "./userFieldValues";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/FilterService/FilterTaskSorting" });
 
 export type FilterTaskSortingContext = {
 	userFields?: TaskNotesSettings["userFields"];
@@ -41,7 +44,12 @@ export function compareFilterTaskDates(dateA?: string, dateB?: string): number {
 		}
 		return 0;
 	} catch (error) {
-		console.error("Error comparing dates time-aware:", { dateA, dateB, error });
+		tasknotesLogger.error("Error comparing dates time-aware:", {
+			category: "validation",
+			operation: "comparing-dates-time-aware",
+			details: { dateA, dateB },
+			error: error,
+		});
 		return dateA.localeCompare(dateB);
 	}
 }

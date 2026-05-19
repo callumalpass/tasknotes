@@ -4,11 +4,12 @@ import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../typ
 import { OAUTH_CONSTANTS } from "./constants";
 import { OAuthNotConfiguredError, TokenExpiredError, TokenRefreshError } from "./errors";
 import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/OAuthService" });
 
 type HttpModuleLike = {
-	createServer(
-		handler?: (req: HTTPRequestLike, res: HTTPResponseLike) => void
-	): HTTPServerLike;
+	createServer(handler?: (req: HTTPRequestLike, res: HTTPResponseLike) => void): HTTPServerLike;
 };
 
 let cachedHttpModule: HttpModuleLike | null = null;
@@ -188,7 +189,11 @@ export class OAuthService {
 				config.redirectUri = originalRedirectUri;
 			}
 		} catch (error) {
-			console.error(`OAuth authentication failed for ${provider}:`, error);
+			tasknotesLogger.error(`OAuth authentication failed for ${provider}:`, {
+				category: "provider",
+				operation: "oauth-authentication",
+				error: error,
+			});
 			new Notice(`Failed to connect to ${provider}: ${error.message}`);
 			throw error;
 		} finally {
@@ -306,7 +311,11 @@ export class OAuthService {
 			// Use .once() instead of .on() since we only need to handle the first error
 			// This prevents memory leaks from accumulating error listeners
 			this.callbackServer.once("error", (error: Error) => {
-				console.error("OAuth callback server error:", error);
+				tasknotesLogger.error("OAuth callback server error:", {
+					category: "provider",
+					operation: "oauth-callback-server",
+					error: error,
+				});
 				reject(error);
 			});
 
@@ -465,10 +474,26 @@ export class OAuthService {
 
 			// Check if request failed
 			if (response.status !== 200) {
-				console.error("Token exchange failed with status:", response.status);
-				console.error("Response headers:", response.headers);
-				console.error("Response body:", response.text);
-				console.error("Response JSON:", response.json);
+				tasknotesLogger.error("Token exchange failed with status:", {
+					category: "provider",
+					operation: "token-exchange-status",
+					details: { value: response.status },
+				});
+				tasknotesLogger.error("Response headers:", {
+					category: "provider",
+					operation: "response-headers",
+					details: { value: response.headers },
+				});
+				tasknotesLogger.error("Response body:", {
+					category: "provider",
+					operation: "response-body",
+					details: { value: response.text },
+				});
+				tasknotesLogger.error("Response JSON:", {
+					category: "provider",
+					operation: "response-json",
+					details: { value: response.json },
+				});
 				throw new Error(
 					`Token exchange failed with status ${response.status}: ${response.text || JSON.stringify(response.json)}`
 				);
@@ -491,7 +516,11 @@ export class OAuthService {
 				tokenType: data.token_type || "Bearer",
 			};
 		} catch (error) {
-			console.error("Token exchange error:", error);
+			tasknotesLogger.error("Token exchange error:", {
+				category: "provider",
+				operation: "token-exchange",
+				error: error,
+			});
 			throw new Error(`Failed to exchange code for tokens: ${error.message}`);
 		}
 	}
@@ -553,10 +582,11 @@ export class OAuthService {
 					// Response body might not be JSON
 				}
 
-				console.error("[OAuth] Token refresh failed:", {
-					status: response.status,
+				tasknotesLogger.error("[OAuth] Token refresh failed:", {
+					category: "provider",
+					operation: "token-refresh",
+					details: { status: response.status, description: oauthErrorDescription },
 					error: oauthError,
-					description: oauthErrorDescription,
 				});
 
 				// Check if this is an irrecoverable token error
@@ -613,7 +643,11 @@ export class OAuthService {
 				throw error;
 			}
 
-			console.error("Token refresh failed:", error);
+			tasknotesLogger.error("Token refresh failed:", {
+				category: "provider",
+				operation: "token-refresh",
+				error: error,
+			});
 			throw new Error(`Failed to refresh ${provider} token: ${error.message}`);
 		}
 	}
@@ -744,7 +778,10 @@ export class OAuthService {
 		const config = this.configs[provider];
 
 		if (!config.revocationEndpoint) {
-			console.warn(`No revocation endpoint configured for ${provider}`);
+			tasknotesLogger.warn(`No revocation endpoint configured for ${provider}`, {
+				category: "provider",
+				operation: "no-revocation-endpoint-configured",
+			});
 			return;
 		}
 
@@ -765,7 +802,11 @@ export class OAuthService {
 			// Token revocation completed (status 200 or token already invalid)
 		} catch (error) {
 			// Don't throw - revocation failure shouldn't prevent disconnection
-			console.error(`[OAuth] Failed to revoke token for ${provider}:`, error);
+			tasknotesLogger.error(`[OAuth] Failed to revoke token for ${provider}:`, {
+				category: "provider",
+				operation: "revoke-token",
+				error: error,
+			});
 		}
 	}
 

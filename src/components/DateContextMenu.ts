@@ -3,6 +3,9 @@ import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
 import { addDaysToDateTime } from "../utils/dateUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Components/DateContextMenu" });
 
 type SubmenuMenuItem = {
 	setSubmenu(): Menu;
@@ -332,7 +335,10 @@ export class DateContextMenu {
 		// Use app from options or plugin
 		const app = this.options.app || this.options.plugin?.app;
 		if (!app) {
-			console.error("DateContextMenu: No app instance available for modal");
+			tasknotesLogger.error("DateContextMenu: No app instance available for modal", {
+				category: "validation",
+				operation: "datecontextmenu-no-app-instance-modal",
+			});
 			return;
 		}
 

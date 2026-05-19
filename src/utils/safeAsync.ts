@@ -1,4 +1,7 @@
 import { Notice } from "obsidian";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/SafeAsync" });
 
 /**
  * Utility for safe async operations with error boundaries
@@ -27,7 +30,11 @@ export class SafeAsync {
 			return await operation();
 		} catch (error) {
 			if (logError) {
-				console.error(errorMessage, error);
+				tasknotesLogger.error(errorMessage, {
+					category: "provider",
+					operation: "execute-safe-operation",
+					error: error,
+				});
 			}
 
 			if (showNotice) {
@@ -72,7 +79,12 @@ export class SafeAsync {
 				}
 
 				// Final attempt failed
-				console.error(`${errorMessage} after ${maxRetries + 1} attempts:`, lastError);
+				tasknotesLogger.error(`${errorMessage} after ${maxRetries + 1} attempts:`, {
+					category: "provider",
+					operation: "execute-with-retry",
+					details: { attempts: maxRetries + 1 },
+					error: lastError,
+				});
 
 				if (showNotice) {
 					new Notice(`${errorMessage}: ${lastError.message}`);

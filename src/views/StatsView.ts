@@ -17,6 +17,9 @@ import { getTodayLocal } from "../utils/dateUtils";
 import { createTaskCard } from "../ui/TaskCard";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { getProjectDisplayName } from "../utils/linkUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Views/StatsView" });
 
 function isDay(value: number): value is Day {
 	return Number.isInteger(value) && value >= 0 && value <= 6;
@@ -111,9 +114,7 @@ export function normalizeStatsFilters(value: unknown): StatsFilters {
 	}
 
 	const minTimeSpent =
-		typeof record.minTimeSpent === "number"
-			? record.minTimeSpent
-			: Number(record.minTimeSpent);
+		typeof record.minTimeSpent === "number" ? record.minTimeSpent : Number(record.minTimeSpent);
 	if (Number.isFinite(minTimeSpent) && minTimeSpent > 0) {
 		filters.minTimeSpent = Math.floor(minTimeSpent);
 	}
@@ -227,7 +228,11 @@ export class StatsView extends ItemView {
 			}
 			return normalizeStatsFilters(JSON.parse(stored));
 		} catch (error) {
-			console.warn("[TaskNotes] Failed to load Stats view filters:", error);
+			tasknotesLogger.warn("[TaskNotes] Failed to load Stats view filters:", {
+				category: "persistence",
+				operation: "load-stats-view-filters",
+				error: error,
+			});
 			return createDefaultStatsFilters();
 		}
 	}
@@ -239,7 +244,11 @@ export class StatsView extends ItemView {
 				JSON.stringify(this.currentFilters)
 			);
 		} catch (error) {
-			console.warn("[TaskNotes] Failed to save Stats view filters:", error);
+			tasknotesLogger.warn("[TaskNotes] Failed to save Stats view filters:", {
+				category: "persistence",
+				operation: "save-stats-view-filters",
+				error: error,
+			});
 		}
 	}
 
@@ -332,7 +341,11 @@ export class StatsView extends ItemView {
 				results.forEach((result, index) => {
 					if (result.status === "rejected") {
 						const sections = ["overview", "today", "week", "month", "projects"];
-						console.warn(`Failed to update ${sections[index]} stats:`, result.reason);
+						tasknotesLogger.warn(`Failed to update ${sections[index]} stats:`, {
+							category: "validation",
+							operation: "update",
+							details: { value: result.reason },
+						});
 					}
 				});
 			}
@@ -1462,7 +1475,11 @@ export class StatsView extends ItemView {
 			this.currentDrilldownData = drilldownData;
 			this.renderDrilldownContent(content, drilldownData);
 		} catch (error) {
-			console.error("Error loading drill-down data:", error);
+			tasknotesLogger.error("Error loading drill-down data:", {
+				category: "persistence",
+				operation: "loading-drill-down-data",
+				error: error,
+			});
 			content.textContent = this.plugin.i18n.translate("notices.statsLoadingFailed");
 		}
 	}
@@ -1496,7 +1513,11 @@ export class StatsView extends ItemView {
 			this.currentDrilldownData = updatedData;
 			this.renderDrilldownContent(modalContent as HTMLElement, updatedData);
 		} catch (error) {
-			console.error("Error refreshing drill-down modal:", error);
+			tasknotesLogger.error("Error refreshing drill-down modal:", {
+				category: "stale-data",
+				operation: "refreshing-drill-down-modal",
+				error: error,
+			});
 		}
 	}
 
@@ -1518,7 +1539,11 @@ export class StatsView extends ItemView {
 					}
 				}
 			} catch (error) {
-				console.error(`Failed to get task for drill-down: ${path}`, error);
+				tasknotesLogger.error(`Failed to get task for drill-down: ${path}`, {
+					category: "persistence",
+					operation: "get-task-drill-down",
+					error: error,
+				});
 			}
 		}
 

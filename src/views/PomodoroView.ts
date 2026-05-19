@@ -21,6 +21,9 @@ import {
 	getSessionProgressRatio,
 	parsePomodoroDurationInput,
 } from "../utils/pomodoroTime";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Views/PomodoroView" });
 
 export class PomodoroView extends ItemView {
 	plugin: TaskNotesPlugin;
@@ -64,7 +67,11 @@ export class PomodoroView extends ItemView {
 
 	private refreshStats(): void {
 		this.updateStats().catch((error) => {
-			console.error("Failed to update stats:", error);
+			tasknotesLogger.error("Failed to update stats:", {
+				category: "validation",
+				operation: "update-stats",
+				error: error,
+			});
 		});
 	}
 
@@ -795,7 +802,11 @@ export class PomodoroView extends ItemView {
 				{ targetDate }
 			);
 		} catch (error) {
-			console.error("Error opening task selector:", error);
+			tasknotesLogger.error("Error opening task selector:", {
+				category: "persistence",
+				operation: "opening-task-selector",
+				error: error,
+			});
 			new Notice(this.t("views.pomodoro.notices.loadFailed"));
 		}
 	}
@@ -903,7 +914,11 @@ export class PomodoroView extends ItemView {
 				}
 			}
 		} catch (error) {
-			console.error("Error restoring last selected task:", error);
+			tasknotesLogger.error("Error restoring last selected task:", {
+				category: "persistence",
+				operation: "restoring-last-selected-task",
+				error: error,
+			});
 			// Don't let this error stop the render process
 		}
 	}
@@ -947,7 +962,11 @@ export class PomodoroView extends ItemView {
 			}
 			this.updateTaskCardDisplay(null);
 		} catch (error) {
-			console.error("Error updating task button from path:", error);
+			tasknotesLogger.error("Error updating task button from path:", {
+				category: "persistence",
+				operation: "updating-task-button-path",
+				error: error,
+			});
 		}
 	}
 
@@ -1307,7 +1326,11 @@ export class PomodoroView extends ItemView {
 
 			this.updateSessionMeta(this.plugin.pomodoroService.getState());
 		} catch (error) {
-			console.error("Failed to update stats:", error);
+			tasknotesLogger.error("Failed to update stats:", {
+				category: "validation",
+				operation: "update-stats",
+				error: error,
+			});
 			// Fallback to show zeros if stats loading fails
 			if (this.statElements.pomodoros) this.statElements.pomodoros.textContent = "0";
 		}

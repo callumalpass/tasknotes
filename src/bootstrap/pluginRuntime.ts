@@ -13,6 +13,9 @@ import {
 	registerRibbonIcons,
 	registerTaskNotesIcon,
 } from "./pluginBootstrap";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bootstrap/PluginRuntime" });
 
 export async function initializePluginRuntime(plugin: TaskNotesPlugin): Promise<void> {
 	registerTaskNotesIcon();
@@ -36,7 +39,11 @@ export async function cleanupPluginRuntime(plugin: TaskNotesPlugin): Promise<voi
 			unregisterBasesViews(plugin);
 			plugin.basesRegistered = false;
 		} catch (error) {
-			console.debug("[TaskNotes][Bases] Unregistration failed:", error);
+			tasknotesLogger.debug("[TaskNotes][Bases] Unregistration failed:", {
+				category: "internal",
+				operation: "unregistration",
+				error: error,
+			});
 		}
 	}
 

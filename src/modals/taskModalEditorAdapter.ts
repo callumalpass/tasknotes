@@ -1,14 +1,19 @@
 import { App, TFile } from "obsidian";
 import type { Extension } from "@codemirror/state";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskModalEditorAdapter" });
 
 type EmbeddableMarkdownEditorConstructor =
 	typeof import("../editor/EmbeddableMarkdownEditor").EmbeddableMarkdownEditor;
 
 function loadEmbeddableMarkdownEditor(): EmbeddableMarkdownEditorConstructor {
 	// Lazy-load because the editor module resolves Obsidian internals during evaluation.
-	// eslint-disable-next-line @typescript-eslint/no-require-imports -- Modal editor is lazy-loaded to avoid evaluating Obsidian internals during import.
-	const editorModule = require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
+	/* eslint-disable @typescript-eslint/no-require-imports -- Modal editor is lazy-loaded to avoid evaluating Obsidian internals during import. */
+	const editorModule =
+		require("../editor/EmbeddableMarkdownEditor") as typeof import("../editor/EmbeddableMarkdownEditor");
+	/* eslint-enable @typescript-eslint/no-require-imports -- Re-enable after the isolated lazy import. */
 	return editorModule.EmbeddableMarkdownEditor;
 }
 
@@ -37,7 +42,11 @@ export function createTaskModalMarkdownEditor(
 			onTab: (_editor, shift) => options.onTab(shift),
 		});
 	} catch (error) {
-		console.error("Failed to create markdown editor:", error);
+		tasknotesLogger.error("Failed to create markdown editor:", {
+			category: "persistence",
+			operation: "create-markdown-editor",
+			error: error,
+		});
 
 		const fallbackTextarea = container.createEl("textarea", {
 			cls: options.cls + "-fallback",

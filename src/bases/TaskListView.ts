@@ -30,13 +30,8 @@ import {
 	type SortOrderPlan,
 } from "./sortOrderUtils";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
-import {
-	computeBasesFormulas,
-	isObsidianListProperty,
-} from "./basesViewAdapters";
-import {
-	coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter,
-} from "./propertyValueCoercion";
+import { computeBasesFormulas, isObsidianListProperty } from "./basesViewAdapters";
+import { coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter } from "./propertyValueCoercion";
 import {
 	getTaskListDropSegments,
 	reconstructTaskListDropTarget,
@@ -68,6 +63,9 @@ import {
 	buildSortOrderUpdateMap,
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
 type TaskListDataAdapterWithView = {
 	basesView: TaskListView;
@@ -201,7 +199,10 @@ export class TaskListView extends BasesViewBase {
 	private readViewOptions(): void {
 		// Guard: config may not be set yet if called too early
 		if (!this.config || typeof this.config.get !== "function") {
-			console.debug("[TaskListView] Config not available yet in readViewOptions");
+			tasknotesLogger.debug("[TaskListView] Config not available yet in readViewOptions", {
+				category: "configuration",
+				operation: "config-not-yet-readviewoptions",
+			});
 			return;
 		}
 
@@ -220,7 +221,11 @@ export class TaskListView extends BasesViewBase {
 			this.configLoaded = true;
 		} catch (e) {
 			// Use defaults
-			console.warn("[TaskListView] Failed to parse config:", e);
+			tasknotesLogger.warn("[TaskListView] Failed to parse config:", {
+				category: "configuration",
+				operation: "parse-config",
+				error: e,
+			});
 		}
 	}
 
@@ -353,7 +358,11 @@ export class TaskListView extends BasesViewBase {
 
 			// Check if we have grouped data
 		} catch (error: unknown) {
-			console.error("[TaskNotes][TaskListView] Error rendering:", error);
+			tasknotesLogger.error("[TaskNotes][TaskListView] Error rendering:", {
+				category: "persistence",
+				operation: "rendering",
+				error: error,
+			});
 			this.clearAllTaskElements();
 			this.sortScopeTaskPaths.clear();
 			this.sortScopeCandidateTaskPaths.clear();
@@ -782,7 +791,7 @@ export class TaskListView extends BasesViewBase {
 					}
 				}, 200);
 			}
-			});
+		});
 	}
 
 	private shouldEnableManualReordering(): boolean {
@@ -859,11 +868,7 @@ export class TaskListView extends BasesViewBase {
 		segmentIndex: number,
 		insertionIndex: number
 	): { taskPath: string; above: boolean } | null {
-		return reconstructTaskListDropTarget(
-			this.getDropSegments(),
-			segmentIndex,
-			insertionIndex
-		);
+		return reconstructTaskListDropTarget(this.getDropSegments(), segmentIndex, insertionIndex);
 	}
 
 	private getCurrentInsertionTarget(): { taskPath: string; above: boolean } | null {
@@ -1220,9 +1225,13 @@ export class TaskListView extends BasesViewBase {
 						}
 					}
 				} catch (sideEffectError) {
-					console.warn(
+					tasknotesLogger.warn(
 						"[TaskNotes][TaskListView] Side-effect error after drop:",
-						sideEffectError
+						{
+							category: "persistence",
+							operation: "side-effect-drop",
+							error: sideEffectError,
+						}
 					);
 				}
 			}
@@ -1311,15 +1320,15 @@ export class TaskListView extends BasesViewBase {
 					if ("type" in item) {
 						throw new Error("Unexpected grouped item in flat renderer");
 					}
-						const taskInfo = item;
-						// Create card using lazy mode
-						const card = createTaskCard(item, this.plugin, visibleProperties, cardOptions);
+					const taskInfo = item;
+					// Create card using lazy mode
+					const card = createTaskCard(item, this.plugin, visibleProperties, cardOptions);
 
-						// Attach drag handlers for sort_order reordering
-						this.configureCardForManualReordering(card, taskInfo, null);
+					// Attach drag handlers for sort_order reordering
+					this.configureCardForManualReordering(card, taskInfo, null);
 
-						// Cache task info for event handlers
-						this.taskInfoCache.set(taskInfo.path, taskInfo);
+					// Cache task info for event handlers
+					this.taskInfoCache.set(taskInfo.path, taskInfo);
 					this.lastTaskSignatures.set(taskInfo.path, this.buildTaskSignature(taskInfo));
 
 					return card;
@@ -1333,28 +1342,28 @@ export class TaskListView extends BasesViewBase {
 			});
 
 			// Force recalculation after DOM settles
-				window.setTimeout(() => {
-					this.virtualScroller?.recalculate();
-				}, 0);
-			} else {
-				// Update existing virtual scroller with new items
-				this.resetVirtualScrollerIfCardRenderChanged(
-					this.buildCardRenderSignature(visibleProperties, cardOptions)
-				);
-				if (!this.virtualScroller) {
-					await this.renderFlatVirtual(taskNotes, visibleProperties, cardOptions);
-					return;
-				}
-				this.virtualScroller.updateItems(taskNotes);
-			}
-
-			this.lastVirtualItems = taskNotes;
-			this.lastFlatPaths = taskNotes.map((task) => task.path);
-			this.lastCardRenderSignature = this.buildCardRenderSignature(
-				visibleProperties,
-				cardOptions
+			window.setTimeout(() => {
+				this.virtualScroller?.recalculate();
+			}, 0);
+		} else {
+			// Update existing virtual scroller with new items
+			this.resetVirtualScrollerIfCardRenderChanged(
+				this.buildCardRenderSignature(visibleProperties, cardOptions)
 			);
+			if (!this.virtualScroller) {
+				await this.renderFlatVirtual(taskNotes, visibleProperties, cardOptions);
+				return;
+			}
+			this.virtualScroller.updateItems(taskNotes);
 		}
+
+		this.lastVirtualItems = taskNotes;
+		this.lastFlatPaths = taskNotes.map((task) => task.path);
+		this.lastCardRenderSignature = this.buildCardRenderSignature(
+			visibleProperties,
+			cardOptions
+		);
+	}
 
 	private async renderFlatNormal(
 		taskNotes: TaskInfo[],
@@ -1399,9 +1408,9 @@ export class TaskListView extends BasesViewBase {
 				this.itemsContainer.appendChild(cardEl);
 			}
 
-				if (needsUpdate) {
-					this.configureCardForManualReordering(cardEl, taskInfo, null);
-				}
+			if (needsUpdate) {
+				this.configureCardForManualReordering(cardEl, taskInfo, null);
+			}
 
 			this.currentTaskElements.set(taskInfo.path, cardEl);
 			this.taskInfoCache.set(taskInfo.path, taskInfo);
@@ -1596,8 +1605,8 @@ export class TaskListView extends BasesViewBase {
 		// Populate group key lookup for cross-group drag detection
 		this.syncGroupedDragMetadata(items);
 
-			if (!this.virtualScroller) {
-				this.virtualScroller = new VirtualScroller<TaskListVirtualItem>({
+		if (!this.virtualScroller) {
+			this.virtualScroller = new VirtualScroller<TaskListVirtualItem>({
 				container: this.itemsContainer!,
 				items: items,
 				// itemHeight omitted - automatically calculated from sample (headers + cards)
@@ -1608,17 +1617,17 @@ export class TaskListView extends BasesViewBase {
 					}
 					if (item.type === "primary-header" || item.type === "sub-header") {
 						return this.createGroupHeader(item);
-						} else {
-							const cardEl = createTaskCard(
-								item.task,
-								this.plugin,
-								visibleProperties,
-								cardOptions
-							);
-							// Attach drag handlers for sort_order reordering
-							this.configureCardForManualReordering(cardEl, item.task, item.groupKey);
-							this.taskInfoCache.set(item.task.path, item.task);
-							this.lastTaskSignatures.set(
+					} else {
+						const cardEl = createTaskCard(
+							item.task,
+							this.plugin,
+							visibleProperties,
+							cardOptions
+						);
+						// Attach drag handlers for sort_order reordering
+						this.configureCardForManualReordering(cardEl, item.task, item.groupKey);
+						this.taskInfoCache.set(item.task.path, item.task);
+						this.lastTaskSignatures.set(
 							item.task.path,
 							this.buildTaskSignature(item.task)
 						);
@@ -1639,25 +1648,25 @@ export class TaskListView extends BasesViewBase {
 				},
 			});
 
-				window.setTimeout(() => {
-					this.virtualScroller?.recalculate();
-				}, 0);
-			} else {
-				this.resetVirtualScrollerIfCardRenderChanged(
-					this.buildCardRenderSignature(visibleProperties, cardOptions)
-				);
-				if (!this.virtualScroller) {
-					await this.renderGroupedVirtual(items, visibleProperties, cardOptions);
-					return;
-				}
-				this.virtualScroller.updateItems(items);
-			}
-			this.lastVirtualItems = items;
-			this.lastCardRenderSignature = this.buildCardRenderSignature(
-				visibleProperties,
-				cardOptions
+			window.setTimeout(() => {
+				this.virtualScroller?.recalculate();
+			}, 0);
+		} else {
+			this.resetVirtualScrollerIfCardRenderChanged(
+				this.buildCardRenderSignature(visibleProperties, cardOptions)
 			);
+			if (!this.virtualScroller) {
+				await this.renderGroupedVirtual(items, visibleProperties, cardOptions);
+				return;
+			}
+			this.virtualScroller.updateItems(items);
 		}
+		this.lastVirtualItems = items;
+		this.lastCardRenderSignature = this.buildCardRenderSignature(
+			visibleProperties,
+			cardOptions
+		);
+	}
 
 	private async renderGroupedNormal(
 		items: TaskListRenderItem[],
@@ -1672,25 +1681,25 @@ export class TaskListView extends BasesViewBase {
 			if (item.type === "primary-header" || item.type === "sub-header") {
 				const headerEl = this.createGroupHeader(item);
 				this.itemsContainer!.appendChild(headerEl);
-				} else {
-					const cardEl = createTaskCard(
-						item.task,
-						this.plugin,
-						visibleProperties,
-						cardOptions
-					);
-					this.configureCardForManualReordering(cardEl, item.task, item.groupKey);
-					this.itemsContainer!.appendChild(cardEl);
-					this.currentTaskElements.set(item.task.path, cardEl);
+			} else {
+				const cardEl = createTaskCard(
+					item.task,
+					this.plugin,
+					visibleProperties,
+					cardOptions
+				);
+				this.configureCardForManualReordering(cardEl, item.task, item.groupKey);
+				this.itemsContainer!.appendChild(cardEl);
+				this.currentTaskElements.set(item.task.path, cardEl);
 				this.taskInfoCache.set(item.task.path, item.task);
 				this.lastTaskSignatures.set(item.task.path, this.buildTaskSignature(item.task));
-				}
 			}
-			this.lastCardRenderSignature = this.buildCardRenderSignature(
-				visibleProperties,
-				cardOptions
-			);
 		}
+		this.lastCardRenderSignature = this.buildCardRenderSignature(
+			visibleProperties,
+			cardOptions
+		);
+	}
 
 	private createGroupHeader(headerItem: TaskListHeaderItem): HTMLElement {
 		// Use correct document for pop-out window support
@@ -1766,18 +1775,18 @@ export class TaskListView extends BasesViewBase {
 			const existingElement = this.currentTaskElements.get(task.path);
 			if (existingElement && existingElement.isConnected) {
 				const visibleProperties = this.getVisibleProperties();
-					const replacement = createTaskCard(
-						task,
-						this.plugin,
-						visibleProperties,
-						this.getCardOptions(this.currentTargetDate)
-					);
-					this.configureCardForManualReordering(
-						replacement,
-						task,
-						this.taskGroupKeys.get(task.path) ?? null
-					);
-					existingElement.replaceWith(replacement);
+				const replacement = createTaskCard(
+					task,
+					this.plugin,
+					visibleProperties,
+					this.getCardOptions(this.currentTargetDate)
+				);
+				this.configureCardForManualReordering(
+					replacement,
+					task,
+					this.taskGroupKeys.get(task.path) ?? null
+				);
+				existingElement.replaceWith(replacement);
 				replacement.classList.add("task-card--updated");
 				// Use correct window for pop-out window support
 				const win = this.containerEl.ownerDocument.defaultView || window;
@@ -2218,9 +2227,11 @@ export class TaskListView extends BasesViewBase {
 			}
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			console.error("[TaskNotes][TaskListView] Failed to toggle status", {
+			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to toggle status", {
+				category: "persistence",
+				operation: "toggle-status",
+				details: { taskPath: task.path },
 				error: message,
-				taskPath: task.path,
 			});
 			new Notice(`Failed to toggle task status: ${message}`);
 		}
@@ -2247,7 +2258,10 @@ export class TaskListView extends BasesViewBase {
 					try {
 						await this.plugin.updateTaskProperty(task, "priority", newPriority);
 					} catch (error) {
-						console.error("[TaskNotes][TaskListView] Failed to update priority", error);
+						tasknotesLogger.error(
+							"[TaskNotes][TaskListView] Failed to update priority",
+							{ category: "validation", operation: "update-priority", error: error }
+						);
 						new Notice("Failed to update priority");
 					}
 				})();
@@ -2274,9 +2288,9 @@ export class TaskListView extends BasesViewBase {
 							await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
 						}
 					} catch (error) {
-						console.error(
+						tasknotesLogger.error(
 							"[TaskNotes][TaskListView] Failed to update recurrence",
-							error
+							{ category: "validation", operation: "update-recurrence", error: error }
 						);
 						new Notice("Failed to update recurrence");
 					}
@@ -2298,7 +2312,11 @@ export class TaskListView extends BasesViewBase {
 						reminders.length > 0 ? reminders : undefined
 					);
 				} catch (error) {
-					console.error("[TaskNotes][TaskListView] Failed to update reminders", error);
+					tasknotesLogger.error("[TaskNotes][TaskListView] Failed to update reminders", {
+						category: "validation",
+						operation: "update-reminders",
+						error: error,
+					});
 					new Notice("Failed to update reminders");
 				}
 			})();
@@ -2330,10 +2348,11 @@ export class TaskListView extends BasesViewBase {
 						await this.plugin.updateTaskProperty(task, dateType, finalValue);
 					} catch (error) {
 						const message = error instanceof Error ? error.message : String(error);
-						console.error("[TaskNotes][TaskListView] Failed to update date", {
+						tasknotesLogger.error("[TaskNotes][TaskListView] Failed to update date", {
+							category: "validation",
+							operation: "update-date",
+							details: { taskPath: task.path, dateType },
 							error: message,
-							taskPath: task.path,
-							dateType,
 						});
 						new Notice(`Failed to update ${dateType} date: ${message}`);
 					}
@@ -2426,7 +2445,11 @@ export class TaskListView extends BasesViewBase {
 		try {
 			await this.plugin.applyProjectSubtaskFilter(task);
 		} catch (error) {
-			console.error("[TaskNotes][TaskListView] Failed to filter project subtasks", error);
+			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to filter project subtasks", {
+				category: "persistence",
+				operation: "filter-project-subtasks",
+				error: error,
+			});
 			new Notice("Failed to filter project subtasks");
 		}
 	}
@@ -2434,7 +2457,10 @@ export class TaskListView extends BasesViewBase {
 	private async toggleSubtasks(task: TaskInfo, target: HTMLElement): Promise<void> {
 		try {
 			if (!this.plugin.expandedProjectsService) {
-				console.error("[TaskNotes][TaskListView] ExpandedProjectsService not initialized");
+				tasknotesLogger.error(
+					"[TaskNotes][TaskListView] ExpandedProjectsService not initialized",
+					{ category: "stale-data", operation: "expandedprojectsservice-not-initialized" }
+				);
 				new Notice("Service not available. Please try reloading the plugin.");
 				return;
 			}
@@ -2456,7 +2482,11 @@ export class TaskListView extends BasesViewBase {
 				await toggleSubtasks(card, task, this.plugin, newExpanded);
 			}
 		} catch (error) {
-			console.error("[TaskNotes][TaskListView] Failed to toggle subtasks", error);
+			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to toggle subtasks", {
+				category: "persistence",
+				operation: "toggle-subtasks",
+				error: error,
+			});
 			new Notice("Failed to toggle subtasks");
 		}
 	}
@@ -2472,7 +2502,11 @@ export class TaskListView extends BasesViewBase {
 				await toggleBlockingTasks(card, task, this.plugin, expanded);
 			}
 		} catch (error) {
-			console.error("[TaskNotes][TaskListView] Failed to toggle blocking tasks", error);
+			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to toggle blocking tasks", {
+				category: "persistence",
+				operation: "toggle-blocking-tasks",
+				error: error,
+			});
 			new Notice("Failed to toggle blocking tasks");
 		}
 	}
@@ -2539,7 +2573,10 @@ export class TaskListView extends BasesViewBase {
 export function buildTaskListViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
 	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
-			console.error("[TaskNotes][TaskListView] No containerEl provided");
+			tasknotesLogger.error("[TaskNotes][TaskListView] No containerEl provided", {
+				category: "stale-data",
+				operation: "no-containerel-provided",
+			});
 			throw new Error("TaskListView requires a containerEl");
 		}
 

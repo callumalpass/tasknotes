@@ -1,5 +1,8 @@
 import { TaskInfo } from "../types";
 import { extractBasesValue } from "./taskCardPresentation";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardPropertyAccess" });
 
 type BasesDataWithGetter = {
 	getValue(propertyId: string): unknown;
@@ -132,7 +135,11 @@ export function getTaskCardPropertyValue(
 				const extracted = extractBasesValue(value);
 				return extracted !== "" ? extracted : "";
 			} catch (error) {
-				console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
+				tasknotesLogger.debug(`[TaskNotes] Error computing formula ${propertyId}:`, {
+					category: "validation",
+					operation: "computing-formula",
+					error: error,
+				});
 				return "[Formula Error]";
 			}
 		}
@@ -159,7 +166,11 @@ export function getTaskCardPropertyValue(
 
 		return null;
 	} catch (error) {
-		console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
+		tasknotesLogger.warn(`TaskCard: Error getting property ${propertyId}:`, {
+			category: "persistence",
+			operation: "taskcard-getting-property",
+			error: error,
+		});
 		return null;
 	}
 }
@@ -196,7 +207,11 @@ function getFrontmatterValue(
 
 		return fileMetadata.frontmatter[key];
 	} catch (error) {
-		console.warn(`TaskCard: Error accessing frontmatter for ${taskPath}:`, error);
+		tasknotesLogger.warn(`TaskCard: Error accessing frontmatter for ${taskPath}:`, {
+			category: "validation",
+			operation: "taskcard-accessing-frontmatter",
+			error: error,
+		});
 		return undefined;
 	}
 }

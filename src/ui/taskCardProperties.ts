@@ -3,10 +3,7 @@ import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo } from "../types";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
-import {
-	calculateTotalTimeSpent,
-	getFiniteRecurringInstanceCount,
-} from "../utils/helpers";
+import { calculateTotalTimeSpent, getFiniteRecurringInstanceCount } from "../utils/helpers";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 import {
 	formatDateTimeForDisplay,
@@ -37,6 +34,9 @@ import {
 } from "./renderers/linkRenderer";
 import { renderContextsValue, renderTagsValue, type TagServices } from "./renderers/tagRenderer";
 import { normalizeDependencyEntry, resolveDependencyEntry } from "../utils/dependencyUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardProperties" });
 
 export interface TaskCardPropertyOptions {
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
@@ -157,7 +157,11 @@ function attachDateClickHandler(
 						await plugin.updateTaskProperty(task, dateType, finalValue);
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error(`Error updating ${dateType} date:`, errorMessage);
+						tasknotesLogger.error(`Error updating ${dateType} date:`, {
+							category: "persistence",
+							operation: "updating",
+							details: { value: errorMessage },
+						});
 						const noticeKey =
 							dateType === "due"
 								? "contextMenus.task.notices.updateDueDateFailure"
@@ -534,7 +538,11 @@ export function renderPropertyMetadata(
 
 		return element;
 	} catch (error) {
-		console.warn(`TaskCard: Error rendering property ${propertyId}:`, error);
+		tasknotesLogger.warn(`TaskCard: Error rendering property ${propertyId}:`, {
+			category: "persistence",
+			operation: "taskcard-rendering-property",
+			error: error,
+		});
 		element.textContent = `${propertyId}: (error)`;
 		return element;
 	}
@@ -728,7 +736,11 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 				return stringifyUnknown(value);
 		}
 	} catch (error) {
-		console.warn("TaskCard: Error formatting user property value:", error);
+		tasknotesLogger.warn("TaskCard: Error formatting user property value:", {
+			category: "validation",
+			operation: "taskcard-formatting-user-property-value",
+			error: error,
+		});
 		return stringifyUnknown(value);
 	}
 }

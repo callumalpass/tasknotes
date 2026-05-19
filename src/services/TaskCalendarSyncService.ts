@@ -12,6 +12,9 @@ import { convertToGoogleRecurrence } from "../utils/rruleConverter";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { TokenRefreshError } from "./errors";
 import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
 
 /** Debounce delay for rapid task updates (ms) */
 const SYNC_DEBOUNCE_MS = 500;
@@ -166,10 +169,7 @@ export class TaskCalendarSyncService {
 	private withGoogleRateLimit<T>(fn: () => Promise<T>): Promise<T> {
 		const run = async (): Promise<T> => {
 			const now = Date.now();
-			const wait = Math.max(
-				0,
-				GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt)
-			);
+			const wait = Math.max(0, GOOGLE_API_CALL_SPACING_MS - (now - this.lastApiCallAt));
 			if (wait > 0) {
 				await new Promise((resolve) => window.setTimeout(resolve, wait));
 			}
@@ -219,7 +219,11 @@ export class TaskCalendarSyncService {
 
 		recovery
 			.catch((error) => {
-				console.error("[TaskCalendarSync] Failed to process recovery queues:", error);
+				tasknotesLogger.error("[TaskCalendarSync] Failed to process recovery queues:", {
+					category: "provider",
+					operation: "process-recovery-queues",
+					error: error,
+				});
 			})
 			.finally(() => {
 				this.scheduleRecoveryQueueProcessor();
@@ -249,7 +253,9 @@ export class TaskCalendarSyncService {
 		return !!settings?.enabled && !!settings?.targetCalendarId && isConnected;
 	}
 
-	private getDeletionQueueKey(item: Pick<PendingGoogleCalendarDeletion, "calendarId" | "eventId">): string {
+	private getDeletionQueueKey(
+		item: Pick<PendingGoogleCalendarDeletion, "calendarId" | "eventId">
+	): string {
 		return `${item.calendarId}::${item.eventId}`;
 	}
 
@@ -339,8 +345,9 @@ export class TaskCalendarSyncService {
 				item.eventId
 			);
 			if (!deleted) {
-				console.warn(
-					`[TaskCalendarSync] Replaced event cleanup queued for ${item.taskPath}`
+				tasknotesLogger.warn(
+					`[TaskCalendarSync] Replaced event cleanup queued for ${item.taskPath}`,
+					{ category: "provider", operation: "replaced-event-cleanup-queued" }
 				);
 			}
 		}
@@ -365,7 +372,11 @@ export class TaskCalendarSyncService {
 		}
 	}
 
-	private async queueTaskSync(taskPath: string, error?: unknown, attempted = false): Promise<void> {
+	private async queueTaskSync(
+		taskPath: string,
+		error?: unknown,
+		attempted = false
+	): Promise<void> {
 		const now = Date.now();
 		const queue = await this.getSyncQueue();
 		const existing = queue.find((item) => item.taskPath === taskPath);
@@ -471,7 +482,12 @@ export class TaskCalendarSyncService {
 				return true;
 			}
 
-			console.error("[TaskCalendarSync] Failed to delete event:", taskPath, error);
+			tasknotesLogger.error("[TaskCalendarSync] Failed to delete event:", {
+				category: "provider",
+				operation: "delete-event",
+				details: { value: taskPath },
+				error: error,
+			});
 			await this.queueCalendarDeletion(taskPath, calendarId, eventId, error, true);
 			return false;
 		}
@@ -555,7 +571,13 @@ export class TaskCalendarSyncService {
 		}
 	}
 
-	async processPendingSyncQueue(): Promise<{ synced: number; failed: number; deleted: number; dropped: number; remaining: number }> {
+	async processPendingSyncQueue(): Promise<{
+		synced: number;
+		failed: number;
+		deleted: number;
+		dropped: number;
+		remaining: number;
+	}> {
 		const results = { synced: 0, failed: 0, deleted: 0, dropped: 0, remaining: 0 };
 		const queue = await this.getSyncQueue();
 
@@ -587,7 +609,13 @@ export class TaskCalendarSyncService {
 				if (eventId) {
 					const deleted = await this.deleteTaskFromCalendar(task);
 					if (!deleted) {
-						console.warn(`[TaskCalendarSync] Calendar deletion queued while replaying sync for ${item.taskPath}`);
+						tasknotesLogger.warn(
+							`[TaskCalendarSync] Calendar deletion queued while replaying sync for ${item.taskPath}`,
+							{
+								category: "provider",
+								operation: "calendar-deletion-queued-replaying-sync",
+							}
+						);
 					}
 					results.deleted++;
 				} else {
@@ -596,7 +624,9 @@ export class TaskCalendarSyncService {
 				continue;
 			}
 
-			const synced = await this.syncTaskToCalendar(task, undefined, { queueOnFailure: false });
+			const synced = await this.syncTaskToCalendar(task, undefined, {
+				queueOnFailure: false,
+			});
 			if (synced) {
 				results.synced++;
 				continue;
@@ -664,7 +694,12 @@ export class TaskCalendarSyncService {
 					lastAttemptAt: Date.now(),
 					lastError: getErrorMessage(error),
 				});
-				console.error("[TaskCalendarSync] Failed to retry queued event deletion:", item, error);
+				tasknotesLogger.error("[TaskCalendarSync] Failed to retry queued event deletion:", {
+					category: "provider",
+					operation: "retry-queued-event-deletion",
+					details: { value: item },
+					error: error,
+				});
 			}
 		}
 
@@ -726,7 +761,10 @@ export class TaskCalendarSyncService {
 	private async saveTaskEventId(taskPath: string, eventId: string): Promise<void> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
 		if (!(file instanceof TFile)) {
-			console.warn(`Cannot save event ID: file not found at ${taskPath}`);
+			tasknotesLogger.warn(`Cannot save event ID: file not found at ${taskPath}`, {
+				category: "provider",
+				operation: "save-event-id-file-not-found",
+			});
 			return;
 		}
 
@@ -748,7 +786,10 @@ export class TaskCalendarSyncService {
 	private async removeTaskEventId(taskPath: string): Promise<void> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
 		if (!(file instanceof TFile)) {
-			console.warn(`Cannot remove event ID: file not found at ${taskPath}`);
+			tasknotesLogger.warn(`Cannot remove event ID: file not found at ${taskPath}`, {
+				category: "provider",
+				operation: "remove-event-id-file-not-found",
+			});
 			this.taskEventIdCache.delete(taskPath);
 			await this.removeEventIndexForTask(taskPath);
 			return;
@@ -790,9 +831,7 @@ export class TaskCalendarSyncService {
 
 	private getCalendarEventTitle(task: TaskInfo): string {
 		const title = this.applyTitleTemplate(task);
-		return this.plugin.statusManager.isCompletedStatus(task.status)
-			? `✓ ${title}`
-			: title;
+		return this.plugin.statusManager.isCompletedStatus(task.status) ? `✓ ${title}` : title;
 	}
 
 	/**
@@ -841,12 +880,22 @@ export class TaskCalendarSyncService {
 
 		// Add contexts
 		if (task.contexts && task.contexts.length > 0) {
-			parts.push(t("contexts", { value: task.contexts.map((c) => `@${this.toCalendarDescriptionLabel(c)}`).join(", ") }));
+			parts.push(
+				t("contexts", {
+					value: task.contexts
+						.map((c) => `@${this.toCalendarDescriptionLabel(c)}`)
+						.join(", "),
+				})
+			);
 		}
 
 		// Add projects
 		if (task.projects && task.projects.length > 0) {
-			parts.push(t("projects", { value: task.projects.map((p) => this.toCalendarDescriptionLabel(p)).join(", ") }));
+			parts.push(
+				t("projects", {
+					value: task.projects.map((p) => this.toCalendarDescriptionLabel(p)).join(", "),
+				})
+			);
 		}
 
 		// Add separator before link
@@ -870,7 +919,9 @@ export class TaskCalendarSyncService {
 	private toCalendarDescriptionLabel(value: string): string {
 		return value
 			.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, "$2")
-			.replace(/\[\[([^\]]+)\]\]/g, (_match, target: string) => this.basenameForDisplay(target))
+			.replace(/\[\[([^\]]+)\]\]/g, (_match, target: string) =>
+				this.basenameForDisplay(target)
+			)
 			.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
 			.trim();
 	}
@@ -1034,11 +1085,19 @@ export class TaskCalendarSyncService {
 			}
 
 			if (isNaN(eventStartMs)) {
-				console.warn("[TaskCalendarSync] Invalid event start time:", eventStartTime);
+				tasknotesLogger.warn("[TaskCalendarSync] Invalid event start time:", {
+					category: "provider",
+					operation: "invalid-event-start-time",
+					details: { value: eventStartTime },
+				});
 				return null;
 			}
 		} catch (error) {
-			console.warn("[TaskCalendarSync] Error parsing event start time:", error);
+			tasknotesLogger.warn("[TaskCalendarSync] Error parsing event start time:", {
+				category: "provider",
+				operation: "parsing-event-start-time",
+				error: error,
+			});
 			return null;
 		}
 
@@ -1055,7 +1114,11 @@ export class TaskCalendarSyncService {
 				if (!reminder.offset) continue;
 				const durationMs = this.parseISO8601Duration(reminder.offset);
 				if (durationMs === null) {
-					console.warn("[TaskCalendarSync] Invalid duration format:", reminder.offset);
+					tasknotesLogger.warn("[TaskCalendarSync] Invalid duration format:", {
+						category: "provider",
+						operation: "invalid-duration-format",
+						details: { value: reminder.offset },
+					});
 					continue;
 				}
 
@@ -1067,7 +1130,11 @@ export class TaskCalendarSyncService {
 
 				// Skip if reminder is after the event (positive duration without negative sign)
 				if (durationMs > 0) {
-					console.warn("[TaskCalendarSync] Skipping reminder after event:", reminder);
+					tasknotesLogger.warn("[TaskCalendarSync] Skipping reminder after event:", {
+						category: "provider",
+						operation: "skipping-reminder-event",
+						details: { value: reminder },
+					});
 					continue;
 				}
 
@@ -1088,10 +1155,11 @@ export class TaskCalendarSyncService {
 				try {
 					const reminderTimeMs = new Date(reminder.absoluteTime).getTime();
 					if (isNaN(reminderTimeMs)) {
-						console.warn(
-							"[TaskCalendarSync] Invalid absolute time:",
-							reminder.absoluteTime
-						);
+						tasknotesLogger.warn("[TaskCalendarSync] Invalid absolute time:", {
+							category: "provider",
+							operation: "invalid-absolute-time",
+							details: { value: reminder.absoluteTime },
+						});
 						continue;
 					}
 
@@ -1101,9 +1169,13 @@ export class TaskCalendarSyncService {
 
 					// Skip if reminder is after the event start
 					if (minutesBefore < 0) {
-						console.warn(
+						tasknotesLogger.warn(
 							"[TaskCalendarSync] Skipping absolute reminder after event:",
-							reminder
+							{
+								category: "provider",
+								operation: "skipping-absolute-reminder-event",
+								details: { value: reminder },
+							}
 						);
 						continue;
 					}
@@ -1116,7 +1188,14 @@ export class TaskCalendarSyncService {
 					// Include 0-minute reminders (at event time)
 					googleReminders.push({ method: "popup", minutes: cappedMinutes });
 				} catch (error) {
-					console.warn("[TaskCalendarSync] Error parsing absolute reminder time:", error);
+					tasknotesLogger.warn(
+						"[TaskCalendarSync] Error parsing absolute reminder time:",
+						{
+							category: "provider",
+							operation: "parsing-absolute-reminder-time",
+							error: error,
+						}
+					);
 					continue;
 				}
 			}
@@ -1141,10 +1220,7 @@ export class TaskCalendarSyncService {
 				continue;
 			}
 
-			const cappedMinutes = Math.min(
-				minutes,
-				GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES
-			);
+			const cappedMinutes = Math.min(minutes, GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES);
 			if (seen.has(cappedMinutes)) {
 				continue;
 			}
@@ -1159,7 +1235,10 @@ export class TaskCalendarSyncService {
 	/**
 	 * Convert a task to a Google Calendar event payload
 	 */
-	private taskToCalendarEvent(task: TaskInfo, clearRecurrence?: boolean): CalendarEventPayload | null {
+	private taskToCalendarEvent(
+		task: TaskInfo,
+		clearRecurrence?: boolean
+	): CalendarEventPayload | null {
 		const eventDate = this.getEventDate(task);
 		if (!eventDate) return null;
 
@@ -1295,13 +1374,10 @@ export class TaskCalendarSyncService {
 		calendarId: string
 	): Promise<string> {
 		const createdEvent = await this.withGoogleRateLimit(() =>
-			this.googleCalendarService.createEvent(
-				calendarId,
-				{
-					...eventData,
-					isAllDay: !!eventData.start.date,
-				}
-			)
+			this.googleCalendarService.createEvent(calendarId, {
+				...eventData,
+				isAllDay: !!eventData.start.date,
+			})
 		);
 
 		// Extract the actual event ID from the ICSEvent ID format.
@@ -1350,12 +1426,23 @@ export class TaskCalendarSyncService {
 
 			const eventData = this.taskToCalendarEvent(task, clearRecurrence);
 			if (!eventData) {
-				console.warn("[TaskCalendarSync] Could not convert task to event:", task.path);
+				tasknotesLogger.warn("[TaskCalendarSync] Could not convert task to event:", {
+					category: "provider",
+					operation: "convert-task-event",
+					details: { value: task.path },
+				});
 				return false;
 			}
 
 			if (!targetCalendarId) {
-				console.warn("[TaskCalendarSync] Cannot sync task without target calendar:", task.path);
+				tasknotesLogger.warn(
+					"[TaskCalendarSync] Cannot sync task without target calendar:",
+					{
+						category: "provider",
+						operation: "sync-task-without-target-calendar",
+						details: { value: task.path },
+					}
+				);
 				if (queueOnFailure) {
 					await this.queueTaskSync(
 						task.path,
@@ -1384,7 +1471,11 @@ export class TaskCalendarSyncService {
 					return true;
 				}
 
-				const createPromise = this.createCalendarEventForTask(task, eventData, targetCalendarId);
+				const createPromise = this.createCalendarEventForTask(
+					task,
+					eventData,
+					targetCalendarId
+				);
 				this.pendingEventCreates.set(task.path, createPromise);
 				try {
 					await createPromise;
@@ -1408,7 +1499,12 @@ export class TaskCalendarSyncService {
 				}
 			}
 
-			console.error("[TaskCalendarSync] Failed to sync task:", task.path, error);
+			tasknotesLogger.error("[TaskCalendarSync] Failed to sync task:", {
+				category: "provider",
+				operation: "sync-task",
+				details: { value: task.path },
+				error: error,
+			});
 			if (queueOnFailure) {
 				await this.queueTaskSync(task.path, error, true);
 			}
@@ -1529,7 +1625,10 @@ export class TaskCalendarSyncService {
 			if (existingEventId) {
 				const deleted = await this.deleteTaskFromCalendar(task);
 				if (!deleted) {
-					console.warn(`Google Calendar deletion queued for ${task.path}`);
+					tasknotesLogger.warn(`Google Calendar deletion queued for ${task.path}`, {
+						category: "provider",
+						operation: "google-calendar-deletion-queued",
+					});
 				}
 			}
 			// Clean up previous state
@@ -1592,29 +1691,30 @@ export class TaskCalendarSyncService {
 			return;
 		}
 
-			try {
-				// Update the event title to indicate completion
-				const description = settings.includeDescription
-					? this.buildEventDescription(task)
-					: undefined;
+		try {
+			// Update the event title to indicate completion
+			const description = settings.includeDescription
+				? this.buildEventDescription(task)
+				: undefined;
 
-				await this.withGoogleRateLimit(() =>
-					this.googleCalendarService.updateEvent(
-						settings.targetCalendarId,
-						existingEventId,
-						{
-							summary: this.getCalendarEventTitle(task),
-							description,
-						}
-					)
-				);
+			await this.withGoogleRateLimit(() =>
+				this.googleCalendarService.updateEvent(settings.targetCalendarId, existingEventId, {
+					summary: this.getCalendarEventTitle(task),
+					description,
+				})
+			);
 		} catch (error: unknown) {
 			if (getErrorStatus(error) === 404) {
 				// Event was deleted externally, clean up the link
 				await this.removeTaskEventId(task.path);
 				return;
 			}
-			console.error("[TaskCalendarSync] Failed to update completed task:", task.path, error);
+			tasknotesLogger.error("[TaskCalendarSync] Failed to update completed task:", {
+				category: "provider",
+				operation: "update-completed-task",
+				details: { value: task.path },
+				error: error,
+			});
 		}
 	}
 
@@ -1648,11 +1748,12 @@ export class TaskCalendarSyncService {
 				await this.removeTaskEventId(task.path);
 				return;
 			}
-			console.error(
-				"[TaskCalendarSync] Failed to update recurring event EXDATEs:",
-				task.path,
-				error
-			);
+			tasknotesLogger.error("[TaskCalendarSync] Failed to update recurring event EXDATEs:", {
+				category: "provider",
+				operation: "update-recurring-event-exdates",
+				details: { value: task.path },
+				error: error,
+			});
 			// Fall back to full resync
 			await this.syncTaskToCalendar(task);
 		}
@@ -1674,7 +1775,14 @@ export class TaskCalendarSyncService {
 
 		const targetCalendarId = settings.targetCalendarId;
 		if (!targetCalendarId) {
-			console.warn("[TaskCalendarSync] Cannot delete task event without target calendar:", task.path);
+			tasknotesLogger.warn(
+				"[TaskCalendarSync] Cannot delete task event without target calendar:",
+				{
+					category: "provider",
+					operation: "delete-task-event-without-target-calendar",
+					details: { value: task.path },
+				}
+			);
 			return false;
 		}
 
@@ -1715,7 +1823,14 @@ export class TaskCalendarSyncService {
 
 		const targetCalendarId = settings.targetCalendarId;
 		if (!targetCalendarId) {
-			console.warn("[TaskCalendarSync] Cannot delete task events without target calendar:", taskPath);
+			tasknotesLogger.warn(
+				"[TaskCalendarSync] Cannot delete task events without target calendar:",
+				{
+					category: "provider",
+					operation: "delete-task-events-without-target-calendar",
+					details: { value: taskPath },
+				}
+			);
 			return false;
 		}
 
@@ -1781,7 +1896,11 @@ export class TaskCalendarSyncService {
 				}
 			} catch (error) {
 				results.failed++;
-				console.error(`[TaskCalendarSync] Failed to sync task ${task.path}:`, error);
+				tasknotesLogger.error(`[TaskCalendarSync] Failed to sync task ${task.path}:`, {
+					category: "provider",
+					operation: "sync-task",
+					error: error,
+				});
 			}
 		});
 
@@ -1817,7 +1936,10 @@ export class TaskCalendarSyncService {
 			if (deleteEvents) {
 				const targetCalendarId = settings.targetCalendarId;
 				if (!targetCalendarId) {
-					console.warn(`[TaskCalendarSync] Cannot delete event without target calendar for ${task.path}`);
+					tasknotesLogger.warn(
+						`[TaskCalendarSync] Cannot delete event without target calendar for ${task.path}`,
+						{ category: "provider", operation: "delete-event-without-target-calendar" }
+					);
 					continue;
 				}
 
@@ -1827,7 +1949,10 @@ export class TaskCalendarSyncService {
 					eventId
 				);
 				if (!deleted) {
-					console.warn(`[TaskCalendarSync] Event deletion queued; keeping link for ${task.path}`);
+					tasknotesLogger.warn(
+						`[TaskCalendarSync] Event deletion queued; keeping link for ${task.path}`,
+						{ category: "provider", operation: "event-deletion-queued-keeping-link" }
+					);
 					continue;
 				}
 			}

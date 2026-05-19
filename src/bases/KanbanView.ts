@@ -44,6 +44,7 @@ import {
 	resolveKanbanContainerDropTarget,
 	resolveNestedTaskCardDragSource,
 	type KanbanDropTarget,
+	type KanbanTaskDropUpdatePlan,
 	type KanbanTaskDragSource,
 } from "./kanbanDragUtils";
 import {
@@ -74,6 +75,9 @@ import {
 	normalizePinnedColumnConfig,
 	shouldRenderKanbanColumn,
 } from "./kanbanGrouping";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/KanbanView" });
 
 export {
 	addPinnedColumnGroups,
@@ -112,12 +116,25 @@ type KanbanDropExecutionOptions = {
 	draggedPaths?: readonly string[];
 };
 
+type SuccessfulKanbanDropLocalPatchInput = {
+	path: string;
+	dropPlan: KanbanTaskDropUpdatePlan;
+	dropTarget?: KanbanDropTarget;
+	sortOrderPlan: SortOrderPlan | null;
+	updatedTask?: TaskInfo | null;
+	optimisticReorderApplied: boolean;
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
 
 function isKanbanEphemeralState(value: unknown): value is KanbanEphemeralState {
 	return isRecord(value);
+}
+
+function escapeAttributeSelectorValue(value: string): string {
+	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 function getColumnScrollState(state: KanbanEphemeralState): Record<string, number> | null {
@@ -328,7 +345,11 @@ export class KanbanView extends BasesViewBase {
 		try {
 			void this.render();
 		} catch (error) {
-			console.error(`[TaskNotes][${this.type}] Render error:`, error);
+			tasknotesLogger.error(`[TaskNotes][${this.type}] Render error:`, {
+				category: "internal",
+				operation: "render-kanban-view",
+				error: error,
+			});
 			this.renderError(error as Error);
 		}
 		this.setEphemeralState(savedState);
@@ -384,7 +405,11 @@ export class KanbanView extends BasesViewBase {
 			this.configLoaded = true;
 		} catch (e) {
 			// Use defaults
-			console.warn("[KanbanView] Failed to parse config:", e);
+			tasknotesLogger.warn("[KanbanView] Failed to parse config:", {
+				category: "configuration",
+				operation: "parse-config",
+				error: e,
+			});
 		}
 	}
 
@@ -590,7 +615,11 @@ export class KanbanView extends BasesViewBase {
 				await this.renderFlat(groups, allGroups);
 			}
 		} catch (error: unknown) {
-			console.error("[TaskNotes][KanbanView] Error rendering:", error);
+			tasknotesLogger.error("[TaskNotes][KanbanView] Error rendering:", {
+				category: "internal",
+				operation: "rendering",
+				error: error,
+			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
@@ -674,7 +703,14 @@ export class KanbanView extends BasesViewBase {
 			pathsToUpdate.length === 1 &&
 			(options.draggedPaths?.length ?? 1) === 1 &&
 			(options.optimisticReorderApplied === true || hasVirtualScroller)
-		);
+			);
+	}
+
+	private canFastPatchCrossScopeDrop(
+		options: KanbanDropExecutionOptions,
+		pathsToUpdate: readonly string[]
+	): boolean {
+		return pathsToUpdate.length === 1 && (options.draggedPaths?.length ?? 1) === 1;
 	}
 
 	private setSortScopeCandidatePaths(entries: Iterable<[string, string[]]>): void {
@@ -763,6 +799,373 @@ export class KanbanView extends BasesViewBase {
 		return true;
 	}
 
+	private applySuccessfulKanbanDropLocally({
+		path,
+		dropPlan,
+		dropTarget,
+		sortOrderPlan,
+		updatedTask,
+		optimisticReorderApplied,
+	}: SuccessfulKanbanDropLocalPatchInput): boolean {
+		if (
+			(!dropPlan.needsGroupUpdate && !dropPlan.needsSwimlaneUpdate) ||
+			dropPlan.isGroupByListProperty ||
+			dropPlan.isSwimlaneListProperty
+		) {
+			return false;
+		}
+
+		const sourceGroupKey = dropPlan.sourceColumn;
+		if (!sourceGroupKey) {
+			return false;
+		}
+
+		const sourceSwimLaneKey = this.swimLanePropertyId ? (dropPlan.sourceSwimlane ?? null) : null;
+		const targetGroupKey = dropPlan.newGroupValue;
+		const targetSwimLaneKey = this.swimLanePropertyId ? dropPlan.newSwimLaneValue : null;
+		const sourceScopePaths = this.getVisibleSortScopePaths(sourceGroupKey, sourceSwimLaneKey);
+		const targetScopePaths = this.getVisibleSortScopePaths(targetGroupKey, targetSwimLaneKey);
+		if (!sourceScopePaths || !targetScopePaths || !sourceScopePaths.includes(path)) {
+			return false;
+		}
+
+		const nextSourceScopePaths = sourceScopePaths.filter((scopePath) => scopePath !== path);
+		const nextTargetScopePaths = this.insertPathIntoDropScope(targetScopePaths, path, dropTarget);
+		if (!nextTargetScopePaths) {
+			return false;
+		}
+
+		const nextVisiblePaths = this.moveVisiblePathForDrop(path, dropTarget);
+		if (!nextVisiblePaths) {
+			return false;
+		}
+
+		const task = updatedTask ?? this.buildTaskInfoForLocalDropPatch(path, dropPlan, sortOrderPlan);
+		if (!task) {
+			return false;
+		}
+		const sortOrdersByPath = sortOrderPlan
+			? buildSortOrderUpdateMap(path, sortOrderPlan)
+			: new Map<string, string>();
+		const draggedSortOrder = sortOrdersByPath.get(path);
+		if (draggedSortOrder) {
+			task.sortOrder = draggedSortOrder;
+		}
+
+		const sourceScroller = this.columnScrollers.get(
+			this.getColumnScrollerKey(sourceGroupKey, sourceSwimLaneKey)
+		);
+		const targetScroller = this.columnScrollers.get(
+			this.getColumnScrollerKey(targetGroupKey, targetSwimLaneKey)
+		);
+		const targetInsertOptions = {
+			items: [task],
+			targetKey: dropTarget?.taskPath,
+			position: dropTarget ? (dropTarget.above ? "before" : "after") : "end",
+		} as const;
+
+		if (sourceScroller && !sourceScroller.canRemoveItems([path])) {
+			return false;
+		}
+		if (targetScroller && !targetScroller.canInsertItems(targetInsertOptions)) {
+			return false;
+		}
+		if (!targetScroller && !this.getTaskContainerForScope(targetGroupKey, targetSwimLaneKey)) {
+			return false;
+		}
+		if (!targetScroller && !optimisticReorderApplied && !dropTarget) {
+			return false;
+		}
+
+		if (sourceScroller && !sourceScroller.removeItems([path])) {
+			return false;
+		}
+		if (targetScroller) {
+			if (!targetScroller.insertItems(targetInsertOptions)) {
+				return false;
+			}
+			targetScroller.invalidateItems([path]);
+			this.removeNormalRenderedTask(path);
+		} else if (!this.renderNormalTaskInDropScope(task, targetGroupKey, targetSwimLaneKey, dropTarget)) {
+			return false;
+		}
+
+		this.taskInfoCache.set(path, task);
+		applySortOrderUpdatesToTaskCache(this.taskInfoCache, sortOrdersByPath);
+		for (const scroller of [sourceScroller, targetScroller]) {
+			if (!scroller) continue;
+			const scrollerItems = scroller.getItems();
+			applySortOrderUpdatesToItems(
+				scrollerItems,
+				(item) => item,
+				sortOrdersByPath,
+				(updated) => {
+					this.taskInfoCache.set(updated.path, updated);
+				}
+			);
+			const scrollerPaths = new Set(scrollerItems.map((item) => item.path));
+			const keysToInvalidate = [...sortOrdersByPath.keys()].filter((key) =>
+				scrollerPaths.has(key)
+			);
+			scroller.invalidateItems(keysToInvalidate);
+		}
+
+		this.setSortScopePathsForScope(sourceGroupKey, sourceSwimLaneKey, nextSourceScopePaths);
+		this.setSortScopePathsForScope(targetGroupKey, targetSwimLaneKey, nextTargetScopePaths);
+		this.setCurrentVisibleTaskPathOrder(nextVisiblePaths);
+		this.updateScopeEmptyHint(sourceGroupKey, sourceSwimLaneKey);
+		this.updateScopeEmptyHint(targetGroupKey, targetSwimLaneKey);
+		this.updateCountDisplaysForScope(sourceGroupKey, sourceSwimLaneKey);
+		this.updateCountDisplaysForScope(targetGroupKey, targetSwimLaneKey);
+		return true;
+	}
+
+	private insertPathIntoDropScope(
+		scopePaths: readonly string[],
+		path: string,
+		dropTarget?: KanbanDropTarget
+	): string[] | null {
+		const withoutPath = scopePaths.filter((scopePath) => scopePath !== path);
+		if (!dropTarget) {
+			return [...withoutPath, path];
+		}
+		if (!withoutPath.includes(dropTarget.taskPath)) {
+			return null;
+		}
+		return movePathsRelativeToTarget(
+			[...withoutPath, path],
+			[path],
+			dropTarget.taskPath,
+			dropTarget.above
+		);
+	}
+
+	private moveVisiblePathForDrop(
+		path: string,
+		dropTarget?: KanbanDropTarget
+	): string[] | null {
+		const visiblePaths = this.getCurrentVisibleTaskPathOrder();
+		if (!visiblePaths.includes(path)) {
+			return null;
+		}
+		if (!dropTarget) {
+			return [...visiblePaths.filter((visiblePath) => visiblePath !== path), path];
+		}
+		if (!visiblePaths.includes(dropTarget.taskPath)) {
+			return null;
+		}
+		return movePathsRelativeToTarget(visiblePaths, [path], dropTarget.taskPath, dropTarget.above);
+	}
+
+	private buildTaskInfoForLocalDropPatch(
+		path: string,
+		dropPlan: KanbanTaskDropUpdatePlan,
+		sortOrderPlan: SortOrderPlan | null
+	): TaskInfo | null {
+		const cachedTask = this.taskInfoCache.get(path);
+		if (!cachedTask) {
+			return null;
+		}
+
+		const task: TaskInfo = {
+			...cachedTask,
+			customProperties: { ...(cachedTask.customProperties ?? {}) },
+		};
+		if (dropPlan.needsGroupUpdate) {
+			this.applyLocalDropValue(
+				task,
+				dropPlan.groupByTaskProp,
+				dropPlan.groupByFrontmatterKey,
+				dropPlan.newGroupValue
+			);
+		}
+		if (
+			dropPlan.needsSwimlaneUpdate &&
+			dropPlan.swimlaneFrontmatterKey &&
+			dropPlan.newSwimLaneValue !== null
+		) {
+			this.applyLocalDropValue(
+				task,
+				dropPlan.swimlaneTaskProp,
+				dropPlan.swimlaneFrontmatterKey,
+				dropPlan.newSwimLaneValue
+			);
+		}
+		if (sortOrderPlan?.sortOrder) {
+			task.sortOrder = sortOrderPlan.sortOrder;
+		}
+		return task;
+	}
+
+	private applyLocalDropValue(
+		task: TaskInfo,
+		taskProp: string | null,
+		frontmatterKey: string,
+		value: string
+	): void {
+		const localValue = value === "None" ? null : value;
+		if (taskProp) {
+			(task as unknown as Record<string, unknown>)[taskProp] = localValue;
+		}
+		task.customProperties = {
+			...(task.customProperties ?? {}),
+			[frontmatterKey]: localValue,
+		};
+	}
+
+	private createRenderedTaskWrapper(task: TaskInfo): HTMLElement {
+		const doc = this.containerEl.ownerDocument;
+		const cardWrapper = doc.createElement("div");
+		cardWrapper.className = "kanban-view__card-wrapper";
+		cardWrapper.setAttribute("draggable", "true");
+		cardWrapper.setAttribute("data-task-path", task.path);
+		const card = createTaskCard(
+			task,
+			this.plugin,
+			this.getVisibleProperties(),
+			this.getCardOptions()
+		);
+		cardWrapper.appendChild(card);
+		this.setupCardDragHandlers(cardWrapper, task);
+		return cardWrapper;
+	}
+
+	private renderNormalTaskInDropScope(
+		task: TaskInfo,
+		groupKey: string,
+		swimLaneKey: string | null,
+		dropTarget?: KanbanDropTarget
+	): boolean {
+		const targetContainer = this.getTaskContainerForScope(groupKey, swimLaneKey);
+		if (!targetContainer) {
+			return false;
+		}
+
+		const existingWrapper = this.currentTaskElements.get(task.path);
+		const nextWrapper = this.createRenderedTaskWrapper(task);
+		this.removeEmptyCellHint(targetContainer);
+
+		if (existingWrapper && targetContainer.contains(existingWrapper)) {
+			existingWrapper.replaceWith(nextWrapper);
+		} else {
+			const targetWrapper = dropTarget
+				? this.currentTaskElements.get(dropTarget.taskPath)
+				: null;
+			if (targetWrapper && targetContainer.contains(targetWrapper)) {
+				if (dropTarget?.above) {
+					targetContainer.insertBefore(nextWrapper, targetWrapper);
+				} else {
+					targetContainer.insertBefore(nextWrapper, targetWrapper.nextSibling);
+				}
+			} else {
+				targetContainer.appendChild(nextWrapper);
+			}
+			existingWrapper?.remove();
+		}
+
+		this.currentTaskElements.set(task.path, nextWrapper);
+		return true;
+	}
+
+	private removeNormalRenderedTask(path: string): void {
+		const existingWrapper = this.currentTaskElements.get(path);
+		existingWrapper?.remove();
+		this.currentTaskElements.delete(path);
+	}
+
+	private getTaskContainerForScope(
+		groupKey: string,
+		swimLaneKey: string | null
+	): HTMLElement | null {
+		if (!this.boardEl) {
+			return null;
+		}
+
+		const groupSelector = escapeAttributeSelectorValue(groupKey);
+		if (swimLaneKey === null) {
+			return this.boardEl.querySelector<HTMLElement>(
+				`.kanban-view__column[data-group="${groupSelector}"] .kanban-view__cards`
+			);
+		}
+
+		const swimLaneSelector = escapeAttributeSelectorValue(swimLaneKey);
+		return this.boardEl.querySelector<HTMLElement>(
+			`.kanban-view__swimlane-column[data-column="${groupSelector}"][data-swimlane="${swimLaneSelector}"] .kanban-view__tasks-container`
+		);
+	}
+
+	private updateScopeEmptyHint(groupKey: string, swimLaneKey: string | null): void {
+		const container = this.getTaskContainerForScope(groupKey, swimLaneKey);
+		if (!container) {
+			return;
+		}
+
+		const scopePaths = this.getVisibleSortScopePaths(groupKey, swimLaneKey) ?? [];
+		this.removeEmptyCellHint(container);
+		if (scopePaths.length === 0) {
+			this.renderEmptyCellHint(container, groupKey, swimLaneKey);
+		}
+	}
+
+	private updateCountDisplaysForScope(groupKey: string, swimLaneKey: string | null): void {
+		this.updateColumnCountDisplay(groupKey);
+		if (swimLaneKey !== null) {
+			this.updateSwimLaneCountDisplay(swimLaneKey);
+		}
+	}
+
+	private updateColumnCountDisplay(groupKey: string): void {
+		const count = this.getVisibleColumnTaskCount(groupKey);
+		const formatted = formatKanbanColumnCount(count, this.wipLimits[groupKey]);
+		const groupSelector = escapeAttributeSelectorValue(groupKey);
+		const countEl = this.boardEl?.querySelector<HTMLElement>(
+			`.kanban-view__column[data-group="${groupSelector}"] .kanban-view__column-count, .kanban-view__column-header-cell[data-column-key="${groupSelector}"] .kanban-view__column-count`
+		);
+		if (!countEl) {
+			return;
+		}
+
+		countEl.textContent = formatted.text;
+		countEl.classList.toggle("kanban-view__column-count--exceeded", formatted.isExceeded);
+	}
+
+	private getVisibleColumnTaskCount(groupKey: string): number {
+		if (!this.swimLanePropertyId) {
+			return this.getVisibleSortScopePaths(groupKey, null)?.length ?? 0;
+		}
+
+		const suffix = `::${groupKey}`;
+		let count = 0;
+		for (const [scopeKey, paths] of this.sortScopeTaskPaths) {
+			if (scopeKey.endsWith(suffix)) {
+				count += paths.length;
+			}
+		}
+		return count;
+	}
+
+	private updateSwimLaneCountDisplay(swimLaneKey: string): void {
+		const swimLaneSelector = escapeAttributeSelectorValue(swimLaneKey);
+		const row = this.boardEl
+			?.querySelector<HTMLElement>(
+				`.kanban-view__swimlane-column[data-swimlane="${swimLaneSelector}"]`
+			)
+			?.closest<HTMLElement>(".kanban-view__swimlane-row");
+		const countEl = row?.querySelector<HTMLElement>(".kanban-view__swimlane-count");
+		if (!countEl) {
+			return;
+		}
+
+		const prefix = `${swimLaneKey}::`;
+		let count = 0;
+		for (const [scopeKey, paths] of this.sortScopeTaskPaths) {
+			if (scopeKey.startsWith(prefix)) {
+				count += paths.length;
+			}
+		}
+		countEl.textContent = `${count}`;
+	}
+
 	private async confirmLargeReorder(
 		editCount: number,
 		groupKey: string,
@@ -819,8 +1222,7 @@ export class KanbanView extends BasesViewBase {
 				[],
 			isStatusGroupingProperty: (propertyId) => this.isStatusGroupingProperty(propertyId),
 			isPriorityGroupingProperty: (propertyId) => this.isPriorityGroupingProperty(propertyId),
-			getStatusGroupKeyAliases: (statusConfig) =>
-				this.getStatusGroupKeyAliases(statusConfig),
+			getStatusGroupKeyAliases: (statusConfig) => this.getStatusGroupKeyAliases(statusConfig),
 			pinnedColumns: this.pinnedColumns,
 		});
 	}
@@ -924,8 +1326,7 @@ export class KanbanView extends BasesViewBase {
 				this.plugin.statusManager?.normalizeStatusValue?.(value) ?? value,
 			normalizePriorityValue: (value) =>
 				this.plugin.priorityManager?.normalizePriorityValue?.(value) ?? value,
-			getStatusGroupKeyAliases: (statusConfig) =>
-				this.getStatusGroupKeyAliases(statusConfig),
+			getStatusGroupKeyAliases: (statusConfig) => this.getStatusGroupKeyAliases(statusConfig),
 		});
 	}
 
@@ -1845,7 +2246,11 @@ export class KanbanView extends BasesViewBase {
 
 				// Optimistic DOM reorder: move card to correct position immediately
 				const paths = getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath);
-				const optimisticResult = this.performOptimisticReorder(paths, dropTarget, cardsContainer);
+				const optimisticResult = this.performOptimisticReorder(
+					paths,
+					dropTarget,
+					cardsContainer
+				);
 				this.debugLog("COLUMN-DROP-OPTIMISTIC-RESULT", { success: optimisticResult });
 
 				// Now clean up shift CSS — no visual change since DOM is already correct
@@ -1974,10 +2379,16 @@ export class KanbanView extends BasesViewBase {
 				this.cleanupDragShift();
 
 				// Update both the groupBy property and swimlane property
-				await this.handleTaskDrop(this.draggedTaskPath, columnKey, swimLaneKey, dropTarget, {
-					optimisticReorderApplied: optimisticResult,
-					draggedPaths: paths,
-				});
+				await this.handleTaskDrop(
+					this.draggedTaskPath,
+					columnKey,
+					swimLaneKey,
+					dropTarget,
+					{
+						optimisticReorderApplied: optimisticResult,
+						draggedPaths: paths,
+					}
+				);
 
 				this.draggedTaskPath = null;
 				this.draggedFromColumn = null;
@@ -3138,14 +3549,19 @@ export class KanbanView extends BasesViewBase {
 				const pathsToUpdate =
 					requestedDraggedPaths.length > 1 ? requestedDraggedPaths : [taskPath];
 				const isBatchOperation = pathsToUpdate.length > 1;
-				const canFastPatchManualOrder = this.canFastPatchManualOrderDrop(
-					options,
-					dropTarget,
-					pathsToUpdate,
-					newGroupValue,
-					newSwimLaneValue
-				);
-				let fastPatchedManualOrder = false;
+					const canFastPatchManualOrder = this.canFastPatchManualOrderDrop(
+						options,
+						dropTarget,
+						pathsToUpdate,
+						newGroupValue,
+						newSwimLaneValue
+					);
+					const canFastPatchCrossScopeDrop = this.canFastPatchCrossScopeDrop(
+						options,
+						pathsToUpdate
+					);
+					let fastPatchedManualOrder = false;
+					let fastPatchedCrossScopeDrop = false;
 
 				// Pre-compute sort_order related state
 				const hasSortOrder = isSortOrderInSortConfig(
@@ -3343,6 +3759,8 @@ export class KanbanView extends BasesViewBase {
 					}
 
 					// Fire post-write side effects for known TaskInfo property changes
+					let sideEffectFailed = false;
+					let sideEffectUpdatedTask: TaskInfo | null = null;
 					if (dropPlan.changedTaskProp) {
 						try {
 							const originalTask =
@@ -3364,13 +3782,34 @@ export class KanbanView extends BasesViewBase {
 									sideEffectPlan.oldPropValue,
 									sideEffectPlan.newPropValue
 								);
+								sideEffectUpdatedTask = sideEffectPlan.updatedTask;
 							}
 						} catch (sideEffectError) {
-							console.warn(
+							sideEffectFailed = true;
+							tasknotesLogger.warn(
 								"[TaskNotes][KanbanView] Side-effect error after drop:",
-								sideEffectError
+								{
+									category: "configuration",
+									operation: "side-effect-drop",
+									error: sideEffectError,
+								}
 							);
 						}
+					}
+
+					if (
+						canFastPatchCrossScopeDrop &&
+						!sideEffectFailed &&
+						(dropPlan.needsGroupUpdate || dropPlan.needsSwimlaneUpdate)
+					) {
+						fastPatchedCrossScopeDrop = this.applySuccessfulKanbanDropLocally({
+							path,
+							dropPlan,
+							dropTarget,
+							sortOrderPlan,
+							updatedTask: sideEffectUpdatedTask,
+							optimisticReorderApplied: options.optimisticReorderApplied === true,
+						});
 					}
 				}
 
@@ -3383,14 +3822,19 @@ export class KanbanView extends BasesViewBase {
 				this.debugLog("HANDLE-DROP-COMPLETE", {
 					pathsUpdated: pathsToUpdate.map((p) => p.split("/").pop()),
 					fastPatchedManualOrder,
+					fastPatchedCrossScopeDrop,
 				});
-				if (fastPatchedManualOrder) {
+				if (fastPatchedManualOrder || fastPatchedCrossScopeDrop) {
 					this.pendingRender = false;
 					dropRequiresPostDropRefresh = false;
 				}
 			}); // end dropQueue.enqueue
 		} catch (error) {
-			console.error("[TaskNotes][KanbanView] Error updating task:", error);
+			tasknotesLogger.error("[TaskNotes][KanbanView] Error updating task:", {
+				category: "persistence",
+				operation: "updating-task",
+				error: error,
+			});
 		} finally {
 			this.activeDropCount--;
 			if (dropRequiresPostDropRefresh) {
@@ -3663,7 +4107,11 @@ export class KanbanView extends BasesViewBase {
 			// Save to config using BasesViewConfig API
 			this.config.set("columnOrder", orderJson);
 		} catch (error) {
-			console.error("[KanbanView] Failed to save column order:", error);
+			tasknotesLogger.error("[KanbanView] Failed to save column order:", {
+				category: "persistence",
+				operation: "save-column-order",
+				error: error,
+			});
 		}
 	}
 
@@ -3848,7 +4296,10 @@ export class KanbanView extends BasesViewBase {
 export function buildKanbanViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
 	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
-			console.error("[TaskNotes][KanbanView] No containerEl provided");
+			tasknotesLogger.error("[TaskNotes][KanbanView] No containerEl provided", {
+				category: "stale-data",
+				operation: "no-containerel-provided",
+			});
 			throw new Error("KanbanView requires a containerEl");
 		}
 

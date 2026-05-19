@@ -1,5 +1,8 @@
 import type { RenderContext } from "obsidian";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardPresentation" });
 
 export interface TaskCardPresentationOptions {
 	propertyLabels?: Record<string, string>;
@@ -78,7 +81,11 @@ export function renderBasesValue(
 			container.textContent = getBasesDisplayString(value);
 		}
 	} catch (error) {
-		console.debug("[TaskNotes] Error rendering Bases value:", error);
+		tasknotesLogger.debug("[TaskNotes] Error rendering Bases value:", {
+			category: "persistence",
+			operation: "rendering-bases-value",
+			error: error,
+		});
 		container.textContent = getBasesDisplayString(value);
 	}
 

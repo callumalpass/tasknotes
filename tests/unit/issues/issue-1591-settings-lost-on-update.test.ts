@@ -43,7 +43,13 @@ describe("issue #1591 settings reset on update", () => {
 		expect(plugin.loadData).toHaveBeenCalledTimes(4);
 		expect(plugin.saveData).not.toHaveBeenCalled();
 		expect(console.error).toHaveBeenCalledWith(
-			expect.stringContaining("Settings data file exists")
+			expect.stringContaining(
+				"[TaskNotes][Main][internal][load-settings-data] Settings data could not be read safely"
+			),
+			expect.objectContaining({
+				reason: expect.stringContaining("Settings data file exists"),
+				settingsSavesBlocked: true,
+			})
 		);
 		expect(console.warn).toHaveBeenCalledWith(
 			expect.stringContaining("Skipping settings save")

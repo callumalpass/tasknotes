@@ -1,4 +1,7 @@
 import { App, TFile, parseLinktext } from "obsidian";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/LinkUtils" });
 
 /**
  * Parse a link string (wikilink or markdown) to extract the path.
@@ -19,7 +22,12 @@ export function parseLinkToPath(linkText: string): string {
 		try {
 			inner = decodeURIComponent(inner);
 		} catch (error) {
-			console.debug("Failed to decode URI component:", inner, error);
+			tasknotesLogger.debug("Failed to decode URI component:", {
+				category: "internal",
+				operation: "decode-uri-component",
+				details: { value: inner },
+				error: error,
+			});
 		}
 
 		const parsed = parseLinktext(inner);
@@ -31,8 +39,8 @@ export function parseLinkToPath(linkText: string): string {
 		const inner = trimmed.slice(2, -2).trim();
 
 		// Manually strip alias if present
-		// parseLinktext doesn't always handle aliases correctly 
-		const pipeIndex = inner.indexOf('|');
+		// parseLinktext doesn't always handle aliases correctly
+		const pipeIndex = inner.indexOf("|");
 		const pathOnly = pipeIndex !== -1 ? inner.substring(0, pipeIndex) : inner;
 		const parsed = parseLinktext(pathOnly);
 
@@ -56,7 +64,12 @@ export function parseLinkToPath(linkText: string): string {
 			linkPath = decodeURIComponent(linkPath);
 		} catch (error) {
 			// If decoding fails, use the original path
-			console.debug("Failed to decode URI component:", linkPath, error);
+			tasknotesLogger.debug("Failed to decode URI component:", {
+				category: "internal",
+				operation: "decode-uri-component",
+				details: { value: linkPath },
+				error: error,
+			});
 		}
 
 		// Use parseLinktext to handle subpaths/headings
@@ -138,9 +151,11 @@ function getResolvedProjectDisplayName(
 function getResolvedFileTitle(file: TFile, app?: App): string | null {
 	const cache =
 		app?.metadataCache.getFileCache(file) ??
-		(app?.metadataCache as App["metadataCache"] & {
-			getCache?: (path: string) => { frontmatter?: Record<string, unknown> } | null;
-		})?.getCache?.(file.path);
+		(
+			app?.metadataCache as App["metadataCache"] & {
+				getCache?: (path: string) => { frontmatter?: Record<string, unknown> } | null;
+			}
+		)?.getCache?.(file.path);
 	const title = cache?.frontmatter?.title;
 	return typeof title === "string" && title.trim().length > 0 ? title.trim() : null;
 }
@@ -210,7 +225,7 @@ export function generateLink(
 		link += `|${alias}`;
 	}
 
-	link += ']]';
+	link += "]]";
 	return link;
 }
 

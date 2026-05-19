@@ -65,6 +65,9 @@ import { insertAfterElement, insertAfterMetadataOrHeader } from "./MarkdownWidge
 import { FilterUtils } from "../utils/FilterUtils";
 import { collectCacheTags } from "../utils/tagExtraction";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/RelationshipsDecorations" });
 
 // CSS class for identifying plugin-generated elements
 const CSS_RELATIONSHIPS_WIDGET = "tasknotes-relationships-widget";
@@ -78,8 +81,8 @@ interface HTMLElementWithComponent extends HTMLElement {
 }
 
 function getHTMLElementChildren(element: HTMLElement): HTMLElement[] {
-	return Array.from(element.children).filter(
-		(child): child is HTMLElement => child.instanceOf(HTMLElement)
+	return Array.from(element.children).filter((child): child is HTMLElement =>
+		child.instanceOf(HTMLElement)
 	);
 }
 
@@ -182,10 +185,7 @@ export function applyRelationshipsBottomOffset(container: HTMLElement, widget: H
 	if (spacerGap > 0) {
 		const defaultMarginTop = getRelationshipsWidgetDefaultMarginTop(widget);
 		const adjustedMarginTop = Math.round(defaultMarginTop - spacerGap);
-		widget.style.setProperty(
-			"--tn-relationships-widget-margin-top",
-			`${adjustedMarginTop}px`
-		);
+		widget.style.setProperty("--tn-relationships-widget-margin-top", `${adjustedMarginTop}px`);
 	}
 }
 
@@ -248,7 +248,11 @@ async function createRelationshipsWidget(
 			component
 		);
 	} catch (error) {
-		console.error("[TaskNotes] Error rendering Bases view in relationships widget:", error);
+		tasknotesLogger.error("[TaskNotes] Error rendering Bases view in relationships widget:", {
+			category: "internal",
+			operation: "rendering-bases-view-relationships-widget",
+			error: error,
+		});
 		const errorDiv = activeDocument.createElement("div");
 		errorDiv.className = "relationships__error";
 		errorDiv.textContent = "Failed to load relationships view";
@@ -385,7 +389,11 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			const editorInfo = view.state.field(editorInfoField, false);
 			return editorInfo?.file || null;
 		} catch (error) {
-			console.debug("[TaskNotes] Error getting file from editor view:", error);
+			tasknotesLogger.debug("[TaskNotes] Error getting file from editor view:", {
+				category: "persistence",
+				operation: "getting-file-editor-view",
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -444,7 +452,11 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 
 			return false;
 		} catch (error) {
-			console.debug("[TaskNotes] Error detecting table cell editor:", error);
+			tasknotesLogger.debug("[TaskNotes] Error detecting table cell editor:", {
+				category: "internal",
+				operation: "detecting-table-cell-editor",
+				error: error,
+			});
 			return false;
 		}
 	}
@@ -469,8 +481,12 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			// Remove any widget DOM that might exist from previous or overlapping instances.
 			const container = view.dom.closest(".workspace-leaf-content");
 			if (!container) {
-				console.debug(
-					"[TaskNotes] Could not find workspace-leaf-content for orphan cleanup"
+				tasknotesLogger.debug(
+					"[TaskNotes] Could not find workspace-leaf-content for orphan cleanup",
+					{
+						category: "stale-data",
+						operation: "find-workspace-leaf-content-orphan-cleanup",
+					}
 				);
 				return;
 			}
@@ -483,7 +499,11 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			this.currentWidget = null;
 			this.widgetContainer = null;
 		} catch (error) {
-			console.error("[TaskNotes] Error cleaning up orphaned relationships widgets:", error);
+			tasknotesLogger.error("[TaskNotes] Error cleaning up orphaned relationships widgets:", {
+				category: "stale-data",
+				operation: "cleaning-up-orphaned-relationships-widgets",
+				error: error,
+			});
 		}
 	}
 
@@ -542,8 +562,12 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				?.querySelector<HTMLElement>(".cm-sizer");
 
 			if (!targetContainer) {
-				console.warn(
-					"[TaskNotes] Could not find .cm-sizer container for relationships widget"
+				tasknotesLogger.warn(
+					"[TaskNotes] Could not find .cm-sizer container for relationships widget",
+					{
+						category: "stale-data",
+						operation: "find-cm-sizer-container-relationships-widget",
+					}
 				);
 				return;
 			}
@@ -582,7 +606,11 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				this.scheduleBottomOffsetRefresh();
 			}
 		} catch (error) {
-			console.error("[TaskNotes] Error injecting relationships widget:", error);
+			tasknotesLogger.error("[TaskNotes] Error injecting relationships widget:", {
+				category: "internal",
+				operation: "injecting-relationships-widget",
+				error: error,
+			});
 			// Clean up on error
 			this.removeWidget();
 		}
@@ -657,9 +685,13 @@ async function injectReadingModeWidget(
 				el.remove();
 			});
 		} catch (error) {
-			console.debug(
+			tasknotesLogger.debug(
 				"[TaskNotes] Error cleaning up relationships widget in reading mode:",
-				error
+				{
+					category: "persistence",
+					operation: "cleaning-up-relationships-widget-reading-mode",
+					error: error,
+				}
 			);
 		}
 		return;
@@ -690,8 +722,12 @@ async function injectReadingModeWidget(
 		// RISK: Relies on Obsidian's internal DOM structure
 		const sizer = containerEl.querySelector<HTMLElement>(".markdown-preview-sizer");
 		if (!sizer) {
-			console.warn(
-				"[TaskNotes] Could not find .markdown-preview-sizer for relationships in reading mode"
+			tasknotesLogger.warn(
+				"[TaskNotes] Could not find .markdown-preview-sizer for relationships in reading mode",
+				{
+					category: "stale-data",
+					operation: "find-markdown-preview-sizer-relationships-reading-mode",
+				}
 			);
 			return;
 		}
@@ -710,7 +746,11 @@ async function injectReadingModeWidget(
 			insertRelationshipsWidgetAtBottom(sizer, widget);
 		}
 	} catch (error) {
-		console.error("[TaskNotes] Error injecting relationships widget in reading mode:", error);
+		tasknotesLogger.error("[TaskNotes] Error injecting relationships widget in reading mode:", {
+			category: "persistence",
+			operation: "injecting-relationships-widget-reading-mode",
+			error: error,
+		});
 	}
 }
 

@@ -5,6 +5,9 @@ import { ICSNoteCreationModal } from "./ICSNoteCreationModal";
 import { openFileSelector } from "./FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
 import { TranslationKey } from "../i18n";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ICSEventInfoModal" });
 
 /**
  * Modal for displaying ICS event information with note/task creation capabilities
@@ -196,7 +199,11 @@ export class ICSEventInfoModal extends Modal {
 
 			modal.open();
 		} catch (error) {
-			console.error("Error opening creation modal:", error);
+			tasknotesLogger.error("Error opening creation modal:", {
+				category: "provider",
+				operation: "opening-creation-modal",
+				error: error,
+			});
 			new Notice(this.translate("notices.icsCreationModalOpenFailed"));
 		}
 	}
@@ -206,8 +213,8 @@ export class ICSEventInfoModal extends Modal {
 			async () => {
 				openFileSelector(
 					this.plugin,
-						(file) => {
-							if (!(file instanceof TAbstractFile)) return;
+					(file) => {
+						if (!(file instanceof TAbstractFile)) return;
 
 						void SafeAsync.execute(
 							async () => {
@@ -293,10 +300,18 @@ export class ICSEventInfoModal extends Modal {
 				await this.app.workspace.getLeaf().openFile(file);
 			} else {
 				new Notice(this.translate("notices.icsFileNotFound"));
-				console.error("Invalid file path or file not found:", filePath);
+				tasknotesLogger.error("Invalid file path or file not found:", {
+					category: "provider",
+					operation: "invalid-file-path-or-file-not-found",
+					details: { value: filePath },
+				});
 			}
 		} catch (error) {
-			console.error("Error opening file:", error);
+			tasknotesLogger.error("Error opening file:", {
+				category: "provider",
+				operation: "opening-file",
+				error: error,
+			});
 			new Notice(this.translate("notices.icsFileOpenFailed"));
 		}
 	}

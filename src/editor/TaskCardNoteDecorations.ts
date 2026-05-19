@@ -45,14 +45,7 @@ import {
 	EVENT_DATE_CHANGED,
 	TaskInfo,
 } from "../types";
-import {
-	Component,
-	EventRef,
-	TFile,
-	editorInfoField,
-	MarkdownView,
-	WorkspaceLeaf,
-} from "obsidian";
+import { Component, EventRef, TFile, editorInfoField, MarkdownView, WorkspaceLeaf } from "obsidian";
 import { Extension } from "@codemirror/state";
 
 import TaskNotesPlugin from "../main";
@@ -67,6 +60,9 @@ import {
 	shouldSkipMarkdownWidgetLeaf,
 } from "./MarkdownWidgetContext";
 import { insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/TaskCardNoteDecorations" });
 
 // CSS class for identifying plugin-generated elements
 const CSS_TASK_CARD_WIDGET = "tasknotes-task-card-note-widget";
@@ -313,8 +309,12 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 				view.dom.closest(".canvas-node-content") ??
 				view.dom.closest(".workspace-leaf-content");
 			if (!container) {
-				console.debug(
-					"[TaskNotes] Could not find workspace-leaf-content for orphan cleanup"
+				tasknotesLogger.debug(
+					"[TaskNotes] Could not find workspace-leaf-content for orphan cleanup",
+					{
+						category: "stale-data",
+						operation: "find-workspace-leaf-content-orphan-cleanup",
+					}
 				);
 				return;
 			}
@@ -327,7 +327,11 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 				}
 			});
 		} catch (error) {
-			console.error("[TaskNotes] Error cleaning up orphaned task card widgets:", error);
+			tasknotesLogger.error("[TaskNotes] Error cleaning up orphaned task card widgets:", {
+				category: "stale-data",
+				operation: "cleaning-up-orphaned-task-card-widgets",
+				error: error,
+			});
 		}
 	}
 
@@ -373,7 +377,11 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 					this.injectWidget(view);
 				}
 			} catch (error) {
-				console.error("[TaskNotes] Error loading task for task note:", error);
+				tasknotesLogger.error("[TaskNotes] Error loading task for task note:", {
+					category: "persistence",
+					operation: "loading-task-task-note",
+					error: error,
+				});
 			}
 		} else {
 			if (this.cachedTask !== null) {
@@ -389,7 +397,11 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 			const editorInfo = view.state.field(editorInfoField, false);
 			return editorInfo?.file || null;
 		} catch (error) {
-			console.debug("[TaskNotes] Error getting file from editor view:", error);
+			tasknotesLogger.debug("[TaskNotes] Error getting file from editor view:", {
+				category: "persistence",
+				operation: "getting-file-editor-view",
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -448,7 +460,11 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 
 			return false;
 		} catch (error) {
-			console.debug("[TaskNotes] Error detecting table cell editor:", error);
+			tasknotesLogger.debug("[TaskNotes] Error detecting table cell editor:", {
+				category: "persistence",
+				operation: "detecting-table-cell-editor",
+				error: error,
+			});
 			return false;
 		}
 	}
@@ -487,7 +503,13 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 				.closest(".markdown-source-view")
 				?.querySelector<HTMLElement>(".cm-sizer");
 			if (!targetContainer) {
-				console.warn("[TaskNotes] Could not find .cm-sizer container for task card widget");
+				tasknotesLogger.warn(
+					"[TaskNotes] Could not find .cm-sizer container for task card widget",
+					{
+						category: "stale-data",
+						operation: "find-cm-sizer-container-task-card-widget",
+					}
+				);
 				return;
 			}
 
@@ -503,7 +525,11 @@ export class TaskCardNoteDecorationsPlugin implements PluginValue {
 			// Emit event for coordination with other widgets (e.g., relationships)
 			this.plugin.emitter.trigger(EVENT_TASK_CARD_INJECTED, { container: targetContainer });
 		} catch (error) {
-			console.error("[TaskNotes] Error injecting task card widget:", error);
+			tasknotesLogger.error("[TaskNotes] Error injecting task card widget:", {
+				category: "persistence",
+				operation: "injecting-task-card-widget",
+				error: error,
+			});
 			// Clean up on error
 			this.removeWidget();
 		}
@@ -563,7 +589,11 @@ async function injectReadingModeWidget(
 			const containerEl = previewView.containerEl;
 			removeTaskCardWidgets(containerEl);
 		} catch (error) {
-			console.debug("[TaskNotes] Error cleaning up task card in reading mode:", error);
+			tasknotesLogger.debug("[TaskNotes] Error cleaning up task card in reading mode:", {
+				category: "persistence",
+				operation: "cleaning-up-task-card-reading-mode",
+				error: error,
+			});
 		}
 		return;
 	}
@@ -586,15 +616,23 @@ async function injectReadingModeWidget(
 		// RISK: Relies on Obsidian's internal DOM structure
 		const sizer = containerEl.querySelector<HTMLElement>(".markdown-preview-sizer");
 		if (!sizer) {
-			console.warn(
-				"[TaskNotes] Could not find .markdown-preview-sizer for task card in reading mode"
+			tasknotesLogger.warn(
+				"[TaskNotes] Could not find .markdown-preview-sizer for task card in reading mode",
+				{
+					category: "stale-data",
+					operation: "find-markdown-preview-sizer-task-card-reading-mode",
+				}
 			);
 			return;
 		}
 
 		insertAfterMetadataOrHeader(sizer, widget);
 	} catch (error) {
-		console.error("[TaskNotes] Error injecting task card widget in reading mode:", error);
+		tasknotesLogger.error("[TaskNotes] Error injecting task card widget in reading mode:", {
+			category: "persistence",
+			operation: "injecting-task-card-widget-reading-mode",
+			error: error,
+		});
 	}
 }
 

@@ -5,6 +5,9 @@ import {
 } from "../services/ViewPerformanceService";
 import { TaskInfo, TimeEntry } from "../types";
 import TaskNotesPlugin from "../main";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/ViewOptimizations" });
 
 /**
  * Mixin interface for views that want performance optimizations
@@ -48,8 +51,9 @@ export function initializeViewPerformance(
 
 		view.viewPerformanceService.registerView(fullConfig, handler);
 	} else {
-		console.warn(
-			`[ViewOptimizations] ViewPerformanceService not available for ${fullConfig.viewId}`
+		tasknotesLogger.warn(
+			`[ViewOptimizations] ViewPerformanceService not available for ${fullConfig.viewId}`,
+			{ category: "stale-data", operation: "viewperformanceservice-not" }
 		);
 	}
 }
@@ -170,10 +174,10 @@ export async function selectiveUpdateForListView(
 			}
 			break;
 
-			case "create":
-				// For new tasks, we generally need to check if they should be visible
-				// This is view-specific, so fallback to refresh for now
-				await view.refresh?.();
+		case "create":
+			// For new tasks, we generally need to check if they should be visible
+			// This is view-specific, so fallback to refresh for now
+			await view.refresh?.();
 			break;
 	}
 }
@@ -200,7 +204,11 @@ async function updateTaskElementInPlace(
 			element.classList.remove("task-card--updated");
 		}, 1000);
 	} catch (error) {
-		console.error("[ViewOptimizations] Error updating task element in place:", error);
+		tasknotesLogger.error("[ViewOptimizations] Error updating task element in place:", {
+			category: "persistence",
+			operation: "updating-task-element-place",
+			error: error,
+		});
 		// Could fallback to full refresh here if needed
 	}
 }

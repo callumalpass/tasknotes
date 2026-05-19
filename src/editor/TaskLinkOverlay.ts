@@ -1,11 +1,5 @@
 import { Extension, RangeSetBuilder, StateEffect } from "@codemirror/state";
-import {
-	Decoration,
-	DecorationSet,
-	EditorView,
-	ViewPlugin,
-	ViewUpdate,
-} from "@codemirror/view";
+import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import {
 	editorInfoField,
 	editorLivePreviewField,
@@ -23,6 +17,9 @@ import {
 } from "../types";
 import { TaskLinkDetectionService } from "../services/TaskLinkDetectionService";
 import { TaskLinkWidget } from "./TaskLinkWidget";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/TaskLinkOverlay" });
 
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
@@ -105,7 +102,11 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 								effects: [taskUpdateEffect.of({})],
 							});
 						} catch (error) {
-							console.error("Error dispatching task link update:", error);
+							tasknotesLogger.error("Error dispatching task link update:", {
+								category: "validation",
+								operation: "dispatching-task-link-update",
+								error: error,
+							});
 						}
 					});
 				}
@@ -187,7 +188,11 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 						lastKnownWidgets
 					);
 				} catch (error) {
-					console.error("Error building task link decorations:", error);
+					tasknotesLogger.error("Error building task link decorations:", {
+						category: "persistence",
+						operation: "building-task-link-decorations",
+						error: error,
+					});
 					return Decoration.none;
 				}
 			}
@@ -396,7 +401,11 @@ export function buildTaskLinkDecorations(
 			}
 		}
 	} catch (error) {
-		console.error("Error in buildTaskLinkDecorations:", error);
+		tasknotesLogger.error("Error in buildTaskLinkDecorations:", {
+			category: "persistence",
+			operation: "buildtasklinkdecorations",
+			error: error,
+		});
 	}
 
 	return builder.finish();
@@ -611,7 +620,11 @@ export { taskUpdateEffect };
 export function dispatchTaskUpdate(view: EditorView, taskPath?: string): void {
 	// Validate that view is a proper EditorView with dispatch method
 	if (!view || typeof view.dispatch !== "function") {
-		console.warn("Invalid EditorView passed to dispatchTaskUpdate:", view);
+		tasknotesLogger.warn("Invalid EditorView passed to dispatchTaskUpdate:", {
+			category: "validation",
+			operation: "invalid-editorview-passed-dispatchtaskupdate",
+			details: { value: view },
+		});
 		return;
 	}
 
@@ -620,7 +633,11 @@ export function dispatchTaskUpdate(view: EditorView, taskPath?: string): void {
 			effects: [taskUpdateEffect.of({ taskPath })],
 		});
 	} catch (error) {
-		console.error("Error dispatching task update:", error);
+		tasknotesLogger.error("Error dispatching task update:", {
+			category: "validation",
+			operation: "dispatching-task-update",
+			error: error,
+		});
 	}
 }
 

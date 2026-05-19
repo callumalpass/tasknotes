@@ -65,9 +65,7 @@ describe("settings persistence helpers", () => {
 			loadResults: [null, null, null, null],
 		});
 
-		await expect(
-			loadPluginSettingsDataWithRetry(host, { retryDelayMs: 0 })
-		).resolves.toEqual({
+		await expect(loadPluginSettingsDataWithRetry(host, { retryDelayMs: 0 })).resolves.toEqual({
 			data: null,
 			compromised: true,
 		});
@@ -81,9 +79,7 @@ describe("settings persistence helpers", () => {
 			loadResults: [null],
 		});
 
-		await expect(
-			loadPluginSettingsDataWithRetry(host, { retryDelayMs: 0 })
-		).resolves.toEqual({
+		await expect(loadPluginSettingsDataWithRetry(host, { retryDelayMs: 0 })).resolves.toEqual({
 			data: null,
 			compromised: false,
 		});
@@ -100,7 +96,9 @@ describe("settings persistence helpers", () => {
 
 		await expect(pluginDataFileExists(host)).resolves.toBe(false);
 		expect(console.warn).toHaveBeenCalledWith(
-			"[TaskNotes] Could not check settings data file existence:",
+			expect.stringContaining(
+				"[TaskNotes][Settings/SettingsPersistence][configuration][check-settings-data-file-existence] [TaskNotes] Could not check settings data file existence:"
+			),
 			expect.any(Error)
 		);
 	});
@@ -122,8 +120,9 @@ describe("settings persistence helpers", () => {
 		expect(settings.apiAuthToken).toBe("");
 		expect(settings.enableMCP).toBe(false);
 		expect("useNativeMetadataCache" in settings).toBe(false);
-		expect(settings.nlpTriggers.triggers.find((trigger) => trigger.propertyId === "status"))
-			.toMatchObject({ trigger: "/" });
+		expect(
+			settings.nlpTriggers.triggers.find((trigger) => trigger.propertyId === "status")
+		).toMatchObject({ trigger: "/" });
 		expect(settings.calendarViewSettings.defaultShowScheduledToDueSpan).toBe(false);
 		expect(settings.calendarViewSettings.eventMaxStack).toBeNull();
 		expect(settings.modalFieldsConfig?.fields.map((field) => field.id)).toEqual(

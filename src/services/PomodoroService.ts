@@ -45,6 +45,9 @@ import {
 	getSessionRemainingSeconds,
 } from "../utils/pomodoroTime";
 import { isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/PomodoroService" });
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 
@@ -154,7 +157,11 @@ export class PomodoroService {
 				await this.plugin.saveData(data);
 			}
 		} catch (error) {
-			console.error("Failed to persist Pomodoro task path after file rename:", error);
+			tasknotesLogger.error("Failed to persist Pomodoro task path after file rename:", {
+				category: "persistence",
+				operation: "persist-pomodoro-task-path-file-rename",
+				error: error,
+			});
 		}
 
 		if (stateChanged) {
@@ -235,7 +242,11 @@ export class PomodoroService {
 				}
 			}
 		} catch (error) {
-			console.error("Failed to load pomodoro state:", error);
+			tasknotesLogger.error("Failed to load pomodoro state:", {
+				category: "persistence",
+				operation: "load-pomodoro-state",
+				error: error,
+			});
 			// Reset to clean state on error
 			this.state = {
 				isRunning: false,
@@ -255,7 +266,11 @@ export class PomodoroService {
 			data.lastPomodoroDate = today;
 			await this.plugin.saveData(data);
 		} catch (error) {
-			console.error("Failed to save pomodoro state:", error);
+			tasknotesLogger.error("Failed to save pomodoro state:", {
+				category: "persistence",
+				operation: "save-pomodoro-state",
+				error: error,
+			});
 		}
 	}
 
@@ -274,7 +289,11 @@ export class PomodoroService {
 			}
 			await this.plugin.saveData(data);
 		} catch (error) {
-			console.error("Failed to save last selected task:", error);
+			tasknotesLogger.error("Failed to save last selected task:", {
+				category: "persistence",
+				operation: "save-last-selected-task",
+				error: error,
+			});
 		}
 	}
 
@@ -293,7 +312,11 @@ export class PomodoroService {
 			this.lastSelectedTaskPathLoaded = true;
 			return this.lastSelectedTaskPath;
 		} catch (error) {
-			console.error("Failed to load last selected task:", error);
+			tasknotesLogger.error("Failed to load last selected task:", {
+				category: "persistence",
+				operation: "load-last-selected-task",
+				error: error,
+			});
 			return undefined;
 		}
 	}
@@ -368,7 +391,11 @@ export class PomodoroService {
 			} catch (error) {
 				// If time tracking is already active, that's fine for Pomodoro
 				if (!error.message?.includes("Time tracking is already active")) {
-					console.error("Failed to start time tracking for Pomodoro:", error);
+					tasknotesLogger.error("Failed to start time tracking for Pomodoro:", {
+						category: "internal",
+						operation: "start-time-tracking-pomodoro",
+						error: error,
+					});
 				}
 			}
 		}
@@ -381,7 +408,11 @@ export class PomodoroService {
 			try {
 				await this.webhookNotifier.triggerWebhook("pomodoro.started", { session, task });
 			} catch (error) {
-				console.warn("Failed to trigger webhook for pomodoro start:", error);
+				tasknotesLogger.warn("Failed to trigger webhook for pomodoro start:", {
+					category: "provider",
+					operation: "trigger-webhook-pomodoro-start",
+					error: error,
+				});
 			}
 		}
 
@@ -468,7 +499,11 @@ export class PomodoroService {
 					await this.plugin.taskService.stopTimeTracking(task);
 				}
 			} catch (error) {
-				console.error("Failed to stop time tracking for Pomodoro pause:", error);
+				tasknotesLogger.error("Failed to stop time tracking for Pomodoro pause:", {
+					category: "internal",
+					operation: "stop-time-tracking-pomodoro-pause",
+					error: error,
+				});
 			}
 		}
 
@@ -513,7 +548,11 @@ export class PomodoroService {
 			} catch (error) {
 				// If time tracking is already active, that's fine for Pomodoro resume
 				if (!error.message?.includes("Time tracking is already active")) {
-					console.error("Failed to start time tracking for Pomodoro resume:", error);
+					tasknotesLogger.error("Failed to start time tracking for Pomodoro resume:", {
+						category: "internal",
+						operation: "start-time-tracking-pomodoro-resume",
+						error: error,
+					});
 				}
 			}
 		}
@@ -573,7 +612,11 @@ export class PomodoroService {
 					task,
 				});
 			} catch (error) {
-				console.warn("Failed to trigger webhook for pomodoro interruption:", error);
+				tasknotesLogger.warn("Failed to trigger webhook for pomodoro interruption:", {
+					category: "provider",
+					operation: "trigger-webhook-pomodoro-interruption",
+					error: error,
+				});
 			}
 		}
 
@@ -587,7 +630,11 @@ export class PomodoroService {
 					await this.plugin.taskService.stopTimeTracking(task);
 				}
 			} catch (error) {
-				console.error("Failed to stop time tracking for Pomodoro interrupt:", error);
+				tasknotesLogger.error("Failed to stop time tracking for Pomodoro interrupt:", {
+					category: "internal",
+					operation: "stop-time-tracking-pomodoro-interrupt",
+					error: error,
+				});
 			}
 		}
 
@@ -710,7 +757,11 @@ export class PomodoroService {
 				await this.startPomodoro();
 			}
 		} catch (error) {
-			console.error("Failed to auto-start work session:", error);
+			tasknotesLogger.error("Failed to auto-start work session:", {
+				category: "internal",
+				operation: "auto-start-work-session",
+				error: error,
+			});
 		}
 	}
 
@@ -753,7 +804,11 @@ export class PomodoroService {
 				}
 				return task;
 			} catch (error) {
-				console.warn(`Failed to load task for auto-start (${path}):`, error);
+				tasknotesLogger.warn(`Failed to load task for auto-start (${path}):`, {
+					category: "persistence",
+					operation: "load-task-auto-start",
+					error: error,
+				});
 			}
 		}
 
@@ -810,7 +865,11 @@ export class PomodoroService {
 						await this.plugin.taskService.stopTimeTracking(task);
 					}
 				} catch (error) {
-					console.error("Failed to stop time tracking for Pomodoro completion:", error);
+					tasknotesLogger.error("Failed to stop time tracking for Pomodoro completion:", {
+						category: "internal",
+						operation: "stop-time-tracking-pomodoro-completion",
+						error: error,
+					});
 				}
 			}
 		}
@@ -827,7 +886,11 @@ export class PomodoroService {
 				shouldTakeLongBreak =
 					totalCompleted % this.plugin.settings.pomodoroLongBreakInterval === 0;
 			} catch (error) {
-				console.error("Failed to calculate break type:", error);
+				tasknotesLogger.error("Failed to calculate break type:", {
+					category: "internal",
+					operation: "calculate-break-type",
+					error: error,
+				});
 				shouldTakeLongBreak = false;
 			}
 		}
@@ -854,7 +917,11 @@ export class PomodoroService {
 					: undefined;
 				await this.webhookNotifier.triggerWebhook("pomodoro.completed", { session, task });
 			} catch (error) {
-				console.warn("Failed to trigger webhook for pomodoro completion:", error);
+				tasknotesLogger.warn("Failed to trigger webhook for pomodoro completion:", {
+					category: "provider",
+					operation: "trigger-webhook-pomodoro-completion",
+					error: error,
+				});
 			}
 		}
 
@@ -947,7 +1014,11 @@ export class PomodoroService {
 					osc2.start();
 					osc2.stop(audioContext.currentTime + 0.1);
 				} catch (error) {
-					console.error("Failed to play second beep:", error);
+					tasknotesLogger.error("Failed to play second beep:", {
+						category: "provider",
+						operation: "play-second-beep",
+						error: error,
+					});
 				}
 			}, 150);
 			this.cleanupTimeouts.add(beepTimeout);
@@ -959,7 +1030,11 @@ export class PomodoroService {
 			}, 300);
 			this.cleanupTimeouts.add(cleanupTimeout);
 		} catch (error) {
-			console.error("Failed to play completion sound:", error);
+			tasknotesLogger.error("Failed to play completion sound:", {
+				category: "provider",
+				operation: "play-completion-sound",
+				error: error,
+			});
 		}
 	}
 
@@ -975,7 +1050,11 @@ export class PomodoroService {
 		try {
 			new Notification(title, options);
 		} catch (error) {
-			console.warn("Failed to show Pomodoro notification:", error);
+			tasknotesLogger.warn("Failed to show Pomodoro notification:", {
+				category: "provider",
+				operation: "show-pomodoro-notification",
+				error: error,
+			});
 		}
 	}
 
@@ -1078,7 +1157,11 @@ export class PomodoroService {
 					await this.plugin.taskService.stopTimeTracking(previousTask);
 				}
 			} catch (error) {
-				console.error("Failed to stop time tracking for previous Pomodoro task:", error);
+				tasknotesLogger.error("Failed to stop time tracking for previous Pomodoro task:", {
+					category: "persistence",
+					operation: "stop-time-tracking-previous-pomodoro-task",
+					error: error,
+				});
 			}
 		}
 
@@ -1102,7 +1185,11 @@ export class PomodoroService {
 				await this.plugin.taskService.startTimeTracking(task);
 			} catch (error) {
 				if (!error.message?.includes("Time tracking is already active")) {
-					console.error("Failed to start time tracking for new Pomodoro task:", error);
+					tasknotesLogger.error("Failed to start time tracking for new Pomodoro task:", {
+						category: "persistence",
+						operation: "start-time-tracking-new-pomodoro-task",
+						error: error,
+					});
 				}
 			}
 		}
@@ -1138,7 +1225,11 @@ export class PomodoroService {
 			// Sort by start time to maintain chronological order
 			return sortPomodoroSessions(history);
 		} catch (error) {
-			console.error("Failed to load session history:", error);
+			tasknotesLogger.error("Failed to load session history:", {
+				category: "persistence",
+				operation: "load-session-history",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -1165,7 +1256,11 @@ export class PomodoroService {
 
 			return sortPomodoroSessions(history);
 		} catch (error) {
-			console.error("Failed to load session history for date:", error);
+			tasknotesLogger.error("Failed to load session history for date:", {
+				category: "validation",
+				operation: "load-session-history-date",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -1193,7 +1288,11 @@ export class PomodoroService {
 
 			return sortPomodoroSessions(history);
 		} catch (error) {
-			console.error("Failed to load session history for date range:", error);
+			tasknotesLogger.error("Failed to load session history for date range:", {
+				category: "validation",
+				operation: "load-session-history-date-range",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -1207,7 +1306,11 @@ export class PomodoroService {
 				await this.savePluginHistory(history);
 			}
 		} catch (error) {
-			console.error("Failed to save session history:", error);
+			tasknotesLogger.error("Failed to save session history:", {
+				category: "persistence",
+				operation: "save-session-history",
+				error: error,
+			});
 		}
 	}
 
@@ -1227,7 +1330,11 @@ export class PomodoroService {
 				deleted = (await this.deleteSessionFromDailyNote(session)) || deleted;
 			}
 		} catch (error) {
-			console.error("Failed to delete pomodoro session:", error);
+			tasknotesLogger.error("Failed to delete pomodoro session:", {
+				category: "persistence",
+				operation: "delete-pomodoro-session",
+				error: error,
+			});
 		}
 
 		return deleted;
@@ -1235,7 +1342,10 @@ export class PomodoroService {
 
 	async addSessionToHistory(session: PomodoroSession): Promise<void> {
 		if (!session.endTime) {
-			console.warn("Cannot add session to history without end time");
+			tasknotesLogger.warn("Cannot add session to history without end time", {
+				category: "persistence",
+				operation: "add-session-history-without-end-time",
+			});
 			return;
 		}
 
@@ -1261,7 +1371,11 @@ export class PomodoroService {
 				await this.saveSessionHistory(history);
 			}
 		} catch (error) {
-			console.error("Failed to add session to history:", error);
+			tasknotesLogger.error("Failed to add session to history:", {
+				category: "persistence",
+				operation: "add-session-history",
+				error: error,
+			});
 		}
 	}
 
@@ -1351,7 +1465,11 @@ export class PomodoroService {
 				await this.updateDailyNotePomodoros(dateStr, sessions);
 			}
 		} catch (error) {
-			console.error("Failed to save history to daily notes:", error);
+			tasknotesLogger.error("Failed to save history to daily notes:", {
+				category: "persistence",
+				operation: "save-history-daily-notes",
+				error: error,
+			});
 			throw error;
 		}
 	}
@@ -1378,7 +1496,11 @@ export class PomodoroService {
 
 			return history;
 		} catch (error) {
-			console.error("Failed to load history from daily notes for date range:", error);
+			tasknotesLogger.error("Failed to load history from daily notes for date range:", {
+				category: "validation",
+				operation: "load-history-daily-notes-date-range",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -1403,7 +1525,11 @@ export class PomodoroService {
 
 			return this.readPomodoroSessionsFromDailyNote(dailyNote);
 		} catch (error) {
-			console.warn(`Failed to load pomodoro history for daily note ${dateKey}:`, error);
+			tasknotesLogger.warn(`Failed to load pomodoro history for daily note ${dateKey}:`, {
+				category: "persistence",
+				operation: "load-pomodoro-history-daily-note",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -1426,16 +1552,24 @@ export class PomodoroService {
 				try {
 					allHistory.push(...this.readPomodoroSessionsFromDailyNote(file));
 				} catch (error) {
-					console.warn(
+					tasknotesLogger.warn(
 						`Failed to read pomodoro data from daily note ${file.path}:`,
-						error
+						{
+							category: "persistence",
+							operation: "read-pomodoro-data-daily-note",
+							error: error,
+						}
 					);
 				}
 			}
 
 			return allHistory;
 		} catch (error) {
-			console.error("Failed to load history from daily notes:", error);
+			tasknotesLogger.error("Failed to load history from daily notes:", {
+				category: "persistence",
+				operation: "load-history-daily-notes",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -1517,7 +1651,11 @@ export class PomodoroService {
 				}
 			});
 		} catch (error) {
-			console.error(`Failed to add session to daily note:`, error);
+			tasknotesLogger.error(`Failed to add session to daily note:`, {
+				category: "persistence",
+				operation: "add-session-daily-note",
+				error: error,
+			});
 		}
 	}
 
@@ -1547,7 +1685,9 @@ export class PomodoroService {
 				const existingSessions = Array.isArray(frontmatter[pomodoroField])
 					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
 					: [];
-				const filteredSessions = existingSessions.filter((entry) => entry.id !== session.id);
+				const filteredSessions = existingSessions.filter(
+					(entry) => entry.id !== session.id
+				);
 
 				if (filteredSessions.length !== existingSessions.length) {
 					frontmatter[pomodoroField] = filteredSessions;
@@ -1557,7 +1697,11 @@ export class PomodoroService {
 
 			return deleted;
 		} catch (error) {
-			console.error(`Failed to delete pomodoro session from daily note:`, error);
+			tasknotesLogger.error(`Failed to delete pomodoro session from daily note:`, {
+				category: "persistence",
+				operation: "delete-pomodoro-session-daily-note",
+				error: error,
+			});
 			return false;
 		}
 	}
@@ -1606,7 +1750,11 @@ export class PomodoroService {
 				}
 			});
 		} catch (error) {
-			console.error(`Failed to update daily note for ${dateStr}:`, error);
+			tasknotesLogger.error(`Failed to update daily note for ${dateStr}:`, {
+				category: "validation",
+				operation: "update-daily-note",
+				error: error,
+			});
 		}
 	}
 
@@ -1661,7 +1809,11 @@ export class PomodoroService {
 				})
 			);
 		} catch (error) {
-			console.error("Failed to migrate pomodoro data to daily notes:", error);
+			tasknotesLogger.error("Failed to migrate pomodoro data to daily notes:", {
+				category: "persistence",
+				operation: "migrate-pomodoro-data-daily-notes",
+				error: error,
+			});
 			new Notice(this.translate("services.pomodoro.notices.migrationFailure"));
 			throw error;
 		}

@@ -5,6 +5,9 @@ import { WebhookConfig, WebhookDelivery, WebhookEvent, WebhookPayload } from "..
 import TaskNotesPlugin from "../main";
 
 import { Get, Post, Delete } from "../utils/OpenAPIDecorators";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Api/WebhookController" });
 
 const WEBHOOK_EVENTS = new Set<WebhookEvent>([
 	"task.created",
@@ -189,7 +192,11 @@ export class WebhookController extends BaseController {
 		// Fire and forget - don't block the main operation
 		setImmediate(() => {
 			this.processWebhookTrigger(event, data).catch((error) => {
-				console.error("Webhook processing error:", error);
+				tasknotesLogger.error("Webhook processing error:", {
+					category: "provider",
+					operation: "webhook-processing",
+					error: error,
+				});
 			});
 		});
 	}
@@ -235,7 +242,11 @@ export class WebhookController extends BaseController {
 				try {
 					payload = await this.applyTransformation(webhook.transformFile, basePayload);
 				} catch (error) {
-					console.error(`Transform error for ${webhook.transformFile}:`, error);
+					tasknotesLogger.error(`Transform error for ${webhook.transformFile}:`, {
+						category: "provider",
+						operation: "transform",
+						error: error,
+					});
 					// Continue with original payload on error
 				}
 			}
@@ -318,8 +329,9 @@ export class WebhookController extends BaseController {
 				// Disable webhook after too many failures
 				if (webhook.failureCount > 10) {
 					webhook.active = false;
-					console.warn(
-						`Webhook ${webhook.id} disabled after ${webhook.failureCount} failures`
+					tasknotesLogger.warn(
+						`Webhook ${webhook.id} disabled after ${webhook.failureCount} failures`,
+						{ category: "provider", operation: "webhook" }
 					);
 				}
 			}
@@ -338,7 +350,11 @@ export class WebhookController extends BaseController {
 			false,
 			["sign"]
 		);
-		const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(JSON.stringify(payload)));
+		const signature = await crypto.subtle.sign(
+			"HMAC",
+			key,
+			encoder.encode(JSON.stringify(payload))
+		);
 		return this.bytesToHex(new Uint8Array(signature));
 	}
 
@@ -397,12 +413,17 @@ export class WebhookController extends BaseController {
 			}
 
 			// Unknown file type, return original payload
-			console.warn(
-				`⚠️ Unknown transform file type for ${transformFile}, using original payload`
+			tasknotesLogger.warn(
+				`⚠️ Unknown transform file type for ${transformFile}, using original payload`,
+				{ category: "provider", operation: "unknown-transform-file-type" }
 			);
 			return payload;
 		} catch (error) {
-			console.error(`❌ Transformation failed for ${transformFile}:`, error);
+			tasknotesLogger.error(`❌ Transformation failed for ${transformFile}:`, {
+				category: "provider",
+				operation: "transformation",
+				error: error,
+			});
 			throw error;
 		}
 	}
@@ -457,10 +478,11 @@ export class WebhookController extends BaseController {
 			const result = this.interpolateTemplate(template, payload);
 			return result;
 		} catch (error) {
-			console.error(
-				`❌ JSON transformation error for '${transformFile}':`,
-				getErrorMessage(error)
-			);
+			tasknotesLogger.error(`❌ JSON transformation error for '${transformFile}':`, {
+				category: "provider",
+				operation: "json-transformation",
+				details: { value: getErrorMessage(error) },
+			});
 			throw error;
 		}
 	}

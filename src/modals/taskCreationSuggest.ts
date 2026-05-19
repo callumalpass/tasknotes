@@ -4,6 +4,9 @@ import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { ProjectEntry, ProjectMetadataResolver } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { filterTagsForTaskModalSuggestions } from "../utils/taskTagFiltering";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationSuggest" });
 
 /**
  * Auto-suggestion provider for NLP textarea with @, #, and + triggers
@@ -201,9 +204,10 @@ export class NLPSuggest extends AbstractInputSuggest<
 			this.projectMetadataResolver = new ProjectMetadataResolver({
 				getFrontmatter: (entry) => {
 					const file = appRef?.vault.getAbstractFileByPath(entry.path);
-					const cache = file instanceof TFile
-						? appRef?.metadataCache.getFileCache(file)
-						: undefined;
+					const cache =
+						file instanceof TFile
+							? appRef?.metadataCache.getFileCache(file)
+							: undefined;
 					return cache?.frontmatter || {};
 				},
 			});
@@ -260,7 +264,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 				const title = typeof mapped.title === "string" ? mapped.title : "";
 				const aliasesFm = parseFrontMatterAliases(frontmatter) || [];
 				const aliases = Array.isArray(aliasesFm)
-					? (aliasesFm.filter((a) => typeof a === "string"))
+					? aliasesFm.filter((a) => typeof a === "string")
 					: [];
 
 				const fileData = {
@@ -299,9 +303,13 @@ export class NLPSuggest extends AbstractInputSuggest<
 				};
 			});
 		} catch (err) {
-			console.error(
+			tasknotesLogger.error(
 				"Enhanced project autosuggest failed, falling back to basic suggestions",
-				err
+				{
+					category: "persistence",
+					operation: "enhanced-project-autosuggest-falling-back-basic-suggestions",
+					error: err,
+				}
 			);
 			return list.map((item) => ({
 				basename: item.insertText,
@@ -398,9 +406,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 		el.setAttribute("role", "option");
 		// Get display text - ProjectSuggestion uses displayName, others use display
 		const displayText =
-			suggestion.type === "project"
-				? (suggestion).displayName
-				: (suggestion).display;
+			suggestion.type === "project" ? suggestion.displayName : suggestion.display;
 		el.setAttribute("aria-label", `${suggestion.type}: ${displayText}`);
 
 		const icon = el.createSpan("nlp-suggest-icon");

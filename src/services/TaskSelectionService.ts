@@ -1,5 +1,8 @@
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskSelectionService" });
 
 /**
  * Service for managing task selection state across views.
@@ -257,7 +260,11 @@ export class TaskSelectionService {
 			try {
 				listener(active);
 			} catch (e) {
-				console.error("[TaskSelectionService] Error in selection mode listener:", e);
+				tasknotesLogger.error("[TaskSelectionService] Error in selection mode listener:", {
+					category: "persistence",
+					operation: "selection-mode-listener",
+					error: e,
+				});
 			}
 		}
 	}
@@ -268,7 +275,10 @@ export class TaskSelectionService {
 			try {
 				listener(paths);
 			} catch (e) {
-				console.error("[TaskSelectionService] Error in selection change listener:", e);
+				tasknotesLogger.error(
+					"[TaskSelectionService] Error in selection change listener:",
+					{ category: "persistence", operation: "selection-change-listener", error: e }
+				);
 			}
 		}
 	}

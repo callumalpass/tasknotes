@@ -1,4 +1,7 @@
 import { requestUrl, type RequestUrlParam } from "obsidian";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Api/LoadAPIEndpoints" });
 
 type OpenAPIOperationSummary = {
 	tags?: string[];
@@ -111,7 +114,11 @@ async function loadAPIEndpoints(
 			});
 		}
 	} catch (error: unknown) {
-		console.error("Error loading API endpoints:", error);
+		tasknotesLogger.error("Error loading API endpoints:", {
+			category: "provider",
+			operation: "loading-api-endpoints",
+			error: error,
+		});
 
 		// Remove loading message
 		loadingEl.remove();

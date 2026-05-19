@@ -13,6 +13,9 @@ import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/proje
 import { FilterUtils } from "../utils/FilterUtils";
 import { collectCacheTags } from "../utils/tagExtraction";
 import { getActiveFolderPath, isPathInIncludedFolders } from "../suggest/FileSuggestHelper";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ProjectSelectModal" });
 
 /**
  * Modal for selecting project notes using fuzzy search
@@ -99,12 +102,12 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 
 		// Parse searchable fields from configuration
 		for (const row of rows) {
-				try {
-					const tokens = parseDisplayFieldsRow(row);
-					for (const token of tokens) {
-						if (token.searchable && !token.property.startsWith("literal:")) {
-							searchableFields.add(token.property);
-						}
+			try {
+				const tokens = parseDisplayFieldsRow(row);
+				for (const token of tokens) {
+					if (token.searchable && !token.property.startsWith("literal:")) {
+						searchableFields.add(token.property);
+					}
 				}
 			} catch {
 				// Ignore parse errors
@@ -203,7 +206,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 			const title = typeof mapped.title === "string" ? mapped.title : "";
 			const aliasesFm = parseFrontMatterAliases(frontmatter) || [];
 			const aliases = Array.isArray(aliasesFm)
-				? (aliasesFm.filter((a) => typeof a === "string"))
+				? aliasesFm.filter((a) => typeof a === "string")
 				: [];
 
 			const fileData: ProjectEntry = {
@@ -224,13 +227,21 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 			container.createDiv({ cls: "project-name", text: file.basename });
 
 			// Render configured rows using shared utility
-			const metadataRows = resolver.buildMetadataRows(rowConfigs, fileData, parseDisplayFieldsRow);
+			const metadataRows = resolver.buildMetadataRows(
+				rowConfigs,
+				fileData,
+				parseDisplayFieldsRow
+			);
 			for (const line of metadataRows) {
 				const metaEl = container.createDiv({ cls: "project-meta" });
 				metaEl.textContent = line;
 			}
 		} catch (error) {
-			console.error("Error rendering project suggestion:", error);
+			tasknotesLogger.error("Error rendering project suggestion:", {
+				category: "internal",
+				operation: "rendering-project-suggestion",
+				error: error,
+			});
 			// Fallback to simple display
 			container.createSpan({ cls: "project-name", text: file.basename });
 		}

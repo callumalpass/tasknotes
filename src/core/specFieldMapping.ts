@@ -1,3 +1,6 @@
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Core/SpecFieldMapping" });
 export type FieldRole =
 	| "title"
 	| "status"
@@ -89,7 +92,10 @@ export function buildFieldMapping(
 			const role = def.tn_role as FieldRole;
 			if (!rolesSet.has(role)) continue;
 			if (roleToField[role] !== undefined) {
-				console.warn(`[mtn] Duplicate tn_role "${role}" on field "${fieldName}", ignoring.`);
+				tasknotesLogger.warn(
+					`[mtn] Duplicate tn_role "${role}" on field "${fieldName}", ignoring.`,
+					{ category: "configuration", operation: "duplicate-tn-role" }
+				);
 				continue;
 			}
 			roleToField[role] = fieldName;
@@ -123,7 +129,10 @@ export function buildFieldMapping(
 	};
 }
 
-function inferCompletedStatuses(fields: Record<string, unknown>, statusFieldName: string): string[] {
+function inferCompletedStatuses(
+	fields: Record<string, unknown>,
+	statusFieldName: string
+): string[] {
 	const statusDef = fields[statusFieldName];
 	if (!isSpecFieldDefinition(statusDef)) {
 		return ["done", "cancelled"];
@@ -142,7 +151,9 @@ function inferCompletedStatuses(fields: Record<string, unknown>, statusFieldName
 			.filter((v: unknown): v is string => typeof v === "string")
 			.filter((v: string) => {
 				const lower = v.toLowerCase();
-				return lower.includes("done") || lower.includes("complete") || lower.includes("cancel");
+				return (
+					lower.includes("done") || lower.includes("complete") || lower.includes("cancel")
+				);
 			});
 		if (inferred.length > 0) return inferred;
 	}

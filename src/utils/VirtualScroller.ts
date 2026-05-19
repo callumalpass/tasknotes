@@ -1,3 +1,6 @@
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/VirtualScroller" });
 /**
  * Simple virtual scrolling implementation for large lists
  *
@@ -47,6 +50,15 @@ export interface VirtualScrollerReorderOptions {
 export interface VirtualScrollerInvalidateOptions {
 	/** Clear cached heights for invalidated items before rerendering them. */
 	invalidateHeights?: boolean;
+}
+
+export interface VirtualScrollerInsertOptions<T> {
+	/** Items to insert, in render order. */
+	items: readonly T[];
+	/** Stable key for the item that receives the inserted items. Omit to append. */
+	targetKey?: string;
+	/** Whether to insert before/after the target item, or append to the end. */
+	position?: "before" | "after" | "end";
 }
 
 type VirtualScrollerItemEntry<T> = {
@@ -297,6 +309,82 @@ export class VirtualScroller<T> {
 		this.updateVisibleRange();
 	}
 
+	private getUniqueCurrentEntries(): VirtualScrollerItemEntry<T>[] | null {
+		const currentEntries = this.getItemEntries();
+		return this.hasUniqueStableKeys(currentEntries) ? currentEntries : null;
+	}
+
+	private buildEntriesAfterRemoval(
+		keys: readonly string[]
+	): VirtualScrollerItemEntry<T>[] | null {
+		const keySet = new Set(keys);
+		if (keys.length === 0 || keySet.size !== keys.length) {
+			return null;
+		}
+
+		const currentEntries = this.getUniqueCurrentEntries();
+		if (!currentEntries) {
+			return null;
+		}
+
+		const currentKeys = new Set(currentEntries.map((entry) => entry.key));
+		if (!keys.every((key) => currentKeys.has(key))) {
+			return null;
+		}
+
+		const nextEntries = currentEntries.filter((entry) => !keySet.has(entry.key));
+		const keysRemainStable = nextEntries.every(
+			(entry, index) => this.getItemKey(entry.item, index) === entry.key
+		);
+		return keysRemainStable ? nextEntries : null;
+	}
+
+	private buildEntriesAfterInsertion(
+		options: VirtualScrollerInsertOptions<T>
+	): VirtualScrollerItemEntry<T>[] | null {
+		if (options.items.length === 0) {
+			return null;
+		}
+
+		const currentEntries = this.getUniqueCurrentEntries();
+		if (!currentEntries) {
+			return null;
+		}
+
+		const position = options.position ?? "end";
+		if (position !== "end" && !options.targetKey) {
+			return null;
+		}
+
+		let insertAt = currentEntries.length;
+		if (position !== "end") {
+			const targetIndex = currentEntries.findIndex((entry) => entry.key === options.targetKey);
+			if (targetIndex === -1) {
+				return null;
+			}
+			insertAt = position === "before" ? targetIndex : targetIndex + 1;
+		}
+
+		const insertedEntries = options.items.map((item, index) => ({
+			item,
+			key: this.getItemKey(item, insertAt + index),
+		}));
+		const nextEntries = [
+			...currentEntries.slice(0, insertAt),
+			...insertedEntries,
+			...currentEntries.slice(insertAt),
+		];
+
+		if (!this.hasUniqueStableKeys(nextEntries)) {
+			return null;
+		}
+
+		const keysRemainStable = nextEntries.every(
+			(entry, index) => this.getItemKey(entry.item, index) === entry.key
+		);
+		return keysRemainStable ? nextEntries : null;
+	}
+
 	/**
 	 * Setup ResizeObserver to detect height changes in rendered items
 	 */
@@ -408,7 +496,11 @@ export class VirtualScroller<T> {
 		if (containerHeight === 0) {
 			// Fall back to window height as last resort
 			containerHeight = window.innerHeight;
-			console.warn("[VirtualScroller] Using window height as fallback:", containerHeight);
+			tasknotesLogger.warn("[VirtualScroller] Using window height as fallback:", {
+				category: "configuration",
+				operation: "using-window-height-as-fallback",
+				details: { value: containerHeight },
+			});
 		}
 
 		// Use binary search to find visible range based on actual positions
@@ -647,13 +739,56 @@ export class VirtualScroller<T> {
 		return true;
 	}
 
+	canRemoveItems(keys: readonly string[]): boolean {
+		return this.buildEntriesAfterRemoval(keys) !== null;
+	}
+
+	removeItems(keys: readonly string[]): boolean {
+		const nextEntries = this.buildEntriesAfterRemoval(keys);
+		if (!nextEntries) {
+			return false;
+		}
+
+		const currentScrollTop = this.scrollContainer.scrollTop;
+		for (const key of keys) {
+			const element = this.renderedElements.get(key);
+			if (element) {
+				if (this.resizeObserver) {
+					this.resizeObserver.unobserve(element);
+				}
+				element.remove();
+				this.renderedElements.delete(key);
+			}
+			this.invalidatedKeys.delete(key);
+		}
+
+		this.applyItemEntries(nextEntries);
+		this.scrollContainer.scrollTop = currentScrollTop;
+		this.forceVisibleRangeUpdate();
+		return true;
+	}
+
+	canInsertItems(options: VirtualScrollerInsertOptions<T>): boolean {
+		return this.buildEntriesAfterInsertion(options) !== null;
+	}
+
+	insertItems(options: VirtualScrollerInsertOptions<T>): boolean {
+		const nextEntries = this.buildEntriesAfterInsertion(options);
+		if (!nextEntries) {
+			return false;
+		}
+
+		const currentScrollTop = this.scrollContainer.scrollTop;
+		this.applyItemEntries(nextEntries);
+		this.scrollContainer.scrollTop = currentScrollTop;
+		this.forceVisibleRangeUpdate();
+		return true;
+	}
+
 	/**
 	 * Re-render currently visible items by key without rebuilding the whole scroller.
 	 */
-	invalidateItems(
-		keys: readonly string[],
-		options: VirtualScrollerInvalidateOptions = {}
-	): void {
+	invalidateItems(keys: readonly string[], options: VirtualScrollerInvalidateOptions = {}): void {
 		if (keys.length === 0) {
 			return;
 		}

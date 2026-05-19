@@ -1,4 +1,7 @@
 import { parseDateToUTC, isPastDate, isToday, formatDateForStorage } from "./dateUtils";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/TasksPluginParser" });
 
 export interface ParsedTaskData {
 	title: string;
@@ -270,7 +273,11 @@ export class TasksPluginParser {
 				}
 			}
 		} catch (error) {
-			console.debug("Error extracting date:", error);
+			tasknotesLogger.debug("Error extracting date:", {
+				category: "validation",
+				operation: "extracting-date",
+				error: error,
+			});
 		}
 
 		return undefined;
@@ -391,7 +398,11 @@ export class TasksPluginParser {
 
 			return tags;
 		} catch (error) {
-			console.debug("Error extracting tags:", error);
+			tasknotesLogger.debug("Error extracting tags:", {
+				category: "validation",
+				operation: "extracting-tags",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -406,7 +417,10 @@ export class TasksPluginParser {
 		}
 
 		try {
-			const freshPattern = new RegExp(this.CONTEXT_PATTERN.source, this.CONTEXT_PATTERN.flags);
+			const freshPattern = new RegExp(
+				this.CONTEXT_PATTERN.source,
+				this.CONTEXT_PATTERN.flags
+			);
 			const contexts: string[] = [];
 			let match;
 
@@ -421,7 +435,11 @@ export class TasksPluginParser {
 
 			return contexts;
 		} catch (error) {
-			console.debug("Error extracting contexts:", error);
+			tasknotesLogger.debug("Error extracting contexts:", {
+				category: "validation",
+				operation: "extracting-contexts",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -445,7 +463,11 @@ export class TasksPluginParser {
 					cleanContent = cleanContent.replace(freshPattern, "");
 				} catch (error) {
 					// If regex fails, continue with other patterns
-					console.debug("Error applying emoji pattern:", error);
+					tasknotesLogger.debug("Error applying emoji pattern:", {
+						category: "validation",
+						operation: "applying-emoji-pattern",
+						error: error,
+					});
 				}
 			});
 
@@ -454,7 +476,11 @@ export class TasksPluginParser {
 				const tagPattern = new RegExp(this.TAG_PATTERN.source, this.TAG_PATTERN.flags);
 				cleanContent = cleanContent.replace(tagPattern, "");
 			} catch (error) {
-				console.debug("Error removing tags from title:", error);
+				tasknotesLogger.debug("Error removing tags from title:", {
+					category: "validation",
+					operation: "removing-tags-title",
+					error: error,
+				});
 			}
 
 			// Remove contexts using fresh regex instance
@@ -465,7 +491,11 @@ export class TasksPluginParser {
 				);
 				cleanContent = cleanContent.replace(contextPattern, "");
 			} catch (error) {
-				console.debug("Error removing contexts from title:", error);
+				tasknotesLogger.debug("Error removing contexts from title:", {
+					category: "validation",
+					operation: "removing-contexts-title",
+					error: error,
+				});
 			}
 
 			// Clean up extra whitespace and validate result
@@ -478,7 +508,11 @@ export class TasksPluginParser {
 
 			return cleaned;
 		} catch (error) {
-			console.debug("Error extracting clean title:", error);
+			tasknotesLogger.debug("Error extracting clean title:", {
+				category: "validation",
+				operation: "extracting-clean-title",
+				error: error,
+			});
 			return "Untitled Task";
 		}
 	}
@@ -514,7 +548,11 @@ export class TasksPluginParser {
 				}
 			});
 		} catch (error) {
-			console.debug("Error validating Tasks plugin format:", error);
+			tasknotesLogger.debug("Error validating Tasks plugin format:", {
+				category: "validation",
+				operation: "validating-tasks-plugin-format",
+				error: error,
+			});
 			return false;
 		}
 	}

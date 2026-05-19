@@ -139,8 +139,9 @@ const pluginReviewRules = {
 			},
 			create(context) {
 				const sourceCode = context.sourceCode ?? context.getSourceCode();
-				const hasNetworkCall =
-					/\b(?:requestUrl|fetch|XMLHttpRequest|sendBeacon)\b/u.test(sourceCode.text);
+				const hasNetworkCall = /\b(?:requestUrl|fetch|XMLHttpRequest|sendBeacon)\b/u.test(
+					sourceCode.text
+				);
 
 				if (!hasNetworkCall) {
 					return {};
@@ -210,22 +211,55 @@ const pluginReviewRules = {
 				};
 			},
 		},
+		"no-raw-console-diagnostics": {
+			meta: {
+				type: "problem",
+				docs: {
+					description:
+						"Require production diagnostics to go through tasknotesLogger instead of raw console calls.",
+				},
+				messages: {
+					noRawConsoleDiagnostic:
+						"Use tasknotesLogger for production diagnostics instead of console.{{ method }}.",
+				},
+				schema: [],
+			},
+			create(context) {
+				const filename = context.filename ?? context.getFilename();
+				if (filename.endsWith("src/utils/tasknotesLogger.ts")) {
+					return {};
+				}
+
+				return {
+					CallExpression(node) {
+						const { callee } = node;
+						if (
+							callee.type === "MemberExpression" &&
+							!callee.computed &&
+							callee.object.type === "Identifier" &&
+							callee.object.name === "console" &&
+							callee.property.type === "Identifier" &&
+							["debug", "info", "warn", "error"].includes(callee.property.name)
+						) {
+							context.report({
+								node: callee,
+								messageId: "noRawConsoleDiagnostic",
+								data: { method: callee.property.name },
+							});
+						}
+					},
+				};
+			},
+		},
 	},
 };
 
-const sourceFilePatterns = [
-	"src/**/*.ts",
-	"src/**/*.tsx",
-	"src/**/*.js",
-	"src/**/*.jsx",
-];
+const sourceFilePatterns = ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"];
 
 const obsidianRecommendedConfig = obsidianmd.configs.recommended.map((config) => {
 	const hasUnscopedObsidianRules =
 		config.files === undefined &&
-		Object.keys(config.rules ?? {}).some((ruleName) =>
-			ruleName.startsWith("obsidianmd/")
-		);
+		Object.keys(config.rules ?? {}).some((ruleName) => ruleName.startsWith("obsidianmd/"));
 
 	if (!hasUnscopedObsidianRules) {
 		return config;
@@ -299,10 +333,7 @@ export default [
 					minimumDescriptionLength: 10,
 				},
 			],
-			"@typescript-eslint/no-explicit-any": [
-				"warn",
-				{ fixToUnknown: true },
-			],
+			"@typescript-eslint/no-explicit-any": ["warn", { fixToUnknown: true }],
 			"@typescript-eslint/no-inferrable-types": "warn",
 			"no-constant-condition": "warn",
 			"no-case-declarations": "warn",
@@ -312,6 +343,7 @@ export default [
 			"plugin-review/require-eslint-directive-description": "warn",
 			"plugin-review/no-network-interval": "warn",
 			"plugin-review/no-codemirror-theme-styles": "warn",
+			"plugin-review/no-raw-console-diagnostics": "warn",
 			"obsidianmd/no-static-styles-assignment": "warn",
 			"obsidianmd/rule-custom-message": "warn",
 			"obsidianmd/ui/sentence-case": "warn",
@@ -348,10 +380,7 @@ export default [
 	{
 		files: ["src/i18n/resources/en.ts"],
 		rules: {
-			"obsidianmd/ui/sentence-case-locale-module": [
-				"warn",
-				englishLocaleSentenceCaseOptions,
-			],
+			"obsidianmd/ui/sentence-case-locale-module": ["warn", englishLocaleSentenceCaseOptions],
 		},
 	},
 

@@ -1,4 +1,7 @@
 import { Modal, App, Setting } from "obsidian";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/PropertySelectorModal" });
 
 /**
  * Modal for selecting visible properties (multi-select checkboxes)
@@ -134,7 +137,11 @@ export class PropertySelectorModal extends Modal {
 		void Promise.resolve()
 			.then(() => this.onSubmit(this.tempSelection))
 			.catch((error: unknown) => {
-				console.error("TaskNotes property selection callback failed:", error);
+				tasknotesLogger.error("TaskNotes property selection callback failed:", {
+					category: "persistence",
+					operation: "property-selection-callback",
+					error: error,
+				});
 			});
 	}
 

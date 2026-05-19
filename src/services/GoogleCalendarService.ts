@@ -14,6 +14,9 @@ import {
 } from "./errors";
 import { validateCalendarId, validateEventId, validateRequired } from "./validation";
 import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/GoogleCalendarService" });
 
 /**
  * Google Calendar color palette mapping
@@ -112,8 +115,14 @@ export class GoogleCalendarService extends CalendarProvider {
 
 				if (isLastAttempt) {
 					// Max retries exhausted - throw
-					console.error(
-						`[GoogleCalendar] ${context} failed after ${MAX_RETRIES} retries`
+					tasknotesLogger.error(
+						`[GoogleCalendar] ${context} failed after ${MAX_RETRIES} retries`,
+						{
+							category: "provider",
+							operation: "retry-google-calendar-request",
+							details: { context, attempts: MAX_RETRIES },
+							error,
+						}
 					);
 					throw error;
 				}
@@ -122,10 +131,18 @@ export class GoogleCalendarService extends CalendarProvider {
 				const jitter = Math.random() * 0.3 * backoffMs; // 0-30% jitter
 				const delay = Math.min(backoffMs + jitter, MAX_BACKOFF_MS);
 
-				console.warn(
-					`[GoogleCalendar] ${context} failed (${error.status}), ` +
-						`retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})`
-				);
+				tasknotesLogger.warn("Google Calendar request failed and will be retried", {
+					category: "provider",
+					operation: "retry-google-calendar-request",
+					details: {
+						context,
+						status: error.status,
+						delayMs: Math.round(delay),
+						nextAttempt: attempt + 1,
+						maxRetries: MAX_RETRIES,
+					},
+					error,
+				});
 
 				await this.sleep(delay);
 
@@ -218,7 +235,11 @@ export class GoogleCalendarService extends CalendarProvider {
 			this.refreshTimer = null;
 			this.refreshAllCalendars()
 				.catch((error) => {
-					console.error("Google Calendar refresh failed:", error);
+					tasknotesLogger.error("Google Calendar refresh failed:", {
+						category: "provider",
+						operation: "google-calendar-refresh",
+						error: error,
+					});
 				})
 				.finally(() => {
 					void this.oauthService.isConnected("google").then((isConnected) => {
@@ -278,7 +299,11 @@ export class GoogleCalendarService extends CalendarProvider {
 				return providerCalendars;
 			}, "List calendars");
 		} catch (error) {
-			console.error("Failed to list calendars:", error);
+			tasknotesLogger.error("Failed to list calendars:", {
+				category: "provider",
+				operation: "list-calendars",
+				error: error,
+			});
 			throw new GoogleCalendarError(
 				`Failed to fetch calendar list: ${error.message}`,
 				error.status
@@ -387,7 +412,11 @@ export class GoogleCalendarService extends CalendarProvider {
 				hasDeletes,
 			};
 		} catch (error) {
-			console.error(`Failed to fetch events from calendar ${calendarId}:`, error);
+			tasknotesLogger.error(`Failed to fetch events from calendar ${calendarId}:`, {
+				category: "provider",
+				operation: "fetch-events-calendar",
+				error: error,
+			});
 			throw new Error(`Failed to fetch calendar events: ${error.message}`);
 		}
 	}
@@ -516,7 +545,11 @@ export class GoogleCalendarService extends CalendarProvider {
 						}
 					}
 				} catch (error) {
-					console.error(`Failed to fetch events from calendar ${calendarId}:`, error);
+					tasknotesLogger.error(`Failed to fetch events from calendar ${calendarId}:`, {
+						category: "provider",
+						operation: "fetch-events-calendar",
+						error: error,
+					});
 					// Continue with other calendars
 				}
 			}
@@ -527,12 +560,20 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Emit data-changed event
 			this.emit("data-changed");
 		} catch (error) {
-			console.error("Failed to refresh Google calendars:", error);
+			tasknotesLogger.error("Failed to refresh Google calendars:", {
+				category: "provider",
+				operation: "refresh-google-calendars",
+				error: error,
+			});
 
 			// If it's an auth error, show notice to reconnect
 			if (error.message && error.message.includes("401")) {
-				console.warn(
-					"[GoogleCalendar] Authentication expired - caller should handle re-authentication"
+				tasknotesLogger.warn(
+					"[GoogleCalendar] Authentication expired - caller should handle re-authentication",
+					{
+						category: "provider",
+						operation: "authentication-expired-caller-should-handle-re-authentication",
+					}
 				);
 			}
 
@@ -743,7 +784,11 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			return icsEvent;
 		} catch (error) {
-			console.error("Failed to update Google Calendar event:", error);
+			tasknotesLogger.error("Failed to update Google Calendar event:", {
+				category: "provider",
+				operation: "update-google-calendar-event",
+				error: error,
+			});
 			// Check for specific error types
 			if (error.status === 404) {
 				throw new EventNotFoundError(eventId);
@@ -826,13 +871,13 @@ export class GoogleCalendarService extends CalendarProvider {
 					payload.start = { dateTime: event.start, timeZone: "UTC" };
 					payload.end = { dateTime: event.end as string, timeZone: "UTC" };
 				}
-				} else {
-					payload.start = event.start;
-					payload.end =
-						typeof event.end === "string"
-							? { dateTime: event.end, timeZone: "UTC" }
-							: event.end;
-				}
+			} else {
+				payload.start = event.start;
+				payload.end =
+					typeof event.end === "string"
+						? { dateTime: event.end, timeZone: "UTC" }
+						: event.end;
+			}
 
 			const response = await this.withRetry(async () => {
 				return await requestUrl({
@@ -857,7 +902,11 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			return icsEvent;
 		} catch (error) {
-			console.error("Failed to create Google Calendar event:", error);
+			tasknotesLogger.error("Failed to create Google Calendar event:", {
+				category: "provider",
+				operation: "create-google-calendar-event",
+				error: error,
+			});
 			if (error.status === 404) {
 				throw new CalendarNotFoundError(calendarId);
 			}
@@ -900,7 +949,11 @@ export class GoogleCalendarService extends CalendarProvider {
 				return;
 			}
 
-			console.error("Failed to delete Google Calendar event:", error);
+			tasknotesLogger.error("Failed to delete Google Calendar event:", {
+				category: "provider",
+				operation: "delete-google-calendar-event",
+				error: error,
+			});
 			if (error.status === 404) {
 				throw new EventNotFoundError(eventId);
 			}
@@ -945,7 +998,11 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			return calendar.id;
 		} catch (error) {
-			console.error("Failed to create calendar:", error);
+			tasknotesLogger.error("Failed to create calendar:", {
+				category: "provider",
+				operation: "create-calendar",
+				error: error,
+			});
 			if (error.status === 401 || error.status === 403) {
 				throw new TokenExpiredError("google");
 			}

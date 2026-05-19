@@ -3,6 +3,9 @@ import { EventEmitter } from "../utils/EventEmitter";
 import { FilterUtils } from "../utils/FilterUtils";
 import { App } from "obsidian";
 import type TaskNotesPlugin from "../main";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ViewStateManager" });
 
 /**
  * Manages view-specific state like filter preferences across the application
@@ -52,8 +55,12 @@ export class ViewStateManager extends EventEmitter {
 			!Array.isArray(state.children) ||
 			typeof state.conjunction !== "string"
 		) {
-			console.warn(
-				`ViewStateManager: Ignoring old format filter state for ${viewType}, will use default`
+			tasknotesLogger.warn(
+				`ViewStateManager: Ignoring old format filter state for ${viewType}, will use default`,
+				{
+					category: "validation",
+					operation: "viewstatemanager-ignoring-old-format-filter-state",
+				}
 			);
 			// Clear the old format data
 			delete this.filterState[viewType];
@@ -97,7 +104,9 @@ export class ViewStateManager extends EventEmitter {
 	/**
 	 * Get view preferences for a specific view
 	 */
-	getViewPreferences<T extends object = Record<string, unknown>>(viewType: string): T | undefined {
+	getViewPreferences<T extends object = Record<string, unknown>>(
+		viewType: string
+	): T | undefined {
 		return this.viewPreferences[viewType] as T | undefined;
 	}
 
@@ -141,7 +150,11 @@ export class ViewStateManager extends EventEmitter {
 				this.filterState = JSON.parse(stored);
 			}
 		} catch (error) {
-			console.warn("Failed to load view filter state from storage:", error);
+			tasknotesLogger.warn("Failed to load view filter state from storage:", {
+				category: "persistence",
+				operation: "load-view-filter-state-storage",
+				error: error,
+			});
 			this.filterState = {};
 		}
 	}
@@ -153,7 +166,11 @@ export class ViewStateManager extends EventEmitter {
 		try {
 			this.app.saveLocalStorage(this.storageKey, JSON.stringify(this.filterState));
 		} catch (error) {
-			console.warn("Failed to save view filter state to storage:", error);
+			tasknotesLogger.warn("Failed to save view filter state to storage:", {
+				category: "persistence",
+				operation: "save-view-filter-state-storage",
+				error: error,
+			});
 		}
 	}
 
@@ -167,7 +184,11 @@ export class ViewStateManager extends EventEmitter {
 				this.viewPreferences = JSON.parse(stored);
 			}
 		} catch (error) {
-			console.warn("Failed to load view preferences from storage:", error);
+			tasknotesLogger.warn("Failed to load view preferences from storage:", {
+				category: "configuration",
+				operation: "load-view-preferences-storage",
+				error: error,
+			});
 			this.viewPreferences = {};
 		}
 	}
@@ -182,7 +203,11 @@ export class ViewStateManager extends EventEmitter {
 				JSON.stringify(this.viewPreferences)
 			);
 		} catch (error) {
-			console.warn("Failed to save view preferences to storage:", error);
+			tasknotesLogger.warn("Failed to save view preferences to storage:", {
+				category: "configuration",
+				operation: "save-view-preferences-storage",
+				error: error,
+			});
 		}
 	}
 
@@ -378,7 +403,11 @@ export class ViewStateManager extends EventEmitter {
 				this.app.saveLocalStorage(this.savedViewsStorageKey, null);
 			}
 		} catch (error) {
-			console.warn("Failed to load/migrate saved views:", error);
+			tasknotesLogger.warn("Failed to load/migrate saved views:", {
+				category: "persistence",
+				operation: "load-migrate-saved-views",
+				error: error,
+			});
 			this.savedViews = [];
 		}
 	}
@@ -394,7 +423,11 @@ export class ViewStateManager extends EventEmitter {
 			// Save to data.json
 			await this.plugin.saveSettings();
 		} catch (error) {
-			console.warn("Failed to save saved views to plugin data:", error);
+			tasknotesLogger.warn("Failed to save saved views to plugin data:", {
+				category: "persistence",
+				operation: "save-saved-views-plugin-data",
+				error: error,
+			});
 		}
 	}
 
@@ -429,7 +462,11 @@ export class ViewStateManager extends EventEmitter {
 			// Emit migration complete event
 			this.emit("migration-complete");
 		} catch (error) {
-			console.error("Error during ViewStateManager migration:", error);
+			tasknotesLogger.error("Error during ViewStateManager migration:", {
+				category: "configuration",
+				operation: "viewstatemanager-migration",
+				error: error,
+			});
 			// Fallback: ensure we have empty saved views
 			this.savedViews = [];
 			await this.saveSavedViewsToPluginData();

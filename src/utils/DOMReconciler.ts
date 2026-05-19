@@ -1,3 +1,6 @@
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/DOMReconciler" });
 /**
  * DOM Reconciler for efficient incremental updates
  *
@@ -36,7 +39,11 @@ export class DOMReconciler {
 				try {
 					update();
 				} catch (error) {
-					console.error("Error processing DOM update:", error);
+					tasknotesLogger.error("Error processing DOM update:", {
+						category: "validation",
+						operation: "processing-dom-update",
+						error: error,
+					});
 				}
 			});
 		} finally {

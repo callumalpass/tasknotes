@@ -136,4 +136,55 @@ describe("VirtualScroller", () => {
 		expect(container.querySelector("[data-key='b']")?.textContent).toBe("B2:1");
 		expect(renderedKeys(container)).toEqual(["a", "b", "c"]);
 	});
+
+	it("removes keyed items without rebuilding remaining visible elements", () => {
+		const { container, renderItem, scroller } = createTestScroller([
+			{ id: "a", label: "A" },
+			{ id: "b", label: "B" },
+			{ id: "c", label: "C" },
+		]);
+		const firstElement = container.querySelector<HTMLElement>("[data-key='a']");
+		const thirdElement = container.querySelector<HTMLElement>("[data-key='c']");
+		renderItem.mockClear();
+
+		expect(scroller.canRemoveItems(["b"])).toBe(true);
+		expect(scroller.removeItems(["b"])).toBe(true);
+
+		expect(scroller.getItems().map((item) => item.id)).toEqual(["a", "c"]);
+		expect(renderedKeys(container)).toEqual(["a", "c"]);
+		expect(renderItem).not.toHaveBeenCalled();
+		expect(container.querySelector("[data-key='a']")).toBe(firstElement);
+		expect(container.querySelector("[data-key='c']")).toBe(thirdElement);
+	});
+
+	it("inserts keyed items relative to a target without rebuilding visible elements", () => {
+		const { container, renderItem, scroller } = createTestScroller([
+			{ id: "a", label: "A" },
+			{ id: "c", label: "C" },
+		]);
+		const firstElement = container.querySelector<HTMLElement>("[data-key='a']");
+		const thirdElement = container.querySelector<HTMLElement>("[data-key='c']");
+		renderItem.mockClear();
+
+		expect(
+			scroller.canInsertItems({
+				items: [{ id: "b", label: "B" }],
+				targetKey: "a",
+				position: "after",
+			})
+		).toBe(true);
+		expect(
+			scroller.insertItems({
+				items: [{ id: "b", label: "B" }],
+				targetKey: "a",
+				position: "after",
+			})
+		).toBe(true);
+
+		expect(scroller.getItems().map((item) => item.id)).toEqual(["a", "b", "c"]);
+		expect(renderedKeys(container)).toEqual(["a", "b", "c"]);
+		expect(renderItem).toHaveBeenCalledTimes(1);
+		expect(container.querySelector("[data-key='a']")).toBe(firstElement);
+		expect(container.querySelector("[data-key='c']")).toBe(thirdElement);
+	});
 });

@@ -8,6 +8,9 @@ import { createTaskCard } from "../ui/TaskCard";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
 import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 import { NLPSuggest } from "./taskCreationSuggest";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskSelectorWithCreateModal" });
 
 export type TaskSelectorWithCreateResult =
 	| { type: "selected"; task: TaskInfo }
@@ -30,11 +33,7 @@ function searchableValueIncludes(value: unknown, lowerQuery: string): boolean {
 		return false;
 	}
 
-	if (
-		typeof value !== "string" &&
-		typeof value !== "number" &&
-		typeof value !== "boolean"
-	) {
+	if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
 		return false;
 	}
 
@@ -452,7 +451,11 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			this.close();
 			this.options.onResult({ type: "created", task: result.taskInfo });
 		} catch (error) {
-			console.error("Failed to create task:", error);
+			tasknotesLogger.error("Failed to create task:", {
+				category: "persistence",
+				operation: "create-task",
+				error: error,
+			});
 			const message = error instanceof Error ? error.message : String(error);
 			new Notice(this.translate("modals.taskCreation.notices.failure", { message }));
 		} finally {

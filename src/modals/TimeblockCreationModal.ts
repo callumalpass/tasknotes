@@ -25,6 +25,9 @@ import {
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
 import { TranslationKey } from "../i18n";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TimeblockCreationModal" });
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 type DailyNotesLookup = ReturnType<typeof getAllDailyNotes>;
@@ -211,10 +214,10 @@ export class TimeblockCreationModal extends Modal {
 					.setTooltip(this.translate("modals.timeblockCreation.addAttachmentTooltip"))
 					.onClick(() => {
 						openFileSelector(
-								this.plugin,
-								(file) => {
-									if (file instanceof TAbstractFile) this.addAttachment(file);
-								},
+							this.plugin,
+							(file) => {
+								if (file instanceof TAbstractFile) this.addAttachment(file);
+							},
 							{
 								placeholder: "Search files or type to create new...",
 								filter: "all",
@@ -364,7 +367,11 @@ export class TimeblockCreationModal extends Modal {
 			new Notice(`Timeblock "${title}" created successfully`);
 			this.close();
 		} catch (error) {
-			console.error("Error creating timeblock:", error);
+			tasknotesLogger.error("Error creating timeblock:", {
+				category: "internal",
+				operation: "creating-timeblock",
+				error: error,
+			});
 			new Notice(getTimeblockCreationErrorMessage(error));
 		}
 	}
@@ -417,7 +424,11 @@ export class TimeblockCreationModal extends Modal {
 				try {
 					frontmatter = parseYaml(frontmatterText) || {};
 				} catch (error) {
-					console.error("Error parsing existing frontmatter:", error);
+					tasknotesLogger.error("Error parsing existing frontmatter:", {
+						category: "validation",
+						operation: "parsing-existing-frontmatter",
+						error: error,
+					});
 					frontmatter = {};
 				}
 			}
@@ -492,7 +503,11 @@ export class TimeblockCreationModal extends Modal {
 				}
 			);
 		} catch (error) {
-			console.error("Failed to open task selector for timeblock creation:", error);
+			tasknotesLogger.error("Failed to open task selector for timeblock creation:", {
+				category: "persistence",
+				operation: "open-task-selector-timeblock-creation",
+				error: error,
+			});
 			new Notice("Failed to open task selector");
 		}
 	}

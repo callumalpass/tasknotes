@@ -1,6 +1,9 @@
 import { App, Modal, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardDeletion" });
 
 class DeleteTaskConfirmationModal extends Modal {
 	private task: TaskInfo;
@@ -109,7 +112,11 @@ class DeleteTaskConfirmationModal extends Modal {
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
 					new Notice(`Failed to delete task: ${errorMessage}`);
-					console.error("Error in delete confirmation:", error);
+					tasknotesLogger.error("Error in delete confirmation:", {
+						category: "persistence",
+						operation: "delete-confirmation",
+						error: error,
+					});
 				}
 			})();
 		});

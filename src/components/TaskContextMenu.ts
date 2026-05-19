@@ -37,6 +37,9 @@ import {
 	parseTaskTagInput,
 	removeTagsFromList,
 } from "../utils/taskTagList";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
 
 type SubmenuMenuItem = {
 	setSubmenu(): Menu;
@@ -202,9 +205,11 @@ export class TaskContextMenu {
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error("Error updating task due date:", {
+						tasknotesLogger.error("Error updating task due date:", {
+							category: "validation",
+							operation: "updating-task-due-date",
+							details: { taskPath: task.path },
 							error: errorMessage,
-							taskPath: task.path,
 						});
 						new Notice(
 							this.t("contextMenus.task.notices.updateDueDateFailure", {
@@ -234,9 +239,11 @@ export class TaskContextMenu {
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error("Error updating task scheduled date:", {
+						tasknotesLogger.error("Error updating task scheduled date:", {
+							category: "validation",
+							operation: "updating-task-scheduled-date",
+							details: { taskPath: task.path },
 							error: errorMessage,
-							taskPath: task.path,
 						});
 						new Notice(
 							this.t("contextMenus.task.notices.updateScheduledFailure", {
@@ -295,7 +302,11 @@ export class TaskContextMenu {
 								);
 								this.options.onUpdate?.();
 							} catch (error) {
-								console.error("Error updating reminders:", error);
+								tasknotesLogger.error("Error updating reminders:", {
+									category: "persistence",
+									operation: "updating-reminders",
+									error: error,
+								});
 								new Notice(
 									this.t("contextMenus.task.notices.updateRemindersFailure")
 								);
@@ -316,7 +327,11 @@ export class TaskContextMenu {
 							await plugin.updateTaskProperty(task, "reminders", undefined);
 							this.options.onUpdate?.();
 						} catch (error) {
-							console.error("Error clearing reminders:", error);
+							tasknotesLogger.error("Error clearing reminders:", {
+								category: "persistence",
+								operation: "clearing-reminders",
+								error: error,
+							});
 							new Notice(this.t("contextMenus.task.notices.clearRemindersFailure"));
 						}
 					});
@@ -409,9 +424,11 @@ export class TaskContextMenu {
 					this.options.onUpdate?.();
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error("Error toggling task archive:", {
+					tasknotesLogger.error("Error toggling task archive:", {
+						category: "persistence",
+						operation: "toggling-task-archive",
+						details: { taskPath: task.path },
 						error: errorMessage,
-						taskPath: task.path,
 					});
 					new Notice(
 						this.t("contextMenus.task.notices.archiveFailure", {
@@ -474,9 +491,17 @@ export class TaskContextMenu {
 				// Try to populate with Obsidian's native file menu
 				try {
 					// Trigger the file-menu event to populate with default actions
-					plugin.app.workspace.trigger("file-menu", submenu, file, "tasknotes-context-menu");
+					plugin.app.workspace.trigger(
+						"file-menu",
+						submenu,
+						file,
+						"tasknotes-context-menu"
+					);
 				} catch {
-					console.debug("Native file menu not available, using fallback");
+					tasknotesLogger.debug("Native file menu not available, using fallback", {
+						category: "stale-data",
+						operation: "native-file-menu-not-using-fallback",
+					});
 				}
 
 				// Add common file actions (these will either supplement or replace the native menu)
@@ -519,7 +544,11 @@ export class TaskContextMenu {
 								}
 							}
 						} catch (error) {
-							console.error("Error renaming file:", error);
+							tasknotesLogger.error("Error renaming file:", {
+								category: "persistence",
+								operation: "renaming-file",
+								error: error,
+							});
 							new Notice(this.t("contextMenus.task.notices.renameFailure"));
 						}
 					});
@@ -546,7 +575,11 @@ export class TaskContextMenu {
 							} catch (error) {
 								const message =
 									error instanceof Error ? error.message : String(error);
-								console.error("Error deleting task:", error);
+								tasknotesLogger.error("Error deleting task:", {
+									category: "persistence",
+									operation: "deleting-task",
+									error: error,
+								});
 								new Notice(`Failed to delete task: ${message}`);
 							}
 						}
@@ -608,7 +641,11 @@ export class TaskContextMenu {
 								}
 							})
 							.catch((error) => {
-								console.warn("Failed to reveal task in file explorer:", error);
+								tasknotesLogger.warn("Failed to reveal task in file explorer:", {
+									category: "persistence",
+									operation: "reveal-task-file-explorer",
+									error: error,
+								});
 							});
 					});
 				});
@@ -702,7 +739,11 @@ export class TaskContextMenu {
 						new Notice(this.t("contextMenus.task.calendar.syncToGoogleSuccess"));
 						this.options.onUpdate?.();
 					} catch (error) {
-						console.error("Failed to sync task to Google Calendar:", error);
+						tasknotesLogger.error("Failed to sync task to Google Calendar:", {
+							category: "provider",
+							operation: "sync-task-google-calendar",
+							error: error,
+						});
 						new Notice(this.t("contextMenus.task.calendar.syncToGoogleFailed"));
 					}
 				});
@@ -728,9 +769,11 @@ export class TaskContextMenu {
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error("Error updating task recurrence:", {
+						tasknotesLogger.error("Error updating task recurrence:", {
+							category: "persistence",
+							operation: "updating-task-recurrence",
+							details: { taskPath: task.path },
 							error: errorMessage,
-							taskPath: task.path,
 						});
 						new Notice(
 							this.t("contextMenus.task.notices.updateRecurrenceFailure", {
@@ -799,9 +842,11 @@ export class TaskContextMenu {
 					this.options.onUpdate?.();
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error("Error toggling recurring task completion:", {
+					tasknotesLogger.error("Error toggling recurring task completion:", {
+						category: "persistence",
+						operation: "toggling-recurring-task-completion",
+						details: { taskPath: task.path },
 						error: errorMessage,
-						taskPath: task.path,
 					});
 					new Notice(
 						this.t("contextMenus.task.notices.toggleCompletionFailure", {
@@ -830,9 +875,11 @@ export class TaskContextMenu {
 					this.options.onUpdate?.();
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error("Error toggling recurring task skip:", {
+					tasknotesLogger.error("Error toggling recurring task skip:", {
+						category: "persistence",
+						operation: "toggling-recurring-task-skip",
+						details: { taskPath: task.path },
 						error: errorMessage,
-						taskPath: task.path,
 					});
 					new Notice(
 						this.t("contextMenus.task.notices.toggleSkipFailure", {
@@ -883,7 +930,11 @@ export class TaskContextMenu {
 								);
 								this.options.onUpdate?.();
 							} catch (error) {
-								console.error("Failed to remove blocked-by dependency:", error);
+								tasknotesLogger.error("Failed to remove blocked-by dependency:", {
+									category: "persistence",
+									operation: "remove-blocked-by-dependency",
+									error: error,
+								});
 								new Notice(
 									this.t("contextMenus.task.dependencies.notices.updateFailed")
 								);
@@ -936,7 +987,11 @@ export class TaskContextMenu {
 								);
 								this.options.onUpdate?.();
 							} catch (error) {
-								console.error("Failed to remove blocking dependency:", error);
+								tasknotesLogger.error("Failed to remove blocking dependency:", {
+									category: "persistence",
+									operation: "remove-blocking-dependency",
+									error: error,
+								});
 								new Notice(
 									this.t("contextMenus.task.dependencies.notices.updateFailed")
 								);
@@ -1020,7 +1075,11 @@ export class TaskContextMenu {
 				void onSelect(task);
 			});
 		} catch (error) {
-			console.error("Failed to open task selector for dependencies:", error);
+			tasknotesLogger.error("Failed to open task selector for dependencies:", {
+				category: "persistence",
+				operation: "open-task-selector-dependencies",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
 		}
 	}
@@ -1058,7 +1117,11 @@ export class TaskContextMenu {
 			);
 			this.options.onUpdate?.();
 		} catch (error) {
-			console.error("Failed to add blocked-by dependency via selector:", error);
+			tasknotesLogger.error("Failed to add blocked-by dependency via selector:", {
+				category: "persistence",
+				operation: "add-blocked-by-dependency-via-selector",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
 		}
 	}
@@ -1104,7 +1167,11 @@ export class TaskContextMenu {
 			);
 			this.options.onUpdate?.();
 		} catch (error) {
-			console.error("Failed to add blocking dependency via selector:", error);
+			tasknotesLogger.error("Failed to add blocking dependency via selector:", {
+				category: "persistence",
+				operation: "add-blocking-dependency-via-selector",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
 		}
 	}
@@ -1222,7 +1289,11 @@ export class TaskContextMenu {
 			Object.assign(task, updatedTask);
 			this.options.onUpdate?.();
 		} catch (error) {
-			console.error("Failed to update task contexts:", error);
+			tasknotesLogger.error("Failed to update task contexts:", {
+				category: "validation",
+				operation: "update-task-contexts",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.organization.notices.updateContextsFailed"));
 		}
 	}
@@ -1246,7 +1317,11 @@ export class TaskContextMenu {
 					item.setTitle(this.t("contextMenus.task.removeTag", { tag: `#${tag}` }));
 					item.setIcon("x");
 					item.onClick(async () => {
-						await this.updateTaskTags(task, plugin, removeTagsFromList(task.tags, [tag]));
+						await this.updateTaskTags(
+							task,
+							plugin,
+							removeTagsFromList(task.tags, [tag])
+						);
 					});
 				});
 			}
@@ -1302,7 +1377,11 @@ export class TaskContextMenu {
 			Object.assign(task, updatedTask);
 			this.options.onUpdate?.();
 		} catch (error) {
-			console.error("Failed to update task tags:", error);
+			tasknotesLogger.error("Failed to update task tags:", {
+				category: "validation",
+				operation: "update-task-tags",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.notices.updateTagsFailed"));
 		}
 	}
@@ -1315,7 +1394,11 @@ export class TaskContextMenu {
 			});
 			selector.open();
 		} catch (error) {
-			console.error("Failed to open project selector:", error);
+			tasknotesLogger.error("Failed to open project selector:", {
+				category: "persistence",
+				operation: "open-project-selector",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.organization.notices.projectSelectFailed"));
 		}
 	}
@@ -1340,7 +1423,11 @@ export class TaskContextMenu {
 				void this.assignTaskAsSubtask(task, plugin, subtask);
 			});
 		} catch (error) {
-			console.error("Failed to open subtask assignment selector:", error);
+			tasknotesLogger.error("Failed to open subtask assignment selector:", {
+				category: "persistence",
+				operation: "open-subtask-assignment-selector",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.organization.notices.subtaskSelectFailed"));
 		}
 	}
@@ -1362,7 +1449,11 @@ export class TaskContextMenu {
 				this.options.onUpdate?.();
 			}
 		} catch (error) {
-			console.error("Failed to add task to project:", error);
+			tasknotesLogger.error("Failed to add task to project:", {
+				category: "persistence",
+				operation: "add-task-project",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.organization.notices.addToProjectFailed"));
 		}
 	}
@@ -1385,7 +1476,11 @@ export class TaskContextMenu {
 				this.options.onUpdate?.();
 			}
 		} catch (error) {
-			console.error("Failed to assign task as subtask:", error);
+			tasknotesLogger.error("Failed to assign task as subtask:", {
+				category: "persistence",
+				operation: "assign-task-as-subtask",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.organization.notices.addAsSubtaskFailed"));
 		}
 	}
@@ -1468,9 +1563,11 @@ export class TaskContextMenu {
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error("Error updating task status:", {
+						tasknotesLogger.error("Error updating task status:", {
+							category: "persistence",
+							operation: "updating-task-status",
+							details: { taskPath: task.path },
 							error: errorMessage,
-							taskPath: task.path,
 						});
 						new Notice(`Failed to update task status: ${errorMessage}`);
 					}
@@ -1520,9 +1617,11 @@ export class TaskContextMenu {
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
-						console.error("Error updating task priority:", {
+						tasknotesLogger.error("Error updating task priority:", {
+							category: "persistence",
+							operation: "updating-task-priority",
+							details: { taskPath: task.path },
 							error: errorMessage,
-							taskPath: task.path,
 						});
 						new Notice(`Failed to update task priority: ${errorMessage}`);
 					}
@@ -1562,9 +1661,7 @@ export class TaskContextMenu {
 
 		const dateOptions = dateContextMenu.getDateOptions();
 
-		const incrementOptions = dateOptions.filter(
-			(option) => option.category === "increment"
-		);
+		const incrementOptions = dateOptions.filter((option) => option.category === "increment");
 		if (incrementOptions.length > 0) {
 			incrementOptions.forEach((option) => {
 				submenu.addItem((item) => {
@@ -1857,7 +1954,11 @@ export class TaskContextMenu {
 			await plugin.updateTaskProperty(task, "reminders", updatedReminders);
 			this.options.onUpdate?.();
 		} catch (error) {
-			console.error("Error adding reminder:", error);
+			tasknotesLogger.error("Error adding reminder:", {
+				category: "persistence",
+				operation: "adding-reminder",
+				error: error,
+			});
 			new Notice("Failed to add reminder");
 		}
 	}

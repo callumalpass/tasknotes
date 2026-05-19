@@ -6,6 +6,9 @@ import TaskNotesPlugin from "../main";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
 
 import { generateOpenAPISpec, Get, Post } from "../utils/OpenAPIDecorators";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Api/SystemController" });
 
 type VaultAdapterWithPath = {
 	basePath?: string;
@@ -141,7 +144,11 @@ export class SystemController extends BaseController {
 			res.setHeader("Access-Control-Allow-Origin", "*");
 			res.end(JSON.stringify(spec, null, 2));
 		} catch (error: unknown) {
-			console.error("OpenAPI spec generation error:", error);
+			tasknotesLogger.error("OpenAPI spec generation error:", {
+				category: "provider",
+				operation: "openapi-spec-generation",
+				error: error,
+			});
 			this.sendResponse(res, 500, this.errorResponse("Failed to generate API specification"));
 		}
 	}
@@ -156,7 +163,11 @@ export class SystemController extends BaseController {
 			res.setHeader("Access-Control-Allow-Origin", "*");
 			res.end(swaggerHTML);
 		} catch (error: unknown) {
-			console.error("Swagger UI generation error:", error);
+			tasknotesLogger.error("Swagger UI generation error:", {
+				category: "provider",
+				operation: "swagger-ui-generation",
+				error: error,
+			});
 			this.sendResponse(res, 500, this.errorResponse("Failed to generate API documentation"));
 		}
 	}

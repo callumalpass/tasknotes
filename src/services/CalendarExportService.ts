@@ -2,6 +2,9 @@ import { TaskInfo } from "../types";
 import { format, parseISO } from "date-fns";
 import { Notice } from "obsidian";
 import { TranslationKey } from "../i18n";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/CalendarExportService" });
 
 export interface CalendarURLOptions {
 	type: "google" | "outlook" | "yahoo" | "ics";
@@ -58,7 +61,11 @@ export class CalendarExportService {
 			const url = this.generateCalendarURL(options);
 			window.open(url, "_blank");
 		} catch (error) {
-			console.error("Failed to generate calendar URL:", error);
+			tasknotesLogger.error("Failed to generate calendar URL:", {
+				category: "provider",
+				operation: "generate-calendar-url",
+				error: error,
+			});
 			new Notice(
 				translate
 					? translate("services.calendarExport.notices.generateLinkFailed")
@@ -299,10 +306,7 @@ export class CalendarExportService {
 		return parts.join("\n");
 	}
 
-	private static buildObsidianOpenUri(
-		task: TaskInfo,
-		options?: ICSExportOptions
-	): string | null {
+	private static buildObsidianOpenUri(task: TaskInfo, options?: ICSExportOptions): string | null {
 		if (!options?.includeObsidianLink || !options.vaultName) {
 			return null;
 		}
@@ -349,7 +353,11 @@ export class CalendarExportService {
 				const scheduledDate = this.parseTaskDate(task.scheduled);
 				startISO = scheduledDate.toISOString();
 			} catch {
-				console.warn("Invalid scheduled date:", task.scheduled);
+				tasknotesLogger.warn("Invalid scheduled date:", {
+					category: "provider",
+					operation: "invalid-scheduled-date",
+					details: { value: task.scheduled },
+				});
 			}
 		}
 
@@ -370,7 +378,11 @@ export class CalendarExportService {
 				const dueDate = this.parseTaskDate(task.due);
 				endISO = dueDate.toISOString();
 			} catch {
-				console.warn("Invalid due date:", task.due);
+				tasknotesLogger.warn("Invalid due date:", {
+					category: "provider",
+					operation: "invalid-due-date",
+					details: { value: task.due },
+				});
 			}
 		} else if (useScheduledAsDue && startISO) {
 			// Use scheduled + 1 hour as end time (default fallback)
@@ -687,7 +699,9 @@ export class CalendarExportService {
 			return tasks;
 		}
 
-		const completedStatuses = new Set(options.completedStatuses?.length ? options.completedStatuses : ["done"]);
+		const completedStatuses = new Set(
+			options.completedStatuses?.length ? options.completedStatuses : ["done"]
+		);
 		return tasks.filter((task) => {
 			if (options.excludeArchived && task.archived) {
 				return false;
@@ -769,7 +783,11 @@ export class CalendarExportService {
 					: `Downloaded ${filename} with ${exportTasks.length} task${pluralSuffix}`
 			);
 		} catch (error) {
-			console.error("Failed to download all tasks ICS file:", error);
+			tasknotesLogger.error("Failed to download all tasks ICS file:", {
+				category: "provider",
+				operation: "download-all-tasks-ics-file",
+				error: error,
+			});
 			new Notice(
 				translate
 					? translate("services.calendarExport.notices.downloadFailed")
@@ -808,7 +826,11 @@ export class CalendarExportService {
 					: `Downloaded ${filename}`
 			);
 		} catch (error) {
-			console.error("Failed to download ICS file:", error);
+			tasknotesLogger.error("Failed to download ICS file:", {
+				category: "provider",
+				operation: "download-ics-file",
+				error: error,
+			});
 			new Notice(
 				translate
 					? translate("services.calendarExport.notices.downloadFailed")

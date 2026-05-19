@@ -23,6 +23,9 @@ import {
 	getFrontmatterTags,
 } from "../../utils/taskIdentificationFrontmatter";
 import type { UserMappedField } from "../../types/settings";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService/TaskCreationService" });
 
 interface TemplateApplicationResult {
 	frontmatter: Record<string, unknown>;
@@ -292,7 +295,9 @@ export class TaskCreationService {
 				...completeTaskData,
 				...finalFrontmatter,
 				title: stringifyUnknown(finalFrontmatter.title || completeTaskData.title || title),
-				status: stringifyUnknown(finalFrontmatter.status || completeTaskData.status || status),
+				status: stringifyUnknown(
+					finalFrontmatter.status || completeTaskData.status || status
+				),
 				priority: stringifyUnknown(
 					finalFrontmatter.priority || completeTaskData.priority || priority
 				),
@@ -308,7 +313,11 @@ export class TaskCreationService {
 				}
 				runtime.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
 			} catch (cacheError) {
-				console.error("Error updating cache for new task:", cacheError);
+				tasknotesLogger.error("Error updating cache for new task:", {
+					category: "stale-data",
+					operation: "updating-cache-new-task",
+					error: cacheError,
+				});
 			}
 
 			runtime.emitter.trigger(EVENT_TASK_UPDATED, {
@@ -322,7 +331,11 @@ export class TaskCreationService {
 						task: taskInfo,
 					});
 				} catch (error) {
-					console.warn("Failed to trigger webhook for task creation:", error);
+					tasknotesLogger.warn("Failed to trigger webhook for task creation:", {
+						category: "provider",
+						operation: "trigger-webhook-task-creation",
+						error: error,
+					});
 				}
 			}
 
@@ -331,17 +344,22 @@ export class TaskCreationService {
 				runtime.settings.googleCalendarExport.syncOnTaskCreate
 			) {
 				runtime.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {
-					console.warn("Failed to sync task to Google Calendar:", error);
+					tasknotesLogger.warn("Failed to sync task to Google Calendar:", {
+						category: "provider",
+						operation: "sync-task-google-calendar",
+						error: error,
+					});
 				});
 			}
 
 			return { file, taskInfo };
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error creating task:", {
+			tasknotesLogger.error("Error creating task:", {
+				category: "persistence",
+				operation: "creating-task",
+				details: { stack: error instanceof Error ? error.stack : undefined, taskData },
 				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				taskData,
 			});
 			throw new Error(`Failed to create task: ${errorMessage}`);
 		}
@@ -381,7 +399,9 @@ export class TaskCreationService {
 			return this.deps.processFolderTemplate(tasksFolder, taskData);
 		}
 
-		const tasksFolder = this.resolveCurrentNoteFolderVariables(runtime.settings.tasksFolder || "");
+		const tasksFolder = this.resolveCurrentNoteFolderVariables(
+			runtime.settings.tasksFolder || ""
+		);
 		return this.deps.processFolderTemplate(tasksFolder, taskData);
 	}
 }

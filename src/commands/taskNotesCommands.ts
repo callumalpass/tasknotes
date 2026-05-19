@@ -1,6 +1,9 @@
 import { Notice, type Editor } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TranslatedCommandDefinition } from "./types";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Commands/TaskNotesCommands" });
 
 export function createTaskNotesCommandDefinitions(
 	plugin: TaskNotesPlugin
@@ -234,7 +237,11 @@ export function createTaskNotesCommandDefinitions(
 						}
 					);
 				} catch (error) {
-					console.error("Error exporting all tasks as ICS:", error);
+					tasknotesLogger.error("Error exporting all tasks as ICS:", {
+						category: "provider",
+						operation: "exporting-all-tasks-as-ics",
+						error: error,
+					});
 					new Notice(ctx.i18n.translate("notices.exportTasksFailed"));
 				}
 			},

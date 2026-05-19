@@ -34,6 +34,9 @@ import {
 	createWeeklyNote,
 } from "obsidian-daily-notes-interface";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/MiniCalendarView" });
 
 interface NoteEntry {
 	kind: "note" | "external";
@@ -175,7 +178,11 @@ export class MiniCalendarView extends BasesViewBase {
 			this.readCalendarToggles();
 			this.configLoaded = true;
 		} catch (e) {
-			console.error("[TaskNotes][MiniCalendarView] Error reading view options:", e);
+			tasknotesLogger.error("[TaskNotes][MiniCalendarView] Error reading view options:", {
+				category: "provider",
+				operation: "reading-view-options",
+				error: e,
+			});
 		}
 	}
 
@@ -270,7 +277,11 @@ export class MiniCalendarView extends BasesViewBase {
 				}, 10);
 			}
 		} catch (error: unknown) {
-			console.error("[TaskNotes][MiniCalendarView] Error rendering:", error);
+			tasknotesLogger.error("[TaskNotes][MiniCalendarView] Error rendering:", {
+				category: "provider",
+				operation: "rendering",
+				error: error,
+			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
@@ -350,9 +361,13 @@ export class MiniCalendarView extends BasesViewBase {
 							}
 						}
 					} catch (error) {
-						console.warn(
+						tasknotesLogger.warn(
 							"[TaskNotes][MiniCalendarView] Error getting title property:",
-							error
+							{
+								category: "provider",
+								operation: "getting-title-property",
+								error: error,
+							}
 						);
 					}
 				}
@@ -376,7 +391,11 @@ export class MiniCalendarView extends BasesViewBase {
 					notes.push(noteEntry);
 				}
 			} catch (error) {
-				console.warn("[TaskNotes][MiniCalendarView] Error indexing note:", error);
+				tasknotesLogger.warn("[TaskNotes][MiniCalendarView] Error indexing note:", {
+					category: "provider",
+					operation: "indexing-note",
+					error: error,
+				});
 			}
 		}
 
@@ -566,7 +585,11 @@ export class MiniCalendarView extends BasesViewBase {
 
 			return null;
 		} catch (error) {
-			console.warn("[TaskNotes][MiniCalendarView] Error getting date value:", error);
+			tasknotesLogger.warn("[TaskNotes][MiniCalendarView] Error getting date value:", {
+				category: "provider",
+				operation: "getting-date-value",
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -1000,7 +1023,9 @@ export class MiniCalendarView extends BasesViewBase {
 	private showDayContextMenu(event: MouseEvent, date: Date): void {
 		const menu = new Menu();
 		menu.addItem((item) => {
-			item.setTitle(this.plugin.i18n.translate("views.miniCalendar.contextMenu.openDailyNote"));
+			item.setTitle(
+				this.plugin.i18n.translate("views.miniCalendar.contextMenu.openDailyNote")
+			);
 			item.setIcon("calendar-days");
 			item.onClick(() => {
 				void this.openDailyNoteForDate(date);
@@ -1012,7 +1037,9 @@ export class MiniCalendarView extends BasesViewBase {
 	private showWeekContextMenu(event: MouseEvent, dateInWeek: Date): void {
 		const menu = new Menu();
 		menu.addItem((item) => {
-			item.setTitle(this.plugin.i18n.translate("views.miniCalendar.contextMenu.openWeeklyNote"));
+			item.setTitle(
+				this.plugin.i18n.translate("views.miniCalendar.contextMenu.openWeeklyNote")
+			);
 			item.setIcon("calendar-range");
 			item.onClick(() => {
 				void this.openWeeklyNoteForDate(dateInWeek);
@@ -1053,7 +1080,11 @@ export class MiniCalendarView extends BasesViewBase {
 				dailyNote = await createDailyNote(dailyNoteMoment);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
-				console.error("Failed to create daily note:", error);
+				tasknotesLogger.error("Failed to create daily note:", {
+					category: "provider",
+					operation: "create-daily-note",
+					error: error,
+				});
 				new Notice(`Failed to create daily note: ${errorMessage}`);
 				return;
 			}
@@ -1093,7 +1124,11 @@ export class MiniCalendarView extends BasesViewBase {
 				weeklyNote = await createWeeklyNote(weeklyNoteMoment);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
-				console.error("Failed to create weekly note:", error);
+				tasknotesLogger.error("Failed to create weekly note:", {
+					category: "provider",
+					operation: "create-weekly-note",
+					error: error,
+				});
 				new Notice(`Failed to create weekly note: ${errorMessage}`);
 				return;
 			}
@@ -1626,7 +1661,10 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 export function buildMiniCalendarViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
 	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
-			console.error("[TaskNotes][MiniCalendarView] No containerEl provided");
+			tasknotesLogger.error("[TaskNotes][MiniCalendarView] No containerEl provided", {
+				category: "provider",
+				operation: "no-containerel-provided",
+			});
 			throw new Error("MiniCalendarView requires a containerEl");
 		}
 

@@ -6,6 +6,9 @@ import {
 	getDatePart,
 	parseDateToUTC,
 } from "../utils/dateUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/KanbanCardActions" });
 
 export interface KanbanCardActionContext {
 	action: string;
@@ -92,7 +95,11 @@ async function handleToggleStatus(
 			await plugin.toggleTaskStatus(task);
 		}
 	} catch (error) {
-		console.error("[TaskNotes][KanbanView] Failed to toggle status", error);
+		tasknotesLogger.error("[TaskNotes][KanbanView] Failed to toggle status", {
+			category: "internal",
+			operation: "toggle-status",
+			error: error,
+		});
 	}
 }
 
@@ -118,7 +125,11 @@ function showPriorityMenu(
 				try {
 					await plugin.updateTaskProperty(task, "priority", newPriority);
 				} catch (error) {
-					console.error("[TaskNotes][KanbanView] Failed to update priority", error);
+					tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update priority", {
+						category: "validation",
+						operation: "update-priority",
+						error: error,
+					});
 				}
 			})();
 		},
@@ -145,7 +156,11 @@ function showRecurrenceMenu(
 						await plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
 					}
 				} catch (error) {
-					console.error("[TaskNotes][KanbanView] Failed to update recurrence", error);
+					tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update recurrence", {
+						category: "validation",
+						operation: "update-recurrence",
+						error: error,
+					});
 				}
 			})();
 		},
@@ -169,7 +184,11 @@ function showReminderModal(
 					reminders.length > 0 ? reminders : undefined
 				);
 			} catch (error) {
-				console.error("[TaskNotes][KanbanView] Failed to update reminders", error);
+				tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update reminders", {
+					category: "validation",
+					operation: "update-reminders",
+					error: error,
+				});
 			}
 		})();
 	});
@@ -205,7 +224,11 @@ async function openDateContextMenu(
 					}
 					await plugin.updateTaskProperty(task, dateType, finalValue);
 				} catch (error) {
-					console.error("[TaskNotes][KanbanView] Failed to update date", error);
+					tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update date", {
+						category: "validation",
+						operation: "update-date",
+						error: error,
+					});
 				}
 			})();
 		},

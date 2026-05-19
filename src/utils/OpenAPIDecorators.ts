@@ -1,4 +1,7 @@
 import "reflect-metadata";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/OpenAPIDecorators" });
 
 // OpenAPI specification interfaces
 export interface OpenAPIParameter {
@@ -167,8 +170,12 @@ export function OpenAPI(operation: OpenAPIOperation) {
  * New code should use @Route decorators instead
  */
 function extractPathAndMethod(methodName: string): { path: string; method: string } {
-	console.warn(
-		`extractPathAndMethod is deprecated. Use @Route decorators on method: ${methodName}`
+	tasknotesLogger.warn(
+		`extractPathAndMethod is deprecated. Use @Route decorators on method: ${methodName}`,
+		{
+			category: "provider",
+			operation: "extractpathandmethod-deprecated-use-route-decorators-on-method",
+		}
 	);
 	return { path: "/api/unknown", method: "get" };
 }
@@ -382,7 +389,8 @@ function getCommonSchemas(): Record<string, unknown> {
 				recurrence_anchor: {
 					type: "string",
 					enum: ["scheduled", "completion"],
-					description: "Whether recurrence advances from the scheduled date or completion date",
+					description:
+						"Whether recurrence advances from the scheduled date or completion date",
 					nullable: true,
 				},
 				reminders: {
@@ -404,7 +412,8 @@ function getCommonSchemas(): Record<string, unknown> {
 					items: {
 						type: "string",
 					},
-					description: "Task paths this task blocks. This is derived from other tasks' blockedBy fields.",
+					description:
+						"Task paths this task blocks. This is derived from other tasks' blockedBy fields.",
 					readOnly: true,
 				},
 				isBlocked: {
@@ -505,7 +514,8 @@ function getCommonSchemas(): Record<string, unknown> {
 				recurrence_anchor: {
 					type: "string",
 					enum: ["scheduled", "completion"],
-					description: "Whether recurrence advances from the scheduled date or completion date",
+					description:
+						"Whether recurrence advances from the scheduled date or completion date",
 				},
 				reminders: {
 					type: "array",
@@ -645,10 +655,12 @@ function getCommonSchemas(): Record<string, unknown> {
 						"is-greater-than-or-equal",
 						"is-less-than-or-equal",
 					],
-					description: "Comparison operator. Use an operator supported by the selected property.",
+					description:
+						"Comparison operator. Use an operator supported by the selected property.",
 				},
 				value: {
-					description: "Comparison value. Empty and checked operators do not require a value.",
+					description:
+						"Comparison value. Empty and checked operators do not require a value.",
 					nullable: true,
 					oneOf: [
 						{

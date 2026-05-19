@@ -51,6 +51,9 @@ import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
 import { TaskNotesAPI } from "../api/TaskNotesAPI";
 import { isCalendarIntegrationDisabledOnMobile } from "../utils/calendarIntegration";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bootstrap/PluginBootstrap" });
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
 
@@ -222,7 +225,11 @@ export async function registerBasesIntegration(plugin: TaskNotesPlugin): Promise
 		await registerBasesTaskList(plugin);
 		plugin.basesRegistered = true;
 	} catch (error) {
-		console.debug("[TaskNotes][Bases] Registration failed:", error);
+		tasknotesLogger.debug("[TaskNotes][Bases] Registration failed:", {
+			category: "internal",
+			operation: "registration",
+			error: error,
+		});
 	}
 }
 
@@ -246,7 +253,11 @@ export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> 
 		await plugin.apiService.start();
 		new Notice(`TaskNotes API started on port ${plugin.apiService.getPort()}`);
 	} catch (error) {
-		console.error("Failed to initialize HTTP API:", error);
+		tasknotesLogger.error("Failed to initialize HTTP API:", {
+			category: "provider",
+			operation: "initialize-http-api",
+			error: error,
+		});
 		new Notice("Failed to start tasknotes API server. Check console for details.");
 	}
 }
@@ -277,7 +288,11 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 		initializeServicesLazily(plugin);
 		await registerBasesIntegration(plugin);
 	} catch (error) {
-		console.error("Error during post-layout initialization:", error);
+		tasknotesLogger.error("Error during post-layout initialization:", {
+			category: "internal",
+			operation: "post-layout-initialization",
+			error: error,
+		});
 	}
 }
 
@@ -340,9 +355,14 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 								plugin.taskCalendarSyncService
 									.deleteTaskFromCalendarByPath(data.path, eventId)
 									.catch((error) => {
-										console.warn(
+										tasknotesLogger.warn(
 											"Failed to delete task from Google Calendar on file deletion:",
-											error
+											{
+												category: "provider",
+												operation:
+													"delete-task-google-calendar-on-file-deletion",
+												error: error,
+											}
 										);
 									});
 							}
@@ -426,7 +446,11 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 				plugin.setupTimeTrackingEventListeners();
 				await plugin.checkForVersionUpdate();
 			} catch (error) {
-				console.error("Error during lazy service initialization:", error);
+				tasknotesLogger.error("Error during lazy service initialization:", {
+					category: "internal",
+					operation: "lazy-service-initialization",
+					error: error,
+				});
 			}
 		})();
 	}, 10);

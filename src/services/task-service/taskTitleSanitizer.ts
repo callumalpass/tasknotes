@@ -1,3 +1,6 @@
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService/TaskTitleSanitizer" });
 const UNTITLED_TASK_TITLE = "untitled";
 
 function stripControlCharacters(value: string): string {
@@ -28,7 +31,11 @@ export function sanitizeTaskTitleForFilename(input: string): string {
 
 		return fallbackUntitled(sanitized);
 	} catch (error) {
-		console.error("Error sanitizing title:", error);
+		tasknotesLogger.error("Error sanitizing title:", {
+			category: "validation",
+			operation: "sanitizing-title",
+			error: error,
+		});
 		return UNTITLED_TASK_TITLE;
 	}
 }
@@ -41,7 +48,11 @@ export function sanitizeTaskTitleForStorage(input: string): string {
 	try {
 		return fallbackUntitled(stripControlCharacters(normalizeTitleWhitespace(input)).trim());
 	} catch (error) {
-		console.error("Error sanitizing title:", error);
+		tasknotesLogger.error("Error sanitizing title:", {
+			category: "validation",
+			operation: "sanitizing-title",
+			error: error,
+		});
 		return UNTITLED_TASK_TITLE;
 	}
 }

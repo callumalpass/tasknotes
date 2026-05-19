@@ -86,6 +86,9 @@ import {
 } from "./calendarEventMount";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import { filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarView" });
 
 export {
 	getCalendarConfigValue,
@@ -830,8 +833,9 @@ export class CalendarView extends BasesViewBase {
 			allowMaxHourOnlyAtZero,
 		});
 		if (!result.isValid) {
-			console.warn(
-				`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`
+			tasknotesLogger.warn(
+				`[TaskNotes][CalendarView] Invalid time value: ${value}, using default: ${defaultValue}`,
+				{ category: "provider", operation: "invalid-time-value" }
 			);
 		}
 		return result.value;
@@ -913,7 +917,11 @@ export class CalendarView extends BasesViewBase {
 				}
 			}
 		} catch (e) {
-			console.error("[TaskNotes][CalendarView] Error reading event toggles:", e);
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error reading event toggles:", {
+				category: "provider",
+				operation: "reading-event-toggles",
+				error: e,
+			});
 		}
 	}
 
@@ -1095,7 +1103,11 @@ export class CalendarView extends BasesViewBase {
 				this.scheduleDailyNoteHeaderLinkUpdate();
 			}
 		} catch (e) {
-			console.error("[TaskNotes][CalendarView] Error reading view options:", e);
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error reading view options:", {
+				category: "provider",
+				operation: "reading-view-options",
+				error: e,
+			});
 		}
 	}
 
@@ -1181,7 +1193,11 @@ export class CalendarView extends BasesViewBase {
 				await this.updateCalendarEvents(filteredTasks);
 			}
 		} catch (error: unknown) {
-			console.error("[TaskNotes][CalendarView] Error rendering:", error);
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error rendering:", {
+				category: "provider",
+				operation: "rendering",
+				error: error,
+			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		} finally {
 			this._isRendering = false;
@@ -1468,7 +1484,11 @@ export class CalendarView extends BasesViewBase {
 
 			this.calendar?.refetchEvents();
 		} catch (error) {
-			console.error("[TaskNotes][CalendarView] Error refreshing calendars:", error);
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error refreshing calendars:", {
+				category: "provider",
+				operation: "refreshing-calendars",
+				error: error,
+			});
 		}
 	}
 
@@ -1597,10 +1617,14 @@ export class CalendarView extends BasesViewBase {
 			if (col) {
 				col.style.width = width;
 			} else {
-				console.warn(
-					`[TaskNotes][CalendarView] No <col> found for dated cell (date=${dateKey}). ` +
-						`FullCalendar DOM may have changed; today-column width skipped.`
-				);
+				tasknotesLogger.warn("Calendar column width target was not found", {
+					category: "provider",
+					operation: "apply-today-column-width",
+					details: {
+						dateKey,
+						reason: "FullCalendar DOM may have changed; today-column width skipped.",
+					},
+				});
 			}
 		});
 	}
@@ -1664,10 +1688,18 @@ export class CalendarView extends BasesViewBase {
 			try {
 				if (this.config && typeof this.config.set === "function") {
 					this.config.set("calendarView", viewType);
-					console.debug("[TaskNotes][CalendarView] View type saved to config:", viewType);
+					tasknotesLogger.debug("[TaskNotes][CalendarView] View type saved to config:", {
+						category: "provider",
+						operation: "view-type-saved-config",
+						details: { value: viewType },
+					});
 				}
 			} catch (error) {
-				console.error("[TaskNotes][CalendarView] Failed to save view type:", error);
+				tasknotesLogger.error("[TaskNotes][CalendarView] Failed to save view type:", {
+					category: "provider",
+					operation: "save-view-type",
+					error: error,
+				});
 			}
 		}, 1000);
 	}
@@ -1697,7 +1729,11 @@ export class CalendarView extends BasesViewBase {
 			const events = await this.buildAllEvents(fetchInfo);
 			successCallback(events);
 		} catch (error) {
-			console.error("[TaskNotes][CalendarView] Error fetching events:", error);
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error fetching events:", {
+				category: "provider",
+				operation: "fetching-events",
+				error: error,
+			});
 			failureCallback(error instanceof Error ? error : new Error(String(error)));
 		}
 	}
@@ -1818,9 +1854,13 @@ export class CalendarView extends BasesViewBase {
 					events.push(event);
 				}
 			} catch (error) {
-				console.warn(
+				tasknotesLogger.warn(
 					`[TaskNotes][CalendarView] Error processing property-based entry:`,
-					error
+					{
+						category: "provider",
+						operation: "processing-property-based-entry",
+						error: error,
+					}
 				);
 			}
 		}
@@ -1861,7 +1901,11 @@ export class CalendarView extends BasesViewBase {
 			this.currentTasks = refreshedTasks;
 			this.calendar.refetchEvents();
 		} catch (error) {
-			console.error("[TaskNotes][CalendarView] Error refreshing calendar:", error);
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error refreshing calendar:", {
+				category: "provider",
+				operation: "refreshing-calendar",
+				error: error,
+			});
 		}
 	}
 
@@ -1979,7 +2023,10 @@ export class CalendarView extends BasesViewBase {
 		this.expectImmediateUpdate();
 
 		if (!info?.event?.extendedProps) {
-			console.warn("[TaskNotes][CalendarView] Event dropped without extendedProps");
+			tasknotesLogger.warn("[TaskNotes][CalendarView] Event dropped without extendedProps", {
+				category: "provider",
+				operation: "event-dropped-without-extendedprops",
+			});
 			return;
 		}
 
@@ -2055,9 +2102,13 @@ export class CalendarView extends BasesViewBase {
 					}
 				});
 			} catch (error) {
-				console.error(
+				tasknotesLogger.error(
 					"[TaskNotes][CalendarView] Error updating property-based event:",
-					error
+					{
+						category: "provider",
+						operation: "updating-property-based-event",
+						error: error,
+					}
 				);
 				info.revert();
 			}
@@ -2083,9 +2134,9 @@ export class CalendarView extends BasesViewBase {
 
 					await provider.updateEvent(calendarId, eventId, providerUpdate.updates);
 				} catch (error) {
-					console.error(
+					tasknotesLogger.error(
 						`[TaskNotes][CalendarView] Error updating ${provider.providerName} event:`,
-						error
+						{ category: "provider", operation: "updating", error: error }
 					);
 					info.revert();
 				}
@@ -2116,7 +2167,11 @@ export class CalendarView extends BasesViewBase {
 						timeEntries: plan.timeEntries,
 					});
 				} catch (error) {
-					console.error("Error updating time entry:", error);
+					tasknotesLogger.error("Error updating time entry:", {
+						category: "provider",
+						operation: "updating-time-entry",
+						error: error,
+					});
 					info.revert();
 				}
 			}
@@ -2165,7 +2220,11 @@ export class CalendarView extends BasesViewBase {
 					}
 				}
 			} catch (error) {
-				console.error("[TaskNotes][CalendarView] Error updating task date:", error);
+				tasknotesLogger.error("[TaskNotes][CalendarView] Error updating task date:", {
+					category: "provider",
+					operation: "updating-task-date",
+					error: error,
+				});
 				info.revert();
 			}
 		}
@@ -2176,7 +2235,10 @@ export class CalendarView extends BasesViewBase {
 		this.expectImmediateUpdate();
 
 		if (!info?.event?.extendedProps) {
-			console.warn("[TaskNotes][CalendarView] Event resized without extendedProps");
+			tasknotesLogger.warn("[TaskNotes][CalendarView] Event resized without extendedProps", {
+				category: "provider",
+				operation: "event-resized-without-extendedprops",
+			});
 			return;
 		}
 
@@ -2201,7 +2263,11 @@ export class CalendarView extends BasesViewBase {
 						timeEntries: plan.timeEntries,
 					});
 				} catch (error) {
-					console.error("Error resizing time entry:", error);
+					tasknotesLogger.error("Error resizing time entry:", {
+						category: "provider",
+						operation: "resizing-time-entry",
+						error: error,
+					});
 					info.revert();
 				}
 			}
@@ -2250,9 +2316,13 @@ export class CalendarView extends BasesViewBase {
 					}
 				});
 			} catch (error) {
-				console.error(
+				tasknotesLogger.error(
 					"[TaskNotes][CalendarView] Error resizing property-based event:",
-					error
+					{
+						category: "provider",
+						operation: "resizing-property-based-event",
+						error: error,
+					}
 				);
 				info.revert();
 			}
@@ -2279,9 +2349,9 @@ export class CalendarView extends BasesViewBase {
 
 					await provider.updateEvent(calendarId, eventId, providerUpdate.updates);
 				} catch (error) {
-					console.error(
+					tasknotesLogger.error(
 						`[TaskNotes][CalendarView] Error resizing ${provider.providerName} event:`,
-						error
+						{ category: "provider", operation: "resizing", error: error }
 					);
 					info.revert();
 				}
@@ -2307,7 +2377,11 @@ export class CalendarView extends BasesViewBase {
 		try {
 			await this.plugin.taskService.updateProperty(taskInfo, "timeEstimate", plan.value);
 		} catch (error) {
-			console.error("[TaskNotes][CalendarView] Error updating task duration:", error);
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error updating task duration:", {
+				category: "provider",
+				operation: "updating-task-duration",
+				error: error,
+			});
 			info.revert();
 		}
 	}
@@ -2435,7 +2509,12 @@ export class CalendarView extends BasesViewBase {
 				visibleProperties: this.getVisibleProperties(),
 				basesEntryByPath: this.basesEntryByPath,
 				buildTaskCardOptions: (options) => this.buildTaskCardOptions(options),
-				logDebug: (message, ...data) => console.debug(message, ...data),
+				logDebug: (message, ...data) =>
+					tasknotesLogger.debug(message, {
+						category: "provider",
+						operation: "mount-calendar-list-event-card",
+						details: data.length > 0 ? { values: data } : undefined,
+					}),
 			})
 		) {
 			return;
@@ -2701,7 +2780,11 @@ export class CalendarView extends BasesViewBase {
 		const savedState = this.getEphemeralState();
 		void this.render()
 			.catch((error: unknown) => {
-				console.error("[TaskNotes][CalendarView] Render error:", error);
+				tasknotesLogger.error("[TaskNotes][CalendarView] Render error:", {
+					category: "provider",
+					operation: "render",
+					error: error,
+				});
 				this.renderError(error instanceof Error ? error : new Error(String(error)));
 			})
 			.finally(() => this.setEphemeralState(savedState));
@@ -2810,7 +2893,11 @@ export class CalendarView extends BasesViewBase {
 				try {
 					this.calendar.gotoDate(new Date(state.calendarDate));
 				} catch (e) {
-					console.debug("[CalendarView] Failed to restore calendar date:", e);
+					tasknotesLogger.debug("[CalendarView] Failed to restore calendar date:", {
+						category: "provider",
+						operation: "restore-calendar-date",
+						error: e,
+					});
 				}
 			}
 
@@ -2840,7 +2927,10 @@ export class CalendarView extends BasesViewBase {
 export function buildCalendarViewFactory(plugin: TaskNotesPlugin): BasesViewFactory {
 	return function (controller: unknown, containerEl: HTMLElement): BasesView {
 		if (!containerEl) {
-			console.error("[TaskNotes][CalendarView] No containerEl provided");
+			tasknotesLogger.error("[TaskNotes][CalendarView] No containerEl provided", {
+				category: "provider",
+				operation: "no-containerel-provided",
+			});
 			throw new Error("CalendarView requires a containerEl");
 		}
 

@@ -38,11 +38,7 @@ import {
 } from "../modals/TimeblockCreationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
-import {
-	colorWithAlpha,
-	isCssVariableColor,
-	normalizeThemeColor,
-} from "../utils/themeColors";
+import { colorWithAlpha, isCssVariableColor, normalizeThemeColor } from "../utils/themeColors";
 import {
 	calculateAllDayEndDate,
 	createDueTaskEvent,
@@ -52,6 +48,9 @@ import {
 	createTimeEntryTaskEvents,
 	type CalendarTaskEventContext,
 } from "./calendarTaskEvents";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarCore" });
 
 export { calculateAllDayEndDate } from "./calendarTaskEvents";
 
@@ -375,7 +374,11 @@ export async function handlePatternInstanceDrop(
 
 		// The refresh will happen automatically via EVENT_TASK_UPDATED listener
 	} catch (error) {
-		console.error("Error updating pattern instance time:", error);
+		tasknotesLogger.error("Error updating pattern instance time:", {
+			category: "provider",
+			operation: "updating-pattern-instance-time",
+			error: error,
+		});
 		throw error;
 	}
 }
@@ -600,7 +603,11 @@ export function createICSEvent(
 			},
 		};
 	} catch (error) {
-		console.error("Error creating ICS event:", error);
+		tasknotesLogger.error("Error creating ICS event:", {
+			category: "provider",
+			operation: "creating-ics-event",
+			error: error,
+		});
 		return null;
 	}
 }
@@ -815,10 +822,8 @@ export function generateRecurringTaskInstances(
 		return [];
 	}
 
-	const {
-		showCompletedRecurringInstances = true,
-		showSkippedRecurringInstances = true,
-	} = options;
+	const { showCompletedRecurringInstances = true, showSkippedRecurringInstances = true } =
+		options;
 	const instances: CalendarEvent[] = [];
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
@@ -1028,7 +1033,11 @@ export async function generateTimeblockEvents(
 
 		return events;
 	} catch (error) {
-		console.error("Error getting timeblock events:", error);
+		tasknotesLogger.error("Error getting timeblock events:", {
+			category: "provider",
+			operation: "getting-timeblock-events",
+			error: error,
+		});
 		return [];
 	}
 }
@@ -1098,12 +1107,7 @@ export async function generateCalendarEvents(
 		allowScheduledToDueSpan: boolean
 	): void => {
 		let showedSpan = false;
-		if (
-			allowScheduledToDueSpan &&
-			showScheduledToDueSpan &&
-			task.scheduled &&
-			task.due
-		) {
+		if (allowScheduledToDueSpan && showScheduledToDueSpan && task.scheduled && task.due) {
 			const spanEvents = createScheduledToDueSpanEvents(
 				task,
 				plugin,
@@ -1179,9 +1183,9 @@ export async function generateCalendarEvents(
 		} catch (error) {
 			// Log error but continue processing other tasks
 			// This prevents a single task with invalid dates from breaking the entire calendar
-			console.warn(
+			tasknotesLogger.warn(
 				`[TaskNotes][Calendar] Error processing task "${task.title}" (${task.path}):`,
-				error
+				{ category: "provider", operation: "processing-task", error: error }
 			);
 		}
 	}
@@ -1308,14 +1312,22 @@ export async function handleTimeEntryCreation(
 							})
 						);
 					} catch (error) {
-						console.error("Error creating time entry:", error);
+						tasknotesLogger.error("Error creating time entry:", {
+							category: "provider",
+							operation: "creating-time-entry",
+							error: error,
+						});
 						new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
 					}
 				}
 			})();
 		});
 	} catch (error) {
-		console.error("Error opening task selector for time entry:", error);
+		tasknotesLogger.error("Error opening task selector for time entry:", {
+			category: "provider",
+			operation: "opening-task-selector-time-entry",
+			error: error,
+		});
 		new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
 	}
 }
@@ -1369,7 +1381,11 @@ export async function handleTimeblockDrop(
 
 		new Notice("Timeblock moved successfully");
 	} catch (error: unknown) {
-		console.error("Error moving timeblock:", error);
+		tasknotesLogger.error("Error moving timeblock:", {
+			category: "provider",
+			operation: "moving-timeblock",
+			error: error,
+		});
 		new Notice(`Failed to move timeblock: ${getErrorMessage(error)}`);
 		dropInfo.revert();
 	}
@@ -1409,7 +1425,11 @@ export async function handleTimeblockResize(
 
 		new Notice("Timeblock duration updated");
 	} catch (error: unknown) {
-		console.error("Error resizing timeblock:", error);
+		tasknotesLogger.error("Error resizing timeblock:", {
+			category: "provider",
+			operation: "resizing-timeblock",
+			error: error,
+		});
 		new Notice(`Failed to resize timeblock: ${getErrorMessage(error)}`);
 		resizeInfo.revert();
 	}
@@ -1514,9 +1534,7 @@ export async function handleDateTitleClick(
 
 		if (!dailyNote) {
 			if (!createIfMissing) {
-				new Notice(
-					plugin.i18n.translate("views.basesCalendar.notices.noDailyNoteForDate")
-				);
+				new Notice(plugin.i18n.translate("views.basesCalendar.notices.noDailyNoteForDate"));
 				return;
 			}
 
@@ -1525,7 +1543,11 @@ export async function handleDateTitleClick(
 				dailyNote = await createDailyNote(moment);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
-				console.error("Failed to create daily note:", error);
+				tasknotesLogger.error("Failed to create daily note:", {
+					category: "provider",
+					operation: "create-daily-note",
+					error: error,
+				});
 				new Notice(`Failed to create daily note: ${errorMessage}`);
 				return;
 			}
@@ -1537,7 +1559,11 @@ export async function handleDateTitleClick(
 		}
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		console.error("Failed to navigate to daily note:", error);
+		tasknotesLogger.error("Failed to navigate to daily note:", {
+			category: "provider",
+			operation: "navigate-daily-note",
+			error: error,
+		});
 		new Notice(`Failed to navigate to daily note: ${errorMessage}`);
 	}
 }

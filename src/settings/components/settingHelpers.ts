@@ -1,4 +1,7 @@
 import { Setting, SettingGroup, requireApiVersion } from "obsidian";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Components/SettingHelpers" });
 
 export interface ToggleSettingOptions {
 	name: string;
@@ -63,7 +66,11 @@ export function runAsyncSettingCallback(callback: () => unknown): void {
 	void Promise.resolve()
 		.then(callback)
 		.catch((error: unknown) => {
-			console.error("TaskNotes settings callback failed:", error);
+			tasknotesLogger.error("TaskNotes settings callback failed:", {
+				category: "configuration",
+				operation: "settings-callback",
+				error: error,
+			});
 		});
 }
 

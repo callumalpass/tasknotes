@@ -11,6 +11,9 @@ import {
 import { setIcon, MarkdownView, Editor, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TasksPluginParser } from "../utils/TasksPluginParser";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/InstantConvertButtons" });
 
 class ConvertButtonWidget extends WidgetType {
 	private plugin: TaskNotesPlugin;
@@ -51,7 +54,13 @@ class ConvertButtonWidget extends WidgetType {
 					const activeMarkdownView =
 						this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
 					if (!activeMarkdownView) {
-						console.warn("No active markdown view available for task conversion");
+						tasknotesLogger.warn(
+							"No active markdown view available for task conversion",
+							{
+								category: "configuration",
+								operation: "no-active-markdown-view-task-conversion",
+							}
+						);
 						return;
 					}
 					const editor = activeMarkdownView.editor;
@@ -69,7 +78,11 @@ class ConvertButtonWidget extends WidgetType {
 						);
 					}
 				} catch (error) {
-					console.error("Error in convert button click handler:", error);
+					tasknotesLogger.error("Error in convert button click handler:", {
+						category: "validation",
+						operation: "convert-button-click-handler",
+						error: error,
+					});
 				}
 			})();
 		};
@@ -104,17 +117,27 @@ class ConvertButtonWidget extends WidgetType {
 	 */
 	private validateButtonClick(): boolean {
 		if (!this.plugin) {
-			console.warn("Plugin not available for task conversion");
+			tasknotesLogger.warn("Plugin not available for task conversion", {
+				category: "configuration",
+				operation: "plugin-not-task-conversion",
+			});
 			return false;
 		}
 
 		if (!this.plugin.settings.enableInstantTaskConvert) {
-			console.warn("Instant task conversion is disabled");
+			tasknotesLogger.warn("Instant task conversion is disabled", {
+				category: "configuration",
+				operation: "instant-task-conversion-disabled",
+			});
 			return false;
 		}
 
 		if (typeof this.lineNumber !== "number" || this.lineNumber < 0) {
-			console.warn("Invalid line number for task conversion:", this.lineNumber);
+			tasknotesLogger.warn("Invalid line number for task conversion:", {
+				category: "configuration",
+				operation: "invalid-line-number-task-conversion",
+				details: { value: this.lineNumber },
+			});
 			return false;
 		}
 
@@ -126,14 +149,18 @@ class ConvertButtonWidget extends WidgetType {
 	 */
 	private validateEditorState(editor: unknown): boolean {
 		if (!editor) {
-			console.warn("Editor not available for task conversion");
+			tasknotesLogger.warn("Editor not available for task conversion", {
+				category: "configuration",
+				operation: "editor-not-task-conversion",
+			});
 			return false;
 		}
 
 		const totalLines = (editor as Editor).lineCount();
 		if (this.lineNumber >= totalLines) {
-			console.warn(
-				`Line number ${this.lineNumber} is out of bounds (total lines: ${totalLines})`
+			tasknotesLogger.warn(
+				`Line number ${this.lineNumber} is out of bounds (total lines: ${totalLines})`,
+				{ category: "validation", operation: "line-number" }
 			);
 			return false;
 		}
@@ -142,19 +169,29 @@ class ConvertButtonWidget extends WidgetType {
 		try {
 			const currentLine = (editor as Editor).getLine(this.lineNumber);
 			if (!currentLine) {
-				console.warn(`Cannot read line ${this.lineNumber}`);
+				tasknotesLogger.warn(`Cannot read line ${this.lineNumber}`, {
+					category: "validation",
+					operation: "read-line",
+				});
 				return false;
 			}
 
 			const taskLineInfo = TasksPluginParser.parseTaskLine(currentLine);
 			if (!taskLineInfo.isTaskLine) {
-				console.warn(`Line ${this.lineNumber} is no longer a task`);
+				tasknotesLogger.warn(`Line ${this.lineNumber} is no longer a task`, {
+					category: "validation",
+					operation: "line",
+				});
 				return false;
 			}
 
 			return true;
 		} catch (error) {
-			console.warn("Error validating line content:", error);
+			tasknotesLogger.warn("Error validating line content:", {
+				category: "validation",
+				operation: "validating-line-content",
+				error: error,
+			});
 			return false;
 		}
 	}
@@ -215,21 +252,26 @@ export function buildConvertButtonDecorations(
 
 	// Validate inputs
 	if (!doc || !plugin) {
-		console.warn("Invalid state or plugin for building convert button decorations");
+		tasknotesLogger.warn("Invalid state or plugin for building convert button decorations", {
+			category: "validation",
+			operation: "invalid-state-or-plugin-building-convert-button-decorations",
+		});
 		return builder.finish();
 	}
 
 	// Safety check for doc.lines
 	if (typeof doc.lines !== "number" || doc.lines < 0) {
-		console.warn("Invalid document lines count:", doc.lines);
+		tasknotesLogger.warn("Invalid document lines count:", {
+			category: "validation",
+			operation: "invalid-document-lines-count",
+			details: { value: doc.lines },
+		});
 		return builder.finish();
 	}
 
 	const seenLineNumbers = new Set<number>();
 	const ranges =
-		view.visibleRanges.length > 0
-			? view.visibleRanges
-			: [{ from: 0, to: doc.length }];
+		view.visibleRanges.length > 0 ? view.visibleRanges : [{ from: 0, to: doc.length }];
 
 	for (const range of ranges) {
 		try {
@@ -248,7 +290,12 @@ export function buildConvertButtonDecorations(
 				line = doc.line(line.number + 1);
 			}
 		} catch (error) {
-			console.debug("Error processing visible range", range, ":", error);
+			tasknotesLogger.debug("Error processing visible range", {
+				category: "validation",
+				operation: "processing-visible-range",
+				details: { values: [range, ":"] },
+				error: error,
+			});
 		}
 	}
 
@@ -299,7 +346,12 @@ function addConvertButtonDecorationForLine(
 			builder.add(line.to, line.to, decoration);
 		}
 	} catch (error) {
-		console.debug("Error processing line", line.number, ":", error);
+		tasknotesLogger.debug("Error processing line", {
+			category: "validation",
+			operation: "processing-line",
+			details: { values: [line.number, ":"] },
+			error: error,
+		});
 	}
 }
 

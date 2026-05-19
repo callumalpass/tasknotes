@@ -2,6 +2,9 @@ import { Notice, TFile, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from "../types";
 import { parseDateToLocal } from "../utils/dateUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/NotificationService" });
 
 interface NotificationQueueItem {
 	taskPath: string;
@@ -191,7 +194,11 @@ export class NotificationService {
 				return anchorDate.getTime() + offsetMs;
 			}
 		} catch (error) {
-			console.error("Error calculating notification time:", error);
+			tasknotesLogger.error("Error calculating notification time:", {
+				category: "provider",
+				operation: "calculating-notification-time",
+				error: error,
+			});
 			return null;
 		}
 
@@ -351,7 +358,11 @@ export class NotificationService {
 				try {
 					playTone(1175, 0.12);
 				} catch (error) {
-					console.error("Failed to play notification sound tone:", error);
+					tasknotesLogger.error("Failed to play notification sound tone:", {
+						category: "provider",
+						operation: "play-notification-sound-tone",
+						error: error,
+					});
 				}
 			}, 140);
 			this.audioCleanupTimeouts.add(secondToneTimeout);
@@ -364,7 +375,11 @@ export class NotificationService {
 			}, 320);
 			this.audioCleanupTimeouts.add(cleanupTimeout);
 		} catch (error) {
-			console.error("Failed to play notification sound:", error);
+			tasknotesLogger.error("Failed to play notification sound:", {
+				category: "provider",
+				operation: "play-notification-sound",
+				error: error,
+			});
 		}
 	}
 

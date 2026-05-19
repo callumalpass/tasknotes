@@ -4,12 +4,12 @@ import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { POMODORO_STATS_VIEW_TYPE, PomodoroHistoryStats, PomodoroSessionHistory } from "../types";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
-import {
-	getTodayLocal,
-	createUTCDateFromLocalCalendarDate,
-} from "../utils/dateUtils";
+import { getTodayLocal, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import { getSessionDuration } from "../utils/pomodoroUtils";
 import { calculatePomodoroStats } from "../utils/pomodoroStats";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Views/PomodoroStatsView" });
 
 function isDay(value: number): value is Day {
 	return Number.isInteger(value) && value >= 0 && value <= 6;
@@ -215,7 +215,11 @@ export class PomodoroStatsView extends ItemView {
 				this.renderRecentSessions(this.recentSessionsEl, history);
 			}
 		} catch (error) {
-			console.error("Failed to refresh stats:", error);
+			tasknotesLogger.error("Failed to refresh stats:", {
+				category: "stale-data",
+				operation: "refresh-stats",
+				error: error,
+			});
 		}
 	}
 

@@ -17,6 +17,9 @@ import {
 	parseTaskTagInput,
 	removeTagsFromList,
 } from "../utils/taskTagList";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Components/BatchContextMenu" });
 
 type SubmenuMenuItem = {
 	setSubmenu(): Menu;
@@ -390,7 +393,11 @@ export class BatchContextMenu {
 						failCount++;
 					}
 				} catch (e) {
-					console.error(`[BatchContextMenu] Failed to update tags for ${path}:`, e);
+					tasknotesLogger.error(`[BatchContextMenu] Failed to update tags for ${path}:`, {
+						category: "validation",
+						operation: "update-tags",
+						error: e,
+					});
 					failCount++;
 				}
 			}
@@ -406,7 +413,11 @@ export class BatchContextMenu {
 
 			onUpdate?.();
 		} catch (error) {
-			console.error("[BatchContextMenu] Batch tag update failed:", error);
+			tasknotesLogger.error("[BatchContextMenu] Batch tag update failed:", {
+				category: "validation",
+				operation: "batch-tag-update",
+				error: error,
+			});
 			new Notice(this.t("contextMenus.task.notices.updateTagsFailed"));
 		}
 	}
@@ -431,7 +442,11 @@ export class BatchContextMenu {
 						failCount++;
 					}
 				} catch (e) {
-					console.error(`[BatchContextMenu] Failed to update task ${path}:`, e);
+					tasknotesLogger.error(`[BatchContextMenu] Failed to update task ${path}:`, {
+						category: "validation",
+						operation: "update-task",
+						error: e,
+					});
 					failCount++;
 				}
 			}
@@ -448,7 +463,11 @@ export class BatchContextMenu {
 
 			onUpdate?.();
 		} catch (error) {
-			console.error("[BatchContextMenu] Batch update failed:", error);
+			tasknotesLogger.error("[BatchContextMenu] Batch update failed:", {
+				category: "validation",
+				operation: "batch-update",
+				error: error,
+			});
 			new Notice("Failed to update tasks");
 		}
 	}
@@ -476,7 +495,11 @@ export class BatchContextMenu {
 						failCount++;
 					}
 				} catch (e) {
-					console.error(`[BatchContextMenu] Failed to archive task ${path}:`, e);
+					tasknotesLogger.error(`[BatchContextMenu] Failed to archive task ${path}:`, {
+						category: "persistence",
+						operation: "archive-task",
+						error: e,
+					});
 					failCount++;
 				}
 			}
@@ -495,7 +518,11 @@ export class BatchContextMenu {
 
 			onUpdate?.();
 		} catch (error) {
-			console.error("[BatchContextMenu] Batch archive failed:", error);
+			tasknotesLogger.error("[BatchContextMenu] Batch archive failed:", {
+				category: "persistence",
+				operation: "batch-archive",
+				error: error,
+			});
 			new Notice("Failed to archive tasks");
 		}
 	}
@@ -531,7 +558,11 @@ export class BatchContextMenu {
 						failCount++;
 					}
 				} catch (e) {
-					console.error(`[BatchContextMenu] Failed to delete task ${path}:`, e);
+					tasknotesLogger.error(`[BatchContextMenu] Failed to delete task ${path}:`, {
+						category: "persistence",
+						operation: "delete-task",
+						error: e,
+					});
 					failCount++;
 				}
 			}
@@ -548,7 +579,11 @@ export class BatchContextMenu {
 
 			onUpdate?.();
 		} catch (error) {
-			console.error("[BatchContextMenu] Batch delete failed:", error);
+			tasknotesLogger.error("[BatchContextMenu] Batch delete failed:", {
+				category: "persistence",
+				operation: "batch-delete",
+				error: error,
+			});
 			new Notice("Failed to delete tasks");
 		}
 	}

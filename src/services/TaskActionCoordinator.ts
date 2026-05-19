@@ -8,6 +8,9 @@ import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { getCurrentDateString } from "../core/date";
 import { getActiveTimeEntry } from "../utils/helpers";
 import { getOverdueScheduledRolloverCandidates } from "../utils/scheduledRollover";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskActionCoordinator" });
 
 export class TaskActionCoordinator {
 	constructor(private plugin: TaskNotesPlugin) {}
@@ -72,7 +75,11 @@ export class TaskActionCoordinator {
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
-			console.error("Failed to start time tracking:", error);
+			tasknotesLogger.error("Failed to start time tracking:", {
+				category: "persistence",
+				operation: "start-time-tracking",
+				error: error,
+			});
 			if (
 				error instanceof Error &&
 				error.message === "Time tracking is already active for this task"
@@ -92,7 +99,11 @@ export class TaskActionCoordinator {
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
-			console.error("Failed to stop time tracking:", error);
+			tasknotesLogger.error("Failed to stop time tracking:", {
+				category: "persistence",
+				operation: "stop-time-tracking",
+				error: error,
+			});
 			if (
 				error instanceof Error &&
 				error.message === "No active time tracking session for this task"
@@ -135,7 +146,11 @@ export class TaskActionCoordinator {
 								})
 							);
 						} catch (error) {
-							console.error("Error starting time tracking:", error);
+							tasknotesLogger.error("Error starting time tracking:", {
+								category: "persistence",
+								operation: "starting-time-tracking",
+								error: error,
+							});
 							new Notice(
 								this.plugin.i18n.translate("modals.timeTracking.startFailed")
 							);
@@ -145,7 +160,11 @@ export class TaskActionCoordinator {
 				{ targetDate }
 			);
 		} catch (error) {
-			console.error("Error opening task selector for time tracking:", error);
+			tasknotesLogger.error("Error opening task selector for time tracking:", {
+				category: "persistence",
+				operation: "opening-task-selector-time-tracking",
+				error: error,
+			});
 			new Notice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));
 		}
 	}
@@ -168,7 +187,11 @@ export class TaskActionCoordinator {
 				}
 			});
 		} catch (error) {
-			console.error("Error opening task selector for time entry editor:", error);
+			tasknotesLogger.error("Error opening task selector for time entry editor:", {
+				category: "persistence",
+				operation: "opening-task-selector-time-entry-editor",
+				error: error,
+			});
 			new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.openFailed"));
 		}
 	}
@@ -213,9 +236,13 @@ export class TaskActionCoordinator {
 					);
 					successCount++;
 				} catch (error) {
-					console.error(
+					tasknotesLogger.error(
 						`[TaskActionCoordinator] Failed to postpone scheduled task ${candidate.task.path}:`,
-						error
+						{
+							category: "persistence",
+							operation: "postpone-scheduled-task",
+							error: error,
+						}
 					);
 					failCount++;
 				}
@@ -229,7 +256,11 @@ export class TaskActionCoordinator {
 
 			this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
 		} catch (error) {
-			console.error("Failed to postpone overdue scheduled tasks:", error);
+			tasknotesLogger.error("Failed to postpone overdue scheduled tasks:", {
+				category: "persistence",
+				operation: "postpone-overdue-scheduled-tasks",
+				error: error,
+			});
 			new Notice("Failed to postpone overdue scheduled tasks");
 		}
 	}
@@ -256,7 +287,11 @@ export class TaskActionCoordinator {
 						this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
 						new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saved"));
 					} catch (error) {
-						console.error("Error saving time entries:", error);
+						tasknotesLogger.error("Error saving time entries:", {
+							category: "persistence",
+							operation: "saving-time-entries",
+							error: error,
+						});
 						new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saveFailed"));
 					}
 				})();

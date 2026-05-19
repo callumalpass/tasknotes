@@ -1,5 +1,11 @@
- 
-import { FieldMapping, PriorityConfig, Reminder, StatusConfig, TaskInfo, TimeEntry } from "../types";
+import {
+	FieldMapping,
+	PriorityConfig,
+	Reminder,
+	StatusConfig,
+	TaskInfo,
+	TimeEntry,
+} from "../types";
 import type { UserMappedField } from "../types/settings";
 import {
 	normalizeDependencyEntry,
@@ -8,6 +14,9 @@ import {
 } from "../utils/dependencyUtils";
 import { validateCompleteInstances } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Core/FieldMapping" });
 
 export function toUserField(mapping: FieldMapping, internalName: keyof FieldMapping): string {
 	return mapping[internalName];
@@ -208,9 +217,14 @@ export function mapTaskFromFrontmatter(
 		const anchorValue = frontmatter[mapping.recurrenceAnchor];
 		if (anchorValue === "scheduled" || anchorValue === "completion") {
 			mapped.recurrence_anchor = anchorValue;
-		} else if (anchorValue !== null && anchorValue !== undefined && !isBlankString(anchorValue)) {
-			console.warn(
-				`Invalid recurrence_anchor value: ${stringifyUnknown(anchorValue)}, defaulting to 'scheduled'`
+		} else if (
+			anchorValue !== null &&
+			anchorValue !== undefined &&
+			!isBlankString(anchorValue)
+		) {
+			tasknotesLogger.warn(
+				`Invalid recurrence_anchor value: ${stringifyUnknown(anchorValue)}, defaulting to 'scheduled'`,
+				{ category: "validation", operation: "invalid-recurrence-anchor-value" }
 			);
 			mapped.recurrence_anchor = "scheduled";
 		}
@@ -254,7 +268,9 @@ export function mapTaskFromFrontmatter(
 	}
 
 	if (frontmatter[mapping.googleCalendarEventId] !== undefined) {
-		mapped.googleCalendarEventId = normalizeStringValue(frontmatter[mapping.googleCalendarEventId]);
+		mapped.googleCalendarEventId = normalizeStringValue(
+			frontmatter[mapping.googleCalendarEventId]
+		);
 	}
 
 	if (frontmatter[mapping.reminders] !== undefined) {
@@ -381,7 +397,10 @@ export function mapTaskToFrontmatter(
 		if (Array.isArray(taskData.blockedBy)) {
 			const normalized = taskData.blockedBy
 				.map((item) => normalizeDependencyEntry(item))
-				.filter((item): item is NonNullable<ReturnType<typeof normalizeDependencyEntry>> => !!item);
+				.filter(
+					(item): item is NonNullable<ReturnType<typeof normalizeDependencyEntry>> =>
+						!!item
+				);
 			if (normalized.length > 0) {
 				frontmatter[mapping.blockedBy] = serializeDependencies(normalized);
 			}
@@ -449,7 +468,10 @@ export function lookupMappingKey(
 	return null;
 }
 
-export function isRecognizedProperty(mapping: FieldMapping, frontmatterPropertyName: string): boolean {
+export function isRecognizedProperty(
+	mapping: FieldMapping,
+	frontmatterPropertyName: string
+): boolean {
 	return lookupMappingKey(mapping, frontmatterPropertyName) !== null;
 }
 

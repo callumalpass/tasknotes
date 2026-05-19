@@ -12,6 +12,9 @@ import {
 import { ensureFolderExists } from "../utils/helpers";
 import { processTemplate, ICSTemplateData } from "../utils/templateProcessor";
 import type { InterpolationValues, TranslationKey } from "../i18n";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSNoteService" });
 
 export interface ICSEventReference {
 	event: ICSEvent;
@@ -188,15 +191,16 @@ export class ICSNoteService {
 				addReference(frontmatter[icsEventIdField], file.path);
 			}
 		} catch (error) {
-			console.error("Error counting related notes for ICS events:", error);
+			tasknotesLogger.error("Error counting related notes for ICS events:", {
+				category: "provider",
+				operation: "counting-related-notes-ics-events",
+				error: error,
+			});
 			return new Map();
 		}
 
 		return new Map(
-			Array.from(pathsByEventId.entries()).map(([eventId, paths]) => [
-				eventId,
-				paths.size,
-			])
+			Array.from(pathsByEventId.entries()).map(([eventId, paths]) => [eventId, paths.size])
 		);
 	}
 
@@ -264,10 +268,11 @@ export class ICSNoteService {
 			return await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error creating task from ICS event:", {
+			tasknotesLogger.error("Error creating task from ICS event:", {
+				category: "provider",
+				operation: "creating-task-ics-event",
+				details: { icsEventId: icsEvent.id, icsEventTitle: icsEvent.title },
 				error: errorMessage,
-				icsEventId: icsEvent.id,
-				icsEventTitle: icsEvent.title,
 			});
 			throw new Error(`Failed to create task from ICS event: ${errorMessage}`);
 		}
@@ -293,9 +298,11 @@ export class ICSNoteService {
 			// Timed event: store local wall-clock without seconds
 			return format(start, "yyyy-MM-dd'T'HH:mm");
 		} catch (error) {
-			console.warn("Failed to compute scheduled from ICS event start:", {
-				start: icsEvent.start,
-				error,
+			tasknotesLogger.warn("Failed to compute scheduled from ICS event start:", {
+				category: "provider",
+				operation: "compute-scheduled-ics-event-start",
+				details: { start: icsEvent.start },
+				error: error,
 			});
 			return icsEvent.start; // fallback to raw value
 		}
@@ -331,9 +338,11 @@ export class ICSNoteService {
 			const endDate = new Date(endDateStr);
 			return format(endDate, "yyyy-MM-dd'T'HH:mm");
 		} catch (error) {
-			console.warn("Failed to compute due from ICS event end:", {
-				end: icsEvent.end,
-				error,
+			tasknotesLogger.warn("Failed to compute due from ICS event end:", {
+				category: "provider",
+				operation: "compute-due-ics-event-end",
+				details: { end: icsEvent.end },
+				error: error,
 			});
 			return undefined;
 		}
@@ -455,7 +464,10 @@ export class ICSNoteService {
 						frontmatter = { ...frontmatter, ...processed.frontmatter };
 						bodyContent = processed.body || bodyContent;
 					} else {
-						console.warn(`ICS note template not found: ${templatePath}`);
+						tasknotesLogger.warn(`ICS note template not found: ${templatePath}`, {
+							category: "provider",
+							operation: "ics-note-template-not-found",
+						});
 						new Notice(
 							this.translate("services.icsNote.notices.templateNotFound", {
 								path: templatePath,
@@ -463,7 +475,11 @@ export class ICSNoteService {
 						);
 					}
 				} catch (error) {
-					console.error("Error processing ICS note template:", error);
+					tasknotesLogger.error("Error processing ICS note template:", {
+						category: "provider",
+						operation: "processing-ics-note-template",
+						error: error,
+					});
 					new Notice(
 						this.translate("services.icsNote.notices.templateProcessError", {
 							template: overrides.template,
@@ -481,33 +497,34 @@ export class ICSNoteService {
 					: "";
 			const content = `${yamlHeader}${bodyContent}`;
 
-				// Create the file
-				const file = await this.plugin.app.vault.create(fullPath, content);
+			// Create the file
+			const file = await this.plugin.app.vault.create(fullPath, content);
 
-				const noteTags = Array.isArray(frontmatter.tags)
-					? frontmatter.tags.filter((tag): tag is string => typeof tag === "string")
-					: [];
-				const createdDate =
-					typeof frontmatter[dateCreatedField] === "string"
-						? frontmatter[dateCreatedField]
-						: undefined;
+			const noteTags = Array.isArray(frontmatter.tags)
+				? frontmatter.tags.filter((tag): tag is string => typeof tag === "string")
+				: [];
+			const createdDate =
+				typeof frontmatter[dateCreatedField] === "string"
+					? frontmatter[dateCreatedField]
+					: undefined;
 
-				// Create NoteInfo object
-				const noteInfo: NoteInfo = {
-					title: noteTitle,
-					path: file.path,
-					tags: noteTags,
-					createdDate,
-					lastModified: Date.now(),
-				};
+			// Create NoteInfo object
+			const noteInfo: NoteInfo = {
+				title: noteTitle,
+				path: file.path,
+				tags: noteTags,
+				createdDate,
+				lastModified: Date.now(),
+			};
 
 			return { file, noteInfo };
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error creating note from ICS event:", {
+			tasknotesLogger.error("Error creating note from ICS event:", {
+				category: "provider",
+				operation: "creating-note-ics-event",
+				details: { icsEventId: icsEvent.id, icsEventTitle: icsEvent.title },
 				error: errorMessage,
-				icsEventId: icsEvent.id,
-				icsEventTitle: icsEvent.title,
 			});
 			throw new Error(`Failed to create note from ICS event: ${errorMessage}`);
 		}
@@ -565,7 +582,11 @@ export class ICSNoteService {
 
 			return relatedNotes;
 		} catch (error) {
-			console.error("Error finding related notes for ICS event:", error);
+			tasknotesLogger.error("Error finding related notes for ICS event:", {
+				category: "provider",
+				operation: "finding-related-notes-ics-event",
+				error: error,
+			});
 			return [];
 		}
 	}
@@ -608,10 +629,11 @@ export class ICSNoteService {
 			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Error linking note to ICS event:", {
+			tasknotesLogger.error("Error linking note to ICS event:", {
+				category: "provider",
+				operation: "linking-note-ics-event",
+				details: { notePath, icsEventId: icsEvent.id },
 				error: errorMessage,
-				notePath,
-				icsEventId: icsEvent.id,
 			});
 			throw new Error(`Failed to link note to ICS event: ${errorMessage}`);
 		}
@@ -718,7 +740,11 @@ export class ICSNoteService {
 			// Return duration only if it's positive and reasonable (less than 24 hours)
 			return durationMinutes > 0 && durationMinutes < 1440 ? durationMinutes : undefined;
 		} catch (error) {
-			console.warn("Error calculating event duration:", error);
+			tasknotesLogger.warn("Error calculating event duration:", {
+				category: "provider",
+				operation: "calculating-event-duration",
+				error: error,
+			});
 			return undefined;
 		}
 	}

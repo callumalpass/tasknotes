@@ -1,4 +1,7 @@
 import { stringifyUnknown } from "./stringUtils";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/ProjectMetadataResolver" });
 
 export interface ProjectEntry {
 	basename: string;
@@ -63,7 +66,12 @@ export class ProjectMetadataResolver {
 				}
 			} catch (e) {
 				if (process.env.NODE_ENV === "development") {
-					console.debug("ProjectMetadataResolver: failed to parse row config:", row, e);
+					tasknotesLogger.debug("ProjectMetadataResolver: failed to parse row config:", {
+						category: "configuration",
+						operation: "projectmetadataresolver-parse-row-config",
+						details: { value: row },
+						error: e,
+					});
 				}
 			}
 		}
@@ -101,13 +109,13 @@ export class ProjectMetadataResolver {
 				return ml[1].trim();
 			}
 			return trimmed; // plain string
-			}
-			if (t === "number" || t === "boolean") return stringifyUnknown(value);
-			// Obsidian frontmatter links are objects with a path field
-			if (t === "object") {
-				const anyVal = value as { path?: unknown };
-				if (typeof anyVal.path === "string") {
-					const p = anyVal.path;
+		}
+		if (t === "number" || t === "boolean") return stringifyUnknown(value);
+		// Obsidian frontmatter links are objects with a path field
+		if (t === "object") {
+			const anyVal = value as { path?: unknown };
+			if (typeof anyVal.path === "string") {
+				const p = anyVal.path;
 				const base = p.split("/").pop() || p;
 				return base.replace(/\.md$/i, "");
 			}

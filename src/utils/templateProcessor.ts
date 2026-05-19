@@ -1,5 +1,8 @@
 import { format } from "date-fns";
 import YAML from "yaml";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/TemplateProcessor" });
 // YAML not needed in template processor
 
 export interface TemplateData {
@@ -118,13 +121,20 @@ function processTemplateFrontmatter(
 
 		// Return empty object if parsing failed or result is not an object
 		if (typeof parsedFrontmatter !== "object" || parsedFrontmatter === null) {
-			console.warn("Template frontmatter did not parse to a valid object");
+			tasknotesLogger.warn("Template frontmatter did not parse to a valid object", {
+				category: "validation",
+				operation: "template-frontmatter-did-not-parse-valid-object",
+			});
 			return {};
 		}
 
 		return parsedFrontmatter;
 	} catch (error) {
-		console.error("Error processing template frontmatter:", error);
+		tasknotesLogger.error("Error processing template frontmatter:", {
+			category: "validation",
+			operation: "processing-template-frontmatter",
+			error: error,
+		});
 		return {};
 	}
 }
@@ -235,7 +245,10 @@ function processTemplateVariablesForYaml(
 	const secondsSinceMidnight = Math.floor((now.getTime() - midnight.getTime()) / 1000);
 	const zettelId = `${datePart}${secondsSinceMidnight.toString(36)}`;
 	result = result.replace(/\{\{zettel\}\}/g, zettelId);
-	result = result.replace(/\{\{nano\}\}/g, Date.now().toString() + Math.random().toString(36).substring(2, 7));
+	result = result.replace(
+		/\{\{nano\}\}/g,
+		Date.now().toString() + Math.random().toString(36).substring(2, 7)
+	);
 
 	// Priority and status variations
 	const priority = taskData.priority || "";
@@ -247,8 +260,14 @@ function processTemplateVariablesForYaml(
 	const titleForVariations = taskData.title || "";
 	result = result.replace(/\{\{titleLower\}\}/g, titleForVariations.toLowerCase());
 	result = result.replace(/\{\{titleUpper\}\}/g, titleForVariations.toUpperCase());
-	result = result.replace(/\{\{titleSnake\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "_"));
-	result = result.replace(/\{\{titleKebab\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "-"));
+	result = result.replace(
+		/\{\{titleSnake\}\}/g,
+		titleForVariations.toLowerCase().replace(/\s+/g, "_")
+	);
+	result = result.replace(
+		/\{\{titleKebab\}\}/g,
+		titleForVariations.toLowerCase().replace(/\s+/g, "-")
+	);
 	result = result.replace(
 		/\{\{titleCamel\}\}/g,
 		titleForVariations
@@ -291,11 +310,7 @@ function processTemplateVariablesForYaml(
 
 		// {{icsEventSubscription}} - ICS subscription name (quote if contains special characters)
 		const icsSubscription = icsData.icsEventSubscription || "";
-		result = replaceYamlTemplateVariable(
-			result,
-			"icsEventSubscription",
-			icsSubscription
-		);
+		result = replaceYamlTemplateVariable(result, "icsEventSubscription", icsSubscription);
 
 		// {{icsEventId}} - ICS event ID (ALWAYS quote for YAML safety since it's a UUID)
 		const icsEventId = icsData.icsEventId || "";
@@ -465,7 +480,10 @@ export function processTemplateVariables(
 	const secondsSinceMidnightBody = Math.floor((now.getTime() - midnightBody.getTime()) / 1000);
 	const zettelIdBody = `${datePartBody}${secondsSinceMidnightBody.toString(36)}`;
 	result = result.replace(/\{\{zettel\}\}/g, zettelIdBody);
-	result = result.replace(/\{\{nano\}\}/g, Date.now().toString() + Math.random().toString(36).substring(2, 7));
+	result = result.replace(
+		/\{\{nano\}\}/g,
+		Date.now().toString() + Math.random().toString(36).substring(2, 7)
+	);
 
 	// Priority and status variations
 	const priority = taskData.priority || "";
@@ -477,8 +495,14 @@ export function processTemplateVariables(
 	const titleForVariations = taskData.title || "";
 	result = result.replace(/\{\{titleLower\}\}/g, titleForVariations.toLowerCase());
 	result = result.replace(/\{\{titleUpper\}\}/g, titleForVariations.toUpperCase());
-	result = result.replace(/\{\{titleSnake\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "_"));
-	result = result.replace(/\{\{titleKebab\}\}/g, titleForVariations.toLowerCase().replace(/\s+/g, "-"));
+	result = result.replace(
+		/\{\{titleSnake\}\}/g,
+		titleForVariations.toLowerCase().replace(/\s+/g, "_")
+	);
+	result = result.replace(
+		/\{\{titleKebab\}\}/g,
+		titleForVariations.toLowerCase().replace(/\s+/g, "-")
+	);
 	result = result.replace(
 		/\{\{titleCamel\}\}/g,
 		titleForVariations

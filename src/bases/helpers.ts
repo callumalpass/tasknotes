@@ -9,6 +9,9 @@ import type { TaskCardOptions } from "../ui/TaskCard";
 import { PropertyMappingService } from "./PropertyMappingService";
 import { normalizeDependencyList } from "../utils/dependencyUtils";
 import { stringifyUnknown, stringifyUnknownArray } from "../utils/stringUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/Helpers" });
 
 export interface BasesDataItem {
 	key?: string;
@@ -293,7 +296,11 @@ export async function identifyTaskNotesFromBasesData(
 			const taskInfo = taskInfoConverter(item, plugin);
 			if (taskInfo) taskNotes.push(taskInfo);
 		} catch (error) {
-			console.warn("[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:", error);
+			tasknotesLogger.warn("[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:", {
+				category: "validation",
+				operation: "converting-bases-item-taskinfo",
+				error: error,
+			});
 		}
 	}
 	return taskNotes;
@@ -376,10 +383,7 @@ export function getBasesVisibleProperties(basesContainer: unknown): BasesSelecte
 		if (!order || !Array.isArray(order) || order.length === 0) {
 			const fullCfg = controller?.getViewConfig?.() ?? {};
 			try {
-				order =
-					query?.getViewConfig?.("order") ??
-					fullCfg.order ??
-					fullCfg.columns?.order;
+				order = query?.getViewConfig?.("order") ?? fullCfg.order ?? fullCfg.columns?.order;
 			} catch {
 				order = fullCfg.order ?? fullCfg.columns?.order;
 			}
@@ -513,7 +517,11 @@ export async function renderTaskNotesInBasesView(
 				taskElementsMap.set(taskInfo.path, taskCard);
 			}
 		} catch (error) {
-			console.warn("[TaskNotes][BasesPOC] Error creating task card:", error);
+			tasknotesLogger.warn("[TaskNotes][BasesPOC] Error creating task card:", {
+				category: "persistence",
+				operation: "creating-task-card",
+				error: error,
+			});
 		}
 	}
 }
@@ -794,7 +802,11 @@ export async function renderGroupedTasksInBasesView(
 					taskElementsMap.set(task.path, taskCard);
 				}
 			} catch (error) {
-				console.warn("[TaskNotes][Bases] Error creating task card:", error);
+				tasknotesLogger.warn("[TaskNotes][Bases] Error creating task card:", {
+					category: "persistence",
+					operation: "creating-task-card",
+					error: error,
+				});
 			}
 		}
 	}

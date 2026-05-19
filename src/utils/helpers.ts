@@ -20,6 +20,9 @@ import {
 } from "../core/recurrence";
 import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
 import { normalizeThemeColor } from "./themeColors";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/Helpers" });
 
 type ObsidianMoment = import("moment").Moment;
 
@@ -54,7 +57,11 @@ function extractFrontmatter(content: string): unknown {
 	try {
 		return parseYaml(frontmatterText) || {};
 	} catch (error) {
-		console.error("Error parsing frontmatter:", error);
+		tasknotesLogger.error("Error parsing frontmatter:", {
+			category: "validation",
+			operation: "parsing-frontmatter",
+			error: error,
+		});
 		return {};
 	}
 }
@@ -92,11 +99,11 @@ export async function ensureFolderExists(vault: Vault, folderPath: string): Prom
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		const stack = error instanceof Error ? error.stack : undefined;
-		console.error("Error creating folder structure:", {
+		tasknotesLogger.error("Error creating folder structure:", {
+			category: "internal",
+			operation: "creating-folder-structure",
+			details: { stack, folderPath, normalizedPath: normalizePath(folderPath) },
 			error: errorMessage,
-			stack,
-			folderPath,
-			normalizedPath: normalizePath(folderPath),
 		});
 
 		// Create enhanced error with preserved context
@@ -118,13 +125,21 @@ export function calculateDuration(startTime: string, endTime: string): number {
 
 		// Validate dates
 		if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-			console.error("Invalid timestamps for duration calculation:", { startTime, endTime });
+			tasknotesLogger.error("Invalid timestamps for duration calculation:", {
+				category: "validation",
+				operation: "invalid-timestamps-duration-calculation",
+				details: { startTime, endTime },
+			});
 			return 0;
 		}
 
 		// Ensure end is after start
 		if (end <= start) {
-			console.error("End time is not after start time:", { startTime, endTime });
+			tasknotesLogger.error("End time is not after start time:", {
+				category: "internal",
+				operation: "end-time-not-start-time",
+				details: { startTime, endTime },
+			});
 			return 0;
 		}
 
@@ -134,7 +149,12 @@ export function calculateDuration(startTime: string, endTime: string): number {
 
 		return Math.max(0, durationMinutes); // Ensure non-negative
 	} catch (error) {
-		console.error("Error calculating duration:", error, { startTime, endTime });
+		tasknotesLogger.error("Error calculating duration:", {
+			category: "internal",
+			operation: "calculating-duration",
+			details: { startTime, endTime },
+			error: error,
+		});
 		return 0;
 	}
 }
@@ -201,7 +221,11 @@ export function parseTime(timeStr: string): TimeInfo | null {
 		}
 		return null;
 	} catch (error) {
-		console.error("Error parsing time string:", error);
+		tasknotesLogger.error("Error parsing time string:", {
+			category: "internal",
+			operation: "parsing-time-string",
+			error: error,
+		});
 		return null;
 	}
 }
@@ -414,7 +438,11 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 /**
  * Gets the effective status of a task, considering recurrence
  */
-export function getEffectiveTaskStatus(task: TaskInfo, date: Date, completedStatus?: string): string {
+export function getEffectiveTaskStatus(
+	task: TaskInfo,
+	date: Date,
+	completedStatus?: string
+): string {
 	return getEffectiveTaskStatusCore(task, date, completedStatus);
 }
 
@@ -558,7 +586,11 @@ export function extractNoteInfo(
 					createdDate = format(date, "yyyy-MM-dd");
 				}
 			} catch (e) {
-				console.error(`Error parsing date ${createdDate}:`, e);
+				tasknotesLogger.error(`Error parsing date ${createdDate}:`, {
+					category: "validation",
+					operation: "parsing-date",
+					error: e,
+				});
 			}
 		}
 	}
@@ -670,13 +702,21 @@ export function extractTimeblocksFromNote(content: string, path: string): TimeBl
 			if (validateTimeBlock(timeblock)) {
 				validTimeblocks.push(timeblock);
 			} else {
-				console.warn(`Invalid timeblock in ${path}:`, timeblock);
+				tasknotesLogger.warn(`Invalid timeblock in ${path}:`, {
+					category: "validation",
+					operation: "invalid-timeblock",
+					details: { value: timeblock },
+				});
 			}
 		}
 
 		return validTimeblocks;
 	} catch (error) {
-		console.error(`Error extracting timeblocks from ${path}:`, error);
+		tasknotesLogger.error(`Error extracting timeblocks from ${path}:`, {
+			category: "internal",
+			operation: "extracting-timeblocks",
+			error: error,
+		});
 		return [];
 	}
 }

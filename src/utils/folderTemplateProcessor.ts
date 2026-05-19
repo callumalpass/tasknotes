@@ -1,4 +1,7 @@
 import { format } from "date-fns";
+import { createTaskNotesLogger } from "./tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/FolderTemplateProcessor" });
 
 /**
  * Data for processing task-specific template variables
@@ -129,7 +132,12 @@ function parseProjectFilePath(project: string): string {
 		try {
 			linkPath = decodeURIComponent(linkPath);
 		} catch (error) {
-			console.debug("Failed to decode project path:", linkPath, error);
+			tasknotesLogger.debug("Failed to decode project path:", {
+				category: "persistence",
+				operation: "decode-project-path",
+				details: { value: linkPath },
+				error: error,
+			});
 		}
 		return stripMarkdownExtension(linkPath);
 	}
@@ -257,7 +265,9 @@ export function processFolderTemplate(
 		const projects =
 			Array.isArray(taskData.projects) && taskData.projects.length > 0
 				? taskData.projects
-						.map((proj) => (extractProjectBasename ? extractProjectBasename(proj) : proj))
+						.map((proj) =>
+							extractProjectBasename ? extractProjectBasename(proj) : proj
+						)
 						.join("/")
 				: "";
 		processedPath = processedPath.replace(/\{\{projects\}\}/g, projects);
@@ -334,9 +344,7 @@ export function processFolderTemplate(
 		processedPath = processedPath.replace(/\{\{titleCamel\}\}/g, titleCamel);
 
 		const titlePascal = title
-			? title
-					.replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
-					.replace(/\s+/g, "")
+			? title.replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase()).replace(/\s+/g, "")
 			: "";
 		processedPath = processedPath.replace(/\{\{titlePascal\}\}/g, titlePascal);
 	}

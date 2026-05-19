@@ -12,6 +12,9 @@ import { PriorityManager } from "./PriorityManager";
 import type TaskNotesPlugin from "../main";
 import type { UserMappedField } from "../types/settings";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/BasesFilterConverter" });
 
 function getErrorMessage(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
@@ -58,7 +61,11 @@ export class BasesFilterConverter {
 
 			return filterObject;
 		} catch (error) {
-			console.error("Error converting TaskNotes filter to Bases:", error);
+			tasknotesLogger.error("Error converting TaskNotes filter to Bases:", {
+				category: "validation",
+				operation: "converting-tasknotes-filter-bases",
+				error: error,
+			});
 			throw new Error(`Failed to convert filter: ${getErrorMessage(error)}`);
 		}
 	}
@@ -145,7 +152,6 @@ export class BasesFilterConverter {
 		return this.convertOperator(basesProperty, operator, value, property);
 	}
 
-
 	/**
 	 * Check if a condition is complete (has property, operator, and value if needed)
 	 */
@@ -167,7 +173,6 @@ export class BasesFilterConverter {
 		return value !== null && value !== undefined && value !== "";
 	}
 
-
 	/**
 	 * Convert status.isCompleted to Bases expression
 	 * This needs to expand to check against all completed statuses and handle recurring tasks
@@ -184,9 +189,8 @@ export class BasesFilterConverter {
 			.join(" || ");
 
 		// Build status check expression
-		let statusExpression = completedStatusValues.length > 1
-			? `(${statusConditions})`
-			: statusConditions;
+		let statusExpression =
+			completedStatusValues.length > 1 ? `(${statusConditions})` : statusConditions;
 
 		// For recurring tasks, also check if today's date is in complete_instances array
 		// Use list.map() to convert dates to formatted strings, then check with contains()
@@ -248,12 +252,15 @@ export class BasesFilterConverter {
 	): string {
 		const fieldId = property.slice(5); // Remove "user:" prefix
 		const userFields = this.plugin.settings.userFields || [];
-		const field = userFields.find((f: UserMappedField) =>
-			(f.id || f.key) === fieldId || f.key === fieldId
+		const field = userFields.find(
+			(f: UserMappedField) => (f.id || f.key) === fieldId || f.key === fieldId
 		);
 
 		if (!field) {
-			console.warn(`User field not found: ${fieldId}`);
+			tasknotesLogger.warn(`User field not found: ${fieldId}`, {
+				category: "validation",
+				operation: "user-field-not-found",
+			});
 			return "true"; // Default to always true if field not found
 		}
 
@@ -262,7 +269,13 @@ export class BasesFilterConverter {
 
 		// Convert based on field type
 		// Cast to FilterProperty since user fields are valid FilterProperty values (user:${string})
-		return this.convertOperator(basesProperty, operator, value, property as FilterProperty, field.type);
+		return this.convertOperator(
+			basesProperty,
+			operator,
+			value,
+			property as FilterProperty,
+			field.type
+		);
 	}
 
 	/**
@@ -390,7 +403,11 @@ export class BasesFilterConverter {
 				return `${basesProperty} <= ${this.formatNumericValue(value)}`;
 
 			default:
-				console.warn("Unknown operator:", operator);
+				tasknotesLogger.warn("Unknown operator:", {
+					category: "validation",
+					operation: "unknown-operator",
+					details: { value: operator },
+				});
 				return "true";
 		}
 	}
@@ -419,7 +436,8 @@ export class BasesFilterConverter {
 
 		// Handle boolean values
 		if (typeof value == "boolean" || fieldType == "boolean") {
-			const booleanValue = typeof value === "boolean" ? (value ? "true" : "false") : stringifyUnknown(value);
+			const booleanValue =
+				typeof value === "boolean" ? (value ? "true" : "false") : stringifyUnknown(value);
 			return `${basesProperty} == ${booleanValue}`;
 		}
 
@@ -493,9 +511,9 @@ export class BasesFilterConverter {
 	private escapeString(str: string): string {
 		return str
 			.replace(/\\/g, "\\\\") // Escape backslashes
-			.replace(/"/g, '\\"')   // Escape quotes
-			.replace(/\n/g, "\\n")  // Escape newlines
-			.replace(/\r/g, "\\r")  // Escape carriage returns
+			.replace(/"/g, '\\"') // Escape quotes
+			.replace(/\n/g, "\\n") // Escape newlines
+			.replace(/\r/g, "\\r") // Escape carriage returns
 			.replace(/\t/g, "\\t"); // Escape tabs
 	}
 
@@ -512,7 +530,9 @@ export class BasesFilterConverter {
 
 		if (Array.isArray(filterObj)) {
 			// Array of conditions
-			return filterObj.map(item => `\n${indentStr}- ${this.filterObjectToYAML(item, indent + 1)}`).join("");
+			return filterObj
+				.map((item) => `\n${indentStr}- ${this.filterObjectToYAML(item, indent + 1)}`)
+				.join("");
 		}
 
 		if (isRecord(filterObj)) {
@@ -521,7 +541,7 @@ export class BasesFilterConverter {
 			const value = filterObj[key];
 
 			if (Array.isArray(value)) {
-				return `\n${indentStr}${key}:${value.map(item => `\n${indentStr}  - ${this.filterObjectToYAML(item, indent + 2)}`).join("")}`;
+				return `\n${indentStr}${key}:${value.map((item) => `\n${indentStr}  - ${this.filterObjectToYAML(item, indent + 2)}`).join("")}`;
 			}
 
 			return `\n${indentStr}${key}: ${this.filterObjectToYAML(value, indent + 1)}`;
@@ -535,7 +555,10 @@ export class BasesFilterConverter {
 	 */
 	convertSavedViewToBasesFile(
 		savedView: SavedView,
-		viewType: "tasknotesTaskList" | "tasknotesKanban" | "tasknotesCalendar" = "tasknotesTaskList"
+		viewType:
+			| "tasknotesTaskList"
+			| "tasknotesKanban"
+			| "tasknotesCalendar" = "tasknotesTaskList"
 	): string {
 		const filterObject = this.convertToBasesFilter(savedView.query);
 
@@ -596,25 +619,37 @@ export class BasesFilterConverter {
 
 		// Handle known TaskNotes sort keys
 		switch (sortKey) {
-			case "due": return fm.toUserField("due");
-			case "scheduled": return fm.toUserField("scheduled");
-			case "priority": return fm.toUserField("priority");
-			case "status": return fm.toUserField("status");
-			case "title": return fm.toUserField("title");
-			case "dateCreated": return "file.ctime";
-			case "dateModified": return "file.mtime";
-			case "completedDate": return fm.toUserField("completedDate");
-			case "tags": return "file.tags";
-			case "path": return "file.path";
-			case "timeEstimate": return fm.toUserField("timeEstimate");
-			case "recurrence": return fm.toUserField("recurrence");
+			case "due":
+				return fm.toUserField("due");
+			case "scheduled":
+				return fm.toUserField("scheduled");
+			case "priority":
+				return fm.toUserField("priority");
+			case "status":
+				return fm.toUserField("status");
+			case "title":
+				return fm.toUserField("title");
+			case "dateCreated":
+				return "file.ctime";
+			case "dateModified":
+				return "file.mtime";
+			case "completedDate":
+				return fm.toUserField("completedDate");
+			case "tags":
+				return "file.tags";
+			case "path":
+				return "file.path";
+			case "timeEstimate":
+				return fm.toUserField("timeEstimate");
+			case "recurrence":
+				return fm.toUserField("recurrence");
 			default:
 				// Handle user fields
 				if (sortKey.startsWith("user:")) {
 					const fieldId = sortKey.slice(5);
 					const userFields = this.plugin.settings.userFields || [];
-					const field = userFields.find((f: UserMappedField) =>
-						(f.id || f.key) === fieldId || f.key === fieldId
+					const field = userFields.find(
+						(f: UserMappedField) => (f.id || f.key) === fieldId || f.key === fieldId
 					);
 					return field?.key || sortKey;
 				}
@@ -727,17 +762,17 @@ export class BasesFilterConverter {
 			"firstDay",
 			"slotMinTime",
 			"slotMaxTime",
-			"slotDuration"
+			"slotDuration",
 		];
 
-		const hasCalendarOptions = calendarOptions.some(option => option in viewOptions);
+		const hasCalendarOptions = calendarOptions.some((option) => option in viewOptions);
 		if (hasCalendarOptions) {
 			return "tasknotesCalendar";
 		}
 
 		// Check for kanban specific options
 		const kanbanOptions = ["columnWidth", "hideEmptyColumns", "pinnedColumns", "cardLayout"];
-		const hasKanbanOptions = kanbanOptions.some(option => option in viewOptions);
+		const hasKanbanOptions = kanbanOptions.some((option) => option in viewOptions);
 		if (hasKanbanOptions) {
 			return "tasknotesKanban";
 		}

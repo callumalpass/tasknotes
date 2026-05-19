@@ -2,6 +2,9 @@
 import { EventRef } from "obsidian";
 import type { ViewPerformanceServiceContext } from "../bootstrap/pluginServices";
 import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ViewPerformanceService" });
 
 export interface ViewPerformanceConfig {
 	viewId: string;
@@ -188,9 +191,9 @@ export class ViewPerformanceService {
 				// Process selective updates in parallel for better performance
 				const updatePromises = pathsToUpdate.map((path) =>
 					handler.updateForTask(path, "update").catch((error) => {
-						console.error(
+						tasknotesLogger.error(
 							`[ViewPerformanceService] Error updating task ${path} in ${viewId}:`,
-							error
+							{ category: "persistence", operation: "updating-task", error: error }
 						);
 						// Don't rethrow - let other updates continue
 					})
@@ -198,9 +201,9 @@ export class ViewPerformanceService {
 				await Promise.all(updatePromises);
 			}
 		} catch (error) {
-			console.error(
+			tasknotesLogger.error(
 				`[ViewPerformanceService] Error processing updates for ${viewId}:`,
-				error
+				{ category: "validation", operation: "processing-updates", error: error }
 			);
 			// Fallback to full refresh
 			await handler.refresh();
@@ -283,7 +286,11 @@ export class ViewPerformanceService {
 				this.lastGlobalRefreshTime = 0;
 			}
 		} catch (error) {
-			console.error("[ViewPerformanceService] Error during cache cleanup:", error);
+			tasknotesLogger.error("[ViewPerformanceService] Error during cache cleanup:", {
+				category: "stale-data",
+				operation: "cache-cleanup",
+				error: error,
+			});
 		}
 	}
 

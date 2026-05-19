@@ -13,27 +13,16 @@ import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { EventEmitter } from "../utils/EventEmitter";
-import {
-	FilterUtils,
-	FilterValidationError,
-	FilterEvaluationError,
-} from "../utils/FilterUtils";
+import { FilterUtils, FilterValidationError, FilterEvaluationError } from "../utils/FilterUtils";
 import { format } from "date-fns";
-import {
-	isToday as isTodayUtil,
-	formatDateForStorage,
-	isTodayUTC,
-} from "../utils/dateUtils";
+import { isToday as isTodayUtil, formatDateForStorage, isTodayUTC } from "../utils/dateUtils";
 import { TranslationKey } from "../i18n";
 import { FilterQueryPlanner } from "./filter-service/FilterQueryPlanner";
 import {
 	findUserFieldByIdOrKey,
 	getHierarchicalUserFieldGroupValues,
 } from "./filter-service/userFieldValues";
-import {
-	isTaskForAgendaDate,
-	isTaskOverdueForAgenda,
-} from "./filter-service/agendaTaskSelection";
+import { isTaskForAgendaDate, isTaskOverdueForAgenda } from "./filter-service/agendaTaskSelection";
 import {
 	evaluateFilterNode,
 	type FilterPredicateEvaluationContext,
@@ -42,10 +31,7 @@ import {
 	groupFilterTasks,
 	type FilterTaskGroupingContext,
 } from "./filter-service/filterTaskGrouping";
-import {
-	sortFilterTasks,
-	type FilterTaskSortingContext,
-} from "./filter-service/filterTaskSorting";
+import { sortFilterTasks, type FilterTaskSortingContext } from "./filter-service/filterTaskSorting";
 import { buildFilterOptions } from "./filter-service/filterOptions";
 import {
 	applyQuickToggleCondition,
@@ -54,17 +40,14 @@ import {
 	type QuickFilterToggle,
 } from "./filter-service/filterQueryState";
 import type { TaskNotesSettings } from "../types/settings";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
-type FilterServiceSettings = Pick<
-	TaskNotesSettings,
-	"userFields" | "hideCompletedFromOverdue"
->;
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/FilterService" });
+
+type FilterServiceSettings = Pick<TaskNotesSettings, "userFields" | "hideCompletedFromOverdue">;
 
 interface FilterServiceI18n {
-	translate(
-		key: TranslationKey,
-		vars?: Record<string, string | number>
-	): string;
+	translate(key: TranslationKey, vars?: Record<string, string | number>): string;
 	getCurrentLocale?(): string;
 }
 
@@ -124,7 +107,11 @@ export class FilterService extends EventEmitter {
 				return this.runtime.i18n.translate(key, vars);
 			}
 		} catch (error) {
-			console.error("FilterService translation error:", error);
+			tasknotesLogger.error("FilterService translation error:", {
+				category: "internal",
+				operation: "filterservice-translation",
+				error: error,
+			});
 		}
 		return fallback;
 	}
@@ -144,7 +131,11 @@ export class FilterService extends EventEmitter {
 				return locale;
 			}
 		} catch (error) {
-			console.error("FilterService locale error:", error);
+			tasknotesLogger.error("FilterService locale error:", {
+				category: "internal",
+				operation: "filterservice-locale",
+				error: error,
+			});
 		}
 		return "en";
 	}
@@ -194,9 +185,15 @@ export class FilterService extends EventEmitter {
 			);
 		} catch (error) {
 			if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
-				console.error("Filter error:", error.message, {
-					nodeId: error.nodeId,
-					field: (error as FilterValidationError).field,
+				tasknotesLogger.error("Filter error:", {
+					category: "internal",
+					operation: "filter",
+					details: {
+						values: [
+							error.message,
+							{ nodeId: error.nodeId, field: (error as FilterValidationError).field },
+						],
+					},
 				});
 				// Return empty results rather than throwing - let UI handle gracefully
 				return new Map<string, TaskInfo[]>();
@@ -293,8 +290,10 @@ export class FilterService extends EventEmitter {
 			return { groups };
 		} catch (error) {
 			if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
-				console.error("Filter error (hierarchical):", error.message, {
-					nodeId: error.nodeId,
+				tasknotesLogger.error("Filter error (hierarchical):", {
+					category: "internal",
+					operation: "filter-hierarchical",
+					details: { values: [error.message, { nodeId: error.nodeId }] },
 				});
 				return { groups: new Map<string, TaskInfo[]>() };
 			}
@@ -338,12 +337,7 @@ export class FilterService extends EventEmitter {
 		task: TaskInfo,
 		targetDate?: Date
 	): boolean {
-		return evaluateFilterNode(
-			node,
-			task,
-			this.createPredicateEvaluationContext(),
-			targetDate
-		);
+		return evaluateFilterNode(node, task, this.createPredicateEvaluationContext(), targetDate);
 	}
 
 	private createPredicateEvaluationContext(): FilterPredicateEvaluationContext {
@@ -351,8 +345,7 @@ export class FilterService extends EventEmitter {
 			app: this.runtime?.app,
 			userFields: this.runtime?.settings?.userFields || [],
 			projectSubtasksService: this.runtime?.projectSubtasksService,
-			getUserFieldRawValue: (task, fieldKey) =>
-				this.getUserFieldRawValue(task, fieldKey),
+			getUserFieldRawValue: (task, fieldKey) => this.getUserFieldRawValue(task, fieldKey),
 			getCompletedStatuses: () => this.statusManager.getCompletedStatuses(),
 			isCompletedStatus: (status) => this.statusManager.isCompletedStatus(status),
 		};
@@ -442,8 +435,7 @@ export class FilterService extends EventEmitter {
 			isCompletedStatus: (status) => this.statusManager.isCompletedStatus(status),
 			getPriorityWeight: (priority) => this.priorityManager.getPriorityWeight(priority),
 			getStatusOrder: (status) => this.statusManager.getStatusOrder(status),
-			getUserFieldRawValue: (task, fieldKey) =>
-				this.getUserFieldRawValue(task, fieldKey),
+			getUserFieldRawValue: (task, fieldKey) => this.getUserFieldRawValue(task, fieldKey),
 			resolveProjectToAbsolutePath: (projectValue) =>
 				this.resolveProjectToAbsolutePath(projectValue),
 			translate: (key, fallback, vars) => this.translate(key, fallback, vars),
@@ -456,8 +448,7 @@ export class FilterService extends EventEmitter {
 			userFields: this.runtime?.settings?.userFields || [],
 			getPriorityWeight: (priority) => this.priorityManager.getPriorityWeight(priority),
 			getStatusOrder: (status) => this.statusManager.getStatusOrder(status),
-			getUserFieldRawValue: (task, fieldKey) =>
-				this.getUserFieldRawValue(task, fieldKey),
+			getUserFieldRawValue: (task, fieldKey) => this.getUserFieldRawValue(task, fieldKey),
 		};
 	}
 
@@ -465,9 +456,10 @@ export class FilterService extends EventEmitter {
 		try {
 			const app = this.cacheManager.getApp();
 			const file = app.vault.getAbstractFileByPath(task.path);
-			const frontmatter = file instanceof TFile
-				? app.metadataCache.getFileCache(file)?.frontmatter
-				: undefined;
+			const frontmatter =
+				file instanceof TFile
+					? app.metadataCache.getFileCache(file)?.frontmatter
+					: undefined;
 			return frontmatter ? frontmatter[fieldKey] : undefined;
 		} catch {
 			return undefined;
@@ -844,5 +836,4 @@ export class FilterService extends EventEmitter {
 
 		return flatData;
 	}
-
 }

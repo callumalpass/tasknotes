@@ -1,5 +1,8 @@
 import { Menu } from "obsidian";
 import type TaskNotesPlugin from "../main";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/PropertyVisibilityDropdown" });
 
 interface PropertyDefinition {
 	id: string;
@@ -57,7 +60,11 @@ export class PropertyVisibilityDropdown {
 			// Show menu using the most reliable method
 			this.showMenu(menu, event);
 		} catch (error) {
-			console.error("PropertyVisibilityDropdown: Error showing menu:", error);
+			tasknotesLogger.error("PropertyVisibilityDropdown: Error showing menu:", {
+				category: "persistence",
+				operation: "propertyvisibilitydropdown-showing-menu",
+				error: error,
+			});
 			// Provide user feedback on error
 			this.plugin.app.workspace.trigger(
 				"notice",
@@ -75,7 +82,10 @@ export class PropertyVisibilityDropdown {
 		} else if (menu.showAtPosition) {
 			menu.showAtPosition({ x: event.clientX, y: event.clientY });
 		} else {
-			console.error("PropertyVisibilityDropdown: No menu show method available");
+			tasknotesLogger.error("PropertyVisibilityDropdown: No menu show method available", {
+				category: "persistence",
+				operation: "propertyvisibilitydropdown-no-menu-show-method",
+			});
 		}
 	}
 
@@ -263,7 +273,11 @@ export class PropertyVisibilityDropdown {
 				}
 			}
 		} catch (error) {
-			console.warn("PropertyVisibilityDropdown: Error loading user properties:", error);
+			tasknotesLogger.warn("PropertyVisibilityDropdown: Error loading user properties:", {
+				category: "persistence",
+				operation: "propertyvisibilitydropdown-loading-user-properties",
+				error: error,
+			});
 		}
 	}
 
@@ -312,7 +326,11 @@ export class PropertyVisibilityDropdown {
 			const newProperties = Array.from(currentSet);
 			this.onUpdate(newProperties);
 		} catch (error) {
-			console.error("PropertyVisibilityDropdown: Error toggling property:", error);
+			tasknotesLogger.error("PropertyVisibilityDropdown: Error toggling property:", {
+				category: "persistence",
+				operation: "propertyvisibilitydropdown-toggling-property",
+				error: error,
+			});
 		}
 	}
 }

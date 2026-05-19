@@ -18,6 +18,9 @@ import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
 import type { InterpolationValues, TranslationKey } from "../i18n";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/InstantTaskConvertService" });
 
 export function findClosestHeadingAboveLine(
 	headings: HeadingCache[] | undefined,
@@ -147,10 +150,18 @@ export class InstantTaskConvertService {
 				);
 
 				// Log failures for debugging
-				console.warn("Batch conversion failures:", result.failures);
+				tasknotesLogger.warn("Batch conversion failures:", {
+					category: "configuration",
+					operation: "batch-conversion-failures",
+					details: { value: result.failures },
+				});
 			}
 		} catch (error) {
-			console.error("Error during batch task conversion:", error);
+			tasknotesLogger.error("Error during batch task conversion:", {
+				category: "configuration",
+				operation: "batch-task-conversion",
+				error: error,
+			});
 			new Notice(this.translate("services.instantTaskConvert.notices.batchConversionFailed"));
 		}
 	}
@@ -331,9 +342,13 @@ export class InstantTaskConvertService {
 				try {
 					await this.plugin.app.fileManager.trashFile(file);
 				} catch (cleanupError) {
-					console.warn(
+					tasknotesLogger.warn(
 						"Failed to clean up created file after replacement failure:",
-						cleanupError
+						{
+							category: "validation",
+							operation: "clean-up-created-file-replacement",
+							error: cleanupError,
+						}
 					);
 				}
 				return;
@@ -365,7 +380,11 @@ export class InstantTaskConvertService {
 			// Trigger immediate refresh of task link overlays to show the inline widget
 			await this.refreshTaskLinkOverlays(editor, file);
 		} catch (error) {
-			console.error("Error during instant task conversion:", error);
+			tasknotesLogger.error("Error during instant task conversion:", {
+				category: "configuration",
+				operation: "instant-task-conversion",
+				error: error,
+			});
 			if (error.message.includes("file already exists")) {
 				new Notice(this.translate("services.instantTaskConvert.notices.fileExists"));
 			} else {
@@ -513,10 +532,7 @@ export class InstantTaskConvertService {
 		const title = this.sanitizeTitle(titleSource) || "Untitled Task";
 
 		// If title was truncated, preserve the overflow in details
-		let enhancedDetails = this.appendPreservedTitleLinks(
-			details,
-			titleLinkPreservation.links
-		);
+		let enhancedDetails = this.appendPreservedTitleLinks(details, titleLinkPreservation.links);
 		if (titleSource.length > 200) {
 			const overflowText = this.extractOverflowText(titleSource, 200);
 			if (overflowText) {
@@ -575,7 +591,10 @@ export class InstantTaskConvertService {
 					? combineDateAndTime(parsedDueDate, parsedDueTime)
 					: parsedDueDate;
 			} else if (defaults.defaultDueDate !== "none") {
-				dueDate = calculateDefaultDateTime(defaults.defaultDueDate, defaults.defaultDueTime);
+				dueDate = calculateDefaultDateTime(
+					defaults.defaultDueDate,
+					defaults.defaultDueTime
+				);
 			}
 
 			// Apply scheduled date: parsed date takes priority, then defaults
@@ -750,8 +769,12 @@ export class InstantTaskConvertService {
 						customFrontmatter[userField.key] = value;
 					}
 				} else {
-					console.warn(
-						`[InstantTaskConvert] No user field definition found for field ID: ${fieldId}`
+					tasknotesLogger.warn(
+						`[InstantTaskConvert] No user field definition found for field ID: ${fieldId}`,
+						{
+							category: "validation",
+							operation: "no-user-field-definition-found-field-id",
+						}
 					);
 				}
 			}
@@ -818,7 +841,9 @@ export class InstantTaskConvertService {
 		cleanTitle = cleanTitle.replace(/\[\[([^[\]]+)\]\]/g, (match, inner) => {
 			links.push(match);
 			const linkText = String(inner);
-			const display = linkText.includes("|") ? linkText.split("|").pop() || linkText : linkText;
+			const display = linkText.includes("|")
+				? linkText.split("|").pop() || linkText
+				: linkText;
 			return display.split("/").pop()?.replace(/\.md$/i, "") || display;
 		});
 
@@ -835,9 +860,7 @@ export class InstantTaskConvertService {
 			return details;
 		}
 
-		const linkBlock = ["Source links:", ...linksToAppend.map((link) => `- ${link}`)].join(
-			"\n"
-		);
+		const linkBlock = ["Source links:", ...linksToAppend.map((link) => `- ${link}`)].join("\n");
 		return details.trimEnd() ? `${details.trimEnd()}\n\n${linkBlock}` : linkBlock;
 	}
 
@@ -986,7 +1009,11 @@ export class InstantTaskConvertService {
 
 			return { success: true };
 		} catch (error) {
-			console.error("Error replacing task lines:", error);
+			tasknotesLogger.error("Error replacing task lines:", {
+				category: "validation",
+				operation: "replacing-task-lines",
+				error: error,
+			});
 			return { success: false, error: `Failed to replace lines: ${error.message}` };
 		}
 	}
@@ -1015,7 +1042,8 @@ export class InstantTaskConvertService {
 	}
 
 	private getReplacementPrefix(originalLine: string, isCheckboxTask: boolean): string {
-		const { leadingWhitespace, blockquotePrefix, content } = splitBlockquotePrefix(originalLine);
+		const { leadingWhitespace, blockquotePrefix, content } =
+			splitBlockquotePrefix(originalLine);
 		const contentPrefix = isCheckboxTask
 			? this.getCheckboxReplacementPrefix(content)
 			: this.getNonCheckboxReplacementPrefix(content);
@@ -1048,16 +1076,28 @@ export class InstantTaskConvertService {
 							try {
 								editor.setCursor(cursorPos);
 							} catch (error) {
-								console.debug("Error restoring cursor position:", error);
+								tasknotesLogger.debug("Error restoring cursor position:", {
+									category: "validation",
+									operation: "restoring-cursor-position",
+									error: error,
+								});
 							}
 						}, 10);
 					}
 				} catch (error) {
-					console.debug("Error dispatching task update for overlays:", error);
+					tasknotesLogger.debug("Error dispatching task update for overlays:", {
+						category: "validation",
+						operation: "dispatching-task-update-overlays",
+						error: error,
+					});
 				}
 			}, 100);
 		} catch (error) {
-			console.debug("Error refreshing task link overlays:", error);
+			tasknotesLogger.debug("Error refreshing task link overlays:", {
+				category: "stale-data",
+				operation: "refreshing-task-link-overlays",
+				error: error,
+			});
 		}
 	}
 
@@ -1072,7 +1112,7 @@ export class InstantTaskConvertService {
 		const sourceFile =
 			activeEditor?.editor === editor
 				? activeEditor.file
-				: workspace.getActiveFile?.() ?? null;
+				: (workspace.getActiveFile?.() ?? null);
 
 		if (!sourceFile) {
 			return null;
@@ -1082,7 +1122,11 @@ export class InstantTaskConvertService {
 			await this.plugin.app.vault.modify(sourceFile, editor.getValue());
 			this.plugin.notifyDataChanged(sourceFile.path, false, false);
 		} catch (error) {
-			console.debug("Error saving source note after instant task conversion:", error);
+			tasknotesLogger.debug("Error saving source note after instant task conversion:", {
+				category: "configuration",
+				operation: "saving-source-note-instant-task-conversion",
+				error: error,
+			});
 		}
 
 		return sourceFile;
@@ -1106,13 +1150,21 @@ export class InstantTaskConvertService {
 						try {
 							await this.plugin.app.vault.cachedRead(file);
 						} catch (error) {
-							console.debug("Error in delayed cache update:", error);
+							tasknotesLogger.debug("Error in delayed cache update:", {
+								category: "stale-data",
+								operation: "delayed-cache-update",
+								error: error,
+							});
 						}
 					})();
 				}, 10);
 			}
 		} catch (error) {
-			console.debug("Error forcing metadata cache update:", error);
+			tasknotesLogger.debug("Error forcing metadata cache update:", {
+				category: "stale-data",
+				operation: "forcing-metadata-cache-update",
+				error: error,
+			});
 		}
 	}
 
@@ -1233,7 +1285,11 @@ export class InstantTaskConvertService {
 
 			return parsedData;
 		} catch (error) {
-			console.debug("NLP fallback parsing failed:", error);
+			tasknotesLogger.debug("NLP fallback parsing failed:", {
+				category: "validation",
+				operation: "nlp-fallback-parsing",
+				error: error,
+			});
 			return null;
 		}
 	}
@@ -1281,7 +1337,11 @@ export class InstantTaskConvertService {
 						}
 					} catch (error) {
 						// If file resolution fails, return the original project
-						console.debug("Error resolving project link:", error);
+						tasknotesLogger.debug("Error resolving project link:", {
+							category: "validation",
+							operation: "resolving-project-link",
+							error: error,
+						});
 					}
 
 					// If file not found, return the original project
@@ -1292,7 +1352,11 @@ export class InstantTaskConvertService {
 				return project;
 			});
 		} catch (error) {
-			console.debug("Error in resolveProjectLinks:", error);
+			tasknotesLogger.debug("Error in resolveProjectLinks:", {
+				category: "validation",
+				operation: "resolveprojectlinks",
+				error: error,
+			});
 			// Fallback: return projects as-is if resolution fails
 			return projects;
 		}
@@ -1432,7 +1496,11 @@ export class InstantTaskConvertService {
 				return taskLineInfo.parsedData;
 			}
 		} catch (error) {
-			console.warn("Error parsing task for batch:", error);
+			tasknotesLogger.warn("Error parsing task for batch:", {
+				category: "validation",
+				operation: "parsing-task-batch",
+				error: error,
+			});
 			return null;
 		}
 	}

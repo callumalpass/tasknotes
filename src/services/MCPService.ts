@@ -1,4 +1,3 @@
- 
 import type { HTTPRequestLike, HTTPResponseLike } from "../api/httpTypes";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -27,10 +26,10 @@ import {
 import { collectCalendarEvents } from "../utils/calendarUtils";
 import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
 import { hydrateTaskDetailsFromFile } from "../utils/taskDetails";
-import {
-	JsonRpcBody,
-	normalizeMcpInitializeProtocol,
-} from "./mcpProtocol";
+import { JsonRpcBody, normalizeMcpInitializeProtocol } from "./mcpProtocol";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MCPService" });
 
 type ListTasksArgs = { limit?: number; offset?: number };
 type TaskIdArgs = { id: string };
@@ -47,13 +46,14 @@ type CreateTaskArgs = {
 	timeEstimate?: number;
 	details?: string;
 };
-type UpdateTaskArgs = TaskIdArgs & Partial<Omit<CreateTaskArgs, "title" | "timeEstimate">> & {
-	title?: string;
-	recurrence?: string | null;
-	timeEstimate?: number | null;
-	due?: string | null;
-	scheduled?: string | null;
-};
+type UpdateTaskArgs = TaskIdArgs &
+	Partial<Omit<CreateTaskArgs, "title" | "timeEstimate">> & {
+		title?: string;
+		recurrence?: string | null;
+		timeEstimate?: number | null;
+		due?: string | null;
+		scheduled?: string | null;
+	};
 type CompleteRecurringArgs = TaskIdArgs & { date?: string };
 type TextTaskArgs = { text: string };
 type QueryTasksArgs = {
@@ -133,7 +133,11 @@ export class MCPService {
 			await transport.close();
 			await server.close();
 		} catch (error: unknown) {
-			console.error("MCP request error:", error);
+			tasknotesLogger.error("MCP request error:", {
+				category: "provider",
+				operation: "mcp-request",
+				error: error,
+			});
 			if (!res.headersSent) {
 				res.writeHead(500, { "Content-Type": "application/json" });
 				res.end(
@@ -171,10 +175,13 @@ export class MCPService {
 
 		tool(
 			"tasknotes_list_tasks",
-			{ description: "List all tasks with optional pagination", inputSchema: {
-				limit: z.number().optional().describe("Max tasks to return"),
-				offset: z.number().optional().describe("Number of tasks to skip"),
-			} },
+			{
+				description: "List all tasks with optional pagination",
+				inputSchema: {
+					limit: z.number().optional().describe("Max tasks to return"),
+					offset: z.number().optional().describe("Number of tasks to skip"),
+				},
+			},
 			async ({ limit, offset }: ListTasksArgs) => {
 				try {
 					const allTasks = await this.cacheManager.getAllTasks();
@@ -183,15 +190,17 @@ export class MCPService {
 					const tasks = allTasks.slice(start, end);
 
 					return {
-						content: [{
-							type: "text" as const,
-							text: JSON.stringify({
-								tasks,
-								total: allTasks.length,
-								offset: start,
-								returned: tasks.length,
-							}),
-						}],
+						content: [
+							{
+								type: "text" as const,
+								text: JSON.stringify({
+									tasks,
+									total: allTasks.length,
+									offset: start,
+									returned: tasks.length,
+								}),
+							},
+						],
 					};
 				} catch (error: unknown) {
 					return this.errorResult(this.getErrorMessage(error));
@@ -201,7 +210,12 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_task",
-			{ description: "Get a single task by its file path ID", inputSchema: { id: z.string().describe("Task file path (e.g. 'tasks/My Task.md')") } },
+			{
+				description: "Get a single task by its file path ID",
+				inputSchema: {
+					id: z.string().describe("Task file path (e.g. 'tasks/My Task.md')"),
+				},
+			},
 			async ({ id }: TaskIdArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -218,19 +232,28 @@ export class MCPService {
 
 		tool(
 			"tasknotes_create_task",
-			{ description: "Create a new task", inputSchema: {
-				title: z.string().describe("Task title"),
-				status: z.string().optional().describe("Task status (e.g. 'open', 'in-progress', 'done')"),
-				priority: z.string().optional().describe("Task priority (e.g. 'low', 'normal', 'high', 'urgent')"),
-				due: z.string().optional().describe("Due date (YYYY-MM-DD)"),
-				scheduled: z.string().optional().describe("Scheduled date (YYYY-MM-DD)"),
-				tags: z.array(z.string()).optional().describe("Tags"),
-				contexts: z.array(z.string()).optional().describe("Contexts"),
-				projects: z.array(z.string()).optional().describe("Projects"),
-				recurrence: z.string().optional().describe("RFC 5545 recurrence rule"),
-				timeEstimate: z.number().optional().describe("Time estimate in minutes"),
-				details: z.string().optional().describe("Task body/description"),
-			} },
+			{
+				description: "Create a new task",
+				inputSchema: {
+					title: z.string().describe("Task title"),
+					status: z
+						.string()
+						.optional()
+						.describe("Task status (e.g. 'open', 'in-progress', 'done')"),
+					priority: z
+						.string()
+						.optional()
+						.describe("Task priority (e.g. 'low', 'normal', 'high', 'urgent')"),
+					due: z.string().optional().describe("Due date (YYYY-MM-DD)"),
+					scheduled: z.string().optional().describe("Scheduled date (YYYY-MM-DD)"),
+					tags: z.array(z.string()).optional().describe("Tags"),
+					contexts: z.array(z.string()).optional().describe("Contexts"),
+					projects: z.array(z.string()).optional().describe("Projects"),
+					recurrence: z.string().optional().describe("RFC 5545 recurrence rule"),
+					timeEstimate: z.number().optional().describe("Time estimate in minutes"),
+					details: z.string().optional().describe("Task body/description"),
+				},
+			},
 			async (args: CreateTaskArgs) => {
 				try {
 					const taskData: TaskCreationData = {
@@ -260,20 +283,39 @@ export class MCPService {
 
 		tool(
 			"tasknotes_update_task",
-			{ description: "Update an existing task's properties", inputSchema: {
-				id: z.string().describe("Task file path"),
-				title: z.string().optional().describe("New title"),
-				status: z.string().optional().describe("New status"),
-				priority: z.string().optional().describe("New priority"),
-				due: z.string().nullable().optional().describe("New due date (YYYY-MM-DD) or null to clear"),
-				scheduled: z.string().nullable().optional().describe("New scheduled date (YYYY-MM-DD) or null to clear"),
-				tags: z.array(z.string()).optional().describe("New tags"),
-				contexts: z.array(z.string()).optional().describe("New contexts"),
-				projects: z.array(z.string()).optional().describe("New projects"),
-				recurrence: z.string().nullable().optional().describe("New recurrence rule or null to clear"),
-				timeEstimate: z.number().nullable().optional().describe("New time estimate in minutes or null to clear"),
-				details: z.string().optional().describe("New body/description"),
-			} },
+			{
+				description: "Update an existing task's properties",
+				inputSchema: {
+					id: z.string().describe("Task file path"),
+					title: z.string().optional().describe("New title"),
+					status: z.string().optional().describe("New status"),
+					priority: z.string().optional().describe("New priority"),
+					due: z
+						.string()
+						.nullable()
+						.optional()
+						.describe("New due date (YYYY-MM-DD) or null to clear"),
+					scheduled: z
+						.string()
+						.nullable()
+						.optional()
+						.describe("New scheduled date (YYYY-MM-DD) or null to clear"),
+					tags: z.array(z.string()).optional().describe("New tags"),
+					contexts: z.array(z.string()).optional().describe("New contexts"),
+					projects: z.array(z.string()).optional().describe("New projects"),
+					recurrence: z
+						.string()
+						.nullable()
+						.optional()
+						.describe("New recurrence rule or null to clear"),
+					timeEstimate: z
+						.number()
+						.nullable()
+						.optional()
+						.describe("New time estimate in minutes or null to clear"),
+					details: z.string().optional().describe("New body/description"),
+				},
+			},
 			async ({ id, ...updates }: UpdateTaskArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -300,7 +342,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_delete_task",
-			{ description: "Permanently delete a task file", inputSchema: { id: z.string().describe("Task file path") } },
+			{
+				description: "Permanently delete a task file",
+				inputSchema: { id: z.string().describe("Task file path") },
+			},
 			async ({ id }: TaskIdArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -318,7 +363,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_toggle_status",
-			{ description: "Toggle a task's status through the status cycle", inputSchema: { id: z.string().describe("Task file path") } },
+			{
+				description: "Toggle a task's status through the status cycle",
+				inputSchema: { id: z.string().describe("Task file path") },
+			},
 			async ({ id }: TaskIdArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -336,7 +384,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_toggle_archive",
-			{ description: "Toggle a task's archived state", inputSchema: { id: z.string().describe("Task file path") } },
+			{
+				description: "Toggle a task's archived state",
+				inputSchema: { id: z.string().describe("Task file path") },
+			},
 			async ({ id }: TaskIdArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -354,10 +405,16 @@ export class MCPService {
 
 		tool(
 			"tasknotes_complete_recurring_instance",
-			{ description: "Mark a recurring task as completed for a specific date", inputSchema: {
-				id: z.string().describe("Task file path"),
-				date: z.string().optional().describe("Date to mark complete (YYYY-MM-DD), defaults to today"),
-			} },
+			{
+				description: "Mark a recurring task as completed for a specific date",
+				inputSchema: {
+					id: z.string().describe("Task file path"),
+					date: z
+						.string()
+						.optional()
+						.describe("Date to mark complete (YYYY-MM-DD), defaults to today"),
+				},
+			},
 			async ({ id, date }: CompleteRecurringArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -379,7 +436,11 @@ export class MCPService {
 
 		tool(
 			"tasknotes_create_task_from_text",
-			{ description: "Create a task by parsing natural language text (e.g. 'Buy groceries tomorrow #shopping @home')", inputSchema: { text: z.string().describe("Natural language task description") } },
+			{
+				description:
+					"Create a task by parsing natural language text (e.g. 'Buy groceries tomorrow #shopping @home')",
+				inputSchema: { text: z.string().describe("Natural language task description") },
+			},
 			async ({ text }: TextTaskArgs) => {
 				try {
 					const parsed = this.nlParser.parseInput(text);
@@ -405,8 +466,16 @@ export class MCPService {
 		const filterConditionSchema: z.ZodType<FilterCondition> = z.object({
 			type: z.literal("condition"),
 			id: z.string(),
-			property: z.string().describe("Filter property (e.g. 'status', 'priority', 'due', 'tags', 'projects', 'contexts')"),
-			operator: z.string().describe("Filter operator (e.g. 'is', 'is_not', 'contains', 'before', 'after', 'is_empty')"),
+			property: z
+				.string()
+				.describe(
+					"Filter property (e.g. 'status', 'priority', 'due', 'tags', 'projects', 'contexts')"
+				),
+			operator: z
+				.string()
+				.describe(
+					"Filter operator (e.g. 'is', 'is_not', 'contains', 'before', 'after', 'is_empty')"
+				),
 			value: z.union([z.string(), z.array(z.string()), z.number(), z.boolean(), z.null()]),
 		}) as z.ZodType<FilterCondition>;
 
@@ -421,22 +490,42 @@ export class MCPService {
 
 		tool(
 			"tasknotes_query_tasks",
-			{ description: "Query tasks using advanced filters with AND/OR logic, sorting, and grouping", inputSchema: {
-				conjunction: z.enum(["and", "or"]).describe("How to combine filter conditions"),
-				children: z.array(z.union([
-					z.object({
-						type: z.literal("condition"),
-						id: z.string(),
-						property: z.string(),
-						operator: z.string(),
-						value: z.union([z.string(), z.array(z.string()), z.number(), z.boolean(), z.null()]),
-					}),
-					filterGroupSchema,
-				])).describe("Filter conditions or nested groups"),
-				sortKey: z.string().optional().describe("Sort by field (e.g. 'due', 'priority', 'title', 'status')"),
-				sortDirection: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
-				groupKey: z.string().optional().describe("Group by field (e.g. 'priority', 'status', 'projects')"),
-			} },
+			{
+				description:
+					"Query tasks using advanced filters with AND/OR logic, sorting, and grouping",
+				inputSchema: {
+					conjunction: z.enum(["and", "or"]).describe("How to combine filter conditions"),
+					children: z
+						.array(
+							z.union([
+								z.object({
+									type: z.literal("condition"),
+									id: z.string(),
+									property: z.string(),
+									operator: z.string(),
+									value: z.union([
+										z.string(),
+										z.array(z.string()),
+										z.number(),
+										z.boolean(),
+										z.null(),
+									]),
+								}),
+								filterGroupSchema,
+							])
+						)
+						.describe("Filter conditions or nested groups"),
+					sortKey: z
+						.string()
+						.optional()
+						.describe("Sort by field (e.g. 'due', 'priority', 'title', 'status')"),
+					sortDirection: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
+					groupKey: z
+						.string()
+						.optional()
+						.describe("Group by field (e.g. 'priority', 'status', 'projects')"),
+				},
+			},
 			async (args: QueryTasksArgs) => {
 				try {
 					const query: FilterQuery = {
@@ -463,7 +552,11 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_filter_options",
-			{ description: "Get available filter options (statuses, priorities, tags, contexts, projects)", inputSchema: {} },
+			{
+				description:
+					"Get available filter options (statuses, priorities, tags, contexts, projects)",
+				inputSchema: {},
+			},
 			async () => {
 				try {
 					const options = await this.filterService.getFilterOptions();
@@ -476,7 +569,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_stats",
-			{ description: "Get task statistics (counts by status, priority, overdue, etc.)", inputSchema: {} },
+			{
+				description: "Get task statistics (counts by status, priority, overdue, etc.)",
+				inputSchema: {},
+			},
 			async () => {
 				try {
 					const allTasks = await this.cacheManager.getAllTasks();
@@ -496,10 +592,13 @@ export class MCPService {
 
 		tool(
 			"tasknotes_start_time_tracking",
-			{ description: "Start a time tracking session on a task", inputSchema: {
-				id: z.string().describe("Task file path"),
-				description: z.string().optional().describe("Description for the time session"),
-			} },
+			{
+				description: "Start a time tracking session on a task",
+				inputSchema: {
+					id: z.string().describe("Task file path"),
+					description: z.string().optional().describe("Description for the time session"),
+				},
+			},
 			async ({ id, description }: StartTimeTrackingArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -510,8 +609,13 @@ export class MCPService {
 					let updatedTask = await this.taskService.startTimeTracking(task);
 
 					// If description was provided, update the latest time entry
-					if (description && updatedTask.timeEntries && updatedTask.timeEntries.length > 0) {
-						const latestEntry = updatedTask.timeEntries[updatedTask.timeEntries.length - 1];
+					if (
+						description &&
+						updatedTask.timeEntries &&
+						updatedTask.timeEntries.length > 0
+					) {
+						const latestEntry =
+							updatedTask.timeEntries[updatedTask.timeEntries.length - 1];
 						if (latestEntry && !latestEntry.endTime) {
 							latestEntry.description = description;
 							updatedTask = await this.taskService.updateTask(updatedTask, {
@@ -529,7 +633,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_stop_time_tracking",
-			{ description: "Stop the active time tracking session on a task", inputSchema: { id: z.string().describe("Task file path") } },
+			{
+				description: "Stop the active time tracking session on a task",
+				inputSchema: { id: z.string().describe("Task file path") },
+			},
 			async ({ id }: TaskIdArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -547,13 +654,15 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_active_time_sessions",
-			{ description: "Get all tasks with currently running time tracking sessions", inputSchema: {} },
+			{
+				description: "Get all tasks with currently running time tracking sessions",
+				inputSchema: {},
+			},
 			async () => {
 				try {
 					const allTasks = await this.cacheManager.getAllTasks();
-					const result = computeActiveTimeSessions(
-						allTasks,
-						(task) => this.plugin.getActiveTimeSession(task)
+					const result = computeActiveTimeSessions(allTasks, (task) =>
+						this.plugin.getActiveTimeSession(task)
 					);
 					return this.jsonResult(result);
 				} catch (error: unknown) {
@@ -564,11 +673,20 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_time_summary",
-			{ description: "Get time tracking summary for a period", inputSchema: {
-				period: z.enum(["today", "week", "month", "all", "custom"]).optional().describe("Time period (default: today)"),
-				from: z.string().optional().describe("Start date (ISO string) for custom range"),
-				to: z.string().optional().describe("End date (ISO string) for custom range"),
-			} },
+			{
+				description: "Get time tracking summary for a period",
+				inputSchema: {
+					period: z
+						.enum(["today", "week", "month", "all", "custom"])
+						.optional()
+						.describe("Time period (default: today)"),
+					from: z
+						.string()
+						.optional()
+						.describe("Start date (ISO string) for custom range"),
+					to: z.string().optional().describe("End date (ISO string) for custom range"),
+				},
+			},
 			async ({ period: periodArg, from, to }: TimeSummaryArgs) => {
 				try {
 					const allTasks = await this.cacheManager.getAllTasks();
@@ -591,7 +709,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_task_time_data",
-			{ description: "Get detailed time tracking data for a specific task", inputSchema: { id: z.string().describe("Task file path") } },
+			{
+				description: "Get detailed time tracking data for a specific task",
+				inputSchema: { id: z.string().describe("Task file path") },
+			},
 			async ({ id }: TaskIdArgs) => {
 				try {
 					const task = await this.cacheManager.getTaskInfo(id);
@@ -599,9 +720,8 @@ export class MCPService {
 						return this.errorResult("Task not found");
 					}
 
-					const result = computeTaskTimeData(
-						task,
-						(t) => this.plugin.getActiveTimeSession(t)
+					const result = computeTaskTimeData(task, (t) =>
+						this.plugin.getActiveTimeSession(t)
 					);
 					return this.jsonResult(result);
 				} catch (error: unknown) {
@@ -618,10 +738,19 @@ export class MCPService {
 
 		tool(
 			"tasknotes_start_pomodoro",
-			{ description: "Start a pomodoro timer, optionally linked to a task", inputSchema: {
-				taskId: z.string().optional().describe("Task file path to associate with this pomodoro"),
-				duration: z.number().optional().describe("Duration in minutes (default: work duration from settings)"),
-			} },
+			{
+				description: "Start a pomodoro timer, optionally linked to a task",
+				inputSchema: {
+					taskId: z
+						.string()
+						.optional()
+						.describe("Task file path to associate with this pomodoro"),
+					duration: z
+						.number()
+						.optional()
+						.describe("Duration in minutes (default: work duration from settings)"),
+				},
+			},
 			async ({ taskId, duration }: StartPomodoroArgs) => {
 				try {
 					let task;
@@ -717,7 +846,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_pomodoro_status",
-			{ description: "Get the current pomodoro timer status including stats", inputSchema: {} },
+			{
+				description: "Get the current pomodoro timer status including stats",
+				inputSchema: {},
+			},
 			async () => {
 				try {
 					const state = this.plugin.pomodoroService.getState();
@@ -742,10 +874,14 @@ export class MCPService {
 
 		tool(
 			"tasknotes_get_calendar_events",
-			{ description: "Get calendar events from all connected providers (Google, Microsoft, ICS subscriptions)", inputSchema: {
-				start: z.string().optional().describe("Start date filter (ISO string)"),
-				end: z.string().optional().describe("End date filter (ISO string)"),
-			} },
+			{
+				description:
+					"Get calendar events from all connected providers (Google, Microsoft, ICS subscriptions)",
+				inputSchema: {
+					start: z.string().optional().describe("Start date filter (ISO string)"),
+					end: z.string().optional().describe("End date filter (ISO string)"),
+				},
+			},
 			async ({ start, end }: CalendarEventsArgs) => {
 				try {
 					const startDate = start ? new Date(start) : null;
@@ -775,7 +911,10 @@ export class MCPService {
 
 		tool(
 			"tasknotes_health_check",
-			{ description: "Check if the TaskNotes MCP server is running and return vault info", inputSchema: {} },
+			{
+				description: "Check if the TaskNotes MCP server is running and return vault info",
+				inputSchema: {},
+			},
 			async () => {
 				try {
 					const vaultName = this.plugin.app.vault.getName();
