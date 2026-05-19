@@ -22,6 +22,7 @@ import {
 	type SortOrderPlan,
 } from "./sortOrderUtils";
 import {
+	applySortOrderUpdatesToItems,
 	applySortOrderUpdatesToTaskCache,
 	buildSortOrderUpdateMap,
 	movePathsRelativeToTarget,
@@ -667,12 +668,12 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		swimLaneKey: string | null
 	): boolean {
+		const hasVirtualScroller = this.hasVirtualScrollerForScope(groupKey, swimLaneKey);
 		return (
-			options.optimisticReorderApplied === true &&
 			!!dropTarget &&
 			pathsToUpdate.length === 1 &&
 			(options.draggedPaths?.length ?? 1) === 1 &&
-			!this.hasVirtualScrollerForScope(groupKey, swimLaneKey)
+			(options.optimisticReorderApplied === true || hasVirtualScroller)
 		);
 	}
 
@@ -732,8 +733,31 @@ export class KanbanView extends BasesViewBase {
 			return false;
 		}
 
+		const scroller = this.columnScrollers.get(this.getColumnScrollerKey(groupKey, swimLaneKey));
+		if (scroller) {
+			const reordered = scroller.reorderItems({
+				movedKeys: [draggedPath],
+				targetKey: targetPath,
+				position: above ? "before" : "after",
+			});
+			if (!reordered) {
+				return false;
+			}
+		}
+
 		const sortOrdersByPath = buildSortOrderUpdateMap(draggedPath, sortOrderPlan);
 		applySortOrderUpdatesToTaskCache(this.taskInfoCache, sortOrdersByPath);
+		if (scroller) {
+			applySortOrderUpdatesToItems(
+				scroller.getItems(),
+				(task) => task,
+				sortOrdersByPath,
+				(task) => {
+					this.taskInfoCache.set(task.path, task);
+				}
+			);
+			scroller.invalidateItems([...sortOrdersByPath.keys()]);
+		}
 		this.setSortScopePathsForScope(groupKey, swimLaneKey, nextScopePaths);
 		this.setCurrentVisibleTaskPathOrder(nextVisiblePaths);
 		return true;

@@ -35,6 +35,26 @@ export interface VirtualScrollState {
 	offsetY: number;
 }
 
+export interface VirtualScrollerReorderOptions {
+	/** Stable keys for the items being moved, in the order they should be inserted. */
+	movedKeys: readonly string[];
+	/** Stable key for the item that receives the moved items. */
+	targetKey: string;
+	/** Whether to insert moved items before or after the target item. */
+	position: "before" | "after";
+}
+
+export interface VirtualScrollerInvalidateOptions {
+	/** Clear cached heights for invalidated items before rerendering them. */
+	invalidateHeights?: boolean;
+}
+
+type VirtualScrollerItemEntry<T> = {
+	item: T;
+	key: string;
+	height?: number;
+};
+
 export class VirtualScroller<T> {
 	private container: HTMLElement;
 	private scrollContainer: HTMLElement;
@@ -64,6 +84,7 @@ export class VirtualScroller<T> {
 	private resizeObserver: ResizeObserver | null = null;
 	private measurementRAF: number | null = null;
 	private pendingMeasurements = new Set<number>();
+	private invalidatedKeys = new Set<string>();
 
 	constructor(options: VirtualScrollerOptions<T>) {
 		this.container = options.container;
@@ -234,6 +255,46 @@ export class VirtualScroller<T> {
 
 		this.totalHeight = currentPosition;
 		this.updateSpacerHeight();
+	}
+
+	private getItemEntries(): VirtualScrollerItemEntry<T>[] {
+		return this.items.map((item, index) => ({
+			item,
+			key: this.getItemKey(item, index),
+			height: this.itemHeights.get(index),
+		}));
+	}
+
+	private hasUniqueStableKeys(entries: readonly VirtualScrollerItemEntry<T>[]): boolean {
+		const seen = new Set<string>();
+		for (const entry of entries) {
+			if (seen.has(entry.key)) {
+				return false;
+			}
+			seen.add(entry.key);
+		}
+		return true;
+	}
+
+	private applyItemEntries(entries: readonly VirtualScrollerItemEntry<T>[]): void {
+		this.items = entries.map((entry) => entry.item);
+		this.state.totalItems = this.items.length;
+
+		const nextHeights = new Map<number, number>();
+		entries.forEach((entry, index) => {
+			if (entry.height !== undefined) {
+				nextHeights.set(index, entry.height);
+			}
+		});
+		this.itemHeights = nextHeights;
+		this.pendingMeasurements.clear();
+		this.rebuildPositionCache();
+	}
+
+	private forceVisibleRangeUpdate(): void {
+		this.state.startIndex = -1;
+		this.state.endIndex = -1;
+		this.updateVisibleRange();
 	}
 
 	/**
@@ -412,6 +473,15 @@ export class VirtualScroller<T> {
 
 			let element = this.renderedElements.get(key);
 
+			if (element && this.invalidatedKeys.has(key)) {
+				if (this.resizeObserver) {
+					this.resizeObserver.unobserve(element);
+				}
+				element.remove();
+				this.renderedElements.delete(key);
+				element = undefined;
+			}
+
 			if (!element) {
 				// Create new element
 				element = this.renderItem(item, i);
@@ -429,6 +499,7 @@ export class VirtualScroller<T> {
 				// Update index for existing element
 				element.dataset.virtualIndex = String(i);
 			}
+			this.invalidatedKeys.delete(key);
 
 			// Only manipulate DOM if element is not in correct position
 			if (previousElement) {
@@ -455,6 +526,7 @@ export class VirtualScroller<T> {
 				}
 				element.remove();
 				this.renderedElements.delete(key);
+				this.invalidatedKeys.delete(key);
 			}
 		}
 
@@ -506,6 +578,100 @@ export class VirtualScroller<T> {
 	}
 
 	/**
+	 * Return a shallow copy of the current items in render order.
+	 */
+	getItems(): readonly T[] {
+		return [...this.items];
+	}
+
+	/**
+	 * Reorder existing items by stable item key without clearing rendered DOM.
+	 * Returns false if the move cannot be represented safely with the current keys.
+	 */
+	reorderItems(options: VirtualScrollerReorderOptions): boolean {
+		const movedKeys = [...options.movedKeys];
+		const movedKeySet = new Set(movedKeys);
+		if (
+			movedKeys.length === 0 ||
+			movedKeySet.size !== movedKeys.length ||
+			movedKeySet.has(options.targetKey)
+		) {
+			return false;
+		}
+
+		const currentEntries = this.getItemEntries();
+		if (!this.hasUniqueStableKeys(currentEntries)) {
+			return false;
+		}
+
+		const entriesByKey = new Map(currentEntries.map((entry) => [entry.key, entry]));
+		if (!entriesByKey.has(options.targetKey)) {
+			return false;
+		}
+		if (!movedKeys.every((key) => entriesByKey.has(key))) {
+			return false;
+		}
+
+		const remainingEntries = currentEntries.filter((entry) => !movedKeySet.has(entry.key));
+		const targetIndex = remainingEntries.findIndex((entry) => entry.key === options.targetKey);
+		if (targetIndex === -1) {
+			return false;
+		}
+
+		const movingEntries = movedKeys.map((key) => entriesByKey.get(key)!);
+		const insertAt = options.position === "before" ? targetIndex : targetIndex + 1;
+		const nextEntries = [
+			...remainingEntries.slice(0, insertAt),
+			...movingEntries,
+			...remainingEntries.slice(insertAt),
+		];
+
+		const keysRemainStable = nextEntries.every(
+			(entry, index) => this.getItemKey(entry.item, index) === entry.key
+		);
+		if (!keysRemainStable) {
+			return false;
+		}
+
+		const currentScrollTop = this.scrollContainer.scrollTop;
+		this.applyItemEntries(nextEntries);
+		this.scrollContainer.scrollTop = currentScrollTop;
+		this.forceVisibleRangeUpdate();
+		return true;
+	}
+
+	/**
+	 * Re-render currently visible items by key without rebuilding the whole scroller.
+	 */
+	invalidateItems(
+		keys: readonly string[],
+		options: VirtualScrollerInvalidateOptions = {}
+	): void {
+		if (keys.length === 0) {
+			return;
+		}
+
+		const keySet = new Set(keys);
+		if (options.invalidateHeights) {
+			for (const key of keySet) {
+				const element = this.renderedElements.get(key);
+				if (!element) continue;
+
+				const index = parseInt(element.dataset.virtualIndex || "-1", 10);
+				if (index >= 0) {
+					this.itemHeights.delete(index);
+				}
+			}
+			this.rebuildPositionCache();
+		}
+
+		for (const key of keySet) {
+			this.invalidatedKeys.add(key);
+		}
+		this.forceVisibleRangeUpdate();
+	}
+
+	/**
 	 * Scroll to a specific item index
 	 */
 	scrollToIndex(index: number, behavior: ScrollBehavior = "smooth"): void {
@@ -530,23 +696,7 @@ export class VirtualScroller<T> {
 	 * Invalidate a specific item by key, forcing it to re-render
 	 */
 	invalidateItem(key: string): void {
-		const element = this.renderedElements.get(key);
-		if (element) {
-			// Get the index from the element
-			const index = parseInt(element.dataset.virtualIndex || "-1", 10);
-
-			// Clear height measurement for this index
-			if (index >= 0) {
-				this.itemHeights.delete(index);
-			}
-
-			// Remove from cache - will be recreated on next render
-			this.renderedElements.delete(key);
-			element.remove();
-		}
-		// Rebuild position cache and force re-render
-		this.rebuildPositionCache();
-		this.updateVisibleRange();
+		this.invalidateItems([key], { invalidateHeights: true });
 	}
 
 	/**
@@ -587,5 +737,6 @@ export class VirtualScroller<T> {
 		this.itemHeights.clear();
 		this.positionCache = [];
 		this.pendingMeasurements.clear();
+		this.invalidatedKeys.clear();
 	}
 }

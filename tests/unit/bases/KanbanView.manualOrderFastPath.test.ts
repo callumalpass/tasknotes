@@ -105,27 +105,29 @@ describe("KanbanView manual-order fast path", () => {
 		).toBe(false);
 	});
 
-	it("does not fast-patch manual order drops for virtualized columns", () => {
+	it("allows virtualized columns to fast-patch manual order drops", () => {
 		const view = makeView();
-		(view as any).columnScrollers.set("todo", { updateItems: jest.fn() });
+		(view as any).columnScrollers.set("todo", { reorderItems: jest.fn() });
 
 		expect(
 			(view as any).canFastPatchManualOrderDrop(
-				{ optimisticReorderApplied: true, draggedPaths: ["tasks/c.md"] },
+				{ draggedPaths: ["tasks/c.md"] },
 				{ taskPath: "tasks/a.md", above: false },
 				["tasks/c.md"],
 				"todo",
 				null
 			)
-		).toBe(false);
+		).toBe(true);
 	});
 
-	it("does not force virtual scroller item updates during the fast path", () => {
+	it("uses the virtual scroller reorder API during the fast path", () => {
 		const view = makeView();
 		const taskA = createTask("tasks/a.md", "old-a");
 		const taskB = createTask("tasks/b.md", "old-b");
 		const taskC = createTask("tasks/c.md", "old-c");
-		const updateItems = jest.fn();
+		const reorderItems = jest.fn().mockReturnValue(true);
+		const getItems = jest.fn().mockReturnValue([taskA, taskB, taskC]);
+		const invalidateItems = jest.fn();
 		const plan: SortOrderPlan = {
 			sortOrder: "tnmzzzzzzzzz",
 			additionalWrites: [{ path: "tasks/a.md", sortOrder: "tnaaaaaaaaaa" }],
@@ -140,7 +142,11 @@ describe("KanbanView manual-order fast path", () => {
 			"tasks/b.md",
 			"tasks/c.md",
 		]);
-		(view as any).columnScrollers.set("todo", { updateItems });
+		(view as any).columnScrollers.set("todo", {
+			getItems,
+			invalidateItems,
+			reorderItems,
+		});
 		(view as any).setCurrentVisibleTaskPaths([taskA, taskB, taskC]);
 
 		const result = (view as any).applyOptimisticSortOrderResult(
@@ -153,7 +159,12 @@ describe("KanbanView manual-order fast path", () => {
 		);
 
 		expect(result).toBe(true);
-		expect(updateItems).not.toHaveBeenCalled();
+		expect(reorderItems).toHaveBeenCalledWith({
+			movedKeys: ["tasks/c.md"],
+			targetKey: "tasks/a.md",
+			position: "after",
+		});
+		expect(invalidateItems).toHaveBeenCalledWith(["tasks/c.md", "tasks/a.md"]);
 		expect(taskA.sortOrder).toBe("tnaaaaaaaaaa");
 		expect(taskC.sortOrder).toBe("tnmzzzzzzzzz");
 	});
