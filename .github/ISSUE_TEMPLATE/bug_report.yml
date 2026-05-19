@@ -8,13 +8,100 @@ body:
       value: |
         Thanks for taking the time to report this bug!
 
-        Please fill out the details below. The more info you provide, the faster we can help. 
+        Please fill out the details below. The more specific the report is, the faster we can reproduce and fix it.
+
+        Before posting, remove private vault content, calendar details, tokens, or personal paths that are not needed to reproduce the issue.
 
   - type: textarea
     id: description
     attributes:
       label: Bug Description
-      description: Please describe the bug and any relevant details.
+      description: What happened? What did you expect to happen instead?
     validations:
       required: true
 
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: List the smallest set of steps that triggers the problem.
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: debug-info
+    attributes:
+      label: TaskNotes Debug Info
+      description: Run Obsidian's "Show debug info" command from the command palette and paste the TaskNotes/Obsidian/system output here.
+      render: text
+      placeholder: |
+        Paste the output of "Show debug info" here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-frontmatter
+    attributes:
+      label: Affected Task Frontmatter
+      description: If the bug involves one or more task files, paste the YAML frontmatter from the smallest affected examples. Remove private content that is not relevant.
+      render: yaml
+      placeholder: |
+        ---
+        title: Example task
+        status: open
+        due: 2026-05-19
+        ---
+    validations:
+      required: false
+
+  - type: textarea
+    id: bases-files
+    attributes:
+      label: Relevant Bases File Content
+      description: If the bug involves Task List, Kanban, Calendar, Agenda, generated views, filters, grouping, sorting, or the New button, paste the relevant `.base` file content.
+      render: yaml
+      placeholder: |
+        views:
+          - type: tasknotesTaskList
+            name: Today
+    validations:
+      required: false
+
+  - type: textarea
+    id: settings-context
+    attributes:
+      label: Relevant Settings or Customizations
+      description: Include any related TaskNotes settings, or relevant excerpts from `.obsidian/plugins/tasknotes/data.json`. Remove calendar credentials, account details, tokens, and unrelated private values before posting.
+      placeholder: |
+        data.json excerpt:
+        {
+          "taskIdentificationMethod": "tag",
+          "taskTag": "task"
+        }
+
+        - Task identification setting:
+        - Custom status/priority values:
+        - Theme/CSS snippets/community plugins:
+    validations:
+      required: false
+
+  - type: textarea
+    id: console-output
+    attributes:
+      label: Console Errors or Logs
+      description: If there are errors, open Obsidian developer tools, copy relevant console output, and paste only the related lines.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Screen Recording
+      description: Drag in screenshots or a short recording if the bug is visual or interaction-related.
+    validations:
+      required: false

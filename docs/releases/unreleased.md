@@ -92,6 +92,7 @@ Example:
 
 ## Changed
 
+- Expanded the bug report template to ask for Obsidian "Show debug info" output, affected task frontmatter, relevant Bases file contents, reproduction steps, and related logs or screenshots.
 - Release notes now show the default `.base` file regeneration reminder only on the current version section, keeping older bundled sections focused on their own changes.
 - Updated the release notes GitHub prompt to invite feedback while still asking satisfied users to star the project.
 - (#239) Ordered Kanban status and priority columns by the configured status order and priority weights when no manual column order is saved. Thanks to @ScumbagScalawag for asking about this, and to @nightroman, @lavir, and @elvarb for the follow-up discussion.
