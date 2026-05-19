@@ -199,6 +199,8 @@ Current examples:
 - `src/bases/basesUpdateEvents.ts` owns shared Bases task update/delete event
   relevance decisions, path-rename refresh planning, and rendered-card path
   extraction.
+- `src/bases/basesToolbar.ts` owns shared Bases toolbar integration for the
+  TaskNotes New button, including stale-button replacement and cleanup.
 - `src/bases/basesSelectionUi.ts` owns shared Bases selection-mode DOM state,
   selected-card classes, keyboard and click selection decisions, selection
   indicator behavior, and default visible-task path extraction behind a narrow

@@ -158,6 +158,8 @@ Refactor rule:
   escaping, and export file-name sanitization behind `basesExport`
 - keep shared Bases task update/delete relevance decisions, path-rename refresh
   planning, and rendered-card path extraction behind `basesUpdateEvents`
+- keep shared Bases toolbar DOM integration for the TaskNotes New button behind
+  `basesToolbar`
 
 Current adapter seams include:
 
@@ -174,6 +176,7 @@ Current adapter seams include:
 - shared Bases selection UI state and click/keyboard selection decisions
 - shared Bases copy/export table assembly
 - shared Bases update/delete event relevance planning
+- shared Bases toolbar New button integration
 - Bases-backed task creation assembly
 - TaskCard property access
 - TaskCard relationship expansion rendering

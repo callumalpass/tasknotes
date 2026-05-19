@@ -1,4 +1,4 @@
-import { Component, App, Notice, setIcon, TFile } from "obsidian";
+import { Component, App, Notice, TFile } from "obsidian";
 import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
@@ -32,6 +32,10 @@ import {
 	planBasesTaskDeletedEvent,
 	planBasesTaskUpdatedEvent,
 } from "./basesUpdateEvents";
+import {
+	cleanupBasesNewTaskButton,
+	injectBasesNewTaskButton,
+} from "./basesToolbar";
 import {
 	getVisibleTaskPathsFromBasesRoot,
 	handleBasesSelectionClick,
@@ -380,95 +384,44 @@ export abstract class BasesViewBase extends Component {
 	 * Clean up injected toolbar state.
 	 */
 	private cleanupNewTaskButton(): void {
-		const basesViewEl = this.containerEl.closest(".bases-view");
-		const parentEl = basesViewEl?.parentElement;
-
-		parentEl?.querySelector(".tn-bases-new-task-btn")?.remove();
-		parentEl?.classList.remove("tasknotes-view-active");
+		cleanupBasesNewTaskButton(this.containerEl);
 	}
 
 	/**
 	 * Inject the custom "New Task" button into the Bases toolbar.
 	 */
 	private injectNewTaskButton(): void {
-		// Find the Bases view container
-		const basesViewEl = this.containerEl.closest(".bases-view");
-		if (!basesViewEl) {
+		const result = injectBasesNewTaskButton({
+			containerEl: this.containerEl,
+			label: this.plugin.i18n.translate("common.new"),
+			onClick: (event) => {
+				event.preventDefault();
+				event.stopPropagation();
+
+				void this.createFileForView("New Task");
+			},
+		});
+
+		if (result === "missing-bases-view") {
 			this.logger.debug("No .bases-view element found", {
 				category: "provider",
 				operation: "inject-new-task-button",
 			});
 			return;
 		}
-
-		// The toolbar is a sibling of .bases-view, not a child
-		// Look in the parent container for the toolbar
-		const parentEl = basesViewEl.parentElement;
-		if (!parentEl) {
+		if (result === "missing-parent") {
 			this.logger.debug("No parent element found for Bases view", {
 				category: "provider",
 				operation: "inject-new-task-button",
 			});
 			return;
 		}
-
-		// Mark parent as having an active TaskNotes view (controls visibility via CSS)
-		parentEl.classList.add("tasknotes-view-active");
-
-		const toolbarEl = parentEl.querySelector(".bases-toolbar");
-		if (!toolbarEl) {
+		if (result === "missing-toolbar") {
 			this.logger.debug("No .bases-toolbar element found", {
 				category: "provider",
 				operation: "inject-new-task-button",
 			});
 			return;
-		}
-
-		// Replace stale buttons left behind by prior plugin reloads.
-		toolbarEl.querySelector(".tn-bases-new-task-btn")?.remove();
-
-		// Use correct document for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-
-		// Create "New Task" button matching Bases' text-icon-button style
-		const newTaskBtn = doc.createElement("div");
-		newTaskBtn.className = "bases-toolbar-item tn-bases-new-task-btn";
-
-		const innerBtn = doc.createElement("button");
-		innerBtn.className = "text-icon-button";
-		innerBtn.type = "button";
-		innerBtn.setAttribute("aria-label", this.plugin.i18n.translate("common.new"));
-
-		// Add icon
-		const iconSpan = doc.createElement("span");
-		iconSpan.className = "text-button-icon";
-		setIcon(iconSpan, "plus");
-		innerBtn.appendChild(iconSpan);
-
-		// Add label
-		const labelSpan = doc.createElement("span");
-		labelSpan.className = "text-button-label";
-		labelSpan.textContent = this.plugin.i18n.translate("common.new");
-		innerBtn.appendChild(labelSpan);
-
-		// Find the original "New" button position and insert our button there
-		const originalNewBtn = toolbarEl.querySelector<HTMLElement>(".bases-toolbar-new-item-menu");
-
-		newTaskBtn.appendChild(innerBtn);
-
-		newTaskBtn.addEventListener("click", (event) => {
-			event.preventDefault();
-			event.stopPropagation();
-
-			void this.createFileForView("New Task");
-		});
-
-		if (originalNewBtn) {
-			// Insert before the original (which will be hidden by CSS)
-			originalNewBtn.before(newTaskBtn);
-		} else {
-			// Fallback: append to end of toolbar
-			toolbarEl.appendChild(newTaskBtn);
 		}
 
 		this.logger.debug("Injected New Task button into toolbar", {
