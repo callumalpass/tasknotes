@@ -1884,19 +1884,31 @@ export class CalendarView extends BasesViewBase {
 	 * Use this when task data has changed and calendar needs to reflect updates immediately.
 	 * Bases' cache may be stale, so we read directly from metadataCache.
 	 */
-	private async refreshCalendarWithFreshData(): Promise<void> {
+	private async refreshCalendarWithFreshData(updatedTask?: TaskInfo): Promise<void> {
 		if (!this.calendar) return;
 
 		try {
 			// Refresh each task from Obsidian's metadata cache (bypasses Bases' stale cache)
 			const refreshedTasks: TaskInfo[] = [];
+			let updatedTaskIncluded = false;
 			for (const task of this.currentTasks) {
-				const freshTask = this.plugin.cacheManager.getCachedTaskInfoSync(task.path);
+				const freshTask =
+					updatedTask?.path === task.path
+						? updatedTask
+						: this.plugin.cacheManager.getCachedTaskInfoSync(task.path);
 				if (freshTask) {
 					// Preserve basesData reference for formula access
-					freshTask.basesData = task.basesData;
-					refreshedTasks.push(freshTask);
+					const taskWithBasesData = { ...freshTask, basesData: task.basesData };
+					if (updatedTask?.path === freshTask.path) {
+						updatedTaskIncluded = true;
+					}
+					refreshedTasks.push(taskWithBasesData);
 				}
+			}
+			if (updatedTask?.path && !updatedTaskIncluded && !updatedTask.archived) {
+				refreshedTasks.push(
+					this.plugin.cacheManager.getCachedTaskInfoSync(updatedTask.path) ?? updatedTask
+				);
 			}
 			this.currentTasks = refreshedTasks;
 			this.calendar.refetchEvents();
@@ -1907,6 +1919,13 @@ export class CalendarView extends BasesViewBase {
 				error: error,
 			});
 		}
+	}
+
+	private async refreshAfterExpectedCalendarTaskWrite(updatedTask: TaskInfo): Promise<void> {
+		if (!this._expectingImmediateUpdate) return;
+
+		this._expectingImmediateUpdate = false;
+		await this.refreshCalendarWithFreshData(updatedTask);
 	}
 
 	private async handleEventClick(info: EventClickArg): Promise<void> {
@@ -2163,9 +2182,10 @@ export class CalendarView extends BasesViewBase {
 			}
 			if (plan.kind === "update-time-entries") {
 				try {
-					await this.plugin.taskService.updateTask(taskInfo, {
+					const updatedTask = await this.plugin.taskService.updateTask(taskInfo, {
 						timeEntries: plan.timeEntries,
 					});
+					await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
 				} catch (error) {
 					tasknotesLogger.error("Error updating time entry:", {
 						category: "provider",
@@ -2199,11 +2219,12 @@ export class CalendarView extends BasesViewBase {
 					return;
 				}
 				if (plan.kind === "update-date-property") {
-					await this.plugin.taskService.updateProperty(
+					const updatedTask = await this.plugin.taskService.updateProperty(
 						taskInfo,
 						plan.property,
 						plan.value
 					);
+					await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
 				} else if (plan.kind === "update-scheduled-due-span") {
 					const spanFile = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
 					if (spanFile instanceof TFile) {
@@ -2217,6 +2238,11 @@ export class CalendarView extends BasesViewBase {
 								if (plan.due) frontmatter[dueField] = plan.due;
 							}
 						);
+						await this.refreshAfterExpectedCalendarTaskWrite({
+							...taskInfo,
+							scheduled: plan.scheduled ?? taskInfo.scheduled,
+							due: plan.due ?? taskInfo.due,
+						});
 					}
 				}
 			} catch (error) {
@@ -2259,9 +2285,10 @@ export class CalendarView extends BasesViewBase {
 			}
 			if (plan.kind === "update-time-entries") {
 				try {
-					await this.plugin.taskService.updateTask(taskInfo, {
+					const updatedTask = await this.plugin.taskService.updateTask(taskInfo, {
 						timeEntries: plan.timeEntries,
 					});
+					await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
 				} catch (error) {
 					tasknotesLogger.error("Error resizing time entry:", {
 						category: "provider",
@@ -2375,7 +2402,12 @@ export class CalendarView extends BasesViewBase {
 
 		// Handle task resize (update time estimate)
 		try {
-			await this.plugin.taskService.updateProperty(taskInfo, "timeEstimate", plan.value);
+			const updatedTask = await this.plugin.taskService.updateProperty(
+				taskInfo,
+				"timeEstimate",
+				plan.value
+			);
+			await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][CalendarView] Error updating task duration:", {
 				category: "provider",
@@ -2408,7 +2440,10 @@ export class CalendarView extends BasesViewBase {
 
 					const modal = new TaskCreationModal(this.plugin.app, this.plugin, {
 						prePopulatedValues: values,
-						onTaskCreated: () => this.expectImmediateUpdate(),
+						onTaskCreated: (task) => {
+							this.expectImmediateUpdate();
+							void this.refreshAfterExpectedCalendarTaskWrite(task);
+						},
 					});
 					modal.open();
 				});
@@ -2759,8 +2794,11 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
-		// Use shorter debounce for task updates - these are often from user interactions
-		// that expect quicker feedback than external file changes
+		if (this._expectingImmediateUpdate) {
+			await this.refreshAfterExpectedCalendarTaskWrite(task);
+			return;
+		}
+
 		this.debouncedRefresh();
 	}
 
