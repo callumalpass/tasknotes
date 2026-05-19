@@ -27,6 +27,7 @@ Example:
 ## Fixed
 
 - (#1901) Fixed the task context menu creating an `undefined` property when adding or removing tags.
+  - Hardened task property updates so invalid frontmatter property names are rejected instead of written.
   - Thanks to @mgrecar for reporting the issue.
 - (#1902) Fixed Markdown-style project links in task frontmatter not appearing as subtasks on project pages.
   - Thanks to @minchinweb for reporting the issue.

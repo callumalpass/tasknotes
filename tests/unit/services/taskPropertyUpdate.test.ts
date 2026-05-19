@@ -145,6 +145,29 @@ describe("taskPropertyUpdate", () => {
 		expect(frontmatter.dateModified).toBe("2026-05-19T06:40:00+10:00");
 	});
 
+	it("refuses to write invalid frontmatter field names", () => {
+		const frontmatter: Record<string, unknown> = {};
+
+		expect(() =>
+			applyTaskPropertyFrontmatterChange({
+				frontmatter,
+				property: "priority",
+				fieldName: "",
+				rawValue: "high",
+				normalizedValue: "high",
+				dateModified: "2026-05-19T06:40:00+10:00",
+				dateModifiedField: "dateModified",
+				completedDateField: "completedDate",
+				isRecurring: false,
+				normalizeStatusValue: String,
+				isCompletedStatus: () => false,
+				currentDateString: "2026-05-19",
+			})
+		).toThrow(/invalid frontmatter field name/);
+
+		expect(frontmatter).toEqual({});
+	});
+
 	it("removes completedDate when status becomes incomplete", () => {
 		const frontmatter: Record<string, unknown> = {
 			completedDate: "2026-05-18",

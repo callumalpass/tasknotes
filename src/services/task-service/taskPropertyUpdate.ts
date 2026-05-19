@@ -1,5 +1,6 @@
 import type { TaskDependency, TaskInfo } from "../../types";
 import { normalizeDependencyEntry, serializeDependencies } from "../../utils/dependencyUtils";
+import { assertValidFrontmatterFieldName } from "./taskPropertyFrontmatterField";
 
 export interface TaskPropertyUpdatePlan {
 	updatedTask: TaskInfo;
@@ -132,31 +133,44 @@ export function applyTaskPropertyFrontmatterChange({
 	isCompletedStatus,
 	currentDateString,
 }: ApplyTaskPropertyFrontmatterChangeInput): void {
+	const resolvedFieldName = assertValidFrontmatterFieldName(
+		fieldName,
+		`task property ${String(property)}`
+	);
+	const resolvedDateModifiedField = assertValidFrontmatterFieldName(
+		dateModifiedField,
+		"dateModified field mapping"
+	);
+	const resolvedCompletedDateField = assertValidFrontmatterFieldName(
+		completedDateField,
+		"completedDate field mapping"
+	);
+
 	if (property === "status") {
 		const normalizedStatus = normalizeStatusValue(normalizedValue);
-		frontmatter[fieldName] = coerceStatusFrontmatterValue(normalizedStatus);
+		frontmatter[resolvedFieldName] = coerceStatusFrontmatterValue(normalizedStatus);
 		updateCompletedDateFrontmatter(
 			frontmatter,
 			normalizedStatus,
 			isRecurring,
-			completedDateField,
+			resolvedCompletedDateField,
 			isCompletedStatus,
 			currentDateString
 		);
 	} else if ((property === "due" || property === "scheduled") && !rawValue) {
-		delete frontmatter[fieldName];
+		delete frontmatter[resolvedFieldName];
 	} else if (property === "blockedBy") {
 		const dependencies = Array.isArray(normalizedValue)
 			? (normalizedValue as TaskDependency[])
 			: [];
 		if (dependencies.length > 0) {
-			frontmatter[fieldName] = serializeDependencies(dependencies);
+			frontmatter[resolvedFieldName] = serializeDependencies(dependencies);
 		} else {
-			delete frontmatter[fieldName];
+			delete frontmatter[resolvedFieldName];
 		}
 	} else {
-		frontmatter[fieldName] = normalizedValue;
+		frontmatter[resolvedFieldName] = normalizedValue;
 	}
 
-	frontmatter[dateModifiedField] = dateModified;
+	frontmatter[resolvedDateModifiedField] = dateModified;
 }
