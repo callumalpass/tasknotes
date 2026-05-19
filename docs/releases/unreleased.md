@@ -23,3 +23,9 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1904) Fixed long tags in task cards wrapping instead of forcing horizontal scrolling in TaskNotes Bases views and note cards
+  - Long tag pills can now wrap across lines and break within very long tag names on narrow screens
+  - Thanks to @3zra47 for reporting
