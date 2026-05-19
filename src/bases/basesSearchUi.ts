@@ -1,3 +1,52 @@
+import { SearchBox } from "./components/SearchBox";
+import { TaskSearchFilter } from "./TaskSearchFilter";
+
+export type BasesSearchControls = {
+	searchContainer: HTMLElement;
+	searchBox: SearchBox;
+	searchFilter: TaskSearchFilter;
+};
+
+export type CreateBasesSearchControlsOptions = {
+	container: HTMLElement;
+	visibleProperties: readonly string[];
+	currentSearchTerm: string;
+	onSearch: (term: string) => void;
+	debounceMs?: number;
+};
+
+export function createBasesSearchControls({
+	container,
+	visibleProperties,
+	currentSearchTerm,
+	onSearch,
+	debounceMs = 300,
+}: CreateBasesSearchControlsOptions): BasesSearchControls {
+	const doc = container.ownerDocument;
+	const searchContainer = doc.createElement("div");
+	searchContainer.className = "tn-search-container";
+
+	if (container.firstChild) {
+		container.insertBefore(searchContainer, container.firstChild);
+	} else {
+		container.appendChild(searchContainer);
+	}
+
+	const searchFilter = new TaskSearchFilter([...visibleProperties]);
+	const searchBox = new SearchBox(searchContainer, onSearch, debounceMs);
+	searchBox.render();
+
+	if (currentSearchTerm) {
+		searchBox.setValue(currentSearchTerm);
+	}
+
+	return {
+		searchContainer,
+		searchBox,
+		searchFilter,
+	};
+}
+
 export function isBasesSearchWithNoResults(
 	searchTerm: string,
 	filteredCount: number,

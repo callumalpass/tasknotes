@@ -41,6 +41,7 @@ import {
 	buildBasesVisiblePropertyLabels,
 } from "./basesVisibleProperties";
 import {
+	createBasesSearchControls,
 	isBasesSearchWithNoResults,
 	renderBasesSearchNoResults,
 } from "./basesSearchUi";
@@ -656,22 +657,6 @@ export abstract class BasesViewBase extends Component {
 			return;
 		}
 
-		// Use correct document for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-
-		// Create search container
-		const searchContainer = doc.createElement("div");
-		searchContainer.className = "tn-search-container";
-
-		// Insert search container at the top of the container so it appears above
-		// the main items/content (e.g., the task list). This keeps the search box
-		// visible while the list itself can scroll independently.
-		if (container.firstChild) {
-			container.insertBefore(searchContainer, container.firstChild);
-		} else {
-			container.appendChild(searchContainer);
-		}
-
 		// Initialize search filter with visible properties (if available)
 		// Config might not be available yet during initial setup
 		let visibleProperties: string[] = [];
@@ -686,20 +671,14 @@ export abstract class BasesViewBase extends Component {
 				error: e,
 			});
 		}
-		this.searchFilter = new TaskSearchFilter(visibleProperties);
-
-		// Initialize search box
-		this.searchBox = new SearchBox(
-			searchContainer,
-			(term) => this.handleSearch(term),
-			300 // 300ms debounce
-		);
-		this.searchBox.render();
-
-		// Restore search term if view is being re-initialized with existing search
-		if (this.currentSearchTerm) {
-			this.searchBox.setValue(this.currentSearchTerm);
-		}
+		const searchControls = createBasesSearchControls({
+			container,
+			visibleProperties,
+			currentSearchTerm: this.currentSearchTerm,
+			onSearch: (term) => this.handleSearch(term),
+		});
+		this.searchFilter = searchControls.searchFilter;
+		this.searchBox = searchControls.searchBox;
 
 		// Register cleanup using Component lifecycle
 		this.register(() => {

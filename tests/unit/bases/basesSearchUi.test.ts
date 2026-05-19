@@ -1,4 +1,5 @@
 import {
+	createBasesSearchControls,
 	isBasesSearchWithNoResults,
 	renderBasesSearchNoResults,
 } from "../../../src/bases/basesSearchUi";
@@ -24,5 +25,37 @@ describe("Bases search UI helpers", () => {
 			"Try a different search term or clear the search"
 		);
 		expect(container.querySelector("client")).toBeNull();
+	});
+
+	it("creates search controls at the top of the container and restores the term", () => {
+		const container = document.createElement("div");
+		const existingContent = document.createElement("section");
+		container.appendChild(existingContent);
+		const onSearch = jest.fn();
+
+		const controls = createBasesSearchControls({
+			container,
+			visibleProperties: ["client"],
+			currentSearchTerm: "alpha",
+			onSearch,
+			debounceMs: 0,
+		});
+
+		expect(container.firstElementChild).toBe(controls.searchContainer);
+		expect(controls.searchContainer.nextElementSibling).toBe(existingContent);
+		expect(controls.searchBox.getValue()).toBe("alpha");
+		expect(
+			controls.searchFilter.filterTasks(
+				[
+					{
+						title: "Visible task",
+						status: "open",
+						priority: "normal",
+						customProperties: { client: "Alpha" },
+					} as never,
+				],
+				"alpha"
+			)
+		).toHaveLength(1);
 	});
 });
