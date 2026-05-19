@@ -162,6 +162,8 @@ Refactor rule:
   `basesToolbar`
 - keep shared Bases-to-TaskCard visible property mapping and display-label
   override assembly behind `basesVisibleProperties`
+- keep shared Bases search no-results state and rendering behind
+  `basesSearchUi`
 
 Current adapter seams include:
 
@@ -180,6 +182,7 @@ Current adapter seams include:
 - shared Bases update/delete event relevance planning
 - shared Bases toolbar New button integration
 - shared Bases visible-property and display-label mapping
+- shared Bases search no-results rendering
 - Bases-backed task creation assembly
 - TaskCard property access
 - TaskCard relationship expansion rendering

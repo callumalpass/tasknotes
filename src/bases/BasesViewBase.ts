@@ -41,6 +41,10 @@ import {
 	buildBasesVisiblePropertyLabels,
 } from "./basesVisibleProperties";
 import {
+	isBasesSearchWithNoResults,
+	renderBasesSearchNoResults,
+} from "./basesSearchUi";
+import {
 	getVisibleTaskPathsFromBasesRoot,
 	handleBasesSelectionClick,
 	handleBasesSelectionKeyDown,
@@ -856,7 +860,11 @@ export abstract class BasesViewBase extends Component {
 	 * Returns true if search is active and produced no matches.
 	 */
 	protected isSearchWithNoResults(filteredTasks: TaskInfo[], originalCount: number): boolean {
-		return this.currentSearchTerm.length > 0 && filteredTasks.length === 0 && originalCount > 0;
+		return isBasesSearchWithNoResults(
+			this.currentSearchTerm,
+			filteredTasks.length,
+			originalCount
+		);
 	}
 
 	/**
@@ -864,23 +872,7 @@ export abstract class BasesViewBase extends Component {
 	 * Call this when search produces no matches.
 	 */
 	protected renderSearchNoResults(container: HTMLElement): void {
-		// Use correct document for pop-out window support
-		const doc = container.ownerDocument;
-
-		const noResultsEl = doc.createElement("div");
-		noResultsEl.className = "tn-search-no-results";
-
-		const textEl = doc.createElement("div");
-		textEl.className = "tn-search-no-results__text";
-		textEl.textContent = `No tasks match "${this.currentSearchTerm}"`;
-
-		const hintEl = doc.createElement("div");
-		hintEl.className = "tn-search-no-results__hint";
-		hintEl.textContent = "Try a different search term or clear the search";
-
-		noResultsEl.appendChild(textEl);
-		noResultsEl.appendChild(hintEl);
-		container.appendChild(noResultsEl);
+		renderBasesSearchNoResults(container, this.currentSearchTerm);
 	}
 
 	// =====================

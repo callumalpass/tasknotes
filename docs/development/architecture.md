@@ -204,6 +204,8 @@ Current examples:
 - `src/bases/basesVisibleProperties.ts` owns shared Bases-to-TaskCard visible
   property mapping, fallback default-property selection, and display-label
   override assembly.
+- `src/bases/basesSearchUi.ts` owns shared Bases search empty-state detection
+  and no-results rendering.
 - `src/bases/basesSelectionUi.ts` owns shared Bases selection-mode DOM state,
   selected-card classes, keyboard and click selection decisions, selection
   indicator behavior, and default visible-task path extraction behind a narrow
