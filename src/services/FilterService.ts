@@ -24,7 +24,6 @@ import {
 	isSameDateSafe,
 	startOfDayForDateString,
 	isToday as isTodayUtil,
-	isBeforeDateTimeAware,
 	getDatePart,
 	formatDateForStorage,
 	parseDateToUTC,
@@ -33,8 +32,6 @@ import {
 import { TranslationKey } from "../i18n";
 import { FilterQueryPlanner } from "./filter-service/FilterQueryPlanner";
 import {
-	compareUserFieldValues,
-	findUserFieldById,
 	findUserFieldByIdOrKey,
 	getHierarchicalUserFieldGroupValues,
 } from "./filter-service/userFieldValues";
@@ -50,6 +47,10 @@ import {
 	groupFilterTasks,
 	type FilterTaskGroupingContext,
 } from "./filter-service/filterTaskGrouping";
+import {
+	sortFilterTasks,
+	type FilterTaskSortingContext,
+} from "./filter-service/filterTaskSorting";
 import type { TaskNotesSettings } from "../types/settings";
 
 type FilterServiceSettings = Pick<
@@ -539,178 +540,7 @@ export class FilterService extends EventEmitter {
 		sortKey: TaskSortKey,
 		direction: SortDirection
 	): TaskInfo[] {
-		return tasks.sort((a, b) => {
-			let comparison = 0;
-
-			// Primary sort criteria
-			if (typeof sortKey === "string" && sortKey.startsWith("user:")) {
-				comparison = this.compareByUserField(a, b, sortKey as `user:${string}`);
-			} else {
-				switch (sortKey) {
-					case "due":
-						comparison = this.compareDates(a.due, b.due);
-						break;
-					case "scheduled":
-						comparison = this.compareDates(a.scheduled, b.scheduled);
-						break;
-					case "priority":
-						comparison = this.comparePriorityWeights(a.priority, b.priority);
-						break;
-					case "status":
-						comparison = this.compareStatuses(a.status, b.status);
-						break;
-					case "title":
-						comparison = a.title.localeCompare(b.title);
-						break;
-					case "dateCreated":
-						comparison = this.compareDates(a.dateCreated, b.dateCreated);
-						break;
-					case "completedDate":
-						comparison = this.compareDates(a.completedDate, b.completedDate);
-						break;
-					case "tags":
-						comparison = this.compareTags(a.tags, b.tags);
-						break;
-				}
-			}
-
-			if (comparison !== 0) {
-				return direction === "desc" ? -comparison : comparison;
-			}
-
-			// If primary criteria are equal, apply natural task fallback sorting.
-			return this.applyFallbackSorting(a, b, sortKey);
-		});
-	}
-
-	/**
-	 * Compare due dates with proper null handling using time-aware utilities
-	 * Supports both date-only (YYYY-MM-DD) and datetime (YYYY-MM-DDTHH:mm) formats
-	 */
-	private compareDates(dateA?: string, dateB?: string): number {
-		if (!dateA && !dateB) return 0;
-		if (!dateA) return 1; // No due date sorts last
-		if (!dateB) return -1;
-
-		try {
-			// Use time-aware comparison for precise sorting
-			if (isBeforeDateTimeAware(dateA, dateB)) {
-				return -1;
-			} else if (isBeforeDateTimeAware(dateB, dateA)) {
-				return 1;
-			} else {
-				return 0;
-			}
-		} catch (error) {
-			console.error("Error comparing dates time-aware:", { dateA, dateB, error });
-			// Fallback to string comparison
-			return dateA.localeCompare(dateB);
-		}
-	}
-
-	/**
-	 * Compare priorities using PriorityManager weights
-	 */
-	private comparePriorities(priorityA: string, priorityB: string): number {
-		const weightA = this.priorityManager.getPriorityWeight(priorityA);
-		const weightB = this.priorityManager.getPriorityWeight(priorityB);
-
-		// Higher weight = higher priority, so higher priorities come first as a fallback.
-		return weightB - weightA;
-	}
-
-	private comparePriorityWeights(priorityA: string, priorityB: string): number {
-		const weightA = this.priorityManager.getPriorityWeight(priorityA);
-		const weightB = this.priorityManager.getPriorityWeight(priorityB);
-
-		return weightA - weightB;
-	}
-
-	/**
-	 * Compare statuses using StatusManager order
-	 */
-	private compareStatuses(statusA: string, statusB: string): number {
-		const orderA = this.statusManager.getStatusOrder(statusA);
-		const orderB = this.statusManager.getStatusOrder(statusB);
-
-		// Lower order = higher priority in status sequence
-		return orderA - orderB;
-	}
-
-	/**
-	 * Compare two task tag arrays for sorting purposes
-	 * Sort by the first tag alphabetically, tasks with no tags go last
-	 */
-	private compareTags(tagsA: string[] | undefined, tagsB: string[] | undefined): number {
-		const normalizedTagsA = tagsA && tagsA.length > 0 ? tagsA : [];
-		const normalizedTagsB = tagsB && tagsB.length > 0 ? tagsB : [];
-
-		// If neither has tags, they're equal
-		if (normalizedTagsA.length === 0 && normalizedTagsB.length === 0) {
-			return 0;
-		}
-
-		// Tasks with no tags sort last
-		if (normalizedTagsA.length === 0) return 1;
-		if (normalizedTagsB.length === 0) return -1;
-
-		// Sort by the first tag alphabetically (case-insensitive)
-		const firstTagA = normalizedTagsA[0].toLowerCase();
-		const firstTagB = normalizedTagsB[0].toLowerCase();
-
-		return firstTagA.localeCompare(firstTagB);
-	}
-
-	/**
-	 * Apply fallback sorting criteria when primary sort yields equal values
-	 * Order: due date → scheduled date → priority → title
-	 */
-	private applyFallbackSorting(a: TaskInfo, b: TaskInfo, primarySortKey: TaskSortKey): number {
-		const fallbackOrder: TaskSortKey[] = ["due", "scheduled", "priority", "title"];
-
-		// Remove the primary sort key from fallbacks to avoid redundant comparison
-		const fallbacks = fallbackOrder.filter((key) => key !== primarySortKey);
-
-		for (const fallbackKey of fallbacks) {
-			let comparison = 0;
-
-			switch (fallbackKey) {
-				case "scheduled":
-					comparison = this.compareDates(a.scheduled, b.scheduled);
-					break;
-				case "due":
-					comparison = this.compareDates(a.due, b.due);
-					break;
-				case "priority":
-					comparison = this.comparePriorities(a.priority, b.priority);
-					break;
-				case "title":
-					comparison = a.title.localeCompare(b.title);
-					break;
-			}
-
-			// Return first non-zero comparison
-			if (comparison !== 0) {
-				return comparison;
-			}
-		}
-
-		// All criteria equal
-		return 0;
-	}
-
-	/** Compare by dynamic user field for sorting */
-	private compareByUserField(a: TaskInfo, b: TaskInfo, sortKey: `user:${string}`): number {
-		const fieldId = sortKey.slice(5);
-		const userFields = this.runtime?.settings?.userFields || [];
-		const field = findUserFieldById(userFields, fieldId);
-		if (!field) return 0;
-
-		return compareUserFieldValues(
-			field,
-			this.getUserFieldRawValue(a, field.key),
-			this.getUserFieldRawValue(b, field.key)
-		);
+		return sortFilterTasks(tasks, sortKey, direction, this.createTaskSortingContext());
 	}
 
 	private createTaskGroupingContext(): FilterTaskGroupingContext {
@@ -728,6 +558,16 @@ export class FilterService extends EventEmitter {
 				this.resolveProjectToAbsolutePath(projectValue),
 			translate: (key, fallback, vars) => this.translate(key, fallback, vars),
 			getLocale: () => this.getLocale(),
+		};
+	}
+
+	private createTaskSortingContext(): FilterTaskSortingContext {
+		return {
+			userFields: this.runtime?.settings?.userFields || [],
+			getPriorityWeight: (priority) => this.priorityManager.getPriorityWeight(priority),
+			getStatusOrder: (status) => this.statusManager.getStatusOrder(status),
+			getUserFieldRawValue: (task, fieldKey) =>
+				this.getUserFieldRawValue(task, fieldKey),
 		};
 	}
 

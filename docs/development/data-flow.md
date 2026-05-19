@@ -223,13 +223,18 @@ navigation candidates, and navigation-state snapshots belong in
 previews, context menus, and refresh orchestration.
 
 Agenda date sections should ask `agendaTaskSelection` whether a task belongs to
-a date or overdue section. `FilterService` keeps task loading, query filtering,
-and sorting, while recurrence expansion, completed-overdue hiding, and
+a date or overdue section. `FilterService` keeps task loading and query
+filtering, while recurrence expansion, completed-overdue hiding, and
 due/scheduled date eligibility live in the helper.
 
+Task sorting should run through `filterTaskSorting`. `FilterService` keeps
+metadata-cache access and orchestration while the helper owns sort-key
+comparison, time-aware date ordering, natural fallback ordering, tag ordering,
+and user-field sort comparison.
+
 Filter predicates should ask `filterPredicateEvaluation` whether a task matches
-a query node. `FilterService` keeps cache reads, query planning, sorting,
-grouping, labels, and option discovery while the helper owns recursive group
+a query node. `FilterService` keeps cache reads, query planning, grouping,
+labels, and option discovery while the helper owns recursive group
 evaluation, dynamic user-field coercion, project matching, subtask lookup, and
 completion-state semantics.
 
@@ -367,6 +372,9 @@ Refactor rule:
   and group header ordering belong in `filterTaskGrouping`; `FilterService`
   injects translation, locale, status, priority, project-resolution, and
   frontmatter-value access
+- task sort-key comparison, time-aware date ordering, fallback ordering, tag
+  ordering, and user-field sort comparison belong in `filterTaskSorting`;
+  `FilterService` injects status, priority, and frontmatter-value access
 - DOM functions should wire controls, render values, and call services
 
 This keeps DOM tests focused on interaction while pure unit tests cover state

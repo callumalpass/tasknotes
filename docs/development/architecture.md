@@ -344,6 +344,9 @@ Current extracted examples:
   project/tag fan-out, date bucket labels, completed-date labels, and group
   header ordering behind injected translation, locale, status, priority,
   project-resolution, and frontmatter-value callbacks.
+- `src/services/filter-service/filterTaskSorting.ts` owns task sorting, date
+  comparison, natural fallback ordering, tag ordering, and user-field sort
+  comparison behind injected status, priority, and frontmatter-value callbacks.
 
 ### Bases Integration
 
