@@ -138,10 +138,28 @@ export function findRelationshipsBottomAnchor(container: HTMLElement): HTMLEleme
 	return children.length > 0 ? children[children.length - 1] : null;
 }
 
+function parsePixelValue(value: string): number | null {
+	const parsed = Number.parseFloat(value);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getRelationshipsWidgetDefaultMarginTop(widget: HTMLElement): number {
+	const ownerWindow = widget.ownerDocument.defaultView ?? window;
+	const computedStyle = ownerWindow.getComputedStyle(widget);
+	const marginTop = parsePixelValue(computedStyle.marginTop);
+	if (marginTop !== null) {
+		return marginTop;
+	}
+
+	const fontSize = parsePixelValue(computedStyle.fontSize);
+	return fontSize !== null ? fontSize * 1.5 : 24;
+}
+
 export function applyRelationshipsBottomOffset(container: HTMLElement, widget: HTMLElement): void {
+	widget.style.removeProperty("--tn-relationships-widget-margin-top");
+
 	const cmContent = container.querySelector<HTMLElement>(".cm-content");
 	if (!cmContent) {
-		widget.style.removeProperty("--tn-relationships-widget-margin-top");
 		return;
 	}
 
@@ -151,7 +169,6 @@ export function applyRelationshipsBottomOffset(container: HTMLElement, widget: H
 	const lastLine = lines.length > 0 ? lines[lines.length - 1] : null;
 	const contentContainer = cmContent.closest<HTMLElement>(".cm-contentContainer");
 	if (!lastLine || !contentContainer) {
-		widget.style.removeProperty("--tn-relationships-widget-margin-top");
 		return;
 	}
 
@@ -163,9 +180,12 @@ export function applyRelationshipsBottomOffset(container: HTMLElement, widget: H
 		)
 	);
 	if (spacerGap > 0) {
-		widget.style.setProperty("--tn-relationships-widget-margin-top", `-${spacerGap}px`);
-	} else {
-		widget.style.removeProperty("--tn-relationships-widget-margin-top");
+		const defaultMarginTop = getRelationshipsWidgetDefaultMarginTop(widget);
+		const adjustedMarginTop = Math.round(defaultMarginTop - spacerGap);
+		widget.style.setProperty(
+			"--tn-relationships-widget-margin-top",
+			`${adjustedMarginTop}px`
+		);
 	}
 }
 
@@ -174,12 +194,12 @@ export function insertRelationshipsWidgetAtBottom(
 	widget: HTMLElement
 ): void {
 	const anchor = findRelationshipsBottomAnchor(container);
-	applyRelationshipsBottomOffset(container, widget);
 	if (anchor) {
 		insertAfterElement(anchor, widget);
 	} else {
 		container.appendChild(widget);
 	}
+	applyRelationshipsBottomOffset(container, widget);
 }
 
 /**
@@ -559,6 +579,7 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 				}
 			} else {
 				insertRelationshipsWidgetAtBottom(targetContainer, widget);
+				this.scheduleBottomOffsetRefresh();
 			}
 		} catch (error) {
 			console.error("[TaskNotes] Error injecting relationships widget:", error);

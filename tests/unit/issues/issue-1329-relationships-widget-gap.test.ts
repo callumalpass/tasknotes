@@ -31,7 +31,7 @@ function el(className: string): HTMLElement {
 }
 
 describe("Issue #1329: relationships widget bottom placement", () => {
-	it("anchors live preview widgets after CodeMirror content and offsets editor spacer gap", () => {
+	it("anchors live preview widgets after CodeMirror content and preserves normal spacing", () => {
 		const sizer = el("cm-sizer");
 		const contentContainer = el("cm-contentContainer");
 		const cmContent = el("cm-content cm-lineWrapping");
@@ -39,6 +39,7 @@ describe("Issue #1329: relationships widget bottom placement", () => {
 		const lastLine = el("cm-line");
 		const backlinks = el("embedded-backlinks");
 		const widget = el("tasknotes-relationships-widget");
+		widget.style.marginTop = "24px";
 
 		cmContent.append(firstLine, lastLine);
 		contentContainer.append(cmContent);
@@ -59,7 +60,7 @@ describe("Issue #1329: relationships widget bottom placement", () => {
 		expect(widget.previousElementSibling).toBe(contentContainer);
 		expect(widget.nextElementSibling).toBe(backlinks);
 		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe(
-			"-124px"
+			"-100px"
 		);
 	});
 
@@ -70,6 +71,7 @@ describe("Issue #1329: relationships widget bottom placement", () => {
 		const lastLine = el("cm-line");
 		const widget = el("tasknotes-relationships-widget");
 		let lastLineBottom = 100;
+		widget.style.marginTop = "24px";
 
 		cmContent.append(lastLine);
 		contentContainer.append(cmContent);
@@ -84,13 +86,13 @@ describe("Issue #1329: relationships widget bottom placement", () => {
 
 		applyRelationshipsBottomOffset(sizer, widget);
 		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe(
-			"-124px"
+			"-100px"
 		);
 
 		lastLineBottom = 210;
 		applyRelationshipsBottomOffset(sizer, widget);
 		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe(
-			"-14px"
+			"10px"
 		);
 
 		lastLineBottom = 224;
