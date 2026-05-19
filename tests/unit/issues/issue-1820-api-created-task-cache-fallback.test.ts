@@ -2,7 +2,7 @@ import type { App } from "obsidian";
 import { App as MockApp, MockObsidian } from "../../__mocks__/obsidian";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING, DEFAULT_SETTINGS } from "../../../src/settings/defaults";
-import type { TaskInfo } from "../../../src/types";
+import { EVENT_TASK_UPDATED, type TaskInfo } from "../../../src/types";
 import { TaskManager } from "../../../src/utils/TaskManager";
 
 const createMockApp = (): App => new MockApp() as unknown as App;
@@ -109,5 +109,100 @@ describe("Issue #1820: API-created task cache fallback", () => {
 			scheduled: "2026-05-20",
 			dateModified: "2026-05-18T09:05:00.000Z",
 		});
+	});
+
+	it("keeps just-written task data for synchronous cache reads while native metadata is stale", () => {
+		const path = "TaskNotes/Tasks/api-created.md";
+		MockObsidian.createTestFile(
+			path,
+			"---\ntitle: API-created task\ntags:\n  - task\nscheduled: 2026-05-18\ndateModified: 2026-05-18T09:00:00.000Z\n---\n"
+		);
+		app.metadataCache.setCache(path, {
+			frontmatter: {
+				title: "API-created task",
+				status: "open",
+				priority: "normal",
+				tags: ["task"],
+				scheduled: "2026-05-18",
+				dateModified: "2026-05-18T09:00:00.000Z",
+			},
+		});
+
+		manager.updateTaskInfoInCache(
+			path,
+			createTask({
+				path,
+				scheduled: "2026-05-20",
+				dateModified: "2026-05-18T09:05:00.000Z",
+			})
+		);
+
+		expect(manager.getCachedTaskInfoSync(path)).toMatchObject({
+			path,
+			scheduled: "2026-05-20",
+			dateModified: "2026-05-18T09:05:00.000Z",
+		});
+	});
+
+	it("does not drop just-written task data when a stale metadata change event arrives", async () => {
+		jest.useFakeTimers();
+		try {
+			const path = "TaskNotes/Tasks/api-created.md";
+			MockObsidian.createTestFile(
+				path,
+				"---\ntitle: API-created task\ntags:\n  - task\nscheduled: 2026-05-20T10:00\ndateModified: 2026-05-18T09:05:00.000Z\n---\n"
+			);
+			app.metadataCache.setCache(path, {
+				frontmatter: {
+					title: "API-created task",
+					status: "open",
+					priority: "normal",
+					tags: ["task"],
+					scheduled: "2026-05-18",
+					dateModified: "2026-05-18T09:00:00.000Z",
+				},
+			});
+			manager.initialize();
+			const updates: TaskInfo[] = [];
+			manager.on(EVENT_TASK_UPDATED, (payload: { updatedTask?: TaskInfo }) => {
+				if (payload.updatedTask) {
+					updates.push(payload.updatedTask);
+				}
+			});
+
+			manager.updateTaskInfoInCache(
+				path,
+				createTask({
+					path,
+					scheduled: "2026-05-20T10:00",
+					dateModified: "2026-05-18T09:05:00.000Z",
+				})
+			);
+
+			app.metadataCache.setCache(path, {
+				frontmatter: {
+					title: "API-created task",
+					status: "open",
+					priority: "normal",
+					tags: ["task"],
+					scheduled: "2026-05-18",
+					dateModified: "2026-05-18T09:00:00.000Z",
+				},
+			});
+			jest.advanceTimersByTime(300);
+			await Promise.resolve();
+
+			await expect(manager.getTaskInfo(path)).resolves.toMatchObject({
+				path,
+				scheduled: "2026-05-20T10:00",
+				dateModified: "2026-05-18T09:05:00.000Z",
+			});
+			expect(updates[updates.length - 1]).toMatchObject({
+				path,
+				scheduled: "2026-05-20T10:00",
+			});
+		} finally {
+			jest.useRealTimers();
+		}
 	});
 });

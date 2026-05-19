@@ -56,7 +56,7 @@ describe("Bases task update listeners", () => {
 			onError: jest.fn(),
 		});
 
-		expect(handleTaskUpdate).toHaveBeenCalledWith(task);
+		expect(handleTaskUpdate).toHaveBeenCalledWith(task, "tasknotes-service");
 	});
 
 	it("refreshes and swaps cached paths for renamed tasks", async () => {
@@ -159,7 +159,7 @@ describe("Bases task update listeners", () => {
 		emitter.listeners.get(EVENT_TASK_DELETED)?.({ path: "TaskNotes/A.md" });
 		emitter.listeners.get("file-deleted")?.({ path: "TaskNotes/B.md" });
 
-		expect(handleTaskUpdate).toHaveBeenCalledWith(task);
+		expect(handleTaskUpdate).toHaveBeenCalledWith(task, "tasknotes-service");
 		expect(handleTaskDeleted).toHaveBeenCalledTimes(2);
 
 		cleanupBasesTaskUpdateListeners(emitter, refs);

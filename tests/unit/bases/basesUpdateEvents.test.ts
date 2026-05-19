@@ -20,6 +20,25 @@ describe("Bases update event helpers", () => {
 		).toEqual({
 			action: "handle-task",
 			task,
+			source: "tasknotes-service",
+		});
+	});
+
+	it("marks metadata-cache relevant updates so views can keep them debounced", () => {
+		const task = TaskFactory.createTask({
+			path: "TaskNotes/Visible.md",
+			title: "Visible",
+		});
+
+		expect(
+			planBasesTaskUpdatedEvent(
+				{ path: task.path, task, taskInfo: task, updatedTask: task },
+				new Set(["TaskNotes/Visible.md"])
+			)
+		).toEqual({
+			action: "handle-task",
+			task,
+			source: "metadata-cache",
 		});
 	});
 

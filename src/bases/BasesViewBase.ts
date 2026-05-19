@@ -65,6 +65,7 @@ import {
 	cleanupBasesTaskUpdateListeners,
 	registerBasesTaskUpdateListeners,
 } from "./basesTaskUpdateListeners";
+import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 type BasesEphemeralState = {
@@ -403,7 +404,7 @@ export abstract class BasesViewBase extends Component {
 			emitter: this.plugin.emitter,
 			isConnected: () => Boolean(this.rootElement?.isConnected),
 			relevantPathsCache: this.relevantPathsCache,
-			handleTaskUpdate: (task) => this.handleTaskUpdate(task),
+			handleTaskUpdate: (task, source) => this.handleTaskUpdate(task, source),
 			handleTaskDeleted: (eventData) => this.handleTaskDeletedEvent(eventData),
 			debouncedRefresh: () => this.debouncedRefresh(),
 			onError: (error) => {
@@ -899,7 +900,10 @@ export abstract class BasesViewBase extends Component {
 	 * Handle a single task update for selective rendering.
 	 * Subclasses can implement efficient updates or fall back to full refresh.
 	 */
-	protected abstract handleTaskUpdate(task: TaskInfo): Promise<void>;
+	protected abstract handleTaskUpdate(
+		task: TaskInfo,
+		source?: BasesTaskUpdateSource
+	): Promise<void>;
 
 	/**
 	 * The view type identifier (required by BasesView).

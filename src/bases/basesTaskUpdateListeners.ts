@@ -1,7 +1,10 @@
 import type { EventRef } from "obsidian";
 import type { TaskInfo } from "../types";
 import { EVENT_TASK_DELETED, EVENT_TASK_UPDATED } from "../types";
-import { planBasesTaskUpdatedEvent } from "./basesUpdateEvents";
+import {
+	planBasesTaskUpdatedEvent,
+	type BasesTaskUpdateSource,
+} from "./basesUpdateEvents";
 
 type BasesEventSource = {
 	on: (event: string, callback: (eventData: unknown) => void | Promise<void>) => EventRef;
@@ -12,7 +15,7 @@ type HandleBasesTaskUpdatedEventOptions = {
 	eventData: unknown;
 	isConnected: () => boolean;
 	relevantPathsCache: Set<string>;
-	handleTaskUpdate: (task: TaskInfo) => Promise<void>;
+	handleTaskUpdate: (task: TaskInfo, source: BasesTaskUpdateSource) => Promise<void>;
 	debouncedRefresh: () => void;
 	onError: (error: unknown) => void;
 };
@@ -21,7 +24,7 @@ type RegisterBasesTaskUpdateListenersOptions = {
 	emitter: BasesEventSource;
 	isConnected: () => boolean;
 	relevantPathsCache: Set<string>;
-	handleTaskUpdate: (task: TaskInfo) => Promise<void>;
+	handleTaskUpdate: (task: TaskInfo, source: BasesTaskUpdateSource) => Promise<void>;
 	handleTaskDeleted: (eventData: unknown) => void;
 	debouncedRefresh: () => void;
 	onError: (error: unknown) => void;
@@ -50,7 +53,7 @@ export async function handleBasesTaskUpdatedEvent({
 			return;
 		}
 		if (updatePlan.action === "handle-task") {
-			await handleTaskUpdate(updatePlan.task);
+			await handleTaskUpdate(updatePlan.task, updatePlan.source);
 		}
 	} catch (error) {
 		onError(error);

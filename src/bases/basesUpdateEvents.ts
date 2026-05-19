@@ -26,12 +26,15 @@ export type BasesTaskUpdatePlan =
 	| {
 			action: "handle-task";
 			task: TaskInfo;
+			source: BasesTaskUpdateSource;
 	  }
 	| {
 			action: "refresh-renamed-task";
 			removePath: string;
 			addPath: string;
 	  };
+
+export type BasesTaskUpdateSource = "metadata-cache" | "tasknotes-service";
 
 export type BasesTaskDeletionPlan = {
 	deletedPath?: string;
@@ -78,6 +81,7 @@ export function planBasesTaskUpdatedEvent(
 	return {
 		action: "handle-task",
 		task: updatedTask,
+		source: getTaskUpdateSource(taskEvent),
 	};
 }
 
@@ -88,6 +92,11 @@ function shouldRefreshForUntrackedTaskChange(taskEvent: TaskUpdateEventData): bo
 
 	const hasMetadataCacheAliases = taskEvent.task !== undefined || taskEvent.taskInfo !== undefined;
 	return !hasMetadataCacheAliases;
+}
+
+function getTaskUpdateSource(taskEvent: TaskUpdateEventData): BasesTaskUpdateSource {
+	const hasMetadataCacheAliases = taskEvent.task !== undefined || taskEvent.taskInfo !== undefined;
+	return hasMetadataCacheAliases ? "metadata-cache" : "tasknotes-service";
 }
 
 export function planBasesTaskDeletedEvent(

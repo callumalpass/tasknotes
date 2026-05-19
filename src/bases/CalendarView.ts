@@ -62,6 +62,7 @@ import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
 } from "./calendarRecreateUtils";
+import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import {
 	determineCalendarInitialDate,
 	getCalendarRecreateNavigationState,
@@ -1897,6 +1898,9 @@ export class CalendarView extends BasesViewBase {
 						? updatedTask
 						: this.plugin.cacheManager.getCachedTaskInfoSync(task.path);
 				if (freshTask) {
+					if (freshTask.archived) {
+						continue;
+					}
 					// Preserve basesData reference for formula access
 					const taskWithBasesData = { ...freshTask, basesData: task.basesData };
 					if (updatedTask?.path === freshTask.path) {
@@ -1926,6 +1930,23 @@ export class CalendarView extends BasesViewBase {
 
 		this._expectingImmediateUpdate = false;
 		await this.refreshCalendarWithFreshData(updatedTask);
+	}
+
+	private clearPendingCalendarRefreshTimers(): void {
+		if (this.updateDebounceTimer) {
+			window.clearTimeout(this.updateDebounceTimer);
+			this.updateDebounceTimer = null;
+		}
+		if (this.dataUpdateDebounceTimer) {
+			window.clearTimeout(this.dataUpdateDebounceTimer);
+			this.dataUpdateDebounceTimer = null;
+		}
+	}
+
+	private async refreshAfterDirectCalendarTaskWrite(updatedTask: TaskInfo): Promise<void> {
+		this.clearPendingCalendarRefreshTimers();
+		await this.refreshCalendarWithFreshData(updatedTask);
+		this.clearPendingCalendarRefreshTimers();
 	}
 
 	private async handleEventClick(info: EventClickArg): Promise<void> {
@@ -2038,9 +2059,6 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventDrop(info: EventDropArg): Promise<void> {
-		// Expect immediate update since user is interacting with calendar
-		this.expectImmediateUpdate();
-
 		if (!info?.event?.extendedProps) {
 			tasknotesLogger.warn("[TaskNotes][CalendarView] Event dropped without extendedProps", {
 				category: "provider",
@@ -2185,7 +2203,7 @@ export class CalendarView extends BasesViewBase {
 					const updatedTask = await this.plugin.taskService.updateTask(taskInfo, {
 						timeEntries: plan.timeEntries,
 					});
-					await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
+					await this.refreshAfterDirectCalendarTaskWrite(updatedTask);
 				} catch (error) {
 					tasknotesLogger.error("Error updating time entry:", {
 						category: "provider",
@@ -2224,7 +2242,7 @@ export class CalendarView extends BasesViewBase {
 						plan.property,
 						plan.value
 					);
-					await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
+					await this.refreshAfterDirectCalendarTaskWrite(updatedTask);
 				} else if (plan.kind === "update-scheduled-due-span") {
 					const spanFile = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
 					if (spanFile instanceof TFile) {
@@ -2238,7 +2256,7 @@ export class CalendarView extends BasesViewBase {
 								if (plan.due) frontmatter[dueField] = plan.due;
 							}
 						);
-						await this.refreshAfterExpectedCalendarTaskWrite({
+						await this.refreshAfterDirectCalendarTaskWrite({
 							...taskInfo,
 							scheduled: plan.scheduled ?? taskInfo.scheduled,
 							due: plan.due ?? taskInfo.due,
@@ -2257,9 +2275,6 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventResize(info: EventResizeDoneArg): Promise<void> {
-		// Expect immediate update since user is interacting with calendar
-		this.expectImmediateUpdate();
-
 		if (!info?.event?.extendedProps) {
 			tasknotesLogger.warn("[TaskNotes][CalendarView] Event resized without extendedProps", {
 				category: "provider",
@@ -2288,7 +2303,7 @@ export class CalendarView extends BasesViewBase {
 					const updatedTask = await this.plugin.taskService.updateTask(taskInfo, {
 						timeEntries: plan.timeEntries,
 					});
-					await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
+					await this.refreshAfterDirectCalendarTaskWrite(updatedTask);
 				} catch (error) {
 					tasknotesLogger.error("Error resizing time entry:", {
 						category: "provider",
@@ -2407,7 +2422,7 @@ export class CalendarView extends BasesViewBase {
 				"timeEstimate",
 				plan.value
 			);
-			await this.refreshAfterExpectedCalendarTaskWrite(updatedTask);
+			await this.refreshAfterDirectCalendarTaskWrite(updatedTask);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][CalendarView] Error updating task duration:", {
 				category: "provider",
@@ -2441,8 +2456,7 @@ export class CalendarView extends BasesViewBase {
 					const modal = new TaskCreationModal(this.plugin.app, this.plugin, {
 						prePopulatedValues: values,
 						onTaskCreated: (task) => {
-							this.expectImmediateUpdate();
-							void this.refreshAfterExpectedCalendarTaskWrite(task);
+							void this.refreshAfterDirectCalendarTaskWrite(task);
 						},
 					});
 					modal.open();
@@ -2455,7 +2469,6 @@ export class CalendarView extends BasesViewBase {
 				item.setTitle("Create timeblock")
 					.setIcon("clock")
 					.onClick(async () => {
-						this.expectImmediateUpdate();
 						await handleTimeblockCreation(
 							info.start,
 							info.end,
@@ -2520,10 +2533,22 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private handleEventDidMount(arg: EventMountArg): void {
-		if (!arg?.event?.extendedProps) return;
+		let extendedProps: EventMountArg["event"]["extendedProps"];
+		try {
+			const eventProps = arg?.event?.extendedProps;
+			if (!eventProps || typeof eventProps !== "object") return;
+			extendedProps = eventProps;
+		} catch (error) {
+			tasknotesLogger.warn("[TaskNotes][CalendarView] Event mounted without readable props", {
+				category: "provider",
+				operation: "event-mounted-readable-props",
+				error: error,
+			});
+			return;
+		}
 
 		const { taskInfo, timeblock, icsEvent, eventType, relatedNoteCount } =
-			arg.event.extendedProps;
+			extendedProps;
 		suppressCalendarContextMenuOnMobile(arg.el);
 
 		const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
@@ -2615,7 +2640,7 @@ export class CalendarView extends BasesViewBase {
 			}
 
 			// Apply recurring task styling (handles completion styling as well)
-			applyRecurringTaskStyling(arg.el, arg.event.extendedProps);
+			applyRecurringTaskStyling(arg.el, extendedProps);
 		}
 
 		// Add hover tooltip for tasks and ICS events
@@ -2667,7 +2692,7 @@ export class CalendarView extends BasesViewBase {
 				e.preventDefault();
 				e.stopPropagation();
 
-				const subscriptionName = arg.event.extendedProps.subscriptionName;
+				const subscriptionName = extendedProps.subscriptionName;
 
 				const contextMenu = new ICSEventContextMenu({
 					icsEvent: icsEvent,
@@ -2683,10 +2708,10 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Add hover preview for property-based events (Ctrl+hover to preview note)
-		if (eventType === "property-based" && arg.event.extendedProps.filePath) {
+		if (eventType === "property-based" && extendedProps.filePath) {
 			arg.el.addEventListener("mouseover", (event: MouseEvent) => {
 				const file = this.plugin.app.vault.getAbstractFileByPath(
-					arg.event.extendedProps.filePath
+					extendedProps.filePath
 				);
 				if (file) {
 					this.plugin.app.workspace.trigger("hover-link", {
@@ -2694,21 +2719,21 @@ export class CalendarView extends BasesViewBase {
 						source: "tasknotes-bases-calendar",
 						hoverParent: arg.el,
 						targetEl: arg.el,
-						linktext: arg.event.extendedProps.filePath,
-						sourcePath: arg.event.extendedProps.filePath,
+						linktext: extendedProps.filePath,
+						sourcePath: extendedProps.filePath,
 					});
 				}
 			});
 		}
 
 		// Add context menu for property-based events (right-click)
-		if (eventType === "property-based" && arg.event.extendedProps.filePath) {
+		if (eventType === "property-based" && extendedProps.filePath) {
 			arg.el.addEventListener("contextmenu", (e: MouseEvent) => {
 				e.preventDefault();
 				e.stopPropagation();
 
 				const file = this.plugin.app.vault.getAbstractFileByPath(
-					arg.event.extendedProps.filePath
+					extendedProps.filePath
 				);
 
 				if (file instanceof TFile) {
@@ -2793,9 +2818,17 @@ export class CalendarView extends BasesViewBase {
 		}
 	}
 
-	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
+	protected async handleTaskUpdate(
+		task: TaskInfo,
+		source?: BasesTaskUpdateSource
+	): Promise<void> {
 		if (this._expectingImmediateUpdate) {
 			await this.refreshAfterExpectedCalendarTaskWrite(task);
+			return;
+		}
+
+		if (source === "tasknotes-service") {
+			await this.refreshCalendarWithFreshData(task);
 			return;
 		}
 

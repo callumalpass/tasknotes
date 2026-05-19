@@ -139,10 +139,21 @@ export class TaskManager extends Events {
 		let updatedTask: TaskInfo | null = null;
 
 		if (cache && typeof cache === "object" && "frontmatter" in cache) {
-			this.pendingTaskInfoByPath.delete(file.path);
 			const frontmatter = (cache as { frontmatter?: unknown }).frontmatter;
 			if (frontmatter && this.isTaskFile(frontmatter)) {
-				updatedTask = this.extractTaskInfoFromNative(file.path, frontmatter);
+				const metadataTaskInfo = this.extractTaskInfoFromNative(file.path, frontmatter);
+				const pendingTaskInfo = this.getPendingTaskInfo(file.path);
+				if (
+					pendingTaskInfo &&
+					this.shouldUsePendingTaskInfo(pendingTaskInfo, metadataTaskInfo)
+				) {
+					updatedTask = pendingTaskInfo;
+				} else {
+					this.pendingTaskInfoByPath.delete(file.path);
+					updatedTask = metadataTaskInfo;
+				}
+			} else {
+				this.pendingTaskInfoByPath.delete(file.path);
 			}
 		}
 
@@ -699,13 +710,21 @@ export class TaskManager extends Events {
 		const file = this.app.vault.getAbstractFileByPath(path);
 		if (!(file instanceof TFile)) return null;
 
+		const pendingTaskInfo = this.getPendingTaskInfo(path);
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) {
-			return this.getPendingTaskInfo(path);
+			return pendingTaskInfo;
 		}
-		if (!this.isTaskFile(metadata.frontmatter)) return null;
 
-		return this.extractTaskInfoFromNative(path, metadata.frontmatter);
+		const metadataTaskInfo = this.isTaskFile(metadata.frontmatter)
+			? this.extractTaskInfoFromNative(path, metadata.frontmatter)
+			: null;
+		if (pendingTaskInfo && this.shouldUsePendingTaskInfo(pendingTaskInfo, metadataTaskInfo)) {
+			return pendingTaskInfo;
+		}
+
+		this.pendingTaskInfoByPath.delete(path);
+		return metadataTaskInfo;
 	}
 
 	private async readFrontmatterFromFile(file: TFile): Promise<Record<string, unknown> | null> {
