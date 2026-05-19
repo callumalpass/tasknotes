@@ -7,7 +7,7 @@ import {
 	FilterGroup,
 	FilterOptions,
 } from "../types";
-import { parseLinktext, TFile, type App } from "obsidian";
+import { TFile, type App } from "obsidian";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "./StatusManager";
@@ -18,15 +18,10 @@ import {
 	FilterValidationError,
 	FilterEvaluationError,
 } from "../utils/FilterUtils";
-import { isDueByRRule } from "../utils/helpers";
 import { format } from "date-fns";
 import {
-	isSameDateSafe,
-	startOfDayForDateString,
 	isToday as isTodayUtil,
-	getDatePart,
 	formatDateForStorage,
-	parseDateToUTC,
 	isTodayUTC,
 } from "../utils/dateUtils";
 import { TranslationKey } from "../i18n";
@@ -415,122 +410,10 @@ export class FilterService extends EventEmitter {
 	}
 
 	/**
-	 * Get task paths within a date range
-	 */
-	private async getTaskPathsInDateRange(
-		startDate: string,
-		endDate: string
-	): Promise<Set<string>> {
-		const pathsInRange = new Set<string>();
-		// Use UTC anchors for consistent date range operations
-		const start = parseDateToUTC(startDate);
-		const end = parseDateToUTC(endDate);
-
-		// Get tasks with due dates in the range (existing logic)
-		for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
-			const dateStr = format(date, "yyyy-MM-dd"); // CORRECT: Uses local timezone
-			const pathsForDate = this.cacheManager.getTaskPathsByDate(dateStr);
-			pathsForDate.forEach((path) => pathsInRange.add(path));
-		}
-
-		// Also check recurring tasks without due dates to see if they should appear in this range
-		const allTaskPaths = this.cacheManager.getAllTaskPaths();
-
-		// Process paths in batches for better performance
-		const batchSize = 50;
-		const pathArray = Array.from(allTaskPaths);
-
-		for (let i = 0; i < pathArray.length; i += batchSize) {
-			const batch = pathArray.slice(i, i + batchSize);
-			const batchTasks = await Promise.all(
-				batch.map((path) => this.cacheManager.getCachedTaskInfo(path))
-			);
-
-			for (const task of batchTasks) {
-				if (task && task.recurrence && !task.due) {
-					// Check if this recurring task should appear on any date in the range
-					for (
-						let date = new Date(start);
-						date <= end;
-						date.setDate(date.getDate() + 1)
-					) {
-						if (isDueByRRule(task, date)) {
-							pathsInRange.add(task.path);
-							break; // No need to check more dates once we find a match
-						}
-					}
-				}
-			}
-		}
-
-		return pathsInRange;
-	}
-
-	/**
 	 * Get overdue task paths efficiently using the dedicated index
 	 */
 	getOverdueTaskPaths(): Set<string> {
 		return this.cacheManager.getOverdueTaskPaths();
-	}
-
-	/**
-	 * Combine multiple task path sets (e.g., date range + overdue)
-	 */
-	private combineTaskPathSets(sets: Set<string>[]): Set<string> {
-		const combined = new Set<string>();
-		sets.forEach((set) => {
-			set.forEach((path) => combined.add(path));
-		});
-		return combined;
-	}
-
-	/**
-	 * Check if a date string falls within a date range (inclusive)
-	 * Works with both date-only and datetime strings
-	 */
-	private isDateInRange(
-		dateString: string,
-		startDateString: string,
-		endDateString: string
-	): boolean {
-		try {
-			// Extract date parts for range comparison
-			const datePart = getDatePart(dateString);
-			const startDatePart = getDatePart(startDateString);
-			const endDatePart = getDatePart(endDateString);
-
-			const date = startOfDayForDateString(datePart);
-			const startDate = startOfDayForDateString(startDatePart);
-			const endDate = startOfDayForDateString(endDatePart);
-
-			return date >= startDate && date <= endDate;
-		} catch (error) {
-			console.error("Error checking date range:", {
-				dateString,
-				startDateString,
-				endDateString,
-				error,
-			});
-			return false;
-		}
-	}
-
-	/**
-	 * Check if a Date object represents the same day as a date string
-	 */
-	private isSameDayAs(dateObj: Date, dateString: string): boolean {
-		try {
-			// Use safe date comparison with UTC anchors
-			const dateObjString = format(dateObj, "yyyy-MM-dd");
-			return isSameDateSafe(dateObjString, dateString);
-		} catch (error) {
-			console.error("Error comparing date object with date string:", {
-				dateObj,
-				dateString,
-				error,
-			});
-			return false;
-		}
 	}
 
 	/**
@@ -1047,39 +930,4 @@ export class FilterService extends EventEmitter {
 		return flatData;
 	}
 
-	/**
-	 * Extract project names from a task project value, handling [[link]] format
-	 */
-	private extractProjectNamesFromTaskValue(projectValue: string, sourcePath: string): string[] {
-		if (!projectValue || projectValue.trim() === "" || projectValue === '""') {
-			return [];
-		}
-
-		// Remove quotes if the value is wrapped in them
-		const cleanValue = projectValue.replace(/^"(.*)"$/, "$1");
-
-		// Check if it's a wikilink format
-		if (cleanValue.startsWith("[[") && cleanValue.endsWith("]]")) {
-			const linkContent = cleanValue.slice(2, -2);
-			const parsed = parseLinktext(linkContent);
-
-			// Try to resolve the link using Obsidian's API through cache manager
-			const resolvedFile = this.cacheManager
-				.getApp()
-				.metadataCache.getFirstLinkpathDest(parsed.path, sourcePath);
-			if (resolvedFile) {
-				// Return the basename of the resolved file
-				return [resolvedFile.basename];
-			} else {
-				// If file doesn't exist, use the display text or path
-				const displayName =
-					parsed.subpath ||
-					(parsed.path.includes("/") ? parsed.path.split("/").pop() : parsed.path);
-				return displayName ? [displayName] : [];
-			}
-		} else {
-			// Plain text project (backward compatibility)
-			return [cleanValue];
-		}
-	}
 }
