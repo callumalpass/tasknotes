@@ -1,4 +1,4 @@
-import { Component, App, Notice, TFile } from "obsidian";
+import { Component, App, Notice } from "obsidian";
 import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
@@ -11,11 +11,7 @@ import { TaskSearchFilter } from "./TaskSearchFilter";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import type { TaskCardOptions } from "../ui/TaskCard";
 import { identifyTaskNotesFromBasesData } from "./helpers";
-import {
-	formatTasksForClipboard,
-	type ClipboardTask,
-	type TaskCopyFormat,
-} from "../utils/taskClipboard";
+import type { TaskCopyFormat } from "../utils/taskClipboard";
 import {
 	buildTaskCreationDataFromFrontmatter,
 } from "./basesTaskCreation";
@@ -60,16 +56,16 @@ import {
 	scheduleBasesDebouncedRefresh,
 	type BasesTimeoutScheduler,
 } from "./basesRefreshLifecycle";
+import {
+	buildBasesTaskCopyActions,
+	copyBasesCurrentViewTasks,
+	resolveBasesTaskLinkText,
+	type BasesViewAction,
+} from "./basesTaskCopyActions";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
-};
-
-type BasesViewAction = {
-	name: string;
-	icon?: string;
-	callback: () => void;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -298,29 +294,9 @@ export abstract class BasesViewBase extends Component {
 	 * Obsidian calls this after its built-in Copy and Export CSV actions.
 	 */
 	getViewActions(): BasesViewAction[] {
-		return [
-			{
-				name: "Copy task filenames",
-				icon: "lucide-file-text",
-				callback: () => {
-					void this.copyCurrentViewTasks("filenames");
-				},
-			},
-			{
-				name: "Copy task links",
-				icon: "lucide-link",
-				callback: () => {
-					void this.copyCurrentViewTasks("markdown-links");
-				},
-			},
-			{
-				name: "Copy task titles",
-				icon: "lucide-text",
-				callback: () => {
-					void this.copyCurrentViewTasks("titles");
-				},
-			},
-		];
+		return buildBasesTaskCopyActions((format) => {
+			void this.copyCurrentViewTasks(format);
+		});
 	}
 
 	/**
@@ -715,17 +691,23 @@ export abstract class BasesViewBase extends Component {
 
 	private async copyCurrentViewTasks(format: TaskCopyFormat): Promise<void> {
 		try {
-			const tasks = await this.getCurrentViewClipboardTasks();
-			if (tasks.length === 0) {
+			const app = this.app || this.plugin.app;
+			const result = await copyBasesCurrentViewTasks({
+				dataItems: this.dataAdapter.extractDataItems(),
+				format,
+				identifyTaskNotes: (dataItems) =>
+					identifyTaskNotesFromBasesData(dataItems, this.plugin),
+				filterTasks: (tasks) => this.applySearchFilter(tasks),
+				resolveLinkText: (task) => resolveBasesTaskLinkText(app, task.path),
+				writeText: (text) => navigator.clipboard.writeText(text),
+			});
+
+			if (result.status === "empty") {
 				new Notice("No tasks to copy");
 				return;
 			}
 
-			const text = formatTasksForClipboard(tasks, format, (task) =>
-				this.getMarkdownLinkText(task.path)
-			);
-			await navigator.clipboard.writeText(text);
-			new Notice(`Copied ${tasks.length} tasks`);
+			new Notice(`Copied ${result.count} tasks`);
 		} catch (error) {
 			this.logger.error("Failed to copy current view tasks", {
 				category: "provider",
@@ -734,17 +716,6 @@ export abstract class BasesViewBase extends Component {
 			});
 			new Notice("Failed to copy tasks");
 		}
-	}
-
-	private async getCurrentViewClipboardTasks(): Promise<ClipboardTask[]> {
-		const dataItems = this.dataAdapter.extractDataItems();
-		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
-		const filteredTasks = this.applySearchFilter(taskNotes);
-
-		return filteredTasks.map((task) => ({
-			path: task.path,
-			title: task.title,
-		}));
 	}
 
 	private getBasesExportTable(): BasesExportTable {
@@ -796,15 +767,6 @@ export abstract class BasesViewBase extends Component {
 			});
 			new Notice("Failed to export table");
 		}
-	}
-
-	private getMarkdownLinkText(path: string): string {
-		const app = this.app || this.plugin.app;
-		const file = app.vault.getAbstractFileByPath(path);
-		if (file instanceof TFile) {
-			return app.metadataCache.fileToLinktext(file, "");
-		}
-		return path;
 	}
 
 	/**

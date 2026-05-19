@@ -210,6 +210,9 @@ Current examples:
   hooks, data-update render debouncing, and explicit refresh debouncing.
 - `src/bases/basesToolbar.ts` owns shared Bases toolbar integration for the
   TaskNotes New button, including stale-button replacement and cleanup.
+- `src/bases/basesTaskCopyActions.ts` owns shared Bases result-menu task copy
+  action construction, current-view task collection, clipboard formatting, and
+  Obsidian linktext resolution.
 - `src/bases/basesVisibleProperties.ts` owns shared Bases-to-TaskCard visible
   property mapping, fallback default-property selection, and display-label
   override assembly.

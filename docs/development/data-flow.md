@@ -168,6 +168,8 @@ Refactor rule:
   and explicit refresh debouncing behind `basesRefreshLifecycle`
 - keep shared Bases toolbar DOM integration for the TaskNotes New button behind
   `basesToolbar`
+- keep shared Bases result-menu task copy action construction and current-view
+  clipboard task assembly behind `basesTaskCopyActions`
 - keep shared Bases-to-TaskCard visible property mapping and display-label
   override assembly behind `basesVisibleProperties`
 - keep shared Bases search controls, no-results state, and rendering behind
@@ -192,6 +194,7 @@ Current adapter seams include:
 - shared Bases update/delete event relevance planning
 - shared Bases refresh lifecycle scheduling
 - shared Bases toolbar New button integration
+- shared Bases result-menu task copy actions
 - shared Bases visible-property and display-label mapping
 - shared Bases search control creation and no-results rendering
 - Bases-backed task creation assembly
