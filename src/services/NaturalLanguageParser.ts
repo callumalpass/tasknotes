@@ -29,6 +29,7 @@ function getDateLocaleFromPlugin(plugin: TaskNotesPlugin): string {
 export class NaturalLanguageParser extends NaturalLanguageParserCore {
 	private readonly taskNotesNlpTriggers?: NLPTriggersConfig;
 	private readonly taskNotesUserFields: UserMappedField[];
+	private readonly taskNotesPriorityConfigs: PriorityConfig[];
 
 	static fromPlugin(plugin: TaskNotesPlugin): NaturalLanguageParser {
 		const s = plugin.settings;
@@ -63,12 +64,84 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		);
 		this.taskNotesNlpTriggers = nlpTriggers;
 		this.taskNotesUserFields = userFields || [];
+		this.taskNotesPriorityConfigs = priorityConfigs;
 	}
 
 	parseInput(input: string): ParsedTaskData {
 		const parsed = super.parseInput(input);
-		const withLinkedFields = this.extractLinkedUserFields(input, parsed);
+		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(input, parsed);
+		const withLinkedFields = this.extractLinkedUserFields(input, withPriorityShortcutResidueRemoved);
 		return this.normalizeUserFieldValues(withLinkedFields);
+	}
+
+	private removePriorityShortcutResidue(input: string, parsed: ParsedTaskData): ParsedTaskData {
+		if (!parsed.priority || this.taskNotesPriorityConfigs.length === 0) {
+			return parsed;
+		}
+
+		const priorityConfig = this.taskNotesPriorityConfigs.find(
+			(config) => config.value === parsed.priority
+		);
+		if (!priorityConfig) {
+			return parsed;
+		}
+
+		const trigger = this.getPriorityTrigger();
+		const tokenCandidates = [priorityConfig.value, priorityConfig.label]
+			.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+			.flatMap((value) => (trigger ? [`${trigger}${value}`, value] : [value]));
+		const matchCandidates = [priorityConfig.label, priorityConfig.value].filter(
+			(value): value is string => typeof value === "string" && value.trim().length > 0
+		);
+		const residues = new Set<string>();
+
+		for (const token of tokenCandidates) {
+			if (!this.containsToken(input, token)) continue;
+
+			for (const matchCandidate of matchCandidates) {
+				const residue = this.removeFirstCaseInsensitive(token, matchCandidate);
+				if (!residue || residue === token) continue;
+
+				residues.add(residue);
+			}
+		}
+
+		let title = parsed.title;
+		for (const residue of Array.from(residues).sort((a, b) => b.length - a.length)) {
+			title = this.removeTokenFragment(title, residue);
+		}
+
+		parsed.title = title || "Untitled Task";
+		return parsed;
+	}
+
+	private getPriorityTrigger(): string {
+		const priorityTrigger = this.taskNotesNlpTriggers?.triggers.find(
+			(trigger) => trigger.propertyId === "priority"
+		);
+		return priorityTrigger?.trigger || "";
+	}
+
+	private containsToken(text: string, token: string): boolean {
+		const escaped = this.escapeRegexLiteral(token);
+		return new RegExp(`(^|\\s)${escaped}(?=\\s|$)`, "iu").test(text);
+	}
+
+	private removeTokenFragment(text: string, fragment: string): string {
+		const escaped = this.escapeRegexLiteral(fragment);
+		return text
+			.replace(new RegExp(`(^|\\s)${escaped}(?=\\s|$)`, "giu"), "$1")
+			.replace(/\s+/g, " ")
+			.trim();
+	}
+
+	private removeFirstCaseInsensitive(text: string, value: string): string | null {
+		const index = text.toLowerCase().indexOf(value.toLowerCase());
+		if (index === -1) {
+			return null;
+		}
+
+		return `${text.slice(0, index)}${text.slice(index + value.length)}`;
 	}
 
 	private normalizeUserFieldValues(parsed: ParsedTaskData): ParsedTaskData {

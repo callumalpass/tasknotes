@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1906) Fixed NLP priority shortcuts leaving partial text in task titles when custom priority values include words like `high` or `low`.
+  - Thanks to @RumiaKitinari for reporting the issue.
 - (#1901) Fixed the task context menu creating an `undefined` property when adding or removing tags.
   - Hardened task property updates so invalid frontmatter property names are rejected instead of written.
   - Thanks to @mgrecar for reporting the issue.
