@@ -51,6 +51,7 @@ import {
 	sortFilterTasks,
 	type FilterTaskSortingContext,
 } from "./filter-service/filterTaskSorting";
+import { buildFilterOptions } from "./filter-service/filterOptions";
 import type { TaskNotesSettings } from "../types/settings";
 
 type FilterServiceSettings = Pick<
@@ -602,15 +603,16 @@ export class FilterService extends EventEmitter {
 
 		// Cache miss - compute fresh options
 
-		const freshOptions = {
+		const freshOptions = buildFilterOptions({
 			statuses: this.statusManager.getAllStatuses(),
 			priorities: this.priorityManager.getAllPriorities(),
 			contexts: this.cacheManager.getAllContexts(),
 			projects: this.cacheManager.getAllProjects(),
 			tags: this.cacheManager.getAllTags(),
-			folders: this.extractUniqueFolders(),
-			userProperties: this.buildUserPropertyDefinitions(),
-		};
+			taskPaths: this.cacheManager.getAllTaskPaths(),
+			rootFolderLabel: this.translate("services.filter.folders.root", "(Root)"),
+			userFields: this.runtime?.settings?.userFields || [],
+		});
 
 		this.filterOptionsComputeCount++;
 
@@ -619,84 +621,6 @@ export class FilterService extends EventEmitter {
 		this.filterOptionsCacheTimestamp = now;
 
 		return freshOptions;
-	}
-
-	/**
-	 * Build dynamic user property definitions from settings.userFields
-	 */
-	private buildUserPropertyDefinitions(): import("../types").PropertyDefinition[] {
-		const fields = this.runtime?.settings?.userFields || [];
-		const defs: import("../types").PropertyDefinition[] = [];
-		for (const f of fields) {
-			if (!f || !f.key || !f.displayName) continue;
-			const id = `user:${f.id || f.key}` as import("../types").FilterProperty;
-			// Map type to supported operators and value input type
-			let supported: import("../types").FilterOperator[];
-			let valueInputType: import("../types").PropertyDefinition["valueInputType"];
-			switch (f.type) {
-				case "number":
-					supported = [
-						"is",
-						"is-not",
-						"is-greater-than",
-						"is-less-than",
-						"is-greater-than-or-equal",
-						"is-less-than-or-equal",
-						"is-empty",
-						"is-not-empty",
-					];
-					valueInputType = "number";
-					break;
-				case "date":
-					supported = [
-						"is",
-						"is-not",
-						"is-before",
-						"is-after",
-						"is-on-or-before",
-						"is-on-or-after",
-						"is-empty",
-						"is-not-empty",
-					];
-					valueInputType = "date";
-					break;
-				case "boolean":
-					supported = ["is-checked", "is-not-checked"];
-					valueInputType = "none";
-					break;
-				case "list":
-					supported = ["contains", "does-not-contain", "is-empty", "is-not-empty"];
-					valueInputType = "text";
-					break;
-				case "text":
-				default:
-					supported = [
-						"is",
-						"is-not",
-						"contains",
-						"does-not-contain",
-						"is-empty",
-						"is-not-empty",
-					];
-					valueInputType = "text";
-					break;
-			}
-			defs.push({
-				id,
-				label: f.displayName,
-				category:
-					f.type === "boolean"
-						? "boolean"
-						: f.type === "number"
-							? "numeric"
-							: f.type === "date"
-								? "date"
-								: "text",
-				supportedOperators: supported,
-				valueInputType,
-			});
-		}
-		return defs;
 	}
 
 	/**
@@ -1121,35 +1045,6 @@ export class FilterService extends EventEmitter {
 		}
 
 		return flatData;
-	}
-
-	/**
-	 * Extract unique folder paths from all task paths
-	 * Returns an array of folder paths for dropdown filtering
-	 */
-	private extractUniqueFolders(): readonly string[] {
-		const allTaskPaths = this.cacheManager.getAllTaskPaths();
-		const folderSet = new Set<string>();
-
-		for (const taskPath of allTaskPaths) {
-			// Extract the folder part of the path (everything before the last slash)
-			const lastSlashIndex = taskPath.lastIndexOf("/");
-			if (lastSlashIndex > 0) {
-				const folderPath = taskPath.substring(0, lastSlashIndex);
-				folderSet.add(folderPath);
-			}
-			// Also add root-level folder (empty string or "." for tasks in vault root)
-			else if (lastSlashIndex === -1) {
-				folderSet.add(""); // Root folder
-			}
-		}
-
-		// Convert to sorted array for consistent UI ordering
-		const folders = Array.from(folderSet).sort();
-
-		// Replace empty string with a user-friendly label for root folder
-		const rootLabel = this.translate("services.filter.folders.root", "(Root)");
-		return folders.map((folder) => (folder === "" ? rootLabel : folder));
 	}
 
 	/**

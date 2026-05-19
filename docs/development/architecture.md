@@ -347,6 +347,10 @@ Current extracted examples:
 - `src/services/filter-service/filterTaskSorting.ts` owns task sorting, date
   comparison, natural fallback ordering, tag ordering, and user-field sort
   comparison behind injected status, priority, and frontmatter-value callbacks.
+- `src/services/filter-service/filterOptions.ts` owns filter-option assembly,
+  task-folder extraction, and dynamic user-property definitions behind injected
+  status, priority, cache-derived option, task-path, root-label, and user-field
+  sources.
 
 ### Bases Integration
 

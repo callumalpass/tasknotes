@@ -238,6 +238,10 @@ labels, and option discovery while the helper owns recursive group
 evaluation, dynamic user-field coercion, project matching, subtask lookup, and
 completion-state semantics.
 
+Filter option assembly should run through `filterOptions`. `FilterService`
+keeps option caching and invalidation while the helper owns task-folder
+extraction and dynamic user-property definition construction.
+
 ## UI State Flow
 
 TaskCard and TaskModal rendering should consume already-normalized state.
@@ -375,6 +379,9 @@ Refactor rule:
 - task sort-key comparison, time-aware date ordering, fallback ordering, tag
   ordering, and user-field sort comparison belong in `filterTaskSorting`;
   `FilterService` injects status, priority, and frontmatter-value access
+- filter option assembly, task-folder extraction, and dynamic user-property
+  definitions belong in `filterOptions`; `FilterService` keeps cache
+  invalidation and source orchestration
 - DOM functions should wire controls, render values, and call services
 
 This keeps DOM tests focused on interaction while pure unit tests cover state
