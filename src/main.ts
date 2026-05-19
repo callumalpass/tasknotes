@@ -49,10 +49,10 @@ import { DragDropManager } from "./utils/DragDropManager";
 import { formatDateForStorage, parseDateToLocal, getTodayLocal } from "./utils/dateUtils";
 import { ICSSubscriptionService } from "./services/ICSSubscriptionService";
 import { ICSNoteService } from "./services/ICSNoteService";
-import { StatusBarService } from "./services/StatusBarService";
+import { StatusBarService } from "./ui/StatusBarService";
 import { ProjectSubtasksService } from "./services/ProjectSubtasksService";
 import { ExpandedProjectsService } from "./services/ExpandedProjectsService";
-import { NotificationService } from "./services/NotificationService";
+import { NotificationService } from "./ui/NotificationService";
 import { AutoExportService } from "./services/AutoExportService";
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from "./services/HTTPAPIService";
@@ -142,8 +142,8 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task selection service for batch operations
 	taskSelectionService: import("./services/TaskSelectionService").TaskSelectionService;
-	workspaceNavigationService: import("./services/WorkspaceNavigationService").WorkspaceNavigationService;
-	taskActionCoordinator: import("./services/TaskActionCoordinator").TaskActionCoordinator;
+	workspaceNavigationService: import("./ui/WorkspaceNavigationService").WorkspaceNavigationService;
+	taskActionCoordinator: import("./ui/TaskActionCoordinator").TaskActionCoordinator;
 	settingsLifecycleService: import("./services/SettingsLifecycleService").SettingsLifecycleService;
 	commandRegistry: import("./commands/TranslatedCommandRegistry").TranslatedCommandRegistry;
 

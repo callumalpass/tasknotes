@@ -2,7 +2,7 @@ import type TaskNotesPlugin from "../../../src/main";
 import { NaturalLanguageParser } from "../../../src/services/NaturalLanguageParser";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import type { NLPTriggersConfig, UserMappedField } from "../../../src/types/settings";
-import { buildTaskCreationDataFromParsed } from "../../../src/utils/buildTaskCreationDataFromParsed";
+import { buildTaskCreationDataFromParsed } from "../../../src/services/buildTaskCreationDataFromParsed";
 
 const BOOLEAN_FIELD: UserMappedField = {
 	id: "reviewed",

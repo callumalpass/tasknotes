@@ -1,11 +1,17 @@
 import { ICSEvent } from "../types";
-import { CalendarProviderRegistry } from "../services/CalendarProvider";
-import { ICSSubscriptionService } from "../services/ICSSubscriptionService";
 
 export interface CollectedCalendarEvents {
 	events: (ICSEvent & { provider: string })[];
 	total: number;
 	sources: Record<string, number>;
+}
+
+interface CalendarProviderEventSource {
+	getAllEvents(): (ICSEvent & { subscriptionId: string })[];
+}
+
+interface ICSCalendarEventSource {
+	getAllEvents(): ICSEvent[];
 }
 
 export function isEventInRange(
@@ -41,8 +47,8 @@ export function getProviderFromSubscriptionId(subscriptionId: string): string {
 }
 
 export function collectCalendarEvents(
-	providerRegistry: CalendarProviderRegistry,
-	icsService: ICSSubscriptionService | null,
+	providerRegistry: CalendarProviderEventSource,
+	icsService: ICSCalendarEventSource | null,
 	options: { start?: Date | null; end?: Date | null }
 ): CollectedCalendarEvents {
 	const startDate = options.start ?? null;

@@ -3,7 +3,7 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { generateLink, parseLinkToPath } from "../utils/linkUtils";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 
 function translate(
 	plugin: TaskNotesPlugin,
@@ -78,7 +78,10 @@ export async function addTaskToProject(
 	const currentProjects = Array.isArray(task.projects) ? task.projects : [];
 
 	if (currentProjects.includes(projectReference) || currentProjects.includes(legacyReference)) {
-		showNotice(translate(plugin, "contextMenus.task.organization.notices.alreadyInProject"));
+		publishUserNotice(
+			plugin.emitter,
+			translate(plugin, "contextMenus.task.organization.notices.alreadyInProject")
+		);
 		return null;
 	}
 
@@ -86,7 +89,8 @@ export async function addTaskToProject(
 	const updatedProjects = [...sanitizedProjects, projectReference];
 	const updatedTask = await plugin.updateTaskProperty(task, "projects", updatedProjects);
 
-	showNotice(
+	publishUserNotice(
+		plugin.emitter,
 		translate(plugin, "contextMenus.task.organization.notices.addedToProject", {
 			project: projectFile.basename,
 		})
@@ -111,7 +115,10 @@ export async function assignTaskAsSubtask(
 	const subtaskProjects = Array.isArray(subtask.projects) ? subtask.projects : [];
 
 	if (subtaskProjects.includes(projectReference) || subtaskProjects.includes(legacyReference)) {
-		showNotice(translate(plugin, "contextMenus.task.organization.notices.alreadySubtask"));
+		publishUserNotice(
+			plugin.emitter,
+			translate(plugin, "contextMenus.task.organization.notices.alreadySubtask")
+		);
 		return null;
 	}
 
@@ -119,7 +126,8 @@ export async function assignTaskAsSubtask(
 	const updatedProjects = [...sanitizedProjects, projectReference];
 	const updatedSubtask = await plugin.updateTaskProperty(subtask, "projects", updatedProjects);
 
-	showNotice(
+	publishUserNotice(
+		plugin.emitter,
 		translate(plugin, "contextMenus.task.organization.notices.addedAsSubtask", {
 			subtask: subtask.title,
 			parent: parentFile.basename,

@@ -1,4 +1,4 @@
-import { StatusBarService } from "../../../src/services/StatusBarService";
+import { StatusBarService } from "../../../src/ui/StatusBarService";
 
 function createStatusBarElement(): HTMLElement {
 	const statusBarElement = document.createElement("div");

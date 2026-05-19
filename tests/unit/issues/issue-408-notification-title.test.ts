@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { NotificationService } from "../../../src/services/NotificationService";
+import { NotificationService } from "../../../src/ui/NotificationService";
 import { Reminder, TaskInfo } from "../../../src/types";
 
 describe("Issue #408: reminder system notification title", () => {

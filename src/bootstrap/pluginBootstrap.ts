@@ -23,8 +23,8 @@ import { ProjectSubtasksService } from "../services/ProjectSubtasksService";
 import { ExpandedProjectsService } from "../services/ExpandedProjectsService";
 import { AutoArchiveService } from "../services/AutoArchiveService";
 import { DragDropManager } from "../utils/DragDropManager";
-import { StatusBarService } from "../services/StatusBarService";
-import { NotificationService } from "../services/NotificationService";
+import { StatusBarService } from "../ui/StatusBarService";
+import { NotificationService } from "../ui/NotificationService";
 import { ViewPerformanceService } from "../services/ViewPerformanceService";
 import { PomodoroView } from "../views/PomodoroView";
 import { PomodoroStatsView } from "../views/PomodoroStatsView";
@@ -53,6 +53,7 @@ import { TaskNotesAPI } from "../api/TaskNotesAPI";
 import { isCalendarIntegrationDisabledOnMobile } from "../utils/calendarIntegration";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
+import { EVENT_USER_NOTICE, type UserNoticePayload } from "../core/userNotices";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bootstrap/PluginBootstrap" });
 
@@ -108,6 +109,11 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 
 	plugin.cacheManager = new TaskManager(plugin.app, plugin.settings, plugin.fieldMapper);
 	plugin.emitter = plugin.cacheManager;
+	plugin.registerEvent(
+		plugin.emitter.on(EVENT_USER_NOTICE, (payload: UserNoticePayload) => {
+			showNotice(payload.message, payload.timeout);
+		})
+	);
 
 	plugin.dependencyCache = new DependencyCache(
 		plugin.app,

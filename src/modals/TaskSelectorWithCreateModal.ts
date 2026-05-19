@@ -5,7 +5,7 @@ import type TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
 import { NaturalLanguageParser, ParsedTaskData } from "../services/NaturalLanguageParser";
 import { createTaskCard } from "../ui/TaskCard";
-import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
+import { buildTaskCreationDataFromParsed } from "../services/buildTaskCreationDataFromParsed";
 import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 import { NLPSuggest } from "./taskCreationSuggest";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";

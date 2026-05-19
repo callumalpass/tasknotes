@@ -5,7 +5,7 @@ import { OAUTH_CONSTANTS } from "./constants";
 import { OAuthNotConfiguredError, TokenExpiredError, TokenRefreshError } from "./errors";
 import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/OAuthService" });
 
@@ -135,7 +135,7 @@ export class OAuthService {
 			const config = this.configs[provider];
 
 			if (!Platform.isDesktopApp) {
-				showNotice("OAUTH authentication requires the desktop app.");
+				publishUserNotice(this.plugin.emitter, "OAUTH authentication requires the desktop app.");
 				throw new Error("OAuth authentication requires the desktop app.");
 			}
 
@@ -170,7 +170,7 @@ export class OAuthService {
 					reject: () => {},
 				});
 
-				showNotice(`Opening browser for ${provider} authorization...`);
+				publishUserNotice(this.plugin.emitter, `Opening browser for ${provider} authorization...`);
 
 				// Open browser to authorization URL
 				window.open(authUrl, "_blank");
@@ -184,7 +184,7 @@ export class OAuthService {
 				// Store connection
 				await this.storeConnection(provider, tokens);
 
-				showNotice(`Successfully connected to ${provider} Calendar!`);
+				publishUserNotice(this.plugin.emitter, `Successfully connected to ${provider} Calendar!`);
 			} finally {
 				// Restore original redirect URI
 				config.redirectUri = originalRedirectUri;
@@ -195,7 +195,7 @@ export class OAuthService {
 				operation: "oauth-authentication",
 				error: error,
 			});
-			showNotice(`Failed to connect to ${provider}: ${error.message}`);
+			publishUserNotice(this.plugin.emitter, `Failed to connect to ${provider}: ${error.message}`);
 			throw error;
 		} finally {
 			await this.stopCallbackServer();
@@ -604,7 +604,7 @@ export class OAuthService {
 					// This clears local tokens but doesn't revoke on provider (token is already invalid)
 					await this.clearConnection(provider);
 
-					showNotice(
+					publishUserNotice(this.plugin.emitter,
 						`${provider} connection expired. Please reconnect in Settings > Integrations.`
 					);
 					throw new TokenRefreshError(provider, oauthError, oauthErrorDescription);
@@ -768,7 +768,7 @@ export class OAuthService {
 			await this.plugin.saveData(data);
 		}
 
-		showNotice(`Disconnected from ${provider} Calendar`);
+		publishUserNotice(this.plugin.emitter, `Disconnected from ${provider} Calendar`);
 	}
 
 	/**

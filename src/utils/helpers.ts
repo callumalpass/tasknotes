@@ -1,7 +1,7 @@
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from "../types";
-import { FieldMapper } from "../services/FieldMapper";
+import { FieldMapper } from "../core/FieldMapper";
 import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
 import {
 	addDTSTARTToRecurrenceRule as addDTSTARTToRecurrenceRuleCore,
@@ -21,7 +21,7 @@ import {
 import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
 import { normalizeThemeColor } from "./themeColors";
 import { createTaskNotesLogger } from "./tasknotesLogger";
-import { modifyVaultFile } from "../services/VaultMutationService";
+import { modifyVaultFile } from "../core/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/Helpers" });
 

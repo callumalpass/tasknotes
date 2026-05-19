@@ -1,5 +1,5 @@
 import { Notice } from "obsidian";
-import { NotificationService } from "../../../src/services/NotificationService";
+import { NotificationService } from "../../../src/ui/NotificationService";
 
 describe("Issue #380: test reminder notification", () => {
 	const originalNotification = window.Notification;

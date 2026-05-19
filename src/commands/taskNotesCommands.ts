@@ -214,10 +214,10 @@ export function createTaskNotesCommandDefinitions(
 			callback: async (ctx) => {
 				try {
 					const allTasks = await ctx.cacheManager.getAllTasks();
-					const { CalendarExportService } = await import(
-						"../services/CalendarExportService"
+					const { downloadAllTasksICSFile } = await import(
+						"../ui/calendarExportActions"
 					);
-					CalendarExportService.downloadAllTasksICSFile(
+					downloadAllTasksICSFile(
 						allTasks,
 						ctx.i18n.translate.bind(ctx.i18n),
 						{

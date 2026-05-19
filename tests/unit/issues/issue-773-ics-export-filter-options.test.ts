@@ -1,4 +1,5 @@
 import { CalendarExportService } from "../../../src/services/CalendarExportService";
+import { downloadAllTasksICSFile } from "../../../src/ui/calendarExportActions";
 import type { TaskInfo } from "../../../src/types";
 
 jest.mock("obsidian", () => ({
@@ -190,7 +191,7 @@ describe("Issue #773: ICS export filter options", () => {
 			configurable: true,
 		});
 
-		CalendarExportService.downloadAllTasksICSFile(makeTasks(), translate, {
+		downloadAllTasksICSFile(makeTasks(), translate, {
 			excludeArchived: true,
 			excludeCompleted: true,
 			completedStatuses: ["done"],

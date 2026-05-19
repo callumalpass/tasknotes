@@ -24,7 +24,7 @@ import {
 	computeTaskTimeData,
 } from "../utils/timeTrackingUtils";
 import { collectCalendarEvents } from "../utils/calendarUtils";
-import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
+import { buildTaskCreationDataFromParsed } from "./buildTaskCreationDataFromParsed";
 import { hydrateTaskDetailsFromFile } from "../utils/taskDetails";
 import { JsonRpcBody, normalizeMcpInitializeProtocol } from "./mcpProtocol";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";

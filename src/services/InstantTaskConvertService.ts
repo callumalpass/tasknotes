@@ -19,7 +19,7 @@ import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 import { modifyVaultFile } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/InstantTaskConvertService" });
@@ -117,12 +117,12 @@ export class InstantTaskConvertService {
 			const checkboxTasks = this.findAllCheckboxTasks(editor);
 
 			if (checkboxTasks.length === 0) {
-				showNotice(this.translate("services.instantTaskConvert.notices.noCheckboxTasks"));
+				publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.noCheckboxTasks"));
 				return;
 			}
 
 			const plural = checkboxTasks.length === 1 ? "" : "s";
-			showNotice(
+			publishUserNotice(this.plugin.emitter,
 				this.translate("services.instantTaskConvert.notices.convertingTasks", {
 					count: checkboxTasks.length,
 					plural,
@@ -135,7 +135,7 @@ export class InstantTaskConvertService {
 			// Show summary
 			if (result.failures.length === 0) {
 				const plural = result.successCount === 1 ? "" : "s";
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate("services.instantTaskConvert.notices.conversionSuccess", {
 						count: result.successCount,
 						plural,
@@ -143,7 +143,7 @@ export class InstantTaskConvertService {
 				);
 			} else {
 				const successPlural = result.successCount === 1 ? "" : "s";
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate("services.instantTaskConvert.notices.partialConversion", {
 						successCount: result.successCount,
 						successPlural,
@@ -164,7 +164,7 @@ export class InstantTaskConvertService {
 				operation: "batch-task-conversion",
 				error: error,
 			});
-			showNotice(this.translate("services.instantTaskConvert.notices.batchConversionFailed"));
+			publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.batchConversionFailed"));
 		}
 	}
 
@@ -234,7 +234,7 @@ export class InstantTaskConvertService {
 			// Validate input parameters
 			const validationResult = this.validateInputParameters(editor, lineNumber);
 			if (!validationResult.isValid) {
-				showNotice(this.translate("services.instantTaskConvert.notices.invalidParameters"));
+				publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.invalidParameters"));
 				return;
 			}
 
@@ -254,7 +254,7 @@ export class InstantTaskConvertService {
 				const taskTitle = this.extractLineContentAsTitle(currentLine);
 
 				if (!taskTitle.trim()) {
-					showNotice(this.translate("services.instantTaskConvert.notices.emptyLine"));
+					publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.emptyLine"));
 					return;
 				}
 
@@ -280,7 +280,7 @@ export class InstantTaskConvertService {
 			} else {
 				// Line is a checkbox task, process normally
 				if (taskLineInfo.error || !taskLineInfo.parsedData) {
-					showNotice(
+					publishUserNotice(this.plugin.emitter,
 						this.translate("services.instantTaskConvert.notices.parseError", {
 							error: taskLineInfo.error || "No data extracted",
 						})
@@ -323,7 +323,7 @@ export class InstantTaskConvertService {
 			// Validate final parsed data before proceeding
 			const taskValidation = this.validateTaskData(parsedData);
 			if (!taskValidation.isValid) {
-				showNotice(this.translate("services.instantTaskConvert.notices.invalidTaskData"));
+				publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.invalidTaskData"));
 				return;
 			}
 
@@ -339,7 +339,7 @@ export class InstantTaskConvertService {
 			);
 
 			if (!replaceResult.success) {
-				showNotice(this.translate("services.instantTaskConvert.notices.replaceLineFailed"));
+				publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.replaceLineFailed"));
 				// Clean up the created file since replacement failed
 				try {
 					await this.plugin.app.fileManager.trashFile(file);
@@ -365,14 +365,14 @@ export class InstantTaskConvertService {
 					file.basename
 				)
 			) {
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate(
 						"services.instantTaskConvert.notices.conversionCompleteShortened",
 						{ title: parsedData.title }
 					)
 				);
 			} else {
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate("services.instantTaskConvert.notices.conversionComplete", {
 						title: parsedData.title,
 					})
@@ -388,9 +388,9 @@ export class InstantTaskConvertService {
 				error: error,
 			});
 			if (error.message.includes("file already exists")) {
-				showNotice(this.translate("services.instantTaskConvert.notices.fileExists"));
+				publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.fileExists"));
 			} else {
-				showNotice(this.translate("services.instantTaskConvert.notices.conversionFailed"));
+				publishUserNotice(this.plugin.emitter, this.translate("services.instantTaskConvert.notices.conversionFailed"));
 			}
 		}
 	}

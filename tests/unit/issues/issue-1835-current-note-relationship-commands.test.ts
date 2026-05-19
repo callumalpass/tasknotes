@@ -1,9 +1,10 @@
-import { Notice, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 import {
 	addTaskToProject,
 	assignTaskAsSubtask,
 } from "../../../src/services/taskRelationshipActions";
+import { EVENT_USER_NOTICE } from "../../../src/core/userNotices";
 import type { TaskInfo } from "../../../src/types";
 
 jest.mock("obsidian");
@@ -21,6 +22,9 @@ function makePlugin() {
 		i18n: {
 			translate: (key: string, params?: Record<string, string | number>) =>
 				params ? `${key}:${Object.values(params).join(",")}` : key,
+		},
+		emitter: {
+			trigger: jest.fn(),
 		},
 		updateTaskProperty: jest.fn(
 			async (task: TaskInfo, property: keyof TaskInfo, value: unknown) => ({
@@ -74,8 +78,11 @@ describe("Issue #1835: current note relationship commands", () => {
 			"[[Projects/Alpha]]",
 		]);
 		expect(updatedTask?.projects).toEqual(["[[Projects/Alpha]]"]);
-		expect(Notice).toHaveBeenCalledWith(
-			"contextMenus.task.organization.notices.addedToProject:Alpha"
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
+			EVENT_USER_NOTICE,
+			expect.objectContaining({
+				message: "contextMenus.task.organization.notices.addedToProject:Alpha",
+			})
 		);
 	});
 
@@ -94,8 +101,11 @@ describe("Issue #1835: current note relationship commands", () => {
 			"[[Projects/Alpha]]",
 		]);
 		expect(updatedTask?.projects).toEqual(["[[Projects/Alpha]]"]);
-		expect(Notice).toHaveBeenCalledWith(
-			"contextMenus.task.organization.notices.addedAsSubtask:Subtask,Alpha"
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
+			EVENT_USER_NOTICE,
+			expect.objectContaining({
+				message: "contextMenus.task.organization.notices.addedAsSubtask:Subtask,Alpha",
+			})
 		);
 	});
 
@@ -112,8 +122,11 @@ describe("Issue #1835: current note relationship commands", () => {
 
 		expect(updatedTask).toBeNull();
 		expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
-		expect(Notice).toHaveBeenCalledWith(
-			"contextMenus.task.organization.notices.alreadyInProject"
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
+			EVENT_USER_NOTICE,
+			expect.objectContaining({
+				message: "contextMenus.task.organization.notices.alreadyInProject",
+			})
 		);
 	});
 });

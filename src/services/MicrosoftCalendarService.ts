@@ -13,7 +13,7 @@ import {
 import { validateCalendarId, validateEventId, validateRequired } from "./validation";
 import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MicrosoftCalendarService" });
 
@@ -835,7 +835,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			showNotice(`Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
+			publishUserNotice(this.plugin.emitter, `Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
 			return;
 		}
 

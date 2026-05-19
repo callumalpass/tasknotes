@@ -2,7 +2,7 @@ import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 import { createVaultFile } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/AutoExportService" });
@@ -160,7 +160,7 @@ export class AutoExportService {
 				!this.lastExportTime ||
 				Date.now() - this.lastExportTime.getTime() > 6 * 60 * 60 * 1000
 			) {
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate("services.autoExport.notices.exportFailed", {
 						error: error instanceof Error ? error.message : String(error),
 					})

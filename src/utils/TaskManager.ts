@@ -1,6 +1,6 @@
 import { TFile, App, Events, EventRef, parseYaml } from "obsidian";
 import { TaskInfo, NoteInfo, EVENT_TASK_UPDATED } from "../types";
-import { FieldMapper } from "../services/FieldMapper";
+import { FieldMapper } from "../core/FieldMapper";
 import { normalizePriorityConfigValue, normalizeStatusConfigValue } from "../core/fieldMapping";
 import { getTodayString, formatDateForStorage, isBeforeDateSafe, getDatePart } from "./dateUtils";
 import { TaskNotesSettings } from "../types/settings";

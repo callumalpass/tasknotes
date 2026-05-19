@@ -4,8 +4,8 @@ import { TaskNotesSettingTab } from "../settings/TaskNotesSettingTab";
 import { perfMonitor } from "../utils/PerformanceMonitor";
 import { registerCliHandlers } from "../cli/registerCliHandlers";
 import { TranslatedCommandRegistry } from "../commands/TranslatedCommandRegistry";
-import { WorkspaceNavigationService } from "../services/WorkspaceNavigationService";
-import { TaskActionCoordinator } from "../services/TaskActionCoordinator";
+import { WorkspaceNavigationService } from "../ui/WorkspaceNavigationService";
+import { TaskActionCoordinator } from "../ui/TaskActionCoordinator";
 import { SettingsLifecycleService } from "../services/SettingsLifecycleService";
 import { unregisterBasesViews } from "../bases/registration";
 import {

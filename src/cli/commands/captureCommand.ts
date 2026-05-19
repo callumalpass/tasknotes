@@ -1,7 +1,7 @@
 import type { CliData } from "obsidian";
 import type { CliCommandDefinition } from "../types";
 import { formatCliJson, formatTaskSummary } from "../helpers/formatters";
-import { buildTaskCreationDataFromCli } from "../../utils/buildTaskCreationDataFromCli";
+import { buildTaskCreationDataFromCli } from "../../services/buildTaskCreationDataFromCli";
 
 export const captureCliCommand: CliCommandDefinition = {
 	command: "capture",

@@ -1,4 +1,4 @@
-import { StatusBarService } from "../../../src/services/StatusBarService";
+import { StatusBarService } from "../../../src/ui/StatusBarService";
 
 describe("Issue #1880: status bar with dash titles", () => {
 	it("renders the tracked task status when the title contains a dash", async () => {

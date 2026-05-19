@@ -63,6 +63,7 @@ const vaultWriteAllowedPatterns = [
 	/^src\/api\/.*\.ts$/,
 	/^src\/bases\/.*\.ts$/,
 	/^src\/bootstrap\/.*\.ts$/,
+	/^src\/core\/VaultMutationService\.ts$/,
 	/^src\/main\.ts$/,
 	/^src\/services\/(?:AutoArchiveService|ICSNoteService|MdbaseSpecService|TaskService|VaultMutationService|ViewStateManager)\.ts$/,
 	/^src\/services\/task-service\/(?:TaskCreationService|TaskUpdateService|taskPropertyChangeSideEffects)\.ts$/,

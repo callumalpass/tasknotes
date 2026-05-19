@@ -7,7 +7,7 @@ import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSSubscriptionService" });
 
@@ -355,7 +355,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			// Show user notification for errors with more helpful message
 			if (subscription.type === "remote") {
 				if (errorMessage.includes("404")) {
-					showNotice(
+					publishUserNotice(this.plugin.emitter,
 						this.translate("services.icsSubscription.notices.calendarNotFound", {
 							name: subscription.name,
 						})
@@ -364,13 +364,13 @@ export class ICSSubscriptionService extends EventEmitter {
 					errorMessage.includes("500") ||
 					errorMessage.includes("OwaBasicUnsupportedException")
 				) {
-					showNotice(
+					publishUserNotice(this.plugin.emitter,
 						this.translate("services.icsSubscription.notices.calendarAccessDenied", {
 							name: subscription.name,
 						})
 					);
 				} else {
-					showNotice(
+					publishUserNotice(this.plugin.emitter,
 						this.translate("services.icsSubscription.notices.fetchRemoteFailed", {
 							name: subscription.name,
 							error: errorMessage,
@@ -378,7 +378,7 @@ export class ICSSubscriptionService extends EventEmitter {
 					);
 				}
 			} else {
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate("services.icsSubscription.notices.readLocalFailed", {
 						name: subscription.name,
 						error: errorMessage,

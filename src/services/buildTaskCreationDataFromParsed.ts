@@ -1,8 +1,8 @@
 import type TaskNotesPlugin from "../main";
-import type { ParsedTaskData } from "../services/NaturalLanguageParser";
+import type { ParsedTaskData } from "./NaturalLanguageParser";
 import type { TaskCreationData } from "../types";
-import { combineDateAndTime, getCurrentTimestamp } from "./dateUtils";
-import { sanitizeTags } from "./helpers";
+import { combineDateAndTime, getCurrentTimestamp } from "../utils/dateUtils";
+import { sanitizeTags } from "../utils/helpers";
 
 interface BuildTaskCreationDataOptions {
 	creationContext?: TaskCreationData["creationContext"];

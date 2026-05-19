@@ -1,8 +1,6 @@
 import { TaskInfo } from "../types";
 import { format, parseISO } from "date-fns";
-import { TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/CalendarExportService" });
 
@@ -23,7 +21,11 @@ export interface ICSExportOptions {
 	vaultName?: string; // Vault name used when includeObsidianLink is enabled
 }
 
-type TranslateFn = (key: TranslationKey, variables?: Record<string, unknown>) => string;
+export interface ICSDownloadFile {
+	content: string;
+	filename: string;
+	taskCount: number;
+}
 
 interface ICSDateProperties {
 	startLine: string | null;
@@ -50,27 +52,6 @@ export class CalendarExportService {
 				return this.generateICSDownloadURL(task);
 			default:
 				throw new Error("Unsupported calendar type");
-		}
-	}
-
-	/**
-	 * Open calendar URL in browser
-	 */
-	static openCalendarURL(options: CalendarURLOptions, translate?: TranslateFn): void {
-		try {
-			const url = this.generateCalendarURL(options);
-			window.open(url, "_blank");
-		} catch (error) {
-			tasknotesLogger.error("Failed to generate calendar URL:", {
-				category: "provider",
-				operation: "generate-calendar-url",
-				error: error,
-			});
-			showNotice(
-				translate
-					? translate("services.calendarExport.notices.generateLinkFailed")
-					: "Failed to generate calendar link"
-			);
 		}
 	}
 
@@ -730,112 +711,32 @@ export class CalendarExportService {
 		return "CONFIRMED";
 	}
 
-	/**
-	 * Download ICS file for all tasks
-	 */
-	static downloadAllTasksICSFile(
+	static createMultipleTasksICSDownload(
 		tasks: TaskInfo[],
-		translate?: TranslateFn,
 		options?: ICSExportOptions
-	): void {
-		try {
-			if (!tasks || tasks.length === 0) {
-				showNotice(
-					translate
-						? translate("services.calendarExport.notices.noTasksToExport")
-						: "No tasks found to export"
-				);
-				return;
-			}
-
-			const exportTasks = this.filterTasksForExport(tasks, options);
-			if (exportTasks.length === 0) {
-				showNotice(
-					translate
-						? translate("services.calendarExport.notices.noTasksToExport")
-						: "No tasks found to export"
-				);
-				return;
-			}
-
-			const icsContent = this.generateMultipleTasksICSContent(exportTasks, options);
-			const blob = new Blob([icsContent], { type: "text/calendar" });
-			const url = URL.createObjectURL(blob);
-
-			const date = new Date().toISOString().split("T")[0];
-			const filename = `tasknotes-all-tasks-${date}.ics`;
-
-			const a = activeDocument.createElement("a");
-			a.href = url;
-			a.download = filename;
-			a.click();
-
-			URL.revokeObjectURL(url);
-
-			const pluralSuffix = exportTasks.length === 1 ? "" : "s";
-			showNotice(
-				translate
-					? translate("services.calendarExport.notices.downloadSuccess", {
-							filename,
-							count: exportTasks.length,
-							plural: pluralSuffix,
-						})
-					: `Downloaded ${filename} with ${exportTasks.length} task${pluralSuffix}`
-			);
-		} catch (error) {
-			tasknotesLogger.error("Failed to download all tasks ICS file:", {
-				category: "provider",
-				operation: "download-all-tasks-ics-file",
-				error: error,
-			});
-			showNotice(
-				translate
-					? translate("services.calendarExport.notices.downloadFailed")
-					: "Failed to download calendar file"
-			);
+	): ICSDownloadFile | null {
+		if (!tasks || tasks.length === 0) {
+			return null;
 		}
+
+		const exportTasks = this.filterTasksForExport(tasks, options);
+		if (exportTasks.length === 0) {
+			return null;
+		}
+
+		const date = new Date().toISOString().split("T")[0];
+		return {
+			content: this.generateMultipleTasksICSContent(exportTasks, options),
+			filename: `tasknotes-all-tasks-${date}.ics`,
+			taskCount: exportTasks.length,
+		};
 	}
 
-	/**
-	 * Download ICS file for a task
-	 */
-	static downloadICSFile(
-		task: TaskInfo,
-		translate?: TranslateFn,
-		options?: ICSExportOptions
-	): void {
-		try {
-			const icsContent = this.generateICSContent(task, options);
-			const blob = new Blob([icsContent], { type: "text/calendar" });
-			const url = URL.createObjectURL(blob);
-
-			const filename = `${task.title.replace(/[^a-zA-Z0-9]/g, "-")}.ics`;
-
-			const a = activeDocument.createElement("a");
-			a.href = url;
-			a.download = filename;
-			a.click();
-
-			URL.revokeObjectURL(url);
-
-			showNotice(
-				translate
-					? translate("services.calendarExport.notices.singleDownloadSuccess", {
-							filename,
-						})
-					: `Downloaded ${filename}`
-			);
-		} catch (error) {
-			tasknotesLogger.error("Failed to download ICS file:", {
-				category: "provider",
-				operation: "download-ics-file",
-				error: error,
-			});
-			showNotice(
-				translate
-					? translate("services.calendarExport.notices.downloadFailed")
-					: "Failed to download calendar file"
-			);
-		}
+	static createTaskICSDownload(task: TaskInfo, options?: ICSExportOptions): ICSDownloadFile {
+		return {
+			content: this.generateICSContent(task, options),
+			filename: `${task.title.replace(/[^a-zA-Z0-9]/g, "-")}.ics`,
+			taskCount: 1,
+		};
 	}
 }

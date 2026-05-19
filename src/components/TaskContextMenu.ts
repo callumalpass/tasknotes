@@ -3,7 +3,6 @@ import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
 import { ReminderModal } from "../modals/ReminderModal";
-import { CalendarExportService } from "../services/CalendarExportService";
 import {
 	addTaskToProject,
 	assignTaskAsSubtask,
@@ -38,6 +37,7 @@ import {
 	parseTaskTagInput,
 	removeTagsFromList,
 } from "../utils/taskTagList";
+import { downloadTaskICSFile, openCalendarURL } from "../ui/calendarExportActions";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
@@ -667,7 +667,7 @@ export class TaskContextMenu {
 				subItem.setTitle(this.t("contextMenus.task.calendar.google"));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
-					CalendarExportService.openCalendarURL(
+					openCalendarURL(
 						{
 							type: "google",
 							task: task,
@@ -683,7 +683,7 @@ export class TaskContextMenu {
 				subItem.setTitle(this.t("contextMenus.task.calendar.outlook"));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
-					CalendarExportService.openCalendarURL(
+					openCalendarURL(
 						{
 							type: "outlook",
 							task: task,
@@ -699,7 +699,7 @@ export class TaskContextMenu {
 				subItem.setTitle(this.t("contextMenus.task.calendar.yahoo"));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
-					CalendarExportService.openCalendarURL(
+					openCalendarURL(
 						{
 							type: "yahoo",
 							task: task,
@@ -717,7 +717,7 @@ export class TaskContextMenu {
 				subItem.setTitle(this.t("contextMenus.task.calendar.downloadIcs"));
 				subItem.setIcon("download");
 				subItem.onClick(() => {
-					CalendarExportService.downloadICSFile(task, this.t.bind(this), {
+					downloadTaskICSFile(task, this.t.bind(this), {
 						includeObsidianLink: true,
 						vaultName: plugin.app.vault.getName(),
 					});

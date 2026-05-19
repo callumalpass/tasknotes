@@ -1,20 +1,33 @@
-import {
-	ViewPerformanceService,
-	ViewPerformanceConfig,
-	ViewUpdateHandler,
-} from "../services/ViewPerformanceService";
 import { TaskInfo, TimeEntry } from "../types";
 import TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/ViewOptimizations" });
 
+export interface ViewPerformanceConfig {
+	viewId: string;
+	debounceDelay?: number;
+	maxBatchSize?: number;
+	changeDetectionEnabled?: boolean;
+}
+
+export interface ViewUpdateHandler {
+	updateForTask: (taskPath: string, operation: "update" | "delete" | "create") => Promise<void>;
+	refresh: (force?: boolean) => Promise<void>;
+	shouldRefreshForTask?: (originalTask: TaskInfo | undefined, updatedTask: TaskInfo) => boolean;
+}
+
+interface ViewPerformanceRegistry {
+	registerView(config: ViewPerformanceConfig, handler: ViewUpdateHandler): void;
+	unregisterView(viewId: string): void;
+}
+
 /**
  * Mixin interface for views that want performance optimizations
  */
 export interface OptimizedView {
 	plugin: TaskNotesPlugin;
-	viewPerformanceService?: ViewPerformanceService;
+	viewPerformanceService?: ViewPerformanceRegistry;
 	performanceConfig?: ViewPerformanceConfig;
 	getViewType(): string;
 

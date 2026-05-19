@@ -1,6 +1,7 @@
 import { OAuthService } from '../../src/services/OAuthService';
-import { requestUrl, Notice } from 'obsidian';
+import { requestUrl } from 'obsidian';
 import type TaskNotesPlugin from '../../src/main';
+import { EVENT_USER_NOTICE } from '../../src/core/userNotices';
 
 // Mock Obsidian APIs
 jest.mock('obsidian', () => ({
@@ -55,6 +56,9 @@ describe('OAuthService - Token Revocation', () => {
 				googleOAuthClientSecret: 'test-client-secret',
 				microsoftOAuthClientId: '',
 				microsoftOAuthClientSecret: ''
+			} as any,
+			emitter: {
+				trigger: jest.fn()
 			} as any,
 			loadData: jest.fn().mockResolvedValue(mockConnectionData),
 			saveData: jest.fn().mockResolvedValue(undefined)
@@ -132,7 +136,10 @@ describe('OAuthService - Token Revocation', () => {
 
 			await oauthService.disconnect('google');
 
-			expect(Notice).toHaveBeenCalledWith('Disconnected from google Calendar');
+			expect(mockPlugin.emitter?.trigger).toHaveBeenCalledWith(
+				EVENT_USER_NOTICE,
+				expect.objectContaining({ message: 'Disconnected from google Calendar' })
+			);
 		});
 
 		test('should handle revocation failure gracefully', async () => {
@@ -146,7 +153,10 @@ describe('OAuthService - Token Revocation', () => {
 			expect(mockPlugin.saveData).toHaveBeenCalled();
 
 			// Should still show disconnect notice
-			expect(Notice).toHaveBeenCalledWith('Disconnected from google Calendar');
+			expect(mockPlugin.emitter?.trigger).toHaveBeenCalledWith(
+				EVENT_USER_NOTICE,
+				expect.objectContaining({ message: 'Disconnected from google Calendar' })
+			);
 		});
 
 		test('should handle already-revoked tokens (400 error)', async () => {

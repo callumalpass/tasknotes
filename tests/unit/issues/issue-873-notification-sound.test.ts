@@ -1,4 +1,4 @@
-import { NotificationService } from "../../../src/services/NotificationService";
+import { NotificationService } from "../../../src/ui/NotificationService";
 
 class MockOscillator {
 	frequency = { value: 0 };

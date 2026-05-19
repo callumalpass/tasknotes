@@ -13,7 +13,7 @@ import { stringifyUnknown } from "../utils/stringUtils";
 import { TokenRefreshError } from "./errors";
 import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 import { processVaultFrontMatter } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
@@ -1514,13 +1514,13 @@ export class TaskCalendarSyncService {
 			// Show user-friendly message for token refresh errors
 			// TokenRefreshError indicates the OAuth connection expired and user needs to reconnect
 			if (error instanceof TokenRefreshError) {
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.connectionExpired"
 					)
 				);
 			} else {
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.syncFailed",
 						{ message: getErrorMessage(error) }
@@ -1860,7 +1860,7 @@ export class TaskCalendarSyncService {
 		const results = { synced: 0, failed: 0, skipped: 0 };
 
 		if (!this.isEnabled()) {
-			showNotice(
+			publishUserNotice(this.plugin.emitter,
 				this.plugin.i18n.translate(
 					"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
 				)
@@ -1880,7 +1880,7 @@ export class TaskCalendarSyncService {
 		});
 
 		const total = allTasks.length;
-		showNotice(
+		publishUserNotice(this.plugin.emitter,
 			this.plugin.i18n.translate(
 				"settings.integrations.googleCalendarExport.notices.syncingTasks",
 				{ total }
@@ -1906,7 +1906,7 @@ export class TaskCalendarSyncService {
 			}
 		});
 
-		showNotice(
+		publishUserNotice(this.plugin.emitter,
 			this.plugin.i18n.translate(
 				"settings.integrations.googleCalendarExport.notices.syncComplete",
 				{
@@ -1964,7 +1964,7 @@ export class TaskCalendarSyncService {
 			unlinkedCount++;
 		}
 
-		showNotice(
+		publishUserNotice(this.plugin.emitter,
 			deleteEvents
 				? this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked",

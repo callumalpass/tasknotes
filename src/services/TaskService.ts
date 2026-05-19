@@ -22,7 +22,7 @@ import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplate
 import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { TaskCreationService } from "./task-service/TaskCreationService";
-import { showNotice } from "../ui/notifications";
+import { publishUserNotice } from "../core/userNotices";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
 import { applyTaskCreationDefaults as applyTaskCreationDefaultsToData } from "./task-service/taskCreationDefaults";
 import {
@@ -284,7 +284,7 @@ export class TaskService {
 					category: "persistence",
 					operation: "task-body-template-not-found",
 				});
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
 				);
 				return {
@@ -299,7 +299,7 @@ export class TaskService {
 				operation: "reading-task-body-template",
 				error: error,
 			});
-			showNotice(
+			publishUserNotice(this.plugin.emitter,
 				this.translate("services.task.notices.templateReadError", {
 					template: defaults.bodyTemplate,
 				})
@@ -537,7 +537,7 @@ export class TaskService {
 					operation: "moving",
 					details: { value: errorMessage },
 				});
-				showNotice(
+				publishUserNotice(this.plugin.emitter,
 					this.translate("services.task.notices.moveTaskFailed", {
 						operation,
 						error: errorMessage,

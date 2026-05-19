@@ -1,9 +1,9 @@
 import type { CliData } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { Reminder, TaskCreationData } from "../types";
-import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
-import { getCurrentTimestamp } from "./dateUtils";
-import { sanitizeTags } from "./helpers";
+import { NaturalLanguageParser } from "./NaturalLanguageParser";
+import { getCurrentTimestamp } from "../utils/dateUtils";
+import { sanitizeTags } from "../utils/helpers";
 import { buildTaskCreationDataFromParsed } from "./buildTaskCreationDataFromParsed";
 
 export interface CliCaptureBuildResult {

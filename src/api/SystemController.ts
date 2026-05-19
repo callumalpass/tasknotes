@@ -3,7 +3,7 @@ import { BaseController } from "./BaseController";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { TaskService } from "../services/TaskService";
 import TaskNotesPlugin from "../main";
-import { buildTaskCreationDataFromParsed } from "../utils/buildTaskCreationDataFromParsed";
+import { buildTaskCreationDataFromParsed } from "../services/buildTaskCreationDataFromParsed";
 
 import { generateOpenAPISpec, Get, Post } from "../utils/OpenAPIDecorators";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";

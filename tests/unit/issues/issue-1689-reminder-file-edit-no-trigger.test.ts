@@ -5,7 +5,7 @@
  * notification queue just like TaskNotes UI edits do.
  */
 
-import { NotificationService } from "../../../src/services/NotificationService";
+import { NotificationService } from "../../../src/ui/NotificationService";
 import { Reminder, TaskInfo } from "../../../src/types";
 
 class TestEmitter {

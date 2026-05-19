@@ -1,15 +1,18 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Dependency graph traversal guards resolved task nodes before dereferencing. */
 import { TFile, App, Events, EventRef } from "obsidian";
-import { FieldMapper } from "../services/FieldMapper";
+import { FieldMapper } from "../core/FieldMapper";
 import { normalizeDependencyList, resolveDependencyEntry } from "./dependencyUtils";
 import { TaskNotesSettings } from "../types/settings";
-import { StatusManager } from "../services/StatusManager";
 import { isPathInExcludedFolder, parseExcludedFolders } from "./pathExclusions";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/DependencyCache" });
 
 export const EVENT_DEPENDENCY_CACHE_CHANGED = "dependency-cache-changed";
+
+interface DependencyStatusClassifier {
+	isCompletedStatus(statusValue: string): boolean;
+}
 
 /**
  * Minimal cache for task dependencies and project references.
@@ -25,7 +28,7 @@ export class DependencyCache extends Events {
 	private settings: TaskNotesSettings;
 	private excludedFolders: string[];
 	private fieldMapper?: FieldMapper;
-	private statusManager: StatusManager;
+	private statusManager: DependencyStatusClassifier;
 
 	// Dependency indexes
 	private dependencySources: Map<string, Set<string>> = new Map(); // task path -> blocking task paths
@@ -49,7 +52,7 @@ export class DependencyCache extends Events {
 		app: App,
 		settings: TaskNotesSettings,
 		fieldMapper: FieldMapper | undefined,
-		statusManager: StatusManager,
+		statusManager: DependencyStatusClassifier,
 		isTaskFileCallback: (frontmatter: unknown) => boolean
 	) {
 		super();

@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { WorkspaceNavigationService } from "../../../src/services/WorkspaceNavigationService";
+import { WorkspaceNavigationService } from "../../../src/ui/WorkspaceNavigationService";
 import type TaskNotesPlugin from "../../../src/main";
 
 jest.mock("obsidian");

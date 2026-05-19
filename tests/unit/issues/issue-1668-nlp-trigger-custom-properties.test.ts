@@ -3,7 +3,7 @@ import { NaturalLanguageParser } from "../../../src/services/NaturalLanguagePars
 import { DEFAULT_PRIORITIES, DEFAULT_SETTINGS, DEFAULT_STATUSES } from "../../../src/settings/defaults";
 import type { NLPTriggersConfig, UserMappedField } from "../../../src/types/settings";
 import type TaskNotesPlugin from "../../../src/main";
-import { buildTaskCreationDataFromParsed } from "../../../src/utils/buildTaskCreationDataFromParsed";
+import { buildTaskCreationDataFromParsed } from "../../../src/services/buildTaskCreationDataFromParsed";
 import { TaskModal } from "../../../src/modals/TaskModal";
 import { MockObsidian } from "../../__mocks__/obsidian";
 
