@@ -7,6 +7,7 @@ import { TranslatedCommandRegistry } from "../commands/TranslatedCommandRegistry
 import { WorkspaceNavigationService } from "../services/WorkspaceNavigationService";
 import { TaskActionCoordinator } from "../services/TaskActionCoordinator";
 import { SettingsLifecycleService } from "../services/SettingsLifecycleService";
+import { unregisterBasesViews } from "../bases/registration";
 import {
 	initializeCoreServices,
 	registerRibbonIcons,
@@ -31,14 +32,12 @@ export async function initializePluginRuntime(plugin: TaskNotesPlugin): Promise<
 
 export async function cleanupPluginRuntime(plugin: TaskNotesPlugin): Promise<void> {
 	if (plugin.settings?.enableBases) {
-		import("../bases/registration")
-			.then(({ unregisterBasesViews }) => {
-				unregisterBasesViews(plugin);
-				plugin.basesRegistered = false;
-			})
-			.catch((error) => {
-				console.debug("[TaskNotes][Bases] Unregistration failed:", error);
-			});
+		try {
+			unregisterBasesViews(plugin);
+			plugin.basesRegistered = false;
+		} catch (error) {
+			console.debug("[TaskNotes][Bases] Unregistration failed:", error);
+		}
 	}
 
 	const cacheStats = perfMonitor.getStats("cache-initialization");

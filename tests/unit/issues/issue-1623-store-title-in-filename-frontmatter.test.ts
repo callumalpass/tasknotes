@@ -61,7 +61,7 @@ describe('Issue #1623: Store title in filename still writes title frontmatter', 
 		mockPlugin.settings.storeTitleInFilename = true;
 
 		const service = new TaskCreationService({
-			plugin: mockPlugin,
+			runtime: mockPlugin,
 			applyTaskCreationDefaults: jest.fn(async (taskData) => taskData),
 			applyTemplate: jest.fn(async () => ({ frontmatter: {}, body: "" })),
 			processFolderTemplate: jest.fn((folderTemplate) => folderTemplate),

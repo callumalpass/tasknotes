@@ -13,6 +13,18 @@ Primary source of truth:
 
 TaskNotes should avoid introducing a competing internal database for core task state.
 
+## Settings Startup Path
+
+1. `TaskNotesPlugin` asks `settingsPersistence` to read plugin `data.json`.
+2. If Obsidian returns `null` while the existing data file is present, the read
+   is retried before defaults are trusted.
+3. A compromised startup read blocks settings saves for that session so
+   existing user configuration is not overwritten by in-memory defaults.
+4. Legacy settings and nested defaults are normalized in
+   `settingsPersistence` before `TaskNotesPlugin.settings` is assigned.
+5. Settings-only saves write the known settings keys back to plugin data while
+   preserving other persisted plugin state already in `data.json`.
+
 ## Read Path
 
 1. Vault files change.
@@ -20,7 +32,13 @@ TaskNotes should avoid introducing a competing internal database for core task s
 3. `TaskManager` and related adapters read task state from metadata cache.
 4. Task frontmatter is identified through `taskIdentification`, then mapped
    task data is completed through `taskInfoAssembly`.
-5. Domain services and views consume normalized `TaskInfo` representations.
+5. Filter/query behavior receives user-field settings, i18n, link resolution,
+   and subtask lookup through the `FilterService` runtime contract rather than
+   reaching for the full plugin object.
+6. Query predicate evaluation runs through `filterPredicateEvaluation`, which
+   owns recursive group semantics, user-field coercion, project-link matching,
+   `hasSubtasks`, and `status.isCompleted` decisions.
+7. Domain services and views consume normalized `TaskInfo` representations.
 
 ## Write Path
 
@@ -28,15 +46,24 @@ TaskNotes should avoid introducing a competing internal database for core task s
 2. The request flows through `TaskService` or a dedicated mutation collaborator.
 3. Single-property updates are normalized and planned through
    `taskPropertyUpdate` before frontmatter is written.
-4. Frontmatter/body changes are written to the markdown file.
-5. `taskPropertyChangeSideEffects` refreshes the task cache, emits task update
+4. Bulk task updates are normalized and planned through `taskUpdatePlanning`
+   before mapped frontmatter or body writes happen.
+5. Frontmatter/body changes are written to the markdown file.
+6. `taskPropertyChangeSideEffects` refreshes the task cache, emits task update
    events, and runs webhook, calendar-sync, and auto-archive side effects.
-6. Obsidian metadata cache emits update events.
-7. Event listeners invalidate caches and refresh views.
+7. Obsidian metadata cache emits update events.
+8. Event listeners invalidate caches and refresh views.
 
 Task creation payload assembly should happen before the write boundary:
 
+- `TaskCreationService` and `TaskUpdateService` receive narrow runtime
+  contracts, not the full plugin type, so the task write path documents which
+  settings, app, cache, event, mapper, and sync capabilities it can use.
+- Bases view filters are converted into frontmatter defaults through
+  `basesFilterDefaults` before the creation payload is assembled.
 - Bases `New` frontmatter is normalized through `basesTaskCreation`.
+- Kanban column and swimlane creation defaults are planned through
+  `kanbanCreationDefaults` before the creation payload is assembled.
 - Modal user fields are normalized through `taskModalUserFields`.
 - Modal creation defaults and pre-populated values are normalized through
   `taskCreationFormState` before `TaskCreationModal` renders or saves.
@@ -49,11 +76,18 @@ Task creation payload assembly should happen before the write boundary:
 - Modal edit subtask additions/removals are planned through `taskEditSubtasks`
   before child task project links are updated.
 - NLP/API creation payloads use the shared parsed-data assembly path.
+- Convert-current-note command payloads use `currentNoteConversion` to coerce
+  existing frontmatter, apply status/priority defaults, and extract the body
+  before opening the edit modal.
 - Task creation defaults are applied through `taskCreationDefaults`.
 - Task title sanitization for filenames and stored frontmatter values is applied
   through `taskTitleSanitizer`.
 - Single-property task updates use `taskPropertyUpdate` to normalize incoming
   values and apply frontmatter mutation rules.
+- Bulk task updates use `taskUpdatePlanning` to sanitize time-entry updates,
+  plan recurrence date/DTSTART changes, apply mapped frontmatter and explicit
+  field-removal rules, merge custom frontmatter, and assemble the returned task
+  state.
 - Archive toggles use `taskArchivePlanning` to plan archive state, frontmatter
   tag changes, and optional archive/tasks folder moves.
 - Time-tracking start/stop/delete writes use `taskTimeTrackingPlanning` to
@@ -110,6 +144,16 @@ Refactor rule:
 - prefer `unknown` plus narrowing over `any`
 - keep Bases-specific value extraction out of general rendering code unless the
   renderer is explicitly responsible for displaying a native Bases value
+- keep filter-expression defaults for Bases-created tasks behind
+  `basesFilterDefaults`, including task-tag exclusion, mapped core fields,
+  custom user-field keys, list properties, and current-file link defaults
+- keep default Base file creation and overwrite policy behind a startup/settings
+  helper rather than inside the plugin shell
+- unregister custom Bases views synchronously during plugin unload so reloads
+  cannot remove newly registered view types after startup
+- keep shared Bases selection-mode classes, selected-card visuals, keyboard
+  shortcuts, click-selection decisions, indicator behavior, and default
+  visible-task path extraction behind `basesSelectionUi`
 
 Current adapter seams include:
 
@@ -117,10 +161,13 @@ Current adapter seams include:
 - calendar mutation planning
 - calendar config snapshot construction for refresh/recreate decisions
 - calendar data-signature property selection and value normalization
-- Kanban task grouping, column/swimlane ordering, and drag planning
+- calendar initial-date and navigation-state planning for recreate decisions
+- Kanban task grouping, column/swimlane ordering, drag planning, and
+  task-creation default planning
 - Task List drag/drop insertion geometry
 - Task List grouped render planning and sub-property grouping
 - shared Bases formula evaluation and path-property map assembly
+- shared Bases selection UI state and click/keyboard selection decisions
 - Bases-backed task creation assembly
 - TaskCard property access
 - TaskCard relationship expansion rendering
@@ -151,6 +198,8 @@ Current adapter seams include:
 - TaskEditModal initial form-state defaults and cached user-field values
 - TaskEditModal frontmatter-cache reads and edit-change input assembly
 - TaskEditModal subtask add/remove planning and child project-link updates
+- Bases filter defaults for task creation from filtered Base views
+- default Bases file creation and regeneration writes
 
 ## Date and Recurrence Flow
 
@@ -161,10 +210,28 @@ Refactor rule:
 - parsing and coercion should happen at the boundary
 - internal logic should use explicit date semantics
 - recurrence expansion should remain centralized rather than duplicated in views
+- date rollover detection should stay behind `dateChangeDetection`, which owns
+  the minute poll, next-midnight timeout, timer registration, and event trigger
 
 Calendar views should build events through normalized event builders before
 touching FullCalendar APIs. Drag/drop and resize handlers should ask planning
-helpers for explicit mutation plans before performing side effects.
+helpers for explicit mutation plans before performing side effects. Event-mount
+list-card rendering and Bases-backed task enrichment belong in
+`calendarEventMount`. Initial-date option normalization, property-backed
+navigation candidates, and navigation-state snapshots belong in
+`calendarInitialDate`; Calendar views keep FullCalendar callback wiring, hover
+previews, context menus, and refresh orchestration.
+
+Agenda date sections should ask `agendaTaskSelection` whether a task belongs to
+a date or overdue section. `FilterService` keeps task loading, query filtering,
+and sorting, while recurrence expansion, completed-overdue hiding, and
+due/scheduled date eligibility live in the helper.
+
+Filter predicates should ask `filterPredicateEvaluation` whether a task matches
+a query node. `FilterService` keeps cache reads, query planning, sorting,
+grouping, labels, and option discovery while the helper owns recursive group
+evaluation, dynamic user-field coercion, project matching, subtask lookup, and
+completion-state semantics.
 
 ## UI State Flow
 
@@ -194,6 +261,9 @@ Refactor rule:
 - Task List drag/drop segmenting, insertion-slot resolution, and drop-target
   reconstruction belong in `taskListDragGeometry`; `TaskListView` keeps DOM
   measurement, drag event handling, and persistence
+- Task List grouped-drop frontmatter mutation, status-derived fields, and
+  side-effect task snapshots belong in `taskListDropPlanning`; `TaskListView`
+  keeps sort-order queueing, vault writes, notices, and refresh orchestration
 - Task List grouped render items, sub-property groups, grouped sort-scope paths,
   formula-backed property maps, and group-value stringification belong in
   `taskListGrouping`; `TaskListView` keeps render mode switching, virtualization,
@@ -251,6 +321,11 @@ Refactor rule:
   `taskPropertyUpdate`; callers should not duplicate status coercion,
   completed-date derivation, date removal, dependency serialization, or
   date-modified writes inline
+- bulk task-update sanitation, recurrence-update planning, mapped frontmatter
+  mutation, custom-frontmatter merge/delete semantics, explicit mapped-field
+  removals, and returned task-state assembly belong in `taskUpdatePlanning`;
+  `TaskUpdateService` keeps vault writes, renames, body writes, cache updates,
+  events, webhooks, calendar sync, and auto-archive side effects
 - archive tag mutation and archive/tasks move path construction belong in
   `taskArchivePlanning`; `TaskService` keeps the vault write, rename, cache,
   calendar, and webhook side effects
@@ -266,12 +341,28 @@ Refactor rule:
   `TaskService` keeps task cache reads and child task writes
 - post-write cache refresh, dependent-task refresh events, webhooks, calendar
   sync, and auto-archive routing belong in `taskPropertyChangeSideEffects`
+- Calendar drag/resize frontmatter mutation decisions belong in
+  `calendarMutationPlanning`; Calendar views keep event dispatch, vault file
+  lookup, and provider/task-service side effects
+- Kanban drop frontmatter mutation, status-derived fields, and post-write
+  side-effect task snapshots belong in `kanbanDragUtils`; Kanban final
+  coordinate drop-target reconstruction and optimistic DOM card movement also
+  belong there. Kanban column/swimlane task-creation defaults belong in
+  `kanbanCreationDefaults`, while Kanban views keep event wiring, active drag
+  state, sort-order service calls, vault writes, notices, and modal entry
+  points
 - task-frontmatter identification belongs in `taskIdentification`; callers
   should not duplicate tag/property matching, metadata-cache `#` stripping, or
   boolean-like identifier comparison
 - mapped task-info defaults, computed tracked time, and blocking flags belong in
   `taskInfoAssembly`; `TaskManager` keeps metadata-cache access, FieldMapper
   calls, and dependency-cache lookups
+- custom user-field filter coercion, list-token normalization, sort comparison,
+  and group bucket selection belong in `userFieldValues`; `FilterService` keeps
+  metadata-cache reads and query orchestration
+- filter predicate evaluation belongs in `filterPredicateEvaluation`; callers
+  should not duplicate recursive group rules, user-field filter coercion,
+  project wikilink matching, `hasSubtasks`, or `status.isCompleted` semantics
 - DOM functions should wire controls, render values, and call services
 
 This keeps DOM tests focused on interaction while pure unit tests cover state

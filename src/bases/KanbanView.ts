@@ -26,9 +26,14 @@ import { setElementDragImage } from "../utils/dragImage";
 import {
 	applyKanbanTaskDropFrontmatterPlan,
 	createKanbanDropTarget,
+	getKanbanCardDropTargetFromClientY,
 	getKanbanDraggedPaths,
 	kanbanDropPlanNeedsWrite,
+	performKanbanOptimisticReorder,
+	planKanbanDropSideEffect,
+	planKanbanStatusDerivativeUpdate,
 	planKanbanTaskDropUpdate,
+	reconstructKanbanDropTargetFromContainer,
 	resolveKanbanContainerDropTarget,
 	resolveNestedTaskCardDragSource,
 	type KanbanDropTarget,
@@ -39,6 +44,7 @@ import {
 	computeBasesFormulas,
 	isObsidianListProperty,
 } from "./basesViewAdapters";
+import { applyKanbanCreationDefault } from "./kanbanCreationDefaults";
 import { coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter } from "./propertyValueCoercion";
 import {
 	buildKanbanTaskGroups,
@@ -1274,82 +1280,26 @@ export class KanbanView extends BasesViewBase {
 		swimLaneKey: string | null = null
 	): Promise<void> {
 		await this.createFileForView(undefined, (frontmatter) => {
-			this.applyKanbanCreationDefault(frontmatter, groupByPropertyId, groupKey);
-			this.applyKanbanCreationDefault(frontmatter, this.swimLanePropertyId, swimLaneKey);
+			const applyCreationDefault = (
+				propertyId: string | null,
+				defaultGroupKey: string | null
+			): void => {
+				applyKanbanCreationDefault({
+					frontmatter,
+					propertyId,
+					groupKey: defaultGroupKey,
+					propertyMapper: this.propertyMapper,
+					fieldMapper: this.plugin.fieldMapper,
+					userFields: this.plugin.settings.userFields,
+					isListTypeProperty: (property) => this.isListTypeProperty(property),
+					coerceGroupKeyForFrontmatter: (property, value) =>
+						this.coerceGroupKeyForFrontmatter(property, value),
+				});
+			};
+
+			applyCreationDefault(groupByPropertyId, groupKey);
+			applyCreationDefault(this.swimLanePropertyId, swimLaneKey);
 		});
-	}
-
-	private applyKanbanCreationDefault(
-		frontmatter: Record<string, unknown>,
-		propertyId: string | null,
-		groupKey: string | null
-	): void {
-		if (!propertyId || !groupKey || groupKey === "None") {
-			return;
-		}
-
-		const property = this.getCreatableFrontmatterProperty(propertyId);
-		if (!property) {
-			return;
-		}
-
-		if (this.isCreationListProperty(property)) {
-			const existing = frontmatter[property];
-			const values = Array.isArray(existing)
-				? existing.filter((item): item is string => typeof item === "string")
-				: typeof existing === "string"
-					? [existing]
-					: [];
-			if (!values.includes(groupKey)) {
-				frontmatter[property] = [...values, groupKey];
-			}
-			return;
-		}
-
-		frontmatter[property] = this.coerceGroupKeyForFrontmatter(property, groupKey);
-	}
-
-	private getCreatableFrontmatterProperty(propertyId: string): string | null {
-		if (propertyId.startsWith("file.") || propertyId.startsWith("formula.")) {
-			return null;
-		}
-
-		const property = this.propertyMapper.basesToUserProperty(propertyId);
-		const fieldMapper = this.plugin.fieldMapper;
-		const allowedProperties = new Set([
-			fieldMapper.toUserField("status"),
-			fieldMapper.toUserField("priority"),
-			fieldMapper.toUserField("due"),
-			fieldMapper.toUserField("scheduled"),
-			fieldMapper.toUserField("contexts"),
-			fieldMapper.toUserField("projects"),
-			fieldMapper.toUserField("timeEstimate"),
-			fieldMapper.toUserField("recurrence"),
-			fieldMapper.toUserField("blockedBy"),
-			"tags",
-		]);
-
-		if (allowedProperties.has(property)) {
-			return property;
-		}
-
-		const userFields = this.plugin.settings.userFields || [];
-		return userFields.some((field) => field.key === property) ? property : null;
-	}
-
-	private isCreationListProperty(property: string): boolean {
-		const fieldMapper = this.plugin.fieldMapper;
-		if (
-			property === "tags" ||
-			property === fieldMapper.toUserField("contexts") ||
-			property === fieldMapper.toUserField("projects") ||
-			property === fieldMapper.toUserField("blockedBy")
-		) {
-			return true;
-		}
-
-		const userField = this.plugin.settings.userFields?.find((field) => field.key === property);
-		return userField?.type === "list" || this.isListTypeProperty(property);
 	}
 
 	private coerceGroupKeyForFrontmatter(
@@ -1741,14 +1691,19 @@ export class KanbanView extends BasesViewBase {
 					cardsContainer?.querySelector(
 						`[data-task-path="${CSS.escape(initialDropTarget.taskPath)}"]`
 					) != null;
+				const coordinateDropTarget = cardsContainer
+					? reconstructKanbanDropTargetFromContainer({
+							cardsContainer,
+							draggedTaskPaths: this.draggedTaskPaths,
+							currentInsertionIndex: this.currentInsertionIndex,
+							clientY: e.clientY,
+						})
+					: undefined;
 				const dropTarget = resolveKanbanContainerDropTarget({
-					dropTarget: initialDropTarget,
+					dropTarget: coordinateDropTarget ?? initialDropTarget,
 					isCrossScope: isCrossColumn,
-					targetInDropScope: targetInColumn,
-					fallbackDropTarget:
-						!isCrossColumn && cardsContainer
-							? this.reconstructDropTarget(cardsContainer)
-							: undefined,
+					targetInDropScope: !!coordinateDropTarget || targetInColumn,
+					fallbackDropTarget: !isCrossColumn ? coordinateDropTarget : undefined,
 				});
 
 				this.debugLog("COLUMN-DROP", {
@@ -1766,11 +1721,7 @@ export class KanbanView extends BasesViewBase {
 
 				// Optimistic DOM reorder: move card to correct position immediately
 				const paths = getKanbanDraggedPaths(this.draggedTaskPaths, this.draggedTaskPath);
-				const optimisticResult = this.performOptimisticReorder(
-					paths,
-					dropTarget,
-					cardsContainer
-				);
+				const optimisticResult = this.performOptimisticReorder(paths, dropTarget, cardsContainer);
 				this.debugLog("COLUMN-DROP-OPTIMISTIC-RESULT", { success: optimisticResult });
 
 				// Now clean up shift CSS — no visual change since DOM is already correct
@@ -1855,14 +1806,19 @@ export class KanbanView extends BasesViewBase {
 					cardsContainer?.querySelector(
 						`[data-task-path="${CSS.escape(initialDropTarget.taskPath)}"]`
 					) != null;
+				const coordinateDropTarget = cardsContainer
+					? reconstructKanbanDropTargetFromContainer({
+							cardsContainer,
+							draggedTaskPaths: this.draggedTaskPaths,
+							currentInsertionIndex: this.currentInsertionIndex,
+							clientY: e.clientY,
+						})
+					: undefined;
 				const dropTarget = resolveKanbanContainerDropTarget({
-					dropTarget: initialDropTarget,
+					dropTarget: coordinateDropTarget ?? initialDropTarget,
 					isCrossScope,
-					targetInDropScope: targetInCell,
-					fallbackDropTarget:
-						!isCrossScope && cardsContainer
-							? this.reconstructDropTarget(cardsContainer)
-							: undefined,
+					targetInDropScope: !!coordinateDropTarget || targetInCell,
+					fallbackDropTarget: !isCrossScope ? coordinateDropTarget : undefined,
 				});
 
 				// Optimistic DOM reorder: move card to correct position immediately
@@ -2313,8 +2269,13 @@ export class KanbanView extends BasesViewBase {
 
 				if (!groupKey) return;
 
-				// Build drop target from the current card position
-				const dropTarget = createKanbanDropTarget(task.path, this.dropAbove);
+				// Resolve from the actual drop event so a queued dragover frame
+				// cannot leave the final before/after side stale.
+				const dropTarget = getKanbanCardDropTargetFromClientY(
+					cardWrapper,
+					task.path,
+					e.clientY
+				);
 
 				this.debugLog("CARD-DROP (drop-on-card handler)", {
 					draggedTask: this.draggedTaskPath?.split("/").pop(),
@@ -2322,7 +2283,7 @@ export class KanbanView extends BasesViewBase {
 					sourceColumn: this.draggedFromColumn,
 					targetColumn: groupKey,
 					isCrossColumn: this.draggedFromColumn !== groupKey,
-					above: this.dropAbove,
+					above: dropTarget.above,
 					swimLaneKey,
 				});
 
@@ -2604,30 +2565,6 @@ export class KanbanView extends BasesViewBase {
 	 * Used as a fallback when the user drops in empty space where the card-level
 	 * dragover never fired, so dropTargetPath is null.
 	 */
-	private reconstructDropTarget(
-		cardsContainer: HTMLElement
-	): { taskPath: string; above: boolean } | undefined {
-		const visibleCards = Array.from(
-			cardsContainer.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper")
-		).filter((el) => !this.draggedTaskPaths.includes(el.dataset.taskPath || ""));
-
-		if (visibleCards.length === 0) return undefined;
-
-		// Use currentInsertionIndex if available; otherwise
-		// default to after the last visible card.
-		const idx =
-			this.currentInsertionIndex >= 0
-				? Math.min(this.currentInsertionIndex, visibleCards.length)
-				: visibleCards.length;
-
-		if (idx === 0) {
-			// Before the first visible card
-			return { taskPath: visibleCards[0].dataset.taskPath!, above: true };
-		}
-		// After the card at idx-1
-		return { taskPath: visibleCards[idx - 1].dataset.taskPath!, above: false };
-	}
-
 	/**
 	 * Move dragged card(s) to the correct DOM position immediately after drop,
 	 * before CSS shift classes are removed. This prevents the visual flash
@@ -2639,108 +2576,14 @@ export class KanbanView extends BasesViewBase {
 		dropTarget: { taskPath: string; above: boolean } | undefined,
 		targetContainer?: HTMLElement | null
 	): boolean {
-		if (draggedPaths.length === 0) {
-			this.debugLog("OPTIMISTIC-REORDER: bail — no dragged paths");
-			return false;
-		}
-
-		// Cross-column drop onto empty space / column background: no specific
-		// card target, but we know the destination container.  Append the
-		// dragged card(s) so the user sees an instant move instead of the card
-		// snapping back to the source column.
-		if (!dropTarget) {
-			if (!targetContainer) {
-				this.debugLog("OPTIMISTIC-REORDER: bail — no dropTarget AND no targetContainer");
-				return false;
-			}
-			this.removeEmptyCellHint(targetContainer);
-			this.debugLog("OPTIMISTIC-REORDER: cross-column append path", {
-				paths: draggedPaths.map((p) => p.split("/").pop()),
-				containerChildCount: targetContainer.childElementCount,
-				containerClass: targetContainer.className,
-			});
-			for (const path of draggedPaths) {
-				const draggedEl = this.currentTaskElements.get(path);
-				if (!draggedEl) {
-					this.debugLog("OPTIMISTIC-REORDER: bail — element not in currentTaskElements", {
-						path: path.split("/").pop(),
-					});
-					return false;
-				}
-				const oldParent = draggedEl.parentElement;
-				this.debugLog("OPTIMISTIC-REORDER: moving element", {
-					path: path.split("/").pop(),
-					oldParentClass: oldParent?.className,
-					oldParentChildCount: oldParent?.childElementCount,
-					sameContainer: oldParent === targetContainer,
-					elCurrentStyles: draggedEl.style.cssText.slice(0, 120),
-				});
-				clearStaticStyleClasses(draggedEl);
-				draggedEl.classList.remove("kanban-view__card--dragging");
-				targetContainer.appendChild(draggedEl);
-			}
-			this.debugLog("OPTIMISTIC-REORDER: cross-column append SUCCESS", {
-				containerChildCount: targetContainer.childElementCount,
-			});
-			return true;
-		}
-
-		this.debugLog("OPTIMISTIC-REORDER: drop-on-card path", {
-			paths: draggedPaths.map((p) => p.split("/").pop()),
-			targetCard: dropTarget.taskPath.split("/").pop(),
-			above: dropTarget.above,
-			hasContainer: !!targetContainer,
+		return performKanbanOptimisticReorder({
+			draggedPaths,
+			dropTarget,
+			targetContainer,
+			currentTaskElements: this.currentTaskElements,
+			removeEmptyCellHint: (container) => this.removeEmptyCellHint(container),
+			log: (message, data) => this.debugLog(message, data),
 		});
-
-		const targetEl = this.currentTaskElements.get(dropTarget.taskPath);
-		if (!targetEl) {
-			this.debugLog("OPTIMISTIC-REORDER: bail — target element not in currentTaskElements", {
-				target: dropTarget.taskPath.split("/").pop(),
-			});
-			return false;
-		}
-
-		const container = targetContainer || targetEl.parentElement;
-		if (!container) {
-			this.debugLog("OPTIMISTIC-REORDER: bail — no container resolved");
-			return false;
-		}
-
-		// If the target element is not in the container (e.g. cross-column drop
-		// where dropTarget references a card in the source column), bail out
-		// gracefully — the post-drop render will fix the DOM.
-		if (!container.contains(targetEl)) {
-			this.debugLog("OPTIMISTIC-REORDER: bail — targetEl not in container", {
-				containerClass: container.className,
-				targetElParentClass: targetEl.parentElement?.className,
-			});
-			return false;
-		}
-		this.removeEmptyCellHint(container);
-
-		for (const path of draggedPaths) {
-			const draggedEl = this.currentTaskElements.get(path);
-			if (!draggedEl) {
-				this.debugLog(
-					"OPTIMISTIC-REORDER: bail — dragged element not in map (virtual scroll?)",
-					{ path: path.split("/").pop() }
-				);
-				return false; // Virtual-scrolled column — can't do optimistic reorder
-			}
-
-			// Restore visibility (undo the dragstart collapse)
-			clearStaticStyleClasses(draggedEl);
-			draggedEl.classList.remove("kanban-view__card--dragging");
-
-			// Move to correct DOM position
-			if (dropTarget.above) {
-				container.insertBefore(draggedEl, targetEl);
-			} else {
-				container.insertBefore(draggedEl, targetEl.nextSibling);
-			}
-		}
-		this.debugLog("OPTIMISTIC-REORDER: drop-on-card SUCCESS");
-		return true;
 	}
 
 	/**
@@ -3303,33 +3146,20 @@ export class KanbanView extends BasesViewBase {
 							fm[sortOrderField] = sortOrderPlan.sortOrder;
 						}
 
-						// Derivative writes for status changes (completedDate + dateModified)
-						if (dropPlan.needsGroupUpdate && groupByTaskProp === "status") {
-							const task = this.taskInfoCache.get(path);
-							const isRecurring = !!task?.recurrence;
+						const statusDerivativePlan = planKanbanStatusDerivativeUpdate({
+							plan: dropPlan,
+							task: this.taskInfoCache.get(path),
+							dateModifiedField: this.plugin.fieldMapper.toUserField("dateModified"),
+							dateModifiedValue: getCurrentTimestamp(),
+						});
+						if (statusDerivativePlan) {
 							this.plugin.taskService.updateCompletedDateInFrontmatter(
 								fm,
-								newGroupValue,
-								isRecurring
+								statusDerivativePlan.statusValue,
+								statusDerivativePlan.isRecurring
 							);
-							const dateModifiedField =
-								this.plugin.fieldMapper.toUserField("dateModified");
-							fm[dateModifiedField] = getCurrentTimestamp();
-						} else if (
-							dropPlan.needsSwimlaneUpdate &&
-							swimlaneTaskProp === "status" &&
-							dropPlan.newSwimLaneValue !== null
-						) {
-							const task = this.taskInfoCache.get(path);
-							const isRecurring = !!task?.recurrence;
-							this.plugin.taskService.updateCompletedDateInFrontmatter(
-								fm,
-								dropPlan.newSwimLaneValue,
-								isRecurring
-							);
-							const dateModifiedField =
-								this.plugin.fieldMapper.toUserField("dateModified");
-							fm[dateModifiedField] = getCurrentTimestamp();
+							fm[statusDerivativePlan.dateModifiedField] =
+								statusDerivativePlan.dateModifiedValue;
 						}
 					});
 
@@ -3341,40 +3171,26 @@ export class KanbanView extends BasesViewBase {
 					});
 
 					// Fire post-write side effects for known TaskInfo property changes
-					const changedTaskProp = dropPlan.changedTaskProp;
-					if (changedTaskProp) {
-						const oldPropValue = dropPlan.oldPropValue;
-						const newPropValue = dropPlan.newPropValue;
+					if (dropPlan.changedTaskProp) {
 						try {
 							const originalTask =
 								this.taskInfoCache.get(path) ??
 								(await this.plugin.cacheManager.getTaskInfo(path));
-							if (originalTask) {
-								const updatedTask = {
-									...originalTask,
-									[changedTaskProp]: newPropValue,
-								};
-								updatedTask.dateModified = getCurrentTimestamp();
-								if (changedTaskProp === "status" && !originalTask.recurrence) {
-									if (
-										this.plugin.statusManager.isCompletedStatus(
-											newPropValue as string
-										)
-									) {
-										updatedTask.completedDate = new Date()
-											.toISOString()
-											.split("T")[0];
-									} else {
-										updatedTask.completedDate = undefined;
-									}
-								}
+							const sideEffectPlan = planKanbanDropSideEffect({
+								plan: dropPlan,
+								originalTask,
+								dateModifiedValue: getCurrentTimestamp(),
+								isCompletedStatus: (status) =>
+									this.plugin.statusManager.isCompletedStatus(status),
+							});
+							if (sideEffectPlan) {
 								await this.plugin.taskService.applyPropertyChangeSideEffects(
 									file,
-									originalTask,
-									updatedTask,
-									changedTaskProp as keyof TaskInfo,
-									oldPropValue,
-									newPropValue
+									originalTask as TaskInfo,
+									sideEffectPlan.updatedTask,
+									sideEffectPlan.changedTaskProp,
+									sideEffectPlan.oldPropValue,
+									sideEffectPlan.newPropValue
 								);
 							}
 						} catch (sideEffectError) {

@@ -7,7 +7,6 @@ import {
 	TAbstractFile,
 	TFile,
 	getLanguage,
-	normalizePath,
 } from "obsidian";
 import { format } from "date-fns";
 import {
@@ -17,9 +16,6 @@ import {
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
 import { TaskNotesSettings } from "./types/settings";
-import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./settings/defaults";
-import { hasMissingMigratedSettings } from "./settings/settingsMigration";
-import { initializeFieldConfig } from "./utils/fieldConfigDefaults";
 import { generateBasesFileTemplate } from "./templates/defaultBasesFiles";
 import {
 	MINI_CALENDAR_VIEW_TYPE,
@@ -35,7 +31,7 @@ import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "./modals/ProjectSelectModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
+import { convertUTCToLocalCalendarDate } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -51,7 +47,6 @@ import { AutoArchiveService } from "./services/AutoArchiveService";
 import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
 import { formatDateForStorage, parseDateToLocal, getTodayLocal } from "./utils/dateUtils";
-import { stringifyUnknownArray } from "./utils/stringUtils";
 import { ICSSubscriptionService } from "./services/ICSSubscriptionService";
 import { ICSNoteService } from "./services/ICSNoteService";
 import { StatusBarService } from "./services/StatusBarService";
@@ -74,14 +69,19 @@ import {
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
+import { ensureDefaultBasesViewFiles } from "./bootstrap/defaultBasesFiles";
+import { buildCurrentNoteConversionTaskInfo } from "./services/task-service/currentNoteConversion";
 import { applyParentNoteProjectDefault } from "./utils/taskCreationPrepopulation";
 import { applySearchQueryToView } from "./utils/obsidianSearchView";
 import { TaskContextMenu } from "./components/TaskContextMenu";
-
-type LoadedSettingsData = Partial<TaskNotesSettings> &
-	Record<string, unknown> & {
-		statusSuggestionTrigger?: string;
-	};
+import {
+	LoadedSettingsData,
+	buildSettingsDataForSave,
+	buildSettingsFromLoadedData,
+	loadPluginSettingsDataWithRetry,
+	pluginDataFileExists,
+} from "./settings/settingsPersistence";
+import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 
 type DailyNoteMoment = Parameters<typeof getDailyNote>[0];
 type TaskLinkDetectionServiceInstance =
@@ -95,38 +95,12 @@ function getSubmenu(item: unknown): Menu {
 	return (item as SubmenuMenuItem).setSubmenu();
 }
 
-function frontmatterString(value: unknown): string | undefined {
-	if (value === null || value === undefined) return undefined;
-	if (typeof value === "string") return value;
-	if (typeof value === "number" || typeof value === "boolean") return String(value);
-	return undefined;
-}
-
-function frontmatterStringArray(value: unknown): string[] | undefined {
-	if (value === null || value === undefined) return undefined;
-	return stringifyUnknownArray(value);
-}
-
-function frontmatterNumber(value: unknown): number | undefined {
-	if (typeof value === "number") return value;
-	if (typeof value === "string" && value.trim() !== "") {
-		const parsed = Number(value);
-		return Number.isNaN(parsed) ? undefined : parsed;
-	}
-	return undefined;
-}
-
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
 	i18n: I18nService;
 	private settingsLoadCompromised = false;
 	private settingsDataSavePromise: Promise<void> | null = null;
 	private settingsDataSaveRequested = false;
-
-	// Date change detection for refreshing task states at midnight
-	private lastKnownDate: string = new Date().toDateString();
-	private dateCheckInterval: number;
-	private midnightTimeout: number;
 
 	// Ready promise to signal when initialization is complete
 	private readyPromise: Promise<void>;
@@ -581,53 +555,10 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Set up date change detection to refresh task states when the date rolls over
 	 */
 	setupDateChangeDetection(): void {
-		// Check for date changes every minute
-		const checkDateChange = () => {
-			const currentDate = new Date().toDateString();
-			if (currentDate !== this.lastKnownDate) {
-				this.lastKnownDate = currentDate;
-				// Emit date change event to trigger UI refresh
-				this.emitter.trigger(EVENT_DATE_CHANGED);
-			}
-		};
-
-		// Set up regular interval to check for date changes
-		this.dateCheckInterval = window.setInterval(checkDateChange, 60000); // Check every minute
-		this.registerInterval(this.dateCheckInterval);
-
-		// Schedule precise check at next midnight for better timing
-		this.scheduleNextMidnightCheck();
-	}
-
-	/**
-	 * Schedule a precise check at the next midnight
-	 */
-	private scheduleNextMidnightCheck(): void {
-		const now = new Date();
-		const midnight = new Date(now);
-		midnight.setHours(24, 0, 0, 0); // Next midnight
-
-		const msUntilMidnight = midnight.getTime() - now.getTime();
-
-		// Clear any existing midnight timeout
-		if (this.midnightTimeout) {
-			window.clearTimeout(this.midnightTimeout);
-		}
-
-		this.midnightTimeout = window.setTimeout(() => {
-			// Force immediate date change check at midnight
-			const currentDate = new Date().toDateString();
-			if (currentDate !== this.lastKnownDate) {
-				this.lastKnownDate = currentDate;
-				this.emitter.trigger(EVENT_DATE_CHANGED);
-			}
-
-			// Schedule the next midnight check
-			this.scheduleNextMidnightCheck();
-		}, msUntilMidnight);
-
-		// Register the timeout for cleanup
-		this.registerInterval(this.midnightTimeout);
+		startDateChangeDetection({
+			registerTimer: (timerId) => this.registerInterval(timerId),
+			emitDateChanged: () => this.emitter.trigger(EVENT_DATE_CHANGED),
+		});
 	}
 
 	onunload() {
@@ -635,156 +566,30 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	private async pluginDataFileExists(): Promise<boolean> {
-		const manifest = this.manifest as { dir?: string; id?: string };
-		const vault = this.app.vault as typeof this.app.vault & { configDir?: string };
-		const pluginDir =
-			manifest.dir ??
-			(vault.configDir && manifest.id
-				? `${vault.configDir}/plugins/${manifest.id}`
-				: undefined);
-		if (!pluginDir) {
-			return false;
-		}
-		const dataPath = normalizePath(`${pluginDir}/data.json`);
-
-		try {
-			return await this.app.vault.adapter.exists(dataPath);
-		} catch (error) {
-			console.warn("[TaskNotes] Could not check settings data file existence:", error);
-			return false;
-		}
+		return pluginDataFileExists(this);
 	}
 
 	private async loadSettingsData(): Promise<LoadedSettingsData | null> {
 		this.settingsLoadCompromised = false;
 
-		const loadedData = (await this.loadData()) as LoadedSettingsData | null;
-		if (loadedData !== null) {
-			return loadedData;
+		const result = await loadPluginSettingsDataWithRetry(this);
+		this.settingsLoadCompromised = result.compromised;
+		if (result.compromised) {
+			console.error(
+				"[TaskNotes] Settings data file exists, but Obsidian returned no settings data. " +
+					"Using defaults in memory for this session and blocking settings saves to avoid overwriting existing custom settings."
+			);
 		}
-
-		if (!(await this.pluginDataFileExists())) {
-			return null;
-		}
-
-		for (let attempt = 0; attempt < 3; attempt++) {
-			await new Promise((resolve) => window.setTimeout(resolve, 50));
-			const retryData = (await this.loadData()) as LoadedSettingsData | null;
-			if (retryData !== null) {
-				return retryData;
-			}
-		}
-
-		this.settingsLoadCompromised = true;
-		console.error(
-			"[TaskNotes] Settings data file exists, but Obsidian returned no settings data. " +
-				"Using defaults in memory for this session and blocking settings saves to avoid overwriting existing custom settings."
-		);
-		return null;
+		return result.data;
 	}
 
 	async loadSettings() {
 		const loadedData = await this.loadSettingsData();
+		const { settings, shouldPersistMigratedSettings } =
+			buildSettingsFromLoadedData(loadedData);
+		this.settings = settings;
 
-		// Migration: Remove old useNativeMetadataCache setting if it exists
-		if (loadedData && "useNativeMetadataCache" in loadedData) {
-			delete loadedData.useNativeMetadataCache;
-		}
-
-		// Migration: Add API settings defaults if they don't exist
-		if (loadedData && typeof loadedData.enableAPI === "undefined") {
-			loadedData.enableAPI = false;
-		}
-		if (loadedData && typeof loadedData.apiPort === "undefined") {
-			loadedData.apiPort = 8080;
-		}
-		if (loadedData && typeof loadedData.apiAuthToken === "undefined") {
-			loadedData.apiAuthToken = "";
-		}
-		if (loadedData && typeof loadedData.enableMCP === "undefined") {
-			loadedData.enableMCP = false;
-		}
-
-		// Migration: Migrate statusSuggestionTrigger to nlpTriggers if needed
-		if (
-			loadedData &&
-			!loadedData.nlpTriggers &&
-			loadedData.statusSuggestionTrigger !== undefined
-		) {
-			loadedData.nlpTriggers = {
-				triggers: [...DEFAULT_NLP_TRIGGERS.triggers],
-			};
-			// Update status trigger if it was customized
-			const statusTriggerIndex = loadedData.nlpTriggers.triggers.findIndex(
-				(trigger) => trigger.propertyId === "status"
-			);
-			if (statusTriggerIndex !== -1 && loadedData.statusSuggestionTrigger) {
-				loadedData.nlpTriggers.triggers[statusTriggerIndex].trigger =
-					loadedData.statusSuggestionTrigger;
-			}
-		}
-
-		// Migration: Initialize modal fields configuration if not present
-		if (loadedData && !loadedData.modalFieldsConfig) {
-			loadedData.modalFieldsConfig = initializeFieldConfig(undefined, loadedData.userFields);
-		}
-
-		// Migration: Force enableBases to true (issue #1187)
-		// The enableBases toggle was removed in V4 (bases is always-on), but users who
-		// had disabled it in pre-V4 still have enableBases: false saved. This prevents
-		// view registration and causes "Unknown view types" errors.
-		if (loadedData && loadedData.enableBases === false) {
-			loadedData.enableBases = true;
-		}
-
-		// Deep merge settings with proper migration for nested objects
-		this.settings = {
-			...DEFAULT_SETTINGS,
-			...loadedData,
-			// Deep merge field mapping to ensure new fields get default values
-			fieldMapping: {
-				...DEFAULT_SETTINGS.fieldMapping,
-				...(loadedData?.fieldMapping || {}),
-			},
-			// Deep merge task creation defaults to ensure new fields get default values
-			taskCreationDefaults: {
-				...DEFAULT_SETTINGS.taskCreationDefaults,
-				...(loadedData?.taskCreationDefaults || {}),
-			},
-			// Deep merge calendar view settings to ensure new fields get default values
-			calendarViewSettings: {
-				...DEFAULT_SETTINGS.calendarViewSettings,
-				...(loadedData?.calendarViewSettings || {}),
-			},
-			// Deep merge command file mapping to ensure new commands get defaults
-			commandFileMapping: {
-				...DEFAULT_SETTINGS.commandFileMapping,
-				...(loadedData?.commandFileMapping || {}),
-			},
-			// Deep merge ICS integration settings to ensure new fields get default values
-			icsIntegration: {
-				...DEFAULT_SETTINGS.icsIntegration,
-				...(loadedData?.icsIntegration || {}),
-			},
-			// Deep merge NLP triggers to ensure new triggers get defaults
-			nlpTriggers: {
-				...DEFAULT_SETTINGS.nlpTriggers,
-				...(loadedData?.nlpTriggers || {}),
-				triggers:
-					loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
-			},
-			// Modal fields configuration (already migrated above if needed)
-			modalFieldsConfig: initializeFieldConfig(
-				loadedData?.modalFieldsConfig,
-				loadedData?.userFields
-			),
-			// Array handling - maintain existing arrays or use defaults
-			customStatuses: loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses,
-			customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities,
-			savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
-		};
-
-		if (hasMissingMigratedSettings(loadedData)) {
+		if (shouldPersistMigratedSettings) {
 			// Save the migrated settings to include new field mappings (non-blocking)
 			window.setTimeout(() => {
 				void (async () => {
@@ -850,12 +655,7 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		const data = loadedData || {};
-		// Merge only settings properties, preserving non-settings data
-		const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
-		for (const key of settingsKeys) {
-			data[key] = this.settings[key];
-		}
-		await this.saveData(data);
+		await this.saveData(buildSettingsDataForSave(data, this.settings));
 	}
 
 	async onExternalSettingsChange(): Promise<void> {
@@ -926,105 +726,24 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
-	private async ensureFolderHierarchy(folderPath: string): Promise<void> {
-		if (!folderPath) {
-			return;
-		}
-
-		const normalized = normalizePath(folderPath);
-		const adapter = this.app.vault.adapter;
-		const segments = normalized.split("/").filter((segment) => segment.length > 0);
-
-		if (segments.length === 0) {
-			return;
-		}
-
-		let currentPath = "";
-		for (const segment of segments) {
-			currentPath = currentPath ? `${currentPath}/${segment}` : segment;
-
-			if (await adapter.exists(currentPath)) {
-				continue;
-			}
-
-			try {
-				await this.app.vault.createFolder(currentPath);
-			} catch (error) {
-				if (!(await adapter.exists(currentPath))) {
-					throw error;
-				}
-			}
-		}
-	}
-
 	async ensureBasesViewFiles(
 		options: { overwriteExisting?: boolean } = {}
 	): Promise<{ created: string[]; updated: string[]; skipped: string[] }> {
-		const created: string[] = [];
-		const updated: string[] = [];
-		const skipped: string[] = [];
-		const overwriteExisting = options.overwriteExisting === true;
-
-		try {
-			const adapter = this.app.vault.adapter;
-			const commandFileMapping = {
-				...DEFAULT_SETTINGS.commandFileMapping,
-				...(this.settings.commandFileMapping ?? {}),
-			};
-			this.settings.commandFileMapping = commandFileMapping;
-			const entries = Object.entries(commandFileMapping);
-
-			for (const [commandId, rawPath] of entries) {
-				if (!rawPath) {
-					continue;
-				}
-
-				const normalizedPath = normalizePath(rawPath);
-
-				// Generate template with user settings
-				const template = generateBasesFileTemplate(commandId, this);
-				if (!template) {
-					skipped.push(rawPath);
-					continue;
-				}
-
-				if (await adapter.exists(normalizedPath)) {
-					if (!overwriteExisting) {
-						skipped.push(rawPath);
-						continue;
+		return ensureDefaultBasesViewFiles(
+			{
+				app: this.app,
+				settings: this.settings,
+				generateTemplate: (commandId) => generateBasesFileTemplate(commandId, this),
+				warn: (message, error) => {
+					if (error === undefined) {
+						console.warn(message);
+					} else {
+						console.warn(message, error);
 					}
-
-					const existing = this.app.vault.getAbstractFileByPath(normalizedPath);
-					if (!(existing instanceof TFile)) {
-						console.warn(
-							`[TaskNotes][Bases] Cannot update default Bases file because path is not a file: ${normalizedPath}`
-						);
-						skipped.push(rawPath);
-						continue;
-					}
-
-					await this.app.vault.modify(existing, template);
-					updated.push(rawPath);
-					continue;
-				}
-
-				// Only create folder hierarchy if we're actually creating the file
-				const lastSlashIndex = normalizedPath.lastIndexOf("/");
-				const directory =
-					lastSlashIndex >= 0 ? normalizedPath.substring(0, lastSlashIndex) : "";
-
-				if (directory) {
-					await this.ensureFolderHierarchy(directory);
-				}
-
-				await this.app.vault.create(normalizedPath, template);
-				created.push(rawPath);
-			}
-		} catch (error) {
-			console.warn("[TaskNotes][Bases] Failed to ensure Bases command files:", error);
-		}
-
-		return { created, updated, skipped };
+				},
+			},
+			options
+		);
 	}
 
 	/**
@@ -1307,36 +1026,13 @@ export default class TaskNotesPlugin extends Plugin {
 		const frontmatter: Record<string, unknown> = metadata?.frontmatter || {};
 		const content = await this.app.vault.read(activeFile);
 
-		// Extract body content (everything after frontmatter)
-		let details = "";
-		const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n*/);
-		if (frontmatterMatch) {
-			details = content.slice(frontmatterMatch[0].length).trim();
-		} else {
-			details = content.trim();
-		}
-
-		// Build a TaskInfo object from the note's existing data
-		// Use defaults for required fields that don't exist
-		// Use ?? (nullish coalescing) to properly handle empty string defaults
-		const now = getCurrentTimestamp();
-		const taskInfo: TaskInfo = {
+		const taskInfo = buildCurrentNoteConversionTaskInfo({
 			path: activeFile.path,
-			title: frontmatterString(frontmatter.title) || activeFile.basename,
-			status: frontmatterString(frontmatter.status) ?? this.settings.defaultTaskStatus,
-			priority: frontmatterString(frontmatter.priority) ?? this.settings.defaultTaskPriority,
-			archived: false,
-			due: frontmatterString(frontmatter.due),
-			scheduled: frontmatterString(frontmatter.scheduled),
-			contexts: frontmatterStringArray(frontmatter.contexts),
-			projects: frontmatterStringArray(frontmatter.projects),
-			tags: frontmatterStringArray(frontmatter.tags) ?? [],
-			timeEstimate: frontmatterNumber(frontmatter.timeEstimate),
-			recurrence: frontmatterString(frontmatter.recurrence),
-			dateCreated: frontmatterString(frontmatter.dateCreated) || now,
-			dateModified: now,
-			details: details,
-		};
+			basename: activeFile.basename,
+			content,
+			frontmatter,
+			settings: this.settings,
+		});
 
 		// Open the task edit modal with the constructed TaskInfo
 		new TaskEditModal(this.app, this, {

@@ -25,6 +25,11 @@ export interface ICSFilenameContext extends FilenameContext {
 	icsEventDescription?: string;
 }
 
+export type TaskFilenameSettings = Pick<
+	TaskNotesSettings,
+	"storeTitleInFilename" | "taskFilenameFormat" | "customFilenameTemplate"
+>;
+
 /**
  * Generates a filename for ICS event notes based on the configured format and context
  */
@@ -112,7 +117,7 @@ export function generateICSNoteFilename(
  */
 export function generateTaskFilename(
 	context: FilenameContext,
-	settings: TaskNotesSettings
+	settings: TaskFilenameSettings
 ): string {
 	// Validate inputs
 	if (!context || !settings) {

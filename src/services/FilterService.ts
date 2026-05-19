@@ -7,11 +7,9 @@ import {
 	FilterCondition,
 	FilterGroup,
 	FilterOptions,
-	FilterProperty,
-	FilterOperator,
 } from "../types";
-import { parseLinktext, TFile } from "obsidian";
-import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
+import { parseLinktext, TFile, type App } from "obsidian";
+import { parseLinkToPath } from "../utils/linkUtils";
 import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
@@ -20,16 +18,12 @@ import {
 	FilterUtils,
 	FilterValidationError,
 	FilterEvaluationError,
-	TaskPropertyValue,
 } from "../utils/FilterUtils";
 import {
 	filterEmptyProjects,
-	generateRecurringInstances,
-	getEffectiveTaskStatus,
 	isDueByRRule,
 } from "../utils/helpers";
 import { format, parseISO } from "date-fns";
-import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import {
 	getTodayString,
 	isBeforeDateSafe,
@@ -45,8 +39,47 @@ import {
 } from "../utils/dateUtils";
 import { TranslationKey } from "../i18n";
 import { FilterQueryPlanner } from "./filter-service/FilterQueryPlanner";
-import type TaskNotesPlugin from "../main";
-import { stringifyUnknown } from "../utils/stringUtils";
+import {
+	compareUserFieldValues,
+	findUserFieldById,
+	findUserFieldByIdOrKey,
+	getHierarchicalUserFieldGroupValues,
+	getUserFieldGroupValue as getUserFieldGroupBucket,
+	sortUserFieldGroupKeys,
+} from "./filter-service/userFieldValues";
+import {
+	isTaskForAgendaDate,
+	isTaskOverdueForAgenda,
+} from "./filter-service/agendaTaskSelection";
+import {
+	evaluateFilterNode,
+	type FilterPredicateEvaluationContext,
+} from "./filter-service/filterPredicateEvaluation";
+import type { TaskNotesSettings } from "../types/settings";
+
+type FilterServiceSettings = Pick<
+	TaskNotesSettings,
+	"userFields" | "hideCompletedFromOverdue"
+>;
+
+interface FilterServiceI18n {
+	translate(
+		key: TranslationKey,
+		vars?: Record<string, string | number>
+	): string;
+	getCurrentLocale?(): string;
+}
+
+interface FilterServiceProjectSubtasks {
+	isTaskUsedAsProjectSync(path: string): boolean;
+}
+
+export interface FilterServiceRuntime {
+	app?: App;
+	settings?: Partial<FilterServiceSettings>;
+	i18n?: FilterServiceI18n;
+	projectSubtasksService?: FilterServiceProjectSubtasks;
+}
 
 /**
  * Unified filtering, sorting, and grouping service for all task views.
@@ -73,7 +106,7 @@ export class FilterService extends EventEmitter {
 		cacheManager: TaskManager,
 		statusManager: StatusManager,
 		priorityManager: PriorityManager,
-		private plugin?: TaskNotesPlugin // Plugin reference for accessing settings
+		private runtime?: FilterServiceRuntime | null
 	) {
 		super();
 		this.cacheManager = cacheManager;
@@ -89,8 +122,8 @@ export class FilterService extends EventEmitter {
 		vars?: Record<string, string | number>
 	): string {
 		try {
-			if (this.plugin?.i18n) {
-				return this.plugin.i18n.translate(key, vars);
+			if (this.runtime?.i18n) {
+				return this.runtime.i18n.translate(key, vars);
 			}
 		} catch (error) {
 			console.error("FilterService translation error:", error);
@@ -108,7 +141,7 @@ export class FilterService extends EventEmitter {
 
 	private getLocale(): string {
 		try {
-			const locale = this.plugin?.i18n?.getCurrentLocale?.();
+			const locale = this.runtime?.i18n?.getCurrentLocale?.();
 			if (locale) {
 				return locale;
 			}
@@ -281,53 +314,11 @@ export class FilterService extends EventEmitter {
 
 				// Resolver that mirrors user-field extraction logic used elsewhere in this service
 				const resolver = (task: TaskInfo, fieldIdOrKey: string): string[] => {
-					const userFields = this.plugin?.settings?.userFields || [];
-					const field = userFields.find(
-						(f) => (f.id || f.key) === fieldIdOrKey || f.key === fieldIdOrKey
-					);
+					const userFields = this.runtime?.settings?.userFields || [];
+					const field = findUserFieldByIdOrKey(userFields, fieldIdOrKey);
 					const missingLabel = `No ${field?.displayName || field?.key || fieldIdOrKey}`;
-					if (!field) return [missingLabel];
-					try {
-							const app = this.cacheManager.getApp();
-							const file = app.vault.getAbstractFileByPath(task.path);
-							if (!(file instanceof TFile)) return [missingLabel];
-							const fm = app.metadataCache.getFileCache(file)?.frontmatter;
-						const raw = fm ? fm[field.key] : undefined;
-						switch (field.type) {
-							case "boolean": {
-								if (typeof raw === "boolean") return [raw ? "true" : "false"];
-								if (raw == null) return [missingLabel];
-								const s = String(raw).trim().toLowerCase();
-								if (s === "true" || s === "false") return [s];
-								return [missingLabel];
-							}
-							case "number": {
-								if (typeof raw === "number") return [String(raw)];
-								if (typeof raw === "string") {
-									const match = raw.match(/^(\d+(?:\.\d+)?)/);
-									return match ? [match[1]] : [missingLabel];
-								}
-								return [missingLabel];
-							}
-							case "date": {
-								return raw ? [String(raw)] : [missingLabel];
-							}
-							case "list": {
-								// For grouping: use display tokens only (exclude raw wikilink tokens)
-								const tokens = this.normalizeUserListValue(raw).filter(
-									(t) => !/^\[\[/.test(t)
-								);
-								return tokens.length > 0 ? tokens : [missingLabel];
-							}
-							case "text":
-							default: {
-								const s = String(raw ?? "").trim();
-								return s ? [s] : [missingLabel];
-							}
-						}
-					} catch {
-						return [missingLabel];
-					}
+					const raw = field ? this.getUserFieldRawValue(task, field.key) : undefined;
+					return getHierarchicalUserFieldGroupValues(field, raw, missingLabel);
 				};
 
 				const svc = new HierarchicalGroupingService(resolver);
@@ -336,7 +327,7 @@ export class FilterService extends EventEmitter {
 					query.groupKey,
 					subgroupKey,
 					this.currentSortDirection,
-					this.plugin?.settings?.userFields || []
+					this.runtime?.settings?.userFields || []
 				);
 
 				// Ensure primary group order matches the same order used for flat groups
@@ -403,322 +394,24 @@ export class FilterService extends EventEmitter {
 		task: TaskInfo,
 		targetDate?: Date
 	): boolean {
-		if (node.type === "condition") {
-			return this.evaluateCondition(node, task, targetDate);
-		} else if (node.type === "group") {
-			return this.evaluateGroup(node, task, targetDate);
-		}
-		return true; // Default to true if unknown node type
-	}
-
-	/**
-	 * Evaluate a filter group against a task
-	 */
-	private evaluateGroup(group: FilterGroup, task: TaskInfo, targetDate?: Date): boolean {
-		if (group.children.length === 0) {
-			return true; // Empty group matches everything
-		}
-
-		// Filter out incomplete conditions - they should be completely ignored
-		const completeChildren = group.children.filter((child) => {
-			if (child.type === "condition") {
-				return FilterUtils.isFilterNodeComplete(child);
-			}
-			return true; // Groups are always evaluated (they may contain complete conditions)
-		});
-
-		// If no complete children, return true (no active filters)
-		if (completeChildren.length === 0) {
-			return true;
-		}
-
-		if (group.conjunction === "and") {
-			// All complete children must match
-			return completeChildren.every((child) =>
-				this.evaluateFilterNode(child, task, targetDate)
-			);
-		} else if (group.conjunction === "or") {
-			// At least one complete child must match
-			return completeChildren.some((child) =>
-				this.evaluateFilterNode(child, task, targetDate)
-			);
-		}
-
-		return true; // Default to true if unknown conjunction
-	}
-
-	/**
-	 * Normalize list-type user field values from frontmatter into comparable tokens
-	 * - Splits comma-separated strings: "a, b" -> ["a","b"]
-	 * - Extracts display text from wikilinks: [[file|Alias]] -> "Alias"; [[People/Chuck Norris]] -> "Chuck Norris"
-	 * - Also includes the raw token (e.g., "[[Chuck Norris]]") for exact-match scenarios
-	 */
-	private normalizeUserListValue(raw: unknown): string[] {
-		const tokens: string[] = [];
-		const pushToken = (s: string) => {
-			if (!s) return;
-			const trimmed = String(s).trim();
-			if (!trimmed) return;
-			const m = trimmed.match(/^\[\[([^|\]]+)(?:\|([^\]]+))?\]\]$/);
-			if (m) {
-				const target = m[1] || "";
-				const alias = m[2];
-				const base = alias || target.split("#")[0].split("/").pop() || target;
-				if (base) tokens.push(base);
-				tokens.push(trimmed); // keep raw as fallback
-				return;
-			}
-			tokens.push(trimmed);
-		};
-
-		if (Array.isArray(raw)) {
-			for (const v of raw) pushToken(stringifyUnknown(v));
-		} else if (typeof raw === "string") {
-			const parts = splitListPreservingLinksAndQuotes(raw);
-			for (const p of parts) pushToken(p);
-		} else if (raw != null) {
-			pushToken(stringifyUnknown(raw));
-		}
-
-		// Deduplicate while preserving order
-		const seen = new Set<string>();
-		const out: string[] = [];
-		for (const t of tokens) {
-			if (!seen.has(t)) {
-				seen.add(t);
-				out.push(t);
-			}
-		}
-		return out;
-	}
-
-	/**
-	 * Evaluate a single filter condition against a task
-	 */
-	private evaluateCondition(
-		condition: FilterCondition,
-		task: TaskInfo,
-		targetDate?: Date
-	): boolean {
-		const { property, operator, value } = condition;
-
-		// Dynamic user-mapped properties: user:<id>
-		if (typeof property === "string" && property.startsWith("user:")) {
-			const fieldId = property.slice(5);
-			const userFields = this.plugin?.settings?.userFields || [];
-			const field = userFields.find((f) => (f.id || f.key) === fieldId);
-			let taskValue: TaskPropertyValue = undefined;
-			if (field) {
-				try {
-						const app = this.cacheManager.getApp();
-						const file = app.vault.getAbstractFileByPath(task.path);
-						if (file instanceof TFile) {
-							const fm = app.metadataCache.getFileCache(file)?.frontmatter;
-						const raw = fm ? fm[field.key] : undefined;
-						// Normalize based on type
-						switch (field.type) {
-							case "boolean":
-								taskValue =
-									typeof raw === "boolean"
-										? raw
-										: String(raw).toLowerCase() === "true";
-								break;
-							case "number":
-								taskValue =
-									typeof raw === "number"
-										? raw
-										: raw != null
-											? parseFloat(String(raw))
-											: undefined;
-								break;
-							case "list":
-								taskValue = this.normalizeUserListValue(raw);
-								break;
-							default:
-								taskValue = raw != null ? String(raw) : undefined;
-						}
-					}
-				} catch {
-					// Ignore JSON parsing errors for malformed user field values
-				}
-			}
-			// For list user fields, treat 'contains' as substring match across tokens
-			if (
-				field?.type === "list" &&
-				(operator === "contains" || operator === "does-not-contain")
-			) {
-				const haystack = Array.isArray(taskValue)
-					? (taskValue)
-					: taskValue != null
-						? [String(taskValue)]
-						: [];
-				const needles = Array.isArray(value) ? (value) : [String(value ?? "")];
-				const match = needles.some(
-					(n) =>
-						typeof n === "string" &&
-						haystack.some(
-							(h) =>
-								typeof h === "string" && h.toLowerCase().includes(n.toLowerCase())
-						)
-				);
-				return operator === "contains" ? match : !match;
-			}
-
-			// For date equality, trick date handling by passing a known date property id
-			const propForDate =
-				field?.type === "date" ? ("due" as FilterProperty) : (property);
-			return FilterUtils.applyOperator(
-				taskValue,
-				operator,
-				value,
-				condition.id,
-				propForDate
-			);
-		}
-
-		// Get the actual value from the task
-		let taskValue: TaskPropertyValue = FilterUtils.getTaskPropertyValue(
+		return evaluateFilterNode(
+			node,
 			task,
-			property
-		);
-
-		if (property === "hasSubtasks" && this.plugin?.projectSubtasksService) {
-			taskValue = this.plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
-		}
-
-		// Handle special case for status.isCompleted
-		if (property === "status.isCompleted") {
-			const effectiveStatus = getEffectiveTaskStatus(task, targetDate || new Date(), this.statusManager.getCompletedStatuses()[0]);
-			taskValue = this.statusManager.isCompletedStatus(effectiveStatus);
-		}
-
-		// Handle special case for projects - resolve wikilinks before comparison
-		if (
-			property === "projects" &&
-			(operator === "contains" || operator === "does-not-contain")
-		) {
-			const result = this.evaluateProjectsCondition(
-				taskValue,
-				operator,
-				value
-			);
-			return result;
-		}
-
-		// Apply the operator
-		return FilterUtils.applyOperator(
-			taskValue,
-			operator,
-			value,
-			condition.id,
-			property
+			this.createPredicateEvaluationContext(),
+			targetDate
 		);
 	}
 
-	/**
-	 * Evaluate projects condition with wikilink resolution
-	 * Resolves wikilink paths to handle cases where task projects use relative paths
-	 * but filter condition uses simple names, or vice versa
-	 */
-	private evaluateProjectsCondition(
-		taskValue: TaskPropertyValue,
-		operator: FilterOperator,
-		conditionValue: TaskPropertyValue
-	): boolean {
-		if (!Array.isArray(taskValue)) {
-			return false;
-		}
-
-		if (typeof conditionValue !== "string") {
-			return false;
-		}
-
-		// Extract the condition project name (handle both [[Name]] and Name formats)
-		const conditionProjectName = this.extractProjectName(conditionValue);
-		if (!conditionProjectName) {
-			return false;
-		}
-
-		// Check if any task project matches the condition project
-		const hasMatch = taskValue.some((taskProject) => {
-			// Add null check before processing
-			if (!taskProject || typeof taskProject !== "string") {
-				return false;
-			}
-
-			const taskProjectName = this.extractProjectName(taskProject);
-			if (!taskProjectName) {
-				return false;
-			}
-
-			// Direct name comparison
-			if (taskProjectName === conditionProjectName) {
-				return true;
-			}
-
-			// Resolve wikilinks and compare resolved paths
-			return this.compareProjectWikilinks(taskProject, conditionValue);
-		});
-
-		return operator === "contains" ? hasMatch : !hasMatch;
-	}
-
-	/**
-	 * Extract clean project name from various formats ([[Name]], Name, [[path/Name]], etc.)
-	 */
-	private extractProjectName(projectValue: string): string | null {
-		if (!projectValue || typeof projectValue !== "string") {
-			return null;
-		}
-		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
-		return displayName ? displayName : null;
-	}
-
-	/**
-	 * Compare two project wikilinks by resolving them to actual files
-	 * Returns true if both links resolve to the same file
-	 */
-	private compareProjectWikilinks(taskProject: string, conditionProject: string): boolean {
-		if (!this.plugin?.app) {
-			return false;
-		}
-
-		// Extract link paths
-		const taskLinkPath = this.extractWikilinkPath(taskProject);
-		const conditionLinkPath = this.extractWikilinkPath(conditionProject);
-
-		if (!taskLinkPath || !conditionLinkPath) {
-			return false;
-		}
-
-		// Resolve both links to actual files
-		const taskFile = this.plugin.app.metadataCache.getFirstLinkpathDest(taskLinkPath, "");
-		const conditionFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
-			conditionLinkPath,
-			""
-		);
-
-		// Compare resolved file paths
-		if (taskFile && conditionFile) {
-			return taskFile.path === conditionFile.path;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Extract the link path from a wikilink (handles [[path]] format)
-	 */
-	private extractWikilinkPath(linkValue: string): string | null {
-		if (!linkValue || typeof linkValue !== "string") {
-			return null;
-		}
-
-		if (linkValue.startsWith("[[") && linkValue.endsWith("]]")) {
-			return linkValue.slice(2, -2);
-		}
-
-		return linkValue;
+	private createPredicateEvaluationContext(): FilterPredicateEvaluationContext {
+		return {
+			app: this.runtime?.app,
+			userFields: this.runtime?.settings?.userFields || [],
+			projectSubtasksService: this.runtime?.projectSubtasksService,
+			getUserFieldRawValue: (task, fieldKey) =>
+				this.getUserFieldRawValue(task, fieldKey),
+			getCompletedStatuses: () => this.statusManager.getCompletedStatuses(),
+			isCompletedStatus: (status) => this.statusManager.isCompletedStatus(status),
+		};
 	}
 
 	/**
@@ -731,7 +424,7 @@ export class FilterService extends EventEmitter {
 			return projectValue || "";
 		}
 
-		if (!this.plugin?.app) {
+		if (!this.runtime?.app) {
 			return projectValue;
 		}
 
@@ -740,7 +433,7 @@ export class FilterService extends EventEmitter {
 		const linkPath = this.parseLinkToPath(projectValue);
 
 		// Always try to resolve using Obsidian's API - this handles relative paths correctly
-		const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, "");
+		const resolvedFile = this.runtime.app.metadataCache.getFirstLinkpathDest(linkPath, "");
 		if (resolvedFile) {
 			// Return the absolute file path (vault-relative) without .md extension
 			return resolvedFile.path.replace(/\.md$/, "");
@@ -1068,94 +761,15 @@ export class FilterService extends EventEmitter {
 	/** Compare by dynamic user field for sorting */
 	private compareByUserField(a: TaskInfo, b: TaskInfo, sortKey: `user:${string}`): number {
 		const fieldId = sortKey.slice(5);
-		const userFields = this.plugin?.settings?.userFields || [];
-		const field = userFields.find((f) => (f.id || f.key) === fieldId);
+		const userFields = this.runtime?.settings?.userFields || [];
+		const field = findUserFieldById(userFields, fieldId);
 		if (!field) return 0;
 
-		const getRaw = (t: TaskInfo) => {
-			try {
-					const app = this.cacheManager.getApp();
-					const file = app.vault.getAbstractFileByPath(t.path);
-					const fm = file instanceof TFile
-						? app.metadataCache.getFileCache(file)?.frontmatter
-						: undefined;
-				return fm ? fm[field.key] : undefined;
-			} catch {
-				return undefined;
-			}
-		};
-
-		const rawA = getRaw(a);
-		const rawB = getRaw(b);
-
-		switch (field.type) {
-			case "number": {
-				const numA =
-					typeof rawA === "number" ? rawA : rawA != null ? parseFloat(String(rawA)) : NaN;
-				const numB =
-					typeof rawB === "number" ? rawB : rawB != null ? parseFloat(String(rawB)) : NaN;
-				const isNumA = !isNaN(numA);
-				const isNumB = !isNaN(numB);
-				if (isNumA && isNumB) return numA - numB;
-				if (isNumA && !isNumB) return -1;
-				if (!isNumA && isNumB) return 1;
-				return 0;
-			}
-			case "boolean": {
-				const toBool = (v: unknown): boolean | undefined => {
-					if (typeof v === "boolean") return v;
-					if (v == null) return undefined;
-					const s = stringifyUnknown(v).trim().toLowerCase();
-					if (s === "true") return true;
-					if (s === "false") return false;
-					return undefined;
-				};
-				const bA = toBool(rawA);
-				const bB = toBool(rawB);
-				if (bA === bB) return 0;
-				if (bA === true) return -1;
-				if (bB === true) return 1;
-				if (bA === false) return -1;
-				if (bB === false) return 1;
-				return 0;
-			}
-			case "date": {
-				const tA = rawA ? Date.parse(String(rawA)) : NaN;
-				const tB = rawB ? Date.parse(String(rawB)) : NaN;
-				const isValidA = !isNaN(tA);
-				const isValidB = !isNaN(tB);
-				if (isValidA && isValidB) return tA - tB;
-				if (isValidA && !isValidB) return -1;
-				if (!isValidA && isValidB) return 1;
-				return 0;
-			}
-			case "list": {
-				const toFirst = (v: unknown): string | undefined => {
-					if (Array.isArray(v)) {
-						const tokens = this.normalizeUserListValue(v);
-						return tokens[0];
-					}
-					if (typeof v === "string") {
-						if (v.trim().length === 0) return "";
-						const tokens = this.normalizeUserListValue(v);
-						return tokens[0];
-					}
-					return undefined;
-				};
-				const sA = toFirst(rawA);
-				const sB = toFirst(rawB);
-				if ((sA == null || sA === "") && (sB == null || sB === "")) return 0;
-				if (sA == null || sA === "") return 1; // empty/missing last
-				if (sB == null || sB === "") return -1;
-				return sA.localeCompare(sB);
-			}
-			case "text":
-			default: {
-				const sA = rawA != null ? String(rawA) : "";
-				const sB = rawB != null ? String(rawB) : "";
-				return sA.localeCompare(sB);
-			}
-		}
+		return compareUserFieldValues(
+			field,
+			this.getUserFieldRawValue(a, field.key),
+			this.getUserFieldRawValue(b, field.key)
+		);
 	}
 
 	/**
@@ -1262,56 +876,10 @@ export class FilterService extends EventEmitter {
 	 */
 	private getUserFieldGroupValue(task: TaskInfo, groupKey: string): string {
 		const fieldId = groupKey.slice(5);
-		const userFields = this.plugin?.settings?.userFields || [];
-		const field = userFields.find((f) => (f.id || f.key) === fieldId);
-		if (!field) return "unknown-field";
-
-		try {
-				const app = this.cacheManager.getApp();
-				const file = app.vault.getAbstractFileByPath(task.path);
-				if (!(file instanceof TFile)) return "no-value";
-				const fm = app.metadataCache.getFileCache(file)?.frontmatter;
-			const raw = fm ? fm[field.key] : undefined;
-
-			switch (field.type) {
-				case "boolean": {
-					if (typeof raw === "boolean") return raw ? "true" : "false";
-					if (raw == null) return "no-value";
-					const s = String(raw).trim().toLowerCase();
-					if (s === "true") return "true";
-					if (s === "false") return "false";
-					return "no-value";
-				}
-				case "number": {
-					if (typeof raw === "number") return String(raw);
-					if (typeof raw === "string") {
-						const match = raw.match(/^(\d+(?:\.\d+)?)/);
-						return match ? match[1] : "non-numeric";
-					}
-					return "no-value";
-				}
-				case "date":
-					return raw ? String(raw) : "no-date";
-				case "list": {
-					if (Array.isArray(raw)) {
-						const tokens = this.normalizeUserListValue(raw);
-						return tokens.length > 0 ? tokens[0] : "empty";
-					}
-					if (typeof raw === "string") {
-						if (raw.trim().length === 0) return "empty";
-						const tokens = this.normalizeUserListValue(raw);
-						return tokens.length > 0 ? tokens[0] : "empty";
-					}
-					return "no-value";
-				}
-				case "text":
-				default:
-					return raw ? String(raw).trim() || "empty" : "no-value";
-			}
-		} catch (e) {
-			console.error("Error extracting user field value for grouping", e);
-			return "error";
-		}
+		const userFields = this.runtime?.settings?.userFields || [];
+		const field = findUserFieldById(userFields, fieldId);
+		const raw = field ? this.getUserFieldRawValue(task, field.key) : undefined;
+		return getUserFieldGroupBucket(field, raw);
 	}
 
 	/**
@@ -1324,7 +892,7 @@ export class FilterService extends EventEmitter {
 		referenceDate.setHours(0, 0, 0, 0);
 
 		const isCompleted = this.statusManager.isCompletedStatus(task.status);
-		const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+		const hideCompletedFromOverdue = this.runtime?.settings?.hideCompletedFromOverdue ?? true;
 
 		// For recurring tasks, check if due on the target date
 		if (task.recurrence) {
@@ -1408,7 +976,7 @@ export class FilterService extends EventEmitter {
 		if (!task.due) return "No due date";
 
 		const isCompleted = this.statusManager.isCompletedStatus(task.status);
-		const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+		const hideCompletedFromOverdue = this.runtime?.settings?.hideCompletedFromOverdue ?? true;
 
 		return this.getDateGroupFromDateStringWithTask(
 			task.due,
@@ -1458,7 +1026,7 @@ export class FilterService extends EventEmitter {
 		if (!task.scheduled) return this.getScheduledGroupLabel("none");
 
 		const isCompleted = this.statusManager.isCompletedStatus(task.status);
-		const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+		const hideCompletedFromOverdue = this.runtime?.settings?.hideCompletedFromOverdue ?? true;
 
 		return this.getScheduledDateGroupForTask(
 			task.scheduled,
@@ -1696,43 +1264,21 @@ export class FilterService extends EventEmitter {
 	 */
 	private sortUserFieldGroups(groupKeys: string[], groupKey: string): string[] {
 		const fieldId = groupKey.slice(5);
-		const userFields = this.plugin?.settings?.userFields || [];
-		const field = userFields.find((f) => (f.id || f.key) === fieldId);
-		if (!field) return groupKeys.sort();
+		const userFields = this.runtime?.settings?.userFields || [];
+		const field = findUserFieldById(userFields, fieldId);
+		return sortUserFieldGroupKeys(groupKeys, field);
+	}
 
-		switch (field.type) {
-			case "number":
-				return groupKeys.sort((a, b) => {
-					const numA = parseFloat(a);
-					const numB = parseFloat(b);
-					const isNumA = !isNaN(numA);
-					const isNumB = !isNaN(numB);
-					if (isNumA && isNumB) return numB - numA; // desc
-					if (isNumA && !isNumB) return -1;
-					if (!isNumA && isNumB) return 1;
-					return a == null ? 1 : b == null ? -1 : a.localeCompare(b);
-				});
-			case "boolean":
-				return groupKeys.sort((a, b) => {
-					if (a === "true" && b === "false") return -1;
-					if (a === "false" && b === "true") return 1;
-					return a == null ? 1 : b == null ? -1 : a.localeCompare(b);
-				});
-			case "date":
-				return groupKeys.sort((a, b) => {
-					const tA = Date.parse(a);
-					const tB = Date.parse(b);
-					const isValidA = !isNaN(tA);
-					const isValidB = !isNaN(tB);
-					if (isValidA && isValidB) return tA - tB; // asc
-					if (isValidA && !isValidB) return -1;
-					if (!isValidA && isValidB) return 1;
-					return a == null ? 1 : b == null ? -1 : a.localeCompare(b);
-				});
-			case "text":
-			case "list":
-			default:
-				return groupKeys.sort((a, b) => a == null ? 1 : b == null ? -1 : a.localeCompare(b));
+	private getUserFieldRawValue(task: TaskInfo, fieldKey: string): unknown {
+		try {
+			const app = this.cacheManager.getApp();
+			const file = app.vault.getAbstractFileByPath(task.path);
+			const frontmatter = file instanceof TFile
+				? app.metadataCache.getFileCache(file)?.frontmatter
+				: undefined;
+			return frontmatter ? frontmatter[fieldKey] : undefined;
+		} catch {
+			return undefined;
 		}
 	}
 
@@ -1777,7 +1323,7 @@ export class FilterService extends EventEmitter {
 	 * Build dynamic user property definitions from settings.userFields
 	 */
 	private buildUserPropertyDefinitions(): import("../types").PropertyDefinition[] {
-		const fields = this.plugin?.settings?.userFields || [];
+		const fields = this.runtime?.settings?.userFields || [];
 		const defs: import("../types").PropertyDefinition[] = [];
 		for (const f of fields) {
 			if (!f || !f.key || !f.displayName) continue;
@@ -2141,56 +1687,17 @@ export class FilterService extends EventEmitter {
 		const allTaskPaths = this.cacheManager.getAllTaskPaths();
 		const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
 		const filteredTasks = allTasks.filter((task) => this.evaluateFilterNode(baseQuery, task));
+		const hideCompletedFromOverdue = this.runtime?.settings?.hideCompletedFromOverdue ?? true;
 
-		const tasksForDate = filteredTasks.filter((task) => {
-			// Handle recurring tasks
-			if (task.recurrence) {
-				// Use UTC Anchor principle: convert date string to UTC date for consistent recurring task evaluation
-				const utcDateForRecurrence = parseDateToUTC(dateStr);
-				return isDueByRRule(task, utcDateForRecurrence);
-			}
-
-			// Handle regular tasks with due dates for this specific date
-			// Use robust date comparison to handle timezone edge cases
-			if (task.due) {
-				const taskDueDatePart = getDatePart(task.due);
-				if (taskDueDatePart === dateStr) {
-					return true;
-				}
-			}
-
-			// Handle regular tasks with scheduled dates for this specific date
-			// Use robust date comparison to handle timezone edge cases
-			if (task.scheduled) {
-				const taskScheduledDatePart = getDatePart(task.scheduled);
-				if (taskScheduledDatePart === dateStr) {
-					return true;
-				}
-			}
-
-			// If showing overdue tasks and this is today, include overdue tasks on today
-			if (includeOverdue && isViewingToday) {
-				const isCompleted = this.statusManager.isCompletedStatus(task.status);
-				const hideCompletedFromOverdue =
-					this.plugin?.settings?.hideCompletedFromOverdue ?? true;
-
-				// Check if due date is overdue (show on today)
-				if (task.due && getDatePart(task.due) !== dateStr) {
-					if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
-						return true;
-					}
-				}
-
-				// Check if scheduled date is overdue (show on today)
-				if (task.scheduled && getDatePart(task.scheduled) !== dateStr) {
-					if (isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue)) {
-						return true;
-					}
-				}
-			}
-
-			return false;
-		});
+		const tasksForDate = filteredTasks.filter((task) =>
+			isTaskForAgendaDate(task, {
+				dateStr,
+				isViewingToday,
+				includeOverdue,
+				hideCompletedFromOverdue,
+				isCompletedStatus: (status) => this.statusManager.isCompletedStatus(status),
+			})
+		);
 
 		// Apply sorting to the filtered tasks for this date
 		return this.sortTasks(
@@ -2209,103 +1716,20 @@ export class FilterService extends EventEmitter {
 		const allTaskPaths = this.cacheManager.getAllTaskPaths();
 		const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
 		const filteredTasks = allTasks.filter((task) => this.evaluateFilterNode(baseQuery, task));
+		const hideCompletedFromOverdue = this.runtime?.settings?.hideCompletedFromOverdue ?? true;
 
-		const overdueTasks = filteredTasks.filter((task) => {
-			const isCompleted = this.statusManager.isCompletedStatus(task.status);
-			const hideCompletedFromOverdue =
-				this.plugin?.settings?.hideCompletedFromOverdue ?? true;
-
-			// For recurring tasks, check if the current scheduled date is overdue
-			if (task.recurrence) {
-				if (
-					!(isCompleted && hideCompletedFromOverdue) &&
-					this.hasIncompletePastRecurringInstance(task)
-				) {
-					return true;
-				}
-
-				// For recurring tasks, check scheduled date (current instance)
-				// Also check due date if it exists (user may set both)
-				if (task.due) {
-					if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
-						return true;
-					}
-				}
-				if (task.scheduled) {
-					if (isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue)) {
-						return true;
-					}
-				}
-				return false;
-			}
-
-			// For non-recurring tasks, check both due and scheduled dates
-			// Check if due date is overdue
-			if (task.due) {
-				if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
-					return true;
-				}
-			}
-
-			// Check if scheduled date is overdue
-			if (task.scheduled) {
-				if (isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue)) {
-					return true;
-				}
-			}
-
-			return false;
-		});
+		const overdueTasks = filteredTasks.filter((task) =>
+			isTaskOverdueForAgenda(task, {
+				hideCompletedFromOverdue,
+				isCompletedStatus: (status) => this.statusManager.isCompletedStatus(status),
+			})
+		);
 
 		// Apply sorting to the overdue tasks
 		return this.sortTasks(
 			overdueTasks,
 			baseQuery.sortKey || "due",
 			baseQuery.sortDirection || "asc"
-		);
-	}
-
-	private hasIncompletePastRecurringInstance(task: TaskInfo): boolean {
-		if (!task.recurrence) {
-			return false;
-		}
-
-		const todayString = getTodayString();
-		const today = parseDateToUTC(todayString);
-		const endDate = new Date(today);
-		endDate.setUTCDate(endDate.getUTCDate() - 1);
-
-		const startDate = this.getRecurringOverdueSearchStart(task, today);
-		if (startDate > endDate) {
-			return false;
-		}
-
-		const completedInstances = new Set(task.complete_instances || []);
-		const skippedInstances = new Set(task.skipped_instances || []);
-		const instances = generateRecurringInstances(task, startDate, endDate);
-
-		return instances.some((instance) => {
-			const instanceDate = formatDateForStorage(instance);
-			return (
-				instanceDate < todayString &&
-				!completedInstances.has(instanceDate) &&
-				!skippedInstances.has(instanceDate)
-			);
-		});
-	}
-
-	private getRecurringOverdueSearchStart(task: TaskInfo, today: Date): Date {
-		const fallback = new Date(today);
-		fallback.setUTCFullYear(fallback.getUTCFullYear() - 2);
-
-		const candidates = [task.dateCreated, task.scheduled, task.due]
-			.map((value) => (value ? getDatePart(value) : ""))
-			.filter((value) => value.length > 0)
-			.map((value) => parseDateToUTC(value));
-
-		return candidates.reduce(
-			(earliest, candidate) => (candidate < earliest ? candidate : earliest),
-			fallback
 		);
 	}
 

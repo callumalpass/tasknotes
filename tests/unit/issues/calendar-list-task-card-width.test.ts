@@ -9,7 +9,7 @@ function readRepoFile(relativePath: string): string {
 
 describe("Calendar List task card width", () => {
 	it("places custom list cards inside a full-width FullCalendar table cell", () => {
-		const source = readRepoFile("src/bases/CalendarView.ts");
+		const source = readRepoFile("src/bases/calendarEventMount.ts");
 
 		expect(source).toContain('ownerDocument.createElement("td")');
 		expect(source).toContain('cardCell.className = "fc-list-event-title fc-list-card-content"');

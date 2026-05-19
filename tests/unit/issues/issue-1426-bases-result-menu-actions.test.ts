@@ -72,4 +72,36 @@ describe("Issue #1426: native Bases result-count menu actions", () => {
 			"File\tStatus\tPriority\nTasks/A.md\topen\thigh"
 		);
 	});
+
+	it("refreshes the active custom view after Bases config changes", () => {
+		jest.useFakeTimers();
+		try {
+			const controller = {
+				view: null as TestBasesView | null,
+				onConfigChanged: jest.fn(),
+			};
+			const plugin = {
+				fieldMapper: {
+					isRecognizedProperty: jest.fn().mockReturnValue(false),
+				},
+			} as unknown as TaskNotesPlugin;
+			const container = document.createElement("div");
+			const root = document.createElement("div");
+			document.body.appendChild(container);
+			document.body.appendChild(root);
+			const view = new TestBasesView(controller, container, plugin);
+			controller.view = view;
+			(view as unknown as { rootElement: HTMLElement }).rootElement = root;
+			const refresh = jest
+				.spyOn(view as unknown as { debouncedRefresh(): void }, "debouncedRefresh")
+				.mockImplementation(() => {});
+
+			controller.onConfigChanged();
+			jest.runOnlyPendingTimers();
+
+			expect(refresh).toHaveBeenCalledTimes(1);
+		} finally {
+			jest.useRealTimers();
+		}
+	});
 });

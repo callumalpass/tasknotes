@@ -19,8 +19,17 @@ import {
 import { stringifyUnknown } from "../utils/stringUtils";
 import {
 	buildTaskCreationDataFromFrontmatter,
-	type BasesCreateFileFrontmatter,
 } from "./basesTaskCreation";
+import { extractBasesFilterDefaults } from "./basesFilterDefaults";
+import {
+	getVisibleTaskPathsFromBasesRoot,
+	handleBasesSelectionClick,
+	handleBasesSelectionKeyDown,
+	setBasesSelectionModeUi,
+	updateBasesSelectionIndicator,
+	updateBasesSelectionVisuals,
+	clearBasesSelectionVisuals,
+} from "./basesSelectionUi";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 type BasesEphemeralState = {
@@ -49,17 +58,14 @@ type BasesViewAction = {
 	callback: () => void;
 };
 
+type BasesConfigChangeController = {
+	onConfigChanged?: (...args: unknown[]) => unknown;
+	view?: unknown;
+};
+
 type BasesExportColumn = {
 	id: string;
 	label: string;
-};
-
-type BasesFilterLike = {
-	conjunction?: unknown;
-	filters?: unknown;
-	rule?: {
-		text?: unknown;
-	};
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -90,14 +96,6 @@ function sanitizeExportFileName(name: string): string {
 	return sanitized || "tasknotes-bases-export";
 }
 
-function decodeQuotedValue(value: string): string {
-	try {
-		return JSON.parse(`"${value}"`) as string;
-	} catch {
-		return value;
-	}
-}
-
 /**
  * Abstract base class for all TaskNotes Bases views.
  * Extends Component and is adapted to the public BasesView type at registration.
@@ -119,6 +117,7 @@ export abstract class BasesViewBase extends Component {
 	protected taskUpdateListener: unknown = null;
 	protected updateDebounceTimer: number | null = null;
 	protected dataUpdateDebounceTimer: number | null = null;
+	private restoreConfigChangeHook: (() => void) | null = null;
 	protected relevantPathsCache: Set<string> = new Set();
 
 	// Search functionality (opt-in via enableSearch flag)
@@ -149,6 +148,62 @@ export abstract class BasesViewBase extends Component {
 		// Bind createFileForView to ensure Bases can find it
 		// Some versions of Bases may check hasOwnProperty rather than prototype chain
 		this.createFileForView = this.createFileForView.bind(this);
+		this.setupConfigChangeHook(controller);
+	}
+
+	private setupConfigChangeHook(controller: unknown): void {
+		if (!isRecord(controller) || typeof controller.onConfigChanged !== "function") {
+			return;
+		}
+
+		const basesController = controller as BasesConfigChangeController;
+		const originalOnConfigChanged = basesController.onConfigChanged;
+		if (!originalOnConfigChanged) {
+			return;
+		}
+
+		const wrappedOnConfigChanged = (...args: unknown[]): unknown => {
+			const result = originalOnConfigChanged.apply(basesController, args);
+			this.scheduleConfigRefresh(basesController, result);
+			return result;
+		};
+
+		basesController.onConfigChanged = wrappedOnConfigChanged;
+		this.restoreConfigChangeHook = () => {
+			if (basesController.onConfigChanged === wrappedOnConfigChanged) {
+				basesController.onConfigChanged = originalOnConfigChanged;
+			}
+		};
+		if (typeof this.register === "function") {
+			this.register(() => {
+				this.restoreConfigChangeHook?.();
+				this.restoreConfigChangeHook = null;
+			});
+		}
+	}
+
+	private scheduleConfigRefresh(
+		controller: BasesConfigChangeController,
+		result: unknown
+	): void {
+		const refresh = () => {
+			if (controller.view && controller.view !== this) {
+				return;
+			}
+			if (!this.rootElement?.isConnected) {
+				return;
+			}
+			this.debouncedRefresh();
+		};
+
+		const maybePromise = result as PromiseLike<unknown> | null;
+		if (maybePromise && typeof maybePromise.then === "function") {
+			void maybePromise.then(refresh, refresh);
+			return;
+		}
+
+		const win = this.containerEl.ownerDocument.defaultView || window;
+		win.setTimeout(refresh, 0);
 	}
 
 	/**
@@ -612,11 +667,17 @@ export abstract class BasesViewBase extends Component {
 	 */
 	async createFileForView(
 		baseFileName?: string,
-		frontmatterProcessor?: (frontmatter: BasesCreateFileFrontmatter) => void
+		frontmatterProcessor?: (frontmatter: Record<string, unknown>) => void
 	): Promise<void> {
 		const { TaskCreationModal } = await import("../modals/TaskCreationModal");
 
-		const mockFrontmatter = this.extractDefaultFrontmatterFromCurrentView();
+		const mockFrontmatter = extractBasesFilterDefaults({
+			config: this.config,
+			fieldMapper: this.plugin.fieldMapper,
+			taskTag: this.plugin.settings.taskTag,
+			userFields: this.plugin.settings.userFields || [],
+			currentFileLink: () => this.getCurrentFileLinkDefault(),
+		});
 
 		if (frontmatterProcessor) {
 			frontmatterProcessor(mockFrontmatter);
@@ -642,84 +703,6 @@ export abstract class BasesViewBase extends Component {
 		modal.open();
 	}
 
-	private extractDefaultFrontmatterFromCurrentView(): BasesCreateFileFrontmatter {
-		const defaults: BasesCreateFileFrontmatter = {};
-		const configRecord = isRecord(this.config)
-			? (this.config as unknown as Record<string, unknown>)
-			: {};
-		const query = isRecord(configRecord.query) ? configRecord.query : undefined;
-
-		this.collectFilterDefaults(query?.filters, defaults);
-		this.collectFilterDefaults(configRecord.filters, defaults);
-
-		return defaults;
-	}
-
-	private collectFilterDefaults(filter: unknown, defaults: BasesCreateFileFrontmatter): void {
-		if (!isRecord(filter)) return;
-
-		const filterGroup = filter as BasesFilterLike;
-		const children = Array.isArray(filterGroup.filters) ? filterGroup.filters : [];
-		if (children.length > 0) {
-			// OR filters are ambiguous as defaults; only apply deterministic AND chains.
-			if (filterGroup.conjunction !== undefined && filterGroup.conjunction !== "and") {
-				return;
-			}
-
-			for (const child of children) {
-				this.collectFilterDefaults(child, defaults);
-			}
-			return;
-		}
-
-		const ruleText = isRecord(filterGroup.rule) ? filterGroup.rule.text : undefined;
-		if (typeof ruleText === "string") {
-			this.applyFilterRuleDefault(ruleText, defaults);
-		}
-	}
-
-	private applyFilterRuleDefault(ruleText: string, defaults: BasesCreateFileFrontmatter): void {
-		const trimmedRule = ruleText.trim();
-
-		const tagMatch = trimmedRule.match(/^file\.hasTag\("((?:\\.|[^"\\])*)"\)$/);
-		if (tagMatch) {
-			const tag = decodeQuotedValue(tagMatch[1]);
-			if (tag !== this.plugin.settings.taskTag) {
-				this.addFrontmatterDefault(defaults, "tags", tag);
-			}
-			return;
-		}
-
-		const equalityMatch = trimmedRule.match(/^(.+?)\s*==\s*"((?:\\.|[^"\\])*)"$/);
-		if (equalityMatch) {
-			const property = this.normalizeFilterProperty(equalityMatch[1]);
-			if (property) {
-				this.addFrontmatterDefault(defaults, property, decodeQuotedValue(equalityMatch[2]));
-			}
-			return;
-		}
-
-		const containsMatch = trimmedRule.match(/^(.+?)\.contains\("((?:\\.|[^"\\])*)"\)$/);
-		if (containsMatch) {
-			const property = this.normalizeFilterProperty(containsMatch[1]);
-			if (property) {
-				this.addFrontmatterDefault(defaults, property, decodeQuotedValue(containsMatch[2]));
-			}
-			return;
-		}
-
-		const currentFileContainsMatch = trimmedRule.match(
-			/^(.+?)\.contains\(this\.file\.asLink\(\)\)$/
-		);
-		if (currentFileContainsMatch) {
-			const property = this.normalizeFilterProperty(currentFileContainsMatch[1]);
-			const currentFileLink = this.getCurrentFileLinkDefault();
-			if (property && currentFileLink) {
-				this.addFrontmatterDefault(defaults, property, currentFileLink);
-			}
-		}
-	}
-
 	private getCurrentFileLinkDefault(): string | null {
 		const app = this.app || this.plugin.app;
 		const activeFile = app.workspace.getActiveFile();
@@ -728,80 +711,6 @@ export abstract class BasesViewBase extends Component {
 		}
 
 		return app.fileManager.generateMarkdownLink(activeFile, activeFile.path);
-	}
-
-	private normalizeFilterProperty(propertyExpression: string): string | null {
-		let property = propertyExpression.trim();
-		const listMatch = property.match(/^list\((.+)\)$/);
-		if (listMatch) {
-			property = listMatch[1].trim();
-		}
-		property = property.replace(/^(note|task)\./, "");
-
-		const fm = this.plugin.fieldMapper;
-		const coreFields = [
-			"title",
-			"status",
-			"priority",
-			"due",
-			"scheduled",
-			"contexts",
-			"projects",
-			"timeEstimate",
-			"completedDate",
-			"dateCreated",
-			"recurrence",
-			"blockedBy",
-		] as const;
-
-		if (property === "tags" || property === "file.tags") {
-			return "tags";
-		}
-
-		for (const field of coreFields) {
-			const userField = fm.toUserField(field);
-			if (property === field || property === userField) {
-				return userField;
-			}
-		}
-
-		const userFields = this.plugin.settings.userFields || [];
-		if (userFields.some((field) => field.key === property)) {
-			return property;
-		}
-
-		return null;
-	}
-
-	private addFrontmatterDefault(
-		defaults: BasesCreateFileFrontmatter,
-		property: string,
-		value: string
-	): void {
-		const fm = this.plugin.fieldMapper;
-		const listFields = new Set([
-			"tags",
-			fm.toUserField("contexts"),
-			fm.toUserField("projects"),
-			fm.toUserField("blockedBy"),
-		]);
-
-		if (!listFields.has(property)) {
-			if (defaults[property] === undefined) {
-				defaults[property] = value;
-			}
-			return;
-		}
-
-		const existing = defaults[property];
-		const values = Array.isArray(existing)
-			? existing.filter((item): item is string => typeof item === "string")
-			: typeof existing === "string"
-				? [existing]
-				: [];
-		if (!values.includes(value)) {
-			defaults[property] = [...values, value];
-		}
 	}
 
 	/**
@@ -1149,23 +1058,13 @@ export abstract class BasesViewBase extends Component {
 
 		// Keyboard event handler for selection mode
 		const handleKeyDown = (e: KeyboardEvent) => {
-			// Escape exits selection mode and clears selection
-			if (e.key === "Escape" && selectionService.isSelectionModeActive()) {
-				selectionService.exitSelectionMode(true);
-				this.updateSelectionModeUI(false);
-			}
-
-			// Ctrl/Cmd + A to select all visible tasks (only when in selection mode)
-			if (
-				(e.ctrlKey || e.metaKey) &&
-				e.key === "a" &&
-				selectionService.isSelectionModeActive()
-			) {
-				e.preventDefault();
-				const visiblePaths = this.getVisibleTaskPaths();
-				selectionService.selectAll(visiblePaths);
-				this.updateSelectionVisuals();
-			}
+			handleBasesSelectionKeyDown({
+				event: e,
+				selectionService,
+				getVisibleTaskPaths: () => this.getVisibleTaskPaths(),
+				updateSelectionModeUi: (active) => this.updateSelectionModeUI(active),
+				updateSelectionVisuals: () => this.updateSelectionVisuals(),
+			});
 		};
 
 		// Add listener to the root element
@@ -1195,15 +1094,7 @@ export abstract class BasesViewBase extends Component {
 	protected updateSelectionModeUI(active: boolean): void {
 		if (!this.rootElement) return;
 
-		if (active) {
-			this.rootElement.classList.add("tn-selection-mode");
-			this.rootElement.setAttribute("data-selection-mode", "true");
-		} else {
-			this.rootElement.classList.remove("tn-selection-mode");
-			this.rootElement.removeAttribute("data-selection-mode");
-			// Also clear visual selection indicators
-			this.clearSelectionVisuals();
-		}
+		setBasesSelectionModeUi(this.rootElement, active);
 	}
 
 	/**
@@ -1215,47 +1106,7 @@ export abstract class BasesViewBase extends Component {
 		const selectionService = this.plugin.taskSelectionService;
 		if (!selectionService) return;
 
-		// Find all task cards and update their selection state
-		const primaryPath = selectionService.getPrimarySelectedPath();
-
-		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card");
-		for (const card of cards) {
-			const path = card.dataset.taskPath;
-			if (path) {
-				if (selectionService.isSelected(path)) {
-					card.classList.add("task-card--selected");
-					if (path === primaryPath) {
-						card.classList.add("task-card--selected-primary");
-					} else {
-						card.classList.remove("task-card--selected-primary");
-					}
-				} else {
-					card.classList.remove("task-card--selected");
-					card.classList.remove("task-card--selected-primary");
-				}
-			}
-		}
-
-		// Also update kanban card wrappers (for visual consistency)
-		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(
-			".kanban-view__card-wrapper"
-		);
-		for (const wrapper of cardWrappers) {
-			const path = wrapper.dataset.taskPath;
-			if (path) {
-				if (selectionService.isSelected(path)) {
-					wrapper.classList.add("kanban-view__card-wrapper--selected");
-					if (path === primaryPath) {
-						wrapper.classList.add("kanban-view__card-wrapper--selected-primary");
-					} else {
-						wrapper.classList.remove("kanban-view__card-wrapper--selected-primary");
-					}
-				} else {
-					wrapper.classList.remove("kanban-view__card-wrapper--selected");
-					wrapper.classList.remove("kanban-view__card-wrapper--selected-primary");
-				}
-			}
-		}
+		updateBasesSelectionVisuals(this.rootElement, selectionService);
 	}
 
 	/**
@@ -1264,19 +1115,7 @@ export abstract class BasesViewBase extends Component {
 	protected clearSelectionVisuals(): void {
 		if (!this.rootElement) return;
 
-		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card--selected");
-		for (const card of cards) {
-			card.classList.remove("task-card--selected");
-			card.classList.remove("task-card--selected-primary");
-		}
-
-		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(
-			".kanban-view__card-wrapper--selected"
-		);
-		for (const wrapper of cardWrappers) {
-			wrapper.classList.remove("kanban-view__card-wrapper--selected");
-			wrapper.classList.remove("kanban-view__card-wrapper--selected-primary");
-		}
+		clearBasesSelectionVisuals(this.rootElement);
 	}
 
 	/**
@@ -1285,55 +1124,15 @@ export abstract class BasesViewBase extends Component {
 	protected updateSelectionIndicator(count: number): void {
 		if (!this.rootElement) return;
 
-		if (count > 0) {
-			// Create or update indicator
-			if (!this.selectionIndicatorEl) {
-				// Use correct document for pop-out window support
-				const doc = this.rootElement.ownerDocument;
-				this.selectionIndicatorEl = doc.createElement("div");
-				this.selectionIndicatorEl.className = "tn-selection-indicator";
-				this.selectionIndicatorEl.setAttribute("role", "button");
-				this.selectionIndicatorEl.tabIndex = 0;
-				this.selectionIndicatorEl.addEventListener("click", () => {
-					this.plugin.taskSelectionService?.clearSelection();
-					this.plugin.taskSelectionService?.exitSelectionMode();
-				});
-				this.selectionIndicatorEl.addEventListener("keydown", (event) => {
-					if (event.key !== "Enter" && event.key !== " ") return;
-					event.preventDefault();
-					this.selectionIndicatorEl?.click();
-				});
-				this.rootElement.appendChild(this.selectionIndicatorEl);
-			}
-			this.selectionIndicatorEl.textContent = `${count} selected`;
-			this.selectionIndicatorEl.setAttribute(
-				"aria-label",
-				`${count} selected. Activate to clear selection.`
-			);
-			this.selectionIndicatorEl.classList.remove(
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			this.selectionIndicatorEl.classList.add("tn-static-display-block-2a1b75c9");
-		} else if (this.selectionIndicatorEl) {
-			this.selectionIndicatorEl.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			this.selectionIndicatorEl.classList.add("tn-static-display-none-6b99de8b");
-		}
+		this.selectionIndicatorEl = updateBasesSelectionIndicator({
+			rootElement: this.rootElement,
+			indicatorEl: this.selectionIndicatorEl,
+			count,
+			onClearSelection: () => {
+				this.plugin.taskSelectionService?.clearSelection();
+				this.plugin.taskSelectionService?.exitSelectionMode();
+			},
+		});
 	}
 
 	/**
@@ -1342,38 +1141,13 @@ export abstract class BasesViewBase extends Component {
 	 */
 	protected handleSelectionClick(event: MouseEvent, taskPath: string): boolean {
 		const selectionService = this.plugin.taskSelectionService;
-		if (!selectionService) return false;
-
-		// If not in selection mode and no modifier keys, don't handle
-		if (
-			!selectionService.isSelectionModeActive() &&
-			!event.shiftKey &&
-			!event.ctrlKey &&
-			!event.metaKey
-		) {
-			return false;
-		}
-
-		// Enter selection mode if shift is pressed
-		if (event.shiftKey && !selectionService.isSelectionModeActive()) {
-			selectionService.enterSelectionMode();
-		}
-
-		// Handle different click modes
-		if (event.shiftKey) {
-			// Range selection
-			const visiblePaths = this.getVisibleTaskPaths();
-			selectionService.selectRange(taskPath, visiblePaths);
-		} else if (event.ctrlKey || event.metaKey) {
-			// Toggle individual selection
-			selectionService.toggleSelection(taskPath);
-		} else if (selectionService.isSelectionModeActive()) {
-			// In selection mode, regular click toggles selection
-			selectionService.toggleSelection(taskPath);
-		}
-
-		this.updateSelectionVisuals();
-		return true;
+		return handleBasesSelectionClick({
+			event,
+			taskPath,
+			selectionService,
+			getVisibleTaskPaths: () => this.getVisibleTaskPaths(),
+			updateSelectionVisuals: () => this.updateSelectionVisuals(),
+		});
 	}
 
 	/**
@@ -1402,18 +1176,7 @@ export abstract class BasesViewBase extends Component {
 	 * Subclasses should override this to return the correct paths based on their rendering.
 	 */
 	protected getVisibleTaskPaths(): string[] {
-		// Default implementation: extract from DOM
-		if (!this.rootElement) return [];
-
-		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card[data-task-path]");
-		const paths: string[] = [];
-		for (const card of cards) {
-			const path = card.dataset.taskPath;
-			if (path) {
-				paths.push(path);
-			}
-		}
-		return paths;
+		return getVisibleTaskPathsFromBasesRoot(this.rootElement);
 	}
 
 	// Abstract methods that subclasses must implement

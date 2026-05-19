@@ -74,7 +74,7 @@ export class TaskService {
 
 	constructor(private plugin: TaskNotesPlugin) {
 		this.taskCreationService = new TaskCreationService({
-			plugin: this.plugin,
+			runtime: this.plugin,
 			webhookNotifier: this.webhookNotifier,
 			applyTaskCreationDefaults: (taskData) =>
 				Promise.resolve(applyTaskCreationDefaultsToData(taskData, this.plugin.settings)),
@@ -85,7 +85,7 @@ export class TaskService {
 			sanitizeTitleForStorage: sanitizeTaskTitleForStorage,
 		});
 		this.taskUpdateService = new TaskUpdateService({
-			plugin: this.plugin,
+			runtime: this.plugin,
 			webhookNotifier: this.webhookNotifier,
 			autoArchiveService: this.autoArchiveService,
 			updateCompletedDateInFrontmatter: (frontmatter, newStatus, isRecurring) =>

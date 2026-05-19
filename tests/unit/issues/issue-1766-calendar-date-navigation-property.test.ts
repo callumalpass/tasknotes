@@ -1,67 +1,55 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
-import { CalendarView } from "../../../src/bases/CalendarView";
+import { determineCalendarInitialDate } from "../../../src/bases/calendarInitialDate";
 import type { TaskInfo } from "../../../src/types";
 
 type MockEntry = {
 	values: Record<string, unknown>;
 };
 
-function createCalendarViewFixture(
+function determineInitialDateFixture(
 	entries: MockEntry[],
 	overrides: Partial<{
+		initialDate: string;
 		initialDateProperty: string | null;
 		initialDateStrategy: "first" | "earliest" | "latest";
 		data: unknown;
+		taskNotes: TaskInfo[];
 	}> = {}
 ) {
-	const view = Object.create(CalendarView.prototype) as {
-		determineInitialDate: (taskNotes: TaskInfo[]) => Date | string | undefined;
-		viewOptions: {
-			initialDate: string;
-			initialDateProperty: string | null;
-			initialDateStrategy: "first" | "earliest" | "latest";
-		};
-		data?: unknown;
-		dataAdapter: {
-			getPropertyValue: jest.Mock<(entry: MockEntry, propertyId: string) => unknown>;
-		};
-		propertyMapper: {
-			basesToTaskCardProperty: jest.Mock<(propertyId: string) => string>;
-		};
-	};
-
-	view.viewOptions = {
-		initialDate: "",
-		initialDateProperty: overrides.initialDateProperty ?? "note.date",
-		initialDateStrategy: overrides.initialDateStrategy ?? "first",
-	};
-	view.data = Object.prototype.hasOwnProperty.call(overrides, "data")
+	const getPropertyValue = jest.fn((entry: MockEntry, propertyId: string) => entry.values[propertyId]);
+	const mapPropertyToTaskField = jest.fn((propertyId: string) =>
+		propertyId.replace(/^(note\.|task\.)/, "")
+	);
+	const data = Object.prototype.hasOwnProperty.call(overrides, "data")
 		? overrides.data
-		: { data: entries };
-	view.dataAdapter = {
-		getPropertyValue: jest.fn((entry: MockEntry, propertyId: string) => entry.values[propertyId]),
-	};
-	view.propertyMapper = {
-		basesToTaskCardProperty: jest.fn((propertyId: string) =>
-			propertyId.replace(/^(note\.|task\.)/, "")
-		),
+		: entries;
+	const determine = () => {
+		return determineCalendarInitialDate({
+			viewOptions: {
+				initialDate: overrides.initialDate ?? "",
+				initialDateProperty: overrides.initialDateProperty ?? "note.date",
+				initialDateStrategy: overrides.initialDateStrategy ?? "first",
+			},
+			taskNotes: overrides.taskNotes ?? [],
+			entries: Array.isArray(data) ? data : undefined,
+			getEntryPropertyValue: (entry, propertyId) =>
+				getPropertyValue(entry as MockEntry, propertyId),
+			mapPropertyToTaskField,
+		});
 	};
 
-	return view;
+	return { determine, getPropertyValue, mapPropertyToTaskField };
 }
 
 describe("Issue #1766: Calendar date navigation from property", () => {
 	it("uses raw Bases row values for custom note date properties", () => {
-		const view = createCalendarViewFixture([
+		const fixture = determineInitialDateFixture([
 			{ values: { "note.date": "2031-04-05" } },
 		]);
 
-		expect(view.determineInitialDate([])).toBe("2031-04-05");
-		expect(view.dataAdapter.getPropertyValue).toHaveBeenCalledWith(
-			expect.anything(),
-			"note.date"
-		);
+		expect(fixture.determine()).toBe("2031-04-05");
+		expect(fixture.getPropertyValue).toHaveBeenCalledWith(expect.anything(), "note.date");
 	});
 
 	it("honors earliest and latest strategies when reading Bases rows", () => {
@@ -71,19 +59,18 @@ describe("Issue #1766: Calendar date navigation from property", () => {
 			{ values: { "note.date": "2031-12-20" } },
 		];
 
-		const earliestView = createCalendarViewFixture(entries, {
+		const earliestFixture = determineInitialDateFixture(entries, {
 			initialDateStrategy: "earliest",
 		});
-		const latestView = createCalendarViewFixture(entries, {
+		const latestFixture = determineInitialDateFixture(entries, {
 			initialDateStrategy: "latest",
 		});
 
-		expect(earliestView.determineInitialDate([])).toBe("2031-01-10");
-		expect(latestView.determineInitialDate([])).toBe("2031-12-20");
+		expect(earliestFixture.determine()).toBe("2031-01-10");
+		expect(latestFixture.determine()).toBe("2031-12-20");
 	});
 
 	it("falls back to TaskInfo customProperties when raw Bases data is unavailable", () => {
-		const view = createCalendarViewFixture([], { data: undefined });
 		const task = {
 			title: "Custom date task",
 			status: "open",
@@ -94,7 +81,11 @@ describe("Issue #1766: Calendar date navigation from property", () => {
 				date: "2031-04-05",
 			},
 		};
+		const fixture = determineInitialDateFixture([], {
+			data: undefined,
+			taskNotes: [task],
+		});
 
-		expect(view.determineInitialDate([task])).toBe("2031-04-05");
+		expect(fixture.determine()).toBe("2031-04-05");
 	});
 });

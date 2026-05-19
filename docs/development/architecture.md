@@ -18,7 +18,7 @@ This document records the intended high-level boundaries in the TaskNotes plugin
 Owns:
 
 - plugin lifecycle
-- settings load/save
+- settings load/save orchestration through the typed settings persistence helper
 - workspace command entry points
 - integration registration
 - delegation into bootstrap and services
@@ -28,6 +28,7 @@ Should not own:
 - detailed business logic
 - view rendering logic
 - low-level task mutation logic
+- settings migration and default-merge rules
 
 ### Bootstrap
 
@@ -37,6 +38,9 @@ Owns:
 
 - service construction
 - startup sequencing
+- date rollover timer orchestration that emits refresh events
+- default Bases file creation/regeneration orchestration
+- synchronous Bases view unregistration during plugin unload
 - layout-ready initialization
 - lazy initialization of optional/heavy services
 
@@ -46,6 +50,23 @@ Should not own:
 - task parsing
 - long-lived presentation behavior
 
+### Settings Persistence
+
+`src/settings/settingsPersistence.ts`
+
+Owns:
+
+- plugin `data.json` path resolution and retry-aware startup reads
+- settings-load compromised-state decisions before defaults can be saved
+- legacy settings migrations and nested default merging
+- settings-only save snapshots that preserve non-settings persisted plugin data
+
+Should not own:
+
+- plugin lifecycle
+- settings UI rendering
+- runtime side effects that happen after settings are saved
+
 ### Domain Services
 
 `src/services/`
@@ -53,8 +74,16 @@ Should not own:
 Own:
 
 - task creation and mutation
+- task creation/update runtime contracts that expose only the app, settings,
+  mapper, cache, event, and optional sync surfaces those services need
+- filtering runtime contracts that expose only user-field settings, overdue
+  policy, i18n, Obsidian link resolution, and project-subtask lookup
+- current-note conversion planning for turning note frontmatter and markdown
+  body into an edit-modal `TaskInfo`
 - task title normalization for filename and frontmatter storage boundaries
 - single-property update planning for normalized task values and frontmatter writes
+- bulk task-update planning for time-entry sanitation, recurrence adjustments,
+  mapped frontmatter mutation, explicit field removals, and returned task state
 - archive state and archive move planning
 - task start/stop/delete time-entry planning and duration cleanup
 - recurring task completion/skip instance planning
@@ -62,6 +91,9 @@ Own:
 - post-write property-change side effects such as cache refresh, events,
   webhooks, calendar sync, and auto-archive
 - filtering, grouping, sorting
+- filter predicate evaluation for query groups, user fields, project links,
+  subtask lookup, and completion state
+- agenda date selection and overdue/recurrence eligibility
 - recurrence and time tracking logic
 - external provider coordination
 
@@ -153,6 +185,19 @@ Current examples:
 - `src/bases/taskListGrouping.ts` owns Task List grouped render planning,
   sub-property grouping, grouped sort-scope path assembly, Bases formula-backed
   property lookup, and group-value stringification.
+- `src/bases/taskListDropPlanning.ts` owns Task List drop mutation planning for
+  grouped frontmatter writes, status-derived fields, and post-write side-effect
+  task snapshots.
+- `src/bases/kanbanDragUtils.ts` owns Kanban drop target reconstruction,
+  optimistic DOM card movement, drop frontmatter planning, status-derived
+  fields, and post-write side-effect task snapshots.
+- `src/bases/kanbanCreationDefaults.ts` owns Kanban column/swimlane task
+  creation default planning, including writable Bases property resolution, list
+  default appending, and scalar group-key coercion.
+- `src/bases/basesSelectionUi.ts` owns shared Bases selection-mode DOM state,
+  selected-card classes, keyboard and click selection decisions, selection
+  indicator behavior, and default visible-task path extraction behind a narrow
+  selection-service interface.
 - `src/modals/taskModalUserFields.ts` owns TaskModal user-field formatting,
   input parsing, custom-frontmatter filtering, and edit-change detection.
 - `src/modals/taskModalUserFieldControls.ts` owns TaskModal custom-field
@@ -231,6 +276,11 @@ action-specific rather than mixing service calls into DOM construction.
 
 Task creation, update, recurrence transitions, archive toggles, and relationship writes should flow through `TaskService` and its collaborators, not ad hoc UI code.
 
+`TaskCreationService` and `TaskUpdateService` should depend on their exported
+runtime interfaces instead of the full `TaskNotesPlugin` type. The facade can
+still pass the plugin object structurally, but the service contract should make
+the required app/settings/mapper/cache/event/sync surface explicit.
+
 Task-title sanitization belongs in `src/services/task-service/taskTitleSanitizer.ts`
 so filename safety and stored-title safety stay explicit and independently
 tested.
@@ -240,6 +290,13 @@ Single-property update planning belongs in
 checkbox-backed status values, empty date cleanup, dependency serialization, and
 date-modified writes stay explicit before `TaskService` performs the vault
 write.
+
+Bulk task-update planning belongs in
+`src/services/task-service/taskUpdatePlanning.ts` so edit-modal/API update
+payloads sanitize legacy time-entry duration fields, plan recurrence
+scheduled/due/DTSTART adjustments, apply mapped frontmatter removals, preserve
+custom frontmatter semantics, and assemble the returned `TaskInfo` before
+`TaskUpdateService` performs vault writes and side effects.
 
 Archive state and archive move planning belongs in
 `src/services/task-service/taskArchivePlanning.ts` so archive tag toggling,
@@ -274,21 +331,34 @@ auto-archive routing.
 
 Query planning, predicate evaluation, sorting, grouping, and label formatting should be separate concerns even if they remain behind the same facade during migration.
 
+Current extracted examples:
+
+- `src/services/filter-service/FilterQueryPlanner.ts` owns index-backed
+  candidate task selection before `FilterService` evaluates complete filter
+  predicates.
+- `src/services/filter-service/userFieldValues.ts` owns custom user-field list
+  token normalization, filter-value coercion, sort comparison, group bucket
+  selection, and hierarchical group labels without depending on the plugin or
+  Obsidian metadata cache.
+
 ### Bases Integration
 
 Treat Bases as an integration boundary. TaskNotes should normalize the subset of Bases APIs it depends on into local adapter types rather than spreading `any`-based access across views.
 
-Current extracted examples include Calendar event builders, config snapshots, and data-signature
-helpers, Kanban task grouping,
-column/swimlane ordering, and drag planning, Task List drag/drop insertion
-geometry, Task List grouped render planning, Bases task creation assembly,
-shared Bases formula/property-map adapters, TaskCard property access, TaskCard
-relationship expansion rendering, TaskCard metadata assembly and
-metadata-line adapter wiring,
-TaskCard render-state assembly, TaskCard completion-state refresh, TaskCard
-primary indicator rendering, TaskCard secondary badge rendering, TaskCard
-title/link rendering, TaskCard context-menu integration, TaskCard quick-action
-wiring, and TaskCard indicator helpers, plus TaskModal action state/menu
+Current extracted examples include Calendar event builders, event-mount list-card
+rendering, property-event mutation planning, config snapshots, and
+data-signature helpers, initial-date/navigation planning, Kanban task grouping,
+column/swimlane ordering, and drag planning, Kanban task-creation default
+planning, Task List drag/drop insertion geometry, Task List grouped render
+planning, shared Bases selection UI behavior, Bases task creation assembly,
+filter-default extraction for Bases-created tasks, Kanban drop status-derivative
+and side-effect planning, shared Bases formula/property-map adapters, TaskCard
+property access, TaskCard relationship expansion rendering, TaskCard metadata
+assembly and metadata-line adapter wiring, TaskCard render-state assembly,
+TaskCard completion-state refresh, TaskCard primary indicator rendering,
+TaskCard secondary badge rendering, TaskCard title/link rendering, TaskCard
+context-menu integration, TaskCard quick-action wiring, and TaskCard indicator
+helpers, plus TaskModal action state/menu
 adapters, creation form-state defaults, creation subtask assignment, edit
 form-state defaults, edit-change state assembly, edit subtask mutation
 planning, title-input behavior, details/right-column layout transitions, mobile

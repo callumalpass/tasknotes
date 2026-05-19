@@ -1,13 +1,16 @@
-import { TFile, stringifyYaml } from "obsidian";
+import { TFile, stringifyYaml, type Vault } from "obsidian";
 import {
 	EVENT_TASK_UPDATED,
+	FieldMapping,
 	IWebhookNotifier,
 	TaskCreationData,
 	TaskInfo,
 } from "../../types";
+import type { TaskNotesSettings } from "../../types/settings";
 import { addDTSTARTToRecurrenceRule } from "../../core/recurrence";
 import {
 	FilenameContext,
+	type TaskFilenameSettings,
 	generateTaskFilename,
 	generateUniqueFilename,
 } from "../../utils/filenameGenerator";
@@ -19,15 +22,73 @@ import {
 	applyPropertyTaskIdentifier,
 	getFrontmatterTags,
 } from "../../utils/taskIdentificationFrontmatter";
-import type TaskNotesPlugin from "../../main";
+import type { UserMappedField } from "../../types/settings";
 
 interface TemplateApplicationResult {
 	frontmatter: Record<string, unknown>;
 	body: string;
 }
 
+interface TaskCreationWorkspace {
+	getActiveFile(): TFile | null;
+}
+
+interface TaskCreationVault extends Vault {
+	create(path: string, content: string): Promise<TFile>;
+}
+
+interface TaskCreationFieldMapper {
+	getUserFields(): UserMappedField[];
+	mapToFrontmatter(
+		taskData: Partial<TaskInfo>,
+		taskTag?: string,
+		storeTitleInFilename?: boolean
+	): Record<string, unknown>;
+	toUserField(field: keyof FieldMapping): string;
+}
+
+interface TaskCreationCacheManager {
+	waitForFreshTaskData?: (file: TFile) => Promise<void>;
+	updateTaskInfoInCache(path: string, task: TaskInfo): void;
+}
+
+interface TaskCreationEmitter {
+	trigger(event: typeof EVENT_TASK_UPDATED, payload: unknown): void;
+}
+
+interface TaskCreationCalendarSyncService {
+	syncTaskToCalendar(task: TaskInfo): Promise<unknown>;
+}
+
+type TaskCreationSettings = Pick<
+	TaskNotesSettings,
+	| "storeTitleInFilename"
+	| "defaultTaskPriority"
+	| "defaultTaskStatus"
+	| "taskIdentificationMethod"
+	| "taskTag"
+	| "taskPropertyName"
+	| "taskPropertyValue"
+	| "inlineTaskConvertFolder"
+	| "tasksFolder"
+	| "googleCalendarExport"
+> &
+	TaskFilenameSettings;
+
+export interface TaskCreationRuntime {
+	app: {
+		vault: TaskCreationVault;
+		workspace: TaskCreationWorkspace;
+	};
+	settings: TaskCreationSettings;
+	fieldMapper: TaskCreationFieldMapper;
+	cacheManager: TaskCreationCacheManager;
+	emitter: TaskCreationEmitter;
+	taskCalendarSyncService?: TaskCreationCalendarSyncService;
+}
+
 export interface TaskCreationServiceDependencies {
-	plugin: TaskNotesPlugin;
+	runtime: TaskCreationRuntime;
 	webhookNotifier?: IWebhookNotifier;
 	applyTaskCreationDefaults(taskData: TaskCreationData): Promise<TaskCreationData>;
 	applyTemplate(taskData: TaskCreationData): Promise<TemplateApplicationResult>;
@@ -48,7 +109,7 @@ export class TaskCreationService {
 		options: { applyDefaults?: boolean } = {}
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
 		const { applyDefaults = true } = options;
-		const { plugin } = this.deps;
+		const { runtime } = this.deps;
 
 		try {
 			if (applyDefaults) {
@@ -61,11 +122,11 @@ export class TaskCreationService {
 
 			const rawTitle = taskData.title.trim();
 			const title = this.deps.sanitizeTitleForStorage(rawTitle);
-			const filenameTitle = plugin.settings.storeTitleInFilename
+			const filenameTitle = runtime.settings.storeTitleInFilename
 				? this.deps.sanitizeTitleForFilename(rawTitle)
 				: title;
-			const priority = taskData.priority || plugin.settings.defaultTaskPriority;
-			const status = taskData.status || plugin.settings.defaultTaskStatus;
+			const priority = taskData.priority || runtime.settings.defaultTaskPriority;
+			const status = taskData.status || runtime.settings.defaultTaskStatus;
 			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
 			const dateModified = taskData.dateModified || getCurrentTimestamp();
 
@@ -73,9 +134,9 @@ export class TaskCreationService {
 			const projectsArray = taskData.projects || [];
 			let tagsArray = taskData.tags || [];
 
-			if (plugin.settings.taskIdentificationMethod === "tag") {
-				if (!tagsArray.includes(plugin.settings.taskTag)) {
-					tagsArray = [plugin.settings.taskTag, ...tagsArray];
+			if (runtime.settings.taskIdentificationMethod === "tag") {
+				if (!tagsArray.includes(runtime.settings.taskTag)) {
+					tagsArray = [runtime.settings.taskTag, ...tagsArray];
 				}
 			}
 
@@ -94,17 +155,17 @@ export class TaskCreationService {
 				parentNote: taskData.parentNote,
 			};
 
-			const baseFilename = generateTaskFilename(filenameContext, plugin.settings);
+			const baseFilename = generateTaskFilename(filenameContext, runtime.settings);
 			const folder = await this.resolveTargetFolder(taskData);
 
 			if (folder) {
-				await ensureFolderExists(plugin.app.vault, folder);
+				await ensureFolderExists(runtime.app.vault, folder);
 			}
 
 			const uniqueFilename = await generateUniqueFilename(
 				baseFilename,
 				folder,
-				plugin.app.vault
+				runtime.app.vault
 			);
 			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
 
@@ -138,7 +199,7 @@ export class TaskCreationService {
 			// Thread user-defined field values from taskData through to frontmatter.
 			// completeTaskData only lists hardcoded core fields, so we copy any user
 			// field values here before mapToFrontmatter is called.
-			const userFields = plugin.fieldMapper.getUserFields();
+			const userFields = runtime.fieldMapper.getUserFields();
 			if (userFields.length > 0) {
 				const taskDataAny = taskData as Record<string, unknown>;
 				const completeAny = completeTaskData as Record<string, unknown>;
@@ -171,18 +232,18 @@ export class TaskCreationService {
 				}
 			}
 
-			const shouldAddTaskTag = plugin.settings.taskIdentificationMethod === "tag";
-			const taskTagForFrontmatter = shouldAddTaskTag ? plugin.settings.taskTag : undefined;
+			const shouldAddTaskTag = runtime.settings.taskIdentificationMethod === "tag";
+			const taskTagForFrontmatter = shouldAddTaskTag ? runtime.settings.taskTag : undefined;
 
-			const frontmatter = plugin.fieldMapper.mapToFrontmatter(
+			const frontmatter = runtime.fieldMapper.mapToFrontmatter(
 				completeTaskData,
 				taskTagForFrontmatter,
-				plugin.settings.storeTitleInFilename
+				runtime.settings.storeTitleInFilename
 			);
 
-			if (plugin.settings.taskIdentificationMethod === "property") {
-				const propName = plugin.settings.taskPropertyName;
-				const propValue = plugin.settings.taskPropertyValue;
+			if (runtime.settings.taskIdentificationMethod === "property") {
+				const propName = runtime.settings.taskPropertyName;
+				const propValue = runtime.settings.taskPropertyValue;
 				if (propName && propValue) {
 					applyPropertyTaskIdentifier(frontmatter, propName, propValue);
 				}
@@ -207,14 +268,14 @@ export class TaskCreationService {
 			if (taskData.customFrontmatter) {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
-			if (plugin.settings.storeTitleInFilename) {
-				delete finalFrontmatter[plugin.fieldMapper.toUserField("title")];
+			if (runtime.settings.storeTitleInFilename) {
+				delete finalFrontmatter[runtime.fieldMapper.toUserField("title")];
 			}
-			if (plugin.settings.taskIdentificationMethod === "property") {
+			if (runtime.settings.taskIdentificationMethod === "property") {
 				applyPropertyTaskIdentifier(
 					finalFrontmatter,
-					plugin.settings.taskPropertyName,
-					plugin.settings.taskPropertyValue
+					runtime.settings.taskPropertyName,
+					runtime.settings.taskPropertyValue
 				);
 			}
 			tagsArray = getFrontmatterTags(finalFrontmatter.tags);
@@ -225,7 +286,7 @@ export class TaskCreationService {
 				content += `${normalizedBody}\n`;
 			}
 
-			const file = await plugin.app.vault.create(fullPath, content);
+			const file = await runtime.app.vault.create(fullPath, content);
 
 			const taskInfo: TaskInfo = {
 				...completeTaskData,
@@ -242,15 +303,15 @@ export class TaskCreationService {
 			};
 
 			try {
-				if (plugin.cacheManager.waitForFreshTaskData) {
-					await plugin.cacheManager.waitForFreshTaskData(file);
+				if (runtime.cacheManager.waitForFreshTaskData) {
+					await runtime.cacheManager.waitForFreshTaskData(file);
 				}
-				plugin.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
+				runtime.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
 			} catch (cacheError) {
 				console.error("Error updating cache for new task:", cacheError);
 			}
 
-			plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+			runtime.emitter.trigger(EVENT_TASK_UPDATED, {
 				path: file.path,
 				updatedTask: taskInfo,
 			});
@@ -266,10 +327,10 @@ export class TaskCreationService {
 			}
 
 			if (
-				plugin.taskCalendarSyncService &&
-				plugin.settings.googleCalendarExport.syncOnTaskCreate
+				runtime.taskCalendarSyncService &&
+				runtime.settings.googleCalendarExport.syncOnTaskCreate
 			) {
-				plugin.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {
+				runtime.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {
 					console.warn("Failed to sync task to Google Calendar:", error);
 				});
 			}
@@ -294,33 +355,33 @@ export class TaskCreationService {
 			return folderTemplate;
 		}
 
-		const currentFile = this.deps.plugin.app.workspace.getActiveFile();
+		const currentFile = this.deps.runtime.app.workspace.getActiveFile();
 		return folderTemplate
 			.replace(/\{\{currentNotePath\}\}/g, currentFile?.parent?.path || "")
 			.replace(/\{\{currentNoteTitle\}\}/g, currentFile?.basename || "");
 	}
 
 	private async resolveTargetFolder(taskData: TaskCreationData): Promise<string> {
-		const { plugin } = this.deps;
+		const { runtime } = this.deps;
 		let folder = "";
 
 		if (
 			taskData.creationContext === "inline-conversion" ||
 			taskData.creationContext === "modal-inline-creation"
 		) {
-			const inlineFolder = plugin.settings.inlineTaskConvertFolder || "";
+			const inlineFolder = runtime.settings.inlineTaskConvertFolder || "";
 			if (inlineFolder.trim()) {
 				folder = this.resolveCurrentNoteFolderVariables(inlineFolder);
 				return this.deps.processFolderTemplate(folder, taskData);
 			}
 
 			const tasksFolder = this.resolveCurrentNoteFolderVariables(
-				plugin.settings.tasksFolder || ""
+				runtime.settings.tasksFolder || ""
 			);
 			return this.deps.processFolderTemplate(tasksFolder, taskData);
 		}
 
-		const tasksFolder = this.resolveCurrentNoteFolderVariables(plugin.settings.tasksFolder || "");
+		const tasksFolder = this.resolveCurrentNoteFolderVariables(runtime.settings.tasksFolder || "");
 		return this.deps.processFolderTemplate(tasksFolder, taskData);
 	}
 }

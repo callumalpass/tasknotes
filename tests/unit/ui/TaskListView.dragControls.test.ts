@@ -353,12 +353,129 @@ describe("TaskListView drag controls", () => {
 		});
 	});
 
-	it("flushes the latest dragover insertion slot instead of recomputing from the drop event coordinates", () => {
+	it("changes the card render signature when visible Bases properties change", () => {
+		const view = createView();
+		const targetDate = new Date(Date.UTC(2026, 4, 18));
+		const initialSignature = (view as any).buildCardRenderSignature(["status"], {
+			targetDate,
+			propertyLabels: { status: "Status" },
+		});
+		const updatedSignature = (view as any).buildCardRenderSignature(
+			["status", "sort_order"],
+			{
+				targetDate,
+				propertyLabels: { status: "Status", sort_order: "sort_order" },
+			}
+		);
+
+		expect(updatedSignature).not.toBe(initialSignature);
+	});
+
+	it("recreates the virtual renderer when visible Bases properties change", () => {
+		const view = createView();
+		const targetDate = new Date(Date.UTC(2026, 4, 18));
+		const destroy = jest.fn();
+		const initialSignature = (view as any).buildCardRenderSignature(["status"], {
+			targetDate,
+			propertyLabels: { status: "Status" },
+		});
+		const updatedSignature = (view as any).buildCardRenderSignature(
+			["status", "sort_order"],
+			{
+				targetDate,
+				propertyLabels: { status: "Status", sort_order: "sort_order" },
+			}
+		);
+
+		(view as any).virtualScroller = { destroy };
+		(view as any).lastCardRenderSignature = initialSignature;
+
+		(view as any).resetVirtualScrollerIfCardRenderChanged(updatedSignature);
+
+		expect(destroy).toHaveBeenCalledTimes(1);
+		expect((view as any).virtualScroller).toBeNull();
+	});
+
+	it("optimistically reorders virtual task items after a sort-order write", () => {
+		const view = createView();
+		const taskA = TaskFactory.createTask({ path: "tasks/a.md", sortOrder: "0|hzzzzz:" } as any);
+		const taskB = TaskFactory.createTask({ path: "tasks/b.md", sortOrder: "0|i0000f:" } as any);
+		const taskC = TaskFactory.createTask({ path: "tasks/c.md", sortOrder: "0|i0000n:" } as any);
+		const updateItems = jest.fn();
+
+		(view as any).virtualScroller = { updateItems };
+		(view as any).lastVirtualItems = [
+			{
+				type: "primary-header",
+				groupKey: "todo",
+				groupTitle: "Todo",
+				taskCount: 3,
+				groupEntries: [],
+				isCollapsed: false,
+			},
+			{ type: "task", task: taskA, groupKey: "todo" },
+			{ type: "task", task: taskB, groupKey: "todo" },
+			{ type: "task", task: taskC, groupKey: "todo" },
+		];
+		(view as any).taskInfoCache.set(taskA.path, taskA);
+		(view as any).taskInfoCache.set(taskB.path, taskB);
+		(view as any).taskInfoCache.set(taskC.path, taskC);
+
+		const applied = (view as any).applyOptimisticSortOrderResult(
+			"tasks/c.md",
+			"tasks/a.md",
+			false,
+			"todo",
+			"todo",
+			{
+				sortOrder: "tnmzzzzzzzzz",
+				additionalWrites: [
+					{ path: "tasks/a.md", sortOrder: "tndgmzzzzzzz" },
+					{ path: "tasks/b.md", sortOrder: "tnwtmzzzzzzt" },
+				],
+				reason: "rebalance",
+			}
+		);
+
+		expect(applied).toBe(true);
+		expect(updateItems).toHaveBeenCalledTimes(1);
+		const updatedItems = updateItems.mock.calls[0][0] as any[];
+		expect(updatedItems.map((item) => item.task?.path ?? item.groupKey)).toEqual([
+			"todo",
+			"tasks/a.md",
+			"tasks/c.md",
+			"tasks/b.md",
+		]);
+		expect(taskA.sortOrder).toBe("tndgmzzzzzzz");
+		expect(taskB.sortOrder).toBe("tnwtmzzzzzzt");
+		expect(taskC.sortOrder).toBe("tnmzzzzzzzzz");
+		expect((view as any).getVisibleSortScopePaths("todo")).toEqual([
+			"tasks/a.md",
+			"tasks/c.md",
+			"tasks/b.md",
+		]);
+	});
+
+	it("changes the task render signature when sort order changes", () => {
+		const view = createView();
+		const task = TaskFactory.createTask({
+			path: "tasks/sort-order.md",
+			sortOrder: "0|hzzzzz:",
+		} as any);
+
+		expect((view as any).buildTaskSignature({ ...task, sortOrder: "0|i00000:" })).not.toBe(
+			(view as any).buildTaskSignature(task)
+		);
+	});
+
+	it("resolves the final insertion slot from the drop event coordinate", () => {
 		const view = createView();
 		const updateResolvedInsertionSlot = jest
 			.spyOn(view as any, "updateResolvedInsertionSlot")
 			.mockReturnValue(true);
-		const cancelAnimationFrameSpy = jest.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+		const cancelAnimationFrameSpy = jest
+			.spyOn(window, "cancelAnimationFrame")
+			.mockImplementation(() => {});
 
 		(view as any).dragOverRafId = 42;
 		(view as any).pendingDragClientY = 135;
@@ -368,10 +485,27 @@ describe("TaskListView drag controls", () => {
 
 		expect((view as any).flushPendingInsertionSlot(400)).toBe(true);
 		expect(cancelAnimationFrameSpy).toHaveBeenCalledWith(42);
-		expect(updateResolvedInsertionSlot).toHaveBeenCalledWith(135);
+		expect(updateResolvedInsertionSlot).toHaveBeenCalledWith(400);
 		expect((view as any).dragOverRafId).toBe(0);
+		expect((view as any).pendingDragClientY).toBeNull();
 
 		cancelAnimationFrameSpy.mockRestore();
+		updateResolvedInsertionSlot.mockRestore();
+	});
+
+	it("uses the drop event coordinates after the queued dragover has already rendered", () => {
+		const view = createView();
+		const updateResolvedInsertionSlot = jest
+			.spyOn(view as any, "updateResolvedInsertionSlot")
+			.mockReturnValue(true);
+
+		(view as any).dragOverRafId = 0;
+		(view as any).pendingDragClientY = 135;
+
+		expect((view as any).flushPendingInsertionSlot(400)).toBe(true);
+		expect(updateResolvedInsertionSlot).toHaveBeenCalledWith(400);
+		expect((view as any).pendingDragClientY).toBeNull();
+
 		updateResolvedInsertionSlot.mockRestore();
 	});
 

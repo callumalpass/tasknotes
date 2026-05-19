@@ -1,5 +1,8 @@
 import {
 	buildProviderEventDateUpdate,
+	getCalendarFrontmatterPropertyName,
+	planPropertyEventDrop,
+	planPropertyEventResize,
 	planTaskCalendarDrop,
 	planTaskCalendarResize,
 	planTimeEntryDrop,
@@ -12,6 +15,96 @@ function localDate(year: number, monthIndex: number, day: number, hour = 0, minu
 }
 
 describe("calendar mutation planning", () => {
+	describe("property-based event planning", () => {
+		it("normalizes Bases property IDs to frontmatter keys", () => {
+			expect(getCalendarFrontmatterPropertyName("note.reviewStart")).toBe("reviewStart");
+			expect(getCalendarFrontmatterPropertyName("reviewStart")).toBe("reviewStart");
+			expect(getCalendarFrontmatterPropertyName(null)).toBeNull();
+		});
+
+		it("shifts property-based event start and end values by the drag delta", () => {
+			const plan = planPropertyEventDrop({
+				frontmatter: {
+					start: "2026-05-18T09:00",
+					end: "2026-05-18T10:30",
+				},
+				startProperty: "start",
+				endProperty: "end",
+				oldStart: localDate(2026, 4, 18, 9),
+				newStart: localDate(2026, 4, 19, 11),
+				allDay: false,
+			});
+
+			expect(plan).toEqual({
+				kind: "update-frontmatter",
+				updates: {
+					start: "2026-05-19T11:00",
+					end: "2026-05-19T12:30",
+				},
+			});
+		});
+
+		it("keeps the start update when the optional end value cannot be shifted", () => {
+			const plan = planPropertyEventDrop({
+				frontmatter: {
+					start: "2026-05-18",
+					end: "not a date",
+				},
+				startProperty: "start",
+				endProperty: "end",
+				oldStart: localDate(2026, 4, 18),
+				newStart: localDate(2026, 4, 20),
+				allDay: true,
+			});
+
+			expect(plan).toEqual({
+				kind: "update-frontmatter",
+				updates: {
+					start: "2026-05-20",
+				},
+			});
+		});
+
+		it("ignores property-based drops when the required start value is malformed", () => {
+			const plan = planPropertyEventDrop({
+				frontmatter: {
+					start: "not a date",
+					end: "2026-05-18",
+				},
+				startProperty: "start",
+				endProperty: "end",
+				oldStart: localDate(2026, 4, 18),
+				newStart: localDate(2026, 4, 20),
+				allDay: true,
+			});
+
+			expect(plan).toEqual({ kind: "ignore", reason: "invalid-start-value" });
+		});
+
+		it("plans property-based resize writes against the configured end field", () => {
+			expect(
+				planPropertyEventResize({
+					endProperty: "end",
+					newEnd: localDate(2026, 4, 18, 16, 45),
+					allDay: false,
+				})
+			).toEqual({
+				kind: "update-frontmatter",
+				updates: {
+					end: "2026-05-18T16:45",
+				},
+			});
+
+			expect(
+				planPropertyEventResize({
+					endProperty: null,
+					newEnd: localDate(2026, 4, 18),
+					allDay: true,
+				})
+			).toEqual({ kind: "revert", reason: "missing-end-property" });
+		});
+	});
+
 	describe("task drop planning", () => {
 		it("updates scheduled all-day events as date-only values", () => {
 			const plan = planTaskCalendarDrop({

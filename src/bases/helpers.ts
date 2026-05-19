@@ -172,6 +172,7 @@ function createTaskInfoFromProperties(
 		"skipped_instances",
 		"blockedBy",
 		"blocking",
+		"sortOrder",
 		// Prevent double-nesting: when this function is called with a Partial<TaskInfo>
 		// that already has customProperties populated (e.g. from mapFromFrontmatter),
 		// we must not re-classify it as an unknown property.
@@ -232,6 +233,7 @@ function createTaskInfoFromProperties(
 		blocking: blockingTasks.length > 0 ? blockingTasks : undefined,
 		isBlocked: isBlocked,
 		isBlocking: isBlocking,
+		sortOrder: toOptionalString(props.sortOrder),
 		customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined,
 		basesData: basesItem.basesData,
 	};

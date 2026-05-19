@@ -1,5 +1,5 @@
 import TaskNotesPlugin from "../main";
-import type { BasesView, BasesViewFactory } from "obsidian";
+import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
 import type { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
@@ -40,6 +40,9 @@ import {
 } from "./calendar-core";
 import {
 	buildProviderEventDateUpdate,
+	getCalendarFrontmatterPropertyName,
+	planPropertyEventDrop,
+	planPropertyEventResize,
 	planTaskCalendarDrop,
 	planTaskCalendarResize,
 	planTimeEntryDrop,
@@ -52,17 +55,17 @@ import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { Menu, Platform, TFile, setIcon, setTooltip } from "obsidian";
 import type { EventRef } from "obsidian";
 import { format } from "date-fns";
-import { createTaskCard } from "../ui/TaskCard";
-import { createICSEventCard } from "../ui/ICSCard";
-import { createPropertyEventCard } from "../ui/PropertyEventCard";
-import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
-import { parseDateToLocal, parseDateToUTC } from "../utils/dateUtils";
+import { parseDateToLocal } from "../utils/dateUtils";
 import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
 } from "./calendarRecreateUtils";
+import {
+	determineCalendarInitialDate,
+	getCalendarRecreateNavigationState,
+} from "./calendarInitialDate";
 import {
 	buildCalendarDataSignature,
 	buildCalendarDataSignaturePropertyIds,
@@ -72,11 +75,15 @@ import {
 	buildCalendarConfigSnapshot,
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
-import {
-	buildCalendarPropertyEvent,
-	normalizeDateValueForCalendar,
-} from "./calendarPropertyEvents";
+import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
 import { buildExternalCalendarEvents } from "./calendarExternalEvents";
+import {
+	decorateCalendarIcsEventElement,
+	getCalendarRelatedNoteTooltip,
+	mountCalendarListEventCard,
+	normalizeCalendarRelatedNoteCount,
+	type BasesEntryWithGetValue,
+} from "./calendarEventMount";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import { filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
 
@@ -88,40 +95,6 @@ export {
 
 type CalendarDataAdapterWithView = {
 	basesView: CalendarView;
-};
-
-function getRelatedNoteTooltip(plugin: TaskNotesPlugin, relatedNoteCount: number): string {
-	const label = plugin.i18n.translate("modals.icsEventInfo.relatedNotesHeading");
-	return `${label}: ${relatedNoteCount}`;
-}
-
-function appendRelatedNoteIndicator(
-	container: Element,
-	plugin: TaskNotesPlugin,
-	relatedNoteCount: number
-): void {
-	if (relatedNoteCount <= 0 || container.querySelector(".ics-related-note-indicator")) {
-		return;
-	}
-
-	const doc = container.ownerDocument;
-	const iconContainer = doc.createElement("span");
-	iconContainer.classList.add("ics-related-note-indicator");
-	iconContainer.setAttribute("aria-label", getRelatedNoteTooltip(plugin, relatedNoteCount));
-	iconContainer.dataset.relatedNoteCount = String(relatedNoteCount);
-	setIcon(iconContainer, "file-text");
-	setTooltip(iconContainer, getRelatedNoteTooltip(plugin, relatedNoteCount), {
-		placement: "top",
-	});
-	container.appendChild(iconContainer);
-}
-
-type BasesEntryValue = {
-	data?: unknown;
-};
-
-type BasesEntryWithGetValue = {
-	getValue?: (propertyId: string) => BasesEntryValue | undefined;
 };
 
 type CalendarEphemeralState = {
@@ -352,6 +325,25 @@ export function findColForCell(cell: HTMLTableCellElement): HTMLTableColElement 
 	if (!colgroup) return null;
 	const col = colgroup.children[cell.cellIndex];
 	return col?.tagName === "COL" ? (col as HTMLTableColElement) : null;
+}
+
+const CALENDAR_INLINE_WIDTH_CELL_SELECTOR =
+	".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date], .fc-timegrid-axis";
+
+export function resetCalendarInlineWidths(calendarEl: HTMLElement): void {
+	const cells = calendarEl.querySelectorAll<HTMLTableCellElement>(
+		CALENDAR_INLINE_WIDTH_CELL_SELECTOR
+	);
+	cells.forEach((cell) => {
+		cell.style.removeProperty("width");
+		cell.style.removeProperty("min-width");
+		cell.style.removeProperty("max-width");
+
+		const col = findColForCell(cell);
+		if (col) {
+			col.style.removeProperty("width");
+		}
+	});
 }
 
 export function isCalendarElementReadyForSizing(
@@ -1651,19 +1643,7 @@ export class CalendarView extends BasesViewBase {
 	private resetTodayColumnWidths(): void {
 		if (!this.calendarEl) return;
 
-		const dayElements = this.calendarEl.querySelectorAll<HTMLTableCellElement>(
-			".fc-col-header-cell[data-date], .fc-timegrid-col[data-date], .fc-daygrid-day[data-date]"
-		);
-		dayElements.forEach((element) => {
-			element.style.removeProperty("width");
-			element.style.removeProperty("min-width");
-			element.style.removeProperty("max-width");
-
-			const col = findColForCell(element);
-			if (col) {
-				col.style.removeProperty("width");
-			}
-		});
+		resetCalendarInlineWidths(this.calendarEl);
 	}
 
 	/**
@@ -1693,95 +1673,19 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private determineInitialDate(taskNotes: TaskInfo[]): Date | string | undefined {
-		// Check for explicit initial date option
-		if (this.viewOptions.initialDate) {
-			const normalized = normalizeDateValueForCalendar(this.viewOptions.initialDate);
-			return normalized?.value ?? this.viewOptions.initialDate;
-		}
-
-		// Check for property-based navigation
-		if (this.viewOptions.initialDateProperty) {
-			const propertyId = this.viewOptions.initialDateProperty;
-			const dates = this.collectInitialDateCandidates(propertyId, taskNotes);
-
-			if (dates.length > 0) {
-				// Apply strategy
-				if (this.viewOptions.initialDateStrategy === "earliest") {
-					const earliest = dates.reduce((prev, curr) =>
-						curr.compare.getTime() < prev.compare.getTime() ? curr : prev
-					);
-					return earliest.value;
-				} else if (this.viewOptions.initialDateStrategy === "latest") {
-					const latest = dates.reduce((prev, curr) =>
-						curr.compare.getTime() > prev.compare.getTime() ? curr : prev
-					);
-					return latest.value;
-				} else {
-					// "first" - return first date
-					return dates[0].value;
-				}
-			}
-		}
-
-		// Default to today
-		return undefined;
-	}
-
-	private collectInitialDateCandidates(
-		propertyId: string,
-		taskNotes: TaskInfo[]
-	): { compare: Date; value: string | Date }[] {
-		const dates: { compare: Date; value: string | Date }[] = [];
-
-		if (this.data?.data) {
-			for (const entry of this.data.data) {
-				const value = this.dataAdapter.getPropertyValue(entry, propertyId);
-				const candidate = this.toInitialDateCandidate(value);
-				if (candidate) {
-					dates.push(candidate);
-				}
-			}
-		}
-
-		if (dates.length > 0) {
-			return dates;
-		}
-
-		const internalFieldName = this.propertyMapper.basesToTaskCardProperty(propertyId);
-		for (const task of taskNotes) {
-			const taskRecord = task as unknown as Record<string, unknown>;
-			const customProperties = task.customProperties;
-			const value =
-				taskRecord[internalFieldName] ??
-				customProperties?.[internalFieldName] ??
-				customProperties?.[propertyId];
-			const candidate = this.toInitialDateCandidate(value);
-			if (candidate) {
-				dates.push(candidate);
-			}
-		}
-
-		return dates;
-	}
-
-	private toInitialDateCandidate(value: unknown): { compare: Date; value: string | Date } | null {
-		const normalized = normalizeDateValueForCalendar(value);
-		if (!normalized) return null;
-
-		const compareDate = normalized.isAllDay
-			? parseDateToUTC(normalized.value as string)
-			: new Date(normalized.value);
-		if (isNaN(compareDate.getTime())) return null;
-
-		return { compare: compareDate, value: normalized.value };
+		return determineCalendarInitialDate({
+			viewOptions: this.viewOptions,
+			taskNotes,
+			entries: this.data?.data,
+			getEntryPropertyValue: (entry, propertyId) =>
+				this.dataAdapter.getPropertyValue(entry as BasesEntry, propertyId),
+			mapPropertyToTaskField: (propertyId) =>
+				this.propertyMapper.basesToTaskCardProperty(propertyId),
+		});
 	}
 
 	private getNavigationConfigState(): CalendarRecreateNavigationState {
-		return {
-			initialDate: this.viewOptions.initialDate,
-			initialDateProperty: this.viewOptions.initialDateProperty,
-			initialDateStrategy: this.viewOptions.initialDateStrategy,
-		};
+		return getCalendarRecreateNavigationState(this.viewOptions);
 	}
 
 	private async fetchEvents(
@@ -2120,61 +2024,33 @@ export class CalendarView extends BasesViewBase {
 				const startDateProperty = this.viewOptions.startDateProperty;
 				const endDateProperty = this.viewOptions.endDateProperty;
 
-				if (!startDateProperty) {
-					info.revert();
-					return;
-				}
-
-				// Strip property prefix if present
-				const startProp = startDateProperty.includes(".")
-					? startDateProperty.split(".").pop()
-					: startDateProperty;
-				const endProp =
-					endDateProperty && endDateProperty.includes(".")
-						? endDateProperty.split(".").pop()
-						: endDateProperty;
-
+				const startProp = getCalendarFrontmatterPropertyName(startDateProperty);
+				const endProp = getCalendarFrontmatterPropertyName(endDateProperty);
 				if (!startProp) {
 					info.revert();
 					return;
 				}
 
-				// Calculate time shift (in milliseconds)
 				const oldStart = info.oldEvent.start;
 				const newStart = info.event.start;
 				if (!oldStart || !newStart) {
 					info.revert();
 					return;
 				}
-				const timeDiffMs = newStart.getTime() - oldStart.getTime();
 
 				// Update frontmatter
 				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-					// Update start date
-					const oldStartValue = frontmatter[startProp];
-					if (oldStartValue) {
-						const oldStartDate = new Date(oldStartValue);
-						if (isNaN(oldStartDate.getTime())) return;
-						const newStartDate = new Date(oldStartDate.getTime() + timeDiffMs);
-						if (isNaN(newStartDate.getTime())) return;
-						frontmatter[startProp] = format(
-							newStartDate,
-							info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm"
-						);
-					}
-
-					// Update end date if configured
-					if (endProp) {
-						const oldEndValue = frontmatter[endProp];
-						if (oldEndValue) {
-							const oldEndDate = new Date(oldEndValue);
-							if (isNaN(oldEndDate.getTime())) return;
-							const newEndDate = new Date(oldEndDate.getTime() + timeDiffMs);
-							if (isNaN(newEndDate.getTime())) return;
-							frontmatter[endProp] = format(
-								newEndDate,
-								info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm"
-							);
+					const plan = planPropertyEventDrop({
+						frontmatter,
+						startProperty: startProp,
+						endProperty: endProp,
+						oldStart,
+						newStart,
+						allDay: info.event.allDay,
+					});
+					if (plan.kind === "update-frontmatter") {
+						for (const [property, value] of Object.entries(plan.updates)) {
+							frontmatter[property] = value;
 						}
 					}
 				});
@@ -2353,36 +2229,25 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				const endDateProperty = this.viewOptions.endDateProperty;
-
-				if (!endDateProperty) {
-					// No end date property configured, can't resize
+				const endProp = getCalendarFrontmatterPropertyName(endDateProperty);
+				const plan = planPropertyEventResize({
+					endProperty: endProp,
+					newEnd: info.event.end,
+					allDay: info.event.allDay,
+				});
+				if (plan.kind === "revert") {
 					info.revert();
 					return;
 				}
-
-				// Strip property prefix
-				const endProp = endDateProperty.includes(".")
-					? endDateProperty.split(".").pop()
-					: endDateProperty;
-
-				if (!endProp) {
-					info.revert();
-					return;
-				}
-
-				const newEnd = info.event.end;
-				if (!newEnd) {
-					info.revert();
+				if (plan.kind === "ignore") {
 					return;
 				}
 
 				// Update frontmatter
 				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-					if (isNaN(newEnd.getTime())) return;
-					frontmatter[endProp] = format(
-						newEnd,
-						info.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm"
-					);
+					for (const [property, value] of Object.entries(plan.updates)) {
+						frontmatter[property] = value;
+					}
 				});
 			} catch (error) {
 				console.error(
@@ -2548,156 +2413,32 @@ export class CalendarView extends BasesViewBase {
 	private handleEventDidMount(arg: EventMountArg): void {
 		if (!arg?.event?.extendedProps) return;
 
-		const { taskInfo, timeblock, icsEvent, eventType, basesEntry, relatedNoteCount } =
+		const { taskInfo, timeblock, icsEvent, eventType, relatedNoteCount } =
 			arg.event.extendedProps;
 		suppressCalendarContextMenuOnMobile(arg.el);
 
-		const relatedNoteTotal =
-			typeof relatedNoteCount === "number" && relatedNoteCount > 0 ? relatedNoteCount : 0;
-
-		if (icsEvent) {
-			arg.el.setAttribute("data-ics-event", "true");
-			arg.el.classList.add("fc-ics-event");
-			if (relatedNoteTotal > 0) {
-				arg.el.classList.add("has-related-note", "fc-event--has-related-note");
-				arg.el.dataset.relatedNoteCount = String(relatedNoteTotal);
-			}
-		}
-
-		// Add calendar icon to provider-managed calendar events in grid views
-		if (icsEvent && arg.view.type !== "listWeek") {
-			const provider = this.plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
-			if (provider && !arg.el.querySelector(".fc-event-provider-icon")) {
-				const iconEl = arg.el.ownerDocument.createElement("span");
-				iconEl.classList.add("fc-event-provider-icon");
-				iconEl.setAttribute("aria-hidden", "true");
-				setIcon(iconEl, "calendar");
-				arg.el.appendChild(iconEl);
-			}
-
-			const titleEl = arg.el.querySelector(".fc-event-title");
-			if (titleEl && relatedNoteTotal > 0) {
-				appendRelatedNoteIndicator(titleEl, this.plugin, relatedNoteTotal);
-			}
-		}
+		const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
+		decorateCalendarIcsEventElement({
+			element: arg.el,
+			viewType: arg.view.type,
+			icsEvent,
+			relatedNoteCount: relatedNoteTotal,
+			plugin: this.plugin,
+		});
 
 		// Custom rendering for list view - replace with card components
-		if (arg.view.type === "listWeek") {
-			// Clear the default content
-			arg.el.innerHTML = "";
-
-			let cardElement: HTMLElement | null = null;
-
-			// Get visible properties from Bases view configuration
-			const visibleProperties = this.getVisibleProperties();
-
-			// Render task events with TaskCard
-			if (taskInfo && eventType !== "ics" && eventType !== "property-based") {
-				// Enrich TaskInfo with Bases data for formula and file property access
-				const enrichedTask = { ...taskInfo };
-				const basesEntry = this.basesEntryByPath.get(taskInfo.path);
-
-				if (basesEntry) {
-					// Store the full basesEntry for lazy file property access (e.g., file.backlinks)
-					// This allows TaskCard.getPropertyValue to call getValue() on demand
-					enrichedTask.basesData = basesEntry;
-
-					// Pre-populate formula results for performance (formulas are accessed frequently)
-					if (visibleProperties) {
-						for (const propId of visibleProperties) {
-							if (propId.startsWith("formula.")) {
-								try {
-									// Just trigger the getValue to ensure it's cached by Bases
-									basesEntry.getValue?.(propId);
-								} catch (error) {
-									console.debug(
-										"[TaskNotes][CalendarView] Error getting formula:",
-										propId,
-										error
-									);
-								}
-							}
-						}
-					}
-
-					// Add file properties if not already present
-					if (!enrichedTask.dateCreated) {
-						try {
-							const ctimeValue = basesEntry.getValue?.("file.ctime");
-							if (ctimeValue?.data) enrichedTask.dateCreated = ctimeValue.data;
-						} catch (error) {
-							console.debug(
-								"[TaskNotes][CalendarView] Error getting file.ctime:",
-								error
-							);
-						}
-					}
-					if (!enrichedTask.dateModified) {
-						try {
-							const mtimeValue = basesEntry.getValue?.("file.mtime");
-							if (mtimeValue?.data) enrichedTask.dateModified = mtimeValue.data;
-						} catch (error) {
-							console.debug(
-								"[TaskNotes][CalendarView] Error getting file.mtime:",
-								error
-							);
-						}
-					}
-				}
-
-				// Use shared UTC-anchored target date logic
-				const targetDate = getTargetDateForEvent(arg);
-
-				cardElement = createTaskCard(
-					enrichedTask,
-					this.plugin,
-					visibleProperties,
-					this.buildTaskCardOptions({
-						targetDate: targetDate,
-					})
-				);
-			}
-			// Render ICS events with ICSCard
-			else if (icsEvent && eventType === "ics") {
-				cardElement = createICSEventCard(icsEvent, this.plugin, {
-					relatedNoteCount: relatedNoteTotal,
-				});
-			}
-			// Render property-based events with PropertyEventCard
-			else if (eventType === "property-based" && basesEntry) {
-				cardElement = createPropertyEventCard(basesEntry, this.plugin, this.config);
-			}
-			// Render timeblock events with TimeBlockCard
-			else if (eventType === "timeblock" && timeblock) {
-				const originalDate = arg.event.start
-					? format(arg.event.start, "yyyy-MM-dd")
-					: undefined;
-				cardElement = createTimeBlockCard(timeblock, this.plugin, {
-					eventDate: arg.event.start ?? undefined,
-					originalDate: originalDate,
-				});
-			}
-
-			// Replace the event element content with the card
-			if (cardElement) {
-				const cardCell = arg.el.ownerDocument.createElement("td");
-				cardCell.className = "fc-list-event-title fc-list-card-content";
-				cardCell.colSpan = 3;
-				cardCell.appendChild(cardElement);
-				arg.el.appendChild(cardCell);
-				if (taskInfo?.path) {
-					arg.el.setAttribute("data-task-path", taskInfo.path);
-					arg.el.classList.add("fc-task-event");
-				}
-				arg.el.classList.add("fc-list-task-card");
-				// Remove default FullCalendar classes that interfere with card styling
-				arg.el.classList.remove("fc-event", "fc-event-start", "fc-event-end");
-
-				return; // Skip default handling
-			} else {
-				// Fallback: Add consistent styling to events without custom cards
-				arg.el.classList.add("fc-event-default-list");
-			}
+		if (
+			mountCalendarListEventCard({
+				arg,
+				plugin: this.plugin,
+				config: this.config,
+				visibleProperties: this.getVisibleProperties(),
+				basesEntryByPath: this.basesEntryByPath,
+				buildTaskCardOptions: (options) => this.buildTaskCardOptions(options),
+				logDebug: (message, ...data) => console.debug(message, ...data),
+			})
+		) {
+			return;
 		}
 
 		// Set event type attribute
@@ -2770,7 +2511,7 @@ export class CalendarView extends BasesViewBase {
 		} else if (icsEvent) {
 			const relatedNotesText =
 				relatedNoteTotal > 0
-					? `\n\n${getRelatedNoteTooltip(this.plugin, relatedNoteTotal)}`
+					? `\n\n${getCalendarRelatedNoteTooltip(this.plugin, relatedNoteTotal)}`
 					: "";
 			const tooltipText = icsEvent.description
 				? `${icsEvent.title}\n\n${icsEvent.description}${relatedNotesText}`

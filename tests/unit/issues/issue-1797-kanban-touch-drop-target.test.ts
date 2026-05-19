@@ -1,4 +1,5 @@
 import { KanbanView } from "../../../src/bases/KanbanView";
+import { reconstructKanbanDropTargetFromContainer } from "../../../src/bases/kanbanDragUtils";
 
 function makeView(): KanbanView {
 	return new KanbanView(
@@ -73,6 +74,64 @@ describe("issue #1797 Kanban touch drop targets", () => {
 			type: "task",
 			groupKey: "todo",
 			taskPath: "tasks/b.md",
+			above: false,
+		});
+	});
+
+	it("reconstructs mouse drop targets from the drop coordinate instead of a stale insertion index", () => {
+		const view = makeView();
+		const cards = document.createElement("div");
+		cards.className = "kanban-view__cards";
+		const dragged = cards.createDiv("kanban-view__card-wrapper");
+		dragged.dataset.taskPath = "tasks/a.md";
+		const firstTarget = cards.createDiv("kanban-view__card-wrapper");
+		firstTarget.dataset.taskPath = "tasks/b.md";
+		const secondTarget = cards.createDiv("kanban-view__card-wrapper");
+		secondTarget.dataset.taskPath = "tasks/c.md";
+
+		firstTarget.getBoundingClientRect = jest.fn(
+			() =>
+				({
+					top: 100,
+					bottom: 140,
+					height: 40,
+					left: 0,
+					right: 200,
+					width: 200,
+				}) as DOMRect
+		);
+		secondTarget.getBoundingClientRect = jest.fn(
+			() =>
+				({
+					top: 160,
+					bottom: 200,
+					height: 40,
+					left: 0,
+					right: 200,
+					width: 200,
+				}) as DOMRect
+		);
+
+		expect(
+			reconstructKanbanDropTargetFromContainer({
+				cardsContainer: cards,
+				draggedTaskPaths: ["tasks/a.md"],
+				currentInsertionIndex: 2,
+				clientY: 110,
+			})
+		).toEqual({
+			taskPath: "tasks/b.md",
+			above: true,
+		});
+		expect(
+			reconstructKanbanDropTargetFromContainer({
+				cardsContainer: cards,
+				draggedTaskPaths: ["tasks/a.md"],
+				currentInsertionIndex: 2,
+				clientY: 195,
+			})
+		).toEqual({
+			taskPath: "tasks/c.md",
 			above: false,
 		});
 	});

@@ -60,6 +60,7 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => unknown> = {
 	skippedInstances: (task) => task.skipped_instances,
 	dateCreated: (task) => task.dateCreated,
 	dateModified: (task) => task.dateModified,
+	sortOrder: (task) => task.sortOrder,
 	googleCalendarSync: (task) => task.path,
 	checklistProgress: (task) => task.path,
 };

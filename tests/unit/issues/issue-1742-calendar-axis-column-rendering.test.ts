@@ -31,6 +31,7 @@
 import {
 	findColForCell,
 	getTodayColumnWidths,
+	resetCalendarInlineWidths,
 	shouldWidenTodayColumn,
 } from "../../../src/bases/CalendarView";
 
@@ -247,20 +248,40 @@ describe("Issue #1742 - Calendar view timeline shifted to center", () => {
 			});
 		});
 
-		test("reset clears widths only on dated cols, axis col unaffected", () => {
+		test("reset clears widths on dated cols and stale time-axis cols", () => {
 			const dateKeys = ["2026-04-27", "2026-04-28", "2026-04-29"];
 			const { axisCol, dayCols, dayHeaderCells } = buildTimeGridTable(dateKeys);
 
 			axisCol.style.width = "60px";
 			dayCols.forEach((col) => (col.style.width = "33%"));
-
 			dayHeaderCells.forEach((cell) => {
-				const col = findColForCell(cell);
-				if (col) col.style.removeProperty("width");
+				cell.style.width = "33%";
+				cell.style.minWidth = "33%";
+				cell.style.maxWidth = "33%";
 			});
 
-			expect(axisCol.style.width).toBe("60px");
+			resetCalendarInlineWidths(dayHeaderCells[0].closest("table")!);
+
+			expect(axisCol.style.width).toBe("");
 			dayCols.forEach((col) => expect(col.style.width).toBe(""));
+			dayHeaderCells.forEach((cell) => {
+				expect(cell.style.width).toBe("");
+				expect(cell.style.minWidth).toBe("");
+				expect(cell.style.maxWidth).toBe("");
+			});
+		});
+
+		test("reset clears an axis col even when no dated cell maps to it", () => {
+			const dateKeys = ["2026-04-28"];
+			const { table, axisCol, dayCols } = buildTimeGridTable(dateKeys);
+
+			axisCol.style.width = "50%";
+			dayCols[0].style.width = "50%";
+
+			resetCalendarInlineWidths(table);
+
+			expect(axisCol.style.width).toBe("");
+			expect(dayCols[0].style.width).toBe("");
 		});
 
 		test("extra colgroup cols (transitional state) do not leak widths to axis", () => {

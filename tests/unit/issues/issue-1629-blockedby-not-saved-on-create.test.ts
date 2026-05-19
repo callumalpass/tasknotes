@@ -37,7 +37,7 @@ describe("Issue #1629: blockedBy field not saved on create task", () => {
 		const mapToFrontmatterSpy = jest.spyOn(mockPlugin.fieldMapper, "mapToFrontmatter");
 
 		const service = new TaskCreationService({
-			plugin: mockPlugin,
+			runtime: mockPlugin,
 			applyTaskCreationDefaults: jest.fn(async (taskData) => taskData),
 			applyTemplate: jest.fn(async () => ({ frontmatter: {}, body: "" })),
 			processFolderTemplate: jest.fn((folderTemplate) => folderTemplate),

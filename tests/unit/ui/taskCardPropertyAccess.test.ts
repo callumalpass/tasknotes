@@ -44,6 +44,14 @@ describe("TaskCard property access", () => {
 		expect(getTaskCardPropertyValue(task, "faellig", context)).toBe("2026-05-18");
 	});
 
+	it("resolves mapped manual-order properties from TaskInfo sortOrder", () => {
+		const task = createTask({ sortOrder: "0|hzzzzz:" });
+		const context = createContext({ mapping: { sort_order: "sortOrder" } });
+
+		expect(getTaskCardPropertyValue(task, "sort_order", context)).toBe("0|hzzzzz:");
+		expect(getTaskCardPropertyValue(task, "sortOrder", context)).toBe("0|hzzzzz:");
+	});
+
 	it("reads user properties from task data before metadata frontmatter", () => {
 		const task = createTask({ customDate: "2026-05-18" } as Partial<TaskInfo>);
 		const context = createContext({
