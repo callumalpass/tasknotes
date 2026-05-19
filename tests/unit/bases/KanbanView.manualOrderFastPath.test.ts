@@ -105,7 +105,22 @@ describe("KanbanView manual-order fast path", () => {
 		).toBe(false);
 	});
 
-	it("updates virtual column items when the drop scope uses a virtual scroller", () => {
+	it("does not fast-patch manual order drops for virtualized columns", () => {
+		const view = makeView();
+		(view as any).columnScrollers.set("todo", { updateItems: jest.fn() });
+
+		expect(
+			(view as any).canFastPatchManualOrderDrop(
+				{ optimisticReorderApplied: true, draggedPaths: ["tasks/c.md"] },
+				{ taskPath: "tasks/a.md", above: false },
+				["tasks/c.md"],
+				"todo",
+				null
+			)
+		).toBe(false);
+	});
+
+	it("does not force virtual scroller item updates during the fast path", () => {
 		const view = makeView();
 		const taskA = createTask("tasks/a.md", "old-a");
 		const taskB = createTask("tasks/b.md", "old-b");
@@ -126,7 +141,6 @@ describe("KanbanView manual-order fast path", () => {
 			"tasks/c.md",
 		]);
 		(view as any).columnScrollers.set("todo", { updateItems });
-		(view as any).columnScrollerItems.set("todo", [taskA, taskB, taskC]);
 		(view as any).setCurrentVisibleTaskPaths([taskA, taskB, taskC]);
 
 		const result = (view as any).applyOptimisticSortOrderResult(
@@ -139,11 +153,7 @@ describe("KanbanView manual-order fast path", () => {
 		);
 
 		expect(result).toBe(true);
-		expect(updateItems).toHaveBeenCalledWith(
-			[taskA, taskC, taskB],
-			{ preserveContainerHeight: true }
-		);
-		expect((view as any).columnScrollerItems.get("todo")).toEqual([taskA, taskC, taskB]);
+		expect(updateItems).not.toHaveBeenCalled();
 		expect(taskA.sortOrder).toBe("tnaaaaaaaaaa");
 		expect(taskC.sortOrder).toBe("tnmzzzzzzzzz");
 	});

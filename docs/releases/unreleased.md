@@ -136,7 +136,7 @@ Example:
 
 ## Fixed
 
-- Made same-column manual-order drops in TaskNotes Kanban, including virtual columns, settle immediately when the local order patch is safe instead of waiting for the delayed post-drop refresh.
+- Made same-column manual-order drops in TaskNotes Kanban settle immediately when the local order patch is safe, while keeping virtual columns on the conservative refresh path to avoid layout jumps.
 - Fixed Calendar timeblocks created from a selected time range so they appear as soon as Obsidian indexes the daily note update, instead of waiting for a later refresh.
 - Replaced the external calendar event emoji marker with the calendar icon and kept it in the same top-right event corner.
 - Restored Task List group toggles and recurring calendar month controls to compact icon buttons instead of inherited boxed theme buttons.
