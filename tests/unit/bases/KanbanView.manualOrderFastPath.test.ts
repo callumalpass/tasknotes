@@ -139,7 +139,10 @@ describe("KanbanView manual-order fast path", () => {
 		);
 
 		expect(result).toBe(true);
-		expect(updateItems).toHaveBeenCalledWith([taskA, taskC, taskB]);
+		expect(updateItems).toHaveBeenCalledWith(
+			[taskA, taskC, taskB],
+			{ preserveContainerHeight: true }
+		);
 		expect((view as any).columnScrollerItems.get("todo")).toEqual([taskA, taskC, taskB]);
 		expect(taskA.sortOrder).toBe("tnaaaaaaaaaa");
 		expect(taskC.sortOrder).toBe("tnmzzzzzzzzz");

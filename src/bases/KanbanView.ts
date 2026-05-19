@@ -749,7 +749,7 @@ export class KanbanView extends BasesViewBase {
 				}
 			);
 			this.columnScrollerItems.set(scrollerKey, nextScrollerItems);
-			scroller.updateItems(nextScrollerItems);
+			scroller.updateItems(nextScrollerItems, { preserveContainerHeight: true });
 		}
 
 		this.setSortScopePathsForScope(groupKey, swimLaneKey, nextScopePaths);

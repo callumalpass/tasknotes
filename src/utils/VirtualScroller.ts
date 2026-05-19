@@ -35,6 +35,11 @@ export interface VirtualScrollState {
 	offsetY: number;
 }
 
+export interface VirtualScrollerUpdateOptions {
+	/** Keep the container's current height through the next paint while items are rebuilt. */
+	preserveContainerHeight?: boolean;
+}
+
 export class VirtualScroller<T> {
 	private container: HTMLElement;
 	private scrollContainer: HTMLElement;
@@ -467,7 +472,10 @@ export class VirtualScroller<T> {
 	/**
 	 * Update the items list and re-render
 	 */
-	updateItems(items: T[]): void {
+	updateItems(items: T[], options: VirtualScrollerUpdateOptions = {}): void {
+		const unlockContainerHeight = options.preserveContainerHeight
+			? this.lockContainerHeightForNextPaint()
+			: null;
 		// Save current scroll position
 		const currentScrollTop = this.scrollContainer.scrollTop;
 
@@ -503,6 +511,32 @@ export class VirtualScroller<T> {
 		this.scrollContainer.scrollTop = currentScrollTop;
 
 		this.updateVisibleRange();
+		unlockContainerHeight?.();
+	}
+
+	private lockContainerHeightForNextPaint(): (() => void) | null {
+		const height = this.container.getBoundingClientRect().height || this.container.offsetHeight;
+		if (height <= 0) {
+			return null;
+		}
+
+		const previousMinHeight = this.container.style.minHeight;
+		const lockedMinHeight = `${height}px`;
+		this.container.style.minHeight = lockedMinHeight;
+
+		return () => {
+			const win = this.container.ownerDocument.defaultView ?? window;
+			const release = () => {
+				if (this.container.style.minHeight === lockedMinHeight) {
+					this.container.style.minHeight = previousMinHeight;
+				}
+			};
+			if (typeof win.requestAnimationFrame === "function") {
+				win.requestAnimationFrame(() => win.requestAnimationFrame(release));
+				return;
+			}
+			win.setTimeout(release, 0);
+		};
 	}
 
 	/**
