@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Fixed
+
+- (#1901) Fixed the task context menu creating an `undefined` property when adding or removing tags.
+  - Thanks to @mgrecar for reporting the issue.
+
 ## Changed
 
 - Improved internal boundaries for service notifications, vault writes, and pure utilities to make the codebase easier to maintain.

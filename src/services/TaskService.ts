@@ -3,6 +3,7 @@ import {
 	EVENT_TASK_UPDATED,
 	TaskCreationData,
 	TaskDependency,
+	FieldMappingKey,
 	TaskInfo,
 	IWebhookNotifier,
 } from "../types";
@@ -63,6 +64,29 @@ import {
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService" });
+
+const TASK_PROPERTY_FIELD_MAPPING_KEYS: Partial<Record<keyof TaskInfo, FieldMappingKey>> = {
+	recurrence_anchor: "recurrenceAnchor",
+	complete_instances: "completeInstances",
+	skipped_instances: "skippedInstances",
+};
+
+function getTaskPropertyFrontmatterField(
+	fieldMapper: TaskNotesPlugin["fieldMapper"],
+	property: keyof TaskInfo
+): string {
+	const mapping = fieldMapper.getMapping();
+	if (property in mapping) {
+		return fieldMapper.toUserField(property as FieldMappingKey);
+	}
+
+	const mappedKey = TASK_PROPERTY_FIELD_MAPPING_KEYS[property];
+	if (mappedKey) {
+		return fieldMapper.toUserField(mappedKey);
+	}
+
+	return String(property);
+}
 
 export class TaskService {
 	private webhookNotifier?: IWebhookNotifier;
@@ -372,9 +396,7 @@ export class TaskService {
 			// Step 2: Persist to file
 			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				// Use field mapper to get the correct frontmatter property name
-				const fieldName = this.plugin.fieldMapper.toUserField(
-					property as keyof import("../types").FieldMapping
-				);
+				const fieldName = getTaskPropertyFrontmatterField(this.plugin.fieldMapper, property);
 				const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 				const completedDateField = this.plugin.fieldMapper.toUserField("completedDate");
 				applyTaskPropertyFrontmatterChange({
