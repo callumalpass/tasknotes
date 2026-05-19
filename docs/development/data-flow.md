@@ -146,6 +146,8 @@ Refactor rule:
   instead of the full plugin object
 - keep Bases-specific value extraction out of general rendering code unless the
   renderer is explicitly responsible for displaying a native Bases value
+- keep native conversion and display stringification for Bases value wrappers
+  behind `basesValueConversion`
 - keep filter-expression defaults for Bases-created tasks behind
   `basesFilterDefaults`, including task-tag exclusion, mapped core fields,
   custom user-field keys, list properties, and current-file link defaults
@@ -180,6 +182,7 @@ Current adapter seams include:
   task-creation default planning
 - Task List drag/drop insertion geometry
 - Task List grouped render planning and sub-property grouping
+- Bases value conversion and group-key display strings
 - shared Bases formula evaluation and path-property map assembly
 - shared Bases selection UI state and click/keyboard selection decisions
 - shared Bases copy/export table assembly

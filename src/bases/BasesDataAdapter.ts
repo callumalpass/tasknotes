@@ -4,26 +4,14 @@ import type {
 	BasesEntryGroup,
 	BasesPropertyId,
 	BasesView,
-	TFile,
 } from "obsidian";
-import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
+import {
+	convertBasesGroupKeyToString,
+	convertBasesValueToNative,
+} from "./basesValueConversion";
 
 type BasesViewDataSource = Pick<BasesView, "config" | "data">;
-
-type BasesValueInternals = {
-	data?: unknown;
-	date?: Date;
-	file?: TFile;
-	value?: unknown[];
-	get?: (index: number) => unknown;
-	at?: (index: number) => unknown;
-	length?: () => number;
-	toISOString?: () => string;
-	constructor?: {
-		name?: string;
-	};
-};
 
 type BasesEntryInternals = {
 	frontmatter?: Record<string, unknown>;
@@ -128,7 +116,7 @@ export class BasesDataAdapter {
 	getPropertyValue(entry: BasesEntry, propertyId: string): unknown {
 		try {
 			const value = entry.getValue(propertyId as BasesPropertyId);
-			return this.convertValueToNative(value);
+			return convertBasesValueToNative(value);
 		} catch (e) {
 			this.logger.warn("Failed to get property value", {
 				category: "provider",
@@ -141,150 +129,12 @@ export class BasesDataAdapter {
 	}
 
 	/**
-	 * Convert Bases Value object to native JavaScript value.
-	 * Handles: PrimitiveValue, ListValue, DateValue, FileValue, NullValue, etc.
-	 */
-	private convertValueToNative(value: unknown): unknown {
-		if (value === null || value === undefined) {
-			return null;
-		}
-
-		const basesValue = value as BasesValueInternals;
-		if (basesValue.constructor?.name === "NullValue") {
-			return null;
-		}
-
-		// PrimitiveValue (string, number, boolean)
-		if (typeof basesValue.data !== "undefined") {
-			return basesValue.data;
-		}
-
-		const listValue = this.convertListValueToNative(basesValue);
-		if (listValue) {
-			return listValue;
-		}
-
-		// DateValue - check for date property (more reliable than constructor check)
-		if (basesValue.date instanceof Date) {
-			// Return the date as ISO string for consistency
-			return basesValue.date.toISOString();
-		}
-
-		// DateValue - legacy check with toISOString method
-		if (basesValue.constructor?.name === "DateValue" && basesValue.toISOString) {
-			return basesValue.toISOString();
-		}
-
-		// FileValue
-		if (basesValue.file) {
-			return basesValue.file.path;
-		}
-
-		// Fallback: try to extract raw data
-		const toString = Reflect.get(basesValue, "toString");
-		if (typeof toString === "function" && toString !== Object.prototype.toString) {
-			const stringValue = Reflect.apply(toString, basesValue, []);
-			if (stringValue !== "[object Object]") {
-				return stringValue;
-			}
-		}
-
-		return value;
-	}
-
-	private convertListValueToNative(basesValue: BasesValueInternals): unknown[] | null {
-		const getListItem =
-			typeof basesValue.get === "function"
-				? basesValue.get.bind(basesValue)
-				: typeof basesValue.at === "function"
-					? basesValue.at.bind(basesValue)
-					: null;
-
-		if (typeof basesValue.length === "function" && getListItem) {
-			const len = basesValue.length();
-			const result = [];
-			for (let i = 0; i < len; i++) {
-				const item = getListItem(i);
-				result.push(this.convertValueToNative(item));
-			}
-			return result;
-		}
-
-		if (Array.isArray(basesValue.value)) {
-			return basesValue.value.map((item) => this.convertValueToNative(item));
-		}
-
-		return null;
-	}
-
-	/**
 	 * Convert group key Value to display string.
 	 * Handles Bases Value objects, particularly DateValue which has special structure.
 	 * For FileValue (links), returns the file path which can be rendered as a clickable link.
 	 */
 	convertGroupKeyToString(key: unknown): string {
-		// Check if key exists and is valid
-		if (key === null || key === undefined) {
-			return "Unknown";
-		}
-
-		const basesKey = key as BasesValueInternals;
-		if (basesKey.constructor?.name === "NullValue") {
-			return "Unknown";
-		}
-
-		// Extract the actual value from Bases Value object
-		let actualValue: unknown;
-
-		// FileValue has a .file property containing the TFile object
-		if (basesKey.file && typeof basesKey.file === "object") {
-			// Return the full path so it can be rendered as a clickable link
-			actualValue = basesKey.file.path;
-		}
-		// DateValue has a .date property containing the Date object
-		else if (basesKey.date instanceof Date) {
-			actualValue = basesKey.date;
-		}
-		// ListValue stores each item as another Bases Value object
-		else {
-			const listValue = this.convertListValueToNative(basesKey);
-			if (listValue) {
-				actualValue = listValue;
-			}
-		}
-		// Other Value types have a .data property
-		if (actualValue === undefined && typeof basesKey.data !== "undefined") {
-			actualValue = basesKey.data;
-		}
-		// Fallback: try to use the key directly
-		else if (actualValue === undefined) {
-			actualValue = basesKey;
-		}
-
-		// Handle null/undefined after extraction
-		if (actualValue === null || actualValue === undefined) {
-			return "None";
-		}
-
-		// Format Date objects as YYYY-MM-DD (date only, no time)
-		if (actualValue instanceof Date) {
-			const year = actualValue.getFullYear();
-			const month = String(actualValue.getMonth() + 1).padStart(2, "0");
-			const day = String(actualValue.getDate()).padStart(2, "0");
-			return `${year}-${month}-${day}`;
-		}
-
-		// Handle other types
-		if (typeof actualValue === "string") {
-			return actualValue || "None";
-		}
-		if (typeof actualValue === "number") return String(actualValue);
-		if (typeof actualValue === "boolean") return actualValue ? "True" : "False";
-		if (Array.isArray(actualValue)) {
-			return actualValue.length > 0 ? actualValue.map(stringifyUnknown).join(", ") : "None";
-		}
-
-		return stringifyUnknown(actualValue) || "None";
+		return convertBasesGroupKeyToString(key);
 	}
 
 	/**
@@ -332,16 +182,17 @@ export class BasesDataAdapter {
 	 * Call this during rendering for visible items only - NOT during bulk extraction.
 	 * This is much more efficient for expensive properties like backlinks.
 	 */
-		getComputedProperty(basesEntry: unknown, propertyId: string): unknown {
-			if (!basesEntry || typeof basesEntry !== "object") return null;
+	getComputedProperty(basesEntry: unknown, propertyId: string): unknown {
+		if (!basesEntry || typeof basesEntry !== "object") return null;
 
-				try {
-					const getValue = (basesEntry as { getValue?: (id: BasesPropertyId) => unknown }).getValue;
-					if (typeof getValue !== "function") return null;
-					const value = getValue.call(basesEntry, propertyId);
-				return this.convertValueToNative(value);
-			} catch {
-				return null;
+		try {
+			const getValue = (basesEntry as { getValue?: (id: BasesPropertyId) => unknown })
+				.getValue;
+			if (typeof getValue !== "function") return null;
+			const value = getValue.call(basesEntry, propertyId);
+			return convertBasesValueToNative(value);
+		} catch {
+			return null;
 		}
 	}
 

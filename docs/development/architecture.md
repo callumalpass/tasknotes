@@ -190,6 +190,9 @@ Current examples:
 - `src/bases/taskListDropPlanning.ts` owns Task List drop mutation planning for
   grouped frontmatter writes, status-derived fields, and post-write side-effect
   task snapshots.
+- `src/bases/basesValueConversion.ts` owns native conversion and display
+  stringification for unstable Bases primitive, list, date, file, and null
+  value wrappers.
 - `src/bases/kanbanDragUtils.ts` owns Kanban drop target reconstruction,
   optimistic DOM card movement, drop frontmatter planning, status-derived
   fields, and post-write side-effect task snapshots.
