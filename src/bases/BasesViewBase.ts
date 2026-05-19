@@ -123,7 +123,7 @@ export abstract class BasesViewBase extends Component {
 			isDebugEnabled: () => this.plugin.settings.enableDebugLogging,
 		});
 		this.dataAdapter = new BasesDataAdapter(this, this.logger.child("DataAdapter"));
-		this.propertyMapper = new PropertyMappingService(plugin, plugin.fieldMapper);
+		this.propertyMapper = new PropertyMappingService(plugin.fieldMapper);
 
 		// Bind createFileForView to ensure Bases can find it
 		// Some versions of Bases may check hasOwnProperty rather than prototype chain

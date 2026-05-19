@@ -113,6 +113,8 @@ Own:
   helpers
 - conversion between Bases data and TaskNotes representations
 - frontmatter/property coercion at integration boundaries
+- Bases property mapping through `PropertyMappingService`, which depends on the
+  stable `FieldMapper` contract rather than a full plugin instance
 
 Should not own:
 

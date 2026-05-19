@@ -142,6 +142,8 @@ Refactor rule:
 
 - use local adapter types for the subset of Bases APIs the plugin actually uses
 - prefer `unknown` plus narrowing over `any`
+- keep Bases property mapping dependent on the narrow `FieldMapper` contract
+  instead of the full plugin object
 - keep Bases-specific value extraction out of general rendering code unless the
   renderer is explicitly responsible for displaying a native Bases value
 - keep filter-expression defaults for Bases-created tasks behind

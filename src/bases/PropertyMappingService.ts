@@ -1,4 +1,3 @@
-import TaskNotesPlugin from "../main";
 import { FieldMapper } from "../services/FieldMapper";
 import type { TaskCardPropertyId } from "../types";
 
@@ -30,10 +29,13 @@ import type { TaskCardPropertyId } from "../types";
  * - "file.tasks" / "formula.checklistProgress" → "checklistProgress"
  */
 export class PropertyMappingService {
-	constructor(
-		private plugin: TaskNotesPlugin,
-		private fieldMapper: FieldMapper
-	) {}
+	private fieldMapper: FieldMapper;
+
+	constructor(fieldMapper: FieldMapper);
+	constructor(_legacyPlugin: unknown, fieldMapper: FieldMapper);
+	constructor(fieldMapperOrLegacyPlugin: unknown, legacyFieldMapper?: FieldMapper) {
+		this.fieldMapper = legacyFieldMapper ?? (fieldMapperOrLegacyPlugin as FieldMapper);
+	}
 
 	/**
 	 * Map Bases property ID to TaskCard property ID.
