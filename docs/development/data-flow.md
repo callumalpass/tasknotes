@@ -156,6 +156,8 @@ Refactor rule:
   visible-task path extraction behind `basesSelectionUi`
 - keep shared Bases copy/export table assembly, value stringification, TSV/CSV
   escaping, and export file-name sanitization behind `basesExport`
+- keep shared Bases task update/delete relevance decisions, path-rename refresh
+  planning, and rendered-card path extraction behind `basesUpdateEvents`
 
 Current adapter seams include:
 
@@ -171,6 +173,7 @@ Current adapter seams include:
 - shared Bases formula evaluation and path-property map assembly
 - shared Bases selection UI state and click/keyboard selection decisions
 - shared Bases copy/export table assembly
+- shared Bases update/delete event relevance planning
 - Bases-backed task creation assembly
 - TaskCard property access
 - TaskCard relationship expansion rendering

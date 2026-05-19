@@ -28,6 +28,11 @@ import {
 	type BasesExportTable,
 } from "./basesExport";
 import {
+	getRenderedTaskPaths,
+	planBasesTaskDeletedEvent,
+	planBasesTaskUpdatedEvent,
+} from "./basesUpdateEvents";
+import {
 	getVisibleTaskPathsFromBasesRoot,
 	handleBasesSelectionClick,
 	handleBasesSelectionKeyDown,
@@ -40,22 +45,6 @@ import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesL
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
-};
-
-type TaskUpdateEventData = {
-	path?: string;
-	originalTask?: TaskInfo;
-	updatedTask?: TaskInfo;
-	task?: TaskInfo;
-	taskInfo?: TaskInfo;
-};
-
-type TaskDeletedEventData = {
-	path?: string;
-	deletedTask?: TaskInfo;
-	prevCache?: {
-		frontmatter?: Record<string, unknown>;
-	};
 };
 
 type BasesViewAction = {
@@ -499,31 +488,18 @@ export abstract class BasesViewBase extends Component {
 			EVENT_TASK_UPDATED,
 			async (eventData: unknown) => {
 				try {
-					const taskEvent: TaskUpdateEventData = isRecord(eventData) ? eventData : {};
-					const updatedTask =
-						taskEvent.updatedTask ?? taskEvent.task ?? taskEvent.taskInfo;
-					if (!updatedTask?.path) return;
-					const originalPath =
-						taskEvent.originalTask?.path ??
-						(typeof taskEvent.path === "string" ? taskEvent.path : undefined);
-
 					// Skip if view is not visible (no point updating hidden views)
 					if (!this.rootElement?.isConnected) return;
 
-					// Use cached Set for O(1) lookup instead of O(n) iteration
-					const updatedPath = updatedTask.path;
-					const isRelevant =
-						this.relevantPathsCache.has(updatedPath) ||
-						(originalPath ? this.relevantPathsCache.has(originalPath) : false);
-
-					if (isRelevant) {
-						if (originalPath && originalPath !== updatedPath) {
-							this.relevantPathsCache.delete(originalPath);
-							this.relevantPathsCache.add(updatedPath);
-							this.debouncedRefresh();
-							return;
-						}
-						await this.handleTaskUpdate(updatedTask);
+					const updatePlan = planBasesTaskUpdatedEvent(eventData, this.relevantPathsCache);
+					if (updatePlan.action === "refresh-renamed-task") {
+						this.relevantPathsCache.delete(updatePlan.removePath);
+						this.relevantPathsCache.add(updatePlan.addPath);
+						this.debouncedRefresh();
+						return;
+					}
+					if (updatePlan.action === "handle-task") {
+						await this.handleTaskUpdate(updatePlan.task);
 					}
 				} catch (error) {
 					this.logger.error("Error in task update handler", {
@@ -562,12 +538,13 @@ export abstract class BasesViewBase extends Component {
 	}
 
 	private handleTaskDeletedEvent(eventData: unknown): void {
-		const taskEvent: TaskDeletedEventData = isRecord(eventData) ? eventData : {};
-		const deletedPath =
-			typeof taskEvent.path === "string" ? taskEvent.path : taskEvent.deletedTask?.path;
+		const deletePlan = planBasesTaskDeletedEvent(eventData, {
+			projectsField: this.plugin.fieldMapper.toUserField("projects"),
+			renderedTaskPaths: getRenderedTaskPaths(this.rootElement),
+		});
 
-		if (deletedPath) {
-			this.relevantPathsCache.delete(deletedPath);
+		if (deletePlan.deletedPath) {
+			this.relevantPathsCache.delete(deletePlan.deletedPath);
 		}
 
 		this.plugin.projectSubtasksService?.invalidateIndex();
@@ -576,38 +553,9 @@ export abstract class BasesViewBase extends Component {
 			return;
 		}
 
-		const deletedTaskHadProjects =
-			(taskEvent.deletedTask?.projects?.length ?? 0) > 0 ||
-			this.deletedCacheHasProjects(taskEvent.prevCache);
-		const deletedTaskWasRendered =
-			typeof deletedPath === "string" && this.isTaskPathRendered(deletedPath);
-
-		if (deletedTaskWasRendered || deletedTaskHadProjects) {
+		if (deletePlan.shouldRefresh) {
 			this.debouncedRefresh();
 		}
-	}
-
-	private deletedCacheHasProjects(prevCache: TaskDeletedEventData["prevCache"]): boolean {
-		const frontmatter = prevCache?.frontmatter;
-		if (!frontmatter) {
-			return false;
-		}
-
-		const projectsField = this.plugin.fieldMapper.toUserField("projects");
-		const projects = frontmatter[projectsField];
-		if (Array.isArray(projects)) {
-			return projects.length > 0;
-		}
-		return typeof projects === "string" && projects.trim().length > 0;
-	}
-
-	private isTaskPathRendered(path: string): boolean {
-		if (!this.rootElement) {
-			return false;
-		}
-
-		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card[data-task-path]");
-		return Array.from(cards).some((card) => card.dataset.taskPath === path);
 	}
 
 	/**

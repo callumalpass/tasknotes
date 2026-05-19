@@ -196,6 +196,9 @@ Current examples:
   default appending, and scalar group-key coercion.
 - `src/bases/basesExport.ts` owns shared Bases table export assembly, value
   stringification, TSV/CSV escaping, and export file-name sanitization.
+- `src/bases/basesUpdateEvents.ts` owns shared Bases task update/delete event
+  relevance decisions, path-rename refresh planning, and rendered-card path
+  extraction.
 - `src/bases/basesSelectionUi.ts` owns shared Bases selection-mode DOM state,
   selected-card classes, keyboard and click selection decisions, selection
   indicator behavior, and default visible-task path extraction behind a narrow
