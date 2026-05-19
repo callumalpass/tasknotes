@@ -22,8 +22,10 @@ import {
 	type SortOrderPlan,
 } from "./sortOrderUtils";
 import {
+	applySortOrderUpdatesToItems,
 	applySortOrderUpdatesToTaskCache,
 	buildSortOrderUpdateMap,
+	moveItemsRelativeToTarget,
 	movePathsRelativeToTarget,
 } from "./manualOrderState";
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
@@ -214,6 +216,7 @@ export class KanbanView extends BasesViewBase {
 	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
+	private columnScrollerItems = new Map<string, TaskInfo[]>(); // columnKey -> current scroller items
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
@@ -630,6 +633,10 @@ export class KanbanView extends BasesViewBase {
 		return swimLaneKey === null ? groupKey : `${swimLaneKey}::${groupKey}`;
 	}
 
+	private getColumnScrollerKey(groupKey: string, swimLaneKey: string | null = null): string {
+		return swimLaneKey === null ? groupKey : `${swimLaneKey}:${groupKey}`;
+	}
+
 	private getVisibleSortScopePaths(
 		groupKey: string,
 		swimLaneKey: string | null = null
@@ -650,6 +657,10 @@ export class KanbanView extends BasesViewBase {
 		paths: readonly string[]
 	): void {
 		this.sortScopeTaskPaths.set(this.getSortScopeKey(groupKey, swimLaneKey), [...paths]);
+	}
+
+	private hasVirtualScrollerForScope(groupKey: string, swimLaneKey: string | null): boolean {
+		return this.columnScrollers.has(this.getColumnScrollerKey(groupKey, swimLaneKey));
 	}
 
 	private setSortScopeCandidatePaths(entries: Iterable<[string, string[]]>): void {
@@ -708,8 +719,39 @@ export class KanbanView extends BasesViewBase {
 			return false;
 		}
 
+		const scrollerKey = this.getColumnScrollerKey(groupKey, swimLaneKey);
+		const scroller = this.columnScrollers.get(scrollerKey);
+		const scrollerItems = this.columnScrollerItems.get(scrollerKey);
+		let nextScrollerItems: TaskInfo[] | null = null;
+		if (scroller && scrollerItems) {
+			nextScrollerItems = moveItemsRelativeToTarget(
+				scrollerItems,
+				(task) => task.path,
+				[draggedPath],
+				targetPath,
+				above
+			);
+			if (!nextScrollerItems) {
+				return false;
+			}
+		}
+
 		const sortOrdersByPath = buildSortOrderUpdateMap(draggedPath, sortOrderPlan);
 		applySortOrderUpdatesToTaskCache(this.taskInfoCache, sortOrdersByPath);
+
+		if (scroller && nextScrollerItems) {
+			applySortOrderUpdatesToItems(
+				nextScrollerItems,
+				(task) => task,
+				sortOrdersByPath,
+				(task) => {
+					this.taskInfoCache.set(task.path, task);
+				}
+			);
+			this.columnScrollerItems.set(scrollerKey, nextScrollerItems);
+			scroller.updateItems(nextScrollerItems);
+		}
+
 		this.setSortScopePathsForScope(groupKey, swimLaneKey, nextScopePaths);
 		this.setCurrentVisibleTaskPathOrder(nextVisiblePaths);
 		return true;
@@ -1425,6 +1467,7 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		this.columnScrollers.set(groupKey, scroller);
+		this.columnScrollerItems.set(groupKey, [...tasks]);
 	}
 
 	private async createVirtualSwimLaneCell(
@@ -1464,6 +1507,7 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		this.columnScrollers.set(cellKey, scroller);
+		this.columnScrollerItems.set(cellKey, [...tasks]);
 	}
 
 	private createNormalColumn(
@@ -3091,10 +3135,11 @@ export class KanbanView extends BasesViewBase {
 					requestedDraggedPaths.length > 1 ? requestedDraggedPaths : [taskPath];
 				const isBatchOperation = pathsToUpdate.length > 1;
 				const canFastPatchManualOrder =
-					options.optimisticReorderApplied === true &&
 					!!dropTarget &&
 					!isBatchOperation &&
-					(options.draggedPaths?.length ?? 1) === 1;
+					(options.draggedPaths?.length ?? 1) === 1 &&
+					(options.optimisticReorderApplied === true ||
+						this.hasVirtualScrollerForScope(newGroupValue, newSwimLaneValue));
 				let fastPatchedManualOrder = false;
 
 				// Pre-compute sort_order related state
@@ -3765,6 +3810,7 @@ export class KanbanView extends BasesViewBase {
 			scroller.destroy();
 		}
 		this.columnScrollers.clear();
+		this.columnScrollerItems.clear();
 	}
 
 	/**

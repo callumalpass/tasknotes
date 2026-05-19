@@ -104,4 +104,44 @@ describe("KanbanView manual-order fast path", () => {
 			)
 		).toBe(false);
 	});
+
+	it("updates virtual column items when the drop scope uses a virtual scroller", () => {
+		const view = makeView();
+		const taskA = createTask("tasks/a.md", "old-a");
+		const taskB = createTask("tasks/b.md", "old-b");
+		const taskC = createTask("tasks/c.md", "old-c");
+		const updateItems = jest.fn();
+		const plan: SortOrderPlan = {
+			sortOrder: "tnmzzzzzzzzz",
+			additionalWrites: [{ path: "tasks/a.md", sortOrder: "tnaaaaaaaaaa" }],
+			reason: "rebalance",
+		};
+
+		(view as any).taskInfoCache.set(taskA.path, taskA);
+		(view as any).taskInfoCache.set(taskB.path, taskB);
+		(view as any).taskInfoCache.set(taskC.path, taskC);
+		(view as any).sortScopeTaskPaths.set("todo", [
+			"tasks/a.md",
+			"tasks/b.md",
+			"tasks/c.md",
+		]);
+		(view as any).columnScrollers.set("todo", { updateItems });
+		(view as any).columnScrollerItems.set("todo", [taskA, taskB, taskC]);
+		(view as any).setCurrentVisibleTaskPaths([taskA, taskB, taskC]);
+
+		const result = (view as any).applyOptimisticSortOrderResult(
+			"tasks/c.md",
+			"tasks/a.md",
+			false,
+			"todo",
+			null,
+			plan
+		);
+
+		expect(result).toBe(true);
+		expect(updateItems).toHaveBeenCalledWith([taskA, taskC, taskB]);
+		expect((view as any).columnScrollerItems.get("todo")).toEqual([taskA, taskC, taskB]);
+		expect(taskA.sortOrder).toBe("tnaaaaaaaaaa");
+		expect(taskC.sortOrder).toBe("tnmzzzzzzzzz");
+	});
 });
