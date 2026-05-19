@@ -1,4 +1,4 @@
-import { Editor, TFile, Notice, EditorPosition } from "obsidian";
+import { Editor, TFile, EditorPosition } from "obsidian";
 import type { HeadingCache } from "obsidian";
 import type { EditorView } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
@@ -19,6 +19,8 @@ import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
+import { modifyVaultFile } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/InstantTaskConvertService" });
 
@@ -115,12 +117,12 @@ export class InstantTaskConvertService {
 			const checkboxTasks = this.findAllCheckboxTasks(editor);
 
 			if (checkboxTasks.length === 0) {
-				new Notice(this.translate("services.instantTaskConvert.notices.noCheckboxTasks"));
+				showNotice(this.translate("services.instantTaskConvert.notices.noCheckboxTasks"));
 				return;
 			}
 
 			const plural = checkboxTasks.length === 1 ? "" : "s";
-			new Notice(
+			showNotice(
 				this.translate("services.instantTaskConvert.notices.convertingTasks", {
 					count: checkboxTasks.length,
 					plural,
@@ -133,7 +135,7 @@ export class InstantTaskConvertService {
 			// Show summary
 			if (result.failures.length === 0) {
 				const plural = result.successCount === 1 ? "" : "s";
-				new Notice(
+				showNotice(
 					this.translate("services.instantTaskConvert.notices.conversionSuccess", {
 						count: result.successCount,
 						plural,
@@ -141,7 +143,7 @@ export class InstantTaskConvertService {
 				);
 			} else {
 				const successPlural = result.successCount === 1 ? "" : "s";
-				new Notice(
+				showNotice(
 					this.translate("services.instantTaskConvert.notices.partialConversion", {
 						successCount: result.successCount,
 						successPlural,
@@ -162,7 +164,7 @@ export class InstantTaskConvertService {
 				operation: "batch-task-conversion",
 				error: error,
 			});
-			new Notice(this.translate("services.instantTaskConvert.notices.batchConversionFailed"));
+			showNotice(this.translate("services.instantTaskConvert.notices.batchConversionFailed"));
 		}
 	}
 
@@ -232,7 +234,7 @@ export class InstantTaskConvertService {
 			// Validate input parameters
 			const validationResult = this.validateInputParameters(editor, lineNumber);
 			if (!validationResult.isValid) {
-				new Notice(this.translate("services.instantTaskConvert.notices.invalidParameters"));
+				showNotice(this.translate("services.instantTaskConvert.notices.invalidParameters"));
 				return;
 			}
 
@@ -252,7 +254,7 @@ export class InstantTaskConvertService {
 				const taskTitle = this.extractLineContentAsTitle(currentLine);
 
 				if (!taskTitle.trim()) {
-					new Notice(this.translate("services.instantTaskConvert.notices.emptyLine"));
+					showNotice(this.translate("services.instantTaskConvert.notices.emptyLine"));
 					return;
 				}
 
@@ -278,7 +280,7 @@ export class InstantTaskConvertService {
 			} else {
 				// Line is a checkbox task, process normally
 				if (taskLineInfo.error || !taskLineInfo.parsedData) {
-					new Notice(
+					showNotice(
 						this.translate("services.instantTaskConvert.notices.parseError", {
 							error: taskLineInfo.error || "No data extracted",
 						})
@@ -321,7 +323,7 @@ export class InstantTaskConvertService {
 			// Validate final parsed data before proceeding
 			const taskValidation = this.validateTaskData(parsedData);
 			if (!taskValidation.isValid) {
-				new Notice(this.translate("services.instantTaskConvert.notices.invalidTaskData"));
+				showNotice(this.translate("services.instantTaskConvert.notices.invalidTaskData"));
 				return;
 			}
 
@@ -337,7 +339,7 @@ export class InstantTaskConvertService {
 			);
 
 			if (!replaceResult.success) {
-				new Notice(this.translate("services.instantTaskConvert.notices.replaceLineFailed"));
+				showNotice(this.translate("services.instantTaskConvert.notices.replaceLineFailed"));
 				// Clean up the created file since replacement failed
 				try {
 					await this.plugin.app.fileManager.trashFile(file);
@@ -363,14 +365,14 @@ export class InstantTaskConvertService {
 					file.basename
 				)
 			) {
-				new Notice(
+				showNotice(
 					this.translate(
 						"services.instantTaskConvert.notices.conversionCompleteShortened",
 						{ title: parsedData.title }
 					)
 				);
 			} else {
-				new Notice(
+				showNotice(
 					this.translate("services.instantTaskConvert.notices.conversionComplete", {
 						title: parsedData.title,
 					})
@@ -386,9 +388,9 @@ export class InstantTaskConvertService {
 				error: error,
 			});
 			if (error.message.includes("file already exists")) {
-				new Notice(this.translate("services.instantTaskConvert.notices.fileExists"));
+				showNotice(this.translate("services.instantTaskConvert.notices.fileExists"));
 			} else {
-				new Notice(this.translate("services.instantTaskConvert.notices.conversionFailed"));
+				showNotice(this.translate("services.instantTaskConvert.notices.conversionFailed"));
 			}
 		}
 	}
@@ -1119,7 +1121,7 @@ export class InstantTaskConvertService {
 		}
 
 		try {
-			await this.plugin.app.vault.modify(sourceFile, editor.getValue());
+			await modifyVaultFile(this.plugin.app, sourceFile, editor.getValue());
 			this.plugin.notifyDataChanged(sourceFile.path, false, false);
 		} catch (error) {
 			tasknotesLogger.debug("Error saving source note after instant task conversion:", {

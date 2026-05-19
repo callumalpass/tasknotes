@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- ICS parsing normalizes optional event fields before use. */
-import { Notice, requestUrl, TFile } from "obsidian";
+import { requestUrl, TFile } from "obsidian";
 import ICAL from "ical.js";
 import { ICSSubscription, ICSEvent, ICSCache } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
@@ -7,6 +7,7 @@ import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSSubscriptionService" });
 
@@ -354,7 +355,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			// Show user notification for errors with more helpful message
 			if (subscription.type === "remote") {
 				if (errorMessage.includes("404")) {
-					new Notice(
+					showNotice(
 						this.translate("services.icsSubscription.notices.calendarNotFound", {
 							name: subscription.name,
 						})
@@ -363,13 +364,13 @@ export class ICSSubscriptionService extends EventEmitter {
 					errorMessage.includes("500") ||
 					errorMessage.includes("OwaBasicUnsupportedException")
 				) {
-					new Notice(
+					showNotice(
 						this.translate("services.icsSubscription.notices.calendarAccessDenied", {
 							name: subscription.name,
 						})
 					);
 				} else {
-					new Notice(
+					showNotice(
 						this.translate("services.icsSubscription.notices.fetchRemoteFailed", {
 							name: subscription.name,
 							error: errorMessage,
@@ -377,7 +378,7 @@ export class ICSSubscriptionService extends EventEmitter {
 					);
 				}
 			} else {
-				new Notice(
+				showNotice(
 					this.translate("services.icsSubscription.notices.readLocalFailed", {
 						name: subscription.name,
 						error: errorMessage,

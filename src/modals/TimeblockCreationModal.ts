@@ -18,6 +18,7 @@ import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { parseDateAsLocal } from "../utils/dateUtils";
 import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
 import { configureThemeColorInput } from "../settings/components/CardComponent";
+import { modifyVaultFile } from "../services/VaultMutationService";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -447,7 +448,7 @@ export class TimeblockCreationModal extends Modal {
 		const newContent = `---\n${frontmatterText}---${bodyContent}`;
 
 		// Write back to file
-		await this.app.vault.modify(dailyNote, newContent);
+		await modifyVaultFile(this.app, dailyNote, newContent);
 
 		// The native metadata cache will automatically update
 		return dailyNote;

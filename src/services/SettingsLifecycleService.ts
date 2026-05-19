@@ -1,9 +1,10 @@
-import { Notice, type EventRef } from "obsidian";
+import type { EventRef } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { EVENT_TASK_UPDATED } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/SettingsLifecycleService" });
 
@@ -190,7 +191,7 @@ export class SettingsLifecycleService {
 		try {
 			await this.plugin.stopTimeTracking(updatedTask);
 			if (this.plugin.settings.autoStopTimeTrackingNotification) {
-				new Notice(`Auto-stopped time tracking for: ${updatedTask.title}`);
+				showNotice(`Auto-stopped time tracking for: ${updatedTask.title}`);
 			}
 		} catch (error) {
 			tasknotesLogger.error("Error auto-stopping time tracking:", {

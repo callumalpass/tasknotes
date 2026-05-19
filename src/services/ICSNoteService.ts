@@ -1,4 +1,4 @@
-import { TFile, Notice, normalizePath } from "obsidian";
+import { TFile, normalizePath } from "obsidian";
 import { format } from "date-fns";
 import { processFolderTemplate } from "../utils/folderTemplateProcessor";
 import TaskNotesPlugin from "../main";
@@ -13,6 +13,7 @@ import { ensureFolderExists } from "../utils/helpers";
 import { processTemplate, ICSTemplateData } from "../utils/templateProcessor";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSNoteService" });
 
@@ -468,7 +469,7 @@ export class ICSNoteService {
 							category: "provider",
 							operation: "ics-note-template-not-found",
 						});
-						new Notice(
+						showNotice(
 							this.translate("services.icsNote.notices.templateNotFound", {
 								path: templatePath,
 							})
@@ -480,7 +481,7 @@ export class ICSNoteService {
 						operation: "processing-ics-note-template",
 						error: error,
 					});
-					new Notice(
+					showNotice(
 						this.translate("services.icsNote.notices.templateProcessError", {
 							template: overrides.template,
 						})
@@ -624,7 +625,7 @@ export class ICSNoteService {
 				frontmatter[dateModifiedField] = getCurrentTimestamp();
 			});
 
-			new Notice(
+			showNotice(
 				this.translate("services.icsNote.notices.linkedToEvent", { title: icsEvent.title })
 			);
 		} catch (error) {

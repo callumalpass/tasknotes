@@ -1,8 +1,8 @@
 import { TaskInfo } from "../types";
 import { format, parseISO } from "date-fns";
-import { Notice } from "obsidian";
 import { TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/CalendarExportService" });
 
@@ -66,7 +66,7 @@ export class CalendarExportService {
 				operation: "generate-calendar-url",
 				error: error,
 			});
-			new Notice(
+			showNotice(
 				translate
 					? translate("services.calendarExport.notices.generateLinkFailed")
 					: "Failed to generate calendar link"
@@ -740,7 +740,7 @@ export class CalendarExportService {
 	): void {
 		try {
 			if (!tasks || tasks.length === 0) {
-				new Notice(
+				showNotice(
 					translate
 						? translate("services.calendarExport.notices.noTasksToExport")
 						: "No tasks found to export"
@@ -750,7 +750,7 @@ export class CalendarExportService {
 
 			const exportTasks = this.filterTasksForExport(tasks, options);
 			if (exportTasks.length === 0) {
-				new Notice(
+				showNotice(
 					translate
 						? translate("services.calendarExport.notices.noTasksToExport")
 						: "No tasks found to export"
@@ -773,7 +773,7 @@ export class CalendarExportService {
 			URL.revokeObjectURL(url);
 
 			const pluralSuffix = exportTasks.length === 1 ? "" : "s";
-			new Notice(
+			showNotice(
 				translate
 					? translate("services.calendarExport.notices.downloadSuccess", {
 							filename,
@@ -788,7 +788,7 @@ export class CalendarExportService {
 				operation: "download-all-tasks-ics-file",
 				error: error,
 			});
-			new Notice(
+			showNotice(
 				translate
 					? translate("services.calendarExport.notices.downloadFailed")
 					: "Failed to download calendar file"
@@ -818,7 +818,7 @@ export class CalendarExportService {
 
 			URL.revokeObjectURL(url);
 
-			new Notice(
+			showNotice(
 				translate
 					? translate("services.calendarExport.notices.singleDownloadSuccess", {
 							filename,
@@ -831,7 +831,7 @@ export class CalendarExportService {
 				operation: "download-ics-file",
 				error: error,
 			});
-			new Notice(
+			showNotice(
 				translate
 					? translate("services.calendarExport.notices.downloadFailed")
 					: "Failed to download calendar file"

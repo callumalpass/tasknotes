@@ -1,10 +1,11 @@
-import { Notice, requestUrl, Platform } from "obsidian";
+import { requestUrl, Platform } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../types";
 import { OAUTH_CONSTANTS } from "./constants";
 import { OAuthNotConfiguredError, TokenExpiredError, TokenRefreshError } from "./errors";
 import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/OAuthService" });
 
@@ -134,7 +135,7 @@ export class OAuthService {
 			const config = this.configs[provider];
 
 			if (!Platform.isDesktopApp) {
-				new Notice("OAUTH authentication requires the desktop app.");
+				showNotice("OAUTH authentication requires the desktop app.");
 				throw new Error("OAuth authentication requires the desktop app.");
 			}
 
@@ -169,7 +170,7 @@ export class OAuthService {
 					reject: () => {},
 				});
 
-				new Notice(`Opening browser for ${provider} authorization...`);
+				showNotice(`Opening browser for ${provider} authorization...`);
 
 				// Open browser to authorization URL
 				window.open(authUrl, "_blank");
@@ -183,7 +184,7 @@ export class OAuthService {
 				// Store connection
 				await this.storeConnection(provider, tokens);
 
-				new Notice(`Successfully connected to ${provider} Calendar!`);
+				showNotice(`Successfully connected to ${provider} Calendar!`);
 			} finally {
 				// Restore original redirect URI
 				config.redirectUri = originalRedirectUri;
@@ -194,7 +195,7 @@ export class OAuthService {
 				operation: "oauth-authentication",
 				error: error,
 			});
-			new Notice(`Failed to connect to ${provider}: ${error.message}`);
+			showNotice(`Failed to connect to ${provider}: ${error.message}`);
 			throw error;
 		} finally {
 			await this.stopCallbackServer();
@@ -603,7 +604,7 @@ export class OAuthService {
 					// This clears local tokens but doesn't revoke on provider (token is already invalid)
 					await this.clearConnection(provider);
 
-					new Notice(
+					showNotice(
 						`${provider} connection expired. Please reconnect in Settings > Integrations.`
 					);
 					throw new TokenRefreshError(provider, oauthError, oauthErrorDescription);
@@ -767,7 +768,7 @@ export class OAuthService {
 			await this.plugin.saveData(data);
 		}
 
-		new Notice(`Disconnected from ${provider} Calendar`);
+		showNotice(`Disconnected from ${provider} Calendar`);
 	}
 
 	/**

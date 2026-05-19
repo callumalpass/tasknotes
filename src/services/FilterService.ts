@@ -93,7 +93,13 @@ export class FilterService extends EventEmitter {
 		this.cacheManager = cacheManager;
 		this.statusManager = statusManager;
 		this.priorityManager = priorityManager;
-		this.queryPlanner = new FilterQueryPlanner({ cacheManager });
+		this.queryPlanner = new FilterQueryPlanner({
+			cacheManager,
+			timer: {
+				setTimeout: (callback, delayMs) => window.setTimeout(callback, delayMs),
+				clearTimeout: (timeoutId) => window.clearTimeout(timeoutId),
+			},
+		});
 		FilterService.lastInstance = this;
 	}
 

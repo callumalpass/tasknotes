@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Platform, addIcon } from "obsidian";
+import { MarkdownView, Platform, addIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import type TaskNotesPlugin from "../main";
 import {
@@ -52,6 +52,7 @@ import { AutoExportService } from "../services/AutoExportService";
 import { TaskNotesAPI } from "../api/TaskNotesAPI";
 import { isCalendarIntegrationDisabledOnMobile } from "../utils/calendarIntegration";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bootstrap/PluginBootstrap" });
 
@@ -251,14 +252,14 @@ export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> 
 		plugin.taskService.setWebhookNotifier(plugin.apiService);
 		plugin.pomodoroService.setWebhookNotifier(plugin.apiService);
 		await plugin.apiService.start();
-		new Notice(`TaskNotes API started on port ${plugin.apiService.getPort()}`);
+		showNotice(`TaskNotes API started on port ${plugin.apiService.getPort()}`);
 	} catch (error) {
 		tasknotesLogger.error("Failed to initialize HTTP API:", {
 			category: "provider",
 			operation: "initialize-http-api",
 			error: error,
 		});
-		new Notice("Failed to start tasknotes API server. Check console for details.");
+		showNotice("Failed to start tasknotes API server. Check console for details.");
 	}
 }
 

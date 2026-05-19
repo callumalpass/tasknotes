@@ -22,6 +22,7 @@ import { formatDateForStorage } from "../utils/dateUtils";
 import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
 import { configureThemeColorInput } from "../settings/components/CardComponent";
 import type { InterpolationValues, TranslationKey } from "../i18n";
+import { modifyVaultFile } from "../services/VaultMutationService";
 import { TaskInfo } from "../types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -553,7 +554,7 @@ export class TimeblockInfoModal extends Modal {
 		const newContent = `---\n${frontmatterText}---${bodyContent}`;
 
 		// Write back to file
-		await this.app.vault.modify(dailyNote, newContent);
+		await modifyVaultFile(this.app, dailyNote, newContent);
 	}
 
 	private async handleDelete(): Promise<void> {
@@ -736,7 +737,7 @@ export class TimeblockInfoModal extends Modal {
 			: bodyContent.trim();
 
 		// Write back to file
-		await this.app.vault.modify(dailyNote, newContent);
+		await modifyVaultFile(this.app, dailyNote, newContent);
 	}
 
 	onClose() {

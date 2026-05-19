@@ -1,8 +1,9 @@
-import { Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
+import { createVaultFile } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/AutoExportService" });
 
@@ -143,7 +144,7 @@ export class AutoExportService {
 				await this.plugin.app.vault.adapter.write(normalizedPath, icsContent);
 			} else {
 				// Create new file
-				await this.plugin.app.vault.create(normalizedPath, icsContent);
+				await createVaultFile(this.plugin.app, normalizedPath, icsContent);
 			}
 
 			this.lastExportTime = new Date();
@@ -159,7 +160,7 @@ export class AutoExportService {
 				!this.lastExportTime ||
 				Date.now() - this.lastExportTime.getTime() > 6 * 60 * 60 * 1000
 			) {
-				new Notice(
+				showNotice(
 					this.translate("services.autoExport.notices.exportFailed", {
 						error: error instanceof Error ? error.message : String(error),
 					})

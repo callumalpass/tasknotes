@@ -1,7 +1,22 @@
-import { Notice } from "obsidian";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/SafeAsync" });
+
+type SafeAsyncNoticeHandler = (message: string) => void;
+
+interface SafeAsyncNoticeOptions {
+	showNotice?: boolean;
+	noticeHandler?: SafeAsyncNoticeHandler;
+}
+
+function notifyIfRequested(
+	message: string,
+	{ showNotice = true, noticeHandler }: SafeAsyncNoticeOptions
+): void {
+	if (showNotice) {
+		noticeHandler?.(message);
+	}
+}
 
 /**
  * Utility for safe async operations with error boundaries
@@ -16,6 +31,7 @@ export class SafeAsync {
 			fallback?: T;
 			errorMessage?: string;
 			showNotice?: boolean;
+			noticeHandler?: SafeAsyncNoticeHandler;
 			logError?: boolean;
 		} = {}
 	): Promise<T | undefined> {
@@ -23,6 +39,7 @@ export class SafeAsync {
 			fallback,
 			errorMessage = "An error occurred",
 			showNotice = true,
+			noticeHandler,
 			logError = true,
 		} = options;
 
@@ -39,7 +56,10 @@ export class SafeAsync {
 
 			if (showNotice) {
 				const message = error instanceof Error ? error.message : String(error);
-				new Notice(`${errorMessage}: ${message}`);
+				notifyIfRequested(`${errorMessage}: ${message}`, {
+					showNotice,
+					noticeHandler,
+				});
 			}
 
 			return fallback;
@@ -56,6 +76,7 @@ export class SafeAsync {
 			retryDelay?: number;
 			errorMessage?: string;
 			showNotice?: boolean;
+			noticeHandler?: SafeAsyncNoticeHandler;
 		} = {}
 	): Promise<T | undefined> {
 		const {
@@ -63,6 +84,7 @@ export class SafeAsync {
 			retryDelay = 1000,
 			errorMessage = "Operation failed",
 			showNotice = true,
+			noticeHandler,
 		} = options;
 
 		let lastError: Error;
@@ -87,7 +109,10 @@ export class SafeAsync {
 				});
 
 				if (showNotice) {
-					new Notice(`${errorMessage}: ${lastError.message}`);
+					notifyIfRequested(`${errorMessage}: ${lastError.message}`, {
+						showNotice,
+						noticeHandler,
+					});
 				}
 
 				return undefined;
@@ -104,15 +129,19 @@ export class SafeAsync {
 		options: {
 			errorMessage?: string;
 			showNotice?: boolean;
+			noticeHandler?: SafeAsyncNoticeHandler;
 		} = {}
 	): Promise<T | undefined> {
-		const { showNotice = true } = options;
+		const { showNotice = true, noticeHandler } = options;
 
 		// Check all validations
 		for (const validation of validations) {
 			if (!validation.condition) {
 				if (showNotice) {
-					new Notice(validation.message);
+					notifyIfRequested(validation.message, {
+						showNotice,
+						noticeHandler,
+					});
 				}
 				return undefined;
 			}

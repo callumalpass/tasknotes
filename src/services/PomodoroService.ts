@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Pomodoro state transitions guard active sessions before dereferencing. */
-import { Notice, TFile, moment as obsidianMoment } from "obsidian";
+import { TFile, moment as obsidianMoment } from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
 	createDailyNote,
@@ -20,6 +20,8 @@ import {
 	IWebhookNotifier,
 } from "../types";
 import type { InterpolationValues, TranslationKey } from "../i18n";
+import { showNotice } from "../ui/notifications";
+import { processVaultFrontMatter } from "./VaultMutationService";
 import {
 	getCurrentTimestamp,
 	formatDateForStorage,
@@ -323,13 +325,13 @@ export class PomodoroService {
 
 	async startPomodoro(task?: TaskInfo, durationMinutes?: number) {
 		if (this.state.isRunning) {
-			new Notice(this.translate("services.pomodoro.notices.alreadyRunning"));
+			showNotice(this.translate("services.pomodoro.notices.alreadyRunning"));
 			return;
 		}
 
 		// Check if there's a paused session that should be resumed instead
 		if (this.state.currentSession && !this.state.isRunning) {
-			new Notice(this.translate("services.pomodoro.notices.resumeCurrentSession"));
+			showNotice(this.translate("services.pomodoro.notices.resumeCurrentSession"));
 			return;
 		}
 
@@ -421,13 +423,13 @@ export class PomodoroService {
 
 	async startBreak(isLongBreak = false) {
 		if (this.state.isRunning) {
-			new Notice(this.translate("services.pomodoro.notices.timerAlreadyRunning"));
+			showNotice(this.translate("services.pomodoro.notices.timerAlreadyRunning"));
 			return;
 		}
 
 		// Check if there's a paused session
 		if (this.state.currentSession && !this.state.isRunning) {
-			new Notice(this.translate("services.pomodoro.notices.resumeSessionInstead"));
+			showNotice(this.translate("services.pomodoro.notices.resumeSessionInstead"));
 			return;
 		}
 
@@ -459,7 +461,7 @@ export class PomodoroService {
 		await this.saveState();
 		this.startTimer();
 
-		new Notice(
+		showNotice(
 			this.translate(
 				isLongBreak
 					? "services.pomodoro.notices.longBreakStarted"
@@ -515,7 +517,7 @@ export class PomodoroService {
 			session: this.state.currentSession,
 		});
 
-		new Notice(this.translate("services.pomodoro.notices.paused"));
+		showNotice(this.translate("services.pomodoro.notices.paused"));
 	}
 
 	async resumePomodoro() {
@@ -563,7 +565,7 @@ export class PomodoroService {
 			session: this.state.currentSession,
 		});
 
-		new Notice(this.translate("services.pomodoro.notices.resumed"));
+		showNotice(this.translate("services.pomodoro.notices.resumed"));
 	}
 
 	async stopPomodoro() {
@@ -653,7 +655,7 @@ export class PomodoroService {
 		});
 
 		if (wasRunning) {
-			new Notice(this.translate("services.pomodoro.notices.stoppedAndReset"));
+			showNotice(this.translate("services.pomodoro.notices.stoppedAndReset"));
 		}
 	}
 
@@ -1638,7 +1640,7 @@ export class PomodoroService {
 			// Update frontmatter
 			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
 
-			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
+			await processVaultFrontMatter(this.plugin.app, dailyNote, (frontmatter) => {
 				// Get existing sessions
 				const existingSessions = Array.isArray(frontmatter[pomodoroField])
 					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
@@ -1681,7 +1683,7 @@ export class PomodoroService {
 			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
 			let deleted = false;
 
-			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
+			await processVaultFrontMatter(this.plugin.app, dailyNote, (frontmatter) => {
 				const existingSessions = Array.isArray(frontmatter[pomodoroField])
 					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
 					: [];
@@ -1735,7 +1737,7 @@ export class PomodoroService {
 			// Update frontmatter
 			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
 
-			await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
+			await processVaultFrontMatter(this.plugin.app, dailyNote, (frontmatter) => {
 				// Get existing sessions and append new ones
 				const existingSessions = Array.isArray(frontmatter[pomodoroField])
 					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
@@ -1803,7 +1805,7 @@ export class PomodoroService {
 			data.pomodoroHistory = [];
 			await this.plugin.saveData(data);
 
-			new Notice(
+			showNotice(
 				this.translate("services.pomodoro.notices.migrationSuccess", {
 					count: pluginHistory.length,
 				})
@@ -1814,7 +1816,7 @@ export class PomodoroService {
 				operation: "migrate-pomodoro-data-daily-notes",
 				error: error,
 			});
-			new Notice(this.translate("services.pomodoro.notices.migrationFailure"));
+			showNotice(this.translate("services.pomodoro.notices.migrationFailure"));
 			throw error;
 		}
 	}

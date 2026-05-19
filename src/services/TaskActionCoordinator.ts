@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { EVENT_DATA_CHANGED } from "../types";
@@ -9,6 +9,7 @@ import { getCurrentDateString } from "../core/date";
 import { getActiveTimeEntry } from "../utils/helpers";
 import { getOverdueScheduledRolloverCandidates } from "../utils/scheduledRollover";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskActionCoordinator" });
 
@@ -71,7 +72,7 @@ export class TaskActionCoordinator {
 				}
 			}
 
-			new Notice("Time tracking started");
+			showNotice("Time tracking started");
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
@@ -84,9 +85,9 @@ export class TaskActionCoordinator {
 				error instanceof Error &&
 				error.message === "Time tracking is already active for this task"
 			) {
-				new Notice("Time tracking is already active for this task");
+				showNotice("Time tracking is already active for this task");
 			} else {
-				new Notice("Failed to start time tracking");
+				showNotice("Failed to start time tracking");
 			}
 			throw error;
 		}
@@ -95,7 +96,7 @@ export class TaskActionCoordinator {
 	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
 		try {
 			const updatedTask = await this.plugin.taskService.stopTimeTracking(task);
-			new Notice("Time tracking stopped");
+			showNotice("Time tracking stopped");
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
@@ -108,9 +109,9 @@ export class TaskActionCoordinator {
 				error instanceof Error &&
 				error.message === "No active time tracking session for this task"
 			) {
-				new Notice("No active time tracking session for this task");
+				showNotice("No active time tracking session for this task");
 			} else {
-				new Notice("Failed to stop time tracking");
+				showNotice("Failed to stop time tracking");
 			}
 			throw error;
 		}
@@ -125,7 +126,7 @@ export class TaskActionCoordinator {
 				.filter((task) => !getActiveTimeEntry(task.timeEntries || []));
 
 			if (availableTasks.length === 0) {
-				new Notice(this.plugin.i18n.translate("modals.timeTracking.noTasksAvailable"));
+				showNotice(this.plugin.i18n.translate("modals.timeTracking.noTasksAvailable"));
 				return;
 			}
 
@@ -140,7 +141,7 @@ export class TaskActionCoordinator {
 
 						try {
 							await this.startTimeTracking(selectedTask);
-							new Notice(
+							showNotice(
 								this.plugin.i18n.translate("modals.timeTracking.started", {
 									taskTitle: selectedTask.title,
 								})
@@ -151,7 +152,7 @@ export class TaskActionCoordinator {
 								operation: "starting-time-tracking",
 								error: error,
 							});
-							new Notice(
+							showNotice(
 								this.plugin.i18n.translate("modals.timeTracking.startFailed")
 							);
 						}
@@ -165,7 +166,7 @@ export class TaskActionCoordinator {
 				operation: "opening-task-selector-time-tracking",
 				error: error,
 			});
-			new Notice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));
+			showNotice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));
 		}
 	}
 
@@ -177,7 +178,7 @@ export class TaskActionCoordinator {
 				.filter((task) => task.timeEntries && task.timeEntries.length > 0);
 
 			if (tasksWithEntries.length === 0) {
-				new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.noTasksWithEntries"));
+				showNotice(this.plugin.i18n.translate("modals.timeEntryEditor.noTasksWithEntries"));
 				return;
 			}
 
@@ -192,7 +193,7 @@ export class TaskActionCoordinator {
 				operation: "opening-task-selector-time-entry-editor",
 				error: error,
 			});
-			new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.openFailed"));
+			showNotice(this.plugin.i18n.translate("modals.timeEntryEditor.openFailed"));
 		}
 	}
 
@@ -207,7 +208,7 @@ export class TaskActionCoordinator {
 			);
 
 			if (candidates.length === 0) {
-				new Notice("No overdue scheduled tasks to postpone");
+				showNotice("No overdue scheduled tasks to postpone");
 				return;
 			}
 
@@ -223,7 +224,7 @@ export class TaskActionCoordinator {
 				return;
 			}
 
-			new Notice(`Postponing ${candidates.length} ${taskLabel}...`);
+			showNotice(`Postponing ${candidates.length} ${taskLabel}...`);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -249,9 +250,9 @@ export class TaskActionCoordinator {
 			}
 
 			if (failCount === 0) {
-				new Notice(`Postponed ${successCount} ${successCount === 1 ? "task" : "tasks"}`);
+				showNotice(`Postponed ${successCount} ${successCount === 1 ? "task" : "tasks"}`);
 			} else {
-				new Notice(`Postponed ${successCount} tasks, ${failCount} failed`);
+				showNotice(`Postponed ${successCount} tasks, ${failCount} failed`);
 			}
 
 			this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
@@ -261,7 +262,7 @@ export class TaskActionCoordinator {
 				operation: "postpone-overdue-scheduled-tasks",
 				error: error,
 			});
-			new Notice("Failed to postpone overdue scheduled tasks");
+			showNotice("Failed to postpone overdue scheduled tasks");
 		}
 	}
 
@@ -285,14 +286,14 @@ export class TaskActionCoordinator {
 
 						onSave?.();
 						this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
-						new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saved"));
+						showNotice(this.plugin.i18n.translate("modals.timeEntryEditor.saved"));
 					} catch (error) {
 						tasknotesLogger.error("Error saving time entries:", {
 							category: "persistence",
 							operation: "saving-time-entries",
 							error: error,
 						});
-						new Notice(this.plugin.i18n.translate("modals.timeEntryEditor.saveFailed"));
+						showNotice(this.plugin.i18n.translate("modals.timeEntryEditor.saveFailed"));
 					}
 				})();
 			}

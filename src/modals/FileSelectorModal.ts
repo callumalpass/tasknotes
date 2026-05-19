@@ -1,6 +1,7 @@
 import { App, SuggestModal, TAbstractFile, TFile, parseFrontMatterAliases, Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { createVaultFile, createVaultFolder } from "../services/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/FileSelectorModal" });
 
@@ -210,11 +211,11 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 			// Ensure folder exists (check on-disk via adapter, not in-memory cache)
 			if (folderPath && !(await this.app.vault.adapter.exists(folderPath))) {
-				await this.app.vault.createFolder(folderPath);
+				await createVaultFolder(this.app, folderPath);
 			}
 
 			// Create the file
-			const newFile = await this.app.vault.create(filePath, "");
+			const newFile = await createVaultFile(this.app, filePath, "");
 
 			this.resultHandled = true;
 			this.close();

@@ -7,7 +7,7 @@ import {
 	IWebhookNotifier,
 } from "../types";
 import { AutoArchiveService } from "./AutoArchiveService";
-import { Notice, TFile, normalizePath } from "obsidian";
+import { TFile, normalizePath } from "obsidian";
 import { TemplateData, processTemplate } from "../utils/templateProcessor";
 import {
 	ensureFolderExists,
@@ -22,6 +22,7 @@ import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplate
 import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { TaskCreationService } from "./task-service/TaskCreationService";
+import { showNotice } from "../ui/notifications";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
 import { applyTaskCreationDefaults as applyTaskCreationDefaultsToData } from "./task-service/taskCreationDefaults";
 import {
@@ -283,7 +284,7 @@ export class TaskService {
 					category: "persistence",
 					operation: "task-body-template-not-found",
 				});
-				new Notice(
+				showNotice(
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
 				);
 				return {
@@ -298,7 +299,7 @@ export class TaskService {
 				operation: "reading-task-body-template",
 				error: error,
 			});
-			new Notice(
+			showNotice(
 				this.translate("services.task.notices.templateReadError", {
 					template: defaults.bodyTemplate,
 				})
@@ -536,7 +537,7 @@ export class TaskService {
 					operation: "moving",
 					details: { value: errorMessage },
 				});
-				new Notice(
+				showNotice(
 					this.translate("services.task.notices.moveTaskFailed", {
 						operation,
 						error: errorMessage,

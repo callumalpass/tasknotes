@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Calendar sync validates credentials before accessing token fields. */
-import { requestUrl, Notice } from "obsidian";
+import { requestUrl } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { OAuthService } from "./OAuthService";
@@ -15,6 +15,7 @@ import {
 import { validateCalendarId, validateEventId, validateRequired } from "./validation";
 import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/GoogleCalendarService" });
 
@@ -628,7 +629,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			new Notice(`Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
+			showNotice(`Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
 			return;
 		}
 

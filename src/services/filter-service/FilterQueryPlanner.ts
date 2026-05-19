@@ -4,6 +4,10 @@ import { stringifyUnknown } from "../../utils/stringUtils";
 
 export interface FilterQueryPlannerDependencies {
 	cacheManager: TaskManager;
+	timer: {
+		setTimeout(callback: () => void, delayMs: number): number;
+		clearTimeout(timeoutId: number): void;
+	};
 }
 
 export class FilterQueryPlanner {
@@ -40,7 +44,7 @@ export class FilterQueryPlanner {
 
 	clearIndexQueryCache(): void {
 		for (const timer of this.cacheTimers.values()) {
-			window.clearTimeout(timer);
+			this.deps.timer.clearTimeout(timer);
 		}
 		this.indexQueryCache.clear();
 		this.cacheTimers.clear();
@@ -200,10 +204,10 @@ export class FilterQueryPlanner {
 
 		const existingTimer = this.cacheTimers.get(cacheKey);
 		if (existingTimer) {
-			window.clearTimeout(existingTimer);
+			this.deps.timer.clearTimeout(existingTimer);
 		}
 
-		const timer = window.setTimeout(() => {
+		const timer = this.deps.timer.setTimeout(() => {
 			this.indexQueryCache.delete(cacheKey);
 			this.cacheTimers.delete(cacheKey);
 		}, this.cacheTimeout);

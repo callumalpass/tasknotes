@@ -9,6 +9,7 @@ import {
 	assignTaskAsSubtask,
 	buildSubtaskCreationPrePopulatedValues,
 } from "../services/taskRelationshipActions";
+import { renameVaultFile } from "../services/VaultMutationService";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
 import {
@@ -531,7 +532,7 @@ export class TaskContextMenu {
 									: finalName;
 
 								// Rename the file
-								await plugin.app.vault.rename(file, newPath);
+								await renameVaultFile(plugin.app, file, newPath);
 								new Notice(
 									this.t("contextMenus.task.notices.renameSuccess", {
 										name: finalName,

@@ -1,8 +1,9 @@
-import { Notice, TFile, EventRef } from "obsidian";
+import { TFile, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from "../types";
 import { parseDateToLocal } from "../utils/dateUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/NotificationService" });
 
@@ -406,11 +407,11 @@ export class NotificationService {
 			}
 		}
 
-		new Notice(message, 5000);
+		showNotice(message, 5000);
 	}
 
 	private showInAppNotice(message: string, taskPath: string): void {
-		const notice = new Notice(message, 0); // 0 = persistent until clicked
+		const notice = showNotice(message, 0); // 0 = persistent until clicked
 		const noticeEl = (notice as unknown as { noticeEl: HTMLElement }).noticeEl;
 
 		// Add click handler to open the task

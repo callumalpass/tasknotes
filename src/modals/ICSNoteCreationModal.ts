@@ -4,6 +4,7 @@ import { ICSEvent, NoteInfo } from "../types";
 import { format } from "date-fns";
 import { SafeAsync } from "../utils/safeAsync";
 import { TranslationKey } from "../i18n";
+import { showNotice } from "../ui/notifications";
 
 export interface ICSNoteCreationOptions {
 	icsEvent: ICSEvent;
@@ -328,6 +329,7 @@ export class ICSNoteCreationModal extends Modal {
 			],
 			{
 				errorMessage: "Failed to create note from ICS event",
+				noticeHandler: showNotice,
 			}
 		);
 	}

@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
@@ -13,6 +13,8 @@ import { stringifyUnknown } from "../utils/stringUtils";
 import { TokenRefreshError } from "./errors";
 import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
+import { processVaultFrontMatter } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
 
@@ -769,7 +771,7 @@ export class TaskCalendarSyncService {
 		}
 
 		const fieldName = this.plugin.fieldMapper.toUserField("googleCalendarEventId");
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			frontmatter[fieldName] = eventId;
 		});
 		this.taskEventIdCache.set(taskPath, eventId);
@@ -796,7 +798,7 @@ export class TaskCalendarSyncService {
 		}
 
 		const fieldName = this.plugin.fieldMapper.toUserField("googleCalendarEventId");
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			delete frontmatter[fieldName];
 		});
 		this.taskEventIdCache.delete(taskPath);
@@ -1512,13 +1514,13 @@ export class TaskCalendarSyncService {
 			// Show user-friendly message for token refresh errors
 			// TokenRefreshError indicates the OAuth connection expired and user needs to reconnect
 			if (error instanceof TokenRefreshError) {
-				new Notice(
+				showNotice(
 					this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.connectionExpired"
 					)
 				);
 			} else {
-				new Notice(
+				showNotice(
 					this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.syncFailed",
 						{ message: getErrorMessage(error) }
@@ -1858,7 +1860,7 @@ export class TaskCalendarSyncService {
 		const results = { synced: 0, failed: 0, skipped: 0 };
 
 		if (!this.isEnabled()) {
-			new Notice(
+			showNotice(
 				this.plugin.i18n.translate(
 					"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
 				)
@@ -1878,7 +1880,7 @@ export class TaskCalendarSyncService {
 		});
 
 		const total = allTasks.length;
-		new Notice(
+		showNotice(
 			this.plugin.i18n.translate(
 				"settings.integrations.googleCalendarExport.notices.syncingTasks",
 				{ total }
@@ -1904,7 +1906,7 @@ export class TaskCalendarSyncService {
 			}
 		});
 
-		new Notice(
+		showNotice(
 			this.plugin.i18n.translate(
 				"settings.integrations.googleCalendarExport.notices.syncComplete",
 				{
@@ -1962,7 +1964,7 @@ export class TaskCalendarSyncService {
 			unlinkedCount++;
 		}
 
-		new Notice(
+		showNotice(
 			deleteEvents
 				? this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked",

@@ -10,6 +10,11 @@ import { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import {
+	createVaultFile,
+	createVaultFolder,
+	modifyVaultFile,
+} from "../../services/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/GeneralTab" });
 
@@ -530,7 +535,7 @@ export function renderGeneralTab(
 									if (
 										!(await plugin.app.vault.adapter.exists("TaskNotes/Views"))
 									) {
-										await plugin.app.vault.createFolder("TaskNotes/Views");
+										await createVaultFolder(plugin.app, "TaskNotes/Views");
 									}
 
 									// Handle file overwrite confirmation
@@ -551,9 +556,9 @@ export function renderGeneralTab(
 											isDestructive: false,
 										});
 										if (!confirmed) return;
-										await plugin.app.vault.modify(existingFile, basesContent);
+										await modifyVaultFile(plugin.app, existingFile, basesContent);
 									} else {
-										await plugin.app.vault.create(filePath, basesContent);
+										await createVaultFile(plugin.app, filePath, basesContent);
 									}
 
 									new Notice(

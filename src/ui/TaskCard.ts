@@ -1,6 +1,7 @@
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
+import { BatchContextMenu } from "../components/BatchContextMenu";
 import { type TaskCardPresentationOptions } from "./taskCardPresentation";
 import { renderTaskCardMetadataLine } from "./taskCardMetadata";
 import {
@@ -255,6 +256,12 @@ export function createTaskCard(
 			if (!path) return;
 			void showTaskContextMenu(e, path, plugin, targetDate);
 		},
+		createBatchContextMenu: (selectedPaths, onUpdate) =>
+			new BatchContextMenu({
+				plugin,
+				selectedPaths,
+				onUpdate,
+			}),
 	});
 
 	card.addEventListener("click", clickHandler);

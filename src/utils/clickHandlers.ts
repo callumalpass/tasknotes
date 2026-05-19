@@ -1,7 +1,15 @@
 import { TFile } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
-import { BatchContextMenu } from "../components/BatchContextMenu";
+
+interface BatchContextMenuAdapter {
+	show(event: MouseEvent): void;
+}
+
+type BatchContextMenuFactory = (
+	selectedPaths: string[],
+	onUpdate: () => void
+) => BatchContextMenuAdapter;
 
 export interface ClickHandlerOptions {
 	task: TaskInfo;
@@ -10,6 +18,7 @@ export interface ClickHandlerOptions {
 	onSingleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for single click
 	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
 	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
+	createBatchContextMenu?: BatchContextMenuFactory;
 }
 
 const DEFAULT_EXCLUDE_SELECTOR = [
@@ -30,8 +39,15 @@ const DEFAULT_EXCLUDE_SELECTOR = [
  * Ctrl/Cmd + Click: Opens source note immediately
  */
 export function createTaskClickHandler(options: ClickHandlerOptions) {
-	const { task, plugin, excludeSelector, onSingleClick, onDoubleClick, contextMenuHandler } =
-		options;
+	const {
+		task,
+		plugin,
+		excludeSelector,
+		onSingleClick,
+		onDoubleClick,
+		contextMenuHandler,
+		createBatchContextMenu,
+	} = options;
 	const clickExcludeSelector = excludeSelector
 		? `${DEFAULT_EXCLUDE_SELECTOR}, ${excludeSelector}`
 		: DEFAULT_EXCLUDE_SELECTOR;
@@ -160,12 +176,8 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 
 			// Show batch context menu if we have selections
 			if (selectionService.getSelectionCount() > 0) {
-				const menu = new BatchContextMenu({
-					plugin,
-					selectedPaths: selectionService.getSelectedPaths(),
-					onUpdate: () => {},
-				});
-				menu.show(e);
+				const menu = createBatchContextMenu?.(selectionService.getSelectedPaths(), () => {});
+				menu?.show(e);
 			}
 			return;
 		}
@@ -178,14 +190,10 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 			}
 
 			// Import and show batch context menu
-			const menu = new BatchContextMenu({
-				plugin,
-				selectedPaths: selectionService.getSelectedPaths(),
-				onUpdate: () => {
-					// Views will refresh via events
-				},
+			const menu = createBatchContextMenu?.(selectionService.getSelectedPaths(), () => {
+				// Views will refresh via events
 			});
-			menu.show(e);
+			menu?.show(e);
 			return;
 		}
 

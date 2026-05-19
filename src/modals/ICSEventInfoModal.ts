@@ -6,6 +6,7 @@ import { openFileSelector } from "./FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
 import { TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ICSEventInfoModal" });
 
@@ -231,6 +232,7 @@ export class ICSEventInfoModal extends Modal {
 							},
 							{
 								errorMessage: "Failed to link note",
+								noticeHandler: showNotice,
 							}
 						);
 					},
@@ -242,6 +244,7 @@ export class ICSEventInfoModal extends Modal {
 			},
 			{
 				errorMessage: "Failed to open note selection",
+				noticeHandler: showNotice,
 			}
 		);
 	}
@@ -264,6 +267,7 @@ export class ICSEventInfoModal extends Modal {
 			},
 			{
 				errorMessage: "Failed to create task from ICS event",
+				noticeHandler: showNotice,
 			}
 		);
 	}
@@ -277,6 +281,7 @@ export class ICSEventInfoModal extends Modal {
 			},
 			{
 				errorMessage: "Failed to refresh related notes",
+				noticeHandler: showNotice,
 			}
 		);
 	}

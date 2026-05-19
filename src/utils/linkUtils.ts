@@ -1,7 +1,13 @@
-import { App, TFile, parseLinktext } from "obsidian";
+import type { App, TFile } from "obsidian";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/LinkUtils" });
+
+function parseLinkPath(linkText: string): string {
+	const subpathIndex = linkText.search(/[#^]/);
+	const path = subpathIndex === -1 ? linkText : linkText.slice(0, subpathIndex);
+	return path.trim();
+}
 
 /**
  * Parse a link string (wikilink or markdown) to extract the path.
@@ -30,21 +36,18 @@ export function parseLinkToPath(linkText: string): string {
 			});
 		}
 
-		const parsed = parseLinktext(inner);
-		return hasMdExt ? inner : parsed.path || inner;
+		const parsedPath = parseLinkPath(inner);
+		return hasMdExt ? inner : parsedPath || inner;
 	}
 
 	// Handle wikilinks: [[path]] or [[path|alias]]
 	if (trimmed.startsWith("[[") && trimmed.endsWith("]]")) {
 		const inner = trimmed.slice(2, -2).trim();
 
-		// Manually strip alias if present
-		// parseLinktext doesn't always handle aliases correctly
+		// Manually strip alias if present.
 		const pipeIndex = inner.indexOf("|");
 		const pathOnly = pipeIndex !== -1 ? inner.substring(0, pipeIndex) : inner;
-		const parsed = parseLinktext(pathOnly);
-
-		return parsed.path;
+		return parseLinkPath(pathOnly);
 	}
 
 	// Handle markdown links: [text](path)
@@ -72,9 +75,8 @@ export function parseLinkToPath(linkText: string): string {
 			});
 		}
 
-		// Use parseLinktext to handle subpaths/headings
-		const parsed = parseLinktext(linkPath);
-		return hasMdExt ? linkPath : parsed.path;
+		const parsedPath = parseLinkPath(linkPath);
+		return hasMdExt ? linkPath : parsedPath;
 	}
 
 	// Not a link format, return as-is
@@ -119,8 +121,8 @@ export function getProjectDisplayName(projectValue: string, app?: App): string {
 			const alias = linkContent.slice(pipeIndex + 1).trim();
 			if (alias) return alias;
 		}
-		const parsed = parseLinktext(linkContent.split("|")[0] || linkContent);
-		const linkPath = parsed.path || parseLinkToPath(trimmed);
+		const linkPath =
+			parseLinkPath(linkContent.split("|")[0] || linkContent) || parseLinkToPath(trimmed);
 		const resolvedDisplayName = getResolvedProjectDisplayName(linkPath, app);
 		if (resolvedDisplayName) return resolvedDisplayName;
 		const cleanPath = linkPath.replace(/\.md$/i, "");

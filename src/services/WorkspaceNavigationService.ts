@@ -1,5 +1,4 @@
 import {
-	Notice,
 	Platform,
 	TFile,
 	WorkspaceLeaf,
@@ -13,6 +12,7 @@ import {
 	STATS_VIEW_TYPE,
 } from "../types";
 import { RELEASE_NOTES_VIEW_TYPE } from "../views/ReleaseNotesView";
+import { showNotice } from "../ui/notifications";
 
 type WorkspaceLeafLike = {
 	isDeferred?: boolean;
@@ -130,14 +130,14 @@ export class WorkspaceNavigationService {
 	async openBasesFileForCommand(commandId: string): Promise<void> {
 		const filePath = this.plugin.settings.commandFileMapping[commandId];
 		if (!filePath) {
-			new Notice(`No file configured for command: ${commandId}`);
+			showNotice(`No file configured for command: ${commandId}`);
 			return;
 		}
 
 		const normalizedPath = normalizePath(filePath);
 		const fileExists = await this.plugin.app.vault.adapter.exists(normalizedPath);
 		if (!fileExists) {
-			new Notice(
+			showNotice(
 				`File not found: ${normalizedPath}\n\nPlease configure a valid file in Settings → TaskNotes → View Commands, or use the "Create Default Files" button.`,
 				10000
 			);
@@ -146,13 +146,13 @@ export class WorkspaceNavigationService {
 
 		const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 		if (!file) {
-			new Notice(
+			showNotice(
 				`File not found in vault: ${normalizedPath}\n\nThe file exists but Obsidian cannot find it. Try reloading the vault.`
 			);
 			return;
 		}
 		if (!(file instanceof TFile)) {
-			new Notice(`Path is not a file: ${normalizedPath}`);
+			showNotice(`Path is not a file: ${normalizedPath}`);
 			return;
 		}
 

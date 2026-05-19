@@ -2,10 +2,7 @@ import { generateLink, generateLinkWithBasename, generateLinkWithDisplay, getPro
 import { MockObsidian } from '../../__mocks__/obsidian';
 import type { App, TFile } from 'obsidian';
 
-// @ts-ignore helper to cast the mock app
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;
-
-jest.mock('obsidian');
 
 describe('linkUtils - frontmatter link format', () => {
   let mockApp: App;

@@ -8,6 +8,8 @@ import {
 	NLPTriggersConfig,
 	GoogleCalendarExportSettings,
 } from "../types/settings";
+import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
+export { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
 
 /**
  * Internal field names for default visible properties.
@@ -21,34 +23,6 @@ export const DEFAULT_INTERNAL_VISIBLE_PROPERTIES: (keyof FieldMapping)[] = [
 	"projects",
 	"contexts",
 ];
-
-// Default field mapping maintains backward compatibility
-export const DEFAULT_FIELD_MAPPING: FieldMapping = {
-	title: "title",
-	status: "status",
-	priority: "priority",
-	due: "due",
-	scheduled: "scheduled",
-	contexts: "contexts",
-	projects: "projects",
-	timeEstimate: "timeEstimate",
-	completedDate: "completedDate",
-	dateCreated: "dateCreated",
-	dateModified: "dateModified",
-	recurrence: "recurrence",
-	recurrenceAnchor: "recurrence_anchor",
-	archiveTag: "archived",
-	timeEntries: "timeEntries",
-	completeInstances: "complete_instances",
-	skippedInstances: "skipped_instances",
-	blockedBy: "blockedBy",
-	pomodoros: "pomodoros",
-	icsEventId: "icsEventId",
-	icsEventTag: "ics_event",
-	googleCalendarEventId: "googleCalendarEventId",
-	reminders: "reminders",
-	sortOrder: "tasknotes_manual_order",
-};
 
 // Default status configuration matches current hardcoded behavior
 export const DEFAULT_STATUSES: StatusConfig[] = [

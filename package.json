@@ -28,6 +28,7 @@
 		"test:build": "node -e \"console.log('Build test passed - plugin bundle created successfully')\"",
 		"conformance:test": "node scripts/run-tasknotes-spec-conformance.mjs",
 		"lint": "node scripts/run-lint.mjs",
+		"lint:architecture": "node scripts/run-architecture-conformance.mjs",
 		"lint:ts": "eslint src/ package.json --max-warnings=0",
 		"lint:ts:fix": "eslint src/ package.json --fix",
 		"lint:css": "stylelint \"styles/**/*.css\" \"docs-builder/src/styles/**/*.css\" --max-warnings=0",

@@ -7,6 +7,7 @@ import { openFileSelector } from "../modals/FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
 import { ContextMenu } from "./ContextMenu";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showNotice } from "../ui/notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/ICSEventContextMenu" });
 
@@ -177,6 +178,7 @@ export class ICSEventContextMenu {
 			},
 			{
 				errorMessage: this.t("contextMenus.ics.notices.taskCreateFailure"),
+				noticeHandler: showNotice,
 			}
 		);
 	}
@@ -238,6 +240,7 @@ export class ICSEventContextMenu {
 							},
 							{
 								errorMessage: this.t("contextMenus.ics.notices.linkFailure"),
+								noticeHandler: showNotice,
 							}
 						);
 					},
@@ -249,6 +252,7 @@ export class ICSEventContextMenu {
 			},
 			{
 				errorMessage: this.t("contextMenus.ics.notices.linkSelectionFailure"),
+				noticeHandler: showNotice,
 			}
 		);
 	}

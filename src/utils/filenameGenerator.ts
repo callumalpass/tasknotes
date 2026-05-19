@@ -1,10 +1,17 @@
 import { format } from "date-fns";
-import { normalizePath, type Vault } from "obsidian";
+import type { Vault } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
 import { getProjectDisplayName } from "./linkUtils";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/FilenameGenerator" });
+
+function normalizeVaultPath(path: string): string {
+	return path
+		.replace(/\\/g, "/")
+		.replace(/\/+/g, "/")
+		.replace(/^\/+/, "");
+}
 
 export interface FilenameContext {
 	title: string;
@@ -573,7 +580,7 @@ export async function generateUniqueFilename(
 	const sanitizedFolderPath = folderPath.replace(/\.\./g, "").trim();
 
 	try {
-		const basePath = normalizePath(`${sanitizedFolderPath}/${sanitizedFilename}.md`);
+		const basePath = normalizeVaultPath(`${sanitizedFolderPath}/${sanitizedFilename}.md`);
 
 		// Validate path length
 		if (basePath.length > 260) {
@@ -589,7 +596,7 @@ export async function generateUniqueFilename(
 		// If not, try appending numbers
 		for (let i = 2; i <= 999; i++) {
 			const candidateFilename = `${sanitizedFilename}-${i}`;
-			const candidatePath = normalizePath(`${sanitizedFolderPath}/${candidateFilename}.md`);
+			const candidatePath = normalizeVaultPath(`${sanitizedFolderPath}/${candidateFilename}.md`);
 
 			// Check path length for each candidate
 			if (candidatePath.length > 260) {

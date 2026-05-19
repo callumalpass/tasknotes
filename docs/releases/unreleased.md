@@ -23,3 +23,7 @@ Example:
 ```
 
 -->
+
+## Changed
+
+- Improved internal boundaries for service notifications, vault writes, and pure utilities to make the codebase easier to maintain.

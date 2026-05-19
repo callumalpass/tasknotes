@@ -2,7 +2,7 @@ import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from "obsi
 import { format } from "date-fns";
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
-import { DEFAULT_FIELD_MAPPING } from "../settings/defaults";
+import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
 import {
 	addDTSTARTToRecurrenceRule as addDTSTARTToRecurrenceRuleCore,
 	addDTSTARTToRecurrenceRuleWithDraggedTime as addDTSTARTToRecurrenceRuleWithDraggedTimeCore,
@@ -21,6 +21,7 @@ import {
 import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
 import { normalizeThemeColor } from "./themeColors";
 import { createTaskNotesLogger } from "./tasknotesLogger";
+import { modifyVaultFile } from "../services/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/Helpers" });
 
@@ -988,7 +989,7 @@ async function updateDailyNoteFrontmatter(
 	const newContent = `---\n${frontmatterText}---${bodyContent}`;
 
 	// Write back to file
-	await app.vault.modify(dailyNote, newContent);
+	await modifyVaultFile(app, dailyNote, newContent);
 
 	// Native metadata cache will automatically update
 }
