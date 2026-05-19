@@ -351,6 +351,8 @@ Current extracted examples:
   task-folder extraction, and dynamic user-property definitions behind injected
   status, priority, cache-derived option, task-path, root-label, and user-field
   sources.
+- `src/services/filter-service/filterQueryState.ts` owns default filter query
+  construction, quick-toggle query mutation, and partial query normalization.
 
 ### Bases Integration
 

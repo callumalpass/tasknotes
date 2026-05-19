@@ -242,6 +242,11 @@ Filter option assembly should run through `filterOptions`. `FilterService`
 keeps option caching and invalidation while the helper owns task-folder
 extraction and dynamic user-property definition construction.
 
+Filter query state assembly should run through `filterQueryState`. `FilterService`
+keeps validation, cache reads, and execution orchestration while the helper owns
+default query construction, quick-toggle query mutation, and saved-query
+normalization.
+
 ## UI State Flow
 
 TaskCard and TaskModal rendering should consume already-normalized state.
@@ -382,6 +387,8 @@ Refactor rule:
 - filter option assembly, task-folder extraction, and dynamic user-property
   definitions belong in `filterOptions`; `FilterService` keeps cache
   invalidation and source orchestration
+- default query construction, quick-toggle condition mutation, and partial query
+  normalization belong in `filterQueryState`
 - DOM functions should wire controls, render values, and call services
 
 This keeps DOM tests focused on interaction while pure unit tests cover state

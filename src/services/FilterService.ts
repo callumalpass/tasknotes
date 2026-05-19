@@ -47,6 +47,12 @@ import {
 	type FilterTaskSortingContext,
 } from "./filter-service/filterTaskSorting";
 import { buildFilterOptions } from "./filter-service/filterOptions";
+import {
+	applyQuickToggleCondition,
+	createDefaultFilterQuery,
+	normalizeFilterQuery,
+	type QuickFilterToggle,
+} from "./filter-service/filterQueryState";
 import type { TaskNotesSettings } from "../types/settings";
 
 type FilterServiceSettings = Pick<
@@ -582,15 +588,7 @@ export class FilterService extends EventEmitter {
 	 * Create a default filter query with the new structure
 	 */
 	createDefaultQuery(): FilterQuery {
-		return {
-			type: "group",
-			id: FilterUtils.generateId(),
-			conjunction: "and",
-			children: [],
-			sortKey: "due",
-			sortDirection: "asc",
-			groupKey: "none",
-		};
+		return createDefaultFilterQuery(() => FilterUtils.generateId());
 	}
 
 	/**
@@ -599,100 +597,17 @@ export class FilterService extends EventEmitter {
 	 */
 	addQuickToggleCondition(
 		query: FilterQuery,
-		toggle: "showCompleted" | "showArchived" | "showRecurrent",
+		toggle: QuickFilterToggle,
 		enabled: boolean
 	): FilterQuery {
-		const newQuery = JSON.parse(JSON.stringify(query)); // Deep clone
-
-		// Remove existing condition for this toggle if it exists
-		this.removeQuickToggleCondition(newQuery, toggle);
-
-		// Add new condition if toggle is disabled (meaning we want to filter out)
-		if (!enabled) {
-			let condition: FilterCondition;
-
-			switch (toggle) {
-				case "showCompleted":
-					condition = {
-						type: "condition",
-						id: FilterUtils.generateId(),
-						property: "status.isCompleted",
-						operator: "is-not-checked",
-						value: null,
-					};
-					break;
-				case "showArchived":
-					condition = {
-						type: "condition",
-						id: FilterUtils.generateId(),
-						property: "archived",
-						operator: "is-not-checked",
-						value: null,
-					};
-					break;
-				case "showRecurrent":
-					condition = {
-						type: "condition",
-						id: FilterUtils.generateId(),
-						property: "recurrence",
-						operator: "is-empty",
-						value: null,
-					};
-					break;
-			}
-
-			newQuery.children.push(condition);
-		}
-
-		return newQuery;
-	}
-
-	/**
-	 * Remove quick toggle condition from query
-	 */
-	private removeQuickToggleCondition(
-		query: FilterQuery,
-		toggle: "showCompleted" | "showArchived" | "showRecurrent"
-	): void {
-		let propertyToRemove: string;
-
-		switch (toggle) {
-			case "showCompleted":
-				propertyToRemove = "status.isCompleted";
-				break;
-			case "showArchived":
-				propertyToRemove = "archived";
-				break;
-			case "showRecurrent":
-				propertyToRemove = "recurrence";
-				break;
-		}
-
-		query.children = query.children.filter((child) => {
-			if (child.type === "condition") {
-				return child.property !== propertyToRemove;
-			}
-			return true;
-		});
+		return applyQuickToggleCondition(query, toggle, enabled, () => FilterUtils.generateId());
 	}
 
 	/**
 	 * Validate and normalize a filter query
 	 */
 	normalizeQuery(query: Partial<FilterQuery>): FilterQuery {
-		const defaultQuery = this.createDefaultQuery();
-
-		return {
-			...defaultQuery,
-			...query,
-			type: "group",
-			id: query.id || defaultQuery.id,
-			conjunction: query.conjunction || defaultQuery.conjunction,
-			children: query.children || defaultQuery.children,
-			sortKey: query.sortKey || defaultQuery.sortKey,
-			sortDirection: query.sortDirection || defaultQuery.sortDirection,
-			groupKey: query.groupKey || defaultQuery.groupKey,
-		};
+		return normalizeFilterQuery(query, () => FilterUtils.generateId());
 	}
 
 	/**
