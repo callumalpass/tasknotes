@@ -199,13 +199,15 @@ Current examples:
 - `src/bases/basesUpdateEvents.ts` owns shared Bases task update/delete event
   relevance decisions, path-rename refresh planning, and rendered-card path
   extraction.
+- `src/bases/basesRefreshLifecycle.ts` owns shared Bases config-change refresh
+  hooks, data-update render debouncing, and explicit refresh debouncing.
 - `src/bases/basesToolbar.ts` owns shared Bases toolbar integration for the
   TaskNotes New button, including stale-button replacement and cleanup.
 - `src/bases/basesVisibleProperties.ts` owns shared Bases-to-TaskCard visible
   property mapping, fallback default-property selection, and display-label
   override assembly.
-- `src/bases/basesSearchUi.ts` owns shared Bases search empty-state detection
-  and no-results rendering.
+- `src/bases/basesSearchUi.ts` owns shared Bases search control creation,
+  empty-state detection, and no-results rendering.
 - `src/bases/basesSelectionUi.ts` owns shared Bases selection-mode DOM state,
   selected-card classes, keyboard and click selection decisions, selection
   indicator behavior, and default visible-task path extraction behind a narrow

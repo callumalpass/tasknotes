@@ -54,6 +54,12 @@ import {
 	updateBasesSelectionVisuals,
 	clearBasesSelectionVisuals,
 } from "./basesSelectionUi";
+import {
+	installBasesConfigRefreshHook,
+	scheduleBasesDataUpdateRender,
+	scheduleBasesDebouncedRefresh,
+	type BasesTimeoutScheduler,
+} from "./basesRefreshLifecycle";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
 type BasesEphemeralState = {
@@ -64,11 +70,6 @@ type BasesViewAction = {
 	name: string;
 	icon?: string;
 	callback: () => void;
-};
-
-type BasesConfigChangeController = {
-	onConfigChanged?: (...args: unknown[]) => unknown;
-	view?: unknown;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -131,28 +132,19 @@ export abstract class BasesViewBase extends Component {
 	}
 
 	private setupConfigChangeHook(controller: unknown): void {
-		if (!isRecord(controller) || typeof controller.onConfigChanged !== "function") {
-			return;
-		}
+		const cleanup = installBasesConfigRefreshHook({
+			controller,
+			view: this,
+			isConnected: () => Boolean(this.rootElement?.isConnected),
+			refresh: () => this.debouncedRefresh(),
+			scheduleTimeout: (callback, delayMs) => {
+				const scheduler = this.getTimeoutScheduler();
+				scheduler.setTimeout(callback, delayMs);
+			},
+		});
+		if (!cleanup) return;
 
-		const basesController = controller as BasesConfigChangeController;
-		const originalOnConfigChanged = basesController.onConfigChanged;
-		if (!originalOnConfigChanged) {
-			return;
-		}
-
-		const wrappedOnConfigChanged = (...args: unknown[]): unknown => {
-			const result = originalOnConfigChanged.apply(basesController, args);
-			this.scheduleConfigRefresh(basesController, result);
-			return result;
-		};
-
-		basesController.onConfigChanged = wrappedOnConfigChanged;
-		this.restoreConfigChangeHook = () => {
-			if (basesController.onConfigChanged === wrappedOnConfigChanged) {
-				basesController.onConfigChanged = originalOnConfigChanged;
-			}
-		};
+		this.restoreConfigChangeHook = cleanup;
 		if (typeof this.register === "function") {
 			this.register(() => {
 				this.restoreConfigChangeHook?.();
@@ -161,28 +153,12 @@ export abstract class BasesViewBase extends Component {
 		}
 	}
 
-	private scheduleConfigRefresh(
-		controller: BasesConfigChangeController,
-		result: unknown
-	): void {
-		const refresh = () => {
-			if (controller.view && controller.view !== this) {
-				return;
-			}
-			if (!this.rootElement?.isConnected) {
-				return;
-			}
-			this.debouncedRefresh();
-		};
-
-		const maybePromise = result as PromiseLike<unknown> | null;
-		if (maybePromise && typeof maybePromise.then === "function") {
-			void maybePromise.then(refresh, refresh);
-			return;
-		}
-
+	private getTimeoutScheduler(): BasesTimeoutScheduler {
 		const win = this.containerEl.ownerDocument.defaultView || window;
-		win.setTimeout(refresh, 0);
+		return {
+			setTimeout: (callback, delayMs) => win.setTimeout(callback, delayMs),
+			clearTimeout: (timer) => win.clearTimeout(timer),
+		};
 	}
 
 	/**
@@ -208,27 +184,25 @@ export abstract class BasesViewBase extends Component {
 			return;
 		}
 
-		// Debounce data updates to avoid freezing during typing
-		if (this.dataUpdateDebounceTimer) {
-			window.clearTimeout(this.dataUpdateDebounceTimer);
-		}
-
-		// Use correct window for pop-out window support
-		const win = this.containerEl.ownerDocument.defaultView || window;
-		this.dataUpdateDebounceTimer = win.setTimeout(() => {
-			this.dataUpdateDebounceTimer = null;
-			try {
-				this.updateRelevantPathsCache();
-				void this.render();
-			} catch (error) {
+		this.dataUpdateDebounceTimer = scheduleBasesDataUpdateRender({
+			currentTimer: this.dataUpdateDebounceTimer,
+			scheduler: this.getTimeoutScheduler(),
+			isConnected: () => Boolean(this.rootElement?.isConnected),
+			beforeRender: () => this.updateRelevantPathsCache(),
+			render: () => this.render(),
+			onTimerCleared: () => {
+				this.dataUpdateDebounceTimer = null;
+			},
+			onRenderError: (error) => {
 				this.logger.error("Render error during data update", {
 					category: "internal",
 					operation: "data-update-render",
 					error,
 				});
 				this.renderError(error as Error);
-			}
-		}, 500); // 500ms debounce for data updates
+			},
+			delayMs: 500,
+		});
 	}
 
 	/**
@@ -525,16 +499,15 @@ export abstract class BasesViewBase extends Component {
 	 * Timer is automatically cleaned up on component unload.
 	 */
 	protected debouncedRefresh(): void {
-		if (this.updateDebounceTimer) {
-			window.clearTimeout(this.updateDebounceTimer);
-		}
-
-		// Use correct window for pop-out window support
-		const win = this.containerEl.ownerDocument.defaultView || window;
-		this.updateDebounceTimer = win.setTimeout(() => {
-			void this.render();
-			this.updateDebounceTimer = null;
-		}, 300); // Increased from 150ms for better typing performance
+		this.updateDebounceTimer = scheduleBasesDebouncedRefresh({
+			currentTimer: this.updateDebounceTimer,
+			scheduler: this.getTimeoutScheduler(),
+			render: () => this.render(),
+			onTimerCleared: () => {
+				this.updateDebounceTimer = null;
+			},
+			delayMs: 300,
+		});
 
 		// Note: We don't need to explicitly register cleanup for this timer
 		// because it's short-lived (300ms) and clears itself. If the component
