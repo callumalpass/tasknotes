@@ -201,6 +201,9 @@ Current examples:
   extraction.
 - `src/bases/basesToolbar.ts` owns shared Bases toolbar integration for the
   TaskNotes New button, including stale-button replacement and cleanup.
+- `src/bases/basesVisibleProperties.ts` owns shared Bases-to-TaskCard visible
+  property mapping, fallback default-property selection, and display-label
+  override assembly.
 - `src/bases/basesSelectionUi.ts` owns shared Bases selection-mode DOM state,
   selected-card classes, keyboard and click selection decisions, selection
   indicator behavior, and default visible-task path extraction behind a narrow

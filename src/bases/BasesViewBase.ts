@@ -37,6 +37,10 @@ import {
 	injectBasesNewTaskButton,
 } from "./basesToolbar";
 import {
+	buildBasesVisibleProperties,
+	buildBasesVisiblePropertyLabels,
+} from "./basesVisibleProperties";
+import {
 	getVisibleTaskPathsFromBasesRoot,
 	handleBasesSelectionClick,
 	handleBasesSelectionKeyDown,
@@ -596,43 +600,29 @@ export abstract class BasesViewBase extends Component {
 	 * Uses BasesView's config API directly.
 	 */
 	protected getVisibleProperties(): string[] {
-		// Get ordered properties from Bases config (configured by user in Bases UI)
-		const basesPropertyIds = this.config.getOrder();
-		let visibleProperties = this.propertyMapper.mapVisibleProperties(basesPropertyIds);
-
-		// Fallback to plugin defaults if no properties configured
-		if (!visibleProperties || visibleProperties.length === 0) {
-			const internalDefaults = this.plugin.settings.defaultVisibleProperties || [
-				...DEFAULT_INTERNAL_VISIBLE_PROPERTIES,
-				"tags",
-			];
-			// Convert internal field names to user-configured property names
-			visibleProperties = convertInternalToUserProperties(internalDefaults, this.plugin);
-		}
-
-		return visibleProperties;
+		const fallbackInternalProperties = this.plugin.settings.defaultVisibleProperties || [
+			...DEFAULT_INTERNAL_VISIBLE_PROPERTIES,
+			"tags",
+		];
+		return buildBasesVisibleProperties({
+			basesPropertyIds: this.config.getOrder(),
+			propertyMapper: this.propertyMapper,
+			fallbackInternalProperties,
+			toUserProperties: (properties) =>
+				convertInternalToUserProperties([...properties], this.plugin),
+		});
 	}
 
 	/**
 	 * Get Bases-configured display labels keyed by the TaskCard property IDs we render.
 	 */
 	protected getVisiblePropertyLabels(): Record<string, string> {
-		const labels: Record<string, string> = {};
-		const basesPropertyIds = this.config.getOrder();
-
-		for (const basesPropertyId of basesPropertyIds) {
-			const taskCardPropertyId = this.propertyMapper.basesToTaskCardProperty(basesPropertyId);
-			const displayName = this.config.getDisplayName?.(basesPropertyId);
-			if (
-				taskCardPropertyId &&
-				typeof displayName === "string" &&
-				displayName.trim() !== ""
-			) {
-				labels[taskCardPropertyId] = displayName;
-			}
-		}
-
-		return labels;
+		return buildBasesVisiblePropertyLabels({
+			basesPropertyIds: this.config.getOrder(),
+			propertyMapper: this.propertyMapper,
+			getDisplayName: (propertyId) =>
+				this.config.getDisplayName?.(propertyId as BasesPropertyId),
+		});
 	}
 
 	protected buildTaskCardOptions(

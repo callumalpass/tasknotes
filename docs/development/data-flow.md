@@ -160,6 +160,8 @@ Refactor rule:
   planning, and rendered-card path extraction behind `basesUpdateEvents`
 - keep shared Bases toolbar DOM integration for the TaskNotes New button behind
   `basesToolbar`
+- keep shared Bases-to-TaskCard visible property mapping and display-label
+  override assembly behind `basesVisibleProperties`
 
 Current adapter seams include:
 
@@ -177,6 +179,7 @@ Current adapter seams include:
 - shared Bases copy/export table assembly
 - shared Bases update/delete event relevance planning
 - shared Bases toolbar New button integration
+- shared Bases visible-property and display-label mapping
 - Bases-backed task creation assembly
 - TaskCard property access
 - TaskCard relationship expansion rendering
