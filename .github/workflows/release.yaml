@@ -33,6 +33,8 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/}"
           VERSION="${VERSION#v}"
           echo "Setting version to: $VERSION"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "RELEASE_NOTES_PATH=docs/releases/$VERSION.md" >> "$GITHUB_ENV"
 
           # Update manifest.json with the tag version
           jq --arg version "$VERSION" '.version = $version' manifest.json > manifest.tmp
@@ -58,6 +60,14 @@ jobs:
           EOF
           npm run build  # This includes CSS building via npm run build-css
 
+      - name: Verify release notes
+        run: |
+          if [ ! -f "$RELEASE_NOTES_PATH" ]; then
+            echo "Release notes file not found: $RELEASE_NOTES_PATH"
+            exit 1
+          fi
+          echo "Using release notes from $RELEASE_NOTES_PATH"
+
       - name: Generate artifact attestations
         uses: actions/attest@v4
         with:
@@ -69,8 +79,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          name: ${{ env.VERSION }}
+          body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             main.js
             manifest.json
             styles.css
-          draft: true
+          draft: false
+          make_latest: true
