@@ -89,13 +89,26 @@ describe("taskModalFocusGuards", () => {
 
 		expect(elements.containerEl.classList.contains("is-mobile-keyboard-focused")).toBe(true);
 		expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith({
-			block: "center",
+			block: "nearest",
 			inline: "nearest",
-			behavior: "smooth",
+			behavior: "auto",
 		});
 
 		guards.destroy();
 
 		expect(elements.containerEl.classList.contains("is-mobile-keyboard-focused")).toBe(false);
+	});
+
+	it("can mark keyboard focus without forcing the title field to scroll", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const input = elements.contentEl.createEl("textarea");
+
+		guards.attachMobileKeyboardScrollGuard(input, { scrollOnFocus: false });
+		input.dispatchEvent(new Event("focus"));
+		jest.runOnlyPendingTimers();
+
+		expect(elements.containerEl.classList.contains("is-mobile-keyboard-focused")).toBe(true);
+		expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
 	});
 });

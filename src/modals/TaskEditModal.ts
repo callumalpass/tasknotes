@@ -57,6 +57,13 @@ export class TaskEditModal extends TaskModal {
 		return true;
 	}
 
+	protected focusTitleInput(): void {
+		if (this.isMobileLikeEnvironment()) {
+			return;
+		}
+		super.focusTitleInput();
+	}
+
 	async initializeFormData(): Promise<void> {
 		const formState = buildTaskEditFormStateFromTask({
 			app: this.app,

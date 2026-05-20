@@ -97,7 +97,10 @@ import {
 	type TaskModalTitleInputElement,
 } from "./taskModalTitleInput";
 import { collapseTaskModalDetailsLayout, expandTaskModalDetailsLayout } from "./taskModalLayout";
-import { TaskModalFocusGuards } from "./taskModalFocusGuards";
+import {
+	TaskModalFocusGuards,
+	type TaskModalMobileKeyboardScrollGuardOptions,
+} from "./taskModalFocusGuards";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskModal" });
@@ -534,6 +537,7 @@ export abstract class TaskModal extends Modal {
 			},
 			attachFocusScrollGuard: (input) => {
 				this.attachTitleFocusScrollGuard(input);
+				this.attachMobileKeyboardScrollGuard(input, { scrollOnFocus: false });
 			},
 		});
 	}
@@ -1059,8 +1063,11 @@ export abstract class TaskModal extends Modal {
 		this.focusGuards.attachTitleFocusScrollGuard(input);
 	}
 
-	protected attachMobileKeyboardScrollGuard(input: HTMLElement): void {
-		this.focusGuards.attachMobileKeyboardScrollGuard(input);
+	protected attachMobileKeyboardScrollGuard(
+		input: HTMLElement,
+		options?: TaskModalMobileKeyboardScrollGuardOptions
+	): void {
+		this.focusGuards.attachMobileKeyboardScrollGuard(input, options);
 	}
 
 	protected addProject(file: TAbstractFile): void {

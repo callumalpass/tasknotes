@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1903) Improved the Edit Task modal on iPhone-sized screens so opening a task no longer automatically focuses the title field, and the mobile layout gives the title, fields, and action buttons more usable space.
+  - Thanks to @3zra47 for reporting the issue and sharing the screen recording.
 - (#1909) Fixed compact Kanban task cards showing oversized status and priority indicators on touch devices.
   - Thanks to @pxxush for reporting the issue.
 - (#1908) Restored newly generated Calendar Bases to show the full day by default and inherit the calendar start/end settings instead of hard-coding 06:00-22:00.

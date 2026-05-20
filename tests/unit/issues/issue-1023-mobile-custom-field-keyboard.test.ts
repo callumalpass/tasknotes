@@ -99,9 +99,9 @@ describe("Issue #1023: mobile custom field keyboard visibility", () => {
 
 		expect(modal.containerEl.classList.contains("is-mobile-keyboard-focused")).toBe(true);
 		expect(scrollIntoView).toHaveBeenCalledWith({
-			block: "center",
+			block: "nearest",
 			inline: "nearest",
-			behavior: "smooth",
+			behavior: "auto",
 		});
 	});
 

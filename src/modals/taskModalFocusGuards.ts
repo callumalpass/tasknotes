@@ -12,6 +12,10 @@ export interface TaskModalScrollPosition {
 	scrollLeft: number;
 }
 
+export interface TaskModalMobileKeyboardScrollGuardOptions {
+	scrollOnFocus?: boolean;
+}
+
 export class TaskModalFocusGuards {
 	private readonly elements: TaskModalFocusGuardElements;
 	private guardedTitleInputs = new WeakSet<TaskModalTitleInputElement>();
@@ -63,14 +67,20 @@ export class TaskModalFocusGuards {
 		});
 	}
 
-	attachMobileKeyboardScrollGuard(input: HTMLElement): void {
+	attachMobileKeyboardScrollGuard(
+		input: HTMLElement,
+		options: TaskModalMobileKeyboardScrollGuardOptions = {}
+	): void {
 		if (this.guardedMobileKeyboardInputs.has(input)) return;
 		this.guardedMobileKeyboardInputs.add(input);
+		const shouldScrollOnFocus = options.scrollOnFocus ?? true;
 
 		const handleFocus = () => {
 			if (!this.isMobileLikeEnvironment()) return;
 			this.elements.containerEl.addClass("is-mobile-keyboard-focused");
-			this.scheduleMobileKeyboardScrollIntoView(input);
+			if (shouldScrollOnFocus) {
+				this.scheduleMobileKeyboardScrollIntoView(input);
+			}
 		};
 		const handleBlur = () => {
 			const win = input.ownerDocument.defaultView || window;
@@ -217,9 +227,9 @@ export class TaskModalFocusGuards {
 
 		const target = input.closest<HTMLElement>(".setting-item") ?? input;
 		target.scrollIntoView({
-			block: "center",
+			block: "nearest",
 			inline: "nearest",
-			behavior: "smooth",
+			behavior: "auto",
 		});
 
 		this.nudgeFocusedFieldInsideVisualViewport(target);
