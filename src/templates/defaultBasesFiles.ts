@@ -864,8 +864,6 @@ ${orderYaml}
       calendarView: "timeGridWeek"
       customDayCount: 3
       firstDay: 0
-      slotMinTime: "06:00:00"
-      slotMaxTime: "22:00:00"
       slotDuration: "00:30:00"
 `;
 

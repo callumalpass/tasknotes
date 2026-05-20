@@ -105,6 +105,18 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain("listDayCount: 7");
 	});
 
+	it("lets generated calendar views inherit app-level time bounds", () => {
+		const template = generateBasesFileTemplate(
+			"open-advanced-calendar-view",
+			createMockPlugin() as any
+		);
+
+		expect(template).toContain('calendarView: "timeGridWeek"');
+		expect(template).toContain('slotDuration: "00:30:00"');
+		expect(template).not.toContain("slotMinTime");
+		expect(template).not.toContain("slotMaxTime");
+	});
+
 	it("does not force the due-in agenda property when due dates are hidden by default", () => {
 		const template = generateBasesFileTemplate(
 			"open-agenda-view",
