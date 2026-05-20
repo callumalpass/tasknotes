@@ -48,10 +48,34 @@ describe("issue #1710 subtask project inheritance", () => {
 			parentFile
 		);
 
-		expect(values.projects).toEqual(["[[Tasks/Build login page]]"]);
+		expect(values.projects).toEqual(["[[Build login page]]"]);
 		expect(values.contexts).toBeUndefined();
 		expect(values.priority).toBeUndefined();
 		expect(values.tags).toBeUndefined();
+	});
+
+	it("uses Obsidian link text for the parent project link", () => {
+		const parentFile = new TFile("Tasks/Product Code Implementation.md");
+		const plugin = createPlugin() as never;
+		(plugin as any).app.metadataCache.fileToLinktext = jest
+			.fn()
+			.mockReturnValue("Product Code Implementation");
+
+		const values = buildSubtaskCreationPrePopulatedValues(
+			plugin,
+			createParentTask({
+				title: "Product Code Implementation",
+				path: "Tasks/Product Code Implementation.md",
+			}),
+			parentFile
+		);
+
+		expect((plugin as any).app.metadataCache.fileToLinktext).toHaveBeenCalledWith(
+			parentFile,
+			"Tasks/Product Code Implementation.md",
+			true
+		);
+		expect(values.projects).toEqual(["[[Product Code Implementation]]"]);
 	});
 
 	it("prefills a new subtask with the parent task's projects and parent link when inheritance is enabled", () => {
@@ -68,7 +92,7 @@ describe("issue #1710 subtask project inheritance", () => {
 
 		expect(values.projects).toEqual([
 			"[[Projects/YGPT Dashboard]]",
-			"[[Tasks/Build login page]]",
+			"[[Build login page]]",
 		]);
 	});
 
@@ -80,7 +104,7 @@ describe("issue #1710 subtask project inheritance", () => {
 			parentFile
 		);
 
-		expect(values.projects).toEqual(["[[Tasks/Build login page]]"]);
+		expect(values.projects).toEqual(["[[Build login page]]"]);
 	});
 
 	it("does not duplicate the parent link if it is already one of the parent projects", () => {
@@ -92,14 +116,14 @@ describe("issue #1710 subtask project inheritance", () => {
 				},
 			}) as never,
 			createParentTask({
-				projects: ["[[Projects/YGPT Dashboard]]", "[[Tasks/Build login page]]"],
+				projects: ["[[Projects/YGPT Dashboard]]", "[[Build login page]]"],
 			}),
 			parentFile
 		);
 
 		expect(values.projects).toEqual([
 			"[[Projects/YGPT Dashboard]]",
-			"[[Tasks/Build login page]]",
+			"[[Build login page]]",
 		]);
 	});
 
@@ -128,8 +152,8 @@ describe("issue #1710 subtask project inheritance", () => {
 			"Tasks/Build login page.md"
 		);
 		expect(values.projects).toEqual([
-			"[[Areas/YGPT Dashboard]]",
-			"[[Tasks/Build login page]]",
+			"[[YGPT Dashboard]]",
+			"[[Build login page]]",
 		]);
 	});
 });

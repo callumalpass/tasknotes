@@ -28,3 +28,5 @@ Example:
 
 - (#1911) Fixed recurrence choices starting from today instead of the selected calendar date when creating a task from Calendar view.
   - Thanks to @mikhailmarka for reporting.
+- (#1912) Fixed "Create subtask" pre-filling the parent task's full folder path in the Projects field instead of using the normal Obsidian link text.
+  - Thanks to @pkuehne for reporting.

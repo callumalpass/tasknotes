@@ -30,16 +30,19 @@ function uniqueNonEmptyStrings(values: string[]): string[] {
 	return uniqueValues;
 }
 
-function encodeMarkdownLinkPath(path: string): string {
-	return encodeURI(path).replace(/\(/g, "%28").replace(/\)/g, "%29");
-}
-
-function buildStableFileLink(plugin: TaskNotesPlugin, file: TFile): string {
-	if (plugin.settings.useFrontmatterMarkdownLinks) {
-		return `[${file.basename}](${encodeMarkdownLinkPath(file.path)})`;
-	}
-
-	return `[[${file.path.replace(/\.md$/i, "")}]]`;
+function buildStableFileLink(
+	plugin: TaskNotesPlugin,
+	file: TFile,
+	sourcePath: string
+): string {
+	return generateLink(
+		plugin.app,
+		file,
+		sourcePath,
+		"",
+		"",
+		plugin.settings.useFrontmatterMarkdownLinks
+	);
 }
 
 function resolveProjectReference(
@@ -55,7 +58,7 @@ function resolveProjectReference(
 	const linkPath = parseLinkToPath(trimmedReference);
 	const resolvedFile = plugin.app.metadataCache.getFirstLinkpathDest?.(linkPath, sourcePath);
 	if (resolvedFile instanceof TFile) {
-		return buildStableFileLink(plugin, resolvedFile);
+		return buildStableFileLink(plugin, resolvedFile, sourcePath);
 	}
 
 	return trimmedReference;
@@ -144,7 +147,7 @@ export function buildSubtaskCreationPrePopulatedValues(
 	const shouldInheritParentProperties = Boolean(
 		plugin.settings.taskCreationDefaults?.inheritParentTaskProperties
 	);
-	const projectReference = buildStableFileLink(plugin, parentFile);
+	const projectReference = buildStableFileLink(plugin, parentFile, parentTask.path);
 	const parentTags = Array.isArray(parentTask.tags) ? parentTask.tags : [];
 	const parentProjects = shouldInheritParentProperties
 		? Array.isArray(parentTask.projects)
