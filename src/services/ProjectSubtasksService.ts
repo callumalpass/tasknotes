@@ -60,75 +60,6 @@ export class ProjectSubtasksService {
 		return linkingSources;
 	}
 
-	private getMarkdownFiles(): TFile[] {
-		if (typeof this.plugin.app.vault.getMarkdownFiles !== "function") {
-			return [];
-		}
-
-		return this.plugin.app.vault.getMarkdownFiles();
-	}
-
-	private getTaskProjectValues(sourceFilePath: string): string[] {
-		const sourceFile = this.plugin.app.vault.getAbstractFileByPath(sourceFilePath);
-		const metadata =
-			sourceFile instanceof TFile
-				? this.plugin.app.metadataCache.getFileCache(sourceFile)
-				: this.plugin.app.metadataCache.getCache(sourceFilePath);
-
-		if (!metadata?.frontmatter) return [];
-		if (
-			this.plugin.cacheManager?.isTaskFile &&
-			!this.plugin.cacheManager.isTaskFile(metadata.frontmatter)
-		) {
-			return [];
-		}
-
-		const projectsFieldName = this.plugin.fieldMapper.toUserField("projects");
-		const projects = metadata.frontmatter[projectsFieldName];
-
-		if (Array.isArray(projects)) {
-			return projects.filter((project): project is string => typeof project === "string");
-		}
-
-		if (typeof projects === "string") {
-			return [projects];
-		}
-
-		return [];
-	}
-
-	private resolveProjectReference(project: string, sourceFilePath: string): TFile | null {
-		const trimmedProject = project.trim();
-		if (!trimmedProject) return null;
-
-		// Parse the link to extract the path (handles wikilinks, markdown links, and angle paths)
-		const linkPath = parseLinkToPath(trimmedProject);
-
-		// Skip plain text project names; this service only follows actual links.
-		if (
-			linkPath === trimmedProject &&
-			!trimmedProject.startsWith("[[") &&
-			!trimmedProject.startsWith("[") &&
-			!trimmedProject.startsWith("<")
-		) {
-			return null;
-		}
-
-		return this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourceFilePath);
-	}
-
-	private async getFilesReferencingProjectInFrontmatter(projectPath: string): Promise<string[]> {
-		const sources: string[] = [];
-
-		for (const file of this.getMarkdownFiles()) {
-			if (await this.isLinkFromProjectsField(file.path, projectPath)) {
-				sources.push(file.path);
-			}
-		}
-
-		return sources;
-	}
-
 	/**
 	 * Check for unresolved project references (broken links)
 	 * Useful for debugging and maintenance
@@ -151,10 +82,7 @@ export class ProjectSubtasksService {
 	 */
 	async getTasksLinkedToProject(projectFile: TFile): Promise<TaskInfo[]> {
 		try {
-			const linkingSources = new Set([
-				...this.getFilesLinkingToProject(projectFile.path),
-				...(await this.getFilesReferencingProjectInFrontmatter(projectFile.path)),
-			]);
+			const linkingSources = this.getFilesLinkingToProject(projectFile.path);
 			const linkedTasks: TaskInfo[] = [];
 
 			for (const sourcePath of linkingSources) {
@@ -195,9 +123,36 @@ export class ProjectSubtasksService {
 		targetFilePath: string
 	): Promise<boolean> {
 		try {
+			const sourceFile = this.plugin.app.vault.getAbstractFileByPath(sourceFilePath);
+			if (!(sourceFile instanceof TFile)) return false;
+
+			const metadata = this.plugin.app.metadataCache.getFileCache(sourceFile);
+
+			// Use the user's configured field mapping for projects
+			const projectsFieldName = this.plugin.fieldMapper.toUserField("projects");
+			if (!metadata?.frontmatter?.[projectsFieldName]) return false;
+
+			const projects = metadata.frontmatter[projectsFieldName];
+			if (!Array.isArray(projects)) return false;
+
 			// Check if any project reference resolves to our target
-			for (const project of this.getTaskProjectValues(sourceFilePath)) {
-				const resolvedFile = this.resolveProjectReference(project, sourceFilePath);
+			for (const project of projects) {
+				if (!project || typeof project !== "string") continue;
+
+				// Parse the link to extract the path (handles both wikilinks and markdown links)
+				const linkPath = parseLinkToPath(project);
+
+				// Skip if not a link format
+				if (linkPath === project && !project.startsWith("[[")) {
+					continue; // Plain text, not a link
+				}
+
+				// Resolve the link to get the actual file
+				const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
+					linkPath,
+					sourceFilePath
+				);
+
 				if (resolvedFile && resolvedFile.path === targetFilePath) {
 					return true;
 				}
@@ -237,18 +192,45 @@ export class ProjectSubtasksService {
 		this.stats.indexBuilds++;
 
 		try {
-			const sourcePaths = new Set<string>(Object.keys(this.plugin.app.metadataCache.resolvedLinks));
+			const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
 			const projectPaths = new Set<string>();
 
-			for (const file of this.getMarkdownFiles()) {
-				sourcePaths.add(file.path);
-			}
+			// Single pass through all resolved links to find project targets
+			for (const [sourcePath, targets] of Object.entries(resolvedLinks)) {
+				if (!targets) continue;
 
-			// Single pass through candidate task files to find project targets.
-			for (const sourcePath of sourcePaths) {
+				// Check if source has projects frontmatter
+				const metadata = this.plugin.app.metadataCache.getCache(sourcePath);
+
+				// Validate that the source file is actually a task (issue #953)
+				// Only tasks should be able to create project relationships
+				if (!metadata?.frontmatter) continue;
+				if (!this.plugin.cacheManager.isTaskFile(metadata.frontmatter)) continue;
+
+				// Use the user's configured field mapping for projects
+				const projectsFieldName = this.plugin.fieldMapper.toUserField("projects");
+				const projects = metadata.frontmatter[projectsFieldName];
+
+				if (!Array.isArray(projects)) continue;
+
 				// Check if any project reference resolves to our target
-				for (const project of this.getTaskProjectValues(sourcePath)) {
-					const resolvedFile = this.resolveProjectReference(project, sourcePath);
+				for (const project of projects) {
+					if (!project || typeof project !== "string") continue;
+
+					// Parse the link to extract the path (handles both wikilinks and markdown links)
+					const linkPath = parseLinkToPath(project);
+
+					// Skip if not a link format
+					if (linkPath === project && !project.startsWith("[[")) {
+						continue; // Plain text, not a link
+					}
+
+					// Resolve the link to get the actual file
+					const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
+						linkPath,
+						sourcePath
+					);
+
 					if (resolvedFile) {
 						projectPaths.add(resolvedFile.path);
 					}

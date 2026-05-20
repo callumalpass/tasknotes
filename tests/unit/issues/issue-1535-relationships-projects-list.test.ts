@@ -42,10 +42,29 @@ function createMockPlugin() {
 }
 
 describe("Issue #1535: relationships project filters handle single Link values", () => {
-	it("wraps the Subtasks projects property with list() before contains()", () => {
+	it("normalizes the Subtasks projects property before contains()", () => {
 		const template = generateBasesFileTemplate("relationships", createMockPlugin() as any);
+		const normalizedProjectLink = String.raw`file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()`;
 
-		expect(template).toContain("list(note.projects).contains(this.file.asLink())");
+		expect(template).toContain(
+			`file.hasLink(this.file) && list(note.projects).map(${normalizedProjectLink}).contains(this.file.asLink())`
+		);
 		expect(template).not.toContain("note.projects.contains(this.file.asLink())");
+	});
+});
+
+describe("Issue #1902: relationships project filters handle Markdown project links", () => {
+	it("normalizes task project entries in both relationship directions", () => {
+		const template = generateBasesFileTemplate("relationships", createMockPlugin() as any);
+		const normalizedProjectLink = String.raw`file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()`;
+
+		expect(template).toContain(
+			`file.hasLink(this.file) && list(note.projects).map(${normalizedProjectLink}).contains(this.file.asLink())`
+		);
+		expect(template).toContain(
+			`list(this.projects).map(${normalizedProjectLink}).contains(file.asLink())`
+		);
+		expect(template).not.toContain("list(note.projects).contains(this.file.asLink())");
+		expect(template).not.toContain("list(this.projects).contains(file.asLink())");
 	});
 });

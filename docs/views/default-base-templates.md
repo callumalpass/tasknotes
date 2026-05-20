@@ -697,7 +697,7 @@ views:
     filters:
       and:
         - file.hasTag("task")
-        - note.projects.contains(this.file.asLink())
+        - file.hasLink(this.file) && list(note.projects).map(file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(this.file.asLink())
     order:
       - status
       - priority
@@ -721,7 +721,7 @@ views:
     name: "Projects"
     filters:
       and:
-        - list(this.projects).contains(file.asLink())
+        - list(this.projects).map(file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(file.asLink())
     order:
       - status
       - priority

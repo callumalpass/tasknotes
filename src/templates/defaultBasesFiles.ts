@@ -32,6 +32,10 @@ function formatDependencyEntryLinkExpression(entryExpression: string): string {
 	return `${formatDependencyEntryFileExpression(entryExpression)}.asLink()`;
 }
 
+function formatProjectEntryLinkExpression(entryExpression: string): string {
+	return `file(${entryExpression}.replace(/^\\[[^\\]]+\\]\\((.*)\\)$/, "$1").replace(/%20/g, " ")).asLink()`;
+}
+
 /**
  * Generate a task filter expression based on the task identification method
  * Returns the filter condition string (not the full YAML structure)
@@ -928,7 +932,7 @@ views:
     filters:
       and:
         - ${taskFilterCondition}
-        - list(note.${projectsProperty}).contains(this.file.asLink())
+        - file.hasLink(this.file) && list(note.${projectsProperty}).map(${formatProjectEntryLinkExpression("value")}).contains(this.file.asLink())
     order:
 ${orderYaml}
     sort:
@@ -941,7 +945,7 @@ ${orderYaml}
     name: "Projects"
     filters:
       and:
-        - list(this.${projectsProperty}).contains(file.asLink())
+        - list(this.${projectsProperty}).map(${formatProjectEntryLinkExpression("value")}).contains(file.asLink())
     order:
 ${orderYaml}
   - type: tasknotesTaskList
