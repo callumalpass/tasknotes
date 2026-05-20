@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1909) Fixed compact Kanban task cards showing oversized status and priority indicators on touch devices.
+  - Thanks to @pxxush for reporting the issue.
 - (#1908) Restored newly generated Calendar Bases to show the full day by default and inherit the calendar start/end settings instead of hard-coding 06:00-22:00.
   - Thanks to @AndreMonthy for reporting the issue.
 - (#1907) Fixed calendar time labels drifting away from the left axis in narrow sidebar calendar views.

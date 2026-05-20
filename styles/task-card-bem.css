@@ -1709,17 +1709,30 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__context-m
 .tasknotes-plugin .task-card--layout-compact .task-card__status-dot {
     width: 14px;
     height: 14px;
+    min-width: 14px;
+    min-height: 14px;
+}
+
+.tasknotes-plugin .task-card--layout-compact .task-card__status-dot--icon svg {
+    width: 100%;
+    height: 100%;
 }
 
 .tasknotes-plugin .task-card--layout-compact .task-card__priority-dot {
+    display: inline-block;
     width: 9px;
     height: 9px;
+    min-width: 9px;
+    min-height: 9px;
     margin: 0 var(--tn-spacing-xs);
 }
 
 .tasknotes-plugin .task-card--layout-compact .task-card__priority-dot--icon {
+    display: inline-flex;
     width: 16px;
     height: 16px;
+    min-width: 16px;
+    min-height: 16px;
 }
 
 .tasknotes-plugin .task-card--layout-compact .task-card__badges {
