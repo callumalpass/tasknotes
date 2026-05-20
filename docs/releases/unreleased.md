@@ -34,6 +34,9 @@ Example:
   - Thanks to @kmaustral for reporting the issue.
 - (#1906) Fixed NLP priority shortcuts leaving partial text in task titles when custom priority values include words like `high` or `low`.
   - Thanks to @RumiaKitinari for reporting the issue.
+- (#1904) Fixed long tags in task cards wrapping instead of forcing horizontal scrolling in TaskNotes Bases views and note cards.
+  - Long tag pills can now wrap across lines and break within very long tag names on narrow screens.
+  - Thanks to @3zra47 for reporting the issue.
 - (#1901) Fixed the task context menu creating an `undefined` property when adding or removing tags.
   - Hardened task property updates so invalid frontmatter property names are rejected instead of written.
   - Thanks to @mgrecar for reporting the issue.
