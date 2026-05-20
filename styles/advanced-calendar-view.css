@@ -1081,6 +1081,7 @@
     color: var(--text-muted);
     padding: 0;
     text-align: right;
+    width: 4rem;
 }
 
 .advanced-calendar-view .fc-timegrid-slot-label-frame {
