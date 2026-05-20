@@ -85,5 +85,4 @@ jobs:
             main.js
             manifest.json
             styles.css
-          draft: false
-          make_latest: true
+          draft: true
