@@ -60,6 +60,13 @@ interface MonthDayOption {
 	text: string;
 }
 
+export interface BuildRecurrenceOptionsInput {
+	currentValue?: string;
+	scheduledDate?: string;
+	calendarLocale?: string;
+	translate: (key: TranslationKey, vars?: Record<string, string>) => string;
+}
+
 const RECURRENCE_WEEKDAYS: RecurrenceWeekdayDefinition[] = [
 	{ dateIndex: 0, code: "SU", nameKey: "sunday", shortKey: "sun" },
 	{ dateIndex: 1, code: "MO", nameKey: "monday", shortKey: "mon" },
@@ -168,6 +175,208 @@ export function getWeekdayOnlyRRuleCodes(locale?: string): RecurrenceWeekdayCode
 
 export function buildWeekdaysOnlyRecurrenceRule(dtstart: string, locale?: string): string {
 	return `DTSTART:${dtstart};FREQ=WEEKLY;BYDAY=${getWeekdayOnlyRRuleCodes(locale).join(",")}`;
+}
+
+export function getRecurrenceStartDate(scheduledDate?: string, fallbackDate = new Date()): Date {
+	const dateMatch = scheduledDate?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+	if (!dateMatch) {
+		return fallbackDate;
+	}
+
+	const year = parseInt(dateMatch[1], 10);
+	const month = parseInt(dateMatch[2], 10);
+	const day = parseInt(dateMatch[3], 10);
+	const parsedDate = new Date(year, month - 1, day);
+
+	if (
+		parsedDate.getFullYear() !== year ||
+		parsedDate.getMonth() !== month - 1 ||
+		parsedDate.getDate() !== day
+	) {
+		return fallbackDate;
+	}
+
+	return parsedDate;
+}
+
+export function formatDateForDTSTART(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	return `${year}${month}${day}`;
+}
+
+export function formatDateForInput(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
+function getScheduledDateTimePart(scheduledDate?: string): string | undefined {
+	if (!scheduledDate?.includes("T")) {
+		return undefined;
+	}
+
+	const timeMatch = scheduledDate.match(/T(\d{2}):(\d{2})/);
+	if (!timeMatch) {
+		return undefined;
+	}
+
+	return `${timeMatch[1]}${timeMatch[2]}00Z`;
+}
+
+function getOrdinal(n: number): string {
+	const s = ["th", "st", "nd", "rd"];
+	const v = n % 100;
+	return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+export function buildRecurrenceOptions(input: BuildRecurrenceOptionsInput): RecurrenceOption[] {
+	const options: RecurrenceOption[] = [];
+	const startDate = getRecurrenceStartDate(input.scheduledDate);
+
+	// Get selected day/month/year context for smart defaults
+	const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+	const monthNames = [
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December",
+	];
+	const currentDay = dayNames[startDate.getDay()];
+	const currentDate = startDate.getDate();
+	const currentMonth = startDate.getMonth() + 1; // 1-based
+	const currentMonthName = monthNames[startDate.getMonth()];
+	const dayName = startDate.toLocaleDateString(input.calendarLocale || undefined, {
+		weekday: "long",
+	});
+
+	// Format selected date as DTSTART, preserving existing time if available
+	let startDTSTART = formatDateForDTSTART(startDate);
+
+	// Priority 1: Preserve time from existing recurrence
+	if (input.currentValue) {
+		const existingDtstartMatch = input.currentValue.match(
+			/DTSTART:(\d{8}(?:T\d{6}Z?)?)/
+		);
+		if (existingDtstartMatch && existingDtstartMatch[1].includes("T")) {
+			// Extract time part from existing DTSTART
+			const existingTime = existingDtstartMatch[1].split("T")[1];
+			startDTSTART = `${startDTSTART}T${existingTime}`;
+		}
+	}
+	// Priority 2: If no existing recurrence time, check task's scheduled date
+	else {
+		const scheduledTime = getScheduledDateTimePart(input.scheduledDate);
+		if (scheduledTime) {
+			startDTSTART = `${startDTSTART}T${scheduledTime}`;
+		}
+	}
+
+	// Daily
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.daily"),
+		value: `DTSTART:${startDTSTART};FREQ=DAILY;INTERVAL=1`,
+		icon: "calendar-days",
+	});
+
+	// Weekly (for selected day of week)
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.weeklyOn", { day: dayName }),
+		value: `DTSTART:${startDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
+		icon: "calendar",
+	});
+
+	// Every 2 weeks (for selected day of week)
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.everyTwoWeeksOn", {
+			day: dayName,
+		}),
+		value: `DTSTART:${startDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
+		icon: "calendar",
+	});
+
+	// Monthly (on selected date)
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.monthlyOnThe", {
+			ordinal: getOrdinal(currentDate),
+		}),
+		value: `DTSTART:${startDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
+		icon: "calendar-range",
+	});
+
+	// Every 3 months (on selected date)
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.everyThreeMonthsOnThe", {
+			ordinal: getOrdinal(currentDate),
+		}),
+		value: `DTSTART:${startDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
+		icon: "calendar-range",
+	});
+
+	// Yearly (on selected date)
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.yearlyOn", {
+			month: currentMonthName,
+			ordinal: getOrdinal(currentDate),
+		}),
+		value: `DTSTART:${startDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
+		icon: "calendar-clock",
+	});
+
+	// Weekdays only
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.weekdaysOnly"),
+		value: buildWeekdaysOnlyRecurrenceRule(startDTSTART, input.calendarLocale),
+		icon: "briefcase",
+	});
+
+	// Separator (visual only - will be filtered out)
+	options.push({
+		label: "─────────",
+		value: "",
+		icon: undefined,
+	});
+
+	// Completion-based options
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.dailyAfterCompletion"),
+		value: `DTSTART:${startDTSTART};FREQ=DAILY;INTERVAL=1`,
+		icon: "calendar-days",
+		anchor: "completion",
+	});
+
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.every3DaysAfterCompletion"),
+		value: `DTSTART:${startDTSTART};FREQ=DAILY;INTERVAL=3`,
+		icon: "calendar-days",
+		anchor: "completion",
+	});
+
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.weeklyAfterCompletion"),
+		value: `DTSTART:${startDTSTART};FREQ=WEEKLY;INTERVAL=1`,
+		icon: "calendar",
+		anchor: "completion",
+	});
+
+	options.push({
+		label: input.translate("components.recurrenceContextMenu.monthlyAfterCompletion"),
+		value: `DTSTART:${startDTSTART};FREQ=MONTHLY;INTERVAL=1`,
+		icon: "calendar-range",
+		anchor: "completion",
+	});
+
+	return options;
 }
 
 export function buildCustomRecurrenceRule(input: CustomRecurrenceRuleInput): string {
@@ -343,165 +552,12 @@ export class RecurrenceContextMenu {
 	}
 
 	private getRecurrenceOptions(): RecurrenceOption[] {
-		const options: RecurrenceOption[] = [];
-		const today = new Date();
-
-		// Get current day/month/year context for smart defaults
-		const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-		const monthNames = [
-			"January",
-			"February",
-			"March",
-			"April",
-			"May",
-			"June",
-			"July",
-			"August",
-			"September",
-			"October",
-			"November",
-			"December",
-		];
-		const currentDay = dayNames[today.getDay()];
-		const currentDate = today.getDate();
-		const currentMonth = today.getMonth() + 1; // 1-based
-		const currentMonthName = monthNames[today.getMonth()];
-		const calendarLocale = getPluginCalendarLocale(this.options.plugin);
-		const dayName = today.toLocaleDateString(calendarLocale || undefined, { weekday: "long" });
-
-		// Format today as DTSTART, preserving existing time if available
-		let todayDTSTART = this.formatDateForDTSTART(today);
-
-		// Priority 1: Preserve time from existing recurrence
-		if (this.options.currentValue) {
-			const existingDtstartMatch = this.options.currentValue.match(
-				/DTSTART:(\d{8}(?:T\d{6}Z?)?)/
-			);
-			if (existingDtstartMatch && existingDtstartMatch[1].includes("T")) {
-				// Extract time part from existing DTSTART
-				const existingTime = existingDtstartMatch[1].split("T")[1];
-				todayDTSTART = `${todayDTSTART}T${existingTime}`;
-			}
-		}
-		// Priority 2: If no existing recurrence time, check task's scheduled date
-		else if (this.options.scheduledDate && this.options.scheduledDate.includes("T")) {
-			// Extract time from scheduled date (format: YYYY-MM-DDTHH:mm or similar)
-			const timeMatch = this.options.scheduledDate.match(/T(\d{2}):(\d{2})/);
-			if (timeMatch) {
-				const hours = timeMatch[1];
-				const minutes = timeMatch[2];
-				todayDTSTART = `${todayDTSTART}T${hours}${minutes}00Z`;
-			}
-		}
-
-		// Daily
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.daily"),
-			value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=1`,
-			icon: "calendar-days",
+		return buildRecurrenceOptions({
+			currentValue: this.options.currentValue,
+			scheduledDate: this.options.scheduledDate,
+			calendarLocale: getPluginCalendarLocale(this.options.plugin),
+			translate: this.translate,
 		});
-
-		// Weekly (for current day of week)
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.weeklyOn", { day: dayName }),
-			value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
-			icon: "calendar",
-		});
-
-		// Every 2 weeks (for current day of week)
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.everyTwoWeeksOn", {
-				day: dayName,
-			}),
-			value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
-			icon: "calendar",
-		});
-
-		// Monthly (on current date)
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.monthlyOnThe", {
-				ordinal: this.getOrdinal(currentDate),
-			}),
-			value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
-			icon: "calendar-range",
-		});
-
-		// Every 3 months (on current date)
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.everyThreeMonthsOnThe", {
-				ordinal: this.getOrdinal(currentDate),
-			}),
-			value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
-			icon: "calendar-range",
-		});
-
-		// Yearly (on current date)
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.yearlyOn", {
-				month: currentMonthName,
-				ordinal: this.getOrdinal(currentDate),
-			}),
-			value: `DTSTART:${todayDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
-			icon: "calendar-clock",
-		});
-
-		// Weekdays only
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.weekdaysOnly"),
-			value: buildWeekdaysOnlyRecurrenceRule(todayDTSTART, calendarLocale),
-			icon: "briefcase",
-		});
-
-		// Separator (visual only - will be filtered out)
-		options.push({
-			label: "─────────",
-			value: "",
-			icon: undefined,
-		});
-
-		// Completion-based options
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.dailyAfterCompletion"),
-			value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=1`,
-			icon: "calendar-days",
-			anchor: "completion",
-		});
-
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.every3DaysAfterCompletion"),
-			value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=3`,
-			icon: "calendar-days",
-			anchor: "completion",
-		});
-
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.weeklyAfterCompletion"),
-			value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=1`,
-			icon: "calendar",
-			anchor: "completion",
-		});
-
-		options.push({
-			label: this.translate("components.recurrenceContextMenu.monthlyAfterCompletion"),
-			value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=1`,
-			icon: "calendar-range",
-			anchor: "completion",
-		});
-
-		return options;
-	}
-
-	private formatDateForDTSTART(date: Date): string {
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, "0");
-		const day = String(date.getDate()).padStart(2, "0");
-		return `${year}${month}${day}`;
-	}
-
-	private getOrdinal(n: number): string {
-		const s = ["th", "st", "nd", "rd"];
-		const v = n % 100;
-		return n + (s[(v - 20) % 10] || s[v] || s[0]);
 	}
 
 	private showCustomRecurrenceModal(): void {
@@ -563,8 +619,8 @@ class CustomRecurrenceModal extends Modal {
 
 	private parseCurrentValue(): void {
 		if (!this.currentValue) {
-			// Set default DTSTART to today
-			this.dtstart = this.formatTodayForInput();
+			// Set default DTSTART to the task's scheduled date when available.
+			this.dtstart = formatDateForInput(getRecurrenceStartDate(this.scheduledDate));
 
 			// Check if we should preserve time from scheduled date
 			if (this.scheduledDate && this.scheduledDate.includes("T")) {
@@ -603,8 +659,10 @@ class CustomRecurrenceModal extends Modal {
 						if (!isNaN(parsed.getTime())) {
 							this.dtstart = value; // Already in YYYY-MM-DD format
 						} else {
-							// Invalid date, use today as fallback
-							this.dtstart = this.formatTodayForInput();
+							// Invalid date, use the task's scheduled date when available.
+							this.dtstart = formatDateForInput(
+								getRecurrenceStartDate(this.scheduledDate)
+							);
 						}
 					}
 					break;
@@ -661,20 +719,13 @@ class CustomRecurrenceModal extends Modal {
 		}
 	}
 
-	private formatTodayForInput(): string {
-		const today = new Date();
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, "0");
-		const day = String(today.getDate()).padStart(2, "0");
-		return `${year}-${month}-${day}`;
-	}
-
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
 		const calendarLocale = getPluginCalendarLocale(this.plugin);
 		const firstDay = this.plugin.settings?.calendarViewSettings?.firstDay;
 		const orderedWeekdays = getOrderedRecurrenceWeekdays(firstDay, calendarLocale);
+		const recurrenceStartDate = getRecurrenceStartDate(this.scheduledDate);
 
 		contentEl.createEl("h2", {
 			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.title"),
@@ -838,7 +889,7 @@ class CustomRecurrenceModal extends Modal {
 			const dayValue = parseInt(dayOption.value, 10);
 			if (this.byMonthDay.length > 0 && this.byMonthDay[0] === dayValue) {
 				option.selected = true;
-			} else if (this.byMonthDay.length === 0 && dayValue === new Date().getDate()) {
+			} else if (this.byMonthDay.length === 0 && dayValue === recurrenceStartDate.getDate()) {
 				option.selected = true;
 			}
 		}
@@ -905,8 +956,9 @@ class CustomRecurrenceModal extends Modal {
 				`components.recurrenceContextMenu.customRecurrenceModal.weekdays.${day.nameKey}`
 			),
 		}));
-		const today = new Date();
-		const currentDayCode = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"][today.getDay()];
+		const currentDayCode = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"][
+			recurrenceStartDate.getDay()
+		];
 		dayOptions.forEach((opt) => {
 			const option = monthlyDaySelect.createEl("option", {
 				value: opt.value,
@@ -981,7 +1033,10 @@ class CustomRecurrenceModal extends Modal {
 			});
 			if (this.byMonth.length > 0 && this.byMonth[0] === index + 1) {
 				option.selected = true;
-			} else if (this.byMonth.length === 0 && index + 1 === new Date().getMonth() + 1) {
+			} else if (
+				this.byMonth.length === 0 &&
+				index + 1 === recurrenceStartDate.getMonth() + 1
+			) {
 				option.selected = true;
 			}
 		});
@@ -998,7 +1053,7 @@ class CustomRecurrenceModal extends Modal {
 			const dayValue = parseInt(dayOption.value, 10);
 			if (this.byMonthDay.length > 0 && this.byMonthDay[0] === dayValue) {
 				option.selected = true;
-			} else if (this.byMonthDay.length === 0 && dayValue === new Date().getDate()) {
+			} else if (this.byMonthDay.length === 0 && dayValue === recurrenceStartDate.getDate()) {
 				option.selected = true;
 			}
 		}
@@ -1072,7 +1127,10 @@ class CustomRecurrenceModal extends Modal {
 			});
 			if (this.byMonth.length > 0 && this.byMonth[0] === index + 1) {
 				option.selected = true;
-			} else if (this.byMonth.length === 0 && index + 1 === new Date().getMonth() + 1) {
+			} else if (
+				this.byMonth.length === 0 &&
+				index + 1 === recurrenceStartDate.getMonth() + 1
+			) {
 				option.selected = true;
 			}
 		});

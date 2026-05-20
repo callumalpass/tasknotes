@@ -23,3 +23,8 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1911) Fixed recurrence choices starting from today instead of the selected calendar date when creating a task from Calendar view.
+  - Thanks to @mikhailmarka for reporting.
