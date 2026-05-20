@@ -99,6 +99,19 @@ describe("Issue #1639: Task link overlay ignores alias setting in reading mode",
 		expect(shouldSkip).toBe(false);
 	});
 
+	it("keeps generated markdown filename labels eligible for overlay", () => {
+		const shouldSkip = shouldSkipReadingModeTaskLinkOverlay({
+			disableOverlayOnAlias: true,
+			hasExplicitAlias: false,
+			linkText: "task-202601051431",
+			originalLinkPath: "../../tasks/2026/01/task-202601051431.md",
+			taskPath: "tasks/2026/01/task-202601051431.md",
+			taskTitle: "Write release notes",
+		});
+
+		expect(shouldSkip).toBe(false);
+	});
+
 	it("keeps the legacy fallback for custom rendered link text when source metadata is unavailable", () => {
 		const shouldSkip = shouldSkipReadingModeTaskLinkOverlay({
 			disableOverlayOnAlias: true,

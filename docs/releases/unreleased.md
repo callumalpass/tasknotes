@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1916) Fixed Markdown task links using Obsidian's generated filename label instead of the TaskNote title in the task link overlay.
+  - Thanks to @minchinweb for reporting.
 - (#1911) Fixed recurrence choices starting from today instead of the selected calendar date when creating a task from Calendar view.
   - Thanks to @mikhailmarka for reporting.
 - (#1912) Fixed "Create subtask" pre-filling the parent task's full folder path in the Projects field instead of using the normal Obsidian link text.

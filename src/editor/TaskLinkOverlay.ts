@@ -18,6 +18,7 @@ import {
 import { TaskLinkDetectionService } from "../services/TaskLinkDetectionService";
 import { TaskLinkWidget } from "./TaskLinkWidget";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { resolveTaskLinkDisplayText } from "./taskLinkDisplayText";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/TaskLinkOverlay" });
 
@@ -347,11 +348,19 @@ export function buildTaskLinkDecorations(
 					const widgetKey = `${resolvedPath}-${link.start}-${link.end}`;
 
 					// Always create a new widget with the current task info
+					const displayText =
+						link.type === "markdown"
+							? resolveTaskLinkDisplayText(
+									parsed.displayText,
+									taskInfo.path,
+									linkPath
+								)
+							: parsed.displayText;
 					const newWidget = new TaskLinkWidget(
 						taskInfo,
 						plugin,
 						link.match,
-						parsed.displayText
+						displayText
 					);
 
 					// Check if we need to update the cached widget

@@ -10,6 +10,10 @@ import {
 } from "../types";
 import { TaskLinkWidget } from "./TaskLinkWidget";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import {
+	isImplicitTaskLinkDisplayText,
+	resolveTaskLinkDisplayText,
+} from "./taskLinkDisplayText";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/ReadingModeTaskLinkProcessor" });
 
@@ -145,12 +149,16 @@ export function shouldSkipReadingModeTaskLinkOverlay(options: {
 	hasExplicitAlias: boolean;
 	linkText: string;
 	originalLinkPath: string;
+	taskPath?: string;
 	taskTitle: string;
 }): boolean {
 	if (!options.disableOverlayOnAlias) return false;
 	if (options.hasExplicitAlias) return true;
 
 	const currentText = options.linkText.trim();
+	if (isImplicitTaskLinkDisplayText(currentText, options.taskPath, options.originalLinkPath)) {
+		return false;
+	}
 	return currentText !== options.originalLinkPath && currentText !== options.taskTitle;
 }
 
@@ -516,6 +524,7 @@ export class ReadingModeTaskLinkProcessor {
 					hasExplicitAlias,
 					linkText: linkEl.textContent || "",
 					originalLinkPath,
+					taskPath: taskInfo.path,
 					taskTitle: taskInfo.title,
 				})
 			) {
@@ -525,8 +534,14 @@ export class ReadingModeTaskLinkProcessor {
 			// Parse display text if it's a piped link
 			let displayText: string | undefined;
 			const linkContent = linkEl.textContent || "";
-			if (linkContent !== originalLinkPath && linkContent !== taskInfo.title) {
-				displayText = linkContent;
+			if (hasExplicitAlias) {
+				displayText = linkContent.trim() || undefined;
+			} else if (linkContent !== originalLinkPath && linkContent !== taskInfo.title) {
+				displayText = resolveTaskLinkDisplayText(
+					linkContent,
+					taskInfo.path,
+					originalLinkPath
+				);
 			}
 
 			// Create a task widget instance

@@ -2,6 +2,7 @@ import { TFile, parseLinktext } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
+import { resolveTaskLinkDisplayText } from "../editor/taskLinkDisplayText";
 
 export interface TaskLinkInfo {
 	isValidTaskLink: boolean;
@@ -42,7 +43,7 @@ export class TaskLinkDetectionService {
 			return { isValidTaskLink: false };
 		}
 
-		const { linkPath, displayText } = parsed;
+		const { linkPath, displayText: parsedDisplayText } = parsed;
 		const cacheKey = `${sourcePath}:${linkPath}`;
 
 		// Check cache first
@@ -74,6 +75,10 @@ export class TaskLinkDetectionService {
 		try {
 			const taskInfo = await this.plugin.cacheManager.getTaskInfo(resolvedPath);
 			if (taskInfo) {
+				const displayText =
+					linkType === "markdown"
+						? resolveTaskLinkDisplayText(parsedDisplayText, taskInfo.path, linkPath)
+						: parsedDisplayText;
 				const result: TaskLinkInfo = {
 					isValidTaskLink: true,
 					taskPath: resolvedPath,
