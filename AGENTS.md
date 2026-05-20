@@ -50,6 +50,12 @@ When you make changes, update docs/releases/unreleased.md. If your changes are r
 
 You may update `.ops/` files locally as you work on items, but do not commit `.ops/` files. `.ops/` is local-only working state.
 
+## Investigating issues
+
+When investigating issues, you should try your best to reproduce them first. You can do a lot with the obsidian cli tool. If you have a theory about what is causing an issue, test that theory.
+
+Not all reported issues will require changes to the code, and not all feature requests need to be implemented; Bases are very powerful, but can be difficult to navigate. If something is not working, or is being asked for, figure out if it is--or can be--achieved through Bases first.
+
 ## Prepare for a release. 
 
 When asked to prepare for a release: 
@@ -62,4 +68,3 @@ When asked to prepare for a release:
 6. Update @manifest.json and @package.json. 
 7. Commit changes as \"release <VERSION NUMBER>\" (you can choose the version number unless it is specified). 
 8. Tag the commit. (Just version number, no 'v' prefix. 
-
