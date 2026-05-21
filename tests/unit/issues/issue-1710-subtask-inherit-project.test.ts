@@ -48,7 +48,7 @@ describe("issue #1710 subtask project inheritance", () => {
 			parentFile
 		);
 
-		expect(values.projects).toEqual(["[[Tasks/Build login page]]"]);
+		expect(values.projects).toEqual(["[[Build login page]]"]);
 		expect(values.contexts).toBeUndefined();
 		expect(values.priority).toBeUndefined();
 		expect(values.tags).toBeUndefined();
@@ -68,7 +68,7 @@ describe("issue #1710 subtask project inheritance", () => {
 
 		expect(values.projects).toEqual([
 			"[[Projects/YGPT Dashboard]]",
-			"[[Tasks/Build login page]]",
+			"[[Build login page]]",
 		]);
 	});
 
@@ -80,7 +80,7 @@ describe("issue #1710 subtask project inheritance", () => {
 			parentFile
 		);
 
-		expect(values.projects).toEqual(["[[Tasks/Build login page]]"]);
+		expect(values.projects).toEqual(["[[Build login page]]"]);
 	});
 
 	it("does not duplicate the parent link if it is already one of the parent projects", () => {
@@ -92,14 +92,14 @@ describe("issue #1710 subtask project inheritance", () => {
 				},
 			}) as never,
 			createParentTask({
-				projects: ["[[Projects/YGPT Dashboard]]", "[[Tasks/Build login page]]"],
+				projects: ["[[Projects/YGPT Dashboard]]", "[[Build login page]]"],
 			}),
 			parentFile
 		);
 
 		expect(values.projects).toEqual([
 			"[[Projects/YGPT Dashboard]]",
-			"[[Tasks/Build login page]]",
+			"[[Build login page]]",
 		]);
 	});
 
@@ -129,7 +129,7 @@ describe("issue #1710 subtask project inheritance", () => {
 		);
 		expect(values.projects).toEqual([
 			"[[Areas/YGPT Dashboard]]",
-			"[[Tasks/Build login page]]",
+			"[[Build login page]]",
 		]);
 	});
 });

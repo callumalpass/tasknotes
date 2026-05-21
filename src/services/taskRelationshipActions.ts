@@ -144,7 +144,14 @@ export function buildSubtaskCreationPrePopulatedValues(
 	const shouldInheritParentProperties = Boolean(
 		plugin.settings.taskCreationDefaults?.inheritParentTaskProperties
 	);
-	const projectReference = buildStableFileLink(plugin, parentFile);
+	const projectReference = generateLink(
+		plugin.app,
+		parentFile,
+		parentTask.path,
+		"",
+		"",
+		plugin.settings.useFrontmatterMarkdownLinks
+	);
 	const parentTags = Array.isArray(parentTask.tags) ? parentTask.tags : [];
 	const parentProjects = shouldInheritParentProperties
 		? Array.isArray(parentTask.projects)
