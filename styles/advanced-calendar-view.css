@@ -329,6 +329,18 @@
     color: var(--text-on-accent);
 }
 
+body.is-mobile .timeblock-creation-modal input.tasknotes-theme-color-text-input,
+body.is-mobile .timeblock-info-modal input.tasknotes-theme-color-text-input {
+    width: auto;
+}
+
+body.is-mobile .timeblock-creation-modal input.tasknotes-theme-color-picker,
+body.is-mobile .timeblock-info-modal input.tasknotes-theme-color-picker {
+    width: 2.25rem;
+    min-width: 2.25rem;
+    max-width: 2.25rem;
+}
+
 /* Attachment Suggestion Modal Styles */
 .attachment-suggestion {
     padding: 0.5rem;

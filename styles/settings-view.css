@@ -295,6 +295,22 @@ select.tasknotes-settings__card-input {
     border-color: var(--interactive-accent);
 }
 
+.tasknotes-theme-color-text-input {
+    flex: 1 1 10rem;
+    min-width: 0;
+}
+
+input.tasknotes-theme-color-picker {
+    flex: 0 0 2.25rem;
+    width: 2.25rem;
+    min-width: 2.25rem;
+    max-width: 2.25rem;
+    height: 2rem;
+    padding: 2px;
+    margin-inline-start: 0.5rem;
+    cursor: var(--cursor-link, pointer);
+}
+
 /* Card Actions */
 .tasknotes-settings__card-actions {
     padding: 12px 16px;

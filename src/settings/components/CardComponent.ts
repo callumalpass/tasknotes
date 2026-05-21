@@ -564,6 +564,14 @@ export function createCardInput(
 }
 
 const THEME_COLOR_DATALIST_ID = "tasknotes-theme-color-options";
+const THEME_COLOR_NATIVE_PICKER_CLASS = "tasknotes-theme-color-picker";
+const THEME_COLOR_TEXT_INPUT_CLASS = "tasknotes-theme-color-text-input";
+const THEME_COLOR_PICKER_FALLBACK = "#6366f1";
+const HEX_COLOR_INPUT_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+type ThemeColorTextInput = HTMLInputElement & {
+	tasknotesThemeColorPicker?: HTMLInputElement;
+};
 
 function ensureThemeColorDatalist(): void {
 	if (activeDocument.getElementById(THEME_COLOR_DATALIST_ID)) return;
@@ -576,12 +584,72 @@ function ensureThemeColorDatalist(): void {
 	activeDocument.body.appendChild(datalist);
 }
 
+function hexColorForNativePicker(value: string | null | undefined): string | null {
+	const match = value?.trim().match(HEX_COLOR_INPUT_PATTERN);
+	if (!match) return null;
+
+	const hex = match[1].toLowerCase();
+	if (hex.length === 3) {
+		return `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+	}
+
+	return `#${hex}`;
+}
+
+function dispatchNativePickerInput(input: HTMLInputElement): void {
+	input.dispatchEvent(new Event("input", { bubbles: true }));
+	input.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function configureNativeThemeColorPicker(input: ThemeColorTextInput): void {
+	const parent = input.parentElement;
+	if (!parent) return;
+
+	if (input.tasknotesThemeColorPicker?.isConnected) {
+		const pickerColor = hexColorForNativePicker(input.value);
+		if (pickerColor) {
+			input.tasknotesThemeColorPicker.value = pickerColor;
+		}
+		return;
+	}
+
+	const picker = activeDocument.createElement("input");
+	picker.type = "color";
+	picker.addClass(THEME_COLOR_NATIVE_PICKER_CLASS);
+	picker.value = hexColorForNativePicker(input.value) || THEME_COLOR_PICKER_FALLBACK;
+	picker.title = "Open color picker";
+	picker.setAttribute("aria-label", "Open color picker");
+
+	const syncInputFromPicker = () => {
+		if (input.value === picker.value) return;
+		input.value = picker.value;
+		dispatchNativePickerInput(input);
+	};
+
+	const syncPickerFromInput = () => {
+		const pickerColor = hexColorForNativePicker(input.value);
+		if (pickerColor) {
+			picker.value = pickerColor;
+		}
+	};
+
+	picker.addEventListener("input", syncInputFromPicker);
+	picker.addEventListener("change", syncInputFromPicker);
+	input.addEventListener("input", syncPickerFromInput);
+	input.addEventListener("change", syncPickerFromInput);
+	input.insertAdjacentElement("afterend", picker);
+	input.tasknotesThemeColorPicker = picker;
+}
+
 export function configureThemeColorInput(input: HTMLInputElement): void {
+	const themeInput = input as ThemeColorTextInput;
 	input.type = "text";
+	input.addClass(THEME_COLOR_TEXT_INPUT_CLASS);
 	input.placeholder = THEME_COLOR_INPUT_PLACEHOLDER;
 	input.setAttribute("list", THEME_COLOR_DATALIST_ID);
 	input.title = THEME_COLOR_INPUT_PLACEHOLDER;
 	ensureThemeColorDatalist();
+	configureNativeThemeColorPicker(themeInput);
 }
 
 export function createThemeColorInput(value?: string): HTMLInputElement {

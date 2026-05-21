@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1922) Restored the native color picker alongside manual color text entry in Create/Edit Timeblock fields.
+  - Thanks to @AndreMonthy for reporting.
 - (#1921) Fixed direct frontmatter edits to lifecycle-relevant task fields not triggering Google Calendar sync or auto-archive side effects.
   - Thanks to @martin-forge for reporting and verifying the direct-edit reproduction.
 - (#1919) Fixed the Pomodoro view rapidly resizing at certain sidebar sizes.
