@@ -49,6 +49,7 @@ import { MicrosoftCalendarService } from "../services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "../services/CalendarProvider";
 import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
+import { TaskFileLifecycleReconciliationService } from "../services/TaskFileLifecycleReconciliationService";
 import { TaskNotesAPI } from "../api/TaskNotesAPI";
 import { isCalendarIntegrationDisabledOnMobile } from "../utils/calendarIntegration";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -381,6 +382,10 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					});
 					await plugin.microsoftCalendarService.initialize();
 				}
+
+				plugin.taskFileLifecycleReconciliationService =
+					new TaskFileLifecycleReconciliationService(plugin);
+				await plugin.taskFileLifecycleReconciliationService.initialize();
 
 				await initializeHTTPAPI(plugin);
 

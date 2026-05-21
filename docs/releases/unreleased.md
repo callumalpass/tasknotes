@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1921) Fixed direct frontmatter edits to lifecycle-relevant task fields not triggering Google Calendar sync or auto-archive side effects.
+  - Thanks to @martin-forge for reporting and verifying the direct-edit reproduction.
 - (#1919) Fixed the Pomodoro view rapidly resizing at certain sidebar sizes.
   - Thanks to @RumiaKitinari for reporting.
 - (#1898) Fixed Calendar Day view time labels shifting into the middle of the grid after switching views.
