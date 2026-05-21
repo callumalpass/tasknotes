@@ -25,6 +25,26 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Views/PomodoroView" });
 
+export interface PomodoroLayoutSize {
+	width: number;
+	height: number;
+}
+
+function hasUsablePomodoroLayoutSize(size: PomodoroLayoutSize): boolean {
+	return size.width > 0 && size.height > 0;
+}
+
+export function resolvePomodoroLayoutSize(
+	viewportSize: PomodoroLayoutSize,
+	contentSize: PomodoroLayoutSize
+): PomodoroLayoutSize {
+	if (hasUsablePomodoroLayoutSize(viewportSize)) {
+		return viewportSize;
+	}
+
+	return contentSize;
+}
+
 export class PomodoroView extends ItemView {
 	plugin: TaskNotesPlugin;
 
@@ -550,7 +570,7 @@ export class PomodoroView extends ItemView {
 			this.resizeObserver = new win.ResizeObserver(debouncedResize);
 			const pomodoroContainer = this.contentEl.querySelector(".pomodoro-view");
 			if (pomodoroContainer) {
-				this.resizeObserver.observe(pomodoroContainer);
+				this.resizeObserver.observe(this.contentEl);
 			}
 		}
 
@@ -588,10 +608,15 @@ export class PomodoroView extends ItemView {
 					".pomodoro-view"
 				) as HTMLElement;
 				if (pomodoroContainer) {
-					const width = pomodoroContainer.getBoundingClientRect().width;
+					const viewportRect = this.contentEl.getBoundingClientRect();
+					const contentRect = pomodoroContainer.getBoundingClientRect();
+					const { width, height } = resolvePomodoroLayoutSize(
+						{ width: viewportRect.width, height: viewportRect.height },
+						{ width: contentRect.width, height: contentRect.height }
+					);
 
 					// Check if container has proper dimensions (not zero width)
-					if (width > 0) {
+					if (width > 0 && height > 0) {
 						// DOM is ready with proper dimensions, set up resize handling
 						this.setupResizeHandling();
 					} else if (attempt < maxAttempts) {
@@ -611,8 +636,11 @@ export class PomodoroView extends ItemView {
 		if (!pomodoroContainer) return;
 
 		const containerRect = pomodoroContainer.getBoundingClientRect();
-		const containerWidth = containerRect.width;
-		const containerHeight = containerRect.height;
+		const viewportRect = this.contentEl.getBoundingClientRect();
+		const { width: containerWidth, height: containerHeight } = resolvePomodoroLayoutSize(
+			{ width: viewportRect.width, height: viewportRect.height },
+			{ width: containerRect.width, height: containerRect.height }
+		);
 
 		// Calculate a responsive scale factor based on both width and height
 		// Use the smaller dimension as the limiting factor, but weight width more heavily

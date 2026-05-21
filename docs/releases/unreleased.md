@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1919) Fixed the Pomodoro view rapidly resizing at certain sidebar sizes.
+  - Thanks to @RumiaKitinari for reporting.
 - (#1898) Fixed Calendar Day view time labels shifting into the middle of the grid after switching views.
   - Thanks to @ddevaal for reporting and confirming the regression.
 - (#1916) Fixed Markdown task links using Obsidian's generated filename label instead of the TaskNote title in the task link overlay.
