@@ -58,6 +58,7 @@ import { EVENT_USER_NOTICE, type UserNoticePayload } from "../core/userNotices";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bootstrap/PluginBootstrap" });
 
 type FileDeletedEventData = { path: string; prevCache?: unknown };
+type FileUpdatedEventData = { path: string; file?: unknown; updatedTask?: TaskInfo };
 
 type EditorWithCodeMirror = {
 	cm?: unknown;
@@ -343,7 +344,29 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					plugin.taskCalendarSyncService = new (
 						await import("../services/TaskCalendarSyncService")
 					).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
+					await plugin.taskCalendarSyncService.initializeExternalFileReconciliation();
 					plugin.taskCalendarSyncService.startRecoveryQueueProcessor();
+
+					plugin.registerEvent(
+						plugin.emitter.on("file-updated", (data: FileUpdatedEventData) => {
+							if (!plugin.taskCalendarSyncService || !data?.path) {
+								return;
+							}
+
+							plugin.taskCalendarSyncService
+								.handleExternalTaskFileUpdated(data.path, data.updatedTask)
+								.catch((error) => {
+									tasknotesLogger.warn(
+										"Failed to reconcile externally updated task with Google Calendar:",
+										{
+											category: "provider",
+											operation: "reconcile-external-task-file-update",
+											error: error,
+										}
+									);
+								});
+						})
+					);
 
 					plugin.registerEvent(
 						plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
