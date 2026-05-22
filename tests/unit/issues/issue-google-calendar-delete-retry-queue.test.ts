@@ -215,6 +215,30 @@ describe("Google Calendar deletion retry queue", () => {
 		expect(pluginData.googleCalendarEventIndex).toEqual([]);
 	});
 
+	it("recovers indexed deleted task events during normal recovery queue processing", async () => {
+		const pluginData = {
+			googleCalendarEventIndex: [
+				{
+					taskPath: "TaskNotes/Tasks/deleted-before-retry.md",
+					calendarId: "primary",
+					eventId: "event-from-index",
+					updatedAt: 1,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getAllTasks = jest.fn().mockResolvedValue([]);
+		plugin.cacheManager.getTaskInfo = jest.fn().mockResolvedValue(null);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		await syncService.processRecoveryQueues();
+
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-from-index");
+		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
+		expect(pluginData.googleCalendarEventIndex).toEqual([]);
+	});
+
 	it("updates the event index instead of deleting events when an indexed task moved while Obsidian was closed", async () => {
 		const pluginData = {
 			googleCalendarEventIndex: [
@@ -248,6 +272,43 @@ describe("Google Calendar deletion retry queue", () => {
 			}),
 		]);
 		expect(googleCalendarService.deleteEvent).not.toHaveBeenCalled();
+	});
+
+	it("does not rewrite unchanged event index entries during recovery", async () => {
+		const taskPath = "TaskNotes/Tasks/still-indexed.md";
+		const pluginData = {
+			googleCalendarEventIndex: [
+				{
+					taskPath,
+					calendarId: "primary",
+					eventId: "stable-event",
+					updatedAt: 1,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getAllTasks = jest.fn().mockResolvedValue([
+			TaskFactory.createTask({
+				path: taskPath,
+				scheduled: "2026-04-29",
+				googleCalendarEventId: "stable-event",
+			}),
+		]);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		await syncService.recoverDeletedTaskEventsFromIndex();
+
+		expect(plugin.saveData).not.toHaveBeenCalled();
+		expect(googleCalendarService.deleteEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarEventIndex).toEqual([
+			expect.objectContaining({
+				taskPath,
+				calendarId: "primary",
+				eventId: "stable-event",
+				updatedAt: 1,
+			}),
+		]);
 	});
 
 	it("cleans up an older indexed event when the same task receives a replacement event id", async () => {

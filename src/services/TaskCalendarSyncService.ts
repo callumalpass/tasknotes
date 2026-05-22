@@ -503,6 +503,13 @@ export class TaskCalendarSyncService {
 	): Promise<void> {
 		const index = await this.getEventIndex();
 		const key = this.getDeletionQueueKey({ calendarId, eventId });
+		const matchingEntries = index.filter(
+			(item) =>
+				this.getDeletionQueueKey(item) === key &&
+				item.taskPath === taskPath &&
+				item.calendarId === calendarId &&
+				item.eventId === eventId
+		);
 		const replacedEntries = index.filter(
 			(item) =>
 				item.taskPath === taskPath &&
@@ -514,6 +521,14 @@ export class TaskCalendarSyncService {
 				this.getDeletionQueueKey(item) !== key &&
 				!(item.taskPath === taskPath && item.calendarId === calendarId)
 		);
+
+		if (
+			matchingEntries.length === 1 &&
+			replacedEntries.length === 0 &&
+			filteredIndex.length === index.length - 1
+		) {
+			return;
+		}
 
 		filteredIndex.push({
 			taskPath,
@@ -703,11 +718,11 @@ export class TaskCalendarSyncService {
 	}
 
 	async processStartupRecovery(): Promise<void> {
-		await this.recoverDeletedTaskEventsFromIndex();
 		await this.processRecoveryQueues();
 	}
 
 	async processRecoveryQueues(): Promise<void> {
+		await this.recoverDeletedTaskEventsFromIndex();
 		await this.processDeletionQueue();
 		await this.processPendingSyncQueue();
 	}
