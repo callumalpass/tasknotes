@@ -4,6 +4,10 @@ import {
 	updateToNextScheduledOccurrence,
 } from "../../core/recurrence";
 import {
+	applyGoogleCalendarRecurringExceptionCleanup,
+	applyGoogleCalendarRecurringExceptionForScheduledChange,
+} from "./googleCalendarRecurringExceptions";
+import {
 	applyPropertyTaskIdentifier,
 	getFrontmatterTags,
 } from "../../utils/taskIdentificationFrontmatter";
@@ -161,6 +165,23 @@ export function buildTaskUpdateRecurrenceUpdates({
 		}
 	}
 
+	if (Object.prototype.hasOwnProperty.call(updates, "scheduled")) {
+		const nextTask: TaskInfo = { ...originalTask, ...updates, ...recurrenceUpdates };
+		applyGoogleCalendarRecurringExceptionForScheduledChange(
+			originalTask,
+			updates.scheduled,
+			nextTask
+		);
+		recurrenceUpdates.googleCalendarExceptionOriginalScheduled =
+			nextTask.googleCalendarExceptionOriginalScheduled;
+	}
+
+	const nextTask: TaskInfo = { ...originalTask, ...updates, ...recurrenceUpdates };
+	applyGoogleCalendarRecurringExceptionCleanup(nextTask);
+	recurrenceUpdates.googleCalendarExceptionOriginalScheduled =
+		nextTask.googleCalendarExceptionOriginalScheduled;
+	recurrenceUpdates.googleCalendarMovedOriginalDates = nextTask.googleCalendarMovedOriginalDates;
+
 	return recurrenceUpdates;
 }
 
@@ -212,7 +233,7 @@ export function applyTaskUpdateFrontmatterChange({
 		});
 	}
 
-	removeUnsetMappedFields(frontmatter, updates, fieldMapper);
+	removeUnsetMappedFields(frontmatter, { ...updates, ...recurrenceUpdates }, fieldMapper);
 
 	if (storeTitleInFilename) {
 		delete frontmatter[fieldMapper.toUserField("title")];
@@ -299,6 +320,22 @@ function removeUnsetMappedFields(
 		updates.recurrence === undefined
 	) {
 		delete frontmatter[fieldMapper.toUserField("recurrence")];
+	}
+	if (
+		Object.prototype.hasOwnProperty.call(
+			updates,
+			"googleCalendarExceptionOriginalScheduled"
+		) &&
+		updates.googleCalendarExceptionOriginalScheduled === undefined
+	) {
+		delete frontmatter[fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled")];
+	}
+	if (
+		Object.prototype.hasOwnProperty.call(updates, "googleCalendarMovedOriginalDates") &&
+		(!Array.isArray(updates.googleCalendarMovedOriginalDates) ||
+			updates.googleCalendarMovedOriginalDates.length === 0)
+	) {
+		delete frontmatter[fieldMapper.toUserField("googleCalendarMovedOriginalDates")];
 	}
 	if (
 		Object.prototype.hasOwnProperty.call(updates, "blockedBy") &&

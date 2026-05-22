@@ -26,6 +26,8 @@ export interface ConversionOptions {
 	completedInstances?: string[];
 	/** Skipped instances to exclude via EXDATE (YYYY-MM-DD format) */
 	skippedInstances?: string[];
+	/** Additional dates to exclude via EXDATE (YYYY-MM-DD format) */
+	additionalExcludedDates?: string[];
 }
 
 /**
@@ -75,6 +77,7 @@ export function convertToGoogleRecurrence(
 	const exdates = formatExdates([
 		...(options?.completedInstances || []),
 		...(options?.skippedInstances || []),
+		...(options?.additionalExcludedDates || []),
 	]);
 	recurrence.push(...exdates);
 

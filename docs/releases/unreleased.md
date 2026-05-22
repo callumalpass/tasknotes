@@ -26,5 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1696) Fixed Google Calendar export for scheduled recurring tasks when a single occurrence is moved to a different date.
+  - Keeps the recurring master event on its original rule, excludes the original occurrence date, and syncs the moved occurrence as a detached event.
+
 - (#1911) Fixed recurrence choices starting from today instead of the selected calendar date when creating a task from Calendar view.
   - Thanks to @mikhailmarka for reporting.

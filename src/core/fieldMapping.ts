@@ -273,6 +273,24 @@ export function mapTaskFromFrontmatter(
 		);
 	}
 
+	if (frontmatter[mapping.googleCalendarExceptionEventId] !== undefined) {
+		mapped.googleCalendarExceptionEventId = normalizeStringValue(
+			frontmatter[mapping.googleCalendarExceptionEventId]
+		);
+	}
+
+	if (frontmatter[mapping.googleCalendarExceptionOriginalScheduled] !== undefined) {
+		mapped.googleCalendarExceptionOriginalScheduled = normalizeStringValue(
+			frontmatter[mapping.googleCalendarExceptionOriginalScheduled]
+		);
+	}
+
+	if (frontmatter[mapping.googleCalendarMovedOriginalDates] !== undefined) {
+		mapped.googleCalendarMovedOriginalDates = normalizeStringArrayValue(
+			frontmatter[mapping.googleCalendarMovedOriginalDates]
+		);
+	}
+
 	if (frontmatter[mapping.reminders] !== undefined) {
 		mapped.reminders = normalizeReminders(frontmatter[mapping.reminders]);
 	}
@@ -411,6 +429,28 @@ export function mapTaskToFrontmatter(
 
 	if (taskData.icsEventId !== undefined && taskData.icsEventId.length > 0) {
 		frontmatter[mapping.icsEventId] = taskData.icsEventId;
+	}
+
+	if (taskData.googleCalendarEventId !== undefined) {
+		frontmatter[mapping.googleCalendarEventId] = taskData.googleCalendarEventId;
+	}
+
+	if (taskData.googleCalendarExceptionEventId !== undefined) {
+		frontmatter[mapping.googleCalendarExceptionEventId] =
+			taskData.googleCalendarExceptionEventId;
+	}
+
+	if (taskData.googleCalendarExceptionOriginalScheduled !== undefined) {
+		frontmatter[mapping.googleCalendarExceptionOriginalScheduled] =
+			taskData.googleCalendarExceptionOriginalScheduled;
+	}
+
+	if (
+		taskData.googleCalendarMovedOriginalDates !== undefined &&
+		taskData.googleCalendarMovedOriginalDates.length > 0
+	) {
+		frontmatter[mapping.googleCalendarMovedOriginalDates] =
+			taskData.googleCalendarMovedOriginalDates;
 	}
 
 	if (taskData.reminders !== undefined && taskData.reminders.length > 0) {

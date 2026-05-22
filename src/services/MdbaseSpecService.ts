@@ -313,6 +313,12 @@ export class MdbaseSpecService {
 			items: { type: "string" },
 		});
 		this.addRoleField(lines, "googleCalendarEventId", { type: "string" });
+		this.addRoleField(lines, "googleCalendarExceptionEventId", { type: "string" });
+		this.addRoleField(lines, "googleCalendarExceptionOriginalScheduled", { type: "date" });
+		this.addRoleField(lines, "googleCalendarMovedOriginalDates", {
+			type: "list",
+			items: { type: "date" },
+		});
 
 		// User-defined fields
 		if (settings.userFields && settings.userFields.length > 0) {

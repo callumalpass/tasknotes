@@ -353,14 +353,27 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 							const eventIdKey =
 								plugin.fieldMapper.toUserField("googleCalendarEventId");
+							const exceptionEventIdKey = plugin.fieldMapper.toUserField(
+								"googleCalendarExceptionEventId"
+							);
 							const prevCache = data.prevCache as
 								| { frontmatter?: Record<string, unknown> }
 								| undefined;
 							const eventId = prevCache?.frontmatter?.[eventIdKey];
+							const exceptionEventId = prevCache?.frontmatter?.[exceptionEventIdKey];
 
-							if (typeof eventId === "string" && eventId.length > 0) {
+							if (
+								(typeof eventId === "string" && eventId.length > 0) ||
+								(typeof exceptionEventId === "string" && exceptionEventId.length > 0)
+							) {
 								plugin.taskCalendarSyncService
-									.deleteTaskFromCalendarByPath(data.path, eventId)
+									.deleteTaskFromCalendarByPath(
+										data.path,
+										typeof eventId === "string" ? eventId : undefined,
+										typeof exceptionEventId === "string"
+											? exceptionEventId
+											: undefined
+									)
 									.catch((error) => {
 										tasknotesLogger.warn(
 											"Failed to delete task from Google Calendar on file deletion:",
