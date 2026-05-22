@@ -141,7 +141,6 @@ export class SystemController extends BaseController {
 
 			res.statusCode = 200;
 			res.setHeader("Content-Type", "application/json");
-			res.setHeader("Access-Control-Allow-Origin", "*");
 			res.end(JSON.stringify(spec, null, 2));
 		} catch (error: unknown) {
 			tasknotesLogger.error("OpenAPI spec generation error:", {
@@ -160,7 +159,6 @@ export class SystemController extends BaseController {
 
 			res.statusCode = 200;
 			res.setHeader("Content-Type", "text/html");
-			res.setHeader("Access-Control-Allow-Origin", "*");
 			res.end(swaggerHTML);
 		} catch (error: unknown) {
 			tasknotesLogger.error("Swagger UI generation error:", {

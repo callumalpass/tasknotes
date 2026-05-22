@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Security
+
+- (#1923) Restricted the HTTP API server to loopback and limited browser CORS access to loopback origins.
+  - Thanks to @martin-forge for reporting.
+
 ## Fixed
 
 - (#1922) Restored the native color picker alongside manual color text entry in Create/Edit Timeblock fields.

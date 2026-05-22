@@ -17,12 +17,18 @@ import { SystemController } from "../api/SystemController";
 import { WebhookController } from "../api/WebhookController";
 import { CalendarsController } from "../api/CalendarsController";
 import { MCPService } from "./MCPService";
-import { parseJSONBody, sendJSONResponse, setCORSHeaders } from "../api/httpUtils";
+import {
+	parseJSONBody,
+	resolveLocalCORSOrigin,
+	sendJSONResponse,
+	setCORSHeaders,
+} from "../api/httpUtils";
 import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
 import { parseRequestUrl } from "../api/httpTypes";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/HTTPAPIService" });
+export const API_BIND_HOST = "127.0.0.1";
 
 type HttpModuleLike = {
 	createServer(handler: (req: HTTPRequestLike, res: HTTPResponseLike) => void): HTTPServerLike;
@@ -152,6 +158,27 @@ export class HTTPAPIService implements IWebhookNotifier {
 		res.end();
 	}
 
+	private getFallbackCORSOrigin(): string {
+		return `http://${API_BIND_HOST}:${this.plugin.settings.apiPort}`;
+	}
+
+	private getRequestOrigin(req: HTTPRequestLike): string | undefined {
+		const originHeader = req.headers.origin;
+		return Array.isArray(originHeader) ? originHeader[0] : originHeader;
+	}
+
+	private applyCORSPolicy(req: HTTPRequestLike, res: HTTPResponseLike): boolean {
+		const requestOrigin = this.getRequestOrigin(req);
+		const allowOrigin = resolveLocalCORSOrigin(requestOrigin, this.getFallbackCORSOrigin());
+
+		if (!allowOrigin) {
+			return false;
+		}
+
+		setCORSHeaders(res, { allowOrigin });
+		return true;
+	}
+
 	private authenticate(req: HTTPRequestLike): boolean {
 		const authToken = this.plugin.settings.apiAuthToken;
 
@@ -187,6 +214,13 @@ export class HTTPAPIService implements IWebhookNotifier {
 
 	private async handleRequest(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
+			if (!this.applyCORSPolicy(req, res)) {
+				res.statusCode = 403;
+				res.setHeader("Content-Type", "application/json");
+				res.end(JSON.stringify(this.errorResponse("CORS origin is not allowed")));
+				return;
+			}
+
 			// Handle CORS preflight requests
 			if (req.method === "OPTIONS") {
 				await this.handleCORSPreflight(req, res);
@@ -267,7 +301,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 					});
 				});
 
-				this.server.listen(this.plugin.settings.apiPort, () => {
+				this.server.listen(this.plugin.settings.apiPort, API_BIND_HOST, () => {
 					resolve();
 				});
 

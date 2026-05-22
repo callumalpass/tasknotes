@@ -7,6 +7,9 @@ The TaskNotes HTTP API provides local HTTP access to tasks, time tracking, pomod
 - Desktop only
 - Disabled by default
 - Started when Obsidian starts and TaskNotes API is enabled
+- Bound to loopback (`127.0.0.1`) only, not the local network
+- Browser CORS requests are allowed only from loopback origins such as
+  `localhost`, `127.0.0.1`, and `[::1]`
 - Not available on mobile
 
 Enable it in `Settings -> TaskNotes -> Integrations -> HTTP API`.
@@ -23,6 +26,8 @@ Authentication is optional.
 
 - If `apiAuthToken` is empty, all API requests are accepted.
 - If `apiAuthToken` is set, send `Authorization: Bearer <token>`.
+- Set a token for any workflow where local browser pages, scripts, or other
+  desktop apps are not fully trusted.
 
 Example:
 

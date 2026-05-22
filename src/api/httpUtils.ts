@@ -2,20 +2,54 @@ import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 
 const DEFAULT_ALLOW_METHODS = "GET, POST, PUT, DELETE, OPTIONS";
 const DEFAULT_ALLOW_HEADERS = "Content-Type, Authorization";
+const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+
+export interface CORSHeaderOptions {
+	allowMethods?: string;
+	allowHeaders?: string;
+	allowOrigin?: string;
+}
+
+export function resolveLocalCORSOrigin(
+	requestOrigin: string | undefined,
+	fallbackOrigin: string
+): string | undefined {
+	if (!requestOrigin) {
+		return fallbackOrigin;
+	}
+
+	try {
+		const originUrl = new URL(requestOrigin);
+		if (originUrl.protocol !== "http:" && originUrl.protocol !== "https:") {
+			return undefined;
+		}
+
+		return LOOPBACK_HOSTNAMES.has(originUrl.hostname) ? originUrl.origin : undefined;
+	} catch {
+		return undefined;
+	}
+}
 
 export function setCORSHeaders(
 	res: HTTPResponseLike,
-	options?: { allowMethods?: string; allowHeaders?: string; allowOrigin?: string }
+	options?: CORSHeaderOptions
 ): void {
-	res.setHeader("Access-Control-Allow-Origin", options?.allowOrigin ?? "*");
+	if (options?.allowOrigin) {
+		res.setHeader("Access-Control-Allow-Origin", options.allowOrigin);
+	}
 	res.setHeader("Access-Control-Allow-Methods", options?.allowMethods ?? DEFAULT_ALLOW_METHODS);
 	res.setHeader("Access-Control-Allow-Headers", options?.allowHeaders ?? DEFAULT_ALLOW_HEADERS);
 }
 
-export function sendJSONResponse(res: HTTPResponseLike, statusCode: number, data: unknown): void {
+export function sendJSONResponse(
+	res: HTTPResponseLike,
+	statusCode: number,
+	data: unknown,
+	corsOptions?: CORSHeaderOptions
+): void {
 	res.statusCode = statusCode;
 	res.setHeader("Content-Type", "application/json");
-	setCORSHeaders(res);
+	setCORSHeaders(res, corsOptions);
 	res.end(JSON.stringify(data));
 }
 
