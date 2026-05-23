@@ -1010,32 +1010,32 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
     height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
-    background-color: var(--priority-color, transparent);
+    background-color: var(--current-priority-color, var(--priority-color, transparent));
     margin: 0 var(--tn-spacing-xs);
 }
 
 /* Dynamic priority colors using CSS variables set by PriorityManager */
 /* Use child combinator (>) to prevent subtasks from inheriting parent priority styling */
 .tasknotes-plugin .task-card[data-priority] > .task-card__main-row .task-card__priority-dot {
-    background-color: var(--current-priority-color, var(--tn-text-muted));
+    background-color: var(--current-priority-color, var(--priority-color, var(--tn-text-muted)));
 }
 
 /* Fallback priority colors using existing system */
 /* Use child combinator (>) to prevent subtasks from inheriting parent priority styling */
 .tasknotes-plugin .task-card--priority-high > .task-card__main-row .task-card__priority-dot {
-    background-color: var(--priority-high-color, var(--tn-color-error));
+    background-color: var(--current-priority-color, var(--priority-color, var(--priority-high-color, var(--tn-color-error))));
 }
 
 .tasknotes-plugin .task-card--priority-medium > .task-card__main-row .task-card__priority-dot {
-    background-color: var(--priority-medium-color, var(--tn-interactive-accent));
+    background-color: var(--current-priority-color, var(--priority-color, var(--priority-medium-color, var(--tn-interactive-accent))));
 }
 
 .tasknotes-plugin .task-card--priority-normal > .task-card__main-row .task-card__priority-dot {
-    background-color: var(--priority-normal-color, var(--tn-interactive-accent));
+    background-color: var(--current-priority-color, var(--priority-color, var(--priority-normal-color, var(--tn-interactive-accent))));
 }
 
 .tasknotes-plugin .task-card--priority-low > .task-card__main-row .task-card__priority-dot {
-    background-color: var(--priority-low-color, var(--tn-text-muted));
+    background-color: var(--current-priority-color, var(--priority-color, var(--priority-low-color, var(--tn-text-muted))));
 }
 
 /* Priority dot with icon mode - uses Lucide icons from theme */
@@ -1057,12 +1057,12 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
 .tasknotes-plugin .task-card__priority-dot--icon svg {
     width: 16px;
     height: 16px;
-    color: var(--priority-color, var(--tn-text-muted));
+    color: var(--current-priority-color, var(--priority-color, var(--tn-text-muted)));
     stroke-width: 2;
 }
 
 .tasknotes-plugin .task-card__priority-dot--icon:hover svg {
-    color: color-mix(in srgb, var(--priority-color, var(--tn-interactive-accent)) 80%, var(--tn-text-normal));
+    color: color-mix(in srgb, var(--current-priority-color, var(--priority-color, var(--tn-interactive-accent))) 80%, var(--tn-text-normal));
 }
 
 /* Status colors - Use dynamic status colors from user settings */

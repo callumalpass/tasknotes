@@ -182,14 +182,28 @@ describe("taskCardPrimaryIndicators", () => {
 		expect(card.querySelector(".task-card__priority-dot")).toBe(updated);
 	});
 
+	it("stores the custom priority color in both legacy and current CSS variables", () => {
+		const plugin = createPlugin();
+		const { card } = createCard();
+
+		applyTaskCardPriorityColor(card, createTask({ priority: "normal" }), plugin);
+
+		expect(card.style.getPropertyValue("--priority-color")).toBe("#888888");
+		expect(card.style.getPropertyValue("--current-priority-color")).toBe("#888888");
+	});
+
 	it("removes priority indicators and stale priority colors when no priority config exists", () => {
 		const plugin = createPlugin();
 		const { card, mainRow } = createCard();
 		mainRow.createSpan({ cls: "task-card__priority-dot" });
 		card.style.setProperty("--priority-color", "#ff0000");
+		card.style.setProperty("--current-priority-color", "#ff0000");
 
-		expect(applyTaskCardPriorityColor(card, createTask({ priority: "none" }), plugin)).toBeNull();
+		expect(
+			applyTaskCardPriorityColor(card, createTask({ priority: "none" }), plugin)
+		).toBeNull();
 		expect(card.style.getPropertyValue("--priority-color")).toBe("");
+		expect(card.style.getPropertyValue("--current-priority-color")).toBe("");
 		expect(
 			updatePriorityIndicator({
 				mainRow,

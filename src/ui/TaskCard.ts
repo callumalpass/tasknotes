@@ -151,6 +151,11 @@ export function createTaskCard(
 	card.dataset.taskPath = task.path;
 	card.dataset.key = task.path; // For DOMReconciler compatibility
 	card.dataset.status = effectiveStatus;
+	if (task.priority) {
+		card.dataset.priority = task.priority;
+	} else {
+		delete card.dataset.priority;
+	}
 	card.dataset.hasDetails = hasDetails ? "true" : "false";
 
 	// Create main row container for horizontal layout
@@ -293,6 +298,11 @@ export function updateTaskCard(
 
 	element.className = renderState.cardClasses.join(" ");
 	element.dataset.status = effectiveStatus;
+	if (task.priority) {
+		element.dataset.priority = task.priority;
+	} else {
+		delete element.dataset.priority;
+	}
 	element.dataset.hasDetails = hasDetails ? "true" : "false";
 
 	// Get the main row container

@@ -444,6 +444,8 @@ describe('TaskCard Component', () => {
       const card = createTaskCard(task, mockPlugin);
 
       expect(card.style.getPropertyValue('--priority-color')).toBe('#ff0000');
+      expect(card.style.getPropertyValue('--current-priority-color')).toBe('#ff0000');
+      expect(card.dataset.priority).toBe('high');
       expect(card.style.getPropertyValue('--current-status-color')).toBe('#666666');
     });
 

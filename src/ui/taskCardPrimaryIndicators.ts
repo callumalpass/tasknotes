@@ -76,8 +76,10 @@ export function applyTaskCardPriorityColor(
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 	if (priorityConfig?.color) {
 		card.style.setProperty("--priority-color", priorityConfig.color);
+		card.style.setProperty("--current-priority-color", priorityConfig.color);
 	} else {
 		card.style.removeProperty("--priority-color");
+		card.style.removeProperty("--current-priority-color");
 	}
 	return priorityConfig;
 }

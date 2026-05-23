@@ -36,6 +36,8 @@ Example:
 
 ## Fixed
 
+- (#1934) Fixed custom priority colors being overridden by default task-card priority styles in views.
+  - Thanks to @KittehBit for reporting.
 - (#1933) Added the note path to fallback frontmatter parse warnings so malformed task YAML is easier to find.
   - Thanks to @rayvermey for reporting.
 - (#1931) Made the Pomodoro task chooser open from cached task data and ignore repeated clicks while it is already opening.
