@@ -1,4 +1,5 @@
 import type { App } from "obsidian";
+import * as Obsidian from "obsidian";
 import { App as MockApp, MockObsidian } from "../../__mocks__/obsidian";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING, DEFAULT_SETTINGS } from "../../../src/settings/defaults";
@@ -77,5 +78,28 @@ describe("Issue #1302: TaskManager file frontmatter fallback", () => {
 		app.metadataCache.deleteCache(path);
 
 		await expect(manager.getTaskInfo(path)).resolves.toBeNull();
+	});
+
+	it("includes the file path when fallback frontmatter parsing fails", async () => {
+		const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+		const parseYamlSpy = jest.spyOn(Obsidian, "parseYaml").mockImplementation(() => {
+			throw new Error("Broken YAML");
+		});
+		const path = "Notes/broken-frontmatter.md";
+		const parseFrontmatter = (
+			manager as unknown as {
+				parseFrontmatterFromContent(content: string, path?: string): Record<string, unknown> | null;
+			}
+		).parseFrontmatterFromContent.bind(manager);
+
+		expect(parseFrontmatter("---\ntitle: Broken\n---\nBody", path)).toBeNull();
+
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining(`TaskManager: Failed to parse frontmatter fallback for ${path}`),
+			expect.objectContaining({ path }),
+			expect.anything()
+		);
+		parseYamlSpy.mockRestore();
+		warnSpy.mockRestore();
 	});
 });

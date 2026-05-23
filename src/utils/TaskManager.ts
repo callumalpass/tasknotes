@@ -730,7 +730,7 @@ export class TaskManager extends Events {
 	private async readFrontmatterFromFile(file: TFile): Promise<Record<string, unknown> | null> {
 		try {
 			const content = await this.app.vault.read(file);
-			return this.parseFrontmatterFromContent(content);
+			return this.parseFrontmatterFromContent(content, file.path);
 		} catch (error) {
 			tasknotesLogger.warn(
 				`TaskManager: Failed to read frontmatter fallback for ${file.path}`,
@@ -744,7 +744,10 @@ export class TaskManager extends Events {
 		}
 	}
 
-	private parseFrontmatterFromContent(content: string): Record<string, unknown> | null {
+	private parseFrontmatterFromContent(
+		content: string,
+		path?: string
+	): Record<string, unknown> | null {
 		const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
 		if (!match) return null;
 
@@ -755,9 +758,11 @@ export class TaskManager extends Events {
 			}
 			return parsed as Record<string, unknown>;
 		} catch (error) {
-			tasknotesLogger.warn("TaskManager: Failed to parse frontmatter fallback", {
+			const fileContext = path ? ` for ${path}` : "";
+			tasknotesLogger.warn(`TaskManager: Failed to parse frontmatter fallback${fileContext}`, {
 				category: "validation",
 				operation: "taskmanager-parse-frontmatter-fallback",
+				details: path ? { path } : undefined,
 				error: error,
 			});
 			return null;

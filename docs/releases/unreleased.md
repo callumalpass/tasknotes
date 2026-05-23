@@ -36,6 +36,8 @@ Example:
 
 ## Fixed
 
+- (#1933) Added the note path to fallback frontmatter parse warnings so malformed task YAML is easier to find.
+  - Thanks to @rayvermey for reporting.
 - (#1931) Made the Pomodoro task chooser open from cached task data and ignore repeated clicks while it is already opening.
   - Thanks to @sumiyalairu03 for reporting.
 - (#1930) Fixed starting the Pomodoro timer from its hotkey without starting time tracking for the selected Pomodoro task.
