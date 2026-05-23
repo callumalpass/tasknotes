@@ -610,6 +610,7 @@ export function openTaskSelector(
 	const modal = new TaskSelectorWithCreateModal(plugin.app, plugin, tasks, {
 		placeholder: options?.placeholder,
 		title: options?.title,
+		targetDate: options?.targetDate,
 		onResult: (result) => {
 			if (result.type === "selected" || result.type === "created") {
 				onChooseTask(result.task);

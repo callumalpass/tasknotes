@@ -31,6 +31,8 @@ Example:
 
 ## Fixed
 
+- (#1931) Made the Pomodoro task chooser open from cached task data and ignore repeated clicks while it is already opening.
+  - Thanks to @sumiyalairu03 for reporting.
 - (#1930) Fixed starting the Pomodoro timer from its hotkey without starting time tracking for the selected Pomodoro task.
   - Thanks to @sumiyalairu03 for reporting.
 - (#1929) Fixed the bottom Relationships widget overlapping embedded content such as Bases/Kanban views in task notes.

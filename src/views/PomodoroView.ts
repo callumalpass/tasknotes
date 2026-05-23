@@ -34,6 +34,20 @@ function hasUsablePomodoroLayoutSize(size: PomodoroLayoutSize): boolean {
 	return size.width > 0 && size.height > 0;
 }
 
+export function getCachedUnarchivedPomodoroTasks(plugin: TaskNotesPlugin): TaskInfo[] {
+	const taskPaths = plugin.cacheManager.getAllTaskPaths();
+	const tasks: TaskInfo[] = [];
+
+	for (const path of taskPaths) {
+		const task = plugin.cacheManager.getCachedTaskInfoSync(path);
+		if (task && !task.archived) {
+			tasks.push(task);
+		}
+	}
+
+	return tasks;
+}
+
 export function resolvePomodoroLayoutSize(
 	viewportSize: PomodoroLayoutSize,
 	contentSize: PomodoroLayoutSize
@@ -68,6 +82,7 @@ export class PomodoroView extends ItemView {
 	private subtractTimeButton: HTMLButtonElement | null = null;
 	private skipBreakButton: HTMLButtonElement | null = null;
 	private isEditingTimer = false;
+	private isTaskSelectorOpen = false;
 	private todaysPomodoros = 0;
 
 	// Cache stat elements to avoid innerHTML
@@ -810,13 +825,19 @@ export class PomodoroView extends ItemView {
 	}
 
 	private async openTaskSelector() {
+		if (this.isTaskSelectorOpen) {
+			return;
+		}
+
+		this.isTaskSelectorOpen = true;
+
 		try {
-			const allTasks = await this.plugin.cacheManager.getAllTasks();
-			const unarchivedTasks = allTasks.filter((task) => !task.archived);
+			const unarchivedTasks = getCachedUnarchivedPomodoroTasks(this.plugin);
 			const targetDate = new Date();
 
 			if (unarchivedTasks.length === 0) {
 				new Notice(this.t("views.pomodoro.notices.noTasks"));
+				this.isTaskSelectorOpen = false;
 				return;
 			}
 
@@ -825,11 +846,13 @@ export class PomodoroView extends ItemView {
 				this.plugin,
 				unarchivedTasks,
 				(selectedTask) => {
+					this.isTaskSelectorOpen = false;
 					void this.selectTask(selectedTask);
 				},
 				{ targetDate }
 			);
 		} catch (error) {
+			this.isTaskSelectorOpen = false;
 			tasknotesLogger.error("Error opening task selector:", {
 				category: "persistence",
 				operation: "opening-task-selector",
