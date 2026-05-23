@@ -248,6 +248,8 @@ export const ru: TranslationTree = {
 					dayEndTimePlaceholder: "ЧЧ:мм:сс (например, 20:00:00)",
 					timeSlotDuration: "Длительность временного слота",
 					timeSlotDurationPlaceholder: "ЧЧ:мм:сс (например, 00:30:00)",
+					dragDropResolution: "Шаг перетаскивания",
+					dragDropResolutionPlaceholder: "ЧЧ:мм:сс (например, 00:05:00)",
 					weekStartsOn: "Неделя начинается с",
 					showWeekNumbers: "Показать номера недель",
 					showNowIndicator: "Показать индикатор текущего времени",

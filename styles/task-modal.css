@@ -805,6 +805,21 @@ body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__o
     grid-column: 1 / -1;
 }
 
+body.is-mobile .tasknotes-plugin .task-project-remove {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: var(--size-4-1);
+}
+
+body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-remove {
+    margin-top: var(--size-4-1);
+}
+
 /* =====================================================================
    SPLIT LAYOUT - BASE STYLES (mobile/narrow screens)
    On narrow screens, content flows vertically with details below title

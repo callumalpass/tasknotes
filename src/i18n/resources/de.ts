@@ -248,6 +248,8 @@ export const de: TranslationTree = {
 					dayEndTimePlaceholder: "HH:mm:ss (z.B. 20:00:00)",
 					timeSlotDuration: "Zeitschlitzdauer",
 					timeSlotDurationPlaceholder: "HH:mm:ss (z.B. 00:30:00)",
+					dragDropResolution: "Auflösung für Ziehen/Ablegen",
+					dragDropResolutionPlaceholder: "HH:mm:ss (z.B. 00:05:00)",
 					weekStartsOn: "Woche beginnt am",
 					showWeekNumbers: "Wochennummern anzeigen",
 					showNowIndicator: "Jetzt-Indikator anzeigen",

@@ -179,6 +179,8 @@
   "views.basesCalendar.settings.layout.dayEndTimePlaceholder": "0133cae380a25a9edd58d66259a3164cfb8f475e",
   "views.basesCalendar.settings.layout.timeSlotDuration": "29f4bf4e4e79c36f8416b3785304f0a28bf6d1ca",
   "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": "42dcf2fde11e354fe96a959abe2424d9339a8589",
+  "views.basesCalendar.settings.layout.dragDropResolution": "10bae1b83a90069958aeb5e093500223c0719848",
+  "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": "3767ff7d284933429f9cb625c21bc84b7ce51780",
   "views.basesCalendar.settings.layout.weekStartsOn": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
   "views.basesCalendar.settings.layout.showWeekNumbers": "181797ee5c8edfd86e0166c5012159efdebefee8",
   "views.basesCalendar.settings.layout.showNowIndicator": "80bc9e34e9d741ed65ca981c5371f2598870dad8",

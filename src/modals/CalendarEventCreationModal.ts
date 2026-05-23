@@ -79,7 +79,7 @@ export class CalendarEventCreationModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.addClass("calendar-event-creation-modal");
+		contentEl.addClass("tasknotes-plugin", "calendar-event-creation-modal");
 
 		// Global Ctrl/Cmd+Enter shortcut
 		this.keyboardHandler = (e: KeyboardEvent) => {

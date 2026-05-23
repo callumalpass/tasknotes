@@ -37,6 +37,7 @@
     color: var(--interactive-accent);
     display: block;
     margin-bottom: var(--size-4-1);
+    overflow-wrap: anywhere;
 }
 
 .tasknotes-plugin .reminder-modal__task-dates {
@@ -461,6 +462,13 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
         max-width: 90vw;
         min-height: 60vh;
         max-height: 90vh;
+    }
+
+    .tasknotes-plugin .reminder-modal__header,
+    .tasknotes-plugin .reminder-modal__content,
+    .tasknotes-plugin .reminder-modal__actions {
+        padding-left: var(--size-4-3);
+        padding-right: var(--size-4-3);
     }
     
     .tasknotes-plugin .reminder-modal__quick-buttons {

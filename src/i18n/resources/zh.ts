@@ -248,6 +248,8 @@ export const zh: TranslationTree = {
 					dayEndTimePlaceholder: "HH:mm:ss（例如：20:00:00）",
 					timeSlotDuration: "时间段持续时间",
 					timeSlotDurationPlaceholder: "HH:mm:ss（例如：00:30:00）",
+					dragDropResolution: "拖放时间粒度",
+					dragDropResolutionPlaceholder: "HH:mm:ss（例如：00:05:00）",
 					weekStartsOn: "一周开始于",
 					showWeekNumbers: "显示周数",
 					showNowIndicator: "显示当前时间指示器",

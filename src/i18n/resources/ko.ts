@@ -248,6 +248,8 @@ export const ko: TranslationTree = {
 					dayEndTimePlaceholder: "HH:mm:ss (예: 20:00:00)",
 					timeSlotDuration: "시간 슬롯 간격",
 					timeSlotDurationPlaceholder: "HH:mm:ss (예: 00:30:00)",
+					dragDropResolution: "드래그/드롭 간격",
+					dragDropResolutionPlaceholder: "HH:mm:ss (예: 00:05:00)",
 					weekStartsOn: "주 시작 요일",
 					showWeekNumbers: "주 번호 표시",
 					showNowIndicator: "현재 시간 표시",

@@ -387,4 +387,9 @@
 body.is-mobile .tasknotes-plugin {
     --tn-nested-task-indent: 12px;
     --tn-nested-task-padding: 10px;
+    --tn-mobile-task-card-indicator-size: 24px;
+    --tn-mobile-task-card-menu-size: 32px;
+    --tn-mobile-task-card-dot-padding: 6px;
+    --tn-mobile-inline-indicator-size: 20px;
+    --tn-mobile-inline-menu-size: 24px;
 }

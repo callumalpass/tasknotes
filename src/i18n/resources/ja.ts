@@ -248,6 +248,8 @@ export const ja: TranslationTree = {
 					dayEndTimePlaceholder: "HH:mm:ss（例：20:00:00）",
 					timeSlotDuration: "タイムスロット期間",
 					timeSlotDurationPlaceholder: "HH:mm:ss（例：00:30:00）",
+					dragDropResolution: "ドラッグ/ドロップ間隔",
+					dragDropResolutionPlaceholder: "HH:mm:ss（例：00:05:00）",
 					weekStartsOn: "週の開始曜日",
 					showWeekNumbers: "週番号を表示",
 					showNowIndicator: "現在の時刻インジケータを表示",

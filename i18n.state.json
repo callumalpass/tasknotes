@@ -720,6 +720,14 @@
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "b4bbf64dc40534031d82ceb781e7b201e91f68a3"
     },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "c6628f51cebbe1f9be67312022133109c3dd006b"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "7c1c1d81cea7e2e99e17e9f2f47993cf394a3e44"
+    },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
       "translation": "c8d224c187903f6721d87209ff3dd3b39a564ecf"
@@ -9465,6 +9473,14 @@
     "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "84ed6d9e5a3898b4f62d998df68e77624024a797"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "f893179e3146bfae4d8eeea2e4f3710d5b7b5d13"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "22ff72915931f0fa3b045d19295d2d159d0c10bb"
     },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
@@ -18212,6 +18228,14 @@
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "f91b444cf92bd0a247a23d6e7d846893676f1efc"
     },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "0ecf86f1a4bacc9053daea31ab9258fd00b2c622"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "36428c14bae6164415659d6a19bd57c9d9580c7e"
+    },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
       "translation": "a42d4d52511f97f3946357564da09ba5b9994fb2"
@@ -26957,6 +26981,14 @@
     "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "11ef7c65a18066af074d8c55613a6a6ff8bc9dbb"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "ca04d38b6f5c4c6b332caa4de6fed81bff845d82"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "413ecfc29e7bff421553e7d6f25665e2ce91bd26"
     },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
@@ -35704,6 +35736,14 @@
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "616865e7b3296dfd2bdb6c6966443f42489d4f73"
     },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "3201b2813062ec065f0f6bea5b93b1a922186ba2"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "c501a5868b1fa3600c551b98db57ad928bf62c15"
+    },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
       "translation": "9cc0d3755aa858490230b50cd4c74bf82f718259"
@@ -44449,6 +44489,14 @@
     "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "99332bae87308c3ce447a78af64c00e2a8b1b8ba"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "6594e906e5d044d74cda586ff5e3597014a90715"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "d03571b31304d80326705349f5a6d061fbeb4813"
     },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
@@ -53196,6 +53244,14 @@
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "f523d5d23e814daa0c269a9a0c1cff38fb16560d"
     },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "06ef6c342fddeec7341f6fd6c9874652f2004491"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "42237fd5473f5e8a2107a665e51078afc10807a2"
+    },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
       "translation": "ef0a6f46cc55b10e8e9c2e9f51724b2867beaf58"
@@ -61941,6 +61997,14 @@
     "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
       "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
       "translation": "fd33b47fedea685a26f4f3b27a7fccf19a0d919d"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolution": {
+      "source": "10bae1b83a90069958aeb5e093500223c0719848",
+      "translation": "f868576e3459e313ed790332927c45f71515b77a"
+    },
+    "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder": {
+      "source": "3767ff7d284933429f9cb625c21bc84b7ce51780",
+      "translation": "9660ecf6c7af9b968f34d41b6165767ebf648046"
     },
     "views.basesCalendar.settings.layout.weekStartsOn": {
       "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",

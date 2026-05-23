@@ -110,6 +110,10 @@
     .tasknotes-plugin .settings-header {
         justify-content: flex-start;
     }
+
+    .tasknotes-plugin .settings-view__tab-nav {
+        width: 100%;
+    }
 }
 
 /* ================================================
@@ -309,6 +313,61 @@ input.tasknotes-theme-color-picker {
     padding: 2px;
     margin-inline-start: 0.5rem;
     cursor: var(--cursor-link, pointer);
+}
+
+body.is-mobile .tasknotes-plugin .tasknotes-settings__card-config-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+body.is-mobile .tasknotes-plugin .tasknotes-settings__nested-content,
+body.is-mobile .tasknotes-plugin .tasknotes-settings__nested-cards,
+body.is-mobile .tasknotes-plugin .tasknotes-settings__collapsible-section-content {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+body.is-mobile .tasknotes-plugin .field-manager,
+body.is-mobile .tasknotes-plugin .field-manager__content,
+body.is-mobile .tasknotes-plugin .field-manager__cards {
+    min-width: 0;
+    max-width: 100%;
+}
+
+body.is-mobile .tasknotes-plugin .field-manager__tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+body.is-mobile .tasknotes-plugin .field-manager__tab {
+    flex: 0 0 auto;
+}
+
+body.is-mobile .tasknotes-plugin .tasknotes-settings__card-config-label {
+    min-width: 0;
+    width: 100%;
+    margin-right: 0;
+}
+
+body.is-mobile .tasknotes-plugin .tasknotes-settings__card-input:not([type="checkbox"]):not([type="color"]) {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+body.is-mobile .tasknotes-plugin .tasknotes-settings__card-actions {
+    flex-direction: column;
+}
+
+body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
+    justify-content: center;
+    width: 100%;
 }
 
 /* Card Actions */

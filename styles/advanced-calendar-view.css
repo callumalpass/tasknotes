@@ -341,6 +341,53 @@ body.is-mobile .timeblock-info-modal input.tasknotes-theme-color-picker {
     max-width: 2.25rem;
 }
 
+body.is-mobile .timeblock-creation-modal .setting-item,
+body.is-mobile .timeblock-info-modal .setting-item,
+body.is-mobile .tasknotes-plugin.calendar-event-creation-modal .setting-item {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+
+body.is-mobile .timeblock-creation-modal .setting-item-control,
+body.is-mobile .timeblock-info-modal .setting-item-control,
+body.is-mobile .tasknotes-plugin.calendar-event-creation-modal .setting-item-control {
+    justify-content: flex-start;
+    width: 100%;
+}
+
+body.is-mobile .timeblock-creation-modal input,
+body.is-mobile .timeblock-creation-modal textarea,
+body.is-mobile .timeblock-info-modal input,
+body.is-mobile .timeblock-info-modal textarea,
+body.is-mobile .tasknotes-plugin.calendar-event-creation-modal input,
+body.is-mobile .tasknotes-plugin.calendar-event-creation-modal textarea,
+body.is-mobile .tasknotes-plugin.calendar-event-creation-modal select {
+    width: 100%;
+}
+
+body.is-mobile .timeblock-modal-buttons,
+body.is-mobile .tasknotes-plugin.calendar-event-creation-modal .calendar-event-modal-buttons {
+    flex-direction: column;
+}
+
+body.is-mobile .timeblock-modal-buttons button,
+body.is-mobile .tasknotes-plugin.calendar-event-creation-modal .calendar-event-modal-buttons button {
+    width: 100%;
+}
+
+body.is-mobile .timeblock-modal-buttons-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+body.is-mobile .timeblock-attachment-remove {
+    width: 32px;
+    height: 32px;
+}
+
 /* Attachment Suggestion Modal Styles */
 .attachment-suggestion {
     padding: 0.5rem;

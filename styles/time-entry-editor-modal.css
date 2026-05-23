@@ -269,6 +269,11 @@
         width: 90vw;
     }
 
+    .time-entry-editor-modal .modal-title {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
     .time-entry-editor-modal__footer {
         flex-direction: column;
         align-items: flex-start;
