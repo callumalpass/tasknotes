@@ -763,6 +763,7 @@ export class BasesFilterConverter {
 			"slotMinTime",
 			"slotMaxTime",
 			"slotDuration",
+			"snapDuration",
 		];
 
 		const hasCalendarOptions = calendarOptions.some((option) => option in viewOptions);

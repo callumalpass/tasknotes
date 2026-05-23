@@ -357,6 +357,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										placeholder: t("layout.timeSlotDurationPlaceholder"),
 									},
 									{
+										type: "text",
+										key: "snapDuration",
+										displayName: t("layout.dragDropResolution"),
+										default: calendarSettings.slotDuration,
+										placeholder: t("layout.dragDropResolutionPlaceholder"),
+									},
+									{
 										type: "dropdown",
 										key: "firstDay",
 										displayName: t("layout.weekStartsOn"),

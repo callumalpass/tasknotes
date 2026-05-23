@@ -38,6 +38,7 @@ describe("calendarConfigSnapshot", () => {
 			expect.arrayContaining([
 				"showScheduled",
 				"calendarView",
+				"snapDuration",
 				"createDailyNotesFromDateLinks",
 				"showICS_ics-a",
 				"showGoogleCalendar_google-a",

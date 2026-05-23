@@ -54,6 +54,8 @@ Example:
   - Thanks to @RumiaKitinari for reporting.
 - (#1898) Fixed Calendar Day view time labels shifting into the middle of the grid after switching views.
   - Thanks to @ddevaal for reporting and confirming the regression.
+- (#1936) Added a Calendar Base drag/drop resolution option so events can snap to smaller increments than the visible time slot grid.
+  - Thanks to @benmartinek for suggesting this.
 - (#1916) Fixed Markdown task links using Obsidian's generated filename label instead of the TaskNote title in the task link overlay.
   - Thanks to @minchinweb for reporting.
 - (#1911) Fixed recurrence choices starting from today instead of the selected calendar date when creating a task from Calendar view.

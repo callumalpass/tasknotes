@@ -486,6 +486,7 @@ export class CalendarView extends BasesViewBase {
 		slotMinTime: string;
 		slotMaxTime: string;
 		slotDuration: string;
+		snapDuration: string;
 		firstDay: number;
 		weekNumbers: boolean;
 		nowIndicator: boolean;
@@ -557,6 +558,7 @@ export class CalendarView extends BasesViewBase {
 				true
 			),
 			slotDuration: this.validateTimeValue(calendarSettings.slotDuration, "00:30:00"),
+			snapDuration: this.validateTimeValue(calendarSettings.slotDuration, "00:30:00"),
 			scrollTime: this.validateTimeValue(calendarSettings.scrollTime, "08:00:00"),
 			firstDay: calendarSettings.firstDay,
 			weekNumbers: calendarSettings.weekNumbers,
@@ -991,6 +993,10 @@ export class CalendarView extends BasesViewBase {
 				this.getConfigOption<string | undefined>("slotDuration", undefined),
 				this.viewOptions.slotDuration
 			);
+			this.viewOptions.snapDuration = this.validateTimeValue(
+				this.getConfigOption<string | undefined>("snapDuration", undefined),
+				this.viewOptions.slotDuration
+			);
 			this.viewOptions.scrollTime = this.validateTimeValue(
 				this.getConfigOption<string | undefined>("scrollTime", undefined),
 				this.viewOptions.scrollTime
@@ -1296,6 +1302,7 @@ export class CalendarView extends BasesViewBase {
 			slotMinTime: this.viewOptions.slotMinTime,
 			slotMaxTime: this.viewOptions.slotMaxTime,
 			slotDuration: this.viewOptions.slotDuration,
+			snapDuration: this.viewOptions.snapDuration,
 			firstDay: this.viewOptions.firstDay,
 			weekNumbers: this.viewOptions.weekNumbers,
 			nowIndicator: this.viewOptions.nowIndicator,
