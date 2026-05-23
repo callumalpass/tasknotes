@@ -155,6 +155,29 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		void handleClick(event);
 	};
 
+	const handleAuxClick = (e: MouseEvent) => {
+		if (e.button !== 1) {
+			return;
+		}
+
+		const target = e.target as HTMLElement;
+		if (target.closest(clickExcludeSelector)) {
+			return;
+		}
+
+		e.preventDefault();
+		e.stopPropagation();
+		if (clickTimeout) {
+			window.clearTimeout(clickTimeout);
+			clickTimeout = null;
+		}
+		openNote(true);
+	};
+
+	const auxclickHandler = (event: MouseEvent) => {
+		handleAuxClick(event);
+	};
+
 	const dblclickHandler = (_event: MouseEvent) => {
 		// This is handled by the clickHandler to distinguish single/double clicks
 	};
@@ -214,6 +237,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 
 	return {
 		clickHandler,
+		auxclickHandler,
 		dblclickHandler,
 		contextmenuHandler,
 		cleanup: () => {

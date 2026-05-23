@@ -248,23 +248,25 @@ export function createTaskCard(
 	});
 
 	// Add click handlers with single/double click distinction
-	const { clickHandler, dblclickHandler, contextmenuHandler } = createTaskClickHandler({
-		task,
-		plugin,
-		contextMenuHandler: (e) => {
-			const path = card.dataset.taskPath;
-			if (!path) return;
-			void showTaskContextMenu(e, path, plugin, targetDate);
-		},
-		createBatchContextMenu: (selectedPaths, onUpdate) =>
-			new BatchContextMenu({
-				plugin,
-				selectedPaths,
-				onUpdate,
-			}),
-	});
+	const { clickHandler, auxclickHandler, dblclickHandler, contextmenuHandler } =
+		createTaskClickHandler({
+			task,
+			plugin,
+			contextMenuHandler: (e) => {
+				const path = card.dataset.taskPath;
+				if (!path) return;
+				void showTaskContextMenu(e, path, plugin, targetDate);
+			},
+			createBatchContextMenu: (selectedPaths, onUpdate) =>
+				new BatchContextMenu({
+					plugin,
+					selectedPaths,
+					onUpdate,
+				}),
+		});
 
 	card.addEventListener("click", clickHandler);
+	card.addEventListener("auxclick", auxclickHandler);
 	card.addEventListener("dblclick", dblclickHandler);
 	card.addEventListener("contextmenu", contextmenuHandler);
 

@@ -749,6 +749,22 @@ describe('TaskCard Component', () => {
       expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
     });
 
+    it('should handle middle-click to open source note in a new tab', async () => {
+      const mockFile = new TFile('test.md');
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+      const middleClickEvent = new MouseEvent('auxclick', {
+        bubbles: true,
+        cancelable: true,
+        button: 1
+      });
+
+      card.dispatchEvent(middleClickEvent);
+
+      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
+      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+    });
+
     it('should handle right-click context menu', async () => {
       const contextMenuEvent = new MouseEvent('contextmenu', { bubbles: true });
 

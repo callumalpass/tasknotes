@@ -29,6 +29,11 @@ Example:
 - (#1923) Restricted the HTTP API server to loopback and limited browser CORS access to loopback origins.
   - Thanks to @martin-forge for reporting.
 
+## Added
+
+- (#1932) Added middle-click support for opening task cards in a new tab.
+  - Thanks to @imsuck for the request.
+
 ## Fixed
 
 - (#1931) Made the Pomodoro task chooser open from cached task data and ignore repeated clicks while it is already opening.
