@@ -31,6 +31,8 @@ Example:
 
 ## Fixed
 
+- (#1929) Fixed the bottom Relationships widget overlapping embedded content such as Bases/Kanban views in task notes.
+  - Thanks to @rchaklashiya for reporting and following up with the embed case.
 - (#1922) Restored the native color picker alongside manual color text entry in Create/Edit Timeblock fields.
   - Thanks to @AndreMonthy for reporting.
 - (#1921) Fixed direct frontmatter edits to lifecycle-relevant task fields not triggering Google Calendar sync or auto-archive side effects.

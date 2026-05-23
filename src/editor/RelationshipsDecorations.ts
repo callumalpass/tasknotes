@@ -158,6 +158,40 @@ function getRelationshipsWidgetDefaultMarginTop(widget: HTMLElement): number {
 	return fontSize !== null ? fontSize * 1.5 : 24;
 }
 
+function getVisibleElementBottom(element: HTMLElement): number | null {
+	const rect = element.getBoundingClientRect();
+	if (rect.width <= 0 && rect.height <= 0) {
+		return null;
+	}
+	return rect.bottom;
+}
+
+function getRenderedElementBottom(element: HTMLElement): number | null {
+	let bottom = getVisibleElementBottom(element);
+
+	element.querySelectorAll<HTMLElement>("*").forEach((child) => {
+		const childBottom = getVisibleElementBottom(child);
+		if (childBottom !== null && (bottom === null || childBottom > bottom)) {
+			bottom = childBottom;
+		}
+	});
+
+	return bottom;
+}
+
+function getRenderedLinesBottom(lines: HTMLElement[]): number | null {
+	let bottom: number | null = null;
+
+	for (const line of lines) {
+		const lineBottom = getRenderedElementBottom(line);
+		if (lineBottom !== null && (bottom === null || lineBottom > bottom)) {
+			bottom = lineBottom;
+		}
+	}
+
+	return bottom;
+}
+
 export function applyRelationshipsBottomOffset(container: HTMLElement, widget: HTMLElement): void {
 	widget.style.removeProperty("--tn-relationships-widget-margin-top");
 
@@ -169,18 +203,18 @@ export function applyRelationshipsBottomOffset(container: HTMLElement, widget: H
 	const lines = getHTMLElementChildren(cmContent).filter((child) =>
 		child.classList.contains("cm-line")
 	);
-	const lastLine = lines.length > 0 ? lines[lines.length - 1] : null;
+	const contentBottom = getRenderedLinesBottom(lines);
 	const contentContainer = cmContent.closest<HTMLElement>(".cm-contentContainer");
-	if (!lastLine || !contentContainer) {
+	if (contentBottom === null || !contentContainer) {
 		return;
 	}
 
 	const spacerGap = Math.max(
 		0,
 		Math.round(
-			contentContainer.getBoundingClientRect().bottom -
-				lastLine.getBoundingClientRect().bottom
-		)
+				contentContainer.getBoundingClientRect().bottom -
+					contentBottom
+			)
 	);
 	if (spacerGap > 0) {
 		const defaultMarginTop = getRelationshipsWidgetDefaultMarginTop(widget);
