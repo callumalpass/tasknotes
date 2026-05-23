@@ -31,6 +31,8 @@ Example:
 
 ## Fixed
 
+- (#1930) Fixed starting the Pomodoro timer from its hotkey without starting time tracking for the selected Pomodoro task.
+  - Thanks to @sumiyalairu03 for reporting.
 - (#1929) Fixed the bottom Relationships widget overlapping embedded content such as Bases/Kanban views in task notes.
   - Thanks to @rchaklashiya for reporting and following up with the embed case.
 - (#1922) Restored the native color picker alongside manual color text entry in Create/Edit Timeblock fields.

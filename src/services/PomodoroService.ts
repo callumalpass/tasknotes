@@ -421,6 +421,11 @@ export class PomodoroService {
 		this.showPomodoroNotification(`Pomodoro started${task ? ` for: ${task.title}` : ""}`);
 	}
 
+	async startPomodoroWithLastSelectedTask(durationMinutes?: number): Promise<void> {
+		const task = await this.getAutoStartTask();
+		await this.startPomodoro(task, durationMinutes);
+	}
+
 	async startBreak(isLongBreak = false) {
 		if (this.state.isRunning) {
 			publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.timerAlreadyRunning"));

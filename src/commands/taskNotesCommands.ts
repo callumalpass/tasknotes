@@ -178,7 +178,7 @@ export function createTaskNotesCommandDefinitions(
 				} else if (state.nextSessionType === "long-break") {
 					await ctx.pomodoroService.startBreak(true);
 				} else {
-					await ctx.pomodoroService.startPomodoro();
+					await ctx.pomodoroService.startPomodoroWithLastSelectedTask();
 				}
 			},
 		},
