@@ -63,6 +63,30 @@
     flex: 1 1 auto;
 }
 
+.tn-task-modal__markdown-editor--details .details-editor-fallback {
+    display: block;
+    width: 100%;
+    min-height: inherit;
+    height: 100%;
+    max-height: 400px;
+    box-sizing: border-box;
+    padding: var(--size-4-2);
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-normal);
+    font-family: var(--font-text);
+    font-size: var(--font-ui-medium);
+    line-height: var(--line-height-normal);
+    resize: none;
+    overflow-y: auto;
+}
+
+.tn-task-modal__markdown-editor--details .details-editor-fallback:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 /* Style the editor content */
 .tn-task-modal__markdown-editor--details .cm-content {
     padding-left: var(--size-4-2);
@@ -761,7 +785,8 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-right {
 
 body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details,
 body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .task-details-editor,
-body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .cm-editor {
+body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .cm-editor,
+body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .details-editor-fallback {
     min-height: 140px;
     max-height: 32vh;
 }

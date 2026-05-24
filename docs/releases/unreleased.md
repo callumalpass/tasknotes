@@ -40,3 +40,5 @@ Example:
   - Thanks to @martin-forge for reporting and contributing the fix.
 - (#1938) Fixed partial HTTP API task updates rewriting native tags with `#` prefixes or duplicate task tags.
   - Thanks to @joseluisgonzalezdelgado-ctrl for reporting.
+- (#1939) Fixed the mobile task Details field rendering as a small nested textarea when the embedded editor falls back on iPhone.
+  - Thanks to @g-arthurvanderbilt for reporting.
