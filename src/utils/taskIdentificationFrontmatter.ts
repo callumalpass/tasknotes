@@ -4,7 +4,8 @@ export function coerceTaskIdentifierPropertyValue(value: string): string | boole
 }
 
 function normalizeTag(value: string): string {
-	return value.startsWith("#") ? value.slice(1) : value;
+	const trimmed = value.trim();
+	return trimmed.startsWith("#") ? trimmed.slice(1).trim() : trimmed;
 }
 
 export function isTagsTaskIdentifierProperty(propertyName: string): boolean {
@@ -20,12 +21,25 @@ function propertyValuesMatch(left: unknown, right: string | boolean): boolean {
 }
 
 export function getFrontmatterTags(value: unknown): string[] {
+	const tags: string[] = [];
+	const seen = new Set<string>();
+	const addTag = (tagValue: unknown): void => {
+		const normalized = normalizeTag(String(tagValue));
+		if (!normalized || seen.has(normalized)) {
+			return;
+		}
+		seen.add(normalized);
+		tags.push(normalized);
+	};
+
 	if (Array.isArray(value)) {
-		return value.map(String).filter((tag) => tag.trim().length > 0);
+		value.forEach(addTag);
+		return tags;
 	}
 
 	if (typeof value === "string" && value.trim().length > 0) {
-		return [value.trim()];
+		addTag(value);
+		return tags;
 	}
 
 	return [];

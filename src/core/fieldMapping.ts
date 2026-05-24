@@ -13,6 +13,7 @@ import {
 	serializeDependencies,
 } from "../utils/dependencyUtils";
 import { validateCompleteInstances } from "../utils/dateUtils";
+import { getFrontmatterTags } from "../utils/taskIdentificationFrontmatter";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -299,9 +300,12 @@ export function mapTaskFromFrontmatter(
 		mapped.sortOrder = normalizeStringValue(frontmatter[mapping.sortOrder]);
 	}
 
-	if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
-		mapped.tags = frontmatter.tags.map(String);
-		mapped.archived = frontmatter.tags.includes(mapping.archiveTag);
+	if (frontmatter.tags !== undefined) {
+		const tags = getFrontmatterTags(frontmatter.tags);
+		if (tags.length > 0) {
+			mapped.tags = tags;
+		}
+		mapped.archived = tags.includes(normalizeTagForComparison(mapping.archiveTag));
 	}
 
 	if (userFields.length > 0) {
@@ -457,16 +461,18 @@ export function mapTaskToFrontmatter(
 		frontmatter[mapping.reminders] = taskData.reminders;
 	}
 
-	let tags = taskData.tags ? [...taskData.tags] : [];
+	let tags = getFrontmatterTags(taskData.tags);
+	const taskTagValue = taskTag ? normalizeTagForComparison(taskTag) : "";
+	const archiveTag = normalizeTagForComparison(mapping.archiveTag);
 
-	if (taskTag && !tags.includes(taskTag)) {
-		tags.push(taskTag);
+	if (taskTagValue && !tags.includes(taskTagValue)) {
+		tags.push(taskTagValue);
 	}
 
-	if (taskData.archived === true && !tags.includes(mapping.archiveTag)) {
-		tags.push(mapping.archiveTag);
+	if (taskData.archived === true && !tags.includes(archiveTag)) {
+		tags.push(archiveTag);
 	} else if (taskData.archived === false) {
-		tags = tags.filter((tag) => tag !== mapping.archiveTag);
+		tags = tags.filter((tag) => tag !== archiveTag);
 	}
 
 	if (tags.length > 0) {
@@ -494,6 +500,10 @@ export function mapTaskToFrontmatter(
 	}
 
 	return frontmatter;
+}
+
+function normalizeTagForComparison(tag: string): string {
+	return getFrontmatterTags(tag)[0] ?? "";
 }
 
 export function lookupMappingKey(

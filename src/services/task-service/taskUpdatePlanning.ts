@@ -240,7 +240,7 @@ export function applyTaskUpdateFrontmatterChange({
 	}
 
 	if (Object.prototype.hasOwnProperty.call(updates, "tags")) {
-		const tagsToSet = Array.isArray(updates.tags) ? [...updates.tags] : [];
+		const tagsToSet = getFrontmatterTags(updates.tags);
 		if (tagsToSet.length > 0) {
 			frontmatter.tags = tagsToSet;
 		} else {

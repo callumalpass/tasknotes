@@ -38,3 +38,5 @@ Example:
   - Batched recovery also cleans up indexed Google Calendar events whose task files were deleted or replaced outside the normal TaskNotes delete path, without scanning the full vault every minute.
   - Added internal profiling around this recovery path so performance can be checked in large vaults.
   - Thanks to @martin-forge for reporting and contributing the fix.
+- (#1938) Fixed partial HTTP API task updates rewriting native tags with `#` prefixes or duplicate task tags.
+  - Thanks to @joseluisgonzalezdelgado-ctrl for reporting.
