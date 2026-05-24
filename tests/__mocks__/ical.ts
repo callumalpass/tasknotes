@@ -160,6 +160,15 @@ export const ICAL = {
       return this.multiProperties.get(name) || [];
     }
 
+    getFirstProperty(name: string): any | null {
+      const multi = this.multiProperties.get(name);
+      if (multi && multi.length > 0) return multi[0];
+      if (this.properties.has(name)) {
+        return new ICAL.Property(name, this.properties.get(name), {});
+      }
+      return null;
+    }
+
     addPropertyWithValue(name: string, value: any): void {
       this.properties.set(name, value);
     }

@@ -26,5 +26,7 @@ Example:
 
 ## Fixed
 
+- (#781, #1085) Fixed Outlook-published ICS calendar events appearing at the wrong time when their feed used Windows timezone names without matching timezone definitions.
+  - Thanks to @chrlaney for reporting and @mjkrasny for confirming the Outlook timezone case.
 - (#1912) Fixed "Create subtask" inserting the full path of the parent task in the Projects field instead of using the normal Obsidian link text.
   - Thanks to @pkuehne for reporting and @benmartinek for confirming.

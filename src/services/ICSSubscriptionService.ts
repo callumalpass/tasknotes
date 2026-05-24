@@ -8,6 +8,7 @@ import type { InterpolationValues, TranslationKey } from "../i18n";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { resolveTzidToIANA, wallTimeInZoneToUtcIso } from "../utils/icsTimezoneFallback";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSSubscriptionService" });
 
@@ -98,12 +99,21 @@ export class ICSSubscriptionService extends EventEmitter {
 	 * For timed events, uses toUnixTime() which correctly handles all timezones.
 	 * For all-day events, preserves the date without time conversion.
 	 *
+	 * When ical.js can't resolve a TZID (no matching VTIMEZONE in the feed and
+	 * no IANA tzdata in ical.js itself), it demotes the time to "floating",
+	 * and `toUnixTime()` then misinterprets the wall clock as UTC. To recover,
+	 * the caller can pass the raw TZID parameter from the source property; if
+	 * it maps to a known IANA zone (directly or via the Windows TZID alias
+	 * table), Intl.DateTimeFormat is used to compute the correct UTC instant.
+	 *
 	 * This fixes issues with:
-	 * - Non-IANA timezones (e.g., TZID=Zurich without VTIMEZONE)
-	 * - Floating time events
-	 * - Outlook/Exchange timezone formats
+	 * - Outlook/Exchange feeds that reference Windows TZIDs without
+	 *   inlining a VTIMEZONE block for every referenced zone.
+	 * - Events with IANA TZIDs that have no accompanying VTIMEZONE.
+	 * - Non-IANA timezones (e.g., TZID=Zurich without VTIMEZONE).
+	 * - All-day events (date-only output, no zone math).
 	 */
-	private icalTimeToISOString(icalTime: ICAL.Time): string {
+	private icalTimeToISOString(icalTime: ICAL.Time, rawTzid?: string | null): string {
 		// For all-day events, return date-only string (YYYY-MM-DD)
 		// This preserves the calendar date semantics without timezone ambiguity
 		// per iCalendar RFC 5545 specification for VALUE=DATE events
@@ -114,13 +124,34 @@ export class ICSSubscriptionService extends EventEmitter {
 			return `${year}-${month}-${day}`;
 		}
 
-		// For timed events, use toUnixTime() which correctly converts to UTC
-		// This handles all timezone cases properly, including:
-		// - Events with proper VTIMEZONE definitions
-		// - Events with non-IANA TZIDs (treated as floating)
-		// - Floating time events
+		// Fallback path: when ical.js fell back to floating but the source
+		// property had a TZID that resolves to a known IANA zone, compute
+		// the UTC instant from the wall clock using Intl tzdata.
+		const zoneTzid = icalTime.zone?.tzid;
+		if (zoneTzid === "floating" || zoneTzid === undefined) {
+			const iana = resolveTzidToIANA(rawTzid);
+			if (iana) {
+				return wallTimeInZoneToUtcIso(icalTime, iana);
+			}
+		}
+
+		// Normal path: ical.js has a registered timezone for this Time
+		// (either from a VTIMEZONE in the feed or because the time is UTC),
+		// so toUnixTime() gives the correct instant.
 		const unixTime = icalTime.toUnixTime();
 		return new Date(unixTime * 1000).toISOString();
+	}
+
+	/**
+	 * Extract the raw TZID parameter from a property (e.g. DTSTART, DTEND).
+	 * Returns null when the property is missing or has no TZID parameter
+	 * (which means the value is either UTC, date-only, or floating by intent).
+	 */
+	private rawTzidOf(vevent: ICAL.Component, propName: string): string | null {
+		const prop = vevent.getFirstProperty(propName);
+		if (!prop) return null;
+		const tzid = prop.getParameter("tzid");
+		return typeof tzid === "string" ? tzid : null;
 	}
 
 	constructor(plugin: TaskNotesPlugin) {
@@ -469,9 +500,18 @@ export class ICSSubscriptionService extends EventEmitter {
 						return; // Skip events without start date
 					}
 
+					// Capture the raw TZID parameters so icalTimeToISOString can
+					// fall back to Intl-based resolution for floating times whose
+					// TZID was a Windows (Outlook) zone name or any other IANA
+					// name not present in the calendar's VTIMEZONE blocks.
+					const startTzidRaw = this.rawTzidOf(vevent, "dtstart");
+					const endTzidRaw = this.rawTzidOf(vevent, "dtend");
+
 					const isAllDay = startDate.isDate;
-					const startISO = this.icalTimeToISOString(startDate);
-					const endISO = endDate ? this.icalTimeToISOString(endDate) : undefined;
+					const startISO = this.icalTimeToISOString(startDate, startTzidRaw);
+					const endISO = endDate
+						? this.icalTimeToISOString(endDate, endTzidRaw ?? startTzidRaw)
+						: undefined;
 
 					// Generate unique ID
 					const uid = event.uid || `${subscriptionId}-${events.length}`;
@@ -549,6 +589,14 @@ export class ICSSubscriptionService extends EventEmitter {
 								// Use the modified event instead
 								const modifiedStart = modifiedEvent.startDate;
 								const modifiedEnd = modifiedEvent.endDate;
+								const modifiedVevent: ICAL.Component | undefined =
+									(modifiedEvent as { component?: ICAL.Component }).component;
+								const modStartTzidRaw = modifiedVevent
+									? this.rawTzidOf(modifiedVevent, "dtstart")
+									: null;
+								const modEndTzidRaw = modifiedVevent
+									? this.rawTzidOf(modifiedVevent, "dtend")
+									: null;
 
 								if (modifiedStart) {
 									events.push({
@@ -556,9 +604,15 @@ export class ICSSubscriptionService extends EventEmitter {
 										subscriptionId: subscriptionId,
 										title: modifiedEvent.summary || summary,
 										description: modifiedEvent.description || description,
-										start: this.icalTimeToISOString(modifiedStart),
+										start: this.icalTimeToISOString(
+											modifiedStart,
+											modStartTzidRaw
+										),
 										end: modifiedEnd
-											? this.icalTimeToISOString(modifiedEnd)
+											? this.icalTimeToISOString(
+													modifiedEnd,
+													modEndTzidRaw ?? modStartTzidRaw
+												)
 											: undefined,
 										allDay: modifiedStart.isDate,
 										location: modifiedEvent.location || location,
@@ -567,15 +621,25 @@ export class ICSSubscriptionService extends EventEmitter {
 									visibleInstanceCount++;
 								}
 							} else {
-								// Use the original recurring event instance
-								const instanceStart = this.icalTimeToISOString(occurrence);
+								// Use the original recurring event instance.
+								// The iterator emits ICAL.Time values that share the
+								// startDate's TZID, so pass startTzidRaw for fallback.
+								const instanceStart = this.icalTimeToISOString(
+									occurrence,
+									startTzidRaw
+								);
 								let instanceEnd = endISO;
 
-								if (endDate && startDate) {
-									// Calculate duration using Unix timestamps for accuracy
-									const duration = endDate.toUnixTime() - startDate.toUnixTime();
-									const instanceEndTime = occurrence.toUnixTime() + duration;
-									instanceEnd = new Date(instanceEndTime * 1000).toISOString();
+								if (endISO && startISO && !isAllDay) {
+									// Derive duration from the already-resolved ISO
+									// strings so the fallback path stays consistent
+									// across the start and end of an instance.
+									const durationMs =
+										new Date(endISO).getTime() -
+										new Date(startISO).getTime();
+									instanceEnd = new Date(
+										new Date(instanceStart).getTime() + durationMs
+									).toISOString();
 								}
 
 								events.push({
