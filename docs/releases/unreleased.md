@@ -23,3 +23,8 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1912) Fixed "Create subtask" inserting the full path of the parent task in the Projects field instead of using the normal Obsidian link text.
+  - Thanks to @pkuehne for reporting and @benmartinek for confirming.
