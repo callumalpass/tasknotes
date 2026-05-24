@@ -11,6 +11,10 @@ import {
 	getTodayLocal,
 	parseDateToUTC,
 } from "../../utils/dateUtils";
+import {
+	applyGoogleCalendarRecurringExceptionCleanup,
+	resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction,
+} from "./googleCalendarRecurringExceptions";
 
 export interface BuildRecurringTaskCompletePlanInput {
 	freshTask: TaskInfo;
@@ -51,6 +55,8 @@ export interface ApplyRecurringTaskCompleteFrontmatterInput {
 	scheduledField: string;
 	dueField: string;
 	recurrenceField: string;
+	googleCalendarExceptionOriginalScheduledField: string;
+	googleCalendarMovedOriginalDatesField: string;
 	plan: RecurringTaskCompletePlan;
 }
 
@@ -61,6 +67,8 @@ export interface ApplyRecurringTaskSkippedFrontmatterInput {
 	dateModifiedField: string;
 	scheduledField: string;
 	dueField: string;
+	googleCalendarExceptionOriginalScheduledField: string;
+	googleCalendarMovedOriginalDatesField: string;
 	plan: RecurringTaskSkippedPlan;
 }
 
@@ -143,6 +151,12 @@ export function buildRecurringTaskCompletePlan({
 	if (nextDates.due) {
 		updatedTask.due = nextDates.due;
 	}
+	resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
+		freshTask,
+		dateStr,
+		updatedTask
+	);
+	applyGoogleCalendarRecurringExceptionCleanup(updatedTask);
 
 	return {
 		updatedTask,
@@ -162,6 +176,8 @@ export function applyRecurringTaskCompleteFrontmatterChange({
 	scheduledField,
 	dueField,
 	recurrenceField,
+	googleCalendarExceptionOriginalScheduledField,
+	googleCalendarMovedOriginalDatesField,
 	plan,
 }: ApplyRecurringTaskCompleteFrontmatterInput): void {
 	if (!frontmatter[completeInstancesField]) {
@@ -194,6 +210,17 @@ export function applyRecurringTaskCompleteFrontmatterChange({
 	if (plan.updatedTask.due) {
 		frontmatter[dueField] = plan.updatedTask.due;
 	}
+
+	writeOptionalFrontmatterField(
+		frontmatter,
+		googleCalendarExceptionOriginalScheduledField,
+		plan.updatedTask.googleCalendarExceptionOriginalScheduled
+	);
+	writeOptionalFrontmatterField(
+		frontmatter,
+		googleCalendarMovedOriginalDatesField,
+		plan.updatedTask.googleCalendarMovedOriginalDates
+	);
 
 	frontmatter[dateModifiedField] = plan.dateModified;
 }
@@ -238,6 +265,12 @@ export function buildRecurringTaskSkippedPlan({
 	if (nextDates.due) {
 		updatedTask.due = nextDates.due;
 	}
+	resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
+		freshTask,
+		dateStr,
+		updatedTask
+	);
+	applyGoogleCalendarRecurringExceptionCleanup(updatedTask);
 
 	return {
 		updatedTask,
@@ -255,6 +288,8 @@ export function applyRecurringTaskSkippedFrontmatterChange({
 	dateModifiedField,
 	scheduledField,
 	dueField,
+	googleCalendarExceptionOriginalScheduledField,
+	googleCalendarMovedOriginalDatesField,
 	plan,
 }: ApplyRecurringTaskSkippedFrontmatterInput): void {
 	if (!frontmatter[skippedField]) {
@@ -274,5 +309,29 @@ export function applyRecurringTaskSkippedFrontmatterChange({
 		frontmatter[dueField] = plan.updatedTask.due;
 	}
 
+	writeOptionalFrontmatterField(
+		frontmatter,
+		googleCalendarExceptionOriginalScheduledField,
+		plan.updatedTask.googleCalendarExceptionOriginalScheduled
+	);
+	writeOptionalFrontmatterField(
+		frontmatter,
+		googleCalendarMovedOriginalDatesField,
+		plan.updatedTask.googleCalendarMovedOriginalDates
+	);
+
 	frontmatter[dateModifiedField] = plan.dateModified;
+}
+
+function writeOptionalFrontmatterField(
+	frontmatter: Record<string, unknown>,
+	fieldName: string,
+	value: unknown
+): void {
+	if (value === null || value === undefined || (Array.isArray(value) && value.length === 0)) {
+		delete frontmatter[fieldName];
+		return;
+	}
+
+	frontmatter[fieldName] = value;
 }

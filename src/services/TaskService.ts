@@ -56,6 +56,10 @@ import {
 	getRecurringTaskActionDate,
 } from "./task-service/taskRecurringPlanning";
 import {
+	applyGoogleCalendarRecurringExceptionCleanup,
+	applyGoogleCalendarRecurringExceptionForScheduledChange,
+} from "./task-service/googleCalendarRecurringExceptions";
+import {
 	buildBlockedByTaskUpdate,
 	buildBlockingRelationshipPathChanges,
 	computeBlockedByUpdate,
@@ -92,19 +96,41 @@ export class TaskService {
 		});
 	}
 
-	private hasGoogleCalendarLink(task: TaskInfo): boolean {
-		return !!task.googleCalendarEventId;
+	private hasGoogleCalendarLinks(task: TaskInfo): boolean {
+		return Boolean(task.googleCalendarEventId || task.googleCalendarExceptionEventId);
 	}
 
 	private createArchiveCalendarDeletionTask(task: TaskInfo, updatedTask: TaskInfo): TaskInfo {
 		return {
 			...updatedTask,
 			googleCalendarEventId: task.googleCalendarEventId,
+			googleCalendarExceptionEventId: task.googleCalendarExceptionEventId,
+			googleCalendarExceptionOriginalScheduled:
+				task.googleCalendarExceptionOriginalScheduled,
+			googleCalendarMovedOriginalDates: task.googleCalendarMovedOriginalDates
+				? [...task.googleCalendarMovedOriginalDates]
+				: undefined,
 		};
 	}
 
 	private clearGoogleCalendarMetadata(task: TaskInfo): void {
 		task.googleCalendarEventId = undefined;
+		task.googleCalendarExceptionEventId = undefined;
+		task.googleCalendarExceptionOriginalScheduled = undefined;
+		task.googleCalendarMovedOriginalDates = undefined;
+	}
+
+	private writeOptionalFrontmatterField(
+		frontmatter: Record<string, unknown>,
+		fieldName: string,
+		value: unknown
+	): void {
+		if (value === null || value === undefined || (Array.isArray(value) && value.length === 0)) {
+			delete frontmatter[fieldName];
+			return;
+		}
+
+		frontmatter[fieldName] = value;
 	}
 
 	private async deleteArchivedTaskFromCalendar(task: TaskInfo): Promise<boolean> {
@@ -370,6 +396,17 @@ export class TaskService {
 				isCompletedStatus: (status) => this.plugin.statusManager.isCompletedStatus(status),
 			});
 
+			if (property === "scheduled") {
+				applyGoogleCalendarRecurringExceptionForScheduledChange(
+					freshTask,
+					updatePlan.normalizedValue,
+					updatePlan.updatedTask
+				);
+			}
+			if (property === "recurrence" || property === "recurrence_anchor") {
+				applyGoogleCalendarRecurringExceptionCleanup(updatePlan.updatedTask);
+			}
+
 			// Step 2: Persist to file
 			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				// Use field mapper to get the correct frontmatter property name
@@ -394,6 +431,19 @@ export class TaskService {
 						this.plugin.statusManager.isCompletedStatus(status),
 					currentDateString: getCurrentDateString(),
 				});
+
+				this.writeOptionalFrontmatterField(
+					frontmatter,
+					this.plugin.fieldMapper.toUserField(
+						"googleCalendarExceptionOriginalScheduled"
+					),
+					updatePlan.updatedTask.googleCalendarExceptionOriginalScheduled
+				);
+				this.writeOptionalFrontmatterField(
+					frontmatter,
+					this.plugin.fieldMapper.toUserField("googleCalendarMovedOriginalDates"),
+					updatePlan.updatedTask.googleCalendarMovedOriginalDates
+				);
 			});
 
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
@@ -551,7 +601,7 @@ export class TaskService {
 
 		let archiveCalendarCleanupComplete = true;
 		if (this.plugin.taskCalendarSyncService?.isEnabled() && updatedTask.archived) {
-			if (this.hasGoogleCalendarLink(task)) {
+			if (this.hasGoogleCalendarLinks(task)) {
 				const archiveCalendarTask = this.createArchiveCalendarDeletionTask(
 					task,
 					updatedTask
@@ -622,7 +672,7 @@ export class TaskService {
 							error: error,
 						});
 					});
-			} else if (!archiveCalendarCleanupComplete && this.hasGoogleCalendarLink(updatedTask)) {
+			} else if (!archiveCalendarCleanupComplete && this.hasGoogleCalendarLinks(updatedTask)) {
 				tasknotesLogger.warn(
 					"Archived task still has Google Calendar links and will need retry cleanup:",
 					{
@@ -894,11 +944,12 @@ export class TaskService {
 			}
 
 			// Delete from Google Calendar first (before file deletion, so we have the event ID)
-			if (this.plugin.taskCalendarSyncService && task.googleCalendarEventId) {
+			if (this.plugin.taskCalendarSyncService && this.hasGoogleCalendarLinks(task)) {
 				try {
 					await this.plugin.taskCalendarSyncService.deleteTaskFromCalendarByPath(
 						task.path,
-						task.googleCalendarEventId
+						task.googleCalendarEventId,
+						task.googleCalendarExceptionEventId
 					);
 				} catch (error) {
 					tasknotesLogger.warn("Failed to delete task from Google Calendar:", {
@@ -996,6 +1047,11 @@ export class TaskService {
 			const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 			const dueField = this.plugin.fieldMapper.toUserField("due");
 			const recurrenceField = this.plugin.fieldMapper.toUserField("recurrence");
+			const googleCalendarExceptionOriginalScheduledField =
+				this.plugin.fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled");
+			const googleCalendarMovedOriginalDatesField = this.plugin.fieldMapper.toUserField(
+				"googleCalendarMovedOriginalDates"
+			);
 
 			applyRecurringTaskCompleteFrontmatterChange({
 				frontmatter,
@@ -1005,6 +1061,8 @@ export class TaskService {
 				scheduledField,
 				dueField,
 				recurrenceField,
+				googleCalendarExceptionOriginalScheduledField,
+				googleCalendarMovedOriginalDatesField,
 				plan: recurringPlan,
 			});
 		});
@@ -1138,6 +1196,11 @@ export class TaskService {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 			const dueField = this.plugin.fieldMapper.toUserField("due");
+			const googleCalendarExceptionOriginalScheduledField =
+				this.plugin.fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled");
+			const googleCalendarMovedOriginalDatesField = this.plugin.fieldMapper.toUserField(
+				"googleCalendarMovedOriginalDates"
+			);
 
 			applyRecurringTaskSkippedFrontmatterChange({
 				frontmatter,
@@ -1146,6 +1209,8 @@ export class TaskService {
 				dateModifiedField,
 				scheduledField,
 				dueField,
+				googleCalendarExceptionOriginalScheduledField,
+				googleCalendarMovedOriginalDatesField,
 				plan: recurringPlan,
 			});
 		});

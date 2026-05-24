@@ -474,6 +474,9 @@ export interface TaskInfo {
 	dateModified?: string; // Last modification date (ISO timestamp)
 	icsEventId?: string[]; // Links to ICS calendar event IDs
 	googleCalendarEventId?: string; // Google Calendar event ID for sync
+	googleCalendarExceptionEventId?: string; // Detached Google Calendar event ID for a moved recurring occurrence
+	googleCalendarExceptionOriginalScheduled?: string; // Original recurring date replaced by the current moved occurrence
+	googleCalendarMovedOriginalDates?: string[]; // Original recurring dates excluded after moved occurrences are resolved
 	reminders?: Reminder[]; // Task reminders
 	customProperties?: Record<string, unknown>; // Custom properties from Bases or other sources
 	basesData?: unknown; // Raw Bases data for formula computation (internal use)
@@ -695,6 +698,9 @@ export interface FieldMapping {
 	icsEventId: string; // For linking to ICS calendar events (stored as array in frontmatter)
 	icsEventTag: string; // Tag used for ICS event-related content
 	googleCalendarEventId: string; // For Google Calendar sync (stores event ID)
+	googleCalendarExceptionEventId: string; // Detached Google Calendar event ID for moved recurring occurrences
+	googleCalendarExceptionOriginalScheduled: string; // Original recurring date replaced by the current moved occurrence
+	googleCalendarMovedOriginalDates: string; // Historical moved recurring dates excluded from the master event
 	reminders: string; // For task reminders
 	sortOrder: string; // Numeric ordering within column (lower = higher)
 }
