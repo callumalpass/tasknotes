@@ -45,6 +45,9 @@ const GOOGLE_CALENDAR_FINGERPRINTS_KEY = "googleCalendarTaskFingerprints";
 /** Delay between queued Google Calendar recovery retry attempts */
 const RECOVERY_QUEUE_RETRY_DELAY_MS = 60000;
 
+/** Minimum delay between full event-index recovery scans after startup. */
+const EVENT_INDEX_RECOVERY_INTERVAL_MS = 15 * 60 * 1000;
+
 type CalendarEventPayload = {
 	summary: string;
 	description?: string;
@@ -102,6 +105,7 @@ export class TaskCalendarSyncService {
 	private lastApiCallAt = 0;
 	private recoveryQueueProcessorStarted = false;
 	private recoveryQueueProcessorTimeout: number | null = null;
+	private lastEventIndexRecoveryAt = 0;
 
 	/** Debounce timers for pending syncs, keyed by task path */
 	private pendingSyncs: Map<string, number> = new Map();
@@ -299,6 +303,12 @@ export class TaskCalendarSyncService {
 		item: Pick<PendingGoogleCalendarDeletion, "calendarId" | "eventId">
 	): string {
 		return `${item.calendarId}::${item.eventId}`;
+	}
+
+	private getEventIndexTaskCalendarKey(
+		item: Pick<GoogleCalendarEventIndexEntry, "taskPath" | "calendarId">
+	): string {
+		return `${item.calendarId}::${item.taskPath}`;
 	}
 
 	private isTaskCalendarEligible(task: TaskInfo): boolean {
@@ -752,16 +762,31 @@ export class TaskCalendarSyncService {
 
 	async processStartupRecovery(): Promise<void> {
 		await this.profileAsync("processStartupRecovery", async () => {
-			await this.processRecoveryQueues();
+			await this.recoverDeletedTaskEventsFromIndex();
+			await this.processDeletionQueue();
+			await this.processPendingSyncQueue();
 		});
 	}
 
 	async processRecoveryQueues(): Promise<void> {
 		await this.profileAsync("processRecoveryQueues", async () => {
-			await this.recoverDeletedTaskEventsFromIndex();
+			await this.recoverDeletedTaskEventsFromIndexIfDue();
 			await this.processDeletionQueue();
 			await this.processPendingSyncQueue();
 		});
+	}
+
+	private async recoverDeletedTaskEventsFromIndexIfDue(): Promise<void> {
+		const elapsed = Date.now() - this.lastEventIndexRecoveryAt;
+		if (this.lastEventIndexRecoveryAt > 0 && elapsed < EVENT_INDEX_RECOVERY_INTERVAL_MS) {
+			this.profileIncrement("recoverDeletedTaskEventsFromIndex.skipped", 1, {
+				reason: "interval",
+				nextDueInMs: EVENT_INDEX_RECOVERY_INTERVAL_MS - elapsed,
+			});
+			return;
+		}
+
+		await this.recoverDeletedTaskEventsFromIndex();
 	}
 
 	async initializeExternalFileReconciliation(): Promise<void> {
@@ -914,8 +939,26 @@ export class TaskCalendarSyncService {
 			this.profileGauge("recoverDeletedTaskEventsFromIndex.hasTargetCalendar", 1);
 
 			const tasks = await this.plugin.cacheManager.getAllTasks();
+			const index = await this.getEventIndex();
 			const activeTasksByEvent = new Map<string, TaskInfo>();
+			const eventIndexByEvent = new Map<string, GoogleCalendarEventIndexEntry>();
+			const nextIndexByTaskCalendar = new Map<string, GoogleCalendarEventIndexEntry>();
+			const replacedEntries: GoogleCalendarEventIndexEntry[] = [];
 			let linkedTasks = 0;
+			let indexChanged = false;
+
+			for (const item of index) {
+				const eventKey = this.getDeletionQueueKey(item);
+				const taskCalendarKey = this.getEventIndexTaskCalendarKey(item);
+
+				if (eventIndexByEvent.has(eventKey) || nextIndexByTaskCalendar.has(taskCalendarKey)) {
+					indexChanged = true;
+					continue;
+				}
+
+				eventIndexByEvent.set(eventKey, item);
+				nextIndexByTaskCalendar.set(taskCalendarKey, item);
+			}
 
 			for (const task of tasks) {
 				const eventId = this.getTaskEventId(task);
@@ -928,13 +971,48 @@ export class TaskCalendarSyncService {
 					calendarId: targetCalendarId,
 					eventId,
 				});
+				const taskCalendarKey = this.getEventIndexTaskCalendarKey({
+					taskPath: task.path,
+					calendarId: targetCalendarId,
+				});
 				activeTasksByEvent.set(key, task);
-				await this.upsertEventIndex(task.path, targetCalendarId, eventId);
+
+				const existingTaskEntry = nextIndexByTaskCalendar.get(taskCalendarKey);
+				if (
+					existingTaskEntry?.taskPath === task.path &&
+					existingTaskEntry.calendarId === targetCalendarId &&
+					existingTaskEntry.eventId === eventId
+				) {
+					continue;
+				}
+
+				const existingEventEntry = eventIndexByEvent.get(key);
+				if (existingTaskEntry && existingTaskEntry.eventId !== eventId) {
+					replacedEntries.push(existingTaskEntry);
+				}
+				if (existingEventEntry && existingEventEntry.taskPath !== task.path) {
+					nextIndexByTaskCalendar.delete(
+						this.getEventIndexTaskCalendarKey(existingEventEntry)
+					);
+				}
+
+				const nextEntry = {
+					taskPath: task.path,
+					calendarId: targetCalendarId,
+					eventId,
+					updatedAt: existingEventEntry?.updatedAt || existingTaskEntry?.updatedAt || Date.now(),
+				};
+				nextIndexByTaskCalendar.set(taskCalendarKey, nextEntry);
+				eventIndexByEvent.set(key, nextEntry);
+				indexChanged = true;
 			}
 
-			const index = await this.getEventIndex();
+			if (indexChanged) {
+				await this.saveEventIndex(Array.from(nextIndexByTaskCalendar.values()));
+			}
+
 			let queuedDeletions = 0;
-			for (const item of index) {
+			for (const item of nextIndexByTaskCalendar.values()) {
 				const activeTask = activeTasksByEvent.get(this.getDeletionQueueKey(item));
 				if (activeTask && this.isTaskCalendarEligible(activeTask)) {
 					continue;
@@ -951,9 +1029,27 @@ export class TaskCalendarSyncService {
 				);
 			}
 
+			for (const item of replacedEntries) {
+				const deleted = await this.deleteOrQueueCalendarEvent(
+					item.taskPath,
+					item.calendarId,
+					item.eventId
+				);
+				if (!deleted) {
+					tasknotesLogger.warn(
+						`[TaskCalendarSync] Replaced event cleanup queued for ${item.taskPath}`,
+						{ category: "provider", operation: "replaced-event-cleanup-queued" }
+					);
+				}
+			}
+
+			this.lastEventIndexRecoveryAt = Date.now();
 			this.profileGauge("recoverDeletedTaskEventsFromIndex.tasks", tasks.length);
 			this.profileGauge("recoverDeletedTaskEventsFromIndex.linkedTasks", linkedTasks);
-			this.profileGauge("recoverDeletedTaskEventsFromIndex.indexEntries", index.length);
+			this.profileGauge(
+				"recoverDeletedTaskEventsFromIndex.indexEntries",
+				nextIndexByTaskCalendar.size
+			);
 			this.profileGauge("recoverDeletedTaskEventsFromIndex.queuedDeletions", queuedDeletions);
 		});
 	}

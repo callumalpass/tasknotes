@@ -311,6 +311,65 @@ describe("Google Calendar deletion retry queue", () => {
 		]);
 	});
 
+	it("bulk-loads the event index once during recovery for many linked tasks", async () => {
+		const tasks = Array.from({ length: 1000 }, (_value, index) =>
+			TaskFactory.createTask({
+				path: `TaskNotes/Tasks/linked-${index}.md`,
+				scheduled: "2026-04-29",
+				googleCalendarEventId: `event-${index}`,
+			})
+		);
+		const pluginData = {
+			googleCalendarEventIndex: tasks.map((task, index) => ({
+				taskPath: task.path,
+				calendarId: "primary",
+				eventId: `event-${index}`,
+				updatedAt: 1,
+			})),
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getAllTasks = jest.fn().mockResolvedValue(tasks);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		await syncService.recoverDeletedTaskEventsFromIndex();
+
+		expect(plugin.loadData).toHaveBeenCalledTimes(1);
+		expect(plugin.saveData).not.toHaveBeenCalled();
+		expect(googleCalendarService.deleteEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarEventIndex).toHaveLength(1000);
+	});
+
+	it("does not run full event-index recovery on every recovery queue tick", async () => {
+		const taskPath = "TaskNotes/Tasks/still-indexed.md";
+		const pluginData = {
+			googleCalendarEventIndex: [
+				{
+					taskPath,
+					calendarId: "primary",
+					eventId: "stable-event",
+					updatedAt: 1,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getAllTasks = jest.fn().mockResolvedValue([
+			TaskFactory.createTask({
+				path: taskPath,
+				scheduled: "2026-04-29",
+				googleCalendarEventId: "stable-event",
+			}),
+		]);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		await syncService.processStartupRecovery();
+		await syncService.processRecoveryQueues();
+
+		expect(plugin.cacheManager.getAllTasks).toHaveBeenCalledTimes(1);
+		expect(googleCalendarService.deleteEvent).not.toHaveBeenCalled();
+	});
+
 	it("cleans up an older indexed event when the same task receives a replacement event id", async () => {
 		const pluginData = {
 			googleCalendarEventIndex: [
