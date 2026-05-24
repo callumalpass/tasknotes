@@ -83,6 +83,10 @@ import {
 } from "./settings/settingsPersistence";
 import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
+import {
+	createTaskNotesPerformanceProfiler,
+	TaskNotesPerformanceProfiler,
+} from "./utils/PerformanceProfiler";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Main" });
 
@@ -121,6 +125,7 @@ export default class TaskNotesPlugin extends Plugin {
 	predictivePrefetcher: PredictivePrefetcher;
 	domReconciler: DOMReconciler;
 	uiStateManager: UIStateManager;
+	performanceProfiler: TaskNotesPerformanceProfiler;
 
 	// Pomodoro service
 	pomodoroService: PomodoroService;
@@ -256,6 +261,13 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		await this.loadSettings();
+		this.performanceProfiler = createTaskNotesPerformanceProfiler({
+			isEnabled: () => this.settings?.enableDebugLogging === true,
+			logger: createTaskNotesLogger({
+				tag: "PerformanceProfiler",
+				isDebugEnabled: () => this.settings?.enableDebugLogging === true,
+			}),
+		});
 
 		this.i18n = createI18nService({
 			initialLocale: this.settings.uiLanguage ?? "system",

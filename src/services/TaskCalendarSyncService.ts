@@ -16,6 +16,7 @@ import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { processVaultFrontMatter } from "./VaultMutationService";
+import type { PerformanceProfilerDetails } from "../utils/PerformanceProfiler";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
 
@@ -129,6 +130,33 @@ export class TaskCalendarSyncService {
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
+	}
+
+	private profileAsync<T>(
+		name: string,
+		fn: () => Promise<T>,
+		details?: PerformanceProfilerDetails
+	): Promise<T> {
+		return (
+			this.plugin.performanceProfiler?.measureAsync(`calendarSync.${name}`, fn, details) ??
+			fn()
+		);
+	}
+
+	private profileIncrement(
+		name: string,
+		amount = 1,
+		details?: PerformanceProfilerDetails
+	): void {
+		this.plugin.performanceProfiler?.increment(`calendarSync.${name}`, amount, details);
+	}
+
+	private profileGauge(
+		name: string,
+		value: number,
+		details?: PerformanceProfilerDetails
+	): void {
+		this.plugin.performanceProfiler?.recordGauge(`calendarSync.${name}`, value, details);
 	}
 
 	/**
@@ -723,158 +751,211 @@ export class TaskCalendarSyncService {
 	}
 
 	async processStartupRecovery(): Promise<void> {
-		await this.processRecoveryQueues();
+		await this.profileAsync("processStartupRecovery", async () => {
+			await this.processRecoveryQueues();
+		});
 	}
 
 	async processRecoveryQueues(): Promise<void> {
-		await this.recoverDeletedTaskEventsFromIndex();
-		await this.processDeletionQueue();
-		await this.processPendingSyncQueue();
+		await this.profileAsync("processRecoveryQueues", async () => {
+			await this.recoverDeletedTaskEventsFromIndex();
+			await this.processDeletionQueue();
+			await this.processPendingSyncQueue();
+		});
 	}
 
 	async initializeExternalFileReconciliation(): Promise<void> {
-		const settings = this.plugin.settings.googleCalendarExport;
-		if (!settings.enabled) {
-			return;
-		}
-
-		const fingerprints = await this.getCalendarFingerprints();
-		const tasks = await this.plugin.cacheManager.getAllTasks();
-		const activeTaskPaths = new Set<string>();
-		let changed = false;
-
-		for (const task of tasks) {
-			activeTaskPaths.add(task.path);
-			const fingerprint = this.getCalendarRelevantFingerprint(task);
-			const previousFingerprint = fingerprints.get(task.path);
-
-			if (previousFingerprint === undefined) {
-				fingerprints.set(task.path, fingerprint);
-				changed = true;
-				continue;
+		await this.profileAsync("initializeExternalFileReconciliation", async () => {
+			const settings = this.plugin.settings.googleCalendarExport;
+			this.profileGauge("initializeExternalFileReconciliation.enabled", settings.enabled ? 1 : 0);
+			if (!settings.enabled) {
+				return;
 			}
 
-			const previousTask = this.getTaskStateFromFingerprint(task, previousFingerprint);
+			const fingerprints = await this.getCalendarFingerprints();
+			const tasks = await this.plugin.cacheManager.getAllTasks();
+			const activeTaskPaths = new Set<string>();
+			let changed = false;
+			let changedTasks = 0;
+			let linkedTasks = 0;
+			let baselineTasks = 0;
 
-			if (previousFingerprint !== fingerprint) {
-				await this.reconcileExternalAutoArchive(task, previousTask);
-			}
+			for (const task of tasks) {
+				activeTaskPaths.add(task.path);
+				const fingerprint = this.getCalendarRelevantFingerprint(task);
+				const previousFingerprint = fingerprints.get(task.path);
 
-			if (this.hasTaskCalendarLink(task) && previousFingerprint !== fingerprint) {
-				if (settings.syncOnTaskUpdate) {
-					await this.executeTaskUpdate(task, previousTask);
-				} else {
+				if (previousFingerprint === undefined) {
+					fingerprints.set(task.path, fingerprint);
+					changed = true;
+					baselineTasks++;
+					continue;
+				}
+
+				const previousTask = this.getTaskStateFromFingerprint(task, previousFingerprint);
+				const hasCalendarLink = this.hasTaskCalendarLink(task);
+				if (hasCalendarLink) {
+					linkedTasks++;
+				}
+
+				if (previousFingerprint !== fingerprint) {
+					changedTasks++;
+					await this.reconcileExternalAutoArchive(task, previousTask);
+				}
+
+				if (hasCalendarLink && previousFingerprint !== fingerprint) {
+					if (settings.syncOnTaskUpdate) {
+						await this.executeTaskUpdate(task, previousTask);
+					} else {
+						fingerprints.set(task.path, fingerprint);
+						changed = true;
+					}
+					continue;
+				}
+
+				if (previousFingerprint !== fingerprint) {
 					fingerprints.set(task.path, fingerprint);
 					changed = true;
 				}
-				continue;
 			}
 
-			if (previousFingerprint !== fingerprint) {
-				fingerprints.set(task.path, fingerprint);
-				changed = true;
+			let removedFingerprints = 0;
+			for (const path of Array.from(fingerprints.keys())) {
+				if (!activeTaskPaths.has(path)) {
+					fingerprints.delete(path);
+					changed = true;
+					removedFingerprints++;
+				}
 			}
-		}
 
-		for (const path of Array.from(fingerprints.keys())) {
-			if (!activeTaskPaths.has(path)) {
-				fingerprints.delete(path);
-				changed = true;
+			this.profileGauge("initializeExternalFileReconciliation.tasks", tasks.length);
+			this.profileGauge("initializeExternalFileReconciliation.linkedTasks", linkedTasks);
+			this.profileGauge("initializeExternalFileReconciliation.changedTasks", changedTasks);
+			this.profileGauge("initializeExternalFileReconciliation.baselineTasks", baselineTasks);
+			this.profileGauge(
+				"initializeExternalFileReconciliation.removedFingerprints",
+				removedFingerprints
+			);
+
+			if (changed) {
+				await this.saveCalendarFingerprints(fingerprints);
 			}
-		}
-
-		if (changed) {
-			await this.saveCalendarFingerprints(fingerprints);
-		}
+		});
 	}
 
 	async handleExternalTaskFileUpdated(taskPath: string, updatedTask?: TaskInfo): Promise<void> {
-		const settings = this.plugin.settings.googleCalendarExport;
-		if (!settings.enabled) {
-			return;
-		}
+		await this.profileAsync(
+			"handleExternalTaskFileUpdated",
+			async () => {
+				const settings = this.plugin.settings.googleCalendarExport;
+				if (!settings.enabled) {
+					return;
+				}
 
-		const task = updatedTask || (await this.plugin.cacheManager.getTaskInfo(taskPath));
-		if (!task) {
-			await this.removeCalendarSyncFingerprint(taskPath);
-			return;
-		}
+				const task = updatedTask || (await this.plugin.cacheManager.getTaskInfo(taskPath));
+				if (!task) {
+					this.profileIncrement("handleExternalTaskFileUpdated.removedTask");
+					await this.removeCalendarSyncFingerprint(taskPath);
+					return;
+				}
 
-		const fingerprints = await this.getCalendarFingerprints();
-		const fingerprint = this.getCalendarRelevantFingerprint(task);
-		const previousFingerprint = fingerprints.get(task.path);
+				const fingerprints = await this.getCalendarFingerprints();
+				const fingerprint = this.getCalendarRelevantFingerprint(task);
+				const previousFingerprint = fingerprints.get(task.path);
 
-		if (previousFingerprint === fingerprint) {
-			return;
-		}
+				if (previousFingerprint === fingerprint) {
+					this.profileIncrement("handleExternalTaskFileUpdated.unchanged");
+					return;
+				}
 
-		const previousTask = this.getTaskStateFromFingerprint(task, previousFingerprint);
-		await this.reconcileExternalAutoArchive(task, previousTask);
+				const previousTask = this.getTaskStateFromFingerprint(task, previousFingerprint);
+				await this.reconcileExternalAutoArchive(task, previousTask);
 
-		if (this.hasTaskCalendarLink(task)) {
-			if (settings.syncOnTaskUpdate) {
-				await this.executeTaskUpdate(task, previousTask);
-			} else {
+				if (this.hasTaskCalendarLink(task)) {
+					this.profileIncrement("handleExternalTaskFileUpdated.changedLinkedTask");
+					if (settings.syncOnTaskUpdate) {
+						await this.executeTaskUpdate(task, previousTask);
+					} else {
+						await this.recordCalendarSyncFingerprint(task);
+					}
+					return;
+				}
+
+				if (this.isTaskCalendarEligible(task)) {
+					this.profileIncrement("handleExternalTaskFileUpdated.changedEligibleTask");
+					if (settings.syncOnTaskCreate) {
+						await this.syncTaskToCalendar(task);
+					} else {
+						await this.recordCalendarSyncFingerprint(task);
+					}
+					return;
+				}
+
+				this.profileIncrement("handleExternalTaskFileUpdated.changedIneligibleTask");
 				await this.recordCalendarSyncFingerprint(task);
-			}
-			return;
-		}
-
-		if (this.isTaskCalendarEligible(task)) {
-			if (settings.syncOnTaskCreate) {
-				await this.syncTaskToCalendar(task);
-			} else {
-				await this.recordCalendarSyncFingerprint(task);
-			}
-			return;
-		}
-
-		await this.recordCalendarSyncFingerprint(task);
+			},
+			{ hadUpdatedTask: updatedTask !== undefined }
+		);
 	}
 
 	async recoverDeletedTaskEventsFromIndex(): Promise<void> {
-		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
-			return;
-		}
+		await this.profileAsync("recoverDeletedTaskEventsFromIndex", async () => {
+			if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
+				this.profileGauge("recoverDeletedTaskEventsFromIndex.enabled", 0);
+				return;
+			}
+			this.profileGauge("recoverDeletedTaskEventsFromIndex.enabled", 1);
 
-		const targetCalendarId = this.plugin.settings.googleCalendarExport.targetCalendarId;
-		if (!targetCalendarId) {
-			return;
-		}
+			const targetCalendarId = this.plugin.settings.googleCalendarExport.targetCalendarId;
+			if (!targetCalendarId) {
+				this.profileGauge("recoverDeletedTaskEventsFromIndex.hasTargetCalendar", 0);
+				return;
+			}
+			this.profileGauge("recoverDeletedTaskEventsFromIndex.hasTargetCalendar", 1);
 
-		const tasks = await this.plugin.cacheManager.getAllTasks();
-		const activeTasksByEvent = new Map<string, TaskInfo>();
+			const tasks = await this.plugin.cacheManager.getAllTasks();
+			const activeTasksByEvent = new Map<string, TaskInfo>();
+			let linkedTasks = 0;
 
-		for (const task of tasks) {
-			const eventId = this.getTaskEventId(task);
-			if (!eventId) {
-				continue;
+			for (const task of tasks) {
+				const eventId = this.getTaskEventId(task);
+				if (!eventId) {
+					continue;
+				}
+
+				linkedTasks++;
+				const key = this.getDeletionQueueKey({
+					calendarId: targetCalendarId,
+					eventId,
+				});
+				activeTasksByEvent.set(key, task);
+				await this.upsertEventIndex(task.path, targetCalendarId, eventId);
 			}
 
-			const key = this.getDeletionQueueKey({
-				calendarId: targetCalendarId,
-				eventId,
-			});
-			activeTasksByEvent.set(key, task);
-			await this.upsertEventIndex(task.path, targetCalendarId, eventId);
-		}
+			const index = await this.getEventIndex();
+			let queuedDeletions = 0;
+			for (const item of index) {
+				const activeTask = activeTasksByEvent.get(this.getDeletionQueueKey(item));
+				if (activeTask && this.isTaskCalendarEligible(activeTask)) {
+					continue;
+				}
 
-		const index = await this.getEventIndex();
-		for (const item of index) {
-			const activeTask = activeTasksByEvent.get(this.getDeletionQueueKey(item));
-			if (activeTask && this.isTaskCalendarEligible(activeTask)) {
-				continue;
+				queuedDeletions++;
+				await this.queueCalendarDeletion(
+					activeTask?.path || item.taskPath,
+					item.calendarId,
+					item.eventId,
+					activeTask
+						? new Error("Indexed task no longer meets calendar sync criteria")
+						: new Error("Indexed task file no longer exists")
+				);
 			}
 
-			await this.queueCalendarDeletion(
-				activeTask?.path || item.taskPath,
-				item.calendarId,
-				item.eventId,
-				activeTask
-					? new Error("Indexed task no longer meets calendar sync criteria")
-					: new Error("Indexed task file no longer exists")
-			);
-		}
+			this.profileGauge("recoverDeletedTaskEventsFromIndex.tasks", tasks.length);
+			this.profileGauge("recoverDeletedTaskEventsFromIndex.linkedTasks", linkedTasks);
+			this.profileGauge("recoverDeletedTaskEventsFromIndex.indexEntries", index.length);
+			this.profileGauge("recoverDeletedTaskEventsFromIndex.queuedDeletions", queuedDeletions);
+		});
 	}
 
 	async processPendingSyncQueue(): Promise<{
@@ -884,112 +965,60 @@ export class TaskCalendarSyncService {
 		dropped: number;
 		remaining: number;
 	}> {
-		const results = { synced: 0, failed: 0, deleted: 0, dropped: 0, remaining: 0 };
-		const queue = await this.getSyncQueue();
+		return this.profileAsync("processPendingSyncQueue", async () => {
+			const results = { synced: 0, failed: 0, deleted: 0, dropped: 0, remaining: 0 };
+			const queue = await this.getSyncQueue();
+			this.profileGauge("processPendingSyncQueue.queueLength", queue.length);
 
-		if (queue.length === 0) {
-			return results;
-		}
-
-		if (!this.isSyncQueueReady()) {
-			results.remaining = queue.length;
-			return results;
-		}
-
-		const dedupedQueue = new Map<string, PendingGoogleCalendarSync>();
-		for (const item of queue) {
-			dedupedQueue.set(item.taskPath, item);
-		}
-
-		const remainingItems: PendingGoogleCalendarSync[] = [];
-
-		for (const item of dedupedQueue.values()) {
-			const task = await this.plugin.cacheManager.getTaskInfo(item.taskPath);
-			if (!task) {
-				results.dropped++;
-				continue;
+			if (queue.length === 0) {
+				return results;
 			}
 
-			if (!this.isTaskCalendarEligible(task)) {
-				const eventId = this.getTaskEventId(task);
-				if (eventId) {
-					const deleted = await this.deleteTaskFromCalendar(task);
-					if (!deleted) {
-						tasknotesLogger.warn(
-							`[TaskCalendarSync] Calendar deletion queued while replaying sync for ${item.taskPath}`,
-							{
-								category: "provider",
-								operation: "calendar-deletion-queued-replaying-sync",
-							}
-						);
-					}
-					results.deleted++;
-				} else {
+			if (!this.isSyncQueueReady()) {
+				results.remaining = queue.length;
+				this.profileGauge("processPendingSyncQueue.remaining", results.remaining);
+				return results;
+			}
+
+			const dedupedQueue = new Map<string, PendingGoogleCalendarSync>();
+			for (const item of queue) {
+				dedupedQueue.set(item.taskPath, item);
+			}
+
+			const remainingItems: PendingGoogleCalendarSync[] = [];
+
+			for (const item of dedupedQueue.values()) {
+				const task = await this.plugin.cacheManager.getTaskInfo(item.taskPath);
+				if (!task) {
 					results.dropped++;
-				}
-				continue;
-			}
-
-			const synced = await this.syncTaskToCalendar(task, undefined, {
-				queueOnFailure: false,
-			});
-			if (synced) {
-				results.synced++;
-				continue;
-			}
-
-			results.failed++;
-			remainingItems.push({
-				...item,
-				attempts: item.attempts + 1,
-				lastAttemptAt: Date.now(),
-				lastError: "Failed to replay queued Google Calendar sync",
-			});
-		}
-
-		results.remaining = remainingItems.length;
-		await this.saveSyncQueue(remainingItems);
-		return results;
-	}
-
-	async processDeletionQueue(): Promise<{ deleted: number; failed: number; remaining: number }> {
-		const results = { deleted: 0, failed: 0, remaining: 0 };
-		const queue = await this.getDeletionQueue();
-
-		if (queue.length === 0) {
-			return results;
-		}
-
-		if (!this.isDeletionQueueReady()) {
-			results.remaining = queue.length;
-			return results;
-		}
-
-		const dedupedQueue = new Map<string, PendingGoogleCalendarDeletion>();
-		for (const item of queue) {
-			dedupedQueue.set(this.getDeletionQueueKey(item), item);
-		}
-
-		const remainingItems: PendingGoogleCalendarDeletion[] = [];
-
-		for (const item of dedupedQueue.values()) {
-			try {
-				const deletionStillNeeded = await this.isQueuedDeletionStillNeeded(item);
-				if (!deletionStillNeeded) {
 					continue;
 				}
 
-				await this.withGoogleRateLimit(() =>
-					this.googleCalendarService.deleteEvent(item.calendarId, item.eventId)
-				);
-				await this.clearTaskEventIdIfMatching(item);
-				await this.removeEventIndexForEvent(item.calendarId, item.eventId);
-				results.deleted++;
-			} catch (error: unknown) {
-				if (isAlreadyDeletedError(error)) {
-					await this.clearTaskEventIdIfMatching(item);
-					await this.removeEventIndexForEvent(item.calendarId, item.eventId);
-					results.deleted++;
+				if (!this.isTaskCalendarEligible(task)) {
+					const eventId = this.getTaskEventId(task);
+					if (eventId) {
+						const deleted = await this.deleteTaskFromCalendar(task);
+						if (!deleted) {
+							tasknotesLogger.warn(
+								`[TaskCalendarSync] Calendar deletion queued while replaying sync for ${item.taskPath}`,
+								{
+									category: "provider",
+									operation: "calendar-deletion-queued-replaying-sync",
+								}
+							);
+						}
+						results.deleted++;
+					} else {
+						results.dropped++;
+					}
+					continue;
+				}
+
+				const synced = await this.syncTaskToCalendar(task, undefined, {
+					queueOnFailure: false,
+				});
+				if (synced) {
+					results.synced++;
 					continue;
 				}
 
@@ -998,20 +1027,88 @@ export class TaskCalendarSyncService {
 					...item,
 					attempts: item.attempts + 1,
 					lastAttemptAt: Date.now(),
-					lastError: getErrorMessage(error),
-				});
-				tasknotesLogger.error("[TaskCalendarSync] Failed to retry queued event deletion:", {
-					category: "provider",
-					operation: "retry-queued-event-deletion",
-					details: { value: item },
-					error: error,
+					lastError: "Failed to replay queued Google Calendar sync",
 				});
 			}
-		}
 
-		results.remaining = remainingItems.length;
-		await this.saveDeletionQueue(remainingItems);
-		return results;
+			results.remaining = remainingItems.length;
+			await this.saveSyncQueue(remainingItems);
+			this.profileGauge("processPendingSyncQueue.synced", results.synced);
+			this.profileGauge("processPendingSyncQueue.failed", results.failed);
+			this.profileGauge("processPendingSyncQueue.deleted", results.deleted);
+			this.profileGauge("processPendingSyncQueue.dropped", results.dropped);
+			this.profileGauge("processPendingSyncQueue.remaining", results.remaining);
+			return results;
+		});
+	}
+
+	async processDeletionQueue(): Promise<{ deleted: number; failed: number; remaining: number }> {
+		return this.profileAsync("processDeletionQueue", async () => {
+			const results = { deleted: 0, failed: 0, remaining: 0 };
+			const queue = await this.getDeletionQueue();
+			this.profileGauge("processDeletionQueue.queueLength", queue.length);
+
+			if (queue.length === 0) {
+				return results;
+			}
+
+			if (!this.isDeletionQueueReady()) {
+				results.remaining = queue.length;
+				this.profileGauge("processDeletionQueue.remaining", results.remaining);
+				return results;
+			}
+
+			const dedupedQueue = new Map<string, PendingGoogleCalendarDeletion>();
+			for (const item of queue) {
+				dedupedQueue.set(this.getDeletionQueueKey(item), item);
+			}
+
+			const remainingItems: PendingGoogleCalendarDeletion[] = [];
+
+			for (const item of dedupedQueue.values()) {
+				try {
+					const deletionStillNeeded = await this.isQueuedDeletionStillNeeded(item);
+					if (!deletionStillNeeded) {
+						continue;
+					}
+
+					await this.withGoogleRateLimit(() =>
+						this.googleCalendarService.deleteEvent(item.calendarId, item.eventId)
+					);
+					await this.clearTaskEventIdIfMatching(item);
+					await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+					results.deleted++;
+				} catch (error: unknown) {
+					if (isAlreadyDeletedError(error)) {
+						await this.clearTaskEventIdIfMatching(item);
+						await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+						results.deleted++;
+						continue;
+					}
+
+					results.failed++;
+					remainingItems.push({
+						...item,
+						attempts: item.attempts + 1,
+						lastAttemptAt: Date.now(),
+						lastError: getErrorMessage(error),
+					});
+					tasknotesLogger.error("[TaskCalendarSync] Failed to retry queued event deletion:", {
+						category: "provider",
+						operation: "retry-queued-event-deletion",
+						details: { value: item },
+						error: error,
+					});
+				}
+			}
+
+			results.remaining = remainingItems.length;
+			await this.saveDeletionQueue(remainingItems);
+			this.profileGauge("processDeletionQueue.deleted", results.deleted);
+			this.profileGauge("processDeletionQueue.failed", results.failed);
+			this.profileGauge("processDeletionQueue.remaining", results.remaining);
+			return results;
+		});
 	}
 
 	/**

@@ -88,6 +88,7 @@ export async function cleanupPluginRuntime(plugin: TaskNotesPlugin): Promise<voi
 	plugin.domReconciler?.destroy();
 	plugin.uiStateManager?.destroy();
 	plugin.settingsLifecycleService?.destroy();
+	plugin.performanceProfiler?.destroy();
 
 	if (typeof perfMonitor !== "undefined") {
 		perfMonitor.destroy();
