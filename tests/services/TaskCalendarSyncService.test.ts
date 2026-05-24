@@ -16,6 +16,7 @@ describe("TaskCalendarSyncService", () => {
 
     beforeEach(() => {
         jest.useFakeTimers();
+        const pluginData: Record<string, unknown> = {};
 
         mockPlugin = {
             settings: {
@@ -40,6 +41,14 @@ describe("TaskCalendarSyncService", () => {
             cacheManager: {
                 getTaskInfo: jest.fn()
             },
+            loadData: jest.fn().mockImplementation(async () => pluginData),
+            saveData: jest.fn().mockImplementation(async (data: Record<string, unknown>) => {
+                const nextData = { ...data };
+                for (const key of Object.keys(pluginData)) {
+                    delete pluginData[key];
+                }
+                Object.assign(pluginData, nextData);
+            }),
             statusManager: {
                 getStatusConfig: jest.fn((status: string) => ({ label: status === "ready" ? "Ready" : "Todo" })),
                 isCompletedStatus: jest.fn((status?: string) => status === "done")
