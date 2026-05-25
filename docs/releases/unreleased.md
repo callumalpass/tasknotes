@@ -40,7 +40,7 @@ Example:
   - Thanks to @martin-forge for reporting and contributing the fix.
 - (#1938) Fixed partial HTTP API task updates rewriting native tags with `#` prefixes or duplicate task tags.
   - Thanks to @joseluisgonzalezdelgado-ctrl for reporting.
-- (#1939) Fixed the mobile task Details field rendering as a small nested textarea when the embedded editor falls back on iPhone.
-  - Thanks to @g-arthurvanderbilt for reporting.
+- (#1939) Fixed the task Details field rendering as a small nested textarea when the embedded editor falls back.
+  - Thanks to @g-arthurvanderbilt for reporting and @cookbr for confirming the desktop impact.
 - (#1941) Fixed mobile Kanban boards scrolling the whole board vertically instead of keeping each list independently scrollable.
   - Thanks to @pxxush for reporting.
