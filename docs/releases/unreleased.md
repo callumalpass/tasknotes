@@ -42,3 +42,5 @@ Example:
   - Thanks to @joseluisgonzalezdelgado-ctrl for reporting.
 - (#1939) Fixed the mobile task Details field rendering as a small nested textarea when the embedded editor falls back on iPhone.
   - Thanks to @g-arthurvanderbilt for reporting.
+- (#1941) Fixed mobile Kanban boards scrolling the whole board vertically instead of keeping each list independently scrollable.
+  - Thanks to @pxxush for reporting.

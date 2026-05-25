@@ -544,7 +544,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__board {
 body.is-mobile .tasknotes-plugin .kanban-view__column {
     min-width: min(78vw, 320px);
     max-width: min(78vw, 320px);
-    max-height: none;
+    max-height: 100%;
     scroll-snap-align: start;
 }
 
