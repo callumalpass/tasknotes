@@ -464,27 +464,37 @@ export class MCPService {
 
 		// Define the recursive filter schema
 		const filterConditionSchema: z.ZodType<FilterCondition> = z.object({
-			type: z.literal("condition"),
-			id: z.string(),
+			type: z.literal("condition").describe("Represents a single filter rule"),
+			id: z.string().describe("A unique identifier for this condition node"),
 			property: z
 				.string()
 				.describe(
-					"Filter property (e.g. 'status', 'priority', 'due', 'tags', 'projects', 'contexts')"
+					"The field to filter on. Standard properties: 'title', 'path', 'status', 'priority', 'tags', 'contexts', 'projects', 'blockedBy', 'blocking', 'due', 'scheduled', 'completedDate', 'dateCreated', 'dateModified', 'archived', 'hasSubtasks', 'dependencies.isBlocked', 'dependencies.isBlocking', 'timeEstimate', 'recurrence', 'status.isCompleted'. Use 'user:<fieldname>' for custom fields."
 				),
 			operator: z
 				.string()
 				.describe(
-					"Filter operator (e.g. 'is', 'is-not', 'contains', 'is-before', 'is-after', 'is-empty')"
+					"Comparison operator. Basic: 'is', 'is-not'. Text: 'contains', 'does-not-contain'. Date: 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after'. Existence: 'is-empty', 'is-not-empty'. Boolean: 'is-checked', 'is-not-checked'. Numeric: 'is-greater-than', 'is-less-than', 'is-greater-than-or-equal', 'is-less-than-or-equal'."
 				),
-			value: z.union([z.string(), z.array(z.string()), z.number(), z.boolean(), z.null()]),
+			value: z
+				.union([z.string(), z.array(z.string()), z.number(), z.boolean(), z.null()])
+				.describe(
+					"The value to compare against. For date properties, use YYYY-MM-DD or relative natural language date strings (e.g., 'tomorrow')."
+				),
 		}) as z.ZodType<FilterCondition>;
 
 		const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 			z.object({
-				type: z.literal("group"),
-				id: z.string(),
-				conjunction: z.enum(["and", "or"]),
-				children: z.array(z.union([filterConditionSchema, filterGroupSchema])),
+				type: z.literal("group").describe("Represents a logical grouping of conditions"),
+				id: z.string().describe("A unique identifier for this group node"),
+				conjunction: z
+					.enum(["and", "or"])
+					.describe(
+						"Logical conjunction. Use 'and' if all children must match; 'or' if at least one must match"
+					),
+				children: z
+					.array(z.union([filterConditionSchema, filterGroupSchema]))
+					.describe("Nested condition or group nodes within this group"),
 			})
 		) as z.ZodType<FilterGroup>;
 
@@ -492,21 +502,32 @@ export class MCPService {
 			"tasknotes_query_tasks",
 			{
 				description:
-					"Query tasks using advanced filters with AND/OR logic, sorting, and grouping",
+					"Query tasks using advanced filters with AND/OR logic, sorting, and grouping. Always prefer using exact operators and properties specified in the schema.",
 				inputSchema: {
-					conjunction: z.enum(["and", "or"]).describe("How to combine filter conditions"),
+					conjunction: z
+						.enum(["and", "or"])
+						.describe(
+							"The logical conjunction used to join the top-level children filters"
+						),
 					children: z
 						.array(z.union([filterConditionSchema, filterGroupSchema]))
-						.describe("Filter conditions or nested groups"),
+						.describe("Top-level filter conditions or nested groups"),
 					sortKey: z
 						.string()
 						.optional()
-						.describe("Sort by field (e.g. 'due', 'priority', 'title', 'status')"),
-					sortDirection: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
+						.describe(
+							"The property to sort tasks by (e.g. 'due', 'priority', 'title', 'status', 'timeEstimate', 'dateCreated', 'dateModified')"
+						),
+					sortDirection: z
+						.enum(["asc", "desc"])
+						.optional()
+						.describe("Direction to sort: 'asc' for ascending, 'desc' for descending"),
 					groupKey: z
 						.string()
 						.optional()
-						.describe("Group by field (e.g. 'priority', 'status', 'projects')"),
+						.describe(
+							"Group tasks by field (e.g. 'priority', 'status', 'projects', 'due', 'scheduled')"
+						),
 				},
 			},
 			async (args: QueryTasksArgs) => {
