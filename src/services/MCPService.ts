@@ -474,7 +474,7 @@ export class MCPService {
 			operator: z
 				.string()
 				.describe(
-					"Filter operator (e.g. 'is', 'is_not', 'contains', 'before', 'after', 'is_empty')"
+					"Filter operator (e.g. 'is', 'is-not', 'contains', 'is-before', 'is-after', 'is-empty')"
 				),
 			value: z.union([z.string(), z.array(z.string()), z.number(), z.boolean(), z.null()]),
 		}) as z.ZodType<FilterCondition>;
@@ -496,24 +496,7 @@ export class MCPService {
 				inputSchema: {
 					conjunction: z.enum(["and", "or"]).describe("How to combine filter conditions"),
 					children: z
-						.array(
-							z.union([
-								z.object({
-									type: z.literal("condition"),
-									id: z.string(),
-									property: z.string(),
-									operator: z.string(),
-									value: z.union([
-										z.string(),
-										z.array(z.string()),
-										z.number(),
-										z.boolean(),
-										z.null(),
-									]),
-								}),
-								filterGroupSchema,
-							])
-						)
+						.array(z.union([filterConditionSchema, filterGroupSchema]))
 						.describe("Filter conditions or nested groups"),
 					sortKey: z
 						.string()
