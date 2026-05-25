@@ -1,4 +1,4 @@
-import { describe, it, expect, jest } from "@jest/globals";
+import { beforeEach, describe, it, expect, jest } from "@jest/globals";
 import { TFile } from "obsidian";
 
 import { TaskCalendarSyncService } from "../../../src/services/TaskCalendarSyncService";
@@ -69,6 +69,10 @@ const createPlugin = (frontmatter: Record<string, any>) => ({
 });
 
 describe("Google Calendar duplicate sync prevention", () => {
+	beforeEach(() => {
+		TaskCalendarSyncService.clearSharedGoogleCalendarSyncStateForTests();
+	});
+
 	it("does not create duplicate events when two syncs race before the event id reaches task metadata", async () => {
 		const frontmatter: Record<string, any> = {};
 		const plugin = createPlugin(frontmatter);
@@ -134,6 +138,45 @@ describe("Google Calendar duplicate sync prevention", () => {
 				start: { date: "2026-04-30" },
 			})
 		);
+	});
+
+	it("does not create duplicate events when two independent sync services race for the same task", async () => {
+		const frontmatter: Record<string, any> = {};
+		const firstPlugin = createPlugin(frontmatter);
+		const secondPlugin = createPlugin(frontmatter);
+		const googleCalendarService = {
+			getAvailableCalendars: jest.fn().mockReturnValue([{ id: "primary", name: "Primary" }]),
+			createEvent: jest
+				.fn()
+				.mockResolvedValueOnce({ id: "google-primary-first-event-id" })
+				.mockResolvedValueOnce({ id: "google-primary-second-event-id" }),
+			updateEvent: jest.fn().mockResolvedValue(undefined),
+			deleteEvent: jest.fn().mockResolvedValue(undefined),
+		};
+		const firstSyncService = new TaskCalendarSyncService(
+			firstPlugin as any,
+			googleCalendarService as any
+		);
+		const secondSyncService = new TaskCalendarSyncService(
+			secondPlugin as any,
+			googleCalendarService as any
+		);
+		const task: TaskInfo = {
+			path: "TaskNotes/Tasks/cross-instance-race.md",
+			title: "Cross-instance race",
+			status: "open",
+			priority: "normal",
+			scheduled: "2026-04-29",
+			archived: false,
+		};
+
+		await Promise.all([
+			firstSyncService.syncTaskToCalendar(task),
+			secondSyncService.syncTaskToCalendar(task),
+		]);
+
+		expect(googleCalendarService.createEvent).toHaveBeenCalledTimes(1);
+		expect(frontmatter.googleCalendarEventId).toBe("first-event-id");
 	});
 
 	it("does not leave a failed create in flight and allows a later retry", async () => {

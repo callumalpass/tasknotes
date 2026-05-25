@@ -95,6 +95,12 @@ function isAlreadyDeletedError(error: unknown): boolean {
  * Handles creating, updating, and deleting calendar events when tasks change.
  */
 export class TaskCalendarSyncService {
+	/** In-flight create operations keyed by calendar and task path to avoid duplicate Google events */
+	private static pendingEventCreates: Map<string, Promise<string>> = new Map();
+
+	/** Event IDs written during this session, used while Obsidian metadata catches up */
+	private static taskEventIdCache: Map<string, string> = new Map();
+
 	private plugin: TaskNotesPlugin;
 	private googleCalendarService: GoogleCalendarService;
 	private rateLimitChain: Promise<unknown> = Promise.resolve();
@@ -114,12 +120,6 @@ export class TaskCalendarSyncService {
 	/** Store the latest explicitly passed task object during debounce to avoid cache race conditions */
 	private pendingTasks: Map<string, TaskInfo> = new Map();
 
-	/** In-flight create operations keyed by task path to avoid duplicate Google events */
-	private pendingEventCreates: Map<string, Promise<string>> = new Map();
-
-	/** Event IDs written during this session, used while Obsidian metadata catches up */
-	private taskEventIdCache: Map<string, string> = new Map();
-
 	/** Detached recurring exception event IDs written during this session */
 	private taskExceptionEventIdCache: Map<string, string> = new Map();
 
@@ -129,6 +129,44 @@ export class TaskCalendarSyncService {
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
+	}
+
+	private static getTaskCalendarCacheKey(taskPath: string, calendarId?: string): string {
+		return calendarId ? `${calendarId}::${taskPath}` : taskPath;
+	}
+
+	private static clearTaskEventIdCache(taskPath: string, calendarId?: string): void {
+		if (calendarId) {
+			TaskCalendarSyncService.taskEventIdCache.delete(
+				TaskCalendarSyncService.getTaskCalendarCacheKey(taskPath, calendarId)
+			);
+			return;
+		}
+
+		TaskCalendarSyncService.taskEventIdCache.delete(
+			TaskCalendarSyncService.getTaskCalendarCacheKey(taskPath)
+		);
+		for (const key of Array.from(TaskCalendarSyncService.taskEventIdCache.keys())) {
+			if (key.endsWith(`::${taskPath}`)) {
+				TaskCalendarSyncService.taskEventIdCache.delete(key);
+			}
+		}
+	}
+
+	private static clearSharedGoogleCalendarSyncState(): void {
+		TaskCalendarSyncService.pendingEventCreates.clear();
+		TaskCalendarSyncService.taskEventIdCache.clear();
+	}
+
+	static clearSharedGoogleCalendarSyncStateForTests(): void {
+		TaskCalendarSyncService.clearSharedGoogleCalendarSyncState();
+	}
+
+	private getTaskEventIdCacheKey(taskPath: string, calendarId?: string): string {
+		return TaskCalendarSyncService.getTaskCalendarCacheKey(
+			taskPath,
+			calendarId || this.plugin.settings.googleCalendarExport.targetCalendarId
+		);
 	}
 
 	/**
@@ -146,8 +184,7 @@ export class TaskCalendarSyncService {
 		this.pendingSyncs.clear();
 		this.previousTaskState.clear();
 		this.pendingTasks.clear();
-		this.pendingEventCreates.clear();
-		this.taskEventIdCache.clear();
+		TaskCalendarSyncService.clearSharedGoogleCalendarSyncState();
 		this.taskExceptionEventIdCache.clear();
 		this.calendarFingerprints = null;
 	}
@@ -1042,7 +1079,12 @@ export class TaskCalendarSyncService {
 	 * Get the Google Calendar event ID from the task's frontmatter
 	 */
 	getTaskEventId(task: TaskInfo): string | undefined {
-		return task.googleCalendarEventId || this.taskEventIdCache.get(task.path);
+		return (
+			task.googleCalendarEventId ||
+			TaskCalendarSyncService.taskEventIdCache.get(
+				this.getTaskEventIdCacheKey(task.path)
+			)
+		);
 	}
 
 	/**
@@ -1103,7 +1145,11 @@ export class TaskCalendarSyncService {
 	/**
 	 * Save the Google Calendar event ID to the task's frontmatter
 	 */
-	private async saveTaskEventId(taskPath: string, eventId: string): Promise<void> {
+	private async saveTaskEventId(
+		taskPath: string,
+		eventId: string,
+		calendarId?: string
+	): Promise<void> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
 		if (!(file instanceof TFile)) {
 			tasknotesLogger.warn(`Cannot save event ID: file not found at ${taskPath}`, {
@@ -1117,9 +1163,13 @@ export class TaskCalendarSyncService {
 		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			frontmatter[fieldName] = eventId;
 		});
-		this.taskEventIdCache.set(taskPath, eventId);
+		TaskCalendarSyncService.taskEventIdCache.set(
+			this.getTaskEventIdCacheKey(taskPath, calendarId),
+			eventId
+		);
 
-		const targetCalendarId = this.plugin.settings.googleCalendarExport.targetCalendarId;
+		const targetCalendarId =
+			calendarId || this.plugin.settings.googleCalendarExport.targetCalendarId;
 		if (targetCalendarId) {
 			await this.upsertEventIndex(taskPath, targetCalendarId, eventId);
 		}
@@ -1135,7 +1185,7 @@ export class TaskCalendarSyncService {
 				category: "provider",
 				operation: "remove-event-id-file-not-found",
 			});
-			this.taskEventIdCache.delete(taskPath);
+			TaskCalendarSyncService.clearTaskEventIdCache(taskPath);
 			await this.removeEventIndexForTask(taskPath);
 			return;
 		}
@@ -1144,7 +1194,7 @@ export class TaskCalendarSyncService {
 		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			delete frontmatter[fieldName];
 		});
-		this.taskEventIdCache.delete(taskPath);
+		TaskCalendarSyncService.clearTaskEventIdCache(taskPath);
 		await this.removeEventIndexForTask(taskPath);
 	}
 
@@ -1824,7 +1874,7 @@ export class TaskCalendarSyncService {
 			? createdEvent.id.slice(prefix.length)
 			: createdEvent.id;
 
-		await this.saveTaskEventId(task.path, eventId);
+		await this.saveTaskEventId(task.path, eventId, calendarId);
 		return eventId;
 	}
 
@@ -2039,7 +2089,12 @@ export class TaskCalendarSyncService {
 					)
 				);
 			} else {
-				const pendingCreate = this.pendingEventCreates.get(task.path);
+				const createCacheKey = this.getTaskEventIdCacheKey(
+					task.path,
+					targetCalendarId
+				);
+				const pendingCreate =
+					TaskCalendarSyncService.pendingEventCreates.get(createCacheKey);
 				if (pendingCreate) {
 					const eventId = await pendingCreate;
 					await this.withGoogleRateLimit(() =>
@@ -2051,12 +2106,18 @@ export class TaskCalendarSyncService {
 						eventData,
 						targetCalendarId
 					);
-					this.pendingEventCreates.set(task.path, createPromise);
+					TaskCalendarSyncService.pendingEventCreates.set(
+						createCacheKey,
+						createPromise
+					);
 					try {
 						await createPromise;
 					} finally {
-						if (this.pendingEventCreates.get(task.path) === createPromise) {
-							this.pendingEventCreates.delete(task.path);
+						if (
+							TaskCalendarSyncService.pendingEventCreates.get(createCacheKey) ===
+							createPromise
+						) {
+							TaskCalendarSyncService.pendingEventCreates.delete(createCacheKey);
 						}
 					}
 				}
