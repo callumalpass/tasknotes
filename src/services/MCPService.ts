@@ -11,10 +11,12 @@ import { StatusManager } from "./StatusManager";
 import { NaturalLanguageParser } from "./NaturalLanguageParser";
 import { TaskStatsService } from "./TaskStatsService";
 import {
+	FILTER_OPERATORS,
 	TaskCreationData,
 	FilterQuery,
 	FilterCondition,
 	FilterGroup,
+	FilterOperator,
 	TaskGroupKey,
 	TaskSortKey,
 } from "../types";
@@ -30,6 +32,14 @@ import { JsonRpcBody, normalizeMcpInitializeProtocol } from "./mcpProtocol";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MCPService" });
+const MCP_FILTER_OPERATOR_VALUES = FILTER_OPERATORS.map((operator) => operator.id) as [
+	FilterOperator,
+	...FilterOperator[],
+];
+const MCP_FILTER_OPERATOR_DESCRIPTION = [
+	"Filter operator. Valid operators:",
+	MCP_FILTER_OPERATOR_VALUES.join(", "),
+].join(" ");
 
 type ListTasksArgs = { limit?: number; offset?: number };
 type TaskIdArgs = { id: string };
@@ -463,6 +473,16 @@ export class MCPService {
 		const tool = this.getToolRegistrar(server);
 
 		// Define the recursive filter schema
+		const filterValueSchema = z.union([
+			z.string(),
+			z.array(z.string()),
+			z.number(),
+			z.boolean(),
+			z.null(),
+		]);
+		const filterOperatorSchema = z
+			.enum(MCP_FILTER_OPERATOR_VALUES)
+			.describe(MCP_FILTER_OPERATOR_DESCRIPTION);
 		const filterConditionSchema: z.ZodType<FilterCondition> = z.object({
 			type: z.literal("condition"),
 			id: z.string(),
@@ -471,12 +491,8 @@ export class MCPService {
 				.describe(
 					"Filter property (e.g. 'status', 'priority', 'due', 'tags', 'projects', 'contexts')"
 				),
-			operator: z
-				.string()
-				.describe(
-					"Filter operator (e.g. 'is', 'is_not', 'contains', 'before', 'after', 'is_empty')"
-				),
-			value: z.union([z.string(), z.array(z.string()), z.number(), z.boolean(), z.null()]),
+			operator: filterOperatorSchema,
+			value: filterValueSchema,
 		}) as z.ZodType<FilterCondition>;
 
 		const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
@@ -496,24 +512,7 @@ export class MCPService {
 				inputSchema: {
 					conjunction: z.enum(["and", "or"]).describe("How to combine filter conditions"),
 					children: z
-						.array(
-							z.union([
-								z.object({
-									type: z.literal("condition"),
-									id: z.string(),
-									property: z.string(),
-									operator: z.string(),
-									value: z.union([
-										z.string(),
-										z.array(z.string()),
-										z.number(),
-										z.boolean(),
-										z.null(),
-									]),
-								}),
-								filterGroupSchema,
-							])
-						)
+						.array(z.union([filterConditionSchema, filterGroupSchema]))
 						.describe("Filter conditions or nested groups"),
 					sortKey: z
 						.string()

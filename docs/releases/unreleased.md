@@ -44,3 +44,5 @@ Example:
   - Thanks to @g-arthurvanderbilt for reporting and @cookbr for confirming the desktop impact.
 - (#1941) Fixed mobile Kanban boards scrolling the whole board vertically instead of keeping each list independently scrollable.
   - Thanks to @pxxush for reporting.
+- (#1943) Fixed MCP task-query tool instructions so filter operators match the operators TaskNotes actually accepts.
+  - Thanks to @jordankbartos for reporting.
