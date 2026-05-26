@@ -28,6 +28,26 @@ function createTestScroller(items: TestItem[]) {
 	return { container, renderItem, scroller };
 }
 
+function createTestScrollerWithContainer(container: HTMLElement, items: TestItem[]) {
+	const renderItem = jest.fn((item: TestItem, index: number) => {
+		const element = document.createElement("div");
+		element.dataset.key = item.id;
+		element.textContent = `${item.label}:${index}`;
+		return element;
+	});
+
+	const scroller = new VirtualScroller<TestItem>({
+		container,
+		items,
+		itemHeight: 20,
+		overscan: 0,
+		renderItem,
+		getItemKey: (item) => item.id,
+	});
+
+	return { renderItem, scroller };
+}
+
 function renderedKeys(container: HTMLElement): string[] {
 	return Array.from(container.querySelectorAll<HTMLElement>("[data-key]")).map(
 		(element) => element.dataset.key ?? ""
@@ -35,6 +55,22 @@ function renderedKeys(container: HTMLElement): string[] {
 }
 
 describe("VirtualScroller", () => {
+	it("includes container bottom padding in the spacer height", () => {
+		const container = document.createElement("div");
+		container.style.overflowY = "auto";
+		container.style.paddingBottom = "112px";
+
+		createTestScrollerWithContainer(container, [
+			{ id: "a", label: "A" },
+			{ id: "b", label: "B" },
+			{ id: "c", label: "C" },
+		]);
+
+		expect(
+			container.querySelector<HTMLElement>(".virtual-scroller__spacer")?.style.height
+		).toBe("172px");
+	});
+
 	it("reorders keyed items without rerendering existing visible elements", () => {
 		const { container, renderItem, scroller } = createTestScroller([
 			{ id: "a", label: "A" },

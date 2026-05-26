@@ -213,8 +213,15 @@ export class VirtualScroller<T> {
 		return element;
 	}
 
+	private getContainerBottomPadding(): number {
+		const view = this.container.ownerDocument.defaultView;
+		const paddingBottom = view?.getComputedStyle(this.container).paddingBottom ?? "";
+		const parsedPadding = Number.parseFloat(paddingBottom);
+		return Number.isFinite(parsedPadding) ? parsedPadding : 0;
+	}
+
 	private updateSpacerHeight(): void {
-		this.spacer.style.height = `${this.totalHeight}px`;
+		this.spacer.style.height = `${this.totalHeight + this.getContainerBottomPadding()}px`;
 	}
 
 	/**
@@ -831,6 +838,7 @@ export class VirtualScroller<T> {
 		// Force a fresh calculation by resetting state
 		this.state.startIndex = -1;
 		this.state.endIndex = -1;
+		this.updateSpacerHeight();
 		this.updateVisibleRange();
 	}
 

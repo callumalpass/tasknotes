@@ -178,8 +178,8 @@
 
 body.is-mobile .tn-tasknotesTaskList .tn-bases-items-container,
 body.is-mobile .tn-bases-tasknotes-list {
-    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
-    scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
 }
 
 /* Sidebar and popout note embeds already have a constrained note scroller. Let

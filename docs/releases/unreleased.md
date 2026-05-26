@@ -51,3 +51,5 @@ Example:
   - Thanks to @pxxush for reporting.
 - (#1943) Fixed MCP task-query tool instructions so filter operators match the operators TaskNotes actually accepts.
   - Thanks to @jordankbartos for reporting.
+- (#1946) Fixed the bottom task in virtualized Task List Bases being partially hidden behind Obsidian's mobile bottom bar.
+  - Thanks to @3zra47 for reporting.
