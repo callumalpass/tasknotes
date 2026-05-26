@@ -51,6 +51,7 @@ function createSelectionService(
 		}),
 		selectRange: jest.fn(),
 		selectAll: jest.fn(),
+		selectAdjacentRange: jest.fn(),
 		isSelected: jest.fn((path: string) => selected.has(path)),
 		getPrimarySelectedPath: jest.fn(() => options.primaryPath ?? null),
 	};
@@ -261,6 +262,59 @@ describe("basesSelectionUi", () => {
 		).toBe(true);
 		expect(selectAllService.selectAll).toHaveBeenCalledWith(["Tasks/a.md", "Tasks/b.md"]);
 		expect(updateSelectionVisuals).toHaveBeenCalled();
+	});
+
+	it("extends active selection with Shift+arrow keys", () => {
+		const activeService = createSelectionService({ active: true });
+		const updateSelectionModeUi = jest.fn();
+		const updateSelectionVisuals = jest.fn();
+		const getVisibleTaskPaths = jest.fn(() => ["Tasks/a.md", "Tasks/b.md"]);
+		const event = new KeyboardEvent("keydown", { key: "ArrowDown", shiftKey: true });
+
+		expect(
+			handleBasesSelectionKeyDown({
+				event,
+				selectionService: activeService,
+				getVisibleTaskPaths,
+				updateSelectionModeUi,
+				updateSelectionVisuals,
+			})
+		).toBe(true);
+
+		expect(activeService.selectAdjacentRange).toHaveBeenCalledWith(1, [
+			"Tasks/a.md",
+			"Tasks/b.md",
+		]);
+		expect(updateSelectionVisuals).toHaveBeenCalled();
+	});
+
+	it("does not steal selection keyboard shortcuts from editable controls", () => {
+		const activeService = createSelectionService({ active: true });
+		const updateSelectionModeUi = jest.fn();
+		const updateSelectionVisuals = jest.fn();
+		const getVisibleTaskPaths = jest.fn(() => ["Tasks/a.md", "Tasks/b.md"]);
+		const input = document.createElement("input");
+
+		expect(
+			handleBasesSelectionKeyDown({
+				event: {
+					key: "ArrowDown",
+					shiftKey: true,
+					ctrlKey: false,
+					metaKey: false,
+					target: input,
+					preventDefault: jest.fn(),
+				},
+				selectionService: activeService,
+				getVisibleTaskPaths,
+				updateSelectionModeUi,
+				updateSelectionVisuals,
+			})
+		).toBe(false);
+
+		expect(activeService.selectAdjacentRange).not.toHaveBeenCalled();
+		expect(getVisibleTaskPaths).not.toHaveBeenCalled();
+		expect(updateSelectionVisuals).not.toHaveBeenCalled();
 	});
 
 	it("reads visible task paths from the shared Bases root", () => {

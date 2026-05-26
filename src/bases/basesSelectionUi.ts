@@ -14,6 +14,7 @@ export type BasesSelectionKeyboardState = {
 	isSelectionModeActive(): boolean;
 	exitSelectionMode(clearSelection?: boolean): void;
 	selectAll(paths: string[]): void;
+	selectAdjacentRange(direction: -1 | 1, paths: string[]): void;
 };
 
 type SelectionIndicatorOptions = {
@@ -32,7 +33,10 @@ type SelectionClickOptions = {
 };
 
 type SelectionKeyboardOptions = {
-	event: Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey" | "preventDefault">;
+	event: Pick<
+		KeyboardEvent,
+		"key" | "ctrlKey" | "metaKey" | "shiftKey" | "preventDefault" | "target"
+	>;
 	selectionService: BasesSelectionKeyboardState | null | undefined;
 	getVisibleTaskPaths: () => string[];
 	updateSelectionModeUi: (active: boolean) => void;
@@ -186,6 +190,7 @@ export function handleBasesSelectionKeyDown({
 	updateSelectionVisuals,
 }: SelectionKeyboardOptions): boolean {
 	if (!selectionService?.isSelectionModeActive()) return false;
+	if (isEditableKeyboardTarget(event.target)) return false;
 
 	if (event.key === "Escape") {
 		selectionService.exitSelectionMode(true);
@@ -196,6 +201,14 @@ export function handleBasesSelectionKeyDown({
 	if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
 		event.preventDefault();
 		selectionService.selectAll(getVisibleTaskPaths());
+		updateSelectionVisuals();
+		return true;
+	}
+
+	const arrowDirection = getSelectionArrowDirection(event);
+	if (arrowDirection !== null) {
+		event.preventDefault();
+		selectionService.selectAdjacentRange(arrowDirection, getVisibleTaskPaths());
 		updateSelectionVisuals();
 		return true;
 	}
@@ -259,4 +272,21 @@ function updateSelectionClasses({
 	} else {
 		element.classList.remove(primaryClass);
 	}
+}
+
+function getSelectionArrowDirection(
+	event: Pick<KeyboardEvent, "key" | "shiftKey">
+): -1 | 1 | null {
+	if (!event.shiftKey) return null;
+	if (event.key === "ArrowUp" || event.key === "ArrowLeft") return -1;
+	if (event.key === "ArrowDown" || event.key === "ArrowRight") return 1;
+	return null;
+}
+
+function isEditableKeyboardTarget(target: EventTarget | null): boolean {
+	if (!(target instanceof HTMLElement)) return false;
+	if (target.isContentEditable) return true;
+
+	const tagName = target.tagName.toLowerCase();
+	return tagName === "input" || tagName === "textarea" || tagName === "select";
 }

@@ -843,13 +843,19 @@ export abstract class BasesViewBase extends Component {
 	 */
 	protected handleSelectionClick(event: MouseEvent, taskPath: string): boolean {
 		const selectionService = this.plugin.taskSelectionService;
-		return handleBasesSelectionClick({
+		const handled = handleBasesSelectionClick({
 			event,
 			taskPath,
 			selectionService,
 			getVisibleTaskPaths: () => this.getVisibleTaskPaths(),
 			updateSelectionVisuals: () => this.updateSelectionVisuals(),
 		});
+
+		if (handled) {
+			this.rootElement?.focus({ preventScroll: true });
+		}
+
+		return handled;
 	}
 
 	/**

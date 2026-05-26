@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Added
+
+- (#1885) Added Shift+arrow keyboard range selection while bulk task selection mode is active.
+  - Thanks to @chrabia for suggesting bulk selection improvements and @sumiyalairu03 for the keyboard selection idea.
+
 ## Fixed
 
 - (#781, #1085) Fixed Outlook-published ICS calendar events appearing at the wrong time when their feed used Windows timezone names without matching timezone definitions.
