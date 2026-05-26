@@ -40,6 +40,51 @@ function searchableValueIncludes(value: unknown, lowerQuery: string): boolean {
 	return String(value).toLowerCase().includes(lowerQuery);
 }
 
+function searchableValueRank(value: unknown, lowerQuery: string): number | null {
+	if (value === null || value === undefined) {
+		return null;
+	}
+
+	if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
+		return null;
+	}
+
+	const text = String(value).toLowerCase();
+	if (!text.includes(lowerQuery)) {
+		return null;
+	}
+
+	if (text === lowerQuery) {
+		return 0;
+	}
+
+	if (text.startsWith(lowerQuery)) {
+		return 1;
+	}
+
+	const startsWord = text.split(/[^a-z0-9]+/).some((word) => word.startsWith(lowerQuery));
+	if (startsWord) {
+		return 2;
+	}
+
+	return 3;
+}
+
+function bestSearchableValueRank(values: unknown[], lowerQuery: string): number | null {
+	let bestRank: number | null = null;
+
+	for (const value of values) {
+		const rank = searchableValueRank(value, lowerQuery);
+		if (rank === null) {
+			continue;
+		}
+
+		bestRank = bestRank === null ? rank : Math.min(bestRank, rank);
+	}
+
+	return bestRank;
+}
+
 export function taskMatchesSelectorQuery(task: TaskInfo, lowerQuery: string): boolean {
 	if (searchableValueIncludes(task.title, lowerQuery)) return true;
 	if (searchableValueIncludes(task.due, lowerQuery)) return true;
@@ -56,6 +101,38 @@ export function taskMatchesSelectorQuery(task: TaskInfo, lowerQuery: string): bo
 	}
 
 	return false;
+}
+
+export function getTaskSelectorQueryRank(task: TaskInfo, lowerQuery: string): number {
+	const titleRank = searchableValueRank(task.title, lowerQuery);
+	if (titleRank !== null) {
+		return titleRank;
+	}
+
+	const contextRank = bestSearchableValueRank(task.contexts || [], lowerQuery);
+	if (contextRank !== null) {
+		return 10 + contextRank;
+	}
+
+	const filteredProjects = filterEmptyProjects(task.projects || []);
+	const projectRank = bestSearchableValueRank(filteredProjects, lowerQuery);
+	if (projectRank !== null) {
+		return 20 + projectRank;
+	}
+
+	if (task.priority !== "normal") {
+		const priorityRank = searchableValueRank(task.priority, lowerQuery);
+		if (priorityRank !== null) {
+			return 30 + priorityRank;
+		}
+	}
+
+	const dueRank = searchableValueRank(task.due, lowerQuery);
+	if (dueRank !== null) {
+		return 40 + dueRank;
+	}
+
+	return Number.MAX_SAFE_INTEGER;
 }
 
 /**
@@ -473,15 +550,23 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	}
 
 	private getFilteredTasks(query: string): TaskInfo[] {
-		const lowerQuery = query.toLowerCase();
+		const lowerQuery = query.trim().toLowerCase();
+		const hasQuery = lowerQuery.length > 0;
 
 		return this.tasks
 			.filter((task) => !task.archived)
 			.filter((task) => {
-				if (!query) return true;
+				if (!hasQuery) return true;
 				return taskMatchesSelectorQuery(task, lowerQuery);
 			})
 			.sort((a, b) => {
+				if (hasQuery) {
+					const rankCompare =
+						getTaskSelectorQueryRank(a, lowerQuery) -
+						getTaskSelectorQueryRank(b, lowerQuery);
+					if (rankCompare !== 0) return rankCompare;
+				}
+
 				// Sort by completion status first (incomplete tasks come first)
 				const aCompleted = isTaskInstanceCompleted(
 					a,
@@ -497,6 +582,11 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				);
 				if (aCompleted !== bCompleted) {
 					return aCompleted ? 1 : -1;
+				}
+
+				if (hasQuery) {
+					const titleCompare = a.title.localeCompare(b.title);
+					if (titleCompare !== 0) return titleCompare;
 				}
 
 				// Sort by due date second
