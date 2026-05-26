@@ -26,5 +26,7 @@ Example:
 
 ## Fixed
 
+- (#1392, #1949) Fixed due and scheduled date picker fields so typed or pasted date edits stay open until you choose Select, including compact `YYYYMMDD` entry when a date is already set.
+  - Thanks to @kazerniel for reporting and following up.
 - (#982, #1947) Restored larger mobile task-card typography and let secondary card icons wrap below the task details when they no longer fit comfortably on mobile.
   - Thanks to @3zra47 for reporting the font-size regression, @chrsdk and @scottaltham-payroc for confirming the mobile font-size issue, and @Jomo94 for reporting the mobile card layout problem.
