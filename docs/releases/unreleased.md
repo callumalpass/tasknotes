@@ -55,3 +55,5 @@ Example:
   - Thanks to @3zra47 for reporting.
 - (#1947) Fixed mobile Task List cards with left-positioned subtask chevrons so the chevron remains visible and project/detail badges stay on the main row.
   - Thanks to @Jomo94 for reporting.
+- (#1948) Fixed Agenda Calendar Bases so completed recurring instances can appear on their recorded completion dates, even when recurring task projections are hidden or the completion date is outside the recurrence pattern.
+  - Thanks to @Jomo94 for reporting.

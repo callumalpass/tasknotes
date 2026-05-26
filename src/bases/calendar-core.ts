@@ -163,6 +163,7 @@ export interface CalendarEventGenerationOptions {
 interface RecurringInstanceVisibilityOptions {
 	showCompletedRecurringInstances?: boolean;
 	showSkippedRecurringInstances?: boolean;
+	showProjectedRecurringInstances?: boolean;
 }
 
 /**
@@ -809,6 +810,63 @@ export function createRecurringEvent(
 }
 
 /**
+ * Create an event for a recorded recurring instance whose date is stored in
+ * complete_instances or skipped_instances but may not be part of the RRULE.
+ */
+export function createRecordedRecurringInstanceEvent(
+	task: TaskInfo,
+	eventStart: string,
+	instanceDate: string,
+	templateTime: string,
+	plugin: TaskNotesPlugin
+): CalendarEvent | null {
+	const hasTime = hasTimeComponent(eventStart);
+
+	let endDate: string | undefined;
+	if (hasTime && task.timeEstimate) {
+		const start = parseDateToLocal(eventStart);
+		const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
+		endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+	} else if (!hasTime) {
+		endDate = calculateAllDayEndDate(eventStart, task.timeEstimate);
+	}
+
+	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
+	const borderColor = normalizeThemeColor(priorityConfig?.color, "var(--color-accent)");
+	const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
+	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
+
+	let backgroundColor = "transparent";
+	if (isInstanceCompleted) {
+		backgroundColor = "rgba(0,0,0,0.3)";
+	} else if (isInstanceSkipped) {
+		backgroundColor = "rgba(128,128,128,0.2)";
+	}
+
+	return {
+		id: `recurring-recorded-${task.path}-${instanceDate}`,
+		title: task.title,
+		start: eventStart,
+		end: endDate,
+		allDay: !hasTime,
+		backgroundColor,
+		borderColor,
+		textColor,
+		editable: false,
+		extendedProps: {
+			taskInfo: task,
+			eventType: "recurring",
+			isCompleted: isInstanceCompleted,
+			isSkipped: isInstanceSkipped,
+			isRecurringInstance: true,
+			instanceDate,
+			recurringTemplateTime: templateTime,
+		},
+	};
+}
+
+/**
  * Generate recurring task instances for calendar display
  */
 export function generateRecurringTaskInstances(
@@ -822,83 +880,150 @@ export function generateRecurringTaskInstances(
 		return [];
 	}
 
-	const { showCompletedRecurringInstances = true, showSkippedRecurringInstances = true } =
-		options;
+	const {
+		showCompletedRecurringInstances = true,
+		showSkippedRecurringInstances = true,
+		showProjectedRecurringInstances = true,
+	} = options;
 	const instances: CalendarEvent[] = [];
+	const emittedInstanceDates = new Set<string>();
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
 	const nextScheduledDate = getDatePart(task.scheduled);
 
-	// 1. Create next scheduled occurrence event
-	const scheduledTime = hasOriginalTime ? getTimePart(task.scheduled) : null;
-	const scheduledEventStart = scheduledTime
-		? `${nextScheduledDate}T${scheduledTime}`
-		: nextScheduledDate;
-	const nextScheduledEvent = createNextScheduledEvent(
-		task,
-		scheduledEventStart,
-		nextScheduledDate,
-		scheduledTime || "09:00",
-		plugin
-	);
-	if (
-		nextScheduledEvent &&
-		shouldShowRecurringInstance(
+	if (showProjectedRecurringInstances) {
+		// 1. Create next scheduled occurrence event
+		const scheduledTime = hasOriginalTime ? getTimePart(task.scheduled) : null;
+		const scheduledEventStart = scheduledTime
+			? `${nextScheduledDate}T${scheduledTime}`
+			: nextScheduledDate;
+		const nextScheduledEvent = createNextScheduledEvent(
 			task,
+			scheduledEventStart,
 			nextScheduledDate,
-			showCompletedRecurringInstances,
-			showSkippedRecurringInstances
-		)
-	) {
-		instances.push(nextScheduledEvent);
-	}
-
-	// 2. Generate pattern instances from recurrence rule
-	// For yearly recurring tasks, extend the look-ahead period to ensure we find occurrences
-	// even when viewing short calendar ranges (weekly, 3-day, day views)
-	let adjustedEndDate = endDate;
-	if (typeof task.recurrence === "string" && task.recurrence.includes("FREQ=YEARLY")) {
-		// For yearly tasks, look ahead ~2.2 years to ensure we find at least one occurrence
-		const lookAheadDays = 800;
-		adjustedEndDate = new Date(startDate.getTime() + lookAheadDays * 24 * 60 * 60 * 1000);
-	}
-	const recurringDates = generateRecurringInstances(task, startDate, adjustedEndDate);
-
-	// Filter instances to only show those within the original visible date range
-	// Compare by date only (not time) since FullCalendar boundaries are at midnight local time
-	// but RRule generates occurrences at the task's scheduled time in UTC (issue #1582)
-	const endDateOnly = formatDateForStorage(endDate);
-	for (const date of recurringDates) {
-		const instanceDate = formatDateForStorage(date);
-
-		// Skip instances outside the original visible range (for yearly tasks with extended look-ahead)
-		// Compare dates as strings (YYYY-MM-DD) to avoid timezone/time issues
-		if (instanceDate > endDateOnly) {
-			continue;
-		}
-
-		// Skip if conflicts with next scheduled occurrence
-		if (instanceDate === nextScheduledDate) {
-			continue;
-		}
-
+			scheduledTime || "09:00",
+			plugin
+		);
 		if (
-			!shouldShowRecurringInstance(
+			nextScheduledEvent &&
+			shouldShowRecurringInstance(
 				task,
-				instanceDate,
+				nextScheduledDate,
 				showCompletedRecurringInstances,
 				showSkippedRecurringInstances
 			)
 		) {
+			instances.push(nextScheduledEvent);
+			emittedInstanceDates.add(nextScheduledDate);
+		}
+
+		// 2. Generate pattern instances from recurrence rule
+		// For yearly recurring tasks, extend the look-ahead period to ensure we find occurrences
+		// even when viewing short calendar ranges (weekly, 3-day, day views)
+		let adjustedEndDate = endDate;
+		if (typeof task.recurrence === "string" && task.recurrence.includes("FREQ=YEARLY")) {
+			// For yearly tasks, look ahead ~2.2 years to ensure we find at least one occurrence
+			const lookAheadDays = 800;
+			adjustedEndDate = new Date(
+				startDate.getTime() + lookAheadDays * 24 * 60 * 60 * 1000
+			);
+		}
+		const recurringDates = generateRecurringInstances(task, startDate, adjustedEndDate);
+
+		// Filter instances to only show those within the original visible date range
+		// Compare by date only (not time) since FullCalendar boundaries are at midnight local time
+		// but RRule generates occurrences at the task's scheduled time in UTC (issue #1582)
+		const endDateOnly = formatDateForStorage(endDate);
+		for (const date of recurringDates) {
+			const instanceDate = formatDateForStorage(date);
+
+			// Skip instances outside the original visible range (for yearly tasks with extended look-ahead)
+			// Compare dates as strings (YYYY-MM-DD) to avoid timezone/time issues
+			if (instanceDate > endDateOnly) {
+				continue;
+			}
+
+			// Skip if conflicts with next scheduled occurrence
+			if (instanceDate === nextScheduledDate) {
+				continue;
+			}
+
+			if (
+				!shouldShowRecurringInstance(
+					task,
+					instanceDate,
+					showCompletedRecurringInstances,
+					showSkippedRecurringInstances
+				)
+			) {
+				continue;
+			}
+
+			const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
+			const event = createRecurringEvent(task, eventStart, instanceDate, templateTime, plugin);
+			if (event) {
+				instances.push(event);
+				emittedInstanceDates.add(instanceDate);
+			}
+		}
+	}
+
+	for (const instanceDate of getRecordedRecurringInstanceDatesInRange(
+		task,
+		startDate,
+		endDate,
+		showCompletedRecurringInstances,
+		showSkippedRecurringInstances
+	)) {
+		if (emittedInstanceDates.has(instanceDate)) {
 			continue;
 		}
 
 		const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
-		const event = createRecurringEvent(task, eventStart, instanceDate, templateTime, plugin);
-		if (event) instances.push(event);
+		const event = createRecordedRecurringInstanceEvent(
+			task,
+			eventStart,
+			instanceDate,
+			templateTime,
+			plugin
+		);
+		if (event) {
+			instances.push(event);
+			emittedInstanceDates.add(instanceDate);
+		}
 	}
 
 	return instances;
+}
+
+function getRecordedRecurringInstanceDatesInRange(
+	task: TaskInfo,
+	startDate: Date,
+	endDate: Date,
+	showCompletedRecurringInstances: boolean,
+	showSkippedRecurringInstances: boolean
+): string[] {
+	const startDateOnly = formatDateForStorage(startDate);
+	const endDateOnly = formatDateForStorage(endDate);
+	const dates = new Set<string>();
+
+	if (showCompletedRecurringInstances) {
+		for (const date of task.complete_instances || []) {
+			if (date >= startDateOnly && date <= endDateOnly) {
+				dates.add(date);
+			}
+		}
+	}
+
+	if (showSkippedRecurringInstances) {
+		for (const date of task.skipped_instances || []) {
+			if (date >= startDateOnly && date <= endDateOnly) {
+				dates.add(date);
+			}
+		}
+	}
+
+	return [...dates].sort();
 }
 
 function shouldShowRecurringInstance(
@@ -1146,7 +1271,13 @@ export async function generateCalendarEvents(
 				let includeStandaloneScheduled = showScheduled;
 				let allowScheduledToDueSpan = true;
 
-				if (showRecurring && visibleStart && visibleEnd) {
+				if (
+					(showRecurring ||
+						showCompletedRecurringInstances ||
+						showSkippedRecurringInstances) &&
+					visibleStart &&
+					visibleEnd
+				) {
 					if (task.scheduled) {
 						const recurringEvents = generateRecurringTaskInstances(
 							task,
@@ -1156,11 +1287,14 @@ export async function generateCalendarEvents(
 							{
 								showCompletedRecurringInstances,
 								showSkippedRecurringInstances,
+								showProjectedRecurringInstances: showRecurring,
 							}
 						);
 						events.push(...recurringEvents);
-						includeStandaloneScheduled = false;
-						allowScheduledToDueSpan = false;
+						if (showRecurring) {
+							includeStandaloneScheduled = false;
+							allowScheduledToDueSpan = false;
+						}
 					}
 				}
 
