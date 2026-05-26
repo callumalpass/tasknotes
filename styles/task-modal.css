@@ -1332,6 +1332,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 .tasknotes-plugin .nl-preview-container.nl-preview-container--visible {
     display: block;
+    visibility: visible;
 }
 
 .tasknotes-plugin .nl-preview-item {

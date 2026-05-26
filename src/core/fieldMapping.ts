@@ -302,9 +302,7 @@ export function mapTaskFromFrontmatter(
 
 	if (frontmatter.tags !== undefined) {
 		const tags = getFrontmatterTags(frontmatter.tags);
-		if (tags.length > 0) {
-			mapped.tags = tags;
-		}
+		mapped.tags = tags;
 		mapped.archived = tags.includes(normalizeTagForComparison(mapping.archiveTag));
 	}
 

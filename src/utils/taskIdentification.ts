@@ -53,8 +53,6 @@ export function isTaskFrontmatter(
 
 	const tags = getFrontmatterTags(frontmatter.tags);
 	return tags.some((tag) => {
-		// Obsidian metadata cache prepends "#" to frontmatter tags.
-		const cleanTag = tag.startsWith("#") ? tag.slice(1) : tag;
-		return FilterUtils.matchesHierarchicalTagExact(cleanTag, settings.taskTag);
+		return FilterUtils.matchesHierarchicalTagExact(tag, settings.taskTag);
 	});
 }

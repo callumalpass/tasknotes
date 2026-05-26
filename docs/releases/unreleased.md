@@ -47,10 +47,13 @@ Example:
   - Thanks to @joseluisgonzalezdelgado-ctrl for reporting.
 - (#1939) Fixed the task Details field rendering as a small nested textarea when the embedded editor falls back.
   - Thanks to @g-arthurvanderbilt for reporting and @cookbr for confirming the desktop impact.
+- Fixed tag and modal preview edge cases found during validation: double-hash tags no longer match the task tag, empty tag lists stay empty when read back, and natural-language previews remain visible when enabled.
 - (#1941) Fixed mobile Kanban boards scrolling the whole board vertically instead of keeping each list independently scrollable.
   - Thanks to @pxxush for reporting.
 - (#1943) Fixed MCP task-query tool instructions so filter operators match the operators TaskNotes actually accepts.
-  - Thanks to @jordankbartos for reporting.
+  - Thanks to @jordankbartos for reporting and proposing a fix in #1944.
+- (#1945) Fixed Google Calendar export so overlapping sync services do not create duplicate events for the same task while the saved event ID is still catching up.
+  - Thanks to @martin-forge for reporting and contributing the fix.
 - (#1946) Fixed the bottom task in virtualized Task List Bases being partially hidden behind Obsidian's mobile bottom bar.
   - Thanks to @3zra47 for reporting.
 - (#1947) Fixed mobile Task List cards with left-positioned subtask chevrons so the chevron remains visible and project/detail badges stay on the main row.
