@@ -17,4 +17,15 @@ describe("Issue #982: Obsidian text font size inheritance", () => {
 		expect(css).toContain("--tn-font-size-lg: calc(var(--tn-font-size-base) * 0.875)");
 		expect(css).toContain("--tn-font-size-2xl: calc(var(--tn-font-size-base) * 1.125)");
 	});
+
+	it("keeps mobile task cards tied to the Obsidian text size instead of compact desktop tokens", () => {
+		const css = readRepoFile("styles/task-card-bem.css");
+
+		expect(css).toMatch(
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__title\s*\{[^}]*font-size:\s*var\(--tn-font-size-base\);/s
+		);
+		expect(css).toMatch(
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata\s*\{[^}]*font-size:\s*max\(var\(--tn-font-size-lg\),\s*var\(--font-ui-small,\s*13px\)\);/s
+		);
+	});
 });

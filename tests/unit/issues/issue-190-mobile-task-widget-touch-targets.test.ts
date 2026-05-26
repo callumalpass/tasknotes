@@ -19,6 +19,9 @@ describe("Issue #190: mobile task widget touch targets", () => {
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*center;[^}]*flex-wrap:\s*wrap;/s
 		);
 		expect(css).toMatch(
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__content\s*\{[^}]*flex:\s*1 0 14rem;[^}]*padding-top:\s*0;/s
+		);
+		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__status-dot\s*\{[^}]*width:\s*var\(--tn-mobile-task-card-indicator-size\);[^}]*height:\s*var\(--tn-mobile-task-card-indicator-size\);/s
 		);
 		expect(css).toMatch(
@@ -28,7 +31,13 @@ describe("Issue #190: mobile task widget touch targets", () => {
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__context-menu\s*\{[^}]*width:\s*var\(--tn-mobile-task-card-menu-size\);[^}]*height:\s*var\(--tn-mobile-task-card-menu-size\);/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__badges\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 0 100%;/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__badges\s*\{[^}]*order:\s*0;[^}]*flex:\s*0 0 auto;[^}]*margin-left:\s*auto;/s
+		);
+		expect(css).toMatch(
+			/@container tn-task-card \(max-width:\s*300px\)\s*\{[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*flex-start;[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__badges\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 0 100%;[^}]*justify-content:\s*flex-end;[^}]*padding-left:\s*calc\(var\(--tn-mobile-task-card-indicator-size\) \+ var\(--tn-mobile-task-card-indicator-size\) \+ var\(--tn-spacing-sm\)\);/s
+		);
+		expect(css).toMatch(
+			/@container tn-task-card \(max-width:\s*300px\)\s*\{[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata-property\s*\{[^}]*flex:\s*1 1 100%;[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata-value\s*\{[^}]*flex:\s*1 1 0;/s
 		);
 	});
 
