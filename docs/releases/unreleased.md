@@ -53,3 +53,5 @@ Example:
   - Thanks to @jordankbartos for reporting.
 - (#1946) Fixed the bottom task in virtualized Task List Bases being partially hidden behind Obsidian's mobile bottom bar.
   - Thanks to @3zra47 for reporting.
+- (#1947) Fixed mobile Task List cards with left-positioned subtask chevrons so the chevron remains visible and project/detail badges stay on the main row.
+  - Thanks to @Jomo94 for reporting.

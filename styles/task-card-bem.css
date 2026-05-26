@@ -1186,6 +1186,16 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
     box-sizing: border-box;
 }
 
+body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left:not(.task-card--layout-inline):not(.task-card--layout-compact) {
+    margin-left: calc(var(--tn-mobile-task-card-menu-size) + var(--tn-spacing-lg));
+}
+
+body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__badges {
+    order: 0;
+    flex: 0 0 auto;
+    padding-left: 0;
+}
+
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata-property--projects {
     flex-wrap: wrap;
     overflow-wrap: anywhere;
