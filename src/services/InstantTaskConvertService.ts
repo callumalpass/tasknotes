@@ -87,6 +87,13 @@ function splitBlockquotePrefix(line: string): {
 	return { leadingWhitespace, blockquotePrefix, content };
 }
 
+function getWikilinkDisplayText(linkText: string): string {
+	const display = linkText.includes("|")
+		? linkText.split("|").pop() || linkText
+		: linkText;
+	return display.split("/").pop()?.replace(/\.md$/i, "") || display;
+}
+
 export class InstantTaskConvertService {
 	private plugin: TaskNotesPlugin;
 	private statusManager: StatusManager;
@@ -842,11 +849,7 @@ export class InstantTaskConvertService {
 
 		cleanTitle = cleanTitle.replace(/\[\[([^[\]]+)\]\]/g, (match, inner) => {
 			links.push(match);
-			const linkText = String(inner);
-			const display = linkText.includes("|")
-				? linkText.split("|").pop() || linkText
-				: linkText;
-			return display.split("/").pop()?.replace(/\.md$/i, "") || display;
+			return getWikilinkDisplayText(String(inner));
 		});
 
 		const uniqueLinks = [...new Set(links)];
@@ -854,6 +857,49 @@ export class InstantTaskConvertService {
 			cleanTitle: cleanTitle.replace(/\s+/g, " ").trim(),
 			links: uniqueLinks,
 		};
+	}
+
+	private sanitizeGeneratedLinkAlias(linkText: string): string {
+		if (linkText.startsWith("[[") && linkText.endsWith("]]")) {
+			const inner = linkText.slice(2, -2);
+			const aliasSeparator = inner.indexOf("|");
+			if (aliasSeparator === -1) {
+				return linkText;
+			}
+
+			const target = inner.slice(0, aliasSeparator);
+			const alias = inner.slice(aliasSeparator + 1);
+			const sanitizedAlias = this.sanitizeLinkAliasText(alias);
+
+			return sanitizedAlias ? `[[${target}|${sanitizedAlias}]]` : `[[${target}]]`;
+		}
+
+		if (linkText.startsWith("[") && linkText.endsWith(")")) {
+			const aliasSeparator = linkText.lastIndexOf("](");
+			if (aliasSeparator <= 0) {
+				return linkText;
+			}
+
+			const alias = linkText.slice(1, aliasSeparator);
+			const destination = linkText.slice(aliasSeparator + 2, -1);
+			const sanitizedAlias = this.sanitizeLinkAliasText(alias);
+
+			return sanitizedAlias ? `[${sanitizedAlias}](${destination})` : linkText;
+		}
+
+		return linkText;
+	}
+
+	private sanitizeLinkAliasText(alias: string): string {
+		let sanitized = alias.replace(/\[([^\]]+)\]\((<[^>]+>|[^)]+)\)/g, (_match, label) =>
+			String(label).trim()
+		);
+
+		sanitized = sanitized.replace(/\[\[([^[\]]+)\]\]/g, (_match, inner) =>
+			getWikilinkDisplayText(String(inner)).trim()
+		);
+
+		return sanitized.replace(/\s+/g, " ").trim();
 	}
 
 	private appendPreservedTitleLinks(details: string, links: string[]): string {
@@ -991,7 +1037,9 @@ export class InstantTaskConvertService {
 			const sourcePath = currentFile?.path || "";
 
 			// Use Obsidian's generateMarkdownLink (respects user's link format settings)
-			const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
+			const properLink = this.sanitizeGeneratedLinkAlias(
+				this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath)
+			);
 
 			// Create the final line with proper indentation and original list format
 			const replacementPrefix = this.getReplacementPrefix(originalContent[0], isCheckboxTask);
@@ -1517,7 +1565,9 @@ export class InstantTaskConvertService {
 
 		const currentFile = this.plugin.app.workspace.getActiveFile();
 		const sourcePath = currentFile?.path || "";
-		const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
+		const properLink = this.sanitizeGeneratedLinkAlias(
+			this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath)
+		);
 
 		return `${this.getReplacementPrefix(originalLine, isCheckboxTask)}${properLink}`;
 	}

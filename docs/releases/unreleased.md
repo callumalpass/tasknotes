@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1953) Fixed inline task conversion so source-line wikilinks no longer create nested wikilinks in the replacement link text.
+  - Thanks to @bgk0018 for reporting.
 - (#1952) Fixed Pomodoro task picker search results so matching task titles are ranked and sorted ahead of due-date ordering.
   - Thanks to @KFrancoD for reporting.
 - (#1392, #1949) Fixed due and scheduled date picker fields so typed or pasted date edits stay open until you choose Select, including compact `YYYYMMDD` entry when a date is already set.
