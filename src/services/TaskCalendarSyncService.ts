@@ -2135,7 +2135,7 @@ export class TaskCalendarSyncService {
 		const end = this.getEventEnd(adjustedStartInfo, task);
 
 		const event: CalendarEventPayload = {
-			summary: this.applyTitleTemplate(task),
+			summary: this.getCalendarEventTitle(task),
 			start,
 			end,
 		};
@@ -2642,8 +2642,14 @@ export class TaskCalendarSyncService {
 			});
 
 			if (recurrenceData) {
+				const description = settings.includeDescription
+					? this.buildEventDescription(task)
+					: undefined;
+
 				await this.withGoogleRateLimit(() =>
 					this.googleCalendarService.updateEvent(settings.targetCalendarId, eventId, {
+						summary: this.getCalendarEventTitle(task),
+						description,
 						recurrence: recurrenceData.recurrence,
 					})
 				);

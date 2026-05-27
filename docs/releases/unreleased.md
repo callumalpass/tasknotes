@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1956) Fixed Google Calendar sync so completing a recurring task updates the linked event title with the completion checkmark.
+  - Thanks to @jacksoluke for reporting.
 - (#1953) Fixed inline task conversion so source-line wikilinks no longer create nested wikilinks in the replacement link text.
   - Thanks to @bgk0018 for reporting.
 - (#1952) Fixed Pomodoro task picker search results so matching task titles are ranked and sorted ahead of due-date ordering.
