@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Added
+
+- (#1791) Added collapse and expand controls for grouped Bases Task List views, including a default collapsed state option.
+  - Thanks to @renatomen for the contribution.
+
 ## Fixed
 
 - (#1961) Fixed the default custom filename template so it uses the recommended double-brace syntax and no longer warns on first use.
