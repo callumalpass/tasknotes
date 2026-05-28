@@ -17,6 +17,16 @@ const KANBAN_CARD_LAYOUT_OPTIONS: Record<string, string> = {
 	compact: "Compact",
 };
 
+const TASK_LIST_DEFAULT_COLLAPSED_STATE_OPTIONS: Record<string, string> = {
+	Expanded: "Expanded",
+	Collapsed: "Collapsed",
+};
+
+const EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS: Record<string, string> = {
+	inherit: "Inherit",
+	"show-all": "Show all",
+};
+
 /**
  * Register TaskNotes views with Bases plugin
  * Requires Obsidian 1.10.1+ (public Bases API with groupBy support)
@@ -62,17 +72,14 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							key: "defaultCollapsedState",
 							displayName: "Default collapsed state",
 							default: "Expanded",
-							options: { Expanded: "Expanded", Collapsed: "Collapsed" } as Record<string, string>,
+							options: TASK_LIST_DEFAULT_COLLAPSED_STATE_OPTIONS,
 						},
 						{
 							type: "dropdown",
 							key: "expandedRelationshipFilterMode",
 							displayName: "Expanded relationships",
 							default: "inherit",
-							options: {
-								inherit: "Inherit",
-								"show-all": "Show all",
-							} as Record<string, string>,
+							options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
 						},
 					],
 				},
@@ -179,10 +186,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						key: "expandedRelationshipFilterMode",
 						displayName: "Expanded relationships",
 						default: "inherit",
-						options: {
-							inherit: "Inherit",
-							"show-all": "Show all",
-						} as Record<string, string>,
+						options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
 					},
 					],
 				},

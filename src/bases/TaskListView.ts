@@ -119,35 +119,6 @@ function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "s
 
 type DefaultCollapsedState = "Expanded" | "Collapsed";
 
-type PrimaryHeaderRenderItem = {
-	type: "primary-header";
-	groupKey: string;
-	groupTitle: string;
-	taskCount: number;
-	groupEntries: any[];
-	isCollapsed: boolean;
-};
-
-type SubHeaderRenderItem = {
-	type: "sub-header";
-	groupKey: string;
-	subGroupKey: string;
-	subGroupTitle: string;
-	taskCount: number;
-	isCollapsed: boolean;
-	parentKey: string;
-};
-
-type TaskRenderItem = {
-	type: "task";
-	task: TaskInfo;
-	groupKey: string;
-	subGroupKey?: string;
-};
-
-type GroupHeaderRenderItem = PrimaryHeaderRenderItem | SubHeaderRenderItem;
-type GroupedRenderItem = GroupHeaderRenderItem | TaskRenderItem;
-
 type GroupHierarchySnapshot = {
 	primaryGroupKeys: string[];
 	subGroupKeysByParent: Map<string, string[]>;
@@ -335,9 +306,11 @@ export class TaskListView extends BasesViewBase {
 			const enableSearchValue = this.config.get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
 			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
-			
+
 			this.defaultCollapsedState =
-				defaultCollapsedStateValue === "Collapsed" || defaultCollapsedStateValue === "1" ? "Collapsed" : "Expanded";
+				defaultCollapsedStateValue === "Collapsed" || defaultCollapsedStateValue === "1"
+					? "Collapsed"
+					: "Expanded";
 			const expandedRelationshipFilterModeValue = this.config.get(
 				"expandedRelationshipFilterMode"
 			);
