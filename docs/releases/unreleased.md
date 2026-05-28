@@ -24,6 +24,11 @@ Example:
 
 -->
 
+## Added
+
+- (#1791) Added collapse and expand controls for grouped Bases Task List views, including a default collapsed state option.
+  - Thanks to @renatomen for the contribution.
+
 ## Fixed
 
 - (#982, #1947) Restored larger mobile task-card typography and let secondary card icons wrap below the task details when they no longer fit comfortably on mobile.
