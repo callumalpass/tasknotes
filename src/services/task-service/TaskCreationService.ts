@@ -135,11 +135,13 @@ export class TaskCreationService {
 
 			const contextsArray = taskData.contexts || [];
 			const projectsArray = taskData.projects || [];
-			let tagsArray = taskData.tags || [];
+			let tagsArray = getFrontmatterTags(taskData.tags || []);
 
 			if (runtime.settings.taskIdentificationMethod === "tag") {
-				if (!tagsArray.includes(runtime.settings.taskTag)) {
-					tagsArray = [runtime.settings.taskTag, ...tagsArray];
+				const taskTag =
+					getFrontmatterTags(runtime.settings.taskTag)[0] ?? runtime.settings.taskTag;
+				if (taskTag && !tagsArray.includes(taskTag)) {
+					tagsArray = [taskTag, ...tagsArray];
 				}
 			}
 

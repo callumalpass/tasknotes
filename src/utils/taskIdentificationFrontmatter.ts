@@ -3,9 +3,10 @@ export function coerceTaskIdentifierPropertyValue(value: string): string | boole
 	return lower === "true" || lower === "false" ? lower === "true" : value;
 }
 
-function normalizeTag(value: string): string {
+export function normalizeFrontmatterTag(value: string): string {
 	const trimmed = value.trim();
-	return trimmed.startsWith("#") ? trimmed.slice(1).trim() : trimmed;
+	const withoutHash = trimmed.startsWith("#") ? trimmed.slice(1).trim() : trimmed;
+	return withoutHash.replace(/\s+/g, "-");
 }
 
 export function isTagsTaskIdentifierProperty(propertyName: string): boolean {
@@ -24,7 +25,7 @@ export function getFrontmatterTags(value: unknown): string[] {
 	const tags: string[] = [];
 	const seen = new Set<string>();
 	const addTag = (tagValue: unknown): void => {
-		const normalized = normalizeTag(String(tagValue));
+		const normalized = normalizeFrontmatterTag(String(tagValue));
 		if (!normalized || seen.has(normalized)) {
 			return;
 		}
@@ -56,8 +57,8 @@ export function applyPropertyTaskIdentifier(
 
 	if (isTagsTaskIdentifierProperty(propertyName)) {
 		const tags = getFrontmatterTags(frontmatter.tags);
-		const normalizedIdentifier = normalizeTag(propertyValue);
-		const hasIdentifier = tags.some((tag) => normalizeTag(tag) === normalizedIdentifier);
+		const normalizedIdentifier = normalizeFrontmatterTag(propertyValue);
+		const hasIdentifier = tags.some((tag) => normalizeFrontmatterTag(tag) === normalizedIdentifier);
 		if (!hasIdentifier) {
 			tags.push(normalizedIdentifier);
 		}
