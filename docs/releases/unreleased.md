@@ -26,6 +26,8 @@ Example:
 
 ## Fixed
 
+- (#1957) Fixed the Pomodoro timer layout in vertically split panes so the timer header and progress circle remain reachable when the pane is short.
+  - Thanks to @sumiyalairu03 for reporting.
 - (#1956) Fixed Google Calendar sync so completing a recurring task updates the linked event title with the completion checkmark.
   - Thanks to @jacksoluke for reporting.
 - (#1953) Fixed inline task conversion so source-line wikilinks no longer create nested wikilinks in the replacement link text.

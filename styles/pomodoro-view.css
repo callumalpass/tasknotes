@@ -16,7 +16,7 @@
     min-width: 0;
     min-height: 0;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     background: var(--tn-bg-primary);
 
 	button {
@@ -500,6 +500,16 @@
     max-width: 300px;
     margin: 0 auto;
     box-sizing: border-box;
+}
+
+/* Center the timer group only when there is spare height. Auto margins collapse
+   when the pane is shorter than the content, keeping the top scrollable. */
+.tasknotes-plugin.pomodoro-view > .pomodoro-view__timer-section {
+    margin-top: auto;
+}
+
+.tasknotes-plugin.pomodoro-view > .pomodoro-view__stats-section {
+    margin-bottom: auto;
 }
 
 /* Statistics Grid */
