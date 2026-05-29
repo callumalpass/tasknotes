@@ -24,6 +24,11 @@
     /* Interactions & Accessibility - Smooth transitions */
     transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), border-color var(--tn-transition-fast);
     outline: none;
+}
+
+/* Scoped to full card layout: inline/compact must not establish an inline-size
+   container (collapses the mobile inline-flex widget to 0 width). */
+.tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) {
     container: tn-task-card / inline-size;
 }
 
