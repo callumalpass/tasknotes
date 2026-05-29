@@ -1566,6 +1566,11 @@ export const en: TranslationTree = {
 					name: "Show expandable subtasks",
 					description: "Allow expanding/collapsing subtask sections in task cards",
 				},
+				hideRootSubtasks: {
+					name: "Hide subtasks in list root",
+					description:
+						"In task list views, hide tasks that belong to a parent project from the root level. Subtasks remain visible when their parent is expanded.",
+				},
 				expandSubtasksByDefault: {
 					name: "Expand subtasks by default",
 					description: "Show project subtasks expanded when task cards are rendered",

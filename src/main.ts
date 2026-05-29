@@ -261,6 +261,7 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		await this.loadSettings();
+		document.body.classList.toggle("tasknotes-hide-root-subtasks", this.settings.hideRootSubtasks);
 		this.performanceProfiler = createTaskNotesPerformanceProfiler({
 			isEnabled: () => this.settings?.enableDebugLogging === true,
 			logger: createTaskNotesLogger({
@@ -590,6 +591,7 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	onunload() {
+		document.body.classList.remove("tasknotes-hide-root-subtasks");
 		void cleanupPluginRuntime(this);
 	}
 

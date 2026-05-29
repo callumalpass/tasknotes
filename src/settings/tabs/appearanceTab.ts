@@ -815,6 +815,19 @@ export function renderAppearanceTab(
 			}
 
 			group.addSetting((setting) =>
+				void configureToggleSetting(setting, {
+					name: translate("settings.appearance.uiElements.hideRootSubtasks.name"),
+					desc: translate("settings.appearance.uiElements.hideRootSubtasks.description"),
+					getValue: () => plugin.settings.hideRootSubtasks,
+					setValue: async (value: boolean) => {
+						plugin.settings.hideRootSubtasks = value;
+						document.body.classList.toggle("tasknotes-hide-root-subtasks", value);
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
 				void configureDropdownSetting(setting, {
 					name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),
 					desc: translate(
