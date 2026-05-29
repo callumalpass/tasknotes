@@ -329,6 +329,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Task card expandable subtasks defaults
 	showExpandableSubtasks: true,
 	expandSubtasksByDefault: false,
+	hideRootSubtasks: false,
 	// Subtask chevron position default
 	subtaskChevronPosition: "right",
 	// Filter toolbar layout defaults

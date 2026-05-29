@@ -180,6 +180,8 @@ export interface TaskNotesSettings {
 	showExpandableSubtasks: boolean;
 	// Expand project subtasks by default when task cards render
 	expandSubtasksByDefault: boolean;
+	// Hide subtasks from root of task list views (only show under expanded parent)
+	hideRootSubtasks: boolean;
 	// Subtask chevron position in task cards
 	subtaskChevronPosition: "left" | "right";
 	// Filter toolbar layout
