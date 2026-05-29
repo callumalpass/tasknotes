@@ -23,3 +23,7 @@ Example:
 ```
 
 -->
+
+## Fixed
+
+- (#1968) Fixed inline task link overlays collapsing on Obsidian mobile, which could hide the task title and leave a tall empty gap after the widget. Thanks to @renatomen for reporting and diagnosing the containment issue.

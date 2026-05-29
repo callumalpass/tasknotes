@@ -1445,6 +1445,10 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
     /* Use inline display to respect line boundaries */
     display: inline;
 
+    /* Inline overlays size from their content; card container queries are for block cards. */
+    container-type: normal;
+    container-name: none;
+
     /* Minimal padding - no indentation needed in inline mode */
     padding: 2px 0;
     margin: 0;
