@@ -1,4 +1,4 @@
-import { TFile } from "obsidian";
+import { TFile, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
@@ -15,7 +15,7 @@ import { TokenRefreshError } from "./errors";
 import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
-import { processVaultFrontMatter } from "./VaultMutationService";
+import { modifyVaultFile, processVaultFrontMatter } from "./VaultMutationService";
 import type { PerformanceProfilerDetails } from "../utils/PerformanceProfiler";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
@@ -111,6 +111,9 @@ export class TaskCalendarSyncService {
 	/** Detached exception event IDs written during this session */
 	private static taskExceptionEventIdCache: Map<string, string> = new Map();
 
+	/** Serialized frontmatter writes keyed by task path to avoid concurrent YAML edits */
+	private static googleCalendarFrontmatterWrites: Map<string, Promise<unknown>> = new Map();
+
 	private plugin: TaskNotesPlugin;
 	private googleCalendarService: GoogleCalendarService;
 	private rateLimitChain: Promise<unknown> = Promise.resolve();
@@ -188,6 +191,7 @@ export class TaskCalendarSyncService {
 		TaskCalendarSyncService.pendingExceptionEventCreates.clear();
 		TaskCalendarSyncService.taskEventIdCache.clear();
 		TaskCalendarSyncService.taskExceptionEventIdCache.clear();
+		TaskCalendarSyncService.googleCalendarFrontmatterWrites.clear();
 	}
 
 	private getTaskEventIdCacheKey(taskPath: string, calendarId?: string): string {
@@ -1358,6 +1362,137 @@ export class TaskCalendarSyncService {
 		return Array.from(excludedDates).sort();
 	}
 
+	private isDuplicateYamlKeyError(error: unknown): boolean {
+		if (error && typeof error === "object") {
+			const code = (error as { code?: unknown }).code;
+			if (code === "DUPLICATE_KEY") {
+				return true;
+			}
+		}
+
+		return getErrorMessage(error).includes("Map keys must be unique");
+	}
+
+	private async withGoogleCalendarFrontmatterWriteLock<T>(
+		taskPath: string,
+		write: () => Promise<T>
+	): Promise<T> {
+		const previous =
+			TaskCalendarSyncService.googleCalendarFrontmatterWrites.get(taskPath) ??
+			Promise.resolve();
+		const current = previous.catch(() => undefined).then(write);
+
+		TaskCalendarSyncService.googleCalendarFrontmatterWrites.set(taskPath, current);
+
+		try {
+			return await current;
+		} finally {
+			if (
+				TaskCalendarSyncService.googleCalendarFrontmatterWrites.get(taskPath) ===
+				current
+			) {
+				TaskCalendarSyncService.googleCalendarFrontmatterWrites.delete(taskPath);
+			}
+		}
+	}
+
+	private async writeGoogleCalendarFrontmatterFields(
+		taskPath: string,
+		file: TFile,
+		updates: Record<string, unknown>
+	): Promise<void> {
+		await this.withGoogleCalendarFrontmatterWriteLock(taskPath, async () => {
+			try {
+				await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
+					for (const [fieldName, value] of Object.entries(updates)) {
+						this.writeOptionalFrontmatterField(frontmatter, fieldName, value, true);
+					}
+				});
+			} catch (error) {
+				if (!this.isDuplicateYamlKeyError(error)) {
+					throw error;
+				}
+
+				await this.rewriteGoogleCalendarFrontmatterFields(file, updates);
+			}
+		});
+	}
+
+	private async rewriteGoogleCalendarFrontmatterFields(
+		file: TFile,
+		updates: Record<string, unknown>
+	): Promise<void> {
+		const content = await this.plugin.app.vault.read(file);
+		const repaired = this.replaceFrontmatterFields(content, updates);
+		await modifyVaultFile(this.plugin.app, file, repaired);
+	}
+
+	private replaceFrontmatterFields(
+		content: string,
+		updates: Record<string, unknown>
+	): string {
+		const match = content.match(/^(---\r?\n)([\s\S]*?)(\r?\n---)([\s\S]*)$/);
+		if (!match) {
+			throw new Error("Cannot repair Google Calendar metadata: missing frontmatter block");
+		}
+
+		const [, opening, frontmatterText, closing, body] = match;
+		const newline = opening.includes("\r\n") ? "\r\n" : "\n";
+		const filteredLines = this.removeFrontmatterFields(
+			frontmatterText.split(/\r?\n/),
+			new Set(Object.keys(updates))
+		);
+		const serializedUpdates = Object.entries(updates)
+			.filter(([, value]) => this.shouldWriteFrontmatterValue(value))
+			.map(([fieldName, value]) => stringifyYaml({ [fieldName]: value }).trimEnd());
+		const nextFrontmatter = [...filteredLines, ...serializedUpdates]
+			.filter((line, index, lines) => line.length > 0 || index < lines.length - 1)
+			.join(newline);
+
+		return `${opening}${nextFrontmatter}${closing}${body}`;
+	}
+
+	private removeFrontmatterFields(lines: string[], fieldNames: Set<string>): string[] {
+		const result: string[] = [];
+		let index = 0;
+
+		while (index < lines.length) {
+			if (this.isFrontmatterFieldLine(lines[index], fieldNames)) {
+				index++;
+				while (index < lines.length && /^[\t ]/.test(lines[index])) {
+					index++;
+				}
+				continue;
+			}
+
+			result.push(lines[index]);
+			index++;
+		}
+
+		while (result.length > 0 && result[result.length - 1].trim() === "") {
+			result.pop();
+		}
+
+		return result;
+	}
+
+	private isFrontmatterFieldLine(line: string, fieldNames: Set<string>): boolean {
+		if (/^\s/.test(line)) {
+			return false;
+		}
+
+		const separatorIndex = line.indexOf(":");
+		if (separatorIndex <= 0) {
+			return false;
+		}
+
+		return fieldNames.has(line.slice(0, separatorIndex).trim());
+	}
+
+	private shouldWriteFrontmatterValue(value: unknown): boolean {
+		return value !== null && value !== undefined && (!Array.isArray(value) || value.length > 0);
+	}
+
 	/**
 	 * Save the Google Calendar event ID to the task's frontmatter
 	 */
@@ -1376,8 +1511,8 @@ export class TaskCalendarSyncService {
 		}
 
 		const fieldName = this.plugin.fieldMapper.toUserField("googleCalendarEventId");
-		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
-			frontmatter[fieldName] = eventId;
+		await this.writeGoogleCalendarFrontmatterFields(taskPath, file, {
+			[fieldName]: eventId,
 		});
 		TaskCalendarSyncService.taskEventIdCache.set(
 			this.getTaskEventIdCacheKey(taskPath, calendarId),
@@ -1407,8 +1542,8 @@ export class TaskCalendarSyncService {
 		}
 
 		const fieldName = this.plugin.fieldMapper.toUserField("googleCalendarEventId");
-		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
-			delete frontmatter[fieldName];
+		await this.writeGoogleCalendarFrontmatterFields(taskPath, file, {
+			[fieldName]: undefined,
 		});
 		TaskCalendarSyncService.clearTaskEventIdCache(taskPath);
 		await this.removeEventIndexForTask(taskPath);
@@ -1445,26 +1580,26 @@ export class TaskCalendarSyncService {
 			"googleCalendarMovedOriginalDates"
 		);
 
-		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
-			this.writeOptionalFrontmatterField(
-				frontmatter,
-				exceptionEventIdField,
-				updates.googleCalendarExceptionEventId,
-				"googleCalendarExceptionEventId" in updates
+		const frontmatterUpdates: Record<string, unknown> = {};
+		if ("googleCalendarExceptionEventId" in updates) {
+			frontmatterUpdates[exceptionEventIdField] = updates.googleCalendarExceptionEventId;
+		}
+		if ("googleCalendarExceptionOriginalScheduled" in updates) {
+			frontmatterUpdates[exceptionOriginalField] =
+				updates.googleCalendarExceptionOriginalScheduled;
+		}
+		if ("googleCalendarMovedOriginalDates" in updates) {
+			frontmatterUpdates[movedOriginalDatesField] =
+				updates.googleCalendarMovedOriginalDates;
+		}
+
+		if (Object.keys(frontmatterUpdates).length > 0) {
+			await this.writeGoogleCalendarFrontmatterFields(
+				taskPath,
+				file,
+				frontmatterUpdates
 			);
-			this.writeOptionalFrontmatterField(
-				frontmatter,
-				exceptionOriginalField,
-				updates.googleCalendarExceptionOriginalScheduled,
-				"googleCalendarExceptionOriginalScheduled" in updates
-			);
-			this.writeOptionalFrontmatterField(
-				frontmatter,
-				movedOriginalDatesField,
-				updates.googleCalendarMovedOriginalDates,
-				"googleCalendarMovedOriginalDates" in updates
-			);
-		});
+		}
 
 		if ("googleCalendarExceptionEventId" in updates) {
 			if (updates.googleCalendarExceptionEventId) {

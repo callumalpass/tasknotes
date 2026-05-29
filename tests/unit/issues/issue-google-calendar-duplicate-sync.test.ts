@@ -6,6 +6,7 @@ import { TaskInfo } from "../../../src/types";
 
 jest.mock("obsidian", () => ({
 	Notice: jest.fn(),
+	stringifyYaml: jest.fn((obj: unknown) => require("yaml").stringify(obj)),
 	TFile: class MockTFile {
 		path: string;
 
@@ -15,58 +16,78 @@ jest.mock("obsidian", () => ({
 	},
 }));
 
-const createPlugin = (frontmatter: Record<string, any>) => ({
-	settings: {
-		googleCalendarExport: {
-			enabled: true,
-			targetCalendarId: "primary",
-			syncOnTaskCreate: true,
-			syncOnTaskUpdate: true,
-			syncOnTaskComplete: true,
-			syncOnTaskDelete: true,
-			eventTitleTemplate: "{{title}}",
-			includeDescription: false,
-			eventColorId: null,
-			syncTrigger: "scheduled",
-			createAsAllDay: true,
-			defaultEventDuration: 60,
-			includeObsidianLink: false,
-			defaultReminderMinutes: null,
+const createPlugin = (
+	frontmatter: Record<string, any>,
+	options: {
+		content?: string;
+		processFrontMatter?: jest.Mock;
+	} = {}
+) => {
+	let fileContent = options.content ?? "";
+
+	return {
+		settings: {
+			googleCalendarExport: {
+				enabled: true,
+				targetCalendarId: "primary",
+				syncOnTaskCreate: true,
+				syncOnTaskUpdate: true,
+				syncOnTaskComplete: true,
+				syncOnTaskDelete: true,
+				eventTitleTemplate: "{{title}}",
+				includeDescription: false,
+				eventColorId: null,
+				syncTrigger: "scheduled",
+				createAsAllDay: true,
+				defaultEventDuration: 60,
+				includeObsidianLink: false,
+				defaultReminderMinutes: null,
+			},
 		},
-	},
-	app: {
-		vault: {
-			getAbstractFileByPath: jest.fn().mockImplementation((path: string) => new TFile(path)),
-			getName: jest.fn().mockReturnValue("MyVault"),
-		},
-		fileManager: {
-			processFrontMatter: jest
-				.fn()
-				.mockImplementation(async (_file: TFile, fn: (fm: Record<string, any>) => void) => {
-					fn(frontmatter);
+		app: {
+			vault: {
+				getAbstractFileByPath: jest
+					.fn()
+					.mockImplementation((path: string) => new TFile(path)),
+				getName: jest.fn().mockReturnValue("MyVault"),
+				read: jest.fn().mockImplementation(async () => fileContent),
+				modify: jest.fn().mockImplementation(async (_file: TFile, content: string) => {
+					fileContent = content;
 				}),
+			},
+			fileManager: {
+				processFrontMatter:
+					options.processFrontMatter ??
+					jest
+						.fn()
+						.mockImplementation(
+							async (_file: TFile, fn: (fm: Record<string, any>) => void) => {
+								fn(frontmatter);
+							}
+						),
+			},
 		},
-	},
-	fieldMapper: {
-		toUserField: jest.fn((field: string) => field),
-	},
-	priorityManager: {
-		getPriorityConfig: jest.fn().mockReturnValue(null),
-	},
-	statusManager: {
-		getStatusConfig: jest.fn().mockReturnValue(null),
-		isCompletedStatus: jest.fn((status?: string) => status === "done"),
-	},
-	i18n: {
-		translate: jest.fn((key: string) => key),
-	},
-	cacheManager: {
-		getTaskInfo: jest.fn().mockResolvedValue(null),
-		getAllTasks: jest.fn().mockResolvedValue([]),
-	},
-	loadData: jest.fn().mockResolvedValue({}),
-	saveData: jest.fn().mockResolvedValue(undefined),
-});
+		fieldMapper: {
+			toUserField: jest.fn((field: string) => field),
+		},
+		priorityManager: {
+			getPriorityConfig: jest.fn().mockReturnValue(null),
+		},
+		statusManager: {
+			getStatusConfig: jest.fn().mockReturnValue(null),
+			isCompletedStatus: jest.fn((status?: string) => status === "done"),
+		},
+		i18n: {
+			translate: jest.fn((key: string) => key),
+		},
+		cacheManager: {
+			getTaskInfo: jest.fn().mockResolvedValue(null),
+			getAllTasks: jest.fn().mockResolvedValue([]),
+		},
+		loadData: jest.fn().mockResolvedValue({}),
+		saveData: jest.fn().mockResolvedValue(undefined),
+	};
+};
 
 describe("Google Calendar duplicate sync prevention", () => {
 	beforeEach(() => {
@@ -300,5 +321,61 @@ describe("Google Calendar duplicate sync prevention", () => {
 
 		expect(googleCalendarService.createEvent).toHaveBeenCalledTimes(2);
 		expect(frontmatter.googleCalendarEventId).toBe("created-event-id");
+	});
+
+	it("repairs duplicate Google Calendar event ID frontmatter when saving a new event ID", async () => {
+		const duplicateKeyError = Object.assign(new Error("Map keys must be unique"), {
+			code: "DUPLICATE_KEY",
+		});
+		const processFrontMatter = jest.fn().mockRejectedValue(duplicateKeyError);
+		const plugin = createPlugin(
+			{},
+			{
+				content: [
+					"---",
+					"status: open",
+					"priority: normal",
+					"scheduled: 2026-05-29",
+					"tags:",
+					"  - task",
+					"googleCalendarEventId: first-event",
+					"googleCalendarEventId: second-event",
+					"---",
+					"",
+					"Duplicate event ID task",
+					"",
+				].join("\n"),
+				processFrontMatter,
+			}
+		);
+		const googleCalendarService = {
+			getAvailableCalendars: jest.fn().mockReturnValue([{ id: "primary", name: "Primary" }]),
+			createEvent: jest
+				.fn()
+				.mockResolvedValue({ id: "google-primary-created-event-id" }),
+			updateEvent: jest.fn().mockResolvedValue(undefined),
+			deleteEvent: jest.fn().mockResolvedValue(undefined),
+		};
+		const syncService = new TaskCalendarSyncService(plugin as any, googleCalendarService as any);
+		const task: TaskInfo = {
+			path: "TaskNotes/Tasks/duplicate-yaml.md",
+			title: "Duplicate YAML",
+			status: "open",
+			priority: "normal",
+			scheduled: "2026-05-29",
+			archived: false,
+		};
+
+		await syncService.syncTaskToCalendar(task);
+
+		expect(googleCalendarService.createEvent).toHaveBeenCalledTimes(1);
+		expect(plugin.app.vault.modify).toHaveBeenCalledTimes(1);
+
+		const repairedContent = plugin.app.vault.modify.mock.calls[0][1];
+		expect(repairedContent.match(/^googleCalendarEventId:/gm)).toHaveLength(1);
+		expect(repairedContent).toContain("googleCalendarEventId: created-event-id");
+		expect(repairedContent).not.toContain("googleCalendarEventId: first-event");
+		expect(repairedContent).not.toContain("googleCalendarEventId: second-event");
+		expect(repairedContent).toContain("tags:\n  - task");
 	});
 });

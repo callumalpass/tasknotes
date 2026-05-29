@@ -31,6 +31,8 @@ Example:
 
 ## Fixed
 
+- (#1963) Fixed Google Calendar sync so duplicate event ID fields are repaired when saving task calendar metadata.
+  - Thanks to @christenbc for reporting.
 - (#1961) Fixed the default custom filename template so it uses the recommended double-brace syntax and no longer warns on first use.
   - Thanks to @chmac for reporting.
 - (#1962) Fixed task tag normalization so tags entered with spaces are saved with hyphens for Obsidian tag compatibility.
