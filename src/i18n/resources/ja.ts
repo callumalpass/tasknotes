@@ -2601,7 +2601,8 @@ export const ja: TranslationTree = {
 			},
 			whatThisMeans: "これが意味すること：",
 			bullets: {
-				dailyNotesRequired: "Daily Notesコアプラグインは有効のままである必要があります",
+				dailyNotesRequired:
+					"Daily NotesのコアプラグインまたはPeriodic Notesでデイリーノートを有効にしておく必要があります",
 				storedInNotes: "データはデイリーノートのフロントマターに保存されます",
 				migrateData: "既存のプラグインデータは移行され、その後クリアされます",
 				futureSessions: "今後のセッションはデイリーノートに保存されます",

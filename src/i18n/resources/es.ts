@@ -2601,7 +2601,8 @@ export const es: TranslationTree = {
 			},
 			whatThisMeans: "Lo que esto significa:",
 			bullets: {
-				dailyNotesRequired: "El plugin principal Daily Notes debe permanecer habilitado",
+				dailyNotesRequired:
+					"Las notas diarias deben estar activadas en el plugin principal de notas diarias o en Periodic Notes",
 				storedInNotes: "Los datos se almacenarán en el frontmatter de tus notas diarias",
 				migrateData: "Los datos del plugin existentes se migrarán y luego se borrarán",
 				futureSessions: "Las sesiones futuras se guardarán en notas diarias",

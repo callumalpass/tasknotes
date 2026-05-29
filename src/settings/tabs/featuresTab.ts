@@ -19,6 +19,16 @@ import {
 } from "../../utils/themeColors";
 import { configureThemeColorInput } from "../components/CardComponent";
 
+async function getInitializedPomodoroService(plugin: TaskNotesPlugin) {
+	if (!plugin.pomodoroService) {
+		const { PomodoroService } = await import("../../services/PomodoroService");
+		plugin.pomodoroService = new PomodoroService(plugin);
+		await plugin.pomodoroService.initialize();
+	}
+
+	return plugin.pomodoroService;
+}
+
 /**
  * Renders the Features tab - optional plugin modules and their configuration
  */
@@ -514,23 +524,33 @@ export function renderFeaturesTab(
 								);
 
 								if (confirmed) {
-									plugin.settings.pomodoroStorageLocation = newLocation;
-									save();
-									new Notice(
-										translate(
-											"settings.features.dataStorage.notices.locationChanged",
-											{
-												location:
-													newLocation === "plugin"
-														? translate(
-																"settings.features.dataStorage.pluginData"
-															)
-														: translate(
-																"settings.features.dataStorage.dailyNotes"
-															),
-											}
-										)
-									);
+									try {
+										if (newLocation === "daily-notes") {
+											const pomodoroService =
+												await getInitializedPomodoroService(plugin);
+											await pomodoroService.migrateTodailyNotes();
+										}
+
+										plugin.settings.pomodoroStorageLocation = newLocation;
+										save();
+										new Notice(
+											translate(
+												"settings.features.dataStorage.notices.locationChanged",
+												{
+													location:
+														newLocation === "plugin"
+															? translate(
+																	"settings.features.dataStorage.pluginData"
+																)
+															: translate(
+																	"settings.features.dataStorage.dailyNotes"
+																),
+												}
+											)
+										);
+									} catch {
+										renderFeaturesTab(container, plugin, save);
+									}
 								} else {
 									renderFeaturesTab(container, plugin, save);
 								}

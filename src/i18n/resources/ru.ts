@@ -2601,7 +2601,8 @@ export const ru: TranslationTree = {
 			},
 			whatThisMeans: "Что это означает:",
 			bullets: {
-				dailyNotesRequired: "Основной плагин ежедневных заметок должен оставаться включенным",
+				dailyNotesRequired:
+					"Ежедневные заметки должны быть включены в основном плагине ежедневных заметок или в Periodic Notes",
 				storedInNotes: "Данные будут храниться в frontmatter ваших ежедневных заметок",
 				migrateData: "Существующие данные плагина будут перенесены и затем очищены",
 				futureSessions: "Будущие сессии будут сохраняться в ежедневные заметки",

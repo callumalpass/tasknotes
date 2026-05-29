@@ -3313,16 +3313,16 @@
       "translation": "7b12a3ed2487b19a390668b8c616875bcfa4f61d"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "97ff7f8db4324fc6f22a04009bb97aa66700e481"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "c3ec81852b02d8ed16c756e0f14e437d276b0859"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "1cd6fc2aaa93549b724470d098b4f3af42646d78"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "c3322671b0cc265a47889354fb0031ba8bbf70c2"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -6577,8 +6577,8 @@
       "translation": "81564b516dce71608126c44c067d716e4d512523"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "6a9bb2a163a2e70e9d5a6db200b1482ccc8564d8"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "4db66384f8b43093b80414fd8bdca759c701846f"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",
@@ -12067,16 +12067,16 @@
       "translation": "491e04edc5e51795ea5f644bd15c5f29c1c75106"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "fd6ed18b3fd5c558acf418349d7653ada82bc95f"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "f9685edd3845b8c5c9dd43b8eea1792bc222122d"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "223afae32859a6fc4d6e1acb71aca79a7ed28171"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "e7b8be0869a2e17a9d7d5ddae0f4205f38f31088"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -15331,8 +15331,8 @@
       "translation": "de0d15a734cd7c75877d0a878a16ba7f99ff7444"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "b49ed3bbc460f5ec00e57f270cfc9c1bf882af9c"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "4fcd244a96136a62a15041f164aa17a51af4d63a"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",
@@ -20821,16 +20821,16 @@
       "translation": "9ae0783fe0c65867ca81e6a3ad2c977e229da72f"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "4907594b4d72725ef6fca6930e56a76250eea917"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "fe123a95c66670fb67efca990a443f69111563ca"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "2ea2f09c961b06ac6828044b9f81784d77c7653f"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "9dc2d993c405232749dc6be07ffe2de64db97723"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -24085,8 +24085,8 @@
       "translation": "ac4d6c2340959c40857a9ebd212f7143c8d9d9d7"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "25066b081e321f3f73d80eee57ffe884593557ba"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "a73cd2a606650b16586e72d78fb963a9311cdf67"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",
@@ -29575,16 +29575,16 @@
       "translation": "1f792715168a79e50b3240d9bf86a35900305d13"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "cae16b46ec9dcc2de3407c0ca92d0ca603afb465"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "1d22988a4ed4eba120ac35f9cdcf213cb47c0844"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "0373362cae699b4e807d21d2f1f7734b0d8174f5"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "e6086e8e251499645622f31c1f1d98150b0f03ed"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -32839,8 +32839,8 @@
       "translation": "0ffd2cfff240004245008113993f9a71b09ac0e9"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "586b69429df6e0f92d0dc3f91a667619ab3b8fd1"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "b6938e537e798aa621bda7bcda0df9e3d7161f11"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",
@@ -38329,16 +38329,16 @@
       "translation": "127f2b12956bcdad1cf8db2a2511cdd6d3004923"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "b74c5b5307b31f13305343d1c9563840d10b6312"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "7d79d069c65c5a781439dde43a0b3afcd06c7f9e"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "771e70fb334984c44696f63433cec4a62f35a099"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "7673f7823448ef314704f58f7e96276c5bb9ab11"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -41593,8 +41593,8 @@
       "translation": "7a882d3766bb2bf8285e03c529cf5e79927025b8"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "f939dc5c3828f6b8142842dd6fd5d6ad73c7bbd3"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "02598271ca33a95d01eb2c252c3acb6f52785e43"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",
@@ -47083,16 +47083,16 @@
       "translation": "158288d4b34fc4a201bdd212abb667ffce28a694"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "7f3355b309f54a0d02f1c1f91b195262ee7c0943"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "3bce2bda2b6b7c70d1cc4d4c2c3729a15542d232"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "a272e192792a88092e5d2b28441b697ed13141eb"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "8dd74a46e0bf77e7bca80b7c62d2452990722e4d"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -50347,8 +50347,8 @@
       "translation": "0c5562382471355755190b0353c7301afabe4261"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "2ae9a51420f4d1366026eef569f7219a58adabcf"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "a061bcab09cdae1bf156d6468d35bc6e153343f0"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",
@@ -55837,16 +55837,16 @@
       "translation": "cd51bcb9bfc06f41b49862055dca8fb0d5f887c5"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "c49db7a923e06a7dc5e18b4e49b16c9d30eb0921"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "17b9fef19c068278cde8de207fdc110b0caf4537"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "025ca68ca7494ef530052d557bdee977bc88faa7"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "bd77da240bfe5944f18beba87c530ce183d570f6"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -59101,8 +59101,8 @@
       "translation": "fb9031b809654808e7d85c9f0190e9443a5b04f1"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "502c416d48db1a2c630e63fa1a7cc32b752c433f"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "1f938975281db3b03d565a4a8f0d6e1d70e4e038"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",
@@ -64591,16 +64591,16 @@
       "translation": "8ee0a9522578466b0f889b9c3409fbb1ab5736eb"
     },
     "settings.appearance.taskFilenames.customTemplate.description": {
-      "source": "499ebab68cb5f7ddd7b70ae9a3de2c4a879b6980",
-      "translation": "652741898049fbc489bdf6a37c018c2e0002d72b"
+      "source": "383e15271d7f0a41f37546ef92b95ef49392891d",
+      "translation": "aac3b64d71d9a83d83e0a7e3aa55a41eba125eda"
     },
     "settings.appearance.taskFilenames.customTemplate.placeholder": {
-      "source": "45d935bae21a085be19adfefed97b0ab3877ae48",
-      "translation": "45d935bae21a085be19adfefed97b0ab3877ae48"
+      "source": "f6b2ffc3c185d594b47083867537a3c081316a15",
+      "translation": "f6b2ffc3c185d594b47083867537a3c081316a15"
     },
     "settings.appearance.taskFilenames.customTemplate.helpText": {
-      "source": "9ca694b40f32ae10cf727a3aa8f1c6e97b3dca9c",
-      "translation": "8fd1b84a74745b7531e99a4fa7e78231d36397d1"
+      "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
+      "translation": "555714be462f091a28f4b95a11a612b7c924fb33"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -67855,8 +67855,8 @@
       "translation": "9e00430541d71beff2e6e36a90946e7e06df7a94"
     },
     "modals.storageLocation.bullets.dailyNotesRequired": {
-      "source": "7eb72fb84a32f4c3cccac99ad07128ead93325b4",
-      "translation": "8e98f5d6ff67ae2d4c531def7b1b41103f46ad10"
+      "source": "cc2146852e75b293d2e9cd1b59e94d8f6fa31e4b",
+      "translation": "a4065d507129c8cd2771d67250c477f1c5b1f60a"
     },
     "modals.storageLocation.bullets.storedInNotes": {
       "source": "a364c250661e2f99d0577a09dd125ca84d35e3a3",

@@ -2585,7 +2585,8 @@ export const ko: TranslationTree = {
 			},
 			whatThisMeans: "이것이 의미하는 것:",
 			bullets: {
-				dailyNotesRequired: "데일리 노트 코어 플러그인이 활성화되어 있어야 합니다",
+				dailyNotesRequired:
+					"데일리 노트는 코어 데일리 노트 플러그인이나 Periodic Notes에서 활성화되어 있어야 합니다",
 				storedInNotes: "데이터가 데일리 노트 프론트매터에 저장됩니다",
 				migrateData: "기존 플러그인 데이터가 마이그레이션된 후 지워집니다",
 				futureSessions: "향후 세션은 데일리 노트에 저장됩니다",

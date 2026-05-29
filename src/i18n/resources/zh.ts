@@ -2601,7 +2601,7 @@ export const zh: TranslationTree = {
 			},
 			whatThisMeans: "这意味着：",
 			bullets: {
-				dailyNotesRequired: "日记核心插件必须保持启用",
+				dailyNotesRequired: "必须在核心日记插件或 Periodic Notes 中启用日记",
 				storedInNotes: "数据将存储在您的日记前置数据中",
 				migrateData: "现有插件数据将迁移然后清除",
 				futureSessions: "未来的会话将保存到日记",

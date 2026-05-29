@@ -1142,13 +1142,15 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
 }
 
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__main-row {
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
     gap: var(--tn-spacing-xs);
 }
 
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__content {
-    flex: 1 0 14rem;
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: min(13rem, calc(100% - var(--tn-mobile-task-card-indicator-size) - var(--tn-mobile-task-card-indicator-size) - var(--tn-spacing-xs) - var(--tn-spacing-xs)));
     padding-top: 0;
 }
 

@@ -328,8 +328,10 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 	window.setTimeout(() => {
 		void (async () => {
 			try {
-				plugin.pomodoroService = new PomodoroService(plugin);
-				await plugin.pomodoroService.initialize();
+				if (!plugin.pomodoroService) {
+					plugin.pomodoroService = new PomodoroService(plugin);
+					await plugin.pomodoroService.initialize();
+				}
 
 				plugin.autoExportService = new AutoExportService(plugin);
 				plugin.autoExportService.start();
