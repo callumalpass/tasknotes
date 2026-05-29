@@ -278,9 +278,12 @@ export class OAuthService {
 			state: state,
 			code_challenge: codeChallenge,
 			code_challenge_method: "S256",
-			access_type: "offline", // Request refresh token
-			prompt: "consent", // Force consent screen to get refresh token
 		});
+
+		if (config.provider === "google") {
+			params.set("access_type", "offline"); // Request refresh token
+			params.set("prompt", "consent"); // Force consent screen to get refresh token
+		}
 
 		return `${config.authorizationEndpoint}?${params.toString()}`;
 	}
