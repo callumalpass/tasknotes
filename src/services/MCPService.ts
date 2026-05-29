@@ -61,6 +61,13 @@ function createMcpJsonReplacer(): (this: unknown, key: string, value: unknown) =
 			return value;
 		}
 
+		if (!Array.isArray(value)) {
+			const prototype = Object.getPrototypeOf(value);
+			if (prototype !== Object.prototype && prototype !== null) {
+				return undefined;
+			}
+		}
+
 		while (ancestors.length > 0 && ancestors[ancestors.length - 1] !== this) {
 			ancestors.pop();
 		}

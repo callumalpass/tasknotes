@@ -41,7 +41,7 @@ Example:
   - Thanks to @chmac for reporting.
 - (#1962) Fixed task tag normalization so tags entered with spaces are saved with hyphens for Obsidian tag compatibility.
   - Thanks to @christenbc for reporting.
-- (#1959) Fixed the MCP `tasknotes_list_tasks` tool so circular internal task data no longer makes the response fail.
+- (#1959) Fixed the MCP `tasknotes_list_tasks` tool so circular internal task data and live Obsidian object references no longer break task-list responses.
   - Thanks to @kmaustral for reporting.
 - (#1957) Fixed the Pomodoro timer layout in vertically split panes so the timer header and progress circle remain reachable when the pane is short.
   - Thanks to @sumiyalairu03 for reporting.

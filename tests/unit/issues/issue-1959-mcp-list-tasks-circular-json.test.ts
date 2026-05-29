@@ -83,4 +83,33 @@ describe("Issue #1959: MCP list tasks circular JSON", () => {
 		expect(parsed.tasks[0].customProperties.source).toEqual({ label: "review" });
 		expect(parsed.tasks[0]).not.toHaveProperty("basesData");
 	});
+
+	it("omits live Obsidian object references from custom task values", async () => {
+		class ObsidianLikeApp {
+			appMenuBarManager = { app: this };
+			vault = { name: "test-vault" };
+		}
+
+		const callback = getListTasksCallback([
+			{
+				title: "Task with app reference",
+				status: "open",
+				priority: "normal",
+				path: "Tasks/App.md",
+				archived: false,
+				customProperties: {
+					source: { label: "review" },
+					app: new ObsidianLikeApp(),
+				},
+			},
+		]);
+
+		const result = await callback({});
+
+		expect(result.isError).not.toBe(true);
+		const parsed = JSON.parse(result.content[0].text);
+		expect(parsed.tasks[0].customProperties.source).toEqual({ label: "review" });
+		expect(parsed.tasks[0].customProperties).not.toHaveProperty("app");
+		expect(result.content[0].text).not.toContain("appMenuBarManager");
+	});
 });
