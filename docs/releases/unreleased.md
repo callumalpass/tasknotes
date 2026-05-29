@@ -33,6 +33,8 @@ Example:
 
 - (#1964) Fixed Microsoft Calendar OAuth so connecting no longer forces a fresh consent prompt every time, and clarified the Microsoft desktop app setup steps.
   - Thanks to @thechonta for reporting.
+- (#1966) Fixed custom priority icons so they render as icons instead of filled squares on task cards.
+  - Thanks to @sruiz-savia for reporting.
 - (#1963) Fixed Google Calendar sync so duplicate event ID fields are repaired when saving task calendar metadata.
   - Thanks to @christenbc for reporting.
 - (#1961) Fixed the default custom filename template so it uses the recommended double-brace syntax and no longer warns on first use.
