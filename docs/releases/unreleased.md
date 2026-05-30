@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- (#1974) Stopped Calendar and Agenda property-based events from logging date parse errors for entries that do not have the selected date property. Thanks to @Jomo94 for suggesting completed-date Agenda events.
 - (#1973) Reduced unnecessary Calendar view recreations when external calendar providers are reported in a different order, and preserved Calendar scroll position when a config-driven refresh has to recreate the view. Thanks to @e-zz for reporting this.
 - (#1972) Fixed ICS calendar event related notes so standalone events with similar numeric IDs no longer show unrelated notes or tasks on every event. Thanks to @ks-studio-net for reporting this.
 - (#1970) Fixed TaskNotes Bases views still rendering task files from excluded folders. Thanks to @henrim01 for reporting that this still affected 4.9.2.

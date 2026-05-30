@@ -536,6 +536,21 @@ views:
 Used by the **Agenda** command to display tasks in a list-based agenda view.
 
 Note: Property-based events are disabled by default to avoid duplicate entries when tasks already have due/scheduled dates.
+To build an Agenda variant for completed tasks that do not have due or scheduled dates, enable property-based events and use the completed-date property as the event start date:
+
+```yaml
+    options:
+      showScheduled: false
+      showDue: false
+      showRecurring: false
+      showTimeEntries: false
+      showPropertyBasedEvents: true
+      createDailyNotesFromDateLinks: true
+    calendarView: "listWeek"
+    startDateProperty: completedDate
+    listDayCount: 7
+    titleProperty: file.basename
+```
 
 ```yaml
 # Agenda
