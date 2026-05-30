@@ -804,6 +804,7 @@ export interface ICSEvent {
 	location?: string;
 	url?: string;
 	rrule?: string; // Recurrence rule
+	recurringEventId?: string; // Stable master/series ID for expanded recurring event instances
 	color?: string; // Hex color code (e.g., "#4285F4")
 }
 
@@ -958,6 +959,12 @@ export interface GoogleCalendarEvent {
 		responseStatus?: string;
 	}>;
 	htmlLink?: string;
+	recurringEventId?: string;
+	originalStartTime?: {
+		dateTime?: string;
+		date?: string;
+		timeZone?: string;
+	};
 	recurrence?: string[]; // RRULE strings
 	colorId?: string; // Google Calendar color ID (1-11)
 	status?: string; // Event status: "confirmed", "tentative", or "cancelled"

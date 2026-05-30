@@ -2,7 +2,7 @@ import { TFile } from "obsidian";
 import { ICSNoteService } from "../../../src/services/ICSNoteService";
 import type { ICSEvent, TaskInfo } from "../../../src/types";
 
-function createEvent(id: string): ICSEvent {
+function createEvent(id: string, overrides: Partial<ICSEvent> = {}): ICSEvent {
 	return {
 		id,
 		subscriptionId: "work",
@@ -10,6 +10,7 @@ function createEvent(id: string): ICSEvent {
 		start: "2026-02-05T10:00:00Z",
 		end: "2026-02-05T11:00:00Z",
 		allDay: false,
+		...overrides,
 	};
 }
 
@@ -53,9 +54,9 @@ function createPlugin(
 describe("Issue #559: related notes for recurring calendar event series", () => {
 	it("finds a note linked to one recurring instance when opening a sibling instance", async () => {
 		const events = [
-			createEvent("work-weekly-review-0"),
-			createEvent("work-weekly-review-1"),
-			createEvent("work-weekly-review-2"),
+			createEvent("work-weekly-review-0", { recurringEventId: "work-weekly-review" }),
+			createEvent("work-weekly-review-1", { recurringEventId: "work-weekly-review" }),
+			createEvent("work-weekly-review-2", { recurringEventId: "work-weekly-review" }),
 		];
 		const linkedTask = {
 			path: "Tasks/Weekly Review.md",
@@ -72,9 +73,9 @@ describe("Issue #559: related notes for recurring calendar event series", () => 
 
 	it("counts a note linked to one recurring instance for every loaded sibling instance", async () => {
 		const events = [
-			createEvent("work-weekly-review-0"),
-			createEvent("work-weekly-review-1"),
-			createEvent("work-weekly-review-2"),
+			createEvent("work-weekly-review-0", { recurringEventId: "work-weekly-review" }),
+			createEvent("work-weekly-review-1", { recurringEventId: "work-weekly-review" }),
+			createEvent("work-weekly-review-2", { recurringEventId: "work-weekly-review" }),
 		];
 		const service = new ICSNoteService(
 			createPlugin(events, [], {

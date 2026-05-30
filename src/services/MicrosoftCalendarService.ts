@@ -59,6 +59,8 @@ interface MicrosoftCalendarEvent {
 	isAllDay?: boolean;
 	isCancelled?: boolean;
 	showAs?: string;
+	type?: "singleInstance" | "occurrence" | "exception" | "seriesMaster";
+	seriesMasterId?: string;
 	"@removed"?: {
 		reason?: string;
 	};
@@ -594,6 +596,9 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		// Microsoft doesn't provide event-level colors in the same way as Google
 		// Use a default blue color
 		const color = "#0078D4"; // Microsoft blue
+		const recurringEventId = msEvent.seriesMasterId
+			? `microsoft-${calendarId}-${msEvent.seriesMasterId}`
+			: undefined;
 
 		return {
 			id: `microsoft-${calendarId}-${msEvent.id}`,
@@ -605,6 +610,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			allDay: allDay,
 			location: msEvent.location?.displayName,
 			url: msEvent.webLink,
+			recurringEventId,
 			color: color,
 		};
 	}
