@@ -47,6 +47,30 @@ describe("calendarConfigSnapshot", () => {
 		);
 	});
 
+	it("keeps provider toggle keys stable when providers arrive in a different order", () => {
+		const firstKeys = getCalendarConfigSnapshotKeys({
+			icsCalendarIds: ["ics-b", "ics-a"],
+			googleCalendarIds: ["google-b", "google-a"],
+			microsoftCalendarIds: ["ms-b", "ms-a"],
+		});
+		const secondKeys = getCalendarConfigSnapshotKeys({
+			icsCalendarIds: ["ics-a", "ics-b"],
+			googleCalendarIds: ["google-a", "google-b"],
+			microsoftCalendarIds: ["ms-a", "ms-b"],
+		});
+
+		expect(firstKeys).toEqual(secondKeys);
+		expect(firstKeys.indexOf("showICS_ics-a")).toBeLessThan(
+			firstKeys.indexOf("showICS_ics-b")
+		);
+		expect(firstKeys.indexOf("showGoogleCalendar_google-a")).toBeLessThan(
+			firstKeys.indexOf("showGoogleCalendar_google-b")
+		);
+		expect(firstKeys.indexOf("showMicrosoftCalendar_ms-a")).toBeLessThan(
+			firstKeys.indexOf("showMicrosoftCalendar_ms-b")
+		);
+	});
+
 	it("builds config snapshots from direct, options, and provider toggle values", () => {
 		const config = createConfig({
 			showScheduled: true,

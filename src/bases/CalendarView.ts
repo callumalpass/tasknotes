@@ -654,7 +654,7 @@ export class CalendarView extends BasesViewBase {
 		// If config changed, mark for recreation and render immediately
 		if (configChanged) {
 			this._configChangedNeedsRecreate = true;
-			void this.render();
+			this.renderPreservingEphemeralState();
 			return;
 		}
 
