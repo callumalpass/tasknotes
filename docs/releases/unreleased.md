@@ -26,4 +26,5 @@ Example:
 
 ## Fixed
 
+- (#1970) Fixed TaskNotes Bases views still rendering task files from excluded folders. Thanks to @henrim01 for reporting that this still affected 4.9.2.
 - (#1968) Fixed inline task link overlays collapsing on Obsidian mobile, which could hide the task title and leave a tall empty gap after the widget. Thanks to @renatomen for reporting and diagnosing the containment issue.

@@ -292,6 +292,7 @@ export async function identifyTaskNotesFromBasesData(
 	const taskNotes: TaskInfo[] = [];
 	for (const item of dataItems) {
 		if (!item?.path) continue;
+		if (plugin?.cacheManager && !plugin.cacheManager.isValidFile(item.path)) continue;
 		try {
 			const taskInfo = taskInfoConverter(item, plugin);
 			if (taskInfo) taskNotes.push(taskInfo);
