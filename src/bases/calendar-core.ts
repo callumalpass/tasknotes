@@ -840,6 +840,15 @@ function replaceDatePartPreservingTime(value: string, datePart: string): string 
 	return timePart ? `${datePart}T${timePart}` : datePart;
 }
 
+function hasDateOnlyDueOnScheduledDay(task: TaskInfo): boolean {
+	return Boolean(
+		task.scheduled &&
+			task.due &&
+			!hasTimeComponent(task.due) &&
+			getDatePart(task.scheduled) === getDatePart(task.due)
+	);
+}
+
 function createRecurringScheduledToDueSpanEvents(
 	task: TaskInfo,
 	instanceDate: string,
@@ -1505,7 +1514,8 @@ export async function generateCalendarEvents(
 		task: TaskInfo,
 		includeScheduled: boolean,
 		allowScheduledToDueSpan: boolean,
-		includeDue = showDue
+		includeDue = showDue,
+		hasGeneratedScheduledLayer = false
 	): void => {
 		let showedSpan = false;
 		if (allowScheduledToDueSpan && showScheduledToDueSpan && task.scheduled && task.due) {
@@ -1534,7 +1544,13 @@ export async function generateCalendarEvents(
 			}
 		}
 
-		if (includeDue && task.due) {
+		const shouldSuppressDateOnlyDue =
+			includeDue &&
+			(includeScheduled || hasGeneratedScheduledLayer) &&
+			hasDateOnlyDueOnScheduledDay(task);
+		const shouldShowDue = includeDue && !shouldSuppressDateOnlyDue;
+
+		if (shouldShowDue && task.due) {
 			if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
 				const dueEvent = createDueEvent(task, plugin);
 				if (dueEvent) {
@@ -1551,6 +1567,7 @@ export async function generateCalendarEvents(
 				let includeStandaloneScheduled = showScheduled;
 				let includeStandaloneDue = showDue;
 				let allowScheduledToDueSpan = true;
+				let hasGeneratedScheduledLayer = false;
 
 				if (
 					(showRecurring ||
@@ -1578,6 +1595,7 @@ export async function generateCalendarEvents(
 						);
 						events.push(...recurringEvents);
 						if (showRecurring) {
+							hasGeneratedScheduledLayer = recurringEvents.length > 0;
 							includeStandaloneScheduled = false;
 							allowScheduledToDueSpan = false;
 							if (
@@ -1596,7 +1614,8 @@ export async function generateCalendarEvents(
 					task,
 					includeStandaloneScheduled,
 					allowScheduledToDueSpan,
-					includeStandaloneDue
+					includeStandaloneDue,
+					hasGeneratedScheduledLayer
 				);
 			} else {
 				// Handle non-recurring tasks with date range filtering
