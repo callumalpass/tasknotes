@@ -47,6 +47,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#1976) Fixed embedded Calendar and Agenda Bases so "Navigate to date from property" can use the containing note's date property when the Base rows do not have that property. Thanks to @matesvecenik for reporting this.
 - (#216) Improved inline conversion for Tasks plugin task lines, including Dataview-style fields, priority markers, recurrence text, date aliases, block links, and safer trailing-field parsing. Thanks to @ksdavidc for the request, @natleahh for the Dataview example, and @hangryscribe3 and @nayatiuh for the discussion.
 - (#1974) Stopped Calendar and Agenda property-based events from logging date parse errors for entries that do not have the selected date property. Thanks to @Jomo94 for suggesting completed-date Agenda events.
 - (#1973) Reduced unnecessary Calendar view recreations when external calendar providers are reported in a different order, and preserved Calendar scroll position when a config-driven refresh has to recreate the view. Thanks to @e-zz for reporting this.

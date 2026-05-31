@@ -21,6 +21,7 @@ export type DetermineCalendarInitialDateInput = {
 	taskNotes: readonly TaskInfo[];
 	entries?: readonly unknown[] | null;
 	getEntryPropertyValue?: (entry: unknown, propertyId: string) => unknown;
+	getContextPropertyValue?: (propertyId: string) => unknown;
 	mapPropertyToTaskField: (propertyId: string) => string;
 };
 
@@ -29,6 +30,7 @@ export function determineCalendarInitialDate({
 	taskNotes,
 	entries,
 	getEntryPropertyValue,
+	getContextPropertyValue,
 	mapPropertyToTaskField,
 }: DetermineCalendarInitialDateInput): Date | string | undefined {
 	if (viewOptions.initialDate) {
@@ -49,7 +51,10 @@ export function determineCalendarInitialDate({
 	});
 
 	if (dates.length === 0) {
-		return undefined;
+		const contextCandidate = getContextPropertyValue
+			? toCalendarInitialDateCandidate(getContextPropertyValue(viewOptions.initialDateProperty))
+			: null;
+		return contextCandidate?.value;
 	}
 
 	if (viewOptions.initialDateStrategy === "earliest") {
