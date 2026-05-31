@@ -1,0 +1,85 @@
+{
+	"name": "@tasknotes/model",
+	"version": "0.1.0",
+	"description": "TaskNotes model, mapping, validation, recurrence, and operation-planning reference implementation.",
+	"license": "MIT",
+	"type": "module",
+	"main": "./dist/cjs/index.cjs",
+	"module": "./dist/esm/index.js",
+	"types": "./dist/types/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/types/index.d.ts",
+			"import": "./dist/esm/index.js",
+			"require": "./dist/cjs/index.cjs"
+		},
+		"./config": {
+			"types": "./dist/types/config.d.ts",
+			"import": "./dist/esm/config.js",
+			"require": "./dist/cjs/config.cjs"
+		},
+		"./date": {
+			"types": "./dist/types/date.d.ts",
+			"import": "./dist/esm/date.js",
+			"require": "./dist/cjs/date.cjs"
+		},
+		"./mapping": {
+			"types": "./dist/types/mapping.d.ts",
+			"import": "./dist/esm/mapping.js",
+			"require": "./dist/cjs/mapping.cjs"
+		},
+		"./schema": {
+			"types": "./dist/types/schema.d.ts",
+			"import": "./dist/esm/schema.js",
+			"require": "./dist/cjs/schema.cjs"
+		},
+		"./recurrence": {
+			"types": "./dist/types/recurrence.d.ts",
+			"import": "./dist/esm/recurrence.js",
+			"require": "./dist/cjs/recurrence.cjs"
+		},
+		"./time": {
+			"types": "./dist/types/time.d.ts",
+			"import": "./dist/esm/time.js",
+			"require": "./dist/cjs/time.cjs"
+		},
+		"./validation": {
+			"types": "./dist/types/validation.d.ts",
+			"import": "./dist/esm/validation.js",
+			"require": "./dist/cjs/validation.cjs"
+		},
+		"./operations": {
+			"types": "./dist/types/operations.d.ts",
+			"import": "./dist/esm/operations.js",
+			"require": "./dist/cjs/operations.cjs"
+		},
+		"./frontmatter": {
+			"types": "./dist/types/frontmatter.d.ts",
+			"import": "./dist/esm/frontmatter.js",
+			"require": "./dist/cjs/frontmatter.cjs"
+		},
+		"./conformance": {
+			"types": "./dist/types/conformance.d.ts",
+			"import": "./dist/esm/conformance.js",
+			"require": "./dist/cjs/conformance.cjs"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+		"build": "npm run clean && node scripts/build.mjs && tsc -p tsconfig.types.json",
+		"test": "npm run build && node --test test/**/*.test.mjs"
+	},
+	"dependencies": {
+		"rrule": "^2.8.1",
+		"yaml": "^2.3.1",
+		"zod": "^3.24.0"
+	},
+	"devDependencies": {
+		"esbuild": "^0.25.9",
+		"typescript": "^5.9.2"
+	}
+}

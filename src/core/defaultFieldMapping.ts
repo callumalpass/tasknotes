@@ -1,31 +1,4 @@
+import { DEFAULT_FIELD_MAPPING as MODEL_DEFAULT_FIELD_MAPPING } from "@tasknotes/model/mapping";
 import type { FieldMapping } from "../types";
 
-export const DEFAULT_FIELD_MAPPING: FieldMapping = {
-	title: "title",
-	status: "status",
-	priority: "priority",
-	due: "due",
-	scheduled: "scheduled",
-	contexts: "contexts",
-	projects: "projects",
-	timeEstimate: "timeEstimate",
-	completedDate: "completedDate",
-	dateCreated: "dateCreated",
-	dateModified: "dateModified",
-	recurrence: "recurrence",
-	recurrenceAnchor: "recurrence_anchor",
-	archiveTag: "archived",
-	timeEntries: "timeEntries",
-	completeInstances: "complete_instances",
-	skippedInstances: "skipped_instances",
-	blockedBy: "blockedBy",
-	pomodoros: "pomodoros",
-	icsEventId: "icsEventId",
-	icsEventTag: "ics_event",
-	googleCalendarEventId: "googleCalendarEventId",
-	googleCalendarExceptionEventId: "googleCalendarExceptionEventId",
-	googleCalendarExceptionOriginalScheduled: "googleCalendarExceptionOriginalScheduled",
-	googleCalendarMovedOriginalDates: "googleCalendarMovedOriginalDates",
-	reminders: "reminders",
-	sortOrder: "tasknotes_manual_order",
-};
+export const DEFAULT_FIELD_MAPPING: FieldMapping = MODEL_DEFAULT_FIELD_MAPPING;

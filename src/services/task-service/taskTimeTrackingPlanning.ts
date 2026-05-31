@@ -1,22 +1,25 @@
-import type { TaskInfo, TimeEntry } from "../../types";
+import {
+	buildDeleteTimeEntryPlan,
+	buildStartTimeTrackingPlan,
+	buildStopTimeTrackingPlan,
+	removeTimeEntryDuration,
+	sanitizeTimeEntries,
+} from "@tasknotes/model/time";
+import type { TimeEntry } from "../../types";
 
-export interface StartTimeTrackingPlan {
-	updatedTask: TaskInfo;
-	newEntry: TimeEntry;
-	dateModified: string;
-}
+export type {
+	DeleteTimeEntryPlan,
+	StartTimeTrackingPlan,
+	StopTimeTrackingPlan,
+} from "@tasknotes/model/time";
 
-export interface StopTimeTrackingPlan {
-	updatedTask: TaskInfo;
-	stopTimestamp: string;
-	dateModified: string;
-}
-
-export interface DeleteTimeEntryPlan {
-	updatedTask: TaskInfo;
-	timeEntryIndex: number;
-	dateModified: string;
-}
+export {
+	buildDeleteTimeEntryPlan,
+	buildStartTimeTrackingPlan,
+	buildStopTimeTrackingPlan,
+	removeTimeEntryDuration,
+	sanitizeTimeEntries,
+};
 
 export interface ApplyStartTimeTrackingFrontmatterInput {
 	frontmatter: Record<string, unknown>;
@@ -43,70 +46,6 @@ export interface ApplyDeleteTimeEntryFrontmatterInput {
 	dateModified: string;
 }
 
-export function removeTimeEntryDuration(entry: TimeEntry): TimeEntry {
-	const sanitizedEntry = { ...entry };
-	delete sanitizedEntry.duration;
-	return sanitizedEntry;
-}
-
-export function sanitizeTimeEntries(entries: TimeEntry[] | undefined): TimeEntry[] {
-	return Array.isArray(entries) ? entries.map(removeTimeEntryDuration) : [];
-}
-
-export function buildStartTimeTrackingPlan(
-	task: TaskInfo,
-	currentTimestamp: string,
-	startTimestamp: string
-): StartTimeTrackingPlan {
-	const newEntry: TimeEntry = {
-		startTime: startTimestamp,
-		description: "Work session",
-	};
-	const updatedTask = {
-		...task,
-		dateModified: currentTimestamp,
-		timeEntries: [...sanitizeTimeEntries(task.timeEntries), newEntry],
-	};
-
-	return {
-		updatedTask,
-		newEntry,
-		dateModified: currentTimestamp,
-	};
-}
-
-export function buildStopTimeTrackingPlan(
-	task: TaskInfo,
-	activeSession: TimeEntry,
-	currentTimestamp: string,
-	stopTimestamp: string
-): StopTimeTrackingPlan {
-	const updatedTask = {
-		...task,
-		dateModified: currentTimestamp,
-	};
-
-	if (Array.isArray(task.timeEntries)) {
-		const timeEntries = sanitizeTimeEntries(task.timeEntries);
-		const entryIndex = timeEntries.findIndex(
-			(entry) => entry.startTime === activeSession.startTime && !entry.endTime
-		);
-		if (entryIndex !== -1) {
-			timeEntries[entryIndex] = {
-				...timeEntries[entryIndex],
-				endTime: stopTimestamp,
-			};
-		}
-		updatedTask.timeEntries = timeEntries;
-	}
-
-	return {
-		updatedTask,
-		stopTimestamp,
-		dateModified: currentTimestamp,
-	};
-}
-
 export function applyStartTimeTrackingFrontmatterChange({
 	frontmatter,
 	timeEntriesField,
@@ -125,30 +64,6 @@ export function applyStartTimeTrackingFrontmatterChange({
 
 	(frontmatter[timeEntriesField] as TimeEntry[]).push(newEntry);
 	frontmatter[dateModifiedField] = dateModified;
-}
-
-export function buildDeleteTimeEntryPlan(
-	task: TaskInfo,
-	timeEntryIndex: number,
-	currentTimestamp: string
-): DeleteTimeEntryPlan {
-	if (!Array.isArray(task.timeEntries)) {
-		throw new Error("Task has no time entries");
-	}
-
-	if (timeEntryIndex < 0 || timeEntryIndex >= task.timeEntries.length) {
-		throw new Error("Invalid time entry index");
-	}
-
-	return {
-		updatedTask: {
-			...task,
-			dateModified: currentTimestamp,
-			timeEntries: task.timeEntries.filter((_, index) => index !== timeEntryIndex),
-		},
-		timeEntryIndex,
-		dateModified: currentTimestamp,
-	};
 }
 
 export function applyDeleteTimeEntryFrontmatterChange({

@@ -85,6 +85,7 @@ tasknotes-e2e-vault/*.ics
 /.ops
 AGENTS.md
 /docs-builder/dist
+/packages/model/dist/
 .ops/
 .serena/
 /.codex

@@ -29,6 +29,10 @@ Example:
 - (#1951) Added Calendar support for recurring tasks stretched between scheduled and due dates when the existing stretch option is enabled. Date-only ranges stay as all-day spans, and timed ranges render once per day in the range. Thanks to @atos2212-blip for the request.
 - (#1510, #1751, #1792, #1969) Added a Task List and Kanban view option to hide top-level subtasks when their parent task is also in the filtered view, while still allowing inherited expanded relationships to show the subtasks under the parent. Thanks to @Kickdak and @Glint-Eye for the requests, @inigourrestarazu for identifying the project-linked parent edge case, and @stanley-910 and @Spencerduran for the earlier PRs.
 
+## Changed
+
+- Moved core TaskNotes model behavior for field mapping, dates, recurrence, time-tracking, and adapter operation planning into a shared package used by the plugin and companion tooling.
+
 ## Fixed
 
 - (#1974) Stopped Calendar and Agenda property-based events from logging date parse errors for entries that do not have the selected date property. Thanks to @Jomo94 for suggesting completed-date Agenda events.

@@ -3,9 +3,14 @@
 	"version": "4.9.2",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
+	"workspaces": [
+		"packages/model"
+	],
 	"scripts": {
-		"build": "npm run build-css && node generate-release-notes-import.mjs && tsc -noEmit --skipLibCheck && node esbuild.config.mjs production",
-		"dev": "npm run build-css && node generate-release-notes-import.mjs && node esbuild.config.mjs",
+		"build": "npm run build:model && npm run build-css && node generate-release-notes-import.mjs && tsc -noEmit --skipLibCheck && node esbuild.config.mjs production",
+		"build:model": "npm --workspace @tasknotes/model run build",
+		"test:model": "npm --workspace @tasknotes/model run test",
+		"dev": "npm run build:model && npm run build-css && node generate-release-notes-import.mjs && node esbuild.config.mjs",
 		"build:test": "npm run build && node copy-files.mjs",
 		"copy-files": "node copy-files.mjs",
 		"build-css": "node build-css.mjs",
@@ -79,6 +84,7 @@
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
+		"@tasknotes/model": "file:packages/model",
 		"@codemirror/view": "^6.38.6",
 		"@fullcalendar/core": "^6.1.17",
 		"@fullcalendar/daygrid": "^6.1.17",
