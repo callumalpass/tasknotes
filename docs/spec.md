@@ -2,9 +2,9 @@
 
 The TaskNotes specification defines how tools should read, write, and reason about task data stored as markdown files with YAML frontmatter.
 
-It exists so that multiple implementations — the Obsidian plugin, the terminal UI, CLI tools, and anything else that touches the same vault — can agree on what a task looks like, how dates and recurrence work, and what happens when a task is completed, skipped, or archived.
+It exists so that multiple implementations — the Obsidian plugin, the terminal UI, CLI tools, and anything else that touches the same vault — can agree on what a task looks like, how dates and recurrence work, and what happens when a task is completed, skipped, archived, or materialized from a recurring parent.
 
-The spec is maintained separately from any single implementation. The canonical source is [callumalpass/tasknotes-spec](https://github.com/callumalpass/tasknotes-spec).
+The spec is maintained separately from any single implementation. The canonical source is [callumalpass/tasknotes-spec](https://github.com/callumalpass/tasknotes-spec). The embedded docs currently track the 0.2.0 materialized-occurrences update, including the optional `materialized-occurrences` conformance profile.
 
 ## Sections
 
@@ -14,7 +14,7 @@ The spec is maintained separately from any single implementation. The canonical 
 | [Terminology](spec/01-terminology.md) | Normative definitions used throughout |
 | [Model & Mapping](spec/02-model-and-mapping.md) | Task data model, semantic roles, and field mapping |
 | [Temporal Semantics](spec/03-temporal-semantics.md) | Date, datetime, and timezone rules |
-| [Recurrence](spec/04-recurrence.md) | RRULE semantics and per-instance state |
+| [Recurrence](spec/04-recurrence.md) | RRULE semantics, per-instance state, and materialized occurrence semantics |
 | [Operations](spec/05-operations.md) | Create, update, complete, skip, delete behaviors |
 | [Validation](spec/06-validation.md) | Validation rules and the issue model |
 | [Conformance](spec/07-conformance.md) | Conformance profiles and how to claim them |
@@ -25,7 +25,7 @@ The spec is maintained separately from any single implementation. The canonical 
 
 ## Conformance
 
-The spec includes an executable conformance suite — a set of JSON test fixtures that any implementation can run against via a simple adapter interface. The suite covers date handling, recurrence, field mapping, configuration, operations, validation, and more.
+The spec includes an executable conformance suite — a set of JSON test fixtures that any implementation can run against via a simple adapter interface. The suite covers date handling, recurrence, materialized occurrence operations, field mapping, configuration, operations, validation, and more.
 
 Implementations claim conformance to one or more profiles (core-lite, recurrence, extended, templating) and must declare their spec version and any known deviations.
 

@@ -65,11 +65,20 @@ recurrence: "FREQ=WEEKLY;BYDAY=MO"
 complete_instances: ["2024-01-08"]
 ```
 
+When an individual recurrence needs its own note, TaskNotes can materialize that occurrence as a normal task:
+
+```yaml
+title: "Weekly meeting"
+recurrence_parent: "[[Tasks/Weekly meeting]]"
+occurrence_date: "2024-01-15"
+scheduled: "2024-01-15"
+```
+
 All property names are configurable. If you already use `deadline` instead of `due`, remap it in settings.
 
 ## Other features
 
-Calendar sync with Google and Microsoft (OAuth) or any ICS feed. Time tracking with start/stop per task, Pomodoro timer, and session history. Recurring tasks with fixed or flexible schedules and per-instance completion tracking. Dependencies between tasks. Natural language parsing for task creation. Custom statuses, priorities, and user-defined fields.
+Calendar sync with Google and Microsoft (OAuth) or any ICS feed. Time tracking with start/stop per task, Pomodoro timer, and session history. Recurring tasks with fixed or flexible schedules, per-instance completion tracking, and optional materialized occurrence notes. Dependencies between tasks. Natural language parsing for task creation. Custom statuses, priorities, and user-defined fields.
 
 ## Integrations
 

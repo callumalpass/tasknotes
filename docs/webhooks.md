@@ -35,6 +35,8 @@ Recurring events:
 - `recurring.instance.completed`
 - `recurring.instance.skipped`
 
+Completing a materialized occurrence note emits `recurring.instance.completed` with the reconciled parent task plus the completed `occurrence` and `date` in the event data. Skipping virtual recurring instances emits `recurring.instance.skipped`; materialized occurrence skip currently reconciles the parent and occurrence note without emitting a separate skip webhook.
+
 Reminder events:
 
 - `reminder.triggered`

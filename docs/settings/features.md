@@ -39,6 +39,8 @@ Time tracking options handle completion behavior. You can automatically stop run
 
 Use **Maintain due date offset in recurring tasks** to keep due/scheduled spacing consistent when recurring tasks roll forward.
 
+Occurrence note behavior is configured per recurring task from the task context menu: open **Recurrence → Occurrence notes** to choose manual creation or automatic creation of the next materialized occurrence after completion. See [Recurring Tasks](../features/recurring-tasks.md#materialized-occurrence-notes) for the workflow and storage model.
+
 ## Timeblocking
 
 Timeblocking enables lightweight daily-note scheduling blocks and controls whether those blocks are visible by default in calendar views.

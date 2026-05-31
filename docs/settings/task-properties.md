@@ -179,6 +179,8 @@ Pattern for repeating tasks. Configuration options:
 - **Property key**: Frontmatter field name (default: `recurrence`)
 - **Default**: Default recurrence pattern (None, Daily, Weekly, Monthly, Yearly)
 
+Recurring tasks also use the **Recurrence anchor** metadata property to decide whether the series advances from the scheduled date or the completion date. Materialized occurrence note controls live on each recurring task's context menu under **Recurrence → Occurrence notes** rather than as a global default.
+
 ### Reminders
 
 Notifications before task deadlines. Configuration options:
@@ -211,7 +213,11 @@ These properties are system-managed and typically only require property key conf
 - **Archive Tag**: Tag used to mark archived tasks
 - **Time Entries**: Time tracking entries for the task
 - **Complete Instances**: Completion history for recurring tasks
+- **Skipped Instances**: Skip history for recurring tasks
+- **Recurrence Anchor**: Whether recurring progression is based on scheduled date or completion date
 - **Blocked By**: Tasks that must be completed first
+
+Materialized occurrence notes also use system-managed frontmatter fields such as `recurrence_parent`, `occurrence_date`, `occurrence_materialization`, `occurrence_next_trigger`, and optional occurrence template/horizon fields. These fields are documented in the [Property Types Reference](property-types-reference.md#materialized-occurrence-properties) and are normally changed through recurrence and occurrence-note controls instead of by hand.
 
 ## Feature Properties
 

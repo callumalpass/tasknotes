@@ -22,6 +22,8 @@ complete_instances:
 
 Use Calendar and Agenda views to review upcoming occurrences, and use recurring-task filters when you want a habit-only planning view.
 
+For richer recurring work, such as a weekly review or maintenance visit, right-click the recurrence in a task card or calendar view and choose **Open or create occurrence note**. The occurrence note keeps the date-specific checklist and completion state while the parent recurring task keeps the long-term rule.
+
 ## Project-Centered Planning
 
 Projects in TaskNotes can be plain text values or wikilinks to project notes. Wikilinks are usually the better long-term option because they connect task execution to project context, backlinks, and graph navigation.
