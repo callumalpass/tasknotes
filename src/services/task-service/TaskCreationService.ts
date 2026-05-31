@@ -190,10 +190,18 @@ export class TaskCreationService {
 				dateModified,
 				recurrence: taskData.recurrence || undefined,
 				recurrence_anchor: taskData.recurrence_anchor || undefined,
+				recurrence_parent: taskData.recurrence_parent || undefined,
+				occurrence_date: taskData.occurrence_date || undefined,
+				occurrence_materialization: taskData.occurrence_materialization || undefined,
+				occurrence_next_trigger: taskData.occurrence_next_trigger || undefined,
+				occurrence_template: taskData.occurrence_template || undefined,
+				occurrence_past_horizon: taskData.occurrence_past_horizon || undefined,
+				occurrence_future_horizon: taskData.occurrence_future_horizon || undefined,
 				reminders:
 					taskData.reminders && taskData.reminders.length > 0
 						? taskData.reminders
 						: undefined,
+				customProperties: taskData.customProperties || undefined,
 				icsEventId: taskData.icsEventId || undefined,
 				blockedBy:
 					taskData.blockedBy && taskData.blockedBy.length > 0

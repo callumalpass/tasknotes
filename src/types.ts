@@ -1,3 +1,4 @@
+import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import type { TAbstractFile } from "obsidian";
 
 // View types (active views)
@@ -466,6 +467,13 @@ export interface TaskInfo {
 	recurrence_anchor?: 'scheduled' | 'completion'; // Determines if recurrence is from scheduled date (fixed) or completion date (flexible). Defaults to 'scheduled'
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
 	skipped_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was skipped
+	recurrence_parent?: string; // Link/path to the parent recurring task when this is a materialized occurrence
+	occurrence_date?: string; // Target recurrence date (YYYY-MM-DD) for materialized occurrences
+	occurrence_materialization?: OccurrenceMaterializationMode; // Parent occurrence materialization policy
+	occurrence_next_trigger?: OccurrenceNextTrigger; // Parent policy for materializing the next occurrence
+	occurrence_template?: string; // Optional template note/link for generated occurrence notes
+	occurrence_past_horizon?: string; // ISO duration override for rolling materialization past horizon
+	occurrence_future_horizon?: string; // ISO duration override for rolling materialization future horizon
 	completedDate?: string; // Date (YYYY-MM-DD) when task was marked as done
 	timeEstimate?: number; // Estimated time in minutes
 	timeEntries?: TimeEntry[]; // Individual time tracking sessions
@@ -569,6 +577,14 @@ export interface TaskFrontmatter {
 	projects?: string[];
 	recurrence?: string; // RFC 5545 recurrence rule string
 	complete_instances?: string[];
+	skipped_instances?: string[];
+	recurrence_parent?: string;
+	occurrence_date?: string;
+	occurrence_materialization?: OccurrenceMaterializationMode;
+	occurrence_next_trigger?: OccurrenceNextTrigger;
+	occurrence_template?: string;
+	occurrence_past_horizon?: string;
+	occurrence_future_horizon?: string;
 	completedDate?: string;
 	timeEstimate?: number;
 	timeEntries?: TimeEntry[];
@@ -689,6 +705,13 @@ export interface FieldMapping {
 	dateModified: string;
 	recurrence: string; // RFC 5545 recurrence rule string
 	recurrenceAnchor: string; // User-configurable property name for recurrence_anchor field
+	recurrenceParent: string;
+	occurrenceDate: string;
+	occurrenceMaterialization: string;
+	occurrenceNextTrigger: string;
+	occurrenceTemplate: string;
+	occurrencePastHorizon: string;
+	occurrenceFutureHorizon: string;
 	archiveTag: string; // For the archive tag in the tags array
 	timeEntries: string;
 	completeInstances: string;
@@ -712,6 +735,7 @@ export interface StatusConfig {
 	color: string; // Hex color for UI elements
 	icon?: string; // Optional Lucide icon name (e.g., "circle", "check", "clock")
 	isCompleted: boolean; // Whether this counts as "done"
+	isSkipped?: boolean; // Whether this counts as a skipped occurrence
 	excludeFromCycle?: boolean; // Whether status-dot cycling should skip this status
 	nextStatus?: string; // Optional status value to use when cycling forward from this status
 	order: number; // Sort order (for cycling)
