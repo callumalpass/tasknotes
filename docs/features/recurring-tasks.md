@@ -104,15 +104,20 @@ Good uses include:
 
 To create one manually, right-click a recurring task card or calendar occurrence and choose **Open or create occurrence note**. The Task Action Palette also exposes **Open or create occurrence note** for recurring tasks. If a matching note already exists for the same parent and date, TaskNotes opens it instead of creating a duplicate.
 
-An occurrence note is an ordinary TaskNotes task. It appears in views, can be edited like any other task, and shows an occurrence pill that links back to the recurring parent. Its frontmatter includes:
+An occurrence note is an ordinary TaskNotes task. It appears in views, can be edited like any other task, and shows an occurrence pill that links back to the recurring parent. On the calendar, a materialized occurrence replaces the matching virtual parent occurrence for the same parent/date pair, so you do not see both the generated instance and the note-backed instance at the same time.
+
+Its frontmatter includes:
 
 ```yaml
 recurrence_parent: "[[Tasks/Weekly review]]"
 occurrence_date: "2026-06-01"
-scheduled: "2026-06-01"
+scheduled: "2026-06-01T09:30"
+timeEstimate: 45
 ```
 
-The parent task remains the source of the recurrence rule. The occurrence note owns date-specific state such as `status`, `completedDate`, body content, checklists, time entries, reminders, contexts, projects, and other per-instance fields.
+When TaskNotes creates an occurrence note, it copies the parent fields that describe how that instance should be planned: title, priority, scheduled time, due offset, contexts, projects, tags, reminders, dependencies, details, custom properties, and time estimate. Date-like fields are rebased onto the occurrence date, so a parent scheduled at `09:30` creates an occurrence scheduled at `09:30` on the selected date, and a due date one day after the parent scheduled date stays one day after the occurrence scheduled date.
+
+The parent task remains the source of the recurrence rule and series history. Occurrence notes do not copy the parent's `recurrence`, `complete_instances`, `skipped_instances`, `completedDate`, calendar provider IDs, or `timeEntries`. New time entries belong to the occurrence note once you track time there.
 
 ### Occurrence Note Policies
 
@@ -170,8 +175,11 @@ Recurring tasks can show:
 
 - **Next occurrence** (solid border): dragging updates only `scheduled`
 - **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
+- **Materialized occurrence notes**: dragging updates the occurrence note's own `scheduled` or `due` date like a normal task, without changing the parent's recurrence rule
 
 ![Recurring tasks in calendar week view](../assets/views-calendar-week.png)
+
+Materialized occurrence notes keep `occurrence_date` as their identity. If you drag the note for the June 1 occurrence to June 2, it is still the June 1 recurrence instance, now scheduled for June 2. TaskNotes suppresses the June 1 virtual parent event and leaves the June 2 virtual occurrence alone unless that date also has its own materialized note.
 
 ## Completion Tracking
 

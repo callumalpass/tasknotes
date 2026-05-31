@@ -224,6 +224,8 @@ Single-item arrays may look verbose, but they prevent edge cases when filters an
 
 Materialized occurrence notes are ordinary task notes created for one date in a recurring series. The parent recurring task owns the recurrence rule; the occurrence note owns date-specific state such as status, completed date, body content, time entries, reminders, and comments.
 
+When an occurrence note is created, TaskNotes inherits parent planning metadata such as scheduled time, due offset, priority, tags, contexts, projects, reminders, dependencies, details, custom properties, and time estimate. It does not copy parent recurrence/history/runtime fields such as `recurrence`, `complete_instances`, `skipped_instances`, `completedDate`, provider event IDs, or `timeEntries`.
+
 #### recurrence_parent
 
 - **Type:** text (link or path string)

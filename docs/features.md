@@ -6,7 +6,7 @@ TaskNotes includes task organization, time tracking, and calendar integration fe
 
 TaskNotes gives each task a structured set of properties, including status, priority, due and scheduled dates, tags, contexts, and optional estimates. Because these values live in frontmatter, they stay readable and portable while still powering advanced filtering and grouping in Bases.
 
-Reminders can be relative (for example, "3 days before due") or absolute, and completed tasks can be archived automatically to keep active work surfaces focused. Recurring tasks can stay virtual for lightweight checkoff workflows, or you can materialize individual occurrences into normal task notes when a specific instance needs its own checklist, comments, time tracking, or attachments.
+Reminders can be relative (for example, "3 days before due") or absolute, and completed tasks can be archived automatically to keep active work surfaces focused. Recurring tasks can stay virtual for lightweight checkoff workflows, or you can materialize individual occurrences into normal task notes when a specific instance needs its own checklist, comments, time tracking, or attachments. Occurrence notes inherit useful planning metadata from the parent while keeping their own completion state and time entries, and calendar views coalesce them with the matching virtual recurrence instance.
 
 See [Task Management](features/task-management.md) for details.
 For recurrence behavior, see [Recurring Tasks](features/recurring-tasks.md).

@@ -2224,7 +2224,14 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Handle recurring task drops
-		if (taskInfo && (isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)) {
+		const isMaterializedOccurrenceTaskEvent = Boolean(
+			taskInfo?.recurrence_parent && taskInfo?.occurrence_date
+		);
+		if (
+			taskInfo &&
+			!isMaterializedOccurrenceTaskEvent &&
+			(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)
+		) {
 			await handleRecurringTaskDrop(info, taskInfo, this.plugin);
 			return;
 		}

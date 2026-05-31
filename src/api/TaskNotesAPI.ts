@@ -6,141 +6,47 @@ import {
 } from "../services/NaturalLanguageParser";
 import type {
 	FilterQuery,
+	PomodoroHistoryStats,
+	PomodoroSessionHistory,
+	PomodoroState,
+	Reminder,
 	TaskCreationData,
+	TaskDependency,
 	TaskInfo,
 	TimeEntry,
 } from "../types";
-import { EVENT_TASK_DELETED, EVENT_TASK_UPDATED } from "../types";
+import {
+	EVENT_POMODORO_COMPLETE,
+	EVENT_POMODORO_INTERRUPT,
+	EVENT_POMODORO_START,
+	EVENT_TASK_DELETED,
+	EVENT_TASK_UPDATED,
+} from "../types";
 import type { TaskNotesSettings } from "../types/settings";
 import { ensureFolderExists } from "../utils/helpers";
+import {
+	TASKNOTES_RUNTIME_API_CAPABILITIES,
+	TASKNOTES_RUNTIME_API_VERSION,
+	type ActiveTimeEntry,
+	type CompleteTaskOptions,
+	type PomodoroSessionsOptions,
+	type PomodoroStartOptions,
+	type StartTimeEntryOptions,
+	type TaskNotesApiChanges,
+	type TaskNotesApiEvent,
+	type TaskNotesApiEventHandler,
+	type TaskNotesApiEventPayload,
+	type TaskNotesMutationContext,
+	type TaskNotesRuntimeApiV1,
+	type TaskNotesRuntimeExtension,
+	type TaskNotesRuntimeExtensionHandle,
+	type TaskNotesRuntimeExtensionInfo,
+	type TaskNotesRuntimeEventName,
+	type TaskNotesTaskPatch,
+	type UncompleteTaskOptions,
+} from "./runtime-api";
 
-export const TASKNOTES_API_VERSION = 1 as const;
-
-export const TASKNOTES_API_CAPABILITIES = [
-	"tasks.read",
-	"tasks.write",
-	"tasks.move",
-	"tasks.events",
-	"time.read",
-	"time.write",
-	"settings.snapshot",
-	"nlp.parse",
-] as const;
-
-export type TaskNotesApiVersion = typeof TASKNOTES_API_VERSION;
-export type TaskNotesApiCapability = (typeof TASKNOTES_API_CAPABILITIES)[number];
-
-export type TaskNotesApiEvent =
-	| "task.created"
-	| "task.updated"
-	| "task.deleted"
-	| "task.moved"
-	| "task.status.changed"
-	| "task.completed"
-	| "task.uncompleted"
-	| "task.archived"
-	| "task.unarchived"
-	| "task.scheduled.changed"
-	| "task.due.changed"
-	| "task.priority.changed"
-	| "time.started"
-	| "time.stopped";
-
-export interface TaskNotesMutationContext {
-	source?: string;
-	correlationId?: string;
-	reason?: string;
-}
-
-export type TaskNotesTaskPatch = Partial<TaskInfo> & {
-	details?: string;
-};
-
-export interface CompleteTaskOptions {
-	status?: string;
-}
-
-export interface ActiveTimeEntry {
-	taskPath: string;
-	task: TaskInfo;
-	entry: TimeEntry;
-	index: number;
-}
-
-export interface TaskNotesApiChange {
-	before: unknown;
-	after: unknown;
-}
-
-export type TaskNotesApiChanges = Record<string, TaskNotesApiChange>;
-
-export interface TaskNotesApiEventPayload {
-	event: TaskNotesApiEvent;
-	taskPath: string;
-	task?: TaskInfo;
-	before?: TaskInfo;
-	after?: TaskInfo;
-	deletedTask?: TaskInfo;
-	changes: TaskNotesApiChanges;
-	context?: TaskNotesMutationContext;
-	source?: string;
-	correlationId?: string;
-	reason?: string;
-	rawEvent: typeof EVENT_TASK_UPDATED | typeof EVENT_TASK_DELETED;
-}
-
-export type TaskNotesApiEventHandler = (payload: TaskNotesApiEventPayload) => void;
-
-export interface TaskNotesApiV1 {
-	readonly apiVersion: TaskNotesApiVersion;
-	readonly capabilities: readonly TaskNotesApiCapability[];
-	hasCapability(capability: TaskNotesApiCapability | string): boolean;
-
-	parseNaturalLanguage(text: string): ParsedTaskData;
-
-	getTask(path: string): Promise<TaskInfo | null>;
-	listTasks(query?: FilterQuery): Promise<TaskInfo[]>;
-	createTask(
-		taskData: TaskCreationData,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
-	updateTask(
-		path: string,
-		patch: TaskNotesTaskPatch,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
-	completeTask(
-		path: string,
-		options?: CompleteTaskOptions,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
-	rescheduleTask(
-		path: string,
-		date: string | null,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
-	archiveTask(
-		path: string,
-		archived: boolean,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
-	moveTask(
-		path: string,
-		targetFolder: string,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
-
-	startTimeEntry(path: string, context?: TaskNotesMutationContext): Promise<void>;
-	stopTimeEntry(path: string, context?: TaskNotesMutationContext): Promise<void>;
-	getActiveTimeEntries(): Promise<ActiveTimeEntry[]>;
-
-	getSettingsSnapshot(): Readonly<TaskNotesSettings>;
-
-	on(event: TaskNotesApiEvent, handler: TaskNotesApiEventHandler): EventRef;
-	off(ref: EventRef): void;
-}
-
-export type TaskNotesPublicAPI = TaskNotesApiV1;
+export * from "./runtime-api";
 
 interface TaskUpdatedEventPayload {
 	path?: string;
@@ -153,17 +59,185 @@ interface TaskDeletedEventPayload {
 	deletedTask?: TaskInfo;
 }
 
-export class TaskNotesAPI implements TaskNotesApiV1 {
-	readonly apiVersion = TASKNOTES_API_VERSION;
-	readonly capabilities = TASKNOTES_API_CAPABILITIES;
+interface RegisteredRuntimeExtension {
+	id: string;
+	namespace: string;
+	api: unknown;
+	displayName?: string;
+	version?: string;
+	capabilities: readonly string[];
+	token: symbol;
+}
+
+const RESERVED_RUNTIME_EXTENSION_NAMESPACES = new Set([
+	"apiversion",
+	"capabilities",
+	"events",
+	"extensions",
+	"hascapability",
+	"nlp",
+	"pomodoro",
+	"recurring",
+	"settings",
+	"tasks",
+	"time",
+]);
+
+export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
+	readonly apiVersion = TASKNOTES_RUNTIME_API_VERSION;
+
+	readonly tasks = {
+		get: (path: string) => this.getTask(path),
+		list: (query?: FilterQuery) => this.listTasks(query),
+		create: (taskData: TaskCreationData, context?: TaskNotesMutationContext) =>
+			this.createTask(taskData, context),
+		update: (path: string, patch: TaskNotesTaskPatch, context?: TaskNotesMutationContext) =>
+			this.updateTask(path, patch, context),
+		patch: (path: string, patch: TaskNotesTaskPatch, context?: TaskNotesMutationContext) =>
+			this.updateTask(path, patch, context),
+		delete: (path: string, context?: TaskNotesMutationContext) =>
+			this.deleteTask(path, context),
+		complete: (
+			path: string,
+			options?: CompleteTaskOptions,
+			context?: TaskNotesMutationContext
+		) => this.completeTask(path, options, context),
+		uncomplete: (
+			path: string,
+			options?: UncompleteTaskOptions,
+			context?: TaskNotesMutationContext
+		) => this.uncompleteTask(path, options, context),
+		setStatus: (path: string, status: string, context?: TaskNotesMutationContext) =>
+			this.setTaskProperty(path, "status", status, context),
+		setPriority: (path: string, priority: string, context?: TaskNotesMutationContext) =>
+			this.setTaskProperty(path, "priority", priority, context),
+		setDue: (path: string, date: string, context?: TaskNotesMutationContext) =>
+			this.setTaskProperty(path, "due", date, context),
+		clearDue: (path: string, context?: TaskNotesMutationContext) =>
+			this.setTaskProperty(path, "due", undefined, context),
+		setScheduled: (path: string, date: string, context?: TaskNotesMutationContext) =>
+			this.setTaskProperty(path, "scheduled", date, context),
+		clearScheduled: (path: string, context?: TaskNotesMutationContext) =>
+			this.setTaskProperty(path, "scheduled", undefined, context),
+		reschedule: (path: string, date: string | null, context?: TaskNotesMutationContext) =>
+			this.rescheduleTask(path, date, context),
+		archive: (path: string, archived: boolean, context?: TaskNotesMutationContext) =>
+			this.archiveTask(path, archived, context),
+		move: (path: string, targetFolder: string, context?: TaskNotesMutationContext) =>
+			this.moveTask(path, targetFolder, context),
+		addTag: (path: string, tag: string, context?: TaskNotesMutationContext) =>
+			this.updateStringList(path, "tags", tag, "add", context),
+		removeTag: (path: string, tag: string, context?: TaskNotesMutationContext) =>
+			this.updateStringList(path, "tags", tag, "remove", context),
+		addProject: (path: string, project: string, context?: TaskNotesMutationContext) =>
+			this.updateStringList(path, "projects", project, "add", context),
+		removeProject: (path: string, project: string, context?: TaskNotesMutationContext) =>
+			this.updateStringList(path, "projects", project, "remove", context),
+		addContext: (path: string, contextName: string, context?: TaskNotesMutationContext) =>
+			this.updateStringList(path, "contexts", contextName, "add", context),
+		removeContext: (path: string, contextName: string, context?: TaskNotesMutationContext) =>
+			this.updateStringList(path, "contexts", contextName, "remove", context),
+		setReminders: (
+			path: string,
+			reminders: Reminder[],
+			context?: TaskNotesMutationContext
+		) =>
+			this.updateTask(
+				path,
+				{ reminders: reminders.map((reminder) => ({ ...reminder })) },
+				context
+			),
+		addReminder: (path: string, reminder: Reminder, context?: TaskNotesMutationContext) =>
+			this.addReminder(path, reminder, context),
+		removeReminder: (path: string, reminderId: string, context?: TaskNotesMutationContext) =>
+			this.removeReminder(path, reminderId, context),
+		addDependency: (
+			path: string,
+			dependency: TaskDependency,
+			context?: TaskNotesMutationContext
+		) => this.addDependency(path, dependency, context),
+		removeDependency: (path: string, uid: string, context?: TaskNotesMutationContext) =>
+			this.removeDependency(path, uid, context),
+	};
+
+	readonly time = {
+		start: (
+			path: string,
+			options?: StartTimeEntryOptions,
+			context?: TaskNotesMutationContext
+		) => this.startTime(path, options, context),
+		stop: (path: string, context?: TaskNotesMutationContext) => this.stopTime(path, context),
+		active: () => this.getActiveTimeEntries(),
+		append: (path: string, entry: TimeEntry, context?: TaskNotesMutationContext) =>
+			this.appendTimeEntry(path, entry, context),
+		deleteEntry: (path: string, entryIndex: number, context?: TaskNotesMutationContext) =>
+			this.deleteTimeEntry(path, entryIndex, context),
+	};
+
+	readonly pomodoro = {
+		status: () => Promise.resolve(this.copyPomodoroState(this.plugin.pomodoroService.getState())),
+		start: (options?: PomodoroStartOptions, context?: TaskNotesMutationContext) =>
+			this.startPomodoro(options, context),
+		stop: (context?: TaskNotesMutationContext) => this.stopPomodoro(context),
+		pause: (context?: TaskNotesMutationContext) => this.pausePomodoro(context),
+		resume: (context?: TaskNotesMutationContext) => this.resumePomodoro(context),
+		assignTask: (path: string | null, context?: TaskNotesMutationContext) =>
+			this.assignPomodoroTask(path, context),
+		sessions: (options?: PomodoroSessionsOptions) => this.getPomodoroSessions(options),
+		stats: (date?: string) => this.getPomodoroStats(date),
+	};
+
+	readonly recurring = {
+		toggleCompleteInstance: (
+			path: string,
+			date?: string,
+			context?: TaskNotesMutationContext
+		) => this.toggleRecurringComplete(path, date, context),
+		toggleSkippedInstance: (
+			path: string,
+			date?: string,
+			context?: TaskNotesMutationContext
+		) => this.toggleRecurringSkipped(path, date, context),
+	};
+
+	readonly events = {
+		on: <EventName extends TaskNotesRuntimeEventName>(
+			event: EventName,
+			handler: TaskNotesApiEventHandler<EventName>
+		) => this.on(event, handler),
+		off: (ref: EventRef) => this.off(ref),
+	};
+
+	readonly settings = {
+		snapshot: () => this.getSettingsSnapshot(),
+	};
+
+	readonly nlp = {
+		parse: (text: string) => this.parseNaturalLanguage(text),
+	};
+
+	readonly extensions = {
+		register: <TApi>(extension: TaskNotesRuntimeExtension<TApi>) =>
+			this.registerExtension(extension),
+		get: <TApi = unknown>(namespace: string) => this.getExtension<TApi>(namespace),
+		require: <TApi = unknown>(namespace: string) => this.requireExtension<TApi>(namespace),
+		has: (namespace: string) => this.hasExtension(namespace),
+		list: () => this.listExtensions(),
+		capabilities: () => this.getExtensionCapabilities(),
+	};
 
 	private readonly mutationContextByPath = new Map<string, TaskNotesMutationContext[]>();
 	private readonly mutationContextStack: TaskNotesMutationContext[] = [];
+	private readonly extensionRegistry = new Map<string, RegisteredRuntimeExtension>();
 
 	constructor(private plugin: TaskNotesPlugin) {}
 
-	hasCapability(capability: TaskNotesApiCapability | string): boolean {
-		return (TASKNOTES_API_CAPABILITIES as readonly string[]).includes(capability);
+	get capabilities(): readonly string[] {
+		return [...TASKNOTES_RUNTIME_API_CAPABILITIES, ...this.getExtensionCapabilities()];
+	}
+
+	hasCapability(capability: string): boolean {
+		return this.capabilities.includes(capability);
 	}
 
 	parseNaturalLanguage(text: string): ParsedTaskData {
@@ -316,18 +390,186 @@ export class TaskNotesAPI implements TaskNotesApiV1 {
 		});
 	}
 
-	async startTimeEntry(path: string, context?: TaskNotesMutationContext): Promise<void> {
+	async deleteTask(path: string, context?: TaskNotesMutationContext): Promise<void> {
 		const task = await this.requireTask(path);
 		await this.withMutationContext([task.path], context, () =>
-			this.plugin.taskService.startTimeTracking(task)
+			this.plugin.taskService.deleteTask(task)
 		);
 	}
 
-	async stopTimeEntry(path: string, context?: TaskNotesMutationContext): Promise<void> {
+	async uncompleteTask(
+		path: string,
+		options?: UncompleteTaskOptions,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
 		const task = await this.requireTask(path);
-		await this.withMutationContext([task.path], context, () =>
+		const targetStatus = options?.status ?? this.plugin.settings.defaultTaskStatus ?? "open";
+
+		if (!this.plugin.statusManager.isCompletedStatus(task.status) && !options?.status) {
+			return copyTaskInfo(task);
+		}
+
+		const updatedTask = await this.withMutationContext([task.path], context, () =>
+			this.plugin.taskService.updateProperty(task, "status", targetStatus)
+		);
+		return copyTaskInfo(updatedTask);
+	}
+
+	async startTimeEntry(path: string, context?: TaskNotesMutationContext): Promise<void> {
+		await this.startTime(path, undefined, context);
+	}
+
+	async stopTimeEntry(path: string, context?: TaskNotesMutationContext): Promise<void> {
+		await this.stopTime(path, context);
+	}
+
+	private async setTaskProperty(
+		path: string,
+		property: keyof TaskInfo,
+		value: unknown,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const updatedTask = await this.withMutationContext([task.path], context, () =>
+			this.plugin.taskService.updateProperty(task, property, value)
+		);
+		return copyTaskInfo(updatedTask);
+	}
+
+	private async updateStringList(
+		path: string,
+		property: "tags" | "projects" | "contexts",
+		value: string,
+		operation: "add" | "remove",
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const existingValues = task[property] ?? [];
+		const normalizedValue = value.trim();
+		if (!normalizedValue) {
+			throw new TypeError(`TaskNotes API ${operation} ${property} expects a non-empty value`);
+		}
+
+		const nextValues =
+			operation === "add"
+				? Array.from(new Set([...existingValues, normalizedValue]))
+				: existingValues.filter((entry) => entry !== normalizedValue);
+
+		return this.updateTask(task.path, { [property]: nextValues }, context);
+	}
+
+	private async addReminder(
+		path: string,
+		reminder: Reminder,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const reminders = [...(task.reminders ?? []), { ...reminder }];
+		return this.updateTask(task.path, { reminders }, context);
+	}
+
+	private async removeReminder(
+		path: string,
+		reminderId: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const reminders = (task.reminders ?? []).filter((reminder) => reminder.id !== reminderId);
+		return this.updateTask(task.path, { reminders }, context);
+	}
+
+	private async addDependency(
+		path: string,
+		dependency: TaskDependency,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const dependencies = task.blockedBy ?? [];
+		const existingIndex = dependencies.findIndex(
+			(candidate) => candidate.uid === dependency.uid
+		);
+		const nextDependencies =
+			existingIndex >= 0
+				? dependencies.map((candidate, index) =>
+						index === existingIndex ? { ...dependency } : { ...candidate }
+					)
+				: [...dependencies.map((candidate) => ({ ...candidate })), { ...dependency }];
+
+		return this.updateTask(task.path, { blockedBy: nextDependencies }, context);
+	}
+
+	private async removeDependency(
+		path: string,
+		uid: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const dependencies = (task.blockedBy ?? []).filter((dependency) => dependency.uid !== uid);
+		return this.updateTask(task.path, { blockedBy: dependencies }, context);
+	}
+
+	private async startTime(
+		path: string,
+		options?: StartTimeEntryOptions,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		let updatedTask = await this.withMutationContext([task.path], context, () =>
+			this.plugin.taskService.startTimeTracking(task)
+		);
+
+		if (options?.description && updatedTask.timeEntries?.length) {
+			const timeEntries = updatedTask.timeEntries.map((entry) => ({ ...entry }));
+			let activeEntryIndex = -1;
+			for (let index = timeEntries.length - 1; index >= 0; index--) {
+				if (!timeEntries[index].endTime) {
+					activeEntryIndex = index;
+					break;
+				}
+			}
+			if (activeEntryIndex >= 0) {
+				timeEntries[activeEntryIndex] = {
+					...timeEntries[activeEntryIndex],
+					description: options.description,
+				};
+				updatedTask = await this.updateTask(updatedTask.path, { timeEntries }, context);
+			}
+		}
+
+		return copyTaskInfo(updatedTask);
+	}
+
+	private async stopTime(path: string, context?: TaskNotesMutationContext): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const updatedTask = await this.withMutationContext([task.path], context, () =>
 			this.plugin.taskService.stopTimeTracking(task)
 		);
+		return copyTaskInfo(updatedTask);
+	}
+
+	private async appendTimeEntry(
+		path: string,
+		entry: TimeEntry,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const timeEntries = [
+			...(task.timeEntries ?? []).map((existing) => ({ ...existing })),
+			{ ...entry },
+		];
+		return this.updateTask(task.path, { timeEntries }, context);
+	}
+
+	private async deleteTimeEntry(
+		path: string,
+		entryIndex: number,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const updatedTask = await this.withMutationContext([task.path], context, () =>
+			this.plugin.taskService.deleteTimeEntry(task, entryIndex)
+		);
+		return copyTaskInfo(updatedTask);
 	}
 
 	async getActiveTimeEntries(): Promise<ActiveTimeEntry[]> {
@@ -352,17 +594,227 @@ export class TaskNotesAPI implements TaskNotesApiV1 {
 		return JSON.parse(JSON.stringify(this.plugin.settings)) as TaskNotesSettings;
 	}
 
-	on(event: TaskNotesApiEvent, handler: TaskNotesApiEventHandler): EventRef {
-		const rawEvent = event === "task.deleted" ? EVENT_TASK_DELETED : EVENT_TASK_UPDATED;
+	private registerExtension<TApi>(
+		extension: TaskNotesRuntimeExtension<TApi>
+	): TaskNotesRuntimeExtensionHandle {
+		if (!extension || typeof extension !== "object") {
+			throw new TypeError("TaskNotes API extension registration expects an object");
+		}
+		if (typeof extension.id !== "string" || extension.id.trim().length === 0) {
+			throw new TypeError("TaskNotes API extension registration expects a non-empty id");
+		}
+		if (extension.api === null || typeof extension.api === "undefined") {
+			throw new TypeError("TaskNotes API extension registration expects an api object");
+		}
+
+		const id = extension.id.trim();
+		const namespace = this.normalizeExtensionNamespace(extension.namespace);
+		if (RESERVED_RUNTIME_EXTENSION_NAMESPACES.has(namespace)) {
+			throw new Error(`Cannot register TaskNotes API extension namespace "${namespace}"`);
+		}
+		if (this.extensionRegistry.has(namespace)) {
+			throw new Error(`TaskNotes API extension namespace "${namespace}" is already registered`);
+		}
+
+		const token = Symbol(namespace);
+		const capabilities = Array.from(
+			new Set(
+				(extension.capabilities ?? []).map((capability) =>
+					this.normalizeExtensionCapability(capability)
+				)
+			)
+		);
+		const registered: RegisteredRuntimeExtension = {
+			id,
+			namespace,
+			api: extension.api,
+			displayName: extension.displayName,
+			version: extension.version,
+			capabilities,
+			token,
+		};
+
+		this.extensionRegistry.set(namespace, registered);
+
+		return {
+			id,
+			namespace,
+			unregister: () => {
+				const current = this.extensionRegistry.get(namespace);
+				if (current?.token === token) {
+					this.extensionRegistry.delete(namespace);
+				}
+			},
+		};
+	}
+
+	private getExtension<TApi = unknown>(namespace: string): TApi | undefined {
+		return this.extensionRegistry.get(this.normalizeExtensionNamespace(namespace))?.api as
+			| TApi
+			| undefined;
+	}
+
+	private requireExtension<TApi = unknown>(namespace: string): TApi {
+		const normalizedNamespace = this.normalizeExtensionNamespace(namespace);
+		const extension = this.extensionRegistry.get(normalizedNamespace);
+		if (!extension) {
+			throw new Error(`TaskNotes API extension namespace "${normalizedNamespace}" is not registered`);
+		}
+		return extension.api as TApi;
+	}
+
+	private hasExtension(namespace: string): boolean {
+		return this.extensionRegistry.has(this.normalizeExtensionNamespace(namespace));
+	}
+
+	private listExtensions(): TaskNotesRuntimeExtensionInfo[] {
+		return Array.from(this.extensionRegistry.values()).map((extension) => ({
+			id: extension.id,
+			namespace: extension.namespace,
+			displayName: extension.displayName,
+			version: extension.version,
+			capabilities: [...extension.capabilities],
+		}));
+	}
+
+	private getExtensionCapabilities(): readonly string[] {
+		return Array.from(this.extensionRegistry.values()).flatMap((extension) => [
+			...extension.capabilities,
+		]);
+	}
+
+	private normalizeExtensionNamespace(namespace: string): string {
+		if (typeof namespace !== "string" || namespace.trim().length === 0) {
+			throw new TypeError("TaskNotes API extension namespace must be a non-empty string");
+		}
+
+		const normalizedNamespace = namespace.trim().toLowerCase();
+		if (!/^[a-z][a-z0-9._-]*$/.test(normalizedNamespace)) {
+			throw new TypeError(
+				`TaskNotes API extension namespace "${namespace}" must use letters, numbers, dots, underscores, or dashes`
+			);
+		}
+		return normalizedNamespace;
+	}
+
+	private normalizeExtensionCapability(capability: string): string {
+		if (typeof capability !== "string" || capability.trim().length === 0) {
+			throw new TypeError("TaskNotes API extension capabilities must be non-empty strings");
+		}
+
+		const normalizedCapability = capability.trim().toLowerCase();
+		if (!/^[a-z][a-z0-9._:-]*$/.test(normalizedCapability)) {
+			throw new TypeError(
+				`TaskNotes API extension capability "${capability}" must use letters, numbers, dots, underscores, dashes, or colons`
+			);
+		}
+		return normalizedCapability;
+	}
+
+	private async startPomodoro(
+		options?: PomodoroStartOptions,
+		context?: TaskNotesMutationContext
+	): Promise<PomodoroState> {
+		const task = options?.taskPath ? await this.requireTask(options.taskPath) : undefined;
+		await this.withMutationContext(task ? [task.path] : [], context, () =>
+			this.plugin.pomodoroService.startPomodoro(task, options?.duration)
+		);
+		return this.copyPomodoroState(this.plugin.pomodoroService.getState());
+	}
+
+	private async stopPomodoro(context?: TaskNotesMutationContext): Promise<PomodoroState> {
+		await this.withMutationContext([], context, () => this.plugin.pomodoroService.stopPomodoro());
+		return this.copyPomodoroState(this.plugin.pomodoroService.getState());
+	}
+
+	private async pausePomodoro(context?: TaskNotesMutationContext): Promise<PomodoroState> {
+		await this.withMutationContext([], context, () =>
+			this.plugin.pomodoroService.pausePomodoro()
+		);
+		return this.copyPomodoroState(this.plugin.pomodoroService.getState());
+	}
+
+	private async resumePomodoro(context?: TaskNotesMutationContext): Promise<PomodoroState> {
+		await this.withMutationContext([], context, () =>
+			this.plugin.pomodoroService.resumePomodoro()
+		);
+		return this.copyPomodoroState(this.plugin.pomodoroService.getState());
+	}
+
+	private async assignPomodoroTask(
+		path: string | null,
+		context?: TaskNotesMutationContext
+	): Promise<PomodoroState> {
+		const task = path ? await this.requireTask(path) : undefined;
+		await this.withMutationContext(task ? [task.path] : [], context, () =>
+			this.plugin.pomodoroService.assignTaskToCurrentSession(task)
+		);
+		return this.copyPomodoroState(this.plugin.pomodoroService.getState());
+	}
+
+	private async getPomodoroSessions(
+		options?: PomodoroSessionsOptions
+	): Promise<PomodoroSessionHistory[]> {
+		let sessions = await this.plugin.pomodoroService.getSessionHistory();
+		if (options?.date) {
+			sessions = sessions.filter(
+				(session) => new Date(session.startTime).toISOString().split("T")[0] === options.date
+			);
+		}
+		if (options?.limit && options.limit > 0) {
+			sessions = sessions.slice(-options.limit);
+		}
+		return sessions.map((session) => ({ ...session }));
+	}
+
+	private getPomodoroStats(date?: string): Promise<PomodoroHistoryStats> {
+		if (date) {
+			return this.plugin.pomodoroService.getStatsForDate(new Date(date));
+		}
+		return this.plugin.pomodoroService.getTodayStats();
+	}
+
+	private copyPomodoroState(state: PomodoroState): PomodoroState {
+		return JSON.parse(JSON.stringify(state)) as PomodoroState;
+	}
+
+	private async toggleRecurringComplete(
+		path: string,
+		date?: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const targetDate = date ? new Date(date) : undefined;
+		const updatedTask = await this.withMutationContext([task.path], context, () =>
+			this.plugin.taskService.toggleRecurringTaskComplete(task, targetDate)
+		);
+		return copyTaskInfo(updatedTask);
+	}
+
+	private async toggleRecurringSkipped(
+		path: string,
+		date?: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const targetDate = date ? new Date(date) : undefined;
+		const updatedTask = await this.withMutationContext([task.path], context, () =>
+			this.plugin.taskService.toggleRecurringTaskSkipped(task, targetDate)
+		);
+		return copyTaskInfo(updatedTask);
+	}
+
+	on<EventName extends TaskNotesRuntimeEventName>(
+		event: EventName,
+		handler: TaskNotesApiEventHandler<EventName>
+	): EventRef {
+		const rawEvent = getRawEventForRuntimeEvent(event);
 		return this.plugin.emitter.on(rawEvent, (payload: unknown) => {
-			const apiEvents =
-				rawEvent === EVENT_TASK_DELETED
-					? this.normalizeDeletedEvent(payload as TaskDeletedEventPayload)
-					: this.normalizeUpdatedEvent(payload as TaskUpdatedEventPayload);
+			const apiEvents = this.normalizeRawEvent(rawEvent, payload);
 
 			for (const apiEvent of apiEvents) {
 				if (apiEvent.event === event) {
-					handler(apiEvent);
+					handler(apiEvent as Parameters<TaskNotesApiEventHandler<EventName>>[0]);
 				}
 			}
 		});
@@ -486,6 +938,38 @@ export class TaskNotesAPI implements TaskNotesApiV1 {
 			events.push({ ...common, event: "task.priority.changed" });
 		}
 
+		if (before && after && !areValuesEqual(before.tags ?? [], after.tags ?? [])) {
+			events.push({ ...common, event: "task.tags.changed" });
+		}
+
+		if (before && after && !areValuesEqual(before.contexts ?? [], after.contexts ?? [])) {
+			events.push({ ...common, event: "task.contexts.changed" });
+		}
+
+		if (before && after && !areValuesEqual(before.projects ?? [], after.projects ?? [])) {
+			events.push({ ...common, event: "task.projects.changed" });
+		}
+
+		if (before && after && !areValuesEqual(before.reminders ?? [], after.reminders ?? [])) {
+			events.push({ ...common, event: "task.reminders.changed" });
+		}
+
+		if (before && after && !areValuesEqual(before.blockedBy ?? [], after.blockedBy ?? [])) {
+			events.push({ ...common, event: "task.dependencies.changed" });
+		}
+
+		if (before && after && before.recurrence !== after.recurrence) {
+			events.push({ ...common, event: "task.recurrence.changed" });
+		}
+
+		if (before && after && hasNewArrayValue(before.complete_instances, after.complete_instances)) {
+			events.push({ ...common, event: "recurring.instance.completed" });
+		}
+
+		if (before && after && hasNewArrayValue(before.skipped_instances, after.skipped_instances)) {
+			events.push({ ...common, event: "recurring.instance.skipped" });
+		}
+
 		if (before && after && getActiveTimeEntryCount(before) !== getActiveTimeEntryCount(after)) {
 			events.push({
 				...common,
@@ -518,16 +1002,22 @@ export class TaskNotesAPI implements TaskNotesApiV1 {
 	}
 
 	private buildEventPayloadBase(
-		payload: Omit<TaskNotesApiEventPayload, "event"> & { event?: TaskNotesApiEvent }
+		payload: Partial<Omit<TaskNotesApiEventPayload, "event" | "timestamp">> & {
+			event?: TaskNotesApiEvent;
+			changes: TaskNotesApiChanges;
+			rawEvent: string;
+		}
 	): TaskNotesApiEventPayload {
 		return {
 			event: payload.event ?? "task.updated",
+			timestamp: new Date().toISOString(),
 			taskPath: payload.taskPath,
 			task: payload.task,
 			before: payload.before,
 			after: payload.after,
 			deletedTask: payload.deletedTask,
 			changes: payload.changes,
+			data: payload.data,
 			context: payload.context,
 			source: payload.context?.source,
 			correlationId: payload.context?.correlationId,
@@ -557,6 +1047,45 @@ export class TaskNotesAPI implements TaskNotesApiV1 {
 		}
 
 		return this.mutationContextStack[this.mutationContextStack.length - 1];
+	}
+
+	private normalizeRawEvent(rawEvent: string, payload: unknown): TaskNotesApiEventPayload[] {
+		if (rawEvent === EVENT_TASK_DELETED) {
+			return this.normalizeDeletedEvent(payload as TaskDeletedEventPayload);
+		}
+		if (rawEvent === EVENT_POMODORO_START) {
+			return this.normalizePomodoroEvent("pomodoro.started", rawEvent, payload);
+		}
+		if (rawEvent === EVENT_POMODORO_COMPLETE) {
+			return this.normalizePomodoroEvent("pomodoro.completed", rawEvent, payload);
+		}
+		if (rawEvent === EVENT_POMODORO_INTERRUPT) {
+			return this.normalizePomodoroEvent("pomodoro.interrupted", rawEvent, payload);
+		}
+		return this.normalizeUpdatedEvent(payload as TaskUpdatedEventPayload);
+	}
+
+	private normalizePomodoroEvent(
+		event: TaskNotesApiEvent,
+		rawEvent: string,
+		payload: unknown
+	): TaskNotesApiEventPayload[] {
+		const data = payload as { task?: TaskInfo; session?: { taskPath?: string } };
+		const task = data.task ? copyTaskInfo(data.task) : undefined;
+		const taskPath = task?.path ?? data.session?.taskPath;
+		const context = this.mutationContextStack[this.mutationContextStack.length - 1];
+
+		return [
+			this.buildEventPayloadBase({
+				event,
+				taskPath,
+				task,
+				changes: {},
+				data: payload,
+				context,
+				rawEvent,
+			}),
+		];
 	}
 }
 
@@ -607,24 +1136,66 @@ function getActiveTimeEntryCount(task: TaskInfo): number {
 	return (task.timeEntries ?? []).filter((entry) => !entry.endTime).length;
 }
 
+function hasNewArrayValue(before: string[] | undefined, after: string[] | undefined): boolean {
+	const beforeValues = new Set(before ?? []);
+	return (after ?? []).some((value) => !beforeValues.has(value));
+}
+
+function getRawEventForRuntimeEvent(event: TaskNotesRuntimeEventName): string {
+	if (event === "task.deleted") {
+		return EVENT_TASK_DELETED;
+	}
+	if (event === "pomodoro.started") {
+		return EVENT_POMODORO_START;
+	}
+	if (event === "pomodoro.completed") {
+		return EVENT_POMODORO_COMPLETE;
+	}
+	if (event === "pomodoro.interrupted") {
+		return EVENT_POMODORO_INTERRUPT;
+	}
+	return EVENT_TASK_UPDATED;
+}
+
 function copyTaskInfo(task: TaskInfo): TaskInfo {
-	return {
-		...task,
-		tags: task.tags ? [...task.tags] : undefined,
-		contexts: task.contexts ? [...task.contexts] : undefined,
-		projects: task.projects ? [...task.projects] : undefined,
-		complete_instances: task.complete_instances ? [...task.complete_instances] : undefined,
-		skipped_instances: task.skipped_instances ? [...task.skipped_instances] : undefined,
-		icsEventId: task.icsEventId ? [...task.icsEventId] : undefined,
-		googleCalendarMovedOriginalDates: task.googleCalendarMovedOriginalDates
-			? [...task.googleCalendarMovedOriginalDates]
-			: undefined,
-		reminders: task.reminders ? task.reminders.map((reminder) => ({ ...reminder })) : undefined,
-		timeEntries: task.timeEntries ? task.timeEntries.map((entry) => ({ ...entry })) : undefined,
-		blockedBy: task.blockedBy
-			? task.blockedBy.map((dependency) => ({ ...dependency }))
-			: undefined,
-		blocking: task.blocking ? [...task.blocking] : undefined,
-		customProperties: task.customProperties ? { ...task.customProperties } : undefined,
-	};
+	const copy = { ...task };
+
+	if (task.tags) {
+		copy.tags = [...task.tags];
+	}
+	if (task.contexts) {
+		copy.contexts = [...task.contexts];
+	}
+	if (task.projects) {
+		copy.projects = [...task.projects];
+	}
+	if (task.complete_instances) {
+		copy.complete_instances = [...task.complete_instances];
+	}
+	if (task.skipped_instances) {
+		copy.skipped_instances = [...task.skipped_instances];
+	}
+	if (task.icsEventId) {
+		copy.icsEventId = [...task.icsEventId];
+	}
+	if (task.googleCalendarMovedOriginalDates) {
+		copy.googleCalendarMovedOriginalDates = [...task.googleCalendarMovedOriginalDates];
+	}
+	if (task.reminders) {
+		copy.reminders = task.reminders.map((reminder) => ({ ...reminder }));
+	}
+	if (task.timeEntries) {
+		copy.timeEntries = task.timeEntries.map((entry) => ({ ...entry }));
+	}
+	if (task.blockedBy) {
+		copy.blockedBy = task.blockedBy.map((dependency) => ({ ...dependency }));
+	}
+	if (task.blocking) {
+		copy.blocking = [...task.blocking];
+	}
+	if (task.customProperties) {
+		copy.customProperties = { ...task.customProperties };
+	}
+
+	return copy;
 }

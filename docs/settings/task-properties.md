@@ -217,7 +217,7 @@ These properties are system-managed and typically only require property key conf
 - **Recurrence Anchor**: Whether recurring progression is based on scheduled date or completion date
 - **Blocked By**: Tasks that must be completed first
 
-Materialized occurrence notes also use system-managed frontmatter fields such as `recurrence_parent`, `occurrence_date`, `occurrence_materialization`, `occurrence_next_trigger`, and optional occurrence template/horizon fields. These fields are documented in the [Property Types Reference](property-types-reference.md#materialized-occurrence-properties) and are normally changed through recurrence and occurrence-note controls instead of by hand.
+Materialized occurrence notes also use system-managed frontmatter fields such as `recurrence_parent`, `occurrence_date`, `occurrence_materialization`, `occurrence_next_trigger`, and optional occurrence template/horizon fields. Occurrence notes inherit parent planning metadata when they are created, but keep their own status, completion date, and time entries. These fields are documented in the [Property Types Reference](property-types-reference.md#materialized-occurrence-properties) and are normally changed through recurrence and occurrence-note controls instead of by hand.
 
 ## Feature Properties
 

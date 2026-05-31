@@ -56,6 +56,10 @@ Use [Core Concepts](core-concepts.md) to understand the data model, [Features](f
     <span class="card__title">HTTP API</span>
     <span class="card__desc">REST API for automation and external integrations</span>
   </a>
+  <a class="card" href="/javascript-api/">
+    <span class="card__title">JavaScript API</span>
+    <span class="card__desc">In-process API for companion plugins and in-vault scripts</span>
+  </a>
   <a class="card" href="/migration-v3-to-v4/">
     <span class="card__title">Migration Guide</span>
     <span class="card__desc">Upgrading from TaskNotes v3 to v4</span>

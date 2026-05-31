@@ -7,8 +7,17 @@ import {
 	type TaskNotesTaskPatch,
 } from "../../../src/api/TaskNotesAPI";
 import type TaskNotesPlugin from "../../../src/main";
-import type { FilterQuery, TaskCreationData, TaskInfo, TimeEntry } from "../../../src/types";
-import { EVENT_TASK_UPDATED } from "../../../src/types";
+import type {
+	FilterQuery,
+	PomodoroHistoryStats,
+	PomodoroSessionHistory,
+	PomodoroState,
+	TaskCreationData,
+	TaskDependency,
+	TaskInfo,
+	TimeEntry,
+} from "../../../src/types";
+import { EVENT_POMODORO_START, EVENT_TASK_DELETED, EVENT_TASK_UPDATED } from "../../../src/types";
 
 type Listener = (payload: unknown) => void;
 
@@ -39,6 +48,10 @@ interface TestPluginContext {
 		toggleArchive: jest.Mock<Promise<TaskInfo>, [TaskInfo]>;
 		startTimeTracking: jest.Mock<Promise<TaskInfo>, [TaskInfo]>;
 		stopTimeTracking: jest.Mock<Promise<TaskInfo>, [TaskInfo]>;
+		deleteTask: jest.Mock<Promise<void>, [TaskInfo]>;
+		deleteTimeEntry: jest.Mock<Promise<TaskInfo>, [TaskInfo, number]>;
+		toggleRecurringTaskComplete: jest.Mock<Promise<TaskInfo>, [TaskInfo, Date?]>;
+		toggleRecurringTaskSkipped: jest.Mock<Promise<TaskInfo>, [TaskInfo, Date?]>;
 	};
 	filterService: {
 		getGroupedTasks: jest.Mock<Promise<Map<string, TaskInfo[]>>, [FilterQuery]>;
@@ -51,6 +64,17 @@ interface TestPluginContext {
 	};
 	fileManager: {
 		renameFile: jest.Mock<Promise<void>, [TFile, string]>;
+	};
+	pomodoroService: {
+		getState: jest.Mock<PomodoroState, []>;
+		startPomodoro: jest.Mock<Promise<void>, [TaskInfo?, number?]>;
+		stopPomodoro: jest.Mock<Promise<void>, []>;
+		pausePomodoro: jest.Mock<Promise<void>, []>;
+		resumePomodoro: jest.Mock<Promise<void>, []>;
+		assignTaskToCurrentSession: jest.Mock<Promise<void>, [TaskInfo?]>;
+		getSessionHistory: jest.Mock<Promise<PomodoroSessionHistory[]>, []>;
+		getStatsForDate: jest.Mock<Promise<PomodoroHistoryStats>, [Date]>;
+		getTodayStats: jest.Mock<Promise<PomodoroHistoryStats>, []>;
 	};
 }
 
@@ -174,6 +198,41 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 			emitTaskUpdate(task, updatedTask);
 			return updatedTask;
 		}),
+		deleteTask: jest.fn(async (task: TaskInfo) => {
+			tasks.delete(task.path);
+			files.delete(task.path);
+			emitter.trigger(EVENT_TASK_DELETED, {
+				path: task.path,
+				deletedTask: task,
+			});
+		}),
+		deleteTimeEntry: jest.fn(async (task: TaskInfo, entryIndex: number) => {
+			const updatedTask = {
+				...task,
+				timeEntries: (task.timeEntries ?? []).filter((_, index) => index !== entryIndex),
+			};
+			tasks.set(updatedTask.path, updatedTask);
+			emitTaskUpdate(task, updatedTask);
+			return updatedTask;
+		}),
+		toggleRecurringTaskComplete: jest.fn(async (task: TaskInfo) => {
+			const updatedTask = {
+				...task,
+				complete_instances: [...(task.complete_instances ?? []), "2026-06-01"],
+			};
+			tasks.set(updatedTask.path, updatedTask);
+			emitTaskUpdate(task, updatedTask);
+			return updatedTask;
+		}),
+		toggleRecurringTaskSkipped: jest.fn(async (task: TaskInfo) => {
+			const updatedTask = {
+				...task,
+				skipped_instances: [...(task.skipped_instances ?? []), "2026-06-01"],
+			};
+			tasks.set(updatedTask.path, updatedTask);
+			emitTaskUpdate(task, updatedTask);
+			return updatedTask;
+		}),
 	};
 
 	const filterService: TestPluginContext["filterService"] = {
@@ -186,6 +245,70 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 			file.path = newPath;
 			files.set(newPath, file);
 		}),
+	};
+
+	const pomodoroState: PomodoroState = {
+		isRunning: false,
+		timeRemaining: 1500,
+	};
+	const pomodoroService: TestPluginContext["pomodoroService"] = {
+		getState: jest.fn(() => pomodoroState),
+		startPomodoro: jest.fn(async (task?: TaskInfo, duration?: number) => {
+			pomodoroState.isRunning = true;
+			pomodoroState.currentSession = {
+				id: "pomodoro-1",
+				taskPath: task?.path,
+				startTime: "2026-05-31T10:00:00.000Z",
+				plannedDuration: duration ?? 25,
+				type: "work",
+				completed: false,
+				activePeriods: [{ startTime: "2026-05-31T10:00:00.000Z" }],
+			};
+			emitter.trigger(EVENT_POMODORO_START, {
+				session: pomodoroState.currentSession,
+				task,
+			});
+		}),
+		stopPomodoro: jest.fn(async () => {
+			pomodoroState.isRunning = false;
+			pomodoroState.currentSession = undefined;
+		}),
+		pausePomodoro: jest.fn(async () => {
+			pomodoroState.isRunning = false;
+		}),
+		resumePomodoro: jest.fn(async () => {
+			pomodoroState.isRunning = true;
+		}),
+		assignTaskToCurrentSession: jest.fn(async (task?: TaskInfo) => {
+			if (pomodoroState.currentSession) {
+				pomodoroState.currentSession.taskPath = task?.path;
+			}
+		}),
+		getSessionHistory: jest.fn(async () => [
+			{
+				id: "pomodoro-history-1",
+				startTime: "2026-05-31T09:00:00.000Z",
+				endTime: "2026-05-31T09:25:00.000Z",
+				plannedDuration: 25,
+				type: "work",
+				completed: true,
+				activePeriods: [{ startTime: "2026-05-31T09:00:00.000Z" }],
+			},
+		]),
+		getStatsForDate: jest.fn(async () => ({
+			pomodorosCompleted: 1,
+			currentStreak: 1,
+			totalMinutes: 25,
+			averageSessionLength: 25,
+			completionRate: 100,
+		})),
+		getTodayStats: jest.fn(async () => ({
+			pomodorosCompleted: 1,
+			currentStreak: 1,
+			totalMinutes: 25,
+			averageSessionLength: 25,
+			completionRate: 100,
+		})),
 	};
 
 	const vault = {
@@ -220,6 +343,7 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 			isCompletedStatus: jest.fn((status: string) => status === "done"),
 		},
 		taskService,
+		pomodoroService,
 	} as unknown as TaskNotesPlugin;
 
 	return {
@@ -232,6 +356,7 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		filterService,
 		cacheManager,
 		fileManager,
+		pomodoroService,
 	};
 }
 
@@ -242,9 +367,70 @@ describe("TaskNotesApiV1", () => {
 
 		expect(api.apiVersion).toBe(1);
 		expect(api.capabilities).toContain("tasks.write");
+		expect(api.capabilities).toContain("pomodoro.events");
+		expect(api.capabilities).toContain("extensions.register");
 		expect(api.hasCapability("tasks.events")).toBe(true);
 		expect(api.hasCapability("missing.capability")).toBe(false);
 		expect(typeof api.parseNaturalLanguage).toBe("function");
+		expect(typeof api.tasks.update).toBe("function");
+		expect(typeof api.time.start).toBe("function");
+		expect(typeof api.pomodoro.start).toBe("function");
+		expect(typeof api.events.on).toBe("function");
+		expect(typeof api.extensions.register).toBe("function");
+	});
+
+	it("lets companion plugins register extension namespaces and capabilities", () => {
+		const { plugin } = createPluginContext();
+		const api = new TaskNotesAPI(plugin);
+		const workflowsApi = {
+			run: jest.fn(),
+		};
+
+		const handle = api.extensions.register({
+			id: "tasknotes-workflows",
+			namespace: "tasknotes-workflows",
+			displayName: "TaskNotes Workflows",
+			version: "0.1.0",
+			capabilities: ["tasknotes-workflows.run"],
+			api: workflowsApi,
+		});
+
+		expect(api.extensions.get<typeof workflowsApi>("tasknotes-workflows")).toBe(workflowsApi);
+		expect(api.extensions.require<typeof workflowsApi>("tasknotes-workflows").run).toBe(
+			workflowsApi.run
+		);
+		expect(api.extensions.has("tasknotes-workflows")).toBe(true);
+		expect(api.extensions.list()).toEqual([
+			{
+				id: "tasknotes-workflows",
+				namespace: "tasknotes-workflows",
+				displayName: "TaskNotes Workflows",
+				version: "0.1.0",
+				capabilities: ["tasknotes-workflows.run"],
+			},
+		]);
+		expect(api.extensions.capabilities()).toEqual(["tasknotes-workflows.run"]);
+		expect(api.capabilities).toContain("tasknotes-workflows.run");
+		expect(api.hasCapability("tasknotes-workflows.run")).toBe(true);
+		expect(() =>
+			api.extensions.register({
+				id: "duplicate",
+				namespace: "tasknotes-workflows",
+				api: {},
+			})
+		).toThrow(/already registered/);
+		expect(() =>
+			api.extensions.register({
+				id: "reserved",
+				namespace: "tasks",
+				api: {},
+			})
+		).toThrow(/Cannot register/);
+
+		handle.unregister();
+		expect(api.extensions.get("tasknotes-workflows")).toBeUndefined();
+		expect(api.hasCapability("tasknotes-workflows.run")).toBe(false);
+		handle.unregister();
 	});
 
 	it("reads individual tasks and filtered task lists without exposing mutable arrays", async () => {
@@ -305,6 +491,48 @@ describe("TaskNotesApiV1", () => {
 
 		await api.archiveTask(task.path, true);
 		expect(taskService.toggleArchive).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path })
+		);
+	});
+
+	it("exposes a namespaced task API for common workflow mutations", async () => {
+		const dependency: TaskDependency = { uid: "[[Tasks/blocker]]", reltype: "FINISHTOSTART" };
+		const task = createTask({ tags: ["work"], projects: ["Project A"], contexts: ["office"] });
+		const { plugin, taskService } = createPluginContext([task]);
+		const api = new TaskNotesAPI(plugin);
+
+		await api.tasks.addTag(task.path, "urgent");
+		await api.tasks.removeProject(task.path, "Project A");
+		await api.tasks.addContext(task.path, "deep-work");
+		await api.tasks.setDue(task.path, "2026-06-02");
+		await api.tasks.clearDue(task.path);
+		await api.tasks.addDependency(task.path, dependency);
+		await api.tasks.addReminder(task.path, {
+			id: "reminder-1",
+			type: "absolute",
+			absoluteTime: "2026-06-01T09:00:00.000Z",
+		});
+		await api.tasks.delete(task.path);
+
+		expect(taskService.updateTask).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			expect.objectContaining({ tags: ["work", "urgent"] })
+		);
+		expect(taskService.updateProperty).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			"due",
+			"2026-06-02"
+		);
+		expect(taskService.updateProperty).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			"due",
+			undefined
+		);
+		expect(taskService.updateTask).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			expect.objectContaining({ blockedBy: [dependency] })
+		);
+		expect(taskService.deleteTask).toHaveBeenCalledWith(
 			expect.objectContaining({ path: task.path })
 		);
 	});
@@ -377,6 +605,63 @@ describe("TaskNotesApiV1", () => {
 				event: "time.started",
 				source: "tasknotes-workflows",
 				correlationId: "run-456",
+			})
+		);
+	});
+
+	it("returns updated tasks from the namespaced time API", async () => {
+		const task = createTask({
+			timeEntries: [{ startTime: "2026-05-31T09:00:00.000Z" }],
+		});
+		const { plugin, taskService } = createPluginContext([task]);
+		const api = new TaskNotesAPI(plugin);
+
+		const started = await api.time.start(task.path, { description: "Planning" });
+		expect(started.timeEntries?.[1]?.description).toBe("Planning");
+
+		await api.time.deleteEntry(task.path, 0);
+		expect(taskService.deleteTimeEntry).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			0
+		);
+	});
+
+	it("normalizes recurring instance and pomodoro events", async () => {
+		const task = createTask({ recurrence: "FREQ=DAILY" });
+		const { plugin, pomodoroService } = createPluginContext([task]);
+		const api = new TaskNotesAPI(plugin);
+		const recurringHandler = jest.fn<void, [TaskNotesApiEventPayload]>();
+		const pomodoroHandler = jest.fn<void, [TaskNotesApiEventPayload]>();
+
+		api.events.on("recurring.instance.completed", recurringHandler);
+		api.events.on("pomodoro.started", pomodoroHandler);
+
+		await api.recurring.toggleCompleteInstance(task.path, "2026-06-01", {
+			source: "tasknotes-workflows",
+			correlationId: "run-recurring",
+		});
+		await api.pomodoro.start(
+			{ taskPath: task.path, duration: 10 },
+			{ source: "tasknotes-workflows", correlationId: "run-pomodoro" }
+		);
+
+		expect(recurringHandler).toHaveBeenCalledWith(
+			expect.objectContaining({
+				event: "recurring.instance.completed",
+				source: "tasknotes-workflows",
+				correlationId: "run-recurring",
+			})
+		);
+		expect(pomodoroService.startPomodoro).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			10
+		);
+		expect(pomodoroHandler).toHaveBeenCalledWith(
+			expect.objectContaining({
+				event: "pomodoro.started",
+				taskPath: task.path,
+				source: "tasknotes-workflows",
+				correlationId: "run-pomodoro",
 			})
 		);
 	});

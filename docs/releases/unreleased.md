@@ -22,17 +22,27 @@ Example:
   - Thanks to @userhandle for reporting and help debugging
 ```
 
+When a change has user-facing documentation, include a canonical tasknotes.dev link:
+
+```
+## Added
+
+- Added materialized occurrence notes for recurring tasks. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#materialized-occurrence-notes) for setup and calendar behavior.
+```
+
 -->
 
 ## Added
 
-- Added support for TaskNotes spec 0.2.0 materialized occurrences, including recurrence parent/date fields, generated mdbase schema roles, parent reconciliation when occurrence notes are completed, occurrence note controls in task, calendar, and edit-modal completion menus, and visible occurrence identity on task cards.
+- Added a versioned TaskNotes JavaScript runtime API for companion plugins, with namespaced task, time-tracking, Pomodoro, recurring-task, settings, NLP, event, and extension-registry surfaces. Runtime API mutations carry source and correlation metadata so companion plugins can debug and coordinate workflow runs. See [JavaScript API](https://tasknotes.dev/javascript-api/).
+- (#288, #345, #361, #523, #573, #703, #925, #929, #1115, #1137, #1260, #1303, #1324, #1394, #1445, #1509, #1735, #1736, #1743, #1780, #1874, #1951, #1974) Added support for TaskNotes spec 0.2.0 materialized occurrences, including recurrence parent/date fields, generated mdbase schema roles, parent reconciliation when occurrence notes are completed, occurrence notes that inherit parent planning metadata without copying history, occurrence note controls in task, calendar, and edit-modal completion menus, and visible occurrence identity on task cards. This gives recurring tasks a concrete occurrence-note path for per-instance state, related notes, subtasks, templates, scheduling changes, completion history, and calendar behavior without forcing every recurring task to create files. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#materialized-occurrence-notes) and [Property Types Reference](https://tasknotes.dev/settings/property-types-reference/#materialized-occurrence-properties). Thanks to @LuxBetancourt, @luciolebrillante, @jhedlund, @cathywu, @Lorite, @EllenGYY, @JcMinarro, @gsssr, @3zra47, @Leonard-44, @ak-42, @RumiaKitinari, @atos2212-blip, @kmaustral, @eugenedefox, @notDavid, @zitongcharliedeng, and @Jomo94 for the related recurrence, occurrence, completion, and calendar requests.
 - (#1951) Added Calendar support for recurring tasks stretched between scheduled and due dates when the existing stretch option is enabled. Date-only ranges stay as all-day spans, and timed ranges render once per day in the range. Thanks to @atos2212-blip for the request.
 - (#1510, #1751, #1792, #1969) Added a Task List and Kanban view option to hide top-level subtasks when their parent task is also in the filtered view, while still allowing inherited expanded relationships to show the subtasks under the parent. Thanks to @Kickdak and @Glint-Eye for the requests, @inigourrestarazu for identifying the project-linked parent edge case, and @stanley-910 and @Spencerduran for the earlier PRs.
 
 ## Changed
 
 - Moved core TaskNotes model behavior for field mapping, dates, recurrence, time-tracking, and adapter operation planning into a shared package used by the plugin and companion tooling.
+- Calendar views now coalesce materialized occurrence notes with their matching virtual recurring instances. Dragging a materialized occurrence reschedules that occurrence note without changing the parent recurrence rule or the note's `occurrence_date` identity. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#calendar-drag-and-drop).
 - Improved the Calendar Bases View Options menu by splitting settings into clearer groups and hiding view-specific controls until they apply to the selected calendar mode.
 
 ## Fixed

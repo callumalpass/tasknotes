@@ -65,14 +65,17 @@ recurrence: "FREQ=WEEKLY;BYDAY=MO"
 complete_instances: ["2024-01-08"]
 ```
 
-When an individual recurrence needs its own note, TaskNotes can materialize that occurrence as a normal task:
+When an individual recurrence needs its own note, TaskNotes can materialize that occurrence as a normal task. Calendar views show the note-backed occurrence in place of the matching virtual recurrence instance:
 
 ```yaml
 title: "Weekly meeting"
 recurrence_parent: "[[Tasks/Weekly meeting]]"
 occurrence_date: "2024-01-15"
-scheduled: "2024-01-15"
+scheduled: "2024-01-15T09:30"
+timeEstimate: 60
 ```
+
+Occurrence notes inherit planning metadata from the recurring parent, such as scheduled time, due offset, tags, contexts, projects, reminders, details, and time estimate. They do not copy the parent's recurrence rule, completion history, or time entries.
 
 All property names are configurable. If you already use `deadline` instead of `due`, remap it in settings.
 
