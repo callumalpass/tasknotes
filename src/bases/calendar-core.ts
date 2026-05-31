@@ -55,6 +55,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarCore" });
 export { calculateAllDayEndDate } from "./calendarTaskEvents";
 
 const MIN_EXTERNAL_TIMED_EVENT_DURATION_MS = 1;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export interface CalendarEvent {
 	id: string;
@@ -164,7 +165,10 @@ interface RecurringInstanceVisibilityOptions {
 	showCompletedRecurringInstances?: boolean;
 	showSkippedRecurringInstances?: boolean;
 	showProjectedRecurringInstances?: boolean;
+	showScheduledToDueSpan?: boolean;
 }
+
+type RecurringSpanInstanceKind = "next-scheduled" | "pattern" | "recorded";
 
 /**
  * Convert a configured color to a translucent calendar color.
@@ -691,6 +695,96 @@ export function getRecurringTime(task: TaskInfo): string {
 	return "09:00";
 }
 
+function getScheduledToDueSpanDayOffset(task: TaskInfo): number | null {
+	if (!task.scheduled || !task.due) {
+		return null;
+	}
+
+	const scheduledDateTime = parseDateToLocal(task.scheduled);
+	const dueDateTime = parseDateToLocal(task.due);
+	if (dueDateTime <= scheduledDateTime) {
+		return null;
+	}
+
+	const scheduledDate = parseDateToLocal(getDatePart(task.scheduled));
+	const dueDate = parseDateToLocal(getDatePart(task.due));
+	const scheduledUTC = Date.UTC(
+		scheduledDate.getFullYear(),
+		scheduledDate.getMonth(),
+		scheduledDate.getDate()
+	);
+	const dueUTC = Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+	return Math.round((dueUTC - scheduledUTC) / MS_PER_DAY);
+}
+
+function shiftLocalDateByDays(date: Date, days: number): Date {
+	const shifted = new Date(date);
+	shifted.setDate(shifted.getDate() + days);
+	return shifted;
+}
+
+function shiftUTCDateByDays(date: Date, days: number): Date {
+	const shifted = new Date(date);
+	shifted.setUTCDate(shifted.getUTCDate() + days);
+	return shifted;
+}
+
+function replaceDatePartPreservingTime(value: string, datePart: string): string {
+	const timePart = getTimePart(value);
+	return timePart ? `${datePart}T${timePart}` : datePart;
+}
+
+function createRecurringScheduledToDueSpanEvents(
+	task: TaskInfo,
+	instanceDate: string,
+	templateTime: string,
+	instanceKind: RecurringSpanInstanceKind,
+	spanDayOffset: number,
+	plugin: TaskNotesPlugin,
+	visibleStart?: Date,
+	visibleEnd?: Date
+): CalendarEvent[] {
+	if (!task.scheduled || !task.due) {
+		return [];
+	}
+
+	const dueDate = shiftLocalDateByDays(parseDateToLocal(instanceDate), spanDayOffset);
+	const dueDatePart = format(dueDate, "yyyy-MM-dd");
+	const scheduledTime = hasTimeComponent(task.scheduled) ? templateTime : null;
+	const instanceTask: TaskInfo = {
+		...task,
+		scheduled: scheduledTime ? `${instanceDate}T${scheduledTime}` : instanceDate,
+		due: replaceDatePartPreservingTime(task.due, dueDatePart),
+	};
+	const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
+	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
+	const recurringProps = {
+		isCompleted: isInstanceCompleted,
+		isSkipped: isInstanceSkipped,
+		isNextScheduledOccurrence: instanceKind === "next-scheduled",
+		isPatternInstance: instanceKind === "pattern",
+		isRecurringInstance: instanceKind === "recorded",
+		instanceDate,
+		recurringTemplateTime: templateTime,
+	};
+
+	return createScheduledToDueSpanEvents(instanceTask, plugin, visibleStart, visibleEnd).map(
+		(event) => {
+			const eventDate = getDatePart(event.start);
+			return {
+				...event,
+				id: `span-${instanceKind}-${task.path}-${instanceDate}-${eventDate}`,
+				editable: false,
+				extendedProps: {
+					...event.extendedProps,
+					taskInfo: task,
+					...recurringProps,
+				},
+			};
+		}
+	);
+}
+
 /**
  * Create next scheduled occurrence event for recurring task
  */
@@ -884,12 +978,18 @@ export function generateRecurringTaskInstances(
 		showCompletedRecurringInstances = true,
 		showSkippedRecurringInstances = true,
 		showProjectedRecurringInstances = true,
+		showScheduledToDueSpan = false,
 	} = options;
 	const instances: CalendarEvent[] = [];
 	const emittedInstanceDates = new Set<string>();
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
 	const nextScheduledDate = getDatePart(task.scheduled);
+	const spanDayOffset = showScheduledToDueSpan ? getScheduledToDueSpanDayOffset(task) : null;
+	const shouldCreateRecurringSpan = spanDayOffset !== null;
+	const recurringSearchStartDate = shouldCreateRecurringSpan
+		? shiftUTCDateByDays(startDate, -Math.max(spanDayOffset, 0))
+		: startDate;
 
 	if (showProjectedRecurringInstances) {
 		// 1. Create next scheduled occurrence event
@@ -913,8 +1013,25 @@ export function generateRecurringTaskInstances(
 				showSkippedRecurringInstances
 			)
 		) {
-			instances.push(nextScheduledEvent);
-			emittedInstanceDates.add(nextScheduledDate);
+			if (shouldCreateRecurringSpan) {
+				const spanEvents = createRecurringScheduledToDueSpanEvents(
+					task,
+					nextScheduledDate,
+					scheduledTime || templateTime,
+					"next-scheduled",
+					spanDayOffset,
+					plugin,
+					startDate,
+					endDate
+				);
+				if (spanEvents.length > 0) {
+					instances.push(...spanEvents);
+					emittedInstanceDates.add(nextScheduledDate);
+				}
+			} else {
+				instances.push(nextScheduledEvent);
+				emittedInstanceDates.add(nextScheduledDate);
+			}
 		}
 
 		// 2. Generate pattern instances from recurrence rule
@@ -928,7 +1045,11 @@ export function generateRecurringTaskInstances(
 				startDate.getTime() + lookAheadDays * 24 * 60 * 60 * 1000
 			);
 		}
-		const recurringDates = generateRecurringInstances(task, startDate, adjustedEndDate);
+		const recurringDates = generateRecurringInstances(
+			task,
+			recurringSearchStartDate,
+			adjustedEndDate
+		);
 
 		// Filter instances to only show those within the original visible date range
 		// Compare by date only (not time) since FullCalendar boundaries are at midnight local time
@@ -959,6 +1080,24 @@ export function generateRecurringTaskInstances(
 				continue;
 			}
 
+			if (shouldCreateRecurringSpan) {
+				const spanEvents = createRecurringScheduledToDueSpanEvents(
+					task,
+					instanceDate,
+					templateTime,
+					"pattern",
+					spanDayOffset,
+					plugin,
+					startDate,
+					endDate
+				);
+				if (spanEvents.length > 0) {
+					instances.push(...spanEvents);
+					emittedInstanceDates.add(instanceDate);
+				}
+				continue;
+			}
+
 			const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
 			const event = createRecurringEvent(task, eventStart, instanceDate, templateTime, plugin);
 			if (event) {
@@ -970,12 +1109,30 @@ export function generateRecurringTaskInstances(
 
 	for (const instanceDate of getRecordedRecurringInstanceDatesInRange(
 		task,
-		startDate,
+		recurringSearchStartDate,
 		endDate,
 		showCompletedRecurringInstances,
 		showSkippedRecurringInstances
 	)) {
 		if (emittedInstanceDates.has(instanceDate)) {
+			continue;
+		}
+
+		if (shouldCreateRecurringSpan) {
+			const spanEvents = createRecurringScheduledToDueSpanEvents(
+				task,
+				instanceDate,
+				templateTime,
+				"recorded",
+				spanDayOffset,
+				plugin,
+				startDate,
+				endDate
+			);
+			if (spanEvents.length > 0) {
+				instances.push(...spanEvents);
+				emittedInstanceDates.add(instanceDate);
+			}
 			continue;
 		}
 
@@ -1229,7 +1386,8 @@ export async function generateCalendarEvents(
 	const addStandaloneDateEvents = (
 		task: TaskInfo,
 		includeScheduled: boolean,
-		allowScheduledToDueSpan: boolean
+		allowScheduledToDueSpan: boolean,
+		includeDue = showDue
 	): void => {
 		let showedSpan = false;
 		if (allowScheduledToDueSpan && showScheduledToDueSpan && task.scheduled && task.due) {
@@ -1256,7 +1414,7 @@ export async function generateCalendarEvents(
 			}
 		}
 
-		if (showDue && task.due) {
+		if (includeDue && task.due) {
 			if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
 				const dueEvent = createDueEvent(task, plugin);
 				if (dueEvent) events.push(dueEvent);
@@ -1269,6 +1427,7 @@ export async function generateCalendarEvents(
 			// Handle recurring tasks
 			if (task.recurrence) {
 				let includeStandaloneScheduled = showScheduled;
+				let includeStandaloneDue = showDue;
 				let allowScheduledToDueSpan = true;
 
 				if (
@@ -1288,17 +1447,31 @@ export async function generateCalendarEvents(
 								showCompletedRecurringInstances,
 								showSkippedRecurringInstances,
 								showProjectedRecurringInstances: showRecurring,
+								showScheduledToDueSpan,
 							}
 						);
 						events.push(...recurringEvents);
 						if (showRecurring) {
 							includeStandaloneScheduled = false;
 							allowScheduledToDueSpan = false;
+							if (
+								recurringEvents.some(
+									(event) =>
+										event.extendedProps.eventType === "scheduledToDueSpan"
+								)
+							) {
+								includeStandaloneDue = false;
+							}
 						}
 					}
 				}
 
-				addStandaloneDateEvents(task, includeStandaloneScheduled, allowScheduledToDueSpan);
+				addStandaloneDateEvents(
+					task,
+					includeStandaloneScheduled,
+					allowScheduledToDueSpan,
+					includeStandaloneDue
+				);
 			} else {
 				// Handle non-recurring tasks with date range filtering
 				addStandaloneDateEvents(task, showScheduled, true);

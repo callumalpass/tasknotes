@@ -807,6 +807,7 @@ If you've customized your TaskNotes settings (e.g., renamed properties, added cu
 - **Custom statuses**: The incomplete task filters will check against all your configured completed statuses
 - **Custom priorities**: The `priorityWeight` formula will include all your configured priorities with their weights
 - **Property-based identification**: If you identify tasks by a property instead of a tag, the filters will use that property
+- **Excluded folders**: If you've configured excluded folders, generated TaskNotes task views will add `file.inFolder(...) != true` filters for those folders
 - **Custom visible properties**: The `order` arrays will include your configured visible properties
 - **Essential card properties**: `file.name`, recurrence, `complete_instances`, and `file.tasks` are always included in generated `order` arrays for TaskNotes card rendering
 After major settings changes, regenerate default files and diff against customized versions to merge template updates.

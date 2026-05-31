@@ -24,10 +24,15 @@ Example:
 
 -->
 
+## Added
+
+- (#1951) Added Calendar support for recurring tasks stretched between scheduled and due dates when the existing stretch option is enabled. Date-only ranges stay as all-day spans, and timed ranges render once per day in the range. Thanks to @atos2212-blip for the request.
+- (#1510, #1751, #1792, #1969) Added a Task List and Kanban view option to hide top-level subtasks when their parent task is also in the filtered view, while still allowing inherited expanded relationships to show the subtasks under the parent. Thanks to @Kickdak and @Glint-Eye for the requests, @inigourrestarazu for identifying the project-linked parent edge case, and @stanley-910 and @Spencerduran for the earlier PRs.
+
 ## Fixed
 
 - (#1974) Stopped Calendar and Agenda property-based events from logging date parse errors for entries that do not have the selected date property. Thanks to @Jomo94 for suggesting completed-date Agenda events.
 - (#1973) Reduced unnecessary Calendar view recreations when external calendar providers are reported in a different order, and preserved Calendar scroll position when a config-driven refresh has to recreate the view. Thanks to @e-zz for reporting this.
 - (#1972) Fixed ICS calendar event related notes so standalone events with similar numeric IDs no longer show unrelated notes or tasks on every event. Thanks to @ks-studio-net for reporting this.
-- (#1970) Fixed TaskNotes Bases views still rendering task files from excluded folders. Thanks to @henrim01 for reporting that this still affected 4.9.2.
+- (#1970) Fixed generated default Base filters so updating default files applies configured excluded folders to TaskNotes task views. Thanks to @henrim01 for reporting that templates could still appear in regenerated views.
 - (#1968) Fixed inline task link overlays collapsing on Obsidian mobile, which could hide the task title and leave a tall empty gap after the widget. Thanks to @renatomen for reporting and diagnosing the containment issue.

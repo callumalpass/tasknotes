@@ -236,6 +236,9 @@ export class KanbanView extends BasesViewBase {
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
 	private currentVisibleTaskOrder = new Map<string, number>();
+	private expandedRelationshipTaskPaths = new Set<string>();
+	private expandedRelationshipTaskOrder = new Map<string, number>();
+	private hideTopLevelSubtasks = false;
 	private suppressRenderUntil = 0;
 	private postDropTimer: number | null = null;
 	private dropQueue = new DropOperationQueue();
@@ -400,6 +403,7 @@ export class KanbanView extends BasesViewBase {
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
 			);
+			this.hideTopLevelSubtasks = this.config.get("hideTopLevelSubtasks") === true;
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;
@@ -567,7 +571,10 @@ export class KanbanView extends BasesViewBase {
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);
-			this.setCurrentVisibleTaskPaths(filteredTasks);
+			this.setExpandedRelationshipTaskScope(filteredTasks);
+			const renderTasks = this.getTopLevelRenderTasks(filteredTasks);
+			const candidateTasks = this.getTopLevelRenderTasks(taskNotes);
+			this.setCurrentVisibleTaskPaths(renderTasks);
 
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
@@ -575,7 +582,7 @@ export class KanbanView extends BasesViewBase {
 			this.sortScopeTaskPaths.clear();
 			this.sortScopeCandidateTaskPaths.clear();
 
-			if (filteredTasks.length === 0) {
+			if (renderTasks.length === 0) {
 				// Show "no results" if search returned empty but we had tasks
 				if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
 					this.renderSearchNoResults(this.boardEl);
@@ -598,16 +605,16 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Group tasks
-			const groups = this.groupTasks(filteredTasks, groupByPropertyId, pathToProps);
-			const allGroups = this.groupTasks(taskNotes, groupByPropertyId, pathToProps);
+			const groups = this.groupTasks(renderTasks, groupByPropertyId, pathToProps);
+			const allGroups = this.groupTasks(candidateTasks, groupByPropertyId, pathToProps);
 
 			// Render swimlanes if configured
 			if (this.swimLanePropertyId) {
 				await this.renderWithSwimLanes(
 					groups,
-					filteredTasks,
+					renderTasks,
 					allGroups,
-					taskNotes,
+					candidateTasks,
 					pathToProps,
 					groupByPropertyId
 				);
@@ -733,6 +740,14 @@ export class KanbanView extends BasesViewBase {
 			this.currentVisibleTaskPaths.add(path);
 			this.currentVisibleTaskOrder.set(path, index);
 		});
+		if (!this.hideTopLevelSubtasks) {
+			this.expandedRelationshipTaskPaths.clear();
+			this.expandedRelationshipTaskOrder.clear();
+			paths.forEach((path, index) => {
+				this.expandedRelationshipTaskPaths.add(path);
+				this.expandedRelationshipTaskOrder.set(path, index);
+			});
+		}
 	}
 
 	private applyOptimisticSortOrderResult(
@@ -4135,8 +4150,21 @@ export class KanbanView extends BasesViewBase {
 				normalizeExpandedRelationshipFilterMode(
 					this.config?.get("expandedRelationshipFilterMode")
 				),
-			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
-			expandedRelationshipTaskOrder: this.currentVisibleTaskOrder,
+			expandedRelationshipTaskPaths: this.expandedRelationshipTaskPaths,
+			expandedRelationshipTaskOrder: this.expandedRelationshipTaskOrder,
+		});
+	}
+
+	private getTopLevelRenderTasks(tasks: readonly TaskInfo[]): TaskInfo[] {
+		return this.hideTopLevelSubtasks ? this.filterTopLevelSubtasks(tasks) : [...tasks];
+	}
+
+	private setExpandedRelationshipTaskScope(tasks: readonly TaskInfo[]): void {
+		this.expandedRelationshipTaskPaths.clear();
+		this.expandedRelationshipTaskOrder.clear();
+		tasks.forEach((task, index) => {
+			this.expandedRelationshipTaskPaths.add(task.path);
+			this.expandedRelationshipTaskOrder.set(task.path, index);
 		});
 	}
 

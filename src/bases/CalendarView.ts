@@ -2554,8 +2554,16 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		const { taskInfo, timeblock, icsEvent, eventType, relatedNoteCount } =
-			extendedProps;
+		const {
+			taskInfo,
+			timeblock,
+			icsEvent,
+			eventType,
+			relatedNoteCount,
+			isRecurringInstance,
+			isNextScheduledOccurrence,
+			isPatternInstance,
+		} = extendedProps;
 		suppressCalendarContextMenuOnMobile(arg.el);
 
 		const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
@@ -2638,7 +2646,11 @@ export class CalendarView extends BasesViewBase {
 					case "timeEntry":
 					case "due":
 					case "scheduledToDueSpan":
-						arg.event.setProp("editable", true);
+						arg.event.setProp(
+							"editable",
+							eventType !== "scheduledToDueSpan" ||
+								!(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)
+						);
 						break;
 					default:
 						// Non-task events (like ICS without provider) remain non-editable

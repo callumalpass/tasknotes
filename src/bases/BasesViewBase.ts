@@ -65,6 +65,7 @@ import {
 	cleanupBasesTaskUpdateListeners,
 	registerBasesTaskUpdateListeners,
 } from "./basesTaskUpdateListeners";
+import { filterTopLevelSubtasks } from "./topLevelSubtasks";
 import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -543,6 +544,12 @@ export abstract class BasesViewBase extends Component {
 			propertyLabels: this.getVisiblePropertyLabels(),
 			...options,
 		};
+	}
+
+	protected filterTopLevelSubtasks(tasks: readonly TaskInfo[]): TaskInfo[] {
+		return filterTopLevelSubtasks(tasks, (linkPath, sourcePath) =>
+			this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath)
+		);
 	}
 
 	/**

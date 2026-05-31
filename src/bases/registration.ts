@@ -81,6 +81,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							default: "inherit",
 							options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
 						},
+						{
+							type: "toggle",
+							key: "hideTopLevelSubtasks",
+							displayName: "Hide top-level subtasks",
+							default: false,
+						},
 					],
 				},
 				logger
@@ -187,6 +193,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						displayName: "Expanded relationships",
 						default: "inherit",
 						options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
+					},
+					{
+						type: "toggle",
+						key: "hideTopLevelSubtasks",
+						displayName: "Hide top-level subtasks",
+						default: false,
 					},
 					],
 				},
