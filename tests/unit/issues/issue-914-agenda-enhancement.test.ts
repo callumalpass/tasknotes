@@ -378,9 +378,9 @@ describe("CalendarView listDayCount configuration", () => {
 	// These tests document the expected configuration changes needed
 
 	it("exposes a longer agenda range through the Bases listDayCount option", () => {
-		const registrationSource = readRepoFile("src/bases/registration.ts");
-		const listDayCountStart = registrationSource.indexOf('key: "listDayCount"');
-		const listDayCountBlock = registrationSource.slice(
+		const calendarOptionsSource = readRepoFile("src/bases/calendarViewOptions.ts");
+		const listDayCountStart = calendarOptionsSource.indexOf('key: "listDayCount"');
+		const listDayCountBlock = calendarOptionsSource.slice(
 			listDayCountStart,
 			listDayCountStart + 220
 		);
