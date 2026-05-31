@@ -19,9 +19,7 @@
     "noImplicitReturns": false,
     "noImplicitThis": false,
     "paths": {
-      "obsidian": ["./node_modules/obsidian"],
-      "@tasknotes/model": ["./packages/model/src/index.ts"],
-      "@tasknotes/model/*": ["./packages/model/src/*"]
+      "obsidian": ["./node_modules/obsidian"]
     },
     "types": [
       "obsidian-typings"
