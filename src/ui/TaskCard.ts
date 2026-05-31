@@ -12,10 +12,7 @@ import {
 	refreshParentTaskSubtasksExpansion,
 	type TaskCardRelationshipExpansionContext,
 } from "./taskCardRelationshipExpansion";
-import {
-	createPriorityClickHandler,
-	createStatusCycleHandler,
-} from "./taskCardActions";
+import { createPriorityClickHandler, createStatusCycleHandler } from "./taskCardActions";
 import {
 	applyTaskCardPriorityColor,
 	createPriorityIndicator,
@@ -23,22 +20,14 @@ import {
 	updatePriorityIndicator,
 	updateStatusIndicator,
 } from "./taskCardPrimaryIndicators";
-import {
-	buildTaskCardRenderState,
-} from "./taskCardState";
+import { buildTaskCardRenderState } from "./taskCardState";
 import {
 	renderTaskCardSecondaryBadges,
 	updateTaskCardSecondaryBadges,
 	type TaskCardSecondaryBadgeHandlers,
 } from "./taskCardSecondaryBadges";
-import {
-	createTaskCardContextMenuButton,
-	showTaskContextMenu,
-} from "./taskCardContextMenu";
-import {
-	createTaskCardTitle,
-	updateTaskCardTitle,
-} from "./taskCardTitle";
+import { createTaskCardContextMenuButton, showTaskContextMenu } from "./taskCardContextMenu";
+import { createTaskCardTitle, updateTaskCardTitle } from "./taskCardTitle";
 import { updateTaskCardStatusIndicatorVisuals } from "./taskCardCompletionState";
 export { showDeleteConfirmationModal } from "./taskCardDeletion";
 export { showTaskContextMenu } from "./taskCardContextMenu";
@@ -66,6 +55,8 @@ export interface TaskCardOptions {
 	expandedRelationshipTaskPaths?: ReadonlySet<string>;
 	/** Sort order of paths in the current view after Bases/search sorting. */
 	expandedRelationshipTaskOrder?: ReadonlyMap<string, number>;
+	/** When true, occurrence actions are promoted to the top of the card context menu. */
+	promoteOccurrenceControlsInContextMenu?: boolean;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -227,6 +218,7 @@ export function createTaskCard(
 		taskPath: task.path,
 		plugin,
 		targetDate,
+		promoteOccurrenceControls: opts.promoteOccurrenceControlsInContextMenu,
 	});
 
 	createTaskCardTitle({
@@ -260,7 +252,13 @@ export function createTaskCard(
 			contextMenuHandler: (e) => {
 				const path = card.dataset.taskPath;
 				if (!path) return;
-				void showTaskContextMenu(e, path, plugin, targetDate);
+				if (opts.promoteOccurrenceControlsInContextMenu === undefined) {
+					void showTaskContextMenu(e, path, plugin, targetDate);
+					return;
+				}
+				void showTaskContextMenu(e, path, plugin, targetDate, {
+					promoteOccurrenceControls: opts.promoteOccurrenceControlsInContextMenu,
+				});
 			},
 			createBatchContextMenu: (selectedPaths, onUpdate) =>
 				new BatchContextMenu({

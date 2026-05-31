@@ -31,7 +31,9 @@ export type CalendarListEventMountInput = {
 	config?: BasesViewConfig;
 	visibleProperties: string[];
 	basesEntryByPath: ReadonlyMap<string, BasesEntryWithGetValue>;
-	buildTaskCardOptions: (options: { targetDate: Date }) => TaskCardOptions;
+	buildTaskCardOptions: (
+		options: Partial<TaskCardOptions> & { targetDate: Date }
+	) => TaskCardOptions;
 	logDebug?: (message: string, ...data: unknown[]) => void;
 	factories?: CalendarListCardFactories;
 };
@@ -201,7 +203,12 @@ export function mountCalendarListEventCard({
 			enrichedTask,
 			plugin,
 			visibleProperties,
-			buildTaskCardOptions({ targetDate })
+			buildTaskCardOptions({
+				targetDate,
+				promoteOccurrenceControlsInContextMenu: Boolean(
+					taskInfo.recurrence || (taskInfo.recurrence_parent && taskInfo.occurrence_date)
+				),
+			})
 		);
 	} else if (icsEvent && eventType === "ics") {
 		cardElement = (factories.createICSEventCard ?? createICSEventCard)(icsEvent, plugin, {

@@ -15,6 +15,7 @@ export interface TaskCardRenderState {
 	isCompleted: boolean;
 	isSkipped: boolean;
 	isRecurring: boolean;
+	isMaterializedOccurrence: boolean;
 	isActivelyTracked: boolean;
 	hasDetails: boolean;
 	cardClasses: string[];
@@ -32,7 +33,9 @@ function createUTCDateFromStorageDate(datePart: string): Date | null {
 
 function getTodayTaskCardTargetDate(): Date {
 	const todayLocal = new Date();
-	return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
+	return new Date(
+		Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate())
+	);
 }
 
 export function getDefaultTaskCardTargetDate(task: TaskInfo): Date {
@@ -97,6 +100,7 @@ function buildTaskCardClassNames(
 	if (task.archived) cardClasses.push("task-card--archived");
 	if (state.isActivelyTracked) cardClasses.push("task-card--actively-tracked");
 	if (state.isRecurring) cardClasses.push("task-card--recurring");
+	if (state.isMaterializedOccurrence) cardClasses.push("task-card--materialized-occurrence");
 	if (state.hasDetails) cardClasses.push("task-card--has-details");
 
 	if (task.priority) {
@@ -142,6 +146,7 @@ export function buildTaskCardRenderState(
 		isCompleted,
 		isSkipped,
 		isRecurring: !!task.recurrence,
+		isMaterializedOccurrence: !!(task.recurrence_parent && task.occurrence_date),
 		isActivelyTracked: plugin.getActiveTimeSession(task) !== null,
 		hasDetails: taskHasDetails(task, plugin),
 	};

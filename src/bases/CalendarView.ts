@@ -2696,6 +2696,10 @@ export class CalendarView extends BasesViewBase {
 					task: taskInfo,
 					plugin: this.plugin,
 					targetDate: targetDate,
+					promoteOccurrenceControls: Boolean(
+						taskInfo.recurrence ||
+							(taskInfo.recurrence_parent && taskInfo.occurrence_date)
+					),
 					onUpdate: () => {
 						// Refresh calendar with fresh task data when task is updated
 						void this.refreshCalendarWithFreshData();

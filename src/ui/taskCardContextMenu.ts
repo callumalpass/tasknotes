@@ -13,6 +13,7 @@ export interface TaskCardContextMenuButtonOptions {
 	taskPath: string;
 	plugin: TaskNotesPlugin;
 	targetDate: Date;
+	promoteOccurrenceControls?: boolean;
 }
 
 function tTaskCard(
@@ -33,7 +34,7 @@ function getTaskCardContextMenuLogger(plugin: TaskNotesPlugin) {
 export function createTaskCardContextMenuButton(
 	options: TaskCardContextMenuButtonOptions
 ): HTMLElement {
-	const { mainRow, taskPath, plugin, targetDate } = options;
+	const { mainRow, taskPath, plugin, targetDate, promoteOccurrenceControls } = options;
 	const taskOptionsLabel = tTaskCard(plugin, "taskOptions");
 	const contextIcon = mainRow.createEl("div", {
 		cls: "task-card__context-menu",
@@ -49,7 +50,11 @@ export function createTaskCardContextMenuButton(
 	contextIcon.addEventListener("click", (e) => {
 		e.stopPropagation();
 		e.preventDefault();
-		void showTaskContextMenu(e, taskPath, plugin, targetDate);
+		if (promoteOccurrenceControls === undefined) {
+			void showTaskContextMenu(e, taskPath, plugin, targetDate);
+			return;
+		}
+		void showTaskContextMenu(e, taskPath, plugin, targetDate, { promoteOccurrenceControls });
 	});
 
 	return contextIcon;
@@ -62,7 +67,8 @@ export async function showTaskContextMenu(
 	event: MouseEvent,
 	taskPath: string,
 	plugin: TaskNotesPlugin,
-	targetDate: Date
+	targetDate: Date,
+	options: { promoteOccurrenceControls?: boolean } = {}
 ): Promise<void> {
 	const file = plugin.app.vault.getAbstractFileByPath(taskPath);
 	const showFileMenuFallback = () => {
@@ -82,6 +88,7 @@ export async function showTaskContextMenu(
 			task,
 			plugin,
 			targetDate,
+			promoteOccurrenceControls: options.promoteOccurrenceControls,
 			onUpdate: () => {
 				plugin.app.workspace.trigger("tasknotes:refresh-views");
 			},

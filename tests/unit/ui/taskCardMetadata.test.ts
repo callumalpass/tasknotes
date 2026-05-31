@@ -124,8 +124,45 @@ describe("taskCardMetadata", () => {
 		expect(metadataLine.querySelector(".task-card__metadata-pill--blocking")?.textContent).toBe(
 			"Blocking (2)"
 		);
-		expect(metadataLine.querySelector(".task-card__metadata-pill--google-calendar")).not.toBeNull();
+		expect(
+			metadataLine.querySelector(".task-card__metadata-pill--google-calendar")
+		).not.toBeNull();
 		expect(metadataLine.textContent).not.toContain("Tasks/task.md");
+	});
+
+	it("renders materialized occurrence identity as an interactive parent control", () => {
+		const plugin = createPlugin();
+		const { card, metadataLine } = createMetadataHost();
+		const parentClick = jest.fn();
+		card.addEventListener("click", parentClick);
+
+		const elements = renderTaskCardMetadata({
+			metadataLine,
+			card,
+			task: createTask({
+				recurrence_parent: "[[Tasks/Daily task]]",
+				occurrence_date: "2026-06-01",
+			}),
+			plugin,
+			visibleProperties: [],
+			onBlockedByToggle: jest.fn(),
+		});
+
+		const occurrencePill = metadataLine.querySelector<HTMLElement>(
+			".task-card__metadata-pill--occurrence"
+		);
+		expect(elements).toEqual([occurrencePill]);
+		expect(occurrencePill?.textContent).toContain("Occurrence:");
+		expect(occurrencePill?.getAttribute("role")).toBe("button");
+
+		occurrencePill?.click();
+
+		expect(plugin.app.workspace.openLinkText).toHaveBeenCalledWith(
+			"Tasks/Daily task",
+			"Tasks/task.md",
+			false
+		);
+		expect(parentClick).not.toHaveBeenCalled();
 	});
 
 	it("clears stale metadata and hides the line when no configured property renders", () => {

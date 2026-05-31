@@ -10,6 +10,10 @@ import {
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { getDatePart } from "../utils/dateUtils";
+import {
+	openMaterializedOccurrenceParent,
+	openOrCreateOccurrenceNote,
+} from "../ui/occurrenceNoteActions";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskActionPaletteModal" });
@@ -252,6 +256,51 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				execute: async (task, plugin, targetDate) => {
 					await plugin.toggleRecurringTaskComplete(task, targetDate);
 					new Notice("Recurring task instance completed");
+				},
+			});
+
+			actions.push({
+				id: "open-or-create-occurrence-note",
+				title: "Open or create occurrence note",
+				description: "Open the note for this occurrence, creating it if needed",
+				icon: "file-plus",
+				category: "dates",
+				keywords: [
+					"open",
+					"create",
+					"materialize",
+					"note",
+					"recurring",
+					"instance",
+					"occurrence",
+				],
+				isApplicable: () => true,
+				execute: async (task, plugin, targetDate) => {
+					await openOrCreateOccurrenceNote({
+						plugin,
+						parentTask: task,
+						targetDate,
+						openInNewLeaf: true,
+					});
+				},
+			});
+		}
+
+		if (this.task.recurrence_parent && this.task.occurrence_date) {
+			actions.push({
+				id: "open-recurring-parent",
+				title: "Open recurring parent",
+				description: "Open the recurring task that generated this occurrence",
+				icon: "refresh-ccw",
+				category: "other",
+				keywords: ["open", "parent", "recurring", "materialized", "occurrence"],
+				isApplicable: () => true,
+				execute: async (task, plugin) => {
+					await openMaterializedOccurrenceParent({
+						plugin,
+						occurrenceTask: task,
+						openInNewLeaf: true,
+					});
 				},
 			});
 		}
