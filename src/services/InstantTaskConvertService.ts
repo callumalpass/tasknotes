@@ -541,7 +541,9 @@ export class InstantTaskConvertService {
 		const title = this.sanitizeTitle(titleSource) || "Untitled Task";
 
 		// If title was truncated, preserve the overflow in details
-		let enhancedDetails = this.appendPreservedTitleLinks(details, titleLinkPreservation.links);
+		const parsedDetails = parsedData.details?.trim();
+		const sourceDetails = [parsedDetails, details].filter(Boolean).join("\n\n");
+		let enhancedDetails = this.appendPreservedTitleLinks(sourceDetails, titleLinkPreservation.links);
 		if (titleSource.length > 200) {
 			const overflowText = this.extractOverflowText(titleSource, 200);
 			if (overflowText) {
@@ -765,7 +767,9 @@ export class InstantTaskConvertService {
 
 		// Prepare custom frontmatter from NLP-parsed user fields
 		// Default values for user fields are applied by TaskService.createTask()
-		const customFrontmatter: Record<string, unknown> = {};
+		const customFrontmatter: Record<string, unknown> = {
+			...(parsedData.customFrontmatter || {}),
+		};
 		if (parsedData.userFields) {
 			for (const [fieldId, value] of Object.entries(parsedData.userFields)) {
 				// Find the user field definition to get the frontmatter key
@@ -801,6 +805,7 @@ export class InstantTaskConvertService {
 			tags: tagsArray,
 			timeEstimate: timeEstimate,
 			recurrence: recurrence,
+			recurrence_anchor: parsedData.recurrenceAnchor,
 			reminders: reminders,
 			details: enhancedDetails, // Use enhanced details with any overflow from title truncation
 			parentNote: parentNote, // Include parent note for template variable
@@ -950,7 +955,17 @@ export class InstantTaskConvertService {
 			.getAllPriorities()
 			.map((p) => p.value)
 			.filter((value) => value != null);
-		return validPriorities.includes(priority) ? priority : "";
+		if (validPriorities.includes(priority)) {
+			return priority;
+		}
+
+		const taskPluginPriorityFallbacks: Record<string, string> = {
+			highest: "high",
+			medium: "normal",
+			lowest: "low",
+		};
+		const fallback = taskPluginPriorityFallbacks[priority];
+		return fallback && validPriorities.includes(fallback) ? fallback : "";
 	}
 
 	/**
@@ -1248,6 +1263,11 @@ export class InstantTaskConvertService {
 			return Object.keys(merged).length > 0 ? merged : undefined;
 		};
 
+		const customFrontmatter = {
+			...(nlpData.customFrontmatter || {}),
+			...(tasksPluginData.customFrontmatter || {}),
+		};
+
 		return {
 			// Use NLP title (cleaner, with NL phrases removed) unless it's empty
 			title: nlpData.title?.trim() || tasksPluginData.title,
@@ -1263,6 +1283,7 @@ export class InstantTaskConvertService {
 			priority: tasksPluginData.priority || nlpData.priority,
 			status: tasksPluginData.status || nlpData.status,
 			recurrence: tasksPluginData.recurrence || nlpData.recurrence,
+			recurrenceAnchor: tasksPluginData.recurrenceAnchor,
 			recurrenceData: tasksPluginData.recurrenceData, // NLP doesn't have this structure
 			timeEstimate: tasksPluginData.timeEstimate || nlpData.timeEstimate,
 
@@ -1276,6 +1297,13 @@ export class InstantTaskConvertService {
 
 			// Merge user fields
 			userFields: mergeUserFields(tasksPluginData.userFields, nlpData.userFields),
+			customFrontmatter:
+				Object.keys(customFrontmatter).length > 0 ? customFrontmatter : undefined,
+			details: tasksPluginData.details || nlpData.details,
+			blockLink: tasksPluginData.blockLink,
+			taskPluginId: tasksPluginData.taskPluginId,
+			dependsOn: tasksPluginData.dependsOn,
+			onCompletion: tasksPluginData.onCompletion,
 
 			// Preserve completion status from TasksPlugin (it parses [x] checkboxes)
 			isCompleted: tasksPluginData.isCompleted,
@@ -1331,6 +1359,13 @@ export class InstantTaskConvertService {
 				createdDate: undefined,
 				doneDate: undefined,
 				recurrenceData: undefined,
+				recurrenceAnchor: undefined,
+				customFrontmatter: undefined,
+				details: undefined,
+				blockLink: undefined,
+				taskPluginId: undefined,
+				dependsOn: undefined,
+				onCompletion: undefined,
 			};
 
 			return parsedData;
