@@ -894,6 +894,11 @@ body.is-mobile .timeblock-attachment-remove {
     overflow-x: hidden;
 }
 
+body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller {
+    padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+}
+
 .advanced-calendar-view.advanced-calendar-view--list .fc-list-table {
     table-layout: fixed;
 }

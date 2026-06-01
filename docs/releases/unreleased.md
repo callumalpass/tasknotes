@@ -34,4 +34,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#1980) Added mobile bottom spacing to Agenda Calendar views so the last visible tasks can scroll above Obsidian's bottom navigation bar. Thanks to @Jomo94 for reporting and sharing the screenshot.
 - (#1903) Reduced the Edit Task modal's mobile action-button footer so Open note, Archive, Delete, Save, and Cancel take two rows instead of three on iPhone-sized screens. Thanks to @3zra47 for the original report and @krzyfu for the follow-up about the button area crowding the editor.
